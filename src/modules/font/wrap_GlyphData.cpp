@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,7 @@ int w_GlyphData_getGlyph(lua_State *L)
 	lua_pushnumber(L, (lua_Number) glyph);
 	return 1;
 }
-	
+
 int w_GlyphData_getGlyphString(lua_State *L)
 {
 	GlyphData *t = luax_checkglyphdata(L, 1);
@@ -115,13 +115,8 @@ int w_GlyphData_getFormat(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_GlyphData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getWidth", w_GlyphData_getWidth },
 	{ "getHeight", w_GlyphData_getHeight },
 	{ "getDimensions", w_GlyphData_getDimensions },
@@ -136,7 +131,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_glyphdata(lua_State *L)
 {
-	return luax_register_type(L, FONT_GLYPH_DATA_ID, functions);
+	return luax_register_type(L, FONT_GLYPH_DATA_ID, "GlyphData", w_Data_functions, w_GlyphData_functions, nullptr);
 }
 
 } // font

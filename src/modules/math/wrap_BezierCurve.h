@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,17 +31,6 @@ namespace math
 {
 
 BezierCurve *luax_checkbeziercurve(lua_State *L, int idx);
-int w_BezierCurve_getDegree(lua_State *L);
-int w_BezierCurve_getDerivative(lua_State *L);
-int w_BezierCurve_getControlPoint(lua_State *L);
-int w_BezierCurve_setControlPoint(lua_State *L);
-int w_BezierCurve_insertControlPoint(lua_State *L);
-int w_BezierCurve_getControlPointCount(lua_State *L);
-int w_BezierCurve_translate(lua_State *L);
-int w_BezierCurve_rotate(lua_State *L);
-int w_BezierCurve_scale(lua_State *L);
-int w_BezierCurve_evaluate(lua_State *L);
-int w_BezierCurve_render(lua_State *L);
 extern "C" int luaopen_beziercurve(lua_State *L);
 
 } // math

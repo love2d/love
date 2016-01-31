@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 #include "common/Module.h"
 #include "filesystem/File.h"
 #include "ImageData.h"
-#include "CompressedData.h"
+#include "CompressedImageData.h"
 
 namespace love
 {
@@ -76,11 +76,11 @@ public:
 	virtual ImageData *newImageData(int width, int height, void *data, bool own = false) = 0;
 
 	/**
-	 * Creates new CompressedData from FileData.
+	 * Creates new CompressedImageData from FileData.
 	 * @param data The FileData containing the compressed image data.
-	 * @return The new CompressedData.
+	 * @return The new CompressedImageData.
 	 **/
-	virtual CompressedData *newCompressedData(love::filesystem::FileData *data) = 0;
+	virtual CompressedImageData *newCompressedData(love::filesystem::FileData *data) = 0;
 
 	/**
 	 * Determines whether a FileData is Compressed image data or not.

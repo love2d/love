@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -95,7 +95,7 @@ int w_Joystick_getHatCount(lua_State *L)
 int w_Joystick_getAxis(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	int axisindex = luaL_checkint(L, 2) - 1;
+	int axisindex = (int) luaL_checknumber(L, 2) - 1;
 	lua_pushnumber(L, j->getAxis(axisindex));
 	return 1;
 }
@@ -114,7 +114,7 @@ int w_Joystick_getAxes(lua_State *L)
 int w_Joystick_getHat(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	int hatindex = luaL_checkint(L, 2) - 1;
+	int hatindex = (int) luaL_checknumber(L, 2) - 1;
 
 	Joystick::Hat h = j->getHat(hatindex);
 
@@ -133,7 +133,7 @@ int w_Joystick_isDown(lua_State *L)
 
 	std::vector<int> buttons;
 	for (int i = 2; i <= lua_gettop(L); i++)
-		buttons.push_back(luaL_checkint(L, i) - 1);
+		buttons.push_back((int) luaL_checknumber(L, i) - 1);
 
 	luax_pushboolean(L, j->isDown(buttons));
 	return 1;
@@ -224,7 +224,7 @@ int w_Joystick_getVibration(lua_State *L)
 }
 
 // List of functions to wrap.
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Joystick_functions[] =
 {
 	{ "isConnected", w_Joystick_isConnected },
 	{ "getName", w_Joystick_getName },
@@ -255,7 +255,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_joystick(lua_State *L)
 {
-	return luax_register_type(L, JOYSTICK_JOYSTICK_ID, functions);
+	return luax_register_type(L, JOYSTICK_JOYSTICK_ID, "Joystick", w_Joystick_functions, nullptr);
 }
 
 } // joystick

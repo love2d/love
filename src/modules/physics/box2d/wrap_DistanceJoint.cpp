@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -80,7 +80,7 @@ int w_DistanceJoint_getDampingRatio(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_DistanceJoint_functions[] =
 {
 	{ "setLength", w_DistanceJoint_setLength },
 	{ "getLength", w_DistanceJoint_getLength },
@@ -88,23 +88,12 @@ static const luaL_Reg functions[] =
 	{ "getFrequency", w_DistanceJoint_getFrequency },
 	{ "setDampingRatio", w_DistanceJoint_setDampingRatio },
 	{ "getDampingRatio", w_DistanceJoint_getDampingRatio },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_distancejoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_DISTANCE_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_DISTANCE_JOINT_ID, "DistanceJoint", w_Joint_functions, w_DistanceJoint_functions, nullptr);
 }
 
 } // box2d

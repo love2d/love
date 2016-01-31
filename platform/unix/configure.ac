@@ -7,34 +7,26 @@ AM_INIT_AUTOMAKE([foreign -Wall foreign tar-ustar silent-rules])
 AM_SILENT_RULES
 AC_PREFIX_DEFAULT([/usr])
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
-AC_PROG_LIBTOOL
+LT_INIT([disable-static])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_SED
 AC_PROG_MKDIR_P
 AC_PROG_OBJCXX
+PKG_PROG_PKG_CONFIG
 AC_C_BIGENDIAN
 AC_LANG([C++])
 
-includes=
+dnl Workaround for old aclocal versions
+m4_include([platform/unix/cpp11.m4])
 
-AC_DEFUN([ACLOVE_CXX_FLAG_TEST], # WARNING: NOT REENTRANT
-		 [aclove_cxx_flag_test_save_cflags="$CXXFLAGS"
-		  CXXFLAGS="$1"
-		  AC_MSG_CHECKING([whether $CXX supports flag $1])
-		  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-			  [AC_MSG_RESULT([yes])]; $2,
-			  [AC_MSG_RESULT([no]); $3])
-		  CXXFLAGS="$aclove_cxx_flag_test_save_cflags"])
+includes=
 
 AC_DEFUN([LOVE_MSG_ERROR],
 		 [AC_MSG_ERROR([LÖVE needs "$1"[,] please install "$1" with development files and try again])])
 
-# C++11 support
-cxx11name="no"
-ACLOVE_CXX_FLAG_TEST([-std=c++0x], cxx11name="c++0x", [])
-ACLOVE_CXX_FLAG_TEST([-std=c++11], cxx11name="c++11", [])
-AS_VAR_IF([cxx11name], [no], AC_MSG_ERROR([LÖVE needs a C++ compiler with C++11 support]), CXXFLAGS="$CXXFLAGS -std=$cxx11name")
+# C++11 support in cpp11.m4
+ACLOVE_CPP11_TEST
 
 # Allow people on OSX to use autotools, they need their platform files
 AC_ARG_ENABLE([osx],
@@ -52,32 +44,32 @@ AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua v
 
 # pkg-config libraries
 AM_PATH_SDL2([], [], [LOVE_MSG_ERROR([SDL 2])])
+with_clean_luaversion=`printf ${with_luaversion} | sed 's/\.//g'`
 PKG_CHECK_MODULES([lua], [${with_lua}${with_luaversion}], [lua_found=yes],
-				  [PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])
+	[PKG_CHECK_MODULES([lua], [${with_lua}${with_clean_luaversion}], [lua_found=yes],
+	[PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])])
 PKG_CHECK_MODULES([freetype2], [freetype2], [], [LOVE_MSG_ERROR([FreeType2])])
 PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])
 PKG_CHECK_MODULES([libmodplug], [libmodplug], [], [LOVE_MSG_ERROR([libmodplug])])
 PKG_CHECK_MODULES([vorbisfile], [vorbisfile], [], [LOVE_MSG_ERROR([libvorbis and libvorbisfile])])
 PKG_CHECK_MODULES([zlib], [zlib], [], [LOVE_MSG_ERROR([zlib])])
+PKG_CHECK_MODULES([theora], [theoradec], [], [LOVE_MSG_ERROR([libtheora])])
 
 # Other libraries
 AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])
 AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])
-AC_SEARCH_LIBS([glDrawArrays], [GL], [], [LOVE_MSG_ERROR([OpenGL])])
-AC_SEARCH_LIBS([tjInitCompress], [turbojpeg], [], [LOVE_MSG_ERROR([TurboJPEG])])
 
 # Lua, treated seperately because of --with-lua
-AS_VAR_IF([with_luaversion], [5.2], [luatest=lua_version], [luatest=lua_pcall]) # use lua_version for 5.2
 AS_VAR_IF([lua_found], [yes],
 		  #if
 		  [
 		   luaheaders_found=yes
-		   AC_MSG_CHECKING([for library containing ${luatest}])
+		   AC_MSG_CHECKING([for library containing lua_call])
 		   AC_MSG_RESULT([${lua_LIBS}])],
 		  #else
 		  [
-		   AC_MSG_WARN([Could not find pkg-config definition for ${with_lua}${with_luaversion} or ${with_lua}, falling back to manual detection])
-		   AC_SEARCH_LIBS([$luatest], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
+		   AC_MSG_WARN([Could not find pkg-config definition for ${with_lua}${with_luaversion} or ${with_lua}${with_clean_luaversion}${with_lua}, falling back to manual detection])
+		   AC_SEARCH_LIBS([lua_call], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
 						  [LOVE_MSG_ERROR([$with_lua])])
 		   luaheaders_found=no
 		   AC_CHECK_HEADER(["${with_lua}${with_luaversion}/lua.h"], [luaheaders_found=yes includes="$includes -I/usr/include/${with_lua}${with_luaversion}"], [])

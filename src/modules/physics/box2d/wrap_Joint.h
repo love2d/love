@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,17 +34,9 @@ namespace box2d
 
 void luax_pushjoint(lua_State *L, Joint *j);
 Joint *luax_checkjoint(lua_State *L, int idx);
-int w_Joint_getType(lua_State *L);
-int w_Joint_getBodies(lua_State *L);
-int w_Joint_getAnchors(lua_State *L);
-int w_Joint_getReactionForce(lua_State *L);
-int w_Joint_getReactionTorque(lua_State *L);
-int w_Joint_getCollideConnected(lua_State *L);
-int w_Joint_setUserData(lua_State *L);
-int w_Joint_getUserData(lua_State *L);
-int w_Joint_destroy(lua_State *L);
-int w_Joint_isDestroyed(lua_State *L);
 extern "C" int luaopen_joint(lua_State *L);
+
+extern const luaL_Reg w_Joint_functions[];
 
 } // box2d
 } // physics

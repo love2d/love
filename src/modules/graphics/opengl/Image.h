@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #include "common/StringMap.h"
 #include "common/math.h"
 #include "image/ImageData.h"
-#include "image/CompressedData.h"
+#include "image/CompressedImageData.h"
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 
@@ -55,34 +55,34 @@ public:
 	enum FlagType
 	{
 		FLAG_TYPE_MIPMAPS,
-		FLAG_TYPE_SRGB,
+		FLAG_TYPE_LINEAR,
 		FLAG_TYPE_MAX_ENUM
 	};
 
 	struct Flags
 	{
 		bool mipmaps = false;
-		bool sRGB = false;;
+		bool linear = false;
 	};
 
 	/**
 	 * Creates a new Image. Not that anything is ready to use
 	 * before load is called.
 	 *
-	 * @param data The data from which to load the image.
+	 * @param data The data from which to load the image. Each element in the
+	 * array is a mipmap level. If more than the base level is present, all
+	 * mip levels must be present.
 	 **/
-	Image(love::image::ImageData *data, const Flags &flags);
+	Image(const std::vector<love::image::ImageData *> &data, const Flags &flags);
 
 	/**
 	 * Creates a new Image with compressed image data.
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(love::image::CompressedData *cdata, const Flags &flags);
+	Image(const std::vector<love::image::CompressedImageData *> &cdata, const Flags &flags);
 
 	virtual ~Image();
-
-	bool load();
 
 	// Implements Volatile.
 	bool loadVolatile();
@@ -100,8 +100,8 @@ public:
 
 	virtual const void *getHandle() const;
 
-	love::image::ImageData *getImageData() const;
-	love::image::CompressedData *getCompressedData() const;
+	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const;
+	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const;
 
 	virtual void setFilter(const Texture::Filter &f);
 	virtual bool setWrap(const Texture::Wrap &w);
@@ -110,12 +110,12 @@ public:
 	float getMipmapSharpness() const;
 
 	/**
-	 * Whether this Image is using a compressed texture (via CompressedData).
+	 * Whether this Image is using a compressed texture (via CompressedImageData).
 	 **/
 	bool isCompressed() const;
 
 	/**
-	 * Re-uploads the ImageData or CompressedData associated with this Image to
+	 * Re-uploads the ImageData or CompressedImageData associated with this Image to
 	 * the GPU.
 	 **/
 	bool refresh(int xoffset, int yoffset, int w, int h);
@@ -128,7 +128,7 @@ public:
 	static FilterMode getDefaultMipmapFilter();
 
 	static bool hasAnisotropicFilteringSupport();
-	static bool hasCompressedTextureSupport(image::CompressedData::Format format, bool sRGB);
+	static bool hasCompressedTextureSupport(image::CompressedImageData::Format format, bool sRGB);
 	static bool hasSRGBSupport();
 
 	static bool getConstant(const char *in, FlagType &out);
@@ -138,24 +138,25 @@ public:
 
 private:
 
-	void drawv(const Matrix &t, const Vertex *v);
+	void drawv(const Matrix4 &t, const Vertex *v);
 
 	void preload();
 
 	void generateMipmaps();
 	void loadDefaultTexture();
-	void loadTextureFromCompressedData();
-	void loadTextureFromImageData();
+	void loadFromCompressedData();
+	void loadFromImageData();
 
-	GLenum getCompressedFormat(image::CompressedData::Format cformat) const;
+	GLenum getCompressedFormat(image::CompressedImageData::Format cformat, bool &isSRGB) const;
 
-	// The ImageData from which the texture is created. May be null if
+	// The ImageData from which the texture is created. May be empty if
 	// Compressed image data was used to create the texture.
-	StrongRef<love::image::ImageData> data;
+	// Each element in the array is a mipmap level.
+	std::vector<StrongRef<love::image::ImageData>> data;
 
 	// Or the Compressed Image Data from which the texture is created. May be
-	// null if raw ImageData was used to create the texture.
-	StrongRef<love::image::CompressedData> cdata;
+	// empty if raw ImageData was used to create the texture.
+	std::vector<StrongRef<love::image::CompressedImageData>> cdata;
 
 	// OpenGL texture identifier.
 	GLuint texture;
@@ -168,6 +169,8 @@ private:
 
 	// The flags used to initialize this Image.
 	Flags flags;
+
+	bool sRGB;
 
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.

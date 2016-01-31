@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,15 +24,18 @@
 // C
 #include <cstring>
 
+// C++
+#include <unordered_map>
+
 // LOVE
 #include "common/math.h"
 #include "common/Matrix.h"
-#include "common/StringMap.h"
 #include "graphics/Drawable.h"
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
-#include "VertexBuffer.h"
+#include "GLBuffer.h"
+#include "Mesh.h"
 
 namespace love
 {
@@ -49,15 +52,7 @@ class SpriteBatch : public Drawable
 {
 public:
 
-	enum UsageHint
-	{
-		USAGE_DYNAMIC,
-		USAGE_STATIC,
-		USAGE_STREAM,
-		USAGE_MAX_ENUM
-	};
-
-	SpriteBatch(Texture *texture, int size, int usage);
+	SpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 	virtual ~SpriteBatch();
 
 	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
@@ -106,15 +101,24 @@ public:
 	 **/
 	int getBufferSize() const;
 
+	/**
+	 * Attaches a specific vertex attribute from a Mesh to this SpriteBatch.
+	 * The vertex attribute will be used when drawing the SpriteBatch.
+	 **/
+	void attachAttribute(const std::string &name, Mesh *mesh);
+
 	// Implements Drawable.
 	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
-	static bool getConstant(const char *in, UsageHint &out);
-	static bool getConstant(UsageHint in, const char *&out);
-
 private:
 
-	void addv(const Vertex *v, const Matrix &m, int index);
+	struct AttachedAttribute
+	{
+		StrongRef<Mesh> mesh;
+		int index;
+	};
+
+	void addv(const Vertex *v, const Matrix3 &m, int index);
 
 	/**
 	 * Set the color for vertices.
@@ -137,15 +141,10 @@ private:
 	// added sprite.
 	Color *color;
 
-	VertexBuffer *array_buf;
-	VertexIndex element_buf;
+	GLBuffer *array_buf;
+	QuadIndices quad_indices;
 
-	// The portion of the vertex buffer that's been modified while mapped.
-	size_t buffer_used_offset;
-	size_t buffer_used_size;
-
-	static StringMap<UsageHint, USAGE_MAX_ENUM>::Entry usageHintEntries[];
-	static StringMap<UsageHint, USAGE_MAX_ENUM> usageHints;
+	std::unordered_map<std::string, AttachedAttribute> attached_attributes;
 
 }; // SpriteBatch
 

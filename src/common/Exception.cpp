@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Exception.h"
 #include "common/config.h"
+#include "Exception.h"
 
 #include <iostream>
 
@@ -58,6 +58,10 @@ Exception::Exception(const char *fmt, ...)
 	}
 	message = std::string(buffer);
 	delete[] buffer;
+}
+
+Exception::~Exception() throw()
+{
 }
 
 }

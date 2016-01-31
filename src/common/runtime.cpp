@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,14 @@ static int w__gc(lua_State *L)
 
 static int w__tostring(lua_State *L)
 {
+	Proxy *p = (Proxy *) lua_touserdata(L, 1);
+	const char *typname = lua_tostring(L, lua_upvalueindex(1));
+	lua_pushfstring(L, "%s: %p", typname, p->object);
+	return 1;
+}
+
+static int w__type(lua_State *L)
+{
 	lua_pushvalue(L, lua_upvalueindex(1));
 	return 1;
 }
@@ -70,7 +78,7 @@ static int w__eq(lua_State *L)
 
 Reference *luax_refif(lua_State *L, int type)
 {
-	Reference *r = 0;
+	Reference *r = nullptr;
 
 	// Create a reference only if the test succeeds.
 	if (lua_type(L, -1) == type)
@@ -83,10 +91,8 @@ Reference *luax_refif(lua_State *L, int type)
 
 void luax_printstack(lua_State *L)
 {
-	for (int i = 1; i<=lua_gettop(L); i++)
-	{
+	for (int i = 1; i <= lua_gettop(L); i++)
 		std::cout << i << " - " << luaL_typename(L, i) << std::endl;
-	}
 }
 
 bool luax_toboolean(lua_State *L, int idx)
@@ -133,7 +139,7 @@ bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultV
 	if (lua_isnoneornil(L, -1))
 		retval = defaultValue;
 	else
-		retval = lua_toboolean(L, -1);
+		retval = lua_toboolean(L, -1) != 0;
 
 	lua_pop(L, 1);
 	return retval;
@@ -190,18 +196,28 @@ int luax_assert_nilerror(lua_State *L, int idx)
 
 void luax_setfuncs(lua_State *L, const luaL_Reg *l)
 {
-	if (l == 0)
+	if (l == nullptr)
 		return;
 
-	for (; l->name != 0; l++)
+	for (; l->name != nullptr; l++)
 	{
 		lua_pushcfunction(L, l->func);
 		lua_setfield(L, -2, l->name);
 	}
 }
 
+int luax_require(lua_State *L, const char *name)
+{
+	lua_getglobal(L, "require");
+	lua_pushstring(L, name);
+	lua_call(L, 1, 1);
+	return 1;
+}
+
 int luax_register_module(lua_State *L, const WrappedModule &m)
 {
+	love::addTypeName(m.type, m.name);
+
 	// Put a reference to the C++ module in Lua.
 	luax_insistregistry(L, REGISTRY_MODULES);
 
@@ -226,13 +242,15 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	lua_newtable(L);
 
 	// Register all the functions.
-	if (m.functions != 0)
+	if (m.functions != nullptr)
 		luax_setfuncs(L, m.functions);
 
 	// Register types.
-	if (m.types != 0)
-		for (const lua_CFunction *t = m.types; *t != 0; t++)
+	if (m.types != nullptr)
+	{
+		for (const lua_CFunction *t = m.types; *t != nullptr; t++)
 			(*t)(L);
+	}
 
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -3, m.name); // love.graphics = table
@@ -254,17 +272,14 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
+int luax_register_type(lua_State *L, love::Type type, const char *name, ...)
 {
-	// Verify that this type name has a matching Type ID and type name mapping.
-	const char *tname = "Invalid";
-	if (!love::getType(type, tname))
-		printf("Missing type name entry for type ID %d\n", type);
+	love::addTypeName(type, name);
 
 	// Get the place for storing and re-using instantiated love types.
-	luax_getregistry(L, REGISTRY_TYPES);
+	luax_getregistry(L, REGISTRY_OBJECTS);
 
-	// Create registry._lovetypes if it doesn't exist yet.
+	// Create registry._loveobjects if it doesn't exist yet.
 	if (!lua_istable(L, -1))
 	{
 		lua_newtable(L);
@@ -280,13 +295,13 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
 		// setmetatable(newtable, metatable)
 		lua_setmetatable(L, -2);
 
-		// registry._lovetypes = newtable
-		lua_setfield(L, LUA_REGISTRYINDEX, "_lovetypes");
+		// registry._loveobjects = newtable
+		lua_setfield(L, LUA_REGISTRYINDEX, "_loveobjects");
 	}
 	else
 		lua_pop(L, 1);
 
-	luaL_newmetatable(L, tname);
+	luaL_newmetatable(L, name);
 
 	// m.__index = m
 	lua_pushvalue(L, -1);
@@ -301,24 +316,36 @@ int luax_register_type(lua_State *L, love::Type type, const luaL_Reg *f)
 	lua_setfield(L, -2, "__eq");
 
 	// Add tostring function.
-	lua_pushstring(L, tname);
+	lua_pushstring(L, name);
 	lua_pushcclosure(L, w__tostring, 1);
 	lua_setfield(L, -2, "__tostring");
 
-	// Add tostring to as type() as well.
-	lua_pushstring(L, tname);
-	lua_pushcclosure(L, w__tostring, 1);
+	// Add type
+	lua_pushstring(L, name);
+	lua_pushcclosure(L, w__type, 1);
 	lua_setfield(L, -2, "type");
 
 	// Add typeOf
 	lua_pushcfunction(L, w__typeOf);
 	lua_setfield(L, -2, "typeOf");
 
-	if (f != 0)
+	va_list fs;
+	va_start(fs, name);
+	for (const luaL_Reg *f = va_arg(fs, const luaL_Reg *); f; f = va_arg(fs, const luaL_Reg *))
 		luax_setfuncs(L, f);
+	va_end(fs);
 
 	lua_pop(L, 1); // Pops metatable.
 	return 0;
+}
+
+void luax_gettypemetatable(lua_State *L, love::Type type)
+{
+	const char *name = nullptr;
+	if (getTypeName(type, name))
+		lua_getfield(L, LUA_REGISTRYINDEX, name);
+	else
+		lua_pushnil(L);
 }
 
 int luax_table_insert(lua_State *L, int tindex, int vindex, int pos)
@@ -331,13 +358,13 @@ int luax_table_insert(lua_State *L, int tindex, int vindex, int pos)
 	if (pos == -1)
 	{
 		lua_pushvalue(L, vindex);
-		lua_rawseti(L, tindex, (int) lua_objlen(L, tindex)+1);
+		lua_rawseti(L, tindex, (int) luax_objlen(L, tindex)+1);
 		return 0;
 	}
 	else if (pos < 0)
-		pos = (int) lua_objlen(L, tindex)+1+pos;
+		pos = (int) luax_objlen(L, tindex)+1+pos;
 
-	for (int i = (int) lua_objlen(L, tindex)+1; i > pos; i--)
+	for (int i = (int) luax_objlen(L, tindex)+1; i > pos; i--)
 	{
 		lua_rawgeti(L, tindex, i-1);
 		lua_rawseti(L, tindex, i);
@@ -384,7 +411,7 @@ void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object)
 	u->type = type;
 
 	const char *name = "Invalid";
-	getType(type, name);
+	getTypeName(type, name);
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
@@ -398,8 +425,8 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 		return;
 	}
 
-	// Fetch the registry table of instantiated types.
-	luax_getregistry(L, REGISTRY_TYPES);
+	// Fetch the registry table of instantiated objects.
+	luax_getregistry(L, REGISTRY_OBJECTS);
 
 	// The table might not exist - it should be insisted in luax_register_type.
 	if (!lua_istable(L, -1))
@@ -408,7 +435,7 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 		return luax_rawnewtype(L, type, object);
 	}
 
-	// Get the value of lovetypes[object] on the stack.
+	// Get the value of loveobjects[object] on the stack.
 	lua_pushlightuserdata(L, object);
 	lua_gettable(L, -2);
 
@@ -422,11 +449,11 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 		lua_pushlightuserdata(L, object);
 		lua_pushvalue(L, -2);
 
-		// lovetypes[object] = Proxy.
+		// loveobjects[object] = Proxy.
 		lua_settable(L, -4);
 	}
 
-	// Remove the lovetypes table from the stack.
+	// Remove the loveobjects table from the stack.
 	lua_remove(L, -2);
 
 	// Keep the Proxy userdata on the stack.
@@ -438,7 +465,11 @@ bool luax_istype(lua_State *L, int idx, love::Type type)
 		return false;
 
 	Proxy *p = (Proxy *) lua_touserdata(L, idx);
-	return typeFlags[p->type][type];
+
+	if (p->type > INVALID_ID && p->type < TYPE_MAX_ENUM)
+		return typeFlags[p->type][type];
+	else
+		return false;
 }
 
 int luax_getfunction(lua_State *L, const char *mod, const char *fn)
@@ -481,7 +512,8 @@ int luax_convobj(lua_State *L, int idxs[], int n, const char *mod, const char *f
 	lua_call(L, n, 2); // Call the function, n args, one return value (plus optional errstring.)
 	luax_assert_nilerror(L, -2); // Make sure the function returned something.
 	lua_pop(L, 1); // Pop the second return value now that we don't need it.
-	lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
+	if (n > 0)
+		lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
 	return 0;
 }
 
@@ -544,6 +576,11 @@ int luax_insistglobal(lua_State *L, const char *k)
 	return 1;
 }
 
+int luax_c_insistglobal(lua_State *L, const char *k)
+{
+	return luax_insistglobal(L, k);
+}
+
 int luax_insistlove(lua_State *L, const char *k)
 {
 	luax_insistglobal(L, "love");
@@ -573,12 +610,10 @@ int luax_insistregistry(lua_State *L, Registry r)
 {
 	switch (r)
 	{
-	case REGISTRY_GC:
-		return luax_insistlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_insistlove(L, "_modules");
-	case REGISTRY_TYPES:
-		return luax_insist(L, LUA_REGISTRYINDEX, "_lovetypes");
+	case REGISTRY_OBJECTS:
+		return luax_insist(L, LUA_REGISTRYINDEX, "_loveobjects");
 	default:
 		return luaL_error(L, "Attempted to use invalid registry.");
 	}
@@ -588,16 +623,47 @@ int luax_getregistry(lua_State *L, Registry r)
 {
 	switch (r)
 	{
-	case REGISTRY_GC:
-		return luax_getlove(L, "_gc");
 	case REGISTRY_MODULES:
 		return luax_getlove(L, "_modules");
-	case REGISTRY_TYPES:
-		lua_getfield(L, LUA_REGISTRYINDEX, "_lovetypes");
+	case REGISTRY_OBJECTS:
+		lua_getfield(L, LUA_REGISTRYINDEX, "_loveobjects");
 		return 1;
 	default:
 		return luaL_error(L, "Attempted to use invalid registry.");
 	}
+}
+
+static const char *MAIN_THREAD_KEY = "_love_mainthread";
+
+lua_State *luax_insistpinnedthread(lua_State *L)
+{
+	lua_getfield(L, LUA_REGISTRYINDEX, MAIN_THREAD_KEY);
+
+	if (lua_isnoneornil(L, -1))
+	{
+		lua_pop(L, 1);
+
+		// lua_pushthread returns 1 if it's actually the main thread, but we
+		// can't actually get the real main thread if lua_pushthread doesn't
+		// return it (in Lua 5.1 at least), so we ignore that for now...
+		// We do store a strong reference to the current thread/coroutine in
+		// the registry, however.
+		lua_pushthread(L);
+		lua_pushvalue(L, -1);
+		lua_setfield(L, LUA_REGISTRYINDEX, MAIN_THREAD_KEY);
+	}
+
+	lua_State *thread = lua_tothread(L, -1);
+	lua_pop(L, 1);
+	return thread;
+}
+
+lua_State *luax_getpinnedthread(lua_State *L)
+{
+	lua_getfield(L, LUA_REGISTRYINDEX, MAIN_THREAD_KEY);
+	lua_State *thread = lua_tothread(L, -1);
+	lua_pop(L, 1);
+	return thread;
 }
 
 extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
@@ -606,17 +672,17 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 	const char *argtname = 0;
 
 	// We want to use the love type name for userdata, if possible.
-	if (argtype == LUA_TUSERDATA && luaL_getmetafield(L, narg, "__tostring") != 0)
+	if (argtype == LUA_TUSERDATA && luaL_getmetafield(L, narg, "type") != 0)
 	{
 		lua_pushvalue(L, narg);
 		if (lua_pcall(L, 1, 1, 0) == 0 && lua_type(L, -1) == LUA_TSTRING)
 		{
 			argtname = lua_tostring(L, -1);
 
-			// Non-love userdata might have a tostring metamethod which doesn't
-			// describe its type, so we only use __tostring for love types.
+			// Non-love userdata might have a type metamethod which doesn't
+			// describe its type properly, so we only use it for love types.
 			love::Type t;
-			if (!love::getType(argtname, t))
+			if (!love::getTypeName(argtname, t))
 				argtname = 0;
 		}
 	}
@@ -628,10 +694,32 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 	return luaL_argerror(L, narg, msg);
 }
 
+size_t luax_objlen(lua_State *L, int ndx)
+{
+#if LUA_VERSION_NUM == 501
+	return lua_objlen(L, ndx);
+#else
+	return lua_rawlen(L, ndx);
+#endif
+}
+
+void luax_register(lua_State *L, const char *name, const luaL_Reg *l)
+{
+	if (name)
+		lua_newtable(L);
+
+	luax_setfuncs(L, l);
+	if (name)
+	{
+		lua_pushvalue(L, -1);
+		lua_setglobal(L, name);
+	}
+}
+
 Type luax_type(lua_State *L, int idx)
 {
 	Type t = INVALID_ID;
-	getType(luaL_checkstring(L, idx), t);
+	getTypeName(luaL_checkstring(L, idx), t);
 	return t;
 }
 

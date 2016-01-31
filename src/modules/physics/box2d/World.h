@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -70,6 +70,7 @@ public:
 	{
 	public:
 		Reference *ref;
+		lua_State *L;
 		ContactCallback();
 		~ContactCallback();
 		void process(b2Contact *contact, const b2ContactImpulse *impulse = NULL);
@@ -79,6 +80,7 @@ public:
 	{
 	public:
 		Reference *ref;
+		lua_State *L;
 		ContactFilter();
 		~ContactFilter();
 		bool process(Fixture *a, Fixture *b);
@@ -87,19 +89,23 @@ public:
 	class QueryCallback : public b2QueryCallback
 	{
 	public:
-		Reference *ref;
-		QueryCallback();
+		QueryCallback(lua_State *L, int idx);
 		~QueryCallback();
 		virtual bool ReportFixture(b2Fixture *fixture);
+	private:
+		lua_State *L;
+		int funcidx;
 	};
 
 	class RayCastCallback : public b2RayCastCallback
 	{
 	public:
-		Reference *ref;
-		RayCastCallback();
+		RayCastCallback(lua_State *L, int idx);
 		~RayCastCallback();
 		virtual float32 ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float32 fraction);
+	private:
+		lua_State *L;
+		int funcidx;
 	};
 
 	/**
@@ -156,6 +162,13 @@ public:
 	 * Returns the functions previously set by setCallbacks.
 	 **/
 	int getCallbacks(lua_State *L);
+
+	/**
+	 * Updates the Lua thread/coroutine used when callbacks are executed in
+	 * the update method. This should be called in the same Lua function which
+	 * calls update().
+	 **/
+	void setCallbacksL(lua_State *L);
 
 	/**
 	 * Sets the ContactFilter callback.
@@ -281,8 +294,6 @@ private:
 	// Contact callbacks.
 	ContactCallback begin, end, presolve, postsolve;
 	ContactFilter filter;
-	QueryCallback query;
-	RayCastCallback	raycast;
 };
 
 } // box2d

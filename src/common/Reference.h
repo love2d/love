@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -64,36 +64,17 @@ public:
 	void unref();
 
 	/**
-	 * Pushes the referred value onto the stack of a different coroutine
-	 * in the same main Lua state.
-	 * THIS SHOULD NOT BE USED FOR DIFFERENT LUA STATES (created with
-	 * luaL_newstate)! Only with different coroutines!
+	 * Pushes the referred value onto the stack of the specified Lua coroutine.
+	 * NOTE: The coroutine *must* belong to the same Lua state that was used for
+	 * Reference::ref.
 	 **/
-	void push(lua_State *newL);
-
-	/**
-	 * Pushes the referred value onto the stack.
-	 **/
-	void push();
-
-	/**
-	 * Gets the Lua state associated with this
-	 * reference.
-	 **/
-	lua_State *getL() const;
-
-	/**
-	 * Associates a new Lua state with this reference.
-	 * THIS IS DANGEROUS! It is only designed to be
-	 * used with different coroutines from the same
-	 * main Lua state!
-	 **/
-	void setL(lua_State *newL);
+	void push(lua_State *L);
 
 private:
 
-	// The Lua state in which the reference resides.
-	lua_State *L;
+	// A pinned coroutine (probably the main thread) belonging to the Lua state
+	// in which the reference resides.
+	lua_State *pinnedL;
 
 	// Index to the Lua reference.
 	int idx;

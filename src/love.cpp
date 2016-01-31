@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,11 +36,20 @@ extern "C" {
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_MACOSX
-#include "common/OSX.h"
+#include "common/macosx.h"
+#include <unistd.h>
 #endif // LOVE_MACOSX
 
 #ifdef LOVE_IOS
-#include "common/iOS.h"
+#include "common/ios.h"
+#endif
+
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+extern "C" 
+{
+#include "luajit.h"
+}
 #endif
 
 #ifdef LOVE_WINDOWS
@@ -50,46 +59,13 @@ extern "C"
 // http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
 // TODO: Re-evaluate in the future when the average integrated GPU in Optimus
 // systems is less mediocre?
-LOVE_EXPORT DWORD NvOptimusEnablement = 0x00000001;
+LOVE_EXPORT DWORD NvOptimusEnablement = 1;
+
+// Same with AMD GPUs.
+// https://community.amd.com/thread/169965
+LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif // LOVE_WINDOWS
-
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
-
-void get_utf8_arguments(int &argc, char **&argv)
-{
-	LPWSTR cmd = GetCommandLineW();
-
-	if (!cmd)
-		return;
-
-	LPWSTR *argv_w = CommandLineToArgvW(cmd, &argc);
-
-	argv = new char *[argc];
-
-	for (int i = 0; i < argc; ++i)
-	{
-		// Size of wide char buffer (plus one for trailing '\0').
-		size_t wide_len = wcslen(argv_w[i]) + 1;
-
-		// Get size in UTF-8.
-		int utf8_size = WideCharToMultiByte(CP_UTF8, 0, argv_w[i], wide_len, argv[i], 0, 0, 0);
-
-		argv[i] = new char[utf8_size];
-
-		// Convert to UTF-8.
-		int ok = WideCharToMultiByte(CP_UTF8, 0, argv_w[i], wide_len, argv[i], utf8_size, 0, 0);
-
-		int len = strlen(argv[i]);
-
-		if (!ok)
-			printf("Warning: could not convert to UTF8.\n");
-	}
-
-	LocalFree(argv_w);
-}
-
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 
@@ -106,12 +82,16 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 	}
 
 #ifdef LOVE_MACOSX
-	// Check for a drop file string.
-	std::string dropfilestr = love::osx::checkDropEvents();
+	// Check for a drop file string, if the app wasn't launched in a terminal.
+	// Checking for the terminal is a pretty big hack, but works around an issue
+	// where OS X will switch Spaces if the terminal launching love is in its
+	// own full-screen Space.
+	std::string dropfilestr;
+	if (!isatty(STDIN_FILENO))
+		dropfilestr = love::macosx::checkDropEvents();
+
 	if (!dropfilestr.empty())
-	{
 		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
-	}
 	else
 #endif
 	{
@@ -119,7 +99,7 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 		std::string loveResourcesPath;
 		bool fused = true;
 #if defined(LOVE_MACOSX)
-		loveResourcesPath = love::osx::getLoveInResources();
+		loveResourcesPath = love::macosx::getLoveInResources();
 #elif defined(LOVE_IOS)
 		loveResourcesPath = love::ios::getLoveInResources(fused);
 #endif
@@ -159,6 +139,39 @@ static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
+#ifdef LOVE_ANDROID
+static int l_print_sdl_log(lua_State *L)
+{
+	int nargs = lua_gettop(L);
+
+	lua_getglobal(L, "tostring");
+
+	std::string outstring;
+
+	for (int i = 1; i <= nargs; i++)
+	{
+		// Call tostring(arg) and leave the result on the top of the stack.
+		lua_pushvalue(L, -1);
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1);
+
+		const char *s = lua_tostring(L, -1);
+		if (s == nullptr)
+			return luaL_error(L, "'tostring' must return a string to 'print'");
+
+		if (i > 1)
+			outstring += "\t";
+
+		outstring += s;
+
+		lua_pop(L, 1); // Pop the result of tostring(arg).
+	}
+
+	SDL_Log("[LOVE] %s", outstring.c_str());
+	return 0;
+}
+#endif
+
 int main(int argc, char **argv)
 {
 	int retval = 0;
@@ -175,13 +188,6 @@ int main(int argc, char **argv)
 		argc = orig_argc;
 		argv = orig_argv;
 #endif
-
-#ifdef LOVE_LEGENDARY_UTF8_ARGV_HACK
-	int hack_argc = 0;	char **hack_argv = 0;
-	get_utf8_arguments(hack_argc, hack_argv);
-	argc = hack_argc;
-	argv = hack_argv;
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK
 
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 	int hack_argc = 0;
@@ -208,6 +214,11 @@ int main(int argc, char **argv)
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
+
+#ifdef LOVE_ANDROID
+	luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE| LUAJIT_MODE_OFF);
+	lua_register(L, "print", l_print_sdl_log);
+#endif
 
 	// Add love to package.preload for easy requiring.
 	love_preload(L, luaopen_love, "love");
@@ -263,17 +274,21 @@ int main(int argc, char **argv)
 
 	lua_close(L);
 
-#if defined(LOVE_LEGENDARY_UTF8_ARGV_HACK) || defined(LOVE_LEGENDARY_APP_ARGV_HACK)
+#if defined(LOVE_LEGENDARY_APP_ARGV_HACK)
 	if (hack_argv)
 	{
 		for (int i = 0; i<hack_argc; ++i)
 			delete [] hack_argv[i];
 		delete [] hack_argv;
 	}
-#endif // LOVE_LEGENDARY_UTF8_ARGV_HACK || LOVE_LEGENDARY_APP_ARGV_HACK
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 #ifdef LOVE_IOS
 	} // while (true)
+#endif
+
+#ifdef LOVE_ANDROID
+	SDL_Quit();
 #endif
 
 	return retval;

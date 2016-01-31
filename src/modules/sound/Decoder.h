@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -133,6 +133,12 @@ public:
 	 * @return The sample rate, eg. 44100.
 	 **/
 	virtual int getSampleRate() const = 0;
+
+	/**
+	 * Gets the estimated total duration of the stream. in seconds. May return
+	 * -1 if the duration cannot be determined.
+	 **/
+	virtual double getDuration() = 0;
 
 }; // Decoder
 

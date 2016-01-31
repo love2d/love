@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -368,7 +368,7 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 	{"nonusbackslash", SCANCODE_NONUSBACKSLASH},
 	{"application", SCANCODE_APPLICATION},
 	{"power", SCANCODE_POWER},
-	{"=", SCANCODE_KP_EQUALS},
+	{"kp=", SCANCODE_KP_EQUALS},
 	{"f13", SCANCODE_F13},
 	{"f14", SCANCODE_F14},
 	{"f15", SCANCODE_F15},
@@ -514,7 +514,7 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 	{"kbdillumup", SCANCODE_KBDILLUMUP},
 	{"eject", SCANCODE_EJECT},
 	{"sleep", SCANCODE_SLEEP},
-	
+
 	{"app1", SCANCODE_APP1},
 	{"app2", SCANCODE_APP2},
 };

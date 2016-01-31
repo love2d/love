@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -66,7 +66,7 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	std::string ext = data->getExtension();
 	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
-	sound::Decoder *decoder = 0;
+	sound::Decoder *decoder = nullptr;
 
 	// Find a suitable decoder here, and return it.
 	if (false)

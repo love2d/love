@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,6 @@ namespace openal
 Pool::Pool()
 	: sources()
 	, totalSources(0)
-	, mutex(nullptr)
 {
 	// Clear errors.
 	alGetError();
@@ -52,9 +51,6 @@ Pool::Pool()
 
 	if (totalSources < 4)
 		throw love::Exception("Could not generate sources.");
-
-	// Create the mutex.
-	mutex = thread::newMutex();
 
 #ifdef AL_SOFT_direct_channels
 	ALboolean hasext = alIsExtensionPresent("AL_SOFT_direct_channels");
@@ -78,8 +74,6 @@ Pool::Pool()
 Pool::~Pool()
 {
 	stop();
-
-	delete mutex;
 
 	// Free all sources.
 	alDeleteSources(totalSources, sources);
@@ -182,6 +176,7 @@ void Pool::stop()
 	for (const auto &i : playing)
 	{
 		i.first->stopAtomic();
+		i.first->rewindAtomic();
 		i.first->release();
 		available.push(i.second);
 	}
@@ -266,6 +261,12 @@ float Pool::tell(Source *source, void *unit)
 {
 	thread::Lock lock(mutex);
 	return source->tellAtomic(unit);
+}
+
+double Pool::getDuration(Source *source, void *unit)
+{
+	thread::Lock lock(mutex);
+	return source->getDurationAtomic(unit);
 }
 
 ALuint Pool::findi(const Source *source) const

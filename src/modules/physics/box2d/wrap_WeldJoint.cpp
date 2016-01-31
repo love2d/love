@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -65,29 +65,18 @@ int w_WeldJoint_getDampingRatio(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_WeldJoint_functions[] =
 {
 	{ "setFrequency", w_WeldJoint_setFrequency },
 	{ "getFrequency", w_WeldJoint_getFrequency },
 	{ "setDampingRatio", w_WeldJoint_setDampingRatio },
 	{ "getDampingRatio", w_WeldJoint_getDampingRatio },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_weldjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_WELD_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_WELD_JOINT_ID, "WeldJoint", w_Joint_functions, w_WeldJoint_functions, nullptr);
 }
 
 } // box2d

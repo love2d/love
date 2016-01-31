@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -98,6 +98,13 @@ public:
 	 * @return Whether the URL was opened successfully.
 	 **/
 	virtual bool openURL(const std::string &url) const;
+
+	/**
+	 * Vibrates for the specified amount of seconds.
+	 *
+	 * @param number of seconds to vibrate.
+	 */
+	virtual void vibrate(double seconds) const;
 
 	static bool getConstant(const char *in, PowerState &out);
 	static bool getConstant(PowerState in, const char *&out);

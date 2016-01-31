@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -164,7 +164,7 @@ int w_RevoluteJoint_getLimits(lua_State *L)
 	return t->getLimits(L);
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_RevoluteJoint_functions[] =
 {
 	{ "getJointAngle", w_RevoluteJoint_getJointAngle },
 	{ "getJointSpeed", w_RevoluteJoint_getJointSpeed },
@@ -183,23 +183,12 @@ static const luaL_Reg functions[] =
 	{ "getLowerLimit", w_RevoluteJoint_getLowerLimit },
 	{ "getUpperLimit", w_RevoluteJoint_getUpperLimit },
 	{ "getLimits", w_RevoluteJoint_getLimits },
-	// From Joint.
-	{ "getType", w_Joint_getType },
-	{ "getBodies", w_Joint_getBodies },
-	{ "getAnchors", w_Joint_getAnchors },
-	{ "getReactionForce", w_Joint_getReactionForce },
-	{ "getReactionTorque", w_Joint_getReactionTorque },
-	{ "getCollideConnected", w_Joint_getCollideConnected },
-	{ "setUserData", w_Joint_setUserData },
-	{ "getUserData", w_Joint_getUserData },
-	{ "destroy", w_Joint_destroy },
-	{ "isDestroyed", w_Joint_isDestroyed },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_revolutejoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_REVOLUTE_JOINT_ID, functions);
+	return luax_register_type(L, PHYSICS_REVOLUTE_JOINT_ID, "RevoluteJoint", w_Joint_functions, w_RevoluteJoint_functions, nullptr);
 }
 
 } // box2d

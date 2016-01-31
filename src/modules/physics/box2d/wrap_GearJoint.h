@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,9 +34,6 @@ namespace box2d
 {
 
 GearJoint *luax_checkgearjoint(lua_State *L, int idx);
-int w_GearJoint_setRatio(lua_State *L);
-int w_GearJoint_getRatio(lua_State *L);
-int w_GearJoint_getJoints(lua_State *L);
 extern "C" int luaopen_gearjoint(lua_State *L);
 
 } // box2d

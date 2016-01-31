@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -64,7 +64,9 @@ bool DroppedFile::open(Mode newmode)
 #ifdef LOVE_WINDOWS
 	// make sure non-ASCII filenames work.
 	std::wstring modestr = to_widestr(getModeString(newmode));
-	file = _wfopen(to_widestr(filename).c_str(), modestr.c_str());
+	std::wstring wfilename = to_widestr(filename);
+
+	file = _wfopen(wfilename.c_str(), modestr.c_str());
 #else
 	file = fopen(filename.c_str(), getModeString(newmode));
 #endif
@@ -105,8 +107,10 @@ int64 DroppedFile::getSize()
 #ifdef LOVE_WINDOWS
 
 	// make sure non-ASCII filenames work.
+	std::wstring wfilename = to_widestr(filename);
+
 	struct _stat buf;
-	if (_wstat(to_widestr(filename).c_str(), &buf) != 0)
+	if (_wstat(wfilename.c_str(), &buf) != 0)
 		return -1;
 
 	return (int64) buf.st_size;
@@ -157,7 +161,7 @@ bool DroppedFile::flush()
 	return fflush(file) == 0;
 }
 
-bool DroppedFile::eof()
+bool DroppedFile::isEOF()
 {
 	return file == nullptr || feof(file) != 0;
 }

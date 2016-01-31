@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,6 +44,8 @@ public:
 	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr);
 	void getWindow(int &width, int &height, WindowSettings &settings);
 
+	void close();
+
 	bool setFullscreen(bool fullscreen, FullscreenType fstype);
 	bool setFullscreen(bool fullscreen);
 
@@ -60,13 +62,16 @@ public:
 	void setPosition(int x, int y, int displayindex);
 	void getPosition(int &x, int &y, int &displayindex);
 
-	bool isCreated() const;
+	bool isOpen() const;
 
 	void setWindowTitle(const std::string &title);
 	const std::string &getWindowTitle() const;
 
 	bool setIcon(love::image::ImageData *imgd);
 	love::image::ImageData *getIcon();
+
+	void setDisplaySleepEnabled(bool enable);
+	bool isDisplaySleepEnabled() const;
 
 	void minimize();
 	void maximize();
@@ -100,8 +105,7 @@ public:
 	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow);
 	int showMessageBox(const MessageBoxData &data);
 
-	static love::window::Window *createSingleton();
-	static love::window::Window *getSingleton();
+	void requestAttention(bool continuous);
 
 	const char *getName() const;
 
@@ -117,8 +121,8 @@ private:
 
 	void setGLFramebufferAttributes(int msaa, bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
-	bool checkGLVersion(const ContextAttribs &attribs);
-	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool sRGB);
+	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings);
@@ -127,18 +131,14 @@ private:
 
 	std::string title;
 
-	struct _currentMode
-	{
-		int width  = 800;
-		int height = 600;
-		int pixelwidth = 800;
-		int pixelheight = 600;
-		WindowSettings settings;
-		StrongRef<love::image::ImageData> icon;
+	int windowWidth  = 800;
+	int windowHeight = 600;
+	int pixelWidth   = 800;
+	int pixelHeight  = 600;
+	WindowSettings settings;
+	StrongRef<love::image::ImageData> icon;
 
-	} curMode;
-
-	bool created;
+	bool open;
 
 	bool mouseGrabbed;
 
@@ -146,7 +146,7 @@ private:
 	SDL_GLContext context;
 
 	bool displayedWindowError;
-	bool displayedContextError;
+	bool hasSDL203orEarlier;
 
 }; // Window
 

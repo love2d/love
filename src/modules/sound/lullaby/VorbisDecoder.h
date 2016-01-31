@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,7 +40,7 @@ namespace lullaby
 // Struct for handling data
 struct SOggFile
 {
-	char *dataPtr;	// Pointer to the data in memory
+	const char *dataPtr;	// Pointer to the data in memory
 	int dataSize;	// Size of the data
 	int dataRead;	// How much we've read so far
 };
@@ -62,6 +62,7 @@ public:
 	int getChannels() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
+	double getDuration();
 
 private:
 	SOggFile oggFile;				// (see struct)
@@ -70,6 +71,7 @@ private:
 	vorbis_info *vorbisInfo;		// Info
 	vorbis_comment *vorbisComment;	// Comments
 	int endian;						// Endianness
+	double duration;
 }; // VorbisDecoder
 
 } // lullaby

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,15 +33,8 @@ namespace math
 
 // Helper functions.
 RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx);
-int luax_getrandom(lua_State *L, int startidx, double r);
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx);
-int w_RandomGenerator_random(lua_State *L);
-int w_RandomGenerator_randomNormal(lua_State *L);
-int w_RandomGenerator_setSeed(lua_State *L);
-int w_RandomGenerator_getSeed(lua_State *L);
-int w_RandomGenerator_setState(lua_State *L);
-int w_RandomGenerator_getState(lua_State *L);
 extern "C" int luaopen_randomgenerator(lua_State *L);
 
 } // math

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,6 @@ namespace filesystem
 {
 
 FileData *luax_checkfiledata(lua_State *L, int idx);
-int w_FileData_getFilename(lua_State *L);
-int w_FileData_getExtension(lua_State *L);
 extern "C" int luaopen_filedata(lua_State *L);
 
 } // filesystem

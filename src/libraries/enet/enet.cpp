@@ -190,7 +190,7 @@ static ENetPacket *read_packet(lua_State *l, int idx, enet_uint8 *channel_id) {
 	}
 
 	if (argc >= idx+1 && !lua_isnil(l, idx+1)) {
-		*channel_id = luaL_checkint(l, idx+1);
+		*channel_id = (int) luaL_checknumber(l, idx+1);
 	}
 
 	packet = enet_packet_create(data, size, flags);
@@ -226,13 +226,13 @@ static int host_create(lua_State *l) {
 
 	switch (lua_gettop(l)) {
 		case 5:
-			if (!lua_isnil(l, 5)) out_bandwidth = luaL_checkint(l, 5);
+			if (!lua_isnil(l, 5)) out_bandwidth = (int) luaL_checknumber(l, 5);
 		case 4:
-			if (!lua_isnil(l, 4)) in_bandwidth = luaL_checkint(l, 4);
+			if (!lua_isnil(l, 4)) in_bandwidth = (int) luaL_checknumber(l, 4);
 		case 3:
-			if (!lua_isnil(l, 3)) channel_count = luaL_checkint(l, 3);
+			if (!lua_isnil(l, 3)) channel_count = (int) luaL_checknumber(l, 3);
 		case 2:
-			if (!lua_isnil(l, 2)) peer_count = luaL_checkint(l, 2);
+			if (!lua_isnil(l, 2)) peer_count = (int) luaL_checknumber(l, 2);
 	}
 
 	// printf("host create, peers=%d, channels=%d, in=%d, out=%d\n",
@@ -279,7 +279,7 @@ static int host_service(lua_State *l) {
 	int timeout = 0, out;
 
 	if (lua_gettop(l) > 1)
-		timeout = luaL_checkint(l, 2);
+		timeout = (int) luaL_checknumber(l, 2);
 
 	out = enet_host_service(host, &event, timeout);
 	if (out == 0) return 0;
@@ -348,9 +348,9 @@ static int host_connect(lua_State *l) {
 
 	switch (lua_gettop(l)) {
 		case 4:
-			if (!lua_isnil(l, 4)) data = luaL_checkint(l, 4);
+			if (!lua_isnil(l, 4)) data = (int) luaL_checknumber(l, 4);
 		case 3:
-			if (!lua_isnil(l, 3)) channel_count = luaL_checkint(l, 3);
+			if (!lua_isnil(l, 3)) channel_count = (int) luaL_checknumber(l, 3);
 	}
 
 	// printf("host connect, channels=%d, data=%d\n", channel_count, data);
@@ -392,7 +392,7 @@ static int host_channel_limit(lua_State *l) {
 	if (!host) {
 		return luaL_error(l, "Tried to index a nil host!");
 	}
-	int limit = luaL_checkint(l, 2);
+	int limit = (int) luaL_checknumber(l, 2);
 	enet_host_channel_limit(host, limit);
 	return 0;
 }
@@ -402,8 +402,8 @@ static int host_bandwidth_limit(lua_State *l) {
 	if (!host) {
 		return luaL_error(l, "Tried to index a nil host!");
 	}
-	enet_uint32 in_bandwidth = luaL_checkint(l, 2);
-	enet_uint32 out_bandwidth = luaL_checkint(l, 2);
+	enet_uint32 in_bandwidth = (int) luaL_checknumber(l, 2);
+	enet_uint32 out_bandwidth = (int) luaL_checknumber(l, 2);
 	enet_host_bandwidth_limit(host, in_bandwidth, out_bandwidth);
 	return 0;
 }
@@ -473,7 +473,7 @@ static int host_get_peer(lua_State *l) {
 		return luaL_error(l, "Tried to index a nil host!");
 	}
 
-	int peer_index = luaL_checkint(l, 2) - 1;
+	int peer_index = (int) luaL_checknumber(l, 2) - 1;
 
 	if (peer_index < 0 || ((size_t) peer_index) >= host->peerCount) {
 		luaL_argerror (l, 2, "Invalid peer index");
@@ -517,9 +517,9 @@ static int peer_ping(lua_State *l) {
 static int peer_throttle_configure(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
-	enet_uint32 interval = luaL_checkint(l, 2);
-	enet_uint32 acceleration = luaL_checkint(l, 3);
-	enet_uint32 deceleration = luaL_checkint(l, 4);
+	enet_uint32 interval = (int) luaL_checknumber(l, 2);
+	enet_uint32 acceleration = (int) luaL_checknumber(l, 3);
+	enet_uint32 deceleration = (int) luaL_checknumber(l, 4);
 
 	enet_peer_throttle_configure(peer, interval, acceleration, deceleration);
 	return 0;
@@ -529,7 +529,7 @@ static int peer_round_trip_time(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
 	if (lua_gettop(l) > 1) {
-		enet_uint32 round_trip_time = luaL_checkint(l, 2);
+		enet_uint32 round_trip_time = (int) luaL_checknumber(l, 2);
 		peer->roundTripTime = round_trip_time;
 	}
 
@@ -542,7 +542,7 @@ static int peer_last_round_trip_time(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
 	if (lua_gettop(l) > 1) {
-		enet_uint32 round_trip_time = luaL_checkint(l, 2);
+		enet_uint32 round_trip_time = (int) luaL_checknumber(l, 2);
 		peer->lastRoundTripTime = round_trip_time;
 	}
 	lua_pushinteger (l, peer->lastRoundTripTime);
@@ -554,7 +554,7 @@ static int peer_ping_interval(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
 	if (lua_gettop(l) > 1) {
-		enet_uint32 interval = luaL_checkint(l, 2);
+		enet_uint32 interval = (int) luaL_checknumber(l, 2);
 		enet_peer_ping_interval (peer, interval);
 	}
 
@@ -572,11 +572,11 @@ static int peer_timeout(lua_State *l) {
 
 	switch (lua_gettop(l)) {
 		case 4:
-			if (!lua_isnil(l, 4)) timeout_maximum = luaL_checkint(l, 4);
+			if (!lua_isnil(l, 4)) timeout_maximum = (int) luaL_checknumber(l, 4);
 		case 3:
-			if (!lua_isnil(l, 3)) timeout_minimum = luaL_checkint(l, 3);
+			if (!lua_isnil(l, 3)) timeout_minimum = (int) luaL_checknumber(l, 3);
 		case 2:
-			if (!lua_isnil(l, 2)) timeout_limit = luaL_checkint(l, 2);
+			if (!lua_isnil(l, 2)) timeout_limit = (int) luaL_checknumber(l, 2);
 	}
 
 	enet_peer_timeout (peer, timeout_limit, timeout_minimum, timeout_maximum);
@@ -591,7 +591,7 @@ static int peer_timeout(lua_State *l) {
 static int peer_disconnect(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
-	enet_uint32 data = lua_gettop(l) > 1 ? luaL_checkint(l, 2) : 0;
+	enet_uint32 data = lua_gettop(l) > 1 ? (int) luaL_checknumber(l, 2) : 0;
 	enet_peer_disconnect(peer, data);
 	return 0;
 }
@@ -599,7 +599,7 @@ static int peer_disconnect(lua_State *l) {
 static int peer_disconnect_now(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
-	enet_uint32 data = lua_gettop(l) > 1 ? luaL_checkint(l, 2) : 0;
+	enet_uint32 data = lua_gettop(l) > 1 ? (int) luaL_checknumber(l, 2) : 0;
 	enet_peer_disconnect_now(peer, data);
 	return 0;
 }
@@ -607,7 +607,7 @@ static int peer_disconnect_now(lua_State *l) {
 static int peer_disconnect_later(lua_State *l) {
 	ENetPeer *peer = check_peer(l, 1);
 
-	enet_uint32 data = lua_gettop(l) > 1 ? luaL_checkint(l, 2) : 0;
+	enet_uint32 data = lua_gettop(l) > 1 ? (int) luaL_checknumber(l, 2) : 0;
 	enet_peer_disconnect_later(peer, data);
 	return 0;
 }
@@ -683,7 +683,7 @@ static int peer_receive(lua_State *l) {
 	enet_uint8 channel_id = 0;
 
 	if (lua_gettop(l) > 1) {
-		channel_id = luaL_checkint(l, 2);
+		channel_id = (int) luaL_checknumber(l, 2);
 	}
 
 	packet = enet_peer_receive(peer, &channel_id);
@@ -770,6 +770,10 @@ static const struct luaL_Reg enet_peer_funcs [] = {
 	{NULL, NULL}
 };
 
+extern "C" {
+	void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+}
+
 int luaopen_enet(lua_State *l) {
 	enet_initialize();
 	atexit(enet_deinitialize);
@@ -777,14 +781,14 @@ int luaopen_enet(lua_State *l) {
 	// create metatables
 	luaL_newmetatable(l, "enet_host");
 	lua_newtable(l); // index
-	luaL_register(l, NULL, enet_host_funcs);
+	luax_register(l, NULL, enet_host_funcs);
 	lua_setfield(l, -2, "__index");
 	lua_pushcfunction(l, host_gc);
 	lua_setfield(l, -2, "__gc");
 
 	luaL_newmetatable(l, "enet_peer");
 	lua_newtable(l);
-	luaL_register(l, NULL, enet_peer_funcs);
+	luax_register(l, NULL, enet_peer_funcs);
 	lua_setfield(l, -2, "__index");
 	lua_pushcfunction(l, peer_tostring);
 	lua_setfield(l, -2, "__tostring");
@@ -799,7 +803,7 @@ int luaopen_enet(lua_State *l) {
 
 	lua_setfield(l, LUA_REGISTRYINDEX, "enet_peers");
 
-	luaL_register(l, "enet", enet_funcs);
+	luax_register(l, "enet", enet_funcs);
 
 	// return the enet table created with luaL_register
 	return 1;

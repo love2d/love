@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@ bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
 	return false;
 }
 
-bool FormatHandler::canEncode(ImageData::Format /*format*/)
+bool FormatHandler::canEncode(ImageData::EncodedFormat /*format*/)
 {
 	return false;
 }
@@ -52,7 +52,7 @@ FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*
 	throw love::Exception("Image decoding is not implemented for this format backend.");
 }
 
-FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::Format /*format*/)
+FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::EncodedFormat /*format*/)
 {
 	throw love::Exception("Image encoding is not implemented for this format backend.");
 }

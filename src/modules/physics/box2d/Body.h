@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,7 +48,7 @@ class Fixture;
 struct bodyudata
 {
 	// Reference to arbitrary data.
-	Reference *ref;
+	Reference *ref = nullptr;
 };
 
 /**
@@ -435,13 +435,9 @@ private:
 	 **/
 	int pushVector(lua_State *L, const b2Vec2 &v);
 
-	// We need a shared_ptr to the parent World,
-	// because World can not be destroyed as long as
-	// bodies exists in it.
-	//
-	// This ensures that a World only can be destroyed
-	// once all bodies have been destroyed too.
-	StrongRef<World> world;
+	// FIXME: This should be a weak reference, rather than being completely
+	// unowned?
+	World *world;
 
 	bodyudata *udata;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,11 +20,21 @@
 
 #include "Image.h"
 
+#include "graphics/Graphics.h"
 #include "common/int.h"
 
 // STD
-#include <cstring> // For memcpy
 #include <algorithm> // for min/max
+
+#ifdef LOVE_ANDROID
+// log2 is not declared in the math.h shipped with the Android NDK
+#include <cmath>
+inline double log2(double n)
+{ 
+	// log(n)/log(2) is log2.  
+	return std::log(n) / std::log(2);
+}
+#endif
 
 namespace love
 {
@@ -37,50 +47,104 @@ int Image::imageCount = 0;
 
 float Image::maxMipmapSharpness = 0.0f;
 
-Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_NEAREST;
+Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_LINEAR;
 float Image::defaultMipmapSharpness = 0.0f;
 
-Image::Image(love::image::ImageData *data, const Flags &flags)
-	: data(data)
-	, cdata(nullptr)
-	, texture(0)
+static int getMipmapCount(int basewidth, int baseheight)
+{
+	return (int) log2(std::max(basewidth, baseheight)) + 1;
+}
+
+template <typename T>
+static bool verifyMipmapLevels(const std::vector<T> &miplevels)
+{
+	int numlevels = (int) miplevels.size();
+
+	if (numlevels == 1)
+		return false;
+
+	int width  = miplevels[0]->getWidth();
+	int height = miplevels[0]->getHeight();
+
+	int expectedlevels = getMipmapCount(width, height);
+
+	// All mip levels must be present when not using auto-generated mipmaps.
+	if (numlevels != expectedlevels)
+		throw love::Exception("Image does not have all required mipmap levels (expected %d, got %d)", expectedlevels, numlevels);
+
+	// Verify the size of each mip level.
+	for (int i = 1; i < numlevels; i++)
+	{
+		width  = std::max(width / 2, 1);
+		height = std::max(height / 2, 1);
+
+		if (miplevels[i]->getWidth() != width)
+			throw love::Exception("Width of image mipmap level %d is incorrect (expected %d, got %d)", i+1, width, miplevels[i]->getWidth());
+		if (miplevels[i]->getHeight() != height)
+			throw love::Exception("Height of image mipmap level %d is incorrect (expected %d, got %d)", i+1, height, miplevels[i]->getHeight());
+	}
+
+	return true;
+}
+
+Image::Image(const std::vector<love::image::ImageData *> &imagedata, const Flags &flags)
+	: texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(false)
 	, flags(flags)
+	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
-	width = data->getWidth();
-	height = data->getHeight();
+	if (imagedata.empty())
+		throw love::Exception("");
+
+	width = imagedata[0]->getWidth();
+	height = imagedata[0]->getHeight();
+
+	if (verifyMipmapLevels(imagedata))
+		this->flags.mipmaps = true;
+
+	for (const auto &id : imagedata)
+		data.push_back(id);
+
 	preload();
+	loadVolatile();
 
 	++imageCount;
 }
 
-Image::Image(love::image::CompressedData *cdata, const Flags &flags)
-	: data(nullptr)
-	, cdata(cdata)
-	, texture(0)
+Image::Image(const std::vector<love::image::CompressedImageData *> &compresseddata, const Flags &flags)
+	: texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(true)
 	, flags(flags)
+	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
-	this->flags.sRGB = (flags.sRGB || cdata->isSRGB());
+	width = compresseddata[0]->getWidth(0);
+	height = compresseddata[0]->getHeight(0);
 
-	width = cdata->getWidth(0);
-	height = cdata->getHeight(0);
-
-	if (flags.mipmaps)
+	if (verifyMipmapLevels(compresseddata))
+		this->flags.mipmaps = true;
+	else if (flags.mipmaps && getMipmapCount(width, height) != compresseddata[0]->getMipmapCount())
 	{
-		// The mipmap texture data comes from the CompressedData in this case,
-		// so we should make sure it has all necessary mipmap levels.
-		if (cdata->getMipmapCount() < (int) log2(std::max(width, height)) + 1)
+		if (compresseddata[0]->getMipmapCount() == 1)
+			this->flags.mipmaps = false;
+		else
 			throw love::Exception("Image cannot have mipmaps: compressed image data does not have all required mipmap levels.");
 	}
 
+	for (const auto &cd : compresseddata)
+	{
+		cdata.push_back(cd);
+		if (cd->getFormat() != cdata[0]->getFormat())
+			throw love::Exception("All image mipmap levels must have the same format.");
+	}
+
 	preload();
+	loadVolatile();
 
 	++imageCount;
 }
@@ -121,11 +185,14 @@ void Image::preload()
 
 	if (flags.mipmaps)
 		filter.mipmap = defaultMipmapFilter;
-}
 
-bool Image::load()
-{
-	return loadVolatile();
+	if (!isGammaCorrect())
+		flags.linear = false;
+
+	if (isGammaCorrect() && !flags.linear)
+		sRGB = true;
+	else
+		sRGB = false;
 }
 
 void Image::generateMipmaps()
@@ -135,11 +202,8 @@ void Image::generateMipmaps()
 	if (flags.mipmaps && !isCompressed() &&
 		(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
-		// Driver bug: http://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
-#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
-		if (gl.getVendor() == OpenGL::VENDOR_ATI_AMD)
+		if (gl.bugs.generateMipmapsRequiresTexture2DEnable)
 			glEnable(GL_TEXTURE_2D);
-#endif
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
@@ -153,70 +217,89 @@ void Image::loadDefaultTexture()
 	setFilter(filter);
 
 	// A nice friendly checkerboard to signify invalid textures...
-	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xC0,0xC0,0xC0,0xFF,
-	                0xC0,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
+	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xFF,0xC0,0xC0,0xFF,
+	                0xFF,0xC0,0xC0,0xFF, 0xFF,0xFF,0xFF,0xFF};
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
 }
 
-void Image::loadTextureFromCompressedData()
+void Image::loadFromCompressedData()
 {
-	GLenum iformat = getCompressedFormat(cdata->getFormat());
-	int count = flags.mipmaps ? cdata->getMipmapCount() : 1;
+	GLenum iformat = getCompressedFormat(cdata[0]->getFormat(), sRGB);
 
-	// We have to inform OpenGL if the image doesn't have all mipmap levels.
-	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, count - 1);
+	if (isGammaCorrect() && !sRGB)
+		flags.linear = true;
+
+	int count = 1;
+
+	if (flags.mipmaps && cdata.size() > 1)
+		count = (int) cdata.size();
+	else if (flags.mipmaps)
+		count = cdata[0]->getMipmapCount();
 
 	for (int i = 0; i < count; i++)
 	{
-		glCompressedTexImage2D(GL_TEXTURE_2D, i, iformat,
-		                       cdata->getWidth(i), cdata->getHeight(i), 0,
-		                       (GLsizei) cdata->getSize(i), cdata->getData(i));
+		// Compressed image mipmaps can come from separate CompressedImageData
+		// objects, or all from a single object.
+		auto cd = cdata.size() > 1 ? cdata[i].get() : cdata[0].get();
+		int datamip = cdata.size() > 1 ? 0 : i;
+
+		glCompressedTexImage2D(GL_TEXTURE_2D, i, iformat, cd->getWidth(datamip),
+		                       cd->getHeight(datamip), 0,
+		                       (GLsizei) cd->getSize(datamip), cd->getData(datamip));
 	}
 }
 
-void Image::loadTextureFromImageData()
+void Image::loadFromImageData()
 {
-	GLenum iformat = flags.sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+	GLenum iformat = sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 	GLenum format  = GL_RGBA;
 
 	// in GLES2, the internalformat and format params of TexImage have to match.
 	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
 	{
-		format  = flags.sRGB ? GL_SRGB_ALPHA : GL_RGBA;
+		format  = sRGB ? GL_SRGB_ALPHA : GL_RGBA;
 		iformat = format;
 	}
 
+	int mipcount = flags.mipmaps ? (int) data.size() : 1;
+
+	for (int i = 0; i < mipcount; i++)
 	{
-		love::thread::Lock lock(data->getMutex());
-		glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, format,
-		             GL_UNSIGNED_BYTE, data->getData());
+		love::image::ImageData *id = data[i].get();
+		love::thread::Lock lock(id->getMutex());
+
+		glTexImage2D(GL_TEXTURE_2D, i, iformat, id->getWidth(), id->getHeight(),
+		             0, format, GL_UNSIGNED_BYTE, id->getData());
 	}
 
-	generateMipmaps();
+	if (data.size() <= 1)
+		generateMipmaps();
 }
 
 bool Image::loadVolatile()
 {
-	if (isCompressed() && !hasCompressedTextureSupport(cdata->getFormat(), flags.sRGB))
+	OpenGL::TempDebugGroup debuggroup("Image load");
+
+	if (isCompressed() && !hasCompressedTextureSupport(cdata[0]->getFormat(), sRGB))
 	{
 		const char *str;
-		if (image::CompressedData::getConstant(cdata->getFormat(), str))
+		if (image::CompressedImageData::getConstant(cdata[0]->getFormat(), str))
 		{
 			throw love::Exception("Cannot create image: "
-			                      "%s%s compressed images are not supported on this system.", flags.sRGB ? "sRGB " : "", str);
+			                      "%s%s compressed images are not supported on this system.", sRGB ? "sRGB " : "", str);
 		}
 		else
 			throw love::Exception("cannot create image: format is not supported on this system.");
 	}
 	else if (!isCompressed())
 	{
-		if (flags.sRGB && !hasSRGBSupport())
+		if (sRGB && !hasSRGBSupport())
 			throw love::Exception("sRGB images are not supported on this system.");
 
 		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
-		if (flags.sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0))
+		if (sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
+			&& data.size() <= 1)
 		{
 			flags.mipmaps = false;
 			filter.mipmap = FILTER_NONE;
@@ -251,7 +334,7 @@ bool Image::loadVolatile()
 	if (!flags.mipmaps && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
-	if (flags.mipmaps && !isCompressed() &&
+	if (flags.mipmaps && !isCompressed() && data.size() <= 1 &&
 		!(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
 	{
 		// Auto-generate mipmaps every time the texture is modified, if
@@ -264,13 +347,13 @@ bool Image::loadVolatile()
 	try
 	{
 		if (isCompressed())
-			loadTextureFromCompressedData();
+			loadFromCompressedData();
 		else
-			loadTextureFromImageData();
+			loadFromImageData();
 
 		GLenum glerr = glGetError();
 		if (glerr != GL_NO_ERROR)
-			throw love::Exception("Cannot create image (error code 0x%x)", glerr);
+			throw love::Exception("Cannot create image (OpenGL error: %s)", OpenGL::errorString(glerr));
 	}
 	catch (love::Exception &)
 	{
@@ -282,17 +365,12 @@ bool Image::loadVolatile()
 	size_t prevmemsize = textureMemorySize;
 
 	if (isCompressed())
-	{
-		textureMemorySize = 0;
-		for (int i = 0; i < (flags.mipmaps ? cdata->getMipmapCount() : 1); i++)
-			textureMemorySize += cdata->getSize(i);
-	}
+		textureMemorySize = cdata[0]->getSize();
 	else
-	{
-		textureMemorySize = width * height * 4;
-		if (flags.mipmaps)
-			textureMemorySize *= 1.333;
-	}
+		textureMemorySize = data[0]->getSize();
+
+	if (flags.mipmaps)
+		textureMemorySize *= 1.33334;
 
 	gl.updateTextureMemorySize(prevmemsize, textureMemorySize);
 
@@ -307,7 +385,7 @@ void Image::unloadVolatile()
 
 	gl.deleteTexture(texture);
 	texture = 0;
-	
+
 	gl.updateTextureMemorySize(textureMemorySize, 0);
 	textureMemorySize = 0;
 }
@@ -324,59 +402,75 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 		throw love::Exception("Invalid rectangle dimensions.");
 	}
 
+	OpenGL::TempDebugGroup debuggroup("Image refresh");
+
 	gl.bindTexture(texture);
 
 	if (isCompressed())
-		loadTextureFromCompressedData();
-	else
 	{
-		const image::pixel *pdata = (const image::pixel *) data->getData();
-		pdata += yoffset * data->getWidth() + xoffset;
-
-		{
-			thread::Lock lock(data->getMutex());
-			glTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, w, h, GL_RGBA,
-			                GL_UNSIGNED_BYTE, pdata);
-		}
-
-		generateMipmaps();
+		loadFromCompressedData();
+		return true;
 	}
-	
+
+	GLenum format = GL_RGBA;
+
+	// In ES2, the format parameter of TexSubImage must match the internal
+	// format of the texture.
+	if (sRGB && (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0))
+		format = GL_SRGB_ALPHA;
+
+	int mipcount = flags.mipmaps ? (int) data.size() : 1;
+
+	// Reupload the sub-rectangle of each mip level (if we have custom mipmaps.)
+	for (int i = 0; i < mipcount; i++)
+	{
+		const image::pixel *pdata = (const image::pixel *) data[i]->getData();
+		pdata += yoffset * data[i]->getWidth() + xoffset;
+
+		thread::Lock lock(data[i]->getMutex());
+		glTexSubImage2D(GL_TEXTURE_2D, i, xoffset, yoffset, w, h, format,
+						GL_UNSIGNED_BYTE, pdata);
+
+		xoffset /= 2;
+		yoffset /= 2;
+		w = std::max(w / 2, 1);
+		h = std::max(h / 2, 1);
+	}
+
+	if (data.size() <= 1)
+		generateMipmaps();
+
 	return true;
 }
 
-void Image::drawv(const Matrix &t, const Vertex *v)
+void Image::drawv(const Matrix4 &t, const Vertex *v)
 {
+	OpenGL::TempDebugGroup debuggroup("Image draw");
+
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
 	gl.bindTexture(texture);
 
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 
 	gl.prepareDraw();
 	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, vertices);
 }
 
 void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, quad->getVertices());
 }
@@ -386,14 +480,14 @@ const void *Image::getHandle() const
 	return &texture;
 }
 
-love::image::ImageData *Image::getImageData() const
+const std::vector<StrongRef<love::image::ImageData>> &Image::getImageData() const
 {
-	return data.get();
+	return data;
 }
 
-love::image::CompressedData *Image::getCompressedData() const
+const std::vector<StrongRef<love::image::CompressedImageData>> &Image::getCompressedData() const
 {
-	return cdata.get();
+	return cdata;
 }
 
 void Image::setFilter(const Texture::Filter &f)
@@ -434,8 +528,16 @@ bool Image::setWrap(const Texture::Wrap &w)
 		wrap.s = wrap.t = WRAP_CLAMP;
 	}
 
+	if (!gl.isClampZeroTextureWrapSupported())
+	{
+		if (wrap.s == WRAP_CLAMP_ZERO)
+			wrap.s = WRAP_CLAMP;
+		if (wrap.t == WRAP_CLAMP_ZERO)
+			wrap.t = WRAP_CLAMP;
+	}
+
 	gl.bindTexture(texture);
-	gl.setTextureWrap(w);
+	gl.setTextureWrap(wrap);
 
 	return success;
 }
@@ -490,142 +592,163 @@ bool Image::isCompressed() const
 	return compressed;
 }
 
-GLenum Image::getCompressedFormat(image::CompressedData::Format cformat) const
+GLenum Image::getCompressedFormat(image::CompressedImageData::Format cformat, bool &isSRGB) const
 {
+	using image::CompressedImageData;
+
 	switch (cformat)
 	{
-	case image::CompressedData::FORMAT_DXT1:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
-		else
-			return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-	case image::CompressedData::FORMAT_DXT3:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
-		else
-			return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	case image::CompressedData::FORMAT_DXT5:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
-		else
-			return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	case image::CompressedData::FORMAT_BC4:
+	case CompressedImageData::FORMAT_DXT1:
+		return isSRGB ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	case CompressedImageData::FORMAT_DXT3:
+		return isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	case CompressedImageData::FORMAT_DXT5:
+		return isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	case CompressedImageData::FORMAT_BC4:
+		isSRGB = false;
 		return GL_COMPRESSED_RED_RGTC1;
-	case image::CompressedData::FORMAT_BC4s:
+	case CompressedImageData::FORMAT_BC4s:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_RED_RGTC1;
-	case image::CompressedData::FORMAT_BC5:
+	case CompressedImageData::FORMAT_BC5:
+		isSRGB = false;
 		return GL_COMPRESSED_RG_RGTC2;
-	case image::CompressedData::FORMAT_BC5s:
+	case CompressedImageData::FORMAT_BC5s:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_RG_RGTC2;
-	case image::CompressedData::FORMAT_BC6H:
+	case CompressedImageData::FORMAT_BC6H:
+		isSRGB = false;
 		return GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
-	case image::CompressedData::FORMAT_BC6Hs:
+	case CompressedImageData::FORMAT_BC6Hs:
+		isSRGB = false;
 		return GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
-	case image::CompressedData::FORMAT_BC7:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
-		else
-			return GL_COMPRESSED_RGBA_BPTC_UNORM;
-	case image::CompressedData::FORMAT_ETC1:
+	case CompressedImageData::FORMAT_BC7:
+		return isSRGB ? GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM : GL_COMPRESSED_RGBA_BPTC_UNORM;
+	case CompressedImageData::FORMAT_PVR1_RGB2:
+		return isSRGB ? GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT : GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+	case CompressedImageData::FORMAT_PVR1_RGB4:
+		return isSRGB ? GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT : GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+	case CompressedImageData::FORMAT_PVR1_RGBA2:
+		return isSRGB ? GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT : GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+	case CompressedImageData::FORMAT_PVR1_RGBA4:
+		return isSRGB ? GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT : GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+	case CompressedImageData::FORMAT_ETC1:
 		// The ETC2 format can load ETC1 textures.
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
-			return GL_COMPRESSED_RGB8_ETC2;
+			return isSRGB ? GL_COMPRESSED_SRGB8_ETC2 : GL_COMPRESSED_RGB8_ETC2;
 		else
+		{
+			isSRGB = false;
 			return GL_ETC1_RGB8_OES;
-	case image::CompressedData::FORMAT_ETC2_RGB:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB8_ETC2;
-		else
-			return GL_COMPRESSED_RGB8_ETC2;
-	case image::CompressedData::FORMAT_ETC2_RGBA:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
-		else
-			return GL_COMPRESSED_RGBA8_ETC2_EAC;
-	case image::CompressedData::FORMAT_ETC2_RGBA1:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
-		else
-			return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
-	case image::CompressedData::FORMAT_EAC_R:
+		}
+	case CompressedImageData::FORMAT_ETC2_RGB:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ETC2 : GL_COMPRESSED_RGB8_ETC2;
+	case CompressedImageData::FORMAT_ETC2_RGBA:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC : GL_COMPRESSED_RGBA8_ETC2_EAC;
+	case CompressedImageData::FORMAT_ETC2_RGBA1:
+		return isSRGB ? GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 : GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+	case CompressedImageData::FORMAT_EAC_R:
+		isSRGB = false;
 		return GL_COMPRESSED_R11_EAC;
-	case image::CompressedData::FORMAT_EAC_Rs:
+	case CompressedImageData::FORMAT_EAC_Rs:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_R11_EAC;
-	case image::CompressedData::FORMAT_EAC_RG:
+	case CompressedImageData::FORMAT_EAC_RG:
+		isSRGB = false;
 		return GL_COMPRESSED_RG11_EAC;
-	case image::CompressedData::FORMAT_EAC_RGs:
+	case CompressedImageData::FORMAT_EAC_RGs:
+		isSRGB = false;
 		return GL_COMPRESSED_SIGNED_RG11_EAC;
-	case image::CompressedData::FORMAT_PVR1_RGB2:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT;
-		else
-			return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
-	case image::CompressedData::FORMAT_PVR1_RGB4:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT;
-		else
-			return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-	case image::CompressedData::FORMAT_PVR1_RGBA2:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT;
-		else
-			return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
-	case image::CompressedData::FORMAT_PVR1_RGBA4:
-		if (flags.sRGB)
-			return GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT;
-		else
-			return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+	case CompressedImageData::FORMAT_ASTC_4x4:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR : GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+	case CompressedImageData::FORMAT_ASTC_5x4:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR : GL_COMPRESSED_RGBA_ASTC_5x4_KHR;
+	case CompressedImageData::FORMAT_ASTC_5x5:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR : GL_COMPRESSED_RGBA_ASTC_5x5_KHR;
+	case CompressedImageData::FORMAT_ASTC_6x5:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR : GL_COMPRESSED_RGBA_ASTC_6x5_KHR;
+	case CompressedImageData::FORMAT_ASTC_6x6:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR : GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
+	case CompressedImageData::FORMAT_ASTC_8x5:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR : GL_COMPRESSED_RGBA_ASTC_8x5_KHR;
+	case CompressedImageData::FORMAT_ASTC_8x6:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR : GL_COMPRESSED_RGBA_ASTC_8x6_KHR;
+	case CompressedImageData::FORMAT_ASTC_8x8:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR : GL_COMPRESSED_RGBA_ASTC_8x8_KHR;
+	case CompressedImageData::FORMAT_ASTC_10x5:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR : GL_COMPRESSED_RGBA_ASTC_10x5_KHR;
+	case CompressedImageData::FORMAT_ASTC_10x6:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR : GL_COMPRESSED_RGBA_ASTC_10x6_KHR;
+	case CompressedImageData::FORMAT_ASTC_10x8:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR : GL_COMPRESSED_RGBA_ASTC_10x8_KHR;
+	case CompressedImageData::FORMAT_ASTC_10x10:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR : GL_COMPRESSED_RGBA_ASTC_10x10_KHR;
+	case CompressedImageData::FORMAT_ASTC_12x10:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR : GL_COMPRESSED_RGBA_ASTC_12x10_KHR;
+	case CompressedImageData::FORMAT_ASTC_12x12:
+		return isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR : GL_COMPRESSED_RGBA_ASTC_12x12_KHR;
 	default:
-		if (flags.sRGB)
-			return GL_SRGB8_ALPHA8;
-		else
-			return GL_RGBA8;
+		return isSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 	}
 }
 
 bool Image::hasAnisotropicFilteringSupport()
 {
-	return GLAD_EXT_texture_filter_anisotropic;
+	return GLAD_EXT_texture_filter_anisotropic != GL_FALSE;
 }
 
-bool Image::hasCompressedTextureSupport(image::CompressedData::Format format, bool sRGB)
+bool Image::hasCompressedTextureSupport(image::CompressedImageData::Format format, bool sRGB)
 {
+	using image::CompressedImageData;
+
 	switch (format)
 	{
-	case image::CompressedData::FORMAT_DXT1:
+	case CompressedImageData::FORMAT_DXT1:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;
-	case image::CompressedData::FORMAT_DXT3:
+	case CompressedImageData::FORMAT_DXT3:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3;
-	case image::CompressedData::FORMAT_DXT5:
+	case CompressedImageData::FORMAT_DXT5:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5;
-	case image::CompressedData::FORMAT_BC4:
-	case image::CompressedData::FORMAT_BC4s:
-	case image::CompressedData::FORMAT_BC5:
-	case image::CompressedData::FORMAT_BC5s:
+	case CompressedImageData::FORMAT_BC4:
+	case CompressedImageData::FORMAT_BC4s:
+	case CompressedImageData::FORMAT_BC5:
+	case CompressedImageData::FORMAT_BC5s:
 		return (GLAD_VERSION_3_0 || GLAD_ARB_texture_compression_rgtc || GLAD_EXT_texture_compression_rgtc);
-	case image::CompressedData::FORMAT_BC6H:
-	case image::CompressedData::FORMAT_BC6Hs:
-	case image::CompressedData::FORMAT_BC7:
+	case CompressedImageData::FORMAT_BC6H:
+	case CompressedImageData::FORMAT_BC6Hs:
+	case CompressedImageData::FORMAT_BC7:
 		return GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc;
-	case image::CompressedData::FORMAT_ETC1:
+	case CompressedImageData::FORMAT_PVR1_RGB2:
+	case CompressedImageData::FORMAT_PVR1_RGB4:
+	case CompressedImageData::FORMAT_PVR1_RGBA2:
+	case CompressedImageData::FORMAT_PVR1_RGBA4:
+		return sRGB ? GLAD_EXT_pvrtc_sRGB : GLAD_IMG_texture_compression_pvrtc;
+	case CompressedImageData::FORMAT_ETC1:
 		// ETC2 support guarantees ETC1 support as well.
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture;
-	case image::CompressedData::FORMAT_ETC2_RGB:
-	case image::CompressedData::FORMAT_ETC2_RGBA:
-	case image::CompressedData::FORMAT_ETC2_RGBA1:
-	case image::CompressedData::FORMAT_EAC_R:
-	case image::CompressedData::FORMAT_EAC_Rs:
-	case image::CompressedData::FORMAT_EAC_RG:
-	case image::CompressedData::FORMAT_EAC_RGs:
+	case CompressedImageData::FORMAT_ETC2_RGB:
+	case CompressedImageData::FORMAT_ETC2_RGBA:
+	case CompressedImageData::FORMAT_ETC2_RGBA1:
+	case CompressedImageData::FORMAT_EAC_R:
+	case CompressedImageData::FORMAT_EAC_Rs:
+	case CompressedImageData::FORMAT_EAC_RG:
+	case CompressedImageData::FORMAT_EAC_RGs:
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility;
-	case image::CompressedData::FORMAT_PVR1_RGB2:
-	case image::CompressedData::FORMAT_PVR1_RGB4:
-	case image::CompressedData::FORMAT_PVR1_RGBA2:
-	case image::CompressedData::FORMAT_PVR1_RGBA4:
-		if (sRGB)
-			return GLAD_EXT_pvrtc_sRGB;
-		else
-			return GLAD_IMG_texture_compression_pvrtc;
+	case CompressedImageData::FORMAT_ASTC_4x4:
+	case CompressedImageData::FORMAT_ASTC_5x4:
+	case CompressedImageData::FORMAT_ASTC_5x5:
+	case CompressedImageData::FORMAT_ASTC_6x5:
+	case CompressedImageData::FORMAT_ASTC_6x6:
+	case CompressedImageData::FORMAT_ASTC_8x5:
+	case CompressedImageData::FORMAT_ASTC_8x6:
+	case CompressedImageData::FORMAT_ASTC_8x8:
+	case CompressedImageData::FORMAT_ASTC_10x5:
+	case CompressedImageData::FORMAT_ASTC_10x6:
+	case CompressedImageData::FORMAT_ASTC_10x8:
+	case CompressedImageData::FORMAT_ASTC_10x10:
+	case CompressedImageData::FORMAT_ASTC_12x10:
+	case CompressedImageData::FORMAT_ASTC_12x12:
+		return GLAD_ES_VERSION_3_2 || GLAD_KHR_texture_compression_astc_ldr;
 	default:
 		return false;
 	}
@@ -648,8 +771,8 @@ bool Image::getConstant(FlagType in, const char *&out)
 
 StringMap<Image::FlagType, Image::FLAG_TYPE_MAX_ENUM>::Entry Image::flagNameEntries[] =
 {
-	{"mipmaps", Image::FLAG_TYPE_MIPMAPS},
-	{"srgb", Image::FLAG_TYPE_SRGB},
+	{"mipmaps", FLAG_TYPE_MIPMAPS},
+	{"linear", FLAG_TYPE_LINEAR},
 };
 
 StringMap<Image::FlagType, Image::FLAG_TYPE_MAX_ENUM> Image::flagNames(Image::flagNameEntries, sizeof(Image::flagNameEntries));

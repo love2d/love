@@ -1,0 +1,43 @@
+version: 0.10.1.{build}
+
+os:
+- Windows Server 2012 R2
+
+shallow_clone: true
+
+init:
+# Make VS 2013 command line tools available
+- call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %platform%
+
+install:
+# We need to install NSIS to create the packaged installer executable.
+- choco install nsis -pre -y
+
+# Move all woking directory items except `appveyor.yml` to `love` subdirectory.
+- md love
+- for /D %%i in (*) do @if "%%i" NEQ "love" @move %%i love\%%i
+- for %%i in (*) do @if "%%i" NEQ "appveyor.yml" @move %%i love\%%i
+# clone megasource and move into top directory.
+- hg clone https://bitbucket.org/rude/megasource megasource
+- cd megasource
+- for /D %%i in (*) do @move %%i ..\%%i
+- for %%i in (*) do @move %%i ..\%%i
+- cd ..
+# move love source to megasource's libs\love.
+- move love libs\love
+
+before_build:
+- cmake -G "Visual Studio 12" -H. -Bbuild
+
+build_script:
+- cmake --build build --target PACKAGE --config Release
+
+after_build:
+
+before_test:
+
+test_script:
+
+artifacts:
+- path: build\*.zip
+- path: build\*.exe

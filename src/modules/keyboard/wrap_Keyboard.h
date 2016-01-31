@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,15 +30,6 @@ namespace love
 namespace keyboard
 {
 
-int w_setKeyRepeat(lua_State *L);
-int w_hasKeyRepeat(lua_State *L);
-int w_isDown(lua_State *L);
-int w_isScancodeDown(lua_State *L);
-int w_getKeyFromScancode(lua_State *L);
-int w_getScancodeFromkey(lua_State *L);
-int w_setTextInput(lua_State *L);
-int w_hasTextInput(lua_State *L);
-int w_hasScreenKeyboard(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_keyboard(lua_State *L);
 
 } // keyboard

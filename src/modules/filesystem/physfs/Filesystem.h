@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -75,8 +75,10 @@ public:
 
 	std::string getRealDirectory(const char *filename) const;
 
+	bool exists(const char *path) const;
 	bool isDirectory(const char *dir) const;
 	bool isFile(const char *file) const;
+	bool isSymlink(const char *filename) const;
 
 	bool createDirectory(const char *dir);
 
@@ -86,14 +88,13 @@ public:
 	void write(const char *filename, const void *data, int64 size) const;
 	void append(const char *filename, const void *data, int64 size) const;
 
-	int getDirectoryItems(lua_State *L);
+	void getDirectoryItems(const char *dir, std::vector<std::string> &items);
 
 	int64 getLastModified(const char *filename) const;
 	int64 getSize(const char *filename) const;
 
 	void setSymlinksEnabled(bool enable);
 	bool areSymlinksEnabled() const;
-	bool isSymlink(const char *filename) const;
 
 	std::vector<std::string> &getRequirePath();
 

@@ -12,6 +12,8 @@
 
 #include "inet.h"
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*=========================================================================*\
 * Internal function prototypes.
 \*=========================================================================*/
@@ -38,7 +40,7 @@ int inet_open(lua_State *L)
 {
     lua_pushstring(L, "dns");
     lua_newtable(L);
-    luaL_openlib(L, NULL, func, 0);
+    luax_register(L, NULL, func);
     lua_settable(L, -3);
     return 0;
 }

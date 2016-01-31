@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -114,18 +114,19 @@ bool Texture::getConstant(WrapMode in, const char  *&out)
 
 StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM>::Entry Texture::filterModeEntries[] =
 {
-	{ "linear", Texture::FILTER_LINEAR },
-	{ "nearest", Texture::FILTER_NEAREST },
-	{ "none", Texture::FILTER_NONE },
+	{ "linear", FILTER_LINEAR },
+	{ "nearest", FILTER_NEAREST },
+	{ "none", FILTER_NONE },
 };
 
 StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM> Texture::filterModes(Texture::filterModeEntries, sizeof(Texture::filterModeEntries));
 
 StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM>::Entry Texture::wrapModeEntries[] =
 {
-	{ "clamp", Texture::WRAP_CLAMP },
-	{ "repeat", Texture::WRAP_REPEAT },
-	{ "mirroredrepeat", Texture::WRAP_MIRRORED_REPEAT },
+	{ "clamp", WRAP_CLAMP },
+	{ "clampzero", WRAP_CLAMP_ZERO },
+	{ "repeat", WRAP_REPEAT },
+	{ "mirroredrepeat", WRAP_MIRRORED_REPEAT },
 };
 
 StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM> Texture::wrapModes(Texture::wrapModeEntries, sizeof(Texture::wrapModeEntries));

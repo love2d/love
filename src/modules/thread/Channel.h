@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,7 @@ class Channel : public love::Object
 // FOR WRAPPER USE ONLY
 friend void retainVariant(Channel *, Variant *);
 friend void releaseVariant(Channel *, Variant *);
+friend int w_Channel_performAtomic(lua_State *);
 
 public:
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 #define LOVE_FILESYSTEM_PHYSFS_FILE_H
 
 // LOVE
+#include "common/config.h"
 #include "filesystem/File.h"
 
 // PhysFS
@@ -33,6 +34,12 @@
 
 // STD
 #include <string>
+
+// These platforms always use PhysFS 2.1.
+#if (defined(LOVE_IOS) || defined(LOVE_ANDROID)) \
+&& (PHYSFS_VER_MAJOR == 2 && PHYSFS_VER_MINOR >= 1)
+#define LOVE_USE_PHYSFS_2_1
+#endif
 
 namespace love
 {
@@ -56,20 +63,20 @@ public:
 	// Implements love::filesystem::File.
 	using love::filesystem::File::read;
 	using love::filesystem::File::write;
-	bool open(Mode mode);
-	bool close();
-	bool isOpen() const;
-	int64 getSize();
-	virtual int64 read(void *dst, int64 size);
-	bool write(const void *data, int64 size);
-	bool flush();
-	bool eof();
-	int64 tell();
-	bool seek(uint64 pos);
-	bool setBuffer(BufferMode bufmode, int64 size);
-	BufferMode getBuffer(int64 &size) const;
-	Mode getMode() const;
-	const std::string &getFilename() const;
+	bool open(Mode mode) override;
+	bool close() override;
+	bool isOpen() const override;
+	int64 getSize() override;
+	virtual int64 read(void *dst, int64 size) override;
+	bool write(const void *data, int64 size) override;
+	bool flush() override;
+	bool isEOF() override;
+	int64 tell() override;
+	bool seek(uint64 pos) override;
+	bool setBuffer(BufferMode bufmode, int64 size) override;
+	BufferMode getBuffer(int64 &size) const override;
+	Mode getMode() const override;
+	const std::string &getFilename() const override;
 
 private:
 

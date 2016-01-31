@@ -115,10 +115,10 @@
       "scale" : "2x"
     },
     {
-      "size" : "120x120",
-      "idiom" : "car",
-      "filename" : "pig-120pt@1x.png",
-      "scale" : "1x"
+      "size" : "83.5x83.5",
+      "idiom" : "ipad",
+      "filename" : "pig-83.5pt@2x.png",
+      "scale" : "2x"
     }
   ],
   "info" : {

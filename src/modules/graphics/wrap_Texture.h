@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,13 +30,9 @@ namespace graphics
 {
 
 Texture *luax_checktexture(lua_State *L, int idx);
-int w_Texture_getWidth(lua_State *L);
-int w_Texture_getHeight(lua_State *L);
-int w_Texture_getDimensions(lua_State *L);
-int w_Texture_setFilter(lua_State *L);
-int w_Texture_getFilter(lua_State *L);
-int w_Texture_setWrap(lua_State *L);
-int w_Texture_getWrap(lua_State *L);
+extern "C" int luaopen_texture(lua_State *L);
+
+extern const luaL_Reg w_Texture_functions[];
 
 } // graphics
 } // love

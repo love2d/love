@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@ namespace lullaby
 ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSize)
 	: Decoder(data, ext, bufferSize)
 	, plug(0)
+	, duration(-2.0)
 {
 
 	// Set some ModPlug settings.
@@ -47,11 +48,8 @@ ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSiz
 	// garbage settings when the struct is only partially initialized)
 	// This does not exist yet on Windows.
 
-	// Some settings not supported by some older versions
-#ifndef LOVE_OLD_MODPLUG
 	settings.mStereoSeparation = 128;
 	settings.mMaxMixChannels = 32;
-#endif
 	settings.mReverbDepth = 0;
 	settings.mReverbDelay = 0;
 	settings.mBassAmount = 0;
@@ -142,6 +140,22 @@ int ModPlugDecoder::getChannels() const
 int ModPlugDecoder::getBitDepth() const
 {
 	return 16;
+}
+
+double ModPlugDecoder::getDuration()
+{
+	// Only calculate the duration if we haven't done so already.
+	if (duration == -2.0)
+	{
+		int lengthms = ModPlug_GetLength(plug);
+
+		if (lengthms < 0)
+			duration = -1.0;
+		else
+			duration = (double) lengthms / 1000.0;
+	}
+
+	return duration;
 }
 
 } // lullaby

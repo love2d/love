@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,7 @@ extern "C"
 LOVE_EXPORT const char *love_version();
 LOVE_EXPORT const char *love_codename();
 LOVE_EXPORT int luaopen_love(lua_State *L);
+LOVE_EXPORT int luaopen_love_nogame(lua_State *L);
 LOVE_EXPORT int luaopen_love_boot(lua_State *L);
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,12 +26,8 @@ namespace love
 namespace window
 {
 
-Window *Window::singleton = nullptr;
-
 Window::~Window()
 {
-	if (singleton == this)
-		singleton = nullptr;
 }
 
 void Window::swapBuffers()
@@ -81,7 +77,6 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"centered", SETTING_CENTERED},
 	{"display", SETTING_DISPLAY},
 	{"highdpi", SETTING_HIGHDPI},
-	{"srgb", SETTING_SRGB},
 	{"refreshrate", SETTING_REFRESHRATE},
 	{"x", SETTING_X},
 	{"y", SETTING_Y},

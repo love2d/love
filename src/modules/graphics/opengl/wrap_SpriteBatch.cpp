@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,19 +39,17 @@ SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 	return luax_checktype<SpriteBatch>(L, idx, GRAPHICS_SPRITE_BATCH_ID);
 }
 
-int w_SpriteBatch_add(lua_State *L)
+static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int startidx, int index)
 {
-	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Quad *quad = nullptr;
-	int startidx = 2;
 
-	if (luax_istype(L, 2, GRAPHICS_QUAD_ID))
+	if (luax_istype(L, startidx, GRAPHICS_QUAD_ID))
 	{
-		quad = luax_totype<Quad>(L, 2, GRAPHICS_QUAD_ID);
-		startidx = 3;
+		quad = luax_totype<Quad>(L, startidx, GRAPHICS_QUAD_ID);
+		startidx++;
 	}
-	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
-		return luax_typerror(L, 2, "Quad");
+	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
+		return luax_typerror(L, startidx, "Quad");
 
 	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
 	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
@@ -63,50 +61,32 @@ int w_SpriteBatch_add(lua_State *L)
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	int id = 0;
 	luax_catchexcept(L, [&]() {
 		if (quad)
-			id = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky);
+			index = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, index);
 		else
-			id = t->add(x, y, a, sx, sy, ox, oy, kx, ky);
+			index = t->add(x, y, a, sx, sy, ox, oy, kx, ky, index);
 	});
 
-	lua_pushinteger(L, id);
+	return index;
+}
+
+int w_SpriteBatch_add(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+
+	int index = w_SpriteBatch_add_or_set(L, t, 2, -1);
+	lua_pushinteger(L, index + 1);
+
 	return 1;
 }
 
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int id = luaL_checkint(L, 2);
+	int index = (int) luaL_checknumber(L, 2) - 1;
 
-	Quad *quad = nullptr;
-	int startidx = 3;
-
-	if (luax_istype(L, 3, GRAPHICS_QUAD_ID))
-	{
-		quad = luax_totype<Quad>(L, 3, GRAPHICS_QUAD_ID);
-		startidx = 4;
-	}
-	else if (lua_isnil(L, 3) && !lua_isnoneornil(L, 4))
-		return luax_typerror(L, 3, "Quad");
-
-	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
-	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
-	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
-	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
-	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
-	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
-	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
-	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
-	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
-
-	luax_catchexcept(L, [&]() {
-		if (quad)
-			t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, id);
-		else
-			t->add(x, y, a, sx, sy, ox, oy, kx, ky, id);
-	});
+	w_SpriteBatch_add_or_set(L, t, 3, index);
 
 	return 0;
 }
@@ -164,19 +144,19 @@ int w_SpriteBatch_setColor(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 2, i);
 
-		c.r = (unsigned char) luaL_checkinteger(L, -4);
-		c.g = (unsigned char) luaL_checkinteger(L, -3);
-		c.b = (unsigned char) luaL_checkinteger(L, -2);
-		c.a = (unsigned char) luaL_optinteger(L, -1, 255);
+		c.r = (unsigned char) luaL_checknumber(L, -4);
+		c.g = (unsigned char) luaL_checknumber(L, -3);
+		c.b = (unsigned char) luaL_checknumber(L, -2);
+		c.a = (unsigned char) luaL_optnumber(L, -1, 255);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char)luaL_checkinteger(L, 2);
-		c.g = (unsigned char)luaL_checkinteger(L, 3);
-		c.b = (unsigned char)luaL_checkinteger(L, 4);
-		c.a = (unsigned char)luaL_optinteger(L, 5, 255);
+		c.r = (unsigned char) luaL_checknumber(L, 2);
+		c.g = (unsigned char) luaL_checknumber(L, 3);
+		c.b = (unsigned char) luaL_checknumber(L, 4);
+		c.a = (unsigned char) luaL_optnumber(L, 5, 255);
 	}
 
 	t->setColor(c);
@@ -189,14 +169,14 @@ int w_SpriteBatch_getColor(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	const Color *color = t->getColor();
 
-	// getColor returns NULL if no color is set.
+	// getColor returns null if no color is set.
 	if (!color)
 		return 0;
 
-	lua_pushinteger(L, (lua_Integer) color->r);
-	lua_pushinteger(L, (lua_Integer) color->g);
-	lua_pushinteger(L, (lua_Integer) color->b);
-	lua_pushinteger(L, (lua_Integer) color->a);
+	lua_pushnumber(L, color->r);
+	lua_pushnumber(L, color->g);
+	lua_pushnumber(L, color->b);
+	lua_pushnumber(L, color->a);
 
 	return 4;
 }
@@ -211,7 +191,7 @@ int w_SpriteBatch_getCount(lua_State *L)
 int w_SpriteBatch_setBufferSize(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int size = luaL_checkint(L, 2);
+	int size = (int) luaL_checknumber(L, 2);
 	luax_catchexcept(L, [&]() {t->setBufferSize(size); });
 	return 0;
 }
@@ -223,7 +203,17 @@ int w_SpriteBatch_getBufferSize(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+int w_SpriteBatch_attachAttribute(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	Mesh *m = luax_checktype<Mesh>(L, 3, GRAPHICS_MESH_ID);
+
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, m); });
+	return 0;
+}
+
+static const luaL_Reg w_SpriteBatch_functions[] =
 {
 	{ "add", w_SpriteBatch_add },
 	{ "set", w_SpriteBatch_set },
@@ -236,12 +226,13 @@ static const luaL_Reg functions[] =
 	{ "getCount", w_SpriteBatch_getCount },
 	{ "setBufferSize", w_SpriteBatch_setBufferSize },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
+	{ "attachAttribute", w_SpriteBatch_attachAttribute },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_spritebatch(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SPRITE_BATCH_ID, functions);
+	return luax_register_type(L, GRAPHICS_SPRITE_BATCH_ID, "SpriteBatch", w_SpriteBatch_functions, nullptr);
 }
 
 } // opengl

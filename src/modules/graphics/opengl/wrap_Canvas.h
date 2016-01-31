@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,10 +35,6 @@ namespace opengl
 
 //see Canvas.h
 Canvas *luax_checkcanvas(lua_State *L, int idx);
-int w_Canvas_renderTo(lua_State *L);
-int w_Canvas_newImageData(lua_State *L);
-int w_Canvas_getFormat(lua_State *L);
-int w_Canvas_getMSAA(lua_State *L);
 extern "C" int luaopen_canvas(lua_State *L);
 
 } // opengl

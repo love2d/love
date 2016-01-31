@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,11 @@
 
 #include <cmath>
 #include <algorithm>
+
+// Put the Lua code directly into a raw string literal.
+static const char randomgenerator_lua[] =
+#include "wrap_RandomGenerator.lua"
+;
 
 namespace love
 {
@@ -56,41 +61,16 @@ RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx)
 	return s;
 }
 
-int luax_getrandom(lua_State *L, int startidx, double r)
-{
-	int l, u;
-	// from lua 5.1.4 source code: lmathlib.c:185 ff.
-	switch (lua_gettop(L) - (startidx - 1))
-	{
-	case 0:
-		lua_pushnumber(L, r);
-		break;
-	case 1:
-		u = luaL_checkint(L, startidx);
-		luaL_argcheck(L, 1 <= u, startidx, "interval is empty");
-		lua_pushnumber(L, floor(r * u) + 1);
-		break;
-	case 2:
-		l = luaL_checkint(L, startidx);
-		u = luaL_checkint(L, startidx + 1);
-		luaL_argcheck(L, l <= u, startidx + 1, "interval is empty");
-		lua_pushnumber(L, floor(r * (u - l + 1)) + l);
-		break;
-	default:
-		return luaL_error(L, "wrong number of arguments");
-	}
-	return 1;
-}
-
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 {
 	return luax_checktype<RandomGenerator>(L, idx, MATH_RANDOM_GENERATOR_ID);
 }
 
-int w_RandomGenerator_random(lua_State *L)
+int w_RandomGenerator__random(lua_State *L)
 {
 	RandomGenerator *rng = luax_checkrandomgenerator(L, 1);
-	return luax_getrandom(L, 2, rng->random());
+	lua_pushnumber(L, rng->random());
+	return 1;
 }
 
 int w_RandomGenerator_randomNormal(lua_State *L)
@@ -135,9 +115,28 @@ int w_RandomGenerator_getState(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+// C functions in a struct, necessary for the FFI versions of RandomGenerator functions.
+struct FFI_RandomGenerator
 {
-	{ "random", w_RandomGenerator_random },
+	double (*random)(Proxy *p);
+};
+
+static FFI_RandomGenerator ffifuncs =
+{
+	[](Proxy *p) -> double // random()
+	{
+		// FIXME: We need better type-checking...
+		if (p == nullptr || !typeFlags[p->type][MATH_RANDOM_GENERATOR_ID])
+			return 0.0;
+
+		RandomGenerator *rng = (RandomGenerator *) p->object;
+		return rng->random();
+	}
+};
+
+static const luaL_Reg w_RandomGenerator_functions[] =
+{
+	{ "_random", w_RandomGenerator__random }, // random() is defined in wrap_RandomGenerator.lua.
 	{ "randomNormal", w_RandomGenerator_randomNormal },
 	{ "setSeed", w_RandomGenerator_setSeed },
 	{ "getSeed", w_RandomGenerator_getSeed },
@@ -148,7 +147,24 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_randomgenerator(lua_State *L)
 {
-	return luax_register_type(L, MATH_RANDOM_GENERATOR_ID, functions);
+	int n = luax_register_type(L, MATH_RANDOM_GENERATOR_ID, "RandomGenerator", w_RandomGenerator_functions, nullptr);
+
+	luax_gettypemetatable(L, MATH_RANDOM_GENERATOR_ID);
+
+	// Load and execute wrap_RandomGenerator.lua, sending the metatable and the
+	// ffi functions struct pointer as arguments.
+	if (lua_istable(L, -1))
+	{
+		luaL_loadbuffer(L, randomgenerator_lua, sizeof(randomgenerator_lua), "wrap_RandomGenerator.lua");
+		lua_pushvalue(L, -2);
+		lua_pushlightuserdata(L, &ffifuncs);
+		lua_call(L, 2, 0);
+	}
+
+	// Pop the metatable.
+	lua_pop(L, 1);
+
+	return n;
 }
 
 } // math

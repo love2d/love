@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ int w_Cursor_getType(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Cursor_functions[] =
 {
 	{ "getType", w_Cursor_getType },
 	{ 0, 0 },
@@ -61,7 +61,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_cursor(lua_State *L)
 {
-	return luax_register_type(L, MOUSE_CURSOR_ID, functions);
+	return luax_register_type(L, MOUSE_CURSOR_ID, "Cursor", w_Cursor_functions, nullptr);
 }
 
 } // mouse

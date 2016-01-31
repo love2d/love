@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,13 +25,13 @@ namespace love
 {
 
 // Version stuff.
-#define LOVE_VERSION_STRING "0.10.0"
+#define LOVE_VERSION_STRING "0.10.1"
 static const int VERSION_MAJOR = 0;
 static const int VERSION_MINOR = 10;
-static const int VERSION_REV = 0;
+static const int VERSION_REV = 1;
 static const char *VERSION = LOVE_VERSION_STRING;
-static const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
-static const char *VERSION_CODENAME = "";
+static const char *VERSION_COMPATIBILITY[] =  { VERSION, "0.10.0", 0 };
+static const char *VERSION_CODENAME = "Super Toast";
 
 } // love
 

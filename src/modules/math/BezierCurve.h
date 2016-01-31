@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -74,6 +74,12 @@ public:
 	void insertControlPoint(const Vector &point, int pos = -1);
 
 	/**
+	 * Remove the i'th control point from the curve.
+	 * @param i Control point to remove
+	 **/
+	void removeControlPoint(int i);
+
+	/**
 	 * @returns Number of control points.
 	 **/
 	size_t getControlPointCount() const
@@ -108,11 +114,29 @@ public:
 	Vector evaluate(double t) const;
 
 	/**
+	 * Get curve segment starting at t1 and ending at t2.
+	 * The new curve will be parametrized from 0 <= t <= 1.
+	 * @param t1 Start of the segment.
+	 * @param t2 End of the segment.
+	 * @returns Bezier curve covering the segment.
+	 */
+	BezierCurve* getSegment(double t1, double t2) const;
+
+	/**
 	 * Renders the curve by subdivision.
 	 * @param accuracy The 'fineness' of the curve.
 	 * @returns A polygon chain that approximates the bezier curve.
 	 **/
 	std::vector<Vector> render(int accuracy = 4) const;
+
+	/**
+	 * Renders a segment of the curve by subdivision.
+	 * @param start The starting point (between 0 and 1) on the curve.
+	 * @param end The ending point on the curve.
+	 * @param accuracy The 'fineness' of the curve.
+	 * @returns A polygon chain that approximates the segment along the curve
+	 **/
+	std::vector<Vector> renderSegment(double start, double end, size_t accuracy = 4) const;
 
 private:
 	std::vector<Vector> controlPoints;

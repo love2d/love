@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -57,7 +57,6 @@ public:
 		SETTING_CENTERED,
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
-		SETTING_SRGB,
 		SETTING_REFRESHRATE,
 		SETTING_X,
 		SETTING_Y,
@@ -112,6 +111,8 @@ public:
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
 	virtual void getWindow(int &width, int &height, WindowSettings &settings) = 0;
 
+	virtual void close() = 0;
+
 	virtual bool setFullscreen(bool fullscreen, FullscreenType fstype) = 0;
 	virtual bool setFullscreen(bool fullscreen) = 0;
 
@@ -128,13 +129,16 @@ public:
 	virtual void setPosition(int x, int y, int displayindex) = 0;
 	virtual void getPosition(int &x, int &y, int &displayindex) = 0;
 
-	virtual bool isCreated() const = 0;
+	virtual bool isOpen() const = 0;
 
 	virtual void setWindowTitle(const std::string &title) = 0;
 	virtual const std::string &getWindowTitle() const = 0;
 
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 	virtual love::image::ImageData *getIcon() = 0;
+
+	virtual void setDisplaySleepEnabled(bool enable) = 0;
+	virtual bool isDisplaySleepEnabled() const = 0;
 
 	virtual void minimize() = 0;
 	virtual void maximize() = 0;
@@ -171,9 +175,7 @@ public:
 	virtual bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) = 0;
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
-	//virtual static Window *createSingleton() = 0;
-	//virtual static Window *getSingleton() = 0;
-	// No virtual statics, of course, but you are supposed to implement these statics.
+	virtual void requestAttention(bool continuous) = 0;
 
 	static bool getConstant(const char *in, Setting &out);
 	static bool getConstant(Setting in, const char *&out);
@@ -183,10 +185,6 @@ public:
 
 	static bool getConstant(const char *in, MessageBoxType &out);
 	static bool getConstant(MessageBoxType in, const char *&out);
-
-protected:
-
-	static Window *singleton;
 
 private:
 
@@ -214,7 +212,6 @@ struct WindowSettings
 	bool centered = true;
 	int display = 0;
 	bool highdpi = false;
-	bool sRGB = false;
 	double refreshrate = 0.0;
 	bool useposition = false;
 	int x = 0;

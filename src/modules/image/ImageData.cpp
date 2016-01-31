@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,14 +28,12 @@ namespace image
 {
 
 ImageData::ImageData()
-	: data(0)
+	: data(nullptr)
 {
-	mutex = thread::newMutex();
 }
 
 ImageData::~ImageData()
 {
-	delete mutex;
 }
 
 size_t ImageData::getSize() const
@@ -71,16 +69,13 @@ void ImageData::setPixel(int x, int y, pixel c)
 	Lock lock(mutex);
 
 	pixel *pixels = (pixel *) getData();
-	pixels[y*getWidth()+x] = c;
+	pixels[y*width+x] = c;
 }
 
-void ImageData::setPixelUnsafe(int x, int y, love::image::pixel c)
+void ImageData::setPixelUnsafe(int x, int y, pixel c)
 {
-	if (!inside(x, y))
-		throw love::Exception("Attempt to set out-of-range pixel!");
-
 	pixel *pixels = (pixel *) getData();
-	pixels[y*getWidth()+x] = c;
+	pixels[y*width+x] = c;
 }
 
 pixel ImageData::getPixel(int x, int y) const
@@ -88,8 +83,16 @@ pixel ImageData::getPixel(int x, int y) const
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");
 
+	Lock lock(mutex);
+
 	const pixel *pixels = (const pixel *) getData();
-	return pixels[y*getWidth()+x];
+	return pixels[y*width+x];
+}
+
+pixel ImageData::getPixelUnsafe(int x, int y) const
+{
+	const pixel *pixels = (const pixel *) getData();
+	return pixels[y*width+x];
 }
 
 void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, int sh)
@@ -130,22 +133,18 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 		dy -= sy;
 		sy = 0;
 	}
+
 	if (dx + sw > getWidth())
-	{
 		sw = getWidth() - dx;
-	}
+
 	if (dy + sh > getHeight())
-	{
 		sh = getHeight() - dy;
-	}
+
 	if (sx + sw > src->getWidth())
-	{
 		sw = src->getWidth() - sx;
-	}
+
 	if (sy + sh > src->getHeight())
-	{
 		sh = src->getHeight() - sy;
-	}
 
 	// If the dimensions match up, copy the entire memory stream in one go
 	if (sw == getWidth() && getWidth() == src->getWidth()
@@ -166,24 +165,23 @@ love::thread::Mutex *ImageData::getMutex() const
 	return mutex;
 }
 
-bool ImageData::getConstant(const char *in, ImageData::Format &out)
+bool ImageData::getConstant(const char *in, EncodedFormat &out)
 {
-	return formats.find(in, out);
+	return encodedFormats.find(in, out);
 }
 
-bool ImageData::getConstant(ImageData::Format in, const char  *&out)
+bool ImageData::getConstant(EncodedFormat in, const char *&out)
 {
-	return formats.find(in, out);
+	return encodedFormats.find(in, out);
 }
 
-StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
+StringMap<ImageData::EncodedFormat, ImageData::ENCODED_MAX_ENUM>::Entry ImageData::encodedFormatEntries[] =
 {
-	{"tga", ImageData::FORMAT_TGA},
-	{"jpg", ImageData::FORMAT_JPG},
-	{"png", ImageData::FORMAT_PNG},
+	{"tga", ENCODED_TGA},
+	{"png", ENCODED_PNG},
 };
 
-StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM> ImageData::formats(ImageData::formatEntries, sizeof(ImageData::formatEntries));
+StringMap<ImageData::EncodedFormat, ImageData::ENCODED_MAX_ENUM> ImageData::encodedFormats(ImageData::encodedFormatEntries, sizeof(ImageData::encodedFormatEntries));
 
 } // image
 } // love

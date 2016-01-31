@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,11 +32,11 @@ namespace event
 
 #define instance() (Module::getInstance<Event>(Module::M_EVENT))
 
-static int poll_i(lua_State *L)
+static int w_poll_i(lua_State *L)
 {
-	Message *m;
+	Message *m = nullptr;
 
-	while (instance()->poll(m))
+	if (instance()->poll(m))
 	{
 		int args = m->toLua(L);
 		m->release();
@@ -47,23 +47,22 @@ static int poll_i(lua_State *L)
 	return 0;
 }
 
+int w_poll(lua_State *L)
+{
+	lua_pushcclosure(L, &w_poll_i, 0);
+	return 1;
+}
+
 int w_pump(lua_State *)
 {
 	instance()->pump();
 	return 0;
 }
 
-int w_poll(lua_State *L)
-{
-	lua_pushcclosure(L, &poll_i, 0);
-	return 1;
-}
-
 int w_wait(lua_State *L)
 {
-	Message *m;
-
-	if ((m = instance()->wait()))
+	Message *m = instance()->wait();
+	if (m)
 	{
 		int args = m->toLua(L);
 		m->release();
@@ -75,12 +74,11 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	Message *m;
+	Message *m = Message::fromLua(L, 1);
 
-	bool success = (m = Message::fromLua(L, 1)) != NULL;
-	luax_pushboolean(L, success);
+	luax_pushboolean(L, m != nullptr);
 
-	if (!success)
+	if (m == nullptr)
 		return 1;
 
 	instance()->push(m);
@@ -97,9 +95,19 @@ int w_clear(lua_State *)
 
 int w_quit(lua_State *L)
 {
-	Message *m = new Message("quit");
+	std::vector<StrongRef<Variant>> args;
+
+	Variant *v = Variant::fromLua(L, 1);
+	if (v)
+	{
+		args.push_back(v);
+		v->release();
+	}
+
+	Message *m = new Message("quit", args);
 	instance()->push(m);
 	m->release();
+
 	luax_pushboolean(L, true);
 	return 1;
 }
@@ -131,9 +139,11 @@ extern "C" int luaopen_love_event(lua_State *L)
 	w.name = "event";
 	w.type = MODULE_ID;
 	w.functions = functions;
-	w.types = 0;
+	w.types = nullptr;
 
-	return luax_register_module(L, w);
+	int ret = luax_register_module(L, w);
+
+	return ret;
 }
 
 } // event

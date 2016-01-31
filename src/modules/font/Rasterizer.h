@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -104,6 +104,11 @@ public:
 	 * @param text The (UTF-8) string.
 	 **/
 	virtual bool hasGlyphs(const std::string &text) const;
+
+	/**
+	 * Gets the amount of horizontal kerning between two glyphs.
+	 **/
+	virtual float getKerning(uint32 leftglyph, uint32 rightglyph) const;
 
 protected:
 

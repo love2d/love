@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,10 +30,9 @@ namespace graphics
 namespace opengl
 {
 
-Text::Text(Font *font, const std::string &text)
+Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vbo(nullptr)
-	, text_info()
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -59,13 +58,13 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 		if (vbo != nullptr)
 			newsize = std::max(size_t(vbo->getSize() * 1.5), newsize);
 
-		VertexBuffer *new_vbo = VertexBuffer::Create(newsize, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+		GLBuffer *new_vbo = new GLBuffer(newsize, nullptr, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
 		if (vbo != nullptr)
 		{
 			try
 			{
-				VertexBuffer::Bind bind(*vbo);
+				GLBuffer::Bind bind(*vbo);
 				vbodata = (uint8 *) vbo->map();
 			}
 			catch (love::Exception &)
@@ -74,7 +73,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 				throw;
 			}
 
-			VertexBuffer::Bind bind(*new_vbo);
+			GLBuffer::Bind bind(*new_vbo);
 			new_vbo->fill(0, vbo->getSize(), vbodata);
 		}
 
@@ -82,9 +81,9 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 		vbo = new_vbo;
 	}
 
-	if (vbo != nullptr)
+	if (vbo != nullptr && datasize > 0)
 	{
-		VertexBuffer::Bind bind(*vbo);
+		GLBuffer::Bind bind(*vbo);
 		vbodata = (uint8 *) vbo->map();
 		memcpy(vbodata + offset, &vertices[0], datasize);
 		// We unmap when we draw, to avoid unnecessary full map()/unmap() calls.
@@ -113,11 +112,13 @@ void Text::addTextData(const TextData &t)
 	std::vector<Font::GlyphVertex> vertices;
 	std::vector<Font::DrawCommand> new_commands;
 
+	Font::TextInfo text_info;
+
 	// We only have formatted text if the align mode is valid.
 	if (t.align == Font::ALIGN_MAX_ENUM)
-		new_commands = font->generateVertices(t.text, vertices, 0.0f, Vector(0.0f, 0.0f), &text_info);
+		new_commands = font->generateVertices(t.codepoints, vertices, 0.0f, Vector(0.0f, 0.0f), &text_info);
 	else
-		new_commands = font->generateVerticesFormatted(t.text, t.wrap, t.align, vertices, &text_info);
+		new_commands = font->generateVerticesFormatted(t.codepoints, t.wrap, t.align, vertices, &text_info);
 
 	if (t.use_matrix)
 		t.matrix.transform(&vertices[0], &vertices[0], (int) vertices.size());
@@ -158,27 +159,29 @@ void Text::addTextData(const TextData &t)
 	}
 
 	vert_offset = voffset + vertices.size();
+
 	text_data.push_back(t);
+	text_data.back().text_info = text_info;
 
 	// Font::generateVertices can invalidate the font's texture cache.
 	if (font->getTextureCacheID() != texture_cache_id)
 		regenerateVertices();
 }
 
-void Text::set(const std::string &text)
+void Text::set(const std::vector<Font::ColoredString> &text)
 {
-	if (text.empty())
-		return set();
-
-	addTextData({text, -1.0f, Font::ALIGN_MAX_ENUM, false, false, Matrix()});
+	return set(text, -1.0f, Font::ALIGN_MAX_ENUM);
 }
 
-void Text::set(const std::string &text, float wrap, Font::AlignMode align)
+void Text::set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align)
 {
-	if (text.empty())
+	if (text.empty() || (text.size() == 1 && text[0].str.empty()))
 		return set();
 
-	addTextData({text, wrap, align, false, false, Matrix()});
+	Font::ColoredCodepoints codepoints;
+	Font::getCodepointsFromString(text, codepoints);
+
+	addTextData({codepoints, wrap, align, {}, false, false, Matrix3()});
 }
 
 void Text::set()
@@ -186,26 +189,21 @@ void Text::set()
 	clear();
 }
 
-void Text::add(const std::string &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+int Text::add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	if (text.empty())
-		return;
-
-	Matrix m;
-	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	addTextData({text, -1.0f, Font::ALIGN_MAX_ENUM, true, true, m});
+	return addf(text, -1.0f, Font::ALIGN_MAX_ENUM, x, y, angle, sx, sy, ox, oy, kx, ky);
 }
 
-void Text::addf(const std::string &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+int Text::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	if (text.empty())
-		return;
+	Font::ColoredCodepoints codepoints;
+	Font::getCodepointsFromString(text, codepoints);
 
-	Matrix m;
-	m.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix3 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	addTextData({text, wrap, align, true, true, m});
+	addTextData({codepoints, wrap, align, {}, true, true, m});
+
+	return (int) text_data.size() - 1;
 }
 
 void Text::clear()
@@ -213,7 +211,6 @@ void Text::clear()
 	text_data.clear();
 	draw_commands.clear();
 	texture_cache_id = font->getTextureCacheID();
-	text_info = {};
 	vert_offset = 0;
 }
 
@@ -222,45 +219,43 @@ void Text::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 	if (vbo == nullptr || draw_commands.empty())
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("Text object draw");
+
 	// Re-generate the text if the Font's texture cache was invalidated.
 	if (font->getTextureCacheID() != texture_cache_id)
 		regenerateVertices();
 
-	const size_t pos_offset = offsetof(Font::GlyphVertex, x);
-	const size_t tex_offset = offsetof(Font::GlyphVertex, s);
+	const size_t pos_offset   = offsetof(Font::GlyphVertex, x);
+	const size_t tex_offset   = offsetof(Font::GlyphVertex, s);
+	const size_t color_offset = offsetof(Font::GlyphVertex, color.r);
 	const size_t stride = sizeof(Font::GlyphVertex);
 
-	Matrix t;
-	t.setTransformation(ceilf(x), ceilf(y), angle, sx, sy, ox, oy, kx, ky);
-
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
+	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	{
-		VertexBuffer::Bind bind(*vbo);
+		GLBuffer::Bind bind(*vbo);
 		vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
 		// Font::drawVertices expects AttribPointer calls to be done already.
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(pos_offset));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(tex_offset));
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, vbo->getPointer(tex_offset));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
 	}
 
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
-	try
-	{
-		font->drawVertices(draw_commands);
-	}
-	catch (love::Exception &)
-	{
-		glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-		glDisableVertexAttribArray(ATTRIB_POS);
-		throw;
-	}
+	font->drawVertices(draw_commands, true);
+}
 
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
+void Text::setFont(Font *f)
+{
+	font.set(f);
+
+	// Invalidate the texture cache ID since the font is different. We also have
+	// to re-upload all the vertices based on the new font's textures.
+	texture_cache_id = (uint32) -1;
+	regenerateVertices();
 }
 
 Font *Text::getFont() const
@@ -268,14 +263,26 @@ Font *Text::getFont() const
 	return font.get();
 }
 
-int Text::getWidth() const
+int Text::getWidth(int index) const
 {
-	return text_info.width;
+	if (index < 0)
+		index = std::max((int) text_data.size() - 1, 0);
+
+	if (index >= (int) text_data.size())
+		return 0;
+
+	return text_data[index].text_info.width;
 }
 
-int Text::getHeight() const
+int Text::getHeight(int index) const
 {
-	return text_info.height;
+	if (index < 0)
+		index = std::max((int) text_data.size() - 1, 0);
+
+	if (index >= (int) text_data.size())
+		return 0;
+
+	return text_data[index].text_info.height;
 }
 
 } // opengl

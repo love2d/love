@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,55 +21,28 @@
 #include "wrap_Math.h"
 #include "wrap_RandomGenerator.h"
 #include "wrap_BezierCurve.h"
+#include "wrap_CompressedData.h"
 #include "MathModule.h"
 #include "BezierCurve.h"
 
 #include <cmath>
 #include <iostream>
+#include <algorithm>
+
+// Put the Lua code directly into a raw string literal.
+static const char math_lua[] =
+#include "wrap_Math.lua"
+;
 
 namespace love
 {
 namespace math
 {
 
-int w_random(lua_State *L)
+int w__getRandomGenerator(lua_State *L)
 {
-	return luax_getrandom(L, 1, Math::instance.random());
-}
-
-int w_randomNormal(lua_State *L)
-{
-	double stddev = luaL_optnumber(L, 1, 1.0);
-	double mean = luaL_optnumber(L, 2, 0.0);
-	double r = Math::instance.randomNormal(stddev);
-
-	lua_pushnumber(L, r + mean);
-	return 1;
-}
-
-int w_setRandomSeed(lua_State *L)
-{
-	luax_catchexcept(L, [&](){ Math::instance.setRandomSeed(luax_checkrandomseed(L, 1)); });
-	return 0;
-}
-
-int w_getRandomSeed(lua_State *L)
-{
-	RandomGenerator::Seed s = Math::instance.getRandomSeed();
-	lua_pushnumber(L, (lua_Number) s.b32.low);
-	lua_pushnumber(L, (lua_Number) s.b32.high);
-	return 2;
-}
-
-int w_setRandomState(lua_State *L)
-{
-	luax_catchexcept(L, [&](){ Math::instance.setRandomState(luax_checkstring(L, 1)); });
-	return 0;
-}
-
-int w_getRandomState(lua_State *L)
-{
-	luax_pushstring(L, Math::instance.getRandomState());
+	RandomGenerator *t = Math::instance.getRandomGenerator();
+	luax_pushtype(L, MATH_RANDOM_GENERATOR_ID, t);
 	return 1;
 }
 
@@ -110,7 +83,7 @@ int w_newBezierCurve(lua_State *L)
 	std::vector<Vector> points;
 	if (lua_istable(L, 1))
 	{
-		int top = (int) lua_objlen(L, 1);
+		int top = (int) luax_objlen(L, 1);
 		points.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
@@ -149,7 +122,7 @@ int w_triangulate(lua_State *L)
 	std::vector<Vertex> vertices;
 	if (lua_istable(L, 1))
 	{
-		int top = (int) lua_objlen(L, 1);
+		int top = (int) luax_objlen(L, 1);
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
@@ -219,7 +192,7 @@ int w_isConvex(lua_State *L)
 	std::vector<Vertex> vertices;
 	if (lua_istable(L, 1))
 	{
-		int top = (int) lua_objlen(L, 1);
+		int top = (int) luax_objlen(L, 1);
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
@@ -257,7 +230,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 
 	if (lua_istable(L, 1))
 	{
-		int n = (int) lua_objlen(L, 1);
+		int n = (int) luax_objlen(L, 1);
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
 			lua_rawgeti(L, 1, i);
@@ -279,7 +252,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 
 	if (numcomponents == 0)
 		luaL_checknumber(L, 1);
-	
+
 	return numcomponents;
 }
 
@@ -317,33 +290,27 @@ int w_linearToGamma(lua_State *L)
 
 int w_noise(lua_State *L)
 {
-	float w, x, y, z;
-	float val;
+	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
+	float args[4];
 
-	switch (lua_gettop(L))
+	for (int i = 0; i < nargs; i++)
+		args[i] = (float) luaL_checknumber(L, i + 1);
+
+	float val = 0.0f;
+
+	switch (nargs)
 	{
 	case 1:
-		x = (float) luaL_checknumber(L, 1);
-		val = Math::instance.noise(x);
+		val = Math::instance.noise(args[0]);
 		break;
 	case 2:
-		x = (float) luaL_checknumber(L, 1);
-		y = (float) luaL_checknumber(L, 2);
-		val = Math::instance.noise(x, y);
+		val = Math::instance.noise(args[0], args[1]);
 		break;
 	case 3:
-		x = (float) luaL_checknumber(L, 1);
-		y = (float) luaL_checknumber(L, 2);
-		z = (float) luaL_checknumber(L, 3);
-		val = Math::instance.noise(x, y, z);
+		val = Math::instance.noise(args[0], args[1], args[2]);
 		break;
 	case 4:
-	default:
-		x = (float) luaL_checknumber(L, 1);
-		y = (float) luaL_checknumber(L, 2);
-		z = (float) luaL_checknumber(L, 3);
-		w = (float) luaL_checknumber(L, 4);
-		val = Math::instance.noise(x, y, z, w);
+		val = Math::instance.noise(args[0], args[1], args[2], args[3]);
 		break;
 	}
 
@@ -351,15 +318,120 @@ int w_noise(lua_State *L)
 	return 1;
 }
 
+int w_compress(lua_State *L)
+{
+	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
+	Compressor::Format format = Compressor::FORMAT_LZ4;
+
+	if (fstr && !Compressor::getConstant(fstr, format))
+		return luaL_error(L, "Invalid compressed data format: %s", fstr);
+
+	int level = (int) luaL_optnumber(L, 3, -1);
+
+	CompressedData *cdata = nullptr;
+	if (lua_isstring(L, 1))
+	{
+		size_t rawsize = 0;
+		const char *rawbytes = luaL_checklstring(L, 1, &rawsize);
+		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawbytes, rawsize, level); });
+	}
+	else
+	{
+		Data *rawdata = luax_checktype<Data>(L, 1, DATA_ID);
+		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawdata, level); });
+	}
+
+	luax_pushtype(L, MATH_COMPRESSED_DATA_ID, cdata);
+	return 1;
+}
+
+int w_decompress(lua_State *L)
+{
+	char *rawbytes = nullptr;
+	size_t rawsize = 0;
+
+	if (luax_istype(L, 1, MATH_COMPRESSED_DATA_ID))
+	{
+		CompressedData *data = luax_checkcompresseddata(L, 1);
+		rawsize = data->getDecompressedSize();
+		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(data, rawsize); });
+	}
+	else
+	{
+		Compressor::Format format = Compressor::FORMAT_LZ4;
+		const char *fstr = luaL_checkstring(L, 2);
+
+		if (!Compressor::getConstant(fstr, format))
+			return luaL_error(L, "Invalid compressed data format: %s", fstr);
+
+		size_t compressedsize = 0;
+		const char *cbytes = nullptr;
+
+		if (luax_istype(L, 1, DATA_ID))
+		{
+			Data *data = luax_checktype<Data>(L, 1, DATA_ID);
+			cbytes = (const char *) data->getData();
+			compressedsize = data->getSize();
+		}
+		else
+			cbytes = luaL_checklstring(L, 1, &compressedsize);
+
+		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(format, cbytes, compressedsize, rawsize); });
+	}
+
+	lua_pushlstring(L, rawbytes, rawsize);
+	delete[] rawbytes;
+
+	return 1;
+}
+
+// C functions in a struct, necessary for the FFI versions of math functions.
+struct FFI_Math
+{
+	float (*noise1)(float x);
+	float (*noise2)(float x, float y);
+	float (*noise3)(float x, float y, float z);
+	float (*noise4)(float x, float y, float z, float w);
+
+	float (*gammaToLinear)(float c);
+	float (*linearToGamma)(float c);
+};
+
+static FFI_Math ffifuncs =
+{
+	[](float x) -> float // noise1
+	{
+		return Math::instance.noise(x);
+	},
+	[](float x, float y) -> float // noise2
+	{
+		return Math::instance.noise(x, y);
+	},
+	[](float x, float y, float z) -> float // noise3
+	{
+		return Math::instance.noise(x, y, z);
+	},
+	[](float x, float y, float z, float w) -> float // noise4
+	{
+		return Math::instance.noise(x, y, z, w);
+	},
+
+	[](float c) -> float // gammaToLinear
+	{
+		return Math::instance.gammaToLinear(c);
+	},
+	[](float c) -> float // linearToGamma
+	{
+		return Math::instance.linearToGamma(c);
+	}
+};
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "random", w_random },
-	{ "randomNormal", w_randomNormal },
-	{ "setRandomSeed", w_setRandomSeed },
-	{ "getRandomSeed", w_getRandomSeed },
-	{ "setRandomState", w_setRandomState },
-	{ "getRandomState", w_getRandomState },
+	// love.math.random etc. are defined in wrap_Math.lua.
+
+	{ "_getRandomGenerator", w__getRandomGenerator },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "newBezierCurve", w_newBezierCurve },
 	{ "triangulate", w_triangulate },
@@ -367,6 +439,8 @@ static const luaL_Reg functions[] =
 	{ "gammaToLinear", w_gammaToLinear },
 	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
+	{ "compress", w_compress },
+	{ "decompress", w_decompress },
 	{ 0, 0 }
 };
 
@@ -374,6 +448,7 @@ static const lua_CFunction types[] =
 {
 	luaopen_randomgenerator,
 	luaopen_beziercurve,
+	luaopen_compresseddata,
 	0
 };
 
@@ -389,6 +464,12 @@ extern "C" int luaopen_love_math(lua_State *L)
 	w.types = types;
 
 	int n = luax_register_module(L, w);
+
+	// Execute wrap_Math.lua, sending the math table and ffifuncs pointer as args.
+	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "wrap_Math.lua");
+	lua_pushvalue(L, -2);
+	lua_pushlightuserdata(L, &ffifuncs);
+	lua_call(L, 2, 0);
 
 	return n;
 }

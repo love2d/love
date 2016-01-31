@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -86,6 +86,13 @@ int w_openURL(lua_State *L)
 	return 1;
 }
 
+int w_vibrate(lua_State *L)
+{
+	double seconds = luaL_optnumber(L, 1, 0.5);
+	instance()->vibrate(seconds);
+	return 0;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -94,6 +101,7 @@ static const luaL_Reg functions[] =
 	{ "getClipboardText", w_getClipboardText },
 	{ "getPowerInfo", w_getPowerInfo },
 	{ "openURL", w_openURL },
+	{ "vibrate", w_vibrate },
 	{ 0, 0 }
 };
 

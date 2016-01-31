@@ -24,6 +24,7 @@ namespace love
 {
 namespace thread
 {
+
 void retainVariant(Channel *c, Variant *v)
 {
 	c->lockMutex();
@@ -116,7 +117,35 @@ int w_Channel_clear(lua_State *L)
 	return 0;
 }
 
-static const luaL_Reg type_functions[] = {
+int w_Channel_performAtomic(lua_State *L)
+{
+	Channel *c = luax_checkchannel(L, 1);
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	// Pass this channel as an argument to the function.
+	lua_pushvalue(L, 1);
+	lua_insert(L, 3);
+
+	c->lockMutex();
+
+	// call the function, passing the channel as the first argument and any
+	// user-specified arguments after.
+	int numargs = lua_gettop(L) - 2;
+	int err = lua_pcall(L, numargs, LUA_MULTRET, 0);
+
+	c->unlockMutex();
+
+	// Unfortunately, this eats the stack trace, too bad.
+	if (err != 0)
+		return lua_error(L);
+
+	// The function and everything after it in the stack are eaten by the pcall,
+	// leaving only the Channel argument. Everything else is a return value.
+	return lua_gettop(L) - 1;
+}
+
+static const luaL_Reg w_Channel_functions[] =
+{
 	{ "push", w_Channel_push },
 	{ "supply", w_Channel_supply },
 	{ "pop", w_Channel_pop },
@@ -124,12 +153,14 @@ static const luaL_Reg type_functions[] = {
 	{ "peek", w_Channel_peek },
 	{ "getCount", w_Channel_getCount },
 	{ "clear", w_Channel_clear },
+	{ "performAtomic", w_Channel_performAtomic },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_channel(lua_State *L)
 {
-	return luax_register_type(L, THREAD_CHANNEL_ID, type_functions);
+	return luax_register_type(L, THREAD_CHANNEL_ID, "Channel", w_Channel_functions, nullptr);
 }
-}
-}
+
+} // thread
+} // love

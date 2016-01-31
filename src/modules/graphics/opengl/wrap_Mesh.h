@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_WRAP_MESH_H
 
 // LOVE
+#include "common/config.h"
 #include "common/runtime.h"
 #include "Mesh.h"
 
@@ -32,24 +33,10 @@ namespace graphics
 namespace opengl
 {
 
+char *luax_writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data);
+const char *luax_readAttributeData(lua_State *L, Mesh::DataType type, int components, const char *data);
+
 Mesh *luax_checkmesh(lua_State *L, int idx);
-
-int w_Mesh_setVertex(lua_State *L);
-int w_Mesh_getVertex(lua_State *L);
-int w_Mesh_setVertices(lua_State *L);
-int w_Mesh_getVertices(lua_State *L);
-int w_Mesh_getVertexCount(lua_State *L);
-int w_Mesh_setVertexMap(lua_State *L);
-int w_Mesh_getVertexMap(lua_State *L);
-int w_Mesh_setTexture(lua_State *L);
-int w_Mesh_getTexture(lua_State *L);
-int w_Mesh_setDrawMode(lua_State *L);
-int w_Mesh_getDrawMode(lua_State *L);
-int w_Mesh_setDrawRange(lua_State *L);
-int w_Mesh_getDrawRange(lua_State *L);
-int w_Mesh_setVertexColors(lua_State *L);
-int w_Mesh_hasVertexColors(lua_State *L);
-
 extern "C" int luaopen_mesh(lua_State *L);
 
 } // opengl

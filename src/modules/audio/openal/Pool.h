@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -93,6 +93,7 @@ public:
 	void softRewind(Source *source);
 	void seek(Source *source, float offset, void *unit);
 	float tell(Source *source, void *unit);
+	double getDuration(Source *source, void *unit);
 
 private:
 
@@ -124,7 +125,7 @@ private:
 
 	// Only one thread can access this object at the same time. This mutex will
 	// make sure of that.
-	thread::Mutex *mutex;
+	love::thread::MutexRef mutex;
 
 }; // Pool
 

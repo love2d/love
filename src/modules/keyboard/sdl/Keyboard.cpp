@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -122,7 +122,7 @@ void Keyboard::setTextInput(bool enable, double x, double y, double w, double h)
 {
 	// SDL_SetTextInputRect expects coordinates in window-space but setTextInput
 	// takes pixels, so we should convert.
-	window::Window *window = Module::getInstance<window::Window>(M_WINDOW);
+	auto window = Module::getInstance<window::Window>(M_WINDOW);
 	if (window)
 	{
 		window->pixelToWindowCoords(&x, &y);
@@ -137,12 +137,12 @@ void Keyboard::setTextInput(bool enable, double x, double y, double w, double h)
 
 bool Keyboard::hasTextInput() const
 {
-	return SDL_IsTextInputActive();
+	return SDL_IsTextInputActive() != SDL_FALSE;
 }
 
 bool Keyboard::hasScreenKeyboard() const
 {
-	return SDL_HasScreenKeyboardSupport();
+	return SDL_HasScreenKeyboardSupport() != SDL_FALSE;
 }
 
 bool Keyboard::getConstant(Scancode in, SDL_Scancode &out)
@@ -627,7 +627,7 @@ EnumMap<Keyboard::Scancode, SDL_Scancode, SDL_NUM_SCANCODES>::Entry Keyboard::sc
 	{SCANCODE_KBDILLUMUP, SDL_SCANCODE_KBDILLUMUP},
 	{SCANCODE_EJECT, SDL_SCANCODE_EJECT},
 	{SCANCODE_SLEEP, SDL_SCANCODE_SLEEP},
-	
+
 	{SCANCODE_APP1, SDL_SCANCODE_APP1},
 	{SCANCODE_APP2, SDL_SCANCODE_APP2},
 };

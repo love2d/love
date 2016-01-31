@@ -16,7 +16,7 @@ implfind()
 
 sourcefind()
 {
-	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
+	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
 }
 
 handlemodule()
@@ -114,7 +114,7 @@ cat > src/Makefile.am << EOF
 AM_CPPFLAGS = -I$inc_current -I$inc_modules -I$inc_libraries -I$inc_libraries/enet/libenet/include \$(LOVE_INCLUDES) \$(FILE_OFFSET)\
 	\$(SDL_CFLAGS) \$(lua_CFLAGS) \$(freetype2_CFLAGS)\
 	\$(openal_CFLAGS) \$(zlib_CFLAGS) \$(libmodplug_CFLAGS)\
-	\$(vorbisfile_CFLAGS)
+	\$(vorbisfile_CFLAGS) \$(theora_CFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS =
 SUFFIXES = .lua .lua.h
@@ -129,8 +129,7 @@ love${love_amsuffix}_SOURCES = love.cpp
 if LOVE_TARGET_OSX
 love${love_amsuffix}_LIBTOOLFLAGS = --tag=OBJCXX
 love${love_amsuffix}_SOURCES += \\
-    ../platform/macosx/OSX.h \\
-    ../platform/macosx/OSX.mm
+    ./common/macosx.mm
 else
 love${love_amsuffix}_LIBTOOLFLAGS = --tag=CXX
 endif
@@ -147,7 +146,7 @@ liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
 liblove${love_amsuffix}_la_LIBADD = \
 	\$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)\
 	\$(openal_LIBS) \$(zlib_LIBS) \$(libmodplug_LIBS)\
-	\$(vorbisfile_LIBS)
+	\$(vorbisfile_LIBS) \$(theora_LIBS)
 EOF
 
 genmodules >> src/Makefile.am

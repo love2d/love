@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,12 +30,6 @@ namespace love
 namespace timer
 {
 
-int w_step(lua_State *L);
-int w_getDelta(lua_State *L);
-int w_getFPS(lua_State *L);
-int w_getAverageDelta(lua_State *L);
-int w_sleep(lua_State *L);
-int w_getTime(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_timer(lua_State *L);
 
 } // timer

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,13 +36,11 @@ Audio::PoolThread::PoolThread(Pool *pool)
 	: pool(pool)
 	, finish(false)
 {
-	mutex = thread::newMutex();
 	threadName = "AudioPool";
 }
 
 Audio::PoolThread::~PoolThread()
 {
-	delete mutex;
 }
 
 
@@ -192,6 +190,9 @@ void Audio::pause(love::audio::Source *source)
 void Audio::pause()
 {
 	pool->pause();
+#ifdef LOVE_ANDROID
+	alcDevicePauseSOFT(device);
+#endif
 }
 
 void Audio::resume(love::audio::Source *source)
@@ -201,6 +202,9 @@ void Audio::resume(love::audio::Source *source)
 
 void Audio::resume()
 {
+#ifdef LOVE_ANDROID
+	alcDeviceResumeSOFT(device);
+#endif
 	pool->resume();
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,19 +24,17 @@
 namespace love
 {
 
-extern StringMap<Type, TYPE_MAX_ENUM> types;
-
 static love::Type extractudatatype(lua_State *L, int idx)
 {
 	Type t = INVALID_ID;
 	if (!lua_isuserdata(L, idx))
 		return t;
-	if (luaL_getmetafield(L, idx, "__tostring") == 0)
+	if (luaL_getmetafield(L, idx, "type") == 0)
 		return t;
 	lua_pushvalue(L, idx);
 	int result = lua_pcall(L, 1, 1, 0);
 	if (result == 0)
-		types.find(lua_tostring(L, -1), t);
+		getTypeName(lua_tostring(L, -1), t);
 	if (result == 0 || result == LUA_ERRRUN)
 		lua_pop(L, 1);
 	return t;
@@ -134,7 +132,7 @@ Variant::~Variant()
 
 Variant *Variant::fromLua(lua_State *L, int n, bool allowTables)
 {
-	Variant *v = NULL;
+	Variant *v = nullptr;
 	size_t len;
 	const char *str;
 	if (n < 0) // Fix the stack position, we might modify it later
@@ -165,7 +163,7 @@ Variant *Variant::fromLua(lua_State *L, int n, bool allowTables)
 		if (allowTables)
 		{
 			bool success = true;
-			std::vector<std::pair<Variant*, Variant*> > *table = new std::vector<std::pair<Variant*, Variant*> >();
+			std::vector<std::pair<Variant*, Variant*>> *table = new std::vector<std::pair<Variant*, Variant*>>();
 			lua_pushnil(L);
 			while (lua_next(L, n))
 			{
@@ -230,7 +228,7 @@ void Variant::toLua(lua_State *L)
 		// I can do (at the moment).
 		break;
 	case TABLE:
-		lua_newtable(L);
+		lua_createtable(L, 0, (int) data.table->size());
 		for (size_t i = 0; i < data.table->size(); ++i)
 		{
 			std::pair<Variant*, Variant*> &kv = data.table->at(i);

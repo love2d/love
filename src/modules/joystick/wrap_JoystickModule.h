@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,13 +31,8 @@ namespace love
 namespace joystick
 {
 
-int w_getJoysticks(lua_State *L);
 int w_getIndex(lua_State *L);
-int w_getJoystickCount(lua_State *L);
-int w_setGamepadMapping(lua_State *L);
 int w_getGamepadMapping(lua_State *L);
-int w_loadGamepadMappings(lua_State *L);
-int w_saveGamepadMappings(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_joystick(lua_State *L);
 
 } // joystick

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -76,19 +76,13 @@ EdgeShape *ChainShape::getChildEdge(int index) const
 	{
 		c->GetChildEdge(e, index);
 	}
-	catch (love::Exception &ex)
+	catch (love::Exception &)
 	{
 		delete e;
 		throw;
 	}
 
 	return new EdgeShape(e, true);
-}
-
-int ChainShape::getChildCount() const
-{
-	b2ChainShape *c = (b2ChainShape *)shape;
-	return c->GetChildCount();
 }
 
 int ChainShape::getVertexCount() const

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,27 +35,6 @@ namespace box2d
 {
 
 World *luax_checkworld(lua_State *L, int idx);
-int w_World_update(lua_State *L);
-int w_World_setCallbacks(lua_State *L);
-int w_World_getCallbacks(lua_State *L);
-int w_World_setContactFilter(lua_State *L);
-int w_World_getContactFilter(lua_State *L);
-int w_World_setGravity(lua_State *L);
-int w_World_getGravity(lua_State *L);
-int w_World_translateOrigin(lua_State *L);
-int w_World_setSleepingAllowed(lua_State *L);
-int w_World_isSleepingAllowed(lua_State *L);
-int w_World_isLocked(lua_State *L);
-int w_World_getBodyCount(lua_State *L);
-int w_World_getJointCount(lua_State *L);
-int w_World_getContactCount(lua_State *L);
-int w_World_getBodyList(lua_State *L);
-int w_World_getJointList(lua_State *L);
-int w_World_getContactList(lua_State *L);
-int w_World_queryBoundingBox(lua_State *L);
-int w_World_rayCast(lua_State *L);
-int w_World_destroy(lua_State *L);
-int w_World_isDestroyed(lua_State *L);
 extern "C" int luaopen_world(lua_State *L);
 
 } // box2d

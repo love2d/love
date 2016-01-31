@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,9 @@
 #include "common/Exception.h"
 #include "Touch.h"
 
+// C++
+#include <algorithm>
+
 namespace love
 {
 namespace touch
@@ -30,25 +33,20 @@ namespace touch
 namespace sdl
 {
 
-std::vector<int64> Touch::getIDs() const
+const std::vector<Touch::TouchInfo> &Touch::getTouches() const
 {
-	std::vector<int64> ids;
-	ids.reserve(touches.size());
-
-	for (const auto &touch : touches)
-		ids.push_back(touch.first);
-
-	return ids;
+	return touches;
 }
 
-void Touch::getPosition(int64 id, double &x, double &y) const
+const Touch::TouchInfo &Touch::getTouch(int64 id) const
 {
-	const auto it = touches.find(id);
-	if (it == touches.end())
-		throw love::Exception("Invalid active touch ID: %d", id);
+	for (const auto &touch : touches)
+	{
+		if (touch.id == id)
+			return touch;
+	}
 
-	x = it->second.x;
-	y = it->second.y;
+	throw love::Exception("Invalid active touch ID: %d", id);
 }
 
 const char *Touch::getName() const
@@ -58,14 +56,28 @@ const char *Touch::getName() const
 
 void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)
 {
+	auto compare = [&](const TouchInfo &touch) -> bool
+	{
+		return touch.id == info.id;
+	};
+
 	switch (eventtype)
 	{
 	case SDL_FINGERDOWN:
-	case SDL_FINGERMOTION:
-		touches[info.id] = info;
+		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
+		touches.push_back(info);
 		break;
+	case SDL_FINGERMOTION:
+	{
+		for (TouchInfo &touch : touches)
+		{
+			if (touch.id == info.id)
+				touch = info;
+		}
+		break;
+	}
 	case SDL_FINGERUP:
-		touches.erase(info.id);
+		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
 		break;
 	default:
 		break;

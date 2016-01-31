@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -126,8 +126,8 @@ int WaveDecoder::decode()
 
 	while (size < (size_t) bufferSize)
 	{
-		size_t bytes = bufferSize;
-		int wuff_status = wuff_read(handle, (wuff_uint8 *) buffer, &bytes);
+		size_t bytes = bufferSize-size;
+		int wuff_status = wuff_read(handle, (wuff_uint8 *) buffer+size, &bytes);
 
 		if (wuff_status < 0)
 			return 0;
@@ -187,6 +187,11 @@ int WaveDecoder::getBitDepth() const
 int WaveDecoder::getSampleRate() const
 {
 	return info.sample_rate;
+}
+
+double WaveDecoder::getDuration()
+{
+	return (double) info.length / (double) info.sample_rate;
 }
 
 } // lullaby

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@ namespace sdl
 JoystickModule::JoystickModule()
 {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) < 0)
-		throw love::Exception("%s", SDL_GetError());
+		throw love::Exception("Could not initialize SDL joystick subsystem (%s)", SDL_GetError());
 
 	// Initialize any joysticks which are already connected.
 	for (int i = 0; i < SDL_NumJoysticks(); i++)
@@ -241,7 +241,7 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	std::string insertstr = gpinputname + ":" + joyinputstr + ",";
 
 	// We should replace any existing gamepad bind.
-	size_t findpos = mapstr.find(gpinputname + ":");
+	size_t findpos = mapstr.find(std::string(", ") + gpinputname + ":");
 	if (findpos != std::string::npos)
 	{
 		// The bind string ends at the next comma, or the end of the string.

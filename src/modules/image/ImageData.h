@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "filesystem/File.h"
+#include "filesystem/FileData.h"
 #include "thread/threads.h"
 
 using love::thread::Mutex;
@@ -47,23 +47,15 @@ class ImageData : public Data
 {
 public:
 
-	enum Format
+	enum EncodedFormat
 	{
-		FORMAT_TGA,
-		FORMAT_JPG,
-		FORMAT_PNG,
-		FORMAT_MAX_ENUM
+		ENCODED_TGA,
+		ENCODED_PNG,
+		ENCODED_MAX_ENUM
 	};
 
 	ImageData();
-
-	/**
-	 * Destructor.
-	 **/
 	virtual ~ImageData();
-
-	static bool getConstant(const char *in, Format &out);
-	static bool getConstant(Format in, const char  *&out);
 
 	/**
 	 * Paste part of one ImageData onto another. The subregion defined by the top-left
@@ -106,7 +98,7 @@ public:
 
 	/**
 	 * Sets the pixel at location (x,y).
-	 * Not thread-safe!
+	 * Not thread-safe, and doesn't verify the coordinates!
 	 **/
 	void setPixelUnsafe(int x, int y, pixel p);
 
@@ -119,17 +111,26 @@ public:
 	pixel getPixel(int x, int y) const;
 
 	/**
+	 * Gets the pixel at location (x,y).
+	 * Not thread-safe, and doesn't verify the coordinates!
+	 **/
+	pixel getPixelUnsafe(int x, int y) const;
+
+	/**
 	 * Encodes raw pixel data into a given format.
 	 * @param f The file to save the encoded image data to.
 	 * @param format The format of the encoded data.
 	 **/
-	virtual void encode(love::filesystem::File *f, Format format) = 0;
+	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename) = 0;
 
 	love::thread::Mutex *getMutex() const;
 
 	// Implements Data.
 	virtual void *getData() const;
 	virtual size_t getSize() const;
+
+	static bool getConstant(const char *in, EncodedFormat &out);
+	static bool getConstant(EncodedFormat in, const char *&out);
 
 protected:
 
@@ -145,12 +146,12 @@ protected:
 	// We need to be thread-safe
 	// so we lock when we're accessing our
 	// data
-	Mutex *mutex;
+	love::thread::MutexRef mutex;
 
 private:
 
-	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
-	static StringMap<Format, FORMAT_MAX_ENUM> formats;
+	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
+	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;
 
 }; // ImageData
 

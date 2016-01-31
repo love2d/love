@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,20 +47,20 @@ public:
 	// Implements File.
 	using File::read;
 	using File::write;
-	bool open(Mode mode);
-	bool close();
-	bool isOpen() const;
-	int64 getSize();
-	int64 read(void *dst, int64 size);
-	bool write(const void *data, int64 size);
-	bool flush();
-	bool eof();
-	int64 tell();
-	bool seek(uint64 pos);
-	bool setBuffer(BufferMode bufmode, int64 size);
-	BufferMode getBuffer(int64 &size) const;
-	Mode getMode() const;
-	const std::string &getFilename() const;
+	bool open(Mode mode) override;
+	bool close() override;
+	bool isOpen() const override;
+	int64 getSize() override;
+	int64 read(void *dst, int64 size) override;
+	bool write(const void *data, int64 size) override;
+	bool flush() override;
+	bool isEOF() override;
+	int64 tell() override;
+	bool seek(uint64 pos) override;
+	bool setBuffer(BufferMode bufmode, int64 size) override;
+	BufferMode getBuffer(int64 &size) const override;
+	Mode getMode() const override;
+	const std::string &getFilename() const override;
 
 private:
 

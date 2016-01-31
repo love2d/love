@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -499,28 +499,26 @@ int w_ParticleSystem_setColors(lua_State *L)
 		if (nColors > 8)
 			return luaL_error(L, "At most eight (8) colors may be used.");
 
-		std::vector<Color> colors(nColors);
+		std::vector<Colorf> colors(nColors);
 
 		for (int i = 0; i < nColors; i++)
 		{
 			luaL_checktype(L, i + 2, LUA_TTABLE);
 
-			if (lua_objlen(L, i + 2) < 3)
+			if (luax_objlen(L, i + 2) < 3)
 				return luaL_argerror(L, i + 2, "expected 4 color components");
 
 			for (int j = 0; j < 4; j++)
 				// push args[i+2][j+1] onto the stack
 				lua_rawgeti(L, i + 2, j + 1);
 
-			unsigned char r = (unsigned char) luaL_checkinteger(L, -4);
-			unsigned char g = (unsigned char) luaL_checkinteger(L, -3);
-			unsigned char b = (unsigned char) luaL_checkinteger(L, -2);
-			unsigned char a = (unsigned char) luaL_optinteger(L, -1, 255);
+			colors[i].r = (float) luaL_checknumber(L, -4);
+			colors[i].g = (float) luaL_checknumber(L, -3);
+			colors[i].b = (float) luaL_checknumber(L, -2);
+			colors[i].a = (float) luaL_optnumber(L, -1, 255);
 
 			// pop the color components from the stack
 			lua_pop(L, 4);
-
-			colors[i] = Color(r, g, b, a);
 		}
 
 		t->setColor(colors);
@@ -536,27 +534,17 @@ int w_ParticleSystem_setColors(lua_State *L)
 		if (nColors > 8)
 			return luaL_error(L, "At most eight (8) colors may be used.");
 
-		if (nColors == 1)
+		std::vector<Colorf> colors(nColors);
+
+		for (int i = 0; i < nColors; ++i)
 		{
-			unsigned char r = (unsigned char) luaL_checkinteger(L, 2);
-			unsigned char g = (unsigned char) luaL_checkinteger(L, 3);
-			unsigned char b = (unsigned char) luaL_checkinteger(L, 4);
-			unsigned char a = (unsigned char) luaL_optinteger(L, 5, 255);
-			t->setColor(Color(r,g,b,a));
+			colors[i].r = (float) luaL_checknumber(L, 1 + i*4 + 1);
+			colors[i].g = (float) luaL_checknumber(L, 1 + i*4 + 2);
+			colors[i].b = (float) luaL_checknumber(L, 1 + i*4 + 3);
+			colors[i].a = (float) luaL_checknumber(L, 1 + i*4 + 4);
 		}
-		else
-		{
-			std::vector<Color> colors(nColors);
-			for (int i = 0; i < nColors; ++i)
-			{
-				unsigned char r = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 1);
-				unsigned char g = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 2);
-				unsigned char b = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 3);
-				unsigned char a = (unsigned char) luaL_checkinteger(L, 1 + i*4 + 4);
-				colors[i] = Color(r,g,b,a);
-			}
-			t->setColor(colors);
-		}
+
+		t->setColor(colors);
 	}
 
 	return 0;
@@ -566,19 +554,19 @@ int w_ParticleSystem_getColors(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 
-	const std::vector<Color> &colors =t->getColor();
+	const std::vector<Colorf> &colors =t->getColor();
 
 	for (size_t i = 0; i < colors.size(); i++)
 	{
 		lua_createtable(L, 4, 0);
 
-		lua_pushinteger(L, colors[i].r);
+		lua_pushnumber(L, colors[i].r);
 		lua_rawseti(L, -2, 1);
-		lua_pushinteger(L, colors[i].g);
+		lua_pushnumber(L, colors[i].g);
 		lua_rawseti(L, -2, 2);
-		lua_pushinteger(L, colors[i].b);
+		lua_pushnumber(L, colors[i].b);
 		lua_rawseti(L, -2, 3);
-		lua_pushinteger(L, colors[i].a);
+		lua_pushnumber(L, colors[i].a);
 		lua_rawseti(L, -2, 4);
 	}
 
@@ -592,7 +580,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 
 	if (lua_istable(L, 2))
 	{
-		for (int i = 1; i <= (int) lua_objlen(L, 2); i++)
+		for (int i = 1; i <= (int) luax_objlen(L, 2); i++)
 		{
 			lua_rawgeti(L, 2, i);
 
@@ -683,7 +671,7 @@ int w_ParticleSystem_reset(lua_State *L)
 int w_ParticleSystem_emit(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int num = luaL_checkint(L, 2);
+	int num = (int) luaL_checknumber(L, 2);
 	t->emit(num);
 	return 0;
 }
@@ -717,7 +705,7 @@ int w_ParticleSystem_update(lua_State *L)
 	return 0;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_ParticleSystem_functions[] =
 {
 	{ "clone", w_ParticleSystem_clone },
 	{ "setTexture", w_ParticleSystem_setTexture },
@@ -784,7 +772,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_particlesystem(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, functions);
+	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, "ParticleSystem", w_ParticleSystem_functions, nullptr);
 }
 
 } // opengl

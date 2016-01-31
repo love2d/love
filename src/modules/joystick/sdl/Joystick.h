@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -106,17 +106,15 @@ private:
 
 	struct Vibration
 	{
-		float left, right;
-		SDL_HapticEffect effect;
+		float left  = 0.0f;
+		float right = 0.0f;
+		SDL_HapticEffect effect = {};
 		Uint16 data[4];
-		int id;
-
-		Uint32 endtime;
+		int id = -1;
+		Uint32 endtime = SDL_HAPTIC_INFINITY;
 
 		Vibration()
-			: left(0.0f), right(0.0f)
-			, effect(), data(), id(-1)
-			, endtime(SDL_HAPTIC_INFINITY)
+			: data() // VS2013 can't initialize the array above...
 		{}
 
 	} vibration;
@@ -129,7 +127,7 @@ private:
 
 	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
 	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
-	
+
 };
 
 } // sdl

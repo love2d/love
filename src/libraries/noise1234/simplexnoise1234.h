@@ -13,6 +13,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
 
+// Modified by the LOVE Development Team to remove 3D and 4D implementations due
+// to patent issues.
+
 /** \file
 		\brief Declares the SimplexNoise1234 class for producing Perlin simplex noise.
 		\author Stefan Gustavson (stegu@itn.liu.se)
@@ -35,26 +38,14 @@ class SimplexNoise1234 {
     SimplexNoise1234() {}
     ~SimplexNoise1234() {}
 
-/** 1D, 2D, 3D and 4D float Perlin noise
+/** 1D and 2D float Perlin noise
  */
     static float noise( float x );
     static float noise( float x, float y );
-    static float noise( float x, float y, float z );
-    static float noise( float x, float y, float z, float w );
-
-/** 1D, 2D, 3D and 4D float Perlin noise, with a specified integer period
- */
-    static float pnoise( float x, int px );
-    static float pnoise( float x, float y, int px, int py );
-    static float pnoise( float x, float y, float z, int px, int py, int pz );
-    static float pnoise( float x, float y, float z, float w,
-                              int px, int py, int pz, int pw );
 
   private:
     static unsigned char perm[];
     static float  grad( int hash, float x );
     static float  grad( int hash, float x, float y );
-    static float  grad( int hash, float x, float y , float z );
-    static float  grad( int hash, float x, float y, float z, float t );
 
 };

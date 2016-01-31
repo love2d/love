@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,8 @@
 
 #include "window/Window.h"
 
+#include "video/VideoStream.h"
+
 #include "Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
@@ -47,6 +49,7 @@
 #include "Shader.h"
 #include "Mesh.h"
 #include "Text.h"
+#include "Video.h"
 
 namespace love
 {
@@ -59,6 +62,12 @@ class Graphics : public love::graphics::Graphics
 {
 public:
 
+	struct OptionalColorf
+	{
+		float r, g, b, a;
+		bool enabled;
+	};
+
 	Graphics();
 	virtual ~Graphics();
 
@@ -66,7 +75,7 @@ public:
 	const char *getName() const;
 
 	virtual void setViewportSize(int width, int height);
-	virtual bool setMode(int width, int height, bool &sRGB);
+	virtual bool setMode(int width, int height);
 	virtual void unSetMode();
 
 	virtual void setActive(bool active);
@@ -84,12 +93,17 @@ public:
 	/**
 	 * Clears the screen to a specific color.
 	 **/
-	void clear(Color c);
+	void clear(Colorf c);
+
+	/**
+	 * Clears each active canvas to a different color.
+	 **/
+	void clear(const std::vector<OptionalColorf> &colors);
 
 	/**
 	 * Discards the contents of the screen.
 	 **/
-	void discard(bool color, bool stencil);
+	void discard(const std::vector<bool> &colorbuffers, bool stencil);
 
 	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).
@@ -121,6 +135,8 @@ public:
 	 **/
 	void setScissor(int x, int y, int width, int height);
 
+	void intersectScissor(int x, int y, int width, int height);
+
 	/**
 	 * Clears any scissor that has been created.
 	 **/
@@ -136,13 +152,15 @@ public:
 	 * Enables or disables drawing to the stencil buffer. When enabled, the
 	 * color buffer is disabled.
 	 **/
-	void drawToStencilBuffer(bool enable);
+	void drawToStencilBuffer(StencilAction action, int value);
+	void stopDrawToStencilBuffer();
 
 	/**
 	 * Sets whether stencil testing is enabled.
 	 **/
-	void setStencilTest(bool enable, bool invert);
-	void getStencilTest(bool &enable, bool &invert);
+	void setStencilTest(CompareMode compare, int value);
+	void setStencilTest();
+	void getStencilTest(CompareMode &compare, int &value);
 
 	/**
 	 * Clear the stencil buffer in the active Canvas(es.)
@@ -152,17 +170,17 @@ public:
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(love::image::ImageData *data, const Image::Flags &flags);
-	Image *newImage(love::image::CompressedData *cdata, const Image::Flags &flags);
+	Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Flags &flags);
+	Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Flags &flags);
 
-	Quad *newQuad(Quad::Viewport v, float sw, float sh);
+	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 
 	/**
 	 * Creates a Font object.
 	 **/
 	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::getDefaultFilter());
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, int usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
@@ -170,31 +188,38 @@ public:
 
 	Shader *newShader(const Shader::ShaderSource &source);
 
-	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
-	Mesh *newMesh(int vertexcount, Mesh::DrawMode mode = Mesh::DRAW_MODE_FAN);
+	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, Mesh::Usage usage);
+	Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage);
 
-	Text *newText(Font *font, const std::string &text = "");
+	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage);
+	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage);
+
+	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
+
+	Video *newVideo(love::video::VideoStream *stream);
+
+	bool isGammaCorrect() const;
 
 	/**
 	 * Sets the foreground color.
 	 * @param c The new foreground color.
 	 **/
-	void setColor(const Color &c);
+	void setColor(Colorf c);
 
 	/**
 	 * Gets current color.
 	 **/
-	Color getColor() const;
+	Colorf getColor() const;
 
 	/**
 	 * Sets the background Color.
 	 **/
-	void setBackgroundColor(const Color &c);
+	void setBackgroundColor(Colorf c);
 
 	/**
 	 * Gets the current background color.
 	 **/
-	Color getBackgroundColor() const;
+	Colorf getBackgroundColor() const;
 
 	void setFont(Font *font);
 	Font *getFont();
@@ -224,12 +249,12 @@ public:
 	/**
 	 * Sets the current blend mode.
 	 **/
-	void setBlendMode(BlendMode mode);
+	void setBlendMode(BlendMode mode, BlendAlpha alphamode);
 
 	/**
 	 * Gets the current blend mode.
 	 **/
-	BlendMode getBlendMode() const;
+	BlendMode getBlendMode(BlendAlpha &alphamode) const;
 
 	/**
 	 * Sets the default filter for images, canvases, and fonts.
@@ -316,7 +341,7 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void print(const std::string &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void print(const std::vector<Font::ColoredString> &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draw formatted text on screen at the specified coordinates.
@@ -334,14 +359,14 @@ public:
 	 * @param kx Shear along the x-axis.
 	 * @param ky Shear along the y-axis.
 	 **/
-	void printf(const std::string &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void printf(const std::vector<Font::ColoredString> &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	/**
 	 * Draws a point at (x,y).
 	 * @param x Point along x-axis.
 	 * @param y Point along y-axis.
 	 **/
-	void point(float x, float y);
+	void points(const float *coords, const uint8 *colors, size_t numpoints);
 
 	/**
 	 * Draws a series of lines connecting the given vertices.
@@ -360,6 +385,19 @@ public:
 	void rectangle(DrawMode mode, float x, float y, float w, float h);
 
 	/**
+	 * Variant of rectangle that draws a rounded rectangle.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of top-left corner
+	 * @param y Y-coordinate of top-left corner
+	 * @param w The width of the rectangle.
+	 * @param h The height of the rectangle.
+	 * @param rx The radius of the corners on the x axis
+	 * @param ry The radius of the corners on the y axis
+	 * @param points The number of points to use per corner
+	 **/
+	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points = 10);
+
+	/**
 	 * Draws a circle using the specified arguments.
 	 * @param mode The mode of drawing (line/filled).
 	 * @param x X-coordinate.
@@ -370,8 +408,20 @@ public:
 	void circle(DrawMode mode, float x, float y, float radius, int points = 10);
 
 	/**
-	 * Draws an arc using the specified arguments.
+	 * Draws an ellipse using the specified arguments.
 	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of center
+	 * @param y Y-coordinate of center
+	 * @param a Radius in x-direction
+	 * @param b Radius in y-direction
+	 * @param points Number of points to use to draw the circle.
+	 **/
+	void ellipse(DrawMode mode, float x, float y, float a, float b, int points = 10);
+
+	/**
+	 * Draws an arc using the specified arguments.
+	 * @param drawmode The mode of drawing (line/filled).
+	 * @param arcmode The type of arc.
 	 * @param x X-coordinate.
 	 * @param y Y-coordinate.
 	 * @param radius Radius of the arc.
@@ -379,7 +429,7 @@ public:
 	 * @param angle2 The angle at which the arc terminates.
 	 * @param points Number of points to use to draw the arc.
 	 **/
-	void arc(DrawMode mode, float x, float y, float radius, float angle1, float angle2, int points = 10);
+	void arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points = 10);
 
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.
@@ -431,43 +481,38 @@ private:
 
 	struct DisplayState
 	{
-		Color color;
-		Color backgroundColor;
+		Colorf color = Colorf(255.0, 255.0, 255.0, 255.0);
+		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 255.0);
 
-		BlendMode blendMode;
+		BlendMode blendMode = BLEND_ALPHA;
+		BlendAlpha blendAlphaMode = BLENDALPHA_MULTIPLY;
 
-		float lineWidth;
-		LineStyle lineStyle;
-		LineJoin lineJoin;
+		float lineWidth = 1.0f;
+		LineStyle lineStyle = LINE_SMOOTH;
+		LineJoin lineJoin = LINE_JOIN_MITER;
 
-		float pointSize;
+		float pointSize = 1.0f;
 
-		bool scissor;
-		OpenGL::Viewport scissorBox;
+		bool scissor = false;
+		ScissorRect scissorRect = ScissorRect();
 
 		// Stencil.
-		bool stencilTest;
-		bool stencilInvert;
+		CompareMode stencilCompare = COMPARE_ALWAYS;
+		int stencilTestValue = 0;
 
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
 		std::vector<StrongRef<Canvas>> canvases;
 
-		ColorMask colorMask;
+		ColorMask colorMask = ColorMask(true, true, true, true);
 
-		bool wireframe;
+		bool wireframe = false;
 
-		Texture::Filter defaultFilter;
+		Texture::Filter defaultFilter = Texture::Filter();
 
-		Texture::FilterMode defaultMipmapFilter;
-		float defaultMipmapSharpness;
-
-		DisplayState();
-		DisplayState(const DisplayState &other);
-		~DisplayState();
-
-		DisplayState &operator = (const DisplayState &other);
+		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_NEAREST;
+		float defaultMipmapSharpness = 0.0f;
 	};
 
 	void restoreState(const DisplayState &s);
@@ -475,11 +520,13 @@ private:
 
 	void checkSetDefaultFont();
 
-	love::window::Window *currentWindow;
+	StrongRef<love::window::Window> currentWindow;
 
 	StrongRef<Font> defaultFont;
 
-	std::vector<double> pixel_size_stack; // stores current size of a pixel (needed for line drawing)
+	std::vector<double> pixelSizeStack; // stores current size of a pixel (needed for line drawing)
+
+	QuadIndices *quadIndices;
 
 	int width;
 	int height;

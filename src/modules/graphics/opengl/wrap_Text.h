@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,14 +32,7 @@ namespace opengl
 {
 
 Text *luax_checktext(lua_State *L, int idx);
-int w_Text_set(lua_State *L);
-int w_Text_setf(lua_State *L);
-int w_Text_add(lua_State *L);
-int w_Text_addf(lua_State *L);
-int w_Text_clear(lua_State *L);
-int w_Text_getFont(lua_State *L);
-int w_Text_getWidth(lua_State *L);
-int w_Text_getHeight(lua_State *L);
+void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings);
 extern "C" int luaopen_text(lua_State *L);
 
 } // opengl

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,8 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
+	// Make sure the world callbacks are using the calling Lua thread.
+	t->setCallbacksL(L);
 	luax_catchexcept(L, [&](){ t->update(dt); });
 	return 0;
 }
@@ -197,7 +199,7 @@ int w_World_isDestroyed(lua_State *L)
 }
 
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_World_functions[] =
 {
 	{ "update", w_World_update },
 	{ "setCallbacks", w_World_setCallbacks },
@@ -225,7 +227,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_world(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_WORLD_ID, functions);
+	return luax_register_type(L, PHYSICS_WORLD_ID, "World", w_World_functions, nullptr);
 }
 
 } // box2d

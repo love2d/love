@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -105,7 +105,7 @@ int Shape::rayCast(lua_State *L) const
 	float x = Physics::scaleDown((float)luaL_checknumber(L, 6));
 	float y = Physics::scaleDown((float)luaL_checknumber(L, 7));
 	float r = (float)luaL_checknumber(L, 8);
-	int childIndex = (int)luaL_optint(L, 9, 1) - 1; // Convert from 1-based index
+	int childIndex = (int) luaL_optnumber(L, 9, 1) - 1; // Convert from 1-based index
 	b2RayCastInput input;
 	input.p1.Set(p1x, p1y);
 	input.p2.Set(p2x, p2y);
@@ -125,7 +125,7 @@ int Shape::computeAABB(lua_State *L) const
 	float x = Physics::scaleDown((float)luaL_checknumber(L, 1));
 	float y = Physics::scaleDown((float)luaL_checknumber(L, 2));
 	float r = (float)luaL_checknumber(L, 3);
-	int childIndex = (int)luaL_optint(L, 4, 1) - 1; // Convert from 1-based index
+	int childIndex = (int) luaL_optnumber(L, 4, 1) - 1; // Convert from 1-based index
 	b2Transform transform(b2Vec2(x, y), b2Rot(r));
 	b2AABB box;
 	shape->ComputeAABB(&box, transform, childIndex);

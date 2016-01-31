@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,13 +29,6 @@ namespace love
 {
 namespace event
 {
-
-int w_pump(lua_State *L);
-int w_poll(lua_State *L);
-int w_wait(lua_State *L);
-int w_push(lua_State *L);
-int w_clear(lua_State *L);
-int w_quit(lua_State *L);
 
 extern "C" LOVE_EXPORT int luaopen_love_event(lua_State *L);
 

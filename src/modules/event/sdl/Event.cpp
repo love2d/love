@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,13 +23,13 @@
 #include "filesystem/DroppedFile.h"
 #include "filesystem/Filesystem.h"
 #include "keyboard/sdl/Keyboard.h"
-#include "mouse/Mouse.h"
 #include "joystick/JoystickModule.h"
 #include "joystick/sdl/Joystick.h"
 #include "touch/sdl/Touch.h"
 #include "graphics/Graphics.h"
 #include "window/Window.h"
 #include "common/Exception.h"
+#include "audio/Audio.h"
 #include "common/config.h"
 
 #include <cmath>
@@ -45,7 +45,7 @@ namespace sdl
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
 static void windowToPixelCoords(double *x, double *y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->windowToPixelCoords(x, y);
 }
@@ -53,7 +53,7 @@ static void windowToPixelCoords(double *x, double *y)
 #ifndef LOVE_MACOSX
 static void normalizedToPixelCoords(double *x, double *y)
 {
-	window::Window *window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	int w = 1, h = 1;
 
 	if (window)
@@ -71,7 +71,7 @@ static void normalizedToPixelCoords(double *x, double *y)
 // handling inside the function which triggered them on some backends.
 static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 {
-	graphics::Graphics *gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 
 	switch (event->type)
 	{
@@ -98,7 +98,7 @@ const char *Event::getName() const
 Event::Event()
 {
 	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
-		throw love::Exception("%s", SDL_GetError());
+		throw love::Exception("Could not initialize SDL events subsystem (%s)", SDL_GetError());
 
 	SDL_AddEventWatch(watchAppEvents, this);
 }
@@ -153,12 +153,10 @@ Message *Event::convert(const SDL_Event &e) const
 	std::vector<StrongRef<Variant>> vargs;
 	vargs.reserve(4);
 
-	love::keyboard::Keyboard *kb = nullptr;
 	love::filesystem::Filesystem *filesystem = nullptr;
 
 	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
 	love::keyboard::Keyboard::Scancode scancode = love::keyboard::Keyboard::SCANCODE_UNKNOWN;
-	love::mouse::Mouse::Button button;
 
 	const char *txt;
 	const char *txt2;
@@ -178,7 +176,7 @@ Message *Event::convert(const SDL_Event &e) const
 	case SDL_KEYDOWN:
 		if (e.key.repeat)
 		{
-			kb = Module::getInstance<love::keyboard::Keyboard>(Module::M_KEYBOARD);
+			auto kb = Module::getInstance<love::keyboard::Keyboard>(Module::M_KEYBOARD);
 			if (kb && !kb->hasKeyRepeat())
 				break;
 		}
@@ -225,7 +223,7 @@ Message *Event::convert(const SDL_Event &e) const
 		vargs.push_back(new Variant(txt, strlen(txt)));
 		vargs.push_back(new Variant((double) e.edit.start));
 		vargs.push_back(new Variant((double) e.edit.length));
-		msg = new Message("textedit", vargs);
+		msg = new Message("textedited", vargs);
 		break;
 	case SDL_MOUSEMOTION:
 		{
@@ -239,19 +237,32 @@ Message *Event::convert(const SDL_Event &e) const
 			vargs.push_back(new Variant(y));
 			vargs.push_back(new Variant(xrel));
 			vargs.push_back(new Variant(yrel));
+			vargs.push_back(new Variant(e.motion.which == SDL_TOUCH_MOUSEID));
 			msg = new Message("mousemoved", vargs);
 		}
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
-		if (buttons.find(e.button.button, button) && mouse::Mouse::getConstant(button, txt))
 		{
+			// SDL uses button index 3 for the right mouse button, but we use
+			// index 2.
+			int button = e.button.button;
+			switch (button)
+			{
+			case SDL_BUTTON_RIGHT:
+				button = 2;
+				break;
+			case SDL_BUTTON_MIDDLE:
+				button = 3;
+				break;
+			}
+
 			double x = (double) e.button.x;
 			double y = (double) e.button.y;
 			windowToPixelCoords(&x, &y);
 			vargs.push_back(new Variant(x));
 			vargs.push_back(new Variant(y));
-			vargs.push_back(new Variant(txt, strlen(txt)));
+			vargs.push_back(new Variant((double) button));
 			vargs.push_back(new Variant(e.button.which == SDL_TOUCH_MOUSEID));
 			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
 							  "mousepressed" : "mousereleased",
@@ -276,6 +287,7 @@ Message *Event::convert(const SDL_Event &e) const
 		touchinfo.y = e.tfinger.y;
 		touchinfo.dx = e.tfinger.dx;
 		touchinfo.dy = e.tfinger.dy;
+		touchinfo.pressure = e.tfinger.pressure;
 
 #ifdef LOVE_LINUX
 		// FIXME: hacky workaround for SDL not normalizing touch coordinates in
@@ -309,6 +321,7 @@ Message *Event::convert(const SDL_Event &e) const
 		vargs.push_back(new Variant(touchinfo.y));
 		vargs.push_back(new Variant(touchinfo.dx));
 		vargs.push_back(new Variant(touchinfo.dy));
+		vargs.push_back(new Variant(touchinfo.pressure));
 
 		if (e.type == SDL_FINGERDOWN)
 			txt = "touchpressed";
@@ -351,7 +364,7 @@ Message *Event::convert(const SDL_Event &e) const
 				Proxy proxy;
 				proxy.object = new love::filesystem::DroppedFile(e.drop.file);
 				proxy.type = FILESYSTEM_DROPPED_FILE_ID;
-				vargs.push_back(new Variant(FILESYSTEM_DROPPED_FILE_ID, &proxy));
+				vargs.push_back(new Variant(proxy.type, &proxy));
 				msg = new Message("filedropped", vargs);
 				proxy.object->release();
 			}
@@ -381,7 +394,7 @@ Message *Event::convert(const SDL_Event &e) const
 
 Message *Event::convertJoystickEvent(const SDL_Event &e) const
 {
-	joystick::JoystickModule *joymodule = Module::getInstance<joystick::JoystickModule>(Module::M_JOYSTICK);
+	auto joymodule = Module::getInstance<joystick::JoystickModule>(Module::M_JOYSTICK);
 	if (!joymodule)
 		return nullptr;
 
@@ -405,7 +418,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!proxy.object)
 			break;
 
-		vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+		vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 		vargs.push_back(new Variant((double)(e.jbutton.button+1)));
 		msg = new Message((e.type == SDL_JOYBUTTONDOWN) ?
 						  "joystickpressed" : "joystickreleased",
@@ -418,7 +431,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			if (!proxy.object)
 				break;
 
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 			vargs.push_back(new Variant((double)(e.jaxis.axis+1)));
 			float value = joystick::Joystick::clampval(e.jaxis.value / 32768.0f);
 			vargs.push_back(new Variant((double) value));
@@ -434,7 +447,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!proxy.object)
 			break;
 
-		vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+		vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 		vargs.push_back(new Variant((double)(e.jhat.hat+1)));
 		vargs.push_back(new Variant(txt, strlen(txt)));
 		msg = new Message("joystickhat", vargs);
@@ -452,7 +465,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!proxy.object)
 			break;
 
-		vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+		vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 		vargs.push_back(new Variant(txt, strlen(txt)));
 		msg = new Message(e.type == SDL_CONTROLLERBUTTONDOWN ?
 						  "gamepadpressed" : "gamepadreleased", vargs);
@@ -468,7 +481,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			if (!proxy.object)
 				break;
 
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 
 			vargs.push_back(new Variant(txt, strlen(txt)));
 			float value = joystick::Joystick::clampval(e.caxis.value / 32768.0f);
@@ -482,7 +495,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		proxy.type = JOYSTICK_JOYSTICK_ID;
 		if (proxy.object)
 		{
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 			msg = new Message("joystickadded", vargs);
 		}
 		break;
@@ -493,10 +506,26 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (proxy.object)
 		{
 			joymodule->removeJoystick((joystick::Joystick *) proxy.object);
-			vargs.push_back(new Variant(JOYSTICK_JOYSTICK_ID, (void *) &proxy));
+			vargs.push_back(new Variant(proxy.type, (void *) &proxy));
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
+#ifdef LOVE_ANDROID
+	case SDL_WINDOWEVENT_MINIMIZED:
+		{
+			auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
+			if (audio)
+				audio->pause();
+		}
+		break;
+	case SDL_WINDOWEVENT_RESTORED:
+		{
+			auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
+			if (audio)
+				audio->resume();
+		}
+		break;
+#endif
 	default:
 		break;
 	}
@@ -527,12 +556,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 	{
 	case SDL_WINDOWEVENT_FOCUS_GAINED:
 	case SDL_WINDOWEVENT_FOCUS_LOST:
-		// Users won't expect the screensaver to activate if a game is in
-		// focus. Also, joystick input may not delay the screensaver timer.
-		if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-			SDL_DisableScreenSaver();
-		else
-			SDL_EnableScreenSaver();
 		vargs.push_back(new Variant(e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED));
 		msg = new Message("focus", vargs);
 		break;
@@ -790,21 +813,14 @@ std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::createKeyMap()
 	k[SDLK_EJECT] = Keyboard::KEY_EJECT;
 	k[SDLK_SLEEP] = Keyboard::KEY_SLEEP;
 
+#ifdef LOVE_ANDROID
+	k[SDLK_AC_BACK] = Keyboard::KEY_ESCAPE;
+#endif
+
 	return k;
 }
 
 std::map<SDL_Keycode, love::keyboard::Keyboard::Key> Event::keys = Event::createKeyMap();
-
-EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM>::Entry Event::buttonEntries[] =
-{
-	{ love::mouse::Mouse::BUTTON_LEFT, SDL_BUTTON_LEFT},
-	{ love::mouse::Mouse::BUTTON_MIDDLE, SDL_BUTTON_MIDDLE},
-	{ love::mouse::Mouse::BUTTON_RIGHT, SDL_BUTTON_RIGHT},
-	{ love::mouse::Mouse::BUTTON_X1, SDL_BUTTON_X1},
-	{ love::mouse::Mouse::BUTTON_X2, SDL_BUTTON_X2},
-};
-
-EnumMap<love::mouse::Mouse::Button, Uint8, love::mouse::Mouse::BUTTON_MAX_ENUM> Event::buttons(Event::buttonEntries, sizeof(Event::buttonEntries));
 
 } // sdl
 } // event

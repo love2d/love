@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "Color.h"
 
 // C++
 #include <string>
@@ -32,6 +33,31 @@ namespace love
 {
 namespace graphics
 {
+
+/**
+ * Globally sets whether gamma correction is enabled. Ideally this should be set
+ * prior to using any Graphics module function.
+ **/
+void setGammaCorrect(bool gammacorrect);
+
+/**
+ * Gets whether global gamma correction is enabled.
+ **/
+bool isGammaCorrect();
+
+/**
+ * Gamma-corrects a color (converts it from sRGB to linear RGB, if
+ * gamma correction is enabled.)
+ * The color's components are expected to be in the range of [0, 1].
+ **/
+void gammaCorrectColor(Colorf &c);
+
+/**
+ * Un-gamma-corrects a color (converts it from linear RGB to sRGB, if
+ * gamma correction is enabled.)
+ * The color's components are expected to be in the range of [0, 1].
+ **/
+void unGammaCorrectColor(Colorf &c);
 
 class Graphics : public Module
 {
@@ -44,16 +70,32 @@ public:
 		DRAW_MAX_ENUM
 	};
 
+	enum ArcMode
+	{
+		ARC_OPEN,
+		ARC_CLOSED,
+		ARC_PIE,
+		ARC_MAX_ENUM
+	};
+
 	enum BlendMode
 	{
 		BLEND_ALPHA,
 		BLEND_ADD,
 		BLEND_SUBTRACT,
 		BLEND_MULTIPLY,
-		BLEND_PREMULTIPLIED,
+		BLEND_LIGHTEN,
+		BLEND_DARKEN,
 		BLEND_SCREEN,
 		BLEND_REPLACE,
 		BLEND_MAX_ENUM
+	};
+
+	enum BlendAlpha
+	{
+		BLENDALPHA_MULTIPLY,
+		BLENDALPHA_PREMULTIPLIED,
+		BLENDALPHA_MAX_ENUM
 	};
 
 	enum LineStyle
@@ -71,11 +113,34 @@ public:
 		LINE_JOIN_MAX_ENUM
 	};
 
+	enum StencilAction
+	{
+		STENCIL_REPLACE,
+		STENCIL_INCREMENT,
+		STENCIL_DECREMENT,
+		STENCIL_INCREMENT_WRAP,
+		STENCIL_DECREMENT_WRAP,
+		STENCIL_INVERT,
+		STENCIL_MAX_ENUM
+	};
+
+	enum CompareMode
+	{
+		COMPARE_LESS,
+		COMPARE_LEQUAL,
+		COMPARE_EQUAL,
+		COMPARE_GEQUAL,
+		COMPARE_GREATER,
+		COMPARE_NOTEQUAL,
+		COMPARE_ALWAYS,
+		COMPARE_MAX_ENUM
+	};
+
 	enum Support
 	{
-		SUPPORT_MULTI_CANVAS,
 		SUPPORT_MULTI_CANVAS_FORMATS,
-		SUPPORT_SRGB,
+		SUPPORT_CLAMP_ZERO,
+		SUPPORT_LIGHTEN,
 		SUPPORT_MAX_ENUM
 	};
 
@@ -135,6 +200,14 @@ public:
 	{
 		bool r, g, b, a;
 
+		ColorMask()
+			: r(true), g(true), b(true), a(true)
+		{}
+
+		ColorMask(bool _r, bool _g, bool _b, bool _a)
+			: r(_r), g(_g), b(_b), a(_a)
+		{}
+
 		bool operator == (const ColorMask &m) const
 		{
 			return r == m.r && g == m.g && b == m.b && a == m.a;
@@ -143,6 +216,17 @@ public:
 		bool operator != (const ColorMask &m) const
 		{
 			return !(operator == (m));
+		}
+	};
+
+	struct ScissorRect
+	{
+		int x, y;
+		int w, h;
+
+		bool operator == (const ScissorRect &rhs) const
+		{
+			return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
 		}
 	};
 
@@ -161,7 +245,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height, bool &sRGB) = 0;
+	virtual bool setMode(int width, int height) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -186,14 +270,26 @@ public:
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
 
+	static bool getConstant(const char *in, ArcMode &out);
+	static bool getConstant(ArcMode in, const char *&out);
+
 	static bool getConstant(const char *in, BlendMode &out);
 	static bool getConstant(BlendMode in, const char *&out);
+
+	static bool getConstant(const char *in, BlendAlpha &out);
+	static bool getConstant(BlendAlpha in, const char *&out);
 
 	static bool getConstant(const char *in, LineStyle &out);
 	static bool getConstant(LineStyle in, const char *&out);
 
 	static bool getConstant(const char *in, LineJoin &out);
 	static bool getConstant(LineJoin in, const char *&out);
+
+	static bool getConstant(const char *in, StencilAction &out);
+	static bool getConstant(StencilAction in, const char *&out);
+
+	static bool getConstant(const char *in, CompareMode &out);
+	static bool getConstant(CompareMode in, const char *&out);
 
 	static bool getConstant(const char *in, Support &out);
 	static bool getConstant(Support in, const char *&out);
@@ -212,14 +308,26 @@ private:
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
 
+	static StringMap<ArcMode, ARC_MAX_ENUM>::Entry arcModeEntries[];
+	static StringMap<ArcMode, ARC_MAX_ENUM> arcModes;
+
 	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
 	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
+
+	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM>::Entry blendAlphaEntries[];
+	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM> blendAlphaModes;
 
 	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
 	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;
 
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
+
+	static StringMap<StencilAction, STENCIL_MAX_ENUM>::Entry stencilActionEntries[];
+	static StringMap<StencilAction, STENCIL_MAX_ENUM> stencilActions;
+
+	static StringMap<CompareMode, COMPARE_MAX_ENUM>::Entry compareModeEntries[];
+	static StringMap<CompareMode, COMPARE_MAX_ENUM> compareModes;
 
 	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
 	static StringMap<Support, SUPPORT_MAX_ENUM> support;

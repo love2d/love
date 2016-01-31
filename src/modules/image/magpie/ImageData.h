@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 
 // LOVE
 #include "FormatHandler.h"
-#include "filesystem/File.h"
 #include "image/ImageData.h"
 
 // C++
@@ -46,7 +45,7 @@ public:
 	virtual ~ImageData();
 
 	// Implements image::ImageData.
-	virtual void encode(love::filesystem::File *f, ImageData::Format format);
+	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename);
 
 private:
 

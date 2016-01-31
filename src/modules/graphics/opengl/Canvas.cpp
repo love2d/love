@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -198,6 +198,8 @@ bool Canvas::createMSAAFBO(GLenum internalformat)
 
 bool Canvas::loadVolatile()
 {
+	OpenGL::TempDebugGroup debuggroup("Canvas load");
+
 	fbo = depth_stencil = texture = 0;
 	resolve_fbo = msaa_buffer = 0;
 	status = GL_FRAMEBUFFER_COMPLETE;
@@ -296,41 +298,42 @@ void Canvas::unloadVolatile()
 	texture_memory = 0;
 }
 
-void Canvas::drawv(const Matrix &t, const Vertex *v)
+void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 {
+	// FIXME: This doesn't handle cases where the Canvas is used as a texture
+	// in a SpriteBatch, Mesh, or ParticleSystem, or when the Canvas is used in
+	// a shader as a non-default texture.
+	if (Canvas::current == this)
+		throw love::Exception("Cannot draw a Canvas to itself.");
+
+	OpenGL::TempDebugGroup debuggroup("Canvas draw");
+
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
 	gl.bindTexture(texture);
 
-	glEnableVertexAttribArray(ATTRIB_POS);
-	glEnableVertexAttribArray(ATTRIB_TEXCOORD);
+	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 
 	gl.prepareDraw();
 	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	glDisableVertexAttribArray(ATTRIB_TEXCOORD);
-	glDisableVertexAttribArray(ATTRIB_POS);
 }
 
 void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	static Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	drawv(t, vertices);
 }
 
 void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
-	static Matrix t;
-	t.setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
+	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	const Vertex *v = quad->getVertices();
-	drawv(t, v);
+	drawv(t, quad->getVertices());
 }
 
 void Canvas::setFilter(const Texture::Filter &f)
@@ -356,6 +359,14 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 
 		// If we only have limited NPOT support then the wrap mode must be CLAMP.
 		wrap.s = wrap.t = WRAP_CLAMP;
+	}
+
+	if (!gl.isClampZeroTextureWrapSupported())
+	{
+		if (wrap.s == WRAP_CLAMP_ZERO)
+			wrap.s = WRAP_CLAMP;
+		if (wrap.t == WRAP_CLAMP_ZERO)
+			wrap.t = WRAP_CLAMP;
 	}
 
 	gl.bindTexture(texture);
@@ -392,16 +403,7 @@ void Canvas::setupGrab()
 	gl.setViewport({0, 0, width, height});
 
 	// Set up the projection matrix
-	gl.matrices.projection.push_back(Matrix::ortho(0.0, width, 0.0, height));
-
-	// Make sure the correct sRGB setting is used when drawing to the canvas.
-	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-	{
-		if (format == FORMAT_SRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB);
-		else if (screenHasSRGB)
-			glDisable(GL_FRAMEBUFFER_SRGB);
-	}
+	gl.matrices.projection.push_back(Matrix4::ortho(0.0, (float) width, 0.0, (float) height));
 }
 
 void Canvas::startGrab(const std::vector<Canvas *> &canvases)
@@ -409,12 +411,10 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 	// Whether the new canvas list is different from the old one.
 	// A more thorough check is done below.
 	bool canvaseschanged = canvases.size() != attachedCanvases.size();
+	bool hasSRGBcanvas = getSizedFormat(format) == FORMAT_SRGB;
 
 	if (canvases.size() > 0)
 	{
-		if (!isMultiCanvasSupported())
-			throw love::Exception("Multi-canvas rendering is not supported on this system.");
-
 		if ((int) canvases.size() + 1 > gl.getMaxRenderTargets())
 			throw love::Exception("This system can't simultaneously render to %d canvases.", canvases.size()+1);
 
@@ -429,7 +429,9 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 		if (canvases[i]->getWidth() != width || canvases[i]->getHeight() != height)
 			throw love::Exception("All canvases must have the same dimensions.");
 
-		if (canvases[i]->getTextureFormat() != format && !multiformatsupported)
+		Format otherformat = canvases[i]->getTextureFormat();
+
+		if (otherformat != format && !multiformatsupported)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (canvases[i]->getMSAA() != 0)
@@ -437,9 +439,23 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 		if (!canvaseschanged && canvases[i] != attachedCanvases[i])
 			canvaseschanged = true;
+
+		if (getSizedFormat(otherformat) == FORMAT_SRGB)
+			hasSRGBcanvas = true;
 	}
 
+	OpenGL::TempDebugGroup debuggroup("Canvas set");
+
 	setupGrab();
+
+	// Make sure the correct sRGB setting is used when drawing to the canvases.
+	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
+	{
+		if (hasSRGBcanvas && !gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(true);
+		else if (!hasSRGBcanvas && gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(false);
+	}
 
 	// Don't attach anything if there's nothing to change.
 	if (!canvaseschanged)
@@ -471,12 +487,24 @@ void Canvas::startGrab(const std::vector<Canvas *> &canvases)
 
 void Canvas::startGrab()
 {
+	OpenGL::TempDebugGroup debuggroup("Canvas set");
+
 	setupGrab();
+
+	// Make sure the correct sRGB setting is used when drawing to the canvas.
+	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
+	{
+		bool isSRGB = getSizedFormat(format) == FORMAT_SRGB;
+		if (isSRGB && !gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(true);
+		else if (!isSRGB && gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(false);
+	}
 
 	if (attachedCanvases.size() == 0)
 		return;
 
-	// make sure the FBO is only using a single draw buffer
+	// Make sure the FBO is only using a single draw buffer.
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	attachedCanvases.clear();
@@ -488,20 +516,14 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	if (current != this)
 		return;
 
+	OpenGL::TempDebugGroup debuggroup("Canvas un-set");
+
 	// Make sure the canvas texture is up to date if we're using MSAA.
 	resolveMSAA(false);
 
 	gl.matrices.projection.pop_back();
 
-	if (switchingToOtherCanvas)
-	{
-		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-		{
-			if (format == FORMAT_SRGB)
-				glDisable(GL_FRAMEBUFFER_SRGB);
-		}
-	}
-	else
+	if (!switchingToOtherCanvas)
 	{
 		// bind system framebuffer.
 		gl.bindFramebuffer(GL_FRAMEBUFFER, gl.getDefaultFBO());
@@ -510,10 +532,10 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 		{
-			if (format == FORMAT_SRGB && !screenHasSRGB)
-				glDisable(GL_FRAMEBUFFER_SRGB);
-			else if (format != FORMAT_SRGB && screenHasSRGB)
-				glEnable(GL_FRAMEBUFFER_SRGB);
+			if (screenHasSRGB && !gl.hasFramebufferSRGB())
+				gl.setFramebufferSRGB(true);
+			else if (!screenHasSRGB && gl.hasFramebufferSRGB())
+				gl.setFramebufferSRGB(false);
 		}
 	}
 }
@@ -523,6 +545,8 @@ bool Canvas::checkCreateStencil()
 	// Do nothing if we've already created the stencil buffer.
 	if (depth_stencil != 0)
 		return true;
+
+	OpenGL::TempDebugGroup debuggroup("Canvas create stencil");
 
 	if (current != this)
 		gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -534,7 +558,7 @@ bool Canvas::checkCreateStencil()
 	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object
 		|| GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
 	{
-		format = GL_DEPTH_STENCIL;
+		format = GL_DEPTH24_STENCIL8;
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
 	}
 
@@ -611,6 +635,8 @@ bool Canvas::resolveMSAA(bool restoreprev)
 	if (resolve_fbo == 0 || msaa_buffer == 0)
 		return false;
 
+	OpenGL::TempDebugGroup debuggroup("Canvas MSAA resolve");
+
 	GLint w = width;
 	GLint h = height;
 
@@ -640,8 +666,10 @@ Canvas::Format Canvas::getSizedFormat(Canvas::Format format)
 	switch (format)
 	{
 	case FORMAT_NORMAL:
-		// 32-bit render targets don't have guaranteed support on OpenGL ES 2.
-		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8))
+		if (isGammaCorrect())
+			return FORMAT_SRGB;
+		else if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8))
+			// 32-bit render targets don't have guaranteed support on GLES2.
 			return FORMAT_RGBA4;
 		else
 			return FORMAT_RGBA8;
@@ -781,15 +809,9 @@ bool Canvas::isSupported()
 	return GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_object;
 }
 
-bool Canvas::isMultiCanvasSupported()
-{
-	// system must support at least 4 simultaneous active canvases.
-	return gl.getMaxRenderTargets() >= 4;
-}
-
 bool Canvas::isMultiFormatMultiCanvasSupported()
 {
-	return isMultiCanvasSupported() && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
+	return gl.getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
 }
 
 bool Canvas::supportedFormats[] = {false};
@@ -826,7 +848,7 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 		supported = GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0;
 		break;
 	case FORMAT_RG11B10F:
-		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float /*|| GLAD_APPLE_color_buffer_packed_float*/;
+		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float;
 		break;
 	case FORMAT_R16F:
 	case FORMAT_RG16F:

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,41 +30,6 @@ namespace audio
 {
 
 Source *luax_checksource(lua_State *L, int idx);
-int w_Source_clone(lua_State *L);
-int w_Source_play(lua_State *L);
-int w_Source_stop(lua_State *L);
-int w_Source_pause(lua_State *L);
-int w_Source_resume(lua_State *L);
-int w_Source_rewind(lua_State *L);
-int w_Source_setPitch(lua_State *L);
-int w_Source_getPitch(lua_State *L);
-int w_Source_setVolume(lua_State *L);
-int w_Source_getVolume(lua_State *L);
-int w_Source_seek(lua_State *L);
-int w_Source_tell(lua_State *L);
-int w_Source_setPosition(lua_State *L);
-int w_Source_getPosition(lua_State *L);
-int w_Source_setVelocity(lua_State *L);
-int w_Source_getVelocity(lua_State *L);
-int w_Source_setDirection(lua_State *L);
-int w_Source_getDirection(lua_State *L);
-int w_Source_setCone(lua_State *L);
-int w_Source_getCone(lua_State *L);
-int w_Source_setRelative(lua_State *L);
-int w_Source_isRelative(lua_State *L);
-int w_Source_setLooping(lua_State *L);
-int w_Source_isLooping(lua_State *L);
-int w_Source_isStopped(lua_State *L);
-int w_Source_isPaused(lua_State *L);
-int w_Source_isPlaying(lua_State *L);
-int w_Source_setVolumeLimits(lua_State *L);
-int w_Source_getVolumeLimits(lua_State *L);
-int w_Source_setAttenuationDistances(lua_State *L);
-int w_Source_getAttenuationDistances(lua_State *L);
-int w_Source_setRolloff(lua_State *L);
-int w_Source_getRolloff(lua_State *L);
-int w_Source_getChannels(lua_State *L);
-int w_Source_getType(lua_State *L);
 extern "C" int luaopen_source(lua_State *L);
 
 } // audio

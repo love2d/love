@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 #include "image/ImageData.h"
 
 // C++
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace love
@@ -50,6 +50,7 @@ public:
 	GlyphData *getGlyphData(uint32 glyph) const override;
 	int getGlyphCount() const override;
 	bool hasGlyph(uint32 glyph) const override;
+	float getKerning(uint32 leftglyph, uint32 rightglyph) const override;
 
 	static bool accepts(love::filesystem::FileData *fontdef);
 
@@ -68,10 +69,13 @@ private:
 	std::string fontFolder;
 
 	// Image pages, indexed by their page id.
-	std::map<int, StrongRef<image::ImageData>> images;
+	std::unordered_map<int, StrongRef<image::ImageData>> images;
 
 	// Glyph characters, indexed by their glyph id.
-	std::map<uint32, BMFontCharacter> characters;
+	std::unordered_map<uint32, BMFontCharacter> characters;
+
+	// Kerning information, indexed by two (packed) characters.
+	std::unordered_map<uint64, int> kerning;
 
 	int fontSize;
 	bool unicode;

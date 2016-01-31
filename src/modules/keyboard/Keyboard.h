@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -503,7 +503,7 @@ public:
 		SCANCODE_AC_STOP,
 		SCANCODE_AC_REFRESH,
 		SCANCODE_AC_BOOKMARKS,
-		
+
 		SCANCODE_BRIGHTNESSDOWN,
 		SCANCODE_BRIGHTNESSUP,
 		SCANCODE_DISPLAYSWITCH,
@@ -512,7 +512,7 @@ public:
 		SCANCODE_KBDILLUMUP,
 		SCANCODE_EJECT,
 		SCANCODE_SLEEP,
-		
+
 		SCANCODE_APP1,
 		SCANCODE_APP2,
 

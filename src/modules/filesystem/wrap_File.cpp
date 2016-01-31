@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -110,7 +110,7 @@ int w_File_read(lua_State *L)
 	File *file = luax_checkfile(L, 1);
 	Data *d = 0;
 
-	int64 size = (int64)luaL_optnumber(L, 2, File::ALL);
+	int64 size = (int64) luaL_optnumber(L, 2, (lua_Number) File::ALL);
 
 	try
 	{
@@ -186,10 +186,10 @@ int w_File_flush(lua_State *L)
 	return 1;
 }
 
-int w_File_eof(lua_State *L)
+int w_File_isEOF(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	luax_pushboolean(L, file->eof());
+	luax_pushboolean(L, file->isEOF());
 	return 1;
 }
 
@@ -246,7 +246,7 @@ int w_File_lines_i(lua_State *L)
 			file->seek(pos);
 	}
 
-	while (!newline && !file->eof())
+	while (!newline && !file->isEOF())
 	{
 		// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
 		int read = (int) file->read(buf, bufsize);
@@ -266,7 +266,7 @@ int w_File_lines_i(lua_State *L)
 		}
 	}
 
-	if (newline || (file->eof() && linesize > 0))
+	if (newline || (file->isEOF() && linesize > 0))
 	{
 		if (linesize < bufsize)
 		{
@@ -319,7 +319,7 @@ int w_File_lines_i(lua_State *L)
 		file->seek(userpos);
 	else
 		file->close();
-	
+
 	return 0;
 }
 
@@ -413,7 +413,7 @@ int w_File_getExtension(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+const luaL_Reg w_File_functions[] =
 {
 	{ "getSize", w_File_getSize },
 	{ "open", w_File_open },
@@ -422,7 +422,7 @@ static const luaL_Reg functions[] =
 	{ "read", w_File_read },
 	{ "write", w_File_write },
 	{ "flush", w_File_flush },
-	{ "eof", w_File_eof },
+	{ "isEOF", w_File_isEOF },
 	{ "tell", w_File_tell },
 	{ "seek", w_File_seek },
 	{ "lines", w_File_lines },
@@ -436,7 +436,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_file(lua_State *L)
 {
-	return luax_register_type(L, FILESYSTEM_FILE_ID, functions);
+	return luax_register_type(L, FILESYSTEM_FILE_ID, "File", w_File_functions, nullptr);
 }
 
 } // filesystem

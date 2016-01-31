@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,9 +24,6 @@
 // LOVE
 #include "touch/Touch.h"
 
-// C++
-#include <map>
-
 // SDL
 #include <SDL_events.h>
 
@@ -43,11 +40,11 @@ public:
 
 	virtual ~Touch() {}
 
-	virtual std::vector<int64> getIDs() const;
-	virtual void getPosition(int64 id, double &x, double &y) const;
+	const std::vector<TouchInfo> &getTouches() const override;
+	const TouchInfo &getTouch(int64 id) const override;
 
 	// Implements Module.
-	virtual const char *getName() const;
+	const char *getName() const override;
 
 	// SDL has functions to query the state of touch presses, but unfortunately
 	// they are updated on a different thread in some backends, which causes
@@ -58,8 +55,8 @@ public:
 
 private:
 
-	// All current touches, indexed by their IDs.
-	std::map<int64, TouchInfo> touches;
+	// All current touches.
+	std::vector<TouchInfo> touches;
 
 }; // Touch
 

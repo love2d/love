@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,24 +30,6 @@ namespace love
 namespace mouse
 {
 
-int w_newCursor(lua_State *L);
-int w_getSystemCursor(lua_State *L);
-int w_setCursor(lua_State *L);
-int w_getCursor(lua_State *L);
-int w_hasCursor(lua_State *L);
-int w_getX(lua_State *L);
-int w_getY(lua_State *L);
-int w_getPosition(lua_State *L);
-int w_setX(lua_State *L);
-int w_setY(lua_State *L);
-int w_setPosition(lua_State *L);
-int w_isDown(lua_State *L);
-int w_setVisible(lua_State *L);
-int w_isVisible(lua_State *L);
-int w_setGrabbed(lua_State *L);
-int w_isGrabbed(lua_State *L);
-int w_setRelativeMode(lua_State *L);
-int w_getRelativeMode(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_mouse(lua_State *L);
 
 } // mouse

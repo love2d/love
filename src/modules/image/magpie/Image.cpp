@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,20 +18,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
+
 #include "Image.h"
 
 #include "ImageData.h"
-#include "CompressedData.h"
+#include "CompressedImageData.h"
 
-#include "JPEGHandler.h"
 #include "PNGHandler.h"
 #include "STBHandler.h"
-#include "ImageIOHandler.h"
 
 #include "ddsHandler.h"
 #include "PVRHandler.h"
 #include "KTXHandler.h"
 #include "PKMHandler.h"
+#include "ASTCHandler.h"
 
 namespace love
 {
@@ -42,22 +43,18 @@ namespace magpie
 
 Image::Image()
 {
-	formatHandlers.push_back(new PNGHandler);
+	formatHandlers = {
+		new PNGHandler,
+		new STBHandler,
+	};
 
-#ifndef LOVE_NO_TURBOJPEG
-	formatHandlers.push_back(new JPEGHandler);
-#endif
-
-	formatHandlers.push_back(new STBHandler);
-
-#ifdef LOVE_SUPPORT_IMAGEIO
-	formatHandlers.push_back(new ImageIOHandler);
-#endif
-
-	compressedFormatHandlers.push_back(new DDSHandler);
-	compressedFormatHandlers.push_back(new PVRHandler);
-	compressedFormatHandlers.push_back(new KTXHandler);
-	compressedFormatHandlers.push_back(new PKMHandler);
+	compressedFormatHandlers = {
+		new DDSHandler,
+		new PVRHandler,
+		new KTXHandler,
+		new PKMHandler,
+		new ASTCHandler,
+	};
 }
 
 Image::~Image()
@@ -91,9 +88,9 @@ love::image::ImageData *Image::newImageData(int width, int height, void *data, b
 	return new ImageData(formatHandlers, width, height, data, own);
 }
 
-love::image::CompressedData *Image::newCompressedData(love::filesystem::FileData *data)
+love::image::CompressedImageData *Image::newCompressedData(love::filesystem::FileData *data)
 {
-	return new CompressedData(compressedFormatHandlers, data);
+	return new CompressedImageData(compressedFormatHandlers, data);
 }
 
 bool Image::isCompressed(love::filesystem::FileData *data)

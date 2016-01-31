@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -65,9 +65,15 @@ public:
 		return buffer;
 	}
 
+	inline ALsizei getSize() const
+	{
+		return size;
+	}
+
 private:
 
 	ALuint buffer;
+	ALsizei size;
 
 }; // StaticDataBuffer
 
@@ -98,6 +104,8 @@ public:
 	virtual void seek(float offset, Unit unit);
 	virtual float tellAtomic(void *unit) const;
 	virtual float tell(Unit unit);
+	virtual double getDurationAtomic(void *unit);
+	virtual double getDuration(Unit unit);
 	virtual void setPosition(float *v);
 	virtual void getPosition(float *v) const;
 	virtual void setVelocity(float *v);
@@ -180,6 +188,7 @@ private:
 
 	int sampleRate;
 	int channels;
+	int bitDepth;
 
 	StrongRef<love::sound::Decoder> decoder;
 

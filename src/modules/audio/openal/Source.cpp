@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -65,6 +65,7 @@ Ensure the Source is not multi-channel before calling this function.")
 };
 
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
+	: size(size)
 {
 	alGenBuffers(1, &buffer);
 	alBufferData(buffer, format, data, size, freq);
@@ -95,6 +96,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, offsetSeconds(0)
 	, sampleRate(soundData->getSampleRate())
 	, channels(soundData->getChannels())
+	, bitDepth(soundData->getBitDepth())
 	, decoder(nullptr)
 	, toLoop(0)
 {
@@ -134,6 +136,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, offsetSeconds(0)
 	, sampleRate(decoder->getSampleRate())
 	, channels(decoder->getChannels())
+	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
 	, toLoop(0)
 {
@@ -169,6 +172,7 @@ Source::Source(const Source &s)
 	, offsetSeconds(0)
 	, sampleRate(s.sampleRate)
 	, channels(s.channels)
+	, bitDepth(s.bitDepth)
 	, decoder(nullptr)
 	, toLoop(0)
 {
@@ -308,8 +312,11 @@ bool Source::update()
 			offsetSamples += (curOffsetSamples - newOffsetSamples);
 			offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
-			streamAtomic(buffer, decoder.get());
-			alSourceQueueBuffers(source, 1, &buffer);
+			// FIXME: We should put freed buffers into a list that we later
+			// consume here, so we can keep track of all free buffers even if we
+			// tried to stream data to one but the decoder didn't have data for it.
+			if (streamAtomic(buffer, decoder.get()) > 0)
+				alSourceQueueBuffers(source, 1, &buffer);
 		}
 
 		return true;
@@ -436,6 +443,36 @@ float Source::tellAtomic(void *unit) const
 float Source::tell(Source::Unit unit)
 {
 	return pool->tell(this, &unit);
+}
+
+double Source::getDurationAtomic(void *vunit)
+{
+	Unit unit = *(Unit *) vunit;
+
+	if (type == TYPE_STREAM)
+	{
+		double seconds = decoder->getDuration();
+
+		if (unit == UNIT_SECONDS)
+			return seconds;
+		else
+			return seconds * decoder->getSampleRate();
+	}
+	else
+	{
+		ALsizei size = staticBuffer->getSize();
+		ALsizei samples = (size / channels) / (bitDepth / 8);
+
+		if (unit == UNIT_SAMPLES)
+			return (double) samples;
+		else
+			return (double) samples / (double) sampleRate;
+	}
+}
+
+double Source::getDuration(Unit unit)
+{
+	return pool->getDuration(this, &unit);
 }
 
 void Source::setPosition(float *v)
@@ -575,8 +612,11 @@ bool Source::playAtomic()
 
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 		{
-			streamAtomic(streamBuffers[i], decoder.get());
+			if (streamAtomic(streamBuffers[i], decoder.get()) == 0)
+				break;
+
 			++usedBuffers;
+
 			if (decoder->isFinished())
 				break;
 		}
@@ -736,13 +776,18 @@ ALenum Source::getFormat(int channels, int bitDepth) const
 int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 {
 	// Get more sound data.
-	int decoded = d->decode();
-	decoded = decoded >= 0 ? decoded : 0;
+	int decoded = std::max(d->decode(), 0);
 
-	int fmt = getFormat(d->getChannels(), d->getBitDepth());
+	// OpenAL implementations are allowed to ignore 0-size alBufferData calls.
+	if (decoded > 0)
+	{
+		int fmt = getFormat(d->getChannels(), d->getBitDepth());
 
-	if (fmt != 0)
-		alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
+		if (fmt != 0)
+			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
+		else
+			decoded = 0;
+	}
 
 	if (decoder->isFinished() && isLooping())
 	{

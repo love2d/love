@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,12 +32,17 @@
 
 // C
 #include <cstring>
+#include <cstdio>
 
 // For SDL_GL_GetProcAddress.
 #include <SDL_video.h>
 
 #ifdef LOVE_IOS
-#include <SDL_system.h>
+#include <SDL_syswm.h>
+#endif
+
+#ifdef LOVE_ANDROID
+#include <dlfcn.h>
 #endif
 
 namespace love
@@ -46,6 +51,17 @@ namespace graphics
 {
 namespace opengl
 {
+
+static void *LOVEGetProcAddress(const char *name)
+{
+#ifdef LOVE_ANDROID
+	void *proc = dlsym(RTLD_DEFAULT, name);
+	if (proc)
+		return proc;
+#endif
+
+	return SDL_GL_GetProcAddress(name);
+}
 
 OpenGL::OpenGL()
 	: stats()
@@ -67,12 +83,23 @@ bool OpenGL::initContext()
 	if (contextInitialized)
 		return true;
 
-	if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
+	if (!gladLoadGLLoader(LOVEGetProcAddress))
 		return false;
 
 	initOpenGLFunctions();
 	initVendor();
 	initMatrices();
+
+	bugs = {};
+
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
+	// See the comments in OpenGL.h.
+	if (getVendor() == VENDOR_AMD)
+	{
+		bugs.clearRequiresDriverTextureStateUpdate = true;
+		bugs.generateMipmapsRequiresTexture2DEnable = true;
+	}
+#endif
 
 	contextInitialized = true;
 
@@ -86,9 +113,14 @@ void OpenGL::setupContext()
 
 	initMaxValues();
 
-	state.color = Color(255, 255, 255, 255);
 	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
+	glVertexAttrib4fv(ATTRIB_CONSTANTCOLOR, glcolor);
+
+	GLint maxvertexattribs = 1;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
+	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
+	useVertexAttribArrays(0);
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -103,26 +135,26 @@ void OpenGL::setupContext()
 	else
 		state.pointSize = 1.0f;
 
+	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
+		|| GLAD_EXT_sRGB_write_control)
+	{
+		state.framebufferSRGBEnabled = (glIsEnabled(GL_FRAMEBUFFER_SRGB) == GL_TRUE);
+	}
+	else
+		state.framebufferSRGBEnabled = false;
+
 	// Initialize multiple texture unit support for shaders.
 	state.boundTextures.clear();
 	state.boundTextures.resize(maxTextureUnits, 0);
 
-	GLenum curgltextureunit;
-	glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *) &curgltextureunit);
-
-	state.curTextureUnit = (int) curgltextureunit - GL_TEXTURE0;
-
-	// Retrieve currently bound textures for each texture unit.
 	for (int i = 0; i < (int) state.boundTextures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *) &state.boundTextures[i]);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	glActiveTexture(curgltextureunit);
-
-	BlendState blend = {GL_ONE, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD};
-	setBlendState(blend);
+	glActiveTexture(GL_TEXTURE0);
+	state.curTextureUnit = 0;
 
 	createDefaultTexture();
 
@@ -160,7 +192,7 @@ void OpenGL::initVendor()
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
 	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
 	if (strstr(vstr, "ATI Technologies"))
-		vendor = VENDOR_ATI_AMD;
+		vendor = VENDOR_AMD;
 	else if (strstr(vstr, "NVIDIA"))
 		vendor = VENDOR_NVIDIA;
 	else if (strstr(vstr, "Intel"))
@@ -264,8 +296,8 @@ void OpenGL::initMatrices()
 	matrices.transform.clear();
 	matrices.projection.clear();
 
-	matrices.transform.push_back(Matrix());
-	matrices.projection.push_back(Matrix());
+	matrices.transform.push_back(Matrix4());
+	matrices.projection.push_back(Matrix4());
 }
 
 void OpenGL::createDefaultTexture()
@@ -286,8 +318,8 @@ void OpenGL::createDefaultTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	GLubyte pix = 255;
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, &pix);
+	GLubyte pix[] = {255, 255, 255, 255};
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pix);
 
 	bindTexture(curtexture);
 }
@@ -302,39 +334,28 @@ void OpenGL::popTransform()
 	matrices.transform.pop_back();
 }
 
-Matrix &OpenGL::getTransform()
+Matrix4 &OpenGL::getTransform()
 {
 	return matrices.transform.back();
 }
 
 void OpenGL::prepareDraw()
 {
-	Shader *shader = Shader::current;
-	if (shader != nullptr)
+	TempDebugGroup debuggroup("Prepare OpenGL draw");
+
+	// Make sure the active shader's love-provided uniforms are up to date.
+	if (Shader::current != nullptr)
+		Shader::current->checkSetBuiltinUniforms();
+
+	// We use glLoadMatrix rather than uniforms for our matrices when possible,
+	// because uniform uploads can be significantly slower than glLoadMatrix.
+	if (GLAD_VERSION_1_0)
 	{
-		// Make sure the active shader has the correct values for its
-		// love-provided uniforms.
-		shader->checkSetScreenParams();
-	}
+		const Matrix4 &curproj = matrices.projection.back();
+		const Matrix4 &curxform = matrices.transform.back();
 
-	const Matrix &curproj = matrices.projection.back();
-	const Matrix &curxform = matrices.transform.back();
-
-	if (GLAD_ES_VERSION_2_0 && shader)
-	{
-		// Send built-in uniforms to the current shader.
-		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_MATRIX, 4, curxform.getElements(), 1);
-		shader->sendBuiltinMatrix(Shader::BUILTIN_PROJECTION_MATRIX, 4, curproj.getElements(), 1);
-
-		Matrix tp_matrix(curproj * curxform);
-		shader->sendBuiltinMatrix(Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX, 4, tp_matrix.getElements(), 1);
-
-		shader->sendBuiltinFloat(Shader::BUILTIN_POINT_SIZE, 1, &state.pointSize, 1);
-	}
-	else if (GLAD_VERSION_1_0)
-	{
-		const Matrix &lastproj = state.lastProjectionMatrix;
-		const Matrix &lastxform = state.lastTransformMatrix;
+		const Matrix4 &lastproj = state.lastProjectionMatrix;
+		const Matrix4 &lastxform = state.lastTransformMatrix;
 
 		// We only need to re-upload the projection matrix if it's changed.
 		if (memcmp(curproj.getElements(), lastproj.getElements(), sizeof(float) * 16) != 0)
@@ -367,17 +388,36 @@ void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *i
 	++stats.drawCalls;
 }
 
-void OpenGL::setColor(const Color &c)
+void OpenGL::useVertexAttribArrays(uint32 arraybits)
 {
-	GLfloat glc[] = {c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f};
-	glVertexAttrib4fv(ATTRIB_COLOR, glc);
+	uint32 diff = arraybits ^ state.enabledAttribArrays;
 
-	state.color = c;
-}
+	if (diff == 0)
+		return;
 
-Color OpenGL::getColor() const
-{
-	return state.color;
+	// Max 32 attributes. As of when this was written, no GL driver exposes more
+	// than 32. Lets hope that doesn't change...
+	for (uint32 i = 0; i < 32; i++)
+	{
+		uint32 bit = 1 << i;
+
+		if (diff & bit)
+		{
+			if (arraybits & bit)
+				glEnableVertexAttribArray(i);
+			else
+				glDisableVertexAttribArray(i);
+		}
+	}
+
+	state.enabledAttribArrays = arraybits;
+
+	// glDisableVertexAttribArray will make the constant value for a vertex
+	// attribute undefined. We rely on the per-vertex color attribute being
+	// white when no per-vertex color is used, so we set it here.
+	// FIXME: Is there a better place to do this?
+	if ((diff & ATTRIBFLAG_COLOR) && !(arraybits & ATTRIBFLAG_COLOR))
+		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void OpenGL::setViewport(const OpenGL::Viewport &v)
@@ -415,19 +455,6 @@ OpenGL::Viewport OpenGL::getScissor() const
 	return state.scissor;
 }
 
-void OpenGL::setBlendState(const BlendState &blend)
-{
-	glBlendEquation(blend.func);
-	glBlendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcA, blend.dstA);
-
-	state.blend = blend;
-}
-
-OpenGL::BlendState OpenGL::getBlendState() const
-{
-	return state.blend;
-}
-
 void OpenGL::setPointSize(float size)
 {
 	if (GLAD_VERSION_1_0)
@@ -439,6 +466,21 @@ void OpenGL::setPointSize(float size)
 float OpenGL::getPointSize() const
 {
 	return state.pointSize;
+}
+
+void OpenGL::setFramebufferSRGB(bool enable)
+{
+	if (enable)
+		glEnable(GL_FRAMEBUFFER_SRGB);
+	else
+		glDisable(GL_FRAMEBUFFER_SRGB);
+
+	state.framebufferSRGBEnabled = enable;
+}
+
+bool OpenGL::hasFramebufferSRGB() const
+{
+	return state.framebufferSRGBEnabled;
 }
 
 void OpenGL::bindFramebuffer(GLenum target, GLuint framebuffer)
@@ -453,7 +495,10 @@ GLuint OpenGL::getDefaultFBO() const
 {
 #ifdef LOVE_IOS
 	// Hack: iOS uses a custom FBO.
-	return SDL_iPhoneGetViewFramebuffer(SDL_GL_GetCurrentWindow());
+	SDL_SysWMinfo info = {};
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
+	return info.info.uikit.framebuffer;
 #else
 	return 0;
 #endif
@@ -484,29 +529,21 @@ void OpenGL::bindTexture(GLuint texture)
 	}
 }
 
-void OpenGL::bindTextures(GLuint first, GLsizei count, const GLuint *textures)
+void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
-	if (first + count > (GLuint) maxTextureUnits)
-		return;
+	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
+		throw love::Exception("Invalid texture unit index.");
 
-	if (GLAD_VERSION_4_4 || GLAD_ARB_multi_bind)
-		glBindTextures(first, count, textures);
-	else
+	if (texture != state.boundTextures[textureunit])
 	{
-		for (GLint i = 0; i < count; i++)
-		{
-			GLuint texture = textures != nullptr ? textures[i] : 0;
+		int oldtextureunit = state.curTextureUnit;
+		setTextureUnit(textureunit);
 
-			if (state.boundTextures[first + i] != texture)
-			{
-				glActiveTexture(GL_TEXTURE0 + first + i);
-				glBindTexture(GL_TEXTURE_2D, texture);
+		state.boundTextures[textureunit] = texture;
+		glBindTexture(GL_TEXTURE_2D, texture);
 
-				state.boundTextures[first + i] = texture;
-			}
-		}
-
-		glActiveTexture(GL_TEXTURE0 + state.curTextureUnit);
+		if (restoreprev)
+			setTextureUnit(oldtextureunit);
 	}
 }
 
@@ -571,24 +608,32 @@ void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 		f.anisotropy = 1.0f;
 }
 
+GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
+{
+	switch (wmode)
+	{
+	case Texture::WRAP_CLAMP:
+	default:
+		return GL_CLAMP_TO_EDGE;
+	case Texture::WRAP_CLAMP_ZERO:
+		return GL_CLAMP_TO_BORDER;
+	case Texture::WRAP_REPEAT:
+		return GL_REPEAT;
+	case Texture::WRAP_MIRRORED_REPEAT:
+		return GL_MIRRORED_REPEAT;
+	}
+
+}
+
 void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
 {
-	auto glWrapMode = [](Texture::WrapMode wmode) -> GLint
-	{
-		switch (wmode)
-		{
-		case Texture::WRAP_CLAMP:
-		default:
-			return GL_CLAMP_TO_EDGE;
-		case Texture::WRAP_REPEAT:
-			return GL_REPEAT;
-		case Texture::WRAP_MIRRORED_REPEAT:
-			return GL_MIRRORED_REPEAT;
-		}
-	};
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
+}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode(w.s));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode(w.t));
+bool OpenGL::isClampZeroTextureWrapSupported() const
+{
+	return GLAD_VERSION_1_3 || GLAD_EXT_texture_border_clamp || GLAD_NV_texture_border_clamp;
 }
 
 int OpenGL::getMaxTextureSize() const
@@ -613,13 +658,43 @@ int OpenGL::getMaxTextureUnits() const
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
 {
-	int64 memsize = (int64) stats.textureMemory + ((int64 )newsize -  (int64) oldsize);
+	int64 memsize = (int64) stats.textureMemory + ((int64) newsize - (int64) oldsize);
 	stats.textureMemory = (size_t) std::max(memsize, (int64) 0);
 }
 
 OpenGL::Vendor OpenGL::getVendor() const
 {
 	return vendor;
+}
+
+const char *OpenGL::errorString(GLenum errorcode)
+{
+	switch (errorcode)
+	{
+	case GL_NO_ERROR:
+		return "no error";
+	case GL_INVALID_ENUM:
+		return "invalid enum";
+	case GL_INVALID_VALUE:
+		return "invalid value";
+	case GL_INVALID_OPERATION:
+		return "invalid operation";
+	case GL_OUT_OF_MEMORY:
+		return "out of memory";
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		return "invalid framebuffer operation";
+	case GL_CONTEXT_LOST:
+		return "OpenGL context has been lost";
+	default:
+		break;
+	}
+
+	static char text[64] = {};
+
+	memset(text, 0, sizeof(text));
+	sprintf(text, "0x%x", errorcode);
+
+	return text;
 }
 
 const char *OpenGL::debugSeverityString(GLenum severity)
@@ -633,9 +708,8 @@ const char *OpenGL::debugSeverityString(GLenum severity)
 	case GL_DEBUG_SEVERITY_LOW:
 		return "low";
 	default:
-		break;
+		return "unknown";
 	}
-	return "unknown";
 }
 
 const char *OpenGL::debugSourceString(GLenum source)
@@ -655,9 +729,8 @@ const char *OpenGL::debugSourceString(GLenum source)
 	case GL_DEBUG_SOURCE_OTHER:
 		return "other";
 	default:
-		break;
+		return "unknown";
 	}
-	return "unknown";
 }
 
 const char *OpenGL::debugTypeString(GLenum type)
@@ -677,9 +750,8 @@ const char *OpenGL::debugTypeString(GLenum type)
 	case GL_DEBUG_TYPE_OTHER:
 		return "other";
 	default:
-		break;
+		return "unknown";
 	}
-	return "unknown";
 }
 
 

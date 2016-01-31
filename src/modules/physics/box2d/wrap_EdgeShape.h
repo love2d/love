@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,6 @@ namespace box2d
 {
 
 EdgeShape *luax_checkedgeshape(lua_State *L, int idx);
-int w_EdgeShape_getPoints(lua_State *L);
 extern "C" int luaopen_edgeshape(lua_State *L);
 
 } // box2d

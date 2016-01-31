@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,7 @@ Body::Body(b2Body *b)
 	, udata(nullptr)
 {
 	udata = (bodyudata *) b->GetUserData();
-	world.set((World *) Memoizer::find(b->GetWorld()));
+	world = (World *) Memoizer::find(b->GetWorld());
 	// Box2D body holds a reference to the love Body.
 	this->retain();
 	Memoizer::add(body, this);
@@ -420,7 +420,7 @@ bool Body::isFixedRotation() const
 
 World *Body::getWorld() const
 {
-	return world.get();
+	return world;
 }
 
 int Body::getFixtureList(lua_State *L) const
@@ -482,7 +482,7 @@ int Body::getContactList(lua_State *L) const
 			contact = new Contact(ce->contact);
 		else
 			contact->retain();
-		
+
 		luax_pushtype(L, PHYSICS_CONTACT_ID, contact);
 		contact->release();
 		lua_rawseti(L, -2, i);
@@ -535,15 +535,7 @@ int Body::setUserData(lua_State *L)
 		body->SetUserData((void *) udata);
 	}
 
-	if (udata->ref != nullptr)
-	{
-		// We set the Reference's lua_State to this one before deleting it, so
-		// it unrefs using the current lua_State's stack. This is necessary
-		// if setUserData is called in a coroutine.
-		udata->ref->setL(L);
-		delete udata->ref;
-	}
-
+	delete udata->ref;
 	udata->ref = new Reference(L);
 
 	return 0;

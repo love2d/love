@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -102,6 +102,21 @@ bool Threadable::isRunning() const
 const char *Threadable::getThreadName() const
 {
 	return threadName.empty() ? nullptr : threadName.c_str();
+}
+
+MutexRef::MutexRef()
+	: mutex(newMutex())
+{
+}
+
+MutexRef::~MutexRef()
+{
+	delete mutex;
+}
+
+MutexRef::operator Mutex*() const
+{
+	return mutex;
 }
 
 } // thread

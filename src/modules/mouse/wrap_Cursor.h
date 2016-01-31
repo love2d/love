@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,6 @@ namespace mouse
 {
 
 Cursor *luax_checkcursor(lua_State *L, int idx);
-int w_Cursor_getType(lua_State *L);
 extern "C" int luaopen_cursor(lua_State *L);
 
 } // mouse

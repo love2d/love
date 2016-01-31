@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,29 +37,25 @@ namespace font
 
 int w_newRasterizer(lua_State *L)
 {
-	if (lua_isnoneornil(L, 2))
+	if (lua_type(L, 1) == LUA_TNUMBER || lua_type(L, 2) == LUA_TNUMBER || lua_isnone(L, 1))
 	{
-		// Single number argument: use the default TrueType font.
-		if (lua_type(L, 1) == LUA_TNUMBER)
-			return w_newTrueTypeRasterizer(L);
-
+		// First or second argument is a number: call newTrueTypeRasterizer.
+		return w_newTrueTypeRasterizer(L);
+	}
+	else if (lua_isnoneornil(L, 2))
+	{
 		// Single argument of another type: call Font::newRasterizer.
 		Rasterizer *t = nullptr;
 		filesystem::FileData *d = filesystem::luax_getfiledata(L, 1);
 
 		luax_catchexcept(L,
 			[&]() { t = instance()->newRasterizer(d); },
-			[&]() { d->release(); }
+			[&](bool) { d->release(); }
 		);
 
 		luax_pushtype(L, FONT_RASTERIZER_ID, t);
 		t->release();
 		return 1;
-	}
-	else if (lua_type(L, 2) == LUA_TNUMBER)
-	{
-		// Second argument is a number: call newTrueTypeRasterizer.
-		return w_newTrueTypeRasterizer(L);
 	}
 	else
 	{
@@ -71,27 +67,40 @@ int w_newRasterizer(lua_State *L)
 int w_newTrueTypeRasterizer(lua_State *L)
 {
 	Rasterizer *t = nullptr;
+	TrueTypeRasterizer::Hinting hinting = TrueTypeRasterizer::HINTING_NORMAL;
 
-	if (lua_type(L, 1) == LUA_TNUMBER)
+	if (lua_type(L, 1) == LUA_TNUMBER || lua_isnone(L, 1))
 	{
 		// First argument is a number: use the default TrueType font.
-		int size = luaL_checkint(L, 1);
-		luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size); });
+		int size = (int) luaL_optnumber(L, 1, 12);
+
+		const char *hintstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
+		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
+			return luaL_error(L, "Invalid TrueType font hinting mode: %s", hintstr);
+
+		luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, hinting); });
 	}
 	else
 	{
 		love::Data *d = nullptr;
 
 		if (luax_istype(L, 1, DATA_ID))
+		{
 			d = luax_checkdata(L, 1);
+			d->retain();
+		}
 		else
 			d = filesystem::luax_getfiledata(L, 1);
 
-		int size = luaL_optint(L, 2, 12);
+		int size = (int) luaL_optnumber(L, 2, 12);
+
+		const char *hintstr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
+		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
+			return luaL_error(L, "Invalid TrueType font hinting mode: %s", hintstr);
 
 		luax_catchexcept(L,
-			[&]() { t = instance()->newTrueTypeRasterizer(d, size); },
-			[&]() { d->release(); }
+			[&]() { t = instance()->newTrueTypeRasterizer(d, size, hinting); },
+			[&](bool) { d->release(); }
 		);
 	}
 
@@ -102,7 +111,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 
 static void convimagedata(lua_State *L, int idx)
 {
-	if (lua_isstring(L, idx) || luax_istype(L, idx, FILESYSTEM_FILE_ID) || luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID))
+	if (lua_type(L, 1) == LUA_TSTRING || luax_istype(L, idx, FILESYSTEM_FILE_ID) || luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID))
 		luax_convobj(L, idx, "image", "newImageData");
 }
 
@@ -115,7 +124,7 @@ int w_newBMFontRasterizer(lua_State *L)
 
 	if (lua_istable(L, 2))
 	{
-		for (int i = 1; i <= (int) lua_objlen(L, 2); i++)
+		for (int i = 1; i <= (int) luax_objlen(L, 2); i++)
 		{
 			lua_rawgeti(L, 2, i);
 
@@ -140,7 +149,7 @@ int w_newBMFontRasterizer(lua_State *L)
 
 	luax_catchexcept(L,
 		[&]() { t = instance()->newBMFontRasterizer(d, images); },
-		[&]() { d->release(); for (auto id : images) id->release(); }
+		[&](bool) { d->release(); for (auto id : images) id->release(); }
 	);
 
 	luax_pushtype(L, FONT_RASTERIZER_ID, t);
@@ -156,8 +165,9 @@ int w_newImageRasterizer(lua_State *L)
 
 	image::ImageData *d = luax_checktype<image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
 	std::string glyphs = luax_checkstring(L, 2);
+	int extraspacing = (int) luaL_optnumber(L, 3, 0);
 
-	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs); });
+	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs, extraspacing); });
 
 	luax_pushtype(L, FONT_RASTERIZER_ID, t);
 	t->release();

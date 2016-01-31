@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,6 @@
  **/
 
 #include "common/config.h"
-#include "common/int.h"
 
 // LOVE
 #include "wrap_Touch.h"
@@ -33,20 +32,28 @@ namespace touch
 
 #define instance() (Module::getInstance<Touch>(Module::M_TOUCH))
 
-int w_getIDs(lua_State *L)
+int64 luax_checktouchid(lua_State *L, int idx)
 {
-	std::vector<int64> ids = instance()->getIDs();
+	if (!lua_islightuserdata(L, idx))
+		return luax_typerror(L, idx, "touch id");
 
-	lua_createtable(L, (int) ids.size(), 0);
+	return (int64) (intptr_t) lua_touserdata(L, 1);
+}
 
-	for (size_t i = 0; i < ids.size(); i++)
+int w_getTouches(lua_State *L)
+{
+	const std::vector<Touch::TouchInfo> &touches = instance()->getTouches();
+
+	lua_createtable(L, (int) touches.size(), 0);
+
+	for (size_t i = 0; i < touches.size(); i++)
 	{
 		// This is a bit hackish and we lose the higher 32 bits of the id on
 		// 32-bit systems, but SDL only ever gives id's that at most use as many
 		// bits as can fit in a pointer (for now.)
 		// We use lightuserdata instead of a lua_Number (double) because doubles
 		// can't represent all possible id values on 64-bit systems.
-		lua_pushlightuserdata(L, (void *) (intptr_t) ids[i]);
+		lua_pushlightuserdata(L, (void *) (intptr_t) touches[i].id);
 		lua_rawseti(L, -2, (int) i + 1);
 	}
 
@@ -55,25 +62,33 @@ int w_getIDs(lua_State *L)
 
 int w_getPosition(lua_State *L)
 {
-	if (!lua_islightuserdata(L, 1))
-		return luax_typerror(L, 1, "touch id");
+	int64 id = luax_checktouchid(L, 1);
 
-	int64 id = (int64) (intptr_t) lua_touserdata(L, 1);
+	Touch::TouchInfo touch = {};
+	luax_catchexcept(L, [&]() { touch = instance()->getTouch(id); });
 
-	double x = 0;
-	double y = 0;
-	luax_catchexcept(L, [&]() { instance()->getPosition(id, x, y); });
-
-	lua_pushnumber(L, x);
-	lua_pushnumber(L, y);
+	lua_pushnumber(L, touch.x);
+	lua_pushnumber(L, touch.y);
 
 	return 2;
 }
 
+int w_getPressure(lua_State *L)
+{
+	int64 id = luax_checktouchid(L, 1);
+
+	Touch::TouchInfo touch = {};
+	luax_catchexcept(L, [&](){ touch = instance()->getTouch(id); });
+
+	lua_pushnumber(L, touch.pressure);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
-	{ "getIDs", w_getIDs },
+	{ "getTouches", w_getTouches },
 	{ "getPosition", w_getPosition },
+	{ "getPressure", w_getPressure },
 	{ 0, 0 }
 };
 

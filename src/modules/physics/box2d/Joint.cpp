@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,7 +40,7 @@ namespace box2d
 {
 
 Joint::Joint(Body *body1)
-	: world(body1->world.get())
+	: world(body1->world)
 	, udata(nullptr)
 	, body1(body1)
 	, body2(nullptr)
@@ -50,7 +50,7 @@ Joint::Joint(Body *body1)
 }
 
 Joint::Joint(Body *body1, Body *body2)
-	: world(body1->world.get())
+	: world(body1->world)
 	, udata(nullptr)
 	, body1(body1)
 	, body2(body2)
@@ -193,15 +193,7 @@ int Joint::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (udata->ref != nullptr)
-	{
-		// We set the Reference's lua_State to this one before deleting it, so
-		// it unrefs using the current lua_State's stack. This is necessary
-		// if setUserData is called in a coroutine.
-		udata->ref->setL(L);
-		delete udata->ref;
-	}
-
+	delete udata->ref;
 	udata->ref = new Reference(L);
 
 	return 0;
@@ -213,7 +205,7 @@ int Joint::getUserData(lua_State *L)
 		udata->ref->push(L);
 	else
 		lua_pushnil(L);
-	
+
 	return 1;
 }
 

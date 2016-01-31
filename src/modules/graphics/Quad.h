@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,14 +36,14 @@ public:
 
 	struct Viewport
 	{
-		float x, y;
-		float w, h;
+		double x, y;
+		double w, h;
 	};
 
-	Quad(const Viewport &v, float sw, float sh);
+	Quad(const Viewport &v, double sw, double sh);
 	virtual ~Quad();
 
-	void refresh(const Viewport &v, float sw, float sh);
+	void refresh(const Viewport &v, double sw, double sh);
 	void setViewport(const Viewport &v);
 	Viewport getViewport() const;
 
@@ -54,8 +54,8 @@ private:
 	Vertex vertices[4];
 
 	Viewport viewport;
-	float sw;
-	float sh;
+	double sw;
+	double sh;
 
 }; // Quad
 

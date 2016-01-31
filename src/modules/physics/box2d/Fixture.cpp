@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -227,15 +227,7 @@ int Fixture::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (data->ref != nullptr)
-	{
-		// We set the Reference's lua_State to this one before deleting it, so
-		// it unrefs using the current lua_State's stack. This is necessary
-		// if setUserData is called in a coroutine.
-		data->ref->setL(L);
-		delete data->ref;
-	}
-
+	delete data->ref;
 	data->ref = new Reference(L);
 
 	return 0;
@@ -263,7 +255,7 @@ int Fixture::rayCast(lua_State *L) const
 	float p2x = Physics::scaleDown((float)luaL_checknumber(L, 3));
 	float p2y = Physics::scaleDown((float)luaL_checknumber(L, 4));
 	float maxFraction = (float)luaL_checknumber(L, 5);
-	int childIndex = (int)luaL_optint(L, 6, 1) - 1; // Convert from 1-based index
+	int childIndex = (int) luaL_optnumber(L, 6, 1) - 1; // Convert from 1-based index
 	b2RayCastInput input;
 	input.p1.Set(p1x, p1y);
 	input.p2.Set(p2x, p2y);
@@ -279,7 +271,7 @@ int Fixture::rayCast(lua_State *L) const
 
 int Fixture::getBoundingBox(lua_State *L) const
 {
-	int childIndex = (int)luaL_optint(L, 1, 1) - 1; // Convert from 1-based index
+	int childIndex = (int) luaL_optnumber(L, 1, 1) - 1; // Convert from 1-based index
 	b2AABB box = fixture->GetAABB(childIndex);
 	box = Physics::scaleUp(box);
 	lua_pushnumber(L, box.lowerBound.x);

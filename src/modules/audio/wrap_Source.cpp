@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -137,6 +137,19 @@ int w_Source_tell(lua_State *L)
 		return luaL_error(L, "Invalid Source time unit: %s", unit);
 
 	lua_pushnumber(L, t->tell(u));
+	return 1;
+}
+
+int w_Source_getDuration(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+
+	Source::Unit u = Source::UNIT_SECONDS;
+	const char *unit = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	if (unit && !t->getConstant(unit, u))
+		return luaL_error(L, "Invalid Source time unit: %s", unit);
+
+	lua_pushnumber(L, t->getDuration(u));
 	return 1;
 }
 
@@ -357,7 +370,7 @@ int w_Source_getType(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Source_functions[] =
 {
 	{ "clone", w_Source_clone },
 
@@ -373,6 +386,7 @@ static const luaL_Reg functions[] =
 	{ "getVolume", w_Source_getVolume },
 	{ "seek", w_Source_seek },
 	{ "tell", w_Source_tell },
+	{ "getDuration", w_Source_getDuration },
 	{ "setPosition", w_Source_setPosition },
 	{ "getPosition", w_Source_getPosition },
 	{ "setVelocity", w_Source_setVelocity },
@@ -406,7 +420,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_source(lua_State *L)
 {
-	return luax_register_type(L, AUDIO_SOURCE_ID, functions);
+	return luax_register_type(L, AUDIO_SOURCE_ID, "Source", w_Source_functions, nullptr);
 }
 
 } // audio

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,14 +24,14 @@
 // LOVE
 #include "Touch.h"
 #include "common/runtime.h"
+#include "common/int.h"
 
 namespace love
 {
 namespace touch
 {
 
-int w_getIDs(lua_State *L);
-int w_getPosition(lua_State *L);
+int64 luax_checktouchid(lua_State *L, int idx);
 extern "C" LOVE_EXPORT int luaopen_love_touch(lua_State *L);
 
 } // touch

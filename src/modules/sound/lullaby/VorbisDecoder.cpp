@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ static size_t vorbisRead(void *ptr	/* ptr to the data that the vorbis files need
 	if (actualSizeToRead)
 	{
 		// Copy the data from the start of the file PLUS how much we have already read in
-		memcpy(ptr, (char *)vorbisData->dataPtr + vorbisData->dataRead, actualSizeToRead);
+		memcpy(ptr, (const char *)vorbisData->dataPtr + vorbisData->dataRead, actualSizeToRead);
 		// Increase by how much we have read by
 		vorbisData->dataRead += (actualSizeToRead);
 	}
@@ -106,10 +106,12 @@ static int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files 
 		vorbisData->dataRead += (int)actualOffset;
 		break;
 	case SEEK_END: // Seek from the end of the file
-		vorbisData->dataRead = vorbisData->dataSize+1;
+		if (offset < 0)
+			vorbisData->dataRead = vorbisData->dataSize + offset;
+		else
+			vorbisData->dataRead = vorbisData->dataSize;
 		break;
 	default:
-		throw love::Exception("Unknown seek command in vorbisSeek\n");
 		break;
 	};
 
@@ -128,6 +130,7 @@ static long vorbisTell(void *datasource	/* ptr to the data that the vorbis files
 
 VorbisDecoder::VorbisDecoder(Data *data, const std::string &ext, int bufferSize)
 	: Decoder(data, ext, bufferSize)
+	, duration(-2.0)
 {
 	// Initialize callbacks
 	vorbisCallbacks.close_func = vorbisClose;
@@ -143,7 +146,7 @@ VorbisDecoder::VorbisDecoder(Data *data, const std::string &ext, int bufferSize)
 #endif
 
 	// Initialize OGG file
-	oggFile.dataPtr = (char *) data->getData();
+	oggFile.dataPtr = (const char *) data->getData();
 	oggFile.dataSize = (int) data->getSize();
 	oggFile.dataRead = 0;
 
@@ -165,7 +168,7 @@ bool VorbisDecoder::accepts(const std::string &ext)
 {
 	static const std::string supported[] =
 	{
-		"ogg", "oga", ""
+		"ogg", "oga", "ogv", ""
 	};
 
 	for (int i = 0; !(supported[i].empty()); i++)
@@ -208,7 +211,14 @@ int VorbisDecoder::decode()
 
 bool VorbisDecoder::seek(float s)
 {
-	int result = ov_time_seek(&handle, s);
+	int result = 0;
+
+	// Avoid ov_time_seek (which calls ov_pcm_seek) when seeking to 0, to avoid
+	// a bug in libvorbis <= 1.3.4 when seeking to PCM 0 in multiplexed streams.
+	if (s <= 0.000001)
+		result = ov_raw_seek(&handle, 0);
+	else
+		result = ov_time_seek(&handle, s);
 
 	if (result == 0)
 	{
@@ -221,7 +231,9 @@ bool VorbisDecoder::seek(float s)
 
 bool VorbisDecoder::rewind()
 {
-	int result = ov_pcm_seek(&handle, 0);
+	// Avoid ov_time_seek to avoid a bug in libvorbis <= 1.3.4 when seeking to
+	// PCM 0 in multiplexed streams.
+	int result = ov_raw_seek(&handle, 0);
 
 	if (result == 0)
 	{
@@ -251,6 +263,20 @@ int VorbisDecoder::getBitDepth() const
 int VorbisDecoder::getSampleRate() const
 {
 	return (int) vorbisInfo->rate;
+}
+
+double VorbisDecoder::getDuration()
+{
+	// Only calculate the duration if we haven't done so already.
+	if (duration == -2.0)
+	{
+		duration = ov_time_total(&handle, -1);
+
+		if (duration == OV_EINVAL || duration < 0.0)
+			duration = -1.0;
+	}
+
+	return duration;
 }
 
 } // lullaby

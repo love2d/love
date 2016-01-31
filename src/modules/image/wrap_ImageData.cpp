@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,10 +23,20 @@
 #include "common/wrap_Data.h"
 #include "filesystem/File.h"
 
+// Shove the wrap_ImageData.lua code directly into a raw string literal.
+static const char imagedata_lua[] =
+#include "wrap_ImageData.lua"
+;
+
 namespace love
 {
 namespace image
 {
+
+/**
+ * NOTE: Additional wrapper code is in wrap_ImageData.lua. Be sure to keep it
+ * in sync with any changes made to this file!
+ **/
 
 ImageData *luax_checkimagedata(lua_State *L, int idx)
 {
@@ -58,8 +68,8 @@ int w_ImageData_getDimensions(lua_State *L)
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = luaL_checkint(L, 2);
-	int y = luaL_checkint(L, 3);
+	int x = (int) luaL_checknumber(L, 2);
+	int y = (int) luaL_checknumber(L, 3);
 	pixel c;
 
 	luax_catchexcept(L, [&](){ c = t->getPixel(x, y); });
@@ -74,8 +84,8 @@ int w_ImageData_getPixel(lua_State *L)
 int w_ImageData_setPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = luaL_checkint(L, 2);
-	int y = luaL_checkint(L, 3);
+	int x = (int) luaL_checknumber(L, 2);
+	int y = (int) luaL_checknumber(L, 3);
 	pixel c;
 
 	if (lua_istable(L, 4))
@@ -130,8 +140,9 @@ static int luax_retnumbererror(lua_State *L, int level, int retnum, int ttype)
 	                     where, retnum, ttypename);
 }
 
-// ImageData:mapPixel. Not thread-safe! See the wrapper function below.
-static int w_ImageData_mapPixelUnsafe(lua_State *L)
+// ImageData:mapPixel. Not thread-safe! See wrap_ImageData.lua for the thread-
+// safe wrapper function.
+int w_ImageData__mapPixelUnsafe(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -186,38 +197,6 @@ static int w_ImageData_mapPixelUnsafe(lua_State *L)
 			t->setPixelUnsafe(x, y, c);
 		}
 	}
-	return 0;
-}
-
-// Thread-safe wrapper for the above function.
-int w_ImageData_mapPixel(lua_State *L)
-{
-	ImageData *t = luax_checkimagedata(L, 1);
-	luaL_checktype(L, 2, LUA_TFUNCTION);
-	int sx = luaL_optint(L, 3, 0);
-	int sy = luaL_optint(L, 4, 0);
-	int w = luaL_optint(L, 5, t->getWidth());
-	int h = luaL_optint(L, 6, t->getHeight());
-
-	lua_pushcfunction(L, w_ImageData_mapPixelUnsafe);
-	lua_pushvalue(L, 1);
-	lua_pushvalue(L, 2);
-	lua_pushinteger(L, sx);
-	lua_pushinteger(L, sy);
-	lua_pushinteger(L, w);
-	lua_pushinteger(L, h);
-
-	int ret = 0;
-
-	// Lock this ImageData's mutex during the entire mapPixel. We pcall instead
-	// of call because lua_error longjmp's without calling object destructors.
-	{
-		love::thread::Lock lock(t->getMutex());
-		ret = lua_pcall(L, 6, 0, 0);
-	}
-
-	if (ret != 0)
-		return lua_error(L);
 
 	return 0;
 }
@@ -226,66 +205,132 @@ int w_ImageData_paste(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	ImageData *src = luax_checkimagedata(L, 2);
-	int dx = luaL_checkint(L, 3);
-	int dy = luaL_checkint(L, 4);
-	int sx = luaL_optint(L, 5, 0);
-	int sy = luaL_optint(L, 6, 0);
-	int sw = luaL_optint(L, 7, src->getWidth());
-	int sh = luaL_optint(L, 8, src->getHeight());
+	int dx = (int) luaL_checknumber(L, 3);
+	int dy = (int) luaL_checknumber(L, 4);
+	int sx = (int) luaL_optnumber(L, 5, 0);
+	int sy = (int) luaL_optnumber(L, 6, 0);
+	int sw = (int) luaL_optnumber(L, 7, src->getWidth());
+	int sh = (int) luaL_optnumber(L, 8, src->getHeight());
 	t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 	return 0;
 }
 
 int w_ImageData_encode(lua_State *L)
 {
-	std::string ext;
-	const char *fmt;
-	ImageData::Format format = ImageData::FORMAT_MAX_ENUM;
 	ImageData *t = luax_checkimagedata(L, 1);
 
-	if (lua_isstring(L, 2))
-		luax_convobj(L, 2, "filesystem", "newFile");
-	love::filesystem::File *file = luax_checktype<love::filesystem::File>(L, 2, FILESYSTEM_FILE_ID);
+	ImageData::EncodedFormat format;
+	const char *fmt = luaL_checkstring(L, 2);
+	if (!ImageData::getConstant(fmt, format))
+		return luaL_error(L, "Invalid encoded image format '%s'.", fmt);
 
-	if (lua_isnoneornil(L, 3))
+	bool hasfilename = false;
+
+	std::string filename = "Image." + std::string(fmt);
+	if (!lua_isnoneornil(L, 3))
 	{
-		ext = file->getExtension();
-		fmt = ext.c_str();
-		if (!ImageData::getConstant(fmt, format))
-			return luaL_error(L, "Invalid image format '%s'.", fmt);
-	}
-	else
-	{
-		fmt = luaL_checkstring(L, 3);
-		if (!ImageData::getConstant(fmt, format))
-			return luaL_error(L, "Invalid image format '%s'.", fmt);
+		hasfilename = true;
+		filename = luax_checkstring(L, 3);
 	}
 
-	luax_catchexcept(L, [&](){ t->encode(file, format); });
-	return 0;
+	love::filesystem::FileData *filedata = nullptr;
+	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
+
+	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, filedata);
+	filedata->release();
+
+	if (hasfilename)
+	{
+		luax_getfunction(L, "filesystem", "write");
+		lua_pushvalue(L, 3); // filename
+		lua_pushvalue(L, -3); // FileData
+		lua_call(L, 2, 0);
+	}
+
+	return 1;
 }
 
-static const luaL_Reg functions[] =
+int w_ImageData__performAtomic(lua_State *L)
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
+	ImageData *t = luax_checkimagedata(L, 1);
+	int err = 0;
 
+	{
+		love::thread::Lock lock(t->getMutex());
+		// call the function, passing any user-specified arguments.
+		err = lua_pcall(L, lua_gettop(L) - 2, LUA_MULTRET, 0);
+	}
+
+	// Unfortunately, this eats the stack trace, too bad.
+	if (err != 0)
+		return lua_error(L);
+
+	// The function and everything after it in the stack are eaten by the pcall,
+	// leaving only the ImageData object. Everything else is a return value.
+	return lua_gettop(L) - 1;
+}
+
+// C functions in a struct, necessary for the FFI versions of ImageData methods.
+struct FFI_ImageData
+{
+	void (*lockMutex)(Proxy *p);
+	void (*unlockMutex)(Proxy *p);
+};
+
+static FFI_ImageData ffifuncs =
+{
+	[](Proxy *p) // lockMutex
+	{
+		// We don't do any type-checking for the Proxy here since these functions
+		// are always called from code which has already done type checking.
+		ImageData *i = (ImageData *) p->object;
+		i->getMutex()->lock();
+	},
+
+	[](Proxy *p) // unlockMutex
+	{
+		ImageData *i = (ImageData *) p->object;
+		i->getMutex()->unlock();
+	}
+};
+
+static const luaL_Reg w_ImageData_functions[] =
+{
 	{ "getWidth", w_ImageData_getWidth },
 	{ "getHeight", w_ImageData_getHeight },
 	{ "getDimensions", w_ImageData_getDimensions },
 	{ "getPixel", w_ImageData_getPixel },
 	{ "setPixel", w_ImageData_setPixel },
-	{ "mapPixel", w_ImageData_mapPixel },
 	{ "paste", w_ImageData_paste },
 	{ "encode", w_ImageData_encode },
+
+	// Used in the Lua wrapper code.
+	{ "_mapPixelUnsafe", w_ImageData__mapPixelUnsafe },
+	{ "_performAtomic", w_ImageData__performAtomic },
+
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	return luax_register_type(L, IMAGE_IMAGE_DATA_ID, functions);
+	int ret = luax_register_type(L, IMAGE_IMAGE_DATA_ID, "ImageData", w_Data_functions, w_ImageData_functions, nullptr);
+
+	luax_gettypemetatable(L, IMAGE_IMAGE_DATA_ID);
+
+	// Load and execute ImageData.lua, sending the metatable and the ffi
+	// functions struct pointer as arguments.
+	if (lua_istable(L, -1))
+	{
+		luaL_loadbuffer(L, imagedata_lua, sizeof(imagedata_lua), "ImageData.lua");
+		lua_pushvalue(L, -2);
+		lua_pushlightuserdata(L, &ffifuncs);
+		lua_call(L, 2, 0);
+	}
+
+	// Pop the metatable.
+	lua_pop(L, 1);
+
+	return ret;
 }
 
 } // image

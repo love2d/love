@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -69,6 +69,7 @@ CoreAudioDecoder::CoreAudioDecoder(Data *data, const std::string &ext, int buffe
 	, extAudioFile(nullptr)
 	, inputInfo()
 	, outputInfo()
+	, duration(-2.0)
 {
 	try
 	{
@@ -229,26 +230,26 @@ int CoreAudioDecoder::decode()
 bool CoreAudioDecoder::seek(float s)
 {
 	OSStatus err = ExtAudioFileSeek(extAudioFile, (SInt64) (s * inputInfo.mSampleRate));
-	
+
 	if (err == noErr)
 	{
 		eof = false;
 		return true;
 	}
-	
+
 	return false;
 }
 
 bool CoreAudioDecoder::rewind()
 {
-	OSStatus err =  ExtAudioFileSeek(extAudioFile, 0);
-	
+	OSStatus err = ExtAudioFileSeek(extAudioFile, 0);
+
 	if (err == noErr)
 	{
 		eof = false;
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -265,6 +266,25 @@ int CoreAudioDecoder::getChannels() const
 int CoreAudioDecoder::getBitDepth() const
 {
 	return outputInfo.mBitsPerChannel;
+}
+
+double CoreAudioDecoder::getDuration()
+{
+	// Only calculate the duration if we haven't done so already.
+	if (duration == -2.0)
+	{
+		SInt64 samples = 0;
+		UInt32 psize = (UInt32) sizeof(samples);
+
+		OSStatus err = ExtAudioFileGetProperty(extAudioFile, kExtAudioFileProperty_FileLengthFrames, &psize, &samples);
+
+		if (err == noErr)
+			duration = (double) samples / (double) sampleRate;
+		else
+			duration = -1.0;
+	}
+
+	return duration;
 }
 
 } // lullaby

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -117,14 +117,17 @@ void ImageData::decode(love::filesystem::FileData *data)
 
 	if (decodedimage.data == nullptr)
 	{
-		const char *ext = data->getExtension().c_str();
-		throw love::Exception("Could not decode to ImageData: unrecognized format (%s)", ext);
+		const std::string &name = data->getFilename();
+		throw love::Exception("Could not decode file '%s' to ImageData: unsupported file format", name.c_str());
 	}
 
 	// The decoder *must* output a 32 bits-per-pixel image.
 	if (decodedimage.size != decodedimage.width*decodedimage.height*sizeof(pixel))
 	{
-		delete[] decodedimage.data;
+		if (decodeHandler)
+			decodeHandler->free(decodedimage.data);
+		else
+			delete[] decodedimage.data;
 		throw love::Exception("Could not convert image!");
 	}
 
@@ -141,7 +144,7 @@ void ImageData::decode(love::filesystem::FileData *data)
 	decodeHandler = decoder;
 }
 
-void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
+love::filesystem::FileData *ImageData::encode(EncodedFormat format, const char *filename)
 {
 	FormatHandler *encoder = nullptr;
 	FormatHandler::EncodedImage encodedimage;
@@ -171,14 +174,14 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 	{
 		const char *fname = "unknown";
 		getConstant(format, fname);
-		throw love::Exception("no suitable image encoder for %s format.", fname);
+		throw love::Exception("No suitable image encoder for %s format.", fname);
 	}
+
+	love::filesystem::FileData *filedata = nullptr;
 
 	try
 	{
-		f->open(love::filesystem::File::MODE_WRITE);
-		f->write(encodedimage.data, encodedimage.size);
-		f->close();
+		filedata = new love::filesystem::FileData(encodedimage.size, filename);
 	}
 	catch (love::Exception &)
 	{
@@ -186,7 +189,10 @@ void ImageData::encode(love::filesystem::File *f, ImageData::Format format)
 		throw;
 	}
 
+	memcpy(filedata->getData(), encodedimage.data, encodedimage.size);
 	encoder->free(encodedimage.data);
+
+	return filedata;
 }
 
 } // magpie

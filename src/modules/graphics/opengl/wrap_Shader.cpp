@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,12 @@
 
 #include "wrap_Shader.h"
 #include "graphics/wrap_Texture.h"
+#include "math/MathModule.h"
+
 #include <string>
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 namespace love
 {
@@ -68,7 +72,7 @@ static T *_getScalars(lua_State *L, int count, size_t &dimension)
 template <typename T>
 static T *_getVectors(lua_State *L, int count, size_t &dimension)
 {
-	dimension = lua_objlen(L, 3);
+	dimension = luax_objlen(L, 3);
 	T *values = new T[count * dimension];
 
 	for (int i = 0; i < count; ++i)
@@ -79,11 +83,11 @@ static T *_getVectors(lua_State *L, int count, size_t &dimension)
 			luax_typerror(L, 3 + i, "table");
 			return 0;
 		}
-		if (lua_objlen(L, 3 + i) != dimension)
+		if (luax_objlen(L, 3 + i) != dimension)
 		{
 			delete[] values;
 			luaL_error(L, "Error in argument %d: Expected table size %d, got %d.",
-						   3+i, dimension, lua_objlen(L, 3+i));
+						   3+i, dimension, luax_objlen(L, 3+i));
 			return 0;
 		}
 
@@ -148,7 +152,7 @@ int w_Shader_sendInt(lua_State *L)
 	return 0;
 }
 
-int w_Shader_sendFloat(lua_State *L)
+static int w__Shader_sendFloat(lua_State *L, bool colors)
 {
 	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
@@ -157,7 +161,7 @@ int w_Shader_sendFloat(lua_State *L)
 	if (count < 1)
 		return luaL_error(L, "No variable to send.");
 
-	float *values = 0;
+	float *values = nullptr;
 	size_t dimension = 1;
 
 	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
@@ -169,6 +173,24 @@ int w_Shader_sendFloat(lua_State *L)
 
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
+
+	if (colors)
+	{
+		bool gammacorrect = love::graphics::isGammaCorrect();
+		const auto &m = love::math::Math::instance;
+
+		for (int i = 0; i < count; i++)
+		{
+			for (int j = 0; j < (int) dimension; j++)
+			{
+				// the fourth component (alpha) is always already linear, if it exists.
+				if (gammacorrect && j < 3)
+					values[i * dimension + j] = m.gammaToLinear(values[i * dimension + j] / 255.0f);
+				else
+					values[i * dimension + j] /= 255.0f;
+			}
+		}
+	}
 
 	bool should_error = false;
 	try
@@ -189,6 +211,16 @@ int w_Shader_sendFloat(lua_State *L)
 	return 0;
 }
 
+int w_Shader_sendFloat(lua_State *L)
+{
+	return w__Shader_sendFloat(L, false);
+}
+
+int w_Shader_sendColor(lua_State *L)
+{
+	return w__Shader_sendFloat(L, true);
+}
+
 int w_Shader_sendMatrix(lua_State *L)
 {
 	int count = lua_gettop(L) - 2;
@@ -198,43 +230,91 @@ int w_Shader_sendMatrix(lua_State *L)
 	if (!lua_istable(L, 3))
 		return luax_typerror(L, 3, "matrix table");
 
-	lua_getfield(L, 3, "dimension");
-	int dimension = (int) lua_tointeger(L, -1);
+	int dimension = 0;
+
+	lua_rawgeti(L, 3, 1);
+	if (lua_istable(L, -1))
+		dimension = (int) luax_objlen(L, 3);
 	lua_pop(L, 1);
+
+	if (dimension == 0)
+	{
+		lua_getfield(L, 3, "dimension");
+
+		if (!lua_isnoneornil(L, -1))
+			dimension = (int) lua_tointeger(L, -1);
+		else
+			dimension = (int) sqrtf((float) luax_objlen(L, 3));
+
+		lua_pop(L, 1);
+	}
 
 	if (dimension < 2 || dimension > 4)
 		return luaL_error(L, "Invalid matrix size: %dx%d (only 2x2, 3x3 and 4x4 matrices are supported).",
 						  dimension, dimension);
 
 	float *values = new float[dimension * dimension * count];
+
 	for (int i = 0; i < count; ++i)
 	{
-		lua_getfield(L, 3+i, "dimension");
-		if (lua_tointeger(L, -1) != dimension)
+		int other_dimension = 0;
+
+		lua_rawgeti(L, 3+i, 1);
+		bool table_of_tables = lua_istable(L, -1);
+
+		if (table_of_tables)
+			other_dimension = luax_objlen(L, -1);
+
+		lua_pop(L, 1);
+
+		if (!table_of_tables)
+			other_dimension = (int) sqrtf((float) luax_objlen(L, 3+i));
+
+		if (other_dimension != dimension)
 		{
 			// You unlock this door with the key of imagination. Beyond it is
 			// another dimension: a dimension of sound, a dimension of sight,
 			// a dimension of mind. You're moving into a land of both shadow
 			// and substance, of things and ideas. You've just crossed over
 			// into... the Twilight Zone.
-			int other_dimension = (int) lua_tointeger(L, -1);
 			delete[] values;
 			return luaL_error(L, "Invalid matrix size at argument %d: Expected size %dx%d, got %dx%d.",
 							  3+i, dimension, dimension, other_dimension, other_dimension);
 		}
 
-		for (int k = 1; k <= dimension*dimension; ++k)
+		if (table_of_tables)
 		{
-			lua_rawgeti(L, 3+i, k);
-			values[i * dimension * dimension + k - 1] = (float)lua_tonumber(L, -1);
-		}
+			int n = 0;
 
-		lua_pop(L, 1 + dimension);
+			for (int j = 1; j <= dimension; j++)
+			{
+				lua_rawgeti(L, 3+i, j);
+
+				for (int k = 1; k <= dimension; k++)
+				{
+					lua_rawgeti(L, -k, k);
+					values[i * dimension * dimension + n] = (float) lua_tonumber(L, -1);
+					n++;
+				}
+
+				lua_pop(L, dimension + 1);
+			}
+		}
+		else
+		{
+			for (int k = 1; k <= dimension*dimension; k++)
+			{
+				lua_rawgeti(L, 3+i, k);
+				values[i * dimension * dimension + k - 1] = (float) lua_tonumber(L, -1);
+			}
+
+			lua_pop(L, dimension*dimension);
+		}
 	}
 
 	luax_catchexcept(L,
 		[&]() { shader->sendMatrix(name, dimension, values, count); },
-		[&]() { delete[] values; }
+		[&](bool) { delete[] values; }
 	);
 
 	return 0;
@@ -248,48 +328,6 @@ int w_Shader_sendTexture(lua_State *L)
 
 	luax_catchexcept(L, [&](){ shader->sendTexture(name, texture); });
 	return 0;
-}
-
-// Convert matrices on the stack for use with sendMatrix.
-static void w_convertMatrices(lua_State *L, int idx)
-{
-	int matrixcount = lua_gettop(L) - (idx - 1);
-
-	for (int matrix = idx; matrix < idx + matrixcount; matrix++)
-	{
-		luaL_checktype(L, matrix, LUA_TTABLE);
-		int dimension = (int) lua_objlen(L, matrix);
-
-		int newi = 1;
-		lua_createtable(L, dimension * dimension, 0);
-
-		// Collapse {{a,b,c}, {d,e,f}, ...} to {a,b,c, d,e,f, ...}
-		for (int i = 1; i <= (int) lua_objlen(L, matrix); i++)
-		{
-			// Push args[matrix][i] onto the stack.
-			lua_rawgeti(L, matrix, i);
-			luaL_checktype(L, -1, LUA_TTABLE);
-
-			for (int j = 1; j <= (int) lua_objlen(L, -1); j++)
-			{
-				// Push args[matrix[i][j] onto the stack.
-				lua_rawgeti(L, -1, j);
-				luaL_checktype(L, -1, LUA_TNUMBER);
-
-				// newtable[newi] = args[matrix][i][j]
-				lua_rawseti(L, -3, newi++);
-			}
-
-			lua_pop(L, 1);
-		}
-
-		// newtable.dimension = #args[matrix]
-		lua_pushinteger(L, dimension);
-		lua_setfield(L, -2, "dimension");
-
-		// Replace args[i] with the new table
-		lua_replace(L, matrix);
-	}
 }
 
 int w_Shader_send(lua_State *L)
@@ -321,10 +359,7 @@ int w_Shader_send(lua_State *L)
 		if (ttype == LUA_TNUMBER || ttype == LUA_TBOOLEAN)
 			return w_Shader_sendFloat(L);
 		else if (ttype == LUA_TTABLE)
-		{
-			w_convertMatrices(L, 3);
 			return w_Shader_sendMatrix(L);
-		}
 
 		break;
 	default:
@@ -366,12 +401,13 @@ int w_Shader_getExternVariable(lua_State *L)
 	return 3;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Shader_functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
 	{ "sendInt",     w_Shader_sendInt },
 	{ "sendBoolean", w_Shader_sendInt },
 	{ "sendFloat",   w_Shader_sendFloat },
+	{ "sendColor",   w_Shader_sendColor },
 	{ "sendMatrix",  w_Shader_sendMatrix },
 	{ "sendTexture", w_Shader_sendTexture },
 	{ "send",        w_Shader_send },
@@ -381,7 +417,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SHADER_ID, functions);
+	return luax_register_type(L, GRAPHICS_SHADER_ID, "Shader", w_Shader_functions, nullptr);
 }
 
 } // opengl

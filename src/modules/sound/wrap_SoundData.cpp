@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,10 +22,20 @@
 
 #include "common/wrap_Data.h"
 
+// Shove the wrap_SoundData.lua code directly into a raw string literal.
+static const char sounddata_lua[] =
+#include "wrap_SoundData.lua"
+;
+
 namespace love
 {
 namespace sound
 {
+
+/**
+ * NOTE: Additional wrapper code is in wrap_SoundData.lua. Be sure to keep it
+ * in sync with any changes made to this file!
+ **/
 
 SoundData *luax_checksounddata(lua_State *L, int idx)
 {
@@ -86,13 +96,8 @@ int w_SoundData_getSample(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_SoundData_functions[] =
 {
-	// Data
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-
 	{ "getChannels", w_SoundData_getChannels },
 	{ "getBitDepth", w_SoundData_getBitDepth },
 	{ "getSampleRate", w_SoundData_getSampleRate },
@@ -105,7 +110,22 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	return luax_register_type(L, SOUND_SOUND_DATA_ID, functions);
+	int ret = luax_register_type(L, SOUND_SOUND_DATA_ID, "SoundData", w_Data_functions, w_SoundData_functions, nullptr);
+
+	luax_gettypemetatable(L, SOUND_SOUND_DATA_ID);
+
+	// Load and execute SoundData.lua, sending the metatable as an argument.
+	if (lua_istable(L, -1))
+	{
+		luaL_loadbuffer(L, sounddata_lua, sizeof(sounddata_lua), "SoundData.lua");
+		lua_pushvalue(L, -2);
+		lua_call(L, 1, 0);
+	}
+
+	// Pop the metatable.
+	lua_pop(L, 1);
+
+	return ret;
 }
 
 } // sound

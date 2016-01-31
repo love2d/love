@@ -1,4 +1,0 @@
-#!/bin/sh
-
-update-mime-database /usr/share/mime
-gtk-update-icon-cache --force /usr/share/icons/gnome

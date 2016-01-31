@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,8 +61,12 @@ public:
 		BUILTIN_TRANSFORM_MATRIX = 0,
 		BUILTIN_PROJECTION_MATRIX,
 		BUILTIN_TRANSFORM_PROJECTION_MATRIX,
+		BUILTIN_NORMAL_MATRIX,
 		BUILTIN_POINT_SIZE,
 		BUILTIN_SCREEN_SIZE,
+		BUILTIN_VIDEO_Y_CHANNEL,
+		BUILTIN_VIDEO_CB_CHANNEL,
+		BUILTIN_VIDEO_CR_CHANNEL,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -88,9 +92,11 @@ public:
 
 	// Pointer to the default Shader.
 	static Shader *defaultShader;
+	static Shader *defaultVideoShader;
 
 	// Default shader code (a shader is always required internally.)
 	static ShaderSource defaultCode[Graphics::RENDERER_MAX_ENUM];
+	static ShaderSource defaultVideoCode[Graphics::RENDERER_MAX_ENUM];
 
 	/**
 	 * Creates a new Shader using a list of source codes.
@@ -174,22 +180,33 @@ public:
 	 **/
 	UniformType getExternVariable(const std::string &name, int &components, int &count);
 
+	GLint getAttribLocation(const std::string &name);
+
 	/**
 	 * Internal use only.
 	 **/
 	bool hasVertexAttrib(VertexAttribID attrib) const;
-	bool hasBuiltinUniform(BuiltinUniform builtin) const;
-	bool sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *m, int count);
-	bool sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *m, int count);
+
+	void setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture);
 	void checkSetScreenParams();
+	void checkSetPointSize(float size);
+	void checkSetBuiltinUniforms();
 
 	const std::map<std::string, Object *> &getBoundRetainables() const;
+
+	GLuint getProgram() const
+	{
+		return program;
+	}
 
 	static std::string getGLSLVersion();
 	static bool isSupported();
 
 	static bool getConstant(const char *in, UniformType &out);
 	static bool getConstant(UniformType in, const char *&out);
+
+	static bool getConstant(const char *in, VertexAttribID &out);
+	static bool getConstant(VertexAttribID in, const char *&out);
 
 private:
 
@@ -236,6 +253,8 @@ private:
 	// Location values for any generic vertex attribute variables.
 	GLint builtinAttributes[ATTRIB_MAX_ENUM];
 
+	std::map<std::string, GLint> attributes;
+
 	// Uniform location buffer map
 	std::map<std::string, Uniform> uniforms;
 
@@ -249,6 +268,13 @@ private:
 	// Pointer to the active Canvas when the screen params were last checked.
 	Canvas *lastCanvas;
 	OpenGL::Viewport lastViewport;
+
+	float lastPointSize;
+
+	Matrix4 lastTransformMatrix;
+	Matrix4 lastProjectionMatrix;
+
+	GLuint videoTextureUnits[3];
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;

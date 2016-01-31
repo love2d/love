@@ -3,58 +3,48 @@ Section: games
 Priority: extra
 Maintainer: Bart van Strien <bart.bes@gmail.com>
 Build-Depends: debhelper (>= 9),
-               autotools-dev,
-               autoconf,
-               automake,
-               libtool,
+               dh-autoreconf,
                pkg-config,
+               libtool,
+               g++ (>= 4.7.0),
                libfreetype6-dev,
+               luajit,
                libluajit-5.1-dev,
-               libphysfs-dev,
-               libsdl2-dev (>= 2.0.0),
-               libopenal-dev,
-               libogg-dev,
-               libvorbis-dev,
                libmodplug-dev,
                libmpg123-dev,
-               zlib1g-dev,
-               libjpeg-turbo8-dev
+               libopenal-dev,
+               libphysfs-dev,
+               libsdl2-dev (>= 2.0.1),
+               libogg-dev,
+               libvorbis-dev,
+               libtheora-dev,
+               zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://love2d.org
 
-Package: liblove@LOVE_SUFFIX@
+Package: liblove@LOVE_SUFFIX@0
+Section: libs
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
-         ${shlibs:Depends},
-         libfreetype6,
-         libgl1-mesa-glx,
-         libluajit-5.1-2,
-         libphysfs-1.0-0,
-         libsdl2-2.0-0 (>= 2.0.0),
-         libopenal1,
-         libogg0,
-         libvorbis0a,
-         libvorbisfile3,
-         libmodplug1,
-         libmpg123-0,
-         zlib1g,
-         libjpeg-turbo8
-Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
+         ${shlibs:Depends}
+Description: 2D game engine - runtime
+ LOVE is a free 2D game engine which enables easy game creation in Lua.
 
 Package: love@LOVE_SUFFIX@
 Architecture: any
-Multi-Arch: same
 Depends: ${misc:Depends},
-         liblove@LOVE_SUFFIX@ (= ${binary:Version})
-Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
+         ${shlibs:Depends}
+Description: 2D game engine
+ LOVE is a free 2D game engine which enables easy game creation in Lua.
 
-Package: love@LOVE_SUFFIX@-dbg
+Package: liblove@LOVE_SUFFIX@-dbg
 Priority: extra
 Section: debug
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         love@LOVE_SUFFIX@ (= ${binary:Version}),
-Description: LOVE is a free 2D game engine which enables easy game creation in Lua.
+         liblove@LOVE_SUFFIX@0 (= ${binary:Version})
+Description: 2D game engine - debug symbols
+ LOVE is a free 2D game engine which enables easy game creation in Lua.

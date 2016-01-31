@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -52,17 +52,10 @@ int w_ChainShape_setPreviousVertex(lua_State *L)
 	return 0;
 }
 
-int w_ChainShape_getChildCount(lua_State *L)
-{
-	ChainShape *c = luax_checkchainshape(L, 1);
-	lua_pushinteger(L, c->getChildCount());
-	return 1;
-}
-
 int w_ChainShape_getChildEdge(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
+	int index = (int) luaL_checknumber(L, 2) - 1; // Convert from 1-based index
 	EdgeShape *e = 0;
 	luax_catchexcept(L, [&](){ e = c->getChildEdge(index); });
 	luax_pushtype(L, PHYSICS_EDGE_SHAPE_ID, e);
@@ -81,7 +74,7 @@ int w_ChainShape_getVertexCount(lua_State *L)
 int w_ChainShape_getPoint(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	int index = luaL_checkint(L, 2) - 1; // Convert from 1-based index
+	int index = (int) luaL_checknumber(L, 2) - 1; // Convert from 1-based index
 	b2Vec2 v;
 	luax_catchexcept(L, [&](){ v = c->getPoint(index); });
 	lua_pushnumber(L, v.x);
@@ -105,29 +98,20 @@ int w_ChainShape_getPoints(lua_State *L)
 	return count*2;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_ChainShape_functions[] =
 {
 	{ "setNextVertex", w_ChainShape_setNextVertex },
 	{ "setPreviousVertex", w_ChainShape_setPreviousVertex },
-	{ "getChildCount", w_ChainShape_getChildCount },
 	{ "getChildEdge", w_ChainShape_getChildEdge },
 	{ "getVertexCount", w_ChainShape_getVertexCount },
 	{ "getPoint", w_ChainShape_getPoint },
 	{ "getPoints", w_ChainShape_getPoints },
-	// From Shape.
-	{ "getType", w_Shape_getType },
-	{ "getRadius", w_Shape_getRadius },
-	{ "getChildCount", w_Shape_getChildCount },
-	{ "testPoint", w_Shape_testPoint },
-	{ "rayCast", w_Shape_rayCast },
-	{ "computeAABB", w_Shape_computeAABB },
-	{ "computeMass", w_Shape_computeMass },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_chainshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CHAIN_SHAPE_ID, functions);
+	return luax_register_type(L, PHYSICS_CHAIN_SHAPE_ID, "ChainShape", w_Shape_functions, w_ChainShape_functions, nullptr);
 }
 
 } // box2d

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,12 +34,6 @@ namespace box2d
 {
 
 WeldJoint *luax_checkweldjoint(lua_State *L, int idx);
-
-int w_WeldJoint_setFrequency(lua_State *L);
-int w_WeldJoint_getFrequency(lua_State *L);
-int w_WeldJoint_setDampingRatio(lua_State *L);
-int w_WeldJoint_getDampingRatio(lua_State *L);
-
 extern "C" int luaopen_weldjoint(lua_State *L);
 
 } // box2d

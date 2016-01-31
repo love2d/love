@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,7 +38,7 @@ inline uint16 swap16big(uint16 x)
 #ifdef LOVE_BIG_ENDIAN
 	return x;
 #else
-	return swap16(x);
+	return swapuint16(x);
 #endif
 }
 
@@ -68,29 +68,29 @@ enum PKMTextureFormat
 	ETC2PACKAGE_RG_SIGNED_NO_MIPMAPS
 };
 
-CompressedData::Format convertFormat(uint16 texformat)
+static CompressedImageData::Format convertFormat(uint16 texformat)
 {
 	switch (texformat)
 	{
 	case ETC1_RGB_NO_MIPMAPS:
-		return CompressedData::FORMAT_ETC1;
+		return CompressedImageData::FORMAT_ETC1;
 	case ETC2PACKAGE_RGB_NO_MIPMAPS:
-		return CompressedData::FORMAT_ETC2_RGB;
+		return CompressedImageData::FORMAT_ETC2_RGB;
 	case ETC2PACKAGE_RGBA_NO_MIPMAPS_OLD:
 	case ETC2PACKAGE_RGBA_NO_MIPMAPS:
-		return CompressedData::FORMAT_ETC2_RGBA;
+		return CompressedImageData::FORMAT_ETC2_RGBA;
 	case ETC2PACKAGE_RGBA1_NO_MIPMAPS:
-		return CompressedData::FORMAT_ETC2_RGBA1;
+		return CompressedImageData::FORMAT_ETC2_RGBA1;
 	case ETC2PACKAGE_R_NO_MIPMAPS:
-		return CompressedData::FORMAT_EAC_R;
+		return CompressedImageData::FORMAT_EAC_R;
 	case ETC2PACKAGE_RG_NO_MIPMAPS:
-		return CompressedData::FORMAT_EAC_RG;
+		return CompressedImageData::FORMAT_EAC_RG;
 	case ETC2PACKAGE_R_SIGNED_NO_MIPMAPS:
-		return CompressedData::FORMAT_EAC_Rs;
+		return CompressedImageData::FORMAT_EAC_Rs;
 	case ETC2PACKAGE_RG_SIGNED_NO_MIPMAPS:
-		return CompressedData::FORMAT_EAC_RGs;
+		return CompressedImageData::FORMAT_EAC_RGs;
 	default:
-		return CompressedData::FORMAT_UNKNOWN;
+		return CompressedImageData::FORMAT_UNKNOWN;
 	}
 }
 
@@ -113,7 +113,7 @@ bool PKMHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
+uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -126,9 +126,9 @@ uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	header.widthBig = swap16big(header.widthBig);
 	header.heightBig = swap16big(header.heightBig);
 
-	CompressedData::Format cformat = convertFormat(header.textureFormatBig);
+	CompressedImageData::Format cformat = convertFormat(header.textureFormatBig);
 
-	if (cformat == CompressedData::FORMAT_UNKNOWN)
+	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PKM file: unsupported texture format.");
 
 	// The rest of the file after the header is all texture data.
@@ -147,7 +147,7 @@ uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	// PKM files only store a single mipmap level.
 	memcpy(data, (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
 
-	CompressedData::SubImage mip;
+	CompressedImageData::SubImage mip;
 
 	// TODO: verify whether glCompressedTexImage works properly with the unpadded
 	// width and height values (extended == padded.)

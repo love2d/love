@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,15 +33,6 @@ namespace font
 {
 
 GlyphData *luax_checkglyphdata(lua_State *L, int idx);
-int w_GlyphData_getWidth(lua_State *L);
-int w_GlyphData_getHeight(lua_State *L);
-int w_GlyphData_getDimensions(lua_State *L);
-int w_GlyphData_getGlyph(lua_State *L);
-int w_GlyphData_getGlyphString(lua_State *L);
-int w_GlyphData_getAdvance(lua_State *L);
-int w_GlyphData_getBearing(lua_State *L);
-int w_GlyphData_getBoundingBox(lua_State *L);
-int w_GlyphData_getFormat(lua_State *L);
 extern "C" int luaopen_glyphdata(lua_State *L);
 
 } // font

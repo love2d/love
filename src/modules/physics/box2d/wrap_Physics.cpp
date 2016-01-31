@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -439,7 +439,7 @@ int w_getDistance(lua_State *L)
 
 int w_setMeter(lua_State *L)
 {
-	int arg1 = luaL_checkint(L, 1);
+	int arg1 = (int) luaL_checknumber(L, 1);
 	luax_catchexcept(L, [&](){ Physics::setMeter(arg1); });
 	return 0;
 

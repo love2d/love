@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,8 @@
 #define LOVE_GRAPHICS_OPENGL_OPENGL_H
 
 // LOVE
+#include "common/config.h"
+#include "common/int.h"
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
 #include "common/Matrix.h"
@@ -55,7 +57,16 @@ enum VertexAttribID
 	ATTRIB_POS = 0,
 	ATTRIB_TEXCOORD,
 	ATTRIB_COLOR,
+	ATTRIB_CONSTANTCOLOR,
 	ATTRIB_MAX_ENUM
+};
+
+enum VertexAttribFlags
+{
+	ATTRIBFLAG_POS = 1 << ATTRIB_POS,
+	ATTRIBFLAG_TEXCOORD = 1 << ATTRIB_TEXCOORD,
+	ATTRIBFLAG_COLOR = 1 << ATTRIB_COLOR,
+	ATTRIBFLAG_CONSTANTCOLOR = 1 << ATTRIB_CONSTANTCOLOR
 };
 
 /**
@@ -72,7 +83,7 @@ public:
 	// OpenGL GPU vendors.
 	enum Vendor
 	{
-		VENDOR_ATI_AMD,
+		VENDOR_AMD,
 		VENDOR_NVIDIA,
 		VENDOR_INTEL,
 		VENDOR_MESA_SOFT, // Software renderer.
@@ -98,17 +109,10 @@ public:
 		}
 	};
 
-	struct BlendState
-	{
-		GLenum srcRGB, srcA;
-		GLenum dstRGB, dstA;
-		GLenum func;
-	};
-
 	struct
 	{
-		std::vector<Matrix> transform;
-		std::vector<Matrix> projection;
+		std::vector<Matrix4> transform;
+		std::vector<Matrix4> projection;
 	} matrices;
 
 	class TempTransform
@@ -126,7 +130,7 @@ public:
 			gl.popTransform();
 		}
 
-		Matrix &get()
+		Matrix4 &get()
 		{
 			return gl.getTransform();
 		}
@@ -135,12 +139,78 @@ public:
 		OpenGL &gl;
 	};
 
+	class TempDebugGroup
+	{
+	public:
+
+#if defined(LOVE_IOS)
+		TempDebugGroup(const char *name)
+		{
+			if (GLAD_EXT_debug_marker)
+				glPushGroupMarkerEXT(0, (const GLchar *) name);
+		}
+#else
+		TempDebugGroup(const char *) {}
+#endif
+
+#if defined(LOVE_IOS)
+		~TempDebugGroup()
+		{
+			if (GLAD_EXT_debug_marker)
+				glPopGroupMarkerEXT();
+		}
+#endif
+	};
+
 	struct Stats
 	{
 		size_t textureMemory;
 		int    drawCalls;
 		int    framebufferBinds;
 	} stats;
+
+	struct Bugs
+	{
+		/**
+		 * On AMD's Windows (and probably Linux) drivers,
+		 * glBindFramebuffer + glClear + glBindFramebuffer + draw(fbo_tex) won't
+		 * work unless there's some kind of draw or state change which causes
+		 * the driver to update the texture's contents (just drawing the texture
+		 * won't always do it, with this driver bug).
+		 * Activating shader program 0 and then activating the actual program
+		 * seems to always 'fix' it for me.
+		 * Bug observed January 2016 with multiple AMD GPUs and driver versions.
+		 * https://love2d.org/forums/viewtopic.php?f=4&t=81496
+		 **/
+		bool clearRequiresDriverTextureStateUpdate;
+
+		/**
+		 * AMD's Windows drivers don't always properly generate mipmaps unless
+		 * glEnable(GL_TEXTURE_2D) is called directly before glGenerateMipmap.
+		 * This only applies to legacy and Compatibility Profile contexts, of
+		 * course.
+		 * https://www.opengl.org/wiki/Common_Mistakes#Automatic_mipmap_generation
+		 **/
+		bool generateMipmapsRequiresTexture2DEnable;
+
+		/**
+		 * Other bugs which have workarounds that don't use conditional code at
+		 * the moment:
+		 *
+		 * Kepler nvidia GPUs in at least OS X 10.10 and 10.11 fail to render
+		 * geometry with glDrawElements if index data comes from a Buffer Object
+		 * and vertex data doesn't. One workaround is to use a CPU-side index
+		 * array when there's also a CPU-side vertex array.
+		 * https://love2d.org/forums/viewtopic.php?f=4&t=81401&start=10
+		 *
+		 * Some android drivers don't seem to initialize the sampler index
+		 * values of sampler uniforms in shaders to 0 (which is required by the
+		 * GLSL ES specification) when linking the shader program. One
+		 * workaround is to always set the values of said sampler uniforms to 0
+		 * just after linking the shader program.
+		 * https://love2d.org/forums/viewtopic.php?f=4&t=81458
+		 **/
+	} bugs;
 
 	OpenGL();
 
@@ -164,7 +234,7 @@ public:
 
 	void pushTransform();
 	void popTransform();
-	Matrix &getTransform();
+	Matrix4 &getTransform();
 
 	/**
 	 * Set up necessary state (LOVE-provided shader uniforms, etc.) for drawing.
@@ -180,14 +250,13 @@ public:
 	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
 
 	/**
-	 * Sets the current constant color.
+	 * Sets the enabled vertex attribute arrays based on the specified attribute
+	 * bits. Each bit in the uint32 represents an enabled attribute array index.
+	 * For example, useVertexAttribArrays(1 << 0) will enable attribute index 0.
+	 * See the VertexAttribFlags enum for the standard vertex attributes.
+	 * This function *must* be used instead of glEnable/DisableVertexAttribArray.
 	 **/
-	void setColor(const Color &c);
-
-	/**
-	 * Gets the current constant color.
-	 **/
-	Color getColor() const;
+	void useVertexAttribArrays(uint32 arraybits);
 
 	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
@@ -212,17 +281,6 @@ public:
 	Viewport getScissor() const;
 
 	/**
-	 * Sets blending functionality.
-	 * Note: This does not globally enable or disable blending.
-	 **/
-	void setBlendState(const BlendState &blend);
-
-	/**
-	 * Gets the currently set blending functionality.
-	 **/
-	BlendState getBlendState() const;
-
-	/**
 	 * Sets the global point size.
 	 **/
 	void setPointSize(float size);
@@ -231,6 +289,16 @@ public:
 	 * Gets the global point size.
 	 **/
 	float getPointSize() const;
+
+	/**
+	 * Calls glEnable/glDisable(GL_FRAMEBUFFER_SRGB).
+	 **/
+	void setFramebufferSRGB(bool enable);
+
+	/**
+	 * Equivalent to glIsEnabled(GL_FRAMEBUFFER_SRGB).
+	 **/
+	bool hasFramebufferSRGB() const;
 
 	/**
 	 * Binds a Framebuffer Object to the specified target.
@@ -262,10 +330,12 @@ public:
 	void bindTexture(GLuint texture);
 
 	/**
-	 * Binds multiple textures to texture units without changing the active
-	 * texture unit. Equivalent to glBindTextures.
+	 * Helper for binding a texture to a specific texture unit.
+	 *
+	 * @param textureunit Index in the range of [0, maxtextureunits-1]
+	 * @param restoreprev Restore previously bound texture unit when done.
 	 **/
-	void bindTextures(GLuint first, GLsizei count, const GLuint *textures);
+	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -284,6 +354,8 @@ public:
 	 * Sets the texture wrap mode for the currently bound texture.
 	 **/
 	void setTextureWrap(const graphics::Texture::Wrap &w);
+
+	bool isClampZeroTextureWrapSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -312,6 +384,8 @@ public:
 	 **/
 	Vendor getVendor() const;
 
+	static const char *errorString(GLenum errorcode);
+
 	// Get human-readable strings for debug info.
 	static const char *debugSeverityString(GLenum severity);
 	static const char *debugSourceString(GLenum source);
@@ -324,6 +398,8 @@ private:
 	void initMaxValues();
 	void initMatrices();
 	void createDefaultTexture();
+
+	GLint getGLWrapMode(Texture::WrapMode wmode);
 
 	bool contextInitialized;
 
@@ -338,26 +414,25 @@ private:
 	// Tracked OpenGL state.
 	struct
 	{
-		// Current constant color.
-		Color color;
-
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures;
 
 		// Currently active texture unit.
 		int curTextureUnit;
 
+		uint32 enabledAttribArrays;
+
 		Viewport viewport;
 		Viewport scissor;
 
 		float pointSize;
 
+		bool framebufferSRGBEnabled;
+
 		GLuint defaultTexture;
 
-		BlendState blend;
-
-		Matrix lastProjectionMatrix;
-		Matrix lastTransformMatrix;
+		Matrix4 lastProjectionMatrix;
+		Matrix4 lastTransformMatrix;
 
 	} state;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,19 +59,59 @@ struct PVRTexHeaderV3
 
 enum PVRV3PixelFormat
 {
-	ePVRTPF_PVRTCI_2bpp_RGB = 0x00,
+	ePVRTPF_PVRTCI_2bpp_RGB = 0,
 	ePVRTPF_PVRTCI_2bpp_RGBA,
 	ePVRTPF_PVRTCI_4bpp_RGB,
 	ePVRTPF_PVRTCI_4bpp_RGBA,
-	ePVRTPF_PVRTCII_2bpp,
+	ePVRTPF_PVRTCII_2bpp = 4,
 	ePVRTPF_PVRTCII_4bpp,
-	ePVRTPF_ETC1 = 0x06,
-	ePVRTPF_DXT1,
+	ePVRTPF_ETC1 = 6,
+	ePVRTPF_DXT1 = 7,
 	ePVRTPF_DXT2,
 	ePVRTPF_DXT3,
 	ePVRTPF_DXT4,
 	ePVRTPF_DXT5,
-	ePVRTF_UNKNOWN_FORMAT = 0x7F
+	ePVRTPF_BC4,
+	ePVRTPF_BC5,
+	ePVRTPF_BC6,
+	ePVRTPF_BC7,
+	ePVRTPF_ETC2_RGB = 22,
+	ePVRTPF_ETC2_RGBA,
+	ePVRTPF_ETC2_RGBA1,
+	ePVRTPF_EAC_R = 25,
+	ePVRTPF_EAC_RG,
+	ePVRTPF_ASTC_4x4 = 27,
+	ePVRTPF_ASTC_5x4,
+	ePVRTPF_ASTC_5x5,
+	ePVRTPF_ASTC_6x5,
+	ePVRTPF_ASTC_6x6,
+	ePVRTPF_ASTC_8x5,
+	ePVRTPF_ASTC_8x6,
+	ePVRTPF_ASTC_8x8,
+	ePVRTPF_ASTC_10x5,
+	ePVRTPF_ASTC_10x6,
+	ePVRTPF_ASTC_10x8,
+	ePVRTPF_ASTC_10x10,
+	ePVRTPF_ASTC_12x10,
+	ePVRTPF_ASTC_12x12,
+	ePVRTPF_UNKNOWN_FORMAT = 0x7F
+};
+
+enum PVRV3ChannelType
+{
+	ePVRTCT_UNORM8 = 0,
+	ePVRTCT_SNORM8,
+	ePVRTCT_UINT8,
+	ePVRTCT_SINT8,
+	ePVRTCT_UNORM16,
+	ePVRTCT_SNORM16,
+	ePVRTCT_UINT16,
+	ePVRTCT_SINT16,
+	ePVRTCT_UNORM32,
+	ePVRTCT_SNORM32,
+	ePVRTCT_UINT32,
+	ePVRTCT_SINT32,
+	ePVRTCT_FLOAT
 };
 
 // 'P' 'V' 'R' '!'
@@ -117,7 +157,7 @@ void ConvertPVRHeader(PVRTexHeaderV2 header2, PVRTexHeaderV3 *header3)
 		// All of the struct's members are uint32 values, so we can do this.
 		uint32 *headerArray = (uint32 *) &header2;
 		for (size_t i = 0; i < sizeof(PVRTexHeaderV2) / sizeof(uint32); i++)
-			headerArray[i] = swap32(headerArray[i]);
+			headerArray[i] = swapuint32(headerArray[i]);
 	}
 
 	memset(header3, 0, sizeof(PVRTexHeaderV3));
@@ -158,33 +198,92 @@ void ConvertPVRHeader(PVRTexHeaderV2 header2, PVRTexHeaderV3 *header3)
 		header3->pixelFormat = ePVRTPF_ETC1;
 		break;
 	default:
-		header3->pixelFormat = ePVRTF_UNKNOWN_FORMAT;
+		header3->pixelFormat = ePVRTPF_UNKNOWN_FORMAT;
 		break;
 	}
 }
 
-CompressedData::Format convertFormat(PVRV3PixelFormat format)
+static CompressedImageData::Format convertFormat(PVRV3PixelFormat format, PVRV3ChannelType channeltype)
 {
+	bool snorm = false;
+
+	switch (channeltype)
+	{
+	case ePVRTCT_SNORM8:
+	case ePVRTCT_SNORM16:
+	case ePVRTCT_SNORM32:
+		snorm = true;
+		break;
+	default:
+		break;
+	}
+
 	switch (format)
 	{
 	case ePVRTPF_PVRTCI_2bpp_RGB:
-		return CompressedData::FORMAT_PVR1_RGB2;
+		return CompressedImageData::FORMAT_PVR1_RGB2;
 	case ePVRTPF_PVRTCI_2bpp_RGBA:
-		return CompressedData::FORMAT_PVR1_RGBA2;
+		return CompressedImageData::FORMAT_PVR1_RGBA2;
 	case ePVRTPF_PVRTCI_4bpp_RGB:
-		return CompressedData::FORMAT_PVR1_RGB4;
+		return CompressedImageData::FORMAT_PVR1_RGB4;
 	case ePVRTPF_PVRTCI_4bpp_RGBA:
-		return CompressedData::FORMAT_PVR1_RGBA4;
+		return CompressedImageData::FORMAT_PVR1_RGBA4;
 	case ePVRTPF_ETC1:
-		return CompressedData::FORMAT_ETC1;
+		return CompressedImageData::FORMAT_ETC1;
 	case ePVRTPF_DXT1:
-		return CompressedData::FORMAT_DXT1;
+		return CompressedImageData::FORMAT_DXT1;
 	case ePVRTPF_DXT3:
-		return CompressedData::FORMAT_DXT3;
+		return CompressedImageData::FORMAT_DXT3;
 	case ePVRTPF_DXT5:
-		return CompressedData::FORMAT_DXT5;
+		return CompressedImageData::FORMAT_DXT5;
+	case ePVRTPF_BC4:
+		return snorm ? CompressedImageData::FORMAT_BC4s : CompressedImageData::FORMAT_BC4;
+	case ePVRTPF_BC5:
+		return snorm ? CompressedImageData::FORMAT_BC5s : CompressedImageData::FORMAT_BC5;
+	case ePVRTPF_BC6:
+		return snorm ? CompressedImageData::FORMAT_BC6Hs : CompressedImageData::FORMAT_BC6H;
+	case ePVRTPF_BC7:
+		return CompressedImageData::FORMAT_BC7;
+	case ePVRTPF_ETC2_RGB:
+		return CompressedImageData::FORMAT_ETC2_RGB;
+	case ePVRTPF_ETC2_RGBA:
+		return CompressedImageData::FORMAT_ETC2_RGBA;
+	case ePVRTPF_ETC2_RGBA1:
+		return CompressedImageData::FORMAT_ETC2_RGBA1;
+	case ePVRTPF_EAC_R:
+		return snorm ? CompressedImageData::FORMAT_EAC_Rs : CompressedImageData::FORMAT_EAC_R;
+	case ePVRTPF_EAC_RG:
+		return snorm ? CompressedImageData::FORMAT_EAC_RGs : CompressedImageData::FORMAT_EAC_RG;
+	case ePVRTPF_ASTC_4x4:
+		return CompressedImageData::FORMAT_ASTC_4x4;
+	case ePVRTPF_ASTC_5x4:
+		return CompressedImageData::FORMAT_ASTC_5x4;
+	case ePVRTPF_ASTC_5x5:
+		return CompressedImageData::FORMAT_ASTC_5x5;
+	case ePVRTPF_ASTC_6x5:
+		return CompressedImageData::FORMAT_ASTC_6x5;
+	case ePVRTPF_ASTC_6x6:
+		return CompressedImageData::FORMAT_ASTC_6x6;
+	case ePVRTPF_ASTC_8x5:
+		return CompressedImageData::FORMAT_ASTC_8x5;
+	case ePVRTPF_ASTC_8x6:
+		return CompressedImageData::FORMAT_ASTC_8x6;
+	case ePVRTPF_ASTC_8x8:
+		return CompressedImageData::FORMAT_ASTC_8x8;
+	case ePVRTPF_ASTC_10x5:
+		return CompressedImageData::FORMAT_ASTC_10x5;
+	case ePVRTPF_ASTC_10x6:
+		return CompressedImageData::FORMAT_ASTC_10x6;
+	case ePVRTPF_ASTC_10x8:
+		return CompressedImageData::FORMAT_ASTC_10x8;
+	case ePVRTPF_ASTC_10x10:
+		return CompressedImageData::FORMAT_ASTC_10x10;
+	case ePVRTPF_ASTC_12x10:
+		return CompressedImageData::FORMAT_ASTC_12x10;
+	case ePVRTPF_ASTC_12x12:
+		return CompressedImageData::FORMAT_ASTC_12x12;
 	default:
-		return CompressedData::FORMAT_UNKNOWN;
+		return CompressedImageData::FORMAT_UNKNOWN;
 	}
 }
 
@@ -208,19 +307,30 @@ int getBitsPerPixel(uint64 pixelformat)
 	case ePVRTPF_PVRTCII_4bpp:
 	case ePVRTPF_ETC1:
 	case ePVRTPF_DXT1:
+	case ePVRTPF_BC4:
+	case ePVRTPF_ETC2_RGB:
+	case ePVRTPF_ETC2_RGBA1:
+	case ePVRTPF_EAC_R:
 		return 4;
 	case ePVRTPF_DXT2:
 	case ePVRTPF_DXT3:
 	case ePVRTPF_DXT4:
 	case ePVRTPF_DXT5:
+	case ePVRTPF_BC5:
+	case ePVRTPF_BC6:
+	case ePVRTPF_BC7:
+	case ePVRTPF_ETC2_RGBA:
+	case ePVRTPF_EAC_RG:
 		return 8;
 	default:
 		return 0;
 	}
 }
 
-void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY)
+void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY, int &minZ)
 {
+	minZ = 1;
+
 	switch (pixelformat)
 	{
 	case ePVRTPF_PVRTCI_2bpp_RGB:
@@ -244,8 +354,73 @@ void getFormatMinDimensions(uint64 pixelformat, int &minX, int &minY)
 	case ePVRTPF_DXT3:
 	case ePVRTPF_DXT4:
 	case ePVRTPF_DXT5:
+	case ePVRTPF_BC4:
+	case ePVRTPF_BC5:
+	case ePVRTPF_BC6:
+	case ePVRTPF_BC7:
 	case ePVRTPF_ETC1:
+	case ePVRTPF_ETC2_RGB:
+	case ePVRTPF_ETC2_RGBA:
+	case ePVRTPF_ETC2_RGBA1:
+	case ePVRTPF_EAC_R:
+	case ePVRTPF_EAC_RG:
 		minX = minY = 4;
+		break;
+	case ePVRTPF_ASTC_4x4:
+		minX = 4;
+		minY = 4;
+		break;
+	case ePVRTPF_ASTC_5x4:
+		minX = 5;
+		minY = 4;
+		break;
+	case ePVRTPF_ASTC_5x5:
+		minX = 5;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_6x5:
+		minX = 6;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_6x6:
+		minX = 6;
+		minY = 6;
+		break;
+	case ePVRTPF_ASTC_8x5:
+		minX = 8;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_8x6:
+		minX = 8;
+		minY = 6;
+		break;
+	case ePVRTPF_ASTC_8x8:
+		minX = 8;
+		minY = 8;
+		break;
+	case ePVRTPF_ASTC_10x5:
+		minX = 10;
+		minY = 5;
+		break;
+	case ePVRTPF_ASTC_10x6:
+		minX = 10;
+		minY = 6;
+		break;
+	case ePVRTPF_ASTC_10x8:
+		minX = 10;
+		minY = 8;
+		break;
+	case ePVRTPF_ASTC_10x10:
+		minX = 10;
+		minY = 10;
+		break;
+	case ePVRTPF_ASTC_12x10:
+		minX = 12;
+		minY = 10;
+		break;
+	case ePVRTPF_ASTC_12x12:
+		minX = 12;
+		minY = 12;
 		break;
 	default: // We don't handle all possible formats, but that's fine.
 		minX = minY = 1;
@@ -257,17 +432,22 @@ size_t getMipLevelSize(const PVRTexHeaderV3 &header, int miplevel)
 {
 	int smallestwidth = 1;
 	int smallestheight = 1;
-	getFormatMinDimensions(header.pixelFormat, smallestwidth, smallestheight);
+	int smallestdepth = 1;
+	getFormatMinDimensions(header.pixelFormat, smallestwidth, smallestheight, smallestdepth);
 
 	int width = std::max((int) header.width >> miplevel, 1);
 	int height = std::max((int) header.height >> miplevel, 1);
 	int depth = std::max((int) header.depth >> miplevel, 1);
 
 	// Pad the dimensions.
-	width += (-width) % smallestwidth;
-	height += (-height) % smallestheight;
+	width = ((width + smallestwidth - 1) / smallestwidth) * smallestwidth;
+	height = ((height + smallestheight - 1) / smallestheight) * smallestheight;
+	depth = ((depth + smallestdepth - 1) / smallestdepth) * smallestdepth;
 
-	return getBitsPerPixel(header.pixelFormat) * width * height * depth / 8;
+	if (header.pixelFormat >= ePVRTPF_ASTC_4x4 && header.pixelFormat <= ePVRTPF_ASTC_12x12)
+		return (width / smallestwidth) * (height / smallestheight) * (depth / smallestdepth) * (128 / 8);
+	else
+		return getBitsPerPixel(header.pixelFormat) * width * height * depth / 8;
 }
 
 } // Anonymous namespace.
@@ -294,7 +474,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedData::SubImage> &images, size_t &dataSize, CompressedData::Format &format, bool &sRGB)
+uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -309,24 +489,27 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 	if (header3.version == PVRTEX3_IDENT_REV)
 	{
 		header3.version = PVRTEX3_IDENT;
-		header3.flags = swap32(header3.flags);
-		header3.pixelFormat = swap64(header3.pixelFormat);
-		header3.colorSpace = swap32(header3.colorSpace);
-		header3.channelType = swap32(header3.channelType);
-		header3.height = swap32(header3.height);
-		header3.width = swap32(header3.width);
-		header3.depth = swap32(header3.depth);
-		header3.numFaces = swap32(header3.numFaces);
-		header3.numMipmaps = swap32(header3.numMipmaps);
-		header3.metaDataSize = swap32(header3.metaDataSize);
+		header3.flags = swapuint32(header3.flags);
+		header3.pixelFormat = swapuint64(header3.pixelFormat);
+		header3.colorSpace = swapuint32(header3.colorSpace);
+		header3.channelType = swapuint32(header3.channelType);
+		header3.height = swapuint32(header3.height);
+		header3.width = swapuint32(header3.width);
+		header3.depth = swapuint32(header3.depth);
+		header3.numFaces = swapuint32(header3.numFaces);
+		header3.numMipmaps = swapuint32(header3.numMipmaps);
+		header3.metaDataSize = swapuint32(header3.metaDataSize);
 	}
 
 	if (header3.depth > 1)
 		throw love::Exception("Image depths greater than 1 in PVR files are unsupported.");
 
-	CompressedData::Format cformat = convertFormat((PVRV3PixelFormat) header3.pixelFormat);
+	PVRV3PixelFormat pixelformat = (PVRV3PixelFormat) header3.pixelFormat;
+	PVRV3ChannelType channeltype = (PVRV3ChannelType) header3.channelType;
 
-	if (cformat == CompressedData::FORMAT_UNKNOWN)
+	CompressedImageData::Format cformat = convertFormat(pixelformat, channeltype);
+
+	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PVR file: unsupported image format.");
 
 	size_t totalsize = 0;
@@ -361,7 +544,7 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedD
 		if (curoffset + mipsize > totalsize)
 			break; // Just in case.
 
-		CompressedData::SubImage mip;
+		CompressedImageData::SubImage mip;
 		mip.width = std::max((int) header3.width >> i, 1);
 		mip.height = std::max((int) header3.height >> i, 1);
 		mip.size = mipsize;

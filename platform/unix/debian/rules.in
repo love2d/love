@@ -1,16 +1,31 @@
 #!/usr/bin/make -f
 
-DEB_HOST_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
-DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+commonflags = -Wall -Wno-maybe-uninitialized -Wno-strict-aliasing
+CFLAGS += $(commonflags)
+CXXFLAGS += $(commonflags)
+
+
+%:
+	dh  $@ --parallel --with autoreconf
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -f platform/unix/love-unstable.6
 
 override_dh_auto_configure:
 	dh_auto_configure -- --with-lua=luajit
 
-override_dh_link:
-	dh_link -plove@LOVE_SUFFIX@-dev usr/lib/$(DEB_HOST_MULTIARCH)/liblove@LOVE_SUFFIX@.so.0.0.0 usr/lib/$(DEB_HOST_MULTIARCH)/liblove@LOVE_SUFFIX@.so
+override_dh_installdocs:
+	dh_installdocs --link-doc=liblove@LOVE_SUFFIX@0
+
+override_dh_installchangelogs:
+	dh_installchangelogs changes.txt
+
+override_dh_installman:
+	cp -f platform/unix/love.6 platform/unix/love-unstable.6
+	dh_installman
 
 override_dh_strip:
-	dh_strip --dbg-package=love@LOVE_SUFFIX@-dbg
+	dh_strip -pliblove@LOVE_SUFFIX@0 --dbg-package=liblove@LOVE_SUFFIX@-dbg
+	dh_strip --remaining-packages
 
-%:
-	dh  $@ --parallel

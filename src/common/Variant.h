@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -71,7 +71,7 @@ public:
 			size_t len;
 		} string;
 		void *userdata;
-		std::vector<std::pair<Variant*, Variant*> > *table;
+		std::vector<std::pair<Variant*, Variant*>> *table;
 	} data;
 
 private:

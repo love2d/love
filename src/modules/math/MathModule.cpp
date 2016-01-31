@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -89,6 +89,10 @@ Math::Math()
 {
 	// prevent the runtime from free()-ing this
 	retain();
+}
+
+Math::~Math()
+{
 }
 
 RandomGenerator *Math::newRandomGenerator()
@@ -198,11 +202,7 @@ bool Math::isConvex(const std::vector<Vertex> &polygon)
  **/
 float Math::gammaToLinear(float c) const
 {
-	if (c > 1.0f)
-		return 1.0f;
-	else if (c < 0.0f)
-		return 0.0f;
-	else if (c <= 0.04045)
+	if (c <= 0.04045f)
 		return c / 12.92f;
 	else
 		return powf((c + 0.055f) / 1.055f, 2.4f);
@@ -213,14 +213,61 @@ float Math::gammaToLinear(float c) const
  **/
 float Math::linearToGamma(float c) const
 {
-	if (c > 1.0f)
-		return 1.0f;
-	else if (c < 0.0f)
-		return 0.0f;
-	else if (c < 0.0031308f)
+	if (c <= 0.0031308f)
 		return c * 12.92f;
 	else
-		return 1.055f * powf(c, 0.41666f) - 0.055f;
+		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
+}
+
+CompressedData *Math::compress(Compressor::Format format, love::Data *rawdata, int level)
+{
+	return compress(format, (const char *) rawdata->getData(), rawdata->getSize(), level);
+}
+
+CompressedData *Math::compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
+{
+	Compressor *compressor = Compressor::getCompressor(format);
+
+	if (compressor == nullptr)
+		throw love::Exception("Invalid compression format.");
+
+	size_t compressedsize = 0;
+	char *cbytes = compressor->compress(format, rawbytes, rawsize, level, compressedsize);
+
+	CompressedData *data = nullptr;
+
+	try
+	{
+		data = new CompressedData(format, cbytes, compressedsize, rawsize, true);
+	}
+	catch (love::Exception &)
+	{
+		delete[] cbytes;
+		throw;
+	}
+
+	return data;
+}
+
+char *Math::decompress(CompressedData *data, size_t &decompressedsize)
+{
+	size_t rawsize = data->getDecompressedSize();
+
+	char *rawbytes = decompress(data->getFormat(), (const char *) data->getData(),
+	                            data->getSize(), rawsize);
+
+	decompressedsize = rawsize;
+	return rawbytes;
+}
+
+char *Math::decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
+{
+	Compressor *compressor = Compressor::getCompressor(format);
+
+	if (compressor == nullptr)
+		throw love::Exception("Invalid compression format.");
+
+	return compressor->decompress(format, cbytes, compressedsize, rawsize);
 }
 
 } // math

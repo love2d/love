@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -51,17 +51,25 @@ int w_Decoder_getSampleRate(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+int w_Decoder_getDuration(lua_State *L)
+{
+	Decoder *t = luax_checkdecoder(L, 1);
+	lua_pushnumber(L, t->getDuration());
+	return 1;
+}
+
+static const luaL_Reg w_Decoder_functions[] =
 {
 	{ "getChannels", w_Decoder_getChannels },
 	{ "getBitDepth", w_Decoder_getBitDepth },
 	{ "getSampleRate", w_Decoder_getSampleRate },
+	{ "getDuration", w_Decoder_getDuration },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_decoder(lua_State *L)
 {
-	return luax_register_type(L, SOUND_DECODER_ID, functions);
+	return luax_register_type(L, SOUND_DECODER_ID, "Decoder", w_Decoder_functions, nullptr);
 }
 
 } // sound

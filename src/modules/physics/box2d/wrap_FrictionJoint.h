@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,10 +34,6 @@ namespace box2d
 {
 
 FrictionJoint *luax_checkfrictionjoint(lua_State *L, int idx);
-int w_FrictionJoint_setMaxForce(lua_State *L);
-int w_FrictionJoint_getMaxForce(lua_State *L);
-int w_FrictionJoint_setMaxTorque(lua_State *L);
-int w_FrictionJoint_getMaxTorque(lua_State *L);
 extern "C" int luaopen_frictionjoint(lua_State *L);
 
 } // box2d

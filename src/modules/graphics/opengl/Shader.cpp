@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 
 // C++
 #include <algorithm>
+#include <limits>
 
 namespace love
 {
@@ -63,8 +64,10 @@ namespace
 
 Shader *Shader::current = nullptr;
 Shader *Shader::defaultShader = nullptr;
+Shader *Shader::defaultVideoShader = nullptr;
 
 Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM];
+Shader::ShaderSource Shader::defaultVideoCode[Graphics::RENDERER_MAX_ENUM];
 
 std::vector<int> Shader::textureCounters;
 
@@ -75,13 +78,15 @@ Shader::Shader(const ShaderSource &source)
 	, builtinAttributes()
 	, lastCanvas((Canvas *) -1)
 	, lastViewport()
+	, lastPointSize(0.0f)
+	, videoTextureUnits()
 {
 	if (source.vertex.empty() && source.pixel.empty())
 		throw love::Exception("Cannot create shader: no source code!");
 
 	// initialize global texture id counters if needed
-	if ((int) textureCounters.size() < gl.getMaxTextureUnits())
-		textureCounters.resize(gl.getMaxTextureUnits(), 0);
+	if ((int) textureCounters.size() < gl.getMaxTextureUnits() - 1)
+		textureCounters.resize(gl.getMaxTextureUnits() - 1, 0);
 
 	// load shader source and create program object
 	loadVolatile();
@@ -173,6 +178,11 @@ void Shader::mapActiveUniforms()
 
 	uniforms.clear();
 
+	GLint activeprogram = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &activeprogram);
+
+	glUseProgram(program);
+
 	GLint numuniforms;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numuniforms);
 
@@ -190,6 +200,12 @@ void Shader::mapActiveUniforms()
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(u.type);
 
+		// Initialize all samplers to 0. Both GLSL and GLSL ES are supposed to
+		// do this themselves, but some Android devices (galaxy tab 3 and 4)
+		// don't seem to do it...
+		if (u.baseType == UNIFORM_SAMPLER)
+			glUniform1i(u.location, 0);
+
 		// glGetActiveUniform appends "[0]" to the end of array uniform names...
 		if (u.name.length() > 3)
 		{
@@ -206,17 +222,31 @@ void Shader::mapActiveUniforms()
 		if (u.location != -1)
 			uniforms[u.name] = u;
 	}
+
+	glUseProgram(activeprogram);
 }
 
 bool Shader::loadVolatile()
 {
+	OpenGL::TempDebugGroup debuggroup("Shader load");
+
     // Recreating the shader program will invalidate uniforms that rely on these.
     lastCanvas = (Canvas *) -1;
     lastViewport = OpenGL::Viewport();
 
+	lastPointSize = -1.0f;
+
+	// Invalidate the cached matrices by setting some elements to NaN.
+	float nan = std::numeric_limits<float>::quiet_NaN();
+	lastProjectionMatrix.setTranslation(nan, nan);
+	lastTransformMatrix.setTranslation(nan, nan);
+
+	for (int i = 0; i < 3; i++)
+		videoTextureUnits[i] = 0;
+
 	// zero out active texture list
 	activeTexUnits.clear();
-	activeTexUnits.insert(activeTexUnits.begin(), gl.getMaxTextureUnits(), 0);
+	activeTexUnits.insert(activeTexUnits.begin(), gl.getMaxTextureUnits() - 1, 0);
 
 	std::vector<GLuint> shaderids;
 
@@ -277,7 +307,7 @@ bool Shader::loadVolatile()
 		throw love::Exception("Cannot link shader program object:\n%s", warnings.c_str());
 	}
 
-	// Retreive all active uniform variables in this shader from OpenGL.
+	// Get all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
 
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
@@ -294,7 +324,7 @@ bool Shader::loadVolatile()
 		// make sure glUseProgram gets called.
 		current = nullptr;
 		attach();
-        checkSetScreenParams();
+		checkSetBuiltinUniforms();
 	}
 
 	return true;
@@ -320,7 +350,9 @@ void Shader::unloadVolatile()
 
 	// active texture list is probably invalid, clear it
 	activeTexUnits.clear();
-	activeTexUnits.resize(gl.getMaxTextureUnits(), 0);
+	activeTexUnits.resize(gl.getMaxTextureUnits() - 1, 0);
+
+	attributes.clear();
 
 	// same with uniform location list
 	uniforms.clear();
@@ -382,7 +414,14 @@ void Shader::attach(bool temporary)
 	{
 		// make sure all sent textures are properly bound to their respective texture units
 		// note: list potentially contains texture ids of deleted/invalid textures!
-		gl.bindTextures(1, (GLsizei) activeTexUnits.size(), &activeTexUnits[0]);
+		for (size_t i = 0; i < activeTexUnits.size(); ++i)
+		{
+			if (activeTexUnits[i] > 0)
+				gl.bindTextureToUnit(activeTexUnits[i], i + 1, false);
+		}
+
+		// We always want to use texture unit 0 for everyhing else.
+		gl.setTextureUnit(0);
 	}
 }
 
@@ -523,7 +562,7 @@ void Shader::sendTexture(const std::string &name, Texture *texture)
 	checkSetUniformError(u, 1, 1, UNIFORM_SAMPLER);
 
 	// bind texture to assigned texture unit and send uniform to shader program
-	gl.bindTextures(texunit, 1, &gltex);
+	gl.bindTextureToUnit(gltex, texunit, true);
 
 	glUniform1i(u.location, texunit);
 
@@ -598,71 +637,72 @@ Shader::UniformType Shader::getExternVariable(const std::string &name, int &comp
 	return it->second.baseType;
 }
 
+GLint Shader::getAttribLocation(const std::string &name)
+{
+	auto it = attributes.find(name);
+	if (it != attributes.end())
+		return it->second;
+
+	GLint location = glGetAttribLocation(program, name.c_str());
+
+	attributes[name] = location;
+	return location;
+}
+
 bool Shader::hasVertexAttrib(VertexAttribID attrib) const
 {
 	return builtinAttributes[int(attrib)] != -1;
 }
 
-bool Shader::hasBuiltinUniform(BuiltinUniform builtin) const
+void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture)
 {
-	return builtinUniforms[int(builtin)] != -1;
-}
-
-bool Shader::sendBuiltinMatrix(BuiltinUniform builtin, int size, const GLfloat *m, int count)
-{
-	if (!hasBuiltinUniform(builtin))
-		return false;
-
-	GLint location = builtinUniforms[GLint(builtin)];
-
 	TemporaryAttacher attacher(this);
 
-	switch (size)
+	// Set up the texture units that will be used by the shader to sample from
+	// the textures, if they haven't been set up yet.
+	if (videoTextureUnits[0] == 0)
 	{
-	case 2:
-		glUniformMatrix2fv(location, count, GL_FALSE, m);
-		break;
-	case 3:
-		glUniformMatrix3fv(location, count, GL_FALSE, m);
-		break;
-	case 4:
-		glUniformMatrix4fv(location, count, GL_FALSE, m);
-		break;
-	default:
-		return false;
+		const GLint locs[3] = {
+			builtinUniforms[BUILTIN_VIDEO_Y_CHANNEL],
+			builtinUniforms[BUILTIN_VIDEO_CB_CHANNEL],
+			builtinUniforms[BUILTIN_VIDEO_CR_CHANNEL]
+		};
+
+		const char *names[3] = {nullptr, nullptr, nullptr};
+		builtinNames.find(BUILTIN_VIDEO_Y_CHANNEL,  names[0]);
+		builtinNames.find(BUILTIN_VIDEO_CB_CHANNEL, names[1]);
+		builtinNames.find(BUILTIN_VIDEO_CR_CHANNEL, names[2]);
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (locs[i] >= 0 && names[i] != nullptr)
+			{
+				videoTextureUnits[i] = getTextureUnit(names[i]);
+
+				// Increment global shader texture id counter for this texture
+				// unit, if we haven't already.
+				if (activeTexUnits[videoTextureUnits[i] - 1] == 0)
+					++textureCounters[videoTextureUnits[i] - 1];
+
+				glUniform1i(locs[i], videoTextureUnits[i]);
+			}
+		}
 	}
-	
-	return true;
-}
 
-bool Shader::sendBuiltinFloat(BuiltinUniform builtin, int size, const GLfloat *vec, int count)
-{
-	if (!hasBuiltinUniform(builtin))
-		return false;
+	const GLuint textures[3] = {ytexture, cbtexture, crtexture};
 
-	GLint location = builtinUniforms[int(builtin)];
-
-	TemporaryAttacher attacher(this);
-
-	switch (size)
+	// Bind the textures to their respective texture units.
+	for (int i = 0; i < 3; i++)
 	{
-	case 1:
-		glUniform1fv(location, count, vec);
-		break;
-	case 2:
-		glUniform2fv(location, count, vec);
-		break;
-	case 3:
-		glUniform3fv(location, count, vec);
-		break;
-	case 4:
-		glUniform4fv(location, count, vec);
-		break;
-	default:
-		return false;
+		if (videoTextureUnits[i] != 0)
+		{
+			// Store texture id so it can be re-bound later.
+			activeTexUnits[videoTextureUnits[i] - 1] = textures[i];
+			gl.bindTextureToUnit(textures[i], videoTextureUnits[i], false);
+		}
 	}
-	
-	return true;
+
+	gl.setTextureUnit(0);
 }
 
 void Shader::checkSetScreenParams()
@@ -694,10 +734,92 @@ void Shader::checkSetScreenParams()
 		params[3] = (GLfloat) view.h;
 	}
 
-	sendBuiltinFloat(BUILTIN_SCREEN_SIZE, 4, params, 1);
+	GLint location = builtinUniforms[BUILTIN_SCREEN_SIZE];
+
+	if (location >= 0)
+	{
+		TemporaryAttacher attacher(this);
+		glUniform4fv(location, 1, params);
+	}
 
 	lastCanvas = Canvas::current;
 	lastViewport = view;
+}
+
+void Shader::checkSetPointSize(float size)
+{
+	if (size == lastPointSize)
+		return;
+
+	GLint location = builtinUniforms[BUILTIN_POINT_SIZE];
+
+	if (location >= 0)
+	{
+		TemporaryAttacher attacher(this);
+		glUniform1f(location, size);
+	}
+
+	lastPointSize = size;
+}
+
+void Shader::checkSetBuiltinUniforms()
+{
+	checkSetScreenParams();
+
+	// We use a more efficient method for sending transformation matrices to
+	// the GPU on desktop GL.
+	if (GLAD_ES_VERSION_2_0)
+	{
+		checkSetPointSize(gl.getPointSize());
+
+		const Matrix4 &curxform = gl.matrices.transform.back();
+		const Matrix4 &curproj = gl.matrices.projection.back();
+
+		TemporaryAttacher attacher(this);
+
+		bool tpmatrixneedsupdate = false;
+
+		// Only upload the matrices if they've changed.
+		if (memcmp(curxform.getElements(), lastTransformMatrix.getElements(), sizeof(float) * 16) != 0)
+		{
+			GLint location = builtinUniforms[BUILTIN_TRANSFORM_MATRIX];
+			if (location >= 0)
+				glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
+
+			// Also upload the re-calculated normal matrix, if possible. The
+			// normal matrix is the transpose of the inverse of the rotation
+			// portion (top-left 3x3) of the transform matrix.
+			location = builtinUniforms[BUILTIN_NORMAL_MATRIX];
+			if (location >= 0)
+			{
+				Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
+				glUniformMatrix3fv(location, 1, GL_FALSE, normalmatrix.getElements());
+			}
+
+			tpmatrixneedsupdate = true;
+			lastTransformMatrix = curxform;
+		}
+
+		if (memcmp(curproj.getElements(), lastProjectionMatrix.getElements(), sizeof(float) * 16) != 0)
+		{
+			GLint location = builtinUniforms[BUILTIN_PROJECTION_MATRIX];
+			if (location >= 0)
+				glUniformMatrix4fv(location, 1, GL_FALSE, curproj.getElements());
+
+			tpmatrixneedsupdate = true;
+			lastProjectionMatrix = curproj;
+		}
+
+		if (tpmatrixneedsupdate)
+		{
+			GLint location = builtinUniforms[BUILTIN_TRANSFORM_PROJECTION_MATRIX];
+			if (location >= 0)
+			{
+				Matrix4 tp_matrix(curproj * curxform);
+				glUniformMatrix4fv(location, 1, GL_FALSE, tp_matrix.getElements());
+			}
+		}
+	}
 }
 
 const std::map<std::string, Object *> &Shader::getBoundRetainables() const
@@ -774,6 +896,12 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 	case GL_FLOAT_MAT2:
 	case GL_FLOAT_MAT3:
 	case GL_FLOAT_MAT4:
+	case GL_FLOAT_MAT2x3:
+	case GL_FLOAT_MAT2x4:
+	case GL_FLOAT_MAT3x2:
+	case GL_FLOAT_MAT3x4:
+	case GL_FLOAT_MAT4x2:
+	case GL_FLOAT_MAT4x3:
 		return UNIFORM_FLOAT;
 	case GL_BOOL:
 	case GL_BOOL_VEC2:
@@ -781,8 +909,22 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 	case GL_BOOL_VEC4:
 		return UNIFORM_BOOL;
 	case GL_SAMPLER_1D:
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
 	case GL_SAMPLER_2D:
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_2D_ARRAY:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
 	case GL_SAMPLER_3D:
+	case GL_SAMPLER_CUBE:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_CUBE_MAP_ARRAY:
+	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
 		return UNIFORM_SAMPLER;
 	default:
 		return UNIFORM_UNKNOWN;
@@ -797,6 +939,16 @@ bool Shader::getConstant(const char *in, UniformType &out)
 bool Shader::getConstant(UniformType in, const char *&out)
 {
 	return uniformTypes.find(in, out);
+}
+
+bool Shader::getConstant(const char *in, VertexAttribID &out)
+{
+	return attribNames.find(in, out);
+}
+
+bool Shader::getConstant(VertexAttribID in, const char *&out)
+{
+	return attribNames.find(in, out);
 }
 
 StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM>::Entry Shader::stageNameEntries[] =
@@ -823,6 +975,7 @@ StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
 	{"VertexPosition", ATTRIB_POS},
 	{"VertexTexCoord", ATTRIB_TEXCOORD},
 	{"VertexColor", ATTRIB_COLOR},
+	{"ConstantColor", ATTRIB_CONSTANTCOLOR},
 };
 
 StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
@@ -832,8 +985,12 @@ StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::built
 	{"TransformMatrix", Shader::BUILTIN_TRANSFORM_MATRIX},
 	{"ProjectionMatrix", Shader::BUILTIN_PROJECTION_MATRIX},
 	{"TransformProjectionMatrix", Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX},
+	{"NormalMatrix", Shader::BUILTIN_NORMAL_MATRIX},
 	{"love_PointSize", Shader::BUILTIN_POINT_SIZE},
 	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
+	{"love_VideoYChannel", Shader::BUILTIN_VIDEO_Y_CHANNEL},
+	{"love_VideoCbChannel", Shader::BUILTIN_VIDEO_CB_CHANNEL},
+	{"love_VideoCrChannel", Shader::BUILTIN_VIDEO_CR_CHANNEL},
 };
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));

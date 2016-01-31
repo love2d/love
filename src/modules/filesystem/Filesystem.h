@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 
 // LOVE
 #include "common/config.h"
-#include "common/runtime.h"
 #include "common/Module.h"
 #include "common/int.h"
 #include "FileData.h"
@@ -79,6 +78,20 @@ public:
 	 * @return True on success, false otherwise.
 	 **/
 	virtual bool setupWriteDirectory() = 0;
+
+	/**
+	 * This sets the save location on Android. 
+	 * False for internal, true for external
+	 * @param external Bool for whether 
+	 * Android should use external file storage.
+	**/
+	virtual void setAndroidSaveExternal(bool useExternal = false);
+
+	/**
+	 * Gets whether the Android save is external.
+	 * Returns a bool.
+	**/
+	virtual bool isAndroidSaveExternal() const; 
 
 	/**
 	 * Sets the name of the save folder.
@@ -158,6 +171,12 @@ public:
 	virtual std::string getRealDirectory(const char *filename) const = 0;
 
 	/**
+	 * Checks if a path exists.
+	 * @param path The path to check.
+	 **/
+	virtual bool exists(const char *path) const = 0;
+
+	/**
 	 * Checks if a path is a directory.
 	 * @param dir The directory name to check.
 	 **/
@@ -168,6 +187,12 @@ public:
 	 * @param file The filename to check.
 	 **/
 	virtual bool isFile(const char *file) const = 0;
+
+	/**
+	 * Gets whether a filepath is actually a symlink.
+	 * Always returns false if symlinks are not enabled.
+	 **/
+	virtual bool isSymlink(const char *filename) const = 0;
 
 	/**
 	 * Creates a directory. Write dir must be set.
@@ -208,7 +233,7 @@ public:
 	 * This "native" method returns a table of all
 	 * files in a given directory.
 	 **/
-	virtual int getDirectoryItems(lua_State *L) = 0;
+	virtual void getDirectoryItems(const char *dir, std::vector<std::string> &items) = 0;
 
 	/**
 	 * Gets the last modification time of a file, in seconds
@@ -233,12 +258,6 @@ public:
 	 **/
 	virtual bool areSymlinksEnabled() const = 0;
 
-	/**
-	 * Gets whether a filepath is actually a symlink.
-	 * Always returns false if symlinks are not enabled.
-	 **/
-	virtual bool isSymlink(const char *filename) const = 0;
-
 	// Require path accessors
 	// Not const because it's R/W
 	virtual std::vector<std::string> &getRequirePath() = 0;
@@ -253,6 +272,15 @@ public:
 	 **/
 	virtual bool isRealDirectory(const std::string &path) const;
 
+	/**
+	 * Gets the full platform-dependent path to the executable.
+	 **/
+	virtual std::string getExecutablePath() const;
+
+private:
+
+	//should we save external or internal for Android
+	bool useExternal;
 }; // Filesystem
 
 } // filesystem

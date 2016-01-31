@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -64,26 +64,18 @@ int w_CircleShape_setPoint(lua_State *L)
 	return 0;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_CircleShape_functions[] =
 {
 	{ "getRadius", w_CircleShape_getRadius },
 	{ "setRadius", w_CircleShape_setRadius },
 	{ "getPoint", w_CircleShape_getPoint },
 	{ "setPoint", w_CircleShape_setPoint },
-	// From Shape.
-	{ "getType", w_Shape_getType },
-	{ "getRadius", w_Shape_getRadius },
-	{ "getChildCount", w_Shape_getChildCount },
-	{ "testPoint", w_Shape_testPoint },
-	{ "rayCast", w_Shape_rayCast },
-	{ "computeAABB", w_Shape_computeAABB },
-	{ "computeMass", w_Shape_computeMass },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_circleshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CIRCLE_SHAPE_ID, functions);
+	return luax_register_type(L, PHYSICS_CIRCLE_SHAPE_ID, "CircleShape", w_Shape_functions, w_CircleShape_functions, nullptr);
 }
 
 } // box2d

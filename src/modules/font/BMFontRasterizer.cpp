@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,7 @@ public:
 private:
 
 	std::string tag;
-	std::map<std::string, std::string> attributes;
+	std::unordered_map<std::string, std::string> attributes;
 
 };
 
@@ -190,8 +190,8 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 			{
 				using namespace love::filesystem;
 
-				Filesystem *filesystem = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
-				image::Image *imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
+				auto filesystem  = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
+				auto imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
 
 				if (!filesystem)
 					throw love::Exception("Filesystem module not loaded!");
@@ -199,7 +199,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 					throw love::Exception("Image module not loaded!");
 
 				// Release these variables right away since StrongRef retains.
-				StrongRef<filesystem::FileData> data = filesystem->read(filename.c_str());
+				StrongRef<FileData> data = filesystem->read(filename.c_str());
 				data->release();
 
 				images[pageindex].set(imagemodule->newImageData(data.get()));
@@ -226,7 +226,12 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		}
 		else if (tag == "kerning")
 		{
-			// TODO
+			uint32 firstid  = (uint32) cline.getAttributeInt("first");
+			uint32 secondid = (uint32) cline.getAttributeInt("second");
+
+			uint64 packedids = ((uint64) firstid << 32) | (uint64) secondid;
+
+			kerning[packedids] = cline.getAttributeInt("amount");
 		}
 	}
 
@@ -240,6 +245,8 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 	for (const auto &cpair : characters)
 	{
 		const BMFontCharacter &c = cpair.second;
+		int width = c.metrics.width;
+		int height = c.metrics.height;
 
 		if (!unicode && cpair.first > 127)
 			throw love::Exception("Invalid BMFont character id (only unicode and ASCII are supported)");
@@ -249,8 +256,14 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 		const image::ImageData *id = images[c.page].get();
 
-		if (!id->inside(c.x, c.y) || !id->inside(c.x + c.metrics.width - 1, c.y + c.metrics.height - 1))
-			throw love::Exception("Invalid BMFont character coordinates.");
+		if (!id->inside(c.x, c.y))
+			throw love::Exception("Invalid coordinates for BMFont character %u.", cpair.first);
+
+		if (width > 0 && !id->inside(c.x + width - 1, c.y))
+			throw love::Exception("Invalid width %d for BMFont character %u.", width, cpair.first);
+
+		if (height > 0 && !id->inside(c.x, c.y + height - 1))
+			throw love::Exception("Invalid height %d for BMFont character %u.", height, cpair.first);
 
 		if (guessheight)
 			lineHeight = std::max(lineHeight, c.metrics.height);
@@ -307,6 +320,17 @@ int BMFontRasterizer::getGlyphCount() const
 bool BMFontRasterizer::hasGlyph(uint32 glyph) const
 {
 	return characters.find(glyph) != characters.end();
+}
+
+float BMFontRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
+{
+	uint64 packedglyphs = ((uint64) leftglyph << 32) | (uint64) rightglyph;
+
+	auto it = kerning.find(packedglyphs);
+	if (it != kerning.end())
+		return it->second;
+
+	return 0.0f;
 }
 
 bool BMFontRasterizer::accepts(love::filesystem::FileData *fontdef)

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,9 @@ bool File::open(Mode mode)
 {
 	if (mode == MODE_CLOSED)
 		return true;
+
+	if (!PHYSFS_isInit())
+		throw love::Exception("PhysFS is not initialized.");
 
 	// File must exist if read mode.
 	if ((mode == MODE_READ) && !PHYSFS_exists(filename.c_str()))
@@ -154,7 +157,11 @@ int64 File::read(void *dst, int64 size)
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
 
+#ifdef LOVE_USE_PHYSFS_2_1
+	int64 read = PHYSFS_readBytes(file, dst, (PHYSFS_uint64) size);
+#else
 	int64 read = (int64)PHYSFS_read(file, dst, 1, (PHYSFS_uint32) size);
+#endif
 
 	return read;
 }
@@ -171,7 +178,11 @@ bool File::write(const void *data, int64 size)
 		throw love::Exception("Invalid write size.");
 
 	// Try to write.
+#ifdef LOVE_USE_PHYSFS_2_1
+	int64 written = PHYSFS_writeBytes(file, data, (PHYSFS_uint64) size);
+#else
 	int64 written = (int64) PHYSFS_write(file, data, 1, (PHYSFS_uint32) size);
+#endif
 
 	// Check that correct amount of data was written.
 	if (written != size)
@@ -212,7 +223,7 @@ inline bool test_eof(File *, PHYSFS_File *file)
 }
 #endif
 
-bool File::eof()
+bool File::isEOF()
 {
 	return file == nullptr || test_eof(this, file);
 }

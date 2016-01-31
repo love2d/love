@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -165,9 +165,9 @@ int w_Fixture_setFilterData(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
 	int v[3];
-	v[0] = luaL_checkint(L, 2);
-	v[1] = luaL_checkint(L, 3);
-	v[2] = luaL_checkint(L, 4);
+	v[0] = (int) luaL_checknumber(L, 2);
+	v[1] = (int) luaL_checknumber(L, 3);
+	v[2] = (int) luaL_checknumber(L, 4);
 	t->setFilterData(v);
 	return 0;
 }
@@ -250,7 +250,7 @@ int w_Fixture_getGroupIndex(lua_State *L)
 int w_Fixture_setGroupIndex(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	int i = luaL_checkint(L, 2);
+	int i = (int) luaL_checknumber(L, 2);
 	t->setGroupIndex(i);
 	return 0;
 }
@@ -269,7 +269,7 @@ int w_Fixture_isDestroyed(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Fixture_functions[] =
 {
 	{ "getType", w_Fixture_getType },
 	{ "setFriction", w_Fixture_setFriction },
@@ -303,7 +303,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_fixture(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_FIXTURE_ID, functions);
+	return luax_register_type(L, PHYSICS_FIXTURE_ID, "Fixture", w_Fixture_functions, nullptr);
 }
 
 } // box2d

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,16 +28,10 @@ namespace love
 {
 namespace thread
 {
-Channel *luax_checkchannel(lua_State *L, int idx);
-int w_Channel_push(lua_State *L);
-int w_Channel_supply(lua_State *L);
-int w_Channel_pop(lua_State *L);
-int w_Channel_demand(lua_State *L);
-int w_Channel_peek(lua_State *L);
-int w_Channel_getCount(lua_State *L);
-int w_Channel_clear(lua_State *L);
 
+Channel *luax_checkchannel(lua_State *L, int idx);
 extern "C" int luaopen_channel(lua_State *L);
+
 } // thread
 } // love
 

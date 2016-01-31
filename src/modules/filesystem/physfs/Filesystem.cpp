@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,14 @@
 #endif
 
 #ifdef LOVE_IOS
-#	include "common/iOS.h"
+#	include "common/ios.h"
+#endif
+
+#include <string>
+
+#ifdef LOVE_ANDROID
+#include <SDL.h>
+#include "common/android.h"
 #endif
 
 namespace
@@ -85,6 +92,7 @@ namespace
 
 		return out.str();
 	}
+
 }
 
 namespace love
@@ -117,12 +125,8 @@ void Filesystem::init(const char *arg0)
 	if (!PHYSFS_init(arg0))
 		throw love::Exception("%s", PHYSFS_getLastError());
 
-	PHYSFS_Version version = {};
-	PHYSFS_getLinkedVersion(&version);
-
-	// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in 2.1-alpha.
-	if (version.major == 2 && version.minor == 1)
-		PHYSFS_permitSymbolicLinks(1);
+	// Enable symlinks by default. Also fixes an issue in PhysFS 2.1-alpha.
+	setSymlinksEnabled(true);
 }
 
 void Filesystem::setFused(bool fused)
@@ -140,7 +144,7 @@ bool Filesystem::isFused() const
 	return fused;
 }
 
-bool Filesystem::setIdentity(const char *ident, bool appendToPath)
+bool Filesystem::setIdentity(const char *ident, bool appendToPath) 
 {
 	if (!PHYSFS_isInit())
 		return false;
@@ -160,7 +164,26 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	else
 		save_path_full += save_path_relative;
 
-	save_path_full = normalize(save_path_full);
+	save_path_full = normalize(save_path_full);	
+	
+#ifdef LOVE_ANDROID
+	if (save_identity == "")
+		save_identity = "unnamed";
+
+	std::string storage_path;
+	if (isAndroidSaveExternal())
+		storage_path = SDL_AndroidGetExternalStoragePath();
+	else
+		storage_path = SDL_AndroidGetInternalStoragePath();
+
+	std::string save_directory = storage_path + "/save";
+
+	save_path_full = storage_path + std::string("/save/") + save_identity;
+
+	if (!love::android::directoryExists(save_path_full.c_str()) &&
+			!love::android::mkdir(save_path_full.c_str()))
+		SDL_Log("Error: Could not create save directory %s!", save_path_full.c_str());
+#endif
 
 	// We now have something like:
 	// save_identity: game
@@ -170,7 +193,13 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	// We don't want old read-only save paths to accumulate when we set a new
 	// identity.
 	if (!old_save_path.empty())
+	{
+#ifdef LOVE_USE_PHYSFS_2_1
+		PHYSFS_unmount(old_save_path.c_str());
+#else
 		PHYSFS_removeFromSearchPath(old_save_path.c_str());
+#endif
+	}
 
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
@@ -198,12 +227,74 @@ bool Filesystem::setSource(const char *source)
 	if (!game_source.empty())
 		return false;
 
+	std::string new_search_path = source;
+
+#ifdef LOVE_ANDROID
+	if (!love::android::createStorageDirectories())
+		SDL_Log("Error creating storage directories!");
+
+	char* game_archive_ptr = NULL;
+	size_t game_archive_size = 0;
+	bool archive_loaded = false;
+
+	// try to load the game that was sent to LÖVE via a Intent
+	archive_loaded = love::android::loadGameArchiveToMemory(love::android::getSelectedGameFile(), &game_archive_ptr, &game_archive_size);
+
+	if (!archive_loaded)
+	{
+		// try to load the game in the assets/ folder
+		archive_loaded = love::android::loadGameArchiveToMemory("game.love", &game_archive_ptr, &game_archive_size);
+	}
+
+	if (archive_loaded)
+	{
+		if (!PHYSFS_mountMemory(game_archive_ptr, game_archive_size, love::android::freeGameArchiveMemory, "archive.zip", "/", 0))
+		{
+			SDL_Log("Mounting of in-memory game archive failed!");
+			love::android::freeGameArchiveMemory(game_archive_ptr);
+			return false;
+		}
+	}
+	else
+	{
+		// try to load the game in the directory that was sent to LÖVE via an
+		// Intent ...
+		std::string game_path = std::string(love::android::getSelectedGameFile());
+
+		if (game_path == "")
+		{
+			// ... or fall back to the game at /sdcard/lovegame
+			game_path = "/sdcard/lovegame/";
+		}
+
+		SDL_RWops *sdcard_main = SDL_RWFromFile(std::string(game_path + "main.lua").c_str(), "rb");
+
+		if (sdcard_main)
+		{
+			new_search_path = game_path;
+			sdcard_main->close(sdcard_main);
+
+			if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
+			{
+				SDL_Log("mounting of %s failed", new_search_path.c_str());
+				return false;
+			}
+		}
+		else
+		{
+			// Neither assets/game.love or /sdcard/lovegame was mounted
+			// sucessfully, therefore simply fail.
+			return false;
+		}
+	}
+#else
 	// Add the directory.
-	if (!PHYSFS_mount(source, nullptr, 1))
+	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
 		return false;
+#endif
 
 	// Save the game source.
-	game_source = std::string(source);
+	game_source = new_search_path;
 
 	return true;
 }
@@ -312,7 +403,7 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 	if (realPath.length() == 0)
 		return false;
 
-	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath);
+	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath) != 0;
 }
 
 bool Filesystem::unmount(const char *archive)
@@ -353,7 +444,11 @@ bool Filesystem::unmount(const char *archive)
 	if (!mountPoint)
 		return false;
 
-	return PHYSFS_removeFromSearchPath(realPath.c_str());
+#ifdef LOVE_USE_PHYSFS_2_1
+	return PHYSFS_unmount(realPath.c_str()) != 0;
+#else
+	return PHYSFS_removeFromSearchPath(realPath.c_str()) != 0;
+#endif
 }
 
 love::filesystem::File *Filesystem::newFile(const char *filename) const
@@ -410,7 +505,13 @@ const char *Filesystem::getWorkingDirectory()
 
 std::string Filesystem::getUserDirectory()
 {
+#ifdef LOVE_IOS
+	// PHYSFS_getUserDir doesn't give exactly the path we want on iOS.
+	static std::string userDir = normalize(love::ios::getHomeDirectory());
+#else
 	static std::string userDir = normalize(PHYSFS_getUserDir());
+#endif
+
 	return userDir;
 }
 
@@ -475,6 +576,9 @@ std::string Filesystem::getSourceBaseDirectory() const
 
 std::string Filesystem::getRealDirectory(const char *filename) const
 {
+	if (!PHYSFS_isInit())
+		throw love::Exception("PhysFS is not initialized.");
+
 	const char *dir = PHYSFS_getRealDir(filename);
 
 	if (dir == nullptr)
@@ -483,33 +587,79 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
+bool Filesystem::exists(const char *path) const
+{
+	if (!PHYSFS_isInit())
+		return false;
+
+	return PHYSFS_exists(path) != 0;
+}
+
 bool Filesystem::isDirectory(const char *dir) const
 {
-	return PHYSFS_isDirectory(dir);
+	if (!PHYSFS_isInit())
+		return false;
+
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(dir, &stat))
+		return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
+	else
+		return false;
+#else
+	return PHYSFS_isDirectory(dir) != 0;
+#endif
 }
 
 bool Filesystem::isFile(const char *file) const
 {
-	return PHYSFS_exists(file) && !PHYSFS_isDirectory(file);
+	if (!PHYSFS_isInit())
+		return false;
+
+	return PHYSFS_exists(file) && !isDirectory(file);
+}
+
+bool Filesystem::isSymlink(const char *filename) const
+{
+	if (!PHYSFS_isInit())
+		return false;
+
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(filename, &stat))
+		return stat.filetype == PHYSFS_FILETYPE_SYMLINK;
+	else
+		return false;
+#else
+	return PHYSFS_isSymbolicLink(filename) != 0;
+#endif
 }
 
 bool Filesystem::createDirectory(const char *dir)
 {
+	if (!PHYSFS_isInit())
+		return false;
+
 	if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 		return false;
 
 	if (!PHYSFS_mkdir(dir))
 		return false;
+
 	return true;
 }
 
 bool Filesystem::remove(const char *file)
 {
+	if (!PHYSFS_isInit())
+		return false;
+
 	if (PHYSFS_getWriteDir() == 0 && !setupWriteDirectory())
 		return false;
 
 	if (!PHYSFS_delete(file))
 		return false;
+
 	return true;
 }
 
@@ -545,41 +695,36 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 		throw love::Exception("Data could not be written.");
 }
 
-int Filesystem::getDirectoryItems(lua_State *L)
+void Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &items)
 {
-	const char *dir = luaL_checkstring(L, 1);
-	bool hascallback = !lua_isnoneornil(L, 2);
-
-	if (hascallback)
-		luaL_checktype(L, 2, LUA_TFUNCTION);
+	if (!PHYSFS_isInit())
+		return;
 
 	char **rc = PHYSFS_enumerateFiles(dir);
-	int index = 1;
 
-	lua_newtable(L);
+	if (rc == nullptr)
+		return;
 
 	for (char **i = rc; *i != 0; i++)
-	{
-		if (hascallback)
-		{
-			lua_pushvalue(L, 2);
-			lua_pushstring(L, *i);
-			lua_call(L, 1, 0);
-		}
-
-		lua_pushstring(L, *i);
-		lua_rawseti(L, -2, index);
-		index++;
-	}
+		items.push_back(*i);
 
 	PHYSFS_freeList(rc);
-
-	return 1;
 }
 
 int64 Filesystem::getLastModified(const char *filename) const
 {
-	PHYSFS_sint64 time = PHYSFS_getLastModTime(filename);
+	PHYSFS_sint64 time = -1;
+
+	if (!PHYSFS_isInit())
+		return -1;
+
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(filename, &stat))
+		time = stat.modtime;
+#else
+	time = PHYSFS_getLastModTime(filename);
+#endif
 
 	if (time == -1)
 		throw love::Exception("Could not determine file modification date.");
@@ -596,17 +741,29 @@ int64 Filesystem::getSize(const char *filename) const
 
 void Filesystem::setSymlinksEnabled(bool enable)
 {
+	if (!PHYSFS_isInit())
+		return;
+
+	if (!enable)
+	{
+		PHYSFS_Version version = {};
+		PHYSFS_getLinkedVersion(&version);
+
+		// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in
+		// PhysFS 2.1-alpha.
+		if (version.major == 2 && version.minor == 1)
+			return;
+	}
+
 	PHYSFS_permitSymbolicLinks(enable ? 1 : 0);
 }
 
 bool Filesystem::areSymlinksEnabled() const
 {
-	return PHYSFS_symbolicLinksPermitted() != 0;
-}
+	if (!PHYSFS_isInit())
+		return false;
 
-bool Filesystem::isSymlink(const char *filename) const
-{
-	return PHYSFS_isSymbolicLink(filename) != 0;
+	return PHYSFS_symbolicLinksPermitted() != 0;
 }
 
 std::vector<std::string> &Filesystem::getRequirePath()

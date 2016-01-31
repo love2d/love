@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,58 +31,17 @@ namespace timer
 namespace sdl
 {
 
-/**
- * An SDL timer module. Can keep track of time between certain function
- * calls, and provides access to a FPS metric which updates once each second.
- **/
 class Timer : public love::timer::Timer
 {
 public:
 
-	/**
-	 * Constructor. Initializes the SDL/timer subsystem.
-	 **/
 	Timer();
-
-	/**
-	 * Destructor.
-	 **/
 	virtual ~Timer();
 
-	const char *getName() const;
-	void step();
-	void sleep(double seconds) const;
-	double getDelta() const;
-	int getFPS() const;
-	double getAverageDelta() const;
-	double getTime() const;
+	const char *getName() const override;
 
-private:
+	void sleep(double seconds) const override;
 
-	// Frame delta vars.
-	double currTime;
-	double prevTime;
-	double prevFpsUpdate;
-
-	// Updated with a certain frequency.
-	int fps;
-	double averageDelta;
-
-	// The frequency by which to update the FPS.
-	double fpsUpdateFrequency;
-
-	// Frames since last FPS update.
-	int frames;
-
-	// The current timestep.
-	double dt;
-
-	// The timer period (reciprocal of the frequency.)
-	const double timerPeriod;
-
-	// Returns the timer period on some platforms.
-	static double getTimerPeriod();
-	
 }; // Timer
 
 } // sdl

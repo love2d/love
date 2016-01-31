@@ -81,7 +81,8 @@ int w_Thread_isRunning(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg type_functions[] = {
+static const luaL_Reg w_Thread_functions[] =
+{
 	{ "start", w_Thread_start },
 	{ "wait", w_Thread_wait },
 	{ "getError", w_Thread_getError },
@@ -91,7 +92,7 @@ static const luaL_Reg type_functions[] = {
 
 extern "C" int luaopen_thread(lua_State *L)
 {
-	return luax_register_type(L, THREAD_THREAD_ID, type_functions);
+	return luax_register_type(L, THREAD_THREAD_ID, "Thread", w_Thread_functions, nullptr);
 }
 
 } // thread

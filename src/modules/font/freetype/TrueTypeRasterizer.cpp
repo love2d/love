@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,9 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, Hinting hinting)
 	: data(data)
+	, hinting(hinting)
 {
 	if (size <= 0)
 		throw love::Exception("Invalid TrueType font size: %d", size);
@@ -75,9 +76,10 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	FT_Glyph ftglyph;
 
 	FT_Error err = FT_Err_Ok;
+	FT_ULong loadoption = hintingToLoadOption(hinting);
 
 	// Initialize
-	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT);
+	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT | loadoption);
 
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Load_Glyph failed (0x%x)", err);
@@ -87,7 +89,11 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Get_Glyph failed (0x%x)", err);
 
-	err = FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+	FT_Render_Mode rendermode = FT_RENDER_MODE_NORMAL;
+	if (hinting == HINTING_MONO)
+		rendermode = FT_RENDER_MODE_MONO;
+
+	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
 
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
@@ -110,9 +116,9 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	// We treat the luminance of the FreeType bitmap as alpha in the GlyphData.
 	if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
 	{
-		for (int y = 0; y < bitmap.rows; y++)
+		for (int y = 0; y < (int) bitmap.rows; y++)
 		{
-			for (int x = 0; x < bitmap.width; x++)
+			for (int x = 0; x < (int) bitmap.width; x++)
 			{
 				// Extract the 1-bit value and convert it to uint8.
 				uint8 v = ((pixels[x / 8]) & (1 << (7 - (x % 8)))) ? 255 : 0;
@@ -125,9 +131,9 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	}
 	else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY)
 	{
-		for (int y = 0; y < bitmap.rows; y++)
+		for (int y = 0; y < (int) bitmap.rows; y++)
 		{
-			for (int x = 0; x < bitmap.width; x++)
+			for (int x = 0; x < (int) bitmap.width; x++)
 			{
 				dest[2 * (y * bitmap.width + x) + 0] = 255;
 				dest[2 * (y * bitmap.width + x) + 1] = pixels[x];
@@ -159,6 +165,13 @@ bool TrueTypeRasterizer::hasGlyph(uint32 glyph) const
 	return FT_Get_Char_Index(face, glyph) != 0;
 }
 
+float TrueTypeRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
+{
+	FT_Vector kerning = {};
+	FT_Get_Kerning(face, leftglyph, rightglyph, FT_KERNING_DEFAULT, &kerning);
+	return float(kerning.x >> 6);
+}
+
 bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
 {
 	const FT_Byte *fbase = (const FT_Byte *) data->getData();
@@ -166,6 +179,22 @@ bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
 
 	// Pasing in -1 for the face index lets us test if the data is valid.
 	return FT_New_Memory_Face(library, fbase, fsize, -1, nullptr) == 0;
+}
+
+FT_ULong TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
+{
+	switch (hint)
+	{
+	case HINTING_NORMAL:
+	default:
+		return FT_LOAD_TARGET_NORMAL;
+	case HINTING_LIGHT:
+		return FT_LOAD_TARGET_LIGHT;
+	case HINTING_MONO:
+		return FT_LOAD_TARGET_MONO;
+	case HINTING_NONE:
+		return FT_LOAD_NO_HINTING;
+	}
 }
 
 } // freetype

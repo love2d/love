@@ -37,6 +37,8 @@
 #include "udp.h"
 #include "select.h"
 
+extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
+
 /*-------------------------------------------------------------------------*\
 * Internal function prototypes
 \*-------------------------------------------------------------------------*/
@@ -69,7 +71,7 @@ static luaL_reg func[] = {
 * Skip a few arguments
 \*-------------------------------------------------------------------------*/
 static int global_skip(lua_State *L) {
-    int amount = luaL_checkint(L, 1);
+    int amount = (int) luaL_checknumber(L, 1);
     int ret = lua_gettop(L) - amount - 1;
     return ret >= 0 ? ret : 0;
 }
@@ -89,7 +91,7 @@ static int global_unload(lua_State *L) {
 static int base_open(lua_State *L) {
     if (socket_open()) {
         /* export functions (and leave namespace table on top of stack) */
-        luaL_openlib(L, "socket", func, 0);
+        luax_register(L, "socket", func);
 #ifdef LUASOCKET_DEBUG
         lua_pushstring(L, "_DEBUG");
         lua_pushboolean(L, 1);

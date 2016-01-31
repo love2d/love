@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,7 +38,7 @@ namespace love
 {
 namespace filesystem
 {
-	
+
 #define instance() (Module::getInstance<Filesystem>(Module::M_FILESYSTEM))
 
 bool hack_setupWriteDirectory()
@@ -67,6 +67,13 @@ int w_isFused(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isFused());
 	return 1;
+}
+
+int w_setAndroidSaveExternal(lua_State *L)
+{
+	bool useExternal = luax_optboolean(L, 1, false);
+	instance()->setAndroidSaveExternal(useExternal);
+	return 0;
 }
 
 int w_setIdentity(lua_State *L)
@@ -155,19 +162,28 @@ int w_newFile(lua_State *L)
 	return 1;
 }
 
-FileData *luax_getfiledata(lua_State *L, int idx)
+File *luax_getfile(lua_State *L, int idx)
 {
-	FileData *data = nullptr;
 	File *file = nullptr;
-
 	if (lua_isstring(L, idx))
 	{
 		const char *filename = luaL_checkstring(L, idx);
 		file = instance()->newFile(filename);
 	}
-	else if (luax_istype(L, idx, FILESYSTEM_FILE_ID))
-	{
+	else
 		file = luax_checkfile(L, idx);
+
+	return file;
+}
+
+FileData *luax_getfiledata(lua_State *L, int idx)
+{
+	FileData *data = nullptr;
+	File *file = nullptr;
+
+	if (lua_isstring(L, idx) || luax_istype(L, idx, FILESYSTEM_FILE_ID))
+	{
+		file = luax_getfile(L, idx);
 		file->retain();
 	}
 	else if (luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID))
@@ -186,7 +202,7 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	{
 		luax_catchexcept(L,
 			[&]() { data = file->read(); },
-			[&]() { file->release(); }
+			[&](bool) { file->release(); }
 		);
 	}
 
@@ -301,6 +317,19 @@ int w_getRealDirectory(lua_State *L)
 	return 1;
 }
 
+int w_getExecutablePath(lua_State *L)
+{
+	luax_pushstring(L, instance()->getExecutablePath());
+	return 1;
+}
+
+int w_exists(lua_State *L)
+{
+	const char *arg = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->exists(arg));
+	return 1;
+}
+
 int w_isDirectory(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
@@ -312,6 +341,13 @@ int w_isFile(lua_State *L)
 {
 	const char *arg = luaL_checkstring(L, 1);
 	luax_pushboolean(L, instance()->isFile(arg));
+	return 1;
+}
+
+int w_isSymlink(lua_State *L)
+{
+	const char *filename = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->isSymlink(filename));
 	return 1;
 }
 
@@ -408,7 +444,21 @@ int w_append(lua_State *L)
 
 int w_getDirectoryItems(lua_State *L)
 {
-	return instance()->getDirectoryItems(L);
+	const char *dir = luaL_checkstring(L, 1);
+	std::vector<std::string> items;
+
+	instance()->getDirectoryItems(dir, items);
+
+	lua_createtable(L, (int) items.size(), 0);
+
+	for (int i = 0; i < (int) items.size(); i++)
+	{
+		lua_pushstring(L, items[i].c_str());
+		lua_rawseti(L, -2, i + 1);
+	}
+
+	// Return the table.
+	return 1;
 }
 
 int w_lines(lua_State *L)
@@ -519,13 +569,6 @@ int w_setSymlinksEnabled(lua_State *L)
 int w_areSymlinksEnabled(lua_State *L)
 {
 	luax_pushboolean(L, instance()->areSymlinksEnabled());
-	return 1;
-}
-
-int w_isSymlink(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isSymlink(filename));
 	return 1;
 }
 
@@ -672,6 +715,7 @@ static const luaL_Reg functions[] =
 	{ "init", w_init },
 	{ "setFused", w_setFused },
 	{ "isFused", w_isFused },
+	{ "_setAndroidSaveExternal", w_setAndroidSaveExternal },
 	{ "setIdentity", w_setIdentity },
 	{ "getIdentity", w_getIdentity },
 	{ "setSource", w_setSource },
@@ -685,8 +729,11 @@ static const luaL_Reg functions[] =
 	{ "getSaveDirectory", w_getSaveDirectory },
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "getRealDirectory", w_getRealDirectory },
+	{ "getExecutablePath", w_getExecutablePath },
+	{ "exists", w_exists },
 	{ "isDirectory", w_isDirectory },
 	{ "isFile", w_isFile },
+	{ "isSymlink", w_isSymlink },
 	{ "createDirectory", w_createDirectory },
 	{ "remove", w_remove },
 	{ "read", w_read },
@@ -699,7 +746,6 @@ static const luaL_Reg functions[] =
 	{ "getSize", w_getSize },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },
-	{ "isSymlink", w_isSymlink },
 	{ "newFileData", w_newFileData },
 	{ "getRequirePath", w_getRequirePath },
 	{ "setRequirePath", w_setRequirePath },

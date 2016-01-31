@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,7 +39,7 @@ public:
 		TYPE_STATIC,
 		TYPE_STREAM,
 		TYPE_MAX_ENUM
-	}; // Type
+	};
 
 	enum Unit
 	{
@@ -71,6 +71,7 @@ public:
 
 	virtual void seek(float offset, Unit unit) = 0;
 	virtual float tell(Unit unit) = 0;
+	virtual double getDuration(Unit unit) = 0;
 
 	// all float * v must be of size 3
 	virtual void setPosition(float *v) = 0;

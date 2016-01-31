@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,6 @@
 #ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
 #endif // LOVE_BUILD_STANDALONE
-extern "C" int luaopen_love_thread(lua_State *L);
 
 namespace love
 {
@@ -34,7 +33,7 @@ namespace thread
 LuaThread::LuaThread(const std::string &name, love::Data *code)
 	: code(code)
 	, name(name)
-	, args(0)
+	, args(nullptr)
 	, nargs(0)
 {
 	threadName = name;
@@ -52,13 +51,25 @@ void LuaThread::threadFunction()
 {
 	this->retain();
 	error.clear();
+
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
+
 #ifdef LOVE_BUILD_STANDALONE
-	love::luax_preload(L, luaopen_love, "love");
-	luaopen_love(L);
+	luax_preload(L, luaopen_love, "love");
+	luax_require(L, "love");
+	lua_pop(L, 1);
 #endif // LOVE_BUILD_STANDALONE
-	luaopen_love_thread(L);
+
+	luax_require(L, "love.thread");
+	lua_pop(L, 1);
+
+	// We load love.filesystem by default, since require still exists without it
+	// but won't load files from the proper paths. love.filesystem also must be
+	// loaded before using any love function that can take a filepath argument.
+	luax_require(L, "love.filesystem");
+	lua_pop(L, 1);
+
 	if (luaL_loadbuffer(L, (const char *) code->getData(), code->getSize(), name.c_str()) != 0)
 		error = luax_tostring(L, -1);
 	else
@@ -72,14 +83,17 @@ void LuaThread::threadFunction()
 		// Set both args and nargs to nil, prevents the deconstructor from
 		// accessing it again.
 		nargs = 0;
-		args = 0;
+		args = nullptr;
 
 		if (lua_pcall(L, pushedargs, 0, 0) != 0)
 			error = luax_tostring(L, -1);
 	}
+
 	lua_close(L);
+
 	if (!error.empty())
 		onError();
+
 	this->release();
 }
 
@@ -104,8 +118,8 @@ void LuaThread::onError()
 	if (error.empty())
 		return;
 
-	event::Event *event = Module::getInstance<event::Event>(Module::M_EVENT);
-	if (!event)
+	auto eventmodule = Module::getInstance<event::Event>(Module::M_EVENT);
+	if (!eventmodule)
 		return;
 
 	Proxy p;
@@ -122,7 +136,7 @@ void LuaThread::onError()
 	for (const StrongRef<Variant> &v : vargs)
 		v->release();
 
-	event->push(msg);
+	eventmodule->push(msg);
 	msg->release();
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,10 @@
 #	define LOVE_WINDOWS 1
 #endif
 #if defined(linux) || defined(__linux) || defined(__linux__)
-#	define LOVE_LINUX 1
+# define LOVE_LINUX 1
+#endif
+#if defined(__ANDROID__)
+#  define LOVE_ANDROID 1
 #endif
 #if defined(__APPLE__)
 #	include <TargetConditionals.h>
@@ -36,13 +39,16 @@
 #		define LOVE_MACOSX 1
 #	endif
 #endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+// I know it's not linux, but it seems most "linux-only" code is bsd-compatible
+#	define LOVE_LINUX 1
+#endif
 
 // Endianness.
-#if defined(__i386__) || defined(__i386)
-#	define LOVE_LITTLE_ENDIAN 1
-#endif
 #if defined(__ppc__) || defined(__ppc) || defined(__powerpc__) || defined(__powerpc)
 #	define LOVE_BIG_ENDIAN 1
+#else
+#	define LOVE_LITTLE_ENDIAN 1
 #endif
 
 // Warnings.
@@ -70,13 +76,16 @@
 #endif
 
 #if defined(LOVE_WINDOWS)
-#	define LOVE_LEGENDARY_UTF8_ARGV_HACK
 #	define LOVE_LEGENDARY_CONSOLE_IO_HACK
 #	define NOMINMAX
 #endif
 
 #if defined(LOVE_MACOSX) || defined(LOVE_IOS)
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
+#endif
+
+#if defined(LOVE_ANDROID) || defined(LOVE_IOS)
+#	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 #endif
 
 // Autotools config.h
@@ -131,9 +140,19 @@
 #	define LOVE_ENABLE_TOUCH
 #	define LOVE_ENABLE_TOUCH_SDL
 #	define LOVE_ENABLE_UTF8
+#	define LOVE_ENABLE_VIDEO
+#	define LOVE_ENABLE_VIDEO_THEORA
 #	define LOVE_ENABLE_WINDOW
 #	define LOVE_ENABLE_WINDOW_SDL
 #	define LOVE_ENABLE_WUFF
+#endif
+
+// Check we have a sane configuration
+#if !defined(LOVE_WINDOWS) && !defined(LOVE_LINUX) && !defined(LOVE_IOS) && !defined(LOVE_MACOSX)
+#	error Could not detect target platform
+#endif
+#if !defined(LOVE_LITTLE_ENDIAN) && !defined(LOVE_BIG_ENDIAN)
+#	error Could not detect endianness
 #endif
 
 #endif // LOVE_CONFIG_H

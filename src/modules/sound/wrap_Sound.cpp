@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,16 +32,35 @@ namespace sound
 
 #define instance() (Module::getInstance<Sound>(Module::M_SOUND))
 
+int w_newDecoder(lua_State *L)
+{
+	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+	int bufferSize = (int) luaL_optnumber(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
+
+	Decoder *t = nullptr;
+	luax_catchexcept(L,
+		[&]() { t = instance()->newDecoder(data, bufferSize); },
+		[&](bool) { data->release(); }
+	);
+
+	if (t == nullptr)
+		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
+
+	luax_pushtype(L, SOUND_DECODER_ID, t);
+	t->release();
+	return 1;
+}
+
 int w_newSoundData(lua_State *L)
 {
 	SoundData *t = 0;
 
 	if (lua_isnumber(L, 1))
 	{
-		int samples = luaL_checkint(L, 1);
-		int sampleRate = luaL_optint(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
-		int bitDepth = luaL_optint(L, 3, Decoder::DEFAULT_BIT_DEPTH);
-		int channels = luaL_optint(L, 4, Decoder::DEFAULT_CHANNELS);
+		int samples = (int) luaL_checknumber(L, 1);
+		int sampleRate = (int) luaL_optnumber(L, 2, Decoder::DEFAULT_SAMPLE_RATE);
+		int bitDepth = (int) luaL_optnumber(L, 3, Decoder::DEFAULT_BIT_DEPTH);
+		int channels = (int) luaL_optnumber(L, 4, Decoder::DEFAULT_CHANNELS);
 
 		luax_catchexcept(L, [&](){ t = instance()->newSoundData(samples, sampleRate, bitDepth, channels); });
 	}
@@ -63,30 +82,11 @@ int w_newSoundData(lua_State *L)
 	return 1;
 }
 
-int w_newDecoder(lua_State *L)
-{
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
-	int bufferSize = luaL_optint(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
-
-	Decoder *t = nullptr;
-	luax_catchexcept(L,
-		[&]() { t = instance()->newDecoder(data, bufferSize); },
-		[&]() { data->release(); }
-	);
-
-	if (t == nullptr)
-		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
-
-	luax_pushtype(L, SOUND_DECODER_ID, t);
-	t->release();
-	return 1;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "newSoundData",  w_newSoundData },
 	{ "newDecoder",  w_newDecoder },
+	{ "newSoundData",  w_newSoundData },
 	{ 0, 0 }
 };
 

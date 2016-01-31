@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,19 +34,6 @@ namespace box2d
 {
 
 WheelJoint *luax_checkwheeljoint(lua_State *L, int idx);
-int w_WheelJoint_getJointTranslation(lua_State *L);
-int w_WheelJoint_getJointSpeed(lua_State *L);
-int w_WheelJoint_setMotorEnabled(lua_State *L);
-int w_WheelJoint_isMotorEnabled(lua_State *L);
-int w_WheelJoint_setMotorSpeed(lua_State *L);
-int w_WheelJoint_getMotorSpeed(lua_State *L);
-int w_WheelJoint_setMaxMotorTorque(lua_State *L);
-int w_WheelJoint_getMaxMotorTorque(lua_State *L);
-int w_WheelJoint_getMotorTorque(lua_State *L);
-int w_WheelJoint_setSpringFrequency(lua_State *L);
-int w_WheelJoint_getSpringFrequency(lua_State *L);
-int w_WheelJoint_setSpringDampingRatio(lua_State *L);
-int w_WheelJoint_getSpringDampingRatio(lua_State *L);
 extern "C" int luaopen_wheeljoint(lua_State *L);
 
 } // box2d

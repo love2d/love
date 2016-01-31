@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,6 @@ private:
 class Event : public Module
 {
 public:
-	Event();
 	virtual ~Event();
 
 	// Implements Module.
@@ -73,7 +72,7 @@ public:
 	virtual Message *wait() = 0;
 
 protected:
-	thread::Mutex *mutex;
+	love::thread::MutexRef mutex;
 	std::queue<Message *> queue;
 
 }; // Event

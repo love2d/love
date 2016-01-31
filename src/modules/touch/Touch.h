@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,7 @@ public:
 		double y;  // Position in pixels along the y-axis.
 		double dx; // Amount in pixels moved along the x-axis.
 		double dy; // Amount in pixels moved along the y-axis.
+		double pressure;
 	};
 
 	virtual ~Touch() {}
@@ -54,14 +55,14 @@ public:
 	virtual ModuleType getModuleType() const { return M_TOUCH; }
 
 	/**
-	 * Gets a list of the IDs of all currently active touches.
+	 * Gets all currently active touches.
 	 **/
-	virtual std::vector<int64> getIDs() const = 0;
+	virtual const std::vector<TouchInfo> &getTouches() const = 0;
 
 	/**
-	 * Gets the position in pixels of a specific touch, using its ID.
+	 * Gets a specific touch, using its ID.
 	 **/
-	virtual void getPosition(int64 id, double &x, double &y) const = 0;
+	virtual const TouchInfo &getTouch(int64 id) const = 0;
 
 }; // Touch
 

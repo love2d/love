@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,19 +30,6 @@ namespace love
 namespace math
 {
 
-int w_random(lua_State *L);
-int w_randomNormal(lua_State *L);
-int w_setRandomSeed(lua_State *L);
-int w_getRandomSeed(lua_State *L);
-int w_setRandomState(lua_State *L);
-int w_getRandomState(lua_State *L);
-int w_newRandomGenerator(lua_State *L);
-int w_newBezierCurve(lua_State *L);
-int w_triangulate(lua_State *L);
-int w_isConvex(lua_State *L);
-int w_gammaToLinear(lua_State *L);
-int w_linearToGamma(lua_State *L);
-int w_noise(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_math(lua_State *L);
 
 } // random

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,23 +34,6 @@ namespace box2d
 {
 
 PrismaticJoint *luax_checkprismaticjoint(lua_State *L, int idx);
-int w_PrismaticJoint_getJointTranslation(lua_State *L);
-int w_PrismaticJoint_getJointSpeed(lua_State *L);
-int w_PrismaticJoint_setMotorEnabled(lua_State *L);
-int w_PrismaticJoint_isMotorEnabled(lua_State *L);
-int w_PrismaticJoint_setMaxMotorForce(lua_State *L);
-int w_PrismaticJoint_setMotorSpeed(lua_State *L);
-int w_PrismaticJoint_getMotorSpeed(lua_State *L);
-int w_PrismaticJoint_getMotorForce(lua_State *L);
-int w_PrismaticJoint_getMaxMotorForce(lua_State *L);
-int w_PrismaticJoint_setLimitsEnabled(lua_State *L);
-int w_PrismaticJoint_hasLimitsEnabled(lua_State *L);
-int w_PrismaticJoint_setUpperLimit(lua_State *L);
-int w_PrismaticJoint_setLowerLimit(lua_State *L);
-int w_PrismaticJoint_setLimits(lua_State *L);
-int w_PrismaticJoint_getLowerLimit(lua_State *L);
-int w_PrismaticJoint_getUpperLimit(lua_State *L);
-int w_PrismaticJoint_getLimits(lua_State *L);
 extern "C" int luaopen_prismaticjoint(lua_State *L);
 
 } // box2d

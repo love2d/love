@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,7 +38,7 @@ int w_Canvas_renderTo(lua_State *L)
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	Graphics *graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	auto graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 	if (graphics)
 	{
@@ -51,12 +51,15 @@ int w_Canvas_renderTo(lua_State *L)
 		luax_catchexcept(L, [&](){ graphics->setCanvas(canvas); });
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
-		lua_call(L, 0, 0);
+		int status = lua_pcall(L, 0, 0, 0);
 
 		graphics->setCanvas(oldcanvases);
 
 		for (Canvas *c : oldcanvases)
 			c->release();
+
+		if (status != 0)
+			return lua_error(L);
 	}
 
 	return 0;
@@ -66,10 +69,10 @@ int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, MODULE_IMAGE_ID);
-	int x = luaL_optint(L, 2, 0);
-	int y = luaL_optint(L, 3, 0);
-	int w = luaL_optint(L, 4, canvas->getWidth());
-	int h = luaL_optint(L, 5, canvas->getHeight());
+	int x = (int) luaL_optnumber(L, 2, 0);
+	int y = (int) luaL_optnumber(L, 3, 0);
+	int w = (int) luaL_optnumber(L, 4, canvas->getWidth());
+	int h = (int) luaL_optnumber(L, 5, canvas->getHeight());
 
 	love::image::ImageData *img = nullptr;
 	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });
@@ -98,17 +101,8 @@ int w_Canvas_getMSAA(lua_State *L)
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Canvas_functions[] =
 {
-	// From wrap_Texture.
-	{ "getWidth", w_Texture_getWidth },
-	{ "getHeight", w_Texture_getHeight },
-	{ "getDimensions", w_Texture_getDimensions },
-	{ "setFilter", w_Texture_setFilter },
-	{ "getFilter", w_Texture_getFilter },
-	{ "setWrap", w_Texture_setWrap },
-	{ "getWrap", w_Texture_getWrap },
-
 	{ "renderTo", w_Canvas_renderTo },
 	{ "newImageData", w_Canvas_newImageData },
 	{ "getFormat", w_Canvas_getFormat },
@@ -118,7 +112,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_canvas(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_CANVAS_ID, functions);
+	return luax_register_type(L, GRAPHICS_CANVAS_ID, "Canvas", w_Texture_functions, w_Canvas_functions, nullptr);
 }
 
 } // opengl

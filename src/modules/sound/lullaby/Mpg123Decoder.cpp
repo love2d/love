@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,18 +31,88 @@ namespace sound
 namespace lullaby
 {
 
+/**
+ * mpg123 callbacks for seekable streams.
+ **/
+
+static ssize_t read_callback(void *udata, void *buffer, size_t count)
+{
+	DecoderFile *file = (DecoderFile *) udata;
+
+	// Calculates how much data is still left and takes that value or
+	// the buffer size, whichever is lower, as the number of bytes to write.
+	size_t countLeft = file->size - file->offset;
+	size_t countWrite = countLeft < count ? countLeft : count;
+
+	if (countWrite > 0)
+	{
+		memcpy(buffer, file->data + file->offset, countWrite);
+		file->offset += countWrite;
+	}
+
+	// Returns the number of written bytes. 0 means EOF.
+	return countWrite;
+}
+
+static off_t seek_callback(void *udata, off_t offset, int whence)
+{
+	DecoderFile *file = (DecoderFile *) udata;
+
+	switch (whence)
+	{
+	case SEEK_SET:
+		// Negative values are invalid at this point.
+		if (offset < 0)
+			return -1;
+
+		// Prevents the offset from going over EOF.
+		if (file->size > (size_t) offset)
+			file->offset = offset;
+		else
+			file->offset = file->size;
+		break;
+	case SEEK_END:
+		// Offset is set to EOF. Offset calculation is just like SEEK_CUR.
+		file->offset = file->size;
+	case SEEK_CUR:
+		// Prevents the offset from going over EOF or below 0.
+		if (offset > 0)
+		{
+			if (file->size > file->offset + (size_t) offset)
+				file->offset = file->offset + offset;
+			else
+				file->offset = file->size;
+		}
+		else if (offset < 0)
+		{
+			if (file->offset >= (size_t) (-offset))
+				file->offset = file->offset - (size_t) (-offset);
+			else
+				file->offset = 0;
+		}
+		break;
+	default:
+		return -1;
+	};
+	
+	return file->offset;
+}
+
+static void cleanup_callback(void *)
+{
+	// Cleanup is done by the Decoder class.
+}
+
 bool Mpg123Decoder::inited = false;
 
 Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
 	: Decoder(data, ext, bufferSize)
+	, decoder_file(data)
 	, handle(0)
 	, channels(MPG123_STEREO)
+	, duration(-2.0)
 {
-
-	data_size = data->getSize();
-	data_offset = 0;
-
-	int ret;
+	int ret = 0;
 
 	if (!inited)
 	{
@@ -52,18 +122,46 @@ Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
 		inited = (ret == MPG123_OK);
 	}
 
-	//Intialize the handle
-	handle = mpg123_new(NULL, &ret);
-	if (handle == NULL)
-		throw love::Exception("Could not create handle.");
-	ret = mpg123_open_feed(handle);
-	if (ret != MPG123_OK)
-		throw love::Exception("Could not open feed.");
+	// Intialize the handle.
+	handle = mpg123_new(nullptr, nullptr);
+	if (handle == nullptr)
+		throw love::Exception("Could not create decoder.");
 
-	ret = feed(16384);
+	// Suppressing all mpg123 messages.
+	mpg123_param(handle, MPG123_ADD_FLAGS, MPG123_QUIET, 0);
 
-	if (ret != MPG123_OK && ret != MPG123_DONE)
-		throw love::Exception("Could not feed!");
+	try
+	{
+		ret = mpg123_replace_reader_handle(handle, &read_callback, &seek_callback, &cleanup_callback);
+		if (ret != MPG123_OK)
+			throw love::Exception("Could not set decoder callbacks.");
+
+		ret = mpg123_open_handle(handle, &decoder_file);
+		if (ret != MPG123_OK)
+			throw love::Exception("Could not open decoder.");
+
+		// mpg123_getformat should be able to tell us the properties of the stream's first frame.
+		long rate = 0;
+		ret = mpg123_getformat(handle, &rate, &channels, nullptr);
+		if (ret == MPG123_ERR)
+			throw love::Exception("Could not get stream information.");
+
+		// I forgot what this was about.
+		if (channels == 0)
+			channels = 2;
+
+		// Force signed 16-bit output.
+		mpg123_param(handle, MPG123_FLAGS, (channels == 2 ? MPG123_FORCE_STEREO : MPG123_MONO_MIX), 0);
+		mpg123_format_none(handle);
+		mpg123_format(handle, rate, channels, MPG123_ENC_SIGNED_16);
+
+		sampleRate = rate;
+	}
+	catch (love::Exception &)
+	{
+		mpg123_delete(handle);
+		throw;
+	}
 }
 
 Mpg123Decoder::~Mpg123Decoder()
@@ -102,64 +200,24 @@ love::sound::Decoder *Mpg123Decoder::clone()
 int Mpg123Decoder::decode()
 {
 	int size = 0;
-	bool done = false;
 
-	while (size < bufferSize && !done && !eof)
+	while (size < bufferSize && !eof)
 	{
 		size_t numbytes = 0;
+		int res = mpg123_read(handle, (unsigned char *) buffer + size, bufferSize - size, &numbytes);
 
-		int r = mpg123_read(handle, (unsigned char *) buffer + size, bufferSize - size, &numbytes);
-
-		switch (r)
+		switch (res)
 		{
-		case MPG123_NEW_FORMAT:
-		{
-			size += numbytes;
-			long rate = 0;
-			int encoding = 0;
-			mpg123_getformat(handle, &rate, &channels, &encoding);
-			if (rate == 0)
-				rate = sampleRate;
-			else
-				sampleRate = rate;
-			if (channels == 0)
-				channels = MPG123_STEREO;
-			if (encoding == 0)
-				encoding = MPG123_ENC_SIGNED_16;
-			int ret = mpg123_format(handle, rate, channels, encoding);
-			if (ret != MPG123_OK)
-				throw love::Exception("Could not set output format.");
-		}
-		continue;
 		case MPG123_NEED_MORE:
-		{
-			size += numbytes;
-			int v = feed(8192);
-
-			switch (v)
-			{
-			case MPG123_OK:
-				continue;
-			case MPG123_DONE:
-				if (numbytes == 0)
-					eof = true;
-				break;
-			default:
-				done = true;
-			}
-
-			continue;
-		}
+		case MPG123_NEW_FORMAT:
 		case MPG123_OK:
 			size += numbytes;
 			continue;
 		case MPG123_DONE:
-			// Apparently, mpg123_read does not return MPG123_DONE, but
-			// let's keep it here anyway.
+			size += numbytes;
 			eof = true;
 		default:
-			done = true;
-			break;
+			return size;
 		}
 	}
 
@@ -168,14 +226,13 @@ int Mpg123Decoder::decode()
 
 bool Mpg123Decoder::seek(float s)
 {
-	off_t offset = static_cast<off_t>(s * static_cast<float>(sampleRate));
+	off_t offset = (off_t) (s * (double) sampleRate);
 
 	if (offset < 0)
 		return false;
 
-	if (mpg123_feedseek(handle, offset, SEEK_SET, &offset) >= 0)
+	if (mpg123_seek(handle, offset, SEEK_SET) >= 0)
 	{
-		data_offset = offset;
 		eof = false;
 		return true;
 	}
@@ -186,13 +243,9 @@ bool Mpg123Decoder::seek(float s)
 bool Mpg123Decoder::rewind()
 {
 	eof = false;
-	off_t offset;
 
-	if (mpg123_feedseek(handle, 0, SEEK_SET, &offset) >= 0)
-	{
-		data_offset = offset;
+	if (mpg123_seek(handle, 0, SEEK_SET) >= 0)
 		return true;
-	}
 	else
 		return false;
 }
@@ -212,21 +265,22 @@ int Mpg123Decoder::getBitDepth() const
 	return 16;
 }
 
-int Mpg123Decoder::feed(int bytes)
+double Mpg123Decoder::getDuration()
 {
-	int remaining = data_size - data_offset;
+	// Only calculate the duration if we haven't done so already.
+	if (duration == -2.0)
+	{
+		mpg123_scan(handle);
 
-	if (remaining <= 0)
-		return MPG123_DONE;
+		off_t length = mpg123_length(handle);
 
-	int feed_bytes = remaining < bytes ? remaining : bytes;
+		if (length == MPG123_ERR || length < 0)
+			duration = -1.0;
+		else
+			duration = (double) length / (double) sampleRate;
+	}
 
-	int r = mpg123_feed(handle, (unsigned char *)data->getData() + data_offset, feed_bytes);
-
-	if (r == MPG123_OK || r == MPG123_DONE)
-		data_offset += feed_bytes;
-
-	return r;
+	return duration;
 }
 
 } // lullaby

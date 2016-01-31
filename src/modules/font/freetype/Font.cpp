@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,16 +46,16 @@ Font::~Font()
 Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 {
 	if (TrueTypeRasterizer::accepts(library, data))
-		return newTrueTypeRasterizer(data, 12);
+		return newTrueTypeRasterizer(data, 12, TrueTypeRasterizer::HINTING_NORMAL);
 	else if (BMFontRasterizer::accepts(data))
 		return newBMFontRasterizer(data, {});
 
 	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
 }
 
-Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size)
+Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting)
 {
-	return new TrueTypeRasterizer(library, data, size);
+	return new TrueTypeRasterizer(library, data, size, hinting);
 }
 
 const char *Font::getName() const

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,11 +34,6 @@ namespace opengl
 {
 
 Image *luax_checkimage(lua_State *L, int idx);
-int w_Image_setMipmapFilter(lua_State *L);
-int w_Image_getMipmapFilter(lua_State *L);
-int w_Image_isCompressed(lua_State *L);
-int w_Image_refresh(lua_State *L);
-int w_Image_getData(lua_State *L);
 extern "C" int luaopen_image(lua_State *L);
 
 } // opengl

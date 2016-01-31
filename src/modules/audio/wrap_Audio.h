@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,29 +32,6 @@ namespace love
 namespace audio
 {
 
-int w_getSourceCount(lua_State *L);
-int w_newSource(lua_State *L);
-int w_play(lua_State *L);
-int w_stop(lua_State *L);
-int w_pause(lua_State *L);
-int w_resume(lua_State *L);
-int w_rewind(lua_State *L);
-int w_setVolume(lua_State *L);
-int w_getVolume(lua_State *L);
-int w_setPosition(lua_State *L);
-int w_getPosition(lua_State *L);
-int w_setOrientation(lua_State *L);
-int w_getOrientation(lua_State *L);
-int w_setVelocity(lua_State *L);
-int w_getVelocity(lua_State *L);
-int w_setDopplerScale(lua_State *L);
-int w_getDopplerScale(lua_State *L);
-int w_record(lua_State *L);
-int w_getRecordedData(lua_State *L);
-int w_stopRecording(lua_State *L);
-int w_canRecord(lua_State *L);
-int w_setDistanceModel(lua_State *L);
-int w_getDistanceModel(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State *L);
 
 } // audio

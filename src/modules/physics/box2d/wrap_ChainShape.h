@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,15 +34,6 @@ namespace box2d
 {
 
 ChainShape *luax_checkchainshape(lua_State *L, int idx);
-
-int w_ChainShape_setNextVertex(lua_State *L);
-int w_ChainShape_setPreviousVertex(lua_State *L);
-int w_ChainShape_getChildCount(lua_State *L);
-int w_ChainShape_getChildEdge(lua_State *L);
-int w_ChainShape_getVertexCount(lua_State *L);
-int w_ChainShape_getPoint(lua_State *L);
-int w_ChainShape_getPoints(lua_State *L);
-
 extern "C" int luaopen_chainshape(lua_State *L);
 
 } // box2d

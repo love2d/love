@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,6 +41,9 @@ SoundData::SoundData(Decoder *decoder)
 	, bitDepth(0)
 	, channels(0)
 {
+	if (decoder->getBitDepth() != 8 && decoder->getBitDepth() != 16)
+		throw love::Exception("Invalid bit depth: %d", decoder->getBitDepth());
+
 	size_t bufferSize = 524288; // 0x80000
 	int decoded = decoder->decode();
 
@@ -117,7 +120,7 @@ void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, vo
 	if (sampleRate <= 0)
 		throw love::Exception("Invalid sample rate: %d", sampleRate);
 
-	if (bitDepth <= 0)
+	if (bitDepth != 8 && bitDepth != 16)
 		throw love::Exception("Invalid bit depth: %d", bitDepth);
 
 	if (channels <= 0)

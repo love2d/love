@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -123,6 +123,23 @@ int w_Texture_getWrap(lua_State *L)
 	lua_pushstring(L, sstr);
 	lua_pushstring(L, tstr);
 	return 2;
+}
+
+const luaL_Reg w_Texture_functions[] =
+{
+	{ "getWidth", w_Texture_getWidth },
+	{ "getHeight", w_Texture_getHeight },
+	{ "getDimensions", w_Texture_getDimensions },
+	{ "setFilter", w_Texture_setFilter },
+	{ "getFilter", w_Texture_getFilter },
+	{ "setWrap", w_Texture_setWrap },
+	{ "getWrap", w_Texture_getWrap },
+	{ 0, 0 }
+};
+
+extern "C" int luaopen_texture(lua_State *L)
+{
+	return luax_register_type(L, GRAPHICS_TEXTURE_ID, "Texture", w_Texture_functions, nullptr);
 }
 
 } // graphics

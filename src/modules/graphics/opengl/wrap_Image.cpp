@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -80,10 +80,10 @@ int w_Image_refresh(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
 
-	int xoffset = luaL_optint(L, 2, 0);
-	int yoffset = luaL_optint(L, 3, 0);
-	int w = luaL_optint(L, 4, i->getWidth());
-	int h = luaL_optint(L, 5, i->getHeight());
+	int xoffset = (int) luaL_optnumber(L, 2, 0);
+	int yoffset = (int) luaL_optnumber(L, 3, 0);
+	int w = (int) luaL_optnumber(L, 4, i->getWidth());
+	int h = (int) luaL_optnumber(L, 5, i->getHeight());
 
 	luax_catchexcept(L, [&](){ i->refresh(xoffset, yoffset, w, h); });
 	return 0;
@@ -92,37 +92,65 @@ int w_Image_refresh(lua_State *L)
 int w_Image_getData(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
+	int n = 0;
 
 	if (i->isCompressed())
-		luax_pushtype(L, IMAGE_COMPRESSED_DATA_ID, i->getCompressedData());
+	{
+		for (const auto &cdata : i->getCompressedData())
+		{
+			luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, cdata.get());
+			n++;
+		}
+	}
 	else
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i->getImageData());
+	{
+		for (const auto &data : i->getImageData())
+		{
+			luax_pushtype(L, IMAGE_IMAGE_DATA_ID, data.get());
+			n++;
+		}
+	}
+
+	return n;
+}
+
+static const char *imageFlagName(Image::FlagType flagtype)
+{
+	const char *name = nullptr;
+	Image::getConstant(flagtype, name);
+	return name;
+}
+
+int w_Image_getFlags(lua_State *L)
+{
+	Image *i = luax_checkimage(L, 1);
+	Image::Flags flags = i->getFlags();
+
+	lua_createtable(L, 0, 2);
+
+	lua_pushboolean(L, flags.mipmaps);
+	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_MIPMAPS));
+
+	lua_pushboolean(L, flags.linear);
+	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_LINEAR));
 
 	return 1;
 }
 
-static const luaL_Reg functions[] =
+static const luaL_Reg w_Image_functions[] =
 {
-	// From wrap_Texture.
-	{ "getWidth", w_Texture_getWidth },
-	{ "getHeight", w_Texture_getHeight },
-	{ "getDimensions", w_Texture_getDimensions },
-	{ "setFilter", w_Texture_setFilter },
-	{ "getFilter", w_Texture_getFilter },
-	{ "setWrap", w_Texture_setWrap },
-	{ "getWrap", w_Texture_getWrap },
-
 	{ "setMipmapFilter", w_Image_setMipmapFilter },
 	{ "getMipmapFilter", w_Image_getMipmapFilter },
 	{ "isCompressed", w_Image_isCompressed },
 	{ "refresh", w_Image_refresh },
 	{ "getData", w_Image_getData },
+	{ "getFlags", w_Image_getFlags },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_image(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_IMAGE_ID, functions);
+	return luax_register_type(L, GRAPHICS_IMAGE_ID, "Image", w_Texture_functions, w_Image_functions, nullptr);
 }
 
 } // opengl

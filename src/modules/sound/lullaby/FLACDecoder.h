@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -52,6 +52,7 @@ public:
 	int getChannels() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
+	double getDuration();
 
 	//needed for FLAC
 	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[], size_t *bytes);

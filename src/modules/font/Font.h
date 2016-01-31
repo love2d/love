@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 
 // LOVE
 #include "Rasterizer.h"
+#include "TrueTypeRasterizer.h"
 #include "image/ImageData.h"
 #include "filesystem/FileData.h"
 #include "common/Module.h"
@@ -46,13 +47,13 @@ public:
 
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
 
-	virtual Rasterizer *newTrueTypeRasterizer(int size);
-	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size) = 0;
+	virtual Rasterizer *newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting);
+	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) = 0;
 
 	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
 
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs);
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs, int extraspacing);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length, int extraspacing);
 
 	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
 	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);

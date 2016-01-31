@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -91,14 +91,14 @@ int w_setGamepadMapping(lua_State *L)
 	switch (jinput.type)
 	{
 	case Joystick::INPUT_TYPE_AXIS:
-		jinput.axis = luaL_checkint(L, 4) - 1;
+		jinput.axis = (int) luaL_checknumber(L, 4) - 1;
 		break;
 	case Joystick::INPUT_TYPE_BUTTON:
-		jinput.button = luaL_checkint(L, 4) - 1;
+		jinput.button = (int) luaL_checknumber(L, 4) - 1;
 		break;
 	case Joystick::INPUT_TYPE_HAT:
 		// Hats need both a hat index and a hat value.
-		jinput.hat.index = luaL_checkint(L, 4) - 1;
+		jinput.hat.index = (int) luaL_checknumber(L, 4) - 1;
 		hatstr = luaL_checkstring(L, 5);
 		if (!Joystick::getConstant(hatstr, jinput.hat.value))
 			return luaL_error(L, "Invalid joystick hat: %s", hatstr);

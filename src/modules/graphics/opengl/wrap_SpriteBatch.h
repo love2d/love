@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2015 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,18 +32,6 @@ namespace opengl
 {
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx);
-int w_SpriteBatch_add(lua_State *L);
-int w_SpriteBatch_set(lua_State *L);
-int w_SpriteBatch_clear(lua_State *L);
-int w_SpriteBatch_flush(lua_State *L);
-int w_SpriteBatch_setTexture(lua_State *L);
-int w_SpriteBatch_getTexture(lua_State *L);
-int w_SpriteBatch_setColor(lua_State *L);
-int w_SpriteBatch_getColor(lua_State *L);
-int w_SpriteBatch_getCount(lua_State *L);
-int w_SpriteBatch_setBufferSize(lua_State *L);
-int w_SpriteBatch_getBufferSize(lua_State *L);
-
 extern "C" int luaopen_spritebatch(lua_State *L);
 
 } // opengl
