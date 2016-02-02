@@ -1,5 +1,36 @@
+LOVE 0.10.1 [Super Toast]
+-------------------------
+
+Released: N/A
+
+  * Added a new love.conf flag t.externalstorage, which determines whether files are saved in internal or external storage on Android devices.
+  * Added a new variant of love.graphics.arc which can draw different types of arcs ("pie", "open", or "closed").
+  * Added "lighten" and "darken" BlendModes. They can only be used with the "premultiplied" BlendAlphaMode.
+  * Added the "lighten" GraphicsFeature constant.
+  * Added the ability to avoid clearing specific Canvases when calling love.graphics.clear, if multiple Canvases are active at once via love.graphics.setCanvas.
+  * Added Text:getDimensions.
+
+  * Fixed a Lua error in the no-game screen if the window's height is too small.
+  * Fixed the default error handler to reset the mouse Cursor.
+  * Fixed love.filesystem functions crashing when called if liblove is used directly without calling love.filesystem.init.
+  * Fixed audio on Android to pause when the app is inactive, and resume when the app becomes active again.
+  * Fixed the Video decoding thread hanging after Video:seek or when a Video finishes.
+  * Fixed Video:isPlaying to always return false after it finishes playing.
+  * Fixed RandomGenerator:random crashing if a nil 'self' is used.
+  * Fixed loading BMFont files which have characters with 0 width or height (a space character, for example).
+  * Fixed love.graphics.newFont causing crashes if FileData is passed in.
+  * Fixed a driver bug on some Android devices which caused all objects to show up as black.
+  * Fixed a driver bug on Windows with AMD graphics cards where love.graphics.clear would not always work.
+  * Fixed Shader:sendColor incorrectly converting alpha values from sRGB to linear RGB when gamma-correct rendering is enabled.
+  * Fixed love.graphics.newMesh(vertices) double-converting colors from sRGB to linear RGB when gamma-correct rendering is enabled.
+
+  * Updated the Windows executable to prefer the high-powered AMD graphics card on systems which have switchable Intel+AMD GPUs.
+  * Updated love.touch.getTouches to return the list of IDs in the relative order that the touches initially happened, instead of being in a random order.
+  * Updated the error messages caused by invalid or bad arguments to ImageData and SoundData methods to be more descriptive.
+
+
 LOVE 0.10.0 [Super Toast]
---------------
+-------------------------
 
 Released: 2015-12-22
 
