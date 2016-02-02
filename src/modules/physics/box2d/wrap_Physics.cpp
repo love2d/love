@@ -419,8 +419,9 @@ int w_newMotorJoint(lua_State *L)
 	if (!lua_isnoneornil(L, 3))
 	{
 		float correctionFactor = (float)luaL_checknumber(L, 3);
+		bool collideConnected = luax_optboolean(L, 4, false);
 		luax_catchexcept(L, [&]() {
-			j = instance()->newMotorJoint(body1, body2, correctionFactor);
+			j = instance()->newMotorJoint(body1, body2, correctionFactor, collideConnected);
 		});
 	}
 	else
