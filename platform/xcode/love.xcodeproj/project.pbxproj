@@ -20,10 +20,9 @@
 		FA0797991BF480A200034B7C /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0797981BF480A200034B7C /* GameController.framework */; };
 		FA08F69616C766E000F007B5 /* love.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
 		FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		FA0B78D21A95814A000E1D17 /* love.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D01A95814A000E1D17 /* love.icns */; };
-		FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */ = {isa = PBXBuildFile; fileRef = FA0B78D11A95814A000E1D17 /* lovedocument.icns */; };
 		FA0B7F301A95AC7D000E1D17 /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
 		FA27B3CB1B498696008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3CA1B498696008A9DCE /* Theora.framework */; };
+		FA5933751C6D625B000EC779 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA5D249A1A96CF4300C6FC8F /* Images.xcassets */; };
 		FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24811A96CA1800C6FC8F /* OpenAL.framework */; };
 		FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24831A96CA2700C6FC8F /* OpenGLES.framework */; };
 		FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24871A96CA8A00C6FC8F /* UIKit.framework */; };
@@ -113,8 +112,6 @@
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA0797981BF480A200034B7C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FA0B78D01A95814A000E1D17 /* love.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = love.icns; path = macosx/love.icns; sourceTree = "<group>"; };
-		FA0B78D11A95814A000E1D17 /* lovedocument.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = lovedocument.icns; path = macosx/lovedocument.icns; sourceTree = "<group>"; };
 		FA0B7F061A95AAF3000E1D17 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA27B3CA1B498696008A9DCE /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = /Library/Frameworks/Theora.framework; sourceTree = "<absolute>"; };
 		FA577A9316C7217800860150 /* liblove.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = liblove.xcodeproj; sourceTree = "<group>"; };
@@ -127,7 +124,7 @@
 		FA5D24931A96CABA00C6FC8F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/usr/lib/libz.dylib; sourceTree = DEVELOPER_DIR; };
 		FA5D24951A96CAC200C6FC8F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/CoreMotion.framework; sourceTree = DEVELOPER_DIR; };
 		FA5D24971A96CE1E00C6FC8F /* love-ios.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "love-ios.plist"; path = "ios/love-ios.plist"; sourceTree = "<group>"; };
-		FA5D249A1A96CF4300C6FC8F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ios/Images.xcassets; sourceTree = "<group>"; };
+		FA5D249A1A96CF4300C6FC8F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		FA5D24C11A96D78000C6FC8F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		FA7C63691A9C49570000FD29 /* Launch Screen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = "Launch Screen.xib"; path = "ios/Launch Screen.xib"; sourceTree = "<group>"; };
 		FA9B4A0916E1579F00074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -206,8 +203,6 @@
 			isa = PBXGroup;
 			children = (
 				FAC1A448196F5DC600125284 /* license.txt */,
-				FA0B78D01A95814A000E1D17 /* love.icns */,
-				FA0B78D11A95814A000E1D17 /* lovedocument.icns */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -379,9 +374,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA5933751C6D625B000EC779 /* Images.xcassets in Resources */,
 				FAC1A449196F5DC600125284 /* license.txt in Resources */,
-				FA0B78D31A95814A000E1D17 /* lovedocument.icns in Resources */,
-				FA0B78D21A95814A000E1D17 /* love.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,6 +426,7 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -458,6 +453,7 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -597,8 +593,8 @@
 		FA0B7F261A95AAF4000E1D17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "iOS AppIcon";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "iOS LaunchImage";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -643,8 +639,8 @@
 		FA0B7F271A95AAF4000E1D17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "iOS AppIcon";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "iOS LaunchImage";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -685,8 +681,8 @@
 		FA0B7F281A95AAF4000E1D17 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "iOS AppIcon";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "iOS LaunchImage";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -786,6 +782,7 @@
 		FA5326C718971A0900F7BBF4 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
