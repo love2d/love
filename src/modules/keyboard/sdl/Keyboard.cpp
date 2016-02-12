@@ -55,6 +55,7 @@ bool Keyboard::isDown(const std::vector<Key> &keylist) const
 	for (Key key : keylist)
 	{
 		SDL_Scancode scancode = SDL_GetScancodeFromKey(keymap[key]);
+
 		if (state[scancode])
 			return true;
 	}
@@ -68,11 +69,9 @@ bool Keyboard::isScancodeDown(const std::vector<Scancode> &scancodelist) const
 
 	for (Scancode scancode : scancodelist)
 	{
-		SDL_Scancode sdlscancode = SDL_SCANCODE_UNKNOWN;
-		if (!scancodes.find(scancode, sdlscancode))
-			continue;
+		SDL_Scancode sdlcode = SDL_SCANCODE_UNKNOWN;
 
-		if (state[sdlscancode])
+		if (scancodes.find(scancode, sdlcode) && state[sdlcode])
 			return true;
 	}
 
