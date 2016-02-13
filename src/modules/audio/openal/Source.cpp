@@ -537,7 +537,7 @@ void Source::setRelative(bool enable)
 		throw SpatialSupportException();
 
 	if (valid)
-		alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
+		alSourcei(source, AL_SOURCE_RELATIVE, enable ? AL_TRUE : AL_FALSE);
 
 	relative = enable;
 }
