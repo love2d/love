@@ -9,6 +9,7 @@ Released: N/A
   * Added the "lighten" GraphicsFeature constant.
   * Added the ability to avoid clearing specific Canvases when calling love.graphics.clear, if multiple Canvases are active at once via love.graphics.setCanvas.
   * Added Text:getDimensions.
+  * Added optional "collideconnected" argument to love.physics.newMotorJoint.
 
   * Fixed a Lua error in the no-game screen if the window's height is too small.
   * Fixed the default error handler to reset the mouse Cursor.
@@ -23,6 +24,7 @@ Released: N/A
   * Fixed a driver bug on Windows with AMD graphics cards where love.graphics.clear would not always work.
   * Fixed Shader:sendColor incorrectly converting alpha values from sRGB to linear RGB when gamma-correct rendering is enabled.
   * Fixed love.graphics.newMesh(vertices) double-converting colors from sRGB to linear RGB when gamma-correct rendering is enabled.
+  * Fixed love.graphics.new* crashing when there is no graphics context/window.
 
   * Updated the Windows executable to prefer the high-powered AMD graphics card on systems which have switchable Intel+AMD GPUs.
   * Updated love.touch.getTouches to return the list of IDs in the relative order that the touches initially happened, instead of being in a random order.
