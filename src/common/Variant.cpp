@@ -100,8 +100,8 @@ Variant::Variant(std::vector<std::pair<Variant, Variant>> *table)
 
 Variant::Variant(const Variant &v)
 	: type(v.type)
-	, data(v.data)
 	, udatatype(v.udatatype)
+	, data(v.data)
 {
 	if (type == STRING)
 		data.string->retain();
