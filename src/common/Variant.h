@@ -93,9 +93,12 @@ private:
 		FUSERDATA,
 		NIL,
 		TABLE
-	} type;
+	};
 
 	static const int MAX_SMALL_STRING_LENGTH = 15;
+
+	Type type;
+	love::Type udatatype;
 
 	union Data
 	{
@@ -110,8 +113,6 @@ private:
 			uint8 len;
 		} smallstring;
 	} data;
-
-	love::Type udatatype;
 
 }; // Variant
 } // love
