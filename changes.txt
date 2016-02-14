@@ -1,7 +1,7 @@
 LOVE 0.10.1 [Super Toast]
 -------------------------
 
-Released: N/A
+Released: 2016-02-14
 
   * Added a new love.conf flag t.externalstorage, which determines whether files are saved in internal or external storage on Android devices.
   * Added a new variant of love.graphics.arc which can draw different types of arcs ("pie", "open", or "closed").
