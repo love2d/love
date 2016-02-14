@@ -43,7 +43,7 @@ class Message : public Object
 {
 public:
 
-	Message(const std::string &name, const std::vector<StrongRef<Variant>> &vargs = {});
+	Message(const std::string &name, const std::vector<Variant> &vargs = {});
 	~Message();
 
 	int toLua(lua_State *L);
@@ -52,7 +52,7 @@ public:
 private:
 
 	std::string name;
-	std::vector<StrongRef<Variant>> args;
+	std::vector<Variant> args;
 
 }; // Message
 

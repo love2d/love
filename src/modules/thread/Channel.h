@@ -37,8 +37,6 @@ namespace thread
 class Channel : public love::Object
 {
 // FOR WRAPPER USE ONLY
-friend void retainVariant(Channel *, Variant *);
-friend void releaseVariant(Channel *, Variant *);
 friend int w_Channel_performAtomic(lua_State *);
 
 public:
@@ -48,11 +46,11 @@ public:
 
 	static Channel *getChannel(const std::string &name);
 
-	unsigned long push(Variant *var);
-	void supply(Variant *var); // blocking push
-	Variant *pop();
-	Variant *demand(); // blocking pop
-	Variant *peek();
+	unsigned long push(const Variant &var);
+	void supply(const Variant &var); // blocking push
+	bool pop(Variant *var);
+	void demand(Variant *var); // blocking pop
+	bool peek(Variant *var);
 	int getCount();
 	void clear();
 
@@ -67,7 +65,7 @@ private:
 
 	Mutex *mutex;
 	Conditional *cond;
-	std::queue<Variant *> queue;
+	std::queue<Variant> queue;
 	bool named;
 	std::string name;
 

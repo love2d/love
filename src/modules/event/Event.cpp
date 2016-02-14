@@ -28,7 +28,7 @@ namespace love
 namespace event
 {
 
-Message::Message(const std::string &name, const std::vector<StrongRef<Variant>> &vargs)
+Message::Message(const std::string &name, const std::vector<Variant> &vargs)
 	: name(name)
 	, args(vargs)
 {
@@ -42,13 +42,8 @@ int Message::toLua(lua_State *L)
 {
 	luax_pushstring(L, name);
 
-	for (const StrongRef<Variant> &v : args)
-	{
-		if (v.get() != nullptr)
-			v->toLua(L);
-		else
-			lua_pushnil(L);
-	}
+	for (const Variant &v : args)
+		v.toLua(L);
 
 	return (int) args.size() + 1;
 }
@@ -56,26 +51,26 @@ int Message::toLua(lua_State *L)
 Message *Message::fromLua(lua_State *L, int n)
 {
 	std::string name = luax_checkstring(L, n);
-	std::vector<StrongRef<Variant>> vargs;
+	std::vector<Variant> vargs;
 
 	int count = lua_gettop(L) - n;
 	n++;
+
+	Variant varg;
 
 	for (int i = 0; i < count; i++)
 	{
 		if (lua_isnoneornil(L, n+i))
 			break;
 
-		vargs.push_back(Variant::fromLua(L, n+i));
-
-		if (!vargs.back().get())
+		if (!Variant::fromLua(L, n+i, &varg))
 		{
 			vargs.clear();
 			luaL_error(L, "Argument %d can't be stored safely\nExpected boolean, number, string or userdata.", n+i);
 			return nullptr;
 		}
 
-		vargs.back()->release(); // fromLua gave a +1 ref.
+		vargs.push_back(varg);
 	}
 
 	return new Message(name, vargs);

@@ -33,26 +33,22 @@ LuaThread *luax_checkthread(lua_State *L, int idx)
 int w_Thread_start(lua_State *L)
 {
 	LuaThread *t = luax_checkthread(L, 1);
+	std::vector<Variant> args;
 	int nargs = lua_gettop(L) - 1;
-	Variant **args = 0;
 
-	if (nargs > 0)
+	Variant v;
+	for (int i = 0; i < nargs; ++i)
 	{
-		args = new Variant*[nargs];
-		for (int i = 0; i < nargs; ++i)
+		if (!Variant::fromLua(L, i+2, &v))
 		{
-			args[i] = Variant::fromLua(L, i+2);
-			if (!args[i])
-			{
-				for (int j = i; j >= 0; j--)
-					delete args[j];
-				delete[] args;
-				return luaL_argerror(L, i+2, "boolean, number, string, love type, or flat table expected");
-			}
+			args.clear();
+			return luaL_argerror(L, i+2, "boolean, number, string, love type, or flat table expected");
 		}
+
+		args.push_back(v);
 	}
 
-	luax_pushboolean(L, t->start(args, nargs));
+	luax_pushboolean(L, t->start(args));
 	return 1;
 }
 

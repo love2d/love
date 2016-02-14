@@ -23,15 +23,15 @@
 
 #include "common/runtime.h"
 #include "common/Object.h"
+#include "common/int.h"
 
 #include <cstring>
 #include <vector>
-#include <utility>
 
 namespace love
 {
 
-class Variant : public love::Object
+class Variant
 {
 public:
 
@@ -39,42 +39,78 @@ public:
 	Variant(bool boolean);
 	Variant(double number);
 	Variant(const char *string, size_t len);
-	Variant(char c);
 	Variant(void *userdata);
 	Variant(love::Type udatatype, void *userdata);
-	Variant(std::vector<std::pair<Variant*, Variant*> > *table);
-	virtual ~Variant();
+	Variant(std::vector<std::pair<Variant, Variant>> *table);
+	Variant(const Variant &v);
+	~Variant();
 
-	static Variant *fromLua(lua_State *L, int n, bool allowTables = true);
-	void toLua(lua_State *L);
+	Variant &operator = (const Variant &v);
+
+	static bool fromLua(lua_State *L, int n, Variant *v, bool allowTables = true);
+	void toLua(lua_State *L) const;
+
+private:
+
+	class SharedString : public love::Object
+	{
+	public:
+
+		SharedString(const char *string, size_t len)
+			: len(len)
+		{
+			str = new char[len+1];
+			memcpy(str, string, len);
+		}
+		virtual ~SharedString() { delete[] str; }
+
+		char *str;
+		size_t len;
+	};
+
+	class SharedTable : public love::Object
+	{
+	public:
+
+		SharedTable(std::vector<std::pair<Variant, Variant>> *table)
+			: table(table)
+		{
+		}
+
+		virtual ~SharedTable() { delete table; }
+
+		std::vector<std::pair<Variant, Variant>> *table;
+	};
 
 	enum Type
 	{
 		UNKNOWN = 0,
 		BOOLEAN,
 		NUMBER,
-		CHARACTER,
 		STRING,
+		SMALLSTRING,
 		LUSERDATA,
 		FUSERDATA,
 		NIL,
 		TABLE
 	} type;
-	union
+
+	static const int MAX_SMALL_STRING_LENGTH = 15;
+
+	union Data
 	{
 		bool boolean;
-		char character;
 		double number;
+		SharedString *string;
+		void *userdata;
+		SharedTable *table;
 		struct
 		{
-			const char *str;
-			size_t len;
-		} string;
-		void *userdata;
-		std::vector<std::pair<Variant*, Variant*>> *table;
+			char str[MAX_SMALL_STRING_LENGTH];
+			uint8 len;
+		} smallstring;
 	} data;
 
-private:
 	love::Type udatatype;
 
 }; // Variant

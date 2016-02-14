@@ -26,35 +26,21 @@ namespace love
 
 static love::Type extractudatatype(lua_State *L, int idx)
 {
-	Type t = INVALID_ID;
-	if (!lua_isuserdata(L, idx))
-		return t;
-	if (luaL_getmetafield(L, idx, "type") == 0)
-		return t;
-	lua_pushvalue(L, idx);
-	int result = lua_pcall(L, 1, 1, 0);
-	if (result == 0)
-		getTypeName(lua_tostring(L, -1), t);
-	if (result == 0 || result == LUA_ERRRUN)
-		lua_pop(L, 1);
-	return t;
-}
+	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-static inline void delete_table(std::vector<std::pair<Variant*, Variant*> > *table)
-{
-	while (!table->empty())
-	{
-		std::pair<Variant*, Variant*> &kv = table->back();
-		kv.first->release();
-		kv.second->release();
-		table->pop_back();
-	}
-	delete table;
+	if (u == nullptr || u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM)
+		return INVALID_ID;
+
+	// We could get rid of the dynamic_cast for more performance, but it would
+	// be less safe...
+	if (dynamic_cast<Object *>(u->object) != nullptr)
+		return u->type;
+
+	return INVALID_ID;
 }
 
 Variant::Variant()
 	: type(NIL)
-	, data()
 {
 }
 
@@ -71,19 +57,18 @@ Variant::Variant(double number)
 }
 
 Variant::Variant(const char *string, size_t len)
-	: type(STRING)
 {
-	char *buf = new char[len+1];
-	memset(buf, 0, len+1);
-	memcpy(buf, string, len);
-	data.string.str = buf;
-	data.string.len = len;
-}
-
-Variant::Variant(char c)
-	: type(CHARACTER)
-{
-	data.character = c;
+	if (len <= MAX_SMALL_STRING_LENGTH)
+	{
+		type = SMALLSTRING;
+		memcpy(data.smallstring.str, string, len);
+		data.smallstring.len = (uint8) len;
+	}
+	else
+	{
+		type = STRING;
+		data.string = new SharedString(string, len);
+	}
 }
 
 Variant::Variant(void *userdata)
@@ -107,10 +92,23 @@ Variant::Variant(love::Type udatatype, void *userdata)
 }
 
 // Variant gets ownership of the vector.
-Variant::Variant(std::vector<std::pair<Variant*, Variant*> > *table)
+Variant::Variant(std::vector<std::pair<Variant, Variant>> *table)
 	: type(TABLE)
 {
-	data.table = table;
+	data.table = new SharedTable(table);
+}
+
+Variant::Variant(const Variant &v)
+	: type(v.type)
+	, data(v.data)
+	, udatatype(v.udatatype)
+{
+	if (type == STRING)
+		data.string->retain();
+	else if (type == FUSERDATA)
+		((love::Object *) data.userdata)->retain();
+	else if (type == TABLE)
+		data.table->retain();
 }
 
 Variant::~Variant()
@@ -118,102 +116,122 @@ Variant::~Variant()
 	switch (type)
 	{
 	case STRING:
-		delete[] data.string.str;
+		data.string->release();
 		break;
 	case FUSERDATA:
 		((love::Object *) data.userdata)->release();
 		break;
 	case TABLE:
-		delete_table(data.table);
+		data.table->release();
+		break;
 	default:
 		break;
 	}
 }
 
-Variant *Variant::fromLua(lua_State *L, int n, bool allowTables)
+Variant &Variant::operator = (const Variant &v)
 {
-	Variant *v = nullptr;
+	if (v.type == STRING)
+		v.data.string->retain();
+	else if (v.type == FUSERDATA)
+		((love::Object *) v.data.userdata)->retain();
+	else if (v.type == TABLE)
+		v.data.table->retain();
+
+	if (type == STRING)
+		data.string->release();
+	else if (type == FUSERDATA)
+		((love::Object *) v.data.userdata)->release();
+	else if (type == TABLE)
+		data.table->release();
+
+	type = v.type;
+	data = v.data;
+	udatatype = v.udatatype;
+
+	return *this;
+}
+
+bool Variant::fromLua(lua_State *L, int n, Variant *v, bool allowTables)
+{
 	size_t len;
 	const char *str;
+
 	if (n < 0) // Fix the stack position, we might modify it later
 		n += lua_gettop(L) + 1;
 
 	switch (lua_type(L, n))
 	{
 	case LUA_TBOOLEAN:
-		v = new Variant(luax_toboolean(L, n));
-		break;
+		*v = Variant(luax_toboolean(L, n));
+		return true;
 	case LUA_TNUMBER:
-		v = new Variant(lua_tonumber(L, n));
-		break;
+		*v = Variant(lua_tonumber(L, n));
+		return true;
 	case LUA_TSTRING:
 		str = lua_tolstring(L, n, &len);
-		v = new Variant(str, len);
-		break;
+		*v = Variant(str, len);
+		return true;
 	case LUA_TLIGHTUSERDATA:
-		v = new Variant(lua_touserdata(L, n));
-		break;
+		*v = Variant(lua_touserdata(L, n));
+		return true;
 	case LUA_TUSERDATA:
-		v = new Variant(extractudatatype(L, n), lua_touserdata(L, n));
-		break;
+		*v = Variant(extractudatatype(L, n), lua_touserdata(L, n));
+		return true;
 	case LUA_TNIL:
-		v = new Variant();
-		break;
+		*v = Variant();
+		return true;
 	case LUA_TTABLE:
 		if (allowTables)
 		{
 			bool success = true;
-			std::vector<std::pair<Variant*, Variant*>> *table = new std::vector<std::pair<Variant*, Variant*>>();
+			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
+			std::pair<Variant, Variant> pair;
+
 			lua_pushnil(L);
+
 			while (lua_next(L, n))
 			{
-				Variant *key = fromLua(L, -2, false);
-				if (!key)
+				if (!fromLua(L, -2, &pair.first, false) || !fromLua(L, -1, &pair.second, false))
 				{
 					success = false;
 					lua_pop(L, 2);
 					break;
 				}
 
-				Variant *value = fromLua(L, -1, false);
-				if (!value)
-				{
-					delete key;
-					success = false;
-					lua_pop(L, 2);
-					break;
-				}
-
-				table->push_back(std::make_pair(key, value));
-
+				table->push_back(pair);
 				lua_pop(L, 1);
 			}
 
 			if (success)
-				v = new Variant(table);
+			{
+				*v = Variant(table);
+				return true;
+			}
 			else
-				delete_table(table);
+				delete table;
 		}
 		break;
 	}
-	return v;
+
+	return false;
 }
 
-void Variant::toLua(lua_State *L)
+void Variant::toLua(lua_State *L) const
 {
 	switch (type)
 	{
 	case BOOLEAN:
 		lua_pushboolean(L, data.boolean);
 		break;
-	case CHARACTER:
-		lua_pushlstring(L, &data.character, 1);
-		break;
 	case NUMBER:
 		lua_pushnumber(L, data.number);
 		break;
 	case STRING:
-		lua_pushlstring(L, data.string.str, data.string.len);
+		lua_pushlstring(L, data.string->str, data.string->len);
+		break;
+	case SMALLSTRING:
+		lua_pushlstring(L, data.smallstring.str, data.smallstring.len);
 		break;
 	case LUSERDATA:
 		lua_pushlightuserdata(L, data.userdata);
@@ -228,15 +246,20 @@ void Variant::toLua(lua_State *L)
 		// I can do (at the moment).
 		break;
 	case TABLE:
-		lua_createtable(L, 0, (int) data.table->size());
-		for (size_t i = 0; i < data.table->size(); ++i)
+	{
+		std::vector<std::pair<Variant, Variant>> *table = data.table->table;
+		lua_createtable(L, 0, (int) table->size());
+
+		for (size_t i = 0; i < table->size(); ++i)
 		{
-			std::pair<Variant*, Variant*> &kv = data.table->at(i);
-			kv.first->toLua(L);
-			kv.second->toLua(L);
+			std::pair<Variant, Variant> &kv = table->at(i);
+			kv.first.toLua(L);
+			kv.second.toLua(L);
 			lua_settable(L, -3);
 		}
+
 		break;
+	}
 	case NIL:
 	default:
 		lua_pushnil(L);

@@ -23,6 +23,7 @@
 
 // STL
 #include <string>
+#include <vector>
 
 // LOVE
 #include "common/Data.h"
@@ -44,7 +45,7 @@ public:
 	void threadFunction();
 	const std::string &getError() const;
 
-	bool start(Variant **args, int nargs);
+	bool start(const std::vector<Variant> &args);
 
 private:
 
@@ -54,8 +55,7 @@ private:
 	std::string name;
 	std::string error;
 
-	Variant **args;
-	int nargs;
+	std::vector<Variant> args;
 
 }; // LuaThread
 
