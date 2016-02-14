@@ -461,16 +461,22 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 	if (colors.size() == 0)
 		return;
 
-	if (states.back().canvases.size() == 0)
+	size_t numcanvases = states.back().canvases.size();
+
+	if (numcanvases > 0 && colors.size() != numcanvases)
+		throw love::Exception("Number of clear colors must match the number of active canvases (%ld)", states.back().canvases.size());
+
+	// We want to take the single-color codepath if there's no active Canvas, or
+	// if there's only one active Canvas. The multi-color codepath (in the loop
+	// below) assumes MRT functions are available, and also may call more
+	// expensive GL functions which are unnecessary if only one Canvas is active.
+	if (numcanvases <= 1)
 	{
 		if (colors[0].enabled)
-			clear({colors[0].r, colors[0].g, colors[0].b, colors[0].a});
+			clear(colors[0].toColor());
 
 		return;
 	}
-
-	if (colors.size() != states.back().canvases.size())
-		throw love::Exception("Number of clear colors must match the number of active canvases (%ld)", states.back().canvases.size());
 
 	bool drawbuffermodified = false;
 

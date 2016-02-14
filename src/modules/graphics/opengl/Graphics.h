@@ -66,6 +66,8 @@ public:
 	{
 		float r, g, b, a;
 		bool enabled;
+
+		Colorf toColor() const { return Colorf(r, g, b, a); }
 	};
 
 	Graphics();

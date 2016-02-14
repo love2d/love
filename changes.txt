@@ -20,6 +20,7 @@ Released: N/A
   * Fixed RandomGenerator:random crashing if a nil 'self' is used.
   * Fixed loading BMFont files which have characters with 0 width or height (a space character, for example).
   * Fixed love.graphics.newFont causing crashes if FileData is passed in.
+  * Fixed love.graphics.clear(colortable) causing crashes on OpenGL ES 2 systems when a Canvas is active.
   * Fixed a driver bug on some Android devices which caused all objects to show up as black.
   * Fixed a driver bug on Windows with AMD graphics cards where love.graphics.clear would not always work.
   * Fixed Shader:sendColor incorrectly converting alpha values from sRGB to linear RGB when gamma-correct rendering is enabled.
