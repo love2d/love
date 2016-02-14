@@ -8,7 +8,7 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeIconFile</key>
-			<string>lovedocument</string>
+			<string>GameIcon</string>
 			<key>CFBundleTypeName</key>
 			<string>LÖVE Project</string>
 			<key>CFBundleTypeRole</key>
@@ -47,8 +47,6 @@
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>love</string>
-	<key>CFBundleIconFile</key>
-	<string>love.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -79,7 +77,7 @@
 			<key>UTTypeDescription</key>
 			<string>LÖVE Project</string>
 			<key>UTTypeIconFile</key>
-			<string>lovedocument</string>
+			<string>GameIcon</string>
 			<key>UTTypeIdentifier</key>
 			<string>org.love2d.love-game</string>
 			<key>UTTypeReferenceURL</key>

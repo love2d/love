@@ -117,6 +117,7 @@ public:
 		return actual_samples;
 	}
 
+	static Format getSizedFormat(Format format);
 	static bool isSupported();
 	static bool isMultiFormatMultiCanvasSupported();
 	static bool isFormatSupported(Format format);
@@ -143,7 +144,6 @@ private:
 
 	void drawv(const Matrix4 &t, const Vertex *v);
 
-	static Format getSizedFormat(Format format);
 	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
 	static size_t getFormatBitsPerPixel(Format format);
 

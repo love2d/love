@@ -445,7 +445,7 @@ T *luax_checktype(lua_State *L, int idx, love::Type type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-	if (!typeFlags[u->type][type])
+	if (u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM || !typeFlags[u->type][type])
 	{
 		const char *name = "Invalid";
 		getTypeName(type, name);
@@ -469,7 +469,7 @@ T *luax_getmodule(lua_State *L, love::Type type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if (!typeFlags[u->type][type])
+	if (u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM || !typeFlags[u->type][type])
 		luaL_error(L, "Incorrect module %s", name);
 
 	lua_pop(L, 2);

@@ -268,9 +268,9 @@ MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2)
 	return new MotorJoint(body1, body2);
 }
 
-MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2, float correctionFactor)
+MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2, float correctionFactor, bool collideConnected)
 {
-	return new MotorJoint(body1, body2, correctionFactor);
+	return new MotorJoint(body1, body2, correctionFactor, collideConnected);
 }
 
 

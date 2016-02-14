@@ -257,7 +257,7 @@ public:
 	 * and body2.
 	 **/
 	MotorJoint *newMotorJoint(Body *body1, Body *body2);
-	MotorJoint *newMotorJoint(Body *body1, Body *body2, float correctionFactor);
+	MotorJoint *newMotorJoint(Body *body1, Body *body2, float correctionFactor, bool collideConnected);
 
 	/**
 	 * Creates a new Fixture attaching shape to body.

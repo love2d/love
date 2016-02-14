@@ -41,7 +41,7 @@ class MotorJoint : public Joint
 public:
 
 	MotorJoint(Body *body1, Body* body2);
-	MotorJoint(Body *body1, Body* body2, float correctionFactor);
+	MotorJoint(Body *body1, Body* body2, float correctionFactor, bool collideConnected);
 	virtual ~MotorJoint();
 
 	/// Set/get the target linear offset, in frame A, in meters.

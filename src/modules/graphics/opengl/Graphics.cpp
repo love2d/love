@@ -459,16 +459,22 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 	if (colors.size() == 0)
 		return;
 
-	if (states.back().canvases.size() == 0)
+	size_t numcanvases = states.back().canvases.size();
+
+	if (numcanvases > 0 && colors.size() != numcanvases)
+		throw love::Exception("Number of clear colors must match the number of active canvases (%ld)", states.back().canvases.size());
+
+	// We want to take the single-color codepath if there's no active Canvas, or
+	// if there's only one active Canvas. The multi-color codepath (in the loop
+	// below) assumes MRT functions are available, and also may call more
+	// expensive GL functions which are unnecessary if only one Canvas is active.
+	if (numcanvases <= 1)
 	{
 		if (colors[0].enabled)
-			clear({colors[0].r, colors[0].g, colors[0].b, colors[0].a});
+			clear(colors[0].toColor());
 
 		return;
 	}
-
-	if (colors.size() != states.back().canvases.size())
-		throw love::Exception("Number of clear colors must match the number of active canvases (%ld)", states.back().canvases.size());
 
 	bool drawbuffermodified = false;
 
@@ -840,11 +846,14 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 
 Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int msaa)
 {
+	if (!Canvas::isSupported())
+		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
+
 	if (!Canvas::isFormatSupported(format))
 	{
 		const char *fstr = "rgba8";
-		Canvas::getConstant(format, fstr);
-		throw love::Exception("The %s canvas format is not supported by your OpenGL implementation.", fstr);
+		Canvas::getConstant(Canvas::getSizedFormat(format), fstr);
+		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
 	}
 
 	if (width > gl.getMaxTextureSize())
@@ -868,7 +877,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int ms
 	switch (err)
 	{
 	case GL_FRAMEBUFFER_UNSUPPORTED:
-		error_string << "Not supported by your OpenGL implementation.";
+		error_string << "Not supported by your OpenGL drivers.";
 		break;
 	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 		error_string << "Texture format cannot be rendered to on this system.";
@@ -879,14 +888,14 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int ms
 	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
 	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-		error_string << "Error in implementation.";
+		error_string << "Error in graphics driver.";
 		break;
 	default:
 		// my intel hda card wrongly returns 0 to glCheckFramebufferStatus() but sets
 		// no error flag. I think it meant to return GL_FRAMEBUFFER_UNSUPPORTED, but who
 		// knows.
 		if (glGetError() == GL_NO_ERROR)
-			error_string << "May not be supported by your OpenGL implementation.";
+			error_string << "May not be supported by your OpenGL drivers.";
 		// the remaining error is an indication of a serious fuckup since it should
 		// only be returned if glCheckFramebufferStatus() was called with the wrong
 		// arguments.

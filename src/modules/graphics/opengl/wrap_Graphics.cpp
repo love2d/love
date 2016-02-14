@@ -47,6 +47,13 @@ namespace opengl
 
 #define instance() (Module::getInstance<Graphics>(Module::M_GRAPHICS))
 
+static int luax_checkgraphicscreated(lua_State *L)
+{
+	if (!instance()->isCreated())
+		return luaL_error(L, "love.graphics cannot function without a window!");
+	return 0;
+}
+
 int w_reset(lua_State *)
 {
 	instance()->reset();
@@ -290,6 +297,8 @@ static const char *imageFlagName(Image::FlagType flagtype)
 
 int w_newImage(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	std::vector<love::image::ImageData *> data;
 	std::vector<love::image::CompressedImageData *> cdata;
 
@@ -400,6 +409,8 @@ int w_newImage(lua_State *L)
 
 int w_newQuad(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Quad::Viewport v;
 	v.x = luaL_checknumber(L, 1);
 	v.y = luaL_checknumber(L, 2);
@@ -417,6 +428,8 @@ int w_newQuad(lua_State *L)
 
 int w_newFont(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Font *font = nullptr;
 
 	// Convert to Rasterizer, if necessary.
@@ -443,6 +456,8 @@ int w_newFont(lua_State *L)
 
 int w_newImageFont(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	// filter for glyphs
 	Texture::Filter filter = instance()->getDefaultFilter();
 
@@ -483,6 +498,8 @@ int w_newImageFont(lua_State *L)
 
 int w_newSpriteBatch(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Texture *texture = luax_checktexture(L, 1);
 	int size = (int) luaL_optnumber(L, 2, 1000);
 	Mesh::Usage usage = Mesh::USAGE_DYNAMIC;
@@ -505,6 +522,8 @@ int w_newSpriteBatch(lua_State *L)
 
 int w_newParticleSystem(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Texture *texture = luax_checktexture(L, 1);
 	lua_Number size = luaL_optnumber(L, 2, 1000);
 	ParticleSystem *t = 0;
@@ -522,6 +541,8 @@ int w_newParticleSystem(lua_State *L)
 
 int w_newCanvas(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	// check if width and height are given. else default to screen dimensions.
 	int width       = (int) luaL_optnumber(L, 1, instance()->getWidth());
 	int height      = (int) luaL_optnumber(L, 2, instance()->getHeight());
@@ -547,6 +568,8 @@ int w_newCanvas(lua_State *L)
 
 int w_newShader(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	// clamp stack to 2 elements
 	lua_settop(L, 2);
 
@@ -848,6 +871,8 @@ static Mesh *newCustomMesh(lua_State *L)
 
 int w_newMesh(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	// Check first argument: table or number of vertices.
 	int arg1type = lua_type(L, 1);
 	if (arg1type != LUA_TTABLE && arg1type != LUA_TNUMBER)
@@ -868,6 +893,8 @@ int w_newMesh(lua_State *L)
 
 int w_newText(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Font *font = luax_checkfont(L, 1);
 	Text *t = nullptr;
 
@@ -888,6 +915,8 @@ int w_newText(lua_State *L)
 
 int w_newVideo(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	if (!luax_istype(L, 1, VIDEO_VIDEO_STREAM_ID))
 		luax_convobj(L, 1, "video", "newVideoStream");
 
