@@ -188,6 +188,10 @@ bool Variant::fromLua(lua_State *L, int n, Variant *v, bool allowTables)
 			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
 			std::pair<Variant, Variant> pair;
 
+			size_t len = luax_objlen(L, -1);
+			if (len > 0)
+				table->reserve(len);
+
 			lua_pushnil(L);
 
 			while (lua_next(L, n))
