@@ -35,6 +35,7 @@ Please see http://bitbucket.org/rude/megasource
 endif()
 
 set(LOVE_EXE_NAME love)
+set(LOVE_CONSOLE_EXE_NAME lovec)
 set(LOVE_LIB_NAME liblove)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -1309,6 +1310,7 @@ endif()
 # love (executable)
 #
 add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
+add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
 target_link_libraries(love liblove)
 
 # Add post build steps to move the DLLs next to the binary. Otherwise
