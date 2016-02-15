@@ -1314,9 +1314,9 @@ endif()
 #
 add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
 
-if(LOVE_CONSOLE_EXE_NAME)
-	add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
-endif()
+#if(MSVC)
+#	add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
+#endif()
 
 target_link_libraries(love liblove)
 
