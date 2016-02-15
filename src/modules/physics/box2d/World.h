@@ -131,6 +131,7 @@ public:
 	 * @param dt The timestep.
 	 **/
 	void update(float dt);
+	void update(float dt, int velocityIterations, int positionIterations);
 
 	// From b2ContactListener
 	void BeginContact(b2Contact *contact);

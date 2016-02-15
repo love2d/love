@@ -251,7 +251,12 @@ World::~World()
 
 void World::update(float dt)
 {
-	world->Step(dt, 8, 6);
+	update(dt, 8, 3); // Box2D 2.3's recommended defaults.
+}
+
+void World::update(float dt, int velocityIterations, int positionIterations)
+{
+	world->Step(dt, velocityIterations, positionIterations);
 
 	// Destroy all objects marked during the time step.
 	for (Body *b : destructBodies)

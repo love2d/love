@@ -39,9 +39,19 @@ int w_World_update(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	float dt = (float)luaL_checknumber(L, 2);
+
 	// Make sure the world callbacks are using the calling Lua thread.
 	t->setCallbacksL(L);
-	luax_catchexcept(L, [&](){ t->update(dt); });
+
+	if (lua_isnoneornil(L, 3))
+		luax_catchexcept(L, [&](){ t->update(dt); });
+	else
+	{
+		int velocityiterations = (int) luaL_checknumber(L, 3);
+		int positioniterations = (int) luaL_checknumber(L, 4);
+		luax_catchexcept(L, [&](){ t->update(dt, velocityiterations, positioniterations); });
+	}
+
 	return 0;
 }
 
