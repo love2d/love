@@ -195,7 +195,7 @@ public:
 	uint32 getTextureCacheID() const;
 
 	static bool getConstant(const char *in, AlignMode &out);
-	static bool getConstant(AlignMode in, const char  *&out);
+	static bool getConstant(AlignMode in, const char *&out);
 
 	static int fontCount;
 

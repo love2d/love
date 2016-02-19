@@ -136,12 +136,12 @@ public:
 		COMPARE_MAX_ENUM
 	};
 
-	enum Support
+	enum Feature
 	{
-		SUPPORT_MULTI_CANVAS_FORMATS,
-		SUPPORT_CLAMP_ZERO,
-		SUPPORT_LIGHTEN,
-		SUPPORT_MAX_ENUM
+		FEATURE_MULTI_CANVAS_FORMATS,
+		FEATURE_CLAMP_ZERO,
+		FEATURE_LIGHTEN,
+		FEATURE_MAX_ENUM
 	};
 
 	enum Renderer
@@ -291,8 +291,8 @@ public:
 	static bool getConstant(const char *in, CompareMode &out);
 	static bool getConstant(CompareMode in, const char *&out);
 
-	static bool getConstant(const char *in, Support &out);
-	static bool getConstant(Support in, const char *&out);
+	static bool getConstant(const char *in, Feature &out);
+	static bool getConstant(Feature in, const char *&out);
 
 	static bool getConstant(const char *in, SystemLimit &out);
 	static bool getConstant(SystemLimit in, const char *&out);
@@ -329,8 +329,8 @@ private:
 	static StringMap<CompareMode, COMPARE_MAX_ENUM>::Entry compareModeEntries[];
 	static StringMap<CompareMode, COMPARE_MAX_ENUM> compareModes;
 
-	static StringMap<Support, SUPPORT_MAX_ENUM>::Entry supportEntries[];
-	static StringMap<Support, SUPPORT_MAX_ENUM> support;
+	static StringMap<Feature, FEATURE_MAX_ENUM>::Entry featureEntries[];
+	static StringMap<Feature, FEATURE_MAX_ENUM> features;
 
 	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
 	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;

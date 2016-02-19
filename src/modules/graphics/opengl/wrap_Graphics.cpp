@@ -1387,11 +1387,11 @@ int w_setDefaultShaderCode(lua_State *L)
 
 int w_getSupported(lua_State *L)
 {
-	lua_createtable(L, 0, (int) Graphics::SUPPORT_MAX_ENUM);
+	lua_createtable(L, 0, (int) Graphics::FEATURE_MAX_ENUM);
 
-	for (int i = 0; i < (int) Graphics::SUPPORT_MAX_ENUM; i++)
+	for (int i = 0; i < (int) Graphics::FEATURE_MAX_ENUM; i++)
 	{
-		Graphics::Support feature = (Graphics::Support) i;
+		auto feature = (Graphics::Feature) i;
 		const char *name = nullptr;
 
 		if (!Graphics::getConstant(feature, name))

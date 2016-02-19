@@ -76,7 +76,7 @@ struct Triangle
 	Vertex a, b, c;
 };
 
-inline int next_p2(int x)
+inline int nextP2(int x)
 {
 	x += (x == 0);
 	x--;
@@ -84,9 +84,9 @@ inline int next_p2(int x)
 	return ++x;
 }
 
-inline float next_p2(float x)
+inline float nextP2(float x)
 {
-	return static_cast<float>(next_p2(static_cast<int>(x)));
+	return (float) nextP2((int) x);
 }
 
 } // love
