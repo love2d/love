@@ -47,10 +47,10 @@ int w_Shader_getWarnings(lua_State *L)
 }
 
 template <typename T>
-static T *_getScalars(lua_State *L, int count, size_t &dimension)
+static T *_getScalars(lua_State *L, Shader *shader, int count, size_t &dimension)
 {
 	dimension = 1;
-	T *values = new T[count];
+	T *values = shader->getScratchBuffer<T>(count);
 
 	for (int i = 0; i < count; ++i)
 	{
@@ -60,7 +60,6 @@ static T *_getScalars(lua_State *L, int count, size_t &dimension)
 			values[i] = static_cast<T>(lua_toboolean(L, 3 + i));
 		else
 		{
-			delete[] values;
 			luax_typerror(L, 3 + i, "number or boolean");
 			return 0;
 		}
@@ -70,24 +69,22 @@ static T *_getScalars(lua_State *L, int count, size_t &dimension)
 }
 
 template <typename T>
-static T *_getVectors(lua_State *L, int count, size_t &dimension)
+static T *_getVectors(lua_State *L, Shader *shader, int count, size_t &dimension)
 {
 	dimension = luax_objlen(L, 3);
-	T *values = new T[count * dimension];
+	T *values = shader->getScratchBuffer<T>(count * dimension);
 
 	for (int i = 0; i < count; ++i)
 	{
 		if (!lua_istable(L, 3 + i))
 		{
-			delete[] values;
 			luax_typerror(L, 3 + i, "table");
 			return 0;
 		}
 		if (luax_objlen(L, 3 + i) != dimension)
 		{
-			delete[] values;
 			luaL_error(L, "Error in argument %d: Expected table size %d, got %d.",
-						   3+i, dimension, luax_objlen(L, 3+i));
+			           3+i, dimension, luax_objlen(L, 3+i));
 			return 0;
 		}
 
@@ -100,7 +97,6 @@ static T *_getVectors(lua_State *L, int count, size_t &dimension)
 				values[i * dimension + k - 1] = static_cast<T>(lua_toboolean(L, -1));
 			else
 			{
-				delete[] values;
 				luax_typerror(L, -1, "number or boolean");
 				return 0;
 			}
@@ -124,31 +120,16 @@ int w_Shader_sendInt(lua_State *L)
 	size_t dimension = 1;
 
 	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
-		values = _getScalars<int>(L, count, dimension);
+		values = _getScalars<int>(L, shader, count, dimension);
 	else if (lua_istable(L, 3))
-		values = _getVectors<int>(L, count, dimension);
+		values = _getVectors<int>(L, shader, count, dimension);
 	else
 		return luax_typerror(L, 3, "number, boolean, or table");
 
 	if (!values)
 		return luaL_error(L, "Error in arguments.");
 
-	bool should_error = false;
-	try
-	{
-		shader->sendInt(name, (int) dimension, values, count);
-	}
-	catch (love::Exception &e)
-	{
-		should_error = true;
-		lua_pushstring(L, e.what());
-	}
-
-	delete[] values;
-
-	if (should_error)
-		return luaL_error(L, "%s", lua_tostring(L, -1));
-
+	luax_catchexcept(L, [&]() { shader->sendInt(name, (int) dimension, values, count); });
 	return 0;
 }
 
@@ -165,9 +146,9 @@ static int w__Shader_sendFloat(lua_State *L, bool colors)
 	size_t dimension = 1;
 
 	if (lua_isnumber(L, 3) || lua_isboolean(L, 3))
-		values = _getScalars<float>(L, count, dimension);
+		values = _getScalars<float>(L, shader, count, dimension);
 	else if (lua_istable(L, 3))
-		values = _getVectors<float>(L, count, dimension);
+		values = _getVectors<float>(L, shader, count, dimension);
 	else
 		return luax_typerror(L, 3, "number, boolean, or table");
 
@@ -192,22 +173,7 @@ static int w__Shader_sendFloat(lua_State *L, bool colors)
 		}
 	}
 
-	bool should_error = false;
-	try
-	{
-		shader->sendFloat(name, (int) dimension, values, count);
-	}
-	catch (love::Exception &e)
-	{
-		should_error = true;
-		lua_pushstring(L, e.what());
-	}
-
-	delete[] values;
-
-	if (should_error)
-		return luaL_error(L, "%s", lua_tostring(L, -1));
-
+	luax_catchexcept(L, [&]() { shader->sendFloat(name, (int) dimension, values, count); });
 	return 0;
 }
 
@@ -253,7 +219,7 @@ int w_Shader_sendMatrix(lua_State *L)
 		return luaL_error(L, "Invalid matrix size: %dx%d (only 2x2, 3x3 and 4x4 matrices are supported).",
 						  dimension, dimension);
 
-	float *values = new float[dimension * dimension * count];
+	float *values = shader->getScratchBuffer<float>(dimension * dimension * count);
 
 	for (int i = 0; i < count; ++i)
 	{
@@ -277,9 +243,8 @@ int w_Shader_sendMatrix(lua_State *L)
 			// a dimension of mind. You're moving into a land of both shadow
 			// and substance, of things and ideas. You've just crossed over
 			// into... the Twilight Zone.
-			delete[] values;
 			return luaL_error(L, "Invalid matrix size at argument %d: Expected size %dx%d, got %dx%d.",
-							  3+i, dimension, dimension, other_dimension, other_dimension);
+			                  3+i, dimension, dimension, other_dimension, other_dimension);
 		}
 
 		if (table_of_tables)
@@ -312,11 +277,7 @@ int w_Shader_sendMatrix(lua_State *L)
 		}
 	}
 
-	luax_catchexcept(L,
-		[&]() { shader->sendMatrix(name, dimension, values, count); },
-		[&](bool) { delete[] values; }
-	);
-
+	luax_catchexcept(L, [&]() { shader->sendMatrix(name, dimension, values, count); });
 	return 0;
 }
 

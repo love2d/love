@@ -199,6 +199,17 @@ public:
 		return program;
 	}
 
+	template <typename T>
+	T *getScratchBuffer(size_t count)
+	{
+		size_t bytes = sizeof(T) * count;
+
+		if (scratchBuffer.size() < bytes)
+			scratchBuffer.resize(bytes);
+
+		return (T *) scratchBuffer.data();
+	}
+
 	static std::string getGLSLVersion();
 	static bool isSupported();
 
@@ -275,6 +286,8 @@ private:
 	Matrix4 lastProjectionMatrix;
 
 	GLuint videoTextureUnits[3];
+
+	std::vector<char> scratchBuffer;
 
 	// Counts total number of textures bound to each texture unit in all shaders
 	static std::vector<int> textureCounters;
