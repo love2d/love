@@ -552,18 +552,18 @@ bool Canvas::checkCreateStencil()
 		gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);
 
 	GLenum format = GL_STENCIL_INDEX8;
-	GLenum attachment = GL_STENCIL_ATTACHMENT;
+	std::vector<GLenum> attachments = {GL_STENCIL_ATTACHMENT};
 
 	// Prefer a combined depth/stencil buffer.
 	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
 	{
 		format = GL_DEPTH24_STENCIL8;
-		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+		attachments = {GL_DEPTH_STENCIL_ATTACHMENT};
 	}
 	else if (GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
 	{
-		format = GL_DEPTH24_STENCIL8_OES;
-		attachment = GL_DEPTH_ATTACHMENT;
+		format = GL_DEPTH24_STENCIL8;
+		attachments = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
 	}
 
 	glGenRenderbuffers(1, &depth_stencil);
@@ -574,10 +574,9 @@ bool Canvas::checkCreateStencil()
 	else
 		glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
 
-	// Attach the stencil buffer to the framebuffer object.
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, depth_stencil);
-	if (format == GL_DEPTH24_STENCIL8_OES)
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_stencil);
+	// Attach the buffer to the framebuffer object.
+	for (GLenum attachment : attachments)
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, depth_stencil);
 
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
