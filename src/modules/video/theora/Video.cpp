@@ -112,8 +112,7 @@ void Worker::threadFunction()
 			}
 		}
 
-		// sleep
-		love::delay(2);
+		love::sleep(2);
 	}
 }
 

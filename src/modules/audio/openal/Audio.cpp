@@ -57,7 +57,7 @@ void Audio::PoolThread::threadFunction()
 		}
 
 		pool->update();
-		delay(5);
+		sleep(5);
 	}
 }
 

@@ -468,7 +468,7 @@ public:
 	/**
 	 * Gets whether a graphics feature is supported on this system.
 	 **/
-	bool isSupported(Support feature) const;
+	bool isSupported(Feature feature) const;
 
 	void push(StackType type = STACK_TRANSFORM);
 	void pop();

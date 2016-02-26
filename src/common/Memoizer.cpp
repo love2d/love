@@ -19,12 +19,13 @@
  **/
  
 #include "Memoizer.h"
-#include <cstddef>
+
+#include <unordered_map>
 
 namespace love
 {
 
-std::map<void *, void *> Memoizer::objectMap;
+static std::unordered_map<void *, void *> objectMap;
 
 void Memoizer::add(void *key, void *val)
 {

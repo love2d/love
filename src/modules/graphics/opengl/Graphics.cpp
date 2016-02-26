@@ -1103,7 +1103,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 
 	if (mode == BLEND_LIGHTEN || mode == BLEND_DARKEN)
 	{
-		if (!isSupported(SUPPORT_LIGHTEN))
+		if (!isSupported(FEATURE_LIGHTEN))
 			throw love::Exception("The 'lighten' and 'darken' blend modes are not supported on this system.");
 	}
 
@@ -1677,15 +1677,15 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 	}
 }
 
-bool Graphics::isSupported(Support feature) const
+bool Graphics::isSupported(Feature feature) const
 {
 	switch (feature)
 	{
-	case SUPPORT_MULTI_CANVAS_FORMATS:
+	case FEATURE_MULTI_CANVAS_FORMATS:
 		return Canvas::isMultiFormatMultiCanvasSupported();
-	case SUPPORT_CLAMP_ZERO:
+	case FEATURE_CLAMP_ZERO:
 		return gl.isClampZeroTextureWrapSupported();
-	case SUPPORT_LIGHTEN:
+	case FEATURE_LIGHTEN:
 		return GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
 	default:
 		return false;

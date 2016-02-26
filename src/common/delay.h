@@ -24,7 +24,7 @@
 namespace love
 {
 
-void delay(unsigned int ms);
+void sleep(unsigned int ms);
 
 } // namespace love
 

@@ -53,7 +53,7 @@ const char *Timer::getName() const
 void Timer::sleep(double seconds) const
 {
 	if (seconds > 0)
-		delay((unsigned int)(seconds*1000));
+		love::sleep((unsigned int)(seconds*1000));
 }
 
 } // sdl

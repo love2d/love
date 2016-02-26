@@ -25,7 +25,7 @@
 namespace love
 {
 
-void delay(unsigned int ms)
+void sleep(unsigned int ms)
 {
 	SDL_Delay(ms);
 }

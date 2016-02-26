@@ -37,6 +37,10 @@ endif()
 set(LOVE_EXE_NAME love)
 set(LOVE_LIB_NAME liblove)
 
+if(MSVC)
+	set(LOVE_CONSOLE_EXE_NAME lovec)
+endif()
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(LOVE_X64 TRUE)
 	set(LOVE_TARGET_PLATFORM x64)
@@ -1294,7 +1298,7 @@ if(MSVC)
 endif()
 
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
-target_link_libraries(liblove ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
+target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
 if(MEGA_EXTRA_DEPENDECIES)
 	add_dependencies(${LOVE_LIB_NAME} ${MEGA_EXTRA_DEPENDECIES})
@@ -1309,7 +1313,13 @@ endif()
 # love (executable)
 #
 add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
-target_link_libraries(love liblove)
+target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
+
+if(MSVC)
+	add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
+	target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
+endif()
+
 
 # Add post build steps to move the DLLs next to the binary. Otherwise
 # running/debugging the binary will not work from inside VS.
@@ -1351,7 +1361,7 @@ message(STATUS "Version: ${LOVE_VERSION_STR}")
 ###################################
 # CPack
 ###################################
-install(TARGETS love ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
+install(TARGETS ${LOVE_EXE_NAME} ${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
 
 # Extra DLLs.
 if(MEGA_EXTRA_DLLS)
@@ -1404,7 +1414,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${LOVE_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${LOVE_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${LOVE_VERSION_REV}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "LOVE")
-set(CPACK_PACKAGE_EXECUTABLES "love;LOVE")
+set(CPACK_PACKAGE_EXECUTABLES "${LOVE_EXE_NAME};LOVE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/license.txt")
 

@@ -308,7 +308,7 @@ bool Image::loadVolatile()
 
 	// NPOT textures don't support mipmapping without full NPOT support.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (width != next_p2(width) || height != next_p2(height)))
+		&& (width != nextP2(width) || height != nextP2(height)))
 	{
 		flags.mipmaps = false;
 		filter.mipmap = FILTER_NONE;
@@ -519,7 +519,7 @@ bool Image::setWrap(const Texture::Wrap &w)
 	wrap = w;
 
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (width != next_p2(width) || height != next_p2(height)))
+		&& (width != nextP2(width) || height != nextP2(height)))
 	{
 		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
 			success = false;
