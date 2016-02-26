@@ -261,6 +261,7 @@ public:
 	// Require path accessors
 	// Not const because it's R/W
 	virtual std::vector<std::string> &getRequirePath() = 0;
+	virtual std::vector<std::string> &getCRequirePath() = 0;
 
 	/**
 	 * Allows a full (OS-dependent) path to be used with Filesystem::mount.

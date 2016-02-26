@@ -97,6 +97,7 @@ public:
 	bool areSymlinksEnabled() const;
 
 	std::vector<std::string> &getRequirePath();
+	std::vector<std::string> &getCRequirePath();
 
 	void allowMountingForPath(const std::string &path);
 
@@ -127,6 +128,7 @@ private:
 
 	// Search path for require
 	std::vector<std::string> requirePath;
+	std::vector<std::string> cRequirePath;
 
 	std::vector<std::string> allowedMountPaths;
 

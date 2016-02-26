@@ -590,10 +590,43 @@ int w_getRequirePath(lua_State *L)
 	return 1;
 }
 
+int w_getCRequirePath(lua_State *L)
+{
+	std::stringstream path;
+	bool seperator = false;
+	for (auto &element : instance()->getCRequirePath())
+	{
+		if (seperator)
+			path << ";";
+		else
+			seperator = true;
+
+		path << element;
+	}
+
+	luax_pushstring(L, path.str());
+	return 1;
+}
+
 int w_setRequirePath(lua_State *L)
 {
 	std::string element = luax_checkstring(L, 1);
 	auto &requirePath = instance()->getRequirePath();
+
+	requirePath.clear();
+	std::stringstream path;
+	path << element;
+
+	while(std::getline(path, element, ';'))
+		requirePath.push_back(element);
+
+	return 0;
+}
+
+int w_setCRequirePath(lua_State *L)
+{
+	std::string element = luax_checkstring(L, 1);
+	auto &requirePath = instance()->getCRequirePath();
 
 	requirePath.clear();
 	std::stringstream path;
@@ -651,6 +684,9 @@ int extloader(lua_State *L)
 	std::string tokenized_name(filename);
 	std::string tokenized_function(filename);
 
+	// We need both the tokenized filename (dots replaced with slashes)
+	// and the tokenized function name (dots replaced with underscores)
+	// NOTE: Lua's loader queries more names than this one.
 	for (unsigned int i = 0; i < tokenized_name.size(); i++)
 	{
 		if (tokenized_name[i] == '.')
@@ -660,32 +696,29 @@ int extloader(lua_State *L)
 		}
 	}
 
-	tokenized_name += library_extension();
-
 	void *handle = nullptr;
-
-	// If the game is fused, try looking for the DLL in the game's read paths.
-	if (instance()->isFused())
+	auto *inst = instance();
+	for (std::string element : inst->getCRequirePath())
 	{
-		try
-		{
-			std::string dir = instance()->getRealDirectory(tokenized_name.c_str());
+		// Replace ?? with the filename and extension
+		size_t pos = element.find("??");
+		if (pos != std::string::npos)
+			element.replace(pos, 2, tokenized_name + library_extension());
+		// Or ? with just the filename
+		pos = element.find('?');
+		if (pos != std::string::npos)
+			element.replace(pos, 1, tokenized_name);
 
-			// We don't want to look in the game's source, because it can be a
-			// zip sometimes and a folder other times.
-			if (dir.find(instance()->getSource()) == std::string::npos)
-				handle = SDL_LoadObject((dir + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
-		}
-		catch (love::Exception &)
-		{
-			// Nothing...
-		}
-	}
+		if (!inst->isFile(element.c_str()))
+			continue;
 
-	if (!handle)
-	{
-		std::string path = std::string(instance()->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name;
-		handle = SDL_LoadObject(path.c_str());
+		// Now resolve the full path, as we're bypassing physfs for the next part.
+		element = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
+
+		handle = SDL_LoadObject(element.c_str());
+		// Can fail, for instance if it turned out the source was a zip
+		if (handle)
+			break;
 	}
 
 	if (!handle)
@@ -694,6 +727,8 @@ int extloader(lua_State *L)
 		return 1;
 	}
 
+	// We look for both loveopen_ and luaopen_, so libraries with specific love support
+	// can tell when they've been loaded by love.
 	void *func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
 	if (!func)
 		func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
@@ -749,6 +784,8 @@ static const luaL_Reg functions[] =
 	{ "newFileData", w_newFileData },
 	{ "getRequirePath", w_getRequirePath },
 	{ "setRequirePath", w_setRequirePath },
+	{ "getCRequirePath", w_getCRequirePath },
+	{ "setCRequirePath", w_setCRequirePath },
 	{ 0, 0 }
 };
 
