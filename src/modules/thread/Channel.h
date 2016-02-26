@@ -54,9 +54,6 @@ public:
 	int getCount();
 	void clear();
 
-	void retain();
-	void release();
-
 private:
 
 	Channel(const std::string &name);
