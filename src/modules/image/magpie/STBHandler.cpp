@@ -75,7 +75,12 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 	                                 &comp, 4);
 
 	if (img.data == nullptr || img.width <= 0 || img.height <= 0)
-		throw love::Exception("Could not decode image with stb_image.");
+	{
+		const char *err = stbi_failure_reason();
+		if (err == nullptr)
+			err = "unknown error";
+		throw love::Exception("Could not decode image with stb_image (%s).", err);
+	}
 
 	img.size = img.width * img.height * 4;
 

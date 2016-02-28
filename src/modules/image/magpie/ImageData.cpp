@@ -124,10 +124,7 @@ void ImageData::decode(love::filesystem::FileData *data)
 	// The decoder *must* output a 32 bits-per-pixel image.
 	if (decodedimage.size != decodedimage.width*decodedimage.height*sizeof(pixel))
 	{
-		if (decodeHandler)
-			decodeHandler->free(decodedimage.data);
-		else
-			delete[] decodedimage.data;
+		decoder->free(decodedimage.data);
 		throw love::Exception("Could not convert image!");
 	}
 

@@ -78,7 +78,7 @@ bool FileData::getConstant(const char *in, Decoder &out)
 	return decoders.find(in, out);
 }
 
-bool FileData::getConstant(Decoder in, const char  *&out)
+bool FileData::getConstant(Decoder in, const char *&out)
 {
 	return decoders.find(in, out);
 }
