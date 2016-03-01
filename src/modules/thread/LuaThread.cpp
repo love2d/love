@@ -116,9 +116,8 @@ void LuaThread::onError()
 		Variant(error.c_str(), error.length())
 	};
 
-	event::Message *msg = new event::Message("threaderror", vargs);
+	StrongRef<event::Message> msg(new event::Message("threaderror", vargs), Acquire::NORETAIN);
 	eventmodule->push(msg);
-	msg->release();
 }
 
 } // thread

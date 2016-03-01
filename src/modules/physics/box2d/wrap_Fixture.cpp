@@ -118,8 +118,8 @@ int w_Fixture_getBody(lua_State *L)
 int w_Fixture_getShape(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	Shape *shape = t->getShape();
-	if (shape == 0)
+	StrongRef<Shape> shape(t->getShape(), Acquire::NORETAIN);
+	if (shape.get() == nullptr)
 		return 0;
 	switch (shape->getType())
 	{
@@ -139,7 +139,6 @@ int w_Fixture_getShape(lua_State *L)
 		luax_pushtype(L, PHYSICS_SHAPE_ID, shape);
 		break;
 	}
-	shape->release();
 	return 1;
 }
 

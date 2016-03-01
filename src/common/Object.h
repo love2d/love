@@ -75,30 +75,39 @@ private:
 
 }; // Object
 
-/**
- * Partial re-implementation + specialization of std::shared_ptr. We can't
- * use C++11's stdlib yet...
- **/
+
+enum class Acquire
+{
+	RETAIN,
+	NORETAIN,
+};
+
 template <typename T>
 class StrongRef
 {
 public:
 
 	StrongRef()
-	: object(nullptr)
+		: object(nullptr)
 	{
 	}
 
-	StrongRef(T *obj)
-	: object(obj)
+	StrongRef(T *obj, Acquire acquire = Acquire::RETAIN)
+		: object(obj)
 	{
-		if (object) object->retain();
+		if (object && acquire == Acquire::RETAIN) object->retain();
 	}
 
 	StrongRef(const StrongRef &other)
-	: object(other.get())
+		: object(other.get())
 	{
 		if (object) object->retain();
+	}
+
+	StrongRef(StrongRef &&other)
+		: object(other.object)
+	{
+		other.object = nullptr;
 	}
 
 	~StrongRef()
@@ -117,7 +126,7 @@ public:
 		return object;
 	}
 
-	operator bool() const
+	explicit operator bool() const
 	{
 		return object != nullptr;
 	}
@@ -127,9 +136,9 @@ public:
 		return object;
 	}
 
-	void set(T *obj)
+	void set(T *obj, Acquire acquire = Acquire::RETAIN)
 	{
-		if (obj) obj->retain();
+		if (obj && acquire == Acquire::RETAIN) obj->retain();
 		if (object) object->release();
 		object = obj;
 	}

@@ -223,17 +223,16 @@ int w_newFileData(lua_State *L)
 		{
 			File *file = luax_checkfile(L, 1);
 
-			FileData *data = 0;
+			StrongRef<FileData> data;
 			try
 			{
-				data = file->read();
+				data.set(file->read(), Acquire::NORETAIN);
 			}
 			catch (love::Exception &e)
 			{
 				return luax_ioError(L, "%s", e.what());
 			}
 			luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, data);
-			data->release();
 			return 1;
 		}
 		else
