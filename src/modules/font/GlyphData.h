@@ -70,6 +70,16 @@ public:
 	size_t getSize() const;
 
 	/**
+	 * Gets the data starting at a specific pixel in the glyph.
+	 **/
+	void *getData(int x, int y) const;
+
+	/**
+	 * Gets the size in bytes of each pixel in the glyph.
+	 **/
+	size_t getPixelSize() const;
+
+	/**
 	 * Gets the height of the glyph.
 	 **/
 	virtual int getHeight() const;
@@ -141,7 +151,7 @@ private:
 	GlyphMetrics metrics;
 
 	// Glyph texture data.
-	unsigned char *data;
+	uint8 *data;
 
 	// The format the data's in.
 	Format format;
