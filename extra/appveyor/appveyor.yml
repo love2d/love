@@ -1,4 +1,4 @@
-version: 0.10.1.{build}
+version: 0.11.0.{build}
 
 os:
 - Windows Server 2012 R2
