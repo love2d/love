@@ -133,7 +133,11 @@ Image::Image(const std::vector<love::image::CompressedImageData *> &compressedda
 		if (compresseddata[0]->getMipmapCount() == 1)
 			this->flags.mipmaps = false;
 		else
-			throw love::Exception("Image cannot have mipmaps: compressed image data does not have all required mipmap levels.");
+		{
+			throw love::Exception("Image cannot have mipmaps: compressed image data does not have all required mipmap levels (expected %d, got %d)",
+			                      getMipmapCount(width, height),
+			                      compresseddata[0]->getMipmapCount());
+		}
 	}
 
 	for (const auto &cd : compresseddata)

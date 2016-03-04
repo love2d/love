@@ -27,8 +27,7 @@ namespace thread
 
 LuaThread *ThreadModule::newThread(const std::string &name, love::Data *data)
 {
-	LuaThread *lt = new LuaThread(name, data);
-	return lt;
+	return new LuaThread(name, data);
 }
 
 Channel *ThreadModule::newChannel()

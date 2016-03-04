@@ -104,10 +104,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	if (fmt == 0)
 		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
 
-	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), soundData->getSampleRate()));
-
-	// The buffer has a +2 retain count right now, but we want it to have +1.
-	staticBuffer->release();
+	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), sampleRate), Acquire::NORETAIN);
 
 	float z[3] = {0, 0, 0};
 
@@ -179,11 +176,7 @@ Source::Source(const Source &s)
 	if (type == TYPE_STREAM)
 	{
 		if (s.decoder.get())
-		{
-			love::sound::Decoder *dec = s.decoder->clone();
-			decoder.set(dec);
-			dec->release();
-		}
+			decoder.set(s.decoder->clone(), Acquire::NORETAIN);
 
 		alGenBuffers(MAX_BUFFERS, streamBuffers);
 	}

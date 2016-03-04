@@ -55,7 +55,7 @@ public:
 	const std::string &getExtension() const;
 
 	static bool getConstant(const char *in, Decoder &out);
-	static bool getConstant(Decoder in, const char  *&out);
+	static bool getConstant(Decoder in, const char *&out);
 
 private:
 

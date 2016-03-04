@@ -43,9 +43,7 @@ public:
 
 Rasterizer *Font::newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting)
 {
-	StrongRef<DefaultFontData> data(new DefaultFontData);
-	data->release();
-
+	StrongRef<DefaultFontData> data(new DefaultFontData, Acquire::NORETAIN);
 	return newTrueTypeRasterizer(data.get(), size, hinting);
 }
 

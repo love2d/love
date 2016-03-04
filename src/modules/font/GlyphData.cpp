@@ -40,18 +40,7 @@ GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format 
 	, format(f)
 {
 	if (metrics.width > 0 && metrics.height > 0)
-	{
-		switch (f)
-		{
-		case GlyphData::FORMAT_LUMINANCE_ALPHA:
-			data = new unsigned char[metrics.width * metrics.height * 2];
-			break;
-		case GlyphData::FORMAT_RGBA:
-		default:
-			data = new unsigned char[metrics.width * metrics.height * 4];
-			break;
-		}
-	}
+		data = new uint8[metrics.width * metrics.height * getPixelSize()];
 }
 
 GlyphData::~GlyphData()
@@ -61,22 +50,30 @@ GlyphData::~GlyphData()
 
 void *GlyphData::getData() const
 {
-	return (void *) data;
+	return data;
+}
+
+size_t GlyphData::getPixelSize() const
+{
+	switch (format)
+	{
+	case FORMAT_LUMINANCE_ALPHA:
+		return 2;
+	case FORMAT_RGBA:
+	default:
+		return 4;
+	}
+}
+
+void *GlyphData::getData(int x, int y) const
+{
+	size_t offset = (y * getWidth() + x) * getPixelSize();
+	return data + offset;
 }
 
 size_t GlyphData::getSize() const
 {
-	switch (format)
-	{
-	case GlyphData::FORMAT_LUMINANCE_ALPHA:
-		return size_t(getWidth() * getHeight() * 2);
-		break;
-	case GlyphData::FORMAT_RGBA:
-	default:
-		return size_t(getWidth() * getHeight() * 4);
-		break;
-	}
-
+	return size_t(getWidth() * getHeight()) * getPixelSize();
 }
 
 int GlyphData::getHeight() const
@@ -133,22 +130,22 @@ int GlyphData::getBearingY() const
 
 int GlyphData::getMinX() const
 {
-	return this->getBearingX();
+	return getBearingX();
 }
 
 int GlyphData::getMinY() const
 {
-	return this->getHeight() - this->getBearingY();
+	return getHeight() - getBearingY();
 }
 
 int GlyphData::getMaxX() const
 {
-	return this->getBearingX() + this->getWidth();
+	return getBearingX() + getWidth();
 }
 
 int GlyphData::getMaxY() const
 {
-	return this->getBearingY();
+	return getBearingY();
 }
 
 GlyphData::Format GlyphData::getFormat() const
@@ -168,8 +165,8 @@ bool GlyphData::getConstant(GlyphData::Format in, const char *&out)
 
 StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM>::Entry GlyphData::formatEntries[] =
 {
-	{"luminancealpha", GlyphData::FORMAT_LUMINANCE_ALPHA},
-	{"rgba", GlyphData::FORMAT_RGBA},
+	{"luminancealpha", FORMAT_LUMINANCE_ALPHA},
+	{"rgba", FORMAT_RGBA},
 };
 
 StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM> GlyphData::formats(GlyphData::formatEntries, sizeof(GlyphData::formatEntries));

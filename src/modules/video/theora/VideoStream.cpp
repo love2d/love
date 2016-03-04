@@ -64,8 +64,7 @@ VideoStream::VideoStream(love::filesystem::File *file)
 		throw ex;
 	}
 
-	frameSync = new DeltaSync();
-	frameSync->release();
+	frameSync.set(new DeltaSync(), Acquire::NORETAIN);
 }
 
 VideoStream::~VideoStream()

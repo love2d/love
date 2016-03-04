@@ -74,16 +74,14 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	Message *m = Message::fromLua(L, 1);
+	StrongRef<Message> m(Message::fromLua(L, 1), Acquire::NORETAIN);
 
-	luax_pushboolean(L, m != nullptr);
+	luax_pushboolean(L, m.get() != nullptr);
 
-	if (m == nullptr)
+	if (m.get() == nullptr)
 		return 1;
 
 	instance()->push(m);
-	m->release();
-
 	return 1;
 }
 
@@ -101,9 +99,8 @@ int w_quit(lua_State *L)
 	if (Variant::fromLua(L, 1, &v))
 		args.push_back(v);
 
-	Message *m = new Message("quit", args);
+	StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
 	instance()->push(m);
-	m->release();
 
 	luax_pushboolean(L, true);
 	return 1;

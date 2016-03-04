@@ -58,12 +58,17 @@ Channel *Channel::getChannel(const std::string &name)
 	if (!namedChannelMutex)
 		namedChannelMutex = newMutex();
 
-	Lock l(namedChannelMutex);
-	if (!namedChannels.count(name))
-		namedChannels[name] = new Channel(name);
-	else
-		namedChannels[name]->retain();
+	Lock lock(namedChannelMutex);
 
+	auto it = namedChannels.find(name);
+
+	if (it != namedChannels.end())
+	{
+		it->second->retain();
+		return it->second;
+	}
+
+	namedChannels[name] = new Channel(name);
 	return namedChannels[name];
 }
 
@@ -92,7 +97,10 @@ Channel::~Channel()
 	delete cond;
 
 	if (named)
+	{
+		Lock l(namedChannelMutex);
 		namedChannels.erase(name);
+	}
 }
 
 unsigned long Channel::push(const Variant &var)
@@ -196,22 +204,5 @@ void Channel::unlockMutex()
 	mutex->unlock();
 }
 
-void Channel::retain()
-{
-	EmptyLock l;
-	if (named)
-		l.setLock(namedChannelMutex);
-
-	Object::retain();
-}
-
-void Channel::release()
-{
-	EmptyLock l;
-	if (named)
-		l.setLock(namedChannelMutex);
-
-	Object::release();
-}
 } // thread
 } // love

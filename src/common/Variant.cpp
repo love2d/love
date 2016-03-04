@@ -111,6 +111,14 @@ Variant::Variant(const Variant &v)
 		data.table->retain();
 }
 
+Variant::Variant(Variant &&v)
+	: type(std::move(v.type))
+	, udatatype(std::move(v.udatatype))
+	, data(std::move(v.data))
+{
+	v.type = NIL;
+}
+
 Variant::~Variant()
 {
 	switch (type)

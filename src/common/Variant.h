@@ -43,6 +43,7 @@ public:
 	Variant(love::Type udatatype, void *userdata);
 	Variant(std::vector<std::pair<Variant, Variant>> *table);
 	Variant(const Variant &v);
+	Variant(Variant &&v);
 	~Variant();
 
 	Variant &operator = (const Variant &v);

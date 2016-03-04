@@ -203,11 +203,10 @@ void Graphics::checkSetDefaultFont()
 		if (!fontmodule)
 			throw love::Exception("Font module has not been loaded.");
 
-		StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(12, font::TrueTypeRasterizer::HINTING_NORMAL));
-		r->release();
+		auto hinting = font::TrueTypeRasterizer::HINTING_NORMAL;
+		StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(12, hinting), Acquire::NORETAIN);
 
-		defaultFont.set(newFont(r.get()));
-		defaultFont->release();
+		defaultFont.set(newFont(r.get()), Acquire::NORETAIN);
 	}
 
 	states.back().font.set(defaultFont.get());

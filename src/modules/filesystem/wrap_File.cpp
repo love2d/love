@@ -108,13 +108,13 @@ int w_File_isOpen(lua_State *L)
 int w_File_read(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	Data *d = 0;
+	StrongRef<Data> d = nullptr;
 
 	int64 size = (int64) luaL_optnumber(L, 2, (lua_Number) File::ALL);
 
 	try
 	{
-		d = file->read(size);
+		d.set(file->read(size), Acquire::NORETAIN);
 	}
 	catch (love::Exception &e)
 	{
@@ -123,7 +123,6 @@ int w_File_read(lua_State *L)
 
 	lua_pushlstring(L, (const char *) d->getData(), d->getSize());
 	lua_pushnumber(L, d->getSize());
-	d->release();
 	return 2;
 }
 
