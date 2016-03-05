@@ -66,9 +66,11 @@ SpriteBatch::~SpriteBatch()
 
 int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 {
-	// Only do this if there's a free slot.
-	if ((index == -1 && next >= size) || index < -1 || index >= size)
-		return -1;
+	if (index < -1 || index >= size)
+		throw love::Exception("Invalid sprite index: %d", index + 1);
+
+	if (index == -1 && next >= size)
+		setBufferSize(size * 2);
 
 	Matrix3 t(x, y, a, sx, sy, ox, oy, kx, ky);
 
@@ -83,9 +85,11 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 
 int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
 {
-	// Only do this if there's a free slot.
-	if ((index == -1 && next >= size) || index < -1 || index >= next)
-		return -1;
+	if (index < -1 || index >= size)
+		throw love::Exception("Invalid sprite index: %d", index + 1);
+
+	if (index == -1 && next >= size)
+		setBufferSize(size * 2);
 
 	Matrix3 t(x, y, a, sx, sy, ox, oy, kx, ky);
 
@@ -198,8 +202,8 @@ void SpriteBatch::attachAttribute(const std::string &name, Mesh *mesh)
 	AttachedAttribute oldattrib = {};
 	AttachedAttribute newattrib = {};
 
-	if (mesh->getVertexCount() < (size_t) getBufferSize() * 4)
-		throw love::Exception("Mesh has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", getBufferSize()*4);
+	if (mesh->getVertexCount() < (size_t) next * 4)
+		throw love::Exception("Mesh has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", next*4);
 
 	auto it = attached_attributes.find(name);
 	if (it != attached_attributes.end())
@@ -256,9 +260,9 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	{
 		Mesh *mesh = it.second.mesh.get();
 
-		// We have to do this check here as well because setBufferSize can be
+		// We have to do this check here as wll because setBufferSize can be
 		// called after attachAttribute.
-		if (mesh->getVertexCount() < (size_t) getBufferSize() * 4)
+		if (mesh->getVertexCount() < (size_t) next * 4)
 			throw love::Exception("Mesh with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
 
 		int location = mesh->bindAttributeToShaderInput(it.second.index, it.first);

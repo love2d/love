@@ -91,13 +91,7 @@ public:
 	int getCount() const;
 
 	/**
-	 * Sets the total number of sprites this SpriteBatch can hold.
-	 * Leaves existing sprite data intact when possible.
-	 **/
-	void setBufferSize(int newsize);
-
-	/**
-	 * Get the total number of sprites this SpriteBatch can hold.
+	 * Get the total number of sprites this SpriteBatch can currently hold.
 	 **/
 	int getBufferSize() const;
 
@@ -117,6 +111,12 @@ private:
 		StrongRef<Mesh> mesh;
 		int index;
 	};
+
+	/**
+	 * Sets the total number of sprites this SpriteBatch can hold.
+	 * Leaves existing sprite data intact when possible.
+	 **/
+	void setBufferSize(int newsize);
 
 	void addv(const Vertex *v, const Matrix3 &m, int index);
 

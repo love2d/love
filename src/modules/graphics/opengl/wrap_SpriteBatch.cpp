@@ -188,14 +188,6 @@ int w_SpriteBatch_getCount(lua_State *L)
 	return 1;
 }
 
-int w_SpriteBatch_setBufferSize(lua_State *L)
-{
-	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int size = (int) luaL_checknumber(L, 2);
-	luax_catchexcept(L, [&]() {t->setBufferSize(size); });
-	return 0;
-}
-
 int w_SpriteBatch_getBufferSize(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
@@ -224,7 +216,6 @@ static const luaL_Reg w_SpriteBatch_functions[] =
 	{ "setColor", w_SpriteBatch_setColor },
 	{ "getColor", w_SpriteBatch_getColor },
 	{ "getCount", w_SpriteBatch_getCount },
-	{ "setBufferSize", w_SpriteBatch_setBufferSize },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
 	{ "attachAttribute", w_SpriteBatch_attachAttribute },
 	{ 0, 0 }
