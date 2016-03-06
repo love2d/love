@@ -68,10 +68,13 @@ public:
 	void stop();
 
 private:
-	std::vector<StrongRef<VideoStream>> streams;
-	love::thread::MutexRef mutex;
 
-	volatile bool stopping;
+	std::vector<StrongRef<VideoStream>> streams;
+
+	love::thread::MutexRef mutex;
+	love::thread::ConditionalRef cond;
+
+	bool stopping;
 }; // Worker
 
 } // theora

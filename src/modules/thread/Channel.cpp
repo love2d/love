@@ -77,8 +77,6 @@ Channel::Channel()
 	, sent(0)
 	, received(0)
 {
-	mutex = newMutex();
-	cond = newConditional();
 }
 
 Channel::Channel(const std::string &name)
@@ -87,15 +85,10 @@ Channel::Channel(const std::string &name)
 	, sent(0)
 	, received(0)
 {
-	mutex = newMutex();
-	cond = newConditional();
 }
 
 Channel::~Channel()
 {
-	delete mutex;
-	delete cond;
-
 	if (named)
 	{
 		Lock l(namedChannelMutex);

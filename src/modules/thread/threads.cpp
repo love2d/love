@@ -43,7 +43,7 @@ Lock::~Lock()
 }
 
 EmptyLock::EmptyLock()
-	: mutex(0)
+	: mutex(nullptr)
 {
 }
 
@@ -117,6 +117,31 @@ MutexRef::~MutexRef()
 MutexRef::operator Mutex*() const
 {
 	return mutex;
+}
+
+Mutex *MutexRef::operator->() const
+{
+	return mutex;
+}
+
+ConditionalRef::ConditionalRef()
+	: conditional(newConditional())
+{
+}
+
+ConditionalRef::~ConditionalRef()
+{
+	delete conditional;
+}
+
+ConditionalRef::operator Conditional*() const
+{
+	return conditional;
+}
+
+Conditional *ConditionalRef::operator->() const
+{
+	return conditional;
 }
 
 } // thread

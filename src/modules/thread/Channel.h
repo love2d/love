@@ -60,8 +60,8 @@ private:
 	void lockMutex();
 	void unlockMutex();
 
-	Mutex *mutex;
-	Conditional *cond;
+	MutexRef mutex;
+	ConditionalRef cond;
 	std::queue<Variant> queue;
 	bool named;
 	std::string name;

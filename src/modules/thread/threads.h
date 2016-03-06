@@ -103,9 +103,23 @@ public:
 	~MutexRef();
 
 	operator Mutex*() const;
+	Mutex *operator->() const;
 
 private:
 	Mutex *mutex;
+};
+
+class ConditionalRef
+{
+public:
+	ConditionalRef();
+	~ConditionalRef();
+
+	operator Conditional*() const;
+	Conditional *operator->() const;
+
+private:
+	Conditional *conditional;
 };
 
 Mutex *newMutex();
