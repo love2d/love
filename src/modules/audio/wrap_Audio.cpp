@@ -49,7 +49,7 @@ int w_newSource(lua_State *L)
 
 	Source::Type stype = Source::TYPE_STREAM;
 
-	const char *stypestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+	const char *stypestr = luaL_checkstring(L, 2);
 	if (stypestr && !Source::getConstant(stypestr, stype))
 		return luaL_error(L, "Invalid source type: %s", stypestr);
 

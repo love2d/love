@@ -359,7 +359,7 @@ function love.graphics.newVideo(file, loadaudio)
 	local source, success
 
 	if loadaudio ~= false then
-		success, source = pcall(love.audio.newSource, video:getStream():getFilename())
+		success, source = pcall(love.audio.newSource, video:getStream():getFilename(), "stream")
 	end
 	if success then
 		video:setSource(source)
