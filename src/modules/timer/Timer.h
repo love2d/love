@@ -76,8 +76,7 @@ public:
 	 * and increases monotonically.
 	 * @return The time (in seconds)
 	 **/
-	virtual double getTime() const;
-	static double getTimeSinceEpoch();
+	static double getTime();
 
 private:
 

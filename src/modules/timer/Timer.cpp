@@ -114,7 +114,7 @@ double Timer::getTimerPeriod()
 	return 0;
 }
 
-double Timer::getTimeSinceEpoch()
+double Timer::getTime()
 {
 	// The timer period (reciprocal of the frequency.)
 	static const double timerPeriod = getTimerPeriod();
@@ -143,11 +143,6 @@ double Timer::getTimeSinceEpoch()
 	QueryPerformanceCounter(&microTime);
 	return (double) microTime.QuadPart * timerPeriod;
 #endif
-}
-
-double Timer::getTime() const
-{
-	return getTimeSinceEpoch();
 }
 
 } // timer
