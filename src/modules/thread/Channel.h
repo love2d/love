@@ -27,6 +27,7 @@
 
 // LOVE
 #include "common/Variant.h"
+#include "common/int.h"
 #include "threads.h"
 
 namespace love
@@ -46,12 +47,13 @@ public:
 
 	static Channel *getChannel(const std::string &name);
 
-	unsigned long push(const Variant &var);
+	uint64 push(const Variant &var);
 	void supply(const Variant &var); // blocking push
 	bool pop(Variant *var);
 	void demand(Variant *var); // blocking pop
 	bool peek(Variant *var);
-	int getCount();
+	int getCount() const;
+	bool hasRead(uint64 id) const;
 	void clear();
 
 private:
@@ -66,8 +68,8 @@ private:
 	bool named;
 	std::string name;
 
-	unsigned long sent;
-	unsigned long received;
+	uint64 sent;
+	uint64 received;
 
 }; // Channel
 

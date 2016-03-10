@@ -22,34 +22,11 @@
 #include <map>
 #include <string>
 
-namespace
-{
-union uslong
-{
-	unsigned long u;
-	long i;
-};
-
-// target <= current, but semi-wrapsafe, one wrap, anyway
-inline bool past(unsigned int target, unsigned int current)
-{
-	if (target > current)
-		return false;
-	if (target == current)
-		return true;
-
-	uslong t, c;
-	t.u = target;
-	c.u = current;
-
-	return !(t.i < 0 && c.i > 0);
-}
-}
-
 namespace love
 {
 namespace thread
 {
+
 static std::map<std::string, Channel *> namedChannels;
 static Mutex *namedChannelMutex;
 
@@ -61,7 +38,6 @@ Channel *Channel::getChannel(const std::string &name)
 	Lock lock(namedChannelMutex);
 
 	auto it = namedChannels.find(name);
-
 	if (it != namedChannels.end())
 	{
 		it->second->retain();
@@ -96,7 +72,7 @@ Channel::~Channel()
 	}
 }
 
-unsigned long Channel::push(const Variant &var)
+uint64 Channel::push(const Variant &var)
 {
 	Lock l(mutex);
 
@@ -114,9 +90,9 @@ unsigned long Channel::push(const Variant &var)
 void Channel::supply(const Variant &var)
 {
 	Lock l(mutex);
-	unsigned long id = push(var);
+	uint64 id = push(var);
 
-	while (!past(id, received))
+	while (received < id)
 		cond->wait(mutex);
 }
 
@@ -160,10 +136,16 @@ bool Channel::peek(Variant *var)
 	return true;
 }
 
-int Channel::getCount()
+int Channel::getCount() const
 {
 	Lock l(mutex);
 	return (int) queue.size();
+}
+
+bool Channel::hasRead(uint64 id) const
+{
+	Lock l(mutex);
+	return received >= id;
 }
 
 void Channel::clear()
