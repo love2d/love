@@ -63,14 +63,14 @@ Message *Message::fromLua(lua_State *L, int n)
 		if (lua_isnoneornil(L, n+i))
 			break;
 
-		if (!Variant::fromLua(L, n+i, &varg))
+		vargs.push_back(Variant::fromLua(L, n+i));
+
+		if (vargs.back().getType() == Variant::UNKNOWN)
 		{
 			vargs.clear();
 			luaL_error(L, "Argument %d can't be stored safely\nExpected boolean, number, string or userdata.", n+i);
 			return nullptr;
 		}
-
-		vargs.push_back(varg);
 	}
 
 	return new Message(name, vargs);
