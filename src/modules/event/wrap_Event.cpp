@@ -93,11 +93,7 @@ int w_clear(lua_State *)
 
 int w_quit(lua_State *L)
 {
-	std::vector<Variant> args;
-
-	Variant v;
-	if (Variant::fromLua(L, 1, &v))
-		args.push_back(v);
+	std::vector<Variant> args = {Variant::fromLua(L, 1)};
 
 	StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
 	instance()->push(m);

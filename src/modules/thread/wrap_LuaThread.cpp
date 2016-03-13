@@ -36,16 +36,15 @@ int w_Thread_start(lua_State *L)
 	std::vector<Variant> args;
 	int nargs = lua_gettop(L) - 1;
 
-	Variant v;
 	for (int i = 0; i < nargs; ++i)
 	{
-		if (!Variant::fromLua(L, i+2, &v))
+		args.push_back(Variant::fromLua(L, i+2));
+
+		if (args.back().getType() == Variant::UNKNOWN)
 		{
 			args.clear();
 			return luaL_argerror(L, i+2, "boolean, number, string, love type, or flat table expected");
 		}
-
-		args.push_back(v);
 	}
 
 	luax_pushboolean(L, t->start(args));

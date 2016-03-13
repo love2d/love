@@ -35,6 +35,19 @@ class Variant
 {
 public:
 
+	enum Type
+	{
+		UNKNOWN = 0,
+		BOOLEAN,
+		NUMBER,
+		STRING,
+		SMALLSTRING,
+		LUSERDATA,
+		FUSERDATA,
+		NIL,
+		TABLE
+	};
+
 	Variant();
 	Variant(bool boolean);
 	Variant(double number);
@@ -48,7 +61,9 @@ public:
 
 	Variant &operator = (const Variant &v);
 
-	static bool fromLua(lua_State *L, int n, Variant *v, bool allowTables = true);
+	Type getType() const { return type; }
+
+	static Variant fromLua(lua_State *L, int n, bool allowTables = true);
 	void toLua(lua_State *L) const;
 
 private:
@@ -81,19 +96,6 @@ private:
 		virtual ~SharedTable() { delete table; }
 
 		std::vector<std::pair<Variant, Variant>> *table;
-	};
-
-	enum Type
-	{
-		UNKNOWN = 0,
-		BOOLEAN,
-		NUMBER,
-		STRING,
-		SMALLSTRING,
-		LUSERDATA,
-		FUSERDATA,
-		NIL,
-		TABLE
 	};
 
 	static const int MAX_SMALL_STRING_LENGTH = 15;
