@@ -444,6 +444,10 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			continue;
 		}
 
+		// Ignore carriage returns
+		if (g == '\r')
+			continue;
+
 		uint32 cacheid = textureCacheID;
 
 		const Glyph &glyph = findGlyph(g);
@@ -521,7 +525,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 		info->width = maxwidth - offset.x;;
 		info->height = (int) dy + (dx > 0.0f ? floorf(getHeight() * getLineHeight() + 0.5f) : 0) - offset.y;
 	}
-	
+
 	return commands;
 }
 
@@ -534,7 +538,6 @@ std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, s
 
 std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info)
 {
-	
 	wrap = std::max(wrap, 0.0f);
 
 	uint32 cacheid = textureCacheID;
@@ -733,6 +736,10 @@ int Font::getWidth(const std::string &str)
 			{
 				uint32 c = *i++;
 
+				// Ignore carriage returns
+				if (c == '\r')
+					continue;
+
 				const Glyph &g = findGlyph(c);
 				width += g.spacing + getKerning(prevglyph, c);
 
@@ -810,6 +817,13 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 			wline.colors.clear();
 			i++;
 
+			continue;
+		}
+
+		// Ignore carriage returns
+		if (c == '\r')
+		{
+			i++;
 			continue;
 		}
 
