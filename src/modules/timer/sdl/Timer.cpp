@@ -34,15 +34,12 @@ namespace sdl
 
 Timer::Timer()
 {
-	// Init the SDL timer system (needed for SDL_Delay.)
-	if (SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
-		throw love::Exception("Could not initialize SDL timer subsystem (%s)", SDL_GetError());
+	// We don't need to initialize the SDL timer subsystem for SDL_Delay to
+	// function - and doing so causes SDL to create a worker thread.
 }
 
 Timer::~Timer()
 {
-	// Quit SDL timer.
-	SDL_QuitSubSystem(SDL_INIT_TIMER);
 }
 
 const char *Timer::getName() const
