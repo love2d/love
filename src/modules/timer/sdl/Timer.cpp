@@ -20,10 +20,6 @@
 
 // LOVE
 #include "Timer.h"
-#include "common/delay.h"
-
-// SDL
-#include <SDL.h>
 
 namespace love
 {
@@ -45,12 +41,6 @@ Timer::~Timer()
 const char *Timer::getName() const
 {
 	return "love.timer.sdl";
-}
-
-void Timer::sleep(double seconds) const
-{
-	if (seconds > 0)
-		love::sleep((unsigned int)(seconds*1000));
 }
 
 } // sdl

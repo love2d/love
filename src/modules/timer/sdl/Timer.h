@@ -37,10 +37,7 @@ public:
 
 	Timer();
 	virtual ~Timer();
-
 	const char *getName() const override;
-
-	void sleep(double seconds) const override;
 
 }; // Timer
 
