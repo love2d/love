@@ -27,7 +27,6 @@
 #elif defined(LOVE_IOS)
 #include "common/ios.h"
 #elif defined(LOVE_LINUX) || defined(LOVE_ANDROID)
-#include <spawn.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <errno.h>
@@ -39,6 +38,8 @@
 #endif
 #if defined(LOVE_ANDROID)
 #include "common/android.h"
+#elif defined(LOVE_LINUX)
+#include <spawn.h>
 #endif
 
 #if defined(LOVE_LINUX)
