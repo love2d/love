@@ -26,19 +26,19 @@
 #include <CoreServices/CoreServices.h>
 #elif defined(LOVE_IOS)
 #include "common/ios.h"
-#elif defined(LOVE_ANDROID)
-#include "common/android.h"
-#elif defined(LOVE_LINUX)
+#elif defined(LOVE_LINUX) || defined(LOVE_ANDROID)
 #include <spawn.h>
-//#include <stdlib.h>
-//#include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <errno.h>
 #elif defined(LOVE_WINDOWS)
 #include "common/utf8.h"
 #include <shlobj.h>
 #include <shellapi.h>
 #pragma comment(lib, "shell32.lib")
+#endif
+#if defined(LOVE_ANDROID)
+#include "common/android.h"
 #endif
 
 #if defined(LOVE_LINUX)
