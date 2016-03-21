@@ -660,6 +660,11 @@ int OpenGL::getMaxTextureUnits() const
 	return maxTextureUnits;
 }
 
+float OpenGL::getMaxPointSize() const
+{
+	return maxPointSize;
+}
+
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
 {
 	int64 memsize = (int64) stats.textureMemory + ((int64) newsize - (int64) oldsize);
