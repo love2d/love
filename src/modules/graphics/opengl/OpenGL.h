@@ -377,6 +377,12 @@ public:
 	 **/
 	int getMaxTextureUnits() const;
 
+	/**
+	 * Returns the maximum point size.
+	 **/
+	float getMaxPointSize() const;
+
+
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
 	/**
@@ -408,6 +414,7 @@ private:
 	int maxRenderTargets;
 	int maxRenderbufferSamples;
 	int maxTextureUnits;
+	float maxPointSize;
 
 	Vendor vendor;
 

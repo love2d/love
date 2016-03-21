@@ -1661,13 +1661,10 @@ Graphics::Stats Graphics::getStats() const
 
 double Graphics::getSystemLimit(SystemLimit limittype) const
 {
-	GLfloat limits[2];
-
 	switch (limittype)
 	{
 	case Graphics::LIMIT_POINT_SIZE:
-		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
-		return (double) limits[1];
+		return (double) gl.getMaxPointSize();
 	case Graphics::LIMIT_TEXTURE_SIZE:
 		return (double) gl.getMaxTextureSize();
 	case Graphics::LIMIT_MULTI_CANVAS:
