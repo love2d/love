@@ -172,45 +172,8 @@ static int l_print_sdl_log(lua_State *L)
 }
 #endif
 
-int main(int argc, char **argv)
+static int runlove(int argc, char **argv)
 {
-	int retval = 0;
-
-#ifdef LOVE_IOS
-	int orig_argc = argc;
-	char **orig_argv = argv;
-
-	// on iOS we should never programmatically exit the app, so we'll just
-	// "restart" when that is attempted. Games which use threads might cause
-	// some issues if the threads aren't cleaned up properly...
-	while (true)
-	{
-		argc = orig_argc;
-		argv = orig_argv;
-#endif
-
-#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
-	int hack_argc = 0;
-	char **hack_argv = 0;
-	get_app_arguments(argc, argv, hack_argc, hack_argv);
-	argc = hack_argc;
-	argv = hack_argv;
-#endif // LOVE_LEGENDARY_APP_ARGV_HACK
-
-	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
-	{
-		printf("Version mismatch detected!\nLOVE binary is version %s\n"
-				"LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
-		return 1;
-	}
-
-	// Oh, you just want the version? Okay!
-	if (argc > 1 && strcmp(argv[1], "--version") == 0)
-	{
-		printf("LOVE %s (%s)\n", love_version(), love_codename());
-		return 0;
-	}
-
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
@@ -269,12 +232,52 @@ int main(int argc, char **argv)
 	// Call the returned boot function.
 	lua_call(L, 0, 1);
 
+	int retval = 0;
 	if (lua_isnumber(L, -1))
 		retval = (int) lua_tonumber(L, -1);
 
 	lua_close(L);
 
-#if defined(LOVE_LEGENDARY_APP_ARGV_HACK)
+	return retval;
+}
+
+int main(int argc, char **argv)
+{
+	int retval = 0;
+
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
+	int hack_argc = 0;
+	char **hack_argv = 0;
+	get_app_arguments(argc, argv, hack_argc, hack_argv);
+	argc = hack_argc;
+	argv = hack_argv;
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
+
+	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
+	{
+		printf("Version mismatch detected!\nLOVE binary is version %s\n"
+			   "LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
+		return 1;
+	}
+
+	// Oh, you just want the version? Okay!
+	if (argc > 1 && strcmp(argv[1], "--version") == 0)
+	{
+		printf("LOVE %s (%s)\n", love_version(), love_codename());
+		return 0;
+	}
+
+#ifdef LOVE_IOS
+	// on iOS we should never programmatically exit the app, so we'll just
+	// "restart" when that is attempted. Games which use threads might cause
+	// some issues if the threads aren't cleaned up properly...
+	while (true)
+#endif
+	{
+		retval = runlove(argc, argv);
+	}
+
+#if defined(LOVE_LEGENDARY_APP_ARGV_HACK) && !defined(LOVE_IOS)
 	if (hack_argv)
 	{
 		for (int i = 0; i<hack_argc; ++i)
@@ -282,10 +285,6 @@ int main(int argc, char **argv)
 		delete [] hack_argv;
 	}
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
-
-#ifdef LOVE_IOS
-	} // while (true)
-#endif
 
 #ifdef LOVE_ANDROID
 	SDL_Quit();
