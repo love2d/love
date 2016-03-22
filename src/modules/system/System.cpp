@@ -26,19 +26,34 @@
 #include <CoreServices/CoreServices.h>
 #elif defined(LOVE_IOS)
 #include "common/ios.h"
-#elif defined(LOVE_ANDROID)
-#include "common/android.h"
-#elif defined(LOVE_LINUX)
-#include <spawn.h>
-//#include <stdlib.h>
-//#include <unistd.h>
+#elif defined(LOVE_LINUX) || defined(LOVE_ANDROID)
 #include <signal.h>
 #include <sys/wait.h>
+#include <errno.h>
 #elif defined(LOVE_WINDOWS)
 #include "common/utf8.h"
 #include <shlobj.h>
 #include <shellapi.h>
 #pragma comment(lib, "shell32.lib")
+#endif
+#if defined(LOVE_ANDROID)
+#include "common/android.h"
+#elif defined(LOVE_LINUX)
+#include <spawn.h>
+#endif
+
+#if defined(LOVE_LINUX)
+static void sigchld_handler(int sig)
+{
+	// Because waitpid can set errno, we need to save it.
+	auto old = errno;
+
+	// Reap whilst there are children waiting to be reaped.
+	while (waitpid(-1, nullptr, WNOHANG) > 0)
+		;
+
+	errno = old;
+}
 #endif
 
 namespace love
@@ -50,12 +65,14 @@ System::System()
 {
 #if defined(LOVE_LINUX)
 	// Enable automatic cleanup of zombie processes
+	// NOTE: We're using our own handler, instead of SA_NOCLDWAIT because the
+	// latter breaks wait, and thus os.execute.
+	// NOTE: This isn't perfect, due to multithreading our SIGCHLD can happen
+	// on a different thread than the one calling wait(), thus causing a race.
 	struct sigaction act = {0};
 	sigemptyset(&act.sa_mask);
-	act.sa_handler = SIG_DFL;
-	act.sa_flags = SA_NOCLDWAIT;
-
-	// Requires linux 2.6 or higher, so anything remotely modern
+	act.sa_handler = sigchld_handler;
+	act.sa_flags = SA_RESTART;
 	sigaction(SIGCHLD, &act, nullptr);
 #endif
 }

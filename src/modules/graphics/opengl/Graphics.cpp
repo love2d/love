@@ -252,8 +252,6 @@ bool Graphics::setMode(int width, int height)
 
 	created = true;
 
-	setViewportSize(width, height);
-
 	// Enable blending
 	glEnable(GL_BLEND);
 
@@ -309,6 +307,8 @@ bool Graphics::setMode(int width, int height)
 	// objects is destroyed when the last object is destroyed.
 	if (quadIndices == nullptr)
 		quadIndices = new QuadIndices(20);
+
+	setViewportSize(width, height);
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -1658,13 +1658,10 @@ Graphics::Stats Graphics::getStats() const
 
 double Graphics::getSystemLimit(SystemLimit limittype) const
 {
-	GLfloat limits[2];
-
 	switch (limittype)
 	{
 	case Graphics::LIMIT_POINT_SIZE:
-		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
-		return (double) limits[1];
+		return (double) gl.getMaxPointSize();
 	case Graphics::LIMIT_TEXTURE_SIZE:
 		return (double) gl.getMaxTextureSize();
 	case Graphics::LIMIT_MULTI_CANVAS:

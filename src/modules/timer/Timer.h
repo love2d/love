@@ -50,7 +50,7 @@ public:
 	 * usually 1ms.
 	 * @param seconds The number of seconds to sleep for.
 	 **/
-	virtual void sleep(double seconds) const = 0;
+	virtual void sleep(double seconds) const;
 
 	/**
 	 * Gets the time between the last two frames, assuming step is called

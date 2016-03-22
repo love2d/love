@@ -521,7 +521,8 @@ void Canvas::stopGrab(bool switchingToOtherCanvas)
 	// Make sure the canvas texture is up to date if we're using MSAA.
 	resolveMSAA(false);
 
-	gl.matrices.projection.pop_back();
+	if (gl.matrices.projection.size() > 1)
+		gl.matrices.projection.pop_back();
 
 	if (!switchingToOtherCanvas)
 	{

@@ -21,6 +21,7 @@
 // LOVE
 #include "common/config.h"
 #include "common/int.h"
+#include "common/delay.h"
 #include "Timer.h"
 
 #if defined(LOVE_WINDOWS)
@@ -83,6 +84,12 @@ void Timer::step()
 		prevFpsUpdate = currTime;
 		frames = 0;
 	}
+}
+
+void Timer::sleep(double seconds) const
+{
+	if (seconds > 0)
+		love::sleep((unsigned int)(seconds*1000));
 }
 
 double Timer::getDelta() const
