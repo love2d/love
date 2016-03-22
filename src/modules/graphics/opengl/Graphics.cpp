@@ -252,8 +252,6 @@ bool Graphics::setMode(int width, int height)
 
 	created = true;
 
-	setViewportSize(width, height);
-
 	// Enable blending
 	glEnable(GL_BLEND);
 
@@ -309,6 +307,8 @@ bool Graphics::setMode(int width, int height)
 	// objects is destroyed when the last object is destroyed.
 	if (quadIndices == nullptr)
 		quadIndices = new QuadIndices(20);
+
+	setViewportSize(width, height);
 
 	// Restore the graphics state.
 	restoreState(states.back());
