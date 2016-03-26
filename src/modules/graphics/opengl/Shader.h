@@ -95,8 +95,8 @@ public:
 	static Shader *defaultVideoShader;
 
 	// Default shader code (a shader is always required internally.)
-	static ShaderSource defaultCode[Graphics::RENDERER_MAX_ENUM];
-	static ShaderSource defaultVideoCode[Graphics::RENDERER_MAX_ENUM];
+	static ShaderSource defaultCode[Graphics::RENDERER_MAX_ENUM][2];
+	static ShaderSource defaultVideoCode[Graphics::RENDERER_MAX_ENUM][2];
 
 	/**
 	 * Creates a new Shader using a list of source codes.
