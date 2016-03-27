@@ -1350,8 +1350,6 @@ int w_setDefaultShaderCode(lua_State *L)
 
 	for (int i = 0; i < 2; i++)
 	{
-		bool gammacorrect = i > 0;
-
 		for (int renderer = 0; renderer < Graphics::RENDERER_MAX_ENUM; renderer++)
 		{
 			const char *lang = renderer == Graphics::RENDERER_OPENGLES ? "glsles" : "glsl";
