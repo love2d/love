@@ -490,7 +490,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 		if (isGammaCorrect())
 		{
 			for (int i = 0; i < 3; i++)
-				c[i] = math::Math::instance.gammaToLinear(c[i]);
+				c[i] = math::gammaToLinear(c[i]);
 		}
 
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)

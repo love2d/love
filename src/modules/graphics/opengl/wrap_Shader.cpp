@@ -159,12 +159,11 @@ static int w__Shader_sendFloat(lua_State *L, bool colors)
 	{
 		// the fourth component (alpha) is always already linear, if it exists.
 		int ncomponents = std::min((int) dimension, 3);
-		const auto &m = love::math::Math::instance;
 
 		for (int i = 0; i < count; i++)
 		{
 			for (int j = 0; j < ncomponents; j++)
-				values[i * dimension + j] = m.gammaToLinear(values[i * dimension + j]);
+				values[i * dimension + j] = math::gammaToLinear(values[i * dimension + j]);
 		}
 	}
 

@@ -160,7 +160,7 @@ int w_triangulate(lua_State *L)
 		if (vertices.size() == 3)
 			triangles.push_back(Triangle(vertices[0], vertices[1], vertices[2]));
 		else
-			triangles = Math::instance.triangulate(vertices);
+			triangles = triangulate(vertices);
 	});
 
 	lua_createtable(L, (int) triangles.size(), 0);
@@ -221,7 +221,7 @@ int w_isConvex(lua_State *L)
 		}
 	}
 
-	luax_pushboolean(L, Math::instance.isConvex(vertices));
+	luax_pushboolean(L, isConvex(vertices));
 	return 1;
 }
 
@@ -266,7 +266,7 @@ int w_gammaToLinear(lua_State *L)
 	{
 		// Alpha should always be linear.
 		if (i < 3)
-			color[i] = Math::instance.gammaToLinear(color[i]);
+			color[i] = gammaToLinear(color[i]);
 		lua_pushnumber(L, color[i]);
 	}
 
@@ -282,7 +282,7 @@ int w_linearToGamma(lua_State *L)
 	{
 		// Alpha should always be linear.
 		if (i < 3)
-			color[i] = Math::instance.linearToGamma(color[i]);
+			color[i] = linearToGamma(color[i]);
 		lua_pushnumber(L, color[i]);
 	}
 
@@ -302,16 +302,16 @@ int w_noise(lua_State *L)
 	switch (nargs)
 	{
 	case 1:
-		val = Math::instance.noise(args[0]);
+		val = noise1(args[0]);
 		break;
 	case 2:
-		val = Math::instance.noise(args[0], args[1]);
+		val = noise2(args[0], args[1]);
 		break;
 	case 3:
-		val = Math::instance.noise(args[0], args[1], args[2]);
+		val = noise3(args[0], args[1], args[2]);
 		break;
 	case 4:
-		val = Math::instance.noise(args[0], args[1], args[2], args[3]);
+		val = noise4(args[0], args[1], args[2], args[3]);
 		break;
 	}
 
@@ -334,12 +334,12 @@ int w_compress(lua_State *L)
 	{
 		size_t rawsize = 0;
 		const char *rawbytes = luaL_checklstring(L, 1, &rawsize);
-		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawbytes, rawsize, level); });
+		luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
 	}
 	else
 	{
 		Data *rawdata = luax_checktype<Data>(L, 1, DATA_ID);
-		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawdata, level); });
+		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
 	}
 
 	luax_pushtype(L, MATH_COMPRESSED_DATA_ID, cdata);
@@ -355,7 +355,7 @@ int w_decompress(lua_State *L)
 	{
 		CompressedData *data = luax_checkcompresseddata(L, 1);
 		rawsize = data->getDecompressedSize();
-		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(data, rawsize); });
+		luax_catchexcept(L, [&](){ rawbytes = decompress(data, rawsize); });
 	}
 	else
 	{
@@ -377,7 +377,7 @@ int w_decompress(lua_State *L)
 		else
 			cbytes = luaL_checklstring(L, 1, &compressedsize);
 
-		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(format, cbytes, compressedsize, rawsize); });
+		luax_catchexcept(L, [&](){ rawbytes = decompress(format, cbytes, compressedsize, rawsize); });
 	}
 
 	lua_pushlstring(L, rawbytes, rawsize);
@@ -389,8 +389,8 @@ int w_decompress(lua_State *L)
 int w_encode(lua_State *L)
 {
 	const char *formatstr = luaL_checkstring(L, 1);
-	Math::EncodeFormat format;
-	if (!Math::getConstant(formatstr, format))
+	EncodeFormat format;
+	if (!getConstant(formatstr, format))
 		return luaL_error(L, "Invalid encode format: %s", formatstr);
 
 	size_t srclen = 0;
@@ -409,7 +409,7 @@ int w_encode(lua_State *L)
 
 	size_t dstlen = 0;
 	char *dst = nullptr;
-	luax_catchexcept(L, [&](){ dst = Math::instance.encode(format, src, srclen, dstlen, linelen); });
+	luax_catchexcept(L, [&](){ dst = encode(format, src, srclen, dstlen, linelen); });
 
 	if (dst != nullptr)
 		lua_pushlstring(L, dst, dstlen);
@@ -423,8 +423,8 @@ int w_encode(lua_State *L)
 int w_decode(lua_State *L)
 {
 	const char *formatstr = luaL_checkstring(L, 1);
-	Math::EncodeFormat format;
-	if (!Math::getConstant(formatstr, format))
+	EncodeFormat format;
+	if (!getConstant(formatstr, format))
 		return luaL_error(L, "Invalid decode format: %s", formatstr);
 
 	size_t srclen = 0;
@@ -441,7 +441,7 @@ int w_decode(lua_State *L)
 
 	size_t dstlen = 0;
 	char *dst = nullptr;
-	luax_catchexcept(L, [&](){ dst = Math::instance.decode(format, src, srclen, dstlen); });
+	luax_catchexcept(L, [&](){ dst = decode(format, src, srclen, dstlen); });
 
 	if (dst != nullptr)
 		lua_pushlstring(L, dst, dstlen);
@@ -466,31 +466,13 @@ struct FFI_Math
 
 static FFI_Math ffifuncs =
 {
-	[](float x) -> float // noise1
-	{
-		return Math::instance.noise(x);
-	},
-	[](float x, float y) -> float // noise2
-	{
-		return Math::instance.noise(x, y);
-	},
-	[](float x, float y, float z) -> float // noise3
-	{
-		return Math::instance.noise(x, y, z);
-	},
-	[](float x, float y, float z, float w) -> float // noise4
-	{
-		return Math::instance.noise(x, y, z, w);
-	},
+	noise1,
+	noise2,
+	noise3,
+	noise4,
 
-	[](float c) -> float // gammaToLinear
-	{
-		return Math::instance.gammaToLinear(c);
-	},
-	[](float c) -> float // linearToGamma
-	{
-		return Math::instance.linearToGamma(c);
-	}
+	gammaToLinear,
+	linearToGamma,
 };
 
 // List of functions to wrap.

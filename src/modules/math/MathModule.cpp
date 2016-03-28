@@ -23,6 +23,7 @@
 #include "common/Vector.h"
 #include "common/b64.h"
 #include "common/int.h"
+#include "common/StringMap.h"
 #include "BezierCurve.h"
 
 // STL
@@ -164,30 +165,7 @@ namespace love
 namespace math
 {
 
-Math Math::instance;
-
-Math::Math()
-	: rng()
-{
-	// prevent the runtime from free()-ing this
-	retain();
-}
-
-Math::~Math()
-{
-}
-
-RandomGenerator *Math::newRandomGenerator()
-{
-	return new RandomGenerator();
-}
-
-BezierCurve *Math::newBezierCurve(const vector<Vector> &points)
-{
-	return new BezierCurve(points);
-}
-
-vector<Triangle> Math::triangulate(const vector<Vertex> &polygon)
+vector<Triangle> triangulate(const vector<Vertex> &polygon)
 {
 	if (polygon.size() < 3)
 		throw love::Exception("Not a polygon");
@@ -252,7 +230,7 @@ vector<Triangle> Math::triangulate(const vector<Vertex> &polygon)
 	return triangles;
 }
 
-bool Math::isConvex(const std::vector<Vertex> &polygon)
+bool isConvex(const std::vector<Vertex> &polygon)
 {
 	if (polygon.size() < 3)
 		return false;
@@ -282,7 +260,7 @@ bool Math::isConvex(const std::vector<Vertex> &polygon)
 /**
  * http://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
  **/
-float Math::gammaToLinear(float c) const
+float gammaToLinear(float c)
 {
 	if (c <= 0.04045f)
 		return c / 12.92f;
@@ -293,7 +271,7 @@ float Math::gammaToLinear(float c) const
 /**
  * http://en.wikipedia.org/wiki/SRGB#The_forward_transformation_.28CIE_xyY_or_CIE_XYZ_to_sRGB.29
  **/
-float Math::linearToGamma(float c) const
+float linearToGamma(float c)
 {
 	if (c <= 0.0031308f)
 		return c * 12.92f;
@@ -301,12 +279,12 @@ float Math::linearToGamma(float c) const
 		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
 }
 
-CompressedData *Math::compress(Compressor::Format format, love::Data *rawdata, int level)
+CompressedData *compress(Compressor::Format format, love::Data *rawdata, int level)
 {
 	return compress(format, (const char *) rawdata->getData(), rawdata->getSize(), level);
 }
 
-CompressedData *Math::compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
+CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
 {
 	Compressor *compressor = Compressor::getCompressor(format);
 
@@ -331,7 +309,7 @@ CompressedData *Math::compress(Compressor::Format format, const char *rawbytes, 
 	return data;
 }
 
-char *Math::decompress(CompressedData *data, size_t &decompressedsize)
+char *decompress(CompressedData *data, size_t &decompressedsize)
 {
 	size_t rawsize = data->getDecompressedSize();
 
@@ -342,7 +320,7 @@ char *Math::decompress(CompressedData *data, size_t &decompressedsize)
 	return rawbytes;
 }
 
-char *Math::decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
+char *decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
 {
 	Compressor *compressor = Compressor::getCompressor(format);
 
@@ -352,7 +330,7 @@ char *Math::decompress(Compressor::Format format, const char *cbytes, size_t com
 	return compressor->decompress(format, cbytes, compressedsize, rawsize);
 }
 
-char *Math::encode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen, size_t linelen)
+char *encode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen, size_t linelen)
 {
 	switch (format)
 	{
@@ -364,7 +342,7 @@ char *Math::encode(EncodeFormat format, const char *src, size_t srclen, size_t &
 	}
 }
 
-char *Math::decode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen)
+char *decode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen)
 {
 	switch (format)
 	{
@@ -376,23 +354,46 @@ char *Math::decode(EncodeFormat format, const char *src, size_t srclen, size_t &
 	}
 }
 
-bool Math::getConstant(const char *in, EncodeFormat &out)
+Math Math::instance;
+
+Math::Math()
+	: rng()
 {
-	return encoders.find(in, out);
+	// prevent the runtime from free()-ing this
+	retain();
 }
 
-bool Math::getConstant(EncodeFormat in, const char *&out)
+Math::~Math()
 {
-	return encoders.find(in, out);
 }
 
-StringMap<Math::EncodeFormat, Math::ENCODE_MAX_ENUM>::Entry Math::encoderEntries[] =
+RandomGenerator *Math::newRandomGenerator()
+{
+	return new RandomGenerator();
+}
+
+BezierCurve *Math::newBezierCurve(const vector<Vector> &points)
+{
+	return new BezierCurve(points);
+}
+
+static StringMap<EncodeFormat, ENCODE_MAX_ENUM>::Entry encoderEntries[] =
 {
 	{ "base64", ENCODE_BASE64 },
 	{ "hex",    ENCODE_HEX },
 };
 
-StringMap<Math::EncodeFormat, Math::ENCODE_MAX_ENUM> Math::encoders(Math::encoderEntries, sizeof(Math::encoderEntries));
+static StringMap<EncodeFormat, ENCODE_MAX_ENUM> encoders(encoderEntries, sizeof(encoderEntries));
+
+bool getConstant(const char *in, EncodeFormat &out)
+{
+	return encoders.find(in, out);
+}
+
+bool getConstant(EncodeFormat in, const char *&out)
+{
+	return encoders.find(in, out);
+}
 
 } // math
 } // love

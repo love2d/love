@@ -42,9 +42,9 @@ void gammaCorrectColor(Colorf &c)
 {
 	if (isGammaCorrect())
 	{
-		c.r = math::Math::instance.gammaToLinear(c.r);
-		c.g = math::Math::instance.gammaToLinear(c.g);
-		c.b = math::Math::instance.gammaToLinear(c.b);
+		c.r = math::gammaToLinear(c.r);
+		c.g = math::gammaToLinear(c.g);
+		c.b = math::gammaToLinear(c.b);
 	}
 }
 
@@ -52,9 +52,9 @@ void unGammaCorrectColor(Colorf &c)
 {
 	if (isGammaCorrect())
 	{
-		c.r = math::Math::instance.linearToGamma(c.r);
-		c.g = math::Math::instance.linearToGamma(c.g);
-		c.b = math::Math::instance.linearToGamma(c.b);
+		c.r = math::linearToGamma(c.r);
+		c.g = math::linearToGamma(c.g);
+		c.b = math::linearToGamma(c.b);
 	}
 }
 
