@@ -936,7 +936,8 @@ function love.nogame()
 		love.graphics.setBackgroundColor(136/255, 193/255, 206/255)
 
 		local function load_image(file, name)
-			return love.graphics.newImage(love.filesystem.newFileData(file, name:gsub("_", "."), "base64"))
+			local decoded = love.math.decode("base64", file)
+			return love.graphics.newImage(love.filesystem.newFileData(decoded, name:gsub("_", ".")))
 		end
 
 		g_images = {}

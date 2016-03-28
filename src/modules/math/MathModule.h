@@ -30,6 +30,7 @@
 #include "common/math.h"
 #include "common/Vector.h"
 #include "common/int.h"
+#include "common/StringMap.h"
 
 // Noise
 #include "libraries/noise1234/noise1234.h"
@@ -52,6 +53,13 @@ private:
 	RandomGenerator rng;
 
 public:
+
+	enum EncodeFormat
+	{
+		ENCODE_BASE64,
+		ENCODE_HEX,
+		ENCODE_MAX_ENUM
+	};
 
 	virtual ~Math();
 
@@ -152,11 +160,20 @@ public:
 	 **/
 	char *decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize);
 
+	char *encode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen, size_t linelen = 0);
+	char *decode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen);
+
+	static bool getConstant(const char *in, EncodeFormat &out);
+	static bool getConstant(EncodeFormat in, const char *&out);
+
 	static Math instance;
 
 private:
 
 	Math();
+
+	static StringMap<EncodeFormat, ENCODE_MAX_ENUM>::Entry encoderEntries[];
+	static StringMap<EncodeFormat, ENCODE_MAX_ENUM> encoders;
 
 }; // Math
 

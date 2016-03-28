@@ -64,9 +64,6 @@ public:
 
 	File *newFile(const char *filename) const;
 
-	FileData *newFileData(void *data, unsigned int size, const char *filename) const;
-	FileData *newFileData(const char *b64, const char *filename) const;
-
 	const char *getWorkingDirectory();
 	std::string getUserDirectory();
 	std::string getAppdataDirectory();

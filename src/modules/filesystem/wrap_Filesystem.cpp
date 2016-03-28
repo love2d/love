@@ -242,26 +242,9 @@ int w_newFileData(lua_State *L)
 	size_t length = 0;
 	const char *str = luaL_checklstring(L, 1, &length);
 	const char *filename = luaL_checkstring(L, 2);
-	const char *decstr = lua_isstring(L, 3) ? lua_tostring(L, 3) : 0;
 
-	FileData::Decoder decoder = FileData::FILE;
-
-	if (decstr && !FileData::getConstant(decstr, decoder))
-		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
-
-	FileData *t = 0;
-
-	switch (decoder)
-	{
-	case FileData::FILE:
-		t = instance()->newFileData((void *)str, (int)length, filename);
-		break;
-	case FileData::BASE64:
-		t = instance()->newFileData(str, filename);
-		break;
-	default:
-		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
-	}
+	FileData *t = nullptr;
+	luax_catchexcept(L, [&](){ t = instance()->newFileData(str, length, filename); });
 
 	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, t);
 	t->release();

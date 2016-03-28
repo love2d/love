@@ -22,10 +22,11 @@
 #define LOVE_FILESYSTEM_FILE_DATA_H
 
 // LOVE
-#include <string>
 #include "common/Data.h"
-#include "common/StringMap.h"
 #include "common/int.h"
+#include "common/Exception.h"
+
+#include <string>
 
 namespace love
 {
@@ -35,13 +36,6 @@ namespace filesystem
 class FileData : public Data
 {
 public:
-
-	enum Decoder
-	{
-		FILE,
-		BASE64,
-		DECODE_MAX_ENUM
-	}; // Decoder
 
 	FileData(uint64 size, const std::string &filename);
 
@@ -53,9 +47,6 @@ public:
 
 	const std::string &getFilename() const;
 	const std::string &getExtension() const;
-
-	static bool getConstant(const char *in, Decoder &out);
-	static bool getConstant(Decoder in, const char *&out);
 
 private:
 
@@ -70,9 +61,6 @@ private:
 
 	// The extension (without dot). Used to identify file type.
 	std::string extension;
-
-	static StringMap<Decoder, DECODE_MAX_ENUM>::Entry decoderEntries[];
-	static StringMap<Decoder, DECODE_MAX_ENUM> decoders;
 
 }; // FileData
 

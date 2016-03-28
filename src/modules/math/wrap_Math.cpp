@@ -24,6 +24,7 @@
 #include "wrap_CompressedData.h"
 #include "MathModule.h"
 #include "BezierCurve.h"
+#include "common/b64.h"
 
 #include <cmath>
 #include <iostream>
@@ -385,6 +386,72 @@ int w_decompress(lua_State *L)
 	return 1;
 }
 
+int w_encode(lua_State *L)
+{
+	const char *formatstr = luaL_checkstring(L, 1);
+	Math::EncodeFormat format;
+	if (!Math::getConstant(formatstr, format))
+		return luaL_error(L, "Invalid encode format: %s", formatstr);
+
+	size_t srclen = 0;
+	const char *src = nullptr;
+
+	if (luax_istype(L, 2, DATA_ID))
+	{
+		Data *data = luax_totype<Data>(L, 2, DATA_ID);
+		src = (const char *) data->getData();
+		srclen = data->getSize();
+	}
+	else
+		src = luaL_checklstring(L, 2, &srclen);
+
+	size_t linelen = (size_t) luaL_optinteger(L, 3, 0);
+
+	size_t dstlen = 0;
+	char *dst = nullptr;
+	luax_catchexcept(L, [&](){ dst = Math::instance.encode(format, src, srclen, dstlen, linelen); });
+
+	if (dst != nullptr)
+		lua_pushlstring(L, dst, dstlen);
+	else
+		lua_pushstring(L, "");
+
+	delete[] dst;
+	return 1;
+}
+
+int w_decode(lua_State *L)
+{
+	const char *formatstr = luaL_checkstring(L, 1);
+	Math::EncodeFormat format;
+	if (!Math::getConstant(formatstr, format))
+		return luaL_error(L, "Invalid decode format: %s", formatstr);
+
+	size_t srclen = 0;
+	const char *src = nullptr;
+
+	if (luax_istype(L, 2, DATA_ID))
+	{
+		Data *data = luax_totype<Data>(L, 2, DATA_ID);
+		src = (const char *) data->getData();
+		srclen = data->getSize();
+	}
+	else
+		src = luaL_checklstring(L, 2, &srclen);
+
+	size_t dstlen = 0;
+	char *dst = nullptr;
+	luax_catchexcept(L, [&](){ dst = Math::instance.decode(format, src, srclen, dstlen); });
+
+	if (dst != nullptr)
+		lua_pushlstring(L, dst, dstlen);
+	else
+		lua_pushstring(L, "");
+
+	delete[] dst;
+	return 1;
+}
+
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
@@ -441,6 +508,8 @@ static const luaL_Reg functions[] =
 	{ "noise", w_noise },
 	{ "compress", w_compress },
 	{ "decompress", w_decompress },
+	{ "encode", w_encode },
+	{ "decode", w_decode },
 	{ 0, 0 }
 };
 

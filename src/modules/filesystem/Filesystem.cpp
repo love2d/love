@@ -60,6 +60,13 @@ bool Filesystem::isAndroidSaveExternal() const
 	return useExternal;
 }
 
+FileData *Filesystem::newFileData(const void *data, size_t size, const char *filename) const
+{
+	FileData *fd = new FileData(size, std::string(filename));
+	memcpy(fd->getData(), data, size);
+	return fd;
+}
+
 bool Filesystem::isRealDirectory(const std::string &path) const
 {
 #ifdef LOVE_WINDOWS

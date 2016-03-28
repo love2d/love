@@ -128,13 +128,7 @@ public:
 	 * @param size The size of the data.
 	 * @param filename The full filename used to file type identification.
 	 **/
-	virtual FileData *newFileData(void *data, unsigned int size, const char *filename) const = 0;
-
-	/**
-	 * Creates a new FileData object from base64 data.
-	 * @param b64 The base64 data.
-	 **/
-	virtual FileData *newFileData(const char *b64, const char *filename) const = 0;
+	virtual FileData *newFileData(const void *data, size_t size, const char *filename) const;
 
 	/**
 	 * Gets the current working directory.

@@ -457,30 +457,6 @@ love::filesystem::File *Filesystem::newFile(const char *filename) const
 	return new File(filename);
 }
 
-FileData *Filesystem::newFileData(void *data, unsigned int size, const char *filename) const
-{
-	FileData *fd = new FileData(size, std::string(filename));
-
-	// Copy the data into FileData.
-	memcpy(fd->getData(), data, size);
-
-	return fd;
-}
-
-FileData *Filesystem::newFileData(const char *b64, const char *filename) const
-{
-	int size = (int) strlen(b64);
-	int outsize = 0;
-	char *dst = b64_decode(b64, size, outsize);
-	FileData *fd = new FileData(outsize, std::string(filename));
-
-	// Copy the data into FileData.
-	memcpy(fd->getData(), dst, outsize);
-	delete [] dst;
-
-	return fd;
-}
-
 const char *Filesystem::getWorkingDirectory()
 {
 	if (cwd.empty())

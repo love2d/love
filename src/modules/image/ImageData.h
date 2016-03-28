@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/Data.h"
+#include "common/StringMap.h"
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
 
