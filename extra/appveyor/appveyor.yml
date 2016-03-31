@@ -11,7 +11,7 @@ init:
 
 install:
 # We need to install NSIS to create the packaged installer executable.
-- choco install nsis -pre -y
+- choco install nsis -y
 
 # Move all woking directory items except `appveyor.yml` to `love` subdirectory.
 - md love
