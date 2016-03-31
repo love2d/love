@@ -111,11 +111,20 @@ int w_getSource(lua_State *L)
 
 int w_mount(lua_State *L)
 {
-	const char *archive = luaL_checkstring(L, 1);
+	std::string archive;
+
+	if (luax_istype(L, 1, FILESYSTEM_DROPPED_FILE_ID))
+	{
+		DroppedFile *file = luax_totype<DroppedFile>(L, 1, FILESYSTEM_DROPPED_FILE_ID);
+		archive = file->getFilename();
+	}
+	else
+		archive = luax_checkstring(L, 1);
+
 	const char *mountpoint = luaL_checkstring(L, 2);
 	bool append = luax_optboolean(L, 3, false);
 
-	luax_pushboolean(L, instance()->mount(archive, mountpoint, append));
+	luax_pushboolean(L, instance()->mount(archive.c_str(), mountpoint, append));
 	return 1;
 }
 
