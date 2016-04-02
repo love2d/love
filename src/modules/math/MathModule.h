@@ -24,6 +24,7 @@
 #include "RandomGenerator.h"
 #include "CompressedData.h"
 #include "Compressor.h"
+#include "HashFunction.h"
 
 // LOVE
 #include "common/Module.h"
@@ -125,6 +126,18 @@ char *decompress(Compressor::Format format, const char *cbytes, size_t compresse
 
 char *encode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen, size_t linelen = 0);
 char *decode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen);
+
+/**
+ * Hash the input, producing an set of bytes as output.
+ *
+ * @param[in] function The selected hash function.
+ * @param[in] input The input data to hash.
+ * @return An std::string of bytes, representing the result of the hash
+ *         function.
+ **/
+std::string hash(HashFunction::Function function, Data *input);
+std::string hash(HashFunction::Function function, const char *input, uint64_t size);
+
 
 bool getConstant(const char *in, EncodeFormat &out);
 bool getConstant(EncodeFormat in, const char *&out);

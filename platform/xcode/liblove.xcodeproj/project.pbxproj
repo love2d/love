@@ -819,6 +819,8 @@
 		FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */; };
+		FA1DC2631C5D9555008F99A0 /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */; };
+		FA1DC2641C5D9555008F99A0 /* HashFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2621C5D9555008F99A0 /* HashFunction.h */; };
 		FA27B39D1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39E1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39F1B498151008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B38B1B498151008A9DCE /* Video.h */; };
@@ -1502,6 +1504,8 @@
 		FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Video.cpp; sourceTree = "<group>"; };
 		FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Video.lua; sourceTree = "<group>"; };
+		FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HashFunction.cpp; sourceTree = "<group>"; };
+		FA1DC2621C5D9555008F99A0 /* HashFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HashFunction.h; sourceTree = "<group>"; };
 		FA27B38A1B498151008A9DCE /* Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
 		FA27B38B1B498151008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
 		FA27B38C1B498151008A9DCE /* VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VideoStream.cpp; sourceTree = "<group>"; };
@@ -2450,6 +2454,8 @@
 				FAB17BEA1ABFAF1800F9BA27 /* CompressedData.h */,
 				FAB17BDE1ABFAA2000F9BA27 /* Compressor.cpp */,
 				FAB17BDF1ABFAA2000F9BA27 /* Compressor.h */,
+				FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */,
+				FA1DC2621C5D9555008F99A0 /* HashFunction.h */,
 				FA0B7C031A95902C000E1D17 /* MathModule.cpp */,
 				FA0B7C041A95902C000E1D17 /* MathModule.h */,
 				FA0B7C051A95902C000E1D17 /* RandomGenerator.cpp */,
@@ -3032,6 +3038,7 @@
 				FA0B7AAF1A958EA3000E1D17 /* b2WheelJoint.h in Headers */,
 				FA0B7D1A1A95902C000E1D17 /* TrueTypeRasterizer.h in Headers */,
 				FA0B7EA81A95902C000E1D17 /* wrap_Decoder.h in Headers */,
+				FA1DC2641C5D9555008F99A0 /* HashFunction.h in Headers */,
 				FA0B7AC51A958EA3000E1D17 /* time.h in Headers */,
 				FA0B793E1A958E3B000E1D17 /* StringMap.h in Headers */,
 				FA0B793A1A958E3B000E1D17 /* Reference.h in Headers */,
@@ -3848,6 +3855,7 @@
 				FA0B7B1B1A958EA3000E1D17 /* usocket.c in Sources */,
 				FA0B7E3C1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
 				FA0B7D791A95902C000E1D17 /* Quad.cpp in Sources */,
+				FA1DC2631C5D9555008F99A0 /* HashFunction.cpp in Sources */,
 				FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */,
 				FA0B7DD31A95902C000E1D17 /* BezierCurve.cpp in Sources */,
 				FA0B7E7B1A95902C000E1D17 /* wrap_World.cpp in Sources */,

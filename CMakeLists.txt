@@ -460,6 +460,8 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/CompressedData.h
 	src/modules/math/Compressor.cpp
 	src/modules/math/Compressor.h
+	src/modules/math/HashFunction.cpp
+	src/modules/math/HashFunction.h
 	src/modules/math/MathModule.cpp
 	src/modules/math/MathModule.h
 	src/modules/math/RandomGenerator.cpp

@@ -452,6 +452,30 @@ int w_decode(lua_State *L)
 	return 1;
 }
 
+int w_hash(lua_State *L)
+{
+	const char *fstr = luaL_checkstring(L, 1);
+	HashFunction::Function function;
+	if (!HashFunction::getConstant(fstr, function))
+		return luaL_error(L, "Invalid hash function: %s", fstr);
+
+	std::string hash;
+	if (lua_isstring(L, 2))
+	{
+		size_t rawsize = 0;
+		const char *rawbytes = luaL_checklstring(L, 2, &rawsize);
+		luax_catchexcept(L, [&](){ hash = love::math::hash(function, rawbytes, rawsize); });
+	}
+	else
+	{
+		Data *rawdata = luax_checktype<Data>(L, 2, DATA_ID);
+		luax_catchexcept(L, [&](){ hash = love::math::hash(function, rawdata); });
+	}
+
+	luax_pushstring(L, hash);
+	return 1;
+}
+
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
@@ -492,6 +516,7 @@ static const luaL_Reg functions[] =
 	{ "decompress", w_decompress },
 	{ "encode", w_encode },
 	{ "decode", w_decode },
+	{ "hash", w_hash },
 	{ 0, 0 }
 };
 

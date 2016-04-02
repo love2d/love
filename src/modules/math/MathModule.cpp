@@ -377,6 +377,20 @@ BezierCurve *Math::newBezierCurve(const vector<Vector> &points)
 	return new BezierCurve(points);
 }
 
+std::string hash(HashFunction::Function function, Data *input)
+{
+	return hash(function, (const char*) input->getData(), input->getSize());
+}
+
+std::string hash(HashFunction::Function function, const char *input, uint64_t size)
+{
+	HashFunction *hashfunction = HashFunction::getHashFunction(function);
+	if (hashfunction == nullptr)
+		throw love::Exception("Invalid hash function.");
+
+	return hashfunction->hash(function, input, size);
+}
+
 static StringMap<EncodeFormat, ENCODE_MAX_ENUM>::Entry encoderEntries[] =
 {
 	{ "base64", ENCODE_BASE64 },

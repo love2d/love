@@ -7,6 +7,7 @@ Released: N/A
   * Added love.filesystem.get/setCRequirePath, and use that to find c libraries for require.
   * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
   * Added love.math.encode/decode, which support hex and base64.
+  * Added love.math.hash, which supports MD5, SHA-1 and the SHA-2 family.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.
