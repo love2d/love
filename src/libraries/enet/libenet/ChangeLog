@@ -1,3 +1,17 @@
+* use getaddrinfo and getnameinfo where available
+
+ENet 1.3.13 (April 30, 2015):
+
+* miscellaneous bug fixes
+* added premake and cmake support
+* miscellaneous documentation cleanups
+
+ENet 1.3.12 (April 24, 2014):
+
+* added maximumPacketSize and maximumWaitingData fields to ENetHost to limit the amount of 
+data waiting to be delivered on a peer (beware that the default maximumPacketSize is
+32MB and should be set higher if desired as should maximumWaitingData)
+
 ENet 1.3.11 (December 26, 2013):
 
 * allow an ENetHost to connect to itself

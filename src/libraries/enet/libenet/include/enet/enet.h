@@ -25,7 +25,7 @@ extern "C"
 
 #define ENET_VERSION_MAJOR 1
 #define ENET_VERSION_MINOR 3
-#define ENET_VERSION_PATCH 11
+#define ENET_VERSION_PATCH 13
 #define ENET_VERSION_CREATE(major, minor, patch) (((major)<<16) | ((minor)<<8) | (patch))
 #define ENET_VERSION_GET_MAJOR(version) (((version)>>16)&0xFF)
 #define ENET_VERSION_GET_MINOR(version) (((version)>>8)&0xFF)
@@ -138,7 +138,11 @@ typedef void (ENET_CALLBACK * ENetPacketFreeCallback) (struct _ENetPacket *);
  *    (not supported for reliable packets)
  *
  *    ENET_PACKET_FLAG_NO_ALLOCATE - packet will not allocate data, and user must supply it instead
- 
+ *
+ *    ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT - packet will be fragmented using unreliable
+ *    (instead of reliable) sends if it exceeds the MTU
+ *
+ *    ENET_PACKET_FLAG_SENT - whether the packet has been sent from all queues it has been entered into
    @sa ENetPacketFlag
  */
 typedef struct _ENetPacket
@@ -209,6 +213,8 @@ enum
    ENET_HOST_SEND_BUFFER_SIZE             = 256 * 1024,
    ENET_HOST_BANDWIDTH_THROTTLE_INTERVAL  = 1000,
    ENET_HOST_DEFAULT_MTU                  = 1400,
+   ENET_HOST_DEFAULT_MAXIMUM_PACKET_SIZE  = 32 * 1024 * 1024,
+   ENET_HOST_DEFAULT_MAXIMUM_WAITING_DATA = 32 * 1024 * 1024,
 
    ENET_PEER_DEFAULT_ROUND_TRIP_TIME      = 500,
    ENET_PEER_DEFAULT_PACKET_THROTTLE      = 32,
@@ -310,6 +316,7 @@ typedef struct _ENetPeer
    enet_uint16   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
    enet_uint32   eventData;
+   size_t        totalWaitingData;
 } ENetPeer;
 
 /** An ENet packet compressor for compressing UDP packets before socket sends or receives.
@@ -384,6 +391,8 @@ typedef struct _ENetHost
    size_t               connectedPeers;
    size_t               bandwidthLimitedPeers;
    size_t               duplicatePeers;              /**< optional number of allowed peers from duplicate IPs, defaults to ENET_PROTOCOL_MAXIMUM_PEER_ID */
+   size_t               maximumPacketSize;           /**< the maximum allowable packet size that may be sent or received on a peer */
+   size_t               maximumWaitingData;          /**< the maximum aggregate amount of buffer space a peer may use waiting for packets to be delivered */
 } ENetHost;
 
 /**
@@ -446,7 +455,7 @@ ENET_API int enet_initialize (void);
   Initializes ENet globally and supplies user-overridden callbacks. Must be called prior to using any functions in ENet. Do not use enet_initialize() if you use this variant. Make sure the ENetCallbacks structure is zeroed out so that any additional callbacks added in future versions will be properly ignored.
 
   @param version the constant ENET_VERSION should be supplied so ENet knows which version of ENetCallbacks struct to use
-  @param inits user-overriden callbacks where any NULL callbacks will use ENet's defaults
+  @param inits user-overridden callbacks where any NULL callbacks will use ENet's defaults
   @returns 0 on success, < 0 on failure
 */
 ENET_API int enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits);
@@ -510,7 +519,7 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
 */
 ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
 
-/** Gives the printable form of the ip address specified in the address parameter.
+/** Gives the printable form of the IP address specified in the address parameter.
     @param address    address printed
     @param hostName   destination for name, must not be NULL
     @param nameLength maximum length of hostName.
@@ -565,7 +574,7 @@ extern int                   enet_peer_throttle (ENetPeer *, enet_uint32);
 extern void                  enet_peer_reset_queues (ENetPeer *);
 extern void                  enet_peer_setup_outgoing_command (ENetPeer *, ENetOutgoingCommand *);
 extern ENetOutgoingCommand * enet_peer_queue_outgoing_command (ENetPeer *, const ENetProtocol *, ENetPacket *, enet_uint32, enet_uint16);
-extern ENetIncomingCommand * enet_peer_queue_incoming_command (ENetPeer *, const ENetProtocol *, ENetPacket *, enet_uint32);
+extern ENetIncomingCommand * enet_peer_queue_incoming_command (ENetPeer *, const ENetProtocol *, const void *, size_t, enet_uint32, enet_uint32);
 extern ENetAcknowledgement * enet_peer_queue_acknowledgement (ENetPeer *, const ENetProtocol *, enet_uint16);
 extern void                  enet_peer_dispatch_incoming_unreliable_commands (ENetPeer *, ENetChannel *);
 extern void                  enet_peer_dispatch_incoming_reliable_commands (ENetPeer *, ENetChannel *);
