@@ -75,8 +75,32 @@ int w_newSource(lua_State *L)
 		return luax_typerror(L, 1, "Decoder or SoundData");
 }
 
+static std::vector<Source*> readSourceList(lua_State *L, int n)
+{
+	if (n < 0)
+		n += lua_gettop(L) + 1;
+
+	size_t items = lua_objlen(L, n);
+	std::vector<Source*> sources(items);
+
+	for (size_t i = 0; i < items; i++)
+	{
+		lua_rawgeti(L, n, i+1);
+		sources[i] = luax_checksource(L, -1);
+		lua_pop(L, 1);
+	}
+
+	return sources;
+}
+
 int w_play(lua_State *L)
 {
+	if (lua_istable(L, 1))
+	{
+		luax_pushboolean(L, instance()->play(readSourceList(L, 1)));
+		return 1;
+	}
+
 	Source *s = luax_checksource(L, 1);
 	luax_pushboolean(L, instance()->play(s));
 	return 1;
@@ -84,10 +108,10 @@ int w_play(lua_State *L)
 
 int w_stop(lua_State *L)
 {
-	if (lua_gettop(L) == 0)
-	{
+	if (lua_isnone(L, 1))
 		instance()->stop();
-	}
+	else if (lua_istable(L, 1))
+		instance()->stop(readSourceList(L, 1));
 	else
 	{
 		Source *s = luax_checksource(L, 1);
@@ -98,44 +122,26 @@ int w_stop(lua_State *L)
 
 int w_pause(lua_State *L)
 {
-	if (lua_gettop(L) == 0)
+	if (lua_isnone(L, 1))
 	{
-		instance()->pause();
+		auto sources = instance()->pause();
+
+		lua_createtable(L, sources.size(), 0);
+		for (size_t i = 0; i < sources.size(); i++)
+		{
+			luax_pushtype(L, AUDIO_SOURCE_ID, sources[i]);
+			lua_rawseti(L, -2, i+1);
+		}
+		return 1;
 	}
+	else if (lua_istable(L, 1))
+		instance()->pause(readSourceList(L, 1));
 	else
 	{
 		Source *s = luax_checksource(L, 1);
 		s->pause();
 	}
 
-	return 0;
-}
-
-int w_resume(lua_State *L)
-{
-	if (lua_gettop(L) == 0)
-	{
-		instance()->resume();
-	}
-	else
-	{
-		Source *s = luax_checksource(L, 1);
-		s->resume();
-	}
-	return 0;
-}
-
-int w_rewind(lua_State *L)
-{
-	if (lua_gettop(L) == 0)
-	{
-		instance()->rewind();
-	}
-	else
-	{
-		Source *s = luax_checksource(L, 1);
-		s->rewind();
-	}
 	return 0;
 }
 
@@ -301,8 +307,6 @@ static const luaL_Reg functions[] =
 	{ "play", w_play },
 	{ "stop", w_stop },
 	{ "pause", w_pause },
-	{ "resume", w_resume },
-	{ "rewind", w_rewind },
 	{ "setVolume", w_setVolume },
 	{ "getVolume", w_getVolume },
 	{ "setPosition", w_setPosition },

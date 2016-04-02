@@ -161,7 +161,7 @@ void VideoStream::SourceSync::seek(double time)
 
 bool VideoStream::SourceSync::isPlaying() const
 {
-	return !source->isStopped() && !source->isPaused();
+	return source->isPlaying();
 }
 
 } // video

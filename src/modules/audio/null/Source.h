@@ -42,10 +42,7 @@ public:
 	virtual bool play();
 	virtual void stop();
 	virtual void pause();
-	virtual void resume();
-	virtual void rewind();
-	virtual bool isStopped() const;
-	virtual bool isPaused() const;
+	virtual bool isPlaying() const;
 	virtual bool isFinished() const;
 	virtual bool update();
 	virtual void setPitch(float pitch);

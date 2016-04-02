@@ -24,6 +24,7 @@
 // STD
 #include <queue>
 #include <map>
+#include <vector>
 #include <cmath>
 
 // LOVE
@@ -73,14 +74,13 @@ public:
 	int getSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);
+	bool play(const std::vector<love::audio::Source*> &sources);
 	void stop(love::audio::Source *source);
+	void stop(const std::vector<love::audio::Source*> &sources);
 	void stop();
 	void pause(love::audio::Source *source);
-	void pause();
-	void resume(love::audio::Source *source);
-	void resume();
-	void rewind(love::audio::Source *source);
-	void rewind();
+	void pause(const std::vector<love::audio::Source*> &sources);
+	std::vector<love::audio::Source*> pause();
 	void setVolume(float volume);
 	float getVolume() const;
 

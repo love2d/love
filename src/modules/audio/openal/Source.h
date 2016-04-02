@@ -28,6 +28,9 @@
 #include "sound/SoundData.h"
 #include "sound/Decoder.h"
 
+// STL
+#include <vector>
+
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
 #ifdef LOVE_IOS
@@ -90,10 +93,7 @@ public:
 	virtual bool play();
 	virtual void stop();
 	virtual void pause();
-	virtual void resume();
-	virtual void rewind();
-	virtual bool isStopped() const;
-	virtual bool isPaused() const;
+	virtual bool isPlaying() const;
 	virtual bool isFinished() const;
 	virtual bool update();
 	virtual void setPitch(float pitch);
@@ -130,11 +130,17 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
-	bool playAtomic();
+	void prepareAtomic();
+	void teardownAtomic();
+
+	bool playAtomic(ALuint source);
 	void stopAtomic();
 	void pauseAtomic();
 	void resumeAtomic();
-	void rewindAtomic();
+
+	static bool playAtomic(const std::vector<love::audio::Source*> &sources, const std::vector<ALuint> &ids, const std::vector<char> &wasPlaying);
+	static void stopAtomic(const std::vector<love::audio::Source*> &sources);
+	static void pauseAtomic(const std::vector<love::audio::Source*> &sources);
 
 private:
 
@@ -169,7 +175,6 @@ private:
 	float direction[3];
 	bool relative;
 	bool looping;
-	bool paused;
 	float minVolume;
 	float maxVolume;
 	float referenceDistance;

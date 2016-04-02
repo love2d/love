@@ -63,20 +63,6 @@ int w_Source_pause(lua_State *L)
 	return 0;
 }
 
-int w_Source_resume(lua_State *L)
-{
-	Source *t = luax_checksource(L, 1);
-	t->resume();
-	return 0;
-}
-
-int w_Source_rewind(lua_State *L)
-{
-	Source *t = luax_checksource(L, 1);
-	t->rewind();
-	return 0;
-}
-
 int w_Source_setPitch(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -268,24 +254,10 @@ int w_Source_isLooping(lua_State *L)
 	return 1;
 }
 
-int w_Source_isStopped(lua_State *L)
-{
-	Source *t = luax_checksource(L, 1);
-	luax_pushboolean(L, t->isStopped());
-	return 1;
-}
-
-int w_Source_isPaused(lua_State *L)
-{
-	Source *t = luax_checksource(L, 1);
-	luax_pushboolean(L, t->isPaused());
-	return 1;
-}
-
 int w_Source_isPlaying(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	luax_pushboolean(L, !t->isStopped() && !t->isPaused());
+	luax_pushboolean(L, t->isPlaying());
 	return 1;
 }
 
@@ -377,8 +349,6 @@ static const luaL_Reg w_Source_functions[] =
 	{ "play", w_Source_play },
 	{ "stop", w_Source_stop },
 	{ "pause", w_Source_pause },
-	{ "resume", w_Source_resume },
-	{ "rewind", w_Source_rewind },
 
 	{ "setPitch", w_Source_setPitch },
 	{ "getPitch", w_Source_getPitch },
@@ -401,8 +371,6 @@ static const luaL_Reg w_Source_functions[] =
 
 	{ "setLooping", w_Source_setLooping },
 	{ "isLooping", w_Source_isLooping },
-	{ "isStopped", w_Source_isStopped },
-	{ "isPaused", w_Source_isPaused },
 	{ "isPlaying", w_Source_isPlaying },
 
 	{ "setVolumeLimits", w_Source_setVolumeLimits },

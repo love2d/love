@@ -55,20 +55,7 @@ void Source::pause()
 {
 }
 
-void Source::resume()
-{
-}
-
-void Source::rewind()
-{
-}
-
-bool Source::isStopped() const
-{
-	return true;
-}
-
-bool Source::isPaused() const
+bool Source::isPlaying() const
 {
 	return false;
 }

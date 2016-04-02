@@ -21,6 +21,10 @@
 #ifndef LOVE_AUDIO_AUDIO_H
 #define LOVE_AUDIO_AUDIO_H
 
+// STL
+#include <vector>
+
+// LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "Source.h"
@@ -91,10 +95,22 @@ public:
 	virtual bool play(Source *source) = 0;
 
 	/**
+	 * Play the specified Sources.
+	 * @param sources The Sources to play.
+	 **/
+	virtual bool play(const std::vector<Source*> &sources) = 0;
+
+	/**
 	 * Stops playback on the specified source.
 	 * @param source The source on which to stop the playback.
 	 **/
 	virtual void stop(Source *source) = 0;
+
+	/**
+	 * Stops playback on the specified sources.
+	 * @param sources The sources on which to stop the playback.
+	 **/
+	virtual void stop(const std::vector<Source*> &sources) = 0;
 
 	/**
 	 * Stops all playing audio.
@@ -108,32 +124,15 @@ public:
 	virtual void pause(Source *source) = 0;
 
 	/**
+	 * Pauses playback on the specified sources.
+	 * @param sources The sources on which to pause the playback.
+	 **/
+	virtual void pause(const std::vector<Source*> &sources) = 0;
+
+	/**
 	 * Pauses all audio.
 	 **/
-	virtual void pause() = 0;
-
-	/**
-	 * Resumes playback on the specified source.
-	 * @param source The source on which to resume the playback.
-	 **/
-	virtual void resume(Source *source) = 0;
-
-	/**
-	 * Resumes all audio.
-	 **/
-	virtual void resume() = 0;
-
-	/**
-	 * Rewinds the specified source. Whatever is playing on this
-	 * source gets rewound to the start.
-	 * @param source The source to rewind.
-	 **/
-	virtual void rewind(Source *source) = 0;
-
-	/**
-	 * Rewinds all playing audio.
-	 **/
-	virtual void rewind() = 0;
+	virtual std::vector<Source*> pause() = 0;
 
 	/**
 	 * Sets the master volume, where 0.0f is min (off) and 1.0f is max.

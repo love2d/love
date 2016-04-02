@@ -66,7 +66,16 @@ bool Audio::play(love::audio::Source *)
 	return false;
 }
 
+bool Audio::play(const std::vector<love::audio::Source*>&)
+{
+	return false;
+}
+
 void Audio::stop(love::audio::Source *)
+{
+}
+
+void Audio::stop(const std::vector<love::audio::Source*>&)
 {
 }
 
@@ -78,24 +87,13 @@ void Audio::pause(love::audio::Source *)
 {
 }
 
-void Audio::pause()
+void Audio::pause(const std::vector<love::audio::Source*>&)
 {
 }
 
-void Audio::resume(love::audio::Source *)
+std::vector<love::audio::Source*> Audio::pause()
 {
-}
-
-void Audio::resume()
-{
-}
-
-void Audio::rewind(love::audio::Source *)
-{
-}
-
-void Audio::rewind()
-{
+	return {};
 }
 
 void Audio::setVolume(float volume)

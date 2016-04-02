@@ -56,10 +56,7 @@ public:
 	virtual bool play() = 0;
 	virtual void stop() = 0;
 	virtual void pause() = 0;
-	virtual void resume() = 0;
-	virtual void rewind() = 0;
-	virtual bool isStopped() const = 0;
-	virtual bool isPaused() const = 0;
+	virtual bool isPlaying() const = 0;
 	virtual bool isFinished() const = 0;
 	virtual bool update() = 0;
 

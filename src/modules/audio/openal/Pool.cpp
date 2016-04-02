@@ -110,7 +110,6 @@ void Pool::update()
 		if (!i->first->update())
 		{
 			i->first->stopAtomic();
-			i->first->rewindAtomic();
 			i->first->release();
 			available.push(i->second);
 			playing.erase(i++);
@@ -130,44 +129,72 @@ int Pool::getMaxSources() const
 	return totalSources;
 }
 
-bool Pool::play(Source *source, ALuint &out)
+bool Pool::assignSource(Source *source, ALuint &out, char *wasPlaying)
+{
+	out = 0;
+
+	if (findSource(source, out))
+	{
+		if (wasPlaying)
+			*wasPlaying = true;
+		return true;
+	}
+
+	if (wasPlaying)
+		*wasPlaying = false;
+
+	if (available.empty())
+		return false;
+
+	out = available.front();
+	available.pop();
+
+	playing.insert(std::make_pair(source, out));
+	source->retain();
+	return true;
+}
+
+bool Pool::play(Source *source)
+{
+	thread::Lock lock(mutex);
+	ALuint out;
+
+	char wasPlaying;
+	if (!assignSource(source, out, &wasPlaying))
+		return false;
+
+	if (!wasPlaying)
+		return source->playAtomic(out);
+	else
+	{
+		source->resumeAtomic();
+		return true;
+	}
+}
+
+bool Pool::play(const std::vector<love::audio::Source*> &sources)
 {
 	thread::Lock lock(mutex);
 
-	bool ok = true;
-	out = 0;
+	std::vector<ALuint> ids(sources.size());
+	// NOTE: not bool, because std::vector<bool> is implemented as a bitvector
+	// which means no pointers can be created.
+	std::vector<char> wasPlaying(sources.size());
 
-	bool alreadyPlaying = findSource(source, out);
-
-	if (!alreadyPlaying)
+	for (size_t i = 0; i < sources.size(); i++)
 	{
-		// Try to play.
-		if (!available.empty())
+		Source *source = (Source*) sources[i];
+		if (!assignSource(source, ids[i], &wasPlaying[i]))
 		{
-			// Get the first available source.
-			out = available.front();
-
-			// Remove it.
-			available.pop();
-
-			// Insert into map of playing sources.
-			playing.insert(std::pair<Source *, ALuint>(source, out));
-
-			source->retain();
-
-			ok = source->playAtomic();
-		}
-		else
-		{
-			ok = false;
+			// Now we need to release the resources we had already allocated
+			for (size_t j = 0; j < sources.size(); j++)
+				if (!wasPlaying[j])
+					release((Source*) sources[j]);
+			return false;
 		}
 	}
-	else
-	{
-		ok = true;
-	}
 
-	return ok;
+	return Source::playAtomic(sources, ids, wasPlaying);
 }
 
 void Pool::stop()
@@ -176,7 +203,6 @@ void Pool::stop()
 	for (const auto &i : playing)
 	{
 		i.first->stopAtomic();
-		i.first->rewindAtomic();
 		i.first->release();
 		available.push(i.second);
 	}
@@ -190,11 +216,28 @@ void Pool::stop(Source *source)
 	removeSource(source);
 }
 
-void Pool::pause()
+void Pool::stop(const std::vector<love::audio::Source*> &sources)
 {
 	thread::Lock lock(mutex);
+	Source::stopAtomic(sources);
+}
+
+std::vector<love::audio::Source*> Pool::pause()
+{
+	thread::Lock lock(mutex);
+
+	std::vector<love::audio::Source*> werePlaying;
+	werePlaying.reserve(playing.size());
+
 	for (const auto &i : playing)
+	{
+		if (!i.first->isPlaying())
+			continue;
+		werePlaying.push_back(i.first);
 		i.first->pauseAtomic();
+	}
+
+	return werePlaying;
 }
 
 void Pool::pause(Source *source)
@@ -205,39 +248,10 @@ void Pool::pause(Source *source)
 		source->pauseAtomic();
 }
 
-void Pool::resume()
+void Pool::pause(const std::vector<love::audio::Source*> &sources)
 {
 	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-		i.first->resumeAtomic();
-}
-
-void Pool::resume(Source *source)
-{
-	thread::Lock lock(mutex);
-	ALuint out;
-	if (findSource(source, out))
-		source->resumeAtomic();
-}
-
-void Pool::rewind()
-{
-	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-		i.first->rewindAtomic();
-}
-
-// For those times we don't need it backed.
-void Pool::softRewind(Source *source)
-{
-	thread::Lock lock(mutex);
-	source->rewindAtomic();
-}
-
-void Pool::rewind(Source *source)
-{
-	thread::Lock lock(mutex);
-	source->rewindAtomic();
+	Source::pauseAtomic(sources);
 }
 
 void Pool::release(Source *source)
