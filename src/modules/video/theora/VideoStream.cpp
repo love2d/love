@@ -151,12 +151,12 @@ bool VideoStream::readPacket(bool mustSucceed)
 
 	while (ogg_stream_packetout(&stream, &packet) != 1)
 	{
-		// We need to read another page, but there is none, we're at the end
-		if (ogg_page_eos(&page) && !mustSucceed)
-			return eos = true;
-
 		do
 		{
+			// We need to read another page, but there is none, we're at the end
+			if (ogg_page_eos(&page) && !mustSucceed)
+				return eos = true;
+
 			readPage();
 		} while (ogg_page_serialno(&page) != videoSerial);
 

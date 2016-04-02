@@ -66,8 +66,8 @@ Shader *Shader::current = nullptr;
 Shader *Shader::defaultShader = nullptr;
 Shader *Shader::defaultVideoShader = nullptr;
 
-Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM];
-Shader::ShaderSource Shader::defaultVideoCode[Graphics::RENDERER_MAX_ENUM];
+Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM][2];
+Shader::ShaderSource Shader::defaultVideoCode[Graphics::RENDERER_MAX_ENUM][2];
 
 std::vector<int> Shader::textureCounters;
 
@@ -250,9 +250,10 @@ bool Shader::loadVolatile()
 
 	std::vector<GLuint> shaderids;
 
-	const ShaderSource *defaults = &defaultCode[Graphics::RENDERER_OPENGL];
+	bool gammacorrect = graphics::isGammaCorrect();
+	const ShaderSource *defaults = &defaultCode[Graphics::RENDERER_OPENGL][gammacorrect ? 1 : 0];
 	if (GLAD_ES_VERSION_2_0)
-		defaults = &defaultCode[Graphics::RENDERER_OPENGLES];
+		defaults = &defaultCode[Graphics::RENDERER_OPENGLES][gammacorrect ? 1 : 0];
 
 	// The shader program must have both vertex and pixel shader stages.
 	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults->vertex : shaderSource.vertex;

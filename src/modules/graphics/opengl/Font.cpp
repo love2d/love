@@ -25,6 +25,7 @@
 
 #include "common/math.h"
 #include "common/Matrix.h"
+#include "graphics/Graphics.h"
 
 #include <math.h>
 #include <sstream>
@@ -112,12 +113,36 @@ Font::TextureSize Font::getNextTextureSize() const
 	return size;
 }
 
+GLenum Font::getTextureFormat(FontType fontType, GLenum *internalformat) const
+{
+	GLenum format = fontType == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA;
+	GLenum iformat = fontType == FONT_TRUETYPE ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
+
+	if (format == GL_RGBA && isGammaCorrect())
+	{
+		// In ES2, the internalformat and format params of TexImage must match.
+		// ES3 doesn't allow "GL_SRGB_ALPHA" as the internal format. But it also
+		// requires GL_LUMINANCE_ALPHA rather than GL_LUMINANCE8_ALPHA8 as the
+		// internal format, for LA.
+		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
+			format = iformat = GL_SRGB_ALPHA;
+		else
+			iformat = GL_SRGB8_ALPHA8;
+	}
+	else if (GLAD_ES_VERSION_2_0)
+		iformat = format;
+
+	if (internalformat != nullptr)
+		*internalformat = iformat;
+
+	return format;
+}
+
 void Font::createTexture()
 {
 	OpenGL::TempDebugGroup debuggroup("Font create texture");
 
-	GLenum format = type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA;
-	size_t bpp = format == GL_LUMINANCE_ALPHA ? 2 : 4;
+	size_t bpp = type == FONT_TRUETYPE ? 2 : 4;
 
 	size_t prevmemsize = textureMemorySize;
 	if (prevmemsize > 0)
@@ -151,13 +176,8 @@ void Font::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	GLenum internalformat = type == FONT_TRUETYPE ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
-
-	// In GLES2, the internalformat and format params of TexImage have to match.
-	// There is still no GL_LUMINANCE8_ALPHA8 in GLES3, so we have to use
-	// GL_LUMINANCE_ALPHA even on ES3.
-	if (GLAD_ES_VERSION_2_0)
-		internalformat = format;
+	GLenum internalformat = GL_RGBA;
+	GLenum format = getTextureFormat(type, &internalformat);
 
 	// Initialize the texture with transparent black.
 	std::vector<GLubyte> emptydata(size.width * size.height * bpp, 0);
@@ -268,14 +288,12 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	// don't waste space for empty glyphs. also fixes a divide by zero bug with ATI drivers
 	if (w > 0 && h > 0)
 	{
-		const GLuint t = textures.back();
+		GLenum format = getTextureFormat(type);
+		g.texture = textures.back();
 
-		gl.bindTexture(t);
+		gl.bindTexture(g.texture);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, textureX, textureY, w, h,
-		                (type == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA),
-		                GL_UNSIGNED_BYTE, gd->getData());
-
-		g.texture = t;
+		                format, GL_UNSIGNED_BYTE, gd->getData());
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;

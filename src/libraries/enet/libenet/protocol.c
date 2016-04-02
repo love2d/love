@@ -424,7 +424,6 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
 static int
 enet_protocol_handle_send_reliable (ENetHost * host, ENetPeer * peer, const ENetProtocol * command, enet_uint8 ** currentData)
 {
-    ENetPacket * packet;
     size_t dataLength;
 
     if (command -> header.channelID >= peer -> channelCount ||
@@ -433,16 +432,12 @@ enet_protocol_handle_send_reliable (ENetHost * host, ENetPeer * peer, const ENet
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendReliable.dataLength);
     * currentData += dataLength;
-    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (dataLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
 
-    packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendReliable),
-                                 dataLength,
-                                 ENET_PACKET_FLAG_RELIABLE);
-    if (packet == NULL ||
-        enet_peer_queue_incoming_command (peer, command, packet, 0) == NULL)
+    if (enet_peer_queue_incoming_command (peer, command, (const enet_uint8 *) command + sizeof (ENetProtocolSendReliable), dataLength, ENET_PACKET_FLAG_RELIABLE, 0) == NULL)
       return -1;
 
     return 0;
@@ -451,7 +446,6 @@ enet_protocol_handle_send_reliable (ENetHost * host, ENetPeer * peer, const ENet
 static int
 enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const ENetProtocol * command, enet_uint8 ** currentData)
 {
-    ENetPacket * packet;
     enet_uint32 unsequencedGroup, index;
     size_t dataLength;
 
@@ -461,7 +455,7 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendUnsequenced.dataLength);
     * currentData += dataLength;
-    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (dataLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1; 
@@ -487,11 +481,7 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
     if (peer -> unsequencedWindow [index / 32] & (1 << (index % 32)))
       return 0;
       
-    packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendUnsequenced),
-                                 dataLength,
-                                 ENET_PACKET_FLAG_UNSEQUENCED);
-    if (packet == NULL ||
-        enet_peer_queue_incoming_command (peer, command, packet, 0) == NULL)
+    if (enet_peer_queue_incoming_command (peer, command, (const enet_uint8 *) command + sizeof (ENetProtocolSendUnsequenced), dataLength, ENET_PACKET_FLAG_UNSEQUENCED, 0) == NULL)
       return -1;
    
     peer -> unsequencedWindow [index / 32] |= 1 << (index % 32);
@@ -502,7 +492,6 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
 static int
 enet_protocol_handle_send_unreliable (ENetHost * host, ENetPeer * peer, const ENetProtocol * command, enet_uint8 ** currentData)
 {
-    ENetPacket * packet;
     size_t dataLength;
 
     if (command -> header.channelID >= peer -> channelCount ||
@@ -511,16 +500,12 @@ enet_protocol_handle_send_unreliable (ENetHost * host, ENetPeer * peer, const EN
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendUnreliable.dataLength);
     * currentData += dataLength;
-    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (dataLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
 
-    packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendUnreliable),
-                                 dataLength,
-                                 0);
-    if (packet == NULL ||
-        enet_peer_queue_incoming_command (peer, command, packet, 0) == NULL)
+    if (enet_peer_queue_incoming_command (peer, command, (const enet_uint8 *) command + sizeof (ENetProtocolSendUnreliable), dataLength, 0, 0) == NULL)
       return -1;
 
     return 0;
@@ -546,7 +531,7 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
 
     fragmentLength = ENET_NET_TO_HOST_16 (command -> sendFragment.dataLength);
     * currentData += fragmentLength;
-    if (fragmentLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (fragmentLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
@@ -569,7 +554,7 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
     
     if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT ||
         fragmentNumber >= fragmentCount ||
-        totalLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        totalLength > host -> maximumPacketSize ||
         fragmentOffset >= totalLength ||
         fragmentLength > totalLength - fragmentOffset)
       return -1;
@@ -607,13 +592,10 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
     if (startCommand == NULL)
     {
        ENetProtocol hostCommand = * command;
-       ENetPacket * packet = enet_packet_create (NULL, totalLength, ENET_PACKET_FLAG_RELIABLE);
-       if (packet == NULL)
-         return -1;
 
        hostCommand.header.reliableSequenceNumber = startSequenceNumber;
 
-       startCommand = enet_peer_queue_incoming_command (peer, & hostCommand, packet, fragmentCount);
+       startCommand = enet_peer_queue_incoming_command (peer, & hostCommand, NULL, totalLength, ENET_PACKET_FLAG_RELIABLE, fragmentCount);
        if (startCommand == NULL)
          return -1;
     }
@@ -659,7 +641,7 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 
     fragmentLength = ENET_NET_TO_HOST_16 (command -> sendFragment.dataLength);
     * currentData += fragmentLength;
-    if (fragmentLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (fragmentLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
@@ -688,7 +670,7 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 
     if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT ||
         fragmentNumber >= fragmentCount ||
-        totalLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        totalLength > host -> maximumPacketSize ||
         fragmentOffset >= totalLength ||
         fragmentLength > totalLength - fragmentOffset)
       return -1;
@@ -731,11 +713,7 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 
     if (startCommand == NULL)
     {
-       ENetPacket * packet = enet_packet_create (NULL, totalLength, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
-       if (packet == NULL)
-         return -1;
-
-       startCommand = enet_peer_queue_incoming_command (peer, command, packet, fragmentCount);
+       startCommand = enet_peer_queue_incoming_command (peer, command, NULL, totalLength, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT, fragmentCount);
        if (startCommand == NULL)
          return -1;
     }
@@ -786,6 +764,10 @@ enet_protocol_handle_bandwidth_limit (ENetHost * host, ENetPeer * peer, const EN
 
     if (peer -> incomingBandwidth == 0 && host -> outgoingBandwidth == 0)
       peer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;
+    else
+    if (peer -> incomingBandwidth == 0 || host -> outgoingBandwidth == 0)
+      peer -> windowSize = (ENET_MAX (peer -> incomingBandwidth, host -> outgoingBandwidth) /
+                             ENET_PEER_WINDOW_SIZE_SCALE) * ENET_PROTOCOL_MINIMUM_WINDOW_SIZE;
     else
       peer -> windowSize = (ENET_MIN (peer -> incomingBandwidth, host -> outgoingBandwidth) /
                              ENET_PEER_WINDOW_SIZE_SCALE) * ENET_PROTOCOL_MINIMUM_WINDOW_SIZE;
@@ -1213,7 +1195,9 @@ commandError:
 static int
 enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
 {
-    for (;;)
+    int packets;
+
+    for (packets = 0; packets < 256; ++ packets)
     {
        int receivedLength;
        ENetBuffer buffer;
@@ -1506,7 +1490,7 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
                ! (outgoingCommand -> reliableSequenceNumber % ENET_PEER_RELIABLE_WINDOW_SIZE) &&
                (channel -> reliableWindows [(reliableWindow + ENET_PEER_RELIABLE_WINDOWS - 1) % ENET_PEER_RELIABLE_WINDOWS] >= ENET_PEER_RELIABLE_WINDOW_SIZE ||
                  channel -> usedReliableWindows & ((((1 << ENET_PEER_FREE_RELIABLE_WINDOWS) - 1) << reliableWindow) | 
-                   (((1 << ENET_PEER_FREE_RELIABLE_WINDOWS) - 1) >> (ENET_PEER_RELIABLE_WINDOW_SIZE - reliableWindow)))))
+                   (((1 << ENET_PEER_FREE_RELIABLE_WINDOWS) - 1) >> (ENET_PEER_RELIABLE_WINDOWS - reliableWindow)))))
              windowWrap = 1;
           if (windowWrap)
           {
@@ -1903,6 +1887,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
              break;
           }
        }
+
+       if (ENET_TIME_GREATER_EQUAL (host -> serviceTime, timeout))
+         return 0;
 
        do
        {

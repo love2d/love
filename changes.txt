@@ -1,3 +1,20 @@
+LOVE 0.10.2 [Super Toast]
+-------------------------
+
+Released: N/A
+
+  * Added lovec.exe in Windows. It is the same as love.exe but built with the Console subsystem, so it always uses or provides a console.
+
+  * Fixed os.execute always returning -1 on Linux.
+  * Fixed the video decoding thread to not do any work when there are no videos to decode.
+  * Fixed stencils inside Canvases on some OpenGL ES 2 devices.
+  * Fixed love.window.setMode crashing when called with a Canvas active.
+  * Fixed gamma correction of ImageFonts and BMFonts with colored images.
+  * Fixed the default shader improperly applying gamma correction to per-vertex colors when gamma correction is requested but not supported on OpenGL ES.
+
+  * Improved performance of Channel methods by roughly 2x in many cases.
+
+
 LOVE 0.10.1 [Super Toast]
 -------------------------
 

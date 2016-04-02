@@ -1346,41 +1346,34 @@ int w_getShader(lua_State *L)
 int w_setDefaultShaderCode(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TTABLE);
+	luaL_checktype(L, 2, LUA_TTABLE);
 
-	lua_getfield(L, 1, "opengl");
-	lua_rawgeti(L, -1, 1);
-	lua_rawgeti(L, -2, 2);
-	lua_rawgeti(L, -3, 3);
+	for (int i = 0; i < 2; i++)
+	{
+		for (int renderer = 0; renderer < Graphics::RENDERER_MAX_ENUM; renderer++)
+		{
+			const char *lang = renderer == Graphics::RENDERER_OPENGLES ? "glsles" : "glsl";
 
-	Shader::ShaderSource openglcode;
-	openglcode.vertex = luax_checkstring(L, -3);
-	openglcode.pixel = luax_checkstring(L, -2);
+			lua_getfield(L, i + 1, lang);
 
-	Shader::ShaderSource openglVideocode;
-	openglVideocode.vertex = luax_checkstring(L, -3);
-	openglVideocode.pixel = luax_checkstring(L, -1);
+			lua_getfield(L, -1, "vertex");
+			lua_getfield(L, -2, "pixel");
+			lua_getfield(L, -3, "videopixel");
 
-	lua_pop(L, 4);
+			Shader::ShaderSource code;
+			code.vertex = luax_checkstring(L, -3);
+			code.pixel = luax_checkstring(L, -2);
 
-	lua_getfield(L, 1, "opengles");
-	lua_rawgeti(L, -1, 1);
-	lua_rawgeti(L, -2, 2);
-	lua_rawgeti(L, -3, 3);
+			Shader::ShaderSource videocode;
+			videocode.vertex = luax_checkstring(L, -3);
+			videocode.pixel = luax_checkstring(L, -1);
 
-	Shader::ShaderSource openglescode;
-	openglescode.vertex = luax_checkstring(L, -3);
-	openglescode.pixel = luax_checkstring(L, -2);
+			lua_pop(L, 4);
 
-	Shader::ShaderSource openglesVideocode;
-	openglesVideocode.vertex = luax_checkstring(L, -3);
-	openglesVideocode.pixel = luax_checkstring(L, -1);
-
-	lua_pop(L, 4);
-
-	Shader::defaultCode[Graphics::RENDERER_OPENGL]   = openglcode;
-	Shader::defaultCode[Graphics::RENDERER_OPENGLES] = openglescode;
-	Shader::defaultVideoCode[Graphics::RENDERER_OPENGL]   = openglVideocode;
-	Shader::defaultVideoCode[Graphics::RENDERER_OPENGLES] = openglesVideocode;
+			Shader::defaultCode[renderer][i] = code;
+			Shader::defaultVideoCode[renderer][i] = videocode;
+		}
+	}
 
 	return 0;
 }

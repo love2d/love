@@ -222,6 +222,7 @@ private:
 	};
 
 	TextureSize getNextTextureSize() const;
+	GLenum getTextureFormat(FontType fontType, GLenum *internalformat = nullptr) const;
 	void createTexture();
 	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
 	const Glyph &addGlyph(uint32 glyph);

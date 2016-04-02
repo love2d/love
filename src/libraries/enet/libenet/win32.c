@@ -4,9 +4,10 @@
 */
 #ifdef _WIN32
 
-#include <time.h>
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
+#include <windows.h>
+#include <mmsystem.h>
 
 static enet_uint32 timeBase = 0;
 
@@ -85,7 +86,13 @@ enet_address_get_host_ip (const ENetAddress * address, char * name, size_t nameL
     char * addr = inet_ntoa (* (struct in_addr *) & address -> host);
     if (addr == NULL)
         return -1;
-    strncpy (name, addr, nameLength);
+    else
+    {
+        size_t addrLen = strlen(addr);
+        if (addrLen >= nameLength)
+          return -1;
+        memcpy (name, addr, addrLen + 1);
+    }
     return 0;
 }
 
@@ -94,14 +101,19 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 {
     struct in_addr in;
     struct hostent * hostEntry;
-    
+ 
     in.s_addr = address -> host;
     
     hostEntry = gethostbyaddr ((char *) & in, sizeof (struct in_addr), AF_INET);
     if (hostEntry == NULL)
       return enet_address_get_host_ip (address, name, nameLength);
-
-    strncpy (name, hostEntry -> h_name, nameLength);
+    else
+    {
+       size_t hostLen = strlen (hostEntry -> h_name);
+       if (hostLen >= nameLength)
+         return -1;
+       memcpy (name, hostEntry -> h_name, hostLen + 1);
+    }
 
     return 0;
 }

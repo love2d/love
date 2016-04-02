@@ -317,18 +317,20 @@ bool Graphics::setMode(int width, int height)
 	pixelSizeStack.reserve(5);
 	pixelSizeStack.push_back(1);
 
+	int gammacorrect = isGammaCorrect() ? 1 : 0;
+
 	// We always need a default shader.
 	if (!Shader::defaultShader)
 	{
 		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
-		Shader::defaultShader = newShader(Shader::defaultCode[renderer]);
+		Shader::defaultShader = newShader(Shader::defaultCode[renderer][gammacorrect]);
 	}
 
 	// and a default video shader.
 	if (!Shader::defaultVideoShader)
 	{
 		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
-		Shader::defaultVideoShader = newShader(Shader::defaultVideoCode[renderer]);
+		Shader::defaultVideoShader = newShader(Shader::defaultVideoCode[renderer][gammacorrect]);
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
