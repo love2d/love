@@ -167,17 +167,6 @@ public:
 		STACK_MAX_ENUM
 	};
 
-	enum StatType
-	{
-		STAT_DRAW_CALLS,
-		STAT_CANVAS_SWITCHES,
-		STAT_CANVASES,
-		STAT_IMAGES,
-		STAT_FONTS,
-		STAT_TEXTURE_MEMORY,
-		STAT_MAX_ENUM
-	};
-
 	struct RendererInfo
 	{
 		std::string name;
@@ -190,6 +179,7 @@ public:
 	{
 		int drawCalls;
 		int canvasSwitches;
+		int shaderSwitches;
 		int canvases;
 		int images;
 		int fonts;
@@ -300,9 +290,6 @@ public:
 	static bool getConstant(const char *in, StackType &out);
 	static bool getConstant(StackType in, const char *&out);
 
-	static bool getConstant(const char *in, StatType &out);
-	static bool getConstant(StatType in, const char *&out);
-
 private:
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
@@ -337,9 +324,6 @@ private:
 
 	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
 	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
-
-	static StringMap<StatType, STAT_MAX_ENUM>::Entry statTypeEntries[];
-	static StringMap<StatType, STAT_MAX_ENUM> statTypes;
 
 }; // Graphics
 

@@ -1473,33 +1473,28 @@ int w_getStats(lua_State *L)
 {
 	Graphics::Stats stats = instance()->getStats();
 
-	lua_createtable(L, 0, (int) Graphics::STAT_MAX_ENUM);
+	lua_createtable(L, 0, 7);
 
-	const char *sname = nullptr;
-
-	Graphics::getConstant(Graphics::STAT_DRAW_CALLS, sname);
 	lua_pushinteger(L, stats.drawCalls);
-	lua_setfield(L, -2, sname);
+	lua_setfield(L, -2, "drawcalls");
 
-	Graphics::getConstant(Graphics::STAT_CANVAS_SWITCHES, sname);
 	lua_pushinteger(L, stats.canvasSwitches);
-	lua_setfield(L, -2, sname);
+	lua_setfield(L, -2, "canvasswitches");
 
-	Graphics::getConstant(Graphics::STAT_CANVASES, sname);
+	lua_pushinteger(L, stats.shaderSwitches);
+	lua_setfield(L, -2, "shaderswitches");
+
 	lua_pushinteger(L, stats.canvases);
-	lua_setfield(L, -2, sname);
+	lua_setfield(L, -2, "canvases");
 
-	Graphics::getConstant(Graphics::STAT_IMAGES, sname);
 	lua_pushinteger(L, stats.images);
-	lua_setfield(L, -2, sname);
+	lua_setfield(L, -2, "images");
 
-	Graphics::getConstant(Graphics::STAT_FONTS, sname);
 	lua_pushinteger(L, stats.fonts);
-	lua_setfield(L, -2, sname);
+	lua_setfield(L, -2, "fonts");
 
-	Graphics::getConstant(Graphics::STAT_TEXTURE_MEMORY, sname);
-	lua_pushnumber(L, (lua_Number) stats.textureMemory);
-	lua_setfield(L, -2, sname);
+	lua_pushinteger(L, stats.textureMemory);
+	lua_setfield(L, -2, "texturememory");
 
 	return 1;
 }

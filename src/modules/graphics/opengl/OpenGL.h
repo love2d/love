@@ -167,6 +167,7 @@ public:
 		size_t textureMemory;
 		int    drawCalls;
 		int    framebufferBinds;
+		int    shaderSwitches;
 	} stats;
 
 	struct Bugs
@@ -304,6 +305,11 @@ public:
 	 * Binds a Framebuffer Object to the specified target.
 	 **/
 	void bindFramebuffer(GLenum target, GLuint framebuffer);
+
+	/**
+	 * Calls glUseProgram.
+	 **/
+	void useProgram(GLuint program);
 
 	/**
 	 * This will usually be 0 (system drawable), but some platforms require a
