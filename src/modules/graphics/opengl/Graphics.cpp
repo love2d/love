@@ -1116,7 +1116,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 		{
 		case BLEND_LIGHTEN:
 		case BLEND_DARKEN:
-		/*case BLEND_MULTIPLY:*/ // FIXME: Uncomment for 0.11.0
+		case BLEND_MULTIPLY:
 			getConstant(mode, modestr);
 			throw love::Exception("The '%s' blend mode must be used with premultiplied alpha.", modestr);
 			break;
