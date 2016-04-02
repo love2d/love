@@ -450,8 +450,8 @@ void Graphics::clear(Colorf c)
 	{
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
-		glUseProgram(0);
-		glUseProgram(Shader::current->getProgram());
+		gl.useProgram(0);
+		gl.useProgram(Shader::current->getProgram());
 	}
 }
 
@@ -528,8 +528,8 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 	{
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
-		glUseProgram(0);
-		glUseProgram(Shader::current->getProgram());
+		gl.useProgram(0);
+		gl.useProgram(Shader::current->getProgram());
 	}
 }
 
@@ -608,6 +608,7 @@ void Graphics::present()
 	// Reset the per-frame stat counts.
 	gl.stats.drawCalls = 0;
 	gl.stats.framebufferBinds = 0;
+	gl.stats.shaderSwitches = 0;
 }
 
 int Graphics::getWidth() const
@@ -1650,6 +1651,7 @@ Graphics::Stats Graphics::getStats() const
 
 	stats.drawCalls = gl.stats.drawCalls;
 	stats.canvasSwitches = gl.stats.framebufferBinds;
+	stats.shaderSwitches = gl.stats.shaderSwitches;
 	stats.canvases = Canvas::canvasCount;
 	stats.images = Image::imageCount;
 	stats.fonts = Font::fontCount;

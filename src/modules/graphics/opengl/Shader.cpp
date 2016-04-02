@@ -181,7 +181,7 @@ void Shader::mapActiveUniforms()
 	GLint activeprogram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &activeprogram);
 
-	glUseProgram(program);
+	gl.useProgram(program);
 
 	GLint numuniforms;
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &numuniforms);
@@ -223,7 +223,7 @@ void Shader::mapActiveUniforms()
 			uniforms[u.name] = u;
 	}
 
-	glUseProgram(activeprogram);
+	gl.useProgram(activeprogram);
 }
 
 bool Shader::loadVolatile()
@@ -334,7 +334,7 @@ bool Shader::loadVolatile()
 void Shader::unloadVolatile()
 {
 	if (current == this)
-		glUseProgram(0);
+		gl.useProgram(0);
 
 	if (program != 0)
 	{
@@ -406,7 +406,7 @@ void Shader::attach(bool temporary)
 {
 	if (current != this)
 	{
-		glUseProgram(program);
+		gl.useProgram(program);
 		current = this;
 		// retain/release happens in Graphics::setShader.
 	}
@@ -437,7 +437,7 @@ void Shader::detach()
 	}
 
 	if (current != nullptr)
-		glUseProgram(0);
+		gl.useProgram(0);
 
 	current = nullptr;
 }

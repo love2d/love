@@ -495,6 +495,12 @@ void OpenGL::bindFramebuffer(GLenum target, GLuint framebuffer)
 		++stats.framebufferBinds;
 }
 
+void OpenGL::useProgram(GLuint program)
+{
+	glUseProgram(program);
+	++stats.shaderSwitches;
+}
+
 GLuint OpenGL::getDefaultFBO() const
 {
 #ifdef LOVE_IOS
