@@ -1,3 +1,20 @@
+LOVE 0.11.0 []
+--------------
+
+Released: N/A
+
+  * Added a variant to World:update, which accepts the number of iterations to run. The defaults are now 8 and 3.
+  * Added love.filesystem.get/setCRequirePath, and use that to find c libraries for require.
+  * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
+  * Added love.math.encode/decode, which support hex and base64.
+
+  * Changed all color values to be in the range 0-1, rather than 0-255.
+  * Changed love.graphics.print and friends to ignore carriage returns.
+  * Changed audio playback API drastically.
+
+  * Removed the default source type for love.audio.newSource.
+  * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
+
 LOVE 0.10.2 [Super Toast]
 -------------------------
 
