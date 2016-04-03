@@ -595,6 +595,11 @@ bool Source::isLooping() const
 
 bool Source::playAtomic()
 {
+	// This Source may now be associated with an OpenAL source that still has
+	// the properties of another love Source. Let's reset it to the settings
+	// of the new one.
+	reset();
+
 	if (type == TYPE_STATIC)
 	{
 		alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
@@ -617,11 +622,6 @@ bool Source::playAtomic()
 		if (usedBuffers > 0)
 			alSourceQueueBuffers(source, usedBuffers, streamBuffers);
 	}
-
-	// This Source may now be associated with an OpenAL source that still has
-	// the properties of another love Source. Let's reset it to the settings
-	// of the new one.
-	reset();
 
 	// Clear errors.
 	alGetError();
@@ -714,6 +714,7 @@ void Source::rewindAtomic()
 
 void Source::reset()
 {
+	alSourcei(source, AL_BUFFER, 0);
 	alSourcefv(source, AL_POSITION, position);
 	alSourcefv(source, AL_VELOCITY, velocity);
 	alSourcefv(source, AL_DIRECTION, direction);
