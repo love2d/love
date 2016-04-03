@@ -568,6 +568,11 @@ bool Source::isLooping() const
 
 void Source::prepareAtomic()
 {
+	// This Source may now be associated with an OpenAL source that still has
+	// the properties of another love Source. Let's reset it to the settings
+	// of the new one.
+	reset();
+
 	if (type == TYPE_STATIC)
 	{
 		alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
@@ -590,11 +595,6 @@ void Source::prepareAtomic()
 		if (usedBuffers > 0)
 			alSourceQueueBuffers(source, usedBuffers, streamBuffers);
 	}
-
-	// This Source may now be associated with an OpenAL source that still has
-	// the properties of another love Source. Let's reset it to the settings
-	// of the new one.
-	reset();
 }
 
 void Source::teardownAtomic()
@@ -736,6 +736,7 @@ void Source::pauseAtomic(const std::vector<love::audio::Source*> &sources)
 
 void Source::reset()
 {
+	alSourcei(source, AL_BUFFER, 0);
 	alSourcefv(source, AL_POSITION, position);
 	alSourcefv(source, AL_VELOCITY, velocity);
 	alSourcefv(source, AL_DIRECTION, direction);
