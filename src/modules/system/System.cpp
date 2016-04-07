@@ -147,12 +147,18 @@ bool System::openURL(const std::string &url) const
 	// Unicode-aware WinAPI functions don't accept UTF-8, so we need to convert.
 	std::wstring wurl = to_widestr(url);
 
-	HINSTANCE result = ShellExecuteW(nullptr,
-	                                 L"open",
-	                                 wurl.c_str(),
-	                                 nullptr,
-	                                 nullptr,
-	                                 SW_SHOW);
+	HINSTANCE result = 0;
+
+	#if !defined(LOVE_WINDOWS_UWP)
+
+	result = ShellExecuteW(nullptr,
+		L"open",
+		wurl.c_str(),
+		nullptr,
+		nullptr,
+		SW_SHOW);
+
+	#endif // LOVE_WINDOWS_UWP
 
 	return (int) result > 32;
 

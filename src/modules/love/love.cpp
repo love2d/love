@@ -307,7 +307,9 @@ int luaopen_love(lua_State *L)
 	lua_pushcfunction(L, w_love_isVersionCompatible);
 	lua_setfield(L, -2, "isVersionCompatible");
 
-#ifdef LOVE_WINDOWS
+#ifdef LOVE_WINDOWS_UWP
+	lua_pushstring(L, "Universal Windows Platform");
+#elif LOVE_WINDOWS
 	lua_pushstring(L, "Windows");
 #elif defined(LOVE_MACOSX)
 	lua_pushstring(L, "OS X");

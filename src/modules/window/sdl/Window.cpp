@@ -229,7 +229,14 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	};
 
 	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
-	if (hasSDL203orEarlier)
+	bool removeES3 = hasSDL203orEarlier;
+
+	// While UWP SDL is above 2.0.4, it still doesn't support OpenGL ES 3+
+#ifdef LOVE_WINDOWS_UWP
+	removeES3 = true;
+#endif
+	
+	if (removeES3)
 	{
 		auto it = attribslist.begin();
 		while (it != attribslist.end())
@@ -1019,7 +1026,7 @@ int Window::showMessageBox(const MessageBoxData &data)
 
 void Window::requestAttention(bool continuous)
 {
-#if defined(LOVE_WINDOWS)
+#if defined(LOVE_WINDOWS) && !defined(LOVE_WINDOWS_UWP)
 
 	if (hasFocus())
 		return;

@@ -62,7 +62,7 @@ public:
 	bool mount(const char *archive, const char *mountpoint, bool appendToPath = false);
 	bool unmount(const char *archive);
 
-	File *newFile(const char *filename) const;
+	love::filesystem::File *newFile(const char *filename) const;
 
 	FileData *newFileData(void *data, unsigned int size, const char *filename) const;
 	FileData *newFileData(const char *b64, const char *filename) const;
