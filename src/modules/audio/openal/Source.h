@@ -198,7 +198,6 @@ private:
 	StrongRef<love::sound::Decoder> decoder;
 
 	unsigned int toLoop;
-
 }; // Source
 
 } // openal

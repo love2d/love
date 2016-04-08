@@ -334,46 +334,35 @@ float Source::getVolume() const
 
 void Source::seekAtomic(float offset, void *unit)
 {
-	if (!valid)
-		return;
-
-	bool waspaused = !isPlaying();
+	bool wasPlaying = isPlaying();
 
 	// To drain all buffers
-	if (type == TYPE_STREAM)
+	if (valid && type == TYPE_STREAM)
 		stopAtomic();
 
 	switch (*((Source::Unit *) unit))
 	{
 	case Source::UNIT_SAMPLES:
-		if (type == TYPE_STREAM)
-		{
-			offsetSamples = offset;
-			offset /= decoder->getSampleRate();
-			offsetSeconds = offset;
-			decoder->seek(offset);
-		}
-		else
-			alSourcef(source, AL_SAMPLE_OFFSET, offset);
+		offsetSamples = offset;
+		offsetSeconds = offset / sampleRate;
 		break;
 	case Source::UNIT_SECONDS:
 	default:
-		if (type == TYPE_STREAM)
-		{
-			offsetSeconds = offset;
-			decoder->seek(offset);
-			offsetSamples = offset * decoder->getSampleRate();
-		}
-		else
-			alSourcef(source, AL_SEC_OFFSET, offset);
+		offsetSeconds = offset;
+		offsetSamples = offset * sampleRate;
 		break;
 	}
 
 	if (type == TYPE_STREAM)
-		playAtomic(source);
+		decoder->seek(offsetSeconds);
+	else if (valid) // Playing static source
+	{
+		alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+		offsetSamples = offsetSeconds = 0;
+	}
 
-	if (waspaused)
-		pauseAtomic();
+	if (wasPlaying && type == TYPE_STREAM)
+		playAtomic(source);
 }
 
 void Source::seek(float offset, Source::Unit unit)
@@ -383,27 +372,24 @@ void Source::seek(float offset, Source::Unit unit)
 
 float Source::tellAtomic(void *unit) const
 {
-	if (valid)
+	float offset = 0.0f;
+
+	switch (*((Source::Unit *) unit))
 	{
-		float offset;
-		switch (*((Source::Unit *) unit))
-		{
-		case Source::UNIT_SAMPLES:
+	case Source::UNIT_SAMPLES:
+		if (valid)
 			alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-			if (type == TYPE_STREAM) offset += offsetSamples;
-			break;
-		case Source::UNIT_SECONDS:
-		default:
-			{
-				alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-				offset /= sampleRate;
-				if (type == TYPE_STREAM) offset += offsetSeconds;
-			}
-			break;
-		}
-		return offset;
+		offset += offsetSamples;
+		break;
+	case Source::UNIT_SECONDS:
+	default:
+		if (valid)
+			alGetSourcef(source, AL_SEC_OFFSET, &offset);
+		offset += offsetSeconds;
+		break;
 	}
-	return 0.0f;
+
+	return offset;
 }
 
 float Source::tell(Source::Unit unit)
@@ -576,6 +562,8 @@ void Source::prepareAtomic()
 	if (type == TYPE_STATIC)
 	{
 		alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
+		if (offsetSamples >= 0)
+			alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 	}
 	else if (type == TYPE_STREAM)
 	{
@@ -621,6 +609,7 @@ void Source::teardownAtomic()
 
 	toLoop = 0;
 	valid = false;
+	offsetSamples = offsetSeconds = 0;
 }
 
 bool Source::playAtomic(ALuint source)
@@ -639,6 +628,9 @@ bool Source::playAtomic(ALuint source)
 
 	valid = true; //if it fails it will be set to false again
 	//but this prevents a horrible, horrible bug
+
+	if (type == TYPE_STATIC)
+		offsetSamples = offsetSeconds = 0;
 
 	return success;
 }
@@ -688,6 +680,9 @@ bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const 
 	{
 		Source *source = (Source*) _source;
 		source->valid = source->valid || success;
+
+		if (success && source->type == TYPE_STATIC)
+			source->offsetSamples = source->offsetSeconds = 0;
 	}
 
 	return success;
