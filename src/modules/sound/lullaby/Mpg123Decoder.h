@@ -25,7 +25,7 @@
 #include "common/Data.h"
 #include "Decoder.h"
 
-#ifndef LOVE_NO_MPG123
+#ifndef LOVE_NOMPG123
 
 // libmpg123
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
@@ -90,6 +90,6 @@ private:
 } // sound
 } // love
 
-#endif // LOVE_NO_MPG123
+#endif // LOVE_NOMPG123
 
 #endif // LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H

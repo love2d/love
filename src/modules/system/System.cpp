@@ -83,6 +83,8 @@ std::string System::getOS() const
 	return "OS X";
 #elif defined(LOVE_IOS)
 	return "iOS";
+#elif defined(LOVE_WINDOWS_UWP)
+	return "UWP";
 #elif defined(LOVE_WINDOWS)
 	return "Windows";
 #elif defined(LOVE_ANDROID)
@@ -149,7 +151,13 @@ bool System::openURL(const std::string &url) const
 
 	HINSTANCE result = 0;
 
-	#if !defined(LOVE_WINDOWS_UWP)
+#if defined(LOVE_WINDOWS_UWP)
+	
+	Platform::String^ urlString = ref new Platform::String(wurl.c_str());
+	auto uwpUri = ref new Windows::Foundation::Uri(urlString);
+	Windows::System::Launcher::LaunchUriAsync(uwpUri);
+
+#else
 
 	result = ShellExecuteW(nullptr,
 		L"open",
@@ -158,7 +166,7 @@ bool System::openURL(const std::string &url) const
 		nullptr,
 		SW_SHOW);
 
-	#endif // LOVE_WINDOWS_UWP
+#endif
 
 	return (int) result > 32;
 

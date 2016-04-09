@@ -521,7 +521,7 @@ std::string Filesystem::getAppdataDirectory()
 	{
 #ifdef LOVE_WINDOWS_UWP
 		appdata = getUserDirectory();
-#elif LOVE_WINDOWS
+#elif defined(LOVE_WINDOWS)
 		wchar_t *w_appdata = _wgetenv(L"APPDATA");
 		appdata = to_utf8(w_appdata);
 		replace_char(appdata, '\\', '/');

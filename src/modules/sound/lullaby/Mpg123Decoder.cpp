@@ -24,7 +24,7 @@
 
 #include <iostream>
 
-#ifndef LOVE_NO_MPG123
+#ifndef LOVE_NOMPG123
 
 namespace love
 {
@@ -289,4 +289,4 @@ double Mpg123Decoder::getDuration()
 } // sound
 } // love
 
-#endif // LOVE_NO_MPG123
+#endif // LOVE_NOMPG123
