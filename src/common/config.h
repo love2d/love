@@ -27,7 +27,7 @@
 #if WINAPI_FAMILY==WINAPI_FAMILY_APP
 #	define LOVE_WINDOWS_UWP 1
 #	define LOVE_NO_MODPLUG 1
-#	define LOVE_NO_MPG123 1
+#	define LOVE_NOMPG123 1
 #endif
 #endif
 #if defined(linux) || defined(__linux) || defined(__linux__)
