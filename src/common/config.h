@@ -24,6 +24,7 @@
 // Platform stuff.
 #if defined(WIN32) || defined(_WIN32)
 #	define LOVE_WINDOWS 1
+#	include <winapifamily.h>
 #if WINAPI_FAMILY==WINAPI_FAMILY_APP
 #	define LOVE_WINDOWS_UWP 1
 #	define LOVE_NO_MODPLUG 1
