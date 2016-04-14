@@ -79,6 +79,16 @@ Quad::Viewport Quad::getViewport() const
 	return viewport;
 }
 
+double Quad::getTextureWidth() const
+{
+	return sw;
+}
+
+double Quad::getTextureHeight() const
+{
+	return sh;
+}
+
 const Vertex *Quad::getVertices() const
 {
 	return vertices;

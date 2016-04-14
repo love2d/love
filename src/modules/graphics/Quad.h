@@ -47,6 +47,9 @@ public:
 	void setViewport(const Viewport &v);
 	Viewport getViewport() const;
 
+	double getTextureWidth() const;
+	double getTextureHeight() const;
+
 	const Vertex *getVertices() const;
 
 private:
