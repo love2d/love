@@ -252,7 +252,7 @@ love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
 
 const Font::Glyph &Font::addGlyph(uint32 glyph)
 {
-	love::font::GlyphData *gd = getRasterizerGlyphData(glyph);
+	StrongRef<love::font::GlyphData> gd(getRasterizerGlyphData(glyph), Acquire::NORETAIN);
 
 	int w = gd->getWidth();
 	int h = gd->getHeight();
@@ -264,18 +264,15 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		textureY += rowHeight;
 		rowHeight = TEXTURE_PADDING;
 	}
+
 	if (textureY + h + TEXTURE_PADDING > textureHeight)
 	{
 		// totally out of space - new texture!
-		try
-		{
-			createTexture();
-		}
-		catch (love::Exception &)
-		{
-			gd->release();
-			throw;
-		}
+		createTexture();
+
+		// Makes sure the above code for checking if the glyph can fit at
+		// the current position in the texture is run again for this glyph.
+		return addGlyph(glyph);
 	}
 
 	Glyph g;
@@ -318,18 +315,12 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 			g.vertices[i].x += gd->getBearingX();
 			g.vertices[i].y -= gd->getBearingY();
 		}
+
+		textureX += w + TEXTURE_PADDING;
+		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
 	}
 
-	if (w > 0)
-		textureX += (w + TEXTURE_PADDING);
-
-	if (h > 0)
-		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
-
-	gd->release();
-
 	const auto p = glyphs.insert(std::make_pair(glyph, g));
-
 	return p.first->second;
 }
 
