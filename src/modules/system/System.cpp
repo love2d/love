@@ -83,6 +83,8 @@ std::string System::getOS() const
 	return "OS X";
 #elif defined(LOVE_IOS)
 	return "iOS";
+#elif defined(LOVE_WINDOWS_UWP)
+	return "UWP";
 #elif defined(LOVE_WINDOWS)
 	return "Windows";
 #elif defined(LOVE_ANDROID)
@@ -147,12 +149,24 @@ bool System::openURL(const std::string &url) const
 	// Unicode-aware WinAPI functions don't accept UTF-8, so we need to convert.
 	std::wstring wurl = to_widestr(url);
 
-	HINSTANCE result = ShellExecuteW(nullptr,
-	                                 L"open",
-	                                 wurl.c_str(),
-	                                 nullptr,
-	                                 nullptr,
-	                                 SW_SHOW);
+	HINSTANCE result = 0;
+
+#if defined(LOVE_WINDOWS_UWP)
+	
+	Platform::String^ urlString = ref new Platform::String(wurl.c_str());
+	auto uwpUri = ref new Windows::Foundation::Uri(urlString);
+	Windows::System::Launcher::LaunchUriAsync(uwpUri);
+
+#else
+
+	result = ShellExecuteW(nullptr,
+		L"open",
+		wurl.c_str(),
+		nullptr,
+		nullptr,
+		SW_SHOW);
+
+#endif
 
 	return (int) result > 32;
 

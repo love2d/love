@@ -174,6 +174,21 @@ static int l_print_sdl_log(lua_State *L)
 
 static int runlove(int argc, char **argv)
 {
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
+	int hack_argc = 0;
+	char **hack_argv = 0;
+	get_app_arguments(argc, argv, hack_argc, hack_argv);
+	argc = hack_argc;
+	argv = hack_argv;
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
+
+	// Oh, you just want the version? Okay!
+	if (argc > 1 && strcmp(argv[1], "--version") == 0)
+	{
+		printf("LOVE %s (%s)\n", love_version(), love_codename());
+		return 0;
+	}
+
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
@@ -238,6 +253,15 @@ static int runlove(int argc, char **argv)
 
 	lua_close(L);
 
+#if defined(LOVE_LEGENDARY_APP_ARGV_HACK) && !defined(LOVE_IOS)
+	if (hack_argv)
+	{
+		for (int i = 0; i<hack_argc; ++i)
+			delete [] hack_argv[i];
+		delete [] hack_argv;
+	}
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
+
 	return retval;
 }
 
@@ -245,26 +269,11 @@ int main(int argc, char **argv)
 {
 	int retval = 0;
 
-#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
-	int hack_argc = 0;
-	char **hack_argv = 0;
-	get_app_arguments(argc, argv, hack_argc, hack_argv);
-	argc = hack_argc;
-	argv = hack_argv;
-#endif // LOVE_LEGENDARY_APP_ARGV_HACK
-
 	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
 	{
 		printf("Version mismatch detected!\nLOVE binary is version %s\n"
 			   "LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
 		return 1;
-	}
-
-	// Oh, you just want the version? Okay!
-	if (argc > 1 && strcmp(argv[1], "--version") == 0)
-	{
-		printf("LOVE %s (%s)\n", love_version(), love_codename());
-		return 0;
 	}
 
 #ifdef LOVE_IOS
@@ -276,15 +285,6 @@ int main(int argc, char **argv)
 	{
 		retval = runlove(argc, argv);
 	}
-
-#if defined(LOVE_LEGENDARY_APP_ARGV_HACK) && !defined(LOVE_IOS)
-	if (hack_argv)
-	{
-		for (int i = 0; i<hack_argc; ++i)
-			delete [] hack_argv[i];
-		delete [] hack_argv;
-	}
-#endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 #ifdef LOVE_ANDROID
 	SDL_Quit();
