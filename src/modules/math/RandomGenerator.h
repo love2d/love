@@ -73,7 +73,13 @@ public:
 	 **/
 	inline double random()
 	{
-		return double(rand()) / (double(std::numeric_limits<uint64>::max()) + 1.0);
+		uint64 r = rand();
+
+		// From http://xoroshiro.di.unimi.it
+		union { uint64 i; double d; } u;
+		u.i = ((0x3FFULL) << 52) | (r >> 12);
+
+		return u.d - 1.0;
 	}
 
 	/**
