@@ -164,7 +164,7 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 			lua_pushvalue(L, 2);
 			lua_pushnumber(L, x);
 			lua_pushnumber(L, y);
-			pixel c = t->getPixel(x, y);
+			pixel c = t->getPixelUnsafe(x, y);
 			lua_pushnumber(L, c.r);
 			lua_pushnumber(L, c.g);
 			lua_pushnumber(L, c.b);
