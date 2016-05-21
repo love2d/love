@@ -131,7 +131,7 @@ function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
 	for y=iy, iy+ih-1 do
 		for x=ix, ix+iw-1 do
 			local p = pixels[y*idw+x]
-			local r, g, b, a = func(x, y, tonumber(p.r), tonumber(p.g), tonumber(p.b), tonumber(p.a))
+			local r, g, b, a = func(x, y, tonumber(p.r) / 255, tonumber(p.g) / 255, tonumber(p.b) / 255, tonumber(p.a) / 255)
 			pixels[y*idw+x].r = r * 255
 			pixels[y*idw+x].g = g * 255
 			pixels[y*idw+x].b = b * 255
