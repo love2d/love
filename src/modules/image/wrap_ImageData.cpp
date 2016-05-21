@@ -165,10 +165,10 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 			lua_pushnumber(L, x);
 			lua_pushnumber(L, y);
 			pixel c = t->getPixel(x, y);
-			lua_pushnumber(L, c.r);
-			lua_pushnumber(L, c.g);
-			lua_pushnumber(L, c.b);
-			lua_pushnumber(L, c.a);
+			lua_pushnumber(L, c.r / 255.0);
+			lua_pushnumber(L, c.g / 255.0);
+			lua_pushnumber(L, c.b / 255.0);
+			lua_pushnumber(L, c.a / 255.0);
 			lua_call(L, 6, 4);
 
 			// If we used luaL_checkX / luaL_optX then we would get messy error
