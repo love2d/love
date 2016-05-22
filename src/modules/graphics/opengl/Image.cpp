@@ -501,6 +501,14 @@ void Image::setFilter(const Texture::Filter &f)
 
 	filter = f;
 
+	if (!data.empty() && !hasTextureFilteringSupport(data[0]->getFormat()))
+	{
+		filter.mag = filter.min = FILTER_NEAREST;
+
+		if (filter.mipmap == FILTER_LINEAR)
+			filter.mipmap = FILTER_NEAREST;
+	}
+
 	// We don't want filtering or (attempted) mipmaps on the default texture.
 	if (usingDefaultTexture)
 	{
