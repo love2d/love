@@ -52,8 +52,8 @@ public:
 	const char *getName() const;
 
 	love::image::ImageData *newImageData(love::filesystem::FileData *data);
-	love::image::ImageData *newImageData(int width, int height);
-	love::image::ImageData *newImageData(int width, int height, void *data, bool own = false);
+	love::image::ImageData *newImageData(int width, int height, ImageData::Format format = ImageData::FORMAT_RGBA8);
+	love::image::ImageData *newImageData(int width, int height, ImageData::Format format, void *data, bool own = false);
 
 	love::image::CompressedImageData *newCompressedData(love::filesystem::FileData *data);
 

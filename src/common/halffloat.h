@@ -18,50 +18,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
-#include "FormatHandler.h"
-#include "common/Exception.h"
+#ifndef LOVE_HALF_FLOAT_H
+#define LOVE_HALF_FLOAT_H
+
+#include "int.h"
 
 namespace love
 {
-namespace image
-{
-namespace magpie
-{
 
-FormatHandler::FormatHandler()
-{
-}
+typedef uint16 half;
 
-FormatHandler::~FormatHandler()
-{
-}
+void halfInit();
 
-bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
-{
-	return false;
-}
+float halfToFloat(half h);
+half floatToHalf(float f);
 
-bool FormatHandler::canEncode(ImageData::Format /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
-{
-	return false;
-}
-
-FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*data*/)
-{
-	throw love::Exception("Image decoding is not implemented for this format backend.");
-}
-
-FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::EncodedFormat /*format*/)
-{
-	throw love::Exception("Image encoding is not implemented for this format backend.");
-}
-
-void FormatHandler::free(unsigned char *mem)
-{
-	delete[] mem;
-}
-
-} // magpie
-} // image
 } // love
+
+#endif // LOVE_HALF_FLOAT_H

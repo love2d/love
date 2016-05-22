@@ -140,9 +140,10 @@ bool PNGHandler::canDecode(love::filesystem::FileData *data)
 	return status == 0 && width > 0 && height > 0;
 }
 
-bool PNGHandler::canEncode(ImageData::EncodedFormat format)
+bool PNGHandler::canEncode(ImageData::Format rawFormat, ImageData::EncodedFormat encodedFormat)
 {
-	return format == ImageData::ENCODED_PNG;
+	return encodedFormat == ImageData::ENCODED_PNG
+		&& (rawFormat == ImageData::FORMAT_RGBA8 || rawFormat == ImageData::FORMAT_RGBA16);
 }
 
 PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
@@ -154,14 +155,23 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 	DecodedImage img;
 
 	lodepng::State state;
+	unsigned status = lodepng_inspect(&width, &height, &state, indata, insize);
 
-	state.info_raw.colortype = LCT_RGBA;
-	state.info_raw.bitdepth = 8;
+	if (status != 0)
+	{
+		const char *err = lodepng_error_text(status);
+		throw love::Exception("Could not decode PNG image (%s)", err);
+	}
 
 	state.decoder.zlibsettings.custom_zlib = zlibDecompress;
+	state.info_raw.colortype = LCT_RGBA;
 
-	unsigned status = lodepng_decode(&img.data, &width, &height,
-	                                 &state, indata, insize);
+	if (state.info_png.color.bitdepth == 16)
+		state.info_raw.bitdepth = 16;
+	else
+		state.info_raw.bitdepth = 8;
+
+	status = lodepng_decode(&img.data, &width, &height, &state, indata, insize);
 
 	if (status != 0)
 	{
@@ -171,14 +181,27 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 
 	img.width  = (int) width;
 	img.height = (int) height;
-	img.size   = width * height * 4;
+	img.size   = width * height * (state.info_raw.bitdepth * 4 / 8);
+	img.format = state.info_raw.bitdepth == 16 ? ImageData::FORMAT_RGBA16 : ImageData::FORMAT_RGBA8;
+
+	// LodePNG keeps raw 16 bit images stored as big-endian.
+#ifndef LOVE_BIG_ENDIAN
+	if (state.info_raw.bitdepth == 16)
+	{
+		uint16 *pixeldata = (uint16 *) img.data;
+		uint16 numpixelcomponents = img.size / sizeof(uint16);
+
+		for (size_t i = 0; i < numpixelcomponents; i++)
+			pixeldata[i] = swapuint16(pixeldata[i]);
+	}
+#endif
 
 	return img;
 }
 
-PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::EncodedFormat format)
+PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::EncodedFormat encodedFormat)
 {
-	if (format != ImageData::ENCODED_PNG)
+	if (!canEncode(img.format, encodedFormat))
 		throw love::Exception("PNG encoder cannot encode to non-PNG format.");
 
 	EncodedImage encimg;
@@ -186,11 +209,10 @@ PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::
 	lodepng::State state;
 
 	state.info_raw.colortype = LCT_RGBA;
-	state.info_raw.bitdepth = 8;
+	state.info_raw.bitdepth = img.format == ImageData::FORMAT_RGBA16 ? 16 : 8;
 
-	// TODO: support plain RGB (24-bit) encoding in the future?
 	state.info_png.color.colortype = LCT_RGBA;
-	state.info_png.color.bitdepth = 8;
+	state.info_png.color.bitdepth = state.info_raw.bitdepth;
 
 	state.encoder.zlibsettings.custom_zlib = zlibCompress;
 

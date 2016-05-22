@@ -40,6 +40,9 @@ ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, i
 	, numglyphs(numglyphs)
 	, extraSpacing(extraspacing)
 {
+	if (data->getFormat() != image::ImageData::FORMAT_RGBA8)
+		throw love::Exception("Only 32-bit RGBA images are supported in Image Fonts!");
+
 	load();
 }
 

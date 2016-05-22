@@ -24,6 +24,8 @@
 // LOVE
 #include "common/Data.h"
 #include "common/StringMap.h"
+#include "common/int.h"
+#include "common/halffloat.h"
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
 
@@ -41,12 +43,29 @@ struct pixel
 	unsigned char r, g, b, a;
 };
 
+union Pixel
+{
+	uint8  rgba8[4];
+	uint16 rgba16[4];
+	half   rgba16f[4];
+	float  rgba32f[4];
+};
+
 /**
  * Represents raw pixel data.
  **/
 class ImageData : public Data
 {
 public:
+
+	enum Format
+	{
+		FORMAT_RGBA8,
+		FORMAT_RGBA16,
+		FORMAT_RGBA16F,
+		FORMAT_RGBA32F,
+		FORMAT_MAX_ENUM
+	};
 
 	enum EncodedFormat
 	{
@@ -57,6 +76,8 @@ public:
 
 	ImageData();
 	virtual ~ImageData();
+
+	Format getFormat() const;
 
 	/**
 	 * Paste part of one ImageData onto another. The subregion defined by the top-left
@@ -79,13 +100,11 @@ public:
 
 	/**
 	 * Gets the width of this ImageData.
-	 * @return The width of this ImageData.
 	 **/
 	int getWidth() const;
 
 	/**
 	 * Gets the height of this ImageData.
-	 * @return The height of this ImageData.
 	 **/
 	int getHeight() const;
 
@@ -95,13 +114,7 @@ public:
 	 * @param y The location along the y-axis.
 	 * @param p The color to use for the given location.
 	 **/
-	void setPixel(int x, int y, pixel p);
-
-	/**
-	 * Sets the pixel at location (x,y).
-	 * Not thread-safe, and doesn't verify the coordinates!
-	 **/
-	void setPixelUnsafe(int x, int y, pixel p);
+	void setPixel(int x, int y, const Pixel &p);
 
 	/**
 	 * Gets the pixel at location (x,y).
@@ -109,13 +122,7 @@ public:
 	 * @param y The location along the y-axis.
 	 * @return The color for the given location.
 	 **/
-	pixel getPixel(int x, int y) const;
-
-	/**
-	 * Gets the pixel at location (x,y).
-	 * Not thread-safe, and doesn't verify the coordinates!
-	 **/
-	pixel getPixelUnsafe(int x, int y) const;
+	void getPixel(int x, int y, Pixel &p) const;
 
 	/**
 	 * Encodes raw pixel data into a given format.
@@ -130,10 +137,19 @@ public:
 	virtual void *getData() const;
 	virtual size_t getSize() const;
 
+	size_t getPixelSize() const;
+
+	static size_t getPixelSize(Format format);
+
+	static bool getConstant(const char *in, Format &out);
+	static bool getConstant(Format in, const char *&out);
+
 	static bool getConstant(const char *in, EncodedFormat &out);
 	static bool getConstant(EncodedFormat in, const char *&out);
 
 protected:
+
+	Format format;
 
 	// The width of the image data.
 	int width;
@@ -150,6 +166,9 @@ protected:
 	love::thread::MutexRef mutex;
 
 private:
+
+	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
+	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
 	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;

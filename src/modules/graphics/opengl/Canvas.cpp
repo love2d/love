@@ -633,7 +633,7 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *image, int x, i
 	gl.bindFramebuffer(GL_FRAMEBUFFER, prevfbo);
 
 	// The new ImageData now owns the pixel data, so we don't delete it here.
-	return image->newImageData(w, h, pixels, true);
+	return image->newImageData(w, h, image::ImageData::FORMAT_RGBA8, pixels, true);
 }
 
 bool Canvas::resolveMSAA(bool restoreprev)

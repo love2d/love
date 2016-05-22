@@ -18,9 +18,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
+#ifndef LOVE_IMAGE_MAGPIE_EXR_HANDLER_H
+#define LOVE_IMAGE_MAGPIE_EXR_HANDLER_H
+
 #include "FormatHandler.h"
-#include "common/Exception.h"
 
 namespace love
 {
@@ -29,39 +30,27 @@ namespace image
 namespace magpie
 {
 
-FormatHandler::FormatHandler()
+/**
+ * Interface between ImageData and TinyEXR library, for decoding exr files.
+ **/
+class EXRHandler : public FormatHandler
 {
-}
+public:
 
-FormatHandler::~FormatHandler()
-{
-}
+	// Implements FormatHandler.
 
-bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
-{
-	return false;
-}
+	virtual bool canDecode(love::filesystem::FileData *data);
+	virtual bool canEncode(ImageData::Format rawFormat, ImageData::EncodedFormat encodedFormat);
 
-bool FormatHandler::canEncode(ImageData::Format /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
-{
-	return false;
-}
+	virtual DecodedImage decode(love::filesystem::FileData *data);
+	virtual EncodedImage encode(const DecodedImage &img, ImageData::EncodedFormat format);
 
-FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*data*/)
-{
-	throw love::Exception("Image decoding is not implemented for this format backend.");
-}
+	virtual void free(unsigned char *mem);
 
-FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::EncodedFormat /*format*/)
-{
-	throw love::Exception("Image encoding is not implemented for this format backend.");
-}
-
-void FormatHandler::free(unsigned char *mem)
-{
-	delete[] mem;
-}
+}; // EXRHandler
 
 } // magpie
 } // image
 } // love
+
+#endif // LOVE_IMAGE_MAGPIE_EXR_HANDLER_H

@@ -189,6 +189,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 			if (images[pageindex].get() == nullptr)
 			{
 				using namespace love::filesystem;
+				using namespace love::image;
 
 				auto filesystem  = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
 				auto imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
@@ -201,8 +202,16 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 				// read() returns a retained ref already.
 				StrongRef<FileData> data(filesystem->read(filename.c_str()), Acquire::NORETAIN);
 
+				ImageData *imagedata = imagemodule->newImageData(data.get());
+
+				if (imagedata->getFormat() != ImageData::FORMAT_RGBA8)
+				{
+					imagedata->release();
+					throw love::Exception("Only 32-bit RGBA images are supported in BMFonts.");
+				}
+
 				// Same with newImageData.
-				images[pageindex].set(imagemodule->newImageData(data.get()), Acquire::NORETAIN);
+				images[pageindex].set(imagedata, Acquire::NORETAIN);
 			}
 		}
 		else if (tag == "char")
@@ -296,6 +305,8 @@ GlyphData *BMFontRasterizer::getGlyphData(uint32 glyph) const
 	}
 
 	image::ImageData *imagedata = imagepair->second.get();
+
+	size_t pixelsize = imagedata->getPixelSize();
 	image::pixel *pixels = (image::pixel *) g->getData();
 	const image::pixel *ipixels = (const image::pixel *) imagedata->getData();
 
@@ -305,7 +316,7 @@ GlyphData *BMFontRasterizer::getGlyphData(uint32 glyph) const
 	for (int y = 0; y < c.metrics.height; y++)
 	{
 		size_t idindex = (c.y + y) * imagedata->getWidth() + c.x;
-		memcpy(&pixels[y * c.metrics.width], &ipixels[idindex], sizeof(image::pixel) * c.metrics.width);
+		memcpy(&pixels[y * c.metrics.width], &ipixels[idindex], pixelsize * c.metrics.width);
 	}
 
 	return g;

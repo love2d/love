@@ -44,6 +44,7 @@ public:
 	// Raw RGBA pixel data.
 	struct DecodedImage
 	{
+		ImageData::Format format = ImageData::FORMAT_RGBA8;
 		int width   = 0;
 		int height  = 0;
 		size_t size = 0;
@@ -75,7 +76,7 @@ public:
 	/**
 	 * Whether this format handler can encode to a particular format.
 	 **/
-	virtual bool canEncode(ImageData::EncodedFormat format);
+	virtual bool canEncode(ImageData::Format rawFormat, ImageData::EncodedFormat encodedFormat);
 
 	/**
 	 * Decodes an image from its encoded form into raw pixel data.

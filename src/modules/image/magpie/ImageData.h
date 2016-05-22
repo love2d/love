@@ -39,18 +39,18 @@ class ImageData : public love::image::ImageData
 {
 public:
 
-	ImageData(std::list<FormatHandler *> formats, love::filesystem::FileData *data);
-	ImageData(std::list<FormatHandler *> formats, int width, int height);
-	ImageData(std::list<FormatHandler *> formats, int width, int height, void *data, bool own);
+	ImageData(std::list<FormatHandler *> formatHandlers, love::filesystem::FileData *data);
+	ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, Format format = FORMAT_RGBA8);
+	ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, Format format, void *data, bool own);
 	virtual ~ImageData();
 
 	// Implements image::ImageData.
-	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename);
+	virtual love::filesystem::FileData *encode(EncodedFormat encodedFormat, const char *filename);
 
 private:
 
 	// Create imagedata. Initialize with data if not null.
-	void create(int width, int height, void *data = 0);
+	void create(int width, int height, Format format, void *data = nullptr);
 
 	// Decode and load an encoded format.
 	void decode(love::filesystem::FileData *data);

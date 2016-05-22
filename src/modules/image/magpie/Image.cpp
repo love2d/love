@@ -27,6 +27,7 @@
 
 #include "PNGHandler.h"
 #include "STBHandler.h"
+#include "EXRHandler.h"
 
 #include "ddsHandler.h"
 #include "PVRHandler.h"
@@ -43,9 +44,12 @@ namespace magpie
 
 Image::Image()
 {
+	halfInit(); // Makes sure half-float conversions can be used.
+
 	formatHandlers = {
 		new PNGHandler,
 		new STBHandler,
+		new EXRHandler,
 	};
 
 	compressedFormatHandlers = {
@@ -78,14 +82,14 @@ love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
 	return new ImageData(formatHandlers, data);
 }
 
-love::image::ImageData *Image::newImageData(int width, int height)
+love::image::ImageData *Image::newImageData(int width, int height, ImageData::Format format)
 {
-	return new ImageData(formatHandlers, width, height);
+	return new ImageData(formatHandlers, width, height, format);
 }
 
-love::image::ImageData *Image::newImageData(int width, int height, void *data, bool own)
+love::image::ImageData *Image::newImageData(int width, int height, ImageData::Format format, void *data, bool own)
 {
-	return new ImageData(formatHandlers, width, height, data, own);
+	return new ImageData(formatHandlers, width, height, format, data, own);
 }
 
 love::image::CompressedImageData *Image::newCompressedData(love::filesystem::FileData *data)

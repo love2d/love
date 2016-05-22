@@ -36,7 +36,7 @@ namespace image
 
 int w_newImageData(lua_State *L)
 {
-	// Case 1: Integers.
+	// Case 1: width & height.
 	if (lua_isnumber(L, 1))
 	{
 		int w = (int) luaL_checknumber(L, 1);
@@ -44,14 +44,23 @@ int w_newImageData(lua_State *L)
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 
+		ImageData::Format format = ImageData::FORMAT_RGBA8;
+
+		if (!lua_isnoneornil(L, 3))
+		{
+			const char *fstr = luaL_checkstring(L, 3);
+			if (!ImageData::getConstant(fstr, format))
+				return luaL_error(L, "Invalid ImageData format: %s", fstr);
+		}
+
 		size_t numbytes = 0;
 		const char *bytes = nullptr;
 
-		if (!lua_isnoneornil(L, 3))
-			bytes = luaL_checklstring(L, 3, &numbytes);
+		if (!lua_isnoneornil(L, 4))
+			bytes = luaL_checklstring(L, 4, &numbytes);
 
 		ImageData *t = nullptr;
-		luax_catchexcept(L, [&](){ t = instance()->newImageData(w, h); });
+		luax_catchexcept(L, [&](){ t = instance()->newImageData(w, h, format); });
 
 		if (bytes)
 		{

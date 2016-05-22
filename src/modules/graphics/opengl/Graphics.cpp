@@ -1600,7 +1600,7 @@ love::image::ImageData *Graphics::newScreenshot(love::image::Image *image, bool 
 	{
 		// Tell the new ImageData that it owns the screenshot data, so we don't
 		// need to delete it here.
-		img = image->newImageData(w, h, (void *) screenshot, true);
+		img = image->newImageData(w, h, image::ImageData::FORMAT_RGBA8, screenshot, true);
 	}
 	catch (love::Exception &)
 	{

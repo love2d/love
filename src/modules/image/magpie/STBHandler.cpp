@@ -32,6 +32,7 @@ static void loveSTBIAssert(bool test, const char *teststr)
 // #define STBI_ONLY_PNG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
+#define STBI_ONLY_HDR
 #define STBI_NO_STDIO
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ASSERT(A) loveSTBIAssert((A), #A)
@@ -59,20 +60,31 @@ bool STBHandler::canDecode(love::filesystem::FileData *data)
 	return status == 1 && w > 0 && h > 0;
 }
 
-bool STBHandler::canEncode(ImageData::EncodedFormat format)
+bool STBHandler::canEncode(ImageData::Format rawFormat, ImageData::EncodedFormat encodedFormat)
 {
-	return format == ImageData::ENCODED_TGA;
+	return encodedFormat == ImageData::ENCODED_TGA && rawFormat == ImageData::FORMAT_RGBA8;
 }
 
 FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 {
 	DecodedImage img;
 
+	const stbi_uc *buffer = (const stbi_uc *) data->getData();
+	int bufferlen = (int) data->getSize();
 	int comp = 0;
-	img.data = stbi_load_from_memory((const stbi_uc *) data->getData(),
-	                                 (int) data->getSize(),
-	                                 &img.width, &img.height,
-	                                 &comp, 4);
+
+	if (stbi_is_hdr_from_memory(buffer, bufferlen))
+	{
+		img.data = (unsigned char *) stbi_loadf_from_memory(buffer, bufferlen, &img.width, &img.height, &comp, 4);
+		img.size = img.width * img.height * 4 * sizeof(float);
+		img.format = ImageData::FORMAT_RGBA32F;
+	}
+	else
+	{
+		img.data = stbi_load_from_memory(buffer, bufferlen, &img.width, &img.height, &comp, 4);
+		img.size = img.width * img.height * 4;
+		img.format = ImageData::FORMAT_RGBA8;
+	}
 
 	if (img.data == nullptr || img.width <= 0 || img.height <= 0)
 	{
@@ -82,14 +94,12 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 		throw love::Exception("Could not decode image with stb_image (%s).", err);
 	}
 
-	img.size = img.width * img.height * 4;
-
 	return img;
 }
 
-FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageData::EncodedFormat format)
+FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageData::EncodedFormat encodedFormat)
 {
-	if (!canEncode(format))
+	if (!canEncode(img.format, encodedFormat))
 		throw love::Exception("Invalid format.");
 
 	// We don't actually use stb_image for encoding, but this code is small
@@ -113,13 +123,13 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageDat
 		throw love::Exception("Out of memory.");
 
 	// here's the header for the Targa file format.
-	encimg.data[0] = 0; // ID field size
-	encimg.data[1] = 0; // colormap type
-	encimg.data[2] = 2; // image type
-	encimg.data[3] = encimg.data[4] = 0; // colormap start
-	encimg.data[5] = encimg.data[6] = 0; // colormap length
-	encimg.data[7] = 32; // colormap bits
-	encimg.data[8] = encimg.data[9] = 0; // x origin
+	encimg.data[0]  = 0; // ID field size
+	encimg.data[1]  = 0; // colormap type
+	encimg.data[2]  = 2; // image type
+	encimg.data[3]  = encimg.data[4] = 0; // colormap start
+	encimg.data[5]  = encimg.data[6] = 0; // colormap length
+	encimg.data[7]  = 32; // colormap bits
+	encimg.data[8]  = encimg.data[9] = 0; // x origin
 	encimg.data[10] = encimg.data[11] = 0; // y origin
 	// Targa is little endian, so:
 	encimg.data[12] = img.width & 255; // least significant byte of width

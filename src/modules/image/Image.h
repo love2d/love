@@ -62,7 +62,7 @@ public:
 	 * @param height The height of the ImageData.
 	 * @return The new ImageData.
 	 **/
-	virtual ImageData *newImageData(int width, int height) = 0;
+	virtual ImageData *newImageData(int width, int height, ImageData::Format format = ImageData::FORMAT_RGBA8) = 0;
 
 	/**
 	 * Creates empty ImageData with the given size.
@@ -73,7 +73,7 @@ public:
 	 *        copy it.
 	 * @return The new ImageData.
 	 **/
-	virtual ImageData *newImageData(int width, int height, void *data, bool own = false) = 0;
+	virtual ImageData *newImageData(int width, int height, ImageData::Format format, void *data, bool own = false) = 0;
 
 	/**
 	 * Creates new CompressedImageData from FileData.

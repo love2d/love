@@ -69,26 +69,98 @@ if not status then return end
 
 pcall(ffi.cdef, [[
 typedef struct Proxy Proxy;
+typedef uint16_t half;
 
 typedef struct FFI_ImageData
 {
 	void (*lockMutex)(Proxy *p);
 	void (*unlockMutex)(Proxy *p);
+
+	float (*halfToFloat)(half h);
+	half (*floatToHalf)(float f);
 } FFI_ImageData;
 
-typedef struct ImageData_Pixel
+typedef struct ImageData_Pixel_RGBA8
 {
 	uint8_t r, g, b, a;
-} ImageData_Pixel;
+} ImageData_Pixel_RGBA8;
+
+typedef struct ImageData_Pixel_RGBA16
+{
+	uint16_t r, g, b, a;
+} ImageData_Pixel_RGBA16;
+
+typedef struct ImageData_Pixel_RGBA16F
+{
+	half r, g, b, a;
+} ImageData_Pixel_RGBA16F;
+
+typedef struct ImageData_Pixel_RGBA32F
+{
+	float r, g, b, a;
+} ImageData_Pixel_RGBA32F;
 ]])
 
 local ffifuncs = ffi.cast("FFI_ImageData *", ffifuncspointer)
 
-local pixelpointer = ffi.typeof("ImageData_Pixel *")
+local conversions = {
+	rgba8 = {
+		pointer = ffi.typeof("ImageData_Pixel_RGBA8 *"),
+		tolua = function(self)
+			return tonumber(self.r) / 255, tonumber(self.g) / 255, tonumber(self.b) / 255, tonumber(self.a) / 255
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = r * 255
+			self.g = g * 255
+			self.b = b * 255
+			self.a = a == nil and 255 or a * 255
+		end,
+	},
+	rgba16 = {
+		pointer = ffi.typeof("ImageData_Pixel_RGBA16 *"),
+		tolua = function(self)
+			return tonumber(self.r) / 65535, tonumber(self.g) / 65535, tonumber(self.b) / 65535, tonumber(self.a) / 65535
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = r * 65535
+			self.g = g * 65535
+			self.b = b * 65535
+			self.a = a == nil and 65535 or a * 65535
+		end,
+	},
+	rgba16f = {
+		pointer = ffi.typeof("ImageData_Pixel_RGBA16F *"),
+		tolua = function(self)
+			return tonumber(ffifuncs.halfToFloat(self.r)),
+			       tonumber(ffifuncs.halfToFloat(self.g)),
+			       tonumber(ffifuncs.halfToFloat(self.b)),
+			       tonumber(ffifuncs.halfToFloat(self.a))
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = ffifuncs.floatToHalf(r)
+			self.g = ffifuncs.floatToHalf(g)
+			self.b = ffifuncs.floatToHalf(b)
+			self.a = ffifuncs.floatToHalf(a == nil and 1.0 or a)
+		end,
+	},
+	rgba32f = {
+		pointer = ffi.typeof("ImageData_Pixel_RGBA32F *"),
+		tolua = function(self)
+			return tonumber(self.r), tonumber(self.g), tonumber(self.b), tonumber(self.a)
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = r
+			self.g = g
+			self.b = b
+			self.a = a == nil and 1.0 or a
+		end,
+	},
+}
 
 local _getWidth = ImageData.getWidth
 local _getHeight = ImageData.getHeight
 local _getDimensions = ImageData.getDimensions
+local _getFormat = ImageData.getFormat
 
 -- Table which holds ImageData objects as keys, and information about the objects
 -- as values. Uses weak keys so the ImageData objects can still be GC'd properly.
@@ -96,12 +168,17 @@ local objectcache = setmetatable({}, {
 	__mode = "k",
 	__index = function(self, imagedata)
 		local width, height = _getDimensions(imagedata)
-		local pointer = ffi.cast(pixelpointer, imagedata:getPointer())
+		local format = _getFormat(imagedata)
+		
+		local conv = conversions[format]
 
 		local p = {
 			width = width,
 			height = height,
-			pointer = pointer,
+			format = format,
+			pointer = ffi.cast(conv.pointer, imagedata:getPointer()),
+			tolua = conv.tolua,
+			fromlua = conv.fromlua,
 		}
 
 		self[imagedata] = p
@@ -127,15 +204,14 @@ function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
 	local idw, idh = p.width, p.height
 
 	local pixels = p.pointer
+	local tolua = p.tolua
+	local fromlua = p.fromlua
 
 	for y=iy, iy+ih-1 do
 		for x=ix, ix+iw-1 do
-			local p = pixels[y*idw+x]
-			local r, g, b, a = func(x, y, tonumber(p.r) / 255, tonumber(p.g) / 255, tonumber(p.b) / 255, tonumber(p.a) / 255)
-			pixels[y*idw+x].r = r * 255
-			pixels[y*idw+x].g = g * 255
-			pixels[y*idw+x].b = b * 255
-			pixels[y*idw+x].a = a == nil and 255 or (a*255)
+			local pixel = pixels[y*idw+x]
+			local r, g, b, a = func(x, y, tolua(pixel))
+			fromlua(pixel, r, g, b, a)
 		end
 	end
 end
@@ -149,13 +225,11 @@ function ImageData:getPixel(x, y)
 
 	ffifuncs.lockMutex(self)
 	local pixel = p.pointer[y * p.width + x]
-	local r, g, b, a = tonumber(pixel.r), tonumber(pixel.g), tonumber(pixel.b), tonumber(pixel.a)
+	local r, g, b, a = p.tolua(pixel)
 	ffifuncs.unlockMutex(self)
 
-	return r / 255, g / 255, b / 255, a / 255
+	return r, g, b, a
 end
-
-local temppixel = ffi.new("ImageData_Pixel")
 
 function ImageData:setPixel(x, y, r, g, b, a)
 	if type(x) ~= "number" then error("bad argument #1 to ImageData:setPixel (expected number)", 2) end
@@ -174,13 +248,8 @@ function ImageData:setPixel(x, y, r, g, b, a)
 	local p = objectcache[self]
 	if not inside(x, y, p.width, p.height) then error("Attempt to set out-of-range pixel!", 2) end
 
-	temppixel.r = r * 255
-	temppixel.g = g * 255
-	temppixel.b = b * 255
-	temppixel.a = a == nil and 255 or a * 255
-
 	ffifuncs.lockMutex(self)
-	p.pointer[y * p.width + x] = temppixel
+	p.fromlua(p.pointer[y * p.width + x], r, g, b, a)
 	ffifuncs.unlockMutex(self)
 end
 
@@ -195,6 +264,10 @@ end
 function ImageData:getDimensions()
 	local p = objectcache[self]
 	return p.width, p.height
+end
+
+function ImageData:getFormat()
+	return objectcache[self].format
 end
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
