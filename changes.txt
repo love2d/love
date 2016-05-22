@@ -8,13 +8,20 @@ Released: N/A
   * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
   * Added love.math.encode/decode, which support hex and base64.
   * Added love.math.hash, which supports MD5, SHA-1 and the SHA-2 family.
+  * Added support for different ImageData formats, including RGBA8 (the default), RGBA16, RGBA16F, and RGBA32F.
+  * Added the ability to load Radiance HDR, OpenEXR, and 16 bit PNG images.
+  * Added love.graphics.getRawImageFormats.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.
-  * Changed audio playback API drastically.
+  * Changed the 'multiply' blend mode to error if not used with the 'premultiplied' blend alpha mode, since the formula only works with that anyway.
+  * Changed the audio playback APIs drastically.
 
   * Removed the default source type for love.audio.newSource.
   * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
+
+  * Updated Source:seek to work if the Source isn't playing.
+  * Updated love.math.random to have improved numeric distribution.
 
 LOVE 0.10.2 [Super Toast]
 -------------------------
