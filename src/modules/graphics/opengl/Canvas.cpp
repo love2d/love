@@ -605,12 +605,37 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *image, int x, i
 	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > width || (y + h) > height)
 		throw love::Exception("Invalid ImageData rectangle dimensions.");
 
-	int row = 4 * w;
-	int size = row * h;
-	GLubyte *pixels = nullptr;
+	GLenum datatype = GL_UNSIGNED_BYTE;
+	image::ImageData::Format imageformat = image::ImageData::FORMAT_RGBA8;
+
+	switch (getSizedFormat(format))
+	{
+	case FORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
+		datatype = GL_UNSIGNED_SHORT;
+		imageformat = image::ImageData::FORMAT_RGBA16;
+		break;
+	case FORMAT_R16F:
+	case FORMAT_RG16F:
+	case FORMAT_RGBA16F:
+	case FORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
+		datatype = GL_HALF_FLOAT;
+		imageformat = image::ImageData::FORMAT_RGBA16F;
+		break;
+	case FORMAT_R32F:
+	case FORMAT_RG32F:
+	case FORMAT_RGBA32F:
+		datatype = GL_FLOAT;
+		imageformat = image::ImageData::FORMAT_RGBA32F;
+		break;
+	default:
+		break;
+	}
+
+	int size = w * h * image::ImageData::getPixelSize(imageformat);
+	uint8 *pixels = nullptr;
 	try
 	{
-		pixels = new GLubyte[size];
+		pixels = new uint8[size];
 	}
 	catch (std::bad_alloc &)
 	{
@@ -627,13 +652,13 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *image, int x, i
 	else
 		gl.bindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels(x, y, w, h, GL_RGBA, datatype, pixels);
 
 	GLuint prevfbo = current ? current->fbo : gl.getDefaultFBO();
 	gl.bindFramebuffer(GL_FRAMEBUFFER, prevfbo);
 
 	// The new ImageData now owns the pixel data, so we don't delete it here.
-	return image->newImageData(w, h, image::ImageData::FORMAT_RGBA8, pixels, true);
+	return image->newImageData(w, h, imageformat, pixels, true);
 }
 
 bool Canvas::resolveMSAA(bool restoreprev)
