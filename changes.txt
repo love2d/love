@@ -17,6 +17,7 @@ Released: N/A
   * Fixed love.window.setMode crashing when called with a Canvas active.
   * Fixed gamma correction of ImageFonts and BMFonts with colored images.
   * Fixed the default shader improperly applying gamma correction to per-vertex colors when gamma correction is requested but not supported on OpenGL ES.
+  * Fixed text coloring breaking because of an empty string.
 
   * Improved performance of Channel methods by roughly 2x in many cases.
   

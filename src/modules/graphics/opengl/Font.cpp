@@ -387,6 +387,11 @@ void Font::getCodepointsFromString(const std::vector<ColoredString> &strs, Color
 
 	for (const ColoredString &cstr : strs)
 	{
+		// No need to add the color if the string is empty anyway, and the code
+		// further on assumes no two colors share the same starting position.
+		if (cstr.str.size() == 0)
+			continue;
+
 		IndexedColor c = {cstr.color, (int) codepoints.cps.size()};
 		codepoints.colors.push_back(c);
 
