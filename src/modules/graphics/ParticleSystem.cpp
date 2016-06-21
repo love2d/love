@@ -437,6 +437,9 @@ void ParticleSystem::setEmissionRate(float rate)
 	if (rate < 0.0f)
 		throw love::Exception("Invalid emission rate");
 	emissionRate = rate;
+
+	// Prevent an explosion when dramatically increasing the rate
+	emitCounter = std::min(emitCounter, 1.0f/rate);
 }
 
 float ParticleSystem::getEmissionRate() const
@@ -932,9 +935,6 @@ void ParticleSystem::update(float dt)
 			addParticle(1.0f - (emitCounter - rate) / total);
 			emitCounter -= rate;
 		}
-		/*int particles = (int)(emissionRate * dt);
-		 for (int i = 0; i != particles; i++)
-		 add();*/
 
 		life -= dt;
 		if (lifetime != -1 && life < 0)
