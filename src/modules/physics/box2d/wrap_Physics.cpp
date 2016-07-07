@@ -215,12 +215,25 @@ int w_newRevoluteJoint(lua_State *L)
 {
 	Body *body1 = luax_checkbody(L, 1);
 	Body *body2 = luax_checkbody(L, 2);
-	float x = (float)luaL_checknumber(L, 3);
-	float y = (float)luaL_checknumber(L, 4);
-	bool collideConnected = luax_optboolean(L, 5, false);
+	float xA = (float)luaL_checknumber(L, 3);
+	float yA = (float)luaL_checknumber(L, 4);
+	float xB, yB;
+	bool collideConnected;
+	if (lua_gettop(L) >= 6)
+	{
+		xB = (float)luaL_checknumber(L, 5);
+		yB = (float)luaL_checknumber(L, 6);
+		collideConnected = luax_optboolean(L, 7, false);
+	}
+	else
+	{
+		xB = xA;
+		yB = yA;
+		collideConnected = luax_optboolean(L, 5, false);
+	}
 	RevoluteJoint *j;
 	luax_catchexcept(L, [&]() {
-		j = instance()->newRevoluteJoint(body1, body2, x, y, collideConnected);
+		j = instance()->newRevoluteJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 	});
 	luax_pushtype(L, PHYSICS_REVOLUTE_JOINT_ID, j);
 	j->release();

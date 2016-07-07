@@ -171,11 +171,13 @@ public:
 
 	/**
 	 * Creates a new RevoluteJoint connecting body1 with body2.
-	 * @param x Anchor along the x-axis. (World coordinates)
-	 * @param y Anchor along the y-axis. (World coordinates)
+	 * @param xA Anchor for body 1 along the x-axis. (World coordinates)
+	 * @param yA Anchor for body 1 along the y-axis. (World coordinates)
+	 * @param xB Anchor for body 2 along the x-axis. (World coordinates)
+	 * @param yB Anchor for body 2 along the y-axis. (World coordinates)
 	 * @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
 	 **/
-	RevoluteJoint *newRevoluteJoint(Body *body1, Body *body2, float x, float y, bool collideConnected);
+	RevoluteJoint *newRevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected);
 
 	/**
 	 * Creates a new PrismaticJoint connecting body1 with body2.

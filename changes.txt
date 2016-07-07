@@ -7,6 +7,7 @@ Released: N/A
   * Added 'shaderswitches' field to the table returned by love.graphics.getStats.
   * Added Quad:getTextureDimensions.
   * Added PrismaticJoint:getAxis and WheelJoint:getAxis.
+  * Added 2-point version of love.physics.newRevoluteJoint.
 
   * Fixed love on iOS 6.
   * Fixed os.execute always returning -1 on Linux.
