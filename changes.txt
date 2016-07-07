@@ -6,6 +6,7 @@ Released: N/A
   * Added lovec.exe in Windows. It is the same as love.exe but built with the Console subsystem, so it always uses or provides a console.
   * Added 'shaderswitches' field to the table returned by love.graphics.getStats.
   * Added Quad:getTextureDimensions.
+  * Added PrismaticJoint:getAxis and WheelJoint:getAxis.
 
   * Fixed love on iOS 6.
   * Fixed os.execute always returning -1 on Linux.

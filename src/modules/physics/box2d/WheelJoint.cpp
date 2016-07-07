@@ -113,6 +113,12 @@ float WheelJoint::getSpringDampingRatio() const
 	return joint->GetSpringDampingRatio();
 }
 
+int WheelJoint::getAxis(lua_State *L)
+{
+	lua_pushnumber(L, joint->GetLocalAxisA().x);
+	lua_pushnumber(L, joint->GetLocalAxisA().y);
+	return 2;
+}
 
 } // box2d
 } // physics

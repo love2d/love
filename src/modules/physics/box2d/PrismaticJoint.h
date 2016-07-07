@@ -134,6 +134,13 @@ public:
 	 **/
 	int getLimits(lua_State *L);
 
+	/**
+	 * Gets the axis unit vector, relative to body1.
+	 * @returns The X component of the axis unit vector.
+	 * @returns The Y component of the axis unit vector.
+	 **/
+	int getAxis(lua_State *L);
+
 private:
 
 	// The Box2D prismatic joint object.
