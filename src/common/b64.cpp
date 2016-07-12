@@ -34,9 +34,11 @@ static void b64_decode_block(char in[4], char out[3])
 
 char *b64_decode(const char *src, int slen, int &size)
 {
-	size = (slen / 4) * 3;
+	// Actual output may be smaller due to padding and/or whitespace in the
+	// base64-encoded string.
+	int max_size = (slen / 4) * 3;
 
-	char *dst = new char[size];
+	char *dst = new char[max_size];
 	char *d = dst;
 
 	char in[4] = {0}, out[3], v;
@@ -70,9 +72,11 @@ char *b64_decode(const char *src, int slen, int &size)
 		{
 			b64_decode_block(in, out);
 			for (i = 0; i < len - 1; i++)
-				 *(d++) = out[i];
+				*(d++) = out[i];
 		}
 	}
+
+	size = int(d - dst);
 
 	return dst;
 }
