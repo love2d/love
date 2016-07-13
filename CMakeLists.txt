@@ -27,13 +27,6 @@ cmake_minimum_required(VERSION 2.8)
 
 project(love)
 
-if(NOT MEGA)
-	message(FATAL_ERROR "
-It is currently only possible to build with megasource on Windows.
-Please see http://bitbucket.org/rude/megasource
-")
-endif()
-
 set(LOVE_EXE_NAME love)
 set(LOVE_LIB_NAME liblove)
 
@@ -66,16 +59,111 @@ message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
 find_package(OpenGL)
 
-if(${LOVE_JIT})
-	set(MEGA_LUA ${MEGA_LUAJIT_LIB})
-	set(MEGA_EXTRA_INCLUDE ${MEGA_LUAJIT_INCLUDE})
-	set(MEGA_EXTRA_DLLS ${MEGA_LUAJIT_DLL})
-	set(MEGA_EXTRA_DEPENDECIES luajit)
+if(MEGA)
+	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
+	# binary (in e.g. the installer). Example: msvcp140.dll.
+	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
+
+	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
+	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
+	# are CMake targets, causing include paths to be added automatically.
+	set(LOVE_INCLUDE_DIRS)
+
+	# SDL2 links with some DirectX libraries, and we apparently also
+	# pull those libraries in for linkage because we link with SDL2.
+	set(LOVE_LINK_DIRS ${SDL_LINK_DIR})
+
+	set(LOVE_LINK_LIBRARIES
+		${OPENGL_gl_LIBRARY}
+		${MEGA_FREETYPE}
+		${MEGA_LIBOGG}
+		${MEGA_LIBVORBISFILE}
+		${MEGA_LIBVORBIS}
+		${MEGA_LIBTHEORA}
+		${MEGA_MODPLUG}
+		${MEGA_OPENAL}
+		${MEGA_PHYSFS}
+		${MEGA_SDL2MAIN}
+		${MEGA_SDL2}
+		${MEGA_ZLIB}
+	)
+
+	# These DLLs are moved next to the love binary in a post-build step to
+	# love runnable from inside Visual Studio.
+	#
+	# LOVE_MOVE_DLLS can contain CMake targets, in which case the target's
+	# output is assumed to be a DLL, or it can contain paths to actual files.
+	# We detect whether or not each item is a target, and take the appropriate
+	# action.
+	set(LOVE_MOVE_DLLS
+		${MEGA_SDL2}
+		${MEGA_OPENAL}
+	)
+
+	if(LOVE_MPG123)
+		set(LOVE_LINK_LIBRARIES
+			${LOVE_LINK_LIBRARIES}
+			${MEGA_MPEG123}
+		)
+		set(LOVE_MOVE_DLLS
+			${LOVE_MOVE_DLLS}
+			${MEGA_MPEG123}
+		)
+	endif()
+
+	if(LOVE_JIT)
+		set(LOVE_LUA_LIBRARY ${MEGA_LUAJIT_LIB})
+		# LOVE_EXTRA_DLLS are non-runtime DLLs which should be bundled with the
+		# love binary in installers, etc. It's only needed for external
+		# (non-CMake) targets, i.e. LuaJIT.
+		set(LOVE_EXTRA_DLLS ${MEGA_LUAJIT_DLL})
+		set(LOVE_EXTRA_DEPENDECIES luajit)
+
+		set(LOVE_INCLUDE_DIRS
+			${LOVE_INCLUDE_DIRS}
+			${MEGA_LUAJIT_INCLUDE}
+		)
+		set(LOVE_LINK_LIBRARIES
+			${LOVE_LINK_LIBRARIES}
+			${LOVE_LUA_LIBRARY}
+		)
+		set(LOVE_MOVE_DLLS
+			${LOVE_MOVE_DLLS}
+			${MEGA_LUAJIT_DLL}
+		)
+	else()
+		set(LOVE_LUA_LIBRARY ${MEGA_LUA51})
+
+		set(LOVE_LINK_LIBRARIES
+			${LOVE_LINK_LIBRARIES}
+			${LOVE_LUA_LIBRARY}
+		)
+		set(LOVE_MOVE_DLLS
+			${LOVE_MOVE_DLLS}
+			${LOVE_LUA_LIBRARY}
+		)
+		# MEGA_LUA51 is a CMake target, so includes are handled
+		# automatically.
+	endif()
 else()
-	set(MEGA_LUA ${MEGA_LUA51})
-	# MEGA_LUA51 is a CMake target, so includes are handled
-	# automatically.
+	message(FATAL_ERROR "
+It is currently only possible to build with megasource on Windows.
+Please see http://bitbucket.org/rude/megasource
+")
 endif()
+
+###
+### No Megasource-specific stuff beyond this point!
+###
+
+function(disable_warnings ARG_TARGET)
+	get_target_property(OLD_FLAGS ${ARG_TARGET} COMPILE_FLAGS)
+	set(NEW_FLAGS -W0)
+	if(OLD_FLAGS)
+		set(NEW_FLAGS "${OLD_FLAGS} ${NEW_FLAGS}")
+	endif()
+	set_target_properties(${ARG_TARGET} PROPERTIES COMPILE_FLAGS ${NEW_FLAGS})
+endfunction()
 
 #
 # common
@@ -1028,7 +1116,7 @@ set(LOVE_SRC_3P_ENET
 )
 
 add_library(love_3p_enet ${LOVE_SRC_3P_ENET})
-target_link_libraries(love_3p_enet ${MEGA_LUA})
+target_link_libraries(love_3p_enet ${LOVE_LUA_LIBRARY})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 
 #
@@ -1114,7 +1202,7 @@ set(LOVE_SRC_3P_LUASOCKET
 )
 
 add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
-target_link_libraries(love_3p_luasocket ${MEGA_LUA})
+target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY})
 
 #
 # Lua 5.3's UTF-8 library
@@ -1127,7 +1215,7 @@ set(LOVE_SRC_3P_LUAUTF8
 )
 
 add_library(love_3p_luautf8 ${LOVE_SRC_3P_LUAUTF8})
-target_link_libraries(love_3p_luautf8 ${MEGA_LUA})
+target_link_libraries(love_3p_luautf8 ${LOVE_LUA_LIBRARY})
 
 #
 # lz4
@@ -1248,40 +1336,10 @@ include_directories(
 	src
 	src/libraries
 	src/modules
-	${MEGA_EXTRA_INCLUDE}
+	${LOVE_INCLUDE_DIRS}
 )
 
-# SDL2 links with some DirectX libraries, and we apparently also
-# pull those libraries in for linkage because we link with SDL2.
-link_directories(${SDL_LINK_DIR})
-
-set(LOVE_MEGA_3P
-	${MEGA_FREETYPE}
-	${MEGA_LIBOGG}
-	${MEGA_LIBVORBISFILE}
-	${MEGA_LIBVORBIS}
-	${MEGA_LIBTHEORA}
-	${MEGA_LUA}
-	${MEGA_MODPLUG}
-	${MEGA_OPENAL}
-	${MEGA_PHYSFS}
-	${MEGA_SDL2MAIN}
-	${MEGA_SDL2}
-	${MEGA_ZLIB}
-)
-
-if(LOVE_MPG123)
-	set(LOVE_MEGA_3P
-		${LOVE_MEGA_3P}
-		${MEGA_MPEG123}
-	)
-endif()
-
-
-set(LOVE_LINK_LIBRARIES
-	${OPENGL_gl_LIBRARY}
-	${LOVE_MEGA_3P}
-)
+link_directories(${LOVE_LINK_DIRS})
 
 set(LOVE_RC)
 
@@ -1300,8 +1358,8 @@ endif()
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
 target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
-if(MEGA_EXTRA_DEPENDECIES)
-	add_dependencies(${LOVE_LIB_NAME} ${MEGA_EXTRA_DEPENDECIES})
+if(LOVE_EXTRA_DEPENDECIES)
+	add_dependencies(${LOVE_LIB_NAME} ${LOVE_EXTRA_DEPENDECIES})
 endif()
 
 if(MSVC)
@@ -1320,21 +1378,29 @@ if(MSVC)
 	target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
 endif()
 
+function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
+	if(TARGET ${ARG_TARGET_OR_FILE})
+		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+			$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
+			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
+	else()
+		get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
+		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+			${ARG_TARGET_OR_FILE}
+			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
+	endif()
+endfunction()
 
 # Add post build steps to move the DLLs next to the binary. Otherwise
 # running/debugging the binary will not work from inside VS.
-if(LOVE_MPG123)
-	add_move_dll(love ${MEGA_MPEG123})
+if(LOVE_MOVE_DLLS)
+	foreach(DLL ${LOVE_MOVE_DLLS})
+		post_step_move_dll(love ${DLL})
+	endforeach()
 endif()
 
-add_move_dll(love ${MEGA_SDL2})
-add_move_dll(love ${MEGA_OPENAL})
-
-if(LOVE_JIT)
-	add_move_file(love ${MEGA_LUAJIT_DLL})
-else()
-	add_move_dll(love ${MEGA_LUA51})
-endif()
 
 ###################################
 # Version
@@ -1364,21 +1430,21 @@ message(STATUS "Version: ${LOVE_VERSION_STR}")
 install(TARGETS ${LOVE_EXE_NAME} ${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
 
 # Extra DLLs.
-if(MEGA_EXTRA_DLLS)
-	foreach(DLL ${MEGA_EXTRA_DLLS})
+if(LOVE_EXTRA_DLLS)
+	foreach(DLL ${LOVE_EXTRA_DLLS})
 		get_filename_component(DLL_NAME ${DLL} NAME)
 		message(STATUS "Extra DLL: ${DLL_NAME}")
 	endforeach()
-	install(FILES ${MEGA_EXTRA_DLLS} DESTINATION .)
+	install(FILES ${LOVE_EXTRA_DLLS} DESTINATION .)
 endif()
 
 # Dynamic runtime libs.
-if(MEGA_MSVC_DLLS)
-	foreach(DLL ${MEGA_MSVC_DLLS})
+if(LOVE_MSVC_DLLS)
+	foreach(DLL ${LOVE_MSVC_DLLS})
 		get_filename_component(DLL_NAME ${DLL} NAME)
 		message(STATUS "Runtime DLL: ${DLL_NAME}")
 	endforeach()
-	install(FILES ${MEGA_MSVC_DLLS} DESTINATION .)
+	install(FILES ${LOVE_MSVC_DLLS} DESTINATION .)
 endif()
 
 # Copy a text file from CMAKE_CURRENT_SOURCE_DIR to CMAKE_CURRENT_BINARY_DIR.
