@@ -84,8 +84,8 @@ public:
 	 **/
 	Type getType() const;
 
-	Body *getBodyA() const;
-	Body *getBodyB() const;
+	virtual Body *getBodyA() const;
+	virtual Body *getBodyB() const;
 
 	/**
 	 * Gets the anchor positions of the Joint in world

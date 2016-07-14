@@ -25,7 +25,11 @@
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 
-#include <SDL2/SDL.h>
+#ifdef LOVE_MACOSX_SDL_DIRECT_INCLUDE
+# include <SDL.h>
+#else
+# include <SDL2/SDL.h>
+#endif
 
 namespace love
 {

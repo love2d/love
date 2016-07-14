@@ -95,6 +95,9 @@ public:
 	 **/
 	float getDampingRatio() const;
 
+	virtual Body *getBodyA() const;
+	virtual Body *getBodyB() const;
+
 private:
 	// The Box2D MouseJoint object.
 	b2MouseJoint *joint;

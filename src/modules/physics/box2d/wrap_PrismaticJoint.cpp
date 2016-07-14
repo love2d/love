@@ -164,6 +164,13 @@ int w_PrismaticJoint_getLimits(lua_State *L)
 	return t->getLimits(L);
 }
 
+int w_PrismaticJoint_getAxis(lua_State *L)
+{
+	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
+	lua_remove(L, 1);
+	return t->getAxis(L);
+}
+
 static const luaL_Reg w_PrismaticJoint_functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
@@ -183,6 +190,7 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 	{ "getLowerLimit", w_PrismaticJoint_getLowerLimit },
 	{ "getUpperLimit", w_PrismaticJoint_getUpperLimit },
 	{ "getLimits", w_PrismaticJoint_getLimits },
+	{ "getAxis", w_PrismaticJoint_getAxis },
 	{ 0, 0 }
 };
 

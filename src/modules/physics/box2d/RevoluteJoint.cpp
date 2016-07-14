@@ -34,12 +34,13 @@ namespace physics
 namespace box2d
 {
 
-RevoluteJoint::RevoluteJoint(Body *body1, Body *body2, float x, float y, bool collideConnected)
+RevoluteJoint::RevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	: Joint(body1, body2)
 	, joint(NULL)
 {
 	b2RevoluteJointDef def;
-	def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(x,y)));
+	def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(xA,yA)));
+	def.localAnchorB = body2->body->GetLocalPoint(Physics::scaleDown(b2Vec2(xB, yB)));
 	def.collideConnected = collideConnected;
 	joint = (b2RevoluteJoint *)createJoint(&def);
 }

@@ -223,9 +223,9 @@ MouseJoint *Physics::newMouseJoint(Body *body, float x, float y)
 	return new MouseJoint(body, x, y);
 }
 
-RevoluteJoint *Physics::newRevoluteJoint(Body *body1, Body *body2, float x, float y, bool collideConnected)
+RevoluteJoint *Physics::newRevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 {
-	return new RevoluteJoint(body1, body2, x, y, collideConnected);
+	return new RevoluteJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 }
 
 PrismaticJoint *Physics::newPrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)

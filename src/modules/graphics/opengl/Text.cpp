@@ -129,6 +129,7 @@ void Text::addTextData(const TextData &t)
 	{
 		voffset = 0;
 		draw_commands.clear();
+		text_data.clear();
 	}
 
 	uploadVertices(vertices, voffset);
