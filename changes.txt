@@ -11,6 +11,7 @@ Released: N/A
   * Added support for different ImageData formats, including RGBA8 (the default), RGBA16, RGBA16F, and RGBA32F.
   * Added the ability to load Radiance HDR, OpenEXR, and 16 bit PNG images.
   * Added love.graphics.getRawImageFormats.
+  * Added love.window.updateMode.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.
