@@ -91,6 +91,16 @@ float MouseJoint::getDampingRatio() const
 	return joint->GetDampingRatio();
 }
 
+Body *MouseJoint::getBodyA() const
+{
+	return Joint::getBodyB();
+}
+
+Body *MouseJoint::getBodyB() const
+{
+	return nullptr;
+}
+
 } // box2d
 } // physics
 } // love
