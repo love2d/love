@@ -30,6 +30,8 @@ project(love)
 set(LOVE_EXE_NAME love)
 set(LOVE_LIB_NAME liblove)
 
+set (CMAKE_CXX_STANDARD 11)
+
 if(MSVC)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
 endif()
@@ -46,6 +48,9 @@ option(LOVE_JIT "Use LuaJIT" TRUE)
 option(LOVE_MPG123 "Use mpg123" TRUE)
 
 if(LOVE_JIT)
+	if(APPLE)
+		message(FATAL_ERROR "JIT not supported yet on Mac. Please use -DLOVE_JIT=0.")
+	endif()
 	message(STATUS "LuaJIT: Enabled")
 else()
 	message(STATUS "LuaJIT: Disabled")
@@ -68,6 +73,12 @@ if(MEGA)
 	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
 	# are CMake targets, causing include paths to be added automatically.
 	set(LOVE_INCLUDE_DIRS)
+
+	if(APPLE)
+		# Some files do #include <SDL2/SDL.h>, but building with megasource
+		# requires #include <SDL.h>.
+		add_definitions(-DLOVE_MACOSX_SDL_DIRECT_INCLUDE)
+	endif ()
 
 	# SDL2 links with some DirectX libraries, and we apparently also
 	# pull those libraries in for linkage because we link with SDL2.
@@ -206,6 +217,12 @@ set(LOVE_SRC_COMMON
 	src/common/wrap_Data.cpp
 	src/common/wrap_Data.h
 )
+
+if (APPLE)
+	set(LOVE_SRC_COMMON ${LOVE_SRC_COMMON}
+		src/common/macosx.mm
+	)
+endif()
 
 source_group("common" FILES ${LOVE_SRC_COMMON})
 
@@ -1194,6 +1211,12 @@ if(MSVC)
 		src/libraries/luasocket/libluasocket/wsocket.c
 		src/libraries/luasocket/libluasocket/wsocket.h
 	)
+else()
+	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
+		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+		src/libraries/luasocket/libluasocket/usocket.c
+		src/libraries/luasocket/libluasocket/usocket.h
+	)
 endif()
 
 set(LOVE_SRC_3P_LUASOCKET
@@ -1401,6 +1424,9 @@ if(LOVE_MOVE_DLLS)
 	endforeach()
 endif()
 
+if (NOT MSVC)
+	return()
+endif()
 
 ###################################
 # Version
