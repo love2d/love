@@ -23,12 +23,16 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 	message(FATAL_ERROR "Prevented in-tree build.")
 endif()
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 project(love)
 
 set(LOVE_EXE_NAME love)
 set(LOVE_LIB_NAME liblove)
+
+set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
+# Needed for shared libs on Linux. (-fPIC).
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 set (CMAKE_CXX_STANDARD 11)
 
@@ -157,19 +161,87 @@ if(MEGA)
 		# automatically.
 	endif()
 else()
-	message(FATAL_ERROR "
+	if(MSVC)
+		message(FATAL_ERROR "
 It is currently only possible to build with megasource on Windows.
 Please see http://bitbucket.org/rude/megasource
 ")
+	endif()
+
+	find_package(Freetype REQUIRED)
+	find_package(ModPlug REQUIRED)
+	find_package(OpenAL REQUIRED)
+	find_package(OpenGL REQUIRED)
+	find_package(PhysFS REQUIRED)
+	find_package(SDL2 REQUIRED)
+	find_package(Theora REQUIRED)
+	find_package(Vorbis REQUIRED)
+
+	# required for enet
+	add_definitions(-D HAS_SOCKLEN_T)
+
+	set(LOVE_INCLUDE_DIRS
+		${SDL2_INCLUDE_DIR}
+		${PHYSFS_INCLUDE_DIR}
+		${FREETYPE_INCLUDE_DIRS}
+		${VORBIS_INCLUDE_DIR}
+	)
+
+	set(LOVE_LINK_LIBRARIES
+		${OPENGL_gl_LIBRARY}
+		${SDL2_LIBRARY}
+		${FREETYPE_LIBRARY}
+		${OPENAL_LIBRARY}
+		${MODPLUG_LIBRARY}
+		${PHYSFS_LIBRARY}
+		${THEORA_LIBRARY}
+		${THEORADEC_LIBRARY}
+		${VORBISFILE_LIBRARY}
+		${LOVE_LUA_LIBRARY}
+	)
+
+	if(LOVE_MPG123)
+		find_package(MPG123 REQUIRED)
+		set(LOVE_LINK_LIBRARIES
+			${LOVE_LINK_LIBRARIES}
+			${MPG123_LIBRARY}
+		)
+	endif()
+
+	if(LOVE_JIT)
+		find_package(LuaJIT REQUIRED)
+		set(LOVE_LUA_LIBRARY ${LUAJIT_LIBRARY})
+		set(LOVE_LUA_INCLUDE_DIR ${LUAJIT_INCLUDE_DIR})
+	else()
+		find_package(Lua51 REQUIRED)
+		set(LOVE_LUA_LIBRARY ${LUA_LIBRARY})
+		set(LOVE_LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR})
+	endif()
+
+	set(LOVE_INCLUDE_DIRS
+		${LOVE_INCLUDE_DIRS}
+		${LOVE_LUA_INCLUDE_DIR}
+	)
+	set(LOVE_LINK_LIBRARIES
+		${LOVE_LINK_LIBRARIES}
+		${LOVE_LUA_LIBRARY}
+	)
+
 endif()
 
 ###
 ### No Megasource-specific stuff beyond this point!
 ###
 
+if(MSVC)
+	set(DISABLE_WARNING_FLAG -W0)
+else()
+	set(DISABLE_WARNING_FLAG -w)
+endif()
+
 function(disable_warnings ARG_TARGET)
 	get_target_property(OLD_FLAGS ${ARG_TARGET} COMPILE_FLAGS)
-	set(NEW_FLAGS -W0)
+	set(NEW_FLAGS ${DISABLE_WARNING_FLAG})
 	if(OLD_FLAGS)
 		set(NEW_FLAGS "${OLD_FLAGS} ${NEW_FLAGS}")
 	endif()
