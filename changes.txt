@@ -22,6 +22,7 @@ Released: N/A
   * Fixed text coloring breaking because of an empty string.
   * Fixed large burst of particles when dramatically increasing the emission rate of a ParticleSystem.
   * Fixed MouseJoint:getBodies unconditionally erroring.
+  * Fixed memory leak in Text:set.
 
   * Improved performance of Channel methods by roughly 2x in many cases.
   
