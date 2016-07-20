@@ -7,6 +7,10 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>love</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>GameIcon</string>
 			<key>CFBundleTypeName</key>
@@ -19,6 +23,8 @@
 			<array>
 				<string>org.love2d.love-game</string>
 			</array>
+			<key>LSTypeIsPackage</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
@@ -73,6 +79,7 @@
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>com.pkware.zip-archive</string>
+				<string>com.apple.package</string>
 			</array>
 			<key>UTTypeDescription</key>
 			<string>LÖVE Project</string>
