@@ -108,8 +108,14 @@ end
 for i, v in ipairs(arg) do
 	--run the auto function for every argument
 	--but do it with pcall, to catch errors
-	v = v:gsub("%.lua$", ""):gsub("^(.+)/", "") -- normalize input
-	local ok, err = pcall(auto, v)
+	local ok, err = true
+	v = v:gsub("^scripts/", "")
+	if v:match("/") then
+		ok, err = false, "not in scripts directory"
+	else
+		v = v:gsub("%.lua$", "") -- normalize input
+		ok, err = pcall(auto, v)
+	end
 	if not ok then
 		--inform people we've failed
 		print(v .. ": " .. err)
