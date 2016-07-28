@@ -64,7 +64,7 @@ void ChainShape::setPreviousVertex(float x, float y)
 	}
 	b2Vec2 v(x, y);
 	b2ChainShape *c = (b2ChainShape *)shape;
-	c->SetNextVertex(Physics::scaleDown(v));
+	c->SetPrevVertex(Physics::scaleDown(v));
 }
 
 EdgeShape *ChainShape::getChildEdge(int index) const
