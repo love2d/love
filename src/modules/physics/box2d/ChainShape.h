@@ -64,6 +64,30 @@ public:
 	void setPreviousVertex(float x, float y);
 
 	/**
+	 * Returns whether a vertex that follows the last vertex exists.
+	 * @returns True if specified vertex exists, else false.
+	 **/
+	bool hasNextVertex() const;
+
+	/**
+	 * Returns whether a vertex that precedes the first vertex exists.
+	 * @returns True if specified vertex exists, else false.
+	 **/
+	bool hasPreviousVertex() const;
+
+	/**
+	 * Returns the vertex that follows the last vertex.
+	 * @returns The specified vertex.
+	 **/
+	b2Vec2 getNextVertex() const;
+
+	/**
+	 * Returns the vertex that precedes the first vertex.
+	 * @returns The specified vertex.
+	 **/
+	b2Vec2 getPreviousVertex() const;
+
+	/**
 	 * Returns a child EdgeShape.
 	 * @param index The index of the child shape.
 	 * @returns The specified child.

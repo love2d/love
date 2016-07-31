@@ -82,6 +82,34 @@ int w_ChainShape_getPoint(lua_State *L)
 	return 2;
 }
 
+int w_ChainShape_getNextVertex(lua_State *L)
+{
+	ChainShape *c = luax_checkchainshape(L, 1);
+	if (c->hasNextVertex())
+	{
+		b2Vec2 v;
+		luax_catchexcept(L, [&](){ v = c->getNextVertex(); });
+		lua_pushnumber(L, v.x);
+		lua_pushnumber(L, v.y);
+		return 2;
+	}
+	return 0;
+}
+
+int w_ChainShape_getPreviousVertex(lua_State *L)
+{
+	ChainShape *c = luax_checkchainshape(L, 1);
+	if (c->hasPreviousVertex())
+	{
+		b2Vec2 v;
+		luax_catchexcept(L, [&](){ v = c->getPreviousVertex(); });
+		lua_pushnumber(L, v.x);
+		lua_pushnumber(L, v.y);
+		return 2;
+	}
+	return 0;
+}
+
 int w_ChainShape_getPoints(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
@@ -102,6 +130,8 @@ static const luaL_Reg w_ChainShape_functions[] =
 {
 	{ "setNextVertex", w_ChainShape_setNextVertex },
 	{ "setPreviousVertex", w_ChainShape_setPreviousVertex },
+	{ "getNextVertex", w_ChainShape_getNextVertex },
+	{ "getPreviousVertex", w_ChainShape_getPreviousVertex },
 	{ "getChildEdge", w_ChainShape_getChildEdge },
 	{ "getVertexCount", w_ChainShape_getVertexCount },
 	{ "getPoint", w_ChainShape_getPoint },
