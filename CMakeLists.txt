@@ -239,7 +239,7 @@ else()
 	set(DISABLE_WARNING_FLAG -w)
 endif()
 
-function(disable_warnings ARG_TARGET)
+function(love_disable_warnings ARG_TARGET)
 	get_target_property(OLD_FLAGS ${ARG_TARGET} COMPILE_FLAGS)
 	set(NEW_FLAGS ${DISABLE_WARNING_FLAG})
 	if(OLD_FLAGS)
@@ -1398,7 +1398,7 @@ set(LOVE_3P
 	love_3p_wuff
 )
 
-disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)
+love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)
 
 #
 # liblove
