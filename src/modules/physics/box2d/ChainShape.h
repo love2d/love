@@ -54,6 +54,7 @@ public:
 	 * @param y The y-coordinate of the vertex.
 	 **/
 	void setNextVertex(float x, float y);
+	void setNextVertex();
 
 	/**
 	 * Establish connectivity to a vertex that precedes
@@ -62,30 +63,17 @@ public:
 	 * @param y The y-coordinate of the vertex.
 	 **/
 	void setPreviousVertex(float x, float y);
+	void setPreviousVertex();
 
 	/**
-	 * Returns whether a vertex that follows the last vertex exists.
-	 * @returns True if specified vertex exists, else false.
+	 * Gets the vertex that follows the last vertex.
 	 **/
-	bool hasNextVertex() const;
+	bool getNextVertex(float &x, float &y) const;
 
 	/**
-	 * Returns whether a vertex that precedes the first vertex exists.
-	 * @returns True if specified vertex exists, else false.
+	 * Gets the vertex that precedes the first vertex.
 	 **/
-	bool hasPreviousVertex() const;
-
-	/**
-	 * Returns the vertex that follows the last vertex.
-	 * @returns The specified vertex.
-	 **/
-	b2Vec2 getNextVertex() const;
-
-	/**
-	 * Returns the vertex that precedes the first vertex.
-	 * @returns The specified vertex.
-	 **/
-	b2Vec2 getPreviousVertex() const;
+	bool getPreviousVertex(float &x, float &y) const;
 
 	/**
 	 * Returns a child EdgeShape.

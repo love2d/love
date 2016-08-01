@@ -43,6 +43,64 @@ EdgeShape::~EdgeShape()
 {
 }
 
+void EdgeShape::setNextVertex(float x, float y)
+{
+	b2EdgeShape *e = (b2EdgeShape *)shape;
+	b2Vec2 v(x, y);
+	e->m_vertex3 = Physics::scaleDown(v);
+	e->m_hasVertex3 = true;
+}
+
+void EdgeShape::setNextVertex()
+{
+	b2EdgeShape *e = (b2EdgeShape *)shape;
+	e->m_hasVertex3 = false;
+}
+
+bool EdgeShape::getNextVertex(float &x, float &y) const
+{
+	b2EdgeShape *e = (b2EdgeShape *)shape;
+
+	if (e->m_hasVertex3)
+	{
+		b2Vec2 v = Physics::scaleUp(e->m_vertex3);
+		x = v.x;
+		y = v.y;
+		return true;
+	}
+
+	return false;
+}
+
+void EdgeShape::setPreviousVertex(float x, float y)
+{
+	b2EdgeShape *e = (b2EdgeShape *)shape;
+	b2Vec2 v(x, y);
+	e->m_vertex0 = Physics::scaleDown(v);
+	e->m_hasVertex0 = true;
+}
+
+void EdgeShape::setPreviousVertex()
+{
+	b2EdgeShape *e = (b2EdgeShape *)shape;
+	e->m_hasVertex0 = false;
+}
+
+bool EdgeShape::getPreviousVertex(float &x, float &y) const
+{
+	b2EdgeShape *e = (b2EdgeShape *)shape;
+
+	if (e->m_hasVertex0)
+	{
+		b2Vec2 v = Physics::scaleUp(e->m_vertex0);
+		x = v.x;
+		y = v.y;
+		return true;
+	}
+
+	return false;
+}
+
 int EdgeShape::getPoints(lua_State *L)
 {
 	b2EdgeShape *e = (b2EdgeShape *)shape;
