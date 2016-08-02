@@ -284,7 +284,8 @@ int Fixture::rayCast(lua_State *L) const
 int Fixture::getBoundingBox(lua_State *L) const
 {
 	int childIndex = (int) luaL_optnumber(L, 1, 1) - 1; // Convert from 1-based index
-	b2AABB box = fixture->GetAABB(childIndex);
+	b2AABB box;
+	luax_catchexcept(L, [&]() { box = fixture->GetAABB(childIndex); });
 	box = Physics::scaleUp(box);
 	lua_pushnumber(L, box.lowerBound.x);
 	lua_pushnumber(L, box.lowerBound.y);
