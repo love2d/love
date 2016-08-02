@@ -8,6 +8,8 @@ Released: N/A
   * Added Quad:getTextureDimensions.
   * Added PrismaticJoint:getAxis and WheelJoint:getAxis.
   * Added 2-point version of love.physics.newRevoluteJoint.
+  * Added table variants of Fixture:setCategory and Fixture:setMask.
+  * Added getNextVertex and getPreviousVertex to ChainShape and EdgeShape.
 
   * Fixed love on iOS 6.
   * Fixed os.execute always returning -1 on Linux.
@@ -23,6 +25,7 @@ Released: N/A
   * Fixed large burst of particles when dramatically increasing the emission rate of a ParticleSystem.
   * Fixed MouseJoint:getBodies unconditionally erroring.
   * Fixed memory leak in Text:set.
+  * Fixed incorrect kerning caused by using kerning information for the wrong character in some fonts.
 
   * Improved performance of Channel methods by roughly 2x in many cases.
   
