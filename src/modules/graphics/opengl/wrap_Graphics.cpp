@@ -1763,13 +1763,14 @@ int w_rectangle(lua_State *L)
 	float rx = (float)luaL_optnumber(L, 6, 0.0);
 	float ry = (float)luaL_optnumber(L, 7, rx);
 
-	int points;
 	if (lua_isnoneornil(L, 8))
-		points = std::max(rx, ry) > 20.0 ? (int)(std::max(rx, ry) / 2) : 10;
+		instance()->rectangle(mode, x, y, w, h, rx, ry);
 	else
-		points = (int) luaL_checknumber(L, 8);
+	{
+		int points = (int) luaL_checknumber(L, 8);
+		instance()->rectangle(mode, x, y, w, h, rx, ry, points);
+	}
 
-	instance()->rectangle(mode, x, y, w, h, rx, ry, points);
 	return 0;
 }
 
@@ -1783,13 +1784,15 @@ int w_circle(lua_State *L)
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float radius = (float)luaL_checknumber(L, 4);
-	int points;
-	if (lua_isnoneornil(L, 5))
-		points = radius > 10 ? (int)(radius) : 10;
-	else
-		points = (int) luaL_checknumber(L, 5);
 
-	instance()->circle(mode, x, y, radius, points);
+	if (lua_isnoneornil(L, 5))
+		instance()->circle(mode, x, y, radius);
+	else
+	{
+		int points = (int) luaL_checknumber(L, 5);
+		instance()->circle(mode, x, y, radius, points);
+	}
+
 	return 0;
 }
 
@@ -1805,13 +1808,14 @@ int w_ellipse(lua_State *L)
 	float a = (float)luaL_checknumber(L, 4);
 	float b = (float)luaL_optnumber(L, 5, a);
 
-	int points;
 	if (lua_isnoneornil(L, 6))
-		points = a + b > 30 ? (int)((a + b) / 2) : 15;
+		instance()->ellipse(mode, x, y, a, b);
 	else
-		points = (int) luaL_checknumber(L, 6);
+	{
+		int points = (int) luaL_checknumber(L, 6);
+		instance()->ellipse(mode, x, y, a, b, points);
+	}
 
-	instance()->ellipse(mode, x, y, a, b, points);
 	return 0;
 }
 
@@ -1841,17 +1845,14 @@ int w_arc(lua_State *L)
 	float angle1 = (float) luaL_checknumber(L, startidx + 3);
 	float angle2 = (float) luaL_checknumber(L, startidx + 4);
 
-	int points = (int) radius;
-	float angle = fabs(angle1 - angle2);
+	if (lua_isnoneornil(L, startidx + 5))
+		instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2);
+	else
+	{
+		int points = (int) luaL_checknumber(L, startidx + 5);
+		instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points);
+	}
 
-	// The amount of points is based on the fraction of the circle created by the arc.
-	if (angle < 2.0f * (float) LOVE_M_PI)
-		points *= angle / (2.0f * (float) LOVE_M_PI);
-
-	points = std::max(points, 10);
-	points = (int) luaL_optnumber(L, startidx + 5, points);
-
-	instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points);
 	return 0;
 }
 

@@ -1347,7 +1347,7 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 	if (h >= 0.02f)
 		ry = std::min(ry, h / 2.0f - 0.01f);
 
-	points = std::max(points, 1);
+	points = std::max(points / 4, 1);
 
 	const float half_pi = static_cast<float>(LOVE_M_PI / 2);
 	float angle_shift = half_pi / ((float) points + 1.0f);
@@ -1394,9 +1394,26 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 	delete[] coords;
 }
 
+int Graphics::calculateEllipsePoints(float rx, float ry) const
+{
+	float pixelScale = 1.0f / std::max((float) pixelSizeStack.back(), 0.00001f);
+	int points = (int) sqrtf(((rx + ry) / 2.0f) * 20.0f * pixelScale);
+	return std::max(points, 8);
+}
+
+void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry)
+{
+	rectangle(mode, x, y, w, h, rx, ry, calculateEllipsePoints(rx, ry));
+}
+
 void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)
 {
 	ellipse(mode, x, y, radius, radius, points);
+}
+
+void Graphics::circle(DrawMode mode, float x, float y, float radius)
+{
+	ellipse(mode, x, y, radius, radius);
 }
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int points)
@@ -1419,6 +1436,11 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 	polygon(mode, coords, (points + 1) * 2);
 
 	delete[] coords;
+}
+
+void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b)
+{
+	ellipse(mode, x, y, a, b, calculateEllipsePoints(a, b));
 }
 
 void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points)
@@ -1497,6 +1519,18 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 	polygon(drawmode, coords, num_coords);
 
 	delete[] coords;
+}
+
+void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2)
+{
+	float points = (float) calculateEllipsePoints(radius, radius);
+
+	// The amount of points is based on the fraction of the circle created by the arc.
+	float angle = fabsf(angle1 - angle2);
+	if (angle < 2.0f * (float) LOVE_M_PI)
+		points *= angle / (2.0f * (float) LOVE_M_PI);
+
+	arc(drawmode, arcmode, x, y, radius, angle1, angle2, (int) (points + 0.5f));
 }
 
 /// @param mode    the draw mode
