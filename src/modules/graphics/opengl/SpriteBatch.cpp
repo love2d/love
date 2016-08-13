@@ -162,14 +162,18 @@ void SpriteBatch::setBufferSize(int newsize)
 	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
 	GLBuffer *new_array_buf = nullptr;
 
+	int new_next = std::min(next, newsize);
+
 	try
 	{
 		new_array_buf = new GLBuffer(vertex_size, nullptr, array_buf->getTarget(), array_buf->getUsage(), array_buf->getMapFlags());
 
-		// Copy as much of the old data into the new GLBuffer as can fit.
 		GLBuffer::Bind bind(*new_array_buf);
-		void *new_data = new_array_buf->map();
-		memcpy(new_data, old_data, sizeof(Vertex) * 4 * std::min(newsize, size));
+
+		// Copy as much of the old data into the new GLBuffer as can fit.
+		size_t copy_size = sizeof(Vertex) * 4 * new_next;
+		memcpy(new_array_buf->map(), old_data, copy_size);
+		new_array_buf->setMappedRangeModified(0, copy_size);
 
 		quad_indices = QuadIndices(newsize);
 	}
@@ -185,7 +189,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	array_buf = new_array_buf;
 	size = newsize;
 
-	next = std::min(next, newsize);
+	next = new_next;
 }
 
 int SpriteBatch::getBufferSize() const
