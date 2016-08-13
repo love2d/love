@@ -193,16 +193,28 @@ int Fixture::getMask(lua_State *L)
 uint16 Fixture::getBits(lua_State *L)
 {
 	// Get number of args.
-	int argc = lua_gettop(L);
+	bool istable = lua_istable(L, 1);
+	int argc = istable ? (int) luax_objlen(L, 1) : lua_gettop(L);
 
 	// The new bitset.
 	std::bitset<16> b;
 
-	for (int i = 1; i<=argc; i++)
+	for (int i = 1; i <= argc; i++)
 	{
-		size_t bpos = (size_t)(lua_tointeger(L, i)-1);
+		size_t bpos = 0;
+
+		if (istable)
+		{
+			lua_rawgeti(L, 1, i);
+			bpos = (size_t) (lua_tointeger(L, -1) - 1);
+			lua_pop(L, 1);
+		}
+		else
+			bpos = (size_t) (lua_tointeger(L, i) - 1);
+
 		if (bpos >= 16)
 			luaL_error(L, "Values must be in range 1-16.");
+
 		b.set(bpos, true);
 	}
 
@@ -272,7 +284,8 @@ int Fixture::rayCast(lua_State *L) const
 int Fixture::getBoundingBox(lua_State *L) const
 {
 	int childIndex = (int) luaL_optnumber(L, 1, 1) - 1; // Convert from 1-based index
-	b2AABB box = fixture->GetAABB(childIndex);
+	b2AABB box;
+	luax_catchexcept(L, [&]() { box = fixture->GetAABB(childIndex); });
 	box = Physics::scaleUp(box);
 	lua_pushnumber(L, box.lowerBound.x);
 	lua_pushnumber(L, box.lowerBound.y);

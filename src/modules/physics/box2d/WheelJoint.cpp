@@ -115,8 +115,10 @@ float WheelJoint::getSpringDampingRatio() const
 
 int WheelJoint::getAxis(lua_State *L)
 {
-	lua_pushnumber(L, joint->GetLocalAxisA().x);
-	lua_pushnumber(L, joint->GetLocalAxisA().y);
+	b2Vec2 axis = joint->GetLocalAxisA();
+	getBodyA()->getWorldVector(axis.x, axis.y, axis.x, axis.y);
+	lua_pushnumber(L, axis.x);
+	lua_pushnumber(L, axis.y);
 	return 2;
 }
 

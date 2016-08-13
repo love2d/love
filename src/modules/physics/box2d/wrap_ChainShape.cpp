@@ -37,18 +37,28 @@ ChainShape *luax_checkchainshape(lua_State *L, int idx)
 int w_ChainShape_setNextVertex(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	float x = (float)luaL_checknumber(L, 2);
-	float y = (float)luaL_checknumber(L, 3);
-	luax_catchexcept(L, [&](){ c->setNextVertex(x, y); });
+	if (lua_isnoneornil(L, 2))
+		c->setNextVertex();
+	else
+	{
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		luax_catchexcept(L, [&](){ c->setNextVertex(x, y); });
+	}
 	return 0;
 }
 
 int w_ChainShape_setPreviousVertex(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	float x = (float)luaL_checknumber(L, 2);
-	float y = (float)luaL_checknumber(L, 3);
-	luax_catchexcept(L, [&](){ c->setPreviousVertex(x, y); });
+	if (lua_isnoneornil(L, 2))
+		c->setPreviousVertex();
+	else
+	{
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
+		luax_catchexcept(L, [&](){ c->setPreviousVertex(x, y); });
+	}
 	return 0;
 }
 
@@ -82,6 +92,32 @@ int w_ChainShape_getPoint(lua_State *L)
 	return 2;
 }
 
+int w_ChainShape_getNextVertex(lua_State *L)
+{
+	ChainShape *c = luax_checkchainshape(L, 1);
+	float x, y;
+	if (c->getNextVertex(x, y))
+	{
+		lua_pushnumber(L, x);
+		lua_pushnumber(L, y);
+		return 2;
+	}
+	return 0;
+}
+
+int w_ChainShape_getPreviousVertex(lua_State *L)
+{
+	ChainShape *c = luax_checkchainshape(L, 1);
+	float x, y;
+	if (c->getPreviousVertex(x, y))
+	{
+		lua_pushnumber(L, x);
+		lua_pushnumber(L, y);
+		return 2;
+	}
+	return 0;
+}
+
 int w_ChainShape_getPoints(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
@@ -102,6 +138,8 @@ static const luaL_Reg w_ChainShape_functions[] =
 {
 	{ "setNextVertex", w_ChainShape_setNextVertex },
 	{ "setPreviousVertex", w_ChainShape_setPreviousVertex },
+	{ "getNextVertex", w_ChainShape_getNextVertex },
+	{ "getPreviousVertex", w_ChainShape_getPreviousVertex },
 	{ "getChildEdge", w_ChainShape_getChildEdge },
 	{ "getVertexCount", w_ChainShape_getVertexCount },
 	{ "getPoint", w_ChainShape_getPoint },

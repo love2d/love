@@ -58,12 +58,10 @@ GLBuffer::GLBuffer(size_t size, const void *data, GLenum target, GLenum usage, u
 	if (data != nullptr)
 		memcpy(memory_map, data, size);
 
-	bool ok = load(data != nullptr);
-
-	if (!ok)
+	if (!load(data != nullptr))
 	{
 		delete[] memory_map;
-		throw love::Exception("Could not load VBO.");
+		throw love::Exception("Could not load vertex buffer (out of VRAM?)");
 	}
 }
 
@@ -221,13 +219,16 @@ bool GLBuffer::load(bool restore)
 
 	GLBuffer::Bind bind(*this);
 
+	while (glGetError() != GL_NO_ERROR)
+		/* Clear the error buffer. */;
+
 	// Copy the old buffer only if 'restore' was requested.
 	const GLvoid *src = restore ? memory_map : nullptr;
 
 	// Note that if 'src' is '0', no data will be copied.
 	glBufferData(getTarget(), (GLsizeiptr) getSize(), src, getUsage());
 
-	return true;
+	return (glGetError() == GL_NO_ERROR);
 }
 
 void GLBuffer::unload()
