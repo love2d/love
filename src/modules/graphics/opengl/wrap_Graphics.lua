@@ -352,13 +352,17 @@ function love.graphics.newVideo(file, loadaudio)
 	local video = love.graphics._newVideo(file)
 	local source, success
 
-	if loadaudio ~= false then
+	if loadaudio ~= false and love.audio then
 		success, source = pcall(love.audio.newSource, video:getStream():getFilename())
 	end
 	if success then
 		video:setSource(source)
 	elseif loadaudio == true then
-		error("Video had no audio track", 2)
+		if love.audio then
+			error("Video had no audio track", 2)
+		else
+			error("love.audio was not loaded", 2)
+		end
 	else
 		video:getStream():setSync()
 	end
