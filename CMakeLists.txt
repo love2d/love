@@ -199,6 +199,9 @@ Please see http://bitbucket.org/rude/megasource
 		${VORBISFILE_LIBRARY}
 		${LOVE_LUA_LIBRARY}
 	)
+	
+	# Work-around for gcc bug 1568899.
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} gcc_s gcc)
 
 	if(LOVE_MPG123)
 		find_package(MPG123 REQUIRED)
