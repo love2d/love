@@ -1,0 +1,7 @@
+image: mfcula/love-cmake:v1
+pipelines:
+  default:
+    - step:
+        script:
+          - cmake -G"Ninja" -H. -Bout
+          - ninja -C out
