@@ -164,6 +164,13 @@ int w_RevoluteJoint_getLimits(lua_State *L)
 	return t->getLimits(L);
 }
 
+int w_RevoluteJoint_getReferenceAngle(lua_State *L)
+{
+	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
+	lua_pushnumber(L, t->getReferenceAngle());
+	return 1;
+}
+
 static const luaL_Reg w_RevoluteJoint_functions[] =
 {
 	{ "getJointAngle", w_RevoluteJoint_getJointAngle },
@@ -183,6 +190,7 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 	{ "getLowerLimit", w_RevoluteJoint_getLowerLimit },
 	{ "getUpperLimit", w_RevoluteJoint_getUpperLimit },
 	{ "getLimits", w_RevoluteJoint_getLimits },
+	{ "getReferenceAngle", w_RevoluteJoint_getReferenceAngle },
 	{ 0, 0 }
 };
 

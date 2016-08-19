@@ -44,6 +44,8 @@ public:
 	 **/
 	RevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected);
 
+	RevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected, float referenceAngle);
+
 	virtual ~RevoluteJoint();
 
 	/**
@@ -134,10 +136,17 @@ public:
 	 **/
 	int getLimits(lua_State *L);
 
+	/**
+	 * Gets the reference angle.
+	 **/
+	float getReferenceAngle() const;
+
 private:
 
 	// The Box2D revolute joint object.
 	b2RevoluteJoint *joint;
+
+	void init(b2RevoluteJointDef &def, Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected);
 };
 
 } // box2d
