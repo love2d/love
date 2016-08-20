@@ -177,17 +177,12 @@ void Text::set(const std::vector<Font::ColoredString> &text)
 void Text::set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align)
 {
 	if (text.empty() || (text.size() == 1 && text[0].str.empty()))
-		return set();
+		return clear();
 
 	Font::ColoredCodepoints codepoints;
 	Font::getCodepointsFromString(text, codepoints);
 
 	addTextData({codepoints, wrap, align, {}, false, false, Matrix3()});
-}
-
-void Text::set()
-{
-	clear();
 }
 
 int Text::add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)

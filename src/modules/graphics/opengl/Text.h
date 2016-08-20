@@ -43,7 +43,6 @@ public:
 
 	void set(const std::vector<Font::ColoredString> &text);
 	void set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align);
-	void set();
 
 	int add(const std::vector<Font::ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 	int addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);

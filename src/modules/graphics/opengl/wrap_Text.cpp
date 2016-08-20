@@ -77,12 +77,7 @@ int w_Text_set(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
 
-	if (lua_isnoneornil(L, 2))
-	{
-		// No argument: clear all current text.
-		luax_catchexcept(L, [&](){ t->set(); });
-	}
-	else if (lua_isnoneornil(L, 3))
+	if (lua_isnoneornil(L, 3))
 	{
 		// Single argument: unformatted text.
 		std::vector<Font::ColoredString> newtext;
