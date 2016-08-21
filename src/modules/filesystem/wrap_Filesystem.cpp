@@ -218,6 +218,11 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	return data;
 }
 
+bool luax_cangetfiledata(lua_State *L, int idx)
+{
+	return lua_isstring(L, idx) || luax_istype(L, idx, FILESYSTEM_FILE_ID) || luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID);
+}
+
 int w_newFileData(lua_State *L)
 {
 	// Single argument: treat as filepath or File.
