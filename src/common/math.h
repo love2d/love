@@ -68,14 +68,6 @@ struct Vertex
 	unsigned char r, g, b, a;
 };
 
-struct Triangle
-{
-	Triangle(const Vertex &x, const Vertex &y, const Vertex &z)
-		: a(x), b(y), c(z)
-	{}
-	Vertex a, b, c;
-};
-
 inline int nextP2(int x)
 {
 	x += (x == 0);
