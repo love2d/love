@@ -501,13 +501,15 @@ void Canvas::startGrab()
 			gl.setFramebufferSRGB(false);
 	}
 
-	if (attachedCanvases.size() == 0)
-		return;
+	if (attachedCanvases.size() > 0)
+	{
+		// Make sure the FBO is only using a single draw buffer.
+		// GLES3 only has glDrawBuffers, so we avoid using glDrawBuffer.
+		const GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
+		glDrawBuffers(1, buffers);
 
-	// Make sure the FBO is only using a single draw buffer.
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-	attachedCanvases.clear();
+		attachedCanvases.clear();
+	}
 }
 
 void Canvas::stopGrab(bool switchingToOtherCanvas)
