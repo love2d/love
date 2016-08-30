@@ -37,18 +37,32 @@ PrismaticJoint::PrismaticJoint(Body *body1, Body *body2, float xA, float yA, flo
 	, joint(NULL)
 {
 	b2PrismaticJointDef def;
+	init(def, body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
+	joint = (b2PrismaticJoint *)createJoint(&def);
+}
 
+PrismaticJoint::PrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected, float referenceAngle)
+	: Joint(body1, body2)
+	, joint(NULL)
+{
+	b2PrismaticJointDef def;
+	init(def, body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
+	def.referenceAngle = referenceAngle;
+	joint = (b2PrismaticJoint *)createJoint(&def);
+}
+
+PrismaticJoint::~PrismaticJoint()
+{
+}
+
+void PrismaticJoint::init(b2PrismaticJointDef &def, Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
+{
 	def.Initialize(body1->body, body2->body, Physics::scaleDown(b2Vec2(xA,yA)), b2Vec2(ax,ay));
 	def.localAnchorB = body2->body->GetLocalPoint(Physics::scaleDown(b2Vec2(xB, yB)));
 	def.lowerTranslation = 0.0f;
 	def.upperTranslation = 100.0f;
 	def.enableLimit = true;
 	def.collideConnected = collideConnected;
-	joint = (b2PrismaticJoint *)createJoint(&def);
-}
-
-PrismaticJoint::~PrismaticJoint()
-{
 }
 
 float PrismaticJoint::getJointTranslation() const
@@ -145,6 +159,11 @@ int PrismaticJoint::getAxis(lua_State *L)
 	lua_pushnumber(L, axis.x);
 	lua_pushnumber(L, axis.y);
 	return 2;
+}
+
+float PrismaticJoint::getReferenceAngle() const
+{
+	return joint->GetReferenceAngle();
 }
 
 } // box2d

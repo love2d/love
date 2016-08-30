@@ -46,6 +46,14 @@ namespace math
 
 class BezierCurve;
 
+struct Triangle
+{
+	Triangle(const Vector &x, const Vector &y, const Vector &z)
+		: a(x), b(y), c(z)
+	{}
+	Vector a, b, c;
+};
+
 enum EncodeFormat
 {
 	ENCODE_BASE64,
@@ -59,7 +67,7 @@ enum EncodeFormat
  * @param polygon Polygon to triangulate. Must not intersect itself.
  * @return List of triangles the polygon is composed of.
  **/
-std::vector<Triangle> triangulate(const std::vector<Vertex> &polygon);
+std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon);
 
 /**
  * Checks whether a polygon is convex.
@@ -67,7 +75,7 @@ std::vector<Triangle> triangulate(const std::vector<Vertex> &polygon);
  * @param polygon Polygon to test.
  * @return True if the polygon is convex, false otherwise.
  **/
-bool isConvex(const std::vector<Vertex> &polygon);
+bool isConvex(const std::vector<love::Vector> &polygon);
 
 /**
  * Converts a value from the sRGB (gamma) colorspace to linear RGB.

@@ -44,6 +44,8 @@ public:
 	 **/
 	PrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 
+	PrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected, float referenceAngle);
+
 	virtual ~PrismaticJoint();
 
 	/**
@@ -141,10 +143,17 @@ public:
 	 **/
 	int getAxis(lua_State *L);
 
+	/**
+	 * Gets the reference angle.
+	 **/
+	float getReferenceAngle() const;
+
 private:
 
 	// The Box2D prismatic joint object.
 	b2PrismaticJoint *joint;
+
+	void init(b2PrismaticJointDef &def, Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
 };
 
 } // box2d

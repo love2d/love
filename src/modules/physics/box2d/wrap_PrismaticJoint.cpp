@@ -171,6 +171,13 @@ int w_PrismaticJoint_getAxis(lua_State *L)
 	return t->getAxis(L);
 }
 
+int w_PrismaticJoint_getReferenceAngle(lua_State *L)
+{
+	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
+	lua_pushnumber(L, t->getReferenceAngle());
+	return 1;
+}
+
 static const luaL_Reg w_PrismaticJoint_functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
@@ -191,6 +198,7 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 	{ "getUpperLimit", w_PrismaticJoint_getUpperLimit },
 	{ "getLimits", w_PrismaticJoint_getLimits },
 	{ "getAxis", w_PrismaticJoint_getAxis },
+	{ "getReferenceAngle", w_PrismaticJoint_getReferenceAngle },
 	{ 0, 0 }
 };
 

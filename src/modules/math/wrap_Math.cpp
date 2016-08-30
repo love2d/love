@@ -120,7 +120,7 @@ int w_newBezierCurve(lua_State *L)
 
 int w_triangulate(lua_State *L)
 {
-	std::vector<Vertex> vertices;
+	std::vector<love::Vector> vertices;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -130,7 +130,7 @@ int w_triangulate(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			Vertex v;
+			Vector v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
@@ -144,7 +144,7 @@ int w_triangulate(lua_State *L)
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			Vertex v;
+			Vector v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);
@@ -190,7 +190,7 @@ int w_triangulate(lua_State *L)
 
 int w_isConvex(lua_State *L)
 {
-	std::vector<Vertex> vertices;
+	std::vector<love::Vector> vertices;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -200,7 +200,7 @@ int w_isConvex(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			Vertex v;
+			love::Vector v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
@@ -214,7 +214,7 @@ int w_isConvex(lua_State *L)
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			Vertex v;
+			love::Vector v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);

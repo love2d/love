@@ -228,9 +228,19 @@ RevoluteJoint *Physics::newRevoluteJoint(Body *body1, Body *body2, float xA, flo
 	return new RevoluteJoint(body1, body2, xA, yA, xB, yB, collideConnected);
 }
 
+RevoluteJoint *Physics::newRevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected, float referenceAngle)
+{
+	return new RevoluteJoint(body1, body2, xA, yA, xB, yB, collideConnected, referenceAngle);
+}
+
 PrismaticJoint *Physics::newPrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 {
 	return new PrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected);
+}
+
+PrismaticJoint *Physics::newPrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected, float referenceAngle)
+{
+	return new PrismaticJoint(body1, body2, xA, yA, xB, yB, ax, ay, collideConnected, referenceAngle);
 }
 
 PulleyJoint *Physics::newPulleyJoint(Body *body1, Body *body2, b2Vec2 groundAnchor1, b2Vec2 groundAnchor2, b2Vec2 anchor1, b2Vec2 anchor2, float ratio, bool collideConnected)
@@ -251,6 +261,11 @@ FrictionJoint *Physics::newFrictionJoint(Body *body1, Body *body2, float xA, flo
 WeldJoint *Physics::newWeldJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 {
 	return new WeldJoint(body1, body2, xA, yA, xB, yB, collideConnected);
+}
+
+WeldJoint *Physics::newWeldJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected, float referenceAngle)
+{
+	return new WeldJoint(body1, body2, xA, yA, xB, yB, collideConnected, referenceAngle);
 }
 
 WheelJoint *Physics::newWheelJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)

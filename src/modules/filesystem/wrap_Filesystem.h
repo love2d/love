@@ -39,6 +39,7 @@ namespace filesystem
  * May trigger a Lua error.
  **/
 FileData *luax_getfiledata(lua_State *L, int idx);
+bool luax_cangetfiledata(lua_State *L, int idx);
 File *luax_getfile(lua_State *L, int idx);
 
 bool hack_setupWriteDirectory();

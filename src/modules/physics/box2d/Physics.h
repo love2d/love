@@ -176,8 +176,11 @@ public:
 	 * @param xB Anchor for body 2 along the x-axis. (World coordinates)
 	 * @param yB Anchor for body 2 along the y-axis. (World coordinates)
 	 * @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
+	 * @param referenceAngle The reference angle.
 	 **/
 	RevoluteJoint *newRevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected);
+
+	RevoluteJoint *newRevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected, float referenceAngle);
 
 	/**
 	 * Creates a new PrismaticJoint connecting body1 with body2.
@@ -188,8 +191,11 @@ public:
 	 * @param ax The x-component of the world-axis.
 	 * @param ay The y-component of the world-axis.
 	 * @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
+	 * @param referenceAngle The reference angle.
 	 **/
 	PrismaticJoint *newPrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected);
+
+	PrismaticJoint *newPrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected, float referenceAngle);
 
 	/**
 	 * Creates a new PulleyJoint connecting body1 with body2.
@@ -228,8 +234,11 @@ public:
 	 * @param xB Anchor for body 2 along the x-axis. (World coordinates)
 	 * @param yB Anchor for body 2 along the y-axis. (World coordinates)
 	 * @param collideConnected Whether the connected bodies should collide with each other. Defaults to false.
+	 * @param referenceAngle The reference angle.
 	 **/
 	WeldJoint *newWeldJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected);
+
+	WeldJoint *newWeldJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected, float referenceAngle);
 
 	/**
 	 * Creates a new WheelJoint connecting body1 with body2.
