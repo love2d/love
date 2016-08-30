@@ -1,4 +1,4 @@
-version: 0.10.1.{build}
+version: 0.10.2.{build}
 
 image: Visual Studio 2013
 
