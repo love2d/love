@@ -82,7 +82,6 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	lua_pop(L, 1);
 
 	settings.fullscreen = luax_boolflag(L, idx, settingName(Window::SETTING_FULLSCREEN), settings.fullscreen);
-	settings.vsync = luax_boolflag(L, idx, settingName(Window::SETTING_VSYNC), settings.vsync);
 	settings.msaa = luax_intflag(L, idx, settingName(Window::SETTING_MSAA), settings.msaa);
 	settings.resizable = luax_boolflag(L, idx, settingName(Window::SETTING_RESIZABLE), settings.resizable);
 	settings.minwidth = luax_intflag(L, idx, settingName(Window::SETTING_MIN_WIDTH), settings.minwidth);
@@ -91,6 +90,13 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
 	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
 	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
+
+	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
+	if (lua_isnumber(L, -1))
+		settings.vsync = (int) lua_tointeger(L, -1);
+	else if (lua_isboolean(L, -1))
+		settings.vsync = lua_toboolean(L, -1);
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_X));
 	lua_getfield(L, idx, settingName(Window::SETTING_Y));
@@ -122,7 +128,7 @@ int w_setMode(lua_State *L)
 	// Defaults
 	settings.fstype = Window::FULLSCREEN_DESKTOP;
 	settings.fullscreen = false;
-	settings.vsync = true;
+	settings.vsync = 1;
 	settings.msaa = 0;
 	settings.resizable = false;
 	settings.minwidth = 1;
@@ -186,7 +192,7 @@ int w_getMode(lua_State *L)
 	luax_pushboolean(L, settings.fullscreen);
 	lua_setfield(L, -2, settingName(Window::SETTING_FULLSCREEN));
 
-	luax_pushboolean(L, settings.vsync);
+	lua_pushinteger(L, settings.vsync);
 	lua_setfield(L, -2, settingName(Window::SETTING_VSYNC));
 
 	lua_pushinteger(L, settings.msaa);

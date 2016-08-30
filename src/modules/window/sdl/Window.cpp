@@ -483,7 +483,12 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	SDL_GL_SetSwapInterval(f.vsync ? 1 : 0);
+	SDL_GL_SetSwapInterval(f.vsync);
+
+	// Check if adaptive vsync was requested but not supported, and fall back
+	// to regular vsync if so.
+	if (f.vsync == -1 && SDL_GL_GetSwapInterval() != -1)
+		SDL_GL_SetSwapInterval(1);
 
 	updateSettings(f);
 
@@ -568,7 +573,7 @@ void Window::updateSettings(const WindowSettings &newsettings)
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	settings.msaa = (buffers > 0 ? samples : 0);
-	settings.vsync = SDL_GL_GetSwapInterval() != 0;
+	settings.vsync = SDL_GL_GetSwapInterval();
 
 	SDL_DisplayMode dmode = {};
 	SDL_GetCurrentDisplayMode(settings.display, &dmode);

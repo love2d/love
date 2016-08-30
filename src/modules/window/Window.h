@@ -203,7 +203,7 @@ struct WindowSettings
 {
 	bool fullscreen = false;
 	Window::FullscreenType fstype = Window::FULLSCREEN_DESKTOP;
-	bool vsync = true;
+	int vsync = 1;
 	int msaa = 0;
 	bool resizable = false;
 	int minwidth = 1;
