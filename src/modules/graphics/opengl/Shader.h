@@ -168,17 +168,10 @@ public:
 	void sendTexture(const std::string &name, Texture *texture);
 
 	/**
-	 * Gets the type, number of components, and number of array elements of
-	 * an active uniform variable in the shader. If a uniform variable with the
-	 * specified name doesn't exist, returns UNIFORM_UNKNOWN and sets the
-	 * 'components' and 'count' values to 0.
-	 *
-	 * @param name The name of the uniform variable in the source code.
-	 * @param[out] components Number of components of the variable (2 for vec2.)
-	 * @param[out] count Number of array elements, if the variable is an array.
-	 * @return The base type of the uniform variable.
+	 * Gets whether a uniform with the specified name exists and is actively
+	 * used in the shader.
 	 **/
-	UniformType getUniformVariable(const std::string &name, int &components, int &count);
+	bool hasUniform(const std::string &name) const;
 
 	GLint getAttribLocation(const std::string &name);
 

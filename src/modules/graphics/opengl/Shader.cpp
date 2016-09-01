@@ -621,21 +621,9 @@ int Shader::getTextureUnit(const std::string &name)
 	return texunit;
 }
 
-Shader::UniformType Shader::getUniformVariable(const std::string &name, int &components, int &count)
+bool Shader::hasUniform(const std::string &name) const
 {
-	auto it = uniforms.find(name);
-
-	if (it == uniforms.end())
-	{
-		components = 0;
-		count = 0;
-		return UNIFORM_UNKNOWN;
-	}
-
-	components = getUniformTypeSize(it->second.type);
-	count = (int) it->second.count;
-
-	return it->second.baseType;
+	return uniforms.find(name) != uniforms.end();
 }
 
 GLint Shader::getAttribLocation(const std::string &name)
