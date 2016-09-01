@@ -621,7 +621,7 @@ int Shader::getTextureUnit(const std::string &name)
 	return texunit;
 }
 
-Shader::UniformType Shader::getExternVariable(const std::string &name, int &components, int &count)
+Shader::UniformType Shader::getUniformVariable(const std::string &name, int &components, int &count)
 {
 	auto it = uniforms.find(name);
 

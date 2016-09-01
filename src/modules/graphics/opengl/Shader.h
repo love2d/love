@@ -55,7 +55,7 @@ public:
 		STAGE_MAX_ENUM
 	};
 
-	// Built-in uniform (extern) variables.
+	// Built-in uniform variables.
 	enum BuiltinUniform
 	{
 		BUILTIN_TRANSFORM_MATRIX = 0,
@@ -70,7 +70,7 @@ public:
 		BUILTIN_MAX_ENUM
 	};
 
-	// Types of potential uniform (extern) variables used in love's shaders.
+	// Types of potential uniform variables used in love's shaders.
 	enum UniformType
 	{
 		UNIFORM_FLOAT,
@@ -169,16 +169,16 @@ public:
 
 	/**
 	 * Gets the type, number of components, and number of array elements of
-	 * an active 'extern' (uniform) variable in the shader. If a uniform
-	 * variable with the specified name doesn't exist, returns UNIFORM_UNKNOWN
-	 * and sets the 'components' and 'count' values to 0.
+	 * an active uniform variable in the shader. If a uniform variable with the
+	 * specified name doesn't exist, returns UNIFORM_UNKNOWN and sets the
+	 * 'components' and 'count' values to 0.
 	 *
 	 * @param name The name of the uniform variable in the source code.
 	 * @param[out] components Number of components of the variable (2 for vec2.)
 	 * @param[out] count Number of array elements, if the variable is an array.
 	 * @return The base type of the uniform variable.
 	 **/
-	UniformType getExternVariable(const std::string &name, int &components, int &count);
+	UniformType getUniformVariable(const std::string &name, int &components, int &count);
 
 	GLint getAttribLocation(const std::string &name);
 
@@ -221,7 +221,7 @@ public:
 
 private:
 
-	// Represents a single uniform/extern shader variable.
+	// Represents a single uniform shader variable.
 	struct Uniform
 	{
 		GLint location;
