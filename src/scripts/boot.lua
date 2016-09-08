@@ -679,5 +679,5 @@ return function()
 	local result, retval = xpcall(love.run, deferErrhand)
 	if not result then return 1 end
 
-	return tonumber(retval) or 0
+	return retval == nil and 0 or retval
 end
