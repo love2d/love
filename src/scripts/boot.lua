@@ -239,8 +239,9 @@ function love.createhandlers()
 			if love.directorydropped then return love.directorydropped(dir) end
 		end,
 		lowmemory = function ()
+			if love.lowmemory then love.lowmemory() end
 			collectgarbage()
-			if love.lowmemory then return love.lowmemory() end
+			collectgarbage()
 		end,
 	}, {
 		__index = function(self, name)
