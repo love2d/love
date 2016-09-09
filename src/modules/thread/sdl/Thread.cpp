@@ -35,13 +35,9 @@ Thread::Thread(Threadable *t)
 
 Thread::~Thread()
 {
-	if (!running) // Clean up handle
-		wait();
-	/*
-	if (running)
-		wait();
-	FIXME: Needed for proper thread cleanup
-	*/
+	// Clean up handle
+	if (thread)
+		SDL_DetachThread(thread);
 }
 
 bool Thread::start()
@@ -50,9 +46,9 @@ bool Thread::start()
 	if (running)
 		return false;
 	if (thread) // Clean old handle up
-		SDL_WaitThread(thread, 0);
+		SDL_WaitThread(thread, nullptr);
 	thread = SDL_CreateThread(thread_runner, t->getThreadName(), this);
-	running = (thread != 0);
+	running = (thread != nullptr);
 	return running;
 }
 
@@ -63,10 +59,10 @@ void Thread::wait()
 		if (!thread)
 			return;
 	}
-	SDL_WaitThread(thread, 0);
+	SDL_WaitThread(thread, nullptr);
 	Lock l(mutex);
 	running = false;
-	thread = 0;
+	thread = nullptr;
 }
 
 bool Thread::isRunning()
