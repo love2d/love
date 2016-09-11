@@ -260,11 +260,6 @@ int w_Shader_hasUniform(lua_State *L)
 static const luaL_Reg w_Shader_functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
-	{ "sendInt",     w_Shader_send },
-	{ "sendBoolean", w_Shader_send },
-	{ "sendFloat",   w_Shader_send },
-	{ "sendMatrix",  w_Shader_send },
-	{ "sendTexture", w_Shader_send },
 	{ "send",        w_Shader_send },
 	{ "sendColor",   w_Shader_sendColors },
 	{ "hasUniform",  w_Shader_hasUniform },
