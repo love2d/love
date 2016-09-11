@@ -150,6 +150,14 @@ int w_Shader_sendBooleans(lua_State *L, int startidx, Shader *shader, const Shad
 
 int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
+	bool columnmajor = false;
+
+	if (lua_isboolean(L, startidx))
+	{
+		columnmajor = lua_toboolean(L, startidx);
+		startidx++;
+	}
+
 	int count = _getCount(L, startidx, info);
 	int columns = info->matrix.columns;
 	int rows = info->matrix.rows;
@@ -169,33 +177,65 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 		{
 			int n = i * elements;
 
-			for (int row = 0; row < rows; row++)
+			if (columnmajor)
 			{
-				lua_rawgeti(L, startidx + i, row + 1);
-
 				for (int column = 0; column < columns; column++)
 				{
-					// The table has the matrix elements laid out in row-major
-					// order, but we need to store them column-major in memory.
-					lua_rawgeti(L, -(column + 1), column + 1);
-					values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
-				}
+					lua_rawgeti(L, startidx + i, column + 1);
 
-				lua_pop(L, columns + 1);
+					for (int row = 0; row < rows; row++)
+					{
+						lua_rawgeti(L, -(row + 1), row + 1);
+						values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
+					}
+
+					lua_pop(L, rows + 1);
+				}
+			}
+			else
+			{
+				for (int row = 0; row < rows; row++)
+				{
+					lua_rawgeti(L, startidx + i, row + 1);
+
+					for (int column = 0; column < columns; column++)
+					{
+						// The table has the matrix elements laid out in row-major
+						// order, but we need to store them column-major in memory.
+						lua_rawgeti(L, -(column + 1), column + 1);
+						values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
+					}
+
+					lua_pop(L, columns + 1);
+				}
 			}
 		}
 		else
 		{
 			int n = i * elements;
 
-			for (int column = 0; column < columns; column++)
+			if (columnmajor)
 			{
-				for (int row = 0; row < rows; row++)
+				for (int column = 0; column < columns; column++)
 				{
-					// The table has the matrix elements laid out in row-major
-					// order, but we need to store them column-major in memory.
-					lua_rawgeti(L, startidx + i, row * columns + column + 1);
-					values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
+					for (int row = 0; row < rows; row++)
+					{
+						lua_rawgeti(L, startidx + i, column * rows + row + 1);
+						values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
+					}
+				}
+			}
+			else
+			{
+				for (int column = 0; column < columns; column++)
+				{
+					for (int row = 0; row < rows; row++)
+					{
+						// The table has the matrix elements laid out in row-major
+						// order, but we need to store them column-major in memory.
+						lua_rawgeti(L, startidx + i, row * columns + column + 1);
+						values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
+					}
 				}
 			}
 
