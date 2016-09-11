@@ -239,8 +239,9 @@ function love.createhandlers()
 			if love.directorydropped then return love.directorydropped(dir) end
 		end,
 		lowmemory = function ()
+			if love.lowmemory then love.lowmemory() end
 			collectgarbage()
-			if love.lowmemory then return love.lowmemory() end
+			collectgarbage()
 		end,
 	}, {
 		__index = function(self, name)
@@ -678,5 +679,5 @@ return function()
 	local result, retval = xpcall(love.run, deferErrhand)
 	if not result then return 1 end
 
-	return tonumber(retval) or 0
+	return retval == nil and 0 or retval
 end

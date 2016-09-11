@@ -172,7 +172,13 @@ static int l_print_sdl_log(lua_State *L)
 }
 #endif
 
-static int runlove(int argc, char **argv)
+enum DoneAction
+{
+	DONE_QUIT,
+	DONE_RESTART,
+};
+
+static DoneAction runlove(int argc, char **argv, int &retval)
 {
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 	int hack_argc = 0;
@@ -186,7 +192,8 @@ static int runlove(int argc, char **argv)
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
-		return 0;
+		retval = 0;
+		return DONE_QUIT;
 	}
 
 	// Create the virtual machine.
@@ -247,7 +254,13 @@ static int runlove(int argc, char **argv)
 	// Call the returned boot function.
 	lua_call(L, 0, 1);
 
-	int retval = 0;
+	retval = 0;
+	DoneAction done = DONE_QUIT;
+
+	// if love.boot() returns "restart", we'll start up again after closing this
+	// Lua state.
+	if (lua_type(L, -1) == LUA_TSTRING && strcmp(lua_tostring(L, -1), "restart") == 0)
+		done = DONE_RESTART;
 	if (lua_isnumber(L, -1))
 		retval = (int) lua_tonumber(L, -1);
 
@@ -262,13 +275,11 @@ static int runlove(int argc, char **argv)
 	}
 #endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
-	return retval;
+	return done;
 }
 
 int main(int argc, char **argv)
 {
-	int retval = 0;
-
 	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
 	{
 		printf("Version mismatch detected!\nLOVE binary is version %s\n"
@@ -276,15 +287,20 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-#ifdef LOVE_IOS
-	// on iOS we should never programmatically exit the app, so we'll just
-	// "restart" when that is attempted. Games which use threads might cause
-	// some issues if the threads aren't cleaned up properly...
-	while (true)
-#endif
+	int retval = 0;
+	DoneAction done = DONE_QUIT;
+
+	do
 	{
-		retval = runlove(argc, argv);
-	}
+		done = runlove(argc, argv, retval);
+
+#ifdef LOVE_IOS
+		// on iOS we should never programmatically exit the app, so we'll just
+		// "restart" when that is attempted. Games which use threads might cause
+		// some issues if the threads aren't cleaned up properly...
+		done = DONE_RESTART;
+#endif
+	} while (done != DONE_QUIT);
 
 #ifdef LOVE_ANDROID
 	SDL_Quit();
