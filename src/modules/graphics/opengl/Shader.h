@@ -88,11 +88,21 @@ public:
 		std::string pixel;
 	};
 
+	struct MatrixSize
+	{
+		short columns;
+		short rows;
+	};
+
 	struct UniformInfo
 	{
 		int location;
 		int count;
-		int components;
+		union
+		{
+			int components;
+			MatrixSize matrix;
+		};
 		UniformType baseType;
 		std::string name;
 	};
@@ -195,7 +205,8 @@ private:
 	// Map active uniform names to their locations.
 	void mapActiveUniforms();
 
-	int getUniformTypeSize(GLenum type) const;
+	int getUniformTypeComponents(GLenum type) const;
+	MatrixSize getMatrixSize(GLenum type) const;
 	UniformType getUniformBaseType(GLenum type) const;
 
 	GLuint compileCode(ShaderStage stage, const std::string &code);

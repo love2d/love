@@ -151,8 +151,9 @@ int w_Shader_sendBooleans(lua_State *L, int startidx, Shader *shader, const Shad
 int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
 	int count = _getCount(L, startidx, info);
-	int dimension = info->components;
-	int elements = dimension * dimension;
+	int columns = info->matrix.columns;
+	int rows = info->matrix.rows;
+	int elements = columns * rows;
 
 	float *values = shader->getScratchBuffer<float>(elements * count);
 
@@ -166,28 +167,36 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 
 		if (table_of_tables)
 		{
-			int n = 0;
+			int n = i * elements;
 
-			for (int j = 1; j <= dimension; j++)
+			for (int row = 0; row < rows; row++)
 			{
-				lua_rawgeti(L, startidx + i, j);
+				lua_rawgeti(L, startidx + i, row + 1);
 
-				for (int k = 1; k <= dimension; k++)
+				for (int column = 0; column < columns; column++)
 				{
-					lua_rawgeti(L, -k, k);
-					values[i * elements + n] = (float) luaL_checknumber(L, -1);
-					n++;
+					// The table has the matrix elements laid out in row-major
+					// order, but we need to store them column-major in memory.
+					lua_rawgeti(L, -(column + 1), column + 1);
+					values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
 				}
 
-				lua_pop(L, dimension + 1);
+				lua_pop(L, columns + 1);
 			}
 		}
 		else
 		{
-			for (int k = 1; k <= elements; k++)
+			int n = i * elements;
+
+			for (int column = 0; column < columns; column++)
 			{
-				lua_rawgeti(L, startidx + i, k);
-				values[i * elements + (k - 1)] = (float) luaL_checknumber(L, -1);
+				for (int row = 0; row < rows; row++)
+				{
+					// The table has the matrix elements laid out in row-major
+					// order, but we need to store them column-major in memory.
+					lua_rawgeti(L, startidx + i, row * columns + column + 1);
+					values[n + (column * rows + row)] = (float) luaL_checknumber(L, -1);
+				}
 			}
 
 			lua_pop(L, elements);

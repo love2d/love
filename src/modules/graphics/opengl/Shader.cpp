@@ -200,7 +200,11 @@ void Shader::mapActiveUniforms()
 		u.name = std::string(cname, (size_t) namelen);
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(gltype);
-		u.components = getUniformTypeSize(gltype);
+
+		if (u.baseType == UNIFORM_MATRIX)
+			u.matrix = getMatrixSize(gltype);
+		else
+			u.components = getUniformTypeComponents(gltype);
 
 		// Initialize all samplers to 0. Both GLSL and GLSL ES are supposed to
 		// do this themselves, but some Android devices (galaxy tab 3 and 4)
@@ -517,19 +521,27 @@ void Shader::sendMatrices(const UniformInfo *info, const float *m, int count)
 
 	int location = info->location;
 
-	switch (info->components)
-	{
-	case 4:
-		glUniformMatrix4fv(location, count, GL_FALSE, m);
-		break;
-	case 3:
-		glUniformMatrix3fv(location, count, GL_FALSE, m);
-		break;
-	case 2:
-	default:
+	int columns = info->matrix.columns;
+	int rows = info->matrix.rows;
+
+	if (columns == 2 && rows == 2)
 		glUniformMatrix2fv(location, count, GL_FALSE, m);
-		break;
-	}
+	else if (columns == 3 && rows == 3)
+		glUniformMatrix3fv(location, count, GL_FALSE, m);
+	else if (columns == 4 && rows == 4)
+		glUniformMatrix4fv(location, count, GL_FALSE, m);
+	else if (columns == 2 && rows == 3)
+		glUniformMatrix2x3fv(location, count, GL_FALSE, m);
+	else if (columns == 2 && rows == 4)
+		glUniformMatrix2x4fv(location, count, GL_FALSE, m);
+	else if (columns == 3 && rows == 2)
+		glUniformMatrix3x2fv(location, count, GL_FALSE, m);
+	else if (columns == 3 && rows == 4)
+		glUniformMatrix3x4fv(location, count, GL_FALSE, m);
+	else if (columns == 4 && rows == 2)
+		glUniformMatrix4x2fv(location, count, GL_FALSE, m);
+	else if (columns == 4 && rows == 3)
+		glUniformMatrix4x3fv(location, count, GL_FALSE, m);
 }
 
 void Shader::sendTexture(const UniformInfo *info, Texture *texture)
@@ -819,7 +831,7 @@ bool Shader::isSupported()
 	return GLAD_ES_VERSION_2_0 || (getGLSLVersion() >= "1.2");
 }
 
-int Shader::getUniformTypeSize(GLenum type) const
+int Shader::getUniformTypeComponents(GLenum type) const
 {
 	switch (type)
 	{
@@ -848,6 +860,50 @@ int Shader::getUniformTypeSize(GLenum type) const
 	default:
 		return 1;
 	}
+}
+
+Shader::MatrixSize Shader::getMatrixSize(GLenum type) const
+{
+	MatrixSize m;
+
+	switch (type)
+	{
+	case GL_FLOAT_MAT2:
+		m.columns = m.rows = 2;
+		break;
+	case GL_FLOAT_MAT3:
+		m.columns = m.rows = 3;
+		break;
+	case GL_FLOAT_MAT4:
+		m.columns = m.rows = 4;
+		break;
+	case GL_FLOAT_MAT2x3:
+		m.columns = 2;
+		m.rows = 3;
+		break;
+	case GL_FLOAT_MAT2x4:
+		m.columns = 2;
+		m.rows = 4;
+		break;
+	case GL_FLOAT_MAT3x2:
+		m.columns = 3;
+		m.rows = 2;
+		break;
+	case GL_FLOAT_MAT3x4:
+		m.columns = 3;
+		m.rows = 4;
+		break;
+	case GL_FLOAT_MAT4x2:
+		m.columns = 4;
+		m.rows = 2;
+		break;
+	case GL_FLOAT_MAT4x3:
+		m.columns = 4;
+		m.rows = 3;
+		break;
+	}
+
+	return m;
 }
 
 Shader::UniformType Shader::getUniformBaseType(GLenum type) const
