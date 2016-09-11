@@ -74,6 +74,7 @@ public:
 	enum UniformType
 	{
 		UNIFORM_FLOAT,
+		UNIFORM_MATRIX,
 		UNIFORM_INT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
@@ -85,6 +86,15 @@ public:
 	{
 		std::string vertex;
 		std::string pixel;
+	};
+
+	struct UniformInfo
+	{
+		int location;
+		int count;
+		int components;
+		UniformType baseType;
+		std::string name;
 	};
 
 	// Pointer to currently active Shader.
@@ -128,44 +138,12 @@ public:
 	 **/
 	std::string getWarnings() const;
 
-	/**
-	 * Send at least one integer or int-vector value to this Shader as a uniform.
-	 *
-	 * @param name The name of the uniform variable in the source code.
-	 * @param size Number of elements in each vector to send.
-	 *             A value of 1 indicates a single-component vector (an int).
-	 * @param vec Pointer to the integer or int-vector values.
-	 * @param count Number of integer or int-vector values.
-	 **/
-	void sendInt(const std::string &name, int size, const GLint *vec, int count);
+	const UniformInfo *getUniformInfo(const std::string &name) const;
 
-	/**
-	 * Send at least one float or vector value to this Shader as a uniform.
-	 *
-	 * @param name The name of the uniform variable in the source code.
-	 * @param size Number of elements in each vector to send.
-	 *             A value of 1 indicates a single-component vector (a float).
-	 * @param vec Pointer to the float or float-vector values.
-	 * @param count Number of float or float-vector values.
-	 **/
-	void sendFloat(const std::string &name, int size, const GLfloat *vec, int count);
-
-	/**
-	 * Send at least one matrix to this Shader as a uniform.
-	 *
-	 * @param name The name of the uniform variable in the source code.
-	 * @param size Number of rows/columns in the matrix.
-	 * @param m Pointer to the first element of the first matrix.
-	 * @param count Number of matrices to send.
-	 **/
-	void sendMatrix(const std::string &name, int size, const GLfloat *m, int count);
-
-	/**
-	 * Send a texture to this Shader as a uniform.
-	 *
-	 * @param name The name of the uniform variable in the source code.
-	 **/
-	void sendTexture(const std::string &name, Texture *texture);
+	void sendInts(const UniformInfo *info, const int *vec, int count);
+	void sendFloats(const UniformInfo *info, const float *vec, int count);
+	void sendMatrices(const UniformInfo *info, const float *m, int count);
+	void sendTexture(const UniformInfo *info, Texture *texture);
 
 	/**
 	 * Gets the type, number of components, and number of array elements of
@@ -221,24 +199,11 @@ public:
 
 private:
 
-	// Represents a single uniform/extern shader variable.
-	struct Uniform
-	{
-		GLint location;
-		GLint count;
-		GLenum type;
-		UniformType baseType;
-		std::string name;
-	};
-
 	// Map active uniform names to their locations.
 	void mapActiveUniforms();
 
-	const Uniform &getUniform(const std::string &name) const;
-
 	int getUniformTypeSize(GLenum type) const;
 	UniformType getUniformBaseType(GLenum type) const;
-	void checkSetUniformError(const Uniform &u, int size, int count, UniformType sendtype) const;
 
 	GLuint compileCode(ShaderStage stage, const std::string &code);
 
@@ -267,7 +232,7 @@ private:
 	std::map<std::string, GLint> attributes;
 
 	// Uniform location buffer map
-	std::map<std::string, Uniform> uniforms;
+	std::map<std::string, UniformInfo> uniforms;
 
 	// Texture unit pool for setting images
 	std::map<std::string, GLint> texUnitPool; // texUnitPool[name] = textureunit
