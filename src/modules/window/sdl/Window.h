@@ -122,6 +122,7 @@ private:
 	void setGLFramebufferAttributes(int msaa, bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
+	std::vector<ContextAttribs> getContextAttribsList() const;
 	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa);
 
 	// Update the saved window settings based on the window's actual state.
@@ -147,6 +148,7 @@ private:
 
 	bool displayedWindowError;
 	bool hasSDL203orEarlier;
+	ContextAttribs contextAttribs;
 
 }; // Window
 

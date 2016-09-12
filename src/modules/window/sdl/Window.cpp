@@ -62,6 +62,7 @@ Window::Window()
 	, context(nullptr)
 	, displayedWindowError(false)
 	, hasSDL203orEarlier(false)
+	, contextAttribs()
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
@@ -182,8 +183,14 @@ bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversi
 	return true;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa)
+std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 {
+	// If we already have a set of context attributes that we know work, just
+	// return that. love.graphics doesn't really support switching GL versions
+	// after the first initialization.
+	if (contextAttribs.versionMajor > 0)
+		return std::vector<ContextAttribs>{contextAttribs};
+
 	bool preferGLES = false;
 
 #ifdef LOVE_GRAPHICS_USE_OPENGLES
@@ -235,22 +242,25 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 #ifdef LOVE_WINDOWS_UWP
 	removeES3 = true;
 #endif
-	
+
 	if (removeES3)
 	{
-		auto it = attribslist.begin();
-		while (it != attribslist.end())
+		std::remove_if(attribslist.begin(), attribslist.end(), [](ContextAttribs a)
 		{
-			if (it->gles && it->versionMajor >= 3)
-				it = attribslist.erase(it);
-			else
-				++it;
-		}
+			return a.gles && a.versionMajor >= 3;
+		});
 	}
 
 	// Move OpenGL ES to the front of the list if we should prefer GLES.
 	if (preferGLES)
 		std::rotate(attribslist.begin(), attribslist.begin() + 1, attribslist.end());
+
+	return attribslist;
+}
+
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa)
+{
+	std::vector<ContextAttribs> attribslist = getContextAttribsList();
 
 	std::string windowerror;
 	std::string contexterror;
@@ -350,6 +360,9 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 		if (window && context)
 		{
+			// Store the successful context attributes so we can re-use them in
+			// subsequent calls to createWindowAndContext.
+			contextAttribs = attribs;
 			love::graphics::setGammaCorrect(curSRGB);
 			break;
 		}

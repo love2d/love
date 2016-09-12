@@ -87,7 +87,7 @@ int w_Shader_sendFloats(lua_State *L, int startidx, Shader *shader, const Shader
 
 	float *values = _getNumbers<float>(L, startidx, shader, components, count);
 
-	if (colors && love::graphics::isGammaCorrect())
+	if (colors && graphics::isGammaCorrect())
 	{
 		// alpha is always linear (when present).
 		int gammacomponents = std::min(components, 3);
@@ -95,7 +95,7 @@ int w_Shader_sendFloats(lua_State *L, int startidx, Shader *shader, const Shader
 		for (int i = 0; i < count; i++)
 		{
 			for (int j = 0; j < gammacomponents; j++)
-				values[i * components + j] = love::math::gammaToLinear(values[i * components + j]);
+				values[i * components + j] = math::gammaToLinear(values[i * components + j]);
 		}
 	}
 
