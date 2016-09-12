@@ -245,10 +245,12 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 
 	if (removeES3)
 	{
-		std::remove_if(attribslist.begin(), attribslist.end(), [](ContextAttribs a)
+		auto it = std::remove_if(attribslist.begin(), attribslist.end(), [](ContextAttribs a)
 		{
 			return a.gles && a.versionMajor >= 3;
 		});
+
+		attribslist.erase(it, attribslist.end());
 	}
 
 	// Move OpenGL ES to the front of the list if we should prefer GLES.
