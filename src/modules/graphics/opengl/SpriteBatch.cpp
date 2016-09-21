@@ -48,6 +48,8 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, Mesh::Usage usage)
 	, color(0)
 	, array_buf(nullptr)
 	, quad_indices(size)
+	, range_start(-1)
+	, range_count(-1)
 {
 	if (size <= 0)
 		throw love::Exception("Invalid SpriteBatch size.");
@@ -223,6 +225,30 @@ void SpriteBatch::attachAttribute(const std::string &name, Mesh *mesh)
 	attached_attributes[name] = newattrib;
 }
 
+void SpriteBatch::setDrawRange(int start, int count)
+{
+	if (start < 0 || count <= 0)
+		throw love::Exception("Invalid draw range.");
+
+	range_start = start;
+	range_count = count;
+}
+
+void SpriteBatch::setDrawRange()
+{
+	range_start = range_count = -1;
+}
+
+bool SpriteBatch::getDrawRange(int &start, int &count) const
+{
+	if (range_start < 0 || range_count <= 0)
+		return false;
+
+	start = range_start;
+	count = range_count;
+	return true;
+}
+
 void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	const size_t pos_offset   = offsetof(Vertex, x);
@@ -279,8 +305,19 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 
 	gl.prepareDraw();
 
+	int start = std::min(std::max(0, range_start), next - 1);
+
+	int count = next;
+	if (range_count > 0)
+		count = std::min(count, range_count);
+
+	count = std::min(count, next - start);
+
 	GLBuffer::Bind element_bind(*quad_indices.getBuffer());
-	gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(next), quad_indices.getType(), quad_indices.getPointer(0));
+	const void *indices = quad_indices.getPointer(start * quad_indices.getElementSize());
+
+	if (count > 0)
+		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), quad_indices.getType(), indices);
 }
 
 void SpriteBatch::addv(const Vertex *v, const Matrix3 &m, int index)

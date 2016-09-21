@@ -533,7 +533,7 @@ void Mesh::setDrawRange()
 
 bool Mesh::getDrawRange(int &start, int &count) const
 {
-	if (rangeStart < 0 || rangeCount < 0)
+	if (rangeStart < 0 || rangeCount <= 0)
 		return false;
 
 	start = rangeStart;
@@ -576,6 +576,9 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 
 void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
+	if (vertexCount <= 0)
+		return;
+
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 
 	uint32 enabledattribs = 0;

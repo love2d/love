@@ -205,6 +205,36 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 	return 0;
 }
 
+int w_SpriteBatch_setDrawRange(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+
+	if (lua_isnoneornil(L, 2))
+		t->setDrawRange();
+	else
+	{
+		int start = (int) luaL_checknumber(L, 2) - 1;
+		int count = (int) luaL_checknumber(L, 3);
+		luax_catchexcept(L, [&](){ t->setDrawRange(start, count); });
+	}
+
+	return 0;
+}
+
+int w_SpriteBatch_getDrawRange(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+
+	int start = 0;
+	int count = 1;
+	if (!t->getDrawRange(start, count))
+		return 0;
+
+	lua_pushnumber(L, start + 1);
+	lua_pushnumber(L, count);
+	return 2;
+}
+
 static const luaL_Reg w_SpriteBatch_functions[] =
 {
 	{ "add", w_SpriteBatch_add },
@@ -218,6 +248,8 @@ static const luaL_Reg w_SpriteBatch_functions[] =
 	{ "getCount", w_SpriteBatch_getCount },
 	{ "getBufferSize", w_SpriteBatch_getBufferSize },
 	{ "attachAttribute", w_SpriteBatch_attachAttribute },
+	{ "setDrawRange", w_SpriteBatch_setDrawRange },
+	{ "getDrawRange", w_SpriteBatch_getDrawRange },
 	{ 0, 0 }
 };
 
