@@ -68,8 +68,8 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	, elementCount(0)
 	, elementDataType(0)
 	, drawMode(drawmode)
-	, rangeMin(-1)
-	, rangeMax(-1)
+	, rangeStart(-1)
+	, rangeCount(-1)
 {
 	setupAttachedAttributes();
 	calculateAttributeSizes();
@@ -95,8 +95,8 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 	, elementCount(0)
 	, elementDataType(getGLDataTypeFromMax(vertexcount))
 	, drawMode(drawmode)
-	, rangeMin(-1)
-	, rangeMax(-1)
+	, rangeStart(-1)
+	, rangeCount(-1)
 {
 	if (vertexcount <= 0)
 		throw love::Exception("Invalid number of vertices (%d).", vertexcount);
@@ -517,24 +517,28 @@ Mesh::DrawMode Mesh::getDrawMode() const
 	return drawMode;
 }
 
-void Mesh::setDrawRange(int min, int max)
+void Mesh::setDrawRange(int start, int count)
 {
-	if (min < 0 || max < 0 || min > max)
+	if (start < 0 || count <= 0)
 		throw love::Exception("Invalid draw range.");
 
-	rangeMin = min;
-	rangeMax = max;
+	rangeStart = start;
+	rangeCount = count;
 }
 
 void Mesh::setDrawRange()
 {
-	rangeMin = rangeMax = -1;
+	rangeStart = rangeCount = -1;
 }
 
-void Mesh::getDrawRange(int &min, int &max) const
+bool Mesh::getDrawRange(int &start, int &count) const
 {
-	min = rangeMin;
-	max = rangeMax;
+	if (rangeStart < 0 || rangeCount < 0)
+		return false;
+
+	start = rangeStart;
+	count = rangeCount;
+	return true;
 }
 
 int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inputname)
@@ -614,31 +618,33 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
 
-		int max = (int) elementCount - 1;
-		if (rangeMax >= 0)
-			max = std::min(rangeMax, max);
+		int start = std::min(std::max(0, rangeStart), (int) elementCount - 1);
 
-		int min = 0;
-		if (rangeMin >= 0)
-			min = std::min(rangeMin, max);
+		int count = (int) elementCount;
+		if (rangeCount > 0)
+			count = std::min(count, rangeCount);
+
+		count = std::min(count, (int) elementCount - start);
 
 		GLenum type = elementDataType;
-		const void *indices = ibo->getPointer(min * getGLDataTypeSize(type));
+		const void *indices = ibo->getPointer(start * getGLDataTypeSize(type));
 
-		gl.drawElements(getGLDrawMode(drawMode), max - min + 1, type, indices);
+		if (count > 0)
+			gl.drawElements(getGLDrawMode(drawMode), count, type, indices);
 	}
 	else
 	{
-		int max = (int) vertexCount - 1;
-		if (rangeMax >= 0)
-			max = std::min(rangeMax, max);
+		int start = std::min(std::max(0, rangeStart), (int) vertexCount - 1);
 
-		int min = 0;
-		if (rangeMin >= 0)
-			min = std::min(rangeMin, max);
+		int count = (int) vertexCount;
+		if (rangeCount > 0)
+			count = std::min(count, rangeCount);
+
+		count = std::min(count, (int) vertexCount - start);
 
 		// Normal non-indexed drawing (no custom vertex map.)
-		gl.drawArrays(getGLDrawMode(drawMode), min, max - min + 1);
+		if (count > 0)
+			gl.drawArrays(getGLDrawMode(drawMode), start, count);
 	}
 }
 

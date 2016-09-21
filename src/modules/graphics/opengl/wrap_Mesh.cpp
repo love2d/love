@@ -480,9 +480,9 @@ int w_Mesh_setDrawRange(lua_State *L)
 		t->setDrawRange();
 	else
 	{
-		int rangemin = (int) luaL_checknumber(L, 2) - 1;
-		int rangemax = (int) luaL_checknumber(L, 3) - 1;
-		luax_catchexcept(L, [&](){ t->setDrawRange(rangemin, rangemax); });
+		int start = (int) luaL_checknumber(L, 2) - 1;
+		int count = (int) luaL_checknumber(L, 3);
+		luax_catchexcept(L, [&](){ t->setDrawRange(start, count); });
 	}
 
 	return 0;
@@ -492,15 +492,13 @@ int w_Mesh_getDrawRange(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
-	int rangemin = -1;
-	int rangemax = -1;
-	t->getDrawRange(rangemin, rangemax);
-
-	if (rangemin < 0 || rangemax < 0)
+	int start = 0;
+	int count = 1;
+	if (!t->getDrawRange(start, count))
 		return 0;
 
-	lua_pushinteger(L, rangemin + 1);
-	lua_pushinteger(L, rangemax + 1);
+	lua_pushinteger(L, start + 1);
+	lua_pushinteger(L, count);
 	return 2;
 }
 

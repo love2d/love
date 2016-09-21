@@ -190,9 +190,9 @@ public:
 	void setDrawMode(DrawMode mode);
 	DrawMode getDrawMode() const;
 
-	void setDrawRange(int min, int max);
+	void setDrawRange(int start, int count);
 	void setDrawRange();
-	void getDrawRange(int &min, int &max) const;
+	bool getDrawRange(int &start, int &count) const;
 
 	int bindAttributeToShaderInput(int attributeindex, const std::string &inputname);
 
@@ -252,8 +252,8 @@ private:
 
 	DrawMode drawMode;
 
-	int rangeMin;
-	int rangeMax;
+	int rangeStart;
+	int rangeCount;
 
 	StrongRef<Texture> texture;
 
