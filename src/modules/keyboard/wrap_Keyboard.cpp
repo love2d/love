@@ -46,14 +46,30 @@ int w_hasKeyRepeat(lua_State *L)
 int w_isDown(lua_State *L)
 {
 	Keyboard::Key k;
-	int num = lua_gettop(L);
+
+	bool istable = lua_istable(L, 1);
+	int num = istable ? (int) luax_objlen(L, 1) : lua_gettop(L);
+
 	std::vector<Keyboard::Key> keylist;
 	keylist.reserve(num);
 
-	for (int i = 0; i < num; i++)
+	if (istable)
 	{
-		if (Keyboard::getConstant(luaL_checkstring(L, i+1), k))
-			keylist.push_back(k);
+		for (int i = 0; i < num; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			if (Keyboard::getConstant(luaL_checkstring(L, -1), k))
+				keylist.push_back(k);
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < num; i++)
+		{
+			if (Keyboard::getConstant(luaL_checkstring(L, i+1), k))
+				keylist.push_back(k);
+		}
 	}
 
 	luax_pushboolean(L, instance()->isDown(keylist));
@@ -63,14 +79,30 @@ int w_isDown(lua_State *L)
 int w_isScancodeDown(lua_State *L)
 {
 	Keyboard::Scancode scancode;
-	int num = lua_gettop(L);
+
+	bool istable = lua_istable(L, 1);
+	int num = istable ? (int) luax_objlen(L, 1) : lua_gettop(L);
+
 	std::vector<Keyboard::Scancode> scancodelist;
 	scancodelist.reserve(num);
 
-	for (int i = 0; i < num; i++)
+	if (istable)
 	{
-		if (Keyboard::getConstant(luaL_checkstring(L, i+1), scancode))
-			scancodelist.push_back(scancode);
+		for (int i = 0; i < num; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			if (Keyboard::getConstant(luaL_checkstring(L, -1), scancode))
+				scancodelist.push_back(scancode);
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < num; i++)
+		{
+			if (Keyboard::getConstant(luaL_checkstring(L, i+1), scancode))
+				scancodelist.push_back(scancode);
+		}
 	}
 
 	luax_pushboolean(L, instance()->isScancodeDown(scancodelist));

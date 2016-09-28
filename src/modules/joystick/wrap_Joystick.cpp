@@ -105,8 +105,8 @@ int w_Joystick_getAxes(lua_State *L)
 	Joystick *j = luax_checkjoystick(L, 1);
 	std::vector<float> axes = j->getAxes();
 
-	for (size_t i = 0; i < axes.size(); i++)
-		lua_pushnumber(L, axes[i]);
+	for (float value : axes)
+		lua_pushnumber(L, value);
 
 	return (int) axes.size();
 }
@@ -129,11 +129,29 @@ int w_Joystick_isDown(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
 
-	luaL_checkinteger(L, 2);
+	bool istable = lua_istable(L, 2);
+	int num = istable ? (int) luax_objlen(L, 2) : (lua_gettop(L) - 1);
+
+	if (num == 0)
+		luaL_checkinteger(L, 2);
 
 	std::vector<int> buttons;
-	for (int i = 2; i <= lua_gettop(L); i++)
-		buttons.push_back((int) luaL_checknumber(L, i) - 1);
+	buttons.reserve(num);
+
+	if (istable)
+	{
+		for (int i = 0; i < num; i++)
+		{
+			lua_rawgeti(L, 2, i + 1);
+			buttons.push_back((int) luaL_checknumber(L, -1) - 1);
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < num; i++)
+			buttons.push_back((int) luaL_checknumber(L, i + 2) - 1);
+	}
 
 	luax_pushboolean(L, j->isDown(buttons));
 	return 1;
@@ -164,20 +182,43 @@ int w_Joystick_isGamepadDown(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
 
+	bool istable = lua_istable(L, 2);
+	int num = istable ? (int) luax_objlen(L, 2) : (lua_gettop(L) - 1);
+
+	if (num == 0)
+		luaL_checkstring(L, 2);
+
 	std::vector<Joystick::GamepadButton> buttons;
-	buttons.reserve(lua_gettop(L) - 1);
+	buttons.reserve(num);
 
-	luaL_checkstring(L, 2);
+	Joystick::GamepadButton button;
 
-	for (int i = 2; i <= lua_gettop(L); i++)
+	if (istable)
 	{
-		const char *str = luaL_checkstring(L, i);
-		Joystick::GamepadButton button;
+		for (int i = 0; i < num; i++)
+		{
+			lua_rawgeti(L, 2, i + 1);
+			const char *str = luaL_checkstring(L, -1);
 
-		if (!joystick::Joystick::getConstant(str, button))
-			return luaL_error(L, "Invalid gamepad button: %s", str);
+			if (!joystick::Joystick::getConstant(str, button))
+				return luaL_error(L, "Invalid gamepad button: %s", str);
 
-		buttons.push_back(button);
+			buttons.push_back(button);
+
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < num; i++)
+		{
+			const char *str = luaL_checkstring(L, i + 2);
+
+			if (!joystick::Joystick::getConstant(str, button))
+				return luaL_error(L, "Invalid gamepad button: %s", str);
+
+			buttons.push_back(button);
+		}
 	}
 
 	luax_pushboolean(L, j->isGamepadDown(buttons));

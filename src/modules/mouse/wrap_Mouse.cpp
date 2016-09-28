@@ -142,12 +142,26 @@ int w_setPosition(lua_State *L)
 
 int w_isDown(lua_State *L)
 {
-	int num = lua_gettop(L);
+	bool istable = lua_istable(L, 1);
+	int num = istable ? (int) luax_objlen(L, 1) : lua_gettop(L);
+
 	std::vector<int> buttons;
 	buttons.reserve(num);
 
-	for (int i = 0; i < num; i++)
-		buttons.push_back((int) luaL_checknumber(L, i + 1));
+	if (istable)
+	{
+		for (int i = 0; i < num; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			buttons.push_back((int) luaL_checknumber(L, -1));
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < num; i++)
+			buttons.push_back((int) luaL_checknumber(L, i + 1));
+	}
 
 	luax_pushboolean(L, instance()->isDown(buttons));
 	return 1;
