@@ -68,9 +68,20 @@ public:
 
 private:
 
-	Message *convert(const SDL_Event &e) const;
-	Message *convertJoystickEvent(const SDL_Event &e) const;
-	Message *convertWindowEvent(const SDL_Event &e) const;
+	struct ClickState
+	{
+		int count;
+		int lastX;
+		int lastY;
+		double time;
+	};
+
+	Message *convert(const SDL_Event &e);
+	Message *convertMouseButtonEvent(const SDL_Event &e);
+	Message *convertJoystickEvent(const SDL_Event &e);
+	Message *convertWindowEvent(const SDL_Event &e);
+
+	std::map<int, ClickState> clickCounts;
 
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;

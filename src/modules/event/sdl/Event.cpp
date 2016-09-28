@@ -31,6 +31,7 @@
 #include "common/Exception.h"
 #include "audio/Audio.h"
 #include "common/config.h"
+#include "timer/Timer.h"
 
 #include <cmath>
 
@@ -146,7 +147,7 @@ void Event::clear()
 	love::event::Event::clear();
 }
 
-Message *Event::convert(const SDL_Event &e) const
+Message *Event::convert(const SDL_Event &e)
 {
 	Message *msg = nullptr;
 
@@ -243,31 +244,7 @@ Message *Event::convert(const SDL_Event &e) const
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
-		{
-			// SDL uses button index 3 for the right mouse button, but we use
-			// index 2.
-			int button = e.button.button;
-			switch (button)
-			{
-			case SDL_BUTTON_RIGHT:
-				button = 2;
-				break;
-			case SDL_BUTTON_MIDDLE:
-				button = 3;
-				break;
-			}
-
-			double x = (double) e.button.x;
-			double y = (double) e.button.y;
-			windowToPixelCoords(&x, &y);
-			vargs.emplace_back(x);
-			vargs.emplace_back(y);
-			vargs.emplace_back((double) button);
-			vargs.emplace_back(e.button.which == SDL_TOUCH_MOUSEID);
-			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
-							  "mousepressed" : "mousereleased",
-							  vargs);
-		}
+		msg = convertMouseButtonEvent(e);
 		break;
 	case SDL_MOUSEWHEEL:
 		vargs.emplace_back((double) e.wheel.x);
@@ -385,7 +362,69 @@ Message *Event::convert(const SDL_Event &e) const
 	return msg;
 }
 
-Message *Event::convertJoystickEvent(const SDL_Event &e) const
+Message *Event::convertMouseButtonEvent(const SDL_Event &e)
+{
+	bool down = e.type == SDL_MOUSEBUTTONDOWN;
+
+	std::vector<Variant> vargs;
+	vargs.reserve(5);
+
+	// SDL uses button index 3 for the right mouse button, but we use index 2.
+	int button = e.button.button;
+	switch (button)
+	{
+	case SDL_BUTTON_RIGHT:
+		button = 2;
+		break;
+	case SDL_BUTTON_MIDDLE:
+		button = 3;
+		break;
+	}
+
+	double px = (double) e.button.x;
+	double py = (double) e.button.y;
+	windowToPixelCoords(&px, &py);
+	vargs.emplace_back(px);
+	vargs.emplace_back(py);
+	vargs.emplace_back((double) button);
+	vargs.emplace_back(e.button.which == SDL_TOUCH_MOUSEID);
+
+#if SDL_VERSION_ATLEAST(2,0,4)
+	SDL_version version;
+	SDL_GetVersion(&version);
+	if (version.major >= 2 && (version.minor > 0 || version.patch >= 4))
+		vargs.emplace_back((double) e.button.clicks);
+	else
+#endif
+	{
+		ClickState state = clickCounts[e.button.which];
+
+		// Matches the behaviour of SDL 2.0.4's click count tracking code when
+		// it doesn't know any OS-specific information.
+		if (down)
+		{
+			double now = timer::Timer::getTime();
+			int diffX = abs(e.button.x - state.lastX);
+			int diffY = abs(e.button.y - state.lastY);
+
+			if ((now - state.time) >= 0.5 || diffX > 1 || diffY > 1)
+				state.count = 0;
+
+			state.count++;
+			state.lastX = e.button.x;
+			state.lastY = e.button.y;
+			state.time = now;
+
+			clickCounts[e.button.which] = state;
+		}
+
+		vargs.emplace_back((double) state.count);
+	}
+
+	return new Message(down ? "mousepressed" : "mousereleased", vargs);
+}
+
+Message *Event::convertJoystickEvent(const SDL_Event &e)
 {
 	auto joymodule = Module::getInstance<joystick::JoystickModule>(Module::M_JOYSTICK);
 	if (!joymodule)
@@ -510,7 +549,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	return msg;
 }
 
-Message *Event::convertWindowEvent(const SDL_Event &e) const
+Message *Event::convertWindowEvent(const SDL_Event &e)
 {
 	Message *msg = nullptr;
 
