@@ -4,6 +4,7 @@ LOVE 0.11.0 []
 Released: N/A
 
   * Added a variant to World:update, which accepts the number of iterations to run. The defaults are now 8 and 3.
+  * Added a click count argument to love.mousepressed and love.mousereleased.
   * Added love.filesystem.get/setCRequirePath, and use that to find c libraries for require.
   * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
   * Added love.math.encode/decode, which support hex and base64.
@@ -11,6 +12,10 @@ Released: N/A
   * Added support for different ImageData formats, including RGBA8 (the default), RGBA16, RGBA16F, and RGBA32F.
   * Added the ability to load Radiance HDR, OpenEXR, and 16 bit PNG images.
   * Added love.graphics.getRawImageFormats.
+  * Added SpriteBatch:setDrawRange.
+  * Added Shader:hasUniform.
+  * Added support for non-square shader uniform matrices on desktop platforms.
+  * Added Shader:send(matrixname, is_column_major, matrix, ...) which specifies how to interpret the matrix table arguments.
   * Added love.window.updateMode.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
@@ -20,9 +25,18 @@ Released: N/A
 
   * Removed the default source type for love.audio.newSource.
   * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
+  * Removed the no-argument variant of Text:set, use Text:clear instead.
+  * Removed Shader:getExternVariable, use Shader:hasUniform instead.
+  * Removed functions deprecated in LÖVE 0.10.2:
+    * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
+    * Removed love.window.isCreated (use love.window.isOpen instead).
 
   * Updated Source:seek to work if the Source isn't playing.
   * Updated love.math.random to have improved numeric distribution.
+  * Updated love.graphics.circle/ellipse/arc/rectangle to take transformation scale into account when determining the number of segments to use.
+  * Updated Mesh:setDrawRange to take 'start' and 'count' parameters instead of 'min' and 'max'.
+  * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
+  * Updated the 'vsync' field of love.window.setMode and t.window in love.conf. It's now an integer with 0 disabling vsync.
 
 LOVE 0.10.2 [Super Toast]
 -------------------------
