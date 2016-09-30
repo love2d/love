@@ -849,6 +849,7 @@
 		FA41A3C81C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
 		FA41A3C91C0A1F950084430C /* ASTCHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */; };
 		FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA41A3C71C0A1F950084430C /* ASTCHandler.h */; };
+		FA4943551D9DDFFE00E8D38A /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
@@ -3613,6 +3614,7 @@
 				FA0B7A561A958EA3000E1D17 /* b2Settings.cpp in Sources */,
 				FA0B7E611A95902C000E1D17 /* wrap_Physics.cpp in Sources */,
 				FA0B7DC81A95902C000E1D17 /* Keyboard.cpp in Sources */,
+				FA4943551D9DDFFE00E8D38A /* HashFunction.cpp in Sources */,
 				FA0B7EAD1A95902C000E1D17 /* wrap_SoundData.cpp in Sources */,
 				FA0B7E2E1A95902C000E1D17 /* RopeJoint.cpp in Sources */,
 				FA0B7CE01A95902C000E1D17 /* Source.cpp in Sources */,
