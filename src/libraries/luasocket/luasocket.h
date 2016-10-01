@@ -42,6 +42,8 @@ int __open_luasocket_mime(lua_State * L);
 int __open_luasocket_smtp(lua_State * L);
 int __open_luasocket_tp(lua_State * L);
 int __open_luasocket_url(lua_State * L);
+int __open_luasocket_headers(lua_State * L);
+int __open_luasocket_mbox(lua_State * L);
 
 } // luasocket
 } // love

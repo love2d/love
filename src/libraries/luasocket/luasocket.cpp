@@ -55,6 +55,8 @@ int __open(lua_State * L)
 	PRELOAD("socket.smtp", __open_luasocket_smtp);
 	PRELOAD("socket.tp", __open_luasocket_tp)
 	PRELOAD("socket.url", __open_luasocket_url)
+	PRELOAD("socket.headers", __open_luasocket_headers)
+	PRELOAD("mbox", __open_luasocket_mbox)
 
 	// No need to register garbage collector function.
 
@@ -64,56 +66,60 @@ int __open(lua_State * L)
 int __open_luasocket_socket(lua_State * L)
 {
 	#include "libluasocket/socket.lua.h"
-	lua_getglobal(L, "socket");
 	return 1;
 }
 
 int __open_luasocket_ftp(lua_State * L)
 {
 	#include "libluasocket/ftp.lua.h"
-	lua_getglobal(L, "socket.ftp");
 	return 1;
 }
 
 int __open_luasocket_http(lua_State * L)
 {
 	#include "libluasocket/http.lua.h"
-	lua_getglobal(L, "socket.http");
 	return 1;
 }
 
 int __open_luasocket_ltn12(lua_State * L)
 {
 	#include "libluasocket/ltn12.lua.h"
-	lua_getglobal(L, "ltn12");
 	return 1;
 }
 
 int __open_luasocket_mime(lua_State * L)
 {
 	#include "libluasocket/mime.lua.h"
-	lua_getglobal(L, "mime");
 	return 1;
 }
 
 int __open_luasocket_smtp(lua_State * L)
 {
 	#include "libluasocket/smtp.lua.h"
-	lua_getglobal(L, "socket.smtp");
 	return 1;
 }
 
 int __open_luasocket_tp(lua_State * L)
 {
 	#include "libluasocket/tp.lua.h"
-	lua_getglobal(L, "socket.tp");
 	return 1;
 }
 
 int __open_luasocket_url(lua_State * L)
 {
 	#include "libluasocket/url.lua.h"
-	lua_getglobal(L, "socket.url");
+	return 1;
+}
+
+int __open_luasocket_headers(lua_State * L)
+{
+	#include "libluasocket/headers.lua.h"
+	return 1;
+}
+
+int __open_luasocket_mbox(lua_State * L)
+{
+	#include "libluasocket/mbox.lua.h"
 	return 1;
 }
 

@@ -1,5 +1,5 @@
-#ifndef UDP_H
-#define UDP_H
+#ifndef UNIXUDP_H
+#define UNIXUDP_H
 /*=========================================================================*\
 * UDP object
 * LuaSocket toolkit
@@ -12,20 +12,9 @@
 * with a call to the setpeername function. The same function can be used to
 * break the connection.
 \*=========================================================================*/
-#include "lua.h"
 
-#include "timeout.h"
-#include "socket.h"
+#include "unix.h"
 
-#define UDP_DATAGRAMSIZE 8192
+int unixudp_open(lua_State *L);
 
-typedef struct t_udp_ {
-    t_socket sock;
-    t_timeout tm;
-    int family;
-} t_udp;
-typedef t_udp *p_udp;
-
-int udp_open(lua_State *L);
-
-#endif /* UDP_H */
+#endif /* UNIXUDP_H */

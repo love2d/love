@@ -3,35 +3,34 @@
 * LuaSocket toolkit
 *
 * The penalty of calling select to avoid busy-wait is only paid when
-* the I/O call fail in the first place. 
-*
-* RCS ID: $Id: wsocket.c,v 1.36 2007/06/11 23:44:54 diego Exp $
+* the I/O call fail in the first place.
 \*=========================================================================*/
 #include <string.h>
 
 #include "socket.h"
+#include "pierror.h"
 
 /* WinSock doesn't have a strerror... */
 static const char *wstrerror(int err);
 
 /*-------------------------------------------------------------------------*\
-* Initializes module 
+* Initializes module
 \*-------------------------------------------------------------------------*/
 int socket_open(void) {
     WSADATA wsaData;
-    WORD wVersionRequested = MAKEWORD(2, 0); 
+    WORD wVersionRequested = MAKEWORD(2, 0);
     int err = WSAStartup(wVersionRequested, &wsaData );
     if (err != 0) return 0;
     if ((LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 0) &&
         (LOBYTE(wsaData.wVersion) != 1 || HIBYTE(wsaData.wVersion) != 1)) {
         WSACleanup();
-        return 0; 
+        return 0;
     }
     return 1;
 }
 
 /*-------------------------------------------------------------------------*\
-* Close module 
+* Close module
 \*-------------------------------------------------------------------------*/
 int socket_close(void) {
     WSACleanup();
@@ -52,10 +51,10 @@ int socket_waitfd(p_socket ps, int sw, p_timeout tm) {
     struct timeval tv, *tp = NULL;
     double t;
     if (timeout_iszero(tm)) return IO_TIMEOUT;  /* optimize timeout == 0 case */
-    if (sw & WAITFD_R) { 
-        FD_ZERO(&rfds); 
-		FD_SET(*ps, &rfds);
-        rp = &rfds; 
+    if (sw & WAITFD_R) {
+        FD_ZERO(&rfds);
+        FD_SET(*ps, &rfds);
+        rp = &rfds;
     }
     if (sw & WAITFD_W) { FD_ZERO(&wfds); FD_SET(*ps, &wfds); wp = &wfds; }
     if (sw & WAITFD_C) { FD_ZERO(&efds); FD_SET(*ps, &efds); ep = &efds; }
@@ -74,9 +73,9 @@ int socket_waitfd(p_socket ps, int sw, p_timeout tm) {
 /*-------------------------------------------------------------------------*\
 * Select with int timeout in ms
 \*-------------------------------------------------------------------------*/
-int socket_select(t_socket n, fd_set *rfds, fd_set *wfds, fd_set *efds, 
+int socket_select(t_socket n, fd_set *rfds, fd_set *wfds, fd_set *efds,
         p_timeout tm) {
-    struct timeval tv; 
+    struct timeval tv;
     double t = timeout_get(tm);
     tv.tv_sec = (int) t;
     tv.tv_usec = (int) ((t - tv.tv_sec) * 1.0e6);
@@ -98,7 +97,7 @@ void socket_destroy(p_socket ps) {
 }
 
 /*-------------------------------------------------------------------------*\
-* 
+*
 \*-------------------------------------------------------------------------*/
 void socket_shutdown(p_socket ps, int how) {
     socket_setblocking(ps);
@@ -136,10 +135,10 @@ int socket_connect(p_socket ps, SA *addr, socklen_t len, p_timeout tm) {
         /* give windows time to set the error (yes, disgusting) */
         Sleep(10);
         /* find out why we failed */
-        getsockopt(*ps, SOL_SOCKET, SO_ERROR, (char *)&err, &len); 
+        getsockopt(*ps, SOL_SOCKET, SO_ERROR, (char *)&err, &len);
         /* we KNOW there was an error. if 'why' is 0, we will return
         * "unknown error", but it's not really our fault */
-        return err > 0? err: IO_UNKNOWN; 
+        return err > 0? err: IO_UNKNOWN;
     } else return err;
 
 }
@@ -156,7 +155,7 @@ int socket_bind(p_socket ps, SA *addr, socklen_t len) {
 }
 
 /*-------------------------------------------------------------------------*\
-* 
+*
 \*-------------------------------------------------------------------------*/
 int socket_listen(p_socket ps, int backlog) {
     int err = IO_DONE;
@@ -169,35 +168,29 @@ int socket_listen(p_socket ps, int backlog) {
 /*-------------------------------------------------------------------------*\
 * Accept with timeout
 \*-------------------------------------------------------------------------*/
-int socket_accept(p_socket ps, p_socket pa, SA *addr, socklen_t *len, 
+int socket_accept(p_socket ps, p_socket pa, SA *addr, socklen_t *len,
         p_timeout tm) {
-    SA daddr;
-    socklen_t dlen = sizeof(daddr);
     if (*ps == SOCKET_INVALID) return IO_CLOSED;
-    if (!addr) addr = &daddr;
-    if (!len) len = &dlen;
     for ( ;; ) {
         int err;
         /* try to get client socket */
         if ((*pa = accept(*ps, addr, len)) != SOCKET_INVALID) return IO_DONE;
         /* find out why we failed */
-        err = WSAGetLastError(); 
+        err = WSAGetLastError();
         /* if we failed because there was no connectoin, keep trying */
         if (err != WSAEWOULDBLOCK && err != WSAECONNABORTED) return err;
         /* call select to avoid busy wait */
         if ((err = socket_waitfd(ps, WAITFD_R, tm)) != IO_DONE) return err;
-    } 
-    /* can't reach here */
-    return IO_UNKNOWN; 
+    }
 }
 
 /*-------------------------------------------------------------------------*\
 * Send with timeout
-* On windows, if you try to send 10MB, the OS will buffer EVERYTHING 
-* this can take an awful lot of time and we will end up blocked. 
+* On windows, if you try to send 10MB, the OS will buffer EVERYTHING
+* this can take an awful lot of time and we will end up blocked.
 * Therefore, whoever calls this function should not pass a huge buffer.
 \*-------------------------------------------------------------------------*/
-int socket_send(p_socket ps, const char *data, size_t count, 
+int socket_send(p_socket ps, const char *data, size_t count,
         size_t *sent, p_timeout tm)
 {
     int err;
@@ -207,27 +200,25 @@ int socket_send(p_socket ps, const char *data, size_t count,
     /* loop until we send something or we give up on error */
     for ( ;; ) {
         /* try to send something */
-		int put = send(*ps, data, (int) count, 0);
+        int put = send(*ps, data, (int) count, 0);
         /* if we sent something, we are done */
         if (put > 0) {
             *sent = put;
             return IO_DONE;
         }
         /* deal with failure */
-        err = WSAGetLastError(); 
+        err = WSAGetLastError();
         /* we can only proceed if there was no serious error */
         if (err != WSAEWOULDBLOCK) return err;
         /* avoid busy wait */
         if ((err = socket_waitfd(ps, WAITFD_W, tm)) != IO_DONE) return err;
-    } 
-    /* can't reach here */
-    return IO_UNKNOWN;
+    }
 }
 
 /*-------------------------------------------------------------------------*\
 * Sendto with timeout
 \*-------------------------------------------------------------------------*/
-int socket_sendto(p_socket ps, const char *data, size_t count, size_t *sent, 
+int socket_sendto(p_socket ps, const char *data, size_t count, size_t *sent,
         SA *addr, socklen_t len, p_timeout tm)
 {
     int err;
@@ -239,18 +230,19 @@ int socket_sendto(p_socket ps, const char *data, size_t count, size_t *sent,
             *sent = put;
             return IO_DONE;
         }
-        err = WSAGetLastError(); 
+        err = WSAGetLastError();
         if (err != WSAEWOULDBLOCK) return err;
         if ((err = socket_waitfd(ps, WAITFD_W, tm)) != IO_DONE) return err;
-    } 
-    return IO_UNKNOWN;
+    }
 }
 
 /*-------------------------------------------------------------------------*\
 * Receive with timeout
 \*-------------------------------------------------------------------------*/
-int socket_recv(p_socket ps, char *data, size_t count, size_t *got, p_timeout tm) {
-    int err;
+int socket_recv(p_socket ps, char *data, size_t count, size_t *got,
+        p_timeout tm)
+{
+    int err, prev = IO_DONE;
     *got = 0;
     if (*ps == SOCKET_INVALID) return IO_CLOSED;
     for ( ;; ) {
@@ -261,18 +253,25 @@ int socket_recv(p_socket ps, char *data, size_t count, size_t *got, p_timeout tm
         }
         if (taken == 0) return IO_CLOSED;
         err = WSAGetLastError();
-        if (err != WSAEWOULDBLOCK) return err;
+        /* On UDP, a connreset simply means the previous send failed.
+         * So we try again.
+         * On TCP, it means our socket is now useless, so the error passes.
+         * (We will loop again, exiting because the same error will happen) */
+        if (err != WSAEWOULDBLOCK) {
+            if (err != WSAECONNRESET || prev == WSAECONNRESET) return err;
+            prev = err;
+        }
         if ((err = socket_waitfd(ps, WAITFD_R, tm)) != IO_DONE) return err;
     }
-    return IO_UNKNOWN;
 }
 
 /*-------------------------------------------------------------------------*\
 * Recvfrom with timeout
 \*-------------------------------------------------------------------------*/
-int socket_recvfrom(p_socket ps, char *data, size_t count, size_t *got, 
-        SA *addr, socklen_t *len, p_timeout tm) {
-    int err;
+int socket_recvfrom(p_socket ps, char *data, size_t count, size_t *got,
+        SA *addr, socklen_t *len, p_timeout tm)
+{
+    int err, prev = IO_DONE;
     *got = 0;
     if (*ps == SOCKET_INVALID) return IO_CLOSED;
     for ( ;; ) {
@@ -283,10 +282,16 @@ int socket_recvfrom(p_socket ps, char *data, size_t count, size_t *got,
         }
         if (taken == 0) return IO_CLOSED;
         err = WSAGetLastError();
-        if (err != WSAEWOULDBLOCK) return err;
+        /* On UDP, a connreset simply means the previous send failed.
+         * So we try again.
+         * On TCP, it means our socket is now useless, so the error passes.
+         * (We will loop again, exiting because the same error will happen) */
+        if (err != WSAEWOULDBLOCK) {
+            if (err != WSAECONNRESET || prev == WSAECONNRESET) return err;
+            prev = err;
+        }
         if ((err = socket_waitfd(ps, WAITFD_R, tm)) != IO_DONE) return err;
     }
-    return IO_UNKNOWN;
 }
 
 /*-------------------------------------------------------------------------*\
@@ -306,7 +311,7 @@ void socket_setnonblocking(p_socket ps) {
 }
 
 /*-------------------------------------------------------------------------*\
-* DNS helpers 
+* DNS helpers
 \*-------------------------------------------------------------------------*/
 int socket_gethostbyaddr(const char *addr, socklen_t len, struct hostent **hp) {
     *hp = gethostbyaddr(addr, len, AF_INET);
@@ -326,34 +331,34 @@ int socket_gethostbyname(const char *addr, struct hostent **hp) {
 const char *socket_hoststrerror(int err) {
     if (err <= 0) return io_strerror(err);
     switch (err) {
-        case WSAHOST_NOT_FOUND: return "host not found";
-        default: return wstrerror(err); 
+        case WSAHOST_NOT_FOUND: return PIE_HOST_NOT_FOUND;
+        default: return wstrerror(err);
     }
 }
 
 const char *socket_strerror(int err) {
     if (err <= 0) return io_strerror(err);
     switch (err) {
-        case WSAEADDRINUSE: return "address already in use";
-        case WSAECONNREFUSED: return "connection refused";
-        case WSAEISCONN: return "already connected";
-        case WSAEACCES: return "permission denied";
-        case WSAECONNABORTED: return "closed";
-        case WSAECONNRESET: return "closed";
-        case WSAETIMEDOUT: return "timeout";
+        case WSAEADDRINUSE: return PIE_ADDRINUSE;
+        case WSAECONNREFUSED : return PIE_CONNREFUSED;
+        case WSAEISCONN: return PIE_ISCONN;
+        case WSAEACCES: return PIE_ACCESS;
+        case WSAECONNABORTED: return PIE_CONNABORTED;
+        case WSAECONNRESET: return PIE_CONNRESET;
+        case WSAETIMEDOUT: return PIE_TIMEDOUT;
         default: return wstrerror(err);
     }
 }
 
 const char *socket_ioerror(p_socket ps, int err) {
-	(void) ps;
-	return socket_strerror(err);
+    (void) ps;
+    return socket_strerror(err);
 }
 
 static const char *wstrerror(int err) {
     switch (err) {
         case WSAEINTR: return "Interrupted function call";
-        case WSAEACCES: return "Permission denied";
+        case WSAEACCES: return PIE_ACCESS; // "Permission denied";
         case WSAEFAULT: return "Bad address";
         case WSAEINVAL: return "Invalid argument";
         case WSAEMFILE: return "Too many open files";
@@ -366,36 +371,63 @@ static const char *wstrerror(int err) {
         case WSAEPROTOTYPE: return "Protocol wrong type for socket";
         case WSAENOPROTOOPT: return "Bad protocol option";
         case WSAEPROTONOSUPPORT: return "Protocol not supported";
-        case WSAESOCKTNOSUPPORT: return "Socket type not supported";
+        case WSAESOCKTNOSUPPORT: return PIE_SOCKTYPE; // "Socket type not supported";
         case WSAEOPNOTSUPP: return "Operation not supported";
         case WSAEPFNOSUPPORT: return "Protocol family not supported";
-        case WSAEAFNOSUPPORT: 
-            return "Address family not supported by protocol family"; 
-        case WSAEADDRINUSE: return "Address already in use";
+        case WSAEAFNOSUPPORT: return PIE_FAMILY; // "Address family not supported by protocol family";
+        case WSAEADDRINUSE: return PIE_ADDRINUSE; // "Address already in use";
         case WSAEADDRNOTAVAIL: return "Cannot assign requested address";
         case WSAENETDOWN: return "Network is down";
         case WSAENETUNREACH: return "Network is unreachable";
         case WSAENETRESET: return "Network dropped connection on reset";
         case WSAECONNABORTED: return "Software caused connection abort";
-        case WSAECONNRESET: return "Connection reset by peer";
+        case WSAECONNRESET: return PIE_CONNRESET; // "Connection reset by peer";
         case WSAENOBUFS: return "No buffer space available";
-        case WSAEISCONN: return "Socket is already connected";
+        case WSAEISCONN: return PIE_ISCONN; // "Socket is already connected";
         case WSAENOTCONN: return "Socket is not connected";
         case WSAESHUTDOWN: return "Cannot send after socket shutdown";
-        case WSAETIMEDOUT: return "Connection timed out";
-        case WSAECONNREFUSED: return "Connection refused";
+        case WSAETIMEDOUT: return PIE_TIMEDOUT; // "Connection timed out";
+        case WSAECONNREFUSED: return PIE_CONNREFUSED; // "Connection refused";
         case WSAEHOSTDOWN: return "Host is down";
         case WSAEHOSTUNREACH: return "No route to host";
         case WSAEPROCLIM: return "Too many processes";
         case WSASYSNOTREADY: return "Network subsystem is unavailable";
         case WSAVERNOTSUPPORTED: return "Winsock.dll version out of range";
-        case WSANOTINITIALISED: 
+        case WSANOTINITIALISED:
             return "Successful WSAStartup not yet performed";
         case WSAEDISCON: return "Graceful shutdown in progress";
-        case WSAHOST_NOT_FOUND: return "Host not found";
+        case WSAHOST_NOT_FOUND: return PIE_HOST_NOT_FOUND; // "Host not found";
         case WSATRY_AGAIN: return "Nonauthoritative host not found";
-        case WSANO_RECOVERY: return "Nonrecoverable name lookup error"; 
+        case WSANO_RECOVERY: return PIE_FAIL; // "Nonrecoverable name lookup error";
         case WSANO_DATA: return "Valid name, no data record of requested type";
         default: return "Unknown error";
     }
 }
+
+const char *socket_gaistrerror(int err) {
+    if (err == 0) return NULL;
+    switch (err) {
+        case EAI_AGAIN: return PIE_AGAIN;
+        case EAI_BADFLAGS: return PIE_BADFLAGS;
+#ifdef EAI_BADHINTS
+        case EAI_BADHINTS: return PIE_BADHINTS;
+#endif
+        case EAI_FAIL: return PIE_FAIL;
+        case EAI_FAMILY: return PIE_FAMILY;
+        case EAI_MEMORY: return PIE_MEMORY;
+        case EAI_NONAME: return PIE_NONAME;
+#ifdef EAI_OVERFLOW
+        case EAI_OVERFLOW: return PIE_OVERFLOW;
+#endif
+#ifdef EAI_PROTOCOL
+        case EAI_PROTOCOL: return PIE_PROTOCOL;
+#endif
+        case EAI_SERVICE: return PIE_SERVICE;
+        case EAI_SOCKTYPE: return PIE_SOCKTYPE;
+#ifdef EAI_SYSTEM
+        case EAI_SYSTEM: return strerror(errno);
+#endif
+        default: return gai_strerror(err);
+    }
+}
+

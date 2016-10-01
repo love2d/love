@@ -3,8 +3,6 @@
 /*=========================================================================*\
 * Timeout management functions
 * LuaSocket toolkit
-*
-* RCS ID: $Id: timeout.h,v 1.14 2005/10/07 04:40:59 diego Exp $
 \*=========================================================================*/
 #include "lua.h"
 
@@ -24,6 +22,7 @@ p_timeout timeout_markstart(p_timeout tm);
 double timeout_getstart(p_timeout tm);
 double timeout_gettime(void);
 int timeout_meth_settimeout(lua_State *L, p_timeout tm);
+int timeout_meth_gettimeout(lua_State *L, p_timeout tm);
 
 #define timeout_iszero(tm)   ((tm)->block == 0.0)
 

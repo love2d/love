@@ -10,8 +10,6 @@
 * involved in setting up both  client and server connections. The provided
 * IO routines, however, follow the Lua  style, being very similar  to the
 * standard Lua read and write functions.
-*
-* RCS ID: $Id: luasocket.c,v 1.53 2005/10/07 04:40:59 diego Exp $
 \*=========================================================================*/
 
 /*=========================================================================*\
@@ -19,10 +17,7 @@
 \*=========================================================================*/
 #include "lua.h"
 #include "lauxlib.h"
-
-#if !defined(LUA_VERSION_NUM) || (LUA_VERSION_NUM < 501)
-#include "compat-5.1.h"
-#endif
+#include "compat.h"
 
 /*=========================================================================*\
 * LuaSocket includes
@@ -37,8 +32,6 @@
 #include "udp.h"
 #include "select.h"
 
-extern void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
-
 /*-------------------------------------------------------------------------*\
 * Internal function prototypes
 \*-------------------------------------------------------------------------*/
@@ -49,7 +42,7 @@ static int base_open(lua_State *L);
 /*-------------------------------------------------------------------------*\
 * Modules and functions
 \*-------------------------------------------------------------------------*/
-static const luaL_reg mod[] = {
+static const luaL_Reg mod[] = {
     {"auxiliar", auxiliar_open},
     {"except", except_open},
     {"timeout", timeout_open},
@@ -61,7 +54,7 @@ static const luaL_reg mod[] = {
     {NULL, NULL}
 };
 
-static luaL_reg func[] = {
+static luaL_Reg func[] = {
     {"skip",      global_skip},
     {"__unload",  global_unload},
     {NULL,        NULL}
@@ -71,7 +64,7 @@ static luaL_reg func[] = {
 * Skip a few arguments
 \*-------------------------------------------------------------------------*/
 static int global_skip(lua_State *L) {
-    int amount = (int) luaL_checknumber(L, 1);
+    int amount = luaL_checkinteger(L, 1);
     int ret = lua_gettop(L) - amount - 1;
     return ret >= 0 ? ret : 0;
 }
@@ -91,7 +84,8 @@ static int global_unload(lua_State *L) {
 static int base_open(lua_State *L) {
     if (socket_open()) {
         /* export functions (and leave namespace table on top of stack) */
-        luax_register(L, "socket", func);
+        lua_newtable(L);
+        luaL_setfuncs(L, func, 0);
 #ifdef LUASOCKET_DEBUG
         lua_pushstring(L, "_DEBUG");
         lua_pushboolean(L, 1);
@@ -112,7 +106,7 @@ static int base_open(lua_State *L) {
 /*-------------------------------------------------------------------------*\
 * Initializes all library modules.
 \*-------------------------------------------------------------------------*/
-int LUASOCKET_API luaopen_socket_core(lua_State *L) {
+LUASOCKET_API int luaopen_socket_core(lua_State *L) {
     int i;
     base_open(L);
     for (i = 0; mod[i].name; i++) mod[i].func(L);
