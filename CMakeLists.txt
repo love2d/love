@@ -1250,25 +1250,30 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/auxiliar.h
 	src/libraries/luasocket/libluasocket/buffer.c
 	src/libraries/luasocket/libluasocket/buffer.h
+	src/libraries/luasocket/libluasocket/compat.c
+	src/libraries/luasocket/libluasocket/compat.h
 	src/libraries/luasocket/libluasocket/except.c
 	src/libraries/luasocket/libluasocket/except.h
 	src/libraries/luasocket/libluasocket/ftp.lua.h
+	src/libraries/luasocket/libluasocket/headers.lua.h
 	src/libraries/luasocket/libluasocket/http.lua.h
 	src/libraries/luasocket/libluasocket/inet.c
 	src/libraries/luasocket/libluasocket/inet.h
 	src/libraries/luasocket/libluasocket/io.c
 	src/libraries/luasocket/libluasocket/io.h
 	src/libraries/luasocket/libluasocket/ltn12.lua.h
-	src/libraries/luasocket/libluasocket/lua.h
 	src/libraries/luasocket/libluasocket/luasocket.c
 	src/libraries/luasocket/libluasocket/luasocket.h
+	src/libraries/luasocket/libluasocket/mbox.lua.h
 	src/libraries/luasocket/libluasocket/mime.c
 	src/libraries/luasocket/libluasocket/mime.h
 	src/libraries/luasocket/libluasocket/mime.lua.h
 	src/libraries/luasocket/libluasocket/options.c
 	src/libraries/luasocket/libluasocket/options.h
+	src/libraries/luasocket/libluasocket/pierror.h
 	src/libraries/luasocket/libluasocket/select.c
 	src/libraries/luasocket/libluasocket/select.h
+	src/libraries/luasocket/libluasocket/serial.c
 	src/libraries/luasocket/libluasocket/smtp.lua.h
 	src/libraries/luasocket/libluasocket/socket.h
 	src/libraries/luasocket/libluasocket/socket.lua.h
@@ -1291,6 +1296,12 @@ if(MSVC)
 else()
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+		src/libraries/luasocket/libluasocket/unix.c
+		src/libraries/luasocket/libluasocket/unix.h
+		src/libraries/luasocket/libluasocket/unixtcp.c
+		src/libraries/luasocket/libluasocket/unixtcp.h
+		src/libraries/luasocket/libluasocket/unixudp.c
+		src/libraries/luasocket/libluasocket/unixudp.h
 		src/libraries/luasocket/libluasocket/usocket.c
 		src/libraries/luasocket/libluasocket/usocket.h
 	)
