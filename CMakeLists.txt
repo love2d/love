@@ -1273,7 +1273,6 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/pierror.h
 	src/libraries/luasocket/libluasocket/select.c
 	src/libraries/luasocket/libluasocket/select.h
-	src/libraries/luasocket/libluasocket/serial.c
 	src/libraries/luasocket/libluasocket/smtp.lua.h
 	src/libraries/luasocket/libluasocket/socket.h
 	src/libraries/luasocket/libluasocket/socket.lua.h
@@ -1296,6 +1295,7 @@ if(MSVC)
 else()
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+		src/libraries/luasocket/libluasocket/serial.c
 		src/libraries/luasocket/libluasocket/unix.c
 		src/libraries/luasocket/libluasocket/unix.h
 		src/libraries/luasocket/libluasocket/unixtcp.c
