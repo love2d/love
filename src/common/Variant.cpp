@@ -85,7 +85,8 @@ Variant::Variant(love::Type udatatype, void *userdata)
 	{
 		Proxy *p = (Proxy *) userdata;
 		data.userdata = p->object;
-		p->object->retain();
+		if (p->object)
+			p->object->retain();
 	}
 	else
 		data.userdata = userdata;
@@ -105,7 +106,7 @@ Variant::Variant(const Variant &v)
 {
 	if (type == STRING)
 		data.string->retain();
-	else if (type == FUSERDATA)
+	else if (type == FUSERDATA && data.userdata != nullptr)
 		((love::Object *) data.userdata)->retain();
 	else if (type == TABLE)
 		data.table->retain();
@@ -127,7 +128,8 @@ Variant::~Variant()
 		data.string->release();
 		break;
 	case FUSERDATA:
-		((love::Object *) data.userdata)->release();
+		if (data.userdata != nullptr)
+			((love::Object *) data.userdata)->release();
 		break;
 	case TABLE:
 		data.table->release();
@@ -141,14 +143,14 @@ Variant &Variant::operator = (const Variant &v)
 {
 	if (v.type == STRING)
 		v.data.string->retain();
-	else if (v.type == FUSERDATA)
+	else if (v.type == FUSERDATA && v.data.userdata != nullptr)
 		((love::Object *) v.data.userdata)->retain();
 	else if (v.type == TABLE)
 		v.data.table->retain();
 
 	if (type == STRING)
 		data.string->release();
-	else if (type == FUSERDATA)
+	else if (type == FUSERDATA && v.data.userdata != nullptr)
 		((love::Object *) v.data.userdata)->release();
 	else if (type == TABLE)
 		data.table->release();

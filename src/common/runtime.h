@@ -452,6 +452,9 @@ T *luax_checktype(lua_State *L, int idx, love::Type type)
 		luax_typerror(L, idx, name);
 	}
 
+	if (u->object == nullptr)
+		luaL_error(L, "Cannot use object after it has been released.");
+
 	return (T *)u->object;
 }
 
@@ -513,7 +516,12 @@ T *luax_optmodule(lua_State *L, love::Type type)
 template <typename T>
 T *luax_totype(lua_State *L, int idx, love::Type /*type*/)
 {
-	return (T *)(((Proxy *)lua_touserdata(L, idx))->object);
+	T *o = (T *)(((Proxy *)lua_touserdata(L, idx))->object);
+
+	if (o == nullptr)
+		luaL_error(L, "Cannot use object after it has been released.");
+
+	return o;
 }
 
 Type luax_type(lua_State *L, int idx);

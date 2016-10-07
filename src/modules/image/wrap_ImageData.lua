@@ -161,6 +161,7 @@ local _getWidth = ImageData.getWidth
 local _getHeight = ImageData.getHeight
 local _getDimensions = ImageData.getDimensions
 local _getFormat = ImageData.getFormat
+local _release = ImageData.release
 
 -- Table which holds ImageData objects as keys, and information about the objects
 -- as values. Uses weak keys so the ImageData objects can still be GC'd properly.
@@ -268,6 +269,11 @@ end
 
 function ImageData:getFormat()
 	return objectcache[self].format
+end
+
+function ImageData:release()
+	objectcache[self] = nil
+	return _release(self)
 end
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.

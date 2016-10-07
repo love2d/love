@@ -72,6 +72,8 @@ local ffifuncs = ffi.cast("FFI_RandomGenerator *", ffifuncspointer)
 -- Overwrite some regular love.math functions with FFI implementations.
 
 function RandomGenerator:random(l, u)
+	-- TODO: This should ideally be handled inside ffifuncs.random
+	if self == nil then error("bad argument #1 to 'random' (RandomGenerator expected, got no value)", 2) end
 	local r = tonumber(ffifuncs.random(self))
 	return getrandom(r, l, u)
 end

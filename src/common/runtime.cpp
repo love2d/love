@@ -42,7 +42,11 @@ namespace love
 static int w__gc(lua_State *L)
 {
 	Proxy *p = (Proxy *) lua_touserdata(L, 1);
-	p->object->release();
+	if (p->object != nullptr)
+	{
+		p->object->release();
+		p->object = nullptr;
+	}
 	return 0;
 }
 
@@ -72,7 +76,35 @@ static int w__eq(lua_State *L)
 {
 	Proxy *p1 = (Proxy *)lua_touserdata(L, 1);
 	Proxy *p2 = (Proxy *)lua_touserdata(L, 2);
-	luax_pushboolean(L, p1->object == p2->object);
+	luax_pushboolean(L, p1->object == p2->object && p1->object != nullptr);
+	return 1;
+}
+
+static int w__release(lua_State *L)
+{
+	Proxy *p = (Proxy *) lua_touserdata(L, 1);
+	Object *object = p->object;
+
+	if (object != nullptr)
+	{
+		p->object = nullptr;
+		object->release();
+
+		// Fetch the registry table of instantiated objects.
+		luax_getregistry(L, REGISTRY_OBJECTS);
+
+		if (lua_istable(L, -1))
+		{
+			// loveobjects[object] = nil
+			lua_pushlightuserdata(L, object);
+			lua_pushnil(L);
+			lua_settable(L, -3);
+		}
+
+		lua_pop(L, 1);
+	}
+
+	luax_pushboolean(L, object != nullptr);
 	return 1;
 }
 
@@ -328,6 +360,10 @@ int luax_register_type(lua_State *L, love::Type type, const char *name, ...)
 	// Add typeOf
 	lua_pushcfunction(L, w__typeOf);
 	lua_setfield(L, -2, "typeOf");
+
+	// Add release
+	lua_pushcfunction(L, w__release);
+	lua_setfield(L, -2, "release");
 
 	va_list fs;
 	va_start(fs, name);

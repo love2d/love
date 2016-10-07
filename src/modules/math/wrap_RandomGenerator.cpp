@@ -126,7 +126,7 @@ static FFI_RandomGenerator ffifuncs =
 	[](Proxy *p) -> double // random()
 	{
 		// FIXME: We need better type-checking...
-		if (p == nullptr || !typeFlags[p->type][MATH_RANDOM_GENERATOR_ID])
+		if (p == nullptr || p->object == nullptr || !typeFlags[p->type][MATH_RANDOM_GENERATOR_ID])
 			return 0.0;
 
 		RandomGenerator *rng = (RandomGenerator *) p->object;
