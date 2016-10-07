@@ -24,9 +24,7 @@
 // LOVE
 #include "common/Data.h"
 #include "common/StringMap.h"
-
-// STL
-#include <cstdint>
+#include "common/int.h"
 
 namespace love
 {
@@ -66,7 +64,7 @@ public:
 	 * @param[in] length The length of the input data.
 	 * @return A string of bytes, representing the result of the hash function.
 	 **/
-	virtual std::string hash(Function function, const char *input, uint64_t length) const = 0;
+	virtual std::string hash(Function function, const char *input, uint64 length) const = 0;
 
 	/**
 	 * @param[in] function The requested hash function.
