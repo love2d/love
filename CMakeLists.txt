@@ -1286,11 +1286,18 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/url.lua.h
 )
 
+set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET)
+
 if(MSVC)
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
 		src/libraries/luasocket/libluasocket/wsocket.c
 		src/libraries/luasocket/libluasocket/wsocket.h
+	)
+
+	set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET
+		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
+		ws2_32.lib
 	)
 else()
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
@@ -1313,7 +1320,7 @@ set(LOVE_SRC_3P_LUASOCKET
 )
 
 add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
-target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET})
 
 #
 # Lua 5.3's UTF-8 library
