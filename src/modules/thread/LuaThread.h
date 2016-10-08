@@ -36,12 +36,12 @@ namespace love
 namespace thread
 {
 
-class LuaThread : public love::Object, public Threadable
+class LuaThread : public Threadable
 {
 public:
 
 	LuaThread(const std::string &name, love::Data *code);
-	~LuaThread();
+	virtual ~LuaThread();
 	void threadFunction();
 	const std::string &getError() const;
 

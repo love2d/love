@@ -43,7 +43,7 @@ class Video : public love::video::Video
 {
 public:
 	Video();
-	~Video();
+	virtual ~Video();
 
 	// Implements Module
 	virtual const char *getName() const;
@@ -58,7 +58,7 @@ class Worker : public love::thread::Threadable
 {
 public:
 	Worker();
-	~Worker();
+	virtual ~Worker();
 
 	// Implements Threadable
 	void threadFunction();

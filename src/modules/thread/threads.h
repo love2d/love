@@ -76,7 +76,7 @@ private:
 	Mutex *mutex;
 };
 
-class Threadable
+class Threadable : public love::Object
 {
 public:
 	Threadable();

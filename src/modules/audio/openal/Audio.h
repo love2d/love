@@ -131,7 +131,7 @@ private:
 
 	public:
 		PoolThread(Pool *pool);
-		~PoolThread();
+		virtual ~PoolThread();
 		void setFinish();
 		void threadFunction();
 	};
