@@ -43,7 +43,6 @@ LuaThread::~LuaThread()
 
 void LuaThread::threadFunction()
 {
-	this->retain();
 	error.clear();
 
 	lua_State *L = luaL_newstate();
@@ -83,8 +82,6 @@ void LuaThread::threadFunction()
 
 	if (!error.empty())
 		onError();
-
-	this->release();
 }
 
 bool LuaThread::start(const std::vector<Variant> &args)

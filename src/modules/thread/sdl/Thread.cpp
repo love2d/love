@@ -29,7 +29,7 @@ namespace sdl
 Thread::Thread(Threadable *t)
 	: t(t)
 	, running(false)
-	, thread(0)
+	, thread(nullptr)
 {
 }
 
@@ -74,9 +74,16 @@ bool Thread::isRunning()
 int Thread::thread_runner(void *data)
 {
 	Thread *self = (Thread *) data; // some compilers don't like 'this'
+	self->t->retain();
+
 	self->t->threadFunction();
-	Lock l(self->mutex);
-	self->running = false;
+
+	{
+		Lock l(self->mutex);
+		self->running = false;
+	}
+
+	self->t->release();
 	return 0;
 }
 } // sdl
