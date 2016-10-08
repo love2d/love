@@ -123,20 +123,8 @@ int w_setMode(lua_State *L)
 		return 1;
 	}
 
-
+	// Defaults come from WindowSettings itself.
 	WindowSettings settings;
-	// Defaults
-	settings.fstype = Window::FULLSCREEN_DESKTOP;
-	settings.fullscreen = false;
-	settings.vsync = 1;
-	settings.msaa = 0;
-	settings.resizable = false;
-	settings.minwidth = 1;
-	settings.minheight = 1;
-	settings.borderless = false;
-	settings.centered = false;
-	settings.display = 0;
-	settings.highdpi = false;
 
 	readWindowSettings(L, 3, settings);
 
