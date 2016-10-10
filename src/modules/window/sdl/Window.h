@@ -125,7 +125,7 @@ private:
 	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa);
 
 	// Update the saved window settings based on the window's actual state.
-	void updateSettings(const WindowSettings &newsettings);
+	void updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport);
 
 	SDL_MessageBoxFlags convertMessageBoxType(MessageBoxType type) const;
 

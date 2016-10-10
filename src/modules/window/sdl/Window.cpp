@@ -485,14 +485,14 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_GL_SetSwapInterval(f.vsync ? 1 : 0);
 
-	updateSettings(f);
+	updateSettings(f, false);
 
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		gfx->setMode(pixelWidth, pixelHeight);
 
 #ifdef LOVE_ANDROID
-		love::android::setImmersive(f.fullscreen);
+	love::android::setImmersive(f.fullscreen);
 #endif
 
 	return true;
@@ -515,7 +515,7 @@ bool Window::onSizeChanged(int width, int height)
 	return true;
 }
 
-void Window::updateSettings(const WindowSettings &newsettings)
+void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport)
 {
 	Uint32 wflags = SDL_GetWindowFlags(window);
 
@@ -575,13 +575,21 @@ void Window::updateSettings(const WindowSettings &newsettings)
 
 	// May be 0 if the refresh rate can't be determined.
 	settings.refreshrate = (double) dmode.refresh_rate;
+
+	if (updateGraphicsViewport)
+	{
+		// Update the viewport size now instead of waiting for event polling.
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		if (gfx != nullptr)
+			gfx->setViewportSize(pixelWidth, pixelHeight);
+	}
 }
 
 void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
 {
 	// The window might have been modified (moved, resized, etc.) by the user.
 	if (window)
-		updateSettings(settings);
+		updateSettings(settings, true);
 
 	width = windowWidth;
 	height = windowHeight;
@@ -648,16 +656,11 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
 		SDL_GL_MakeCurrent(window, context);
-		updateSettings(newsettings);
+		updateSettings(newsettings, true);
 
 		// Apparently this gets un-set when we exit fullscreen (at least in OS X).
 		if (!fullscreen)
 			SDL_SetWindowMinimumSize(window, settings.minwidth, settings.minheight);
-
-		// Update the viewport size now instead of waiting for event polling.
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		if (gfx != nullptr)
-			gfx->setViewportSize(pixelWidth, pixelHeight);
 
 		return true;
 	}
@@ -857,7 +860,10 @@ void Window::minimize()
 void Window::maximize()
 {
 	if (window != nullptr)
+	{
 		SDL_MaximizeWindow(window);
+		updateSettings(settings, true);
+	}
 }
 
 void Window::swapBuffers()
