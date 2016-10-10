@@ -151,9 +151,6 @@ public:
 
 	virtual bool isVisible() const = 0;
 
-	virtual void setMouseVisible(bool visible) = 0;
-	virtual bool getMouseVisible() const = 0;
-
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;
 

@@ -886,16 +886,6 @@ bool Window::isVisible() const
 	return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_SHOWN) != 0;
 }
 
-void Window::setMouseVisible(bool visible)
-{
-	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
-}
-
-bool Window::getMouseVisible() const
-{
-	return (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE);
-}
-
 void Window::setMouseGrab(bool grab)
 {
 	mouseGrabbed = grab;

@@ -83,9 +83,6 @@ public:
 
 	bool isVisible() const;
 
-	void setMouseVisible(bool visible);
-	bool getMouseVisible() const;
-
 	void setMouseGrab(bool grab);
 	bool isMouseGrabbed() const;
 
