@@ -217,6 +217,17 @@ int Source::getChannels() const
 	return 2;
 }
 
+bool Source::isQueueable() const
+{
+	return false;
+}
+
+void Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+{
+	return;
+}
+
+
 } // null
 } // audio
 } // love

@@ -86,6 +86,7 @@ public:
 
 	Source(Pool *pool, love::sound::SoundData *soundData);
 	Source(Pool *pool, love::sound::Decoder *decoder);
+	Source(Pool *pool, int sampleRate, int bitDepth, int channels);
 	Source(const Source &s);
 	virtual ~Source();
 
@@ -130,6 +131,10 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
+	virtual bool isQueueable() const;
+	virtual void queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+	virtual void queueDataAtomic(void *data, ALsizei length);
+
 	void prepareAtomic();
 	void teardownAtomic();
 
@@ -159,13 +164,21 @@ private:
 
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 
+	ALuint unusedBufferPeek();
+	ALuint *unusedBufferPop();
+	void unusedBufferPush(ALuint buffer);
+	
 	Pool *pool;
 	ALuint source;
 	bool valid;
 
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
-
+	ALuint unusedBuffers[MAX_BUFFERS];
+	
+	int unusedBufferTop;
+	ALsizei bufferedBytes;
+	
 	StrongRef<StaticDataBuffer> staticBuffer;
 
 	float pitch;

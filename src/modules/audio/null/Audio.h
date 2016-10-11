@@ -46,6 +46,7 @@ public:
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
+	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels);
 	int getSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);

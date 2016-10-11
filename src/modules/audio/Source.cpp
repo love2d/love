@@ -63,6 +63,7 @@ StringMap<Source::Type, Source::TYPE_MAX_ENUM>::Entry Source::typeEntries[] =
 {
 	{"static", Source::TYPE_STATIC},
 	{"stream", Source::TYPE_STREAM},
+	{"queue",  Source::TYPE_QUEUE},
 };
 
 StringMap<Source::Type, Source::TYPE_MAX_ENUM> Source::types(Source::typeEntries, sizeof(Source::typeEntries));

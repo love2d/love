@@ -75,6 +75,7 @@ public:
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;
+	virtual Source *newSource(int sampleRate, int bitDepth, int channels) = 0;
 
 	/**
 	 * Gets the current number of simultaneous playing sources.

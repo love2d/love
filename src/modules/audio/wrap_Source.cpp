@@ -20,6 +20,7 @@
 
 #include <limits>
 
+#include "sound/SoundData.h"
 #include "wrap_Source.h"
 
 namespace love
@@ -329,6 +330,35 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
+int w_Source_isQueueable(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_pushboolean(L, t->isQueueable());
+	return 1;
+}
+
+int w_Source_queueData(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_catchexcept(L, [&]() {
+		if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
+		{
+			love::sound::SoundData *s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
+			t->queueData(s->getData(), lua_isnumber(L, 3) ? (int)lua_tonumber(L, 3) : s->getSize(), s->getSampleRate(), s->getBitDepth(), s->getChannels());
+		}
+		else if (lua_islightuserdata(L, 2))
+		{
+			if (lua_isnumber(L, 4) && lua_isnumber(L, 5) && lua_isnumber(L, 6))
+				t->queueData(lua_touserdata(L, 2), (int)lua_tonumber(L, 3), (int)lua_tonumber(L, 4), (int)lua_tonumber(L, 5), (int)lua_tonumber(L, 6));
+			else
+				return luaL_error(L, "No format specified.");
+		}
+		else
+			return luaL_error(L, "Invalid data type.");
+	});
+	return 1;
+}
+
 int w_Source_getType(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -381,6 +411,10 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getRolloff", w_Source_getRolloff},
 
 	{ "getChannels", w_Source_getChannels },
+	
+	{ "isQueueable", w_Source_isQueueable },
+	{ "queueData", w_Source_queueData },
+	
 	{ "getType", w_Source_getType },
 
 	{ 0, 0 }

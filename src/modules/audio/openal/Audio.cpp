@@ -157,6 +157,11 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *soundData)
 	return new Source(pool, soundData);
 }
 
+love::audio::Source *Audio::newSource(int sampleRate, int bitDepth, int channels)
+{
+	return new Source(pool, sampleRate, bitDepth, channels);
+}
+
 int Audio::getSourceCount() const
 {
 	return pool->getSourceCount();

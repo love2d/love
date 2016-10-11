@@ -51,6 +51,11 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *)
 	return new Source();
 }
 
+love::audio::Source *Audio::newSource(int sampleRate, int bitDepth, int channels)
+{
+	return new Source();
+}
+
 int Audio::getSourceCount() const
 {
 	return 0;

@@ -38,6 +38,7 @@ public:
 	{
 		TYPE_STATIC,
 		TYPE_STREAM,
+		TYPE_QUEUE,
 		TYPE_MAX_ENUM
 	};
 
@@ -100,6 +101,10 @@ public:
 	virtual float getMaxDistance() const = 0;
 
 	virtual int getChannels() const = 0;
+	
+	virtual bool isQueueable() const = 0;
+	virtual void queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;
+	
 	virtual Type getType() const;
 
 	static bool getConstant(const char *in, Type &out);

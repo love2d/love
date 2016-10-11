@@ -44,27 +44,31 @@ int w_getSourceCount(lua_State *L)
 
 int w_newSource(lua_State *L)
 {
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
-		luax_convobj(L, 1, "sound", "newDecoder");
-
-	Source::Type stype = Source::TYPE_STREAM;
-
-	const char *stypestr = luaL_checkstring(L, 2);
-	if (stypestr && !Source::getConstant(stypestr, stype))
-		return luaL_error(L, "Invalid source type: %s", stypestr);
-
-	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_ID))
-		luax_convobj(L, 1, "sound", "newSoundData");
-
 	Source *t = 0;
+	
+	if (lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3))
+		t = instance()->newSource((int)lua_tonumber(L, 1), (int)lua_tonumber(L, 2), (int)lua_tonumber(L, 3));
+	else
+	{
+		if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+			luax_convobj(L, 1, "sound", "newDecoder");
 
-	luax_catchexcept(L, [&]() {
-		if (luax_istype(L, 1, SOUND_SOUND_DATA_ID))
-			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, SOUND_SOUND_DATA_ID));
-		else if (luax_istype(L, 1, SOUND_DECODER_ID))
-			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, SOUND_DECODER_ID));
-	});
+		Source::Type stype = Source::TYPE_STREAM;
 
+		const char *stypestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
+		if (stypestr && !Source::getConstant(stypestr, stype))
+			return luaL_error(L, "Invalid source type: %s", stypestr);
+
+		if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_ID))
+			luax_convobj(L, 1, "sound", "newSoundData");
+			
+		luax_catchexcept(L, [&]() {
+			if (luax_istype(L, 1, SOUND_SOUND_DATA_ID))
+				t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, SOUND_SOUND_DATA_ID));
+			else if (luax_istype(L, 1, SOUND_DECODER_ID))
+				t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, SOUND_DECODER_ID));
+		});
+	}
 	if (t)
 	{
 		luax_pushtype(L, AUDIO_SOURCE_ID, t);
@@ -72,7 +76,7 @@ int w_newSource(lua_State *L)
 		return 1;
 	}
 	else
-		return luax_typerror(L, 1, "Decoder or SoundData");
+		return luax_typerror(L, 1, "Decoder, SoundData or format description");
 }
 
 static std::vector<Source*> readSourceList(lua_State *L, int n)

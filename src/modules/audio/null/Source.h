@@ -76,6 +76,9 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
+	virtual bool isQueueable() const;
+	virtual void queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+
 private:
 
 	float pitch;
