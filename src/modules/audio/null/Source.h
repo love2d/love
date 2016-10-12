@@ -77,7 +77,7 @@ public:
 	virtual int getChannels() const;
 
 	virtual bool isQueueable() const;
-	virtual void queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+	virtual bool queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
 
 private:
 

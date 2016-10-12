@@ -283,10 +283,10 @@ double Pool::getDuration(Source *source, void *unit)
 	return source->getDurationAtomic(unit);
 }
 
-void Pool::queueData(Source *source, void *data, ALsizei length)
+bool Pool::queueData(Source *source, void *data, ALsizei length)
 {
 	thread::Lock lock(mutex);
-	source->queueDataAtomic(data, length);
+	return source->queueDataAtomic(data, length);
 }
 
 ALuint Pool::findi(const Source *source) const

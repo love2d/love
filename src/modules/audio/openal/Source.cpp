@@ -390,7 +390,6 @@ bool Source::update()
 				bufferedBytes -= size;
 				unusedBufferPush(buffers[i]);
 			}
-			
 			return !isFinished();
 		}
 	}
@@ -442,12 +441,6 @@ float Source::getVolume() const
 
 void Source::seekAtomic(float offset, void *unit)
 {
-	bool wasPlaying = isPlaying();
-
-	// To drain all buffers
-	if (valid && type == TYPE_STREAM)
-		stopAtomic();
-
 	switch (*((Source::Unit *) unit))
 	{
 	case Source::UNIT_SAMPLES:
@@ -460,17 +453,58 @@ void Source::seekAtomic(float offset, void *unit)
 		offsetSamples = offset * sampleRate;
 		break;
 	}
-
-	if (type == TYPE_STREAM)
-		decoder->seek(offsetSeconds);
-	else if (valid) // Playing static or queue
+	
+	switch (type)
 	{
-		alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-		offsetSamples = offsetSeconds = 0;
-	}
+		case TYPE_STATIC:
+			alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+			offsetSamples = offsetSeconds = 0;
+			break;
+		case TYPE_STREAM:
+		{
+			bool wasPlaying = isPlaying();
 
-	if (wasPlaying && type == TYPE_STREAM)
-		playAtomic(source);
+			// To drain all buffers
+			if (valid)
+				stopAtomic();
+			
+			decoder->seek(offsetSeconds);
+
+			if (wasPlaying)
+				playAtomic(source);
+				
+			break;
+		}
+		case TYPE_QUEUE:
+			if (valid)
+			{
+				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+				offsetSamples = offsetSeconds = 0;
+			}
+			else
+			{
+				ALint size;
+				ALuint buffer = unusedBufferPeek();
+				
+				//emulate AL behavior, discarding buffer once playback head is past one
+				while (buffer != AL_NONE)
+				{
+					alGetBufferi(buffer, AL_SIZE, &size);
+					
+					if (offsetSamples < size / (bitDepth / 8 * channels))
+						break;
+
+					unusedBufferPop();
+					buffer = unusedBufferPeek();
+					bufferedBytes -= size;
+					offsetSamples -= size / (bitDepth / 8 * channels);
+				}
+				if (buffer == AL_NONE)
+					offsetSamples = 0;
+				offsetSeconds = offsetSamples / sampleRate;
+			}
+			break;
+	}
 }
 
 void Source::seek(float offset, Source::Unit unit)
@@ -673,7 +707,7 @@ bool Source::isLooping() const
 	return looping;
 }
 
-void Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+bool Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
 {
 	if (type != TYPE_QUEUE)
 		throw QueueTypeMismatchException();
@@ -688,41 +722,39 @@ void Source::queueData(void *data, int length, int dataSampleRate, int dataBitDe
 		throw QueueMalformedLengthException(bitDepth / 8 * channels);
 	
 	if (length > 0)
-		pool->queueData(this, data, (ALsizei)length);
+		return pool->queueData(this, data, (ALsizei)length);
 }
 
-void Source::queueDataAtomic(void *data, ALsizei length)
+bool Source::queueDataAtomic(void *data, ALsizei length)
 {
 	if (valid)
 	{
 		ALuint buffer = unusedBufferPeek();
 		if (buffer == AL_NONE)
-			return; //FIXME: out of buffer space handling?
+			return false;
 			
 		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
 		alSourceQueueBuffers(source, 1, &buffer);
 		unusedBufferPop();
 	}
-	else //in not valid state, queue stack is "reversed"
+	else
 	{
-		//remaining buffers are stored beyond the tip of unused stack
-		if (unusedBufferTop == MAX_BUFFERS - 1)
-			return;
+		//remaining buffers are stored beyond the tail of unused stack
+		if (unusedBufferTop >= (int)MAX_BUFFERS - 1)
+			return false;
 		
-		ALuint buffer = unusedBuffers[++unusedBufferTop];
+		ALuint buffer = unusedBuffers[unusedBufferTop + 1];
 		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
 		//new buffer must go last, so it goes to the base of the stack
-		for (unsigned int i = unusedBufferTop; i > 0; i--)
-			unusedBuffers[i] = unusedBuffers[i - 1];
-		unusedBuffers[0] = buffer;
+		unusedBufferQueue(buffer);
 	}
 	bufferedBytes += length;
+	return true;
 }
 
 bool Source::isQueueable() const
 {
-	//in not valid state, queue stack is "reversed"
-	if (type != TYPE_QUEUE || (valid && unusedBufferTop < 0) || (!valid && unusedBufferTop == MAX_BUFFERS - 1))
+	if (type != TYPE_QUEUE || (valid && unusedBufferTop < 0) || (!valid && unusedBufferTop >= (int)MAX_BUFFERS - 1))
 		return false;
 	return true;
 }
@@ -811,6 +843,7 @@ void Source::teardownAtomic()
 				alSourceUnqueueBuffers(source, 1, &buffer);
 				unusedBufferPush(buffer);
 			}
+			
 			// put unused buffers at the end of stack
 			for (unsigned int i = 0; i < unused; i++)
 				unusedBuffers[unusedBufferTop + 1 + i] = buffers[i];
@@ -1011,6 +1044,13 @@ ALuint *Source::unusedBufferPop()
 void Source::unusedBufferPush(ALuint buffer)
 {
 	unusedBuffers[++unusedBufferTop] = buffer;
+}
+
+void Source::unusedBufferQueue(ALuint buffer)
+{
+	for (unsigned int i = ++unusedBufferTop; i > 0; i--)
+		unusedBuffers[i] = unusedBuffers[i - 1];
+	unusedBuffers[0] = buffer;
 }
 
 int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)

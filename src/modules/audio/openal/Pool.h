@@ -91,7 +91,7 @@ public:
 	void seek(Source *source, float offset, void *unit);
 	float tell(Source *source, void *unit);
 	double getDuration(Source *source, void *unit);
-	void queueData(Source *source, void *data, ALsizei length);
+	bool queueData(Source *source, void *data, ALsizei length);
 
 	bool play(const std::vector<love::audio::Source*> &sources);
 	void stop(const std::vector<love::audio::Source*> &sources);

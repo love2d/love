@@ -340,22 +340,25 @@ int w_Source_isQueueable(lua_State *L)
 int w_Source_queueData(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
+	bool success;
+	
 	luax_catchexcept(L, [&]() {
 		if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
 		{
 			love::sound::SoundData *s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
-			t->queueData(s->getData(), lua_isnumber(L, 3) ? (int)lua_tonumber(L, 3) : s->getSize(), s->getSampleRate(), s->getBitDepth(), s->getChannels());
+			success = t->queueData(s->getData(), lua_isnumber(L, 3) ? (int)lua_tonumber(L, 3) : s->getSize(), s->getSampleRate(), s->getBitDepth(), s->getChannels());
 		}
 		else if (lua_islightuserdata(L, 2))
 		{
 			if (lua_isnumber(L, 4) && lua_isnumber(L, 5) && lua_isnumber(L, 6))
-				t->queueData(lua_touserdata(L, 2), (int)lua_tonumber(L, 3), (int)lua_tonumber(L, 4), (int)lua_tonumber(L, 5), (int)lua_tonumber(L, 6));
+				success = t->queueData(lua_touserdata(L, 2), (int)lua_tonumber(L, 3), (int)lua_tonumber(L, 4), (int)lua_tonumber(L, 5), (int)lua_tonumber(L, 6));
 			else
 				return luaL_error(L, "No format specified.");
 		}
 		else
 			return luaL_error(L, "Invalid data type.");
 	});
+	luax_pushboolean(L, success);
 	return 1;
 }
 

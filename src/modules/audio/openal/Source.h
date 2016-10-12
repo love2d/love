@@ -132,8 +132,8 @@ public:
 	virtual int getChannels() const;
 
 	virtual bool isQueueable() const;
-	virtual void queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
-	virtual void queueDataAtomic(void *data, ALsizei length);
+	virtual bool queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+	virtual bool queueDataAtomic(void *data, ALsizei length);
 
 	void prepareAtomic();
 	void teardownAtomic();
@@ -167,6 +167,7 @@ private:
 	ALuint unusedBufferPeek();
 	ALuint *unusedBufferPop();
 	void unusedBufferPush(ALuint buffer);
+	void unusedBufferQueue(ALuint buffer);
 	
 	Pool *pool;
 	ALuint source;

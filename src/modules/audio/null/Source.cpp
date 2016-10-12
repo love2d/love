@@ -222,9 +222,9 @@ bool Source::isQueueable() const
 	return false;
 }
 
-void Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+bool Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
 {
-	return;
+	return false;
 }
 
 

@@ -47,17 +47,19 @@ int w_newSource(lua_State *L)
 	Source *t = 0;
 	
 	if (lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3))
-		t = instance()->newSource((int)lua_tonumber(L, 1), (int)lua_tonumber(L, 2), (int)lua_tonumber(L, 3));
+		luax_catchexcept(L, [&]() {
+			t = instance()->newSource((int)lua_tonumber(L, 1), (int)lua_tonumber(L, 2), (int)lua_tonumber(L, 3));
+		});
 	else
 	{
-		if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
-			luax_convobj(L, 1, "sound", "newDecoder");
-
 		Source::Type stype = Source::TYPE_STREAM;
 
 		const char *stypestr = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
 		if (stypestr && !Source::getConstant(stypestr, stype))
 			return luaL_error(L, "Invalid source type: %s", stypestr);
+
+		if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+			luax_convobj(L, 1, "sound", "newDecoder");
 
 		if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_ID))
 			luax_convobj(L, 1, "sound", "newSoundData");
