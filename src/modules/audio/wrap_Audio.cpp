@@ -44,19 +44,22 @@ int w_getSourceCount(lua_State *L)
 
 int w_newSource(lua_State *L)
 {
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
-		luax_convobj(L, 1, "sound", "newDecoder");
-
 	Source::Type stype = Source::TYPE_STREAM;
 
-	const char *stypestr = luaL_checkstring(L, 2);
-	if (stypestr && !Source::getConstant(stypestr, stype))
-		return luaL_error(L, "Invalid source type: %s", stypestr);
+	if (!luax_istype(L, 1, SOUND_SOUND_DATA_ID) && !luax_istype(L, 1, SOUND_DECODER_ID))
+	{
+		const char *stypestr = luaL_checkstring(L, 2);
+		if (stypestr && !Source::getConstant(stypestr, stype))
+			return luaL_error(L, "Invalid source type: %s", stypestr);
+	}
+
+	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+		luax_convobj(L, 1, "sound", "newDecoder");
 
 	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_ID))
 		luax_convobj(L, 1, "sound", "newSoundData");
 
-	Source *t = 0;
+	Source *t = nullptr;
 
 	luax_catchexcept(L, [&]() {
 		if (luax_istype(L, 1, SOUND_SOUND_DATA_ID))
@@ -65,7 +68,7 @@ int w_newSource(lua_State *L)
 			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, SOUND_DECODER_ID));
 	});
 
-	if (t)
+	if (t != nullptr)
 	{
 		luax_pushtype(L, AUDIO_SOURCE_ID, t);
 		t->release();
