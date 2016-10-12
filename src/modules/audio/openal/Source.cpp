@@ -178,7 +178,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
 	, toLoop(0)
-	, unusedBufferTop(-1)
+	, unusedBufferTop(MAX_BUFFERS - 1)
 {
 	if (getFormat(decoder->getChannels(), decoder->getBitDepth()) == 0)
 		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
