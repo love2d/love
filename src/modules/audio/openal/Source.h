@@ -131,9 +131,9 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
-	virtual bool isQueueable() const;
-	virtual bool queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
-	virtual bool queueDataAtomic(void *data, ALsizei length);
+	virtual int getFreeBufferCount() const;
+	virtual bool queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+	virtual bool queueAtomic(void *data, ALsizei length);
 
 	void prepareAtomic();
 	void teardownAtomic();

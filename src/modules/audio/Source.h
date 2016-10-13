@@ -102,8 +102,8 @@ public:
 
 	virtual int getChannels() const = 0;
 	
-	virtual bool isQueueable() const = 0;
-	virtual bool queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;
+	virtual int getFreeBufferCount() const = 0;
+	virtual bool queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;
 	
 	virtual Type getType() const;
 

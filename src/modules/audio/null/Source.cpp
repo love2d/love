@@ -217,12 +217,12 @@ int Source::getChannels() const
 	return 2;
 }
 
-bool Source::isQueueable() const
+int Source::getFreeBufferCount() const
 {
-	return false;
+	return 0;
 }
 
-bool Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+bool Source::queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
 {
 	return false;
 }

@@ -80,18 +80,7 @@ class QueueTypeMismatchException : public love::Exception
 public:
 
 	QueueTypeMismatchException()
-		: Exception("Only \"queue\" type sound Sources can be queued with sound data.")
-	{
-	}
-
-};
-
-class QueueNegativeLengthException : public love::Exception
-{
-public:
-
-	QueueNegativeLengthException()
-		: Exception("Data length cannot be negative.")
+		: Exception("Only queueable Sources can be queued with sound data.")
 	{
 	}
 
@@ -102,11 +91,23 @@ class QueueMalformedLengthException : public love::Exception
 public:
 
 	QueueMalformedLengthException(int bytes)
-		: Exception("Data lenght must be a multiple of sample size (%d bytes).", bytes)
+		: Exception("Data length must be a multiple of sample size (%d bytes).", bytes)
 	{
 	}
 
 };
+
+class QueueLoopingException : public love::Exception
+{
+public:
+
+	QueueLoopingException()
+		: Exception("Queueable Sources can not be looped.")
+	{
+	}
+
+};
+
 
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
 	: size(size)
@@ -317,10 +318,10 @@ bool Source::isPlaying() const
 }
 
 bool Source::isFinished() const
-{
+{	
 	if (!valid)
 		return false;
-
+	
 	if (type == TYPE_STREAM && (isLooping() || !decoder->isFinished()))
 		return false;
 
@@ -342,7 +343,7 @@ bool Source::update()
 			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 			return !isFinished();
 		case TYPE_STREAM:
-			if (isLooping() || !isFinished())
+			if (!isFinished())
 			{
 				ALint processed;
 				ALuint buffers[MAX_BUFFERS];
@@ -696,6 +697,9 @@ bool Source::isRelative() const
 
 void Source::setLooping(bool enable)
 {
+	if (type == TYPE_QUEUE)
+		throw QueueLoopingException();
+		
 	if (valid && type == TYPE_STATIC)
 		alSourcei(source, AL_LOOPING, enable ? AL_TRUE : AL_FALSE);
 
@@ -707,13 +711,10 @@ bool Source::isLooping() const
 	return looping;
 }
 
-bool Source::queueData(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+bool Source::queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
 {
 	if (type != TYPE_QUEUE)
 		throw QueueTypeMismatchException();
-	
-	if (length < 0)
-		throw QueueNegativeLengthException();
 	
 	if (dataSampleRate != sampleRate || dataBitDepth != bitDepth || dataChannels != channels )
 		throw QueueFormatMismatchException();
@@ -721,11 +722,13 @@ bool Source::queueData(void *data, int length, int dataSampleRate, int dataBitDe
 	if (length % (bitDepth / 8 * channels) != 0)
 		throw QueueMalformedLengthException(bitDepth / 8 * channels);
 	
-	if (length > 0)
-		return pool->queueData(this, data, (ALsizei)length);
+	if (length == 0)
+		return true;
+	
+	return pool->queue(this, data, (ALsizei)length);
 }
 
-bool Source::queueDataAtomic(void *data, ALsizei length)
+bool Source::queueAtomic(void *data, ALsizei length)
 {
 	if (valid)
 	{
@@ -752,11 +755,17 @@ bool Source::queueDataAtomic(void *data, ALsizei length)
 	return true;
 }
 
-bool Source::isQueueable() const
+int Source::getFreeBufferCount() const
 {
-	if (type != TYPE_QUEUE || (valid && unusedBufferTop < 0) || (!valid && unusedBufferTop >= (int)MAX_BUFFERS - 1))
-		return false;
-	return true;
+	switch (type) //why not :^)
+	{
+		case TYPE_STATIC: 
+			return 0;
+		case TYPE_STREAM:
+			return unusedBufferTop + 1;
+		case TYPE_QUEUE:
+			return valid ? unusedBufferTop + 1 : (int)MAX_BUFFERS - unusedBufferTop - 1;
+	}
 }
 
 void Source::prepareAtomic()
@@ -799,7 +808,6 @@ void Source::prepareAtomic()
 			if (offsetSamples >= 0) 
 				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 		}
-			
 	}
 }
 
@@ -839,7 +847,6 @@ void Source::teardownAtomic()
 			//stack needs to be filled in reverse order
 			for (unsigned int i = queued; i > 0; i--)
 			{
-				//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
 				alSourceUnqueueBuffers(source, 1, &buffer);
 				unusedBufferPush(buffer);
 			}
