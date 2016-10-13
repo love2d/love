@@ -346,10 +346,18 @@ int w_Source_queue(lua_State *L)
 	{
 		love::sound::SoundData *s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
 		
-		int length = lua_isnumber(L, 4) ? lua_tonumber(L, 4) : ( lua_isnumber(L, 3) ? lua_tonumber(L, 3) : s->getSize() );
-		int offset = lua_isnumber(L, 4) ? lua_tonumber(L, 3) : 0;
+		int offset = 0;
+		int length = s->getSize();
 		
-		if (length > s->getSize() - offset || offset < 0 || length < 0)
+		if (lua_gettop(L) == 4)
+		{
+			offset = luaL_checknumber(L, 3);
+			length = luaL_checknumber(L, 4);
+		}
+		else if (lua_gettop(L) == 3)
+			length = luaL_checknumber(L, 3);
+		
+		if (length > (int)s->getSize() - offset || offset < 0 || length < 0)
 			return luaL_error(L, "Data region out of bounds.");
 		
 		luax_catchexcept(L, [&]() {
@@ -359,16 +367,17 @@ int w_Source_queue(lua_State *L)
 	}
 	else if (lua_islightuserdata(L, 2))
 	{
-		if (!(lua_isnumber(L, 3) && lua_isnumber(L, 4)))
-			return luaL_error(L, "No region specified.");
-		if (!(lua_isnumber(L, 5) && lua_isnumber(L, 6) && lua_isnumber(L, 7)))
-			return luaL_error(L, "No format specified.");
-		if (lua_tonumber(L, 3) < 0 || lua_tonumber(L, 4) < 0)
+		int offset = luaL_checknumber(L, 3);
+		int length = luaL_checknumber(L, 4);
+		int sampleRate = luaL_checknumber(L, 5);
+		int bitDepth = luaL_checknumber(L, 6);
+		int channels = luaL_checknumber(L, 7);
+		
+		if (length < 0 || offset < 0)
 			return luaL_error(L, "Data region out of bounds.");
 	
 		luax_catchexcept(L, [&]() {
-			success = t->queue((void*)((uintptr_t)lua_touserdata(L, 2) + (uintptr_t)lua_tonumber(L, 3)), 
-				lua_tonumber(L, 4), (int)lua_tonumber(L, 5), (int)lua_tonumber(L, 6), (int)lua_tonumber(L, 7));
+			success = t->queue((void*)((uintptr_t)lua_touserdata(L, 2) + (uintptr_t)offset), length, sampleRate, bitDepth, channels);
 		});
 	}
 	else

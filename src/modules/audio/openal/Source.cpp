@@ -362,7 +362,7 @@ bool Source::update()
 				offsetSamples += (curOffsetSamples - newOffsetSamples);
 				offsetSeconds += (curOffsetSecs - newOffsetSecs);
 				
-				for (unsigned int i = 0; i < processed; i++)
+				for (unsigned int i = 0; i < (unsigned int)processed; i++)
 					unusedBufferPush(buffers[i]);
 				
 				while (unusedBufferPeek() != AL_NONE)
@@ -384,7 +384,7 @@ bool Source::update()
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 			alSourceUnqueueBuffers(source, processed, buffers);
 			
-			for (unsigned int i = 0; i < processed; i++)
+			for (unsigned int i = 0; i < (unsigned int)processed; i++)
 			{
 				ALint size;
 				alGetBufferi(buffers[i], AL_SIZE, &size);
@@ -393,6 +393,8 @@ bool Source::update()
 			}
 			return !isFinished();
 		}
+		case TYPE_MAX_ENUM:
+			break;
 	}
 
 	return false;
@@ -504,6 +506,8 @@ void Source::seekAtomic(float offset, void *unit)
 					offsetSamples = 0;
 				offsetSeconds = offsetSamples / sampleRate;
 			}
+			break;
+		case TYPE_MAX_ENUM:
 			break;
 	}
 }
@@ -742,13 +746,12 @@ bool Source::queueAtomic(void *data, ALsizei length)
 	}
 	else
 	{
-		//remaining buffers are stored beyond the tail of unused stack
-		if (unusedBufferTop >= (int)MAX_BUFFERS - 1)
+		ALuint buffer = unusedBufferPeekNext();
+		if (buffer == AL_NONE)
 			return false;
-		
-		ALuint buffer = unusedBuffers[unusedBufferTop + 1];
+			
+		//stack acts as queue while stopped
 		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
-		//new buffer must go last, so it goes to the base of the stack
 		unusedBufferQueue(buffer);
 	}
 	bufferedBytes += length;
@@ -765,7 +768,10 @@ int Source::getFreeBufferCount() const
 			return unusedBufferTop + 1;
 		case TYPE_QUEUE:
 			return valid ? unusedBufferTop + 1 : (int)MAX_BUFFERS - unusedBufferTop - 1;
+		case TYPE_MAX_ENUM:
+			return 0; 
 	}
+	return 0;
 }
 
 void Source::prepareAtomic()
@@ -807,7 +813,10 @@ void Source::prepareAtomic()
 				
 			if (offsetSamples >= 0) 
 				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+			break;
 		}
+		case TYPE_MAX_ENUM:
+			break;
 	}
 }
 
@@ -823,40 +832,38 @@ void Source::teardownAtomic()
 			ALint queued;
 			ALuint buffer;
 			
+			decoder->seek(0);
+			// drain buffers
+			//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
 			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-			for (unsigned int i = 0; i < queued; i++)
-			{
-				//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
+			for (unsigned int i = 0; i < (unsigned int)queued; i++)
 				alSourceUnqueueBuffers(source, 1, &buffer);
-				unusedBufferPush(buffer);
-			}
+			
+			// generate unused buffers list
+			for (unsigned int i = 0; i < MAX_BUFFERS; i++)
+				unusedBuffers[i] = streamBuffers[i];
+			
+			unusedBufferTop = MAX_BUFFERS - 1;
 			break;
 		}
 		case TYPE_QUEUE:
 		{
 			ALint queued;
-			ALuint buffers[MAX_BUFFERS];
 			ALuint buffer;
-			int unused = 0;
-			
-			//store all unused buffers, also clear stack
-			while (unusedBufferPeek() != AL_NONE)
-				buffers[unused++] = *unusedBufferPop();
 			
 			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-			//stack needs to be filled in reverse order
-			for (unsigned int i = queued; i > 0; i--)
-			{
+			for (unsigned int i = (unsigned int)queued; i > 0; i--)
 				alSourceUnqueueBuffers(source, 1, &buffer);
-				unusedBufferPush(buffer);
-			}
 			
-			// put unused buffers at the end of stack
-			for (unsigned int i = 0; i < unused; i++)
-				unusedBuffers[unusedBufferTop + 1 + i] = buffers[i];
-			
+			// generate unused buffers list
+			for (unsigned int i = 0; i < MAX_BUFFERS; i++)
+				unusedBuffers[i] = streamBuffers[i];
+				
+			unusedBufferTop = -1;
 			break;
 		}
+		case TYPE_MAX_ENUM:
+			break;
 	}
 
 	alSourcei(source, AL_BUFFER, AL_NONE);
@@ -1041,6 +1048,11 @@ ALenum Source::getFormat(int channels, int bitDepth) const
 ALuint Source::unusedBufferPeek()
 {
 	return (unusedBufferTop < 0) ? AL_NONE : unusedBuffers[unusedBufferTop];
+}
+
+ALuint Source::unusedBufferPeekNext()
+{
+	return (unusedBufferTop >= (int)MAX_BUFFERS - 1) ? AL_NONE : unusedBuffers[unusedBufferTop + 1];
 }
 
 ALuint *Source::unusedBufferPop()

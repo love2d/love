@@ -165,6 +165,7 @@ private:
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 
 	ALuint unusedBufferPeek();
+	ALuint unusedBufferPeekNext();
 	ALuint *unusedBufferPop();
 	void unusedBufferPush(ALuint buffer);
 	void unusedBufferQueue(ALuint buffer);
@@ -176,9 +177,6 @@ private:
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
 	ALuint unusedBuffers[MAX_BUFFERS];
-	
-	int unusedBufferTop;
-	ALsizei bufferedBytes;
 	
 	StrongRef<StaticDataBuffer> staticBuffer;
 
@@ -212,6 +210,8 @@ private:
 	StrongRef<love::sound::Decoder> decoder;
 
 	unsigned int toLoop;
+	int unusedBufferTop;
+	ALsizei bufferedBytes;
 }; // Source
 
 } // openal

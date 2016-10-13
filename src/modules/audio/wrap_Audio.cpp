@@ -82,10 +82,9 @@ int w_newQueueableSource(lua_State *L)
 {
 	Source *t = nullptr;
 	
-	if (lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3))
-		luax_catchexcept(L, [&]() {
-			t = instance()->newSource((int)lua_tonumber(L, 1), (int)lua_tonumber(L, 2), (int)lua_tonumber(L, 3));
-		});
+	luax_catchexcept(L, [&]() {
+		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3));
+	});
 		
 	if (t != nullptr)
 	{
@@ -94,7 +93,7 @@ int w_newQueueableSource(lua_State *L)
 		return 1;
 	}
 	else
-		return luaL_error(L, "Wrong type of arguments to function call."); 
+		return 0; //all argument type errors are checked in above constructor
 }
 
 static std::vector<Source*> readSourceList(lua_State *L, int n)
