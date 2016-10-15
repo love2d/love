@@ -108,7 +108,6 @@ public:
 
 };
 
-
 StaticDataBuffer::StaticDataBuffer(ALenum format, const ALvoid *data, ALsizei size, ALsizei freq)
 	: size(size)
 {
@@ -318,7 +317,7 @@ bool Source::isPlaying() const
 }
 
 bool Source::isFinished() const
-{	
+{
 	if (!valid)
 		return false;
 

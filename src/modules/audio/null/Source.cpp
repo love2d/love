@@ -227,7 +227,6 @@ bool Source::queue(void *, int, int, int, int)
 	return false;
 }
 
-
 } // null
 } // audio
 } // love
