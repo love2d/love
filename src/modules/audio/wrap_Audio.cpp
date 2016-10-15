@@ -81,11 +81,11 @@ int w_newSource(lua_State *L)
 int w_newQueueableSource(lua_State *L)
 {
 	Source *t = nullptr;
-	
+
 	luax_catchexcept(L, [&]() {
 		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3));
 	});
-		
+
 	if (t != nullptr)
 	{
 		luax_pushtype(L, AUDIO_SOURCE_ID, t);

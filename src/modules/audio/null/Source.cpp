@@ -222,7 +222,7 @@ int Source::getFreeBufferCount() const
 	return 0;
 }
 
-bool Source::queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+bool Source::queue(void *, int, int, int, int)
 {
 	return false;
 }

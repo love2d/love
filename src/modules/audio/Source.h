@@ -101,10 +101,10 @@ public:
 	virtual float getMaxDistance() const = 0;
 
 	virtual int getChannels() const = 0;
-	
+
 	virtual int getFreeBufferCount() const = 0;
 	virtual bool queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;
-	
+
 	virtual Type getType() const;
 
 	static bool getConstant(const char *in, Type &out);

@@ -177,7 +177,7 @@ private:
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
 	ALuint unusedBuffers[MAX_BUFFERS];
-	
+
 	StrongRef<StaticDataBuffer> staticBuffer;
 
 	float pitch;
