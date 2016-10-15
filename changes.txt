@@ -17,6 +17,8 @@ Released: N/A
   * Added support for non-square shader uniform matrices on desktop platforms.
   * Added Shader:send(matrixname, is_column_major, matrix, ...) which specifies how to interpret the matrix table arguments.
   * Added love.window.updateMode.
+  * Added Object:release.
+  * Added queueable audio sources.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.
