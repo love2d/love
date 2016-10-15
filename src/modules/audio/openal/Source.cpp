@@ -444,6 +444,8 @@ float Source::getVolume() const
 
 void Source::seekAtomic(float offset, void *unit)
 {
+	float offsetSamples, offsetSeconds;
+	
 	switch (*((Source::Unit *) unit))
 	{
 	case Source::UNIT_SAMPLES:
@@ -461,7 +463,7 @@ void Source::seekAtomic(float offset, void *unit)
 	{
 		case TYPE_STATIC:
 			alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-			offsetSamples = offsetSeconds = 0;
+			this->offsetSamples = this->offsetSeconds = 0;
 			break;
 		case TYPE_STREAM:
 		{
@@ -471,6 +473,8 @@ void Source::seekAtomic(float offset, void *unit)
 			if (valid)
 				stopAtomic();
 			
+			this->offsetSamples = offsetSamples;
+			this->offsetSeconds = offsetSeconds;
 			decoder->seek(offsetSeconds);
 
 			if (wasPlaying)
@@ -482,7 +486,7 @@ void Source::seekAtomic(float offset, void *unit)
 			if (valid)
 			{
 				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-				offsetSamples = offsetSeconds = 0;
+				this->offsetSamples = this->offsetSeconds = 0;
 			}
 			else
 			{
@@ -505,6 +509,8 @@ void Source::seekAtomic(float offset, void *unit)
 				if (buffer == AL_NONE)
 					offsetSamples = 0;
 				offsetSeconds = offsetSamples / sampleRate;
+				this->offsetSamples = offsetSamples;
+				this->offsetSeconds = offsetSeconds;
 			}
 			break;
 		case TYPE_MAX_ENUM:
@@ -755,6 +761,7 @@ bool Source::queueAtomic(void *data, ALsizei length)
 		unusedBufferQueue(buffer);
 	}
 	bufferedBytes += length;
+
 	return true;
 }
 
