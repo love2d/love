@@ -217,6 +217,16 @@ int Source::getChannels() const
 	return 2;
 }
 
+int Source::getFreeBufferCount() const
+{
+	return 0;
+}
+
+bool Source::queue(void *, int, int, int, int)
+{
+	return false;
+}
+
 } // null
 } // audio
 } // love

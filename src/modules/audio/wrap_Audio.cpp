@@ -78,6 +78,24 @@ int w_newSource(lua_State *L)
 		return luax_typerror(L, 1, "Decoder or SoundData");
 }
 
+int w_newQueueableSource(lua_State *L)
+{
+	Source *t = nullptr;
+
+	luax_catchexcept(L, [&]() {
+		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3));
+	});
+
+	if (t != nullptr)
+	{
+		luax_pushtype(L, AUDIO_SOURCE_ID, t);
+		t->release();
+		return 1;
+	}
+	else
+		return 0; //all argument type errors are checked in above constructor
+}
+
 static std::vector<Source*> readSourceList(lua_State *L, int n)
 {
 	if (n < 0)
@@ -307,6 +325,7 @@ static const luaL_Reg functions[] =
 {
 	{ "getSourceCount", w_getSourceCount },
 	{ "newSource", w_newSource },
+	{ "newQueueableSource", w_newQueueableSource },
 	{ "play", w_play },
 	{ "stop", w_stop },
 	{ "pause", w_pause },

@@ -20,6 +20,7 @@
 
 #include <limits>
 
+#include "sound/SoundData.h"
 #include "wrap_Source.h"
 
 namespace love
@@ -329,6 +330,63 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
+int w_Source_getFreeBufferCount(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	lua_pushinteger(L, t->getFreeBufferCount());
+	return 1;
+}
+
+int w_Source_queue(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	bool success;
+
+	if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
+	{
+		love::sound::SoundData *s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
+
+		int offset = 0;
+		int length = s->getSize();
+
+		if (lua_gettop(L) == 4)
+		{
+			offset = luaL_checknumber(L, 3);
+			length = luaL_checknumber(L, 4);
+		}
+		else if (lua_gettop(L) == 3)
+			length = luaL_checknumber(L, 3);
+
+		if (length > (int)s->getSize() - offset || offset < 0 || length < 0)
+			return luaL_error(L, "Data region out of bounds.");
+
+		luax_catchexcept(L, [&]() {
+			success = t->queue((void*)((uintptr_t)s->getData() + (uintptr_t)offset), 
+				length, s->getSampleRate(), s->getBitDepth(), s->getChannels());
+		});
+	}
+	else if (lua_islightuserdata(L, 2))
+	{
+		int offset = luaL_checknumber(L, 3);
+		int length = luaL_checknumber(L, 4);
+		int sampleRate = luaL_checknumber(L, 5);
+		int bitDepth = luaL_checknumber(L, 6);
+		int channels = luaL_checknumber(L, 7);
+
+		if (length < 0 || offset < 0)
+			return luaL_error(L, "Data region out of bounds.");
+
+		luax_catchexcept(L, [&]() {
+			success = t->queue((void*)((uintptr_t)lua_touserdata(L, 2) + (uintptr_t)offset), length, sampleRate, bitDepth, channels);
+		});
+	}
+	else
+		return luax_typerror(L, 1, "Sound Data or lightuserdata");
+
+	luax_pushboolean(L, success);
+	return 1;
+}
+
 int w_Source_getType(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -381,6 +439,10 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getRolloff", w_Source_getRolloff},
 
 	{ "getChannels", w_Source_getChannels },
+
+	{ "getFreeBufferCount", w_Source_getFreeBufferCount },
+	{ "queue", w_Source_queue },
+
 	{ "getType", w_Source_getType },
 
 	{ 0, 0 }

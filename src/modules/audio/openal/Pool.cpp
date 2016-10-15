@@ -283,6 +283,12 @@ double Pool::getDuration(Source *source, void *unit)
 	return source->getDurationAtomic(unit);
 }
 
+bool Pool::queue(Source *source, void *data, ALsizei length)
+{
+	thread::Lock lock(mutex);
+	return source->queueAtomic(data, length);
+}
+
 ALuint Pool::findi(const Source *source) const
 {
 	std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);

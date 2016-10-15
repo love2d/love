@@ -86,6 +86,7 @@ public:
 
 	Source(Pool *pool, love::sound::SoundData *soundData);
 	Source(Pool *pool, love::sound::Decoder *decoder);
+	Source(Pool *pool, int sampleRate, int bitDepth, int channels);
 	Source(const Source &s);
 	virtual ~Source();
 
@@ -130,6 +131,10 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
+	virtual int getFreeBufferCount() const;
+	virtual bool queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+	virtual bool queueAtomic(void *data, ALsizei length);
+
 	void prepareAtomic();
 	void teardownAtomic();
 
@@ -159,12 +164,19 @@ private:
 
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 
+	ALuint unusedBufferPeek();
+	ALuint unusedBufferPeekNext();
+	ALuint *unusedBufferPop();
+	void unusedBufferPush(ALuint buffer);
+	void unusedBufferQueue(ALuint buffer);
+	
 	Pool *pool;
 	ALuint source;
 	bool valid;
 
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
+	ALuint unusedBuffers[MAX_BUFFERS];
 
 	StrongRef<StaticDataBuffer> staticBuffer;
 
@@ -198,6 +210,8 @@ private:
 	StrongRef<love::sound::Decoder> decoder;
 
 	unsigned int toLoop;
+	int unusedBufferTop;
+	ALsizei bufferedBytes;
 }; // Source
 
 } // openal
