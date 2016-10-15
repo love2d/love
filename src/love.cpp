@@ -55,6 +55,7 @@ extern "C"
 #ifdef LOVE_WINDOWS
 extern "C"
 {
+
 // Prefer the higher performance GPU on Windows systems that use nvidia Optimus.
 // http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
 // TODO: Re-evaluate in the future when the average integrated GPU in Optimus
