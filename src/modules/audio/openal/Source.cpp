@@ -24,7 +24,6 @@
 
 // STD
 #include <iostream>
-#include <float.h>
 #include <algorithm>
 
 namespace love
@@ -33,13 +32,6 @@ namespace audio
 {
 namespace openal
 {
-
-#ifdef LOVE_IOS
-// OpenAL on iOS barfs if the max distance is +inf.
-static const float MAX_ATTENUATION_DISTANCE = 1000000.0f;
-#else
-static const float MAX_ATTENUATION_DISTANCE = FLT_MAX;
-#endif
 
 class InvalidFormatException : public love::Exception
 {
@@ -123,25 +115,9 @@ StaticDataBuffer::~StaticDataBuffer()
 Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	: love::audio::Source(Source::TYPE_STATIC)
 	, pool(pool)
-	, valid(false)
-	, staticBuffer(nullptr)
-	, pitch(1.0f)
-	, volume(1.0f)
-	, relative(false)
-	, looping(false)
-	, minVolume(0.0f)
-	, maxVolume(1.0f)
-	, referenceDistance(1.0f)
-	, rolloffFactor(1.0f)
-	, maxDistance(MAX_ATTENUATION_DISTANCE)
-	, cone()
-	, offsetSamples(0)
-	, offsetSeconds(0)
 	, sampleRate(soundData->getSampleRate())
 	, channels(soundData->getChannels())
 	, bitDepth(soundData->getBitDepth())
-	, decoder(nullptr)
-	, toLoop(0)
 {
 	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
 	if (fmt == 0)
@@ -159,25 +135,10 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	: love::audio::Source(Source::TYPE_STREAM)
 	, pool(pool)
-	, valid(false)
-	, staticBuffer(nullptr)
-	, pitch(1.0f)
-	, volume(1.0f)
-	, relative(false)
-	, looping(false)
-	, minVolume(0.0f)
-	, maxVolume(1.0f)
-	, referenceDistance(1.0f)
-	, rolloffFactor(1.0f)
-	, maxDistance(MAX_ATTENUATION_DISTANCE)
-	, cone()
-	, offsetSamples(0)
-	, offsetSeconds(0)
 	, sampleRate(decoder->getSampleRate())
 	, channels(decoder->getChannels())
 	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
-	, toLoop(0)
 	, unusedBufferTop(MAX_BUFFERS - 1)
 {
 	if (getFormat(decoder->getChannels(), decoder->getBitDepth()) == 0)
@@ -197,27 +158,9 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels)
 	: love::audio::Source(Source::TYPE_QUEUE)
 	, pool(pool)
-	, valid(false)
-	, staticBuffer(nullptr)
-	, pitch(1.0f)
-	, volume(1.0f)
-	, relative(false)
-	, looping(false)
-	, minVolume(0.0f)
-	, maxVolume(1.0f)
-	, referenceDistance(1.0f)
-	, rolloffFactor(1.0f)
-	, maxDistance(MAX_ATTENUATION_DISTANCE)
-	, cone()
-	, offsetSamples(0)
-	, offsetSeconds(0)
 	, sampleRate(sampleRate)
 	, channels(channels)
 	, bitDepth(bitDepth)
-	, decoder(nullptr)
-	, toLoop(0)
-	, unusedBufferTop(-1)
-	, bufferedBytes(0)
 {
 	ALenum fmt = getFormat(channels, bitDepth);
 	if (fmt == 0)
@@ -256,7 +199,7 @@ Source::Source(const Source &s)
 	, bitDepth(s.bitDepth)
 	, decoder(nullptr)
 	, toLoop(0)
-	, unusedBufferTop(-1)
+	, unusedBufferTop(s.type == TYPE_STREAM ? MAX_BUFFERS - 1 : -1)
 {
 	if (type == TYPE_STREAM)
 	{

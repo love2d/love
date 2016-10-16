@@ -31,6 +31,9 @@
 // STL
 #include <vector>
 
+// C
+#include <float.h>
+
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
 #ifdef LOVE_IOS
@@ -51,6 +54,13 @@ namespace audio
 {
 namespace openal
 {
+
+#ifdef LOVE_IOS
+// OpenAL on iOS barfs if the max distance is +inf.
+static const float MAX_ATTENUATION_DISTANCE = 1000000.0f;
+#else
+static const float MAX_ATTENUATION_DISTANCE = FLT_MAX;
+#endif
 
 class Audio;
 class Pool;
@@ -170,9 +180,9 @@ private:
 	void unusedBufferPush(ALuint buffer);
 	void unusedBufferQueue(ALuint buffer);
 	
-	Pool *pool;
-	ALuint source;
-	bool valid;
+	Pool *pool = nullptr;
+	ALuint source = 0;
+	bool valid = false;
 
 	static const unsigned int MAX_BUFFERS = 8;
 	ALuint streamBuffers[MAX_BUFFERS];
@@ -180,18 +190,18 @@ private:
 
 	StrongRef<StaticDataBuffer> staticBuffer;
 
-	float pitch;
-	float volume;
+	float pitch = 1.0f;
+	float volume = 1.0f;
 	float position[3];
 	float velocity[3];
 	float direction[3];
-	bool relative;
-	bool looping;
-	float minVolume;
-	float maxVolume;
-	float referenceDistance;
-	float rolloffFactor;
-	float maxDistance;
+	bool relative = false;
+	bool looping = false;
+	float minVolume = 0.0f;
+	float maxVolume = 1.0f;
+	float referenceDistance = 1.0f;
+	float rolloffFactor = 1.0f;
+	float maxDistance = MAX_ATTENUATION_DISTANCE;
 
 	struct Cone
 	{
@@ -200,18 +210,19 @@ private:
 		float outerVolume = 0.0f;
 	} cone;
 
-	float offsetSamples;
-	float offsetSeconds;
+	float offsetSamples = 0.0f;
+	float offsetSeconds = 0.0f;
 
-	int sampleRate;
-	int channels;
-	int bitDepth;
+	int sampleRate = 0;
+	int channels = 0;
+	int bitDepth = 0;
 
 	StrongRef<love::sound::Decoder> decoder;
 
-	unsigned int toLoop;
-	int unusedBufferTop;
-	ALsizei bufferedBytes;
+	unsigned int toLoop = 0;
+	int unusedBufferTop = -1;
+	ALsizei bufferedBytes = 0;
+
 }; // Source
 
 } // openal
