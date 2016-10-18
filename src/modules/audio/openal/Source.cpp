@@ -280,9 +280,6 @@ bool Source::update()
 	switch (type)
 	{
 		case TYPE_STATIC:
-			// Looping mode could have changed.
-			// FIXME: make looping mode not change without you noticing so that this is not needed
-			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 			return !isFinished();
 		case TYPE_STREAM:
 			if (!isFinished())
@@ -401,24 +398,26 @@ void Source::seekAtomic(float offset, void *unit)
 		break;
 	}
 
+	bool wasPlaying = isPlaying();
 	switch (type)
 	{
 		case TYPE_STATIC:
-			alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-			offsetSamples = offsetSeconds = 0;
+			if (valid)
+			{
+				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+				offsetSamples = offsetSeconds = 0;
+			}
 			break;
 		case TYPE_STREAM:
 		{
-			bool wasPlaying = isPlaying();
-
 			// To drain all buffers
 			if (valid)
-				stopAtomic();
+				stop();
 
 			decoder->seek(offsetSeconds);
 
 			if (wasPlaying)
-				playAtomic(source);
+				play();
 
 			break;
 		}
@@ -453,6 +452,13 @@ void Source::seekAtomic(float offset, void *unit)
 			break;
 		case TYPE_MAX_ENUM:
 			break;
+	}
+	if (wasPlaying && (alGetError() == AL_INVALID_VALUE || (type == TYPE_STREAM && !isPlaying())))
+	{
+		stop();
+		if (isLooping())
+			play();
+		return;
 	}
 	this->offsetSamples = offsetSamples;
 	this->offsetSeconds = offsetSeconds;
@@ -734,9 +740,6 @@ void Source::prepareAtomic()
 	{
 		case TYPE_STATIC:
 			alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
-			//source can be seeked while not valid
-			if (offsetSamples >= 0) 
-				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 			break;
 		case TYPE_STREAM:
 			while (unusedBufferPeek() != AL_NONE)
@@ -760,8 +763,6 @@ void Source::prepareAtomic()
 			for (unsigned int i = top + 1; i < MAX_BUFFERS; i++)
 				unusedBufferPush(unusedBuffers[i]);
 
-			if (offsetSamples >= 0) 
-				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 			break;
 		}
 		case TYPE_MAX_ENUM:
@@ -774,7 +775,6 @@ void Source::teardownAtomic()
 	switch (type)
 	{
 		case TYPE_STATIC:
-			alSourcef(source, AL_SAMPLE_OFFSET, 0);
 			break;
 		case TYPE_STREAM:
 		{
@@ -832,15 +832,31 @@ bool Source::playAtomic(ALuint source)
 
 	alSourcePlay(source);
 
-	// alSourcePlay may fail if the system has reached its limit of simultaneous
-	// playing sources.
 	bool success = alGetError() == AL_NO_ERROR;
 
-	valid = true; //if it fails it will be set to false again
-	//but this prevents a horrible, horrible bug
+	if (type == TYPE_STREAM)
+	{
+		valid = true; //isPlaying() needs source to be valid
+		if (!isPlaying())
+			success = false;
+	}
+	else if (success)
+	{
+		alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+		success = alGetError() == AL_NO_ERROR;
+	}
 
-	if (type != TYPE_STREAM)
+	if (!success)
+	{
+		valid = true; //stop() needs source to be valid
+		stop();
+	}
+	else if (type != TYPE_STREAM)
 		offsetSamples = offsetSeconds = 0;
+
+	//this is set to success state afterwards anyway, but setting it here
+	//to true preemptively avoids race condition with update bug
+	valid = true; 
 
 	return success;
 }
@@ -862,7 +878,12 @@ void Source::pauseAtomic()
 void Source::resumeAtomic()
 {
 	if (valid && !isPlaying())
+	{
 		alSourcePlay(source);
+
+		if (alGetError() == AL_INVALID_VALUE || (type == TYPE_STREAM && unusedBufferTop == MAX_BUFFERS - 1))
+			stop();
+	}
 }
 
 bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const std::vector<ALuint> &ids, const std::vector<char> &wasPlaying)
@@ -941,7 +962,7 @@ void Source::pauseAtomic(const std::vector<love::audio::Source*> &sources)
 
 void Source::reset()
 {
-	alSourcei(source, AL_BUFFER, 0);
+	alSourcei(source, AL_BUFFER, AL_NONE);
 	alSourcefv(source, AL_POSITION, position);
 	alSourcefv(source, AL_VELOCITY, velocity);
 	alSourcefv(source, AL_DIRECTION, direction);
