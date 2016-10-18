@@ -712,14 +712,9 @@ static int stbi__sse2_available()
 
 static int stbi__sse2_available()
 {
-/*
 #if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 408 // GCC 4.8 or later
    // GCC 4.8+ has a nice way to do this
    return __builtin_cpu_supports("sse2");
-*/
-#if defined(STBI__X64_TARGET)
-	// GCC 5 has this function buggy for a moment, but an x64 CPU can be assumed to have SSE2 anyway
-   return 1;
 #else
    // portable way to do this, preferably without using GCC inline ASM?
    // just bail for now.
