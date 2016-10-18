@@ -280,7 +280,12 @@ bool Source::update()
 	switch (type)
 	{
 		case TYPE_STATIC:
+		{
+			// Looping mode could have changed.
+-			// FIXME: make looping mode change atomically so this is not needed
+			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 			return !isFinished();
+		}
 		case TYPE_STREAM:
 			if (!isFinished())
 			{
