@@ -37,17 +37,8 @@ namespace magpie
 
 bool EXRHandler::canDecode(love::filesystem::FileData *data)
 {
-	const char *err;
-
-	EXRImage exrImage;
-	InitEXRImage(&exrImage);
-
-	if (ParseMultiChannelEXRHeaderFromMemory(&exrImage, (const unsigned char *) data->getData(), &err) != 0)
-		return false;
-
-	FreeEXRImage(&exrImage);
-
-	return exrImage.width > 0 && exrImage.height > 0;
+	EXRVersion version;
+	return ParseEXRVersionFromMemory(&version, (const unsigned char *) data->getData(), data->getSize()) == TINYEXR_SUCCESS;
 }
 
 bool EXRHandler::canEncode(ImageData::Format /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
@@ -56,26 +47,23 @@ bool EXRHandler::canEncode(ImageData::Format /*rawFormat*/, ImageData::EncodedFo
 }
 
 template <typename T>
-static void getEXRChannels(const EXRImage &exrImage, T *rgba[4])
+static void getEXRChannels(const EXRHeader &header, const EXRImage &image, T *rgba[4])
 {
-	for (int i = 0; i < exrImage.num_channels; i++)
+	for (int i = 0; i < header.num_channels; i++)
 	{
-		if (exrImage.channel_names[i] == nullptr)
-			continue;
-
-		switch (*exrImage.channel_names[i])
+		switch (*header.channels[i].name)
 		{
 		case 'R':
-			rgba[0] = (T *) exrImage.images[i];
+			rgba[0] = (T *) image.images[i];
 			break;
 		case 'G':
-			rgba[1] = (T *) exrImage.images[i];
+			rgba[1] = (T *) image.images[i];
 			break;
 		case 'B':
-			rgba[2] = (T *) exrImage.images[i];
+			rgba[2] = (T *) image.images[i];
 			break;
 		case 'A':
-			rgba[3] = (T *) exrImage.images[i];
+			rgba[3] = (T *) image.images[i];
 			break;
 		}
 	}
@@ -115,22 +103,33 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 {
 	const char *err;
 	auto mem = (const unsigned char *) data->getData();
+	size_t memsize = data->getSize();
 	DecodedImage img;
+
+	EXRHeader exrHeader;
+	InitEXRHeader(&exrHeader);
 
 	EXRImage exrImage;
 	InitEXRImage(&exrImage);
 
-	if (ParseMultiChannelEXRHeaderFromMemory(&exrImage, mem, &err) != 0)
-		throw love::Exception("Could not parse EXR image: %s", err);
+	EXRVersion exrVersion;
+	if (ParseEXRVersionFromMemory(&exrVersion, mem, memsize) != TINYEXR_SUCCESS)
+		throw love::Exception("Could not parse EXR image header.");
 
-	if (LoadMultiChannelEXRFromMemory(&exrImage, mem, &err) != 0)
+	if (exrVersion.multipart || exrVersion.non_image || exrVersion.tiled)
+		throw love::Exception("Multi-part, tiled, and non-image EXR files are not supported.");
+
+	if (ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, mem, memsize, &err) != TINYEXR_SUCCESS)
+		throw love::Exception("Could not parse EXR image header: %s", err);
+
+	if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, &err) != TINYEXR_SUCCESS)
 		throw love::Exception("Could not decode EXR image: %s", err);
 
-	int pixelType = exrImage.pixel_types[0];
+	int pixelType = exrHeader.pixel_types[0];
 
-	for (int i = 1; i < exrImage.num_channels; i++)
+	for (int i = 1; i < exrHeader.num_channels; i++)
 	{
-		if (pixelType != exrImage.pixel_types[i])
+		if (pixelType != exrHeader.pixel_types[i])
 		{
 			FreeEXRImage(&exrImage);
 			throw love::Exception("Could not decode EXR image: all channels must have the same data type.");
@@ -145,7 +144,7 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 		img.format = ImageData::FORMAT_RGBA16F;
 
 		half *rgba[4] = {nullptr};
-		getEXRChannels(exrImage, rgba);
+		getEXRChannels(exrHeader, exrImage, rgba);
 
 		try
 		{
@@ -162,7 +161,7 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 		img.format = ImageData::FORMAT_RGBA32F;
 
 		float *rgba[4] = {nullptr};
-		getEXRChannels(exrImage, rgba);
+		getEXRChannels(exrHeader, exrImage, rgba);
 
 		try
 		{
