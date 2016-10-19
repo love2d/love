@@ -55,8 +55,8 @@ public:
 	SpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 	virtual ~SpriteBatch();
 
-	int add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
-	int addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index = -1);
+	int add(const Matrix4 &m, int index = -1);
+	int addq(Quad *quad, const Matrix4 &m, int index = -1);
 	void clear();
 
 	void flush();
@@ -106,7 +106,7 @@ public:
 	bool getDrawRange(int &start, int &count) const;
 
 	// Implements Drawable.
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void draw(const Matrix4 &m) override;
 
 private:
 
@@ -122,7 +122,7 @@ private:
 	 **/
 	void setBufferSize(int newsize);
 
-	void addv(const Vertex *v, const Matrix3 &m, int index);
+	void addv(const Vertex *v, const Matrix4 &m, int index);
 
 	/**
 	 * Set the color for vertices.

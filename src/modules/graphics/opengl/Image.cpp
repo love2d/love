@@ -460,18 +460,14 @@ void Image::drawv(const Matrix4 &t, const Vertex *v)
 	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void Image::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Image::draw(const Matrix4 &m)
 {
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	drawv(t, vertices);
+	drawv(m, vertices);
 }
 
-void Image::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Image::drawq(Quad *quad, const Matrix4 &m)
 {
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	drawv(t, quad->getVertices());
+	drawv(m, quad->getVertices());
 }
 
 const void *Image::getHandle() const

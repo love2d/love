@@ -85,26 +85,26 @@ public:
 	virtual ~Image();
 
 	// Implements Volatile.
-	bool loadVolatile();
-	void unloadVolatile();
+	bool loadVolatile() override;
+	void unloadVolatile() override;
 
 	/**
 	 * @copydoc Drawable::draw()
 	 **/
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void draw(const Matrix4 &m) override;
 
 	/**
 	 * @copydoc Texture::drawq()
 	 **/
-	void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void drawq(Quad *quad, const Matrix4 &m) override;
 
-	virtual const void *getHandle() const;
+	const void *getHandle() const override;
 
 	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const;
 	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const;
 
-	virtual void setFilter(const Texture::Filter &f);
-	virtual bool setWrap(const Texture::Wrap &w);
+	void setFilter(const Texture::Filter &f) override;
+	bool setWrap(const Texture::Wrap &w) override;
 
 	void setMipmapSharpness(float sharpness);
 	float getMipmapSharpness() const;

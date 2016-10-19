@@ -574,7 +574,7 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	return attriblocation;
 }
 
-void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Mesh::draw(const Matrix4 &m)
 {
 	if (vertexCount <= 0)
 		return;
@@ -605,8 +605,6 @@ void Mesh::draw(float x, float y, float angle, float sx, float sy, float ox, flo
 		gl.bindTexture(*(GLuint *) texture->getHandle());
 	else
 		gl.bindTexture(gl.getDefaultTexture());
-
-	Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= m;

@@ -1258,24 +1258,24 @@ bool Graphics::isWireframe() const
 	return states.back().wireframe;
 }
 
-void Graphics::print(const std::vector<Font::ColoredString> &str, float x, float y , float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
 {
 	checkSetDefaultFont();
 
 	DisplayState &state = states.back();
 
 	if (state.font.get() != nullptr)
-		state.font->print(str, x, y, angle, sx, sy, ox, oy, kx, ky);
+		state.font->print(str, m);
 }
 
-void Graphics::printf(const std::vector<Font::ColoredString> &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
 	checkSetDefaultFont();
 
 	DisplayState &state = states.back();
 
 	if (state.font.get() != nullptr)
-		state.font->printf(str, x, y, wrap, align, angle, sx, sy, ox, oy, kx, ky);
+		state.font->printf(str, wrap, align, m);
 }
 
 /**

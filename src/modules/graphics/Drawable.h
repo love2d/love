@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/Object.h"
+#include "common/Matrix.h"
 
 namespace love
 {
@@ -43,19 +44,9 @@ public:
 	virtual ~Drawable() {}
 
 	/**
-	 * Draws the object with the specified transformation.
-	 *
-	 * @param x The position of the object along the x-axis.
-	 * @param y The position of the object along the y-axis.
-	 * @param angle The angle of the object (in radians).
-	 * @param sx The scale factor along the x-axis.
-	 * @param sy The scale factor along the y-axis.
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x-axis.
-	 * @param ky Shear along the y-axis.
+	 * Draws the object with the specified transformation matrix.
 	 **/
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) = 0;
+	virtual void draw(const Matrix4 &m) = 0;
 };
 
 } // graphics

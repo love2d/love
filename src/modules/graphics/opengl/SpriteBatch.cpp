@@ -66,7 +66,7 @@ SpriteBatch::~SpriteBatch()
 	delete array_buf;
 }
 
-int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
+int SpriteBatch::add(const Matrix4 &m, int index /*= -1*/)
 {
 	if (index < -1 || index >= size)
 		throw love::Exception("Invalid sprite index: %d", index + 1);
@@ -74,9 +74,7 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	if (index == -1 && next >= size)
 		setBufferSize(size * 2);
 
-	Matrix3 t(x, y, a, sx, sy, ox, oy, kx, ky);
-
-	addv(texture->getVertices(), t, (index == -1) ? next : index);
+	addv(texture->getVertices(), m, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -85,7 +83,7 @@ int SpriteBatch::add(float x, float y, float a, float sx, float sy, float ox, fl
 	return index;
 }
 
-int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky, int index /*= -1*/)
+int SpriteBatch::addq(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 {
 	if (index < -1 || index >= size)
 		throw love::Exception("Invalid sprite index: %d", index + 1);
@@ -93,9 +91,7 @@ int SpriteBatch::addq(Quad *quad, float x, float y, float a, float sx, float sy,
 	if (index == -1 && next >= size)
 		setBufferSize(size * 2);
 
-	Matrix3 t(x, y, a, sx, sy, ox, oy, kx, ky);
-
-	addv(quad->getVertices(), t, (index == -1) ? next : index);
+	addv(quad->getVertices(), m, (index == -1) ? next : index);
 
 	// Increment counter.
 	if (index == -1)
@@ -249,7 +245,7 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 	return true;
 }
 
-void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void SpriteBatch::draw(const Matrix4 &m)
 {
 	const size_t pos_offset   = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);
@@ -261,7 +257,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
 
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
+	transform.get() *= m;
 
 	gl.bindTexture(*(GLuint *) texture->getHandle());
 
@@ -320,7 +316,7 @@ void SpriteBatch::draw(float x, float y, float angle, float sx, float sy, float 
 		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), quad_indices.getType(), indices);
 }
 
-void SpriteBatch::addv(const Vertex *v, const Matrix3 &m, int index)
+void SpriteBatch::addv(const Vertex *v, const Matrix4 &m, int index)
 {
 	// Needed for colors.
 	Vertex sprite[4] = {v[0], v[1], v[2], v[3]};

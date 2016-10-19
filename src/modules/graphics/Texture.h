@@ -76,19 +76,8 @@ public:
 
 	/**
 	 * Draws the texture using the specified transformation with a Quad applied.
-	 *
-	 * @param quad The Quad object to use to draw the object.
-	 * @param x The position of the object along the x-axis.
-	 * @param y The position of the object along the y-axis.
-	 * @param angle The angle of the object (in radians).
-	 * @param sx The scale factor along the x-axis.
-	 * @param sy The scale factor along the y-axis.
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x-axis.
-	 * @param ky Shear along the y-axis.
 	 **/
-	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) = 0;
+	virtual void drawq(Quad *quad, const Matrix4 &m) = 0;
 
 	virtual int getWidth() const;
 	virtual int getHeight() const;

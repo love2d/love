@@ -44,11 +44,13 @@ public:
 	~Video();
 
 	// Volatile
-	bool loadVolatile();
-	void unloadVolatile();
+	bool loadVolatile() override;
+	void unloadVolatile() override;
+
+	// Drawable
+	void draw(const Matrix4 &m) override;
 
 	love::video::VideoStream *getStream();
-	void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	love::audio::Source *getSource();
 	void setSource(love::audio::Source *source);

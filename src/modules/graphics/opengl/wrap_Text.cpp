@@ -139,8 +139,9 @@ int w_Text_add(lua_State *L)
 	float kx = (float) luaL_optnumber(L, 10, 0.0);
 	float ky = (float) luaL_optnumber(L, 11, 0.0);
 
+	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
 	int index = 0;
-	luax_catchexcept(L, [&](){ index = t->add(text, x, y, a, sx, sy, ox, oy, kx, ky); });
+	luax_catchexcept(L, [&](){ index = t->add(text, m); });
 	lua_pushnumber(L, index + 1);
 
 	return 1;
@@ -171,8 +172,9 @@ int w_Text_addf(lua_State *L)
 	float kx = (float) luaL_optnumber(L, 12, 0.0);
 	float ky = (float) luaL_optnumber(L, 13, 0.0);
 
+	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
 	int index = 0;
-	luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, x, y, a, sx, sy, ox, oy, kx, ky); });
+	luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, m); });
 	lua_pushnumber(L, index + 1);
 
 	return 1;

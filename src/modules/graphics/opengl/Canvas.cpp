@@ -322,18 +322,14 @@ void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void Canvas::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Canvas::draw(const Matrix4 &m)
 {
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	drawv(t, vertices);
+	drawv(m, vertices);
 }
 
-void Canvas::drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Canvas::drawq(Quad *quad, const Matrix4 &m)
 {
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	drawv(t, quad->getVertices());
+	drawv(m, quad->getVertices());
 }
 
 void Canvas::setFilter(const Texture::Filter &f)

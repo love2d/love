@@ -84,7 +84,7 @@ void ParticleSystem::setBufferSize(uint32 size)
 	createVertices(size);
 }
 
-void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void ParticleSystem::draw(const Matrix4 &m)
 {
 	uint32 pCount = getCount();
 
@@ -94,7 +94,7 @@ void ParticleSystem::draw(float x, float y, float angle, float sx, float sy, flo
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
+	transform.get() *= m;
 
 	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;

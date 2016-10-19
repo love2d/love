@@ -331,37 +331,14 @@ public:
 	bool isWireframe() const;
 
 	/**
-	 * Draws text at the specified coordinates, with rotation and
-	 * scaling along both axes.
-	 * @param x The x-coordinate.
-	 * @param y The y-coordinate.
-	 * @param angle The amount of rotation.
-	 * @param sx The scale factor along the x-axis. (1 = normal).
-	 * @param sy The scale factor along the y-axis. (1 = normal).
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x-axis.
-	 * @param ky Shear along the y-axis.
+	 * Draws text at the specified coordinates
 	 **/
-	void print(const std::vector<Font::ColoredString> &str, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void print(const std::vector<Font::ColoredString> &str, const Matrix4 &m);
 
 	/**
-	 * Draw formatted text on screen at the specified coordinates.
-	 *
-	 * @param str A string of text.
-	 * @param x The x-coordinate.
-	 * @param y The y-coordinate.
-	 * @param wrap The maximum width of the text area.
-	 * @param align Where to align the text.
-	 * @param angle The amount of rotation.
-	 * @param sx The scale factor along the x-axis. (1 = normal).
-	 * @param sy The scale factor along the y-axis. (1 = normal).
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x-axis.
-	 * @param ky Shear along the y-axis.
+	 * Draws formatted text on screen at the specified coordinates.
 	 **/
-	void printf(const std::vector<Font::ColoredString> &str, float x, float y, float wrap, Font::AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
 
 	/**
 	 * Draws a point at (x,y).

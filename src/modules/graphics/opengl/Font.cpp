@@ -703,7 +703,7 @@ void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands
 	drawVertices(drawcommands, false);
 }
 
-void Font::print(const std::vector<ColoredString> &text, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Font::print(const std::vector<ColoredString> &text, const Matrix4 &m)
 {
 	ColoredCodepoints codepoints;
 	getCodepointsFromString(text, codepoints);
@@ -711,12 +711,10 @@ void Font::print(const std::vector<ColoredString> &text, float x, float y, float
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVertices(codepoints, vertices);
 
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	printv(t, drawcommands, vertices);
+	printv(m, drawcommands, vertices);
 }
 
-void Font::printf(const std::vector<ColoredString> &text, float x, float y, float wrap, AlignMode align, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Font::printf(const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m)
 {
 	ColoredCodepoints codepoints;
 	getCodepointsFromString(text, codepoints);
@@ -724,9 +722,7 @@ void Font::printf(const std::vector<ColoredString> &text, float x, float y, floa
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVerticesFormatted(codepoints, wrap, align, vertices);
 
-	Matrix4 t(x, y, angle, sx, sy, ox, oy, kx, ky);
-
-	printv(t, drawcommands, vertices);
+	printv(m, drawcommands, vertices);
 }
 
 int Font::getWidth(const std::string &str)

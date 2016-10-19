@@ -115,22 +115,10 @@ public:
 	static void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
 
 	/**
-	 * Prints the text at the designated position with rotation and scaling.
-	 *
-	 * @param text A string.
-	 * @param x The x-coordinate.
-	 * @param y The y-coordinate.
-	 * @param angle The amount of rotation.
-	 * @param sx Scale along the x axis.
-	 * @param sy Scale along the y axis.
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x axis.
-	 * @param ky Shear along the y axis.
+	 * Draws the text at the designated position with a transformation applied.
 	 **/
-	void print(const std::vector<ColoredString> &text, float x, float y, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
-
-	void printf(const std::vector<ColoredString> &text, float x, float y, float wrap, AlignMode align, float angle = 0.0f, float sx = 1.0f, float sy = 1.0f, float ox = 0.0f, float oy = 0.0f, float kx = 0.0f, float ky = 0.0f);
+	void print(const std::vector<ColoredString> &text, const Matrix4 &m);
+	void printf(const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m);
 
 	/**
 	 * Returns the height of the font.

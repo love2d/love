@@ -114,7 +114,7 @@ love::video::VideoStream *Video::getStream()
 	return stream;
 }
 
-void Video::draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
+void Video::draw(const Matrix4 &m)
 {
 	update();
 
@@ -130,7 +130,7 @@ void Video::draw(float x, float y, float angle, float sx, float sy, float ox, fl
 	shader->setVideoTextures(textures[0], textures[1], textures[2]);
 
 	OpenGL::TempTransform transform(gl);
-	transform.get() *= Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
+	transform.get() *= m;
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 

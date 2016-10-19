@@ -61,11 +61,13 @@ static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int sta
 	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
 	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
+	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
+
 	luax_catchexcept(L, [&]() {
 		if (quad)
-			index = t->addq(quad, x, y, a, sx, sy, ox, oy, kx, ky, index);
+			index = t->addq(quad, m, index);
 		else
-			index = t->add(x, y, a, sx, sy, ox, oy, kx, ky, index);
+			index = t->add(m, index);
 	});
 
 	return index;

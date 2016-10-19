@@ -70,17 +70,17 @@ public:
 	virtual ~Canvas();
 
 	// Implements Volatile.
-	virtual bool loadVolatile();
-	virtual void unloadVolatile();
+	bool loadVolatile() override;
+	void unloadVolatile() override;
 
 	// Implements Drawable.
-	virtual void draw(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
+	void draw(const Matrix4 &m) override;
 
 	// Implements Texture.
-	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
-	virtual void setFilter(const Texture::Filter &f);
-	virtual bool setWrap(const Texture::Wrap &w);
-	virtual const void *getHandle() const;
+	void drawq(Quad *quad, const Matrix4 &m) override;
+	void setFilter(const Texture::Filter &f) override;
+	bool setWrap(const Texture::Wrap &w) override;
+	const void *getHandle() const override;
 
 	/**
 	 * @param canvases A list of other canvases to temporarily attach to this one,
