@@ -196,13 +196,13 @@ int w_BezierCurve_renderSegment(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	double start = luaL_checknumber(L, 2);
 	double end = luaL_checknumber(L, 3);
-	int accuracy = luaL_optinteger(L, 4, 5);
+	int accuracy = (int) luaL_optnumber(L, 4, 5);
 
 	std::vector<Vector> points;
 	luax_catchexcept(L, [&](){ points = curve->renderSegment(start, end, accuracy); });
 
-	lua_createtable(L, points.size()*2, 0);
-	for (size_t i = 0; i < points.size(); ++i)
+	lua_createtable(L, (int) points.size() * 2, 0);
+	for (int i = 0; i < (int) points.size(); ++i)
 	{
 		lua_pushnumber(L, points[i].x);
 		lua_rawseti(L, -2, 2*i+1);

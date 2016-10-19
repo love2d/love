@@ -103,7 +103,7 @@ public:
 	virtual int getChannels() const = 0;
 
 	virtual int getFreeBufferCount() const = 0;
-	virtual bool queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;
+	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;
 
 	virtual Type getType() const;
 

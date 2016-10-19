@@ -233,7 +233,7 @@ vector<Vector> BezierCurve::render(int accuracy) const
 	return vertices;
 }
 
-vector<Vector> BezierCurve::renderSegment(double start, double end, size_t accuracy) const
+vector<Vector> BezierCurve::renderSegment(double start, double end, int accuracy) const
 {
 	if (controlPoints.size() < 2)
 		throw Exception("Invalid Bezier curve: Not enough control points.");

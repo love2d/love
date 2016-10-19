@@ -58,7 +58,7 @@ public:
 
 private:
 
-	static FT_ULong hintingToLoadOption(Hinting hinting);
+	static FT_UInt hintingToLoadOption(Hinting hinting);
 
 	// TrueType face
 	FT_Face face;

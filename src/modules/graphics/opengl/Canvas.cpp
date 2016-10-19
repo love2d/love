@@ -629,7 +629,7 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *image, int x, i
 		break;
 	}
 
-	int size = w * h * image::ImageData::getPixelSize(imageformat);
+	size_t size = w * h * image::ImageData::getPixelSize(imageformat);
 	uint8 *pixels = nullptr;
 	try
 	{

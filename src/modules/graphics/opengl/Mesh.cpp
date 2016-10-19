@@ -569,7 +569,7 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	GLenum datatype = getGLDataType(format.type);
 	GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
 
-	glVertexAttribPointer(attriblocation, format.components, datatype, normalized, vertexStride, gloffset);
+	glVertexAttribPointer(attriblocation, format.components, datatype, normalized, (GLsizei) vertexStride, gloffset);
 
 	return attriblocation;
 }

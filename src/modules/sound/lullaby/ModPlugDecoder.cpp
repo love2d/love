@@ -61,7 +61,7 @@ ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSiz
 	ModPlug_SetSettings(&settings);
 
 	// Load the module.
-	plug = ModPlug_Load(data->getData(), data->getSize());
+	plug = ModPlug_Load(data->getData(), (int) data->getSize());
 
 	if (plug == 0)
 		throw love::Exception("Could not load file with ModPlug.");
@@ -121,7 +121,7 @@ bool ModPlugDecoder::rewind()
 {
 	// Let's reload.
 	ModPlug_Unload(plug);
-	plug = ModPlug_Load(data->getData(), data->getSize());
+	plug = ModPlug_Load(data->getData(), (int) data->getSize());
 	ModPlug_SetMasterVolume(plug, 128);
 	eof = false;
 	return (plug != 0);

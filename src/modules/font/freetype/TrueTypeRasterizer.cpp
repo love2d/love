@@ -76,7 +76,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	FT_Glyph ftglyph;
 
 	FT_Error err = FT_Err_Ok;
-	FT_ULong loadoption = hintingToLoadOption(hinting);
+	FT_UInt loadoption = hintingToLoadOption(hinting);
 
 	// Initialize
 	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT | loadoption);
@@ -185,7 +185,7 @@ bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
 	return FT_New_Memory_Face(library, fbase, fsize, -1, nullptr) == 0;
 }
 
-FT_ULong TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
+FT_UInt TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
 {
 	switch (hint)
 	{

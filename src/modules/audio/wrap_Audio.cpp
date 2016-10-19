@@ -101,10 +101,10 @@ static std::vector<Source*> readSourceList(lua_State *L, int n)
 	if (n < 0)
 		n += lua_gettop(L) + 1;
 
-	size_t items = lua_objlen(L, n);
+	int items = (int) lua_objlen(L, n);
 	std::vector<Source*> sources(items);
 
-	for (size_t i = 0; i < items; i++)
+	for (int i = 0; i < items; i++)
 	{
 		lua_rawgeti(L, n, i+1);
 		sources[i] = luax_checksource(L, -1);
@@ -147,8 +147,8 @@ int w_pause(lua_State *L)
 	{
 		auto sources = instance()->pause();
 
-		lua_createtable(L, sources.size(), 0);
-		for (size_t i = 0; i < sources.size(); i++)
+		lua_createtable(L, (int) sources.size(), 0);
+		for (int i = 0; i < (int) sources.size(); i++)
 		{
 			luax_pushtype(L, AUDIO_SOURCE_ID, sources[i]);
 			lua_rawseti(L, -2, i+1);

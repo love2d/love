@@ -1299,7 +1299,7 @@ void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints
 	}
 
 	gl.useVertexAttribArrays(attribflags);
-	gl.drawArrays(GL_POINTS, 0, numpoints);
+	gl.drawArrays(GL_POINTS, 0, (GLsizei) numpoints);
 }
 
 void Graphics::polyline(const float *coords, size_t count)

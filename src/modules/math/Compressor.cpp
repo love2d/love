@@ -146,7 +146,7 @@ public:
 		{
 			// Account for our custom header's size in the decompress arguments.
 			int result = LZ4_decompress_safe(data + headersize, rawbytes,
-			                                 dataSize - headersize, rawsize);
+			                                 (int) (dataSize - headersize), rawsize);
 
 			if (result < 0)
 			{

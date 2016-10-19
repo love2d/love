@@ -23,6 +23,7 @@
 
 // LOVE
 #include "common/Data.h"
+#include "common/int.h"
 #include "Decoder.h"
 
 // vorbis
@@ -41,8 +42,8 @@ namespace lullaby
 struct SOggFile
 {
 	const char *dataPtr;	// Pointer to the data in memory
-	int dataSize;	// Size of the data
-	int dataRead;	// How much we've read so far
+	int64 dataSize;	// Size of the data
+	int64 dataRead;	// How much we've read so far
 };
 
 class VorbisDecoder : public Decoder

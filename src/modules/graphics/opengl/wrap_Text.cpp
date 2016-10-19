@@ -39,7 +39,7 @@ void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredStr
 
 	if (lua_istable(L, idx))
 	{
-		int len = luax_objlen(L, idx);
+		int len = (int) luax_objlen(L, idx);
 
 		for (int i = 1; i <= len; i++)
 		{

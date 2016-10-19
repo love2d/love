@@ -222,7 +222,7 @@ int Source::getFreeBufferCount() const
 	return 0;
 }
 
-bool Source::queue(void *, int, int, int, int)
+bool Source::queue(void *, size_t, int, int, int)
 {
 	return false;
 }

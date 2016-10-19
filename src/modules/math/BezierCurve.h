@@ -136,7 +136,7 @@ public:
 	 * @param accuracy The 'fineness' of the curve.
 	 * @returns A polygon chain that approximates the segment along the curve
 	 **/
-	std::vector<Vector> renderSegment(double start, double end, size_t accuracy = 4) const;
+	std::vector<Vector> renderSegment(double start, double end, int accuracy = 4) const;
 
 private:
 	std::vector<Vector> controlPoints;

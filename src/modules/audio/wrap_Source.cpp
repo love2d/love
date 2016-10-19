@@ -344,10 +344,10 @@ int w_Source_queue(lua_State *L)
 
 	if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
 	{
-		love::sound::SoundData *s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
+		auto s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
 
 		int offset = 0;
-		int length = s->getSize();
+		size_t length = s->getSize();
 
 		if (lua_gettop(L) == 4)
 		{
@@ -357,12 +357,12 @@ int w_Source_queue(lua_State *L)
 		else if (lua_gettop(L) == 3)
 			length = luaL_checknumber(L, 3);
 
-		if (length > (int)s->getSize() - offset || offset < 0 || length < 0)
+		if (offset < 0 || length > s->getSize() - offset)
 			return luaL_error(L, "Data region out of bounds.");
 
 		luax_catchexcept(L, [&]() {
-			success = t->queue((void*)((uintptr_t)s->getData() + (uintptr_t)offset), 
-				length, s->getSampleRate(), s->getBitDepth(), s->getChannels());
+			success = t->queue((unsigned char *)s->getData() + offset, length,
+			            s->getSampleRate(), s->getBitDepth(), s->getChannels());
 		});
 	}
 	else if (lua_islightuserdata(L, 2))

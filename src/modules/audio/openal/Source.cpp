@@ -663,7 +663,7 @@ bool Source::isLooping() const
 	return looping;
 }
 
-bool Source::queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels)
+bool Source::queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels)
 {
 	if (type != TYPE_QUEUE)
 		throw QueueTypeMismatchException();
@@ -883,7 +883,7 @@ bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const 
 	}
 
 	alGetError();
-	alSourcePlayv(toPlay.size(), &toPlay[0]);
+	alSourcePlayv((ALsizei) toPlay.size(), &toPlay[0]);
 	bool success = alGetError() == AL_NO_ERROR;
 
 	for (auto &_source : sources)
@@ -912,7 +912,7 @@ void Source::stopAtomic(const std::vector<love::audio::Source*> &sources)
 			sourceIds.push_back(source->source);
 	}
 
-	alSourceStopv(sources.size(), &sourceIds[0]);
+	alSourceStopv((ALsizei) sources.size(), &sourceIds[0]);
 
 	for (auto &_source : sources)
 	{
@@ -936,7 +936,7 @@ void Source::pauseAtomic(const std::vector<love::audio::Source*> &sources)
 			sourceIds.push_back(source->source);
 	}
 
-	alSourcePausev(sources.size(), &sourceIds[0]);
+	alSourcePausev((ALsizei) sources.size(), &sourceIds[0]);
 }
 
 void Source::reset()

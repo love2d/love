@@ -131,7 +131,7 @@ int w_Mesh_setVertices(lua_State *L)
 	}
 
 	luaL_checktype(L, 2, LUA_TTABLE);
-	size_t nvertices = luax_objlen(L, 2);
+	int nvertices = (int) luax_objlen(L, 2);
 
 	if (vertoffset + nvertices > t->getVertexCount())
 		return luaL_error(L, "Too many vertices (expected at most %d, got %d)", (int) t->getVertexCount() - (int) vertoffset, (int) nvertices);
@@ -144,7 +144,7 @@ int w_Mesh_setVertices(lua_State *L)
 
 	char *data = (char *) t->mapVertexData() + byteoffset;
 
-	for (size_t i = 0; i < nvertices; i++)
+	for (int i = 0; i < nvertices; i++)
 	{
 		// get vertices[vertindex]
 		lua_rawgeti(L, 2, i + 1);

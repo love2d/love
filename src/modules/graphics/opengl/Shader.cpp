@@ -420,7 +420,7 @@ void Shader::attach(bool temporary)
 		{
 			// make sure all sent textures are properly bound to their respective texture units
 			// note: list potentially contains texture ids of deleted/invalid textures!
-			for (size_t i = 0; i < activeTexUnits.size(); ++i)
+			for (int i = 0; i < (int) activeTexUnits.size(); ++i)
 			{
 				if (activeTexUnits[i] > 0)
 					gl.bindTextureToUnit(activeTexUnits[i], i + 1, false);

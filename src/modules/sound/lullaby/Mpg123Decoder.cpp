@@ -157,7 +157,7 @@ Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
 		mpg123_format_none(handle);
 		mpg123_format(handle, rate, channels, MPG123_ENC_SIGNED_16);
 
-		sampleRate = rate;
+		sampleRate = (int) rate;
 	}
 	catch (love::Exception &)
 	{

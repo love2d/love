@@ -142,7 +142,7 @@ public:
 	virtual int getChannels() const;
 
 	virtual int getFreeBufferCount() const;
-	virtual bool queue(void *data, int length, int dataSampleRate, int dataBitDepth, int dataChannels);
+	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
 	virtual bool queueAtomic(void *data, ALsizei length);
 
 	void prepareAtomic();
