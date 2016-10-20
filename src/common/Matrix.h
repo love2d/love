@@ -34,7 +34,13 @@ namespace love
  **/
 class Matrix4
 {
+private:
+
+	static void multiply(const Matrix4 &a, const Matrix4 &b, float t[16]);
+
 public:
+
+	static void multiply(const Matrix4 &a, const Matrix4 &b, Matrix4 &result);
 
 	/**
 	 * Creates a new identity matrix.
@@ -155,6 +161,8 @@ public:
 	 **/
 	template <typename V>
 	void transform(V *dst, const V *src, int size) const;
+
+	Matrix4 inverse() const;
 
 	/**
 	 * Creates a new orthographic projection matrix with depth in the range of

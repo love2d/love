@@ -1960,6 +1960,28 @@ int w_origin(lua_State * /*L*/)
 	return 0;
 }
 
+int w_transformPoint(lua_State *L)
+{
+	Vector p;
+	p.x = (float) luaL_checknumber(L, 1);
+	p.y = (float) luaL_checknumber(L, 2);
+	p = instance()->transformPoint(p);
+	lua_pushnumber(L, p.x);
+	lua_pushnumber(L, p.y);
+	return 2;
+}
+
+int w_inverseTransformPoint(lua_State *L)
+{
+	Vector p;
+	p.x = (float) luaL_checknumber(L, 1);
+	p.y = (float) luaL_checknumber(L, 2);
+	p = instance()->inverseTransformPoint(p);
+	lua_pushnumber(L, p.x);
+	lua_pushnumber(L, p.y);
+	return 2;
+}
+
 
 // List of functions to wrap.
 static const luaL_Reg functions[] =
@@ -2060,6 +2082,8 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
+	{ "transformPoint", w_transformPoint },
+	{ "inverseTransformPoint", w_inverseTransformPoint },
 
 	{ 0, 0 }
 };

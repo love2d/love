@@ -459,6 +459,8 @@ public:
 	void translate(float x, float y);
 	void shear(float kx, float ky);
 	void origin();
+	Vector transformPoint(Vector point);
+	Vector inverseTransformPoint(Vector point);
 
 private:
 

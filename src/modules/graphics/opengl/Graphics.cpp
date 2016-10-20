@@ -1789,6 +1789,22 @@ void Graphics::origin()
 	pixelSizeStack.back() = 1;
 }
 
+Vector Graphics::transformPoint(Vector point)
+{
+	Vector p;
+	gl.getTransform().transform(&p, &point, 1);
+	return p;
+}
+
+Vector Graphics::inverseTransformPoint(Vector point)
+{
+	Vector p;
+	// TODO: We should probably cache the inverse transform so we don't have to
+	// re-calculate it every time this is called.
+	gl.getTransform().inverse().transform(&p, &point, 1);
+	return p;
+}
+
 } // opengl
 } // graphics
 } // love
