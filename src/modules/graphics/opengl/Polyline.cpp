@@ -402,6 +402,7 @@ void Polyline::draw()
 	gl.prepareDraw();
 
 	gl.bindTexture(gl.getDefaultTexture());
+	gl.bindBuffer(BUFFER_VERTEX, 0);
 
 	uint32 enabledattribs = ATTRIBFLAG_POS;
 
@@ -426,7 +427,10 @@ void Polyline::draw()
 	// because the vertex array contains both the core line and the overdraw
 	// vertices.
 	if (use_quad_indices)
+	{
+		gl.bindBuffer(BUFFER_INDEX, 0);
 		gl.drawElements(draw_mode, (int) (total_vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
+	}
 	else
 		gl.drawArrays(draw_mode, 0, (int) total_vertex_count);
 

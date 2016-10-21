@@ -315,6 +315,7 @@ void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
+	gl.bindBuffer(BUFFER_VERTEX, 0);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
 

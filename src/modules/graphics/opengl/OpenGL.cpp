@@ -143,6 +143,12 @@ void OpenGL::setupContext()
 	else
 		state.framebufferSRGBEnabled = false;
 
+	for (int i = 0; i < (int) BUFFER_MAX_ENUM; i++)
+	{
+		state.boundBuffers[i] = 0;
+		glBindBuffer(getGLBufferType((BufferType) i), 0);
+	}
+
 	// Initialize multiple texture unit support for shaders.
 	state.boundTextures.clear();
 	state.boundTextures.resize(maxTextureUnits, 0);
@@ -377,6 +383,39 @@ void OpenGL::prepareDraw()
 			glLoadMatrixf(curxform.getElements());
 			state.lastTransformMatrix = matrices.transform.back();
 		}
+	}
+}
+
+GLenum OpenGL::getGLBufferType(BufferType type)
+{
+	switch (type)
+	{
+	case BUFFER_VERTEX:
+		return GL_ARRAY_BUFFER;
+	case BUFFER_INDEX:
+		return GL_ELEMENT_ARRAY_BUFFER;
+	case BUFFER_MAX_ENUM:
+		return GL_ZERO;
+	}
+}
+
+void OpenGL::bindBuffer(BufferType type, GLuint buffer)
+{
+	if (state.boundBuffers[type] != buffer)
+	{
+		glBindBuffer(getGLBufferType(type), buffer);
+		state.boundBuffers[type] = buffer;
+	}
+}
+
+void OpenGL::deleteBuffer(GLuint buffer)
+{
+	glDeleteBuffers(1, &buffer);
+
+	for (int i = 0; i < (int) BUFFER_MAX_ENUM; i++)
+	{
+		if (state.boundBuffers[i] == buffer)
+			state.boundBuffers[i] = 0;
 	}
 }
 

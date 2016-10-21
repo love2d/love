@@ -80,7 +80,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vbo = new GLBuffer(datasize, data, GL_ARRAY_BUFFER, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	vbo = new GLBuffer(datasize, data, BUFFER_VERTEX, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
@@ -106,10 +106,9 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vbo = new GLBuffer(buffersize, nullptr, GL_ARRAY_BUFFER, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	vbo = new GLBuffer(buffersize, nullptr, BUFFER_VERTEX, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 
 	// Initialize the buffer's contents to 0.
-	GLBuffer::Bind bind(*vbo);
 	memset(vbo->map(), 0, buffersize);
 	vbo->setMappedRangeModified(0, vbo->getSize());
 	vbo->unmap();
@@ -192,9 +191,7 @@ void Mesh::setVertex(size_t vertindex, const void *data, size_t datasize)
 	size_t offset = vertindex * vertexStride;
 	size_t size = std::min(datasize, vertexStride);
 
-	GLBuffer::Bind bind(*vbo);
 	uint8 *bufferdata = (uint8 *) vbo->map();
-
 	memcpy(bufferdata + offset, data, size);
 
 	vbo->setMappedRangeModified(offset, size);
@@ -209,9 +206,7 @@ size_t Mesh::getVertex(size_t vertindex, void *data, size_t datasize)
 	size_t size = std::min(datasize, vertexStride);
 
 	// We're relying on vbo->map() returning read/write data... ew.
-	GLBuffer::Bind bind(*vbo);
 	const uint8 *bufferdata = (const uint8 *) vbo->map();
-
 	memcpy(data, bufferdata + offset, size);
 
 	return size;
@@ -233,9 +228,7 @@ void Mesh::setVertexAttribute(size_t vertindex, int attribindex, const void *dat
 	size_t offset = vertindex * vertexStride + getAttributeOffset(attribindex);
 	size_t size = std::min(datasize, attributeSizes[attribindex]);
 
-	GLBuffer::Bind bind(*vbo);
 	uint8 *bufferdata = (uint8 *) vbo->map();
-
 	memcpy(bufferdata + offset, data, size);
 
 	vbo->setMappedRangeModified(offset, size);
@@ -253,9 +246,7 @@ size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, s
 	size_t size = std::min(datasize, attributeSizes[attribindex]);
 
 	// We're relying on vbo->map() returning read/write data... ew.
-	GLBuffer::Bind bind(*vbo);
 	const uint8 *bufferdata = (const uint8 *) vbo->map();
-
 	memcpy(data, bufferdata + offset, size);
 
 	return size;
@@ -356,29 +347,21 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh)
 
 void *Mesh::mapVertexData()
 {
-	GLBuffer::Bind bind(*vbo);
 	return vbo->map();
 }
 
 void Mesh::unmapVertexData(size_t modifiedoffset, size_t modifiedsize)
 {
-	GLBuffer::Bind bind(*vbo);
 	vbo->setMappedRangeModified(modifiedoffset, modifiedsize);
 	vbo->unmap();
 }
 
 void Mesh::flush()
 {
-	{
-		GLBuffer::Bind vbobind(*vbo);
-		vbo->unmap();
-	}
+	vbo->unmap();
 
 	if (ibo != nullptr)
-	{
-		GLBuffer::Bind ibobind(*ibo);
 		ibo->unmap();
-	}
 }
 
 /**
@@ -414,7 +397,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	}
 
 	if (!ibo && size > 0)
-		ibo = new GLBuffer(size, nullptr, GL_ELEMENT_ARRAY_BUFFER, vbo->getUsage());
+		ibo = new GLBuffer(size, nullptr, BUFFER_INDEX, vbo->getUsage());
 
 	useIndexBuffer = true;
 	elementCount = map.size();
@@ -422,7 +405,6 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	if (!ibo || elementCount == 0)
 		return;
 
-	GLBuffer::Bind ibobind(*ibo);
 	GLBuffer::Mapper ibomap(*ibo);
 
 	// Fill the buffer with the index values from the vector.
@@ -466,8 +448,6 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 
 	if (!ibo || elementCount == 0)
 		return true;
-
-	GLBuffer::Bind ibobind(*ibo);
 
 	// We unmap the buffer in Mesh::draw, Mesh::setVertexMap, and Mesh::flush.
 	void *buffer = ibo->map();
@@ -559,8 +539,8 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	if (attriblocation < 0)
 		return attriblocation;
 
-	// Needed for unmap and glVertexAttribPointer.
-	GLBuffer::Bind vbobind(*vbo);
+	// Needed for glVertexAttribPointer.
+	vbo->bind();
 
 	// Make sure the buffer isn't mapped (sends data to GPU if needed.)
 	vbo->unmap();
@@ -614,7 +594,7 @@ void Mesh::draw(const Matrix4 &m)
 	if (useIndexBuffer && ibo && elementCount > 0)
 	{
 		// Use the custom vertex map (index buffer) to draw the vertices.
-		GLBuffer::Bind ibo_bind(*ibo);
+		ibo->bind();
 
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();

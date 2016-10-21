@@ -663,6 +663,8 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands, bool buffe
 	// with client-side vertex arrays.
 	if (bufferedvertices)
 		quadIndices.getBuffer()->bind();
+	else
+		gl.bindBuffer(BUFFER_INDEX, 0);
 
 	// We need a separate draw call for every section of the text which uses a
 	// different texture than the previous section.
@@ -679,9 +681,6 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands, bool buffe
 		else
 			gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getIndices(offset));
 	}
-
-	if (bufferedvertices)
-		quadIndices.getBuffer()->unbind();
 }
 
 void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices)
@@ -694,6 +693,7 @@ void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
+	gl.bindBuffer(BUFFER_VERTEX, 0);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &vertices[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, sizeof(GlyphVertex), &vertices[0].s);
 	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GlyphVertex), &vertices[0].color.r);

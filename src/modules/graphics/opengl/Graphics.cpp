@@ -1288,6 +1288,7 @@ void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints
 
 	gl.prepareDraw();
 	gl.bindTexture(gl.getDefaultTexture());
+	gl.bindBuffer(BUFFER_VERTEX, 0);
 
 	uint32 attribflags = ATTRIBFLAG_POS;
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
@@ -1550,6 +1551,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 
 		gl.prepareDraw();
 		gl.bindTexture(gl.getDefaultTexture());
+		gl.bindBuffer(BUFFER_VERTEX, 0);
 		gl.useVertexAttribArrays(ATTRIBFLAG_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
 		gl.drawArrays(GL_TRIANGLE_FAN, 0, (int)count/2-1); // opengl will close the polygon for us

@@ -134,6 +134,7 @@ void Video::draw(const Matrix4 &m)
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
+	gl.bindBuffer(BUFFER_VERTEX, 0);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &vertices[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &vertices[0].s);
 

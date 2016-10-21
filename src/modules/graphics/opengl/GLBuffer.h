@@ -56,10 +56,10 @@ public:
 	 * Constructor.
 	 *
 	 * @param size The size of the GLBuffer in bytes.
-	 * @param target The target GLBuffer object, e.g. GL_ARRAY_BUFFER.
+	 * @param type The type of the buffer object.
 	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
 	 */
-	GLBuffer(size_t size, const void *data, GLenum target, GLenum usage, uint32 mapflags = 0);
+	GLBuffer(size_t size, const void *data, BufferType type, GLenum usage, uint32 mapflags = 0);
 
 	/**
 	 * Destructor.
@@ -77,13 +77,11 @@ public:
 	}
 
 	/**
-	 * Get the target buffer object.
-	 *
-	 * @return The target buffer object, e.g. GL_ARRAY_BUFFER.
+	 * Get the type of the buffer object.
 	 */
-	GLenum getTarget() const
+	BufferType getType() const
 	{
-		return target;
+		return type;
 	}
 
 	/**
@@ -94,11 +92,6 @@ public:
 	GLenum getUsage() const
 	{
 		return usage;
-	}
-
-	bool isBound() const
-	{
-		return is_bound;
 	}
 
 	bool isMapped() const
@@ -112,8 +105,6 @@ public:
 	 * This can be faster for large changes to the buffer. For smaller
 	 * changes, see fill().
 	 *
-	 * The GLBuffer must be bound to use this function.
-	 *
 	 * @return A pointer to memory which represents the buffer.
 	 */
 	void *map();
@@ -121,8 +112,6 @@ public:
 	/**
 	 * Unmap a previously mapped GLBuffer. The buffer must be unmapped
 	 * when used to draw elements.
-	 *
-	 * The GLBuffer must be bound to use this function.
 	 */
 	void unmap();
 
@@ -139,14 +128,7 @@ public:
 	void bind();
 
 	/**
-	 * Unbind a prevously bound GLBuffer.
-	 */
-	void unbind();
-
-	/**
 	 * Fill a portion of the buffer with data and marks the range as modified.
-	 *
-	 * The GLBuffer must be bound to use this function.
 	 *
 	 * @param offset The offset in the GLBuffer to store the data.
 	 * @param size The size of the incoming data.
@@ -170,38 +152,6 @@ public:
 	// Implements Volatile.
 	bool loadVolatile() override;
 	void unloadVolatile() override;
-
-	/**
-	 * This helper class can bind a GLBuffer temporarily, and
-	 * automatically un-bind when it's destroyed.
-	 */
-	class Bind
-	{
-	public:
-
-		/**
-		 * Bind a GLBuffer.
-		 */
-		Bind(GLBuffer &buf)
-			: buf(buf)
-		{
-			buf.bind();
-		}
-
-		/**
-		 * Unbinds a GLBuffer.
-		 */
-		~Bind()
-		{
-			buf.unbind();
-		}
-
-	private:
-
-		// GLBuffer to work on.
-		GLBuffer &buf;
-
-	}; // Bind
 
 	class Mapper
 	{
@@ -253,16 +203,14 @@ private:
 	void unmapStatic(size_t offset, size_t size);
 	void unmapStream();
 
-	// Whether the buffer is currently bound.
-	bool is_bound;
-
 	// Whether the buffer is currently mapped to main memory.
 	bool is_mapped;
 
 	// The size of the buffer, in bytes.
 	size_t size;
 
-	// The target buffer object. (GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER).
+	// The type of the buffer object.
+	BufferType type;
 	GLenum target;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
