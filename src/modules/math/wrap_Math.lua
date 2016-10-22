@@ -88,7 +88,7 @@ function love_math.noise(x, y, z, w)
 		return tonumber(ffifuncs.noise3(x, y, z))
 	elseif y ~= nil then
 		return tonumber(ffifuncs.noise2(x, y))
-	elseif x ~= nil then
+	else
 		return tonumber(ffifuncs.noise1(x))
 	end
 end
