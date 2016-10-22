@@ -320,7 +320,7 @@ void OpenGL::createDefaultTexture()
 	GLuint curtexture = state.boundTextures[state.curTextureUnit];
 
 	glGenTextures(1, &state.defaultTexture);
-	bindTexture(state.defaultTexture);
+	bindTextureToUnit(state.defaultTexture, 0, false);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -331,7 +331,7 @@ void OpenGL::createDefaultTexture()
 	GLubyte pix[] = {255, 255, 255, 255};
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pix);
 
-	bindTexture(curtexture);
+	bindTextureToUnit(curtexture, 0, false);
 }
 
 void OpenGL::pushTransform()
