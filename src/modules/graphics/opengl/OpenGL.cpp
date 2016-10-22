@@ -566,15 +566,6 @@ void OpenGL::setTextureUnit(int textureunit)
 	state.curTextureUnit = textureunit;
 }
 
-void OpenGL::bindTexture(GLuint texture)
-{
-	if (texture != state.boundTextures[state.curTextureUnit])
-	{
-		state.boundTextures[state.curTextureUnit] = texture;
-		glBindTexture(GL_TEXTURE_2D, texture);
-	}
-}
-
 void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
 	if (texture != state.boundTextures[textureunit])

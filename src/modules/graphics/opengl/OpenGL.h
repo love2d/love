@@ -349,12 +349,6 @@ public:
 	void setTextureUnit(int textureunit);
 
 	/**
-	 * Helper for binding an OpenGL texture.
-	 * Makes sure we aren't redundantly binding textures.
-	 **/
-	void bindTexture(GLuint texture);
-
-	/**
 	 * Helper for binding a texture to a specific texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
