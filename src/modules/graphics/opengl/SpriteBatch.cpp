@@ -252,7 +252,7 @@ void SpriteBatch::draw(const Matrix4 &m)
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= m;
 
-	gl.bindTexture(*(GLuint *) texture->getHandle());
+	gl.bindTextureToUnit(*(GLuint *) texture->getHandle(), 0, false);
 
 	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
 

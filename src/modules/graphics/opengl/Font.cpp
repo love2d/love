@@ -169,7 +169,7 @@ void Font::createTexture()
 	else
 		glGenTextures(1, &t);
 
-	gl.bindTexture(t);
+	gl.bindTextureToUnit(t, 0, false);
 
 	gl.setTextureFilter(filter);
 
@@ -288,7 +288,7 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		GLenum format = getTextureFormat(type);
 		g.texture = textures.back();
 
-		gl.bindTexture(g.texture);
+		gl.bindTextureToUnit(g.texture, 0, false);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, textureX, textureY, w, h,
 		                format, GL_UNSIGNED_BYTE, gd->getData());
 
@@ -674,7 +674,7 @@ void Font::drawVertices(const std::vector<DrawCommand> &drawcommands, bool buffe
 		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
 
 		// TODO: Use glDrawElementsBaseVertex when supported?
-		gl.bindTexture(cmd.texture);
+		gl.bindTextureToUnit(cmd.texture, 0, false);
 
 		if (bufferedvertices)
 			gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
@@ -976,7 +976,7 @@ void Font::setFilter(const Texture::Filter &f)
 
 	for (GLuint texture : textures)
 	{
-		gl.bindTexture(texture);
+		gl.bindTextureToUnit(texture, 0, false);
 		gl.setTextureFilter(filter);
 	}
 }

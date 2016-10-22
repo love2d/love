@@ -1287,7 +1287,7 @@ void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints
 	OpenGL::TempDebugGroup debuggroup("Graphics points draw");
 
 	gl.prepareDraw();
-	gl.bindTexture(gl.getDefaultTexture());
+	gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
 	gl.bindBuffer(BUFFER_VERTEX, 0);
 
 	uint32 attribflags = ATTRIBFLAG_POS;
@@ -1550,7 +1550,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 		OpenGL::TempDebugGroup debuggroup("Filled polygon draw");
 
 		gl.prepareDraw();
-		gl.bindTexture(gl.getDefaultTexture());
+		gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
 		gl.bindBuffer(BUFFER_VERTEX, 0);
 		gl.useVertexAttribArrays(ATTRIBFLAG_POS);
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);

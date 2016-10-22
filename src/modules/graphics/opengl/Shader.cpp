@@ -425,9 +425,6 @@ void Shader::attach(bool temporary)
 				if (activeTexUnits[i] > 0)
 					gl.bindTextureToUnit(activeTexUnits[i], i + 1, false);
 			}
-
-			// We always want to use texture unit 0 for everyhing else.
-			gl.setTextureUnit(0);
 		}
 	}
 }
@@ -556,7 +553,7 @@ void Shader::sendTexture(const UniformInfo *info, Texture *texture)
 	int texunit = getTextureUnit(info->name);
 
 	// bind texture to assigned texture unit and send uniform to shader program
-	gl.bindTextureToUnit(gltex, texunit, true);
+	gl.bindTextureToUnit(gltex, texunit, false);
 
 	glUniform1i(info->location, texunit);
 
@@ -683,8 +680,6 @@ void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtextur
 			gl.bindTextureToUnit(textures[i], videoTextureUnits[i], false);
 		}
 	}
-
-	gl.setTextureUnit(0);
 }
 
 void Shader::checkSetScreenParams()

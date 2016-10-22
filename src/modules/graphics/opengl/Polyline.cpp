@@ -401,7 +401,7 @@ void Polyline::draw()
 
 	gl.prepareDraw();
 
-	gl.bindTexture(gl.getDefaultTexture());
+	gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
 	gl.bindBuffer(BUFFER_VERTEX, 0);
 
 	uint32 enabledattribs = ATTRIBFLAG_POS;

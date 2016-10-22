@@ -88,7 +88,7 @@ bool Video::loadVolatile()
 
 	for (int i = 0; i < 3; i++)
 	{
-		gl.bindTexture(textures[i]);
+		gl.bindTextureToUnit(textures[i], 0, false);
 
 		gl.setTextureFilter(filter);
 		gl.setTextureWrap(wrap);
@@ -162,7 +162,7 @@ void Video::update()
 
 		for (int i = 0; i < 3; i++)
 		{
-			gl.bindTexture(textures[i]);
+			gl.bindTextureToUnit(textures[i], 0, false);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, widths[i], heights[i],
 			                GL_LUMINANCE, GL_UNSIGNED_BYTE, data[i]);
 		}
@@ -198,7 +198,7 @@ void Video::setFilter(const Texture::Filter &f)
 
 	for (int i = 0; i < 3; i++)
 	{
-		gl.bindTexture(textures[i]);
+		gl.bindTextureToUnit(textures[i], 0, false);
 		gl.setTextureFilter(filter);
 	}
 }

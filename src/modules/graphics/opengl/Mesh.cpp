@@ -582,9 +582,9 @@ void Mesh::draw(const Matrix4 &m)
 	gl.useVertexAttribArrays(enabledattribs);
 
 	if (texture.get())
-		gl.bindTexture(*(GLuint *) texture->getHandle());
+		gl.bindTextureToUnit(*(GLuint *) texture->getHandle(), 0, false);
 	else
-		gl.bindTexture(gl.getDefaultTexture());
+		gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
 
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= m;

@@ -218,7 +218,7 @@ void Image::loadDefaultTexture()
 {
 	usingDefaultTexture = true;
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 	setFilter(filter);
 
 	// A nice friendly checkerboard to signify invalid textures...
@@ -320,7 +320,7 @@ bool Image::loadVolatile()
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
 	glGenTextures(1, &texture);
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	setFilter(filter);
 	setWrap(wrap);
@@ -406,7 +406,7 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 
 	OpenGL::TempDebugGroup debuggroup("Image refresh");
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	if (isCompressed())
 	{
@@ -449,7 +449,7 @@ void Image::drawv(const Matrix4 &t, const Vertex *v)
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
@@ -513,7 +513,7 @@ void Image::setFilter(const Texture::Filter &f)
 		filter.min = filter.mag = FILTER_NEAREST;
 	}
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 	gl.setTextureFilter(filter);
 }
 
@@ -540,7 +540,7 @@ bool Image::setWrap(const Texture::Wrap &w)
 			wrap.t = WRAP_CLAMP;
 	}
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 	gl.setTextureWrap(wrap);
 
 	return success;
@@ -555,7 +555,7 @@ void Image::setMipmapSharpness(float sharpness)
 	// LOD bias has the range (-maxbias, maxbias)
 	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	// negative bias is sharper
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);

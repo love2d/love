@@ -560,9 +560,6 @@ GLuint OpenGL::getDefaultTexture() const
 
 void OpenGL::setTextureUnit(int textureunit)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
-		throw love::Exception("Invalid texture unit index (%d).", textureunit);
-
 	if (textureunit != state.curTextureUnit)
 		glActiveTexture(GL_TEXTURE0 + textureunit);
 
@@ -580,19 +577,19 @@ void OpenGL::bindTexture(GLuint texture)
 
 void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
 {
-	if (textureunit < 0 || (size_t) textureunit >= state.boundTextures.size())
-		throw love::Exception("Invalid texture unit index.");
-
 	if (texture != state.boundTextures[textureunit])
 	{
 		int oldtextureunit = state.curTextureUnit;
-		setTextureUnit(textureunit);
+		if (oldtextureunit != textureunit)
+			glActiveTexture(GL_TEXTURE0 + textureunit);
 
 		state.boundTextures[textureunit] = texture;
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-		if (restoreprev)
-			setTextureUnit(oldtextureunit);
+		if (restoreprev && oldtextureunit != textureunit)
+			glActiveTexture(GL_TEXTURE0 + oldtextureunit);
+		else
+			state.curTextureUnit = textureunit;
 	}
 }
 

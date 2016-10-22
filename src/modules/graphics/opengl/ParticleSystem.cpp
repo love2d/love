@@ -132,7 +132,7 @@ void ParticleSystem::draw(const Matrix4 &m)
 		p = p->next;
 	}
 
-	gl.bindTexture(*(GLuint *) texture->getHandle());
+	gl.bindTextureToUnit(*(GLuint *) texture->getHandle(), 0, false);
 	gl.prepareDraw();
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);

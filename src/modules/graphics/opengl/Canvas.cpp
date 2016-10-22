@@ -217,7 +217,7 @@ bool Canvas::loadVolatile()
 	requested_samples = std::max(requested_samples, 0);
 
 	glGenTextures(1, &texture);
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	if (GLAD_ANGLE_texture_usage)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
@@ -311,7 +311,7 @@ void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 	OpenGL::TempTransform transform(gl);
 	transform.get() *= t;
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 
@@ -339,7 +339,7 @@ void Canvas::setFilter(const Texture::Filter &f)
 		throw love::Exception("Invalid texture filter.");
 
 	filter = f;
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 	gl.setTextureFilter(filter);
 }
 
@@ -366,7 +366,7 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 			wrap.t = WRAP_CLAMP;
 	}
 
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 	gl.setTextureWrap(wrap);
 
 	return success;
@@ -936,7 +936,7 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 
 	GLuint texture = 0;
 	glGenTextures(1, &texture);
-	gl.bindTexture(texture);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	Texture::Filter f;
 	f.min = f.mag = Texture::FILTER_NEAREST;
