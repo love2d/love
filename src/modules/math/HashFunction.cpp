@@ -215,7 +215,7 @@ public:
 			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
 
 		// Allocate our extended words
-		uint32 *words = new uint32[80];
+		uint32 words[80];
 
 		for (uint64 i = 0; i < paddedLength; i += 64)
 		{
@@ -264,7 +264,6 @@ public:
 			intermediate[4] += E;
 		}
 
-		delete[] words;
 		delete[] padded;
 
 		std::string hash(20, ' ');
@@ -325,7 +324,7 @@ public:
 			memcpy(intermediate, initial256, sizeof(intermediate));
 
 		// Allocate our extended words
-		uint32 *words = new uint32[64];
+		uint32 words[64];
 
 		for (uint64 i = 0; i < paddedLength; i += 64)
 		{
@@ -382,8 +381,6 @@ public:
 			intermediate[7] += H;
 		}
 
-
-		delete[] words;
 		delete[] padded;
 
 		int hashlength = 32;
@@ -478,7 +475,7 @@ public:
 			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
 
 		// Allocate our extended words
-		uint64 *words = new uint64[80];
+		uint64 words[80];
 
 		for (uint64 i = 0; i < paddedLength; i += 128)
 		{
@@ -538,7 +535,6 @@ public:
 			intermediates[7] += H;
 		}
 
-		delete[] words;
 		delete[] padded;
 
 		int hashlength = 64;
