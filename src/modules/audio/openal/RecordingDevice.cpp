@@ -102,8 +102,9 @@ int RecordingDevice::getData(love::sound::SoundData *soundData)
 	if (samples == 0)
 		return 0;
 
-	//resize internal buffer to proper size
-	if (samples != soundData->getSampleCount())
+	//reinitialize soundData if necessary
+	if (samples != soundData->getSampleCount() || sampleRate != soundData->getSampleRate() ||
+		bitDepth != soundData->getBitDepth() || channels != soundData->getChannels())
 		soundData->load(samples, sampleRate, bitDepth, channels);
 
 	alcCaptureSamples(device, soundData->getData(), samples);

@@ -67,23 +67,8 @@ int w_RecordingDevice_stopRecording(lua_State *L)
 	}
 
 	love::sound::SoundData *s = nullptr;
-	if (lua_gettop(L) > 1)
-	{
-		if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
-			s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
-		else
-			return luaL_typerror(L, 2, "SoundData");
-
-		s->retain();
-	}
-	else
-	{
-		luax_catchexcept(L, [&](){ 
-			s = soundInstance()->newSoundData(samples, d->getSampleRate(), d->getBitDepth(), d->getChannels()); 
-		});
-	}
-
 	luax_catchexcept(L, [&](){ 
+		s = soundInstance()->newSoundData(samples, d->getSampleRate(), d->getBitDepth(), d->getChannels()); 
 		d->getData(s);
 		d->stopRecording();
 	});
@@ -104,23 +89,10 @@ int w_RecordingDevice_getData(lua_State *L)
 	}
 
 	love::sound::SoundData *s = nullptr;
-	if (lua_gettop(L) > 1)
-	{
-		if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
-			s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
-		else
-			return luaL_typerror(L, 2, "SoundData");
-
-		s->retain();
-	}
-	else
-	{
-		luax_catchexcept(L, [&](){ 
-			s = soundInstance()->newSoundData(samples, d->getSampleRate(), d->getBitDepth(), d->getChannels()); 
-		});
-	}
-
-	luax_catchexcept(L, [&](){ d->getData(s); });
+	luax_catchexcept(L, [&](){ 
+		s = soundInstance()->newSoundData(samples, d->getSampleRate(), d->getBitDepth(), d->getChannels()); 
+		d->getData(s);
+	});
 
 	luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
 	s->release();
