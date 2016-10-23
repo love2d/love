@@ -279,7 +279,7 @@ QuadIndices::QuadIndices(size_t size)
 		}
 		catch (std::bad_alloc &)
 		{
-			delete[] newbuffer;
+			delete newbuffer;
 			delete[] newindices;
 			throw love::Exception("Out of memory.");
 		}
