@@ -71,6 +71,12 @@ bool RecordingDevice::startRecording(int samples, int sampleRate, int bitDepth, 
 	if (format == AL_NONE)
 		throw InvalidFormatException(channels, bitDepth);
 
+	if (samples <= 0)
+		throw love::Exception("Invalid number of samples.");
+
+	if (sampleRate <= 0)
+		throw love::Exception("Invalid sample rate.");
+
 	device = alcCaptureOpenDevice(name.c_str(), sampleRate, format, samples);
 	if (device == nullptr)
 		return false;
