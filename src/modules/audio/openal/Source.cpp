@@ -20,6 +20,7 @@
 
 #include "Source.h"
 #include "Pool.h"
+#include "Audio.h"
 #include "common/math.h"
 
 // STD
@@ -119,8 +120,8 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, channels(soundData->getChannels())
 	, bitDepth(soundData->getBitDepth())
 {
-	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
-	if (fmt == 0)
+	ALenum fmt = Audio::getFormat(soundData->getBitDepth(), soundData->getChannels());
+	if (fmt == AL_NONE)
 		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
 
 	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), sampleRate), Acquire::NORETAIN);
@@ -141,7 +142,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, decoder(decoder)
 	, unusedBufferTop(MAX_BUFFERS - 1)
 {
-	if (getFormat(decoder->getChannels(), decoder->getBitDepth()) == 0)
+	if (Audio::getFormat(decoder->getBitDepth(), decoder->getChannels()) == AL_NONE)
 		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
 
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
@@ -162,8 +163,8 @@ Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels)
 	, channels(channels)
 	, bitDepth(bitDepth)
 {
-	ALenum fmt = getFormat(channels, bitDepth);
-	if (fmt == 0)
+	ALenum fmt = Audio::getFormat(bitDepth, channels);
+	if (fmt == AL_NONE)
 		throw InvalidFormatException(channels, bitDepth);
 
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
@@ -688,7 +689,7 @@ bool Source::queueAtomic(void *data, ALsizei length)
 		if (buffer == AL_NONE)
 			return false;
 
-		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
+		alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
 		alSourceQueueBuffers(source, 1, &buffer);
 		unusedBufferPop();
 	}
@@ -699,7 +700,7 @@ bool Source::queueAtomic(void *data, ALsizei length)
 			return false;
 
 		//stack acts as queue while stopped
-		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
+		alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
 		unusedBufferQueue(buffer);
 	}
 	bufferedBytes += length;
@@ -966,34 +967,6 @@ void Source::setFloatv(float *dst, const float *src) const
 	dst[2] = src[2];
 }
 
-ALenum Source::getFormat(int channels, int bitDepth) const
-{
-	if (channels == 1 && bitDepth == 8)
-		return AL_FORMAT_MONO8;
-	else if (channels == 1 && bitDepth == 16)
-		return AL_FORMAT_MONO16;
-	else if (channels == 2 && bitDepth == 8)
-		return AL_FORMAT_STEREO8;
-	else if (channels == 2 && bitDepth == 16)
-		return AL_FORMAT_STEREO16;
-
-#ifdef AL_EXT_MCFORMATS
-	if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
-	{
-		if (channels == 6 && bitDepth == 8)
-			return AL_FORMAT_51CHN8;
-		else if (channels == 6 && bitDepth == 16)
-			return AL_FORMAT_51CHN16;
-		else if (channels == 8 && bitDepth == 8)
-			return AL_FORMAT_71CHN8;
-		else if (channels == 8 && bitDepth == 16)
-			return AL_FORMAT_71CHN16;
-	}
-#endif
-
-	return 0;
-}
-
 ALuint Source::unusedBufferPeek()
 {
 	return (unusedBufferTop < 0) ? AL_NONE : unusedBuffers[unusedBufferTop];
@@ -1029,9 +1002,9 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	// OpenAL implementations are allowed to ignore 0-size alBufferData calls.
 	if (decoded > 0)
 	{
-		int fmt = getFormat(d->getChannels(), d->getBitDepth());
+		int fmt = Audio::getFormat(d->getBitDepth(), d->getChannels());
 
-		if (fmt != 0)
+		if (fmt != AL_NONE)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 		else
 			decoded = 0;

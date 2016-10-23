@@ -20,10 +20,11 @@
 
 #include "Audio.h"
 #include "common/delay.h"
-
+#include "RecordingDevice.h"
 #include "sound/Decoder.h"
 
 #include <cstdlib>
+#include <iostream>
 
 namespace love
 {
@@ -67,9 +68,29 @@ void Audio::PoolThread::setFinish()
 	finish = true;
 }
 
+ALenum Audio::getFormat(int bitDepth, int channels)
+{
+	if (bitDepth != 8 && bitDepth != 16)
+		return AL_NONE;
+
+	if (channels == 1)
+		return bitDepth == 8 ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
+	else if (channels == 2)
+		return bitDepth == 8 ? AL_FORMAT_STEREO8 : AL_FORMAT_STEREO16;
+	#ifdef AL_EXT_MCFORMATS
+	else if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
+	{
+		if (channels == 6)
+			return bitDepth == 8 ? AL_FORMAT_51CHN8 : AL_FORMAT_51CHN16;
+		else if (channels == 8)
+			return bitDepth == 8 ? AL_FORMAT_71CHN8 : AL_FORMAT_71CHN16;
+	}
+	#endif
+	return AL_NONE;
+}
+
 Audio::Audio()
 	: device(nullptr)
-	, capture(nullptr)
 	, context(nullptr)
 	, pool(nullptr)
 	, poolThread(nullptr)
@@ -89,25 +110,28 @@ Audio::Audio()
 	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
 
-	/*std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
-	const ALCchar * devices = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
-	while (*devices)
+	//find and push default capture device
+	//AL may not return actual device name string when asked directly
+	std::string defaultname;
+	ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, 8, 1);
+	if (alGetError() == AL_NO_ERROR)
 	{
-		std::string device(devices);
-		devices += device.size() + 1;
-		if (device.find("Mic") != std::string::npos || device.find("mic") != std::string::npos)
-		{
-			captureName = device;
-		}
+		defaultname = alcGetString(defaultdevice, ALC_CAPTURE_DEVICE_SPECIFIER);
+		alcCaptureCloseDevice(defaultdevice);
+		capture.push_back(new RecordingDevice(defaultname.c_str(), 0));
 	}
 
-	capture = alcCaptureOpenDevice(captureName.c_str(), 8000, AL_FORMAT_MONO16, 262144); // about 32 seconds
-
-	if (!capture)
+	const ALCchar *devstr = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+	size_t offset = 0;
+	while (true)
 	{
-		// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
-		std::cerr << "Warning, couldn't open capture device! No audio input!" << std::endl;
-	}*/
+		if (devstr[offset] == '\0')
+			break;
+		std::string str((ALCchar*)&devstr[offset]);
+		if (str != defaultname)
+			capture.push_back(new RecordingDevice(str.c_str(), capture.size()));
+		offset += str.length() + 1;
+	}
 
 	// pool must be allocated after AL context.
 	try
@@ -118,8 +142,10 @@ Audio::Audio()
 	{
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(context);
-		//if (capture) alcCaptureCloseDevice(capture);
 		alcCloseDevice(device);
+		for (unsigned int i = 0; i < capture.size(); i++)
+			delete capture[i];
+
 		throw;
 	}
 
@@ -137,8 +163,9 @@ Audio::~Audio()
 
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
-	//if (capture) alcCaptureCloseDevice(capture);
 	alcCloseDevice(device);
+	for (unsigned int i = 0; i < capture.size(); i++)
+		delete capture[i];
 }
 
 
@@ -265,44 +292,6 @@ float Audio::getDopplerScale() const
 	return alGetFloat(AL_DOPPLER_FACTOR);
 }
 
-void Audio::record()
-{
-	if (!canRecord()) return;
-	alcCaptureStart(capture);
-}
-
-love::sound::SoundData *Audio::getRecordedData()
-{
-	if (!canRecord())
-		return NULL;
-	int samplerate = 8000;
-	ALCint samples;
-	alcGetIntegerv(capture, ALC_CAPTURE_SAMPLES, 4, &samples);
-	void *data = malloc(samples * (2/sizeof(char)));
-	alcCaptureSamples(capture, data, samples);
-	love::sound::SoundData *sd = new love::sound::SoundData(data, samples, samplerate, 16, 1);
-	free(data);
-	return sd;
-}
-
-love::sound::SoundData *Audio::stopRecording(bool returnData)
-{
-	if (!canRecord())
-		return NULL;
-	love::sound::SoundData *sd = NULL;
-	if (returnData)
-	{
-		sd = getRecordedData();
-	}
-	alcCaptureStop(capture);
-	return sd;
-}
-
-bool Audio::canRecord()
-{
-	return (capture != NULL);
-}
-
 Audio::DistanceModel Audio::getDistanceModel() const
 {
 	return distanceModel;
@@ -345,6 +334,28 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 	default:
 		break;
 	}
+}
+
+int Audio::getRecordingDeviceCount() const
+{
+	return capture.size();
+}
+
+love::audio::RecordingDevice *Audio::getRecordingDevice(int index) const
+{
+	if (index < 0 || (unsigned int)index >= capture.size())
+		return nullptr;
+
+	return capture[index];
+}
+
+int Audio::getRecordingDeviceIndex(love::audio::RecordingDevice *device) const
+{
+	for (unsigned int i = 0; i < capture.size(); i++)
+		if (device == capture[i])
+			return i;
+
+	return -1;
 }
 
 } // openal

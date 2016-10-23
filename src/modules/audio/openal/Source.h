@@ -163,15 +163,6 @@ private:
 
 	void setFloatv(float *dst, const float *src) const;
 
-	/**
-	 * Gets the OpenAL format identifier based on number of
-	 * channels and bits.
-	 * @param channels Either 1 (mono) or 2 (stereo).
-	 * @param bitDepth Either 8-bit samples, or 16-bit samples.
-	 * @return One of AL_FORMAT_*, or 0 if unsupported format.
-	 **/
-	ALenum getFormat(int channels, int bitDepth) const;
-
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 
 	ALuint unusedBufferPeek();

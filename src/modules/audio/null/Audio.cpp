@@ -144,23 +144,19 @@ float Audio::getDopplerScale() const
 	return 1.0f;
 }
 
-void Audio::record()
+int Audio::getRecordingDeviceCount() const
 {
+	return 0;
 }
 
-love::sound::SoundData *Audio::getRecordedData()
+love::audio::RecordingDevice *Audio::getRecordingDevice(int index) const
 {
-	return NULL;
+	return nullptr;
 }
 
-love::sound::SoundData *Audio::stopRecording(bool)
+int Audio::getRecordingDeviceIndex(love::audio::RecordingDevice *device) const
 {
-	return NULL;
-}
-
-bool Audio::canRecord()
-{
-	return false;
+	return -1;
 }
 
 Audio::DistanceModel Audio::getDistanceModel() const

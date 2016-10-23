@@ -73,6 +73,7 @@ enum Type
 
 	// Audio
 	AUDIO_SOURCE_ID,
+	AUDIO_RECORDING_DEVICE_ID,
 
 	// Sound
 	SOUND_SOUND_DATA_ID,

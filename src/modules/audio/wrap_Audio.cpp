@@ -257,49 +257,6 @@ int w_getDopplerScale(lua_State *L)
 	return 1;
 }
 
-int w_record(lua_State *)
-{
-	instance()->record();
-	return 0;
-}
-
-int w_getRecordedData(lua_State *L)
-{
-	love::sound::SoundData *sd = instance()->getRecordedData();
-	if (!sd)
-		lua_pushnil(L);
-	else
-	{
-		luax_pushtype(L, SOUND_SOUND_DATA_ID, sd);
-		sd->release();
-	}
-	return 1;
-}
-
-int w_stopRecording(lua_State *L)
-{
-	if (luax_optboolean(L, 1, true))
-	{
-		love::sound::SoundData *sd = instance()->stopRecording(true);
-		if (!sd)
-			lua_pushnil(L);
-		else
-		{
-			luax_pushtype(L, SOUND_SOUND_DATA_ID, sd);
-			sd->release();
-		}
-		return 1;
-	}
-	instance()->stopRecording(false);
-	return 0;
-}
-
-int w_canRecord(lua_State *L)
-{
-	luax_pushboolean(L, instance()->canRecord());
-	return 1;
-}
-
 int w_setDistanceModel(lua_State *L)
 {
 	const char *modelStr = luaL_checkstring(L, 1);
@@ -317,6 +274,27 @@ int w_getDistanceModel(lua_State *L)
 	if (!Audio::getConstant(distanceModel, modelStr))
 		return 0;
 	lua_pushstring(L, modelStr);
+	return 1;
+}
+
+int w_getRecordingDeviceCount(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getRecordingDeviceCount());
+	return 1;
+}
+
+int w_getRecordingDevices(lua_State *L)
+{
+	int count = instance()->getRecordingDeviceCount();
+	lua_createtable(L, count, 0);
+
+	for (int i = 0; i < count; i++)
+	{
+		RecordingDevice *device = instance()->getRecordingDevice(i);
+		luax_pushtype(L, AUDIO_RECORDING_DEVICE_ID, device);
+		lua_rawseti(L, -2, i + 1);
+	}
+
 	return 1;
 }
 
@@ -339,17 +317,17 @@ static const luaL_Reg functions[] =
 	{ "getVelocity", w_getVelocity },
 	{ "setDopplerScale", w_setDopplerScale },
 	{ "getDopplerScale", w_getDopplerScale },
-	/*{ "record", w_record },
-	{ "getRecordedData", w_getRecordedData },
-	{ "stopRecording", w_stopRecording },*/
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
+	{ "getRecordingDeviceCount", w_getRecordingDeviceCount },
+	{ "getRecordingDevices", w_getRecordingDevices },
 	{ 0, 0 }
 };
 
 static const lua_CFunction types[] =
 {
 	luaopen_source,
+	luaopen_recordingdevice,
 	0
 };
 
