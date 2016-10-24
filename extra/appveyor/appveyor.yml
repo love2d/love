@@ -26,7 +26,7 @@ install:
 - move love libs\love
 
 before_build:
-- cmake -G "Visual Studio 12" -H. -Bbuild -T v120_xp
+- cmake -G "Visual Studio 12" -H. -Bbuild
 
 build_script:
 - cmake --build build --target PACKAGE --config Release
