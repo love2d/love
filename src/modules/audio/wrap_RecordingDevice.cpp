@@ -22,10 +22,6 @@
 #include "wrap_Audio.h"
 
 #include "sound/SoundData.h"
-#include "sound/Sound.h"
-
-#define soundInstance() (Module::getInstance<love::sound::Sound>(Module::M_SOUND))
-
 namespace love
 {
 namespace audio
@@ -59,43 +55,41 @@ int w_RecordingDevice_startRecording(lua_State *L)
 int w_RecordingDevice_stopRecording(lua_State *L)
 {
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
-	int samples = d->getSampleCount();
-	if (samples == 0)
-	{
-		lua_pushnil(L);
-		return 1;
-	}
-
 	love::sound::SoundData *s = nullptr;
+
 	luax_catchexcept(L, [&](){ 
-		s = soundInstance()->newSoundData(samples, d->getSampleRate(), d->getBitDepth(), d->getChannels()); 
-		d->getData(s);
+		s = d->getData();
 		d->stopRecording();
 	});
 
-	luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
-	s->release();
+	if (s != nullptr)
+	{
+		luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
+		s->release();
+	}
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 
 int w_RecordingDevice_getData(lua_State *L)
 {
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
-	int samples = d->getSampleCount();
-	if (samples == 0)
-	{
-		lua_pushnil(L);
-		return 1;
-	}
-
 	love::sound::SoundData *s = nullptr;
+
 	luax_catchexcept(L, [&](){ 
-		s = soundInstance()->newSoundData(samples, d->getSampleRate(), d->getBitDepth(), d->getChannels()); 
-		d->getData(s);
+		s = d->getData();
 	});
 
-	luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
-	s->release();
+	if (s != nullptr)
+	{
+		luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
+		s->release();
+	}
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 

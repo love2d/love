@@ -60,10 +60,9 @@ public:
 
 	/**
 	 * Retreives recorded data. 
-	 * @param soundData Reference to a SoundData to fill.
-	 * @return number of samples obtained from device.
+	 * @return SoundData containing data obtained from recording device.
 	 **/
-	virtual int getData(love::sound::SoundData *soundData) = 0;
+	virtual love::sound::SoundData *getData() = 0;
 
 	/**
 	 * @return C string device name.

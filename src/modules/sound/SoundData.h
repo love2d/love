@@ -54,9 +54,10 @@ public:
 
 	void setSample(int i, float sample);
 	float getSample(int i) const;
-	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
 
 private:
+
+	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
 
 	uint8 *data;
 	size_t size;

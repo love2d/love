@@ -52,9 +52,9 @@ void RecordingDevice::stopRecording()
 {
 }
 
-int RecordingDevice::getData(love::sound::SoundData*)
+love::sound::SoundData *RecordingDevice::getData()
 {
-	return 0;
+	return nullptr;
 }
 
 int RecordingDevice::getSampleCount() const

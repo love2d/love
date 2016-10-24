@@ -39,7 +39,7 @@ public:
 	virtual bool startRecording();
 	virtual bool startRecording(int samples, int sampleRate, int bitDepth, int channels);
 	virtual void stopRecording();
-	virtual int getData(love::sound::SoundData *soundData);
+	virtual love::sound::SoundData *getData();
 	virtual const char *getName() const;
 	virtual int getID() const;
 	virtual int getSampleCount() const;

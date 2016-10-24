@@ -20,6 +20,7 @@
 
 #include "RecordingDevice.h"
 #include "Audio.h"
+#include "sound/Sound.h"
 
 namespace love
 {
@@ -27,6 +28,8 @@ namespace audio
 {
 namespace openal
 {
+
+#define soundInstance() (Module::getInstance<love::sound::Sound>(Module::M_SOUND))
 
 class InvalidFormatException : public love::Exception
 {
@@ -99,23 +102,20 @@ void RecordingDevice::stopRecording()
 	device = nullptr;
 }
 
-int RecordingDevice::getData(love::sound::SoundData *soundData)
+love::sound::SoundData *RecordingDevice::getData()
 {
 	if (!isRecording())
-		return 0;
+		return nullptr;
 
 	int samples = getSampleCount();
 	if (samples == 0)
-		return 0;
+		return nullptr;
 
-	//reinitialize soundData if necessary
-	if (samples != soundData->getSampleCount() || sampleRate != soundData->getSampleRate() ||
-		bitDepth != soundData->getBitDepth() || channels != soundData->getChannels())
-		soundData->load(samples, sampleRate, bitDepth, channels);
+	love::sound::SoundData *soundData = soundInstance()->newSoundData(samples, sampleRate, bitDepth, channels);
 
 	alcCaptureSamples(device, soundData->getData(), samples);
 
-	return samples;
+	return soundData;
 }
 
 int RecordingDevice::getSampleCount() const
