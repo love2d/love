@@ -23,6 +23,9 @@
 
 // LOVE
 #include "common/Object.h"
+#include "filesystem/File.h"
+
+#include <string>
 
 namespace love
 {
@@ -35,6 +38,9 @@ namespace sound
 class Decoder : public Object
 {
 public:
+
+	Decoder(Data *data, const std::string &ext, int bufferSize);
+	virtual ~Decoder();
 
 	/**
 	 * Indicates how many bytes of raw data should be generated at each
@@ -65,11 +71,6 @@ public:
 	virtual Decoder *clone() = 0;
 
 	/**
-	 * Destructor. Should free internal buffer.
-	 **/
-	virtual ~Decoder() {}
-
-	/**
 	 * Decodes the next chunk of the music stream, this will usually be
 	 * bufferSize amount of bytes, unless EOF occurs. Zero or negative values
 	 * indicate EOF or errors.
@@ -81,14 +82,14 @@ public:
 	 * Gets the size of the buffer (NOT the size of the entire stream).
 	 * @return The size of the buffer.
 	 **/
-	virtual int getSize() const = 0;
+	virtual int getSize() const;
 
 	/**
 	 * Gets a pointer to the actual data. The contents of this buffer will
 	 * change with each call to decode, so the client must copy the data.
 	 * @return A buffer to raw sound data.
 	 **/
-	virtual void *getBuffer() const = 0;
+	virtual void *getBuffer() const;
 
 	/**
 	 * Seeks to the specified position, if possible.
@@ -114,7 +115,7 @@ public:
 	 * rewind to start the stream again.
 	 * @return False if there is more data, true on EOF.
 	 **/
-	virtual bool isFinished() = 0;
+	virtual bool isFinished();
 
 	/**
 	 * Gets the number of channels in a stream. Supported values are 1 (mono) or 2 (stereo).
@@ -132,13 +133,35 @@ public:
 	 * Gets the sample rate for the Decoder, that is, samples per second.
 	 * @return The sample rate, eg. 44100.
 	 **/
-	virtual int getSampleRate() const = 0;
+	virtual int getSampleRate() const;
 
 	/**
 	 * Gets the estimated total duration of the stream. in seconds. May return
 	 * -1 if the duration cannot be determined.
 	 **/
 	virtual double getDuration() = 0;
+
+protected:
+
+	// The encoded data. This should be replaced with buffered file
+	// reads in the future.
+	StrongRef<Data> data;
+
+	// File extension.
+	std::string ext;
+
+	// When the decoder decodes data incrementally, it writes
+	// this many bytes at a time (at most).
+	int bufferSize;
+
+	// The desired frequency of the samples. 44100, 22050, or 11025.
+	int sampleRate;
+
+	// Holds internal memory.
+	void *buffer;
+
+	// Set this to true when eof has been reached.
+	bool eof;
 
 }; // Decoder
 

@@ -818,6 +818,7 @@ source_group("modules\\physics\\box2d" FILES ${LOVE_SRC_MODULE_PHYSICS_BOX2D})
 #
 
 set(LOVE_SRC_MODULE_SOUND_ROOT
+	src/modules/sound/Decoder.cpp
 	src/modules/sound/Decoder.h
 	src/modules/sound/Sound.cpp
 	src/modules/sound/Sound.h
@@ -832,8 +833,6 @@ set(LOVE_SRC_MODULE_SOUND_ROOT
 )
 
 set(LOVE_SRC_MODULE_SOUND_LULLABY
-	src/modules/sound/lullaby/Decoder.cpp
-	src/modules/sound/lullaby/Decoder.h
 	src/modules/sound/lullaby/FLACDecoder.cpp
 	src/modules/sound/lullaby/FLACDecoder.h
 	src/modules/sound/lullaby/GmeDecoder.cpp

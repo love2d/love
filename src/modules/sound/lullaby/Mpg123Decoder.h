@@ -23,7 +23,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "Decoder.h"
+#include "sound/Decoder.h"
 
 #ifndef LOVE_NOMPG123
 

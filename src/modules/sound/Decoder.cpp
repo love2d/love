@@ -26,8 +26,6 @@ namespace love
 {
 namespace sound
 {
-namespace lullaby
-{
 
 Decoder::Decoder(Data *data, const std::string &ext, int bufferSize)
 	: data(data)
@@ -66,7 +64,5 @@ bool Decoder::isFinished()
 	return eof;
 }
 
-
-} // lullaby
 } // sound
 } // love

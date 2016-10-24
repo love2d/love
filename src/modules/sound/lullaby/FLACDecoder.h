@@ -25,7 +25,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "Decoder.h"
+#include "sound/Decoder.h"
 
 #include <FLAC++/decoder.h>
 #include <string.h>

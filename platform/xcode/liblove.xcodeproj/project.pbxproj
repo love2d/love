@@ -719,7 +719,6 @@
 		FA0B7E871A95902C000E1D17 /* CoreAudioDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C7F1A95902C000E1D17 /* CoreAudioDecoder.h */; };
 		FA0B7E881A95902C000E1D17 /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C801A95902C000E1D17 /* Decoder.cpp */; };
 		FA0B7E891A95902C000E1D17 /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C801A95902C000E1D17 /* Decoder.cpp */; };
-		FA0B7E8A1A95902C000E1D17 /* Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C811A95902C000E1D17 /* Decoder.h */; };
 		FA0B7E8B1A95902C000E1D17 /* FLACDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */; };
 		FA0B7E8C1A95902C000E1D17 /* FLACDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */; };
 		FA0B7E8D1A95902C000E1D17 /* FLACDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C831A95902C000E1D17 /* FLACDecoder.h */; };
@@ -1441,7 +1440,6 @@
 		FA0B7C7E1A95902C000E1D17 /* CoreAudioDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CoreAudioDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C7F1A95902C000E1D17 /* CoreAudioDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreAudioDecoder.h; sourceTree = "<group>"; };
 		FA0B7C801A95902C000E1D17 /* Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decoder.cpp; sourceTree = "<group>"; };
-		FA0B7C811A95902C000E1D17 /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
 		FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FLACDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C831A95902C000E1D17 /* FLACDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLACDecoder.h; sourceTree = "<group>"; };
 		FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GmeDecoder.cpp; sourceTree = "<group>"; };
@@ -2630,6 +2628,7 @@
 		FA0B7C7B1A95902C000E1D17 /* sound */ = {
 			isa = PBXGroup;
 			children = (
+				FA0B7C801A95902C000E1D17 /* Decoder.cpp */,
 				FA0B7C7C1A95902C000E1D17 /* Decoder.h */,
 				FA0B7C7D1A95902C000E1D17 /* lullaby */,
 				FA0B7C901A95902C000E1D17 /* Sound.cpp */,
@@ -2652,8 +2651,6 @@
 			children = (
 				FA0B7C7E1A95902C000E1D17 /* CoreAudioDecoder.cpp */,
 				FA0B7C7F1A95902C000E1D17 /* CoreAudioDecoder.h */,
-				FA0B7C801A95902C000E1D17 /* Decoder.cpp */,
-				FA0B7C811A95902C000E1D17 /* Decoder.h */,
 				FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */,
 				FA0B7C831A95902C000E1D17 /* FLACDecoder.h */,
 				FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */,
@@ -3200,7 +3197,6 @@
 				FA0B7DEA1A95902C000E1D17 /* Mouse.h in Headers */,
 				FA0B7E931A95902C000E1D17 /* ModPlugDecoder.h in Headers */,
 				FA0B7D111A95902C000E1D17 /* BMFontRasterizer.h in Headers */,
-				FA0B7E8A1A95902C000E1D17 /* Decoder.h in Headers */,
 				FA0B7E3E1A95902C000E1D17 /* wrap_Body.h in Headers */,
 				FA0B7A571A958EA3000E1D17 /* b2Settings.h in Headers */,
 				FA0B7B321A958EA3000E1D17 /* wuff.h in Headers */,

@@ -25,7 +25,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "Decoder.h"
+#include "sound/Decoder.h"
 
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <Game_Music_Emu/gme.h>

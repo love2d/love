@@ -27,7 +27,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "Decoder.h"
+#include "sound/Decoder.h"
 
 // libmodplug
 #if defined(LOVE_ANDROID) || defined(LOVE_IOS)
