@@ -155,7 +155,7 @@ int RecordingDevice::getID() const
 
 bool RecordingDevice::isRecording() const
 {
-	return device == nullptr ? false : true;
+	return device != nullptr;
 }
 
 } //openal

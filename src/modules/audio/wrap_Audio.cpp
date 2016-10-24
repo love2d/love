@@ -277,21 +277,15 @@ int w_getDistanceModel(lua_State *L)
 	return 1;
 }
 
-int w_getRecordingDeviceCount(lua_State *L)
-{
-	lua_pushnumber(L, instance()->getRecordingDeviceCount());
-	return 1;
-}
-
 int w_getRecordingDevices(lua_State *L)
 {
-	int count = instance()->getRecordingDeviceCount();
-	lua_createtable(L, count, 0);
+	std::vector<RecordingDevice*> *devices = instance()->getRecordingDevices();
 
-	for (int i = 0; i < count; i++)
+	lua_createtable(L, (*devices).size(), 0);
+
+	for (unsigned int i = 0; i < (*devices).size(); i++)
 	{
-		RecordingDevice *device = instance()->getRecordingDevice(i);
-		luax_pushtype(L, AUDIO_RECORDING_DEVICE_ID, device);
+		luax_pushtype(L, AUDIO_RECORDING_DEVICE_ID, (*devices)[i]);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -319,7 +313,6 @@ static const luaL_Reg functions[] =
 	{ "getDopplerScale", w_getDopplerScale },
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
-	{ "getRecordingDeviceCount", w_getRecordingDeviceCount },
 	{ "getRecordingDevices", w_getRecordingDevices },
 	{ 0, 0 }
 };

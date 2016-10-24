@@ -190,20 +190,9 @@ public:
 	virtual float getDopplerScale() const = 0;
 
 	/**
-	 * @return Number of recording devices.
+	 * @return Reference to a vector of pointers to recording devices. May be empty.
 	 **/
-	virtual int getRecordingDeviceCount() const = 0;
-
-	/**
-	 * @param index Index number of recording device. 0 is default device.
-	 * @return Selected recording device.
-	 **/
-	virtual RecordingDevice *getRecordingDevice(int index) const = 0;
-
-	/**
-	 * @return Index number of a recording device, -1 if not present.
-	 **/
-	virtual int getRecordingDeviceIndex(RecordingDevice *device) const = 0;
+	virtual std::vector<RecordingDevice*> *getRecordingDevices() = 0;
 
 	/**
 	 * Gets the distance model used for attenuation.

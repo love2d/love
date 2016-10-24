@@ -105,9 +105,7 @@ public:
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
 
-	int getRecordingDeviceCount() const;
-	love::audio::RecordingDevice *getRecordingDevice(int index) const;
-	int getRecordingDeviceIndex(love::audio::RecordingDevice *device) const;
+	std::vector<love::audio::RecordingDevice*> *getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
