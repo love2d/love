@@ -35,6 +35,7 @@ local status, ffi = pcall(require, "ffi")
 if not status then return end
 
 local tonumber, assert, error = tonumber, assert, error
+local floor = math.floor
 
 local float = ffi.typeof("float")
 local datatypes = {ffi.typeof("uint8_t *"), ffi.typeof("int16_t *")}
@@ -78,6 +79,8 @@ local objectcache = setmetatable({}, {
 function SoundData:getSample(i)
 	if type(i) ~= "number" then error("bad argument #1 to SoundData:getSample (expected number)", 2) end
 
+	i = floor(i)
+
 	local p = objectcache[self]
 
 	if not (i >= 0 and i < p.size/p.bytedepth) then
@@ -96,6 +99,8 @@ end
 function SoundData:setSample(i, sample)
 	if type(i) ~= "number" then error("bad argument #1 to SoundData:setSample (expected number)", 2) end
 	if type(sample) ~= "number" then error("bad argument #2 to SoundData:setSample (expected number)", 2) end
+
+	i = floor(i)
 
 	local p = objectcache[self]
 

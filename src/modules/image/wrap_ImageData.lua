@@ -27,6 +27,7 @@ local ImageData = ImageData_mt.__index
 
 local tonumber, assert, error = tonumber, assert, error
 local type, pcall = type, pcall
+local floor = math.floor
 
 local function inside(x, y, w, h)
 	return x >= 0 and x < w and y >= 0 and y < h
@@ -204,6 +205,11 @@ function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
 	local p = objectcache[self]
 	local idw, idh = p.width, p.height
 
+	ix = floor(ix)
+	iy = floor(iy)
+	iw = floor(iw)
+	ih = floor(ih)
+
 	local pixels = p.pointer
 	local tolua = p.tolua
 	local fromlua = p.fromlua
@@ -221,6 +227,9 @@ function ImageData:getPixel(x, y)
 	if type(x) ~= "number" then error("bad argument #1 to ImageData:getPixel (expected number)", 2) end
 	if type(y) ~= "number" then error("bad argument #2 to ImageData:getPixel (expected number)", 2) end
 
+	x = floor(x)
+	y = floor(y)
+
 	local p = objectcache[self]
 	if not inside(x, y, p.width, p.height) then error("Attempt to get out-of-range pixel!", 2) end
 
@@ -235,6 +244,9 @@ end
 function ImageData:setPixel(x, y, r, g, b, a)
 	if type(x) ~= "number" then error("bad argument #1 to ImageData:setPixel (expected number)", 2) end
 	if type(y) ~= "number" then error("bad argument #2 to ImageData:setPixel (expected number)", 2) end
+
+	x = floor(x)
+	y = floor(y)
 
 	if type(r) == "table" then
 		local t = r
