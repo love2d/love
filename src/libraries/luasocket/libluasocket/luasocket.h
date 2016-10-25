@@ -18,7 +18,11 @@
 * This macro prefixes all exported API functions
 \*-------------------------------------------------------------------------*/
 #ifndef LUASOCKET_API
-#define LUASOCKET_API extern
+#if defined(WIN32) || defined(_WIN32)
+#       define LUASOCKET_API __declspec(dllexport)
+#else
+#       define LUASOCKET_API __attribute__((visibility("default")))
+#endif
 #endif
 
 /*-------------------------------------------------------------------------*\
