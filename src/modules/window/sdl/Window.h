@@ -76,6 +76,8 @@ public:
 	void minimize();
 	void maximize();
 
+	bool isMaximized() const;
+
 	void swapBuffers();
 
 	bool hasFocus() const;
