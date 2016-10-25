@@ -68,14 +68,16 @@ int w_Decoder_decode(lua_State *L)
 
 	int decoded = t->decode();
 	if (decoded > 0)
-	luax_catchexcept(L, [&](){ 
-		SoundData *s = instance()->newSoundData(t->getBuffer(), 
-			decoded / (t->getBitDepth() / 8 * t->getChannels()),
-			t->getSampleRate(), t->getBitDepth(), t->getChannels());
+	{
+		luax_catchexcept(L, [&]() {
+			SoundData *s = instance()->newSoundData(t->getBuffer(),
+				decoded / (t->getBitDepth() / 8 * t->getChannels()),
+				t->getSampleRate(), t->getBitDepth(), t->getChannels());
 
-		luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
-		s->release();
-	});
+			luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
+			s->release();
+		});
+	}
 	else
 		lua_pushnil(L);
 	return 1;
