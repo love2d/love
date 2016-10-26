@@ -36,6 +36,11 @@ Matrix4::Matrix4()
 {
 	setIdentity();
 }
+	
+Matrix4::Matrix4(float t00, float t10, float t01, float t11, float x, float y)
+{
+	setRawTransformation(t00, t10, t01, t11, x, y);
+}
 
 Matrix4::Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
@@ -128,6 +133,18 @@ void Matrix4::setShear(float kx, float ky)
 	setIdentity();
 	e[1] = ky;
 	e[4] = kx;
+}
+	
+void Matrix4::setRawTransformation(float t00, float t10, float t01, float t11, float x, float y)
+{
+	memset(e, 0, sizeof(float)*16); // zero out matrix
+	e[10] = e[15] = 1.0f;
+	e[0] = t00;
+	e[1] = t10;
+	e[4] = t01;
+	e[5] = t11;
+	e[12] = x;
+	e[13] = y;
 }
 
 void Matrix4::setTransformation(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)

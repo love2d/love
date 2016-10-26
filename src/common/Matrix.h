@@ -40,6 +40,11 @@ public:
 	 * Creates a new identity matrix.
 	 **/
 	Matrix4();
+	
+	/**
+	 * Creates a new matrix with the transform values set.
+	 **/
+	Matrix4(float t00, float t10, float t01, float t11, float x, float y);
 
 	/**
 	 * Creates a new matrix set to a transformation.
@@ -101,6 +106,21 @@ public:
 	 * @param ky Shear along y-axis.
 	 **/
 	void setShear(float kx, float ky);
+	
+	/**
+	 * Sets a transformation's values directly. Useful if you want to modify them inplace,
+	 * or if you want to create a transformation that's not buildable with setTransformation()
+	 * i.e. the inverse of setTransformation() is not easily built with another call
+	 * to setTransformation() with tweaked values.
+	 *
+	 * @param t00 The sx*cos(angle) component of the transformation.
+	 * @param t10 The sx*sin(angle) component of the transformation.
+	 * @param t01 The sy*(-sin(angle)) component of the transformation.
+	 * @param t11 The sy*cos(angle) component of the transformation.
+	 * @param x The x translation component of the transformation.
+	 * @param y The y translation component of the transformation.
+	 **/
+	void setRawTransformation(float t00, float t10, float t01, float t11, float x, float y);
 
 	/**
 	 * Creates a transformation with a certain position, orientation, scale
