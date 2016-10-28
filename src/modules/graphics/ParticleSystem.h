@@ -46,13 +46,14 @@ class ParticleSystem : public Drawable
 {
 public:
 	/**
-	 * Type of distribution new particles are drawn from: None, uniform, normal.
+	 * Type of distribution new particles are drawn from: None, uniform, normal, ellipse.
 	 */
 	enum AreaSpreadDistribution
 	{
 		DISTRIBUTION_NONE,
 		DISTRIBUTION_UNIFORM,
 		DISTRIBUTION_NORMAL,
+		DISTRIBUTION_ELLIPSE,
 		DISTRIBUTION_MAX_ENUM
 	};
 
