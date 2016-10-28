@@ -189,7 +189,7 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 	if (state.info_raw.bitdepth == 16)
 	{
 		uint16 *pixeldata = (uint16 *) img.data;
-		uint16 numpixelcomponents = img.size / sizeof(uint16);
+		size_t numpixelcomponents = img.size / sizeof(uint16);
 
 		for (size_t i = 0; i < numpixelcomponents; i++)
 			pixeldata[i] = swapuint16(pixeldata[i]);
@@ -216,8 +216,37 @@ PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::
 
 	state.encoder.zlibsettings.custom_zlib = zlibCompress;
 
+	const uint8 *data = img.data;
+	uint16 *swappeddata = nullptr;
+
+	// LodePNG expects big-endian raw pixel data when encoding a 16 bit image.
+#ifndef LOVE_BIG_ENDIAN
+	if (state.info_raw.bitdepth == 16)
+	{
+		try
+		{
+			swappeddata = new uint16[img.size / sizeof(uint16)];
+		}
+		catch (std::exception &)
+		{
+			throw love::Exception("Out of memory.");
+		}
+
+		const uint16 *rawdata = (const uint16 *) img.data;
+		size_t numpixelcomponents = img.size / sizeof(uint16);
+
+		for (size_t i = 0; i < numpixelcomponents; i++)
+			swappeddata[i] = swapuint16(rawdata[i]);
+
+		data = (const uint8 *) swappeddata;
+	}
+#endif
+
 	unsigned status = lodepng_encode(&encimg.data, &encimg.size,
-	                                 img.data, img.width, img.height, &state);
+	                                 data, img.width, img.height, &state);
+
+	if (swappeddata != nullptr)
+		delete[] swappeddata;
 
 	if (status != 0)
 	{
