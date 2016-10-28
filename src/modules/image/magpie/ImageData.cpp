@@ -156,6 +156,7 @@ love::filesystem::FileData *ImageData::encode(EncodedFormat encodedFormat, const
 	rawimage.height = height;
 	rawimage.size = getSize();
 	rawimage.data = data;
+	rawimage.format = format;
 
 	for (FormatHandler *handler : formatHandlers)
 	{
