@@ -6,6 +6,7 @@ Released: N/A
   * Added lovec.exe in Windows. It is the same as love.exe but built with the Console subsystem, so it always uses or provides a console.
   * Added the ability to restart the game via love.event.quit("restart").
   * Added support for passing a table to love.mouse.isDown, love.keyboard.isDown, love.keyboard.isScancodeDown, Joystick:isDown, and Joystick:isGamepadDown.
+  * Added love.window.isMaximized.
   * Added 'shaderswitches' field to the table returned by love.graphics.getStats.
   * Added Quad:getTextureDimensions.
   * Added PrismaticJoint:getAxis and WheelJoint:getAxis.
@@ -15,11 +16,13 @@ Released: N/A
   * Added optional reference angle arguments to RevoluteJoint, PrismaticJoint, and WeldJoint constructors.
   * Added RevoluteJoint:getReferenceAngle, PrismaticJoint:getReferenceAngle, and WeldJoint:getReferenceAngle.
 
-  * Deprecated Shader:sendTexture, Shader:sendMatrix, Shader:sendInt, and Shader:sendFloat.
+  * Deprecated undocumented Shader:sendTexture, Shader:sendMatrix, Shader:sendInt, and Shader:sendFloat functions.
 
   * Fixed love on iOS 6.
   * Fixed os.execute always returning -1 on Linux.
   * Fixed the love.lowmemory callback to call collectgarbage() after the callback has fired, instead of before.
+  * Fixed love.math.noise(nil) to error instead of returning nil.
+  * Fixed an occasional crash when a Thread ends.
   * Fixed a hang at the end of video playback with some video files.
   * Fixed the video decoding thread to not do any work when there are no videos to decode.
   * Fixed love.graphics.newVideo(file) to no longer error if love.audio is disabled.
@@ -28,6 +31,7 @@ Released: N/A
   * Fixed stencils inside Canvases on some OpenGL ES 2 devices.
   * Fixed an OpenGL error in OpenGL ES 3 when multiple render targets are used.
   * Fixed love.window.setMode crashing when called with a Canvas active.
+  * Fixed love.window.maximize to update the reported window dimensions immediately.
   * Fixed gamma correction of ImageFonts and BMFonts with colored images.
   * Fixed the default shader improperly applying gamma correction to per-vertex colors when gamma correction is requested but not supported on OpenGL ES.
   * Fixed text coloring breaking because of an empty string.
@@ -36,6 +40,7 @@ Released: N/A
   * Fixed MouseJoint:getBodies unconditionally erroring.
   * Fixed memory leak in Text:set.
   * Fixed incorrect kerning caused by using kerning information for the wrong character in some fonts.
+  * Fixed ImageData:setPixel/getPixel/mapPixel and SoundData:setSample/getSample to properly handle non-integer coordinates.
 
   * Improved performance of Channel methods by roughly 2x in many cases.
   * Improved performance of Shader:send when small numbers of arguments are given.
