@@ -734,9 +734,6 @@ static const struct luaL_Reg enet_host_funcs [] = {
 	// Since ENetSocket isn't part of enet-lua, we should try to keep
 	// naming conventions the same as the rest of the lib.
 	{"get_socket_address", host_get_socket_address},
-	// TODO: Remove the line below in future versions, it's for backward
-	// compatibility only.
-	{"socket_get_address", host_get_socket_address},
 	// We need this function to free up our ports when needed!
 	{"destroy", host_gc},
 
