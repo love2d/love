@@ -9,6 +9,8 @@ Released: N/A
   * Added love.window.isMaximized.
   * Added 'shaderswitches' field to the table returned by love.graphics.getStats.
   * Added Quad:getTextureDimensions.
+  * Added 'ellipse' area distribution to ParticleSystems.
+  * Added support for BC4-7 compressed texture formats in KTX files.
   * Added PrismaticJoint:getAxis and WheelJoint:getAxis.
   * Added 2-point version of love.physics.newRevoluteJoint.
   * Added table variants of Fixture:setCategory and Fixture:setMask.
