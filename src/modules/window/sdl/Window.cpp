@@ -886,6 +886,11 @@ void Window::maximize()
 	}
 }
 
+bool Window::isMaximized() const
+{
+	return window != nullptr && (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED);
+}
+
 void Window::swapBuffers()
 {
 	SDL_GL_SwapWindow(window);

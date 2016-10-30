@@ -37,6 +37,12 @@ AS_VAR_IF([enable_osx], [no], [], #else
 		  AC_SUBST([LDFLAGS], ["${LDFLAGS} -framework CoreFoundation -framework Cocoa"])
 		  AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -I../platform/macosx"]))
 
+# stb_image sse2 override (https://github.com/nothings/stb/issues/280)
+AC_ARG_ENABLE([stbi-sse2-override],
+			  AC_HELP_STRING([--enable-stbi-sse2-override], [Force stb_image SSE2 support]), [], [enable_stbi_sse2_override=no])
+AS_VAR_IF([enable_stbi_sse2_override], [no], [], #else
+		  AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -DLOVE_STBI_SSE2_OVERRIDE"]))
+
 # --with-lua and --with-luaversion
 AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],
 	[], [with_lua=luajit])
