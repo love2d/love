@@ -42,9 +42,8 @@ public:
 
 };
 
-RecordingDevice::RecordingDevice(const char *name, int id) 
+RecordingDevice::RecordingDevice(const char *name) 
 	: name(name)
-	, id(id)
 {
 }
 

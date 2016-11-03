@@ -315,7 +315,8 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 
 const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
-	capture.clear();
+	std::vector<std::string> devnames;
+	std::vector<love::audio::RecordingDevice*> devices;
 
 	std::string defaultname(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
 
@@ -330,11 +331,15 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 			alcCaptureCloseDevice(defaultdevice);
 		}
 		else
-		//failed to open default recording device - bail, return empty list
+		{
+			//failed to open default recording device - bail, return empty list
+			capture.clear();
 			return capture;
+		}
 	}
-	capture.push_back(new RecordingDevice(defaultname.c_str(), 0));
+	devnames.push_back(defaultname);
 
+	//find devices name list
 	const ALCchar *devstr = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
 	size_t offset = 0;
 	while (true)
@@ -343,9 +348,26 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 			break;
 		std::string str((ALCchar*)&devstr[offset]);
 		if (str != defaultname)
-			capture.push_back(new RecordingDevice(str.c_str(), capture.size()));
+			devnames.push_back(str);
 		offset += str.length() + 1;
 	}
+
+	//build list of devices
+	devices.reserve(devnames.size());
+	for (unsigned int i = 0; i < devnames.size(); i++)
+	{
+		devices[i] = nullptr;
+		for (auto c = capture.begin(); c != capture.end(); c++)
+			if (devnames[i] == (*c)->getName())
+				devices[i] = *c;
+
+		if (devices[i] == nullptr)
+			devices[i] = new RecordingDevice(devnames[i].c_str());
+	}
+
+	capture.clear();
+	for (unsigned int i = 0; i < devnames.size(); i++)
+		capture.push_back(devices[i]);
 
 	return capture;
 }

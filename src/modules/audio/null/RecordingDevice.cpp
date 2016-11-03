@@ -30,7 +30,7 @@ namespace null
 
 const char *RecordingDevice::name = "null";
 
-RecordingDevice::RecordingDevice(const char *, int)
+RecordingDevice::RecordingDevice(const char *)
 {
 }
 

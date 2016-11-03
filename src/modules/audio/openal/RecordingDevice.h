@@ -47,7 +47,7 @@ namespace openal
 class RecordingDevice : public love::audio::RecordingDevice
 {
 public:
-	RecordingDevice(const char *name, int id);
+	RecordingDevice(const char *name);
 	virtual ~RecordingDevice();
 	virtual bool startRecording();
 	virtual bool startRecording(int samples, int sampleRate, int bitDepth, int channels);
@@ -66,7 +66,6 @@ private:
 	int bitDepth = 16;
 	int channels = 1;
 	std::string name;
-	int id;
 	ALCdevice *device = nullptr;
 }; //RecordingDevice
 
