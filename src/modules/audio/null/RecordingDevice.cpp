@@ -82,11 +82,6 @@ const char *RecordingDevice::getName() const
 	return name;
 }
 
-int RecordingDevice::getID() const
-{
-	return 0;
-}
-
 bool RecordingDevice::isRecording() const
 {
 	return false;

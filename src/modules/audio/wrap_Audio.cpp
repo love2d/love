@@ -279,13 +279,13 @@ int w_getDistanceModel(lua_State *L)
 
 int w_getRecordingDevices(lua_State *L)
 {
-	std::vector<RecordingDevice*> *devices = instance()->getRecordingDevices();
+	const std::vector<RecordingDevice*> &devices = instance()->getRecordingDevices();
 
-	lua_createtable(L, (*devices).size(), 0);
+	lua_createtable(L, devices.size(), 0);
 
-	for (unsigned int i = 0; i < (*devices).size(); i++)
+	for (unsigned int i = 0; i < devices.size(); i++)
 	{
-		luax_pushtype(L, AUDIO_RECORDING_DEVICE_ID, (*devices)[i]);
+		luax_pushtype(L, AUDIO_RECORDING_DEVICE_ID, devices[i]);
 		lua_rawseti(L, -2, i + 1);
 	}
 

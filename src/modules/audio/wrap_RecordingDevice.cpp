@@ -128,13 +128,6 @@ int w_RecordingDevice_getName(lua_State *L)
 	return 1;
 }
 
-int w_RecordingDevice_getID(lua_State *L)
-{
-	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
-	lua_pushnumber(L, d->getID());
-	return 1;
-}
-
 int w_RecordingDevice_isRecording(lua_State *L)
 {
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
@@ -152,7 +145,6 @@ static const luaL_Reg w_RecordingDevice_functions[] =
 	{ "getBitDepth", w_RecordingDevice_getBitDepth },
 	{ "getChannels", w_RecordingDevice_getChannels },
 	{ "getName", w_RecordingDevice_getName },
-	{ "getID", w_RecordingDevice_getID },
 	{ "isRecording", w_RecordingDevice_isRecording },
 	{ 0, 0 }
 };

@@ -313,41 +313,41 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 	}
 }
 
-std::vector<love::audio::RecordingDevice*> *Audio::getRecordingDevices()
+const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
-	if (capture.size() == 0)
+	capture.clear();
+
+	std::string defaultname(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
+
+	//no device name obtained from AL, fallback to reading from device
+	if (defaultname.length() == 0)
 	{
-		std::string defaultname(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
-
-		//no device name obtained from AL, fallback to reading from device
-		if (defaultname.length() == 0)
+		//use some safe basic parameters - 8 kHz, 8 bits, 1 channel
+		ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, 8, 1);
+		if (alGetError() == AL_NO_ERROR)
 		{
-			//use some safe basic parameters - 8 kHz, 8 bits, 1 channel
-			ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, 8, 1);
-			if (alGetError() == AL_NO_ERROR)
-			{
-				defaultname = alcGetString(defaultdevice, ALC_CAPTURE_DEVICE_SPECIFIER);
-				alcCaptureCloseDevice(defaultdevice);
-			}
-			else
-			//failed to open default recording device - bail, return empty list
-				return &capture;
+			defaultname = alcGetString(defaultdevice, ALC_CAPTURE_DEVICE_SPECIFIER);
+			alcCaptureCloseDevice(defaultdevice);
 		}
-		capture.push_back(new RecordingDevice(defaultname.c_str(), 0));
-
-		const ALCchar *devstr = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
-		size_t offset = 0;
-		while (true)
-		{
-			if (devstr[offset] == '\0')
-				break;
-			std::string str((ALCchar*)&devstr[offset]);
-			if (str != defaultname)
-				capture.push_back(new RecordingDevice(str.c_str(), capture.size()));
-			offset += str.length() + 1;
-		}
+		else
+		//failed to open default recording device - bail, return empty list
+			return capture;
 	}
-	return &capture;
+	capture.push_back(new RecordingDevice(defaultname.c_str(), 0));
+
+	const ALCchar *devstr = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+	size_t offset = 0;
+	while (true)
+	{
+		if (devstr[offset] == '\0')
+			break;
+		std::string str((ALCchar*)&devstr[offset]);
+		if (str != defaultname)
+			capture.push_back(new RecordingDevice(str.c_str(), capture.size()));
+		offset += str.length() + 1;
+	}
+
+	return capture;
 }
 
 } // openal

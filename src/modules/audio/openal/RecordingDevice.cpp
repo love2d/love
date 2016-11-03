@@ -148,11 +148,6 @@ const char *RecordingDevice::getName() const
 	return name.c_str();
 }
 
-int RecordingDevice::getID() const
-{
-	return id;
-}
-
 bool RecordingDevice::isRecording() const
 {
 	return device != nullptr;

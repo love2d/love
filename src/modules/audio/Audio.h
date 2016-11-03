@@ -192,7 +192,7 @@ public:
 	/**
 	 * @return Reference to a vector of pointers to recording devices. May be empty.
 	 **/
-	virtual std::vector<RecordingDevice*> *getRecordingDevices() = 0;
+	virtual const std::vector<RecordingDevice*> &getRecordingDevices() = 0;
 
 	/**
 	 * Gets the distance model used for attenuation.

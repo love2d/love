@@ -70,11 +70,6 @@ public:
 	virtual const char *getName() const = 0;
 
 	/**
-	 * @return Unique ID number.
-	 **/ 
-	virtual int getID() const = 0;
-
-	/**
 	 * @return Number of samples currently recorded.
 	 **/
 	virtual int getSampleCount() const = 0;

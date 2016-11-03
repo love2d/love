@@ -54,7 +54,6 @@ public:
 	virtual void stopRecording();
 	virtual love::sound::SoundData *getData();
 	virtual const char *getName() const;
-	virtual int getID() const;
 	virtual int getSampleCount() const;
 	virtual int getSampleRate() const;
 	virtual int getBitDepth() const;
