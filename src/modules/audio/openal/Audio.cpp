@@ -120,8 +120,8 @@ Audio::Audio()
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(context);
 		alcCloseDevice(device);
-		for (unsigned int i = 0; i < capture.size(); i++)
-			delete capture[i];
+		for (auto c : capture)
+			delete c;
 
 		throw;
 	}
@@ -141,8 +141,8 @@ Audio::~Audio()
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
-	for (unsigned int i = 0; i < capture.size(); i++)
-		delete capture[i];
+	for (auto c : capture)
+		delete c;
 }
 
 
@@ -337,6 +337,8 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 			return capture;
 		}
 	}
+
+	devnames.reserve(capture.size());
 	devnames.push_back(defaultname);
 
 	//find devices name list
@@ -352,20 +354,29 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 		offset += str.length() + 1;
 	}
 
-	//build list of devices
 	devices.reserve(devnames.size());
+	//build ordered list of devices
 	for (unsigned int i = 0; i < devnames.size(); i++)
 	{
-		devices[i] = nullptr;
-		for (auto c = capture.begin(); c != capture.end(); c++)
-			if (devnames[i] == (*c)->getName())
-				devices[i] = *c;
+		devices.push_back(nullptr);
+		auto d = devices.end() - 1;
 
-		if (devices[i] == nullptr)
-			devices[i] = new RecordingDevice(devnames[i].c_str());
+		for (auto c : capture)
+			if (devnames[i] == c->getName())
+				*d = c;
+
+		if (*d == nullptr)
+			*d = new RecordingDevice(devnames[i].c_str());
+		else
+			(*d)->retain();
 	}
 
+	for (auto c : capture)
+		c->release();
 	capture.clear();
+	capture.reserve(devices.size());
+
+	//this needs to be executed in specific order
 	for (unsigned int i = 0; i < devnames.size(); i++)
 		capture.push_back(devices[i]);
 
