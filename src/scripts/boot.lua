@@ -122,11 +122,10 @@ function love.arg.parse_option(m, i)
 		m.arg = {}
 		for j=i,i+m.a-1 do
 			table.insert(m.arg, arg[j])
-			i = j
 		end
 	end
 
-	return i
+	return m.a
 end
 
 function love.arg.parse_options()
@@ -134,15 +133,17 @@ function love.arg.parse_options()
 	local game
 	local argc = #arg
 
-	for i=1,argc do
+	local i = 1
+	while i <= argc do
 		-- Look for options.
-		local s, e, m = string.find(arg[i], "%-%-(.+)")
+		local m = string.match(arg[i], "^%-%-(.+)")
 
 		if m and love.arg.options[m] then
-			i = love.arg.parse_option(love.arg.options[m], i+1)
+			i = i + love.arg.parse_option(love.arg.options[m], i+1)
 		elseif not game then
 			game = i
 		end
+		i = i + 1
 	end
 
 	if not love.arg.options.game.set then
