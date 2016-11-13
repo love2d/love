@@ -514,7 +514,7 @@ T *luax_optmodule(lua_State *L, love::Type &type)
  * @param type The type of the object.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, love::Type /*type*/)
+T *luax_totype(lua_State *L, int idx, love::Type& /*type*/)
 {
 	T *o = (T *)(((Proxy *)lua_touserdata(L, idx))->object);
 

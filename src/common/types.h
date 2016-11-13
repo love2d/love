@@ -39,6 +39,7 @@ public:
 
 	// TODO: Type-checking templated constructor
 	Type(Type *parent);
+	Type(const Type&) = delete;
 
 	uint32_t getId();
 	bool isa(const uint32_t &other);
