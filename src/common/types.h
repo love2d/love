@@ -21,6 +21,8 @@
 #ifndef LOVE_TYPES_H
 #define LOVE_TYPES_H
 
+#include "int.h"
+
 // STD
 #include <bitset>
 #include <vector>
@@ -28,31 +30,31 @@
 namespace love
 {
 
-void addTypeName(uint32_t type, const char *name);
-bool getTypeName(const char *in, uint32_t &out);
-bool getTypeName(uint32_t in, const char *&out);
+void addTypeName(uint32 type, const char *name);
+bool getTypeName(const char *in, uint32 &out);
+bool getTypeName(uint32 in, const char *&out);
 
 class Type
 {
 public:
-	static const uint32_t MAX_TYPES = 128;
+	static const uint32 MAX_TYPES = 128;
 
 	// TODO: Type-checking templated constructor
 	Type(Type *parent);
 	Type(const Type&) = delete;
 
-	uint32_t getId();
-	bool isa(const uint32_t &other);
+	uint32 getId();
+	bool isa(const uint32 &other);
 	bool isa(Type &other);
 
 private:
-	static uint32_t nextId;
+	static uint32 nextId;
 	void init();
 
 	bool inited;
 	Type *parent;
 
-	uint32_t id;
+	uint32 id;
 	std::bitset<MAX_TYPES> bits;
 };
 

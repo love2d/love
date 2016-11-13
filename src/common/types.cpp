@@ -24,26 +24,26 @@
 namespace love
 {
 
-static StringMap<uint32_t, love::Type::MAX_TYPES> types(nullptr, 0);
+static StringMap<uint32, love::Type::MAX_TYPES> types(nullptr, 0);
 
-void addTypeName(uint32_t type, const char *name)
+void addTypeName(uint32 type, const char *name)
 {
 	const char *n;
 	if (!types.find(type, n))
 		types.add(name, type);
 }
 
-bool getTypeName(const char *in, uint32_t &out)
+bool getTypeName(const char *in, uint32 &out)
 {
 	return types.find(in, out);
 }
 
-bool getTypeName(uint32_t in, const char *&out)
+bool getTypeName(uint32 in, const char *&out)
 {
 	return types.find(in, out);
 }
 
-uint32_t love::Type::nextId = 1;
+uint32 love::Type::nextId = 1;
 
 Type::Type(Type *parent)
 	: inited(false)
@@ -64,14 +64,14 @@ void love::Type::init()
 	bits |= parent->bits;
 }
 
-uint32_t love::Type::getId()
+uint32 love::Type::getId()
 {
 	if (!inited)
 		init();
 	return id;
 }
 
-bool love::Type::isa(const uint32_t &other)
+bool love::Type::isa(const uint32 &other)
 {
 	if (!inited)
 		init();

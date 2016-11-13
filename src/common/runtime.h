@@ -524,7 +524,9 @@ T *luax_totype(lua_State *L, int idx, love::Type& /*type*/)
 	return o;
 }
 
-uint32_t luax_type(lua_State *L, int idx);
+
+
+uint32 luax_type(lua_State *L, int idx);
 
 /**
  * Converts any exceptions thrown by the passed lambda function into a Lua error.
