@@ -98,7 +98,7 @@ int w_Image_getData(lua_State *L)
 	{
 		for (const auto &cdata : i->getCompressedData())
 		{
-			luax_pushtype(L, love::image::CompressedImageData::type, cdata.get());
+			luax_pushtype(L, cdata.get());
 			n++;
 		}
 	}
@@ -106,7 +106,7 @@ int w_Image_getData(lua_State *L)
 	{
 		for (const auto &data : i->getImageData())
 		{
-			luax_pushtype(L, love::image::ImageData::type, data.get());
+			luax_pushtype(L, data.get());
 			n++;
 		}
 	}

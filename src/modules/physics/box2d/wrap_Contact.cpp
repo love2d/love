@@ -146,8 +146,8 @@ int w_Contact_getFixtures(lua_State *L)
 	Fixture *b = nullptr;
 	luax_catchexcept(L, [&](){ t->getFixtures(a, b); });
 
-	luax_pushtype(L, Fixture::type, a);
-	luax_pushtype(L, Fixture::type, b);
+	luax_pushtype(L, a);
+	luax_pushtype(L, b);
 	return 2;
 }
 

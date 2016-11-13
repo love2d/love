@@ -38,7 +38,7 @@ int w_Source_clone(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	Source *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
-	luax_pushtype(L, love::audio::Source::type, clone);
+	luax_pushtype(L, clone);
 	clone->release();
 	return 1;
 }

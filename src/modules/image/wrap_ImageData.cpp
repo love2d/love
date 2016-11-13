@@ -282,7 +282,7 @@ int w_ImageData_encode(lua_State *L)
 	love::filesystem::FileData *filedata = nullptr;
 	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
 
-	luax_pushtype(L, love::filesystem::FileData::type, filedata);
+	luax_pushtype(L, filedata);
 	filedata->release();
 
 	if (hasfilename)

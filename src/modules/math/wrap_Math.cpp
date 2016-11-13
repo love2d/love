@@ -43,7 +43,7 @@ namespace math
 int w__getRandomGenerator(lua_State *L)
 {
 	RandomGenerator *t = Math::instance.getRandomGenerator();
-	luax_pushtype(L, RandomGenerator::type, t);
+	luax_pushtype(L, t);
 	return 1;
 }
 
@@ -74,7 +74,7 @@ int w_newRandomGenerator(lua_State *L)
 			return luaL_error(L, "%s", lua_tostring(L, -1));
 	}
 
-	luax_pushtype(L, RandomGenerator::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -113,7 +113,7 @@ int w_newBezierCurve(lua_State *L)
 	}
 
 	BezierCurve *curve = Math::instance.newBezierCurve(points);
-	luax_pushtype(L, BezierCurve::type, curve);
+	luax_pushtype(L, curve);
 	curve->release();
 	return 1;
 }
@@ -342,7 +342,7 @@ int w_compress(lua_State *L)
 		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
 	}
 
-	luax_pushtype(L, CompressedData::type, cdata);
+	luax_pushtype(L, cdata);
 	return 1;
 }
 

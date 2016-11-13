@@ -43,6 +43,9 @@ class Object;
 class Module;
 class Reference;
 
+template<typename T>
+class StrongRef;
+
 /**
  * Registries represent special tables which can be accessed with
  * luax_insistregistry and luax_getregistry.
@@ -284,6 +287,18 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
  * @param object The pointer to the actual object.
  **/
 void luax_pushtype(lua_State *L, love::Type &type, love::Object *object);
+
+template <typename T>
+void luax_pushtype(lua_State *L, T *object)
+{
+	luax_pushtype(L, T::type, object);
+}
+
+template <typename T>
+void luax_pushtype(lua_State *L, StrongRef<T> &object)
+{
+	luax_pushtype(L, T::type, object);
+}
 
 /**
  * Creates a new Lua representation of the given object *without* checking if it

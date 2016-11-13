@@ -44,7 +44,7 @@ int w_BezierCurve_getDerivative(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	BezierCurve *deriv = new BezierCurve(curve->getDerivative());
-	luax_pushtype(L, BezierCurve::type, deriv);
+	luax_pushtype(L, deriv);
 	deriv->release();
 	return 1;
 }
@@ -165,7 +165,7 @@ int w_BezierCurve_getSegment(lua_State *L)
 
 	BezierCurve *segment;
 	luax_catchexcept(L, [&](){ segment = curve->getSegment(t1, t2); });
-	luax_pushtype(L, BezierCurve::type, segment);
+	luax_pushtype(L, segment);
 	segment->release();
 
 	return 1;

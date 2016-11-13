@@ -166,7 +166,7 @@ int w_newFile(lua_State *L)
 		}
 	}
 
-	luax_pushtype(L, File::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -246,7 +246,7 @@ int w_newFileData(lua_State *L)
 			{
 				return luax_ioError(L, "%s", e.what());
 			}
-			luax_pushtype(L, FileData::type, data);
+			luax_pushtype(L, data);
 			return 1;
 		}
 		else
@@ -260,7 +260,7 @@ int w_newFileData(lua_State *L)
 	FileData *t = nullptr;
 	luax_catchexcept(L, [&](){ t = instance()->newFileData(str, length, filename); });
 
-	luax_pushtype(L, FileData::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -474,7 +474,7 @@ int w_lines(lua_State *L)
 			return luaL_error(L, "Could not open file.");
 		}
 
-		luax_pushtype(L, File::type, file);
+		luax_pushtype(L, file);
 		file->release();
 	}
 	else

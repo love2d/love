@@ -402,7 +402,7 @@ int w_newImage(lua_State *L)
 		return luaL_error(L, "Could not load image.");
 
 	// Push the type.
-	luax_pushtype(L, Image::type, image);
+	luax_pushtype(L, image);
 	image->release();
 	return 1;
 }
@@ -421,7 +421,7 @@ int w_newQuad(lua_State *L)
 	double sh = luaL_checknumber(L, 6);
 
 	Quad *quad = instance()->newQuad(v, sw, sh);
-	luax_pushtype(L, Quad::type, quad);
+	luax_pushtype(L, quad);
 	quad->release();
 	return 1;
 }
@@ -449,7 +449,7 @@ int w_newFont(lua_State *L)
 	);
 
 	// Push the type.
-	luax_pushtype(L, Font::type, font);
+	luax_pushtype(L, font);
 	font->release();
 	return 1;
 }
@@ -469,7 +469,7 @@ int w_newImageFont(lua_State *L)
 		const auto &idlevels = i->getImageData();
 		if (idlevels.empty())
 			return luaL_argerror(L, 1, "Image must not be compressed.");
-		luax_pushtype(L, love::image::ImageData::type, idlevels[0].get());
+		luax_pushtype(L, idlevels[0].get());
 		lua_replace(L, 1);
 	}
 
@@ -491,7 +491,7 @@ int w_newImageFont(lua_State *L)
 	Font *font = instance()->newFont(rasterizer, filter);
 
 	// Push the type.
-	luax_pushtype(L, Font::type, font);
+	luax_pushtype(L, font);
 	font->release();
 	return 1;
 }
@@ -515,7 +515,7 @@ int w_newSpriteBatch(lua_State *L)
 		[&](){ t = instance()->newSpriteBatch(texture, size, usage); }
 	);
 
-	luax_pushtype(L, SpriteBatch::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -534,7 +534,7 @@ int w_newParticleSystem(lua_State *L)
 		[&](){ t = instance()->newParticleSystem(texture, int(size)); }
 	);
 
-	luax_pushtype(L, ParticleSystem::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -561,7 +561,7 @@ int w_newCanvas(lua_State *L)
 	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
 
-	luax_pushtype(L, Canvas::type, canvas);
+	luax_pushtype(L, canvas);
 	canvas->release();
 	return 1;
 }
@@ -654,7 +654,7 @@ int w_newShader(lua_State *L)
 	try
 	{
 		Shader *shader = instance()->newShader(source);
-		luax_pushtype(L, Shader::type, shader);
+		luax_pushtype(L, shader);
 		shader->release();
 	}
 	catch (love::Exception &e)
@@ -886,7 +886,7 @@ int w_newMesh(lua_State *L)
 	else
 		t = newStandardMesh(L);
 
-	luax_pushtype(L, Mesh::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -908,7 +908,7 @@ int w_newText(lua_State *L)
 		luax_catchexcept(L, [&](){ t = instance()->newText(font, text); });
 	}
 
-	luax_pushtype(L, Text::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -924,7 +924,7 @@ int w_newVideo(lua_State *L)
 	Video *video = nullptr;
 
 	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream); });
-	luax_pushtype(L, Video::type, video);
+	luax_pushtype(L, video);
 	video->release();
 	return 1;
 }
@@ -1021,7 +1021,7 @@ int w_getFont(lua_State *L)
 	Font *f = nullptr;
 	luax_catchexcept(L, [&](){ f = instance()->getFont(); });
 
-	luax_pushtype(L, Font::type, f);
+	luax_pushtype(L, f);
 	return 1;
 }
 
@@ -1254,7 +1254,7 @@ int w_newScreenshot(lua_State *L)
 
 	luax_catchexcept(L, [&](){ i = instance()->newScreenshot(image, copyAlpha); });
 
-	luax_pushtype(L, love::image::ImageData::type, i);
+	luax_pushtype(L, i);
 	i->release();
 	return 1;
 }
@@ -1306,7 +1306,7 @@ int w_getCanvas(lua_State *L)
 
 	for (Canvas *c : canvases)
 	{
-		luax_pushtype(L, Canvas::type, c);
+		luax_pushtype(L, c);
 		n++;
 	}
 
@@ -1336,7 +1336,7 @@ int w_getShader(lua_State *L)
 {
 	Shader *shader = instance()->getShader();
 	if (shader)
-		luax_pushtype(L, Shader::type, shader);
+		luax_pushtype(L, shader);
 	else
 		lua_pushnil(L);
 

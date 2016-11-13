@@ -76,7 +76,7 @@ int w_newThread(lua_State *L)
 	}
 
 	LuaThread *t = instance()->newThread(name, data);
-	luax_pushtype(L, LuaThread::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -84,7 +84,7 @@ int w_newThread(lua_State *L)
 int w_newChannel(lua_State *L)
 {
 	Channel *c = instance()->newChannel();
-	luax_pushtype(L, Channel::type, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }
@@ -93,7 +93,7 @@ int w_getChannel(lua_State *L)
 {
 	std::string name = luax_checkstring(L, 1);
 	Channel *c = instance()->getChannel(name);
-	luax_pushtype(L, Channel::type, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }

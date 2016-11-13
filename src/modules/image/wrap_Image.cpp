@@ -73,7 +73,7 @@ int w_newImageData(lua_State *L)
 			memcpy(t->getData(), bytes, t->getSize());
 		}
 
-		luax_pushtype(L, ImageData::type, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}
@@ -87,7 +87,7 @@ int w_newImageData(lua_State *L)
 			[&](bool) { data->release(); }
 		);
 
-		luax_pushtype(L, ImageData::type, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}

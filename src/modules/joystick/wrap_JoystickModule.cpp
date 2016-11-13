@@ -40,7 +40,7 @@ int w_getJoysticks(lua_State *L)
 	for (int i = 0; i < stickcount; i++)
 	{
 		Joystick *stick = instance()->getJoystick(i);
-		luax_pushtype(L, Joystick::type, stick);
+		luax_pushtype(L, stick);
 		lua_rawseti(L, -2, i + 1);
 	}
 

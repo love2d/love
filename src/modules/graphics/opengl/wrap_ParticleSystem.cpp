@@ -51,7 +51,7 @@ int w_ParticleSystem_clone(lua_State *L)
 	ParticleSystem *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
 
-	luax_pushtype(L, ParticleSystem::type, clone);
+	luax_pushtype(L, clone);
 	clone->release();
 	return 1;
 }
@@ -612,7 +612,7 @@ int w_ParticleSystem_getQuads(lua_State *L)
 
 	for (int i = 0; i < (int) quads.size(); i++)
 	{
-		luax_pushtype(L, Quad::type, quads[i]);
+		luax_pushtype(L, quads[i]);
 		lua_rawseti(L, -2, i + 1);
 	}
 

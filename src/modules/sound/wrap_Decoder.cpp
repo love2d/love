@@ -74,7 +74,7 @@ int w_Decoder_decode(lua_State *L)
 				decoded / (t->getBitDepth() / 8 * t->getChannels()),
 				t->getSampleRate(), t->getBitDepth(), t->getChannels());
 
-			luax_pushtype(L, SoundData::type, s);
+			luax_pushtype(L, s);
 			s->release();
 		});
 	}

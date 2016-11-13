@@ -199,7 +199,7 @@ int w_Text_getFont(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
 	Font *f = t->getFont();
-	luax_pushtype(L, Font::type, f);
+	luax_pushtype(L, f);
 	return 1;
 }
 

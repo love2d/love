@@ -70,7 +70,7 @@ int w_newSource(lua_State *L)
 
 	if (t != nullptr)
 	{
-		luax_pushtype(L, love::audio::Source::type, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}
@@ -88,7 +88,7 @@ int w_newQueueableSource(lua_State *L)
 
 	if (t != nullptr)
 	{
-		luax_pushtype(L, love::audio::Source::type, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}
@@ -150,7 +150,7 @@ int w_pause(lua_State *L)
 		lua_createtable(L, (int) sources.size(), 0);
 		for (int i = 0; i < (int) sources.size(); i++)
 		{
-			luax_pushtype(L, love::audio::Source::type, sources[i]);
+			luax_pushtype(L, sources[i]);
 			lua_rawseti(L, -2, i+1);
 		}
 		return 1;
@@ -270,7 +270,7 @@ int w_getRecordedData(lua_State *L)
 		lua_pushnil(L);
 	else
 	{
-		luax_pushtype(L, love::sound::SoundData::type, sd);
+		luax_pushtype(L, sd);
 		sd->release();
 	}
 	return 1;
@@ -285,7 +285,7 @@ int w_stopRecording(lua_State *L)
 			lua_pushnil(L);
 		else
 		{
-			luax_pushtype(L, love::sound::SoundData::type, sd);
+			luax_pushtype(L, sd);
 			sd->release();
 		}
 		return 1;

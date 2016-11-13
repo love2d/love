@@ -146,7 +146,7 @@ int Physics::newPolygonShape(lua_State *L)
 	}
 
 	PolygonShape *p = new PolygonShape(s);
-	luax_pushtype(L, PolygonShape::type, p);
+	luax_pushtype(L, p);
 	p->release();
 	return 1;
 }
@@ -208,7 +208,7 @@ int Physics::newChainShape(lua_State *L)
 	delete[] vecs;
 
 	ChainShape *c = new ChainShape(s);
-	luax_pushtype(L, ChainShape::type, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }

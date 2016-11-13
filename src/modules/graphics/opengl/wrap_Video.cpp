@@ -40,7 +40,7 @@ Video *luax_checkvideo(lua_State *L, int idx)
 int w_Video_getStream(lua_State *L)
 {
 	Video *video = luax_checkvideo(L, 1);
-	luax_pushtype(L, love::video::VideoStream::type, video->getStream());
+	luax_pushtype(L, video->getStream());
 	return 1;
 }
 
@@ -49,7 +49,7 @@ int w_Video_getSource(lua_State *L)
 	Video *video = luax_checkvideo(L, 1);
 	auto source = video->getSource();
 	if (source)
-		luax_pushtype(L, love::audio::Source::type, video->getSource());
+		luax_pushtype(L, video->getSource());
 	else
 		lua_pushnil(L);
 	return 1;

@@ -45,7 +45,7 @@ int w_newVideoStream(lua_State *L)
 		stream = instance()->newVideoStream(file);
 	});
 
-	luax_pushtype(L, VideoStream::type, stream);
+	luax_pushtype(L, stream);
 	stream->release();
 	return 1;
 }

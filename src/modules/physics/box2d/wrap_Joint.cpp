@@ -103,8 +103,8 @@ int w_Joint_getBodies(lua_State *L)
 		b2 = t->getBodyB();
 	});
 
-	luax_pushtype(L, Body::type, b1);
-	luax_pushtype(L, Body::type, b2);
+	luax_pushtype(L, b1);
+	luax_pushtype(L, b2);
 	return 2;
 }
 

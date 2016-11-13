@@ -77,7 +77,7 @@ int w_Canvas_newImageData(lua_State *L)
 	love::image::ImageData *img = nullptr;
 	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });
 
-	luax_pushtype(L, love::image::ImageData::type, img);
+	luax_pushtype(L, img);
 	img->release();
 	return 1;
 }

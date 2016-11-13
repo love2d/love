@@ -359,7 +359,7 @@ int w_setIcon(lua_State *L)
 int w_getIcon(lua_State *L)
 {
 	image::ImageData *i = instance()->getIcon();
-	luax_pushtype(L, image::ImageData::type, i);
+	luax_pushtype(L, i);
 	return 1;
 }
 

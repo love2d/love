@@ -46,7 +46,7 @@ int w_newDecoder(lua_State *L)
 	if (t == nullptr)
 		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
 
-	luax_pushtype(L, Decoder::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -77,7 +77,7 @@ int w_newSoundData(lua_State *L)
 		luax_catchexcept(L, [&](){ t = instance()->newSoundData(luax_checkdecoder(L, 1)); });
 	}
 
-	luax_pushtype(L, SoundData::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }

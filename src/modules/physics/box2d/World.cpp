@@ -59,7 +59,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 		{
 			Fixture *a = (Fixture *)Memoizer::find(contact->GetFixtureA());
 			if (a != nullptr)
-				luax_pushtype(L, Fixture::type, a);
+				luax_pushtype(L, a);
 			else
 				throw love::Exception("A fixture has escaped Memoizer!");
 		}
@@ -68,7 +68,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 		{
 			Fixture *b = (Fixture *)Memoizer::find(contact->GetFixtureB());
 			if (b != nullptr)
-				luax_pushtype(L, Fixture::type, b);
+				luax_pushtype(L, b);
 			else
 				throw love::Exception("A fixture has escaped Memoizer!");
 		}
@@ -79,7 +79,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 		else
 			cobj->retain();
 
-		luax_pushtype(L, Contact::type, cobj);
+		luax_pushtype(L, cobj);
 		cobj->release();
 
 		int args = 3;
@@ -130,8 +130,8 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 	if (ref != nullptr && L != nullptr)
 	{
 		ref->push(L);
-		luax_pushtype(L, Fixture::type, a);
-		luax_pushtype(L, Fixture::type, b);
+		luax_pushtype(L, a);
+		luax_pushtype(L, b);
 		lua_call(L, 2, 1);
 		return luax_toboolean(L, -1);
 	}
@@ -157,7 +157,7 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 		Fixture *f = (Fixture *)Memoizer::find(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, Fixture::type, f);
+		luax_pushtype(L, f);
 		lua_call(L, 1, 1);
 		bool cont = luax_toboolean(L, -1);
 		lua_pop(L, 1);
@@ -186,7 +186,7 @@ float32 World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &
 		Fixture *f = (Fixture *)Memoizer::find(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, Fixture::type, f);
+		luax_pushtype(L, f);
 		b2Vec2 scaledPoint = Physics::scaleUp(point);
 		lua_pushnumber(L, scaledPoint.x);
 		lua_pushnumber(L, scaledPoint.y);
@@ -475,7 +475,7 @@ int World::getBodyList(lua_State *L) const
 		Body *body = (Body *)Memoizer::find(b);
 		if (!body)
 			throw love::Exception("A body has escaped Memoizer!");
-		luax_pushtype(L, Body::type, body);
+		luax_pushtype(L, body);
 		lua_rawseti(L, -2, i);
 		i++;
 	}
@@ -493,7 +493,7 @@ int World::getJointList(lua_State *L) const
 		if (!j) break;
 		Joint *joint = (Joint *)Memoizer::find(j);
 		if (!joint) throw love::Exception("A joint has escaped Memoizer!");
-		luax_pushtype(L, Joint::type, joint);
+		luax_pushtype(L, joint);
 		lua_rawseti(L, -2, i);
 		i++;
 	}
@@ -514,7 +514,7 @@ int World::getContactList(lua_State *L) const
 			contact = new Contact(c);
 		else
 			contact->retain();
-		luax_pushtype(L, Contact::type, contact);
+		luax_pushtype(L, contact);
 		contact->release();
 		lua_rawseti(L, -2, i);
 		i++;

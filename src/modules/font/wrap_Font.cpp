@@ -53,7 +53,7 @@ int w_newRasterizer(lua_State *L)
 			[&](bool) { d->release(); }
 		);
 
-		luax_pushtype(L, Rasterizer::type, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}
@@ -104,7 +104,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 		);
 	}
 
-	luax_pushtype(L, Rasterizer::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -152,7 +152,7 @@ int w_newBMFontRasterizer(lua_State *L)
 		[&](bool) { d->release(); for (auto id : images) id->release(); }
 	);
 
-	luax_pushtype(L, Rasterizer::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -169,7 +169,7 @@ int w_newImageRasterizer(lua_State *L)
 
 	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs, extraspacing); });
 
-	luax_pushtype(L, Rasterizer::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -191,7 +191,7 @@ int w_newGlyphData(lua_State *L)
 		t = instance()->newGlyphData(r, g);
 	}
 
-	luax_pushtype(L, GlyphData::type, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }

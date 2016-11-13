@@ -111,7 +111,7 @@ int w_Fixture_getBody(lua_State *L)
 	Body *body = t->getBody();
 	if (body == 0)
 		return 0;
-	luax_pushtype(L, Body::type, body);
+	luax_pushtype(L, body);
 	return 1;
 }
 
@@ -124,19 +124,19 @@ int w_Fixture_getShape(lua_State *L)
 	switch (shape->getType())
 	{
 	case Shape::SHAPE_EDGE:
-		luax_pushtype(L, EdgeShape::type, shape);
+		luax_pushtype(L, shape);
 		break;
 	case Shape::SHAPE_CHAIN:
-		luax_pushtype(L, ChainShape::type, shape);
+		luax_pushtype(L, shape);
 		break;
 	case Shape::SHAPE_CIRCLE:
-		luax_pushtype(L, CircleShape::type, shape);
+		luax_pushtype(L, shape);
 		break;
 	case Shape::SHAPE_POLYGON:
-		luax_pushtype(L, PolygonShape::type, shape);
+		luax_pushtype(L, shape);
 		break;
 	default:
-		luax_pushtype(L, Shape::type, shape);
+		luax_pushtype(L, shape);
 		break;
 	}
 	return 1;
