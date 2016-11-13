@@ -29,7 +29,7 @@ namespace box2d
 
 EdgeShape *luax_checkedgeshape(lua_State *L, int idx)
 {
-	return luax_checktype<EdgeShape>(L, idx, EdgeShape::type);
+	return luax_checktype<EdgeShape>(L, idx);
 }
 
 int w_EdgeShape_setNextVertex(lua_State *L)

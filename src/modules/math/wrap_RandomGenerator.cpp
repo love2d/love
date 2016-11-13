@@ -63,7 +63,7 @@ RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx)
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 {
-	return luax_checktype<RandomGenerator>(L, idx, RandomGenerator::type);
+	return luax_checktype<RandomGenerator>(L, idx);
 }
 
 int w_RandomGenerator__random(lua_State *L)

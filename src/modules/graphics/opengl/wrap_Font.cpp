@@ -35,7 +35,7 @@ namespace opengl
 
 Font *luax_checkfont(lua_State *L, int idx)
 {
-	return luax_checktype<Font>(L, idx, Font::type);
+	return luax_checktype<Font>(L, idx);
 }
 
 int w_Font_getHeight(lua_State *L)

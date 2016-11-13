@@ -29,7 +29,7 @@ namespace font
 
 Rasterizer *luax_checkrasterizer(lua_State *L, int idx)
 {
-	return luax_checktype<Rasterizer>(L, idx, Rasterizer::type);
+	return luax_checktype<Rasterizer>(L, idx);
 }
 
 int w_Rasterizer_getHeight(lua_State *L)

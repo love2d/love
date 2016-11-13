@@ -28,7 +28,7 @@ namespace filesystem
 
 DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
 {
-	return luax_checktype<DroppedFile>(L, idx, DroppedFile::type);
+	return luax_checktype<DroppedFile>(L, idx);
 }
 
 extern "C" int luaopen_droppedfile(lua_State *L)

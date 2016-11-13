@@ -41,7 +41,7 @@ namespace opengl
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
 {
-	return luax_checktype<ParticleSystem>(L, idx, ParticleSystem::type);
+	return luax_checktype<ParticleSystem>(L, idx);
 }
 
 int w_ParticleSystem_clone(lua_State *L)
@@ -584,7 +584,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 		{
 			lua_rawgeti(L, 2, i);
 
-			Quad *q = luax_checktype<Quad>(L, -1, Quad::type);
+			Quad *q = luax_checktype<Quad>(L, -1);
 			quads.push_back(q);
 
 			lua_pop(L, 1);
@@ -594,7 +594,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 	{
 		for (int i = 2; i <= lua_gettop(L); i++)
 		{
-			Quad *q = luax_checktype<Quad>(L, i, Quad::type);
+			Quad *q = luax_checktype<Quad>(L, i);
 			quads.push_back(q);
 		}
 	}

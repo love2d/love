@@ -338,7 +338,7 @@ int w_compress(lua_State *L)
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 1, Data::type);
+		Data *rawdata = luax_checktype<Data>(L, 1);
 		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
 	}
 
@@ -370,7 +370,7 @@ int w_decompress(lua_State *L)
 
 		if (luax_istype(L, 1, Data::type))
 		{
-			Data *data = luax_checktype<Data>(L, 1, Data::type);
+			Data *data = luax_checktype<Data>(L, 1);
 			cbytes = (const char *) data->getData();
 			compressedsize = data->getSize();
 		}
@@ -398,7 +398,7 @@ int w_encode(lua_State *L)
 
 	if (luax_istype(L, 2, Data::type))
 	{
-		Data *data = luax_totype<Data>(L, 2, Data::type);
+		Data *data = luax_totype<Data>(L, 2);
 		src = (const char *) data->getData();
 		srclen = data->getSize();
 	}
@@ -432,7 +432,7 @@ int w_decode(lua_State *L)
 
 	if (luax_istype(L, 2, Data::type))
 	{
-		Data *data = luax_totype<Data>(L, 2, Data::type);
+		Data *data = luax_totype<Data>(L, 2);
 		src = (const char *) data->getData();
 		srclen = data->getSize();
 	}
@@ -468,7 +468,7 @@ int w_hash(lua_State *L)
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 2, Data::type);
+		Data *rawdata = luax_checktype<Data>(L, 2);
 		luax_catchexcept(L, [&](){ hash = love::math::hash(function, rawdata); });
 	}
 

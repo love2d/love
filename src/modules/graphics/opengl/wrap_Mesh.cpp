@@ -37,7 +37,7 @@ namespace opengl
 
 Mesh *luax_checkmesh(lua_State *L, int idx)
 {
-	return luax_checktype<Mesh>(L, idx, Mesh::type);
+	return luax_checktype<Mesh>(L, idx);
 }
 
 static inline size_t writeByteData(lua_State *L, int startidx, int components, char *data)
@@ -119,7 +119,7 @@ int w_Mesh_setVertices(lua_State *L)
 
 	if (luax_istype(L, 2, Data::type))
 	{
-		Data *d = luax_checktype<Data>(L, 2, Data::type);
+		Data *d = luax_checktype<Data>(L, 2);
 
 		size_t datasize = std::min(d->getSize(), (t->getVertexCount() - vertoffset) * stride);
 		char *bytedata = (char *) t->mapVertexData() + byteoffset;

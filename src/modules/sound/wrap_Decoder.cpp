@@ -31,7 +31,7 @@ namespace sound
 
 Decoder *luax_checkdecoder(lua_State *L, int idx)
 {
-	return luax_checktype<Decoder>(L, idx, Decoder::type);
+	return luax_checktype<Decoder>(L, idx);
 }
 
 int w_Decoder_getChannels(lua_State *L)

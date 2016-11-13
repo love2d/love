@@ -27,7 +27,7 @@ namespace thread
 
 Channel *luax_checkchannel(lua_State *L, int idx)
 {
-	return luax_checktype<Channel>(L, idx, Channel::type);
+	return luax_checktype<Channel>(L, idx);
 }
 
 int w_Channel_push(lua_State *L)

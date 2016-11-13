@@ -29,7 +29,7 @@ namespace box2d
 
 CircleShape *luax_checkcircleshape(lua_State *L, int idx)
 {
-	return luax_checktype<CircleShape>(L, idx, CircleShape::type);
+	return luax_checktype<CircleShape>(L, idx);
 }
 
 int w_CircleShape_getRadius(lua_State *L)

@@ -29,7 +29,7 @@ namespace box2d
 
 RopeJoint *luax_checkropejoint(lua_State *L, int idx)
 {
-	RopeJoint *j = luax_checktype<RopeJoint>(L, idx, RopeJoint::type);
+	RopeJoint *j = luax_checktype<RopeJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;

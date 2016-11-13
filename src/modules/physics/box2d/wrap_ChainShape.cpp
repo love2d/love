@@ -31,7 +31,7 @@ namespace box2d
 
 ChainShape *luax_checkchainshape(lua_State *L, int idx)
 {
-	return luax_checktype<ChainShape>(L, idx, ChainShape::type);
+	return luax_checktype<ChainShape>(L, idx);
 }
 
 int w_ChainShape_setNextVertex(lua_State *L)

@@ -30,7 +30,7 @@ namespace box2d
 
 RevoluteJoint *luax_checkrevolutejoint(lua_State *L, int idx)
 {
-	RevoluteJoint *j = luax_checktype<RevoluteJoint>(L, idx, RevoluteJoint::type);
+	RevoluteJoint *j = luax_checktype<RevoluteJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;

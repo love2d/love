@@ -29,7 +29,7 @@ namespace box2d
 
 MouseJoint *luax_checkmousejoint(lua_State *L, int idx)
 {
-	MouseJoint *j = luax_checktype<MouseJoint>(L, idx, MouseJoint::type);
+	MouseJoint *j = luax_checktype<MouseJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;

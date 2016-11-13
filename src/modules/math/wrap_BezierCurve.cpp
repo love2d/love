@@ -30,7 +30,7 @@ namespace math
 
 BezierCurve *luax_checkbeziercurve(lua_State *L, int idx)
 {
-	return luax_checktype<BezierCurve>(L, idx, BezierCurve::type);
+	return luax_checktype<BezierCurve>(L, idx);
 }
 
 int w_BezierCurve_getDegree(lua_State *L)

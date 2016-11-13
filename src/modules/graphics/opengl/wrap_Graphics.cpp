@@ -442,7 +442,7 @@ int w_newFont(lua_State *L)
 		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newRasterizer");
 	}
 
-	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, love::font::Rasterizer::type);
+	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	luax_catchexcept(L, [&]() {
 		font = instance()->newFont(rasterizer, instance()->getDefaultFilter()); }
@@ -464,7 +464,7 @@ int w_newImageFont(lua_State *L)
 	// Convert to ImageData if necessary.
 	if (luax_istype(L, 1, Image::type))
 	{
-		Image *i = luax_checktype<Image>(L, 1, Image::type);
+		Image *i = luax_checktype<Image>(L, 1);
 		filter = i->getFilter();
 		const auto &idlevels = i->getImageData();
 		if (idlevels.empty())
@@ -485,7 +485,7 @@ int w_newImageFont(lua_State *L)
 		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newImageRasterizer");
 	}
 
-	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1, love::font::Rasterizer::type);
+	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	// Create the font.
 	Font *font = instance()->newFont(rasterizer, filter);
@@ -806,7 +806,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	else if (luax_istype(L, 2, Data::type))
 	{
 		// Vertex data comes directly from a Data object.
-		Data *data = luax_checktype<Data>(L, 2, Data::type);
+		Data *data = luax_checktype<Data>(L, 2);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, data->getData(), data->getSize(), drawmode, usage); });
 	}
 	else
@@ -920,7 +920,7 @@ int w_newVideo(lua_State *L)
 	if (!luax_istype(L, 1, love::video::VideoStream::type))
 		luax_convobj(L, 1, "video", "newVideoStream");
 
-	auto stream = luax_checktype<love::video::VideoStream>(L, 1, love::video::VideoStream::type);
+	auto stream = luax_checktype<love::video::VideoStream>(L, 1);
 	Video *video = nullptr;
 
 	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream); });
@@ -1004,14 +1004,14 @@ int w_getBackgroundColor(lua_State *L)
 int w_setNewFont(lua_State *L)
 {
 	int ret = w_newFont(L);
-	Font *font = luax_checktype<Font>(L, -1, Font::type);
+	Font *font = luax_checktype<Font>(L, -1);
 	instance()->setFont(font);
 	return ret;
 }
 
 int w_setFont(lua_State *L)
 {
-	Font *font = luax_checktype<Font>(L, 1, Font::type);
+	Font *font = luax_checktype<Font>(L, 1);
 	instance()->setFont(font);
 	return 0;
 }
@@ -1248,7 +1248,7 @@ int w_isWireframe(lua_State *L)
 
 int w_newScreenshot(lua_State *L)
 {
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L);
 	bool copyAlpha = luax_optboolean(L, 1, false);
 	love::image::ImageData *i = 0;
 
@@ -1528,7 +1528,7 @@ int w_draw(lua_State *L)
 	if (luax_istype(L, 2, Quad::type))
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, 2, Quad::type);
+		quad = luax_totype<Quad>(L, 2);
 		startidx = 3;
 	}
 	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
@@ -1537,7 +1537,7 @@ int w_draw(lua_State *L)
 	}
 	else
 	{
-		drawable = luax_checktype<Drawable>(L, 1, Drawable::type);
+		drawable = luax_checktype<Drawable>(L, 1);
 		startidx = 2;
 	}
 

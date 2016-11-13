@@ -77,7 +77,7 @@ void luax_pushjoint(lua_State *L, Joint *j)
 
 Joint *luax_checkjoint(lua_State *L, int idx)
 {
-	Joint *t = luax_checktype<Joint>(L, idx, Joint::type);
+	Joint *t = luax_checktype<Joint>(L, idx);
 	if (!t->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return t;
@@ -160,7 +160,7 @@ int w_Joint_destroy(lua_State *L)
 
 int w_Joint_isDestroyed(lua_State *L)
 {
-	Joint *t = luax_checktype<Joint>(L, 1, Joint::type);
+	Joint *t = luax_checktype<Joint>(L, 1);
 	luax_pushboolean(L, !t->isValid());
 	return 1;
 }

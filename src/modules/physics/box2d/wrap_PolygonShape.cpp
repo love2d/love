@@ -29,7 +29,7 @@ namespace box2d
 
 PolygonShape *luax_checkpolygonshape(lua_State *L, int idx)
 {
-	return luax_checktype<PolygonShape>(L, idx, PolygonShape::type);
+	return luax_checktype<PolygonShape>(L, idx);
 }
 
 int w_PolygonShape_getPoints(lua_State *L)

@@ -40,7 +40,7 @@ namespace image
 
 ImageData *luax_checkimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<ImageData>(L, idx, ImageData::type);
+	return luax_checktype<ImageData>(L, idx);
 }
 
 int w_ImageData_getFormat(lua_State *L)

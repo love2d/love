@@ -129,7 +129,7 @@ int w_newBMFontRasterizer(lua_State *L)
 			lua_rawgeti(L, 2, i);
 
 			convimagedata(L, -1);
-			image::ImageData *id = luax_checktype<image::ImageData>(L, -1, image::ImageData::type);
+			image::ImageData *id = luax_checktype<image::ImageData>(L, -1);
 			images.push_back(id);
 			id->retain();
 
@@ -141,7 +141,7 @@ int w_newBMFontRasterizer(lua_State *L)
 		for (int i = 2; i <= lua_gettop(L); i++)
 		{
 			convimagedata(L, i);
-			image::ImageData *id = luax_checktype<image::ImageData>(L, i, image::ImageData::type);
+			image::ImageData *id = luax_checktype<image::ImageData>(L, i);
 			images.push_back(id);
 			id->retain();
 		}
@@ -163,7 +163,7 @@ int w_newImageRasterizer(lua_State *L)
 
 	convimagedata(L, 1);
 
-	image::ImageData *d = luax_checktype<image::ImageData>(L, 1, image::ImageData::type);
+	image::ImageData *d = luax_checktype<image::ImageData>(L, 1);
 	std::string glyphs = luax_checkstring(L, 2);
 	int extraspacing = (int) luaL_optnumber(L, 3, 0);
 

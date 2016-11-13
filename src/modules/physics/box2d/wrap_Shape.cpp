@@ -30,7 +30,7 @@ namespace box2d
 
 Shape *luax_checkshape(lua_State *L, int idx)
 {
-	return luax_checktype<Shape>(L, idx, Shape::type);
+	return luax_checktype<Shape>(L, idx);
 }
 
 int w_Shape_getType(lua_State *L)

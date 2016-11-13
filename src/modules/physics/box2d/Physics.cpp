@@ -296,8 +296,8 @@ Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 
 int Physics::getDistance(lua_State *L)
 {
-	Fixture *fixtureA = luax_checktype<Fixture>(L, 1, Fixture::type);
-	Fixture *fixtureB = luax_checktype<Fixture>(L, 2, Fixture::type);
+	Fixture *fixtureA = luax_checktype<Fixture>(L, 1);
+	Fixture *fixtureB = luax_checktype<Fixture>(L, 2);
 	b2DistanceProxy pA, pB;
 	b2DistanceInput i;
 	b2DistanceOutput o;

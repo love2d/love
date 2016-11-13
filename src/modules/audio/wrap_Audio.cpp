@@ -63,9 +63,9 @@ int w_newSource(lua_State *L)
 
 	luax_catchexcept(L, [&]() {
 		if (luax_istype(L, 1, love::sound::SoundData::type))
-			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, love::sound::SoundData::type));
+			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1));
 		else if (luax_istype(L, 1, love::sound::Decoder::type))
-			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, love::sound::Decoder::type));
+			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1));
 	});
 
 	if (t != nullptr)

@@ -30,7 +30,7 @@ namespace box2d
 
 Body *luax_checkbody(lua_State *L, int idx)
 {
-	Body *b = luax_checktype<Body>(L, idx, Body::type);
+	Body *b = luax_checktype<Body>(L, idx);
 	if (b->body == 0)
 		luaL_error(L, "Attempt to use destroyed body.");
 	return b;
@@ -566,7 +566,7 @@ int w_Body_destroy(lua_State *L)
 
 int w_Body_isDestroyed(lua_State *L)
 {
-	Body *b = luax_checktype<Body>(L, 1, Body::type);
+	Body *b = luax_checktype<Body>(L, 1);
 	luax_pushboolean(L, b->body == nullptr);
 	return 1;
 }

@@ -39,7 +39,7 @@ namespace sound
 
 SoundData *luax_checksounddata(lua_State *L, int idx)
 {
-	return luax_checktype<SoundData>(L, idx, SoundData::type);
+	return luax_checktype<SoundData>(L, idx);
 }
 
 int w_SoundData_getChannels(lua_State *L)

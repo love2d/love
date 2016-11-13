@@ -27,7 +27,7 @@ namespace video
 
 VideoStream *luax_checkvideostream(lua_State *L, int idx)
 {
-	return luax_checktype<VideoStream>(L, idx, VideoStream::type);
+	return luax_checktype<VideoStream>(L, idx);
 }
 
 int w_VideoStream_setSync(lua_State *L)
@@ -36,14 +36,14 @@ int w_VideoStream_setSync(lua_State *L)
 
 	if (luax_istype(L, 2, love::audio::Source::type))
 	{
-		auto src = luax_totype<love::audio::Source>(L, 2, love::audio::Source::type);
+		auto src = luax_totype<love::audio::Source>(L, 2);
 		auto sync = new VideoStream::SourceSync(src);
 		stream->setSync(sync);
 		sync->release();
 	}
 	else if (luax_istype(L, 2, VideoStream::type))
 	{
-		auto other = luax_totype<VideoStream>(L, 2, VideoStream::type);
+		auto other = luax_totype<VideoStream>(L, 2);
 		stream->setSync(other->getSync());
 	}
 	else if (lua_isnoneornil(L, 2))

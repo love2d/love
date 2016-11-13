@@ -28,7 +28,7 @@ namespace mouse
 
 Cursor *luax_checkcursor(lua_State *L, int idx)
 {
-	return luax_checktype<Cursor>(L, idx, Cursor::type);
+	return luax_checktype<Cursor>(L, idx);
 }
 
 int w_Cursor_getType(lua_State *L)

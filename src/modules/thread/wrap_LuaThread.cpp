@@ -27,7 +27,7 @@ namespace thread
 
 LuaThread *luax_checkthread(lua_State *L, int idx)
 {
-	return luax_checktype<LuaThread>(L, idx, LuaThread::type);
+	return luax_checktype<LuaThread>(L, idx);
 }
 
 int w_Thread_start(lua_State *L)

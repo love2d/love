@@ -27,7 +27,7 @@ namespace font
 
 GlyphData *luax_checkglyphdata(lua_State *L, int idx)
 {
-	return luax_checktype<GlyphData>(L, idx, GlyphData::type);
+	return luax_checktype<GlyphData>(L, idx);
 }
 
 int w_GlyphData_getWidth(lua_State *L)

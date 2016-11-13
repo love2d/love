@@ -30,7 +30,7 @@ namespace box2d
 
 GearJoint *luax_checkgearjoint(lua_State *L, int idx)
 {
-	GearJoint *j = luax_checktype<GearJoint>(L, idx, GearJoint::type);
+	GearJoint *j = luax_checktype<GearJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;

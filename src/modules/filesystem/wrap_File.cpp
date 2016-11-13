@@ -43,7 +43,7 @@ int luax_ioError(lua_State *L, const char *fmt, ...)
 
 File *luax_checkfile(lua_State *L, int idx)
 {
-	return luax_checktype<File>(L, idx, love::filesystem::File::type);
+	return luax_checktype<File>(L, idx);
 }
 
 int w_File_getSize(lua_State *L)
@@ -152,7 +152,7 @@ int w_File_write(lua_State *L)
 	{
 		try
 		{
-			love::Data *data = luax_totype<love::Data>(L, 2, love::Data::type);
+			love::Data *data = luax_totype<love::Data>(L, 2);
 			result = file->write(data, luaL_optinteger(L, 3, data->getSize()));
 		}
 		catch (love::Exception &e)
@@ -227,7 +227,7 @@ int w_File_lines_i(lua_State *L)
 	int linesize = 0;
 	bool newline = false;
 
-	File *file = luax_checktype<File>(L, lua_upvalueindex(1), File::type);
+	File *file = luax_checktype<File>(L, lua_upvalueindex(1));
 
 	// Only accept read mode at this point.
 	if (file->getMode() != File::MODE_READ)

@@ -30,7 +30,7 @@ namespace box2d
 
 Contact *luax_checkcontact(lua_State *L, int idx)
 {
-	Contact *c = luax_checktype<Contact>(L, idx, Contact::type);
+	Contact *c = luax_checktype<Contact>(L, idx);
 	if (!c->isValid())
 		luaL_error(L, "Attempt to use destroyed contact.");
 	return c;
@@ -153,7 +153,7 @@ int w_Contact_getFixtures(lua_State *L)
 
 int w_Contact_isDestroyed(lua_State *L)
 {
-	Contact *c = luax_checktype<Contact>(L, 1, Contact::type);
+	Contact *c = luax_checktype<Contact>(L, 1);
 	luax_pushboolean(L, !c->isValid());
 	return 1;
 }

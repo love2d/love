@@ -40,7 +40,7 @@ int w_newCursor(lua_State *L)
 	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
 		luax_convobj(L, 1, "image", "newImageData");
 
-	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, love::image::ImageData::type);
+	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1);
 	int hotx = (int) luaL_optnumber(L, 2, 0);
 	int hoty = (int) luaL_optnumber(L, 3, 0);
 

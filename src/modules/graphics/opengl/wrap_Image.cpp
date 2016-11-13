@@ -30,7 +30,7 @@ namespace opengl
 
 Image *luax_checkimage(lua_State *L, int idx)
 {
-	return luax_checktype<Image>(L, idx, Image::type);
+	return luax_checktype<Image>(L, idx);
 }
 
 int w_Image_setMipmapFilter(lua_State *L)

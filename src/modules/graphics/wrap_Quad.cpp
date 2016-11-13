@@ -28,7 +28,7 @@ namespace graphics
 
 Quad *luax_checkquad(lua_State *L, int idx)
 {
-	return luax_checktype<Quad>(L, idx, Quad::type);
+	return luax_checktype<Quad>(L, idx);
 }
 
 int w_Quad_setViewport(lua_State *L)

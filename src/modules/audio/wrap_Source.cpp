@@ -30,7 +30,7 @@ namespace audio
 
 Source *luax_checksource(lua_State *L, int idx)
 {
-	return luax_checktype<Source>(L, idx, love::audio::Source::type);
+	return luax_checktype<Source>(L, idx);
 }
 
 int w_Source_clone(lua_State *L)
@@ -344,7 +344,7 @@ int w_Source_queue(lua_State *L)
 
 	if (luax_istype(L, 2, love::sound::SoundData::type))
 	{
-		auto s = luax_totype<love::sound::SoundData>(L, 2, love::sound::SoundData::type);
+		auto s = luax_totype<love::sound::SoundData>(L, 2);
 
 		int offset = 0;
 		size_t length = s->getSize();

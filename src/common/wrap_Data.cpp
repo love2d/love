@@ -25,7 +25,7 @@ namespace love
 
 Data *luax_checkdata(lua_State *L, int idx)
 {
-	return luax_checktype<Data>(L, idx, Data::type);
+	return luax_checktype<Data>(L, idx);
 }
 
 int w_Data_getString(lua_State *L)

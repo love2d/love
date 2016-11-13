@@ -66,13 +66,13 @@ int w_newThread(lua_State *L)
 
 	if (luax_istype(L, 1, love::filesystem::FileData::type))
 	{
-		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1, love::filesystem::FileData::type);
+		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1);
 		name = std::string("@") + fdata->getFilename();
 		data = fdata;
 	}
 	else
 	{
-		data = luax_checktype<love::Data>(L, 1, love::Data::type);
+		data = luax_checktype<love::Data>(L, 1);
 	}
 
 	LuaThread *t = instance()->newThread(name, data);

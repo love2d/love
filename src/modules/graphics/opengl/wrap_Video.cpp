@@ -34,7 +34,7 @@ namespace opengl
 
 Video *luax_checkvideo(lua_State *L, int idx)
 {
-	return luax_checktype<Video>(L, idx, Video::type);
+	return luax_checktype<Video>(L, idx);
 }
 
 int w_Video_getStream(lua_State *L)
@@ -62,7 +62,7 @@ int w_Video_setSource(lua_State *L)
 		video->setSource(nullptr);
 	else
 	{
-		auto source = luax_checktype<love::audio::Source>(L, 2, love::audio::Source::type);
+		auto source = luax_checktype<love::audio::Source>(L, 2);
 		video->setSource(source);
 	}
 	return 0;

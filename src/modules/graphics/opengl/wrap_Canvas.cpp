@@ -30,7 +30,7 @@ namespace opengl
 
 Canvas *luax_checkcanvas(lua_State *L, int idx)
 {
-	return luax_checktype<Canvas>(L, idx, Canvas::type);
+	return luax_checktype<Canvas>(L, idx);
 }
 
 int w_Canvas_renderTo(lua_State *L)
@@ -68,7 +68,7 @@ int w_Canvas_renderTo(lua_State *L)
 int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L);
 	int x = (int) luaL_optnumber(L, 2, 0);
 	int y = (int) luaL_optnumber(L, 3, 0);
 	int w = (int) luaL_optnumber(L, 4, canvas->getWidth());

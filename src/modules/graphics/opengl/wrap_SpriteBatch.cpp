@@ -36,7 +36,7 @@ namespace opengl
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 {
-	return luax_checktype<SpriteBatch>(L, idx, SpriteBatch::type);
+	return luax_checktype<SpriteBatch>(L, idx);
 }
 
 static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int startidx, int index)
@@ -45,7 +45,7 @@ static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int sta
 
 	if (luax_istype(L, startidx, Quad::type))
 	{
-		quad = luax_totype<Quad>(L, startidx, Quad::type);
+		quad = luax_totype<Quad>(L, startidx);
 		startidx++;
 	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
@@ -201,7 +201,7 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Mesh *m = luax_checktype<Mesh>(L, 3, Mesh::type);
+	Mesh *m = luax_checktype<Mesh>(L, 3);
 
 	luax_catchexcept(L, [&](){ t->attachAttribute(name, m); });
 	return 0;

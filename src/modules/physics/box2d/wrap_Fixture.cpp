@@ -30,7 +30,7 @@ namespace box2d
 
 Fixture *luax_checkfixture(lua_State *L, int idx)
 {
-	Fixture *f = luax_checktype<Fixture>(L, idx, Fixture::type);
+	Fixture *f = luax_checktype<Fixture>(L, idx);
 	if (!f->isValid())
 		luaL_error(L, "Attempt to use destroyed fixture.");
 	return f;
@@ -263,7 +263,7 @@ int w_Fixture_destroy(lua_State *L)
 
 int w_Fixture_isDestroyed(lua_State *L)
 {
-	Fixture *f = luax_checktype<Fixture>(L, 1, Fixture::type);
+	Fixture *f = luax_checktype<Fixture>(L, 1);
 	luax_pushboolean(L, !f->isValid());
 	return 1;
 }

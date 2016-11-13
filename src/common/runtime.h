@@ -459,6 +459,12 @@ T *luax_checktype(lua_State *L, int idx, love::Type &type)
 }
 
 template <typename T>
+T *luax_checktype(lua_State *L, int idx)
+{
+	return luax_checktype<T>(L, idx, T::type);
+}
+
+template <typename T>
 T *luax_getmodule(lua_State *L, love::Type &type)
 {
 	const char *name = "Invalid";
@@ -478,6 +484,12 @@ T *luax_getmodule(lua_State *L, love::Type &type)
 	lua_pop(L, 2);
 
 	return (T *)u->object;
+}
+
+template <typename T>
+T *luax_getmodule(lua_State *L)
+{
+	return luax_getmodule<T>(L, T::type);
 }
 
 template <typename T>
@@ -505,6 +517,12 @@ T *luax_optmodule(lua_State *L, love::Type &type)
 	return (T *) u->object;
 }
 
+template <typename T>
+T *luax_optmodule(lua_State *L)
+{
+	return luax_optmodule<T>(L, T::type);
+}
+
 /**
  * Converts the value at idx to the specified type without checking that
  * this conversion is valid. If the type has been previously verified with
@@ -524,7 +542,11 @@ T *luax_totype(lua_State *L, int idx, love::Type& /*type*/)
 	return o;
 }
 
-
+template <typename T>
+T *luax_totype(lua_State *L, int idx)
+{
+	return luax_totype<T>(L, idx, T::type);
+}
 
 uint32 luax_type(lua_State *L, int idx);
 

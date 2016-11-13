@@ -115,7 +115,7 @@ int w_mount(lua_State *L)
 
 	if (luax_istype(L, 1, DroppedFile::type))
 	{
-		DroppedFile *file = luax_totype<DroppedFile>(L, 1, DroppedFile::type);
+		DroppedFile *file = luax_totype<DroppedFile>(L, 1);
 		archive = file->getFilename();
 	}
 	else
@@ -400,7 +400,7 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 
 	if (luax_istype(L, 2, love::Data::type))
 	{
-		love::Data *data = luax_totype<love::Data>(L, 2, love::Data::type);
+		love::Data *data = luax_totype<love::Data>(L, 2);
 		input = (const char *) data->getData();
 		len = data->getSize();
 	}

@@ -35,7 +35,7 @@ namespace opengl
 
 Shader *luax_checkshader(lua_State *L, int idx)
 {
-	return luax_checktype<Shader>(L, idx, Shader::type);
+	return luax_checktype<Shader>(L, idx);
 }
 
 int w_Shader_getWarnings(lua_State *L)

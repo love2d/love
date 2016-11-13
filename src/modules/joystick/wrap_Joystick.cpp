@@ -31,7 +31,7 @@ namespace joystick
 
 Joystick *luax_checkjoystick(lua_State *L, int idx)
 {
-	return luax_checktype<Joystick>(L, idx, Joystick::type);
+	return luax_checktype<Joystick>(L, idx);
 }
 
 int w_Joystick_isConnected(lua_State *L)

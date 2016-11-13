@@ -29,7 +29,7 @@ namespace math
 
 CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedData>(L, idx, CompressedData::type);
+	return luax_checktype<CompressedData>(L, idx);
 }
 
 int w_CompressedData_getFormat(lua_State *L)

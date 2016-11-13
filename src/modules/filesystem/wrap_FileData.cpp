@@ -29,7 +29,7 @@ namespace filesystem
 
 FileData *luax_checkfiledata(lua_State *L, int idx)
 {
-	return luax_checktype<FileData>(L, idx, FileData::type);
+	return luax_checktype<FileData>(L, idx);
 }
 
 int w_FileData_getFilename(lua_State *L)

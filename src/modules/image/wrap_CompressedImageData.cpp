@@ -28,7 +28,7 @@ namespace image
 
 CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedImageData>(L, idx, CompressedImageData::type);
+	return luax_checktype<CompressedImageData>(L, idx);
 }
 
 int w_CompressedImageData_getWidth(lua_State *L)

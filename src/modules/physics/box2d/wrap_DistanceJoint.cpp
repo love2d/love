@@ -29,7 +29,7 @@ namespace box2d
 
 DistanceJoint *luax_checkdistancejoint(lua_State *L, int idx)
 {
-	DistanceJoint *j = luax_checktype<DistanceJoint>(L, idx, DistanceJoint::type);
+	DistanceJoint *j = luax_checktype<DistanceJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
