@@ -42,6 +42,8 @@ friend int w_Channel_performAtomic(lua_State *);
 
 public:
 
+	static love::Type type;
+
 	Channel();
 	~Channel();
 

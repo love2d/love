@@ -62,6 +62,8 @@ RandomGenerator::RandomGenerator()
 	setSeed(newseed);
 }
 
+love::Type RandomGenerator::type(&Object::type);
+
 uint64 RandomGenerator::rand()
 {
 	rng_state.b64 ^= (rng_state.b64 >> 12);

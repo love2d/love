@@ -27,23 +27,23 @@ namespace video
 
 VideoStream *luax_checkvideostream(lua_State *L, int idx)
 {
-	return luax_checktype<VideoStream>(L, idx, VIDEO_VIDEO_STREAM_ID);
+	return luax_checktype<VideoStream>(L, idx, VideoStream::type);
 }
 
 int w_VideoStream_setSync(lua_State *L)
 {
 	auto stream = luax_checkvideostream(L, 1);
 
-	if (luax_istype(L, 2, AUDIO_SOURCE_ID))
+	if (luax_istype(L, 2, love::audio::Source::type))
 	{
-		auto src = luax_totype<love::audio::Source>(L, 2, AUDIO_SOURCE_ID);
+		auto src = luax_totype<love::audio::Source>(L, 2, love::audio::Source::type);
 		auto sync = new VideoStream::SourceSync(src);
 		stream->setSync(sync);
 		sync->release();
 	}
-	else if (luax_istype(L, 2, VIDEO_VIDEO_STREAM_ID))
+	else if (luax_istype(L, 2, VideoStream::type))
 	{
-		auto other = luax_totype<VideoStream>(L, 2, VIDEO_VIDEO_STREAM_ID);
+		auto other = luax_totype<VideoStream>(L, 2, VideoStream::type);
 		stream->setSync(other->getSync());
 	}
 	else if (lua_isnoneornil(L, 2))
@@ -124,7 +124,7 @@ static const luaL_Reg videostream_functions[] =
 
 int luaopen_videostream(lua_State *L)
 {
-	return luax_register_type(L, VIDEO_VIDEO_STREAM_ID, "VideoStream", videostream_functions, nullptr);
+	return luax_register_type(L, VideoStream::type, "VideoStream", videostream_functions, nullptr);
 }
 
 } // video

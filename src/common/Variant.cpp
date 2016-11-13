@@ -24,19 +24,19 @@
 namespace love
 {
 
-static love::Type extractudatatype(lua_State *L, int idx)
+static love::Type *extractudatatype(lua_State *L, int idx)
 {
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-	if (u == nullptr || u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM)
-		return INVALID_ID;
+	if (u == nullptr || u->type == nullptr)
+		return nullptr;
 
 	// We could get rid of the dynamic_cast for more performance, but it would
 	// be less safe...
 	if (dynamic_cast<Object *>(u->object) != nullptr)
 		return u->type;
 
-	return INVALID_ID;
+	return nullptr;
 }
 
 Variant::Variant()
@@ -77,11 +77,11 @@ Variant::Variant(void *userdata)
 	data.userdata = userdata;
 }
 
-Variant::Variant(love::Type udatatype, void *userdata)
+Variant::Variant(love::Type *udatatype, void *userdata)
 	: type(FUSERDATA)
 	, udatatype(udatatype)
 {
-	if (udatatype != INVALID_ID)
+	if (udatatype != nullptr)
 	{
 		Proxy *p = (Proxy *) userdata;
 		data.userdata = p->object;
@@ -243,8 +243,8 @@ void Variant::toLua(lua_State *L) const
 		lua_pushlightuserdata(L, data.userdata);
 		break;
 	case FUSERDATA:
-		if (udatatype != INVALID_ID)
-			luax_pushtype(L, udatatype, (love::Object *) data.userdata);
+		if (udatatype != nullptr)
+			luax_pushtype(L, *udatatype, (love::Object *) data.userdata);
 		else
 			lua_pushlightuserdata(L, data.userdata);
 		// I know this is not the same

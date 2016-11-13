@@ -29,7 +29,7 @@ namespace opengl
 
 Text *luax_checktext(lua_State *L, int idx)
 {
-	return luax_checktype<Text>(L, idx, GRAPHICS_TEXT_ID);
+	return luax_checktype<Text>(L, idx, Text::type);
 }
 
 void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings)
@@ -190,7 +190,7 @@ int w_Text_clear(lua_State *L)
 int w_Text_setFont(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	Font *f = luax_checktype<Font>(L, 2, GRAPHICS_FONT_ID);
+	Font *f = luax_checktype<Font>(L, 2, Font::type);
 	luax_catchexcept(L, [&](){ t->setFont(f); });
 	return 0;
 }
@@ -199,7 +199,7 @@ int w_Text_getFont(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
 	Font *f = t->getFont();
-	luax_pushtype(L, GRAPHICS_FONT_ID, f);
+	luax_pushtype(L, Font::type, f);
 	return 1;
 }
 
@@ -245,7 +245,7 @@ static const luaL_Reg w_Text_functions[] =
 
 extern "C" int luaopen_text(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_TEXT_ID, "Text", w_Text_functions, nullptr);
+	return luax_register_type(L, Text::type, "Text", w_Text_functions, nullptr);
 }
 
 } // opengl

@@ -38,6 +38,8 @@ class Data : public Object
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Destructor.
 	 **/

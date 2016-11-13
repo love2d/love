@@ -43,6 +43,8 @@ class Canvas : public Texture, public Volatile
 {
 public:
 
+	static love::Type type;
+
 	// Different Canvas render target formats.
 	enum Format
 	{

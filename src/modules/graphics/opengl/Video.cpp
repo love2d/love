@@ -30,6 +30,8 @@ namespace graphics
 namespace opengl
 {
 
+love::Type Video::type(&Drawable::type);
+
 Video::Video(love::video::VideoStream *stream)
 	: stream(stream)
 	, filter(Texture::getDefaultFilter())

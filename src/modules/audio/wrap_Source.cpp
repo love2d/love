@@ -30,7 +30,7 @@ namespace audio
 
 Source *luax_checksource(lua_State *L, int idx)
 {
-	return luax_checktype<Source>(L, idx, AUDIO_SOURCE_ID);
+	return luax_checktype<Source>(L, idx, love::audio::Source::type);
 }
 
 int w_Source_clone(lua_State *L)
@@ -38,7 +38,7 @@ int w_Source_clone(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	Source *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
-	luax_pushtype(L, AUDIO_SOURCE_ID, clone);
+	luax_pushtype(L, love::audio::Source::type, clone);
 	clone->release();
 	return 1;
 }
@@ -342,9 +342,9 @@ int w_Source_queue(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	bool success;
 
-	if (luax_istype(L, 2, SOUND_SOUND_DATA_ID))
+	if (luax_istype(L, 2, love::sound::SoundData::type))
 	{
-		auto s = luax_totype<love::sound::SoundData>(L, 2, SOUND_SOUND_DATA_ID);
+		auto s = luax_totype<love::sound::SoundData>(L, 2, love::sound::SoundData::type);
 
 		int offset = 0;
 		size_t length = s->getSize();
@@ -450,7 +450,7 @@ static const luaL_Reg w_Source_functions[] =
 
 extern "C" int luaopen_source(lua_State *L)
 {
-	return luax_register_type(L, AUDIO_SOURCE_ID, "Source", w_Source_functions, nullptr);
+	return luax_register_type(L, love::audio::Source::type, "Source", w_Source_functions, nullptr);
 }
 
 } // audio

@@ -127,7 +127,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "event";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = nullptr;
 

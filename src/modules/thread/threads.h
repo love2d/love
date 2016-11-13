@@ -79,6 +79,8 @@ private:
 class Threadable : public love::Object
 {
 public:
+	static love::Type type;
+
 	Threadable();
 	virtual ~Threadable();
 

@@ -29,7 +29,7 @@ namespace box2d
 
 PolygonShape *luax_checkpolygonshape(lua_State *L, int idx)
 {
-	return luax_checktype<PolygonShape>(L, idx, PHYSICS_POLYGON_SHAPE_ID);
+	return luax_checktype<PolygonShape>(L, idx, PolygonShape::type);
 }
 
 int w_PolygonShape_getPoints(lua_State *L)
@@ -55,7 +55,7 @@ static const luaL_Reg w_PolygonShape_functions[] =
 
 extern "C" int luaopen_polygonshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_POLYGON_SHAPE_ID, "PolygonShape", w_Shape_functions, w_PolygonShape_functions, nullptr);
+	return luax_register_type(L, PolygonShape::type, "PolygonShape", w_Shape_functions, w_PolygonShape_functions, nullptr);
 }
 
 } // box2d

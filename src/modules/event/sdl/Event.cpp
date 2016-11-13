@@ -364,7 +364,7 @@ Message *Event::convert(const SDL_Event &e) const
 			{
 				Proxy proxy;
 				proxy.object = new love::filesystem::DroppedFile(e.drop.file);
-				proxy.type = FILESYSTEM_DROPPED_FILE_ID;
+				proxy.type = &love::filesystem::DroppedFile::type;
 				vargs.emplace_back(proxy.type, &proxy);
 				msg = new Message("filedropped", vargs);
 				proxy.object->release();
@@ -407,7 +407,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	{
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		proxy.type = JOYSTICK_JOYSTICK_ID;
+		proxy.type = &love::joystick::Joystick::type;
 		proxy.object = joymodule->getJoystickFromID(e.jbutton.which);
 		if (!proxy.object)
 			break;
@@ -420,7 +420,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		break;
 	case SDL_JOYAXISMOTION:
 		{
-			proxy.type = JOYSTICK_JOYSTICK_ID;
+			proxy.type = &love::joystick::Joystick::type;
 			proxy.object = joymodule->getJoystickFromID(e.jaxis.which);
 			if (!proxy.object)
 				break;
@@ -436,7 +436,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!joystick::sdl::Joystick::getConstant(e.jhat.value, hat) || !joystick::Joystick::getConstant(hat, txt))
 			break;
 
-		proxy.type = JOYSTICK_JOYSTICK_ID;
+		proxy.type = &love::joystick::Joystick::type;
 		proxy.object = joymodule->getJoystickFromID(e.jhat.which);
 		if (!proxy.object)
 			break;
@@ -454,7 +454,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!joystick::Joystick::getConstant(padbutton, txt))
 			break;
 
-		proxy.type = JOYSTICK_JOYSTICK_ID;
+		proxy.type = &love::joystick::Joystick::type;
 		proxy.object = joymodule->getJoystickFromID(e.cbutton.which);
 		if (!proxy.object)
 			break;
@@ -470,7 +470,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			if (!joystick::Joystick::getConstant(padaxis, txt))
 				break;
 
-			proxy.type = JOYSTICK_JOYSTICK_ID;
+			proxy.type = &love::joystick::Joystick::type;
 			proxy.object = joymodule->getJoystickFromID(e.caxis.which);
 			if (!proxy.object)
 				break;
@@ -486,7 +486,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	case SDL_JOYDEVICEADDED:
 		// jdevice.which is the joystick device index.
 		proxy.object = joymodule->addJoystick(e.jdevice.which);
-		proxy.type = JOYSTICK_JOYSTICK_ID;
+		proxy.type = &love::joystick::Joystick::type;
 		if (proxy.object)
 		{
 			vargs.emplace_back(proxy.type, (void *) &proxy);
@@ -496,7 +496,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	case SDL_JOYDEVICEREMOVED:
 		// jdevice.which is the joystick instance ID now.
 		proxy.object = joymodule->getJoystickFromID(e.jdevice.which);
-		proxy.type = JOYSTICK_JOYSTICK_ID;
+		proxy.type = &love::joystick::Joystick::type;
 		if (proxy.object)
 		{
 			joymodule->removeJoystick((joystick::Joystick *) proxy.object);

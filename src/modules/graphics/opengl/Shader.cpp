@@ -62,6 +62,7 @@ namespace
 } // anonymous namespace
 
 
+love::Type Shader::type(&Object::type);
 Shader *Shader::current = nullptr;
 Shader *Shader::defaultShader = nullptr;
 Shader *Shader::defaultVideoShader = nullptr;

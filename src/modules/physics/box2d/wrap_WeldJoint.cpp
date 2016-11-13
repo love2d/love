@@ -29,7 +29,7 @@ namespace box2d
 
 WeldJoint *luax_checkweldjoint(lua_State *L, int idx)
 {
-	WeldJoint *j = luax_checktype<WeldJoint>(L, idx, PHYSICS_WELD_JOINT_ID);
+	WeldJoint *j = luax_checktype<WeldJoint>(L, idx, WeldJoint::type);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -84,7 +84,7 @@ static const luaL_Reg w_WeldJoint_functions[] =
 
 extern "C" int luaopen_weldjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_WELD_JOINT_ID, "WeldJoint", w_Joint_functions, w_WeldJoint_functions, nullptr);
+	return luax_register_type(L, WeldJoint::type, "WeldJoint", w_Joint_functions, w_WeldJoint_functions, nullptr);
 }
 
 } // box2d

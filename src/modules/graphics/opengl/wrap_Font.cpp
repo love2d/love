@@ -35,7 +35,7 @@ namespace opengl
 
 Font *luax_checkfont(lua_State *L, int idx)
 {
-	return luax_checktype<Font>(L, idx, GRAPHICS_FONT_ID);
+	return luax_checktype<Font>(L, idx, Font::type);
 }
 
 int w_Font_getHeight(lua_State *L)
@@ -207,7 +207,7 @@ static const luaL_Reg w_Font_functions[] =
 
 extern "C" int luaopen_font(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_FONT_ID, "Font", w_Font_functions, nullptr);
+	return luax_register_type(L, Font::type, "Font", w_Font_functions, nullptr);
 }
 
 } // opengl

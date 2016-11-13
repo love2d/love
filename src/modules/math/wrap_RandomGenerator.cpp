@@ -63,7 +63,7 @@ RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx)
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 {
-	return luax_checktype<RandomGenerator>(L, idx, MATH_RANDOM_GENERATOR_ID);
+	return luax_checktype<RandomGenerator>(L, idx, RandomGenerator::type);
 }
 
 int w_RandomGenerator__random(lua_State *L)
@@ -126,7 +126,7 @@ static FFI_RandomGenerator ffifuncs =
 	[](Proxy *p) -> double // random()
 	{
 		// FIXME: We need better type-checking...
-		if (p == nullptr || p->object == nullptr || !typeFlags[p->type][MATH_RANDOM_GENERATOR_ID])
+		if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(RandomGenerator::type))
 			return 0.0;
 
 		RandomGenerator *rng = (RandomGenerator *) p->object;
@@ -147,9 +147,9 @@ static const luaL_Reg w_RandomGenerator_functions[] =
 
 extern "C" int luaopen_randomgenerator(lua_State *L)
 {
-	int n = luax_register_type(L, MATH_RANDOM_GENERATOR_ID, "RandomGenerator", w_RandomGenerator_functions, nullptr);
+	int n = luax_register_type(L, RandomGenerator::type, "RandomGenerator", w_RandomGenerator_functions, nullptr);
 
-	luax_gettypemetatable(L, MATH_RANDOM_GENERATOR_ID);
+	luax_gettypemetatable(L, RandomGenerator::type);
 
 	// Load and execute wrap_RandomGenerator.lua, sending the metatable and the
 	// ffi functions struct pointer as arguments.

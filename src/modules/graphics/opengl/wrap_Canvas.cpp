@@ -30,7 +30,7 @@ namespace opengl
 
 Canvas *luax_checkcanvas(lua_State *L, int idx)
 {
-	return luax_checktype<Canvas>(L, idx, GRAPHICS_CANVAS_ID);
+	return luax_checktype<Canvas>(L, idx, Canvas::type);
 }
 
 int w_Canvas_renderTo(lua_State *L)
@@ -68,7 +68,7 @@ int w_Canvas_renderTo(lua_State *L)
 int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, MODULE_IMAGE_ID);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
 	int x = (int) luaL_optnumber(L, 2, 0);
 	int y = (int) luaL_optnumber(L, 3, 0);
 	int w = (int) luaL_optnumber(L, 4, canvas->getWidth());
@@ -77,7 +77,7 @@ int w_Canvas_newImageData(lua_State *L)
 	love::image::ImageData *img = nullptr;
 	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });
 
-	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, img);
+	luax_pushtype(L, love::image::ImageData::type, img);
 	img->release();
 	return 1;
 }
@@ -112,7 +112,7 @@ static const luaL_Reg w_Canvas_functions[] =
 
 extern "C" int luaopen_canvas(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_CANVAS_ID, "Canvas", w_Texture_functions, w_Canvas_functions, nullptr);
+	return luax_register_type(L, Canvas::type, "Canvas", w_Texture_functions, w_Canvas_functions, nullptr);
 }
 
 } // opengl

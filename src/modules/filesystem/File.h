@@ -44,6 +44,8 @@ class File : public Object
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * File open mode.
 	 **/

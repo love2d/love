@@ -29,6 +29,8 @@ namespace love
 namespace joystick
 {
 
+love::Type Joystick::type(&Object::type);
+
 float Joystick::clampval(float x)
 {
 	if (fabsf(x) < 0.01)

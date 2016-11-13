@@ -43,6 +43,8 @@ class CompressedImageData : public Data
 {
 public:
 
+	static love::Type type;
+
 	// Recognized compressed image data formats.
 	enum Format
 	{

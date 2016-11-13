@@ -31,7 +31,7 @@ namespace joystick
 
 Joystick *luax_checkjoystick(lua_State *L, int idx)
 {
-	return luax_checktype<Joystick>(L, idx, JOYSTICK_JOYSTICK_ID);
+	return luax_checktype<Joystick>(L, idx, Joystick::type);
 }
 
 int w_Joystick_isConnected(lua_State *L)
@@ -296,7 +296,7 @@ static const luaL_Reg w_Joystick_functions[] =
 
 extern "C" int luaopen_joystick(lua_State *L)
 {
-	return luax_register_type(L, JOYSTICK_JOYSTICK_ID, "Joystick", w_Joystick_functions, nullptr);
+	return luax_register_type(L, Joystick::type, "Joystick", w_Joystick_functions, nullptr);
 }
 
 } // joystick

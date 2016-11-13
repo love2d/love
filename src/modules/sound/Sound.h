@@ -42,6 +42,8 @@ class Sound : public Module
 
 public:
 
+	static love::Type type;
+
 	virtual ~Sound();
 
 	// Implements Module.

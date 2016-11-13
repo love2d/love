@@ -30,7 +30,7 @@ namespace box2d
 
 FrictionJoint *luax_checkfrictionjoint(lua_State *L, int idx)
 {
-	FrictionJoint *j = luax_checktype<FrictionJoint>(L, idx, PHYSICS_FRICTION_JOINT_ID);
+	FrictionJoint *j = luax_checktype<FrictionJoint>(L, idx, FrictionJoint::type);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -77,7 +77,7 @@ static const luaL_Reg w_FrictionJoint_functions[] =
 
 extern "C" int luaopen_frictionjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_FRICTION_JOINT_ID, "FrictionJoint", w_Joint_functions, w_FrictionJoint_functions, nullptr);
+	return luax_register_type(L, FrictionJoint::type, "FrictionJoint", w_Joint_functions, w_FrictionJoint_functions, nullptr);
 }
 
 } // box2d

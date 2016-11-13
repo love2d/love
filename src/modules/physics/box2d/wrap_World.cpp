@@ -29,7 +29,7 @@ namespace box2d
 
 World *luax_checkworld(lua_State *L, int idx)
 {
-	World *w = luax_checktype<World>(L, idx, PHYSICS_WORLD_ID);
+	World *w = luax_checktype<World>(L, idx, World::type);
 	if (!w->isValid())
 		luaL_error(L, "Attempt to use destroyed world.");
 	return w;
@@ -203,7 +203,7 @@ int w_World_destroy(lua_State *L)
 
 int w_World_isDestroyed(lua_State *L)
 {
-	World *w = luax_checktype<World>(L, 1, PHYSICS_WORLD_ID);
+	World *w = luax_checktype<World>(L, 1, World::type);
 	luax_pushboolean(L, !w->isValid());
 	return 1;
 }
@@ -237,7 +237,7 @@ static const luaL_Reg w_World_functions[] =
 
 extern "C" int luaopen_world(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_WORLD_ID, "World", w_World_functions, nullptr);
+	return luax_register_type(L, World::type, "World", w_World_functions, nullptr);
 }
 
 } // box2d

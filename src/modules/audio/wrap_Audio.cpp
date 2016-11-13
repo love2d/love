@@ -46,31 +46,31 @@ int w_newSource(lua_State *L)
 {
 	Source::Type stype = Source::TYPE_STREAM;
 
-	if (!luax_istype(L, 1, SOUND_SOUND_DATA_ID) && !luax_istype(L, 1, SOUND_DECODER_ID))
+	if (!luax_istype(L, 1, love::sound::SoundData::type) && !luax_istype(L, 1, love::sound::Decoder::type))
 	{
 		const char *stypestr = luaL_checkstring(L, 2);
 		if (stypestr && !Source::getConstant(stypestr, stype))
 			return luaL_error(L, "Invalid source type: %s", stypestr);
 	}
 
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
 		luax_convobj(L, 1, "sound", "newDecoder");
 
-	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, SOUND_DECODER_ID))
+	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, love::sound::Decoder::type))
 		luax_convobj(L, 1, "sound", "newSoundData");
 
 	Source *t = nullptr;
 
 	luax_catchexcept(L, [&]() {
-		if (luax_istype(L, 1, SOUND_SOUND_DATA_ID))
-			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, SOUND_SOUND_DATA_ID));
-		else if (luax_istype(L, 1, SOUND_DECODER_ID))
-			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, SOUND_DECODER_ID));
+		if (luax_istype(L, 1, love::sound::SoundData::type))
+			t = instance()->newSource(luax_totype<love::sound::SoundData>(L, 1, love::sound::SoundData::type));
+		else if (luax_istype(L, 1, love::sound::Decoder::type))
+			t = instance()->newSource(luax_totype<love::sound::Decoder>(L, 1, love::sound::Decoder::type));
 	});
 
 	if (t != nullptr)
 	{
-		luax_pushtype(L, AUDIO_SOURCE_ID, t);
+		luax_pushtype(L, love::audio::Source::type, t);
 		t->release();
 		return 1;
 	}
@@ -88,7 +88,7 @@ int w_newQueueableSource(lua_State *L)
 
 	if (t != nullptr)
 	{
-		luax_pushtype(L, AUDIO_SOURCE_ID, t);
+		luax_pushtype(L, love::audio::Source::type, t);
 		t->release();
 		return 1;
 	}
@@ -150,7 +150,7 @@ int w_pause(lua_State *L)
 		lua_createtable(L, (int) sources.size(), 0);
 		for (int i = 0; i < (int) sources.size(); i++)
 		{
-			luax_pushtype(L, AUDIO_SOURCE_ID, sources[i]);
+			luax_pushtype(L, love::audio::Source::type, sources[i]);
 			lua_rawseti(L, -2, i+1);
 		}
 		return 1;
@@ -270,7 +270,7 @@ int w_getRecordedData(lua_State *L)
 		lua_pushnil(L);
 	else
 	{
-		luax_pushtype(L, SOUND_SOUND_DATA_ID, sd);
+		luax_pushtype(L, love::sound::SoundData::type, sd);
 		sd->release();
 	}
 	return 1;
@@ -285,7 +285,7 @@ int w_stopRecording(lua_State *L)
 			lua_pushnil(L);
 		else
 		{
-			luax_pushtype(L, SOUND_SOUND_DATA_ID, sd);
+			luax_pushtype(L, love::sound::SoundData::type, sd);
 			sd->release();
 		}
 		return 1;
@@ -395,7 +395,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "audio";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

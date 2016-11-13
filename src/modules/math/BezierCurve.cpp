@@ -83,6 +83,8 @@ namespace love
 namespace math
 {
 
+love::Type BezierCurve::type(&Object::type);
+
 BezierCurve::BezierCurve(const vector<Vector> &pts)
 	: controlPoints(pts)
 {

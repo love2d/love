@@ -67,8 +67,9 @@ static int w__type(lua_State *L)
 static int w__typeOf(lua_State *L)
 {
 	Proxy *p = (Proxy *)lua_touserdata(L, 1);
-	Type t = luax_type(L, 2);
-	luax_pushboolean(L, typeFlags[p->type][t]);
+	//Type t = luax_type(L, 2);
+	love::Type &t = Object::type; // FIXME
+	luax_pushboolean(L, p->type->isa(t));
 	return 1;
 }
 
@@ -248,7 +249,7 @@ int luax_require(lua_State *L, const char *name)
 
 int luax_register_module(lua_State *L, const WrappedModule &m)
 {
-	love::addTypeName(m.type, m.name);
+	love::addTypeName(m.type->getId(), m.name);
 
 	// Put a reference to the C++ module in Lua.
 	luax_insistregistry(L, REGISTRY_MODULES);
@@ -304,9 +305,9 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-int luax_register_type(lua_State *L, love::Type type, const char *name, ...)
+int luax_register_type(lua_State *L, love::Type &type, const char *name, ...)
 {
-	love::addTypeName(type, name);
+	love::addTypeName(type.getId(), name);
 
 	// Get the place for storing and re-using instantiated love types.
 	luax_getregistry(L, REGISTRY_OBJECTS);
@@ -375,10 +376,10 @@ int luax_register_type(lua_State *L, love::Type type, const char *name, ...)
 	return 0;
 }
 
-void luax_gettypemetatable(lua_State *L, love::Type type)
+void luax_gettypemetatable(lua_State *L, love::Type &type)
 {
 	const char *name = nullptr;
-	if (getTypeName(type, name))
+	if (getTypeName(type.getId(), name))
 		lua_getfield(L, LUA_REGISTRYINDEX, name);
 	else
 		lua_pushnil(L);
@@ -437,23 +438,23 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos)
 	return 0;
 }
 
-void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object)
+void luax_rawnewtype(lua_State *L, love::Type &type, love::Object *object)
 {
 	Proxy *u = (Proxy *)lua_newuserdata(L, sizeof(Proxy));
 
 	object->retain();
 
 	u->object = object;
-	u->type = type;
+	u->type = &type;
 
 	const char *name = "Invalid";
-	getTypeName(type, name);
+	getTypeName(type.getId(), name);
 
 	luaL_newmetatable(L, name);
 	lua_setmetatable(L, -2);
 }
 
-void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
+void luax_pushtype(lua_State *L, love::Type &type, love::Object *object)
 {
 	if (object == nullptr)
 	{
@@ -495,15 +496,15 @@ void luax_pushtype(lua_State *L, love::Type type, love::Object *object)
 	// Keep the Proxy userdata on the stack.
 }
 
-bool luax_istype(lua_State *L, int idx, love::Type type)
+bool luax_istype(lua_State *L, int idx, love::Type &type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 		return false;
 
 	Proxy *p = (Proxy *) lua_touserdata(L, idx);
 
-	if (p->type > INVALID_ID && p->type < TYPE_MAX_ENUM)
-		return typeFlags[p->type][type];
+	if (p->type != nullptr)
+		return p->type->isa(type);
 	else
 		return false;
 }
@@ -717,7 +718,7 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 
 			// Non-love userdata might have a type metamethod which doesn't
 			// describe its type properly, so we only use it for love types.
-			love::Type t;
+			uint32_t t;
 			if (!love::getTypeName(argtname, t))
 				argtname = 0;
 		}
@@ -752,9 +753,9 @@ void luax_register(lua_State *L, const char *name, const luaL_Reg *l)
 	}
 }
 
-Type luax_type(lua_State *L, int idx)
+uint32_t luax_type(lua_State *L, int idx)
 {
-	Type t = INVALID_ID;
+	uint32_t t = 0;
 	getTypeName(luaL_checkstring(L, idx), t);
 	return t;
 }

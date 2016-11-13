@@ -58,6 +58,8 @@ class ImageData : public Data
 {
 public:
 
+	static love::Type type;
+
 	enum Format
 	{
 		FORMAT_RGBA8,

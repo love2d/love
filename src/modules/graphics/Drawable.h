@@ -38,6 +38,8 @@ class Drawable : public Object
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Destructor.
 	 **/

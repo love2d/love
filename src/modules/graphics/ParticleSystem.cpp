@@ -50,6 +50,8 @@ float calculate_variation(float inner, float outer, float var)
 
 } // anonymous namespace
 
+love::Type ParticleSystem::type(&Drawable::type);
+
 ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	: pMem(nullptr)
 	, pFree(nullptr)

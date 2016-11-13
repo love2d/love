@@ -35,6 +35,8 @@ class BezierCurve : public Object
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * @param controlPoints Control polygon of the curve.
 	 **/

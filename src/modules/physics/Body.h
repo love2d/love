@@ -34,6 +34,8 @@ class Body : public Object
 {
 public:
 
+	static love::Type type;
+
 	enum Type
 	{
 		BODY_INVALID,

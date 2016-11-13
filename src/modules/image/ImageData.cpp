@@ -27,6 +27,8 @@ namespace love
 namespace image
 {
 
+love::Type ImageData::type(&Data::type);
+
 ImageData::ImageData()
 	: data(nullptr)
 {

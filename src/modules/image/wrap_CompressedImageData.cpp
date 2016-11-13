@@ -28,7 +28,7 @@ namespace image
 
 CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedImageData>(L, idx, IMAGE_COMPRESSED_IMAGE_DATA_ID);
+	return luax_checktype<CompressedImageData>(L, idx, CompressedImageData::type);
 }
 
 int w_CompressedImageData_getWidth(lua_State *L)
@@ -106,7 +106,7 @@ static const luaL_Reg w_CompressedImageData_functions[] =
 
 extern "C" int luaopen_compressedimagedata(lua_State *L)
 {
-	return luax_register_type(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, "CompressedImageData", w_Data_functions, w_CompressedImageData_functions, nullptr);
+	return luax_register_type(L, CompressedImageData::type, "CompressedImageData", w_Data_functions, w_CompressedImageData_functions, nullptr);
 }
 
 } // image

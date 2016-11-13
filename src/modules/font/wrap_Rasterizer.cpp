@@ -29,7 +29,7 @@ namespace font
 
 Rasterizer *luax_checkrasterizer(lua_State *L, int idx)
 {
-	return luax_checktype<Rasterizer>(L, idx, FONT_RASTERIZER_ID);
+	return luax_checktype<Rasterizer>(L, idx, Rasterizer::type);
 }
 
 int w_Rasterizer_getHeight(lua_State *L)
@@ -86,7 +86,7 @@ int w_Rasterizer_getGlyphData(lua_State *L)
 		}
 	});
 
-	luax_pushtype(L, FONT_GLYPH_DATA_ID, g);
+	luax_pushtype(L, GlyphData::type, g);
 	g->release();
 	return 1;
 }
@@ -139,7 +139,7 @@ const luaL_Reg w_Rasterizer_functions[] =
 
 extern "C" int luaopen_rasterizer(lua_State *L)
 {
-	return luax_register_type(L, FONT_RASTERIZER_ID, "Rasterizer", w_Rasterizer_functions, nullptr);
+	return luax_register_type(L, Rasterizer::type, "Rasterizer", w_Rasterizer_functions, nullptr);
 }
 
 } // font

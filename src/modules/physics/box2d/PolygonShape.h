@@ -42,6 +42,8 @@ class PolygonShape : public Shape
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Create a new PolygonShape from a Box2D polygon definition.
 	 * @param p The polygon definition.

@@ -58,6 +58,8 @@ void unGammaCorrectColor(Colorf &c)
 	}
 }
 
+love::Type Graphics::type(&Module::type);
+
 Graphics::~Graphics()
 {
 }

@@ -31,6 +31,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type Contact::type(&Object::type);
+
 Contact::Contact(b2Contact *contact)
 	: contact(contact)
 {

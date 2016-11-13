@@ -38,6 +38,8 @@ class Text : public Drawable
 {
 public:
 
+	static love::Type type;
+
 	Text(Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 

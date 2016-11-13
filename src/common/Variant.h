@@ -53,7 +53,7 @@ public:
 	Variant(double number);
 	Variant(const char *string, size_t len);
 	Variant(void *userdata);
-	Variant(love::Type udatatype, void *userdata);
+	Variant(love::Type *udatatype, void *userdata);
 	Variant(std::vector<std::pair<Variant, Variant>> *table);
 	Variant(const Variant &v);
 	Variant(Variant &&v);
@@ -101,7 +101,7 @@ private:
 	static const int MAX_SMALL_STRING_LENGTH = 15;
 
 	Type type;
-	love::Type udatatype;
+	love::Type *udatatype;
 
 	union Data
 	{

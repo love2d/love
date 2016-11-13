@@ -25,7 +25,7 @@ namespace love
 
 Data *luax_checkdata(lua_State *L, int idx)
 {
-	return luax_checktype<Data>(L, idx, DATA_ID);
+	return luax_checktype<Data>(L, idx, Data::type);
 }
 
 int w_Data_getString(lua_State *L)
@@ -59,7 +59,7 @@ const luaL_Reg w_Data_functions[] =
 
 int w_Data_open(lua_State *L)
 {
-	luax_register_type(L, DATA_ID, "Data", w_Data_functions, nullptr);
+	luax_register_type(L, Data::type, "Data", w_Data_functions, nullptr);
 	return 0;
 }
 

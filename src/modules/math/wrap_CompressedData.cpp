@@ -29,7 +29,7 @@ namespace math
 
 CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedData>(L, idx, MATH_COMPRESSED_DATA_ID);
+	return luax_checktype<CompressedData>(L, idx, CompressedData::type);
 }
 
 int w_CompressedData_getFormat(lua_State *L)
@@ -53,7 +53,7 @@ static const luaL_Reg w_CompressedData_functions[] =
 
 extern "C" int luaopen_compresseddata(lua_State *L)
 {
-	return luax_register_type(L, MATH_COMPRESSED_DATA_ID, "CompressedData", w_Data_functions, w_CompressedData_functions, nullptr);
+	return luax_register_type(L, CompressedData::type, "CompressedData", w_Data_functions, w_CompressedData_functions, nullptr);
 }
 
 } // math

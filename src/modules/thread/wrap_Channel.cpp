@@ -27,7 +27,7 @@ namespace thread
 
 Channel *luax_checkchannel(lua_State *L, int idx)
 {
-	return luax_checktype<Channel>(L, idx, THREAD_CHANNEL_ID);
+	return luax_checktype<Channel>(L, idx, Channel::type);
 }
 
 int w_Channel_push(lua_State *L)
@@ -147,7 +147,7 @@ static const luaL_Reg w_Channel_functions[] =
 
 extern "C" int luaopen_channel(lua_State *L)
 {
-	return luax_register_type(L, THREAD_CHANNEL_ID, "Channel", w_Channel_functions, nullptr);
+	return luax_register_type(L, Channel::type, "Channel", w_Channel_functions, nullptr);
 }
 
 } // thread

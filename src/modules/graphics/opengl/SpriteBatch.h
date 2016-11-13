@@ -52,6 +52,8 @@ class SpriteBatch : public Drawable
 {
 public:
 
+	static love::Type type;
+
 	SpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 	virtual ~SpriteBatch();
 

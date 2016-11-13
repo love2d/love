@@ -39,6 +39,8 @@ class PrismaticJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a new PrismaticJoint connecting body1 and body2.
 	 **/

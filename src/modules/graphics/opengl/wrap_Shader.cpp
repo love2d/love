@@ -35,7 +35,7 @@ namespace opengl
 
 Shader *luax_checkshader(lua_State *L, int idx)
 {
-	return luax_checktype<Shader>(L, idx, GRAPHICS_SHADER_ID);
+	return luax_checktype<Shader>(L, idx, Shader::type);
 }
 
 int w_Shader_getWarnings(lua_State *L)
@@ -317,7 +317,7 @@ static const luaL_Reg w_Shader_functions[] =
 
 extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SHADER_ID, "Shader", w_Shader_functions, nullptr);
+	return luax_register_type(L, Shader::type, "Shader", w_Shader_functions, nullptr);
 }
 
 } // opengl

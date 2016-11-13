@@ -37,6 +37,8 @@ namespace love
 namespace filesystem
 {
 
+love::Type DroppedFile::type(&File::type);
+
 DroppedFile::DroppedFile(const std::string &filename)
 	: filename(filename)
 	, file(nullptr)

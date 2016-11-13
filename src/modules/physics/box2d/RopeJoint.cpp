@@ -32,6 +32,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type RopeJoint::type(&Joint::type);
+
 RopeJoint::RopeJoint(Body *body1, Body *body2, float x1, float y1, float x2, float y2, float maxLength, bool collideConnected)
 	: Joint(body1, body2)
 	, joint(NULL)

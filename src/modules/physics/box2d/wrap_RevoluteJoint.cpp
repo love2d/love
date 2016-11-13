@@ -30,7 +30,7 @@ namespace box2d
 
 RevoluteJoint *luax_checkrevolutejoint(lua_State *L, int idx)
 {
-	RevoluteJoint *j = luax_checktype<RevoluteJoint>(L, idx, PHYSICS_REVOLUTE_JOINT_ID);
+	RevoluteJoint *j = luax_checktype<RevoluteJoint>(L, idx, RevoluteJoint::type);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -196,7 +196,7 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 
 extern "C" int luaopen_revolutejoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_REVOLUTE_JOINT_ID, "RevoluteJoint", w_Joint_functions, w_RevoluteJoint_functions, nullptr);
+	return luax_register_type(L, RevoluteJoint::type, "RevoluteJoint", w_Joint_functions, w_RevoluteJoint_functions, nullptr);
 }
 
 } // box2d

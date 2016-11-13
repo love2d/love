@@ -61,6 +61,8 @@ class Filesystem : public Module
 {
 public:
 
+	static love::Type type;
+
 	Filesystem();
 	virtual ~Filesystem();
 

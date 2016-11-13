@@ -43,6 +43,8 @@ class MouseJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a MouseJoint which connects body1 to the target point.
 	 **/

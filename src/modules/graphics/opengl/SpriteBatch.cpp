@@ -41,6 +41,8 @@ namespace graphics
 namespace opengl
 {
 
+love::Type SpriteBatch::type(&Drawable::type);
+
 SpriteBatch::SpriteBatch(Texture *texture, int size, Mesh::Usage usage)
 	: texture(texture)
 	, size(size)

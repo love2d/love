@@ -40,6 +40,8 @@ class Texture : public Drawable
 {
 public:
 
+	static love::Type type;
+
 	enum WrapMode
 	{
 		WRAP_CLAMP,

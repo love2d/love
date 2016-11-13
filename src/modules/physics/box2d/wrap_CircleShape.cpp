@@ -29,7 +29,7 @@ namespace box2d
 
 CircleShape *luax_checkcircleshape(lua_State *L, int idx)
 {
-	return luax_checktype<CircleShape>(L, idx, PHYSICS_CIRCLE_SHAPE_ID);
+	return luax_checktype<CircleShape>(L, idx, CircleShape::type);
 }
 
 int w_CircleShape_getRadius(lua_State *L)
@@ -75,7 +75,7 @@ static const luaL_Reg w_CircleShape_functions[] =
 
 extern "C" int luaopen_circleshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CIRCLE_SHAPE_ID, "CircleShape", w_Shape_functions, w_CircleShape_functions, nullptr);
+	return luax_register_type(L, CircleShape::type, "CircleShape", w_Shape_functions, w_CircleShape_functions, nullptr);
 }
 
 } // box2d

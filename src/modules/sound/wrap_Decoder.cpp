@@ -31,7 +31,7 @@ namespace sound
 
 Decoder *luax_checkdecoder(lua_State *L, int idx)
 {
-	return luax_checktype<Decoder>(L, idx, SOUND_DECODER_ID);
+	return luax_checktype<Decoder>(L, idx, Decoder::type);
 }
 
 int w_Decoder_getChannels(lua_State *L)
@@ -74,7 +74,7 @@ int w_Decoder_decode(lua_State *L)
 				decoded / (t->getBitDepth() / 8 * t->getChannels()),
 				t->getSampleRate(), t->getBitDepth(), t->getChannels());
 
-			luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
+			luax_pushtype(L, SoundData::type, s);
 			s->release();
 		});
 	}
@@ -109,7 +109,7 @@ static const luaL_Reg w_Decoder_functions[] =
 
 extern "C" int luaopen_decoder(lua_State *L)
 {
-	return luax_register_type(L, SOUND_DECODER_ID, "Decoder", w_Decoder_functions, nullptr);
+	return luax_register_type(L, Decoder::type, "Decoder", w_Decoder_functions, nullptr);
 }
 
 } // sound

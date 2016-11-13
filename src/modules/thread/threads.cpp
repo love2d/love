@@ -74,6 +74,8 @@ void EmptyLock::setLock(Mutex &m)
 	mutex = &m;
 }
 
+love::Type Threadable::type(&Object::type);
+
 Threadable::Threadable()
 {
 	owner = newThread(this);

@@ -34,6 +34,8 @@ class Source : public Object
 {
 public:
 
+	static love::Type type;
+
 	enum Type
 	{
 		TYPE_STATIC,
@@ -114,7 +116,7 @@ public:
 
 protected:
 
-	Type type;
+	Type sourceType;
 
 private:
 

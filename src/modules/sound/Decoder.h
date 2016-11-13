@@ -39,6 +39,8 @@ class Decoder : public Object
 {
 public:
 
+	static love::Type type;
+
 	Decoder(Data *data, const std::string &ext, int bufferSize);
 	virtual ~Decoder();
 

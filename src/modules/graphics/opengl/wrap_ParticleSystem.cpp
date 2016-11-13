@@ -41,7 +41,7 @@ namespace opengl
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
 {
-	return luax_checktype<ParticleSystem>(L, idx, GRAPHICS_PARTICLE_SYSTEM_ID);
+	return luax_checktype<ParticleSystem>(L, idx, ParticleSystem::type);
 }
 
 int w_ParticleSystem_clone(lua_State *L)
@@ -51,7 +51,7 @@ int w_ParticleSystem_clone(lua_State *L)
 	ParticleSystem *clone = nullptr;
 	luax_catchexcept(L, [&](){ clone = t->clone(); });
 
-	luax_pushtype(L, GRAPHICS_PARTICLE_SYSTEM_ID, clone);
+	luax_pushtype(L, ParticleSystem::type, clone);
 	clone->release();
 	return 1;
 }
@@ -71,9 +71,9 @@ int w_ParticleSystem_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
+		luax_pushtype(L, Image::type, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
+		luax_pushtype(L, Canvas::type, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -584,7 +584,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 		{
 			lua_rawgeti(L, 2, i);
 
-			Quad *q = luax_checktype<Quad>(L, -1, GRAPHICS_QUAD_ID);
+			Quad *q = luax_checktype<Quad>(L, -1, Quad::type);
 			quads.push_back(q);
 
 			lua_pop(L, 1);
@@ -594,7 +594,7 @@ int w_ParticleSystem_setQuads(lua_State *L)
 	{
 		for (int i = 2; i <= lua_gettop(L); i++)
 		{
-			Quad *q = luax_checktype<Quad>(L, i, GRAPHICS_QUAD_ID);
+			Quad *q = luax_checktype<Quad>(L, i, Quad::type);
 			quads.push_back(q);
 		}
 	}
@@ -612,7 +612,7 @@ int w_ParticleSystem_getQuads(lua_State *L)
 
 	for (int i = 0; i < (int) quads.size(); i++)
 	{
-		luax_pushtype(L, GRAPHICS_QUAD_ID, quads[i]);
+		luax_pushtype(L, Quad::type, quads[i]);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -772,7 +772,7 @@ static const luaL_Reg w_ParticleSystem_functions[] =
 
 extern "C" int luaopen_particlesystem(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_PARTICLE_SYSTEM_ID, "ParticleSystem", w_ParticleSystem_functions, nullptr);
+	return luax_register_type(L, ParticleSystem::type, "ParticleSystem", w_ParticleSystem_functions, nullptr);
 }
 
 } // opengl

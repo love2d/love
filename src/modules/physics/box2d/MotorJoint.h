@@ -40,6 +40,8 @@ class MotorJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	MotorJoint(Body *body1, Body* body2);
 	MotorJoint(Body *body1, Body* body2, float correctionFactor, bool collideConnected);
 	virtual ~MotorJoint();

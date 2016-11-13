@@ -35,6 +35,8 @@ class SoundData : public love::Data
 {
 public:
 
+	static love::Type type;
+
 	SoundData(Decoder *decoder);
 	SoundData(int samples, int sampleRate, int bitDepth, int channels);
 	SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels);

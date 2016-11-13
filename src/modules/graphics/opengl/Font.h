@@ -50,6 +50,8 @@ class Font : public Object, public Volatile
 {
 public:
 
+	static love::Type type;
+
 	typedef std::vector<uint32> Codepoints;
 
 	enum AlignMode
@@ -235,7 +237,7 @@ private:
 	// map of left/right glyph pairs to horizontal kerning.
 	std::unordered_map<uint64, float> kerning;
 
-	FontType type;
+	FontType fontType;
 	Texture::Filter filter;
 
 	int textureX, textureY;

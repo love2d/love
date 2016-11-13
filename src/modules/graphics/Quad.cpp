@@ -29,6 +29,8 @@ namespace love
 namespace graphics
 {
 
+love::Type Quad::type(&Object::type);
+
 Quad::Quad(const Quad::Viewport &v, double sw, double sh)
 	: sw(sw)
 	, sh(sh)

@@ -39,6 +39,8 @@ namespace graphics
 namespace opengl
 {
 
+love::Type Font::type(&Object::type);
+
 static inline uint16 normToUint16(double n)
 {
 	return (uint16) (n * LOVE_UINT16_MAX);
@@ -77,7 +79,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	}
 
 	love::font::GlyphData *gd = r->getGlyphData(32); // Space character.
-	type = (gd->getFormat() == font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
+	fontType = (gd->getFormat() == font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
 	gd->release();
 
 	if (!r->hasGlyph(9)) // No tab character in the Rasterizer.
@@ -142,7 +144,7 @@ void Font::createTexture()
 {
 	OpenGL::TempDebugGroup debuggroup("Font create texture");
 
-	size_t bpp = type == FONT_TRUETYPE ? 2 : 4;
+	size_t bpp = fontType == FONT_TRUETYPE ? 2 : 4;
 
 	size_t prevmemsize = textureMemorySize;
 	if (prevmemsize > 0)
@@ -177,7 +179,7 @@ void Font::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	GLenum internalformat = GL_RGBA;
-	GLenum format = getTextureFormat(type, &internalformat);
+	GLenum format = getTextureFormat(fontType, &internalformat);
 
 	// Initialize the texture with transparent black.
 	std::vector<GLubyte> emptydata(size.width * size.height * bpp, 0);
@@ -285,7 +287,7 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	// don't waste space for empty glyphs. also fixes a divide by zero bug with ATI drivers
 	if (w > 0 && h > 0)
 	{
-		GLenum format = getTextureFormat(type);
+		GLenum format = getTextureFormat(fontType);
 		g.texture = textures.back();
 
 		gl.bindTextureToUnit(g.texture, 0, false);
@@ -1021,7 +1023,7 @@ int Font::getDescent() const
 float Font::getBaseline() const
 {
 	// 1.25 is magic line height for true type fonts
-	return (type == FONT_TRUETYPE) ? floorf(getHeight() / 1.25f + 0.5f) : 0.0f;
+	return (fontType == FONT_TRUETYPE) ? floorf(getHeight() / 1.25f + 0.5f) : 0.0f;
 }
 
 bool Font::hasGlyph(uint32 glyph) const
@@ -1065,7 +1067,7 @@ void Font::setFallbacks(const std::vector<Font *> &fallbacks)
 {
 	for (const Font *f : fallbacks)
 	{
-		if (f->type != this->type)
+		if (f->fontType != this->fontType)
 			throw love::Exception("Font fallbacks must be of the same font type.");
 	}
 

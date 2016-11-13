@@ -34,6 +34,8 @@ class Shape : public Object
 {
 public:
 
+	static love::Type type;
+
 	enum Type
 	{
 		SHAPE_INVALID,

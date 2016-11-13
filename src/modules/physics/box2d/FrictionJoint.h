@@ -38,6 +38,8 @@ class FrictionJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a new FrictionJoint connecting body1 and body2.
 	 **/

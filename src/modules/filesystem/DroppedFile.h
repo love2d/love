@@ -41,6 +41,8 @@ class DroppedFile : public File
 {
 public:
 
+	static love::Type type;
+
 	DroppedFile(const std::string &filename);
 	virtual ~DroppedFile();
 

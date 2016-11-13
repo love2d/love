@@ -32,6 +32,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type GearJoint::type(&Joint::type);
+
 GearJoint::GearJoint(Joint *joint1, Joint *joint2, float ratio, bool collideConnected)
 	: Joint(joint1->body2, joint2->body2)
 	, joint(NULL)

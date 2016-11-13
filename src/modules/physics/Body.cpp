@@ -25,6 +25,8 @@ namespace love
 namespace physics
 {
 
+love::Type Body::type(&Object::type);
+
 Body::~Body()
 {
 }

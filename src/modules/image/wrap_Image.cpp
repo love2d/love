@@ -73,7 +73,7 @@ int w_newImageData(lua_State *L)
 			memcpy(t->getData(), bytes, t->getSize());
 		}
 
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
+		luax_pushtype(L, ImageData::type, t);
 		t->release();
 		return 1;
 	}
@@ -87,7 +87,7 @@ int w_newImageData(lua_State *L)
 			[&](bool) { data->release(); }
 		);
 
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
+		luax_pushtype(L, ImageData::type, t);
 		t->release();
 		return 1;
 	}
@@ -107,7 +107,7 @@ int w_newCompressedData(lua_State *L)
 		[&](bool) { data->release(); }
 	);
 
-	luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, t);
+	luax_pushtype(L, CompressedImageData::type, t);
 	t->release();
 	return 1;
 }
@@ -151,7 +151,7 @@ extern "C" int luaopen_love_image(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "image";
-	w.type = MODULE_IMAGE_ID;
+	w.type = &Image::type;
 	w.functions = functions;
 	w.types = types;
 

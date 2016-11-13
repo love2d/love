@@ -29,7 +29,7 @@ namespace box2d
 
 DistanceJoint *luax_checkdistancejoint(lua_State *L, int idx)
 {
-	DistanceJoint *j = luax_checktype<DistanceJoint>(L, idx, PHYSICS_DISTANCE_JOINT_ID);
+	DistanceJoint *j = luax_checktype<DistanceJoint>(L, idx, DistanceJoint::type);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -93,7 +93,7 @@ static const luaL_Reg w_DistanceJoint_functions[] =
 
 extern "C" int luaopen_distancejoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_DISTANCE_JOINT_ID, "DistanceJoint", w_Joint_functions, w_DistanceJoint_functions, nullptr);
+	return luax_register_type(L, DistanceJoint::type, "DistanceJoint", w_Joint_functions, w_DistanceJoint_functions, nullptr);
 }
 
 } // box2d
