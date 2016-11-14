@@ -84,7 +84,7 @@ static const luaL_Reg w_Quad_functions[] =
 
 extern "C" int luaopen_quad(lua_State *L)
 {
-	return luax_register_type(L, Quad::type, w_Quad_functions, nullptr);
+	return luax_register_type(L, &Quad::type, w_Quad_functions, nullptr);
 }
 
 } // graphics

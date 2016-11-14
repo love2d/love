@@ -181,7 +181,7 @@ static const luaL_Reg w_Contact_functions[] =
 
 extern "C" int luaopen_contact(lua_State *L)
 {
-	return luax_register_type(L, Contact::type, w_Contact_functions, nullptr);
+	return luax_register_type(L, &Contact::type, w_Contact_functions, nullptr);
 }
 
 } // box2d

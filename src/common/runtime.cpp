@@ -307,9 +307,9 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-int luax_register_type(lua_State *L, love::Type &type, ...)
+int luax_register_type(lua_State *L, love::Type *type, ...)
 {
-	type.init();
+	type->init();
 
 	// Get the place for storing and re-using instantiated love types.
 	luax_getregistry(L, REGISTRY_OBJECTS);
@@ -336,7 +336,7 @@ int luax_register_type(lua_State *L, love::Type &type, ...)
 	else
 		lua_pop(L, 1);
 
-	luaL_newmetatable(L, type.getName());
+	luaL_newmetatable(L, type->getName());
 
 	// m.__index = m
 	lua_pushvalue(L, -1);
@@ -351,12 +351,12 @@ int luax_register_type(lua_State *L, love::Type &type, ...)
 	lua_setfield(L, -2, "__eq");
 
 	// Add tostring function.
-	lua_pushstring(L, type.getName());
+	lua_pushstring(L, type->getName());
 	lua_pushcclosure(L, w__tostring, 1);
 	lua_setfield(L, -2, "__tostring");
 
 	// Add type
-	lua_pushstring(L, type.getName());
+	lua_pushstring(L, type->getName());
 	lua_pushcclosure(L, w__type, 1);
 	lua_setfield(L, -2, "type");
 

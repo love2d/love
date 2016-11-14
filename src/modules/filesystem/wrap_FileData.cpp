@@ -56,7 +56,7 @@ static const luaL_Reg w_FileData_functions[] =
 
 extern "C" int luaopen_filedata(lua_State *L)
 {
-	return luax_register_type(L, FileData::type, w_Data_functions, w_FileData_functions, nullptr);
+	return luax_register_type(L, &FileData::type, w_Data_functions, w_FileData_functions, nullptr);
 }
 
 } // filesystem

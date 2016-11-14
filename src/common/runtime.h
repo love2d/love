@@ -249,11 +249,12 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
 
 /**
  * Register a new type.
+ * NOTE: The type is passed by pointer instead of reference because calling va_start
+ * on a reference is undefined behaviour.
  * @param type The type.
- * @param name The type's human-readable name
  * @param ... The list of lists of member functions for the type. (of type luaL_Reg*)
  **/
-int luax_register_type(lua_State *L, love::Type &type, ...);
+int luax_register_type(lua_State *L, love::Type *type, ...);
 
 /**
  * Pushes the metatable of the specified type onto the stack.

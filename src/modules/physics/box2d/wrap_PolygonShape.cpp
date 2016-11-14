@@ -55,7 +55,7 @@ static const luaL_Reg w_PolygonShape_functions[] =
 
 extern "C" int luaopen_polygonshape(lua_State *L)
 {
-	return luax_register_type(L, PolygonShape::type, w_Shape_functions, w_PolygonShape_functions, nullptr);
+	return luax_register_type(L, &PolygonShape::type, w_Shape_functions, w_PolygonShape_functions, nullptr);
 }
 
 } // box2d

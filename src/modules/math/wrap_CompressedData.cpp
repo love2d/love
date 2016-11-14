@@ -53,7 +53,7 @@ static const luaL_Reg w_CompressedData_functions[] =
 
 extern "C" int luaopen_compresseddata(lua_State *L)
 {
-	return luax_register_type(L, CompressedData::type, w_Data_functions, w_CompressedData_functions, nullptr);
+	return luax_register_type(L, &CompressedData::type, w_Data_functions, w_CompressedData_functions, nullptr);
 }
 
 } // math

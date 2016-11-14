@@ -127,7 +127,7 @@ static const luaL_Reg w_MotorJoint_functions[] =
 
 extern "C" int luaopen_motorjoint(lua_State *L)
 {
-	return luax_register_type(L, MotorJoint::type, w_Joint_functions, w_MotorJoint_functions, nullptr);
+	return luax_register_type(L, &MotorJoint::type, w_Joint_functions, w_MotorJoint_functions, nullptr);
 }
 
 

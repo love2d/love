@@ -87,7 +87,7 @@ static const luaL_Reg w_Thread_functions[] =
 
 extern "C" int luaopen_thread(lua_State *L)
 {
-	return luax_register_type(L, LuaThread::type, w_Thread_functions, nullptr);
+	return luax_register_type(L, &LuaThread::type, w_Thread_functions, nullptr);
 }
 
 } // thread

@@ -150,7 +150,7 @@ static const luaL_Reg w_Image_functions[] =
 
 extern "C" int luaopen_image(lua_State *L)
 {
-	return luax_register_type(L, Image::type, w_Texture_functions, w_Image_functions, nullptr);
+	return luax_register_type(L, &Image::type, w_Texture_functions, w_Image_functions, nullptr);
 }
 
 } // opengl

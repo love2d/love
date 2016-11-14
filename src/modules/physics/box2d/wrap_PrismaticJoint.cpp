@@ -204,7 +204,7 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 
 extern "C" int luaopen_prismaticjoint(lua_State *L)
 {
-	return luax_register_type(L, PrismaticJoint::type, w_Joint_functions, w_PrismaticJoint_functions, nullptr);
+	return luax_register_type(L, &PrismaticJoint::type, w_Joint_functions, w_PrismaticJoint_functions, nullptr);
 }
 
 } // box2d

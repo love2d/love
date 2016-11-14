@@ -61,7 +61,7 @@ static const luaL_Reg w_Cursor_functions[] =
 
 extern "C" int luaopen_cursor(lua_State *L)
 {
-	return luax_register_type(L, Cursor::type, w_Cursor_functions, nullptr);
+	return luax_register_type(L, &Cursor::type, w_Cursor_functions, nullptr);
 }
 
 } // mouse

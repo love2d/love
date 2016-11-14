@@ -296,7 +296,7 @@ static const luaL_Reg w_Joystick_functions[] =
 
 extern "C" int luaopen_joystick(lua_State *L)
 {
-	return luax_register_type(L, Joystick::type, w_Joystick_functions, nullptr);
+	return luax_register_type(L, &Joystick::type, w_Joystick_functions, nullptr);
 }
 
 } // joystick

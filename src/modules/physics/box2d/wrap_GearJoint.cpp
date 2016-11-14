@@ -77,7 +77,7 @@ static const luaL_Reg w_GearJoint_functions[] =
 
 extern "C" int luaopen_gearjoint(lua_State *L)
 {
-	return luax_register_type(L, GearJoint::type, w_Joint_functions, w_GearJoint_functions, nullptr);
+	return luax_register_type(L, &GearJoint::type, w_Joint_functions, w_GearJoint_functions, nullptr);
 }
 
 } // box2d

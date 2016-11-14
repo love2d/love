@@ -75,7 +75,7 @@ static const luaL_Reg w_CircleShape_functions[] =
 
 extern "C" int luaopen_circleshape(lua_State *L)
 {
-	return luax_register_type(L, CircleShape::type, w_Shape_functions, w_CircleShape_functions, nullptr);
+	return luax_register_type(L, &CircleShape::type, w_Shape_functions, w_CircleShape_functions, nullptr);
 }
 
 } // box2d

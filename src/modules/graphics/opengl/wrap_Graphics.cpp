@@ -2090,7 +2090,7 @@ static const luaL_Reg functions[] =
 
 static int luaopen_drawable(lua_State *L)
 {
-	return luax_register_type(L, Drawable::type, nullptr);
+	return luax_register_type(L, &Drawable::type, nullptr);
 }
 
 // Types for this module.
