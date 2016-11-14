@@ -25,7 +25,7 @@ namespace love
 namespace image
 {
 
-love::Type CompressedImageData::type(&Data::type);
+love::Type CompressedImageData::type("CompressedImageData", &Data::type);
 
 CompressedImageData::CompressedImageData()
 	: format(FORMAT_UNKNOWN)

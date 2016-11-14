@@ -182,7 +182,7 @@ const luaL_Reg w_Joint_functions[] =
 
 extern "C" int luaopen_joint(lua_State *L)
 {
-	return luax_register_type(L, Joint::type, "Joint", w_Joint_functions, nullptr);
+	return luax_register_type(L, Joint::type, w_Joint_functions, nullptr);
 }
 
 } // box2d

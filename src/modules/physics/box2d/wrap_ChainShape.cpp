@@ -149,7 +149,7 @@ static const luaL_Reg w_ChainShape_functions[] =
 
 extern "C" int luaopen_chainshape(lua_State *L)
 {
-	return luax_register_type(L, ChainShape::type, "ChainShape", w_Shape_functions, w_ChainShape_functions, nullptr);
+	return luax_register_type(L, ChainShape::type, w_Shape_functions, w_ChainShape_functions, nullptr);
 }
 
 } // box2d

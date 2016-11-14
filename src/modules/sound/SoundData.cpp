@@ -34,7 +34,7 @@ namespace love
 namespace sound
 {
 
-love::Type SoundData::type(&Data::type);
+love::Type SoundData::type("SoundData", &Data::type);
 
 SoundData::SoundData(Decoder *decoder)
 	: data(0)

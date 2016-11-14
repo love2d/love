@@ -34,7 +34,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type WeldJoint::type(&Joint::type);
+love::Type WeldJoint::type("WeldJoint", &Joint::type);
 
 WeldJoint::WeldJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	: Joint(body1, body2)

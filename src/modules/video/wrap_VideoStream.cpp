@@ -124,7 +124,7 @@ static const luaL_Reg videostream_functions[] =
 
 int luaopen_videostream(lua_State *L)
 {
-	return luax_register_type(L, VideoStream::type, "VideoStream", videostream_functions, nullptr);
+	return luax_register_type(L, VideoStream::type, videostream_functions, nullptr);
 }
 
 } // video

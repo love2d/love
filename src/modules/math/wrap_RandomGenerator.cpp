@@ -147,7 +147,7 @@ static const luaL_Reg w_RandomGenerator_functions[] =
 
 extern "C" int luaopen_randomgenerator(lua_State *L)
 {
-	int n = luax_register_type(L, RandomGenerator::type, "RandomGenerator", w_RandomGenerator_functions, nullptr);
+	int n = luax_register_type(L, RandomGenerator::type, w_RandomGenerator_functions, nullptr);
 
 	luax_gettypemetatable(L, RandomGenerator::type);
 

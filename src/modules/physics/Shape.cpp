@@ -25,7 +25,7 @@ namespace love
 namespace physics
 {
 
-love::Type Shape::type(&Object::type);
+love::Type Shape::type("Shape", &Object::type);
 
 Shape::~Shape()
 {

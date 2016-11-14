@@ -25,7 +25,7 @@ namespace love
 namespace audio
 {
 
-love::Type Source::type(&Object::type);
+love::Type Source::type("Source", &Object::type);
 
 Source::Source(Type sourceType)
 	: sourceType(sourceType)

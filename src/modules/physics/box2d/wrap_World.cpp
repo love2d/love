@@ -237,7 +237,7 @@ static const luaL_Reg w_World_functions[] =
 
 extern "C" int luaopen_world(lua_State *L)
 {
-	return luax_register_type(L, World::type, "World", w_World_functions, nullptr);
+	return luax_register_type(L, World::type, w_World_functions, nullptr);
 }
 
 } // box2d

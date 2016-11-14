@@ -58,7 +58,7 @@ static std::vector<Mesh::AttribFormat> getDefaultVertexFormat()
 	return vertexformat;
 }
 
-love::Type Mesh::type(&Drawable::type);
+love::Type Mesh::type("Mesh", &Drawable::type);
 
 Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, Usage usage)
 	: vertexFormat(vertexformat)

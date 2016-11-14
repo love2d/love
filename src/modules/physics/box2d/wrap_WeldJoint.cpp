@@ -84,7 +84,7 @@ static const luaL_Reg w_WeldJoint_functions[] =
 
 extern "C" int luaopen_weldjoint(lua_State *L)
 {
-	return luax_register_type(L, WeldJoint::type, "WeldJoint", w_Joint_functions, w_WeldJoint_functions, nullptr);
+	return luax_register_type(L, WeldJoint::type, w_Joint_functions, w_WeldJoint_functions, nullptr);
 }
 
 } // box2d

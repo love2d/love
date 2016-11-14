@@ -33,7 +33,7 @@ namespace love
 namespace font
 {
 
-love::Type GlyphData::type(&Data::type);
+love::Type GlyphData::type("GlyphData", &Data::type);
 
 GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
 	: glyph(glyph)

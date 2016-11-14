@@ -27,7 +27,7 @@ namespace love
 namespace sound
 {
 
-love::Type Decoder::type(&Object::type);
+love::Type Decoder::type("Decoder", &Object::type);
 
 Decoder::Decoder(Data *data, const std::string &ext, int bufferSize)
 	: data(data)

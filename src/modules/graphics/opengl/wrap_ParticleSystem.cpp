@@ -772,7 +772,7 @@ static const luaL_Reg w_ParticleSystem_functions[] =
 
 extern "C" int luaopen_particlesystem(lua_State *L)
 {
-	return luax_register_type(L, ParticleSystem::type, "ParticleSystem", w_ParticleSystem_functions, nullptr);
+	return luax_register_type(L, ParticleSystem::type, w_ParticleSystem_functions, nullptr);
 }
 
 } // opengl

@@ -139,7 +139,7 @@ const luaL_Reg w_Rasterizer_functions[] =
 
 extern "C" int luaopen_rasterizer(lua_State *L)
 {
-	return luax_register_type(L, Rasterizer::type, "Rasterizer", w_Rasterizer_functions, nullptr);
+	return luax_register_type(L, Rasterizer::type, w_Rasterizer_functions, nullptr);
 }
 
 } // font

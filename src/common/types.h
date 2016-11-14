@@ -30,31 +30,29 @@
 namespace love
 {
 
-void addTypeName(uint32 type, const char *name);
-bool getTypeName(const char *in, uint32 &out);
-bool getTypeName(uint32 in, const char *&out);
-
 class Type
 {
 public:
 	static const uint32 MAX_TYPES = 128;
 
-	// TODO: Type-checking templated constructor
-	Type(Type *parent);
+	Type(const char *name, Type *parent);
 	Type(const Type&) = delete;
 
+	void init();
 	uint32 getId();
 	bool isa(const uint32 &other);
 	bool isa(Type &other);
+	const char *getName() const;
+
+	static Type *byName(const char *name);
 
 private:
 	static uint32 nextId;
-	void init();
 
-	bool inited;
-	Type *parent;
-
+	const char * const name;
+	Type * const parent;
 	uint32 id;
+	bool inited;
 	std::bitset<MAX_TYPES> bits;
 };
 

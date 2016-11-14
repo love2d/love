@@ -25,8 +25,7 @@ namespace love
 namespace graphics
 {
 
-love::Type Texture::type(&Drawable::type);
-
+love::Type Texture::type("Texture", &Drawable::type);
 Texture::Filter Texture::defaultFilter;
 
 Texture::Texture()

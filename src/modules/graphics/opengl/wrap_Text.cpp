@@ -245,7 +245,7 @@ static const luaL_Reg w_Text_functions[] =
 
 extern "C" int luaopen_text(lua_State *L)
 {
-	return luax_register_type(L, Text::type, "Text", w_Text_functions, nullptr);
+	return luax_register_type(L, Text::type, w_Text_functions, nullptr);
 }
 
 } // opengl

@@ -88,7 +88,7 @@ static GLenum createMSAABuffer(int width, int height, int &samples, GLenum iform
 	return status;
 }
 
-love::Type Canvas::type(&Texture::type);
+love::Type Canvas::type("Canvas", &Texture::type);
 Canvas *Canvas::current = nullptr;
 OpenGL::Viewport Canvas::systemViewport = OpenGL::Viewport();
 bool Canvas::screenHasSRGB = false;

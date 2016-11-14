@@ -39,13 +39,12 @@ namespace graphics
 namespace opengl
 {
 
-love::Type Font::type(&Object::type);
-
 static inline uint16 normToUint16(double n)
 {
 	return (uint16) (n * LOVE_UINT16_MAX);
 }
 
+love::Type Font::type("Font", &Object::type);
 int Font::fontCount = 0;
 
 Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)

@@ -29,7 +29,7 @@ namespace love
 namespace joystick
 {
 
-love::Type Joystick::type(&Object::type);
+love::Type Joystick::type("Joystick", &Object::type);
 
 float Joystick::clampval(float x)
 {

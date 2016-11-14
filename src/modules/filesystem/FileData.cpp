@@ -29,7 +29,7 @@ namespace love
 namespace filesystem
 {
 
-love::Type FileData::type(&Data::type);
+love::Type FileData::type("FileData", &Data::type);
 
 FileData::FileData(uint64 size, const std::string &filename)
 	: data(nullptr)

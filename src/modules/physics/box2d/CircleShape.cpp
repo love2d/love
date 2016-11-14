@@ -34,7 +34,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type CircleShape::type(&Shape::type);
+love::Type CircleShape::type("CircleShape", &Shape::type);
 
 CircleShape::CircleShape(b2CircleShape *c, bool own)
 	: Shape(c, own)

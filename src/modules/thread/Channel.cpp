@@ -27,7 +27,7 @@ namespace love
 namespace thread
 {
 
-love::Type Channel::type(&Object::type);
+love::Type Channel::type("Channel", &Object::type);
 static std::map<std::string, Channel *> namedChannels;
 static Mutex *namedChannelMutex;
 

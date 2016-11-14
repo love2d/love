@@ -34,7 +34,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type World::type(&Object::type);
+love::Type World::type("World", &Object::type);
 
 World::ContactCallback::ContactCallback()
 	: ref(nullptr)

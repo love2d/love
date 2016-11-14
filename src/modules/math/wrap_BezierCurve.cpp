@@ -234,7 +234,7 @@ static const luaL_Reg w_BezierCurve_functions[] =
 
 extern "C" int luaopen_beziercurve(lua_State *L)
 {
-	return luax_register_type(L, BezierCurve::type, "BezierCurve", w_BezierCurve_functions, nullptr);
+	return luax_register_type(L, BezierCurve::type, w_BezierCurve_functions, nullptr);
 }
 
 } // math

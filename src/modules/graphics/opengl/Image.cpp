@@ -43,7 +43,7 @@ namespace graphics
 namespace opengl
 {
 
-love::Type Image::type(&Texture::type);
+love::Type Image::type("Image", &Texture::type);
 
 int Image::imageCount = 0;
 

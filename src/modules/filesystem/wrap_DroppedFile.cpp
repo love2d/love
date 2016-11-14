@@ -33,7 +33,7 @@ DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
 
 extern "C" int luaopen_droppedfile(lua_State *L)
 {
-	return luax_register_type(L, DroppedFile::type, "DroppedFile", w_File_functions, nullptr);
+	return luax_register_type(L, DroppedFile::type, w_File_functions, nullptr);
 }
 
 } // filesystem

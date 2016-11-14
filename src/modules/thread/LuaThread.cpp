@@ -31,7 +31,7 @@ namespace love
 namespace thread
 {
 
-love::Type LuaThread::type(&Threadable::type);
+love::Type LuaThread::type("Thread", &Threadable::type);
 
 LuaThread::LuaThread(const std::string &name, love::Data *code)
 	: code(code)

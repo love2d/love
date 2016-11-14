@@ -139,7 +139,7 @@ const luaL_Reg w_Texture_functions[] =
 
 extern "C" int luaopen_texture(lua_State *L)
 {
-	return luax_register_type(L, Texture::type, "Texture", w_Texture_functions, nullptr);
+	return luax_register_type(L, Texture::type, w_Texture_functions, nullptr);
 }
 
 } // graphics

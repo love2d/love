@@ -18,41 +18,33 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// STL
+#include <unordered_map>
+
 #include "types.h"
-#include "StringMap.h"
 
 namespace love
 {
 
-static StringMap<uint32, love::Type::MAX_TYPES> types(nullptr, 0);
-
-void addTypeName(uint32 type, const char *name)
-{
-	const char *n;
-	if (!types.find(type, n))
-		types.add(name, type);
-}
-
-bool getTypeName(const char *in, uint32 &out)
-{
-	return types.find(in, out);
-}
-
-bool getTypeName(uint32 in, const char *&out)
-{
-	return types.find(in, out);
-}
+static std::unordered_map<std::string, Type*> types;
 
 uint32 love::Type::nextId = 1;
 
-Type::Type(Type *parent)
-	: inited(false)
+Type::Type(const char *name, Type *parent)
+	: name(name)
 	, parent(parent)
+	, inited(false)
 {
 }
 
-void love::Type::init()
+void Type::init()
 {
+	// Make sure we don't init twice, that would be bad
+	if (inited)
+		return;
+
+	// Note: we add it here, not in the constructor, because some Types can get initialized before the map!
+	types[name] = this;
 	id = nextId++;
 	bits[id] = true;
 	inited = true;
@@ -64,25 +56,38 @@ void love::Type::init()
 	bits |= parent->bits;
 }
 
-uint32 love::Type::getId()
+uint32 Type::getId()
 {
 	if (!inited)
 		init();
 	return id;
 }
 
-bool love::Type::isa(const uint32 &other)
+bool Type::isa(const uint32 &other)
 {
 	if (!inited)
 		init();
 	return bits[other];
 }
 
-bool love::Type::isa(love::Type &other)
+bool Type::isa(love::Type &other)
 {
 	if (!other.inited)
 		other.init();
 	return isa(other.id);
+}
+
+const char *Type::getName() const
+{
+	return name;
+}
+
+Type *Type::byName(const char *name)
+{
+	auto pos = types.find(name);
+	if (pos == types.end())
+		return nullptr;
+	return pos->second;
 }
 
 } // love
@@ -94,8 +99,8 @@ bool love::Type::isa(love::Type &other)
 #include "filesystem/Filesystem.h"
 #include "image/Image.h"
 
-love::Type love::Data::type(&Object::type);
-love::Type love::Stream::type(&Object::type);
-love::Type love::graphics::Drawable::type(&Object::type);
-love::Type love::filesystem::Filesystem::type(&Module::type);
-love::Type love::image::Image::type(&Module::type);
+love::Type love::Data::type("Data", &Object::type);
+love::Type love::Stream::type("Stream", &Object::type);
+love::Type love::graphics::Drawable::type("Drawable", &Object::type);
+love::Type love::filesystem::Filesystem::type("filesystem", &Module::type);
+love::Type love::image::Image::type("image", &Module::type);

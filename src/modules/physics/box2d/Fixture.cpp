@@ -37,7 +37,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type Fixture::type(&Object::type);
+love::Type Fixture::type("Fixture", &Object::type);
 
 Fixture::Fixture(Body *body, Shape *shape, float density)
 	: body(body)

@@ -110,7 +110,7 @@ static const luaL_Reg w_SoundData_functions[] =
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	int ret = luax_register_type(L, SoundData::type, "SoundData", w_Data_functions, w_SoundData_functions, nullptr);
+	int ret = luax_register_type(L, SoundData::type, w_Data_functions, w_SoundData_functions, nullptr);
 
 	luax_gettypemetatable(L, SoundData::type);
 

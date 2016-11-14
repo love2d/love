@@ -50,7 +50,7 @@ static const luaL_Reg w_RopeJoint_functions[] =
 
 extern "C" int luaopen_ropejoint(lua_State *L)
 {
-	return luax_register_type(L, RopeJoint::type, "RopeJoint", w_Joint_functions, w_RopeJoint_functions, nullptr);
+	return luax_register_type(L, RopeJoint::type, w_Joint_functions, w_RopeJoint_functions, nullptr);
 }
 
 } // box2d

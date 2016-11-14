@@ -26,7 +26,7 @@ namespace love
 namespace math
 {
 
-love::Type CompressedData::type(&Data::type);
+love::Type CompressedData::type("CompressedData", &Data::type);
 
 CompressedData::CompressedData(Compressor::Format format, char *cdata, size_t compressedsize, size_t rawsize, bool own)
 	: format(format)

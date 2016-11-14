@@ -77,7 +77,7 @@ static const luaL_Reg w_FrictionJoint_functions[] =
 
 extern "C" int luaopen_frictionjoint(lua_State *L)
 {
-	return luax_register_type(L, FrictionJoint::type, "FrictionJoint", w_Joint_functions, w_FrictionJoint_functions, nullptr);
+	return luax_register_type(L, FrictionJoint::type, w_Joint_functions, w_FrictionJoint_functions, nullptr);
 }
 
 } // box2d

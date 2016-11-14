@@ -366,7 +366,7 @@ static const luaL_Reg w_ImageData_functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	int ret = luax_register_type(L, ImageData::type, "ImageData", w_Data_functions, w_ImageData_functions, nullptr);
+	int ret = luax_register_type(L, ImageData::type, w_Data_functions, w_ImageData_functions, nullptr);
 
 	luax_gettypemetatable(L, ImageData::type);
 

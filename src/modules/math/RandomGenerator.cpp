@@ -47,6 +47,8 @@ static uint64 wangHash64(uint64 key)
 	return key;
 }
 
+love::Type RandomGenerator::type("RandomGenerator", &Object::type);
+
 // 64 bit Xorshift implementation taken from the end of Sec. 3 (page 4) in
 // George Marsaglia, "Xorshift RNGs", Journal of Statistical Software, Vol.8 (Issue 14), 2003
 // Use an 'Xorshift*' variant, as shown here: http://xorshift.di.unimi.it
@@ -61,8 +63,6 @@ RandomGenerator::RandomGenerator()
 	newseed.b32.high = 0x0139408D;
 	setSeed(newseed);
 }
-
-love::Type RandomGenerator::type(&Object::type);
 
 uint64 RandomGenerator::rand()
 {

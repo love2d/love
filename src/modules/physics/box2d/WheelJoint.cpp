@@ -32,7 +32,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type WheelJoint::type(&Joint::type);
+love::Type WheelJoint::type("WheelJoint", &Joint::type);
 
 WheelJoint::WheelJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 	: Joint(body1, body2)

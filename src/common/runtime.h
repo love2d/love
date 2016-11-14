@@ -253,7 +253,7 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
  * @param name The type's human-readable name
  * @param ... The list of lists of member functions for the type. (of type luaL_Reg*)
  **/
-int luax_register_type(lua_State *L, love::Type &type, const char *name, ...);
+int luax_register_type(lua_State *L, love::Type &type, ...);
 
 /**
  * Pushes the metatable of the specified type onto the stack.
@@ -453,8 +453,7 @@ T *luax_checktype(lua_State *L, int idx, love::Type &type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 	{
-		const char *name = "Invalid";
-		getTypeName(type.getId(), name);
+		const char *name = type.getName();
 		luax_typerror(L, idx, name);
 	}
 
@@ -462,8 +461,7 @@ T *luax_checktype(lua_State *L, int idx, love::Type &type)
 
 	if (u->type == nullptr || !u->type->isa(type))
 	{
-		const char *name = "Invalid";
-		getTypeName(type.getId(), name);
+		const char *name = type.getName();
 		luax_typerror(L, idx, name);
 	}
 
@@ -482,8 +480,7 @@ T *luax_checktype(lua_State *L, int idx)
 template <typename T>
 T *luax_getmodule(lua_State *L, love::Type &type)
 {
-	const char *name = "Invalid";
-	getTypeName(type.getId(), name);
+	const char *name = type.getName();
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -510,8 +507,7 @@ T *luax_getmodule(lua_State *L)
 template <typename T>
 T *luax_optmodule(lua_State *L, love::Type &type)
 {
-	const char *name = "Invalid";
-	getTypeName(type.getId(), name);
+	const char *name = type.getName();
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -563,7 +559,7 @@ T *luax_totype(lua_State *L, int idx)
 	return luax_totype<T>(L, idx, T::type);
 }
 
-uint32 luax_type(lua_State *L, int idx);
+Type *luax_type(lua_State *L, int idx);
 
 /**
  * Converts any exceptions thrown by the passed lambda function into a Lua error.

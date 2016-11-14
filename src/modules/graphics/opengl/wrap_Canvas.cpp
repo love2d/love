@@ -112,7 +112,7 @@ static const luaL_Reg w_Canvas_functions[] =
 
 extern "C" int luaopen_canvas(lua_State *L)
 {
-	return luax_register_type(L, Canvas::type, "Canvas", w_Texture_functions, w_Canvas_functions, nullptr);
+	return luax_register_type(L, Canvas::type, w_Texture_functions, w_Canvas_functions, nullptr);
 }
 
 } // opengl

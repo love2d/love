@@ -74,7 +74,7 @@ void EmptyLock::setLock(Mutex &m)
 	mutex = &m;
 }
 
-love::Type Threadable::type(&Object::type);
+love::Type Threadable::type("Threadable", &Object::type);
 
 Threadable::Threadable()
 {

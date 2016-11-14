@@ -196,7 +196,7 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 
 extern "C" int luaopen_revolutejoint(lua_State *L)
 {
-	return luax_register_type(L, RevoluteJoint::type, "RevoluteJoint", w_Joint_functions, w_RevoluteJoint_functions, nullptr);
+	return luax_register_type(L, RevoluteJoint::type, w_Joint_functions, w_RevoluteJoint_functions, nullptr);
 }
 
 } // box2d

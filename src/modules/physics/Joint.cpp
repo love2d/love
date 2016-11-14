@@ -25,7 +25,7 @@ namespace love
 namespace physics
 {
 
-love::Type Joint::type(&Object::type);
+love::Type Joint::type("Joint", &Object::type);
 
 Joint::~Joint()
 {

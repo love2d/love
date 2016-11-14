@@ -32,7 +32,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type PrismaticJoint::type(&Joint::type);
+love::Type PrismaticJoint::type("PrismaticJoint", &Joint::type);
 
 PrismaticJoint::PrismaticJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 	: Joint(body1, body2)

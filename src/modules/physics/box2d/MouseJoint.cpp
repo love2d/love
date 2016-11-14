@@ -32,7 +32,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type MouseJoint::type(&Joint::type);
+love::Type MouseJoint::type("MouseJoint", &Joint::type);
 
 MouseJoint::MouseJoint(Body *body1, float x, float y)
 	: Joint(body1)

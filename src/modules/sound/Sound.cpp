@@ -25,7 +25,7 @@ namespace love
 namespace sound
 {
 
-love::Type Sound::type(&Module::type);
+love::Type Sound::type("Sound", &Module::type);
 
 Sound::~Sound()
 {

@@ -317,7 +317,7 @@ static const luaL_Reg w_Shader_functions[] =
 
 extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, Shader::type, "Shader", w_Shader_functions, nullptr);
+	return luax_register_type(L, Shader::type, w_Shader_functions, nullptr);
 }
 
 } // opengl

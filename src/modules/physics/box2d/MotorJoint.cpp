@@ -32,7 +32,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type MotorJoint::type(&Joint::type);
+love::Type MotorJoint::type("MotorJoint", &Joint::type);
 
 MotorJoint::MotorJoint(Body *body1, Body *body2)
 	: Joint(body1, body2)

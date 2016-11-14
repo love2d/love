@@ -32,7 +32,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type PulleyJoint::type(&Joint::type);
+love::Type PulleyJoint::type("PulleyJoint", &Joint::type);
 
 PulleyJoint::PulleyJoint(Body *bodyA, Body *bodyB, b2Vec2 groundAnchorA, b2Vec2 groundAnchorB, b2Vec2 anchorA, b2Vec2 anchorB, float ratio, bool collideConnected)
 	: Joint(bodyA, bodyB)

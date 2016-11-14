@@ -207,7 +207,7 @@ static const luaL_Reg w_Font_functions[] =
 
 extern "C" int luaopen_font(lua_State *L)
 {
-	return luax_register_type(L, Font::type, "Font", w_Font_functions, nullptr);
+	return luax_register_type(L, Font::type, w_Font_functions, nullptr);
 }
 
 } // opengl

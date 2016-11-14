@@ -160,7 +160,7 @@ static const luaL_Reg w_WheelJoint_functions[] =
 
 extern "C" int luaopen_wheeljoint(lua_State *L)
 {
-	return luax_register_type(L, WheelJoint::type, "WheelJoint", w_Joint_functions, w_WheelJoint_functions, nullptr);
+	return luax_register_type(L, WheelJoint::type, w_Joint_functions, w_WheelJoint_functions, nullptr);
 }
 
 } // box2d

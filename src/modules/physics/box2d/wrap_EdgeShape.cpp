@@ -105,7 +105,7 @@ static const luaL_Reg w_EdgeShape_functions[] =
 
 extern "C" int luaopen_edgeshape(lua_State *L)
 {
-	return luax_register_type(L, EdgeShape::type, "EdgeShape", w_Shape_functions, w_EdgeShape_functions, nullptr);
+	return luax_register_type(L, EdgeShape::type, w_Shape_functions, w_EdgeShape_functions, nullptr);
 }
 
 } // box2d

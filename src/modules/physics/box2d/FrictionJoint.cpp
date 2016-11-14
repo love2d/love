@@ -34,7 +34,7 @@ namespace physics
 namespace box2d
 {
 
-love::Type FrictionJoint::type(&Joint::type);
+love::Type FrictionJoint::type("FrictionJoint", &Joint::type);
 
 FrictionJoint::FrictionJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	: Joint(body1, body2)

@@ -29,7 +29,7 @@ namespace love
 namespace font
 {
 
-love::Type Rasterizer::type(&Object::type);
+love::Type Rasterizer::type("Rasterizer", &Object::type);
 
 Rasterizer::~Rasterizer()
 {

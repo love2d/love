@@ -30,7 +30,7 @@ namespace graphics
 namespace opengl
 {
 
-love::Type Text::type(&Drawable::type);
+love::Type Text::type("Text", &Drawable::type);
 
 Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
