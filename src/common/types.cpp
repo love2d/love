@@ -28,17 +28,18 @@ namespace love
 
 static std::unordered_map<std::string, Type*> types;
 
-uint32 love::Type::nextId = 1;
-
 Type::Type(const char *name, Type *parent)
 	: name(name)
 	, parent(parent)
+	, id(0)
 	, inited(false)
 {
 }
 
 void Type::init()
 {
+	static uint32 nextId = 1;
+
 	// Make sure we don't init twice, that would be bad
 	if (inited)
 		return;
@@ -61,20 +62,6 @@ uint32 Type::getId()
 	if (!inited)
 		init();
 	return id;
-}
-
-bool Type::isa(const uint32 &other)
-{
-	if (!inited)
-		init();
-	return bits[other];
-}
-
-bool Type::isa(love::Type &other)
-{
-	if (!other.inited)
-		other.init();
-	return isa(other.id);
 }
 
 const char *Type::getName() const
