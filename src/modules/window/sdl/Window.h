@@ -41,6 +41,8 @@ public:
 	Window();
 	~Window();
 
+	void setGraphics(graphics::Graphics *graphics);
+
 	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr);
 	void getWindow(int &width, int &height, WindowSettings &settings);
 
@@ -148,6 +150,8 @@ private:
 	bool displayedWindowError;
 	bool hasSDL203orEarlier;
 	ContextAttribs contextAttribs;
+
+	StrongRef<graphics::Graphics> graphics;
 
 }; // Window
 

@@ -22,7 +22,7 @@
 #include "common/config.h"
 
 #include "Shader.h"
-#include "Canvas.h"
+#include "Graphics.h"
 
 // C++
 #include <algorithm>
@@ -76,7 +76,7 @@ Shader::Shader(const ShaderSource &source)
 	, program(0)
 	, builtinUniforms()
 	, builtinAttributes()
-	, lastCanvas((Canvas *) -1)
+	, canvasWasActive(false)
 	, lastViewport()
 	, lastPointSize(0.0f)
 	, videoTextureUnits()
@@ -237,7 +237,7 @@ bool Shader::loadVolatile()
 	OpenGL::TempDebugGroup debuggroup("Shader load");
 
     // Recreating the shader program will invalidate uniforms that rely on these.
-    lastCanvas = (Canvas *) -1;
+	canvasWasActive = false;
     lastViewport = OpenGL::Viewport();
 
 	lastPointSize = -1.0f;
@@ -339,11 +339,11 @@ bool Shader::loadVolatile()
 
 void Shader::unloadVolatile()
 {
-	if (current == this)
-		gl.useProgram(0);
-
 	if (program != 0)
 	{
+		if (current == this)
+			gl.useProgram(0);
+
 		glDeleteProgram(program);
 		program = 0;
 	}
@@ -686,7 +686,10 @@ void Shader::checkSetScreenParams()
 {
 	OpenGL::Viewport view = gl.getViewport();
 
-	if (view == lastViewport && lastCanvas == Canvas::current)
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	bool canvasActive = gfx->getActivePass().colorAttachmentCount > 0;
+
+	if (view == lastViewport && canvasWasActive == canvasActive)
 		return;
 
 	// In the shader, we do pixcoord.y = gl_FragCoord.y * params.z + params.w.
@@ -697,7 +700,7 @@ void Shader::checkSetScreenParams()
 		0.0f, 0.0f,
 	};
 
-	if (Canvas::current != nullptr)
+	if (canvasActive)
 	{
 		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
 		params[2] = 1.0f;
@@ -719,7 +722,7 @@ void Shader::checkSetScreenParams()
 		glUniform4fv(location, 1, params);
 	}
 
-	lastCanvas = Canvas::current;
+	canvasWasActive = canvasActive;
 	lastViewport = view;
 }
 

@@ -53,15 +53,16 @@ int w_poll(lua_State *L)
 	return 1;
 }
 
-int w_pump(lua_State *)
+int w_pump(lua_State *L)
 {
-	instance()->pump();
+	luax_catchexcept(L, [&]() { instance()->pump(); });
 	return 0;
 }
 
 int w_wait(lua_State *L)
 {
-	Message *m = instance()->wait();
+	Message *m = nullptr;
+	luax_catchexcept(L, [&]() { m = instance()->wait(); });
 	if (m)
 	{
 		int args = m->toLua(L);
@@ -85,9 +86,9 @@ int w_push(lua_State *L)
 	return 1;
 }
 
-int w_clear(lua_State *)
+int w_clear(lua_State *L)
 {
-	instance()->clear();
+	luax_catchexcept(L, [&]() { instance()->clear(); });
 	return 0;
 }
 

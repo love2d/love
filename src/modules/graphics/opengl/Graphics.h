@@ -24,6 +24,7 @@
 // STD
 #include <stack>
 #include <vector>
+#include <unordered_map>
 
 // OpenGL
 #include "OpenGL.h"
@@ -34,8 +35,6 @@
 
 #include "image/Image.h"
 #include "image/ImageData.h"
-
-#include "window/Window.h"
 
 #include "video/VideoStream.h"
 
@@ -53,21 +52,63 @@
 
 namespace love
 {
+
+class Reference;
+
 namespace graphics
 {
 namespace opengl
 {
 
+struct PassInfo
+{
+	enum BeginAction
+	{
+		BEGIN_LOAD,
+		BEGIN_CLEAR,
+		BEGIN_DISCARD,
+	};
+
+	enum EndAction
+	{
+		END_STORE,
+		END_DISCARD,
+	};
+
+	struct ColorAttachment
+	{
+		Canvas *canvas = nullptr;
+		Colorf clearColor = Colorf(0.0f, 0.0f, 0.0f, 0.0f);
+		BeginAction beginAction = BEGIN_LOAD;
+	};
+
+	ColorAttachment colorAttachments[MAX_COLOR_RENDER_TARGETS];
+	int colorAttachmentCount = 0;
+
+	bool stencil = false;
+
+	bool addColorAttachment(const ColorAttachment &attachment)
+	{
+		if (colorAttachmentCount + 1 < MAX_COLOR_RENDER_TARGETS)
+		{
+			colorAttachments[colorAttachmentCount++] = attachment;
+			return true;
+		}
+
+		return false;
+	}
+};
+
 class Graphics : public love::graphics::Graphics
 {
 public:
 
-	struct OptionalColorf
-	{
-		float r, g, b, a;
-		bool enabled;
+	typedef void (*ScreenshotCallback)(love::image::ImageData *i, Reference *ref, void *ud);
 
-		Colorf toColor() const { return Colorf(r, g, b, a); }
+	struct ScreenshotInfo
+	{
+		ScreenshotCallback callback;
+		Reference *ref;
 	};
 
 	Graphics();
@@ -92,25 +133,19 @@ public:
 	 **/
 	void reset();
 
-	/**
-	 * Clears the screen to a specific color.
-	 **/
-	void clear(Colorf c);
+	void beginPass(PassInfo::BeginAction beginAction, Colorf clearColor);
+	void beginPass(const PassInfo &info);
 
-	/**
-	 * Clears each active canvas to a different color.
-	 **/
-	void clear(const std::vector<OptionalColorf> &colors);
+	void endPass();
+	void endPass(int sX, int sY, int sW, int sH, const ScreenshotInfo *info, void *screenshotCallbackData);
 
-	/**
-	 * Discards the contents of the screen.
-	 **/
-	void discard(const std::vector<bool> &colorbuffers, bool stencil);
+	const PassInfo &getActivePass() const;
+	virtual bool isPassActive() const;
 
 	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).
 	 **/
-	void present();
+	void present(void *screenshotCallbackData);
 
 	/**
 	 * Gets the width of the current graphics viewport.
@@ -121,6 +156,9 @@ public:
 	 * Gets the height of the current graphics viewport.
 	 **/
 	int getHeight() const;
+
+	int getPassWidth() const;
+	int getPassHeight() const;
 
 	/**
 	 * True if a graphics viewport is set.
@@ -231,13 +269,6 @@ public:
 
 	Shader *getShader() const;
 
-	void setCanvas(Canvas *canvas);
-	void setCanvas(const std::vector<Canvas *> &canvases);
-	void setCanvas(const std::vector<StrongRef<Canvas>> &canvases);
-	void setCanvas();
-
-	std::vector<Canvas *> getCanvas() const;
-
 	/**
 	 * Sets the enabled color components when rendering.
 	 **/
@@ -329,6 +360,9 @@ public:
 	 * Gets whether wireframe drawing mode is enabled.
 	 **/
 	bool isWireframe() const;
+
+	void draw(Drawable *drawable, const Matrix4 &m);
+	void drawq(Texture *texture, Quad *quad, const Matrix4 &m);
 
 	/**
 	 * Draws text at the specified coordinates
@@ -422,12 +456,7 @@ public:
 	 **/
 	void polygon(DrawMode mode, const float *coords, size_t count);
 
-	/**
-	 * Creates a screenshot of the view and saves it to the default folder.
-	 * @param image The love.image module.
-	 * @param copyAlpha If the alpha channel should be copied or set to full opacity (1.0).
-	 **/
-	love::image::ImageData *newScreenshot(love::image::Image *image, bool copyAlpha = true);
+	void captureScreenshot(const ScreenshotInfo &info);
 
 	/**
 	 * Returns system-dependent renderer information.
@@ -488,8 +517,6 @@ private:
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
-		std::vector<StrongRef<Canvas>> canvases;
-
 		ColorMask colorMask = ColorMask(true, true, true, true);
 
 		bool wireframe = false;
@@ -500,18 +527,46 @@ private:
 		float defaultMipmapSharpness = 0.0f;
 	};
 
+	struct CurrentPass
+	{
+		PassInfo info;
+		bool active;
+	};
+
+	struct PassBufferInfo
+	{
+		bool stencil;
+		Canvas *canvases[MAX_COLOR_RENDER_TARGETS];
+	};
+
+	struct CachedRenderbuffer
+	{
+		int w;
+		int h;
+		int samples;
+		GLenum attachments[2];
+		GLuint renderbuffer;
+	};
+
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
+
+	void bindCachedFBOForPass(const PassInfo &pass);
+	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
+	GLuint attachCachedStencilBuffer(int w, int h, int samples);
 
 	void checkSetDefaultFont();
 
 	int calculateEllipsePoints(float rx, float ry) const;
 
-	StrongRef<love::window::Window> currentWindow;
-
 	StrongRef<Font> defaultFont;
 
 	std::vector<double> pixelSizeStack; // stores current size of a pixel (needed for line drawing)
+
+	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
+
+	std::unordered_map<uint32, GLuint> framebufferObjects;
+	std::vector<CachedRenderbuffer> stencilBuffers;
 
 	QuadIndices *quadIndices;
 
@@ -520,10 +575,16 @@ private:
 	bool created;
 	bool active;
 
+	bool canCaptureScreenshot;
+
+	CurrentPass currentPass;
+
 	bool writingToStencil;
 
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypes; // Keeps track of the pushed stack types.
+
+	int renderPassCount;
 
 	static const size_t MAX_USER_STACK_DEPTH = 64;
 

@@ -880,6 +880,9 @@
 		FA4943551D9DDFFE00E8D38A /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
+		FA4F2B791DE0125B00CA37D7 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2B771DE0125B00CA37D7 /* xxhash.c */; };
+		FA4F2B7A1DE0125B00CA37D7 /* xxhash.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4F2B781DE0125B00CA37D7 /* xxhash.h */; };
+		FA4F2B7B1DE0181B00CA37D7 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2B771DE0125B00CA37D7 /* xxhash.c */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
@@ -1575,6 +1578,8 @@
 		FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASTCHandler.cpp; sourceTree = "<group>"; };
 		FA41A3C71C0A1F950084430C /* ASTCHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASTCHandler.h; sourceTree = "<group>"; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
+		FA4F2B771DE0125B00CA37D7 /* xxhash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
+		FA4F2B781DE0125B00CA37D7 /* xxhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
@@ -1783,6 +1788,7 @@
 				FA1557BE1CE90A2C00AFF582 /* tinyexr */,
 				FA0B7A191A958EA3000E1D17 /* utf8 */,
 				FA0B7A1F1A958EA3000E1D17 /* Wuff */,
+				FA4F2B761DE0125B00CA37D7 /* xxHash */,
 			);
 			name = libraries;
 			path = ../../src/libraries;
@@ -2890,6 +2896,15 @@
 			path = theora;
 			sourceTree = "<group>";
 		};
+		FA4F2B761DE0125B00CA37D7 /* xxHash */ = {
+			isa = PBXGroup;
+			children = (
+				FA4F2B771DE0125B00CA37D7 /* xxhash.c */,
+				FA4F2B781DE0125B00CA37D7 /* xxhash.h */,
+			);
+			path = xxHash;
+			sourceTree = "<group>";
+		};
 		FA56D9B91C2089CE00D8D3C7 /* modplug */ = {
 			isa = PBXGroup;
 			children = (
@@ -3286,6 +3301,7 @@
 				FA0B7E5C1A95902C000E1D17 /* wrap_MotorJoint.h in Headers */,
 				FA0B7A7C1A958EA3000E1D17 /* b2Contact.h in Headers */,
 				FA0B7A881A958EA3000E1D17 /* b2PolygonAndCircleContact.h in Headers */,
+				FA4F2B7A1DE0125B00CA37D7 /* xxhash.h in Headers */,
 				FA0B7DDE1A95902C000E1D17 /* wrap_BezierCurve.h in Headers */,
 				FA0B7DED1A95902C000E1D17 /* Cursor.h in Headers */,
 				FA0B7E501A95902C000E1D17 /* wrap_Fixture.h in Headers */,
@@ -3567,6 +3583,7 @@
 				FA0B7CD41A95902C000E1D17 /* Source.cpp in Sources */,
 				FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */,
 				FA0B7CD11A95902C000E1D17 /* Audio.cpp in Sources */,
+				FA4F2B7B1DE0181B00CA37D7 /* xxhash.c in Sources */,
 				FA0B7D131A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EC91A95902C000E1D17 /* threads.cpp in Sources */,
 				FA0B7A781A958EA3000E1D17 /* b2CircleContact.cpp in Sources */,
@@ -3894,6 +3911,7 @@
 				FA0B7DA51A95902C000E1D17 /* PNGHandler.cpp in Sources */,
 				FA0B7B371A958EA3000E1D17 /* wuff_internal.c in Sources */,
 				FA0B7E971A95902C000E1D17 /* Sound.cpp in Sources */,
+				FA4F2B791DE0125B00CA37D7 /* xxhash.c in Sources */,
 				FA0B7E361A95902C000E1D17 /* WheelJoint.cpp in Sources */,
 				FA0B7A471A958EA3000E1D17 /* b2PolygonShape.cpp in Sources */,
 				FA0B7D8D1A95902C000E1D17 /* ddsHandler.cpp in Sources */,

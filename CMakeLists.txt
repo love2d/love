@@ -1418,6 +1418,17 @@ set(LOVE_SRC_3P_WUFF
 
 add_library(love_3p_wuff ${LOVE_SRC_3P_WUFF})
 
+#
+# xxHash
+#
+
+set(LOVE_SRC_3P_XXHASH
+	src/libraries/xxHash/xxhash.c
+	src/libraries/xxHash/xxhash.h
+)
+
+add_library(love_3p_xxhash ${LOVE_SRC_3P_XXHASH})
+
 set(LOVE_3P
 	love_3p_box2d
 	love_3p_ddsparse
@@ -1429,6 +1440,7 @@ set(LOVE_3P
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_wuff
+	love_3p_xxhash
 )
 
 love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)

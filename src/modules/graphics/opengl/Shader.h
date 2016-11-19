@@ -41,8 +41,6 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas;
-
 // A GLSL shader
 class Shader : public Object, public Volatile
 {
@@ -245,8 +243,7 @@ private:
 	// Uniform name to retainable objects
 	std::map<std::string, Object*> boundRetainables;
 
-	// Pointer to the active Canvas when the screen params were last checked.
-	Canvas *lastCanvas;
+	bool canvasWasActive;
 	OpenGL::Viewport lastViewport;
 
 	float lastPointSize;
