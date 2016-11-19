@@ -48,7 +48,7 @@ int w_Shader_getWarnings(lua_State *L)
 
 static int _getCount(lua_State *L, int startidx, const Shader::UniformInfo *info)
 {
-	return std::min(std::max(lua_gettop(L) - startidx, 1), info->count);
+	return std::min(std::max(lua_gettop(L) - startidx + 1, 1), info->count);
 }
 
 template <typename T>

@@ -43,7 +43,7 @@ Released: N/A
 LOVE 0.10.2 [Super Toast]
 -------------------------
 
-Released: N/A
+Released: 2016-10-31
 
   * Added lovec.exe in Windows. It is the same as love.exe but built with the Console subsystem, so it always uses or provides a console.
   * Added the ability to restart the game via love.event.quit("restart").
