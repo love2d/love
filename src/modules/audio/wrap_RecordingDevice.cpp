@@ -37,18 +37,17 @@ int w_RecordingDevice_startRecording(lua_State *L)
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
 	if (lua_gettop(L) > 1)
 	{
-		int samples = luaL_checkinteger(L, 2);
-		int sampleRate = luaL_checkinteger(L, 3);
-		int bitDepth = luaL_checkinteger(L, 4);
-		int channels = luaL_checkinteger(L, 5);
+		int samples = (int) luaL_checkinteger(L, 2);
+		int sampleRate = (int) luaL_checkinteger(L, 3);
+		int bitDepth = (int) luaL_checkinteger(L, 4);
+		int channels = (int) luaL_checkinteger(L, 5);
 		luax_catchexcept(L, [&](){ 
 			lua_pushboolean(L, d->startRecording(samples, sampleRate, bitDepth, channels)); 
 		});
 	}
 	else
-		luax_catchexcept(L, [&](){ 
-			lua_pushboolean(L, d->startRecording()); 
-		});
+		luax_catchexcept(L, [&](){ lua_pushboolean(L, d->startRecording()); });
+
 	return 1;
 }
 
@@ -57,10 +56,9 @@ int w_RecordingDevice_stopRecording(lua_State *L)
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
 	love::sound::SoundData *s = nullptr;
 
-	luax_catchexcept(L, [&](){ 
-		s = d->getData();
-		d->stopRecording();
-	});
+	luax_catchexcept(L, [&](){ s = d->getData(); });
+
+	d->stopRecording();
 
 	if (s != nullptr)
 	{
@@ -78,9 +76,7 @@ int w_RecordingDevice_getData(lua_State *L)
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
 	love::sound::SoundData *s = nullptr;
 
-	luax_catchexcept(L, [&](){ 
-		s = d->getData();
-	});
+	luax_catchexcept(L, [&](){ s = d->getData(); });
 
 	if (s != nullptr)
 	{

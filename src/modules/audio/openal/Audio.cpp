@@ -356,7 +356,7 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 
 	devices.reserve(devnames.size());
 	//build ordered list of devices
-	for (unsigned int i = 0; i < devnames.size(); i++)
+	for (int i = 0; i < (int) devnames.size(); i++)
 	{
 		devices.push_back(nullptr);
 		auto d = devices.end() - 1;
