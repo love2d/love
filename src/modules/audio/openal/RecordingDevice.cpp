@@ -56,12 +56,12 @@ RecordingDevice::~RecordingDevice()
 	alcCaptureCloseDevice(device);
 }
 
-bool RecordingDevice::startRecording()
+bool RecordingDevice::start()
 {
-	return startRecording(samples, sampleRate, bitDepth, channels);
+	return start(samples, sampleRate, bitDepth, channels);
 }
 
-bool RecordingDevice::startRecording(int samples, int sampleRate, int bitDepth, int channels)
+bool RecordingDevice::start(int samples, int sampleRate, int bitDepth, int channels)
 {
 	if (isRecording())
 	{
@@ -91,7 +91,7 @@ bool RecordingDevice::startRecording(int samples, int sampleRate, int bitDepth, 
 	return true;
 }
 
-void RecordingDevice::stopRecording()
+void RecordingDevice::stop()
 {
 	if (!isRecording())
 		return;

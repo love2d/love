@@ -38,17 +38,17 @@ RecordingDevice::~RecordingDevice()
 {
 }
 
-bool RecordingDevice::startRecording()
+bool RecordingDevice::start()
 {
 	return false;
 }
 
-bool RecordingDevice::startRecording(int, int, int, int)
+bool RecordingDevice::start(int, int, int, int)
 {
 	return false;
 }
 
-void RecordingDevice::stopRecording()
+void RecordingDevice::stop()
 {
 }
 

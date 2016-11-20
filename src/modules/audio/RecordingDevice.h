@@ -41,7 +41,7 @@ public:
 	 * Begins audio input recording process. using default (previous) parameters.
 	 * @return True if recording started successfully.
 	 **/
-	virtual bool startRecording() = 0;
+	virtual bool start() = 0;
 
 	/**
 	 * Begins audio input recording process.
@@ -51,12 +51,12 @@ public:
 	 * @param channels Desired number of channels. 
 	 * @return True if recording started successfully.
 	 **/
-	virtual bool startRecording(int samples, int sampleRate, int bitDepth, int channels) = 0;
+	virtual bool start(int samples, int sampleRate, int bitDepth, int channels) = 0;
 
 	/** 
 	 * Stops audio input recording.
 	 **/
-	virtual void stopRecording() = 0;
+	virtual void stop() = 0;
 
 	/**
 	 * Retreives recorded data. 
