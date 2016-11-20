@@ -309,10 +309,14 @@ set(LOVE_SRC_MODULE_AUDIO_ROOT
 	src/modules/audio/Audio.h
 	src/modules/audio/Source.cpp
 	src/modules/audio/Source.h
+	src/modules/audio/RecordingDevice.cpp
+	src/modules/audio/RecordingDevice.h
 	src/modules/audio/wrap_Audio.cpp
 	src/modules/audio/wrap_Audio.h
 	src/modules/audio/wrap_Source.cpp
 	src/modules/audio/wrap_Source.h
+	src/modules/audio/wrap_RecordingDevice.cpp
+	src/modules/audio/wrap_RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO_NULL
@@ -320,6 +324,8 @@ set(LOVE_SRC_MODULE_AUDIO_NULL
 	src/modules/audio/null/Audio.h
 	src/modules/audio/null/Source.cpp
 	src/modules/audio/null/Source.h
+	src/modules/audio/null/RecordingDevice.cpp
+	src/modules/audio/null/RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO_OPENAL
@@ -329,6 +335,8 @@ set(LOVE_SRC_MODULE_AUDIO_OPENAL
 	src/modules/audio/openal/Pool.h
 	src/modules/audio/openal/Source.cpp
 	src/modules/audio/openal/Source.h
+	src/modules/audio/openal/RecordingDevice.cpp
+	src/modules/audio/openal/RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO

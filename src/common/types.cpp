@@ -72,6 +72,7 @@ static const TypeBits *createTypeFlags()
 
 	// Audio.
 	b[AUDIO_SOURCE_ID] = (one << AUDIO_SOURCE_ID) | b[OBJECT_ID];
+	b[AUDIO_RECORDING_DEVICE_ID] = (one << AUDIO_RECORDING_DEVICE_ID) | b[OBJECT_ID];
 
 	// Sound.
 	b[SOUND_SOUND_DATA_ID] = (one << SOUND_SOUND_DATA_ID) | b[DATA_ID];

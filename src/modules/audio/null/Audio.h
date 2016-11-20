@@ -24,6 +24,7 @@
 // LOVE
 #include "audio/Audio.h"
 
+#include "RecordingDevice.h"
 #include "Source.h"
 
 namespace love
@@ -70,10 +71,7 @@ public:
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
 
-	void record();
-	love::sound::SoundData *getRecordedData();
-	love::sound::SoundData *stopRecording(bool returnData);
-	bool canRecord();
+	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
@@ -81,6 +79,7 @@ public:
 private:
 	float volume;
 	DistanceModel distanceModel;
+	std::vector<love::audio::RecordingDevice*> capture;
 
 }; // Audio
 

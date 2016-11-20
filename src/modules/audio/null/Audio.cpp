@@ -144,23 +144,9 @@ float Audio::getDopplerScale() const
 	return 1.0f;
 }
 
-void Audio::record()
+const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
-}
-
-love::sound::SoundData *Audio::getRecordedData()
-{
-	return NULL;
-}
-
-love::sound::SoundData *Audio::stopRecording(bool)
-{
-	return NULL;
-}
-
-bool Audio::canRecord()
-{
-	return false;
+	return capture;
 }
 
 Audio::DistanceModel Audio::getDistanceModel() const
