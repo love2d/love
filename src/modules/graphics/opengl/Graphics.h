@@ -530,7 +530,7 @@ private:
 	struct CurrentPass
 	{
 		PassInfo info;
-		bool active;
+		bool active = false;
 	};
 
 	struct PassBufferInfo
