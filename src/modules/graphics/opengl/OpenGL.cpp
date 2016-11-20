@@ -74,7 +74,6 @@ OpenGL::OpenGL()
 	, state()
 {
 	matrices.transform.reserve(10);
-	matrices.projection.reserve(2);
 }
 
 bool OpenGL::initContext()
@@ -307,10 +306,9 @@ void OpenGL::initMaxValues()
 void OpenGL::initMatrices()
 {
 	matrices.transform.clear();
-	matrices.projection.clear();
 
 	matrices.transform.push_back(Matrix4());
-	matrices.projection.push_back(Matrix4());
+	matrices.projection = Matrix4();
 }
 
 void OpenGL::createDefaultTexture()
@@ -364,7 +362,7 @@ void OpenGL::prepareDraw()
 	// because uniform uploads can be significantly slower than glLoadMatrix.
 	if (GLAD_VERSION_1_0)
 	{
-		const Matrix4 &curproj = matrices.projection.back();
+		const Matrix4 &curproj = matrices.projection;
 		const Matrix4 &curxform = matrices.transform.back();
 
 		const Matrix4 &lastproj = state.lastProjectionMatrix;
@@ -377,7 +375,7 @@ void OpenGL::prepareDraw()
 			glLoadMatrixf(curproj.getElements());
 			glMatrixMode(GL_MODELVIEW);
 
-			state.lastProjectionMatrix = matrices.projection.back();
+			state.lastProjectionMatrix = matrices.projection;
 		}
 
 		// Same with the transform matrix.

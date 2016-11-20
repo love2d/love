@@ -126,7 +126,7 @@ public:
 	struct
 	{
 		std::vector<Matrix4> transform;
-		std::vector<Matrix4> projection;
+		Matrix4 projection;
 	} matrices;
 
 	class TempTransform

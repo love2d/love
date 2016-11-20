@@ -217,7 +217,7 @@ void Graphics::setViewportSize(int width, int height)
 		gl.setViewport({0, 0, width, height}, false);
 
 		// Set up the projection matrix
-		gl.matrices.projection.back() = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+		gl.matrices.projection = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
 	}
 }
 
@@ -442,7 +442,7 @@ void Graphics::beginPass(PassInfo::BeginAction beginAction, Colorf clearColor)
 
 	// The projection matrix is flipped compared to rendering to a canvas, due
 	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	gl.matrices.projection.back() = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+	gl.matrices.projection = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
 
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
@@ -523,7 +523,7 @@ void Graphics::beginPass(const PassInfo &info)
 	int h = firstcanvas->getHeight();
 
 	gl.setViewport({0, 0, w, h}, true);
-	gl.matrices.projection.back() = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
+	gl.matrices.projection = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)

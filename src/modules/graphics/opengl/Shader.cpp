@@ -753,7 +753,7 @@ void Shader::checkSetBuiltinUniforms()
 		checkSetPointSize(gl.getPointSize());
 
 		const Matrix4 &curxform = gl.matrices.transform.back();
-		const Matrix4 &curproj = gl.matrices.projection.back();
+		const Matrix4 &curproj = gl.matrices.projection;
 
 		TemporaryAttacher attacher(this);
 
