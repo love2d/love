@@ -59,6 +59,10 @@ float RopeJoint::getMaxLength() const
 	return Physics::scaleUp(joint->GetMaxLength());
 }
 
+void RopeJoint::setMaxLength(float maxLength)
+{
+	joint->SetMaxLength(Physics::scaleDown(maxLength));
+}
 
 } // box2d
 } // physics
