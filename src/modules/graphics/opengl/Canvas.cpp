@@ -151,6 +151,9 @@ Canvas::~Canvas()
 
 bool Canvas::loadVolatile()
 {
+	if (texture != 0)
+		return true;
+
 	OpenGL::TempDebugGroup debuggroup("Canvas load");
 
 	fbo = texture = 0;

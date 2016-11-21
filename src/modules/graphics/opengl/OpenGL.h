@@ -106,8 +106,8 @@ public:
 
 	enum FramebufferTarget
 	{
-		FRAMEBUFFER_READ = (1 << 1),
-		FRAMEBUFFER_DRAW = (1 << 2),
+		FRAMEBUFFER_READ = (1 << 0),
+		FRAMEBUFFER_DRAW = (1 << 1),
 		FRAMEBUFFER_ALL  = (FRAMEBUFFER_READ | FRAMEBUFFER_DRAW),
 	};
 
