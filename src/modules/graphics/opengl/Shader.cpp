@@ -27,6 +27,7 @@
 // C++
 #include <algorithm>
 #include <limits>
+#include <sstream>
 
 namespace love
 {
@@ -312,7 +313,10 @@ void Shader::mapActiveUniforms()
 
 				if (u.count > 1)
 				{
-					std::string indexname = u.name + "[" + std::to_string(i) + "]";
+					std::ostringstream ss;
+					ss << i;
+
+					std::string indexname = u.name + "[" + ss.str() + "]";
 					location = glGetUniformLocation(program, indexname.c_str());
 				}
 
