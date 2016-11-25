@@ -2009,6 +2009,8 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 		return (double) gl.getMaxRenderTargets();
 	case Graphics::LIMIT_CANVAS_MSAA:
 		return (double) gl.getMaxRenderbufferSamples();
+	case Graphics::LIMIT_ANISOTROPY:
+		return (double) gl.getMaxAnisotropy();
 	default:
 		return 0.0;
 	}
@@ -2024,6 +2026,10 @@ bool Graphics::isSupported(Feature feature) const
 		return gl.isClampZeroTextureWrapSupported();
 	case FEATURE_LIGHTEN:
 		return GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
+	case FEATURE_FULL_NPOT:
+		return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
+	case FEATURE_PIXEL_SHADER_HIGHP:
+		return gl.isPixelShaderHighpSupported();
 	default:
 		return false;
 	}

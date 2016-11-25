@@ -65,6 +65,7 @@ static void *LOVEGetProcAddress(const char *name)
 OpenGL::OpenGL()
 	: stats()
 	, contextInitialized(false)
+	, pixelShaderHighpSupported(false)
 	, maxAnisotropy(1.0f)
 	, maxTextureSize(0)
 	, maxRenderTargets(1)
@@ -268,6 +269,16 @@ void OpenGL::initOpenGLFunctions()
 
 void OpenGL::initMaxValues()
 {
+	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
+	{
+		GLint range = 0;
+		GLint precision = 0;
+		glGetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT, &range, &precision);
+		pixelShaderHighpSupported = range > 0;
+	}
+	else
+		pixelShaderHighpSupported = true;
+
 	// We'll need this value to clamp anisotropy.
 	if (GLAD_EXT_texture_filter_anisotropic)
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
@@ -715,6 +726,11 @@ bool OpenGL::isClampZeroTextureWrapSupported() const
 	return GLAD_VERSION_1_3 || GLAD_EXT_texture_border_clamp || GLAD_NV_texture_border_clamp;
 }
 
+bool OpenGL::isPixelShaderHighpSupported() const
+{
+	return pixelShaderHighpSupported;
+}
+
 int OpenGL::getMaxTextureSize() const
 {
 	return maxTextureSize;
@@ -738,6 +754,11 @@ int OpenGL::getMaxTextureUnits() const
 float OpenGL::getMaxPointSize() const
 {
 	return maxPointSize;
+}
+
+float OpenGL::getMaxAnisotropy() const
+{
+	return maxAnisotropy;
 }
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)

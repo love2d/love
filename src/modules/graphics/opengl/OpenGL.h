@@ -383,6 +383,7 @@ public:
 	void setTextureWrap(const graphics::Texture::Wrap &w);
 
 	bool isClampZeroTextureWrapSupported() const;
+	bool isPixelShaderHighpSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -408,6 +409,12 @@ public:
 	 * Returns the maximum point size.
 	 **/
 	float getMaxPointSize() const;
+
+	/**
+	 * Returns the maximum anisotropic filtering value that can be used for
+	 * Texture filtering.
+	 **/
+	float getMaxAnisotropy() const;
 
 
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
@@ -438,6 +445,7 @@ private:
 
 	bool contextInitialized;
 
+	bool pixelShaderHighpSupported;
 	float maxAnisotropy;
 	int maxTextureSize;
 	int maxRenderTargets;
