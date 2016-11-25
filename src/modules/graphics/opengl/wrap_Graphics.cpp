@@ -28,6 +28,7 @@
 #include "video/VideoStream.h"
 #include "image/wrap_Image.h"
 #include "common/Reference.h"
+#include "math/wrap_Transform.h"
 
 #include <cassert>
 #include <cstring>
@@ -2124,6 +2125,20 @@ int w_origin(lua_State * /*L*/)
 	return 0;
 }
 
+int w_applyTransform(lua_State *L)
+{
+	math::Transform *t = math::luax_checktransform(L, 1);
+	instance()->applyTransform(t);
+	return 0;
+}
+
+int w_replaceTransform(lua_State *L)
+{
+	math::Transform *t = math::luax_checktransform(L, 1);
+	instance()->replaceTransform(t);
+	return 0;
+}
+
 int w_transformPoint(lua_State *L)
 {
 	Vector p;
@@ -2252,6 +2267,8 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
+	{ "applyTransform", w_applyTransform },
+	{ "replaceTransform", w_replaceTransform },
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 
