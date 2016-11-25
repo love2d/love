@@ -149,6 +149,12 @@ void Matrix4::setShear(float kx, float ky)
 	e[1] = ky;
 	e[4] = kx;
 }
+
+void Matrix4::getApproximateScale(float &sx, float &sy) const
+{
+	sx = sqrtf(e[0] * e[0] + e[4] * e[4]);
+	sy = sqrtf(e[1] * e[1] + e[5] * e[5]);
+}
 	
 void Matrix4::setRawTransformation(float t00, float t10, float t01, float t11, float x, float y)
 {

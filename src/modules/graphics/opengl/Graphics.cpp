@@ -291,9 +291,9 @@ bool Graphics::setMode(int width, int height)
 	// Restore the graphics state.
 	restoreState(states.back());
 
-	pixelSizeStack.clear();
-	pixelSizeStack.reserve(5);
-	pixelSizeStack.push_back(1);
+	pixelScaleStack.clear();
+	pixelScaleStack.reserve(5);
+	pixelScaleStack.push_back(1);
 
 	int gammacorrect = isGammaCorrect() ? 1 : 0;
 
@@ -1688,23 +1688,24 @@ void Graphics::polyline(const float *coords, size_t count)
 		throw RenderOutsidePassException();
 
 	const DisplayState &state = states.back();
+	float pixelsize = std::max((float) pixelScaleStack.back(), 0.000001f);
 
 	if (state.lineJoin == LINE_JOIN_NONE)
 	{
 		NoneJoinPolyline line;
-		line.render(coords, count, state.lineWidth * .5f, float(pixelSizeStack.back()), state.lineStyle == LINE_SMOOTH);
+		line.render(coords, count, state.lineWidth * .5f, pixelsize, state.lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 	else if (state.lineJoin == LINE_JOIN_BEVEL)
 	{
 		BevelJoinPolyline line;
-		line.render(coords, count, state.lineWidth * .5f, float(pixelSizeStack.back()), state.lineStyle == LINE_SMOOTH);
+		line.render(coords, count, state.lineWidth * .5f, pixelsize, state.lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 	else // LINE_JOIN_MITER
 	{
 		MiterJoinPolyline line;
-		line.render(coords, count, state.lineWidth * .5f, float(pixelSizeStack.back()), state.lineStyle == LINE_SMOOTH);
+		line.render(coords, count, state.lineWidth * .5f, pixelsize, state.lineStyle == LINE_SMOOTH);
 		line.draw();
 	}
 }
@@ -1782,8 +1783,7 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 
 int Graphics::calculateEllipsePoints(float rx, float ry) const
 {
-	float pixelScale = 1.0f / std::max((float) pixelSizeStack.back(), 0.00001f);
-	int points = (int) sqrtf(((rx + ry) / 2.0f) * 20.0f * pixelScale);
+	int points = (int) sqrtf(((rx + ry) / 2.0f) * 20.0f * (float) pixelScaleStack.back());
 	return std::max(points, 8);
 }
 
@@ -2042,7 +2042,7 @@ void Graphics::push(StackType type)
 
 	gl.pushTransform();
 
-	pixelSizeStack.push_back(pixelSizeStack.back());
+	pixelScaleStack.push_back(pixelScaleStack.back());
 
 	if (type == STACK_ALL)
 		states.push_back(states.back());
@@ -2056,7 +2056,7 @@ void Graphics::pop()
 		throw Exception("Minimum stack depth reached (more pops than pushes?)");
 
 	gl.popTransform();
-	pixelSizeStack.pop_back();
+	pixelScaleStack.pop_back();
 
 	if (stackTypes.back() == STACK_ALL)
 	{
@@ -2079,7 +2079,7 @@ void Graphics::rotate(float r)
 void Graphics::scale(float x, float y)
 {
 	gl.getTransform().scale(x, y);
-	pixelSizeStack.back() *= 2. / (fabs(x) + fabs(y));
+	pixelScaleStack.back() *= (fabs(x) + fabs(y)) / 2.0;
 }
 
 void Graphics::translate(float x, float y)
@@ -2095,17 +2095,27 @@ void Graphics::shear(float kx, float ky)
 void Graphics::origin()
 {
 	gl.getTransform().setIdentity();
-	pixelSizeStack.back() = 1;
+	pixelScaleStack.back() = 1;
 }
 
 void Graphics::applyTransform(love::math::Transform *transform)
 {
-	gl.getTransform() *= transform->getMatrix();
+	Matrix4 &m = gl.getTransform();
+	m *= transform->getMatrix();
+
+	float sx, sy;
+	m.getApproximateScale(sx, sy);
+	pixelScaleStack.back() = (sx + sy) / 2.0;
 }
 
 void Graphics::replaceTransform(love::math::Transform *transform)
 {
-	gl.getTransform() = transform->getMatrix();
+	const Matrix4 &m = transform->getMatrix();
+	gl.getTransform() = m;
+
+	float sx, sy;
+	m.getApproximateScale(sx, sy);
+	pixelScaleStack.back() = (sx + sy) / 2.0;
 }
 
 Vector Graphics::transformPoint(Vector point)

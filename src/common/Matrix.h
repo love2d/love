@@ -118,6 +118,12 @@ public:
 	 * @param ky Shear along y-axis.
 	 **/
 	void setShear(float kx, float ky);
+
+	/**
+	 * Calculates the scale factors for a 2D affine transform. The output values
+	 * are absolute (not signed).
+	 **/
+	void getApproximateScale(float &sx, float &sy) const;
 	
 	/**
 	 * Sets a transformation's values directly. Useful if you want to modify them inplace,

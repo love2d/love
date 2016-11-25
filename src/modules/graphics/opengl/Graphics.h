@@ -567,7 +567,7 @@ private:
 
 	StrongRef<Font> defaultFont;
 
-	std::vector<double> pixelSizeStack; // stores current size of a pixel (needed for line drawing)
+	std::vector<double> pixelScaleStack;
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
 
