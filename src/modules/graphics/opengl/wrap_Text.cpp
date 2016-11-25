@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Text.h"
+#include "math/wrap_Transform.h"
 
 namespace love
 {
@@ -126,30 +127,41 @@ int w_Text_add(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
 
+	int index = 0;
+
 	std::vector<Font::ColoredString> text;
 	luax_checkcoloredstring(L, 2, text);
 
-	float x  = (float) luaL_optnumber(L, 3, 0.0);
-	float y  = (float) luaL_optnumber(L, 4, 0.0);
-	float a  = (float) luaL_optnumber(L, 5, 0.0);
-	float sx = (float) luaL_optnumber(L, 6, 1.0);
-	float sy = (float) luaL_optnumber(L, 7, sx);
-	float ox = (float) luaL_optnumber(L, 8, 0.0);
-	float oy = (float) luaL_optnumber(L, 9, 0.0);
-	float kx = (float) luaL_optnumber(L, 10, 0.0);
-	float ky = (float) luaL_optnumber(L, 11, 0.0);
+	if (luax_istype(L, 3, MATH_TRANSFORM_ID))
+	{
+		math::Transform *tf = luax_totype<math::Transform>(L, 3, MATH_TRANSFORM_ID);
+		luax_catchexcept(L, [&](){ index = t->add(text, tf->getMatrix()); });
+	}
+	else
+	{
+		float x  = (float) luaL_optnumber(L, 3, 0.0);
+		float y  = (float) luaL_optnumber(L, 4, 0.0);
+		float a  = (float) luaL_optnumber(L, 5, 0.0);
+		float sx = (float) luaL_optnumber(L, 6, 1.0);
+		float sy = (float) luaL_optnumber(L, 7, sx);
+		float ox = (float) luaL_optnumber(L, 8, 0.0);
+		float oy = (float) luaL_optnumber(L, 9, 0.0);
+		float kx = (float) luaL_optnumber(L, 10, 0.0);
+		float ky = (float) luaL_optnumber(L, 11, 0.0);
 
-	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
-	int index = 0;
-	luax_catchexcept(L, [&](){ index = t->add(text, m); });
+		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
+		luax_catchexcept(L, [&](){ index = t->add(text, m); });
+	}
+
 	lua_pushnumber(L, index + 1);
-
 	return 1;
 }
 
 int w_Text_addf(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
+
+	int index = 0;
 
 	std::vector<Font::ColoredString> text;
 	luax_checkcoloredstring(L, 2, text);
@@ -162,21 +174,28 @@ int w_Text_addf(lua_State *L)
 	if (!Font::getConstant(alignstr, align))
 		return luaL_error(L, "Invalid align mode: %s", alignstr);
 
-	float x  = (float) luaL_optnumber(L, 5, 0.0);
-	float y  = (float) luaL_optnumber(L, 6, 0.0);
-	float a  = (float) luaL_optnumber(L, 7, 0.0);
-	float sx = (float) luaL_optnumber(L, 8, 1.0);
-	float sy = (float) luaL_optnumber(L, 9, sx);
-	float ox = (float) luaL_optnumber(L, 10, 0.0);
-	float oy = (float) luaL_optnumber(L, 11, 0.0);
-	float kx = (float) luaL_optnumber(L, 12, 0.0);
-	float ky = (float) luaL_optnumber(L, 13, 0.0);
+	if (luax_istype(L, 5, MATH_TRANSFORM_ID))
+	{
+		math::Transform *tf = luax_totype<math::Transform>(L, 5, MATH_TRANSFORM_ID);
+		luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, tf->getMatrix()); });
+	}
+	else
+	{
+		float x  = (float) luaL_optnumber(L, 5, 0.0);
+		float y  = (float) luaL_optnumber(L, 6, 0.0);
+		float a  = (float) luaL_optnumber(L, 7, 0.0);
+		float sx = (float) luaL_optnumber(L, 8, 1.0);
+		float sy = (float) luaL_optnumber(L, 9, sx);
+		float ox = (float) luaL_optnumber(L, 10, 0.0);
+		float oy = (float) luaL_optnumber(L, 11, 0.0);
+		float kx = (float) luaL_optnumber(L, 12, 0.0);
+		float ky = (float) luaL_optnumber(L, 13, 0.0);
 
-	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
-	int index = 0;
-	luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, m); });
+		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
+		luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, m); });
+	}
+
 	lua_pushnumber(L, index + 1);
-
 	return 1;
 }
 

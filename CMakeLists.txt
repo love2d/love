@@ -655,6 +655,8 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/MathModule.h
 	src/modules/math/RandomGenerator.cpp
 	src/modules/math/RandomGenerator.h
+	src/modules/math/Transform.cpp
+	src/modules/math/Transform.h
 	src/modules/math/wrap_BezierCurve.cpp
 	src/modules/math/wrap_BezierCurve.h
 	src/modules/math/wrap_CompressedData.cpp
@@ -663,6 +665,8 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/wrap_Math.h
 	src/modules/math/wrap_RandomGenerator.cpp
 	src/modules/math/wrap_RandomGenerator.h
+	src/modules/math/wrap_Transform.cpp
+	src/modules/math/wrap_Transform.h
 )
 
 source_group("modules\\math" FILES ${LOVE_SRC_MODULE_MATH})

@@ -23,6 +23,7 @@
 #include "Image.h"
 #include "Canvas.h"
 #include "graphics/wrap_Texture.h"
+#include "math/wrap_Transform.h"
 
 // C++
 #include <typeinfo>
@@ -51,24 +52,37 @@ static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int sta
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
 		return luax_typerror(L, startidx, "Quad");
 
-	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
-	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
-	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
-	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
-	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
-	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
-	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
-	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
-	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
+	if (luax_istype(L, startidx, MATH_TRANSFORM_ID))
+	{
+		math::Transform *tf = luax_totype<math::Transform>(L, startidx, MATH_TRANSFORM_ID);
+		luax_catchexcept(L, [&]() {
+			if (quad)
+				index = t->addq(quad, tf->getMatrix(), index);
+			else
+				index = t->add(tf->getMatrix(), index);
+		});
+	}
+	else
+	{
+		float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
+		float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
+		float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
+		float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
+		float sy = (float) luaL_optnumber(L, startidx + 4, sx);
+		float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
+		float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
+		float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
+		float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
+		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
 
-	luax_catchexcept(L, [&]() {
-		if (quad)
-			index = t->addq(quad, m, index);
-		else
-			index = t->add(m, index);
-	});
+		luax_catchexcept(L, [&]() {
+			if (quad)
+				index = t->addq(quad, m, index);
+			else
+				index = t->add(m, index);
+		});
+	}
 
 	return index;
 }

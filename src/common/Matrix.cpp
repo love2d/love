@@ -73,6 +73,12 @@ Matrix4::Matrix4()
 {
 	setIdentity();
 }
+
+
+Matrix4::Matrix4(const float elements[16])
+{
+	memcpy(e, elements, sizeof(float) * 16);
+}
 	
 Matrix4::Matrix4(float t00, float t10, float t01, float t11, float x, float y)
 {

@@ -895,6 +895,12 @@
 		FA4F2BB31DE1E4B800CA37D7 /* RecordingDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BA21DE1E36400CA37D7 /* RecordingDevice.cpp */; };
 		FA4F2BB41DE1E4BD00CA37D7 /* RecordingDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BAA1DE1E37000CA37D7 /* RecordingDevice.cpp */; };
 		FA4F2BB51DE1E4C300CA37D7 /* wrap_RecordingDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BA41DE1E36400CA37D7 /* wrap_RecordingDevice.cpp */; };
+		FA4F2BE31DE6650600CA37D7 /* Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BDF1DE6650600CA37D7 /* Transform.cpp */; };
+		FA4F2BE41DE6650600CA37D7 /* Transform.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4F2BE01DE6650600CA37D7 /* Transform.h */; };
+		FA4F2BE51DE6650600CA37D7 /* wrap_Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BE11DE6650600CA37D7 /* wrap_Transform.cpp */; };
+		FA4F2BE61DE6650600CA37D7 /* wrap_Transform.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4F2BE21DE6650600CA37D7 /* wrap_Transform.h */; };
+		FA4F2BE71DE6650D00CA37D7 /* Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BDF1DE6650600CA37D7 /* Transform.cpp */; };
+		FA4F2BE81DE6651000CA37D7 /* wrap_Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2BE11DE6650600CA37D7 /* wrap_Transform.cpp */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
@@ -1600,6 +1606,10 @@
 		FA4F2BAB1DE1E37000CA37D7 /* RecordingDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordingDevice.h; sourceTree = "<group>"; };
 		FA4F2BAE1DE1E37B00CA37D7 /* RecordingDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordingDevice.cpp; sourceTree = "<group>"; };
 		FA4F2BAF1DE1E37B00CA37D7 /* RecordingDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordingDevice.h; sourceTree = "<group>"; };
+		FA4F2BDF1DE6650600CA37D7 /* Transform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Transform.cpp; sourceTree = "<group>"; };
+		FA4F2BE01DE6650600CA37D7 /* Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Transform.h; sourceTree = "<group>"; };
+		FA4F2BE11DE6650600CA37D7 /* wrap_Transform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Transform.cpp; sourceTree = "<group>"; };
+		FA4F2BE21DE6650600CA37D7 /* wrap_Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Transform.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
@@ -2559,6 +2569,8 @@
 				FA0B7C041A95902C000E1D17 /* MathModule.h */,
 				FA0B7C051A95902C000E1D17 /* RandomGenerator.cpp */,
 				FA0B7C061A95902C000E1D17 /* RandomGenerator.h */,
+				FA4F2BDF1DE6650600CA37D7 /* Transform.cpp */,
+				FA4F2BE01DE6650600CA37D7 /* Transform.h */,
 				FA0B7C071A95902C000E1D17 /* wrap_BezierCurve.cpp */,
 				FA0B7C081A95902C000E1D17 /* wrap_BezierCurve.h */,
 				FAB17BEE1ABFB37500F9BA27 /* wrap_CompressedData.cpp */,
@@ -2569,6 +2581,8 @@
 				FA0B7C0B1A95902C000E1D17 /* wrap_RandomGenerator.cpp */,
 				FA0B7C0C1A95902C000E1D17 /* wrap_RandomGenerator.h */,
 				FA2E9BFE1C19E00C0004A1EE /* wrap_RandomGenerator.lua */,
+				FA4F2BE11DE6650600CA37D7 /* wrap_Transform.cpp */,
+				FA4F2BE21DE6650600CA37D7 /* wrap_Transform.h */,
 			);
 			path = math;
 			sourceTree = "<group>";
@@ -3191,6 +3205,7 @@
 				FA0B7E6B1A95902C000E1D17 /* wrap_PulleyJoint.h in Headers */,
 				FA0B7E051A95902C000E1D17 /* Contact.h in Headers */,
 				FA0B7A691A958EA3000E1D17 /* b2Island.h in Headers */,
+				FA4F2BE41DE6650600CA37D7 /* Transform.h in Headers */,
 				FA0B7E0E1A95902C000E1D17 /* Fixture.h in Headers */,
 				FA0B7A401A958EA3000E1D17 /* b2ChainShape.h in Headers */,
 				217DFBE81D9F6D490055D849 /* inet.h in Headers */,
@@ -3266,6 +3281,7 @@
 				217DFBF71D9F6D490055D849 /* options.h in Headers */,
 				FA0B7E3B1A95902C000E1D17 /* World.h in Headers */,
 				FA0B7DC31A95902C000E1D17 /* wrap_Joystick.h in Headers */,
+				FA4F2BE61DE6650600CA37D7 /* wrap_Transform.h in Headers */,
 				FA0B7EE71A95902D000E1D17 /* Window.h in Headers */,
 				FA0B7E651A95902C000E1D17 /* wrap_PolygonShape.h in Headers */,
 				FA0B7AC91A958EA3000E1D17 /* win32.h in Headers */,
@@ -3501,6 +3517,7 @@
 				FA0B7AAB1A958EA3000E1D17 /* b2WeldJoint.cpp in Sources */,
 				FA0B7EC21A95902C000E1D17 /* threads.cpp in Sources */,
 				FA0B79371A958E3B000E1D17 /* macosx.mm in Sources */,
+				FA4F2BE81DE6651000CA37D7 /* wrap_Transform.cpp in Sources */,
 				FA0B7D011A95902C000E1D17 /* Filesystem.cpp in Sources */,
 				FA0B7ED91A95902D000E1D17 /* wrap_Timer.cpp in Sources */,
 				FA0B7DD11A95902C000E1D17 /* love.cpp in Sources */,
@@ -3583,6 +3600,7 @@
 				FA0B7D681A95902C000E1D17 /* wrap_ParticleSystem.cpp in Sources */,
 				FA0B7AD51A958EA3000E1D17 /* unix.c in Sources */,
 				FAB17BE71ABFAA9000F9BA27 /* lz4.c in Sources */,
+				FA4F2BE71DE6650D00CA37D7 /* Transform.cpp in Sources */,
 				FA0B7D651A95902C000E1D17 /* wrap_Mesh.cpp in Sources */,
 				FA0B7A531A958EA3000E1D17 /* b2Math.cpp in Sources */,
 				FA0B7CDA1A95902C000E1D17 /* Pool.cpp in Sources */,
@@ -3861,6 +3879,7 @@
 				FA0B7EDF1A95902D000E1D17 /* wrap_Touch.cpp in Sources */,
 				FA0B794A1A958E3B000E1D17 /* wrap_Data.cpp in Sources */,
 				217DFBFB1D9F6D490055D849 /* serial.c in Sources */,
+				FA4F2BE51DE6650600CA37D7 /* wrap_Transform.cpp in Sources */,
 				217DFC0D1D9F6D490055D849 /* unixudp.c in Sources */,
 				FA0B7CDC1A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7DC41A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
@@ -4045,6 +4064,7 @@
 				FA0B7CDF1A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7ECE1A95902C000E1D17 /* wrap_LuaThread.cpp in Sources */,
 				FA0B79431A958E3B000E1D17 /* Variant.cpp in Sources */,
+				FA4F2BE31DE6650600CA37D7 /* Transform.cpp in Sources */,
 				FA0B7EA01A95902C000E1D17 /* Sound.cpp in Sources */,
 				FA0B7DE51A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7EDB1A95902D000E1D17 /* Touch.cpp in Sources */,

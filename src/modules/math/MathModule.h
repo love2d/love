@@ -45,6 +45,7 @@ namespace math
 {
 
 class BezierCurve;
+class Transform;
 
 struct Triangle
 {
@@ -175,6 +176,9 @@ public:
 	 * Creates a new bezier curve.
 	 **/
 	BezierCurve *newBezierCurve(const std::vector<Vector> &points);
+
+	Transform *newTransform();
+	Transform *newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	// Implements Module.
 	virtual ModuleType getModuleType() const

@@ -2092,6 +2092,16 @@ void Graphics::origin()
 	pixelSizeStack.back() = 1;
 }
 
+void Graphics::applyTransform(love::math::Transform *transform)
+{
+	gl.getTransform() *= transform->getMatrix();
+}
+
+void Graphics::replaceTransform(love::math::Transform *transform)
+{
+	gl.getTransform() = transform->getMatrix();
+}
+
 Vector Graphics::transformPoint(Vector point)
 {
 	Vector p;

@@ -21,6 +21,7 @@
 #include "wrap_Shader.h"
 #include "graphics/wrap_Texture.h"
 #include "math/MathModule.h"
+#include "math/Transform.h"
 
 #include <string>
 #include <algorithm>
@@ -164,6 +165,13 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 
 	for (int i = 0; i < count; i++)
 	{
+		if (columns == 4 && rows == 4 && luax_istype(L, startidx + i, MATH_TRANSFORM_ID))
+		{
+			math::Transform *t = luax_totype<math::Transform>(L, startidx + i, MATH_TRANSFORM_ID);
+			memcpy(&values[i * 16], t->getMatrix().getElements(), sizeof(float) * 16);
+			continue;
+		}
+
 		luaL_checktype(L, startidx + i, LUA_TTABLE);
 
 		lua_rawgeti(L, startidx + i, 1);

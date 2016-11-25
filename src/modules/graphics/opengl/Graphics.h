@@ -38,6 +38,8 @@
 
 #include "video/VideoStream.h"
 
+#include "math/Transform.h"
+
 #include "Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
@@ -488,6 +490,10 @@ public:
 	void translate(float x, float y);
 	void shear(float kx, float ky);
 	void origin();
+
+	void applyTransform(love::math::Transform *transform);
+	void replaceTransform(love::math::Transform *transform);
+
 	Vector transformPoint(Vector point);
 	Vector inverseTransformPoint(Vector point);
 
