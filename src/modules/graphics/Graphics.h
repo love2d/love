@@ -34,6 +34,8 @@ namespace love
 namespace graphics
 {
 
+const int MAX_COLOR_RENDER_TARGETS = 16;
+
 /**
  * Globally sets whether gamma correction is enabled. Ideally this should be set
  * prior to using any Graphics module function.
@@ -58,6 +60,14 @@ void gammaCorrectColor(Colorf &c);
  * The color's components are expected to be in the range of [0, 1].
  **/
 void unGammaCorrectColor(Colorf &c);
+
+class RenderOutsidePassException : public love::Exception
+{
+public:
+	RenderOutsidePassException()
+		: Exception("Cannot draw outside of a render pass!")
+	{}
+};
 
 class Graphics : public Module
 {
@@ -143,6 +153,8 @@ public:
 		FEATURE_MULTI_CANVAS_FORMATS,
 		FEATURE_CLAMP_ZERO,
 		FEATURE_LIGHTEN,
+		FEATURE_FULL_NPOT,
+		FEATURE_PIXEL_SHADER_HIGHP,
 		FEATURE_MAX_ENUM
 	};
 
@@ -159,6 +171,7 @@ public:
 		LIMIT_TEXTURE_SIZE,
 		LIMIT_MULTI_CANVAS,
 		LIMIT_CANVAS_MSAA,
+		LIMIT_ANISOTROPY,
 		LIMIT_MAX_ENUM
 	};
 
@@ -180,7 +193,7 @@ public:
 	struct Stats
 	{
 		int drawCalls;
-		int canvasSwitches;
+		int renderPasses;
 		int shaderSwitches;
 		int canvases;
 		int images;
@@ -258,6 +271,8 @@ public:
 	 * may be different on some platforms (especially mobile ones.)
 	 **/
 	virtual bool isActive() const = 0;
+
+	virtual bool isPassActive() const = 0;
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);

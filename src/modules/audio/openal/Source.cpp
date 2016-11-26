@@ -20,6 +20,7 @@
 
 #include "Source.h"
 #include "Pool.h"
+#include "Audio.h"
 #include "common/math.h"
 
 // STD
@@ -119,8 +120,8 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, channels(soundData->getChannels())
 	, bitDepth(soundData->getBitDepth())
 {
-	ALenum fmt = getFormat(soundData->getChannels(), soundData->getBitDepth());
-	if (fmt == 0)
+	ALenum fmt = Audio::getFormat(soundData->getBitDepth(), soundData->getChannels());
+	if (fmt == AL_NONE)
 		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
 
 	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), sampleRate), Acquire::NORETAIN);
@@ -141,7 +142,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, decoder(decoder)
 	, unusedBufferTop(MAX_BUFFERS - 1)
 {
-	if (getFormat(decoder->getChannels(), decoder->getBitDepth()) == 0)
+	if (Audio::getFormat(decoder->getBitDepth(), decoder->getChannels()) == AL_NONE)
 		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
 
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
@@ -162,8 +163,8 @@ Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels)
 	, channels(channels)
 	, bitDepth(bitDepth)
 {
-	ALenum fmt = getFormat(channels, bitDepth);
-	if (fmt == 0)
+	ALenum fmt = Audio::getFormat(bitDepth, channels);
+	if (fmt == AL_NONE)
 		throw InvalidFormatException(channels, bitDepth);
 
 	alGenBuffers(MAX_BUFFERS, streamBuffers);
@@ -280,10 +281,12 @@ bool Source::update()
 	switch (sourceType)
 	{
 		case TYPE_STATIC:
+		{
 			// Looping mode could have changed.
-			// FIXME: make looping mode not change without you noticing so that this is not needed
+			// FIXME: make looping mode change atomically so this is not needed
 			alSourcei(source, AL_LOOPING, isLooping() ? AL_TRUE : AL_FALSE);
 			return !isFinished();
+		}
 		case TYPE_STREAM:
 			if (!isFinished())
 			{
@@ -401,24 +404,26 @@ void Source::seekAtomic(float offset, void *unit)
 		break;
 	}
 
+	bool wasPlaying = isPlaying();
 	switch (sourceType)
 	{
 		case TYPE_STATIC:
-			alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-			offsetSamples = offsetSeconds = 0;
+			if (valid)
+			{
+				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+				offsetSamples = offsetSeconds = 0;
+			}
 			break;
 		case TYPE_STREAM:
 		{
-			bool wasPlaying = isPlaying();
-
 			// To drain all buffers
 			if (valid)
-				stopAtomic();
+				stop();
 
 			decoder->seek(offsetSeconds);
 
 			if (wasPlaying)
-				playAtomic(source);
+				play();
 
 			break;
 		}
@@ -453,6 +458,13 @@ void Source::seekAtomic(float offset, void *unit)
 			break;
 		case TYPE_MAX_ENUM:
 			break;
+	}
+	if (wasPlaying && (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && !isPlaying())))
+	{
+		stop();
+		if (isLooping())
+			play();
+		return;
 	}
 	this->offsetSamples = offsetSamples;
 	this->offsetSeconds = offsetSeconds;
@@ -688,7 +700,7 @@ bool Source::queueAtomic(void *data, ALsizei length)
 		if (buffer == AL_NONE)
 			return false;
 
-		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
+		alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
 		alSourceQueueBuffers(source, 1, &buffer);
 		unusedBufferPop();
 	}
@@ -699,7 +711,7 @@ bool Source::queueAtomic(void *data, ALsizei length)
 			return false;
 
 		//stack acts as queue while stopped
-		alBufferData(buffer, getFormat(channels, bitDepth), data, length, sampleRate);
+		alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
 		unusedBufferQueue(buffer);
 	}
 	bufferedBytes += length;
@@ -734,9 +746,6 @@ void Source::prepareAtomic()
 	{
 		case TYPE_STATIC:
 			alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
-			//source can be seeked while not valid
-			if (offsetSamples >= 0) 
-				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 			break;
 		case TYPE_STREAM:
 			while (unusedBufferPeek() != AL_NONE)
@@ -760,8 +769,6 @@ void Source::prepareAtomic()
 			for (unsigned int i = top + 1; i < MAX_BUFFERS; i++)
 				unusedBufferPush(unusedBuffers[i]);
 
-			if (offsetSamples >= 0) 
-				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 			break;
 		}
 		case TYPE_MAX_ENUM:
@@ -774,7 +781,6 @@ void Source::teardownAtomic()
 	switch (sourceType)
 	{
 		case TYPE_STATIC:
-			alSourcef(source, AL_SAMPLE_OFFSET, 0);
 			break;
 		case TYPE_STREAM:
 		{
@@ -832,15 +838,31 @@ bool Source::playAtomic(ALuint source)
 
 	alSourcePlay(source);
 
-	// alSourcePlay may fail if the system has reached its limit of simultaneous
-	// playing sources.
 	bool success = alGetError() == AL_NO_ERROR;
 
-	valid = true; //if it fails it will be set to false again
-	//but this prevents a horrible, horrible bug
+	if (sourceType == TYPE_STREAM)
+	{
+		valid = true; //isPlaying() needs source to be valid
+		if (!isPlaying())
+			success = false;
+	}
+	else if (success)
+	{
+		alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+		success = alGetError() == AL_NO_ERROR;
+	}
 
+	if (!success)
+	{
+		valid = true; //stop() needs source to be valid
+		stop();
+	}
 	if (sourceType != TYPE_STREAM)
 		offsetSamples = offsetSeconds = 0;
+
+	//this is set to success state afterwards anyway, but setting it here
+	//to true preemptively avoids race condition with update bug
+	valid = true; 
 
 	return success;
 }
@@ -862,7 +884,12 @@ void Source::pauseAtomic()
 void Source::resumeAtomic()
 {
 	if (valid && !isPlaying())
+	{
 		alSourcePlay(source);
+
+		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && unusedBufferTop == MAX_BUFFERS - 1))
+			stop();
+	}
 }
 
 bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const std::vector<ALuint> &ids, const std::vector<char> &wasPlaying)
@@ -941,7 +968,7 @@ void Source::pauseAtomic(const std::vector<love::audio::Source*> &sources)
 
 void Source::reset()
 {
-	alSourcei(source, AL_BUFFER, 0);
+	alSourcei(source, AL_BUFFER, AL_NONE);
 	alSourcefv(source, AL_POSITION, position);
 	alSourcefv(source, AL_VELOCITY, velocity);
 	alSourcefv(source, AL_DIRECTION, direction);
@@ -964,34 +991,6 @@ void Source::setFloatv(float *dst, const float *src) const
 	dst[0] = src[0];
 	dst[1] = src[1];
 	dst[2] = src[2];
-}
-
-ALenum Source::getFormat(int channels, int bitDepth) const
-{
-	if (channels == 1 && bitDepth == 8)
-		return AL_FORMAT_MONO8;
-	else if (channels == 1 && bitDepth == 16)
-		return AL_FORMAT_MONO16;
-	else if (channels == 2 && bitDepth == 8)
-		return AL_FORMAT_STEREO8;
-	else if (channels == 2 && bitDepth == 16)
-		return AL_FORMAT_STEREO16;
-
-#ifdef AL_EXT_MCFORMATS
-	if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
-	{
-		if (channels == 6 && bitDepth == 8)
-			return AL_FORMAT_51CHN8;
-		else if (channels == 6 && bitDepth == 16)
-			return AL_FORMAT_51CHN16;
-		else if (channels == 8 && bitDepth == 8)
-			return AL_FORMAT_71CHN8;
-		else if (channels == 8 && bitDepth == 16)
-			return AL_FORMAT_71CHN16;
-	}
-#endif
-
-	return 0;
 }
 
 ALuint Source::unusedBufferPeek()
@@ -1029,9 +1028,9 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	// OpenAL implementations are allowed to ignore 0-size alBufferData calls.
 	if (decoded > 0)
 	{
-		int fmt = getFormat(d->getChannels(), d->getBitDepth());
+		int fmt = Audio::getFormat(d->getBitDepth(), d->getChannels());
 
-		if (fmt != 0)
+		if (fmt != AL_NONE)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 		else
 			decoded = 0;

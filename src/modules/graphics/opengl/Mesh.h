@@ -140,7 +140,8 @@ public:
 	 * Attaches a vertex attribute from another Mesh to this one. The attribute
 	 * will be used when drawing this Mesh.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh);
+	void attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname);
+	bool detachAttribute(const std::string &name);
 
 	void *mapVertexData();
 	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);

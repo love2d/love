@@ -260,6 +260,8 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "multicanvasformats", FEATURE_MULTI_CANVAS_FORMATS },
 	{ "clampzero", FEATURE_CLAMP_ZERO },
 	{ "lighten", FEATURE_LIGHTEN },
+	{ "fullnpot", FEATURE_FULL_NPOT },
+	{ "pixelshaderhighp", FEATURE_PIXEL_SHADER_HIGHP },
 };
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));
@@ -270,6 +272,7 @@ StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::syst
 	{ "texturesize", LIMIT_TEXTURE_SIZE },
 	{ "multicanvas", LIMIT_MULTI_CANVAS },
 	{ "canvasmsaa",  LIMIT_CANVAS_MSAA  },
+	{ "anisotropy",  LIMIT_ANISOTROPY   },
 };
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));

@@ -9,7 +9,7 @@
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented; you must not
+ * 1. The origin of this software must not be misrepresented = 0; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
@@ -18,24 +18,75 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_WRAP_AUDIO_H
-#define LOVE_AUDIO_WRAP_AUDIO_H
-
-// LOVE
-#include "common/config.h"
-#include "common/runtime.h"
+#include "RecordingDevice.h"
 #include "Audio.h"
-#include "wrap_Source.h"
-#include "wrap_RecordingDevice.h"
 
 namespace love
 {
 namespace audio
 {
+namespace null
+{
 
-extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State *L);
+const char *RecordingDevice::name = "null";
 
-} // audio
-} // love
+RecordingDevice::RecordingDevice(const char *)
+{
+}
 
-#endif // LOVE_AUDIO_WRAP_AUDIO_H
+RecordingDevice::~RecordingDevice()
+{
+}
+
+bool RecordingDevice::start()
+{
+	return false;
+}
+
+bool RecordingDevice::start(int, int, int, int)
+{
+	return false;
+}
+
+void RecordingDevice::stop()
+{
+}
+
+love::sound::SoundData *RecordingDevice::getData()
+{
+	return nullptr;
+}
+
+int RecordingDevice::getSampleCount() const
+{
+	return 0;
+}
+
+int RecordingDevice::getSampleRate() const
+{
+	return 8000;
+}
+
+int RecordingDevice::getBitDepth() const
+{
+	return 16;
+}
+
+int RecordingDevice::getChannels() const
+{
+	return 1;
+}
+
+const char *RecordingDevice::getName() const
+{
+	return name;
+}
+
+bool RecordingDevice::isRecording() const
+{
+	return false;
+}
+
+} //null
+} //audio
+} //love

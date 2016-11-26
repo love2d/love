@@ -22,8 +22,10 @@
 #include "wrap_RandomGenerator.h"
 #include "wrap_BezierCurve.h"
 #include "wrap_CompressedData.h"
+#include "wrap_Transform.h"
 #include "MathModule.h"
 #include "BezierCurve.h"
+#include "Transform.h"
 #include "common/b64.h"
 
 #include <cmath>
@@ -115,6 +117,31 @@ int w_newBezierCurve(lua_State *L)
 	BezierCurve *curve = Math::instance.newBezierCurve(points);
 	luax_pushtype(L, curve);
 	curve->release();
+	return 1;
+}
+
+int w_newTransform(lua_State *L)
+{
+	Transform *t = nullptr;
+
+	if (lua_isnoneornil(L, 1))
+		t = Math::instance.newTransform();
+	else
+	{
+		float x =  (float) luaL_checknumber(L, 1);
+		float y =  (float) luaL_checknumber(L, 2);
+		float a =  (float) luaL_optnumber(L, 3, 0.0);
+		float sx = (float) luaL_optnumber(L, 4, 1.0);
+		float sy = (float) luaL_optnumber(L, 5, sx);
+		float ox = (float) luaL_optnumber(L, 6, 0.0);
+		float oy = (float) luaL_optnumber(L, 7, 0.0);
+		float kx = (float) luaL_optnumber(L, 8, 0.0);
+		float ky = (float) luaL_optnumber(L, 9, 0.0);
+		t = Math::instance.newTransform(x, y, a, sx, sy, ox, oy, kx, ky);
+	}
+
+	luax_pushtype(L, t);
+	t->release();
 	return 1;
 }
 
@@ -507,6 +534,7 @@ static const luaL_Reg functions[] =
 	{ "_getRandomGenerator", w__getRandomGenerator },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "newBezierCurve", w_newBezierCurve },
+	{ "newTransform", w_newTransform },
 	{ "triangulate", w_triangulate },
 	{ "isConvex", w_isConvex },
 	{ "gammaToLinear", w_gammaToLinear },
@@ -525,6 +553,7 @@ static const lua_CFunction types[] =
 	luaopen_randomgenerator,
 	luaopen_beziercurve,
 	luaopen_compresseddata,
+	luaopen_transform,
 	0
 };
 

@@ -79,7 +79,14 @@ Window::~Window()
 {
 	close();
 
+	graphics.set(nullptr);
+
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+}
+
+void Window::setGraphics(graphics::Graphics *graphics)
+{
+	this->graphics.set(graphics);
 }
 
 void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
@@ -401,6 +408,12 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 bool Window::setWindow(int width, int height, WindowSettings *settings)
 {
+	if (!graphics.get())
+		graphics.set(Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS));
+
+	if (graphics.get() && graphics->isPassActive())
+		throw love::Exception("setMode cannot be called while a render pass is active in love.graphics.");
+
 	WindowSettings f;
 
 	if (settings)
@@ -507,9 +520,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	updateSettings(f, false);
 
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->setMode(pixelWidth, pixelHeight);
+	if (graphics.get())
+		graphics->setMode(pixelWidth, pixelHeight);
 
 #ifdef LOVE_ANDROID
 	love::android::setImmersive(f.fullscreen);
@@ -528,9 +540,8 @@ bool Window::onSizeChanged(int width, int height)
 
 	SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->setViewportSize(pixelWidth, pixelHeight);
+	if (graphics.get())
+		graphics->setViewportSize(pixelWidth, pixelHeight);
 
 	return true;
 }
@@ -596,13 +607,9 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	// May be 0 if the refresh rate can't be determined.
 	settings.refreshrate = (double) dmode.refresh_rate;
 
-	if (updateGraphicsViewport)
-	{
-		// Update the viewport size now instead of waiting for event polling.
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		if (gfx != nullptr)
-			gfx->setViewportSize(pixelWidth, pixelHeight);
-	}
+	// Update the viewport size now instead of waiting for event polling.
+	if (updateGraphicsViewport && graphics.get())
+		graphics->setViewportSize(pixelWidth, pixelHeight);
 }
 
 void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
@@ -618,9 +625,13 @@ void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
 
 void Window::close()
 {
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->unSetMode();
+	if (graphics.get())
+	{
+		if (graphics->isPassActive())
+			throw love::Exception("close cannot be called while a render pass is active in love.graphics.");
+
+		graphics->unSetMode();
+	}
 
 	if (context)
 	{
@@ -645,6 +656,9 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 {
 	if (!window)
 		return false;
+
+	if (graphics.get() && graphics->isPassActive())
+		throw love::Exception("setFullscreen cannot be called while a render pass is active in love.graphics.");
 
 	WindowSettings newsettings = settings;
 	newsettings.fullscreen = fullscreen;

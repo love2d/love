@@ -18,24 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_WRAP_AUDIO_H
-#define LOVE_AUDIO_WRAP_AUDIO_H
+#pragma once
 
 // LOVE
-#include "common/config.h"
+#include "Transform.h"
 #include "common/runtime.h"
-#include "Audio.h"
-#include "wrap_Source.h"
-#include "wrap_RecordingDevice.h"
 
 namespace love
 {
-namespace audio
+namespace math
 {
 
-extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State *L);
+Transform *luax_checktransform(lua_State *L, int idx);
+extern "C" int luaopen_transform(lua_State *L);
 
-} // audio
+} // math
 } // love
-
-#endif // LOVE_AUDIO_WRAP_AUDIO_H

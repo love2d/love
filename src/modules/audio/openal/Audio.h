@@ -29,6 +29,7 @@
 
 // LOVE
 #include "audio/Audio.h"
+#include "audio/RecordingDevice.h"
 #include "common/config.h"
 #include "sound/SoundData.h"
 
@@ -65,6 +66,15 @@ public:
 	Audio();
 	~Audio();
 
+	/**
+	 * Gets the OpenAL format identifier based on number of
+	 * channels and bits.
+	 * @param channels.
+	 * @param bitDepth Either 8-bit samples, or 16-bit samples.
+	 * @return One of AL_FORMAT_*, or AL_NONE if unsupported format.
+	 **/
+	static ALenum getFormat(int bitDepth, int channels);
+
 	// Implements Module.
 	const char *getName() const;
 
@@ -95,10 +105,7 @@ public:
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
 
-	void record();
-	love::sound::SoundData *getRecordedData();
-	love::sound::SoundData *stopRecording(bool returnData);
-	bool canRecord();
+	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
@@ -108,8 +115,8 @@ private:
 	// The OpenAL device.
 	ALCdevice *device;
 
-	// The OpenAL capture device (microphone).
-	ALCdevice *capture;
+	// The OpenAL capture devices.
+	std::vector<love::audio::RecordingDevice*> capture;
 
 	// The OpenAL context.
 	ALCcontext *context;

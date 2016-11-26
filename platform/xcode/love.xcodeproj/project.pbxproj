@@ -430,6 +430,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
@@ -439,6 +440,8 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
 				);
@@ -458,6 +461,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
@@ -465,6 +469,8 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
 				);
@@ -841,6 +847,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"\"$(SRCROOT)/build/Release\"",
 					"\"$(SRCROOT)/build/Debug\"",
@@ -848,6 +855,8 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
 				);

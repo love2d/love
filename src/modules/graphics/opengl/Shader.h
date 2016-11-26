@@ -41,8 +41,6 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas;
-
 // A GLSL shader
 class Shader : public Object, public Volatile
 {
@@ -100,13 +98,24 @@ public:
 	{
 		int location;
 		int count;
+
 		union
 		{
 			int components;
 			MatrixSize matrix;
 		};
+
 		UniformType baseType;
 		std::string name;
+
+		union
+		{
+			void *data;
+			float *floats;
+			int *ints;
+		};
+
+		Texture **textures;
 	};
 
 	// Pointer to currently active Shader.
@@ -151,11 +160,9 @@ public:
 	std::string getWarnings() const;
 
 	const UniformInfo *getUniformInfo(const std::string &name) const;
+	void updateUniform(const UniformInfo *info, int count, bool internalUpdate = false);
 
-	void sendInts(const UniformInfo *info, const int *vec, int count);
-	void sendFloats(const UniformInfo *info, const float *vec, int count);
-	void sendMatrices(const UniformInfo *info, const float *m, int count);
-	void sendTexture(const UniformInfo *info, Texture *texture);
+	void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate = false);
 
 	/**
 	 * Gets whether a uniform with the specified name exists and is actively
@@ -175,22 +182,9 @@ public:
 	void checkSetPointSize(float size);
 	void checkSetBuiltinUniforms();
 
-	const std::map<std::string, Object *> &getBoundRetainables() const;
-
 	GLuint getProgram() const
 	{
 		return program;
-	}
-
-	template <typename T>
-	T *getScratchBuffer(size_t count)
-	{
-		size_t bytes = sizeof(T) * count;
-
-		if (scratchBuffer.size() < bytes)
-			scratchBuffer.resize(bytes);
-
-		return (T *) scratchBuffer.data();
 	}
 
 	static std::string getGLSLVersion();
@@ -204,6 +198,12 @@ public:
 
 private:
 
+	struct TextureUnit
+	{
+		GLuint texture = 0;
+		bool active = false;
+	};
+
 	// Map active uniform names to their locations.
 	void mapActiveUniforms();
 
@@ -213,9 +213,7 @@ private:
 
 	GLuint compileCode(ShaderStage stage, const std::string &code);
 
-	int getTextureUnit(const std::string &name);
-
-	void retainObject(const std::string &name, Object *object);
+	int getFreeTextureUnits(int count);
 
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
@@ -241,14 +239,9 @@ private:
 	std::map<std::string, UniformInfo> uniforms;
 
 	// Texture unit pool for setting images
-	std::map<std::string, GLint> texUnitPool; // texUnitPool[name] = textureunit
-	std::vector<GLuint> activeTexUnits; // activeTexUnits[textureunit-1] = textureid
+	std::vector<TextureUnit> textureUnits;
 
-	// Uniform name to retainable objects
-	std::map<std::string, Object*> boundRetainables;
-
-	// Pointer to the active Canvas when the screen params were last checked.
-	Canvas *lastCanvas;
+	bool canvasWasActive;
 	OpenGL::Viewport lastViewport;
 
 	float lastPointSize;
@@ -257,11 +250,6 @@ private:
 	Matrix4 lastProjectionMatrix;
 
 	GLuint videoTextureUnits[3];
-
-	std::vector<char> scratchBuffer;
-
-	// Counts total number of textures bound to each texture unit in all shaders
-	static std::vector<int> textureCounters;
 
 	static StringMap<ShaderStage, STAGE_MAX_ENUM>::Entry stageNameEntries[];
 	static StringMap<ShaderStage, STAGE_MAX_ENUM> stageNames;

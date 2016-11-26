@@ -119,7 +119,7 @@ int w_setMode(lua_State *L)
 
 	if (lua_isnoneornil(L, 3))
 	{
-		luax_pushboolean(L, instance()->setWindow(w, h, nullptr));
+		luax_catchexcept(L, [&](){ luax_pushboolean(L, instance()->setWindow(w, h, nullptr)); });
 		return 1;
 	}
 
@@ -266,10 +266,12 @@ int w_setFullscreen(lua_State *L)
 		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
 
 	bool success = false;
-	if (fstype == Window::FULLSCREEN_MAX_ENUM)
-		success = instance()->setFullscreen(fullscreen);
-	else
-		success = instance()->setFullscreen(fullscreen, fstype);
+	luax_catchexcept(L, [&]() {
+		if (fstype == Window::FULLSCREEN_MAX_ENUM)
+			success = instance()->setFullscreen(fullscreen);
+		else
+			success = instance()->setFullscreen(fullscreen, fstype);
+	});
 
 	luax_pushboolean(L, success);
 	return 1;
@@ -296,9 +298,9 @@ int w_isOpen(lua_State *L)
 	return 1;
 }
 
-int w_close(lua_State * /*L*/)
+int w_close(lua_State *L)
 {
-	instance()->close();
+	luax_catchexcept(L, [&]() { instance()->close(); });
 	return 0;
 }
 

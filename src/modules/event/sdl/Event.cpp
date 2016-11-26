@@ -112,6 +112,8 @@ Event::~Event()
 
 void Event::pump()
 {
+	exceptionIfInRenderPass();
+
 	SDL_Event e;
 
 	while (SDL_PollEvent(&e))
@@ -127,6 +129,8 @@ void Event::pump()
 
 Message *Event::wait()
 {
+	exceptionIfInRenderPass();
+
 	SDL_Event e;
 
 	if (SDL_WaitEvent(&e) != 1)
@@ -137,6 +141,8 @@ Message *Event::wait()
 
 void Event::clear()
 {
+	exceptionIfInRenderPass();
+
 	SDL_Event e;
 
 	while (SDL_PollEvent(&e))
@@ -145,6 +151,17 @@ void Event::clear()
 	}
 
 	love::event::Event::clear();
+}
+
+void Event::exceptionIfInRenderPass()
+{
+	// Some core OS graphics functionality (e.g. swap buffers on some platforms)
+	// happens inside SDL_PumpEvents - which is called by SDL_PollEvent and
+	// friends. It's probably a bad idea to call those functions while we're in
+	// a render pass.
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr && gfx->isPassActive())
+		throw love::Exception("Cannot call this function while a render pass is active in love.graphics.");
 }
 
 Message *Event::convert(const SDL_Event &e) const

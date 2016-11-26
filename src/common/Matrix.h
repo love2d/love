@@ -53,6 +53,12 @@ public:
 	Matrix4(float t00, float t10, float t01, float t11, float x, float y);
 
 	/**
+	 * Creates a new matrix from the specified elements. Be sure to pass
+	 * exactly 16 elements in!
+	 **/
+	Matrix4(const float elements[16]);
+
+	/**
 	 * Creates a new matrix set to a transformation.
 	 **/
 	Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
@@ -112,6 +118,12 @@ public:
 	 * @param ky Shear along y-axis.
 	 **/
 	void setShear(float kx, float ky);
+
+	/**
+	 * Calculates the scale factors for a 2D affine transform. The output values
+	 * are absolute (not signed).
+	 **/
+	void getApproximateScale(float &sx, float &sy) const;
 	
 	/**
 	 * Sets a transformation's values directly. Useful if you want to modify them inplace,
@@ -182,6 +194,9 @@ public:
 	template <typename V>
 	void transform(V *dst, const V *src, int size) const;
 
+	/**
+	 * Computes and returns the inverse of the matrix.
+	 **/
 	Matrix4 inverse() const;
 
 	/**

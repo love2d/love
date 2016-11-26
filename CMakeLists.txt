@@ -309,10 +309,14 @@ set(LOVE_SRC_MODULE_AUDIO_ROOT
 	src/modules/audio/Audio.h
 	src/modules/audio/Source.cpp
 	src/modules/audio/Source.h
+	src/modules/audio/RecordingDevice.cpp
+	src/modules/audio/RecordingDevice.h
 	src/modules/audio/wrap_Audio.cpp
 	src/modules/audio/wrap_Audio.h
 	src/modules/audio/wrap_Source.cpp
 	src/modules/audio/wrap_Source.h
+	src/modules/audio/wrap_RecordingDevice.cpp
+	src/modules/audio/wrap_RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO_NULL
@@ -320,6 +324,8 @@ set(LOVE_SRC_MODULE_AUDIO_NULL
 	src/modules/audio/null/Audio.h
 	src/modules/audio/null/Source.cpp
 	src/modules/audio/null/Source.h
+	src/modules/audio/null/RecordingDevice.cpp
+	src/modules/audio/null/RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO_OPENAL
@@ -329,6 +335,8 @@ set(LOVE_SRC_MODULE_AUDIO_OPENAL
 	src/modules/audio/openal/Pool.h
 	src/modules/audio/openal/Source.cpp
 	src/modules/audio/openal/Source.h
+	src/modules/audio/openal/RecordingDevice.cpp
+	src/modules/audio/openal/RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO
@@ -647,6 +655,8 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/MathModule.h
 	src/modules/math/RandomGenerator.cpp
 	src/modules/math/RandomGenerator.h
+	src/modules/math/Transform.cpp
+	src/modules/math/Transform.h
 	src/modules/math/wrap_BezierCurve.cpp
 	src/modules/math/wrap_BezierCurve.h
 	src/modules/math/wrap_CompressedData.cpp
@@ -655,6 +665,8 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/wrap_Math.h
 	src/modules/math/wrap_RandomGenerator.cpp
 	src/modules/math/wrap_RandomGenerator.h
+	src/modules/math/wrap_Transform.cpp
+	src/modules/math/wrap_Transform.h
 )
 
 source_group("modules\\math" FILES ${LOVE_SRC_MODULE_MATH})
@@ -1418,6 +1430,17 @@ set(LOVE_SRC_3P_WUFF
 
 add_library(love_3p_wuff ${LOVE_SRC_3P_WUFF})
 
+#
+# xxHash
+#
+
+set(LOVE_SRC_3P_XXHASH
+	src/libraries/xxHash/xxhash.c
+	src/libraries/xxHash/xxhash.h
+)
+
+add_library(love_3p_xxhash ${LOVE_SRC_3P_XXHASH})
+
 set(LOVE_3P
 	love_3p_box2d
 	love_3p_ddsparse
@@ -1429,6 +1452,7 @@ set(LOVE_3P
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_wuff
+	love_3p_xxhash
 )
 
 love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)

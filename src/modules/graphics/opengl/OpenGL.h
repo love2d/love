@@ -104,6 +104,13 @@ public:
 		VENDOR_UNKNOWN
 	};
 
+	enum FramebufferTarget
+	{
+		FRAMEBUFFER_READ = (1 << 0),
+		FRAMEBUFFER_DRAW = (1 << 1),
+		FRAMEBUFFER_ALL  = (FRAMEBUFFER_READ | FRAMEBUFFER_DRAW),
+	};
+
 	// A rectangle representing an OpenGL viewport or a scissor box.
 	struct Viewport
 	{
@@ -119,7 +126,7 @@ public:
 	struct
 	{
 		std::vector<Matrix4> transform;
-		std::vector<Matrix4> projection;
+		Matrix4 projection;
 	} matrices;
 
 	class TempTransform
@@ -173,7 +180,6 @@ public:
 	{
 		size_t textureMemory;
 		int    drawCalls;
-		int    framebufferBinds;
 		int    shaderSwitches;
 	} stats;
 
@@ -282,7 +288,7 @@ public:
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
 	 * The y-coordinate starts at the top.
 	 **/
-	void setViewport(const Viewport &v);
+	void setViewport(const Viewport &v, bool canvasActive);
 
 	/**
 	 * Gets the current OpenGL rendering viewport rectangle.
@@ -293,7 +299,7 @@ public:
 	 * Sets the scissor box to the specified rectangle.
 	 * The y-coordinate starts at the top and is flipped internally.
 	 **/
-	void setScissor(const Viewport &v);
+	void setScissor(const Viewport &v, bool canvasActive);
 
 	/**
 	 * Gets the current scissor box (regardless of whether scissoring is enabled.)
@@ -323,7 +329,9 @@ public:
 	/**
 	 * Binds a Framebuffer Object to the specified target.
 	 **/
-	void bindFramebuffer(GLenum target, GLuint framebuffer);
+	void bindFramebuffer(FramebufferTarget target, GLuint framebuffer);
+	GLuint getFramebuffer(FramebufferTarget target) const;
+	void deleteFramebuffer(GLuint framebuffer);
 
 	/**
 	 * Calls glUseProgram.
@@ -375,6 +383,7 @@ public:
 	void setTextureWrap(const graphics::Texture::Wrap &w);
 
 	bool isClampZeroTextureWrapSupported() const;
+	bool isPixelShaderHighpSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -401,6 +410,12 @@ public:
 	 **/
 	float getMaxPointSize() const;
 
+	/**
+	 * Returns the maximum anisotropic filtering value that can be used for
+	 * Texture filtering.
+	 **/
+	float getMaxAnisotropy() const;
+
 
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
@@ -413,6 +428,7 @@ public:
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
 
 	static const char *errorString(GLenum errorcode);
+	static const char *framebufferStatusString(GLenum status);
 
 	// Get human-readable strings for debug info.
 	static const char *debugSeverityString(GLenum severity);
@@ -429,6 +445,7 @@ private:
 
 	bool contextInitialized;
 
+	bool pixelShaderHighpSupported;
 	float maxAnisotropy;
 	int maxTextureSize;
 	int maxRenderTargets;
@@ -455,6 +472,8 @@ private:
 		Viewport scissor;
 
 		float pointSize;
+
+		GLuint boundFramebuffers[2];
 
 		bool framebufferSRGBEnabled;
 

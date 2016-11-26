@@ -283,6 +283,9 @@ void Image::loadFromImageData()
 
 bool Image::loadVolatile()
 {
+	if (texture != 0)
+		return true;
+
 	OpenGL::TempDebugGroup debuggroup("Image load");
 
 	if (isCompressed() && !hasCompressedTextureSupport(cdata[0]->getFormat(), sRGB))

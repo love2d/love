@@ -18,24 +18,23 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_WRAP_AUDIO_H
-#define LOVE_AUDIO_WRAP_AUDIO_H
+#ifndef LOVE_AUDIO_WRAP_RECORDING_DEVICE_H
+#define LOVE_AUDIO_WRAP_RECORDING_DEVICE_H
 
 // LOVE
-#include "common/config.h"
 #include "common/runtime.h"
-#include "Audio.h"
-#include "wrap_Source.h"
-#include "wrap_RecordingDevice.h"
+#include "RecordingDevice.h"
 
 namespace love
 {
 namespace audio
 {
 
-extern "C" LOVE_EXPORT int luaopen_love_audio(lua_State *L);
+RecordingDevice *luax_checkrecordingdevice(lua_State *L, int idx);
+extern "C" int luaopen_recordingdevice(lua_State *L);
 
 } // audio
 } // love
 
-#endif // LOVE_AUDIO_WRAP_AUDIO_H
+#endif //LOVE_AUDIO_WRAP_RECORDING_DEVICE_H
+

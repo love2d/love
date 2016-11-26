@@ -21,6 +21,7 @@
 #include "wrap_Shader.h"
 #include "graphics/wrap_Texture.h"
 #include "math/MathModule.h"
+#include "math/Transform.h"
 
 #include <string>
 #include <algorithm>
@@ -48,14 +49,12 @@ int w_Shader_getWarnings(lua_State *L)
 
 static int _getCount(lua_State *L, int startidx, const Shader::UniformInfo *info)
 {
-	return std::min(std::max(lua_gettop(L) - startidx, 1), info->count);
+	return std::min(std::max(lua_gettop(L) - startidx + 1, 1), info->count);
 }
 
 template <typename T>
-static T *_getNumbers(lua_State *L, int startidx, Shader *shader, int components, int count)
+static void _updateNumbers(lua_State *L, int startidx, T *values, int components, int count)
 {
-	T *values = shader->getScratchBuffer<T>(components * count);
-
 	if (components == 1)
 	{
 		for (int i = 0; i < count; ++i)
@@ -76,16 +75,15 @@ static T *_getNumbers(lua_State *L, int startidx, Shader *shader, int components
 			lua_pop(L, components);
 		}
 	}
-
-	return values;
 }
 
 int w_Shader_sendFloats(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, bool colors)
 {
 	int count = _getCount(L, startidx, info);
 	int components = info->components;
+	float *values = info->floats;
 
-	float *values = _getNumbers<float>(L, startidx, shader, components, count);
+	_updateNumbers(L, startidx, values, components, count);
 
 	if (colors && graphics::isGammaCorrect())
 	{
@@ -99,15 +97,15 @@ int w_Shader_sendFloats(lua_State *L, int startidx, Shader *shader, const Shader
 		}
 	}
 
-	luax_catchexcept(L, [&]() { shader->sendFloats(info, values, count); });
+	luax_catchexcept(L, [&]() { shader->updateUniform(info, count); });
 	return 0;
 }
 
 int w_Shader_sendInts(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
 	int count = _getCount(L, startidx, info);
-	int *values = _getNumbers<int>(L, startidx, shader, info->components, count);
-	luax_catchexcept(L, [&]() { shader->sendInts(info, values, count); });
+	_updateNumbers(L, startidx, info->ints, info->components, count);
+	luax_catchexcept(L, [&]() { shader->updateUniform(info, count); });
 	return 0;
 }
 
@@ -116,15 +114,15 @@ int w_Shader_sendBooleans(lua_State *L, int startidx, Shader *shader, const Shad
 	int count = _getCount(L, startidx, info);
 	int components = info->components;
 
-	// We have to send booleans as ints or floats.
-	float *values = shader->getScratchBuffer<float>(components * count);
+	// We have to send booleans as ints.
+	int *values = info->ints;
 
 	if (components == 1)
 	{
 		for (int i = 0; i < count; i++)
 		{
 			luaL_checktype(L, startidx + i, LUA_TBOOLEAN);
-			values[i] = (float) lua_toboolean(L, startidx + i);
+			values[i] = (int) lua_toboolean(L, startidx + i);
 		}
 	}
 	else
@@ -137,14 +135,14 @@ int w_Shader_sendBooleans(lua_State *L, int startidx, Shader *shader, const Shad
 			{
 				lua_rawgeti(L, startidx + i, k);
 				luaL_checktype(L, -1, LUA_TBOOLEAN);
-				values[i * components + k - 1] = (float) lua_toboolean(L, -1);
+				values[i * components + k - 1] = (int) lua_toboolean(L, -1);
 			}
 
 			lua_pop(L, components);
 		}
 	}
 
-	luax_catchexcept(L, [&]() { shader->sendFloats(info, values, count); });
+	luax_catchexcept(L, [&]() { shader->updateUniform(info, count); });
 	return 0;
 }
 
@@ -163,10 +161,17 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 	int rows = info->matrix.rows;
 	int elements = columns * rows;
 
-	float *values = shader->getScratchBuffer<float>(elements * count);
+	float *values = info->floats;
 
 	for (int i = 0; i < count; i++)
 	{
+		if (columns == 4 && rows == 4 && luax_istype(L, startidx + i, math::Transform::type))
+		{
+			math::Transform *t = luax_totype<math::Transform>(L, startidx + i);
+			memcpy(&values[i * 16], t->getMatrix().getElements(), sizeof(float) * 16);
+			continue;
+		}
+
 		luaL_checktype(L, startidx + i, LUA_TTABLE);
 
 		lua_rawgeti(L, startidx + i, 1);
@@ -243,15 +248,21 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 		}
 	}
 
-	shader->sendMatrices(info, values, count);
+	shader->updateUniform(info, count);
 	return 0;
 }
 
-int w_Shader_sendTexture(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
+int w_Shader_sendTextures(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
-	// We don't support arrays of textures (yet).
-	Texture *texture = luax_checktexture(L, startidx);
-	luax_catchexcept(L, [&]() { shader->sendTexture(info, texture); });
+	int count = _getCount(L, startidx, info);
+
+	std::vector<Texture *> textures;
+	textures.reserve(count);
+
+	for (int i = 0; i < count; i++)
+		textures.push_back(luax_checktexture(L, startidx + i));
+
+	luax_catchexcept(L, [&]() { shader->sendTextures(info, textures.data(), count); });
 	return 0;
 }
 
@@ -277,7 +288,7 @@ int w_Shader_send(lua_State *L)
 	case Shader::UNIFORM_BOOL:
 		return w_Shader_sendBooleans(L, startidx, shader, info);
 	case Shader::UNIFORM_SAMPLER:
-		return w_Shader_sendTexture(L, startidx, shader, info);
+		return w_Shader_sendTextures(L, startidx, shader, info);
 	default:
 		return luaL_error(L, "Unknown variable type for shader uniform '%s", name);
 	}

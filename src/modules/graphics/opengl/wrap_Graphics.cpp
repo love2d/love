@@ -27,6 +27,8 @@
 #include "filesystem/wrap_Filesystem.h"
 #include "video/VideoStream.h"
 #include "image/wrap_Image.h"
+#include "common/Reference.h"
+#include "math/wrap_Transform.h"
 
 #include <cassert>
 #include <cstring>
@@ -60,79 +62,9 @@ int w_reset(lua_State *)
 	return 0;
 }
 
-int w_clear(lua_State *L)
+int w_present(lua_State *L)
 {
-	Colorf color;
-
-	if (lua_isnoneornil(L, 1))
-		color.set(0.0, 0.0, 0.0, 0.0);
-	else if (lua_istable(L, 1))
-	{
-		std::vector<Graphics::OptionalColorf> colors((size_t) lua_gettop(L));
-
-		for (int i = 0; i < lua_gettop(L); i++)
-		{
-			if (lua_isnoneornil(L, i + 1) || luax_objlen(L, i + 1) == 0)
-			{
-				colors[i].enabled = false;
-				continue;
-			}
-
-			for (int j = 1; j <= 4; j++)
-				lua_rawgeti(L, i + 1, j);
-
-			colors[i].enabled = true;
-			colors[i].r = (float) luaL_checknumber(L, -4);
-			colors[i].g = (float) luaL_checknumber(L, -3);
-			colors[i].b = (float) luaL_checknumber(L, -2);
-			colors[i].a = (float) luaL_optnumber(L, -1, 1.0);
-
-			lua_pop(L, 4);
-		}
-
-		luax_catchexcept(L, [&]() { instance()->clear(colors); });
-		return 0;
-	}
-	else
-	{
-		color.r = (float) luaL_checknumber(L, 1);
-		color.g = (float) luaL_checknumber(L, 2);
-		color.b = (float) luaL_checknumber(L, 3);
-		color.a = (float) luaL_optnumber(L, 4, 1.0);
-	}
-
-	luax_catchexcept(L, [&]() { instance()->clear(color); });
-	return 0;
-}
-
-int w_discard(lua_State *L)
-{
-	std::vector<bool> colorbuffers;
-
-	if (lua_istable(L, 1))
-	{
-		for (size_t i = 1; i <= luax_objlen(L, 1); i++)
-		{
-			lua_rawgeti(L, 1, i);
-			colorbuffers.push_back(luax_optboolean(L, -1, true));
-			lua_pop(L, 1);
-		}
-	}
-	else
-	{
-		bool discardcolor = luax_optboolean(L, 1, true);
-		size_t numbuffers = std::max((size_t) 1, instance()->getCanvas().size());
-		colorbuffers = std::vector<bool>(numbuffers, discardcolor);
-	}
-
-	bool stencil = luax_optboolean(L, 2, true);
-	instance()->discard(colorbuffers, stencil);
-	return 0;
-}
-
-int w_present(lua_State *)
-{
-	instance()->present();
+	luax_catchexcept(L, [&]() { instance()->present(L); });
 	return 0;
 }
 
@@ -171,6 +103,274 @@ int w_getDimensions(lua_State *L)
 	lua_pushinteger(L, instance()->getWidth());
 	lua_pushinteger(L, instance()->getHeight());
 	return 2;
+}
+
+int w_getPassWidth(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getPassWidth());
+	return 1;
+}
+
+int w_getPassHeight(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getPassHeight());
+	return 1;
+}
+
+int w_getPassDimensions(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getPassWidth());
+	lua_pushinteger(L, instance()->getPassHeight());
+	return 2;
+}
+
+static int w__beginPass(lua_State *L)
+{
+	int nextstartidx = 1;
+
+	if (lua_isnoneornil(L, 1))
+	{
+		luax_catchexcept(L, [&]() { instance()->beginPass(PassInfo::BEGIN_LOAD, Colorf()); });
+		nextstartidx = 1;
+	}
+	else if (lua_isnumber(L, 1))
+	{
+		Colorf c;
+		c.r = (float) luaL_checknumber(L, 1);
+		c.g = (float) luaL_checknumber(L, 2);
+		c.b = (float) luaL_checknumber(L, 3);
+
+		if (lua_isnumber(L, 4))
+		{
+			c.a = (float) lua_tonumber(L, 4);
+			nextstartidx = 5;
+		}
+		else
+		{
+			c.a = 1.0f;
+			nextstartidx = 4;
+		}
+
+		luax_catchexcept(L, [&]() { instance()->beginPass(PassInfo::BEGIN_CLEAR, c); });
+	}
+	else if (luax_istype(L, 1, Canvas::type))
+	{
+		PassInfo::ColorAttachment attachment;
+		attachment.canvas = luax_checkcanvas(L, 1);
+		attachment.beginAction = PassInfo::BEGIN_LOAD;
+
+		if (lua_isnumber(L, 2))
+		{
+			attachment.beginAction = PassInfo::BEGIN_CLEAR;
+			attachment.clearColor.r = (float) luaL_checknumber(L, 2);
+			attachment.clearColor.g = (float) luaL_checknumber(L, 3);
+			attachment.clearColor.b = (float) luaL_checknumber(L, 4);
+
+			if (lua_isnumber(L, 5))
+			{
+				attachment.clearColor.a = (float) lua_tonumber(L, 5);
+				nextstartidx = 6;
+			}
+			else
+			{
+				attachment.clearColor.a = 1.0f;
+				nextstartidx = 5;
+			}
+		}
+		else
+			nextstartidx = 2;
+
+		PassInfo info;
+		info.addColorAttachment(attachment);
+
+		if (lua_isboolean(L, nextstartidx))
+		{
+			info.stencil = luax_toboolean(L, nextstartidx);
+			nextstartidx++;
+		}
+		else
+			info.stencil = false;
+
+		luax_catchexcept(L, [&]() { instance()->beginPass(info); });
+	}
+	else
+	{
+		luaL_checktype(L, 1, LUA_TTABLE);
+
+		int nattachments = std::max((int) luax_objlen(L, 1), 1);
+
+		if (nattachments > MAX_COLOR_RENDER_TARGETS)
+			return luaL_error(L, "Cannot render to %d Canvases at once!", nattachments);
+
+		PassInfo info;
+
+		for (int i = 1; i <= nattachments; i++)
+		{
+			lua_rawgeti(L, 1, i);
+			luaL_checktype(L, -1, LUA_TTABLE);
+
+			PassInfo::ColorAttachment attachment;
+			attachment.beginAction = PassInfo::BEGIN_LOAD;
+
+			lua_rawgeti(L, -1, 1);
+			attachment.canvas = luax_checkcanvas(L, -1);
+
+			lua_rawgeti(L, -2, 2);
+			if (!lua_isnoneornil(L, -1))
+			{
+				attachment.beginAction = PassInfo::BEGIN_CLEAR;
+
+				for (int j = 3; j < 6; j++)
+					lua_rawgeti(L, -j, j);
+
+				attachment.clearColor.r = (float) luaL_checknumber(L, -4);
+				attachment.clearColor.g = (float) luaL_checknumber(L, -3);
+				attachment.clearColor.b = (float) luaL_checknumber(L, -2);
+				attachment.clearColor.a = (float) luaL_optnumber(L, -1, 1.0);
+			}
+
+			lua_pop(L, 2 + (attachment.beginAction == PassInfo::BEGIN_CLEAR ? 4 : 1));
+
+			info.addColorAttachment(attachment);
+		}
+
+		info.stencil = luax_boolflag(L, 1, "stencil", false);
+
+		luax_catchexcept(L, [&]() { instance()->beginPass(info); });
+
+		nextstartidx = 2;
+	}
+
+	return nextstartidx;
+}
+
+int w_beginPass(lua_State *L)
+{
+	w__beginPass(L);
+	return 0;
+}
+
+static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *gd)
+{
+	if (i != nullptr)
+	{
+		lua_State *L = (lua_State *) gd;
+		ref->push(L);
+		delete ref;
+		luax_pushtype(L, i);
+		lua_call(L, 1, 0);
+	}
+	else
+		delete ref;
+}
+
+static int w__endPass(lua_State *L, int startidx)
+{
+	if (lua_isnoneornil(L, startidx))
+	{
+		luax_catchexcept(L, []() { instance()->endPass(); });
+	}
+	else
+	{
+		int x, y, w, h;
+
+		if (lua_isnumber(L, startidx))
+		{
+			x = (int) luaL_checknumber(L, 1);
+			y = (int) luaL_checknumber(L, 2);
+			w = (int) luaL_checknumber(L, 3);
+			h = (int) luaL_checknumber(L, 4);
+			startidx += 4;
+		}
+		else
+		{
+			x = 0;
+			y = 0;
+			w = instance()->getPassWidth();
+			h = instance()->getPassHeight();
+		}
+
+		luaL_checktype(L, startidx, LUA_TFUNCTION);
+
+		Graphics::ScreenshotInfo info;
+		info.callback = screenshotCallback;
+
+		lua_pushvalue(L, startidx);
+		info.ref = luax_refif(L, LUA_TFUNCTION);
+		lua_pop(L, 1);
+
+		luax_catchexcept(L,
+			[&]() { instance()->endPass(x, y, w, h, &info, L); },
+			[&](bool except) { if (except) delete info.ref; }
+		);
+	}
+
+	return 0;
+}
+
+int w_endPass(lua_State *L)
+{
+	return w__endPass(L, 1);
+}
+
+int w_renderPass(lua_State *L)
+{
+	int startidx = w__beginPass(L);
+
+	if (lua_type(L, startidx) != LUA_TFUNCTION)
+	{
+		w__endPass(L, startidx + 1);
+		luaL_checktype(L, startidx, LUA_TFUNCTION);
+		return 0;
+	}
+
+	int nargs = lua_gettop(L) - startidx;
+	int status = lua_pcall(L, nargs, 0, 0);
+
+	w__endPass(L, startidx + 1);
+
+	if (status != 0)
+		return lua_error(L);
+
+	return 0;
+}
+
+int w_isPassActive(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isPassActive());
+	return 1;
+}
+
+int w_getPassCanvases(lua_State *L)
+{
+	if (!instance()->isPassActive())
+		return 0;
+
+	const PassInfo &info = instance()->getActivePass();
+
+	for (const auto &attachment : info.colorAttachments)
+		luax_pushtype(L, attachment.canvas);
+
+	return info.colorAttachmentCount;
+}
+
+int w_captureScreenshot(lua_State *L)
+{
+	luaL_checktype(L, 1, LUA_TFUNCTION);
+
+	Graphics::ScreenshotInfo info;
+	info.callback = screenshotCallback;
+
+	lua_pushvalue(L, 1);
+	info.ref = luax_refif(L, LUA_TFUNCTION);
+	lua_pop(L, 1);
+
+	luax_catchexcept(L,
+		[&]() { instance()->captureScreenshot(info); },
+		[&](bool except) { if (except) delete info.ref; }
+	);
+
+	return 0;
 }
 
 int w_setScissor(lua_State *L)
@@ -243,13 +443,13 @@ int w_stencil(lua_State *L)
 	if (lua_toboolean(L, 4) == 0)
 		instance()->clearStencil();
 
-	instance()->drawToStencilBuffer(action, stencilvalue);
+	luax_catchexcept(L, [&](){ instance()->drawToStencilBuffer(action, stencilvalue); });
 
 	// Call stencilfunc()
 	lua_pushvalue(L, 1);
 	lua_call(L, 0, 0);
 
-	instance()->stopDrawToStencilBuffer();
+	luax_catchexcept(L, [&](){ instance()->stopDrawToStencilBuffer(); });
 	return 0;
 }
 
@@ -268,7 +468,7 @@ int w_setStencilTest(lua_State *L)
 		comparevalue = (int) luaL_checknumber(L, 2);
 	}
 
-	instance()->setStencilTest(compare, comparevalue);
+	luax_catchexcept(L, [&](){ instance()->setStencilTest(compare, comparevalue); });
 	return 0;
 }
 
@@ -1246,79 +1446,6 @@ int w_isWireframe(lua_State *L)
 	return 1;
 }
 
-int w_newScreenshot(lua_State *L)
-{
-	love::image::Image *image = luax_getmodule<love::image::Image>(L);
-	bool copyAlpha = luax_optboolean(L, 1, false);
-	love::image::ImageData *i = 0;
-
-	luax_catchexcept(L, [&](){ i = instance()->newScreenshot(image, copyAlpha); });
-
-	luax_pushtype(L, i);
-	i->release();
-	return 1;
-}
-
-int w_setCanvas(lua_State *L)
-{
-	// Disable stencil writes.
-	instance()->stopDrawToStencilBuffer();
-
-	// called with none -> reset to default buffer
-	if (lua_isnoneornil(L, 1))
-	{
-		instance()->setCanvas();
-		return 0;
-	}
-
-	bool is_table = lua_istable(L, 1);
-	std::vector<Canvas *> canvases;
-
-	if (is_table)
-	{
-		for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
-		{
-			lua_rawgeti(L, 1, i);
-			canvases.push_back(luax_checkcanvas(L, -1));
-			lua_pop(L, 1);
-		}
-	}
-	else
-	{
-		for (int i = 1; i <= lua_gettop(L); i++)
-			canvases.push_back(luax_checkcanvas(L, i));
-	}
-
-	luax_catchexcept(L, [&]() {
-		if (canvases.size() > 0)
-			instance()->setCanvas(canvases);
-		else
-			instance()->setCanvas();
-	});
-
-	return 0;
-}
-
-int w_getCanvas(lua_State *L)
-{
-	const std::vector<Canvas *> canvases = instance()->getCanvas();
-	int n = 0;
-
-	for (Canvas *c : canvases)
-	{
-		luax_pushtype(L, c);
-		n++;
-	}
-
-	if (n == 0)
-	{
-		lua_pushnil(L);
-		n = 1;
-	}
-
-	return n;
-}
-
 int w_setShader(lua_State *L)
 {
 	if (lua_isnoneornil(L,1))
@@ -1497,8 +1624,8 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.drawCalls);
 	lua_setfield(L, -2, "drawcalls");
 
-	lua_pushinteger(L, stats.canvasSwitches);
-	lua_setfield(L, -2, "canvasswitches");
+	lua_pushinteger(L, stats.renderPasses);
+	lua_setfield(L, -2, "renderpasses");
 
 	lua_pushinteger(L, stats.shaderSwitches);
 	lua_setfield(L, -2, "shaderswitches");
@@ -1541,24 +1668,37 @@ int w_draw(lua_State *L)
 		startidx = 2;
 	}
 
-	float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
-	float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
-	float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
-	float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
-	float sy = (float) luaL_optnumber(L, startidx + 4, sx);
-	float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
-	float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
-	float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
-	float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
+	if (luax_istype(L, startidx, math::Transform::type))
+	{
+		math::Transform *tf = luax_totype<math::Transform>(L, startidx);
+		luax_catchexcept(L, [&]() {
+			if (texture && quad)
+				instance()->drawq(texture, quad, tf->getMatrix());
+			else
+				instance()->draw(drawable, tf->getMatrix());
+		});
+	}
+	else
+	{
+		float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
+		float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
+		float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
+		float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
+		float sy = (float) luaL_optnumber(L, startidx + 4, sx);
+		float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
+		float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
+		float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
+		float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
 
-	Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
+		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
 
-	luax_catchexcept(L, [&]() {
-		if (texture && quad)
-			texture->drawq(quad, m);
-		else if (drawable)
-			drawable->draw(m);
-	});
+		luax_catchexcept(L, [&]() {
+			if (texture && quad)
+				instance()->drawq(texture, quad, m);
+			else if (drawable)
+				instance()->draw(drawable, m);
+		});
+	}
 
 	return 0;
 }
@@ -1568,19 +1708,27 @@ int w_print(lua_State *L)
 	std::vector<Font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
-	float x = (float)luaL_optnumber(L, 2, 0.0);
-	float y = (float)luaL_optnumber(L, 3, 0.0);
-	float angle = (float)luaL_optnumber(L, 4, 0.0f);
-	float sx = (float)luaL_optnumber(L, 5, 1.0f);
-	float sy = (float)luaL_optnumber(L, 6, sx);
-	float ox = (float)luaL_optnumber(L, 7, 0.0f);
-	float oy = (float)luaL_optnumber(L, 8, 0.0f);
-	float kx = (float)luaL_optnumber(L, 9, 0.0f);
-	float ky = (float)luaL_optnumber(L, 10, 0.0f);
+	if (luax_istype(L, 2, math::Transform::type))
+	{
+		math::Transform *tf = luax_totype<math::Transform>(L, 2);
+		luax_catchexcept(L, [&](){ instance()->print(str, tf->getMatrix()); });
+	}
+	else
+	{
+		float x = (float)luaL_optnumber(L, 2, 0.0);
+		float y = (float)luaL_optnumber(L, 3, 0.0);
+		float angle = (float)luaL_optnumber(L, 4, 0.0f);
+		float sx = (float)luaL_optnumber(L, 5, 1.0f);
+		float sy = (float)luaL_optnumber(L, 6, sx);
+		float ox = (float)luaL_optnumber(L, 7, 0.0f);
+		float oy = (float)luaL_optnumber(L, 8, 0.0f);
+		float kx = (float)luaL_optnumber(L, 9, 0.0f);
+		float ky = (float)luaL_optnumber(L, 10, 0.0f);
 
-	Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
+		Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
 
-	luax_catchexcept(L, [&](){ instance()->print(str, m); });
+		luax_catchexcept(L, [&](){ instance()->print(str, m); });
+	}
 	return 0;
 }
 
@@ -1589,36 +1737,38 @@ int w_printf(lua_State *L)
 	std::vector<Font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
-	float x = (float)luaL_checknumber(L, 2);
-	float y = (float)luaL_checknumber(L, 3);
-	float wrap = (float)luaL_checknumber(L, 4);
-
-	float angle = 0.0f;
-	float sx = 1.0f, sy = 1.0f;
-	float ox = 0.0f, oy = 0.0f;
-	float kx = 0.0f, ky = 0.0f;
-
 	Font::AlignMode align = Font::ALIGN_LEFT;
+	Matrix4 m;
 
-	if (lua_gettop(L) >= 5)
+	int formatidx = 4;
+
+	if (luax_istype(L, 2, math::Transform::type))
 	{
-		if (!lua_isnil(L, 5))
-		{
-			const char *str = luaL_checkstring(L, 5);
-			if (!Font::getConstant(str, align))
-				return luaL_error(L, "Incorrect alignment: %s", str);
-		}
+		math::Transform *tf = luax_totype<math::Transform>(L, 2);
+		m = tf->getMatrix();
+		formatidx = 3;
+	}
+	else
+	{
+		float x = (float)luaL_checknumber(L, 2);
+		float y = (float)luaL_checknumber(L, 3);
 
-		angle = (float) luaL_optnumber(L, 6, 0.0f);
-		sx = (float) luaL_optnumber(L, 7, 1.0f);
-		sy = (float) luaL_optnumber(L, 8, sx);
-		ox = (float) luaL_optnumber(L, 9, 0.0f);
-		oy = (float) luaL_optnumber(L, 10, 0.0f);
-		kx = (float) luaL_optnumber(L, 11, 0.0f);
-		ky = (float) luaL_optnumber(L, 12, 0.0f);
+		float angle = (float) luaL_optnumber(L, 6, 0.0f);
+		float sx = (float) luaL_optnumber(L, 7, 1.0f);
+		float sy = (float) luaL_optnumber(L, 8, sx);
+		float ox = (float) luaL_optnumber(L, 9, 0.0f);
+		float oy = (float) luaL_optnumber(L, 10, 0.0f);
+		float kx = (float) luaL_optnumber(L, 11, 0.0f);
+		float ky = (float) luaL_optnumber(L, 12, 0.0f);
+
+		m = Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
 	}
 
-	Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
+	float wrap = (float)luaL_checknumber(L, formatidx);
+
+	const char *astr = lua_isnoneornil(L, formatidx + 1) ? nullptr : luaL_checkstring(L, formatidx + 1);
+	if (astr != nullptr && !Font::getConstant(astr, align))
+		return luaL_error(L, "Incorrect alignment: %s", astr);
 
 	luax_catchexcept(L, [&](){ instance()->printf(str, wrap, align, m); });
 	return 0;
@@ -1698,11 +1848,14 @@ int w_points(lua_State *L)
 			coords[i] = luax_tofloat(L, i + 1);
 	}
 
-	instance()->points(coords, colors, numpoints);
-
-	delete[] coords;
-	if (colors)
-		delete[] colors;
+	luax_catchexcept(L,
+		[&](){ instance()->points(coords, colors, numpoints); },
+		[&](bool) {
+			delete[] coords;
+			if (colors)
+				delete[] colors;
+		}
+	);
 
 	return 0;
 }
@@ -1738,9 +1891,11 @@ int w_line(lua_State *L)
 			coords[i] = luax_tofloat(L, i + 1);
 	}
 
-	instance()->polyline(coords, args);
+	luax_catchexcept(L,
+		[&](){ instance()->polyline(coords, args); },
+		[&](bool) { delete[] coords; }
+	);
 
-	delete[] coords;
 	return 0;
 }
 
@@ -1766,11 +1921,11 @@ int w_rectangle(lua_State *L)
 	float ry = (float)luaL_optnumber(L, 7, rx);
 
 	if (lua_isnoneornil(L, 8))
-		instance()->rectangle(mode, x, y, w, h, rx, ry);
+		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h, rx, ry); });
 	else
 	{
 		int points = (int) luaL_checknumber(L, 8);
-		instance()->rectangle(mode, x, y, w, h, rx, ry, points);
+		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h, rx, ry, points); });
 	}
 
 	return 0;
@@ -1788,11 +1943,11 @@ int w_circle(lua_State *L)
 	float radius = (float)luaL_checknumber(L, 4);
 
 	if (lua_isnoneornil(L, 5))
-		instance()->circle(mode, x, y, radius);
+		luax_catchexcept(L, [&](){ instance()->circle(mode, x, y, radius); });
 	else
 	{
 		int points = (int) luaL_checknumber(L, 5);
-		instance()->circle(mode, x, y, radius, points);
+		luax_catchexcept(L, [&](){ instance()->circle(mode, x, y, radius, points); });
 	}
 
 	return 0;
@@ -1811,11 +1966,11 @@ int w_ellipse(lua_State *L)
 	float b = (float)luaL_optnumber(L, 5, a);
 
 	if (lua_isnoneornil(L, 6))
-		instance()->ellipse(mode, x, y, a, b);
+		luax_catchexcept(L, [&](){ instance()->ellipse(mode, x, y, a, b); });
 	else
 	{
 		int points = (int) luaL_checknumber(L, 6);
-		instance()->ellipse(mode, x, y, a, b, points);
+		luax_catchexcept(L, [&](){ instance()->ellipse(mode, x, y, a, b, points); });
 	}
 
 	return 0;
@@ -1848,11 +2003,11 @@ int w_arc(lua_State *L)
 	float angle2 = (float) luaL_checknumber(L, startidx + 4);
 
 	if (lua_isnoneornil(L, startidx + 5))
-		instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2);
+		luax_catchexcept(L, [&](){ instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2); });
 	else
 	{
 		int points = (int) luaL_checknumber(L, startidx + 5);
-		instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points);
+		luax_catchexcept(L, [&](){ instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points); });
 	}
 
 	return 0;
@@ -1900,8 +2055,11 @@ int w_polygon(lua_State *L)
 	// make a closed loop
 	coords[args]   = coords[0];
 	coords[args+1] = coords[1];
-	instance()->polygon(mode, coords, args+2);
-	delete[] coords;
+
+	luax_catchexcept(L,
+		[&](){ instance()->polygon(mode, coords, args+2); },
+		[&](bool) { delete[] coords; }
+	);
 
 	return 0;
 }
@@ -1914,6 +2072,13 @@ int w_push(lua_State *L)
 		return luaL_error(L, "Invalid graphics stack type: %s", sname);
 
 	luax_catchexcept(L, [&](){ instance()->push(stype); });
+
+	if (luax_istype(L, 2, math::Transform::type))
+	{
+		math::Transform *t = luax_totype<math::Transform>(L, 2);
+		instance()->applyTransform(t);
+	}
+
 	return 0;
 }
 
@@ -1960,6 +2125,20 @@ int w_origin(lua_State * /*L*/)
 	return 0;
 }
 
+int w_applyTransform(lua_State *L)
+{
+	math::Transform *t = math::luax_checktransform(L, 1);
+	instance()->applyTransform(t);
+	return 0;
+}
+
+int w_replaceTransform(lua_State *L)
+{
+	math::Transform *t = math::luax_checktransform(L, 1);
+	instance()->replaceTransform(t);
+	return 0;
+}
+
 int w_transformPoint(lua_State *L)
 {
 	Vector p;
@@ -1987,8 +2166,6 @@ int w_inverseTransformPoint(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "reset", w_reset },
-	{ "clear", w_clear },
-	{ "discard", w_discard },
 	{ "present", w_present },
 
 	{ "newImage", w_newImage },
@@ -2030,9 +2207,6 @@ static const luaL_Reg functions[] =
 	{ "getPointSize", w_getPointSize },
 	{ "setWireframe", w_setWireframe },
 	{ "isWireframe", w_isWireframe },
-	{ "newScreenshot", w_newScreenshot },
-	{ "setCanvas", w_setCanvas },
-	{ "getCanvas", w_getCanvas },
 
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },
@@ -2046,6 +2220,14 @@ static const luaL_Reg functions[] =
 	{ "getSystemLimits", w_getSystemLimits },
 	{ "getStats", w_getStats },
 
+	{ "beginPass", w_beginPass },
+	{ "endPass", w_endPass },
+	{ "renderPass", w_renderPass },
+	{ "isPassActive", w_isPassActive },
+	{ "getPassCanvases", w_getPassCanvases },
+
+	{ "captureScreenshot", w_captureScreenshot },
+
 	{ "draw", w_draw },
 
 	{ "print", w_print },
@@ -2057,6 +2239,9 @@ static const luaL_Reg functions[] =
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },
+	{ "getPassWidth", w_getPassWidth },
+	{ "getPassHeight", w_getPassHeight },
+	{ "getPassDimensions", w_getPassDimensions },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },
@@ -2082,6 +2267,8 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
+	{ "applyTransform", w_applyTransform },
+	{ "replaceTransform", w_replaceTransform },
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 

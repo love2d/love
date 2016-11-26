@@ -122,11 +122,10 @@ function love.arg.parse_option(m, i)
 		m.arg = {}
 		for j=i,i+m.a-1 do
 			table.insert(m.arg, arg[j])
-			i = j
 		end
 	end
 
-	return i
+	return m.a
 end
 
 function love.arg.parse_options()
@@ -134,15 +133,17 @@ function love.arg.parse_options()
 	local game
 	local argc = #arg
 
-	for i=1,argc do
+	local i = 1
+	while i <= argc do
 		-- Look for options.
-		local s, e, m = string.find(arg[i], "%-%-(.+)")
+		local m = string.match(arg[i], "^%-%-(.+)")
 
 		if m and love.arg.options[m] then
-			i = love.arg.parse_option(love.arg.options[m], i+1)
+			i = i + love.arg.parse_option(love.arg.options[m], i+1)
 		elseif not game then
 			game = i
 		end
+		i = i + 1
 	end
 
 	if not love.arg.options.game.set then
@@ -545,9 +546,14 @@ function love.run()
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 
 		if love.graphics and love.graphics.isActive() then
-			love.graphics.clear(love.graphics.getBackgroundColor())
 			love.graphics.origin()
+
+			if love.drawpasses then love.drawpasses() end
+
+			love.graphics.beginPass(love.graphics.getBackgroundColor())
 			if love.draw then love.draw() end
+			love.graphics.endPass()
+
 			love.graphics.present()
 		end
 
@@ -598,15 +604,18 @@ function love.errhand(msg)
 		end
 	end
 	if love.audio then love.audio.stop() end
+
 	love.graphics.reset()
+	if love.graphics.isPassActive() then
+		love.graphics.endPass()
+	end
+
 	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
 
-	love.graphics.setBackgroundColor(89/255, 157/255, 220/255)
 	love.graphics.setColor(1, 1, 1, 1)
 
 	local trace = debug.traceback()
 
-	love.graphics.clear(love.graphics.getBackgroundColor())
 	love.graphics.origin()
 
 	local err = {}
@@ -628,9 +637,7 @@ function love.errhand(msg)
 
 	local function draw()
 		local pos = love.window.toPixels(70)
-		love.graphics.clear(love.graphics.getBackgroundColor())
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
-		love.graphics.present()
 	end
 
 	while true do
@@ -652,7 +659,8 @@ function love.errhand(msg)
 			end
 		end
 
-		draw()
+		love.graphics.renderPass(89/255, 157/255, 220/255, draw)
+		love.graphics.present()
 
 		if love.timer then
 			love.timer.sleep(0.1)

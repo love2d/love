@@ -32,6 +32,12 @@
 
 namespace love
 {
+
+namespace graphics
+{
+class Graphics;
+}
+
 namespace window
 {
 
@@ -107,6 +113,8 @@ public:
 
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_WINDOW; }
+
+	virtual void setGraphics(graphics::Graphics *graphics) = 0;
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
 	virtual void getWindow(int &width, int &height, WindowSettings &settings) = 0;

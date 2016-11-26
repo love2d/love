@@ -25,6 +25,7 @@
 #include "common/int.h"
 #include "common/StringMap.h"
 #include "BezierCurve.h"
+#include "Transform.h"
 
 // STL
 #include <cmath>
@@ -372,6 +373,16 @@ RandomGenerator *Math::newRandomGenerator()
 BezierCurve *Math::newBezierCurve(const std::vector<Vector> &points)
 {
 	return new BezierCurve(points);
+}
+
+Transform *Math::newTransform()
+{
+	return new Transform();
+}
+
+Transform *Math::newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	return new Transform(x, y, a, sx, sy, ox, oy, kx, ky);
 }
 
 std::string hash(HashFunction::Function function, Data *input)

@@ -28,6 +28,7 @@
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "Source.h"
+#include "RecordingDevice.h"
 
 namespace love
 {
@@ -189,34 +190,9 @@ public:
 	virtual float getDopplerScale() const = 0;
 
 	/**
-	 * Begins recording audio input from the microphone.
+	 * @return Reference to a vector of pointers to recording devices. May be empty.
 	 **/
-	virtual void record() = 0;
-
-	/**
-	 * Gets a section of recorded audio.
-	 * Per OpenAL, the measurement begins from the start of the
-	 * audio data in memory, which is after the last time this function
-	 * was called. If this function has not been called yet this recording
-	 * session, it just grabs from the beginning.
-	 * @return All the recorded SoundData thus far.
-	 **/
-	virtual love::sound::SoundData *getRecordedData() = 0;
-
-	/**
-	 * Stops recording and, if passed true, returns all the recorded audio
-	 * not already gotten by getRecordedData.
-	 * @param returnData Whether to return recorded audio.
-	 * @return if returnData, all the recorded audio yet to be gotten,
-	 * otherwise NULL.
-	 **/
-	virtual love::sound::SoundData *stopRecording(bool returnData) = 0;
-
-	/**
-	 * Checks whether LOVE is able to record audio input.
-	 * @return hasMic Whether LOVE has a microphone enabled.
-	 **/
-	virtual bool canRecord() = 0;
+	virtual const std::vector<RecordingDevice*> &getRecordingDevices() = 0;
 
 	/**
 	 * Gets the distance model used for attenuation.

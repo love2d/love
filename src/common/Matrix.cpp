@@ -73,6 +73,12 @@ Matrix4::Matrix4()
 {
 	setIdentity();
 }
+
+
+Matrix4::Matrix4(const float elements[16])
+{
+	memcpy(e, elements, sizeof(float) * 16);
+}
 	
 Matrix4::Matrix4(float t00, float t10, float t01, float t11, float x, float y)
 {
@@ -142,6 +148,12 @@ void Matrix4::setShear(float kx, float ky)
 	setIdentity();
 	e[1] = ky;
 	e[4] = kx;
+}
+
+void Matrix4::getApproximateScale(float &sx, float &sy) const
+{
+	sx = sqrtf(e[0] * e[0] + e[4] * e[4]);
+	sy = sqrtf(e[1] * e[1] + e[5] * e[5]);
 }
 	
 void Matrix4::setRawTransformation(float t00, float t10, float t01, float t11, float x, float y)

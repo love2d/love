@@ -20,10 +20,11 @@
 
 #include "Audio.h"
 #include "common/delay.h"
-
+#include "RecordingDevice.h"
 #include "sound/Decoder.h"
 
 #include <cstdlib>
+#include <iostream>
 
 namespace love
 {
@@ -67,9 +68,29 @@ void Audio::PoolThread::setFinish()
 	finish = true;
 }
 
+ALenum Audio::getFormat(int bitDepth, int channels)
+{
+	if (bitDepth != 8 && bitDepth != 16)
+		return AL_NONE;
+
+	if (channels == 1)
+		return bitDepth == 8 ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
+	else if (channels == 2)
+		return bitDepth == 8 ? AL_FORMAT_STEREO8 : AL_FORMAT_STEREO16;
+	#ifdef AL_EXT_MCFORMATS
+	else if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
+	{
+		if (channels == 6)
+			return bitDepth == 8 ? AL_FORMAT_51CHN8 : AL_FORMAT_51CHN16;
+		else if (channels == 8)
+			return bitDepth == 8 ? AL_FORMAT_71CHN8 : AL_FORMAT_71CHN16;
+	}
+	#endif
+	return AL_NONE;
+}
+
 Audio::Audio()
 	: device(nullptr)
-	, capture(nullptr)
 	, context(nullptr)
 	, pool(nullptr)
 	, poolThread(nullptr)
@@ -89,26 +110,6 @@ Audio::Audio()
 	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
 
-	/*std::string captureName(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
-	const ALCchar * devices = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
-	while (*devices)
-	{
-		std::string device(devices);
-		devices += device.size() + 1;
-		if (device.find("Mic") != std::string::npos || device.find("mic") != std::string::npos)
-		{
-			captureName = device;
-		}
-	}
-
-	capture = alcCaptureOpenDevice(captureName.c_str(), 8000, AL_FORMAT_MONO16, 262144); // about 32 seconds
-
-	if (!capture)
-	{
-		// We're not going to prevent LOVE from running without a microphone, but we should warn, at least
-		std::cerr << "Warning, couldn't open capture device! No audio input!" << std::endl;
-	}*/
-
 	// pool must be allocated after AL context.
 	try
 	{
@@ -118,8 +119,10 @@ Audio::Audio()
 	{
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(context);
-		//if (capture) alcCaptureCloseDevice(capture);
 		alcCloseDevice(device);
+		for (auto c : capture)
+			delete c;
+
 		throw;
 	}
 
@@ -137,8 +140,9 @@ Audio::~Audio()
 
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
-	//if (capture) alcCaptureCloseDevice(capture);
 	alcCloseDevice(device);
+	for (auto c : capture)
+		delete c;
 }
 
 
@@ -265,44 +269,6 @@ float Audio::getDopplerScale() const
 	return alGetFloat(AL_DOPPLER_FACTOR);
 }
 
-void Audio::record()
-{
-	if (!canRecord()) return;
-	alcCaptureStart(capture);
-}
-
-love::sound::SoundData *Audio::getRecordedData()
-{
-	if (!canRecord())
-		return NULL;
-	int samplerate = 8000;
-	ALCint samples;
-	alcGetIntegerv(capture, ALC_CAPTURE_SAMPLES, 4, &samples);
-	void *data = malloc(samples * (2/sizeof(char)));
-	alcCaptureSamples(capture, data, samples);
-	love::sound::SoundData *sd = new love::sound::SoundData(data, samples, samplerate, 16, 1);
-	free(data);
-	return sd;
-}
-
-love::sound::SoundData *Audio::stopRecording(bool returnData)
-{
-	if (!canRecord())
-		return NULL;
-	love::sound::SoundData *sd = NULL;
-	if (returnData)
-	{
-		sd = getRecordedData();
-	}
-	alcCaptureStop(capture);
-	return sd;
-}
-
-bool Audio::canRecord()
-{
-	return (capture != NULL);
-}
-
 Audio::DistanceModel Audio::getDistanceModel() const
 {
 	return distanceModel;
@@ -345,6 +311,76 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 	default:
 		break;
 	}
+}
+
+const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
+{
+	std::vector<std::string> devnames;
+	std::vector<love::audio::RecordingDevice*> devices;
+
+	std::string defaultname(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
+
+	//no device name obtained from AL, fallback to reading from device
+	if (defaultname.length() == 0)
+	{
+		//use some safe basic parameters - 8 kHz, 8 bits, 1 channel
+		ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, 8, 1);
+		if (alGetError() == AL_NO_ERROR)
+		{
+			defaultname = alcGetString(defaultdevice, ALC_CAPTURE_DEVICE_SPECIFIER);
+			alcCaptureCloseDevice(defaultdevice);
+		}
+		else
+		{
+			//failed to open default recording device - bail, return empty list
+			capture.clear();
+			return capture;
+		}
+	}
+
+	devnames.reserve(capture.size());
+	devnames.push_back(defaultname);
+
+	//find devices name list
+	const ALCchar *devstr = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+	size_t offset = 0;
+	while (true)
+	{
+		if (devstr[offset] == '\0')
+			break;
+		std::string str((ALCchar*)&devstr[offset]);
+		if (str != defaultname)
+			devnames.push_back(str);
+		offset += str.length() + 1;
+	}
+
+	devices.reserve(devnames.size());
+	//build ordered list of devices
+	for (int i = 0; i < (int) devnames.size(); i++)
+	{
+		devices.push_back(nullptr);
+		auto d = devices.end() - 1;
+
+		for (auto c : capture)
+			if (devnames[i] == c->getName())
+				*d = c;
+
+		if (*d == nullptr)
+			*d = new RecordingDevice(devnames[i].c_str());
+		else
+			(*d)->retain();
+	}
+
+	for (auto c : capture)
+		c->release();
+	capture.clear();
+	capture.reserve(devices.size());
+
+	//this needs to be executed in specific order
+	for (unsigned int i = 0; i < devnames.size(); i++)
+		capture.push_back(devices[i]);
+
+	return capture;
 }
 
 } // openal
