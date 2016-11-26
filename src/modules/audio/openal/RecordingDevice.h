@@ -21,6 +21,8 @@
 #ifndef LOVE_AUDIO_OPENAL_RECORDING_DEVICE_H
 #define LOVE_AUDIO_OPENAL_RECORDING_DEVICE_H
 
+#include "common/config.h"
+
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
 #ifdef LOVE_IOS
 #include <OpenAL/alc.h>
