@@ -4401,6 +4401,7 @@
 				DYLIB_CURRENT_VERSION = 9.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
@@ -4408,6 +4409,9 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks/FreeType.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
@@ -4435,6 +4439,7 @@
 				DYLIB_CURRENT_VERSION = 9.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
@@ -4442,6 +4447,9 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks/FreeType.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
@@ -4470,6 +4478,7 @@
 				DYLIB_CURRENT_VERSION = 9.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
@@ -4477,6 +4486,9 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
+					"$(PROJECT_DIR)/macosx/Frameworks/FreeType.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					/Library/Frameworks/FreeType.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
