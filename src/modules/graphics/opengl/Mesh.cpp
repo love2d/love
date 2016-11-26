@@ -309,9 +309,26 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 	return it->second.enabled;
 }
 
-void Mesh::attachAttribute(const std::string &name, Mesh *mesh)
+void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname)
 {
-	if (mesh != this)
+	AttachedAttribute oldattrib = {};
+
+	auto it = attachedAttributes.find(name);
+	if (it != attachedAttributes.end())
+		oldattrib = it->second;
+
+	if (mesh == nullptr)
+	{
+		if (it != attachedAttributes.end() && oldattrib.mesh != this)
+		{
+			oldattrib.mesh->release();
+			attachedAttributes.erase(it);
+			if (getAttributeIndex(name) != -1)
+				attachAttribute(name, this, name);
+			return;
+		}
+	}
+	else if (mesh != this)
 	{
 		for (const auto &it : mesh->attachedAttributes)
 		{
@@ -322,19 +339,13 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh)
 		}
 	}
 
-	AttachedAttribute oldattrib = {};
 	AttachedAttribute newattrib = {};
-
-	auto it = attachedAttributes.find(name);
-	if (it != attachedAttributes.end())
-		oldattrib = it->second;
-
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
-	newattrib.index = mesh->getAttributeIndex(name);
+	newattrib.index = mesh->getAttributeIndex(attachname);
 
 	if (newattrib.index < 0)
-		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", name.c_str());
+		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", attachname.c_str());
 
 	if (newattrib.mesh != this)
 		newattrib.mesh->retain();

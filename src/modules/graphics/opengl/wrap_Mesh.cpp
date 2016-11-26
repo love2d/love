@@ -337,8 +337,14 @@ int w_Mesh_attachAttribute(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Mesh *mesh = luax_checkmesh(L, 3);
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh); });
+	const char *attachname = name;
+	Mesh *mesh = nullptr;
+	if (lua_isnoneornil(L, 3))
+	{
+		mesh = luax_checkmesh(L, 3);
+		attachname = luaL_optstring(L, 4, attachname);
+	}
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh, attachname); });
 	return 0;
 }
 
