@@ -237,6 +237,15 @@ void Shader::mapActiveUniforms()
 		if (u.location == -1)
 			continue;
 
+		if (u.baseType == UNIFORM_SAMPLER)
+		{
+			// Initialize all samplers to 0. Both GLSL and GLSL ES are supposed
+			// to do this themselves, but some Android devices (galaxy tab 3 and
+			// 4) don't seem to do it...
+			// NOTE: We also restore previously set texture units below.
+			glUniform1iv(u.location, u.count, u.ints);
+		}
+
 		// Make sure previously set uniform data is preserved, and shader-
 		// initialized values are retrieved.
 		auto oldu = olduniforms.find(u.name);
@@ -294,11 +303,6 @@ void Shader::mapActiveUniforms()
 
 				if (u.baseType == UNIFORM_SAMPLER)
 				{
-					// Initialize all samplers to 0. Both GLSL and GLSL ES are
-					// supposed to do this themselves, but some Android devices
-					// (galaxy tab 3 and 4) don't seem to do it...
-					glUniform1iv(u.location, u.count, u.ints);
-
 					u.textures = new Texture*[u.count];
 					memset(u.textures, 0, sizeof(Texture *) * u.count);
 				}
@@ -679,7 +683,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 		return;
 
 	count = std::min(count, info->count);
-	bool updateuniform = false;
+	bool updateuniform = internalUpdate;
 
 	// Make sure the shader's samplers are associated with texture units.
 	for (int i = 0; i < count; i++)
