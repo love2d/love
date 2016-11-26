@@ -337,15 +337,20 @@ int w_Mesh_attachAttribute(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	const char *attachname = name;
-	Mesh *mesh = nullptr;
-	if (lua_isnoneornil(L, 3))
-	{
-		mesh = luax_checkmesh(L, 3);
-		attachname = luaL_optstring(L, 4, attachname);
-	}
+	Mesh *mesh = luax_checkmesh(L, 3);
+	const char *attachname = luaL_optstring(L, 4, name);
 	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh, attachname); });
 	return 0;
+}
+
+int w_Mesh_detachAttribute(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	bool success = false;
+	luax_catchexcept(L, [&](){ success = t->detachAttribute(name); });
+	luax_pushboolean(L, success);
+	return 1;
 }
 
 int w_Mesh_flush(lua_State *L)
@@ -520,6 +525,7 @@ static const luaL_Reg w_Mesh_functions[] =
 	{ "setAttributeEnabled", w_Mesh_setAttributeEnabled },
 	{ "isAttributeEnabled", w_Mesh_isAttributeEnabled },
 	{ "attachAttribute", w_Mesh_attachAttribute },
+	{ "detachAttribute", w_Mesh_detachAttribute },
 	{ "flush", w_Mesh_flush },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },

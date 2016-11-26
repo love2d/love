@@ -679,7 +679,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 		return;
 
 	count = std::min(count, info->count);
-	bool updateuniform = internalUpdate;
+	bool updateuniform = false;
 
 	// Make sure the shader's samplers are associated with texture units.
 	for (int i = 0; i < count; i++)

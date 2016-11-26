@@ -311,24 +311,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 
 void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname)
 {
-	AttachedAttribute oldattrib = {};
-
-	auto it = attachedAttributes.find(name);
-	if (it != attachedAttributes.end())
-		oldattrib = it->second;
-
-	if (mesh == nullptr)
-	{
-		if (it != attachedAttributes.end() && oldattrib.mesh != this)
-		{
-			oldattrib.mesh->release();
-			attachedAttributes.erase(it);
-			if (getAttributeIndex(name) != -1)
-				attachAttribute(name, this, name);
-			return;
-		}
-	}
-	else if (mesh != this)
+	if (mesh != this)
 	{
 		for (const auto &it : mesh->attachedAttributes)
 		{
@@ -339,7 +322,13 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 		}
 	}
 
+	AttachedAttribute oldattrib = {};
 	AttachedAttribute newattrib = {};
+
+	auto it = attachedAttributes.find(name);
+	if (it != attachedAttributes.end())
+		oldattrib = it->second;
+
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
 	newattrib.index = mesh->getAttributeIndex(attachname);
@@ -354,6 +343,24 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 
 	if (oldattrib.mesh && oldattrib.mesh != this)
 		oldattrib.mesh->release();
+}
+
+bool Mesh::detachAttribute(const std::string &name)
+{
+	auto it = attachedAttributes.find(name);
+
+	if (it != attachedAttributes.end() && it->second.mesh != this)
+	{
+		it->second.mesh->release();
+		attachedAttributes.erase(it);
+
+		if (getAttributeIndex(name) != -1)
+			attachAttribute(name, this, name);
+
+		return true;
+	}
+
+	return false;
 }
 
 void *Mesh::mapVertexData()
