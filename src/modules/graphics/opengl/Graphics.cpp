@@ -1688,7 +1688,7 @@ void Graphics::polyline(const float *coords, size_t count)
 		throw RenderOutsidePassException();
 
 	const DisplayState &state = states.back();
-	float pixelsize = std::max((float) pixelScaleStack.back(), 0.000001f);
+	float pixelsize = 1.0f / std::max((float) pixelScaleStack.back(), 0.000001f);
 
 	if (state.lineJoin == LINE_JOIN_NONE)
 	{
