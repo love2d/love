@@ -46,11 +46,11 @@ ImageData *luax_checkimagedata(lua_State *L, int idx)
 int w_ImageData_getFormat(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	ImageData::Format format = t->getFormat();
+	PixelFormat format = t->getFormat();
 	const char *fstr = nullptr;
 
-	if (!ImageData::getConstant(format, fstr))
-		return luaL_error(L, "Unknown ImageData format.");
+	if (!getConstant(format, fstr))
+		return luaL_error(L, "Unknown pixel format.");
 
 	lua_pushstring(L, fstr);
 	return 1;
@@ -143,21 +143,8 @@ static int luax_pushpixel_rgba32f(lua_State *L, const Pixel &p)
 typedef void(*checkpixel)(lua_State *L, int startidx, Pixel &p);
 typedef int(*pushpixel)(lua_State *L, const Pixel &p);
 
-static checkpixel checkFormats[ImageData::FORMAT_MAX_ENUM] =
-{
-	luax_checkpixel_rgba8,
-	luax_checkpixel_rgba16,
-	luax_checkpixel_rgba16f,
-	luax_checkpixel_rgba32f,
-};
-
-static pushpixel pushFormats[ImageData::FORMAT_MAX_ENUM] =
-{
-	luax_pushpixel_rgba8,
-	luax_pushpixel_rgba16,
-	luax_pushpixel_rgba16f,
-	luax_pushpixel_rgba32f,
-};
+static checkpixel checkFormats[PIXELFORMAT_MAX_ENUM] = {};
+static pushpixel pushFormats[PIXELFORMAT_MAX_ENUM] = {};
 
 int w_ImageData_getPixel(lua_State *L)
 {
@@ -165,7 +152,7 @@ int w_ImageData_getPixel(lua_State *L)
 	int x = (int) luaL_checknumber(L, 2);
 	int y = (int) luaL_checknumber(L, 3);
 
-	ImageData::Format format = t->getFormat();
+	PixelFormat format = t->getFormat();
 
 	Pixel p;
 	luax_catchexcept(L, [&](){ t->getPixel(x, y, p); });
@@ -179,7 +166,7 @@ int w_ImageData_setPixel(lua_State *L)
 	int x = (int) luaL_checknumber(L, 2);
 	int y = (int) luaL_checknumber(L, 3);
 
-	ImageData::Format format = t->getFormat();
+	PixelFormat format = t->getFormat();
 
 	Pixel p;
 
@@ -217,7 +204,7 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 
 	int iw = t->getWidth();
 
-	ImageData::Format format = t->getFormat();
+	PixelFormat format = t->getFormat();
 
 	auto checkpixel = checkFormats[format];
 	auto pushpixel = pushFormats[format];
@@ -366,6 +353,16 @@ static const luaL_Reg w_ImageData_functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
+	checkFormats[PIXELFORMAT_RGBA8]   = luax_checkpixel_rgba8;
+	checkFormats[PIXELFORMAT_RGBA16]  = luax_checkpixel_rgba16;
+	checkFormats[PIXELFORMAT_RGBA16F] = luax_checkpixel_rgba16f;
+	checkFormats[PIXELFORMAT_RGBA32F] = luax_checkpixel_rgba32f;
+
+	pushFormats[PIXELFORMAT_RGBA8]   = luax_pushpixel_rgba8;
+	pushFormats[PIXELFORMAT_RGBA16]  = luax_pushpixel_rgba16;
+	pushFormats[PIXELFORMAT_RGBA16F] = luax_pushpixel_rgba16f;
+	pushFormats[PIXELFORMAT_RGBA32F] = luax_pushpixel_rgba32f;
+
 	int ret = luax_register_type(L, IMAGE_IMAGE_DATA_ID, "ImageData", w_Data_functions, w_ImageData_functions, nullptr);
 
 	luax_gettypemetatable(L, IMAGE_IMAGE_DATA_ID);

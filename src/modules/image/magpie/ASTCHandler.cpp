@@ -47,41 +47,41 @@ struct ASTCHeader
 };
 #pragma pack(pop)
 
-static CompressedImageData::Format convertFormat(uint32 blockX, uint32 blockY, uint32 blockZ)
+static PixelFormat convertFormat(uint32 blockX, uint32 blockY, uint32 blockZ)
 {
 	if (blockZ > 1)
-		return CompressedImageData::FORMAT_UNKNOWN;
+		return PIXELFORMAT_UNKNOWN;
 
 	if (blockX == 4 && blockY == 4)
-		return CompressedImageData::FORMAT_ASTC_4x4;
+		return PIXELFORMAT_ASTC_4x4;
 	else if (blockX == 5 && blockY == 4)
-		return CompressedImageData::FORMAT_ASTC_5x4;
+		return PIXELFORMAT_ASTC_5x4;
 	else if (blockX == 5 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_5x5;
+		return PIXELFORMAT_ASTC_5x5;
 	else if (blockX == 6 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_6x5;
+		return PIXELFORMAT_ASTC_6x5;
 	else if (blockX == 6 && blockY == 6)
-		return CompressedImageData::FORMAT_ASTC_6x6;
+		return PIXELFORMAT_ASTC_6x6;
 	else if (blockX == 8 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_8x5;
+		return PIXELFORMAT_ASTC_8x5;
 	else if (blockX == 8 && blockY == 6)
-		return CompressedImageData::FORMAT_ASTC_8x6;
+		return PIXELFORMAT_ASTC_8x6;
 	else if (blockX == 8 && blockY == 8)
-		return CompressedImageData::FORMAT_ASTC_8x8;
+		return PIXELFORMAT_ASTC_8x8;
 	else if (blockX == 10 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_10x5;
+		return PIXELFORMAT_ASTC_10x5;
 	else if (blockX == 10 && blockY == 6)
-		return CompressedImageData::FORMAT_ASTC_10x6;
+		return PIXELFORMAT_ASTC_10x6;
 	else if (blockX == 10 && blockY == 8)
-		return CompressedImageData::FORMAT_ASTC_10x8;
+		return PIXELFORMAT_ASTC_10x8;
 	else if (blockX == 10 && blockY == 10)
-		return CompressedImageData::FORMAT_ASTC_10x10;
+		return PIXELFORMAT_ASTC_10x10;
 	else if (blockX == 12 && blockY == 10)
-		return CompressedImageData::FORMAT_ASTC_12x10;
+		return PIXELFORMAT_ASTC_12x10;
 	else if (blockX == 12 && blockY == 12)
-		return CompressedImageData::FORMAT_ASTC_12x12;
+		return PIXELFORMAT_ASTC_12x12;
 
-	return CompressedImageData::FORMAT_UNKNOWN;
+	return PIXELFORMAT_UNKNOWN;
 }
 
 } // Anonymous namespace.
@@ -104,16 +104,16 @@ bool ASTCHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *ASTCHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
+uint8 *ASTCHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not an .astc file?)");
 
 	ASTCHeader header = *(const ASTCHeader *) filedata->getData();
 
-	CompressedImageData::Format cformat = convertFormat(header.blockdimX, header.blockdimY, header.blockdimZ);
+	PixelFormat cformat = convertFormat(header.blockdimX, header.blockdimY, header.blockdimZ);
 
-	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
+	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse .astc file: unsupported ASTC format %dx%dx%d.", header.blockdimX, header.blockdimY, header.blockdimZ);
 
 	uint32 sizeX = header.sizeX[0] + (header.sizeX[1] << 8) + (header.sizeX[2] << 16);

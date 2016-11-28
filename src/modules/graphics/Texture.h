@@ -24,6 +24,7 @@
 // LOVE
 #include "common/StringMap.h"
 #include "common/math.h"
+#include "common/pixelformat.h"
 #include "Drawable.h"
 #include "Quad.h"
 
@@ -79,6 +80,8 @@ public:
 	 **/
 	virtual void drawq(Quad *quad, const Matrix4 &m) = 0;
 
+	PixelFormat getPixelFormat() const;
+
 	virtual int getWidth() const;
 	virtual int getHeight() const;
 
@@ -105,6 +108,8 @@ public:
 	static bool getConstant(WrapMode in, const char  *&out);
 
 protected:
+
+	PixelFormat format;
 
 	int width;
 	int height;

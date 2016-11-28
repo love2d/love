@@ -36,10 +36,10 @@ Canvas *luax_checkcanvas(lua_State *L, int idx)
 int w_Canvas_getFormat(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
-	Canvas::Format format = canvas->getTextureFormat();
+	PixelFormat format = canvas->getPixelFormat();
 	const char *str;
-	if (!Canvas::getConstant(format, str))
-		return luaL_error(L, "Unknown Canvas format.");
+	if (!getConstant(format, str))
+		return luaL_error(L, "Unknown pixel format.");
 
 	lua_pushstring(L, str);
 	return 1;

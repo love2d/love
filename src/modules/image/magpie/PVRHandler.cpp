@@ -203,7 +203,7 @@ void ConvertPVRHeader(PVRTexHeaderV2 header2, PVRTexHeaderV3 *header3)
 	}
 }
 
-static CompressedImageData::Format convertFormat(PVRV3PixelFormat format, PVRV3ChannelType channeltype)
+static PixelFormat convertFormat(PVRV3PixelFormat format, PVRV3ChannelType channeltype)
 {
 	bool snorm = false;
 
@@ -221,69 +221,69 @@ static CompressedImageData::Format convertFormat(PVRV3PixelFormat format, PVRV3C
 	switch (format)
 	{
 	case ePVRTPF_PVRTCI_2bpp_RGB:
-		return CompressedImageData::FORMAT_PVR1_RGB2;
+		return PIXELFORMAT_PVR1_RGB2;
 	case ePVRTPF_PVRTCI_2bpp_RGBA:
-		return CompressedImageData::FORMAT_PVR1_RGBA2;
+		return PIXELFORMAT_PVR1_RGBA2;
 	case ePVRTPF_PVRTCI_4bpp_RGB:
-		return CompressedImageData::FORMAT_PVR1_RGB4;
+		return PIXELFORMAT_PVR1_RGB4;
 	case ePVRTPF_PVRTCI_4bpp_RGBA:
-		return CompressedImageData::FORMAT_PVR1_RGBA4;
+		return PIXELFORMAT_PVR1_RGBA4;
 	case ePVRTPF_ETC1:
-		return CompressedImageData::FORMAT_ETC1;
+		return PIXELFORMAT_ETC1;
 	case ePVRTPF_DXT1:
-		return CompressedImageData::FORMAT_DXT1;
+		return PIXELFORMAT_DXT1;
 	case ePVRTPF_DXT3:
-		return CompressedImageData::FORMAT_DXT3;
+		return PIXELFORMAT_DXT3;
 	case ePVRTPF_DXT5:
-		return CompressedImageData::FORMAT_DXT5;
+		return PIXELFORMAT_DXT5;
 	case ePVRTPF_BC4:
-		return snorm ? CompressedImageData::FORMAT_BC4s : CompressedImageData::FORMAT_BC4;
+		return snorm ? PIXELFORMAT_BC4s : PIXELFORMAT_BC4;
 	case ePVRTPF_BC5:
-		return snorm ? CompressedImageData::FORMAT_BC5s : CompressedImageData::FORMAT_BC5;
+		return snorm ? PIXELFORMAT_BC5s : PIXELFORMAT_BC5;
 	case ePVRTPF_BC6:
-		return snorm ? CompressedImageData::FORMAT_BC6Hs : CompressedImageData::FORMAT_BC6H;
+		return snorm ? PIXELFORMAT_BC6Hs : PIXELFORMAT_BC6H;
 	case ePVRTPF_BC7:
-		return CompressedImageData::FORMAT_BC7;
+		return PIXELFORMAT_BC7;
 	case ePVRTPF_ETC2_RGB:
-		return CompressedImageData::FORMAT_ETC2_RGB;
+		return PIXELFORMAT_ETC2_RGB;
 	case ePVRTPF_ETC2_RGBA:
-		return CompressedImageData::FORMAT_ETC2_RGBA;
+		return PIXELFORMAT_ETC2_RGBA;
 	case ePVRTPF_ETC2_RGBA1:
-		return CompressedImageData::FORMAT_ETC2_RGBA1;
+		return PIXELFORMAT_ETC2_RGBA1;
 	case ePVRTPF_EAC_R:
-		return snorm ? CompressedImageData::FORMAT_EAC_Rs : CompressedImageData::FORMAT_EAC_R;
+		return snorm ? PIXELFORMAT_EAC_Rs : PIXELFORMAT_EAC_R;
 	case ePVRTPF_EAC_RG:
-		return snorm ? CompressedImageData::FORMAT_EAC_RGs : CompressedImageData::FORMAT_EAC_RG;
+		return snorm ? PIXELFORMAT_EAC_RGs : PIXELFORMAT_EAC_RG;
 	case ePVRTPF_ASTC_4x4:
-		return CompressedImageData::FORMAT_ASTC_4x4;
+		return PIXELFORMAT_ASTC_4x4;
 	case ePVRTPF_ASTC_5x4:
-		return CompressedImageData::FORMAT_ASTC_5x4;
+		return PIXELFORMAT_ASTC_5x4;
 	case ePVRTPF_ASTC_5x5:
-		return CompressedImageData::FORMAT_ASTC_5x5;
+		return PIXELFORMAT_ASTC_5x5;
 	case ePVRTPF_ASTC_6x5:
-		return CompressedImageData::FORMAT_ASTC_6x5;
+		return PIXELFORMAT_ASTC_6x5;
 	case ePVRTPF_ASTC_6x6:
-		return CompressedImageData::FORMAT_ASTC_6x6;
+		return PIXELFORMAT_ASTC_6x6;
 	case ePVRTPF_ASTC_8x5:
-		return CompressedImageData::FORMAT_ASTC_8x5;
+		return PIXELFORMAT_ASTC_8x5;
 	case ePVRTPF_ASTC_8x6:
-		return CompressedImageData::FORMAT_ASTC_8x6;
+		return PIXELFORMAT_ASTC_8x6;
 	case ePVRTPF_ASTC_8x8:
-		return CompressedImageData::FORMAT_ASTC_8x8;
+		return PIXELFORMAT_ASTC_8x8;
 	case ePVRTPF_ASTC_10x5:
-		return CompressedImageData::FORMAT_ASTC_10x5;
+		return PIXELFORMAT_ASTC_10x5;
 	case ePVRTPF_ASTC_10x6:
-		return CompressedImageData::FORMAT_ASTC_10x6;
+		return PIXELFORMAT_ASTC_10x6;
 	case ePVRTPF_ASTC_10x8:
-		return CompressedImageData::FORMAT_ASTC_10x8;
+		return PIXELFORMAT_ASTC_10x8;
 	case ePVRTPF_ASTC_10x10:
-		return CompressedImageData::FORMAT_ASTC_10x10;
+		return PIXELFORMAT_ASTC_10x10;
 	case ePVRTPF_ASTC_12x10:
-		return CompressedImageData::FORMAT_ASTC_12x10;
+		return PIXELFORMAT_ASTC_12x10;
 	case ePVRTPF_ASTC_12x12:
-		return CompressedImageData::FORMAT_ASTC_12x12;
+		return PIXELFORMAT_ASTC_12x12;
 	default:
-		return CompressedImageData::FORMAT_UNKNOWN;
+		return PIXELFORMAT_UNKNOWN;
 	}
 }
 
@@ -474,7 +474,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
+uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -507,9 +507,9 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	PVRV3PixelFormat pixelformat = (PVRV3PixelFormat) header3.pixelFormat;
 	PVRV3ChannelType channeltype = (PVRV3ChannelType) header3.channelType;
 
-	CompressedImageData::Format cformat = convertFormat(pixelformat, channeltype);
+	PixelFormat cformat = convertFormat(pixelformat, channeltype);
 
-	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
+	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PVR file: unsupported image format.");
 
 	size_t totalsize = 0;

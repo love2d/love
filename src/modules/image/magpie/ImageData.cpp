@@ -38,12 +38,12 @@ ImageData::ImageData(std::list<FormatHandler *> formatHandlers, love::filesystem
 	decode(data);
 }
 
-ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, Format format)
+ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format)
 	: formatHandlers(formatHandlers)
 	, decodeHandler(nullptr)
 {
-	for (FormatHandler *handler : formatHandlers)
-		handler->retain();
+	if (!validPixelFormat(format))
+		throw love::Exception("Unsupported pixel format for ImageData");
 
 	this->width = width;
 	this->height = height;
@@ -53,14 +53,17 @@ ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int h
 
 	// Set to black/transparency.
 	memset(data, 0, getSize());
+
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 }
 
-ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, Format format, void *data, bool own)
+ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format, void *data, bool own)
 	: formatHandlers(formatHandlers)
 	, decodeHandler(nullptr)
 {
-	for (FormatHandler *handler : formatHandlers)
-		handler->retain();
+	if (!validPixelFormat(format))
+		throw love::Exception("Unsupported pixel format for ImageData");
 
 	this->width = width;
 	this->height = height;
@@ -70,6 +73,9 @@ ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int h
 		this->data = (unsigned char *) data;
 	else
 		create(width, height, format, data);
+
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
 }
 
 ImageData::~ImageData()
@@ -83,9 +89,9 @@ ImageData::~ImageData()
 		handler->release();
 }
 
-void ImageData::create(int width, int height, Format format, void *data)
+void ImageData::create(int width, int height, PixelFormat format, void *data)
 {
-	size_t datasize = width * height * getPixelSize(format);
+	size_t datasize = width * height * getPixelFormatSize(format);
 
 	try
 	{
@@ -126,7 +132,7 @@ void ImageData::decode(love::filesystem::FileData *data)
 		throw love::Exception("Could not decode file '%s' to ImageData: unsupported file format", name.c_str());
 	}
 
-	if (decodedimage.size != decodedimage.width * decodedimage.height * getPixelSize(decodedimage.format))
+	if (decodedimage.size != decodedimage.width * decodedimage.height * getPixelFormatSize(decodedimage.format))
 	{
 		decoder->free(decodedimage.data);
 		throw love::Exception("Could not convert image!");
@@ -176,7 +182,7 @@ love::filesystem::FileData *ImageData::encode(EncodedFormat encodedFormat, const
 	if (encoder == nullptr || encodedimage.data == nullptr)
 	{
 		const char *fname = "unknown";
-		getConstant(format, fname);
+		love::getConstant(format, fname);
 		throw love::Exception("No suitable image encoder for %s format.", fname);
 	}
 

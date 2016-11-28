@@ -32,12 +32,12 @@ bool DDSHandler::canParse(const filesystem::FileData *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
+uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
 {
 	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
-	CompressedImageData::Format texformat = CompressedImageData::FORMAT_UNKNOWN;
+	PixelFormat texformat = PIXELFORMAT_UNKNOWN;
 	bool isSRGB = false;
 
 	uint8 *data = nullptr;
@@ -51,7 +51,7 @@ uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 
 		texformat = convertFormat(parser.getFormat(), isSRGB);
 
-		if (texformat == CompressedImageData::FORMAT_UNKNOWN)
+		if (texformat == PIXELFORMAT_UNKNOWN)
 			throw love::Exception("Could not parse compressed data: Unsupported format.");
 
 		if (parser.getMipmapCount() == 0)
@@ -101,37 +101,37 @@ uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	return data;
 }
 
-CompressedImageData::Format DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)
+PixelFormat DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)
 {
 	sRGB = false;
 
 	switch (ddsformat)
 	{
 	case dds::FORMAT_DXT1:
-		return CompressedImageData::FORMAT_DXT1;
+		return PIXELFORMAT_DXT1;
 	case dds::FORMAT_DXT3:
-		return CompressedImageData::FORMAT_DXT3;
+		return PIXELFORMAT_DXT3;
 	case dds::FORMAT_DXT5:
-		return CompressedImageData::FORMAT_DXT5;
+		return PIXELFORMAT_DXT5;
 	case dds::FORMAT_BC4:
-		return CompressedImageData::FORMAT_BC4;
+		return PIXELFORMAT_BC4;
 	case dds::FORMAT_BC4s:
-		return CompressedImageData::FORMAT_BC4s;
+		return PIXELFORMAT_BC4s;
 	case dds::FORMAT_BC5:
-		return CompressedImageData::FORMAT_BC5;
+		return PIXELFORMAT_BC5;
 	case dds::FORMAT_BC5s:
-		return CompressedImageData::FORMAT_BC5s;
+		return PIXELFORMAT_BC5s;
 	case dds::FORMAT_BC6H:
-		return CompressedImageData::FORMAT_BC6H;
+		return PIXELFORMAT_BC6H;
 	case dds::FORMAT_BC6Hs:
-		return CompressedImageData::FORMAT_BC6Hs;
+		return PIXELFORMAT_BC6Hs;
 	case dds::FORMAT_BC7:
-		return CompressedImageData::FORMAT_BC7;
+		return PIXELFORMAT_BC7;
 	case dds::FORMAT_BC7srgb:
 		sRGB = true;
-		return CompressedImageData::FORMAT_BC7;
+		return PIXELFORMAT_BC7;
 	default:
-		return CompressedImageData::FORMAT_UNKNOWN;
+		return PIXELFORMAT_UNKNOWN;
 	}
 }
 

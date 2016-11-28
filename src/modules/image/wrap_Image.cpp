@@ -44,13 +44,13 @@ int w_newImageData(lua_State *L)
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 
-		ImageData::Format format = ImageData::FORMAT_RGBA8;
+		PixelFormat format = PIXELFORMAT_RGBA8;
 
 		if (!lua_isnoneornil(L, 3))
 		{
 			const char *fstr = luaL_checkstring(L, 3);
-			if (!ImageData::getConstant(fstr, format))
-				return luaL_error(L, "Invalid ImageData format: %s", fstr);
+			if (!getConstant(fstr, format))
+				return luaL_error(L, "Invalid pixel format: %s", fstr);
 		}
 
 		size_t numbytes = 0;

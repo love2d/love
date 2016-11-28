@@ -492,9 +492,9 @@ void Graphics::beginPass(const PassInfo &info)
 	Canvas *firstcanvas = info.colorAttachments[0].canvas;
 
 	bool multiformatsupported = isSupported(Feature::FEATURE_MULTI_CANVAS_FORMATS);
-	Canvas::Format firstformat = firstcanvas->getTextureFormat();
+	PixelFormat firstformat = firstcanvas->getPixelFormat();
 
-	bool hasSRGBcanvas = Canvas::getSizedFormat(firstformat) == Canvas::FORMAT_SRGB;
+	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
 
 	for (int i = 1; i < info.colorAttachmentCount; i++)
 	{
@@ -503,13 +503,13 @@ void Graphics::beginPass(const PassInfo &info)
 		if (c->getWidth() != firstcanvas->getWidth() || c->getHeight() != firstcanvas->getHeight())
 			throw love::Exception("All canvases in a render pass must have the same dimensions.");
 
-		if (!multiformatsupported && c->getTextureFormat() != firstformat)
+		if (!multiformatsupported && c->getPixelFormat() != firstformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
 			throw love::Exception("All Canvases in a render pass must have the same requested MSAA value.");
 
-		if (Canvas::getSizedFormat(c->getTextureFormat()) == Canvas::FORMAT_SRGB)
+		if (c->getPixelFormat() == PIXELFORMAT_sRGBA8)
 			hasSRGBcanvas = true;
 	}
 
@@ -639,25 +639,25 @@ void Graphics::endPass(int sX, int sY, int sW, int sH, const ScreenshotInfo *inf
 		if (imagemodule == nullptr)
 			throw love::Exception("The love.image module must be loaded to capture a Canvas' contents.");
 
-		image::ImageData::Format format;
-		switch (Canvas::getSizedFormat(attachments[0].canvas->getTextureFormat()))
+		PixelFormat format;
+		switch (attachments[0].canvas->getPixelFormat())
 		{
-		case Canvas::FORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
-			format = image::ImageData::FORMAT_RGBA16;
+		case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
+			format = PIXELFORMAT_RGBA16;
 			break;
-		case Canvas::FORMAT_R16F:
-		case Canvas::FORMAT_RG16F:
-		case Canvas::FORMAT_RGBA16F:
-		case Canvas::FORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
-			format = image::ImageData::FORMAT_RGBA16F;
+		case PIXELFORMAT_R16F:
+		case PIXELFORMAT_RG16F:
+		case PIXELFORMAT_RGBA16F:
+		case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
+			format = PIXELFORMAT_RGBA16F;
 			break;
-		case Canvas::FORMAT_R32F:
-		case Canvas::FORMAT_RG32F:
-		case Canvas::FORMAT_RGBA32F:
-			format = image::ImageData::FORMAT_RGBA32F;
+		case PIXELFORMAT_R32F:
+		case PIXELFORMAT_RG32F:
+		case PIXELFORMAT_RGBA32F:
+			format = PIXELFORMAT_RGBA32F;
 			break;
 		default:
-			format = image::ImageData::FORMAT_RGBA8;
+			format = PIXELFORMAT_RGBA8;
 			break;
 		}
 
@@ -695,13 +695,13 @@ void Graphics::endPass(int sX, int sY, int sW, int sH, const ScreenshotInfo *inf
 		GLenum datatype;
 		switch (imagedata->getFormat())
 		{
-		case image::ImageData::FORMAT_RGBA16:
+		case PIXELFORMAT_RGBA16:
 			datatype = GL_UNSIGNED_SHORT;
 			break;
-		case image::ImageData::FORMAT_RGBA16F:
+		case PIXELFORMAT_RGBA16F:
 			datatype = GL_HALF_FLOAT;
 			break;
-		case image::ImageData::FORMAT_RGBA32F:
+		case PIXELFORMAT_RGBA32F:
 			datatype = GL_FLOAT;
 			break;
 		default:
@@ -831,7 +831,7 @@ void Graphics::bindCachedFBOForPass(const PassInfo &pass)
 		if (drawbuffers.size() > 1)
 			glDrawBuffers(1, &drawbuffers[0]);
 
-		GLuint stencil = attachCachedStencilBuffer(w, h, msaa);
+		GLuint stencil = attachCachedStencilBuffer(w, h, info.canvases[0]->getRequestedMSAA());
 
 		if (stencil == 0)
 		{
@@ -1011,7 +1011,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 			try
 			{
-				img = imagemodule->newImageData(w, h, image::ImageData::FORMAT_RGBA8, screenshot);
+				img = imagemodule->newImageData(w, h, PIXELFORMAT_RGBA8, screenshot);
 			}
 			catch (love::Exception &)
 			{
@@ -1303,7 +1303,7 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int msaa)
+Canvas *Graphics::newCanvas(int width, int height, PixelFormat format, int msaa)
 {
 	if (!Canvas::isSupported())
 		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
@@ -1311,7 +1311,7 @@ Canvas *Graphics::newCanvas(int width, int height, Canvas::Format format, int ms
 	if (!Canvas::isFormatSupported(format))
 	{
 		const char *fstr = "rgba8";
-		Canvas::getConstant(Canvas::getSizedFormat(format), fstr);
+		love::getConstant(Canvas::getSizedFormat(format), fstr);
 		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
 	}
 

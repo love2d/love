@@ -749,9 +749,9 @@ int w_newCanvas(lua_State *L)
 	const char *str = luaL_optstring(L, 3, "normal");
 	int msaa        = (int) luaL_optnumber(L, 4, 0);
 
-	Canvas::Format format;
-	if (!Canvas::getConstant(str, format))
-		return luaL_error(L, "Invalid Canvas format: %s", str);
+	PixelFormat format;
+	if (!getConstant(str, format))
+		return luaL_error(L, "Invalid pixel format: %s", str);
 
 	Canvas *canvas = nullptr;
 	luax_catchexcept(L,
@@ -1524,64 +1524,38 @@ int w_getSupported(lua_State *L)
 	return 1;
 }
 
+static int w__getFormats(lua_State *L, bool (*isFormatSupported)(PixelFormat), bool (*ignore)(PixelFormat))
+{
+	lua_createtable(L, 0, (int) PIXELFORMAT_MAX_ENUM);
+
+	for (int i = 0; i < (int) PIXELFORMAT_MAX_ENUM; i++)
+	{
+		PixelFormat format = (PixelFormat) i;
+		const char *name = nullptr;
+
+		if (format == PIXELFORMAT_UNKNOWN || !love::getConstant(format, name) || ignore(format))
+			continue;
+
+		luax_pushboolean(L, isFormatSupported(format));
+		lua_setfield(L, -2, name);
+	}
+
+	return 1;
+}
+
 int w_getCanvasFormats(lua_State *L)
 {
-	lua_createtable(L, 0, (int) Canvas::FORMAT_MAX_ENUM);
-
-	for (int i = 0; i < (int) Canvas::FORMAT_MAX_ENUM; i++)
-	{
-		Canvas::Format format = (Canvas::Format) i;
-		const char *name = nullptr;
-
-		if (!Canvas::getConstant(format, name))
-			continue;
-
-		luax_pushboolean(L, Canvas::isFormatSupported(format));
-		lua_setfield(L, -2, name);
-	}
-
-	return 1;
+	return w__getFormats(L, Canvas::isFormatSupported, isPixelFormatCompressed);
 }
 
-int w_getRawImageFormats(lua_State *L)
+int w_getImageFormats(lua_State *L)
 {
-	lua_createtable(L, 0, (int) image::ImageData::FORMAT_MAX_ENUM);
-
-	for (int i = 0; i < (int) image::ImageData::FORMAT_MAX_ENUM; i++)
+	const auto ignore = [](PixelFormat format)
 	{
-		auto format = (image::ImageData::Format) i;
-		const char *name = nullptr;
+		return !(image::ImageData::validPixelFormat(format) || isPixelFormatCompressed(format));
+	};
 
-		if (!image::ImageData::getConstant(format, name))
-			continue;
-
-		luax_pushboolean(L, Image::hasTextureSupport(format));
-		lua_setfield(L, -2, name);
-	}
-
-	return 1;
-}
-
-int w_getCompressedImageFormats(lua_State *L)
-{
-	lua_createtable(L, 0, (int) image::CompressedImageData::FORMAT_MAX_ENUM);
-
-	for (int i = 0; i < (int) image::CompressedImageData::FORMAT_MAX_ENUM; i++)
-	{
-		auto format = (image::CompressedImageData::Format) i;
-		const char *name = nullptr;
-
-		if (format == image::CompressedImageData::FORMAT_UNKNOWN)
-			continue;
-
-		if (!image::CompressedImageData::getConstant(format, name))
-			continue;
-
-		luax_pushboolean(L, Image::hasCompressedTextureSupport(format, false));
-		lua_setfield(L, -2, name);
-	}
-
-	return 1;
+	return w__getFormats(L, Image::isFormatSupported, ignore);
 }
 
 int w_getRendererInfo(lua_State *L)
@@ -2214,8 +2188,7 @@ static const luaL_Reg functions[] =
 
 	{ "getSupported", w_getSupported },
 	{ "getCanvasFormats", w_getCanvasFormats },
-	{ "getRawImageFormats", w_getRawImageFormats },
-	{ "getCompressedImageFormats", w_getCompressedImageFormats },
+	{ "getImageFormats", w_getImageFormats },
 	{ "getRendererInfo", w_getRendererInfo },
 	{ "getSystemLimits", w_getSystemLimits },
 	{ "getStats", w_getStats },

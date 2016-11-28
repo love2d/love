@@ -43,30 +43,7 @@ class Canvas : public Texture, public Volatile
 {
 public:
 
-	// Different Canvas render target formats.
-	enum Format
-	{
-		FORMAT_NORMAL,   // Usually SRGB, RGBA8 or a similar fallback. Always supported.
-		FORMAT_HDR,      // Usually RGBA16F. Not always supported.
-		FORMAT_RGBA4,    // RGBA with 4 bits per channel.
-		FORMAT_RGB5A1,   // RGB with 5 bits per channel, and A with 1 bit.
-		FORMAT_RGB565,   // RGB with 5, 6, and 5 bits each, respectively.
-		FORMAT_R8,       // Single (red) 8-bit channel.
-		FORMAT_RG8,      // Two-channel (red and green) with 8 bits per channel.
-		FORMAT_RGBA8,    // RGBA with 8 bits per channel.
-		FORMAT_RGB10A2,  // RGB with 10 bits each, and A with 2 bits.
-		FORMAT_RG11B10F, // Floating point [0, +65024]. RG with 11 FP bits each, and B with 10 FP bits.
-		FORMAT_R16F,     // Floating point [-65504, +65504]. R with 16 FP bits.
-		FORMAT_RG16F,    // Floating point [-65504, +65504]. RG with 16 FP bits per channel.
-		FORMAT_RGBA16F,  // Floating point [-65504, +65504]. RGBA with 16 FP bits per channel.
-		FORMAT_R32F,     // Floating point [-65504, +65504]. R with 32 FP bits.
-		FORMAT_RG32F,    // Floating point [-65504, +65504]. RG with 32 FP bits per channel.
-		FORMAT_RGBA32F,  // Floating point [-65504, +65504]. RGBA with 32 FP bits per channel.
-		FORMAT_SRGB,     // sRGB with 8 bits per channel, plus 8 bit linear A.
-		FORMAT_MAX_ENUM
-	};
-
-	Canvas(int width, int height, Format format = FORMAT_NORMAL, int msaa = 0);
+	Canvas(int width, int height, PixelFormat format = PIXELFORMAT_NORMAL, int msaa = 0);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -85,11 +62,6 @@ public:
 	inline GLenum getStatus() const
 	{
 		return status;
-	}
-
-	inline Format getTextureFormat() const
-	{
-		return format;
 	}
 
 	inline int getMSAA() const
@@ -112,29 +84,23 @@ public:
 		return fbo;
 	}
 
-	static Format getSizedFormat(Format format);
+	static PixelFormat getSizedFormat(PixelFormat format);
 	static bool isSupported();
 	static bool isMultiFormatMultiCanvasSupported();
-	static bool isFormatSupported(Format format);
+	static bool isFormatSupported(PixelFormat format);
 
 	static int canvasCount;
-
-	static bool getConstant(const char *in, Format &out);
-	static bool getConstant(Format in, const char *&out);
 
 private:
 
 	void drawv(const Matrix4 &t, const Vertex *v);
-
-	static void convertFormat(Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type);
-	static size_t getFormatBitsPerPixel(Format format);
 
 	GLuint fbo;
 
 	GLuint texture;
 	GLuint msaa_buffer;
 
-	Format format;
+	PixelFormat requested_format;
 
 	GLenum status;
 
@@ -143,11 +109,8 @@ private:
 
 	size_t texture_memory;
 
-	static bool supportedFormats[FORMAT_MAX_ENUM];
-	static bool checkedFormats[FORMAT_MAX_ENUM];
-
-	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
-	static StringMap<Format, FORMAT_MAX_ENUM> formats;
+	static bool supportedFormats[PIXELFORMAT_MAX_ENUM];
+	static bool checkedFormats[PIXELFORMAT_MAX_ENUM];
 
 }; // Canvas
 

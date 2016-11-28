@@ -28,7 +28,10 @@ namespace image
 {
 
 ImageData::ImageData()
-	: data(nullptr)
+	: format(PIXELFORMAT_UNKNOWN)
+	, width(0)
+	, height(0)
+	, data(nullptr)
 {
 }
 
@@ -51,7 +54,7 @@ bool ImageData::inside(int x, int y) const
 	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
 }
 
-ImageData::Format ImageData::getFormat() const
+PixelFormat ImageData::getFormat() const
 {
 	return format;
 }
@@ -166,33 +169,21 @@ love::thread::Mutex *ImageData::getMutex() const
 
 size_t ImageData::getPixelSize() const
 {
-	return getPixelSize(format);
+	return getPixelFormatSize(format);
 }
 
-size_t ImageData::getPixelSize(Format format)
+bool ImageData::validPixelFormat(PixelFormat format)
 {
 	switch (format)
 	{
-	case FORMAT_RGBA8:
-		return 4;
-	case FORMAT_RGBA16:
-	case FORMAT_RGBA16F:
-		return 8;
-	case FORMAT_RGBA32F:
-		return 16;
+	case PIXELFORMAT_RGBA8:
+	case PIXELFORMAT_RGBA16:
+	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_RGBA32F:
+		return true;
 	default:
-		return 0;
+		return false;
 	}
-}
-
-bool ImageData::getConstant(const char *in, Format &out)
-{
-	return formats.find(in, out);
-}
-
-bool ImageData::getConstant(Format in, const char *&out)
-{
-	return formats.find(in, out);
 }
 
 bool ImageData::getConstant(const char *in, EncodedFormat &out)
@@ -204,17 +195,6 @@ bool ImageData::getConstant(EncodedFormat in, const char *&out)
 {
 	return encodedFormats.find(in, out);
 }
-
-StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM>::Entry ImageData::formatEntries[] =
-{
-	{"rgba8",   FORMAT_RGBA8  },
-	{"rgba16",  FORMAT_RGBA16 },
-	{"rgba16f", FORMAT_RGBA16F},
-	{"rgba32f", FORMAT_RGBA32F},
-};
-
-StringMap<ImageData::Format, ImageData::FORMAT_MAX_ENUM> ImageData::formats(ImageData::formatEntries, sizeof(ImageData::formatEntries));
-
 
 StringMap<ImageData::EncodedFormat, ImageData::ENCODED_MAX_ENUM>::Entry ImageData::encodedFormatEntries[] =
 {

@@ -274,6 +274,8 @@ set(LOVE_SRC_COMMON
 	src/common/Module.h
 	src/common/Object.cpp
 	src/common/Object.h
+	src/common/pixelformat.cpp
+	src/common/pixelformat.h
 	src/common/Reference.cpp
 	src/common/Reference.h
 	src/common/runtime.cpp

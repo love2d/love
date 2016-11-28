@@ -42,7 +42,7 @@ bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
 	return false;
 }
 
-bool FormatHandler::canEncode(ImageData::Format /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
+bool FormatHandler::canEncode(PixelFormat /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
 {
 	return false;
 }

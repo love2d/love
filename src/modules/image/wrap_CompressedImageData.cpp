@@ -83,10 +83,10 @@ int w_CompressedImageData_getFormat(lua_State *L)
 {
 	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
 
-	image::CompressedImageData::Format format = t->getFormat();
+	PixelFormat format = t->getFormat();
 	const char *str;
 
-	if (image::CompressedImageData::getConstant(format, str))
+	if (getConstant(format, str))
 		lua_pushstring(L, str);
 	else
 		lua_pushstring(L, "unknown");

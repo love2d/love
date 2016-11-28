@@ -60,9 +60,9 @@ bool STBHandler::canDecode(love::filesystem::FileData *data)
 	return status == 1 && w > 0 && h > 0;
 }
 
-bool STBHandler::canEncode(ImageData::Format rawFormat, ImageData::EncodedFormat encodedFormat)
+bool STBHandler::canEncode(PixelFormat rawFormat, ImageData::EncodedFormat encodedFormat)
 {
-	return encodedFormat == ImageData::ENCODED_TGA && rawFormat == ImageData::FORMAT_RGBA8;
+	return encodedFormat == ImageData::ENCODED_TGA && rawFormat == PIXELFORMAT_RGBA8;
 }
 
 FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
@@ -77,13 +77,13 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 	{
 		img.data = (unsigned char *) stbi_loadf_from_memory(buffer, bufferlen, &img.width, &img.height, &comp, 4);
 		img.size = img.width * img.height * 4 * sizeof(float);
-		img.format = ImageData::FORMAT_RGBA32F;
+		img.format = PIXELFORMAT_RGBA32F;
 	}
 	else
 	{
 		img.data = stbi_load_from_memory(buffer, bufferlen, &img.width, &img.height, &comp, 4);
 		img.size = img.width * img.height * 4;
-		img.format = ImageData::FORMAT_RGBA8;
+		img.format = PIXELFORMAT_RGBA8;
 	}
 
 	if (img.data == nullptr || img.width <= 0 || img.height <= 0)

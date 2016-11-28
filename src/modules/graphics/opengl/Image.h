@@ -127,10 +127,7 @@ public:
 	static void setDefaultMipmapFilter(FilterMode f);
 	static FilterMode getDefaultMipmapFilter();
 
-	static bool hasAnisotropicFilteringSupport();
-	static bool hasTextureSupport(image::ImageData::Format format);
-	static bool hasTextureFilteringSupport(image::ImageData::Format format);
-	static bool hasCompressedTextureSupport(image::CompressedImageData::Format format, bool sRGB);
+	static bool isFormatSupported(PixelFormat pixelformat);
 	static bool hasSRGBSupport();
 
 	static bool getConstant(const char *in, FlagType &out);
@@ -148,9 +145,6 @@ private:
 	void loadDefaultTexture();
 	void loadFromCompressedData();
 	void loadFromImageData();
-
-	GLenum getFormat(image::ImageData::Format format, GLenum &glformat, GLenum &gltype, bool &isSRGB) const;
-	GLenum getCompressedFormat(image::CompressedImageData::Format cformat, bool &isSRGB) const;
 
 	// The ImageData from which the texture is created. May be empty if
 	// Compressed image data was used to create the texture.

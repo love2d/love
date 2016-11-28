@@ -954,6 +954,9 @@
 		FA91591F1CF1ED7500A7053F /* halffloat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91591C1CF1ED7500A7053F /* halffloat.cpp */; };
 		FA9159201CF1ED7500A7053F /* halffloat.h in Headers */ = {isa = PBXBuildFile; fileRef = FA91591D1CF1ED7500A7053F /* halffloat.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
+		FA9D8DD11DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
+		FA9D8DD21DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
+		FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9D8DD01DEB56C3002CD881 /* pixelformat.h */; };
 		FAA3A9AE1B7D465A00CED060 /* android.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAA3A9AC1B7D465A00CED060 /* android.cpp */; };
 		FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAA3A9AC1B7D465A00CED060 /* android.cpp */; };
 		FAA3A9B01B7D465A00CED060 /* android.h in Headers */ = {isa = PBXBuildFile; fileRef = FAA3A9AD1B7D465A00CED060 /* android.h */; };
@@ -1662,6 +1665,8 @@
 		FA91591C1CF1ED7500A7053F /* halffloat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = halffloat.cpp; sourceTree = "<group>"; };
 		FA91591D1CF1ED7500A7053F /* halffloat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = halffloat.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
+		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
+		FA9D8DD01DEB56C3002CD881 /* pixelformat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pixelformat.h; sourceTree = "<group>"; };
 		FAA3A9AC1B7D465A00CED060 /* android.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = android.cpp; sourceTree = "<group>"; };
 		FAA3A9AD1B7D465A00CED060 /* android.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = android.h; sourceTree = "<group>"; };
 		FAA627CD18E7E1560080752D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
@@ -1799,6 +1804,8 @@
 				FA0B79071A958E3B000E1D17 /* Module.h */,
 				FA0B79081A958E3B000E1D17 /* Object.cpp */,
 				FA0B79091A958E3B000E1D17 /* Object.h */,
+				FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */,
+				FA9D8DD01DEB56C3002CD881 /* pixelformat.h */,
 				FA0B790C1A958E3B000E1D17 /* Reference.cpp */,
 				FA0B790D1A958E3B000E1D17 /* Reference.h */,
 				FA0B790E1A958E3B000E1D17 /* runtime.cpp */,
@@ -3402,6 +3409,7 @@
 				217DFBE01D9F6D490055D849 /* except.h in Headers */,
 				FA0B79311A958E3B000E1D17 /* Module.h in Headers */,
 				217DFBF51D9F6D490055D849 /* mime.lua.h in Headers */,
+				FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */,
 				FA0B7D5A1A95902C000E1D17 /* wrap_Canvas.h in Headers */,
 				FA0B7E4A1A95902C000E1D17 /* wrap_DistanceJoint.h in Headers */,
 				FA0B7D2E1A95902C000E1D17 /* Color.h in Headers */,
@@ -3750,6 +3758,7 @@
 				FA0B7CF51A95902C000E1D17 /* File.cpp in Sources */,
 				FA0B7E341A95902C000E1D17 /* WeldJoint.cpp in Sources */,
 				FA4F2C091DE936E200CA37D7 /* luasocket.c in Sources */,
+				FA9D8DD21DEB56C3002CD881 /* pixelformat.cpp in Sources */,
 				FA0B7D5C1A95902C000E1D17 /* wrap_Font.cpp in Sources */,
 				FA0B7B221A958EA3000E1D17 /* luasocket.cpp in Sources */,
 				FA0B7D311A95902C000E1D17 /* Graphics.cpp in Sources */,
@@ -4058,6 +4067,7 @@
 				FA0B7EB21A95902C000E1D17 /* System.cpp in Sources */,
 				FA0B7D1B1A95902C000E1D17 /* GlyphData.cpp in Sources */,
 				FA0B7AD11A958EA3000E1D17 /* protocol.c in Sources */,
+				FA9D8DD11DEB56C3002CD881 /* pixelformat.cpp in Sources */,
 				FA0B7E661A95902C000E1D17 /* wrap_PrismaticJoint.cpp in Sources */,
 				FA0B7DCD1A95902C000E1D17 /* wrap_Keyboard.cpp in Sources */,
 				FA0B7EE51A95902D000E1D17 /* Window.cpp in Sources */,

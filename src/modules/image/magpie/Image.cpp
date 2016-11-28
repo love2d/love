@@ -82,12 +82,12 @@ love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
 	return new ImageData(formatHandlers, data);
 }
 
-love::image::ImageData *Image::newImageData(int width, int height, ImageData::Format format)
+love::image::ImageData *Image::newImageData(int width, int height, PixelFormat format)
 {
 	return new ImageData(formatHandlers, width, height, format);
 }
 
-love::image::ImageData *Image::newImageData(int width, int height, ImageData::Format format, void *data, bool own)
+love::image::ImageData *Image::newImageData(int width, int height, PixelFormat format, void *data, bool own)
 {
 	return new ImageData(formatHandlers, width, height, format, data, own);
 }

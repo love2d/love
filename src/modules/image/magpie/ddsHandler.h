@@ -48,11 +48,11 @@ public:
 
 	// Implements CompressedFormatHandler.
 	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
+	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB);
 
 private:
 
-	static CompressedImageData::Format convertFormat(dds::Format ddsformat, bool &sRGB);
+	static PixelFormat convertFormat(dds::Format ddsformat, bool &sRGB);
 
 }; // DDSHandler
 

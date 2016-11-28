@@ -204,7 +204,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 				ImageData *imagedata = imagemodule->newImageData(data.get());
 
-				if (imagedata->getFormat() != ImageData::FORMAT_RGBA8)
+				if (imagedata->getFormat() != PIXELFORMAT_RGBA8)
 				{
 					imagedata->release();
 					throw love::Exception("Only 32-bit RGBA images are supported in BMFonts.");

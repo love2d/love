@@ -41,7 +41,7 @@ bool EXRHandler::canDecode(love::filesystem::FileData *data)
 	return ParseEXRVersionFromMemory(&version, (const unsigned char *) data->getData(), data->getSize()) == TINYEXR_SUCCESS;
 }
 
-bool EXRHandler::canEncode(ImageData::Format /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
+bool EXRHandler::canEncode(PixelFormat /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
 {
 	return false;
 }
@@ -141,7 +141,7 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 
 	if (pixelType == TINYEXR_PIXELTYPE_HALF)
 	{
-		img.format = ImageData::FORMAT_RGBA16F;
+		img.format = PIXELFORMAT_RGBA16F;
 
 		half *rgba[4] = {nullptr};
 		getEXRChannels(exrHeader, exrImage, rgba);
@@ -158,7 +158,7 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 	}
 	else if (pixelType == TINYEXR_PIXELTYPE_FLOAT)
 	{
-		img.format = ImageData::FORMAT_RGBA32F;
+		img.format = PIXELFORMAT_RGBA32F;
 
 		float *rgba[4] = {nullptr};
 		getEXRChannels(exrHeader, exrImage, rgba);
@@ -179,7 +179,7 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 		throw love::Exception("Could not decode EXR image: unknown pixel format.");
 	}
 
-	img.size = img.width * img.height * ImageData::getPixelSize(img.format);
+	img.size = img.width * img.height * getPixelFormatSize(img.format);
 
 	FreeEXRImage(&exrImage);
 

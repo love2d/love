@@ -226,7 +226,7 @@ public:
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Canvas *newCanvas(int width, int height, Canvas::Format format = Canvas::FORMAT_NORMAL, int msaa = 0);
+	Canvas *newCanvas(int width, int height, PixelFormat format = PIXELFORMAT_NORMAL, int msaa = 0);
 
 	Shader *newShader(const Shader::ShaderSource &source);
 

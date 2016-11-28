@@ -28,7 +28,8 @@ namespace graphics
 Texture::Filter Texture::defaultFilter;
 
 Texture::Texture()
-	: width(0)
+	: format(PIXELFORMAT_UNKNOWN)
+	, width(0)
 	, height(0)
 	, filter(getDefaultFilter())
 	, wrap()
@@ -38,6 +39,11 @@ Texture::Texture()
 
 Texture::~Texture()
 {
+}
+
+PixelFormat Texture::getPixelFormat() const
+{
+	return format;
 }
 
 int Texture::getWidth() const

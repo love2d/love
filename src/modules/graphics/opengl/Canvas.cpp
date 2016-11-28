@@ -56,8 +56,11 @@ static GLenum createFBO(GLuint &framebuffer, GLuint texture)
 	return status;
 }
 
-static bool createMSAABuffer(int width, int height, int &samples, GLenum iformat, GLuint &buffer)
+static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
 {
+	bool unusedSRGB = false;
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true, unusedSRGB);
+
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
 	// Temporary FBO used to clear the renderbuffer.
@@ -68,7 +71,7 @@ static bool createMSAABuffer(int width, int height, int &samples, GLenum iformat
 	glGenRenderbuffers(1, &buffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, buffer);
 
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, iformat, width, height);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt.internalformat, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer);
 
 	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
@@ -98,11 +101,11 @@ static bool createMSAABuffer(int width, int height, int &samples, GLenum iformat
 
 int Canvas::canvasCount = 0;
 
-Canvas::Canvas(int width, int height, Format format, int msaa)
+Canvas::Canvas(int width, int height, PixelFormat format, int msaa)
 	: fbo(0)
 	, texture(0)
     , msaa_buffer(0)
-	, format(format)
+	, requested_format(format)
     , requested_samples(msaa)
 	, actual_samples(0)
 	, texture_memory(0)
@@ -137,6 +140,8 @@ Canvas::Canvas(int width, int height, Format format, int msaa)
 	vertices[2].t = 0;
 	vertices[3].s = 1;
 	vertices[3].t = 1;
+
+	this->format = getSizedFormat(requested_format);
 
 	loadVolatile();
 
@@ -181,22 +186,14 @@ bool Canvas::loadVolatile()
 	setFilter(filter);
 	setWrap(wrap);
 
-	GLenum internalformat = GL_RGBA;
-	GLenum externalformat = GL_RGBA;
-	GLenum textype = GL_UNSIGNED_BYTE;
-
-	convertFormat(format, internalformat, externalformat, textype);
-
-	// in GLES2, the internalformat and format params of TexImage have to match.
-	GLint iformat = (GLint) internalformat;
-	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
-		iformat = (GLint) externalformat;
+	bool unusedSRGB = false;
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
 
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
 
-	glTexImage2D(GL_TEXTURE_2D, 0, iformat, width, height, 0, externalformat,
-	             textype, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, width, height, 0,
+	             fmt.externalformat, fmt.type, nullptr);
 
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -221,12 +218,12 @@ bool Canvas::loadVolatile()
 
 	actual_samples = requested_samples == 1 ? 0 : requested_samples;
 
-	if (actual_samples > 0 && !createMSAABuffer(width, height, actual_samples, internalformat, msaa_buffer))
+	if (actual_samples > 0 && !createMSAABuffer(width, height, actual_samples, format, msaa_buffer))
 		actual_samples = 0;
 
 	size_t prevmemsize = texture_memory;
 
-	texture_memory = ((getFormatBitsPerPixel(format) * width) / 8) * height;
+	texture_memory = getPixelFormatSize(format) * width * height;
 	if (msaa_buffer != 0)
 		texture_memory += (texture_memory * actual_samples);
 
@@ -338,146 +335,22 @@ const void *Canvas::getHandle() const
 	return &texture;
 }
 
-Canvas::Format Canvas::getSizedFormat(Canvas::Format format)
+PixelFormat Canvas::getSizedFormat(PixelFormat format)
 {
 	switch (format)
 	{
-	case FORMAT_NORMAL:
+	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
-			return FORMAT_SRGB;
-		else if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8))
+			return PIXELFORMAT_sRGBA8;
+		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8, true, false))
 			// 32-bit render targets don't have guaranteed support on GLES2.
-			return FORMAT_RGBA4;
+			return PIXELFORMAT_RGBA4;
 		else
-			return FORMAT_RGBA8;
-	case FORMAT_HDR:
-		return FORMAT_RGBA16F;
+			return PIXELFORMAT_RGBA8;
+	case PIXELFORMAT_HDR:
+		return PIXELFORMAT_RGBA16F;
 	default:
 		return format;
-	}
-}
-
-void Canvas::convertFormat(Canvas::Format format, GLenum &internalformat, GLenum &externalformat, GLenum &type)
-{
-	format = getSizedFormat(format);
-	externalformat = GL_RGBA;
-
-	switch (format)
-	{
-	case FORMAT_RGBA4:
-		internalformat = GL_RGBA4;
-		type = GL_UNSIGNED_SHORT_4_4_4_4;
-		break;
-	case FORMAT_RGB5A1:
-		internalformat = GL_RGB5_A1;
-		type = GL_UNSIGNED_SHORT_5_5_5_1;
-		break;
-	case FORMAT_RGB565:
-		internalformat = GL_RGB565;
-		externalformat = GL_RGB;
-		type = GL_UNSIGNED_SHORT_5_6_5;
-		break;
-	case FORMAT_R8:
-		internalformat = GL_R8;
-		externalformat = GL_RED;
-		type = GL_UNSIGNED_BYTE;
-		break;
-	case FORMAT_RG8:
-		internalformat = GL_RG8;
-		externalformat = GL_RG;
-		type = GL_UNSIGNED_BYTE;
-		break;
-	case FORMAT_RGBA8:
-	default:
-		internalformat = GL_RGBA8;
-		type = GL_UNSIGNED_BYTE;
-		break;
-	case FORMAT_RGB10A2:
-		internalformat = GL_RGB10_A2;
-		type = GL_UNSIGNED_INT_2_10_10_10_REV;
-		break;
-	case FORMAT_RG11B10F:
-		internalformat = GL_R11F_G11F_B10F;
-		externalformat = GL_RGB;
-		type = GL_UNSIGNED_INT_10F_11F_11F_REV;
-		break;
-	case FORMAT_R16F:
-		internalformat = GL_R16F;
-		externalformat = GL_RED;
-		if (GLAD_OES_texture_half_float)
-			type = GL_HALF_FLOAT_OES;
-		else if (GLAD_VERSION_1_0)
-			type = GL_FLOAT;
-		else
-			type = GL_HALF_FLOAT;
-		break;
-	case FORMAT_RG16F:
-		internalformat = GL_RG16F;
-		externalformat = GL_RG;
-		if (GLAD_OES_texture_half_float)
-			type = GL_HALF_FLOAT_OES;
-		else if (GLAD_VERSION_1_0)
-			type = GL_FLOAT;
-		else
-			type = GL_HALF_FLOAT;
-		break;
-	case FORMAT_RGBA16F:
-		internalformat = GL_RGBA16F;
-		if (GLAD_OES_texture_half_float)
-			type = GL_HALF_FLOAT_OES;
-		else if (GLAD_VERSION_1_0)
-			type = GL_FLOAT;
-		else
-			type = GL_HALF_FLOAT;
-		break;
-	case FORMAT_R32F:
-		internalformat = GL_R32F;
-		externalformat = GL_RED;
-		type = GL_FLOAT;
-		break;
-	case FORMAT_RG32F:
-		internalformat = GL_RG32F;
-		externalformat = GL_RG;
-		type = GL_FLOAT;
-		break;
-	case FORMAT_RGBA32F:
-		internalformat = GL_RGBA32F;
-		type = GL_FLOAT;
-		break;
-	case FORMAT_SRGB:
-		internalformat = GL_SRGB8_ALPHA8;
-		type = GL_UNSIGNED_BYTE;
-		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
-			externalformat = GL_SRGB_ALPHA;
-		break;
-	}
-}
-
-size_t Canvas::getFormatBitsPerPixel(Format format)
-{
-	switch (getSizedFormat(format))
-	{
-	case FORMAT_R8:
-		return 8;
-	case FORMAT_RGBA4:
-	case FORMAT_RGB5A1:
-	case FORMAT_RGB565:
-	case FORMAT_RG8:
-	case FORMAT_R16F:
-		return 16;
-	case FORMAT_RGBA8:
-	case FORMAT_RGB10A2:
-	case FORMAT_RG11B10F:
-	case FORMAT_RG16F:
-	case FORMAT_R32F:
-	case FORMAT_SRGB:
-	default:
-		return 32;
-	case FORMAT_RGBA16F:
-	case FORMAT_RG32F:
-		return 64;
-	case FORMAT_RGBA32F:
-		return 128;
 	}
 }
 
@@ -494,7 +367,7 @@ bool Canvas::isMultiFormatMultiCanvasSupported()
 bool Canvas::supportedFormats[] = {false};
 bool Canvas::checkedFormats[] = {false};
 
-bool Canvas::isFormatSupported(Canvas::Format format)
+bool Canvas::isFormatSupported(PixelFormat format)
 {
 	if (!isSupported())
 		return false;
@@ -502,66 +375,7 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	bool supported = true;
 	format = getSizedFormat(format);
 
-	switch (format)
-	{
-	case FORMAT_RGBA4:
-	case FORMAT_RGB5A1:
-		supported = true;
-		break;
-	case FORMAT_RGB565:
-		supported = GLAD_ES_VERSION_2_0 || GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
-		break;
-	case FORMAT_R8:
-	case FORMAT_RG8:
-		if (GLAD_VERSION_1_0)
-			supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_rg;
-		else if (GLAD_ES_VERSION_2_0)
-			supported = GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg;
-		break;
-	case FORMAT_RGBA8:
-		supported = GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
-		break;
-	case FORMAT_RGB10A2:
-		supported = GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0;
-		break;
-	case FORMAT_RG11B10F:
-		supported = GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float;
-		break;
-	case FORMAT_R16F:
-	case FORMAT_RG16F:
-		if (GLAD_VERSION_1_0)
-			supported = GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_texture_rg);
-		else
-			supported = GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg));
-		break;
-	case FORMAT_RGBA16F:
-		if (GLAD_VERSION_1_0)
-			supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
-		else if (GLAD_ES_VERSION_2_0)
-			supported = GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float);
-		break;
-	case FORMAT_R32F:
-	case FORMAT_RG32F:
-		supported = GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_texture_rg);
-		break;
-	case FORMAT_RGBA32F:
-		supported = GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
-		break;
-	case FORMAT_SRGB:
-		if (GLAD_VERSION_1_0)
-		{
-			supported = GLAD_VERSION_3_0 || ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB)
-				&& (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB));
-		}
-		else
-			supported = GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB;
-		break;
-	default:
-		supported = false;
-		break;
-	}
-
-	if (!supported)
+	if (!OpenGL::isPixelFormatSupported(format, true, false))
 		return false;
 
 	if (checkedFormats[format])
@@ -571,15 +385,6 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
 	// a texture to a FBO whose format the driver doesn't like. So we should
 	// test with an actual FBO.
-
-	GLenum internalformat = GL_RGBA;
-	GLenum externalformat = GL_RGBA;
-	GLenum textype = GL_UNSIGNED_BYTE;
-	convertFormat(format, internalformat, externalformat, textype);
-
-	// in GLES2, the internalformat and format params of TexImage have to match.
-	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
-		internalformat = externalformat;
 
 	GLuint texture = 0;
 	glGenTextures(1, &texture);
@@ -592,7 +397,10 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 	Texture::Wrap w;
 	gl.setTextureWrap(w);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, 2, 2, 0, externalformat, textype, nullptr);
+	bool unusedSRGB = false;
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, 2, 2, 0, fmt.externalformat, fmt.type, nullptr);
 
 	GLuint fbo = 0;
 	supported = (createFBO(fbo, texture) == GL_FRAMEBUFFER_COMPLETE);
@@ -606,39 +414,6 @@ bool Canvas::isFormatSupported(Canvas::Format format)
 
 	return supported;
 }
-
-bool Canvas::getConstant(const char *in, Format &out)
-{
-	return formats.find(in, out);
-}
-
-bool Canvas::getConstant(Format in, const char *&out)
-{
-	return formats.find(in, out);
-}
-
-StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM>::Entry Canvas::formatEntries[] =
-{
-	{"normal", FORMAT_NORMAL},
-	{"hdr", FORMAT_HDR},
-	{"rgba4", FORMAT_RGBA4},
-	{"rgb5a1", FORMAT_RGB5A1},
-	{"rgb565", FORMAT_RGB565},
-	{"r8", FORMAT_R8},
-	{"rg8", FORMAT_RG8},
-	{"rgba8", FORMAT_RGBA8},
-	{"rgb10a2", FORMAT_RGB10A2},
-	{"rg11b10f", FORMAT_RG11B10F},
-	{"r16f", FORMAT_R16F},
-	{"rg16f", FORMAT_RG16F},
-	{"rgba16f", FORMAT_RGBA16F},
-	{"r32f", FORMAT_R32F},
-	{"rg32f", FORMAT_RG32F},
-	{"rgba32f", FORMAT_RGBA32F},
-	{"srgb", FORMAT_SRGB},
-};
-
-StringMap<Canvas::Format, Canvas::FORMAT_MAX_ENUM> Canvas::formats(Canvas::formatEntries, sizeof(Canvas::formatEntries));
 
 } // opengl
 } // graphics

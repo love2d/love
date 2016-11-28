@@ -68,29 +68,29 @@ enum PKMTextureFormat
 	ETC2PACKAGE_RG_SIGNED_NO_MIPMAPS
 };
 
-static CompressedImageData::Format convertFormat(uint16 texformat)
+static PixelFormat convertFormat(uint16 texformat)
 {
 	switch (texformat)
 	{
 	case ETC1_RGB_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_ETC1;
+		return PIXELFORMAT_ETC1;
 	case ETC2PACKAGE_RGB_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_ETC2_RGB;
+		return PIXELFORMAT_ETC2_RGB;
 	case ETC2PACKAGE_RGBA_NO_MIPMAPS_OLD:
 	case ETC2PACKAGE_RGBA_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_ETC2_RGBA;
+		return PIXELFORMAT_ETC2_RGBA;
 	case ETC2PACKAGE_RGBA1_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_ETC2_RGBA1;
+		return PIXELFORMAT_ETC2_RGBA1;
 	case ETC2PACKAGE_R_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_EAC_R;
+		return PIXELFORMAT_EAC_R;
 	case ETC2PACKAGE_RG_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_EAC_RG;
+		return PIXELFORMAT_EAC_RG;
 	case ETC2PACKAGE_R_SIGNED_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_EAC_Rs;
+		return PIXELFORMAT_EAC_Rs;
 	case ETC2PACKAGE_RG_SIGNED_NO_MIPMAPS:
-		return CompressedImageData::FORMAT_EAC_RGs;
+		return PIXELFORMAT_EAC_RGs;
 	default:
-		return CompressedImageData::FORMAT_UNKNOWN;
+		return PIXELFORMAT_UNKNOWN;
 	}
 }
 
@@ -113,7 +113,7 @@ bool PKMHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
+uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -126,9 +126,9 @@ uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	header.widthBig = swap16big(header.widthBig);
 	header.heightBig = swap16big(header.heightBig);
 
-	CompressedImageData::Format cformat = convertFormat(header.textureFormatBig);
+	PixelFormat cformat = convertFormat(header.textureFormatBig);
 
-	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
+	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PKM file: unsupported texture format.");
 
 	// The rest of the file after the header is all texture data.

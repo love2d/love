@@ -65,7 +65,7 @@ public:
 	 * @return The single block of memory containing the parsed images.
 	 **/
 	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images,
-	                     size_t &dataSize, CompressedImageData::Format &format, bool &sRGB) = 0;
+	                     size_t &dataSize, PixelFormat &format, bool &sRGB) = 0;
 
 }; // CompressedFormatHandler
 

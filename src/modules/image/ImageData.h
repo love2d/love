@@ -25,6 +25,7 @@
 #include "common/Data.h"
 #include "common/StringMap.h"
 #include "common/int.h"
+#include "common/pixelformat.h"
 #include "common/halffloat.h"
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
@@ -58,15 +59,6 @@ class ImageData : public Data
 {
 public:
 
-	enum Format
-	{
-		FORMAT_RGBA8,
-		FORMAT_RGBA16,
-		FORMAT_RGBA16F,
-		FORMAT_RGBA32F,
-		FORMAT_MAX_ENUM
-	};
-
 	enum EncodedFormat
 	{
 		ENCODED_TGA,
@@ -77,7 +69,7 @@ public:
 	ImageData();
 	virtual ~ImageData();
 
-	Format getFormat() const;
+	PixelFormat getFormat() const;
 
 	/**
 	 * Paste part of one ImageData onto another. The subregion defined by the top-left
@@ -139,17 +131,14 @@ public:
 
 	size_t getPixelSize() const;
 
-	static size_t getPixelSize(Format format);
-
-	static bool getConstant(const char *in, Format &out);
-	static bool getConstant(Format in, const char *&out);
+	static bool validPixelFormat(PixelFormat format);
 
 	static bool getConstant(const char *in, EncodedFormat &out);
 	static bool getConstant(EncodedFormat in, const char *&out);
 
 protected:
 
-	Format format;
+	PixelFormat format;
 
 	// The width of the image data.
 	int width;
@@ -166,9 +155,6 @@ protected:
 	love::thread::MutexRef mutex;
 
 private:
-
-	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
-	static StringMap<Format, FORMAT_MAX_ENUM> formats;
 
 	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
 	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;

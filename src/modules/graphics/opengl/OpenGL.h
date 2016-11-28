@@ -123,6 +123,13 @@ public:
 		}
 	};
 
+	struct TextureFormat
+	{
+		GLenum internalformat = 0;
+		GLenum externalformat = 0;
+		GLenum type = 0;
+	};
+
 	struct
 	{
 		std::vector<Matrix4> transform;
@@ -426,6 +433,10 @@ public:
 
 	static GLenum getGLBufferType(BufferType type);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
+
+	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
+	static bool isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool isSRGB);
+	static bool hasTextureFilteringSupport(PixelFormat pixelformat);
 
 	static const char *errorString(GLenum errorcode);
 	static const char *framebufferStatusString(GLenum status);

@@ -48,7 +48,7 @@ CompressedImageData::CompressedImageData(std::list<CompressedFormatHandler *> fo
 	if (data == nullptr)
 		throw love::Exception("Could not parse compressed data.");
 
-	if (format == FORMAT_UNKNOWN)
+	if (format == PIXELFORMAT_UNKNOWN)
 	{
 		delete[] data;
 		throw love::Exception("Could not parse compressed data: Unknown format.");
