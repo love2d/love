@@ -37,24 +37,24 @@ namespace opengl
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 {
-	return luax_checktype<SpriteBatch>(L, idx, GRAPHICS_SPRITE_BATCH_ID);
+	return luax_checktype<SpriteBatch>(L, idx);
 }
 
 static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int startidx, int index)
 {
 	Quad *quad = nullptr;
 
-	if (luax_istype(L, startidx, GRAPHICS_QUAD_ID))
+	if (luax_istype(L, startidx, Quad::type))
 	{
-		quad = luax_totype<Quad>(L, startidx, GRAPHICS_QUAD_ID);
+		quad = luax_totype<Quad>(L, startidx);
 		startidx++;
 	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
 		return luax_typerror(L, startidx, "Quad");
 
-	if (luax_istype(L, startidx, MATH_TRANSFORM_ID))
+	if (luax_istype(L, startidx, math::Transform::type))
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, startidx, MATH_TRANSFORM_ID);
+		math::Transform *tf = luax_totype<math::Transform>(L, startidx);
 		luax_catchexcept(L, [&]() {
 			if (quad)
 				index = t->addq(quad, tf->getMatrix(), index);
@@ -136,9 +136,9 @@ int w_SpriteBatch_getTexture(lua_State *L)
 
 	// FIXME: big hack right here.
 	if (typeid(*tex) == typeid(Image))
-		luax_pushtype(L, GRAPHICS_IMAGE_ID, tex);
+		luax_pushtype(L, Image::type, tex);
 	else if (typeid(*tex) == typeid(Canvas))
-		luax_pushtype(L, GRAPHICS_CANVAS_ID, tex);
+		luax_pushtype(L, Canvas::type, tex);
 	else
 		return luaL_error(L, "Unable to determine texture type.");
 
@@ -215,7 +215,7 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Mesh *m = luax_checktype<Mesh>(L, 3, GRAPHICS_MESH_ID);
+	Mesh *m = luax_checktype<Mesh>(L, 3);
 
 	luax_catchexcept(L, [&](){ t->attachAttribute(name, m); });
 	return 0;
@@ -271,7 +271,7 @@ static const luaL_Reg w_SpriteBatch_functions[] =
 
 extern "C" int luaopen_spritebatch(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SPRITE_BATCH_ID, "SpriteBatch", w_SpriteBatch_functions, nullptr);
+	return luax_register_type(L, &SpriteBatch::type, w_SpriteBatch_functions, nullptr);
 }
 
 } // opengl

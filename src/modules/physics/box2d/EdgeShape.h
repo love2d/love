@@ -39,6 +39,8 @@ class EdgeShape : public Shape
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Create a new EdgeShape from a Box2D edge shape.
 	 * @param e The edge shape.

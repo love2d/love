@@ -34,6 +34,8 @@ class Joint : public Object
 {
 public:
 
+	static love::Type type;
+
 	enum Type
 	{
 		JOINT_INVALID,

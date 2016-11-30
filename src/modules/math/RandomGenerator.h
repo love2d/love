@@ -41,6 +41,8 @@ class RandomGenerator : public Object
 {
 public:
 
+	static love::Type type;
+
 	union Seed
 	{
 		uint64 b64;

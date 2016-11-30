@@ -34,6 +34,9 @@ namespace audio
 class RecordingDevice : public love::Object
 {
 public:
+
+	static love::Type type;
+
 	RecordingDevice();
 	virtual ~RecordingDevice();
 

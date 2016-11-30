@@ -99,6 +99,7 @@ static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pi
 	return status == GL_FRAMEBUFFER_COMPLETE && samples > 1;
 }
 
+love::Type Canvas::type("Canvas", &Texture::type);
 int Canvas::canvasCount = 0;
 
 Canvas::Canvas(int width, int height, PixelFormat format, int msaa)

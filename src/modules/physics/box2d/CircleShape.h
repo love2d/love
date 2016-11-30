@@ -44,6 +44,8 @@ class CircleShape : public Shape
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Create a new CircleShape from the a Box2D CircleShape definition.
 	 * @param c The CircleShape definition.

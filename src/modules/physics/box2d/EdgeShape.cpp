@@ -34,6 +34,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type EdgeShape::type("EdgeShape", &Shape::type);
+
 EdgeShape::EdgeShape(b2EdgeShape *e, bool own)
 	: Shape(e, own)
 {

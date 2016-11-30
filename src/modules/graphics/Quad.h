@@ -34,6 +34,8 @@ class Quad : public Object
 {
 public:
 
+	static love::Type type;
+
 	struct Viewport
 	{
 		double x, y;

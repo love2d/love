@@ -34,6 +34,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type PolygonShape::type("PolygonShape", &Shape::type);
+
 PolygonShape::PolygonShape(b2PolygonShape *p, bool own)
 	: Shape(p, own)
 {

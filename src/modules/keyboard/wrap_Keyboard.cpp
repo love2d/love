@@ -201,7 +201,7 @@ extern "C" int luaopen_love_keyboard(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "keyboard";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = 0;
 

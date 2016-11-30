@@ -25,6 +25,8 @@ namespace love
 namespace math
 {
 
+love::Type Transform::type("Transform", &Object::type);
+
 Transform::Transform()
 	: matrix()
 	, inverseDirty(true)

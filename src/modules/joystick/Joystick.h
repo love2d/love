@@ -38,6 +38,8 @@ class Joystick : public Object
 {
 public:
 
+	static love::Type type;
+
 	// Joystick hat values.
 	enum Hat
 	{

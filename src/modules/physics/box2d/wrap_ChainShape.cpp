@@ -31,7 +31,7 @@ namespace box2d
 
 ChainShape *luax_checkchainshape(lua_State *L, int idx)
 {
-	return luax_checktype<ChainShape>(L, idx, PHYSICS_CHAIN_SHAPE_ID);
+	return luax_checktype<ChainShape>(L, idx);
 }
 
 int w_ChainShape_setNextVertex(lua_State *L)
@@ -68,7 +68,7 @@ int w_ChainShape_getChildEdge(lua_State *L)
 	int index = (int) luaL_checknumber(L, 2) - 1; // Convert from 1-based index
 	EdgeShape *e = 0;
 	luax_catchexcept(L, [&](){ e = c->getChildEdge(index); });
-	luax_pushtype(L, PHYSICS_EDGE_SHAPE_ID, e);
+	luax_pushtype(L, e);
 	e->release();
 	return 1;
 }
@@ -149,7 +149,7 @@ static const luaL_Reg w_ChainShape_functions[] =
 
 extern "C" int luaopen_chainshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CHAIN_SHAPE_ID, "ChainShape", w_Shape_functions, w_ChainShape_functions, nullptr);
+	return luax_register_type(L, &ChainShape::type, w_Shape_functions, w_ChainShape_functions, nullptr);
 }
 
 } // box2d

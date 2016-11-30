@@ -30,7 +30,7 @@ namespace opengl
 
 Image *luax_checkimage(lua_State *L, int idx)
 {
-	return luax_checktype<Image>(L, idx, GRAPHICS_IMAGE_ID);
+	return luax_checktype<Image>(L, idx);
 }
 
 int w_Image_setMipmapFilter(lua_State *L)
@@ -98,7 +98,7 @@ int w_Image_getData(lua_State *L)
 	{
 		for (const auto &cdata : i->getCompressedData())
 		{
-			luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, cdata.get());
+			luax_pushtype(L, cdata.get());
 			n++;
 		}
 	}
@@ -106,7 +106,7 @@ int w_Image_getData(lua_State *L)
 	{
 		for (const auto &data : i->getImageData())
 		{
-			luax_pushtype(L, IMAGE_IMAGE_DATA_ID, data.get());
+			luax_pushtype(L, data.get());
 			n++;
 		}
 	}
@@ -150,7 +150,7 @@ static const luaL_Reg w_Image_functions[] =
 
 extern "C" int luaopen_image(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_IMAGE_ID, "Image", w_Texture_functions, w_Image_functions, nullptr);
+	return luax_register_type(L, &Image::type, w_Texture_functions, w_Image_functions, nullptr);
 }
 
 } // opengl

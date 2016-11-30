@@ -25,6 +25,8 @@ namespace love
 namespace image
 {
 
+love::Type CompressedImageData::type("CompressedImageData", &Data::type);
+
 CompressedImageData::CompressedImageData()
 	: format(PIXELFORMAT_UNKNOWN)
 	, sRGB(false)

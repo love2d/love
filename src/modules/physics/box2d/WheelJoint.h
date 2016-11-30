@@ -40,6 +40,8 @@ class WheelJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a new WheelJoint connecting body1 and body2.
 	 **/

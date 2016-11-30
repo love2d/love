@@ -29,7 +29,7 @@ namespace audio
 
 RecordingDevice *luax_checkrecordingdevice(lua_State *L, int idx)
 {
-	return luax_checktype<RecordingDevice>(L, idx, AUDIO_RECORDING_DEVICE_ID);
+	return luax_checktype<RecordingDevice>(L, idx);
 }
 
 int w_RecordingDevice_start(lua_State *L)
@@ -62,7 +62,7 @@ int w_RecordingDevice_stop(lua_State *L)
 
 	if (s != nullptr)
 	{
-		luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
+		luax_pushtype(L, s);
 		s->release();
 	}
 	else
@@ -80,7 +80,7 @@ int w_RecordingDevice_getData(lua_State *L)
 
 	if (s != nullptr)
 	{
-		luax_pushtype(L, SOUND_SOUND_DATA_ID, s);
+		luax_pushtype(L, s);
 		s->release();
 	}
 	else
@@ -147,7 +147,7 @@ static const luaL_Reg w_RecordingDevice_functions[] =
 
 extern "C" int luaopen_recordingdevice(lua_State *L)
 {
-	int ret = luax_register_type(L, AUDIO_RECORDING_DEVICE_ID, "RecordingDevice", w_RecordingDevice_functions, nullptr);
+	int ret = luax_register_type(L, &RecordingDevice::type, w_RecordingDevice_functions, nullptr);
 	return ret;
 }
 

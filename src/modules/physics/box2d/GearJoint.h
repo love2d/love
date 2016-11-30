@@ -47,6 +47,8 @@ class GearJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a GearJoint connecting joint1 to joint2.
 	 **/

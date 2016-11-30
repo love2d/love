@@ -40,6 +40,8 @@ class LuaThread : public Threadable
 {
 public:
 
+	static love::Type type;
+
 	LuaThread(const std::string &name, love::Data *code);
 	virtual ~LuaThread();
 	void threadFunction();

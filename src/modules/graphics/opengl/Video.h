@@ -40,6 +40,8 @@ class Video : public Drawable, public Volatile
 {
 public:
 
+	static love::Type type;
+
 	Video(love::video::VideoStream *stream);
 	~Video();
 

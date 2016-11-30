@@ -66,6 +66,8 @@ public:
 	friend class Body;
 	friend class Fixture;
 
+	static love::Type type;
+
 	class ContactCallback
 	{
 	public:

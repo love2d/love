@@ -49,6 +49,8 @@ class Rasterizer : public Object
 {
 public:
 
+	static love::Type type;
+
 	virtual ~Rasterizer();
 
 	/**

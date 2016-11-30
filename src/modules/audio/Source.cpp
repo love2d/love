@@ -25,8 +25,10 @@ namespace love
 namespace audio
 {
 
-Source::Source(Type type)
-	: type(type)
+love::Type Source::type("Source", &Object::type);
+
+Source::Source(Type sourceType)
+	: sourceType(sourceType)
 {
 }
 
@@ -36,7 +38,7 @@ Source::~Source()
 
 Source::Type Source::getType() const
 {
-	return type;
+	return sourceType;
 }
 
 bool Source::getConstant(const char *in, Type &out)

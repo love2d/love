@@ -45,6 +45,9 @@ namespace graphics
 class ParticleSystem : public Drawable
 {
 public:
+
+	static love::Type type;
+
 	/**
 	 * Type of distribution new particles are drawn from: None, uniform, normal, ellipse.
 	 */

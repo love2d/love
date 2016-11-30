@@ -49,6 +49,8 @@ public:
 	friend class World;
 	friend class World::ContactCallback;
 
+	static love::Type type;
+
 	/**
 	 * Creates a new Contact by copying a Box2D contact
 	 * point. It does not store the pointer, but copy the

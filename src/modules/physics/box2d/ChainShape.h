@@ -39,6 +39,8 @@ class ChainShape : public Shape
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Create a new ChainShape from a Box2D chain shape.
 	 * @param c The chain shape.

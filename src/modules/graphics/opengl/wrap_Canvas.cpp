@@ -30,7 +30,7 @@ namespace opengl
 
 Canvas *luax_checkcanvas(lua_State *L, int idx)
 {
-	return luax_checktype<Canvas>(L, idx, GRAPHICS_CANVAS_ID);
+	return luax_checktype<Canvas>(L, idx);
 }
 
 int w_Canvas_getFormat(lua_State *L)
@@ -61,7 +61,7 @@ static const luaL_Reg w_Canvas_functions[] =
 
 extern "C" int luaopen_canvas(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_CANVAS_ID, "Canvas", w_Texture_functions, w_Canvas_functions, nullptr);
+	return luax_register_type(L, &Canvas::type, w_Texture_functions, w_Canvas_functions, nullptr);
 }
 
 } // opengl

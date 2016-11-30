@@ -58,6 +58,7 @@ namespace
 namespace love
 {
 
+love::Type Module::type("Module", &Object::type);
 Module *Module::instances[] = {};
 
 Module::~Module()

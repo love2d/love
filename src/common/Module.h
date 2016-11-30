@@ -34,6 +34,8 @@ class Module : public Object
 {
 public:
 
+	static love::Type type;
+
 	enum ModuleType
 	{
 		M_AUDIO,

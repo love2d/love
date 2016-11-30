@@ -43,6 +43,9 @@ class Object;
 class Module;
 class Reference;
 
+template<typename T>
+class StrongRef;
+
 /**
  * Registries represent special tables which can be accessed with
  * luax_insistregistry and luax_getregistry.
@@ -62,7 +65,7 @@ enum Registry
 struct Proxy
 {
 	// Holds type information (see types.h).
-	Type type;
+	love::Type *type;
 
 	// Pointer to the actual object.
 	Object *object;
@@ -80,7 +83,7 @@ struct WrappedModule
 	const char *name;
 
 	// The type of this module.
-	love::Type type;
+	love::Type *type;
 
 	// The functions of the module (last element {0,0}).
 	const luaL_Reg *functions;
@@ -246,16 +249,17 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
 
 /**
  * Register a new type.
+ * NOTE: The type is passed by pointer instead of reference because calling va_start
+ * on a reference is undefined behaviour.
  * @param type The type.
- * @param name The type's human-readable name
  * @param ... The list of lists of member functions for the type. (of type luaL_Reg*)
  **/
-int luax_register_type(lua_State *L, love::Type type, const char *name, ...);
+int luax_register_type(lua_State *L, love::Type *type, ...);
 
 /**
  * Pushes the metatable of the specified type onto the stack.
 **/
-void luax_gettypemetatable(lua_State *L, love::Type type);
+void luax_gettypemetatable(lua_State *L, love::Type &type);
 
 /**
  * Do a table.insert from C
@@ -283,7 +287,19 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
  * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
-void luax_pushtype(lua_State *L, const love::Type type, love::Object *object);
+void luax_pushtype(lua_State *L, love::Type &type, love::Object *object);
+
+template <typename T>
+void luax_pushtype(lua_State *L, T *object)
+{
+	luax_pushtype(L, T::type, object);
+}
+
+template <typename T>
+void luax_pushtype(lua_State *L, StrongRef<T> &object)
+{
+	luax_pushtype(L, T::type, object);
+}
 
 /**
  * Creates a new Lua representation of the given object *without* checking if it
@@ -296,7 +312,7 @@ void luax_pushtype(lua_State *L, const love::Type type, love::Object *object);
  * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
-void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object);
+void luax_rawnewtype(lua_State *L, love::Type &type, love::Object *object);
 
 /**
  * Checks whether the value at idx is a certain type.
@@ -305,7 +321,7 @@ void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object);
  * @param type The type to check for.
  * @return True if the value is Proxy of the specified type, false otherwise.
  **/
-bool luax_istype(lua_State *L, int idx, love::Type type);
+bool luax_istype(lua_State *L, int idx, love::Type &type);
 
 /**
  * Gets the function love.module.function and puts it on top of the stack (alone). If the
@@ -434,21 +450,19 @@ extern "C" { // Called by enet and luasocket
  * @param type The type bit.
  **/
 template <typename T>
-T *luax_checktype(lua_State *L, int idx, love::Type type)
+T *luax_checktype(lua_State *L, int idx, love::Type &type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 	{
-		const char *name = "Invalid";
-		getTypeName(type, name);
+		const char *name = type.getName();
 		luax_typerror(L, idx, name);
 	}
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-	if (u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM || !typeFlags[u->type][type])
+	if (u->type == nullptr || !u->type->isa(type))
 	{
-		const char *name = "Invalid";
-		getTypeName(type, name);
+		const char *name = type.getName();
 		luax_typerror(L, idx, name);
 	}
 
@@ -459,10 +473,15 @@ T *luax_checktype(lua_State *L, int idx, love::Type type)
 }
 
 template <typename T>
-T *luax_getmodule(lua_State *L, love::Type type)
+T *luax_checktype(lua_State *L, int idx)
 {
-	const char *name = "Invalid";
-	getTypeName(type, name);
+	return luax_checktype<T>(L, idx, T::type);
+}
+
+template <typename T>
+T *luax_getmodule(lua_State *L, love::Type &type)
+{
+	const char *name = type.getName();
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -472,7 +491,7 @@ T *luax_getmodule(lua_State *L, love::Type type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if (u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM || !typeFlags[u->type][type])
+	if (u->type == nullptr || !u->type->isa(type))
 		luaL_error(L, "Incorrect module %s", name);
 
 	lua_pop(L, 2);
@@ -481,10 +500,15 @@ T *luax_getmodule(lua_State *L, love::Type type)
 }
 
 template <typename T>
-T *luax_optmodule(lua_State *L, love::Type type)
+T *luax_getmodule(lua_State *L)
 {
-	const char *name = "Invalid";
-	getTypeName(type, name);
+	return luax_getmodule<T>(L, T::type);
+}
+
+template <typename T>
+T *luax_optmodule(lua_State *L, love::Type &type)
+{
+	const char *name = type.getName();
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -497,12 +521,18 @@ T *luax_optmodule(lua_State *L, love::Type type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if (!typeFlags[u->type][type])
+	if (!u->type->isa(type))
 		luaL_error(L, "Incorrect module %s", name);
 
 	lua_pop(L, 2);
 
 	return (T *) u->object;
+}
+
+template <typename T>
+T *luax_optmodule(lua_State *L)
+{
+	return luax_optmodule<T>(L, T::type);
 }
 
 /**
@@ -514,7 +544,7 @@ T *luax_optmodule(lua_State *L, love::Type type)
  * @param type The type of the object.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, love::Type /*type*/)
+T *luax_totype(lua_State *L, int idx, love::Type& /*type*/)
 {
 	T *o = (T *)(((Proxy *)lua_touserdata(L, idx))->object);
 
@@ -524,7 +554,13 @@ T *luax_totype(lua_State *L, int idx, love::Type /*type*/)
 	return o;
 }
 
-Type luax_type(lua_State *L, int idx);
+template <typename T>
+T *luax_totype(lua_State *L, int idx)
+{
+	return luax_totype<T>(L, idx, T::type);
+}
+
+Type *luax_type(lua_State *L, int idx);
 
 /**
  * Converts any exceptions thrown by the passed lambda function into a Lua error.

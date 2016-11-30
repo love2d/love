@@ -34,6 +34,9 @@ namespace video
 class VideoStream : public Stream
 {
 public:
+
+	static love::Type type;
+
 	virtual ~VideoStream() {}
 
 	virtual int getWidth() const = 0;

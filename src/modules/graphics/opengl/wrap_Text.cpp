@@ -30,7 +30,7 @@ namespace opengl
 
 Text *luax_checktext(lua_State *L, int idx)
 {
-	return luax_checktype<Text>(L, idx, GRAPHICS_TEXT_ID);
+	return luax_checktype<Text>(L, idx);
 }
 
 void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings)
@@ -132,9 +132,9 @@ int w_Text_add(lua_State *L)
 	std::vector<Font::ColoredString> text;
 	luax_checkcoloredstring(L, 2, text);
 
-	if (luax_istype(L, 3, MATH_TRANSFORM_ID))
+	if (luax_istype(L, 3, math::Transform::type))
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, 3, MATH_TRANSFORM_ID);
+		math::Transform *tf = luax_totype<math::Transform>(L, 3);
 		luax_catchexcept(L, [&](){ index = t->add(text, tf->getMatrix()); });
 	}
 	else
@@ -174,9 +174,9 @@ int w_Text_addf(lua_State *L)
 	if (!Font::getConstant(alignstr, align))
 		return luaL_error(L, "Invalid align mode: %s", alignstr);
 
-	if (luax_istype(L, 5, MATH_TRANSFORM_ID))
+	if (luax_istype(L, 5, math::Transform::type))
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, 5, MATH_TRANSFORM_ID);
+		math::Transform *tf = luax_totype<math::Transform>(L, 5);
 		luax_catchexcept(L, [&](){ index = t->addf(text, wrap, align, tf->getMatrix()); });
 	}
 	else
@@ -209,7 +209,7 @@ int w_Text_clear(lua_State *L)
 int w_Text_setFont(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	Font *f = luax_checktype<Font>(L, 2, GRAPHICS_FONT_ID);
+	Font *f = luax_checktype<Font>(L, 2);
 	luax_catchexcept(L, [&](){ t->setFont(f); });
 	return 0;
 }
@@ -218,7 +218,7 @@ int w_Text_getFont(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
 	Font *f = t->getFont();
-	luax_pushtype(L, GRAPHICS_FONT_ID, f);
+	luax_pushtype(L, f);
 	return 1;
 }
 
@@ -264,7 +264,7 @@ static const luaL_Reg w_Text_functions[] =
 
 extern "C" int luaopen_text(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_TEXT_ID, "Text", w_Text_functions, nullptr);
+	return luax_register_type(L, &Text::type, w_Text_functions, nullptr);
 }
 
 } // opengl

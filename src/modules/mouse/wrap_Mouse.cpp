@@ -24,6 +24,7 @@
 #include "common/config.h"
 
 #include "sdl/Mouse.h"
+#include "filesystem/File.h"
 
 namespace love
 {
@@ -36,16 +37,16 @@ int w_newCursor(lua_State *L)
 {
 	Cursor *cursor = nullptr;
 
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
 		luax_convobj(L, 1, "image", "newImageData");
 
-	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
+	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1);
 	int hotx = (int) luaL_optnumber(L, 2, 0);
 	int hoty = (int) luaL_optnumber(L, 3, 0);
 
 	luax_catchexcept(L, [&](){ cursor = instance()->newCursor(data, hotx, hoty); });
 
-	luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
+	luax_pushtype(L, cursor);
 	cursor->release();
 	return 1;
 }
@@ -61,7 +62,7 @@ int w_getSystemCursor(lua_State *L)
 	Cursor *cursor = 0;
 	luax_catchexcept(L, [&](){ cursor = instance()->getSystemCursor(systemCursor); });
 
-	luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
+	luax_pushtype(L, cursor);
 	return 1;
 }
 
@@ -84,7 +85,7 @@ int w_getCursor(lua_State *L)
 	Cursor *cursor = instance()->getCursor();
 
 	if (cursor)
-		luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
+		luax_pushtype(L, cursor);
 	else
 		lua_pushnil(L);
 
@@ -250,7 +251,7 @@ extern "C" int luaopen_love_mouse(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "mouse";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

@@ -34,6 +34,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type ChainShape::type("ChainShape", &Shape::type);
+
 ChainShape::ChainShape(b2ChainShape *c, bool loop, bool own)
 	: Shape(c, own), loop(loop)
 {

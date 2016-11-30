@@ -179,7 +179,7 @@ Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels)
 }
 
 Source::Source(const Source &s)
-	: love::audio::Source(s.type)
+	: love::audio::Source(s.sourceType)
 	, pool(s.pool)
 	, valid(false)
 	, staticBuffer(s.staticBuffer)
@@ -200,14 +200,14 @@ Source::Source(const Source &s)
 	, bitDepth(s.bitDepth)
 	, decoder(nullptr)
 	, toLoop(0)
-	, unusedBufferTop(s.type == TYPE_STREAM ? MAX_BUFFERS - 1 : -1)
+	, unusedBufferTop(s.sourceType == TYPE_STREAM ? MAX_BUFFERS - 1 : -1)
 {
-	if (type == TYPE_STREAM)
+	if (sourceType == TYPE_STREAM)
 	{
 		if (s.decoder.get())
 			decoder.set(s.decoder->clone(), Acquire::NORETAIN);
 	}
-	if (type != TYPE_STATIC)
+	if (sourceType != TYPE_STATIC)
 	{
 		alGenBuffers(MAX_BUFFERS, streamBuffers);
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
@@ -224,7 +224,7 @@ Source::~Source()
 	if (valid)
 		pool->stop(this);
 
-	if (type != TYPE_STATIC)
+	if (sourceType != TYPE_STATIC)
 		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
 }
 
@@ -265,7 +265,7 @@ bool Source::isFinished() const
 	if (!valid)
 		return false;
 
-	if (type == TYPE_STREAM && (isLooping() || !decoder->isFinished()))
+	if (sourceType == TYPE_STREAM && (isLooping() || !decoder->isFinished()))
 		return false;
 
 	ALenum state;
@@ -278,7 +278,7 @@ bool Source::update()
 	if (!valid)
 		return false;
 
-	switch (type)
+	switch (sourceType)
 	{
 		case TYPE_STATIC:
 		{
@@ -405,7 +405,7 @@ void Source::seekAtomic(float offset, void *unit)
 	}
 
 	bool wasPlaying = isPlaying();
-	switch (type)
+	switch (sourceType)
 	{
 		case TYPE_STATIC:
 			if (valid)
@@ -459,7 +459,7 @@ void Source::seekAtomic(float offset, void *unit)
 		case TYPE_MAX_ENUM:
 			break;
 	}
-	if (wasPlaying && (alGetError() == AL_INVALID_VALUE || (type == TYPE_STREAM && !isPlaying())))
+	if (wasPlaying && (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && !isPlaying())))
 	{
 		stop();
 		if (isLooping())
@@ -506,7 +506,7 @@ double Source::getDurationAtomic(void *vunit)
 {
 	Unit unit = *(Unit *) vunit;
 
-	switch (type)
+	switch (sourceType)
 	{
 		case TYPE_STATIC:
 		{
@@ -661,10 +661,10 @@ bool Source::isRelative() const
 
 void Source::setLooping(bool enable)
 {
-	if (type == TYPE_QUEUE)
+	if (sourceType == TYPE_QUEUE)
 		throw QueueLoopingException();
 
-	if (valid && type == TYPE_STATIC)
+	if (valid && sourceType == TYPE_STATIC)
 		alSourcei(source, AL_LOOPING, enable ? AL_TRUE : AL_FALSE);
 
 	looping = enable;
@@ -677,7 +677,7 @@ bool Source::isLooping() const
 
 bool Source::queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels)
 {
-	if (type != TYPE_QUEUE)
+	if (sourceType != TYPE_QUEUE)
 		throw QueueTypeMismatchException();
 
 	if (dataSampleRate != sampleRate || dataBitDepth != bitDepth || dataChannels != channels )
@@ -721,7 +721,7 @@ bool Source::queueAtomic(void *data, ALsizei length)
 
 int Source::getFreeBufferCount() const
 {
-	switch (type) //why not :^)
+	switch (sourceType) //why not :^)
 	{
 		case TYPE_STATIC: 
 			return 0;
@@ -742,7 +742,7 @@ void Source::prepareAtomic()
 	// of the new one.
 	reset();
 
-	switch (type)
+	switch (sourceType)
 	{
 		case TYPE_STATIC:
 			alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
@@ -778,7 +778,7 @@ void Source::prepareAtomic()
 
 void Source::teardownAtomic()
 {
-	switch (type)
+	switch (sourceType)
 	{
 		case TYPE_STATIC:
 			break;
@@ -840,7 +840,7 @@ bool Source::playAtomic(ALuint source)
 
 	bool success = alGetError() == AL_NO_ERROR;
 
-	if (type == TYPE_STREAM)
+	if (sourceType == TYPE_STREAM)
 	{
 		valid = true; //isPlaying() needs source to be valid
 		if (!isPlaying())
@@ -857,7 +857,7 @@ bool Source::playAtomic(ALuint source)
 		valid = true; //stop() needs source to be valid
 		stop();
 	}
-	else if (type != TYPE_STREAM)
+	if (sourceType != TYPE_STREAM)
 		offsetSamples = offsetSeconds = 0;
 
 	//this is set to success state afterwards anyway, but setting it here
@@ -887,7 +887,7 @@ void Source::resumeAtomic()
 	{
 		alSourcePlay(source);
 
-		if (alGetError() == AL_INVALID_VALUE || (type == TYPE_STREAM && unusedBufferTop == MAX_BUFFERS - 1))
+		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && unusedBufferTop == MAX_BUFFERS - 1))
 			stop();
 	}
 }
@@ -918,7 +918,7 @@ bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const 
 		Source *source = (Source*) _source;
 		source->valid = source->valid || success;
 
-		if (success && source->type != TYPE_STREAM)
+		if (success && source->sourceType != TYPE_STREAM)
 			source->offsetSamples = source->offsetSeconds = 0;
 	}
 
@@ -979,7 +979,7 @@ void Source::reset()
 	alSourcef(source, AL_REFERENCE_DISTANCE, referenceDistance);
 	alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactor);
 	alSourcef(source, AL_MAX_DISTANCE, maxDistance);
-	alSourcei(source, AL_LOOPING, (type == TYPE_STATIC) && isLooping() ? AL_TRUE : AL_FALSE);
+	alSourcei(source, AL_LOOPING, (sourceType == TYPE_STATIC) && isLooping() ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_SOURCE_RELATIVE, relative ? AL_TRUE : AL_FALSE);
 	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);

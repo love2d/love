@@ -18,64 +18,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_THREAD_CHANNEL_H
-#define LOVE_THREAD_CHANNEL_H
-
-// STL
-#include <queue>
-#include <string>
-
 // LOVE
-#include "common/Variant.h"
-#include "common/int.h"
-#include "threads.h"
+#include "Drawable.h"
 
 namespace love
 {
-namespace thread
+namespace graphics
 {
 
-class Channel : public love::Object
-{
-// FOR WRAPPER USE ONLY
-friend int w_Channel_performAtomic(lua_State *);
+love::Type Drawable::type("Drawable", &Object::type);
 
-public:
-
-	static love::Type type;
-
-	Channel();
-	~Channel();
-
-	static Channel *getChannel(const std::string &name);
-
-	uint64 push(const Variant &var);
-	void supply(const Variant &var); // blocking push
-	bool pop(Variant *var);
-	void demand(Variant *var); // blocking pop
-	bool peek(Variant *var);
-	int getCount() const;
-	bool hasRead(uint64 id) const;
-	void clear();
-
-private:
-
-	Channel(const std::string &name);
-	void lockMutex();
-	void unlockMutex();
-
-	MutexRef mutex;
-	ConditionalRef cond;
-	std::queue<Variant> queue;
-	bool named;
-	std::string name;
-
-	uint64 sent;
-	uint64 received;
-
-}; // Channel
-
-} // thread
+} // graphics
 } // love
-
-#endif // LOVE_THREAD_CHANNEL_H

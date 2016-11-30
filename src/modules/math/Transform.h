@@ -34,6 +34,8 @@ class Transform : public Object
 {
 public:
 
+	static love::Type type;
+
 	Transform();
 	Transform(const Matrix4 &m);
 	Transform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);

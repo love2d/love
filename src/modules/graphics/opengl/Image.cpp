@@ -43,6 +43,8 @@ namespace graphics
 namespace opengl
 {
 
+love::Type Image::type("Image", &Texture::type);
+
 int Image::imageCount = 0;
 
 float Image::maxMipmapSharpness = 0.0f;

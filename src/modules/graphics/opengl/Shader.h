@@ -46,6 +46,8 @@ class Shader : public Object, public Volatile
 {
 public:
 
+	static love::Type type;
+
 	enum ShaderStage
 	{
 		STAGE_VERTEX,

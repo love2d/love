@@ -41,6 +41,8 @@ class PulleyJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a PulleyJoint connecting bodyA to bodyB.
 	 **/

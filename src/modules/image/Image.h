@@ -44,6 +44,8 @@ class Image : public Module
 {
 public:
 
+	static love::Type type;
+
 	virtual ~Image() {}
 
 	// Implements Module.

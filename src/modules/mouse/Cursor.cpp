@@ -25,6 +25,8 @@ namespace love
 namespace mouse
 {
 
+love::Type Cursor::type("Cursor", &Object::type);
+
 Cursor::~Cursor()
 {
 }

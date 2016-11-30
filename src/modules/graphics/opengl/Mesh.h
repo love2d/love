@@ -50,6 +50,8 @@ class Mesh : public Drawable
 {
 public:
 
+	static love::Type type;
+
 	// The expected usage pattern of the Mesh's vertex data.
 	enum Usage
 	{

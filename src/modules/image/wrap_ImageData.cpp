@@ -40,7 +40,7 @@ namespace image
 
 ImageData *luax_checkimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<ImageData>(L, idx, IMAGE_IMAGE_DATA_ID);
+	return luax_checktype<ImageData>(L, idx);
 }
 
 int w_ImageData_getFormat(lua_State *L)
@@ -269,7 +269,7 @@ int w_ImageData_encode(lua_State *L)
 	love::filesystem::FileData *filedata = nullptr;
 	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
 
-	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, filedata);
+	luax_pushtype(L, filedata);
 	filedata->release();
 
 	if (hasfilename)
@@ -363,9 +363,9 @@ extern "C" int luaopen_imagedata(lua_State *L)
 	pushFormats[PIXELFORMAT_RGBA16F] = luax_pushpixel_rgba16f;
 	pushFormats[PIXELFORMAT_RGBA32F] = luax_pushpixel_rgba32f;
 
-	int ret = luax_register_type(L, IMAGE_IMAGE_DATA_ID, "ImageData", w_Data_functions, w_ImageData_functions, nullptr);
+	int ret = luax_register_type(L, &ImageData::type, w_Data_functions, w_ImageData_functions, nullptr);
 
-	luax_gettypemetatable(L, IMAGE_IMAGE_DATA_ID);
+	luax_gettypemetatable(L, ImageData::type);
 
 	// Load and execute ImageData.lua, sending the metatable and the ffi
 	// functions struct pointer as arguments.

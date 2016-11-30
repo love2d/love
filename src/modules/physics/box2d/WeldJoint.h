@@ -38,6 +38,8 @@ class WeldJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a new WeldJoint connecting body1 and body2.
 	 **/

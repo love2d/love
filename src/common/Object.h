@@ -22,6 +22,7 @@
 #define LOVE_OBJECT_H
 
 #include <atomic>
+#include "types.h"
 
 namespace love
 {
@@ -37,6 +38,8 @@ namespace love
 class Object
 {
 public:
+
+	static love::Type type;
 
 	/**
 	 * Constructor. Sets reference count to one.

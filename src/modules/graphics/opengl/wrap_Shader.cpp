@@ -36,7 +36,7 @@ namespace opengl
 
 Shader *luax_checkshader(lua_State *L, int idx)
 {
-	return luax_checktype<Shader>(L, idx, GRAPHICS_SHADER_ID);
+	return luax_checktype<Shader>(L, idx);
 }
 
 int w_Shader_getWarnings(lua_State *L)
@@ -165,9 +165,9 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 
 	for (int i = 0; i < count; i++)
 	{
-		if (columns == 4 && rows == 4 && luax_istype(L, startidx + i, MATH_TRANSFORM_ID))
+		if (columns == 4 && rows == 4 && luax_istype(L, startidx + i, math::Transform::type))
 		{
-			math::Transform *t = luax_totype<math::Transform>(L, startidx + i, MATH_TRANSFORM_ID);
+			math::Transform *t = luax_totype<math::Transform>(L, startidx + i);
 			memcpy(&values[i * 16], t->getMatrix().getElements(), sizeof(float) * 16);
 			continue;
 		}
@@ -328,7 +328,7 @@ static const luaL_Reg w_Shader_functions[] =
 
 extern "C" int luaopen_shader(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_SHADER_ID, "Shader", w_Shader_functions, nullptr);
+	return luax_register_type(L, &Shader::type, w_Shader_functions, nullptr);
 }
 
 } // opengl

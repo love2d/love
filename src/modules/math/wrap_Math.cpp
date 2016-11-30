@@ -45,7 +45,7 @@ namespace math
 int w__getRandomGenerator(lua_State *L)
 {
 	RandomGenerator *t = Math::instance.getRandomGenerator();
-	luax_pushtype(L, MATH_RANDOM_GENERATOR_ID, t);
+	luax_pushtype(L, t);
 	return 1;
 }
 
@@ -76,7 +76,7 @@ int w_newRandomGenerator(lua_State *L)
 			return luaL_error(L, "%s", lua_tostring(L, -1));
 	}
 
-	luax_pushtype(L, MATH_RANDOM_GENERATOR_ID, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -115,7 +115,7 @@ int w_newBezierCurve(lua_State *L)
 	}
 
 	BezierCurve *curve = Math::instance.newBezierCurve(points);
-	luax_pushtype(L, MATH_BEZIER_CURVE_ID, curve);
+	luax_pushtype(L, curve);
 	curve->release();
 	return 1;
 }
@@ -140,7 +140,7 @@ int w_newTransform(lua_State *L)
 		t = Math::instance.newTransform(x, y, a, sx, sy, ox, oy, kx, ky);
 	}
 
-	luax_pushtype(L, MATH_TRANSFORM_ID, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -365,11 +365,11 @@ int w_compress(lua_State *L)
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 1, DATA_ID);
+		Data *rawdata = luax_checktype<Data>(L, 1);
 		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
 	}
 
-	luax_pushtype(L, MATH_COMPRESSED_DATA_ID, cdata);
+	luax_pushtype(L, cdata);
 	return 1;
 }
 
@@ -378,7 +378,7 @@ int w_decompress(lua_State *L)
 	char *rawbytes = nullptr;
 	size_t rawsize = 0;
 
-	if (luax_istype(L, 1, MATH_COMPRESSED_DATA_ID))
+	if (luax_istype(L, 1, CompressedData::type))
 	{
 		CompressedData *data = luax_checkcompresseddata(L, 1);
 		rawsize = data->getDecompressedSize();
@@ -395,9 +395,9 @@ int w_decompress(lua_State *L)
 		size_t compressedsize = 0;
 		const char *cbytes = nullptr;
 
-		if (luax_istype(L, 1, DATA_ID))
+		if (luax_istype(L, 1, Data::type))
 		{
-			Data *data = luax_checktype<Data>(L, 1, DATA_ID);
+			Data *data = luax_checktype<Data>(L, 1);
 			cbytes = (const char *) data->getData();
 			compressedsize = data->getSize();
 		}
@@ -423,9 +423,9 @@ int w_encode(lua_State *L)
 	size_t srclen = 0;
 	const char *src = nullptr;
 
-	if (luax_istype(L, 2, DATA_ID))
+	if (luax_istype(L, 2, Data::type))
 	{
-		Data *data = luax_totype<Data>(L, 2, DATA_ID);
+		Data *data = luax_totype<Data>(L, 2);
 		src = (const char *) data->getData();
 		srclen = data->getSize();
 	}
@@ -457,9 +457,9 @@ int w_decode(lua_State *L)
 	size_t srclen = 0;
 	const char *src = nullptr;
 
-	if (luax_istype(L, 2, DATA_ID))
+	if (luax_istype(L, 2, Data::type))
 	{
-		Data *data = luax_totype<Data>(L, 2, DATA_ID);
+		Data *data = luax_totype<Data>(L, 2);
 		src = (const char *) data->getData();
 		srclen = data->getSize();
 	}
@@ -495,7 +495,7 @@ int w_hash(lua_State *L)
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 2, DATA_ID);
+		Data *rawdata = luax_checktype<Data>(L, 2);
 		luax_catchexcept(L, [&](){ hash = love::math::hash(function, rawdata); });
 	}
 
@@ -564,7 +564,7 @@ extern "C" int luaopen_love_math(lua_State *L)
 	WrappedModule w;
 	w.module = &Math::instance;
 	w.name = "math";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

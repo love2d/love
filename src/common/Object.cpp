@@ -24,6 +24,8 @@
 namespace love
 {
 
+love::Type Object::type("Object", nullptr);
+
 Object::Object()
 	: count(1)
 {

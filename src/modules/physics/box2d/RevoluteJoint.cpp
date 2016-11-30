@@ -34,6 +34,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type RevoluteJoint::type("RevoluteJoint", &Joint::type);
+
 RevoluteJoint::RevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	: Joint(body1, body2)
 	, joint(NULL)

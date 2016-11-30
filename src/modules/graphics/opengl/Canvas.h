@@ -43,6 +43,8 @@ class Canvas : public Texture, public Volatile
 {
 public:
 
+	static love::Type type;
+
 	Canvas(int width, int height, PixelFormat format = PIXELFORMAT_NORMAL, int msaa = 0);
 	virtual ~Canvas();
 

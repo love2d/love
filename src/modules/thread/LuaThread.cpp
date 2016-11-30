@@ -30,6 +30,9 @@ namespace love
 {
 namespace thread
 {
+
+love::Type LuaThread::type("Thread", &Threadable::type);
+
 LuaThread::LuaThread(const std::string &name, love::Data *code)
 	: code(code)
 	, name(name)
@@ -105,7 +108,7 @@ void LuaThread::onError()
 		return;
 
 	Proxy p;
-	p.type = THREAD_THREAD_ID;
+	p.type = &LuaThread::type;
 	p.object = this;
 
 	std::vector<Variant> vargs = {

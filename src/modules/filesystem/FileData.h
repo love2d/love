@@ -37,6 +37,8 @@ class FileData : public Data
 {
 public:
 
+	static love::Type type;
+
 	FileData(uint64 size, const std::string &filename);
 
 	virtual ~FileData();

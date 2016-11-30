@@ -25,6 +25,8 @@ namespace love
 namespace filesystem
 {
 
+love::Type File::type("File", &Object::type);
+
 File::~File()
 {
 }

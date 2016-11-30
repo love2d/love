@@ -27,6 +27,8 @@ namespace love
 namespace video
 {
 
+love::Type VideoStream::type("VideoStream", &Stream::type);
+
 void VideoStream::setSync(VideoStream::FrameSync *frameSync)
 {
 	this->frameSync = frameSync;

@@ -27,14 +27,14 @@ namespace math
 
 Transform *luax_checktransform(lua_State *L, int idx)
 {
-	return luax_checktype<Transform>(L, idx, MATH_TRANSFORM_ID);
+	return luax_checktype<Transform>(L, idx, Transform::type);
 }
 
 int w_Transform_clone(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
 	Transform *newtransform = t->clone();
-	luax_pushtype(L, MATH_TRANSFORM_ID, newtransform);
+	luax_pushtype(L, newtransform);
 	newtransform->release();
 	return 1;
 }
@@ -43,7 +43,7 @@ int w_Transform_inverse(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
 	Transform *inverse = t->inverse();
-	luax_pushtype(L, MATH_TRANSFORM_ID, inverse);
+	luax_pushtype(L, inverse);
 	inverse->release();
 	return 1;
 }
@@ -274,7 +274,7 @@ int w_Transform__mul(lua_State *L)
 	Transform *t1 = luax_checktransform(L, 1);
 	Transform *t2 = luax_checktransform(L, 2);
 	Transform *t3 = new Transform(t1->getMatrix() * t2->getMatrix());
-	luax_pushtype(L, MATH_TRANSFORM_ID, t3);
+	luax_pushtype(L, t3);
 	t3->release();
 	return 1;
 }
@@ -298,7 +298,7 @@ static const luaL_Reg functions[] =
 
 extern "C" int luaopen_transform(lua_State *L)
 {
-	return luax_register_type(L, MATH_TRANSFORM_ID, "Transform", functions, nullptr);
+	return luax_register_type(L, &Transform::type, functions, nullptr);
 }
 
 } // math

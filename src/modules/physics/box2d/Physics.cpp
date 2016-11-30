@@ -146,7 +146,7 @@ int Physics::newPolygonShape(lua_State *L)
 	}
 
 	PolygonShape *p = new PolygonShape(s);
-	luax_pushtype(L, PHYSICS_POLYGON_SHAPE_ID, p);
+	luax_pushtype(L, p);
 	p->release();
 	return 1;
 }
@@ -208,7 +208,7 @@ int Physics::newChainShape(lua_State *L)
 	delete[] vecs;
 
 	ChainShape *c = new ChainShape(s);
-	luax_pushtype(L, PHYSICS_CHAIN_SHAPE_ID, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }
@@ -296,8 +296,8 @@ Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 
 int Physics::getDistance(lua_State *L)
 {
-	Fixture *fixtureA = luax_checktype<Fixture>(L, 1, PHYSICS_FIXTURE_ID);
-	Fixture *fixtureB = luax_checktype<Fixture>(L, 2, PHYSICS_FIXTURE_ID);
+	Fixture *fixtureA = luax_checktype<Fixture>(L, 1);
+	Fixture *fixtureB = luax_checktype<Fixture>(L, 2);
 	b2DistanceProxy pA, pB;
 	b2DistanceInput i;
 	b2DistanceOutput o;

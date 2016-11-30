@@ -45,7 +45,7 @@ int w_newVideoStream(lua_State *L)
 		stream = instance()->newVideoStream(file);
 	});
 
-	luax_pushtype(L, VIDEO_VIDEO_STREAM_ID, stream);
+	luax_pushtype(L, stream);
 	stream->release();
 	return 1;
 }
@@ -75,7 +75,7 @@ extern "C" int luaopen_love_video(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "video";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

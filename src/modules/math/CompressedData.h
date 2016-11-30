@@ -37,6 +37,8 @@ class CompressedData : public love::Data
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Constructor just stores already-compressed data in the object.
 	 **/

@@ -59,6 +59,8 @@ class ImageData : public Data
 {
 public:
 
+	static love::Type type;
+
 	enum EncodedFormat
 	{
 		ENCODED_TGA,

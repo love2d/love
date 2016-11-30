@@ -61,6 +61,8 @@ class Fixture : public Object
 public:
 	friend class Physics;
 
+	static love::Type type;
+
 	/**
 	 * Creates a Fixture.
 	 **/

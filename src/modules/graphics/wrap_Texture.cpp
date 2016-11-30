@@ -27,7 +27,7 @@ namespace graphics
 
 Texture *luax_checktexture(lua_State *L, int idx)
 {
-	return luax_checktype<Texture>(L, idx, GRAPHICS_TEXTURE_ID);
+	return luax_checktype<Texture>(L, idx);
 }
 
 int w_Texture_getWidth(lua_State *L)
@@ -139,7 +139,7 @@ const luaL_Reg w_Texture_functions[] =
 
 extern "C" int luaopen_texture(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_TEXTURE_ID, "Texture", w_Texture_functions, nullptr);
+	return luax_register_type(L, &Texture::type, w_Texture_functions, nullptr);
 }
 
 } // graphics

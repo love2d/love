@@ -44,6 +44,8 @@ class CompressedImageData : public Data
 {
 public:
 
+	static love::Type type;
+
 	// Compressed image data can have multiple mipmap levels, each represented
 	// by a sub-image.
 	struct SubImage

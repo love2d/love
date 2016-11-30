@@ -27,6 +27,8 @@ namespace love
 namespace image
 {
 
+love::Type ImageData::type("ImageData", &Data::type);
+
 ImageData::ImageData()
 	: format(PIXELFORMAT_UNKNOWN)
 	, width(0)

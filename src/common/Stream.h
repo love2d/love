@@ -31,6 +31,8 @@ namespace love
 class Stream : public Object
 {
 public:
+	static love::Type type;
+
 	virtual ~Stream() {}
 
 	// getData and getSize are assumed to talk about

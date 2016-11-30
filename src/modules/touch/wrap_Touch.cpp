@@ -105,7 +105,7 @@ extern "C" int luaopen_love_touch(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "touch";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = nullptr;
 

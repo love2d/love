@@ -73,6 +73,8 @@ class Graphics : public Module
 {
 public:
 
+	static love::Type type;
+
 	enum DrawMode
 	{
 		DRAW_LINE,

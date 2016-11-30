@@ -52,6 +52,8 @@ class Image : public Texture, public Volatile
 {
 public:
 
+	static love::Type type;
+
 	enum FlagType
 	{
 		FLAG_TYPE_MIPMAPS,

@@ -35,6 +35,8 @@ class Cursor : public Object
 {
 public:
 
+	static love::Type type;
+
 	// Types of system cursors.
 	enum SystemCursor
 	{
