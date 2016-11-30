@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2015 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,63 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// STL
-#include <unordered_map>
-
-#include "types.h"
+// LOVE
+#include "Stream.h"
 
 namespace love
 {
 
-static std::unordered_map<std::string, Type*> types;
-
-Type::Type(const char *name, Type *parent)
-	: name(name)
-	, parent(parent)
-	, id(0)
-	, inited(false)
-{
-}
-
-void Type::init()
-{
-	static uint32 nextId = 1;
-
-	// Make sure we don't init twice, that would be bad
-	if (inited)
-		return;
-
-	// Note: we add it here, not in the constructor, because some Types can get initialized before the map!
-	types[name] = this;
-	id = nextId++;
-	bits[id] = true;
-	inited = true;
-
-	if (!parent)
-		return;
-	if (!parent->inited)
-		parent->init();
-	bits |= parent->bits;
-}
-
-uint32 Type::getId()
-{
-	if (!inited)
-		init();
-	return id;
-}
-
-const char *Type::getName() const
-{
-	return name;
-}
-
-Type *Type::byName(const char *name)
-{
-	auto pos = types.find(name);
-	if (pos == types.end())
-		return nullptr;
-	return pos->second;
-}
+love::Type Stream::type("Stream", &Object::type);
 
 } // love

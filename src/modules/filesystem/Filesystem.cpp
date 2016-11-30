@@ -42,6 +42,8 @@ namespace love
 namespace filesystem
 {
 
+love::Type Filesystem::type("filesystem", &Module::type);
+
 Filesystem::Filesystem()
 {
 }
