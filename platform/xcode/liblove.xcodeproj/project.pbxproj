@@ -957,6 +957,15 @@
 		FA9D8DD11DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
 		FA9D8DD21DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
 		FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9D8DD01DEB56C3002CD881 /* pixelformat.h */; };
+		FA9D8DD71DEF8411002CD881 /* Data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DD41DEF8411002CD881 /* Data.cpp */; };
+		FA9D8DD81DEF8411002CD881 /* Data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DD41DEF8411002CD881 /* Data.cpp */; };
+		FA9D8DD91DEF8411002CD881 /* Stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DD51DEF8411002CD881 /* Stream.cpp */; };
+		FA9D8DDA1DEF8411002CD881 /* Stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DD51DEF8411002CD881 /* Stream.cpp */; };
+		FA9D8DDB1DEF8411002CD881 /* Stream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9D8DD61DEF8411002CD881 /* Stream.h */; };
+		FA9D8DDD1DEF842A002CD881 /* Drawable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */; };
+		FA9D8DDE1DEF842A002CD881 /* Drawable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */; };
+		FA9D8DE01DEF843D002CD881 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DDF1DEF843D002CD881 /* Image.cpp */; };
+		FA9D8DE11DEF843D002CD881 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DDF1DEF843D002CD881 /* Image.cpp */; };
 		FAA3A9AE1B7D465A00CED060 /* android.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAA3A9AC1B7D465A00CED060 /* android.cpp */; };
 		FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAA3A9AC1B7D465A00CED060 /* android.cpp */; };
 		FAA3A9B01B7D465A00CED060 /* android.h in Headers */ = {isa = PBXBuildFile; fileRef = FAA3A9AD1B7D465A00CED060 /* android.h */; };
@@ -1667,6 +1676,11 @@
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
 		FA9D8DD01DEB56C3002CD881 /* pixelformat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pixelformat.h; sourceTree = "<group>"; };
+		FA9D8DD41DEF8411002CD881 /* Data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Data.cpp; sourceTree = "<group>"; };
+		FA9D8DD51DEF8411002CD881 /* Stream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stream.cpp; sourceTree = "<group>"; };
+		FA9D8DD61DEF8411002CD881 /* Stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stream.h; sourceTree = "<group>"; };
+		FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Drawable.cpp; sourceTree = "<group>"; };
+		FA9D8DDF1DEF843D002CD881 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		FAA3A9AC1B7D465A00CED060 /* android.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = android.cpp; sourceTree = "<group>"; };
 		FAA3A9AD1B7D465A00CED060 /* android.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = android.h; sourceTree = "<group>"; };
 		FAA627CD18E7E1560080752D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
@@ -1782,6 +1796,7 @@
 				FA0B78F71A958E3B000E1D17 /* b64.cpp */,
 				FA0B78F81A958E3B000E1D17 /* b64.h */,
 				FA0B78F91A958E3B000E1D17 /* config.h */,
+				FA9D8DD41DEF8411002CD881 /* Data.cpp */,
 				FA0B78FA1A958E3B000E1D17 /* Data.h */,
 				FA0B78FB1A958E3B000E1D17 /* delay.cpp */,
 				FA0B78FC1A958E3B000E1D17 /* delay.h */,
@@ -1810,6 +1825,8 @@
 				FA0B790D1A958E3B000E1D17 /* Reference.h */,
 				FA0B790E1A958E3B000E1D17 /* runtime.cpp */,
 				FA0B790F1A958E3B000E1D17 /* runtime.h */,
+				FA9D8DD51DEF8411002CD881 /* Stream.cpp */,
+				FA9D8DD61DEF8411002CD881 /* Stream.h */,
 				FA0B79101A958E3B000E1D17 /* StringMap.h */,
 				FA620A391AA305F6005DB4C2 /* types.cpp */,
 				FA0B79111A958E3B000E1D17 /* types.h */,
@@ -2396,6 +2413,7 @@
 			isa = PBXGroup;
 			children = (
 				FA0B7B881A95902C000E1D17 /* Color.h */,
+				FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */,
 				FA0B7B891A95902C000E1D17 /* Drawable.h */,
 				FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B8B1A95902C000E1D17 /* Graphics.h */,
@@ -2476,6 +2494,7 @@
 			children = (
 				FA0B7BC31A95902C000E1D17 /* CompressedImageData.cpp */,
 				FA0B7BC41A95902C000E1D17 /* CompressedImageData.h */,
+				FA9D8DDF1DEF843D002CD881 /* Image.cpp */,
 				FA0B7BC51A95902C000E1D17 /* Image.h */,
 				FA0B7BC61A95902C000E1D17 /* ImageData.cpp */,
 				FA0B7BC71A95902C000E1D17 /* ImageData.h */,
@@ -3189,6 +3208,7 @@
 				FA0B7D881A95902C000E1D17 /* ImageData.h in Headers */,
 				FA0B7A661A958EA3000E1D17 /* b2Fixture.h in Headers */,
 				FA0B7EE11A95902D000E1D17 /* wrap_Touch.h in Headers */,
+				FA9D8DDB1DEF8411002CD881 /* Stream.h in Headers */,
 				FA0B7AA91A958EA3000E1D17 /* b2RopeJoint.h in Headers */,
 				FAB17BE21ABFAA2000F9BA27 /* Compressor.h in Headers */,
 				FA0B7E441A95902C000E1D17 /* wrap_CircleShape.h in Headers */,
@@ -3535,6 +3555,7 @@
 				FA0B7EC61A95902C000E1D17 /* ThreadModule.cpp in Sources */,
 				FA0B7D2C1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
 				FA0B7D591A95902C000E1D17 /* wrap_Canvas.cpp in Sources */,
+				FA9D8DD81DEF8411002CD881 /* Data.cpp in Sources */,
 				FA0B7E8F1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FA0B7CD71A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7AC01A958EA3000E1D17 /* host.c in Sources */,
@@ -3610,6 +3631,7 @@
 				FA0B7E431A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA0B7AA21A958EA3000E1D17 /* b2PulleyJoint.cpp in Sources */,
+				FA9D8DDE1DEF842A002CD881 /* Drawable.cpp in Sources */,
 				FA0B7CCE1A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7DCB1A95902C000E1D17 /* Keyboard.cpp in Sources */,
 				FA0B7A901A958EA3000E1D17 /* b2FrictionJoint.cpp in Sources */,
@@ -3791,6 +3813,7 @@
 				FA0B79331A958E3B000E1D17 /* Object.cpp in Sources */,
 				FA0B7E5B1A95902C000E1D17 /* wrap_MotorJoint.cpp in Sources */,
 				FA0B79441A958E3B000E1D17 /* Variant.cpp in Sources */,
+				FA9D8DDA1DEF8411002CD881 /* Stream.cpp in Sources */,
 				FA0B7DD71A95902C000E1D17 /* MathModule.cpp in Sources */,
 				FA0B7D101A95902C000E1D17 /* BMFontRasterizer.cpp in Sources */,
 				FA0B7E9B1A95902C000E1D17 /* VorbisDecoder.cpp in Sources */,
@@ -3811,6 +3834,7 @@
 				FA0B7EDC1A95902D000E1D17 /* Touch.cpp in Sources */,
 				FA0B7CE91A95902C000E1D17 /* Event.cpp in Sources */,
 				FA4F2C131DE936FE00CA37D7 /* unixudp.c in Sources */,
+				FA9D8DE11DEF843D002CD881 /* Image.cpp in Sources */,
 				FA0B7A961A958EA3000E1D17 /* b2Joint.cpp in Sources */,
 				FA0B7A621A958EA3000E1D17 /* b2ContactManager.cpp in Sources */,
 				FA0B7A2F1A958EA3000E1D17 /* b2CollideEdge.cpp in Sources */,
@@ -3844,6 +3868,7 @@
 				FA0B7DA81A95902C000E1D17 /* PVRHandler.cpp in Sources */,
 				FA0B7EC51A95902C000E1D17 /* ThreadModule.cpp in Sources */,
 				217DFC031D9F6D490055D849 /* timeout.c in Sources */,
+				FA9D8DD71DEF8411002CD881 /* Data.cpp in Sources */,
 				FA0B7D2B1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
 				FA0B7D581A95902C000E1D17 /* wrap_Canvas.cpp in Sources */,
 				FA0B7E8E1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
@@ -3919,6 +3944,7 @@
 				FA0B7CCD1A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7DCA1A95902C000E1D17 /* Keyboard.cpp in Sources */,
 				FA0B7AA41A958EA3000E1D17 /* b2RevoluteJoint.cpp in Sources */,
+				FA9D8DDD1DEF842A002CD881 /* Drawable.cpp in Sources */,
 				FA0B7DFA1A95902C000E1D17 /* Body.cpp in Sources */,
 				FA0B7ED11A95902C000E1D17 /* wrap_ThreadModule.cpp in Sources */,
 				FA0B7EDF1A95902D000E1D17 /* wrap_Touch.cpp in Sources */,
@@ -4100,6 +4126,7 @@
 				FA0B7D0F1A95902C000E1D17 /* BMFontRasterizer.cpp in Sources */,
 				FA0B7E9A1A95902C000E1D17 /* VorbisDecoder.cpp in Sources */,
 				FA0B7E4B1A95902C000E1D17 /* wrap_EdgeShape.cpp in Sources */,
+				FA9D8DD91DEF8411002CD881 /* Stream.cpp in Sources */,
 				FA0B7E241A95902C000E1D17 /* PrismaticJoint.cpp in Sources */,
 				FA0B7A7D1A958EA3000E1D17 /* b2ContactSolver.cpp in Sources */,
 				FA0B7E601A95902C000E1D17 /* wrap_Physics.cpp in Sources */,
@@ -4120,6 +4147,7 @@
 				FA0B7A291A958EA3000E1D17 /* b2BroadPhase.cpp in Sources */,
 				FA0B7A891A958EA3000E1D17 /* b2PolygonContact.cpp in Sources */,
 				FA0B7E1E1A95902C000E1D17 /* Physics.cpp in Sources */,
+				FA9D8DE01DEF843D002CD881 /* Image.cpp in Sources */,
 				FA0B7E811A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA4F2BA81DE1E36400CA37D7 /* wrap_RecordingDevice.cpp in Sources */,
 				FA0B7B251A958EA3000E1D17 /* lutf8lib.c in Sources */,
