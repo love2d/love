@@ -256,6 +256,7 @@ set(LOVE_SRC_COMMON
 	src/common/b64.cpp
 	src/common/b64.h
 	src/common/config.h
+	src/common/Data.cpp
 	src/common/Data.h
 	src/common/delay.cpp
 	src/common/delay.h
@@ -278,6 +279,8 @@ set(LOVE_SRC_COMMON
 	src/common/Reference.h
 	src/common/runtime.cpp
 	src/common/runtime.h
+	src/common/Stream.cpp
+	src/common/Stream.h
 	src/common/StringMap.h
 	src/common/types.cpp
 	src/common/types.h
@@ -457,6 +460,7 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Color.h
+	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
@@ -538,6 +542,7 @@ source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL
 set(LOVE_SRC_MODULE_IMAGE_ROOT
 	src/modules/image/CompressedImageData.cpp
 	src/modules/image/CompressedImageData.h
+	src/modules/image/Image.cpp
 	src/modules/image/Image.h
 	src/modules/image/ImageData.cpp
 	src/modules/image/ImageData.h
