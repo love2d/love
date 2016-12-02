@@ -23,6 +23,7 @@
 
 // LOVE
 #include "event/Event.h"
+#include "audio/Source.h"
 
 // SDL
 #include <SDL_events.h>
@@ -70,12 +71,16 @@ private:
 
 	void exceptionIfInRenderPass();
 
-	Message *convert(const SDL_Event &e) const;
+	Message *convert(const SDL_Event &e);
 	Message *convertJoystickEvent(const SDL_Event &e) const;
-	Message *convertWindowEvent(const SDL_Event &e) const;
+	Message *convertWindowEvent(const SDL_Event &e);
 
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
+
+#ifdef LOVE_ANDROID
+	std::vector<love::audio::Source*> pausedSources;
+#endif
 
 }; // Event
 

@@ -164,7 +164,7 @@ void Event::exceptionIfInRenderPass()
 		throw love::Exception("Cannot call this function while a render pass is active in love.graphics.");
 }
 
-Message *Event::convert(const SDL_Event &e) const
+Message *Event::convert(const SDL_Event &e)
 {
 	Message *msg = nullptr;
 
@@ -528,7 +528,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	return msg;
 }
 
-Message *Event::convertWindowEvent(const SDL_Event &e) const
+Message *Event::convertWindowEvent(const SDL_Event &e)
 {
 	Message *msg = nullptr;
 
@@ -581,16 +581,24 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 	case SDL_WINDOWEVENT_MINIMIZED:
 	case SDL_WINDOWEVENT_RESTORED:
 #ifdef LOVE_ANDROID
-	{
-		auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
-		if (audio)
+		if (auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO))
 		{
 			if (e.window.event == SDL_WINDOWEVENT_MINIMIZED)
-				audio->pause();
+			{
+				for (auto &src : pausedSources)
+					src->release();
+				pausedSources = audio->pause();
+				for (auto &src : pausedSources)
+					src->retain();
+			}
 			else if (e.window.event == SDL_WINDOWEVENT_RESTORED)
-				audio->resume();
+			{
+				audio->play(pausedSources);
+				for (auto &src : pausedSources)
+					src->release();
+				pausedSources.resize(0);
+			}
 		}
-	}
 #endif
 		break;
 	}
