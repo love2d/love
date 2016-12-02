@@ -901,12 +901,17 @@ bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const 
 	toPlay.reserve(sources.size());
 	for (size_t i = 0; i < sources.size(); i++)
 	{
+		Source *source = (Source*) sources[i];
+		// Paused sources have wasPlaying set to true, so do this first
+		if (!source->isPlaying())
+			toPlay.push_back(ids[i]);
+
+		// If it wasn't playing (nor paused), we have just allocated a new
+		// source
 		if (wasPlaying[i])
 			continue;
-		Source *source = (Source*) sources[i];
 		source->source = ids[i];
 		source->prepareAtomic();
-		toPlay.push_back(ids[i]);
 	}
 
 	alGetError();
