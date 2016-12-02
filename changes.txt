@@ -19,16 +19,26 @@ Released: N/A
   * Added love.window.updateMode.
   * Added Object:release.
   * Added queueable audio sources.
+  * Added audio input support.
+  * Added Transform objects to love.math.
+  * Added 'fullnpot' and 'pixelshaderhighp' graphics features.
+  * Added 'anisotropy' graphics limit.
+  * Added a Mesh:attachAttribute variant that takes a different target attribute name.
+  * Added Mesh:detachAttribute.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.
   * Changed the 'multiply' blend mode to error if not used with the 'premultiplied' blend alpha mode, since the formula only works with that anyway.
   * Changed the audio playback APIs drastically.
+  * Changed enet to no longer set the 'enet' global, again matching luasocket.
+  * Changed Source seeking behaviour, all kinds of Sources now behave similarly when seeking past the boundaries.
+  * Changed the rendering API to one based on render passes.
 
   * Removed the default source type for love.audio.newSource.
   * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
   * Removed the no-argument variant of Text:set, use Text:clear instead.
   * Removed Shader:getExternVariable, use Shader:hasUniform instead.
+  * Removed deprecated enet function host:socket_get_address.
   * Removed functions deprecated in LÖVE 0.10.2:
     * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
     * Removed love.window.isCreated (use love.window.isOpen instead).
@@ -39,6 +49,7 @@ Released: N/A
   * Updated Mesh:setDrawRange to take 'start' and 'count' parameters instead of 'min' and 'max'.
   * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
   * Updated the 'vsync' field of love.window.setMode and t.window in love.conf. It's now an integer with 0 disabling vsync.
+  * Updated luasocket to version 3.0rc1.
 
 LOVE 0.10.2 [Super Toast]
 -------------------------
