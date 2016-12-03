@@ -25,6 +25,7 @@ Released: N/A
   * Added 'anisotropy' graphics limit.
   * Added a Mesh:attachAttribute variant that takes a different target attribute name.
   * Added Mesh:detachAttribute.
+  * Added Source filters: low gain, high gain and band pass.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.

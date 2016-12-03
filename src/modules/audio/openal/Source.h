@@ -25,8 +25,11 @@
 #include "common/config.h"
 #include "common/Object.h"
 #include "audio/Source.h"
+#include "audio/Filter.h"
 #include "sound/SoundData.h"
 #include "sound/Decoder.h"
+#include "Audio.h"
+#include "Filter.h"
 
 // STL
 #include <vector>
@@ -141,6 +144,10 @@ public:
 	virtual float getMaxDistance() const;
 	virtual int getChannels() const;
 
+	virtual bool setFilter(love::audio::Filter::Type type, std::vector<float> &params);
+	virtual bool setFilter();
+	virtual bool getFilter(love::audio::Filter::Type &type, std::vector<float> &params);
+
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
 	virtual bool queueAtomic(void *data, ALsizei length);
@@ -213,6 +220,8 @@ private:
 	unsigned int toLoop = 0;
 	int unusedBufferTop = -1;
 	ALsizei bufferedBytes = 0;
+
+	Filter *filter = nullptr;
 
 }; // Source
 

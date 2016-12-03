@@ -18,22 +18,48 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_WRAP_SOURCE_H
-#define LOVE_AUDIO_WRAP_SOURCE_H
+#ifndef LOVE_AUDIO_FILTERS_H
+#define LOVE_AUDIO_FILTERS_H
 
-#include "common/runtime.h"
-#include "Source.h"
-#include "Filter.h"
+#include "common/Object.h"
+#include "common/StringMap.h"
+#include <map>
 
 namespace love
 {
 namespace audio
 {
 
-Source *luax_checksource(lua_State *L, int idx);
-extern "C" int luaopen_source(lua_State *L);
+class Filter
+{
+public:
+	enum Type
+	{
+		TYPE_LOWPASS,
+		TYPE_HIGHPASS,
+		TYPE_BANDPASS,
+		TYPE_MAX_ENUM
+	};
 
-} // audio
-} // love
+	Filter();
+	virtual ~Filter();
+	Type getType() const;
 
-#endif // LOVE_AUDIO_WRAP_SOURCE_H
+	static bool getConstant(const char *in, Type &out);
+	static bool getConstant(Type in, const char *&out);
+	static int getParameterCount(Type in);
+	static int getParameterCount();
+
+protected:
+	Type type;
+
+private:
+	static StringMap<Type, TYPE_MAX_ENUM>::Entry typeEntries[];
+	static StringMap<Type, TYPE_MAX_ENUM> types;
+	static std::map<Type, int> parameterCount;
+};
+
+} //audio
+} //love
+
+#endif //LOVE_AUDIO_FILTERS_H

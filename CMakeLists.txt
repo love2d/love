@@ -316,6 +316,8 @@ set(LOVE_SRC_MODULE_AUDIO_ROOT
 	src/modules/audio/Source.h
 	src/modules/audio/RecordingDevice.cpp
 	src/modules/audio/RecordingDevice.h
+	src/modules/audio/Filter.cpp
+	src/modules/audio/Filter.h
 	src/modules/audio/wrap_Audio.cpp
 	src/modules/audio/wrap_Audio.h
 	src/modules/audio/wrap_Source.cpp
@@ -342,6 +344,8 @@ set(LOVE_SRC_MODULE_AUDIO_OPENAL
 	src/modules/audio/openal/Source.h
 	src/modules/audio/openal/RecordingDevice.cpp
 	src/modules/audio/openal/RecordingDevice.h
+	src/modules/audio/openal/Filter.cpp
+	src/modules/audio/openal/Filter.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO

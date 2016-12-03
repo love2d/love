@@ -18,22 +18,58 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_WRAP_SOURCE_H
-#define LOVE_AUDIO_WRAP_SOURCE_H
+#ifndef LOVE_AUDIO_OPENAL_FILTERS_H
+#define LOVE_AUDIO_OPENAL_FILTERS_H
 
-#include "common/runtime.h"
-#include "Source.h"
-#include "Filter.h"
+// OpenAL
+#ifdef LOVE_APPLE_USE_FRAMEWORKS // Frameworks have different include paths.
+#ifdef LOVE_IOS
+#include <OpenAL/alc.h>
+#include <OpenAL/al.h>
+#else
+#include <OpenAL-Soft/alc.h>
+#include <OpenAL-Soft/al.h>
+#endif
+#else
+#include <AL/alc.h>
+#include <AL/al.h>
+#include <AL/alext.h>
+#endif
+
+#include <vector>
+
+#include "audio/Filter.h"
+#include "Audio.h"
+
+#ifndef AL_FILTER_NULL
+#define AL_FILTER_NULL (0)
+#endif
 
 namespace love
 {
 namespace audio
 {
+namespace openal
+{
 
-Source *luax_checksource(lua_State *L, int idx);
-extern "C" int luaopen_source(lua_State *L);
+class Filter : public love::audio::Filter
+{
+public:
+	Filter();
+	Filter(const Filter &s);
+	virtual ~Filter();
+	virtual Filter *clone();
+	ALuint getFilter() const;
+	virtual bool setParams(Type type, const std::vector<float> &params);
+	virtual const std::vector<float> &getParams() const;
 
-} // audio
-} // love
+private:
+	ALuint filter = AL_FILTER_NULL;
+	std::vector<float> params;
+};
 
-#endif // LOVE_AUDIO_WRAP_SOURCE_H
+} //openal
+} //audio
+} //love
+
+#endif //LOVE_AUDIO_OPENAL_FILTERS_H

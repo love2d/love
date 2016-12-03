@@ -110,7 +110,8 @@ Audio::Audio()
 	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
 
-	// pool must be allocated after AL context.
+	initializeEFX();
+
 	try
 	{
 		pool = new Pool();
@@ -381,6 +382,109 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 		capture.push_back(devices[i]);
 
 	return capture;
+}
+
+#ifdef ALC_EXT_EFX
+LPALGENEFFECTS alGenEffects = nullptr;
+LPALDELETEEFFECTS alDeleteEffects = nullptr;
+LPALISEFFECT alIsEffect = nullptr;
+LPALEFFECTI alEffecti = nullptr;
+LPALEFFECTIV alEffectiv = nullptr;
+LPALEFFECTF alEffectf = nullptr;
+LPALEFFECTFV alEffectfv = nullptr;
+LPALGETEFFECTI alGetEffecti = nullptr;
+LPALGETEFFECTIV alGetEffectiv = nullptr;
+LPALGETEFFECTF alGetEffectf = nullptr;
+LPALGETEFFECTFV alGetEffectfv = nullptr;
+LPALGENFILTERS alGenFilters = nullptr;
+LPALDELETEFILTERS alDeleteFilters = nullptr;
+LPALISFILTER alIsFilter = nullptr;
+LPALFILTERI alFilteri = nullptr;
+LPALFILTERIV alFilteriv = nullptr;
+LPALFILTERF alFilterf = nullptr;
+LPALFILTERFV alFilterfv = nullptr;
+LPALGETFILTERI alGetFilteri = nullptr;
+LPALGETFILTERIV alGetFilteriv = nullptr;
+LPALGETFILTERF alGetFilterf = nullptr;
+LPALGETFILTERFV alGetFilterfv = nullptr;
+LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots = nullptr;
+LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots = nullptr;
+LPALISAUXILIARYEFFECTSLOT alIsAuxiliaryEffectSlot = nullptr;
+LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti = nullptr;
+LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv = nullptr;
+LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf = nullptr;
+LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv = nullptr;
+LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti = nullptr;
+LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv = nullptr;
+LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf = nullptr;
+LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv = nullptr;
+#endif
+
+void Audio::initializeEFX()
+{
+	#ifdef ALC_EXT_EFX
+	if (alcIsExtensionPresent(device, "ALC_EXT_EFX") == AL_FALSE)
+		return;
+
+	alGenEffects = (LPALGENEFFECTS)alGetProcAddress("alGenEffects");
+	alDeleteEffects = (LPALDELETEEFFECTS)alGetProcAddress("alDeleteEffects");
+	alIsEffect = (LPALISEFFECT)alGetProcAddress("alIsEffect");
+	alEffecti = (LPALEFFECTI)alGetProcAddress("alEffecti");
+	alEffectiv = (LPALEFFECTIV)alGetProcAddress("alEffectiv");
+	alEffectf = (LPALEFFECTF)alGetProcAddress("alEffectf");
+	alEffectfv = (LPALEFFECTFV)alGetProcAddress("alEffectfv");
+	alGetEffecti = (LPALGETEFFECTI)alGetProcAddress("alGetEffecti");
+	alGetEffectiv = (LPALGETEFFECTIV)alGetProcAddress("alGetEffectiv");
+	alGetEffectf = (LPALGETEFFECTF)alGetProcAddress("alGetEffectf");
+	alGetEffectfv = (LPALGETEFFECTFV)alGetProcAddress("alGetEffectfv");
+	alGenFilters = (LPALGENFILTERS)alGetProcAddress("alGenFilters");
+	alDeleteFilters = (LPALDELETEFILTERS)alGetProcAddress("alDeleteFilters");
+	alIsFilter = (LPALISFILTER)alGetProcAddress("alIsFilter");
+	alFilteri = (LPALFILTERI)alGetProcAddress("alFilteri");
+	alFilteriv = (LPALFILTERIV)alGetProcAddress("alFilteriv");
+	alFilterf = (LPALFILTERF)alGetProcAddress("alFilterf");
+	alFilterfv = (LPALFILTERFV)alGetProcAddress("alFilterfv");
+	alGetFilteri = (LPALGETFILTERI)alGetProcAddress("alGetFilteri");
+	alGetFilteriv = (LPALGETFILTERIV)alGetProcAddress("alGetFilteriv");
+	alGetFilterf = (LPALGETFILTERF)alGetProcAddress("alGetFilterf");
+	alGetFilterfv = (LPALGETFILTERFV)alGetProcAddress("alGetFilterfv");
+	alGenAuxiliaryEffectSlots = (LPALGENAUXILIARYEFFECTSLOTS)alGetProcAddress("alGenAuxiliaryEffectSlots");
+	alDeleteAuxiliaryEffectSlots = (LPALDELETEAUXILIARYEFFECTSLOTS)alGetProcAddress("alDeleteAuxiliaryEffectSlots");
+	alIsAuxiliaryEffectSlot = (LPALISAUXILIARYEFFECTSLOT)alGetProcAddress("alIsAuxiliaryEffectSlot");
+	alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI)alGetProcAddress("alAuxiliaryEffectSloti");
+	alAuxiliaryEffectSlotiv = (LPALAUXILIARYEFFECTSLOTIV)alGetProcAddress("alAuxiliaryEffectSlotiv");
+	alAuxiliaryEffectSlotf = (LPALAUXILIARYEFFECTSLOTF)alGetProcAddress("alAuxiliaryEffectSlotf");
+	alAuxiliaryEffectSlotfv = (LPALAUXILIARYEFFECTSLOTFV)alGetProcAddress("alAuxiliaryEffectSlotfv");
+	alGetAuxiliaryEffectSloti = (LPALGETAUXILIARYEFFECTSLOTI)alGetProcAddress("alGetAuxiliaryEffectSloti");
+	alGetAuxiliaryEffectSlotiv = (LPALGETAUXILIARYEFFECTSLOTIV)alGetProcAddress("alGetAuxiliaryEffectSlotiv");
+	alGetAuxiliaryEffectSlotf = (LPALGETAUXILIARYEFFECTSLOTF)alGetProcAddress("alGetAuxiliaryEffectSlotf");
+	alGetAuxiliaryEffectSlotfv = (LPALGETAUXILIARYEFFECTSLOTFV)alGetProcAddress("alGetAuxiliaryEffectSlotfv");
+
+	//failed to initialize functions, revert to nullptr
+	if (!alGenEffects || !alDeleteEffects || !alIsEffect ||
+		!alGenFilters || !alDeleteFilters || !alIsFilter ||
+		!alGenAuxiliaryEffectSlots || !alDeleteAuxiliaryEffectSlots || !alIsAuxiliaryEffectSlot ||
+		!alEffecti || !alEffectiv || !alEffectf || !alEffectfv ||
+		!alGetEffecti || !alGetEffectiv || !alGetEffectf || !alGetEffectfv ||
+		!alFilteri || !alFilteriv || !alFilterf || !alFilterfv ||
+		!alGetFilteri || !alGetFilteriv || !alGetFilterf || !alGetFilterfv ||
+		!alAuxiliaryEffectSloti || !alAuxiliaryEffectSlotiv || !alAuxiliaryEffectSlotf || !alAuxiliaryEffectSlotfv ||
+		!alGetAuxiliaryEffectSloti || !alGetAuxiliaryEffectSlotiv || !alGetAuxiliaryEffectSlotf || !alGetAuxiliaryEffectSlotfv)
+	{
+		alGenEffects = nullptr; alDeleteEffects = nullptr; alIsEffect = nullptr;
+		alEffecti = nullptr; alEffectiv = nullptr; alEffectf = nullptr; alEffectfv = nullptr;
+		alGetEffecti = nullptr; alGetEffectiv = nullptr; alGetEffectf = nullptr; alGetEffectfv = nullptr;
+		alGenFilters = nullptr; alDeleteFilters = nullptr; alIsFilter = nullptr;
+		alFilteri = nullptr; alFilteriv = nullptr; alFilterf = nullptr; alFilterfv = nullptr;
+		alGetFilteri = nullptr; alGetFilteriv = nullptr; alGetFilterf = nullptr; alGetFilterfv = nullptr;
+		alGenAuxiliaryEffectSlots = nullptr; alDeleteAuxiliaryEffectSlots = nullptr; alIsAuxiliaryEffectSlot = nullptr;
+		alAuxiliaryEffectSloti = nullptr; alAuxiliaryEffectSlotiv = nullptr;
+		alAuxiliaryEffectSlotf = nullptr; alAuxiliaryEffectSlotfv = nullptr;
+		alGetAuxiliaryEffectSloti = nullptr; alGetAuxiliaryEffectSlotiv = nullptr;
+		alGetAuxiliaryEffectSlotf = nullptr; alGetAuxiliaryEffectSlotfv = nullptr;
+	}
+
+	#endif
 }
 
 } // openal

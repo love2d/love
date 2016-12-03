@@ -227,6 +227,21 @@ bool Source::queue(void *, size_t, int, int, int)
 	return false;
 }
 
+bool Source::setFilter(love::audio::Filter::Type, std::vector<float> &)
+{
+	return false;
+}
+
+bool Source::setFilter()
+{
+	return false;
+}
+
+bool Source::getFilter(love::audio::Filter::Type &, std::vector<float> &)
+{
+	return false;
+}
+
 } // null
 } // audio
 } // love

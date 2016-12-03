@@ -19,6 +19,7 @@
  **/
 
 #include "Source.h"
+#include "Filter.h"
 #include "Pool.h"
 #include "Audio.h"
 #include "common/math.h"
@@ -213,6 +214,8 @@ Source::Source(const Source &s)
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 			unusedBuffers[i] = streamBuffers[i];
 	}
+	if (s.filter)
+		filter = s.filter->clone();
 
 	setFloatv(position, s.position);
 	setFloatv(velocity, s.velocity);
@@ -226,6 +229,9 @@ Source::~Source()
 
 	if (sourceType != TYPE_STATIC)
 		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
+
+	if (filter)
+		delete filter;
 }
 
 love::audio::Source *Source::clone()
@@ -989,6 +995,9 @@ void Source::reset()
 	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
 	alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
+	#ifdef ALC_EXT_EFX
+	alSourcei(source, AL_DIRECT_FILTER, filter ? filter->getFilter() : AL_FILTER_NULL);
+	#endif
 }
 
 void Source::setFloatv(float *dst, const float *src) const
@@ -1193,6 +1202,46 @@ float Source::getMaxDistance() const
 int Source::getChannels() const
 {
 	return channels;
+}
+
+bool Source::setFilter(love::audio::Filter::Type type, std::vector<float> &params)
+{
+	if (!filter)
+		filter = new Filter();
+
+	bool result = filter->setParams(type, params);
+
+	#ifdef ALC_EXT_EFX
+	if (valid)
+		alSourcei(source, AL_DIRECT_FILTER, filter->getFilter());
+	#endif
+
+	return result;
+}
+
+bool Source::setFilter()
+{
+	if (filter)
+		delete filter;
+
+	filter = nullptr;
+
+	#ifdef ALC_EXT_EFX
+	if (valid)
+		alSourcei(source, AL_DIRECT_FILTER, AL_FILTER_NULL);
+	#endif
+
+	return true;
+}
+
+bool Source::getFilter(love::audio::Filter::Type &type, std::vector<float> &params)
+{
+	if (!filter)
+		return false;
+
+	type = filter->getType();
+	params = filter->getParams();
+	return true;
 }
 
 } // openal

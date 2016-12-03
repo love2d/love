@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "audio/Source.h"
+#include "audio/Filter.h"
 
 namespace love
 {
@@ -78,6 +79,10 @@ public:
 
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
+
+	virtual bool setFilter(love::audio::Filter::Type type, std::vector<float> &params);
+	virtual bool setFilter();
+	virtual bool getFilter(love::audio::Filter::Type &type, std::vector<float> &params);
 
 private:
 

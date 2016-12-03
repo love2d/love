@@ -330,6 +330,76 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
+int w_Source_setFilter(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+
+	Filter::Type type;
+	std::vector<float> params;
+
+	params.reserve(Filter::getParameterCount());
+
+	if (lua_gettop(L) == 1)
+	{
+		lua_pushboolean(L, t->setFilter());
+		return 1;
+	}
+	else if (lua_gettop(L) > 2)
+	{
+		const char *ftypestr = luaL_checkstring(L, 2);
+		if (ftypestr && !Filter::getConstant(ftypestr, type))
+			return luaL_error(L, "Invalid filter type: %s", ftypestr);
+
+		unsigned int count = Filter::getParameterCount(type);
+		for (unsigned int i = 0; i < count; i++)
+			params.push_back(luaL_checknumber(L, i + 3));
+	}
+	else if (lua_istable(L, 2))
+	{
+		if (lua_objlen(L, 2) == 0) //empty table also clears filter
+		{
+			lua_pushboolean(L, t->setFilter());
+			return 1;
+		}
+		lua_rawgeti(L, 2, 1);
+		const char *ftypestr = luaL_checkstring(L, -1);
+		if (ftypestr && !Filter::getConstant(ftypestr, type))
+			return luaL_error(L, "Invalid filter type: %s", ftypestr);
+		lua_pop(L, 1);
+
+		unsigned int count = Filter::getParameterCount(type);
+		for (unsigned int i = 0; i < count; i++)
+		{
+			lua_rawgeti(L, 2, i + 2);
+			params.push_back(luaL_checknumber(L, -1));
+			lua_pop(L, 1);
+		}
+	}
+	else
+		return luax_typerror(L, 2, "filter description");
+
+	luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter(type, params)); });
+	return 1;
+}
+
+int w_Source_getFilter(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	Filter::Type type;
+	std::vector<float> params;
+	if (!t->getFilter(type, params))
+		return 0;
+
+	const char *str = nullptr;
+	Filter::getConstant(type, str);
+	lua_pushstring(L, str);
+
+	for (unsigned int i = 0; i < params.size(); i++)
+		lua_pushnumber(L, params[i]);
+
+	return params.size() + 1;
+}
+
 int w_Source_getFreeBufferCount(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -439,6 +509,9 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getRolloff", w_Source_getRolloff},
 
 	{ "getChannels", w_Source_getChannels },
+
+	{ "setFilter", w_Source_setFilter },
+	{ "getFilter", w_Source_getFilter },
 
 	{ "getFreeBufferCount", w_Source_getFreeBufferCount },
 	{ "queue", w_Source_queue },

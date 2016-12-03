@@ -30,6 +30,7 @@
 // LOVE
 #include "audio/Audio.h"
 #include "audio/RecordingDevice.h"
+#include "audio/Filter.h"
 #include "common/config.h"
 #include "sound/SoundData.h"
 
@@ -111,7 +112,7 @@ public:
 	void setDistanceModel(DistanceModel distanceModel);
 
 private:
-
+	void initializeEFX();
 	// The OpenAL device.
 	ALCdevice *device;
 
@@ -149,6 +150,47 @@ private:
 	DistanceModel distanceModel;
 
 }; // Audio
+
+#ifdef ALC_EXT_EFX
+ // Effect objects
+extern LPALGENEFFECTS alGenEffects;
+extern LPALDELETEEFFECTS alDeleteEffects;
+extern LPALISEFFECT alIsEffect;
+extern LPALEFFECTI alEffecti;
+extern LPALEFFECTIV alEffectiv;
+extern LPALEFFECTF alEffectf;
+extern LPALEFFECTFV alEffectfv;
+extern LPALGETEFFECTI alGetEffecti;
+extern LPALGETEFFECTIV alGetEffectiv;
+extern LPALGETEFFECTF alGetEffectf;
+extern LPALGETEFFECTFV alGetEffectfv;
+
+//Filter objects
+extern LPALGENFILTERS alGenFilters;
+extern LPALDELETEFILTERS alDeleteFilters;
+extern LPALISFILTER alIsFilter;
+extern LPALFILTERI alFilteri;
+extern LPALFILTERIV alFilteriv;
+extern LPALFILTERF alFilterf;
+extern LPALFILTERFV alFilterfv;
+extern LPALGETFILTERI alGetFilteri;
+extern LPALGETFILTERIV alGetFilteriv;
+extern LPALGETFILTERF alGetFilterf;
+extern LPALGETFILTERFV alGetFilterfv;
+
+// Auxiliary slot object
+extern LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots;
+extern LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots;
+extern LPALISAUXILIARYEFFECTSLOT alIsAuxiliaryEffectSlot;
+extern LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
+extern LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv;
+extern LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf;
+extern LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv;
+extern LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
+extern LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
+extern LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
+extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
+#endif
 
 } // openal
 } // audio

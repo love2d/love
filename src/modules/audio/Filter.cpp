@@ -18,11 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_WRAP_SOURCE_H
-#define LOVE_AUDIO_WRAP_SOURCE_H
-
-#include "common/runtime.h"
-#include "Source.h"
 #include "Filter.h"
 
 namespace love
@@ -30,10 +25,55 @@ namespace love
 namespace audio
 {
 
-Source *luax_checksource(lua_State *L, int idx);
-extern "C" int luaopen_source(lua_State *L);
+Filter::Filter()
+{
+}
 
-} // audio
-} // love
+Filter::~Filter()
+{
+}
 
-#endif // LOVE_AUDIO_WRAP_SOURCE_H
+Filter::Type Filter::getType() const
+{
+	return type;
+}
+
+bool Filter::getConstant(const char *in, Type &out)
+{
+	return types.find(in, out);
+}
+
+bool Filter::getConstant(Type in, const char *&out)
+{
+	return types.find(in, out);
+}
+
+int Filter::getParameterCount(Type in)
+{
+	return parameterCount[in];
+}
+
+int Filter::getParameterCount()
+{
+	return parameterCount[TYPE_MAX_ENUM];
+}
+
+StringMap<Filter::Type, Filter::TYPE_MAX_ENUM>::Entry Filter::typeEntries[] =
+{
+	{"lowpass", Filter::TYPE_LOWPASS},
+	{"highpass", Filter::TYPE_HIGHPASS},
+	{"bandpass", Filter::TYPE_BANDPASS},
+};
+
+StringMap<Filter::Type, Filter::TYPE_MAX_ENUM> Filter::types(Filter::typeEntries, sizeof(Filter::typeEntries));
+
+std::map<Filter::Type, int> Filter::parameterCount =
+{
+	{Filter::TYPE_LOWPASS, 2},
+	{Filter::TYPE_HIGHPASS, 2},
+	{Filter::TYPE_BANDPASS, 3},
+	{Filter::TYPE_MAX_ENUM, 3},
+};
+
+} //audio
+} //love
