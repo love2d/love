@@ -347,7 +347,7 @@ int w_Source_setFilter(lua_State *L)
 	else if (lua_gettop(L) > 2)
 	{
 		const char *ftypestr = luaL_checkstring(L, 2);
-		if (ftypestr && !Filter::getConstant(ftypestr, type))
+		if (!Filter::getConstant(ftypestr, type))
 			return luaL_error(L, "Invalid filter type: %s", ftypestr);
 
 		unsigned int count = Filter::getParameterCount(type);
@@ -363,7 +363,7 @@ int w_Source_setFilter(lua_State *L)
 		}
 		lua_rawgeti(L, 2, 1);
 		const char *ftypestr = luaL_checkstring(L, -1);
-		if (ftypestr && !Filter::getConstant(ftypestr, type))
+		if (!Filter::getConstant(ftypestr, type))
 			return luaL_error(L, "Invalid filter type: %s", ftypestr);
 		lua_pop(L, 1);
 

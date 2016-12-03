@@ -29,6 +29,7 @@
 #else
 #include <OpenAL-Soft/alc.h>
 #include <OpenAL-Soft/al.h>
+#include <OpenAL-Soft/alext.h>
 #endif
 #else
 #include <AL/alc.h>

@@ -84,18 +84,19 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 	#ifdef ALC_EXT_EFX
 	switch (type)
 	{
-		case TYPE_LOWPASS:
-			alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
-			break;
-		case TYPE_HIGHPASS:
-			alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
-			break;
-		case TYPE_BANDPASS:
-			alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_BANDPASS);
-			break;
-		case TYPE_MAX_ENUM:
-			break;
+	case TYPE_LOWPASS:
+		alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+		break;
+	case TYPE_HIGHPASS:
+		alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
+		break;
+	case TYPE_BANDPASS:
+		alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_BANDPASS);
+		break;
+	case TYPE_MAX_ENUM:
+		break;
 	}
+
 	//failed to make filter specific type - not supported etc.
 	if (alGetError() != AL_NO_ERROR)
 	{
@@ -105,21 +106,21 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 
 	switch (type)
 	{
-		case TYPE_LOWPASS:
-			alFilterf(filter, AL_LOWPASS_GAIN, clampf(params[0], AL_LOWPASS_MIN_GAIN, AL_LOWPASS_MAX_GAIN));
-			alFilterf(filter, AL_LOWPASS_GAINHF, clampf(params[1], AL_LOWPASS_MIN_GAINHF, AL_LOWPASS_MAX_GAINHF));
-			break;
-		case TYPE_HIGHPASS:
-			alFilterf(filter, AL_HIGHPASS_GAIN, clampf(params[0], AL_HIGHPASS_MIN_GAIN, AL_HIGHPASS_MAX_GAIN));
-			alFilterf(filter, AL_HIGHPASS_GAINLF, clampf(params[1], AL_HIGHPASS_MIN_GAINLF, AL_HIGHPASS_MAX_GAINLF));
-			break;
-		case TYPE_BANDPASS:
-			alFilterf(filter, AL_BANDPASS_GAIN, clampf(params[0], AL_BANDPASS_MIN_GAIN, AL_BANDPASS_MAX_GAIN));
-			alFilterf(filter, AL_BANDPASS_GAINLF, clampf(params[1], AL_BANDPASS_MIN_GAINLF, AL_BANDPASS_MAX_GAINLF));
-			alFilterf(filter, AL_BANDPASS_GAINHF, clampf(params[2], AL_BANDPASS_MIN_GAINHF, AL_BANDPASS_MAX_GAINHF));
-			break;
-		case TYPE_MAX_ENUM:
-			break;
+	case TYPE_LOWPASS:
+		alFilterf(filter, AL_LOWPASS_GAIN, clampf(params[0], AL_LOWPASS_MIN_GAIN, AL_LOWPASS_MAX_GAIN));
+		alFilterf(filter, AL_LOWPASS_GAINHF, clampf(params[1], AL_LOWPASS_MIN_GAINHF, AL_LOWPASS_MAX_GAINHF));
+		break;
+	case TYPE_HIGHPASS:
+		alFilterf(filter, AL_HIGHPASS_GAIN, clampf(params[0], AL_HIGHPASS_MIN_GAIN, AL_HIGHPASS_MAX_GAIN));
+		alFilterf(filter, AL_HIGHPASS_GAINLF, clampf(params[1], AL_HIGHPASS_MIN_GAINLF, AL_HIGHPASS_MAX_GAINLF));
+		break;
+	case TYPE_BANDPASS:
+		alFilterf(filter, AL_BANDPASS_GAIN, clampf(params[0], AL_BANDPASS_MIN_GAIN, AL_BANDPASS_MAX_GAIN));
+		alFilterf(filter, AL_BANDPASS_GAINLF, clampf(params[1], AL_BANDPASS_MIN_GAINLF, AL_BANDPASS_MAX_GAINLF));
+		alFilterf(filter, AL_BANDPASS_GAINHF, clampf(params[2], AL_BANDPASS_MIN_GAINHF, AL_BANDPASS_MAX_GAINHF));
+		break;
+	case TYPE_MAX_ENUM:
+		break;
 	}
 	#endif
 
