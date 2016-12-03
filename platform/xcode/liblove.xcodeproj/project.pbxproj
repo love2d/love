@@ -853,6 +853,12 @@
 		FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */; };
 		FA1DC2631C5D9555008F99A0 /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */; };
 		FA1DC2641C5D9555008F99A0 /* HashFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2621C5D9555008F99A0 /* HashFunction.h */; };
+		FA1E887E1DF363CD00E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E887C1DF363CD00E808AA /* Filter.cpp */; };
+		FA1E887F1DF363CD00E808AA /* Filter.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E887D1DF363CD00E808AA /* Filter.h */; };
+		FA1E88801DF363D400E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E887C1DF363CD00E808AA /* Filter.cpp */; };
+		FA1E88831DF363DB00E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E88811DF363DB00E808AA /* Filter.cpp */; };
+		FA1E88841DF363DB00E808AA /* Filter.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E88821DF363DB00E808AA /* Filter.h */; };
+		FA1E88851DF363E100E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E88811DF363DB00E808AA /* Filter.cpp */; };
 		FA27B39D1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39E1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39F1B498151008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B38B1B498151008A9DCE /* Video.h */; };
@@ -1605,6 +1611,10 @@
 		FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Video.lua; sourceTree = "<group>"; };
 		FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HashFunction.cpp; sourceTree = "<group>"; };
 		FA1DC2621C5D9555008F99A0 /* HashFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HashFunction.h; sourceTree = "<group>"; };
+		FA1E887C1DF363CD00E808AA /* Filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Filter.cpp; sourceTree = "<group>"; };
+		FA1E887D1DF363CD00E808AA /* Filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filter.h; sourceTree = "<group>"; };
+		FA1E88811DF363DB00E808AA /* Filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Filter.cpp; sourceTree = "<group>"; };
+		FA1E88821DF363DB00E808AA /* Filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filter.h; sourceTree = "<group>"; };
 		FA27B38A1B498151008A9DCE /* Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
 		FA27B38B1B498151008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
 		FA27B38C1B498151008A9DCE /* VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VideoStream.cpp; sourceTree = "<group>"; };
@@ -2271,6 +2281,8 @@
 			children = (
 				FA0B7B3E1A95902C000E1D17 /* Audio.cpp */,
 				FA0B7B3F1A95902C000E1D17 /* Audio.h */,
+				FA1E887C1DF363CD00E808AA /* Filter.cpp */,
+				FA1E887D1DF363CD00E808AA /* Filter.h */,
 				FA0B7B401A95902C000E1D17 /* null */,
 				FA0B7B451A95902C000E1D17 /* openal */,
 				FA4F2BA21DE1E36400CA37D7 /* RecordingDevice.cpp */,
@@ -2305,6 +2317,8 @@
 			children = (
 				FA0B7B461A95902C000E1D17 /* Audio.cpp */,
 				FA0B7B471A95902C000E1D17 /* Audio.h */,
+				FA1E88811DF363DB00E808AA /* Filter.cpp */,
+				FA1E88821DF363DB00E808AA /* Filter.h */,
 				FA0B7B481A95902C000E1D17 /* Pool.cpp */,
 				FA0B7B491A95902C000E1D17 /* Pool.h */,
 				FA4F2BAE1DE1E37B00CA37D7 /* RecordingDevice.cpp */,
@@ -3166,6 +3180,7 @@
 				FA0B7AC11A958EA3000E1D17 /* callbacks.h in Headers */,
 				FA0B7D8F1A95902C000E1D17 /* ddsHandler.h in Headers */,
 				FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */,
+				FA1E887F1DF363CD00E808AA /* Filter.h in Headers */,
 				FA27B3C21B4985BF008A9DCE /* wrap_VideoStream.h in Headers */,
 				FA0B7AA31A958EA3000E1D17 /* b2PulleyJoint.h in Headers */,
 				FA0B7B2F1A958EA3000E1D17 /* utf8.h in Headers */,
@@ -3178,6 +3193,7 @@
 				FA0B7ED71A95902D000E1D17 /* Timer.h in Headers */,
 				FA0B7AC31A958EA3000E1D17 /* list.h in Headers */,
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
+				FA1E88841DF363DB00E808AA /* Filter.h in Headers */,
 				217DFC061D9F6D490055D849 /* tp.lua.h in Headers */,
 				FAB17BF71ABFC4B100F9BA27 /* lz4hc.h in Headers */,
 				FA0B7E831A95902C000E1D17 /* Shape.h in Headers */,
@@ -3706,6 +3722,7 @@
 				FA0B7AD01A958EA3000E1D17 /* peer.c in Sources */,
 				FA27B3C11B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */,
 				FA0B791C1A958E3B000E1D17 /* b64.cpp in Sources */,
+				FA1E88851DF363E100E808AA /* Filter.cpp in Sources */,
 				FA0B7D941A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */,
 				FA27B3A11B498151008A9DCE /* VideoStream.cpp in Sources */,
@@ -3845,6 +3862,7 @@
 				FA0B7ED51A95902D000E1D17 /* Timer.cpp in Sources */,
 				FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */,
 				FA27B3B41B498151008A9DCE /* wrap_Video.cpp in Sources */,
+				FA1E88801DF363D400E808AA /* Filter.cpp in Sources */,
 				FA0B7AA81A958EA3000E1D17 /* b2RopeJoint.cpp in Sources */,
 				FA0B7ACC1A958EA3000E1D17 /* list.c in Sources */,
 				FA0B7DEF1A95902C000E1D17 /* Mouse.cpp in Sources */,
@@ -4019,6 +4037,7 @@
 				FA27B3C01B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */,
 				FA0B7D931A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */,
+				FA1E88831DF363DB00E808AA /* Filter.cpp in Sources */,
 				FA0B7A2C1A958EA3000E1D17 /* b2CollideCircle.cpp in Sources */,
 				FA27B3A01B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7CEB1A95902C000E1D17 /* Event.cpp in Sources */,
@@ -4158,6 +4177,7 @@
 				217DFC0B1D9F6D490055D849 /* unixtcp.c in Sources */,
 				FA0B7AAD1A958EA3000E1D17 /* b2WheelJoint.cpp in Sources */,
 				FA0B7DEE1A95902C000E1D17 /* Mouse.cpp in Sources */,
+				FA1E887E1DF363CD00E808AA /* Filter.cpp in Sources */,
 				FA0B7D281A95902C000E1D17 /* wrap_GlyphData.cpp in Sources */,
 				FA0B7DE21A95902C000E1D17 /* wrap_RandomGenerator.cpp in Sources */,
 				FA0B79401A958E3B000E1D17 /* utf8.cpp in Sources */,
