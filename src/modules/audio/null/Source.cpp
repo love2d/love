@@ -128,18 +128,20 @@ void Source::getDirection(float *) const
 {
 }
 
-void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume, float outerHighGain)
 {
 	coneInnerAngle = innerAngle;
 	coneOuterAngle = outerAngle;
 	coneOuterVolume = outerVolume;
+	coneOuterHighGain = outerHighGain;
 }
 
-void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume, float &outerHighGain) const
 {
 	innerAngle = coneInnerAngle;
 	outerAngle = coneOuterAngle;
 	outerVolume = coneOuterVolume;
+	outerHighGain = coneOuterHighGain;
 }
 
 void Source::setRelative(bool enable)
@@ -212,6 +214,16 @@ float Source::getMaxDistance() const
 	return this->maxDistance;
 }
 
+void Source::setAirAbsorptionFactor(float factor)
+{
+	absorptionFactor = factor;
+}
+
+float Source::getAirAbsorptionFactor() const
+{
+	return absorptionFactor;
+}
+
 int Source::getChannels() const
 {
 	return 2;
@@ -238,6 +250,26 @@ bool Source::setFilter()
 }
 
 bool Source::getFilter(love::audio::Filter::Type &, std::vector<float> &)
+{
+	return false;
+}
+
+bool Source::setSceneEffect(int, int)
+{
+	return false;
+}
+
+bool Source::setSceneEffect(int, int, love::audio::Filter::Type, std::vector<float> &)
+{
+	return false;
+}
+
+bool Source::setSceneEffect(int)
+{
+	return false;
+}
+
+bool Source::getSceneEffect(int, int &, love::audio::Filter::Type &, std::vector<float> &)
 {
 	return false;
 }

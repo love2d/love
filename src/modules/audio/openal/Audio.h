@@ -35,6 +35,7 @@
 #include "sound/SoundData.h"
 
 #include "Source.h"
+#include "Effect.h"
 #include "Pool.h"
 #include "thread/threads.h"
 
@@ -105,11 +106,23 @@ public:
 
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
+	//void setMeter(float scale);
+	//float getMeter() const;
 
 	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
+
+	bool setSceneEffect(int slot, Effect::Type type, std::vector<float> &params);
+	bool setSceneEffect(int slot);
+	bool getSceneEffect(int slot, Effect::Type &type, std::vector<float> &params);
+	int getMaxSceneEffects() const;
+	int getMaxSourceEffects() const;
+	bool isEFXsupported() const;
+
+	ALuint getSceneEffectID(int slot);
+	int getSceneEffectIndex(ALuint effect);
 
 private:
 	void initializeEFX();
@@ -121,6 +134,13 @@ private:
 
 	// The OpenAL context.
 	ALCcontext *context;
+
+	// The OpenAL effects
+	std::vector<Effect*> effects;
+	std::vector<ALuint> effectSlots;
+	std::map<ALuint, int> effectIndex;
+	int MAX_SCENE_EFFECTS = 16;
+	int MAX_SOURCE_EFFECTS = 16;
 
 	// The Pool.
 	Pool *pool;
@@ -148,7 +168,7 @@ private:
 	PoolThread *poolThread;
 
 	DistanceModel distanceModel;
-
+	float metersPerUnit = 1.0;
 }; // Audio
 
 #ifdef ALC_EXT_EFX

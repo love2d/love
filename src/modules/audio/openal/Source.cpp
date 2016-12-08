@@ -28,6 +28,8 @@
 #include <iostream>
 #include <algorithm>
 
+#define audiomodule() (Module::getInstance<Audio>(Module::M_AUDIO))
+
 namespace love
 {
 namespace audio
@@ -120,6 +122,8 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, sampleRate(soundData->getSampleRate())
 	, channels(soundData->getChannels())
 	, bitDepth(soundData->getBitDepth())
+	, sendfilters(audiomodule()->getMaxSourceEffects(), nullptr)
+	, sendtargets(audiomodule()->getMaxSourceEffects(), AL_EFFECTSLOT_NULL)
 {
 	ALenum fmt = Audio::getFormat(soundData->getBitDepth(), soundData->getChannels());
 	if (fmt == AL_NONE)
@@ -142,6 +146,8 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
 	, unusedBufferTop(MAX_BUFFERS - 1)
+	, sendfilters(audiomodule()->getMaxSourceEffects(), nullptr)
+	, sendtargets(audiomodule()->getMaxSourceEffects(), AL_EFFECTSLOT_NULL)
 {
 	if (Audio::getFormat(decoder->getBitDepth(), decoder->getChannels()) == AL_NONE)
 		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
@@ -163,6 +169,8 @@ Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels)
 	, sampleRate(sampleRate)
 	, channels(channels)
 	, bitDepth(bitDepth)
+	, sendfilters(audiomodule()->getMaxSourceEffects(), nullptr)
+	, sendtargets(audiomodule()->getMaxSourceEffects(), AL_EFFECTSLOT_NULL)
 {
 	ALenum fmt = Audio::getFormat(bitDepth, channels);
 	if (fmt == AL_NONE)
@@ -202,6 +210,8 @@ Source::Source(const Source &s)
 	, decoder(nullptr)
 	, toLoop(0)
 	, unusedBufferTop(s.sourceType == TYPE_STREAM ? MAX_BUFFERS - 1 : -1)
+	, sendfilters(s.sendfilters)
+	, sendtargets(s.sendtargets)
 {
 	if (sourceType == TYPE_STREAM)
 	{
@@ -214,8 +224,8 @@ Source::Source(const Source &s)
 		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
 			unusedBuffers[i] = streamBuffers[i];
 	}
-	if (s.filter)
-		filter = s.filter->clone();
+	if (s.directfilter)
+		directfilter = s.directfilter->clone();
 
 	setFloatv(position, s.position);
 	setFloatv(velocity, s.velocity);
@@ -230,8 +240,12 @@ Source::~Source()
 	if (sourceType != TYPE_STATIC)
 		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
 
-	if (filter)
-		delete filter;
+	if (directfilter)
+		delete directfilter;
+
+	for (auto sf : sendfilters)
+		if (sf != nullptr)
+			delete sf;
 }
 
 love::audio::Source *Source::clone()
@@ -619,7 +633,7 @@ void Source::getDirection(float *v) const
 		setFloatv(v, direction);
 }
 
-void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume, float outerHighGain)
 {
 	if (channels > 1)
 		throw SpatialSupportException();
@@ -627,16 +641,20 @@ void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
 	cone.innerAngle  = (int) LOVE_TODEG(innerAngle);
 	cone.outerAngle  = (int) LOVE_TODEG(outerAngle);
 	cone.outerVolume = outerVolume;
+	cone.outerHighGain = outerHighGain;
 
 	if (valid)
 	{
 		alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 		alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
 		alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
+		#ifdef ALC_EXT_EFX
+		alSourcef(source, AL_CONE_OUTER_GAINHF, cone.outerHighGain);
+		#endif
 	}
 }
 
-void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume, float &outerHighGain) const
 {
 	if (channels > 1)
 		throw SpatialSupportException();
@@ -644,6 +662,7 @@ void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) c
 	innerAngle  = LOVE_TORAD(cone.innerAngle);
 	outerAngle  = LOVE_TORAD(cone.outerAngle);
 	outerVolume = cone.outerVolume;
+	outerHighGain = cone.outerHighGain;
 }
 
 void Source::setRelative(bool enable)
@@ -996,7 +1015,13 @@ void Source::reset()
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
 	alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
 	#ifdef ALC_EXT_EFX
-	alSourcei(source, AL_DIRECT_FILTER, filter ? filter->getFilter() : AL_FILTER_NULL);
+	alSourcef(source, AL_AIR_ABSORPTION_FACTOR, absorptionFactor);
+	alSourcef(source, AL_CONE_OUTER_GAINHF, cone.outerHighGain);
+	alSourcef(source, AL_ROOM_ROLLOFF_FACTOR, rolloffFactor); //reverb-specific rolloff
+	alSourcei(source, AL_DIRECT_FILTER, directfilter ? directfilter->getFilter() : AL_FILTER_NULL);
+	for (unsigned int i = 0; i < sendtargets.size(); i++)
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[i], i, sendfilters[i] ? sendfilters[i]->getFilter() : AL_FILTER_NULL);
+	//alGetError();
 	#endif
 }
 
@@ -1199,6 +1224,29 @@ float Source::getMaxDistance() const
 	return maxDistance;
 }
 
+void Source::setAirAbsorptionFactor(float factor)
+{
+	if (channels > 1)
+		throw SpatialSupportException();
+
+	absorptionFactor = factor;
+	#ifdef ALC_EXT_EFX
+	if (valid)
+	{
+		alSourcef(source, AL_AIR_ABSORPTION_FACTOR, absorptionFactor);
+		//alGetError();
+	}
+	#endif
+}
+
+float Source::getAirAbsorptionFactor() const
+{
+	if (channels > 1)
+		throw SpatialSupportException();
+
+	return absorptionFactor;
+}
+
 int Source::getChannels() const
 {
 	return channels;
@@ -1206,14 +1254,18 @@ int Source::getChannels() const
 
 bool Source::setFilter(love::audio::Filter::Type type, std::vector<float> &params)
 {
-	if (!filter)
-		filter = new Filter();
+	if (!directfilter)
+		directfilter = new Filter();
 
-	bool result = filter->setParams(type, params);
+	bool result = directfilter->setParams(type, params);
 
 	#ifdef ALC_EXT_EFX
 	if (valid)
-		alSourcei(source, AL_DIRECT_FILTER, filter->getFilter());
+	{
+		//in case of failure contains AL_FILTER_NULL, a valid non-filter
+		alSourcei(source, AL_DIRECT_FILTER, directfilter->getFilter());
+		//alGetError();
+	}
 	#endif
 
 	return result;
@@ -1221,14 +1273,17 @@ bool Source::setFilter(love::audio::Filter::Type type, std::vector<float> &param
 
 bool Source::setFilter()
 {
-	if (filter)
-		delete filter;
+	if (directfilter)
+		delete directfilter;
 
-	filter = nullptr;
+	directfilter = nullptr;
 
 	#ifdef ALC_EXT_EFX
 	if (valid)
+	{
 		alSourcei(source, AL_DIRECT_FILTER, AL_FILTER_NULL);
+		//alGetError();
+	}
 	#endif
 
 	return true;
@@ -1236,11 +1291,99 @@ bool Source::setFilter()
 
 bool Source::getFilter(love::audio::Filter::Type &type, std::vector<float> &params)
 {
-	if (!filter)
+	if (!directfilter)
 		return false;
 
-	type = filter->getType();
-	params = filter->getParams();
+	type = directfilter->getType();
+	params = directfilter->getParams();
+
+	return true;
+}
+
+bool Source::setSceneEffect(int slot, int effect)
+{
+	if (slot < 0 || slot >= (int)sendtargets.size())
+		return false;
+
+	sendtargets[slot] = dynamic_cast<Audio*>(audiomodule())->getSceneEffectID(effect);
+
+	if (sendfilters[slot])
+		delete sendfilters[slot];
+
+	sendfilters[slot] = nullptr;
+
+	#ifdef ALC_EXT_EFX
+	if (valid)
+	{
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[slot], slot, AL_FILTER_NULL);
+		//alGetError();
+	}
+	#endif
+
+	return true;
+}
+
+bool Source::setSceneEffect(int slot, int effect, love::audio::Filter::Type type, std::vector<float> &params)
+{
+	if (slot < 0 || slot >= (int)sendtargets.size())
+		return false;
+
+	sendtargets[slot] = dynamic_cast<Audio*>(audiomodule())->getSceneEffectID(effect);
+
+	if (!sendfilters[slot])
+		sendfilters[slot] = new Filter();
+
+	sendfilters[slot]->setParams(type, params);
+
+	#ifdef ALC_EXT_EFX
+	if (valid)
+	{
+		//in case of failure contains AL_FILTER_NULL, a valid non-filter
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[slot], slot, sendfilters[slot]->getFilter());
+		//alGetError();
+	}
+	#endif
+	return true;
+}
+
+bool Source::setSceneEffect(int slot)
+{
+	if (slot < 0 || slot >= (int)sendtargets.size())
+		return false;
+
+	sendtargets[slot] = AL_EFFECTSLOT_NULL;
+
+	if (sendfilters[slot])
+		delete sendfilters[slot];
+	sendfilters[slot] = nullptr;
+
+	#ifdef ALC_EXT_EFX
+	if (valid)
+	{
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, slot, AL_FILTER_NULL);
+		//alGetError();
+	}
+	#endif
+
+	return true;
+}
+
+bool Source::getSceneEffect(int slot, int &effect, love::audio::Filter::Type &type, std::vector<float> &params)
+{
+	if (slot < 0 || slot >= (int)sendtargets.size())
+		return false;
+
+	if (sendtargets[slot] == AL_EFFECTSLOT_NULL)
+		return false;
+
+	effect = dynamic_cast<Audio*>(audiomodule())->getSceneEffectIndex(sendtargets[slot]);
+
+	if(sendfilters[slot])
+	{
+		type = sendfilters[slot]->getType();
+		params = sendfilters[slot]->getParams();
+	}
+
 	return true;
 }
 

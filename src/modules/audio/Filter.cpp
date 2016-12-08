@@ -67,12 +67,12 @@ StringMap<Filter::Type, Filter::TYPE_MAX_ENUM>::Entry Filter::typeEntries[] =
 
 StringMap<Filter::Type, Filter::TYPE_MAX_ENUM> Filter::types(Filter::typeEntries, sizeof(Filter::typeEntries));
 
+//all parameters are floats, therefore bare count will suffice
 std::map<Filter::Type, int> Filter::parameterCount =
 {
-	{Filter::TYPE_LOWPASS, 2},
-	{Filter::TYPE_HIGHPASS, 2},
-	{Filter::TYPE_BANDPASS, 3},
-	{Filter::TYPE_MAX_ENUM, 3},
+	{Filter::TYPE_LOWPASS, 1},
+	{Filter::TYPE_HIGHPASS, 1},
+	{Filter::TYPE_BANDPASS, 2},
 };
 
 } //audio

@@ -28,6 +28,7 @@
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "Source.h"
+#include "Effect.h"
 #include "RecordingDevice.h"
 
 namespace love
@@ -188,7 +189,8 @@ public:
 
 	virtual void setDopplerScale(float scale) = 0;
 	virtual float getDopplerScale() const = 0;
-
+	//virtual void setMeter(float scale) = 0;
+	//virtual float getMeter() const = 0;
 	/**
 	 * @return Reference to a vector of pointers to recording devices. May be empty.
 	 **/
@@ -205,6 +207,49 @@ public:
 	 * @param distanceModel Distance model.
 	 */
 	virtual void setDistanceModel(DistanceModel distanceModel) = 0;
+
+	/**
+	 * Sets scene EFX effect.
+	 * @param slot Slot to put effect into.
+	 * @param type Effect type to use.
+	 * @param params Effect description table.
+	 * @return true if successful, false otherwise.
+	 */
+	virtual bool setSceneEffect(int slot, Effect::Type type, std::vector<float> &params) = 0;
+
+	/**
+	 * Removes scene EFX effect.
+	 * @param slot Effect slot to clear.
+	 * @return true if successful, false otherwise.
+	 */
+	virtual bool setSceneEffect(int slot) = 0;
+
+	/**
+	 * Gets scene EFX effect.
+	 * @param slot Slot from which to get effect.
+	 * @param type Effect type.
+	 * @param params Effect description table.
+	 * @return true if effect was present, false otherwise.
+	 */
+	virtual bool getSceneEffect(int slot, Effect::Type &type, std::vector<float> &params) = 0;
+
+	/**
+	 * Gets maximum number of scene EFX effects.
+	 * @return number of effects.
+	 */
+	virtual int getMaxSceneEffects() const = 0;
+
+	/**
+	 * Gets maximum number of source EFX effects.
+	 * @return number of effects.
+	 */
+	virtual int getMaxSourceEffects() const = 0;
+
+	/**
+	 * Gets EFX (or analog) availability.
+	 * @return true if supported.
+	 */
+	virtual bool isEFXsupported() const = 0;
 
 private:
 

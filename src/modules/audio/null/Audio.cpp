@@ -143,7 +143,16 @@ float Audio::getDopplerScale() const
 {
 	return 1.0f;
 }
+/*
+void setMeter(float)
+{
+}
 
+float getMeter() const
+{
+	return 1.0f;
+}
+*/
 const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
 	return capture;
@@ -157,6 +166,36 @@ Audio::DistanceModel Audio::getDistanceModel() const
 void Audio::setDistanceModel(DistanceModel distanceModel)
 {
 	this->distanceModel = distanceModel;
+}
+
+bool Audio::setSceneEffect(int, Effect::Type, std::vector<float> &)
+{
+	return false;
+}
+
+bool Audio::setSceneEffect(int)
+{
+	return false;
+}
+
+bool Audio::getSceneEffect(int, Effect::Type &, std::vector<float> &)
+{
+	return false;
+}
+
+int Audio::getMaxSceneEffects() const
+{
+	return 0;
+}
+
+int Audio::getMaxSourceEffects() const
+{
+	return 0;
+}
+
+bool Audio::isEFXsupported() const
+{
+	return false;
 }
 
 } // null
