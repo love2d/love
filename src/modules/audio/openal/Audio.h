@@ -168,7 +168,7 @@ private:
 	PoolThread *poolThread;
 
 	DistanceModel distanceModel;
-	float metersPerUnit = 1.0;
+	//float metersPerUnit = 1.0;
 }; // Audio
 
 #ifdef ALC_EXT_EFX

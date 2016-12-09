@@ -274,7 +274,7 @@ bool Effect::setParams(Type type, const std::vector<float> &params)
 		int fine = AL_PITCH_SHIFTER_DEFAULT_FINE_TUNE;
 		if (!isnanf(params[1]))
 		{
-			coarse = (int)ceil(params[1]);
+			coarse = (int)floor(params[1]);
 			fine = (int)(fmod(params[1], 1.0)*100.0);
 			if (fine > 50)
 			{
@@ -286,7 +286,6 @@ bool Effect::setParams(Type type, const std::vector<float> &params)
 				fine += 100;
 				coarse -= 1;
 			}
-			std::cout << params[1] << " " << coarse << " " << fine << std::endl;
 			if (coarse > AL_PITCH_SHIFTER_MAX_COARSE_TUNE)
 			{
 				coarse = AL_PITCH_SHIFTER_MAX_COARSE_TUNE;
