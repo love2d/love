@@ -23,8 +23,6 @@
 // LOVE
 #include "wrap_Timer.h"
 
-#include "sdl/Timer.h"
-
 namespace love
 {
 namespace timer
@@ -86,7 +84,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 	Timer *instance = instance();
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new love::timer::sdl::Timer(); });
+		luax_catchexcept(L, [&](){ instance = new love::timer::Timer(); });
 	}
 	else
 		instance->retain();
