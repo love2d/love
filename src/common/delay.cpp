@@ -27,6 +27,8 @@ namespace love
 
 void sleep(unsigned int ms)
 {
+	// We don't need to initialize the SDL timer subsystem for SDL_Delay to
+	// function - and doing so causes SDL to create a worker thread.
 	SDL_Delay(ms);
 }
 

@@ -820,9 +820,6 @@
 		FA0B7ED11A95902C000E1D17 /* wrap_ThreadModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CB51A95902C000E1D17 /* wrap_ThreadModule.cpp */; };
 		FA0B7ED21A95902C000E1D17 /* wrap_ThreadModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CB51A95902C000E1D17 /* wrap_ThreadModule.cpp */; };
 		FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CB61A95902C000E1D17 /* wrap_ThreadModule.h */; };
-		FA0B7ED41A95902D000E1D17 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CB91A95902C000E1D17 /* Timer.cpp */; };
-		FA0B7ED51A95902D000E1D17 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CB91A95902C000E1D17 /* Timer.cpp */; };
-		FA0B7ED61A95902D000E1D17 /* Timer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CBA1A95902C000E1D17 /* Timer.h */; };
 		FA0B7ED71A95902D000E1D17 /* Timer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7CBB1A95902C000E1D17 /* Timer.h */; };
 		FA0B7ED81A95902D000E1D17 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CBC1A95902C000E1D17 /* wrap_Timer.cpp */; };
 		FA0B7ED91A95902D000E1D17 /* wrap_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7CBC1A95902C000E1D17 /* wrap_Timer.cpp */; };
@@ -1585,8 +1582,6 @@
 		FA0B7CB41A95902C000E1D17 /* wrap_LuaThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_LuaThread.h; sourceTree = "<group>"; };
 		FA0B7CB51A95902C000E1D17 /* wrap_ThreadModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ThreadModule.cpp; sourceTree = "<group>"; };
 		FA0B7CB61A95902C000E1D17 /* wrap_ThreadModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ThreadModule.h; sourceTree = "<group>"; };
-		FA0B7CB91A95902C000E1D17 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
-		FA0B7CBA1A95902C000E1D17 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		FA0B7CBB1A95902C000E1D17 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		FA0B7CBC1A95902C000E1D17 /* wrap_Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Timer.cpp; sourceTree = "<group>"; };
 		FA0B7CBD1A95902C000E1D17 /* wrap_Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Timer.h; sourceTree = "<group>"; };
@@ -2882,22 +2877,12 @@
 		FA0B7CB71A95902C000E1D17 /* timer */ = {
 			isa = PBXGroup;
 			children = (
-				FA0B7CB81A95902C000E1D17 /* sdl */,
 				FA4B66C81ABBCF1900558F15 /* Timer.cpp */,
 				FA0B7CBB1A95902C000E1D17 /* Timer.h */,
 				FA0B7CBC1A95902C000E1D17 /* wrap_Timer.cpp */,
 				FA0B7CBD1A95902C000E1D17 /* wrap_Timer.h */,
 			);
 			path = timer;
-			sourceTree = "<group>";
-		};
-		FA0B7CB81A95902C000E1D17 /* sdl */ = {
-			isa = PBXGroup;
-			children = (
-				FA0B7CB91A95902C000E1D17 /* Timer.cpp */,
-				FA0B7CBA1A95902C000E1D17 /* Timer.h */,
-			);
-			path = sdl;
 			sourceTree = "<group>";
 		};
 		FA0B7CBE1A95902C000E1D17 /* touch */ = {
@@ -3175,7 +3160,6 @@
 				FA0B7EBA1A95902C000E1D17 /* Channel.h in Headers */,
 				FA0B7D3E1A95902C000E1D17 /* Image.h in Headers */,
 				FA0B7ECA1A95902C000E1D17 /* threads.h in Headers */,
-				FA0B7ED61A95902D000E1D17 /* Timer.h in Headers */,
 				FA0B7DB01A95902C000E1D17 /* wrap_CompressedImageData.h in Headers */,
 				FA0B7AC11A958EA3000E1D17 /* callbacks.h in Headers */,
 				FA0B7D8F1A95902C000E1D17 /* ddsHandler.h in Headers */,
@@ -3859,7 +3843,6 @@
 				FA0B7E1F1A95902C000E1D17 /* Physics.cpp in Sources */,
 				FA0B7E821A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA0B7ACE1A958EA3000E1D17 /* packet.c in Sources */,
-				FA0B7ED51A95902D000E1D17 /* Timer.cpp in Sources */,
 				FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */,
 				FA27B3B41B498151008A9DCE /* wrap_Video.cpp in Sources */,
 				FA1E88801DF363D400E808AA /* Filter.cpp in Sources */,
@@ -4170,7 +4153,6 @@
 				FA0B7E811A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA4F2BA81DE1E36400CA37D7 /* wrap_RecordingDevice.cpp in Sources */,
 				FA0B7B251A958EA3000E1D17 /* lutf8lib.c in Sources */,
-				FA0B7ED41A95902D000E1D17 /* Timer.cpp in Sources */,
 				FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */,
 				FA27B3B31B498151008A9DCE /* wrap_Video.cpp in Sources */,
 				FA0B7A611A958EA3000E1D17 /* b2ContactManager.cpp in Sources */,

@@ -948,25 +948,14 @@ source_group("modules\\thread\\sdl" FILES ${LOVE_SRC_MODULE_THREAD_SDL})
 # love.timer
 #
 
-set(LOVE_SRC_MODULE_TIMER_ROOT
+set(LOVE_SRC_MODULE_TIMER
 	src/modules/timer/Timer.cpp
 	src/modules/timer/Timer.h
 	src/modules/timer/wrap_Timer.cpp
 	src/modules/timer/wrap_Timer.h
 )
 
-set(LOVE_SRC_MODULE_TIMER_SDL
-	src/modules/timer/sdl/Timer.cpp
-	src/modules/timer/sdl/Timer.h
-)
-
-set(LOVE_SRC_MODULE_TIMER
-	${LOVE_SRC_MODULE_TIMER_ROOT}
-	${LOVE_SRC_MODULE_TIMER_SDL}
-)
-
-source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER_ROOT})
-source_group("modules\\timer\\sdl" FILES ${LOVE_SRC_MODULE_TIMER_SDL})
+source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER})
 
 #
 # love.touch
