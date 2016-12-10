@@ -83,12 +83,6 @@ public:
 	virtual bool setGamepadMapping(const std::string &pguid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput) = 0;
 
 	/**
-	 * Gets the joystick input value the gamepad input value is bound to for the
-	 * specified joystick product GUID.
-	 **/
-	virtual Joystick::JoystickInput getGamepadMapping(const std::string &pguid, Joystick::GamepadInput gpinput) = 0;
-
-	/**
 	 * Loads a newline-separated list of virtual Gamepad mapping strings for
 	 * multiple joysticks at a time. The mapping strings must have been
 	 * generated with saveGamepadMappings, via Steam, or some other tool which

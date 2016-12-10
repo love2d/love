@@ -152,6 +152,8 @@ public:
 	virtual float getGamepadAxis(GamepadAxis axis) const = 0;
 	virtual bool isGamepadDown(const std::vector<GamepadButton> &blist) const = 0;
 
+	virtual JoystickInput getGamepadMapping(const GamepadInput &input) const = 0;
+
 	virtual void *getHandle() const = 0;
 
 	virtual std::string getGUID() const = 0;

@@ -225,6 +225,59 @@ int w_Joystick_isGamepadDown(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_getGamepadMapping(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	const char *gpbindstr = luaL_checkstring(L, 2);
+	Joystick::GamepadInput gpinput;
+
+	if (Joystick::getConstant(gpbindstr, gpinput.axis))
+		gpinput.type = Joystick::INPUT_TYPE_AXIS;
+	else if (Joystick::getConstant(gpbindstr, gpinput.button))
+		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
+	else
+		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
+
+	Joystick::JoystickInput jinput;
+	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
+
+	luax_catchexcept(L, [&](){ jinput = j->getGamepadMapping(gpinput); });
+
+	if (jinput.type == Joystick::INPUT_TYPE_MAX_ENUM)
+		return 0;
+
+	const char *inputtypestr;
+	if (!Joystick::getConstant(jinput.type, inputtypestr))
+		return luaL_error(L, "Unknown joystick input type.");
+
+	lua_pushstring(L, inputtypestr);
+
+	const char *hatstr;
+	switch (jinput.type)
+	{
+	case Joystick::INPUT_TYPE_AXIS:
+		lua_pushinteger(L, jinput.axis + 1);
+		return 2;
+	case Joystick::INPUT_TYPE_BUTTON:
+		lua_pushinteger(L, jinput.button + 1);
+		return 2;
+	case Joystick::INPUT_TYPE_HAT:
+		lua_pushinteger(L, jinput.hat.index + 1);
+		if (Joystick::getConstant(jinput.hat.value, hatstr))
+		{
+			lua_pushstring(L, hatstr);
+			return 3;
+		}
+		else
+			return luaL_error(L, "Unknown joystick hat.");
+	default:
+		return luaL_error(L, "Unknown joystick input type.");
+	}
+	
+	return 1;
+}
+
 int w_Joystick_isVibrationSupported(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
@@ -282,6 +335,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "isGamepad", w_Joystick_isGamepad },
 	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
+	{ "getGamepadMapping", w_Joystick_getGamepadMapping },
 
 	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
 	{ "setVibration", w_Joystick_setVibration },
@@ -289,7 +343,6 @@ static const luaL_Reg w_Joystick_functions[] =
 
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },
-	{ "getGamepadMapping", w_getGamepadMapping },
 
 	{ 0, 0 },
 };

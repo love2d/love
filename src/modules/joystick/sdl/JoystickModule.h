@@ -56,14 +56,12 @@ public:
 	int getJoystickCount() const;
 
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
-	Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput);
 	void loadGamepadMappings(const std::string &mappings);
 	std::string saveGamepadMappings();
 
 private:
 
 	std::string stringFromGamepadInput(Joystick::GamepadInput gpinput) const;
-	Joystick::JoystickInput JoystickInputFromString(const std::string &str) const;
 	void removeBindFromMapString(std::string &mapstr, const std::string &joybindstr) const;
 
 	void checkGamepads(const std::string &guid) const;

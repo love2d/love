@@ -114,69 +114,6 @@ int w_setGamepadMapping(lua_State *L)
 	return 1;
 }
 
-int w_getGamepadMapping(lua_State *L)
-{
-	std::string guid;
-
-	// Accept either a GUID string or a Joystick object. This way we can re-use
-	// the function for Joystick:getGamepadMapping.
-	if (lua_type(L, 1) == LUA_TSTRING)
-		guid = luax_checkstring(L, 1);
-	else
-	{
-		Joystick *stick = luax_checkjoystick(L, 1);
-		guid = stick->getGUID();
-	}
-
-	const char *gpbindstr = luaL_checkstring(L, 2);
-	Joystick::GamepadInput gpinput;
-
-	if (Joystick::getConstant(gpbindstr, gpinput.axis))
-		gpinput.type = Joystick::INPUT_TYPE_AXIS;
-	else if (Joystick::getConstant(gpbindstr, gpinput.button))
-		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
-	else
-		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
-
-	Joystick::JoystickInput jinput;
-	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
-
-	luax_catchexcept(L, [&](){ jinput = instance()->getGamepadMapping(guid, gpinput); });
-
-	if (jinput.type == Joystick::INPUT_TYPE_MAX_ENUM)
-		return 0;
-
-	const char *inputtypestr;
-	if (!Joystick::getConstant(jinput.type, inputtypestr))
-		return luaL_error(L, "Unknown joystick input type.");
-
-	lua_pushstring(L, inputtypestr);
-
-	const char *hatstr;
-	switch (jinput.type)
-	{
-	case Joystick::INPUT_TYPE_AXIS:
-		lua_pushinteger(L, jinput.axis + 1);
-		return 2;
-	case Joystick::INPUT_TYPE_BUTTON:
-		lua_pushinteger(L, jinput.button + 1);
-		return 2;
-	case Joystick::INPUT_TYPE_HAT:
-		lua_pushinteger(L, jinput.hat.index + 1);
-		if (Joystick::getConstant(jinput.hat.value, hatstr))
-		{
-			lua_pushstring(L, hatstr);
-			return 3;
-		}
-		else
-			return luaL_error(L, "Unknown joystick hat.");
-	default:
-		break; // ?
-	}
-
-	return 1;
-}
-
 int w_loadGamepadMappings(lua_State *L)
 {
 	bool isfile = true;
@@ -229,7 +166,6 @@ static const luaL_Reg functions[] =
 	{ "getJoysticks", w_getJoysticks },
 	{ "getJoystickCount", w_getJoystickCount },
 	{ "setGamepadMapping", w_setGamepadMapping },
-	{ "getGamepadMapping", w_getGamepadMapping },
 	{ "loadGamepadMappings", w_loadGamepadMappings },
 	{ "saveGamepadMappings", w_saveGamepadMappings },
 	{ 0, 0 }
