@@ -62,6 +62,76 @@ int w_reset(lua_State *)
 	return 0;
 }
 
+int w_clear(lua_State *L)
+{
+	Colorf color;
+
+	if (lua_isnoneornil(L, 1))
+		color.set(0.0, 0.0, 0.0, 0.0);
+	else if (lua_istable(L, 1))
+	{
+		std::vector<Graphics::OptionalColorf> colors((size_t) lua_gettop(L));
+
+		for (int i = 0; i < lua_gettop(L); i++)
+		{
+			if (lua_isnoneornil(L, i + 1) || luax_objlen(L, i + 1) == 0)
+			{
+				colors[i].enabled = false;
+				continue;
+			}
+
+			for (int j = 1; j <= 4; j++)
+				lua_rawgeti(L, i + 1, j);
+
+			colors[i].enabled = true;
+			colors[i].c.r = (float) luaL_checknumber(L, -4);
+			colors[i].c.g = (float) luaL_checknumber(L, -3);
+			colors[i].c.b = (float) luaL_checknumber(L, -2);
+			colors[i].c.a = (float) luaL_optnumber(L, -1, 1.0);
+
+			lua_pop(L, 4);
+		}
+
+		luax_catchexcept(L, [&]() { instance()->clear(colors); });
+		return 0;
+	}
+	else
+	{
+		color.r = (float) luaL_checknumber(L, 1);
+		color.g = (float) luaL_checknumber(L, 2);
+		color.b = (float) luaL_checknumber(L, 3);
+		color.a = (float) luaL_optnumber(L, 4, 1.0);
+	}
+
+	luax_catchexcept(L, [&]() { instance()->clear(color); });
+	return 0;
+}
+
+int w_discard(lua_State *L)
+{
+	std::vector<bool> colorbuffers;
+
+	if (lua_istable(L, 1))
+	{
+		for (size_t i = 1; i <= luax_objlen(L, 1); i++)
+		{
+			lua_rawgeti(L, 1, i);
+			colorbuffers.push_back(luax_optboolean(L, -1, true));
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		bool discardcolor = luax_optboolean(L, 1, true);
+		size_t numbuffers = std::max((size_t) 1, instance()->getCanvas().size());
+		colorbuffers = std::vector<bool>(numbuffers, discardcolor);
+	}
+
+	bool stencil = luax_optboolean(L, 2, true);
+	instance()->discard(colorbuffers, stencil);
+	return 0;
+}
+
 int w_present(lua_State *L)
 {
 	luax_catchexcept(L, [&]() { instance()->present(L); });
@@ -105,149 +175,64 @@ int w_getDimensions(lua_State *L)
 	return 2;
 }
 
-int w_getPassWidth(lua_State *L)
+int w_setCanvas(lua_State *L)
 {
-	lua_pushinteger(L, instance()->getPassWidth());
-	return 1;
-}
+	// Disable stencil writes.
+	instance()->stopDrawToStencilBuffer();
 
-int w_getPassHeight(lua_State *L)
-{
-	lua_pushinteger(L, instance()->getPassHeight());
-	return 1;
-}
-
-int w_getPassDimensions(lua_State *L)
-{
-	lua_pushinteger(L, instance()->getPassWidth());
-	lua_pushinteger(L, instance()->getPassHeight());
-	return 2;
-}
-
-static int w__beginPass(lua_State *L)
-{
-	int nextstartidx = 1;
-
+	// called with none -> reset to default buffer
 	if (lua_isnoneornil(L, 1))
 	{
-		luax_catchexcept(L, [&]() { instance()->beginPass(PassInfo::BEGIN_LOAD, Colorf()); });
-		nextstartidx = 1;
+		instance()->setCanvas();
+		return 0;
 	}
-	else if (lua_isnumber(L, 1))
+
+	bool is_table = lua_istable(L, 1);
+	std::vector<Canvas *> canvases;
+
+	if (is_table)
 	{
-		Colorf c;
-		c.r = (float) luaL_checknumber(L, 1);
-		c.g = (float) luaL_checknumber(L, 2);
-		c.b = (float) luaL_checknumber(L, 3);
-
-		if (lua_isnumber(L, 4))
+		for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 		{
-			c.a = (float) lua_tonumber(L, 4);
-			nextstartidx = 5;
+			lua_rawgeti(L, 1, i);
+			canvases.push_back(luax_checkcanvas(L, -1));
+			lua_pop(L, 1);
 		}
-		else
-		{
-			c.a = 1.0f;
-			nextstartidx = 4;
-		}
-
-		luax_catchexcept(L, [&]() { instance()->beginPass(PassInfo::BEGIN_CLEAR, c); });
-	}
-	else if (luax_istype(L, 1, Canvas::type))
-	{
-		PassInfo::ColorAttachment attachment;
-		attachment.canvas = luax_checkcanvas(L, 1);
-		attachment.beginAction = PassInfo::BEGIN_LOAD;
-
-		if (lua_isnumber(L, 2))
-		{
-			attachment.beginAction = PassInfo::BEGIN_CLEAR;
-			attachment.clearColor.r = (float) luaL_checknumber(L, 2);
-			attachment.clearColor.g = (float) luaL_checknumber(L, 3);
-			attachment.clearColor.b = (float) luaL_checknumber(L, 4);
-
-			if (lua_isnumber(L, 5))
-			{
-				attachment.clearColor.a = (float) lua_tonumber(L, 5);
-				nextstartidx = 6;
-			}
-			else
-			{
-				attachment.clearColor.a = 1.0f;
-				nextstartidx = 5;
-			}
-		}
-		else
-			nextstartidx = 2;
-
-		PassInfo info;
-		info.addColorAttachment(attachment);
-
-		if (lua_isboolean(L, nextstartidx))
-		{
-			info.stencil = luax_toboolean(L, nextstartidx);
-			nextstartidx++;
-		}
-		else
-			info.stencil = false;
-
-		luax_catchexcept(L, [&]() { instance()->beginPass(info); });
 	}
 	else
 	{
-		luaL_checktype(L, 1, LUA_TTABLE);
-
-		int nattachments = std::max((int) luax_objlen(L, 1), 1);
-
-		if (nattachments > MAX_COLOR_RENDER_TARGETS)
-			return luaL_error(L, "Cannot render to %d Canvases at once!", nattachments);
-
-		PassInfo info;
-
-		for (int i = 1; i <= nattachments; i++)
-		{
-			lua_rawgeti(L, 1, i);
-			luaL_checktype(L, -1, LUA_TTABLE);
-
-			PassInfo::ColorAttachment attachment;
-			attachment.beginAction = PassInfo::BEGIN_LOAD;
-
-			lua_rawgeti(L, -1, 1);
-			attachment.canvas = luax_checkcanvas(L, -1);
-
-			lua_rawgeti(L, -2, 2);
-			if (!lua_isnoneornil(L, -1))
-			{
-				attachment.beginAction = PassInfo::BEGIN_CLEAR;
-
-				for (int j = 3; j < 6; j++)
-					lua_rawgeti(L, -j, j);
-
-				attachment.clearColor.r = (float) luaL_checknumber(L, -4);
-				attachment.clearColor.g = (float) luaL_checknumber(L, -3);
-				attachment.clearColor.b = (float) luaL_checknumber(L, -2);
-				attachment.clearColor.a = (float) luaL_optnumber(L, -1, 1.0);
-			}
-
-			lua_pop(L, 2 + (attachment.beginAction == PassInfo::BEGIN_CLEAR ? 4 : 1));
-
-			info.addColorAttachment(attachment);
-		}
-
-		info.stencil = luax_boolflag(L, 1, "stencil", false);
-
-		luax_catchexcept(L, [&]() { instance()->beginPass(info); });
-
-		nextstartidx = 2;
+		for (int i = 1; i <= lua_gettop(L); i++)
+			canvases.push_back(luax_checkcanvas(L, i));
 	}
 
-	return nextstartidx;
+	luax_catchexcept(L, [&]() {
+		if (canvases.size() > 0)
+			instance()->setCanvas(canvases);
+		else
+			instance()->setCanvas();
+	});
+	
+	return 0;
 }
 
-int w_beginPass(lua_State *L)
+int w_getCanvas(lua_State *L)
 {
-	w__beginPass(L);
-	return 0;
+	const std::vector<Canvas *> canvases = instance()->getCanvas();
+	int n = 0;
+
+	for (Canvas *c : canvases)
+	{
+		luax_pushtype(L, c);
+		n++;
+	}
+
+	if (n == 0)
+	{
+		lua_pushnil(L);
+		n = 1;
+	}
+	
+	return n;
 }
 
 static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *gd)
@@ -262,96 +247,6 @@ static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *
 	}
 	else
 		delete ref;
-}
-
-static int w__endPass(lua_State *L, int startidx)
-{
-	if (lua_isnoneornil(L, startidx))
-	{
-		luax_catchexcept(L, []() { instance()->endPass(); });
-	}
-	else
-	{
-		int x, y, w, h;
-
-		if (lua_isnumber(L, startidx))
-		{
-			x = (int) luaL_checknumber(L, 1);
-			y = (int) luaL_checknumber(L, 2);
-			w = (int) luaL_checknumber(L, 3);
-			h = (int) luaL_checknumber(L, 4);
-			startidx += 4;
-		}
-		else
-		{
-			x = 0;
-			y = 0;
-			w = instance()->getPassWidth();
-			h = instance()->getPassHeight();
-		}
-
-		luaL_checktype(L, startidx, LUA_TFUNCTION);
-
-		Graphics::ScreenshotInfo info;
-		info.callback = screenshotCallback;
-
-		lua_pushvalue(L, startidx);
-		info.ref = luax_refif(L, LUA_TFUNCTION);
-		lua_pop(L, 1);
-
-		luax_catchexcept(L,
-			[&]() { instance()->endPass(x, y, w, h, &info, L); },
-			[&](bool except) { if (except) delete info.ref; }
-		);
-	}
-
-	return 0;
-}
-
-int w_endPass(lua_State *L)
-{
-	return w__endPass(L, 1);
-}
-
-int w_renderPass(lua_State *L)
-{
-	int startidx = w__beginPass(L);
-
-	if (lua_type(L, startidx) != LUA_TFUNCTION)
-	{
-		w__endPass(L, startidx + 1);
-		luaL_checktype(L, startidx, LUA_TFUNCTION);
-		return 0;
-	}
-
-	int nargs = lua_gettop(L) - startidx;
-	int status = lua_pcall(L, nargs, 0, 0);
-
-	w__endPass(L, startidx + 1);
-
-	if (status != 0)
-		return lua_error(L);
-
-	return 0;
-}
-
-int w_isPassActive(lua_State *L)
-{
-	luax_pushboolean(L, instance()->isPassActive());
-	return 1;
-}
-
-int w_getPassCanvases(lua_State *L)
-{
-	if (!instance()->isPassActive())
-		return 0;
-
-	const PassInfo &info = instance()->getActivePass();
-
-	for (const auto &attachment : info.colorAttachments)
-		luax_pushtype(L, attachment.canvas);
-
-	return info.colorAttachmentCount;
 }
 
 int w_captureScreenshot(lua_State *L)
@@ -1600,8 +1495,8 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.drawCalls);
 	lua_setfield(L, -2, "drawcalls");
 
-	lua_pushinteger(L, stats.renderPasses);
-	lua_setfield(L, -2, "renderpasses");
+	lua_pushinteger(L, stats.canvasSwitches);
+	lua_setfield(L, -2, "canvasswitches");
 
 	lua_pushinteger(L, stats.shaderSwitches);
 	lua_setfield(L, -2, "shaderswitches");
@@ -2142,6 +2037,8 @@ int w_inverseTransformPoint(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "reset", w_reset },
+	{ "clear", w_clear },
+	{ "discard", w_discard },
 	{ "present", w_present },
 
 	{ "newImage", w_newImage },
@@ -2155,6 +2052,9 @@ static const luaL_Reg functions[] =
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },
 	{ "_newVideo", w_newVideo },
+
+	{ "setCanvas", w_setCanvas },
+	{ "getCanvas", w_getCanvas },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -2195,12 +2095,6 @@ static const luaL_Reg functions[] =
 	{ "getSystemLimits", w_getSystemLimits },
 	{ "getStats", w_getStats },
 
-	{ "beginPass", w_beginPass },
-	{ "endPass", w_endPass },
-	{ "renderPass", w_renderPass },
-	{ "isPassActive", w_isPassActive },
-	{ "getPassCanvases", w_getPassCanvases },
-
 	{ "captureScreenshot", w_captureScreenshot },
 
 	{ "draw", w_draw },
@@ -2214,9 +2108,6 @@ static const luaL_Reg functions[] =
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },
-	{ "getPassWidth", w_getPassWidth },
-	{ "getPassHeight", w_getPassHeight },
-	{ "getPassDimensions", w_getPassDimensions },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },

@@ -58,10 +58,8 @@ Graphics::Graphics()
 	, height(0)
 	, created(false)
 	, active(true)
-	, canCaptureScreenshot(true)
-	, currentPass()
 	, writingToStencil(false)
-	, renderPassCount(0)
+	, canvasSwitchCount(0)
 {
 	gl = OpenGL();
 
@@ -132,6 +130,7 @@ void Graphics::restoreState(const DisplayState &s)
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
+	setCanvas(s.canvases);
 
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
@@ -174,6 +173,22 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	setFont(s.font.get());
 	setShader(s.shader.get());
 
+	bool canvaseschanged = s.canvases.size() != cur.canvases.size();
+	if (!canvaseschanged)
+	{
+		for (size_t i = 0; i < s.canvases.size() && i < cur.canvases.size(); i++)
+		{
+			if (s.canvases[i].get() != cur.canvases[i].get())
+			{
+				canvaseschanged = true;
+				break;
+			}
+		}
+	}
+
+	if (canvaseschanged)
+		setCanvas(s.canvases);
+
 	if (s.colorMask != cur.colorMask)
 		setColorMask(s.colorMask);
 
@@ -211,7 +226,7 @@ void Graphics::setViewportSize(int width, int height)
 	this->width = width;
 	this->height = height;
 
-	if (currentPass.active && currentPass.info.colorAttachmentCount == 0)
+	if (states.back().canvases.empty())
 	{
 		// Set the viewport to top-left corner.
 		gl.setViewport({0, 0, width, height}, false);
@@ -427,97 +442,72 @@ void Graphics::reset()
 	origin();
 }
 
-void Graphics::beginPass(PassInfo::BeginAction beginAction, Colorf clearColor)
+void Graphics::setCanvas(Canvas *canvas)
 {
-	if (currentPass.active)
-		throw love::Exception("Cannot call beginPass while another render pass is active!");
+	if (canvas == nullptr)
+		return setCanvas();
 
-	currentPass.active = true;
-
-	OpenGL::TempDebugGroup debuggroup("Render Pass begin");
-
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
-
-	gl.setViewport({0, 0, width, height}, false);
-
-	// The projection matrix is flipped compared to rendering to a canvas, due
-	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	gl.matrices.projection = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
-
-	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-	{
-		if (isGammaCorrect() && !gl.hasFramebufferSRGB())
-			gl.setFramebufferSRGB(true);
-		else if (!isGammaCorrect() && gl.hasFramebufferSRGB())
-			gl.setFramebufferSRGB(false);
-	}
-
-	// Always clear the stencil buffer, for now.
-	GLbitfield clearflags = GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-
-	if (beginAction == PassInfo::BEGIN_CLEAR)
-	{
-		Colorf c = clearColor;
-		gammaCorrectColor(c);
-
-		glClearColor(c.r, c.g, c.b, c.a);
-		clearflags |= GL_COLOR_BUFFER_BIT;
-	}
-
-	if (clearflags != 0)
-		glClear(clearflags);
-
-	PassInfo info;
-	info.colorAttachmentCount = 0;
-	info.stencil = true;
-
-	currentPass.info = info;
-
-	renderPassCount++;
-
-	canCaptureScreenshot = false;
+	std::vector<Canvas *> canvases = {canvas};
+	setCanvas(canvases);
 }
 
-void Graphics::beginPass(const PassInfo &info)
+void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 {
-	if (info.colorAttachmentCount == 0)
-		throw love::Exception("At least one Canvas must be specified for an off-screen render pass.");
+	DisplayState &state = states.back();
+	int ncanvases = (int) canvases.size();
 
-	if (currentPass.active)
-		throw love::Exception("Cannot call beginPass while another render pass is active!");
+	if (ncanvases == 0)
+		return setCanvas();
 
-	if (info.colorAttachmentCount > gl.getMaxRenderTargets())
-		throw love::Exception("This system can't simultaneously render to %d canvases.", info.colorAttachmentCount);
+	if (ncanvases == (int) state.canvases.size())
+	{
+		bool modified = false;
 
-	Canvas *firstcanvas = info.colorAttachments[0].canvas;
+		for (int i = 0; i < ncanvases; i++)
+		{
+			if (canvases[i] != state.canvases[i].get())
+			{
+				modified = true;
+				break;
+			}
+		}
 
-	bool multiformatsupported = isSupported(Feature::FEATURE_MULTI_CANVAS_FORMATS);
+		if (!modified)
+			return;
+	}
+
+	if (ncanvases > gl.getMaxRenderTargets())
+		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
+
+	Canvas *firstcanvas = canvases[0];
+
+	bool multiformatsupported = Canvas::isMultiFormatMultiCanvasSupported();
 	PixelFormat firstformat = firstcanvas->getPixelFormat();
 
 	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
 
-	for (int i = 1; i < info.colorAttachmentCount; i++)
+	for (int i = 1; i < ncanvases; i++)
 	{
-		Canvas *c = info.colorAttachments[i].canvas;
+		Canvas *c = canvases[i];
 
 		if (c->getWidth() != firstcanvas->getWidth() || c->getHeight() != firstcanvas->getHeight())
-			throw love::Exception("All canvases in a render pass must have the same dimensions.");
+			throw love::Exception("All canvases in must have the same dimensions.");
 
 		if (!multiformatsupported && c->getPixelFormat() != firstformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
-			throw love::Exception("All Canvases in a render pass must have the same requested MSAA value.");
+			throw love::Exception("All Canvases in must have the same requested MSAA value.");
 
 		if (c->getPixelFormat() == PIXELFORMAT_sRGBA8)
 			hasSRGBcanvas = true;
 	}
 
-	OpenGL::TempDebugGroup debuggroup("Render Pass begin");
+	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
 
-	bindCachedFBOForPass(info);
+	endPass();
 
-	currentPass.active = true;
+	bindCachedFBO(canvases);
 
 	int w = firstcanvas->getWidth();
 	int h = firstcanvas->getHeight();
@@ -534,73 +524,102 @@ void Graphics::beginPass(const PassInfo &info)
 			gl.setFramebufferSRGB(false);
 	}
 
-	GLbitfield clearflags = 0;
+	std::vector<StrongRef<Canvas>> canvasrefs;
+	canvasrefs.reserve(canvases.size());
 
-	// Take a single-color clear codepath if there's only one specified Canvas.
-	// The multi-color codepath (in the loop below) assumes MRT functions are
-	// available, and also may call more expensive GL functions which are
-	// unnecessary if only one Canvas is used.
-	if (info.colorAttachmentCount <= 1)
+	for (Canvas *c : canvases)
+		canvasrefs.push_back(c);
+
+	std::swap(state.canvases, canvasrefs);
+
+	canvasSwitchCount++;
+}
+
+void Graphics::setCanvas(const std::vector<StrongRef<Canvas>> &canvases)
+{
+	std::vector<Canvas *> canvaslist;
+	canvaslist.reserve(canvases.size());
+
+	for (const StrongRef<Canvas> &c : canvases)
+		canvaslist.push_back(c.get());
+
+	return setCanvas(canvaslist);
+}
+
+void Graphics::setCanvas()
+{
+	DisplayState &state = states.back();
+
+	if (state.canvases.empty())
+		return;
+
+	OpenGL::TempDebugGroup debuggroup("setCanvas()");
+
+	endPass();
+
+	state.canvases.clear();
+
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
+	gl.setViewport({0, 0, width, height}, false);
+
+	// The projection matrix is flipped compared to rendering to a canvas, due
+	// to OpenGL considering (0,0) bottom-left instead of top-left.
+	gl.matrices.projection = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+
+	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
-		if (info.colorAttachmentCount > 0 && info.colorAttachments[0].beginAction == PassInfo::BEGIN_CLEAR)
-		{
-			clearflags |= GL_COLOR_BUFFER_BIT;
-			Colorf c = info.colorAttachments[0].clearColor;
-			gammaCorrectColor(c);
-			glClearColor(c.r, c.g, c.b, c.a);
-		}
-	}
-	else
-	{
-		bool drawbuffermodified = false;
-
-		for (int i = 0; i < info.colorAttachmentCount; i++)
-		{
-			if (info.colorAttachments[i].beginAction == PassInfo::BEGIN_CLEAR)
-			{
-				Colorf c = info.colorAttachments[i].clearColor;
-				gammaCorrectColor(c);
-
-				if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
-				{
-					const GLfloat carray[] = {c.r, c.g, c.b, c.a};
-					glClearBufferfv(GL_COLOR, i, carray);
-				}
-				else
-				{
-					glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-					glClearColor(c.r, c.g, c.b, c.a);
-					glClear(GL_COLOR_BUFFER_BIT);
-
-					drawbuffermodified = true;
-				}
-			}
-		}
-
-		// Revert to the expected draw buffers once we're done, if glClearBuffer
-		// wasn't supported.
-		if (drawbuffermodified)
-		{
-			std::vector<GLenum> bufs;
-
-			for (int i = 0; i < info.colorAttachmentCount; i++)
-				bufs.push_back(GL_COLOR_ATTACHMENT0 + i);
-
-			glDrawBuffers((int) bufs.size(), &bufs[0]);
-		}
+		if (isGammaCorrect() && !gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(true);
+		else if (!isGammaCorrect() && gl.hasFramebufferSRGB())
+			gl.setFramebufferSRGB(false);
 	}
 
-	if (info.stencil)
-		clearflags |= GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+	canvasSwitchCount++;
+}
 
-	if (clearflags != 0)
-		glClear(clearflags);
+std::vector<Canvas *> Graphics::getCanvas() const
+{
+	std::vector<Canvas *> canvases;
+	canvases.reserve(states.back().canvases.size());
 
-	for (int i = 0; i < info.colorAttachmentCount; i++)
-		info.colorAttachments[i].canvas->retain();
+	for (const StrongRef<Canvas> &c : states.back().canvases)
+		canvases.push_back(c.get());
 
-	currentPass.info = info;
-	renderPassCount++;
+	return canvases;
+}
+
+void Graphics::endPass()
+{
+	// Discard the stencil buffer.
+	discard({}, true);
+
+	auto &canvases = states.back().canvases;
+
+	// Resolve MSAA buffers.
+	if (canvases.size() > 0 && canvases[0]->getMSAA() > 1)
+	{
+		int w = canvases[0]->getWidth();
+		int h = canvases[0]->getHeight();
+
+		for (int i = 0; i < (int) canvases.size(); i++)
+		{
+			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
+
+			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, canvases[i]->getFBO());
+
+			if (GLAD_APPLE_framebuffer_multisample)
+				glResolveMultisampleFramebufferAPPLE();
+			else
+				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		}
+	}
+}
+
+void Graphics::clear(Colorf c)
+{
+	gammaCorrectColor(c);
+	glClearColor(c.r, c.g, c.b, c.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -611,123 +630,89 @@ void Graphics::beginPass(const PassInfo &info)
 	}
 }
 
-void Graphics::endPass()
+void Graphics::clear(const std::vector<OptionalColorf> &colors)
 {
-	endPass(0, 0, 0, 0, nullptr, nullptr);
-}
+	if (colors.size() == 0)
+		return;
 
-void Graphics::endPass(int sX, int sY, int sW, int sH, const ScreenshotInfo *info, void *screenshotCallbackData)
-{
-	if (!currentPass.active)
-		return; // Should this error instead?
+	int ncanvases = (int) states.back().canvases.size();
+	int ncolors = std::min((int) colors.size(), ncanvases);
 
-	StrongRef<love::image::ImageData> imagedata;
-
-	auto &attachments = currentPass.info.colorAttachments;
-	int attachmentcount = currentPass.info.colorAttachmentCount;
-
-	if (info != nullptr)
+	if (ncolors <= 1 && ncanvases <= 1)
 	{
-		if (attachmentcount == 0)
-			throw love::Exception("Use captureScreenshot to capture the main screen's contents.");
+		if (colors[0].enabled)
+			clear(colors[0].c);
 
-		if (sX < 0 || sY < 0 || sW <= 0 || sH <= 0 || (sX + sW) > getPassWidth() || (sY + sH) > getPassHeight())
-			throw love::Exception("Invalid rectangle dimensions.");
-
-		auto imagemodule = Module::getInstance<image::Image>(M_IMAGE);
-
-		if (imagemodule == nullptr)
-			throw love::Exception("The love.image module must be loaded to capture a Canvas' contents.");
-
-		PixelFormat format;
-		switch (attachments[0].canvas->getPixelFormat())
-		{
-		case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
-			format = PIXELFORMAT_RGBA16;
-			break;
-		case PIXELFORMAT_R16F:
-		case PIXELFORMAT_RG16F:
-		case PIXELFORMAT_RGBA16F:
-		case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
-			format = PIXELFORMAT_RGBA16F;
-			break;
-		case PIXELFORMAT_R32F:
-		case PIXELFORMAT_RG32F:
-		case PIXELFORMAT_RGBA32F:
-			format = PIXELFORMAT_RGBA32F;
-			break;
-		default:
-			format = PIXELFORMAT_RGBA8;
-			break;
-		}
-
-		imagedata.set(imagemodule->newImageData(sW, sH, format), Acquire::NORETAIN);
+		return;
 	}
 
-	if (currentPass.info.stencil)
-		discard(OpenGL::FRAMEBUFFER_ALL, {}, true);
+	bool drawbuffersmodified = false;
 
-	if (attachmentcount > 0 && attachments[0].canvas->getMSAA() > 1)
+	for (int i = 0; i < ncolors; i++)
 	{
-		int w = attachments[0].canvas->getWidth();
-		int h = attachments[0].canvas->getHeight();
+		if (!colors[i].enabled)
+			continue;
 
-		for (int i = 0; i < attachmentcount; i++)
+		Colorf c = colors[i].c;
+		gammaCorrectColor(c);
+
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
 		{
-			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
+			const GLfloat carray[] = {c.r, c.g, c.b, c.a};
+			glClearBufferfv(GL_COLOR, i, carray);
+		}
+		else
+		{
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
+			glClearColor(c.r, c.g, c.b, c.a);
+			glClear(GL_COLOR_BUFFER_BIT);
 
-			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, attachments[i].canvas->getFBO());
-
-			if (GLAD_APPLE_framebuffer_multisample)
-				glResolveMultisampleFramebufferAPPLE();
-			else
-				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			drawbuffersmodified = true;
 		}
 	}
 
-	if (info != nullptr)
+	// Revert to the expected draw buffers once we're done, if glClearBuffer
+	// wasn't supported.
+	if (drawbuffersmodified)
 	{
-		if (attachments[0].canvas->getMSAA() > 1)
-			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_READ, attachments[0].canvas->getFBO());
-		else if (attachmentcount > 1)
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
+		GLenum bufs[MAX_COLOR_RENDER_TARGETS];
 
-		GLenum datatype;
-		switch (imagedata->getFormat())
-		{
-		case PIXELFORMAT_RGBA16:
-			datatype = GL_UNSIGNED_SHORT;
-			break;
-		case PIXELFORMAT_RGBA16F:
-			datatype = GL_HALF_FLOAT;
-			break;
-		case PIXELFORMAT_RGBA32F:
-			datatype = GL_FLOAT;
-			break;
-		default:
-			datatype = GL_UNSIGNED_BYTE;
-			break;
-		}
+		for (int i = 0; i < ncanvases; i++)
+			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
 
-		glReadPixels(sX, sY, sW, sH, GL_RGBA, datatype, imagedata->getData());
-
-		info->callback(imagedata, info->ref, screenshotCallbackData);
+		glDrawBuffers(ncanvases, bufs);
 	}
 
-	for (int i = 0; i < currentPass.info.colorAttachmentCount; i++)
-		currentPass.info.colorAttachments[i].canvas->release();
+	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	currentPass.active = false;
+	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
+	{
+		// This seems to be enough to fix the bug for me. Other methods I've
+		// tried (e.g. dummy draws) don't work in all cases.
+		gl.useProgram(0);
+		gl.useProgram(Shader::current->getProgram());
+	}
 }
 
-const PassInfo &Graphics::getActivePass() const
+bool Graphics::isCanvasActive() const
 {
-	return currentPass.info;
+	return !states.back().canvases.empty();
 }
 
-bool Graphics::isPassActive() const
+bool Graphics::isCanvasActive(Canvas *canvas) const
 {
-	return currentPass.active;
+	for (const auto &c : states.back().canvases)
+	{
+		if (c.get() == canvas)
+			return true;
+	}
+
+	return false;
+}
+
+void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
+{
+	discard(OpenGL::FRAMEBUFFER_ALL, colorbuffers, depthstencil);
 }
 
 void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil)
@@ -745,7 +730,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (currentPass.info.colorAttachmentCount == 0 && gl.getDefaultFBO() == 0)
+	if (states.back().canvases.empty() && gl.getDefaultFBO() == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
@@ -758,7 +743,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	}
 	else
 	{
-		int rendertargetcount = std::max(currentPass.info.colorAttachmentCount, 1);
+		int rendertargetcount = std::max((int) states.back().canvases.size(), 1);
 
 		for (int i = 0; i < (int) colorbuffers.size(); i++)
 		{
@@ -780,19 +765,11 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::bindCachedFBOForPass(const PassInfo &pass)
+void Graphics::bindCachedFBO(const std::vector<Canvas *> &canvases)
 {
-	PassBufferInfo info;
-	memset(&info, 0, sizeof(PassBufferInfo));
+	int ncanvases = (int) canvases.size();
 
-	info.stencil = pass.stencil;
-
-	int ncanvases = pass.colorAttachmentCount;
-
-	for (int i = 0; i < ncanvases; i++)
-		info.canvases[i] = pass.colorAttachments[i].canvas;
-
-	uint32 hash = XXH32(&info, offsetof(PassBufferInfo, canvases) + ncanvases * sizeof(Canvas *), 0);
+	uint32 hash = XXH32(&canvases[0], sizeof(Canvas *) * ncanvases, 0);
 
 	GLuint fbo = framebufferObjects[hash];
 
@@ -802,36 +779,35 @@ void Graphics::bindCachedFBOForPass(const PassInfo &pass)
 	}
 	else
 	{
-		int w = info.canvases[0]->getWidth();
-		int h = info.canvases[0]->getHeight();
-		int msaa = std::max(info.canvases[0]->getMSAA(), 1);
+		int w = canvases[0]->getWidth();
+		int h = canvases[0]->getHeight();
+		int msaa = std::max(canvases[0]->getMSAA(), 1);
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
 
-		std::vector<GLenum> drawbuffers;
-		drawbuffers.reserve(ncanvases);
+		GLenum drawbuffers[MAX_COLOR_RENDER_TARGETS];
 
 		for (int i = 0; i < ncanvases; i++)
 		{
-			drawbuffers.push_back(GL_COLOR_ATTACHMENT0 + i);
+			drawbuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 
 			if (msaa > 1)
 			{
-				GLuint rbo = (GLuint) info.canvases[i]->getMSAAHandle();
+				GLuint rbo = (GLuint) canvases[i]->getMSAAHandle();
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, drawbuffers[i], GL_RENDERBUFFER, rbo);
 			}
 			else
 			{
-				GLuint tex = *(GLuint *) info.canvases[i]->getHandle();
+				GLuint tex = *(GLuint *) canvases[i]->getHandle();
 				glFramebufferTexture2D(GL_FRAMEBUFFER, drawbuffers[i], GL_TEXTURE_2D, tex, 0);
 			}
 		}
 
-		if (drawbuffers.size() > 1)
-			glDrawBuffers((int) drawbuffers.size(), &drawbuffers[0]);
+		if (ncanvases > 1)
+			glDrawBuffers(ncanvases, drawbuffers);
 
-		GLuint stencil = attachCachedStencilBuffer(w, h, info.canvases[0]->getRequestedMSAA());
+		GLuint stencil = attachCachedStencilBuffer(w, h, canvases[0]->getRequestedMSAA());
 
 		if (stencil == 0)
 		{
@@ -872,7 +848,7 @@ GLuint Graphics::attachCachedStencilBuffer(int w, int h, int samples)
 		}
 	}
 
-	OpenGL::TempDebugGroup debuggroup("Created cached stencil buffer");
+	OpenGL::TempDebugGroup debuggroup("Create cached stencil buffer");
 
 	CachedRenderbuffer rb;
 	rb.w = w;
@@ -921,16 +897,16 @@ GLuint Graphics::attachCachedStencilBuffer(int w, int h, int samples)
 	}
 
 	if (rb.renderbuffer != 0)
+	{
+		glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		stencilBuffers.push_back(rb);
+	}
 
 	return rb.renderbuffer;
 }
 
 void Graphics::captureScreenshot(const ScreenshotInfo &info)
 {
-	if (!canCaptureScreenshot)
-		throw love::Exception("captureScreenshot cannot be called once rendering to the main screen has begun.");
-
 	pendingScreenshotCallbacks.push_back(info);
 }
 
@@ -939,8 +915,10 @@ void Graphics::present(void *screenshotCallbackData)
 	if (!isActive())
 		return;
 
-	if (currentPass.active)
-		throw love::Exception("present cannot be called while a render pass is active.");
+	if (!states.back().canvases.empty())
+		throw love::Exception("present cannot be called while a Canvas is active.");
+
+	endPass();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
 
@@ -1049,9 +1027,7 @@ void Graphics::present(void *screenshotCallbackData)
 	// Reset the per-frame stat counts.
 	gl.stats.drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
-	renderPassCount = 0;
-
-	canCaptureScreenshot = true;
+	canvasSwitchCount = 0;
 }
 
 int Graphics::getWidth() const
@@ -1064,22 +1040,6 @@ int Graphics::getHeight() const
 	return height;
 }
 
-int Graphics::getPassWidth() const
-{
-	if (currentPass.active && currentPass.info.colorAttachmentCount > 0)
-		return currentPass.info.colorAttachments[0].canvas->getWidth();
-	else
-		return width;
-}
-
-int Graphics::getPassHeight() const
-{
-	if (currentPass.active && currentPass.info.colorAttachmentCount > 0)
-		return currentPass.info.colorAttachments[0].canvas->getHeight();
-	else
-		return height;
-}
-
 bool Graphics::isCreated() const
 {
 	return created;
@@ -1087,12 +1047,14 @@ bool Graphics::isCreated() const
 
 void Graphics::setScissor(const Rect &rect)
 {
+	DisplayState &state = states.back();
+
 	glEnable(GL_SCISSOR_TEST);
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor({rect.x, rect.y, rect.w, rect.h}, currentPass.info.colorAttachmentCount > 0);
+	gl.setScissor(rect, !state.canvases.empty());
 
-	states.back().scissor = true;
-	states.back().scissorRect = rect;
+	state.scissor = true;
+	state.scissorRect = rect;
 }
 
 void Graphics::intersectScissor(const Rect &rect)
@@ -1132,9 +1094,6 @@ bool Graphics::getScissor(Rect &rect) const
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	if (!currentPass.active || !currentPass.info.stencil)
-		throw love::Exception("Stenciling must be enabled in the active render pass.");
-
 	writingToStencil = true;
 
 	// Disable color writes but don't save the state for it.
@@ -1189,9 +1148,6 @@ void Graphics::stopDrawToStencilBuffer()
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
-	if (!currentPass.info.stencil && compare != COMPARE_ALWAYS)
-		throw love::Exception("Stenciling must be enabled in the active render pass.");
-
 	DisplayState &state = states.back();
 	state.stencilCompare = compare;
 	state.stencilTestValue = value;
@@ -1608,25 +1564,16 @@ bool Graphics::isWireframe() const
 
 void Graphics::draw(Drawable *drawable, const Matrix4 &m)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	drawable->draw(m);
 }
 
 void Graphics::drawq(Texture *texture, Quad *quad, const Matrix4 &m)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	texture->drawq(quad, m);
 }
 
 void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	checkSetDefaultFont();
 
 	DisplayState &state = states.back();
@@ -1637,9 +1584,6 @@ void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 
 
 void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	checkSetDefaultFont();
 
 	DisplayState &state = states.back();
@@ -1654,9 +1598,6 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, F
 
 void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	OpenGL::TempDebugGroup debuggroup("Graphics points draw");
 
 	gl.prepareDraw();
@@ -1678,9 +1619,6 @@ void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints
 
 void Graphics::polyline(const float *coords, size_t count)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	const DisplayState &state = states.back();
 	float pixelsize = 1.0f / std::max((float) pixelScaleStack.back(), 0.000001f);
 
@@ -1712,9 +1650,6 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	if (rx == 0 || ry == 0)
 	{
 		rectangle(mode, x, y, w, h);
@@ -1798,9 +1733,6 @@ void Graphics::circle(DrawMode mode, float x, float y, float radius)
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int points)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	float two_pi = static_cast<float>(LOVE_M_PI * 2);
 	if (points <= 0) points = 1;
 	float angle_shift = (two_pi / points);
@@ -1828,9 +1760,6 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b)
 
 void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	// Nothing to display with no points or equal angles. (Or is there with line mode?)
 	if (points <= 0 || angle1 == angle2)
 		return;
@@ -1924,9 +1853,6 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 /// @param count   the number of coordinates/size of the array
 void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 {
-	if (!currentPass.active)
-		throw RenderOutsidePassException();
-
 	// coords is an array of a closed loop of vertices, i.e.
 	// coords[count-2] = coords[0], coords[count-1] = coords[1]
 	if (mode == DRAW_LINE)
@@ -1981,7 +1907,7 @@ Graphics::Stats Graphics::getStats() const
 	Stats stats;
 
 	stats.drawCalls = gl.stats.drawCalls;
-	stats.renderPasses = renderPassCount;
+	stats.canvasSwitches = canvasSwitchCount;
 	stats.shaderSwitches = gl.stats.shaderSwitches;
 	stats.canvases = Canvas::canvasCount;
 	stats.images = Image::imageCount;

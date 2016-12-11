@@ -547,12 +547,9 @@ function love.run()
 
 		if love.graphics and love.graphics.isActive() then
 			love.graphics.origin()
+			love.graphics.clear(love.graphics.getBackgroundColor())
 
-			if love.drawpasses then love.drawpasses() end
-
-			love.graphics.beginPass(love.graphics.getBackgroundColor())
 			if love.draw then love.draw() end
-			love.graphics.endPass()
 
 			love.graphics.present()
 		end
@@ -606,9 +603,6 @@ function love.errhand(msg)
 	if love.audio then love.audio.stop() end
 
 	love.graphics.reset()
-	if love.graphics.isPassActive() then
-		love.graphics.endPass()
-	end
 
 	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
 
@@ -636,8 +630,10 @@ function love.errhand(msg)
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 
 	local function draw()
+		love.graphics.clear(89/255, 157/255, 220/255)
 		local pos = love.window.toPixels(70)
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
+		love.graphics.present()
 	end
 
 	while true do
@@ -659,8 +655,7 @@ function love.errhand(msg)
 			end
 		end
 
-		love.graphics.renderPass(89/255, 157/255, 220/255, draw)
-		love.graphics.present()
+		draw()
 
 		if love.timer then
 			love.timer.sleep(0.1)

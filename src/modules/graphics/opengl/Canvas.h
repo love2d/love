@@ -61,6 +61,8 @@ public:
 	bool setWrap(const Texture::Wrap &w) override;
 	const void *getHandle() const override;
 
+	love::image::ImageData *newImageData(love::image::Image *module, int x, int y, int w, int h);
+
 	inline GLenum getStatus() const
 	{
 		return status;

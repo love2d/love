@@ -253,15 +253,8 @@ void Canvas::unloadVolatile()
 void Canvas::drawv(const Matrix4 &t, const Vertex *v)
 {
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-	{
-		const PassInfo &info = gfx->getActivePass();
-		for (const auto &attachment : info.colorAttachments)
-		{
-			if (attachment.canvas == this)
-				throw love::Exception("Cannot render a Canvas to itself!");
-		}
-	}
+	if (gfx != nullptr && gfx->isCanvasActive(this))
+		throw love::Exception("Cannot render a Canvas to itself!");
 
 	OpenGL::TempDebugGroup debuggroup("Canvas draw");
 
@@ -332,6 +325,59 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 const void *Canvas::getHandle() const
 {
 	return &texture;
+}
+
+love::image::ImageData *Canvas::newImageData(love::image::Image *module, int x, int y, int w, int h)
+{
+	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > getWidth() || (y + h) > getHeight())
+		throw love::Exception("Invalid rectangle dimensions.");
+
+	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+	if (gfx != nullptr)
+	{
+		for (const auto &c : gfx->getCanvas())
+		{
+			if (c == this)
+				throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
+		}
+	}
+
+	PixelFormat dataformat;
+	switch (getPixelFormat())
+	{
+	case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
+		dataformat = PIXELFORMAT_RGBA16;
+		break;
+	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_RG16F:
+	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
+		dataformat = PIXELFORMAT_RGBA16F;
+		break;
+	case PIXELFORMAT_R32F:
+	case PIXELFORMAT_RG32F:
+	case PIXELFORMAT_RGBA32F:
+		dataformat = PIXELFORMAT_RGBA32F;
+		break;
+	default:
+		dataformat = PIXELFORMAT_RGBA8;
+		break;
+	}
+
+	love::image::ImageData *imagedata = module->newImageData(w, h, dataformat);
+
+	bool isSRGB = false;
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(dataformat, false, isSRGB);
+
+	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
+
+	glReadPixels(x, y, w, h, fmt.externalformat, fmt.type, imagedata->getData());
+
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+
+	return imagedata;
 }
 
 PixelFormat Canvas::getSizedFormat(PixelFormat format)

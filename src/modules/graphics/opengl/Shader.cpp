@@ -806,7 +806,7 @@ void Shader::checkSetScreenParams()
 	Rect view = gl.getViewport();
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	bool canvasActive = gfx->getActivePass().colorAttachmentCount > 0;
+	bool canvasActive = gfx->isCanvasActive();
 
 	if (view == lastViewport && canvasWasActive == canvasActive)
 		return;

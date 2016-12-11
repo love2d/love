@@ -411,8 +411,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (!graphics.get())
 		graphics.set(Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS));
 
-	if (graphics.get() && graphics->isPassActive())
-		throw love::Exception("setMode cannot be called while a render pass is active in love.graphics.");
+	if (graphics.get() && graphics->isCanvasActive())
+		throw love::Exception("setMode cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings f;
 
@@ -627,8 +627,8 @@ void Window::close()
 {
 	if (graphics.get())
 	{
-		if (graphics->isPassActive())
-			throw love::Exception("close cannot be called while a render pass is active in love.graphics.");
+		if (graphics->isCanvasActive())
+			throw love::Exception("close cannot be called while a Canvas is active in love.graphics.");
 
 		graphics->unSetMode();
 	}
@@ -657,8 +657,8 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (!window)
 		return false;
 
-	if (graphics.get() && graphics->isPassActive())
-		throw love::Exception("setFullscreen cannot be called while a render pass is active in love.graphics.");
+	if (graphics.get() && graphics->isCanvasActive())
+		throw love::Exception("setFullscreen cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings newsettings = settings;
 	newsettings.fullscreen = fullscreen;

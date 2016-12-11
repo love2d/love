@@ -16,6 +16,7 @@ Released: N/A
   * Added Shader:hasUniform.
   * Added support for non-square shader uniform matrices on desktop platforms.
   * Added Shader:send(matrixname, is_column_major, matrix, ...) which specifies how to interpret the matrix table arguments.
+  * Added love.graphics.captureScreenshot (replaces love.graphics.newScreenshot).
   * Added love.window.updateMode.
   * Added Object:release.
   * Added queueable audio sources.
@@ -30,15 +31,16 @@ Released: N/A
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed love.graphics.print and friends to ignore carriage returns.
   * Changed the 'multiply' blend mode to error if not used with the 'premultiplied' blend alpha mode, since the formula only works with that anyway.
+  * Changed some love.graphics, love.window, and love.event APIs to cause an error if a Canvas is active.
   * Changed the audio playback APIs drastically.
   * Changed enet to no longer set the 'enet' global, again matching luasocket.
   * Changed Source seeking behaviour, all kinds of Sources now behave similarly when seeking past the boundaries.
-  * Changed the rendering API to one based on render passes.
 
   * Removed the default source type for love.audio.newSource.
   * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
   * Removed the no-argument variant of Text:set, use Text:clear instead.
   * Removed Shader:getExternVariable, use Shader:hasUniform instead.
+  * Removed love.graphics.newScreenshot, use love.graphics.captureScreenshot instead.
   * Removed deprecated enet function host:socket_get_address.
   * Removed functions deprecated in LÖVE 0.10.2:
     * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).

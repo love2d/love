@@ -62,45 +62,6 @@ namespace graphics
 namespace opengl
 {
 
-struct PassInfo
-{
-	enum BeginAction
-	{
-		BEGIN_LOAD,
-		BEGIN_CLEAR,
-		BEGIN_DISCARD,
-	};
-
-	enum EndAction
-	{
-		END_STORE,
-		END_DISCARD,
-	};
-
-	struct ColorAttachment
-	{
-		Canvas *canvas = nullptr;
-		Colorf clearColor = Colorf(0.0f, 0.0f, 0.0f, 0.0f);
-		BeginAction beginAction = BEGIN_LOAD;
-	};
-
-	ColorAttachment colorAttachments[MAX_COLOR_RENDER_TARGETS];
-	int colorAttachmentCount = 0;
-
-	bool stencil = false;
-
-	bool addColorAttachment(const ColorAttachment &attachment)
-	{
-		if (colorAttachmentCount + 1 < MAX_COLOR_RENDER_TARGETS)
-		{
-			colorAttachments[colorAttachmentCount++] = attachment;
-			return true;
-		}
-
-		return false;
-	}
-};
-
 class Graphics : public love::graphics::Graphics
 {
 public:
@@ -135,14 +96,13 @@ public:
 	 **/
 	void reset();
 
-	void beginPass(PassInfo::BeginAction beginAction, Colorf clearColor);
-	void beginPass(const PassInfo &info);
+	void clear(Colorf color);
+	void clear(const std::vector<OptionalColorf> &colors);
 
-	void endPass();
-	void endPass(int sX, int sY, int sW, int sH, const ScreenshotInfo *info, void *screenshotCallbackData);
+	void discard(const std::vector<bool> &colorbuffers, bool depthstencil);
 
-	const PassInfo &getActivePass() const;
-	virtual bool isPassActive() const;
+	virtual bool isCanvasActive() const;
+	bool isCanvasActive(Canvas *canvas) const;
 
 	/**
 	 * Flips buffers. (Rendered geometry is presented on screen).
@@ -159,13 +119,17 @@ public:
 	 **/
 	int getHeight() const;
 
-	int getPassWidth() const;
-	int getPassHeight() const;
-
 	/**
 	 * True if a graphics viewport is set.
 	 **/
 	bool isCreated() const;
+
+	void setCanvas(Canvas *canvas);
+	void setCanvas(const std::vector<Canvas *> &canvases);
+	void setCanvas(const std::vector<StrongRef<Canvas>> &canvases);
+	void setCanvas();
+
+	std::vector<Canvas *> getCanvas() const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
@@ -519,6 +483,8 @@ private:
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
+		std::vector<StrongRef<Canvas>> canvases;
+
 		ColorMask colorMask = ColorMask(true, true, true, true);
 
 		bool wireframe = false;
@@ -527,18 +493,6 @@ private:
 
 		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_NEAREST;
 		float defaultMipmapSharpness = 0.0f;
-	};
-
-	struct CurrentPass
-	{
-		PassInfo info;
-		bool active = false;
-	};
-
-	struct PassBufferInfo
-	{
-		bool stencil;
-		Canvas *canvases[MAX_COLOR_RENDER_TARGETS];
 	};
 
 	struct CachedRenderbuffer
@@ -553,7 +507,8 @@ private:
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
 
-	void bindCachedFBOForPass(const PassInfo &pass);
+	void endPass();
+	void bindCachedFBO(const std::vector<Canvas *> &canvases);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
 	GLuint attachCachedStencilBuffer(int w, int h, int samples);
 
@@ -577,16 +532,12 @@ private:
 	bool created;
 	bool active;
 
-	bool canCaptureScreenshot;
-
-	CurrentPass currentPass;
-
 	bool writingToStencil;
 
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypes; // Keeps track of the pushed stack types.
 
-	int renderPassCount;
+	int canvasSwitchCount;
 
 	static const size_t MAX_USER_STACK_DEPTH = 64;
 

@@ -61,14 +61,6 @@ void gammaCorrectColor(Colorf &c);
  **/
 void unGammaCorrectColor(Colorf &c);
 
-class RenderOutsidePassException : public love::Exception
-{
-public:
-	RenderOutsidePassException()
-		: Exception("Cannot draw outside of a render pass!")
-	{}
-};
-
 class Graphics : public Module
 {
 public:
@@ -193,7 +185,7 @@ public:
 	struct Stats
 	{
 		int drawCalls;
-		int renderPasses;
+		int canvasSwitches;
 		int shaderSwitches;
 		int canvases;
 		int images;
@@ -222,6 +214,12 @@ public:
 		{
 			return !(operator == (m));
 		}
+	};
+
+	struct OptionalColorf
+	{
+		Colorf c;
+		bool enabled;
 	};
 
 	virtual ~Graphics();
@@ -261,7 +259,7 @@ public:
 	 **/
 	virtual bool isActive() const = 0;
 
-	virtual bool isPassActive() const = 0;
+	virtual bool isCanvasActive() const = 0;
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
