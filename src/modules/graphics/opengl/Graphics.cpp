@@ -124,7 +124,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setPointSize(s.pointSize);
 
 	if (s.scissor)
-		setScissor(s.scissorRect.x, s.scissorRect.y, s.scissorRect.w, s.scissorRect.h);
+		setScissor(s.scissorRect);
 	else
 		setScissor();
 
@@ -163,7 +163,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	if (s.scissor != cur.scissor || (s.scissor && !(s.scissorRect == cur.scissorRect)))
 	{
 		if (s.scissor)
-			setScissor(s.scissorRect.x, s.scissorRect.y, s.scissorRect.w, s.scissorRect.h);
+			setScissor(s.scissorRect);
 		else
 			setScissor();
 	}
@@ -829,7 +829,7 @@ void Graphics::bindCachedFBOForPass(const PassInfo &pass)
 		}
 
 		if (drawbuffers.size() > 1)
-			glDrawBuffers(1, &drawbuffers[0]);
+			glDrawBuffers((int) drawbuffers.size(), &drawbuffers[0]);
 
 		GLuint stencil = attachCachedStencilBuffer(w, h, info.canvases[0]->getRequestedMSAA());
 
@@ -1085,10 +1085,8 @@ bool Graphics::isCreated() const
 	return created;
 }
 
-void Graphics::setScissor(int x, int y, int width, int height)
+void Graphics::setScissor(const Rect &rect)
 {
-	ScissorRect rect = {x, y, width, height};
-
 	glEnable(GL_SCISSOR_TEST);
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
 	gl.setScissor({rect.x, rect.y, rect.w, rect.h}, currentPass.info.colorAttachmentCount > 0);
@@ -1097,25 +1095,26 @@ void Graphics::setScissor(int x, int y, int width, int height)
 	states.back().scissorRect = rect;
 }
 
-void Graphics::intersectScissor(int x, int y, int width, int height)
+void Graphics::intersectScissor(const Rect &rect)
 {
-	ScissorRect rect = states.back().scissorRect;
+	Rect currect = states.back().scissorRect;
 
 	if (!states.back().scissor)
 	{
-		rect.x = 0;
-		rect.y = 0;
-		rect.w = std::numeric_limits<int>::max();
-		rect.h = std::numeric_limits<int>::max();
+		currect.x = 0;
+		currect.y = 0;
+		currect.w = std::numeric_limits<int>::max();
+		currect.h = std::numeric_limits<int>::max();
 	}
 
-	int x1 = std::max(rect.x, x);
-	int y1 = std::max(rect.y, y);
+	int x1 = std::max(currect.x, rect.x);
+	int y1 = std::max(currect.y, rect.y);
 
-	int x2 = std::min(rect.x + rect.w, x + width);
-	int y2 = std::min(rect.y + rect.h, y + height);
+	int x2 = std::min(currect.x + currect.w, rect.x + rect.w);
+	int y2 = std::min(currect.y + currect.h, rect.y + rect.h);
 
-	setScissor(x1, y1, std::max(0, x2 - x1), std::max(0, y2 - y1));
+	Rect newrect = {x1, y1, std::max(0, x2 - x1), std::max(0, y2 - y1)};
+	setScissor(newrect);
 }
 
 void Graphics::setScissor()
@@ -1124,15 +1123,10 @@ void Graphics::setScissor()
 	glDisable(GL_SCISSOR_TEST);
 }
 
-bool Graphics::getScissor(int &x, int &y, int &width, int &height) const
+bool Graphics::getScissor(Rect &rect) const
 {
 	const DisplayState &state = states.back();
-
-	x = state.scissorRect.x;
-	y = state.scissorRect.y;
-	width = state.scissorRect.w;
-	height = state.scissorRect.h;
-
+	rect = state.scissorRect;
 	return state.scissor;
 }
 

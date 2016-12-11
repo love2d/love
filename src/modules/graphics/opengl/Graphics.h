@@ -170,14 +170,10 @@ public:
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded and not drawn.
 	 * Scissoring is automatically enabled.
-	 * @param x The x-coordinate of the top-left corner.
-	 * @param y The y-coordinate of the top-left corner.
-	 * @param width The width of the box.
-	 * @param height The height of the box.
+	 * @param rect The rectangle defining the scissor area.
 	 **/
-	void setScissor(int x, int y, int width, int height);
-
-	void intersectScissor(int x, int y, int width, int height);
+	void setScissor(const Rect &rect);
+	void intersectScissor(const Rect &rect);
 
 	/**
 	 * Clears any scissor that has been created.
@@ -188,7 +184,7 @@ public:
 	 * Gets the current scissor box.
 	 * @return Whether the scissor is enabled.
 	 */
-	bool getScissor(int &x, int &y, int &width, int &height) const;
+	bool getScissor(Rect &rect) const;
 
 	/**
 	 * Enables or disables drawing to the stencil buffer. When enabled, the
@@ -514,7 +510,7 @@ private:
 		float pointSize = 1.0f;
 
 		bool scissor = false;
-		ScissorRect scissorRect = ScissorRect();
+		Rect scissorRect = Rect();
 
 		// Stencil.
 		CompareMode stencilCompare = COMPARE_ALWAYS;

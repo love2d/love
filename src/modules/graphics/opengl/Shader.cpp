@@ -378,7 +378,7 @@ bool Shader::loadVolatile()
 
     // Recreating the shader program will invalidate uniforms that rely on these.
 	canvasWasActive = false;
-    lastViewport = OpenGL::Viewport();
+    lastViewport = Rect();
 
 	lastPointSize = -1.0f;
 
@@ -803,7 +803,7 @@ void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtextur
 
 void Shader::checkSetScreenParams()
 {
-	OpenGL::Viewport view = gl.getViewport();
+	Rect view = gl.getViewport();
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	bool canvasActive = gfx->getActivePass().colorAttachmentCount > 0;

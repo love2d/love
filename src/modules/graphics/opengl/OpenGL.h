@@ -24,6 +24,7 @@
 // LOVE
 #include "common/config.h"
 #include "common/int.h"
+#include "common/math.h"
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
 #include "common/Matrix.h"
@@ -109,18 +110,6 @@ public:
 		FRAMEBUFFER_READ = (1 << 0),
 		FRAMEBUFFER_DRAW = (1 << 1),
 		FRAMEBUFFER_ALL  = (FRAMEBUFFER_READ | FRAMEBUFFER_DRAW),
-	};
-
-	// A rectangle representing an OpenGL viewport or a scissor box.
-	struct Viewport
-	{
-		int x, y;
-		int w, h;
-
-		bool operator == (const Viewport &rhs) const
-		{
-			return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
-		}
 	};
 
 	struct TextureFormat
@@ -295,23 +284,23 @@ public:
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
 	 * The y-coordinate starts at the top.
 	 **/
-	void setViewport(const Viewport &v, bool canvasActive);
+	void setViewport(const Rect &v, bool canvasActive);
 
 	/**
 	 * Gets the current OpenGL rendering viewport rectangle.
 	 **/
-	Viewport getViewport() const;
+	Rect getViewport() const;
 
 	/**
 	 * Sets the scissor box to the specified rectangle.
 	 * The y-coordinate starts at the top and is flipped internally.
 	 **/
-	void setScissor(const Viewport &v, bool canvasActive);
+	void setScissor(const Rect &v, bool canvasActive);
 
 	/**
 	 * Gets the current scissor box (regardless of whether scissoring is enabled.)
 	 **/
-	Viewport getScissor() const;
+	Rect getScissor() const;
 
 	/**
 	 * Sets the global point size.
@@ -479,8 +468,8 @@ private:
 
 		uint32 enabledAttribArrays;
 
-		Viewport viewport;
-		Viewport scissor;
+		Rect viewport;
+		Rect scissor;
 
 		float pointSize;
 

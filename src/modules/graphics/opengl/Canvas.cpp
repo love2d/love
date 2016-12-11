@@ -21,9 +21,7 @@
 #include "Canvas.h"
 #include "Image.h"
 #include "Graphics.h"
-#include "common/Matrix.h"
 
-#include <cstring> // For memcpy
 #include <algorithm> // For min/max
 
 namespace love

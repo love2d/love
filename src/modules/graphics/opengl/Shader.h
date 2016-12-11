@@ -242,7 +242,7 @@ private:
 	std::vector<TextureUnit> textureUnits;
 
 	bool canvasWasActive;
-	OpenGL::Viewport lastViewport;
+	Rect lastViewport;
 
 	float lastPointSize;
 

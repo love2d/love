@@ -475,7 +475,7 @@ void OpenGL::useVertexAttribArrays(uint32 arraybits)
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void OpenGL::setViewport(const OpenGL::Viewport &v, bool canvasActive)
+void OpenGL::setViewport(const Rect &v, bool canvasActive)
 {
 	glViewport(v.x, v.y, v.w, v.h);
 	state.viewport = v;
@@ -486,12 +486,12 @@ void OpenGL::setViewport(const OpenGL::Viewport &v, bool canvasActive)
 	setScissor(state.scissor, canvasActive);
 }
 
-OpenGL::Viewport OpenGL::getViewport() const
+Rect OpenGL::getViewport() const
 {
 	return state.viewport;
 }
 
-void OpenGL::setScissor(const OpenGL::Viewport &v, bool canvasActive)
+void OpenGL::setScissor(const Rect &v, bool canvasActive)
 {
 	if (canvasActive)
 		glScissor(v.x, v.y, v.w, v.h);
@@ -505,7 +505,7 @@ void OpenGL::setScissor(const OpenGL::Viewport &v, bool canvasActive)
 	state.scissor = v;
 }
 
-OpenGL::Viewport OpenGL::getScissor() const
+Rect OpenGL::getScissor() const
 {
 	return state.scissor;
 }
