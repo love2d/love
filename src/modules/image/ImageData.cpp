@@ -160,7 +160,11 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 	{
 		// Otherwise, copy each row individually.
 		for (int i = 0; i < sh; i++)
-			memcpy(d + dx + (i + dy) * getWidth(), s + (sx + (i + sy) * src->getWidth()) * pixelsize, pixelsize * sw);
+		{
+			const uint8 *rowsrc = s + (sx + (i + sy) * src->getWidth()) * pixelsize;
+			uint8 *rowdst = d + (dx + (i + dy) * getWidth()) * pixelsize;
+			memcpy(rowdst, rowsrc, pixelsize * sw);
+		}
 	}
 }
 
