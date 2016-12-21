@@ -465,7 +465,7 @@ T *luax_getmodule(lua_State *L, love::Type type)
 	lua_getfield(L, -1, name);
 
 	if (!lua_isuserdata(L, -1))
-		luaL_error(L, "Tried to get nonexistant module %s.", name);
+		luaL_error(L, "Tried to get nonexistent module %s.", name);
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 

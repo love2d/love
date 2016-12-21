@@ -222,7 +222,7 @@ local function adjust_headers(mesgt)
     lower["date"] = lower["date"] or
         os.date("!%a, %d %b %Y %H:%M:%S ") .. (mesgt.zone or ZONE)
     lower["x-mailer"] = lower["x-mailer"] or socket._VERSION
-    -- this can't be overriden
+    -- this can't be overridden
     lower["mime-version"] = "1.0"
     return lower
 end

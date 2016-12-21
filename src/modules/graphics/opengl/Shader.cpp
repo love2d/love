@@ -172,7 +172,7 @@ GLuint Shader::compileCode(ShaderStage stage, const std::string &code)
 
 void Shader::mapActiveUniforms()
 {
-	// Built-in uniform locations default to -1 (nonexistant.)
+	// Built-in uniform locations default to -1 (nonexistent.)
 	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
 		builtinUniforms[i] = -1;
 
