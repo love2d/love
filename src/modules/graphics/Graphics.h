@@ -229,10 +229,14 @@ public:
 	struct StreamDrawRequest
 	{
 		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
-		vertex::CommonFormat formats[2] = {vertex::CommonFormat::NONE, vertex::CommonFormat::NONE};
+		vertex::CommonFormat formats[2];
 		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
 		int vertexCount = 0;
 		Texture *texture = nullptr;
+
+		StreamDrawRequest()
+			: formats{vertex::CommonFormat::NONE, vertex::CommonFormat::NONE}
+		{}
 	};
 
 	struct StreamVertexData
