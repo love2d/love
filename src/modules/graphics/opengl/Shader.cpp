@@ -892,58 +892,54 @@ void Shader::checkSetBuiltinUniforms()
 
 	checkSetScreenParams();
 
-	// We use a more efficient method for sending transformation matrices to
-	// the GPU on desktop GL.
 	if (GLAD_ES_VERSION_2_0)
-	{
 		checkSetPointSize(gl.getPointSize());
 
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 
-		const Matrix4 &curproj = gfx->getProjection();
-		const Matrix4 &curxform = gfx->getTransform();
+	const Matrix4 &curproj = gfx->getProjection();
+	const Matrix4 &curxform = gfx->getTransform();
 
-		bool tpmatrixneedsupdate = false;
+	bool tpmatrixneedsupdate = false;
 
-		// Only upload the matrices if they've changed.
-		if (memcmp(curxform.getElements(), lastTransformMatrix.getElements(), sizeof(float) * 16) != 0)
+	// Only upload the matrices if they've changed.
+	if (memcmp(curxform.getElements(), lastTransformMatrix.getElements(), sizeof(float) * 16) != 0)
+	{
+		GLint location = builtinUniforms[BUILTIN_TRANSFORM_MATRIX];
+		if (location >= 0)
+			glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
+
+		// Also upload the re-calculated normal matrix, if possible. The normal
+		// matrix is the transpose of the inverse of the rotation portion
+		// (top-left 3x3) of the transform matrix.
+		location = builtinUniforms[BUILTIN_NORMAL_MATRIX];
+		if (location >= 0)
 		{
-			GLint location = builtinUniforms[BUILTIN_TRANSFORM_MATRIX];
-			if (location >= 0)
-				glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
-
-			// Also upload the re-calculated normal matrix, if possible. The
-			// normal matrix is the transpose of the inverse of the rotation
-			// portion (top-left 3x3) of the transform matrix.
-			location = builtinUniforms[BUILTIN_NORMAL_MATRIX];
-			if (location >= 0)
-			{
-				Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
-				glUniformMatrix3fv(location, 1, GL_FALSE, normalmatrix.getElements());
-			}
-
-			tpmatrixneedsupdate = true;
-			lastTransformMatrix = curxform;
+			Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
+			glUniformMatrix3fv(location, 1, GL_FALSE, normalmatrix.getElements());
 		}
 
-		if (memcmp(curproj.getElements(), lastProjectionMatrix.getElements(), sizeof(float) * 16) != 0)
-		{
-			GLint location = builtinUniforms[BUILTIN_PROJECTION_MATRIX];
-			if (location >= 0)
-				glUniformMatrix4fv(location, 1, GL_FALSE, curproj.getElements());
+		tpmatrixneedsupdate = true;
+		lastTransformMatrix = curxform;
+	}
 
-			tpmatrixneedsupdate = true;
-			lastProjectionMatrix = curproj;
-		}
+	if (memcmp(curproj.getElements(), lastProjectionMatrix.getElements(), sizeof(float) * 16) != 0)
+	{
+		GLint location = builtinUniforms[BUILTIN_PROJECTION_MATRIX];
+		if (location >= 0)
+			glUniformMatrix4fv(location, 1, GL_FALSE, curproj.getElements());
 
-		if (tpmatrixneedsupdate)
+		tpmatrixneedsupdate = true;
+		lastProjectionMatrix = curproj;
+	}
+
+	if (tpmatrixneedsupdate)
+	{
+		GLint location = builtinUniforms[BUILTIN_TRANSFORM_PROJECTION_MATRIX];
+		if (location >= 0)
 		{
-			GLint location = builtinUniforms[BUILTIN_TRANSFORM_PROJECTION_MATRIX];
-			if (location >= 0)
-			{
-				Matrix4 tp_matrix(curproj * curxform);
-				glUniformMatrix4fv(location, 1, GL_FALSE, tp_matrix.getElements());
-			}
+			Matrix4 tp_matrix(curproj, curxform);
+			glUniformMatrix4fv(location, 1, GL_FALSE, tp_matrix.getElements());
 		}
 	}
 }

@@ -167,14 +167,6 @@ void OpenGL::setupContext()
 
 	createDefaultTexture();
 
-	// Invalidate the cached matrices by setting some elements to NaN.
-	float nan = std::numeric_limits<float>::quiet_NaN();
-	state.lastProjectionMatrix.setTranslation(nan, nan);
-	state.lastTransformMatrix.setTranslation(nan, nan);
-
-	if (GLAD_VERSION_1_0)
-		glMatrixMode(GL_MODELVIEW);
-
 	contextInitialized = true;
 }
 
@@ -345,35 +337,6 @@ void OpenGL::prepareDraw()
 	// Make sure the active shader's love-provided uniforms are up to date.
 	if (Shader::current != nullptr)
 		Shader::current->checkSetBuiltinUniforms();
-
-	// We use glLoadMatrix rather than uniforms for our matrices when possible,
-	// because uniform uploads can be significantly slower than glLoadMatrix.
-	if (GLAD_VERSION_1_0)
-	{
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		const Matrix4 &curxform = gfx->getTransform();
-		const Matrix4 &curproj = gfx->getProjection();
-
-		const Matrix4 &lastproj = state.lastProjectionMatrix;
-		const Matrix4 &lastxform = state.lastTransformMatrix;
-
-		// We only need to re-upload the projection matrix if it's changed.
-		if (memcmp(curproj.getElements(), lastproj.getElements(), sizeof(float) * 16) != 0)
-		{
-			glMatrixMode(GL_PROJECTION);
-			glLoadMatrixf(curproj.getElements());
-			glMatrixMode(GL_MODELVIEW);
-
-			state.lastProjectionMatrix = curproj;
-		}
-
-		// Same with the transform matrix.
-		if (memcmp(curxform.getElements(), lastxform.getElements(), sizeof(float) * 16) != 0)
-		{
-			glLoadMatrixf(curxform.getElements());
-			state.lastTransformMatrix = curxform;
-		}
-	}
 }
 
 GLenum OpenGL::getGLBufferType(BufferType type)

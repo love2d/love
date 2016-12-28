@@ -439,9 +439,6 @@ private:
 
 		GLuint defaultTexture;
 
-		Matrix4 lastProjectionMatrix;
-		Matrix4 lastTransformMatrix;
-
 	} state;
 
 }; // OpenGL
