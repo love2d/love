@@ -738,7 +738,7 @@ function love.nogame()
 		local SIZE_Y = math.floor(wh / 32 + 2)
 		local SIZE = SIZE_X * SIZE_Y
 
-		self.batch = love.graphics.newSpriteBatch(mosaic_image, SIZE, "stream")
+		self.image = mosaic_image
 		self.pieces = {}
 		self.color_t = 1
 		self.generation = 1
@@ -915,8 +915,6 @@ function love.nogame()
 	end
 
 	function Mosaic:draw()
-		self.batch:clear()
-		love.graphics.setColor(1, 1, 1, 0.25)
 		for idx,piece in ipairs(self.pieces) do
 			local ct = 1 - self.color_t
 			local c0 = piece.color.prev
@@ -925,11 +923,10 @@ function love.nogame()
 			local g = easeOut(ct, c0[2], c1[2] - c0[2], 1)
 			local b = easeOut(ct, c0[3], c1[3] - c0[3], 1)
 
-			self.batch:setColor(r, g, b)
-			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
+			love.graphics.setColor(r, g, b)
+			love.graphics.draw(self.image, piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
 		end
 		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.draw(self.batch, 0, 0)
 	end
 
 	function love.load()

@@ -21,63 +21,85 @@
 #pragma once
 
 // LOVE
-#include "common/math.h"
-#include "graphics/Drawable.h"
-#include "graphics/Volatile.h"
-#include "video/VideoStream.h"
-#include "audio/Source.h"
+#include "common/int.h"
+#include "Color.h"
 
-#include "OpenGL.h"
+// C
+#include <stddef.h>
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+
+enum BufferType
+{
+	BUFFER_VERTEX = 0,
+	BUFFER_INDEX,
+	BUFFER_MAX_ENUM
+};
+
+struct Vertex
+{
+	float x, y;
+	float s, t;
+	Color color;
+};
+
+namespace vertex
 {
 
-class Video : public Drawable, public Volatile
+enum class PrimitiveMode
 {
-public:
+	TRIANGLES,
+	POINTS,
+};
 
-	static love::Type type;
+enum class TriangleIndexMode
+{
+	NONE,
+	STRIP,
+	FAN,
+	QUADS,
+};
 
-	Video(love::video::VideoStream *stream);
-	~Video();
+enum class CommonFormat
+{
+	NONE,
+	XYf,
+	RGBAub,
+	XYf_STf,
+	XYf_STf_RGBAub,
+	XYf_STus_RGBAub,
+};
 
-	// Volatile
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+struct XYf_STf
+{
+	float x, y;
+	float s, t;
+};
 
-	// Drawable
-	void draw(Graphics *gfx, const Matrix4 &m) override;
+struct XYf_STf_RGBAub
+{
+	float x, y;
+	float s, t;
+	Color color;
+};
 
-	love::video::VideoStream *getStream();
+struct XYf_STus_RGBAub
+{
+	float x, y;
+	uint16 s, t;
+	Color color;
+};
 
-	love::audio::Source *getSource();
-	void setSource(love::audio::Source *source);
+size_t getFormatStride(CommonFormat format);
 
-	int getWidth() const;
-	int getHeight() const;
+int getIndexCount(TriangleIndexMode mode, int vertexCount);
 
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
+void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
+void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
-private:
-
-	void update();
-
-	StrongRef<love::video::VideoStream> stream;
-	StrongRef<love::audio::Source> source;
-
-	GLuint textures[3];
-
-	Vertex vertices[4];
-
-	Texture::Filter filter;
-
-}; // Video
-
-} // opengl
+} // vertex
 } // graphics
 } // love

@@ -20,6 +20,7 @@
 
 #include "Text.h"
 #include "common/Matrix.h"
+#include "graphics/Graphics.h"
 
 #include <algorithm>
 
@@ -207,10 +208,12 @@ void Text::clear()
 	vert_offset = 0;
 }
 
-void Text::draw(const Matrix4 &m)
+void Text::draw(Graphics *gfx, const Matrix4 &m)
 {
 	if (vbo == nullptr || draw_commands.empty())
 		return;
+
+	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Text object draw");
 
@@ -223,18 +226,15 @@ void Text::draw(const Matrix4 &m)
 	const size_t color_offset = offsetof(Font::GlyphVertex, color.r);
 	const size_t stride = sizeof(Font::GlyphVertex);
 
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= m;
+	Graphics::TempTransform transform(gfx, m);
 
-	{
-		vbo->bind();
-		vbo->unmap(); // Make sure all pending data is flushed to the GPU.
+	vbo->bind();
+	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
-		// Font::drawVertices expects AttribPointer calls to be done already.
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(pos_offset));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, vbo->getPointer(tex_offset));
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
-	}
+	// Font::drawVertices expects AttribPointer calls to be done already.
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(pos_offset));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, vbo->getPointer(tex_offset));
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 

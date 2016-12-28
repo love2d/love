@@ -25,6 +25,8 @@
 #include "Shader.h"
 #include "common/Exception.h"
 
+#include "graphics/Graphics.h"
+
 // C++
 #include <algorithm>
 #include <limits>
@@ -74,7 +76,6 @@ OpenGL::OpenGL()
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
-	matrices.transform.reserve(10);
 }
 
 bool OpenGL::initContext()
@@ -87,7 +88,6 @@ bool OpenGL::initContext()
 
 	initOpenGLFunctions();
 	initVendor();
-	initMatrices();
 
 	bugs = {};
 
@@ -314,14 +314,6 @@ void OpenGL::initMaxValues()
 	maxPointSize = limits[1];
 }
 
-void OpenGL::initMatrices()
-{
-	matrices.transform.clear();
-
-	matrices.transform.push_back(Matrix4());
-	matrices.projection = Matrix4();
-}
-
 void OpenGL::createDefaultTexture()
 {
 	// Set the 'default' texture (id 0) as a repeating white pixel. Otherwise,
@@ -346,21 +338,6 @@ void OpenGL::createDefaultTexture()
 	bindTextureToUnit(curtexture, 0, false);
 }
 
-void OpenGL::pushTransform()
-{
-	matrices.transform.push_back(matrices.transform.back());
-}
-
-void OpenGL::popTransform()
-{
-	matrices.transform.pop_back();
-}
-
-Matrix4 &OpenGL::getTransform()
-{
-	return matrices.transform.back();
-}
-
 void OpenGL::prepareDraw()
 {
 	TempDebugGroup debuggroup("Prepare OpenGL draw");
@@ -373,8 +350,9 @@ void OpenGL::prepareDraw()
 	// because uniform uploads can be significantly slower than glLoadMatrix.
 	if (GLAD_VERSION_1_0)
 	{
-		const Matrix4 &curproj = matrices.projection;
-		const Matrix4 &curxform = matrices.transform.back();
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		const Matrix4 &curxform = gfx->getTransform();
+		const Matrix4 &curproj = gfx->getProjection();
 
 		const Matrix4 &lastproj = state.lastProjectionMatrix;
 		const Matrix4 &lastxform = state.lastTransformMatrix;
@@ -386,14 +364,14 @@ void OpenGL::prepareDraw()
 			glLoadMatrixf(curproj.getElements());
 			glMatrixMode(GL_MODELVIEW);
 
-			state.lastProjectionMatrix = matrices.projection;
+			state.lastProjectionMatrix = curproj;
 		}
 
 		// Same with the transform matrix.
 		if (memcmp(curxform.getElements(), lastxform.getElements(), sizeof(float) * 16) != 0)
 		{
 			glLoadMatrixf(curxform.getElements());
-			state.lastTransformMatrix = matrices.transform.back();
+			state.lastTransformMatrix = curxform;
 		}
 	}
 }
@@ -454,7 +432,7 @@ void OpenGL::useVertexAttribArrays(uint32 arraybits)
 	// than 32. Lets hope that doesn't change...
 	for (uint32 i = 0; i < 32; i++)
 	{
-		uint32 bit = 1 << i;
+		uint32 bit = 1u << i;
 
 		if (diff & bit)
 		{
@@ -635,6 +613,12 @@ void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev
 		else
 			state.curTextureUnit = textureunit;
 	}
+}
+
+void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev)
+{
+	GLuint handle = texture != nullptr ? (GLuint) texture->getHandle() : getDefaultTexture();
+	bindTextureToUnit(handle, textureunit, restoreprev);
 }
 
 void OpenGL::deleteTexture(GLuint texture)

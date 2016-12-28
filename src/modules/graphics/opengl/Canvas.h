@@ -52,14 +52,10 @@ public:
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
-	// Implements Drawable.
-	void draw(const Matrix4 &m) override;
-
 	// Implements Texture.
-	void drawq(Quad *quad, const Matrix4 &m) override;
 	void setFilter(const Texture::Filter &f) override;
 	bool setWrap(const Texture::Wrap &w) override;
-	const void *getHandle() const override;
+	ptrdiff_t getHandle() const override;
 
 	love::image::ImageData *newImageData(love::image::Image *module, int x, int y, int w, int h);
 
@@ -97,7 +93,7 @@ public:
 
 private:
 
-	void drawv(const Matrix4 &t, const Vertex *v);
+	void drawv(Graphics *gfx, const Matrix4 &t, const Vertex *v) override;
 
 	GLuint fbo;
 

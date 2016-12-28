@@ -108,7 +108,7 @@ public:
 	bool getDrawRange(int &start, int &count) const;
 
 	// Implements Drawable.
-	void draw(const Matrix4 &m) override;
+	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 private:
 
@@ -125,15 +125,6 @@ private:
 	void setBufferSize(int newsize);
 
 	void addv(const Vertex *v, const Matrix4 &m, int index);
-
-	/**
-	 * Set the color for vertices.
-	 *
-	 * @param v The vertices to set the color for. Must be an array of
-	 *          of size 4.
-	 * @param color The color to assign to each vertex.
-	 */
-	void setColorv(Vertex *v, const Color &color);
 
 	StrongRef<Texture> texture;
 

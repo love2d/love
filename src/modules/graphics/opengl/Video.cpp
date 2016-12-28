@@ -22,6 +22,7 @@
 
 // LOVE
 #include "Shader.h"
+#include "graphics/Graphics.h"
 
 namespace love
 {
@@ -41,7 +42,7 @@ Video::Video(love::video::VideoStream *stream)
 	stream->fillBackBuffer();
 
 	for (int i = 0; i < 4; i++)
-		vertices[i].r = vertices[i].g = vertices[i].b = vertices[i].a = 255;
+		vertices[i].color = Color(255, 255, 255, 255);
 
 	// Vertices are ordered for use with triangle strips:
 	// 0----2
@@ -116,9 +117,11 @@ love::video::VideoStream *Video::getStream()
 	return stream;
 }
 
-void Video::draw(const Matrix4 &m)
+void Video::draw(Graphics *gfx, const Matrix4 &m)
 {
 	update();
+
+	gfx->flushStreamDraws();
 
 	Shader *shader = Shader::current;
 	bool defaultShader = (shader == Shader::defaultShader);
@@ -131,8 +134,7 @@ void Video::draw(const Matrix4 &m)
 
 	shader->setVideoTextures(textures[0], textures[1], textures[2]);
 
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= m;
+	Graphics::TempTransform transform(gfx, m);
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
 

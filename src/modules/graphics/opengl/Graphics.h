@@ -62,7 +62,7 @@ namespace graphics
 namespace opengl
 {
 
-class Graphics : public love::graphics::Graphics
+class Graphics final : public love::graphics::Graphics
 {
 public:
 
@@ -78,16 +78,16 @@ public:
 	virtual ~Graphics();
 
 	// Implements Module.
-	const char *getName() const;
+	const char *getName() const override;
 
-	virtual void setViewportSize(int width, int height);
-	virtual bool setMode(int width, int height);
-	virtual void unSetMode();
+	void setViewportSize(int width, int height) override;
+	bool setMode(int width, int height) override;
+	void unSetMode() override;
 
-	virtual void setActive(bool active);
-	virtual bool isActive() const;
+	void setActive(bool active) override;
+	bool isActive() const override;
 
-	void setDebug(bool enable);
+	void flushStreamDraws() override;
 
 	/**
 	 * Resets the current color, background color,
@@ -101,7 +101,7 @@ public:
 
 	void discard(const std::vector<bool> &colorbuffers, bool depthstencil);
 
-	virtual bool isCanvasActive() const;
+	bool isCanvasActive() const override;
 	bool isCanvasActive(Canvas *canvas) const;
 
 	/**
@@ -203,15 +203,14 @@ public:
 	bool isGammaCorrect() const;
 
 	/**
-	 * Sets the foreground color.
-	 * @param c The new foreground color.
+	 * Sets the current constant color.
 	 **/
 	void setColor(Colorf c);
 
 	/**
 	 * Gets current color.
 	 **/
-	Colorf getColor() const;
+	Colorf getColor() const override;
 
 	/**
 	 * Sets the background Color.
@@ -324,7 +323,7 @@ public:
 	bool isWireframe() const;
 
 	void draw(Drawable *drawable, const Matrix4 &m);
-	void drawq(Texture *texture, Quad *quad, const Matrix4 &m);
+	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
 
 	/**
 	 * Draws text at the specified coordinates
@@ -341,7 +340,7 @@ public:
 	 * @param x Point along x-axis.
 	 * @param y Point along y-axis.
 	 **/
-	void points(const float *coords, const uint8 *colors, size_t numpoints);
+	void points(const float *coords, const Colorf *colors, size_t numpoints);
 
 	/**
 	 * Draws a series of lines connecting the given vertices.
@@ -462,6 +461,7 @@ private:
 	struct DisplayState
 	{
 		Colorf color = Colorf(1.0, 1.0, 1.0, 1.0);
+		Colorf gammaCorrectedColor = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
 		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 1.0);
 
 		BlendMode blendMode = BLEND_ALPHA;
@@ -511,6 +511,8 @@ private:
 	void bindCachedFBO(const std::vector<Canvas *> &canvases);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
 	GLuint attachCachedStencilBuffer(int w, int h, int samples);
+
+	void setDebug(bool enable);
 
 	void checkSetDefaultFont();
 

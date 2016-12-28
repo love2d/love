@@ -19,6 +19,7 @@
  **/
 
 #include "Texture.h"
+#include "Graphics.h"
 
 namespace love
 {
@@ -45,6 +46,38 @@ Texture::~Texture()
 PixelFormat Texture::getPixelFormat() const
 {
 	return format;
+}
+
+void Texture::draw(Graphics *gfx, const Matrix4 &m)
+{
+	drawv(gfx, m, vertices);
+}
+
+void Texture::drawq(Graphics *gfx, Quad *quad, const Matrix4 &m)
+{
+	drawv(gfx, m, quad->getVertices());
+}
+
+void Texture::drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v)
+{
+	Matrix4 t = gfx->getTransform() * localTransform;
+
+	Vertex verts[4] = {v[0], v[1], v[2], v[3]};
+	t.transform(verts, v, 4);
+
+	Color c = toColor(gfx->getColor());
+
+	for (int i = 0; i < 4; i++)
+		verts[i].color = c;
+
+	Graphics::StreamDrawRequest req;
+	req.formats[0] = vertex::CommonFormat::XYf_STf_RGBAub;
+	req.indexMode = vertex::TriangleIndexMode::QUADS;
+	req.vertexCount = 4;
+	req.texture = this;
+
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+	memcpy(data.stream[0], verts, sizeof(Vertex) * 4);
 }
 
 int Texture::getWidth() const

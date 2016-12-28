@@ -250,37 +250,14 @@ void Canvas::unloadVolatile()
 	texture_memory = 0;
 }
 
-void Canvas::drawv(const Matrix4 &t, const Vertex *v)
+void Canvas::drawv(love::graphics::Graphics *gfx, const Matrix4 &localTransform, const Vertex *v)
 {
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr && gfx->isCanvasActive(this))
+	Graphics *glgfx = (Graphics *) gfx;
+
+	if (glgfx != nullptr && glgfx->isCanvasActive(this))
 		throw love::Exception("Cannot render a Canvas to itself!");
 
-	OpenGL::TempDebugGroup debuggroup("Canvas draw");
-
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
-
-	gl.bindTextureToUnit(texture, 0, false);
-
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
-
-	gl.bindBuffer(BUFFER_VERTEX, 0);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].x);
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
-
-	gl.prepareDraw();
-	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-}
-
-void Canvas::draw(const Matrix4 &m)
-{
-	drawv(m, vertices);
-}
-
-void Canvas::drawq(Quad *quad, const Matrix4 &m)
-{
-	drawv(m, quad->getVertices());
+	Texture::drawv(gfx, localTransform, v);
 }
 
 void Canvas::setFilter(const Texture::Filter &f)
@@ -322,9 +299,9 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 	return success;
 }
 
-const void *Canvas::getHandle() const
+ptrdiff_t Canvas::getHandle() const
 {
-	return &texture;
+	return texture;
 }
 
 love::image::ImageData *Canvas::newImageData(love::image::Image *module, int x, int y, int w, int h)

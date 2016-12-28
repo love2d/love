@@ -60,8 +60,154 @@ void unGammaCorrectColor(Colorf &c)
 
 love::Type Graphics::type("graphics", &Module::type);
 
+Graphics::Graphics()
+	: streamBufferState()
+	, projectionMatrix()
+{
+	transformStack.reserve(16);
+	transformStack.push_back(Matrix4());
+}
+
 Graphics::~Graphics()
 {
+	delete streamBufferState.vb[0];
+	delete streamBufferState.vb[1];
+	delete streamBufferState.indexBuffer;
+}
+
+Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &req)
+{
+	using namespace vertex;
+
+	StreamBufferState &state = streamBufferState;
+
+	bool shouldflush = false;
+	bool shouldresize = false;
+
+	if (req.primitiveMode != state.primitiveMode
+		|| req.formats[0] != state.formats[0] || req.formats[1] != state.formats[1]
+		|| ((req.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
+		|| req.texture != state.texture)
+	{
+		shouldflush = true;
+	}
+
+	int totalvertices = state.vertexCount + req.vertexCount;
+
+	if (totalvertices > LOVE_UINT16_MAX && req.indexMode != TriangleIndexMode::NONE)
+		shouldflush = true;
+
+	int reqIndexCount = getIndexCount(req.indexMode, req.vertexCount);
+	size_t reqIndexSize = reqIndexCount * sizeof(uint16);
+
+	size_t newdatasizes[2] = {0, 0};
+	size_t buffersizes[3] = {0, 0, 0};
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (req.formats[i] != CommonFormat::NONE)
+		{
+			size_t stride = getFormatStride(req.formats[i]);
+			size_t datasize = stride * totalvertices;
+
+			size_t cursize = state.vb[i]->getSize();
+
+			if (datasize > cursize)
+			{
+				shouldflush = true;
+
+				if (stride * req.vertexCount > cursize)
+				{
+					buffersizes[i] = std::max(datasize, cursize * 2);
+					shouldresize = true;
+				}
+			}
+
+			newdatasizes[i] = stride * req.vertexCount;
+		}
+	}
+
+	{
+		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
+		size_t cursize = state.indexBuffer->getSize();
+
+		if (datasize > cursize)
+		{
+			shouldflush = true;
+
+			if (reqIndexSize > cursize)
+			{
+				buffersizes[2] = std::max(datasize, cursize * 2);
+				shouldresize = true;
+			}
+		}
+	}
+
+	if (shouldflush)
+	{
+		flushStreamDraws();
+
+		state.primitiveMode = req.primitiveMode;
+		state.formats[0] = req.formats[0];
+		state.formats[1] = req.formats[1];
+		state.texture = req.texture;
+	}
+
+	if (shouldresize)
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			if (state.vb[i]->getSize() < buffersizes[i])
+				state.vb[i]->setSize(buffersizes[i]);
+		}
+
+		if (state.indexBuffer->getSize() < buffersizes[2])
+			state.indexBuffer->setSize(buffersizes[2]);
+	}
+
+	if (req.indexMode != TriangleIndexMode::NONE)
+	{
+		uint16 *indices = (uint16 *) state.indexBuffer->getOffsetData();
+		fillIndices(req.indexMode, state.vertexCount, req.vertexCount, indices);
+		state.indexBuffer->incrementOffset(reqIndexSize);
+	}
+
+	StreamVertexData d;
+	d.stream[0] = state.vb[0]->getOffsetData();
+	d.stream[1] = state.vb[1]->getOffsetData();
+
+	state.vertexCount += req.vertexCount;
+	state.indexCount  += reqIndexCount;
+
+	state.vb[0]->incrementOffset(newdatasizes[0]);
+	state.vb[1]->incrementOffset(newdatasizes[1]);
+
+	return d;
+}
+
+const Matrix4 &Graphics::getTransform() const
+{
+	return transformStack.back();
+}
+
+const Matrix4 &Graphics::getProjection() const
+{
+	return projectionMatrix;
+}
+
+void Graphics::pushTransform()
+{
+	transformStack.push_back(transformStack.back());
+}
+
+void Graphics::pushIdentityTransform()
+{
+	transformStack.push_back(Matrix4());
+}
+
+void Graphics::popTransform()
+{
+	transformStack.pop_back();
 }
 
 bool Graphics::getConstant(const char *in, DrawMode &out)
@@ -232,12 +378,12 @@ StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(
 
 StringMap<Graphics::StencilAction, Graphics::STENCIL_MAX_ENUM>::Entry Graphics::stencilActionEntries[] =
 {
-	{ "replace", STENCIL_REPLACE },
-	{ "increment", STENCIL_INCREMENT },
-	{ "decrement", STENCIL_DECREMENT },
+	{ "replace",       STENCIL_REPLACE        },
+	{ "increment",     STENCIL_INCREMENT      },
+	{ "decrement",     STENCIL_DECREMENT      },
 	{ "incrementwrap", STENCIL_INCREMENT_WRAP },
 	{ "decrementwrap", STENCIL_DECREMENT_WRAP },
-	{ "invert", STENCIL_INVERT },
+	{ "invert",        STENCIL_INVERT         },
 };
 
 StringMap<Graphics::StencilAction, Graphics::STENCIL_MAX_ENUM> Graphics::stencilActions(Graphics::stencilActionEntries, sizeof(Graphics::stencilActionEntries));
@@ -258,8 +404,8 @@ StringMap<Graphics::CompareMode, Graphics::COMPARE_MAX_ENUM> Graphics::compareMo
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featureEntries[] =
 {
 	{ "multicanvasformats", FEATURE_MULTI_CANVAS_FORMATS },
-	{ "clampzero", FEATURE_CLAMP_ZERO },
-	{ "lighten", FEATURE_LIGHTEN },
+	{ "clampzero",          FEATURE_CLAMP_ZERO           },
+	{ "lighten",            FEATURE_LIGHTEN              },
 	{ "fullnpot", FEATURE_FULL_NPOT },
 	{ "pixelshaderhighp", FEATURE_PIXEL_SHADER_HIGHP },
 };
@@ -279,7 +425,7 @@ StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimit
 
 StringMap<Graphics::StackType, Graphics::STACK_MAX_ENUM>::Entry Graphics::stackTypeEntries[] =
 {
-	{ "all", STACK_ALL },
+	{ "all",       STACK_ALL       },
 	{ "transform", STACK_TRANSFORM },
 };
 

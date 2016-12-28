@@ -52,7 +52,7 @@ public:
 	void clear();
 
 	// Implements Drawable.
-	void draw(const Matrix4 &m) override;
+	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 	void setFont(Font *f);
 	Font *getFont() const;

@@ -474,6 +474,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/ParticleSystem.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
+	src/modules/graphics/StreamBuffer.cpp
+	src/modules/graphics/StreamBuffer.h
 	src/modules/graphics/Texture.cpp
 	src/modules/graphics/Texture.h
 	src/modules/graphics/Volatile.cpp

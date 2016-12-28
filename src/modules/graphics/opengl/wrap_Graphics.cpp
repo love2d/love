@@ -826,10 +826,10 @@ static Mesh *newStandardMesh(lua_State *L)
 			v.s = (float) luaL_optnumber(L, -6, 0.0);
 			v.t = (float) luaL_optnumber(L, -5, 0.0);
 
-			v.r = (unsigned char) (luaL_optnumber(L, -4, 1.0) * 255.0);
-			v.g = (unsigned char) (luaL_optnumber(L, -3, 1.0) * 255.0);
-			v.b = (unsigned char) (luaL_optnumber(L, -2, 1.0) * 255.0);
-			v.a = (unsigned char) (luaL_optnumber(L, -1, 1.0) * 255.0);
+			v.color.r = (unsigned char) (luaL_optnumber(L, -4, 1.0) * 255.0);
+			v.color.g = (unsigned char) (luaL_optnumber(L, -3, 1.0) * 255.0);
+			v.color.b = (unsigned char) (luaL_optnumber(L, -2, 1.0) * 255.0);
+			v.color.a = (unsigned char) (luaL_optnumber(L, -1, 1.0) * 255.0);
 
 			lua_pop(L, 9);
 			vertices.push_back(v);
@@ -1544,7 +1544,7 @@ int w_draw(lua_State *L)
 		math::Transform *tf = luax_totype<math::Transform>(L, startidx);
 		luax_catchexcept(L, [&]() {
 			if (texture && quad)
-				instance()->drawq(texture, quad, tf->getMatrix());
+				instance()->draw(texture, quad, tf->getMatrix());
 			else
 				instance()->draw(drawable, tf->getMatrix());
 		});
@@ -1565,7 +1565,7 @@ int w_draw(lua_State *L)
 
 		luax_catchexcept(L, [&]() {
 			if (texture && quad)
-				instance()->drawq(texture, quad, m);
+				instance()->draw(texture, quad, m);
 			else if (drawable)
 				instance()->draw(drawable, m);
 		});
@@ -1673,12 +1673,18 @@ int w_points(lua_State *L)
 		numpoints = args;
 
 	float *coords = nullptr;
-	uint8 *colors = nullptr;
-
-	coords = new float[numpoints * 2];
+	Colorf *colors = nullptr;
 
 	if (is_table_of_tables)
-		colors = new uint8[numpoints * 4];
+	{
+		size_t datasize = (sizeof(float) * 2 + sizeof(Colorf)) * numpoints;
+		uint8 *data = instance()->getScratchBuffer<uint8>(datasize);
+
+		coords = (float *) data;
+		colors = (Colorf *) (data + sizeof(float) * numpoints * 2);
+	}
+	else
+		coords = instance()->getScratchBuffer<float>(numpoints * 2);
 
 	if (is_table)
 	{
@@ -1694,10 +1700,10 @@ int w_points(lua_State *L)
 				coords[i * 2 + 0] = luax_tofloat(L, -6);
 				coords[i * 2 + 1] = luax_tofloat(L, -5);
 
-				colors[i * 4 + 0] = (uint8) (luaL_optnumber(L, -4, 1.0) * 255.0);
-				colors[i * 4 + 1] = (uint8) (luaL_optnumber(L, -3, 1.0) * 255.0);
-				colors[i * 4 + 2] = (uint8) (luaL_optnumber(L, -2, 1.0) * 255.0);
-				colors[i * 4 + 3] = (uint8) (luaL_optnumber(L, -1, 1.0) * 255.0);
+				colors[i].r = luaL_optnumber(L, -4, 1.0);
+				colors[i].g = luaL_optnumber(L, -3, 1.0);
+				colors[i].b = luaL_optnumber(L, -2, 1.0);
+				colors[i].a = luaL_optnumber(L, -1, 1.0);
 
 				lua_pop(L, 7);
 			}
@@ -1719,15 +1725,7 @@ int w_points(lua_State *L)
 			coords[i] = luax_tofloat(L, i + 1);
 	}
 
-	luax_catchexcept(L,
-		[&](){ instance()->points(coords, colors, numpoints); },
-		[&](bool) {
-			delete[] coords;
-			if (colors)
-				delete[] colors;
-		}
-	);
-
+	luax_catchexcept(L, [&](){ instance()->points(coords, colors, numpoints); });
 	return 0;
 }
 
@@ -1746,7 +1744,7 @@ int w_line(lua_State *L)
 	else if (args < 4)
 		return luaL_error(L, "Need at least two vertices to draw a line");
 
-	float *coords = new float[args];
+	float *coords = instance()->getScratchBuffer<float>(args);
 	if (is_table)
 	{
 		for (int i = 0; i < args; ++i)
@@ -1894,7 +1892,6 @@ int w_polygon(lua_State *L)
 		return luaL_error(L, "Invalid draw mode: %s", str);
 
 	bool is_table = false;
-	float *coords;
 	if (args == 1 && lua_istable(L, 2))
 	{
 		args = (int) luax_objlen(L, 2);
@@ -1907,7 +1904,7 @@ int w_polygon(lua_State *L)
 		return luaL_error(L, "Need at least three vertices to draw a polygon");
 
 	// fetch coords
-	coords = new float[args + 2];
+	float *coords = instance()->getScratchBuffer<float>(args + 2);
 	if (is_table)
 	{
 		for (int i = 0; i < args; ++i)
@@ -1927,11 +1924,13 @@ int w_polygon(lua_State *L)
 	coords[args]   = coords[0];
 	coords[args+1] = coords[1];
 
-	luax_catchexcept(L,
-		[&](){ instance()->polygon(mode, coords, args+2); },
-		[&](bool) { delete[] coords; }
-	);
+	luax_catchexcept(L, [&](){ instance()->polygon(mode, coords, args+2); });
+	return 0;
+}
 
+int w_flush(lua_State *)
+{
+	instance()->flushStreamDraws();
 	return 0;
 }
 
@@ -2123,8 +2122,9 @@ static const luaL_Reg functions[] =
 	{ "circle", w_circle },
 	{ "ellipse", w_ellipse },
 	{ "arc", w_arc },
-
 	{ "polygon", w_polygon },
+
+	{ "flush", w_flush },
 
 	{ "push", w_push },
 	{ "pop", w_pop },

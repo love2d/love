@@ -18,66 +18,63 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#pragma once
-
-// LOVE
-#include "common/math.h"
-#include "graphics/Drawable.h"
-#include "graphics/Volatile.h"
-#include "video/VideoStream.h"
-#include "audio/Source.h"
-
-#include "OpenGL.h"
+#include "StreamBuffer.h"
+#include "common/Exception.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+
+StreamBuffer::StreamBuffer(Mode mode, size_t size)
+	: data(nullptr)
+	, offset(0)
+	, totalSize(size)
+	, mode(mode)
 {
+	setSize(size);
+}
 
-class Video : public Drawable, public Volatile
+StreamBuffer::~StreamBuffer()
 {
-public:
+		delete[] data;
+}
 
-	static love::Type type;
+void *StreamBuffer::getData() const
+{
+	return data;
+}
 
-	Video(love::video::VideoStream *stream);
-	~Video();
+void *StreamBuffer::getOffsetData() const
+{
+	return data + offset;
+}
 
-	// Volatile
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+void StreamBuffer::incrementOffset(size_t amount)
+{
+	offset += amount;
+}
 
-	// Drawable
-	void draw(Graphics *gfx, const Matrix4 &m) override;
+void StreamBuffer::resetOffset()
+{
+	offset = 0;
+}
 
-	love::video::VideoStream *getStream();
+void StreamBuffer::setSize(size_t size)
+{
+	delete[] data;
 
-	love::audio::Source *getSource();
-	void setSource(love::audio::Source *source);
+	try
+	{
+		data = new uint8[size];
+	}
+	catch (std::exception &)
+	{
+		throw love::Exception("Out of memory.");
+	}
 
-	int getWidth() const;
-	int getHeight() const;
+	this->totalSize = size;
+}
 
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
-
-private:
-
-	void update();
-
-	StrongRef<love::video::VideoStream> stream;
-	StrongRef<love::audio::Source> source;
-
-	GLuint textures[3];
-
-	Vertex vertices[4];
-
-	Texture::Filter filter;
-
-}; // Video
-
-} // opengl
 } // graphics
 } // love

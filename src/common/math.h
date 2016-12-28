@@ -72,13 +72,6 @@ struct Rect
 	}
 };
 
-struct Vertex
-{
-	float x, y;
-	float s, t;
-	unsigned char r, g, b, a;
-};
-
 inline int nextP2(int x)
 {
 	x += (x == 0);

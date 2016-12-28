@@ -215,6 +215,8 @@ private:
 
 	int getFreeTextureUnits(int count);
 
+	void flushStreamDraws() const;
+
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
 

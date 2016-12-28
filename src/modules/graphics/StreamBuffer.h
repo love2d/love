@@ -21,63 +21,57 @@
 #pragma once
 
 // LOVE
-#include "common/math.h"
-#include "graphics/Drawable.h"
-#include "graphics/Volatile.h"
-#include "video/VideoStream.h"
-#include "audio/Source.h"
+#include "common/int.h"
 
-#include "OpenGL.h"
+// C
+#include <cstddef>
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-class Video : public Drawable, public Volatile
+// TODO: This class will need to be changed significantly in the future to
+// accomodate non-client-side vertex/index data.
+class StreamBuffer
 {
 public:
 
-	static love::Type type;
+	enum Mode
+	{
+		MODE_VERTEX,
+		MODE_INDEX,
+	};
 
-	Video(love::video::VideoStream *stream);
-	~Video();
+	StreamBuffer(Mode mode, size_t size);
+	~StreamBuffer();
 
-	// Volatile
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	void *getData() const;
+	void *getOffsetData() const;
 
-	// Drawable
-	void draw(Graphics *gfx, const Matrix4 &m) override;
+	void incrementOffset(size_t amount);
+	void resetOffset();
 
-	love::video::VideoStream *getStream();
+	void setSize(size_t size);
 
-	love::audio::Source *getSource();
-	void setSource(love::audio::Source *source);
+	size_t getSize() const
+	{
+		return totalSize;
+	}
 
-	int getWidth() const;
-	int getHeight() const;
-
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
+	Mode getMode() const
+	{
+		return mode;
+	}
 
 private:
 
-	void update();
+	uint8 *data;
+	size_t offset;
+	size_t totalSize;
+	Mode mode;
 
-	StrongRef<love::video::VideoStream> stream;
-	StrongRef<love::audio::Source> source;
+}; // StreamBuffer
 
-	GLuint textures[3];
-
-	Vertex vertices[4];
-
-	Texture::Filter filter;
-
-}; // Video
-
-} // opengl
 } // graphics
 } // love

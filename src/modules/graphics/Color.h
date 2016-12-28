@@ -48,6 +48,7 @@ struct ColorT
 	bool operator!=(const ColorT<T> &other) const;
 
 	ColorT<T> operator+=(const ColorT<T> &other);
+	ColorT<T> operator*=(const ColorT<T> &other);
 	ColorT<T> operator*=(T s);
 	ColorT<T> operator/=(T s);
 };
@@ -71,6 +72,16 @@ ColorT<T> ColorT<T>::operator+=(const ColorT<T> &other)
 	g += other.g;
 	b += other.b;
 	a += other.a;
+	return *this;
+}
+
+template <typename T>
+ColorT<T> ColorT<T>::operator*=(const ColorT<T> &other)
+{
+	r *= other.r;
+	g *= other.g;
+	b *= other.b;
+	a *= other.a;
 	return *this;
 }
 
@@ -102,6 +113,17 @@ ColorT<T> operator+(const ColorT<T> &a, const ColorT<T> &b)
 }
 
 template <typename T>
+ColorT<T> operator*(const ColorT<T> &a, const ColorT<T> &b)
+{
+	ColorT<T> res;
+	res.r = a.r * b.r;
+	res.g = a.g * b.g;
+	res.b = a.b * b.b;
+	res.a = a.a * b.a;
+	return res;
+}
+
+template <typename T>
 ColorT<T> operator*(const ColorT<T> &a, T s)
 {
 	ColorT<T> tmp(a);
@@ -117,6 +139,19 @@ ColorT<T> operator/(const ColorT<T> &a, T s)
 
 typedef ColorT<unsigned char> Color;
 typedef ColorT<float> Colorf;
+
+inline Color toColor(Colorf cf)
+{
+	return Color((unsigned char) (cf.r * 255.0f),
+	             (unsigned char) (cf.g * 255.0f),
+	             (unsigned char) (cf.b * 255.0f),
+	             (unsigned char) (cf.a * 255.0f));
+}
+
+inline Colorf toColorf(Color c)
+{
+	return Colorf(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
+}
 
 } // graphics
 } // love

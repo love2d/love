@@ -587,6 +587,9 @@ const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
 
 void Shader::updateUniform(const UniformInfo *info, int count, bool internalUpdate)
 {
+	if (!internalUpdate)
+		flushStreamDraws();
+
 	TemporaryAttacher attacher(this, !internalUpdate);
 
 	int location = info->location;
@@ -679,6 +682,9 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 	if (info->baseType != UNIFORM_SAMPLER)
 		return;
 
+	if (!internalUpdate)
+		flushStreamDraws();
+
 	count = std::min(count, info->count);
 	bool updateuniform = false;
 
@@ -713,7 +719,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 
 		if (textures[i] != nullptr)
 		{
-			GLuint gltex = *(GLuint *) textures[i]->getHandle();
+			GLuint gltex = (GLuint) textures[i]->getHandle();
 
 			gl.bindTextureToUnit(gltex, texunit, false);
 
@@ -722,10 +728,20 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 		}
 		else
 		{
-			gl.bindTextureToUnit(0, texunit, false);
+			gl.bindTextureToUnit((GLuint) 0, texunit, false);
 			textureUnits[texunit].texture = 0;
 			textureUnits[texunit].active = false;
 		}
+	}
+}
+
+void Shader::flushStreamDraws() const
+{
+	if (current == this)
+	{
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		if (gfx != nullptr)
+			gfx->flushStreamDraws();
 	}
 }
 
@@ -871,9 +887,10 @@ void Shader::checkSetBuiltinUniforms()
 	{
 		checkSetPointSize(gl.getPointSize());
 
-		const Matrix4 &curxform = gl.matrices.transform.back();
-		const Matrix4 &curproj = gl.matrices.projection;
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		const Matrix4 &curproj = gfx->getProjection();
 
+		const Matrix4 &curxform = gfx->getTransform();
 		TemporaryAttacher attacher(this, true);
 
 		bool tpmatrixneedsupdate = false;

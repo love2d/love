@@ -20,9 +20,7 @@
 
 // LOVE
 #include "Polyline.h"
-
-// OpenGL
-#include "OpenGL.h"
+#include "graphics/Graphics.h"
 
 // C++
 #include <algorithm>
@@ -86,7 +84,7 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 		// extra degenerate triangle in between the core line and the overdraw
 		// line in order to break up the strip into two. This will let us draw
 		// everything in one draw call.
-		if (draw_mode == GL_TRIANGLE_STRIP)
+		if (triangle_mode == vertex::TriangleIndexMode::STRIP)
 			extra_vertices = 2;
 	}
 
@@ -115,6 +113,12 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vect
                                 Vector &s, float &len_s, Vector &ns,
                                 const Vector &q, const Vector &r, float hw)
 {
+	//   ns1------ns2
+	//    |        |
+	//    q ------ r
+	//    |        |
+	// (-ns1)----(-ns2)
+
 	anchors.push_back(q);
 	anchors.push_back(q);
 	normals.push_back(ns);
@@ -126,8 +130,8 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vect
 
 	anchors.push_back(q);
 	anchors.push_back(q);
-	normals.push_back(-ns);
 	normals.push_back(ns);
+	normals.push_back(-ns);
 }
 
 
@@ -324,31 +328,36 @@ void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &/*normals*/, f
 {
 	for (size_t i = 2; i + 3 < vertex_count; i += 4)
 	{
-		Vector s = vertices[i] - vertices[i+3];
-		Vector t = vertices[i] - vertices[i+1];
+		// v0-v2
+		// | / | <- main quad line
+		// v1-v3
+
+		Vector s = vertices[i+0] - vertices[i+2];
+		Vector t = vertices[i+0] - vertices[i+1];
 		s.normalize(pixel_size);
 		t.normalize(pixel_size);
 
 		const size_t k = 4 * (i - 2);
-		overdraw[k  ] = vertices[i];
-		overdraw[k+1] = vertices[i]   + s + t;
-		overdraw[k+2] = vertices[i+1] + s - t;
-		overdraw[k+3] = vertices[i+1];
+
+		overdraw[k+0] = vertices[i+0];
+		overdraw[k+1] = vertices[i+1];
+		overdraw[k+2] = vertices[i+0] + s + t;
+		overdraw[k+3] = vertices[i+1] + s - t;
 
 		overdraw[k+4] = vertices[i+1];
-		overdraw[k+5] = vertices[i+1] + s - t;
-		overdraw[k+6] = vertices[i+2] - s - t;
-		overdraw[k+7] = vertices[i+2];
+		overdraw[k+5] = vertices[i+3];
+		overdraw[k+6] = vertices[i+1] + s - t;
+		overdraw[k+7] = vertices[i+3] - s - t;
 
-		overdraw[k+8]  = vertices[i+2];
-		overdraw[k+9]  = vertices[i+2] - s - t;
-		overdraw[k+10] = vertices[i+3] - s + t;
-		overdraw[k+11] = vertices[i+3];
+		overdraw[k+ 8] = vertices[i+3];
+		overdraw[k+ 9] = vertices[i+2];
+		overdraw[k+10] = vertices[i+3] - s - t;
+		overdraw[k+11] = vertices[i+2] - s + t;
 
-		overdraw[k+12] = vertices[i+3];
-		overdraw[k+13] = vertices[i+3] - s + t;
-		overdraw[k+14] = vertices[i]   + s + t;
-		overdraw[k+15] = vertices[i];
+		overdraw[k+12] = vertices[i+2];
+		overdraw[k+13] = vertices[i+0];
+		overdraw[k+14] = vertices[i+2] - s + t;
+		overdraw[k+15] = vertices[i+0] + s + t;
 	}
 }
 
@@ -358,104 +367,50 @@ Polyline::~Polyline()
 		delete[] vertices;
 }
 
-void Polyline::draw()
+void Polyline::draw(love::graphics::Graphics *gfx)
 {
-	OpenGL::TempDebugGroup debuggroup("Line draw");
-
-	GLushort *indices = nullptr;
-	Color *colors = nullptr;
-
-	size_t total_vertex_count = vertex_count;
+	int total_vertex_count = (int) vertex_count;
 	if (overdraw)
-		total_vertex_count = overdraw_vertex_start + overdraw_vertex_count;
+		total_vertex_count = (int) (overdraw_vertex_start + overdraw_vertex_count);
 
-	// TODO: We should probably be using a reusable index buffer.
-	if (use_quad_indices)
-	{
-		size_t numindices = (total_vertex_count / 4) * 6;
+	Graphics::StreamDrawRequest req;
+	req.formats[0] = vertex::CommonFormat::XYf;
+	req.formats[1] = vertex::CommonFormat::RGBAub;
+	req.indexMode = triangle_mode;
+	req.vertexCount = total_vertex_count;
 
-		try
-		{
-			indices = new GLushort[numindices];
-		}
-		catch (std::bad_alloc &)
-		{
-			throw love::Exception("Out of memory.");
-		}
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
-		// Fill the index array to make 2 triangles from each quad.
-		// NOTE: The triangle vertex ordering here is important!
-		for (size_t i = 0; i < numindices / 6; i++)
-		{
-			// First triangle.
-			indices[i * 6 + 0] = GLushort(i * 4 + 0);
-			indices[i * 6 + 1] = GLushort(i * 4 + 1);
-			indices[i * 6 + 2] = GLushort(i * 4 + 2);
+	const Matrix4 &t = gfx->getTransform();
+	t.transform((Vector *) data.stream[0], vertices, total_vertex_count);
 
-			// Second triangle.
-			indices[i * 6 + 3] = GLushort(i * 4 + 0);
-			indices[i * 6 + 4] = GLushort(i * 4 + 2);
-			indices[i * 6 + 5] = GLushort(i * 4 + 3);
-		}
-	}
+	Color curcolor = toColor(gfx->getColor());
+	Color *colordata = (Color *) data.stream[1];
 
-	gl.prepareDraw();
-
-	gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
-	gl.bindBuffer(BUFFER_VERTEX, 0);
-
-	uint32 enabledattribs = ATTRIBFLAG_POS;
+	for (int i = 0; i < (int) vertex_count; i++)
+		colordata[i] = curcolor;
 
 	if (overdraw)
-	{
-		// Prepare per-vertex colors. Set the core to white, and the overdraw
-		// line's colors to white on one side and transparent on the other.
-		colors = new Color[total_vertex_count];
-		memset(colors, 255, overdraw_vertex_start * sizeof(Color));
-		fill_color_array(colors + overdraw_vertex_start);
-
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
-
-		enabledattribs |= ATTRIBFLAG_COLOR;
-	}
-
-	gl.useVertexAttribArrays(enabledattribs);
-
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-
-	// Draw the core line and the overdraw in a single draw call. We can do this
-	// because the vertex array contains both the core line and the overdraw
-	// vertices.
-	if (use_quad_indices)
-	{
-		gl.bindBuffer(BUFFER_INDEX, 0);
-		gl.drawElements(draw_mode, (int) (total_vertex_count / 4) * 6, GL_UNSIGNED_SHORT, indices);
-	}
-	else
-		gl.drawArrays(draw_mode, 0, (int) total_vertex_count);
-
-	if (overdraw)
-		delete[] colors;
-
-	if (indices)
-		delete[] indices;
+		fill_color_array(curcolor, colordata + overdraw_vertex_start);
 }
 
-void Polyline::fill_color_array(Color *colors)
+void Polyline::fill_color_array(Color constant_color, Color *colors)
 {
 	for (size_t i = 0; i < overdraw_vertex_count; ++i)
 	{
-		// avoids branching. equiv to if (i%2 == 1) colors[i].a = 0;
-		colors[i] = {255, 255, 255, GLubyte(255 * ((i+1) % 2))};
+		Color c = constant_color;
+		c.a *= (i+1) % 2; // avoids branching. equiv to if (i%2 == 1) c.a = 0;
+		colors[i] = c;
 	}
 }
 
-void NoneJoinPolyline::fill_color_array(Color *colors)
+void NoneJoinPolyline::fill_color_array(Color constant_color, Color *colors)
 {
 	for (size_t i = 0; i < overdraw_vertex_count; ++i)
 	{
-		// if (i % 4 == 1 || i % 4 == 2) colors[i].a = 0
-		colors[i] = {255, 255, 255, GLubyte(255 * ((i+1) % 4 < 2))};
+		Color c = constant_color;
+		c.a *= (i & 3) < 2; // if (i % 4 == 2 || i % 4 == 3) c.a = 0
+		colors[i] = c;
 	}
 }
 

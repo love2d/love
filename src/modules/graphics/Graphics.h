@@ -24,10 +24,14 @@
 // LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "StreamBuffer.h"
+#include "vertex.h"
 #include "Color.h"
+#include "Texture.h"
 
 // C++
 #include <string>
+#include <vector>
 
 namespace love
 {
@@ -222,6 +226,47 @@ public:
 		bool enabled;
 	};
 
+	struct StreamDrawRequest
+	{
+		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
+		vertex::CommonFormat formats[2] = {vertex::CommonFormat::NONE, vertex::CommonFormat::NONE};
+		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
+		int vertexCount = 0;
+		Texture *texture = nullptr;
+	};
+
+	struct StreamVertexData
+	{
+		void *stream[2];
+	};
+
+	class TempTransform
+	{
+	public:
+
+		TempTransform(Graphics *gfx)
+			: gfx(gfx)
+		{
+			gfx->pushTransform();
+		}
+
+		TempTransform(Graphics *gfx, const Matrix4 &t)
+			: gfx(gfx)
+		{
+			gfx->pushTransform();
+			gfx->transformStack.back() *= t;
+		}
+
+		~TempTransform()
+		{
+			gfx->popTransform();
+		}
+
+	private:
+		Graphics *gfx;
+	};
+
+	Graphics();
 	virtual ~Graphics();
 
 	// Implements Module.
@@ -261,6 +306,25 @@ public:
 
 	virtual bool isCanvasActive() const = 0;
 
+	virtual void flushStreamDraws() = 0;
+	StreamVertexData requestStreamDraw(const StreamDrawRequest &request);
+
+	virtual Colorf getColor() const = 0;
+
+	const Matrix4 &getTransform() const;
+	const Matrix4 &getProjection() const;
+
+	template <typename T>
+	T *getScratchBuffer(size_t count)
+	{
+		size_t bytes = sizeof(T) * count;
+
+		if (scratchBuffer.size() < bytes)
+			scratchBuffer.resize(bytes);
+
+		return (T *) scratchBuffer.data();
+	}
+
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
 
@@ -294,7 +358,31 @@ public:
 	static bool getConstant(const char *in, StackType &out);
 	static bool getConstant(StackType in, const char *&out);
 
+protected:
+
+	struct StreamBufferState
+	{
+		StreamBuffer *vb[2];
+		StreamBuffer *indexBuffer;
+		vertex::PrimitiveMode primitiveMode;
+		vertex::CommonFormat formats[2];
+		StrongRef<Texture> texture;
+		int vertexCount;
+		int indexCount;
+	};
+
+	void pushTransform();
+	void pushIdentityTransform();
+	void popTransform();
+
+	StreamBufferState streamBufferState;
+
+	std::vector<Matrix4> transformStack;
+	Matrix4 projectionMatrix;
+
 private:
+
+	std::vector<uint8> scratchBuffer;
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;

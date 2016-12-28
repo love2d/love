@@ -24,9 +24,7 @@
 // LOVE
 #include "common/config.h"
 #include "common/Vector.h"
-
-// OpenGL
-#include "OpenGL.h"
+#include "graphics/vertex.h"
 
 // C++
 #include <vector>
@@ -36,6 +34,9 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
 namespace opengl
 {
 
@@ -46,15 +47,16 @@ namespace opengl
 class Polyline
 {
 public:
-	Polyline(GLenum mode = GL_TRIANGLE_STRIP, bool quadindices = false)
+
+	Polyline(vertex::TriangleIndexMode mode = vertex::TriangleIndexMode::STRIP)
 		: vertices(nullptr)
 		, overdraw(nullptr)
 		, vertex_count(0)
 		, overdraw_vertex_count(0)
-		, draw_mode(mode)
-		, use_quad_indices(quadindices)
+		, triangle_mode(mode)
 		, overdraw_vertex_start(0)
 	{}
+
 	virtual ~Polyline();
 
 	/**
@@ -69,12 +71,13 @@ public:
 
 	/** Draws the line on the screen
 	 */
-	void draw();
+	void draw(love::graphics::Graphics *gfx);
 
 protected:
+
 	virtual void calc_overdraw_vertex_count(bool is_looping);
 	virtual void render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping);
-	virtual void fill_color_array(Color *colors);
+	virtual void fill_color_array(Color constant_color, Color *colors);
 
 	/** Calculate line boundary points.
 	 *
@@ -95,8 +98,7 @@ protected:
 	Vector *overdraw;
 	size_t vertex_count;
 	size_t overdraw_vertex_count;
-	GLenum draw_mode;
-	bool use_quad_indices;
+	vertex::TriangleIndexMode triangle_mode;
 	size_t overdraw_vertex_start;
 
 }; // Polyline
@@ -109,8 +111,9 @@ protected:
 class NoneJoinPolyline : public Polyline
 {
 public:
+
 	NoneJoinPolyline()
-		: Polyline(GL_TRIANGLES, true)
+		: Polyline(vertex::TriangleIndexMode::QUADS)
 	{}
 
 	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
@@ -131,13 +134,15 @@ public:
 	}
 
 protected:
+
 	virtual void calc_overdraw_vertex_count(bool is_looping);
 	virtual void render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping);
-	virtual void fill_color_array(Color *colors);
+	virtual void fill_color_array(Color constant_color, Color *colors);
 	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
 	                        Vector &s, float &len_s, Vector &ns,
 	                        const Vector &q, const Vector &r, float hw);
-};
+
+}; // NoneJoinPolyline
 
 
 /**
@@ -147,16 +152,19 @@ protected:
 class MiterJoinPolyline : public Polyline
 {
 public:
+
 	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
 	{
 		Polyline::render(vertices, count, count, halfwidth, pixel_size, draw_overdraw);
 	}
 
 protected:
+
 	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
 	                        Vector &s, float &len_s, Vector &ns,
 	                        const Vector &q, const Vector &r, float hw);
-};
+
+}; // MiterJoinPolyline
 
 
 /**
@@ -166,16 +174,19 @@ protected:
 class BevelJoinPolyline : public Polyline
 {
 public:
+
 	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
 	{
 		Polyline::render(vertices, count, 2 * count - 4, halfwidth, pixel_size, draw_overdraw);
 	}
 
 protected:
+
 	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
 	                        Vector &s, float &len_s, Vector &ns,
 	                        const Vector &q, const Vector &r, float hw);
-};
+
+}; // BevelJoinPolyline
 
 } // opengl
 } // graphics

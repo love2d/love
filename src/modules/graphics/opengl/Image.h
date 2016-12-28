@@ -90,17 +90,7 @@ public:
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
-	/**
-	 * @copydoc Drawable::draw()
-	 **/
-	void draw(const Matrix4 &m) override;
-
-	/**
-	 * @copydoc Texture::drawq()
-	 **/
-	void drawq(Quad *quad, const Matrix4 &m) override;
-
-	const void *getHandle() const override;
+	ptrdiff_t getHandle() const override;
 
 	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const;
 	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const;
@@ -138,8 +128,6 @@ public:
 	static int imageCount;
 
 private:
-
-	void drawv(const Matrix4 &t, const Vertex *v);
 
 	void preload();
 

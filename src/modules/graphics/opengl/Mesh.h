@@ -200,7 +200,7 @@ public:
 	int bindAttributeToShaderInput(int attributeindex, const std::string &inputname);
 
 	// Implements Drawable.
-	void draw(const Matrix4 &m) override;
+	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 	static GLenum getGLBufferUsage(Usage usage);
 

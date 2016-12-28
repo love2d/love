@@ -27,6 +27,10 @@
 #include "common/pixelformat.h"
 #include "Drawable.h"
 #include "Quad.h"
+#include "vertex.h"
+
+// C
+#include <stddef.h>
 
 namespace love
 {
@@ -77,10 +81,13 @@ public:
 	Texture();
 	virtual ~Texture();
 
+	// Drawable.
+	void draw(Graphics *gfx, const Matrix4 &m) override;
+
 	/**
 	 * Draws the texture using the specified transformation with a Quad applied.
 	 **/
-	virtual void drawq(Quad *quad, const Matrix4 &m) = 0;
+	void drawq(Graphics *gfx, Quad *quad, const Matrix4 &m);
 
 	PixelFormat getPixelFormat() const;
 
@@ -95,7 +102,7 @@ public:
 
 	virtual const Vertex *getVertices() const;
 
-	virtual const void *getHandle() const = 0;
+	virtual ptrdiff_t getHandle() const = 0;
 
 	// The default filter.
 	static void setDefaultFilter(const Filter &f);
@@ -110,6 +117,8 @@ public:
 	static bool getConstant(WrapMode in, const char  *&out);
 
 protected:
+
+	virtual void drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v);
 
 	PixelFormat format;
 

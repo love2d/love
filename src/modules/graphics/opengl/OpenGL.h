@@ -27,6 +27,7 @@
 #include "common/math.h"
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
+#include "graphics/vertex.h"
 #include "common/Matrix.h"
 
 // GLAD
@@ -70,13 +71,6 @@ enum VertexAttribFlags
 	ATTRIBFLAG_CONSTANTCOLOR = 1 << ATTRIB_CONSTANTCOLOR
 };
 
-enum BufferType
-{
-	BUFFER_VERTEX = 0,
-	BUFFER_INDEX,
-	BUFFER_MAX_ENUM
-};
-
 /**
  * Thin layer between OpenGL and the rest of the program.
  * Internally shadows some OpenGL context state for improved efficiency and
@@ -117,36 +111,6 @@ public:
 		GLenum internalformat = 0;
 		GLenum externalformat = 0;
 		GLenum type = 0;
-	};
-
-	struct
-	{
-		std::vector<Matrix4> transform;
-		Matrix4 projection;
-	} matrices;
-
-	class TempTransform
-	{
-	public:
-
-		TempTransform(OpenGL &gl)
-			: gl(gl)
-		{
-			gl.pushTransform();
-		}
-
-		~TempTransform()
-		{
-			gl.popTransform();
-		}
-
-		Matrix4 &get()
-		{
-			return gl.getTransform();
-		}
-
-	private:
-		OpenGL &gl;
 	};
 
 	class TempDebugGroup
@@ -241,10 +205,6 @@ public:
 	 * an OpenGL context!
 	 **/
 	void deInitContext();
-
-	void pushTransform();
-	void popTransform();
-	Matrix4 &getTransform();
 
 	/**
 	 * Set up necessary state (LOVE-provided shader uniforms, etc.) for drawing.
@@ -359,6 +319,7 @@ public:
 	 * @param restoreprev Restore previously bound texture unit when done.
 	 **/
 	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
+	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -440,7 +401,6 @@ private:
 	void initVendor();
 	void initOpenGLFunctions();
 	void initMaxValues();
-	void initMatrices();
 	void createDefaultTexture();
 
 	bool contextInitialized;

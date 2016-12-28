@@ -431,7 +431,9 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 	uint32 prevglyph = 0;
 
-	Color curcolor(255, 255, 255, 255);
+	Color initialcolor(255, 255, 255, 255);
+
+	Color curcolor = initialcolor;
 	int curcolori = -1;
 	int ncolors = (int) codepoints.colors.size();
 
@@ -441,11 +443,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 		if (curcolori + 1 < ncolors && codepoints.colors[curcolori + 1].index == i)
 		{
-			const Colorf &c = codepoints.colors[++curcolori].color;
-			curcolor.r = (unsigned char) (c.r * 255.0f);
-			curcolor.g = (unsigned char) (c.g * 255.0f);
-			curcolor.b = (unsigned char) (c.b * 255.0f);
-			curcolor.a = (unsigned char) (c.a * 255.0f);
+			curcolor = toColor(codepoints.colors[++curcolori].color);
 		}
 
 		if (g == '\n')
@@ -478,7 +476,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			vertices.resize(vertstartsize);
 			prevglyph = 0;
 			curcolori = -1;
-			curcolor = Color(255, 255, 255, 255);
+			curcolor = initialcolor;
 			continue;
 		}
 
@@ -689,10 +687,13 @@ void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands
 	if (vertices.empty() || drawcommands.empty())
 		return;
 
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+
+	gfx->flushStreamDraws();
+
 	OpenGL::TempDebugGroup debuggroup("Font print");
 
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
+	Graphics::TempTransform transform(gfx, t);
 
 	gl.bindBuffer(BUFFER_VERTEX, 0);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &vertices[0].x);

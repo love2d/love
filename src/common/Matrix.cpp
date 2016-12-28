@@ -97,7 +97,7 @@ Matrix4::~Matrix4()
 Matrix4 Matrix4::operator * (const Matrix4 &m) const
 {
 	Matrix4 t;
-	multiply(*this, m, t);
+	multiply(*this, m, t.e);
 	return t;
 }
 

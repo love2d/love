@@ -232,7 +232,7 @@ void Graphics::setViewportSize(int width, int height)
 		gl.setViewport({0, 0, width, height}, false);
 
 		// Set up the projection matrix
-		gl.matrices.projection = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
 	}
 }
 
@@ -289,6 +289,15 @@ bool Graphics::setMode(int width, int height)
 
 	setDebug(enabledebug);
 
+	if (streamBufferState.vb[0] == nullptr)
+	{
+		// Initial sizes that should be good enough for most cases. It will
+		// resize to fit if needed, later.
+		streamBufferState.vb[0] = new StreamBuffer(StreamBuffer::MODE_VERTEX, 1024 * 1024 * 1);
+		streamBufferState.vb[1] = new StreamBuffer(StreamBuffer::MODE_VERTEX, 256  * 1024 * 1);
+		streamBufferState.indexBuffer = new StreamBuffer(StreamBuffer::MODE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+	}
+
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
 		::printf("Could not reload all volatile objects.\n");
@@ -339,6 +348,8 @@ void Graphics::unSetMode()
 	if (!isCreated())
 		return;
 
+	flushStreamDraws();
+
 	// Unload all volatile objects. These must be reloaded after the display
 	// mode change.
 	Volatile::unloadAll();
@@ -359,6 +370,8 @@ void Graphics::unSetMode()
 
 void Graphics::setActive(bool enable)
 {
+	flushStreamDraws();
+
 	// Make sure all pending OpenGL commands have fully executed before
 	// returning, when going from active to inactive. This is required on iOS.
 	if (isCreated() && this->active && !enable)
@@ -373,6 +386,113 @@ bool Graphics::isActive() const
 	// context, and the active variable is set.
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 	return active && isCreated() && window != nullptr && window->isOpen();
+}
+
+void Graphics::flushStreamDraws()
+{
+	using namespace vertex;
+
+	const auto &sbstate = streamBufferState;
+
+	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
+		return;
+
+	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
+
+	uint32 attribs = 0;
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (sbstate.formats[i] == CommonFormat::NONE)
+			continue;
+
+		StreamBuffer *buffer = sbstate.vb[i];
+
+		buffer->resetOffset();
+		ptrdiff_t offset = (ptrdiff_t) buffer->getData();
+		GLsizei stride = (GLsizei) getFormatStride(sbstate.formats[i]);
+
+		gl.bindBuffer(BUFFER_VERTEX, 0);
+
+		switch (sbstate.formats[i])
+		{
+		case CommonFormat::NONE:
+			break;
+		case CommonFormat::XYf:
+			attribs |= ATTRIBFLAG_POS;
+			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
+			break;
+		case CommonFormat::RGBAub:
+			attribs |= ATTRIBFLAG_COLOR;
+			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset));
+			break;
+		case CommonFormat::XYf_STf:
+			attribs |= ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
+			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, x)));
+			glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, s)));
+			break;
+		case CommonFormat::XYf_STf_RGBAub:
+			attribs |= ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
+			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, x)));
+			glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, s)));
+			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, color.r)));
+			break;
+		case CommonFormat::XYf_STus_RGBAub:
+			attribs |= ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
+			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, x)));
+			glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, s)));
+			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, color.r)));
+			break;
+		}
+	}
+
+	if (attribs == 0)
+		return;
+
+	GLenum glmode = GL_ZERO;
+
+	switch (sbstate.primitiveMode)
+	{
+	case PrimitiveMode::TRIANGLES:
+		glmode = GL_TRIANGLES;
+		break;
+	case PrimitiveMode::POINTS:
+		glmode = GL_POINTS;
+		break;
+	}
+
+	if (attribs & ATTRIBFLAG_COLOR)
+		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, 1.0f, 1.0f, 1.0f, 1.0f);
+
+	pushIdentityTransform();
+
+	gl.prepareDraw();
+
+	gl.bindTextureToUnit(sbstate.texture, 0, false);
+
+	gl.useVertexAttribArrays(attribs);
+
+	if (sbstate.indexCount > 0)
+	{
+		sbstate.indexBuffer->resetOffset();
+		ptrdiff_t offset = (ptrdiff_t) sbstate.indexBuffer->getData();
+
+		gl.bindBuffer(BUFFER_INDEX, 0);
+		gl.drawElements(glmode, sbstate.indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offset));
+	}
+	else
+		gl.drawArrays(glmode, 0, sbstate.vertexCount);
+
+	popTransform();
+
+	if (attribs & ATTRIB_CONSTANTCOLOR)
+	{
+		Colorf nc = states.back().gammaCorrectedColor;
+		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, nc.r, nc.g, nc.b, nc.a);
+	}
+
+	streamBufferState.vertexCount = 0;
+	streamBufferState.indexCount = 0;
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
@@ -513,7 +633,7 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 	int h = firstcanvas->getHeight();
 
 	gl.setViewport({0, 0, w, h}, true);
-	gl.matrices.projection = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
+	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
@@ -564,7 +684,7 @@ void Graphics::setCanvas()
 
 	// The projection matrix is flipped compared to rendering to a canvas, due
 	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	gl.matrices.projection = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+	projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
 
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
@@ -590,6 +710,8 @@ std::vector<Canvas *> Graphics::getCanvas() const
 
 void Graphics::endPass()
 {
+	flushStreamDraws();
+
 	// Discard the stencil buffer.
 	discard({}, true);
 
@@ -617,6 +739,8 @@ void Graphics::endPass()
 
 void Graphics::clear(Colorf c)
 {
+	flushStreamDraws();
+
 	gammaCorrectColor(c);
 	glClearColor(c.r, c.g, c.b, c.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -645,6 +769,8 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 
 		return;
 	}
+
+	flushStreamDraws();
 
 	bool drawbuffersmodified = false;
 
@@ -712,6 +838,7 @@ bool Graphics::isCanvasActive(Canvas *canvas) const
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 {
+	flushStreamDraws();
 	discard(OpenGL::FRAMEBUFFER_ALL, colorbuffers, depthstencil);
 }
 
@@ -799,7 +926,7 @@ void Graphics::bindCachedFBO(const std::vector<Canvas *> &canvases)
 			}
 			else
 			{
-				GLuint tex = *(GLuint *) canvases[i]->getHandle();
+				GLuint tex = (GLuint) canvases[i]->getHandle();
 				glFramebufferTexture2D(GL_FRAMEBUFFER, drawbuffers[i], GL_TEXTURE_2D, tex, 0);
 			}
 		}
@@ -1047,6 +1174,8 @@ bool Graphics::isCreated() const
 
 void Graphics::setScissor(const Rect &rect)
 {
+	flushStreamDraws();
+
 	DisplayState &state = states.back();
 
 	glEnable(GL_SCISSOR_TEST);
@@ -1081,6 +1210,7 @@ void Graphics::intersectScissor(const Rect &rect)
 
 void Graphics::setScissor()
 {
+	flushStreamDraws();
 	states.back().scissor = false;
 	glDisable(GL_SCISSOR_TEST);
 }
@@ -1134,6 +1264,8 @@ void Graphics::stopDrawToStencilBuffer()
 {
 	if (!writingToStencil)
 		return;
+
+	flushStreamDraws();
 
 	writingToStencil = false;
 
@@ -1324,11 +1456,17 @@ bool Graphics::isGammaCorrect() const
 
 void Graphics::setColor(Colorf c)
 {
+	c.r = std::min(std::max(c.r, 0.0f), 1.0f);
+	c.g = std::min(std::max(c.g, 0.0f), 1.0f);
+	c.b = std::min(std::max(c.b, 0.0f), 1.0f);
+	c.a = std::min(std::max(c.a, 0.0f), 1.0f);
+
 	Colorf nc = c;
 	gammaCorrectColor(nc);
 	glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, nc.r, nc.g, nc.b, nc.a);
 
 	states.back().color = c;
+	states.back().gammaCorrectedColor = nc;
 }
 
 Colorf Graphics::getColor() const
@@ -1350,7 +1488,6 @@ void Graphics::setFont(Font *font)
 {
 	// We don't need to set a default font here if null is passed in, since we
 	// only care about the default font in getFont and print.
-
 	DisplayState &state = states.back();
 	state.font.set(font);
 }
@@ -1366,6 +1503,8 @@ void Graphics::setShader(Shader *shader)
 	if (shader == nullptr)
 		return setShader();
 
+	flushStreamDraws();
+
 	DisplayState &state = states.back();
 
 	shader->attach();
@@ -1375,6 +1514,8 @@ void Graphics::setShader(Shader *shader)
 
 void Graphics::setShader()
 {
+	flushStreamDraws();
+
 	DisplayState &state = states.back();
 
 	// This will activate the default shader.
@@ -1390,6 +1531,8 @@ Shader *Graphics::getShader() const
 
 void Graphics::setColorMask(ColorMask mask)
 {
+	flushStreamDraws();
+
 	glColorMask(mask.r, mask.g, mask.b, mask.a);
 	states.back().colorMask = mask;
 }
@@ -1401,6 +1544,8 @@ Graphics::ColorMask Graphics::getColorMask() const
 
 void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 {
+	flushStreamDraws();
+
 	GLenum func   = GL_FUNC_ADD;
 	GLenum srcRGB = GL_ONE;
 	GLenum srcA   = GL_ONE;
@@ -1538,6 +1683,9 @@ Graphics::LineJoin Graphics::getLineJoin() const
 
 void Graphics::setPointSize(float size)
 {
+	if (streamBufferState.primitiveMode == vertex::PrimitiveMode::POINTS)
+		flushStreamDraws();
+
 	gl.setPointSize(size);
 	states.back().pointSize = size;
 }
@@ -1553,6 +1701,8 @@ void Graphics::setWireframe(bool enable)
 	if (GLAD_ES_VERSION_2_0)
 		return;
 
+	flushStreamDraws();
+
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
 	states.back().wireframe = enable;
 }
@@ -1564,12 +1714,12 @@ bool Graphics::isWireframe() const
 
 void Graphics::draw(Drawable *drawable, const Matrix4 &m)
 {
-	drawable->draw(m);
+	drawable->draw(this, m);
 }
 
-void Graphics::drawq(Texture *texture, Quad *quad, const Matrix4 &m)
+void Graphics::draw(Texture *texture, Quad *quad, const Matrix4 &m)
 {
-	texture->drawq(quad, m);
+	texture->drawq(this, quad, m);
 }
 
 void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
@@ -1596,25 +1746,51 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, F
  * Primitives
  **/
 
-void Graphics::points(const float *coords, const uint8 *colors, size_t numpoints)
+void Graphics::points(const float *coords, const Colorf *colors, size_t numpoints)
 {
-	OpenGL::TempDebugGroup debuggroup("Graphics points draw");
+	StreamDrawRequest req;
+	req.primitiveMode = vertex::PrimitiveMode::POINTS;
+	req.formats[0] = vertex::CommonFormat::XYf;
+	if (colors)
+		req.formats[1] = vertex::CommonFormat::RGBAub;
+	req.vertexCount = (int) numpoints;
 
-	gl.prepareDraw();
-	gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
-	gl.bindBuffer(BUFFER_VERTEX, 0);
+	StreamVertexData data = requestStreamDraw(req);
 
-	uint32 attribflags = ATTRIBFLAG_POS;
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
+	const Matrix4 &t = getTransform();
+	t.transform((Vector *) data.stream[0], (const Vector *) coords, req.vertexCount);
+
+	Color *colordata = (Color *) data.stream[1];
 
 	if (colors)
 	{
-		attribflags |= ATTRIBFLAG_COLOR;
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, colors);
-	}
+		Colorf nc = getColor();
+		gammaCorrectColor(nc);
 
-	gl.useVertexAttribArrays(attribflags);
-	gl.drawArrays(GL_POINTS, 0, (GLsizei) numpoints);
+		if (isGammaCorrect())
+		{
+			for (int i = 0; i < req.vertexCount; i++)
+			{
+				Colorf ci = colors[i];
+				gammaCorrectColor(ci);
+				ci *= nc;
+				unGammaCorrectColor(ci);
+				colordata[i] = toColor(ci);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < req.vertexCount; i++)
+				colordata[i] = toColor(nc * colors[i]);
+		}
+	}
+	else
+	{
+		Color c = toColor(getColor());
+
+		for (int i = 0; i < req.vertexCount; i++)
+			colordata[i] = c;
+	}
 }
 
 void Graphics::polyline(const float *coords, size_t count)
@@ -1626,19 +1802,19 @@ void Graphics::polyline(const float *coords, size_t count)
 	{
 		NoneJoinPolyline line;
 		line.render(coords, count, state.lineWidth * .5f, pixelsize, state.lineStyle == LINE_SMOOTH);
-		line.draw();
+		line.draw(this);
 	}
 	else if (state.lineJoin == LINE_JOIN_BEVEL)
 	{
 		BevelJoinPolyline line;
 		line.render(coords, count, state.lineWidth * .5f, pixelsize, state.lineStyle == LINE_SMOOTH);
-		line.draw();
+		line.draw(this);
 	}
 	else // LINE_JOIN_MITER
 	{
 		MiterJoinPolyline line;
 		line.render(coords, count, state.lineWidth * .5f, pixelsize, state.lineStyle == LINE_SMOOTH);
-		line.draw();
+		line.draw(this);
 	}
 }
 
@@ -1669,7 +1845,7 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 	float angle_shift = half_pi / ((float) points + 1.0f);
 
 	int num_coords = (points + 2) * 8;
-	float *coords = new float[num_coords + 2];
+	float *coords = getScratchBuffer<float>(num_coords + 2);
 	float phi = .0f;
 
 	for (int i = 0; i <= points + 2; ++i, phi += angle_shift)
@@ -1706,8 +1882,6 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 	coords[num_coords + 1] = coords[1];
 
 	polygon(mode, coords, num_coords + 2);
-
-	delete[] coords;
 }
 
 int Graphics::calculateEllipsePoints(float rx, float ry) const
@@ -1733,12 +1907,12 @@ void Graphics::circle(DrawMode mode, float x, float y, float radius)
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int points)
 {
-	float two_pi = static_cast<float>(LOVE_M_PI * 2);
+	float two_pi = (float) (LOVE_M_PI * 2);
 	if (points <= 0) points = 1;
 	float angle_shift = (two_pi / points);
 	float phi = .0f;
 
-	float *coords = new float[2 * (points + 1)];
+	float *coords = getScratchBuffer<float>(2 * (points + 1));
 	for (int i = 0; i < points; ++i, phi += angle_shift)
 	{
 		coords[2*i+0] = x + a * cosf(phi);
@@ -1749,8 +1923,6 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 	coords[2*points+1] = coords[1];
 
 	polygon(mode, coords, (points + 1) * 2);
-
-	delete[] coords;
 }
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b)
@@ -1804,7 +1976,7 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 	if (arcmode == ARC_PIE)
 	{
 		num_coords = (points + 3) * 2;
-		coords = new float[num_coords];
+		coords = getScratchBuffer<float>(num_coords);
 
 		coords[0] = coords[num_coords - 2] = x;
 		coords[1] = coords[num_coords - 1] = y;
@@ -1814,14 +1986,14 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 	else if (arcmode == ARC_OPEN)
 	{
 		num_coords = (points + 1) * 2;
-		coords = new float[num_coords];
+		coords = getScratchBuffer<float>(num_coords);
 
 		createPoints(coords);
 	}
 	else // ARC_CLOSED
 	{
 		num_coords = (points + 2) * 2;
-		coords = new float[num_coords];
+		coords = getScratchBuffer<float>(num_coords);
 
 		createPoints(coords);
 
@@ -1830,10 +2002,7 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 		coords[num_coords - 1] = coords[1];
 	}
 
-	// NOTE: We rely on polygon() using GL_TRIANGLE_FAN, when fill mode is used.
 	polygon(drawmode, coords, num_coords);
-
-	delete[] coords;
 }
 
 void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2)
@@ -1861,14 +2030,21 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
-		OpenGL::TempDebugGroup debuggroup("Filled polygon draw");
+		StreamDrawRequest req;
+		req.formats[0] = vertex::CommonFormat::XYf;
+		req.formats[1] = vertex::CommonFormat::RGBAub;
+		req.indexMode = vertex::TriangleIndexMode::FAN;
+		req.vertexCount = (int)count/2 - 1;
 
-		gl.prepareDraw();
-		gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
-		gl.bindBuffer(BUFFER_VERTEX, 0);
-		gl.useVertexAttribArrays(ATTRIBFLAG_POS);
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, 0, coords);
-		gl.drawArrays(GL_TRIANGLE_FAN, 0, (int)count/2-1); // opengl will close the polygon for us
+		StreamVertexData data = requestStreamDraw(req);
+
+		const Matrix4 &t = getTransform();
+		t.transform((Vector *) data.stream[0], (const Vector *) coords, req.vertexCount);
+
+		Color c = toColor(getColor());
+		Color *colordata = (Color *) data.stream[1];
+		for (int i = 0; i < req.vertexCount; i++)
+			colordata[i] = c;
 	}
 }
 
@@ -1904,9 +2080,14 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 
 Graphics::Stats Graphics::getStats() const
 {
+	int drawcalls = gl.stats.drawCalls;
+
+	if (streamBufferState.vertexCount > 0)
+		drawcalls++;
+
 	Stats stats;
 
-	stats.drawCalls = gl.stats.drawCalls;
+	stats.drawCalls = drawcalls;
 	stats.canvasSwitches = canvasSwitchCount;
 	stats.shaderSwitches = gl.stats.shaderSwitches;
 	stats.canvases = Canvas::canvasCount;
@@ -1960,7 +2141,7 @@ void Graphics::push(StackType type)
 	if (stackTypes.size() == MAX_USER_STACK_DEPTH)
 		throw Exception("Maximum stack depth reached (more pushes than pops?)");
 
-	gl.pushTransform();
+	pushTransform();
 
 	pixelScaleStack.push_back(pixelScaleStack.back());
 
@@ -1975,7 +2156,7 @@ void Graphics::pop()
 	if (stackTypes.size() < 1)
 		throw Exception("Minimum stack depth reached (more pops than pushes?)");
 
-	gl.popTransform();
+	popTransform();
 	pixelScaleStack.pop_back();
 
 	if (stackTypes.back() == STACK_ALL)
@@ -1993,34 +2174,34 @@ void Graphics::pop()
 
 void Graphics::rotate(float r)
 {
-	gl.getTransform().rotate(r);
+	transformStack.back().rotate(r);
 }
 
 void Graphics::scale(float x, float y)
 {
-	gl.getTransform().scale(x, y);
+	transformStack.back().scale(x, y);
 	pixelScaleStack.back() *= (fabs(x) + fabs(y)) / 2.0;
 }
 
 void Graphics::translate(float x, float y)
 {
-	gl.getTransform().translate(x, y);
+	transformStack.back().translate(x, y);
 }
 
 void Graphics::shear(float kx, float ky)
 {
-	gl.getTransform().shear(kx, ky);
+	transformStack.back().shear(kx, ky);
 }
 
 void Graphics::origin()
 {
-	gl.getTransform().setIdentity();
+	transformStack.back().setIdentity();
 	pixelScaleStack.back() = 1;
 }
 
 void Graphics::applyTransform(love::math::Transform *transform)
 {
-	Matrix4 &m = gl.getTransform();
+	Matrix4 &m = transformStack.back();
 	m *= transform->getMatrix();
 
 	float sx, sy;
@@ -2031,7 +2212,7 @@ void Graphics::applyTransform(love::math::Transform *transform)
 void Graphics::replaceTransform(love::math::Transform *transform)
 {
 	const Matrix4 &m = transform->getMatrix();
-	gl.getTransform() = m;
+	transformStack.back() = m;
 
 	float sx, sy;
 	m.getApproximateScale(sx, sy);
@@ -2041,7 +2222,7 @@ void Graphics::replaceTransform(love::math::Transform *transform)
 Vector Graphics::transformPoint(Vector point)
 {
 	Vector p;
-	gl.getTransform().transform(&p, &point, 1);
+	transformStack.back().transform(&p, &point, 1);
 	return p;
 }
 
@@ -2050,7 +2231,7 @@ Vector Graphics::inverseTransformPoint(Vector point)
 	Vector p;
 	// TODO: We should probably cache the inverse transform so we don't have to
 	// re-calculate it every time this is called.
-	gl.getTransform().inverse().transform(&p, &point, 1);
+	transformStack.back().inverse().transform(&p, &point, 1);
 	return p;
 }
 

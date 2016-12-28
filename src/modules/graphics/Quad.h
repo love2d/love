@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/math.h"
+#include "vertex.h"
 
 namespace love
 {

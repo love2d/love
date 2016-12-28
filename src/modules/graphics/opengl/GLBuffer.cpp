@@ -21,6 +21,7 @@
 #include "GLBuffer.h"
 
 #include "common/Exception.h"
+#include "graphics/vertex.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -362,22 +363,9 @@ const void *QuadIndices::getIndices(size_t offset) const
 template <typename T>
 void QuadIndices::fill()
 {
-	T *inds = (T *) indices;
+	using namespace love::graphics::vertex;
 
-	// 0----2
-	// |  / |
-	// | /  |
-	// 1----3
-	for (size_t i = 0; i < maxSize; ++i)
-	{
-		inds[i*6+0] = T(i * 4 + 0);
-		inds[i*6+1] = T(i * 4 + 1);
-		inds[i*6+2] = T(i * 4 + 2);
-
-		inds[i*6+3] = T(i * 4 + 2);
-		inds[i*6+4] = T(i * 4 + 1);
-		inds[i*6+5] = T(i * 4 + 3);
-	}
+	fillIndices(TriangleIndexMode::QUADS, 0, maxSize * 4, (T *) indices);
 
 	indexBuffer->fill(0, indexBuffer->getSize(), indices);
 }

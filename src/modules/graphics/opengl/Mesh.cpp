@@ -23,6 +23,7 @@
 #include "common/Matrix.h"
 #include "common/Exception.h"
 #include "Shader.h"
+#include "graphics/Graphics.h"
 
 // C++
 #include <algorithm>
@@ -44,7 +45,7 @@ static const char *getBuiltinAttribName(VertexAttribID attribid)
 
 static_assert(offsetof(Vertex, x) == sizeof(float) * 0, "Incorrect position offset in Vertex struct");
 static_assert(offsetof(Vertex, s) == sizeof(float) * 2, "Incorrect texture coordinate offset in Vertex struct");
-static_assert(offsetof(Vertex, r) == sizeof(float) * 4, "Incorrect color offset in Vertex struct");
+static_assert(offsetof(Vertex, color.r) == sizeof(float) * 4, "Incorrect color offset in Vertex struct");
 
 static std::vector<Mesh::AttribFormat> getDefaultVertexFormat()
 {
@@ -574,10 +575,12 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	return attriblocation;
 }
 
-void Mesh::draw(const Matrix4 &m)
+void Mesh::draw(Graphics *gfx, const Matrix4 &m)
 {
 	if (vertexCount <= 0)
 		return;
+
+	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 
@@ -601,13 +604,9 @@ void Mesh::draw(const Matrix4 &m)
 
 	gl.useVertexAttribArrays(enabledattribs);
 
-	if (texture.get())
-		gl.bindTextureToUnit(*(GLuint *) texture->getHandle(), 0, false);
-	else
-		gl.bindTextureToUnit(gl.getDefaultTexture(), 0, false);
+	gl.bindTextureToUnit(texture, 0, false);
 
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= m;
+	Graphics::TempTransform transform(gfx, m);
 
 	gl.prepareDraw();
 

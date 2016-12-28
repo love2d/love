@@ -21,6 +21,7 @@
 //LOVE
 #include "common/config.h"
 #include "ParticleSystem.h"
+#include "graphics/Graphics.h"
 
 #include "OpenGL.h"
 
@@ -61,7 +62,7 @@ void ParticleSystem::createVertices(size_t numparticles)
 {
 	try
 	{
-		love::Vertex *pverts = new love::Vertex[numparticles * 4];
+		Vertex *pverts = new Vertex[numparticles * 4];
 		delete[] particleVerts;
 		particleVerts = pverts;
 	}
@@ -84,17 +85,18 @@ void ParticleSystem::setBufferSize(uint32 size)
 	createVertices(size);
 }
 
-void ParticleSystem::draw(const Matrix4 &m)
+void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 {
 	uint32 pCount = getCount();
 
 	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || particleVerts == nullptr)
 		return;
 
+	gfx->flushStreamDraws();
+
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= m;
+	Graphics::TempTransform transform(gfx, m);
 
 	const Vertex *textureVerts = texture->getVertices();
 	Vertex *pVerts = particleVerts;
@@ -114,31 +116,29 @@ void ParticleSystem::draw(const Matrix4 &m)
 		t.setTransformation(p->position.x, p->position.y, p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
 		t.transform(pVerts, textureVerts, 4);
 
+		// Particle colors are stored as floats (0-1) but vertex colors are
+		// unsigned bytes (0-255).
+		Color c = toColor(p->color);
+
 		// set the texture coordinate and color data for particle vertices
 		for (int v = 0; v < 4; v++)
 		{
 			pVerts[v].s = textureVerts[v].s;
 			pVerts[v].t = textureVerts[v].t;
-
-			// Particle colors are stored as floats (0-1) but vertex colors are
-			// unsigned bytes (0-255).
-			pVerts[v].r = (unsigned char) (p->color.r*255);
-			pVerts[v].g = (unsigned char) (p->color.g*255);
-			pVerts[v].b = (unsigned char) (p->color.b*255);
-			pVerts[v].a = (unsigned char) (p->color.a*255);
+			pVerts[v].color = c;
 		}
 
 		pVerts += 4;
 		p = p->next;
 	}
 
-	gl.bindTextureToUnit(*(GLuint *) texture->getHandle(), 0, false);
+	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
 	gl.bindBuffer(BUFFER_VERTEX, 0);
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &particleVerts[0].r);
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &particleVerts[0].color.r);
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].x);
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
 

@@ -169,7 +169,7 @@ Image::~Image()
 void Image::preload()
 {
 	for (int i = 0; i < 4; i++)
-		vertices[i].r = vertices[i].g = vertices[i].b = vertices[i].a = 255;
+		vertices[i].color = Color(255, 255, 255, 255);
 
 	// Vertices are ordered for use with triangle strips:
 	// 0----2
@@ -448,38 +448,9 @@ bool Image::refresh(int xoffset, int yoffset, int w, int h)
 	return true;
 }
 
-void Image::drawv(const Matrix4 &t, const Vertex *v)
+ptrdiff_t Image::getHandle() const
 {
-	OpenGL::TempDebugGroup debuggroup("Image draw");
-
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= t;
-
-	gl.bindTextureToUnit(texture, 0, false);
-
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
-
-	gl.bindBuffer(BUFFER_VERTEX, 0);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].x);
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &v[0].s);
-
-	gl.prepareDraw();
-	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
-}
-
-void Image::draw(const Matrix4 &m)
-{
-	drawv(m, vertices);
-}
-
-void Image::drawq(Quad *quad, const Matrix4 &m)
-{
-	drawv(m, quad->getVertices());
-}
-
-const void *Image::getHandle() const
-{
-	return &texture;
+	return texture;
 }
 
 const std::vector<StrongRef<love::image::ImageData>> &Image::getImageData() const

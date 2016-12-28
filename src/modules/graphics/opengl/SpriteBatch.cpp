@@ -27,6 +27,7 @@
 // LOVE
 #include "GLBuffer.h"
 #include "graphics/Texture.h"
+#include "graphics/Graphics.h"
 
 // C++
 #include <algorithm>
@@ -240,21 +241,22 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 	return true;
 }
 
-void SpriteBatch::draw(const Matrix4 &m)
+void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
 	const size_t pos_offset   = offsetof(Vertex, x);
 	const size_t texel_offset = offsetof(Vertex, s);
-	const size_t color_offset = offsetof(Vertex, r);
+	const size_t color_offset = offsetof(Vertex, color.r);
 
 	if (next == 0)
 		return;
 
+	gfx->flushStreamDraws();
+
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
 
-	OpenGL::TempTransform transform(gl);
-	transform.get() *= m;
+	Graphics::TempTransform transform(gfx, m);
 
-	gl.bindTextureToUnit(*(GLuint *) texture->getHandle(), 0, false);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
 
@@ -315,25 +317,17 @@ void SpriteBatch::addv(const Vertex *v, const Matrix4 &m, int index)
 
 	m.transform(sprite, sprite, 4);
 
-	if (color)
-		setColorv(sprite, *color);
+	if (color != nullptr)
+	{
+		for (int i = 0; i < 4; i++)
+			sprite[i].color = *color;
+	}
 
 	// Always keep the VBO mapped when adding data for now (it'll be unmapped
 	// on draw.)
 	array_buf->map();
 
 	array_buf->fill(index * sprite_size, sprite_size, sprite);
-}
-
-void SpriteBatch::setColorv(Vertex *v, const Color &color)
-{
-	for (size_t i = 0; i < 4; ++i)
-	{
-		v[i].r = color.r;
-		v[i].g = color.g;
-		v[i].b = color.b;
-		v[i].a = color.a;
-	}
 }
 
 } // opengl

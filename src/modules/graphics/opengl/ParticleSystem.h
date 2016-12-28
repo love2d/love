@@ -43,7 +43,7 @@ public:
 
 	ParticleSystem *clone() override;
 	void setBufferSize(uint32 size) override;
-	void draw(const Matrix4 &m) override;
+	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 private:
 
