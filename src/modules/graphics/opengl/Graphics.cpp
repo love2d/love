@@ -1602,6 +1602,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 		dstRGB = dstA = GL_ONE_MINUS_SRC_COLOR;
 		break;
 	case BLEND_REPLACE:
+	case BLEND_NONE:
 	default:
 		srcRGB = srcA = GL_ONE;
 		dstRGB = dstA = GL_ZERO;
@@ -1609,7 +1610,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 	}
 
 	// We can only do alpha-multiplication when srcRGB would have been unmodified.
-	if (srcRGB == GL_ONE && alphamode == BLENDALPHA_MULTIPLY)
+	if (srcRGB == GL_ONE && alphamode == BLENDALPHA_MULTIPLY && mode != BLEND_NONE)
 		srcRGB = GL_SRC_ALPHA;
 
 	glBlendEquation(func);

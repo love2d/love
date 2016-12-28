@@ -610,6 +610,7 @@ StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendM
 	{ "darken",   BLEND_DARKEN   },
 	{ "screen",   BLEND_SCREEN   },
 	{ "replace",  BLEND_REPLACE  },
+	{ "none",     BLEND_NONE     },
 };
 
 StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));

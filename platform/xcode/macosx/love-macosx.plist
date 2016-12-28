@@ -69,12 +69,12 @@
 	<string>public.app-category.games</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
-	<key>NSSupportsAutomaticGraphicsSwitching</key>
-	<false/>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2006-2016 LÖVE Development Team</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<false/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
