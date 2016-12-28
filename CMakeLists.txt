@@ -478,6 +478,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/StreamBuffer.h
 	src/modules/graphics/Texture.cpp
 	src/modules/graphics/Texture.h
+	src/modules/graphics/vertex.cpp
+	src/modules/graphics/vertex.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
 	src/modules/graphics/wrap_Quad.cpp
