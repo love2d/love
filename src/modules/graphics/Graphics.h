@@ -235,8 +235,10 @@ public:
 		Texture *texture = nullptr;
 
 		StreamDrawRequest()
-			: formats{vertex::CommonFormat::NONE, vertex::CommonFormat::NONE}
-		{}
+		{
+			// VS2013 can't initialize arrays in the above manner...
+			formats[1] = formats[0] = vertex::CommonFormat::NONE;
+		}
 	};
 
 	struct StreamVertexData
