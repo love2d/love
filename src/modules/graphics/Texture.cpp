@@ -60,7 +60,7 @@ void Texture::drawq(Graphics *gfx, Quad *quad, const Matrix4 &m)
 
 void Texture::drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v)
 {
-	Matrix4 t = gfx->getTransform() * localTransform;
+	Matrix4 t(gfx->getTransform(), localTransform);
 
 	Vertex verts[4] = {v[0], v[1], v[2], v[3]};
 	t.transform(verts, v, 4);

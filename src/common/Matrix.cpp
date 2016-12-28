@@ -85,20 +85,21 @@ Matrix4::Matrix4(float t00, float t10, float t01, float t11, float x, float y)
 	setRawTransformation(t00, t10, t01, t11, x, y);
 }
 
+Matrix4::Matrix4(const Matrix4 &a, const Matrix4 &b)
+{
+	multiply(a, b, e);
+}
+
 Matrix4::Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky);
 }
 
-Matrix4::~Matrix4()
-{
-}
-
 Matrix4 Matrix4::operator * (const Matrix4 &m) const
 {
-	Matrix4 t;
-	multiply(*this, m, t.e);
-	return t;
+	float t[16];
+	multiply(*this, m, t);
+	return Matrix4(t);
 }
 
 void Matrix4::operator *= (const Matrix4 &m)

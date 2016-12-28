@@ -59,14 +59,15 @@ public:
 	Matrix4(const float elements[16]);
 
 	/**
+	 * Creates a new matrix from the result of multiplying the two specified
+	 * matrices.
+	 **/
+	Matrix4(const Matrix4 &a, const Matrix4 &b);
+
+	/**
 	 * Creates a new matrix set to a transformation.
 	 **/
 	Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
-
-	/**
-	 * Destructor.
-	 **/
-	~Matrix4();
 
 	/**
 	 * Multiplies this Matrix with another Matrix, changing neither.
