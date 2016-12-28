@@ -18,9 +18,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
 #include "Graphics.h"
 #include "math/MathModule.h"
 #include "Polyline.h"
+
+// C++
+#include <algorithm>
 
 namespace love
 {

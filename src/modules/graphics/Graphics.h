@@ -22,6 +22,7 @@
 #define LOVE_GRAPHICS_GRAPHICS_H
 
 // LOVE
+#include "common/config.h"
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "StreamBuffer.h"
