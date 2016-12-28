@@ -60,6 +60,22 @@
 #	define LOVE_LITTLE_ENDIAN 1
 #endif
 
+// SSE instructions.
+#if defined(__SSE__)
+#	define LOVE_SIMD_SSE
+#elif defined(_MSC_VER)
+#	if defined(_M_AMD64) || defined(_M_X64)
+#		define LOVE_SIMD_SSE
+#	elif _M_IX86_FP
+#		define LOVE_SIMD_SSE
+#	endif
+#endif
+
+// NEON instructions.
+#if defined(__ARM_NEON)
+#	define LOVE_SIMD_NEON
+#endif
+
 // Warnings.
 #ifndef _CRT_SECURE_NO_WARNINGS
 #	define _CRT_SECURE_NO_WARNINGS

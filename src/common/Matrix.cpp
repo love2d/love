@@ -19,10 +19,15 @@
  **/
 
 #include "Matrix.h"
+#include "common/config.h"
 
 // STD
 #include <cstring> // memcpy
 #include <cmath>
+
+#if defined(LOVE_SIMD_SSE)
+#include <xmmintrin.h>
+#endif
 
 namespace love
 {
@@ -38,6 +43,35 @@ namespace love
 
 void Matrix4::multiply(const Matrix4 &a, const Matrix4 &b, float t[16])
 {
+	// NOTE: in my testing with ARM NEON instructions (on an iPhone 6 with arm64)
+	// it performed slightly worse than the regular add/multiply code. Further
+	// investigation would be useful.
+#if defined(LOVE_SIMD_SSE)
+
+	// We can't guarantee 16-bit alignment (e.g. for heap-allocated Matrix4
+	// objects) so we use unaligned loads and stores.
+	__m128 col1 = _mm_loadu_ps(&a.e[0]);
+	__m128 col2 = _mm_loadu_ps(&a.e[4]);
+	__m128 col3 = _mm_loadu_ps(&a.e[8]);
+	__m128 col4 = _mm_loadu_ps(&a.e[12]);
+
+	for (int i = 0; i < 4; i++)
+	{
+		__m128 brod1 = _mm_set1_ps(b.e[4*i + 0]);
+		__m128 brod2 = _mm_set1_ps(b.e[4*i + 1]);
+		__m128 brod3 = _mm_set1_ps(b.e[4*i + 2]);
+		__m128 brod4 = _mm_set1_ps(b.e[4*i + 3]);
+
+		__m128 col = _mm_add_ps(
+			_mm_add_ps(_mm_mul_ps(brod1, col1), _mm_mul_ps(brod2, col2)),
+			_mm_add_ps(_mm_mul_ps(brod3, col3), _mm_mul_ps(brod4, col4))
+		);
+
+		_mm_storeu_ps(&t[4*i], col);
+	}
+
+#else
+
 	t[0]  = (a.e[0]*b.e[0])  + (a.e[4]*b.e[1])  + (a.e[8]*b.e[2])  + (a.e[12]*b.e[3]);
 	t[4]  = (a.e[0]*b.e[4])  + (a.e[4]*b.e[5])  + (a.e[8]*b.e[6])  + (a.e[12]*b.e[7]);
 	t[8]  = (a.e[0]*b.e[8])  + (a.e[4]*b.e[9])  + (a.e[8]*b.e[10]) + (a.e[12]*b.e[11]);
@@ -57,6 +91,8 @@ void Matrix4::multiply(const Matrix4 &a, const Matrix4 &b, float t[16])
 	t[7]  = (a.e[3]*b.e[4])  + (a.e[7]*b.e[5])  + (a.e[11]*b.e[6])  + (a.e[15]*b.e[7]);
 	t[11] = (a.e[3]*b.e[8])  + (a.e[7]*b.e[9])  + (a.e[11]*b.e[10]) + (a.e[15]*b.e[11]);
 	t[15] = (a.e[3]*b.e[12]) + (a.e[7]*b.e[13]) + (a.e[11]*b.e[14]) + (a.e[15]*b.e[15]);
+
+#endif
 }
 
 void Matrix4::multiply(const Matrix4 &a, const Matrix4 &b, Matrix4 &t)
@@ -97,9 +133,7 @@ Matrix4::Matrix4(float x, float y, float angle, float sx, float sy, float ox, fl
 
 Matrix4 Matrix4::operator * (const Matrix4 &m) const
 {
-	float t[16];
-	multiply(*this, m, t);
-	return Matrix4(t);
+	return Matrix4(*this, m);
 }
 
 void Matrix4::operator *= (const Matrix4 &m)
