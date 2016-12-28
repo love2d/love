@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_POLYLINE_H
-#define LOVE_GRAPHICS_OPENGL_POLYLINE_H
+#pragma once
 
 // LOVE
 #include "common/config.h"
@@ -36,9 +35,6 @@ namespace graphics
 {
 
 class Graphics;
-
-namespace opengl
-{
 
 /**
  * Abstract base class for a chain of segments.
@@ -188,8 +184,5 @@ protected:
 
 }; // BevelJoinPolyline
 
-} // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_POLYLINE_H

@@ -472,6 +472,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Graphics.h
 	src/modules/graphics/ParticleSystem.cpp
 	src/modules/graphics/ParticleSystem.h
+	src/modules/graphics/Polyline.cpp
+	src/modules/graphics/Polyline.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
 	src/modules/graphics/StreamBuffer.cpp
@@ -505,8 +507,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/OpenGL.h
 	src/modules/graphics/opengl/ParticleSystem.cpp
 	src/modules/graphics/opengl/ParticleSystem.h
-	src/modules/graphics/opengl/Polyline.cpp
-	src/modules/graphics/opengl/Polyline.h
 	src/modules/graphics/opengl/Shader.cpp
 	src/modules/graphics/opengl/Shader.h
 	src/modules/graphics/opengl/SpriteBatch.cpp

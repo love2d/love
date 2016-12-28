@@ -279,25 +279,13 @@ public:
 	void setLineStyle(LineStyle style);
 
 	/**
-	 * Sets the line style.
-	 * @param style LINE_ROUGH or LINE_SMOOTH.
+	 * Sets the line join mode.
 	 **/
 	void setLineJoin(LineJoin style);
 
-	/**
-	 * Gets the line width.
-	 **/
-	float getLineWidth() const;
-
-	/**
-	 * Gets the line style.
-	 **/
-	LineStyle getLineStyle() const;
-
-	/**
-	 * Gets the line style.
-	 **/
-	LineJoin getLineJoin() const;
+	float getLineWidth() const override;
+	LineStyle getLineStyle() const override;
+	LineJoin getLineJoin() const override;
 
 	/**
 	 * Sets the size of points.
@@ -341,81 +329,6 @@ public:
 	 * @param y Point along y-axis.
 	 **/
 	void points(const float *coords, const Colorf *colors, size_t numpoints);
-
-	/**
-	 * Draws a series of lines connecting the given vertices.
-	 * @param coords Vertex components (x1, y1, ..., xn, yn). If x1,y1 == xn,yn the line will be drawn closed.
-	 * @param count Number of items in the array, i.e. count = 2 * n
-	 **/
-	void polyline(const float *coords, size_t count);
-
-	/**
-	 * Draws a rectangle.
-	 * @param x Position along x-axis for top-left corner.
-	 * @param y Position along y-axis for top-left corner.
-	 * @param w The width of the rectangle.
-	 * @param h The height of the rectangle.
-	 **/
-	void rectangle(DrawMode mode, float x, float y, float w, float h);
-
-	/**
-	 * Variant of rectangle that draws a rounded rectangle.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x X-coordinate of top-left corner
-	 * @param y Y-coordinate of top-left corner
-	 * @param w The width of the rectangle.
-	 * @param h The height of the rectangle.
-	 * @param rx The radius of the corners on the x axis
-	 * @param ry The radius of the corners on the y axis
-	 * @param points The number of points to use per corner
-	 **/
-	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points);
-	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry);
-
-	/**
-	 * Draws a circle using the specified arguments.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x X-coordinate.
-	 * @param y Y-coordinate.
-	 * @param radius Radius of the circle.
-	 * @param points Number of points to use to draw the circle.
-	 **/
-	void circle(DrawMode mode, float x, float y, float radius, int points);
-	void circle(DrawMode mode, float x, float y, float radius);
-
-	/**
-	 * Draws an ellipse using the specified arguments.
-	 * @param mode The mode of drawing (line/filled).
-	 * @param x X-coordinate of center
-	 * @param y Y-coordinate of center
-	 * @param a Radius in x-direction
-	 * @param b Radius in y-direction
-	 * @param points Number of points to use to draw the circle.
-	 **/
-	void ellipse(DrawMode mode, float x, float y, float a, float b, int points);
-	void ellipse(DrawMode mode, float x, float y, float a, float b);
-
-	/**
-	 * Draws an arc using the specified arguments.
-	 * @param drawmode The mode of drawing (line/filled).
-	 * @param arcmode The type of arc.
-	 * @param x X-coordinate.
-	 * @param y Y-coordinate.
-	 * @param radius Radius of the arc.
-	 * @param angle1 The angle at which the arc begins.
-	 * @param angle2 The angle at which the arc terminates.
-	 * @param points Number of points to use to draw the arc.
-	 **/
-	void arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points);
-	void arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2);
-
-	/**
-	 * Draws a polygon with an arbitrary number of vertices.
-	 * @param mode The type of drawing (line/filled).
-	 * @param coords Vertex components (x1, y1, x2, y2, etc.)
-	 * @param count Coord array size
-	 **/
-	void polygon(DrawMode mode, const float *coords, size_t count);
 
 	void captureScreenshot(const ScreenshotInfo &info);
 
@@ -516,11 +429,7 @@ private:
 
 	void checkSetDefaultFont();
 
-	int calculateEllipsePoints(float rx, float ry) const;
-
 	StrongRef<Font> defaultFont;
-
-	std::vector<double> pixelScaleStack;
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
 

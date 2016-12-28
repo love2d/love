@@ -317,6 +317,86 @@ public:
 
 	virtual Colorf getColor() const = 0;
 
+	virtual float getLineWidth() const = 0;
+	virtual LineStyle getLineStyle() const = 0;
+	virtual LineJoin getLineJoin() const = 0;
+
+	/**
+	 * Draws a series of lines connecting the given vertices.
+	 * @param coords Vertex components (x1, y1, ..., xn, yn). If x1,y1 == xn,yn the line will be drawn closed.
+	 * @param count Number of items in the array, i.e. count = 2 * n
+	 **/
+	void polyline(const float *coords, size_t count);
+
+	/**
+	 * Draws a rectangle.
+	 * @param x Position along x-axis for top-left corner.
+	 * @param y Position along y-axis for top-left corner.
+	 * @param w The width of the rectangle.
+	 * @param h The height of the rectangle.
+	 **/
+	void rectangle(DrawMode mode, float x, float y, float w, float h);
+
+	/**
+	 * Variant of rectangle that draws a rounded rectangle.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of top-left corner
+	 * @param y Y-coordinate of top-left corner
+	 * @param w The width of the rectangle.
+	 * @param h The height of the rectangle.
+	 * @param rx The radius of the corners on the x axis
+	 * @param ry The radius of the corners on the y axis
+	 * @param points The number of points to use per corner
+	 **/
+	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points);
+	void rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry);
+
+	/**
+	 * Draws a circle using the specified arguments.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate.
+	 * @param y Y-coordinate.
+	 * @param radius Radius of the circle.
+	 * @param points Number of points to use to draw the circle.
+	 **/
+	void circle(DrawMode mode, float x, float y, float radius, int points);
+	void circle(DrawMode mode, float x, float y, float radius);
+
+	/**
+	 * Draws an ellipse using the specified arguments.
+	 * @param mode The mode of drawing (line/filled).
+	 * @param x X-coordinate of center
+	 * @param y Y-coordinate of center
+	 * @param a Radius in x-direction
+	 * @param b Radius in y-direction
+	 * @param points Number of points to use to draw the circle.
+	 **/
+	void ellipse(DrawMode mode, float x, float y, float a, float b, int points);
+	void ellipse(DrawMode mode, float x, float y, float a, float b);
+
+	/**
+	 * Draws an arc using the specified arguments.
+	 * @param drawmode The mode of drawing (line/filled).
+	 * @param arcmode The type of arc.
+	 * @param x X-coordinate.
+	 * @param y Y-coordinate.
+	 * @param radius Radius of the arc.
+	 * @param angle1 The angle at which the arc begins.
+	 * @param angle2 The angle at which the arc terminates.
+	 * @param points Number of points to use to draw the arc.
+	 **/
+	void arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2, int points);
+	void arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float radius, float angle1, float angle2);
+
+	/**
+	 * Draws a polygon with an arbitrary number of vertices.
+	 * @param mode The type of drawing (line/filled).
+	 * @param coords Vertex components (x1, y1, x2, y2, etc.)
+	 * @param count Coord array size
+	 **/
+	void polygon(DrawMode mode, const float *coords, size_t count);
+
+
 	const Matrix4 &getTransform() const;
 	const Matrix4 &getProjection() const;
 
@@ -386,7 +466,11 @@ protected:
 	std::vector<Matrix4> transformStack;
 	Matrix4 projectionMatrix;
 
+	std::vector<double> pixelScaleStack;
+
 private:
+
+	int calculateEllipsePoints(float rx, float ry) const;
 
 	std::vector<uint8> scratchBuffer;
 

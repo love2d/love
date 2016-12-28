@@ -32,8 +32,6 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 void Polyline::render(const float *coords, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw)
 {
@@ -414,6 +412,5 @@ void NoneJoinPolyline::fill_color_array(Color constant_color, Color *colors)
 	}
 }
 
-} // opengl
 } // graphics
 } // love
