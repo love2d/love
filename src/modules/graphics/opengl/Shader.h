@@ -243,6 +243,8 @@ private:
 	// Texture unit pool for setting images
 	std::vector<TextureUnit> textureUnits;
 
+	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
+
 	bool canvasWasActive;
 	Rect lastViewport;
 

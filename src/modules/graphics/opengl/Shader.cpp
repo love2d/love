@@ -548,13 +548,19 @@ void Shader::attach(bool temporary)
 
 		if (!temporary)
 		{
-			// make sure all sent textures are properly bound to their respective texture units
-			// note: list potentially contains texture ids of deleted/invalid textures!
+			// Make sure all textures are properly bound to their respective
+			// texture units.
 			for (int i = 1; i < (int) textureUnits.size(); ++i)
 			{
 				if (textureUnits[i].active)
 					gl.bindTextureToUnit(textureUnits[i].texture, i, false);
 			}
+
+			// send any pending uniforms to the shader program.
+			for (const auto &p : pendingUniformUpdates)
+				updateUniform(p.first, p.second);
+
+			pendingUniformUpdates.clear();
 		}
 	}
 }
@@ -587,10 +593,14 @@ const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
 
 void Shader::updateUniform(const UniformInfo *info, int count, bool internalUpdate)
 {
+	if (current != this)
+	{
+		pendingUniformUpdates.push_back(std::make_pair(info, count));
+		return;
+	}
+
 	if (!internalUpdate)
 		flushStreamDraws();
-
-	TemporaryAttacher attacher(this, !internalUpdate);
 
 	int location = info->location;
 	UniformType type = info->baseType;
@@ -682,7 +692,9 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 	if (info->baseType != UNIFORM_SAMPLER)
 		return;
 
-	if (!internalUpdate)
+	bool shaderactive = current == this;
+
+	if (!internalUpdate && shaderactive)
 		flushStreamDraws();
 
 	count = std::min(count, info->count);
@@ -721,14 +733,17 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 		{
 			GLuint gltex = (GLuint) textures[i]->getHandle();
 
-			gl.bindTextureToUnit(gltex, texunit, false);
+			if (shaderactive)
+				gl.bindTextureToUnit(gltex, texunit, false);
 
-			// store texture id so it can be re-bound to the proper texture unit later
+			// Store texture id so it can be re-bound to the texture unit later.
 			textureUnits[texunit].texture = gltex;
 		}
 		else
 		{
-			gl.bindTextureToUnit((GLuint) 0, texunit, false);
+			if (shaderactive)
+				gl.bindTextureToUnit((GLuint) 0, texunit, false);
+
 			textureUnits[texunit].texture = 0;
 			textureUnits[texunit].active = false;
 		}
@@ -812,7 +827,8 @@ void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtextur
 		{
 			// Store texture id so it can be re-bound later.
 			textureUnits[videoTextureUnits[i]].texture = textures[i];
-			gl.bindTextureToUnit(textures[i], videoTextureUnits[i], false);
+			if (current == this)
+				gl.bindTextureToUnit(textures[i], videoTextureUnits[i], false);
 		}
 	}
 }
@@ -824,7 +840,7 @@ void Shader::checkSetScreenParams()
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	bool canvasActive = gfx->isCanvasActive();
 
-	if (view == lastViewport && canvasWasActive == canvasActive)
+	if ((view == lastViewport && canvasWasActive == canvasActive) || current != this)
 		return;
 
 	// In the shader, we do pixcoord.y = gl_FragCoord.y * params.z + params.w.
@@ -850,12 +866,8 @@ void Shader::checkSetScreenParams()
 	}
 
 	GLint location = builtinUniforms[BUILTIN_SCREEN_SIZE];
-
 	if (location >= 0)
-	{
-		TemporaryAttacher attacher(this, true);
 		glUniform4fv(location, 1, params);
-	}
 
 	canvasWasActive = canvasActive;
 	lastViewport = view;
@@ -863,22 +875,21 @@ void Shader::checkSetScreenParams()
 
 void Shader::checkSetPointSize(float size)
 {
-	if (size == lastPointSize)
+	if (size == lastPointSize || current != this)
 		return;
 
 	GLint location = builtinUniforms[BUILTIN_POINT_SIZE];
-
 	if (location >= 0)
-	{
-		TemporaryAttacher attacher(this, true);
 		glUniform1f(location, size);
-	}
 
 	lastPointSize = size;
 }
 
 void Shader::checkSetBuiltinUniforms()
 {
+	if (current != this)
+		return;
+
 	checkSetScreenParams();
 
 	// We use a more efficient method for sending transformation matrices to
@@ -888,10 +899,9 @@ void Shader::checkSetBuiltinUniforms()
 		checkSetPointSize(gl.getPointSize());
 
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		const Matrix4 &curproj = gfx->getProjection();
 
+		const Matrix4 &curproj = gfx->getProjection();
 		const Matrix4 &curxform = gfx->getTransform();
-		TemporaryAttacher attacher(this, true);
 
 		bool tpmatrixneedsupdate = false;
 
