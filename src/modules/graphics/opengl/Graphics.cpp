@@ -468,7 +468,10 @@ void Graphics::flushStreamDraws()
 
 	gl.prepareDraw();
 
-	gl.bindTextureToUnit(sbstate.texture, 0, false);
+	if (sbstate.textureHandle != 0)
+		gl.bindTextureToUnit((GLuint) sbstate.textureHandle, 0, false);
+	else
+		gl.bindTextureToUnit(sbstate.texture, 0, false);
 
 	gl.useVertexAttribArrays(attribs);
 
@@ -1730,7 +1733,7 @@ void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 
 	DisplayState &state = states.back();
 
 	if (state.font.get() != nullptr)
-		state.font->print(str, m);
+		state.font->print(this, str, m, state.color);
 }
 
 void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
@@ -1740,7 +1743,7 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, F
 	DisplayState &state = states.back();
 
 	if (state.font.get() != nullptr)
-		state.font->printf(str, wrap, align, m);
+		state.font->printf(this, str, wrap, align, m, state.color);
 }
 
 /**

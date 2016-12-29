@@ -53,6 +53,13 @@ void gammaCorrectColor(Colorf &c)
 	}
 }
 
+Colorf gammaCorrectColor(const Colorf &c)
+{
+	Colorf r = c;
+	gammaCorrectColor(r);
+	return r;
+}
+
 void unGammaCorrectColor(Colorf &c)
 {
 	if (isGammaCorrect())
@@ -61,6 +68,13 @@ void unGammaCorrectColor(Colorf &c)
 		c.g = math::linearToGamma(c.g);
 		c.b = math::linearToGamma(c.b);
 	}
+}
+
+Colorf unGammaCorrectColor(const Colorf &c)
+{
+	Colorf r = c;
+	unGammaCorrectColor(r);
+	return r;
 }
 
 love::Type Graphics::type("graphics", &Module::type);
@@ -92,7 +106,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	if (req.primitiveMode != state.primitiveMode
 		|| req.formats[0] != state.formats[0] || req.formats[1] != state.formats[1]
 		|| ((req.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
-		|| req.texture != state.texture)
+		|| req.texture != state.texture || req.textureHandle != state.textureHandle)
 	{
 		shouldflush = true;
 	}
@@ -156,6 +170,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		state.formats[0] = req.formats[0];
 		state.formats[1] = req.formats[1];
 		state.texture = req.texture;
+		state.textureHandle = req.textureHandle;
 	}
 
 	if (shouldresize)

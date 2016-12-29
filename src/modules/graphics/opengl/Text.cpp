@@ -36,6 +36,7 @@ love::Type Text::type("Text", &Drawable::type);
 Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vbo(nullptr)
+	, quadIndices(20)
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -114,11 +115,13 @@ void Text::addTextData(const TextData &t)
 
 	Font::TextInfo text_info;
 
+	Colorf constantcolor = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
+
 	// We only have formatted text if the align mode is valid.
 	if (t.align == Font::ALIGN_MAX_ENUM)
-		new_commands = font->generateVertices(t.codepoints, vertices, 0.0f, Vector(0.0f, 0.0f), &text_info);
+		new_commands = font->generateVertices(t.codepoints, constantcolor, vertices, 0.0f, Vector(0.0f, 0.0f), &text_info);
 	else
-		new_commands = font->generateVerticesFormatted(t.codepoints, t.wrap, t.align, vertices, &text_info);
+		new_commands = font->generateVerticesFormatted(t.codepoints, constantcolor, t.wrap, t.align, vertices, &text_info);
 
 	if (t.use_matrix)
 		t.matrix.transform(&vertices[0], &vertices[0], (int) vertices.size());
@@ -221,24 +224,48 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	if (font->getTextureCacheID() != texture_cache_id)
 		regenerateVertices();
 
+	int totalverts = 0;
+	for (const Font::DrawCommand &cmd : draw_commands)
+		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
+
+	if ((size_t) totalverts / 4 > quadIndices.getSize())
+		quadIndices = QuadIndices((size_t) totalverts / 4);
+
 	const size_t pos_offset   = offsetof(Font::GlyphVertex, x);
 	const size_t tex_offset   = offsetof(Font::GlyphVertex, s);
 	const size_t color_offset = offsetof(Font::GlyphVertex, color.r);
 	const size_t stride = sizeof(Font::GlyphVertex);
 
+	const GLenum gltype = quadIndices.getType();
+	const size_t elemsize = quadIndices.getElementSize();
+
 	Graphics::TempTransform transform(gfx, m);
+
+	gl.prepareDraw();
 
 	vbo->bind();
 	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
-	// Font::drawVertices expects AttribPointer calls to be done already.
 	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(pos_offset));
 	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, vbo->getPointer(tex_offset));
 	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
-	font->drawVertices(draw_commands, true);
+	quadIndices.getBuffer()->bind();
+
+	// We need a separate draw call for every section of the text which uses a
+	// different texture than the previous section.
+	for (const Font::DrawCommand &cmd : draw_commands)
+	{
+		GLsizei count = (cmd.vertexcount / 4) * 6;
+		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
+
+		// TODO: Use glDrawElementsBaseVertex when supported?
+		gl.bindTextureToUnit(cmd.texture, 0, false);
+
+		gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
+	}
 }
 
 void Text::setFont(Font *f)

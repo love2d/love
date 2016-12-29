@@ -86,6 +86,7 @@ private:
 
 	StrongRef<Font> font;
 	GLBuffer *vbo;
+	QuadIndices quadIndices;
 
 	std::vector<Font::DrawCommand> draw_commands;
 

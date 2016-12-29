@@ -141,6 +141,9 @@ GLenum Font::getTextureFormat(FontType fontType, GLenum *internalformat) const
 
 void Font::createTexture()
 {
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	gfx->flushStreamDraws();
+
 	OpenGL::TempDebugGroup debuggroup("Font create texture");
 
 	size_t bpp = fontType == FONT_TRUETYPE ? 2 : 4;
@@ -413,7 +416,7 @@ float Font::getHeight() const
 	return (float) height;
 }
 
-std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
+std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
 {
 	// Spacing counter and newline handling.
 	float dx = offset.x;
@@ -431,9 +434,9 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 	uint32 prevglyph = 0;
 
-	Color initialcolor(255, 255, 255, 255);
+	Colorf linearconstantcolor = gammaCorrectColor(constantcolor);
 
-	Color curcolor = initialcolor;
+	Color curcolor = toColor(constantcolor);
 	int curcolori = -1;
 	int ncolors = (int) codepoints.colors.size();
 
@@ -443,7 +446,11 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 		if (curcolori + 1 < ncolors && codepoints.colors[curcolori + 1].index == i)
 		{
-			curcolor = toColor(codepoints.colors[++curcolori].color);
+			Colorf color = gammaCorrectColor(codepoints.colors[++curcolori].color);
+			color *= linearconstantcolor;
+			unGammaCorrectColor(color);
+
+			curcolor = toColor(color);
 		}
 
 		if (g == '\n')
@@ -476,7 +483,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			vertices.resize(vertstartsize);
 			prevglyph = 0;
 			curcolori = -1;
-			curcolor = initialcolor;
+			curcolor = toColor(constantcolor);
 			continue;
 		}
 
@@ -516,7 +523,6 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			dx = floorf(dx + extra_spacing);
 
 		prevglyph = g;
-
 	}
 
 	const auto drawsort = [](const DrawCommand &a, const DrawCommand &b) -> bool
@@ -535,21 +541,14 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 	if (info != nullptr)
 	{
-		info->width = maxwidth - offset.x;;
+		info->width = maxwidth - offset.x;
 		info->height = (int) dy + (dx > 0.0f ? floorf(getHeight() * getLineHeight() + 0.5f) : 0) - offset.y;
 	}
 
 	return commands;
 }
 
-std::vector<Font::DrawCommand> Font::generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
-{
-	ColoredCodepoints codepoints;
-	getCodepointsFromString(text, codepoints.cps);
-	return generateVertices(codepoints, vertices, extra_spacing, offset, info);
-}
-
-std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info)
+std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCodepoints &text, const Colorf &constantcolor, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info)
 {
 	wrap = std::max(wrap, 0.0f);
 
@@ -598,7 +597,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 			break;
 		}
 
-		std::vector<DrawCommand> newcommands = generateVertices(line, vertices, extraspacing, offset);
+		std::vector<DrawCommand> newcommands = generateVertices(line, constantcolor, vertices, extraspacing, offset);
 
 		if (!newcommands.empty())
 		{
@@ -633,98 +632,55 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 	if (cacheid != textureCacheID)
 	{
 		vertices.clear();
-		drawcommands = generateVerticesFormatted(text, wrap, align, vertices);
+		drawcommands = generateVerticesFormatted(text, constantcolor, wrap, align, vertices);
 	}
 
 	return drawcommands;
 }
 
-void Font::drawVertices(const std::vector<DrawCommand> &drawcommands, bool bufferedvertices)
-{
-	// Vertex attribute pointers need to be set before calling this function.
-	// This assumes that the attribute pointers are constant for all vertices.
-
-	int totalverts = 0;
-	for (const DrawCommand &cmd : drawcommands)
-		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
-
-	if ((size_t) totalverts / 4 > quadIndices.getSize())
-		quadIndices = QuadIndices((size_t) totalverts / 4);
-
-	gl.prepareDraw();
-
-	const GLenum gltype = quadIndices.getType();
-	const size_t elemsize = quadIndices.getElementSize();
-
-	// We only get indices from the index buffer if we're also using vertex
-	// buffers, because at least one graphics driver (the one for Kepler nvidia
-	// GPUs in OS X 10.11) fails to render geometry if an index buffer is used
-	// with client-side vertex arrays.
-	if (bufferedvertices)
-		quadIndices.getBuffer()->bind();
-	else
-		gl.bindBuffer(BUFFER_INDEX, 0);
-
-	// We need a separate draw call for every section of the text which uses a
-	// different texture than the previous section.
-	for (const DrawCommand &cmd : drawcommands)
-	{
-		GLsizei count = (cmd.vertexcount / 4) * 6;
-		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
-
-		// TODO: Use glDrawElementsBaseVertex when supported?
-		gl.bindTextureToUnit(cmd.texture, 0, false);
-
-		if (bufferedvertices)
-			gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
-		else
-			gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getIndices(offset));
-	}
-}
-
-void Font::printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices)
+void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices)
 {
 	if (vertices.empty() || drawcommands.empty())
 		return;
 
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	Matrix4 m(gfx->getTransform(), t);
 
-	gfx->flushStreamDraws();
+	for (const DrawCommand &cmd : drawcommands)
+	{
+		Graphics::StreamDrawRequest req;
+		req.formats[0] = vertex::CommonFormat::XYf_STus_RGBAub;
+		req.indexMode = vertex::TriangleIndexMode::QUADS;
+		req.vertexCount = cmd.vertexcount;
+		req.textureHandle = cmd.texture;
 
-	OpenGL::TempDebugGroup debuggroup("Font print");
+		Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+		GlyphVertex *vertexdata = (GlyphVertex *) data.stream[0];
 
-	Graphics::TempTransform transform(gfx, t);
-
-	gl.bindBuffer(BUFFER_VERTEX, 0);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(GlyphVertex), &vertices[0].x);
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, sizeof(GlyphVertex), &vertices[0].s);
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GlyphVertex), &vertices[0].color.r);
-
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
-
-	drawVertices(drawcommands, false);
+		memcpy(vertexdata, &vertices[cmd.startvertex], sizeof(GlyphVertex) * cmd.vertexcount);
+		m.transform(vertexdata, &vertices[cmd.startvertex], cmd.vertexcount);
+	}
 }
 
-void Font::print(const std::vector<ColoredString> &text, const Matrix4 &m)
+void Font::print(graphics::Graphics *gfx, const std::vector<ColoredString> &text, const Matrix4 &m, const Colorf &constantcolor)
 {
 	ColoredCodepoints codepoints;
 	getCodepointsFromString(text, codepoints);
 
 	std::vector<GlyphVertex> vertices;
-	std::vector<DrawCommand> drawcommands = generateVertices(codepoints, vertices);
+	std::vector<DrawCommand> drawcommands = generateVertices(codepoints, constantcolor, vertices);
 
-	printv(m, drawcommands, vertices);
+	printv(gfx, m, drawcommands, vertices);
 }
 
-void Font::printf(const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m)
+void Font::printf(graphics::Graphics *gfx, const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m, const Colorf &constantcolor)
 {
 	ColoredCodepoints codepoints;
 	getCodepointsFromString(text, codepoints);
 
 	std::vector<GlyphVertex> vertices;
-	std::vector<DrawCommand> drawcommands = generateVerticesFormatted(codepoints, wrap, align, vertices);
+	std::vector<DrawCommand> drawcommands = generateVerticesFormatted(codepoints, constantcolor, wrap, align, vertices);
 
-	printv(m, drawcommands, vertices);
+	printv(gfx, m, drawcommands, vertices);
 }
 
 int Font::getWidth(const std::string &str)

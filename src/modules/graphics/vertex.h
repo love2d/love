@@ -39,13 +39,6 @@ enum BufferType
 	BUFFER_MAX_ENUM
 };
 
-struct Vertex
-{
-	float x, y;
-	float s, t;
-	Color color;
-};
-
 namespace vertex
 {
 
@@ -88,9 +81,9 @@ struct XYf_STf_RGBAub
 
 struct XYf_STus_RGBAub
 {
-	float x, y;
+	float  x, y;
 	uint16 s, t;
-	Color color;
+	Color  color;
 };
 
 size_t getFormatStride(CommonFormat format);
@@ -101,5 +94,8 @@ void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount,
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
 } // vertex
+
+typedef vertex::XYf_STf_RGBAub Vertex;
+
 } // graphics
 } // love

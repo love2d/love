@@ -66,6 +66,9 @@ void gammaCorrectColor(Colorf &c);
  **/
 void unGammaCorrectColor(Colorf &c);
 
+Colorf gammaCorrectColor(const Colorf &c);
+Colorf unGammaCorrectColor(const Colorf &c);
+
 class Graphics : public Module
 {
 public:
@@ -235,6 +238,10 @@ public:
 		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
 		int vertexCount = 0;
 		Texture *texture = nullptr;
+
+		// FIXME: This is only needed for fonts. We should just change fonts to
+		// use love.graphics Images instead of raw OpenGL textures.
+		ptrdiff_t textureHandle = 0;
 
 		StreamDrawRequest()
 		{
@@ -455,6 +462,7 @@ protected:
 		vertex::PrimitiveMode primitiveMode;
 		vertex::CommonFormat formats[2];
 		StrongRef<Texture> texture;
+		ptrdiff_t textureHandle = 0;
 		int vertexCount;
 		int indexCount;
 	};

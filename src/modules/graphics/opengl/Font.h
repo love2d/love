@@ -35,6 +35,7 @@
 #include "font/Rasterizer.h"
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
+#include "graphics/vertex.h"
 #include "GLBuffer.h"
 
 #include "OpenGL.h"
@@ -43,6 +44,9 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
 namespace opengl
 {
 
@@ -53,6 +57,7 @@ public:
 	static love::Type type;
 
 	typedef std::vector<uint32> Codepoints;
+	typedef vertex::XYf_STus_RGBAub GlyphVertex;
 
 	enum AlignMode
 	{
@@ -81,13 +86,6 @@ public:
 		std::vector<IndexedColor> colors;
 	};
 
-	struct GlyphVertex
-	{
-		float  x, y;
-		uint16 s, t;
-		Color  color;
-	};
-
 	struct TextInfo
 	{
 		int width;
@@ -106,21 +104,20 @@ public:
 
 	virtual ~Font();
 
-	std::vector<DrawCommand> generateVertices(const ColoredCodepoints &codepoints, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
-	std::vector<DrawCommand> generateVertices(const std::string &text, std::vector<GlyphVertex> &vertices, float extra_spacing = 0.0f, Vector offset = Vector(), TextInfo *info = nullptr);
+	std::vector<DrawCommand> generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantColor, std::vector<GlyphVertex> &vertices,
+	                                          float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
 
-	std::vector<DrawCommand> generateVerticesFormatted(const ColoredCodepoints &text, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
-
-	void drawVertices(const std::vector<DrawCommand> &drawcommands, bool bufferedvertices);
+	std::vector<DrawCommand> generateVerticesFormatted(const ColoredCodepoints &text, const Colorf &constantColor, float wrap, AlignMode align,
+	                                                  std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
 
 	static void getCodepointsFromString(const std::string &str, Codepoints &codepoints);
 	static void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
 
 	/**
-	 * Draws the text at the designated position with a transformation applied.
+	 * Draws the specified text.
 	 **/
-	void print(const std::vector<ColoredString> &text, const Matrix4 &m);
-	void printf(const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m);
+	void print(graphics::Graphics *gfx, const std::vector<ColoredString> &text, const Matrix4 &m, const Colorf &constantColor);
+	void printf(graphics::Graphics *gfx, const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m, const Colorf &constantColor);
 
 	/**
 	 * Returns the height of the font.
@@ -218,7 +215,7 @@ private:
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
-	void printv(const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
+	void printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
 
