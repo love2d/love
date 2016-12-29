@@ -43,10 +43,12 @@ public:
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
-	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(uint32 glyph) const;
-	virtual int getGlyphCount() const;
-	virtual bool hasGlyph(uint32 glyph) const;
+	int getLineHeight() const override;
+	GlyphData *getGlyphData(uint32 glyph) const override;
+	int getGlyphCount() const override;
+	bool hasGlyph(uint32 glyph) const override;
+	DataType getDataType() const override;
+
 
 private:
 

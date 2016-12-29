@@ -108,7 +108,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.width = bitmap.width;
 	glyphMetrics.advance = (int) (ftglyph->advance.x >> 16);
 
-	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
+	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, PIXELFORMAT_LA8);
 
 	const uint8 *pixels = bitmap.buffer;
 	uint8 *dest = (uint8 *) glyphData->getData();
@@ -174,6 +174,11 @@ float TrueTypeRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
 	               FT_KERNING_DEFAULT,
 	               &kerning);
 	return float(kerning.x >> 6);
+}
+
+Rasterizer::DataType TrueTypeRasterizer::getDataType() const
+{
+	return DATA_TRUETYPE;
 }
 
 bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)

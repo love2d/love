@@ -45,6 +45,8 @@ static StringMap<PixelFormat, PIXELFORMAT_MAX_ENUM>::Entry formatEntries[] =
 	{ "rg32f",   PIXELFORMAT_RG32F   },
 	{ "rgba32f", PIXELFORMAT_RGBA32F },
 
+	{ "la8",     PIXELFORMAT_LA8     },
+
 	{ "rgba4",    PIXELFORMAT_RGBA4    },
 	{ "rgb5a1",   PIXELFORMAT_RGB5A1   },
 	{ "rgb565",   PIXELFORMAT_RGB565   },
@@ -119,6 +121,7 @@ size_t getPixelFormatSize(PixelFormat format)
 	case PIXELFORMAT_RG8:
 	case PIXELFORMAT_R16:
 	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_LA8:
 	case PIXELFORMAT_RGBA4:
 	case PIXELFORMAT_RGB5A1:
 	case PIXELFORMAT_RGB565:

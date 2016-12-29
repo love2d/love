@@ -291,17 +291,17 @@ GlyphData *BMFontRasterizer::getGlyphData(uint32 glyph) const
 
 	// Return an empty GlyphData if we don't have the glyph character.
 	if (it == characters.end())
-		return new GlyphData(glyph, GlyphMetrics(), GlyphData::FORMAT_RGBA);
+		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8);
 
 	const BMFontCharacter &c = it->second;
-	GlyphData *g = new GlyphData(glyph, c.metrics, GlyphData::FORMAT_RGBA);
+	GlyphData *g = new GlyphData(glyph, c.metrics, PIXELFORMAT_RGBA8);
 
 	const auto &imagepair = images.find(c.page);
 
 	if (imagepair == images.end())
 	{
 		g->release();
-		return new GlyphData(glyph, GlyphMetrics(), GlyphData::FORMAT_RGBA);
+		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8);
 	}
 
 	image::ImageData *imagedata = imagepair->second.get();
@@ -341,6 +341,11 @@ float BMFontRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
 		return it->second;
 
 	return 0.0f;
+}
+
+Rasterizer::DataType BMFontRasterizer::getDataType() const
+{
+	return DATA_IMAGE;
 }
 
 bool BMFontRasterizer::accepts(love::filesystem::FileData *fontdef)

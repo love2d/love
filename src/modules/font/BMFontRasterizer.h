@@ -51,6 +51,7 @@ public:
 	int getGlyphCount() const override;
 	bool hasGlyph(uint32 glyph) const override;
 	float getKerning(uint32 leftglyph, uint32 rightglyph) const override;
+	DataType getDataType() const override;
 
 	static bool accepts(love::filesystem::FileData *fontdef);
 

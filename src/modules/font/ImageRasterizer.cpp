@@ -69,7 +69,7 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 
 	gm.height = metrics.height;
 
-	GlyphData *g = new GlyphData(glyph, gm, GlyphData::FORMAT_RGBA);
+	GlyphData *g = new GlyphData(glyph, gm, PIXELFORMAT_RGBA8);
 
 	if (gm.width == 0)
 		return g;
@@ -147,6 +147,11 @@ int ImageRasterizer::getGlyphCount() const
 bool ImageRasterizer::hasGlyph(uint32 glyph) const
 {
 	return imageGlyphs.find(glyph) != imageGlyphs.end();
+}
+
+Rasterizer::DataType ImageRasterizer::getDataType() const
+{
+	return DATA_IMAGE;
 }
 
 } // font

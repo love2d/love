@@ -48,6 +48,8 @@ enum PixelFormat
 	PIXELFORMAT_RG32F,
 	PIXELFORMAT_RGBA32F,
 
+	PIXELFORMAT_LA8, // Same as RG8, but accessed as (L, L, L, A)
+
 	// packed formats
 	PIXELFORMAT_RGBA4,
 	PIXELFORMAT_RGB5A1,

@@ -812,6 +812,12 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		f.type = GL_FLOAT;
 		break;
 
+	case PIXELFORMAT_LA8:
+		f.internalformat = GL_LUMINANCE8_ALPHA8;
+		f.externalformat = GL_LUMINANCE_ALPHA;
+		f.type = GL_UNSIGNED_BYTE;
+		break;
+
 	case PIXELFORMAT_RGBA4:
 		f.internalformat = GL_RGBA4;
 		f.externalformat = GL_RGBA;
@@ -965,8 +971,11 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 
 	if (!isPixelFormatCompressed(pixelformat))
 	{
-		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0 && !renderbuffer)
+		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 && pixelformat != PIXELFORMAT_LA8)
+			&& !renderbuffer)
+		{
 			f.internalformat = f.externalformat;
+		}
 
 		if (pixelformat != PIXELFORMAT_sRGBA8)
 			isSRGB = false;
@@ -1047,6 +1056,9 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 			return GLAD_ES_VERSION_3_0 || GLAD_OES_texture_float;
 		else
 			return false;
+
+	case PIXELFORMAT_LA8:
+		return !rendertarget;
 
 	case PIXELFORMAT_RGBA4:
 	case PIXELFORMAT_RGB5A1:

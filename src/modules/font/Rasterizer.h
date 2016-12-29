@@ -49,6 +49,12 @@ class Rasterizer : public Object
 {
 public:
 
+	enum DataType
+	{
+		DATA_TRUETYPE,
+		DATA_IMAGE,
+	};
+
 	static love::Type type;
 
 	virtual ~Rasterizer();
@@ -111,6 +117,8 @@ public:
 	 * Gets the amount of horizontal kerning between two glyphs.
 	 **/
 	virtual float getKerning(uint32 leftglyph, uint32 rightglyph) const;
+
+	virtual DataType getDataType() const = 0;
 
 protected:
 

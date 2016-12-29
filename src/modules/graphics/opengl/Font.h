@@ -188,13 +188,6 @@ public:
 
 private:
 
-	enum FontType
-	{
-		FONT_TRUETYPE,
-		FONT_IMAGE,
-		FONT_UNKNOWN
-	};
-
 	struct Glyph
 	{
 		GLuint texture;
@@ -209,7 +202,6 @@ private:
 	};
 
 	TextureSize getNextTextureSize() const;
-	GLenum getTextureFormat(FontType fontType, GLenum *internalformat = nullptr) const;
 	void createTexture();
 	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
 	const Glyph &addGlyph(uint32 glyph);
@@ -234,7 +226,8 @@ private:
 	// map of left/right glyph pairs to horizontal kerning.
 	std::unordered_map<uint64, float> kerning;
 
-	FontType fontType;
+	PixelFormat pixelFormat;
+
 	Texture::Filter filter;
 
 	int textureX, textureY;

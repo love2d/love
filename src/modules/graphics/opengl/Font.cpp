@@ -78,7 +78,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
 	}
 
 	love::font::GlyphData *gd = r->getGlyphData(32); // Space character.
-	fontType = (gd->getFormat() == font::GlyphData::FORMAT_LUMINANCE_ALPHA) ? FONT_TRUETYPE : FONT_IMAGE;
+	pixelFormat = gd->getFormat();
 	gd->release();
 
 	if (!r->hasGlyph(9)) // No tab character in the Rasterizer.
@@ -114,31 +114,6 @@ Font::TextureSize Font::getNextTextureSize() const
 	return size;
 }
 
-GLenum Font::getTextureFormat(FontType fontType, GLenum *internalformat) const
-{
-	GLenum format = fontType == FONT_TRUETYPE ? GL_LUMINANCE_ALPHA : GL_RGBA;
-	GLenum iformat = fontType == FONT_TRUETYPE ? GL_LUMINANCE8_ALPHA8 : GL_RGBA8;
-
-	if (format == GL_RGBA && isGammaCorrect())
-	{
-		// In ES2, the internalformat and format params of TexImage must match.
-		// ES3 doesn't allow "GL_SRGB_ALPHA" as the internal format. But it also
-		// requires GL_LUMINANCE_ALPHA rather than GL_LUMINANCE8_ALPHA8 as the
-		// internal format, for LA.
-		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
-			format = iformat = GL_SRGB_ALPHA;
-		else
-			iformat = GL_SRGB8_ALPHA8;
-	}
-	else if (GLAD_ES_VERSION_2_0)
-		iformat = format;
-
-	if (internalformat != nullptr)
-		*internalformat = iformat;
-
-	return format;
-}
-
 void Font::createTexture()
 {
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
@@ -146,7 +121,7 @@ void Font::createTexture()
 
 	OpenGL::TempDebugGroup debuggroup("Font create texture");
 
-	size_t bpp = fontType == FONT_TRUETYPE ? 2 : 4;
+	size_t bpp = getPixelFormatSize(pixelFormat);
 
 	size_t prevmemsize = textureMemorySize;
 	if (prevmemsize > 0)
@@ -180,8 +155,8 @@ void Font::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	GLenum internalformat = GL_RGBA;
-	GLenum format = getTextureFormat(fontType, &internalformat);
+	bool sRGB = isGammaCorrect();
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(pixelFormat, false, sRGB);
 
 	// Initialize the texture with transparent black.
 	std::vector<GLubyte> emptydata(size.width * size.height * bpp, 0);
@@ -189,8 +164,8 @@ void Font::createTexture()
 	// Clear errors before initializing.
 	while (glGetError() != GL_NO_ERROR);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, size.width, size.height, 0,
-	             format, GL_UNSIGNED_BYTE, &emptydata[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, size.width, size.height,
+	             0, fmt.externalformat, fmt.type, &emptydata[0]);
 
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -233,7 +208,7 @@ love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
 	if (glyph == 9 && useSpacesAsTab)
 	{
 		love::font::GlyphData *spacegd = rasterizers[0]->getGlyphData(32);
-		love::font::GlyphData::Format fmt = spacegd->getFormat();
+		PixelFormat fmt = spacegd->getFormat();
 
 		love::font::GlyphMetrics gm = {};
 		gm.advance = spacegd->getAdvance() * SPACES_PER_TAB;
@@ -289,12 +264,14 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	// don't waste space for empty glyphs. also fixes a divide by zero bug with ATI drivers
 	if (w > 0 && h > 0)
 	{
-		GLenum format = getTextureFormat(fontType);
+		bool isSRGB = isGammaCorrect();
+		OpenGL::TextureFormat fmt = gl.convertPixelFormat(pixelFormat, false, isSRGB);
+
 		g.texture = textures.back();
 
 		gl.bindTextureToUnit(g.texture, 0, false);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, textureX, textureY, w, h,
-		                format, GL_UNSIGNED_BYTE, gd->getData());
+		                fmt.externalformat, fmt.type, gd->getData());
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
@@ -979,7 +956,10 @@ int Font::getDescent() const
 float Font::getBaseline() const
 {
 	// 1.25 is magic line height for true type fonts
-	return (fontType == FONT_TRUETYPE) ? floorf(getHeight() / 1.25f + 0.5f) : 0.0f;
+	if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
+		return floorf(getHeight() / 1.25f + 0.5f);
+	else
+		return 0.0f;
 }
 
 bool Font::hasGlyph(uint32 glyph) const
@@ -1023,7 +1003,7 @@ void Font::setFallbacks(const std::vector<Font *> &fallbacks)
 {
 	for (const Font *f : fallbacks)
 	{
-		if (f->fontType != this->fontType)
+		if (f->rasterizers[0]->getDataType() != this->rasterizers[0]->getDataType())
 			throw love::Exception("Font fallbacks must be of the same font type.");
 	}
 
