@@ -33,7 +33,7 @@ namespace opengl
 
 love::Type Text::type("Text", &Drawable::type);
 
-Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
+Text::Text(love::graphics::Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vbo(nullptr)
 	, quadIndices(20)
@@ -262,13 +262,13 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
 
 		// TODO: Use glDrawElementsBaseVertex when supported?
-		gl.bindTextureToUnit(cmd.texture, 0, false);
+		gl.bindTextureToUnit((GLuint) cmd.texture, 0, false);
 
 		gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
 	}
 }
 
-void Text::setFont(Font *f)
+void Text::setFont(love::graphics::Font *f)
 {
 	font.set(f);
 
@@ -278,7 +278,7 @@ void Text::setFont(Font *f)
 	regenerateVertices();
 }
 
-Font *Text::getFont() const
+love::graphics::Font *Text::getFont() const
 {
 	return font.get();
 }

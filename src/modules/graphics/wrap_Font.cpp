@@ -21,7 +21,6 @@
 // LOVE
 #include "common/config.h"
 #include "wrap_Font.h"
-#include "wrap_Text.h"
 
 // C++
 #include <algorithm>
@@ -30,8 +29,47 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
+
+void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings)
 {
+	Font::ColoredString coloredstr;
+	coloredstr.color = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
+
+	if (lua_istable(L, idx))
+	{
+		int len = (int) luax_objlen(L, idx);
+
+		for (int i = 1; i <= len; i++)
+		{
+			lua_rawgeti(L, idx, i);
+
+			if (lua_istable(L, -1))
+			{
+				for (int j = 1; j <= 4; j++)
+					lua_rawgeti(L, -j, j);
+
+				coloredstr.color.r = (float) luaL_checknumber(L, -4);
+				coloredstr.color.g = (float) luaL_checknumber(L, -3);
+				coloredstr.color.b = (float) luaL_checknumber(L, -2);
+				coloredstr.color.a = (float) luaL_optnumber(L, -1, 1.0);
+
+				lua_pop(L, 4);
+			}
+			else
+			{
+				coloredstr.str = luaL_checkstring(L, -1);
+				strings.push_back(coloredstr);
+			}
+
+			lua_pop(L, 1);
+		}
+	}
+	else
+	{
+		coloredstr.str = luaL_checkstring(L, idx);
+		strings.push_back(coloredstr);
+	}
+}
 
 Font *luax_checkfont(lua_State *L, int idx)
 {
@@ -179,7 +217,7 @@ int w_Font_hasGlyphs(lua_State *L)
 int w_Font_setFallbacks(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
-	std::vector<Font *> fallbacks;
+	std::vector<graphics::Font *> fallbacks;
 
 	for (int i = 2; i <= lua_gettop(L); i++)
 		fallbacks.push_back(luax_checkfont(L, i));
@@ -218,6 +256,5 @@ extern "C" int luaopen_font(lua_State *L)
 	return luax_register_type(L, &Font::type, w_Font_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

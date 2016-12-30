@@ -468,6 +468,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Color.h
 	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
+	src/modules/graphics/Font.cpp
+	src/modules/graphics/Font.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
 	src/modules/graphics/ParticleSystem.cpp
@@ -484,6 +486,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/vertex.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
+	src/modules/graphics/wrap_Font.cpp
+	src/modules/graphics/wrap_Font.h
 	src/modules/graphics/wrap_Quad.cpp
 	src/modules/graphics/wrap_Quad.h
 	src/modules/graphics/wrap_Texture.cpp
@@ -517,8 +521,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Video.h
 	src/modules/graphics/opengl/wrap_Canvas.cpp
 	src/modules/graphics/opengl/wrap_Canvas.h
-	src/modules/graphics/opengl/wrap_Font.cpp
-	src/modules/graphics/opengl/wrap_Font.h
 	src/modules/graphics/opengl/wrap_Graphics.cpp
 	src/modules/graphics/opengl/wrap_Graphics.h
 	src/modules/graphics/opengl/wrap_Image.cpp

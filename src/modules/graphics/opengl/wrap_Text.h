@@ -32,7 +32,6 @@ namespace opengl
 {
 
 Text *luax_checktext(lua_State *L, int idx);
-void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings);
 extern "C" int luaopen_text(lua_State *L);
 
 } // opengl

@@ -40,7 +40,7 @@
 
 #include "math/Transform.h"
 
-#include "Font.h"
+#include "graphics/Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
 #include "graphics/Texture.h"
@@ -178,7 +178,7 @@ public:
 	/**
 	 * Creates a Font object.
 	 **/
-	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::getDefaultFilter());
+	graphics::Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::getDefaultFilter());
 
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, Mesh::Usage usage);
 
@@ -194,7 +194,7 @@ public:
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage);
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage);
 
-	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
+	Text *newText(graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
 
 	Video *newVideo(love::video::VideoStream *stream, float pixeldensity);
 
@@ -220,8 +220,8 @@ public:
 	 **/
 	Colorf getBackgroundColor() const;
 
-	void setFont(Font *font);
-	Font *getFont();
+	void setFont(love::graphics::Font *font);
+	love::graphics::Font *getFont();
 
 	void setShader(Shader *shader);
 	void setShader();
@@ -342,10 +342,7 @@ public:
 	 **/
 	Stats getStats() const;
 
-	/**
-	 * Gets the system-dependent numeric limit for the specified parameter.
-	 **/
-	double getSystemLimit(SystemLimit limittype) const;
+	double getSystemLimit(SystemLimit limittype) const override;
 
 	/**
 	 * Gets whether a graphics feature is supported on this system.
@@ -391,7 +388,7 @@ private:
 		CompareMode stencilCompare = COMPARE_ALWAYS;
 		int stencilTestValue = 0;
 
-		StrongRef<Font> font;
+		StrongRef<love::graphics::Font> font;
 		StrongRef<Shader> shader;
 
 		std::vector<StrongRef<Canvas>> canvases;
@@ -427,7 +424,7 @@ private:
 
 	void checkSetDefaultFont();
 
-	StrongRef<Font> defaultFont;
+	StrongRef<love::graphics::Font> defaultFont;
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
 

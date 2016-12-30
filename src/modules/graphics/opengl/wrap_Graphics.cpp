@@ -572,7 +572,7 @@ int w_newFont(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	Font *font = nullptr;
+	graphics::Font *font = nullptr;
 
 	// Convert to Rasterizer, if necessary.
 	if (!luax_istype(L, 1, love::font::Rasterizer::type))
@@ -630,7 +630,7 @@ int w_newImageFont(lua_State *L)
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	// Create the font.
-	Font *font = instance()->newFont(rasterizer, filter);
+	love::graphics::Font *font = instance()->newFont(rasterizer, filter);
 
 	// Push the type.
 	luax_pushtype(L, font);
@@ -1049,7 +1049,7 @@ int w_newText(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	Font *font = luax_checkfont(L, 1);
+	graphics::Font *font = luax_checkfont(L, 1);
 	Text *t = nullptr;
 
 	if (lua_isnoneornil(L, 2))
@@ -1160,21 +1160,21 @@ int w_getBackgroundColor(lua_State *L)
 int w_setNewFont(lua_State *L)
 {
 	int ret = w_newFont(L);
-	Font *font = luax_checktype<Font>(L, -1);
+	love::graphics::Font *font = luax_checktype<love::graphics::Font>(L, -1);
 	instance()->setFont(font);
 	return ret;
 }
 
 int w_setFont(lua_State *L)
 {
-	Font *font = luax_checktype<Font>(L, 1);
+	love::graphics::Font *font = luax_checktype<love::graphics::Font>(L, 1);
 	instance()->setFont(font);
 	return 0;
 }
 
 int w_getFont(lua_State *L)
 {
-	Font *f = nullptr;
+	love::graphics::Font *f = nullptr;
 	luax_catchexcept(L, [&](){ f = instance()->getFont(); });
 
 	luax_pushtype(L, f);

@@ -408,6 +408,10 @@ public:
 	 **/
 	void polygon(DrawMode mode, const float *coords, size_t count);
 
+	/**
+	 * Gets the system-dependent numeric limit for the specified parameter.
+	 **/
+	virtual double getSystemLimit(SystemLimit limittype) const = 0;
 
 	const Matrix4 &getTransform() const;
 	const Matrix4 &getProjection() const;

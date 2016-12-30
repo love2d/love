@@ -459,9 +459,6 @@
 		FA0B7D581A95902C000E1D17 /* wrap_Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */; };
 		FA0B7D591A95902C000E1D17 /* wrap_Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */; };
 		FA0B7D5A1A95902C000E1D17 /* wrap_Canvas.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */; };
-		FA0B7D5B1A95902C000E1D17 /* wrap_Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */; };
-		FA0B7D5C1A95902C000E1D17 /* wrap_Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */; };
-		FA0B7D5D1A95902C000E1D17 /* wrap_Font.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA91A95902C000E1D17 /* wrap_Font.h */; };
 		FA0B7D5E1A95902C000E1D17 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */; };
 		FA0B7D5F1A95902C000E1D17 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */; };
 		FA0B7D601A95902C000E1D17 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BAB1A95902C000E1D17 /* wrap_Graphics.h */; };
@@ -848,6 +845,12 @@
 		FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */; };
+		FA1BA09D1E16CFCE00AA2803 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1BA09B1E16CFCE00AA2803 /* Font.cpp */; };
+		FA1BA09E1E16CFCE00AA2803 /* Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1BA09B1E16CFCE00AA2803 /* Font.cpp */; };
+		FA1BA09F1E16CFCE00AA2803 /* Font.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1BA09C1E16CFCE00AA2803 /* Font.h */; };
+		FA1BA0A21E16D97500AA2803 /* wrap_Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1BA0A01E16D97500AA2803 /* wrap_Font.cpp */; };
+		FA1BA0A31E16D97500AA2803 /* wrap_Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1BA0A01E16D97500AA2803 /* wrap_Font.cpp */; };
+		FA1BA0A41E16D97500AA2803 /* wrap_Font.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1BA0A11E16D97500AA2803 /* wrap_Font.h */; };
 		FA1DC2631C5D9555008F99A0 /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */; };
 		FA1DC2641C5D9555008F99A0 /* HashFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2621C5D9555008F99A0 /* HashFunction.h */; };
 		FA1E887E1DF363CD00E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E887C1DF363CD00E808AA /* Filter.cpp */; };
@@ -1343,8 +1346,6 @@
 		FA0B7BA51A95902C000E1D17 /* GLBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLBuffer.h; sourceTree = "<group>"; };
 		FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Canvas.cpp; sourceTree = "<group>"; };
 		FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Canvas.h; sourceTree = "<group>"; };
-		FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Font.cpp; sourceTree = "<group>"; };
-		FA0B7BA91A95902C000E1D17 /* wrap_Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Font.h; sourceTree = "<group>"; };
 		FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Graphics.cpp; sourceTree = "<group>"; };
 		FA0B7BAB1A95902C000E1D17 /* wrap_Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Graphics.h; sourceTree = "<group>"; };
 		FA0B7BAC1A95902C000E1D17 /* wrap_Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Image.cpp; sourceTree = "<group>"; };
@@ -1608,6 +1609,10 @@
 		FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Video.cpp; sourceTree = "<group>"; };
 		FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FA19C4C41B4B0BD50059B0B3 /* wrap_Video.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Video.lua; sourceTree = "<group>"; };
+		FA1BA09B1E16CFCE00AA2803 /* Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Font.cpp; sourceTree = "<group>"; };
+		FA1BA09C1E16CFCE00AA2803 /* Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Font.h; sourceTree = "<group>"; };
+		FA1BA0A01E16D97500AA2803 /* wrap_Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Font.cpp; sourceTree = "<group>"; };
+		FA1BA0A11E16D97500AA2803 /* wrap_Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Font.h; sourceTree = "<group>"; };
 		FA1DC2611C5D9555008F99A0 /* HashFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HashFunction.cpp; sourceTree = "<group>"; };
 		FA1DC2621C5D9555008F99A0 /* HashFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HashFunction.h; sourceTree = "<group>"; };
 		FA1E887C1DF363CD00E808AA /* Filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Filter.cpp; sourceTree = "<group>"; };
@@ -2432,6 +2437,8 @@
 				FA0B7B881A95902C000E1D17 /* Color.h */,
 				FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */,
 				FA0B7B891A95902C000E1D17 /* Drawable.h */,
+				FA1BA09B1E16CFCE00AA2803 /* Font.cpp */,
+				FA1BA09C1E16CFCE00AA2803 /* Font.h */,
 				FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B8B1A95902C000E1D17 /* Graphics.h */,
 				FA0B7B8C1A95902C000E1D17 /* opengl */,
@@ -2449,6 +2456,8 @@
 				FA2AF6711DAC76FF0032B62C /* vertex.h */,
 				FA0B7BC01A95902C000E1D17 /* Volatile.cpp */,
 				FA0B7BC11A95902C000E1D17 /* Volatile.h */,
+				FA1BA0A01E16D97500AA2803 /* wrap_Font.cpp */,
+				FA1BA0A11E16D97500AA2803 /* wrap_Font.h */,
 				FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */,
 				FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */,
 				FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */,
@@ -2486,8 +2495,6 @@
 				FA27B3C41B4985D8008A9DCE /* Video.h */,
 				FA0B7BA61A95902C000E1D17 /* wrap_Canvas.cpp */,
 				FA0B7BA71A95902C000E1D17 /* wrap_Canvas.h */,
-				FA0B7BA81A95902C000E1D17 /* wrap_Font.cpp */,
-				FA0B7BA91A95902C000E1D17 /* wrap_Font.h */,
 				FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */,
 				FA0B7BAB1A95902C000E1D17 /* wrap_Graphics.h */,
 				FA6AE6041B3335EC00583D5C /* wrap_Graphics.lua */,
@@ -3194,6 +3201,7 @@
 				FAB17BF71ABFC4B100F9BA27 /* lz4hc.h in Headers */,
 				FA0B7E831A95902C000E1D17 /* Shape.h in Headers */,
 				FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */,
+				FA1BA09F1E16CFCE00AA2803 /* Font.h in Headers */,
 				FA0B7EDD1A95902D000E1D17 /* Touch.h in Headers */,
 				FA0B7EDE1A95902D000E1D17 /* Touch.h in Headers */,
 				FA0B7A541A958EA3000E1D17 /* b2Math.h in Headers */,
@@ -3230,6 +3238,7 @@
 				FA0B7DF01A95902C000E1D17 /* Mouse.h in Headers */,
 				217DFBDC1D9F6D490055D849 /* buffer.h in Headers */,
 				FA0B7DAD1A95902C000E1D17 /* STBHandler.h in Headers */,
+				FA1BA0A41E16D97500AA2803 /* wrap_Font.h in Headers */,
 				FA0B7DE11A95902C000E1D17 /* wrap_Math.h in Headers */,
 				FA0B7AAF1A958EA3000E1D17 /* b2WheelJoint.h in Headers */,
 				FA0B7D1A1A95902C000E1D17 /* TrueTypeRasterizer.h in Headers */,
@@ -3460,7 +3469,6 @@
 				FA0B793F1A958E3B000E1D17 /* types.h in Headers */,
 				FA0B7AB31A958EA3000E1D17 /* b2Rope.h in Headers */,
 				FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */,
-				FA0B7D5D1A95902C000E1D17 /* wrap_Font.h in Headers */,
 				FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */,
 				FA0B7A511A958EA3000E1D17 /* b2GrowableStack.h in Headers */,
 				FA0B7D921A95902C000E1D17 /* FormatHandler.h in Headers */,
@@ -3585,6 +3593,7 @@
 				FA0B7D221A95902C000E1D17 /* Rasterizer.cpp in Sources */,
 				FA0B7A4F1A958EA3000E1D17 /* b2Draw.cpp in Sources */,
 				FA0B7D7D1A95902C000E1D17 /* Texture.cpp in Sources */,
+				FA1BA09E1E16CFCE00AA2803 /* Font.cpp in Sources */,
 				FA0B7ECC1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
 				FA0B7E6D1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7A5F1A958EA3000E1D17 /* b2Body.cpp in Sources */,
@@ -3634,6 +3643,7 @@
 				FA4F2BB51DE1E4C300CA37D7 /* wrap_RecordingDevice.cpp in Sources */,
 				FA0B7A311A958EA3000E1D17 /* b2CollidePolygon.cpp in Sources */,
 				FA4F2C111DE936FE00CA37D7 /* unix.c in Sources */,
+				FA1BA0A31E16D97500AA2803 /* wrap_Font.cpp in Sources */,
 				FA0B7A931A958EA3000E1D17 /* b2GearJoint.cpp in Sources */,
 				FA0B7E0D1A95902C000E1D17 /* Fixture.cpp in Sources */,
 				FA0B7D191A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
@@ -3796,7 +3806,6 @@
 				FA0B7E341A95902C000E1D17 /* WeldJoint.cpp in Sources */,
 				FA4F2C091DE936E200CA37D7 /* luasocket.c in Sources */,
 				FA9D8DD21DEB56C3002CD881 /* pixelformat.cpp in Sources */,
-				FA0B7D5C1A95902C000E1D17 /* wrap_Font.cpp in Sources */,
 				FA0B7B221A958EA3000E1D17 /* luasocket.cpp in Sources */,
 				FA0B7D311A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA0B7E9E1A95902C000E1D17 /* WaveDecoder.cpp in Sources */,
@@ -3901,6 +3910,7 @@
 				FA0B7D211A95902C000E1D17 /* Rasterizer.cpp in Sources */,
 				FA0B7D7C1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FA0B7ECB1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
+				FA1BA09D1E16CFCE00AA2803 /* Font.cpp in Sources */,
 				FA0B7E6C1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7A5E1A958EA3000E1D17 /* b2Body.cpp in Sources */,
 				FA0B7E631A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
@@ -3950,6 +3960,7 @@
 				FA0B7E0C1A95902C000E1D17 /* Fixture.cpp in Sources */,
 				FA0B7D181A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
 				FA0B7CFA1A95902C000E1D17 /* Filesystem.cpp in Sources */,
+				FA1BA0A21E16D97500AA2803 /* wrap_Font.cpp in Sources */,
 				FA0B7D3C1A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7A8C1A958EA3000E1D17 /* b2DistanceJoint.cpp in Sources */,
 				217DFBE91D9F6D490055D849 /* io.c in Sources */,
@@ -4104,7 +4115,6 @@
 				FA0B7E1B1A95902C000E1D17 /* MouseJoint.cpp in Sources */,
 				FA0B7CF41A95902C000E1D17 /* File.cpp in Sources */,
 				FA0B7E331A95902C000E1D17 /* WeldJoint.cpp in Sources */,
-				FA0B7D5B1A95902C000E1D17 /* wrap_Font.cpp in Sources */,
 				FA0B7D301A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA0B7E9D1A95902C000E1D17 /* WaveDecoder.cpp in Sources */,
 				FA29C0051E12355B00268CD8 /* StreamBuffer.cpp in Sources */,

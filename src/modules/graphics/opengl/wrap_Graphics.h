@@ -23,7 +23,7 @@
 
 // LOVE
 #include "common/config.h"
-#include "wrap_Font.h"
+#include "graphics/wrap_Font.h"
 #include "wrap_Image.h"
 #include "graphics/wrap_Quad.h"
 #include "wrap_SpriteBatch.h"

@@ -24,7 +24,7 @@
 // LOVE
 #include "common/config.h"
 #include "graphics/Drawable.h"
-#include "Font.h"
+#include "graphics/Font.h"
 #include "GLBuffer.h"
 
 namespace love
@@ -40,7 +40,7 @@ public:
 
 	static love::Type type;
 
-	Text(Font *font, const std::vector<Font::ColoredString> &text = {});
+	Text(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
 	void set(const std::vector<Font::ColoredString> &text);
@@ -54,8 +54,8 @@ public:
 	// Implements Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
-	void setFont(Font *f);
-	Font *getFont() const;
+	void setFont(love::graphics::Font *f);
+	love::graphics::Font *getFont() const;
 
 	/**
 	 * Gets the width of the currently set text.
@@ -84,7 +84,7 @@ private:
 	void regenerateVertices();
 	void addTextData(const TextData &s);
 
-	StrongRef<Font> font;
+	StrongRef<love::graphics::Font> font;
 	GLBuffer *vbo;
 	QuadIndices quadIndices;
 

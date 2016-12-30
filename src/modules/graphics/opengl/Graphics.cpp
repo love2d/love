@@ -25,6 +25,7 @@
 
 #include "Graphics.h"
 #include "font/Font.h"
+#include "Font.h"
 #include "graphics/Polyline.h"
 #include "math/MathModule.h"
 #include "window/Window.h"
@@ -1431,7 +1432,7 @@ Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
 	return new Quad(v, sw, sh);
 }
 
-Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter)
+graphics::Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter)
 {
 	return new Font(r, filter);
 }
@@ -1500,7 +1501,7 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, con
 	return new Mesh(vertexformat, data, datasize, drawmode, usage);
 }
 
-Text *Graphics::newText(Font *font, const std::vector<Font::ColoredString> &text)
+Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
 	return new Text(font, text);
 }
@@ -1545,7 +1546,7 @@ Colorf Graphics::getBackgroundColor() const
 	return states.back().backgroundColor;
 }
 
-void Graphics::setFont(Font *font)
+void Graphics::setFont(love::graphics::Font *font)
 {
 	// We don't need to set a default font here if null is passed in, since we
 	// only care about the default font in getFont and print.
@@ -1553,7 +1554,7 @@ void Graphics::setFont(Font *font)
 	state.font.set(font);
 }
 
-Font *Graphics::getFont()
+love::graphics::Font *Graphics::getFont()
 {
 	checkSetDefaultFont();
 	return states.back().font.get();

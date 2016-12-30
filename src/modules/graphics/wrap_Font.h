@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_FONT_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_FONT_H
+#pragma once
 
 // LOVE
 #include "common/runtime.h"
@@ -29,14 +28,10 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Font *luax_checkfont(lua_State *L, int idx);
+void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings);
 extern "C" int luaopen_font(lua_State *L);
 
-} // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_FONT_H
