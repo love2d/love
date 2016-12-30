@@ -33,6 +33,8 @@ Texture::Texture()
 	: format(PIXELFORMAT_UNKNOWN)
 	, width(0)
 	, height(0)
+	, pixelWidth(0)
+	, pixelHeight(0)
 	, filter(getDefaultFilter())
 	, wrap()
 	, vertices()
@@ -88,6 +90,21 @@ int Texture::getWidth() const
 int Texture::getHeight() const
 {
 	return height;
+}
+
+int Texture::getPixelWidth() const
+{
+	return pixelWidth;
+}
+
+int Texture::getPixelHeight() const
+{
+	return pixelHeight;
+}
+
+float Texture::getPixelDensity() const
+{
+	return (float) pixelHeight / (float) height;
 }
 
 const Texture::Filter &Texture::getFilter() const

@@ -188,6 +188,13 @@ int w_Font_setFallbacks(lua_State *L)
 	return 0;
 }
 
+int w_Font_getPixelDensity(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	lua_pushnumber(L, t->getPixelDensity());
+	return 1;
+}
+
 static const luaL_Reg w_Font_functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
@@ -202,6 +209,7 @@ static const luaL_Reg w_Font_functions[] =
 	{ "getBaseline", w_Font_getBaseline },
 	{ "hasGlyphs", w_Font_hasGlyphs },
 	{ "setFallbacks", w_Font_setFallbacks },
+	{ "getPixelDensity", w_Font_getPixelDensity },
 	{ 0, 0 }
 };
 

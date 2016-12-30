@@ -521,7 +521,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	updateSettings(f, false);
 
 	if (graphics.get())
-		graphics->setMode(pixelWidth, pixelHeight);
+	{
+		double scaledw, scaledh;
+		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
+		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+	}
 
 #ifdef LOVE_ANDROID
 	love::android::setImmersive(f.fullscreen);
@@ -541,7 +545,11 @@ bool Window::onSizeChanged(int width, int height)
 	SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 
 	if (graphics.get())
-		graphics->setViewportSize(pixelWidth, pixelHeight);
+	{
+		double scaledw, scaledh;
+		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
+		graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+	}
 
 	return true;
 }
@@ -609,7 +617,11 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 
 	// Update the viewport size now instead of waiting for event polling.
 	if (updateGraphicsViewport && graphics.get())
-		graphics->setViewportSize(pixelWidth, pixelHeight);
+	{
+		double scaledw, scaledh;
+		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
+		graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+	}
 }
 
 void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
@@ -940,11 +952,26 @@ bool Window::isMouseGrabbed() const
 		return mouseGrabbed;
 }
 
-void Window::getPixelDimensions(int &w, int &h) const
+int Window::getWidth() const
 {
-	w = pixelWidth;
-	h = pixelHeight;
+	return windowWidth;
 }
+
+int Window::getHeight() const
+{
+	return windowHeight;
+}
+
+int Window::getPixelWidth() const
+{
+	return pixelWidth;
+}
+
+int Window::getPixelHeight() const
+{
+	return pixelHeight;
+}
+
 
 void Window::windowToPixelCoords(double *x, double *y) const
 {
@@ -962,7 +989,42 @@ void Window::pixelToWindowCoords(double *x, double *y) const
 		*y = (*y) * ((double) windowHeight / (double) pixelHeight);
 }
 
-double Window::getPixelScale() const
+void Window::windowToDPICoords(double *x, double *y) const
+{
+	double px = x != nullptr ? *x : 0.0;
+	double py = y != nullptr ? *y : 0.0;
+
+	windowToPixelCoords(&px, &py);
+
+	double dpix = 0.0;
+	double dpiy = 0.0;
+
+	fromPixels(px, py, dpix, dpiy);
+
+	if (x != nullptr)
+		*x = dpix;
+	if (y != nullptr)
+		*y = dpiy;
+}
+
+void Window::DPIToWindowCoords(double *x, double *y) const
+{
+	double dpix = x != nullptr ? *x : 0.0;
+	double dpiy = y != nullptr ? *y : 0.0;
+
+	double px = 0.0;
+	double py = 0.0;
+
+	toPixels(dpix, dpiy, px, py);
+	pixelToWindowCoords(&px, &py);
+
+	if (x != nullptr)
+		*x = px;
+	if (y != nullptr)
+		*y = py;
+}
+
+double Window::getPixelDensity() const
 {
 #ifdef LOVE_ANDROID
 	return love::android::getScreenScale();
@@ -973,24 +1035,24 @@ double Window::getPixelScale() const
 
 double Window::toPixels(double x) const
 {
-	return x * getPixelScale();
+	return x * getPixelDensity();
 }
 
 void Window::toPixels(double wx, double wy, double &px, double &py) const
 {
-	double scale = getPixelScale();
+	double scale = getPixelDensity();
 	px = wx * scale;
 	py = wy * scale;
 }
 
 double Window::fromPixels(double x) const
 {
-	return x / getPixelScale();
+	return x / getPixelDensity();
 }
 
 void Window::fromPixels(double px, double py, double &wx, double &wy) const
 {
-	double scale = getPixelScale();
+	double scale = getPixelDensity();
 	wx = px / scale;
 	wy = py / scale;
 }

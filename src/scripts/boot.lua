@@ -603,8 +603,7 @@ function love.errhand(msg)
 	if love.audio then love.audio.stop() end
 
 	love.graphics.reset()
-
-	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
+	local font = love.graphics.setNewFont(14)
 
 	love.graphics.setColor(1, 1, 1, 1)
 
@@ -630,8 +629,8 @@ function love.errhand(msg)
 	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
 
 	local function draw()
+		local pos = 70
 		love.graphics.clear(89/255, 157/255, 220/255)
-		local pos = love.window.toPixels(70)
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
 		love.graphics.present()
 	end

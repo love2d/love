@@ -244,7 +244,7 @@ public:
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
 	 * The y-coordinate starts at the top.
 	 **/
-	void setViewport(const Rect &v, bool canvasActive);
+	void setViewport(const Rect &v);
 
 	/**
 	 * Gets the current OpenGL rendering viewport rectangle.
@@ -256,11 +256,6 @@ public:
 	 * The y-coordinate starts at the top and is flipped internally.
 	 **/
 	void setScissor(const Rect &v, bool canvasActive);
-
-	/**
-	 * Gets the current scissor box (regardless of whether scissoring is enabled.)
-	 **/
-	Rect getScissor() const;
 
 	/**
 	 * Sets the global point size.

@@ -42,7 +42,7 @@ class BMFontRasterizer : public Rasterizer
 {
 public:
 
-	BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist);
+	BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist, float pixeldensity);
 	virtual ~BMFontRasterizer();
 
 	// Implements Rasterizer.

@@ -94,6 +94,11 @@ public:
 	virtual int getWidth() const;
 	virtual int getHeight() const;
 
+	virtual int getPixelWidth() const;
+	virtual int getPixelHeight() const;
+
+	float getPixelDensity() const;
+
 	virtual void setFilter(const Filter &f) = 0;
 	virtual const Filter &getFilter() const;
 
@@ -124,6 +129,9 @@ protected:
 
 	int width;
 	int height;
+
+	int pixelWidth;
+	int pixelHeight;
 
 	Filter filter;
 	Wrap wrap;

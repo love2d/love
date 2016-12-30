@@ -80,8 +80,8 @@ public:
 	// Implements Module.
 	const char *getName() const override;
 
-	void setViewportSize(int width, int height) override;
-	bool setMode(int width, int height) override;
+	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
+	bool setMode(int width, int height, int pixelwidth, int pixelheight) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -109,15 +109,13 @@ public:
 	 **/
 	void present(void *screenshotCallbackData);
 
-	/**
-	 * Gets the width of the current graphics viewport.
-	 **/
-	int getWidth() const;
+	int getWidth() const override;
+	int getHeight() const override;
+	int getPixelWidth() const;
+	int getPixelHeight() const;
 
-	/**
-	 * Gets the height of the current graphics viewport.
-	 **/
-	int getHeight() const;
+	double getCurrentPixelDensity() const;
+	double getScreenPixelDensity() const;
 
 	/**
 	 * True if a graphics viewport is set.
@@ -172,8 +170,8 @@ public:
 	/**
 	 * Creates an Image object with padding and/or optimization.
 	 **/
-	Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Flags &flags);
-	Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Flags &flags);
+	Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings);
+	Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings);
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 
@@ -186,7 +184,7 @@ public:
 
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Canvas *newCanvas(int width, int height, PixelFormat format = PIXELFORMAT_NORMAL, int msaa = 0);
+	Canvas *newCanvas(int width, int height, const Canvas::Settings &settings);
 
 	Shader *newShader(const Shader::ShaderSource &source);
 
@@ -198,7 +196,7 @@ public:
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
-	Video *newVideo(love::video::VideoStream *stream);
+	Video *newVideo(love::video::VideoStream *stream, float pixeldensity);
 
 	bool isGammaCorrect() const;
 
@@ -440,6 +438,9 @@ private:
 
 	int width;
 	int height;
+	int pixelWidth;
+	int pixelHeight;
+
 	bool created;
 	bool active;
 

@@ -48,12 +48,14 @@ public:
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
 
 	virtual Rasterizer *newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting);
+	virtual Rasterizer *newTrueTypeRasterizer(int size, float pixeldensity, TrueTypeRasterizer::Hinting hinting);
 	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) = 0;
+	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, float pixeldensity, TrueTypeRasterizer::Hinting hinting) = 0;
 
-	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images);
+	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images, float pixeldensity);
 
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs, int extraspacing);
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length, int extraspacing);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs, int extraspacing, float pixeldensity);
+	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length, int extraspacing, float pixeldensity);
 
 	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
 	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);

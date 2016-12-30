@@ -90,11 +90,18 @@ public:
 	void setMouseGrab(bool grab);
 	bool isMouseGrabbed() const;
 
-	void getPixelDimensions(int &w, int &h) const;
+	int getWidth() const;
+	int getHeight() const;
+	int getPixelWidth() const;
+	int getPixelHeight() const;
+
 	void windowToPixelCoords(double *x, double *y) const;
 	void pixelToWindowCoords(double *x, double *y) const;
 
-	double getPixelScale() const;
+	void windowToDPICoords(double *x, double *y) const;
+	void DPIToWindowCoords(double *x, double *y) const;
+
+	double getPixelDensity() const;
 
 	double toPixels(double x) const;
 	void toPixels(double wx, double wy, double &px, double &py) const;

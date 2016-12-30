@@ -20,8 +20,10 @@
 
 // LOVE
 #include "TrueTypeRasterizer.h"
-
 #include "common/Exception.h"
+
+// C
+#include <math.h>
 
 namespace love
 {
@@ -30,10 +32,13 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, Hinting hinting)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float pixeldensity, Hinting hinting)
 	: data(data)
 	, hinting(hinting)
 {
+	this->pixelDensity = pixeldensity;
+	size = floorf(size * pixeldensity + 0.5f);
+
 	if (size <= 0)
 		throw love::Exception("Invalid TrueType font size: %d", size);
 

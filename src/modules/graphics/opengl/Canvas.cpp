@@ -100,35 +100,32 @@ static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pi
 love::Type Canvas::type("Canvas", &Texture::type);
 int Canvas::canvasCount = 0;
 
-Canvas::Canvas(int width, int height, PixelFormat format, int msaa)
-	: fbo(0)
+Canvas::Canvas(int width, int height, const Settings &settings)
+	: settings(settings)
+	, fbo(0)
 	, texture(0)
     , msaa_buffer(0)
-	, requested_format(format)
-    , requested_samples(msaa)
 	, actual_samples(0)
 	, texture_memory(0)
 {
 	this->width = width;
 	this->height = height;
-
-	float w = static_cast<float>(width);
-	float h = static_cast<float>(height);
+	this->pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
+	this->pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
 
 	// Vertices are ordered for use with triangle strips:
-	// 0----2
-	// |  / |
-	// | /  |
-	// 1----3
+	// 0---2
+	// | / |
+	// 1---3
 	// world coordinates
 	vertices[0].x = 0;
 	vertices[0].y = 0;
 	vertices[1].x = 0;
-	vertices[1].y = h;
-	vertices[2].x = w;
+	vertices[1].y = (float) height;
+	vertices[2].x = (float) width;
 	vertices[2].y = 0;
-	vertices[3].x = w;
-	vertices[3].y = h;
+	vertices[3].x = (float) width;
+	vertices[3].y = (float) height;
 
 	// texture coordinates
 	vertices[0].s = 0;
@@ -140,7 +137,7 @@ Canvas::Canvas(int width, int height, PixelFormat format, int msaa)
 	vertices[3].s = 1;
 	vertices[3].t = 1;
 
-	this->format = getSizedFormat(requested_format);
+	this->format = getSizedFormat(settings.format);
 
 	loadVolatile();
 
@@ -165,7 +162,7 @@ bool Canvas::loadVolatile()
 	status = GL_FRAMEBUFFER_COMPLETE;
 
 	// glTexImage2D is guaranteed to error in this case.
-	if (width > gl.getMaxTextureSize() || height > gl.getMaxTextureSize())
+	if (pixelWidth > gl.getMaxTextureSize() || pixelHeight > gl.getMaxTextureSize())
 	{
 		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
 		return false;
@@ -173,8 +170,8 @@ bool Canvas::loadVolatile()
 
 	// getMaxRenderbufferSamples will be 0 on systems that don't support
 	// multisampled renderbuffers / don't export FBO multisample extensions.
-	requested_samples = std::min(requested_samples, gl.getMaxRenderbufferSamples());
-	requested_samples = std::max(requested_samples, 0);
+	settings.msaa = std::min(settings.msaa, gl.getMaxRenderbufferSamples());
+	settings.msaa = std::max(settings.msaa, 0);
 
 	glGenTextures(1, &texture);
 	gl.bindTextureToUnit(texture, 0, false);
@@ -191,8 +188,8 @@ bool Canvas::loadVolatile()
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
 
-	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, width, height, 0,
-	             fmt.externalformat, fmt.type, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, pixelWidth, pixelHeight,
+	             0, fmt.externalformat, fmt.type, nullptr);
 
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -215,14 +212,14 @@ bool Canvas::loadVolatile()
 		return false;
 	}
 
-	actual_samples = requested_samples == 1 ? 0 : requested_samples;
+	actual_samples = settings.msaa == 1 ? 0 : settings.msaa;
 
 	if (actual_samples > 0 && !createMSAABuffer(width, height, actual_samples, format, msaa_buffer))
 		actual_samples = 0;
 
 	size_t prevmemsize = texture_memory;
 
-	texture_memory = getPixelFormatSize(format) * width * height;
+	texture_memory = getPixelFormatSize(format) * pixelWidth * pixelHeight;
 	if (msaa_buffer != 0)
 		texture_memory += (texture_memory * actual_samples);
 
@@ -276,7 +273,7 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 	wrap = w;
 
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (width != nextP2(width) || height != nextP2(height)))
+		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
 	{
 		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
 			success = false;
@@ -306,7 +303,7 @@ ptrdiff_t Canvas::getHandle() const
 
 love::image::ImageData *Canvas::newImageData(love::image::Image *module, int x, int y, int w, int h)
 {
-	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > getWidth() || (y + h) > getHeight())
+	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > getPixelWidth() || (y + h) > getPixelHeight())
 		throw love::Exception("Invalid rectangle dimensions.");
 
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);

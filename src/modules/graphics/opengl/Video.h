@@ -42,7 +42,7 @@ public:
 
 	static love::Type type;
 
-	Video(love::video::VideoStream *stream);
+	Video(love::video::VideoStream *stream, float pixeldensity = 1.0f);
 	~Video();
 
 	// Volatile
@@ -60,6 +60,9 @@ public:
 	int getWidth() const;
 	int getHeight() const;
 
+	int getPixelWidth() const;
+	int getPixelHeight() const;
+
 	void setFilter(const Texture::Filter &f);
 	const Texture::Filter &getFilter() const;
 
@@ -69,6 +72,9 @@ private:
 
 	StrongRef<love::video::VideoStream> stream;
 	StrongRef<love::audio::Source> source;
+
+	int width;
+	int height;
 
 	GLuint textures[3];
 

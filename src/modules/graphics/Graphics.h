@@ -290,14 +290,14 @@ public:
 	/**
 	 * Sets the current graphics display viewport dimensions.
 	 **/
-	virtual void setViewportSize(int width, int height) = 0;
+	virtual void setViewportSize(int width, int height, int pixelwidth, int pixelheight) = 0;
 
 	/**
 	 * Sets the current graphics display viewport and initializes the renderer.
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height) = 0;
+	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -318,6 +318,9 @@ public:
 	 * may be different on some platforms (especially mobile ones.)
 	 **/
 	virtual bool isActive() const = 0;
+
+	virtual int getWidth() const = 0;
+	virtual int getHeight() const = 0;
 
 	virtual bool isCanvasActive() const = 0;
 

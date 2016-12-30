@@ -114,25 +114,28 @@ int w_Image_getData(lua_State *L)
 	return n;
 }
 
-static const char *imageFlagName(Image::FlagType flagtype)
+const char *luax_imageSettingName(Image::SettingType settingtype)
 {
 	const char *name = nullptr;
-	Image::getConstant(flagtype, name);
+	Image::getConstant(settingtype, name);
 	return name;
 }
 
 int w_Image_getFlags(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
-	Image::Flags flags = i->getFlags();
+	Image::Settings settings = i->getFlags();
 
 	lua_createtable(L, 0, 2);
 
-	lua_pushboolean(L, flags.mipmaps);
-	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_MIPMAPS));
+	lua_pushboolean(L, settings.mipmaps);
+	lua_setfield(L, -2, luax_imageSettingName(Image::SETTING_MIPMAPS));
 
-	lua_pushboolean(L, flags.linear);
-	lua_setfield(L, -2, imageFlagName(Image::FLAG_TYPE_LINEAR));
+	lua_pushboolean(L, settings.linear);
+	lua_setfield(L, -2, luax_imageSettingName(Image::SETTING_LINEAR));
+
+	lua_pushnumber(L, settings.pixeldensity);
+	lua_setfield(L, -2, luax_imageSettingName(Image::SETTING_PIXELDENSITY));
 
 	return 1;
 }

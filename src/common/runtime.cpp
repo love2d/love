@@ -194,6 +194,20 @@ int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValu
 	return retval;
 }
 
+double luax_numberflag(lua_State *L, int table_index, const char *key, double defaultValue)
+{
+	lua_getfield(L, table_index, key);
+
+	int retval;
+	if (!lua_isnumber(L, -1))
+		retval = defaultValue;
+	else
+		retval = lua_tonumber(L, -1);
+
+	lua_pop(L, 1);
+	return retval;
+}
+
 int luax_assert_argc(lua_State *L, int min)
 {
 	int argc = lua_gettop(L);

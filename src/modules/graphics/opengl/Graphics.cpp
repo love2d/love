@@ -56,6 +56,8 @@ Graphics::Graphics()
 	: quadIndices(nullptr)
 	, width(0)
 	, height(0)
+	, pixelWidth(0)
+	, pixelHeight(0)
 	, created(false)
 	, active(true)
 	, writingToStencil(false)
@@ -74,10 +76,11 @@ Graphics::Graphics()
 
 		if (window->isOpen())
 		{
-			int w = 0, h = 0;
-			window->getPixelDimensions(w, h);
+			double w = window->getWidth();
+			double h = window->getHeight();
+			window->windowToDPICoords(&w, &h);
 
-			setMode(w, h);
+			setMode((int) w, (int) h, window->getPixelWidth(), window->getPixelHeight());
 		}
 	}
 }
@@ -221,22 +224,45 @@ void Graphics::checkSetDefaultFont()
 	states.back().font.set(defaultFont.get());
 }
 
-void Graphics::setViewportSize(int width, int height)
+double Graphics::getCurrentPixelDensity() const
+{
+	if (states.back().canvases.size() > 0)
+	{
+		Canvas *c = states.back().canvases[0];
+		return (double) c->getPixelHeight() / (double) c->getHeight();
+	}
+
+	return getScreenPixelDensity();
+}
+
+double Graphics::getScreenPixelDensity() const
+{
+	return (double) getPixelHeight() / (double) getHeight();
+}
+
+void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
 	this->width = width;
 	this->height = height;
+	this->pixelWidth = pixelwidth;
+	this->pixelHeight = pixelheight;
 
 	if (states.back().canvases.empty())
 	{
 		// Set the viewport to top-left corner.
-		gl.setViewport({0, 0, width, height}, false);
+		gl.setViewport({0, 0, pixelwidth, pixelheight});
+
+		// Re-apply the scissor if it was active, since the rectangle passed to
+		// glScissor is affected by the viewport dimensions.
+		if (states.back().scissor)
+			setScissor(states.back().scissorRect);
 
 		// Set up the projection matrix
 		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
 	}
 }
 
-bool Graphics::setMode(int width, int height)
+bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight)
 {
 	this->width = width;
 	this->height = height;
@@ -246,6 +272,8 @@ bool Graphics::setMode(int width, int height)
 	gl.setupContext();
 
 	created = true;
+
+	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -309,8 +337,6 @@ bool Graphics::setMode(int width, int height)
 	// objects is destroyed when the last object is destroyed.
 	if (quadIndices == nullptr)
 		quadIndices = new QuadIndices(20);
-
-	setViewportSize(width, height);
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -608,13 +634,15 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 	PixelFormat firstformat = firstcanvas->getPixelFormat();
 
 	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
+	int pixelwidth = firstcanvas->getPixelWidth();
+	int pixelheight = firstcanvas->getPixelHeight();
 
 	for (int i = 1; i < ncanvases; i++)
 	{
 		Canvas *c = canvases[i];
 
-		if (c->getWidth() != firstcanvas->getWidth() || c->getHeight() != firstcanvas->getHeight())
-			throw love::Exception("All canvases in must have the same dimensions.");
+		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
+			throw love::Exception("All canvases in must have the same pixel dimensions.");
 
 		if (!multiformatsupported && c->getPixelFormat() != firstformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
@@ -632,10 +660,15 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 
 	bindCachedFBO(canvases);
 
+	gl.setViewport({0, 0, pixelwidth, pixelheight});
+
+	// Re-apply the scissor if it was active, since the rectangle passed to
+	// glScissor is affected by the viewport dimensions.
+	if (state.scissor)
+		setScissor(state.scissorRect);
+
 	int w = firstcanvas->getWidth();
 	int h = firstcanvas->getHeight();
-
-	gl.setViewport({0, 0, w, h}, true);
 	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
@@ -683,7 +716,13 @@ void Graphics::setCanvas()
 	state.canvases.clear();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
-	gl.setViewport({0, 0, width, height}, false);
+
+	gl.setViewport({0, 0, pixelWidth, pixelHeight});
+
+	// Re-apply the scissor if it was active, since the rectangle passed to
+	// glScissor is affected by the viewport dimensions.
+	if (state.scissor)
+		setScissor(state.scissorRect);
 
 	// The projection matrix is flipped compared to rendering to a canvas, due
 	// to OpenGL considering (0,0) bottom-left instead of top-left.
@@ -723,8 +762,8 @@ void Graphics::endPass()
 	// Resolve MSAA buffers.
 	if (canvases.size() > 0 && canvases[0]->getMSAA() > 1)
 	{
-		int w = canvases[0]->getWidth();
-		int h = canvases[0]->getHeight();
+		int w = canvases[0]->getPixelWidth();
+		int h = canvases[0]->getPixelHeight();
 
 		for (int i = 0; i < (int) canvases.size(); i++)
 		{
@@ -909,8 +948,8 @@ void Graphics::bindCachedFBO(const std::vector<Canvas *> &canvases)
 	}
 	else
 	{
-		int w = canvases[0]->getWidth();
-		int h = canvases[0]->getHeight();
+		int w = canvases[0]->getPixelWidth();
+		int h = canvases[0]->getPixelHeight();
 		int msaa = std::max(canvases[0]->getMSAA(), 1);
 
 		glGenFramebuffers(1, &fbo);
@@ -1054,8 +1093,8 @@ void Graphics::present(void *screenshotCallbackData)
 
 	if (!pendingScreenshotCallbacks.empty())
 	{
-		int w = getWidth();
-		int h = getHeight();
+		int w = getPixelWidth();
+		int h = getPixelHeight();
 
 		size_t row = 4 * w;
 		size_t size = row * h;
@@ -1170,6 +1209,16 @@ int Graphics::getHeight() const
 	return height;
 }
 
+int Graphics::getPixelWidth() const
+{
+	return pixelWidth;
+}
+
+int Graphics::getPixelHeight() const
+{
+	return pixelHeight;
+}
+
 bool Graphics::isCreated() const
 {
 	return created;
@@ -1182,8 +1231,17 @@ void Graphics::setScissor(const Rect &rect)
 	DisplayState &state = states.back();
 
 	glEnable(GL_SCISSOR_TEST);
+
+	double density = getCurrentPixelDensity();
+
+	Rect glrect;
+	glrect.x = (int) (rect.x * density);
+	glrect.y = (int) (rect.y * density);
+	glrect.w = (int) (rect.w * density);
+	glrect.h = (int) (rect.h * density);
+
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(rect, !state.canvases.empty());
+	gl.setScissor(glrect, !state.canvases.empty());
 
 	state.scissor = true;
 	state.scissorRect = rect;
@@ -1358,14 +1416,14 @@ void Graphics::clearStencil()
 	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Flags &flags)
+Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
 {
-	return new Image(data, flags);
+	return new Image(data, settings);
 }
 
-Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Flags &flags)
+Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings)
 {
-	return new Image(cdata, flags);
+	return new Image(cdata, settings);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -1388,15 +1446,15 @@ ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 	return new ParticleSystem(texture, size);
 }
 
-Canvas *Graphics::newCanvas(int width, int height, PixelFormat format, int msaa)
+Canvas *Graphics::newCanvas(int width, int height, const Canvas::Settings &settings)
 {
 	if (!Canvas::isSupported())
 		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
 
-	if (!Canvas::isFormatSupported(format))
+	if (!Canvas::isFormatSupported(settings.format))
 	{
 		const char *fstr = "rgba8";
-		love::getConstant(Canvas::getSizedFormat(format), fstr);
+		love::getConstant(Canvas::getSizedFormat(settings.format), fstr);
 		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
 	}
 
@@ -1405,7 +1463,7 @@ Canvas *Graphics::newCanvas(int width, int height, PixelFormat format, int msaa)
 	else if (height > gl.getMaxTextureSize())
 		throw Exception("Cannot create canvas: height of %d pixels is too large for this system.", height);
 
-	Canvas *canvas = new Canvas(width, height, format, msaa);
+	Canvas *canvas = new Canvas(width, height, settings);
 	GLenum err = canvas->getStatus();
 
 	// everything ok, return canvas (early out)
@@ -1447,9 +1505,9 @@ Text *Graphics::newText(Font *font, const std::vector<Font::ColoredString> &text
 	return new Text(font, text);
 }
 
-Video *Graphics::newVideo(love::video::VideoStream *stream)
+Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
 {
-	return new Video(stream);
+	return new Video(stream, pixeldensity);
 }
 
 bool Graphics::isGammaCorrect() const
@@ -1690,7 +1748,7 @@ void Graphics::setPointSize(float size)
 	if (streamBufferState.primitiveMode == vertex::PrimitiveMode::POINTS)
 		flushStreamDraws();
 
-	gl.setPointSize(size);
+	gl.setPointSize(size * getCurrentPixelDensity());
 	states.back().pointSize = size;
 }
 

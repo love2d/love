@@ -366,7 +366,6 @@ void QuadIndices::fill()
 	using namespace love::graphics::vertex;
 
 	fillIndices(TriangleIndexMode::QUADS, 0, maxSize * 4, (T *) indices);
-
 	indexBuffer->fill(0, indexBuffer->getSize(), indices);
 }
 

@@ -34,12 +34,14 @@ inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
 	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
 }
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float pixeldensity)
 	: imageData(data)
 	, glyphs(glyphs)
 	, numglyphs(numglyphs)
 	, extraSpacing(extraspacing)
 {
+	this->pixelDensity = pixeldensity;
+
 	if (data->getFormat() != PIXELFORMAT_RGBA8)
 		throw love::Exception("Only 32-bit RGBA images are supported in Image Fonts!");
 

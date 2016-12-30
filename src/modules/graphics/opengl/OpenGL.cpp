@@ -416,15 +416,10 @@ void OpenGL::useVertexAttribArrays(uint32 arraybits)
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void OpenGL::setViewport(const Rect &v, bool canvasActive)
+void OpenGL::setViewport(const Rect &v)
 {
 	glViewport(v.x, v.y, v.w, v.h);
 	state.viewport = v;
-
-	// glScissor starts from the lower left, so we compensate when setting the
-	// scissor. When the viewport is changed, we need to manually update the
-	// scissor again.
-	setScissor(state.scissor, canvasActive);
 }
 
 Rect OpenGL::getViewport() const
@@ -444,11 +439,6 @@ void OpenGL::setScissor(const Rect &v, bool canvasActive)
 	}
 
 	state.scissor = v;
-}
-
-Rect OpenGL::getScissor() const
-{
-	return state.scissor;
 }
 
 void OpenGL::setPointSize(float size)

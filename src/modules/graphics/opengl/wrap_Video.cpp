@@ -90,6 +90,28 @@ int w_Video_getDimensions(lua_State *L)
 	return 2;
 }
 
+int w_Video_getPixelWidth(lua_State *L)
+{
+	Video *video = luax_checkvideo(L, 1);
+	lua_pushnumber(L, video->getPixelWidth());
+	return 1;
+}
+
+int w_Video_getPixelHeight(lua_State *L)
+{
+	Video *video = luax_checkvideo(L, 1);
+	lua_pushnumber(L, video->getPixelHeight());
+	return 1;
+}
+
+int w_Video_getPixelDimensions(lua_State *L)
+{
+	Video *video = luax_checkvideo(L, 1);
+	lua_pushnumber(L, video->getPixelWidth());
+	lua_pushnumber(L, video->getPixelHeight());
+	return 2;
+}
+
 int w_Video_setFilter(lua_State *L)
 {
 	Video *video = luax_checkvideo(L, 1);
@@ -136,6 +158,9 @@ static const luaL_Reg functions[] =
 	{ "getWidth", w_Video_getWidth },
 	{ "getHeight", w_Video_getHeight },
 	{ "getDimensions", w_Video_getDimensions },
+	{ "getPixelWidth", w_Video_getPixelWidth },
+	{ "getPixelHeight", w_Video_getPixelHeight },
+	{ "getPixelDimensions", w_Video_getPixelDimensions },
 	{ "setFilter", w_Video_setFilter },
 	{ "getFilter", w_Video_getFilter },
 	{ 0, 0 }

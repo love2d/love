@@ -47,19 +47,20 @@ static inline uint16 normToUint16(double n)
 love::Type Font::type("Font", &Object::type);
 int Font::fontCount = 0;
 
-Font::Font(love::font::Rasterizer *r, const Texture::Filter &filter)
+Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
 	: rasterizers({r})
 	, height(r->getHeight())
 	, lineHeight(1)
 	, textureWidth(128)
 	, textureHeight(128)
-	, filter(filter)
+	, filter(f)
+	, pixelDensity(r->getPixelDensity())
 	, useSpacesAsTab(false)
 	, quadIndices(20) // We make this bigger at draw-time, if needed.
 	, textureCacheID(0)
 	, textureMemorySize(0)
 {
-	this->filter.mipmap = Texture::FILTER_NONE;
+	filter.mipmap = Texture::FILTER_NONE;
 
 	// Try to find the best texture size match for the font size. default to the
 	// largest texture size if no rough match is found.
@@ -100,9 +101,10 @@ Font::TextureSize Font::getNextTextureSize() const
 {
 	TextureSize size = {textureWidth, textureHeight};
 
-	int maxsize = std::min(4096, gl.getMaxTextureSize());
+	int maxwidth  = std::min(8192, gl.getMaxTextureSize());
+	int maxheight = std::min(4096, gl.getMaxTextureSize());
 
-	if (size.width * 2 <= maxsize || size.height * 2 <= maxsize)
+	if (size.width * 2 <= maxwidth || size.height * 2 <= maxheight)
 	{
 		// {128, 128} -> {256, 128} -> {256, 256} -> {512, 256} -> etc.
 		if (size.width == size.height)
@@ -114,7 +116,7 @@ Font::TextureSize Font::getNextTextureSize() const
 	return size;
 }
 
-void Font::createTexture()
+bool Font::createTexture()
 {
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	gfx->flushStreamDraws();
@@ -200,6 +202,8 @@ void Font::createTexture()
 	}
 	else
 		textures.push_back(t);
+
+	return true;
 }
 
 love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
@@ -236,32 +240,35 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	int w = gd->getWidth();
 	int h = gd->getHeight();
 
-	if (textureX + w + TEXTURE_PADDING > textureWidth)
+	if (w + TEXTURE_PADDING * 2 < textureWidth && h + TEXTURE_PADDING * 2 < textureHeight)
 	{
-		// out of space - new row!
-		textureX = TEXTURE_PADDING;
-		textureY += rowHeight;
-		rowHeight = TEXTURE_PADDING;
-	}
+		if (textureX + w + TEXTURE_PADDING > textureWidth)
+		{
+			// Out of space - new row!
+			textureX = TEXTURE_PADDING;
+			textureY += rowHeight;
+			rowHeight = TEXTURE_PADDING;
+		}
 
-	if (textureY + h + TEXTURE_PADDING > textureHeight)
-	{
-		// totally out of space - new texture!
-		createTexture();
+		if (textureY + h + TEXTURE_PADDING > textureHeight)
+		{
+			// Totally out of space - new texture!
+			createTexture();
 
-		// Makes sure the above code for checking if the glyph can fit at
-		// the current position in the texture is run again for this glyph.
-		return addGlyph(glyph);
+			// Makes sure the above code for checking if the glyph can fit at
+			// the current position in the texture is run again for this glyph.
+			return addGlyph(glyph);
+		}
 	}
 
 	Glyph g;
 
 	g.texture = 0;
-	g.spacing = gd->getAdvance();
+	g.spacing = floorf(gd->getAdvance() / pixelDensity + 0.5f);
 
 	memset(g.vertices, 0, sizeof(GlyphVertex) * 4);
 
-	// don't waste space for empty glyphs. also fixes a divide by zero bug with ATI drivers
+	// Don't waste space for empty glyphs.
 	if (w > 0 && h > 0)
 	{
 		bool isSRGB = isGammaCorrect();
@@ -278,31 +285,31 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 
 		Color c(255, 255, 255, 255);
 
-		// 0----2
-		// |  / |
-		// | /  |
-		// 1----3
-		const GlyphVertex verts[4] = {
-			{float(0), float(0), normToUint16((tX+0)/tWidth), normToUint16((tY+0)/tHeight), c},
-			{float(0), float(h), normToUint16((tX+0)/tWidth), normToUint16((tY+h)/tHeight), c},
-			{float(w), float(0), normToUint16((tX+w)/tWidth), normToUint16((tY+0)/tHeight), c},
-			{float(w), float(h), normToUint16((tX+w)/tWidth), normToUint16((tY+h)/tHeight), c}
+		// 0---2
+		// | / |
+		// 1---3
+		const GlyphVertex verts[4] =
+		{
+			{0.0f,           0.0f,           normToUint16((tX+0)/tWidth), normToUint16((tY+0)/tHeight), c},
+			{0.0f,           h/pixelDensity, normToUint16((tX+0)/tWidth), normToUint16((tY+h)/tHeight), c},
+			{w/pixelDensity, 0.0f,           normToUint16((tX+w)/tWidth), normToUint16((tY+0)/tHeight), c},
+			{w/pixelDensity, h/pixelDensity, normToUint16((tX+w)/tWidth), normToUint16((tY+h)/tHeight), c}
 		};
 
 		// Copy vertex data to the glyph and set proper bearing.
 		for (int i = 0; i < 4; i++)
 		{
 			g.vertices[i] = verts[i];
-			g.vertices[i].x += gd->getBearingX();
-			g.vertices[i].y -= gd->getBearingY();
+			g.vertices[i].x += gd->getBearingX() / pixelDensity;
+			g.vertices[i].y -= gd->getBearingY() / pixelDensity;
 		}
 
 		textureX += w + TEXTURE_PADDING;
 		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
 	}
 
-	const auto p = glyphs.insert(std::make_pair(glyph, g));
-	return p.first->second;
+	glyphs[glyph] = g;
+	return glyphs[glyph];
 }
 
 const Font::Glyph &Font::findGlyph(uint32 glyph)
@@ -329,7 +336,7 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	{
 		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
 		{
-			k = r->getKerning(leftglyph, rightglyph);
+			k = floorf(r->getKerning(leftglyph, rightglyph) / pixelDensity + 0.5f);
 			break;
 		}
 	}
@@ -390,7 +397,7 @@ void Font::getCodepointsFromString(const std::vector<ColoredString> &strs, Color
 
 float Font::getHeight() const
 {
-	return (float) height;
+	return (float) floorf(height / pixelDensity + 0.5f);
 }
 
 std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
@@ -945,12 +952,12 @@ void Font::unloadVolatile()
 
 int Font::getAscent() const
 {
-	return rasterizers[0]->getAscent();
+	return floorf(rasterizers[0]->getAscent() / pixelDensity + 0.5f);
 }
 
 int Font::getDescent() const
 {
-	return rasterizers[0]->getDescent();
+	return floorf(rasterizers[0]->getDescent() / pixelDensity + 0.5f);
 }
 
 float Font::getBaseline() const
@@ -1012,6 +1019,11 @@ void Font::setFallbacks(const std::vector<Font *> &fallbacks)
 	// NOTE: this won't invalidate already-rasterized glyphs.
 	for (const Font *f : fallbacks)
 		rasterizers.push_back(f->rasterizers[0]);
+}
+
+float Font::getPixelDensity() const
+{
+	return pixelDensity;
 }
 
 uint32 Font::getTextureCacheID() const

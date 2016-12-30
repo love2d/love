@@ -131,11 +131,13 @@ std::string BMFontLine::getAttributeString(const char *name) const
 } // anonymous namespace
 
 
-BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist)
+BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist, float pixeldensity)
 	: fontSize(0)
 	, unicode(false)
 	, lineHeight(0)
 {
+	this->pixelDensity = pixeldensity;
+
 	const std::string &filename = fontdef->getFilename();
 
 	size_t separatorpos = filename.rfind('/');

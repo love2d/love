@@ -102,5 +102,10 @@ float Rasterizer::getKerning(uint32 /*leftglyph*/, uint32 /*rightglyph*/) const
 	return 0.0f;
 }
 
+float Rasterizer::getPixelDensity() const
+{
+	return pixelDensity;
+}
+
 } // font
 } // love

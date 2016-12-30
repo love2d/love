@@ -33,8 +33,10 @@ namespace opengl
 
 love::Type Video::type("Video", &Drawable::type);
 
-Video::Video(love::video::VideoStream *stream)
+Video::Video(love::video::VideoStream *stream, float pixeldensity)
 	: stream(stream)
+	, width(stream->getWidth() / pixeldensity)
+	, height(stream->getHeight() / pixeldensity)
 	, filter(Texture::getDefaultFilter())
 {
 	filter.mipmap = Texture::FILTER_NONE;
@@ -45,18 +47,17 @@ Video::Video(love::video::VideoStream *stream)
 		vertices[i].color = Color(255, 255, 255, 255);
 
 	// Vertices are ordered for use with triangle strips:
-	// 0----2
-	// |  / |
-	// | /  |
-	// 1----3
+	// 0---2
+	// | / |
+	// 1---3
 	vertices[0].x = 0.0f;
 	vertices[0].y = 0.0f;
 	vertices[1].x = 0.0f;
-	vertices[1].y = (float) stream->getHeight();
-	vertices[2].x = (float) stream->getWidth();
+	vertices[1].y = (float) height;
+	vertices[2].x = (float) width;
 	vertices[2].y = 0.0f;
-	vertices[3].x = (float) stream->getWidth();
-	vertices[3].y = (float) stream->getHeight();
+	vertices[3].x = (float) width;
+	vertices[3].y = (float) height;
 
 	vertices[0].s = 0.0f;
 	vertices[0].t = 0.0f;
@@ -185,10 +186,20 @@ void Video::setSource(love::audio::Source *source)
 
 int Video::getWidth() const
 {
-	return stream->getWidth();
+	return width;
 }
 
 int Video::getHeight() const
+{
+	return height;
+}
+
+int Video::getPixelWidth() const
+{
+	return stream->getWidth();
+}
+
+int Video::getPixelHeight() const
 {
 	return stream->getHeight();
 }

@@ -45,7 +45,14 @@ public:
 
 	static love::Type type;
 
-	Canvas(int width, int height, PixelFormat format = PIXELFORMAT_NORMAL, int msaa = 0);
+    struct Settings
+    {
+        PixelFormat format = PIXELFORMAT_NORMAL;
+        float pixeldensity = 1.0f;
+        int msaa = 0;
+    };
+
+	Canvas(int width, int height, const Settings &settings);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -71,7 +78,7 @@ public:
 
 	inline int getRequestedMSAA() const
 	{
-		return requested_samples;
+		return settings.msaa;
 	}
 
 	inline ptrdiff_t getMSAAHandle() const
@@ -95,16 +102,15 @@ private:
 
 	void drawv(Graphics *gfx, const Matrix4 &t, const Vertex *v) override;
 
+    Settings settings;
+
 	GLuint fbo;
 
 	GLuint texture;
 	GLuint msaa_buffer;
 
-	PixelFormat requested_format;
-
 	GLenum status;
 
-	int requested_samples;
 	int actual_samples;
 
 	size_t texture_memory;

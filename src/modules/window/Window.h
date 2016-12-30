@@ -164,13 +164,20 @@ public:
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;
 
-	virtual void getPixelDimensions(int &w, int &h) const = 0;
+	virtual int getWidth() const = 0;
+	virtual int getHeight() const = 0;
+	virtual int getPixelWidth() const = 0;
+	virtual int getPixelHeight() const = 0;
+
 	// Note: window-space coordinates are not necessarily the same as
 	// density-independent units (which toPixels and fromPixels use.)
 	virtual void windowToPixelCoords(double *x, double *y) const = 0;
 	virtual void pixelToWindowCoords(double *x, double *y) const = 0;
 
-	virtual double getPixelScale() const = 0;
+	virtual void windowToDPICoords(double *x, double *y) const = 0;
+	virtual void DPIToWindowCoords(double *x, double *y) const = 0;
+
+	virtual double getPixelDensity() const = 0;
 
 	virtual double toPixels(double x) const = 0;
 	virtual void toPixels(double wx, double wy, double &px, double &py) const = 0;

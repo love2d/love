@@ -78,7 +78,13 @@ int w_newTrueTypeRasterizer(lua_State *L)
 		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
 			return luaL_error(L, "Invalid TrueType font hinting mode: %s", hintstr);
 
-		luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, hinting); });
+		if (lua_isnoneornil(L, 3))
+			luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, hinting); });
+		else
+		{
+			float pixeldensity = (float) luaL_checknumber(L, 3);
+			luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, pixeldensity, hinting); });
+		}
 	}
 	else
 	{
@@ -98,10 +104,21 @@ int w_newTrueTypeRasterizer(lua_State *L)
 		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
 			return luaL_error(L, "Invalid TrueType font hinting mode: %s", hintstr);
 
-		luax_catchexcept(L,
-			[&]() { t = instance()->newTrueTypeRasterizer(d, size, hinting); },
-			[&](bool) { d->release(); }
-		);
+		if (lua_isnoneornil(L, 4))
+		{
+			luax_catchexcept(L,
+				[&]() { t = instance()->newTrueTypeRasterizer(d, size, hinting); },
+				[&](bool) { d->release(); }
+			);
+		}
+		else
+		{
+			float pixeldensity = (float) luaL_checknumber(L, 4);
+			luax_catchexcept(L,
+				[&]() { t = instance()->newTrueTypeRasterizer(d, size, pixeldensity, hinting); },
+				[&](bool) { d->release(); }
+			);
+		}
 	}
 
 	luax_pushtype(L, t);
@@ -121,6 +138,7 @@ int w_newBMFontRasterizer(lua_State *L)
 
 	filesystem::FileData *d = filesystem::luax_getfiledata(L, 1);
 	std::vector<image::ImageData *> images;
+	float pixeldensity = (float) luaL_optnumber(L, 3, 1.0);
 
 	if (lua_istable(L, 2))
 	{
@@ -138,17 +156,14 @@ int w_newBMFontRasterizer(lua_State *L)
 	}
 	else
 	{
-		for (int i = 2; i <= lua_gettop(L); i++)
-		{
-			convimagedata(L, i);
-			image::ImageData *id = luax_checktype<image::ImageData>(L, i);
-			images.push_back(id);
-			id->retain();
-		}
+		convimagedata(L, 2);
+		image::ImageData *id = luax_checktype<image::ImageData>(L, 2);
+		images.push_back(id);
+		id->retain();
 	}
 
 	luax_catchexcept(L,
-		[&]() { t = instance()->newBMFontRasterizer(d, images); },
+		[&]() { t = instance()->newBMFontRasterizer(d, images, pixeldensity); },
 		[&](bool) { d->release(); for (auto id : images) id->release(); }
 	);
 
@@ -166,8 +181,9 @@ int w_newImageRasterizer(lua_State *L)
 	image::ImageData *d = luax_checktype<image::ImageData>(L, 1);
 	std::string glyphs = luax_checkstring(L, 2);
 	int extraspacing = (int) luaL_optnumber(L, 3, 0);
+	float pixeldensity = (float) luaL_optnumber(L, 4, 1.0);
 
-	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs, extraspacing); });
+	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs, extraspacing, pixeldensity); });
 
 	luax_pushtype(L, t);
 	t->release();

@@ -32,6 +32,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 
 #include <algorithm>
 
@@ -172,6 +173,25 @@ int w_getDimensions(lua_State *L)
 {
 	lua_pushinteger(L, instance()->getWidth());
 	lua_pushinteger(L, instance()->getHeight());
+	return 2;
+}
+
+int w_getPixelWidth(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getPixelWidth());
+	return 1;
+}
+
+int w_getPixelHeight(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getPixelHeight());
+	return 1;
+}
+
+int w_getPixelDimensions(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getPixelWidth());
+	lua_pushinteger(L, instance()->getPixelHeight());
 	return 2;
 }
 
@@ -385,13 +405,6 @@ int w_getStencilTest(lua_State *L)
 	return 2;
 }
 
-static const char *imageFlagName(Image::FlagType flagtype)
-{
-	const char *name = nullptr;
-	Image::getConstant(flagtype, name);
-	return name;
-}
-
 int w_newImage(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
@@ -399,13 +412,7 @@ int w_newImage(lua_State *L)
 	std::vector<love::image::ImageData *> data;
 	std::vector<love::image::CompressedImageData *> cdata;
 
-	Image::Flags flags;
-	if (!lua_isnoneornil(L, 2))
-	{
-		luaL_checktype(L, 2, LUA_TTABLE);
-		flags.mipmaps = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_MIPMAPS), flags.mipmaps);
-		flags.linear = luax_boolflag(L, 2, imageFlagName(Image::FLAG_TYPE_LINEAR), flags.linear);
-	}
+	Image::Settings settings;
 
 	bool releasedata = false;
 
@@ -417,6 +424,20 @@ int w_newImage(lua_State *L)
 			return luaL_error(L, "Cannot load images without the love.image module.");
 
 		love::filesystem::FileData *fdata = love::filesystem::luax_getfiledata(L, 1);
+
+		// Parse a density scale of 2.0 from "image@2x.png".
+		const std::string &fname = fdata->getName();
+		size_t namelen = fname.length();
+		size_t atpos = fname.rfind('@');
+
+		if (atpos != std::string::npos && atpos + 2 < namelen
+			&& (fname[namelen - 1] == 'x' || fname[namelen - 1] == 'X'))
+		{
+			char *end = nullptr;
+			float density = std::strtof(fname.c_str() + atpos + 1, &end);
+			if (end != nullptr && density > 0.0f)
+				settings.pixeldensity = density;
+		}
 
 		if (imagemodule->isCompressed(fdata))
 		{
@@ -441,12 +462,18 @@ int w_newImage(lua_State *L)
 	else
 		data.push_back(love::image::luax_checkimagedata(L, 1));
 
-	if (lua_istable(L, 2))
+	if (!lua_isnoneornil(L, 2))
 	{
-		lua_getfield(L, 2, imageFlagName(Image::FLAG_TYPE_MIPMAPS));
+		luaL_checktype(L, 2, LUA_TTABLE);
+
+		settings.mipmaps = luax_boolflag(L, 2, luax_imageSettingName(Image::SETTING_MIPMAPS), settings.mipmaps);
+		settings.linear = luax_boolflag(L, 2, luax_imageSettingName(Image::SETTING_LINEAR), settings.linear);
+		settings.pixeldensity = (float) luax_numberflag(L, 2, luax_imageSettingName(Image::SETTING_PIXELDENSITY), settings.pixeldensity);
+
+		lua_getfield(L, 2, luax_imageSettingName(Image::SETTING_MIPMAPS));
 
 		// Add all manually specified mipmap images to the array of imagedata.
-		// i.e. flags = {mipmaps = {mip1, mip2, ...}}.
+		// i.e. settings = {mipmaps = {mip1, mip2, ...}}.
 		if (lua_istable(L, -1))
 		{
 			for (size_t i = 1; i <= luax_objlen(L, -1); i++)
@@ -480,9 +507,9 @@ int w_newImage(lua_State *L)
 	luax_catchexcept(L,
 		[&]() {
 			if (!cdata.empty())
-				image = instance()->newImage(cdata, flags);
+				image = instance()->newImage(cdata, settings);
 			else if (!data.empty())
-				image = instance()->newImage(data, flags);
+				image = instance()->newImage(data, settings);
 		},
 		[&](bool) {
 			if (releasedata)
@@ -514,8 +541,20 @@ int w_newQuad(lua_State *L)
 	v.w = luaL_checknumber(L, 3);
 	v.h = luaL_checknumber(L, 4);
 
-	double sw = luaL_checknumber(L, 5);
-	double sh = luaL_checknumber(L, 6);
+	double sw = 0.0f;
+	double sh = 0.0f;
+
+	if (luax_istype(L, 5, Texture::type))
+	{
+		Texture *texture = luax_checktexture(L, 5);
+		sw = texture->getWidth();
+		sh = texture->getHeight();
+	}
+	else
+	{
+		sw = luaL_checknumber(L, 5);
+		sh = luaL_checknumber(L, 6);
+	}
 
 	Quad *quad = instance()->newQuad(v, sw, sh);
 	luax_pushtype(L, quad);
@@ -641,19 +680,31 @@ int w_newCanvas(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	// check if width and height are given. else default to screen dimensions.
-	int width       = (int) luaL_optnumber(L, 1, instance()->getWidth());
-	int height      = (int) luaL_optnumber(L, 2, instance()->getHeight());
-	const char *str = luaL_optstring(L, 3, "normal");
-	int msaa        = (int) luaL_optnumber(L, 4, 0);
+	int width  = (int) luaL_optnumber(L, 1, instance()->getWidth());
+	int height = (int) luaL_optnumber(L, 2, instance()->getHeight());
 
-	PixelFormat format;
-	if (!getConstant(str, format))
-		return luaL_error(L, "Invalid pixel format: %s", str);
+	Canvas::Settings settings;
+
+	// Default to the screen's current pixel density scale.
+	settings.pixeldensity = instance()->getScreenPixelDensity();
+
+	if (!lua_isnoneornil(L, 3))
+	{
+		lua_getfield(L, 3, "format");
+		if (!lua_isnoneornil(L, -1))
+		{
+			const char *str = luaL_checkstring(L, -1);
+			if (!getConstant(str, settings.format))
+				return luaL_error(L, "Invalid Canvas format: %s", str);
+		}
+		lua_pop(L, 1);
+
+		settings.pixeldensity = (float) luax_numberflag(L, 3, "pixeldensity", settings.pixeldensity);
+		settings.msaa = luax_intflag(L, 3, "msaa", settings.msaa);
+	}
 
 	Canvas *canvas = nullptr;
-	luax_catchexcept(L,
-		[&](){ canvas = instance()->newCanvas(width, height, format, msaa); }
-	);
+	luax_catchexcept(L, [&](){ canvas = instance()->newCanvas(width, height, settings); });
 
 	if (canvas == nullptr)
 		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
@@ -1018,9 +1069,11 @@ int w_newVideo(lua_State *L)
 		luax_convobj(L, 1, "video", "newVideoStream");
 
 	auto stream = luax_checktype<love::video::VideoStream>(L, 1);
+	float pixeldensity = (float) luaL_optnumber(L, 2, 1.0);
 	Video *video = nullptr;
 
-	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream); });
+	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream, pixeldensity); });
+
 	luax_pushtype(L, video);
 	video->release();
 	return 1;
@@ -2107,6 +2160,9 @@ static const luaL_Reg functions[] =
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },
+	{ "getPixelWidth", w_getPixelWidth },
+	{ "getPixelHeight", w_getPixelHeight },
+	{ "getPixelDimensions", w_getPixelDimensions },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },

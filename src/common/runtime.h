@@ -161,6 +161,7 @@ void luax_pushstring(lua_State *L, const std::string &str);
 
 bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
 int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
+double luax_numberflag(lua_State *L, int table_index, const char *key, double defaultValue);
 
 /**
  * Convert the value at the specified index to an Lua number, and then

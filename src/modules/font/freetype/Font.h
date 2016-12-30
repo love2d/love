@@ -44,11 +44,12 @@ public:
 	virtual ~Font();
 
 	// Implements Font
-	Rasterizer *newRasterizer(love::filesystem::FileData *data);
-	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting);
+	Rasterizer *newRasterizer(love::filesystem::FileData *data) override;
+	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) override;
+	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, float pixeldensity, TrueTypeRasterizer::Hinting hinting) override;
 
 	// Implement Module
-	const char *getName() const;
+	const char *getName() const override;
 
 private:
 

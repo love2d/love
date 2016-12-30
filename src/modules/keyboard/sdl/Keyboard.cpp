@@ -124,8 +124,8 @@ void Keyboard::setTextInput(bool enable, double x, double y, double w, double h)
 	auto window = Module::getInstance<window::Window>(M_WINDOW);
 	if (window)
 	{
-		window->pixelToWindowCoords(&x, &y);
-		window->pixelToWindowCoords(&w, &h);
+		window->DPIToWindowCoords(&x, &y);
+		window->DPIToWindowCoords(&w, &h);
 	}
 
 	SDL_Rect rect = {(int) x, (int) y, (int) w, (int) h};

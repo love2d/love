@@ -100,7 +100,7 @@ public:
 		int vertexcount;
 	};
 
-	Font(love::font::Rasterizer *r, const Texture::Filter &filter = Texture::getDefaultFilter());
+	Font(love::font::Rasterizer *r, const Texture::Filter &filter);
 
 	virtual ~Font();
 
@@ -179,6 +179,8 @@ public:
 
 	void setFallbacks(const std::vector<Font *> &fallbacks);
 
+	float getPixelDensity() const;
+
 	uint32 getTextureCacheID() const;
 
 	static bool getConstant(const char *in, AlignMode &out);
@@ -202,7 +204,7 @@ private:
 	};
 
 	TextureSize getNextTextureSize() const;
-	void createTexture();
+	bool createTexture();
 	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
@@ -229,6 +231,8 @@ private:
 	PixelFormat pixelFormat;
 
 	Texture::Filter filter;
+
+	float pixelDensity;
 
 	int textureX, textureY;
 	int rowHeight;

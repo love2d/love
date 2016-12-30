@@ -45,8 +45,15 @@ FileData::FileData(uint64 size, const std::string &filename)
 		throw love::Exception("Out of memory.");
 	}
 
-	if (filename.rfind('.') != std::string::npos)
-		extension = filename.substr(filename.rfind('.')+1);
+	size_t dotpos = filename.rfind('.');
+
+	if (dotpos != std::string::npos)
+	{
+		extension = filename.substr(dotpos + 1);
+		name = filename.substr(0, dotpos);
+	}
+	else
+		name = filename;
 }
 
 FileData::~FileData()
@@ -56,7 +63,7 @@ FileData::~FileData()
 
 void *FileData::getData() const
 {
-	return (void *)data;
+	return data;
 }
 
 size_t FileData::getSize() const
@@ -73,6 +80,11 @@ const std::string &FileData::getFilename() const
 const std::string &FileData::getExtension() const
 {
 	return extension;
+}
+
+const std::string &FileData::getName() const
+{
+	return name;
 }
 
 } // filesystem

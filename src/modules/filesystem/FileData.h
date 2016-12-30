@@ -49,6 +49,7 @@ public:
 
 	const std::string &getFilename() const;
 	const std::string &getExtension() const;
+	const std::string &getName() const;
 
 private:
 
@@ -63,6 +64,9 @@ private:
 
 	// The extension (without dot). Used to identify file type.
 	std::string extension;
+
+	// The file name without the extension (and without the dot).
+	std::string name;
 
 }; // FileData
 

@@ -44,26 +44,30 @@ namespace sdl
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
-static void windowToPixelCoords(double *x, double *y)
+static void windowToDPICoords(double *x, double *y)
 {
 	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
-		window->windowToPixelCoords(x, y);
+		window->windowToDPICoords(x, y);
 }
 
 #ifndef LOVE_MACOSX
-static void normalizedToPixelCoords(double *x, double *y)
+static void normalizedToDPICoords(double *x, double *y)
 {
-	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
-	int w = 1, h = 1;
+	double w = 1.0, h = 1.0;
 
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
-		window->getPixelDimensions(w, h);
+	{
+		w = window->getWidth();
+		h = window->getHeight();
+		window->windowToDPICoords(&w, &h);
+	}
 
 	if (x)
-		*x = ((*x) * (double) w);
+		*x = ((*x) * w);
 	if (y)
-		*y = ((*y) * (double) h);
+		*y = ((*y) * h);
 }
 #endif
 
@@ -249,8 +253,8 @@ Message *Event::convert(const SDL_Event &e)
 			double y = (double) e.motion.y;
 			double xrel = (double) e.motion.xrel;
 			double yrel = (double) e.motion.yrel;
-			windowToPixelCoords(&x, &y);
-			windowToPixelCoords(&xrel, &yrel);
+			windowToDPICoords(&x, &y);
+			windowToDPICoords(&xrel, &yrel);
 			vargs.emplace_back(x);
 			vargs.emplace_back(y);
 			vargs.emplace_back(xrel);
@@ -276,7 +280,7 @@ Message *Event::convert(const SDL_Event &e)
 
 			double px = (double) e.button.x;
 			double py = (double) e.button.y;
-			windowToPixelCoords(&px, &py);
+			windowToDPICoords(&px, &py);
 			vargs.emplace_back(px);
 			vargs.emplace_back(py);
 			vargs.emplace_back((double) button);
@@ -313,15 +317,15 @@ Message *Event::convert(const SDL_Event &e)
 		if (touchNormalizationBug || fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
 		{
 			touchNormalizationBug = true;
-			windowToPixelCoords(&touchinfo.x, &touchinfo.y);
-			windowToPixelCoords(&touchinfo.dx, &touchinfo.dy);
+			windowToDPICoords(&touchinfo.x, &touchinfo.y);
+			windowToDPICoords(&touchinfo.dx, &touchinfo.dy);
 		}
 		else
 #endif
 		{
-			// SDL's coords are normalized to [0, 1], but we want them in pixels.
-			normalizedToPixelCoords(&touchinfo.x, &touchinfo.y);
-			normalizedToPixelCoords(&touchinfo.dx, &touchinfo.dy);
+			// SDL's coords are normalized to [0, 1], but we want screen coords.
+			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
+			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
 		}
 
 		// We need to update the love.touch.sdl internal state from here.
@@ -536,6 +540,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 	vargs.reserve(4);
 
 	window::Window *win = nullptr;
+	graphics::Graphics *gfx = nullptr;
 
 	if (e.type != SDL_WINDOWEVENT)
 		return nullptr;
@@ -559,17 +564,29 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		break;
 	case SDL_WINDOWEVENT_RESIZED:
 		{
-			int px_w = e.window.data1;
-			int px_h = e.window.data2;
+			double width  = e.window.data1;
+			double height = e.window.data2;
 
-			SDL_Window *sdlwin = SDL_GetWindowFromID(e.window.windowID);
-			if (sdlwin)
-				SDL_GL_GetDrawableSize(sdlwin, &px_w, &px_h);
+			gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+			win = Module::getInstance<window::Window>(Module::M_WINDOW);
 
-			vargs.emplace_back((double) px_w);
-			vargs.emplace_back((double) px_h);
-			vargs.emplace_back((double) e.window.data1);
-			vargs.emplace_back((double) e.window.data2);
+			// WINDOWEVENT_SIZE_CHANGED will always occur before RESIZED.
+			// The size values in the Window aren't necessarily the same as the
+			// graphics size, which is what we want to output.
+			if (gfx)
+			{
+				width  = gfx->getWidth();
+				height = gfx->getHeight();
+			}
+			else if (win)
+			{
+				width  = win->getWidth();
+				height = win->getHeight();
+				windowToDPICoords(&width, &height);
+			}
+
+			vargs.emplace_back(width);
+			vargs.emplace_back(height);
 			msg = new Message("resize", vargs);
 		}
 		break;

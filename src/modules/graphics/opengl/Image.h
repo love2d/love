@@ -54,17 +54,19 @@ public:
 
 	static love::Type type;
 
-	enum FlagType
+	enum SettingType
 	{
-		FLAG_TYPE_MIPMAPS,
-		FLAG_TYPE_LINEAR,
-		FLAG_TYPE_MAX_ENUM
+		SETTING_MIPMAPS,
+		SETTING_LINEAR,
+		SETTING_PIXELDENSITY,
+		SETTING_MAX_ENUM
 	};
 
-	struct Flags
+	struct Settings
 	{
 		bool mipmaps = false;
 		bool linear = false;
+		float pixeldensity = 1.0f;
 	};
 
 	/**
@@ -75,14 +77,14 @@ public:
 	 * array is a mipmap level. If more than the base level is present, all
 	 * mip levels must be present.
 	 **/
-	Image(const std::vector<love::image::ImageData *> &data, const Flags &flags);
+	Image(const std::vector<love::image::ImageData *> &data, const Settings &settings);
 
 	/**
 	 * Creates a new Image with compressed image data.
 	 *
 	 * @param cdata The compressed data from which to load the image.
 	 **/
-	Image(const std::vector<love::image::CompressedImageData *> &cdata, const Flags &flags);
+	Image(const std::vector<love::image::CompressedImageData *> &cdata, const Settings &settings);
 
 	virtual ~Image();
 
@@ -112,7 +114,7 @@ public:
 	 **/
 	bool refresh(int xoffset, int yoffset, int w, int h);
 
-	const Flags &getFlags() const;
+	const Settings &getFlags() const;
 
 	static void setDefaultMipmapSharpness(float sharpness);
 	static float getDefaultMipmapSharpness();
@@ -122,8 +124,8 @@ public:
 	static bool isFormatSupported(PixelFormat pixelformat);
 	static bool hasSRGBSupport();
 
-	static bool getConstant(const char *in, FlagType &out);
-	static bool getConstant(FlagType in, const char *&out);
+	static bool getConstant(const char *in, SettingType &out);
+	static bool getConstant(SettingType in, const char *&out);
 
 	static int imageCount;
 
@@ -154,8 +156,8 @@ private:
 	// Whether this Image is using a compressed texture.
 	bool compressed;
 
-	// The flags used to initialize this Image.
-	Flags flags;
+	// The settings used to initialize this Image.
+	Settings settings;
 
 	bool sRGB;
 
@@ -170,8 +172,8 @@ private:
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
 
-	static StringMap<FlagType, FLAG_TYPE_MAX_ENUM>::Entry flagNameEntries[];
-	static StringMap<FlagType, FLAG_TYPE_MAX_ENUM> flagNames;
+	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
+	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;
 
 }; // Image
 

@@ -341,16 +341,20 @@ end
 
 love.graphics._setDefaultShaderCode(defaults, defaults_gammacorrect)
 
-function love.graphics.newVideo(file, loadaudio)
-	local video = love.graphics._newVideo(file)
+
+function love.graphics.newVideo(file, settings)
+	settings = settings == nil and {} or settings
+	if type(settings) ~= "table" then error("bad argument #2 to newVideo (expected table)", 2) end
+
+	local video = love.graphics._newVideo(file, settings.pixeldensity)
 	local source, success
 
-	if loadaudio ~= false and love.audio then
+	if settings.audio ~= false and love.audio then
 		success, source = pcall(love.audio.newSource, video:getStream():getFilename(), "stream")
 	end
 	if success then
 		video:setSource(source)
-	elseif loadaudio == true then
+	elseif settings.audio == true then
 		if love.audio then
 			error("Video had no audio track", 2)
 		else

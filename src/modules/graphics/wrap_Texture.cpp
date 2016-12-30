@@ -52,6 +52,35 @@ int w_Texture_getDimensions(lua_State *L)
 	return 2;
 }
 
+int w_Texture_getPixelWidth(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getPixelWidth());
+	return 1;
+}
+
+int w_Texture_getPixelHeight(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getPixelHeight());
+	return 1;
+}
+
+int w_Texture_getPixelDimensions(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getPixelWidth());
+	lua_pushnumber(L, t->getPixelHeight());
+	return 2;
+}
+
+int w_Texture_getPixelDensity(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getPixelDensity());
+	return 1;
+}
+
 int w_Texture_setFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
@@ -130,6 +159,10 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getWidth", w_Texture_getWidth },
 	{ "getHeight", w_Texture_getHeight },
 	{ "getDimensions", w_Texture_getDimensions },
+	{ "getPixelWidth", w_Texture_getPixelWidth },
+	{ "getPixelHeight", w_Texture_getPixelHeight },
+	{ "getPixelDimensions", w_Texture_getPixelDimensions },
+	{ "getPixelDensity", w_Texture_getPixelDensity },
 	{ "setFilter", w_Texture_setFilter },
 	{ "getFilter", w_Texture_getFilter },
 	{ "setWrap", w_Texture_setWrap },

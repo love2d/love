@@ -39,7 +39,7 @@ namespace font
 class ImageRasterizer : public Rasterizer
 {
 public:
-	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs, int extraspacing);
+	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs, int extraspacing, float pixeldensity);
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
