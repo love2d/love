@@ -195,6 +195,12 @@ int w_getPixelDimensions(lua_State *L)
 	return 2;
 }
 
+int w_getPixelDensity(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getScreenPixelDensity());
+	return 1;
+}
+
 int w_setCanvas(lua_State *L)
 {
 	// Disable stencil writes.
@@ -2163,6 +2169,7 @@ static const luaL_Reg functions[] =
 	{ "getPixelWidth", w_getPixelWidth },
 	{ "getPixelHeight", w_getPixelHeight },
 	{ "getPixelDimensions", w_getPixelDimensions },
+	{ "getPixelDensity", w_getPixelDimensions },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },
