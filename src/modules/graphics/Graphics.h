@@ -25,10 +25,12 @@
 #include "common/config.h"
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "common/Vector.h"
 #include "StreamBuffer.h"
 #include "vertex.h"
 #include "Color.h"
 #include "Texture.h"
+#include "math/Transform.h"
 
 // C++
 #include <string>
@@ -333,6 +335,16 @@ public:
 	virtual LineStyle getLineStyle() const = 0;
 	virtual LineJoin getLineJoin() const = 0;
 
+	void draw(Drawable *drawable, const Matrix4 &m);
+	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
+
+	/**
+	 * Draws a point at (x,y).
+	 * @param x Point along x-axis.
+	 * @param y Point along y-axis.
+	 **/
+	void points(const float *coords, const Colorf *colors, size_t numpoints);
+
 	/**
 	 * Draws a series of lines connecting the given vertices.
 	 * @param coords Vertex components (x1, y1, ..., xn, yn). If x1,y1 == xn,yn the line will be drawn closed.
@@ -415,6 +427,18 @@ public:
 
 	const Matrix4 &getTransform() const;
 	const Matrix4 &getProjection() const;
+
+	void rotate(float r);
+	void scale(float x, float y = 1.0f);
+	void translate(float x, float y);
+	void shear(float kx, float ky);
+	void origin();
+
+	void applyTransform(love::math::Transform *transform);
+	void replaceTransform(love::math::Transform *transform);
+
+	Vector transformPoint(Vector point);
+	Vector inverseTransformPoint(Vector point);
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)

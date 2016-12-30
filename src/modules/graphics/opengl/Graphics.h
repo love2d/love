@@ -38,8 +38,6 @@
 
 #include "video/VideoStream.h"
 
-#include "math/Transform.h"
-
 #include "graphics/Font.h"
 #include "Image.h"
 #include "graphics/Quad.h"
@@ -308,9 +306,6 @@ public:
 	 **/
 	bool isWireframe() const;
 
-	void draw(Drawable *drawable, const Matrix4 &m);
-	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
-
 	/**
 	 * Draws text at the specified coordinates
 	 **/
@@ -320,13 +315,6 @@ public:
 	 * Draws formatted text on screen at the specified coordinates.
 	 **/
 	void printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
-
-	/**
-	 * Draws a point at (x,y).
-	 * @param x Point along x-axis.
-	 * @param y Point along y-axis.
-	 **/
-	void points(const float *coords, const Colorf *colors, size_t numpoints);
 
 	void captureScreenshot(const ScreenshotInfo &info);
 
@@ -351,18 +339,6 @@ public:
 
 	void push(StackType type = STACK_TRANSFORM);
 	void pop();
-
-	void rotate(float r);
-	void scale(float x, float y = 1.0f);
-	void translate(float x, float y);
-	void shear(float kx, float ky);
-	void origin();
-
-	void applyTransform(love::math::Transform *transform);
-	void replaceTransform(love::math::Transform *transform);
-
-	Vector transformPoint(Vector point);
-	Vector inverseTransformPoint(Vector point);
 
 private:
 

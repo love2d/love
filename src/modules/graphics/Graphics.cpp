@@ -205,6 +205,67 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	return d;
 }
 
+void Graphics::draw(Drawable *drawable, const Matrix4 &m)
+{
+	drawable->draw(this, m);
+}
+
+void Graphics::draw(Texture *texture, Quad *quad, const Matrix4 &m)
+{
+	texture->drawq(this, quad, m);
+}
+
+/**
+ * Primitives
+ **/
+
+void Graphics::points(const float *coords, const Colorf *colors, size_t numpoints)
+{
+	StreamDrawRequest req;
+	req.primitiveMode = vertex::PrimitiveMode::POINTS;
+	req.formats[0] = vertex::CommonFormat::XYf;
+	if (colors)
+		req.formats[1] = vertex::CommonFormat::RGBAub;
+	req.vertexCount = (int) numpoints;
+
+	StreamVertexData data = requestStreamDraw(req);
+
+	const Matrix4 &t = getTransform();
+	t.transform((Vector *) data.stream[0], (const Vector *) coords, req.vertexCount);
+
+	Color *colordata = (Color *) data.stream[1];
+
+	if (colors)
+	{
+		Colorf nc = getColor();
+		gammaCorrectColor(nc);
+
+		if (isGammaCorrect())
+		{
+			for (int i = 0; i < req.vertexCount; i++)
+			{
+				Colorf ci = colors[i];
+				gammaCorrectColor(ci);
+				ci *= nc;
+				unGammaCorrectColor(ci);
+				colordata[i] = toColor(ci);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < req.vertexCount; i++)
+				colordata[i] = toColor(nc * colors[i]);
+		}
+	}
+	else
+	{
+		Color c = toColor(getColor());
+
+		for (int i = 0; i < req.vertexCount; i++)
+			colordata[i] = c;
+	}
+}
+
 int Graphics::calculateEllipsePoints(float rx, float ry) const
 {
 	int points = (int) sqrtf(((rx + ry) / 2.0f) * 20.0f * (float) pixelScaleStack.back());
@@ -486,6 +547,69 @@ void Graphics::pushIdentityTransform()
 void Graphics::popTransform()
 {
 	transformStack.pop_back();
+}
+
+void Graphics::rotate(float r)
+{
+	transformStack.back().rotate(r);
+}
+
+void Graphics::scale(float x, float y)
+{
+	transformStack.back().scale(x, y);
+	pixelScaleStack.back() *= (fabs(x) + fabs(y)) / 2.0;
+}
+
+void Graphics::translate(float x, float y)
+{
+	transformStack.back().translate(x, y);
+}
+
+void Graphics::shear(float kx, float ky)
+{
+	transformStack.back().shear(kx, ky);
+}
+
+void Graphics::origin()
+{
+	transformStack.back().setIdentity();
+	pixelScaleStack.back() = 1;
+}
+
+void Graphics::applyTransform(love::math::Transform *transform)
+{
+	Matrix4 &m = transformStack.back();
+	m *= transform->getMatrix();
+
+	float sx, sy;
+	m.getApproximateScale(sx, sy);
+	pixelScaleStack.back() = (sx + sy) / 2.0;
+}
+
+void Graphics::replaceTransform(love::math::Transform *transform)
+{
+	const Matrix4 &m = transform->getMatrix();
+	transformStack.back() = m;
+
+	float sx, sy;
+	m.getApproximateScale(sx, sy);
+	pixelScaleStack.back() = (sx + sy) / 2.0;
+}
+
+Vector Graphics::transformPoint(Vector point)
+{
+	Vector p;
+	transformStack.back().transform(&p, &point, 1);
+	return p;
+}
+
+Vector Graphics::inverseTransformPoint(Vector point)
+{
+	Vector p;
+	// TODO: We should probably cache the inverse transform so we don't have to
+	// re-calculate it every time this is called.
+	transformStack.back().inverse().transform(&p, &point, 1);
+	return p;
 }
 
 bool Graphics::getConstant(const char *in, DrawMode &out)
