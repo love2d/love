@@ -44,7 +44,7 @@ namespace opengl
 
 love::Type SpriteBatch::type("SpriteBatch", &Drawable::type);
 
-SpriteBatch::SpriteBatch(Texture *texture, int size, Mesh::Usage usage)
+SpriteBatch::SpriteBatch(Texture *texture, int size, vertex::Usage usage)
 	: texture(texture)
 	, size(size)
 	, next(0)
@@ -57,10 +57,9 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, Mesh::Usage usage)
 	if (size <= 0)
 		throw love::Exception("Invalid SpriteBatch size.");
 
-	GLenum gl_usage = Mesh::getGLBufferUsage(usage);
 	size_t vertex_size = sizeof(Vertex) * 4 * size;
 
-	array_buf = new GLBuffer(vertex_size, nullptr, BUFFER_VERTEX, gl_usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	array_buf = new GLBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 }
 
 SpriteBatch::~SpriteBatch()

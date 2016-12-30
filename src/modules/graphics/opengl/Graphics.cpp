@@ -55,14 +55,6 @@ namespace opengl
 
 Graphics::Graphics()
 	: quadIndices(nullptr)
-	, width(0)
-	, height(0)
-	, pixelWidth(0)
-	, pixelHeight(0)
-	, created(false)
-	, active(true)
-	, writingToStencil(false)
-	, canvasSwitchCount(0)
 {
 	gl = OpenGL();
 
@@ -88,21 +80,6 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	// We do this manually so the graphics objects are released before the window.
-	states.clear();
-	defaultFont.set(nullptr);
-
-	if (Shader::defaultShader)
-	{
-		Shader::defaultShader->release();
-		Shader::defaultShader = nullptr;
-	}
-	if (Shader::defaultVideoShader)
-	{
-		Shader::defaultVideoShader->release();
-		Shader::defaultVideoShader = nullptr;
-	}
-
 	if (quadIndices)
 		delete quadIndices;
 }
@@ -112,133 +89,93 @@ const char *Graphics::getName() const
 	return "love.graphics.opengl";
 }
 
-void Graphics::restoreState(const DisplayState &s)
+Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
 {
-	setColor(s.color);
-	setBackgroundColor(s.backgroundColor);
-
-	setBlendMode(s.blendMode, s.blendAlphaMode);
-
-	setLineWidth(s.lineWidth);
-	setLineStyle(s.lineStyle);
-	setLineJoin(s.lineJoin);
-
-	setPointSize(s.pointSize);
-
-	if (s.scissor)
-		setScissor(s.scissorRect);
-	else
-		setScissor();
-
-	setStencilTest(s.stencilCompare, s.stencilTestValue);
-
-	setFont(s.font.get());
-	setShader(s.shader.get());
-	setCanvas(s.canvases);
-
-	setColorMask(s.colorMask);
-	setWireframe(s.wireframe);
-
-	setDefaultFilter(s.defaultFilter);
-	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+	return new Image(data, settings);
 }
 
-void Graphics::restoreStateChecked(const DisplayState &s)
+Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings)
 {
-	const DisplayState &cur = states.back();
-
-	if (s.color != cur.color)
-		setColor(s.color);
-
-	setBackgroundColor(s.backgroundColor);
-
-	if (s.blendMode != cur.blendMode || s.blendAlphaMode != cur.blendAlphaMode)
-		setBlendMode(s.blendMode, s.blendAlphaMode);
-
-	// These are just simple assignments.
-	setLineWidth(s.lineWidth);
-	setLineStyle(s.lineStyle);
-	setLineJoin(s.lineJoin);
-
-	if (s.pointSize != cur.pointSize)
-		setPointSize(s.pointSize);
-
-	if (s.scissor != cur.scissor || (s.scissor && !(s.scissorRect == cur.scissorRect)))
-	{
-		if (s.scissor)
-			setScissor(s.scissorRect);
-		else
-			setScissor();
-	}
-
-	if (s.stencilCompare != cur.stencilCompare || s.stencilTestValue != cur.stencilTestValue)
-		setStencilTest(s.stencilCompare, s.stencilTestValue);
-
-	setFont(s.font.get());
-	setShader(s.shader.get());
-
-	bool canvaseschanged = s.canvases.size() != cur.canvases.size();
-	if (!canvaseschanged)
-	{
-		for (size_t i = 0; i < s.canvases.size() && i < cur.canvases.size(); i++)
-		{
-			if (s.canvases[i].get() != cur.canvases[i].get())
-			{
-				canvaseschanged = true;
-				break;
-			}
-		}
-	}
-
-	if (canvaseschanged)
-		setCanvas(s.canvases);
-
-	if (s.colorMask != cur.colorMask)
-		setColorMask(s.colorMask);
-
-	if (s.wireframe != cur.wireframe)
-		setWireframe(s.wireframe);
-
-	setDefaultFilter(s.defaultFilter);
-	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+	return new Image(cdata, settings);
 }
 
-void Graphics::checkSetDefaultFont()
+graphics::Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter)
 {
-	// We don't create or set the default Font if an existing font is in use.
-	if (states.back().font.get() != nullptr)
-		return;
-
-	// Create a new default font if we don't have one yet.
-	if (!defaultFont.get())
-	{
-		auto fontmodule = Module::getInstance<font::Font>(M_FONT);
-		if (!fontmodule)
-			throw love::Exception("Font module has not been loaded.");
-
-		auto hinting = font::TrueTypeRasterizer::HINTING_NORMAL;
-		StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(12, hinting), Acquire::NORETAIN);
-
-		defaultFont.set(newFont(r.get()), Acquire::NORETAIN);
-	}
-
-	states.back().font.set(defaultFont.get());
+	return new Font(r, filter);
 }
 
-double Graphics::getCurrentPixelDensity() const
+SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
 {
-	if (states.back().canvases.size() > 0)
-	{
-		Canvas *c = states.back().canvases[0];
-		return (double) c->getPixelHeight() / (double) c->getHeight();
-	}
-
-	return getScreenPixelDensity();
+	return new SpriteBatch(texture, size, usage);
 }
 
-double Graphics::getScreenPixelDensity() const
+ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 {
-	return (double) getPixelHeight() / (double) getHeight();
+	return new ParticleSystem(texture, size);
+}
+
+love::graphics::Canvas *Graphics::newCanvas(int width, int height, const Canvas::Settings &settings)
+{
+	if (!Canvas::isSupported())
+		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
+
+	if (!Canvas::isFormatSupported(settings.format))
+	{
+		const char *fstr = "rgba8";
+		love::getConstant(Canvas::getSizedFormat(settings.format), fstr);
+		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
+	}
+
+	if (width > gl.getMaxTextureSize())
+		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
+	else if (height > gl.getMaxTextureSize())
+		throw Exception("Cannot create canvas: height of %d pixels is too large for this system.", height);
+
+	Canvas *canvas = new Canvas(width, height, settings);
+	GLenum err = canvas->getStatus();
+
+	// everything ok, return canvas (early out)
+	if (err == GL_FRAMEBUFFER_COMPLETE)
+		return canvas;
+
+	canvas->release();
+	throw love::Exception("Cannot create Canvas: %s", OpenGL::framebufferStatusString(err));
+	return nullptr; // never reached
+}
+
+love::graphics::Shader *Graphics::newShader(const Shader::ShaderSource &source)
+{
+	return new Shader(source);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage)
+{
+	return new Mesh(vertices, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
+{
+	return new Mesh(vertexcount, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
+{
+	return new Mesh(vertexformat, vertexcount, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage)
+{
+	return new Mesh(vertexformat, data, datasize, drawmode, usage);
+}
+
+Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
+{
+	return new Text(font, text);
+}
+
+Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
+{
+	return new Video(stream, pixeldensity);
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
@@ -352,14 +289,14 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight)
 	if (!Shader::defaultShader)
 	{
 		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
-		Shader::defaultShader = newShader(Shader::defaultCode[renderer][gammacorrect]);
+		Shader::defaultShader = newShader(defaultShaderCode[renderer][gammacorrect]);
 	}
 
 	// and a default video shader.
 	if (!Shader::defaultVideoShader)
 	{
 		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
-		Shader::defaultVideoShader = newShader(Shader::defaultVideoCode[renderer][gammacorrect]);
+		Shader::defaultVideoShader = newShader(defaultVideoShaderCode[renderer][gammacorrect]);
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
@@ -405,14 +342,6 @@ void Graphics::setActive(bool enable)
 		glFinish();
 
 	active = enable;
-}
-
-bool Graphics::isActive() const
-{
-	// The graphics module is only completely 'active' if there's a window, a
-	// context, and the active variable is set.
-	auto window = getInstance<love::window::Window>(M_WINDOW);
-	return active && isCreated() && window != nullptr && window->isOpen();
 }
 
 void Graphics::flushStreamDraws()
@@ -584,24 +513,7 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::reset()
-{
-	DisplayState s;
-	stopDrawToStencilBuffer();
-	restoreState(s);
-	origin();
-}
-
-void Graphics::setCanvas(Canvas *canvas)
-{
-	if (canvas == nullptr)
-		return setCanvas();
-
-	std::vector<Canvas *> canvases = {canvas};
-	setCanvas(canvases);
-}
-
-void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
+void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
 {
 	DisplayState &state = states.back();
 	int ncanvases = (int) canvases.size();
@@ -629,7 +541,7 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 	if (ncanvases > gl.getMaxRenderTargets())
 		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
 
-	Canvas *firstcanvas = canvases[0];
+	love::graphics::Canvas *firstcanvas = canvases[0];
 
 	bool multiformatsupported = Canvas::isMultiFormatMultiCanvasSupported();
 	PixelFormat firstformat = firstcanvas->getPixelFormat();
@@ -640,7 +552,7 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 
 	for (int i = 1; i < ncanvases; i++)
 	{
-		Canvas *c = canvases[i];
+		love::graphics::Canvas *c = canvases[i];
 
 		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
 			throw love::Exception("All canvases in must have the same pixel dimensions.");
@@ -681,26 +593,15 @@ void Graphics::setCanvas(const std::vector<Canvas *> &canvases)
 			gl.setFramebufferSRGB(false);
 	}
 
-	std::vector<StrongRef<Canvas>> canvasrefs;
+	std::vector<StrongRef<love::graphics::Canvas>> canvasrefs;
 	canvasrefs.reserve(canvases.size());
 
-	for (Canvas *c : canvases)
+	for (love::graphics::Canvas *c : canvases)
 		canvasrefs.push_back(c);
 
 	std::swap(state.canvases, canvasrefs);
 
 	canvasSwitchCount++;
-}
-
-void Graphics::setCanvas(const std::vector<StrongRef<Canvas>> &canvases)
-{
-	std::vector<Canvas *> canvaslist;
-	canvaslist.reserve(canvases.size());
-
-	for (const StrongRef<Canvas> &c : canvases)
-		canvaslist.push_back(c.get());
-
-	return setCanvas(canvaslist);
 }
 
 void Graphics::setCanvas()
@@ -740,17 +641,6 @@ void Graphics::setCanvas()
 	canvasSwitchCount++;
 }
 
-std::vector<Canvas *> Graphics::getCanvas() const
-{
-	std::vector<Canvas *> canvases;
-	canvases.reserve(states.back().canvases.size());
-
-	for (const StrongRef<Canvas> &c : states.back().canvases)
-		canvases.push_back(c.get());
-
-	return canvases;
-}
-
 void Graphics::endPass()
 {
 	flushStreamDraws();
@@ -768,9 +658,11 @@ void Graphics::endPass()
 
 		for (int i = 0; i < (int) canvases.size(); i++)
 		{
+			Canvas *c = (Canvas *) canvases[i].get();
+
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
 
-			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, canvases[i]->getFBO());
+			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, c->getFBO());
 
 			if (GLAD_APPLE_framebuffer_multisample)
 				glResolveMultisampleFramebufferAPPLE();
@@ -793,7 +685,7 @@ void Graphics::clear(Colorf c)
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
 		gl.useProgram(0);
-		gl.useProgram(Shader::current->getProgram());
+		gl.useProgram(((Shader *)Shader::current)->getProgram());
 	}
 }
 
@@ -859,24 +751,8 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
 		gl.useProgram(0);
-		gl.useProgram(Shader::current->getProgram());
+		gl.useProgram(((Shader *)Shader::current)->getProgram());
 	}
-}
-
-bool Graphics::isCanvasActive() const
-{
-	return !states.back().canvases.empty();
-}
-
-bool Graphics::isCanvasActive(Canvas *canvas) const
-{
-	for (const auto &c : states.back().canvases)
-	{
-		if (c.get() == canvas)
-			return true;
-	}
-
-	return false;
 }
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
@@ -935,11 +811,11 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::bindCachedFBO(const std::vector<Canvas *> &canvases)
+void Graphics::bindCachedFBO(const std::vector<love::graphics::Canvas *> &canvases)
 {
 	int ncanvases = (int) canvases.size();
 
-	uint32 hash = XXH32(&canvases[0], sizeof(Canvas *) * ncanvases, 0);
+	uint32 hash = XXH32(&canvases[0], sizeof(love::graphics::Canvas *) * ncanvases, 0);
 
 	GLuint fbo = framebufferObjects[hash];
 
@@ -1075,11 +951,6 @@ GLuint Graphics::attachCachedStencilBuffer(int w, int h, int samples)
 	return rb.renderbuffer;
 }
 
-void Graphics::captureScreenshot(const ScreenshotInfo &info)
-{
-	pendingScreenshotCallbacks.push_back(info);
-}
-
 void Graphics::present(void *screenshotCallbackData)
 {
 	if (!isActive())
@@ -1200,31 +1071,6 @@ void Graphics::present(void *screenshotCallbackData)
 	canvasSwitchCount = 0;
 }
 
-int Graphics::getWidth() const
-{
-	return width;
-}
-
-int Graphics::getHeight() const
-{
-	return height;
-}
-
-int Graphics::getPixelWidth() const
-{
-	return pixelWidth;
-}
-
-int Graphics::getPixelHeight() const
-{
-	return pixelHeight;
-}
-
-bool Graphics::isCreated() const
-{
-	return created;
-}
-
 void Graphics::setScissor(const Rect &rect)
 {
 	flushStreamDraws();
@@ -1248,40 +1094,11 @@ void Graphics::setScissor(const Rect &rect)
 	state.scissorRect = rect;
 }
 
-void Graphics::intersectScissor(const Rect &rect)
-{
-	Rect currect = states.back().scissorRect;
-
-	if (!states.back().scissor)
-	{
-		currect.x = 0;
-		currect.y = 0;
-		currect.w = std::numeric_limits<int>::max();
-		currect.h = std::numeric_limits<int>::max();
-	}
-
-	int x1 = std::max(currect.x, rect.x);
-	int y1 = std::max(currect.y, rect.y);
-
-	int x2 = std::min(currect.x + currect.w, rect.x + rect.w);
-	int y2 = std::min(currect.y + currect.h, rect.y + rect.h);
-
-	Rect newrect = {x1, y1, std::max(0, x2 - x1), std::max(0, y2 - y1)};
-	setScissor(newrect);
-}
-
 void Graphics::setScissor()
 {
 	flushStreamDraws();
 	states.back().scissor = false;
 	glDisable(GL_SCISSOR_TEST);
-}
-
-bool Graphics::getScissor(Rect &rect) const
-{
-	const DisplayState &state = states.back();
-	rect = state.scissorRect;
-	return state.scissor;
 }
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
@@ -1405,115 +1222,9 @@ void Graphics::setStencilTest()
 	setStencilTest(COMPARE_ALWAYS, 0);
 }
 
-void Graphics::getStencilTest(CompareMode &compare, int &value)
-{
-	const DisplayState &state = states.back();
-	compare = state.stencilCompare;
-	value = state.stencilTestValue;
-}
-
 void Graphics::clearStencil()
 {
 	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
-{
-	return new Image(data, settings);
-}
-
-Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings)
-{
-	return new Image(cdata, settings);
-}
-
-Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
-{
-	return new Quad(v, sw, sh);
-}
-
-graphics::Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter)
-{
-	return new Font(r, filter);
-}
-
-SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, Mesh::Usage usage)
-{
-	return new SpriteBatch(texture, size, usage);
-}
-
-ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
-{
-	return new ParticleSystem(texture, size);
-}
-
-Canvas *Graphics::newCanvas(int width, int height, const Canvas::Settings &settings)
-{
-	if (!Canvas::isSupported())
-		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
-
-	if (!Canvas::isFormatSupported(settings.format))
-	{
-		const char *fstr = "rgba8";
-		love::getConstant(Canvas::getSizedFormat(settings.format), fstr);
-		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
-	}
-
-	if (width > gl.getMaxTextureSize())
-		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
-	else if (height > gl.getMaxTextureSize())
-		throw Exception("Cannot create canvas: height of %d pixels is too large for this system.", height);
-
-	Canvas *canvas = new Canvas(width, height, settings);
-	GLenum err = canvas->getStatus();
-
-	// everything ok, return canvas (early out)
-	if (err == GL_FRAMEBUFFER_COMPLETE)
-		return canvas;
-
-	canvas->release();
-	throw love::Exception("Cannot create Canvas: %s", OpenGL::framebufferStatusString(err));
-	return nullptr; // never reached
-}
-
-Shader *Graphics::newShader(const Shader::ShaderSource &source)
-{
-	return new Shader(source);
-}
-
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, Mesh::Usage usage)
-{
-	return new Mesh(vertices, drawmode, usage);
-}
-
-Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage)
-{
-	return new Mesh(vertexcount, drawmode, usage);
-}
-
-Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, Mesh::Usage usage)
-{
-	return new Mesh(vertexformat, vertexcount, drawmode, usage);
-}
-
-Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, Mesh::Usage usage)
-{
-	return new Mesh(vertexformat, data, datasize, drawmode, usage);
-}
-
-Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
-{
-	return new Text(font, text);
-}
-
-Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
-{
-	return new Video(stream, pixeldensity);
-}
-
-bool Graphics::isGammaCorrect() const
-{
-	return love::graphics::isGammaCorrect();
 }
 
 void Graphics::setColor(Colorf c)
@@ -1531,77 +1242,12 @@ void Graphics::setColor(Colorf c)
 	states.back().gammaCorrectedColor = nc;
 }
 
-Colorf Graphics::getColor() const
-{
-	return states.back().color;
-}
-
-void Graphics::setBackgroundColor(Colorf c)
-{
-	states.back().backgroundColor = c;
-}
-
-Colorf Graphics::getBackgroundColor() const
-{
-	return states.back().backgroundColor;
-}
-
-void Graphics::setFont(love::graphics::Font *font)
-{
-	// We don't need to set a default font here if null is passed in, since we
-	// only care about the default font in getFont and print.
-	DisplayState &state = states.back();
-	state.font.set(font);
-}
-
-love::graphics::Font *Graphics::getFont()
-{
-	checkSetDefaultFont();
-	return states.back().font.get();
-}
-
-void Graphics::setShader(Shader *shader)
-{
-	if (shader == nullptr)
-		return setShader();
-
-	flushStreamDraws();
-
-	DisplayState &state = states.back();
-
-	shader->attach();
-
-	state.shader.set(shader);
-}
-
-void Graphics::setShader()
-{
-	flushStreamDraws();
-
-	DisplayState &state = states.back();
-
-	// This will activate the default shader.
-	Shader::detach();
-
-	state.shader.set(nullptr);
-}
-
-Shader *Graphics::getShader() const
-{
-	return states.back().shader.get();
-}
-
 void Graphics::setColorMask(ColorMask mask)
 {
 	flushStreamDraws();
 
 	glColorMask(mask.r, mask.g, mask.b, mask.a);
 	states.back().colorMask = mask;
-}
-
-Graphics::ColorMask Graphics::getColorMask() const
-{
-	return states.back().colorMask;
 }
 
 void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
@@ -1682,68 +1328,6 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 	states.back().blendAlphaMode = alphamode;
 }
 
-Graphics::BlendMode Graphics::getBlendMode(BlendAlpha &alphamode) const
-{
-	alphamode = states.back().blendAlphaMode;
-	return states.back().blendMode;
-}
-
-void Graphics::setDefaultFilter(const Texture::Filter &f)
-{
-	Texture::setDefaultFilter(f);
-	states.back().defaultFilter = f;
-}
-
-const Texture::Filter &Graphics::getDefaultFilter() const
-{
-	return Texture::getDefaultFilter();
-}
-
-void Graphics::setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness)
-{
-	Image::setDefaultMipmapFilter(filter);
-	Image::setDefaultMipmapSharpness(sharpness);
-
-	states.back().defaultMipmapFilter = filter;
-	states.back().defaultMipmapSharpness = sharpness;
-}
-
-void Graphics::getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const
-{
-	*filter = Image::getDefaultMipmapFilter();
-	*sharpness = Image::getDefaultMipmapSharpness();
-}
-
-void Graphics::setLineWidth(float width)
-{
-	states.back().lineWidth = width;
-}
-
-void Graphics::setLineStyle(Graphics::LineStyle style)
-{
-	states.back().lineStyle = style;
-}
-
-void Graphics::setLineJoin(Graphics::LineJoin join)
-{
-	states.back().lineJoin = join;
-}
-
-float Graphics::getLineWidth() const
-{
-	return states.back().lineWidth;
-}
-
-Graphics::LineStyle Graphics::getLineStyle() const
-{
-	return states.back().lineStyle;
-}
-
-Graphics::LineJoin Graphics::getLineJoin() const
-{
-	return states.back().lineJoin;
-}
-
 void Graphics::setPointSize(float size)
 {
 	if (streamBufferState.primitiveMode == vertex::PrimitiveMode::POINTS)
@@ -1751,11 +1335,6 @@ void Graphics::setPointSize(float size)
 
 	gl.setPointSize(size * getCurrentPixelDensity());
 	states.back().pointSize = size;
-}
-
-float Graphics::getPointSize() const
-{
-	return states.back().pointSize;
 }
 
 void Graphics::setWireframe(bool enable)
@@ -1768,31 +1347,6 @@ void Graphics::setWireframe(bool enable)
 
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
 	states.back().wireframe = enable;
-}
-
-bool Graphics::isWireframe() const
-{
-	return states.back().wireframe;
-}
-
-void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
-{
-	checkSetDefaultFont();
-
-	DisplayState &state = states.back();
-
-	if (state.font.get() != nullptr)
-		state.font->print(this, str, m, state.color);
-}
-
-void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
-{
-	checkSetDefaultFont();
-
-	DisplayState &state = states.back();
-
-	if (state.font.get() != nullptr)
-		state.font->printf(this, str, wrap, align, m, state.color);
 }
 
 Graphics::RendererInfo Graphics::getRendererInfo() const
@@ -1881,42 +1435,6 @@ bool Graphics::isSupported(Feature feature) const
 	default:
 		return false;
 	}
-}
-
-void Graphics::push(StackType type)
-{
-	if (stackTypes.size() == MAX_USER_STACK_DEPTH)
-		throw Exception("Maximum stack depth reached (more pushes than pops?)");
-
-	pushTransform();
-
-	pixelScaleStack.push_back(pixelScaleStack.back());
-
-	if (type == STACK_ALL)
-		states.push_back(states.back());
-
-	stackTypes.push_back(type);
-}
-
-void Graphics::pop()
-{
-	if (stackTypes.size() < 1)
-		throw Exception("Minimum stack depth reached (more pops than pushes?)");
-
-	popTransform();
-	pixelScaleStack.pop_back();
-
-	if (stackTypes.back() == STACK_ALL)
-	{
-		DisplayState &newstate = states[states.size() - 2];
-
-		restoreStateChecked(newstate);
-
-		// The last two states in the stack should be equal now.
-		states.pop_back();
-	}
-
-	stackTypes.pop_back();
 }
 
 } // opengl

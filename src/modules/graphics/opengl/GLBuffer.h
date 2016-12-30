@@ -25,6 +25,7 @@
 // LOVE
 #include "common/config.h"
 #include "graphics/Volatile.h"
+#include "graphics/vertex.h"
 
 // OpenGL
 #include "OpenGL.h"
@@ -57,9 +58,9 @@ public:
 	 *
 	 * @param size The size of the GLBuffer in bytes.
 	 * @param type The type of the buffer object.
-	 * @param usage Usage hint, e.g. GL_DYNAMIC_DRAW.
+	 * @param usage Usage hint.
 	 */
-	GLBuffer(size_t size, const void *data, BufferType type, GLenum usage, uint32 mapflags = 0);
+	GLBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags = 0);
 
 	/**
 	 * Destructor.
@@ -86,10 +87,8 @@ public:
 
 	/**
 	 * Get the usage hint for this GLBuffer.
-	 *
-	 * @return The usage hint, e.g. GL_DYNAMIC_DRAW.
 	 */
-	GLenum getUsage() const
+	vertex::Usage getUsage() const
 	{
 		return usage;
 	}
@@ -214,7 +213,7 @@ private:
 	GLenum target;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
-	GLenum usage;
+	vertex::Usage usage;
 
 	// The VBO identifier. Assigned by OpenGL.
 	GLuint vbo;

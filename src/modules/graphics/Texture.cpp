@@ -27,7 +27,10 @@ namespace graphics
 {
 
 love::Type Texture::type("Texture", &Drawable::type);
+
 Texture::Filter Texture::defaultFilter;
+Texture::FilterMode Texture::defaultMipmapFilter = Texture::FILTER_LINEAR;
+float Texture::defaultMipmapSharpness = 0.0f;
 
 Texture::Texture()
 	: format(PIXELFORMAT_UNKNOWN)
@@ -35,7 +38,7 @@ Texture::Texture()
 	, height(0)
 	, pixelWidth(0)
 	, pixelHeight(0)
-	, filter(getDefaultFilter())
+	, filter(defaultFilter)
 	, wrap()
 	, vertices()
 {
@@ -120,16 +123,6 @@ const Texture::Wrap &Texture::getWrap() const
 const Vertex *Texture::getVertices() const
 {
 	return vertices;
-}
-
-void Texture::setDefaultFilter(const Filter &f)
-{
-	defaultFilter = f;
-}
-
-const Texture::Filter &Texture::getDefaultFilter()
-{
-	return defaultFilter;
 }
 
 bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)

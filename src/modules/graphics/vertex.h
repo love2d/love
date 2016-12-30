@@ -32,6 +32,25 @@ namespace love
 namespace graphics
 {
 
+// Vertex attribute indices used in shaders by LOVE. The values map to OpenGL
+// generic vertex attribute indices.
+enum VertexAttribID
+{
+	ATTRIB_POS = 0,
+	ATTRIB_TEXCOORD,
+	ATTRIB_COLOR,
+	ATTRIB_CONSTANTCOLOR,
+	ATTRIB_MAX_ENUM
+};
+
+enum VertexAttribFlags
+{
+	ATTRIBFLAG_POS = 1 << ATTRIB_POS,
+	ATTRIBFLAG_TEXCOORD = 1 << ATTRIB_TEXCOORD,
+	ATTRIBFLAG_COLOR = 1 << ATTRIB_COLOR,
+	ATTRIBFLAG_CONSTANTCOLOR = 1 << ATTRIB_CONSTANTCOLOR
+};
+
 enum BufferType
 {
 	BUFFER_VERTEX = 0,
@@ -41,6 +60,15 @@ enum BufferType
 
 namespace vertex
 {
+
+// The expected usage pattern of vertex data.
+enum Usage
+{
+	USAGE_STREAM,
+	USAGE_DYNAMIC,
+	USAGE_STATIC,
+	USAGE_MAX_ENUM
+};
 
 enum class PrimitiveMode
 {
@@ -92,6 +120,9 @@ int getIndexCount(TriangleIndexMode mode, int vertexCount);
 
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
+
+bool getConstant(const char *in, Usage &out);
+bool getConstant(Usage in, const char *&out);
 
 } // vertex
 

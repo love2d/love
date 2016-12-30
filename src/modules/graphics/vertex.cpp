@@ -19,6 +19,7 @@
  **/
 
 #include "vertex.h"
+#include "common/StringMap.h"
 
 namespace love
 {
@@ -127,6 +128,25 @@ void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount,
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices)
 {
 	fillIndicesT(mode, vertexStart, vertexCount, indices);
+}
+
+static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
+{
+	{ "stream",  USAGE_STREAM  },
+	{ "dynamic", USAGE_DYNAMIC },
+	{ "static",  USAGE_STATIC  },
+};
+
+static StringMap<Usage, USAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
+
+bool getConstant(const char *in, Usage &out)
+{
+	return usages.find(in, out);
+}
+
+bool getConstant(Usage in, const char *&out)
+{
+	return usages.find(in, out);
 }
 
 } // vertex

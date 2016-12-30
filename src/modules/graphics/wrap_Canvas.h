@@ -21,42 +21,18 @@
 #pragma once
 
 // LOVE
-#include "graphics/Font.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "common/runtime.h"
+#include "Canvas.h"
+#include "wrap_Texture.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-class Font final : public love::graphics::Font, public Volatile
-{
-public:
+//see Canvas.h
+Canvas *luax_checkcanvas(lua_State *L, int idx);
+extern "C" int luaopen_canvas(lua_State *L);
 
-	Font(love::font::Rasterizer *r, const Texture::Filter &filter);
-	virtual ~Font();
-
-	void setFilter(const Texture::Filter &f) override;
-
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
-
-private:
-
-	void createTexture() override;
-	void uploadGlyphToTexture(font::GlyphData *data, Glyph &glyph) override;
-
-	// vector of packed textures
-	std::vector<GLuint> textures;
-
-	size_t textureMemorySize;
-
-}; // Font
-
-} // opengl
 } // graphics
 } // love

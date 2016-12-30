@@ -19,8 +19,7 @@
  **/
 
 #include "Canvas.h"
-#include "Image.h"
-#include "Graphics.h"
+#include "graphics/Graphics.h"
 
 #include <algorithm> // For min/max
 
@@ -97,9 +96,6 @@ static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pi
 	return status == GL_FRAMEBUFFER_COMPLETE && samples > 1;
 }
 
-love::Type Canvas::type("Canvas", &Texture::type);
-int Canvas::canvasCount = 0;
-
 Canvas::Canvas(int width, int height, const Settings &settings)
 	: settings(settings)
 	, fbo(0)
@@ -140,13 +136,10 @@ Canvas::Canvas(int width, int height, const Settings &settings)
 	this->format = getSizedFormat(settings.format);
 
 	loadVolatile();
-
-	++canvasCount;
 }
 
 Canvas::~Canvas()
 {
-	--canvasCount;
 	unloadVolatile();
 }
 
@@ -247,16 +240,6 @@ void Canvas::unloadVolatile()
 	texture_memory = 0;
 }
 
-void Canvas::drawv(love::graphics::Graphics *gfx, const Matrix4 &localTransform, const Vertex *v)
-{
-	Graphics *glgfx = (Graphics *) gfx;
-
-	if (glgfx != nullptr && glgfx->isCanvasActive(this))
-		throw love::Exception("Cannot render a Canvas to itself!");
-
-	Texture::drawv(gfx, localTransform, v);
-}
-
 void Canvas::setFilter(const Texture::Filter &f)
 {
 	if (!validateFilter(f, false))
@@ -307,15 +290,8 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int x, 
 		throw love::Exception("Invalid rectangle dimensions.");
 
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-
-	if (gfx != nullptr)
-	{
-		for (const auto &c : gfx->getCanvas())
-		{
-			if (c == this)
-				throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
-		}
-	}
+	if (gfx != nullptr && gfx->isCanvasActive(this))
+		throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
 
 	PixelFormat dataformat;
 	switch (getPixelFormat())

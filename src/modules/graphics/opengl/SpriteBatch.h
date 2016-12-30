@@ -54,7 +54,7 @@ public:
 
 	static love::Type type;
 
-	SpriteBatch(Texture *texture, int size, Mesh::Usage usage);
+	SpriteBatch(Texture *texture, int size, vertex::Usage usage);
 	virtual ~SpriteBatch();
 
 	int add(const Matrix4 &m, int index = -1);

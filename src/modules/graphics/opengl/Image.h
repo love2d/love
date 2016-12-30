@@ -116,11 +116,6 @@ public:
 
 	const Settings &getFlags() const;
 
-	static void setDefaultMipmapSharpness(float sharpness);
-	static float getDefaultMipmapSharpness();
-	static void setDefaultMipmapFilter(FilterMode f);
-	static FilterMode getDefaultMipmapFilter();
-
 	static bool isFormatSupported(PixelFormat pixelformat);
 	static bool hasSRGBSupport();
 
@@ -168,9 +163,6 @@ private:
 	size_t textureMemorySize;
 
 	static float maxMipmapSharpness;
-
-	static FilterMode defaultMipmapFilter;
-	static float defaultMipmapSharpness;
 
 	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
 	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;

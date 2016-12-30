@@ -52,25 +52,6 @@ namespace opengl
 // no clashes with other GL libraries when linking, etc.
 using namespace glad;
 
-// Vertex attribute indices used in shaders by LOVE. The values map to OpenGL
-// generic vertex attribute indices.
-enum VertexAttribID
-{
-	ATTRIB_POS = 0,
-	ATTRIB_TEXCOORD,
-	ATTRIB_COLOR,
-	ATTRIB_CONSTANTCOLOR,
-	ATTRIB_MAX_ENUM
-};
-
-enum VertexAttribFlags
-{
-	ATTRIBFLAG_POS = 1 << ATTRIB_POS,
-	ATTRIBFLAG_TEXCOORD = 1 << ATTRIB_TEXCOORD,
-	ATTRIBFLAG_COLOR = 1 << ATTRIB_COLOR,
-	ATTRIBFLAG_CONSTANTCOLOR = 1 << ATTRIB_CONSTANTCOLOR
-};
-
 /**
  * Thin layer between OpenGL and the rest of the program.
  * Internally shadows some OpenGL context state for improved efficiency and
@@ -377,6 +358,7 @@ public:
 	Vendor getVendor() const;
 
 	static GLenum getGLBufferType(BufferType type);
+	static GLenum getGLBufferUsage(vertex::Usage usage);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);

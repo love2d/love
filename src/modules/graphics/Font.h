@@ -34,7 +34,6 @@
 
 #include "font/Rasterizer.h"
 #include "Texture.h"
-#include "Volatile.h"
 #include "vertex.h"
 
 namespace love
@@ -44,7 +43,7 @@ namespace graphics
 
 class Graphics;
 
-class Font : public Object, public Volatile
+class Font : public Object
 {
 public:
 

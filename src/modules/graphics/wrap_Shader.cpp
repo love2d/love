@@ -19,9 +19,10 @@
  **/
 
 #include "wrap_Shader.h"
-#include "graphics/wrap_Texture.h"
+#include "wrap_Texture.h"
 #include "math/MathModule.h"
 #include "math/Transform.h"
+#include "Graphics.h"
 
 #include <string>
 #include <algorithm>
@@ -30,8 +31,6 @@
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 Shader *luax_checkshader(lua_State *L, int idx)
@@ -331,7 +330,6 @@ extern "C" int luaopen_shader(lua_State *L)
 	return luax_register_type(L, &Shader::type, w_Shader_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love
 

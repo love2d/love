@@ -49,9 +49,6 @@ int Image::imageCount = 0;
 
 float Image::maxMipmapSharpness = 0.0f;
 
-Texture::FilterMode Image::defaultMipmapFilter = Texture::FILTER_LINEAR;
-float Image::defaultMipmapSharpness = 0.0f;
-
 static int getMipmapCount(int basewidth, int baseheight)
 {
 	return (int) log2(std::max(basewidth, baseheight)) + 1;
@@ -551,26 +548,6 @@ float Image::getMipmapSharpness() const
 const Image::Settings &Image::getFlags() const
 {
 	return settings;
-}
-
-void Image::setDefaultMipmapSharpness(float sharpness)
-{
-	defaultMipmapSharpness = sharpness;
-}
-
-float Image::getDefaultMipmapSharpness()
-{
-	return defaultMipmapSharpness;
-}
-
-void Image::setDefaultMipmapFilter(Texture::FilterMode f)
-{
-	defaultMipmapFilter = f;
-}
-
-Texture::FilterMode Image::getDefaultMipmapFilter()
-{
-	return defaultMipmapFilter;
 }
 
 bool Image::isCompressed() const

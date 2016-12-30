@@ -23,12 +23,8 @@
 
 #include "common/config.h"
 #include "graphics/Color.h"
-#include "image/Image.h"
-#include "image/ImageData.h"
-#include "common/Matrix.h"
-#include "common/StringMap.h"
 #include "common/int.h"
-#include "graphics/Texture.h"
+#include "graphics/Canvas.h"
 #include "graphics/Volatile.h"
 #include "OpenGL.h"
 
@@ -39,18 +35,9 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas : public Texture, public Volatile
+class Canvas final : public love::graphics::Canvas, public Volatile
 {
 public:
-
-	static love::Type type;
-
-    struct Settings
-    {
-        PixelFormat format = PIXELFORMAT_NORMAL;
-        float pixeldensity = 1.0f;
-        int msaa = 0;
-    };
 
 	Canvas(int width, int height, const Settings &settings);
 	virtual ~Canvas();
@@ -64,26 +51,27 @@ public:
 	bool setWrap(const Texture::Wrap &w) override;
 	ptrdiff_t getHandle() const override;
 
-	love::image::ImageData *newImageData(love::image::Image *module, int x, int y, int w, int h);
+	love::image::ImageData *newImageData(love::image::Image *module, int x, int y, int w, int h) override;
 
-	inline GLenum getStatus() const
-	{
-		return status;
-	}
-
-	inline int getMSAA() const
+	int getMSAA() const override
 	{
 		return actual_samples;
 	}
 
-	inline int getRequestedMSAA() const
+	int getRequestedMSAA() const override
 	{
 		return settings.msaa;
 	}
 
-	inline ptrdiff_t getMSAAHandle() const
+	ptrdiff_t getMSAAHandle() const override
 	{
 		return msaa_buffer;
+	}
+
+
+	inline GLenum getStatus() const
+	{
+		return status;
 	}
 
 	inline GLuint getFBO() const
@@ -96,11 +84,7 @@ public:
 	static bool isMultiFormatMultiCanvasSupported();
 	static bool isFormatSupported(PixelFormat format);
 
-	static int canvasCount;
-
 private:
-
-	void drawv(Graphics *gfx, const Matrix4 &t, const Vertex *v) override;
 
     Settings settings;
 

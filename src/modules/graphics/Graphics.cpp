@@ -22,6 +22,8 @@
 #include "Graphics.h"
 #include "math/MathModule.h"
 #include "Polyline.h"
+#include "font/Font.h"
+#include "window/Window.h"
 
 // C++
 #include <algorithm>
@@ -79,9 +81,20 @@ Colorf unGammaCorrectColor(const Colorf &c)
 
 love::Type Graphics::type("graphics", &Module::type);
 
+Shader::ShaderSource Graphics::defaultShaderCode[Graphics::RENDERER_MAX_ENUM][2];
+Shader::ShaderSource Graphics::defaultVideoShaderCode[Graphics::RENDERER_MAX_ENUM][2];
+
 Graphics::Graphics()
-	: streamBufferState()
+	: width(0)
+	, height(0)
+	, pixelWidth(0)
+	, pixelHeight(0)
+	, created(false)
+	, active(true)
+	, writingToStencil(false)
+	, streamBufferState()
 	, projectionMatrix()
+	, canvasSwitchCount(0)
 {
 	transformStack.reserve(16);
 	transformStack.push_back(Matrix4());
@@ -89,9 +102,424 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	states.clear();
+
+	defaultFont.set(nullptr);
+
+	if (Shader::defaultShader)
+	{
+		Shader::defaultShader->release();
+		Shader::defaultShader = nullptr;
+	}
+
+	if (Shader::defaultVideoShader)
+	{
+		Shader::defaultVideoShader->release();
+		Shader::defaultVideoShader = nullptr;
+	}
+
 	delete streamBufferState.vb[0];
 	delete streamBufferState.vb[1];
 	delete streamBufferState.indexBuffer;
+}
+
+Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
+{
+	return new Quad(v, sw, sh);
+}
+
+int Graphics::getWidth() const
+{
+	return width;
+}
+
+int Graphics::getHeight() const
+{
+	return height;
+}
+
+int Graphics::getPixelWidth() const
+{
+	return pixelWidth;
+}
+
+int Graphics::getPixelHeight() const
+{
+	return pixelHeight;
+}
+
+double Graphics::getCurrentPixelDensity() const
+{
+	if (states.back().canvases.size() > 0)
+	{
+		love::graphics::Canvas *c = states.back().canvases[0];
+		return (double) c->getPixelHeight() / (double) c->getHeight();
+	}
+
+	return getScreenPixelDensity();
+}
+
+double Graphics::getScreenPixelDensity() const
+{
+	return (double) getPixelHeight() / (double) getHeight();
+}
+
+bool Graphics::isCreated() const
+{
+	return created;
+}
+
+bool Graphics::isActive() const
+{
+	// The graphics module is only completely 'active' if there's a window, a
+	// context, and the active variable is set.
+	auto window = getInstance<love::window::Window>(M_WINDOW);
+	return active && isCreated() && window != nullptr && window->isOpen();
+}
+
+void Graphics::reset()
+{
+	DisplayState s;
+	stopDrawToStencilBuffer();
+	restoreState(s);
+	origin();
+}
+
+/**
+ * State functions.
+ **/
+
+void Graphics::restoreState(const DisplayState &s)
+{
+	setColor(s.color);
+	setBackgroundColor(s.backgroundColor);
+
+	setBlendMode(s.blendMode, s.blendAlphaMode);
+
+	setLineWidth(s.lineWidth);
+	setLineStyle(s.lineStyle);
+	setLineJoin(s.lineJoin);
+
+	setPointSize(s.pointSize);
+
+	if (s.scissor)
+		setScissor(s.scissorRect);
+	else
+		setScissor();
+
+	setStencilTest(s.stencilCompare, s.stencilTestValue);
+
+	setFont(s.font.get());
+	setShader(s.shader.get());
+	setCanvas(s.canvases);
+
+	setColorMask(s.colorMask);
+	setWireframe(s.wireframe);
+
+	setDefaultFilter(s.defaultFilter);
+	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+}
+
+void Graphics::restoreStateChecked(const DisplayState &s)
+{
+	const DisplayState &cur = states.back();
+
+	if (s.color != cur.color)
+		setColor(s.color);
+
+	setBackgroundColor(s.backgroundColor);
+
+	if (s.blendMode != cur.blendMode || s.blendAlphaMode != cur.blendAlphaMode)
+		setBlendMode(s.blendMode, s.blendAlphaMode);
+
+	// These are just simple assignments.
+	setLineWidth(s.lineWidth);
+	setLineStyle(s.lineStyle);
+	setLineJoin(s.lineJoin);
+
+	if (s.pointSize != cur.pointSize)
+		setPointSize(s.pointSize);
+
+	if (s.scissor != cur.scissor || (s.scissor && !(s.scissorRect == cur.scissorRect)))
+	{
+		if (s.scissor)
+			setScissor(s.scissorRect);
+		else
+			setScissor();
+	}
+
+	if (s.stencilCompare != cur.stencilCompare || s.stencilTestValue != cur.stencilTestValue)
+		setStencilTest(s.stencilCompare, s.stencilTestValue);
+
+	setFont(s.font.get());
+	setShader(s.shader.get());
+
+	bool canvaseschanged = s.canvases.size() != cur.canvases.size();
+	if (!canvaseschanged)
+	{
+		for (size_t i = 0; i < s.canvases.size() && i < cur.canvases.size(); i++)
+		{
+			if (s.canvases[i].get() != cur.canvases[i].get())
+			{
+				canvaseschanged = true;
+				break;
+			}
+		}
+	}
+
+	if (canvaseschanged)
+		setCanvas(s.canvases);
+
+	if (s.colorMask != cur.colorMask)
+		setColorMask(s.colorMask);
+
+	if (s.wireframe != cur.wireframe)
+		setWireframe(s.wireframe);
+
+	setDefaultFilter(s.defaultFilter);
+	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+}
+
+Colorf Graphics::getColor() const
+{
+	return states.back().color;
+}
+
+void Graphics::setBackgroundColor(Colorf c)
+{
+	states.back().backgroundColor = c;
+}
+
+Colorf Graphics::getBackgroundColor() const
+{
+	return states.back().backgroundColor;
+}
+
+void Graphics::checkSetDefaultFont()
+{
+	// We don't create or set the default Font if an existing font is in use.
+	if (states.back().font.get() != nullptr)
+		return;
+
+	// Create a new default font if we don't have one yet.
+	if (!defaultFont.get())
+	{
+		auto fontmodule = Module::getInstance<font::Font>(M_FONT);
+		if (!fontmodule)
+			throw love::Exception("Font module has not been loaded.");
+
+		auto hinting = font::TrueTypeRasterizer::HINTING_NORMAL;
+		StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(12, hinting), Acquire::NORETAIN);
+
+		defaultFont.set(newFont(r.get()), Acquire::NORETAIN);
+	}
+
+	states.back().font.set(defaultFont.get());
+}
+
+void Graphics::setFont(love::graphics::Font *font)
+{
+	// We don't need to set a default font here if null is passed in, since we
+	// only care about the default font in getFont and print.
+	DisplayState &state = states.back();
+	state.font.set(font);
+}
+
+love::graphics::Font *Graphics::getFont()
+{
+	checkSetDefaultFont();
+	return states.back().font.get();
+}
+
+void Graphics::setShader(love::graphics::Shader *shader)
+{
+	if (shader == nullptr)
+		return setShader();
+
+	flushStreamDraws();
+
+	shader->attach();
+
+	states.back().shader.set(shader);
+}
+
+void Graphics::setShader()
+{
+	flushStreamDraws();
+
+	Shader::attachDefault();
+
+	states.back().shader.set(nullptr);
+}
+
+love::graphics::Shader *Graphics::getShader() const
+{
+	return states.back().shader.get();
+}
+
+void Graphics::setCanvas(Canvas *canvas)
+{
+	if (canvas == nullptr)
+		return setCanvas();
+
+	std::vector<Canvas *> canvases = {canvas};
+	setCanvas(canvases);
+}
+
+void Graphics::setCanvas(const std::vector<StrongRef<Canvas>> &canvases)
+{
+	std::vector<Canvas *> canvaslist;
+	canvaslist.reserve(canvases.size());
+
+	for (const StrongRef<Canvas> &c : canvases)
+		canvaslist.push_back(c.get());
+
+	return setCanvas(canvaslist);
+}
+
+std::vector<Canvas *> Graphics::getCanvas() const
+{
+	std::vector<Canvas *> canvases;
+	canvases.reserve(states.back().canvases.size());
+
+	for (const StrongRef<Canvas> &c : states.back().canvases)
+		canvases.push_back(c.get());
+
+	return canvases;
+}
+
+bool Graphics::isCanvasActive() const
+{
+	return !states.back().canvases.empty();
+}
+
+bool Graphics::isCanvasActive(love::graphics::Canvas *canvas) const
+{
+	for (const auto &c : states.back().canvases)
+	{
+		if (c.get() == canvas)
+			return true;
+	}
+
+	return false;
+}
+
+void Graphics::intersectScissor(const Rect &rect)
+{
+	Rect currect = states.back().scissorRect;
+
+	if (!states.back().scissor)
+	{
+		currect.x = 0;
+		currect.y = 0;
+		currect.w = std::numeric_limits<int>::max();
+		currect.h = std::numeric_limits<int>::max();
+	}
+
+	int x1 = std::max(currect.x, rect.x);
+	int y1 = std::max(currect.y, rect.y);
+
+	int x2 = std::min(currect.x + currect.w, rect.x + rect.w);
+	int y2 = std::min(currect.y + currect.h, rect.y + rect.h);
+
+	Rect newrect = {x1, y1, std::max(0, x2 - x1), std::max(0, y2 - y1)};
+	setScissor(newrect);
+}
+
+bool Graphics::getScissor(Rect &rect) const
+{
+	const DisplayState &state = states.back();
+	rect = state.scissorRect;
+	return state.scissor;
+}
+
+void Graphics::getStencilTest(CompareMode &compare, int &value)
+{
+	const DisplayState &state = states.back();
+	compare = state.stencilCompare;
+	value = state.stencilTestValue;
+}
+
+Graphics::ColorMask Graphics::getColorMask() const
+{
+	return states.back().colorMask;
+}
+
+Graphics::BlendMode Graphics::getBlendMode(BlendAlpha &alphamode) const
+{
+	alphamode = states.back().blendAlphaMode;
+	return states.back().blendMode;
+}
+
+void Graphics::setDefaultFilter(const Texture::Filter &f)
+{
+	Texture::defaultFilter = f;
+	states.back().defaultFilter = f;
+}
+
+const Texture::Filter &Graphics::getDefaultFilter() const
+{
+	return Texture::defaultFilter;
+}
+
+void Graphics::setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness)
+{
+	Texture::defaultMipmapFilter = filter;
+	Texture::defaultMipmapSharpness = sharpness;
+
+	states.back().defaultMipmapFilter = filter;
+	states.back().defaultMipmapSharpness = sharpness;
+}
+
+void Graphics::getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const
+{
+	*filter = Texture::defaultMipmapFilter;
+	*sharpness = Texture::defaultMipmapSharpness;
+}
+
+void Graphics::setLineWidth(float width)
+{
+	states.back().lineWidth = width;
+}
+
+void Graphics::setLineStyle(Graphics::LineStyle style)
+{
+	states.back().lineStyle = style;
+}
+
+void Graphics::setLineJoin(Graphics::LineJoin join)
+{
+	states.back().lineJoin = join;
+}
+
+float Graphics::getLineWidth() const
+{
+	return states.back().lineWidth;
+}
+
+Graphics::LineStyle Graphics::getLineStyle() const
+{
+	return states.back().lineStyle;
+}
+
+Graphics::LineJoin Graphics::getLineJoin() const
+{
+	return states.back().lineJoin;
+}
+
+float Graphics::getPointSize() const
+{
+	return states.back().pointSize;
+}
+
+bool Graphics::isWireframe() const
+{
+	return states.back().wireframe;
+}
+
+void Graphics::captureScreenshot(const ScreenshotInfo &info)
+{
+	pendingScreenshotCallbacks.push_back(info);
 }
 
 Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &req)
@@ -205,6 +633,30 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	return d;
 }
 
+/**
+ * Drawing
+ **/
+
+void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
+{
+	checkSetDefaultFont();
+
+	DisplayState &state = states.back();
+
+	if (state.font.get() != nullptr)
+		state.font->print(this, str, m, state.color);
+}
+
+void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
+{
+	checkSetDefaultFont();
+
+	DisplayState &state = states.back();
+
+	if (state.font.get() != nullptr)
+		state.font->printf(this, str, wrap, align, m, state.color);
+}
+
 void Graphics::draw(Drawable *drawable, const Matrix4 &m)
 {
 	drawable->draw(this, m);
@@ -216,7 +668,7 @@ void Graphics::draw(Texture *texture, Quad *quad, const Matrix4 &m)
 }
 
 /**
- * Primitives
+ * Primitives (points, shapes, lines).
  **/
 
 void Graphics::points(const float *coords, const Colorf *colors, size_t numpoints)
@@ -524,6 +976,46 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 }
 
+void Graphics::push(StackType type)
+{
+	if (stackTypeStack.size() == MAX_USER_STACK_DEPTH)
+		throw Exception("Maximum stack depth reached (more pushes than pops?)");
+
+	pushTransform();
+
+	pixelScaleStack.push_back(pixelScaleStack.back());
+
+	if (type == STACK_ALL)
+		states.push_back(states.back());
+
+	stackTypeStack.push_back(type);
+}
+
+void Graphics::pop()
+{
+	if (stackTypeStack.size() < 1)
+		throw Exception("Minimum stack depth reached (more pops than pushes?)");
+
+	popTransform();
+	pixelScaleStack.pop_back();
+
+	if (stackTypeStack.back() == STACK_ALL)
+	{
+		DisplayState &newstate = states[states.size() - 2];
+
+		restoreStateChecked(newstate);
+
+		// The last two states in the stack should be equal now.
+		states.pop_back();
+	}
+	
+	stackTypeStack.pop_back();
+}
+
+/**
+ * Transform and stack functions.
+ **/
+
 const Matrix4 &Graphics::getTransform() const
 {
 	return transformStack.back();
@@ -611,6 +1103,10 @@ Vector Graphics::inverseTransformPoint(Vector point)
 	transformStack.back().inverse().transform(&p, &point, 1);
 	return p;
 }
+
+/**
+ * Constants.
+ **/
 
 bool Graphics::getConstant(const char *in, DrawMode &out)
 {

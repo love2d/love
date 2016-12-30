@@ -336,7 +336,7 @@ void OpenGL::prepareDraw()
 
 	// Make sure the active shader's love-provided uniforms are up to date.
 	if (Shader::current != nullptr)
-		Shader::current->checkSetBuiltinUniforms();
+		((Shader *)Shader::current)->checkSetBuiltinUniforms();
 }
 
 GLenum OpenGL::getGLBufferType(BufferType type)
@@ -349,6 +349,21 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 		return GL_ELEMENT_ARRAY_BUFFER;
 	case BUFFER_MAX_ENUM:
 		return GL_ZERO;
+	}
+}
+
+GLenum OpenGL::getGLBufferUsage(vertex::Usage usage)
+{
+	switch (usage)
+	{
+	case vertex::USAGE_STREAM:
+		return GL_STREAM_DRAW;
+	case vertex::USAGE_DYNAMIC:
+		return GL_DYNAMIC_DRAW;
+	case vertex::USAGE_STATIC:
+		return GL_STATIC_DRAW;
+	default:
+		return 0;
 	}
 }
 

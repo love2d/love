@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_PROGRAM_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_PROGRAM_H
+#pragma once
 
 #include "common/runtime.h"
 #include "common/config.h"
@@ -29,14 +28,9 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Shader *luax_checkshader(lua_State *L, int idx);
 extern "C" int luaopen_shader(lua_State *L);
 
-} // opengl
 } // graphics
 } // love
-
-#endif

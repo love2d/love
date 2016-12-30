@@ -153,7 +153,7 @@ int w_isActive(lua_State *L)
 
 int w_isGammaCorrect(lua_State *L)
 {
-	luax_pushboolean(L, instance()->isGammaCorrect());
+	luax_pushboolean(L, graphics::isGammaCorrect());
 	return 1;
 }
 
@@ -214,7 +214,7 @@ int w_setCanvas(lua_State *L)
 	}
 
 	bool is_table = lua_istable(L, 1);
-	std::vector<Canvas *> canvases;
+	std::vector<love::graphics::Canvas *> canvases;
 
 	if (is_table)
 	{
@@ -243,10 +243,10 @@ int w_setCanvas(lua_State *L)
 
 int w_getCanvas(lua_State *L)
 {
-	const std::vector<Canvas *> canvases = instance()->getCanvas();
+	const std::vector<love::graphics::Canvas *> canvases = instance()->getCanvas();
 	int n = 0;
 
-	for (Canvas *c : canvases)
+	for (love::graphics::Canvas *c : canvases)
 	{
 		luax_pushtype(L, c);
 		n++;
@@ -644,12 +644,12 @@ int w_newSpriteBatch(lua_State *L)
 
 	Texture *texture = luax_checktexture(L, 1);
 	int size = (int) luaL_optnumber(L, 2, 1000);
-	Mesh::Usage usage = Mesh::USAGE_DYNAMIC;
+	vertex::Usage usage = vertex::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
 		const char *usagestr = luaL_checkstring(L, 3);
-		if (!Mesh::getConstant(usagestr, usage))
-			return luaL_error(L, "Invalid SpriteBatch usage hint: %s", usagestr);
+		if (!vertex::getConstant(usagestr, usage))
+			return luaL_error(L, "Invalid usage hint: %s", usagestr);
 	}
 
 	SpriteBatch *t = nullptr;
@@ -709,7 +709,7 @@ int w_newCanvas(lua_State *L)
 		settings.msaa = luax_intflag(L, 3, "msaa", settings.msaa);
 	}
 
-	Canvas *canvas = nullptr;
+	love::graphics::Canvas *canvas = nullptr;
 	luax_catchexcept(L, [&](){ canvas = instance()->newCanvas(width, height, settings); });
 
 	if (canvas == nullptr)
@@ -807,7 +807,7 @@ int w_newShader(lua_State *L)
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance()->newShader(source);
+		love::graphics::Shader *shader = instance()->newShader(source);
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -827,12 +827,12 @@ int w_newShader(lua_State *L)
 	return 1;
 }
 
-static Mesh::Usage luax_optmeshusage(lua_State *L, int idx, Mesh::Usage def)
+static vertex::Usage luax_optmeshusage(lua_State *L, int idx, vertex::Usage def)
 {
 	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	if (usagestr && !Mesh::getConstant(usagestr, def))
-		luaL_error(L, "Invalid mesh usage hint: %s", usagestr);
+	if (usagestr && !vertex::getConstant(usagestr, def))
+		luaL_error(L, "Invalid usage hint: %s", usagestr);
 
 	return def;
 }
@@ -852,7 +852,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 2, Mesh::DRAWMODE_FAN);
-	Mesh::Usage usage = luax_optmeshusage(L, 3, Mesh::USAGE_DYNAMIC);
+	vertex::Usage usage = luax_optmeshusage(L, 3, vertex::USAGE_DYNAMIC);
 
 	// First argument is a table of standard vertices, or the number of
 	// standard vertices.
@@ -912,7 +912,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	std::vector<Mesh::AttribFormat> vertexformat;
 
 	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 3, Mesh::DRAWMODE_FAN);
-	Mesh::Usage usage = luax_optmeshusage(L, 4, Mesh::USAGE_DYNAMIC);
+	vertex::Usage usage = luax_optmeshusage(L, 4, vertex::USAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
 	if (!lua_istable(L, -1))
@@ -1410,14 +1410,14 @@ int w_setShader(lua_State *L)
 		return 0;
 	}
 
-	Shader *shader = luax_checkshader(L, 1);
+	love::graphics::Shader *shader = luax_checkshader(L, 1);
 	instance()->setShader(shader);
 	return 0;
 }
 
 int w_getShader(lua_State *L)
 {
-	Shader *shader = instance()->getShader();
+	love::graphics::Shader *shader = instance()->getShader();
 	if (shader)
 		luax_pushtype(L, shader);
 	else
@@ -1453,8 +1453,8 @@ int w_setDefaultShaderCode(lua_State *L)
 
 			lua_pop(L, 4);
 
-			Shader::defaultCode[renderer][i] = code;
-			Shader::defaultVideoCode[renderer][i] = videocode;
+			Graphics::defaultShaderCode[renderer][i] = code;
+			Graphics::defaultVideoShaderCode[renderer][i] = videocode;
 		}
 	}
 

@@ -28,6 +28,7 @@
 #include "common/StringMap.h"
 #include "graphics/Drawable.h"
 #include "graphics/Texture.h"
+#include "graphics/vertex.h"
 #include "GLBuffer.h"
 
 // C++
@@ -51,15 +52,6 @@ class Mesh : public Drawable
 public:
 
 	static love::Type type;
-
-	// The expected usage pattern of the Mesh's vertex data.
-	enum Usage
-	{
-		USAGE_STREAM,
-		USAGE_DYNAMIC,
-		USAGE_STATIC,
-		USAGE_MAX_ENUM
-	};
 
 	// How the Mesh's vertices are used when drawing.
 	// http://escience.anu.edu.au/lecture/cg/surfaceModeling/image/surfaceModeling015.png
@@ -87,11 +79,11 @@ public:
 		int components; // max 4
 	};
 
-	Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, Usage usage);
-	Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, Usage usage);
+	Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage);
+	Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage);
 
-	Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, Usage usage);
-	Mesh(int vertexcount, DrawMode drawmode, Usage usage);
+	Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage);
+	Mesh(int vertexcount, DrawMode drawmode, vertex::Usage usage);
 
 	virtual ~Mesh();
 
@@ -202,11 +194,6 @@ public:
 	// Implements Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
-	static GLenum getGLBufferUsage(Usage usage);
-
-	static bool getConstant(const char *in, Usage &out);
-	static bool getConstant(Usage in, const char *&out);
-
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
 
@@ -259,9 +246,6 @@ private:
 	int rangeCount;
 
 	StrongRef<Texture> texture;
-
-	static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[];
-	static StringMap<Usage, USAGE_MAX_ENUM> usages;
 
 	static StringMap<DrawMode, DRAWMODE_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAWMODE_MAX_ENUM> drawModes;

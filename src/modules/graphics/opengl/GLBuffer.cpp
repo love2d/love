@@ -35,7 +35,7 @@ namespace graphics
 namespace opengl
 {
 
-GLBuffer::GLBuffer(size_t size, const void *data, BufferType type, GLenum usage, uint32 mapflags)
+GLBuffer::GLBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
 	: is_mapped(false)
 	, size(size)
 	, type(type)
@@ -100,11 +100,13 @@ void GLBuffer::unmapStatic(size_t offset, size_t size)
 
 void GLBuffer::unmapStream()
 {
+	GLenum glusage = OpenGL::getGLBufferUsage(getUsage());
+
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
 	gl.bindBuffer(type, vbo);
-	glBufferData(target, (GLsizeiptr) getSize(), nullptr,    getUsage());
-	glBufferData(target, (GLsizeiptr) getSize(), memory_map, getUsage());
+	glBufferData(target, (GLsizeiptr) getSize(), nullptr,    glusage);
+	glBufferData(target, (GLsizeiptr) getSize(), memory_map, glusage);
 }
 
 void GLBuffer::unmap()
@@ -125,7 +127,7 @@ void GLBuffer::unmap()
 
 	if (modified_size > 0)
 	{
-		switch (getUsage())
+		switch (OpenGL::getGLBufferUsage(getUsage()))
 		{
 		case GL_STATIC_DRAW:
 			unmapStatic(modified_offset, modified_size);
@@ -213,7 +215,7 @@ bool GLBuffer::load(bool restore)
 	const GLvoid *src = restore ? memory_map : nullptr;
 
 	// Note that if 'src' is '0', no data will be copied.
-	glBufferData(target, (GLsizeiptr) getSize(), src, getUsage());
+	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
 
 	return (glGetError() == GL_NO_ERROR);
 }
@@ -260,7 +262,7 @@ QuadIndices::QuadIndices(size_t size)
 		// QuadIndices will propagate the exception and keep the old GLBuffer.
 		try
 		{
-			newbuffer = new GLBuffer(buffersize, nullptr, BUFFER_INDEX, GL_STATIC_DRAW);
+			newbuffer = new GLBuffer(buffersize, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC);
 			newindices = new char[buffersize];
 		}
 		catch (std::bad_alloc &)

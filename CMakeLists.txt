@@ -465,6 +465,8 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 #
 
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
+	src/modules/graphics/Canvas.cpp
+	src/modules/graphics/Canvas.h
 	src/modules/graphics/Color.h
 	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
@@ -478,6 +480,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Polyline.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
+	src/modules/graphics/Shader.cpp
+	src/modules/graphics/Shader.h
 	src/modules/graphics/StreamBuffer.cpp
 	src/modules/graphics/StreamBuffer.h
 	src/modules/graphics/Texture.cpp
@@ -486,10 +490,14 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/vertex.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
+	src/modules/graphics/wrap_Canvas.cpp
+	src/modules/graphics/wrap_Canvas.h
 	src/modules/graphics/wrap_Font.cpp
 	src/modules/graphics/wrap_Font.h
 	src/modules/graphics/wrap_Quad.cpp
 	src/modules/graphics/wrap_Quad.h
+	src/modules/graphics/wrap_Shader.cpp
+	src/modules/graphics/wrap_Shader.h
 	src/modules/graphics/wrap_Texture.cpp
 	src/modules/graphics/wrap_Texture.h
 )
@@ -519,8 +527,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Text.h
 	src/modules/graphics/opengl/Video.cpp
 	src/modules/graphics/opengl/Video.h
-	src/modules/graphics/opengl/wrap_Canvas.cpp
-	src/modules/graphics/opengl/wrap_Canvas.h
 	src/modules/graphics/opengl/wrap_Graphics.cpp
 	src/modules/graphics/opengl/wrap_Graphics.h
 	src/modules/graphics/opengl/wrap_Image.cpp
@@ -529,8 +535,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_Mesh.h
 	src/modules/graphics/opengl/wrap_ParticleSystem.cpp
 	src/modules/graphics/opengl/wrap_ParticleSystem.h
-	src/modules/graphics/opengl/wrap_Shader.cpp
-	src/modules/graphics/opengl/wrap_Shader.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
 	src/modules/graphics/opengl/wrap_Text.cpp

@@ -18,27 +18,35 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_CANVAS_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_CANVAS_H
-
-// LOVE
-#include "common/runtime.h"
 #include "Canvas.h"
-#include "graphics/wrap_Texture.h"
+#include "Graphics.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+
+love::Type Canvas::type("Canvas", &Texture::type);
+int Canvas::canvasCount = 0;
+
+Canvas::Canvas()
 {
+	canvasCount++;
+}
 
-//see Canvas.h
-Canvas *luax_checkcanvas(lua_State *L, int idx);
-extern "C" int luaopen_canvas(lua_State *L);
+Canvas::~Canvas()
+{
+	canvasCount--;
+}
 
-} // opengl
+void Canvas::drawv(love::graphics::Graphics *gfx, const love::Matrix4 &t, const Vertex *v)
+{
+	if (gfx->isCanvasActive(this))
+		throw love::Exception("Cannot render a Canvas to itself!");
+
+	Texture::drawv(gfx, t, v);
+}
+
 } // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_CANVAS_H

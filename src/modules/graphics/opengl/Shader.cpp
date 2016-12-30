@@ -42,7 +42,7 @@ namespace
 	// reattaches the originally active program when destroyed
 	struct TemporaryAttacher
 	{
-		TemporaryAttacher(Shader *shader, bool attachNow)
+		TemporaryAttacher(graphics::Shader *shader, bool attachNow)
 		: curShader(shader)
 		, prevShader(Shader::current)
 		{
@@ -55,7 +55,7 @@ namespace
 			if (prevShader != nullptr)
 				prevShader->attach();
 			else
-				curShader->detach();
+				Shader::attachDefault();
 		}
 
 		void attach()
@@ -63,19 +63,10 @@ namespace
 			curShader->attach(true);
 		}
 
-		Shader *curShader;
-		Shader *prevShader;
+		graphics::Shader *curShader;
+		graphics::Shader *prevShader;
 	};
 } // anonymous namespace
-
-
-love::Type Shader::type("Shader", &Object::type);
-Shader *Shader::current = nullptr;
-Shader *Shader::defaultShader = nullptr;
-Shader *Shader::defaultVideoShader = nullptr;
-
-Shader::ShaderSource Shader::defaultCode[Graphics::RENDERER_MAX_ENUM][2];
-Shader::ShaderSource Shader::defaultVideoCode[Graphics::RENDERER_MAX_ENUM][2];
 
 Shader::Shader(const ShaderSource &source)
 	: shaderSource(source)
@@ -96,9 +87,6 @@ Shader::Shader(const ShaderSource &source)
 
 Shader::~Shader()
 {
-	if (current == this)
-		detach();
-
 	unloadVolatile();
 
 	for (const auto &p : uniforms)
@@ -125,7 +113,7 @@ GLuint Shader::compileCode(ShaderStage stage, const std::string &code)
 	GLenum glstage;
 	const char *typestr;
 
-	if (!stageNames.find(stage, typestr))
+	if (!getConstant(stage, typestr))
 		typestr = "";
 
 	switch (stage)
@@ -232,7 +220,7 @@ void Shader::mapActiveUniforms()
 
 		// If this is a built-in (LOVE-created) uniform, store the location.
 		BuiltinUniform builtin;
-		if (builtinNames.find(u.name.c_str(), builtin))
+		if (getConstant(u.name.c_str(), builtin))
 			builtinUniforms[int(builtin)] = u.location;
 
 		if (u.location == -1)
@@ -397,9 +385,9 @@ bool Shader::loadVolatile()
 	std::vector<GLuint> shaderids;
 
 	bool gammacorrect = graphics::isGammaCorrect();
-	const ShaderSource *defaults = &defaultCode[Graphics::RENDERER_OPENGL][gammacorrect ? 1 : 0];
+	const ShaderSource *defaults = &Graphics::defaultShaderCode[Graphics::RENDERER_OPENGL][gammacorrect ? 1 : 0];
 	if (GLAD_ES_VERSION_2_0)
-		defaults = &defaultCode[Graphics::RENDERER_OPENGLES][gammacorrect ? 1 : 0];
+		defaults = &Graphics::defaultShaderCode[Graphics::RENDERER_OPENGLES][gammacorrect ? 1 : 0];
 
 	// The shader program must have both vertex and pixel shader stages.
 	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults->vertex : shaderSource.vertex;
@@ -433,7 +421,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (attribNames.find((VertexAttribID) i, name))
+		if (getConstant((VertexAttribID) i, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -460,7 +448,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (attribNames.find(VertexAttribID(i), name))
+		if (getConstant(VertexAttribID(i), name))
 			builtinAttributes[i] = glGetAttribLocation(program, name);
 		else
 			builtinAttributes[i] = -1;
@@ -529,7 +517,7 @@ std::string Shader::getWarnings() const
 	// Get the individual shader stage warnings
 	for (const auto &warning : shaderWarnings)
 	{
-		if (stageNames.find(warning.first, stagestr))
+		if (getConstant(warning.first, stagestr))
 			warnings += std::string(stagestr) + std::string(" shader:\n") + warning.second;
 	}
 
@@ -563,22 +551,6 @@ void Shader::attach(bool temporary)
 			pendingUniformUpdates.clear();
 		}
 	}
-}
-
-void Shader::detach()
-{
-	if (defaultShader)
-	{
-		if (current != defaultShader)
-			defaultShader->attach();
-
-		return;
-	}
-
-	if (current != nullptr)
-		gl.useProgram(0);
-
-	current = nullptr;
 }
 
 const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
@@ -777,11 +749,6 @@ GLint Shader::getAttribLocation(const std::string &name)
 	return location;
 }
 
-bool Shader::hasVertexAttrib(VertexAttribID attrib) const
-{
-	return builtinAttributes[int(attrib)] != -1;
-}
-
 void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture)
 {
 	// Set up the texture units that will be used by the shader to sample from
@@ -797,9 +764,9 @@ void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtextur
 		};
 
 		const char *names[3] = {nullptr, nullptr, nullptr};
-		builtinNames.find(BUILTIN_VIDEO_Y_CHANNEL,  names[0]);
-		builtinNames.find(BUILTIN_VIDEO_CB_CHANNEL, names[1]);
-		builtinNames.find(BUILTIN_VIDEO_CR_CHANNEL, names[2]);
+		getConstant(BUILTIN_VIDEO_Y_CHANNEL,  names[0]);
+		getConstant(BUILTIN_VIDEO_CB_CHANNEL, names[1]);
+		getConstant(BUILTIN_VIDEO_CR_CHANNEL, names[2]);
 
 		for (int i = 0; i < 3; i++)
 		{
@@ -1092,71 +1059,6 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 		return UNIFORM_UNKNOWN;
 	}
 }
-
-bool Shader::getConstant(const char *in, UniformType &out)
-{
-	return uniformTypes.find(in, out);
-}
-
-bool Shader::getConstant(UniformType in, const char *&out)
-{
-	return uniformTypes.find(in, out);
-}
-
-bool Shader::getConstant(const char *in, VertexAttribID &out)
-{
-	return attribNames.find(in, out);
-}
-
-bool Shader::getConstant(VertexAttribID in, const char *&out)
-{
-	return attribNames.find(in, out);
-}
-
-StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM>::Entry Shader::stageNameEntries[] =
-{
-	{"vertex", Shader::STAGE_VERTEX},
-	{"pixel", Shader::STAGE_PIXEL},
-};
-
-StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM> Shader::stageNames(Shader::stageNameEntries, sizeof(Shader::stageNameEntries));
-
-StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM>::Entry Shader::uniformTypeEntries[] =
-{
-	{"float", Shader::UNIFORM_FLOAT},
-	{"matrix", Shader::UNIFORM_MATRIX},
-	{"int", Shader::UNIFORM_INT},
-	{"bool", Shader::UNIFORM_BOOL},
-	{"image", Shader::UNIFORM_SAMPLER},
-	{"unknown", Shader::UNIFORM_UNKNOWN},
-};
-
-StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM> Shader::uniformTypes(Shader::uniformTypeEntries, sizeof(Shader::uniformTypeEntries));
-
-StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
-{
-	{"VertexPosition", ATTRIB_POS},
-	{"VertexTexCoord", ATTRIB_TEXCOORD},
-	{"VertexColor", ATTRIB_COLOR},
-	{"ConstantColor", ATTRIB_CONSTANTCOLOR},
-};
-
-StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
-
-StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
-{
-	{"TransformMatrix", Shader::BUILTIN_TRANSFORM_MATRIX},
-	{"ProjectionMatrix", Shader::BUILTIN_PROJECTION_MATRIX},
-	{"TransformProjectionMatrix", Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX},
-	{"NormalMatrix", Shader::BUILTIN_NORMAL_MATRIX},
-	{"love_PointSize", Shader::BUILTIN_POINT_SIZE},
-	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
-	{"love_VideoYChannel", Shader::BUILTIN_VIDEO_Y_CHANNEL},
-	{"love_VideoCbChannel", Shader::BUILTIN_VIDEO_CB_CHANNEL},
-	{"love_VideoCrChannel", Shader::BUILTIN_VIDEO_CR_CHANNEL},
-};
-
-StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));
 
 } // opengl
 } // graphics

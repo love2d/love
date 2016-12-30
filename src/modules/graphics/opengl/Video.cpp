@@ -37,7 +37,7 @@ Video::Video(love::video::VideoStream *stream, float pixeldensity)
 	: stream(stream)
 	, width(stream->getWidth() / pixeldensity)
 	, height(stream->getHeight() / pixeldensity)
-	, filter(Texture::getDefaultFilter())
+	, filter(Texture::defaultFilter)
 {
 	filter.mipmap = Texture::FILTER_NONE;
 
@@ -124,13 +124,13 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushStreamDraws();
 
-	Shader *shader = Shader::current;
+	Shader *shader = (Shader *) Shader::current;
 	bool defaultShader = (shader == Shader::defaultShader);
 	if (defaultShader)
 	{
 		// If we're still using the default shader, substitute the video version
 		Shader::defaultVideoShader->attach();
-		shader = Shader::defaultVideoShader;
+		shader = (Shader *) Shader::defaultVideoShader;
 	}
 
 	shader->setVideoTextures(textures[0], textures[1], textures[2]);

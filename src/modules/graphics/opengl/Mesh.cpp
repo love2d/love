@@ -61,7 +61,7 @@ static std::vector<Mesh::AttribFormat> getDefaultVertexFormat()
 
 love::Type Mesh::type("Mesh", &Drawable::type);
 
-Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, Usage usage)
+Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
 	, vbo(nullptr)
 	, vertexCount(0)
@@ -83,12 +83,12 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vbo = new GLBuffer(datasize, data, BUFFER_VERTEX, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	vbo = new GLBuffer(datasize, data, BUFFER_VERTEX, usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, Usage usage)
+Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
 	, vbo(nullptr)
 	, vertexCount((size_t) vertexcount)
@@ -109,7 +109,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vbo = new GLBuffer(buffersize, nullptr, BUFFER_VERTEX, getGLBufferUsage(usage), GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	vbo = new GLBuffer(buffersize, nullptr, BUFFER_VERTEX, usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
 
 	// Initialize the buffer's contents to 0.
 	memset(vbo->map(), 0, buffersize);
@@ -119,12 +119,12 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, Usage usage)
+Mesh::Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage)
 	: Mesh(getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage)
 {
 }
 
-Mesh::Mesh(int vertexcount, DrawMode drawmode, Usage usage)
+Mesh::Mesh(int vertexcount, DrawMode drawmode, vertex::Usage usage)
 	: Mesh(getDefaultVertexFormat(), vertexcount, drawmode, usage)
 {
 }
@@ -554,7 +554,7 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	if (Shader::getConstant(inputname.c_str(), builtinattrib))
 		attriblocation = (GLint) builtinattrib;
 	else if (Shader::current)
-		attriblocation = Shader::current->getAttribLocation(inputname);
+		attriblocation = ((Shader *) Shader::current)->getAttribLocation(inputname);
 
 	// The active shader might not use this vertex attribute name.
 	if (attriblocation < 0)
@@ -713,31 +713,6 @@ size_t Mesh::getGLDataTypeSize(GLenum datatype)
 	}
 }
 
-GLenum Mesh::getGLBufferUsage(Usage usage)
-{
-	switch (usage)
-	{
-	case USAGE_STREAM:
-		return GL_STREAM_DRAW;
-	case USAGE_DYNAMIC:
-		return GL_DYNAMIC_DRAW;
-	case USAGE_STATIC:
-		return GL_STATIC_DRAW;
-	default:
-		return 0;
-	}
-}
-
-bool Mesh::getConstant(const char *in, Usage &out)
-{
-	return usages.find(in, out);
-}
-
-bool Mesh::getConstant(Usage in, const char *&out)
-{
-	return usages.find(in, out);
-}
-
 bool Mesh::getConstant(const char *in, Mesh::DrawMode &out)
 {
 	return drawModes.find(in, out);
@@ -757,15 +732,6 @@ bool Mesh::getConstant(DataType in, const char *&out)
 {
 	return dataTypes.find(in, out);
 }
-
-StringMap<Mesh::Usage, Mesh::USAGE_MAX_ENUM>::Entry Mesh::usageEntries[] =
-{
-	{"stream", USAGE_STREAM},
-	{"dynamic", USAGE_DYNAMIC},
-	{"static", USAGE_STATIC},
-};
-
-StringMap<Mesh::Usage, Mesh::USAGE_MAX_ENUM> Mesh::usages(Mesh::usageEntries, sizeof(Mesh::usageEntries));
 
 StringMap<Mesh::DrawMode, Mesh::DRAWMODE_MAX_ENUM>::Entry Mesh::drawModeEntries[] =
 {

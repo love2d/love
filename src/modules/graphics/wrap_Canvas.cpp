@@ -25,8 +25,6 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Canvas *luax_checkcanvas(lua_State *L, int idx)
 {
@@ -115,6 +113,5 @@ extern "C" int luaopen_canvas(lua_State *L)
 	return luax_register_type(L, &Canvas::type, w_Texture_functions, w_Canvas_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

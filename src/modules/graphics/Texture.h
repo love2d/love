@@ -81,6 +81,10 @@ public:
 	Texture();
 	virtual ~Texture();
 
+	static Filter defaultFilter;
+	static FilterMode defaultMipmapFilter;
+	static float defaultMipmapSharpness;
+
 	// Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
@@ -109,10 +113,6 @@ public:
 
 	virtual ptrdiff_t getHandle() const = 0;
 
-	// The default filter.
-	static void setDefaultFilter(const Filter &f);
-	static const Filter &getDefaultFilter();
-
 	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 
 	static bool getConstant(const char *in, FilterMode &out);
@@ -139,9 +139,6 @@ protected:
 	Vertex vertices[4];
 
 private:
-
-	// The default texture filter.
-	static Filter defaultFilter;
 
 	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
 	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;

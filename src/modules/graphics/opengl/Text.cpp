@@ -62,7 +62,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 		if (vbo != nullptr)
 			newsize = std::max(size_t(vbo->getSize() * 1.5), newsize);
 
-		GLBuffer *new_vbo = new GLBuffer(newsize, nullptr, BUFFER_VERTEX, GL_DYNAMIC_DRAW);
+		GLBuffer *new_vbo = new GLBuffer(newsize, nullptr, BUFFER_VERTEX, vertex::USAGE_DYNAMIC);
 
 		if (vbo != nullptr)
 		{
