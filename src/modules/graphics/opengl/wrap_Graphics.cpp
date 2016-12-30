@@ -2169,7 +2169,7 @@ static const luaL_Reg functions[] =
 	{ "getPixelWidth", w_getPixelWidth },
 	{ "getPixelHeight", w_getPixelHeight },
 	{ "getPixelDimensions", w_getPixelDimensions },
-	{ "getPixelDensity", w_getPixelDimensions },
+	{ "getPixelDensity", w_getPixelDensity },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },
