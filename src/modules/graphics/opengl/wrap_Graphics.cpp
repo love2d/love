@@ -440,9 +440,9 @@ int w_newImage(lua_State *L)
 			&& (fname[namelen - 1] == 'x' || fname[namelen - 1] == 'X'))
 		{
 			char *end = nullptr;
-			float density = std::strtof(fname.c_str() + atpos + 1, &end);
-			if (end != nullptr && density > 0.0f)
-				settings.pixeldensity = density;
+			long density = strtol(fname.c_str() + atpos + 1, &end, 10);
+			if (end != nullptr && density > 0)
+				settings.pixeldensity = (float) density;
 		}
 
 		if (imagemodule->isCompressed(fdata))
