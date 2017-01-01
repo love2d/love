@@ -836,6 +836,7 @@
 		FA1557C31CE90BD200AFF582 /* EXRHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1557C11CE90BD200AFF582 /* EXRHandler.cpp */; };
 		FA1557C41CE90BD200AFF582 /* EXRHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1557C21CE90BD200AFF582 /* EXRHandler.h */; };
 		FA1557C51CE90BD900AFF582 /* EXRHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1557C11CE90BD200AFF582 /* EXRHandler.cpp */; };
+		FA1583E21E196180005E603B /* wrap_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1BA0B51E17043400AA2803 /* wrap_Shader.cpp */; };
 		FA19C4C51B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C61B4B0BD50059B0B3 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA19C4C21B4B0BD50059B0B3 /* wrap_Video.cpp */; };
 		FA19C4C71B4B0BD50059B0B3 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA19C4C31B4B0BD50059B0B3 /* wrap_Video.h */; };
@@ -3696,6 +3697,7 @@
 				FA0B7CDA1A95902C000E1D17 /* Pool.cpp in Sources */,
 				FA0B7E161A95902C000E1D17 /* Joint.cpp in Sources */,
 				FA0B7EE91A95902D000E1D17 /* wrap_Window.cpp in Sources */,
+				FA1583E21E196180005E603B /* wrap_Shader.cpp in Sources */,
 				FA0B7AB91A958EA3000E1D17 /* enet.cpp in Sources */,
 				FA0B7E281A95902C000E1D17 /* PulleyJoint.cpp in Sources */,
 				FA0B7A4C1A958EA3000E1D17 /* b2BlockAllocator.cpp in Sources */,

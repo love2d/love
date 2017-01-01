@@ -451,7 +451,7 @@ extern "C" { // Called by enet and luasocket
  * @param type The type bit.
  **/
 template <typename T>
-T *luax_checktype(lua_State *L, int idx, love::Type &type)
+T *luax_checktype(lua_State *L, int idx, const love::Type &type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 	{
@@ -480,7 +480,7 @@ T *luax_checktype(lua_State *L, int idx)
 }
 
 template <typename T>
-T *luax_getmodule(lua_State *L, love::Type &type)
+T *luax_getmodule(lua_State *L, const love::Type &type)
 {
 	const char *name = type.getName();
 
@@ -507,7 +507,7 @@ T *luax_getmodule(lua_State *L)
 }
 
 template <typename T>
-T *luax_optmodule(lua_State *L, love::Type &type)
+T *luax_optmodule(lua_State *L, const love::Type &type)
 {
 	const char *name = type.getName();
 
@@ -545,7 +545,7 @@ T *luax_optmodule(lua_State *L)
  * @param type The type of the object.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, love::Type& /*type*/)
+T *luax_totype(lua_State *L, int idx, const love::Type& /*type*/)
 {
 	T *o = (T *)(((Proxy *)lua_touserdata(L, idx))->object);
 

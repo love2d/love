@@ -51,7 +51,7 @@ public:
 		return bits[other];
 	}
 
-	bool isa(Type &other)
+	bool isa(const Type &other)
 	{
 		if (!inited)
 			init();
