@@ -62,10 +62,10 @@ public:
 	void updateUniform(const UniformInfo *info, int count, bool internalUpdate = false) override;
 	void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate = false) override;
 	bool hasUniform(const std::string &name) const override;
+	void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) override;
 
 	GLint getAttribLocation(const std::string &name);
 
-	void setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture);
 	void checkSetScreenParams();
 	void checkSetPointSize(float size);
 	void checkSetBuiltinUniforms();

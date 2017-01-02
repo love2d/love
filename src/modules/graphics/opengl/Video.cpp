@@ -127,13 +127,13 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushStreamDraws();
 
-	Shader *shader = (Shader *) Shader::current;
+	love::graphics::Shader *shader = Shader::current;
 	bool usingdefaultshader = (shader == Shader::defaultShader);
 	if (usingdefaultshader)
 	{
 		// If we're using the default shader, substitute the video version.
 		Shader::defaultVideoShader->attach();
-		shader = (Shader *) Shader::defaultVideoShader;
+		shader = Shader::defaultVideoShader;
 	}
 
 	shader->setVideoTextures(textures[0], textures[1], textures[2]);

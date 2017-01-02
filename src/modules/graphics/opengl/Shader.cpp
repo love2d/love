@@ -36,38 +36,6 @@ namespace graphics
 namespace opengl
 {
 
-namespace
-{
-	// temporarily attaches a shader program (for setting uniforms, etc)
-	// reattaches the originally active program when destroyed
-	struct TemporaryAttacher
-	{
-		TemporaryAttacher(graphics::Shader *shader, bool attachNow)
-		: curShader(shader)
-		, prevShader(Shader::current)
-		{
-			if (attachNow)
-				attach();
-		}
-
-		~TemporaryAttacher()
-		{
-			if (prevShader != nullptr)
-				prevShader->attach();
-			else
-				Shader::attachDefault();
-		}
-
-		void attach()
-		{
-			curShader->attach(true);
-		}
-
-		graphics::Shader *curShader;
-		graphics::Shader *prevShader;
-	};
-} // anonymous namespace
-
 Shader::Shader(const ShaderSource &source)
 	: shaderSource(source)
 	, program(0)
@@ -749,43 +717,39 @@ GLint Shader::getAttribLocation(const std::string &name)
 	return location;
 }
 
-void Shader::setVideoTextures(GLuint ytexture, GLuint cbtexture, GLuint crtexture)
+void Shader::setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture)
 {
 	// Set up the texture units that will be used by the shader to sample from
 	// the textures, if they haven't been set up yet.
 	if (videoTextureUnits[0] == 0)
 	{
-		TemporaryAttacher attacher(this, true);
-
-		const GLint locs[3] = {
-			builtinUniforms[BUILTIN_VIDEO_Y_CHANNEL],
-			builtinUniforms[BUILTIN_VIDEO_CB_CHANNEL],
-			builtinUniforms[BUILTIN_VIDEO_CR_CHANNEL]
+		const BuiltinUniform builtins[3] = {
+			BUILTIN_VIDEO_Y_CHANNEL,
+			BUILTIN_VIDEO_CB_CHANNEL,
+			BUILTIN_VIDEO_CR_CHANNEL,
 		};
-
-		const char *names[3] = {nullptr, nullptr, nullptr};
-		getConstant(BUILTIN_VIDEO_Y_CHANNEL,  names[0]);
-		getConstant(BUILTIN_VIDEO_CB_CHANNEL, names[1]);
-		getConstant(BUILTIN_VIDEO_CR_CHANNEL, names[2]);
 
 		for (int i = 0; i < 3; i++)
 		{
-			if (locs[i] >= 0 && names[i] != nullptr)
-			{
-				const UniformInfo *info = getUniformInfo(names[i]);
-				if (info != nullptr)
-				{
-					videoTextureUnits[i] = getFreeTextureUnits(1);
-					textureUnits[videoTextureUnits[i]].active = true;
+			GLint loc = builtinUniforms[builtins[i]];
+			const char *name = nullptr;;
 
-					info->ints[0] = videoTextureUnits[i];
-					updateUniform(info, 1);
-				}
+			if (loc >= 0 && getConstant(builtins[i], name) && name != nullptr)
+			{
+				const UniformInfo *info = getUniformInfo(name);
+				if (info == nullptr)
+					continue;
+
+				videoTextureUnits[i] = getFreeTextureUnits(1);
+				textureUnits[videoTextureUnits[i]].active = true;
+
+				info->ints[0] = videoTextureUnits[i];
+				updateUniform(info, 1);
 			}
 		}
 	}
 
-	const GLuint textures[3] = {ytexture, cbtexture, crtexture};
+	const GLuint textures[3] = {(GLuint) ytexture, (GLuint) cbtexture, (GLuint) crtexture};
 
 	// Bind the textures to their respective texture units.
 	for (int i = 0; i < 3; i++)

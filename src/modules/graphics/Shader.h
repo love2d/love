@@ -29,6 +29,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <stddef.h>
 
 namespace love
 {
@@ -149,6 +150,11 @@ public:
 	 * used in the shader.
 	 **/
 	virtual bool hasUniform(const std::string &name) const = 0;
+
+	/**
+	 * Sets the textures used when rendering a video. For internal use only.
+	 **/
+	virtual void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) = 0;
 
 	static bool getConstant(const char *in, ShaderStage &out);
 	static bool getConstant(ShaderStage in, const char *&out);
