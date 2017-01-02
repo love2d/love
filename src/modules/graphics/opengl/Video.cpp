@@ -78,7 +78,7 @@ Video::~Video()
 
 bool Video::loadVolatile()
 {
-	glGenTextures(3, &textures[0]);
+	glGenTextures(3, textures);
 
 	// Create the textures using the initial frame data.
 	auto frame = (const love::video::VideoStream::Frame*) stream->getFrontBuffer();
@@ -90,6 +90,9 @@ bool Video::loadVolatile()
 
 	Texture::Wrap wrap; // Clamp wrap mode.
 
+	bool srgb = false;
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(PIXELFORMAT_R8, false, srgb);
+
 	for (int i = 0; i < 3; i++)
 	{
 		gl.bindTextureToUnit(textures[i], 0, false);
@@ -97,8 +100,8 @@ bool Video::loadVolatile()
 		gl.setTextureFilter(filter);
 		gl.setTextureWrap(wrap);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, widths[i], heights[i], 0,
-		             GL_LUMINANCE, GL_UNSIGNED_BYTE, data[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, widths[i], heights[i],
+		             0, fmt.externalformat, fmt.type, data[i]);
 	}
 
 	return true;
@@ -125,29 +128,39 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	gfx->flushStreamDraws();
 
 	Shader *shader = (Shader *) Shader::current;
-	bool defaultShader = (shader == Shader::defaultShader);
-	if (defaultShader)
+	bool usingdefaultshader = (shader == Shader::defaultShader);
+	if (usingdefaultshader)
 	{
-		// If we're still using the default shader, substitute the video version
+		// If we're using the default shader, substitute the video version.
 		Shader::defaultVideoShader->attach();
 		shader = (Shader *) Shader::defaultVideoShader;
 	}
 
 	shader->setVideoTextures(textures[0], textures[1], textures[2]);
 
-	Graphics::TempTransform transform(gfx, m);
+	Graphics::StreamDrawRequest req;
+	req.formats[0] = vertex::CommonFormat::XYf_STf_RGBAub;
+	req.indexMode = vertex::TriangleIndexMode::QUADS;
+	req.vertexCount = 4;
 
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD);
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+	Vertex *verts = (Vertex *) data.stream[0];
 
-	gl.bindBuffer(BUFFER_VERTEX, 0);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &vertices[0].x);
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &vertices[0].s);
+	Matrix4 t(gfx->getTransform(), m);
+	t.transform(verts, vertices, 4);
 
-	gl.prepareDraw();
-	gl.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	Color c = toColor(gfx->getColor());
 
-	// If we were using the default shader, reattach it
-	if (defaultShader)
+	for (int i = 0; i < 4; i++)
+	{
+		verts[i].s = vertices[i].s;
+		verts[i].t = vertices[i].t;
+		verts[i].color = c;
+	}
+
+	gfx->flushStreamDraws();
+
+	if (usingdefaultshader)
 		Shader::defaultShader->attach();
 }
 
@@ -165,11 +178,14 @@ void Video::update()
 
 		const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
 
+		bool srgb = false;
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(PIXELFORMAT_R8, false, srgb);
+
 		for (int i = 0; i < 3; i++)
 		{
 			gl.bindTextureToUnit(textures[i], 0, false);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, widths[i], heights[i],
-			                GL_LUMINANCE, GL_UNSIGNED_BYTE, data[i]);
+			                fmt.externalformat, fmt.type, data[i]);
 		}
 	}
 }

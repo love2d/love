@@ -740,8 +740,16 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	switch (pixelformat)
 	{
 	case PIXELFORMAT_R8:
-		f.internalformat = GL_R8;
-		f.externalformat = GL_RED;
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
+		{
+			f.internalformat = GL_R8;
+			f.externalformat = GL_RED;
+		}
+		else
+		{
+			f.internalformat = GL_LUMINANCE8;
+			f.externalformat = GL_LUMINANCE;
+		}
 		f.type = GL_UNSIGNED_BYTE;
 		break;
 	case PIXELFORMAT_RG8:
@@ -1001,7 +1009,12 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 	{
 	case PIXELFORMAT_R8:
 	case PIXELFORMAT_RG8:
-		return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg;
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
+			return true;
+		else if (pixelformat == PIXELFORMAT_R8 && !rendertarget && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
+			return true; // We'll use OpenGL's luminance format internally.
+		else
+			return false;
 	case PIXELFORMAT_RGBA8:
 		if (rendertarget)
 			return GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
