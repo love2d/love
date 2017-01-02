@@ -226,10 +226,6 @@ public:
 	 * The y-coordinate starts at the top.
 	 **/
 	void setViewport(const Rect &v);
-
-	/**
-	 * Gets the current OpenGL rendering viewport rectangle.
-	 **/
 	Rect getViewport() const;
 
 	/**
@@ -239,23 +235,22 @@ public:
 	void setScissor(const Rect &v, bool canvasActive);
 
 	/**
+	 * Sets the constant color (vertex attribute). This may be applied
+	 * internally at draw-time.
+	 **/
+	void setConstantColor(const Colorf &color);
+	const Colorf &getConstantColor() const;
+
+	/**
 	 * Sets the global point size.
 	 **/
 	void setPointSize(float size);
-
-	/**
-	 * Gets the global point size.
-	 **/
 	float getPointSize() const;
 
 	/**
 	 * Calls glEnable/glDisable(GL_FRAMEBUFFER_SRGB).
 	 **/
 	void setFramebufferSRGB(bool enable);
-
-	/**
-	 * Equivalent to glIsEnabled(GL_FRAMEBUFFER_SRGB).
-	 **/
 	bool hasFramebufferSRGB() const;
 
 	/**
@@ -404,6 +399,9 @@ private:
 		int curTextureUnit;
 
 		uint32 enabledAttribArrays;
+
+		Colorf constantColor;
+		Colorf lastConstantColor;
 
 		Rect viewport;
 		Rect scissor;

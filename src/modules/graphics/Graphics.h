@@ -720,7 +720,6 @@ protected:
 	struct DisplayState
 	{
 		Colorf color = Colorf(1.0, 1.0, 1.0, 1.0);
-		Colorf gammaCorrectedColor = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
 		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 1.0);
 
 		BlendMode blendMode = BLEND_ALPHA;

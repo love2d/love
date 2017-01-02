@@ -76,6 +76,10 @@ OpenGL::OpenGL()
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
+	state.constantColor = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
+
+	float nan = std::numeric_limits<float>::quiet_NaN();
+	state.lastConstantColor = Colorf(nan, nan, nan, nan);
 }
 
 bool OpenGL::initContext()
@@ -337,6 +341,13 @@ void OpenGL::prepareDraw()
 	// Make sure the active shader's love-provided uniforms are up to date.
 	if (Shader::current != nullptr)
 		((Shader *)Shader::current)->checkSetBuiltinUniforms();
+
+	if (state.constantColor != state.lastConstantColor)
+	{
+		const Colorf &c = state.constantColor;
+		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, c.r, c.g, c.b, c.a);
+		state.lastConstantColor = c;
+	}
 }
 
 GLenum OpenGL::getGLBufferType(BufferType type)
@@ -454,6 +465,16 @@ void OpenGL::setScissor(const Rect &v, bool canvasActive)
 	}
 
 	state.scissor = v;
+}
+
+void OpenGL::setConstantColor(const Colorf &color)
+{
+	state.constantColor = color;
+}
+
+const Colorf &OpenGL::getConstantColor() const
+{
+	return state.constantColor;
 }
 
 void OpenGL::setPointSize(float size)

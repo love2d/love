@@ -417,8 +417,9 @@ void Graphics::flushStreamDraws()
 		break;
 	}
 
+	Colorf nc = gl.getConstantColor();
 	if (attribs & ATTRIBFLAG_COLOR)
-		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, 1.0f, 1.0f, 1.0f, 1.0f);
+		gl.setConstantColor(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
 	pushIdentityTransform();
 
@@ -445,10 +446,7 @@ void Graphics::flushStreamDraws()
 	popTransform();
 
 	if (attribs & ATTRIB_CONSTANTCOLOR)
-	{
-		Colorf nc = states.back().gammaCorrectedColor;
-		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, nc.r, nc.g, nc.b, nc.a);
-	}
+		gl.setConstantColor(nc);
 
 	streamBufferState.vertexCount = 0;
 	streamBufferState.indexCount = 0;
@@ -1236,10 +1234,9 @@ void Graphics::setColor(Colorf c)
 
 	Colorf nc = c;
 	gammaCorrectColor(nc);
-	glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, nc.r, nc.g, nc.b, nc.a);
+	gl.setConstantColor(nc);
 
 	states.back().color = c;
-	states.back().gammaCorrectedColor = nc;
 }
 
 void Graphics::setColorMask(ColorMask mask)
