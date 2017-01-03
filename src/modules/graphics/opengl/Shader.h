@@ -66,9 +66,9 @@ public:
 
 	GLint getAttribLocation(const std::string &name);
 
-	void checkSetScreenParams();
-	void checkSetPointSize(float size);
-	void checkSetBuiltinUniforms();
+	void updateScreenParams();
+	void updatePointSize(float size);
+	void updateBuiltinUniforms();
 
 	GLuint getProgram() const
 	{

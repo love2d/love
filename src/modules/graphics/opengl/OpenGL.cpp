@@ -340,7 +340,7 @@ void OpenGL::prepareDraw()
 
 	// Make sure the active shader's love-provided uniforms are up to date.
 	if (Shader::current != nullptr)
-		((Shader *)Shader::current)->checkSetBuiltinUniforms();
+		((Shader *)Shader::current)->updateBuiltinUniforms();
 
 	if (state.constantColor != state.lastConstantColor)
 	{

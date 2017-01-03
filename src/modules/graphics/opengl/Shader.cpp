@@ -237,6 +237,10 @@ void Shader::mapActiveUniforms()
 				datasize = sizeof(int) * u.components * u.count;
 				u.data = malloc(datasize);
 				break;
+			case UNIFORM_UINT:
+				datasize = sizeof(unsigned int) * u.components * u.count;
+				u.data = malloc(datasize);
+				break;
 			case UNIFORM_MATRIX:
 				datasize = sizeof(float) * (u.matrix.rows * u.matrix.columns) * u.count;
 				u.data = malloc(datasize);
@@ -289,6 +293,10 @@ void Shader::mapActiveUniforms()
 				case UNIFORM_INT:
 				case UNIFORM_BOOL:
 					glGetUniformiv(program, location, &u.ints[offset]);
+					offset += u.components;
+					break;
+				case UNIFORM_UINT:
+					glGetUniformuiv(program, location, &u.uints[offset]);
 					offset += u.components;
 					break;
 				case UNIFORM_MATRIX:
@@ -427,7 +435,7 @@ bool Shader::loadVolatile()
 		// make sure glUseProgram gets called.
 		current = nullptr;
 		attach();
-		checkSetBuiltinUniforms();
+		updateBuiltinUniforms();
 	}
 
 	return true;
@@ -578,6 +586,24 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalUpda
 			break;
 		case 4:
 			glUniform4iv(location, count, info->ints);
+			break;
+		}
+	}
+	else if (type == UNIFORM_UINT)
+	{
+		switch (info->components)
+		{
+		case 1:
+			glUniform1uiv(location, count, info->uints);
+			break;
+		case 2:
+			glUniform2uiv(location, count, info->uints);
+			break;
+		case 3:
+			glUniform3uiv(location, count, info->uints);
+			break;
+		case 4:
+			glUniform4uiv(location, count, info->uints);
 			break;
 		}
 	}
@@ -764,7 +790,7 @@ void Shader::setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t
 	}
 }
 
-void Shader::checkSetScreenParams()
+void Shader::updateScreenParams()
 {
 	Rect view = gl.getViewport();
 
@@ -804,7 +830,7 @@ void Shader::checkSetScreenParams()
 	lastViewport = view;
 }
 
-void Shader::checkSetPointSize(float size)
+void Shader::updatePointSize(float size)
 {
 	if (size == lastPointSize || current != this)
 		return;
@@ -816,15 +842,15 @@ void Shader::checkSetPointSize(float size)
 	lastPointSize = size;
 }
 
-void Shader::checkSetBuiltinUniforms()
+void Shader::updateBuiltinUniforms()
 {
 	if (current != this)
 		return;
 
-	checkSetScreenParams();
+	updateScreenParams();
 
 	if (GLAD_ES_VERSION_2_0)
-		checkSetPointSize(gl.getPointSize());
+		updatePointSize(gl.getPointSize());
 
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 
@@ -902,6 +928,7 @@ int Shader::getUniformTypeComponents(GLenum type) const
 	switch (type)
 	{
 	case GL_INT:
+	case GL_UNSIGNED_INT:
 	case GL_FLOAT:
 	case GL_BOOL:
 	case GL_SAMPLER_1D:
@@ -909,16 +936,19 @@ int Shader::getUniformTypeComponents(GLenum type) const
 	case GL_SAMPLER_3D:
 		return 1;
 	case GL_INT_VEC2:
+	case GL_UNSIGNED_INT_VEC2:
 	case GL_FLOAT_VEC2:
 	case GL_FLOAT_MAT2:
 	case GL_BOOL_VEC2:
 		return 2;
 	case GL_INT_VEC3:
+	case GL_UNSIGNED_INT_VEC3:
 	case GL_FLOAT_VEC3:
 	case GL_FLOAT_MAT3:
 	case GL_BOOL_VEC3:
 		return 3;
 	case GL_INT_VEC4:
+	case GL_UNSIGNED_INT_VEC4:
 	case GL_FLOAT_VEC4:
 	case GL_FLOAT_MAT4:
 	case GL_BOOL_VEC4:
@@ -981,6 +1011,11 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 	case GL_INT_VEC3:
 	case GL_INT_VEC4:
 		return UNIFORM_INT;
+	case GL_UNSIGNED_INT:
+	case GL_UNSIGNED_INT_VEC2:
+	case GL_UNSIGNED_INT_VEC3:
+	case GL_UNSIGNED_INT_VEC4:
+		return UNIFORM_UINT;
 	case GL_FLOAT:
 	case GL_FLOAT_VEC2:
 	case GL_FLOAT_VEC3:

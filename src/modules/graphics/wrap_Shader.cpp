@@ -108,6 +108,14 @@ int w_Shader_sendInts(lua_State *L, int startidx, Shader *shader, const Shader::
 	return 0;
 }
 
+int w_Shader_sendUnsignedInts(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
+{
+	int count = _getCount(L, startidx, info);
+	_updateNumbers(L, startidx, info->uints, info->components, count);
+	luax_catchexcept(L, [&]() { shader->updateUniform(info, count); });
+	return 0;
+}
+
 int w_Shader_sendBooleans(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
 	int count = _getCount(L, startidx, info);
@@ -284,6 +292,8 @@ int w_Shader_send(lua_State *L)
 		return w_Shader_sendMatrices(L, startidx, shader, info);
 	case Shader::UNIFORM_INT:
 		return w_Shader_sendInts(L, startidx, shader, info);
+	case Shader::UNIFORM_UINT:
+		return w_Shader_sendUnsignedInts(L, startidx, shader, info);
 	case Shader::UNIFORM_BOOL:
 		return w_Shader_sendBooleans(L, startidx, shader, info);
 	case Shader::UNIFORM_SAMPLER:

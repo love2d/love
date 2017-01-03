@@ -49,7 +49,7 @@ class Reference;
 namespace graphics
 {
 
-const int MAX_COLOR_RENDER_TARGETS = 16;
+const int MAX_COLOR_RENDER_TARGETS = 8;
 
 /**
  * Globally sets whether gamma correction is enabled. Ideally this should be set

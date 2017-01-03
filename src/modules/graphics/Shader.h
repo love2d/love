@@ -71,6 +71,7 @@ public:
 		UNIFORM_FLOAT,
 		UNIFORM_MATRIX,
 		UNIFORM_INT,
+		UNIFORM_UINT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
 		UNIFORM_UNKNOWN,
@@ -108,6 +109,7 @@ public:
 			void *data;
 			float *floats;
 			int *ints;
+			unsigned int *uints;
 		};
 
 		Texture **textures;

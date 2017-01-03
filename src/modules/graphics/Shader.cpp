@@ -109,6 +109,7 @@ StringMap<Shader::UniformType, Shader::UNIFORM_MAX_ENUM>::Entry Shader::uniformT
 	{"float", Shader::UNIFORM_FLOAT},
 	{"matrix", Shader::UNIFORM_MATRIX},
 	{"int", Shader::UNIFORM_INT},
+	{"uint", Shader::UNIFORM_UINT},
 	{"bool", Shader::UNIFORM_BOOL},
 	{"image", Shader::UNIFORM_SAMPLER},
 	{"unknown", Shader::UNIFORM_UNKNOWN},
