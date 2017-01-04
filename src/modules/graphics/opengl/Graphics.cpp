@@ -1232,9 +1232,7 @@ void Graphics::setColor(Colorf c)
 	c.b = std::min(std::max(c.b, 0.0f), 1.0f);
 	c.a = std::min(std::max(c.a, 0.0f), 1.0f);
 
-	Colorf nc = c;
-	gammaCorrectColor(nc);
-	gl.setConstantColor(nc);
+	gl.setConstantColor(c);
 
 	states.back().color = c;
 }

@@ -236,7 +236,7 @@ public:
 
 	/**
 	 * Sets the constant color (vertex attribute). This may be applied
-	 * internally at draw-time.
+	 * internally at draw-time. This gets gamma-corrected internally as well.
 	 **/
 	void setConstantColor(const Colorf &color);
 	const Colorf &getConstantColor() const;

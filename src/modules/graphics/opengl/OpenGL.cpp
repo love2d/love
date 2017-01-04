@@ -344,9 +344,10 @@ void OpenGL::prepareDraw()
 
 	if (state.constantColor != state.lastConstantColor)
 	{
-		const Colorf &c = state.constantColor;
+		state.lastConstantColor = state.constantColor;
+		Colorf c = state.constantColor;
+		gammaCorrectColor(c);
 		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, c.r, c.g, c.b, c.a);
-		state.lastConstantColor = c;
 	}
 }
 
