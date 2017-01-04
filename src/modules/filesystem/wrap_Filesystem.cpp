@@ -631,16 +631,6 @@ int loader(lua_State *L)
 	auto *inst = instance();
 	for (std::string element : inst->getRequirePath())
 	{
-		// [Modified: 20170104] @evanyeung
-		// Remark: For each template, the searcher will change
-		// the first interrogation mark in the template by the file name.
-		// size_t pos = element.find('?');
-		// if (pos != std::string::npos)
-		// 	element.replace(pos, 1, modulename);
-
-		// [Modified: 20170104] @evanyeung
-		// Remark: For each template, the searcher will change
-		// each interrogation mark in the template by filename.
 		size_t pos = 0;
 		while ((pos = element.find('?', pos)) != std::string::npos)
 			element.replace(pos, 1, modulename);
