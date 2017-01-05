@@ -1094,13 +1094,17 @@ void Graphics::setScissor(const Rect &rect)
 
 void Graphics::setScissor()
 {
-	flushStreamDraws();
+	if (states.back().scissor)
+		flushStreamDraws();
+
 	states.back().scissor = false;
 	glDisable(GL_SCISSOR_TEST);
 }
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
+	flushStreamDraws();
+
 	writingToStencil = true;
 
 	// Disable color writes but don't save the state for it.
@@ -1158,6 +1162,10 @@ void Graphics::stopDrawToStencilBuffer()
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
 	DisplayState &state = states.back();
+
+	if (state.stencilCompare != compare || state.stencilTestValue != value)
+		flushStreamDraws();
+
 	state.stencilCompare = compare;
 	state.stencilTestValue = value;
 
@@ -1247,7 +1255,8 @@ void Graphics::setColorMask(ColorMask mask)
 
 void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 {
-	flushStreamDraws();
+	if (mode != states.back().blendMode || alphamode != states.back().blendAlphaMode)
+		flushStreamDraws();
 
 	GLenum func   = GL_FUNC_ADD;
 	GLenum srcRGB = GL_ONE;
