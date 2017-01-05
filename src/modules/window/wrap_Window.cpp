@@ -83,6 +83,8 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 
 	settings.fullscreen = luax_boolflag(L, idx, settingName(Window::SETTING_FULLSCREEN), settings.fullscreen);
 	settings.msaa = luax_intflag(L, idx, settingName(Window::SETTING_MSAA), settings.msaa);
+	settings.stencil = luax_boolflag(L, idx, settingName(Window::SETTING_STENCIL), settings.stencil);
+	settings.depth = luax_intflag(L, idx, settingName(Window::SETTING_DEPTH), settings.depth);
 	settings.resizable = luax_boolflag(L, idx, settingName(Window::SETTING_RESIZABLE), settings.resizable);
 	settings.minwidth = luax_intflag(L, idx, settingName(Window::SETTING_MIN_WIDTH), settings.minwidth);
 	settings.minheight = luax_intflag(L, idx, settingName(Window::SETTING_MIN_HEIGHT), settings.minheight);
@@ -185,6 +187,12 @@ int w_getMode(lua_State *L)
 
 	lua_pushinteger(L, settings.msaa);
 	lua_setfield(L, -2, settingName(Window::SETTING_MSAA));
+
+	luax_pushboolean(L, settings.stencil);
+	lua_setfield(L, -2, settingName(Window::SETTING_STENCIL));
+
+	lua_pushinteger(L, settings.depth);
+	lua_setfield(L, -2, settingName(Window::SETTING_DEPTH));
 
 	luax_pushboolean(L, settings.resizable);
 	lua_setfield(L, -2, settingName(Window::SETTING_RESIZABLE));

@@ -55,6 +55,7 @@ namespace opengl
 
 Graphics::Graphics()
 	: quadIndices(nullptr)
+	, windowHasStencil(false)
 {
 	gl = OpenGL();
 
@@ -69,11 +70,15 @@ Graphics::Graphics()
 
 		if (window->isOpen())
 		{
-			double w = window->getWidth();
-			double h = window->getHeight();
-			window->windowToDPICoords(&w, &h);
+			int w, h;
+			love::window::WindowSettings settings;
+			window->getWindow(w, h, settings);
 
-			setMode((int) w, (int) h, window->getPixelWidth(), window->getPixelHeight());
+			double dpiW = w;
+			double dpiH = h;
+			window->windowToDPICoords(&dpiW, &dpiH);
+
+			setMode((int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
 		}
 	}
 }
@@ -200,7 +205,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	}
 }
 
-bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight)
+bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
 {
 	this->width = width;
 	this->height = height;
@@ -1103,6 +1108,9 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
+	if (states.back().canvases.empty() && !windowHasStencil)
+		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+
 	flushStreamDraws();
 
 	writingToStencil = true;
@@ -1161,6 +1169,9 @@ void Graphics::stopDrawToStencilBuffer()
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
+	if (compare != COMPARE_ALWAYS && states.back().canvases.empty() && !windowHasStencil)
+		throw love::Exception("The window must have stenciling enabled to use setStencilTest on the main screen.");
+
 	DisplayState &state = states.back();
 
 	if (state.stencilCompare != compare || state.stencilTestValue != value)

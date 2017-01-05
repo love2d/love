@@ -89,7 +89,7 @@ void Window::setGraphics(graphics::Graphics *graphics)
 	this->graphics.set(graphics);
 }
 
-void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
+void Window::setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth)
 {
 	// Set GL window / framebuffer attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -97,7 +97,8 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencil ? 8 : 0);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
 	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
@@ -267,7 +268,7 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	return attribslist;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa)
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth)
 {
 	std::vector<ContextAttribs> attribslist = getContextAttribsList();
 
@@ -332,7 +333,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		int curMSAA  = msaa;
 		bool curSRGB = love::graphics::isGammaCorrect();
 
-		setGLFramebufferAttributes(curMSAA, curSRGB);
+		setGLFramebufferAttributes(curMSAA, curSRGB, stencil, depth);
 		setGLContextAttributes(attribs);
 
 		windowerror.clear();
@@ -343,7 +344,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (!window && curMSAA > 0)
 		{
 			// The MSAA setting could have caused the failure.
-			setGLFramebufferAttributes(0, curSRGB);
+			setGLFramebufferAttributes(0, curSRGB, stencil, depth);
 			if (create(attribs))
 				curMSAA = 0;
 		}
@@ -351,7 +352,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (!window && curSRGB)
 		{
 			// same with sRGB.
-			setGLFramebufferAttributes(curMSAA, false);
+			setGLFramebufferAttributes(curMSAA, false, stencil, depth);
 			if (create(attribs))
 				curSRGB = false;
 		}
@@ -359,7 +360,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (!window && curMSAA > 0 && curSRGB)
 		{
 			// Or both!
-			setGLFramebufferAttributes(0, false);
+			setGLFramebufferAttributes(0, false, stencil, depth);
 			if (create(attribs))
 			{
 				curMSAA = 0;
@@ -494,7 +495,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	close();
 
-	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa))
+	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.stencil, f.depth))
 		return false;
 
 	// Make sure the window keeps any previously set icon.
@@ -524,7 +525,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
-		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
 	}
 
 #ifdef LOVE_ANDROID
@@ -608,6 +609,9 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 
 	settings.msaa = (buffers > 0 ? samples : 0);
 	settings.vsync = SDL_GL_GetSwapInterval();
+
+	settings.stencil = newsettings.stencil;
+	settings.depth = newsettings.depth;
 
 	SDL_DisplayMode dmode = {};
 	SDL_GetCurrentDisplayMode(settings.display, &dmode);

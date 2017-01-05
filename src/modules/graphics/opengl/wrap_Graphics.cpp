@@ -204,7 +204,7 @@ int w_getPixelDensity(lua_State *L)
 int w_setCanvas(lua_State *L)
 {
 	// Disable stencil writes.
-	instance()->stopDrawToStencilBuffer();
+	luax_catchexcept(L, [](){ instance()->stopDrawToStencilBuffer(); });
 
 	// called with none -> reset to default buffer
 	if (lua_isnoneornil(L, 1))

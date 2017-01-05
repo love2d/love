@@ -56,6 +56,8 @@ public:
 		SETTING_FULLSCREEN_TYPE,
 		SETTING_VSYNC,
 		SETTING_MSAA,
+		SETTING_STENCIL,
+		SETTING_DEPTH,
 		SETTING_RESIZABLE,
 		SETTING_MIN_WIDTH,
 		SETTING_MIN_HEIGHT,
@@ -219,6 +221,8 @@ struct WindowSettings
 	Window::FullscreenType fstype = Window::FULLSCREEN_DESKTOP;
 	int vsync = 1;
 	int msaa = 0;
+	bool stencil = true;
+	int depth = 0;
 	bool resizable = false;
 	int minwidth = 1;
 	int minheight = 1;

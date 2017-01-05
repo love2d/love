@@ -338,7 +338,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight) = 0;
+	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if

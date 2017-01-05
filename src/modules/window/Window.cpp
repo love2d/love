@@ -70,6 +70,8 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"fullscreentype", SETTING_FULLSCREEN_TYPE},
 	{"vsync", SETTING_VSYNC},
 	{"msaa", SETTING_MSAA},
+	{"stencil", SETTING_STENCIL},
+	{"depth", SETTING_DEPTH},
 	{"resizable", SETTING_RESIZABLE},
 	{"minwidth", SETTING_MIN_WIDTH},
 	{"minheight", SETTING_MIN_HEIGHT},

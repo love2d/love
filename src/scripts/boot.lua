@@ -473,6 +473,8 @@ function love.init()
 			fullscreentype = c.window.fullscreentype,
 			vsync = c.window.vsync,
 			msaa = c.window.msaa,
+			stencil = c.window.stencil,
+			depth = c.window.depth,
 			resizable = c.window.resizable,
 			minwidth = c.window.minwidth,
 			minheight = c.window.minheight,

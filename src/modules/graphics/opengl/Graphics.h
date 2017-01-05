@@ -89,7 +89,7 @@ public:
 	Video *newVideo(love::video::VideoStream *stream, float pixeldensity);
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(int width, int height, int pixelwidth, int pixelheight) override;
+	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -154,6 +154,8 @@ private:
 	std::vector<CachedRenderbuffer> stencilBuffers;
 
 	QuadIndices *quadIndices;
+
+	bool windowHasStencil;
 
 }; // Graphics
 
