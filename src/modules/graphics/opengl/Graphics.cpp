@@ -996,7 +996,7 @@ void Graphics::present(void *screenshotCallbackData)
 			// We need to do an explicit MSAA resolve on iOS, because it uses GLES
 			// FBOs rather than a system framebuffer.
 			if (GLAD_ES_VERSION_3_0)
-				glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 			else if (GLAD_APPLE_framebuffer_multisample)
 				glResolveMultisampleFramebufferAPPLE();
 
