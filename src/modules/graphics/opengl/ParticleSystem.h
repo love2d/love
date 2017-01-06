@@ -49,8 +49,7 @@ private:
 
 	void createVertices(size_t numparticles);
 
-	// array of transformed vertex data for all particles, for drawing
-	Vertex *particleVerts;
+	GLBuffer *buffer;
 
 	// Vertex index buffer.
 	QuadIndices quadIndices;

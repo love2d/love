@@ -39,7 +39,7 @@ namespace opengl
 
 ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	: love::graphics::ParticleSystem(texture, size)
-	, particleVerts(nullptr)
+	, buffer(nullptr)
 	, quadIndices(size)
 {
 	createVertices(size);
@@ -47,7 +47,6 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 
 ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	: love::graphics::ParticleSystem(p)
-	, particleVerts(nullptr)
 	, quadIndices(p.quadIndices)
 {
 	createVertices(maxParticles);
@@ -55,21 +54,15 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 
 ParticleSystem::~ParticleSystem()
 {
-	delete[] particleVerts;
+	delete buffer;
 }
 
 void ParticleSystem::createVertices(size_t numparticles)
 {
-	try
-	{
-		Vertex *pverts = new Vertex[numparticles * 4];
-		delete[] particleVerts;
-		particleVerts = pverts;
-	}
-	catch (std::exception &)
-	{
-		throw love::Exception("Out of memory.");
-	}
+	size_t size = sizeof(Vertex) * numparticles * 4;
+	GLBuffer *newbuffer = new GLBuffer(size, nullptr, BUFFER_VERTEX, vertex::USAGE_STREAM, 0);
+	delete buffer;
+	buffer = newbuffer;
 }
 
 ParticleSystem *ParticleSystem::clone()
@@ -89,7 +82,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 {
 	uint32 pCount = getCount();
 
-	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || particleVerts == nullptr)
+	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || buffer == nullptr)
 		return;
 
 	gfx->flushStreamDraws();
@@ -99,7 +92,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::TempTransform transform(gfx, m);
 
 	const Vertex *textureVerts = texture->getVertices();
-	Vertex *pVerts = particleVerts;
+	Vertex *pVerts = (Vertex *) buffer->map();
 	Particle *p = pHead;
 
 	bool useQuads = !quads.empty();
@@ -132,25 +125,23 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 		p = p->next;
 	}
 
+	buffer->unmap();
+
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
-	gl.bindBuffer(BUFFER_VERTEX, 0);
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &particleVerts[0].color.r);
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].x);
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), &particleVerts[0].s);
+	buffer->bind();
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, color.r)));
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, x)));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, s)));
 
 	GLsizei count = (GLsizei) quadIndices.getIndexCount(pCount);
 	GLenum gltype = quadIndices.getType();
 
-	// We use a client-side index array instead of an Index Buffers, because
-	// at least one graphics driver (the one for Kepler nvidia GPUs in OS X
-	// 10.11) fails to render geometry if an index buffer is used with
-	// client-side vertex arrays.
-	gl.bindBuffer(BUFFER_INDEX, 0);
-	gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getIndices(0));
+	quadIndices.getBuffer()->bind();
+	gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(0));
 }
 
 } // opengl
