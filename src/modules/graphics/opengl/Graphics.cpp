@@ -210,6 +210,8 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	this->width = width;
 	this->height = height;
 
+	this->windowHasStencil = windowhasstencil;
+
 	// Okay, setup OpenGL.
 	gl.initContext();
 	gl.setupContext();
