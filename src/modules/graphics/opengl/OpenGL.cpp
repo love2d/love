@@ -73,6 +73,8 @@ OpenGL::OpenGL()
 	, maxRenderTargets(1)
 	, maxRenderbufferSamples(0)
 	, maxTextureUnits(1)
+	, maxPointSize(1)
+	, coreProfile(false)
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
@@ -90,6 +92,15 @@ bool OpenGL::initContext()
 	if (!gladLoadGLLoader(LOVEGetProcAddress))
 		return false;
 
+	if (GLAD_VERSION_3_2)
+	{
+		GLint profileMask = 0;
+		glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+		coreProfile = (profileMask & GL_CONTEXT_CORE_PROFILE_BIT);
+	}
+	else
+		coreProfile = false;
+
 	initOpenGLFunctions();
 	initVendor();
 
@@ -100,7 +111,8 @@ bool OpenGL::initContext()
 	if (getVendor() == VENDOR_AMD)
 	{
 		bugs.clearRequiresDriverTextureStateUpdate = true;
-		bugs.generateMipmapsRequiresTexture2DEnable = true;
+		if (!gl.isCoreProfile())
+			bugs.generateMipmapsRequiresTexture2DEnable = true;
 	}
 #endif
 
@@ -306,7 +318,10 @@ void OpenGL::initMaxValues()
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 
 	GLfloat limits[2];
-	glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
+	if (GLAD_VERSION_3_0)
+		glGetFloatv(GL_POINT_SIZE_RANGE, limits);
+	else
+		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
 	maxPointSize = limits[1];
 }
 
@@ -739,6 +754,11 @@ void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
 {
 	int64 memsize = (int64) stats.textureMemory + ((int64) newsize - (int64) oldsize);
 	stats.textureMemory = (size_t) std::max(memsize, (int64) 0);
+}
+
+bool OpenGL::isCoreProfile() const
+{
+	return coreProfile;
 }
 
 OpenGL::Vendor OpenGL::getVendor() const

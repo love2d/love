@@ -157,6 +157,8 @@ private:
 
 	bool windowHasStencil;
 
+	GLuint mainVAO;
+
 }; // Graphics
 
 } // opengl

@@ -348,6 +348,11 @@ public:
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
 	/**
+	 * Gets whether the context is Core Profile OpenGL 3.2+.
+	 **/
+	bool isCoreProfile() const;
+
+	/**
 	 * Get the GPU vendor of this OpenGL context.
 	 **/
 	Vendor getVendor() const;
@@ -384,6 +389,8 @@ private:
 	int maxRenderbufferSamples;
 	int maxTextureUnits;
 	float maxPointSize;
+
+	bool coreProfile;
 
 	Vendor vendor;
 

@@ -56,6 +56,7 @@ namespace opengl
 Graphics::Graphics()
 	: quadIndices(nullptr)
 	, windowHasStencil(false)
+	, mainVAO(0)
 {
 	gl = OpenGL();
 
@@ -224,15 +225,22 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	glEnable(GL_BLEND);
 
 	// Auto-generated mipmaps should be the best quality possible
-	glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
+	if (!gl.isCoreProfile())
+		glHint(GL_GENERATE_MIPMAP_HINT, GL_NICEST);
 
-	if (!GLAD_ES_VERSION_2_0)
+	if (!GLAD_ES_VERSION_2_0 && !gl.isCoreProfile())
 	{
 		// Make sure antialiasing works when set elsewhere
 		glEnable(GL_MULTISAMPLE);
 
 		// Enable texturing
 		glEnable(GL_TEXTURE_2D);
+	}
+
+	if (gl.isCoreProfile())
+	{
+		glGenVertexArrays(1, &mainVAO);
+		glBindVertexArray(mainVAO);
 	}
 
 	gl.setTextureUnit(0);
@@ -333,6 +341,12 @@ void Graphics::unSetMode()
 
 	framebufferObjects.clear();
 	stencilBuffers.clear();
+
+	if (mainVAO != 0)
+	{
+		glDeleteVertexArrays(1, &mainVAO);
+		mainVAO = 0;
+	}
 
 	gl.deInitContext();
 
