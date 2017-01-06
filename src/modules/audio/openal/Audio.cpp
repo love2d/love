@@ -445,7 +445,7 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 	return capture;
 }
 
-bool Audio::setSceneEffect(int slot, Effect::Type type, std::vector<float> &params)
+bool Audio::setSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
 {
 	if (slot < 0 || slot >= MAX_SCENE_EFFECTS)
 		return false;
@@ -453,15 +453,16 @@ bool Audio::setSceneEffect(int slot, Effect::Type type, std::vector<float> &para
 	if (!effects[slot])
 		effects[slot] = new Effect();
 
-	bool result = effects[slot]->setParams(type, params);
+	bool result = effects[slot]->setParams(params);
 
 	#ifdef ALC_EXT_EFX
 	if (alAuxiliaryEffectSloti)
 	{
 		if (result == true)
 		{
+			if (params.find(Effect::EFFECT_VOLUME) != params.end())
+				alAuxiliaryEffectSlotf(effectSlots[slot], AL_EFFECTSLOT_GAIN, params[Effect::EFFECT_VOLUME]);
 			alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, effects[slot]->getEffect());
-			alAuxiliaryEffectSlotf(effectSlots[slot], AL_EFFECTSLOT_GAIN, params[0]);
 		}
 		else
 			alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
@@ -490,7 +491,7 @@ bool Audio::setSceneEffect(int slot)
 	return true;
 }
 
-bool Audio::getSceneEffect(int slot, Effect::Type &type, std::vector<float> &params)
+bool Audio::getSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
 {
 	if (slot < 0 || slot >= MAX_SCENE_EFFECTS)
 		return false;
@@ -498,7 +499,6 @@ bool Audio::getSceneEffect(int slot, Effect::Type &type, std::vector<float> &par
 	if (!effects[slot])
 		return false;
 
-	type = effects[slot]->getType();
 	params = effects[slot]->getParams();
 
 	return true;

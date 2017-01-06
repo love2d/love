@@ -305,109 +305,107 @@ int w_getRecordingDevices(lua_State *L)
 	return 1;
 }
 
-int setSceneEffectHandleParam(lua_State *L, int pos, Effect::ParameterType type, std::vector<float> &params)
-{
-	if (lua_isnoneornil(L, pos))
-		params.push_back(nanf(""));
-	else
-	{
-		const char *typestr;
-		switch (type)
-		{
-		case Effect::PAR_FLOAT:
-			params.push_back(luaL_checknumber(L, pos)); 
-			break;
-		case Effect::PAR_BOOL:
-			if (!lua_isboolean(L, pos))
-				return luax_typerror(L, pos, "boolean");
-			params.push_back(lua_toboolean(L, pos) ? 1.0 : 0.0); 
-			break;
-		case Effect::PAR_WAVEFORM:
-		{
-			typestr = luaL_checkstring(L, pos);
-			Effect::Waveform waveform;
-			if (!Effect::getConstant(typestr, waveform))
-				return luaL_error(L, "Invalid waveform type: %s", typestr);
-			params.push_back(static_cast<int>(waveform));
-			break;
-		}
-		case Effect::PAR_DIRECTION:
-		{
-			typestr = luaL_checkstring(L, pos);
-			Effect::Direction direction;
-			if (!Effect::getConstant(typestr, direction))
-				return luaL_error(L, "Invalid direction type: %s", typestr);
-			params.push_back(static_cast<int>(direction));
-			break;
-		}
-		case Effect::PAR_PHONEME:
-		{
-			typestr = luaL_checkstring(L, pos);
-			Effect::Phoneme phoneme;
-			if (!Effect::getConstant(typestr, phoneme))
-				return luaL_error(L, "Invalid phoneme type: %s", typestr);
-			params.push_back(static_cast<int>(phoneme));
-			break;
-		}
-		case Effect::PAR_MAX_ENUM:
-			break;
-		}
-	}
-	return 0;
-}
-
 int w_setSceneEffect(lua_State *L)
 {
 	int slot = luaL_checknumber(L, 1) - 1;
 
-	const char *typestr;
-	Effect::Type type;
-	std::vector<float> params;
-
-	if (lua_gettop(L) == 1)
+	if (lua_gettop(L) == 1 || (lua_gettop(L) == 2 && lua_isnoneornil(L, 2)))
 	{
 		lua_pushboolean(L, instance()->setSceneEffect(slot));
 		return 1;
 	}
-	else if (lua_gettop(L) > 2)
+
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	const char *paramstr = nullptr;
+
+	//find type (mandatory)
+	Effect::getConstant(Effect::EFFECT_TYPE, paramstr, Effect::TYPE_BASIC);
+	lua_pushstring(L, paramstr);
+	lua_rawget(L, 2);
+	if (lua_type(L, -1) == LUA_TNIL)
+		return luaL_error(L, "Effect type not specificed.");
+
+	Effect::Type type = Effect::TYPE_MAX_ENUM;
+	const char *typestr = luaL_checkstring(L, -1);
+	if (!Effect::getConstant(typestr, type))
+		return luaL_error(L, "Invalid Effect type: %s", typestr);
+
+	lua_pop(L, 1);
+	std::map<Effect::Parameter, float> params;
+	params[Effect::EFFECT_TYPE] = static_cast<int>(type);
+
+	// Iterate over the whole table, reading valid parameters and erroring on invalid ones
+	lua_pushnil(L);
+	while (lua_next(L, 2))
 	{
-		typestr = luaL_checkstring(L, 2);
-		if (!Effect::getConstant(typestr, type))
-			return luaL_error(L, "Invalid effect type: %s", typestr);
+		const char *keystr = luaL_checkstring(L, -2);
+		Effect::Parameter param;
 
-		params.push_back(luaL_checknumber(L, 3));
-		const std::vector<Effect::ParameterType> &paramtypes = Effect::getParameterTypes(type);
-		for (unsigned int i = 0; i < paramtypes.size(); i++)
-			setSceneEffectHandleParam(L, i + 4, paramtypes[i], params);
-	}
-	else if (lua_istable(L, 2))
-	{
-		if (lua_objlen(L, 2) == 0) //empty table also clears effect
+		if(Effect::getConstant(keystr, param, type) || Effect::getConstant(keystr, param, Effect::TYPE_BASIC))
 		{
-			lua_pushboolean(L, instance()->setSceneEffect(slot));
-			return 1;
+			#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
+			switch(Effect::getParameterType(param))
+			{
+			case Effect::PARAM_FLOAT:
+				if (!lua_isnumber(L, -1))
+					return luax_effecterror(L, "number");
+				params[param] = lua_tonumber(L, -1);
+				break;
+			case Effect::PARAM_BOOL:
+				if (!lua_isboolean(L, -1))
+					return luax_effecterror(L, "boolean");
+				params[param] = lua_toboolean(L, -1) ? 1.0 : 0.0; 
+				break;
+			case Effect::PARAM_WAVEFORM:
+			{
+				if (!lua_isstring(L, -1))
+					return luax_effecterror(L, "string");
+				paramstr = lua_tostring(L, -1);
+				Effect::Waveform waveform;
+				if (!Effect::getConstant(paramstr, waveform))
+					return luaL_error(L, "Invalid waveform type: %s", paramstr);
+				params[param] = static_cast<int>(waveform);
+				break;
+			}
+			/*
+			case Effect::PARAM_DIRECTION:
+			{
+				if (!lua_isstring(L, -1))
+					return luax_effecterror(L, "string");
+				paramstr = lua_tostring(L, -1);
+				Effect::Direction direction;
+				if (!Effect::getConstant(paramstr, direction))
+					return luaL_error(L, "Invalid direction type: %s", paramstr);
+				params[param] = static_cast<int>(direction);
+				break;
+			}
+			case Effect::PARAM_PHONEME:
+			{
+				if (!lua_isstring(L, -1))
+					return luax_effecterror(L, "string");
+				paramstr = lua_tostring(L, -1);
+				Effect::Phoneme phoneme;
+				if (!Effect::getConstant(basicstr, phoneme))
+					return luaL_error(L, "Invalid phoneme type: %s", paramstr);
+				params[param] = static_cast<int>(phoneme);
+				break;
+			}
+			*/
+			case Effect::PARAM_TYPE:
+			case Effect::PARAM_MAX_ENUM:
+				break;
+			}
+			#undef luaL_effecterror
 		}
-		lua_rawgeti(L, 2, 1);
-		typestr = luaL_checkstring(L, -1);
-		if (!Effect::getConstant(typestr, type))
-			return luaL_error(L, "Invalid effect type: %s", typestr);
-		lua_pop(L, 1);
+		else
+			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);
 
-		const std::vector<Effect::ParameterType> &paramtypes = Effect::getParameterTypes(type);
-		lua_rawgeti(L, 2, 2);
-		params.push_back(luaL_checknumber(L, -1));
+		//remove the value (-1) from stack, keep the key (-2) to feed into lua_next
 		lua_pop(L, 1);
-		for (unsigned int i = 0; i < paramtypes.size(); i++)
-		{
-			lua_rawgeti(L, 2, i + 3);
-			setSceneEffectHandleParam(L, -1, paramtypes[i], params);
-			lua_pop(L, 1);
-		}
 	}
-	else
-		return luax_typerror(L, 2, "effect description");
 
-	luax_catchexcept(L, [&]() { lua_pushboolean(L, instance()->setSceneEffect(slot, type, params)); });
+	luax_catchexcept(L, [&]() { lua_pushboolean(L, instance()->setSceneEffect(slot, params)); });
 	return 1;
 }
 
@@ -415,49 +413,54 @@ int w_getSceneEffect(lua_State *L)
 {
 	int slot = luaL_checknumber(L, 1) - 1;
 
-	Effect::Type type;
-	std::vector<float> params;
+	std::map<Effect::Parameter, float> params;
 
-	if (!instance()->getSceneEffect(slot, type, params))
+	if (!instance()->getSceneEffect(slot, params))
 		return 0;
 
-	const char *str = nullptr;
-	Effect::getConstant(type, str);
-	lua_pushstring(L, str);
-	lua_pushnumber(L, params[0]);
+	const char *keystr, *valstr;
+	Effect::Type type = static_cast<Effect::Type>((int)params[Effect::EFFECT_TYPE]);
 
-	const std::vector<Effect::ParameterType> &paramtypes = Effect::getParameterTypes(type);
+	lua_createtable(L, 0, params.size());
 
-	for (unsigned int i = 1; i < params.size(); i++)
+	for (auto p : params)
 	{
-		if (isnanf(params[i]))
-			lua_pushnil(L);
-		else
-			switch(paramtypes[i-1])
-			{
-			case Effect::PAR_FLOAT:
-				lua_pushnumber(L, params[i]); 
-				break;
-			case Effect::PAR_BOOL:
-				lua_pushboolean(L, params[i] < 0.5 ? false : true); 
-				break;
-			case Effect::PAR_WAVEFORM:
-				Effect::getConstant(static_cast<Effect::Waveform>((int)params[i]), str);
-				lua_pushstring(L, str);
-				break;
-			case Effect::PAR_DIRECTION:
-				Effect::getConstant(static_cast<Effect::Direction>((int)params[i]), str);
-				lua_pushstring(L, str);
-				break;
-			case Effect::PAR_PHONEME:
-				Effect::getConstant(static_cast<Effect::Phoneme>((int)params[i]), str);
-				lua_pushstring(L, str);
-				break;
-			case Effect::PAR_MAX_ENUM:
-				break;
-			}
+		if (!Effect::getConstant(p.first, keystr, type))
+			Effect::getConstant(p.first, keystr, Effect::TYPE_BASIC);
+
+		lua_pushstring(L, keystr);
+		switch (Effect::getParameterType(p.first))
+		{
+		case Effect::PARAM_FLOAT:
+			lua_pushnumber(L, p.second);
+			break;
+		case Effect::PARAM_BOOL:
+			lua_pushboolean(L, p.second > 0.5 ? true : false);
+			break;
+		case Effect::PARAM_WAVEFORM:
+			Effect::getConstant(static_cast<Effect::Waveform>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+/*
+		case Effect::PARAM_DIRECTION:
+			Effect::getConstant(static_cast<Effect::Direction>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+		case Effect::PARAM_PHONEME:
+			Effect::getConstant(static_cast<Effect::Phoneme>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+*/
+		case Effect::PARAM_TYPE:
+			Effect::getConstant(static_cast<Effect::Type>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+		case Effect::PARAM_MAX_ENUM:
+			break;
+		}
+		lua_rawset(L, -3);
 	}
-	return params.size() + 1;
+	return 1;
 }
 
 int w_getMaxSceneEffects(lua_State *L)

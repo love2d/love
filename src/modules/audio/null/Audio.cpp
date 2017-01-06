@@ -168,7 +168,7 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 	this->distanceModel = distanceModel;
 }
 
-bool Audio::setSceneEffect(int, Effect::Type, std::vector<float> &)
+bool Audio::setSceneEffect(int, std::map<Effect::Parameter, float> &)
 {
 	return false;
 }
@@ -178,7 +178,7 @@ bool Audio::setSceneEffect(int)
 	return false;
 }
 
-bool Audio::getSceneEffect(int, Effect::Type &, std::vector<float> &)
+bool Audio::getSceneEffect(int, std::map<Effect::Parameter, float> &)
 {
 	return false;
 }

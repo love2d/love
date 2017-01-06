@@ -78,9 +78,9 @@ public:
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
 
-	bool setSceneEffect(int slot, Effect::Type type, std::vector<float> &params);
+	bool setSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
 	bool setSceneEffect(int slot);
-	bool getSceneEffect(int slot, Effect::Type &type, std::vector<float> &params);
+	bool getSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
 	int getMaxSceneEffects() const;
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;

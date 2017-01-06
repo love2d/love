@@ -211,11 +211,10 @@ public:
 	/**
 	 * Sets scene EFX effect.
 	 * @param slot Slot to put effect into.
-	 * @param type Effect type to use.
-	 * @param params Effect description table.
+	 * @param fxparams Effect description table.
 	 * @return true if successful, false otherwise.
 	 */
-	virtual bool setSceneEffect(int slot, Effect::Type type, std::vector<float> &params) = 0;
+	virtual bool setSceneEffect(int slot, std::map<Effect::Parameter, float> &params) = 0;
 
 	/**
 	 * Removes scene EFX effect.
@@ -227,11 +226,10 @@ public:
 	/**
 	 * Gets scene EFX effect.
 	 * @param slot Slot from which to get effect.
-	 * @param type Effect type.
-	 * @param params Effect description table.
+	 * @param fxparams Effect description table.
 	 * @return true if effect was present, false otherwise.
 	 */
-	virtual bool getSceneEffect(int slot, Effect::Type &type, std::vector<float> &params) = 0;
+	virtual bool getSceneEffect(int slot, std::map<Effect::Parameter, float> &params) = 0;
 
 	/**
 	 * Gets maximum number of scene EFX effects.

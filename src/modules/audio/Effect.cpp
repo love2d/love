@@ -47,7 +47,7 @@ bool Effect::getConstant(Type in, const char *&out)
 {
 	return types.find(in, out);
 }
-
+/*
 bool Effect::getConstant(const char *in, Phoneme &out)
 {
 	return phonemes.find(in, out);
@@ -57,7 +57,7 @@ bool Effect::getConstant(Phoneme in, const char *&out)
 {
 	return phonemes.find(in, out);
 }
-
+*/
 bool Effect::getConstant(const char *in, Waveform &out)
 {
 	return waveforms.find(in, out);
@@ -67,7 +67,7 @@ bool Effect::getConstant(Waveform in, const char *&out)
 {
 	return waveforms.find(in, out);
 }
-
+/*
 bool Effect::getConstant(const char *in, Direction &out)
 {
 	return directions.find(in, out);
@@ -77,8 +77,18 @@ bool Effect::getConstant(Direction in, const char *&out)
 {
 	return directions.find(in, out);
 }
+*/
+bool Effect::getConstant(const char *in, Parameter &out, Type t)
+{
+	return parameterNames[t].find(in, out);
+}
 
-const std::vector<Effect::ParameterType> &Effect::getParameterTypes(Effect::Type in)
+bool Effect::getConstant(Parameter in, const char *&out, Type t)
+{
+	return parameterNames[t].find(in, out);
+}
+
+Effect::ParameterType Effect::getParameterType(Effect::Parameter in)
 {
 	return parameterTypes[in];
 }
@@ -90,11 +100,11 @@ StringMap<Effect::Type, Effect::TYPE_MAX_ENUM>::Entry Effect::typeEntries[] =
 	{"distortion", Effect::TYPE_DISTORTION},
 	{"echo", Effect::TYPE_ECHO},
 	{"flanger", Effect::TYPE_FLANGER},
-	{"frequencyshifter", Effect::TYPE_FREQSHIFTER},
-	{"vocalmorpher", Effect::TYPE_MORPHER},
-	{"pitchshifter", Effect::TYPE_PITCHSHIFTER},
+	//{"frequencyshifter", Effect::TYPE_FREQSHIFTER},
+	//{"vocalmorpher", Effect::TYPE_MORPHER},
+	//{"pitchshifter", Effect::TYPE_PITCHSHIFTER},
 	{"ringmodulator", Effect::TYPE_MODULATOR},
-	{"autowah", Effect::TYPE_AUTOWAH},
+	//{"autowah", Effect::TYPE_AUTOWAH},
 	{"compressor", Effect::TYPE_COMPRESSOR},
 	{"equalizer", Effect::TYPE_EQUALIZER},
 };
@@ -111,6 +121,7 @@ StringMap<Effect::Waveform, Effect::WAVE_MAX_ENUM>::Entry Effect::waveformEntrie
 
 StringMap<Effect::Waveform, Effect::WAVE_MAX_ENUM> Effect::waveforms(Effect::waveformEntries, sizeof(Effect::waveformEntries));
 
+/*
 StringMap<Effect::Direction, Effect::DIR_MAX_ENUM>::Entry Effect::directionEntries[] =
 {
 	{"up", Effect::DIR_UP},
@@ -155,35 +166,224 @@ StringMap<Effect::Phoneme, Effect::PHONEME_MAX_ENUM>::Entry Effect::phonemeEntri
 };
 
 StringMap<Effect::Phoneme, Effect::PHONEME_MAX_ENUM> Effect::phonemes(Effect::phonemeEntries, sizeof(Effect::phonemeEntries));
+*/
 
-std::map<Effect::Type, std::vector<Effect::ParameterType>> Effect::parameterTypes =
+#define StringMap LazierAndSlowerButEasilyArrayableStringMap
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::basicParameters =
 {
-	//gain, high gain, density, diffusion, decay, high decay ratio, refl gain, refl delay, late gain, late delay, rolloff, air high gain, high limiter
-	{Effect::TYPE_REVERB, {Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT,
-		Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_BOOL}},
-	//waveform, phase, rate, depth, feedback, delay
-	{Effect::TYPE_CHORUS, { Effect::PAR_WAVEFORM, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	//gain, edge, lowpass cutoff, eq center, eq width
-	{Effect::TYPE_DISTORTION, {Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	//delay, LR delay, damping, feedback, spread
-	{Effect::TYPE_ECHO, {Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	//waveform, phase, rate, depth, feedback, delay
-	{Effect::TYPE_FLANGER, {Effect::PAR_WAVEFORM, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	//frequency, left direction, right direction
-	{Effect::TYPE_FREQSHIFTER, {Effect::PAR_FLOAT, Effect::PAR_DIRECTION, Effect::PAR_DIRECTION}},
-	//waveform, rate, phoneme A, phoneme B, phoneme A coarse tune, phoneme B coarse tune
-	{Effect::TYPE_MORPHER, {Effect::PAR_WAVEFORM, Effect::PAR_FLOAT, Effect::PAR_PHONEME, Effect::PAR_PHONEME, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	//pitch(semitones)
-	{Effect::TYPE_PITCHSHIFTER, {Effect::PAR_FLOAT}},
-	//waveform, frequency, highpass cutoff
-	{Effect::TYPE_MODULATOR, {Effect::PAR_WAVEFORM, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	//attack, release, resonance, peak gain
-	{Effect::TYPE_AUTOWAH, {Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
-	// on-off switch
-	{Effect::TYPE_COMPRESSOR, {Effect::PAR_BOOL}},
-	//low gain, low cut, mid1 gain, mid1 freq, mid1 band, mid2 gain, mid2 freq, mid2 band, high gain, high cut
-	{Effect::TYPE_EQUALIZER, {Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, 
-		Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT, Effect::PAR_FLOAT}},
+	{"type", Effect::EFFECT_TYPE},
+	{"volume", Effect::EFFECT_VOLUME}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::reverbParameters =
+{
+	{"gain", Effect::REVERB_GAIN},
+	{"hfgain", Effect::REVERB_HFGAIN},
+	{"density", Effect::REVERB_DENSITY},
+	{"diffusion", Effect::REVERB_DIFFUSION},
+	{"decay", Effect::REVERB_DECAY},
+	{"hfdecay", Effect::REVERB_HFDECAY},
+	{"earlygain", Effect::REVERB_EARLYGAIN},
+	{"earlydelay", Effect::REVERB_EARLYDELAY},
+	{"lategain", Effect::REVERB_LATEGAIN},
+	{"latedelay", Effect::REVERB_LATEDELAY},
+	{"rolloff", Effect::REVERB_ROLLOFF},
+	{"airhfgain", Effect::REVERB_AIRHFGAIN},
+	{"hflimiter", Effect::REVERB_HFLIMITER}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::chorusParameters =
+{
+	{"waveform", Effect::CHORUS_WAVEFORM},
+	{"phase", Effect::CHORUS_PHASE},
+	{"rate", Effect::CHORUS_RATE},
+	{"depth", Effect::CHORUS_DEPTH},
+	{"feedback", Effect::CHORUS_FEEDBACK},
+	{"delay", Effect::CHORUS_DELAY}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::distortionParameters = 
+{
+	{"gain", Effect::DISTORTION_GAIN},
+	{"edge", Effect::DISTORTION_EDGE},
+	{"lowcut", Effect::DISTORTION_LOWCUT},
+	{"eqcenter", Effect::DISTORTION_EQCENTER},
+	{"eqbandwidth", Effect::DISTORTION_EQBAND}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::echoParameters = 
+{
+	{"delay", Effect::ECHO_DELAY},
+	{"lrdelay", Effect::ECHO_LRDELAY},
+	{"damping", Effect::ECHO_DAMPING},
+	{"feedback", Effect::ECHO_FEEDBACK},
+	{"spread", Effect::ECHO_SPREAD}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::flangerParameters = 
+{
+	{"waveform", Effect::FLANGER_WAVEFORM},
+	{"phase", Effect::FLANGER_PHASE},
+	{"rate", Effect::FLANGER_RATE},
+	{"depth", Effect::FLANGER_DEPTH},
+	{"feedback", Effect::FLANGER_FEEDBACK},
+	{"delay", Effect::FLANGER_DELAY}
+};
+/*
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::freqshifterParameters = 
+{
+	{"frequency", Effect::FREQSHIFTER_FREQ},
+	{"leftdirection", Effect::FREQSHIFTER_LEFTDIR},
+	{"rightdirection", Effect::FREQSHIFTER_RIGHTDIR}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::morpherParameters = 
+{
+	{"waveform", Effect::MORPHER_WAVEFORM},
+	{"rate", Effect::MORPHER_RATE},
+	{"phonemea", Effect::MORPHER_PHONEMEA},
+	{"phonemeb", Effect::MORPHER_PHONEMEB},
+	{"tunea", Effect::MORPHER_COARSEA},
+	{"tuneb", Effect::MORPHER_COARSEB}
+}
+;
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::pitchshifterParameters = 
+{
+	{"pitch", Effect::PITCHSHIFTER_PITCH}
+};
+*/
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::modulatorParameters = 
+{
+	{"waveform", Effect::MODULATOR_WAVEFORM},
+	{"frequency", Effect::MODULATOR_FREQ},
+	{"highcut", Effect::MODULATOR_HIGHCUT}
+};
+/*
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::autowahParameters = 
+{
+	{"attack", Effect::AUTOWAH_ATTACK},
+	{"release", Effect::AUTOWAH_RELEASE},
+	{"resonance", Effect::AUTOWAH_RESONANCE},
+	{"peakgain", Effect::AUTOWAH_PEAKGAIN}
+};
+*/
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::compressorParameters = 
+{
+	{"enable", Effect::COMPRESSOR_ENABLE}
+};
+
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::equalizerParameters = 
+{
+	{"lowgain", Effect::EQUALIZER_LOWGAIN},
+	{"lowcut", Effect::EQUALIZER_LOWCUT},
+	{"mid1gain", Effect::EQUALIZER_MID1GAIN},
+	{"mid1frequency", Effect::EQUALIZER_MID1FREQ},
+	{"mid1bandwidth", Effect::EQUALIZER_MID1BAND},
+	{"mid2gain", Effect::EQUALIZER_MID2GAIN},
+	{"mid2frequency", Effect::EQUALIZER_MID2FREQ},
+	{"mid2bandwidth", Effect::EQUALIZER_MID2BAND},
+	{"highgain", Effect::EQUALIZER_HIGHGAIN},
+	{"highcut", Effect::EQUALIZER_HIGHCUT}
+};
+
+std::map<Effect::Type, StringMap<Effect::Parameter>> Effect::parameterNames = 
+{
+	{Effect::TYPE_BASIC, Effect::basicParameters},
+	{Effect::TYPE_REVERB, Effect::reverbParameters},
+	{Effect::TYPE_CHORUS, Effect::chorusParameters},
+	{Effect::TYPE_DISTORTION, Effect::distortionParameters},
+	{Effect::TYPE_ECHO, Effect::echoParameters},
+	{Effect::TYPE_FLANGER, Effect::flangerParameters},
+	//{Effect::TYPE_FREQSHIFTER, Effect::freqshifterParameters},
+	//{Effect::TYPE_MORPHER, Effect::morpherbParameters},
+	//{Effect::TYPE_PITCHSHIFTER, Effect::pitchshifterParameters},
+	{Effect::TYPE_MODULATOR, Effect::modulatorParameters},
+	//{Effect::TYPE_AUTOWAH, Effect::autowahParameters},
+	{Effect::TYPE_COMPRESSOR, Effect::compressorParameters},
+	{Effect::TYPE_EQUALIZER, Effect::equalizerParameters}
+};
+#undef StringMap
+
+std::map<Effect::Parameter, Effect::ParameterType> Effect::parameterTypes = 
+{
+	{Effect::EFFECT_TYPE, Effect::PARAM_TYPE},
+	{Effect::EFFECT_VOLUME, Effect::PARAM_FLOAT},
+
+	{Effect::REVERB_GAIN, Effect::PARAM_FLOAT},
+	{Effect::REVERB_HFGAIN, Effect::PARAM_FLOAT},
+	{Effect::REVERB_DENSITY, Effect::PARAM_FLOAT},
+	{Effect::REVERB_DIFFUSION, Effect::PARAM_FLOAT},
+	{Effect::REVERB_DECAY, Effect::PARAM_FLOAT},
+	{Effect::REVERB_HFDECAY, Effect::PARAM_FLOAT},
+	{Effect::REVERB_EARLYGAIN, Effect::PARAM_FLOAT},
+	{Effect::REVERB_EARLYDELAY, Effect::PARAM_FLOAT},
+	{Effect::REVERB_LATEGAIN, Effect::PARAM_FLOAT},
+	{Effect::REVERB_LATEDELAY, Effect::PARAM_FLOAT},
+	{Effect::REVERB_ROLLOFF, Effect::PARAM_FLOAT},
+	{Effect::REVERB_AIRHFGAIN, Effect::PARAM_FLOAT},
+	{Effect::REVERB_HFLIMITER, Effect::PARAM_BOOL},
+
+	{Effect::CHORUS_WAVEFORM, Effect::PARAM_WAVEFORM},
+	{Effect::CHORUS_PHASE, Effect::PARAM_FLOAT},
+	{Effect::CHORUS_RATE, Effect::PARAM_FLOAT},
+	{Effect::CHORUS_DEPTH, Effect::PARAM_FLOAT},
+	{Effect::CHORUS_FEEDBACK, Effect::PARAM_FLOAT},
+	{Effect::CHORUS_DELAY, Effect::PARAM_FLOAT},
+
+	{Effect::DISTORTION_GAIN, Effect::PARAM_FLOAT},
+	{Effect::DISTORTION_EDGE, Effect::PARAM_FLOAT},
+	{Effect::DISTORTION_LOWCUT, Effect::PARAM_FLOAT},
+	{Effect::DISTORTION_EQCENTER, Effect::PARAM_FLOAT},
+	{Effect::DISTORTION_EQBAND, Effect::PARAM_FLOAT},
+
+	{Effect::ECHO_DELAY, Effect::PARAM_FLOAT},
+	{Effect::ECHO_LRDELAY, Effect::PARAM_FLOAT},
+	{Effect::ECHO_DAMPING, Effect::PARAM_FLOAT},
+	{Effect::ECHO_FEEDBACK, Effect::PARAM_FLOAT},
+	{Effect::ECHO_SPREAD, Effect::PARAM_FLOAT},
+
+	{Effect::FLANGER_WAVEFORM, Effect::PARAM_WAVEFORM},
+	{Effect::FLANGER_PHASE, Effect::PARAM_FLOAT},
+	{Effect::FLANGER_RATE, Effect::PARAM_FLOAT},
+	{Effect::FLANGER_DEPTH, Effect::PARAM_FLOAT},
+	{Effect::FLANGER_FEEDBACK, Effect::PARAM_FLOAT},
+	{Effect::FLANGER_DELAY, Effect::PARAM_FLOAT},
+/*
+	{Effect::FREQSHIFTER_FREQ, Effect::PARAM_FLOAT},
+	{Effect::FREQSHIFTER_LEFTDIR, Effect::PARAM_DIRECTION},
+	{Effect::FREQSHIFTER_RIGHTDIR, Effect::PARAM_DIRECTION},
+
+	{Effect::MORPHER_WAVEFORM, Effect::PARAM_WAVEFORM},
+	{Effect::MORPHER_RATE, Effect::PARAM_FLOAT},
+	{Effect::MORPHER_PHONEMEA, Effect::PARAM_PHONEME},
+	{Effect::MORPHER_PHONEMEB, Effect::PARAM_PHONEME},
+	{Effect::MORPHER_TUNEA, Effect::PARAM_FLOAT},
+	{Effect::MORPHER_TUNEB, Effect::PARAM_FLOAT},
+
+	{Effect::PITCHSHIFTER_PITCH, Effect::PARAM_FLOAT},
+*/
+	{Effect::MODULATOR_WAVEFORM, Effect::PARAM_WAVEFORM},
+	{Effect::MODULATOR_FREQ, Effect::PARAM_FLOAT},
+	{Effect::MODULATOR_HIGHCUT, Effect::PARAM_FLOAT},
+/*
+	{Effect::AUTOWAH_ATTACK, Effect::PARAM_FLOAT},
+	{Effect::AUTOWAH_RELEASE, Effect::PARAM_FLOAT},
+	{Effect::AUTOWAH_RESONANCE, Effect::PARAM_FLOAT},
+	{Effect::AUTOWAH_PEAKGAIN, Effect::PARAM_FLOAT},
+*/
+	{Effect::COMPRESSOR_ENABLE, Effect::PARAM_BOOL},
+
+	{Effect::EQUALIZER_LOWGAIN, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_LOWCUT, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_MID1GAIN, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_MID1FREQ, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_MID1BAND, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_MID2GAIN, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_MID2FREQ, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_MID2BAND, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_HIGHGAIN, Effect::PARAM_FLOAT},
+	{Effect::EQUALIZER_HIGHCUT, Effect::PARAM_FLOAT}
 };
 
 } //audio

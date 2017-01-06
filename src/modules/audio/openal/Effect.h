@@ -66,16 +66,18 @@ public:
 	virtual ~Effect();
 	virtual Effect *clone();
 	ALuint getEffect() const;
-	virtual bool setParams(Type type, const std::vector<float> &params);
-	virtual const std::vector<float> &getParams() const;
+	virtual bool setParams(const std::map<Parameter, float> &params);
+	virtual const std::map<Parameter, float> &getParams() const;
 
 private:
 	bool generateEffect();
 	void deleteEffect();
-	float clampf(float val, float min, float max, float def);
+	float getValue(Parameter in, float def) const;
+	int getValue(Parameter in, int def) const;
+
 	ALuint effect = AL_EFFECT_NULL;
-	std::vector<float> params;
-	static std::map<Phoneme, ALint> phonemeMap;
+	std::map<Parameter, float> params;
+	//static std::map<Phoneme, ALint> phonemeMap;
 };
 
 } //openal
