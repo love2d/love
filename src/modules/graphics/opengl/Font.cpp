@@ -85,6 +85,14 @@ void Font::createTexture()
 	bool sRGB = isGammaCorrect();
 	OpenGL::TextureFormat fmt = gl.convertPixelFormat(pixelFormat, false, sRGB);
 
+	if (fmt.swizzled)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, fmt.swizzle[0]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, fmt.swizzle[1]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, fmt.swizzle[2]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, fmt.swizzle[3]);
+	}
+
 	// Initialize the texture with transparent black.
 	std::vector<GLubyte> emptydata(size.width * size.height * bpp, 0);
 

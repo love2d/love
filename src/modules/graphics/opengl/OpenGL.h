@@ -92,6 +92,9 @@ public:
 		GLenum internalformat = 0;
 		GLenum externalformat = 0;
 		GLenum type = 0;
+
+		bool swizzled = false;
+		GLint swizzle[4];
 	};
 
 	class TempDebugGroup

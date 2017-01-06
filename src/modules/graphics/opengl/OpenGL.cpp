@@ -868,9 +868,21 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		break;
 
 	case PIXELFORMAT_LA8:
-		f.internalformat = GL_LUMINANCE8_ALPHA8;
-		f.externalformat = GL_LUMINANCE_ALPHA;
-		f.type = GL_UNSIGNED_BYTE;
+		if (gl.isCoreProfile() || GLAD_ES_VERSION_3_0)
+		{
+			f.internalformat = GL_RG8;
+			f.externalformat = GL_RG;
+			f.type = GL_UNSIGNED_BYTE;
+			f.swizzled = true;
+			f.swizzle[0] = f.swizzle[1] = f.swizzle[2] = GL_RED;
+			f.swizzle[3] = GL_GREEN;
+		}
+		else
+		{
+			f.internalformat = GL_LUMINANCE8_ALPHA8;
+			f.externalformat = GL_LUMINANCE_ALPHA;
+			f.type = GL_UNSIGNED_BYTE;
+		}
 		break;
 
 	case PIXELFORMAT_RGBA4:
