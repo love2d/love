@@ -244,7 +244,7 @@ int w_Source_isRelative(lua_State *L)
 int w_Source_setLooping(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	t->setLooping(luax_toboolean(L, 2));
+	luax_catchexcept(L, [&](){ t->setLooping(luax_toboolean(L, 2)); });
 	return 0;
 }
 
