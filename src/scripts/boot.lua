@@ -634,6 +634,18 @@ function love.errhand(msg)
 		love.graphics.present()
 	end
 
+	local fullErrorText = p
+	local function copyToClipboard()
+		if not love.system then return end
+		love.system.setClipboardText(fullErrorText)
+		p = p .. "\nCopied to clipboard!"
+		draw()
+	end
+
+	if love.system then
+		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
+	end
+
 	while true do
 		love.event.pump()
 
@@ -642,13 +654,20 @@ function love.errhand(msg)
 				return
 			elseif e == "keypressed" and a == "escape" then
 				return
+			elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
+				copyToClipboard()
 			elseif e == "touchpressed" then
 				local name = love.window.getTitle()
 				if #name == 0 or name == "Untitled" then name = "Game" end
 				local buttons = {"OK", "Cancel"}
+				if love.system then
+					buttons[3] = "Copy to clipboard"
+				end
 				local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
 				if pressed == 1 then
 					return
+				elseif pressed == 3 then
+					copyToClipboard()
 				end
 			end
 		end
