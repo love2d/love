@@ -42,9 +42,18 @@ int w_RopeJoint_getMaxLength(lua_State *L)
 	return 1;
 }
 
+int w_RopeJoint_setMaxLength(lua_State *L)
+{
+	RopeJoint *t = luax_checkropejoint(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	t->setMaxLength(arg1);
+	return 0;
+}
+	
 static const luaL_Reg w_RopeJoint_functions[] =
 {
 	{ "getMaxLength", w_RopeJoint_getMaxLength },
+	{ "setMaxLength", w_RopeJoint_setMaxLength },
 	{ 0, 0 }
 };
 

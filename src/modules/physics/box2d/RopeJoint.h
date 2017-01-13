@@ -52,6 +52,7 @@ public:
 	 * Gets the maximum length of the rope.
 	 **/
 	float getMaxLength() const;
+	void setMaxLength(float length);
 
 private:
 	// The Box2D RopeJoint object.

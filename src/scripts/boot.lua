@@ -260,7 +260,7 @@ end
 
 local no_game_code = false
 
--- This can't be overriden.
+-- This can't be overridden.
 function love.boot()
 
 	-- This is absolutely needed.
