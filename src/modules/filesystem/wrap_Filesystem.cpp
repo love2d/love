@@ -647,8 +647,8 @@ int loader(lua_State *L)
 	auto *inst = instance();
 	for (std::string element : inst->getRequirePath())
 	{
-		size_t pos = element.find('?');
-		if (pos != std::string::npos)
+		size_t pos = 0;
+		while ((pos = element.find('?', pos)) != std::string::npos)
 			element.replace(pos, 1, modulename);
 
 		if (inst->isFile(element.c_str()))
