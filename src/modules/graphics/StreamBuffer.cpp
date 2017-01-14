@@ -37,7 +37,7 @@ StreamBuffer::StreamBuffer(Mode mode, size_t size)
 
 StreamBuffer::~StreamBuffer()
 {
-		delete[] data;
+	delete[] data;
 }
 
 void *StreamBuffer::getData() const

@@ -755,13 +755,19 @@ protected:
 	struct StreamBufferState
 	{
 		StreamBuffer *vb[2];
-		StreamBuffer *indexBuffer;
-		vertex::PrimitiveMode primitiveMode;
+		StreamBuffer *indexBuffer = nullptr;
+		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
 		vertex::CommonFormat formats[2];
 		StrongRef<Texture> texture;
 		ptrdiff_t textureHandle = 0;
-		int vertexCount;
-		int indexCount;
+		int vertexCount = 0;
+		int indexCount = 0;
+
+		StreamBufferState()
+		{
+			vb[0] = vb[1] = nullptr;
+			formats[0] = formats[1] = vertex::CommonFormat::NONE;
+		}
 	};
 
 	void restoreState(const DisplayState &s);
