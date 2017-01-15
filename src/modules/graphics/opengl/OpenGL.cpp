@@ -1051,7 +1051,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 
 	if (!isPixelFormatCompressed(pixelformat))
 	{
-		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 && pixelformat != PIXELFORMAT_LA8)
+		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 && pixelformat == PIXELFORMAT_LA8)
 			&& !renderbuffer)
 		{
 			f.internalformat = f.externalformat;
