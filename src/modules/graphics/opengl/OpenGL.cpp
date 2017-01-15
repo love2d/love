@@ -379,6 +379,19 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 	}
 }
 
+GLenum OpenGL::getGLIndexDataType(IndexDataType type)
+{
+	switch (type)
+	{
+	case INDEX_UINT16:
+		return GL_UNSIGNED_SHORT;
+	case INDEX_UINT32:
+		return GL_UNSIGNED_INT;
+	default:
+		return GL_ZERO;
+	}
+}
+
 GLenum OpenGL::getGLBufferUsage(vertex::Usage usage)
 {
 	switch (usage)

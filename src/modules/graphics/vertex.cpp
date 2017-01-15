@@ -53,6 +53,19 @@ size_t getFormatStride(CommonFormat format)
 	}
 }
 
+size_t getIndexDataSize(IndexDataType type)
+{
+	switch (type)
+	{
+	case INDEX_UINT16:
+		return sizeof(uint16);
+	case INDEX_UINT32:
+		return sizeof(uint32);
+	default:
+		return 0;
+	}
+}
+
 int getIndexCount(TriangleIndexMode mode, int vertexCount)
 {
 	switch (mode)
@@ -130,6 +143,14 @@ void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount,
 	fillIndicesT(mode, vertexStart, vertexCount, indices);
 }
 
+static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
+{
+	{ "uint16", INDEX_UINT16 },
+	{ "uint32", INDEX_UINT32 },
+};
+
+static StringMap<IndexDataType, INDEX_MAX_ENUM> indexTypes(indexTypeEntries, sizeof(indexTypeEntries));
+
 static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
 {
 	{ "stream",  USAGE_STREAM  },
@@ -138,6 +159,16 @@ static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
 };
 
 static StringMap<Usage, USAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
+
+bool getConstant(const char *in, IndexDataType &out)
+{
+	return indexTypes.find(in, out);
+}
+
+bool getConstant(IndexDataType in, const char *&out)
+{
+	return indexTypes.find(in, out);
+}
 
 bool getConstant(const char *in, Usage &out)
 {

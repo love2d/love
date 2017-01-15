@@ -371,6 +371,26 @@ int w_Mesh_setVertexMap(lua_State *L)
 		return 0;
 	}
 
+	if (luax_istype(L, 2, Data::type))
+	{
+		Data *d = luax_totype<Data>(L, 2, Data::type);
+
+		const char *indextypestr = luaL_checkstring(L, 3);
+		IndexDataType indextype;
+		if (!vertex::getConstant(indextypestr, indextype))
+			return luaL_error(L, "Invalid index data type: %s", indextypestr);
+
+		size_t datatypesize = vertex::getIndexDataSize(indextype);
+
+		int indexcount = (int) luaL_optnumber(L, 4, d->getSize() / datatypesize);
+
+		if (indexcount < 1 || indexcount * datatypesize > d->getSize())
+			return luaL_error(L, "Invalid index count: %d", indexcount);
+
+		luax_catchexcept(L, [&]() { t->setVertexMap(indextype, d->getData(), indexcount * datatypesize); });
+		return 0;
+	}
+
 	bool is_table = lua_istable(L, 2);
 	int nargs = is_table ? (int) luax_objlen(L, 2) : lua_gettop(L) - 1;
 

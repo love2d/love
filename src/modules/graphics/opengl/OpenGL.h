@@ -361,6 +361,7 @@ public:
 	Vendor getVendor() const;
 
 	static GLenum getGLBufferType(BufferType type);
+	static GLenum getGLIndexDataType(IndexDataType type);
 	static GLenum getGLBufferUsage(vertex::Usage usage);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
 

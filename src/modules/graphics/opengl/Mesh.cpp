@@ -69,7 +69,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	, ibo(nullptr)
 	, useIndexBuffer(false)
 	, elementCount(0)
-	, elementDataType(0)
+	, elementDataType(INDEX_UINT16)
 	, drawMode(drawmode)
 	, rangeStart(-1)
 	, rangeCount(-1)
@@ -78,7 +78,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	calculateAttributeSizes();
 
 	vertexCount = datasize / vertexStride;
-	elementDataType = getGLDataTypeFromMax(vertexCount);
+	elementDataType = getIndexTypeFromMax(vertexCount);
 
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
@@ -96,7 +96,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 	, ibo(nullptr)
 	, useIndexBuffer(false)
 	, elementCount(0)
-	, elementDataType(getGLDataTypeFromMax(vertexcount))
+	, elementDataType(getIndexTypeFromMax(vertexcount))
 	, drawMode(drawmode)
 	, rangeStart(-1)
 	, rangeCount(-1)
@@ -406,10 +406,10 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
 	size_t maxval = getVertexCount();
 
-	GLenum datatype = getGLDataTypeFromMax(maxval);
+	IndexDataType datatype = getIndexTypeFromMax(maxval);
 
 	// Calculate the size in bytes of the index buffer data.
-	size_t size = map.size() * getGLDataTypeSize(datatype);
+	size_t size = map.size() * vertex::getIndexDataSize(datatype);
 
 	if (ibo && size > ibo->getSize())
 	{
@@ -431,15 +431,38 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	// Fill the buffer with the index values from the vector.
 	switch (datatype)
 	{
-	case GL_UNSIGNED_SHORT:
+	case INDEX_UINT16:
 		copyToIndexBuffer<uint16>(map, ibomap, maxval);
 		break;
-	case GL_UNSIGNED_INT:
+	case INDEX_UINT32:
 	default:
 		copyToIndexBuffer<uint32>(map, ibomap, maxval);
 		break;
 	}
 
+	elementDataType = datatype;
+}
+
+void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasize)
+{
+	if (ibo && datasize > ibo->getSize())
+	{
+		delete ibo;
+		ibo = nullptr;
+	}
+
+	if (!ibo && datasize > 0)
+		ibo = new GLBuffer(datasize, nullptr, BUFFER_INDEX, vbo->getUsage());
+
+	elementCount = datasize / vertex::getIndexDataSize(datatype);
+
+	if (!ibo || elementCount == 0)
+		return;
+
+	GLBuffer::Mapper ibomap(*ibo);
+	memcpy(ibomap.get(), data, datasize);
+
+	useIndexBuffer = true;
 	elementDataType = datatype;
 }
 
@@ -476,10 +499,10 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 	// Fill the vector from the buffer.
 	switch (elementDataType)
 	{
-	case GL_UNSIGNED_SHORT:
+	case INDEX_UINT16:
 		copyFromIndexBuffer<uint16>(buffer, elementCount, map);
 		break;
-	case GL_UNSIGNED_INT:
+	case INDEX_UINT32:
 	default:
 		copyFromIndexBuffer<uint32>(buffer, elementCount, map);
 		break;
@@ -626,8 +649,9 @@ void Mesh::draw(Graphics *gfx, const Matrix4 &m)
 
 		count = std::min(count, (int) elementCount - start);
 
-		GLenum type = elementDataType;
-		const void *indices = ibo->getPointer(start * getGLDataTypeSize(type));
+		size_t elementsize = vertex::getIndexDataSize(elementDataType);
+		const void *indices = ibo->getPointer(start * elementsize);
+		GLenum type = OpenGL::getGLIndexDataType(elementDataType);
 
 		if (count > 0)
 			gl.drawElements(getGLDrawMode(drawMode), count, type, indices);
@@ -690,27 +714,12 @@ GLenum Mesh::getGLDataType(DataType type)
 	}
 }
 
-GLenum Mesh::getGLDataTypeFromMax(size_t maxvalue)
+IndexDataType Mesh::getIndexTypeFromMax(size_t maxvalue)
 {
 	if (maxvalue > LOVE_UINT16_MAX)
-		return GL_UNSIGNED_INT;
+		return INDEX_UINT32;
 	else
-		return GL_UNSIGNED_SHORT;
-}
-
-size_t Mesh::getGLDataTypeSize(GLenum datatype)
-{
-	switch (datatype)
-	{
-	case GL_UNSIGNED_BYTE:
-		return sizeof(uint8);
-	case GL_UNSIGNED_SHORT:
-		return sizeof(uint16);
-	case GL_UNSIGNED_INT:
-		return sizeof(uint32);
-	default:
-		return 0;
-	}
+		return INDEX_UINT16;
 }
 
 bool Mesh::getConstant(const char *in, Mesh::DrawMode &out)

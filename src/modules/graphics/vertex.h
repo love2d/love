@@ -58,6 +58,13 @@ enum BufferType
 	BUFFER_MAX_ENUM
 };
 
+enum IndexDataType
+{
+	INDEX_UINT16,
+	INDEX_UINT32,
+	INDEX_MAX_ENUM
+};
+
 namespace vertex
 {
 
@@ -115,11 +122,15 @@ struct XYf_STus_RGBAub
 };
 
 size_t getFormatStride(CommonFormat format);
+size_t getIndexDataSize(IndexDataType type);
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount);
 
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
+
+bool getConstant(const char *in, IndexDataType &out);
+bool getConstant(IndexDataType in, const char *&out);
 
 bool getConstant(const char *in, Usage &out);
 bool getConstant(Usage in, const char *&out);

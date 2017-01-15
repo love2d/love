@@ -150,6 +150,7 @@ public:
 	 * {0, 1, 2, 3, 4, ...}
 	 **/
 	void setVertexMap(const std::vector<uint32> &map);
+	void setVertexMap(IndexDataType datatype, const void *data, size_t datasize);
 	void setVertexMap();
 
 	/**
@@ -215,10 +216,10 @@ private:
 
 	static size_t getAttribFormatSize(const AttribFormat &format);
 
+	static IndexDataType getIndexTypeFromMax(size_t maxvalue);
+
 	static GLenum getGLDrawMode(DrawMode mode);
 	static GLenum getGLDataType(DataType type);
-	static GLenum getGLDataTypeFromMax(size_t maxvalue);
-	static size_t getGLDataTypeSize(GLenum datatype);
 
 	std::vector<AttribFormat> vertexFormat;
 	std::vector<size_t> attributeSizes;
@@ -238,7 +239,7 @@ private:
 	GLBuffer *ibo;
 	bool useIndexBuffer;
 	size_t elementCount;
-	GLenum elementDataType;
+	IndexDataType elementDataType;
 
 	DrawMode drawMode;
 
