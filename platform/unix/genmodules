@@ -16,7 +16,7 @@ implfind()
 
 sourcefind()
 {
-	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
+	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.lch" -o -iname "*.lua" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
 }
 
 handlemodule()
@@ -142,7 +142,7 @@ endif
 
 # libLÖVE
 lib_LTLIBRARIES = liblove${love_suffix}.la
-liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
+liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) -release \$(PACKAGE_VERSION)
 liblove${love_amsuffix}_la_LIBADD = \
 	\$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)\
 	\$(openal_LIBS) \$(zlib_LIBS) \$(libmodplug_LIBS)\
