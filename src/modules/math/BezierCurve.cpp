@@ -105,6 +105,9 @@ BezierCurve BezierCurve::getDerivative() const
 
 const Vector &BezierCurve::getControlPoint(int i) const
 {
+	if (controlPoints.size() == 0)
+		throw Exception("Curve contains no control points.");
+		
 	while (i < 0)
 		i += controlPoints.size();
 
@@ -116,6 +119,9 @@ const Vector &BezierCurve::getControlPoint(int i) const
 
 void BezierCurve::setControlPoint(int i, const Vector &point)
 {
+	if (controlPoints.size() == 0)
+		throw Exception("Curve contains no control points.");
+
 	while (i < 0)
 		i += controlPoints.size();
 
@@ -127,6 +133,9 @@ void BezierCurve::setControlPoint(int i, const Vector &point)
 
 void BezierCurve::insertControlPoint(const Vector &point, int i)
 {
+	if (controlPoints.size() == 0)
+		i = 0;
+
 	while (i < 0)
 		i += controlPoints.size();
 
@@ -138,6 +147,9 @@ void BezierCurve::insertControlPoint(const Vector &point, int i)
 
 void BezierCurve::removeControlPoint(int i)
 {
+	if (controlPoints.size() == 0)
+		throw Exception("No control points to remove.");
+
 	while (i < 0)
 		i += controlPoints.size();
 
