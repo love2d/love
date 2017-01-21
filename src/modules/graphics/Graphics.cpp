@@ -98,6 +98,9 @@ Graphics::Graphics()
 {
 	transformStack.reserve(16);
 	transformStack.push_back(Matrix4());
+
+	pixelScaleStack.reserve(16);
+	pixelScaleStack.push_back(1);
 }
 
 Graphics::~Graphics()

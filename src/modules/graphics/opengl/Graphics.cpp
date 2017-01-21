@@ -294,10 +294,6 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// Restore the graphics state.
 	restoreState(states.back());
 
-	pixelScaleStack.clear();
-	pixelScaleStack.reserve(5);
-	pixelScaleStack.push_back(1);
-
 	int gammacorrect = isGammaCorrect() ? 1 : 0;
 
 	// We always need a default shader.
