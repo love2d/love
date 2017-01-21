@@ -63,6 +63,9 @@ Graphics::Graphics()
 	states.reserve(10);
 	states.push_back(DisplayState());
 
+	pixelSizeStack.reserve(5);
+	pixelSizeStack.push_back(1);
+
 	if (currentWindow.get())
 	{
 		int w, h;
@@ -312,10 +315,6 @@ bool Graphics::setMode(int width, int height)
 
 	// Restore the graphics state.
 	restoreState(states.back());
-
-	pixelSizeStack.clear();
-	pixelSizeStack.reserve(5);
-	pixelSizeStack.push_back(1);
 
 	int gammacorrect = isGammaCorrect() ? 1 : 0;
 
