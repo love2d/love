@@ -29,19 +29,20 @@ local ipairs = ipairs
 
 local GLSL = {}
 
-GLSL.VERSION = "#version 120"
-GLSL.VERSION_ES = "#version 100"
+GLSL.VERSION = { -- index using [target][gles]
+	glsl1 = {[false]="#version 120",      [true]="#version 100"},
+	glsl3 = {[false]="#version 330 core", [true]="#version 300 es"},
+}
 
 GLSL.SYNTAX = [[
-#ifndef GL_ES
-#define lowp
-#define mediump
-#define highp
+#if !defined(GL_ES) && __VERSION__ < 140
+	#define lowp
+	#define mediump
+	#define highp
 #endif
 #define number float
 #define Image sampler2D
 #define extern uniform
-#define Texel texture2D
 #pragma optionNV(strict on)]]
 
 -- Uniforms shared by the vertex and pixel shader stages.
@@ -50,9 +51,9 @@ GLSL.UNIFORMS = [[
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
 #if defined(VERTEX) || defined(GL_FRAGMENT_PRECISION_HIGH)
-#define LOVE_UNIFORM_PRECISION highp
+	#define LOVE_UNIFORM_PRECISION highp
 #else
-#define LOVE_UNIFORM_PRECISION mediump
+	#define LOVE_UNIFORM_PRECISION mediump
 #endif
 uniform LOVE_UNIFORM_PRECISION mat4 TransformMatrix;
 uniform LOVE_UNIFORM_PRECISION mat4 ProjectionMatrix;
@@ -61,6 +62,22 @@ uniform LOVE_UNIFORM_PRECISION mat3 NormalMatrix;
 uniform mediump vec4 love_ScreenSize;]]
 
 GLSL.FUNCTIONS = [[
+#if __VERSION__ >= 130 && !defined(LOVE_GLSL1_ON_GLSL3)
+	#define Texel texture
+#else
+	#if __VERSION__ >= 130
+		#define texture2D Texel
+		#define love_texture2D texture
+	#else
+		#define love_texture2D texture2D
+	#endif
+	vec4 Texel(sampler2D s, vec2 c) { return love_texture2D(s, c); }
+	#ifdef PIXEL
+		vec4 Texel(sampler2D s, vec2 c, float b) { return love_texture2D(s, c, b); }
+	#endif
+	#define texture love_texture
+#endif
+
 float gammaToLinearPrecise(float c) {
 	return c <= 0.04045 ? c * 0.077399380804954 : pow((c + 0.055) * 0.9478672985782, 2.4);
 }
@@ -93,33 +110,44 @@ mediump vec3 linearToGammaFast(mediump vec3 c) { return pow(max(c, vec3(0.0)), v
 mediump vec4 linearToGammaFast(mediump vec4 c) { return vec4(linearToGammaFast(c.rgb), c.a); }
 
 #ifdef LOVE_PRECISE_GAMMA
-#define gammaToLinear gammaToLinearPrecise
-#define linearToGamma linearToGammaPrecise
+	#define gammaToLinear gammaToLinearPrecise
+	#define linearToGamma linearToGammaPrecise
 #else
-#define gammaToLinear gammaToLinearFast
-#define linearToGamma linearToGammaFast
+	#define gammaToLinear gammaToLinearFast
+	#define linearToGamma linearToGammaFast
 #endif
 
 #ifdef LOVE_GAMMA_CORRECT
-#define gammaCorrectColor gammaToLinear
-#define unGammaCorrectColor linearToGamma
-#define gammaCorrectColorPrecise gammaToLinearPrecise
-#define unGammaCorrectColorPrecise linearToGammaPrecise
-#define gammaCorrectColorFast gammaToLinearFast
-#define unGammaCorrectColorFast linearToGammaFast
+	#define gammaCorrectColor gammaToLinear
+	#define unGammaCorrectColor linearToGamma
+	#define gammaCorrectColorPrecise gammaToLinearPrecise
+	#define unGammaCorrectColorPrecise linearToGammaPrecise
+	#define gammaCorrectColorFast gammaToLinearFast
+	#define unGammaCorrectColorFast linearToGammaFast
 #else
-#define gammaCorrectColor
-#define unGammaCorrectColor
-#define gammaCorrectColorPrecise
-#define unGammaCorrectColorPrecise
-#define gammaCorrectColorFast
-#define unGammaCorrectColorFast
+	#define gammaCorrectColor
+	#define unGammaCorrectColor
+	#define gammaCorrectColorPrecise
+	#define unGammaCorrectColorPrecise
+	#define gammaCorrectColorFast
+	#define unGammaCorrectColorFast
 #endif]]
 
 GLSL.VERTEX = {
 	HEADER = [[
-#define VERTEX
 #define LOVE_PRECISE_GAMMA
+
+#if __VERSION__ >= 130
+	#define attribute in
+	#define varying out
+	#ifndef LOVE_GLSL1_ON_GLSL3
+		#define love_VertexID gl_VertexID
+	#endif
+#endif
+
+#ifdef GL_ES
+	uniform mediump float love_PointSize;
+#endif
 
 attribute vec4 VertexPosition;
 attribute vec4 VertexTexCoord;
@@ -127,11 +155,7 @@ attribute vec4 VertexColor;
 attribute vec4 ConstantColor;
 
 varying vec4 VaryingTexCoord;
-varying vec4 VaryingColor;
-
-#ifdef GL_ES
-uniform mediump float love_PointSize;
-#endif]],
+varying vec4 VaryingColor;]],
 
 	FUNCTIONS = "",
 
@@ -148,26 +172,39 @@ void main() {
 
 GLSL.PIXEL = {
 	HEADER = [[
-#define PIXEL
-
 #ifdef GL_ES
-precision mediump float;
+	precision mediump float;
 #endif
 
+#define love_MaxCanvases gl_MaxDrawBuffers
+
+#if __VERSION__ >= 130
+	#define varying in
+	#ifdef LOVE_MULTI_CANVAS
+		layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
+	#else
+		layout(location = 0) out vec4 love_PixelColor;
+	#endif
+#else
+	#ifdef LOVE_MULTI_CANVAS
+		#define love_Canvases gl_FragData
+	#else
+		#define love_PixelColor gl_FragColor
+	#endif
+#endif
+
+// See Shader::checkSetScreenParams in Shader.cpp.
+#define love_PixelCoord (vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w))
+
 varying mediump vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;
-
-#define love_Canvases gl_FragData
-
-uniform sampler2D _tex0_;]],
+varying mediump vec4 VaryingColor;]],
 
 	FUNCTIONS = [[
 uniform sampler2D love_VideoYChannel;
 uniform sampler2D love_VideoCbChannel;
 uniform sampler2D love_VideoCrChannel;
 
-vec4 VideoTexel(vec2 texcoords)
-{
+vec4 VideoTexel(vec2 texcoords) {
 	vec3 yuv;
 	yuv[0] = Texel(love_VideoYChannel, texcoords).r;
 	yuv[1] = Texel(love_VideoCbChannel, texcoords).r;
@@ -184,39 +221,37 @@ vec4 VideoTexel(vec2 texcoords)
 }]],
 
 	FOOTER = [[
+uniform sampler2D MainTexture;
 void main() {
-	// fix crashing issue in OSX when _tex0_ is unused within effect()
-	float dummy = Texel(_tex0_, vec2(.5)).r;
-
-	// See Shader::checkSetScreenParams in Shader.cpp.
-	vec2 pixelcoord = vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w);
-
-	gl_FragColor = effect(VaryingColor, _tex0_, VaryingTexCoord.st, pixelcoord);
+	love_PixelColor = effect(VaryingColor, MainTexture, VaryingTexCoord.st, love_PixelCoord);
 }]],
 
 	FOOTER_MULTI_CANVAS = [[
+uniform sampler2D MainTexture;
 void main() {
-	// fix crashing issue in OSX when _tex0_ is unused within effect()
-	float dummy = Texel(_tex0_, vec2(.5)).r;
-
-	// See Shader::checkSetScreenParams in Shader.cpp.
-	vec2 pixelcoord = vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w);
-
-	effects(VaryingColor, _tex0_, VaryingTexCoord.st, pixelcoord);
+	effects(VaryingColor, MainTexture, VaryingTexCoord.st, love_PixelCoord);
 }]],
 }
 
-local function createShaderStageCode(stage, code, lang, gammacorrect, multicanvas)
+local function getLanguageTarget(code)
+	if not code then return nil end
+	return (code:match("^%s*#pragma language (%w+)")) or "glsl1"
+end
+
+local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, multicanvas)
 	stage = stage:upper()
 	local lines = {
-		lang == "glsles" and GLSL.VERSION_ES or GLSL.VERSION,
-		GLSL.SYNTAX,
+		GLSL.VERSION[lang][gles],
+		"#define "..stage,
+		glsl1on3 and "#define LOVE_GLSL1_ON_GLSL3 1" or "",
 		gammacorrect and "#define LOVE_GAMMA_CORRECT 1" or "",
+		multicanvas and "#define LOVE_MULTI_CANVAS 1" or "",
+		GLSL.SYNTAX,
 		GLSL[stage].HEADER,
 		GLSL.UNIFORMS,
 		GLSL.FUNCTIONS,
 		GLSL[stage].FUNCTIONS,
-		lang == "glsles" and "#line 1" or "#line 0",
+		(lang == "glsl3" or gles) and "#line 1" or "#line 0",
 		code,
 		multicanvas and GLSL[stage].FOOTER_MULTI_CANVAS or GLSL[stage].FOOTER,
 	}
@@ -238,7 +273,7 @@ local function isPixelCode(code)
 	end
 end
 
-function love.graphics._shaderCodeToGLSL(arg1, arg2)
+function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	local vertexcode, pixelcode
 	local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
 
@@ -266,18 +301,34 @@ function love.graphics._shaderCodeToGLSL(arg1, arg2)
 		end
 	end
 
-	local lang = "glsl"
-	if love.graphics.getRendererInfo() == "OpenGL ES" then
-		lang = "glsles"
-	end
-
+	local supportsGLSL3 = love.graphics.getSupported().glsl3
 	local gammacorrect = love.graphics.isGammaCorrect()
 
+	local targetlang = getLanguageTarget(pixelcode or vertexcode)
+	if getLanguageTarget(vertexcode or pixelcode) ~= targetlang then
+		error("vertex and pixel shader languages must match", 2)
+	end
+
+	if targetlang == "glsl3" and not supportsGLSL3 then
+		error("GLSL 3 shaders are not supported on this system!", 2)
+	end
+
+	if targetlang ~= nil and not GLSL.VERSION[targetlang] then
+		error("Invalid shader language: " .. targetlang, 2)
+	end
+
+	local lang = targetlang or "glsl1"
+	local glsl1on3 = false
+	if lang == "glsl1" and supportsGLSL3 then
+		lang = "glsl3"
+		glsl1on3 = true
+	end
+
 	if vertexcode then
-		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gammacorrect)
+		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect)
 	end
 	if pixelcode then
-		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gammacorrect, is_multicanvas)
+		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_multicanvas)
 	end
 
 	return vertexcode, pixelcode
@@ -328,13 +379,20 @@ vec4 effect(mediump vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 local defaults = {}
 local defaults_gammacorrect = {}
 
-for _, lang in ipairs{"glsl", "glsles"} do
+local langs = {
+	glsl1   = {target="glsl1", gles=false},
+	glsles1 = {target="glsl1", gles=true},
+	glsl3   = {target="glsl3", gles=false},
+	glsles3 = {target="glsl3", gles=true},
+}
+
+for lang, info in pairs(langs) do
 	for _, gammacorrect in ipairs{false, true} do
 		local t = gammacorrect and defaults_gammacorrect or defaults
 		t[lang] = {
-			vertex = createShaderStageCode("VERTEX", defaultcode.vertex, lang, gammacorrect),
-			pixel = createShaderStageCode("PIXEL", defaultcode.pixel, lang, gammacorrect, false),
-			videopixel = createShaderStageCode("PIXEL", defaultcode.videopixel, lang, gammacorrect, false),
+			vertex = createShaderStageCode("VERTEX", defaultcode.vertex, info.target, info.gles, false, gammacorrect),
+			pixel = createShaderStageCode("PIXEL", defaultcode.pixel, info.target, info.gles, false, gammacorrect, false),
+			videopixel = createShaderStageCode("PIXEL", defaultcode.videopixel, info.target, info.gles, false, gammacorrect, false),
 		}
 	end
 end

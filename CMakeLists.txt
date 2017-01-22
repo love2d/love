@@ -503,6 +503,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
+	src/modules/graphics/opengl/BufferSync.cpp
+	src/modules/graphics/opengl/BufferSync.h
 	src/modules/graphics/opengl/Canvas.cpp
 	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/Font.cpp
@@ -523,6 +525,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Shader.h
 	src/modules/graphics/opengl/SpriteBatch.cpp
 	src/modules/graphics/opengl/SpriteBatch.h
+	src/modules/graphics/opengl/StreamBuffer.cpp
+	src/modules/graphics/opengl/StreamBuffer.h
 	src/modules/graphics/opengl/Text.cpp
 	src/modules/graphics/opengl/Text.h
 	src/modules/graphics/opengl/Video.cpp
@@ -1248,6 +1252,123 @@ set(LOVE_SRC_3P_GLAD
 add_library(love_3p_glad ${LOVE_SRC_3P_GLAD})
 
 #
+# glslang
+#
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN
+	src/libraries/glslang/glslang/GenericCodeGen/CodeGen.cpp
+	src/libraries/glslang/glslang/GenericCodeGen/Link.cpp
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
+	src/libraries/glslang/glslang/Include/arrays.h
+	src/libraries/glslang/glslang/Include/BaseTypes.h
+	src/libraries/glslang/glslang/Include/Common.h
+	src/libraries/glslang/glslang/Include/ConstantUnion.h
+	src/libraries/glslang/glslang/Include/InfoSink.h
+	src/libraries/glslang/glslang/Include/InitializeGlobals.h
+	src/libraries/glslang/glslang/Include/intermediate.h
+	src/libraries/glslang/glslang/Include/PoolAlloc.h
+	src/libraries/glslang/glslang/Include/ResourceLimits.h
+	src/libraries/glslang/glslang/Include/revision.h
+	src/libraries/glslang/glslang/Include/ShHandle.h
+	src/libraries/glslang/glslang/Include/Types.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.h
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpMemory.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpSymbols.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR}
+	src/libraries/glslang/glslang/MachineIndependent/Constant.cpp
+	src/libraries/glslang/glslang/MachineIndependent/gl_types.h
+	src/libraries/glslang/glslang/MachineIndependent/glslang_tab.cpp
+	src/libraries/glslang/glslang/MachineIndependent/glslang_tab.cpp.h
+	src/libraries/glslang/glslang/MachineIndependent/InfoSink.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Initialize.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Initialize.h
+	src/libraries/glslang/glslang/MachineIndependent/Intermediate.cpp
+	src/libraries/glslang/glslang/MachineIndependent/intermOut.cpp
+	src/libraries/glslang/glslang/MachineIndependent/IntermTraverse.cpp
+	src/libraries/glslang/glslang/MachineIndependent/iomapper.cpp
+	src/libraries/glslang/glslang/MachineIndependent/iomapper.h
+	src/libraries/glslang/glslang/MachineIndependent/limits.cpp
+	src/libraries/glslang/glslang/MachineIndependent/linkValidate.cpp
+	src/libraries/glslang/glslang/MachineIndependent/LiveTraverser.h
+	src/libraries/glslang/glslang/MachineIndependent/localintermediate.h
+	src/libraries/glslang/glslang/MachineIndependent/parseConst.cpp
+	src/libraries/glslang/glslang/MachineIndependent/ParseContextBase.cpp
+	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.cpp
+	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.h
+	src/libraries/glslang/glslang/MachineIndependent/parseVersions.h
+	src/libraries/glslang/glslang/MachineIndependent/PoolAlloc.cpp
+	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
+	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.h
+	src/libraries/glslang/glslang/MachineIndependent/reflection.cpp
+	src/libraries/glslang/glslang/MachineIndependent/reflection.h
+	src/libraries/glslang/glslang/MachineIndependent/RemoveTree.cpp
+	src/libraries/glslang/glslang/MachineIndependent/RemoveTree.h
+	src/libraries/glslang/glslang/MachineIndependent/Scan.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Scan.h
+	src/libraries/glslang/glslang/MachineIndependent/ScanContext.h
+	src/libraries/glslang/glslang/MachineIndependent/ShaderLang.cpp
+	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.cpp
+	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.h
+	src/libraries/glslang/glslang/MachineIndependent/Versions.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Versions.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
+	src/libraries/glslang/glslang/OSDependent/osinclude.h
+)
+
+if(MSVC)
+	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
+		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
+		src/libraries/glslang/glslang/OSDependent/Windows/main.cpp
+		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
+	)
+else()
+	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
+		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
+		src/libraries/glslang/glslang/OSDependent/Unix/ossource.cpp
+	)
+endif()
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC
+	src/libraries/glslang/glslang/Public/ShaderLang.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC}
+)
+
+set(LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL
+	src/libraries/glslang/OGLCompilersDLL/InitializeDll.cpp
+	src/libraries/glslang/OGLCompilersDLL/InitializeDll.h
+)
+
+set(LOVE_SRC_3P_GLSLANG
+	${LOVE_SRC_3P_GLSLANG_GLSLANG}
+	${LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL}
+)
+
+add_library(love_3p_glslang ${LOVE_SRC_3P_GLSLANG})
+
+#
 # LodePNG
 #
 
@@ -1456,6 +1577,7 @@ set(LOVE_3P
 	love_3p_ddsparse
 	love_3p_enet
 	love_3p_glad
+	love_3p_glslang
 	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_luautf8

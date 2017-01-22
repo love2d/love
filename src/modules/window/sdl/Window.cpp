@@ -131,6 +131,8 @@ void Window::setGLContextAttributes(const ContextAttribs &attribs)
 
 	if (attribs.gles)
 		profilemask = SDL_GL_CONTEXT_PROFILE_ES;
+	else if (attribs.versionMajor * 10 + attribs.versionMinor >= 32)
+		profilemask |= SDL_GL_CONTEXT_PROFILE_CORE;
 	else if (attribs.debug)
 		profilemask = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
 
@@ -236,34 +238,33 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	const char *debughint = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
 	bool debug = (debughint != nullptr && debughint[0] != '0');
 
-	// Different context attribute profiles to try.
-	std::vector<ContextAttribs> attribslist = {
-		{2, 1, false, debug}, // OpenGL 2.1.
-		{3, 0, true,  debug}, // OpenGL ES 3.
-		{2, 0, true,  debug}, // OpenGL ES 2.
-	};
+	const char *preferGL2hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL2");
+	bool preferGL2 = (preferGL2hint != nullptr && preferGL2hint[0] != '0');
 
-	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
-	bool removeES3 = hasSDL203orEarlier;
+	std::vector<ContextAttribs> glcontexts = {{2, 1, false, debug}};
+	glcontexts.insert(preferGL2 ? glcontexts.end() : glcontexts.begin(), {3, 3, false, debug});
+
+	std::vector<ContextAttribs> glescontexts = {{2, 0, true, debug}};
 
 	// While UWP SDL is above 2.0.4, it still doesn't support OpenGL ES 3+
-#ifdef LOVE_WINDOWS_UWP
-	removeES3 = true;
+#ifndef LOVE_WINDOWS_UWP
+	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
+	if (!hasSDL203orEarlier)
+		glescontexts.insert(preferGL2 ? glescontexts.end() : glescontexts.begin(), {3, 0, true, debug});
 #endif
 
-	if (removeES3)
-	{
-		auto it = std::remove_if(attribslist.begin(), attribslist.end(), [](ContextAttribs a)
-		{
-			return a.gles && a.versionMajor >= 3;
-		});
+	std::vector<ContextAttribs> attribslist;
 
-		attribslist.erase(it, attribslist.end());
-	}
-
-	// Move OpenGL ES to the front of the list if we should prefer GLES.
 	if (preferGLES)
-		std::rotate(attribslist.begin(), attribslist.begin() + 1, attribslist.end());
+	{
+		attribslist.insert(attribslist.end(), glescontexts.begin(), glescontexts.end());
+		attribslist.insert(attribslist.end(), glcontexts.begin(), glcontexts.end());
+	}
+	else
+	{
+		attribslist.insert(attribslist.end(), glcontexts.begin(), glcontexts.end());
+		attribslist.insert(attribslist.end(), glescontexts.begin(), glescontexts.end());
+	}
 
 	return attribslist;
 }

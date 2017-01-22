@@ -720,15 +720,12 @@ int w_newCanvas(lua_State *L)
 	return 1;
 }
 
-int w_newShader(lua_State *L)
+static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::ShaderSource &source)
 {
 	luax_checkgraphicscreated(L);
 
-	// clamp stack to 2 elements
-	lua_settop(L, 2);
-
 	// read any filepath arguments
-	for (int i = 1; i <= 2; i++)
+	for (int i = startidx; i < startidx + 2; i++)
 	{
 		if (!lua_isstring(L, i))
 			continue;
@@ -763,24 +760,31 @@ int w_newShader(lua_State *L)
 		}
 	}
 
-	bool has_arg1 = lua_isstring(L, 1) != 0;
-	bool has_arg2 = lua_isstring(L, 2) != 0;
+	bool has_arg1 = lua_isstring(L, startidx + 0) != 0;
+	bool has_arg2 = lua_isstring(L, startidx + 1) != 0;
 
 	// require at least one string argument
 	if (!(has_arg1 || has_arg2))
-		luaL_checkstring(L, 1);
+		luaL_checkstring(L, startidx);
 
 	luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
 
 	// push vertexcode and pixelcode strings to the top of the stack
-	lua_pushvalue(L, 1);
-	lua_pushvalue(L, 2);
+	lua_pushboolean(L, gles);
+
+	if (has_arg1)
+		lua_pushvalue(L, startidx + 0);
+	else
+		lua_pushnil(L);
+
+	if (has_arg2)
+		lua_pushvalue(L, startidx + 1);
+	else
+		lua_pushnil(L);
 
 	// call effectCodeToGLSL, returned values will be at the top of the stack
-	if (lua_pcall(L, 2, 2, 0) != 0)
+	if (lua_pcall(L, 3, 2, 0) != 0)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
-
-	Shader::ShaderSource source;
 
 	// vertex shader code
 	if (lua_isstring(L, -2))
@@ -797,12 +801,22 @@ int w_newShader(lua_State *L)
 	if (source.vertex.empty() && source.pixel.empty())
 	{
 		// Original args had source code, but effectCodeToGLSL couldn't translate it
-		for (int i = 1; i <= 2; i++)
+		for (int i = startidx; i < startidx + 2; i++)
 		{
 			if (lua_isstring(L, i))
 				return luaL_argerror(L, i, "missing 'position' or 'effect' function?");
 		}
 	}
+
+	return 0;
+}
+
+int w_newShader(lua_State *L)
+{
+	bool gles = instance()->getRenderer() == Graphics::RENDERER_OPENGLES;
+
+	Shader::ShaderSource source;
+	w_getShaderSource(L, 1, gles, source);
 
 	bool should_error = false;
 	try
@@ -823,6 +837,28 @@ int w_newShader(lua_State *L)
 
 	if (should_error)
 		return lua_error(L);
+
+	return 1;
+}
+
+int w_validateShader(lua_State *L)
+{
+	luaL_checktype(L, 1, LUA_TBOOLEAN);
+	bool gles = luax_toboolean(L, 1);
+
+	Shader::ShaderSource source;
+	w_getShaderSource(L, 2, gles, source);
+
+	std::string err;
+	bool success = instance()->validateShader(gles, source, err);
+
+	luax_pushboolean(L, success);
+
+	if (!success)
+	{
+		luax_pushstring(L, err);
+		return 2;
+	}
 
 	return 1;
 }
@@ -1428,16 +1464,17 @@ int w_getShader(lua_State *L)
 
 int w_setDefaultShaderCode(lua_State *L)
 {
-	luaL_checktype(L, 1, LUA_TTABLE);
-	luaL_checktype(L, 2, LUA_TTABLE);
-
 	for (int i = 0; i < 2; i++)
 	{
-		for (int renderer = 0; renderer < Graphics::RENDERER_MAX_ENUM; renderer++)
-		{
-			const char *lang = renderer == Graphics::RENDERER_OPENGLES ? "glsles" : "glsl";
+		luaL_checktype(L, i + 1, LUA_TTABLE);
 
-			lua_getfield(L, i + 1, lang);
+		for (int lang = 0; lang < Shader::LANGUAGE_MAX_ENUM; lang++)
+		{
+			const char *langname;
+			if (!Shader::getConstant((Shader::Language) lang, langname))
+				continue;
+
+			lua_getfield(L, i + 1, langname);
 
 			lua_getfield(L, -1, "vertex");
 			lua_getfield(L, -2, "pixel");
@@ -1453,8 +1490,8 @@ int w_setDefaultShaderCode(lua_State *L)
 
 			lua_pop(L, 4);
 
-			Graphics::defaultShaderCode[renderer][i] = code;
-			Graphics::defaultVideoShaderCode[renderer][i] = videocode;
+			Graphics::defaultShaderCode[lang][i] = code;
+			Graphics::defaultVideoShaderCode[lang][i] = videocode;
 		}
 	}
 
@@ -2111,6 +2148,8 @@ static const luaL_Reg functions[] =
 	{ "newText", w_newText },
 	{ "_newVideo", w_newVideo },
 
+	{ "validateShader", w_validateShader },
+
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
 
@@ -2248,6 +2287,8 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 
 	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "wrap_Graphics.lua") == 0)
 		lua_call(L, 0, 0);
+	else
+		lua_error(L);
 
 	return n;
 }

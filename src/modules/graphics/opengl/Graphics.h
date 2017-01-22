@@ -129,8 +129,11 @@ public:
 
 	bool isSupported(Feature feature) const override;
 	double getSystemLimit(SystemLimit limittype) const override;
+	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 	Stats getStats() const override;
+
+	Shader::Language getShaderLanguageTarget() const override;
 
 private:
 
@@ -142,6 +145,8 @@ private:
 		GLenum attachments[2];
 		GLuint renderbuffer;
 	};
+
+	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
 
 	void endPass();
 	void bindCachedFBO(const std::vector<love::graphics::Canvas *> &canvases);

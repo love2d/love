@@ -166,6 +166,7 @@ public:
 		FEATURE_LIGHTEN,
 		FEATURE_FULL_NPOT,
 		FEATURE_PIXEL_SHADER_HIGHP,
+		FEATURE_GLSL3,
 		FEATURE_MAX_ENUM
 	};
 
@@ -312,6 +313,8 @@ public:
 	virtual Canvas *newCanvas(int width, int height, const Canvas::Settings &settings) = 0;
 
 	virtual Shader *newShader(const Shader::ShaderSource &source) = 0;
+
+	bool validateShader(bool gles, const Shader::ShaderSource &source, std::string &err);
 
 	/**
 	 * Resets the current color, background color, line style, and so forth.
@@ -635,6 +638,11 @@ public:
 	virtual double getSystemLimit(SystemLimit limittype) const = 0;
 
 	/**
+	 * Gets the renderer used by love.graphics.
+	 **/
+	virtual Renderer getRenderer() const = 0;
+
+	/**
 	 * Returns system-dependent renderer information.
 	 * Returned strings can vary greatly between systems! Do not rely on it for
 	 * anything!
@@ -666,6 +674,9 @@ public:
 
 	virtual void flushStreamDraws() = 0;
 	StreamVertexData requestStreamDraw(const StreamDrawRequest &request);
+
+	virtual Shader::Language getShaderLanguageTarget() const = 0;
+	const Shader::ShaderSource &getCurrentDefaultShaderCode() const;
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)
@@ -712,8 +723,8 @@ public:
 	static bool getConstant(StackType in, const char *&out);
 
 	// Default shader code (a shader is always required internally.)
-	static Shader::ShaderSource defaultShaderCode[RENDERER_MAX_ENUM][2];
-	static Shader::ShaderSource defaultVideoShaderCode[RENDERER_MAX_ENUM][2];
+	static Shader::ShaderSource defaultShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
+	static Shader::ShaderSource defaultVideoShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
 
 protected:
 
@@ -756,6 +767,7 @@ protected:
 	{
 		StreamBuffer *vb[2];
 		StreamBuffer *indexBuffer = nullptr;
+
 		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
 		vertex::CommonFormat formats[2];
 		StrongRef<Texture> texture;
@@ -763,12 +775,18 @@ protected:
 		int vertexCount = 0;
 		int indexCount = 0;
 
+		StreamBuffer::MapInfo vbMap[2];
+		StreamBuffer::MapInfo indexBufferMap = StreamBuffer::MapInfo();
+
 		StreamBufferState()
 		{
 			vb[0] = vb[1] = nullptr;
 			formats[0] = formats[1] = vertex::CommonFormat::NONE;
+			vbMap[0] = vbMap[1] = StreamBuffer::MapInfo();
 		}
 	};
+
+	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);

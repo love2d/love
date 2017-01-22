@@ -26,54 +26,10 @@ namespace love
 namespace graphics
 {
 
-StreamBuffer::StreamBuffer(Mode mode, size_t size)
-	: data(nullptr)
-	, offset(0)
-	, totalSize(size)
+StreamBuffer::StreamBuffer(BufferType mode, size_t size)
+	: bufferSize(size)
 	, mode(mode)
 {
-	setSize(size);
-}
-
-StreamBuffer::~StreamBuffer()
-{
-	delete[] data;
-}
-
-void *StreamBuffer::getData() const
-{
-	return data;
-}
-
-void *StreamBuffer::getOffsetData() const
-{
-	return data + offset;
-}
-
-void StreamBuffer::incrementOffset(size_t amount)
-{
-	offset += amount;
-}
-
-void StreamBuffer::resetOffset()
-{
-	offset = 0;
-}
-
-void StreamBuffer::setSize(size_t size)
-{
-	delete[] data;
-
-	try
-	{
-		data = new uint8[size];
-	}
-	catch (std::exception &)
-	{
-		throw love::Exception("Out of memory.");
-	}
-
-	this->totalSize = size;
 }
 
 } // graphics

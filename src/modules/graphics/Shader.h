@@ -36,12 +36,23 @@ namespace love
 namespace graphics
 {
 
+class Graphics;
+
 // A GLSL shader
 class Shader : public Object
 {
 public:
 
 	static love::Type type;
+
+	enum Language
+	{
+		LANGUAGE_GLSL1,
+		LANGUAGE_GLSLES1,
+		LANGUAGE_GLSL3,
+		LANGUAGE_GLSLES3,
+		LANGUAGE_MAX_ENUM
+	};
 
 	enum ShaderStage
 	{
@@ -122,6 +133,7 @@ public:
 	static Shader *defaultShader;
 	static Shader *defaultVideoShader;
 
+	Shader(const ShaderSource &source);
 	virtual ~Shader();
 
 	/**
@@ -158,11 +170,16 @@ public:
 	 **/
 	virtual void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) = 0;
 
+	static bool validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err);
+
+	static bool initialize();
+	static void deinitialize();
+
+	static bool getConstant(const char *in, Language &out);
+	static bool getConstant(Language in, const char *&out);
+
 	static bool getConstant(const char *in, ShaderStage &out);
 	static bool getConstant(ShaderStage in, const char *&out);
-
-	static bool getConstant(const char *in, UniformType &out);
-	static bool getConstant(UniformType in, const char *&out);
 
 	static bool getConstant(const char *in, VertexAttribID &out);
 	static bool getConstant(VertexAttribID in, const char *&out);
@@ -170,13 +187,18 @@ public:
 	static bool getConstant(const char *in, BuiltinUniform &out);
 	static bool getConstant(BuiltinUniform in, const char *&out);
 
+protected:
+
+	// Source code used for this Shader.
+	ShaderSource shaderSource;
+
 private:
+
+	static StringMap<Language, LANGUAGE_MAX_ENUM>::Entry languageEntries[];
+	static StringMap<Language, LANGUAGE_MAX_ENUM> languages;
 
 	static StringMap<ShaderStage, STAGE_MAX_ENUM>::Entry stageNameEntries[];
 	static StringMap<ShaderStage, STAGE_MAX_ENUM> stageNames;
-	
-	static StringMap<UniformType, UNIFORM_MAX_ENUM>::Entry uniformTypeEntries[];
-	static StringMap<UniformType, UNIFORM_MAX_ENUM> uniformTypes;
 	
 	// Names for the generic vertex attributes used by love.
 	static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[];

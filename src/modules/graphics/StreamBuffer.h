@@ -22,6 +22,7 @@
 
 // LOVE
 #include "common/int.h"
+#include "vertex.h"
 
 // C
 #include <cstddef>
@@ -31,45 +32,40 @@ namespace love
 namespace graphics
 {
 
-// TODO: This class will need to be changed significantly in the future to
-// accomodate non-client-side vertex/index data.
 class StreamBuffer
 {
 public:
 
-	enum Mode
+	struct MapInfo
 	{
-		MODE_VERTEX,
-		MODE_INDEX,
+		uint8 *data = nullptr;
+		size_t size = 0;
+
+		MapInfo() {}
+
+		MapInfo(uint8 *data, size_t size)
+			: data(data)
+			, size(size)
+		{}
 	};
 
-	StreamBuffer(Mode mode, size_t size);
-	~StreamBuffer();
+	virtual ~StreamBuffer() {}
 
-	void *getData() const;
-	void *getOffsetData() const;
+	size_t getSize() const { return bufferSize; }
+	BufferType getMode() const { return mode; }
 
-	void incrementOffset(size_t amount);
-	void resetOffset();
+	virtual MapInfo map(size_t minsize) = 0;
+	virtual size_t unmap(size_t usedsize) = 0;
+	virtual void markUsed(size_t usedsize) = 0;
 
-	void setSize(size_t size);
+	virtual ptrdiff_t getHandle() const = 0;
 
-	size_t getSize() const
-	{
-		return totalSize;
-	}
+protected:
 
-	Mode getMode() const
-	{
-		return mode;
-	}
+	StreamBuffer(BufferType mode, size_t size);
 
-private:
-
-	uint8 *data;
-	size_t offset;
-	size_t totalSize;
-	Mode mode;
+	size_t bufferSize;
+	BufferType mode;
 
 }; // StreamBuffer
 

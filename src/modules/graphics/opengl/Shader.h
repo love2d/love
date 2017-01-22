@@ -102,9 +102,6 @@ private:
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
 
-	// Source code used for this Shader.
-	ShaderSource shaderSource;
-
 	// Shader compiler warning strings for individual shader stages.
 	std::map<ShaderStage, std::string> shaderWarnings;
 

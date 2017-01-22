@@ -37,7 +37,7 @@ namespace opengl
 {
 
 Shader::Shader(const ShaderSource &source)
-	: shaderSource(source)
+	: love::graphics::Shader(source)
 	, program(0)
 	, builtinUniforms()
 	, builtinAttributes()
@@ -46,9 +46,6 @@ Shader::Shader(const ShaderSource &source)
 	, lastPointSize(0.0f)
 	, videoTextureUnits()
 {
-	if (source.vertex.empty() && source.pixel.empty())
-		throw love::Exception("Cannot create shader: no source code!");
-
 	// load shader source and create program object
 	loadVolatile();
 }
@@ -360,14 +357,12 @@ bool Shader::loadVolatile()
 
 	std::vector<GLuint> shaderids;
 
-	bool gammacorrect = graphics::isGammaCorrect();
-	const ShaderSource *defaults = &Graphics::defaultShaderCode[Graphics::RENDERER_OPENGL][gammacorrect ? 1 : 0];
-	if (GLAD_ES_VERSION_2_0)
-		defaults = &Graphics::defaultShaderCode[Graphics::RENDERER_OPENGLES][gammacorrect ? 1 : 0];
+	auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
+	const ShaderSource &defaults = gfx->getCurrentDefaultShaderCode();
 
 	// The shader program must have both vertex and pixel shader stages.
-	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults->vertex : shaderSource.vertex;
-	const std::string &pixelcode = shaderSource.pixel.empty() ? defaults->pixel : shaderSource.pixel;
+	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults.vertex : shaderSource.vertex;
+	const std::string &pixelcode = shaderSource.pixel.empty() ? defaults.pixel : shaderSource.pixel;
 
 	try
 	{

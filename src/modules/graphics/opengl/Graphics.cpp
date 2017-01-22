@@ -26,7 +26,7 @@
 #include "Graphics.h"
 #include "font/Font.h"
 #include "Font.h"
-#include "graphics/Polyline.h"
+#include "StreamBuffer.h"
 #include "math/MathModule.h"
 #include "window/Window.h"
 
@@ -93,6 +93,11 @@ Graphics::~Graphics()
 const char *Graphics::getName() const
 {
 	return "love.graphics.opengl";
+}
+
+love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t size)
+{
+	return CreateStreamBuffer(type, size);
 }
 
 Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
@@ -215,6 +220,13 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	// Okay, setup OpenGL.
 	gl.initContext();
+
+	if (gl.isCoreProfile())
+	{
+		glGenVertexArrays(1, &mainVAO);
+		glBindVertexArray(mainVAO);
+	}
+
 	gl.setupContext();
 
 	created = true;
@@ -235,12 +247,6 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 		// Enable texturing
 		glEnable(GL_TEXTURE_2D);
-	}
-
-	if (gl.isCoreProfile())
-	{
-		glGenVertexArrays(1, &mainVAO);
-		glBindVertexArray(mainVAO);
 	}
 
 	gl.setTextureUnit(0);
@@ -274,9 +280,9 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		streamBufferState.vb[0] = new StreamBuffer(StreamBuffer::MODE_VERTEX, 1024 * 1024 * 1);
-		streamBufferState.vb[1] = new StreamBuffer(StreamBuffer::MODE_VERTEX, 256  * 1024 * 1);
-		streamBufferState.indexBuffer = new StreamBuffer(StreamBuffer::MODE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		streamBufferState.vb[0] = CreateStreamBuffer(BUFFER_VERTEX, 1024 * 1024 * 1);
+		streamBufferState.vb[1] = CreateStreamBuffer(BUFFER_VERTEX, 256  * 1024 * 1);
+		streamBufferState.indexBuffer = CreateStreamBuffer(BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	// Reload all volatile objects.
@@ -299,15 +305,15 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// We always need a default shader.
 	if (!Shader::defaultShader)
 	{
-		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
-		Shader::defaultShader = newShader(defaultShaderCode[renderer][gammacorrect]);
+		Shader::Language target = getShaderLanguageTarget();
+		Shader::defaultShader = newShader(defaultShaderCode[target][gammacorrect]);
 	}
 
 	// and a default video shader.
 	if (!Shader::defaultVideoShader)
 	{
-		Renderer renderer = GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
-		Shader::defaultVideoShader = newShader(defaultVideoShaderCode[renderer][gammacorrect]);
+		Shader::Language target = getShaderLanguageTarget();
+		Shader::defaultVideoShader = newShader(defaultVideoShaderCode[target][gammacorrect]);
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
@@ -365,7 +371,7 @@ void Graphics::flushStreamDraws()
 {
 	using namespace vertex;
 
-	const auto &sbstate = streamBufferState;
+	auto &sbstate = streamBufferState;
 
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
@@ -373,19 +379,22 @@ void Graphics::flushStreamDraws()
 	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
 
 	uint32 attribs = 0;
+	size_t usedsizes[3] = {0, 0, 0};
 
 	for (int i = 0; i < 2; i++)
 	{
 		if (sbstate.formats[i] == CommonFormat::NONE)
 			continue;
 
-		StreamBuffer *buffer = sbstate.vb[i];
-
-		buffer->resetOffset();
-		ptrdiff_t offset = (ptrdiff_t) buffer->getData();
 		GLsizei stride = (GLsizei) getFormatStride(sbstate.formats[i]);
+		usedsizes[i] = stride * sbstate.vertexCount;
 
-		gl.bindBuffer(BUFFER_VERTEX, 0);
+		love::graphics::StreamBuffer *buffer = sbstate.vb[i];
+
+		gl.bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
+		size_t offset = buffer->unmap(usedsizes[i]);
+
+		sbstate.vbMap[i] = StreamBuffer::MapInfo();
 
 		switch (sbstate.formats[i])
 		{
@@ -451,14 +460,26 @@ void Graphics::flushStreamDraws()
 
 	if (sbstate.indexCount > 0)
 	{
-		sbstate.indexBuffer->resetOffset();
-		ptrdiff_t offset = (ptrdiff_t) sbstate.indexBuffer->getData();
+		usedsizes[2] = sizeof(uint16) * sbstate.indexCount;
 
-		gl.bindBuffer(BUFFER_INDEX, 0);
+		gl.bindBuffer(BUFFER_INDEX, (GLuint) sbstate.indexBuffer->getHandle());
+		size_t offset = sbstate.indexBuffer->unmap(usedsizes[2]);
+
+		sbstate.indexBufferMap = StreamBuffer::MapInfo();
+
 		gl.drawElements(glmode, sbstate.indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offset));
 	}
 	else
 		gl.drawArrays(glmode, 0, sbstate.vertexCount);
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (usedsizes[i] > 0)
+			sbstate.vb[i]->markUsed(usedsizes[i]);
+	}
+
+	if (usedsizes[2] > 0)
+		sbstate.indexBuffer->markUsed(usedsizes[2]);
 
 	popTransform();
 
@@ -1376,6 +1397,11 @@ void Graphics::setWireframe(bool enable)
 	states.back().wireframe = enable;
 }
 
+Graphics::Renderer Graphics::getRenderer() const
+{
+	return GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
+}
+
 Graphics::RendererInfo Graphics::getRendererInfo() const
 {
 	RendererInfo info;
@@ -1459,9 +1485,23 @@ bool Graphics::isSupported(Feature feature) const
 		return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
 	case FEATURE_PIXEL_SHADER_HIGHP:
 		return gl.isPixelShaderHighpSupported();
+	case FEATURE_GLSL3:
+		return GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
 	default:
 		return false;
 	}
+}
+
+Shader::Language Graphics::getShaderLanguageTarget() const
+{
+	if (gl.isCoreProfile())
+		return Shader::LANGUAGE_GLSL3;
+	else if (GLAD_ES_VERSION_3_0)
+		return Shader::LANGUAGE_GLSLES3;
+	else if (GLAD_ES_VERSION_2_0)
+		return Shader::LANGUAGE_GLSLES1;
+	else
+		return Shader::LANGUAGE_GLSL1;
 }
 
 } // opengl

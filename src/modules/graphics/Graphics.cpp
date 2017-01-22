@@ -81,8 +81,8 @@ Colorf unGammaCorrectColor(const Colorf &c)
 
 love::Type Graphics::type("graphics", &Module::type);
 
-Shader::ShaderSource Graphics::defaultShaderCode[Graphics::RENDERER_MAX_ENUM][2];
-Shader::ShaderSource Graphics::defaultVideoShaderCode[Graphics::RENDERER_MAX_ENUM][2];
+Shader::ShaderSource Graphics::defaultShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
+Shader::ShaderSource Graphics::defaultVideoShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
 
 Graphics::Graphics()
 	: width(0)
@@ -101,6 +101,9 @@ Graphics::Graphics()
 
 	pixelScaleStack.reserve(16);
 	pixelScaleStack.push_back(1);
+
+	if (!Shader::initialize())
+		throw love::Exception("Shader support failed to initialize!");
 }
 
 Graphics::~Graphics()
@@ -124,11 +127,18 @@ Graphics::~Graphics()
 	delete streamBufferState.vb[0];
 	delete streamBufferState.vb[1];
 	delete streamBufferState.indexBuffer;
+
+	Shader::deinitialize();
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
 {
 	return new Quad(v, sw, sh);
+}
+
+bool Graphics::validateShader(bool gles, const Shader::ShaderSource &source, std::string &err)
+{
+	return Shader::validate(this, gles, source, true, err);
 }
 
 int Graphics::getWidth() const
@@ -544,6 +554,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 
 	int totalvertices = state.vertexCount + req.vertexCount;
 
+	// We only support uint16 index buffers for now.
 	if (totalvertices > LOVE_UINT16_MAX && req.indexMode != TriangleIndexMode::NONE)
 		shouldflush = true;
 
@@ -555,45 +566,39 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (req.formats[i] != CommonFormat::NONE)
-		{
-			size_t stride = getFormatStride(req.formats[i]);
-			size_t datasize = stride * totalvertices;
+		if (req.formats[i] == CommonFormat::NONE)
+			continue;
 
-			size_t cursize = state.vb[i]->getSize();
+		size_t stride = getFormatStride(req.formats[i]);
+		size_t datasize = stride * totalvertices;
 
-			if (datasize > cursize)
-			{
-				shouldflush = true;
-
-				if (stride * req.vertexCount > cursize)
-				{
-					buffersizes[i] = std::max(datasize, cursize * 2);
-					shouldresize = true;
-				}
-			}
-
-			newdatasizes[i] = stride * req.vertexCount;
-		}
-	}
-
-	{
-		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
-		size_t cursize = state.indexBuffer->getSize();
-
-		if (datasize > cursize)
-		{
+		if (state.vbMap[i].data != nullptr && datasize > state.vbMap[i].size)
 			shouldflush = true;
 
-			if (reqIndexSize > cursize)
-			{
-				buffersizes[2] = std::max(datasize, cursize * 2);
-				shouldresize = true;
-			}
+		if (datasize > state.vb[i]->getSize())
+		{
+			buffersizes[i] = std::max(datasize, state.vb[i]->getSize() * 2);
+			shouldresize = true;
+		}
+
+		newdatasizes[i] = stride * req.vertexCount;
+	}
+
+	if (req.indexMode != TriangleIndexMode::NONE)
+	{
+		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
+
+		if (state.indexBufferMap.data != nullptr && datasize > state.indexBufferMap.size)
+			shouldflush = true;
+
+		if (datasize > state.indexBuffer->getSize())
+		{
+			buffersizes[2] = std::max(datasize, state.indexBuffer->getSize() * 2);
+			shouldresize = true;
 		}
 	}
 
-	if (shouldflush)
+	if (shouldflush || shouldresize)
 	{
 		flushStreamDraws();
 
@@ -609,29 +614,47 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		for (int i = 0; i < 2; i++)
 		{
 			if (state.vb[i]->getSize() < buffersizes[i])
-				state.vb[i]->setSize(buffersizes[i]);
+			{
+				delete state.vb[i];
+				state.vb[i] = newStreamBuffer(BUFFER_VERTEX, buffersizes[i]);
+			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
-			state.indexBuffer->setSize(buffersizes[2]);
+		{
+			delete state.indexBuffer;
+			state.indexBuffer = newStreamBuffer(BUFFER_INDEX, buffersizes[2]);
+		}
 	}
 
 	if (req.indexMode != TriangleIndexMode::NONE)
 	{
-		uint16 *indices = (uint16 *) state.indexBuffer->getOffsetData();
+		if (state.indexBufferMap.data == nullptr)
+			state.indexBufferMap = state.indexBuffer->map(reqIndexSize);
+
+		uint16 *indices = (uint16 *) state.indexBufferMap.data;
 		fillIndices(req.indexMode, state.vertexCount, req.vertexCount, indices);
-		state.indexBuffer->incrementOffset(reqIndexSize);
+
+		state.indexBufferMap.data += reqIndexSize;
 	}
 
 	StreamVertexData d;
-	d.stream[0] = state.vb[0]->getOffsetData();
-	d.stream[1] = state.vb[1]->getOffsetData();
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (newdatasizes[i] > 0)
+		{
+			if (state.vbMap[i].data == nullptr)
+				state.vbMap[i] = state.vb[i]->map(newdatasizes[i]);
+
+			d.stream[i] = state.vbMap[i].data;
+
+			state.vbMap[i].data += newdatasizes[i];
+		}
+	}
 
 	state.vertexCount += req.vertexCount;
 	state.indexCount  += reqIndexCount;
-
-	state.vb[0]->incrementOffset(newdatasizes[0]);
-	state.vb[1]->incrementOffset(newdatasizes[1]);
 
 	return d;
 }
@@ -1107,6 +1130,11 @@ Vector Graphics::inverseTransformPoint(Vector point)
 	return p;
 }
 
+const Shader::ShaderSource &Graphics::getCurrentDefaultShaderCode() const
+{
+	return defaultShaderCode[getShaderLanguageTarget()][isGammaCorrect() ? 1 : 0];
+}
+
 /**
  * Constants.
  **/
@@ -1308,8 +1336,9 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "multicanvasformats", FEATURE_MULTI_CANVAS_FORMATS },
 	{ "clampzero",          FEATURE_CLAMP_ZERO           },
 	{ "lighten",            FEATURE_LIGHTEN              },
-	{ "fullnpot", FEATURE_FULL_NPOT },
-	{ "pixelshaderhighp", FEATURE_PIXEL_SHADER_HIGHP },
+	{ "fullnpot",           FEATURE_FULL_NPOT            },
+	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
+	{ "glsl3",              FEATURE_GLSL3                },
 };
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));
