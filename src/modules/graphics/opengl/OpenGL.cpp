@@ -280,6 +280,28 @@ void OpenGL::initOpenGLFunctions()
 		else if (GLAD_NV_framebuffer_multisample)
 			fp_glRenderbufferStorageMultisample = fp_glRenderbufferStorageMultisampleNV;
 	}
+
+	if (isInstancingSupported() && !(GLAD_VERSION_3_3 || GLAD_ES_VERSION_3_0))
+	{
+		if (GLAD_ARB_instanced_arrays)
+		{
+			fp_glDrawArraysInstanced = fp_glDrawArraysInstancedARB;
+			fp_glDrawElementsInstanced = fp_glDrawElementsInstancedARB;
+			fp_glVertexAttribDivisor = fp_glVertexAttribDivisorARB;
+		}
+		else if (GLAD_EXT_instanced_arrays)
+		{
+			fp_glDrawArraysInstanced = fp_glDrawArraysInstancedEXT;
+			fp_glDrawElementsInstanced = fp_glDrawElementsInstancedEXT;
+			fp_glVertexAttribDivisor = fp_glVertexAttribDivisorEXT;
+		}
+		else if (GLAD_ANGLE_instanced_arrays)
+		{
+			fp_glDrawArraysInstanced = fp_glDrawArraysInstancedANGLE;
+			fp_glDrawElementsInstanced = fp_glDrawElementsInstancedANGLE;
+			fp_glVertexAttribDivisor = fp_glVertexAttribDivisorANGLE;
+		}
+	}
 }
 
 void OpenGL::initMaxValues()
@@ -755,7 +777,8 @@ bool OpenGL::isPixelShaderHighpSupported() const
 
 bool OpenGL::isInstancingSupported() const
 {
-	return GLAD_ES_VERSION_3_0 || isCoreProfile();
+	return GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_3
+		|| GLAD_ARB_instanced_arrays || GLAD_EXT_instanced_arrays || GLAD_ANGLE_instanced_arrays;
 }
 
 int OpenGL::getMaxTextureSize() const
