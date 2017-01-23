@@ -72,6 +72,13 @@ public:
 		DATA_MAX_ENUM
 	};
 
+	enum AttributeStep
+	{
+		STEP_PER_VERTEX,
+		STEP_PER_INSTANCE,
+		STEP_MAX_ENUM
+	};
+
 	struct AttribFormat
 	{
 		std::string name;
@@ -132,7 +139,7 @@ public:
 	 * Attaches a vertex attribute from another Mesh to this one. The attribute
 	 * will be used when drawing this Mesh.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname);
+	void attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
 
 	void *mapVertexData();
@@ -192,6 +199,8 @@ public:
 
 	int bindAttributeToShaderInput(int attributeindex, const std::string &inputname);
 
+	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
+
 	// Implements Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
@@ -201,12 +210,16 @@ public:
 	static bool getConstant(const char *in, DataType &out);
 	static bool getConstant(DataType in, const char *&out);
 
+	static bool getConstant(const char *in, AttributeStep &out);
+	static bool getConstant(AttributeStep in, const char *&out);
+
 private:
 
 	struct AttachedAttribute
 	{
 		Mesh *mesh;
 		int index;
+		AttributeStep step;
 		bool enabled;
 	};
 
@@ -253,6 +266,9 @@ private:
 
 	static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[];
 	static StringMap<DataType, DATA_MAX_ENUM> dataTypes;
+
+	static StringMap<AttributeStep, STEP_MAX_ENUM>::Entry attributeStepEntries[];
+	static StringMap<AttributeStep, STEP_MAX_ENUM> attributeSteps;
 
 }; // Mesh
 

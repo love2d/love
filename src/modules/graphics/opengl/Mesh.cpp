@@ -151,7 +151,7 @@ void Mesh::setupAttachedAttributes()
 		if (attachedAttributes.find(name) != attachedAttributes.end())
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes[name] = {this, (int) i, true};
+		attachedAttributes[name] = {this, (int) i, STEP_PER_VERTEX, true};
 	}
 }
 
@@ -312,8 +312,11 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 	return it->second.enabled;
 }
 
-void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname)
+void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step)
 {
+	if (step == STEP_PER_INSTANCE && !gl.isInstancingSupported())
+		throw love::Exception("Vertex attribute instancing is not supported on this system.");
+
 	if (mesh != this)
 	{
 		for (const auto &it : mesh->attachedAttributes)
@@ -335,6 +338,7 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
 	newattrib.index = mesh->getAttributeIndex(attachname);
+	newattrib.step = step;
 
 	if (newattrib.index < 0)
 		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", attachname.c_str());
@@ -598,16 +602,20 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	return attriblocation;
 }
 
-void Mesh::draw(Graphics *gfx, const Matrix4 &m)
+void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, int instancecount)
 {
-	if (vertexCount <= 0)
+	if (vertexCount <= 0 || instancecount <= 0)
 		return;
+
+	if (instancecount > 1 && !gl.isInstancingSupported())
+		throw love::Exception("Instancing is not supported on this system.");
 
 	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 
 	uint32 enabledattribs = 0;
+	uint32 instancedattribs = 0;
 
 	for (const auto &attrib : attachedAttributes)
 	{
@@ -618,14 +626,21 @@ void Mesh::draw(Graphics *gfx, const Matrix4 &m)
 		int location = mesh->bindAttributeToShaderInput(attrib.second.index, attrib.first);
 
 		if (location >= 0)
-			enabledattribs |= 1u << (uint32) location;
+		{
+			uint32 bit = 1u << (uint32) location;
+
+			enabledattribs |= bit;
+
+			if (attrib.second.step == STEP_PER_INSTANCE)
+				instancedattribs |= bit;
+		}
 	}
 
 	// Not supported on all platforms or GL versions, I believe.
 	if (!(enabledattribs & ATTRIBFLAG_POS))
 		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
 
-	gl.useVertexAttribArrays(enabledattribs);
+	gl.useVertexAttribArrays(enabledattribs, instancedattribs);
 
 	gl.bindTextureToUnit(texture, 0, false);
 
@@ -654,7 +669,7 @@ void Mesh::draw(Graphics *gfx, const Matrix4 &m)
 		GLenum type = OpenGL::getGLIndexDataType(elementDataType);
 
 		if (count > 0)
-			gl.drawElements(getGLDrawMode(drawMode), count, type, indices);
+			gl.drawElements(getGLDrawMode(drawMode), count, type, indices, instancecount);
 	}
 	else
 	{
@@ -668,8 +683,13 @@ void Mesh::draw(Graphics *gfx, const Matrix4 &m)
 
 		// Normal non-indexed drawing (no custom vertex map.)
 		if (count > 0)
-			gl.drawArrays(getGLDrawMode(drawMode), start, count);
+			gl.drawArrays(getGLDrawMode(drawMode), start, count, instancecount);
 	}
+}
+
+void Mesh::draw(love::graphics::Graphics *gfx, const love::Matrix4 &m)
+{
+	drawInstanced(gfx, m, 1);
 }
 
 size_t Mesh::getAttribFormatSize(const AttribFormat &format)
@@ -742,23 +762,41 @@ bool Mesh::getConstant(DataType in, const char *&out)
 	return dataTypes.find(in, out);
 }
 
+bool Mesh::getConstant(const char *in, AttributeStep &out)
+{
+	return attributeSteps.find(in, out);
+}
+
+bool Mesh::getConstant(AttributeStep in, const char *&out)
+{
+	return attributeSteps.find(in, out);
+}
+
 StringMap<Mesh::DrawMode, Mesh::DRAWMODE_MAX_ENUM>::Entry Mesh::drawModeEntries[] =
 {
-	{"fan", DRAWMODE_FAN},
-	{"strip", DRAWMODE_STRIP},
-	{"triangles", DRAWMODE_TRIANGLES},
-	{"points", DRAWMODE_POINTS},
+	{ "fan",       DRAWMODE_FAN       },
+	{ "strip",     DRAWMODE_STRIP     },
+	{ "triangles", DRAWMODE_TRIANGLES },
+	{ "points",    DRAWMODE_POINTS    },
 };
 
 StringMap<Mesh::DrawMode, Mesh::DRAWMODE_MAX_ENUM> Mesh::drawModes(Mesh::drawModeEntries, sizeof(Mesh::drawModeEntries));
 
 StringMap<Mesh::DataType, Mesh::DATA_MAX_ENUM>::Entry Mesh::dataTypeEntries[] =
 {
-	{"byte", DATA_BYTE},
-	{"float", DATA_FLOAT},
+	{ "byte", DATA_BYTE   },
+	{ "float", DATA_FLOAT },
 };
 
 StringMap<Mesh::DataType, Mesh::DATA_MAX_ENUM> Mesh::dataTypes(Mesh::dataTypeEntries, sizeof(Mesh::dataTypeEntries));
+
+StringMap<Mesh::AttributeStep, Mesh::STEP_MAX_ENUM>::Entry Mesh::attributeStepEntries[] =
+{
+	{ "pervertex",   STEP_PER_VERTEX   },
+	{ "perinstance", STEP_PER_INSTANCE },
+};
+
+StringMap<Mesh::AttributeStep, Mesh::STEP_MAX_ENUM> Mesh::attributeSteps(Mesh::attributeStepEntries, sizeof(Mesh::attributeStepEntries));
 
 } // opengl
 } // graphics

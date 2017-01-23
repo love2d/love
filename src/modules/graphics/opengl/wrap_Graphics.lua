@@ -142,6 +142,7 @@ GLSL.VERTEX = {
 	#define varying out
 	#ifndef LOVE_GLSL1_ON_GLSL3
 		#define love_VertexID gl_VertexID
+		#define love_InstanceID gl_InstanceID
 	#endif
 #endif
 
@@ -221,15 +222,15 @@ vec4 VideoTexel(vec2 texcoords) {
 }]],
 
 	FOOTER = [[
-uniform sampler2D MainTexture;
+uniform sampler2D MainTex;
 void main() {
-	love_PixelColor = effect(VaryingColor, MainTexture, VaryingTexCoord.st, love_PixelCoord);
+	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }]],
 
 	FOOTER_MULTI_CANVAS = [[
-uniform sampler2D MainTexture;
+uniform sampler2D MainTex;
 void main() {
-	effects(VaryingColor, MainTexture, VaryingTexCoord.st, love_PixelCoord);
+	effects(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }]],
 }
 

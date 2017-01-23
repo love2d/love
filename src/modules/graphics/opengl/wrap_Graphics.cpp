@@ -1670,6 +1670,36 @@ int w_draw(lua_State *L)
 	return 0;
 }
 
+int w_drawInstanced(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	int instancecount = (int) luaL_checkinteger(L, 2);
+
+	if (luax_istype(L, 3, math::Transform::type))
+	{
+		math::Transform *tf = luax_totype<math::Transform>(L, 3);
+		luax_catchexcept(L, [&]() { instance()->drawInstanced(t, tf->getMatrix(), instancecount); });
+	}
+	else
+	{
+		float x  = (float) luaL_optnumber(L, 3,  0.0);
+		float y  = (float) luaL_optnumber(L, 4,  0.0);
+		float a  = (float) luaL_optnumber(L, 5,  0.0);
+		float sx = (float) luaL_optnumber(L, 6,  1.0);
+		float sy = (float) luaL_optnumber(L, 7,  sx);
+		float ox = (float) luaL_optnumber(L, 8,  0.0);
+		float oy = (float) luaL_optnumber(L, 9,  0.0);
+		float kx = (float) luaL_optnumber(L, 10, 0.0);
+		float ky = (float) luaL_optnumber(L, 11, 0.0);
+
+		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
+
+		luax_catchexcept(L, [&]() { instance()->drawInstanced(t, m, instancecount); });
+	}
+
+	return 0;
+}
+
 int w_print(lua_State *L)
 {
 	std::vector<Font::ColoredString> str;
@@ -2195,6 +2225,7 @@ static const luaL_Reg functions[] =
 	{ "captureScreenshot", w_captureScreenshot },
 
 	{ "draw", w_draw },
+	{ "drawInstanced", w_drawInstanced },
 
 	{ "print", w_print },
 	{ "printf", w_printf },

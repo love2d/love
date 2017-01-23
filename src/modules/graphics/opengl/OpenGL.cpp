@@ -134,8 +134,15 @@ void OpenGL::setupContext()
 
 	GLint maxvertexattribs = 1;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
+
 	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
-	useVertexAttribArrays(0);
+
+	if (GLAD_ES_VERSION_3_0 || isCoreProfile())
+		state.instancedAttribArrays = state.enabledAttribArrays;
+	else
+		state.instancedAttribArrays = 0;
+
+	useVertexAttribArrays(0, 0);
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -427,23 +434,32 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	}
 }
 
-void OpenGL::drawArrays(GLenum mode, GLint first, GLsizei count)
+void OpenGL::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
 {
-	glDrawArrays(mode, first, count);
+	if (instancecount > 1)
+		glDrawArraysInstanced(mode, first, count, instancecount);
+	else
+		glDrawArrays(mode, first, count);
+
 	++stats.drawCalls;
 }
 
-void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices)
+void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount)
 {
-	glDrawElements(mode, count, type, indices);
+	if (count > 1)
+		glDrawElementsInstanced(mode, count, type, indices, instancecount);
+	else
+		glDrawElements(mode, count, type, indices);
+
 	++stats.drawCalls;
 }
 
-void OpenGL::useVertexAttribArrays(uint32 arraybits)
+void OpenGL::useVertexAttribArrays(uint32 arraybits, uint32 instancedbits)
 {
 	uint32 diff = arraybits ^ state.enabledAttribArrays;
+	uint32 instancediff = instancedbits ^ state.instancedAttribArrays;
 
-	if (diff == 0)
+	if (diff == 0 && instancediff == 0)
 		return;
 
 	// Max 32 attributes. As of when this was written, no GL driver exposes more
@@ -459,9 +475,13 @@ void OpenGL::useVertexAttribArrays(uint32 arraybits)
 			else
 				glDisableVertexAttribArray(i);
 		}
+
+		if (instancediff & bit)
+			glVertexAttribDivisor(i, (instancedbits & bit) != 0 ? 1 : 0);
 	}
 
 	state.enabledAttribArrays = arraybits;
+	state.instancedAttribArrays = instancedbits;
 
 	// glDisableVertexAttribArray will make the constant value for a vertex
 	// attribute undefined. We rely on the per-vertex color attribute being
@@ -731,6 +751,11 @@ bool OpenGL::isClampZeroTextureWrapSupported() const
 bool OpenGL::isPixelShaderHighpSupported() const
 {
 	return pixelShaderHighpSupported;
+}
+
+bool OpenGL::isInstancingSupported() const
+{
+	return GLAD_ES_VERSION_3_0 || isCoreProfile();
 }
 
 int OpenGL::getMaxTextureSize() const

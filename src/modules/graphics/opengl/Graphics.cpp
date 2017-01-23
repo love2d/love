@@ -490,6 +490,11 @@ void Graphics::flushStreamDraws()
 	streamBufferState.indexCount = 0;
 }
 
+void Graphics::drawInstanced(Mesh *mesh, const love::Matrix4 &m, int instancecount)
+{
+	mesh->drawInstanced(this, m, instancecount);
+}
+
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
 {
 	// Human-readable strings for the debug info.
@@ -1487,6 +1492,8 @@ bool Graphics::isSupported(Feature feature) const
 		return gl.isPixelShaderHighpSupported();
 	case FEATURE_GLSL3:
 		return GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
+	case FEATURE_INSTANCING:
+		return gl.isInstancingSupported();
 	default:
 		return false;
 	}

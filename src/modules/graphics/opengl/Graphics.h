@@ -96,6 +96,8 @@ public:
 
 	void flushStreamDraws() override;
 
+	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
+
 	void clear(Colorf color) override;
 	void clear(const std::vector<OptionalColorf> &colors) override;
 

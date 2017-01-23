@@ -338,8 +338,15 @@ int w_Mesh_attachAttribute(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	Mesh *mesh = luax_checkmesh(L, 3);
-	const char *attachname = luaL_optstring(L, 4, name);
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh, attachname); });
+
+	Mesh::AttributeStep step = Mesh::STEP_PER_VERTEX;
+	const char *stepstr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
+	if (stepstr != nullptr && !Mesh::getConstant(stepstr, step))
+		return luaL_error(L, "Invalid vertex attribute step: %s", stepstr);
+
+	const char *attachname = luaL_optstring(L, 5, name);
+
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh, attachname, step); });
 	return 0;
 }
 

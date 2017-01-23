@@ -1339,6 +1339,7 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "fullnpot",           FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
 	{ "glsl3",              FEATURE_GLSL3                },
+	{ "instancing",         FEATURE_INSTANCING           },
 };
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));

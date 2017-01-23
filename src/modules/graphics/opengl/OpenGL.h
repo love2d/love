@@ -212,8 +212,8 @@ public:
 	 * glDrawArrays and glDrawElements which increment the draw-call counter by
 	 * themselves.
 	 **/
-	void drawArrays(GLenum mode, GLint first, GLsizei count);
-	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices);
+	void drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instancecount = 1);
+	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount = 1);
 
 	/**
 	 * Sets the enabled vertex attribute arrays based on the specified attribute
@@ -222,7 +222,7 @@ public:
 	 * See the VertexAttribFlags enum for the standard vertex attributes.
 	 * This function *must* be used instead of glEnable/DisableVertexAttribArray.
 	 **/
-	void useVertexAttribArrays(uint32 arraybits);
+	void useVertexAttribArrays(uint32 arraybits, uint32 instancedbits = 0);
 
 	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
@@ -315,6 +315,7 @@ public:
 
 	bool isClampZeroTextureWrapSupported() const;
 	bool isPixelShaderHighpSupported() const;
+	bool isInstancingSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -410,6 +411,7 @@ private:
 		int curTextureUnit;
 
 		uint32 enabledAttribArrays;
+		uint32 instancedAttribArrays;
 
 		Colorf constantColor;
 		Colorf lastConstantColor;
