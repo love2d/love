@@ -726,6 +726,11 @@ bool Shader::hasUniform(const std::string &name) const
 	return uniforms.find(name) != uniforms.end();
 }
 
+ptrdiff_t Shader::getHandle() const
+{
+	return program;
+}
+
 GLint Shader::getAttribLocation(const std::string &name)
 {
 	auto it = attributes.find(name);

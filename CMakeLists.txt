@@ -465,6 +465,8 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 #
 
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
+	src/modules/graphics/Buffer.cpp
+	src/modules/graphics/Buffer.h
 	src/modules/graphics/Canvas.cpp
 	src/modules/graphics/Canvas.h
 	src/modules/graphics/Color.h
@@ -503,14 +505,14 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
+	src/modules/graphics/opengl/Buffer.cpp
+	src/modules/graphics/opengl/Buffer.h
 	src/modules/graphics/opengl/BufferSync.cpp
 	src/modules/graphics/opengl/BufferSync.h
 	src/modules/graphics/opengl/Canvas.cpp
 	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/Font.cpp
 	src/modules/graphics/opengl/Font.h
-	src/modules/graphics/opengl/GLBuffer.cpp
-	src/modules/graphics/opengl/GLBuffer.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp

@@ -21,6 +21,7 @@
 #include "Text.h"
 #include "common/Matrix.h"
 #include "graphics/Graphics.h"
+#include "OpenGL.h"
 
 #include <algorithm>
 
@@ -33,10 +34,10 @@ namespace opengl
 
 love::Type Text::type("Text", &Drawable::type);
 
-Text::Text(love::graphics::Font *font, const std::vector<Font::ColoredString> &text)
+Text::Text(love::graphics::Graphics *gfx, love::graphics::Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vbo(nullptr)
-	, quadIndices(20)
+	, quadIndices(gfx, 20)
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -59,25 +60,15 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 	{
 		// Make it bigger than necessary to reduce potential future allocations.
 		size_t newsize = size_t((offset + datasize) * 1.5);
+
 		if (vbo != nullptr)
 			newsize = std::max(size_t(vbo->getSize() * 1.5), newsize);
 
-		GLBuffer *new_vbo = new GLBuffer(newsize, nullptr, BUFFER_VERTEX, vertex::USAGE_DYNAMIC);
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+		Buffer *new_vbo = gfx->newBuffer(newsize, nullptr, BUFFER_VERTEX, vertex::USAGE_DYNAMIC, 0);
 
 		if (vbo != nullptr)
-		{
-			try
-			{
-				vbodata = (uint8 *) vbo->map();
-			}
-			catch (love::Exception &)
-			{
-				delete new_vbo;
-				throw;
-			}
-
-			new_vbo->fill(0, vbo->getSize(), vbodata);
-		}
+			vbo->copyTo(0, vbo->getSize(), new_vbo, 0);
 
 		delete vbo;
 		vbo = new_vbo;
@@ -229,7 +220,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
 
 	if ((size_t) totalverts / 4 > quadIndices.getSize())
-		quadIndices = QuadIndices((size_t) totalverts / 4);
+		quadIndices = QuadIndices(gfx, (size_t) totalverts / 4);
 
 	const size_t pos_offset   = offsetof(Font::GlyphVertex, x);
 	const size_t tex_offset   = offsetof(Font::GlyphVertex, s);
@@ -243,16 +234,17 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 
 	gl.prepareDraw();
 
-	vbo->bind();
 	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, vbo->getPointer(pos_offset));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, vbo->getPointer(tex_offset));
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, vbo->getPointer(color_offset));
+	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
+
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(pos_offset));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(tex_offset));
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(color_offset));
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
 
-	quadIndices.getBuffer()->bind();
+	gl.bindBuffer(BUFFER_INDEX, (GLuint) quadIndices.getBuffer()->getHandle());
 
 	// We need a separate draw call for every section of the text which uses a
 	// different texture than the previous section.
@@ -264,7 +256,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 		// TODO: Use glDrawElementsBaseVertex when supported?
 		gl.bindTextureToUnit((GLuint) cmd.texture, 0, false);
 
-		gl.drawElements(GL_TRIANGLES, count, gltype, quadIndices.getPointer(offset));
+		gl.drawElements(GL_TRIANGLES, count, gltype, BUFFER_OFFSET(offset));
 	}
 }
 

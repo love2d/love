@@ -34,7 +34,7 @@
 #include "graphics/Volatile.h"
 #include "graphics/Color.h"
 #include "graphics/Quad.h"
-#include "GLBuffer.h"
+#include "graphics/Buffer.h"
 #include "Mesh.h"
 
 namespace love
@@ -44,6 +44,7 @@ namespace graphics
 
 // Forward declarations.
 class Texture;
+class Graphics;
 
 namespace opengl
 {
@@ -54,7 +55,7 @@ public:
 
 	static love::Type type;
 
-	SpriteBatch(Texture *texture, int size, vertex::Usage usage);
+	SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage);
 	virtual ~SpriteBatch();
 
 	int add(const Matrix4 &m, int index = -1);
@@ -138,7 +139,7 @@ private:
 	// added sprite.
 	Color *color;
 
-	GLBuffer *array_buf;
+	love::graphics::Buffer *array_buf;
 	QuadIndices quad_indices;
 
 	std::unordered_map<std::string, AttachedAttribute> attached_attributes;

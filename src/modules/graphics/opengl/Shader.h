@@ -62,6 +62,7 @@ public:
 	void updateUniform(const UniformInfo *info, int count, bool internalUpdate = false) override;
 	void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate = false) override;
 	bool hasUniform(const std::string &name) const override;
+	ptrdiff_t getHandle() const override;
 	void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) override;
 
 	GLint getAttribLocation(const std::string &name);
@@ -69,11 +70,6 @@ public:
 	void updateScreenParams();
 	void updatePointSize(float size);
 	void updateBuiltinUniforms();
-
-	GLuint getProgram() const
-	{
-		return program;
-	}
 
 	static std::string getGLSLVersion();
 	static bool isSupported();

@@ -20,6 +20,7 @@
 
 // LOVE
 #include "Graphics.h"
+#include "Buffer.h"
 #include "math/MathModule.h"
 #include "Polyline.h"
 #include "font/Font.h"

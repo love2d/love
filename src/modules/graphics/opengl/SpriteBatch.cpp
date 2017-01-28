@@ -25,7 +25,6 @@
 #include "OpenGL.h"
 
 // LOVE
-#include "GLBuffer.h"
 #include "graphics/Texture.h"
 #include "graphics/Graphics.h"
 
@@ -44,13 +43,13 @@ namespace opengl
 
 love::Type SpriteBatch::type("SpriteBatch", &Drawable::type);
 
-SpriteBatch::SpriteBatch(Texture *texture, int size, vertex::Usage usage)
+SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage)
 	: texture(texture)
 	, size(size)
 	, next(0)
 	, color(0)
 	, array_buf(nullptr)
-	, quad_indices(size)
+	, quad_indices(gfx, size)
 	, range_start(-1)
 	, range_count(-1)
 {
@@ -59,7 +58,7 @@ SpriteBatch::SpriteBatch(Texture *texture, int size, vertex::Usage usage)
 
 	size_t vertex_size = sizeof(Vertex) * 4 * size;
 
-	array_buf = new GLBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
 }
 
 SpriteBatch::~SpriteBatch()
@@ -155,24 +154,21 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	// Map the old GLBuffer to get a pointer to its data.
-	void *old_data = array_buf->map();
-
 	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
-	GLBuffer *new_array_buf = nullptr;
+	love::graphics::Buffer *new_array_buf = nullptr;
 
 	int new_next = std::min(next, newsize);
 
 	try
 	{
-		new_array_buf = new GLBuffer(vertex_size, nullptr, array_buf->getType(), array_buf->getUsage(), array_buf->getMapFlags());
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getType(), array_buf->getUsage(), array_buf->getMapFlags());
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		size_t copy_size = sizeof(Vertex) * 4 * new_next;
-		memcpy(new_array_buf->map(), old_data, copy_size);
-		new_array_buf->setMappedRangeModified(0, copy_size);
+		array_buf->copyTo(0, copy_size, new_array_buf, 0);
 
-		quad_indices = QuadIndices(newsize);
+		quad_indices = QuadIndices(gfx, newsize);
 	}
 	catch (love::Exception &)
 	{
@@ -262,17 +258,17 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
-	array_buf->bind();
+	gl.bindBuffer(BUFFER_VERTEX, (GLuint) array_buf->getHandle());
 
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
 		enabledattribs |= ATTRIBFLAG_COLOR;
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), array_buf->getPointer(color_offset));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), BUFFER_OFFSET(color_offset));
 	}
 
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(pos_offset));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), array_buf->getPointer(texel_offset));
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(pos_offset));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(texel_offset));
 
 	for (const auto &it : attached_attributes)
 	{
@@ -301,11 +297,15 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	count = std::min(count, next - start);
 
-	quad_indices.getBuffer()->bind();
-	const void *indices = quad_indices.getPointer(start * quad_indices.getElementSize());
-
 	if (count > 0)
-		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), quad_indices.getType(), indices);
+	{
+		gl.bindBuffer(BUFFER_INDEX, (GLuint) quad_indices.getBuffer()->getHandle());
+
+		const void *indices = BUFFER_OFFSET(start * quad_indices.getElementSize());
+		GLenum gltype = OpenGL::getGLIndexDataType(quad_indices.getType());
+
+		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), gltype, indices);
+	}
 }
 
 void SpriteBatch::addv(const Vertex *v, const Matrix4 &m, int index)

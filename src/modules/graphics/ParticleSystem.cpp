@@ -21,6 +21,7 @@
 //LOVE
 #include "common/config.h"
 #include "ParticleSystem.h"
+#include "Graphics.h"
 
 #include "common/math.h"
 #include "modules/math/RandomGenerator.h"
@@ -52,7 +53,7 @@ float calculate_variation(float inner, float outer, float var)
 
 love::Type ParticleSystem::type("ParticleSystem", &Drawable::type);
 
-ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
+ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	: pMem(nullptr)
 	, pFree(nullptr)
 	, pHead(nullptr)
@@ -90,12 +91,15 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, offset(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f)
 	, defaultOffset(true)
 	, relativeRotation(false)
+	, buffer(nullptr)
+	, quadIndices(gfx, size)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
 
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+
 	setBufferSize(size);
 }
 
@@ -143,6 +147,8 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, colors(p.colors)
 	, quads(p.quads)
 	, relativeRotation(p.relativeRotation)
+	, buffer(nullptr)
+	, quadIndices(p.quadIndices)
 {
 	setBufferSize(maxParticles);
 }
@@ -169,6 +175,13 @@ void ParticleSystem::createBuffers(size_t size)
 	{
 		pFree = pMem = new Particle[size];
 		maxParticles = (uint32) size;
+
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+		size_t bytes = sizeof(Vertex) * size * 4;
+		buffer = gfx->newBuffer(bytes, nullptr, BUFFER_VERTEX, vertex::USAGE_STREAM, 0);
+
+		quadIndices = QuadIndices(gfx, size);
 	}
 	catch (std::bad_alloc &)
 	{
@@ -179,10 +192,11 @@ void ParticleSystem::createBuffers(size_t size)
 
 void ParticleSystem::deleteBuffers()
 {
-	// Clean up for great gracefulness!
 	delete[] pMem;
+	delete buffer;
 
 	pMem = nullptr;
+	buffer = nullptr;
 	maxParticles = 0;
 	activeParticles = 0;
 }
@@ -931,6 +945,56 @@ void ParticleSystem::update(float dt)
 	}
 
 	prevPosition = position;
+}
+
+bool ParticleSystem::prepareDraw(Graphics *gfx, const Matrix4 &m)
+{
+	uint32 pCount = getCount();
+
+	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || buffer == nullptr)
+		return false;
+
+	gfx->flushStreamDraws();
+
+	Graphics::TempTransform transform(gfx, m);
+
+	const Vertex *textureVerts = texture->getVertices();
+	Vertex *pVerts = (Vertex *) buffer->map();
+	Particle *p = pHead;
+
+	bool useQuads = !quads.empty();
+
+	Matrix3 t;
+
+	// set the vertex data for each particle (transformation, texcoords, color)
+	while (p)
+	{
+		if (useQuads)
+			textureVerts = quads[p->quadIndex]->getVertices();
+
+		// particle vertices are image vertices transformed by particle info
+		t.setTransformation(p->position.x, p->position.y, p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
+		t.transform(pVerts, textureVerts, 4);
+
+		// Particle colors are stored as floats (0-1) but vertex colors are
+		// unsigned bytes (0-255).
+		Color c = toColor(p->color);
+
+		// set the texture coordinate and color data for particle vertices
+		for (int v = 0; v < 4; v++)
+		{
+			pVerts[v].s = textureVerts[v].s;
+			pVerts[v].t = textureVerts[v].t;
+			pVerts[v].color = c;
+		}
+
+		pVerts += 4;
+		p = p->next;
+	}
+
+	buffer->unmap();
+
+	return true;
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

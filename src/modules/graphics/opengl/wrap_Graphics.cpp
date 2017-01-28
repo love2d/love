@@ -19,7 +19,6 @@
  **/
 
 #include "wrap_Graphics.h"
-#include "OpenGL.h"
 #include "graphics/Texture.h"
 #include "image/ImageData.h"
 #include "image/Image.h"

@@ -29,7 +29,8 @@
 #include "graphics/Drawable.h"
 #include "graphics/Texture.h"
 #include "graphics/vertex.h"
-#include "GLBuffer.h"
+#include "graphics/Buffer.h"
+#include "OpenGL.h"
 
 // C++
 #include <vector>
@@ -39,6 +40,9 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
 namespace opengl
 {
 
@@ -86,11 +90,11 @@ public:
 		int components; // max 4
 	};
 
-	Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage);
-	Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage);
+	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage);
+	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage);
 
-	Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage);
-	Mesh(int vertexcount, DrawMode drawmode, vertex::Usage usage);
+	Mesh(graphics::Graphics *gfx, const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage);
+	Mesh(graphics::Graphics *gfx, int vertexcount, DrawMode drawmode, vertex::Usage usage);
 
 	virtual ~Mesh();
 
@@ -229,8 +233,6 @@ private:
 
 	static size_t getAttribFormatSize(const AttribFormat &format);
 
-	static IndexDataType getIndexTypeFromMax(size_t maxvalue);
-
 	static GLenum getGLDrawMode(DrawMode mode);
 	static GLenum getGLDataType(DataType type);
 
@@ -240,7 +242,7 @@ private:
 	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
 
 	// Vertex buffer, for the vertex data.
-	GLBuffer *vbo;
+	Buffer *vbo;
 	size_t vertexCount;
 	size_t vertexStride;
 
@@ -249,7 +251,7 @@ private:
 	char *vertexScratchBuffer;
 
 	// Element (vertex index) buffer, for the vertex map.
-	GLBuffer *ibo;
+	Buffer *ibo;
 	bool useIndexBuffer;
 	size_t elementCount;
 	IndexDataType elementDataType;

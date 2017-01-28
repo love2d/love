@@ -66,6 +66,12 @@ size_t getIndexDataSize(IndexDataType type)
 	}
 }
 
+IndexDataType getIndexDataTypeFromMax(size_t maxvalue)
+{
+	IndexDataType types[] = {INDEX_UINT16, INDEX_UINT32};
+	return types[maxvalue > LOVE_UINT16_MAX ? 1 : 0];
+}
+
 int getIndexCount(TriangleIndexMode mode, int vertexCount)
 {
 	switch (mode)

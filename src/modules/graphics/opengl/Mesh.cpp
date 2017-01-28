@@ -61,7 +61,7 @@ static std::vector<Mesh::AttribFormat> getDefaultVertexFormat()
 
 love::Type Mesh::type("Mesh", &Drawable::type);
 
-Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
 	, vbo(nullptr)
 	, vertexCount(0)
@@ -78,17 +78,17 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, const void *data, size
 	calculateAttributeSizes();
 
 	vertexCount = datasize / vertexStride;
-	elementDataType = getIndexTypeFromMax(vertexCount);
+	elementDataType = vertex::getIndexDataTypeFromMax(vertexCount);
 
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vbo = new GLBuffer(datasize, data, BUFFER_VERTEX, usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	vbo = gfx->newBuffer(datasize, data, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
 	, vbo(nullptr)
 	, vertexCount((size_t) vertexcount)
@@ -96,7 +96,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 	, ibo(nullptr)
 	, useIndexBuffer(false)
 	, elementCount(0)
-	, elementDataType(getIndexTypeFromMax(vertexcount))
+	, elementDataType(vertex::getIndexDataTypeFromMax(vertexcount))
 	, drawMode(drawmode)
 	, rangeStart(-1)
 	, rangeCount(-1)
@@ -109,7 +109,7 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vbo = new GLBuffer(buffersize, nullptr, BUFFER_VERTEX, usage, GLBuffer::MAP_EXPLICIT_RANGE_MODIFY);
+	vbo = gfx->newBuffer(buffersize, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
 
 	// Initialize the buffer's contents to 0.
 	memset(vbo->map(), 0, buffersize);
@@ -119,13 +119,13 @@ Mesh::Mesh(const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawM
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage)
-	: Mesh(getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage)
+	: Mesh(gfx, getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage)
 {
 }
 
-Mesh::Mesh(int vertexcount, DrawMode drawmode, vertex::Usage usage)
-	: Mesh(getDefaultVertexFormat(), vertexcount, drawmode, usage)
+Mesh::Mesh(graphics::Graphics *gfx, int vertexcount, DrawMode drawmode, vertex::Usage usage)
+	: Mesh(gfx, getDefaultVertexFormat(), vertexcount, drawmode, usage)
 {
 }
 
@@ -393,7 +393,7 @@ void Mesh::flush()
  * Copies index data from a vector to a mapped index buffer.
  **/
 template <typename T>
-static void copyToIndexBuffer(const std::vector<uint32> &indices, GLBuffer::Mapper &buffermap, size_t maxval)
+static void copyToIndexBuffer(const std::vector<uint32> &indices, Buffer::Mapper &buffermap, size_t maxval)
 {
 	T *elems = (T *) buffermap.get();
 
@@ -410,7 +410,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
 	size_t maxval = getVertexCount();
 
-	IndexDataType datatype = getIndexTypeFromMax(maxval);
+	IndexDataType datatype = vertex::getIndexDataTypeFromMax(maxval);
 
 	// Calculate the size in bytes of the index buffer data.
 	size_t size = map.size() * vertex::getIndexDataSize(datatype);
@@ -422,7 +422,10 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	}
 
 	if (!ibo && size > 0)
-		ibo = new GLBuffer(size, nullptr, BUFFER_INDEX, vbo->getUsage());
+	{
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		ibo = gfx->newBuffer(size, nullptr, BUFFER_INDEX, vbo->getUsage(), Buffer::MAP_READ);
+	}
 
 	useIndexBuffer = true;
 	elementCount = map.size();
@@ -430,7 +433,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	if (!ibo || elementCount == 0)
 		return;
 
-	GLBuffer::Mapper ibomap(*ibo);
+	Buffer::Mapper ibomap(*ibo);
 
 	// Fill the buffer with the index values from the vector.
 	switch (datatype)
@@ -456,14 +459,17 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 	}
 
 	if (!ibo && datasize > 0)
-		ibo = new GLBuffer(datasize, nullptr, BUFFER_INDEX, vbo->getUsage());
+	{
+		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+		ibo = gfx->newBuffer(datasize, nullptr, BUFFER_INDEX, vbo->getUsage(), Buffer::MAP_READ);
+	}
 
 	elementCount = datasize / vertex::getIndexDataSize(datatype);
 
 	if (!ibo || elementCount == 0)
 		return;
 
-	GLBuffer::Mapper ibomap(*ibo);
+	Buffer::Mapper ibomap(*ibo);
 	memcpy(ibomap.get(), data, datasize);
 
 	useIndexBuffer = true;
@@ -587,13 +593,12 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	if (attriblocation < 0)
 		return attriblocation;
 
-	// Needed for glVertexAttribPointer.
-	vbo->bind();
-
 	// Make sure the buffer isn't mapped (sends data to GPU if needed.)
 	vbo->unmap();
 
-	const void *gloffset = vbo->getPointer(getAttributeOffset(attributeindex));
+	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
+
+	const void *gloffset = BUFFER_OFFSET(getAttributeOffset(attributeindex));
 	GLenum datatype = getGLDataType(format.type);
 	GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
 
@@ -651,7 +656,7 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 	if (useIndexBuffer && ibo && elementCount > 0)
 	{
 		// Use the custom vertex map (index buffer) to draw the vertices.
-		ibo->bind();
+		gl.bindBuffer(BUFFER_INDEX, (GLuint) ibo->getHandle());
 
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
@@ -665,7 +670,7 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 		count = std::min(count, (int) elementCount - start);
 
 		size_t elementsize = vertex::getIndexDataSize(elementDataType);
-		const void *indices = ibo->getPointer(start * elementsize);
+		const void *indices = BUFFER_OFFSET(start * elementsize);
 		GLenum type = OpenGL::getGLIndexDataType(elementDataType);
 
 		if (count > 0)
@@ -732,14 +737,6 @@ GLenum Mesh::getGLDataType(DataType type)
 	default:
 		return 0;
 	}
-}
-
-IndexDataType Mesh::getIndexTypeFromMax(size_t maxvalue)
-{
-	if (maxvalue > LOVE_UINT16_MAX)
-		return INDEX_UINT32;
-	else
-		return INDEX_UINT16;
 }
 
 bool Mesh::getConstant(const char *in, Mesh::DrawMode &out)

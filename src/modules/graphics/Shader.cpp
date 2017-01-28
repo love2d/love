@@ -21,6 +21,7 @@
 // LOVE
 #include "Shader.h"
 #include "Graphics.h"
+#include "math/MathModule.h"
 
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"

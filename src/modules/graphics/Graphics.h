@@ -49,6 +49,8 @@ class Reference;
 namespace graphics
 {
 
+class Buffer;
+
 const int MAX_COLOR_RENDER_TARGETS = 8;
 
 /**
@@ -314,6 +316,8 @@ public:
 	virtual Canvas *newCanvas(int width, int height, const Canvas::Settings &settings) = 0;
 
 	virtual Shader *newShader(const Shader::ShaderSource &source) = 0;
+
+	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
 
 	bool validateShader(bool gles, const Shader::ShaderSource &source, std::string &err);
 

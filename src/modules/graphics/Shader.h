@@ -31,6 +31,11 @@
 #include <vector>
 #include <stddef.h>
 
+namespace glslang
+{
+class TShader;
+}
+
 namespace love
 {
 namespace graphics
@@ -171,6 +176,8 @@ public:
 	 **/
 	virtual void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) = 0;
 
+	virtual ptrdiff_t getHandle() const = 0;
+
 	static bool validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err);
 
 	static bool initialize();
@@ -187,8 +194,18 @@ public:
 
 protected:
 
+	struct CachedShaderStage
+	{
+		int referenceCount;
+		ShaderStage stage;
+		glslang::TShader *glslangShader;
+		ptrdiff_t handle;
+	};
+
 	// Source code used for this Shader.
 	ShaderSource shaderSource;
+
+	static std::map<std::string, CachedShaderStage> cachedShaders;
 
 private:
 

@@ -25,12 +25,15 @@
 #include "common/config.h"
 #include "graphics/Drawable.h"
 #include "graphics/Font.h"
-#include "GLBuffer.h"
+#include "graphics/Buffer.h"
 
 namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
 namespace opengl
 {
 
@@ -40,7 +43,7 @@ public:
 
 	static love::Type type;
 
-	Text(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
+	Text(love::graphics::Graphics *gfx, love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
 	void set(const std::vector<Font::ColoredString> &text);
@@ -85,7 +88,7 @@ private:
 	void addTextData(const TextData &s);
 
 	StrongRef<love::graphics::Font> font;
-	GLBuffer *vbo;
+	Buffer *vbo;
 	QuadIndices quadIndices;
 
 	std::vector<Font::DrawCommand> draw_commands;

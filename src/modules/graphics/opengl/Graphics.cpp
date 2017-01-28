@@ -29,6 +29,7 @@
 #include "StreamBuffer.h"
 #include "math/MathModule.h"
 #include "window/Window.h"
+#include "Buffer.h"
 
 #include "libraries/xxHash/xxhash.h"
 
@@ -117,12 +118,12 @@ graphics::Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filt
 
 SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
 {
-	return new SpriteBatch(texture, size, usage);
+	return new SpriteBatch(this, texture, size, usage);
 }
 
 ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 {
-	return new ParticleSystem(texture, size);
+	return new ParticleSystem(this, texture, size);
 }
 
 love::graphics::Canvas *Graphics::newCanvas(int width, int height, const Canvas::Settings &settings)
@@ -159,29 +160,34 @@ love::graphics::Shader *Graphics::newShader(const Shader::ShaderSource &source)
 	return new Shader(source);
 }
 
+love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
+{
+	return new Buffer(size, data, type, usage, mapflags);
+}
+
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
-	return new Mesh(vertices, drawmode, usage);
+	return new Mesh(this, vertices, drawmode, usage);
 }
 
 Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
-	return new Mesh(vertexcount, drawmode, usage);
+	return new Mesh(this, vertexcount, drawmode, usage);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
-	return new Mesh(vertexformat, vertexcount, drawmode, usage);
+	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
-	return new Mesh(vertexformat, data, datasize, drawmode, usage);
+	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
 
 Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
-	return new Text(font, text);
+	return new Text(this, font, text);
 }
 
 Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
@@ -295,7 +301,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// index buffer objects, since the shared index buffer used by QuadIndices
 	// objects is destroyed when the last object is destroyed.
 	if (quadIndices == nullptr)
-		quadIndices = new QuadIndices(20);
+		quadIndices = new QuadIndices(this, 20);
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -726,7 +732,7 @@ void Graphics::clear(Colorf c)
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
 		gl.useProgram(0);
-		gl.useProgram(((Shader *)Shader::current)->getProgram());
+		gl.useProgram((GLuint) Shader::current->getHandle());
 	}
 }
 
@@ -792,7 +798,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
 		gl.useProgram(0);
-		gl.useProgram(((Shader *)Shader::current)->getProgram());
+		gl.useProgram((GLuint) Shader::current->getHandle());
 	}
 }
 

@@ -78,6 +78,8 @@ public:
 
 	love::graphics::Shader *newShader(const Shader::ShaderSource &source) override;
 
+	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
+
 	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage);
 	Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage);
 

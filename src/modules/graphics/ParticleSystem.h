@@ -29,6 +29,7 @@
 #include "Color.h"
 #include "Quad.h"
 #include "Texture.h"
+#include "Buffer.h"
 
 // STL
 #include <vector>
@@ -37,6 +38,8 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
 
 /**
  * A class for creating, moving and drawing particles.
@@ -81,7 +84,7 @@ public:
 	/**
 	 * Creates a particle system with the specified buffer size and texture.
 	 **/
-	ParticleSystem(Texture *texture, uint32 buffer);
+	ParticleSystem(Graphics *gfx, Texture *texture, uint32 buffer);
 	ParticleSystem(const ParticleSystem &p);
 
 	/**
@@ -548,6 +551,8 @@ protected:
 		int quadIndex;
 	};
 
+	bool prepareDraw(Graphics *gfx, const Matrix4 &m);
+
 	// Pointer to the beginning of the allocated memory.
 	Particle *pMem;
 
@@ -646,6 +651,11 @@ protected:
 	std::vector<StrongRef<Quad>> quads;
 
 	bool relativeRotation;
+
+	Buffer *buffer;
+
+	// Vertex index buffer.
+	QuadIndices quadIndices;
 
 private:
 

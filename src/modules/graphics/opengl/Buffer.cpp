@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "GLBuffer.h"
+#include "Buffer.h"
 
 #include "common/Exception.h"
 #include "graphics/vertex.h"
@@ -35,16 +35,12 @@ namespace graphics
 namespace opengl
 {
 
-GLBuffer::GLBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
-	: is_mapped(false)
-	, size(size)
-	, type(type)
-	, usage(usage)
+Buffer::Buffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
+	: love::graphics::Buffer(size, type, usage, mapflags)
 	, vbo(0)
 	, memory_map(nullptr)
 	, modified_offset(0)
 	, modified_size(0)
-	, map_flags(mapflags)
 {
 	target = OpenGL::getGLBufferType(type);
 
@@ -67,7 +63,7 @@ GLBuffer::GLBuffer(size_t size, const void *data, BufferType type, vertex::Usage
 	}
 }
 
-GLBuffer::~GLBuffer()
+Buffer::~Buffer()
 {
 	if (vbo != 0)
 		unload();
@@ -75,7 +71,7 @@ GLBuffer::~GLBuffer()
 	delete[] memory_map;
 }
 
-void *GLBuffer::map()
+void *Buffer::map()
 {
 	if (is_mapped)
 		return memory_map;
@@ -88,7 +84,7 @@ void *GLBuffer::map()
 	return memory_map;
 }
 
-void GLBuffer::unmapStatic(size_t offset, size_t size)
+void Buffer::unmapStatic(size_t offset, size_t size)
 {
 	if (size == 0)
 		return;
@@ -98,7 +94,7 @@ void GLBuffer::unmapStatic(size_t offset, size_t size)
 	glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
 }
 
-void GLBuffer::unmapStream()
+void Buffer::unmapStream()
 {
 	GLenum glusage = OpenGL::getGLBufferUsage(getUsage());
 
@@ -109,7 +105,7 @@ void GLBuffer::unmapStream()
 	glBufferData(target, (GLsizeiptr) getSize(), memory_map, glusage);
 }
 
-void GLBuffer::unmap()
+void Buffer::unmap()
 {
 	if (!is_mapped)
 		return;
@@ -127,15 +123,15 @@ void GLBuffer::unmap()
 
 	if (modified_size > 0)
 	{
-		switch (OpenGL::getGLBufferUsage(getUsage()))
+		switch (getUsage())
 		{
-		case GL_STATIC_DRAW:
+		case vertex::USAGE_STATIC:
 			unmapStatic(modified_offset, modified_size);
 			break;
-		case GL_STREAM_DRAW:
+		case vertex::USAGE_STREAM:
 			unmapStream();
 			break;
-		case GL_DYNAMIC_DRAW:
+		case vertex::USAGE_DYNAMIC:
 		default:
 			// It's probably more efficient to treat it like a streaming buffer if
 			// at least a third of its contents have been modified during the map().
@@ -153,7 +149,7 @@ void GLBuffer::unmap()
 	is_mapped = false;
 }
 
-void GLBuffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
+void Buffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
 {
 	if (!is_mapped || !(map_flags & MAP_EXPLICIT_RANGE_MODIFY))
 		return;
@@ -169,12 +165,7 @@ void GLBuffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
 	modified_size = new_range_end - modified_offset;
 }
 
-void GLBuffer::bind()
-{
-	gl.bindBuffer(getType(), vbo);
-}
-
-void GLBuffer::fill(size_t offset, size_t size, const void *data)
+void Buffer::fill(size_t offset, size_t size, const void *data)
 {
 	memcpy(memory_map + offset, data, size);
 
@@ -187,26 +178,30 @@ void GLBuffer::fill(size_t offset, size_t size, const void *data)
 	}
 }
 
-const void *GLBuffer::getPointer(size_t offset) const
+ptrdiff_t Buffer::getHandle() const
 {
-	return BUFFER_OFFSET(offset);
+	return vbo;
 }
 
-bool GLBuffer::loadVolatile()
+void Buffer::copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset)
+{
+	other->fill(otheroffset, size, memory_map + offset);
+}
+
+bool Buffer::loadVolatile()
 {
 	return load(true);
 }
 
-void GLBuffer::unloadVolatile()
+void Buffer::unloadVolatile()
 {
 	unload();
 }
 
-bool GLBuffer::load(bool restore)
+bool Buffer::load(bool restore)
 {
 	glGenBuffers(1, &vbo);
-
-	bind();
+	gl.bindBuffer(type, vbo);
 
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
@@ -220,155 +215,11 @@ bool GLBuffer::load(bool restore)
 	return (glGetError() == GL_NO_ERROR);
 }
 
-void GLBuffer::unload()
+void Buffer::unload()
 {
 	is_mapped = false;
 	gl.deleteBuffer(vbo);
 	vbo = 0;
-}
-
-
-// QuadIndices
-
-size_t QuadIndices::maxSize = 0;
-size_t QuadIndices::elementSize = 0;
-size_t QuadIndices::objectCount = 0;
-
-GLBuffer *QuadIndices::indexBuffer = nullptr;
-char *QuadIndices::indices = nullptr;
-
-QuadIndices::QuadIndices(size_t size)
-	: size(size)
-{
-	// The upper limit is the maximum of GLuint divided by six (the number
-	// of indices per size) and divided by the size of GLuint. This guarantees
-	// no overflows when calculating the array size in bytes.
-	if (size == 0 || size > ((GLuint) -1) / 6 / sizeof(GLuint))
-		throw love::Exception("Invalid number of quads.");
-
-	// Create a new / larger buffer if needed.
-	if (indexBuffer == nullptr || size > maxSize)
-	{
-		GLBuffer *newbuffer = nullptr;
-		char *newindices = nullptr;
-
-		// Depending on the size, a switch to int and more memory is needed.
-		GLenum targettype = getType(size);
-		size_t elemsize = (targettype == GL_UNSIGNED_SHORT) ? sizeof(GLushort) : sizeof(GLuint);
-
-		size_t buffersize = elemsize * 6 * size;
-
-		// Create may throw out-of-memory exceptions.
-		// QuadIndices will propagate the exception and keep the old GLBuffer.
-		try
-		{
-			newbuffer = new GLBuffer(buffersize, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC);
-			newindices = new char[buffersize];
-		}
-		catch (std::bad_alloc &)
-		{
-			delete newbuffer;
-			delete[] newindices;
-			throw love::Exception("Out of memory.");
-		}
-
-		// Allocation of the new GLBuffer succeeded.
-		// The old GLBuffer can now be deleted.
-		delete indexBuffer;
-		indexBuffer = newbuffer;
-
-		delete[] indices;
-		indices = newindices;
-
-		maxSize = size;
-		elementSize = elemsize;
-
-		switch (targettype)
-		{
-		case GL_UNSIGNED_SHORT:
-			fill<GLushort>();
-			break;
-		case GL_UNSIGNED_INT:
-			fill<GLuint>();
-			break;
-		}
-	}
-
-	objectCount++;
-}
-
-QuadIndices::QuadIndices(const QuadIndices &other)
-	: size(other.size)
-{
-	objectCount++;
-}
-
-QuadIndices &QuadIndices::operator = (const QuadIndices &other)
-{
-	size = other.size;
-	return *this;
-}
-
-QuadIndices::~QuadIndices()
-{
-	--objectCount;
-
-	// Delete the buffer if we were the last living QuadIndices object.
-	if (objectCount <= 0)
-	{
-		delete indexBuffer;
-		indexBuffer = nullptr;
-
-		delete[] indices;
-		indices = nullptr;
-	}
-}
-
-size_t QuadIndices::getSize() const
-{
-	return size;
-}
-
-size_t QuadIndices::getIndexCount(size_t elements) const
-{
-	return elements * 6;
-}
-
-GLenum QuadIndices::getType(size_t s) const
-{
-	// Calculates if unsigned short is big enough to hold all the vertex indices.
-	static const GLenum types[] = {GL_UNSIGNED_SHORT, GL_UNSIGNED_INT};
-	return types[s * 4 > std::numeric_limits<GLushort>::max()];
-	// if buffer-size > max(GLushort) then GL_UNSIGNED_INT else GL_UNSIGNED_SHORT
-}
-
-size_t QuadIndices::getElementSize()
-{
-	return elementSize;
-}
-
-GLBuffer *QuadIndices::getBuffer() const
-{
-	return indexBuffer;
-}
-
-const void *QuadIndices::getPointer(size_t offset) const
-{
-	return indexBuffer->getPointer(offset);
-}
-
-const void *QuadIndices::getIndices(size_t offset) const
-{
-	return indices + offset;
-}
-
-template <typename T>
-void QuadIndices::fill()
-{
-	using namespace love::graphics::vertex;
-
-	fillIndices(TriangleIndexMode::QUADS, 0, maxSize * 4, (T *) indices);
-	indexBuffer->fill(0, indexBuffer->getSize(), indices);
 }
 
 } // opengl

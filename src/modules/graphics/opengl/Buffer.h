@@ -18,38 +18,63 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_PARTICLE_SYSTEM_H
-#define LOVE_GRAPHICS_OPENGL_PARTICLE_SYSTEM_H
+#pragma once
 
 // LOVE
-#include "graphics/ParticleSystem.h"
+#include "common/config.h"
+#include "graphics/Buffer.h"
+#include "graphics/Volatile.h"
+
+// OpenGL
+#include "OpenGL.h"
 
 namespace love
 {
 namespace graphics
 {
-
-class Graphics;
-
 namespace opengl
 {
 
-class ParticleSystem final : public love::graphics::ParticleSystem
+class Buffer final : public love::graphics::Buffer, public Volatile
 {
 public:
 
-	ParticleSystem(Graphics *gfx, Texture *texture, uint32 buffer);
-	ParticleSystem(const ParticleSystem &p);
+	Buffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags);
+	virtual ~Buffer();
 
-	virtual ~ParticleSystem();
+	void *map() override;
+	void unmap() override;
+	void setMappedRangeModified(size_t offset, size_t size) override;
+	void fill(size_t offset, size_t size, const void *data) override;
+	ptrdiff_t getHandle() const override;
 
-	ParticleSystem *clone() override;
-	void draw(Graphics *gfx, const Matrix4 &m) override;
+	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
-}; // ParticleSystem
+	// Implements Volatile.
+	bool loadVolatile() override;
+	void unloadVolatile() override;
+
+private:
+
+	bool load(bool restore);
+	void unload();
+
+	void unmapStatic(size_t offset, size_t size);
+	void unmapStream();
+
+	GLenum target;
+
+	// The VBO identifier. Assigned by OpenGL.
+	GLuint vbo;
+
+	// A pointer to mapped memory.
+	char *memory_map;
+
+	size_t modified_offset;
+	size_t modified_size;
+
+}; // Buffer
 
 } // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_PARTICLE_SYSTEM_H
