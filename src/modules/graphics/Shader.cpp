@@ -269,16 +269,6 @@ bool Shader::getConstant(ShaderStage in, const char *&out)
 	return stageNames.find(in, out);
 }
 
-bool Shader::getConstant(const char *in, VertexAttribID &out)
-{
-	return attribNames.find(in, out);
-}
-
-bool Shader::getConstant(VertexAttribID in, const char *&out)
-{
-	return attribNames.find(in, out);
-}
-
 bool Shader::getConstant(const char *in, BuiltinUniform &out)
 {
 	return builtinNames.find(in, out);
@@ -291,43 +281,34 @@ bool Shader::getConstant(BuiltinUniform in, const char *&out)
 
 StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM>::Entry Shader::languageEntries[] =
 {
-	{"glsl1",   LANGUAGE_GLSL1  },
-	{"glsles1", LANGUAGE_GLSLES1},
-	{"glsl3",   LANGUAGE_GLSL3  },
-	{"glsles3", LANGUAGE_GLSLES3},
+	{ "glsl1",   LANGUAGE_GLSL1   },
+	{ "glsles1", LANGUAGE_GLSLES1 },
+	{ "glsl3",   LANGUAGE_GLSL3   },
+	{ "glsles3", LANGUAGE_GLSLES3 },
 };
 
 StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM> Shader::languages(Shader::languageEntries, sizeof(Shader::languageEntries));
 
 StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM>::Entry Shader::stageNameEntries[] =
 {
-	{"vertex", Shader::STAGE_VERTEX},
-	{"pixel", Shader::STAGE_PIXEL},
+	{ "vertex", STAGE_VERTEX },
+	{ "pixel",  STAGE_PIXEL  },
 };
 
 StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM> Shader::stageNames(Shader::stageNameEntries, sizeof(Shader::stageNameEntries));
 
-StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry Shader::attribNameEntries[] =
-{
-	{"VertexPosition", ATTRIB_POS},
-	{"VertexTexCoord", ATTRIB_TEXCOORD},
-	{"VertexColor", ATTRIB_COLOR},
-	{"ConstantColor", ATTRIB_CONSTANTCOLOR},
-};
-
-StringMap<VertexAttribID, ATTRIB_MAX_ENUM> Shader::attribNames(Shader::attribNameEntries, sizeof(Shader::attribNameEntries));
-
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {
-	{"TransformMatrix", Shader::BUILTIN_TRANSFORM_MATRIX},
-	{"ProjectionMatrix", Shader::BUILTIN_PROJECTION_MATRIX},
-	{"TransformProjectionMatrix", Shader::BUILTIN_TRANSFORM_PROJECTION_MATRIX},
-	{"NormalMatrix", Shader::BUILTIN_NORMAL_MATRIX},
-	{"love_PointSize", Shader::BUILTIN_POINT_SIZE},
-	{"love_ScreenSize", Shader::BUILTIN_SCREEN_SIZE},
-	{"love_VideoYChannel", Shader::BUILTIN_VIDEO_Y_CHANNEL},
-	{"love_VideoCbChannel", Shader::BUILTIN_VIDEO_CB_CHANNEL},
-	{"love_VideoCrChannel", Shader::BUILTIN_VIDEO_CR_CHANNEL},
+	{ "MainTex",                   BUILTIN_TEXTURE_MAIN                },
+	{ "love_VideoYChannel",        BUILTIN_TEXTURE_VIDEO_Y             },
+	{ "love_VideoCbChannel",       BUILTIN_TEXTURE_VIDEO_CB            },
+	{ "love_VideoCrChannel",       BUILTIN_TEXTURE_VIDEO_CR            },
+	{ "TransformMatrix",           BUILTIN_MATRIX_TRANSFORM            },
+	{ "ProjectionMatrix",          BUILTIN_MATRIX_PROJECTION           },
+	{ "TransformProjectionMatrix", BUILTIN_MATRIX_TRANSFORM_PROJECTION },
+	{ "NormalMatrix",              BUILTIN_MATRIX_NORMAL               },
+	{ "love_PointSize",            BUILTIN_POINT_SIZE                  },
+	{ "love_ScreenSize",           BUILTIN_SCREEN_SIZE                 },
 };
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));

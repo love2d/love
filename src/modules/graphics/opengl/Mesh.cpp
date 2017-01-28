@@ -39,7 +39,7 @@ namespace opengl
 static const char *getBuiltinAttribName(VertexAttribID attribid)
 {
 	const char *name = "";
-	Shader::getConstant(attribid, name);
+	vertex::getConstant(attribid, name);
 	return name;
 }
 
@@ -578,7 +578,7 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	// If the attribute is one of the LOVE-defined ones, use the constant
 	// attribute index for it, otherwise query the index from the shader.
 	VertexAttribID builtinattrib;
-	if (Shader::getConstant(inputname.c_str(), builtinattrib))
+	if (vertex::getConstant(inputname.c_str(), builtinattrib))
 		attriblocation = (GLint) builtinattrib;
 	else if (Shader::current)
 		attriblocation = ((Shader *) Shader::current)->getAttribLocation(inputname);

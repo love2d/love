@@ -129,6 +129,9 @@ int getIndexCount(TriangleIndexMode mode, int vertexCount);
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
+bool getConstant(const char *in, VertexAttribID &out);
+bool getConstant(VertexAttribID in, const char *&out);
+
 bool getConstant(const char *in, IndexDataType &out);
 bool getConstant(IndexDataType in, const char *&out);
 

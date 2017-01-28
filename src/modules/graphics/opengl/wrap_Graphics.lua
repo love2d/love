@@ -42,15 +42,14 @@ GLSL.SYNTAX = [[
 #endif
 #define number float
 #define Image sampler2D
-#define extern uniform
-#pragma optionNV(strict on)]]
+#define extern uniform]]
 
 -- Uniforms shared by the vertex and pixel shader stages.
 GLSL.UNIFORMS = [[
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
-#if defined(VERTEX) || defined(GL_FRAGMENT_PRECISION_HIGH)
+#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
 	#define LOVE_UNIFORM_PRECISION highp
 #else
 	#define LOVE_UNIFORM_PRECISION mediump
@@ -137,6 +136,8 @@ GLSL.VERTEX = {
 	HEADER = [[
 #define LOVE_PRECISE_GAMMA
 
+#define love_Position gl_Position
+
 #if __VERSION__ >= 130
 	#define attribute in
 	#define varying out
@@ -148,26 +149,31 @@ GLSL.VERTEX = {
 
 #ifdef GL_ES
 	uniform mediump float love_PointSize;
-#endif
+#endif]],
 
+	FUNCTIONS = [[
+void updatePointSize() {
+#ifdef GL_ES
+	gl_PointSize = love_PointSize;
+#endif
+}]],
+
+	MAIN = [[
 attribute vec4 VertexPosition;
 attribute vec4 VertexTexCoord;
 attribute vec4 VertexColor;
 attribute vec4 ConstantColor;
 
 varying vec4 VaryingTexCoord;
-varying vec4 VaryingColor;]],
+varying vec4 VaryingColor;
 
-	FUNCTIONS = "",
+vec4 position(mat4 transform_proj, vec4 vertpos);
 
-	FOOTER = [[
 void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
-#ifdef GL_ES
-	gl_PointSize = love_PointSize;
-#endif
-	gl_Position = position(TransformProjectionMatrix, VertexPosition);
+	updatePointSize();
+	love_Position = position(TransformProjectionMatrix, VertexPosition);
 }]],
 }
 
@@ -195,10 +201,7 @@ GLSL.PIXEL = {
 #endif
 
 // See Shader::checkSetScreenParams in Shader.cpp.
-#define love_PixelCoord (vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w))
-
-varying mediump vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;]],
+#define love_PixelCoord (vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w))]],
 
 	FUNCTIONS = [[
 uniform sampler2D love_VideoYChannel;
@@ -221,14 +224,24 @@ vec4 VideoTexel(vec2 texcoords) {
 	return gammaCorrectColor(color);
 }]],
 
-	FOOTER = [[
+	MAIN = [[
 uniform sampler2D MainTex;
+varying mediump vec4 VaryingTexCoord;
+varying mediump vec4 VaryingColor;
+
+vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
+
 void main() {
 	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }]],
 
-	FOOTER_MULTI_CANVAS = [[
+	MAIN_MULTI_CANVAS = [[
 uniform sampler2D MainTex;
+varying mediump vec4 VaryingTexCoord;
+varying mediump vec4 VaryingColor;
+
+void effects(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
+
 void main() {
 	effects(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }]],
@@ -252,9 +265,9 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		GLSL.UNIFORMS,
 		GLSL.FUNCTIONS,
 		GLSL[stage].FUNCTIONS,
+		multicanvas and GLSL[stage].MAIN_MULTI_CANVAS or GLSL[stage].MAIN,
 		(lang == "glsl3" or gles) and "#line 1" or "#line 0",
 		code,
-		multicanvas and GLSL[stage].FOOTER_MULTI_CANVAS or GLSL[stage].FOOTER,
 	}
 	return table_concat(lines, "\n")
 end
@@ -368,11 +381,11 @@ vec4 position(mat4 transform_proj, vec4 vertpos) {
 	return transform_proj * vertpos;
 }]],
 	pixel = [[
-vec4 effect(mediump vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
+vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 	return Texel(tex, texcoord) * vcolor;
 }]],
 	videopixel = [[
-vec4 effect(mediump vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
+vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 	return VideoTexel(texcoord) * vcolor;
 }]],
 }

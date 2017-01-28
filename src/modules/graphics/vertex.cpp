@@ -143,6 +143,16 @@ void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount,
 	fillIndicesT(mode, vertexStart, vertexCount, indices);
 }
 
+static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
+{
+	{ "VertexPosition", ATTRIB_POS           },
+	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
+	{ "VertexColor",    ATTRIB_COLOR         },
+	{ "ConstantColor",  ATTRIB_CONSTANTCOLOR },
+};
+
+static StringMap<VertexAttribID, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
+
 static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
 {
 	{ "uint16", INDEX_UINT16 },
@@ -159,6 +169,16 @@ static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
 };
 
 static StringMap<Usage, USAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
+
+bool getConstant(const char *in, VertexAttribID &out)
+{
+	return attribNames.find(in, out);
+}
+
+bool getConstant(VertexAttribID in, const char *&out)
+{
+	return attribNames.find(in, out);
+}
 
 bool getConstant(const char *in, IndexDataType &out)
 {

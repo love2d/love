@@ -64,15 +64,16 @@ public:
 	// Built-in uniform variables.
 	enum BuiltinUniform
 	{
-		BUILTIN_TRANSFORM_MATRIX = 0,
-		BUILTIN_PROJECTION_MATRIX,
-		BUILTIN_TRANSFORM_PROJECTION_MATRIX,
-		BUILTIN_NORMAL_MATRIX,
+		BUILTIN_TEXTURE_MAIN,
+		BUILTIN_TEXTURE_VIDEO_Y,
+		BUILTIN_TEXTURE_VIDEO_CB,
+		BUILTIN_TEXTURE_VIDEO_CR,
+		BUILTIN_MATRIX_TRANSFORM,
+		BUILTIN_MATRIX_PROJECTION,
+		BUILTIN_MATRIX_TRANSFORM_PROJECTION,
+		BUILTIN_MATRIX_NORMAL,
 		BUILTIN_POINT_SIZE,
 		BUILTIN_SCREEN_SIZE,
-		BUILTIN_VIDEO_Y_CHANNEL,
-		BUILTIN_VIDEO_CB_CHANNEL,
-		BUILTIN_VIDEO_CR_CHANNEL,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -181,9 +182,6 @@ public:
 	static bool getConstant(const char *in, ShaderStage &out);
 	static bool getConstant(ShaderStage in, const char *&out);
 
-	static bool getConstant(const char *in, VertexAttribID &out);
-	static bool getConstant(VertexAttribID in, const char *&out);
-
 	static bool getConstant(const char *in, BuiltinUniform &out);
 	static bool getConstant(BuiltinUniform in, const char *&out);
 
@@ -199,10 +197,6 @@ private:
 
 	static StringMap<ShaderStage, STAGE_MAX_ENUM>::Entry stageNameEntries[];
 	static StringMap<ShaderStage, STAGE_MAX_ENUM> stageNames;
-	
-	// Names for the generic vertex attributes used by love.
-	static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[];
-	static StringMap<VertexAttribID, ATTRIB_MAX_ENUM> attribNames;
 	
 	// Names for the built-in uniform variables.
 	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];

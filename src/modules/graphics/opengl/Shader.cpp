@@ -392,7 +392,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (getConstant((VertexAttribID) i, name))
+		if (vertex::getConstant((VertexAttribID) i, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -419,7 +419,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (getConstant(VertexAttribID(i), name))
+		if (vertex::getConstant(VertexAttribID(i), name))
 			builtinAttributes[i] = glGetAttribLocation(program, name);
 		else
 			builtinAttributes[i] = -1;
@@ -745,9 +745,9 @@ void Shader::setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t
 	if (videoTextureUnits[0] == 0)
 	{
 		const BuiltinUniform builtins[3] = {
-			BUILTIN_VIDEO_Y_CHANNEL,
-			BUILTIN_VIDEO_CB_CHANNEL,
-			BUILTIN_VIDEO_CR_CHANNEL,
+			BUILTIN_TEXTURE_VIDEO_Y,
+			BUILTIN_TEXTURE_VIDEO_CB,
+			BUILTIN_TEXTURE_VIDEO_CR,
 		};
 
 		for (int i = 0; i < 3; i++)
@@ -857,14 +857,14 @@ void Shader::updateBuiltinUniforms()
 	// Only upload the matrices if they've changed.
 	if (memcmp(curxform.getElements(), lastTransformMatrix.getElements(), sizeof(float) * 16) != 0)
 	{
-		GLint location = builtinUniforms[BUILTIN_TRANSFORM_MATRIX];
+		GLint location = builtinUniforms[BUILTIN_MATRIX_TRANSFORM];
 		if (location >= 0)
 			glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
 
 		// Also upload the re-calculated normal matrix, if possible. The normal
 		// matrix is the transpose of the inverse of the rotation portion
 		// (top-left 3x3) of the transform matrix.
-		location = builtinUniforms[BUILTIN_NORMAL_MATRIX];
+		location = builtinUniforms[BUILTIN_MATRIX_NORMAL];
 		if (location >= 0)
 		{
 			Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
@@ -877,7 +877,7 @@ void Shader::updateBuiltinUniforms()
 
 	if (memcmp(curproj.getElements(), lastProjectionMatrix.getElements(), sizeof(float) * 16) != 0)
 	{
-		GLint location = builtinUniforms[BUILTIN_PROJECTION_MATRIX];
+		GLint location = builtinUniforms[BUILTIN_MATRIX_PROJECTION];
 		if (location >= 0)
 			glUniformMatrix4fv(location, 1, GL_FALSE, curproj.getElements());
 
@@ -887,7 +887,7 @@ void Shader::updateBuiltinUniforms()
 
 	if (tpmatrixneedsupdate)
 	{
-		GLint location = builtinUniforms[BUILTIN_TRANSFORM_PROJECTION_MATRIX];
+		GLint location = builtinUniforms[BUILTIN_MATRIX_TRANSFORM_PROJECTION];
 		if (location >= 0)
 		{
 			Matrix4 tp_matrix(curproj, curxform);
