@@ -335,14 +335,14 @@ public:
 	}
 
 private:
-	
+
 	GLuint vbo;
 	size_t gpuReadOffset;
 	GLenum glMode;
 	uint8 *data;
-	
+
 	BufferSync sync;
-	
+
 }; // StreamBufferPersistentMapSync
 
 love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)

@@ -28,11 +28,8 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 int luaopen_video(lua_State *L);
 
-} // opengl
 } // graphics
 } // love

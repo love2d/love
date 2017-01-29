@@ -29,8 +29,6 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Video *luax_checkvideo(lua_State *L, int idx)
 {
@@ -177,6 +175,5 @@ int luaopen_video(lua_State *L)
 	return ret;
 }
 
-} // opengl
 } // graphics
 } // love

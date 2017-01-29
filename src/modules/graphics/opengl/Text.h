@@ -18,92 +18,30 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_TEXT_H
-#define LOVE_GRAPHICS_OPENGL_TEXT_H
+#pragma once
 
 // LOVE
-#include "common/config.h"
-#include "graphics/Drawable.h"
-#include "graphics/Font.h"
-#include "graphics/Buffer.h"
+#include "graphics/Text.h"
 
 namespace love
 {
 namespace graphics
 {
-
-class Graphics;
-
 namespace opengl
 {
 
-class Text : public Drawable
+class Text final : public love::graphics::Text
 {
 public:
-
-	static love::Type type;
 
 	Text(love::graphics::Graphics *gfx, love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
-	void set(const std::vector<Font::ColoredString> &text);
-	void set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align);
-
-	int add(const std::vector<Font::ColoredString> &text, const Matrix4 &m);
-	int addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m);
-
-	void clear();
-
 	// Implements Drawable.
-	void draw(Graphics *gfx, const Matrix4 &m) override;
-
-	void setFont(love::graphics::Font *f);
-	love::graphics::Font *getFont() const;
-
-	/**
-	 * Gets the width of the currently set text.
-	 **/
-	int getWidth(int index = 0) const;
-
-	/**
-	 * Gets the height of the currently set text.
-	 **/
-	int getHeight(int index = 0) const;
-
-private:
-
-	struct TextData
-	{
-		Font::ColoredCodepoints codepoints;
-		float wrap;
-		Font::AlignMode align;
-		Font::TextInfo text_info;
-		bool use_matrix;
-		bool append_vertices;
-		Matrix4 matrix;
-	};
-
-	void uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset);
-	void regenerateVertices();
-	void addTextData(const TextData &s);
-
-	StrongRef<love::graphics::Font> font;
-	Buffer *vbo;
-	QuadIndices quadIndices;
-
-	std::vector<Font::DrawCommand> draw_commands;
-
-	std::vector<TextData> text_data;
-
-	size_t vert_offset;
-
-	// Used so we know when the font's texture cache is invalidated.
-	uint32 texture_cache_id;
+	void draw(love::graphics::Graphics *gfx, const Matrix4 &m) override;
 
 }; // Text
 
 } // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_TEXT_H

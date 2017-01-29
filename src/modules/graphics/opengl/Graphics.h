@@ -36,16 +36,12 @@
 #include "image/Image.h"
 #include "image/ImageData.h"
 
-#include "video/VideoStream.h"
-
 #include "Image.h"
 #include "SpriteBatch.h"
 #include "ParticleSystem.h"
 #include "Canvas.h"
 #include "Shader.h"
 #include "Mesh.h"
-#include "Text.h"
-#include "Video.h"
 
 namespace love
 {
@@ -86,9 +82,9 @@ public:
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage);
 	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage);
 
-	Text *newText(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
+	love::graphics::Text *newText(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {}) override;
 
-	Video *newVideo(love::video::VideoStream *stream, float pixeldensity);
+	love::graphics::Video *newVideo(love::video::VideoStream *stream, float pixeldensity) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;

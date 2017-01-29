@@ -21,38 +21,65 @@
 #pragma once
 
 // LOVE
-#include "graphics/Video.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "common/math.h"
+#include "Drawable.h"
+#include "Texture.h"
+#include "vertex.h"
+#include "video/VideoStream.h"
+#include "audio/Source.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-class Video : public love::graphics::Video, public Volatile
+class Video : public Drawable
 {
 public:
+
+	static love::Type type;
 
 	Video(love::video::VideoStream *stream, float pixeldensity = 1.0f);
 	virtual ~Video();
 
-	// Volatile
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	// Drawable
+	void draw(Graphics *gfx, const Matrix4 &m) override;
 
-	void setFilter(const Texture::Filter &f) override;
+	love::video::VideoStream *getStream();
 
-private:
+	love::audio::Source *getSource();
+	void setSource(love::audio::Source *source);
 
-	void uploadFrame(const love::video::VideoStream::Frame *frame) override;
+	int getWidth() const;
+	int getHeight() const;
+
+	int getPixelWidth() const;
+	int getPixelHeight() const;
+
+	virtual void setFilter(const Texture::Filter &f) = 0;
+	const Texture::Filter &getFilter() const;
+
+protected:
+
+	virtual void uploadFrame(const love::video::VideoStream::Frame *frame) = 0;
+
+	StrongRef<love::video::VideoStream> stream;
+
+	int width;
+	int height;
 
 	Texture::Filter filter;
 
+	Vertex vertices[4];
+
+	ptrdiff_t textureHandles[3];
+
+private:
+
+	void update();
+	StrongRef<love::audio::Source> source;
+	
 }; // Video
 
-} // opengl
 } // graphics
 } // love

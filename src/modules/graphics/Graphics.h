@@ -36,6 +36,7 @@
 #include "Quad.h"
 #include "math/Transform.h"
 #include "font/Rasterizer.h"
+#include "video/VideoStream.h"
 
 // C++
 #include <string>
@@ -49,6 +50,8 @@ class Reference;
 namespace graphics
 {
 
+class Text;
+class Video;
 class Buffer;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
@@ -317,7 +320,11 @@ public:
 
 	virtual Shader *newShader(const Shader::ShaderSource &source) = 0;
 
+	virtual Video *newVideo(love::video::VideoStream *stream, float pixeldensity) = 0;
+
 	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
+
+	virtual Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {}) = 0;
 
 	bool validateShader(bool gles, const Shader::ShaderSource &source, std::string &err);
 

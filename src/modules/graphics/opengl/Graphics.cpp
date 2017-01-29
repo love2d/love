@@ -30,6 +30,8 @@
 #include "math/MathModule.h"
 #include "window/Window.h"
 #include "Buffer.h"
+#include "Video.h"
+#include "Text.h"
 
 #include "libraries/xxHash/xxhash.h"
 
@@ -185,12 +187,12 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, con
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
 
-Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
+love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
 	return new Text(this, font, text);
 }
 
-Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
+love::graphics::Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
 {
 	return new Video(stream, pixeldensity);
 }

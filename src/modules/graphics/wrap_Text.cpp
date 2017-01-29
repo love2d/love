@@ -19,14 +19,12 @@
  **/
 
 #include "wrap_Text.h"
-#include "graphics/wrap_Font.h"
+#include "wrap_Font.h"
 #include "math/wrap_Transform.h"
 
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 Text *luax_checktext(lua_State *L, int idx)
@@ -227,6 +225,5 @@ extern "C" int luaopen_text(lua_State *L)
 	return luax_register_type(L, &Text::type, w_Text_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

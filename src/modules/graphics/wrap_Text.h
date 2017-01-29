@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_TEXT_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_TEXT_H
+#pragma once
 
 #include "Text.h"
 #include "common/runtime.h"
@@ -28,15 +27,9 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Text *luax_checktext(lua_State *L, int idx);
 extern "C" int luaopen_text(lua_State *L);
 
-} // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_TEXT_H
-
