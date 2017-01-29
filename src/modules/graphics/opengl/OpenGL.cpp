@@ -468,7 +468,7 @@ void OpenGL::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instanc
 
 void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount)
 {
-	if (count > 1)
+	if (instancecount > 1)
 		glDrawElementsInstanced(mode, count, type, indices, instancecount);
 	else
 		glDrawElements(mode, count, type, indices);
