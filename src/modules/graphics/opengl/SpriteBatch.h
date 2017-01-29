@@ -30,7 +30,7 @@ namespace graphics
 namespace opengl
 {
 
-class SpriteBatch : public love::graphics::SpriteBatch
+class SpriteBatch final : public love::graphics::SpriteBatch
 {
 public:
 

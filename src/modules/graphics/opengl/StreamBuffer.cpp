@@ -77,7 +77,7 @@ private:
 
 }; // StreamBufferClientMemory
 
-class StreamBufferSubDataOrphan : public love::graphics::StreamBuffer, public Volatile
+class StreamBufferSubDataOrphan final : public love::graphics::StreamBuffer, public Volatile
 {
 public:
 

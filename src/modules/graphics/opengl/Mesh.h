@@ -31,7 +31,7 @@ namespace graphics
 namespace opengl
 {
 
-class Mesh : public love::graphics::Mesh
+class Mesh final : public love::graphics::Mesh
 {
 public:
 

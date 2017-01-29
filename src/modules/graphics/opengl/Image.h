@@ -34,7 +34,7 @@ namespace graphics
 namespace opengl
 {
 
-class Image : public love::graphics::Image, public Volatile
+class Image final : public love::graphics::Image, public Volatile
 {
 public:
 
