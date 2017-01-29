@@ -694,6 +694,11 @@ void Graphics::draw(Texture *texture, Quad *quad, const Matrix4 &m)
 	texture->drawq(this, quad, m);
 }
 
+void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
+{
+	mesh->drawInstanced(this, m, instancecount);
+}
+
 /**
  * Primitives (points, shapes, lines).
  **/

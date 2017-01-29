@@ -24,7 +24,7 @@
 
 #include "Image.h"
 #include "Canvas.h"
-#include "graphics/wrap_Texture.h"
+#include "wrap_Texture.h"
 
 // C
 #include <cstring>
@@ -32,8 +32,6 @@
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx)
@@ -772,6 +770,5 @@ extern "C" int luaopen_particlesystem(lua_State *L)
 	return luax_register_type(L, &ParticleSystem::type, w_ParticleSystem_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

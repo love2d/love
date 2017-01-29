@@ -34,6 +34,7 @@
 #include "Font.h"
 #include "Shader.h"
 #include "Quad.h"
+#include "Mesh.h"
 #include "math/Transform.h"
 #include "font/Rasterizer.h"
 #include "video/VideoStream.h"
@@ -50,6 +51,8 @@ class Reference;
 namespace graphics
 {
 
+class SpriteBatch;
+class ParticleSystem;
 class Text;
 class Video;
 class Buffer;
@@ -314,6 +317,10 @@ public:
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 
+	virtual SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) = 0;
+
+	virtual ParticleSystem *newParticleSystem(Texture *texture, int size) = 0;
+
 	virtual Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter) = 0;
 
 	virtual Canvas *newCanvas(int width, int height, const Canvas::Settings &settings) = 0;
@@ -323,6 +330,12 @@ public:
 	virtual Video *newVideo(love::video::VideoStream *stream, float pixeldensity) = 0;
 
 	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
+
+	virtual Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
+	virtual Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
+
+	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
+	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
 
 	virtual Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {}) = 0;
 
@@ -546,6 +559,7 @@ public:
 
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
+	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
 
 	/**
 	 * Draws text at the specified coordinates

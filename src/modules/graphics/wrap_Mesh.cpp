@@ -22,17 +22,14 @@
 #include "wrap_Mesh.h"
 #include "Image.h"
 #include "Canvas.h"
-#include "graphics/wrap_Texture.h"
+#include "wrap_Texture.h"
 
 // C++
-#include <typeinfo>
 #include <algorithm>
 
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 Mesh *luax_checkmesh(lua_State *L, int idx)
@@ -570,6 +567,5 @@ extern "C" int luaopen_mesh(lua_State *L)
 	return luax_register_type(L, &Mesh::type, w_Mesh_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

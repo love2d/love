@@ -18,29 +18,18 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_MESH_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_MESH_H
+#pragma once
 
-// LOVE
-#include "common/config.h"
 #include "common/runtime.h"
-#include "Mesh.h"
+#include "SpriteBatch.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-char *luax_writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data);
-const char *luax_readAttributeData(lua_State *L, Mesh::DataType type, int components, const char *data);
+SpriteBatch *luax_checkspritebatch(lua_State *L, int idx);
+extern "C" int luaopen_spritebatch(lua_State *L);
 
-Mesh *luax_checkmesh(lua_State *L, int idx);
-extern "C" int luaopen_mesh(lua_State *L);
-
-} // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_MESH_H

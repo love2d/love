@@ -18,25 +18,23 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_PARTICLE_SYSTEM_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_PARTICLE_SYSTEM_H
+#pragma once
 
 // LOVE
+#include "common/config.h"
 #include "common/runtime.h"
-#include "ParticleSystem.h"
+#include "Mesh.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-ParticleSystem *luax_checkparticlesystem(lua_State *L, int idx);
-extern "C" int luaopen_particlesystem(lua_State *L);
+char *luax_writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data);
+const char *luax_readAttributeData(lua_State *L, Mesh::DataType type, int components, const char *data);
 
-} // opengl
+Mesh *luax_checkmesh(lua_State *L, int idx);
+extern "C" int luaopen_mesh(lua_State *L);
+
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_PARTICLE_SYSTEM_H

@@ -476,6 +476,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Font.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
+	src/modules/graphics/Image.cpp
+	src/modules/graphics/Image.h
+	src/modules/graphics/Mesh.cpp
+	src/modules/graphics/Mesh.h
 	src/modules/graphics/ParticleSystem.cpp
 	src/modules/graphics/ParticleSystem.h
 	src/modules/graphics/Polyline.cpp
@@ -484,6 +488,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Quad.h
 	src/modules/graphics/Shader.cpp
 	src/modules/graphics/Shader.h
+	src/modules/graphics/SpriteBatch.cpp
+	src/modules/graphics/SpriteBatch.h
 	src/modules/graphics/StreamBuffer.cpp
 	src/modules/graphics/StreamBuffer.h
 	src/modules/graphics/Text.cpp
@@ -500,10 +506,18 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/wrap_Canvas.h
 	src/modules/graphics/wrap_Font.cpp
 	src/modules/graphics/wrap_Font.h
+	src/modules/graphics/wrap_Image.cpp
+	src/modules/graphics/wrap_Image.h
+	src/modules/graphics/wrap_Mesh.cpp
+	src/modules/graphics/wrap_Mesh.h
+	src/modules/graphics/wrap_ParticleSystem.cpp
+	src/modules/graphics/wrap_ParticleSystem.h
 	src/modules/graphics/wrap_Quad.cpp
 	src/modules/graphics/wrap_Quad.h
 	src/modules/graphics/wrap_Shader.cpp
 	src/modules/graphics/wrap_Shader.h
+	src/modules/graphics/wrap_SpriteBatch.cpp
+	src/modules/graphics/wrap_SpriteBatch.h
 	src/modules/graphics/wrap_Texture.cpp
 	src/modules/graphics/wrap_Texture.h
 	src/modules/graphics/wrap_Text.cpp
@@ -543,14 +557,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Video.h
 	src/modules/graphics/opengl/wrap_Graphics.cpp
 	src/modules/graphics/opengl/wrap_Graphics.h
-	src/modules/graphics/opengl/wrap_Image.cpp
-	src/modules/graphics/opengl/wrap_Image.h
-	src/modules/graphics/opengl/wrap_Mesh.cpp
-	src/modules/graphics/opengl/wrap_Mesh.h
-	src/modules/graphics/opengl/wrap_ParticleSystem.cpp
-	src/modules/graphics/opengl/wrap_ParticleSystem.h
-	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
-	src/modules/graphics/opengl/wrap_SpriteBatch.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS

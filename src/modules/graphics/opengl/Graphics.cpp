@@ -118,12 +118,12 @@ graphics::Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filt
 	return new Font(r, filter);
 }
 
-SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
+love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
 {
 	return new SpriteBatch(this, texture, size, usage);
 }
 
-ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
+love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 {
 	return new ParticleSystem(this, texture, size);
 }
@@ -167,22 +167,22 @@ love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, Buffe
 	return new Buffer(size, data, type, usage, mapflags);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
 	return new Mesh(this, vertices, drawmode, usage);
 }
 
-Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
 	return new Mesh(this, vertexcount, drawmode, usage);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
@@ -496,11 +496,6 @@ void Graphics::flushStreamDraws()
 
 	streamBufferState.vertexCount = 0;
 	streamBufferState.indexCount = 0;
-}
-
-void Graphics::drawInstanced(Mesh *mesh, const love::Matrix4 &m, int instancecount)
-{
-	mesh->drawInstanced(this, m, instancecount);
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)

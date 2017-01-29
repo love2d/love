@@ -22,17 +22,12 @@
 #include "wrap_SpriteBatch.h"
 #include "Image.h"
 #include "Canvas.h"
-#include "graphics/wrap_Texture.h"
+#include "wrap_Texture.h"
 #include "math/wrap_Transform.h"
-
-// C++
-#include <typeinfo>
 
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
@@ -274,6 +269,5 @@ extern "C" int luaopen_spritebatch(lua_State *L)
 	return luax_register_type(L, &SpriteBatch::type, w_SpriteBatch_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

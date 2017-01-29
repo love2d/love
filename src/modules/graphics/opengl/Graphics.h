@@ -66,9 +66,9 @@ public:
 
 	love::graphics::Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter) override;
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
+	love::graphics::SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) override;
 
-	ParticleSystem *newParticleSystem(Texture *texture, int size);
+	love::graphics::ParticleSystem *newParticleSystem(Texture *texture, int size) override;
 
 	love::graphics::Canvas *newCanvas(int width, int height, const Canvas::Settings &settings) override;
 
@@ -76,11 +76,11 @@ public:
 
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
 
-	Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage);
-	Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage);
+	love::graphics::Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage) override;
+	love::graphics::Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage) override;
 
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage);
+	love::graphics::Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage) override;
+	love::graphics::Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage) override;
 
 	love::graphics::Text *newText(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {}) override;
 
@@ -93,8 +93,6 @@ public:
 	void setActive(bool active) override;
 
 	void flushStreamDraws() override;
-
-	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
 
 	void clear(Colorf color) override;
 	void clear(const std::vector<OptionalColorf> &colors) override;

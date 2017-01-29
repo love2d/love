@@ -651,7 +651,7 @@ int w_newSpriteBatch(lua_State *L)
 			return luaL_error(L, "Invalid usage hint: %s", usagestr);
 	}
 
-	SpriteBatch *t = nullptr;
+	love::graphics::SpriteBatch *t = nullptr;
 	luax_catchexcept(L,
 		[&](){ t = instance()->newSpriteBatch(texture, size, usage); }
 	);
@@ -667,7 +667,7 @@ int w_newParticleSystem(lua_State *L)
 
 	Texture *texture = luax_checktexture(L, 1);
 	lua_Number size = luaL_optnumber(L, 2, 1000);
-	ParticleSystem *t = 0;
+	love::graphics::ParticleSystem *t = nullptr;
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");
 
@@ -882,9 +882,9 @@ static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode
 	return def;
 }
 
-static Mesh *newStandardMesh(lua_State *L)
+static love::graphics::Mesh *newStandardMesh(lua_State *L)
 {
-	Mesh *t = nullptr;
+	love::graphics::Mesh *t = nullptr;
 
 	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 2, Mesh::DRAWMODE_FAN);
 	vertex::Usage usage = luax_optmeshusage(L, 3, vertex::USAGE_DYNAMIC);
@@ -938,9 +938,9 @@ static Mesh *newStandardMesh(lua_State *L)
 	return t;
 }
 
-static Mesh *newCustomMesh(lua_State *L)
+static love::graphics::Mesh *newCustomMesh(lua_State *L)
 {
-	Mesh *t = nullptr;
+	love::graphics::Mesh *t = nullptr;
 
 	// First argument is the vertex format, second is a table of vertices or
 	// the number of vertices.
@@ -1067,7 +1067,7 @@ int w_newMesh(lua_State *L)
 	if (arg1type != LUA_TTABLE && arg1type != LUA_TNUMBER)
 		luaL_argerror(L, 1, "table or number expected");
 
-	Mesh *t = nullptr;
+	love::graphics::Mesh *t = nullptr;
 
 	int arg2type = lua_type(L, 2);
 	if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
@@ -1671,7 +1671,7 @@ int w_draw(lua_State *L)
 
 int w_drawInstanced(lua_State *L)
 {
-	Mesh *t = luax_checkmesh(L, 1);
+	love::graphics::Mesh *t = luax_checkmesh(L, 1);
 	int instancecount = (int) luaL_checkinteger(L, 2);
 
 	if (luax_istype(L, 3, math::Transform::type))
