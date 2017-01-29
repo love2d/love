@@ -61,8 +61,8 @@ public:
 	// Implements Module.
 	const char *getName() const override;
 
-	Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings);
-	Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings);
+	love::graphics::Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings) override;
+	love::graphics::Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings) override;
 
 	love::graphics::Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter) override;
 
@@ -127,6 +127,8 @@ public:
 
 	bool isSupported(Feature feature) const override;
 	double getSystemLimit(SystemLimit limittype) const override;
+	bool isCanvasFormatSupported(PixelFormat format) const override;
+	bool isImageFormatSupported(PixelFormat format) const override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 	Stats getStats() const override;

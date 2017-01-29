@@ -35,6 +35,7 @@
 #include "Shader.h"
 #include "Quad.h"
 #include "Mesh.h"
+#include "Image.h"
 #include "math/Transform.h"
 #include "font/Rasterizer.h"
 #include "video/VideoStream.h"
@@ -314,6 +315,9 @@ public:
 
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
+
+	virtual Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings) = 0;
+	virtual Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 
@@ -662,6 +666,13 @@ public:
 	 * Gets the system-dependent numeric limit for the specified parameter.
 	 **/
 	virtual double getSystemLimit(SystemLimit limittype) const = 0;
+
+	/**
+	 * Gets whether the specified pixel format is supported by Canvases or
+	 * Images.
+	 **/
+	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
+	virtual bool isImageFormatSupported(PixelFormat format) const = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.

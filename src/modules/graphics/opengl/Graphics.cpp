@@ -103,12 +103,12 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
+love::graphics::Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
 {
 	return new Image(data, settings);
 }
 
-Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings)
+love::graphics::Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings)
 {
 	return new Image(cdata, settings);
 }
@@ -1500,6 +1500,16 @@ bool Graphics::isSupported(Feature feature) const
 	default:
 		return false;
 	}
+}
+
+bool Graphics::isCanvasFormatSupported(PixelFormat format) const
+{
+	return Canvas::isFormatSupported(format);
+}
+
+bool Graphics::isImageFormatSupported(PixelFormat format) const
+{
+	return Image::isFormatSupported(format);
 }
 
 Shader::Language Graphics::getShaderLanguageTarget() const

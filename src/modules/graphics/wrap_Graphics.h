@@ -18,34 +18,28 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
+#pragma once
 
 // LOVE
 #include "common/config.h"
-#include "graphics/wrap_Font.h"
-#include "graphics/wrap_Image.h"
-#include "graphics/wrap_Quad.h"
-#include "graphics/wrap_SpriteBatch.h"
-#include "graphics/wrap_ParticleSystem.h"
-#include "graphics/wrap_Canvas.h"
-#include "graphics/wrap_Shader.h"
-#include "graphics/wrap_Mesh.h"
-#include "graphics/wrap_Text.h"
-#include "graphics/wrap_Video.h"
+#include "wrap_Font.h"
+#include "wrap_Image.h"
+#include "wrap_Quad.h"
+#include "wrap_SpriteBatch.h"
+#include "wrap_ParticleSystem.h"
+#include "wrap_Canvas.h"
+#include "wrap_Shader.h"
+#include "wrap_Mesh.h"
+#include "wrap_Text.h"
+#include "wrap_Video.h"
 #include "Graphics.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
 
-} // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H

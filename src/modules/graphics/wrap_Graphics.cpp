@@ -18,8 +18,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
 #include "wrap_Graphics.h"
-#include "graphics/Texture.h"
+#include "Texture.h"
 #include "image/ImageData.h"
 #include "image/Image.h"
 #include "font/Rasterizer.h"
@@ -28,6 +29,10 @@
 #include "image/wrap_Image.h"
 #include "common/Reference.h"
 #include "math/wrap_Transform.h"
+
+#ifdef LOVE_ENABLE_GRAPHICS_OPENGL
+#include "opengl/Graphics.h"
+#endif
 
 #include <cassert>
 #include <cstring>
@@ -43,8 +48,6 @@ static const char graphics_lua[] =
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 #define instance() (Module::getInstance<Graphics>(Module::M_GRAPHICS))
@@ -213,7 +216,7 @@ int w_setCanvas(lua_State *L)
 	}
 
 	bool is_table = lua_istable(L, 1);
-	std::vector<love::graphics::Canvas *> canvases;
+	std::vector<Canvas *> canvases;
 
 	if (is_table)
 	{
@@ -242,10 +245,10 @@ int w_setCanvas(lua_State *L)
 
 int w_getCanvas(lua_State *L)
 {
-	const std::vector<love::graphics::Canvas *> canvases = instance()->getCanvas();
+	const std::vector<Canvas *> canvases = instance()->getCanvas();
 	int n = 0;
 
-	for (love::graphics::Canvas *c : canvases)
+	for (Canvas *c : canvases)
 	{
 		luax_pushtype(L, c);
 		n++;
@@ -629,7 +632,7 @@ int w_newImageFont(lua_State *L)
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	// Create the font.
-	love::graphics::Font *font = instance()->newFont(rasterizer, filter);
+	Font *font = instance()->newFont(rasterizer, filter);
 
 	// Push the type.
 	luax_pushtype(L, font);
@@ -651,7 +654,7 @@ int w_newSpriteBatch(lua_State *L)
 			return luaL_error(L, "Invalid usage hint: %s", usagestr);
 	}
 
-	love::graphics::SpriteBatch *t = nullptr;
+	SpriteBatch *t = nullptr;
 	luax_catchexcept(L,
 		[&](){ t = instance()->newSpriteBatch(texture, size, usage); }
 	);
@@ -667,7 +670,7 @@ int w_newParticleSystem(lua_State *L)
 
 	Texture *texture = luax_checktexture(L, 1);
 	lua_Number size = luaL_optnumber(L, 2, 1000);
-	love::graphics::ParticleSystem *t = nullptr;
+	ParticleSystem *t = nullptr;
 	if (size < 1.0 || size > ParticleSystem::MAX_PARTICLES)
 		return luaL_error(L, "Invalid ParticleSystem size");
 
@@ -708,7 +711,7 @@ int w_newCanvas(lua_State *L)
 		settings.msaa = luax_intflag(L, 3, "msaa", settings.msaa);
 	}
 
-	love::graphics::Canvas *canvas = nullptr;
+	Canvas *canvas = nullptr;
 	luax_catchexcept(L, [&](){ canvas = instance()->newCanvas(width, height, settings); });
 
 	if (canvas == nullptr)
@@ -820,7 +823,7 @@ int w_newShader(lua_State *L)
 	bool should_error = false;
 	try
 	{
-		love::graphics::Shader *shader = instance()->newShader(source);
+		Shader *shader = instance()->newShader(source);
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -882,9 +885,9 @@ static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode
 	return def;
 }
 
-static love::graphics::Mesh *newStandardMesh(lua_State *L)
+static Mesh *newStandardMesh(lua_State *L)
 {
-	love::graphics::Mesh *t = nullptr;
+	Mesh *t = nullptr;
 
 	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 2, Mesh::DRAWMODE_FAN);
 	vertex::Usage usage = luax_optmeshusage(L, 3, vertex::USAGE_DYNAMIC);
@@ -938,9 +941,9 @@ static love::graphics::Mesh *newStandardMesh(lua_State *L)
 	return t;
 }
 
-static love::graphics::Mesh *newCustomMesh(lua_State *L)
+static Mesh *newCustomMesh(lua_State *L)
 {
-	love::graphics::Mesh *t = nullptr;
+	Mesh *t = nullptr;
 
 	// First argument is the vertex format, second is a table of vertices or
 	// the number of vertices.
@@ -1067,7 +1070,7 @@ int w_newMesh(lua_State *L)
 	if (arg1type != LUA_TTABLE && arg1type != LUA_TNUMBER)
 		luaL_argerror(L, 1, "table or number expected");
 
-	love::graphics::Mesh *t = nullptr;
+	Mesh *t = nullptr;
 
 	int arg2type = lua_type(L, 2);
 	if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
@@ -1195,21 +1198,21 @@ int w_getBackgroundColor(lua_State *L)
 int w_setNewFont(lua_State *L)
 {
 	int ret = w_newFont(L);
-	love::graphics::Font *font = luax_checktype<love::graphics::Font>(L, -1);
+	Font *font = luax_checktype<Font>(L, -1);
 	instance()->setFont(font);
 	return ret;
 }
 
 int w_setFont(lua_State *L)
 {
-	love::graphics::Font *font = luax_checktype<love::graphics::Font>(L, 1);
+	Font *font = luax_checktype<Font>(L, 1);
 	instance()->setFont(font);
 	return 0;
 }
 
 int w_getFont(lua_State *L)
 {
-	love::graphics::Font *f = nullptr;
+	Font *f = nullptr;
 	luax_catchexcept(L, [&](){ f = instance()->getFont(); });
 
 	luax_pushtype(L, f);
@@ -1445,14 +1448,14 @@ int w_setShader(lua_State *L)
 		return 0;
 	}
 
-	love::graphics::Shader *shader = luax_checkshader(L, 1);
+	Shader *shader = luax_checkshader(L, 1);
 	instance()->setShader(shader);
 	return 0;
 }
 
 int w_getShader(lua_State *L)
 {
-	love::graphics::Shader *shader = instance()->getShader();
+	Shader *shader = instance()->getShader();
 	if (shader)
 		luax_pushtype(L, shader);
 	else
@@ -1537,17 +1540,27 @@ static int w__getFormats(lua_State *L, bool (*isFormatSupported)(PixelFormat), b
 
 int w_getCanvasFormats(lua_State *L)
 {
-	return w__getFormats(L, Canvas::isFormatSupported, isPixelFormatCompressed);
+	const auto supported = [](PixelFormat format) -> bool
+	{
+		return instance()->isCanvasFormatSupported(format);
+	};
+
+	return w__getFormats(L, supported, isPixelFormatCompressed);
 }
 
 int w_getImageFormats(lua_State *L)
 {
-	const auto ignore = [](PixelFormat format)
+	const auto supported = [](PixelFormat format) -> bool
+	{
+		return instance()->isImageFormatSupported(format);
+	};
+
+	const auto ignore = [](PixelFormat format) -> bool
 	{
 		return !(image::ImageData::validPixelFormat(format) || isPixelFormatCompressed(format));
 	};
 
-	return w__getFormats(L, Image::isFormatSupported, ignore);
+	return w__getFormats(L, supported, ignore);
 }
 
 int w_getRendererInfo(lua_State *L)
@@ -1671,7 +1684,7 @@ int w_draw(lua_State *L)
 
 int w_drawInstanced(lua_State *L)
 {
-	love::graphics::Mesh *t = luax_checkmesh(L, 1);
+	Mesh *t = luax_checkmesh(L, 1);
 	int instancecount = (int) luaL_checkinteger(L, 2);
 
 	if (luax_istype(L, 3, math::Transform::type))
@@ -2301,7 +2314,11 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 	Graphics *instance = instance();
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new Graphics(); });
+#ifdef LOVE_ENABLE_GRAPHICS_OPENGL
+		luax_catchexcept(L, [&](){ instance = new love::graphics::opengl::Graphics(); });
+#else
+		return luaL_error(L, "LOVE was compiled without any love.graphics backend!");
+#endif
 	}
 	else
 		instance->retain();
@@ -2323,6 +2340,5 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 	return n;
 }
 
-} // opengl
 } // graphics
 } // love
