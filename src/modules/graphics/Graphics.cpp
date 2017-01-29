@@ -708,8 +708,7 @@ void Graphics::points(const float *coords, const Colorf *colors, size_t numpoint
 	StreamDrawRequest req;
 	req.primitiveMode = vertex::PrimitiveMode::POINTS;
 	req.formats[0] = vertex::CommonFormat::XYf;
-	if (colors)
-		req.formats[1] = vertex::CommonFormat::RGBAub;
+	req.formats[1] = vertex::CommonFormat::RGBAub;
 	req.vertexCount = (int) numpoints;
 
 	StreamVertexData data = requestStreamDraw(req);
