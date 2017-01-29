@@ -22,6 +22,8 @@
 #include "graphics/Graphics.h"
 #include "OpenGL.h"
 
+#include <algorithm>
+
 namespace love
 {
 namespace graphics

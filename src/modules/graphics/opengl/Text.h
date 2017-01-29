@@ -21,6 +21,7 @@
 #pragma once
 
 // LOVE
+#include "common/config.h"
 #include "graphics/Text.h"
 
 namespace love
