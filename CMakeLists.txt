@@ -486,10 +486,14 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Shader.h
 	src/modules/graphics/StreamBuffer.cpp
 	src/modules/graphics/StreamBuffer.h
+	src/modules/graphics/Text.cpp
+	src/modules/graphics/Text.h
 	src/modules/graphics/Texture.cpp
 	src/modules/graphics/Texture.h
 	src/modules/graphics/vertex.cpp
 	src/modules/graphics/vertex.h
+	src/modules/graphics/Video.cpp
+	src/modules/graphics/Video.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
 	src/modules/graphics/wrap_Canvas.cpp
@@ -502,6 +506,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/wrap_Shader.h
 	src/modules/graphics/wrap_Texture.cpp
 	src/modules/graphics/wrap_Texture.h
+	src/modules/graphics/wrap_Text.cpp
+	src/modules/graphics/wrap_Text.h
+	src/modules/graphics/wrap_Video.cpp
+	src/modules/graphics/wrap_Video.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
@@ -543,10 +551,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/wrap_ParticleSystem.h
 	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
 	src/modules/graphics/opengl/wrap_SpriteBatch.h
-	src/modules/graphics/opengl/wrap_Text.cpp
-	src/modules/graphics/opengl/wrap_Text.h
-	src/modules/graphics/opengl/wrap_Video.cpp
-	src/modules/graphics/opengl/wrap_Video.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
