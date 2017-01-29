@@ -43,10 +43,6 @@ namespace graphics
 namespace opengl
 {
 
-love::Type Image::type("Image", &Texture::type);
-
-int Image::imageCount = 0;
-
 float Image::maxMipmapSharpness = 0.0f;
 
 static int getMipmapCount(int basewidth, int baseheight)
@@ -92,10 +88,10 @@ static bool verifyMipmapLevels(const std::vector<T> &miplevels)
 }
 
 Image::Image(const std::vector<love::image::ImageData *> &imagedata, const Settings &settings)
-	: texture(0)
+	: love::graphics::Image(settings)
+	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(false)
-	, settings(settings)
 	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
@@ -119,15 +115,13 @@ Image::Image(const std::vector<love::image::ImageData *> &imagedata, const Setti
 
 	preload();
 	loadVolatile();
-
-	++imageCount;
 }
 
 Image::Image(const std::vector<love::image::CompressedImageData *> &compresseddata, const Settings &settings)
-	: texture(0)
+	: love::graphics::Image(settings)
+	, texture(0)
 	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(true)
-	, settings(settings)
 	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
@@ -159,14 +153,11 @@ Image::Image(const std::vector<love::image::CompressedImageData *> &compressedda
 
 	preload();
 	loadVolatile();
-
-	++imageCount;
 }
 
 Image::~Image()
 {
 	unloadVolatile();
-	--imageCount;
 }
 
 void Image::preload()
@@ -545,11 +536,6 @@ float Image::getMipmapSharpness() const
 	return mipmapSharpness;
 }
 
-const Image::Settings &Image::getFlags() const
-{
-	return settings;
-}
-
 bool Image::isCompressed() const
 {
 	return compressed;
@@ -564,25 +550,6 @@ bool Image::hasSRGBSupport()
 {
 	return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
 }
-
-bool Image::getConstant(const char *in, SettingType &out)
-{
-	return settingTypes.find(in, out);
-}
-
-bool Image::getConstant(SettingType in, const char *&out)
-{
-	return settingTypes.find(in, out);
-}
-
-StringMap<Image::SettingType, Image::SETTING_MAX_ENUM>::Entry Image::settingTypeEntries[] =
-{
-	{ "mipmaps",      SETTING_MIPMAPS      },
-	{ "linear",       SETTING_LINEAR       },
-	{ "pixeldensity", SETTING_PIXELDENSITY },
-};
-
-StringMap<Image::SettingType, Image::SETTING_MAX_ENUM> Image::settingTypes(Image::settingTypeEntries, sizeof(Image::settingTypeEntries));
 
 } // opengl
 } // graphics

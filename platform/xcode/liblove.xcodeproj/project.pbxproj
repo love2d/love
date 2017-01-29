@@ -459,9 +459,6 @@
 		FA0B7D5E1A95902C000E1D17 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */; };
 		FA0B7D5F1A95902C000E1D17 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */; };
 		FA0B7D601A95902C000E1D17 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BAB1A95902C000E1D17 /* wrap_Graphics.h */; };
-		FA0B7D611A95902C000E1D17 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAC1A95902C000E1D17 /* wrap_Image.cpp */; };
-		FA0B7D621A95902C000E1D17 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAC1A95902C000E1D17 /* wrap_Image.cpp */; };
-		FA0B7D631A95902C000E1D17 /* wrap_Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BAD1A95902C000E1D17 /* wrap_Image.h */; };
 		FA0B7D641A95902C000E1D17 /* wrap_Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAE1A95902C000E1D17 /* wrap_Mesh.cpp */; };
 		FA0B7D651A95902C000E1D17 /* wrap_Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BAE1A95902C000E1D17 /* wrap_Mesh.cpp */; };
 		FA0B7D661A95902C000E1D17 /* wrap_Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BAF1A95902C000E1D17 /* wrap_Mesh.h */; };
@@ -1021,6 +1018,12 @@
 		FADF540E1E3D7CDD00012CC0 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */; };
 		FADF540F1E3D7CDD00012CC0 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF540B1E3D7CDD00012CC0 /* wrap_Video.h */; };
 		FADF54101E3D7CDD00012CC0 /* wrap_Video.lua in Resources */ = {isa = PBXBuildFile; fileRef = FADF540C1E3D7CDD00012CC0 /* wrap_Video.lua */; };
+		FADF54161E3DA08E00012CC0 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54141E3DA08E00012CC0 /* Image.cpp */; };
+		FADF54171E3DA08E00012CC0 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54141E3DA08E00012CC0 /* Image.cpp */; };
+		FADF54181E3DA08E00012CC0 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54151E3DA08E00012CC0 /* Image.h */; };
+		FADF541B1E3DA46C00012CC0 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54191E3DA46C00012CC0 /* wrap_Image.cpp */; };
+		FADF541C1E3DA46C00012CC0 /* wrap_Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54191E3DA46C00012CC0 /* wrap_Image.cpp */; };
+		FADF541D1E3DA46C00012CC0 /* wrap_Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF541A1E3DA46C00012CC0 /* wrap_Image.h */; };
 		FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE272511C05A15B00A67640 /* ParticleSystem.h */; };
 		FAF140531E20934C00F898D2 /* CodeGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF13FC21E20934C00F898D2 /* CodeGen.cpp */; };
@@ -1464,8 +1467,6 @@
 		FA0B7BA51A95902C000E1D17 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Graphics.cpp; sourceTree = "<group>"; };
 		FA0B7BAB1A95902C000E1D17 /* wrap_Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Graphics.h; sourceTree = "<group>"; };
-		FA0B7BAC1A95902C000E1D17 /* wrap_Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Image.cpp; sourceTree = "<group>"; };
-		FA0B7BAD1A95902C000E1D17 /* wrap_Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Image.h; sourceTree = "<group>"; };
 		FA0B7BAE1A95902C000E1D17 /* wrap_Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Mesh.cpp; sourceTree = "<group>"; };
 		FA0B7BAF1A95902C000E1D17 /* wrap_Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Mesh.h; sourceTree = "<group>"; };
 		FA0B7BB01A95902C000E1D17 /* wrap_ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ParticleSystem.cpp; sourceTree = "<group>"; };
@@ -1849,6 +1850,10 @@
 		FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Video.cpp; sourceTree = "<group>"; };
 		FADF540B1E3D7CDD00012CC0 /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FADF540C1E3D7CDD00012CC0 /* wrap_Video.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Video.lua; sourceTree = "<group>"; };
+		FADF54141E3DA08E00012CC0 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
+		FADF54151E3DA08E00012CC0 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
+		FADF54191E3DA46C00012CC0 /* wrap_Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Image.cpp; sourceTree = "<group>"; };
+		FADF541A1E3DA46C00012CC0 /* wrap_Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Image.h; sourceTree = "<group>"; };
 		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		FAF13FC21E20934C00F898D2 /* CodeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGen.cpp; sourceTree = "<group>"; };
@@ -2642,6 +2647,8 @@
 				FA1BA09C1E16CFCE00AA2803 /* Font.h */,
 				FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B8B1A95902C000E1D17 /* Graphics.h */,
+				FADF54141E3DA08E00012CC0 /* Image.cpp */,
+				FADF54151E3DA08E00012CC0 /* Image.h */,
 				FA0B7B8C1A95902C000E1D17 /* opengl */,
 				FAE272501C05A15B00A67640 /* ParticleSystem.cpp */,
 				FAE272511C05A15B00A67640 /* ParticleSystem.h */,
@@ -2667,6 +2674,8 @@
 				FA1BA0AB1E16F9EE00AA2803 /* wrap_Canvas.h */,
 				FA1BA0A01E16D97500AA2803 /* wrap_Font.cpp */,
 				FA1BA0A11E16D97500AA2803 /* wrap_Font.h */,
+				FADF54191E3DA46C00012CC0 /* wrap_Image.cpp */,
+				FADF541A1E3DA46C00012CC0 /* wrap_Image.h */,
 				FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */,
 				FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */,
 				FA1BA0B51E17043400AA2803 /* wrap_Shader.cpp */,
@@ -2716,8 +2725,6 @@
 				FA0B7BAA1A95902C000E1D17 /* wrap_Graphics.cpp */,
 				FA0B7BAB1A95902C000E1D17 /* wrap_Graphics.h */,
 				FA6AE6041B3335EC00583D5C /* wrap_Graphics.lua */,
-				FA0B7BAC1A95902C000E1D17 /* wrap_Image.cpp */,
-				FA0B7BAD1A95902C000E1D17 /* wrap_Image.h */,
 				FA0B7BAE1A95902C000E1D17 /* wrap_Mesh.cpp */,
 				FA0B7BAF1A95902C000E1D17 /* wrap_Mesh.h */,
 				FA0B7BB01A95902C000E1D17 /* wrap_ParticleSystem.cpp */,
@@ -3643,6 +3650,7 @@
 				FAB17BE81ABFAA9000F9BA27 /* lz4.h in Headers */,
 				FA0B7E6B1A95902C000E1D17 /* wrap_PulleyJoint.h in Headers */,
 				FA0B7E051A95902C000E1D17 /* Contact.h in Headers */,
+				FADF541D1E3DA46C00012CC0 /* wrap_Image.h in Headers */,
 				FA1BA0A91E16F20600AA2803 /* Canvas.h in Headers */,
 				FA0B7A691A958EA3000E1D17 /* b2Island.h in Headers */,
 				FA4F2BE41DE6650600CA37D7 /* Transform.h in Headers */,
@@ -3671,7 +3679,6 @@
 				FA0B7E7A1A95902C000E1D17 /* wrap_WheelJoint.h in Headers */,
 				FA0B7A791A958EA3000E1D17 /* b2CircleContact.h in Headers */,
 				FA0B7DD81A95902C000E1D17 /* MathModule.h in Headers */,
-				FA0B7D631A95902C000E1D17 /* wrap_Image.h in Headers */,
 				FA0B7A341A958EA3000E1D17 /* b2Collision.h in Headers */,
 				217DFBDA1D9F6D490055D849 /* auxiliar.h in Headers */,
 				FA0B7EC71A95902C000E1D17 /* ThreadModule.h in Headers */,
@@ -3720,6 +3727,7 @@
 				FA0B7A601A958EA3000E1D17 /* b2Body.h in Headers */,
 				FA0B7EAB1A95902C000E1D17 /* wrap_Sound.h in Headers */,
 				FA0B7B2C1A958EA3000E1D17 /* checked.h in Headers */,
+				FADF54181E3DA08E00012CC0 /* Image.h in Headers */,
 				FA0B7D2A1A95902C000E1D17 /* wrap_GlyphData.h in Headers */,
 				FA0B7E741A95902C000E1D17 /* wrap_Shape.h in Headers */,
 				FA0B7A5D1A958EA3000E1D17 /* b2Timer.h in Headers */,
@@ -3994,6 +4002,7 @@
 				FA0B7ECC1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
 				FA0B7E6D1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7A5F1A958EA3000E1D17 /* b2Body.cpp in Sources */,
+				FADF541C1E3DA46C00012CC0 /* wrap_Image.cpp in Sources */,
 				FA0B7E641A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
 				FA4F2C031DE936C200CA37D7 /* auxiliar.c in Sources */,
 				FA0B7E731A95902C000E1D17 /* wrap_Shape.cpp in Sources */,
@@ -4188,7 +4197,6 @@
 				FA0B7D8E1A95902C000E1D17 /* ddsHandler.cpp in Sources */,
 				FA0B7DFE1A95902C000E1D17 /* ChainShape.cpp in Sources */,
 				FA0B7A451A958EA3000E1D17 /* b2EdgeShape.cpp in Sources */,
-				FA0B7D621A95902C000E1D17 /* wrap_Image.cpp in Sources */,
 				FAF1406D1E20934C00F898D2 /* InfoSink.cpp in Sources */,
 				FAF1407B1E20934C00F898D2 /* limits.cpp in Sources */,
 				FA0B7ABB1A958EA3000E1D17 /* callbacks.c in Sources */,
@@ -4282,6 +4290,7 @@
 				FA0B7EAD1A95902C000E1D17 /* wrap_SoundData.cpp in Sources */,
 				FA0B7E2E1A95902C000E1D17 /* RopeJoint.cpp in Sources */,
 				FA0B7CE01A95902C000E1D17 /* Source.cpp in Sources */,
+				FADF54171E3DA08E00012CC0 /* Image.cpp in Sources */,
 				FA0B7ECF1A95902C000E1D17 /* wrap_LuaThread.cpp in Sources */,
 				FA1BA0A81E16F20600AA2803 /* Canvas.cpp in Sources */,
 				FA0B7AA51A958EA3000E1D17 /* b2RevoluteJoint.cpp in Sources */,
@@ -4350,6 +4359,7 @@
 				FA0B7E6C1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7A5E1A958EA3000E1D17 /* b2Body.cpp in Sources */,
 				FA0B7E631A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
+				FADF541B1E3DA46C00012CC0 /* wrap_Image.cpp in Sources */,
 				FA0B7E721A95902C000E1D17 /* wrap_Shape.cpp in Sources */,
 				FA0B7CFD1A95902C000E1D17 /* File.cpp in Sources */,
 				FA4F2BB01DE1E37B00CA37D7 /* RecordingDevice.cpp in Sources */,
@@ -4537,7 +4547,6 @@
 				FA0B7D8D1A95902C000E1D17 /* ddsHandler.cpp in Sources */,
 				FA0B7DFD1A95902C000E1D17 /* ChainShape.cpp in Sources */,
 				FA0B79201A958E3B000E1D17 /* delay.cpp in Sources */,
-				FA0B7D611A95902C000E1D17 /* wrap_Image.cpp in Sources */,
 				FA0B7A4B1A958EA3000E1D17 /* b2BlockAllocator.cpp in Sources */,
 				FA0B7A551A958EA3000E1D17 /* b2Settings.cpp in Sources */,
 				FA0B7EA91A95902C000E1D17 /* wrap_Sound.cpp in Sources */,
@@ -4638,6 +4647,7 @@
 				FA4F2BE31DE6650600CA37D7 /* Transform.cpp in Sources */,
 				FA0B7EA01A95902C000E1D17 /* Sound.cpp in Sources */,
 				FA0B7DE51A95902C000E1D17 /* Cursor.cpp in Sources */,
+				FADF54161E3DA08E00012CC0 /* Image.cpp in Sources */,
 				FA0B7EDB1A95902D000E1D17 /* Touch.cpp in Sources */,
 				FA1BA0A71E16F20600AA2803 /* Canvas.cpp in Sources */,
 				FA0B7CE81A95902C000E1D17 /* Event.cpp in Sources */,

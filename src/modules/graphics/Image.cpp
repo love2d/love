@@ -18,34 +18,51 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H
-
-// LOVE
-#include "common/config.h"
-#include "graphics/wrap_Font.h"
-#include "graphics/wrap_Image.h"
-#include "graphics/wrap_Quad.h"
-#include "wrap_SpriteBatch.h"
-#include "wrap_ParticleSystem.h"
-#include "graphics/wrap_Canvas.h"
-#include "graphics/wrap_Shader.h"
-#include "wrap_Mesh.h"
-#include "graphics/wrap_Text.h"
-#include "graphics/wrap_Video.h"
-#include "Graphics.h"
+#include "Image.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+
+love::Type Image::type("Image", &Texture::type);
+
+int Image::imageCount = 0;
+
+Image::Image(const Settings &settings)
+	: settings(settings)
 {
+	++imageCount;
+}
 
-extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
+Image::~Image()
+{
+	--imageCount;
+}
 
-} // opengl
+const Image::Settings &Image::getFlags() const
+{
+	return settings;
+}
+
+bool Image::getConstant(const char *in, SettingType &out)
+{
+	return settingTypes.find(in, out);
+}
+
+bool Image::getConstant(SettingType in, const char *&out)
+{
+	return settingTypes.find(in, out);
+}
+
+StringMap<Image::SettingType, Image::SETTING_MAX_ENUM>::Entry Image::settingTypeEntries[] =
+{
+	{ "mipmaps",      SETTING_MIPMAPS      },
+	{ "linear",       SETTING_LINEAR       },
+	{ "pixeldensity", SETTING_PIXELDENSITY },
+};
+
+StringMap<Image::SettingType, Image::SETTING_MAX_ENUM> Image::settingTypes(Image::settingTypeEntries, sizeof(Image::settingTypeEntries));
+
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_GRAPHICS_H

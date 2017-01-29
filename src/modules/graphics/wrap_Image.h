@@ -18,27 +18,21 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_WRAP_IMAGE_H
-#define LOVE_GRAPHICS_OPENGL_WRAP_IMAGE_H
+#pragma once
 
 // LOVE
 #include "common/runtime.h"
 #include "Image.h"
-#include "graphics/wrap_Texture.h"
+#include "wrap_Texture.h"
 
 namespace love
 {
 namespace graphics
-{
-namespace opengl
 {
 
 const char *luax_imageSettingName(Image::SettingType settingtype);
 Image *luax_checkimage(lua_State *L, int idx);
 extern "C" int luaopen_image(lua_State *L);
 
-} // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_WRAP_IMAGE_H

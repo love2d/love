@@ -25,8 +25,6 @@ namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
 Image *luax_checkimage(lua_State *L, int idx)
 {
@@ -156,6 +154,5 @@ extern "C" int luaopen_image(lua_State *L)
 	return luax_register_type(L, &Image::type, w_Texture_functions, w_Image_functions, nullptr);
 }
 
-} // opengl
 } // graphics
 } // love

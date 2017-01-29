@@ -18,18 +18,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_IMAGE_H
-#define LOVE_GRAPHICS_OPENGL_IMAGE_H
+#pragma once
 
 // LOVE
-#include "common/config.h"
-#include "common/Matrix.h"
-#include "common/Vector.h"
-#include "common/StringMap.h"
-#include "common/math.h"
-#include "image/ImageData.h"
-#include "image/CompressedImageData.h"
-#include "graphics/Texture.h"
+#include "graphics/Image.h"
 #include "graphics/Volatile.h"
 
 // OpenGL
@@ -42,48 +34,11 @@ namespace graphics
 namespace opengl
 {
 
-/**
- * A drawable image based on OpenGL-textures. This class takes ImageData
- * objects and create textures on the GPU for fast drawing.
- *
- * @author Anders Ruud
- **/
-class Image : public Texture, public Volatile
+class Image : public love::graphics::Image, public Volatile
 {
 public:
 
-	static love::Type type;
-
-	enum SettingType
-	{
-		SETTING_MIPMAPS,
-		SETTING_LINEAR,
-		SETTING_PIXELDENSITY,
-		SETTING_MAX_ENUM
-	};
-
-	struct Settings
-	{
-		bool mipmaps = false;
-		bool linear = false;
-		float pixeldensity = 1.0f;
-	};
-
-	/**
-	 * Creates a new Image. Not that anything is ready to use
-	 * before load is called.
-	 *
-	 * @param data The data from which to load the image. Each element in the
-	 * array is a mipmap level. If more than the base level is present, all
-	 * mip levels must be present.
-	 **/
 	Image(const std::vector<love::image::ImageData *> &data, const Settings &settings);
-
-	/**
-	 * Creates a new Image with compressed image data.
-	 *
-	 * @param cdata The compressed data from which to load the image.
-	 **/
 	Image(const std::vector<love::image::CompressedImageData *> &cdata, const Settings &settings);
 
 	virtual ~Image();
@@ -94,35 +49,22 @@ public:
 
 	ptrdiff_t getHandle() const override;
 
-	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const;
-	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const;
+	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const override;
+	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const override;
 
 	void setFilter(const Texture::Filter &f) override;
 	bool setWrap(const Texture::Wrap &w) override;
 
-	void setMipmapSharpness(float sharpness);
-	float getMipmapSharpness() const;
-
-	/**
-	 * Whether this Image is using a compressed texture (via CompressedImageData).
-	 **/
-	bool isCompressed() const;
-
-	/**
-	 * Re-uploads the ImageData or CompressedImageData associated with this Image to
-	 * the GPU.
-	 **/
-	bool refresh(int xoffset, int yoffset, int w, int h);
-
-	const Settings &getFlags() const;
+	void setMipmapSharpness(float sharpness) override;
+	float getMipmapSharpness() const override;
+	bool isCompressed() const override;
+	bool refresh(int xoffset, int yoffset, int w, int h) override;
 
 	static bool isFormatSupported(PixelFormat pixelformat);
 	static bool hasSRGBSupport();
 
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
-
-	static int imageCount;
 
 private:
 
@@ -151,9 +93,6 @@ private:
 	// Whether this Image is using a compressed texture.
 	bool compressed;
 
-	// The settings used to initialize this Image.
-	Settings settings;
-
 	bool sRGB;
 
 	// True if the image wasn't able to be properly created and it had to fall
@@ -164,13 +103,8 @@ private:
 
 	static float maxMipmapSharpness;
 
-	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
-	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;
-
 }; // Image
 
 } // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_IMAGE_H
