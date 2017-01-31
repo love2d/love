@@ -47,6 +47,11 @@ Released: N/A
   * Changed enet to no longer set the 'enet' global, again matching luasocket.
   * Changed Source seeking behaviour, all kinds of Sources now behave similarly when seeking past the boundaries.
 
+  * Fixed Joystick:getGamepadMapping to work with xinput controllers.
+
+  * Improved performance when drawing textures, shapes, lines, and points by automatically batching their draw calls together when possible.
+  * Improved performance of Shader:send when the Shader is not active.
+
   * Renamed love.window.getPixelScale to love.window.getPixelDensity.
 
   * Removed the default source type for love.audio.newSource.
@@ -60,9 +65,6 @@ Released: N/A
     * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
     * Removed love.window.isCreated (use love.window.isOpen instead).
 
-  * Improved performance when drawing textures, shapes, lines, and points by automatically batching their draw calls together when possible.
-  * Improved performance of Shader:send when the Shader is not active.
-
   * Updated Source:seek to work if the Source isn't playing.
   * Updated love.math.random to have improved numeric distribution.
   * Updated love.graphics to support Core Profile OpenGL 3.3+ when available.
@@ -70,8 +72,6 @@ Released: N/A
   * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
   * Updated love.graphics.newImage to treat file names ending with "@2x", "@3x", etc. as a pixel density scale factor if none is explicitly supplied.
   * Updated luasocket to version 3.0rc1.
-
-  * Fixed Joystick:getGamepadMapping to work with xinput controllers.
 
 LOVE 0.10.3 [Super Toast]
 -------------------------
