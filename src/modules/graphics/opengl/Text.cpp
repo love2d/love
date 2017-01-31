@@ -65,7 +65,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	const size_t color_offset = offsetof(Font::GlyphVertex, color.r);
 	const size_t stride = sizeof(Font::GlyphVertex);
 
-	const GLenum gltype = quadIndices.getType();
+	const GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());
 	const size_t elemsize = quadIndices.getElementSize();
 
 	Graphics::TempTransform transform(gfx, m);

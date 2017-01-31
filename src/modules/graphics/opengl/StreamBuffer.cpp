@@ -111,6 +111,7 @@ public:
 		if (offset + minsize > bufferSize)
 		{
 			offset = 0;
+			gl.bindBuffer(mode, vbo);
 			glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 		}
 
