@@ -1,3 +1,19 @@
+LOVE 0.10.3 [Super Toast]
+-------------------------
+
+Released: N/A
+
+  * Added RopeJoint:setMaxLength.
+
+  * Fixed Shader:send and Shader:sendColor ignoring the last argument for an array.
+  * Fixed a crash when love.graphics.pop is called after a love.window.setMode while the transformation stack was not empty.
+  * Fixed BezierCurves to error instead of hanging in some situations.
+
+  * Improved command line argument handling.
+
+  * Updated the default error handler to allow copying the error to the clipboard when the user decides to do so.
+  * Updated love.filesystem.setRequirePath to support multiple template '?' characters in each path.
+
 LOVE 0.10.2 [Super Toast]
 -------------------------
 
