@@ -1,5 +1,6 @@
-\./libraries/luasocket/libluasocket/wsocket\.*
-\./modules/sound/lullaby/FLACDecoder\.*
+\./libraries/luasocket/libluasocket/wsocket.*
+\./modules/sound/lullaby/FLACDecoder\..*
 \./love\.cpp
 \./modules/sound/lullaby/Mpg123Decoder\.cpp
 \./modules/sound/lullaby/Mpg123Decoder\.h
+\./libraries/glslang/glslang/OSDependent/Windows
