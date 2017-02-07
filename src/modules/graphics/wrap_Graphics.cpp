@@ -1899,8 +1899,7 @@ int w_line(lua_State *L)
 	}
 
 	luax_catchexcept(L,
-		[&](){ instance()->polyline(coords, args); },
-		[&](bool) { delete[] coords; }
+		[&](){ instance()->polyline(coords, args); }
 	);
 
 	return 0;
