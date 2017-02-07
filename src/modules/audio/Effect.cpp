@@ -179,18 +179,18 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::basicParameters =
 std::vector<StringMap<Effect::Parameter>::Entry> Effect::reverbParameters =
 {
 	{"gain", Effect::REVERB_GAIN},
-	{"hfgain", Effect::REVERB_HFGAIN},
+	{"highgain", Effect::REVERB_HFGAIN},
 	{"density", Effect::REVERB_DENSITY},
 	{"diffusion", Effect::REVERB_DIFFUSION},
-	{"decay", Effect::REVERB_DECAY},
-	{"hfdecay", Effect::REVERB_HFDECAY},
+	{"decaytime", Effect::REVERB_DECAY},
+	{"decayhighratio", Effect::REVERB_HFDECAY},
 	{"earlygain", Effect::REVERB_EARLYGAIN},
 	{"earlydelay", Effect::REVERB_EARLYDELAY},
 	{"lategain", Effect::REVERB_LATEGAIN},
 	{"latedelay", Effect::REVERB_LATEDELAY},
-	{"rolloff", Effect::REVERB_ROLLOFF},
-	{"airhfgain", Effect::REVERB_AIRHFGAIN},
-	{"hflimiter", Effect::REVERB_HFLIMITER}
+	{"roomrolloff", Effect::REVERB_ROLLOFF},
+	{"airabsorption", Effect::REVERB_AIRHFGAIN},
+	{"highlimit", Effect::REVERB_HFLIMITER}
 };
 
 std::vector<StringMap<Effect::Parameter>::Entry> Effect::chorusParameters =
@@ -208,14 +208,14 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::distortionParameters =
 	{"gain", Effect::DISTORTION_GAIN},
 	{"edge", Effect::DISTORTION_EDGE},
 	{"lowcut", Effect::DISTORTION_LOWCUT},
-	{"eqcenter", Effect::DISTORTION_EQCENTER},
-	{"eqbandwidth", Effect::DISTORTION_EQBAND}
+	{"center", Effect::DISTORTION_EQCENTER},
+	{"bandwidth", Effect::DISTORTION_EQBAND}
 };
 
 std::vector<StringMap<Effect::Parameter>::Entry> Effect::echoParameters = 
 {
 	{"delay", Effect::ECHO_DELAY},
-	{"lrdelay", Effect::ECHO_LRDELAY},
+	{"tapdelay", Effect::ECHO_LRDELAY},
 	{"damping", Effect::ECHO_DAMPING},
 	{"feedback", Effect::ECHO_FEEDBACK},
 	{"spread", Effect::ECHO_SPREAD}
@@ -277,12 +277,12 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::equalizerParameters =
 {
 	{"lowgain", Effect::EQUALIZER_LOWGAIN},
 	{"lowcut", Effect::EQUALIZER_LOWCUT},
-	{"mid1gain", Effect::EQUALIZER_MID1GAIN},
-	{"mid1frequency", Effect::EQUALIZER_MID1FREQ},
-	{"mid1bandwidth", Effect::EQUALIZER_MID1BAND},
-	{"mid2gain", Effect::EQUALIZER_MID2GAIN},
-	{"mid2frequency", Effect::EQUALIZER_MID2FREQ},
-	{"mid2bandwidth", Effect::EQUALIZER_MID2BAND},
+	{"lowmidgain", Effect::EQUALIZER_MID1GAIN},
+	{"lowmidfrequency", Effect::EQUALIZER_MID1FREQ},
+	{"lowmidbandwidth", Effect::EQUALIZER_MID1BAND},
+	{"highmidgain", Effect::EQUALIZER_MID2GAIN},
+	{"highmidfrequency", Effect::EQUALIZER_MID2FREQ},
+	{"highmidbandwidth", Effect::EQUALIZER_MID2BAND},
 	{"highgain", Effect::EQUALIZER_HIGHGAIN},
 	{"highcut", Effect::EQUALIZER_HIGHCUT}
 };

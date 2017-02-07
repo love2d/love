@@ -396,7 +396,7 @@ int w_setSceneEffect(lua_State *L)
 			case Effect::PARAM_MAX_ENUM:
 				break;
 			}
-			#undef luaL_effecterror
+			#undef luax_effecterror
 		}
 		else
 			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);
@@ -505,11 +505,11 @@ static const luaL_Reg functions[] =
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
 	{ "getRecordingDevices", w_getRecordingDevices },
-	{ "setSceneEffect", w_setSceneEffect },
-	{ "getSceneEffect", w_getSceneEffect },
+	{ "setEffect", w_setSceneEffect },
+	{ "getEffect", w_getSceneEffect },
 	{ "getMaxSceneEffects", w_getMaxSceneEffects },
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
-	{ "isSceneEffectsSupported", w_isSceneEffectsSupported },
+	{ "isEffectsSupported", w_isSceneEffectsSupported },
 	{ 0, 0 }
 };
 

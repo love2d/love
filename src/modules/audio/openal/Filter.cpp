@@ -39,7 +39,7 @@ Filter::Filter()
 Filter::Filter(const Filter &s)
 	: Filter()
 {
-	setParams(s.getType(), s.getParams());
+	setParams(s.getParams());
 }
 
 Filter::~Filter()
@@ -85,10 +85,10 @@ ALuint Filter::getFilter() const
 	return filter;
 }
 
-bool Filter::setParams(Type type, const std::vector<float> &params)
+bool Filter::setParams(const std::map<Parameter, float> &params)
 {
-	this->type = type;
 	this->params = params;
+	type = static_cast<Type>(this->params[FILTER_TYPE]);
 
 	if (!generateFilter())
 		return false;
@@ -105,6 +105,7 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 	case TYPE_BANDPASS:
 		alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_BANDPASS);
 		break;
+	case TYPE_BASIC:
 	case TYPE_MAX_ENUM:
 		break;
 	}
@@ -116,25 +117,28 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 		return false;
 	}
 
-	#define PARAMSTR(i,e,v) filter, AL_ ## e ## _ ## v, clampf(params[(i)], AL_ ## e ## _MIN_ ## v, AL_ ## e ## _MAX_ ## v, AL_ ## e ## _DEFAULT_ ## v)
+	#define clampf(v,l,h) fmax(fmin((v),(h)),(l))
+	#define PARAMSTR(i,e,v) filter,AL_##e##_##v,clampf(getValue(i,AL_##e##_DEFAULT_##v),AL_##e##_MIN_##v,AL_##e##_MAX_##v)
 	switch (type)
 	{
 	case TYPE_LOWPASS:
-		alFilterf(PARAMSTR(0,LOWPASS,GAIN));
-		alFilterf(PARAMSTR(1,LOWPASS,GAINHF));
+		alFilterf(PARAMSTR(FILTER_VOLUME,LOWPASS,GAIN));
+		alFilterf(PARAMSTR(FILTER_HIGHGAIN,LOWPASS,GAINHF));
 		break;
 	case TYPE_HIGHPASS:
-		alFilterf(PARAMSTR(0,HIGHPASS,GAIN));
-		alFilterf(PARAMSTR(1,HIGHPASS,GAINLF));
+		alFilterf(PARAMSTR(FILTER_VOLUME,HIGHPASS,GAIN));
+		alFilterf(PARAMSTR(FILTER_LOWGAIN,HIGHPASS,GAINLF));
 		break;
 	case TYPE_BANDPASS:
-		alFilterf(PARAMSTR(0,BANDPASS,GAIN));
-		alFilterf(PARAMSTR(1,BANDPASS,GAINLF));
-		alFilterf(PARAMSTR(2,BANDPASS,GAINHF));
+		alFilterf(PARAMSTR(FILTER_VOLUME,BANDPASS,GAIN));
+		alFilterf(PARAMSTR(FILTER_LOWGAIN,BANDPASS,GAINLF));
+		alFilterf(PARAMSTR(FILTER_HIGHGAIN,BANDPASS,GAINHF));
 		break;
+	case TYPE_BASIC:
 	case TYPE_MAX_ENUM:
 		break;
 	}
+	#undef clampf
 	#undef PARAMSTR
 	//alGetError();
 
@@ -144,18 +148,19 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 	#endif
 }
 
-const std::vector<float> &Filter::getParams() const
+const std::map<Filter::Parameter, float> &Filter::getParams() const
 {
 	return params;
 }
 
-//clamp values silently to avoid randomly throwing errors due to implementation differences
-float Filter::clampf(float val, float min, float max, float def)
+float Filter::getValue(Parameter in, float def) const
 {
-	if (isnanf(val)) return def;
-	else if (val < min) val = min;
-	else if (val > max) val = max;
-	return val;
+	return params.find(in) == params.end() ? def : params.at(in);
+}
+
+int Filter::getValue(Parameter in, int def) const
+{
+	return params.find(in) == params.end() ? def : static_cast<int>(params.at(in));
 }
 
 } //openal

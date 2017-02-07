@@ -1252,12 +1252,12 @@ int Source::getChannels() const
 	return channels;
 }
 
-bool Source::setFilter(love::audio::Filter::Type type, std::vector<float> &params)
+bool Source::setFilter(std::map<Filter::Parameter, float> &params)
 {
 	if (!directfilter)
 		directfilter = new Filter();
 
-	bool result = directfilter->setParams(type, params);
+	bool result = directfilter->setParams(params);
 
 	#ifdef ALC_EXT_EFX
 	if (valid)
@@ -1289,12 +1289,11 @@ bool Source::setFilter()
 	return true;
 }
 
-bool Source::getFilter(love::audio::Filter::Type &type, std::vector<float> &params)
+bool Source::getFilter(std::map<Filter::Parameter, float> &params)
 {
 	if (!directfilter)
 		return false;
 
-	type = directfilter->getType();
 	params = directfilter->getParams();
 
 	return true;
@@ -1323,7 +1322,7 @@ bool Source::setSceneEffect(int slot, int effect)
 	return true;
 }
 
-bool Source::setSceneEffect(int slot, int effect, love::audio::Filter::Type type, std::vector<float> &params)
+bool Source::setSceneEffect(int slot, int effect, std::map<Filter::Parameter, float> &params)
 {
 	if (slot < 0 || slot >= (int)sendtargets.size())
 		return false;
@@ -1333,7 +1332,7 @@ bool Source::setSceneEffect(int slot, int effect, love::audio::Filter::Type type
 	if (!sendfilters[slot])
 		sendfilters[slot] = new Filter();
 
-	sendfilters[slot]->setParams(type, params);
+	sendfilters[slot]->setParams(params);
 
 	#ifdef ALC_EXT_EFX
 	if (valid)
@@ -1368,7 +1367,7 @@ bool Source::setSceneEffect(int slot)
 	return true;
 }
 
-bool Source::getSceneEffect(int slot, int &effect, love::audio::Filter::Type &type, std::vector<float> &params)
+bool Source::getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params)
 {
 	if (slot < 0 || slot >= (int)sendtargets.size())
 		return false;
@@ -1379,10 +1378,7 @@ bool Source::getSceneEffect(int slot, int &effect, love::audio::Filter::Type &ty
 	effect = dynamic_cast<Audio*>(audiomodule())->getSceneEffectIndex(sendtargets[slot]);
 
 	if(sendfilters[slot])
-	{
-		type = sendfilters[slot]->getType();
 		params = sendfilters[slot]->getParams();
-	}
 
 	return true;
 }

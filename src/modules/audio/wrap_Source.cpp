@@ -345,88 +345,115 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
-int setFilterReadFilter(lua_State *L, int pos, Filter::Type &type, std::vector<float> &params)
+int setFilterReadFilter(lua_State *L, int idx, std::map<Filter::Parameter, float> &params)
 {
-	if (lua_isnoneornil(L, pos))
+	if (lua_gettop(L) < idx || lua_isnoneornil(L, idx))
 		return 0;
-	else if (lua_isstring(L, pos))
+
+	luaL_checktype(L, idx, LUA_TTABLE);
+
+	const char *paramstr = nullptr;
+
+	Filter::getConstant(Filter::FILTER_TYPE, paramstr, Filter::TYPE_BASIC);
+	lua_pushstring(L, paramstr);
+	lua_rawget(L, idx);
+	if (lua_type(L, -1) == LUA_TNIL)
+		return luaL_error(L, "Filter type not specificed.");
+
+	Filter::Type type = Filter::TYPE_MAX_ENUM;
+	const char *typestr = luaL_checkstring(L, -1);
+	if (!Filter::getConstant(typestr, type))
+		return luaL_error(L, "Invalid Filter type: %s", typestr);
+
+	lua_pop(L, 1);
+	params[Filter::FILTER_TYPE] = static_cast<int>(type);
+
+	lua_pushnil(L);
+	while (lua_next(L, idx))
 	{
-		const char *ftypestr = luaL_checkstring(L, pos);
-		if (!Filter::getConstant(ftypestr, type))
-			return luaL_error(L, "Invalid filter type: %s", ftypestr);
+		const char *keystr = luaL_checkstring(L, -2);
+		Filter::Parameter param;
 
-		params.push_back(luaL_checknumber(L, pos + 1));
-		int count = Filter::getParameterCount(type);
-		for (int i = 0; i < count; i++)
+		if(Filter::getConstant(keystr, param, type) || Filter::getConstant(keystr, param, Filter::TYPE_BASIC))
 		{
-			if (lua_isnoneornil(L, i + pos + 2))
-				params.push_back(nanf(""));
-			else
-				params.push_back(luaL_checknumber(L, i + pos + 2));
+			#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
+			switch(Filter::getParameterType(param))
+			{
+			case Filter::PARAM_FLOAT:
+				if (!lua_isnumber(L, -1))
+					return luax_effecterror(L, "number");
+				params[param] = lua_tonumber(L, -1);
+				break;
+			case Filter::PARAM_TYPE:
+			case Filter::PARAM_MAX_ENUM:
+				break;
+			}
+			#undef luax_effecterror
 		}
-	}
-	else if (lua_istable(L, pos))
-	{
-		if (lua_objlen(L, pos) == 0) //empty table also clears filter
-			return 0;
+		else
+			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);
 
-		lua_rawgeti(L, pos, 1);
-		const char *ftypestr = luaL_checkstring(L, -1);
-		if (!Filter::getConstant(ftypestr, type))
-			return luaL_error(L, "Invalid filter type: %s", ftypestr);
+		//remove the value (-1) from stack, keep the key (-2) to feed into lua_next
 		lua_pop(L, 1);
-
-		lua_rawgeti(L, pos, 2);
-		params.push_back(luaL_checknumber(L, -1));
-		lua_pop(L, 1);
-
-		int count = Filter::getParameterCount(type);
-		for (int i = 0; i < count; i++)
-		{
-			lua_rawgeti(L, pos, i + 3);
-			if (lua_isnoneornil(L, -1))
-				params.push_back(nanf(""));
-			else
-				params.push_back(luaL_checknumber(L, -1));
-			lua_pop(L, 1);
-		}
 	}
-	else
-		return luax_typerror(L, pos, "filter description");
 
 	return 1;
+}
+
+void getFilterWriteFilter(lua_State *L, std::map<Filter::Parameter, float> &params)
+{
+	const char *keystr, *valstr;
+	Filter::Type type = static_cast<Filter::Type>((int)params[Filter::FILTER_TYPE]);
+
+	lua_createtable(L, 0, params.size());
+
+	for (auto p : params)
+	{
+		if (!Filter::getConstant(p.first, keystr, type))
+			Filter::getConstant(p.first, keystr, Filter::TYPE_BASIC);
+
+		lua_pushstring(L, keystr);
+		switch (Filter::getParameterType(p.first))
+		{
+		case Filter::PARAM_FLOAT:
+			lua_pushnumber(L, p.second);
+			break;
+		case Filter::PARAM_TYPE:
+			Filter::getConstant(static_cast<Filter::Type>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+		case Filter::PARAM_MAX_ENUM:
+			break;
+		}
+		lua_rawset(L, -3);
+	}
 }
 
 int w_Source_setFilter(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 
-	Filter::Type type;
-	std::vector<float> params;
+	std::map<Filter::Parameter, float> params;
 
-	if (setFilterReadFilter(L, 2, type, params))
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter(type, params)); });
+	if (setFilterReadFilter(L, 2, params) == 1)
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter(params)); });
 	else
 		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter()); });
+
 	return 1;
 }
 
 int w_Source_getFilter(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	Filter::Type type;
-	std::vector<float> params;
-	if (!t->getFilter(type, params))
+
+	std::map<Filter::Parameter, float> params;
+
+	if (!t->getFilter(params))
 		return 0;
 
-	const char *str = nullptr;
-	Filter::getConstant(type, str);
-	lua_pushstring(L, str);
-
-	for (unsigned int i = 0; i < params.size(); i++)
-		lua_pushnumber(L, params[i]);
-
-	return params.size() + 1;
+	getFilterWriteFilter(L, params);
+	return 1;
 }
 
 int w_Source_setSceneEffect(lua_State *L)
@@ -447,11 +474,10 @@ int w_Source_setSceneEffect(lua_State *L)
 		return 1;
 	}
 
-	Filter::Type type;
-	std::vector<float> params;
+	std::map<Filter::Parameter, float> params;
 
-	if (setFilterReadFilter(L, 4, type, params))
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect, type, params)); });
+	if (setFilterReadFilter(L, 4, params) == 1)
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect, params)); });
 	else
 		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect)); });
 	return 1;
@@ -463,24 +489,16 @@ int w_Source_getSceneEffect(lua_State *L)
 	int slot = luaL_checknumber(L, 2) - 1;
 
 	int effect;
-	Filter::Type type = Filter::TYPE_MAX_ENUM;
-	std::vector<float> params;
-	if (!t->getSceneEffect(slot, effect, type, params))
+	std::map<Filter::Parameter, float> params;
+	if (!t->getSceneEffect(slot, effect, params))
 		return 0;
 
 	lua_pushnumber(L, effect + 1);
-	if(type == Filter::TYPE_MAX_ENUM)
+	if (params.size() == 0)
 		return 1;
 
-	const char *str = nullptr;
-	Filter::getConstant(type, str);
-	if (str)
-		lua_pushstring(L, str);
-
-	for (unsigned int i = 0; i < params.size(); i++)
-		lua_pushnumber(L, params[i]);
-
-	return params.size() + 2;
+	getFilterWriteFilter(L, params);
+	return 2;
 }
 
 int w_Source_getFreeBufferCount(lua_State *L)
@@ -595,8 +613,8 @@ static const luaL_Reg w_Source_functions[] =
 
 	{ "setFilter", w_Source_setFilter },
 	{ "getFilter", w_Source_getFilter },
-	{ "setSceneEffect", w_Source_setSceneEffect },
-	{ "getSceneEffect", w_Source_getSceneEffect },
+	{ "setEffect", w_Source_setSceneEffect },
+	{ "getEffect", w_Source_getSceneEffect },
 
 	{ "getFreeBufferCount", w_Source_getFreeBufferCount },
 	{ "queue", w_Source_queue },

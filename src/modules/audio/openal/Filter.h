@@ -61,15 +61,16 @@ public:
 	virtual ~Filter();
 	virtual Filter *clone();
 	ALuint getFilter() const;
-	virtual bool setParams(Type type, const std::vector<float> &params);
-	virtual const std::vector<float> &getParams() const;
+	virtual bool setParams(const std::map<Parameter, float> &params);
+	virtual const std::map<Parameter, float> &getParams() const;
 
 private:
 	bool generateFilter();
 	void deleteFilter();
-	float clampf(float val, float min, float max, float def);
+	float getValue(Parameter in, float def) const;
+	int getValue(Parameter in, int def) const;
 	ALuint filter = AL_FILTER_NULL;
-	std::vector<float> params;
+	std::map<Parameter, float> params;
 };
 
 } //openal
