@@ -45,7 +45,7 @@ public:
 	ImageData(const ImageData &c);
 	virtual ~ImageData();
 
-	virtual Data *clone() const;
+	virtual ImageData *clone() const;
 	// Implements image::ImageData.
 	virtual love::filesystem::FileData *encode(EncodedFormat encodedFormat, const char *filename);
 

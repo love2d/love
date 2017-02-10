@@ -35,7 +35,7 @@ FileData *luax_checkfiledata(lua_State *L, int idx)
 int w_FileData_clone(lua_State *L)
 {
 	FileData *t = luax_checkfiledata(L, 1), *c = nullptr;
-	luax_catchexcept(L, [&](){ c = (FileData*)t->clone(); });
+	luax_catchexcept(L, [&](){ c = t->clone(); });
 	luax_pushtype(L, c);
 	c->release();
 	return 1;

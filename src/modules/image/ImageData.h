@@ -128,7 +128,7 @@ public:
 	love::thread::Mutex *getMutex() const;
 
 	// Implements Data.
-	virtual Data *clone() const = 0;
+	virtual ImageData *clone() const = 0;
 	virtual void *getData() const;
 	virtual size_t getSize() const;
 

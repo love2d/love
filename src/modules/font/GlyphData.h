@@ -63,7 +63,7 @@ public:
 	virtual ~GlyphData();
 
 	// Implements Data.
-	Data *clone() const;
+	GlyphData *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 

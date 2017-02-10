@@ -45,7 +45,7 @@ public:
 	virtual ~SoundData();
 
 	// Implements Data.
-	Data *clone() const;
+	SoundData *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 

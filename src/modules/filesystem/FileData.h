@@ -45,7 +45,7 @@ public:
 	virtual ~FileData();
 
 	// Implements Data.
-	Data *clone() const;
+	FileData *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 

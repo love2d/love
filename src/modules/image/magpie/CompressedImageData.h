@@ -44,7 +44,7 @@ public:
 	CompressedImageData(const CompressedImageData &c);
 	virtual ~CompressedImageData();
 
-	virtual Data *clone() const;
+	virtual CompressedImageData *clone() const;
 }; // CompressedImageData
 
 } // magpie

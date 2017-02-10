@@ -74,7 +74,7 @@ CompressedData::~CompressedData()
 	delete[] data;
 }
 
-Data *CompressedData::clone() const
+CompressedData *CompressedData::clone() const
 {
 	return new CompressedData(*this);
 }

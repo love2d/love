@@ -82,7 +82,7 @@ CompressedImageData::CompressedImageData(const CompressedImageData &c)
 	}
 }
 
-Data *CompressedImageData::clone() const
+CompressedImageData *CompressedImageData::clone() const
 {
 	return new CompressedImageData(*this);
 }

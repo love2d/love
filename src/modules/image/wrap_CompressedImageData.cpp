@@ -34,7 +34,7 @@ CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx)
 int w_CompressedImageData_clone(lua_State *L)
 {
 	CompressedImageData *t = luax_checkcompressedimagedata(L, 1), *c = nullptr;
-	luax_catchexcept(L, [&](){ c = (CompressedImageData *)t->clone(); }); 
+	luax_catchexcept(L, [&](){ c = t->clone(); }); 
 	luax_pushtype(L, c);
 	c->release();
 	return 1;

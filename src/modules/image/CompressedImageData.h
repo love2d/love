@@ -59,7 +59,7 @@ public:
 	virtual ~CompressedImageData();
 
 	// Implements Data.
-	virtual Data *clone() const = 0;
+	virtual CompressedImageData *clone() const = 0;
 	virtual void *getData() const;
 	virtual size_t getSize() const;
 

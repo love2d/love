@@ -79,7 +79,7 @@ FileData::~FileData()
 	delete [] data;
 }
 
-Data *FileData::clone() const
+FileData *FileData::clone() const
 {
 	return new FileData(*this);
 }

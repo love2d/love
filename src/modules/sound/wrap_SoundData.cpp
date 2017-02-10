@@ -44,8 +44,8 @@ SoundData *luax_checksounddata(lua_State *L, int idx)
 
 int w_SoundData_clone(lua_State *L)
 {
-	SoundData *t = luax_checksounddata(L, 1)*c = nullptr;
-	luax_catchexcept(L, [&](){ c = (SoundData*)t->clone(); });
+	SoundData *t = luax_checksounddata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
 	luax_pushtype(L, c);
 	c->release();
 	return 1;

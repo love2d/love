@@ -46,7 +46,7 @@ ImageData *luax_checkimagedata(lua_State *L, int idx)
 int w_ImageData_clone(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1), *c = nullptr;
-	luax_catchexcept(L, [&](){ c = (ImageData*)t->clone(); });
+	luax_catchexcept(L, [&](){ c = t->clone(); });
 	luax_pushtype(L, c);
 	c->release();
 	return 1;

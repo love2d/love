@@ -58,7 +58,7 @@ public:
 	size_t getDecompressedSize() const;
 
 	// Implements Data.
-	Data *clone() const;
+	CompressedData *clone() const override;
 	void *getData() const override;
 	size_t getSize() const override;
 

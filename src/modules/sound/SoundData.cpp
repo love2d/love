@@ -124,7 +124,7 @@ SoundData::~SoundData()
 		free(data);
 }
 
-Data *SoundData::clone() const
+SoundData *SoundData::clone() const
 {
 	return new SoundData(*this);
 }

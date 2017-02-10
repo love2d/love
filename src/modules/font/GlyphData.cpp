@@ -66,7 +66,7 @@ GlyphData::~GlyphData()
 	delete[] data;
 }
 
-Data *GlyphData::clone() const
+GlyphData *GlyphData::clone() const
 {
 	return new GlyphData(*this);
 }
