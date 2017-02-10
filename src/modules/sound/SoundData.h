@@ -40,10 +40,12 @@ public:
 	SoundData(Decoder *decoder);
 	SoundData(int samples, int sampleRate, int bitDepth, int channels);
 	SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels);
+	SoundData(const SoundData &c);
 
 	virtual ~SoundData();
 
 	// Implements Data.
+	Data *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 

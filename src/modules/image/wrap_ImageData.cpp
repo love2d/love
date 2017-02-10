@@ -43,6 +43,15 @@ ImageData *luax_checkimagedata(lua_State *L, int idx)
 	return luax_checktype<ImageData>(L, idx);
 }
 
+int w_ImageData_clone(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = (ImageData*)t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_ImageData_getFormat(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
@@ -335,6 +344,7 @@ static FFI_ImageData ffifuncs =
 
 static const luaL_Reg w_ImageData_functions[] =
 {
+	{ "clone", w_ImageData_clone },
 	{ "getFormat", w_ImageData_getFormat },
 	{ "getWidth", w_ImageData_getWidth },
 	{ "getHeight", w_ImageData_getHeight },

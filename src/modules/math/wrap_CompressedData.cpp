@@ -32,6 +32,15 @@ CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 	return luax_checktype<CompressedData>(L, idx);
 }
 
+int w_CompressedData_clone(lua_State *L)
+{
+	CompressedData *t = luax_checkcompresseddata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = (CompressedData *)t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_CompressedData_getFormat(lua_State *L)
 {
 	CompressedData *t = luax_checkcompresseddata(L, 1);
@@ -46,6 +55,7 @@ int w_CompressedData_getFormat(lua_State *L)
 
 static const luaL_Reg w_CompressedData_functions[] =
 {
+	{ "clone", w_CompressedData_clone },
 	{ "getFormat", w_CompressedData_getFormat },
 	{ 0, 0 },
 };

@@ -61,6 +61,32 @@ CompressedImageData::CompressedImageData(std::list<CompressedFormatHandler *> fo
 	}
 }
 
+CompressedImageData::CompressedImageData(const CompressedImageData &c)
+{
+	format = c.format;
+	sRGB = c.sRGB;
+	dataSize = c.dataSize;
+
+	data = new uint8[dataSize];
+	memcpy(data, c.data, dataSize);
+
+	for (auto i : c.dataImages )
+	{
+		struct SubImage s;
+		s.width = i.width;
+		s.height = i.height;
+		s.size = i.size;
+		s.data = (uint8*)((intptr_t)data + (intptr_t)i.data - (intptr_t)c.data);
+
+		dataImages.push_back(s);
+	}
+}
+
+Data *CompressedImageData::clone() const
+{
+	return new CompressedImageData(*this);
+}
+
 CompressedImageData::~CompressedImageData()
 {
 	delete[] data;

@@ -42,6 +42,15 @@ SoundData *luax_checksounddata(lua_State *L, int idx)
 	return luax_checktype<SoundData>(L, idx);
 }
 
+int w_SoundData_clone(lua_State *L)
+{
+	SoundData *t = luax_checksounddata(L, 1)*c = nullptr;
+	luax_catchexcept(L, [&](){ c = (SoundData*)t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_SoundData_getChannels(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
@@ -98,6 +107,7 @@ int w_SoundData_getSample(lua_State *L)
 
 static const luaL_Reg w_SoundData_functions[] =
 {
+	{ "clone", w_SoundData_clone },
 	{ "getChannels", w_SoundData_getChannels },
 	{ "getBitDepth", w_SoundData_getBitDepth },
 	{ "getSampleRate", w_SoundData_getSampleRate },

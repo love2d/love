@@ -41,8 +41,10 @@ class CompressedImageData : public love::image::CompressedImageData
 public:
 
 	CompressedImageData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata);
+	CompressedImageData(const CompressedImageData &c);
 	virtual ~CompressedImageData();
 
+	virtual Data *clone() const;
 }; // CompressedImageData
 
 } // magpie

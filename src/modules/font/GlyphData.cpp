@@ -48,9 +48,27 @@ GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, PixelFormat f)
 		data = new uint8[metrics.width * metrics.height * getPixelSize()];
 }
 
+GlyphData::GlyphData(const GlyphData &c)
+	: glyph(c.glyph)
+	, metrics(c.metrics)
+	, data(nullptr)
+	, format(c.format)
+{
+	if (metrics.width > 0 && metrics.height > 0)
+	{
+		data = new uint8[metrics.width * metrics.height * getPixelSize()];
+		memcpy(data, c.data, c.getSize());
+	}
+}
+
 GlyphData::~GlyphData()
 {
 	delete[] data;
+}
+
+Data *GlyphData::clone() const
+{
+	return new GlyphData(*this);
 }
 
 void *GlyphData::getData() const

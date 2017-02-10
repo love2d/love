@@ -78,6 +78,20 @@ ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int h
 		handler->retain();
 }
 
+ImageData::ImageData(const ImageData &c)
+	: formatHandlers(c.formatHandlers)
+	, decodeHandler(nullptr)
+{
+	width = c.width;
+	height = c.height;
+	format = c.format;
+
+	for (FormatHandler *handler : formatHandlers)
+		handler->retain();
+
+	create(width, height, format, c.getData());
+}
+
 ImageData::~ImageData()
 {
 	if (decodeHandler)
@@ -87,6 +101,11 @@ ImageData::~ImageData()
 
 	for (FormatHandler *handler : formatHandlers)
 		handler->release();
+}
+
+Data *ImageData::clone() const
+{
+	return new ImageData(*this);
 }
 
 void ImageData::create(int width, int height, PixelFormat format, void *data)

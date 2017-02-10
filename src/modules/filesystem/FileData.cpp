@@ -56,9 +56,32 @@ FileData::FileData(uint64 size, const std::string &filename)
 		name = filename;
 }
 
+FileData::FileData(const FileData &c)
+	: data(nullptr)
+	, size(c.size)
+	, filename(c.filename)
+	, extension(c.extension)
+	, name(c.name)
+{
+	try
+	{
+		data = new char[(size_t) size];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+	memcpy(data, c.data, size);
+}
+
 FileData::~FileData()
 {
 	delete [] data;
+}
+
+Data *FileData::clone() const
+{
+	return new FileData(*this);
 }
 
 void *FileData::getData() const

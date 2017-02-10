@@ -42,8 +42,10 @@ public:
 	ImageData(std::list<FormatHandler *> formatHandlers, love::filesystem::FileData *data);
 	ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
 	ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format, void *data, bool own);
+	ImageData(const ImageData &c);
 	virtual ~ImageData();
 
+	virtual Data *clone() const;
 	// Implements image::ImageData.
 	virtual love::filesystem::FileData *encode(EncodedFormat encodedFormat, const char *filename);
 

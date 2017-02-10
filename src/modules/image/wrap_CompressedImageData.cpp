@@ -31,6 +31,15 @@ CompressedImageData *luax_checkcompressedimagedata(lua_State *L, int idx)
 	return luax_checktype<CompressedImageData>(L, idx);
 }
 
+int w_CompressedImageData_clone(lua_State *L)
+{
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = (CompressedImageData *)t->clone(); }); 
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_CompressedImageData_getWidth(lua_State *L)
 {
 	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
@@ -96,6 +105,7 @@ int w_CompressedImageData_getFormat(lua_State *L)
 
 static const luaL_Reg w_CompressedImageData_functions[] =
 {
+	{ "clone", w_CompressedImageData_clone },
 	{ "getWidth", w_CompressedImageData_getWidth },
 	{ "getHeight", w_CompressedImageData_getHeight },
 	{ "getDimensions", w_CompressedImageData_getDimensions },

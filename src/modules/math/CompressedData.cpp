@@ -51,9 +51,32 @@ CompressedData::CompressedData(Compressor::Format format, char *cdata, size_t co
 	}
 }
 
+CompressedData::CompressedData(const CompressedData &c)
+	: format(c.format)
+	, data(nullptr)
+	, dataSize(c.dataSize)
+	, originalSize(c.originalSize)
+{
+	try
+	{
+		data = new char[dataSize];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+
+	memcpy(data, c.data, dataSize);
+}
+
 CompressedData::~CompressedData()
 {
 	delete[] data;
+}
+
+Data *CompressedData::clone() const
+{
+	return new CompressedData(*this);
 }
 
 Compressor::Format CompressedData::getFormat() const

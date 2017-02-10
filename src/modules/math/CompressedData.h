@@ -43,6 +43,7 @@ public:
 	 * Constructor just stores already-compressed data in the object.
 	 **/
 	CompressedData(Compressor::Format format, char *cdata, size_t compressedsize, size_t rawsize, bool own = true);
+	CompressedData(const CompressedData &c);
 	virtual ~CompressedData();
 
 	/**
@@ -57,6 +58,7 @@ public:
 	size_t getDecompressedSize() const;
 
 	// Implements Data.
+	Data *clone() const;
 	void *getData() const override;
 	size_t getSize() const override;
 

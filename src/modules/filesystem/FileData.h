@@ -40,10 +40,12 @@ public:
 	static love::Type type;
 
 	FileData(uint64 size, const std::string &filename);
+	FileData(const FileData &c);
 
 	virtual ~FileData();
 
 	// Implements Data.
+	Data *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 

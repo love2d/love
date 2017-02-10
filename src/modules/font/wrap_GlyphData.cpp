@@ -30,6 +30,15 @@ GlyphData *luax_checkglyphdata(lua_State *L, int idx)
 	return luax_checktype<GlyphData>(L, idx);
 }
 
+int w_GlyphData_clone(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = (GlyphData*)t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_GlyphData_getWidth(lua_State *L)
 {
 	GlyphData *t = luax_checkglyphdata(L, 1);
@@ -117,6 +126,7 @@ int w_GlyphData_getFormat(lua_State *L)
 
 const luaL_Reg w_GlyphData_functions[] =
 {
+	{ "clone", w_GlyphData_clone },
 	{ "getWidth", w_GlyphData_getWidth },
 	{ "getHeight", w_GlyphData_getHeight },
 	{ "getDimensions", w_GlyphData_getDimensions },

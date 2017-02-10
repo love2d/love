@@ -108,10 +108,25 @@ SoundData::SoundData(void *d, int samples, int sampleRate, int bitDepth, int cha
 	load(samples, sampleRate, bitDepth, channels, d);
 }
 
+SoundData::SoundData(const SoundData &c)
+	: data(0)
+	, size(0)
+	, sampleRate(0)
+	, bitDepth(0)
+	, channels(0)
+{
+	load(c.getSampleCount(), c.getSampleRate(), c.getBitDepth(), c.getChannels(), c.getData());
+}
+
 SoundData::~SoundData()
 {
 	if (data != 0)
 		free(data);
+}
+
+Data *SoundData::clone() const
+{
+	return new SoundData(*this);
 }
 
 void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, void *newData)

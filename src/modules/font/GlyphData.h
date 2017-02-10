@@ -59,9 +59,11 @@ public:
 	static love::Type type;
 
 	GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, PixelFormat f);
+	GlyphData(const GlyphData &c);
 	virtual ~GlyphData();
 
 	// Implements Data.
+	Data *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 

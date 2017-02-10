@@ -32,6 +32,15 @@ FileData *luax_checkfiledata(lua_State *L, int idx)
 	return luax_checktype<FileData>(L, idx);
 }
 
+int w_FileData_clone(lua_State *L)
+{
+	FileData *t = luax_checkfiledata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = (FileData*)t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_FileData_getFilename(lua_State *L)
 {
 	FileData *t = luax_checkfiledata(L, 1);
@@ -48,6 +57,7 @@ int w_FileData_getExtension(lua_State *L)
 
 static const luaL_Reg w_FileData_functions[] =
 {
+	{ "clone", w_FileData_clone },
 	{ "getFilename", w_FileData_getFilename },
 	{ "getExtension", w_FileData_getExtension },
 

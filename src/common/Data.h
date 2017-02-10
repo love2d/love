@@ -46,6 +46,10 @@ public:
 	virtual ~Data() {}
 
 	/**
+	 * Creates a duplicate of Data derived class instance.
+	 **/
+	virtual Data *clone() const = 0;
+	/**
 	 * Gets a pointer to the data. This pointer will obviously not
 	 * be valid if the Data object is destroyed.
 	 **/

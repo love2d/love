@@ -37,6 +37,7 @@ class DefaultFontData : public love::Data
 {
 public:
 
+	Data *clone() const override { return new DefaultFontData(); }
 	void *getData() const override { return Vera_ttf; }
 	size_t getSize() const override { return sizeof(Vera_ttf); }
 };
