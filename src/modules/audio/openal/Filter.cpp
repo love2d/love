@@ -88,7 +88,7 @@ ALuint Filter::getFilter() const
 bool Filter::setParams(const std::map<Parameter, float> &params)
 {
 	this->params = params;
-	type = static_cast<Type>(this->params[FILTER_TYPE]);
+	type = (Type)(int) this->params[FILTER_TYPE];
 
 	if (!generateFilter())
 		return false;

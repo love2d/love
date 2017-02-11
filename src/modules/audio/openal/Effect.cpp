@@ -89,7 +89,7 @@ ALuint Effect::getEffect() const
 bool Effect::setParams(const std::map<Parameter, float> &params)
 {
 	this->params = params;
-	type = static_cast<Type>(this->params[EFFECT_TYPE]);
+	type = (Type)(int) this->params[EFFECT_TYPE];
 
 	if (!generateEffect())
 		return false;
