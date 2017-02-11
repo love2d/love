@@ -109,12 +109,12 @@ public:
 
 	virtual int getChannels() const = 0;
 
-	virtual bool setFilter(std::map<Filter::Parameter, float> &params) = 0;
+	virtual bool setFilter(const std::map<Filter::Parameter, float> &params) = 0;
 	virtual bool setFilter() = 0;
 	virtual bool getFilter(std::map<Filter::Parameter, float> &params) = 0;
 
 	virtual bool setSceneEffect(int slot, int effect) = 0;
-	virtual bool setSceneEffect(int slot, int effect, std::map<Filter::Parameter, float> &params) = 0;
+	virtual bool setSceneEffect(int slot, int effect, const std::map<Filter::Parameter, float> &params) = 0;
 	virtual bool setSceneEffect(int slot) = 0;
 	virtual bool getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params) = 0;
 

@@ -82,12 +82,12 @@ public:
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
 
-	virtual bool setFilter(std::map<Filter::Parameter, float> &params);
+	virtual bool setFilter(const std::map<Filter::Parameter, float> &params);
 	virtual bool setFilter();
 	virtual bool getFilter(std::map<Filter::Parameter, float> &params);
 
 	virtual bool setSceneEffect(int slot, int effect);
-	virtual bool setSceneEffect(int slot, int effect, std::map<Filter::Parameter, float> &params);
+	virtual bool setSceneEffect(int slot, int effect, const std::map<Filter::Parameter, float> &params);
 	virtual bool setSceneEffect(int slot);
 	virtual bool getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params);
 

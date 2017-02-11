@@ -244,8 +244,10 @@ Source::~Source()
 		delete directfilter;
 
 	for (auto sf : sendfilters)
+	{
 		if (sf != nullptr)
 			delete sf;
+	}
 }
 
 love::audio::Source *Source::clone()
@@ -1252,7 +1254,7 @@ int Source::getChannels() const
 	return channels;
 }
 
-bool Source::setFilter(std::map<Filter::Parameter, float> &params)
+bool Source::setFilter(const std::map<Filter::Parameter, float> &params)
 {
 	if (!directfilter)
 		directfilter = new Filter();
@@ -1322,7 +1324,7 @@ bool Source::setSceneEffect(int slot, int effect)
 	return true;
 }
 
-bool Source::setSceneEffect(int slot, int effect, std::map<Filter::Parameter, float> &params)
+bool Source::setSceneEffect(int slot, int effect, const std::map<Filter::Parameter, float> &params)
 {
 	if (slot < 0 || slot >= (int)sendtargets.size())
 		return false;

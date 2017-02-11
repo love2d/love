@@ -155,11 +155,15 @@ Audio::Audio()
 	{
 		for (auto c : capture)
 			delete c;
+
 #ifdef ALC_EXT_EFX
 		if (alDeleteAuxiliaryEffectSlots)
+		{
 			for (auto slot : effectSlots)
 				alDeleteAuxiliaryEffectSlots(1, &slot);
+		}
 #endif
+
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(context);
 		alcCloseDevice(device);
@@ -177,15 +181,22 @@ Audio::~Audio()
 
 	delete poolThread;
 	delete pool;
+
 	for (auto c : capture)
 		delete c;
+
 #ifdef ALC_EXT_EFX
 	for (auto e : effects)
+	{
 		if (e != nullptr)
 			delete e;
+	}
+
 	if (alDeleteAuxiliaryEffectSlots)
+	{
 		for (auto slot : effectSlots)
 			alDeleteAuxiliaryEffectSlots(1, &slot);
+	}
 #endif
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
@@ -458,7 +469,7 @@ bool Audio::setSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
 #ifdef ALC_EXT_EFX
 	if (alAuxiliaryEffectSloti)
 	{
-		if (result == true)
+		if (result)
 		{
 			if (params.find(Effect::EFFECT_VOLUME) != params.end())
 				alAuxiliaryEffectSlotf(effectSlots[slot], AL_EFFECTSLOT_GAIN, params[Effect::EFFECT_VOLUME]);

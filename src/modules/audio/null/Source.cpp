@@ -239,7 +239,7 @@ bool Source::queue(void *, size_t, int, int, int)
 	return false;
 }
 
-bool Source::setFilter(std::map<Filter::Parameter, float> &)
+bool Source::setFilter(const std::map<Filter::Parameter, float> &)
 {
 	return false;
 }
@@ -259,7 +259,7 @@ bool Source::setSceneEffect(int, int)
 	return false;
 }
 
-bool Source::setSceneEffect(int, int, std::map<Filter::Parameter, float> &)
+bool Source::setSceneEffect(int, int, const std::map<Filter::Parameter, float> &)
 {
 	return false;
 }
