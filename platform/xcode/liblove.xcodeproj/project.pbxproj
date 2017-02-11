@@ -990,6 +990,12 @@
 		FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */; };
+		FAC756F51E4F99B400B91289 /* Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC756F31E4F99B400B91289 /* Effect.cpp */; };
+		FAC756F61E4F99B400B91289 /* Effect.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC756F41E4F99B400B91289 /* Effect.h */; };
+		FAC756F71E4F99BC00B91289 /* Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC756F31E4F99B400B91289 /* Effect.cpp */; };
+		FAC756FA1E4F99D200B91289 /* Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC756F81E4F99D200B91289 /* Effect.cpp */; };
+		FAC756FB1E4F99D200B91289 /* Effect.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC756F91E4F99D200B91289 /* Effect.h */; };
+		FAC756FC1E4F99DB00B91289 /* Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC756F81E4F99D200B91289 /* Effect.cpp */; };
 		FADF53F81E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53F91E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53FA1E3C7ACD00012CC0 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53F71E3C7ACD00012CC0 /* Buffer.h */; };
@@ -1837,6 +1843,10 @@
 		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
 		FAC734C11B2E021A00AB460A /* wrap_SoundData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_SoundData.lua; sourceTree = "<group>"; };
 		FAC734C21B2E628700AB460A /* wrap_ImageData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_ImageData.lua; sourceTree = "<group>"; };
+		FAC756F31E4F99B400B91289 /* Effect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Effect.cpp; sourceTree = "<group>"; };
+		FAC756F41E4F99B400B91289 /* Effect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Effect.h; sourceTree = "<group>"; };
+		FAC756F81E4F99D200B91289 /* Effect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Effect.cpp; sourceTree = "<group>"; };
+		FAC756F91E4F99D200B91289 /* Effect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Effect.h; sourceTree = "<group>"; };
 		FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		FADF53F71E3C7ACD00012CC0 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		FADF53FB1E3D74F200012CC0 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
@@ -2502,6 +2512,8 @@
 			children = (
 				FA0B7B3E1A95902C000E1D17 /* Audio.cpp */,
 				FA0B7B3F1A95902C000E1D17 /* Audio.h */,
+				FAC756F31E4F99B400B91289 /* Effect.cpp */,
+				FAC756F41E4F99B400B91289 /* Effect.h */,
 				FA1E887C1DF363CD00E808AA /* Filter.cpp */,
 				FA1E887D1DF363CD00E808AA /* Filter.h */,
 				FA0B7B401A95902C000E1D17 /* null */,
@@ -2538,6 +2550,8 @@
 			children = (
 				FA0B7B461A95902C000E1D17 /* Audio.cpp */,
 				FA0B7B471A95902C000E1D17 /* Audio.h */,
+				FAC756F81E4F99D200B91289 /* Effect.cpp */,
+				FAC756F91E4F99D200B91289 /* Effect.h */,
 				FA1E88811DF363DB00E808AA /* Filter.cpp */,
 				FA1E88821DF363DB00E808AA /* Filter.h */,
 				FA0B7B481A95902C000E1D17 /* Pool.cpp */,
@@ -3532,6 +3546,7 @@
 				FA0B7CCF1A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B7EC01A95902C000E1D17 /* Thread.h in Headers */,
 				FA0B7E9C1A95902C000E1D17 /* VorbisDecoder.h in Headers */,
+				FAC756FB1E4F99D200B91289 /* Effect.h in Headers */,
 				FA0B791D1A958E3B000E1D17 /* b64.h in Headers */,
 				FA0B7DC61A95902C000E1D17 /* wrap_JoystickModule.h in Headers */,
 				FA0B7D201A95902C000E1D17 /* ImageRasterizer.h in Headers */,
@@ -3889,6 +3904,7 @@
 				FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */,
 				FA0B7A511A958EA3000E1D17 /* b2GrowableStack.h in Headers */,
 				FA0B7D921A95902C000E1D17 /* FormatHandler.h in Headers */,
+				FAC756F61E4F99B400B91289 /* Effect.h in Headers */,
 				FA0B7ADD1A958EA3000E1D17 /* gladfuncs.hpp in Headers */,
 				FAF1405D1E20934C00F898D2 /* intermediate.h in Headers */,
 			);
@@ -4276,6 +4292,7 @@
 				FA0B7EE61A95902D000E1D17 /* Window.cpp in Sources */,
 				FA0B7E3A1A95902C000E1D17 /* World.cpp in Sources */,
 				FA0B79471A958E3B000E1D17 /* Vector.cpp in Sources */,
+				FAC756F71E4F99BC00B91289 /* Effect.cpp in Sources */,
 				FA0B7E7F1A95902C000E1D17 /* Joint.cpp in Sources */,
 				FA0B7DB21A95902C000E1D17 /* wrap_Image.cpp in Sources */,
 				FA0B7E891A95902C000E1D17 /* Decoder.cpp in Sources */,
@@ -4298,6 +4315,7 @@
 				FA0B79441A958E3B000E1D17 /* Variant.cpp in Sources */,
 				FA9D8DDA1DEF8411002CD881 /* Stream.cpp in Sources */,
 				FA0B7DD71A95902C000E1D17 /* MathModule.cpp in Sources */,
+				FAC756FC1E4F99DB00B91289 /* Effect.cpp in Sources */,
 				FA0B7D101A95902C000E1D17 /* BMFontRasterizer.cpp in Sources */,
 				FA0B7E9B1A95902C000E1D17 /* VorbisDecoder.cpp in Sources */,
 				FA0B7E4C1A95902C000E1D17 /* wrap_EdgeShape.cpp in Sources */,
@@ -4635,6 +4653,7 @@
 				FA0B7E3C1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
 				FA0B7D791A95902C000E1D17 /* Quad.cpp in Sources */,
 				FA1DC2631C5D9555008F99A0 /* HashFunction.cpp in Sources */,
+				FAC756F51E4F99B400B91289 /* Effect.cpp in Sources */,
 				FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */,
 				FA0B7DD31A95902C000E1D17 /* BezierCurve.cpp in Sources */,
 				FA91591E1CF1ED7500A7053F /* halffloat.cpp in Sources */,
@@ -4657,6 +4676,7 @@
 				FA0B7E4B1A95902C000E1D17 /* wrap_EdgeShape.cpp in Sources */,
 				FA9D8DD91DEF8411002CD881 /* Stream.cpp in Sources */,
 				FA0B7E241A95902C000E1D17 /* PrismaticJoint.cpp in Sources */,
+				FAC756FA1E4F99D200B91289 /* Effect.cpp in Sources */,
 				FA0B7A7D1A958EA3000E1D17 /* b2ContactSolver.cpp in Sources */,
 				FA0B7E601A95902C000E1D17 /* wrap_Physics.cpp in Sources */,
 				FA0B7DC71A95902C000E1D17 /* Keyboard.cpp in Sources */,
