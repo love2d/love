@@ -48,14 +48,19 @@ bool Filter::getConstant(Type in, const char *&out)
 	return types.find(in, out);
 }
 
-int Filter::getParameterCount(Type in)
+bool Filter::getConstant(const char *in, Parameter &out, Type t)
 {
-	return parameterCount[in];
+	return parameterNames[t].find(in, out);
 }
 
-int Filter::getParameterCount()
+bool Filter::getConstant(Parameter in, const char *&out, Type t)
 {
-	return parameterCount[TYPE_MAX_ENUM];
+	return parameterNames[t].find(in, out);
+}
+
+Filter::ParameterType Filter::getParameterType(Parameter in)
+{
+	return parameterTypes[in];
 }
 
 StringMap<Filter::Type, Filter::TYPE_MAX_ENUM>::Entry Filter::typeEntries[] =
@@ -67,12 +72,44 @@ StringMap<Filter::Type, Filter::TYPE_MAX_ENUM>::Entry Filter::typeEntries[] =
 
 StringMap<Filter::Type, Filter::TYPE_MAX_ENUM> Filter::types(Filter::typeEntries, sizeof(Filter::typeEntries));
 
-std::map<Filter::Type, int> Filter::parameterCount =
+#define StringMap LazierAndSlowerButEasilyArrayableStringMap2
+std::vector<StringMap<Filter::Parameter>::Entry> Filter::basicParameters =
 {
-	{Filter::TYPE_LOWPASS, 2},
-	{Filter::TYPE_HIGHPASS, 2},
-	{Filter::TYPE_BANDPASS, 3},
-	{Filter::TYPE_MAX_ENUM, 3},
+	{"type", Filter::FILTER_TYPE},
+	{"volume", Filter::FILTER_VOLUME}
+};
+
+std::vector<StringMap<Filter::Parameter>::Entry> Filter::lowpassParameters =
+{
+	{"highgain", Filter::FILTER_HIGHGAIN}
+};
+
+std::vector<StringMap<Filter::Parameter>::Entry> Filter::highpassParameters =
+{
+	{"lowgain", Filter::FILTER_LOWGAIN}
+};
+
+std::vector<StringMap<Filter::Parameter>::Entry> Filter::bandpassParameters =
+{
+	{"lowgain", Filter::FILTER_LOWGAIN},
+	{"highgain", Filter::FILTER_HIGHGAIN}
+};
+
+std::map<Filter::Type, StringMap<Filter::Parameter>> Filter::parameterNames = 
+{
+	{Filter::TYPE_BASIC, Filter::basicParameters},
+	{Filter::TYPE_LOWPASS, Filter::lowpassParameters},
+	{Filter::TYPE_HIGHPASS, Filter::highpassParameters},
+	{Filter::TYPE_BANDPASS, Filter::bandpassParameters},
+};
+#undef StringMap
+
+std::map<Filter::Parameter, Filter::ParameterType> Filter::parameterTypes = 
+{
+	{Filter::FILTER_TYPE, Filter::PARAM_TYPE},
+	{Filter::FILTER_VOLUME, Filter::PARAM_FLOAT},
+	{Filter::FILTER_LOWGAIN, Filter::PARAM_FLOAT},
+	{Filter::FILTER_HIGHGAIN, Filter::PARAM_FLOAT}
 };
 
 } //audio

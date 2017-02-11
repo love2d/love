@@ -59,8 +59,8 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
-	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
-	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume, float outerHighGain);
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume, float &outerHighGain) const;
 	virtual void setRelative(bool enable);
 	virtual bool isRelative() const;
 	void setLooping(bool looping);
@@ -75,14 +75,21 @@ public:
 	virtual float getRolloffFactor() const;
 	virtual void setMaxDistance(float distance);
 	virtual float getMaxDistance() const;
+	virtual void setAirAbsorptionFactor(float factor);
+	virtual float getAirAbsorptionFactor() const;
 	virtual int getChannels() const;
 
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
 
-	virtual bool setFilter(love::audio::Filter::Type type, std::vector<float> &params);
+	virtual bool setFilter(std::map<Filter::Parameter, float> &params);
 	virtual bool setFilter();
-	virtual bool getFilter(love::audio::Filter::Type &type, std::vector<float> &params);
+	virtual bool getFilter(std::map<Filter::Parameter, float> &params);
+
+	virtual bool setSceneEffect(int slot, int effect);
+	virtual bool setSceneEffect(int slot, int effect, std::map<Filter::Parameter, float> &params);
+	virtual bool setSceneEffect(int slot);
+	virtual bool getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params);
 
 private:
 
@@ -91,6 +98,7 @@ private:
 	float coneInnerAngle;
 	float coneOuterAngle;
 	float coneOuterVolume;
+	float coneOuterHighGain;
 	bool relative;
 	bool looping;
 	float minVolume;
@@ -98,6 +106,7 @@ private:
 	float referenceDistance;
 	float rolloffFactor;
 	float maxDistance;
+	float absorptionFactor;
 
 }; // Source
 

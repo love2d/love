@@ -28,6 +28,7 @@
 
 // C++
 #include <iostream>
+#include <cmath>
 
 namespace love
 {
@@ -256,7 +257,19 @@ int w_getDopplerScale(lua_State *L)
 	lua_pushnumber(L, instance()->getDopplerScale());
 	return 1;
 }
+/*
+int w_setMeter(lua_State *L)
+{
+	instance()->setMeter(luax_checkfloat(L, 1));
+	return 0;
+}
 
+int w_getMeter(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getMeter());
+	return 1;
+}
+*/
 int w_setDistanceModel(lua_State *L)
 {
 	const char *modelStr = luaL_checkstring(L, 1);
@@ -292,6 +305,182 @@ int w_getRecordingDevices(lua_State *L)
 	return 1;
 }
 
+int w_setSceneEffect(lua_State *L)
+{
+	int slot = luaL_checknumber(L, 1) - 1;
+
+	if (lua_gettop(L) == 1 || (lua_gettop(L) == 2 && lua_isnoneornil(L, 2)))
+	{
+		lua_pushboolean(L, instance()->setSceneEffect(slot));
+		return 1;
+	}
+
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	const char *paramstr = nullptr;
+
+	//find type (mandatory)
+	Effect::getConstant(Effect::EFFECT_TYPE, paramstr, Effect::TYPE_BASIC);
+	lua_pushstring(L, paramstr);
+	lua_rawget(L, 2);
+	if (lua_type(L, -1) == LUA_TNIL)
+		return luaL_error(L, "Effect type not specificed.");
+
+	Effect::Type type = Effect::TYPE_MAX_ENUM;
+	const char *typestr = luaL_checkstring(L, -1);
+	if (!Effect::getConstant(typestr, type))
+		return luaL_error(L, "Invalid Effect type: %s", typestr);
+
+	lua_pop(L, 1);
+	std::map<Effect::Parameter, float> params;
+	params[Effect::EFFECT_TYPE] = static_cast<int>(type);
+
+	// Iterate over the whole table, reading valid parameters and erroring on invalid ones
+	lua_pushnil(L);
+	while (lua_next(L, 2))
+	{
+		const char *keystr = luaL_checkstring(L, -2);
+		Effect::Parameter param;
+
+		if(Effect::getConstant(keystr, param, type) || Effect::getConstant(keystr, param, Effect::TYPE_BASIC))
+		{
+			#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
+			switch(Effect::getParameterType(param))
+			{
+			case Effect::PARAM_FLOAT:
+				if (!lua_isnumber(L, -1))
+					return luax_effecterror(L, "number");
+				params[param] = lua_tonumber(L, -1);
+				break;
+			case Effect::PARAM_BOOL:
+				if (!lua_isboolean(L, -1))
+					return luax_effecterror(L, "boolean");
+				params[param] = lua_toboolean(L, -1) ? 1.0 : 0.0; 
+				break;
+			case Effect::PARAM_WAVEFORM:
+			{
+				if (!lua_isstring(L, -1))
+					return luax_effecterror(L, "string");
+				paramstr = lua_tostring(L, -1);
+				Effect::Waveform waveform;
+				if (!Effect::getConstant(paramstr, waveform))
+					return luaL_error(L, "Invalid waveform type: %s", paramstr);
+				params[param] = static_cast<int>(waveform);
+				break;
+			}
+			/*
+			case Effect::PARAM_DIRECTION:
+			{
+				if (!lua_isstring(L, -1))
+					return luax_effecterror(L, "string");
+				paramstr = lua_tostring(L, -1);
+				Effect::Direction direction;
+				if (!Effect::getConstant(paramstr, direction))
+					return luaL_error(L, "Invalid direction type: %s", paramstr);
+				params[param] = static_cast<int>(direction);
+				break;
+			}
+			case Effect::PARAM_PHONEME:
+			{
+				if (!lua_isstring(L, -1))
+					return luax_effecterror(L, "string");
+				paramstr = lua_tostring(L, -1);
+				Effect::Phoneme phoneme;
+				if (!Effect::getConstant(basicstr, phoneme))
+					return luaL_error(L, "Invalid phoneme type: %s", paramstr);
+				params[param] = static_cast<int>(phoneme);
+				break;
+			}
+			*/
+			case Effect::PARAM_TYPE:
+			case Effect::PARAM_MAX_ENUM:
+				break;
+			}
+			#undef luax_effecterror
+		}
+		else
+			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);
+
+		//remove the value (-1) from stack, keep the key (-2) to feed into lua_next
+		lua_pop(L, 1);
+	}
+
+	luax_catchexcept(L, [&]() { lua_pushboolean(L, instance()->setSceneEffect(slot, params)); });
+	return 1;
+}
+
+int w_getSceneEffect(lua_State *L)
+{
+	int slot = luaL_checknumber(L, 1) - 1;
+
+	std::map<Effect::Parameter, float> params;
+
+	if (!instance()->getSceneEffect(slot, params))
+		return 0;
+
+	const char *keystr, *valstr;
+	Effect::Type type = static_cast<Effect::Type>((int)params[Effect::EFFECT_TYPE]);
+
+	lua_createtable(L, 0, params.size());
+
+	for (auto p : params)
+	{
+		if (!Effect::getConstant(p.first, keystr, type))
+			Effect::getConstant(p.first, keystr, Effect::TYPE_BASIC);
+
+		lua_pushstring(L, keystr);
+		switch (Effect::getParameterType(p.first))
+		{
+		case Effect::PARAM_FLOAT:
+			lua_pushnumber(L, p.second);
+			break;
+		case Effect::PARAM_BOOL:
+			lua_pushboolean(L, p.second > 0.5 ? true : false);
+			break;
+		case Effect::PARAM_WAVEFORM:
+			Effect::getConstant(static_cast<Effect::Waveform>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+/*
+		case Effect::PARAM_DIRECTION:
+			Effect::getConstant(static_cast<Effect::Direction>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+		case Effect::PARAM_PHONEME:
+			Effect::getConstant(static_cast<Effect::Phoneme>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+*/
+		case Effect::PARAM_TYPE:
+			Effect::getConstant(static_cast<Effect::Type>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+		case Effect::PARAM_MAX_ENUM:
+			break;
+		}
+		lua_rawset(L, -3);
+	}
+	return 1;
+}
+
+int w_getMaxSceneEffects(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getMaxSceneEffects());
+	return 1;
+}
+
+int w_getMaxSourceEffects(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getMaxSourceEffects());
+	return 1;
+}
+
+int w_isSceneEffectsSupported(lua_State *L)
+{
+	lua_pushboolean(L, instance()->isEFXsupported());
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -311,9 +500,16 @@ static const luaL_Reg functions[] =
 	{ "getVelocity", w_getVelocity },
 	{ "setDopplerScale", w_setDopplerScale },
 	{ "getDopplerScale", w_getDopplerScale },
+	//{ "setMeter", w_setMeter },
+	//{ "getMeter", w_setMeter },
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
 	{ "getRecordingDevices", w_getRecordingDevices },
+	{ "setEffect", w_setSceneEffect },
+	{ "getEffect", w_getSceneEffect },
+	{ "getMaxSceneEffects", w_getMaxSceneEffects },
+	{ "getMaxSourceEffects", w_getMaxSourceEffects },
+	{ "isEffectsSupported", w_isSceneEffectsSupported },
 	{ 0, 0 }
 };
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,10 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_AUDIO_OPENAL_FILTERS_H
-#define LOVE_AUDIO_OPENAL_FILTERS_H
-
-#include "common/config.h"
+#ifndef LOVE_AUDIO_OPENAL_EFFECTS_H
+#define LOVE_AUDIO_OPENAL_EFFECTS_H
 
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS // Frameworks have different include paths.
@@ -40,12 +38,17 @@
 #endif
 
 #include <vector>
+#include <map>
 
-#include "audio/Filter.h"
+#include "audio/Effect.h"
 #include "Audio.h"
 
-#ifndef AL_FILTER_NULL
-#define AL_FILTER_NULL (0)
+#ifndef AL_EFFECT_NULL
+#define AL_EFFECT_NULL (0)
+#endif
+
+#ifndef AL_EFFECTSLOT_NULL
+#define AL_EFFECTSLOT_NULL (0)
 #endif
 
 namespace love
@@ -55,28 +58,30 @@ namespace audio
 namespace openal
 {
 
-class Filter : public love::audio::Filter
+class Effect : public love::audio::Effect
 {
 public:
-	Filter();
-	Filter(const Filter &s);
-	virtual ~Filter();
-	virtual Filter *clone();
-	ALuint getFilter() const;
+	Effect();
+	Effect(const Effect &s);
+	virtual ~Effect();
+	virtual Effect *clone();
+	ALuint getEffect() const;
 	virtual bool setParams(const std::map<Parameter, float> &params);
 	virtual const std::map<Parameter, float> &getParams() const;
 
 private:
-	bool generateFilter();
-	void deleteFilter();
+	bool generateEffect();
+	void deleteEffect();
 	float getValue(Parameter in, float def) const;
 	int getValue(Parameter in, int def) const;
-	ALuint filter = AL_FILTER_NULL;
+
+	ALuint effect = AL_EFFECT_NULL;
 	std::map<Parameter, float> params;
+	//static std::map<Phoneme, ALint> phonemeMap;
 };
 
 } //openal
 } //audio
 } //love
 
-#endif //LOVE_AUDIO_OPENAL_FILTERS_H
+#endif //LOVE_AUDIO_OPENAL_EFFECTS_H

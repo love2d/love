@@ -84,8 +84,8 @@ public:
 	virtual void setDirection(float *v) = 0;
 	virtual void getDirection(float *v) const = 0;
 
-	virtual void setCone(float innerAngle, float outerAngle, float outerVolume) = 0;
-	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const = 0;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume, float outerHighGain) = 0;
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume, float &outerHighGain) const = 0;
 
 	virtual void setRelative(bool enable) = 0;
 	virtual bool isRelative() const = 0;
@@ -104,12 +104,19 @@ public:
 	virtual float getRolloffFactor() const = 0;
 	virtual void setMaxDistance(float distance) = 0;
 	virtual float getMaxDistance() const = 0;
+	virtual void setAirAbsorptionFactor(float factor) = 0;
+	virtual float getAirAbsorptionFactor() const = 0;
 
 	virtual int getChannels() const = 0;
 
-	virtual bool setFilter(Filter::Type type, std::vector<float> &params) = 0;
+	virtual bool setFilter(std::map<Filter::Parameter, float> &params) = 0;
 	virtual bool setFilter() = 0;
-	virtual bool getFilter(Filter::Type &type, std::vector<float> &params) = 0;
+	virtual bool getFilter(std::map<Filter::Parameter, float> &params) = 0;
+
+	virtual bool setSceneEffect(int slot, int effect) = 0;
+	virtual bool setSceneEffect(int slot, int effect, std::map<Filter::Parameter, float> &params) = 0;
+	virtual bool setSceneEffect(int slot) = 0;
+	virtual bool getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params) = 0;
 
 	virtual int getFreeBufferCount() const = 0;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels) = 0;

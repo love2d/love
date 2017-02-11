@@ -70,11 +70,20 @@ public:
 
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
+	//void setMeter(float scale);
+	//float getMeter() const;
 
 	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
+
+	bool setSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
+	bool setSceneEffect(int slot);
+	bool getSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
+	int getMaxSceneEffects() const;
+	int getMaxSourceEffects() const;
+	bool isEFXsupported() const;
 
 private:
 	float volume;

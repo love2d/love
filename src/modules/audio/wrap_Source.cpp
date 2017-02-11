@@ -23,6 +23,9 @@
 #include "sound/SoundData.h"
 #include "wrap_Source.h"
 
+#include <cmath>
+#include <iostream>
+
 namespace love
 {
 namespace audio
@@ -212,19 +215,21 @@ int w_Source_setCone(lua_State *L)
 	float innerAngle = (float) luaL_checknumber(L, 2);
 	float outerAngle = (float) luaL_checknumber(L, 3);
 	float outerVolume = (float) luaL_optnumber(L, 4, 0.0);
-	luax_catchexcept(L, [&](){ t->setCone(innerAngle, outerAngle, outerVolume); });
+	float outerHighGain = (float) luaL_optnumber(L, 5, 1.0);
+	luax_catchexcept(L, [&](){ t->setCone(innerAngle, outerAngle, outerVolume, outerHighGain); });
 	return 0;
 }
 
 int w_Source_getCone(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	float innerAngle, outerAngle, outerVolume;
-	luax_catchexcept(L, [&](){ t->getCone(innerAngle, outerAngle, outerVolume); });
+	float innerAngle, outerAngle, outerVolume, outerHighGain;
+	luax_catchexcept(L, [&](){ t->getCone(innerAngle, outerAngle, outerVolume, outerHighGain); });
 	lua_pushnumber(L, innerAngle);
 	lua_pushnumber(L, outerAngle);
 	lua_pushnumber(L, outerVolume);
-	return 3;
+	lua_pushnumber(L, outerHighGain);
+	return 4;
 }
 
 int w_Source_setRelative(lua_State *L)
@@ -323,6 +328,16 @@ int w_Source_getRolloff(lua_State *L)
 	return 1;
 }
 
+int w_Source_setAirAbsorption(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	float factor = (float)luaL_checknumber(L, 2);
+	if (factor < 0.0f)
+		return luaL_error(L, "Invalid air absorption factor: %f. Must be > 0.", factor);
+	luax_catchexcept(L, [&](){ t->setAirAbsorptionFactor(factor); });
+	return 0;
+}
+
 int w_Source_getChannels(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -330,74 +345,160 @@ int w_Source_getChannels(lua_State *L)
 	return 1;
 }
 
+int setFilterReadFilter(lua_State *L, int idx, std::map<Filter::Parameter, float> &params)
+{
+	if (lua_gettop(L) < idx || lua_isnoneornil(L, idx))
+		return 0;
+
+	luaL_checktype(L, idx, LUA_TTABLE);
+
+	const char *paramstr = nullptr;
+
+	Filter::getConstant(Filter::FILTER_TYPE, paramstr, Filter::TYPE_BASIC);
+	lua_pushstring(L, paramstr);
+	lua_rawget(L, idx);
+	if (lua_type(L, -1) == LUA_TNIL)
+		return luaL_error(L, "Filter type not specificed.");
+
+	Filter::Type type = Filter::TYPE_MAX_ENUM;
+	const char *typestr = luaL_checkstring(L, -1);
+	if (!Filter::getConstant(typestr, type))
+		return luaL_error(L, "Invalid Filter type: %s", typestr);
+
+	lua_pop(L, 1);
+	params[Filter::FILTER_TYPE] = static_cast<int>(type);
+
+	lua_pushnil(L);
+	while (lua_next(L, idx))
+	{
+		const char *keystr = luaL_checkstring(L, -2);
+		Filter::Parameter param;
+
+		if(Filter::getConstant(keystr, param, type) || Filter::getConstant(keystr, param, Filter::TYPE_BASIC))
+		{
+			#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
+			switch(Filter::getParameterType(param))
+			{
+			case Filter::PARAM_FLOAT:
+				if (!lua_isnumber(L, -1))
+					return luax_effecterror(L, "number");
+				params[param] = lua_tonumber(L, -1);
+				break;
+			case Filter::PARAM_TYPE:
+			case Filter::PARAM_MAX_ENUM:
+				break;
+			}
+			#undef luax_effecterror
+		}
+		else
+			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);
+
+		//remove the value (-1) from stack, keep the key (-2) to feed into lua_next
+		lua_pop(L, 1);
+	}
+
+	return 1;
+}
+
+void getFilterWriteFilter(lua_State *L, std::map<Filter::Parameter, float> &params)
+{
+	const char *keystr, *valstr;
+	Filter::Type type = static_cast<Filter::Type>((int)params[Filter::FILTER_TYPE]);
+
+	lua_createtable(L, 0, params.size());
+
+	for (auto p : params)
+	{
+		if (!Filter::getConstant(p.first, keystr, type))
+			Filter::getConstant(p.first, keystr, Filter::TYPE_BASIC);
+
+		lua_pushstring(L, keystr);
+		switch (Filter::getParameterType(p.first))
+		{
+		case Filter::PARAM_FLOAT:
+			lua_pushnumber(L, p.second);
+			break;
+		case Filter::PARAM_TYPE:
+			Filter::getConstant(static_cast<Filter::Type>((int)p.second), valstr);
+			lua_pushstring(L, valstr);
+			break;
+		case Filter::PARAM_MAX_ENUM:
+			break;
+		}
+		lua_rawset(L, -3);
+	}
+}
+
 int w_Source_setFilter(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 
-	Filter::Type type;
-	std::vector<float> params;
+	std::map<Filter::Parameter, float> params;
 
-	params.reserve(Filter::getParameterCount());
-
-	if (lua_gettop(L) == 1)
-	{
-		lua_pushboolean(L, t->setFilter());
-		return 1;
-	}
-	else if (lua_gettop(L) > 2)
-	{
-		const char *ftypestr = luaL_checkstring(L, 2);
-		if (!Filter::getConstant(ftypestr, type))
-			return luaL_error(L, "Invalid filter type: %s", ftypestr);
-
-		unsigned int count = Filter::getParameterCount(type);
-		for (unsigned int i = 0; i < count; i++)
-			params.push_back(luaL_checknumber(L, i + 3));
-	}
-	else if (lua_istable(L, 2))
-	{
-		if (lua_objlen(L, 2) == 0) //empty table also clears filter
-		{
-			lua_pushboolean(L, t->setFilter());
-			return 1;
-		}
-		lua_rawgeti(L, 2, 1);
-		const char *ftypestr = luaL_checkstring(L, -1);
-		if (!Filter::getConstant(ftypestr, type))
-			return luaL_error(L, "Invalid filter type: %s", ftypestr);
-		lua_pop(L, 1);
-
-		unsigned int count = Filter::getParameterCount(type);
-		for (unsigned int i = 0; i < count; i++)
-		{
-			lua_rawgeti(L, 2, i + 2);
-			params.push_back(luaL_checknumber(L, -1));
-			lua_pop(L, 1);
-		}
-	}
+	if (setFilterReadFilter(L, 2, params) == 1)
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter(params)); });
 	else
-		return luax_typerror(L, 2, "filter description");
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter()); });
 
-	luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setFilter(type, params)); });
 	return 1;
 }
 
 int w_Source_getFilter(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	Filter::Type type;
-	std::vector<float> params;
-	if (!t->getFilter(type, params))
+
+	std::map<Filter::Parameter, float> params;
+
+	if (!t->getFilter(params))
 		return 0;
 
-	const char *str = nullptr;
-	Filter::getConstant(type, str);
-	lua_pushstring(L, str);
+	getFilterWriteFilter(L, params);
+	return 1;
+}
 
-	for (unsigned int i = 0; i < params.size(); i++)
-		lua_pushnumber(L, params[i]);
+int w_Source_setSceneEffect(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
 
-	return params.size() + 1;
+	int slot = luaL_checknumber(L, 2) - 1;
+	if (lua_gettop(L) == 2)
+	{
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot)); });
+		return 1;
+	}
+
+	int effect = luaL_checknumber(L, 3) - 1;
+	if (lua_gettop(L) == 3)
+	{
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect)); });
+		return 1;
+	}
+
+	std::map<Filter::Parameter, float> params;
+
+	if (setFilterReadFilter(L, 4, params) == 1)
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect, params)); });
+	else
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect)); });
+	return 1;
+}
+
+int w_Source_getSceneEffect(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	int slot = luaL_checknumber(L, 2) - 1;
+
+	int effect;
+	std::map<Filter::Parameter, float> params;
+	if (!t->getSceneEffect(slot, effect, params))
+		return 0;
+
+	lua_pushnumber(L, effect + 1);
+	if (params.size() == 0)
+		return 1;
+
+	getFilterWriteFilter(L, params);
+	return 2;
 }
 
 int w_Source_getFreeBufferCount(lua_State *L)
@@ -505,13 +606,15 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getVolumeLimits", w_Source_getVolumeLimits },
 	{ "setAttenuationDistances", w_Source_setAttenuationDistances },
 	{ "getAttenuationDistances", w_Source_getAttenuationDistances },
-	{ "setRolloff", w_Source_setRolloff},
-	{ "getRolloff", w_Source_getRolloff},
+	{ "setRolloff", w_Source_setRolloff },
+	{ "getRolloff", w_Source_getRolloff },
 
 	{ "getChannels", w_Source_getChannels },
 
 	{ "setFilter", w_Source_setFilter },
 	{ "getFilter", w_Source_getFilter },
+	{ "setEffect", w_Source_setSceneEffect },
+	{ "getEffect", w_Source_getSceneEffect },
 
 	{ "getFreeBufferCount", w_Source_getFreeBufferCount },
 	{ "queue", w_Source_queue },

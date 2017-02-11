@@ -102,7 +102,13 @@ Audio::Audio()
 	if (device == nullptr)
 		throw love::Exception("Could not open device.");
 
-	context = alcCreateContext(device, nullptr);
+	#ifdef ALC_EXT_EFX
+	ALint attribs[4] = { ALC_MAX_AUXILIARY_SENDS, MAX_SOURCE_EFFECTS, 0, 0 }; 
+	#else
+	ALint *attribs = nullptr;
+	#endif
+
+	context = alcCreateContext(device, attribs);
 
 	if (context == nullptr)
 		throw love::Exception("Could not create context.");
@@ -110,7 +116,36 @@ Audio::Audio()
 	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
 
+	#ifdef ALC_EXT_EFX
 	initializeEFX();
+
+	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &MAX_SOURCE_EFFECTS);
+
+	alGetError(); 
+	if (alGenAuxiliaryEffectSlots)
+	{
+		for (int i = 0; i < MAX_SCENE_EFFECTS; i++)
+		{
+			ALuint slot;
+			alGenAuxiliaryEffectSlots(1, &slot);
+			if (alGetError() == AL_NO_ERROR)
+			{
+				effectIndex[slot] = effectSlots.size();
+				effectSlots.push_back(slot);
+				effects.push_back(nullptr);
+			}
+			else
+			{
+				MAX_SCENE_EFFECTS = i;
+				break;
+			}
+		}
+	}
+	else
+		MAX_SCENE_EFFECTS = MAX_SOURCE_EFFECTS = 0;
+	#else
+	MAX_SCENE_EFFECTS = MAX_SOURCE_EFFECTS = 0;
+	#endif
 
 	try
 	{
@@ -118,12 +153,16 @@ Audio::Audio()
 	}
 	catch (love::Exception &)
 	{
+		for (auto c : capture)
+			delete c;
+		#ifdef ALC_EXT_EFX
+		if (alDeleteAuxiliaryEffectSlots)
+			for (auto slot : effectSlots)
+				alDeleteAuxiliaryEffectSlots(1, &slot);
+		#endif
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(context);
 		alcCloseDevice(device);
-		for (auto c : capture)
-			delete c;
-
 		throw;
 	}
 
@@ -138,14 +177,20 @@ Audio::~Audio()
 
 	delete poolThread;
 	delete pool;
-
+	for (auto c : capture)
+		delete c;
+	#ifdef ALC_EXT_EFX
+	for (auto e : effects)
+		if (e != nullptr)
+			delete e;
+	if (alDeleteAuxiliaryEffectSlots)
+		for (auto slot : effectSlots)
+			alDeleteAuxiliaryEffectSlots(1, &slot);
+	#endif
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
-	for (auto c : capture)
-		delete c;
 }
-
 
 const char *Audio::getName() const
 {
@@ -269,7 +314,23 @@ float Audio::getDopplerScale() const
 {
 	return alGetFloat(AL_DOPPLER_FACTOR);
 }
+/*
+void Audio::setMeter(float scale)
+{
+	if (scale >= 0.0f)
+	{
+		metersPerUnit = scale;
+		#ifdef ALC_EXT_EFX
+		alListenerf(AL_METERS_PER_UNIT, scale);
+		#endif
+	}
+}
 
+float Audio::getMeter() const
+{
+	return metersPerUnit;
+}
+*/
 Audio::DistanceModel Audio::getDistanceModel() const
 {
 	return distanceModel;
@@ -382,6 +443,97 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 		capture.push_back(devices[i]);
 
 	return capture;
+}
+
+bool Audio::setSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
+{
+	if (slot < 0 || slot >= MAX_SCENE_EFFECTS)
+		return false;
+
+	if (!effects[slot])
+		effects[slot] = new Effect();
+
+	bool result = effects[slot]->setParams(params);
+
+	#ifdef ALC_EXT_EFX
+	if (alAuxiliaryEffectSloti)
+	{
+		if (result == true)
+		{
+			if (params.find(Effect::EFFECT_VOLUME) != params.end())
+				alAuxiliaryEffectSlotf(effectSlots[slot], AL_EFFECTSLOT_GAIN, params[Effect::EFFECT_VOLUME]);
+			alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, effects[slot]->getEffect());
+		}
+		else
+			alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
+		alGetError();
+	}
+	#endif
+
+	return result;
+}
+
+bool Audio::setSceneEffect(int slot)
+{
+	if (slot < 0 || slot >= MAX_SCENE_EFFECTS)
+		return false;
+
+	if (effects[slot])
+		delete effects[slot];
+
+	effects[slot] = nullptr;
+
+	#ifdef ALC_EXT_EFX
+	if (alAuxiliaryEffectSloti)
+		alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
+	#endif
+
+	return true;
+}
+
+bool Audio::getSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
+{
+	if (slot < 0 || slot >= MAX_SCENE_EFFECTS)
+		return false;
+
+	if (!effects[slot])
+		return false;
+
+	params = effects[slot]->getParams();
+
+	return true;
+}
+
+int Audio::getMaxSceneEffects() const
+{
+	return MAX_SCENE_EFFECTS;
+}
+
+int Audio::getMaxSourceEffects() const
+{
+	return MAX_SOURCE_EFFECTS;
+}
+
+bool Audio::isEFXsupported() const
+{
+	#ifdef ALC_EXT_EFX
+	return (alGenEffects != nullptr);
+	#else
+	return false;
+	#endif
+}
+
+ALuint Audio::getSceneEffectID(int slot)
+{
+	if (slot < 0 || slot >= MAX_SCENE_EFFECTS)
+		return effectSlots[0];
+
+	return effectSlots[slot];
+}
+
+int Audio::getSceneEffectIndex(ALuint effect)
+{
+	return effectIndex[effect];
 }
 
 #ifdef ALC_EXT_EFX

@@ -21,6 +21,8 @@
 #include "Filter.h"
 #include "common/Exception.h"
 
+#include <cmath>
+
 namespace love
 {
 namespace audio
@@ -28,39 +30,21 @@ namespace audio
 namespace openal
 {
 
-//clamp values silently to avoid randomly throwing errors due to implementation differences
-float clampf(float val, float min, float max)
-{
-	if      (val < min) val = min;
-	else if (val > max) val = max;
-	return val;
-}
-
 //base class
 Filter::Filter()
 {
-	#ifdef ALC_EXT_EFX
-	if (!alGenFilters)
-		return;
-
-	alGenFilters(1, &filter);
-	if (alGetError() != AL_NO_ERROR)
-		throw love::Exception("Failed to create sound Filter.");
-	#endif
+	generateFilter();
 }
 
 Filter::Filter(const Filter &s)
 	: Filter()
 {
-	setParams(s.getType(), s.getParams());
+	setParams(s.getParams());
 }
 
 Filter::~Filter()
 {
-	#ifdef ALC_EXT_EFX
-	if (filter != AL_FILTER_NULL)
-		alDeleteFilters(1, &filter);
-	#endif
+	deleteFilter();
 }
 
 Filter *Filter::clone()
@@ -68,17 +52,45 @@ Filter *Filter::clone()
 	return new Filter(*this);
 }
 
+bool Filter::generateFilter()
+{
+	#ifdef ALC_EXT_EFX
+	if (!alGenFilters)
+		return false;
+
+	if (filter != AL_FILTER_NULL)
+		return true;
+
+	alGenFilters(1, &filter);
+	if (alGetError() != AL_NO_ERROR)
+		throw love::Exception("Failed to create sound Filter.");
+
+	return true;
+	#else
+	return false;
+	#endif
+}
+
+void Filter::deleteFilter()
+{
+	#ifdef ALC_EXT_EFX
+	if (filter != AL_FILTER_NULL)
+		alDeleteFilters(1, &filter);
+	#endif
+	filter = AL_FILTER_NULL;
+}
+
 ALuint Filter::getFilter() const
 {
 	return filter;
 }
 
-bool Filter::setParams(Type type, const std::vector<float> &params)
+bool Filter::setParams(const std::map<Parameter, float> &params)
 {
-	this->type = type;
 	this->params = params;
+	type = static_cast<Type>(this->params[FILTER_TYPE]);
 
-	if (filter == AL_FILTER_NULL)
+	if (!generateFilter())
 		return false;
 
 	#ifdef ALC_EXT_EFX
@@ -93,6 +105,7 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 	case TYPE_BANDPASS:
 		alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_BANDPASS);
 		break;
+	case TYPE_BASIC:
 	case TYPE_MAX_ENUM:
 		break;
 	}
@@ -100,36 +113,54 @@ bool Filter::setParams(Type type, const std::vector<float> &params)
 	//failed to make filter specific type - not supported etc.
 	if (alGetError() != AL_NO_ERROR)
 	{
-		filter = AL_FILTER_NULL;
+		deleteFilter();
 		return false;
 	}
 
+	#define clampf(v,l,h) fmax(fmin((v),(h)),(l))
+	#define PARAMSTR(i,e,v) filter,AL_##e##_##v,clampf(getValue(i,AL_##e##_DEFAULT_##v),AL_##e##_MIN_##v,AL_##e##_MAX_##v)
 	switch (type)
 	{
 	case TYPE_LOWPASS:
-		alFilterf(filter, AL_LOWPASS_GAIN, clampf(params[0], AL_LOWPASS_MIN_GAIN, AL_LOWPASS_MAX_GAIN));
-		alFilterf(filter, AL_LOWPASS_GAINHF, clampf(params[1], AL_LOWPASS_MIN_GAINHF, AL_LOWPASS_MAX_GAINHF));
+		alFilterf(PARAMSTR(FILTER_VOLUME,LOWPASS,GAIN));
+		alFilterf(PARAMSTR(FILTER_HIGHGAIN,LOWPASS,GAINHF));
 		break;
 	case TYPE_HIGHPASS:
-		alFilterf(filter, AL_HIGHPASS_GAIN, clampf(params[0], AL_HIGHPASS_MIN_GAIN, AL_HIGHPASS_MAX_GAIN));
-		alFilterf(filter, AL_HIGHPASS_GAINLF, clampf(params[1], AL_HIGHPASS_MIN_GAINLF, AL_HIGHPASS_MAX_GAINLF));
+		alFilterf(PARAMSTR(FILTER_VOLUME,HIGHPASS,GAIN));
+		alFilterf(PARAMSTR(FILTER_LOWGAIN,HIGHPASS,GAINLF));
 		break;
 	case TYPE_BANDPASS:
-		alFilterf(filter, AL_BANDPASS_GAIN, clampf(params[0], AL_BANDPASS_MIN_GAIN, AL_BANDPASS_MAX_GAIN));
-		alFilterf(filter, AL_BANDPASS_GAINLF, clampf(params[1], AL_BANDPASS_MIN_GAINLF, AL_BANDPASS_MAX_GAINLF));
-		alFilterf(filter, AL_BANDPASS_GAINHF, clampf(params[2], AL_BANDPASS_MIN_GAINHF, AL_BANDPASS_MAX_GAINHF));
+		alFilterf(PARAMSTR(FILTER_VOLUME,BANDPASS,GAIN));
+		alFilterf(PARAMSTR(FILTER_LOWGAIN,BANDPASS,GAINLF));
+		alFilterf(PARAMSTR(FILTER_HIGHGAIN,BANDPASS,GAINHF));
 		break;
+	case TYPE_BASIC:
 	case TYPE_MAX_ENUM:
 		break;
 	}
-	#endif
+	#undef clampf
+	#undef PARAMSTR
+	//alGetError();
 
 	return true;
+	#else
+	return false;
+	#endif
 }
 
-const std::vector<float> &Filter::getParams() const
+const std::map<Filter::Parameter, float> &Filter::getParams() const
 {
 	return params;
+}
+
+float Filter::getValue(Parameter in, float def) const
+{
+	return params.find(in) == params.end() ? def : params.at(in);
+}
+
+int Filter::getValue(Parameter in, int def) const
+{
+	return params.find(in) == params.end() ? def : static_cast<int>(params.at(in));
 }
 
 } //openal
