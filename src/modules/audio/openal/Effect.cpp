@@ -55,7 +55,7 @@ Effect *Effect::clone()
 
 bool Effect::generateEffect()
 {
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (!alGenEffects)
 		return false;
 
@@ -67,17 +67,17 @@ bool Effect::generateEffect()
 		throw love::Exception("Failed to create sound Effect.");
 
 	return true;
-	#else
+#else
 	return false;
-	#endif
+#endif
 }
 
 void Effect::deleteEffect()
 {
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (effect != AL_EFFECT_NULL)
 		alDeleteEffects(1, &effect);
-	#endif
+#endif
 	effect = AL_EFFECT_NULL;
 }
 
@@ -94,7 +94,7 @@ bool Effect::setParams(const std::map<Parameter, float> &params)
 	if (!generateEffect())
 		return false;
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	//parameter table without EFFECT_TYPE entry is illegal
 	switch (type)
 	{
@@ -150,8 +150,8 @@ bool Effect::setParams(const std::map<Parameter, float> &params)
 		return false;
 	}
 
-	#define clampf(v,l,h) fmax(fmin((v),(h)),(l))
-	#define PARAMSTR(i,e,v) effect,AL_##e##_##v,clampf(getValue(i,AL_##e##_DEFAULT_##v),AL_##e##_MIN_##v,AL_##e##_MAX_##v)
+#define clampf(v,l,h) fmax(fmin((v),(h)),(l))
+#define PARAMSTR(i,e,v) effect,AL_##e##_##v,clampf(getValue(i,AL_##e##_DEFAULT_##v),AL_##e##_MIN_##v,AL_##e##_MAX_##v)
 	switch (type)
 	{
 	case TYPE_REVERB:
@@ -224,7 +224,7 @@ bool Effect::setParams(const std::map<Parameter, float> &params)
 /*
 	case TYPE_FREQSHIFTER:
 	{
-		alEffectf(PARAMSTR(FREQSHIFTER_FREQ,FREQUENCY_SHIFTER,FREQUENCY)); 
+		alEffectf(PARAMSTR(FREQSHIFTER_FREQ,FREQUENCY_SHIFTER,FREQUENCY));
 
 		Direction dir = static_cast<Direction>(getValue(FREQSHIFTER_LEFTDIR, static_cast<int>(DIR_MAX_ENUM)));
 		if (dir == DIR_NONE)
@@ -233,7 +233,7 @@ bool Effect::setParams(const std::map<Parameter, float> &params)
 			alEffecti(effect, AL_FREQUENCY_SHIFTER_LEFT_DIRECTION, AL_FREQUENCY_SHIFTER_DIRECTION_UP);
 		else if(dir == DIR_DOWN)
 			alEffecti(effect, AL_FREQUENCY_SHIFTER_LEFT_DIRECTION, AL_FREQUENCY_SHIFTER_DIRECTION_DOWN);
-		else 
+		else
 			alEffecti(effect, AL_FREQUENCY_SHIFTER_LEFT_DIRECTION, AL_FREQUENCY_SHIFTER_DEFAULT_LEFT_DIRECTION);
 
 		dir = static_cast<Direction>(getValue(FREQSHIFTER_RIGHTDIR, static_cast<int>(DIR_MAX_ENUM)));
@@ -243,7 +243,7 @@ bool Effect::setParams(const std::map<Parameter, float> &params)
 			alEffecti(effect, AL_FREQUENCY_SHIFTER_RIGHT_DIRECTION, AL_FREQUENCY_SHIFTER_DIRECTION_UP);
 		else if(dir == DIR_DOWN)
 			alEffecti(effect, AL_FREQUENCY_SHIFTER_RIGHT_DIRECTION, AL_FREQUENCY_SHIFTER_DIRECTION_DOWN);
-		else 
+		else
 			alEffecti(effect, AL_FREQUENCY_SHIFTER_RIGHT_DIRECTION, AL_FREQUENCY_SHIFTER_DEFAULT_RIGHT_DIRECTION);
 		break;
 	}
@@ -351,14 +351,14 @@ bool Effect::setParams(const std::map<Parameter, float> &params)
 	case TYPE_MAX_ENUM:
 		break;
 	}
-	#undef PARAMSTR
-	#undef clampf
+#undef PARAMSTR
+#undef clampf
 	//alGetError();
 
 	return true;
-	#else
+#else
 	return false;
-	#endif //ALC_EXT_EFX
+#endif //ALC_EXT_EFX
 }
 
 const std::map<Effect::Parameter, float> &Effect::getParams() const
@@ -377,7 +377,7 @@ int Effect::getValue(Parameter in, int def) const
 }
 
 /*
-std::map<Effect::Phoneme, ALint> Effect::phonemeMap = 
+std::map<Effect::Phoneme, ALint> Effect::phonemeMap =
 {
 	{Effect::PHONEME_A, AL_VOCAL_MORPHER_PHONEME_A},
 	{Effect::PHONEME_E, AL_VOCAL_MORPHER_PHONEME_E},

@@ -376,7 +376,7 @@ int setFilterReadFilter(lua_State *L, int idx, std::map<Filter::Parameter, float
 
 		if(Filter::getConstant(keystr, param, type) || Filter::getConstant(keystr, param, Filter::TYPE_BASIC))
 		{
-			#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
+#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
 			switch(Filter::getParameterType(param))
 			{
 			case Filter::PARAM_FLOAT:
@@ -388,7 +388,7 @@ int setFilterReadFilter(lua_State *L, int idx, std::map<Filter::Parameter, float
 			case Filter::PARAM_MAX_ENUM:
 				break;
 			}
-			#undef luax_effecterror
+#undef luax_effecterror
 		}
 		else
 			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);

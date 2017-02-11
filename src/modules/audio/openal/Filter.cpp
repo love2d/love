@@ -54,7 +54,7 @@ Filter *Filter::clone()
 
 bool Filter::generateFilter()
 {
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (!alGenFilters)
 		return false;
 
@@ -66,17 +66,17 @@ bool Filter::generateFilter()
 		throw love::Exception("Failed to create sound Filter.");
 
 	return true;
-	#else
+#else
 	return false;
-	#endif
+#endif
 }
 
 void Filter::deleteFilter()
 {
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (filter != AL_FILTER_NULL)
 		alDeleteFilters(1, &filter);
-	#endif
+#endif
 	filter = AL_FILTER_NULL;
 }
 
@@ -93,7 +93,7 @@ bool Filter::setParams(const std::map<Parameter, float> &params)
 	if (!generateFilter())
 		return false;
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	switch (type)
 	{
 	case TYPE_LOWPASS:
@@ -117,8 +117,8 @@ bool Filter::setParams(const std::map<Parameter, float> &params)
 		return false;
 	}
 
-	#define clampf(v,l,h) fmax(fmin((v),(h)),(l))
-	#define PARAMSTR(i,e,v) filter,AL_##e##_##v,clampf(getValue(i,AL_##e##_DEFAULT_##v),AL_##e##_MIN_##v,AL_##e##_MAX_##v)
+#define clampf(v,l,h) fmax(fmin((v),(h)),(l))
+#define PARAMSTR(i,e,v) filter,AL_##e##_##v,clampf(getValue(i,AL_##e##_DEFAULT_##v),AL_##e##_MIN_##v,AL_##e##_MAX_##v)
 	switch (type)
 	{
 	case TYPE_LOWPASS:
@@ -138,14 +138,14 @@ bool Filter::setParams(const std::map<Parameter, float> &params)
 	case TYPE_MAX_ENUM:
 		break;
 	}
-	#undef clampf
-	#undef PARAMSTR
+#undef clampf
+#undef PARAMSTR
 	//alGetError();
 
 	return true;
-	#else
+#else
 	return false;
-	#endif
+#endif
 }
 
 const std::map<Filter::Parameter, float> &Filter::getParams() const

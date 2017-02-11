@@ -203,7 +203,7 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::chorusParameters =
 	{"delay", Effect::CHORUS_DELAY}
 };
 
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::distortionParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::distortionParameters =
 {
 	{"gain", Effect::DISTORTION_GAIN},
 	{"edge", Effect::DISTORTION_EDGE},
@@ -212,7 +212,7 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::distortionParameters =
 	{"bandwidth", Effect::DISTORTION_EQBAND}
 };
 
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::echoParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::echoParameters =
 {
 	{"delay", Effect::ECHO_DELAY},
 	{"tapdelay", Effect::ECHO_LRDELAY},
@@ -221,7 +221,7 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::echoParameters =
 	{"spread", Effect::ECHO_SPREAD}
 };
 
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::flangerParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::flangerParameters =
 {
 	{"waveform", Effect::FLANGER_WAVEFORM},
 	{"phase", Effect::FLANGER_PHASE},
@@ -231,14 +231,14 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::flangerParameters =
 	{"delay", Effect::FLANGER_DELAY}
 };
 /*
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::freqshifterParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::freqshifterParameters =
 {
 	{"frequency", Effect::FREQSHIFTER_FREQ},
 	{"leftdirection", Effect::FREQSHIFTER_LEFTDIR},
 	{"rightdirection", Effect::FREQSHIFTER_RIGHTDIR}
 };
 
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::morpherParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::morpherParameters =
 {
 	{"waveform", Effect::MORPHER_WAVEFORM},
 	{"rate", Effect::MORPHER_RATE},
@@ -248,19 +248,19 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::morpherParameters =
 	{"tuneb", Effect::MORPHER_COARSEB}
 }
 ;
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::pitchshifterParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::pitchshifterParameters =
 {
 	{"pitch", Effect::PITCHSHIFTER_PITCH}
 };
 */
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::modulatorParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::modulatorParameters =
 {
 	{"waveform", Effect::MODULATOR_WAVEFORM},
 	{"frequency", Effect::MODULATOR_FREQ},
 	{"highcut", Effect::MODULATOR_HIGHCUT}
 };
 /*
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::autowahParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::autowahParameters =
 {
 	{"attack", Effect::AUTOWAH_ATTACK},
 	{"release", Effect::AUTOWAH_RELEASE},
@@ -268,12 +268,12 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::autowahParameters =
 	{"peakgain", Effect::AUTOWAH_PEAKGAIN}
 };
 */
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::compressorParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::compressorParameters =
 {
 	{"enable", Effect::COMPRESSOR_ENABLE}
 };
 
-std::vector<StringMap<Effect::Parameter>::Entry> Effect::equalizerParameters = 
+std::vector<StringMap<Effect::Parameter>::Entry> Effect::equalizerParameters =
 {
 	{"lowgain", Effect::EQUALIZER_LOWGAIN},
 	{"lowcut", Effect::EQUALIZER_LOWCUT},
@@ -287,7 +287,7 @@ std::vector<StringMap<Effect::Parameter>::Entry> Effect::equalizerParameters =
 	{"highcut", Effect::EQUALIZER_HIGHCUT}
 };
 
-std::map<Effect::Type, StringMap<Effect::Parameter>> Effect::parameterNames = 
+std::map<Effect::Type, StringMap<Effect::Parameter>> Effect::parameterNames =
 {
 	{Effect::TYPE_BASIC, Effect::basicParameters},
 	{Effect::TYPE_REVERB, Effect::reverbParameters},
@@ -305,7 +305,7 @@ std::map<Effect::Type, StringMap<Effect::Parameter>> Effect::parameterNames =
 };
 #undef StringMap
 
-std::map<Effect::Parameter, Effect::ParameterType> Effect::parameterTypes = 
+std::map<Effect::Parameter, Effect::ParameterType> Effect::parameterTypes =
 {
 	{Effect::EFFECT_TYPE, Effect::PARAM_TYPE},
 	{Effect::EFFECT_VOLUME, Effect::PARAM_FLOAT},

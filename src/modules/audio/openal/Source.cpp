@@ -341,7 +341,7 @@ bool Source::update()
 				return true;
 			}
 			return false;
-		case TYPE_QUEUE: 
+		case TYPE_QUEUE:
 		{
 			ALint processed;
 			ALuint buffers[MAX_BUFFERS];
@@ -648,9 +648,9 @@ void Source::setCone(float innerAngle, float outerAngle, float outerVolume, floa
 		alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 		alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
 		alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
-		#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 		alSourcef(source, AL_CONE_OUTER_GAINHF, cone.outerHighGain);
-		#endif
+#endif
 	}
 }
 
@@ -748,14 +748,14 @@ int Source::getFreeBufferCount() const
 {
 	switch (sourceType) //why not :^)
 	{
-		case TYPE_STATIC: 
+		case TYPE_STATIC:
 			return 0;
 		case TYPE_STREAM:
 			return unusedBufferTop + 1;
 		case TYPE_QUEUE:
 			return valid ? unusedBufferTop + 1 : (int)MAX_BUFFERS - unusedBufferTop - 1;
 		case TYPE_MAX_ENUM:
-			return 0; 
+			return 0;
 	}
 	return 0;
 }
@@ -887,7 +887,7 @@ bool Source::playAtomic(ALuint source)
 
 	//this is set to success state afterwards anyway, but setting it here
 	//to true preemptively avoids race condition with update bug
-	valid = true; 
+	valid = true;
 
 	return success;
 }
@@ -1014,7 +1014,7 @@ void Source::reset()
 	alSourcei(source, AL_CONE_INNER_ANGLE, cone.innerAngle);
 	alSourcei(source, AL_CONE_OUTER_ANGLE, cone.outerAngle);
 	alSourcef(source, AL_CONE_OUTER_GAIN, cone.outerVolume);
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	alSourcef(source, AL_AIR_ABSORPTION_FACTOR, absorptionFactor);
 	alSourcef(source, AL_CONE_OUTER_GAINHF, cone.outerHighGain);
 	alSourcef(source, AL_ROOM_ROLLOFF_FACTOR, rolloffFactor); //reverb-specific rolloff
@@ -1022,7 +1022,7 @@ void Source::reset()
 	for (unsigned int i = 0; i < sendtargets.size(); i++)
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[i], i, sendfilters[i] ? sendfilters[i]->getFilter() : AL_FILTER_NULL);
 	//alGetError();
-	#endif
+#endif
 }
 
 void Source::setFloatv(float *dst, const float *src) const
@@ -1230,13 +1230,13 @@ void Source::setAirAbsorptionFactor(float factor)
 		throw SpatialSupportException();
 
 	absorptionFactor = factor;
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		alSourcef(source, AL_AIR_ABSORPTION_FACTOR, absorptionFactor);
 		//alGetError();
 	}
-	#endif
+#endif
 }
 
 float Source::getAirAbsorptionFactor() const
@@ -1259,14 +1259,14 @@ bool Source::setFilter(std::map<Filter::Parameter, float> &params)
 
 	bool result = directfilter->setParams(params);
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		//in case of failure contains AL_FILTER_NULL, a valid non-filter
 		alSourcei(source, AL_DIRECT_FILTER, directfilter->getFilter());
 		//alGetError();
 	}
-	#endif
+#endif
 
 	return result;
 }
@@ -1278,13 +1278,13 @@ bool Source::setFilter()
 
 	directfilter = nullptr;
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		alSourcei(source, AL_DIRECT_FILTER, AL_FILTER_NULL);
 		//alGetError();
 	}
-	#endif
+#endif
 
 	return true;
 }
@@ -1311,13 +1311,13 @@ bool Source::setSceneEffect(int slot, int effect)
 
 	sendfilters[slot] = nullptr;
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[slot], slot, AL_FILTER_NULL);
 		//alGetError();
 	}
-	#endif
+#endif
 
 	return true;
 }
@@ -1334,14 +1334,14 @@ bool Source::setSceneEffect(int slot, int effect, std::map<Filter::Parameter, fl
 
 	sendfilters[slot]->setParams(params);
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		//in case of failure contains AL_FILTER_NULL, a valid non-filter
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[slot], slot, sendfilters[slot]->getFilter());
 		//alGetError();
 	}
-	#endif
+#endif
 	return true;
 }
 
@@ -1356,13 +1356,13 @@ bool Source::setSceneEffect(int slot)
 		delete sendfilters[slot];
 	sendfilters[slot] = nullptr;
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		alSource3i(source, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, slot, AL_FILTER_NULL);
 		//alGetError();
 	}
-	#endif
+#endif
 
 	return true;
 }

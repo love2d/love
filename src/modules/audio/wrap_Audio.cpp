@@ -344,7 +344,7 @@ int w_setSceneEffect(lua_State *L)
 
 		if(Effect::getConstant(keystr, param, type) || Effect::getConstant(keystr, param, Effect::TYPE_BASIC))
 		{
-			#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
+#define luax_effecterror(l,t) luaL_error(l,"Bad parameter type for %s %s: " t " expected, got %s", typestr, keystr, lua_typename(L, -1))
 			switch(Effect::getParameterType(param))
 			{
 			case Effect::PARAM_FLOAT:
@@ -355,7 +355,7 @@ int w_setSceneEffect(lua_State *L)
 			case Effect::PARAM_BOOL:
 				if (!lua_isboolean(L, -1))
 					return luax_effecterror(L, "boolean");
-				params[param] = lua_toboolean(L, -1) ? 1.0 : 0.0; 
+				params[param] = lua_toboolean(L, -1) ? 1.0 : 0.0;
 				break;
 			case Effect::PARAM_WAVEFORM:
 			{
@@ -396,7 +396,7 @@ int w_setSceneEffect(lua_State *L)
 			case Effect::PARAM_MAX_ENUM:
 				break;
 			}
-			#undef luax_effecterror
+#undef luax_effecterror
 		}
 		else
 			luaL_error(L, "Invalid '%s' Effect parameter: %s", typestr, keystr);

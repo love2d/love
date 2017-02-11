@@ -95,7 +95,7 @@ std::vector<StringMap<Filter::Parameter>::Entry> Filter::bandpassParameters =
 	{"highgain", Filter::FILTER_HIGHGAIN}
 };
 
-std::map<Filter::Type, StringMap<Filter::Parameter>> Filter::parameterNames = 
+std::map<Filter::Type, StringMap<Filter::Parameter>> Filter::parameterNames =
 {
 	{Filter::TYPE_BASIC, Filter::basicParameters},
 	{Filter::TYPE_LOWPASS, Filter::lowpassParameters},
@@ -104,7 +104,7 @@ std::map<Filter::Type, StringMap<Filter::Parameter>> Filter::parameterNames =
 };
 #undef StringMap
 
-std::map<Filter::Parameter, Filter::ParameterType> Filter::parameterTypes = 
+std::map<Filter::Parameter, Filter::ParameterType> Filter::parameterTypes =
 {
 	{Filter::FILTER_TYPE, Filter::PARAM_TYPE},
 	{Filter::FILTER_VOLUME, Filter::PARAM_FLOAT},

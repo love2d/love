@@ -77,7 +77,7 @@ ALenum Audio::getFormat(int bitDepth, int channels)
 		return bitDepth == 8 ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
 	else if (channels == 2)
 		return bitDepth == 8 ? AL_FORMAT_STEREO8 : AL_FORMAT_STEREO16;
-	#ifdef AL_EXT_MCFORMATS
+#ifdef AL_EXT_MCFORMATS
 	else if (alIsExtensionPresent("AL_EXT_MCFORMATS"))
 	{
 		if (channels == 6)
@@ -85,7 +85,7 @@ ALenum Audio::getFormat(int bitDepth, int channels)
 		else if (channels == 8)
 			return bitDepth == 8 ? AL_FORMAT_71CHN8 : AL_FORMAT_71CHN16;
 	}
-	#endif
+#endif
 	return AL_NONE;
 }
 
@@ -102,11 +102,11 @@ Audio::Audio()
 	if (device == nullptr)
 		throw love::Exception("Could not open device.");
 
-	#ifdef ALC_EXT_EFX
-	ALint attribs[4] = { ALC_MAX_AUXILIARY_SENDS, MAX_SOURCE_EFFECTS, 0, 0 }; 
-	#else
+#ifdef ALC_EXT_EFX
+	ALint attribs[4] = { ALC_MAX_AUXILIARY_SENDS, MAX_SOURCE_EFFECTS, 0, 0 };
+#else
 	ALint *attribs = nullptr;
-	#endif
+#endif
 
 	context = alcCreateContext(device, attribs);
 
@@ -116,12 +116,12 @@ Audio::Audio()
 	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	initializeEFX();
 
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &MAX_SOURCE_EFFECTS);
 
-	alGetError(); 
+	alGetError();
 	if (alGenAuxiliaryEffectSlots)
 	{
 		for (int i = 0; i < MAX_SCENE_EFFECTS; i++)
@@ -143,9 +143,9 @@ Audio::Audio()
 	}
 	else
 		MAX_SCENE_EFFECTS = MAX_SOURCE_EFFECTS = 0;
-	#else
+#else
 	MAX_SCENE_EFFECTS = MAX_SOURCE_EFFECTS = 0;
-	#endif
+#endif
 
 	try
 	{
@@ -155,11 +155,11 @@ Audio::Audio()
 	{
 		for (auto c : capture)
 			delete c;
-		#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 		if (alDeleteAuxiliaryEffectSlots)
 			for (auto slot : effectSlots)
 				alDeleteAuxiliaryEffectSlots(1, &slot);
-		#endif
+#endif
 		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(context);
 		alcCloseDevice(device);
@@ -179,14 +179,14 @@ Audio::~Audio()
 	delete pool;
 	for (auto c : capture)
 		delete c;
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	for (auto e : effects)
 		if (e != nullptr)
 			delete e;
 	if (alDeleteAuxiliaryEffectSlots)
 		for (auto slot : effectSlots)
 			alDeleteAuxiliaryEffectSlots(1, &slot);
-	#endif
+#endif
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
@@ -320,9 +320,9 @@ void Audio::setMeter(float scale)
 	if (scale >= 0.0f)
 	{
 		metersPerUnit = scale;
-		#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 		alListenerf(AL_METERS_PER_UNIT, scale);
-		#endif
+#endif
 	}
 }
 
@@ -455,7 +455,7 @@ bool Audio::setSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
 
 	bool result = effects[slot]->setParams(params);
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (alAuxiliaryEffectSloti)
 	{
 		if (result == true)
@@ -468,7 +468,7 @@ bool Audio::setSceneEffect(int slot, std::map<Effect::Parameter, float> &params)
 			alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
 		alGetError();
 	}
-	#endif
+#endif
 
 	return result;
 }
@@ -483,10 +483,10 @@ bool Audio::setSceneEffect(int slot)
 
 	effects[slot] = nullptr;
 
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (alAuxiliaryEffectSloti)
 		alAuxiliaryEffectSloti(effectSlots[slot], AL_EFFECTSLOT_EFFECT, AL_EFFECT_NULL);
-	#endif
+#endif
 
 	return true;
 }
@@ -516,11 +516,11 @@ int Audio::getMaxSourceEffects() const
 
 bool Audio::isEFXsupported() const
 {
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	return (alGenEffects != nullptr);
-	#else
+#else
 	return false;
-	#endif
+#endif
 }
 
 ALuint Audio::getSceneEffectID(int slot)
@@ -574,7 +574,7 @@ LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv = nullptr;
 
 void Audio::initializeEFX()
 {
-	#ifdef ALC_EXT_EFX
+#ifdef ALC_EXT_EFX
 	if (alcIsExtensionPresent(device, "ALC_EXT_EFX") == AL_FALSE)
 		return;
 
@@ -636,7 +636,7 @@ void Audio::initializeEFX()
 		alGetAuxiliaryEffectSlotf = nullptr; alGetAuxiliaryEffectSlotfv = nullptr;
 	}
 
-	#endif
+#endif
 }
 
 } // openal

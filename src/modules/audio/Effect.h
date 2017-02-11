@@ -50,13 +50,13 @@ public:
 
 	bool find(const char *key, T &t)
 	{
-		if (forward.find(key) == forward.end()) 
+		if (forward.find(key) == forward.end())
 			return false;
 		t = forward[key];
 		return true;
 	}
 
-	bool find(T key, const char *&str) 
+	bool find(T key, const char *&str)
 	{
 		if (reverse.find(key) == reverse.end())
 			return false;
