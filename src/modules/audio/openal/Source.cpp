@@ -30,6 +30,8 @@
 
 #define audiomodule() (Module::getInstance<Audio>(Module::M_AUDIO))
 
+using love::thread::Lock;
+
 namespace love
 {
 namespace audio
@@ -234,8 +236,7 @@ Source::Source(const Source &s)
 
 Source::~Source()
 {
-	if (valid)
-		pool->stop(this);
+	stop();
 
 	if (sourceType != TYPE_STATIC)
 		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
@@ -257,19 +258,34 @@ love::audio::Source *Source::clone()
 
 bool Source::play()
 {
-	valid = pool->play(this);
-	return valid;
+	Lock l = pool->lock();
+	ALuint out;
+
+	char wasPlaying;
+	if (!pool->assignSource(this, out, wasPlaying))
+		return valid = false;
+
+	if (!wasPlaying)
+		return valid = playAtomic(out);
+
+	resumeAtomic();
+	return valid = true;
 }
 
 void Source::stop()
 {
-	if (valid)
-		pool->stop(this);
+	if (!valid)
+		return;
+
+	Lock l = pool->lock();
+	pool->releaseSource(this);
 }
 
 void Source::pause()
 {
-	pool->pause(this);
+	Lock l = pool->lock();
+	if (pool->isPlaying(this))
+		pauseAtomic();
 }
 
 bool Source::isPlaying() const
@@ -343,7 +359,7 @@ bool Source::update()
 				return true;
 			}
 			return false;
-		case TYPE_QUEUE:
+		case TYPE_QUEUE: 
 		{
 			ALint processed;
 			ALuint buffers[MAX_BUFFERS];
@@ -409,11 +425,13 @@ float Source::getVolume() const
 	return volume;
 }
 
-void Source::seekAtomic(float offset, void *unit)
+void Source::seek(float offset, Source::Unit unit)
 {
+	Lock l = pool->lock();
+
 	float offsetSamples, offsetSeconds;
 
-	switch (*((Source::Unit *) unit))
+	switch (unit)
 	{
 	case Source::UNIT_SAMPLES:
 		offsetSamples = offset;
@@ -492,16 +510,13 @@ void Source::seekAtomic(float offset, void *unit)
 	this->offsetSeconds = offsetSeconds;
 }
 
-void Source::seek(float offset, Source::Unit unit)
+float Source::tell(Source::Unit unit)
 {
-	return pool->seek(this, offset, &unit);
-}
+	Lock l = pool->lock();
 
-float Source::tellAtomic(void *unit) const
-{
 	float offset = 0.0f;
 
-	switch (*((Source::Unit *) unit))
+	switch (unit)
 	{
 	case Source::UNIT_SAMPLES:
 		if (valid)
@@ -519,14 +534,9 @@ float Source::tellAtomic(void *unit) const
 	return offset;
 }
 
-float Source::tell(Source::Unit unit)
+double Source::getDuration(Unit unit)
 {
-	return pool->tell(this, &unit);
-}
-
-double Source::getDurationAtomic(void *vunit)
-{
-	Unit unit = *(Unit *) vunit;
+	Lock l = pool->lock();
 
 	switch (sourceType)
 	{
@@ -562,11 +572,6 @@ double Source::getDurationAtomic(void *vunit)
 			return 0.0;
 	}
 	return 0.0;
-}
-
-double Source::getDuration(Unit unit)
-{
-	return pool->getDuration(this, &unit);
 }
 
 void Source::setPosition(float *v)
@@ -716,11 +721,8 @@ bool Source::queue(void *data, size_t length, int dataSampleRate, int dataBitDep
 	if (length == 0)
 		return true;
 
-	return pool->queue(this, data, (ALsizei)length);
-}
+	Lock l = pool->lock();
 
-bool Source::queueAtomic(void *data, ALsizei length)
-{
 	if (valid)
 	{
 		ALuint buffer = unusedBufferPeek();
@@ -887,10 +889,6 @@ bool Source::playAtomic(ALuint source)
 	if (sourceType != TYPE_STREAM)
 		offsetSamples = offsetSeconds = 0;
 
-	//this is set to success state afterwards anyway, but setting it here
-	//to true preemptively avoids race condition with update bug
-	valid = true;
-
 	return success;
 }
 
@@ -919,26 +917,40 @@ void Source::resumeAtomic()
 	}
 }
 
-bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const std::vector<ALuint> &ids, const std::vector<char> &wasPlaying)
+bool Source::play(const std::vector<love::audio::Source*> &sources)
 {
 	if (sources.size() == 0)
 		return true;
+
+	Pool *pool = ((Source*) sources[0])->pool;
+	Lock l = pool->lock();
+
+	// NOTE: not bool, because std::vector<bool> is implemented as a bitvector
+	// which means no bool references can be created.
+	std::vector<char> wasPlaying(sources.size());
+	std::vector<ALuint> ids(sources.size());
+
+	for (size_t i = 0; i < sources.size(); i++)
+	{
+		if (!pool->assignSource((Source*) sources[i], ids[i], wasPlaying[i]))
+		{
+			for (size_t j = 0; j < i; j++)
+				if (!wasPlaying[j])
+					pool->releaseSource((Source*) sources[j], false);
+			return false;
+		}
+	}
 
 	std::vector<ALuint> toPlay;
 	toPlay.reserve(sources.size());
 	for (size_t i = 0; i < sources.size(); i++)
 	{
-		Source *source = (Source*) sources[i];
-		// Paused sources have wasPlaying set to true, so do this first
-		if (!source->isPlaying())
-			toPlay.push_back(ids[i]);
-
-		// If it wasn't playing (nor paused), we have just allocated a new
-		// source
 		if (wasPlaying[i])
 			continue;
+		Source *source = (Source*) sources[i];
 		source->source = ids[i];
 		source->prepareAtomic();
+		toPlay.push_back(ids[i]);
 	}
 
 	alGetError();
@@ -957,10 +969,13 @@ bool Source::playAtomic(const std::vector<love::audio::Source*> &sources, const 
 	return success;
 }
 
-void Source::stopAtomic(const std::vector<love::audio::Source*> &sources)
+void Source::stop(const std::vector<love::audio::Source*> &sources)
 {
 	if (sources.size() == 0)
 		return;
+
+	Pool *pool = ((Source*) sources[0])->pool;
+	Lock l = pool->lock();
 
 	std::vector<ALuint> sourceIds;
 	sourceIds.reserve(sources.size());
@@ -978,13 +993,16 @@ void Source::stopAtomic(const std::vector<love::audio::Source*> &sources)
 		Source *source = (Source*) _source;
 		if (source->valid)
 			source->teardownAtomic();
+		pool->releaseSource(source, false);
 	}
 }
 
-void Source::pauseAtomic(const std::vector<love::audio::Source*> &sources)
+void Source::pause(const std::vector<love::audio::Source*> &sources)
 {
 	if (sources.size() == 0)
 		return;
+
+	Lock l = ((Source*) sources[0])->pool->lock();
 
 	std::vector<ALuint> sourceIds;
 	sourceIds.reserve(sources.size());
@@ -996,6 +1014,26 @@ void Source::pauseAtomic(const std::vector<love::audio::Source*> &sources)
 	}
 
 	alSourcePausev((ALsizei) sources.size(), &sourceIds[0]);
+}
+
+std::vector<love::audio::Source*> Source::pause(Pool *pool)
+{
+	Lock l = pool->lock();
+	std::vector<love::audio::Source*> sources = pool->getPlayingSources();
+
+	auto newend = std::remove_if(sources.begin(), sources.end(), [](love::audio::Source* s) {
+		return !s->isPlaying();
+	});
+	sources.erase(newend, sources.end());
+
+	pause(sources);
+	return sources;
+}
+
+void Source::stop(Pool *pool)
+{
+	Lock l = pool->lock();
+	stop(pool->getPlayingSources());
 }
 
 void Source::reset()

@@ -37,9 +37,16 @@ Lock::Lock(Mutex &m)
 	mutex->lock();
 }
 
+Lock::Lock(Lock &&other)
+{
+	mutex = other.mutex;
+	other.mutex = nullptr;
+}
+
 Lock::~Lock()
 {
-	mutex->unlock();
+	if (mutex)
+		mutex->unlock();
 }
 
 EmptyLock::EmptyLock()

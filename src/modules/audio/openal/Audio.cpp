@@ -240,7 +240,7 @@ bool Audio::play(love::audio::Source *source)
 
 bool Audio::play(const std::vector<love::audio::Source*> &sources)
 {
-	return pool->play(sources);
+	return Source::play(sources);
 }
 
 void Audio::stop(love::audio::Source *source)
@@ -250,12 +250,12 @@ void Audio::stop(love::audio::Source *source)
 
 void Audio::stop(const std::vector<love::audio::Source*> &sources)
 {
-	return pool->stop(sources);
+	return Source::stop(sources);
 }
 
 void Audio::stop()
 {
-	pool->stop();
+	return Source::stop(pool);
 }
 
 void Audio::pause(love::audio::Source *source)
@@ -265,12 +265,12 @@ void Audio::pause(love::audio::Source *source)
 
 void Audio::pause(const std::vector<love::audio::Source*> &sources)
 {
-	return pool->pause(sources);
+	return Source::pause(sources);
 }
 
 std::vector<love::audio::Source*> Audio::pause()
 {
-	return pool->pause();
+	return Source::pause(pool);
 }
 
 void Audio::setVolume(float volume)

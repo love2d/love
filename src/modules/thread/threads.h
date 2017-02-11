@@ -57,6 +57,7 @@ class Lock
 public:
 	Lock(Mutex *m);
 	Lock(Mutex &m);
+	Lock(Lock &&other);
 	~Lock();
 
 private:

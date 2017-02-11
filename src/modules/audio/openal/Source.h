@@ -114,11 +114,8 @@ public:
 	virtual float getPitch() const;
 	virtual void setVolume(float volume);
 	virtual float getVolume() const;
-	virtual void seekAtomic(float offset, void *unit);
 	virtual void seek(float offset, Unit unit);
-	virtual float tellAtomic(void *unit) const;
 	virtual float tell(Unit unit);
-	virtual double getDurationAtomic(void *unit);
 	virtual double getDuration(Unit unit);
 	virtual void setPosition(float *v);
 	virtual void getPosition(float *v) const;
@@ -157,7 +154,6 @@ public:
 
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
-	virtual bool queueAtomic(void *data, ALsizei length);
 
 	void prepareAtomic();
 	void teardownAtomic();
@@ -167,9 +163,12 @@ public:
 	void pauseAtomic();
 	void resumeAtomic();
 
-	static bool playAtomic(const std::vector<love::audio::Source*> &sources, const std::vector<ALuint> &ids, const std::vector<char> &wasPlaying);
-	static void stopAtomic(const std::vector<love::audio::Source*> &sources);
-	static void pauseAtomic(const std::vector<love::audio::Source*> &sources);
+	static bool play(const std::vector<love::audio::Source*> &sources);
+	static void stop(const std::vector<love::audio::Source*> &sources);
+	static void pause(const std::vector<love::audio::Source*> &sources);
+
+	static std::vector<love::audio::Source*> pause(Pool *pool);
+	static void stop(Pool *pool);
 
 private:
 

@@ -83,33 +83,20 @@ public:
 	int getSourceCount() const;
 	int getMaxSources() const;
 
-	bool play(Source *source);
-	void stop();
-	void stop(Source *source);
-	std::vector<love::audio::Source*> pause();
-	void pause(Source *source);
-	void seek(Source *source, float offset, void *unit);
-	float tell(Source *source, void *unit);
-	double getDuration(Source *source, void *unit);
-	bool queue(Source *source, void *data, ALsizei length);
-
-	bool play(const std::vector<love::audio::Source*> &sources);
-	void stop(const std::vector<love::audio::Source*> &sources);
-	void pause(const std::vector<love::audio::Source*> &sources);
-
 private:
+
+	friend class Source;
+	LOVE_WARN_UNUSED thread::Lock lock();
+	std::vector<love::audio::Source*> getPlayingSources();
 
 	/**
 	 * Makes the specified OpenAL source available for use.
 	 * @param source The OpenAL source.
 	 **/
-	void release(Source *source);
+	bool releaseSource(Source *source, bool stop = true);
 
-	ALuint findi(const Source *source) const;
-
-	bool assignSource(Source *source, ALuint &out, char *wasPlaying = nullptr);
+	bool assignSource(Source *source, ALuint &out, char &wasPlaying);
 	bool findSource(Source *source, ALuint &out);
-	bool removeSource(Source *source);
 
 	// Maximum possible number of OpenAL sources the pool attempts to generate.
 	static const int MAX_SOURCES = 64;

@@ -73,7 +73,7 @@ Pool::Pool()
 
 Pool::~Pool()
 {
-	stop();
+	Source::stop(this);
 
 	// Free all sources.
 	alDeleteSources(totalSources, sources);
@@ -103,20 +103,9 @@ void Pool::update()
 {
 	thread::Lock lock(mutex);
 
-	std::map<Source *, ALuint>::iterator i = playing.begin();
-
-	while (i != playing.end())
-	{
-		if (!i->first->update())
-		{
-			i->first->stopAtomic();
-			i->first->release();
-			available.push(i->second);
-			playing.erase(i++);
-		}
-		else
-			i++;
-	}
+	for (const auto &i : playing)
+		if (!i.first->update())
+			releaseSource(i.first);
 }
 
 int Pool::getSourceCount() const
@@ -129,19 +118,14 @@ int Pool::getMaxSources() const
 	return totalSources;
 }
 
-bool Pool::assignSource(Source *source, ALuint &out, char *wasPlaying)
+bool Pool::assignSource(Source *source, ALuint &out, char &wasPlaying)
 {
 	out = 0;
 
 	if (findSource(source, out))
-	{
-		if (wasPlaying)
-			*wasPlaying = true;
-		return true;
-	}
+		return wasPlaying = true;
 
-	if (wasPlaying)
-		*wasPlaying = false;
+	wasPlaying = false;
 
 	if (available.empty())
 		return false;
@@ -154,177 +138,46 @@ bool Pool::assignSource(Source *source, ALuint &out, char *wasPlaying)
 	return true;
 }
 
-bool Pool::play(Source *source)
+bool Pool::releaseSource(Source *source, bool stop)
 {
-	thread::Lock lock(mutex);
-	ALuint out;
+	ALuint s;
 
-	char wasPlaying;
-	if (!assignSource(source, out, &wasPlaying))
-		return false;
-
-	if (!wasPlaying)
-		return source->playAtomic(out);
-	else
+	if (findSource(source, s))
 	{
-		source->resumeAtomic();
-		return true;
-	}
-}
-
-bool Pool::play(const std::vector<love::audio::Source*> &sources)
-{
-	thread::Lock lock(mutex);
-
-	std::vector<ALuint> ids(sources.size());
-	// NOTE: not bool, because std::vector<bool> is implemented as a bitvector
-	// which means no pointers can be created.
-	std::vector<char> wasPlaying(sources.size());
-
-	for (size_t i = 0; i < sources.size(); i++)
-	{
-		Source *source = (Source*) sources[i];
-		if (!assignSource(source, ids[i], &wasPlaying[i]))
-		{
-			// Now we need to release the resources we had already allocated
-			for (size_t j = 0; j < sources.size(); j++)
-				if (!wasPlaying[j])
-					release((Source*) sources[j]);
-			return false;
-		}
-	}
-
-	return Source::playAtomic(sources, ids, wasPlaying);
-}
-
-void Pool::stop()
-{
-	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-	{
-		i.first->stopAtomic();
-		i.first->release();
-		available.push(i.second);
-	}
-
-	playing.clear();
-}
-
-void Pool::stop(Source *source)
-{
-	thread::Lock lock(mutex);
-	removeSource(source);
-}
-
-void Pool::stop(const std::vector<love::audio::Source*> &sources)
-{
-	thread::Lock lock(mutex);
-	Source::stopAtomic(sources);
-}
-
-std::vector<love::audio::Source*> Pool::pause()
-{
-	thread::Lock lock(mutex);
-
-	std::vector<love::audio::Source*> werePlaying;
-	werePlaying.reserve(playing.size());
-
-	for (const auto &i : playing)
-	{
-		if (!i.first->isPlaying())
-			continue;
-		werePlaying.push_back(i.first);
-		i.first->pauseAtomic();
-	}
-
-	return werePlaying;
-}
-
-void Pool::pause(Source *source)
-{
-	thread::Lock lock(mutex);
-	ALuint out;
-	if (findSource(source, out))
-		source->pauseAtomic();
-}
-
-void Pool::pause(const std::vector<love::audio::Source*> &sources)
-{
-	thread::Lock lock(mutex);
-	Source::pauseAtomic(sources);
-}
-
-void Pool::release(Source *source)
-{
-	ALuint s = findi(source);
-
-	if (s != 0)
-	{
+		if (stop)
+			source->stopAtomic();
+		source->release();
 		available.push(s);
 		playing.erase(source);
-	}
-}
-
-void Pool::seek(Source *source, float offset, void *unit)
-{
-	thread::Lock lock(mutex);
-	return source->seekAtomic(offset, unit);
-}
-
-float Pool::tell(Source *source, void *unit)
-{
-	thread::Lock lock(mutex);
-	return source->tellAtomic(unit);
-}
-
-double Pool::getDuration(Source *source, void *unit)
-{
-	thread::Lock lock(mutex);
-	return source->getDurationAtomic(unit);
-}
-
-bool Pool::queue(Source *source, void *data, ALsizei length)
-{
-	thread::Lock lock(mutex);
-	return source->queueAtomic(data, length);
-}
-
-ALuint Pool::findi(const Source *source) const
-{
-	std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
-
-	if (i != playing.end())
-		return i->second;
-
-	return 0;
-}
-
-bool Pool::findSource(Source *source, ALuint &out)
-{
-	std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
-
-	bool found = i != playing.end();
-
-	if (found)
-		out = i->second;
-
-	return found;
-}
-
-bool Pool::removeSource(Source *source)
-{
-	std::map<Source *, ALuint>::iterator i = playing.find((Source *)source);
-
-	if (i != playing.end())
-	{
-		source->stopAtomic();
-		available.push(i->second);
-		playing.erase(i++);
-		source->release();
 		return true;
 	}
 
 	return false;
+}
+
+bool Pool::findSource(Source *source, ALuint &out)
+{
+	std::map<Source *, ALuint>::const_iterator i = playing.find(source);
+
+	if (i == playing.end())
+		return false;
+
+	out = i->second;
+	return true;
+}
+
+thread::Lock Pool::lock()
+{
+	return thread::Lock(mutex);
+}
+
+std::vector<love::audio::Source*> Pool::getPlayingSources()
+{
+	std::vector<love::audio::Source*> sources;
+	sources.reserve(playing.size());
+	for (auto &i : playing)
+		sources.push_back(i.first);
+	return sources;
 }
 
 } // openal

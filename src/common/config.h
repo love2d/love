@@ -86,6 +86,16 @@
 #	define LOVE_UNUSED(x) (void)sizeof(x)
 #endif
 
+
+// Warn on unused return values
+#ifdef __GNUC__
+#	define LOVE_WARN_UNUSED __attribute__((warn_unused_result))
+#elif _MSC_VER
+#	define LOVE_WARN_UNUSED _Check_return_
+#else
+#	define LOVE_WARN_UNUSED
+#endif
+
 #ifndef LOVE_BUILD
 #	define LOVE_BUILD
 #	define LOVE_BUILD_STANDALONE
