@@ -101,23 +101,25 @@ public:
 	{
 	public:
 
-#if defined(LOVE_IOS)
 		TempDebugGroup(const char *name)
 		{
-			if (GLAD_EXT_debug_marker)
+			if (GLAD_VERSION_4_3 || (GLAD_KHR_debug && !GLAD_ES_VERSION_2_0))
+				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, 0, (const GLchar *) name);
+			else if (GLAD_ES_VERSION_2_0 && GLAD_KHR_debug)
+				glPushDebugGroupKHR(GL_DEBUG_SOURCE_APPLICATION, 0, 0, (const GLchar *) name);
+			else if (GLAD_EXT_debug_marker)
 				glPushGroupMarkerEXT(0, (const GLchar *) name);
 		}
-#else
-		TempDebugGroup(const char *) {}
-#endif
 
-#if defined(LOVE_IOS)
 		~TempDebugGroup()
 		{
-			if (GLAD_EXT_debug_marker)
+			if (GLAD_VERSION_4_3 || (GLAD_KHR_debug && !GLAD_ES_VERSION_2_0))
+				glPopDebugGroup();
+			else if (GLAD_ES_VERSION_2_0 && GLAD_KHR_debug)
+				glPopDebugGroupKHR();
+			else if (GLAD_EXT_debug_marker)
 				glPopGroupMarkerEXT();
 		}
-#endif
 	};
 
 	struct Stats
