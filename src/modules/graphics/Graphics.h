@@ -88,6 +88,8 @@ void unGammaCorrectColor(Colorf &c);
 Colorf gammaCorrectColor(const Colorf &c);
 Colorf unGammaCorrectColor(const Colorf &c);
 
+bool isDebugEnabled();
+
 class Graphics : public Module
 {
 public:

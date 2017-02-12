@@ -235,8 +235,7 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	}
 
 	// Do we want a debug context?
-	const char *debughint = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
-	bool debug = (debughint != nullptr && debughint[0] != '0');
+	bool debug = love::graphics::isDebugEnabled();
 
 	const char *preferGL2hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL2");
 	bool preferGL2 = (preferGL2hint != nullptr && preferGL2hint[0] != '0');

@@ -28,6 +28,7 @@
 
 // C++
 #include <algorithm>
+#include <stdlib.h>
 
 namespace love
 {
@@ -35,6 +36,8 @@ namespace graphics
 {
 
 static bool gammaCorrect = false;
+static bool debugMode = false;
+static bool debugModeQueried = false;
 
 void setGammaCorrect(bool gammacorrect)
 {
@@ -78,6 +81,18 @@ Colorf unGammaCorrectColor(const Colorf &c)
 	Colorf r = c;
 	unGammaCorrectColor(r);
 	return r;
+}
+
+bool isDebugEnabled()
+{
+	if (!debugModeQueried)
+	{
+		const char *debugenv = getenv("LOVE_GRAPHICS_DEBUG");
+		debugMode = debugenv != nullptr && debugenv[0] != '0';
+		debugModeQueried = true;
+	}
+
+	return debugMode;
 }
 
 love::Type Graphics::type("graphics", &Module::type);

@@ -272,17 +272,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	else
 		setGammaCorrect(false);
 
-	bool enabledebug = false;
-
-	if (GLAD_VERSION_3_0)
-	{
-		// Enable OpenGL's debug output if a debug context has been created.
-		GLint flags = 0;
-		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-		enabledebug = (flags & GL_CONTEXT_FLAG_DEBUG_BIT) != 0;
-	}
-
-	setDebug(enabledebug);
+	setDebug(isDebugEnabled());
 
 	if (streamBufferState.vb[0] == nullptr)
 	{
