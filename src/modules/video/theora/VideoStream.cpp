@@ -270,7 +270,10 @@ void VideoStream::rewind()
 
 void VideoStream::seekDecoder(double target)
 {
-	if (target < 0.01)
+	const double rewindThreshold = 0.01;
+	const double seekThreshold = 0.0001;
+
+	if (target < rewindThreshold)
 	{
 		rewind();
 		return;
@@ -279,7 +282,7 @@ void VideoStream::seekDecoder(double target)
 	double low = 0;
 	double high = file->getSize();
 
-	while (high-low > 0.0001)
+	while (high-low > rewindThreshold)
 	{
 		// Determine our next binary search position
 		double pos = (high+low)/2;
@@ -289,23 +292,57 @@ void VideoStream::seekDecoder(double target)
 		ogg_sync_reset(&sync);
 		ogg_sync_pageseek(&sync, &page);
 
-		// Read a packet
+		// Read a page
 		readPacket(false);
 		if (eos)
-			return;
-
-		// Determine if this is the right place
-		double curTime = th_granule_time(decoder, packet.granulepos);
-		double nextTime = th_granule_time(decoder, packet.granulepos+1);
-
-		if (curTime == -1)
-			continue; // Invalid granule position (magic?)
-		else if (curTime <= target && nextTime > target)
-			break; // the current frame should be displaying right now
-		else if (curTime > target)
+		{
+			// EOS, so we're definitely past our target (or the target is past
+			// the end)
 			high = pos;
-		else
+			eos = false;
+
+			// And a workaround for single-page files:
+			if (high < rewindThreshold)
+				rewind();
+			else
+				continue;
+		}
+
+		// Now search all packets in this page
+		int result = -1;
+		for (int i = 0; i < ogg_page_packets(&page); ++i)
+		{
+			if (i > 0)
+				readPacket(true);
+
+			// Determine if this is the right place
+			double curTime = th_granule_time(decoder, packet.granulepos);
+			double nextTime = th_granule_time(decoder, packet.granulepos+1);
+
+			if (curTime == -1)
+				continue; // Invalid granule position (magic?)
+			else if (curTime <= target && nextTime > target)
+			{
+				// the current frame should be displaying right now
+				result = 0;
+				break;
+			}
+			else if (curTime > target)
+			{
+				// No need to check the other packets, they're all past
+				// this one
+				result = 1;
+				break;
+			}
+		}
+
+		// The sign of result determines the direction
+		if (result == 0)
+			break;
+		else if (result < 0)
 			low = pos;
+		else
+			high = pos;
 	}
 
 	// Now update theora and our decoder on this new position of ours

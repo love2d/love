@@ -10,6 +10,7 @@ Released: N/A
   * Fixed BezierCurves to error instead of hanging in some situations.
 
   * Improved command line argument handling.
+  * Improved seeking support, especially for short video files.
 
   * Updated the default error handler to allow copying the error to the clipboard when the user decides to do so.
   * Updated love.filesystem.setRequirePath to support multiple template '?' characters in each path.
