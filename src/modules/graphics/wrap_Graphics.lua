@@ -200,7 +200,7 @@ GLSL.PIXEL = {
 	#endif
 #endif
 
-// See Shader::checkSetScreenParams in Shader.cpp.
+// See Shader::updateScreenParams in Shader.cpp.
 #define love_PixelCoord (vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w))]],
 
 	FUNCTIONS = [[
