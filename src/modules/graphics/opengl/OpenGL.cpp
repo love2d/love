@@ -95,7 +95,10 @@ OpenGL::OpenGL()
 	, contextInitialized(false)
 	, pixelShaderHighpSupported(false)
 	, maxAnisotropy(1.0f)
-	, maxTextureSize(0)
+	, max2DTextureSize(0)
+	, max3DTextureSize(0)
+	, maxCubeTextureSize(0)
+	, maxTextureArrayLayers(0)
 	, maxRenderTargets(1)
 	, maxRenderbufferSamples(0)
 	, maxTextureUnits(1)
@@ -202,13 +205,18 @@ void OpenGL::setupContext()
 	}
 
 	// Initialize multiple texture unit support for shaders.
-	state.boundTextures.clear();
-	state.boundTextures.resize(maxTextureUnits, 0);
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+	{
+		state.boundTextures[i].clear();
+		state.boundTextures[i].resize(maxTextureUnits, 0);
+	}
 
-	for (int i = 0; i < (int) state.boundTextures.size(); i++)
+	for (int i = 0; i < maxTextureUnits; i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
+
+		for (int j = 0; j < TEXTURE_MAX_ENUM; j++)
+			glBindTexture(getGLTextureType((TextureType) j), 0);
 	}
 
 	glActiveTexture(GL_TEXTURE0);
@@ -224,8 +232,14 @@ void OpenGL::deInitContext()
 	if (!contextInitialized)
 		return;
 
-	glDeleteTextures(1, &state.defaultTexture);
-	state.defaultTexture = 0;
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+	{
+		if (state.defaultTexture[i] != 0)
+		{
+			gl.deleteTexture(state.defaultTexture[i]);
+			state.defaultTexture[i] = 0;
+		}
+	}
 
 	contextInitialized = false;
 }
@@ -285,10 +299,14 @@ void OpenGL::initOpenGLFunctions()
 			fp_glGenFramebuffers = fp_glGenFramebuffersEXT;
 			fp_glCheckFramebufferStatus = fp_glCheckFramebufferStatusEXT;
 			fp_glFramebufferTexture2D = fp_glFramebufferTexture2DEXT;
+			fp_glFramebufferTexture3D = fp_glFramebufferTexture3DEXT;
 			fp_glFramebufferRenderbuffer = fp_glFramebufferRenderbufferEXT;
 			fp_glGetFramebufferAttachmentParameteriv = fp_glGetFramebufferAttachmentParameterivEXT;
 			fp_glGenerateMipmap = fp_glGenerateMipmapEXT;
 		}
+
+		if (GLAD_VERSION_1_0 && GLAD_EXT_texture_array)
+			fp_glFramebufferTextureLayer = fp_glFramebufferTextureLayerEXT;
 
 		if (GLAD_EXT_framebuffer_blit)
 			fp_glBlitFramebuffer = fp_glBlitFramebufferEXT;
@@ -328,6 +346,17 @@ void OpenGL::initOpenGLFunctions()
 			fp_glVertexAttribDivisor = fp_glVertexAttribDivisorANGLE;
 		}
 	}
+
+	if (GLAD_ES_VERSION_2_0 && GLAD_OES_texture_3D && !GLAD_ES_VERSION_3_0)
+	{
+		// Function signatures don't match, we'll have to conditionally call it
+		//fp_glTexImage3D = fp_glTexImage3DOES;
+		fp_glTexSubImage3D = fp_glTexSubImage3DOES;
+		fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
+		fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
+		fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
+		fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+	}
 }
 
 void OpenGL::initMaxValues()
@@ -348,7 +377,18 @@ void OpenGL::initMaxValues()
 	else
 		maxAnisotropy = 1.0f;
 
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max2DTextureSize);
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &maxCubeTextureSize);
+
+	if (isTextureTypeSupported(TEXTURE_VOLUME))
+		glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &max3DTextureSize);
+	else
+		max3DTextureSize = 0;
+
+	if (isTextureTypeSupported(TEXTURE_2D_ARRAY))
+		glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxTextureArrayLayers);
+	else
+		maxTextureArrayLayers = 0;
 
 	int maxattachments = 1;
 	int maxdrawbuffers = 1;
@@ -382,26 +422,57 @@ void OpenGL::initMaxValues()
 
 void OpenGL::createDefaultTexture()
 {
-	// Set the 'default' texture (id 0) as a repeating white pixel. Otherwise,
-	// texture2D calls inside a shader would return black when drawing graphics
-	// primitives, which would create the need to use different "passthrough"
-	// shaders for untextured primitives vs images.
+	// Set the 'default' texture as a repeating white pixel. Otherwise, texture
+	// calls inside a shader would return black when drawing graphics primitives
+	// which would create the need to use different "passthrough" shaders for
+	// untextured primitives vs images.
+	const GLubyte pix[] = {255, 255, 255, 255};
 
-	GLuint curtexture = state.boundTextures[state.curTextureUnit];
+	Texture::Filter filter;
+	filter.min = filter.mag = Texture::FILTER_NEAREST;
 
-	glGenTextures(1, &state.defaultTexture);
-	bindTextureToUnit(state.defaultTexture, 0, false);
+	Texture::Wrap wrap;
+	wrap.s = wrap.t = wrap.r = Texture::WRAP_CLAMP;
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+	{
+		state.defaultTexture[i] = 0;
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		TextureType type = (TextureType) i;
 
-	GLubyte pix[] = {255, 255, 255, 255};
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pix);
+		if (!isTextureTypeSupported(type))
+			continue;
 
-	bindTextureToUnit(curtexture, 0, false);
+		GLuint curtexture = state.boundTextures[type][0];
+
+		glGenTextures(1, &state.defaultTexture[type]);
+		bindTextureToUnit(type, state.defaultTexture[type], 0, false);
+
+		setTextureWrap(type, wrap);
+		setTextureFilter(type, filter);
+
+		bool isSRGB = false;
+		rawTexStorage(type, 1, PIXELFORMAT_RGBA8, isSRGB, 1, 1);
+
+		TextureFormat fmt = convertPixelFormat(PIXELFORMAT_RGBA8, false, isSRGB);
+
+		int slices = type == TEXTURE_CUBE ? 6 : 1;
+
+		for (int slice = 0; slice < slices; slice++)
+		{
+			GLenum gltarget = getGLTextureType(type);
+
+			if (type == TEXTURE_CUBE)
+				gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+
+			if (type == TEXTURE_2D || type == TEXTURE_CUBE)
+				glTexSubImage2D(gltarget, 0, 0, 0, 1, 1, fmt.externalformat, fmt.type, pix);
+			else if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
+				glTexSubImage3D(gltarget, 0, 0, 0, slice, 1, 1, 1, fmt.externalformat, fmt.type, pix);
+		}
+
+		bindTextureToUnit(type, curtexture, 0, false);
+	}
 }
 
 void OpenGL::prepareDraw()
@@ -432,6 +503,27 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 	case BUFFER_MAX_ENUM:
 		return GL_ZERO;
 	}
+
+	return GL_ZERO;
+}
+
+GLenum OpenGL::getGLTextureType(TextureType type)
+{
+	switch (type)
+	{
+	case TEXTURE_2D:
+		return GL_TEXTURE_2D;
+	case TEXTURE_VOLUME:
+		return GL_TEXTURE_3D;
+	case TEXTURE_2D_ARRAY:
+		return GL_TEXTURE_2D_ARRAY;
+	case TEXTURE_CUBE:
+		return GL_TEXTURE_CUBE_MAP;
+	case TEXTURE_MAX_ENUM:
+		return GL_ZERO;
+	}
+
+	return GL_ZERO;
 }
 
 GLenum OpenGL::getGLIndexDataType(IndexDataType type)
@@ -651,6 +743,29 @@ void OpenGL::deleteFramebuffer(GLuint framebuffer)
 	}
 }
 
+void OpenGL::framebufferTexture(GLenum attachment, TextureType texType, GLuint texture, int level, int layer, int face)
+{
+	GLenum textarget = getGLTextureType(texType);
+
+	switch (texType)
+	{
+	case TEXTURE_2D:
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, texture, level);
+		break;
+	case TEXTURE_VOLUME:
+		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, textarget, texture, level, layer);
+		break;
+	case TEXTURE_2D_ARRAY:
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture, level, layer);
+		break;
+	case TEXTURE_CUBE:
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture, level);
+		break;
+	default:
+		break;
+	}
+}
+
 void OpenGL::useProgram(GLuint program)
 {
 	glUseProgram(program);
@@ -670,9 +785,9 @@ GLuint OpenGL::getDefaultFBO() const
 #endif
 }
 
-GLuint OpenGL::getDefaultTexture() const
+GLuint OpenGL::getDefaultTexture(TextureType type) const
 {
-	return state.defaultTexture;
+	return state.defaultTexture[type];
 }
 
 void OpenGL::setTextureUnit(int textureunit)
@@ -683,16 +798,16 @@ void OpenGL::setTextureUnit(int textureunit)
 	state.curTextureUnit = textureunit;
 }
 
-void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev)
+void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev)
 {
-	if (texture != state.boundTextures[textureunit])
+	if (texture != state.boundTextures[target][textureunit])
 	{
 		int oldtextureunit = state.curTextureUnit;
 		if (oldtextureunit != textureunit)
 			glActiveTexture(GL_TEXTURE0 + textureunit);
 
-		state.boundTextures[textureunit] = texture;
-		glBindTexture(GL_TEXTURE_2D, texture);
+		state.boundTextures[target][textureunit] = texture;
+		glBindTexture(getGLTextureType(target), texture);
 
 		if (restoreprev && oldtextureunit != textureunit)
 			glActiveTexture(GL_TEXTURE0 + oldtextureunit);
@@ -703,24 +818,29 @@ void OpenGL::bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev
 
 void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev)
 {
-	GLuint handle = texture != nullptr ? (GLuint) texture->getHandle() : getDefaultTexture();
-	bindTextureToUnit(handle, textureunit, restoreprev);
+	GLuint handle = texture != nullptr ? (GLuint) texture->getHandle() : getDefaultTexture(TEXTURE_2D);
+	TextureType textype = texture != nullptr ? texture->getTextureType() : TEXTURE_2D;
+
+	bindTextureToUnit(textype, handle, textureunit, restoreprev);
 }
 
 void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
 	// was bound to before deletion.
-	for (GLuint &texid : state.boundTextures)
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 	{
-		if (texid == texture)
-			texid = 0;
+		for (GLuint &texid : state.boundTextures[i])
+		{
+			if (texid == texture)
+				texid = 0;
+		}
 	}
 
 	glDeleteTextures(1, &texture);
 }
 
-void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
+void OpenGL::setTextureFilter(TextureType target, graphics::Texture::Filter &f)
 {
 	GLint gmin, gmag;
 
@@ -756,13 +876,15 @@ void OpenGL::setTextureFilter(graphics::Texture::Filter &f)
 		break;
 	}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gmin);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gmag);
+	GLenum gltarget = getGLTextureType(target);
+
+	glTexParameteri(gltarget, GL_TEXTURE_MIN_FILTER, gmin);
+	glTexParameteri(gltarget, GL_TEXTURE_MAG_FILTER, gmag);
 
 	if (GLAD_EXT_texture_filter_anisotropic)
 	{
 		f.anisotropy = std::min(std::max(f.anisotropy, 1.0f), maxAnisotropy);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, f.anisotropy);
+		glTexParameterf(gltarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, f.anisotropy);
 	}
 	else
 		f.anisotropy = 1.0f;
@@ -785,10 +907,104 @@ GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
 
 }
 
-void OpenGL::setTextureWrap(const graphics::Texture::Wrap &w)
+void OpenGL::setTextureWrap(TextureType target, const graphics::Texture::Wrap &w)
 {
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
+	glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
+	glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
+
+	if (target == TEXTURE_VOLUME)
+		glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_R, getGLWrapMode(w.r));
+}
+
+bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth)
+{
+	GLenum gltarget = getGLTextureType(target);
+	TextureFormat fmt = convertPixelFormat(pixelformat, false, isSRGB);
+
+	if (fmt.swizzled)
+	{
+		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_R, fmt.swizzle[0]);
+		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_G, fmt.swizzle[1]);
+		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_B, fmt.swizzle[2]);
+		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_A, fmt.swizzle[3]);
+	}
+
+	bool supportsTexStorage = GLAD_VERSION_4_2 || GLAD_ARB_texture_storage;
+
+	// Apparently there are bugs with glTexStorage on some Android drivers. I'd
+	// rather not find out the hard way, so we'll avoid it for now...
+#ifndef LOVE_ANDROID
+	if (GLAD_ES_VERSION_3_0)
+		supportsTexStorage = true;
+#endif
+
+	if (supportsTexStorage)
+	{
+		if (target == TEXTURE_2D || target == TEXTURE_CUBE)
+			glTexStorage2D(gltarget, levels, fmt.internalformat, width, height);
+		else if (target == TEXTURE_VOLUME || target == TEXTURE_2D_ARRAY)
+			glTexStorage3D(gltarget, levels, fmt.internalformat, width, height, depth);
+	}
+	else
+	{
+		int w = width;
+		int h = height;
+		int d = depth;
+
+		for (int level = 0; level < levels; level++)
+		{
+			if (target == TEXTURE_2D || target == TEXTURE_CUBE)
+			{
+				int faces = target == TEXTURE_CUBE ? 6 : 1;
+				for (int face = 0; face < faces; face++)
+				{
+					if (target == TEXTURE_CUBE)
+						gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + face;
+
+					glTexImage2D(gltarget, level, fmt.internalformat, w, h, 0,
+					             fmt.externalformat, fmt.type, nullptr);
+				}
+			}
+			else if (target == TEXTURE_2D_ARRAY || target == TEXTURE_VOLUME)
+			{
+				if (target == TEXTURE_VOLUME && GLAD_ES_VERSION_2_0 && GLAD_OES_texture_3D && !GLAD_ES_VERSION_3_0)
+				{
+					glTexImage3DOES(gltarget, level, fmt.internalformat, w, h,
+					                d, 0, fmt.externalformat, fmt.type, nullptr);
+				}
+				else
+				{
+					glTexImage3D(gltarget, level, fmt.internalformat, w, h, d,
+					             0, fmt.externalformat, fmt.type, nullptr);
+				}
+			}
+
+			w = std::max(w / 2, 1);
+			h = std::max(h / 2, 1);
+
+			if (target == TEXTURE_VOLUME)
+				d = std::max(d / 2, 1);
+		}
+	}
+
+	return gltarget != GL_ZERO;
+}
+
+bool OpenGL::isTextureTypeSupported(TextureType type) const
+{
+	switch (type)
+	{
+	case TEXTURE_2D:
+		return true;
+	case TEXTURE_VOLUME:
+		return GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_3D;
+	case TEXTURE_2D_ARRAY:
+		return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_array;
+	case TEXTURE_CUBE:
+		return GLAD_VERSION_1_3 || GLAD_ES_VERSION_2_0;
+	default:
+		return false;
+	}
 }
 
 bool OpenGL::isClampZeroTextureWrapSupported() const
@@ -807,9 +1023,24 @@ bool OpenGL::isInstancingSupported() const
 		|| GLAD_ARB_instanced_arrays || GLAD_EXT_instanced_arrays || GLAD_ANGLE_instanced_arrays;
 }
 
-int OpenGL::getMaxTextureSize() const
+int OpenGL::getMax2DTextureSize() const
 {
-	return maxTextureSize;
+	return std::max(max2DTextureSize, 1);
+}
+
+int OpenGL::getMax3DTextureSize() const
+{
+	return std::max(max3DTextureSize, 1);
+}
+
+int OpenGL::getMaxCubeTextureSize() const
+{
+	return std::max(maxCubeTextureSize, 1);
+}
+
+int OpenGL::getMaxTextureLayers() const
+{
+	return std::max(maxTextureArrayLayers, 1);
 }
 
 int OpenGL::getMaxRenderTargets() const

@@ -177,6 +177,8 @@ public:
 		FEATURE_LIGHTEN,
 		FEATURE_FULL_NPOT,
 		FEATURE_PIXEL_SHADER_HIGHP,
+		FEATURE_ARRAY_TEXTURE,
+		FEATURE_VOLUME_TEXTURE,
 		FEATURE_GLSL3,
 		FEATURE_INSTANCING,
 		FEATURE_MAX_ENUM
@@ -193,6 +195,9 @@ public:
 	{
 		LIMIT_POINT_SIZE,
 		LIMIT_TEXTURE_SIZE,
+		LIMIT_VOLUME_TEXTURE_SIZE,
+		LIMIT_CUBE_TEXTURE_SIZE,
+		LIMIT_TEXTURE_LAYERS,
 		LIMIT_MULTI_CANVAS,
 		LIMIT_CANVAS_MSAA,
 		LIMIT_ANISOTROPY,
@@ -262,10 +267,6 @@ public:
 		int vertexCount = 0;
 		Texture *texture = nullptr;
 
-		// FIXME: This is only needed for fonts. We should just change fonts to
-		// use love.graphics Images instead of raw OpenGL textures.
-		ptrdiff_t textureHandle = 0;
-
 		StreamDrawRequest()
 		{
 			// VS2013 can't initialize arrays in the above manner...
@@ -312,28 +313,47 @@ public:
 		Reference *ref;
 	};
 
+	struct RenderTarget
+	{
+		Canvas *canvas = nullptr;
+		int slice = 0;
+
+		RenderTarget(Canvas *canvas, int slice = 0)
+			: canvas(canvas)
+			, slice(slice)
+		{}
+	};
+
+	struct RenderTargetStrongRef
+	{
+		StrongRef<Canvas> canvas;
+		int slice = 0;
+
+		RenderTargetStrongRef(Canvas *canvas, int slice = 0)
+			: canvas(canvas)
+			, slice(slice)
+		{}
+	};
+
 	Graphics();
 	virtual ~Graphics();
 
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
-	virtual Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings) = 0;
-	virtual Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings) = 0;
+	virtual Image *newImage(const Image::Slices &data, const Image::Settings &settings) = 0;
+	virtual Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
+	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter);
+	Video *newVideo(love::video::VideoStream *stream, float pixeldensity);
 
 	virtual SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) = 0;
 
 	virtual ParticleSystem *newParticleSystem(Texture *texture, int size) = 0;
 
-	virtual Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter) = 0;
-
-	virtual Canvas *newCanvas(int width, int height, const Canvas::Settings &settings) = 0;
-
+	virtual Canvas *newCanvas(const Canvas::Settings &settings) = 0;
 	virtual Shader *newShader(const Shader::ShaderSource &source) = 0;
-
-	virtual Video *newVideo(love::video::VideoStream *stream, float pixeldensity) = 0;
 
 	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
 
@@ -435,12 +455,12 @@ public:
 
 	Shader *getShader() const;
 
-	void setCanvas(Canvas *canvas);
-	virtual void setCanvas(const std::vector<Canvas *> &canvases) = 0;
-	void setCanvas(const std::vector<StrongRef<Canvas>> &canvases);
+	void setCanvas(RenderTarget rt);
+	virtual void setCanvas(const std::vector<RenderTarget> &rts) = 0;
+	void setCanvas(const std::vector<RenderTargetStrongRef> &rts);
 	virtual void setCanvas() = 0;
 
-	std::vector<Canvas *> getCanvas() const;
+	std::vector<RenderTarget> getCanvas() const;
 	bool isCanvasActive() const;
 	bool isCanvasActive(Canvas *canvas) const;
 
@@ -790,7 +810,7 @@ protected:
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
-		std::vector<StrongRef<Canvas>> canvases;
+		std::vector<RenderTargetStrongRef> renderTargets;
 
 		ColorMask colorMask = ColorMask(true, true, true, true);
 
@@ -810,7 +830,6 @@ protected:
 		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
 		vertex::CommonFormat formats[2];
 		StrongRef<Texture> texture;
-		ptrdiff_t textureHandle = 0;
 		int vertexCount = 0;
 		int indexCount = 0;
 

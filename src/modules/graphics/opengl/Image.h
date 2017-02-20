@@ -38,8 +38,8 @@ class Image final : public love::graphics::Image, public Volatile
 {
 public:
 
-	Image(const std::vector<love::image::ImageData *> &data, const Settings &settings);
-	Image(const std::vector<love::image::CompressedImageData *> &cdata, const Settings &settings);
+	Image(const Slices &data, const Settings &settings);
+	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
 
 	virtual ~Image();
 
@@ -49,51 +49,36 @@ public:
 
 	ptrdiff_t getHandle() const override;
 
-	const std::vector<StrongRef<love::image::ImageData>> &getImageData() const override;
-	const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const override;
-
 	void setFilter(const Texture::Filter &f) override;
 	bool setWrap(const Texture::Wrap &w) override;
 
-	void setMipmapSharpness(float sharpness) override;
-	float getMipmapSharpness() const override;
+	bool setMipmapSharpness(float sharpness) override;
+
+	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps) override;
+	void replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps) override;
+
+	bool isFormatLinear() const override;
 	bool isCompressed() const override;
-	bool refresh(int xoffset, int yoffset, int w, int h) override;
+	MipmapsType getMipmapsType() const override;
 
 	static bool isFormatSupported(PixelFormat pixelformat);
 	static bool hasSRGBSupport();
 
-	static bool getConstant(const char *in, SettingType &out);
-	static bool getConstant(SettingType in, const char *&out);
-
 private:
 
-	void preload();
+	void init(PixelFormat fmt, int w, int h, const Settings &settings);
 
 	void generateMipmaps();
 	void loadDefaultTexture();
-	void loadFromCompressedData();
-	void loadFromImageData();
-
-	// The ImageData from which the texture is created. May be empty if
-	// Compressed image data was used to create the texture.
-	// Each element in the array is a mipmap level.
-	std::vector<StrongRef<love::image::ImageData>> data;
-
-	// Or the Compressed Image Data from which the texture is created. May be
-	// empty if raw ImageData was used to create the texture.
-	std::vector<StrongRef<love::image::CompressedImageData>> cdata;
+	void loadData();
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &rect, int level, int slice);
+	void uploadImageData(love::image::ImageDataBase *d, int level, int slice);
 
 	// OpenGL texture identifier.
 	GLuint texture;
 
-	// Mipmap texture LOD bias (sharpness) value.
-	float mipmapSharpness;
-
 	// Whether this Image is using a compressed texture.
 	bool compressed;
-
-	bool sRGB;
 
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.

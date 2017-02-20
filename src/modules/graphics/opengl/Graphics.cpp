@@ -25,12 +25,10 @@
 
 #include "Graphics.h"
 #include "font/Font.h"
-#include "Font.h"
 #include "StreamBuffer.h"
 #include "math/MathModule.h"
 #include "window/Window.h"
 #include "Buffer.h"
-#include "Video.h"
 #include "Text.h"
 
 #include "libraries/xxHash/xxhash.h"
@@ -103,19 +101,14 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-love::graphics::Image *Graphics::newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings)
+love::graphics::Image *Graphics::newImage(const Image::Slices &data, const Image::Settings &settings)
 {
 	return new Image(data, settings);
 }
 
-love::graphics::Image *Graphics::newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings)
+love::graphics::Image *Graphics::newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings)
 {
-	return new Image(cdata, settings);
-}
-
-graphics::Font *Graphics::newFont(love::font::Rasterizer *r, const Texture::Filter &filter)
-{
-	return new Font(r, filter);
+	return new Image(textype, format, width, height, slices, settings);
 }
 
 love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
@@ -128,34 +121,11 @@ love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, in
 	return new ParticleSystem(this, texture, size);
 }
 
-love::graphics::Canvas *Graphics::newCanvas(int width, int height, const Canvas::Settings &settings)
+love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
 {
-	if (!Canvas::isSupported())
-		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
-
-	if (!Canvas::isFormatSupported(settings.format))
-	{
-		const char *fstr = "rgba8";
-		love::getConstant(Canvas::getSizedFormat(settings.format), fstr);
-		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
-	}
-
-	if (width > gl.getMaxTextureSize())
-		throw Exception("Cannot create canvas: width of %d pixels is too large for this system.", width);
-	else if (height > gl.getMaxTextureSize())
-		throw Exception("Cannot create canvas: height of %d pixels is too large for this system.", height);
-
-	Canvas *canvas = new Canvas(width, height, settings);
-	GLenum err = canvas->getStatus();
-
-	// everything ok, return canvas (early out)
-	if (err == GL_FRAMEBUFFER_COMPLETE)
-		return canvas;
-
-	canvas->release();
-	throw love::Exception("Cannot create Canvas: %s", OpenGL::framebufferStatusString(err));
-	return nullptr; // never reached
+	return new Canvas(settings);
 }
+
 
 love::graphics::Shader *Graphics::newShader(const Shader::ShaderSource &source)
 {
@@ -192,11 +162,6 @@ love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<
 	return new Text(this, font, text);
 }
 
-love::graphics::Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
-{
-	return new Video(stream, pixeldensity);
-}
-
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
 	this->width = width;
@@ -204,7 +169,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
-	if (states.back().canvases.empty())
+	if (states.back().renderTargets.empty())
 	{
 		// Set the viewport to top-left corner.
 		gl.setViewport({0, 0, pixelwidth, pixelheight});
@@ -261,6 +226,10 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	// Set pixel row alignment
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	// Always enable seamless cubemap filtering when possible.
+	if (GLAD_VERSION_3_2 || GLAD_ARB_seamless_cube_map)
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
 	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
@@ -374,6 +343,9 @@ void Graphics::flushStreamDraws()
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
 
+	if (Shader::current && sbstate.texture.get())
+		Shader::current->checkMainTextureType(sbstate.texture->getTextureType());
+
 	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
 
 	uint32 attribs = 0;
@@ -448,11 +420,7 @@ void Graphics::flushStreamDraws()
 	pushIdentityTransform();
 
 	gl.prepareDraw();
-
-	if (sbstate.textureHandle != 0)
-		gl.bindTextureToUnit((GLuint) sbstate.textureHandle, 0, false);
-	else
-		gl.bindTextureToUnit(sbstate.texture, 0, false);
+	gl.bindTextureToUnit(sbstate.texture, 0, false);
 
 	gl.useVertexAttribArrays(attribs);
 
@@ -547,21 +515,22 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
+void Graphics::setCanvas(const std::vector<RenderTarget> &rts)
 {
 	DisplayState &state = states.back();
-	int ncanvases = (int) canvases.size();
+	int ncanvases = (int) rts.size();
 
 	if (ncanvases == 0)
 		return setCanvas();
 
-	if (ncanvases == (int) state.canvases.size())
+	if (ncanvases == (int) state.renderTargets.size())
 	{
 		bool modified = false;
 
 		for (int i = 0; i < ncanvases; i++)
 		{
-			if (canvases[i] != state.canvases[i].get())
+			if (rts[i].canvas != state.renderTargets[i].canvas.get()
+				|| rts[i].slice != state.renderTargets[i].slice)
 			{
 				modified = true;
 				break;
@@ -575,7 +544,7 @@ void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
 	if (ncanvases > gl.getMaxRenderTargets())
 		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
 
-	love::graphics::Canvas *firstcanvas = canvases[0];
+	love::graphics::Canvas *firstcanvas = rts[0].canvas;
 
 	bool multiformatsupported = Canvas::isMultiFormatMultiCanvasSupported();
 	PixelFormat firstformat = firstcanvas->getPixelFormat();
@@ -586,7 +555,7 @@ void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
 
 	for (int i = 1; i < ncanvases; i++)
 	{
-		love::graphics::Canvas *c = canvases[i];
+		love::graphics::Canvas *c = rts[i].canvas;
 
 		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
 			throw love::Exception("All canvases in must have the same pixel dimensions.");
@@ -595,7 +564,7 @@ void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
-			throw love::Exception("All Canvases in must have the same requested MSAA value.");
+			throw love::Exception("All Canvases in must have the same MSAA value.");
 
 		if (c->getPixelFormat() == PIXELFORMAT_sRGBA8)
 			hasSRGBcanvas = true;
@@ -605,7 +574,7 @@ void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
 
 	endPass();
 
-	bindCachedFBO(canvases);
+	bindCachedFBO(rts);
 
 	gl.setViewport({0, 0, pixelwidth, pixelheight});
 
@@ -627,13 +596,13 @@ void Graphics::setCanvas(const std::vector<love::graphics::Canvas *> &canvases)
 			gl.setFramebufferSRGB(false);
 	}
 
-	std::vector<StrongRef<love::graphics::Canvas>> canvasrefs;
-	canvasrefs.reserve(canvases.size());
+	std::vector<RenderTargetStrongRef> canvasrefs;
+	canvasrefs.reserve(rts.size());
 
-	for (love::graphics::Canvas *c : canvases)
-		canvasrefs.push_back(c);
+	for (auto c : rts)
+		canvasrefs.emplace_back(c.canvas, c.slice);
 
-	std::swap(state.canvases, canvasrefs);
+	std::swap(state.renderTargets, canvasrefs);
 
 	canvasSwitchCount++;
 }
@@ -642,14 +611,14 @@ void Graphics::setCanvas()
 {
 	DisplayState &state = states.back();
 
-	if (state.canvases.empty())
+	if (state.renderTargets.empty())
 		return;
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas()");
 
 	endPass();
 
-	state.canvases.clear();
+	state.renderTargets.clear();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
 
@@ -682,17 +651,18 @@ void Graphics::endPass()
 	// Discard the stencil buffer.
 	discard({}, true);
 
-	auto &canvases = states.back().canvases;
+	auto &canvases = states.back().renderTargets;
 
-	// Resolve MSAA buffers.
-	if (canvases.size() > 0 && canvases[0]->getMSAA() > 1)
+	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
+	// don't have to worry about resolving to slices.
+	if (canvases.size() > 0 && canvases[0].canvas->getMSAA() > 1)
 	{
-		int w = canvases[0]->getPixelWidth();
-		int h = canvases[0]->getPixelHeight();
+		int w = canvases[0].canvas->getPixelWidth();
+		int h = canvases[0].canvas->getPixelHeight();
 
 		for (int i = 0; i < (int) canvases.size(); i++)
 		{
-			Canvas *c = (Canvas *) canvases[i].get();
+			Canvas *c = (Canvas *) canvases[i].canvas.get();
 
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
 
@@ -728,7 +698,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 	if (colors.size() == 0)
 		return;
 
-	int ncanvases = (int) states.back().canvases.size();
+	int ncanvases = (int) states.back().renderTargets.size();
 	int ncolors = std::min((int) colors.size(), ncanvases);
 
 	if (ncolors <= 1 && ncanvases <= 1)
@@ -810,7 +780,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (states.back().canvases.empty() && gl.getDefaultFBO() == 0)
+	if (states.back().renderTargets.empty() && gl.getDefaultFBO() == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
@@ -823,7 +793,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	}
 	else
 	{
-		int rendertargetcount = std::max((int) states.back().canvases.size(), 1);
+		int rendertargetcount = std::max((int) states.back().renderTargets.size(), 1);
 
 		for (int i = 0; i < (int) colorbuffers.size(); i++)
 		{
@@ -845,11 +815,10 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::bindCachedFBO(const std::vector<love::graphics::Canvas *> &canvases)
+void Graphics::bindCachedFBO(const std::vector<RenderTarget> &targets)
 {
-	int ncanvases = (int) canvases.size();
-
-	uint32 hash = XXH32(&canvases[0], sizeof(love::graphics::Canvas *) * ncanvases, 0);
+	int ntargets = (int) targets.size();
+	uint32 hash = XXH32(&targets[0], sizeof(RenderTarget) * ntargets, 0);
 
 	GLuint fbo = framebufferObjects[hash];
 
@@ -859,35 +828,40 @@ void Graphics::bindCachedFBO(const std::vector<love::graphics::Canvas *> &canvas
 	}
 	else
 	{
-		int w = canvases[0]->getPixelWidth();
-		int h = canvases[0]->getPixelHeight();
-		int msaa = std::max(canvases[0]->getMSAA(), 1);
+		int w = targets[0].canvas->getPixelWidth();
+		int h = targets[0].canvas->getPixelHeight();
+		int msaa = std::max(targets[0].canvas->getMSAA(), 1);
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
 
 		GLenum drawbuffers[MAX_COLOR_RENDER_TARGETS];
 
-		for (int i = 0; i < ncanvases; i++)
+		for (int i = 0; i < ntargets; i++)
 		{
 			drawbuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 
 			if (msaa > 1)
 			{
-				GLuint rbo = (GLuint) canvases[i]->getMSAAHandle();
+				GLuint rbo = (GLuint) targets[i].canvas->getMSAAHandle();
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, drawbuffers[i], GL_RENDERBUFFER, rbo);
 			}
 			else
 			{
-				GLuint tex = (GLuint) canvases[i]->getHandle();
-				glFramebufferTexture2D(GL_FRAMEBUFFER, drawbuffers[i], GL_TEXTURE_2D, tex, 0);
+				GLuint tex = (GLuint) targets[i].canvas->getHandle();
+				TextureType textype = targets[i].canvas->getTextureType();
+
+				int layer = textype == TEXTURE_CUBE ? 0 : targets[i].slice;
+				int face = textype == TEXTURE_CUBE ? targets[i].slice : 0;
+
+				gl.framebufferTexture(drawbuffers[i], textype, tex, 0, layer, face);
 			}
 		}
 
-		if (ncanvases > 1)
-			glDrawBuffers(ncanvases, drawbuffers);
+		if (ntargets > 1)
+			glDrawBuffers(ntargets, drawbuffers);
 
-		GLuint stencil = attachCachedStencilBuffer(w, h, canvases[0]->getRequestedMSAA());
+		GLuint stencil = attachCachedStencilBuffer(w, h, targets[0].canvas->getRequestedMSAA());
 
 		if (stencil == 0)
 		{
@@ -904,7 +878,7 @@ void Graphics::bindCachedFBO(const std::vector<love::graphics::Canvas *> &canvas
 			const char *sstr = OpenGL::framebufferStatusString(status);
 			throw love::Exception("Could not create Framebuffer Object! %s", sstr);
 		}
-
+		
 		framebufferObjects[hash] = fbo;
 	}
 }
@@ -990,7 +964,7 @@ void Graphics::present(void *screenshotCallbackData)
 	if (!isActive())
 		return;
 
-	if (!states.back().canvases.empty())
+	if (!states.back().renderTargets.empty())
 		throw love::Exception("present cannot be called while a Canvas is active.");
 
 	endPass();
@@ -1029,8 +1003,8 @@ void Graphics::present(void *screenshotCallbackData)
 		{
 			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, info.info.uikit.resolveFramebuffer);
 
-			// We need to do an explicit MSAA resolve on iOS, because it uses GLES
-			// FBOs rather than a system framebuffer.
+			// We need to do an explicit MSAA resolve on iOS, because it uses
+			// GLES FBOs rather than a system framebuffer.
 			if (GLAD_ES_VERSION_3_0)
 				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 			else if (GLAD_APPLE_framebuffer_multisample)
@@ -1122,7 +1096,7 @@ void Graphics::setScissor(const Rect &rect)
 	glrect.h = (int) (rect.h * density);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(glrect, !state.canvases.empty());
+	gl.setScissor(glrect, !state.renderTargets.empty());
 
 	state.scissor = true;
 	state.scissorRect = rect;
@@ -1139,7 +1113,7 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	if (states.back().canvases.empty() && !windowHasStencil)
+	if (states.back().renderTargets.empty() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
 
 	flushStreamDraws();
@@ -1200,7 +1174,7 @@ void Graphics::stopDrawToStencilBuffer()
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
-	if (compare != COMPARE_ALWAYS && states.back().canvases.empty() && !windowHasStencil)
+	if (compare != COMPARE_ALWAYS && states.back().renderTargets.empty() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to use setStencilTest on the main screen.");
 
 	DisplayState &state = states.back();
@@ -1454,15 +1428,21 @@ double Graphics::getSystemLimit(SystemLimit limittype) const
 {
 	switch (limittype)
 	{
-	case Graphics::LIMIT_POINT_SIZE:
+	case LIMIT_POINT_SIZE:
 		return (double) gl.getMaxPointSize();
-	case Graphics::LIMIT_TEXTURE_SIZE:
-		return (double) gl.getMaxTextureSize();
-	case Graphics::LIMIT_MULTI_CANVAS:
+	case LIMIT_TEXTURE_SIZE:
+		return (double) gl.getMax2DTextureSize();
+	case LIMIT_TEXTURE_LAYERS:
+		return (double) gl.getMaxTextureLayers();
+	case LIMIT_VOLUME_TEXTURE_SIZE:
+		return (double) gl.getMax3DTextureSize();
+	case LIMIT_CUBE_TEXTURE_SIZE:
+		return (double) gl.getMaxCubeTextureSize();
+	case LIMIT_MULTI_CANVAS:
 		return (double) gl.getMaxRenderTargets();
-	case Graphics::LIMIT_CANVAS_MSAA:
+	case LIMIT_CANVAS_MSAA:
 		return (double) gl.getMaxRenderbufferSamples();
-	case Graphics::LIMIT_ANISOTROPY:
+	case LIMIT_ANISOTROPY:
 		return (double) gl.getMaxAnisotropy();
 	default:
 		return 0.0;
@@ -1483,6 +1463,10 @@ bool Graphics::isSupported(Feature feature) const
 		return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
 	case FEATURE_PIXEL_SHADER_HIGHP:
 		return gl.isPixelShaderHighpSupported();
+	case FEATURE_ARRAY_TEXTURE:
+		return gl.isTextureTypeSupported(TEXTURE_2D_ARRAY);
+	case FEATURE_VOLUME_TEXTURE:
+		return gl.isTextureTypeSupported(TEXTURE_VOLUME);
 	case FEATURE_GLSL3:
 		return GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
 	case FEATURE_INSTANCING:

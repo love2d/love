@@ -39,12 +39,11 @@ public:
 
 	static love::Type type;
 
-	enum SettingType
+	enum MipmapsType
 	{
-		SETTING_MIPMAPS,
-		SETTING_LINEAR,
-		SETTING_PIXELDENSITY,
-		SETTING_MAX_ENUM
+		MIPMAPS_NONE,
+		MIPMAPS_DATA,
+		MIPMAPS_GENERATED,
 	};
 
 	struct Settings
@@ -54,33 +53,59 @@ public:
 		float pixeldensity = 1.0f;
 	};
 
-	Image(const Settings &settings);
+	struct Slices
+	{
+	public:
+
+		Slices(TextureType textype);
+
+		void clear();
+		void set(int slice, int mipmap, love::image::ImageDataBase *data);
+		love::image::ImageDataBase *get(int slice, int mipmap) const;
+
+		void add(love::image::CompressedImageData *cdata, int startslice, int startmip, bool addallslices, bool addallmips);
+
+		int getSliceCount(int mip = 0) const;
+		int getMipmapCount(int slice = 0) const;
+
+		MipmapsType validate() const;
+
+		TextureType getTextureType() const { return textureType; }
+
+	private:
+
+		TextureType textureType;
+
+		// For 2D/Cube/2DArray texture types, each element in the data array has
+		// an array of mipmap levels. For 3D texture types, each mipmap level
+		// has an array of layers.
+		std::vector<std::vector<StrongRef<love::image::ImageDataBase>>> data;
+
+	}; // Slices
+
 	virtual ~Image();
 
-	virtual const std::vector<StrongRef<love::image::ImageData>> &getImageData() const = 0;
-	virtual const std::vector<StrongRef<love::image::CompressedImageData>> &getCompressedData() const = 0;
+	virtual void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps) = 0;
+	virtual void replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps) = 0;
 
-	virtual void setMipmapSharpness(float sharpness) = 0;
-	virtual float getMipmapSharpness() const = 0;
-
+	virtual bool isFormatLinear() const = 0;
 	virtual bool isCompressed() const = 0;
 
-	virtual bool refresh(int xoffset, int yoffset, int w, int h) = 0;
-
-	const Settings &getFlags() const;
-
-	static bool getConstant(const char *in, SettingType &out);
-	static bool getConstant(SettingType in, const char *&out);
+	virtual MipmapsType getMipmapsType() const = 0;
 
 	static int imageCount;
 
 protected:
 
+	Image(const Slices &data, const Settings &settings, bool validatedata);
+
 	// The settings used to initialize this Image.
 	Settings settings;
-	
-	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
-	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;
+
+	Slices data;
+
+	MipmapsType mipmapsType;
+	bool sRGB;
 	
 }; // Image
 

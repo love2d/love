@@ -1006,7 +1006,6 @@ int TScanContext::tokenizeIdentifier()
 
     case ISAMPLER1D:
     case ISAMPLER1DARRAY:
-    case SAMPLER1DARRAYSHADOW:
     case USAMPLER1D:
     case USAMPLER1DARRAY:
         afterType = true;
@@ -1017,8 +1016,6 @@ int TScanContext::tokenizeIdentifier()
     case UVEC3:
     case UVEC4:
     case SAMPLERCUBESHADOW:
-    case SAMPLER2DARRAY:
-    case SAMPLER2DARRAYSHADOW:
     case ISAMPLER2D:
     case ISAMPLER3D:
     case ISAMPLERCUBE:
@@ -1085,6 +1082,37 @@ int TScanContext::tokenizeIdentifier()
             reservedWord();
         return keyword;
 
+    case SAMPLER1DARRAY:
+    case SAMPLER1DARRAYSHADOW:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel())
+            return keyword;
+        else if (parseContext.profile == EEsProfile) {
+            if (parseContext.version >= 300)
+                reservedWord();
+            else
+                return identifierOrType();
+        } else if (parseContext.version < 130 && !parseContext.extensionTurnedOn(E_GL_EXT_texture_array)) {
+            if (parseContext.forwardCompatible)
+                parseContext.warn(loc, "using future keyword", tokenText, "");
+
+            return identifierOrType();
+        }
+        return keyword;
+
+    case SAMPLER2DARRAY:
+    case SAMPLER2DARRAYSHADOW:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel())
+            return keyword;
+        else if (parseContext.version < 130 && ((parseContext.profile == EEsProfile && keyword != SAMPLER2DARRAY) || !parseContext.extensionTurnedOn(E_GL_EXT_texture_array))) {
+            if (parseContext.forwardCompatible)
+                parseContext.warn(loc, "using future keyword", tokenText, "");
+
+            return identifierOrType();
+        }
+        return keyword;
+
     case SAMPLER2DRECT:
     case SAMPLER2DRECTSHADOW:
         afterType = true;
@@ -1096,15 +1124,6 @@ int TScanContext::tokenizeIdentifier()
             else
                 reservedWord();
         }
-        return keyword;
-
-    case SAMPLER1DARRAY:
-        afterType = true;
-        if (parseContext.profile == EEsProfile && parseContext.version == 300)
-            reservedWord();
-        else if ((parseContext.profile == EEsProfile && parseContext.version < 300) ||
-                 (parseContext.profile != EEsProfile && parseContext.version < 130))
-            return identifierOrType();
         return keyword;
 
     case SAMPLEREXTERNALOES:

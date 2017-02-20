@@ -58,14 +58,14 @@ public:
 	 * @param[in] filedata The data to parse.
 	 * @param[out] images The list of sub-images generated. Byte data is a pointer
 	 *             to the returned data.
-	 * @param[out] dataSize The total size in bytes of the returned data.
 	 * @param[out] format The format of the Compressed Data.
 	 * @param[out] sRGB Whether the texture is sRGB-encoded.
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images,
-	                     size_t &dataSize, PixelFormat &format, bool &sRGB) = 0;
+	virtual StrongRef<CompressedImageData::Memory> parse(filesystem::FileData *filedata,
+	               std::vector<StrongRef<CompressedImageData::Slice>> &images,
+	               PixelFormat &format, bool &sRGB) = 0;
 
 }; // CompressedFormatHandler
 

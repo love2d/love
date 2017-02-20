@@ -42,7 +42,17 @@ GLSL.SYNTAX = [[
 #endif
 #define number float
 #define Image sampler2D
-#define extern uniform]]
+#define ArrayImage sampler2DArray
+#define CubeImage samplerCube
+#define VolumeImage sampler3D
+#define extern uniform
+#ifdef GL_EXT_texture_array
+#extension GL_EXT_texture_array : enable
+#endif
+#ifdef GL_OES_texture_3D
+#extension GL_OES_texture_3D : enable
+#endif
+]]
 
 -- Uniforms shared by the vertex and pixel shader stages.
 GLSL.UNIFORMS = [[
@@ -66,13 +76,36 @@ GLSL.FUNCTIONS = [[
 #else
 	#if __VERSION__ >= 130
 		#define texture2D Texel
+		#define texture3D Texel
+		#define textureCube Texel
+		#define texture2DArray Texel
 		#define love_texture2D texture
+		#define love_texture3D texture
+		#define love_textureCube texture
+		#define love_texture2DArray texture
 	#else
 		#define love_texture2D texture2D
+		#define love_texture3D texture3D
+		#define love_textureCube textureCube
+		#define love_texture2DArray texture2DArray
 	#endif
 	vec4 Texel(sampler2D s, vec2 c) { return love_texture2D(s, c); }
+	vec4 Texel(samplerCube s, vec3 c) { return love_textureCube(s, c); }
+	#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
+		vec4 Texel(sampler3D s, vec3 c) { return love_texture3D(s, c); }
+	#endif
+	#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+		vec4 Texel(sampler2DArray s, vec3 c) { return love_texture2DArray(s, c); }
+	#endif
 	#ifdef PIXEL
 		vec4 Texel(sampler2D s, vec2 c, float b) { return love_texture2D(s, c, b); }
+		vec4 Texel(samplerCube s, vec3 c, float b) { return love_textureCube(s, c, b); }
+		#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
+			vec4 Texel(sampler3D s, vec3 c, float b) { return love_texture3D(s, c, b); }
+		#endif
+		#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+			vec4 Texel(sampler2DArray s, vec3 c, float b) { return love_texture2DArray(s, c, b); }
+		#endif
 	#endif
 	#define texture love_texture
 #endif
@@ -187,17 +220,11 @@ GLSL.PIXEL = {
 
 #if __VERSION__ >= 130
 	#define varying in
-	#ifdef LOVE_MULTI_CANVAS
-		layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
-	#else
-		layout(location = 0) out vec4 love_PixelColor;
-	#endif
+	layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
+	#define love_PixelColor love_Canvases[0]
 #else
-	#ifdef LOVE_MULTI_CANVAS
-		#define love_Canvases gl_FragData
-	#else
-		#define love_PixelColor gl_FragColor
-	#endif
+	#define love_Canvases gl_FragData
+	#define love_PixelColor gl_FragColor
 #endif
 
 // See Shader::updateScreenParams in Shader.cpp.
@@ -259,7 +286,6 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		"#define "..stage,
 		glsl1on3 and "#define LOVE_GLSL1_ON_GLSL3 1" or "",
 		gammacorrect and "#define LOVE_GAMMA_CORRECT 1" or "",
-		multicanvas and "#define LOVE_MULTI_CANVAS 1" or "",
 		GLSL.SYNTAX,
 		GLSL[stage].HEADER,
 		GLSL.UNIFORMS,

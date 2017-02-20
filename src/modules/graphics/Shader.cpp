@@ -174,6 +174,14 @@ void Shader::attachDefault()
 	current = nullptr;
 }
 
+void Shader::checkMainTextureType(TextureType textype) const
+{
+	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
+
+	if (info != nullptr && info->textureType != TEXTURE_MAX_ENUM && info->textureType != textype)
+		throw love::Exception("Texture's type must match the type of the shader's main texture.");
+}
+
 bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err)
 {
 	if (source.vertex.empty() && source.pixel.empty())

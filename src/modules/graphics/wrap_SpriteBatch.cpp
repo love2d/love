@@ -120,7 +120,7 @@ int w_SpriteBatch_setTexture(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Texture *tex = luax_checktexture(L, 2);
-	t->setTexture(tex);
+	luax_catchexcept(L, [&](){ t->setTexture(tex); });
 	return 0;
 }
 

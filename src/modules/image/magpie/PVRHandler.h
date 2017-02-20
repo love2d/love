@@ -39,8 +39,11 @@ public:
 	virtual ~PVRHandler() {}
 
 	// Implements CompressedFormatHandler.
-	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB);
+	bool canParse(const filesystem::FileData *data) override;
+
+	StrongRef<CompressedImageData::Memory> parse(filesystem::FileData *filedata,
+	        std::vector<StrongRef<CompressedImageData::Slice>> &images,
+	        PixelFormat &format, bool &sRGB) override;
 
 }; // PVRHandler
 

@@ -104,6 +104,7 @@ const char* const E_GL_EXT_frag_depth                   = "GL_EXT_frag_depth";
 const char* const E_GL_OES_EGL_image_external           = "GL_OES_EGL_image_external";
 const char* const E_GL_EXT_shader_texture_lod           = "GL_EXT_shader_texture_lod";
 
+const char* const E_GL_EXT_texture_array                = "GL_EXT_texture_array";
 const char* const E_GL_ARB_texture_rectangle            = "GL_ARB_texture_rectangle";
 const char* const E_GL_3DL_array_objects                = "GL_3DL_array_objects";
 const char* const E_GL_ARB_shading_language_420pack     = "GL_ARB_shading_language_420pack";
@@ -130,6 +131,7 @@ const char* const E_GL_ARB_sparse_texture_clamp         = "GL_ARB_sparse_texture
 // const char* const E_GL_ARB_cull_distance            = "GL_ARB_cull_distance";  // present for 4.5, but need extension control over block members
 
 const char* const E_GL_EXT_shader_non_constant_global_initializers = "GL_EXT_shader_non_constant_global_initializers";
+const char* const E_GL_EXT_shader_image_load_formatted = "GL_EXT_shader_image_load_formatted";
 
 // #line and #include
 const char* const E_GL_GOOGLE_cpp_style_line_directive          = "GL_GOOGLE_cpp_style_line_directive";
@@ -149,6 +151,7 @@ const char* const E_SPV_NV_geometry_shader_passthrough          = "GL_NV_geometr
 const char* const E_GL_ARB_shader_viewport_layer_array          = "GL_ARB_shader_viewport_layer_array";
 const char* const E_GL_NV_viewport_array2                       = "GL_NV_viewport_array2";
 const char* const E_GL_NV_stereo_view_rendering                 = "GL_NV_stereo_view_rendering";
+const char* const E_GL_NVX_multiview_per_view_attributes        = "GL_NVX_multiview_per_view_attributes";
 
 // Arrays of extensions for the above viewportEXTs duplications
 

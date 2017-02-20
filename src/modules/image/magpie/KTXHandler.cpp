@@ -297,7 +297,7 @@ bool KTXHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedImageData::Memory> KTXHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
@@ -353,15 +353,8 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 		fileoffset += mipsizepadded;
 	}
 
-	uint8 *data = nullptr;
-	try
-	{
-		data = new uint8[totalsize];
-	}
-	catch (std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory.");
-	}
+	StrongRef<CompressedImageData::Memory> memory;
+	memory.set(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
 
 	// Reset the file offset to the start of the file's image data.
 	fileoffset = sizeof(KTXHeader) + header.bytesOfKeyValueData;
@@ -379,25 +372,23 @@ uint8 *KTXHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 
 		uint32 mipsizepadded = (mipsize + 3) & ~uint32(3);
 
-		CompressedImageData::SubImage mip;
-		mip.width = (int) std::max(header.pixelWidth >> i, 1u);
-		mip.height = (int) std::max(header.pixelHeight >> i, 1u);
-		mip.size = mipsize;
+		int width = (int) std::max(header.pixelWidth >> i, 1u);
+		int height = (int) std::max(header.pixelHeight >> i, 1u);
 
-		memcpy(data + dataoffset, filebytes + fileoffset, mipsize);
-		mip.data = data + dataoffset;
+		memcpy(memory->data + dataoffset, filebytes + fileoffset, mipsize);
+
+		auto slice = new CompressedImageData::Slice(cformat, width, height, memory, dataoffset, mipsize);
+		images.push_back(slice);
+		slice->release();
 
 		fileoffset += mipsizepadded;
 		dataoffset += mipsizepadded;
-
-		images.push_back(mip);
 	}
 
-	dataSize = totalsize;
 	format = cformat;
 	sRGB = isSRGB;
 
-	return data;
+	return memory;
 }
 
 } // magpie

@@ -252,7 +252,7 @@ public:
     TIntermAggregate* makeAggregate(const TSourceLoc&);
     TIntermTyped* setAggregateOperator(TIntermNode*, TOperator, const TType& type, TSourceLoc);
     bool areAllChildConst(TIntermAggregate* aggrNode);
-    TIntermNode*  addSelection(TIntermTyped* cond, TIntermNodePair code, const TSourceLoc&);
+    TIntermTyped* addSelection(TIntermTyped* cond, TIntermNodePair code, const TSourceLoc&);
     TIntermTyped* addSelection(TIntermTyped* cond, TIntermTyped* trueBlock, TIntermTyped* falseBlock, const TSourceLoc&);
     TIntermTyped* addComma(TIntermTyped* left, TIntermTyped* right, const TSourceLoc&);
     TIntermTyped* addMethod(TIntermTyped*, const TType&, const TString*, const TSourceLoc&);
@@ -263,6 +263,7 @@ public:
     TIntermConstantUnion* addConstantUnion(unsigned long long, const TSourceLoc&, bool literal = false) const;
     TIntermConstantUnion* addConstantUnion(bool, const TSourceLoc&, bool literal = false) const;
     TIntermConstantUnion* addConstantUnion(double, TBasicType, const TSourceLoc&, bool literal = false) const;
+    TIntermConstantUnion* addConstantUnion(const TString*, const TSourceLoc&, bool literal = false) const;
     TIntermTyped* promoteConstantUnion(TBasicType, TIntermConstantUnion*) const;
     bool parseConstTree(TIntermNode*, TConstUnionArray, TOperator, const TType&, bool singleConstantParam = false);
     TIntermLoop* addLoop(TIntermNode*, TIntermTyped*, TIntermTyped*, bool testFirst, const TSourceLoc&);
@@ -440,6 +441,7 @@ protected:
     bool promoteAggregate(TIntermAggregate&);
     void pushSelector(TIntermSequence&, const TVectorSelector&, const TSourceLoc&);
     void pushSelector(TIntermSequence&, const TMatrixSelector&, const TSourceLoc&);
+    bool specConstantPropagates(const TIntermTyped&, const TIntermTyped&);
 
     const EShLanguage language;  // stage, known at construction time
     EShSource source;            // source language, known a bit later

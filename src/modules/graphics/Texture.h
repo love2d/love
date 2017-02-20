@@ -25,6 +25,7 @@
 #include "common/StringMap.h"
 #include "common/math.h"
 #include "common/pixelformat.h"
+#include "common/Exception.h"
 #include "Drawable.h"
 #include "Quad.h"
 #include "vertex.h"
@@ -36,6 +37,25 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
+enum TextureType
+{
+	TEXTURE_2D,
+	TEXTURE_VOLUME,
+	TEXTURE_2D_ARRAY,
+	TEXTURE_CUBE,
+	TEXTURE_MAX_ENUM
+};
+
+class TextureTooLargeException : public love::Exception
+{
+public:
+	TextureTooLargeException(const char *dimname, int pix)
+		: Exception("Cannot create texture: %s of %d pixels is too large for this system.", dimname, pix)
+	{}
+};
 
 /**
  * Base class for 2D textures. All textures can be drawn with Quads, have a
@@ -76,9 +96,10 @@ public:
 	{
 		WrapMode s = WRAP_CLAMP;
 		WrapMode t = WRAP_CLAMP;
+		WrapMode r = WRAP_CLAMP;
 	};
 
-	Texture();
+	Texture(TextureType texType);
 	virtual ~Texture();
 
 	static Filter defaultFilter;
@@ -93,10 +114,14 @@ public:
 	 **/
 	void drawq(Graphics *gfx, Quad *quad, const Matrix4 &m);
 
+	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
 
-	virtual int getWidth() const;
-	virtual int getHeight() const;
+	int getWidth() const;
+	int getHeight() const;
+	int getDepth() const;
+	int getLayerCount() const;
+	int getMipmapCount() const;
 
 	virtual int getPixelWidth() const;
 	virtual int getPixelHeight() const;
@@ -109,36 +134,58 @@ public:
 	virtual bool setWrap(const Wrap &w) = 0;
 	virtual const Wrap &getWrap() const;
 
+	// Sets the mipmap texture LOD bias (sharpness) value.
+	virtual bool setMipmapSharpness(float sharpness) = 0;
+	float getMipmapSharpness() const;
+
 	virtual const Vertex *getVertices() const;
 
 	virtual ptrdiff_t getHandle() const = 0;
 
 	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 
+	static int getMipmapCount(int w, int h);
+	static int getMipmapCount(int w, int h, int d);
+
+	static bool getConstant(const char *in, TextureType &out);
+	static bool getConstant(TextureType in, const char *&out);
+
 	static bool getConstant(const char *in, FilterMode &out);
-	static bool getConstant(FilterMode in, const char  *&out);
+	static bool getConstant(FilterMode in, const char *&out);
 
 	static bool getConstant(const char *in, WrapMode &out);
-	static bool getConstant(WrapMode in, const char  *&out);
+	static bool getConstant(WrapMode in, const char *&out);
 
 protected:
 
+	void initVertices();
 	virtual void drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v);
+
+	TextureType texType;
 
 	PixelFormat format;
 
 	int width;
 	int height;
+	int depth;
+	int layers;
+	int mipmapCount;
 
 	int pixelWidth;
 	int pixelHeight;
 
+
 	Filter filter;
 	Wrap wrap;
+
+	float mipmapSharpness;
 
 	Vertex vertices[4];
 
 private:
+
+	static StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry texTypeEntries[];
+	static StringMap<TextureType, TEXTURE_MAX_ENUM> texTypes;
 
 	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
 	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;

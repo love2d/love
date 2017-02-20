@@ -31,18 +31,6 @@ Canvas *luax_checkcanvas(lua_State *L, int idx)
 	return luax_checktype<Canvas>(L, idx);
 }
 
-int w_Canvas_getFormat(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	PixelFormat format = canvas->getPixelFormat();
-	const char *str;
-	if (!getConstant(format, str))
-		return luaL_error(L, "Unknown pixel format.");
-
-	lua_pushstring(L, str);
-	return 1;
-}
-
 int w_Canvas_getMSAA(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
@@ -52,28 +40,37 @@ int w_Canvas_getMSAA(lua_State *L)
 
 int w_Canvas_renderTo(lua_State *L)
 {
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	luaL_checktype(L, 2, LUA_TFUNCTION);
+	Graphics::RenderTarget rt(luax_checkcanvas(L, 1));
+
+	int startidx = 2;
+
+	if (rt.canvas->getTextureType() != TEXTURE_2D)
+	{
+		rt.slice = (int) luaL_checknumber(L, 2) - 1;
+		startidx++;
+	}
+
+	luaL_checktype(L, startidx, LUA_TFUNCTION);
 
 	auto graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 	if (graphics)
 	{
-		// Save the current Canvas so we can restore it when we're done.
-		std::vector<Canvas *> oldcanvases = graphics->getCanvas();
+		// Save the current render targets so we can restore them when we're done.
+		std::vector<Graphics::RenderTarget> oldtargets = graphics->getCanvas();
 
-		for (Canvas *c : oldcanvases)
-			c->retain();
+		for (auto c : oldtargets)
+			c.canvas->retain();
 
-		luax_catchexcept(L, [&](){ graphics->setCanvas(canvas); });
+		luax_catchexcept(L, [&](){ graphics->setCanvas(rt); });
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
 		int status = lua_pcall(L, 0, 0, 0);
 
-		graphics->setCanvas(oldcanvases);
+		graphics->setCanvas(oldtargets);
 
-		for (Canvas *c : oldcanvases)
-			c->release();
+		for (auto c : oldtargets)
+			c.canvas->release();
 
 		if (status != 0)
 			return lua_error(L);
@@ -86,13 +83,31 @@ int w_Canvas_newImageData(lua_State *L)
 {
 	Canvas *canvas = luax_checkcanvas(L, 1);
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
-	int x = (int) luaL_optnumber(L, 2, 0);
-	int y = (int) luaL_optnumber(L, 3, 0);
-	int w = (int) luaL_optnumber(L, 4, canvas->getPixelWidth());
-	int h = (int) luaL_optnumber(L, 5, canvas->getPixelHeight());
+
+	int slice = 0;
+	int x = 0;
+	int y = 0;
+	int w = canvas->getPixelWidth();
+	int h = canvas->getPixelHeight();
+
+	int startidx = 2;
+
+	if (canvas->getTextureType() != TEXTURE_2D)
+	{
+		slice = (int) luaL_checknumber(L, startidx);
+		startidx++;
+	}
+
+	if (!lua_isnoneornil(L, startidx))
+	{
+		x = (int) luaL_checknumber(L, startidx + 0);
+		y = (int) luaL_checknumber(L, startidx + 1);
+		w = (int) luaL_checknumber(L, startidx + 2);
+		h = (int) luaL_checknumber(L, startidx + 3);
+	}
 
 	love::image::ImageData *img = nullptr;
-	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, x, y, w, h); });
+	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, slice, x, y, w, h); });
 
 	luax_pushtype(L, img);
 	img->release();
@@ -101,7 +116,6 @@ int w_Canvas_newImageData(lua_State *L)
 
 static const luaL_Reg w_Canvas_functions[] =
 {
-	{ "getFormat", w_Canvas_getFormat },
 	{ "getMSAA", w_Canvas_getMSAA },
 	{ "renderTo", w_Canvas_renderTo },
 	{ "newImageData", w_Canvas_newImageData },

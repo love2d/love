@@ -18,8 +18,24 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+// LOVE
+#include "common/config.h"
 #include "Texture.h"
 #include "Graphics.h"
+
+// C
+#include <cmath>
+#include <algorithm>
+
+#ifdef LOVE_ANDROID
+// log2 is not declared in the math.h shipped with the Android NDK
+static inline double log2(double n)
+{
+	// log(n)/log(2) is log2.
+	return std::log(n) / std::log(2);
+}
+#endif
+
 
 namespace love
 {
@@ -32,20 +48,58 @@ Texture::Filter Texture::defaultFilter;
 Texture::FilterMode Texture::defaultMipmapFilter = Texture::FILTER_LINEAR;
 float Texture::defaultMipmapSharpness = 0.0f;
 
-Texture::Texture()
-	: format(PIXELFORMAT_UNKNOWN)
+Texture::Texture(TextureType texType)
+	: texType(texType)
+	, format(PIXELFORMAT_UNKNOWN)
 	, width(0)
 	, height(0)
+	, depth(1)
+	, layers(1)
+	, mipmapCount(1)
 	, pixelWidth(0)
 	, pixelHeight(0)
 	, filter(defaultFilter)
 	, wrap()
+	, mipmapSharpness(defaultMipmapSharpness)
 	, vertices()
 {
 }
 
 Texture::~Texture()
 {
+}
+
+void Texture::initVertices()
+{
+	for (int i = 0; i < 4; i++)
+		vertices[i].color = Color(255, 255, 255, 255);
+
+	// Vertices are ordered for use with triangle strips:
+	// 0---2
+	// | / |
+	// 1---3
+	vertices[0].x = 0.0f;
+	vertices[0].y = 0.0f;
+	vertices[1].x = 0.0f;
+	vertices[1].y = (float) height;
+	vertices[2].x = (float) width;
+	vertices[2].y = 0.0f;
+	vertices[3].x = (float) width;
+	vertices[3].y = (float) height;
+
+	vertices[0].s = 0.0f;
+	vertices[0].t = 0.0f;
+	vertices[1].s = 0.0f;
+	vertices[1].t = 1.0f;
+	vertices[2].s = 1.0f;
+	vertices[2].t = 0.0f;
+	vertices[3].s = 1.0f;
+	vertices[3].t = 1.0f;
+}
+
+TextureType Texture::getTextureType() const
+{
+	return texType;
 }
 
 PixelFormat Texture::getPixelFormat() const
@@ -65,6 +119,9 @@ void Texture::drawq(Graphics *gfx, Quad *quad, const Matrix4 &m)
 
 void Texture::drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v)
 {
+	if (Shader::current)
+		Shader::current->checkMainTextureType(texType);
+
 	Matrix4 t(gfx->getTransform(), localTransform);
 
 	Vertex verts[4] = {v[0], v[1], v[2], v[3]};
@@ -95,6 +152,21 @@ int Texture::getHeight() const
 	return height;
 }
 
+int Texture::getDepth() const
+{
+	return depth;
+}
+
+int Texture::getLayerCount() const
+{
+	return layers;
+}
+
+int Texture::getMipmapCount() const
+{
+	return mipmapCount;
+}
+
 int Texture::getPixelWidth() const
 {
 	return pixelWidth;
@@ -120,6 +192,11 @@ const Texture::Wrap &Texture::getWrap() const
 	return wrap;
 }
 
+float Texture::getMipmapSharpness() const
+{
+	return mipmapSharpness;
+}
+
 const Vertex *Texture::getVertices() const
 {
 	return vertices;
@@ -142,12 +219,32 @@ bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)
 	return true;
 }
 
+int Texture::getMipmapCount(int w, int h)
+{
+	return (int) log2(std::max(w, h)) + 1;
+}
+
+int Texture::getMipmapCount(int w, int h, int d)
+{
+	return (int) log2(std::max(std::max(w, h), d)) + 1;
+}
+
+bool Texture::getConstant(const char *in, TextureType &out)
+{
+	return texTypes.find(in, out);
+}
+
+bool Texture::getConstant(TextureType in, const char *&out)
+{
+	return texTypes.find(in, out);
+}
+
 bool Texture::getConstant(const char *in, FilterMode &out)
 {
 	return filterModes.find(in, out);
 }
 
-bool Texture::getConstant(FilterMode in, const char  *&out)
+bool Texture::getConstant(FilterMode in, const char *&out)
 {
 	return filterModes.find(in, out);
 }
@@ -157,10 +254,20 @@ bool Texture::getConstant(const char *in, WrapMode &out)
 	return wrapModes.find(in, out);
 }
 
-bool Texture::getConstant(WrapMode in, const char  *&out)
+bool Texture::getConstant(WrapMode in, const char *&out)
 {
 	return wrapModes.find(in, out);
 }
+
+StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry Texture::texTypeEntries[] =
+{
+	{ "2d", TEXTURE_2D },
+	{ "volume", TEXTURE_VOLUME },
+	{ "array", TEXTURE_2D_ARRAY },
+	{ "cube", TEXTURE_CUBE },
+};
+
+StringMap<TextureType, TEXTURE_MAX_ENUM> Texture::texTypes(Texture::texTypeEntries, sizeof(Texture::texTypeEntries));
 
 StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM>::Entry Texture::filterModeEntries[] =
 {

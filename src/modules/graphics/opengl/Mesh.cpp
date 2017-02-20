@@ -99,6 +99,9 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 	if (instancecount > 1 && !gl.isInstancingSupported())
 		throw love::Exception("Instancing is not supported on this system.");
 
+	if (Shader::current && texture.get())
+		Shader::current->checkMainTextureType(texture->getTextureType());
+
 	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
@@ -131,7 +134,10 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 
 	gl.useVertexAttribArrays(enabledattribs, instancedattribs);
 
-	gl.bindTextureToUnit(texture, 0, false);
+	if (texture.get())
+		gl.bindTextureToUnit(texture, 0, false);
+	else
+		gl.bindTextureToUnit(TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, false);
 
 	Graphics::TempTransform transform(gfx, m);
 

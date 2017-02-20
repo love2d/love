@@ -1292,6 +1292,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
                 "vec4 textureCube(samplerCube, vec3);"
 
+                "vec4 texture2DArray(sampler2DArray, vec3);" // GL_EXT_texture_array
+
                 "\n");
         }
     }
@@ -1316,6 +1318,10 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 texture2DRectProj(sampler2DRect, vec4);"      // GL_ARB_texture_rectangle, caught by keyword check
                 "vec4 shadow2DRect(sampler2DRectShadow, vec3);"     // GL_ARB_texture_rectangle, caught by keyword check
                 "vec4 shadow2DRectProj(sampler2DRectShadow, vec4);" // GL_ARB_texture_rectangle, caught by keyword check
+
+                "vec4 texture1DArray(sampler1DArray, vec2);"      // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3);" // GL_EXT_texture_array
+                "vec4 shadow2DArray(sampler2DArrayShadow, vec4);" // GL_EXT_texture_array
 
                 "\n");
         }
@@ -2646,6 +2652,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 texture3DProjLod(sampler3D, vec4, float);"     // GL_ARB_shader_texture_lod  // OES_texture_3D, but caught by keyword check
                 "vec4 textureCubeLod(samplerCube, vec3, float);"     // GL_ARB_shader_texture_lod
 
+                "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
+
                 "\n");
         }
     }
@@ -2680,6 +2688,10 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 texture2DRectProjGradARB( sampler2DRect, vec4, vec2, vec2);"     // GL_ARB_shader_texture_lod
                 "vec4 shadow2DRectGradARB( sampler2DRectShadow, vec3, vec2, vec2);"    // GL_ARB_shader_texture_lod
                 "vec4 shadow2DRectProjGradARB(sampler2DRectShadow, vec4, vec2, vec2);" // GL_ARB_shader_texture_lod
+
+                "vec4 texture1DArrayLod(sampler1DArray, vec2, float);"                 // GL_EXT_texture_array
+                "vec4 shadow1DArrayLod(sampler1DArrayShadow, vec3, float);"            // GL_EXT_texture_array
+                "vec4 shadow2DArrayLod(sampler2DArrayShadow, vec4, float);"            // GL_EXT_texture_array
 
                 "\n");
         }
@@ -2752,6 +2764,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "vec4 texture3D(sampler3D, vec3, float);"        // OES_texture_3D
             "vec4 texture3DProj(sampler3D, vec4, float);"    // OES_texture_3D
             "vec4 textureCube(samplerCube, vec3, float);"
+            "vec4 texture2DArray(sampler2DArray, vec3, float);" // GL_EXT_texture_array
 
             "\n");
     }
@@ -2764,7 +2777,9 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "vec4 shadow2D(sampler2DShadow, vec3, float);"
             "vec4 shadow1DProj(sampler1DShadow, vec4, float);"
             "vec4 shadow2DProj(sampler2DShadow, vec4, float);"
-
+            "vec4 texture1DArray(sampler1DArray, vec2, float);"      // GL_EXT_texture_array
+            "vec4 shadow1DArray(sampler1DArrayShadow, vec3, float);" // GL_EXT_texture_array
+            "vec4 shadow2DArray(sampler2DArrayShadow, vec4, float);" // GL_EXT_texture_array
             "\n");
     }
     if (spvVersion.spv == 0 && profile == EEsProfile) {
@@ -3249,6 +3264,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "out int gl_ViewportMask[];"
                 "out int gl_SecondaryViewportMaskNV[];"
                 "out vec4 gl_SecondaryPositionNV;"
+                "out vec4 gl_PositionPerViewNV[];"
+                "out int  gl_ViewportMaskPerViewNV[];"
                 );
 #endif
 
@@ -3313,6 +3330,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "float gl_CullDistance[];"
 #ifdef NV_EXTENSIONS
                 "vec4 gl_SecondaryPositionNV;"
+                "vec4 gl_PositionPerViewNV[];"
 #endif
                 );
         stageBuiltins[EShLangGeometry].append(
@@ -3362,9 +3380,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 #ifdef NV_EXTENSIONS
         if (version >= 450)
             stageBuiltins[EShLangGeometry].append(
-            "out int gl_ViewportMask[];"
-            "out int gl_SecondaryViewportMaskNV[];"
-            "out vec4 gl_SecondaryPositionNV;"
+                "out int gl_ViewportMask[];"
+                "out int gl_SecondaryViewportMaskNV[];"
+                "out vec4 gl_SecondaryPositionNV;"
+                "out vec4 gl_PositionPerViewNV[];"
+                "out int  gl_ViewportMaskPerViewNV[];"
             );
 #endif
 
@@ -3424,11 +3444,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangTessControl].append(
                 "float gl_CullDistance[];"
 #ifdef NV_EXTENSIONS
-                "int gl_ViewportIndex;"
-                "int gl_Layer;"
-                "int gl_ViewportMask[];"
+                "int  gl_ViewportIndex;"
+                "int  gl_Layer;"
+                "int  gl_ViewportMask[];"
                 "vec4 gl_SecondaryPositionNV;"
-                "int gl_SecondaryViewportMaskNV[];"
+                "int  gl_SecondaryViewportMaskNV[];"
+                "vec4 gl_PositionPerViewNV[];"
+                "int  gl_ViewportMaskPerViewNV[];"
 #endif
                 );
         stageBuiltins[EShLangTessControl].append(
@@ -3503,11 +3525,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 #ifdef NV_EXTENSIONS
         if (version >= 450)
             stageBuiltins[EShLangTessEvaluation].append(
-                "out int gl_ViewportIndex;"
-                "out int gl_Layer;"
-                "out int gl_ViewportMask[];"
+                "out int  gl_ViewportIndex;"
+                "out int  gl_Layer;"
+                "out int  gl_ViewportMask[];"
                 "out vec4 gl_SecondaryPositionNV;"
-                "out int gl_SecondaryViewportMaskNV[];"
+                "out int  gl_SecondaryViewportMaskNV[];"
+                "out vec4 gl_PositionPerViewNV[];"
+                "out int  gl_ViewportMaskPerViewNV[];"
                 );
 #endif
 
@@ -4203,7 +4227,7 @@ void TBuiltIns::addSamplingFunctions(TSampler sampler, TString& typeName, int ve
 
                                         // Add to the per-language set of built-ins
 
-                                        if (bias)
+                                        if (bias || lodClamp)
                                             stageBuiltins[EShLangFragment].append(s);
                                         else
                                             commonBuiltins.append(s);
@@ -4446,6 +4470,7 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
                         "highp float gl_PointSize;"
 #ifdef NV_EXTENSIONS
                         "highp vec4 gl_SecondaryPositionNV;"
+                        "highp vec4 gl_PositionPerViewNV[];"
 #endif
                     "} gl_in[gl_MaxPatchVertices];"
                     "\n");
@@ -4635,6 +4660,7 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
                         "float gl_CullDistance[];"
 #ifdef NV_EXTENSIONS
                         "vec4 gl_SecondaryPositionNV;"
+                        "vec4 gl_PositionPerViewNV[];"
 #endif
                        );
                 s.append(
@@ -5033,19 +5059,26 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.setVariableExtensions("gl_ViewportMask",            1, &E_GL_NV_viewport_array2);
         symbolTable.setVariableExtensions("gl_SecondaryPositionNV",     1, &E_GL_NV_stereo_view_rendering);
         symbolTable.setVariableExtensions("gl_SecondaryViewportMaskNV", 1, &E_GL_NV_stereo_view_rendering);
+        symbolTable.setVariableExtensions("gl_PositionPerViewNV",       1, &E_GL_NVX_multiview_per_view_attributes);
+        symbolTable.setVariableExtensions("gl_ViewportMaskPerViewNV",   1, &E_GL_NVX_multiview_per_view_attributes);
 
         BuiltInVariable("gl_ViewportMask",              EbvViewportMaskNV,          symbolTable);
         BuiltInVariable("gl_SecondaryPositionNV",       EbvSecondaryPositionNV,     symbolTable);
         BuiltInVariable("gl_SecondaryViewportMaskNV",   EbvSecondaryViewportMaskNV, symbolTable);
+        BuiltInVariable("gl_PositionPerViewNV",         EbvPositionPerViewNV,       symbolTable);
+        BuiltInVariable("gl_ViewportMaskPerViewNV",     EbvViewportMaskPerViewNV,   symbolTable);
 
-        if (language != EShLangVertex) 
+        if (language != EShLangVertex) {
             BuiltInVariable("gl_in", "gl_SecondaryPositionNV", EbvSecondaryPositionNV, symbolTable);
-
+            BuiltInVariable("gl_in", "gl_PositionPerViewNV",   EbvPositionPerViewNV,   symbolTable);
+        }
         BuiltInVariable("gl_out", "gl_Layer",                   EbvLayer,                   symbolTable);
         BuiltInVariable("gl_out", "gl_ViewportIndex",           EbvViewportIndex,           symbolTable);
         BuiltInVariable("gl_out", "gl_ViewportMask",            EbvViewportMaskNV,          symbolTable);
         BuiltInVariable("gl_out", "gl_SecondaryPositionNV",     EbvSecondaryPositionNV,     symbolTable);
         BuiltInVariable("gl_out", "gl_SecondaryViewportMaskNV", EbvSecondaryViewportMaskNV, symbolTable);
+        BuiltInVariable("gl_out", "gl_PositionPerViewNV",       EbvPositionPerViewNV,       symbolTable);
+        BuiltInVariable("gl_out", "gl_ViewportMaskPerViewNV",   EbvViewportMaskPerViewNV,   symbolTable);
 #endif
 
         BuiltInVariable("gl_PatchVerticesIn", EbvPatchVertices,  symbolTable);
@@ -5195,6 +5228,27 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("texture2DRectProjGradARB", 1, &E_GL_ARB_shader_texture_lod);
             symbolTable.setFunctionExtensions("shadow2DRectGradARB",      1, &E_GL_ARB_shader_texture_lod);
             symbolTable.setFunctionExtensions("shadow2DRectProjGradARB",  1, &E_GL_ARB_shader_texture_lod);
+        }
+
+		// E_GL_EXT_texture_array
+        if (spvVersion.spv == 0) {
+            symbolTable.setFunctionExtensions("texture2DArray",    1, &E_GL_EXT_texture_array);
+        }
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            int nLodExtensions = 2;
+            const char *lodExtensions[] = {E_GL_EXT_texture_array, E_GL_ARB_shader_texture_lod};
+
+            if (version >= 130)
+                nLodExtensions = 1;
+
+            symbolTable.setFunctionExtensions("texture1DArray",    1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArray",     1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow2DArray",     1, &E_GL_EXT_texture_array);
+
+            symbolTable.setFunctionExtensions("texture1DArrayLod", nLodExtensions, lodExtensions);
+            symbolTable.setFunctionExtensions("texture2DArrayLod", nLodExtensions, lodExtensions);
+            symbolTable.setFunctionExtensions("shadow1DArrayLod",  nLodExtensions, lodExtensions);
+            symbolTable.setFunctionExtensions("shadow2DArrayLod",  nLodExtensions, lodExtensions);
         }
 
         // E_GL_ARB_shader_image_load_store
@@ -5554,6 +5608,15 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("texture2DLodEXT",          EOpTextureLod);
             symbolTable.relateToOperator("texture2DProjLod",         EOpTextureProjLod);
             symbolTable.relateToOperator("texture2DProjLodEXT",      EOpTextureProjLod);
+
+            symbolTable.relateToOperator("texture1DArray",           EOpTexture);
+            symbolTable.relateToOperator("texture2DArray",           EOpTexture);
+            symbolTable.relateToOperator("shadow1DArray",            EOpTexture);
+            symbolTable.relateToOperator("shadow2DArray",            EOpTexture);
+            symbolTable.relateToOperator("texture1DArrayLod",        EOpTextureLod);
+            symbolTable.relateToOperator("texture2DArrayLod",        EOpTextureLod);
+            symbolTable.relateToOperator("shadow1DArrayLod",         EOpTextureLod);
+            symbolTable.relateToOperator("shadow2DArrayLod",         EOpTextureLod);
 
             symbolTable.relateToOperator("texture3D",                EOpTexture);
             symbolTable.relateToOperator("texture3DGradARB",         EOpTextureGrad);

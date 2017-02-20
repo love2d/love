@@ -43,42 +43,31 @@ CompressedImageData::CompressedImageData(std::list<CompressedFormatHandler *> fo
 	if (parser == nullptr)
 		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	data = parser->parse(filedata, dataImages, dataSize, format, sRGB);
+	memory = parser->parse(filedata, dataImages, format, sRGB);
 
-	if (data == nullptr)
+	if (memory == nullptr)
 		throw love::Exception("Could not parse compressed data.");
 
 	if (format == PIXELFORMAT_UNKNOWN)
-	{
-		delete[] data;
 		throw love::Exception("Could not parse compressed data: Unknown format.");
-	}
 
-	if (dataImages.size() == 0 || dataSize == 0)
-	{
-		delete[] data;
+	if (dataImages.size() == 0 || memory->size == 0)
 		throw love::Exception("Could not parse compressed data: No valid data?");
-	}
 }
 
 CompressedImageData::CompressedImageData(const CompressedImageData &c)
 {
 	format = c.format;
 	sRGB = c.sRGB;
-	dataSize = c.dataSize;
 
-	data = new uint8[dataSize];
-	memcpy(data, c.data, dataSize);
+	memory.set(new Memory(c.memory->size), Acquire::NORETAIN);
+	memcpy(memory->data, c.memory->data, memory->size);
 
-	for (auto i : c.dataImages )
+	for (const auto &i : c.dataImages)
 	{
-		struct SubImage s;
-		s.width = i.width;
-		s.height = i.height;
-		s.size = i.size;
-		s.data = (uint8*)((intptr_t)data + (intptr_t)i.data - (intptr_t)c.data);
-
-		dataImages.push_back(s);
+		Slice *slice = new Slice(i->getFormat(), i->getWidth(), i->getHeight(), memory, i->getOffset(), i->getSize());
+		dataImages.push_back(slice);
+		slice->release();
 	}
 }
 
@@ -89,7 +78,6 @@ CompressedImageData *CompressedImageData::clone() const
 
 CompressedImageData::~CompressedImageData()
 {
-	delete[] data;
 }
 
 } // magpie

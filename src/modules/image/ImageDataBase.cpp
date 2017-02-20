@@ -18,41 +18,34 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#pragma once
-
-// LOVE
-#include "graphics/Video.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "ImageDataBase.h"
 
 namespace love
 {
-namespace graphics
-{
-namespace opengl
+namespace image
 {
 
-class Video : public love::graphics::Video, public Volatile
+ImageDataBase::ImageDataBase()
+	: format(PIXELFORMAT_UNKNOWN)
+	, width(0)
+	, height(0)
 {
-public:
+}
 
-	Video(love::video::VideoStream *stream, float pixeldensity = 1.0f);
-	virtual ~Video();
+PixelFormat ImageDataBase::getFormat() const
+{
+	return format;
+}
 
-	// Volatile
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+int ImageDataBase::getWidth() const
+{
+	return width;
+}
 
-	void setFilter(const Texture::Filter &f) override;
+int ImageDataBase::getHeight() const
+{
+	return height;
+}
 
-private:
-
-	void uploadFrame(const love::video::VideoStream::Frame *frame) override;
-
-	Texture::Filter filter;
-
-}; // Video
-
-} // opengl
-} // graphics
+} // image
 } // love

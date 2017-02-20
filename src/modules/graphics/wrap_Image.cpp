@@ -31,40 +31,11 @@ Image *luax_checkimage(lua_State *L, int idx)
 	return luax_checktype<Image>(L, idx);
 }
 
-int w_Image_setMipmapFilter(lua_State *L)
+int w_Image_isFormatLinear(lua_State *L)
 {
-	Image *t = luax_checkimage(L, 1);
-	Texture::Filter f = t->getFilter();
-
-	if (lua_isnoneornil(L, 2))
-		f.mipmap = Texture::FILTER_NONE; // mipmapping is disabled if no argument is given
-	else
-	{
-		const char *mipmapstr = luaL_checkstring(L, 2);
-		if (!Texture::getConstant(mipmapstr, f.mipmap))
-			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
-	}
-
-	luax_catchexcept(L, [&](){ t->setFilter(f); });
-	t->setMipmapSharpness((float) luaL_optnumber(L, 3, 0.0));
-
-	return 0;
-}
-
-int w_Image_getMipmapFilter(lua_State *L)
-{
-	Image *t = luax_checkimage(L, 1);
-
-	const Texture::Filter &f = t->getFilter();
-
-	const char *mipmapstr;
-	if (Texture::getConstant(f.mipmap, mipmapstr))
-		lua_pushstring(L, mipmapstr);
-	else
-		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
-
-	lua_pushnumber(L, t->getMipmapSharpness());
-	return 2;
+	Image *i = luax_checkimage(L, 1);
+	luax_pushboolean(L, i->isFormatLinear());
+	return 1;
 }
 
 int w_Image_isCompressed(lua_State *L)
@@ -74,78 +45,33 @@ int w_Image_isCompressed(lua_State *L)
 	return 1;
 }
 
-int w_Image_refresh(lua_State *L)
+int w_Image_replacePixels(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
+	love::image::ImageData *id = luax_checktype<love::image::ImageData>(L, 2);
 
-	int xoffset = (int) luaL_optnumber(L, 2, 0);
-	int yoffset = (int) luaL_optnumber(L, 3, 0);
-	int w = (int) luaL_optnumber(L, 4, i->getWidth());
-	int h = (int) luaL_optnumber(L, 5, i->getHeight());
+	int slice = 0;
+	int mipmap = 0;
+	bool reloadmipmaps = i->getMipmapsType() == Image::MIPMAPS_GENERATED;
 
-	luax_catchexcept(L, [&](){ i->refresh(xoffset, yoffset, w, h); });
+	if (i->getTextureType() != TEXTURE_2D)
+	{
+		slice = (int) luaL_checknumber(L, 3) - 1;
+		if (!reloadmipmaps)
+			mipmap = (int) luaL_optnumber(L, 4, 1) - 1;
+	}
+	else if (!reloadmipmaps)
+		mipmap = (int) luaL_optnumber(L, 3, 1) - 1;
+
+	luax_catchexcept(L, [&](){ i->replacePixels(id, slice, mipmap, reloadmipmaps); });
 	return 0;
-}
-
-int w_Image_getData(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	int n = 0;
-
-	if (i->isCompressed())
-	{
-		for (const auto &cdata : i->getCompressedData())
-		{
-			luax_pushtype(L, cdata.get());
-			n++;
-		}
-	}
-	else
-	{
-		for (const auto &data : i->getImageData())
-		{
-			luax_pushtype(L, data.get());
-			n++;
-		}
-	}
-
-	return n;
-}
-
-const char *luax_imageSettingName(Image::SettingType settingtype)
-{
-	const char *name = nullptr;
-	Image::getConstant(settingtype, name);
-	return name;
-}
-
-int w_Image_getFlags(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	Image::Settings settings = i->getFlags();
-
-	lua_createtable(L, 0, 2);
-
-	lua_pushboolean(L, settings.mipmaps);
-	lua_setfield(L, -2, luax_imageSettingName(Image::SETTING_MIPMAPS));
-
-	lua_pushboolean(L, settings.linear);
-	lua_setfield(L, -2, luax_imageSettingName(Image::SETTING_LINEAR));
-
-	lua_pushnumber(L, settings.pixeldensity);
-	lua_setfield(L, -2, luax_imageSettingName(Image::SETTING_PIXELDENSITY));
-
-	return 1;
 }
 
 static const luaL_Reg w_Image_functions[] =
 {
-	{ "setMipmapFilter", w_Image_setMipmapFilter },
-	{ "getMipmapFilter", w_Image_getMipmapFilter },
+	{ "isFormatLinear", w_Image_isFormatLinear },
 	{ "isCompressed", w_Image_isCompressed },
-	{ "refresh", w_Image_refresh },
-	{ "getData", w_Image_getData },
-	{ "getFlags", w_Image_getFlags },
+	{ "replacePixels", w_Image_replacePixels },
 	{ 0, 0 }
 };
 

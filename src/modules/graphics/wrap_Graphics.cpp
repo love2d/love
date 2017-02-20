@@ -216,26 +216,67 @@ int w_setCanvas(lua_State *L)
 	}
 
 	bool is_table = lua_istable(L, 1);
-	std::vector<Canvas *> canvases;
+	std::vector<Graphics::RenderTarget> targets;
 
 	if (is_table)
 	{
+		lua_rawgeti(L, 1, 1);
+		bool table_of_tables = lua_istable(L, -1);
+		lua_pop(L, 1);
+
 		for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
-			canvases.push_back(luax_checkcanvas(L, -1));
+
+			if (table_of_tables)
+			{
+				lua_rawgeti(L, -1, 1);
+				Graphics::RenderTarget target(luax_checkcanvas(L, -1), 0);
+				lua_pop(L, 1);
+
+				TextureType type = target.canvas->getTextureType();
+				if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
+					target.slice = luax_checkintflag(L, -1, "layer") - 1;
+				else if (type == TEXTURE_CUBE)
+					target.slice = luax_checkintflag(L, -1, "face") - 1;
+
+				targets.push_back(target);
+			}
+			else
+			{
+				targets.emplace_back(luax_checkcanvas(L, -1), 0);
+
+				if (targets.back().canvas->getTextureType() != TEXTURE_2D)
+					return luaL_error(L, "The table-of-tables variant of setCanvas must be used with non-2D Canvases.");
+			}
+
 			lua_pop(L, 1);
 		}
 	}
 	else
 	{
 		for (int i = 1; i <= lua_gettop(L); i++)
-			canvases.push_back(luax_checkcanvas(L, i));
+		{
+			Graphics::RenderTarget target(luax_checkcanvas(L, i), 0);
+			TextureType type = target.canvas->getTextureType();
+
+			if (i == 1 && type != TEXTURE_2D)
+			{
+				target.slice = (int) luaL_checknumber(L, 2) - 1;
+				targets.push_back(target);
+				break;
+			}
+
+			if (i > 1 && type != TEXTURE_2D)
+				return luaL_error(L, "This variant of setCanvas only supports 2D texture types.");
+
+			targets.push_back(target);
+		}
 	}
 
 	luax_catchexcept(L, [&]() {
-		if (canvases.size() > 0)
-			instance()->setCanvas(canvases);
+		if (targets.size() > 0)
+			instance()->setCanvas(targets);
 		else
 			instance()->setCanvas();
 	});
@@ -245,22 +286,63 @@ int w_setCanvas(lua_State *L)
 
 int w_getCanvas(lua_State *L)
 {
-	const std::vector<Canvas *> canvases = instance()->getCanvas();
-	int n = 0;
+	const std::vector<Graphics::RenderTarget> targets = instance()->getCanvas();
+	int ntargets = (int) targets.size();
 
-	for (Canvas *c : canvases)
-	{
-		luax_pushtype(L, c);
-		n++;
-	}
-
-	if (n == 0)
+	if (ntargets == 0)
 	{
 		lua_pushnil(L);
-		n = 1;
+		return 1;
 	}
-	
-	return n;
+
+	bool hasNon2DTextureType = false;
+	for (const auto &rt : targets)
+	{
+		if (rt.canvas->getTextureType() != TEXTURE_2D)
+		{
+			hasNon2DTextureType = true;
+			break;
+		}
+	}
+
+	if (hasNon2DTextureType)
+	{
+		lua_createtable(L, ntargets, 0);
+
+		for (int i = 0; i < ntargets; i++)
+		{
+			const auto &rt = targets[i];
+
+			lua_createtable(L, 1, 1);
+
+			luax_pushtype(L, rt.canvas);
+			lua_rawseti(L, -2, 1);
+
+			TextureType type = rt.canvas->getTextureType();
+
+			if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
+			{
+				lua_pushnumber(L, rt.slice + 1);
+				lua_setfield(L, -2, "layer");
+			}
+			else if (type == TEXTURE_VOLUME)
+			{
+				lua_pushnumber(L, rt.slice + 1);
+				lua_setfield(L, -2, "face");
+			}
+
+			lua_rawseti(L, -2, i + 1);
+		}
+
+		return 1;
+	}
+	else
+	{
+		for (const auto &rt : targets)
+			luax_pushtype(L, rt.canvas);
+
+		return ntargets;
+	}
 }
 
 static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *gd)
@@ -413,130 +495,325 @@ int w_getStencilTest(lua_State *L)
 	return 2;
 }
 
+static void parsePixelDensity(love::filesystem::FileData *d, float *pixeldensity)
+{
+	// Parse a density scale of 2.0 from "image@2x.png".
+	const std::string &fname = d->getName();
+
+	size_t namelen = fname.length();
+	size_t atpos = fname.rfind('@');
+
+	if (atpos != std::string::npos && atpos + 2 < namelen
+		&& (fname[namelen - 1] == 'x' || fname[namelen - 1] == 'X'))
+	{
+		char *end = nullptr;
+		long density = strtol(fname.c_str() + atpos + 1, &end, 10);
+		if (end != nullptr && density > 0 && pixeldensity != nullptr)
+			*pixeldensity = (float) density;
+	}
+}
+
+static Image::Settings w__optImageSettings(lua_State *L, int idx, const Image::Settings &s)
+{
+	Image::Settings settings = s;
+
+	if (!lua_isnoneornil(L, idx))
+	{
+		luaL_checktype(L, idx, LUA_TTABLE);
+		settings.mipmaps = luax_boolflag(L, idx, "mipmaps", s.mipmaps);
+		settings.linear = luax_boolflag(L, idx, "linear", s.linear);
+		settings.pixeldensity = (float) luax_numberflag(L, idx, "pixeldensity", s.pixeldensity);
+	}
+
+	return settings;
+}
+
+static std::pair<StrongRef<love::image::ImageData>, StrongRef<love::image::CompressedImageData>>
+getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
+{
+	StrongRef<love::image::ImageData> idata;
+	StrongRef<love::image::CompressedImageData> cdata;
+
+	// Convert to ImageData / CompressedImageData, if necessary.
+	if (lua_isstring(L, idx) || luax_istype(L, idx, love::filesystem::File::type) || luax_istype(L, idx, love::filesystem::FileData::type))
+	{
+		auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
+		if (imagemodule == nullptr)
+			luaL_error(L, "Cannot load images without the love.image module.");
+
+		StrongRef<love::filesystem::FileData> fdata(love::filesystem::luax_getfiledata(L, idx), Acquire::NORETAIN);
+
+		if (density != nullptr)
+			parsePixelDensity(fdata, density);
+
+		if (allowcompressed && imagemodule->isCompressed(fdata))
+			luax_catchexcept(L, [&]() { cdata.set(imagemodule->newCompressedData(fdata), Acquire::NORETAIN); });
+		else
+			luax_catchexcept(L, [&]() { idata.set(imagemodule->newImageData(fdata), Acquire::NORETAIN); });
+
+	}
+	else if (luax_istype(L, idx, love::image::CompressedImageData::type))
+		cdata.set(love::image::luax_checkcompressedimagedata(L, idx));
+	else
+		idata.set(love::image::luax_checkimagedata(L, idx));
+
+	return std::make_pair(idata, cdata);
+}
+
+static int w__pushNewImage(lua_State *L, Image::Slices &slices, const Image::Settings &settings)
+{
+	StrongRef<Image> i;
+	luax_catchexcept(L,
+		[&]() { i.set(instance()->newImage(slices, settings), Acquire::NORETAIN); },
+		[&](bool) { slices.clear(); }
+	);
+
+	luax_pushtype(L, i);
+	return 1;
+}
+
+int w_newCubeImage(lua_State *L)
+{
+	luax_checkgraphicscreated(L);
+
+	Image::Slices slices(TEXTURE_CUBE);
+	Image::Settings settings;
+
+	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
+
+	if (!lua_istable(L, 1))
+	{
+		auto imagedata = getImageData(L, 1, false, &settings.pixeldensity);
+
+		std::vector<StrongRef<love::image::ImageData>> faces;
+		luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(imagedata.first); });
+
+		for (int i = 0; i < (int) faces.size(); i++)
+			slices.set(i, 0, faces[i]);
+	}
+	else
+	{
+		int tlen = (int) luax_objlen(L, 1);
+
+		if (luax_isarrayoftables(L, 1))
+		{
+			if (tlen != 6)
+				return luaL_error(L, "Cubemap images must have 6 faces.");
+
+			for (int face = 0; face < tlen; face++)
+			{
+				lua_rawgeti(L, 1, face + 1);
+				luaL_checktype(L, -1, LUA_TTABLE);
+
+				int miplen = std::max(1, (int) luax_objlen(L, -1));
+
+				for (int mip = 0; mip < miplen; mip++)
+				{
+					lua_rawgeti(L, -1, mip + 1);
+
+					auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? &settings.pixeldensity : nullptr);
+					if (data.first.get())
+						slices.set(face, mip, data.first);
+					else
+						slices.set(face, mip, data.second->getSlice(0, 0));
+
+					lua_pop(L, 1);
+				}
+			}
+		}
+		else
+		{
+			bool usemipmaps = false;
+
+			for (int i = 0; i < tlen; i++)
+			{
+				lua_rawgeti(L, 1, i + 1);
+
+				auto data = getImageData(L, -1, true, i == 0 ? &settings.pixeldensity : nullptr);
+
+				if (data.first.get())
+				{
+					if (usemipmaps || data.first->getWidth() != data.first->getHeight())
+					{
+						usemipmaps = true;
+
+						std::vector<StrongRef<love::image::ImageData>> faces;
+						luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(data.first); });
+
+						for (int face = 0; face < (int) faces.size(); face++)
+							slices.set(face, i, faces[i]);
+					}
+					else
+						slices.set(i, 0, data.first);
+				}
+				else
+					slices.add(data.second, i, 0, false, true);
+			}
+		}
+
+		lua_pop(L, tlen);
+	}
+
+	settings = w__optImageSettings(L, 2, settings);
+	return w__pushNewImage(L, slices, settings);
+}
+
+int w_newArrayImage(lua_State *L)
+{
+	luax_checkgraphicscreated(L);
+
+	Image::Slices slices(TEXTURE_2D_ARRAY);
+	Image::Settings settings;
+
+	if (lua_istable(L, 1))
+	{
+		int tlen = std::max(1, (int) luax_objlen(L, 1));
+
+		if (luax_isarrayoftables(L, 1))
+		{
+			for (int slice = 0; slice < tlen; slice++)
+			{
+				lua_rawgeti(L, 1, slice + 1);
+				luaL_checktype(L, -1, LUA_TTABLE);
+
+				int miplen = std::max(1, (int) luax_objlen(L, -1));
+
+				for (int mip = 0; mip < miplen; mip++)
+				{
+					lua_rawgeti(L, -1, mip + 1);
+
+					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.pixeldensity : nullptr);
+					if (data.first.get())
+						slices.set(slice, mip, data.first);
+					else
+						slices.set(slice, mip, data.second->getSlice(0, 0));
+
+					lua_pop(L, 1);
+				}
+			}
+		}
+		else
+		{
+			for (int slice = 0; slice < tlen; slice++)
+			{
+				lua_rawgeti(L, 1, slice + 1);
+				auto data = getImageData(L, -1, true, slice == 0 ? &settings.pixeldensity : nullptr);
+				if (data.first.get())
+					slices.set(slice, 0, data.first);
+				else
+					slices.add(data.second, slice, 0, false, true);
+			}
+		}
+
+		lua_pop(L, tlen);
+	}
+	else
+	{
+		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		if (data.first.get())
+			slices.set(0, 0, data.first);
+		else
+			slices.add(data.second, 0, 0, true, true);
+	}
+
+	settings = w__optImageSettings(L, 2, settings);
+	return w__pushNewImage(L, slices, settings);
+}
+
+int w_newVolumeImage(lua_State *L)
+{
+	luax_checkgraphicscreated(L);
+
+	Image::Slices slices(TEXTURE_VOLUME);
+	Image::Settings settings;
+
+	if (lua_istable(L, 1))
+	{
+		int tlen = std::max(1, (int) luax_objlen(L, 1));
+
+		if (luax_isarrayoftables(L, 1))
+		{
+			for (int mip = 0; mip < tlen; mip++)
+			{
+				lua_rawgeti(L, 1, mip + 1);
+				luaL_checktype(L, -1, LUA_TTABLE);
+
+				int slicelen = std::max(1, (int) luax_objlen(L, -1));
+
+				for (int slice = 0; slice < slicelen; slice++)
+				{
+					lua_rawgeti(L, -1, mip + 1);
+
+					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.pixeldensity : nullptr);
+					if (data.first.get())
+						slices.set(slice, mip, data.first);
+					else
+						slices.set(slice, mip, data.second->getSlice(0, 0));
+
+					lua_pop(L, 1);
+				}
+			}
+		}
+		else
+		{
+			for (int layer = 0; layer < tlen; layer++)
+			{
+				lua_rawgeti(L, 1, layer + 1);
+				auto data = getImageData(L, -1, true, layer == 0 ? &settings.pixeldensity : nullptr);
+				if (data.first.get())
+					slices.set(layer, 0, data.first);
+				else
+					slices.add(data.second, layer, 0, false, true);
+			}
+		}
+
+		lua_pop(L, tlen);
+	}
+	else
+	{
+		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		if (data.first.get())
+			slices.set(0, 0, data.first);
+		else
+			slices.add(data.second, 0, 0, true, true);
+	}
+
+	settings = w__optImageSettings(L, 2, settings);
+	return w__pushNewImage(L, slices, settings);
+}
+
 int w_newImage(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	std::vector<love::image::ImageData *> data;
-	std::vector<love::image::CompressedImageData *> cdata;
-
+	Image::Slices slices(TEXTURE_2D);
 	Image::Settings settings;
 
-	bool releasedata = false;
-
-	// Convert to ImageData / CompressedImageData, if necessary.
-	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
+	if (lua_istable(L, 1))
 	{
-		auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
-		if (imagemodule == nullptr)
-			return luaL_error(L, "Cannot load images without the love.image module.");
-
-		love::filesystem::FileData *fdata = love::filesystem::luax_getfiledata(L, 1);
-
-		// Parse a density scale of 2.0 from "image@2x.png".
-		const std::string &fname = fdata->getName();
-		size_t namelen = fname.length();
-		size_t atpos = fname.rfind('@');
-
-		if (atpos != std::string::npos && atpos + 2 < namelen
-			&& (fname[namelen - 1] == 'x' || fname[namelen - 1] == 'X'))
+		int n = std::max(1, (int) luax_objlen(L, 1));
+		for (int i = 0; i < n; i++)
 		{
-			char *end = nullptr;
-			long density = strtol(fname.c_str() + atpos + 1, &end, 10);
-			if (end != nullptr && density > 0)
-				settings.pixeldensity = (float) density;
+			lua_rawgeti(L, 1, i + 1);
+			auto data = getImageData(L, -1, true, i == 0 ? &settings.pixeldensity : nullptr);
+			if (data.first.get())
+				slices.set(0, i, data.first);
+			else
+				slices.set(0, i, data.second->getSlice(0, 0));
 		}
-
-		if (imagemodule->isCompressed(fdata))
-		{
-			luax_catchexcept(L,
-				[&]() { cdata.push_back(imagemodule->newCompressedData(fdata)); },
-				[&](bool) { fdata->release(); }
-			);
-		}
-		else
-		{
-			luax_catchexcept(L,
-				[&]() { data.push_back(imagemodule->newImageData(fdata)); },
-				[&](bool) { fdata->release(); }
-			);
-		}
-
-		// Lua's GC won't release the image data, so we should do it ourselves.
-		releasedata = true;
+		lua_pop(L, n);
 	}
-	else if (luax_istype(L, 1, love::image::CompressedImageData::type))
-		cdata.push_back(love::image::luax_checkcompressedimagedata(L, 1));
 	else
-		data.push_back(love::image::luax_checkimagedata(L, 1));
-
-	if (!lua_isnoneornil(L, 2))
 	{
-		luaL_checktype(L, 2, LUA_TTABLE);
-
-		settings.mipmaps = luax_boolflag(L, 2, luax_imageSettingName(Image::SETTING_MIPMAPS), settings.mipmaps);
-		settings.linear = luax_boolflag(L, 2, luax_imageSettingName(Image::SETTING_LINEAR), settings.linear);
-		settings.pixeldensity = (float) luax_numberflag(L, 2, luax_imageSettingName(Image::SETTING_PIXELDENSITY), settings.pixeldensity);
-
-		lua_getfield(L, 2, luax_imageSettingName(Image::SETTING_MIPMAPS));
-
-		// Add all manually specified mipmap images to the array of imagedata.
-		// i.e. settings = {mipmaps = {mip1, mip2, ...}}.
-		if (lua_istable(L, -1))
-		{
-			for (size_t i = 1; i <= luax_objlen(L, -1); i++)
-			{
-				lua_rawgeti(L, -1, i);
-
-				if (!data.empty())
-				{
-					if (!luax_istype(L, -1, love::image::ImageData::type))
-						luax_convobj(L, -1, "image", "newImageData");
-
-					data.push_back(love::image::luax_checkimagedata(L, -1));
-				}
-				else if (!cdata.empty())
-				{
-					if (!luax_istype(L, -1, love::image::CompressedImageData::type))
-						luax_convobj(L, -1, "image", "newCompressedData");
-
-					cdata.push_back(love::image::luax_checkcompressedimagedata(L, -1));
-				}
-
-				lua_pop(L, 1);
-			}
-		}
-
-		lua_pop(L, 1);
+		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		if (data.first.get())
+			slices.set(0, 0, data.first);
+		else
+			slices.add(data.second, 0, 0, false, true);
 	}
 
-	// Create the image.
-	Image *image = nullptr;
-	luax_catchexcept(L,
-		[&]() {
-			if (!cdata.empty())
-				image = instance()->newImage(cdata, settings);
-			else if (!data.empty())
-				image = instance()->newImage(data, settings);
-		},
-		[&](bool) {
-			if (releasedata)
-			{
-				for (auto d : data)
-					d->release();
-				for (auto d : cdata)
-					d->release();
-			}
-		}
-	);
-
-	if (image == nullptr)
-		return luaL_error(L, "Could not load image.");
-
-	// Push the type.
-	luax_pushtype(L, image);
-	image->release();
-	return 1;
+	settings = w__optImageSettings(L, 2, settings);
+	return w__pushNewImage(L, slices, settings);
 }
 
 int w_newQuad(lua_State *L)
@@ -604,18 +881,6 @@ int w_newImageFont(lua_State *L)
 
 	// filter for glyphs
 	Texture::Filter filter = instance()->getDefaultFilter();
-
-	// Convert to ImageData if necessary.
-	if (luax_istype(L, 1, Image::type))
-	{
-		Image *i = luax_checktype<Image>(L, 1);
-		filter = i->getFilter();
-		const auto &idlevels = i->getImageData();
-		if (idlevels.empty())
-			return luaL_argerror(L, 1, "Image must not be compressed.");
-		luax_pushtype(L, idlevels[0].get());
-		lua_replace(L, 1);
-	}
 
 	// Convert to Rasterizer if necessary.
 	if (!luax_istype(L, 1, love::font::Rasterizer::type))
@@ -687,35 +952,50 @@ int w_newCanvas(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	// check if width and height are given. else default to screen dimensions.
-	int width  = (int) luaL_optnumber(L, 1, instance()->getWidth());
-	int height = (int) luaL_optnumber(L, 2, instance()->getHeight());
-
 	Canvas::Settings settings;
+
+	// check if width and height are given. else default to screen dimensions.
+	settings.width  = (int) luaL_optnumber(L, 1, instance()->getWidth());
+	settings.height = (int) luaL_optnumber(L, 2, instance()->getHeight());
 
 	// Default to the screen's current pixel density scale.
 	settings.pixeldensity = instance()->getScreenPixelDensity();
 
-	if (!lua_isnoneornil(L, 3))
+	int startidx = 3;
+
+	if (lua_isnumber(L, 3))
 	{
-		lua_getfield(L, 3, "format");
+		settings.layers = (int) luaL_checknumber(L, 3);
+		settings.type = TEXTURE_2D_ARRAY;
+		startidx = 4;
+	}
+
+	if (!lua_isnoneornil(L, startidx))
+	{
+		settings.pixeldensity = (float) luax_numberflag(L, startidx, "pixeldensity", settings.pixeldensity);
+		settings.msaa = luax_intflag(L, startidx, "msaa", 0);
+
+		lua_getfield(L, startidx, "format");
 		if (!lua_isnoneornil(L, -1))
 		{
 			const char *str = luaL_checkstring(L, -1);
 			if (!getConstant(str, settings.format))
-				return luaL_error(L, "Invalid Canvas format: %s", str);
+				return luaL_error(L, "Invalid pixel format: %s", str);
 		}
 		lua_pop(L, 1);
 
-		settings.pixeldensity = (float) luax_numberflag(L, 3, "pixeldensity", settings.pixeldensity);
-		settings.msaa = luax_intflag(L, 3, "msaa", settings.msaa);
+		lua_getfield(L, startidx, "type");
+		if (!lua_isnoneornil(L, -1))
+		{
+			const char *str = luaL_checkstring(L, -1);
+			if (!Texture::getConstant(str, settings.type))
+				return luaL_error(L, "Invalid texture type: %s", str);
+		}
+		lua_pop(L, 1);
 	}
 
 	Canvas *canvas = nullptr;
-	luax_catchexcept(L, [&](){ canvas = instance()->newCanvas(width, height, settings); });
-
-	if (canvas == nullptr)
-		return luaL_error(L, "Canvas not created, but no error thrown. I don't even...");
+	luax_catchexcept(L, [&](){ canvas = instance()->newCanvas(settings); });
 
 	luax_pushtype(L, canvas);
 	canvas->release();
@@ -2178,6 +2458,9 @@ static const luaL_Reg functions[] =
 	{ "present", w_present },
 
 	{ "newImage", w_newImage },
+	{ "newArrayImage", w_newArrayImage },
+	{ "newVolumeImage", w_newVolumeImage },
+	{ "newCubeImage", w_newCubeImage },
 	{ "newQuad", w_newQuad },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },

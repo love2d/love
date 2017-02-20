@@ -30,10 +30,7 @@ namespace image
 love::Type ImageData::type("ImageData", &Data::type);
 
 ImageData::ImageData()
-	: format(PIXELFORMAT_UNKNOWN)
-	, width(0)
-	, height(0)
-	, data(nullptr)
+	: data(nullptr)
 {
 }
 
@@ -51,24 +48,14 @@ void *ImageData::getData() const
 	return data;
 }
 
+bool ImageData::isSRGB() const
+{
+	return false;
+}
+
 bool ImageData::inside(int x, int y) const
 {
 	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
-}
-
-PixelFormat ImageData::getFormat() const
-{
-	return format;
-}
-
-int ImageData::getWidth() const
-{
-	return width;
-}
-
-int ImageData::getHeight() const
-{
-	return height;
 }
 
 void ImageData::setPixel(int x, int y, const Pixel &p)

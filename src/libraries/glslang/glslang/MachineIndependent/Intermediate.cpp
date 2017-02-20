@@ -155,14 +155,10 @@ TIntermTyped* TIntermediate::addBinaryMath(TOperator op, TIntermTyped* left, TIn
             return folded;
     }
 
-    // If either is a specialization constant, while the other is
-    // a constant (or specialization constant), the result is still
-    // a specialization constant, if the operation is an allowed
-    // specialization-constant operation.
-    if (( left->getType().getQualifier().isSpecConstant() && right->getType().getQualifier().isConstant()) ||
-        (right->getType().getQualifier().isSpecConstant() &&  left->getType().getQualifier().isConstant()))
-        if (isSpecializationOperation(*node))
-            node->getWritableType().getQualifier().makeSpecConstant();
+    // If can propagate spec-constantness and if the operation is an allowed
+    // specialization-constant operation, make a spec-constant.
+    if (specConstantPropagates(*left, *right) && isSpecializationOperation(*node))
+        node->getWritableType().getQualifier().makeSpecConstant();
 
     return node;
 }
@@ -1232,7 +1228,7 @@ TIntermAggregate* TIntermediate::makeAggregate(const TSourceLoc& loc)
 //
 // Returns the selection node created.
 //
-TIntermNode* TIntermediate::addSelection(TIntermTyped* cond, TIntermNodePair nodePair, const TSourceLoc& loc)
+TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermNodePair nodePair, const TSourceLoc& loc)
 {
     //
     // Don't prune the false path for compile-time constants; it's needed
@@ -1277,10 +1273,19 @@ TIntermTyped* TIntermediate::addMethod(TIntermTyped* object, const TType& type, 
 // a true path, and a false path.  The two paths are specified
 // as separate parameters.
 //
+// Specialization constant operations include
+//     - The ternary operator ( ? : )
+//
 // Returns the selection node created, or nullptr if one could not be.
 //
 TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermTyped* trueBlock, TIntermTyped* falseBlock, const TSourceLoc& loc)
 {
+    // If it's void, go to the if-then-else selection()
+    if (trueBlock->getBasicType() == EbtVoid && falseBlock->getBasicType() == EbtVoid) {
+        TIntermNodePair pair = { trueBlock, falseBlock };
+        return addSelection(cond, pair, loc);
+    }
+
     //
     // Get compatible types.
     //
@@ -1314,9 +1319,15 @@ TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermTyped* true
     // Make a selection node.
     //
     TIntermSelection* node = new TIntermSelection(cond, trueBlock, falseBlock, trueBlock->getType());
-    node->getQualifier().makeTemporary();
     node->setLoc(loc);
     node->getQualifier().precision = std::max(trueBlock->getQualifier().precision, falseBlock->getQualifier().precision);
+
+    if ((cond->getQualifier().isConstant() && specConstantPropagates(*trueBlock, *falseBlock)) ||
+        (cond->getQualifier().isSpecConstant() && trueBlock->getQualifier().isConstant() &&
+                                                 falseBlock->getQualifier().isConstant()))
+        node->getQualifier().makeSpecConstant();
+    else
+        node->getQualifier().makeTemporary();
 
     return node;
 }
@@ -1390,6 +1401,14 @@ TIntermConstantUnion* TIntermediate::addConstantUnion(double d, TBasicType baseT
     unionArray[0].setDConst(d);
 
     return addConstantUnion(unionArray, TType(baseType, EvqConst), loc, literal);
+}
+
+TIntermConstantUnion* TIntermediate::addConstantUnion(const TString* s, const TSourceLoc& loc, bool literal) const
+{
+    TConstUnionArray unionArray(1);
+    unionArray[0].setSConst(s);
+
+    return addConstantUnion(unionArray, TType(EbtString, EvqConst), loc, literal);
 }
 
 // Put vector swizzle selectors onto the given sequence
@@ -2637,6 +2656,15 @@ void TIntermAggregate::addToPragmaTable(const TPragmaTable& pTable)
     assert(!pragmaTable);
     pragmaTable = new TPragmaTable();
     *pragmaTable = pTable;
+}
+
+// If either node is a specialization constant, while the other is
+// a constant (or specialization constant), the result is still
+// a specialization constant.
+bool TIntermediate::specConstantPropagates(const TIntermTyped& node1, const TIntermTyped& node2)
+{
+    return (node1.getType().getQualifier().isSpecConstant() && node2.getType().getQualifier().isConstant()) ||
+           (node2.getType().getQualifier().isSpecConstant() && node1.getType().getQualifier().isConstant());
 }
 
 } // end namespace glslang

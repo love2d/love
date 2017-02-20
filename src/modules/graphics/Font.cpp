@@ -81,6 +81,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
 	if (!r->hasGlyph(9)) // No tab character in the Rasterizer.
 		useSpacesAsTab = true;
 
+	loadVolatile();
 	++fontCount;
 }
 
@@ -111,6 +112,72 @@ Font::TextureSize Font::getNextTextureSize() const
 	}
 
 	return size;
+}
+
+bool Font::loadVolatile()
+{
+	textureCacheID++;
+	createTexture();
+	return true;
+}
+
+void Font::createTexture()
+{
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	gfx->flushStreamDraws();
+
+	Image *image = nullptr;
+	TextureSize size = {textureWidth, textureHeight};
+	TextureSize nextsize = getNextTextureSize();
+	bool recreatetexture = false;
+
+	// If we have an existing texture already, we'll try replacing it with a
+	// larger-sized one rather than creating a second one. Having a single
+	// texture reduces texture switches and draw calls when rendering.
+	if ((nextsize.width > size.width || nextsize.height > size.height) && !images.empty())
+	{
+		recreatetexture = true;
+		size = nextsize;
+		images.pop_back();
+	}
+
+	Image::Settings settings;
+	image = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
+	image->setFilter(filter);
+
+	// Initialize the texture with transparent black.
+	size_t bpp = getPixelFormatSize(pixelFormat);
+	std::vector<uint8> emptydata(size.width * size.height * bpp, 0);
+
+	Rect rect = {0, 0, size.width, size.height};
+	image->replacePixels(emptydata.data(), emptydata.size(), rect, 0, 0, false);
+
+	images.emplace_back(image, Acquire::NORETAIN);
+
+	textureWidth  = size.width;
+	textureHeight = size.height;
+
+	rowHeight = textureX = textureY = TEXTURE_PADDING;
+
+	// Re-add the old glyphs if we re-created the existing texture object.
+	if (recreatetexture)
+	{
+		textureCacheID++;
+
+		std::vector<uint32> glyphstoadd;
+
+		for (const auto &glyphpair : glyphs)
+			glyphstoadd.push_back(glyphpair.first);
+
+		glyphs.clear();
+		
+		for (uint32 g : glyphstoadd)
+			addGlyph(g);
+	}
+}
+
+void Font::unloadVolatile()
+{
 }
 
 love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
@@ -178,7 +245,11 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	// Don't waste space for empty glyphs.
 	if (w > 0 && h > 0)
 	{
-		uploadGlyphToTexture(gd, g);
+		Image *image = images.back();
+		g.texture = image;
+
+		Rect rect = {textureX, textureY, gd->getWidth(), gd->getHeight()};
+		image->replacePixels(gd->getData(), gd->getSize(), rect, 0, 0, false);
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
@@ -535,7 +606,7 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 		req.formats[0] = vertex::CommonFormat::XYf_STus_RGBAub;
 		req.indexMode = vertex::TriangleIndexMode::QUADS;
 		req.vertexCount = cmd.vertexcount;
-		req.textureHandle = cmd.texture;
+		req.texture = cmd.texture;
 
 		Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 		GlyphVertex *vertexdata = (GlyphVertex *) data.stream[0];
@@ -807,6 +878,14 @@ void Font::setLineHeight(float height)
 float Font::getLineHeight() const
 {
 	return lineHeight;
+}
+
+void Font::setFilter(const Texture::Filter &f)
+{
+	for (const auto &image : images)
+		image->setFilter(f);
+
+	filter = f;
 }
 
 const Texture::Filter &Font::getFilter() const

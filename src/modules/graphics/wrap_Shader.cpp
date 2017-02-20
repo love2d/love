@@ -267,7 +267,12 @@ int w_Shader_sendTextures(lua_State *L, int startidx, Shader *shader, const Shad
 	textures.reserve(count);
 
 	for (int i = 0; i < count; i++)
-		textures.push_back(luax_checktexture(L, startidx + i));
+	{
+		Texture *tex = luax_checktexture(L, startidx + i);
+		if (tex->getTextureType() != info->textureType)
+			return luaL_argerror(L, startidx + i, "invalid texture type for uniform");
+		textures.push_back(tex);
+	}
 
 	luax_catchexcept(L, [&]() { shader->sendTextures(info, textures.data(), count); });
 	return 0;

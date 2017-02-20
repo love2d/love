@@ -30,6 +30,16 @@ Texture *luax_checktexture(lua_State *L, int idx)
 	return luax_checktype<Texture>(L, idx);
 }
 
+int w_Texture_getTextureType(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	const char *tstr;
+	if (!Texture::getConstant(t->getTextureType(), tstr))
+		return luaL_error(L, "unknown texture type");
+	lua_pushstring(L, tstr);
+	return 1;
+}
+
 int w_Texture_getWidth(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
@@ -50,6 +60,27 @@ int w_Texture_getDimensions(lua_State *L)
 	lua_pushnumber(L, t->getWidth());
 	lua_pushnumber(L, t->getHeight());
 	return 2;
+}
+
+int w_Texture_getDepth(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getDepth());
+	return 1;
+}
+
+int w_Texture_getLayerCount(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getLayerCount());
+	return 1;
+}
+
+int w_Texture_getMipmapCount(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushnumber(L, t->getMipmapCount());
+	return 1;
 }
 
 int w_Texture_getPixelWidth(lua_State *L)
@@ -119,6 +150,42 @@ int w_Texture_getFilter(lua_State *L)
 	return 3;
 }
 
+int w_Texture_setMipmapFilter(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	Texture::Filter f = t->getFilter();
+
+	if (lua_isnoneornil(L, 2))
+		f.mipmap = Texture::FILTER_NONE; // mipmapping is disabled if no argument is given
+	else
+	{
+		const char *mipmapstr = luaL_checkstring(L, 2);
+		if (!Texture::getConstant(mipmapstr, f.mipmap))
+			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
+	}
+
+	luax_catchexcept(L, [&](){ t->setFilter(f); });
+	t->setMipmapSharpness((float) luaL_optnumber(L, 3, 0.0));
+
+	return 0;
+}
+
+int w_Texture_getMipmapFilter(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+
+	const Texture::Filter &f = t->getFilter();
+
+	const char *mipmapstr;
+	if (Texture::getConstant(f.mipmap, mipmapstr))
+		lua_pushstring(L, mipmapstr);
+	else
+		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
+
+	lua_pushnumber(L, t->getMipmapSharpness());
+	return 2;
+}
+
 int w_Texture_setWrap(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
@@ -143,30 +210,53 @@ int w_Texture_getWrap(lua_State *L)
 
 	const char *sstr = nullptr;
 	const char *tstr = nullptr;
+	const char *rstr = nullptr;
 
 	if (!Texture::getConstant(w.s, sstr))
 		return luaL_error(L, "Unknown wrap mode.");
 	if (!Texture::getConstant(w.t, tstr))
 		return luaL_error(L, "Unknown wrap mode.");
+	if (!Texture::getConstant(w.r, rstr))
+		return luaL_error(L, "Unknown wrap mode.");
 
 	lua_pushstring(L, sstr);
 	lua_pushstring(L, tstr);
+	lua_pushstring(L, rstr);
 	return 2;
+}
+
+int w_Texture_getFormat(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	PixelFormat format = t->getPixelFormat();
+	const char *str;
+	if (!getConstant(format, str))
+		return luaL_error(L, "Unknown pixel format.");
+
+	lua_pushstring(L, str);
+	return 1;
 }
 
 const luaL_Reg w_Texture_functions[] =
 {
+	{ "getTextureType", w_Texture_getTextureType },
 	{ "getWidth", w_Texture_getWidth },
 	{ "getHeight", w_Texture_getHeight },
 	{ "getDimensions", w_Texture_getDimensions },
+	{ "getDepth", w_Texture_getDepth },
+	{ "getLayerCount", w_Texture_getLayerCount },
+	{ "getMipmapCount", w_Texture_getMipmapCount },
 	{ "getPixelWidth", w_Texture_getPixelWidth },
 	{ "getPixelHeight", w_Texture_getPixelHeight },
 	{ "getPixelDimensions", w_Texture_getPixelDimensions },
 	{ "getPixelDensity", w_Texture_getPixelDensity },
 	{ "setFilter", w_Texture_setFilter },
 	{ "getFilter", w_Texture_getFilter },
+	{ "setMipmapFilter", w_Texture_setMipmapFilter },
+	{ "getMipmapFilter", w_Texture_getMipmapFilter },
 	{ "setWrap", w_Texture_setWrap },
 	{ "getWrap", w_Texture_getWrap },
+	{ "getFormat", w_Texture_getFormat },
 	{ 0, 0 }
 };
 

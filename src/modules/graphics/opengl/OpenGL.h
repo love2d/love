@@ -248,6 +248,8 @@ public:
 	GLuint getFramebuffer(FramebufferTarget target) const;
 	void deleteFramebuffer(GLuint framebuffer);
 
+	void framebufferTexture(GLenum attachment, TextureType texType, GLuint texture, int level, int layer = 0, int face = 0);
+
 	/**
 	 * Calls glUseProgram.
 	 **/
@@ -262,7 +264,7 @@ public:
 	/**
 	 * Gets the ID for love's default texture (used for "untextured" primitives.)
 	 **/
-	GLuint getDefaultTexture() const;
+	GLuint getDefaultTexture(TextureType type) const;
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -277,7 +279,7 @@ public:
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
 	 * @param restoreprev Restore previously bound texture unit when done.
 	 **/
-	void bindTextureToUnit(GLuint texture, int textureunit, bool restoreprev);
+	void bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev);
 	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev);
 
 	/**
@@ -291,13 +293,21 @@ public:
 	 * The anisotropy parameter of the argument is set to the actual amount of
 	 * anisotropy that was used.
 	 **/
-	void setTextureFilter(graphics::Texture::Filter &f);
+	void setTextureFilter(TextureType target, graphics::Texture::Filter &f);
 
 	/**
 	 * Sets the texture wrap mode for the currently bound texture.
 	 **/
-	void setTextureWrap(const graphics::Texture::Wrap &w);
+	void setTextureWrap(TextureType target, const graphics::Texture::Wrap &w);
 
+	/**
+	 * Equivalent to glTexStorage2D/3D on platforms that support it. Equivalent
+	 * to glTexImage2D/3D for all levels and slices of a texture otherwise.
+	 * NOTE: this does not handle compressed texture formats.
+	 **/
+	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth = 1);
+
+	bool isTextureTypeSupported(TextureType type) const;
 	bool isClampZeroTextureWrapSupported() const;
 	bool isPixelShaderHighpSupported() const;
 	bool isInstancingSupported() const;
@@ -305,7 +315,10 @@ public:
 	/**
 	 * Returns the maximum supported width or height of a texture.
 	 **/
-	int getMaxTextureSize() const;
+	int getMax2DTextureSize() const;
+	int getMax3DTextureSize() const;
+	int getMaxCubeTextureSize() const;
+	int getMaxTextureLayers() const;
 
 	/**
 	 * Returns the maximum supported number of simultaneous render targets.
@@ -349,6 +362,7 @@ public:
 	static GLenum getGLBufferType(BufferType type);
 	static GLenum getGLIndexDataType(IndexDataType type);
 	static GLenum getGLBufferUsage(vertex::Usage usage);
+	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
@@ -374,7 +388,10 @@ private:
 
 	bool pixelShaderHighpSupported;
 	float maxAnisotropy;
-	int maxTextureSize;
+	int max2DTextureSize;
+	int max3DTextureSize;
+	int maxCubeTextureSize;
+	int maxTextureArrayLayers;
 	int maxRenderTargets;
 	int maxRenderbufferSamples;
 	int maxTextureUnits;
@@ -390,7 +407,7 @@ private:
 		GLuint boundBuffers[BUFFER_MAX_ENUM];
 
 		// Texture unit state (currently bound texture for each texture unit.)
-		std::vector<GLuint> boundTextures;
+		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM];
 
 		// Currently active texture unit.
 		int curTextureUnit;
@@ -410,7 +427,7 @@ private:
 
 		bool framebufferSRGBEnabled;
 
-		GLuint defaultTexture;
+		GLuint defaultTexture[TEXTURE_MAX_ENUM];
 
 	} state;
 

@@ -122,12 +122,23 @@ int w_isCompressed(lua_State *L)
 	return 1;
 }
 
+int w_newCubeFaces(lua_State *L)
+{
+	ImageData *id = luax_checkimagedata(L, 1);
+	std::vector<StrongRef<ImageData>> faces;
+	luax_catchexcept(L, [&](){ faces = instance()->newCubeFaces(id); });
+	for (auto face : faces)
+		luax_pushtype(L, face);
+	return (int) faces.size();
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
 	{ "newImageData",  w_newImageData },
 	{ "newCompressedData", w_newCompressedData },
 	{ "isCompressed", w_isCompressed },
+	{ "newCubeFaces", w_newCubeFaces },
 	{ 0, 0 }
 };
 

@@ -30,7 +30,6 @@ namespace love
 namespace graphics
 {
 
-const char *luax_imageSettingName(Image::SettingType settingtype);
 Image *luax_checkimage(lua_State *L, int idx);
 extern "C" int luaopen_image(lua_State *L);
 

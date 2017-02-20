@@ -539,8 +539,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/BufferSync.h
 	src/modules/graphics/opengl/Canvas.cpp
 	src/modules/graphics/opengl/Canvas.h
-	src/modules/graphics/opengl/Font.cpp
-	src/modules/graphics/opengl/Font.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
@@ -559,8 +557,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/StreamBuffer.h
 	src/modules/graphics/opengl/Text.cpp
 	src/modules/graphics/opengl/Text.h
-	src/modules/graphics/opengl/Video.cpp
-	src/modules/graphics/opengl/Video.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
@@ -582,6 +578,8 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 	src/modules/image/Image.h
 	src/modules/image/ImageData.cpp
 	src/modules/image/ImageData.h
+	src/modules/image/ImageDataBase.cpp
+	src/modules/image/ImageDataBase.h
 	src/modules/image/wrap_CompressedImageData.cpp
 	src/modules/image/wrap_CompressedImageData.h
 	src/modules/image/wrap_Image.cpp

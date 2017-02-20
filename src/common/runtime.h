@@ -107,6 +107,11 @@ Reference *luax_refif(lua_State *L, int type);
 void luax_printstack(lua_State *L);
 
 /**
+ * Gets whether the value at idx is an array of tables.
+ **/
+bool luax_isarrayoftables(lua_State *L, int idx);
+
+/**
  * Converts the value at idx to a bool. It follow the same rules
  * as lua_toboolean, but returns a bool instead of an int.
  * @param L The Lua state.
@@ -162,6 +167,8 @@ void luax_pushstring(lua_State *L, const std::string &str);
 bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
 int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
 double luax_numberflag(lua_State *L, int table_index, const char *key, double defaultValue);
+
+int luax_checkintflag(lua_State *L, int table_index, const char *key);
 
 /**
  * Convert the value at the specified index to an Lua number, and then

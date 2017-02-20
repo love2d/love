@@ -55,7 +55,7 @@ int w_ParticleSystem_setTexture(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	Texture *tex = luax_checktexture(L, 2);
-	t->setTexture(tex);
+	luax_catchexcept(L, [&](){ t->setTexture(tex); });
 	return 0;
 }
 

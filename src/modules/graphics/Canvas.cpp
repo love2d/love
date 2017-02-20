@@ -29,7 +29,8 @@ namespace graphics
 love::Type Canvas::type("Canvas", &Texture::type);
 int Canvas::canvasCount = 0;
 
-Canvas::Canvas()
+Canvas::Canvas(TextureType textype)
+	: Texture(textype)
 {
 	canvasCount++;
 }

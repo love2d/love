@@ -32,7 +32,7 @@ bool DDSHandler::canParse(const filesystem::FileData *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedImageData::Memory> DDSHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
@@ -40,65 +40,51 @@ uint8 *DDSHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	PixelFormat texformat = PIXELFORMAT_UNKNOWN;
 	bool isSRGB = false;
 
-	uint8 *data = nullptr;
-	dataSize = 0;
+	StrongRef<CompressedImageData::Memory> memory;
+	size_t dataSize = 0;
+
 	images.clear();
 
-	try
+	// Attempt to parse the dds file.
+	dds::Parser parser(filedata->getData(), filedata->getSize());
+
+	texformat = convertFormat(parser.getFormat(), isSRGB);
+
+	if (texformat == PIXELFORMAT_UNKNOWN)
+		throw love::Exception("Could not parse compressed data: Unsupported format.");
+
+	if (parser.getMipmapCount() == 0)
+		throw love::Exception("Could not parse compressed data: No readable texture data.");
+
+	// Calculate the size of the block of memory we're returning.
+	for (size_t i = 0; i < parser.getMipmapCount(); i++)
 	{
-		// Attempt to parse the dds file.
-		dds::Parser parser(filedata->getData(), filedata->getSize());
-
-		texformat = convertFormat(parser.getFormat(), isSRGB);
-
-		if (texformat == PIXELFORMAT_UNKNOWN)
-			throw love::Exception("Could not parse compressed data: Unsupported format.");
-
-		if (parser.getMipmapCount() == 0)
-			throw love::Exception("Could not parse compressed data: No readable texture data.");
-
-		// Calculate the size of the block of memory we're returning.
-		for (size_t i = 0; i < parser.getMipmapCount(); i++)
-		{
-			const dds::Image *img = parser.getImageData(i);
-			dataSize += img->dataSize;
-		}
-
-		data = new uint8[dataSize];
-
-		size_t dataOffset = 0;
-
-		// Copy the parsed mipmap levels from the FileData to our CompressedImageData.
-		for (size_t i = 0; i < parser.getMipmapCount(); i++)
-		{
-			// Fetch the data for this mipmap level.
-			const dds::Image *img = parser.getImageData(i);
-
-			CompressedImageData::SubImage mip;
-
-			mip.width = img->width;
-			mip.height = img->height;
-			mip.size = img->dataSize;
-
-			// Copy the mipmap image from the FileData to our block of memory.
-			memcpy(data + dataOffset, img->data, mip.size);
-			mip.data = data + dataOffset;
-
-			dataOffset += mip.size;
-
-			images.push_back(mip);
-		}
+		const dds::Image *img = parser.getImageData(i);
+		dataSize += img->dataSize;
 	}
-	catch (std::exception &e)
+
+	memory.set(new CompressedImageData::Memory(dataSize), Acquire::NORETAIN);
+
+	size_t dataOffset = 0;
+
+	// Copy the parsed mipmap levels from the FileData to our CompressedImageData.
+	for (size_t i = 0; i < parser.getMipmapCount(); i++)
 	{
-		delete[] data;
-		images.clear();
-		throw love::Exception("%s", e.what());
+		// Fetch the data for this mipmap level.
+		const dds::Image *img = parser.getImageData(i);
+
+		// Copy the mipmap image from the FileData to our block of memory.
+		memcpy(memory->data + dataOffset, img->data, img->dataSize);
+
+		auto slice = new CompressedImageData::Slice(texformat, img->width, img->height, memory, dataOffset, img->dataSize);
+		images.emplace_back(slice, Acquire::NORETAIN);
+
+		dataOffset += img->dataSize;
 	}
 
 	format = texformat;
 	sRGB = isSRGB;
-	return data;
+	return memory;
 }
 
 PixelFormat DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)

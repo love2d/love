@@ -61,17 +61,13 @@ public:
 	// Implements Module.
 	const char *getName() const override;
 
-	love::graphics::Image *newImage(const std::vector<love::image::ImageData *> &data, const Image::Settings &settings) override;
-	love::graphics::Image *newImage(const std::vector<love::image::CompressedImageData *> &cdata, const Image::Settings &settings) override;
-
-	love::graphics::Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter) override;
+	love::graphics::Image *newImage(const Image::Slices &data, const Image::Settings &settings) override;
+	love::graphics::Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) override;
 
 	love::graphics::SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) override;
-
 	love::graphics::ParticleSystem *newParticleSystem(Texture *texture, int size) override;
 
-	love::graphics::Canvas *newCanvas(int width, int height, const Canvas::Settings &settings) override;
-
+	love::graphics::Canvas *newCanvas(const Canvas::Settings &settings) override;
 	love::graphics::Shader *newShader(const Shader::ShaderSource &source) override;
 
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
@@ -83,8 +79,6 @@ public:
 	love::graphics::Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage) override;
 
 	love::graphics::Text *newText(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {}) override;
-
-	love::graphics::Video *newVideo(love::video::VideoStream *stream, float pixeldensity) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
@@ -103,7 +97,7 @@ public:
 
 	void setColor(Colorf c) override;
 
-	void setCanvas(const std::vector<love::graphics::Canvas *> &canvases) override;
+	void setCanvas(const std::vector<RenderTarget> &rts) override;
 	void setCanvas() override;
 
 	void setScissor(const Rect &rect) override;
@@ -149,7 +143,7 @@ private:
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
 
 	void endPass();
-	void bindCachedFBO(const std::vector<love::graphics::Canvas *> &canvases);
+	void bindCachedFBO(const std::vector<RenderTarget> &targets);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
 	GLuint attachCachedStencilBuffer(int w, int h, int samples);
 

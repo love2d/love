@@ -474,7 +474,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedImageData::Memory> PVRHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -525,14 +525,8 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 	if (filedata->getSize() < fileoffset + totalsize)
 		throw love::Exception("Could not parse PVR file: invalid size calculation.");
 
-	try
-	{
-		data = new uint8[totalsize];
-	}
-	catch (std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory.");
-	}
+	StrongRef<CompressedImageData::Memory> memory;
+	memory.set(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
 
 	size_t curoffset = 0;
 	const uint8 *filebytes = (uint8 *) filedata->getData() + fileoffset;
@@ -544,24 +538,22 @@ uint8 *PVRHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 		if (curoffset + mipsize > totalsize)
 			break; // Just in case.
 
-		CompressedImageData::SubImage mip;
-		mip.width = std::max((int) header3.width >> i, 1);
-		mip.height = std::max((int) header3.height >> i, 1);
-		mip.size = mipsize;
+		int width = std::max((int) header3.width >> i, 1);
+		int height = std::max((int) header3.height >> i, 1);
 
 		memcpy(data + curoffset, filebytes + curoffset, mipsize);
-		mip.data = data + curoffset;
+
+		auto slice = new CompressedImageData::Slice(cformat, width, height, memory, curoffset, mipsize);
+		images.push_back(slice);
+		slice->release();
 
 		curoffset += mipsize;
-
-		images.push_back(mip);
 	}
 
-	dataSize = totalsize;
 	format = cformat;
 	sRGB = (header3.colorSpace == 1);
 
-	return data;
+	return memory;
 }
 
 } // magpie

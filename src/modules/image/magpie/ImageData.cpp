@@ -103,7 +103,7 @@ ImageData::~ImageData()
 		handler->release();
 }
 
-ImageData *ImageData::clone() const
+love::image::ImageData *ImageData::clone() const
 {
 	return new ImageData(*this);
 }

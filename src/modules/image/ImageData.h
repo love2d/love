@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_IMAGE_DATA_H
-#define LOVE_IMAGE_IMAGE_DATA_H
+#pragma once
 
 // LOVE
 #include "common/Data.h"
@@ -29,6 +28,7 @@
 #include "common/halffloat.h"
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
+#include "ImageDataBase.h"
 
 using love::thread::Mutex;
 
@@ -55,7 +55,7 @@ union Pixel
 /**
  * Represents raw pixel data.
  **/
-class ImageData : public Data
+class ImageData : public ImageDataBase
 {
 public:
 
@@ -70,8 +70,6 @@ public:
 
 	ImageData();
 	virtual ~ImageData();
-
-	PixelFormat getFormat() const;
 
 	/**
 	 * Paste part of one ImageData onto another. The subregion defined by the top-left
@@ -91,16 +89,6 @@ public:
 	 * @param y The position along the y-axis.
 	 **/
 	bool inside(int x, int y) const;
-
-	/**
-	 * Gets the width of this ImageData.
-	 **/
-	int getWidth() const;
-
-	/**
-	 * Gets the height of this ImageData.
-	 **/
-	int getHeight() const;
 
 	/**
 	 * Sets the pixel at location (x,y).
@@ -127,10 +115,11 @@ public:
 
 	love::thread::Mutex *getMutex() const;
 
-	// Implements Data.
-	virtual ImageData *clone() const = 0;
-	virtual void *getData() const;
-	virtual size_t getSize() const;
+	// Implements ImageDataBase.
+	virtual ImageData *clone() const override = 0;
+	void *getData() const override;
+	size_t getSize() const override;
+	bool isSRGB() const override;
 
 	size_t getPixelSize() const;
 
@@ -140,14 +129,6 @@ public:
 	static bool getConstant(EncodedFormat in, const char *&out);
 
 protected:
-
-	PixelFormat format;
-
-	// The width of the image data.
-	int width;
-
-	// The height of the image data.
-	int height;
 
 	// The actual data.
 	unsigned char *data;
@@ -166,5 +147,3 @@ private:
 
 } // image
 } // love
-
-#endif // LOVE_IMAGE_IMAGE_DATA_H

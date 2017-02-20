@@ -90,6 +90,12 @@ public:
 	 **/
 	virtual bool isCompressed(love::filesystem::FileData *data) = 0;
 
+	std::vector<StrongRef<ImageData>> newCubeFaces(ImageData *layoutData);
+
+private:
+
+	ImageData *newPastedImageData(ImageData *src, int sx, int sy, int w, int h);
+
 }; // Image
 
 } // image

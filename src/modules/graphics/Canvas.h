@@ -39,15 +39,19 @@ public:
 
 	struct Settings
 	{
+		int width  = 1;
+		int height = 1;
+		int layers = 1; // depth for 3D textures
 		PixelFormat format = PIXELFORMAT_NORMAL;
+		TextureType type = TEXTURE_2D;
 		float pixeldensity = 1.0f;
 		int msaa = 0;
 	};
 
-	Canvas();
+	Canvas(TextureType textype);
 	virtual ~Canvas();
 
-	virtual love::image::ImageData *newImageData(love::image::Image *module, int x, int y, int w, int h) = 0;
+	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int x, int y, int w, int h) = 0;
 
 	virtual int getMSAA() const = 0;
 	virtual int getRequestedMSAA() const = 0;

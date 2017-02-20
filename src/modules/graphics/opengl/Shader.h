@@ -56,14 +56,15 @@ public:
 	void unloadVolatile() override;
 
 	// Implements Shader.
-	void attach(bool temporary = false) override;
+	void attach() override;
 	std::string getWarnings() const override;
 	const UniformInfo *getUniformInfo(const std::string &name) const override;
-	void updateUniform(const UniformInfo *info, int count, bool internalUpdate = false) override;
-	void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate = false) override;
+	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
+	void updateUniform(const UniformInfo *info, int count) override;
+	void sendTextures(const UniformInfo *info, Texture **textures, int count) override;
 	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override;
-	void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) override;
+	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) override;
 
 	GLint getAttribLocation(const std::string &name);
 
@@ -79,19 +80,22 @@ private:
 	struct TextureUnit
 	{
 		GLuint texture = 0;
+		TextureType type = TEXTURE_2D;
 		bool active = false;
 	};
 
 	// Map active uniform names to their locations.
 	void mapActiveUniforms();
 
+	void updateUniform(const UniformInfo *info, int count, bool internalupdate);
+	void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalupdate);
+
 	int getUniformTypeComponents(GLenum type) const;
 	MatrixSize getMatrixSize(GLenum type) const;
 	UniformType getUniformBaseType(GLenum type) const;
+	TextureType getUniformTextureType(GLenum type) const;
 
 	GLuint compileCode(ShaderStage stage, const std::string &code);
-
-	int getFreeTextureUnits(int count);
 
 	void flushStreamDraws() const;
 
@@ -106,6 +110,7 @@ private:
 
 	// Location values for any built-in uniform variables.
 	GLint builtinUniforms[BUILTIN_MAX_ENUM];
+	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
 	// Location values for any generic vertex attribute variables.
 	GLint builtinAttributes[ATTRIB_MAX_ENUM];
@@ -127,8 +132,6 @@ private:
 
 	Matrix4 lastTransformMatrix;
 	Matrix4 lastProjectionMatrix;
-
-	GLuint videoTextureUnits[3];
 
 }; // Shader
 

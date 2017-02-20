@@ -21,42 +21,35 @@
 #pragma once
 
 // LOVE
-#include "graphics/Font.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "common/Data.h"
+#include "common/pixelformat.h"
 
 namespace love
 {
-namespace graphics
-{
-namespace opengl
+namespace image
 {
 
-class Font final : public love::graphics::Font, public Volatile
+class ImageDataBase : public Data
 {
 public:
 
-	Font(love::font::Rasterizer *r, const Texture::Filter &filter);
-	virtual ~Font();
+	ImageDataBase();
+	virtual ~ImageDataBase() {}
 
-	void setFilter(const Texture::Filter &f) override;
+	PixelFormat getFormat() const;
 
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	int getWidth() const;
+	int getHeight() const;
 
-private:
+	virtual bool isSRGB() const = 0;
 
-	void createTexture() override;
-	void uploadGlyphToTexture(font::GlyphData *data, Glyph &glyph) override;
+protected:
 
-	// vector of packed textures
-	std::vector<GLuint> textures;
+	PixelFormat format;
+	int width;
+	int height;
 
-	size_t textureMemorySize;
+}; // ImageDataBase
 
-}; // Font
-
-} // opengl
-} // graphics
+} // image
 } // love

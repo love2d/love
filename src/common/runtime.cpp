@@ -130,6 +130,17 @@ void luax_printstack(lua_State *L)
 		std::cout << i << " - " << luaL_typename(L, i) << std::endl;
 }
 
+bool luax_isarrayoftables(lua_State *L, int idx)
+{
+	if (!lua_istable(L, idx))
+		return false;
+
+	lua_rawgeti(L, idx, 1);
+	bool tableoftables = lua_istable(L, -1);
+	lua_pop(L, 1);
+	return tableoftables;
+}
+
 bool luax_toboolean(lua_State *L, int idx)
 {
 	return (lua_toboolean(L, idx) != 0);
@@ -205,6 +216,23 @@ double luax_numberflag(lua_State *L, int table_index, const char *key, double de
 		retval = lua_tonumber(L, -1);
 
 	lua_pop(L, 1);
+	return retval;
+}
+
+int luax_checkintflag(lua_State *L, int table_index, const char *key)
+{
+	lua_getfield(L, table_index, key);
+
+	int retval;
+	if (!lua_isnumber(L, -1))
+	{
+		std::string err = "expected integer field " + std::string(key) + " in table";
+		return luaL_argerror(L, table_index, err.c_str());
+	}
+	else
+		retval = (int) luaL_checkinteger(L, -1);
+	lua_pop(L, 1);
+
 	return retval;
 }
 

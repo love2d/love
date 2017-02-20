@@ -18,14 +18,14 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H
-#define LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H
+#pragma once
 
 // LOVE
 #include "common/Data.h"
 #include "common/StringMap.h"
 #include "common/int.h"
 #include "common/pixelformat.h"
+#include "ImageDataBase.h"
 
 // STL
 #include <vector>
@@ -44,16 +44,45 @@ class CompressedImageData : public Data
 {
 public:
 
-	static love::Type type;
+	class Memory : public Object
+	{
+	public:
+
+		Memory(size_t size);
+		virtual ~Memory();
+
+		uint8 *data;
+		size_t size;
+
+	}; // Memory
 
 	// Compressed image data can have multiple mipmap levels, each represented
 	// by a sub-image.
-	struct SubImage
+	class Slice : public ImageDataBase
 	{
-		int width, height;
-		size_t size;
-		uint8 *data; // Should not have ownership of the data.
-	};
+	public:
+
+		Slice(PixelFormat format, int width, int height, Memory *memory, size_t offset, size_t size);
+		Slice(const Slice &slice);
+		virtual ~Slice();
+
+		Slice *clone() const override;
+		void *getData() const override { return memory->data + offset; }
+		size_t getSize() const override { return dataSize; }
+		bool isSRGB() const override { return sRGB; }
+		size_t getOffset() const { return offset; }
+
+	private:
+
+		StrongRef<Memory> memory;
+
+		size_t offset;
+		size_t dataSize;
+		bool sRGB;
+
+	}; // Slice
+
+	static love::Type type;
 
 	CompressedImageData();
 	virtual ~CompressedImageData();
@@ -67,7 +96,12 @@ public:
 	 * Gets the number of mipmaps in this Compressed Image Data.
 	 * Includes the base image level.
 	 **/
-	int getMipmapCount() const;
+	int getMipmapCount(int slice = 0) const;
+
+	/**
+	 * Gets the number of slices (array layers, cube faces, 3D layers, etc.)
+	 **/
+	int getSliceCount(int mip = 0) const;
 
 	/**
 	 * Gets the size in bytes of a sub-image at the specified mipmap level.
@@ -96,6 +130,8 @@ public:
 
 	bool isSRGB() const;
 
+	Slice *getSlice(int slice, int miplevel) const;
+
 protected:
 
 	PixelFormat format;
@@ -103,17 +139,14 @@ protected:
 	bool sRGB;
 
 	// Single block of memory containing all of the sub-images.
-	uint8 *data;
-	size_t dataSize;
+	StrongRef<Memory> memory;
 
 	// Texture info for each mipmap level.
-	std::vector<SubImage> dataImages;
+	std::vector<StrongRef<Slice>> dataImages;
 
-	void checkMipmapLevelExists(int miplevel) const;
+	void checkSliceExists(int slice, int miplevel) const;
 
 }; // CompressedImageData
 
 } // image
 } // love
-
-#endif // LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H

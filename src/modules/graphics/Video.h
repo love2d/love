@@ -23,7 +23,7 @@
 // LOVE
 #include "common/math.h"
 #include "Drawable.h"
-#include "Texture.h"
+#include "Image.h"
 #include "vertex.h"
 #include "video/VideoStream.h"
 #include "audio/Source.h"
@@ -33,13 +33,15 @@ namespace love
 namespace graphics
 {
 
+class Graphics;
+
 class Video : public Drawable
 {
 public:
 
 	static love::Type type;
 
-	Video(love::video::VideoStream *stream, float pixeldensity = 1.0f);
+	Video(Graphics *gfx, love::video::VideoStream *stream, float pixeldensity = 1.0f);
 	virtual ~Video();
 
 	// Drawable
@@ -56,12 +58,12 @@ public:
 	int getPixelWidth() const;
 	int getPixelHeight() const;
 
-	virtual void setFilter(const Texture::Filter &f) = 0;
+	void setFilter(const Texture::Filter &f);
 	const Texture::Filter &getFilter() const;
 
-protected:
+private:
 
-	virtual void uploadFrame(const love::video::VideoStream::Frame *frame) = 0;
+	void update();
 
 	StrongRef<love::video::VideoStream> stream;
 
@@ -72,11 +74,7 @@ protected:
 
 	Vertex vertices[4];
 
-	ptrdiff_t textureHandles[3];
-
-private:
-
-	void update();
+	StrongRef<Image> images[3];
 	StrongRef<love::audio::Source> source;
 	
 }; // Video

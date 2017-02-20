@@ -25,6 +25,8 @@
 #include "Polyline.h"
 #include "font/Font.h"
 #include "window/Window.h"
+#include "Font.h"
+#include "Video.h"
 
 // C++
 #include <algorithm>
@@ -152,6 +154,16 @@ Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
 	return new Quad(v, sw, sh);
 }
 
+Font *Graphics::newFont(love::font::Rasterizer *data, const Texture::Filter &filter)
+{
+	return new Font(data, filter);
+}
+
+Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
+{
+	return new Video(this, stream, pixeldensity);
+}
+
 bool Graphics::validateShader(bool gles, const Shader::ShaderSource &source, std::string &err)
 {
 	return Shader::validate(this, gles, source, true, err);
@@ -179,9 +191,9 @@ int Graphics::getPixelHeight() const
 
 double Graphics::getCurrentPixelDensity() const
 {
-	if (states.back().canvases.size() > 0)
+	if (states.back().renderTargets.size() > 0)
 	{
-		love::graphics::Canvas *c = states.back().canvases[0];
+		love::graphics::Canvas *c = states.back().renderTargets[0].canvas;
 		return (double) c->getPixelHeight() / (double) c->getHeight();
 	}
 
@@ -240,7 +252,7 @@ void Graphics::restoreState(const DisplayState &s)
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
-	setCanvas(s.canvases);
+	setCanvas(s.renderTargets);
 
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
@@ -283,12 +295,14 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	setFont(s.font.get());
 	setShader(s.shader.get());
 
-	bool canvaseschanged = s.canvases.size() != cur.canvases.size();
+	bool canvaseschanged = s.renderTargets.size() != cur.renderTargets.size();
 	if (!canvaseschanged)
 	{
-		for (size_t i = 0; i < s.canvases.size() && i < cur.canvases.size(); i++)
+		for (size_t i = 0; i < s.renderTargets.size() && i < cur.renderTargets.size(); i++)
 		{
-			if (s.canvases[i].get() != cur.canvases[i].get())
+			const auto &rt1 = s.renderTargets[i];
+			const auto &rt2 = cur.renderTargets[i];
+			if (rt1.canvas.get() != rt2.canvas.get() || rt1.slice != rt2.slice)
 			{
 				canvaseschanged = true;
 				break;
@@ -297,7 +311,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	}
 
 	if (canvaseschanged)
-		setCanvas(s.canvases);
+		setCanvas(s.renderTargets);
 
 	if (s.colorMask != cur.colorMask)
 		setColorMask(s.colorMask);
@@ -386,47 +400,47 @@ love::graphics::Shader *Graphics::getShader() const
 	return states.back().shader.get();
 }
 
-void Graphics::setCanvas(Canvas *canvas)
+void Graphics::setCanvas(RenderTarget rt)
 {
-	if (canvas == nullptr)
+	if (rt.canvas == nullptr)
 		return setCanvas();
 
-	std::vector<Canvas *> canvases = {canvas};
-	setCanvas(canvases);
+	std::vector<RenderTarget> rts = {rt};
+	setCanvas(rts);
 }
 
-void Graphics::setCanvas(const std::vector<StrongRef<Canvas>> &canvases)
+void Graphics::setCanvas(const std::vector<RenderTargetStrongRef> &rts)
 {
-	std::vector<Canvas *> canvaslist;
-	canvaslist.reserve(canvases.size());
+	std::vector<RenderTarget> canvaslist;
+	canvaslist.reserve(rts.size());
 
-	for (const StrongRef<Canvas> &c : canvases)
-		canvaslist.push_back(c.get());
+	for (const auto &rt : rts)
+		canvaslist.emplace_back(rt.canvas.get(), rt.slice);
 
 	return setCanvas(canvaslist);
 }
 
-std::vector<Canvas *> Graphics::getCanvas() const
+std::vector<Graphics::RenderTarget> Graphics::getCanvas() const
 {
-	std::vector<Canvas *> canvases;
-	canvases.reserve(states.back().canvases.size());
+	std::vector<RenderTarget> rts;
+	rts.reserve(states.back().renderTargets.size());
 
-	for (const StrongRef<Canvas> &c : states.back().canvases)
-		canvases.push_back(c.get());
+	for (const auto &rt : states.back().renderTargets)
+		rts.emplace_back(rt.canvas.get(), rt.slice);
 
-	return canvases;
+	return rts;
 }
 
 bool Graphics::isCanvasActive() const
 {
-	return !states.back().canvases.empty();
+	return !states.back().renderTargets.empty();
 }
 
 bool Graphics::isCanvasActive(love::graphics::Canvas *canvas) const
 {
-	for (const auto &c : states.back().canvases)
+	for (const auto &rt : states.back().renderTargets)
 	{
-		if (c.get() == canvas)
+		if (rt.canvas.get() == canvas)
 			return true;
 	}
 
@@ -563,7 +577,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	if (req.primitiveMode != state.primitiveMode
 		|| req.formats[0] != state.formats[0] || req.formats[1] != state.formats[1]
 		|| ((req.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
-		|| req.texture != state.texture || req.textureHandle != state.textureHandle)
+		|| req.texture != state.texture)
 	{
 		shouldflush = true;
 	}
@@ -622,7 +636,6 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		state.formats[0] = req.formats[0];
 		state.formats[1] = req.formats[1];
 		state.texture = req.texture;
-		state.textureHandle = req.textureHandle;
 	}
 
 	if (shouldresize)
@@ -1358,6 +1371,8 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "lighten",            FEATURE_LIGHTEN              },
 	{ "fullnpot",           FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
+	{ "arraytexture",       FEATURE_ARRAY_TEXTURE        },
+	{ "volumetexture",      FEATURE_VOLUME_TEXTURE       },
 	{ "glsl3",              FEATURE_GLSL3                },
 	{ "instancing",         FEATURE_INSTANCING           },
 };
@@ -1366,11 +1381,14 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Grap
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::systemLimitEntries[] =
 {
-	{ "pointsize",   LIMIT_POINT_SIZE   },
-	{ "texturesize", LIMIT_TEXTURE_SIZE },
-	{ "multicanvas", LIMIT_MULTI_CANVAS },
-	{ "canvasmsaa",  LIMIT_CANVAS_MSAA  },
-	{ "anisotropy",  LIMIT_ANISOTROPY   },
+	{ "pointsize",         LIMIT_POINT_SIZE          },
+	{ "texturesize",       LIMIT_TEXTURE_SIZE        },
+	{ "texturelayers",     LIMIT_TEXTURE_LAYERS      },
+	{ "volumetexturesize", LIMIT_VOLUME_TEXTURE_SIZE },
+	{ "cubetexturesize",   LIMIT_CUBE_TEXTURE_SIZE   },
+	{ "multicanvas",       LIMIT_MULTI_CANVAS        },
+	{ "canvasmsaa",        LIMIT_CANVAS_MSAA         },
+	{ "anisotropy",        LIMIT_ANISOTROPY          },
 };
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));

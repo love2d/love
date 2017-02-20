@@ -39,7 +39,7 @@ class Canvas final : public love::graphics::Canvas, public Volatile
 {
 public:
 
-	Canvas(int width, int height, const Settings &settings);
+	Canvas(const Settings &settings);
 	virtual ~Canvas();
 
 	// Implements Volatile.
@@ -49,9 +49,10 @@ public:
 	// Implements Texture.
 	void setFilter(const Texture::Filter &f) override;
 	bool setWrap(const Texture::Wrap &w) override;
+	bool setMipmapSharpness(float sharpness) override;
 	ptrdiff_t getHandle() const override;
 
-	love::image::ImageData *newImageData(love::image::Image *module, int x, int y, int w, int h) override;
+	love::image::ImageData *newImageData(love::image::Image *module, int slice, int x, int y, int w, int h) override;
 
 	int getMSAA() const override
 	{

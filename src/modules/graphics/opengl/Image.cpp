@@ -26,16 +26,6 @@
 // STD
 #include <algorithm> // for min/max
 
-#ifdef LOVE_ANDROID
-// log2 is not declared in the math.h shipped with the Android NDK
-#include <cmath>
-inline double log2(double n)
-{ 
-	// log(n)/log(2) is log2.  
-	return std::log(n) / std::log(2);
-}
-#endif
-
 namespace love
 {
 namespace graphics
@@ -45,114 +35,38 @@ namespace opengl
 
 float Image::maxMipmapSharpness = 0.0f;
 
-static int getMipmapCount(int basewidth, int baseheight)
-{
-	return (int) log2(std::max(basewidth, baseheight)) + 1;
-}
-
-template <typename T>
-static bool verifyMipmapLevels(const std::vector<T> &miplevels)
-{
-	int numlevels = (int) miplevels.size();
-
-	if (numlevels == 1)
-		return false;
-
-	int width  = miplevels[0]->getWidth();
-	int height = miplevels[0]->getHeight();
-
-	auto format = miplevels[0]->getFormat();
-
-	int expectedlevels = getMipmapCount(width, height);
-
-	// All mip levels must be present when not using auto-generated mipmaps.
-	if (numlevels != expectedlevels)
-		throw love::Exception("Image does not have all required mipmap levels (expected %d, got %d)", expectedlevels, numlevels);
-
-	// Verify the size of each mip level.
-	for (int i = 1; i < numlevels; i++)
-	{
-		width  = std::max(width / 2, 1);
-		height = std::max(height / 2, 1);
-
-		if (miplevels[i]->getWidth() != width)
-			throw love::Exception("Width of image mipmap level %d is incorrect (expected %d, got %d)", i+1, width, miplevels[i]->getWidth());
-		if (miplevels[i]->getHeight() != height)
-			throw love::Exception("Height of image mipmap level %d is incorrect (expected %d, got %d)", i+1, height, miplevels[i]->getHeight());
-
-		if (miplevels[i]->getFormat() != format)
-			throw love::Exception("All image mipmap levels must have the same format.");
-	}
-
-	return true;
-}
-
-Image::Image(const std::vector<love::image::ImageData *> &imagedata, const Settings &settings)
-	: love::graphics::Image(settings)
+Image::Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
+	: love::graphics::Image(Slices(textype), settings, false)
 	, texture(0)
-	, mipmapSharpness(defaultMipmapSharpness)
 	, compressed(false)
-	, sRGB(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
-	if (imagedata.empty())
-		throw love::Exception("");
+	if (isPixelFormatCompressed(format))
+		throw love::Exception("This constructor is only supported for non-compressed pixel formats.");
 
-	pixelWidth  = imagedata[0]->getWidth();
-	pixelHeight = imagedata[0]->getHeight();
+	if (textype == TEXTURE_VOLUME)
+		depth = slices;
+	else if (textype == TEXTURE_2D_ARRAY)
+		layers = slices;
 
-	width  = (int) (pixelWidth / settings.pixeldensity + 0.5);
-	height = (int) (pixelHeight / settings.pixeldensity + 0.5);
-
-	if (verifyMipmapLevels(imagedata))
-		this->settings.mipmaps = true;
-
-	for (const auto &id : imagedata)
-		data.push_back(id);
-
-	format = data[0]->getFormat();
-
-	preload();
-	loadVolatile();
+	init(format, width, height, settings);
 }
 
-Image::Image(const std::vector<love::image::CompressedImageData *> &compresseddata, const Settings &settings)
-	: love::graphics::Image(settings)
+Image::Image(const Slices &slices, const Settings &settings)
+	: love::graphics::Image(slices, settings, true)
 	, texture(0)
-	, mipmapSharpness(defaultMipmapSharpness)
-	, compressed(true)
-	, sRGB(false)
+	, compressed(false)
 	, usingDefaultTexture(false)
 	, textureMemorySize(0)
 {
-	pixelWidth  = compresseddata[0]->getWidth(0);
-	pixelHeight = compresseddata[0]->getHeight(0);
+	if (texType == TEXTURE_2D_ARRAY)
+		this->layers = data.getSliceCount();
+	else if (texType == TEXTURE_VOLUME)
+		this->depth = data.getSliceCount();
 
-	width  = (int) (pixelWidth / settings.pixeldensity + 0.5);
-	height = (int) (pixelHeight / settings.pixeldensity + 0.5);
-
-	if (verifyMipmapLevels(compresseddata))
-		this->settings.mipmaps = true;
-	else if (settings.mipmaps && getMipmapCount(pixelWidth, pixelHeight) != compresseddata[0]->getMipmapCount())
-	{
-		if (compresseddata[0]->getMipmapCount() == 1)
-			this->settings.mipmaps = false;
-		else
-		{
-			throw love::Exception("Image cannot have mipmaps: compressed image data does not have all required mipmap levels (expected %d, got %d)",
-			                      getMipmapCount(width, height),
-			                      compresseddata[0]->getMipmapCount());
-		}
-	}
-
-	for (image::CompressedImageData *cd : compresseddata)
-		cdata.push_back(cd);
-
-	format = cdata[0]->getFormat();
-
-	preload();
-	loadVolatile();
+	love::image::ImageDataBase *slice = data.get(0, 0);
+	init(slice->getFormat(), slice->getWidth(), slice->getHeight(), settings);
 }
 
 Image::~Image()
@@ -160,56 +74,41 @@ Image::~Image()
 	unloadVolatile();
 }
 
-void Image::preload()
+void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 {
-	for (int i = 0; i < 4; i++)
-		vertices[i].color = Color(255, 255, 255, 255);
+	pixelWidth = w;
+	pixelHeight = h;
 
-	// Vertices are ordered for use with triangle strips:
-	// 0---2
-	// | / |
-	// 1---3
-	vertices[0].x = 0.0f;
-	vertices[0].y = 0.0f;
-	vertices[1].x = 0.0f;
-	vertices[1].y = (float) height;
-	vertices[2].x = (float) width;
-	vertices[2].y = 0.0f;
-	vertices[3].x = (float) width;
-	vertices[3].y = (float) height;
+	width  = (int) (pixelWidth / settings.pixeldensity + 0.5);
+	height = (int) (pixelHeight / settings.pixeldensity + 0.5);
 
-	vertices[0].s = 0.0f;
-	vertices[0].t = 0.0f;
-	vertices[1].s = 0.0f;
-	vertices[1].t = 1.0f;
-	vertices[2].s = 1.0f;
-	vertices[2].t = 0.0f;
-	vertices[3].s = 1.0f;
-	vertices[3].t = 1.0f;
+	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getMipmapCount(w, h);
+	format = fmt;
+	compressed = isPixelFormatCompressed(format);
 
-	if (settings.mipmaps)
+	if (compressed && mipmapsType == MIPMAPS_GENERATED)
+		mipmapsType = MIPMAPS_NONE;
+
+	if (getMipmapCount() > 1)
 		filter.mipmap = defaultMipmapFilter;
 
-	if (!isGammaCorrect())
-		settings.linear = false;
-
-	if (isGammaCorrect() && !settings.linear)
-		sRGB = true;
-	else
-		sRGB = false;
+	loadVolatile();
+	initVertices();
 }
 
 void Image::generateMipmaps()
 {
 	// The GL_GENERATE_MIPMAP texparameter is set in loadVolatile if we don't
 	// have support for glGenerateMipmap.
-	if (settings.mipmaps && !isCompressed() &&
-		(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
+	if (getMipmapCount() > 1 && !isCompressed() &&
+		(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_object))
 	{
-		if (gl.bugs.generateMipmapsRequiresTexture2DEnable)
-			glEnable(GL_TEXTURE_2D);
+		GLenum gltextype = OpenGL::getGLTextureType(texType);
 
-		glGenerateMipmap(GL_TEXTURE_2D);
+		if (gl.bugs.generateMipmapsRequiresTexture2DEnable)
+			glEnable(gltextype);
+
+		glGenerateMipmap(gltextype);
 	}
 }
 
@@ -217,63 +116,118 @@ void Image::loadDefaultTexture()
 {
 	usingDefaultTexture = true;
 
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.bindTextureToUnit(this, 0, false);
 	setFilter(filter);
+
+	bool isSRGB = false;
+	gl.rawTexStorage(texType, 1, PIXELFORMAT_RGBA8, isSRGB, 2, 2, 1);
 
 	// A nice friendly checkerboard to signify invalid textures...
 	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xFF,0xA0,0xA0,0xFF,
 	                0xFF,0xA0,0xA0,0xFF, 0xFF,0xFF,0xFF,0xFF};
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
+	int slices = texType == TEXTURE_CUBE ? 6 : 1;
+	Rect rect = {0, 0, 2, 2};
+	for (int slice = 0; slice < slices; slice++)
+		uploadByteData(PIXELFORMAT_RGBA8, px, sizeof(px), rect, 0, slice);
 }
 
-void Image::loadFromCompressedData()
+void Image::loadData()
 {
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, sRGB);
+	int mipcount = getMipmapCount();
+	int slicecount = 1;
 
-	if (isGammaCorrect() && !sRGB)
-		settings.linear = true;
+	if (texType == TEXTURE_VOLUME)
+		slicecount = getDepth();
+	else if (texType == TEXTURE_2D_ARRAY)
+		slicecount = getLayerCount();
+	else if (texType == TEXTURE_CUBE)
+		slicecount = 6;
 
-	int count = 1;
+	if (!isCompressed())
+		gl.rawTexStorage(texType, mipcount, format, sRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
-	if (settings.mipmaps && cdata.size() > 1)
-		count = (int) cdata.size();
-	else if (settings.mipmaps)
-		count = cdata[0]->getMipmapCount();
+	if (mipmapsType == MIPMAPS_GENERATED)
+		mipcount = 1;
 
-	for (int i = 0; i < count; i++)
+	int w = pixelWidth;
+	int h = pixelHeight;
+	int d = depth;
+
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, sRGB);
+
+	for (int mip = 0; mip < mipcount; mip++)
 	{
-		// Compressed image mipmaps can come from separate CompressedImageData
-		// objects, or all from a single object.
-		auto cd = cdata.size() > 1 ? cdata[i].get() : cdata[0].get();
-		int datamip = cdata.size() > 1 ? 0 : i;
+		if (isCompressed() && (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME))
+		{
+			size_t mipsize = 0;
 
-		glCompressedTexImage2D(GL_TEXTURE_2D, i, fmt.internalformat,
-		                       cd->getWidth(datamip), cd->getHeight(datamip), 0,
-		                       (GLsizei) cd->getSize(datamip), cd->getData(datamip));
+			if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
+			{
+				for (int slice = 0; slice < data.getSliceCount(mip); slice++)
+					mipsize += data.get(slice, mip)->getSize();
+			}
+
+			GLenum gltarget = OpenGL::getGLTextureType(texType);
+			glCompressedTexImage3D(gltarget, mip, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
+		}
+
+		for (int slice = 0; slice < slicecount; slice++)
+		{
+			love::image::ImageDataBase *id = data.get(slice, mip);
+
+			if (id != nullptr)
+				uploadImageData(id, mip, slice);
+		}
+
+		w = std::max(w / 2, 1);
+		h = std::max(h / 2, 1);
+
+		if (texType == TEXTURE_VOLUME)
+			d = std::max(d / 2, 1);
 	}
-}
 
-void Image::loadFromImageData()
-{
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, sRGB);
-
-	if (isGammaCorrect() && !sRGB)
-		settings.linear = true;
-
-	int mipcount = settings.mipmaps ? (int) data.size() : 1;
-
-	for (int i = 0; i < mipcount; i++)
-	{
-		love::image::ImageData *id = data[i].get();
-		love::thread::Lock lock(id->getMutex());
-
-		glTexImage2D(GL_TEXTURE_2D, i, fmt.internalformat, id->getWidth(), id->getHeight(),
-		             0, fmt.externalformat, fmt.type, id->getData());
-	}
-
-	if (data.size() <= 1)
+	if (mipmapsType == MIPMAPS_GENERATED)
 		generateMipmaps();
+}
+
+void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &r, int level, int slice)
+{
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false, sRGB);
+	GLenum gltarget = OpenGL::getGLTextureType(texType);
+
+	if (texType == TEXTURE_CUBE)
+		gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+
+	if (isPixelFormatCompressed(pixelformat))
+	{
+		if (r.x != 0 || r.y != 0)
+			throw love::Exception("x and y parameters must be 0 for compressed images.");
+
+		if (texType == TEXTURE_2D || texType == TEXTURE_CUBE)
+			glCompressedTexImage2D(gltarget, level, fmt.internalformat, r.w, r.h, 0, size, data);
+		else if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
+			glCompressedTexSubImage3D(gltarget, level, 0, 0, slice, r.w, r.h, 1, fmt.internalformat, size, data);
+	}
+	else
+	{
+		if (texType == TEXTURE_2D || texType == TEXTURE_CUBE)
+			glTexSubImage2D(gltarget, level, r.x, r.y, r.w, r.h, fmt.externalformat, fmt.type, data);
+		else if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
+			glTexSubImage3D(gltarget, level, r.x, r.y, slice, r.w, r.h, 1, fmt.externalformat, fmt.type, data);
+	}
+}
+
+void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice)
+{
+	love::image::ImageData *id = dynamic_cast<love::image::ImageData *>(d);
+
+	love::thread::EmptyLock lock;
+	if (id != nullptr)
+		lock.setLock(id->getMutex());
+
+	Rect rect = {0, 0, d->getWidth(), d->getHeight()};
+	uploadByteData(d->getFormat(), d->getData(), d->getSize(), rect, level, slice);
 }
 
 bool Image::loadVolatile()
@@ -301,9 +255,9 @@ bool Image::loadVolatile()
 
 		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
 		if (sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
-			&& data.size() <= 1)
+			&& mipmapsType != MIPMAPS_DATA)
 		{
-			settings.mipmaps = false;
+			mipmapsType = MIPMAPS_NONE;
 			filter.mipmap = FILTER_NONE;
 		}
 	}
@@ -312,7 +266,7 @@ bool Image::loadVolatile()
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
 		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
 	{
-		settings.mipmaps = false;
+		mipmapsType = MIPMAPS_NONE;
 		filter.mipmap = FILTER_NONE;
 	}
 
@@ -320,38 +274,43 @@ bool Image::loadVolatile()
 		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
 
 	glGenTextures(1, &texture);
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.bindTextureToUnit(this, 0, false);
 
-	setFilter(filter);
-	setWrap(wrap);
-	setMipmapSharpness(mipmapSharpness);
+	bool loaddefault = false;
+
+	int max2Dsize = gl.getMax2DTextureSize();
+	int max3Dsize = gl.getMax3DTextureSize();
+
+	if ((texType == TEXTURE_2D || texType == TEXTURE_2D_ARRAY) && (pixelWidth > max2Dsize || pixelHeight > max2Dsize))
+		loaddefault = true;
+	else if (texType == TEXTURE_2D_ARRAY && layers > gl.getMaxTextureLayers())
+		loaddefault = true;
+	else if (texType == TEXTURE_CUBE && (pixelWidth > gl.getMaxCubeTextureSize() || pixelWidth != pixelHeight))
+		loaddefault = true;
+	else if (texType == TEXTURE_VOLUME && (pixelWidth > max3Dsize || pixelHeight > max3Dsize || depth > max3Dsize))
+		loaddefault = true;
 
 	// Use a default texture if the size is too big for the system.
-	if (pixelWidth > gl.getMaxTextureSize() || pixelHeight > gl.getMaxTextureSize())
+	if (loaddefault)
 	{
 		loadDefaultTexture();
 		return true;
 	}
 
-	if (!settings.mipmaps && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	setFilter(filter);
+	setWrap(wrap);
+	setMipmapSharpness(mipmapSharpness);
 
-	if (settings.mipmaps && !isCompressed() && data.size() <= 1 &&
-		!(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object))
-	{
-		// Auto-generate mipmaps every time the texture is modified, if
-		// glGenerateMipmap isn't supported.
-		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-	}
+	GLenum gltextype = OpenGL::getGLTextureType(texType);
+
+	if (mipmapsType == MIPMAPS_NONE && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
+		glTexParameteri(gltextype, GL_TEXTURE_MAX_LEVEL, 0);
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
 	try
 	{
-		if (isCompressed())
-			loadFromCompressedData();
-		else
-			loadFromImageData();
+		loadData();
 
 		GLenum glerr = glGetError();
 		if (glerr != GL_NO_ERROR)
@@ -365,13 +324,12 @@ bool Image::loadVolatile()
 	}
 
 	size_t prevmemsize = textureMemorySize;
+	textureMemorySize = 0;
 
-	if (isCompressed())
-		textureMemorySize = cdata[0]->getSize();
-	else
-		textureMemorySize = data[0]->getSize();
+	for (int slice = 0; slice < data.getSliceCount(0); slice++)
+		textureMemorySize += data.get(slice, 0)->getSize();
 
-	if (settings.mipmaps)
+	if (getMipmapCount() > 1)
 		textureMemorySize *= 1.33334;
 
 	gl.updateTextureMemorySize(prevmemsize, textureMemorySize);
@@ -392,53 +350,61 @@ void Image::unloadVolatile()
 	textureMemorySize = 0;
 }
 
-bool Image::refresh(int xoffset, int yoffset, int w, int h)
+void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps)
 {
 	// No effect if the texture hasn't been created yet.
 	if (texture == 0 || usingDefaultTexture)
-		return false;
+		return;
 
-	if (xoffset < 0 || yoffset < 0 || w <= 0 || h <= 0 ||
-		(xoffset + w) > pixelWidth || (yoffset + h) > pixelHeight)
+	if (d->getFormat() != getPixelFormat())
+		throw love::Exception("Pixel formats must match.");
+
+	if (mipmap < 0 || (mipmapsType != MIPMAPS_DATA && mipmap > 0) || mipmap >= getMipmapCount())
+		throw love::Exception("Invalid image mipmap index.");
+
+	if (slice < 0 || (texType == TEXTURE_CUBE && slice >= 6)
+		|| (texType == TEXTURE_VOLUME && slice >= std::max(getDepth() >> mipmap, 1))
+		|| (texType == TEXTURE_2D_ARRAY && slice >= getLayerCount()))
 	{
-		throw love::Exception("Invalid rectangle dimensions.");
+		throw love::Exception("Invalid image slice index.");
 	}
 
-	OpenGL::TempDebugGroup debuggroup("Image refresh");
+	love::image::ImageDataBase *oldd = data.get(slice, mipmap);
 
-	gl.bindTextureToUnit(texture, 0, false);
+	if (oldd == nullptr)
+		throw love::Exception("Image does not store ImageData!");
 
-	if (isCompressed())
-	{
-		loadFromCompressedData();
-		return true;
-	}
+	int w = d->getWidth();
+	int h = d->getHeight();
 
-	bool isSRGB = sRGB;
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, isSRGB);
+	if (w != oldd->getWidth() || h != oldd->getHeight())
+		throw love::Exception("Dimensions must match the texture's dimensions for the specified mipmap level.");
 
-	int mipcount = settings.mipmaps ? (int) data.size() : 1;
+	d->retain();
+	oldd->release();
 
-	// Reupload the sub-rectangle of each mip level (if we have custom mipmaps.)
-	for (int i = 0; i < mipcount; i++)
-	{
-		const image::pixel *pdata = (const image::pixel *) data[i]->getData();
-		pdata += yoffset * data[i]->getWidth() + xoffset;
+	data.set(slice, mipmap, d);
 
-		thread::Lock lock(data[i]->getMutex());
-		glTexSubImage2D(GL_TEXTURE_2D, i, xoffset, yoffset, w, h,
-		                fmt.externalformat, fmt.type, pdata);
+	OpenGL::TempDebugGroup debuggroup("Image replace pixels");
 
-		xoffset /= 2;
-		yoffset /= 2;
-		w = std::max(w / 2, 1);
-		h = std::max(h / 2, 1);
-	}
+	gl.bindTextureToUnit(this, 0, false);
 
-	if (data.size() <= 1)
+	uploadImageData(d, mipmap, slice);
+
+	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
+}
 
-	return true;
+void Image::replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps)
+{
+	OpenGL::TempDebugGroup debuggroup("Image replace pixels");
+
+	gl.bindTextureToUnit(this, 0, false);
+
+	uploadByteData(format, data, size, rect, mipmap, slice);
+
+	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
+		generateMipmaps();
 }
 
 ptrdiff_t Image::getHandle() const
@@ -446,21 +412,11 @@ ptrdiff_t Image::getHandle() const
 	return texture;
 }
 
-const std::vector<StrongRef<love::image::ImageData>> &Image::getImageData() const
-{
-	return data;
-}
-
-const std::vector<StrongRef<love::image::CompressedImageData>> &Image::getCompressedData() const
-{
-	return cdata;
-}
-
 void Image::setFilter(const Texture::Filter &f)
 {
-	if (!validateFilter(f, settings.mipmaps))
+	if (!validateFilter(f, getMipmapCount() > 1))
 	{
-		if (f.mipmap != FILTER_NONE && !settings.mipmaps)
+		if (f.mipmap != FILTER_NONE && getMipmapCount() == 1)
 			throw love::Exception("Non-mipmapped image cannot have mipmap filtering.");
 		else
 			throw love::Exception("Invalid texture filter.");
@@ -468,7 +424,7 @@ void Image::setFilter(const Texture::Filter &f)
 
 	filter = f;
 
-	if (!data.empty() && !OpenGL::hasTextureFilteringSupport(data[0]->getFormat()))
+	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
 	{
 		filter.mag = filter.min = FILTER_NEAREST;
 
@@ -483,62 +439,74 @@ void Image::setFilter(const Texture::Filter &f)
 		filter.min = filter.mag = FILTER_NEAREST;
 	}
 
-	gl.bindTextureToUnit(texture, 0, false);
-	gl.setTextureFilter(filter);
+	gl.bindTextureToUnit(this, 0, false);
+	gl.setTextureFilter(texType, filter);
 }
 
 bool Image::setWrap(const Texture::Wrap &w)
 {
 	bool success = true;
+	bool forceclamp = texType == TEXTURE_CUBE;
 	wrap = w;
 
+	// If we only have limited NPOT support then the wrap mode must be CLAMP.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
+		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight) || depth != nextP2(depth)))
 	{
-		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
+		forceclamp = true;
+	}
+
+	if (forceclamp)
+	{
+		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP || wrap.r != WRAP_CLAMP)
 			success = false;
 
-		// If we only have limited NPOT support then the wrap mode must be CLAMP.
-		wrap.s = wrap.t = WRAP_CLAMP;
+		wrap.s = wrap.t = wrap.r = WRAP_CLAMP;
 	}
 
 	if (!gl.isClampZeroTextureWrapSupported())
 	{
-		if (wrap.s == WRAP_CLAMP_ZERO)
-			wrap.s = WRAP_CLAMP;
-		if (wrap.t == WRAP_CLAMP_ZERO)
-			wrap.t = WRAP_CLAMP;
+		if (wrap.s == WRAP_CLAMP_ZERO) wrap.s = WRAP_CLAMP;
+		if (wrap.t == WRAP_CLAMP_ZERO) wrap.t = WRAP_CLAMP;
+		if (wrap.r == WRAP_CLAMP_ZERO) wrap.r = WRAP_CLAMP;
 	}
 
-	gl.bindTextureToUnit(texture, 0, false);
-	gl.setTextureWrap(wrap);
+	gl.bindTextureToUnit(this, 0, false);
+	gl.setTextureWrap(texType, wrap);
 
 	return success;
 }
 
-void Image::setMipmapSharpness(float sharpness)
+bool Image::setMipmapSharpness(float sharpness)
 {
 	// OpenGL ES doesn't support LOD bias via glTexParameter.
 	if (!GLAD_VERSION_1_4)
-		return;
+		return false;
 
 	// LOD bias has the range (-maxbias, maxbias)
 	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
 
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.bindTextureToUnit(this, 0, false);
 
 	// negative bias is sharper
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
+	GLenum gltextype = OpenGL::getGLTextureType(texType);
+	glTexParameterf(gltextype, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
+	return true;
 }
 
-float Image::getMipmapSharpness() const
+bool Image::isFormatLinear() const
 {
-	return mipmapSharpness;
+	return isGammaCorrect() && !sRGB;
 }
 
 bool Image::isCompressed() const
 {
 	return compressed;
+}
+
+Image::MipmapsType Image::getMipmapsType() const
+{
+	return mipmapsType;
 }
 
 bool Image::isFormatSupported(PixelFormat pixelformat)

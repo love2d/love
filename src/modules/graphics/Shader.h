@@ -119,6 +119,7 @@ public:
 		};
 
 		UniformType baseType;
+		TextureType textureType;
 		std::string name;
 
 		union
@@ -144,11 +145,8 @@ public:
 
 	/**
 	 * Binds this Shader's program to be used when rendering.
-	 *
-	 * @param temporary True if we just want to send values to the shader with
-	 * no intention of rendering.
 	 **/
-	virtual void attach(bool temporary = false) = 0;
+	virtual void attach() = 0;
 
 	/**
 	 * Attach the default shader.
@@ -161,9 +159,11 @@ public:
 	virtual std::string getWarnings() const = 0;
 
 	virtual const UniformInfo *getUniformInfo(const std::string &name) const = 0;
-	virtual void updateUniform(const UniformInfo *info, int count, bool internalUpdate = false) = 0;
+	virtual const UniformInfo *getUniformInfo(BuiltinUniform builtin) const = 0;
 
-	virtual void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate = false) = 0;
+	virtual void updateUniform(const UniformInfo *info, int count) = 0;
+
+	virtual void sendTextures(const UniformInfo *info, Texture **textures, int count) = 0;
 
 	/**
 	 * Gets whether a uniform with the specified name exists and is actively
@@ -174,7 +174,9 @@ public:
 	/**
 	 * Sets the textures used when rendering a video. For internal use only.
 	 **/
-	virtual void setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture) = 0;
+	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
+
+	void checkMainTextureType(TextureType textype) const;
 
 	virtual ptrdiff_t getHandle() const = 0;
 

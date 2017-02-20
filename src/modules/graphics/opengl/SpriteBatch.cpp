@@ -53,14 +53,13 @@ SpriteBatch::~SpriteBatch()
 
 void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
-	const size_t pos_offset   = offsetof(Vertex, x);
-	const size_t texel_offset = offsetof(Vertex, s);
-	const size_t color_offset = offsetof(Vertex, color.r);
-
 	if (next == 0)
 		return;
 
 	gfx->flushStreamDraws();
+
+	if (Shader::current && texture.get())
+		Shader::current->checkMainTextureType(texture->getTextureType());
 
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
 
@@ -68,22 +67,22 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	gl.bindTextureToUnit(texture, 0, false);
 
-	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
-
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
 	gl.bindBuffer(BUFFER_VERTEX, (GLuint) array_buf->getHandle());
 
+	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
+
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, x)));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, s)));
+
 	// Apply per-sprite color, if a color is set.
 	if (color)
 	{
 		enabledattribs |= ATTRIBFLAG_COLOR;
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), BUFFER_OFFSET(color_offset));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, color.r)));
 	}
-
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(pos_offset));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(texel_offset));
 
 	for (const auto &it : attached_attributes)
 	{

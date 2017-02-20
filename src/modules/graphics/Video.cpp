@@ -31,14 +31,12 @@ namespace graphics
 
 love::Type Video::type("Video", &Drawable::type);
 
-Video::Video(love::video::VideoStream *stream, float pixeldensity)
+Video::Video(Graphics *gfx, love::video::VideoStream *stream, float pixeldensity)
 	: stream(stream)
 	, width(stream->getWidth() / pixeldensity)
 	, height(stream->getHeight() / pixeldensity)
 	, filter(Texture::defaultFilter)
 {
-	textureHandles[2] = textureHandles[1] = textureHandles[0] = 0;
-
 	filter.mipmap = Texture::FILTER_NONE;
 
 	stream->fillBackBuffer();
@@ -67,6 +65,33 @@ Video::Video(love::video::VideoStream *stream, float pixeldensity)
 	vertices[2].t = 0.0f;
 	vertices[3].s = 1.0f;
 	vertices[3].t = 1.0f;
+
+	// Create the textures using the initial frame data.
+	auto frame = (const love::video::VideoStream::Frame*) stream->getFrontBuffer();
+
+	int widths[3]  = {frame->yw, frame->cw, frame->cw};
+	int heights[3] = {frame->yh, frame->ch, frame->ch};
+
+	const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
+
+	Texture::Wrap wrap; // Clamp wrap mode.
+	Image::Settings settings;
+
+	for (int i = 0; i < 3; i++)
+	{
+		Image *img = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8, widths[i], heights[i], 1, settings);
+
+		img->setFilter(filter);
+		img->setWrap(wrap);
+
+		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8);
+		size_t size = bpp * widths[i] * heights[i];
+
+		Rect rect = {0, 0, widths[i], heights[i]};
+		img->replacePixels(data[i], size, rect, 0, 0, false);
+
+		images[i].set(img, Acquire::NORETAIN);
+	}
 }
 
 Video::~Video()
@@ -93,7 +118,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 		shader = Shader::defaultVideoShader;
 	}
 
-	shader->setVideoTextures(textureHandles[0], textureHandles[1], textureHandles[2]);
+	shader->setVideoTextures(images[0], images[1], images[2]);
 
 	Graphics::StreamDrawRequest req;
 	req.formats[0] = vertex::CommonFormat::XYf_STf_RGBAub;
@@ -129,7 +154,20 @@ void Video::update()
 	if (bufferschanged)
 	{
 		auto frame = (const love::video::VideoStream::Frame*) stream->getFrontBuffer();
-		uploadFrame(frame);
+
+		int widths[3]  = {frame->yw, frame->cw, frame->cw};
+		int heights[3] = {frame->yh, frame->ch, frame->ch};
+
+		const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
+
+		for (int i = 0; i < 3; i++)
+		{
+			size_t bpp = getPixelFormatSize(PIXELFORMAT_R8);
+			size_t size = bpp * widths[i] * heights[i];
+
+			Rect rect = {0, 0, widths[i], heights[i]};
+			images[i]->replacePixels(data[i], size, rect, 0, 0, false);
+		}
 	}
 }
 
@@ -161,6 +199,14 @@ int Video::getPixelWidth() const
 int Video::getPixelHeight() const
 {
 	return stream->getHeight();
+}
+
+void Video::setFilter(const Texture::Filter &f)
+{
+	for (const auto &image : images)
+		image->setFilter(f);
+
+	filter = f;
 }
 
 const Texture::Filter &Video::getFilter() const

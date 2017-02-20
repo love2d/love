@@ -113,7 +113,7 @@ bool PKMHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedImageData::Memory> PKMHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -133,37 +133,24 @@ uint8 *PKMHandler::parse(filesystem::FileData *filedata, std::vector<CompressedI
 
 	// The rest of the file after the header is all texture data.
 	size_t totalsize = filedata->getSize() - sizeof(PKMHeader);
-	uint8 *data = nullptr;
 
-	try
-	{
-		data = new uint8[totalsize];
-	}
-	catch (std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory.");
-	}
+	StrongRef<CompressedImageData::Memory> memory;
+	memory.set(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
 
 	// PKM files only store a single mipmap level.
-	memcpy(data, (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
-
-	CompressedImageData::SubImage mip;
+	memcpy(memory->data, (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
 
 	// TODO: verify whether glCompressedTexImage works properly with the unpadded
 	// width and height values (extended == padded.)
-	mip.width = header.widthBig;
-	mip.height = header.heightBig;
+	int width = header.widthBig;
+	int height = header.heightBig;
 
-	mip.size = totalsize;
-	mip.data = data;
+	images.emplace_back(new CompressedImageData::Slice(cformat, width, height, memory, 0, totalsize), Acquire::NORETAIN);
 
-	images.push_back(mip);
-
-	dataSize = totalsize;
 	format = cformat;
 	sRGB = false;
 
-	return data;
+	return memory;
 }
 
 } // magpie

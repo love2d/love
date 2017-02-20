@@ -28,5 +28,92 @@ namespace image
 
 love::Type Image::type("image", &Module::type);
 
+ImageData *Image::newPastedImageData(ImageData *src, int sx, int sy, int w, int h)
+{
+	ImageData *res = newImageData(w, h, src->getFormat());
+	try
+	{
+		res->paste(src, 0, 0, sx, sy, w, h);
+	}
+	catch (love::Exception &)
+	{
+		res->release();
+		throw;
+	}
+	return res;
+}
+
+std::vector<StrongRef<ImageData>> Image::newCubeFaces(love::image::ImageData *src)
+{
+	// The faces array is always ordered +x, -x, +y, -y, +z, -z.
+	std::vector<StrongRef<ImageData>> faces;
+
+	int totalW = src->getWidth();
+	int totalH = src->getHeight();
+
+	if (totalW % 3 == 0 && totalH % 4 == 0 && totalW / 3 == totalH / 4)
+	{
+		//    +y
+		// +z +x -z
+		//    -y
+		//    -x
+
+		int w = totalW / 3;
+		int h = totalH / 4;
+
+		faces.emplace_back(newPastedImageData(src, 1*w, 1*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 1*w, 3*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 1*w, 0*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 1*w, 2*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 0*w, 1*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 2*w, 1*h, w, h), Acquire::NORETAIN);
+	}
+	else if (totalW % 4 == 0 && totalH % 3 == 0 && totalW / 4 == totalH / 3)
+	{
+		//    +y
+		// -x +z +x -z
+		//    -y
+
+		int w = totalW / 4;
+		int h = totalH / 3;
+
+		faces.emplace_back(newPastedImageData(src, 2*w, 1*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 0*w, 1*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 1*w, 0*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 1*w, 2*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 1*w, 1*h, w, h), Acquire::NORETAIN);
+		faces.emplace_back(newPastedImageData(src, 3*w, 1*h, w, h), Acquire::NORETAIN);
+	}
+	else if (totalH % 6 == 0 && totalW == totalH / 6)
+	{
+		// +x
+		// -x
+		// +y
+		// -y
+		// +z
+		// -z
+
+		int w = totalW;
+		int h = totalH / 6;
+
+		for (int i = 0; i < 6; i++)
+			faces.emplace_back(newPastedImageData(src, 0, i * h, w, h), Acquire::NORETAIN);
+	}
+	else if (totalW % 6 == 0 && totalW / 6 == totalH)
+	{
+		// +x -x +y -y +z -z
+
+		int w = totalW / 6;
+		int h = totalH;
+
+		for (int i = 0; i < 6; i++)
+			faces.emplace_back(newPastedImageData(src, i * w, 0, w, h), Acquire::NORETAIN);
+	}
+	else
+		throw love::Exception("Unknown cubemap image dimensions!");
+
+	return faces;
+}
+
 } // image
 } // love

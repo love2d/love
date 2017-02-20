@@ -33,8 +33,9 @@
 #include "common/Vector.h"
 
 #include "font/Rasterizer.h"
-#include "Texture.h"
+#include "Image.h"
 #include "vertex.h"
+#include "Volatile.h"
 
 namespace love
 {
@@ -43,7 +44,7 @@ namespace graphics
 
 class Graphics;
 
-class Font : public Object
+class Font : public Object, public Volatile
 {
 public:
 
@@ -88,7 +89,7 @@ public:
 	// Used to determine when to change textures in the generated vertex array.
 	struct DrawCommand
 	{
-		ptrdiff_t texture;
+		Texture *texture;
 		int startvertex;
 		int vertexcount;
 	};
@@ -155,7 +156,7 @@ public:
 	 **/
 	float getLineHeight() const;
 
-	virtual void setFilter(const Texture::Filter &f) = 0;
+	void setFilter(const Texture::Filter &f);
 	const Texture::Filter &getFilter() const;
 
 	// Extra font metrics
@@ -172,16 +173,20 @@ public:
 
 	uint32 getTextureCacheID() const;
 
+	// Implements Volatile.
+	bool loadVolatile() override;
+	void unloadVolatile() override;
+
 	static bool getConstant(const char *in, AlignMode &out);
 	static bool getConstant(AlignMode in, const char *&out);
 
 	static int fontCount;
 
-protected:
+private:
 
 	struct Glyph
 	{
-		ptrdiff_t texture;
+		Texture *texture;
 		int spacing;
 		GlyphVertex vertices[4];
 	};
@@ -192,8 +197,7 @@ protected:
 		int height;
 	};
 
-	virtual void createTexture() = 0;
-	virtual void uploadGlyphToTexture(font::GlyphData *data, Glyph &glyph) = 0;
+	void createTexture();
 
 	TextureSize getNextTextureSize() const;
 	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
@@ -209,6 +213,8 @@ protected:
 
 	int textureWidth;
 	int textureHeight;
+
+	std::vector<StrongRef<love::graphics::Image>> images;
 
 	// maps glyphs to glyph texture information
 	std::unordered_map<uint32, Glyph> glyphs;
@@ -226,15 +232,15 @@ protected:
 	int rowHeight;
 
 	bool useSpacesAsTab;
-	
+
 	// ID which is incremented when the texture cache is invalidated.
 	uint32 textureCacheID;
-	
+
 	static const int TEXTURE_PADDING = 1;
-	
+
 	// This will be used if the Rasterizer doesn't have a tab character itself.
 	static const int SPACES_PER_TAB = 4;
-	
+
 	static StringMap<AlignMode, ALIGN_MAX_ENUM>::Entry alignModeEntries[];
 	static StringMap<AlignMode, ALIGN_MAX_ENUM> alignModes;
 	

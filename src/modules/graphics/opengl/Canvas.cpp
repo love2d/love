@@ -30,7 +30,7 @@ namespace graphics
 namespace opengl
 {
 
-static GLenum createFBO(GLuint &framebuffer, GLuint texture)
+static GLenum createFBO(GLuint &framebuffer, TextureType texType, GLuint texture, int layers, bool initialize)
 {
 	// get currently bound fbo to reset to it later
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
@@ -40,11 +40,27 @@ static GLenum createFBO(GLuint &framebuffer, GLuint texture)
 
 	if (texture != 0)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+		if (initialize)
+		{
+			int faces = texType == TEXTURE_CUBE ? 6 : 1;
 
-		// Initialize the texture to transparent black.
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+			// Make sure all faces and layers of the texture are initialized to
+			// transparent black. This is unfortunately probably pretty slow for
+			// 2D-array and 3D textures with a lot of layers...
+			for (int layer = layers - 1; layer >= 0; layer--)
+			{
+				for (int face = faces - 1; face >= 0; face--)
+				{
+					gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, layer, face);
+					glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+					glClear(GL_COLOR_BUFFER_BIT);
+				}
+			}
+		}
+		else
+		{
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
+		}
 	}
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -96,46 +112,39 @@ static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pi
 	return status == GL_FRAMEBUFFER_COMPLETE && samples > 1;
 }
 
-Canvas::Canvas(int width, int height, const Settings &settings)
-	: settings(settings)
+Canvas::Canvas(const Settings &settings)
+	: love::graphics::Canvas(settings.type)
 	, fbo(0)
 	, texture(0)
     , msaa_buffer(0)
 	, actual_samples(0)
 	, texture_memory(0)
 {
-	this->width = width;
-	this->height = height;
+	this->width = settings.width;
+	this->height = settings.height;
 	this->pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
 	this->pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
 
-	// Vertices are ordered for use with triangle strips:
-	// 0---2
-	// | / |
-	// 1---3
-	// world coordinates
-	vertices[0].x = 0;
-	vertices[0].y = 0;
-	vertices[1].x = 0;
-	vertices[1].y = (float) height;
-	vertices[2].x = (float) width;
-	vertices[2].y = 0;
-	vertices[3].x = (float) width;
-	vertices[3].y = (float) height;
+	if (texType == TEXTURE_VOLUME)
+		this->depth = settings.layers;
+	else if (texType == TEXTURE_2D_ARRAY)
+		this->layers = settings.layers;
+	else
+		this->layers = 1;
 
-	// texture coordinates
-	vertices[0].s = 0;
-	vertices[0].t = 0;
-	vertices[1].s = 0;
-	vertices[1].t = 1;
-	vertices[2].s = 1;
-	vertices[2].t = 0;
-	vertices[3].s = 1;
-	vertices[3].t = 1;
+	if (width <= 0 || height <= 0 || layers <= 0)
+		throw love::Exception("Canvas dimensions must be greater than 0.");
+
+	if (texType != TEXTURE_2D && settings.msaa > 1)
+		throw love::Exception("MSAA is only supported for Canvases with the 2D texture type.");
 
 	this->format = getSizedFormat(settings.format);
 
+	initVertices();
 	loadVolatile();
+
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		throw love::Exception("Cannot create Canvas: %s", OpenGL::framebufferStatusString(status));
 }
 
 Canvas::~Canvas()
@@ -148,18 +157,65 @@ bool Canvas::loadVolatile()
 	if (texture != 0)
 		return true;
 
+	if (!Canvas::isSupported())
+		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
+
+	if (!Canvas::isFormatSupported(format))
+	{
+		const char *fstr = "rgba8";
+		love::getConstant(Canvas::getSizedFormat(format), fstr);
+		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
+	}
+
+	if (settings.msaa > 1 && texType != TEXTURE_2D)
+		throw love::Exception("MSAA is only supported for 2D texture types.");
+
+	if (!gl.isTextureTypeSupported(texType))
+	{
+		const char *textypestr = "unknown";
+		getConstant(texType, textypestr);
+		throw love::Exception("%s textures are not supported on this system!", textypestr);
+	}
+
+	switch (texType)
+	{
+	case TEXTURE_2D:
+		if (pixelWidth > gl.getMax2DTextureSize())
+			throw TextureTooLargeException("width", pixelWidth);
+		else if (pixelHeight > gl.getMax2DTextureSize())
+			throw TextureTooLargeException("height", pixelHeight);
+		break;
+	case TEXTURE_VOLUME:
+		if (pixelWidth > gl.getMax3DTextureSize())
+			throw TextureTooLargeException("width", pixelWidth);
+		else if (pixelHeight > gl.getMax3DTextureSize())
+			throw TextureTooLargeException("height", pixelHeight);
+		else if (depth > gl.getMax3DTextureSize())
+			throw TextureTooLargeException("depth", depth);
+		break;
+	case TEXTURE_2D_ARRAY:
+		if (pixelWidth > gl.getMax2DTextureSize())
+			throw TextureTooLargeException("width", pixelWidth);
+		else if (pixelHeight > gl.getMax2DTextureSize())
+			throw TextureTooLargeException("height", pixelHeight);
+		else if (layers > gl.getMaxTextureLayers())
+			throw TextureTooLargeException("array layer count", layers);
+		break;
+	case TEXTURE_CUBE:
+		if (pixelWidth != pixelHeight)
+			throw love::Exception("Cubemap textures must have equal width and height.");
+		else if (pixelWidth > gl.getMaxCubeTextureSize())
+			throw TextureTooLargeException("width", pixelWidth);
+		break;
+	default:
+		break;
+	}
+
 	OpenGL::TempDebugGroup debuggroup("Canvas load");
 
 	fbo = texture = 0;
 	msaa_buffer = 0;
 	status = GL_FRAMEBUFFER_COMPLETE;
-
-	// glTexImage2D is guaranteed to error in this case.
-	if (pixelWidth > gl.getMaxTextureSize() || pixelHeight > gl.getMaxTextureSize())
-	{
-		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-		return false;
-	}
 
 	// getMaxRenderbufferSamples will be 0 on systems that don't support
 	// multisampled renderbuffers / don't export FBO multisample extensions.
@@ -167,22 +223,25 @@ bool Canvas::loadVolatile()
 	settings.msaa = std::max(settings.msaa, 0);
 
 	glGenTextures(1, &texture);
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.bindTextureToUnit(this, 0, false);
+
+	GLenum gltype = OpenGL::getGLTextureType(texType);
 
 	if (GLAD_ANGLE_texture_usage)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+		glTexParameteri(gltype, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
 
 	setFilter(filter);
 	setWrap(wrap);
 
-	bool unusedSRGB = false;
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
-
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
 
-	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, pixelWidth, pixelHeight,
-	             0, fmt.externalformat, fmt.type, nullptr);
+	bool isSRGB = format == PIXELFORMAT_sRGBA8;
+	if (!gl.rawTexStorage(texType, 1, format, isSRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers))
+	{
+		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+		return false;
+	}
 
 	if (glGetError() != GL_NO_ERROR)
 	{
@@ -193,7 +252,7 @@ bool Canvas::loadVolatile()
 	}
 
 	// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
-	status = createFBO(fbo, texture);
+	status = createFBO(fbo, texType, texture, texType == TEXTURE_VOLUME ? depth : layers, true);
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -207,7 +266,7 @@ bool Canvas::loadVolatile()
 
 	actual_samples = settings.msaa == 1 ? 0 : settings.msaa;
 
-	if (actual_samples > 0 && !createMSAABuffer(width, height, actual_samples, format, msaa_buffer))
+	if (actual_samples > 0 && !createMSAABuffer(pixelWidth, pixelHeight, actual_samples, format, msaa_buffer))
 		actual_samples = 0;
 
 	size_t prevmemsize = texture_memory;
@@ -246,37 +305,47 @@ void Canvas::setFilter(const Texture::Filter &f)
 		throw love::Exception("Invalid texture filter.");
 
 	filter = f;
-	gl.bindTextureToUnit(texture, 0, false);
-	gl.setTextureFilter(filter);
+	gl.bindTextureToUnit(this, 0, false);
+	gl.setTextureFilter(texType, filter);
 }
 
 bool Canvas::setWrap(const Texture::Wrap &w)
 {
 	bool success = true;
+	bool forceclamp = texType == TEXTURE_CUBE;
 	wrap = w;
 
+	// If we only have limited NPOT support then the wrap mode must be CLAMP.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
+		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight) || depth != nextP2(depth)))
 	{
-		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP)
+		forceclamp = true;
+	}
+
+	if (forceclamp)
+	{
+		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP || wrap.r != WRAP_CLAMP)
 			success = false;
 
-		// If we only have limited NPOT support then the wrap mode must be CLAMP.
-		wrap.s = wrap.t = WRAP_CLAMP;
+		wrap.s = wrap.t = wrap.r = WRAP_CLAMP;
 	}
 
 	if (!gl.isClampZeroTextureWrapSupported())
 	{
-		if (wrap.s == WRAP_CLAMP_ZERO)
-			wrap.s = WRAP_CLAMP;
-		if (wrap.t == WRAP_CLAMP_ZERO)
-			wrap.t = WRAP_CLAMP;
+		if (wrap.s == WRAP_CLAMP_ZERO) wrap.s = WRAP_CLAMP;
+		if (wrap.t == WRAP_CLAMP_ZERO) wrap.t = WRAP_CLAMP;
+		if (wrap.r == WRAP_CLAMP_ZERO) wrap.r = WRAP_CLAMP;
 	}
 
-	gl.bindTextureToUnit(texture, 0, false);
-	gl.setTextureWrap(wrap);
+	gl.bindTextureToUnit(this, 0, false);
+	gl.setTextureWrap(texType, wrap);
 
 	return success;
+}
+
+bool Canvas::setMipmapSharpness(float /*sharpness*/)
+{
+	return false;
 }
 
 ptrdiff_t Canvas::getHandle() const
@@ -284,10 +353,17 @@ ptrdiff_t Canvas::getHandle() const
 	return texture;
 }
 
-love::image::ImageData *Canvas::newImageData(love::image::Image *module, int x, int y, int w, int h)
+love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int x, int y, int w, int h)
 {
 	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > getPixelWidth() || (y + h) > getPixelHeight())
 		throw love::Exception("Invalid rectangle dimensions.");
+
+	if (slice < 0 || (texType == TEXTURE_VOLUME && slice >= depth)
+		|| (texType == TEXTURE_2D_ARRAY && slice >= layers)
+		|| (texType == TEXTURE_CUBE && slice >= 6))
+	{
+		throw love::Exception("Invalid slice index.");
+	}
 
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr && gfx->isCanvasActive(this))
@@ -323,7 +399,17 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int x, 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
 
+	if (slice > 0)
+	{
+		int layer = texType == TEXTURE_CUBE ? 0 : slice;
+		int face = texType == TEXTURE_CUBE ? slice : 0;
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, layer, face);
+	}
+
 	glReadPixels(x, y, w, h, fmt.externalformat, fmt.type, imagedata->getData());
+
+	if (slice > 0)
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 
@@ -383,14 +469,14 @@ bool Canvas::isFormatSupported(PixelFormat format)
 
 	GLuint texture = 0;
 	glGenTextures(1, &texture);
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
 
 	Texture::Filter f;
 	f.min = f.mag = Texture::FILTER_NEAREST;
-	gl.setTextureFilter(f);
+	gl.setTextureFilter(TEXTURE_2D, f);
 
 	Texture::Wrap w;
-	gl.setTextureWrap(w);
+	gl.setTextureWrap(TEXTURE_2D, w);
 
 	bool unusedSRGB = false;
 	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
@@ -398,7 +484,7 @@ bool Canvas::isFormatSupported(PixelFormat format)
 	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, 2, 2, 0, fmt.externalformat, fmt.type, nullptr);
 
 	GLuint fbo = 0;
-	supported = (createFBO(fbo, texture) == GL_FRAMEBUFFER_COMPLETE);
+	supported = (createFBO(fbo, TEXTURE_2D, texture, 1, false) == GL_FRAMEBUFFER_COMPLETE);
 	gl.deleteFramebuffer(fbo);
 
 	gl.deleteTexture(texture);

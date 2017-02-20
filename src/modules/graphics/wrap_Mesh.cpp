@@ -456,7 +456,7 @@ int w_Mesh_setTexture(lua_State *L)
 	else
 	{
 		Texture *tex = luax_checktexture(L, 2);
-		t->setTexture(tex);
+		luax_catchexcept(L, [&](){ t->setTexture(tex); });
 	}
 
 	return 0;

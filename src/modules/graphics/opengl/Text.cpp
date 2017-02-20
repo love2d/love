@@ -45,6 +45,9 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	if (vbo == nullptr || draw_commands.empty())
 		return;
 
+	if (Shader::current)
+		Shader::current->checkMainTextureType(TEXTURE_2D);
+
 	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Text object draw");
@@ -60,27 +63,23 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	if ((size_t) totalverts / 4 > quadIndices.getSize())
 		quadIndices = QuadIndices(gfx, (size_t) totalverts / 4);
 
-	const size_t pos_offset   = offsetof(Font::GlyphVertex, x);
-	const size_t tex_offset   = offsetof(Font::GlyphVertex, s);
-	const size_t color_offset = offsetof(Font::GlyphVertex, color.r);
-	const size_t stride = sizeof(Font::GlyphVertex);
-
-	const GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());
-	const size_t elemsize = quadIndices.getElementSize();
+	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
 	Graphics::TempTransform transform(gfx, m);
 
 	gl.prepareDraw();
 
-	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
+	size_t stride = sizeof(Font::GlyphVertex);
 
 	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
-
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(pos_offset));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(tex_offset));
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(color_offset));
+	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offsetof(Font::GlyphVertex, x)));
+	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(offsetof(Font::GlyphVertex, s)));
+	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offsetof(Font::GlyphVertex, color.r)));
 
 	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
+
+	const GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());
+	const size_t elemsize = quadIndices.getElementSize();
 
 	gl.bindBuffer(BUFFER_INDEX, (GLuint) quadIndices.getBuffer()->getHandle());
 
@@ -92,7 +91,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
 
 		// TODO: Use glDrawElementsBaseVertex when supported?
-		gl.bindTextureToUnit((GLuint) cmd.texture, 0, false);
+		gl.bindTextureToUnit(cmd.texture, 0, false);
 
 		gl.drawElements(GL_TRIANGLES, count, gltype, BUFFER_OFFSET(offset));
 	}

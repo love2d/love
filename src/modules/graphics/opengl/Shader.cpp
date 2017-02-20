@@ -40,11 +40,11 @@ Shader::Shader(const ShaderSource &source)
 	: love::graphics::Shader(source)
 	, program(0)
 	, builtinUniforms()
+	, builtinUniformInfo()
 	, builtinAttributes()
 	, canvasWasActive(false)
 	, lastViewport()
 	, lastPointSize(0.0f)
-	, videoTextureUnits()
 {
 	// load shader source and create program object
 	loadVolatile();
@@ -142,7 +142,10 @@ void Shader::mapActiveUniforms()
 {
 	// Built-in uniform locations default to -1 (nonexistent.)
 	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
+	{
 		builtinUniforms[i] = -1;
+		builtinUniformInfo[i] = nullptr;
+	}
 
 	GLint activeprogram = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &activeprogram);
@@ -158,17 +161,18 @@ void Shader::mapActiveUniforms()
 	std::map<std::string, UniformInfo> olduniforms = uniforms;
 	uniforms.clear();
 
-	for (int i = 0; i < numuniforms; i++)
+	for (int uindex = 0; uindex < numuniforms; uindex++)
 	{
 		GLsizei namelen = 0;
 		GLenum gltype = 0;
 		UniformInfo u = {};
 
-		glGetActiveUniform(program, (GLuint) i, bufsize, &namelen, &u.count, &gltype, cname);
+		glGetActiveUniform(program, (GLuint) uindex, bufsize, &namelen, &u.count, &gltype, cname);
 
 		u.name = std::string(cname, (size_t) namelen);
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(gltype);
+		u.textureType = getUniformTextureType(gltype);
 
 		if (u.baseType == UNIFORM_MATRIX)
 			u.matrix = getMatrixSize(gltype);
@@ -184,12 +188,23 @@ void Shader::mapActiveUniforms()
 		}
 
 		// If this is a built-in (LOVE-created) uniform, store the location.
-		BuiltinUniform builtin;
+		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 		if (getConstant(u.name.c_str(), builtin))
 			builtinUniforms[int(builtin)] = u.location;
 
 		if (u.location == -1)
 			continue;
+
+		if (u.baseType == UNIFORM_SAMPLER && builtin != BUILTIN_TEXTURE_MAIN)
+		{
+			TextureUnit unit;
+			unit.type = u.textureType;
+			unit.active = true;
+			unit.texture = gl.getDefaultTexture(u.textureType);
+
+			for (int i = 0; i < u.count; i++)
+				textureUnits.push_back(unit);
+		}
 
 		// Make sure previously set uniform data is preserved, and shader-
 		// initialized values are retrieved.
@@ -200,23 +215,6 @@ void Shader::mapActiveUniforms()
 			u.textures = oldu->second.textures;
 
 			updateUniform(&u, u.count, true);
-
-			if (u.baseType == UNIFORM_SAMPLER)
-			{
-				// Make sure all stored textures have their Volatiles loaded
-				// before the sendTextures call, since it calls getHandle().
-				for (int i = 0; i < u.count; i++)
-				{
-					if (u.textures[i] == nullptr)
-						continue;
-
-					Volatile *v = dynamic_cast<Volatile *>(u.textures[i]);
-					if (v != nullptr)
-						v->loadVolatile();
-				}
-
-				sendTextures(&u, u.textures, u.count, true);
-			}
 		}
 		else
 		{
@@ -252,9 +250,14 @@ void Shader::mapActiveUniforms()
 
 				if (u.baseType == UNIFORM_SAMPLER)
 				{
-					// Initialize all samplers to 0. Both GLSL and GLSL ES are
-					// supposed to do this themselves, but some Android devices
-					// (galaxy tab 3 and 4) don't seem to do it...
+					int startunit = (int) textureUnits.size() - u.count;
+
+					if (builtin == BUILTIN_TEXTURE_MAIN)
+						startunit = 0;
+
+					for (int i = 0; i < u.count; i++)
+						u.ints[i] = startunit + i;
+
 					glUniform1iv(u.location, u.count, u.ints);
 
 					u.textures = new Texture*[u.count];
@@ -307,6 +310,26 @@ void Shader::mapActiveUniforms()
 		}
 
 		uniforms[u.name] = u;
+
+		if (builtin != BUILTIN_MAX_ENUM)
+			builtinUniformInfo[(int)builtin] = &uniforms[u.name];
+
+		if (u.baseType == UNIFORM_SAMPLER)
+		{
+			// Make sure all stored textures have their Volatiles loaded before
+			// the sendTextures call, since it calls getHandle().
+			for (int i = 0; i < u.count; i++)
+			{
+				if (u.textures[i] == nullptr)
+					continue;
+
+				Volatile *v = dynamic_cast<Volatile *>(u.textures[i]);
+				if (v != nullptr)
+					v->loadVolatile();
+			}
+
+			sendTextures(&u, u.textures, u.count, true);
+		}
 	}
 
 	// Make sure uniforms that existed before but don't exist anymore are
@@ -348,12 +371,9 @@ bool Shader::loadVolatile()
 	lastProjectionMatrix.setTranslation(nan, nan);
 	lastTransformMatrix.setTranslation(nan, nan);
 
-	for (int i = 0; i < 3; i++)
-		videoTextureUnits[i] = 0;
-
 	// zero out active texture list
 	textureUnits.clear();
-	textureUnits.resize(gl.getMaxTextureUnits(), TextureUnit());
+	textureUnits.push_back(TextureUnit());
 
 	std::vector<GLuint> shaderids;
 
@@ -449,7 +469,7 @@ void Shader::unloadVolatile()
 
 	// active texture list is probably invalid, clear it
 	textureUnits.clear();
-	textureUnits.resize(gl.getMaxTextureUnits(), TextureUnit());
+	textureUnits.push_back(TextureUnit());
 
 	attributes.clear();
 
@@ -497,7 +517,7 @@ std::string Shader::getWarnings() const
 	return warnings;
 }
 
-void Shader::attach(bool temporary)
+void Shader::attach()
 {
 	if (current != this)
 	{
@@ -505,22 +525,19 @@ void Shader::attach(bool temporary)
 		current = this;
 		// retain/release happens in Graphics::setShader.
 
-		if (!temporary)
+		// Make sure all textures are bound to their respective texture units.
+		for (int i = 0; i < (int) textureUnits.size(); ++i)
 		{
-			// Make sure all textures are properly bound to their respective
-			// texture units.
-			for (int i = 1; i < (int) textureUnits.size(); ++i)
-			{
-				if (textureUnits[i].active)
-					gl.bindTextureToUnit(textureUnits[i].texture, i, false);
-			}
-
-			// send any pending uniforms to the shader program.
-			for (const auto &p : pendingUniformUpdates)
-				updateUniform(p.first, p.second);
-
-			pendingUniformUpdates.clear();
+			const TextureUnit &unit = textureUnits[i];
+			if (unit.active)
+				gl.bindTextureToUnit(unit.type, unit.texture, i, false);
 		}
+
+		// send any pending uniforms to the shader program.
+		for (const auto &p : pendingUniformUpdates)
+			updateUniform(p.first, p.second, true);
+
+		pendingUniformUpdates.clear();
 	}
 }
 
@@ -534,15 +551,25 @@ const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
 	return &(it->second);
 }
 
-void Shader::updateUniform(const UniformInfo *info, int count, bool internalUpdate)
+const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 {
-	if (current != this)
+	return builtinUniformInfo[(int)builtin];
+}
+
+void Shader::updateUniform(const UniformInfo *info, int count)
+{
+	updateUniform(info, count, false);
+}
+
+void Shader::updateUniform(const UniformInfo *info, int count, bool internalupdate)
+{
+	if (current != this && !internalupdate)
 	{
 		pendingUniformUpdates.push_back(std::make_pair(info, count));
 		return;
 	}
 
-	if (!internalUpdate)
+	if (!internalupdate)
 		flushStreamDraws();
 
 	int location = info->location;
@@ -628,24 +655,9 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalUpda
 	}
 }
 
-int Shader::getFreeTextureUnits(int count)
+void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count)
 {
-	int startunit = -1;
-
-	// Ignore the first texture unit for Shader-local texture bindings.
-	for (int i = 1; i < (int) textureUnits.size(); i++)
-	{
-		if (!textureUnits[i].active && i + count <= (int) textureUnits.size())
-		{
-			startunit = i;
-			break;
-		}
-	}
-
-	if (startunit == -1)
-		throw love::Exception("No more texture units available for shader.");
-
-	return startunit;
+	Shader::sendTextures(info, textures, count, false);
 }
 
 void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate)
@@ -659,55 +671,36 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 		flushStreamDraws();
 
 	count = std::min(count, info->count);
-	bool updateuniform = false;
-
-	// Make sure the shader's samplers are associated with texture units.
-	for (int i = 0; i < count; i++)
-	{
-		if (info->ints[i] == 0 && textures[i] != nullptr)
-		{
-			int texunit = getFreeTextureUnits(1);
-			textureUnits[texunit].active = true;
-
-			info->ints[i] = texunit;
-			updateuniform = true;
-		}
-	}
-
-	if (updateuniform)
-		updateUniform(info, count, internalUpdate);
 
 	// Bind the textures to the texture units.
 	for (int i = 0; i < count; i++)
 	{
 		if (textures[i] != nullptr)
+		{
+			if (textures[i]->getTextureType() != info->textureType)
+				continue;
+
 			textures[i]->retain();
+		}
 
 		if (info->textures[i] != nullptr)
 			info->textures[i]->release();
 
 		info->textures[i] = textures[i];
 
+		GLuint gltex = 0;
+		if (textures[i] != nullptr)
+			gltex = (GLuint) textures[i]->getHandle();
+		else
+			gltex = gl.getDefaultTexture(info->textureType);
+
 		int texunit = info->ints[i];
 
-		if (textures[i] != nullptr)
-		{
-			GLuint gltex = (GLuint) textures[i]->getHandle();
+		if (shaderactive)
+			gl.bindTextureToUnit(info->textureType, gltex, texunit, false);
 
-			if (shaderactive)
-				gl.bindTextureToUnit(gltex, texunit, false);
-
-			// Store texture id so it can be re-bound to the texture unit later.
-			textureUnits[texunit].texture = gltex;
-		}
-		else
-		{
-			if (shaderactive)
-				gl.bindTextureToUnit((GLuint) 0, texunit, false);
-
-			textureUnits[texunit].texture = 0;
-			textureUnits[texunit].active = false;
-		}
+		// Store texture id so it can be re-bound to the texture unit later.
+		textureUnits[texunit].texture = gltex;
 	}
 }
 
@@ -743,50 +736,22 @@ GLint Shader::getAttribLocation(const std::string &name)
 	return location;
 }
 
-void Shader::setVideoTextures(ptrdiff_t ytexture, ptrdiff_t cbtexture, ptrdiff_t crtexture)
+void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture)
 {
-	// Set up the texture units that will be used by the shader to sample from
-	// the textures, if they haven't been set up yet.
-	if (videoTextureUnits[0] == 0)
-	{
-		const BuiltinUniform builtins[3] = {
-			BUILTIN_TEXTURE_VIDEO_Y,
-			BUILTIN_TEXTURE_VIDEO_CB,
-			BUILTIN_TEXTURE_VIDEO_CR,
-		};
+	const BuiltinUniform builtins[3] = {
+		BUILTIN_TEXTURE_VIDEO_Y,
+		BUILTIN_TEXTURE_VIDEO_CB,
+		BUILTIN_TEXTURE_VIDEO_CR,
+	};
 
-		for (int i = 0; i < 3; i++)
-		{
-			GLint loc = builtinUniforms[builtins[i]];
-			const char *name = nullptr;;
+	Texture *textures[3] = {ytexture, cbtexture, crtexture};
 
-			if (loc >= 0 && getConstant(builtins[i], name) && name != nullptr)
-			{
-				const UniformInfo *info = getUniformInfo(name);
-				if (info == nullptr)
-					continue;
-
-				videoTextureUnits[i] = getFreeTextureUnits(1);
-				textureUnits[videoTextureUnits[i]].active = true;
-
-				info->ints[0] = videoTextureUnits[i];
-				updateUniform(info, 1);
-			}
-		}
-	}
-
-	const GLuint textures[3] = {(GLuint) ytexture, (GLuint) cbtexture, (GLuint) crtexture};
-
-	// Bind the textures to their respective texture units.
 	for (int i = 0; i < 3; i++)
 	{
-		if (videoTextureUnits[i] != 0)
-		{
-			// Store texture id so it can be re-bound later.
-			textureUnits[videoTextureUnits[i]].texture = textures[i];
-			if (current == this)
-				gl.bindTextureToUnit(textures[i], videoTextureUnits[i], false);
-		}
+		const UniformInfo *info = builtinUniformInfo[builtins[i]];
+
+		if (info != nullptr)
+			sendTextures(info, &textures[i], 1);
 	}
 }
 
@@ -925,15 +890,15 @@ bool Shader::isSupported()
 
 int Shader::getUniformTypeComponents(GLenum type) const
 {
+	if (getUniformBaseType(type) == UNIFORM_SAMPLER)
+		return 1;
+
 	switch (type)
 	{
 	case GL_INT:
 	case GL_UNSIGNED_INT:
 	case GL_FLOAT:
 	case GL_BOOL:
-	case GL_SAMPLER_1D:
-	case GL_SAMPLER_2D:
-	case GL_SAMPLER_3D:
 		return 1;
 	case GL_INT_VEC2:
 	case GL_UNSIGNED_INT_VEC2:
@@ -1056,6 +1021,44 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 		return UNIFORM_SAMPLER;
 	default:
 		return UNIFORM_UNKNOWN;
+	}
+}
+
+TextureType Shader::getUniformTextureType(GLenum type) const
+{
+	switch (type)
+	{
+	case GL_SAMPLER_1D:
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+		// 1D-typed textures are not supported.
+		return TEXTURE_MAX_ENUM;
+	case GL_SAMPLER_2D:
+	//case GL_SAMPLER_2D_SHADOW:
+		return TEXTURE_2D;
+	case GL_SAMPLER_2D_MULTISAMPLE:
+	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		// Multisample textures are not supported.
+		return TEXTURE_MAX_ENUM;
+	case GL_SAMPLER_2D_RECT:
+	case GL_SAMPLER_2D_RECT_SHADOW:
+		// Rectangle textures are not supported.
+		return TEXTURE_MAX_ENUM;
+	case GL_SAMPLER_2D_ARRAY:
+	//case GL_SAMPLER_2D_ARRAY_SHADOW:
+		return TEXTURE_2D_ARRAY;
+	case GL_SAMPLER_3D:
+		return TEXTURE_VOLUME;
+	case GL_SAMPLER_CUBE:
+	//case GL_SAMPLER_CUBE_SHADOW:
+		return TEXTURE_CUBE;
+	case GL_SAMPLER_CUBE_MAP_ARRAY:
+	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+		// Cubemap array textures are not supported.
+		return TEXTURE_MAX_ENUM;
+	default:
+		return TEXTURE_MAX_ENUM;
 	}
 }
 
