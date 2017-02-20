@@ -50,7 +50,7 @@ Buffer *QuadIndices::indexBuffer = nullptr;
 char *QuadIndices::indices = nullptr;
 
 QuadIndices::QuadIndices(Graphics *gfx, size_t size)
-: size(size)
+	: size(size)
 {
 	// The upper limit is the maximum of uint32 divided by six (the number
 	// of indices per size) and divided by the size of uint32. This guarantees
@@ -148,7 +148,7 @@ size_t QuadIndices::getIndexCount(size_t elements) const
 
 IndexDataType QuadIndices::getType(size_t s) const
 {
-	return vertex::getIndexDataTypeFromMax(s);
+	return vertex::getIndexDataTypeFromMax(getIndexCount(s));
 }
 
 size_t QuadIndices::getElementSize()
