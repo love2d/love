@@ -263,6 +263,9 @@ void main() {
 }]],
 
 	MAIN_CUSTOM = [[
+varying vec4 VaryingColor;
+varying vec4 VaryingTexCoord;
+
 void effect();
 
 void main() {
