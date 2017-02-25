@@ -356,8 +356,7 @@ void Graphics::flushStreamDraws()
 		if (sbstate.formats[i] == CommonFormat::NONE)
 			continue;
 
-		GLsizei stride = (GLsizei) getFormatStride(sbstate.formats[i]);
-		usedsizes[i] = stride * sbstate.vertexCount;
+		usedsizes[i] = getFormatStride(sbstate.formats[i]) * sbstate.vertexCount;
 
 		love::graphics::StreamBuffer *buffer = sbstate.vb[i];
 
@@ -366,36 +365,8 @@ void Graphics::flushStreamDraws()
 
 		sbstate.vbMap[i] = StreamBuffer::MapInfo();
 
-		switch (sbstate.formats[i])
-		{
-		case CommonFormat::NONE:
-			break;
-		case CommonFormat::XYf:
-			attribs |= ATTRIBFLAG_POS;
-			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
-			break;
-		case CommonFormat::RGBAub:
-			attribs |= ATTRIBFLAG_COLOR;
-			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset));
-			break;
-		case CommonFormat::XYf_STf:
-			attribs |= ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
-			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, x)));
-			glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, s)));
-			break;
-		case CommonFormat::XYf_STf_RGBAub:
-			attribs |= ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
-			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, x)));
-			glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, s)));
-			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, color.r)));
-			break;
-		case CommonFormat::XYf_STus_RGBAub:
-			attribs |= ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
-			glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, x)));
-			glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, s)));
-			glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, color.r)));
-			break;
-		}
+		gl.setVertexPointers(sbstate.formats[i], offset);
+		attribs |= getFormatFlags(sbstate.formats[i]);
 	}
 
 	if (attribs == 0)

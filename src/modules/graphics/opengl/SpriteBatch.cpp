@@ -53,6 +53,8 @@ SpriteBatch::~SpriteBatch()
 
 void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
+	using namespace vertex;
+
 	if (next == 0)
 		return;
 
@@ -70,19 +72,13 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
-	gl.bindBuffer(BUFFER_VERTEX, (GLuint) array_buf->getHandle());
+	CommonFormat format = CommonFormat::XYf_STf_RGBAub;
+	if (color == nullptr)
+		format = CommonFormat::XYf_STf;
 
-	uint32 enabledattribs = ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
+	uint32 enabledattribs = getFormatFlags(format);
 
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, x)));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, s)));
-
-	// Apply per-sprite color, if a color is set.
-	if (color)
-	{
-		enabledattribs |= ATTRIBFLAG_COLOR;
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, color.r)));
-	}
+	gl.setVertexPointers(format, array_buf, getFormatStride(CommonFormat::XYf_STf_RGBAub), 0);
 
 	for (const auto &it : attached_attributes)
 	{

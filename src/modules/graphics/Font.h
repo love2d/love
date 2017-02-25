@@ -53,6 +53,8 @@ public:
 	typedef std::vector<uint32> Codepoints;
 	typedef vertex::XYf_STus_RGBAub GlyphVertex;
 
+	static const vertex::CommonFormat vertexFormat;
+
 	enum AlignMode
 	{
 		ALIGN_LEFT,

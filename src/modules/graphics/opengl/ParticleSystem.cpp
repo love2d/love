@@ -52,6 +52,8 @@ ParticleSystem *ParticleSystem::clone()
 
 void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 {
+	using namespace vertex;
+
 	if (!prepareDraw(gfx, m))
 		return;
 
@@ -63,12 +65,8 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
 
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
-
-	gl.bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, color.r)));
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, x)));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, s)));
+	gl.useVertexAttribArrays(getFormatFlags(CommonFormat::XYf_STf_RGBAub));
+	gl.setVertexPointers(CommonFormat::XYf_STf_RGBAub, buffer, 0);
 
 	GLsizei count = (GLsizei) quadIndices.getIndexCount(getCount());
 	GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());

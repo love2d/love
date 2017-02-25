@@ -26,6 +26,7 @@
 #include "common/Exception.h"
 
 #include "graphics/Graphics.h"
+#include "graphics/Buffer.h"
 
 // C++
 #include <algorithm>
@@ -629,6 +630,54 @@ void OpenGL::useVertexAttribArrays(uint32 arraybits, uint32 instancedbits)
 	// FIXME: Is there a better place to do this?
 	if ((diff & ATTRIBFLAG_COLOR) && !(arraybits & ATTRIBFLAG_COLOR))
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void OpenGL::setVertexPointers(vertex::CommonFormat format, size_t stride, size_t offset)
+{
+	using namespace vertex;
+
+	switch (format)
+	{
+	case CommonFormat::NONE:
+		break;
+	case CommonFormat::XYf:
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
+		break;
+	case CommonFormat::RGBAub:
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset));
+		break;
+	case CommonFormat::XYf_STf:
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, x)));
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, s)));
+		break;
+	case CommonFormat::XYf_STf_RGBAub:
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, x)));
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, s)));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, color.r)));
+		break;
+	case CommonFormat::XYf_STus_RGBAub:
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, x)));
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, s)));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, color.r)));
+		break;
+	}
+}
+
+void OpenGL::setVertexPointers(vertex::CommonFormat format, size_t offset)
+{
+	setVertexPointers(format, getFormatStride(format), offset);
+}
+
+void OpenGL::setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t offset)
+{
+	bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
+	setVertexPointers(format, offset);
+}
+
+void OpenGL::setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t stride, size_t offset)
+{
+	bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
+	setVertexPointers(format, stride, offset);
 }
 
 void OpenGL::setViewport(const Rect &v)

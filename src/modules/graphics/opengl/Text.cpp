@@ -69,14 +69,8 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 
 	gl.prepareDraw();
 
-	size_t stride = sizeof(Font::GlyphVertex);
-
-	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
-	glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offsetof(Font::GlyphVertex, x)));
-	glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(offsetof(Font::GlyphVertex, s)));
-	glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offsetof(Font::GlyphVertex, color.r)));
-
-	gl.useVertexAttribArrays(ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR);
+	gl.setVertexPointers(Font::vertexFormat, vbo, 0);
+	gl.useVertexAttribArrays(vertex::getFormatFlags(Font::vertexFormat));
 
 	const GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());
 	const size_t elemsize = quadIndices.getElementSize();

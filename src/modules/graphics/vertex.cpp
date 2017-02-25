@@ -29,7 +29,6 @@ namespace vertex
 {
 
 static_assert(sizeof(Color) == 4, "sizeof(Color) incorrect!");
-static_assert(sizeof(Vertex) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color), "sizeof(Vertex) incorrect!");
 static_assert(sizeof(XYf_STf) == sizeof(float)*2 + sizeof(float)*2, "sizeof(XYf_STf) incorrect!");
 static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color), "sizeof(XYf_STf_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color), "sizeof(XYf_STus_RGBAub) incorrect!");
@@ -50,6 +49,25 @@ size_t getFormatStride(CommonFormat format)
 		return sizeof(XYf_STf_RGBAub);
 	case CommonFormat::XYf_STus_RGBAub:
 		return sizeof(XYf_STus_RGBAub);
+	}
+}
+
+uint32 getFormatFlags(CommonFormat format)
+{
+	switch (format)
+	{
+	case CommonFormat::NONE:
+		return 0;
+	case CommonFormat::XYf:
+		return ATTRIBFLAG_POS;
+	case CommonFormat::RGBAub:
+		return ATTRIBFLAG_COLOR;
+	case CommonFormat::XYf_STf:
+		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
+	case CommonFormat::XYf_STf_RGBAub:
+	case CommonFormat::XYf_STus_RGBAub:
+		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
+
 	}
 }
 

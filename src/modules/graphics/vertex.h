@@ -122,6 +122,7 @@ struct XYf_STus_RGBAub
 };
 
 size_t getFormatStride(CommonFormat format);
+uint32 getFormatFlags(CommonFormat format);
 size_t getIndexDataSize(IndexDataType type);
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
 

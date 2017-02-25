@@ -44,6 +44,9 @@ namespace love
 {
 namespace graphics
 {
+
+class Buffer;
+
 namespace opengl
 {
 
@@ -208,6 +211,15 @@ public:
 	 * This function *must* be used instead of glEnable/DisableVertexAttribArray.
 	 **/
 	void useVertexAttribArrays(uint32 arraybits, uint32 instancedbits = 0);
+
+	/**
+	 * Calls glVertexAttribPointer appropriately for each attribute used in the
+	 * specified format.
+	 **/
+	void setVertexPointers(vertex::CommonFormat format, size_t offset);
+	void setVertexPointers(vertex::CommonFormat format, size_t stride, size_t offset);
+	void setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t offset);
+	void setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t stride, size_t offset);
 
 	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
