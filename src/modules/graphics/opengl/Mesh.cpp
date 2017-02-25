@@ -134,10 +134,7 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 
 	gl.useVertexAttribArrays(enabledattribs, instancedattribs);
 
-	if (texture.get())
-		gl.bindTextureToUnit(texture, 0, false);
-	else
-		gl.bindTextureToUnit(TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, false);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	Graphics::TempTransform transform(gfx, m);
 

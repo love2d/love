@@ -262,15 +262,11 @@ void main() {
 	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }]],
 
-	MAIN_MULTI_CANVAS = [[
-uniform sampler2D MainTex;
-varying mediump vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;
-
-void effects(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
+	MAIN_CUSTOM = [[
+void effect();
 
 void main() {
-	effects(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
+	effect();
 }]],
 }
 
@@ -279,7 +275,7 @@ local function getLanguageTarget(code)
 	return (code:match("^%s*#pragma language (%w+)")) or "glsl1"
 end
 
-local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, multicanvas)
+local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom)
 	stage = stage:upper()
 	local lines = {
 		GLSL.VERSION[lang][gles],
@@ -291,7 +287,7 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		GLSL.UNIFORMS,
 		GLSL.FUNCTIONS,
 		GLSL[stage].FUNCTIONS,
-		multicanvas and GLSL[stage].MAIN_MULTI_CANVAS or GLSL[stage].MAIN,
+		custom and GLSL[stage].MAIN_CUSTOM or GLSL[stage].MAIN,
 		(lang == "glsl3" or gles) and "#line 1" or "#line 0",
 		code,
 	}
@@ -305,8 +301,8 @@ end
 local function isPixelCode(code)
 	if code:match("vec4%s+effect%s*%(") then
 		return true
-	elseif code:match("void%s+effects%s*%(") then
-		-- function for rendering to multiple canvases simultaneously
+	elseif code:match("void%s+effect%s*%(") then
+		-- custom effect function
 		return true, true
 	else
 		return false
@@ -315,17 +311,17 @@ end
 
 function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	local vertexcode, pixelcode
-	local is_multicanvas = false -- whether pixel code has "effects" function instead of "effect"
+	local is_custompixel = false -- whether pixel code has "effects" function instead of "effect"
 
 	if arg1 then
 		if isVertexCode(arg1) then
 			vertexcode = arg1 -- first arg contains vertex shader code
 		end
 
-		local ispixel, isMultiCanvas = isPixelCode(arg1)
+		local ispixel, isCustomPixel = isPixelCode(arg1)
 		if ispixel then
 			pixelcode = arg1 -- first arg contains pixel shader code
-			is_multicanvas = isMultiCanvas
+			is_custompixel = isCustomPixel
 		end
 	end
 	
@@ -334,10 +330,10 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 			vertexcode = arg2 -- second arg contains vertex shader code
 		end
 
-		local ispixel, isMultiCanvas = isPixelCode(arg2)
+		local ispixel, isCustomPixel = isPixelCode(arg2)
 		if ispixel then
 			pixelcode = arg2 -- second arg contains pixel shader code
-			is_multicanvas = isMultiCanvas
+			is_custompixel = isCustomPixel
 		end
 	end
 
@@ -368,7 +364,7 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect)
 	end
 	if pixelcode then
-		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_multicanvas)
+		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel)
 	end
 
 	return vertexcode, pixelcode

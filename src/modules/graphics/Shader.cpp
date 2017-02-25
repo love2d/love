@@ -174,12 +174,24 @@ void Shader::attachDefault()
 	current = nullptr;
 }
 
+TextureType Shader::getMainTextureType() const
+{
+	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
+	return info != nullptr ? info->textureType : TEXTURE_MAX_ENUM;
+}
+
 void Shader::checkMainTextureType(TextureType textype) const
 {
 	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
 
 	if (info != nullptr && info->textureType != TEXTURE_MAX_ENUM && info->textureType != textype)
-		throw love::Exception("Texture's type must match the type of the shader's main texture.");
+	{
+		const char *textypestr = "unknown";
+		const char *shadertextypestr = "unknown";
+		Texture::getConstant(textype, textypestr);
+		Texture::getConstant(info->textureType, shadertextypestr);
+		throw love::Exception("Texture's type (%s) must match the type of the shader's main texture type (%s).", textypestr, shadertextypestr);
+	}
 }
 
 bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err)

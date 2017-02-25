@@ -867,8 +867,25 @@ void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureun
 
 void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev)
 {
-	GLuint handle = texture != nullptr ? (GLuint) texture->getHandle() : getDefaultTexture(TEXTURE_2D);
-	TextureType textype = texture != nullptr ? texture->getTextureType() : TEXTURE_2D;
+	TextureType textype = TEXTURE_2D;
+	GLuint handle = 0;
+
+	if (texture != nullptr)
+	{
+		textype = texture->getTextureType();
+		handle = (GLuint) texture->getHandle();
+	}
+	else
+	{
+		if (textureunit == 0 && Shader::current != nullptr)
+		{
+			TextureType shadertex = Shader::current->getMainTextureType();
+			if (shadertex != TEXTURE_MAX_ENUM)
+				textype = shadertex;
+		}
+
+		handle = getDefaultTexture(textype);
+	}
 
 	bindTextureToUnit(textype, handle, textureunit, restoreprev);
 }

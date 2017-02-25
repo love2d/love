@@ -176,6 +176,7 @@ public:
 	 **/
 	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
 
+	TextureType getMainTextureType() const;
 	void checkMainTextureType(TextureType textype) const;
 
 	virtual ptrdiff_t getHandle() const = 0;
