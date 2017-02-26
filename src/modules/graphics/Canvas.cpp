@@ -40,12 +40,12 @@ Canvas::~Canvas()
 	canvasCount--;
 }
 
-void Canvas::drawv(love::graphics::Graphics *gfx, const love::Matrix4 &t, const Vertex *v)
+void Canvas::draw(Graphics *gfx, Quad *q, const Matrix4 &t)
 {
 	if (gfx->isCanvasActive(this))
 		throw love::Exception("Cannot render a Canvas to itself!");
 
-	Texture::drawv(gfx, t, v);
+	Texture::draw(gfx, q, t);
 }
 
 } // graphics

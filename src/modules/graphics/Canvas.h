@@ -57,11 +57,9 @@ public:
 	virtual int getRequestedMSAA() const = 0;
 	virtual ptrdiff_t getMSAAHandle() const = 0;
 
+	void draw(Graphics *gfx, Quad *q, const Matrix4 &t) override;
+
 	static int canvasCount;
-
-private:
-
-	void drawv(Graphics *gfx, const Matrix4 &t, const Vertex *v) override;
 	
 }; // Canvas
 

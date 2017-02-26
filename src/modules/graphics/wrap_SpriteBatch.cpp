@@ -23,7 +23,6 @@
 #include "Image.h"
 #include "Canvas.h"
 #include "wrap_Texture.h"
-#include "math/wrap_Transform.h"
 
 namespace love
 {
@@ -47,37 +46,44 @@ static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int sta
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
 		return luax_typerror(L, startidx, "Quad");
 
-	if (luax_istype(L, startidx, math::Transform::type))
+	luax_checkstandardtransform(L, startidx, [&](const Matrix4 &m)
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, startidx);
-		luax_catchexcept(L, [&]() {
+		luax_catchexcept(L, [&]()
+		{
 			if (quad)
-				index = t->addq(quad, tf->getMatrix(), index);
-			else
-				index = t->add(tf->getMatrix(), index);
-		});
-	}
-	else
-	{
-		float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
-		float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
-		float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
-		float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
-		float sy = (float) luaL_optnumber(L, startidx + 4, sx);
-		float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
-		float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
-		float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
-		float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
-
-		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
-
-		luax_catchexcept(L, [&]() {
-			if (quad)
-				index = t->addq(quad, m, index);
+				index = t->add(quad, m, index);
 			else
 				index = t->add(m, index);
 		});
+	});
+
+	return index;
+}
+
+static int w_SpriteBatch_addLayer_or_setLayer(lua_State *L, SpriteBatch *t, int startidx, int index)
+{
+	Quad *quad = nullptr;
+	int layer = (int) luaL_checknumber(L, startidx) - 1;
+	startidx++;
+
+	if (luax_istype(L, startidx, Quad::type))
+	{
+		quad = luax_totype<Quad>(L, startidx);
+		startidx++;
 	}
+	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
+		return luax_typerror(L, startidx, "Quad");
+
+	luax_checkstandardtransform(L, startidx, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]()
+		{
+			if (quad)
+				index = t->addLayer(layer, quad, m, index);
+			else
+				index = t->addLayer(layer, m, index);
+		});
+	});
 
 	return index;
 }
@@ -99,6 +105,26 @@ int w_SpriteBatch_set(lua_State *L)
 
 	w_SpriteBatch_add_or_set(L, t, 3, index);
 
+	return 0;
+}
+
+int w_SpriteBatch_addLayer(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+
+	int index = w_SpriteBatch_addLayer_or_setLayer(L, t, 2, -1);
+	lua_pushinteger(L, index + 1);
+
+	return 1;
+}
+
+int w_SpriteBatch_setLayer(lua_State *L)
+{
+	SpriteBatch *t = luax_checkspritebatch(L, 1);
+	int index = (int) luaL_checknumber(L, 2) - 1;
+
+	w_SpriteBatch_addLayer_or_setLayer(L, t, 3, index);
+	
 	return 0;
 }
 
@@ -178,16 +204,17 @@ int w_SpriteBatch_setColor(lua_State *L)
 int w_SpriteBatch_getColor(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	const Color *color = t->getColor();
+	bool active = false;
+	const Color &color = t->getColor(active);
 
 	// getColor returns null if no color is set.
-	if (!color)
+	if (!active)
 		return 0;
 
-	lua_pushnumber(L, (lua_Number) color->r / 255.0);
-	lua_pushnumber(L, (lua_Number) color->g / 255.0);
-	lua_pushnumber(L, (lua_Number) color->b / 255.0);
-	lua_pushnumber(L, (lua_Number) color->a / 255.0);
+	lua_pushnumber(L, (lua_Number) color.r / 255.0);
+	lua_pushnumber(L, (lua_Number) color.g / 255.0);
+	lua_pushnumber(L, (lua_Number) color.b / 255.0);
+	lua_pushnumber(L, (lua_Number) color.a / 255.0);
 
 	return 4;
 }
@@ -250,6 +277,8 @@ static const luaL_Reg w_SpriteBatch_functions[] =
 {
 	{ "add", w_SpriteBatch_add },
 	{ "set", w_SpriteBatch_set },
+	{ "addLayer", w_SpriteBatch_addLayer },
+	{ "setLayer", w_SpriteBatch_setLayer },
 	{ "clear", w_SpriteBatch_clear },
 	{ "flush", w_SpriteBatch_flush },
 	{ "setTexture", w_SpriteBatch_setTexture },

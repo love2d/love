@@ -60,8 +60,21 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushStreamDraws();
 
-	if (Shader::current && texture.get())
-		Shader::current->checkMainTextureType(texture->getTextureType());
+	Shader *prevdefaultshader = nullptr;
+
+	if (texture.get())
+	{
+		TextureType textype = texture->getTextureType();
+
+		if (textype == TEXTURE_2D_ARRAY && Shader::isDefaultActive())
+		{
+			prevdefaultshader = Shader::current;
+			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
+		}
+
+		if (Shader::current)
+			Shader::current->checkMainTextureType(texture->getTextureType());
+	}
 
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
 
@@ -72,13 +85,19 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
-	CommonFormat format = CommonFormat::XYf_STf_RGBAub;
-	if (color == nullptr)
-		format = CommonFormat::XYf_STf;
+	CommonFormat format = vertex_format;
+
+	if (!color_active)
+	{
+		if (format == CommonFormat::XYf_STPf_RGBAub)
+			format = CommonFormat::XYf_STPf;
+		else
+			format = CommonFormat::XYf_STf;
+	}
 
 	uint32 enabledattribs = getFormatFlags(format);
 
-	gl.setVertexPointers(format, array_buf, getFormatStride(CommonFormat::XYf_STf_RGBAub), 0);
+	gl.setVertexPointers(format, array_buf, format_stride, 0);
 
 	for (const auto &it : attached_attributes)
 	{
@@ -116,6 +135,9 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), gltype, indices);
 	}
+
+	if (prevdefaultshader != nullptr)
+		prevdefaultshader->attach();
 }
 
 } // opengl

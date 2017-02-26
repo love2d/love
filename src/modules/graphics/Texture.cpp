@@ -61,7 +61,6 @@ Texture::Texture(TextureType texType)
 	, filter(defaultFilter)
 	, wrap()
 	, mipmapSharpness(defaultMipmapSharpness)
-	, vertices()
 {
 }
 
@@ -69,32 +68,10 @@ Texture::~Texture()
 {
 }
 
-void Texture::initVertices()
+void Texture::initQuad()
 {
-	for (int i = 0; i < 4; i++)
-		vertices[i].color = Color(255, 255, 255, 255);
-
-	// Vertices are ordered for use with triangle strips:
-	// 0---2
-	// | / |
-	// 1---3
-	vertices[0].x = 0.0f;
-	vertices[0].y = 0.0f;
-	vertices[1].x = 0.0f;
-	vertices[1].y = (float) height;
-	vertices[2].x = (float) width;
-	vertices[2].y = 0.0f;
-	vertices[3].x = (float) width;
-	vertices[3].y = (float) height;
-
-	vertices[0].s = 0.0f;
-	vertices[0].t = 0.0f;
-	vertices[1].s = 0.0f;
-	vertices[1].t = 1.0f;
-	vertices[2].s = 1.0f;
-	vertices[2].t = 0.0f;
-	vertices[3].s = 1.0f;
-	vertices[3].t = 1.0f;
+	Quad::Viewport v = {0, 0, (double) width, (double) height};
+	quad.set(new Quad(v, width, height), Acquire::NORETAIN);
 }
 
 TextureType Texture::getTextureType() const
@@ -109,37 +86,81 @@ PixelFormat Texture::getPixelFormat() const
 
 void Texture::draw(Graphics *gfx, const Matrix4 &m)
 {
-	drawv(gfx, m, vertices);
+	draw(gfx, quad, m);
 }
 
-void Texture::drawq(Graphics *gfx, Quad *quad, const Matrix4 &m)
+void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 {
-	drawv(gfx, m, quad->getVertices());
-}
+	using namespace vertex;
 
-void Texture::drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v)
-{
-	if (Shader::current)
-		Shader::current->checkMainTextureType(texType);
-
-	Matrix4 t(gfx->getTransform(), localTransform);
-
-	Vertex verts[4] = {v[0], v[1], v[2], v[3]};
-	t.transform(verts, v, 4);
+	if (texType == TEXTURE_2D_ARRAY)
+	{
+		drawLayer(gfx, q->getLayer(), q, localTransform);
+		return;
+	}
 
 	Color c = toColor(gfx->getColor());
 
-	for (int i = 0; i < 4; i++)
-		verts[i].color = c;
-
 	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::CommonFormat::XYf_STf_RGBAub;
-	req.indexMode = vertex::TriangleIndexMode::QUADS;
+	req.formats[0] = CommonFormat::XYf_STf_RGBAub;
+	req.indexMode = TriangleIndexMode::QUADS;
 	req.vertexCount = 4;
 	req.texture = this;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
-	memcpy(data.stream[0], verts, sizeof(Vertex) * 4);
+
+	XYf_STf_RGBAub *verts = (XYf_STf_RGBAub *) data.stream[0];
+	const XYf_STf *quadverts = q->getVertices();
+
+	Matrix4 t(gfx->getTransform(), localTransform);
+	t.transform(verts, quadverts, 4);
+
+	for (int i = 0; i < 4; i++)
+	{
+		verts[i].s = quadverts[i].s;
+		verts[i].t = quadverts[i].t;
+		verts[i].color = c;
+	}
+}
+
+void Texture::drawLayer(Graphics *gfx, int layer, const Matrix4 &m)
+{
+	drawLayer(gfx, layer, quad, m);
+}
+
+void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
+{
+	using namespace vertex;
+
+	if (texType != TEXTURE_2D_ARRAY)
+		throw love::Exception("drawLayer can only be used with Array Textures!");
+
+	if (layer < 0 || layer >= layers)
+		throw love::Exception("Invalid layer: %d (Texture has %d layers)", layer + 1, layers);
+
+	Color c = toColor(gfx->getColor());
+
+	Graphics::StreamDrawRequest req;
+	req.formats[0] = CommonFormat::XYf_STPf_RGBAub;
+	req.indexMode = TriangleIndexMode::QUADS;
+	req.vertexCount = 4;
+	req.texture = this;
+
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+
+	XYf_STPf_RGBAub *verts = (XYf_STPf_RGBAub *) data.stream[0];
+	const XYf_STf *quadverts = q->getVertices();
+
+	Matrix4 t(gfx->getTransform(), m);
+	t.transform(verts, quadverts, 4);
+
+	for (int i = 0; i < 4; i++)
+	{
+		verts[i].s = quadverts[i].s;
+		verts[i].t = quadverts[i].t;
+		verts[i].p = (float) layer;
+		verts[i].color = c;
+	}
 }
 
 int Texture::getWidth() const
@@ -197,9 +218,9 @@ float Texture::getMipmapSharpness() const
 	return mipmapSharpness;
 }
 
-const Vertex *Texture::getVertices() const
+Quad *Texture::getQuad() const
 {
-	return vertices;
+	return quad;
 }
 
 bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)

@@ -268,25 +268,19 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	restoreState(states.back());
 
 	int gammacorrect = isGammaCorrect() ? 1 : 0;
+	Shader::Language target = getShaderLanguageTarget();
 
 	// We always need a default shader.
-	if (!Shader::defaultShader)
+	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
-		Shader::Language target = getShaderLanguageTarget();
-		Shader::defaultShader = newShader(defaultShaderCode[target][gammacorrect]);
-	}
-
-	// and a default video shader.
-	if (!Shader::defaultVideoShader)
-	{
-		Shader::Language target = getShaderLanguageTarget();
-		Shader::defaultVideoShader = newShader(defaultVideoShaderCode[target][gammacorrect]);
+		if (!Shader::standardShaders[i])
+			Shader::standardShaders[i] = newShader(defaultShaderCode[i][target][gammacorrect]);
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
 	// returned by getShader(), so we don't do setShader(defaultShader).
 	if (!Shader::current)
-		Shader::defaultShader->attach();
+		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
 
 	return true;
 }
@@ -343,8 +337,21 @@ void Graphics::flushStreamDraws()
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
 
-	if (Shader::current && sbstate.texture.get())
-		Shader::current->checkMainTextureType(sbstate.texture->getTextureType());
+	love::graphics::Shader *prevdefaultshader = nullptr;
+
+	if (sbstate.texture.get())
+	{
+		TextureType textype = sbstate.texture->getTextureType();
+
+		if (textype == TEXTURE_2D_ARRAY && Shader::isDefaultActive())
+		{
+			prevdefaultshader = Shader::current;
+			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
+		}
+
+		if (Shader::current)
+			Shader::current->checkMainTextureType(textype);
+	}
 
 	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
 
@@ -425,6 +432,9 @@ void Graphics::flushStreamDraws()
 
 	streamBufferState.vertexCount = 0;
 	streamBufferState.indexCount = 0;
+
+	if (prevdefaultshader != nullptr)
+		prevdefaultshader->attach();
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)

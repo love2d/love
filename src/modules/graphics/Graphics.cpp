@@ -99,8 +99,7 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
-Shader::ShaderSource Graphics::defaultShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
-Shader::ShaderSource Graphics::defaultVideoShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
+Shader::ShaderSource Graphics::defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
 
 Graphics::Graphics()
 	: width(0)
@@ -130,16 +129,13 @@ Graphics::~Graphics()
 
 	defaultFont.set(nullptr);
 
-	if (Shader::defaultShader)
+	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
-		Shader::defaultShader->release();
-		Shader::defaultShader = nullptr;
-	}
-
-	if (Shader::defaultVideoShader)
-	{
-		Shader::defaultVideoShader->release();
-		Shader::defaultVideoShader = nullptr;
+		if (Shader::standardShaders[i])
+		{
+			Shader::standardShaders[i]->release();
+			Shader::standardShaders[i] = nullptr;
+		}
 	}
 
 	delete streamBufferState.vb[0];
@@ -390,7 +386,7 @@ void Graphics::setShader()
 {
 	flushStreamDraws();
 
-	Shader::attachDefault();
+	Shader::attachDefault(Shader::STANDARD_DEFAULT);
 
 	states.back().shader.set(nullptr);
 }
@@ -692,6 +688,31 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
  * Drawing
  **/
 
+void Graphics::draw(Drawable *drawable, const Matrix4 &m)
+{
+	drawable->draw(this, m);
+}
+
+void Graphics::draw(Texture *texture, Quad *quad, const Matrix4 &m)
+{
+	texture->draw(this, quad, m);
+}
+
+void Graphics::drawLayer(Texture *texture, int layer, const Matrix4 &m)
+{
+	texture->drawLayer(this, layer, m);
+}
+
+void Graphics::drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 &m)
+{
+	texture->drawLayer(this, layer, quad, m);
+}
+
+void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
+{
+	mesh->drawInstanced(this, m, instancecount);
+}
+
 void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
 {
 	checkSetDefaultFont();
@@ -710,21 +731,6 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, F
 
 	if (state.font.get() != nullptr)
 		state.font->printf(this, str, wrap, align, m, state.color);
-}
-
-void Graphics::draw(Drawable *drawable, const Matrix4 &m)
-{
-	drawable->draw(this, m);
-}
-
-void Graphics::draw(Texture *texture, Quad *quad, const Matrix4 &m)
-{
-	texture->drawq(this, quad, m);
-}
-
-void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
-{
-	mesh->drawInstanced(this, m, instancecount);
 }
 
 /**
@@ -1165,7 +1171,7 @@ Vector Graphics::inverseTransformPoint(Vector point)
 
 const Shader::ShaderSource &Graphics::getCurrentDefaultShaderCode() const
 {
-	return defaultShaderCode[getShaderLanguageTarget()][isGammaCorrect() ? 1 : 0];
+	return defaultShaderCode[Shader::STANDARD_DEFAULT][getShaderLanguageTarget()][isGammaCorrect() ? 1 : 0];
 }
 
 /**

@@ -92,8 +92,8 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	if (getMipmapCount() > 1)
 		filter.mipmap = defaultMipmapFilter;
 
+	initQuad();
 	loadVolatile();
-	initVertices();
 }
 
 void Image::generateMipmaps()

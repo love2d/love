@@ -44,7 +44,8 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	: texture(texture)
 	, size(size)
 	, next(0)
-	, color(0)
+	, color(255, 255, 255, 255)
+	, color_active(false)
 	, array_buf(nullptr)
 	, quad_indices(gfx, size)
 	, range_start(-1)
@@ -53,26 +54,59 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	if (size <= 0)
 		throw love::Exception("Invalid SpriteBatch size.");
 
-	size_t vertex_size = sizeof(Vertex) * 4 * size;
+	if (texture == nullptr)
+		throw love::Exception("A texture must be used when creating a SpriteBatch.");
 
+	if (texture->getTextureType() == TEXTURE_2D_ARRAY)
+		vertex_format = vertex::CommonFormat::XYf_STPf_RGBAub;
+	else
+		vertex_format = vertex::CommonFormat::XYf_STf_RGBAub;
+
+	format_stride = vertex::getFormatStride(vertex_format);
+
+	size_t vertex_size = format_stride * 4 * size;
 	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
 }
 
 SpriteBatch::~SpriteBatch()
 {
-	delete color;
 	delete array_buf;
 }
 
 int SpriteBatch::add(const Matrix4 &m, int index /*= -1*/)
 {
+	return add(texture->getQuad(), m, index);
+}
+
+int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
+{
+	using namespace vertex;
+
+	if (vertex_format == CommonFormat::XYf_STPf_RGBAub)
+		return addLayer(quad->getLayer(), quad, m, index);
+
 	if (index < -1 || index >= size)
 		throw love::Exception("Invalid sprite index: %d", index + 1);
 
 	if (index == -1 && next >= size)
 		setBufferSize(size * 2);
 
-	addv(texture->getVertices(), m, (index == -1) ? next : index);
+	const XYf_STf *quadverts = quad->getVertices();
+
+	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
+	size_t offset = (index == -1 ? next : index) * format_stride * 4;
+	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
+
+	m.transform(verts, quadverts, 4);
+
+	for (int i = 0; i < 4; i++)
+	{
+		verts[i].s = quadverts[i].s;
+		verts[i].t = quadverts[i].t;
+		verts[i].color = color;
+	}
+
+	array_buf->setMappedRangeModified(offset, format_stride * 4);
 
 	// Increment counter.
 	if (index == -1)
@@ -81,15 +115,44 @@ int SpriteBatch::add(const Matrix4 &m, int index /*= -1*/)
 	return index;
 }
 
-int SpriteBatch::addq(Quad *quad, const Matrix4 &m, int index /*= -1*/)
+int SpriteBatch::addLayer(int layer, const Matrix4 &m, int index)
 {
+	return addLayer(layer, texture->getQuad(), m, index);
+}
+
+int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
+{
+	using namespace vertex;
+
+	if (vertex_format != CommonFormat::XYf_STPf_RGBAub)
+		throw love::Exception("addLayer can only be called on a SpriteBatch that uses an Array Texture!");
+
 	if (index < -1 || index >= size)
 		throw love::Exception("Invalid sprite index: %d", index + 1);
+
+	if (layer < 0 || layer >= texture->getLayerCount())
+		throw love::Exception("Invalid layer: %d (Texture has %d layers)", layer + 1, texture->getLayerCount());
 
 	if (index == -1 && next >= size)
 		setBufferSize(size * 2);
 
-	addv(quad->getVertices(), m, (index == -1) ? next : index);
+	const XYf_STf *quadverts = quad->getVertices();
+
+	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
+	size_t offset = (index == -1 ? next : index) * format_stride * 4;
+	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
+
+	m.transform(verts, quadverts, 4);
+
+	for (int i = 0; i < 4; i++)
+	{
+		verts[i].s = quadverts[i].s;
+		verts[i].t = quadverts[i].t;
+		verts[i].p = (float) layer;
+		verts[i].color = color;
+	}
+
+	array_buf->setMappedRangeModified(offset, format_stride * 4);
 
 	// Increment counter.
 	if (index == -1)
@@ -111,6 +174,9 @@ void SpriteBatch::flush()
 
 void SpriteBatch::setTexture(Texture *newtexture)
 {
+	if (texture->getTextureType() != newtexture->getTextureType())
+		throw love::Exception("Texture must have the same texture type as the SpriteBatch's previous texture.");
+
 	texture.set(newtexture);
 }
 
@@ -121,20 +187,19 @@ Texture *SpriteBatch::getTexture() const
 
 void SpriteBatch::setColor(const Color &color)
 {
-	if (!this->color)
-		this->color = new Color(color);
-	else
-		*(this->color) = color;
+	color_active = true;
+	this->color = color;
 }
 
 void SpriteBatch::setColor()
 {
-	delete color;
-	color = nullptr;
+	color_active = false;
+	color = Color(255, 255, 255, 255);
 }
 
-const Color *SpriteBatch::getColor() const
+const Color &SpriteBatch::getColor(bool &active) const
 {
+	active = color_active;
 	return color;
 }
 
@@ -151,7 +216,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	size_t vertex_size = sizeof(Vertex) * 4 * newsize;
+	size_t vertex_size = format_stride * 4 * newsize;
 	love::graphics::Buffer *new_array_buf = nullptr;
 
 	int new_next = std::min(next, newsize);
@@ -162,7 +227,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getType(), array_buf->getUsage(), array_buf->getMapFlags());
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
-		size_t copy_size = sizeof(Vertex) * 4 * new_next;
+		size_t copy_size = format_stride * 4 * new_next;
 		array_buf->copyTo(0, copy_size, new_array_buf, 0);
 
 		quad_indices = QuadIndices(gfx, newsize);
@@ -231,27 +296,6 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 	start = range_start;
 	count = range_count;
 	return true;
-}
-
-void SpriteBatch::addv(const Vertex *v, const Matrix4 &m, int index)
-{
-	// Needed for colors.
-	Vertex sprite[4] = {v[0], v[1], v[2], v[3]};
-	const size_t sprite_size = 4 * sizeof(Vertex); // bytecount
-	
-	m.transform(sprite, sprite, 4);
-	
-	if (color != nullptr)
-	{
-		for (int i = 0; i < 4; i++)
-			sprite[i].color = *color;
-	}
-	
-	// Always keep the VBO mapped when adding data for now (it'll be unmapped
-	// on draw.)
-	array_buf->map();
-	
-	array_buf->fill(index * sprite_size, sprite_size, sprite);
 }
 
 } // graphics

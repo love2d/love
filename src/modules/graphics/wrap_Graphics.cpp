@@ -828,12 +828,26 @@ int w_newQuad(lua_State *L)
 
 	double sw = 0.0f;
 	double sh = 0.0f;
+	int layer = 0;
 
 	if (luax_istype(L, 5, Texture::type))
 	{
 		Texture *texture = luax_checktexture(L, 5);
 		sw = texture->getWidth();
 		sh = texture->getHeight();
+	}
+	else if (luax_istype(L, 6, Texture::type))
+	{
+		layer = (int) luaL_checknumber(L, 5) - 1;
+		Texture *texture = luax_checktexture(L, 6);
+		sw = texture->getWidth();
+		sh = texture->getHeight();
+	}
+	else if (!lua_isnoneornil(L, 7))
+	{
+		layer = (int) luaL_checknumber(L, 5) - 1;
+		sw = luaL_checknumber(L, 6);
+		sh = luaL_checknumber(L, 7);
 	}
 	else
 	{
@@ -842,6 +856,8 @@ int w_newQuad(lua_State *L)
 	}
 
 	Quad *quad = instance()->newQuad(v, sw, sh);
+	quad->setLayer(layer);
+
 	luax_pushtype(L, quad);
 	quad->release();
 	return 1;
@@ -1761,19 +1777,25 @@ int w_setDefaultShaderCode(lua_State *L)
 			lua_getfield(L, -1, "vertex");
 			lua_getfield(L, -2, "pixel");
 			lua_getfield(L, -3, "videopixel");
+			lua_getfield(L, -4, "arraypixel");
 
 			Shader::ShaderSource code;
-			code.vertex = luax_checkstring(L, -3);
-			code.pixel = luax_checkstring(L, -2);
+			code.vertex = luax_checkstring(L, -4);
+			code.pixel = luax_checkstring(L, -3);
 
 			Shader::ShaderSource videocode;
-			videocode.vertex = luax_checkstring(L, -3);
-			videocode.pixel = luax_checkstring(L, -1);
+			videocode.vertex = luax_checkstring(L, -4);
+			videocode.pixel = luax_checkstring(L, -2);
 
-			lua_pop(L, 4);
+			Shader::ShaderSource arraycode;
+			arraycode.vertex = luax_checkstring(L, -4);
+			arraycode.pixel = luax_checkstring(L, -1);
 
-			Graphics::defaultShaderCode[lang][i] = code;
-			Graphics::defaultVideoShaderCode[lang][i] = videocode;
+			lua_pop(L, 5);
+
+			Graphics::defaultShaderCode[Shader::STANDARD_DEFAULT][lang][i] = code;
+			Graphics::defaultShaderCode[Shader::STANDARD_VIDEO][lang][i] = videocode;
+			Graphics::defaultShaderCode[Shader::STANDARD_ARRAY][lang][i] = arraycode;
 		}
 	}
 
@@ -1927,37 +1949,48 @@ int w_draw(lua_State *L)
 		startidx = 2;
 	}
 
-	if (luax_istype(L, startidx, math::Transform::type))
+	luax_checkstandardtransform(L, startidx, [&](const Matrix4 &m)
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, startidx);
-		luax_catchexcept(L, [&]() {
-			if (texture && quad)
-				instance()->draw(texture, quad, tf->getMatrix());
-			else
-				instance()->draw(drawable, tf->getMatrix());
-		});
-	}
-	else
-	{
-		float x  = (float) luaL_optnumber(L, startidx + 0, 0.0);
-		float y  = (float) luaL_optnumber(L, startidx + 1, 0.0);
-		float a  = (float) luaL_optnumber(L, startidx + 2, 0.0);
-		float sx = (float) luaL_optnumber(L, startidx + 3, 1.0);
-		float sy = (float) luaL_optnumber(L, startidx + 4, sx);
-		float ox = (float) luaL_optnumber(L, startidx + 5, 0.0);
-		float oy = (float) luaL_optnumber(L, startidx + 6, 0.0);
-		float kx = (float) luaL_optnumber(L, startidx + 7, 0.0);
-		float ky = (float) luaL_optnumber(L, startidx + 8, 0.0);
-
-		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
-
-		luax_catchexcept(L, [&]() {
+		luax_catchexcept(L, [&]()
+		{
 			if (texture && quad)
 				instance()->draw(texture, quad, m);
-			else if (drawable)
+			else
 				instance()->draw(drawable, m);
 		});
+	});
+
+	return 0;
+}
+
+int w_drawLayer(lua_State *L)
+{
+	Texture *texture = luax_checktexture(L, 1);
+	Quad *quad = nullptr;
+	int layer = (int) luaL_checknumber(L, 2) - 1;
+	int startidx = 3;
+
+	if (luax_istype(L, startidx, Quad::type))
+	{
+		texture = luax_checktexture(L, 1);
+		quad = luax_totype<Quad>(L, startidx);
+		startidx++;
 	}
+	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
+	{
+		return luax_typerror(L, startidx, "Quad");
+	}
+
+	luax_checkstandardtransform(L, startidx, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]()
+		{
+			if (quad)
+				instance()->drawLayer(texture, layer, quad, m);
+			else
+				instance()->drawLayer(texture, layer, m);
+		});
+	});
 
 	return 0;
 }
@@ -1967,27 +2000,10 @@ int w_drawInstanced(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 	int instancecount = (int) luaL_checkinteger(L, 2);
 
-	if (luax_istype(L, 3, math::Transform::type))
+	luax_checkstandardtransform(L, 3, [&](const Matrix4 &m)
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, 3);
-		luax_catchexcept(L, [&]() { instance()->drawInstanced(t, tf->getMatrix(), instancecount); });
-	}
-	else
-	{
-		float x  = (float) luaL_optnumber(L, 3,  0.0);
-		float y  = (float) luaL_optnumber(L, 4,  0.0);
-		float a  = (float) luaL_optnumber(L, 5,  0.0);
-		float sx = (float) luaL_optnumber(L, 6,  1.0);
-		float sy = (float) luaL_optnumber(L, 7,  sx);
-		float ox = (float) luaL_optnumber(L, 8,  0.0);
-		float oy = (float) luaL_optnumber(L, 9,  0.0);
-		float kx = (float) luaL_optnumber(L, 10, 0.0);
-		float ky = (float) luaL_optnumber(L, 11, 0.0);
-
-		Matrix4 m(x, y, a, sx, sy, ox, oy, kx, ky);
-
 		luax_catchexcept(L, [&]() { instance()->drawInstanced(t, m, instancecount); });
-	}
+	});
 
 	return 0;
 }
@@ -1997,27 +2013,11 @@ int w_print(lua_State *L)
 	std::vector<Font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
-	if (luax_istype(L, 2, math::Transform::type))
+	luax_checkstandardtransform(L, 2, [&](const Matrix4 &m)
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, 2);
-		luax_catchexcept(L, [&](){ instance()->print(str, tf->getMatrix()); });
-	}
-	else
-	{
-		float x = (float)luaL_optnumber(L, 2, 0.0);
-		float y = (float)luaL_optnumber(L, 3, 0.0);
-		float angle = (float)luaL_optnumber(L, 4, 0.0f);
-		float sx = (float)luaL_optnumber(L, 5, 1.0f);
-		float sy = (float)luaL_optnumber(L, 6, sx);
-		float ox = (float)luaL_optnumber(L, 7, 0.0f);
-		float oy = (float)luaL_optnumber(L, 8, 0.0f);
-		float kx = (float)luaL_optnumber(L, 9, 0.0f);
-		float ky = (float)luaL_optnumber(L, 10, 0.0f);
-
-		Matrix4 m(x, y, angle, sx, sy, ox, oy, kx, ky);
-
 		luax_catchexcept(L, [&](){ instance()->print(str, m); });
-	}
+	});
+
 	return 0;
 }
 
@@ -2519,6 +2519,7 @@ static const luaL_Reg functions[] =
 	{ "captureScreenshot", w_captureScreenshot },
 
 	{ "draw", w_draw },
+	{ "drawLayer", w_drawLayer },
 	{ "drawInstanced", w_drawInstanced },
 
 	{ "print", w_print },

@@ -74,11 +74,28 @@ int w_Quad_getTextureDimensions(lua_State *L)
 	return 2;
 }
 
+int w_Quad_setLayer(lua_State *L)
+{
+	Quad *quad = luax_checkquad(L, 1);
+	int layer = (int) luaL_checknumber(L, 2) - 1;
+	quad->setLayer(layer);
+	return 0;
+}
+
+int w_Quad_getLayer(lua_State *L)
+{
+	Quad *quad = luax_checkquad(L, 1);
+	lua_pushnumber(L, quad->getLayer() + 1);
+	return 1;
+}
+
 static const luaL_Reg w_Quad_functions[] =
 {
 	{ "setViewport", w_Quad_setViewport },
 	{ "getViewport", w_Quad_getViewport },
 	{ "getTextureDimensions", w_Quad_getTextureDimensions },
+	{ "setLayer", w_Quad_setLayer },
+	{ "getLayer", w_Quad_getLayer },
 	{ 0, 0 }
 };
 

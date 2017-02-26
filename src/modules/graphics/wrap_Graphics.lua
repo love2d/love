@@ -413,6 +413,11 @@ vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {
 	return VideoTexel(texcoord) * vcolor;
 }]],
+	arraypixel = [[
+uniform ArrayImage MainTex;
+void effect() {
+	love_PixelColor = Texel(MainTex, VaryingTexCoord.xyz) * VaryingColor;
+}]],
 }
 
 local defaults = {}
@@ -432,6 +437,7 @@ for lang, info in pairs(langs) do
 			vertex = createShaderStageCode("VERTEX", defaultcode.vertex, info.target, info.gles, false, gammacorrect),
 			pixel = createShaderStageCode("PIXEL", defaultcode.pixel, info.target, info.gles, false, gammacorrect, false),
 			videopixel = createShaderStageCode("PIXEL", defaultcode.videopixel, info.target, info.gles, false, gammacorrect, false),
+			arraypixel = createShaderStageCode("PIXEL", defaultcode.arraypixel, info.target, info.gles, false, gammacorrect, true),
 		}
 	end
 end

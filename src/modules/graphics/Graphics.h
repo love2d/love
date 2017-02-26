@@ -585,6 +585,8 @@ public:
 
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
+	void drawLayer(Texture *texture, int layer, const Matrix4 &m);
+	void drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 &m);
 	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
 
 	/**
@@ -782,8 +784,7 @@ public:
 	static bool getConstant(StackType in, const char *&out);
 
 	// Default shader code (a shader is always required internally.)
-	static Shader::ShaderSource defaultShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
-	static Shader::ShaderSource defaultVideoShaderCode[Shader::LANGUAGE_MAX_ENUM][2];
+	static Shader::ShaderSource defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
 
 protected:
 

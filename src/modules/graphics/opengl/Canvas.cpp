@@ -140,7 +140,7 @@ Canvas::Canvas(const Settings &settings)
 
 	this->format = getSizedFormat(settings.format);
 
-	initVertices();
+	initQuad();
 	loadVolatile();
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)

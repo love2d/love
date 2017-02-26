@@ -35,7 +35,7 @@ Quad::Quad(const Quad::Viewport &v, double sw, double sh)
 	: sw(sw)
 	, sh(sh)
 {
-	memset(vertices, 255, sizeof(Vertex) * 4);
+	arrayLayer = 0;
 	refresh(v, sw, sh);
 }
 
@@ -45,7 +45,7 @@ Quad::~Quad()
 
 void Quad::refresh(const Quad::Viewport &v, double sw, double sh)
 {
-	viewport = v;
+	this->viewport = v;
 	this->sw = sw;
 	this->sh = sh;
 
@@ -92,9 +92,19 @@ double Quad::getTextureHeight() const
 	return sh;
 }
 
-const Vertex *Quad::getVertices() const
+const vertex::XYf_STf *Quad::getVertices() const
 {
 	return vertices;
+}
+
+void Quad::setLayer(int layer)
+{
+	arrayLayer = layer;
+}
+
+int Quad::getLayer() const
+{
+	return arrayLayer;
 }
 
 } // graphics

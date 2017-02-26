@@ -109,16 +109,18 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushStreamDraws();
 
-	love::graphics::Shader *shader = Shader::current;
-	bool usingdefaultshader = (shader == Shader::defaultShader);
+	bool usingdefaultshader = Shader::isDefaultActive();
+	Shader *prevdefaultshader = nullptr;
+
+	// If we're using the default shader, substitute the video version.
 	if (usingdefaultshader)
 	{
-		// If we're using the default shader, substitute the video version.
-		Shader::defaultVideoShader->attach();
-		shader = Shader::defaultVideoShader;
+		prevdefaultshader = Shader::current;
+		Shader::standardShaders[Shader::STANDARD_VIDEO]->attach();
 	}
 
-	shader->setVideoTextures(images[0], images[1], images[2]);
+	if (Shader::current != nullptr)
+		Shader::current->setVideoTextures(images[0], images[1], images[2]);
 
 	Graphics::StreamDrawRequest req;
 	req.formats[0] = vertex::CommonFormat::XYf_STf_RGBAub;
@@ -142,8 +144,8 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushStreamDraws();
 
-	if (usingdefaultshader)
-		Shader::defaultShader->attach();
+	if (usingdefaultshader && prevdefaultshader != nullptr)
+		prevdefaultshader->attach();
 }
 
 void Video::update()

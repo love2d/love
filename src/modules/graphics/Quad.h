@@ -53,11 +53,16 @@ public:
 	double getTextureWidth() const;
 	double getTextureHeight() const;
 
-	const Vertex *getVertices() const;
+	const vertex::XYf_STf *getVertices() const;
+
+	void setLayer(int layer);
+	int getLayer() const;
 
 private:
 
-	Vertex vertices[4];
+	vertex::XYf_STf vertices[4];
+
+	int arrayLayer;
 
 	Viewport viewport;
 	double sw;

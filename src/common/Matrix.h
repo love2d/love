@@ -192,8 +192,8 @@ public:
 	 * @param src The source vertices.
 	 * @param size The number of vertices.
 	 **/
-	template <typename V>
-	void transform(V *dst, const V *src, int size) const;
+	template <typename Vdst, typename Vsrc>
+	void transform(Vdst *dst, const Vsrc *src, int size) const;
 
 	/**
 	 * Computes and returns the inverse of the matrix.
@@ -273,8 +273,8 @@ public:
 	/**
 	 * Transforms an array of vertices by this matrix.
 	 **/
-	template <typename V>
-	void transform(V *dst, const V *src, int size) const;
+	template <typename Vdst, typename Vsrc>
+	void transform(Vdst *dst, const Vsrc *src, int size) const;
 
 private:
 
@@ -296,8 +296,8 @@ private:
 // | e2 e6 e10 e14 |
 // | e3 e7 e11 e15 |
 
-template <typename V>
-void Matrix4::transform(V *dst, const V *src, int size) const
+template <typename Vdst, typename Vsrc>
+void Matrix4::transform(Vdst *dst, const Vsrc *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{
@@ -316,8 +316,8 @@ void Matrix4::transform(V *dst, const V *src, int size) const
 // | e0 e3 e6 |
 // | e1 e4 e7 |
 // | e2 e5 e8 |
-template <typename V>
-void Matrix3::transform(V *dst, const V *src, int size) const
+template <typename Vdst, typename Vsrc>
+void Matrix3::transform(Vdst *dst, const Vsrc *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{

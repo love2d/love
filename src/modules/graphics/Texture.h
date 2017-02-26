@@ -112,7 +112,10 @@ public:
 	/**
 	 * Draws the texture using the specified transformation with a Quad applied.
 	 **/
-	void drawq(Graphics *gfx, Quad *quad, const Matrix4 &m);
+	virtual void draw(Graphics *gfx, Quad *quad, const Matrix4 &m);
+
+	void drawLayer(Graphics *gfx, int layer, const Matrix4 &m);
+	virtual void drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m);
 
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
@@ -138,7 +141,7 @@ public:
 	virtual bool setMipmapSharpness(float sharpness) = 0;
 	float getMipmapSharpness() const;
 
-	virtual const Vertex *getVertices() const;
+	Quad *getQuad() const;
 
 	virtual ptrdiff_t getHandle() const = 0;
 
@@ -158,8 +161,7 @@ public:
 
 protected:
 
-	void initVertices();
-	virtual void drawv(Graphics *gfx, const Matrix4 &localTransform, const Vertex *v);
+	void initQuad();
 
 	TextureType texType;
 
@@ -167,6 +169,7 @@ protected:
 
 	int width;
 	int height;
+
 	int depth;
 	int layers;
 	int mipmapCount;
@@ -174,13 +177,12 @@ protected:
 	int pixelWidth;
 	int pixelHeight;
 
-
 	Filter filter;
 	Wrap wrap;
 
 	float mipmapSharpness;
 
-	Vertex vertices[4];
+	StrongRef<Quad> quad;
 
 private:
 

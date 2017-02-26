@@ -132,9 +132,9 @@ namespace graphics
 {
 
 love::Type Shader::type("Shader", &Object::type);
+
 Shader *Shader::current = nullptr;
-Shader *Shader::defaultShader = nullptr;
-Shader *Shader::defaultVideoShader = nullptr;
+Shader *Shader::standardShaders[Shader::STANDARD_MAX_ENUM] = {nullptr};
 
 Shader::Shader(const ShaderSource &source)
 	: shaderSource(source)
@@ -151,27 +151,39 @@ Shader::Shader(const ShaderSource &source)
 
 Shader::~Shader()
 {
-	if (defaultShader == this)
-		defaultShader = nullptr;
-
-	if (defaultVideoShader == this)
-		defaultVideoShader = nullptr;
+	for (int i = 0; i < STANDARD_MAX_ENUM; i++)
+	{
+		if (this == standardShaders[i])
+			standardShaders[i] = nullptr;
+	}
 
 	if (current == this)
-		attachDefault();
+		attachDefault(STANDARD_DEFAULT);
 }
 
-void Shader::attachDefault()
+void Shader::attachDefault(StandardShader defaultType)
 {
-	if (defaultShader)
-	{
-		if (current != defaultShader)
-			defaultShader->attach();
+	Shader *defaultshader = standardShaders[defaultType];
 
+	if (defaultshader == nullptr)
+	{
+		current = nullptr;
 		return;
 	}
 
-	current = nullptr;
+	if (current != defaultshader)
+		defaultshader->attach();
+}
+
+bool Shader::isDefaultActive()
+{
+	for (int i = 0; i < STANDARD_MAX_ENUM; i++)
+	{
+		if (current == standardShaders[i])
+			return true;
+	}
+
+	return false;
 }
 
 TextureType Shader::getMainTextureType() const

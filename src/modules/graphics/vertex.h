@@ -97,14 +97,22 @@ enum class CommonFormat
 	XYf,
 	RGBAub,
 	XYf_STf,
+	XYf_STPf,
 	XYf_STf_RGBAub,
 	XYf_STus_RGBAub,
+	XYf_STPf_RGBAub,
 };
 
 struct XYf_STf
 {
 	float x, y;
 	float s, t;
+};
+
+struct XYf_STPf
+{
+	float x, y;
+	float s, t, p;
 };
 
 struct XYf_STf_RGBAub
@@ -119,6 +127,13 @@ struct XYf_STus_RGBAub
 	float  x, y;
 	uint16 s, t;
 	Color  color;
+};
+
+struct XYf_STPf_RGBAub
+{
+	float x, y;
+	float s, t, p;
+	Color color;
 };
 
 size_t getFormatStride(CommonFormat format);

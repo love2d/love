@@ -54,7 +54,10 @@ public:
 	virtual ~SpriteBatch();
 
 	int add(const Matrix4 &m, int index = -1);
-	int addq(Quad *quad, const Matrix4 &m, int index = -1);
+	int add(Quad *quad, const Matrix4 &m, int index = -1);
+	int addLayer(int layer, const Matrix4 &m, int index = -1);
+	int addLayer(int layer, Quad *quad, const Matrix4 &m, int index = -1);
+
 	void clear();
 
 	void flush();
@@ -78,10 +81,9 @@ public:
 	void setColor();
 
 	/**
-	 * Get the current color for this SpriteBatch. Returns NULL if no color is
-	 * set.
+	 * Get the current color for this SpriteBatch.
 	 **/
-	const Color *getColor() const;
+	const Color &getColor(bool &active) const;
 
 	/**
 	 * Get the number of sprites currently in this SpriteBatch.
@@ -117,8 +119,6 @@ protected:
 	 **/
 	void setBufferSize(int newsize);
 
-	void addv(const Vertex *v, const Matrix4 &m, int index);
-
 	StrongRef<Texture> texture;
 
 	// Max number of sprites in the batch.
@@ -129,7 +129,11 @@ protected:
 
 	// Current color. This color, if present, will be applied to the next
 	// added sprite.
-	Color *color;
+	Color color;
+	bool color_active;
+
+	vertex::CommonFormat vertex_format;
+	size_t format_stride;
 	
 	love::graphics::Buffer *array_buf;
 	QuadIndices quad_indices;

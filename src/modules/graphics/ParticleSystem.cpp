@@ -97,6 +97,9 @@ ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
 
+	if (texture->getTextureType() != TEXTURE_2D)
+		throw love::Exception("Only 2D textures can be used with ParticleSystems.");
+
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
@@ -434,6 +437,9 @@ ParticleSystem::Particle *ParticleSystem::removeParticle(Particle *p)
 
 void ParticleSystem::setTexture(Texture *tex)
 {
+	if (texture->getTextureType() != TEXTURE_2D)
+		throw love::Exception("Only 2D textures can be used with ParticleSystems.");
+
 	texture.set(tex);
 
 	if (defaultOffset)
@@ -958,7 +964,7 @@ bool ParticleSystem::prepareDraw(Graphics *gfx, const Matrix4 &m)
 
 	Graphics::TempTransform transform(gfx, m);
 
-	const Vertex *textureVerts = texture->getVertices();
+	const vertex::XYf_STf *textureVerts = texture->getQuad()->getVertices();
 	Vertex *pVerts = (Vertex *) buffer->map();
 	Particle *p = pHead;
 

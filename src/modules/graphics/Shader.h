@@ -95,6 +95,14 @@ public:
 		UNIFORM_MAX_ENUM
 	};
 
+	enum StandardShader
+	{
+		STANDARD_DEFAULT,
+		STANDARD_VIDEO,
+		STANDARD_ARRAY,
+		STANDARD_MAX_ENUM
+	};
+
 	struct ShaderSource
 	{
 		std::string vertex;
@@ -137,8 +145,7 @@ public:
 	static Shader *current;
 
 	// Pointer to the default Shader.
-	static Shader *defaultShader;
-	static Shader *defaultVideoShader;
+	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
 	Shader(const ShaderSource &source);
 	virtual ~Shader();
@@ -149,9 +156,14 @@ public:
 	virtual void attach() = 0;
 
 	/**
-	 * Attach the default shader.
+	 * Attach a default shader.
 	 **/
-	static void attachDefault();
+	static void attachDefault(StandardShader defaultType);
+
+	/**
+	 * Gets whether any of the default shaders are currently active.
+	 **/
+	static bool isDefaultActive();
 
 	/**
 	 * Returns any warnings this Shader may have generated.

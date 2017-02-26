@@ -30,8 +30,10 @@ namespace vertex
 
 static_assert(sizeof(Color) == 4, "sizeof(Color) incorrect!");
 static_assert(sizeof(XYf_STf) == sizeof(float)*2 + sizeof(float)*2, "sizeof(XYf_STf) incorrect!");
+static_assert(sizeof(XYf_STPf) == sizeof(float)*2 + sizeof(float)*3, "sizeof(XYf_STPf) incorrect!");
 static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color), "sizeof(XYf_STf_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color), "sizeof(XYf_STus_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color), "sizeof(XYf_STPf_RGBAub) incorrect!");
 
 size_t getFormatStride(CommonFormat format)
 {
@@ -45,10 +47,14 @@ size_t getFormatStride(CommonFormat format)
 		return sizeof(uint8) * 4;
 	case CommonFormat::XYf_STf:
 		return sizeof(XYf_STf);
+	case CommonFormat::XYf_STPf:
+		return sizeof(XYf_STPf);
 	case CommonFormat::XYf_STf_RGBAub:
 		return sizeof(XYf_STf_RGBAub);
 	case CommonFormat::XYf_STus_RGBAub:
 		return sizeof(XYf_STus_RGBAub);
+	case CommonFormat::XYf_STPf_RGBAub:
+		return sizeof(XYf_STPf_RGBAub);
 	}
 }
 
@@ -63,9 +69,11 @@ uint32 getFormatFlags(CommonFormat format)
 	case CommonFormat::RGBAub:
 		return ATTRIBFLAG_COLOR;
 	case CommonFormat::XYf_STf:
+	case CommonFormat::XYf_STPf:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
 	case CommonFormat::XYf_STf_RGBAub:
 	case CommonFormat::XYf_STus_RGBAub:
+	case CommonFormat::XYf_STPf_RGBAub:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
 
 	}
