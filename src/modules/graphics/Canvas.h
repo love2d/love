@@ -58,6 +58,7 @@ public:
 	virtual ptrdiff_t getMSAAHandle() const = 0;
 
 	void draw(Graphics *gfx, Quad *q, const Matrix4 &t) override;
+	void drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &t) override;
 
 	static int canvasCount;
 	
