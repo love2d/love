@@ -583,13 +583,19 @@ int w_newCubeImage(lua_State *L)
 
 	if (!lua_istable(L, 1))
 	{
-		auto imagedata = getImageData(L, 1, false, &settings.pixeldensity);
+		auto data = getImageData(L, 1, true, &settings.pixeldensity);
 
 		std::vector<StrongRef<love::image::ImageData>> faces;
-		luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(imagedata.first); });
 
-		for (int i = 0; i < (int) faces.size(); i++)
-			slices.set(i, 0, faces[i]);
+		if (data.first.get())
+		{
+			luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(data.first); });
+
+			for (int i = 0; i < (int) faces.size(); i++)
+				slices.set(i, 0, faces[i]);
+		}
+		else
+			slices.add(data.second, 0, 0, true, true);
 	}
 	else
 	{
@@ -724,6 +730,8 @@ int w_newVolumeImage(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
+	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
+
 	Image::Slices slices(TEXTURE_VOLUME);
 	Image::Settings settings;
 
@@ -772,8 +780,15 @@ int w_newVolumeImage(lua_State *L)
 	else
 	{
 		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+
 		if (data.first.get())
-			slices.set(0, 0, data.first);
+		{
+			std::vector<StrongRef<love::image::ImageData>> layers;
+			luax_catchexcept(L, [&](){ layers = imagemodule->newVolumeLayers(data.first); });
+
+			for (int i = 0; i < (int) layers.size(); i++)
+				slices.set(i, 0, layers[i]);
+		}
 		else
 			slices.add(data.second, 0, 0, true, true);
 	}

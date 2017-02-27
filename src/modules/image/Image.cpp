@@ -115,5 +115,28 @@ std::vector<StrongRef<ImageData>> Image::newCubeFaces(love::image::ImageData *sr
 	return faces;
 }
 
+std::vector<StrongRef<ImageData>> Image::newVolumeLayers(ImageData *src)
+{
+	std::vector<StrongRef<ImageData>> layers;
+
+	int totalW = src->getWidth();
+	int totalH = src->getHeight();
+
+	if (totalW % totalH == 0)
+	{
+		for (int i = 0; i < totalW / totalH; i++)
+			layers.emplace_back(newPastedImageData(src, i * totalH, 0, totalH, totalH));
+	}
+	else if (totalH % totalW == 0)
+	{
+		for (int i = 0; i < totalH / totalW; i++)
+			layers.emplace_back(newPastedImageData(src, 0, i * totalW, totalW, totalW));
+	}
+	else
+		throw love::Exception("Cannot extract volume layers from source ImageData.");
+
+	return layers;
+}
+
 } // image
 } // love
