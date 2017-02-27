@@ -125,12 +125,12 @@ std::vector<StrongRef<ImageData>> Image::newVolumeLayers(ImageData *src)
 	if (totalW % totalH == 0)
 	{
 		for (int i = 0; i < totalW / totalH; i++)
-			layers.emplace_back(newPastedImageData(src, i * totalH, 0, totalH, totalH));
+			layers.emplace_back(newPastedImageData(src, i * totalH, 0, totalH, totalH), Acquire::NORETAIN);
 	}
 	else if (totalH % totalW == 0)
 	{
 		for (int i = 0; i < totalH / totalW; i++)
-			layers.emplace_back(newPastedImageData(src, 0, i * totalW, totalW, totalW));
+			layers.emplace_back(newPastedImageData(src, 0, i * totalW, totalW, totalW), Acquire::NORETAIN);
 	}
 	else
 		throw love::Exception("Cannot extract volume layers from source ImageData.");
