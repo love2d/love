@@ -273,6 +273,9 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// We always need a default shader.
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
+		if (i == Shader::STANDARD_ARRAY && !isSupported(FEATURE_ARRAY_TEXTURE))
+			continue;
+
 		if (!Shader::standardShaders[i])
 			Shader::standardShaders[i] = newShader(defaultShaderCode[i][target][gammacorrect]);
 	}
@@ -345,6 +348,9 @@ void Graphics::flushStreamDraws()
 
 		if (textype == TEXTURE_2D_ARRAY && Shader::isDefaultActive())
 		{
+			if (!Shader::standardShaders[Shader::STANDARD_ARRAY])
+				throw love::Exception("Standard array texture shader has not been initialized!");
+
 			prevdefaultshader = Shader::current;
 			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
 		}

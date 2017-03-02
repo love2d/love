@@ -68,6 +68,9 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 		if (textype == TEXTURE_2D_ARRAY && Shader::isDefaultActive())
 		{
+			if (!Shader::standardShaders[Shader::STANDARD_ARRAY])
+				throw love::Exception("Standard array texture shader has not been initialized!");
+
 			prevdefaultshader = Shader::current;
 			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
 		}
