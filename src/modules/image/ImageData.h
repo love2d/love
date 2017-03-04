@@ -140,6 +140,30 @@ protected:
 
 private:
 
+	union Row
+	{
+		uint8 *u8;
+		uint16 *u16;
+		half *f16;
+		float *f32;
+	};
+
+	static void pasteRGBA8toRGBA16(Row src, Row dst, int w);
+	static void pasteRGBA8toRGBA16F(Row src, Row dst, int w);
+	static void pasteRGBA8toRGBA32F(Row src, Row dst, int w);
+
+	static void pasteRGBA16toRGBA8(Row src, Row dst, int w);
+	static void pasteRGBA16toRGBA16F(Row src, Row dst, int w);
+	static void pasteRGBA16toRGBA32F(Row src, Row dst, int w);
+
+	static void pasteRGBA16FtoRGBA8(Row src, Row dst, int w);
+	static void pasteRGBA16FtoRGBA16(Row src, Row dst, int w);
+	static void pasteRGBA16FtoRGBA32F(Row src, Row dst, int w);
+
+	static void pasteRGBA32FtoRGBA8(Row src, Row dst, int w);
+	static void pasteRGBA32FtoRGBA16(Row src, Row dst, int w);
+	static void pasteRGBA32FtoRGBA16F(Row src, Row dst, int w);
+
 	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
 	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;
 

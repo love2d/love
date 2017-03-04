@@ -83,20 +83,20 @@ void ImageData::getPixel(int x, int y, Pixel &p) const
 
 void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, int sh)
 {
-	if (getFormat() != src->getFormat())
-		throw love::Exception("ImageData formats must match!");
+	PixelFormat dstformat = getFormat();
+	PixelFormat srcformat = src->getFormat();
 
-	Lock lock2(src->mutex);
-	Lock lock1(mutex);
+	int srcW = src->getWidth();
+	int srcH = src->getHeight();
+	int dstW = getWidth();
+	int dstH = getHeight();
 
-	uint8 *s = (uint8 *) src->getData();
-	uint8 *d = (uint8 *) getData();
-
-	size_t pixelsize = getPixelSize();
+	size_t srcpixelsize = src->getPixelSize();
+	size_t dstpixelsize = getPixelSize();
 
 	// Check bounds; if the data ends up completely out of bounds, get out early.
-	if (sx >= src->getWidth() || sx + sw < 0 || sy >= src->getHeight() || sy + sh < 0
-			|| dx >= getWidth() || dx + sw < 0 || dy >= getHeight() || dy + sh < 0)
+	if (sx >= srcW || sx + sw < 0 || sy >= srcH || sy + sh < 0
+			|| dx >= dstW || dx + sw < 0 || dy >= dstH || dy + sh < 0)
 		return;
 
 	// Normalize values to the inside of both images.
@@ -125,34 +125,144 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 		sy = 0;
 	}
 
-	if (dx + sw > getWidth())
-		sw = getWidth() - dx;
+	if (dx + sw > dstW)
+		sw = dstW - dx;
 
-	if (dy + sh > getHeight())
-		sh = getHeight() - dy;
+	if (dy + sh > dstH)
+		sh = dstH - dy;
 
-	if (sx + sw > src->getWidth())
-		sw = src->getWidth() - sx;
+	if (sx + sw > srcW)
+		sw = srcW - sx;
 
-	if (sy + sh > src->getHeight())
-		sh = src->getHeight() - sy;
+	if (sy + sh > srcH)
+		sh = srcH - sy;
+
+	Lock lock2(src->mutex);
+	Lock lock1(mutex);
+
+	uint8 *s = (uint8 *) src->getData();
+	uint8 *d = (uint8 *) getData();
 
 	// If the dimensions match up, copy the entire memory stream in one go
-	if (sw == getWidth() && getWidth() == src->getWidth()
-		&& sh == getHeight() && getHeight() == src->getHeight())
+	if (srcformat == dstformat && (sw == dstW && dstW == srcW && sh == dstH && dstH == srcH))
 	{
-		memcpy(d, s, pixelsize * sw * sh);
+		memcpy(d, s, srcpixelsize * sw * sh);
 	}
 	else if (sw > 0)
 	{
 		// Otherwise, copy each row individually.
 		for (int i = 0; i < sh; i++)
 		{
-			const uint8 *rowsrc = s + (sx + (i + sy) * src->getWidth()) * pixelsize;
-			uint8 *rowdst = d + (dx + (i + dy) * getWidth()) * pixelsize;
-			memcpy(rowdst, rowsrc, pixelsize * sw);
+			Row rowsrc = {s + (sx + (i + sy) * srcW) * srcpixelsize};
+			Row rowdst = {d + (dx + (i + dy) * dstW) * dstpixelsize};
+
+			if (srcformat == dstformat)
+				memcpy(rowdst.u8, rowsrc.u8, srcpixelsize * sw);
+
+			else if (srcformat == PIXELFORMAT_RGBA8 && dstformat == PIXELFORMAT_RGBA16)
+				pasteRGBA8toRGBA16(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA8 && dstformat == PIXELFORMAT_RGBA16F)
+				pasteRGBA8toRGBA16F(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA8 && dstformat == PIXELFORMAT_RGBA32F)
+				pasteRGBA8toRGBA32F(rowsrc, rowdst, sw);
+
+			else if (srcformat == PIXELFORMAT_RGBA16 && dstformat == PIXELFORMAT_RGBA8)
+				pasteRGBA16toRGBA8(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA16 && dstformat == PIXELFORMAT_RGBA16F)
+				pasteRGBA16toRGBA16F(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA16 && dstformat == PIXELFORMAT_RGBA32F)
+				pasteRGBA16toRGBA32F(rowsrc, rowdst, sw);
+
+			else if (srcformat == PIXELFORMAT_RGBA16F && dstformat == PIXELFORMAT_RGBA8)
+				pasteRGBA16FtoRGBA8(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA16F && dstformat == PIXELFORMAT_RGBA16)
+				pasteRGBA16FtoRGBA16(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA16F && dstformat == PIXELFORMAT_RGBA32F)
+				pasteRGBA16FtoRGBA32F(rowsrc, rowdst, sw);
+
+			else if (srcformat == PIXELFORMAT_RGBA32F && dstformat == PIXELFORMAT_RGBA8)
+				pasteRGBA32FtoRGBA8(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA32F && dstformat == PIXELFORMAT_RGBA16)
+				pasteRGBA32FtoRGBA16(rowsrc, rowdst, sw);
+			else if (srcformat == PIXELFORMAT_RGBA32F && dstformat == PIXELFORMAT_RGBA16F)
+				pasteRGBA32FtoRGBA16F(rowsrc, rowdst, sw);
+
+			else
+				throw love::Exception("Unsupported pixel format combination in ImageData:paste!");
 		}
 	}
+}
+
+void ImageData::pasteRGBA8toRGBA16(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u16[i] = (uint16) src.u8[i] << 8u;
+}
+
+void ImageData::pasteRGBA8toRGBA16F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f16[i] = floatToHalf(src.u8[i] / 255.0f);
+}
+
+void ImageData::pasteRGBA8toRGBA32F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f32[i] = src.u8[i] / 255.0f;
+}
+
+void ImageData::pasteRGBA16toRGBA8(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u8[i] = src.u16[i] >> 8u;
+}
+
+void ImageData::pasteRGBA16toRGBA16F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f16[i] = floatToHalf(src.u16[i] / 65535.0f);
+}
+
+void ImageData::pasteRGBA16toRGBA32F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f32[i] = src.u16[i] / 65535.0f;
+}
+
+void ImageData::pasteRGBA16FtoRGBA8(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u8[i] = (uint8) (halfToFloat(src.f16[i]) * 255.0f);
+}
+
+void ImageData::pasteRGBA16FtoRGBA16(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u16[i] = (uint16) (halfToFloat(src.f16[i]) * 65535.0f);
+}
+
+void ImageData::pasteRGBA16FtoRGBA32F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f32[i] = halfToFloat(src.f16[i]);
+}
+
+void ImageData::pasteRGBA32FtoRGBA8(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u8[i] = (uint8) (src.f32[i] * 255.0f);
+}
+
+void ImageData::pasteRGBA32FtoRGBA16(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u16[i] = (uint16) (src.f32[i] * 65535.0f);
+}
+
+void ImageData::pasteRGBA32FtoRGBA16F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f16[i] = (uint16) floatToHalf(src.f32[i]);
 }
 
 love::thread::Mutex *ImageData::getMutex() const
