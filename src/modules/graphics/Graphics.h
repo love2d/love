@@ -593,11 +593,13 @@ public:
 	 * Draws text at the specified coordinates
 	 **/
 	void print(const std::vector<Font::ColoredString> &str, const Matrix4 &m);
+	void print(const std::vector<Font::ColoredString> &str, Font *font, const Matrix4 &m);
 
 	/**
 	 * Draws formatted text on screen at the specified coordinates.
 	 **/
 	void printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
+	void printf(const std::vector<Font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m);
 
 	/**
 	 * Draws a point at (x,y).

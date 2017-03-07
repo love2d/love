@@ -717,20 +717,26 @@ void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 
 {
 	checkSetDefaultFont();
 
-	DisplayState &state = states.back();
+	if (states.back().font.get() != nullptr)
+		print(str, states.back().font.get(), m);
+}
 
-	if (state.font.get() != nullptr)
-		state.font->print(this, str, m, state.color);
+void Graphics::print(const std::vector<Font::ColoredString> &str, Font *font, const Matrix4 &m)
+{
+	font->print(this, str, m, states.back().color);
 }
 
 void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
 	checkSetDefaultFont();
 
-	DisplayState &state = states.back();
+	if (states.back().font.get() != nullptr)
+		printf(str, states.back().font.get(), wrap, align, m);
+}
 
-	if (state.font.get() != nullptr)
-		state.font->printf(this, str, wrap, align, m, state.color);
+void Graphics::printf(const std::vector<Font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m)
+{
+	font->printf(this, str, wrap, align, m, states.back().color);
 }
 
 /**

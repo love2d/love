@@ -2028,10 +2028,22 @@ int w_print(lua_State *L)
 	std::vector<Font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
-	luax_checkstandardtransform(L, 2, [&](const Matrix4 &m)
+	if (luax_istype(L, 2, Font::type))
 	{
-		luax_catchexcept(L, [&](){ instance()->print(str, m); });
-	});
+		Font *font = luax_checkfont(L, 2);
+
+		luax_checkstandardtransform(L, 3, [&](const Matrix4 &m)
+		{
+			luax_catchexcept(L, [&](){ instance()->print(str, font, m); });
+		});
+	}
+	else
+	{
+		luax_checkstandardtransform(L, 2, [&](const Matrix4 &m)
+		{
+			luax_catchexcept(L, [&](){ instance()->print(str, m); });
+		});
+	}
 
 	return 0;
 }
@@ -2041,29 +2053,38 @@ int w_printf(lua_State *L)
 	std::vector<Font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
+	Font *font = nullptr;
+	int startidx = 2;
+
+	if (luax_istype(L, startidx, Font::type))
+	{
+		font = luax_checkfont(L, startidx);
+		startidx++;
+	}
+
 	Font::AlignMode align = Font::ALIGN_LEFT;
 	Matrix4 m;
 
-	int formatidx = 4;
+	int formatidx = startidx + 2;
 
-	if (luax_istype(L, 2, math::Transform::type))
+	if (luax_istype(L, startidx, math::Transform::type))
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, 2);
+		math::Transform *tf = luax_totype<math::Transform>(L, startidx);
 		m = tf->getMatrix();
-		formatidx = 3;
+		formatidx = startidx + 1;
 	}
 	else
 	{
-		float x = (float)luaL_checknumber(L, 2);
-		float y = (float)luaL_checknumber(L, 3);
+		float x = (float)luaL_checknumber(L, startidx + 0);
+		float y = (float)luaL_checknumber(L, startidx + 1);
 
-		float angle = (float) luaL_optnumber(L, 6, 0.0f);
-		float sx = (float) luaL_optnumber(L, 7, 1.0f);
-		float sy = (float) luaL_optnumber(L, 8, sx);
-		float ox = (float) luaL_optnumber(L, 9, 0.0f);
-		float oy = (float) luaL_optnumber(L, 10, 0.0f);
-		float kx = (float) luaL_optnumber(L, 11, 0.0f);
-		float ky = (float) luaL_optnumber(L, 12, 0.0f);
+		float angle = (float) luaL_optnumber(L, startidx + 4, 0.0f);
+		float sx = (float) luaL_optnumber(L, startidx + 5, 1.0f);
+		float sy = (float) luaL_optnumber(L, startidx + 6, sx);
+		float ox = (float) luaL_optnumber(L, startidx + 7, 0.0f);
+		float oy = (float) luaL_optnumber(L, startidx + 8, 0.0f);
+		float kx = (float) luaL_optnumber(L, startidx + 9, 0.0f);
+		float ky = (float) luaL_optnumber(L, startidx + 10, 0.0f);
 
 		m = Matrix4(x, y, angle, sx, sy, ox, oy, kx, ky);
 	}
@@ -2074,7 +2095,11 @@ int w_printf(lua_State *L)
 	if (astr != nullptr && !Font::getConstant(astr, align))
 		return luaL_error(L, "Incorrect alignment: %s", astr);
 
-	luax_catchexcept(L, [&](){ instance()->printf(str, wrap, align, m); });
+	if (font != nullptr)
+		luax_catchexcept(L, [&](){ instance()->printf(str, font, wrap, align, m); });
+	else
+		luax_catchexcept(L, [&](){ instance()->printf(str, wrap, align, m); });
+
 	return 0;
 }
 
