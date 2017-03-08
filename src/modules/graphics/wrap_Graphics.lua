@@ -40,6 +40,11 @@ GLSL.SYNTAX = [[
 	#define mediump
 	#define highp
 #endif
+#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
+	#define LOVE_HIGHP_OR_MEDIUMP highp
+#else
+	#define LOVE_HIGHP_OR_MEDIUMP mediump
+#endif
 #define number float
 #define Image sampler2D
 #define ArrayImage sampler2DArray
@@ -59,16 +64,11 @@ GLSL.UNIFORMS = [[
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
-#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
-	#define LOVE_UNIFORM_PRECISION highp
-#else
-	#define LOVE_UNIFORM_PRECISION mediump
-#endif
-uniform LOVE_UNIFORM_PRECISION mat4 TransformMatrix;
-uniform LOVE_UNIFORM_PRECISION mat4 ProjectionMatrix;
-uniform LOVE_UNIFORM_PRECISION mat4 TransformProjectionMatrix;
-uniform LOVE_UNIFORM_PRECISION mat3 NormalMatrix;
-uniform mediump vec4 love_ScreenSize;]]
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix;
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix;
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 TransformProjectionMatrix;
+uniform LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
+uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;]]
 
 GLSL.FUNCTIONS = [[
 #if __VERSION__ >= 130 && !defined(LOVE_GLSL1_ON_GLSL3)
@@ -253,7 +253,7 @@ vec4 VideoTexel(vec2 texcoords) {
 
 	MAIN = [[
 uniform sampler2D MainTex;
-varying mediump vec4 VaryingTexCoord;
+varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
 varying mediump vec4 VaryingColor;
 
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
@@ -263,8 +263,8 @@ void main() {
 }]],
 
 	MAIN_CUSTOM = [[
-varying vec4 VaryingColor;
-varying vec4 VaryingTexCoord;
+varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
+varying mediump vec4 VaryingColor;
 
 void effect();
 
