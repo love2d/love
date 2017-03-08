@@ -314,10 +314,10 @@ bool Shader::getConstant(BuiltinUniform in, const char *&out)
 
 StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM>::Entry Shader::languageEntries[] =
 {
-	{ "glsl1",   LANGUAGE_GLSL1   },
-	{ "glsles1", LANGUAGE_GLSLES1 },
-	{ "glsl3",   LANGUAGE_GLSL3   },
-	{ "glsles3", LANGUAGE_GLSLES3 },
+	{ "glsl1", LANGUAGE_GLSL1 },
+	{ "essl1", LANGUAGE_ESSL1 },
+	{ "glsl3", LANGUAGE_GLSL3 },
+	{ "essl3", LANGUAGE_ESSL3 },
 };
 
 StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM> Shader::languages(Shader::languageEntries, sizeof(Shader::languageEntries));

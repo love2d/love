@@ -424,10 +424,10 @@ local defaults = {}
 local defaults_gammacorrect = {}
 
 local langs = {
-	glsl1   = {target="glsl1", gles=false},
-	glsles1 = {target="glsl1", gles=true},
-	glsl3   = {target="glsl3", gles=false},
-	glsles3 = {target="glsl3", gles=true},
+	glsl1 = {target="glsl1", gles=false},
+	essl1 = {target="glsl1", gles=true},
+	glsl3 = {target="glsl3", gles=false},
+	essl3 = {target="glsl3", gles=true},
 }
 
 for lang, info in pairs(langs) do

@@ -1478,9 +1478,9 @@ Shader::Language Graphics::getShaderLanguageTarget() const
 	if (gl.isCoreProfile())
 		return Shader::LANGUAGE_GLSL3;
 	else if (GLAD_ES_VERSION_3_0)
-		return Shader::LANGUAGE_GLSLES3;
+		return Shader::LANGUAGE_ESSL3;
 	else if (GLAD_ES_VERSION_2_0)
-		return Shader::LANGUAGE_GLSLES1;
+		return Shader::LANGUAGE_ESSL1;
 	else
 		return Shader::LANGUAGE_GLSL1;
 }
