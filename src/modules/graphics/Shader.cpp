@@ -217,7 +217,7 @@ bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool
 	bool supportsGLSL3 = gfx->isSupported(Graphics::FEATURE_GLSL3);
 
 	int defaultversion = gles ? 100 : 120;
-	EProfile defaultprofile = gles ? EEsProfile : ENoProfile;
+	EProfile defaultprofile = ENoProfile;
 
 	glslang::TShader vshader(EShLangVertex);
 	glslang::TShader pshader(EShLangFragment);
