@@ -261,6 +261,10 @@ void ParticleSystem::initParticle(Particle *p, float t)
 
 	p->position = pos;
 
+	min = direction - spread/2.0f;
+	max = direction + spread/2.0f;
+	float dir = (float) rng.random(min, max);
+
 	float rand_x, rand_y;
 	switch (areaSpreadDistribution)
 	{
@@ -278,6 +282,38 @@ void ParticleSystem::initParticle(Particle *p, float t)
 		p->position.x += areaSpread.getX() * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
 		p->position.y += areaSpread.getY() * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
 		break;
+	case DISTRIBUTION_BORDER_ELLIPSE:
+		rand_x = (float) rng.random(0, LOVE_M_PI * 2);
+		p->position.x += cosf(rand_x) * areaSpread.getX();
+		p->position.y += sinf(rand_x) * areaSpread.getY();
+		dir += rand_x;
+		break;
+	case DISTRIBUTION_BORDER_RECTANGLE:
+		// Unwraps rectangle border onto straight line and pick random point
+		rand_x = (float) rng.random((areaSpread.getX() + areaSpread.getY()) * -2, (areaSpread.getX() + areaSpread.getY()) * 2);
+		min = areaSpread.getY() * 2;
+		if (rand_x < -min)
+		{
+			p->position.x += rand_x + min + areaSpread.getX();
+			p->position.y += -areaSpread.getY();
+		}
+		else if (rand_x < 0)
+		{
+			p->position.x += -areaSpread.getX();
+			p->position.y += rand_x + (areaSpread.getY());
+		}
+		else if (rand_x < min)
+		{
+			p->position.x += areaSpread.getX();
+			p->position.y += rand_x - (areaSpread.getY());
+		}
+		else
+		{
+			p->position.x += rand_x - min - areaSpread.getX();
+			p->position.y += areaSpread.getY();
+		}
+		dir += atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
+		break;
 	case DISTRIBUTION_NONE:
 	default:
 		break;
@@ -288,10 +324,6 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	min = speedMin;
 	max = speedMax;
 	float speed = (float) rng.random(min, max);
-
-	min = direction - spread/2.0f;
-	max = direction + spread/2.0f;
-	float dir = (float) rng.random(min, max);
 
 	p->velocity = love::Vector(cosf(dir), sinf(dir)) * speed;
 
@@ -1029,6 +1061,8 @@ StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_M
 	{ "uniform", DISTRIBUTION_UNIFORM },
 	{ "normal",  DISTRIBUTION_NORMAL },
 	{ "ellipse",  DISTRIBUTION_ELLIPSE },
+	{ "borderellipse",  DISTRIBUTION_BORDER_ELLIPSE },
+	{ "borderrectangle",  DISTRIBUTION_BORDER_RECTANGLE }
 };
 
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));

@@ -52,7 +52,7 @@ public:
 	static love::Type type;
 
 	/**
-	 * Type of distribution new particles are drawn from: None, uniform, normal, ellipse.
+	 * Type of distribution new particles are drawn from: None, uniform, normal, ellipse, borderellipse, borderrectangle.
 	 */
 	enum AreaSpreadDistribution
 	{
@@ -60,6 +60,8 @@ public:
 		DISTRIBUTION_UNIFORM,
 		DISTRIBUTION_NORMAL,
 		DISTRIBUTION_ELLIPSE,
+		DISTRIBUTION_BORDER_ELLIPSE,
+		DISTRIBUTION_BORDER_RECTANGLE,
 		DISTRIBUTION_MAX_ENUM
 	};
 
