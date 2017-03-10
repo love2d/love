@@ -72,7 +72,7 @@ public:
 	 *
 	 * @param color The color to use for the following sprites.
 	 */
-	void setColor(const Color &color);
+	void setColor(const Colorf &color);
 
 	/**
 	 * Disable per-sprite colors for this SpriteBatch. The next call to
@@ -83,7 +83,7 @@ public:
 	/**
 	 * Get the current color for this SpriteBatch.
 	 **/
-	const Color &getColor(bool &active) const;
+	Colorf getColor(bool &active) const;
 
 	/**
 	 * Get the number of sprites currently in this SpriteBatch.

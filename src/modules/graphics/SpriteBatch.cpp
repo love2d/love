@@ -185,10 +185,17 @@ Texture *SpriteBatch::getTexture() const
 	return texture.get();
 }
 
-void SpriteBatch::setColor(const Color &color)
+void SpriteBatch::setColor(const Colorf &c)
 {
 	color_active = true;
-	this->color = color;
+
+	Colorf cclamped;
+	cclamped.r = std::min(std::max(c.r, 0.0f), 1.0f);
+	cclamped.g = std::min(std::max(c.g, 0.0f), 1.0f);
+	cclamped.b = std::min(std::max(c.b, 0.0f), 1.0f);
+	cclamped.a = std::min(std::max(c.a, 0.0f), 1.0f);
+
+	this->color = toColor(cclamped);
 }
 
 void SpriteBatch::setColor()
@@ -197,10 +204,10 @@ void SpriteBatch::setColor()
 	color = Color(255, 255, 255, 255);
 }
 
-const Color &SpriteBatch::getColor(bool &active) const
+Colorf SpriteBatch::getColor(bool &active) const
 {
 	active = color_active;
-	return color;
+	return toColorf(color);
 }
 
 int SpriteBatch::getCount() const

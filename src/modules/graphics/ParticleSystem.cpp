@@ -719,6 +719,15 @@ love::Vector ParticleSystem::getOffset() const
 void ParticleSystem::setColor(const std::vector<Colorf> &newColors)
 {
 	colors = newColors;
+
+	// We don't support colors outside of [0,1] when drawing the ParticleSystem.
+	for (auto &c : colors)
+	{
+		c.r = std::min(std::max(c.r, 0.0f), 1.0f);
+		c.g = std::min(std::max(c.g, 0.0f), 1.0f);
+		c.b = std::min(std::max(c.b, 0.0f), 1.0f);
+		c.a = std::min(std::max(c.a, 0.0f), 1.0f);
+	}
 }
 
 std::vector<Colorf> ParticleSystem::getColor() const

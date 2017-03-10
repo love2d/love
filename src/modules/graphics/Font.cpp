@@ -403,11 +403,18 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 		if (curcolori + 1 < ncolors && codepoints.colors[curcolori + 1].index == i)
 		{
-			Colorf color = gammaCorrectColor(codepoints.colors[++curcolori].color);
-			color *= linearconstantcolor;
-			unGammaCorrectColor(color);
+			Colorf c = codepoints.colors[++curcolori].color;
 
-			curcolor = toColor(color);
+			c.r = std::min(std::max(c.r, 0.0f), 1.0f);
+			c.g = std::min(std::max(c.g, 0.0f), 1.0f);
+			c.b = std::min(std::max(c.b, 0.0f), 1.0f);
+			c.a = std::min(std::max(c.a, 0.0f), 1.0f);
+
+			gammaCorrectColor(c);
+			c *= linearconstantcolor;
+			unGammaCorrectColor(c);
+
+			curcolor = toColor(c);
 		}
 
 		if (g == '\n')

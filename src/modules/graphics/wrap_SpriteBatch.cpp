@@ -169,7 +169,7 @@ int w_SpriteBatch_getTexture(lua_State *L)
 int w_SpriteBatch_setColor(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	Color c;
+	Colorf c;
 
 	if (lua_gettop(L) <= 1)
 	{
@@ -181,19 +181,19 @@ int w_SpriteBatch_setColor(lua_State *L)
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 2, i);
 
-		c.r = (unsigned char) (luaL_checknumber(L, -4) * 255.0);
-		c.g = (unsigned char) (luaL_checknumber(L, -3) * 255.0);
-		c.b = (unsigned char) (luaL_checknumber(L, -2) * 255.0);
-		c.a = (unsigned char) (luaL_optnumber(L, -1, 1.0) * 255.0);
+		c.r = (float) luaL_checknumber(L, -4);
+		c.g = (float) luaL_checknumber(L, -3);
+		c.b = (float) luaL_checknumber(L, -2);
+		c.a = (float) luaL_optnumber(L, -1, 1.0);
 
 		lua_pop(L, 4);
 	}
 	else
 	{
-		c.r = (unsigned char) (luaL_checknumber(L, 2) * 255.0);
-		c.g = (unsigned char) (luaL_checknumber(L, 3) * 255.0);
-		c.b = (unsigned char) (luaL_checknumber(L, 4) * 255.0);
-		c.a = (unsigned char) (luaL_optnumber(L, 5, 1.0) * 255.0);
+		c.r = (float) luaL_checknumber(L, 2);
+		c.g = (float) luaL_checknumber(L, 3);
+		c.b = (float) luaL_checknumber(L, 4);
+		c.a = (float) luaL_optnumber(L, 5, 1.0);
 	}
 
 	t->setColor(c);
@@ -205,16 +205,16 @@ int w_SpriteBatch_getColor(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	bool active = false;
-	const Color &color = t->getColor(active);
+	Colorf color = t->getColor(active);
 
 	// getColor returns null if no color is set.
 	if (!active)
 		return 0;
 
-	lua_pushnumber(L, (lua_Number) color.r / 255.0);
-	lua_pushnumber(L, (lua_Number) color.g / 255.0);
-	lua_pushnumber(L, (lua_Number) color.b / 255.0);
-	lua_pushnumber(L, (lua_Number) color.a / 255.0);
+	lua_pushnumber(L, color.r);
+	lua_pushnumber(L, color.g);
+	lua_pushnumber(L, color.b);
+	lua_pushnumber(L, color.a);
 
 	return 4;
 }
