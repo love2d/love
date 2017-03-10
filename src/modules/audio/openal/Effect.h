@@ -21,6 +21,8 @@
 #ifndef LOVE_AUDIO_OPENAL_EFFECTS_H
 #define LOVE_AUDIO_OPENAL_EFFECTS_H
 
+#include "common/config.h"
+
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS // Frameworks have different include paths.
 #ifdef LOVE_IOS

@@ -217,7 +217,12 @@ void OpenGL::setupContext()
 		glActiveTexture(GL_TEXTURE0 + i);
 
 		for (int j = 0; j < TEXTURE_MAX_ENUM; j++)
-			glBindTexture(getGLTextureType((TextureType) j), 0);
+		{
+			TextureType textype = (TextureType) j;
+
+			if (isTextureTypeSupported(textype))
+				glBindTexture(getGLTextureType(textype), 0);
+		}
 	}
 
 	glActiveTexture(GL_TEXTURE0);
@@ -1004,16 +1009,7 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_A, fmt.swizzle[3]);
 	}
 
-	bool supportsTexStorage = GLAD_VERSION_4_2 || GLAD_ARB_texture_storage;
-
-	// Apparently there are bugs with glTexStorage on some Android drivers. I'd
-	// rather not find out the hard way, so we'll avoid it for now...
-#ifndef LOVE_ANDROID
-	if (GLAD_ES_VERSION_3_0)
-		supportsTexStorage = true;
-#endif
-
-	if (supportsTexStorage)
+	if (isTexStorageSupported())
 	{
 		if (target == TEXTURE_2D || target == TEXTURE_CUBE)
 			glTexStorage2D(gltarget, levels, fmt.internalformat, width, height);
@@ -1063,6 +1059,20 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 	}
 
 	return gltarget != GL_ZERO;
+}
+
+bool OpenGL::isTexStorageSupported()
+{
+	bool supportsTexStorage = GLAD_VERSION_4_2 || GLAD_ARB_texture_storage;
+
+	// Apparently there are bugs with glTexStorage on some Android drivers. I'd
+	// rather not find out the hard way, so we'll avoid it for now...
+#ifndef LOVE_ANDROID
+	if (GLAD_ES_VERSION_3_0)
+		supportsTexStorage = true;
+#endif
+
+	return supportsTexStorage;
 }
 
 bool OpenGL::isTextureTypeSupported(TextureType type) const
@@ -1432,7 +1442,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	if (!isPixelFormatCompressed(pixelformat))
 	{
 		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 && pixelformat == PIXELFORMAT_LA8)
-			&& !renderbuffer)
+			&& !renderbuffer && !isTexStorageSupported())
 		{
 			f.internalformat = f.externalformat;
 		}

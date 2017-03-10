@@ -71,6 +71,15 @@ uniform LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;]]
 
 GLSL.FUNCTIONS = [[
+#ifdef GL_ES
+	#if __VERSION__ >= 300 || defined(GL_EXT_texture_array)
+		precision lowp sampler2DArray;
+	#endif
+	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
+		precision lowp sampler3D;
+	#endif
+#endif
+
 #if __VERSION__ >= 130 && !defined(LOVE_GLSL1_ON_GLSL3)
 	#define Texel texture
 #else

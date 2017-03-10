@@ -378,6 +378,7 @@ public:
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
+	static bool isTexStorageSupported();
 	static bool isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool isSRGB);
 	static bool hasTextureFilteringSupport(PixelFormat pixelformat);
 
