@@ -300,7 +300,6 @@ void ParticleSystem::initParticle(Particle *p, float t)
 		max = sinf(rand_x) * areaSpread.getY();
 		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
 		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
-		// dir += rand_x + areaSpreadAngle;
 		break;
 	case DISTRIBUTION_BORDER_RECTANGLE:
 		rand_x = (float) rng.random((areaSpread.getX() + areaSpread.getY()) * -2, (areaSpread.getX() + areaSpread.getY()) * 2);
@@ -329,7 +328,6 @@ void ParticleSystem::initParticle(Particle *p, float t)
 			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * areaSpread.getY();
 			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * areaSpread.getY();
 		}
-		// dir += atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
 		break;
 	case DISTRIBUTION_NONE:
 	default:
@@ -338,7 +336,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 
 	// Determine if the origin of each particle is the center of the area
 	if (areaSpreadIsRelativeDirection)
-		dir = atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
+		dir += atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
 
 	p->origin = pos;
 
