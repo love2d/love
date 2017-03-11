@@ -66,6 +66,8 @@ ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	, emissionRate(0)
 	, emitCounter(0)
 	, areaSpreadDistribution(DISTRIBUTION_NONE)
+	, areaSpreadAngle(0)
+	, areaSpreadIsRelativeDirection(false)
 	, lifetime(-1)
 	, life(0)
 	, particleLifeMin(0)
@@ -122,6 +124,8 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, prevPosition(p.prevPosition)
 	, areaSpreadDistribution(p.areaSpreadDistribution)
 	, areaSpread(p.areaSpread)
+	, areaSpreadAngle(p.areaSpreadAngle)
+	, areaSpreadIsRelativeDirection(p.areaSpreadIsRelativeDirection)
 	, lifetime(p.lifetime)
 	, life(p.lifetime) // Initialize with the maximum life time.
 	, particleLifeMin(p.particleLifeMin)
@@ -265,59 +269,76 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	max = direction + spread/2.0f;
 	float dir = (float) rng.random(min, max);
 
+	// In this switch statement, variables 'rand_y', 'min', and 'max'
+	// are sometimes reused as data stores for performance reasons
 	float rand_x, rand_y;
 	switch (areaSpreadDistribution)
 	{
 	case DISTRIBUTION_UNIFORM:
-		p->position.x += (float) rng.random(-areaSpread.getX(), areaSpread.getX());
-		p->position.y += (float) rng.random(-areaSpread.getY(), areaSpread.getY());
+		rand_x = (float) rng.random(-areaSpread.getX(), areaSpread.getX());
+		rand_y = (float) rng.random(-areaSpread.getY(), areaSpread.getY());
+		p->position.x += cosf(areaSpreadAngle) * rand_x - sinf(areaSpreadAngle) * rand_y;
+		p->position.y += sinf(areaSpreadAngle) * rand_x + cosf(areaSpreadAngle) * rand_y;
 		break;
 	case DISTRIBUTION_NORMAL:
-		p->position.x += (float) rng.randomNormal(areaSpread.getX());
-		p->position.y += (float) rng.randomNormal(areaSpread.getY());
+		rand_x = (float) rng.randomNormal(areaSpread.getX());
+		rand_y = (float) rng.randomNormal(areaSpread.getY());
+		p->position.x += cosf(areaSpreadAngle) * rand_x - sinf(areaSpreadAngle) * rand_y;
+		p->position.y += sinf(areaSpreadAngle) * rand_x + cosf(areaSpreadAngle) * rand_y;
 		break;
 	case DISTRIBUTION_ELLIPSE:
 		rand_x = (float) rng.random(-1, 1);
 		rand_y = (float) rng.random(-1, 1);
-		p->position.x += areaSpread.getX() * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
-		p->position.y += areaSpread.getY() * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
+		min = areaSpread.getX() * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
+		max = areaSpread.getY() * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
+		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
+		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
 		break;
 	case DISTRIBUTION_BORDER_ELLIPSE:
 		rand_x = (float) rng.random(0, LOVE_M_PI * 2);
-		p->position.x += cosf(rand_x) * areaSpread.getX();
-		p->position.y += sinf(rand_x) * areaSpread.getY();
-		dir += rand_x;
+		min = cosf(rand_x) * areaSpread.getX();
+		max = sinf(rand_x) * areaSpread.getY();
+		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
+		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
+		// dir += rand_x + areaSpreadAngle;
 		break;
 	case DISTRIBUTION_BORDER_RECTANGLE:
-		// Unwraps rectangle border onto straight line and pick random point
 		rand_x = (float) rng.random((areaSpread.getX() + areaSpread.getY()) * -2, (areaSpread.getX() + areaSpread.getY()) * 2);
-		min = areaSpread.getY() * 2;
-		if (rand_x < -min)
+		rand_y = areaSpread.getY() * 2;
+		if (rand_x < -rand_y)
 		{
-			p->position.x += rand_x + min + areaSpread.getX();
-			p->position.y += -areaSpread.getY();
+			min = rand_x + rand_y + areaSpread.getX();
+			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * -areaSpread.getY();
+			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * -areaSpread.getY();
 		}
 		else if (rand_x < 0)
 		{
-			p->position.x += -areaSpread.getX();
-			p->position.y += rand_x + (areaSpread.getY());
+			max = rand_x + areaSpread.getY();
+			p->position.x += cosf(areaSpreadAngle) * -areaSpread.getX() - sinf(areaSpreadAngle) * max;
+			p->position.y += sinf(areaSpreadAngle) * -areaSpread.getX() + cosf(areaSpreadAngle) * max;
 		}
-		else if (rand_x < min)
+		else if (rand_x < rand_y)
 		{
-			p->position.x += areaSpread.getX();
-			p->position.y += rand_x - (areaSpread.getY());
+			max = rand_x - areaSpread.getY();
+			p->position.x += cosf(areaSpreadAngle) * areaSpread.getX() - sinf(areaSpreadAngle) * max;
+			p->position.y += sinf(areaSpreadAngle) * areaSpread.getX() + cosf(areaSpreadAngle) * max;
 		}
 		else
 		{
-			p->position.x += rand_x - min - areaSpread.getX();
-			p->position.y += areaSpread.getY();
+			min = rand_x - rand_y - areaSpread.getX();
+			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * areaSpread.getY();
+			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * areaSpread.getY();
 		}
-		dir += atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
+		// dir += atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
 		break;
 	case DISTRIBUTION_NONE:
 	default:
 		break;
 	}
+
+	// Determine if the origin of each particle is the center of the area
+	if (areaSpreadIsRelativeDirection)
+		dir = atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
 
 	p->origin = pos;
 
@@ -555,6 +576,21 @@ void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x,
 	areaSpreadDistribution = distribution;
 }
 
+void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle)
+{
+	areaSpread = love::Vector(x, y);
+	areaSpreadDistribution = distribution;
+	areaSpreadAngle = angle;
+}
+
+void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle, bool isRelativeDirection)
+{
+	areaSpread = love::Vector(x, y);
+	areaSpreadDistribution = distribution;
+	areaSpreadAngle = angle;
+	areaSpreadIsRelativeDirection = isRelativeDirection;
+}
+
 ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution() const
 {
 	return areaSpreadDistribution;
@@ -563,6 +599,26 @@ ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution
 const love::Vector &ParticleSystem::getAreaSpreadParameters() const
 {
 	return areaSpread;
+}
+
+void ParticleSystem::setAreaSpreadAngle(float angle)
+{
+	this->areaSpreadAngle = angle;
+}
+
+float ParticleSystem::getAreaSpreadAngle() const
+{
+	return areaSpreadAngle;
+}
+
+void ParticleSystem::setAreaSpreadIsRelativeDirection(bool isRelativeDirection)
+{
+	this->areaSpreadIsRelativeDirection = isRelativeDirection;
+}
+
+bool ParticleSystem::getAreaSpreadIsRelativeDirection() const
+{
+	return areaSpreadIsRelativeDirection;
 }
 
 void ParticleSystem::setDirection(float direction)

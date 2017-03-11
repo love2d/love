@@ -197,7 +197,8 @@ int w_ParticleSystem_setAreaSpread(lua_State *L)
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 
 	ParticleSystem::AreaSpreadDistribution distribution = ParticleSystem::DISTRIBUTION_NONE;
-	float x = 0.f, y = 0.f;
+	float x = 0.f, y = 0.f, angle = 0.f;
+	bool isRelativeDirection = false;
 
 	const char *str = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (str && !ParticleSystem::getConstant(str, distribution))
@@ -209,9 +210,11 @@ int w_ParticleSystem_setAreaSpread(lua_State *L)
 		y = (float) luaL_checknumber(L, 4);
 		if (x < 0.0f || y < 0.0f)
 			return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
+		angle = (float) luaL_optnumber(L, 5, 0.0);
+		isRelativeDirection = luax_optboolean(L, 6, false);
 	}
 
-	t->setAreaSpread(distribution, x, y);
+	t->setAreaSpread(distribution, x, y, angle, isRelativeDirection);
 	return 0;
 }
 
@@ -228,6 +231,36 @@ int w_ParticleSystem_getAreaSpread(lua_State *L)
 	lua_pushnumber(L, p.y);
 
 	return 3;
+}
+
+int w_ParticleSystem_setAreaSpreadAngle(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	t->setAreaSpreadAngle(arg1);
+	return 0;
+}
+
+int w_ParticleSystem_getAreaSpreadAngle(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushnumber(L, t->getAreaSpreadAngle());
+	return 1;
+}
+
+int w_ParticleSystem_setAreaSpreadIsRelativeDirection(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	bool arg1 = luax_toboolean(L, 2);
+	t->setAreaSpreadIsRelativeDirection(arg1);
+	return 0;
+}
+
+int w_ParticleSystem_getAreaSpreadIsRelativeDirection(lua_State *L)
+{
+	ParticleSystem *t = luax_checkparticlesystem(L, 1);
+	lua_pushnumber(L, t->getAreaSpreadIsRelativeDirection());
+	return 1;
 }
 
 int w_ParticleSystem_setDirection(lua_State *L)
@@ -720,6 +753,10 @@ static const luaL_Reg w_ParticleSystem_functions[] =
 	{ "moveTo", w_ParticleSystem_moveTo },
 	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
 	{ "getAreaSpread", w_ParticleSystem_getAreaSpread },
+	{ "setAreaSpreadAngle", w_ParticleSystem_setAreaSpreadAngle },
+	{ "getAreaSpreadAngle", w_ParticleSystem_getAreaSpreadAngle },
+	{ "setAreaSpreadIsRelativeDirection", w_ParticleSystem_setAreaSpreadIsRelativeDirection },
+	{ "getAreaSpreadIsRelativeDirection", w_ParticleSystem_getAreaSpreadIsRelativeDirection },
 	{ "setDirection", w_ParticleSystem_setDirection },
 	{ "getDirection", w_ParticleSystem_getDirection },
 	{ "setSpread", w_ParticleSystem_setSpread },

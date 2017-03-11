@@ -197,14 +197,49 @@ public:
 	 * Sets the emission area spread parameters and distribution type. The interpretation of
 	 * the parameters depends on the distribution type:
 	 *
-	 * * None:    Parameters are ignored. No area spread.
+	 * * None: Parameters are ignored. No area spread.
 	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
-	 * * Normal:  Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
+	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
 	 * @param x First parameter. Interpretation depends on distribution type.
 	 * @param y Second parameter. Interpretation depends on distribution type.
 	 * @param distribution Distribution type
 	 **/
 	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y);
+
+	/**
+	 * Sets the emission area spread parameters and distribution type. The interpretation of
+	 * the parameters depends on the distribution type:
+	 *
+	 * * None: Parameters are ignored. No area spread.
+	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
+	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
+	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
+	 * @param x First parameter. Interpretation depends on distribution type.
+	 * @param y Second parameter. Interpretation depends on distribution type.
+	 * @param distribution Distribution type
+	 * @param angle Angle for the distribution to be rotated by
+	 **/
+	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle);
+
+	/**
+	 * Sets the emission area spread parameters and distribution type. The interpretation of
+	 * the parameters depends on the distribution type:
+	 *
+	 * * None: Parameters are ignored. No area spread.
+	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
+	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
+	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
+	 * @param x First parameter. Interpretation depends on distribution type.
+	 * @param y Second parameter. Interpretation depends on distribution type.
+	 * @param distribution Distribution type
+	 * @param angle Angle for the distribution to be rotated by
+	 * @param isRelativeDirection whether to set direction of each particle to away from center
+	 **/
+	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle, bool isRelativeDirection);
 
 	/**
 	 * Returns area spread distribution type.
@@ -215,6 +250,30 @@ public:
 	 * Returns area spread parameters.
 	 **/
 	const love::Vector &getAreaSpreadParameters() const;
+
+	/**
+	 * Returns the angle of the area distribution (in radians).
+	 **/
+	float getAreaSpreadAngle() const;
+
+	/**
+	 * Sets the angle of the area distribution
+	 * @param angle The angle (in radians).
+	 **/
+	void setAreaSpreadAngle(float angle);
+
+	/**
+	 * Returns true if particles spawn relative to the center of the 
+	 * shape area or false if they will use the setDirection parameter
+	 **/
+	bool getAreaSpreadIsRelativeDirection() const;
+
+	/**
+	 * Sets if particles starting direction is away from the center of the
+	 * area spread or the setDirection parameter
+	 * @param isRelativeDirection boolean use relative direction from center
+	 **/
+	void setAreaSpreadIsRelativeDirection(bool isRelativeDirection);
 
 	/**
 	 * Sets the direction of the particle emitter.
@@ -595,6 +654,8 @@ protected:
 	// Emission area spread.
 	AreaSpreadDistribution areaSpreadDistribution;
 	love::Vector areaSpread;
+	float areaSpreadAngle;
+	bool areaSpreadIsRelativeDirection;
 
 	// The lifetime of the particle emitter (-1 means infinite) and the life it has left.
 	float lifetime;
