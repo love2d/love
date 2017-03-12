@@ -26,42 +26,44 @@ AUTOMAKE=${AUTOMAKE:-$(which automake)}
 [[ -x ${ACLOCAL} ]]    || die "Could not find aclocal. Install automake."
 [[ -x ${AUTOMAKE} ]]   || die "Could not find automake."
 
+print_errors() {
+	local output
+	output="$("$@" 2>&1)" && return 0
+	printf "%s\n" "$output"
+	return 1
+}
+
 automagic() {
 	log "Copying files..." >&2
 	cp platform/unix/configure.ac .
 	cp platform/unix/Makefile.am .
 
 	log "Running genmodules..." >&2
-	if ! bash platform/unix/genmodules "$1"; then
+	if ! print_errors bash platform/unix/genmodules "$1"; then
 		echo "You should be doing this from the root directory of the project."
 		exit 1
 	fi
 
-	log "Running autoheader..." >&2
-	${AUTOHEADER} 2>&1 || return 1 # Gimmie config.h.in
+	log "Running autoheader..."
+	print_errors ${AUTOHEADER} || return 1 # Gimmie config.h.in
 
-	log "Running libtoolize..." >&2
-	${LIBTOOLIZE} --force 2>&1 || return 1
+	log "Running libtoolize..."
+	print_errors ${LIBTOOLIZE} --force || return 1
 
-	log "Running aclocal..." >&2
-	${ACLOCAL} 2>&1 || return 1
+	log "Running aclocal..."
+	print_errors ${ACLOCAL} || return 1
 
-	log "Running autoconf..." >&2
-	${AUTOCONF} 2>&1 || return 1
+	log "Running autoconf..."
+	print_errors ${AUTOCONF} || return 1
 
-	log "Running automake..." >&2
-	${AUTOMAKE} -a 2>&1 || return 1
+	log "Running automake..."
+	print_errors ${AUTOMAKE} -a || return 1
 }
 
-if [[ $1 == "-d" ]]; then
-	shift 1
-	automagic "$@" 2>&1
-else
-	(automagic "$@" > /dev/null) 2>&1
-fi
+automagic "$@"
+
 if [[ $? -eq 1 ]]; then
 	log "Failed, sadface."
-	log "You can make this script more verbose running it in debug mode (-d)"
 	log "This is generally a configuration error (I'm looking at you aclocal)"
 	exit 1
 else
