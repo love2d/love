@@ -490,6 +490,19 @@ void luax_rawnewtype(lua_State *L, love::Type &type, love::Object *object)
 
 	const char *name = type.getName();
 	luaL_newmetatable(L, name);
+
+	lua_getfield(L, -1, "__gc");
+	bool has_gc = !lua_isnoneornil(L, -1);
+	lua_pop(L, 1);
+
+	// Make sure mt.__gc exists, so Lua states which don't have the object's
+	// module loaded will still clean the object up when it's collected.
+	if (!has_gc)
+	{
+		lua_pushcfunction(L, w__gc);
+		lua_setfield(L, -2, "__gc");
+	}
+
 	lua_setmetatable(L, -2);
 }
 
