@@ -34,11 +34,11 @@ print_errors() {
 }
 
 automagic() {
-	log "Copying files..." >&2
+	log "Copying files..."
 	cp platform/unix/configure.ac .
 	cp platform/unix/Makefile.am .
 
-	log "Running genmodules..." >&2
+	log "Running genmodules..."
 	if ! print_errors bash platform/unix/genmodules "$1"; then
 		echo "You should be doing this from the root directory of the project."
 		exit 1
