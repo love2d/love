@@ -52,34 +52,60 @@ AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua v
 with_clean_luaversion=`printf ${with_luaversion} | sed 's/\.//g'`
 
 # Generated sources for enabling/disabling modules
-m4_include([configure-modules.ac])
+m4_include([configure-modules-pre.ac])
 
 # Other features that can be enabled/disabled
 AC_ARG_ENABLE([mpg123], AC_HELP_STRING([--disable-mpg123], [Disable mp3 support, for patent-free builds]), [], [enable_mpg123=yes])
 AC_ARG_ENABLE([gme], AC_HELP_STRING([--enable-gme], [Enable GME support, for more chiptuney goodness]), [], [enable_gme=no])
 
+# Dependencies we always use
 ACLOVE_DEP_LUA
 ACLOVE_DEP_SDL2
 ACLOVE_DEP_LIBM
 ACLOVE_DEP_ZLIB
 
-AS_VAR_IF([enable_audio_openal], [true], [ACLOVE_DEP_OPENAL], [])
-AS_VAR_IF([enable_filesystem_physfs], [true], [ACLOVE_DEP_PHYSFS], [])
-AS_VAR_IF([enable_font_freetype], [true], [ACLOVE_DEP_FREETYPE2], [])
-AS_VAR_IF([enable_sound_lullaby], [true], [
+# Conditional dependencies
+AS_VAR_IF([enable_module_audio], [yes], [ACLOVE_DEP_OPENAL], [])
+AS_VAR_IF([enable_module_filesystem], [yes], [ACLOVE_DEP_PHYSFS], [])
+AS_VAR_IF([enable_module_font], [yes], [ACLOVE_DEP_FREETYPE2], [])
+AS_VAR_IF([enable_module_sound], [yes], [
 	ACLOVE_DEP_LIBMODPLUG
 	ACLOVE_DEP_VORBISFILE
 ], [enable_mpg123=no])
-AS_VAR_IF([enable_video_theora], [true], [ACLOVE_DEP_THEORA], [])
+AS_VAR_IF([enable_module_video], [yes], [ACLOVE_DEP_THEORA], [])
 AS_VAR_IF([enable_gme], [yes], [ACLOVE_DEP_GME], [])
 AS_VAR_IF([enable_mpg123], [no],
 	  AC_DEFINE([LOVE_NOMPG123], [], [Build without mpg123]),
 	  [ACLOVE_DEP_MPG123])
 
-# GME, treated seperately because it can be enabled (default off)
+# Add flags for optional libraries
+AC_ARG_ENABLE([library-enet], [  --disable-library-enet    Turn off library enet], [], [enable_library_enet=yes])
+AC_ARG_ENABLE([library-luasocket], [  --disable-library-luasocket    Turn off library luasocket], [], [enable_library_luasocket=yes])
+AC_ARG_ENABLE([library-luautf8], [  --disable-library-luautf8    Turn off library luautf8], [], [enable_library_luautf8=yes])
+
+# Select the libraries we need to build, based on the selected modules
+AS_VAR_IF([enable_module_physics], [yes], [enable_library_Box2D=yes], [enable_library_Box2D=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_library_ddsparse=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glslang=yes], [enable_library_glslang=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_lodepng=yes], [enable_library_lodepng=no])
+AS_VAR_IF([enable_module_math], [yes], [enable_library_lz4=yes], [enable_library_lz4=no])
+AS_VAR_IF([enable_module_math], [yes], [enable_library_noise1234=yes], [enable_library_noise1234=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_stb=yes], [enable_library_stb=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_tinyexr=yes], [enable_library_tinyexr=no])
+AS_VAR_IF([enable_module_sound], [yes], [enable_library_Wuff=yes], [enable_library_Wuff=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_xxHash=yes], [enable_library_xxHash=no])
+
+# Utf8 is required by both graphics and font, so enable if either is enabled
+enable_library_utf8=no
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_utf8=yes], [])
+AS_VAR_IF([enable_module_font], [yes], [enable_library_utf8=yes], [])
 
 # libenet check for socklen_t
 ACLOVE_SOCKLEN_T
+
+# Generated sources for enabling/disabling modules
+m4_include([configure-modules-post.ac])
 
 # Optionally build the executable (default on)
 AC_ARG_ENABLE([exe],
