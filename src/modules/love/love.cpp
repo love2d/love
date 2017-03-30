@@ -168,11 +168,11 @@ static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_SYSTEM)
 	{ "love.system", luaopen_love_system },
 #endif
-#if defined(LOVE_ENABLE_TIMER)
-	{ "love.timer", luaopen_love_timer },
-#endif
 #if defined(LOVE_ENABLE_THREAD)
 	{ "love.thread", luaopen_love_thread },
+#endif
+#if defined(LOVE_ENABLE_TIMER)
+	{ "love.timer", luaopen_love_timer },
 #endif
 #if defined(LOVE_ENABLE_TOUCH)
 	{ "love.touch", luaopen_love_touch },

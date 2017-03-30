@@ -30,9 +30,7 @@
 #include "common/Reference.h"
 #include "math/wrap_Transform.h"
 
-#ifdef LOVE_ENABLE_GRAPHICS_OPENGL
 #include "opengl/Graphics.h"
-#endif
 
 #include <cassert>
 #include <cstring>
@@ -2637,11 +2635,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 	Graphics *instance = instance();
 	if (instance == nullptr)
 	{
-#ifdef LOVE_ENABLE_GRAPHICS_OPENGL
 		luax_catchexcept(L, [&](){ instance = new love::graphics::opengl::Graphics(); });
-#else
-		return luaL_error(L, "LOVE was compiled without any love.graphics backend!");
-#endif
 	}
 	else
 		instance->retain();

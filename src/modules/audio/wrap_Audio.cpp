@@ -524,7 +524,6 @@ extern "C" int luaopen_love_audio(lua_State *L)
 {
 	Audio *instance = instance();
 
-#ifdef LOVE_ENABLE_AUDIO_OPENAL
 	if (instance == nullptr)
 	{
 		// Try OpenAL first.
@@ -539,9 +538,7 @@ extern "C" int luaopen_love_audio(lua_State *L)
 	}
 	else
 		instance->retain();
-#endif
 
-#ifdef LOVE_ENABLE_AUDIO_NULL
 	if (instance == nullptr)
 	{
 		// Fall back to nullaudio.
@@ -554,7 +551,6 @@ extern "C" int luaopen_love_audio(lua_State *L)
 			std::cout << e.what() << std::endl;
 		}
 	}
-#endif
 
 	if (instance == nullptr)
 		return luaL_error(L, "Could not open any audio module.");
