@@ -119,6 +119,7 @@ int w_RandomGenerator_getState(lua_State *L)
 struct FFI_RandomGenerator
 {
 	double (*random)(Proxy *p);
+	double (*randomNormal)(Proxy *p, double stddev, double mean);
 };
 
 static FFI_RandomGenerator ffifuncs =
@@ -131,6 +132,16 @@ static FFI_RandomGenerator ffifuncs =
 
 		RandomGenerator *rng = (RandomGenerator *) p->object;
 		return rng->random();
+	},
+
+	[](Proxy *p, double stdddev, double mean) -> double // randomNormal
+	{
+		// FIXME: We need better type-checking...
+		if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(RandomGenerator::type))
+			return 0.0;
+
+		RandomGenerator *rng = (RandomGenerator *) p->object;
+		return rng->randomNormal(stdddev) + mean;
 	}
 };
 

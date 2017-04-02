@@ -63,6 +63,7 @@ typedef struct Proxy Proxy;
 typedef struct FFI_RandomGenerator
 {
 	double (*random)(Proxy *p);
+	double (*randomNormal)(Proxy *p, double stddev, double mean);
 } FFI_RandomGenerator;
 ]])
 
@@ -76,6 +77,19 @@ function RandomGenerator:random(l, u)
 	if self == nil then error("bad argument #1 to 'random' (RandomGenerator expected, got no value)", 2) end
 	local r = tonumber(ffifuncs.random(self))
 	return getrandom(r, l, u)
+end
+
+function RandomGenerator:randomNormal(stddev, mean)
+	-- TODO: This should ideally be handled inside ffifuncs.randomNormal
+	if self == nil then error("bad argument #1 to 'randomNormal' (RandomGenerator expected, got no value)", 2) end
+
+	stddev = stddev == nil and 1 or stddev
+	mean = mean == nil and 0 or mean
+
+	if type(stddev) ~= "number" then error("bad argument #1 to 'randomNormal' (number expected)", 2) end
+	if type(mean) ~= "number" then error("bad argument #2 to 'randomNormal' (number expected)", 2) end
+
+	return tonumber(ffifuncs.randomNormal(self, stddev, mean))
 end
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
