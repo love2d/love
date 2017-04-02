@@ -513,7 +513,6 @@ StrongRef<CompressedImageData::Memory> PVRHandler::parse(filesystem::FileData *f
 		throw love::Exception("Could not parse PVR file: unsupported image format.");
 
 	size_t totalsize = 0;
-	uint8 *data = nullptr;
 
 	// Ignore faces and surfaces except the first ones (for now.)
 	for (int i = 0; i < (int) header3.numMipmaps; i++)
@@ -541,7 +540,7 @@ StrongRef<CompressedImageData::Memory> PVRHandler::parse(filesystem::FileData *f
 		int width = std::max((int) header3.width >> i, 1);
 		int height = std::max((int) header3.height >> i, 1);
 
-		memcpy(data + curoffset, filebytes + curoffset, mipsize);
+		memcpy(memory->data + curoffset, filebytes + curoffset, mipsize);
 
 		auto slice = new CompressedImageData::Slice(cformat, width, height, memory, curoffset, mipsize);
 		images.push_back(slice);

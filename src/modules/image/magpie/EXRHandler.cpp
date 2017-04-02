@@ -101,7 +101,7 @@ static T *loadEXRChannels(int width, int height, T *rgba[4], T one)
 
 FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 {
-	const char *err;
+	const char *err = "unknown error";
 	auto mem = (const unsigned char *) data->getData();
 	size_t memsize = data->getSize();
 	DecodedImage img;
