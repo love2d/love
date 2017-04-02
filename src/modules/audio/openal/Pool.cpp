@@ -103,9 +103,16 @@ void Pool::update()
 {
 	thread::Lock lock(mutex);
 
+	std::vector<Source *> torelease;
+
 	for (const auto &i : playing)
+	{
 		if (!i.first->update())
-			releaseSource(i.first);
+			torelease.push_back(i.first);
+	}
+
+	for (Source *s : torelease)
+		releaseSource(s);
 }
 
 int Pool::getSourceCount() const
