@@ -25,6 +25,11 @@
 
 #include "sdl/Event.h"
 
+// Shove the wrap_Event.lua code directly into a raw string literal.
+static const char event_lua[] =
+#include "wrap_Event.lua"
+;
+
 namespace love
 {
 namespace event
@@ -45,12 +50,6 @@ static int w_poll_i(lua_State *L)
 
 	// No pending events.
 	return 0;
-}
-
-int w_poll(lua_State *L)
-{
-	lua_pushcclosure(L, &w_poll_i, 0);
-	return 1;
 }
 
 int w_pump(lua_State *L)
@@ -107,7 +106,7 @@ int w_quit(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "pump", w_pump },
-	{ "poll", w_poll },
+	{ "poll_i", w_poll_i },
 	{ "wait", w_wait },
 	{ "push", w_push },
 	{ "clear", w_clear },
@@ -133,6 +132,11 @@ extern "C" int luaopen_love_event(lua_State *L)
 	w.types = nullptr;
 
 	int ret = luax_register_module(L, w);
+
+	if (luaL_loadbuffer(L, (const char *)event_lua, sizeof(event_lua), "wrap_Event.lua") == 0)
+		lua_call(L, 0, 0);
+	else
+		lua_error(L);
 
 	return ret;
 }
