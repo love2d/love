@@ -2383,7 +2383,7 @@ int w_polygon(lua_State *L)
 	return 0;
 }
 
-int w_flush(lua_State *)
+int w_flushBatch(lua_State *)
 {
 	instance()->flushStreamDraws();
 	return 0;
@@ -2590,7 +2590,7 @@ static const luaL_Reg functions[] =
 	{ "arc", w_arc },
 	{ "polygon", w_polygon },
 
-	{ "flush", w_flush },
+	{ "flushBatch", w_flushBatch },
 
 	{ "push", w_push },
 	{ "pop", w_pop },
