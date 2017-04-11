@@ -120,6 +120,8 @@ public:
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
 
+	bool isReadable() const;
+
 	int getWidth() const;
 	int getHeight() const;
 	int getDepth() const;
@@ -166,6 +168,7 @@ protected:
 	TextureType texType;
 
 	PixelFormat format;
+	bool readable;
 
 	int width;
 	int height;

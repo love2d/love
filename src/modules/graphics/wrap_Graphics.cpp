@@ -124,7 +124,7 @@ int w_discard(lua_State *L)
 	else
 	{
 		bool discardcolor = luax_optboolean(L, 1, true);
-		size_t numbuffers = std::max((size_t) 1, instance()->getCanvas().size());
+		size_t numbuffers = std::max((size_t) 1, instance()->getCanvas().colors.size());
 		colorbuffers = std::vector<bool>(numbuffers, discardcolor);
 	}
 
@@ -201,6 +201,21 @@ int w_getPixelDensity(lua_State *L)
 	return 1;
 }
 
+static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
+{
+	lua_rawgeti(L, idx, 1);
+	Graphics::RenderTarget target(luax_checkcanvas(L, -1), 0);
+	lua_pop(L, 1);
+
+	TextureType type = target.canvas->getTextureType();
+	if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
+		target.slice = luax_checkintflag(L, idx, "layer") - 1;
+	else if (type == TEXTURE_CUBE)
+		target.slice = luax_checkintflag(L, idx, "face") - 1;
+
+	return target;
+}
+
 int w_setCanvas(lua_State *L)
 {
 	// Disable stencil writes.
@@ -214,7 +229,7 @@ int w_setCanvas(lua_State *L)
 	}
 
 	bool is_table = lua_istable(L, 1);
-	std::vector<Graphics::RenderTarget> targets;
+	Graphics::RenderTargets targets;
 
 	if (is_table)
 	{
@@ -227,29 +242,24 @@ int w_setCanvas(lua_State *L)
 			lua_rawgeti(L, 1, i);
 
 			if (table_of_tables)
-			{
-				lua_rawgeti(L, -1, 1);
-				Graphics::RenderTarget target(luax_checkcanvas(L, -1), 0);
-				lua_pop(L, 1);
-
-				TextureType type = target.canvas->getTextureType();
-				if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
-					target.slice = luax_checkintflag(L, -1, "layer") - 1;
-				else if (type == TEXTURE_CUBE)
-					target.slice = luax_checkintflag(L, -1, "face") - 1;
-
-				targets.push_back(target);
-			}
+				targets.colors.push_back(checkRenderTarget(L, -1));
 			else
 			{
-				targets.emplace_back(luax_checkcanvas(L, -1), 0);
+				targets.colors.emplace_back(luax_checkcanvas(L, -1), 0);
 
-				if (targets.back().canvas->getTextureType() != TEXTURE_2D)
+				if (targets.colors.back().canvas->getTextureType() != TEXTURE_2D)
 					return luaL_error(L, "The table-of-tables variant of setCanvas must be used with non-2D Canvases.");
 			}
 
 			lua_pop(L, 1);
 		}
+
+		lua_getfield(L, 1, "depthstencil");
+		if (lua_istable(L, -1))
+			targets.depthStencil = checkRenderTarget(L, -1);
+		else if (!lua_isnoneornil(L, -1))
+			targets.depthStencil.canvas = luax_checkcanvas(L, -1);
+		lua_pop(L, 1);
 	}
 	else
 	{
@@ -261,19 +271,19 @@ int w_setCanvas(lua_State *L)
 			if (i == 1 && type != TEXTURE_2D)
 			{
 				target.slice = (int) luaL_checknumber(L, 2) - 1;
-				targets.push_back(target);
+				targets.colors.push_back(target);
 				break;
 			}
 
 			if (i > 1 && type != TEXTURE_2D)
 				return luaL_error(L, "This variant of setCanvas only supports 2D texture types.");
 
-			targets.push_back(target);
+			targets.colors.push_back(target);
 		}
 	}
 
 	luax_catchexcept(L, [&]() {
-		if (targets.size() > 0)
+		if (targets.colors.size() > 0)
 			instance()->setCanvas(targets);
 		else
 			instance()->setCanvas();
@@ -282,10 +292,31 @@ int w_setCanvas(lua_State *L)
 	return 0;
 }
 
+static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
+{
+	lua_createtable(L, 1, 1);
+
+	luax_pushtype(L, rt.canvas);
+	lua_rawseti(L, -2, 1);
+
+	TextureType type = rt.canvas->getTextureType();
+
+	if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
+	{
+		lua_pushnumber(L, rt.slice + 1);
+		lua_setfield(L, -2, "layer");
+	}
+	else if (type == TEXTURE_VOLUME)
+	{
+		lua_pushnumber(L, rt.slice + 1);
+		lua_setfield(L, -2, "face");
+	}
+}
+
 int w_getCanvas(lua_State *L)
 {
-	const std::vector<Graphics::RenderTarget> targets = instance()->getCanvas();
-	int ntargets = (int) targets.size();
+	Graphics::RenderTargets targets = instance()->getCanvas();
+	int ntargets = (int) targets.colors.size();
 
 	if (ntargets == 0)
 	{
@@ -294,7 +325,7 @@ int w_getCanvas(lua_State *L)
 	}
 
 	bool hasNon2DTextureType = false;
-	for (const auto &rt : targets)
+	for (const auto &rt : targets.colors)
 	{
 		if (rt.canvas->getTextureType() != TEXTURE_2D)
 		{
@@ -303,40 +334,27 @@ int w_getCanvas(lua_State *L)
 		}
 	}
 
-	if (hasNon2DTextureType)
+	if (hasNon2DTextureType || targets.depthStencil.canvas != nullptr)
 	{
 		lua_createtable(L, ntargets, 0);
 
 		for (int i = 0; i < ntargets; i++)
 		{
-			const auto &rt = targets[i];
-
-			lua_createtable(L, 1, 1);
-
-			luax_pushtype(L, rt.canvas);
-			lua_rawseti(L, -2, 1);
-
-			TextureType type = rt.canvas->getTextureType();
-
-			if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
-			{
-				lua_pushnumber(L, rt.slice + 1);
-				lua_setfield(L, -2, "layer");
-			}
-			else if (type == TEXTURE_VOLUME)
-			{
-				lua_pushnumber(L, rt.slice + 1);
-				lua_setfield(L, -2, "face");
-			}
-
+			pushRenderTarget(L, targets.colors[i]);
 			lua_rawseti(L, -2, i + 1);
+		}
+
+		if (targets.depthStencil.canvas != nullptr)
+		{
+			pushRenderTarget(L, targets.depthStencil);
+			lua_setfield(L, -2, "depthstencil");
 		}
 
 		return 1;
 	}
 	else
 	{
-		for (const auto &rt : targets)
+		for (const auto &rt : targets.colors)
 			luax_pushtype(L, rt.canvas);
 
 		return ntargets;

@@ -51,6 +51,7 @@ float Texture::defaultMipmapSharpness = 0.0f;
 Texture::Texture(TextureType texType)
 	: texType(texType)
 	, format(PIXELFORMAT_UNKNOWN)
+	, readable(true)
 	, width(0)
 	, height(0)
 	, depth(1)
@@ -84,6 +85,11 @@ PixelFormat Texture::getPixelFormat() const
 	return format;
 }
 
+bool Texture::isReadable() const
+{
+	return readable;
+}
+
 void Texture::draw(Graphics *gfx, const Matrix4 &m)
 {
 	draw(gfx, quad, m);
@@ -92,6 +98,9 @@ void Texture::draw(Graphics *gfx, const Matrix4 &m)
 void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 {
 	using namespace vertex;
+
+	if (!readable)
+		throw love::Exception("Textures with non-readable formats cannot be drawn.");
 
 	if (texType == TEXTURE_2D_ARRAY)
 	{
@@ -131,6 +140,9 @@ void Texture::drawLayer(Graphics *gfx, int layer, const Matrix4 &m)
 void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 {
 	using namespace vertex;
+
+	if (!readable)
+		throw love::Exception("Textures with non-readable formats cannot be drawn.");
 
 	if (texType != TEXTURE_2D_ARRAY)
 		throw love::Exception("drawLayer can only be used with Array Textures!");

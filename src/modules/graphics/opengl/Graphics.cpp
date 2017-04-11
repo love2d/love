@@ -169,7 +169,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
-	if (states.back().renderTargets.empty())
+	if (!isCanvasActive())
 	{
 		// Set the viewport to top-left corner.
 		gl.setViewport({0, 0, pixelwidth, pixelheight});
@@ -302,8 +302,8 @@ void Graphics::unSetMode()
 	for (const auto &pair : framebufferObjects)
 		gl.deleteFramebuffer(pair.second);
 
-	for (const CachedRenderbuffer &rb : stencilBuffers)
-		glDeleteRenderbuffers(1, &rb.renderbuffer);
+	for (love::graphics::Canvas *c : stencilBuffers)
+		c->release();
 
 	framebufferObjects.clear();
 	stencilBuffers.clear();
@@ -354,6 +354,9 @@ void Graphics::flushStreamDraws()
 			prevdefaultshader = Shader::current;
 			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
 		}
+
+		if (!sbstate.texture->isReadable())
+			throw love::Exception("Textures with non-readable formats cannot be drawn.");
 
 		if (Shader::current)
 			Shader::current->checkMainTextureType(textype);
@@ -502,26 +505,36 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setCanvas(const std::vector<RenderTarget> &rts)
+void Graphics::setCanvas(const RenderTargets &rts)
 {
 	DisplayState &state = states.back();
-	int ncanvases = (int) rts.size();
+	int ncanvases = (int) rts.colors.size();
 
-	if (ncanvases == 0)
+	if (ncanvases == 0 && rts.depthStencil.canvas == nullptr)
 		return setCanvas();
+	else if (ncanvases == 0)
+		throw love::Exception("At least one color render target is required when using a custom depth/stencil buffer.");
 
-	if (ncanvases == (int) state.renderTargets.size())
+	const auto &prevRTs = state.renderTargets;
+
+	if (ncanvases == (int) prevRTs.colors.size())
 	{
 		bool modified = false;
 
 		for (int i = 0; i < ncanvases; i++)
 		{
-			if (rts[i].canvas != state.renderTargets[i].canvas.get()
-				|| rts[i].slice != state.renderTargets[i].slice)
+			if (rts.colors[i].canvas != prevRTs.colors[i].canvas.get()
+				|| rts.colors[i].slice != prevRTs.colors[i].slice)
 			{
 				modified = true;
 				break;
 			}
+		}
+
+		if (!modified && rts.depthStencil.canvas == prevRTs.depthStencil.canvas
+			&& rts.depthStencil.slice == prevRTs.depthStencil.slice)
+		{
+			modified = true;
 		}
 
 		if (!modified)
@@ -531,10 +544,13 @@ void Graphics::setCanvas(const std::vector<RenderTarget> &rts)
 	if (ncanvases > gl.getMaxRenderTargets())
 		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
 
-	love::graphics::Canvas *firstcanvas = rts[0].canvas;
+	love::graphics::Canvas *firstcanvas = rts.colors[0].canvas;
 
 	bool multiformatsupported = Canvas::isMultiFormatMultiCanvasSupported();
 	PixelFormat firstformat = firstcanvas->getPixelFormat();
+
+	if (isPixelFormatDepthStencil(firstformat))
+		throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
 
 	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
 	int pixelwidth = firstcanvas->getPixelWidth();
@@ -542,19 +558,37 @@ void Graphics::setCanvas(const std::vector<RenderTarget> &rts)
 
 	for (int i = 1; i < ncanvases; i++)
 	{
-		love::graphics::Canvas *c = rts[i].canvas;
+		love::graphics::Canvas *c = rts.colors[i].canvas;
+		PixelFormat format = c->getPixelFormat();
 
 		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
-			throw love::Exception("All canvases in must have the same pixel dimensions.");
+			throw love::Exception("All canvases must have the same pixel dimensions.");
 
-		if (!multiformatsupported && c->getPixelFormat() != firstformat)
+		if (!multiformatsupported && format != firstformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
-			throw love::Exception("All Canvases in must have the same MSAA value.");
+			throw love::Exception("All Canvases must have the same MSAA value.");
 
-		if (c->getPixelFormat() == PIXELFORMAT_sRGBA8)
+		if (isPixelFormatDepthStencil(format))
+			throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
+
+		if (format == PIXELFORMAT_sRGBA8)
 			hasSRGBcanvas = true;
+	}
+
+	if (rts.depthStencil.canvas != nullptr)
+	{
+		love::graphics::Canvas *c = rts.depthStencil.canvas;
+
+		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
+			throw love::Exception("Only depth/stencil format Canvases can be used with the 'depthstencil' field of the table passed into setCanvas.");
+
+		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
+			throw love::Exception("All canvases must have the same pixel dimensions.");
+
+		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
+			throw love::Exception("All Canvases must have the same MSAA value.");
 	}
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
@@ -583,13 +617,15 @@ void Graphics::setCanvas(const std::vector<RenderTarget> &rts)
 			gl.setFramebufferSRGB(false);
 	}
 
-	std::vector<RenderTargetStrongRef> canvasrefs;
-	canvasrefs.reserve(rts.size());
+	RenderTargetsStrongRef refs;
+	refs.colors.reserve(rts.colors.size());
 
-	for (auto c : rts)
-		canvasrefs.emplace_back(c.canvas, c.slice);
+	for (auto c : rts.colors)
+		refs.colors.emplace_back(c.canvas, c.slice);
 
-	std::swap(state.renderTargets, canvasrefs);
+	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.canvas, rts.depthStencil.slice);
+
+	std::swap(state.renderTargets, refs);
 
 	canvasSwitchCount++;
 }
@@ -598,14 +634,14 @@ void Graphics::setCanvas()
 {
 	DisplayState &state = states.back();
 
-	if (state.renderTargets.empty())
+	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.canvas == nullptr)
 		return;
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas()");
 
 	endPass();
 
-	state.renderTargets.clear();
+	state.renderTargets = RenderTargetsStrongRef();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
 
@@ -635,21 +671,25 @@ void Graphics::endPass()
 {
 	flushStreamDraws();
 
-	// Discard the stencil buffer.
-	discard({}, true);
+	auto &rts = states.back().renderTargets;
 
-	auto &canvases = states.back().renderTargets;
+	// Discard the stencil buffer if we're using an internal cached one.
+	if (rts.depthStencil.canvas.get() == nullptr)
+		discard({}, true);
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
-	if (canvases.size() > 0 && canvases[0].canvas->getMSAA() > 1)
+	if (rts.colors.size() > 0 && rts.colors[0].canvas->getMSAA() > 1)
 	{
-		int w = canvases[0].canvas->getPixelWidth();
-		int h = canvases[0].canvas->getPixelHeight();
+		int w = rts.colors[0].canvas->getPixelWidth();
+		int h = rts.colors[0].canvas->getPixelHeight();
 
-		for (int i = 0; i < (int) canvases.size(); i++)
+		for (int i = 0; i < (int) rts.colors.size(); i++)
 		{
-			Canvas *c = (Canvas *) canvases[i].canvas.get();
+			Canvas *c = (Canvas *) rts.colors[i].canvas.get();
+
+			if (!c->isReadable())
+				continue;
 
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
 
@@ -685,7 +725,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 	if (colors.size() == 0)
 		return;
 
-	int ncanvases = (int) states.back().renderTargets.size();
+	int ncanvases = (int) states.back().renderTargets.colors.size();
 	int ncolors = std::min((int) colors.size(), ncanvases);
 
 	if (ncolors <= 1 && ncanvases <= 1)
@@ -767,7 +807,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (states.back().renderTargets.empty() && gl.getDefaultFBO() == 0)
+	if (!isCanvasActive() && gl.getDefaultFBO() == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
@@ -780,7 +820,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	}
 	else
 	{
-		int rendertargetcount = std::max((int) states.back().renderTargets.size(), 1);
+		int rendertargetcount = std::max((int) states.back().renderTargets.colors.size(), 1);
 
 		for (int i = 0; i < (int) colorbuffers.size(); i++)
 		{
@@ -802,11 +842,18 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::bindCachedFBO(const std::vector<RenderTarget> &targets)
+void Graphics::bindCachedFBO(const RenderTargets &targets)
 {
-	int ntargets = (int) targets.size();
-	uint32 hash = XXH32(&targets[0], sizeof(RenderTarget) * ntargets, 0);
+	RenderTarget hashtargets[MAX_COLOR_RENDER_TARGETS + 1];
+	int hashcount = 0;
 
+	for (int i = 0; i < (int) targets.colors.size(); i++)
+		hashtargets[hashcount++] = targets.colors[i];
+
+	if (targets.depthStencil.canvas != nullptr)
+		hashtargets[hashcount++] = targets.depthStencil;
+
+	uint32 hash = XXH32(hashtargets, sizeof(RenderTarget) * hashcount, 0);
 	GLuint fbo = framebufferObjects[hash];
 
 	if (fbo != 0)
@@ -815,47 +862,66 @@ void Graphics::bindCachedFBO(const std::vector<RenderTarget> &targets)
 	}
 	else
 	{
-		int w = targets[0].canvas->getPixelWidth();
-		int h = targets[0].canvas->getPixelHeight();
-		int msaa = std::max(targets[0].canvas->getMSAA(), 1);
+		int w = targets.colors[0].canvas->getPixelWidth();
+		int h = targets.colors[0].canvas->getPixelHeight();
+		int msaa = targets.colors[0].canvas->getMSAA();
+		int reqmsaa = targets.colors[0].canvas->getRequestedMSAA();
+
+		RenderTarget depthstencil = targets.depthStencil;
+
+		if (depthstencil.canvas == nullptr)
+		{
+			depthstencil.canvas = getCachedStencilBuffer(w, h, reqmsaa);
+			depthstencil.slice = 0;
+		}
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
 
+		int ncolortargets = 0;
 		GLenum drawbuffers[MAX_COLOR_RENDER_TARGETS];
 
-		for (int i = 0; i < ntargets; i++)
+		auto attachCanvas = [&](const RenderTarget &rt)
 		{
-			drawbuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+			bool renderbuffer = msaa > 1 || !rt.canvas->isReadable();
+			bool srgb = false;
+			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.canvas->getPixelFormat(), renderbuffer, srgb);
 
-			if (msaa > 1)
+			if (fmt.framebufferAttachments[0] == GL_COLOR_ATTACHMENT0)
 			{
-				GLuint rbo = (GLuint) targets[i].canvas->getMSAAHandle();
-				glFramebufferRenderbuffer(GL_FRAMEBUFFER, drawbuffers[i], GL_RENDERBUFFER, rbo);
+				fmt.framebufferAttachments[0] = GL_COLOR_ATTACHMENT0 + ncolortargets;
+				drawbuffers[ncolortargets] = fmt.framebufferAttachments[0];
+				ncolortargets++;
 			}
-			else
+
+			GLuint handle = (GLuint) rt.canvas->getRenderTargetHandle();
+
+			for (GLenum attachment : fmt.framebufferAttachments)
 			{
-				GLuint tex = (GLuint) targets[i].canvas->getHandle();
-				TextureType textype = targets[i].canvas->getTextureType();
+				if (attachment == GL_NONE)
+					continue;
+				else if (renderbuffer)
+					glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, handle);
+				else
+				{
+					TextureType textype = rt.canvas->getTextureType();
 
-				int layer = textype == TEXTURE_CUBE ? 0 : targets[i].slice;
-				int face = textype == TEXTURE_CUBE ? targets[i].slice : 0;
+					int layer = textype == TEXTURE_CUBE ? 0 : rt.slice;
+					int face = textype == TEXTURE_CUBE ? rt.slice : 0;
 
-				gl.framebufferTexture(drawbuffers[i], textype, tex, 0, layer, face);
+					gl.framebufferTexture(attachment, textype, handle, 0, layer, face);
+				}
 			}
-		}
+		};
 
-		if (ntargets > 1)
-			glDrawBuffers(ntargets, drawbuffers);
+		for (const auto &rt : targets.colors)
+			attachCanvas(rt);
 
-		GLuint stencil = attachCachedStencilBuffer(w, h, targets[0].canvas->getRequestedMSAA());
+		if (depthstencil.canvas != nullptr)
+			attachCanvas(depthstencil);
 
-		if (stencil == 0)
-		{
-			gl.deleteFramebuffer(fbo);
-			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
-			throw love::Exception("Could not create stencil buffer!");
-		}
+		if (ncolortargets > 1)
+			glDrawBuffers(ncolortargets, drawbuffers);
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -870,80 +936,33 @@ void Graphics::bindCachedFBO(const std::vector<RenderTarget> &targets)
 	}
 }
 
-GLuint Graphics::attachCachedStencilBuffer(int w, int h, int samples)
+love::graphics::Canvas *Graphics::getCachedStencilBuffer(int w, int h, int samples)
 {
-	samples = samples == 1 ? 0 : samples;
+	love::graphics::Canvas *canvas = nullptr;
 
-	for (const CachedRenderbuffer &rb : stencilBuffers)
+	for (love::graphics::Canvas *c : stencilBuffers)
 	{
-		if (rb.w == w && rb.h == h && rb.samples == samples)
+		if (c->getPixelWidth() == w && c->getPixelHeight() == h && c->getRequestedMSAA() == samples)
 		{
-			// Attach the buffer to the framebuffer object.
-			for (GLenum attachment : rb.attachments)
-			{
-				if (attachment != GL_NONE)
-					glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rb.renderbuffer);
-			}
-
-			return rb.renderbuffer;
+			canvas = c;
+			break;
 		}
 	}
 
-	OpenGL::TempDebugGroup debuggroup("Create cached stencil buffer");
-
-	CachedRenderbuffer rb;
-	rb.w = w;
-	rb.h = h;
-	rb.samples = samples;
-
-	rb.attachments[0] = GL_STENCIL_ATTACHMENT;
-	rb.attachments[1] = GL_NONE;
-
-	GLenum format = GL_STENCIL_INDEX8;
-
-	// Prefer a combined depth/stencil buffer.
-	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
+	if (canvas == nullptr)
 	{
-		format = GL_DEPTH24_STENCIL8;
-		rb.attachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
-	}
-	else if (GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
-	{
-		format = GL_DEPTH24_STENCIL8;
-		rb.attachments[0] = GL_DEPTH_ATTACHMENT;
-		rb.attachments[1] = GL_STENCIL_ATTACHMENT;
+		Canvas::Settings settings;
+		settings.format = PIXELFORMAT_STENCIL8;
+		settings.width = w;
+		settings.height = h;
+		settings.msaa = samples;
+
+		canvas = newCanvas(settings);
+
+		stencilBuffers.push_back(canvas);
 	}
 
-	glGenRenderbuffers(1, &rb.renderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, rb.renderbuffer);
-
-	if (rb.samples > 1)
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, rb.samples, format, rb.w, rb.h);
-	else
-		glRenderbufferStorage(GL_RENDERBUFFER, format, rb.w, rb.h);
-
-	// Attach the buffer to the framebuffer object.
-	for (GLenum attachment : rb.attachments)
-	{
-		if (attachment != GL_NONE)
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rb.renderbuffer);
-	}
-
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		glDeleteRenderbuffers(1, &rb.renderbuffer);
-		rb.renderbuffer = 0;
-	}
-
-	if (rb.renderbuffer != 0)
-	{
-		glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		stencilBuffers.push_back(rb);
-	}
-
-	return rb.renderbuffer;
+	return canvas;
 }
 
 void Graphics::present(void *screenshotCallbackData)
@@ -951,7 +970,7 @@ void Graphics::present(void *screenshotCallbackData)
 	if (!isActive())
 		return;
 
-	if (!states.back().renderTargets.empty())
+	if (isCanvasActive())
 		throw love::Exception("present cannot be called while a Canvas is active.");
 
 	endPass();
@@ -1083,7 +1102,7 @@ void Graphics::setScissor(const Rect &rect)
 	glrect.h = (int) (rect.h * density);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(glrect, !state.renderTargets.empty());
+	gl.setScissor(glrect, isCanvasActive());
 
 	state.scissor = true;
 	state.scissorRect = rect;
@@ -1100,7 +1119,7 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	if (states.back().renderTargets.empty() && !windowHasStencil)
+	if (!isCanvasActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
 
 	flushStreamDraws();
@@ -1161,7 +1180,7 @@ void Graphics::stopDrawToStencilBuffer()
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
-	if (compare != COMPARE_ALWAYS && states.back().renderTargets.empty() && !windowHasStencil)
+	if (compare != COMPARE_ALWAYS && !isCanvasActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to use setStencilTest on the main screen.");
 
 	DisplayState &state = states.back();

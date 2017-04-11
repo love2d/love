@@ -1173,6 +1173,9 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 {
 	TextureFormat f;
 
+	f.framebufferAttachments[0] = GL_COLOR_ATTACHMENT0;
+	f.framebufferAttachments[1] = GL_NONE;
+
 	if (pixelformat == PIXELFORMAT_RGBA8 && isSRGB)
 		pixelformat = PIXELFORMAT_sRGBA8;
 	else if (pixelformat == PIXELFORMAT_ETC1)
@@ -1312,6 +1315,32 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		f.internalformat = GL_R11F_G11F_B10F;
 		f.externalformat = GL_RGB;
 		f.type = GL_UNSIGNED_INT_10F_11F_11F_REV;
+		break;
+
+	case PIXELFORMAT_STENCIL8:
+		// Prefer a combined depth/stencil buffer due to driver issues.
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
+		{
+			f.internalformat = GL_DEPTH24_STENCIL8;
+			f.externalformat = GL_DEPTH_STENCIL;
+			f.type = GL_UNSIGNED_INT_24_8;
+			f.framebufferAttachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
+		}
+		else if (GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
+		{
+			f.internalformat = GL_DEPTH24_STENCIL8;
+			f.externalformat = GL_DEPTH_STENCIL;
+			f.type = GL_UNSIGNED_INT_24_8;
+			f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
+			f.framebufferAttachments[1] = GL_STENCIL_ATTACHMENT;
+		}
+		else
+		{
+			f.internalformat = GL_STENCIL_INDEX8;
+			f.externalformat = GL_STENCIL;
+			f.type = GL_UNSIGNED_BYTE;
+			f.framebufferAttachments[0] = GL_STENCIL_ATTACHMENT;
+		}
 		break;
 
 	case PIXELFORMAT_DXT1:
@@ -1454,7 +1483,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	return f;
 }
 
-bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool isSRGB)
+bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool readable, bool isSRGB)
 {
 	if (rendertarget && isPixelFormatCompressed(pixelformat))
 		return false;
@@ -1547,6 +1576,9 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 			return GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float;
 		else
 			return GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float;
+
+	case PIXELFORMAT_STENCIL8:
+		return rendertarget && !readable;
 
 	case PIXELFORMAT_DXT1:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;

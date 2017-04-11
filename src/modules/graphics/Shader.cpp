@@ -206,6 +206,14 @@ void Shader::checkMainTextureType(TextureType textype) const
 	}
 }
 
+void Shader::checkMainTexture(Texture *texture) const
+{
+	if (!texture->isReadable())
+		throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
+
+	checkMainTextureType(texture->getTextureType());
+}
+
 bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err)
 {
 	if (source.vertex.empty() && source.pixel.empty())
@@ -242,7 +250,7 @@ bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool
 
 		if (!s.parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 		{
-			const char *stagename;
+			const char *stagename = "unknown";
 			getConstant(stage, stagename);
 			err = "Error validating " + std::string(stagename) + " shader:\n\n"
 				+ std::string(s.getInfoLog()) + "\n" + std::string(s.getInfoDebugLog());

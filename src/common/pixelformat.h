@@ -57,6 +57,9 @@ enum PixelFormat
 	PIXELFORMAT_RGB10A2,
 	PIXELFORMAT_RG11B10F,
 
+	// depth/stencil formats
+	PIXELFORMAT_STENCIL8,
+
 	// compressed formats
 	PIXELFORMAT_DXT1,
 	PIXELFORMAT_DXT3,
@@ -105,6 +108,11 @@ bool getConstant(const char *in, PixelFormat &out);
  * Gets whether the specified pixel format is a compressed type.
  **/
 bool isPixelFormatCompressed(PixelFormat format);
+
+/**
+ * Gets whether the specified pixel format is a depth/stencil type.
+ **/
+bool isPixelFormatDepthStencil(PixelFormat format);
 
 /**
  * Gets the size in bytes of the specified pixel format.

@@ -58,7 +58,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 		return;
 
 	if (Shader::current && texture.get())
-		Shader::current->checkMainTextureType(texture->getTextureType());
+		Shader::current->checkMainTexture(texture);
 
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 

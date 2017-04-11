@@ -52,6 +52,8 @@ static StringMap<PixelFormat, PIXELFORMAT_MAX_ENUM>::Entry formatEntries[] =
 	{ "rgb565",   PIXELFORMAT_RGB565   },
 	{ "rgb10a2",  PIXELFORMAT_RGB10A2  },
 	{ "rg11b10f", PIXELFORMAT_RG11B10F },
+
+	{ "stencil8", PIXELFORMAT_STENCIL8 },
 	
 	{ "DXT1",      PIXELFORMAT_DXT1       },
 	{ "DXT3",      PIXELFORMAT_DXT3       },
@@ -112,11 +114,17 @@ bool isPixelFormatCompressed(PixelFormat format)
 	return iformat >= (int) PIXELFORMAT_DXT1 && iformat < (int) PIXELFORMAT_MAX_ENUM;
 }
 
+bool isPixelFormatDepthStencil(PixelFormat format)
+{
+	return format == PIXELFORMAT_STENCIL8;
+}
+
 size_t getPixelFormatSize(PixelFormat format)
 {
 	switch (format)
 	{
 	case PIXELFORMAT_R8:
+	case PIXELFORMAT_STENCIL8:
 		return 1;
 	case PIXELFORMAT_RG8:
 	case PIXELFORMAT_R16:

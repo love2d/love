@@ -96,6 +96,9 @@ public:
 		GLenum externalformat = 0;
 		GLenum type = 0;
 
+		// For depth/stencil formats.
+		GLenum framebufferAttachments[2];
+
 		bool swizzled = false;
 		GLint swizzle[4];
 	};
@@ -379,7 +382,7 @@ public:
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
 	static bool isTexStorageSupported();
-	static bool isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool isSRGB);
+	static bool isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool readable, bool isSRGB);
 	static bool hasTextureFilteringSupport(PixelFormat pixelformat);
 
 	static const char *errorString(GLenum errorcode);

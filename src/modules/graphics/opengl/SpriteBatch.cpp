@@ -76,7 +76,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		}
 
 		if (Shader::current)
-			Shader::current->checkMainTextureType(texture->getTextureType());
+			Shader::current->checkMainTexture(texture);
 	}
 
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");

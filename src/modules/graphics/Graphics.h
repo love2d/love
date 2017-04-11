@@ -315,12 +315,17 @@ public:
 
 	struct RenderTarget
 	{
-		Canvas *canvas = nullptr;
-		int slice = 0;
+		Canvas *canvas;
+		int slice;
 
 		RenderTarget(Canvas *canvas, int slice = 0)
 			: canvas(canvas)
 			, slice(slice)
+		{}
+
+		RenderTarget()
+			: canvas(nullptr)
+			, slice(0)
 		{}
 	};
 
@@ -332,6 +337,26 @@ public:
 		RenderTargetStrongRef(Canvas *canvas, int slice = 0)
 			: canvas(canvas)
 			, slice(slice)
+		{}
+	};
+
+	struct RenderTargets
+	{
+		std::vector<RenderTarget> colors;
+		RenderTarget depthStencil;
+
+		RenderTargets()
+			: depthStencil(nullptr)
+		{}
+	};
+
+	struct RenderTargetsStrongRef
+	{
+		std::vector<RenderTargetStrongRef> colors;
+		RenderTargetStrongRef depthStencil;
+
+		RenderTargetsStrongRef()
+			: depthStencil(nullptr)
 		{}
 	};
 
@@ -456,11 +481,11 @@ public:
 	Shader *getShader() const;
 
 	void setCanvas(RenderTarget rt);
-	virtual void setCanvas(const std::vector<RenderTarget> &rts) = 0;
-	void setCanvas(const std::vector<RenderTargetStrongRef> &rts);
+	virtual void setCanvas(const RenderTargets &rts) = 0;
+	void setCanvas(const RenderTargetsStrongRef &rts);
 	virtual void setCanvas() = 0;
 
-	std::vector<RenderTarget> getCanvas() const;
+	RenderTargets getCanvas() const;
 	bool isCanvasActive() const;
 	bool isCanvasActive(Canvas *canvas) const;
 
@@ -813,7 +838,7 @@ protected:
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
-		std::vector<RenderTargetStrongRef> renderTargets;
+		RenderTargetsStrongRef renderTargets;
 
 		ColorMask colorMask = ColorMask(true, true, true, true);
 

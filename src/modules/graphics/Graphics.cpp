@@ -187,9 +187,9 @@ int Graphics::getPixelHeight() const
 
 double Graphics::getCurrentPixelDensity() const
 {
-	if (states.back().renderTargets.size() > 0)
+	if (states.back().renderTargets.colors.size() > 0)
 	{
-		love::graphics::Canvas *c = states.back().renderTargets[0].canvas;
+		Canvas *c = states.back().renderTargets.colors[0].canvas;
 		return (double) c->getPixelHeight() / (double) c->getHeight();
 	}
 
@@ -291,18 +291,27 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	setFont(s.font.get());
 	setShader(s.shader.get());
 
-	bool canvaseschanged = s.renderTargets.size() != cur.renderTargets.size();
+	const auto &sRTs = s.renderTargets;
+	const auto &curRTs = cur.renderTargets;
+
+	bool canvaseschanged = sRTs.colors.size() != curRTs.colors.size();
 	if (!canvaseschanged)
 	{
-		for (size_t i = 0; i < s.renderTargets.size() && i < cur.renderTargets.size(); i++)
+		for (size_t i = 0; i < sRTs.colors.size() && i < curRTs.colors.size(); i++)
 		{
-			const auto &rt1 = s.renderTargets[i];
-			const auto &rt2 = cur.renderTargets[i];
+			const auto &rt1 = sRTs.colors[i];
+			const auto &rt2 = curRTs.colors[i];
 			if (rt1.canvas.get() != rt2.canvas.get() || rt1.slice != rt2.slice)
 			{
 				canvaseschanged = true;
 				break;
 			}
+		}
+
+		if (!canvaseschanged && (sRTs.depthStencil.canvas.get() != curRTs.depthStencil.canvas.get()
+			|| sRTs.depthStencil.slice != curRTs.depthStencil.slice))
+		{
+			canvaseschanged = true;
 		}
 	}
 
@@ -401,44 +410,57 @@ void Graphics::setCanvas(RenderTarget rt)
 	if (rt.canvas == nullptr)
 		return setCanvas();
 
-	std::vector<RenderTarget> rts = {rt};
+	RenderTargets rts;
+	rts.colors.push_back(rt);
+
 	setCanvas(rts);
 }
 
-void Graphics::setCanvas(const std::vector<RenderTargetStrongRef> &rts)
+void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
 {
-	std::vector<RenderTarget> canvaslist;
-	canvaslist.reserve(rts.size());
+	RenderTargets targets;
+	targets.colors.reserve(rts.colors.size());
 
-	for (const auto &rt : rts)
-		canvaslist.emplace_back(rt.canvas.get(), rt.slice);
+	for (const auto &rt : rts.colors)
+		targets.colors.emplace_back(rt.canvas.get(), rt.slice);
 
-	return setCanvas(canvaslist);
+	targets.depthStencil = RenderTarget(rts.depthStencil.canvas, rts.depthStencil.slice);
+
+	return setCanvas(targets);
 }
 
-std::vector<Graphics::RenderTarget> Graphics::getCanvas() const
+Graphics::RenderTargets Graphics::getCanvas() const
 {
-	std::vector<RenderTarget> rts;
-	rts.reserve(states.back().renderTargets.size());
+	const auto &curRTs = states.back().renderTargets;
 
-	for (const auto &rt : states.back().renderTargets)
-		rts.emplace_back(rt.canvas.get(), rt.slice);
+	RenderTargets rts;
+	rts.colors.reserve(curRTs.colors.size());
+
+	for (const auto &rt : curRTs.colors)
+		rts.colors.emplace_back(rt.canvas.get(), rt.slice);
+
+	rts.depthStencil = RenderTarget(curRTs.depthStencil.canvas, curRTs.depthStencil.slice);
 
 	return rts;
 }
 
 bool Graphics::isCanvasActive() const
 {
-	return !states.back().renderTargets.empty();
+	return !states.back().renderTargets.colors.empty();
 }
 
 bool Graphics::isCanvasActive(love::graphics::Canvas *canvas) const
 {
-	for (const auto &rt : states.back().renderTargets)
+	const auto &curRTs = states.back().renderTargets;
+
+	for (const auto &rt : curRTs.colors)
 	{
 		if (rt.canvas.get() == canvas)
 			return true;
 	}
+
+	if (curRTs.depthStencil.canvas.get() == canvas)
+		return true;
 
 	return false;
 }

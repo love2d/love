@@ -56,19 +56,18 @@ public:
 
 	int getMSAA() const override
 	{
-		return actual_samples;
+		return actualSamples;
 	}
 
 	int getRequestedMSAA() const override
 	{
-		return settings.msaa;
+		return requestedSamples;
 	}
 
-	ptrdiff_t getMSAAHandle() const override
+	ptrdiff_t getRenderTargetHandle() const override
 	{
-		return msaa_buffer;
+		return renderbuffer != 0 ? renderbuffer : texture;
 	}
-
 
 	inline GLenum getStatus() const
 	{
@@ -87,18 +86,17 @@ public:
 
 private:
 
-    Settings settings;
-
 	GLuint fbo;
 
 	GLuint texture;
-	GLuint msaa_buffer;
+	GLuint renderbuffer;
 
 	GLenum status;
 
-	int actual_samples;
+	int requestedSamples;
+	int actualSamples;
 
-	size_t texture_memory;
+	size_t textureMemory;
 
 	static bool supportedFormats[PIXELFORMAT_MAX_ENUM];
 	static bool checkedFormats[PIXELFORMAT_MAX_ENUM];

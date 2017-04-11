@@ -237,7 +237,7 @@ bool Image::loadVolatile()
 
 	OpenGL::TempDebugGroup debuggroup("Image load");
 
-	if (!OpenGL::isPixelFormatSupported(format, false, sRGB))
+	if (!OpenGL::isPixelFormatSupported(format, false, true, sRGB))
 	{
 		const char *str;
 		if (love::getConstant(format, str))
@@ -511,7 +511,7 @@ Image::MipmapsType Image::getMipmapsType() const
 
 bool Image::isFormatSupported(PixelFormat pixelformat)
 {
-	return OpenGL::isPixelFormatSupported(pixelformat, false, false);
+	return OpenGL::isPixelFormatSupported(pixelformat, false, true, false);
 }
 
 bool Image::hasSRGBSupport()

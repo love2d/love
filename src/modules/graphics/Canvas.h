@@ -55,7 +55,7 @@ public:
 
 	virtual int getMSAA() const = 0;
 	virtual int getRequestedMSAA() const = 0;
-	virtual ptrdiff_t getMSAAHandle() const = 0;
+	virtual ptrdiff_t getRenderTargetHandle() const = 0;
 
 	void draw(Graphics *gfx, Quad *q, const Matrix4 &t) override;
 	void drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &t) override;

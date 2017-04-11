@@ -69,8 +69,9 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, GLuint texture
 	return status;
 }
 
-static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
+static bool createRenderbuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
 {
+	int reqsamples = samples;
 	bool unusedSRGB = false;
 	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true, unusedSRGB);
 
@@ -84,16 +85,23 @@ static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pi
 	glGenRenderbuffers(1, &buffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, buffer);
 
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt.internalformat, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, buffer);
+	if (samples > 1)
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt.internalformat, width, height);
+	else
+		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, width, height);
 
-	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, fmt.framebufferAttachments[0], GL_RENDERBUFFER, buffer);
+
+	if (samples > 1)
+		glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
+	else
+		samples = 0;
 
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-	if (status == GL_FRAMEBUFFER_COMPLETE && samples > 1)
+	if (status == GL_FRAMEBUFFER_COMPLETE && (reqsamples <= 1 || samples > 1))
 	{
 		// Initialize the buffer to transparent black.
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -109,16 +117,17 @@ static bool createMSAABuffer(int width, int height, int &samples, PixelFormat pi
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 	gl.deleteFramebuffer(fbo);
 
-	return status == GL_FRAMEBUFFER_COMPLETE && samples > 1;
+	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
 Canvas::Canvas(const Settings &settings)
 	: love::graphics::Canvas(settings.type)
 	, fbo(0)
 	, texture(0)
-    , msaa_buffer(0)
-	, actual_samples(0)
-	, texture_memory(0)
+    , renderbuffer(0)
+	, requestedSamples(settings.msaa)
+	, actualSamples(0)
+	, textureMemory(0)
 {
 	this->width = settings.width;
 	this->height = settings.height;
@@ -139,6 +148,8 @@ Canvas::Canvas(const Settings &settings)
 		throw love::Exception("MSAA is only supported for Canvases with the 2D texture type.");
 
 	this->format = getSizedFormat(settings.format);
+
+	readable = this->format != PIXELFORMAT_STENCIL8;
 
 	initQuad();
 	loadVolatile();
@@ -167,8 +178,11 @@ bool Canvas::loadVolatile()
 		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
 	}
 
-	if (settings.msaa > 1 && texType != TEXTURE_2D)
+	if (requestedSamples > 1 && texType != TEXTURE_2D)
 		throw love::Exception("MSAA is only supported for 2D texture types.");
+
+	if (!readable && texType != TEXTURE_2D)
+		throw love::Exception("Non-readable pixel formats are only supported for 2D texture types.");
 
 	if (!gl.isTextureTypeSupported(texType))
 	{
@@ -214,68 +228,74 @@ bool Canvas::loadVolatile()
 	OpenGL::TempDebugGroup debuggroup("Canvas load");
 
 	fbo = texture = 0;
-	msaa_buffer = 0;
+	renderbuffer = 0;
 	status = GL_FRAMEBUFFER_COMPLETE;
+
+	if (isReadable())
+	{
+		glGenTextures(1, &texture);
+		gl.bindTextureToUnit(this, 0, false);
+
+		GLenum gltype = OpenGL::getGLTextureType(texType);
+
+		if (GLAD_ANGLE_texture_usage)
+			glTexParameteri(gltype, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+
+		setFilter(filter);
+		setWrap(wrap);
+
+		while (glGetError() != GL_NO_ERROR)
+			/* Clear the error buffer. */;
+
+		bool isSRGB = format == PIXELFORMAT_sRGBA8;
+		if (!gl.rawTexStorage(texType, 1, format, isSRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers))
+		{
+			status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+			return false;
+		}
+
+		if (glGetError() != GL_NO_ERROR)
+		{
+			gl.deleteTexture(texture);
+			texture = 0;
+			status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+			return false;
+		}
+
+		// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
+		status = createFBO(fbo, texType, texture, texType == TEXTURE_VOLUME ? depth : layers, true);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			if (fbo != 0)
+			{
+				gl.deleteFramebuffer(fbo);
+				fbo = 0;
+			}
+			return false;
+		}
+	}
 
 	// getMaxRenderbufferSamples will be 0 on systems that don't support
 	// multisampled renderbuffers / don't export FBO multisample extensions.
-	settings.msaa = std::min(settings.msaa, gl.getMaxRenderbufferSamples());
-	settings.msaa = std::max(settings.msaa, 0);
+	actualSamples = requestedSamples;
+	actualSamples = std::min(actualSamples, gl.getMaxRenderbufferSamples());
+	actualSamples = std::max(actualSamples, 0);
+	actualSamples = actualSamples == 1 ? 0 : actualSamples;
 
-	glGenTextures(1, &texture);
-	gl.bindTextureToUnit(this, 0, false);
+	if (!isReadable() || actualSamples > 0)
+		createRenderbuffer(pixelWidth, pixelHeight, actualSamples, format, renderbuffer);
 
-	GLenum gltype = OpenGL::getGLTextureType(texType);
+	size_t prevmemsize = textureMemory;
 
-	if (GLAD_ANGLE_texture_usage)
-		glTexParameteri(gltype, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+	textureMemory = getPixelFormatSize(format) * pixelWidth * pixelHeight;
 
-	setFilter(filter);
-	setWrap(wrap);
+	if (actualSamples > 0 && isReadable())
+		textureMemory += (textureMemory * actualSamples);
+	else if (actualSamples > 0)
+		textureMemory *= actualSamples;
 
-	while (glGetError() != GL_NO_ERROR)
-		/* Clear the error buffer. */;
-
-	bool isSRGB = format == PIXELFORMAT_sRGBA8;
-	if (!gl.rawTexStorage(texType, 1, format, isSRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers))
-	{
-		status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-		return false;
-	}
-
-	if (glGetError() != GL_NO_ERROR)
-	{
-        gl.deleteTexture(texture);
-        texture = 0;
-        status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-		return false;
-	}
-
-	// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
-	status = createFBO(fbo, texType, texture, texType == TEXTURE_VOLUME ? depth : layers, true);
-
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-	{
-		if (fbo != 0)
-		{
-			gl.deleteFramebuffer(fbo);
-			fbo = 0;
-		}
-		return false;
-	}
-
-	actual_samples = settings.msaa == 1 ? 0 : settings.msaa;
-
-	if (actual_samples > 0 && !createMSAABuffer(pixelWidth, pixelHeight, actual_samples, format, msaa_buffer))
-		actual_samples = 0;
-
-	size_t prevmemsize = texture_memory;
-
-	texture_memory = getPixelFormatSize(format) * pixelWidth * pixelHeight;
-	if (msaa_buffer != 0)
-		texture_memory += (texture_memory * actual_samples);
-
-	gl.updateTextureMemorySize(prevmemsize, texture_memory);
+	gl.updateTextureMemorySize(prevmemsize, textureMemory);
 
 	return true;
 }
@@ -285,18 +305,18 @@ void Canvas::unloadVolatile()
 	if (fbo != 0)
 		gl.deleteFramebuffer(fbo);
 
-	if (msaa_buffer != 0)
-		glDeleteRenderbuffers(1, &msaa_buffer);
+	if (renderbuffer != 0)
+		glDeleteRenderbuffers(1, &renderbuffer);
 
 	if (texture != 0)
 		gl.deleteTexture(texture);
 
 	fbo = 0;
-	msaa_buffer = 0;
+	renderbuffer = 0;
 	texture = 0;
 
-	gl.updateTextureMemorySize(texture_memory, 0);
-	texture_memory = 0;
+	gl.updateTextureMemorySize(textureMemory, 0);
+	textureMemory = 0;
 }
 
 void Canvas::setFilter(const Texture::Filter &f)
@@ -355,6 +375,9 @@ ptrdiff_t Canvas::getHandle() const
 
 love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int x, int y, int w, int h)
 {
+	if (!isReadable())
+		throw love::Exception("Canvas:newImageData cannot be called on non-readable Canvases.");
+
 	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > getPixelWidth() || (y + h) > getPixelHeight())
 		throw love::Exception("Invalid rectangle dimensions.");
 
@@ -423,7 +446,7 @@ PixelFormat Canvas::getSizedFormat(PixelFormat format)
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
 			return PIXELFORMAT_sRGBA8;
-		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8, true, false))
+		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8, true, true, false))
 			// 32-bit render targets don't have guaranteed support on GLES2.
 			return PIXELFORMAT_RGBA4;
 		else
@@ -456,7 +479,10 @@ bool Canvas::isFormatSupported(PixelFormat format)
 	bool supported = true;
 	format = getSizedFormat(format);
 
-	if (!OpenGL::isPixelFormatSupported(format, true, false))
+	bool depthstencil = isPixelFormatDepthStencil(format);
+	bool readable = !depthstencil;
+
+	if (!OpenGL::isPixelFormatSupported(format, true, readable, false))
 		return false;
 
 	if (checkedFormats[format])
@@ -466,28 +492,37 @@ bool Canvas::isFormatSupported(PixelFormat format)
 	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
 	// a texture to a FBO whose format the driver doesn't like. So we should
 	// test with an actual FBO.
+	if (readable)
+	{
+		GLuint texture = 0;
+		glGenTextures(1, &texture);
+		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
 
-	GLuint texture = 0;
-	glGenTextures(1, &texture);
-	gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
+		Texture::Filter f;
+		f.min = f.mag = Texture::FILTER_NEAREST;
+		gl.setTextureFilter(TEXTURE_2D, f);
 
-	Texture::Filter f;
-	f.min = f.mag = Texture::FILTER_NEAREST;
-	gl.setTextureFilter(TEXTURE_2D, f);
+		Texture::Wrap w;
+		gl.setTextureWrap(TEXTURE_2D, w);
 
-	Texture::Wrap w;
-	gl.setTextureWrap(TEXTURE_2D, w);
+		bool unusedSRGB = false;
+		gl.rawTexStorage(TEXTURE_2D, 1, format, unusedSRGB, 2, 2);
 
-	bool unusedSRGB = false;
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
+		GLuint fbo = 0;
+		supported = (createFBO(fbo, TEXTURE_2D, texture, 1, false) == GL_FRAMEBUFFER_COMPLETE);
+		gl.deleteFramebuffer(fbo);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, fmt.internalformat, 2, 2, 0, fmt.externalformat, fmt.type, nullptr);
+		gl.deleteTexture(texture);
+	}
+	else
+	{
+		int samples = 0;
+		GLuint renderbuffer = 0;
+		supported = createRenderbuffer(2, 2, samples, format, renderbuffer);
 
-	GLuint fbo = 0;
-	supported = (createFBO(fbo, TEXTURE_2D, texture, 1, false) == GL_FRAMEBUFFER_COMPLETE);
-	gl.deleteFramebuffer(fbo);
-
-	gl.deleteTexture(texture);
+		if (supported)
+			glDeleteRenderbuffers(1, &renderbuffer);
+	}
 
 	// Cache the result so we don't do this for every isFormatSupported call.
 	checkedFormats[format] = true;

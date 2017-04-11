@@ -97,7 +97,7 @@ public:
 
 	void setColor(Colorf c) override;
 
-	void setCanvas(const std::vector<RenderTarget> &rts) override;
+	void setCanvas(const RenderTargets &rts) override;
 	void setCanvas() override;
 
 	void setScissor(const Rect &rect) override;
@@ -131,26 +131,17 @@ public:
 
 private:
 
-	struct CachedRenderbuffer
-	{
-		int w;
-		int h;
-		int samples;
-		GLenum attachments[2];
-		GLuint renderbuffer;
-	};
-
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
 
 	void endPass();
-	void bindCachedFBO(const std::vector<RenderTarget> &targets);
+	void bindCachedFBO(const RenderTargets &targets);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
-	GLuint attachCachedStencilBuffer(int w, int h, int samples);
+	love::graphics::Canvas *getCachedStencilBuffer(int w, int h, int samples);
 
 	void setDebug(bool enable);
 
 	std::unordered_map<uint32, GLuint> framebufferObjects;
-	std::vector<CachedRenderbuffer> stencilBuffers;
+	std::vector<love::graphics::Canvas *> stencilBuffers;
 
 	QuadIndices *quadIndices;
 

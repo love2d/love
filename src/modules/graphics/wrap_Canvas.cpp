@@ -57,10 +57,13 @@ int w_Canvas_renderTo(lua_State *L)
 	if (graphics)
 	{
 		// Save the current render targets so we can restore them when we're done.
-		std::vector<Graphics::RenderTarget> oldtargets = graphics->getCanvas();
+		Graphics::RenderTargets oldtargets = graphics->getCanvas();
 
-		for (auto c : oldtargets)
+		for (auto c : oldtargets.colors)
 			c.canvas->retain();
+
+		if (oldtargets.depthStencil.canvas != nullptr)
+			oldtargets.depthStencil.canvas->retain();
 
 		luax_catchexcept(L, [&](){ graphics->setCanvas(rt); });
 
@@ -69,8 +72,11 @@ int w_Canvas_renderTo(lua_State *L)
 
 		graphics->setCanvas(oldtargets);
 
-		for (auto c : oldtargets)
+		for (auto c : oldtargets.colors)
 			c.canvas->release();
+
+		if (oldtargets.depthStencil.canvas != nullptr)
+			oldtargets.depthStencil.canvas->release();
 
 		if (status != 0)
 			return lua_error(L);

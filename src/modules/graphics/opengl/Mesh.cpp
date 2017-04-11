@@ -100,7 +100,7 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 		throw love::Exception("Instancing is not supported on this system.");
 
 	if (Shader::current && texture.get())
-		Shader::current->checkMainTextureType(texture->getTextureType());
+		Shader::current->checkMainTexture(texture);
 
 	gfx->flushStreamDraws();
 

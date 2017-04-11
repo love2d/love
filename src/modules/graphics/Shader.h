@@ -190,6 +190,7 @@ public:
 
 	TextureType getMainTextureType() const;
 	void checkMainTextureType(TextureType textype) const;
+	void checkMainTexture(Texture *texture) const;
 
 	virtual ptrdiff_t getHandle() const = 0;
 

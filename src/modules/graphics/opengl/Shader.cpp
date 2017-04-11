@@ -677,7 +677,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 	{
 		if (textures[i] != nullptr)
 		{
-			if (textures[i]->getTextureType() != info->textureType)
+			if (textures[i]->getTextureType() != info->textureType || !textures[i]->isReadable())
 				continue;
 
 			textures[i]->retain();

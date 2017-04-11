@@ -237,6 +237,13 @@ int w_Texture_getFormat(lua_State *L)
 	return 1;
 }
 
+int w_Texture_isReadable(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_pushboolean(L, t->isReadable());
+	return 1;
+}
+
 const luaL_Reg w_Texture_functions[] =
 {
 	{ "getTextureType", w_Texture_getTextureType },
@@ -257,6 +264,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "setWrap", w_Texture_setWrap },
 	{ "getWrap", w_Texture_getWrap },
 	{ "getFormat", w_Texture_getFormat },
+	{ "isReadable", w_Texture_isReadable },
 	{ 0, 0 }
 };
 
