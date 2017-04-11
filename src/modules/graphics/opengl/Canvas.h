@@ -86,6 +86,25 @@ public:
 
 private:
 
+	struct SupportedFormat
+	{
+		bool readable = false;
+		bool nonreadable = false;
+
+		bool get(bool getreadable)
+		{
+			return getreadable ? readable : nonreadable;
+		}
+
+		void set(bool setreadable, bool val)
+		{
+			if (setreadable)
+				readable = val;
+			else
+				nonreadable = val;
+		}
+	};
+
 	GLuint fbo;
 
 	GLuint texture;
@@ -98,8 +117,8 @@ private:
 
 	size_t textureMemory;
 
-	static bool supportedFormats[PIXELFORMAT_MAX_ENUM];
-	static bool checkedFormats[PIXELFORMAT_MAX_ENUM];
+	static SupportedFormat supportedFormats[PIXELFORMAT_MAX_ENUM];
+	static SupportedFormat checkedFormats[PIXELFORMAT_MAX_ENUM];
 
 }; // Canvas
 

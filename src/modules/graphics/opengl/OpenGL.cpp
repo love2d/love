@@ -1343,6 +1343,60 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		}
 		break;
 
+	case PIXELFORMAT_DEPTH16:
+		f.internalformat = GL_DEPTH_COMPONENT16;
+		f.externalformat = GL_DEPTH_COMPONENT;
+		f.type = GL_UNSIGNED_SHORT;
+		f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
+		break;
+
+	case PIXELFORMAT_DEPTH24:
+		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0 && !GLAD_OES_depth24 && GLAD_OES_packed_depth_stencil)
+		{
+			f.internalformat = GL_DEPTH24_STENCIL8;
+			f.externalformat = GL_DEPTH_STENCIL;
+			f.type = GL_UNSIGNED_INT_24_8;
+			f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
+			f.framebufferAttachments[1] = GL_STENCIL_ATTACHMENT;
+		}
+		else
+		{
+			f.internalformat = GL_DEPTH_COMPONENT24;
+			f.externalformat = GL_DEPTH_COMPONENT;
+			f.type = GL_UNSIGNED_INT;
+			f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
+		}
+		break;
+
+	case PIXELFORMAT_DEPTH32F:
+		f.internalformat = GL_DEPTH_COMPONENT32F;
+		f.externalformat = GL_DEPTH_COMPONENT;
+		f.type = GL_FLOAT;
+		f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
+		break;
+
+	case PIXELFORMAT_DEPTH24_STENCIL8:
+		f.internalformat = GL_DEPTH24_STENCIL8;
+		f.externalformat = GL_DEPTH_STENCIL;
+		f.type = GL_UNSIGNED_INT_24_8;
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object)
+		{
+			f.framebufferAttachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
+		}
+		else if (GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
+		{
+			f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
+			f.framebufferAttachments[1] = GL_STENCIL_ATTACHMENT;
+		}
+		break;
+
+	case PIXELFORMAT_DEPTH32F_STENCIL8:
+		f.internalformat = GL_DEPTH32F_STENCIL8;
+		f.externalformat = GL_DEPTH_STENCIL;
+		f.type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+		f.framebufferAttachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
+		break;
+
 	case PIXELFORMAT_DXT1:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		break;
@@ -1579,6 +1633,19 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 
 	case PIXELFORMAT_STENCIL8:
 		return rendertarget && !readable;
+
+	case PIXELFORMAT_DEPTH16:
+		return rendertarget && !readable;
+
+	case PIXELFORMAT_DEPTH24:
+		return rendertarget && !readable && (GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth24 || GLAD_OES_packed_depth_stencil);
+
+	case PIXELFORMAT_DEPTH24_STENCIL8:
+		return rendertarget && !readable && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil);
+
+	case PIXELFORMAT_DEPTH32F:
+	case PIXELFORMAT_DEPTH32F_STENCIL8:
+		return rendertarget && !readable && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_depth_buffer_float);
 
 	case PIXELFORMAT_DXT1:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;

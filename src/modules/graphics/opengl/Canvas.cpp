@@ -30,7 +30,7 @@ namespace graphics
 namespace opengl
 {
 
-static GLenum createFBO(GLuint &framebuffer, TextureType texType, GLuint texture, int layers, bool initialize)
+static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int layers)
 {
 	// get currently bound fbo to reset to it later
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
@@ -40,26 +40,34 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, GLuint texture
 
 	if (texture != 0)
 	{
-		if (initialize)
-		{
-			int faces = texType == TEXTURE_CUBE ? 6 : 1;
+		bool unusedSRGB = false;
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
 
-			// Make sure all faces and layers of the texture are initialized to
-			// transparent black. This is unfortunately probably pretty slow for
-			// 2D-array and 3D textures with a lot of layers...
-			for (int layer = layers - 1; layer >= 0; layer--)
+		int faces = texType == TEXTURE_CUBE ? 6 : 1;
+
+		// Make sure all faces and layers of the texture are initialized to
+		// transparent black. This is unfortunately probably pretty slow for
+		// 2D-array and 3D textures with a lot of layers...
+		for (int layer = layers - 1; layer >= 0; layer--)
+		{
+			for (int face = faces - 1; face >= 0; face--)
 			{
-				for (int face = faces - 1; face >= 0; face--)
+				for (GLenum attachment : fmt.framebufferAttachments)
 				{
-					gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, layer, face);
-					glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-					glClear(GL_COLOR_BUFFER_BIT);
+					if (attachment == GL_NONE)
+						continue;
+
+					gl.framebufferTexture(attachment, texType, texture, 0, layer, face);
+
+					if (isPixelFormatDepthStencil(format))
+						glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+					else
+					{
+						glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+						glClear(GL_COLOR_BUFFER_BIT);
+					}
 				}
 			}
-		}
-		else
-		{
-			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
 		}
 	}
 
@@ -90,7 +98,11 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 	else
 		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, width, height);
 
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, fmt.framebufferAttachments[0], GL_RENDERBUFFER, buffer);
+	for (GLenum attachment : fmt.framebufferAttachments)
+	{
+		if (attachment != GL_NONE)
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, buffer);
+	}
 
 	if (samples > 1)
 		glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
@@ -103,9 +115,14 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 
 	if (status == GL_FRAMEBUFFER_COMPLETE && (reqsamples <= 1 || samples > 1))
 	{
-		// Initialize the buffer to transparent black.
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		if (isPixelFormatDepthStencil(pixelformat))
+			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		else
+		{
+			// Initialize the buffer to transparent black.
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
 	}
 	else
 	{
@@ -129,17 +146,17 @@ Canvas::Canvas(const Settings &settings)
 	, actualSamples(0)
 	, textureMemory(0)
 {
-	this->width = settings.width;
-	this->height = settings.height;
-	this->pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
-	this->pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
+	width = settings.width;
+	height = settings.height;
+	pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
+	pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
 
 	if (texType == TEXTURE_VOLUME)
-		this->depth = settings.layers;
+		depth = settings.layers;
 	else if (texType == TEXTURE_2D_ARRAY)
-		this->layers = settings.layers;
+		layers = settings.layers;
 	else
-		this->layers = 1;
+		layers = 1;
 
 	if (width <= 0 || height <= 0 || layers <= 0)
 		throw love::Exception("Canvas dimensions must be greater than 0.");
@@ -147,9 +164,8 @@ Canvas::Canvas(const Settings &settings)
 	if (texType != TEXTURE_2D && settings.msaa > 1)
 		throw love::Exception("MSAA is only supported for Canvases with the 2D texture type.");
 
-	this->format = getSizedFormat(settings.format);
-
-	readable = this->format != PIXELFORMAT_STENCIL8;
+	format = getSizedFormat(settings.format);
+	readable = !isPixelFormatDepthStencil(format);
 
 	initQuad();
 	loadVolatile();
@@ -263,7 +279,7 @@ bool Canvas::loadVolatile()
 		}
 
 		// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
-		status = createFBO(fbo, texType, texture, texType == TEXTURE_VOLUME ? depth : layers, true);
+		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 		{
@@ -468,13 +484,16 @@ bool Canvas::isMultiFormatMultiCanvasSupported()
 	return gl.getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
 }
 
-bool Canvas::supportedFormats[] = {false};
-bool Canvas::checkedFormats[] = {false};
+Canvas::SupportedFormat Canvas::supportedFormats[] = {};
+Canvas::SupportedFormat Canvas::checkedFormats[] = {};
 
 bool Canvas::isFormatSupported(PixelFormat format)
 {
 	if (!isSupported())
 		return false;
+
+	const char *fstr = "?";
+	love::getConstant(format, fstr);
 
 	bool supported = true;
 	format = getSizedFormat(format);
@@ -485,16 +504,32 @@ bool Canvas::isFormatSupported(PixelFormat format)
 	if (!OpenGL::isPixelFormatSupported(format, true, readable, false))
 		return false;
 
-	if (checkedFormats[format])
-		return supportedFormats[format];
+	if (checkedFormats[format].get(readable))
+		return supportedFormats[format].get(readable);
 
 	// Even though we might have the necessary OpenGL version or extension,
 	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
 	// a texture to a FBO whose format the driver doesn't like. So we should
 	// test with an actual FBO.
+	GLuint texture = 0;
+	GLuint renderbuffer = 0;
+
+	bool unusedSRGB = false;
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, unusedSRGB);
+
+	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
+
+	// Make sure at least something is bound to a color attachment. I believe
+	// this is required on ES2 but I'm not positive.
+	if (depthstencil)
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
+
 	if (readable)
 	{
-		GLuint texture = 0;
 		glGenTextures(1, &texture);
 		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
 
@@ -505,28 +540,41 @@ bool Canvas::isFormatSupported(PixelFormat format)
 		Texture::Wrap w;
 		gl.setTextureWrap(TEXTURE_2D, w);
 
-		bool unusedSRGB = false;
-		gl.rawTexStorage(TEXTURE_2D, 1, format, unusedSRGB, 2, 2);
-
-		GLuint fbo = 0;
-		supported = (createFBO(fbo, TEXTURE_2D, texture, 1, false) == GL_FRAMEBUFFER_COMPLETE);
-		gl.deleteFramebuffer(fbo);
-
-		gl.deleteTexture(texture);
+		unusedSRGB = false;
+		gl.rawTexStorage(TEXTURE_2D, 1, format, unusedSRGB, 1, 1);
 	}
 	else
 	{
-		int samples = 0;
-		GLuint renderbuffer = 0;
-		supported = createRenderbuffer(2, 2, samples, format, renderbuffer);
-
-		if (supported)
-			glDeleteRenderbuffers(1, &renderbuffer);
+		glGenRenderbuffers(1, &renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, 1, 1);
 	}
 
+	for (GLenum attachment : fmt.framebufferAttachments)
+	{
+		if (attachment == GL_NONE)
+			continue;
+
+		if (readable)
+			gl.framebufferTexture(attachment, TEXTURE_2D, texture, 0, 0, 0);
+		else
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer);
+	}
+
+	supported = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+	gl.deleteFramebuffer(fbo);
+
+	if (texture != 0)
+		gl.deleteTexture(texture);
+
+	if (renderbuffer != 0)
+		glDeleteRenderbuffers(1, &renderbuffer);
+
 	// Cache the result so we don't do this for every isFormatSupported call.
-	checkedFormats[format] = true;
-	supportedFormats[format] = supported;
+	checkedFormats[format].set(readable, true);
+	supportedFormats[format].set(readable, supported);
 
 	return supported;
 }

@@ -53,7 +53,12 @@ static StringMap<PixelFormat, PIXELFORMAT_MAX_ENUM>::Entry formatEntries[] =
 	{ "rgb10a2",  PIXELFORMAT_RGB10A2  },
 	{ "rg11b10f", PIXELFORMAT_RG11B10F },
 
-	{ "stencil8", PIXELFORMAT_STENCIL8 },
+	{ "stencil8",         PIXELFORMAT_STENCIL8          },
+	{ "depth16",          PIXELFORMAT_DEPTH16           },
+	{ "depth24",          PIXELFORMAT_DEPTH24           },
+	{ "depth32f",         PIXELFORMAT_DEPTH32F          },
+	{ "depth24stencil8",  PIXELFORMAT_DEPTH24_STENCIL8  },
+	{ "depth32fstencil8", PIXELFORMAT_DEPTH32F_STENCIL8 },
 	
 	{ "DXT1",      PIXELFORMAT_DXT1       },
 	{ "DXT3",      PIXELFORMAT_DXT3       },
@@ -116,7 +121,8 @@ bool isPixelFormatCompressed(PixelFormat format)
 
 bool isPixelFormatDepthStencil(PixelFormat format)
 {
-	return format == PIXELFORMAT_STENCIL8;
+	int iformat = (int) format;
+	return iformat >= (int) PIXELFORMAT_STENCIL8 && iformat <= (int) PIXELFORMAT_DEPTH32F_STENCIL8;
 }
 
 size_t getPixelFormatSize(PixelFormat format)
@@ -133,6 +139,7 @@ size_t getPixelFormatSize(PixelFormat format)
 	case PIXELFORMAT_RGBA4:
 	case PIXELFORMAT_RGB5A1:
 	case PIXELFORMAT_RGB565:
+	case PIXELFORMAT_DEPTH16:
 		return 2;
 	case PIXELFORMAT_RGBA8:
 	case PIXELFORMAT_sRGBA8:
@@ -141,10 +148,14 @@ size_t getPixelFormatSize(PixelFormat format)
 	case PIXELFORMAT_R32F:
 	case PIXELFORMAT_RGB10A2:
 	case PIXELFORMAT_RG11B10F:
+	case PIXELFORMAT_DEPTH24:
+	case PIXELFORMAT_DEPTH32F:
+	case PIXELFORMAT_DEPTH24_STENCIL8:
 		return 4;
 	case PIXELFORMAT_RGBA16:
 	case PIXELFORMAT_RGBA16F:
 	case PIXELFORMAT_RG32F:
+	case PIXELFORMAT_DEPTH32F_STENCIL8:
 		return 8;
 	case PIXELFORMAT_RGBA32F:
 		return 16;
