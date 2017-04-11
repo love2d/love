@@ -171,6 +171,9 @@ Canvas::Canvas(const Settings &settings)
 	else
 		readable = !isPixelFormatDepthStencil(format);
 
+	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
+		throw love::Exception("Readable depth/stencil Canvases with MSAA are not currently supported.");
+
 	initQuad();
 	loadVolatile();
 
