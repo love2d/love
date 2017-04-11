@@ -39,6 +39,13 @@ public:
 
 	struct Settings
 	{
+		// Defaults to true for color pixel formats, and false for depth/stencil.
+		struct Readable
+		{
+			bool set = false;
+			bool value = false;
+		};
+
 		int width  = 1;
 		int height = 1;
 		int layers = 1; // depth for 3D textures
@@ -46,6 +53,7 @@ public:
 		TextureType type = TEXTURE_2D;
 		float pixeldensity = 1.0f;
 		int msaa = 0;
+		Readable readable;
 	};
 
 	Canvas(TextureType textype);

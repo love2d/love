@@ -1487,6 +1487,11 @@ bool Graphics::isCanvasFormatSupported(PixelFormat format) const
 	return Canvas::isFormatSupported(format);
 }
 
+bool Graphics::isCanvasFormatSupported(PixelFormat format, bool readable) const
+{
+	return Canvas::isFormatSupported(format, readable);
+}
+
 bool Graphics::isImageFormatSupported(PixelFormat format) const
 {
 	return Image::isFormatSupported(format);

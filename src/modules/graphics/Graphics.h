@@ -723,6 +723,7 @@ public:
 	 * Images.
 	 **/
 	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
+	virtual bool isCanvasFormatSupported(PixelFormat format, bool readable) const = 0;
 	virtual bool isImageFormatSupported(PixelFormat format) const = 0;
 
 	/**

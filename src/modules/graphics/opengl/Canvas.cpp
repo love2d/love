@@ -165,7 +165,11 @@ Canvas::Canvas(const Settings &settings)
 		throw love::Exception("MSAA is only supported for Canvases with the 2D texture type.");
 
 	format = getSizedFormat(settings.format);
-	readable = !isPixelFormatDepthStencil(format);
+
+	if (settings.readable.set)
+		readable = settings.readable.value;
+	else
+		readable = !isPixelFormatDepthStencil(format);
 
 	initQuad();
 	loadVolatile();
@@ -187,7 +191,7 @@ bool Canvas::loadVolatile()
 	if (!Canvas::isSupported())
 		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
 
-	if (!Canvas::isFormatSupported(format))
+	if (!Canvas::isFormatSupported(format, readable))
 	{
 		const char *fstr = "rgba8";
 		love::getConstant(Canvas::getSizedFormat(format), fstr);
@@ -489,6 +493,11 @@ Canvas::SupportedFormat Canvas::checkedFormats[] = {};
 
 bool Canvas::isFormatSupported(PixelFormat format)
 {
+	return isFormatSupported(format, !isPixelFormatDepthStencil(format));
+}
+
+bool Canvas::isFormatSupported(PixelFormat format, bool readable)
+{
 	if (!isSupported())
 		return false;
 
@@ -497,9 +506,6 @@ bool Canvas::isFormatSupported(PixelFormat format)
 
 	bool supported = true;
 	format = getSizedFormat(format);
-
-	bool depthstencil = isPixelFormatDepthStencil(format);
-	bool readable = !depthstencil;
 
 	if (!OpenGL::isPixelFormatSupported(format, true, readable, false))
 		return false;
@@ -525,7 +531,7 @@ bool Canvas::isFormatSupported(PixelFormat format)
 
 	// Make sure at least something is bound to a color attachment. I believe
 	// this is required on ES2 but I'm not positive.
-	if (depthstencil)
+	if (isPixelFormatDepthStencil(format))
 		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
 
 	if (readable)

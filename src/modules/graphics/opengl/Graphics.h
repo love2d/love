@@ -122,6 +122,7 @@ public:
 	bool isSupported(Feature feature) const override;
 	double getSystemLimit(SystemLimit limittype) const override;
 	bool isCanvasFormatSupported(PixelFormat format) const override;
+	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
 	bool isImageFormatSupported(PixelFormat format) const override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;

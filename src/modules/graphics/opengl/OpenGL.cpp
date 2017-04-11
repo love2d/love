@@ -1635,17 +1635,32 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		return rendertarget && !readable;
 
 	case PIXELFORMAT_DEPTH16:
-		return rendertarget && !readable;
+		if (!rendertarget)
+			return false;
+		else if (readable)
+			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth_texture;
+		else
+			return true;
 
 	case PIXELFORMAT_DEPTH24:
-		return rendertarget && !readable && (GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth24 || GLAD_OES_packed_depth_stencil);
+		if (!rendertarget)
+			return false;
+		else if (readable)
+			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || (GLAD_OES_depth_texture && (GLAD_OES_depth24 || GLAD_OES_depth_texture));
+		else
+			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth24 || GLAD_OES_depth_texture;
 
 	case PIXELFORMAT_DEPTH24_STENCIL8:
-		return rendertarget && !readable && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil);
+		if (!rendertarget)
+			return false;
+		else if (readable)
+			return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || (GLAD_OES_depth_texture && GLAD_OES_packed_depth_stencil);
+		else
+			return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil;
 
 	case PIXELFORMAT_DEPTH32F:
 	case PIXELFORMAT_DEPTH32F_STENCIL8:
-		return rendertarget && !readable && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_depth_buffer_float);
+		return rendertarget && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_depth_buffer_float);
 
 	case PIXELFORMAT_DXT1:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;

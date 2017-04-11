@@ -1039,6 +1039,15 @@ int w_newCanvas(lua_State *L)
 				return luaL_error(L, "Invalid texture type: %s", str);
 		}
 		lua_pop(L, 1);
+
+		lua_getfield(L, startidx, "readable");
+		if (!lua_isnoneornil(L, -1))
+		{
+			luaL_checktype(L, -1, LUA_TBOOLEAN);
+			settings.readable.set = true;
+			settings.readable.value = luax_toboolean(L, -1);
+		}
+		lua_pop(L, 1);
 	}
 
 	Canvas *canvas = nullptr;
@@ -1873,10 +1882,34 @@ static int w__getFormats(lua_State *L, bool (*isFormatSupported)(PixelFormat), b
 
 int w_getCanvasFormats(lua_State *L)
 {
-	const auto supported = [](PixelFormat format) -> bool
+	bool (*supported)(PixelFormat);
+
+	if (!lua_isnoneornil(L, 1))
 	{
-		return instance()->isCanvasFormatSupported(format);
-	};
+		luaL_checktype(L, 1, LUA_TBOOLEAN);
+
+		if (luax_toboolean(L, 1))
+		{
+			supported = [](PixelFormat format) -> bool
+			{
+				return instance()->isCanvasFormatSupported(format, true);
+			};
+		}
+		else
+		{
+			supported = [](PixelFormat format) -> bool
+			{
+				return instance()->isCanvasFormatSupported(format, false);
+			};
+		}
+	}
+	else
+	{
+		supported = [](PixelFormat format) -> bool
+		{
+			return instance()->isCanvasFormatSupported(format);
+		};
+	}
 
 	return w__getFormats(L, supported, isPixelFormatCompressed);
 }

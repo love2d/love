@@ -82,6 +82,7 @@ public:
 	static PixelFormat getSizedFormat(PixelFormat format);
 	static bool isSupported();
 	static bool isMultiFormatMultiCanvasSupported();
+	static bool isFormatSupported(PixelFormat format, bool readable);
 	static bool isFormatSupported(PixelFormat format);
 
 private:
