@@ -194,8 +194,11 @@ bool Canvas::loadVolatile()
 	if (!Canvas::isFormatSupported(format, readable))
 	{
 		const char *fstr = "rgba8";
+		const char *readablestr = "";
+		if (readable != !isPixelFormatDepthStencil(format))
+			readablestr = readable ? " readable" : " non-readable";
 		love::getConstant(Canvas::getSizedFormat(format), fstr);
-		throw love::Exception("The %s canvas format is not supported by your OpenGL drivers.", fstr);
+		throw love::Exception("The %s%s canvas format is not supported by your OpenGL drivers.", fstr, readablestr);
 	}
 
 	if (requestedSamples > 1 && texType != TEXTURE_2D)
