@@ -37,6 +37,7 @@
 #include "Quad.h"
 #include "Mesh.h"
 #include "Image.h"
+#include "depthstencil.h"
 #include "math/Transform.h"
 #include "font/Rasterizer.h"
 #include "video/VideoStream.h"
@@ -148,29 +149,6 @@ public:
 		LINE_JOIN_MITER,
 		LINE_JOIN_BEVEL,
 		LINE_JOIN_MAX_ENUM
-	};
-
-	enum StencilAction
-	{
-		STENCIL_REPLACE,
-		STENCIL_INCREMENT,
-		STENCIL_DECREMENT,
-		STENCIL_INCREMENT_WRAP,
-		STENCIL_DECREMENT_WRAP,
-		STENCIL_INVERT,
-		STENCIL_MAX_ENUM
-	};
-
-	enum CompareMode
-	{
-		COMPARE_LESS,
-		COMPARE_LEQUAL,
-		COMPARE_EQUAL,
-		COMPARE_GEQUAL,
-		COMPARE_GREATER,
-		COMPARE_NOTEQUAL,
-		COMPARE_ALWAYS,
-		COMPARE_MAX_ENUM
 	};
 
 	enum Feature
@@ -761,6 +739,8 @@ public:
 	virtual void flushStreamDraws() = 0;
 	StreamVertexData requestStreamDraw(const StreamDrawRequest &request);
 
+	static void flushStreamDrawsGlobal();
+
 	virtual Shader::Language getShaderLanguageTarget() const = 0;
 	const Shader::ShaderSource &getCurrentDefaultShaderCode() const;
 
@@ -792,12 +772,6 @@ public:
 
 	static bool getConstant(const char *in, LineJoin &out);
 	static bool getConstant(LineJoin in, const char *&out);
-
-	static bool getConstant(const char *in, StencilAction &out);
-	static bool getConstant(StencilAction in, const char *&out);
-
-	static bool getConstant(const char *in, CompareMode &out);
-	static bool getConstant(CompareMode in, const char *&out);
 
 	static bool getConstant(const char *in, Feature &out);
 	static bool getConstant(Feature in, const char *&out);
@@ -931,12 +905,6 @@ private:
 
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
 	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
-
-	static StringMap<StencilAction, STENCIL_MAX_ENUM>::Entry stencilActionEntries[];
-	static StringMap<StencilAction, STENCIL_MAX_ENUM> stencilActions;
-
-	static StringMap<CompareMode, COMPARE_MAX_ENUM>::Entry compareModeEntries[];
-	static StringMap<CompareMode, COMPARE_MAX_ENUM> compareModes;
 
 	static StringMap<Feature, FEATURE_MAX_ENUM>::Entry featureEntries[];
 	static StringMap<Feature, FEATURE_MAX_ENUM> features;

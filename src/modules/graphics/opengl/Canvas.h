@@ -50,6 +50,7 @@ public:
 	void setFilter(const Texture::Filter &f) override;
 	bool setWrap(const Texture::Wrap &w) override;
 	bool setMipmapSharpness(float sharpness) override;
+	void setDepthSampleMode(Optional<CompareMode> mode) override;
 	ptrdiff_t getHandle() const override;
 
 	love::image::ImageData *newImageData(love::image::Image *module, int slice, int x, int y, int w, int h) override;

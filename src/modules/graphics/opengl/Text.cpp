@@ -46,7 +46,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 		return;
 
 	if (Shader::current)
-		Shader::current->checkMainTextureType(TEXTURE_2D);
+		Shader::current->checkMainTextureType(TEXTURE_2D, false);
 
 	gfx->flushStreamDraws();
 

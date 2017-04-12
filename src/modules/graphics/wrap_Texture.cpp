@@ -244,6 +244,42 @@ int w_Texture_isReadable(lua_State *L)
 	return 1;
 }
 
+int w_Texture_setDepthSampleMode(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+
+	Optional<CompareMode> mode;
+	if (!lua_isnoneornil(L, 2))
+	{
+		const char *str = luaL_checkstring(L, 2);
+
+		mode.hasValue = true;
+		if (!getConstant(str, mode.value))
+			return luaL_error(L, "Invalid compare mode: %s", str);
+	}
+
+	luax_catchexcept(L, [&]() { t->setDepthSampleMode(mode); });
+	return 0;
+}
+
+int w_Texture_getDepthSampleMode(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	Optional<CompareMode> mode = t->getDepthSampleMode();
+
+	if (mode.hasValue)
+	{
+		const char *str = nullptr;
+		if (!getConstant(mode.value, str))
+			return luaL_error(L, "Unknown compare mode.");
+		lua_pushstring(L, str);
+	}
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
 const luaL_Reg w_Texture_functions[] =
 {
 	{ "getTextureType", w_Texture_getTextureType },
@@ -265,6 +301,8 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getWrap", w_Texture_getWrap },
 	{ "getFormat", w_Texture_getFormat },
 	{ "isReadable", w_Texture_isReadable },
+	{ "getDepthSampleMode", w_Texture_getDepthSampleMode },
+	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },
 	{ 0, 0 }
 };
 

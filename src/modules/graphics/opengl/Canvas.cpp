@@ -277,6 +277,7 @@ bool Canvas::loadVolatile()
 
 		setFilter(filter);
 		setWrap(wrap);
+		setDepthSampleMode(depthCompareMode);
 
 		while (glGetError() != GL_NO_ERROR)
 			/* Clear the error buffer. */;
@@ -358,6 +359,8 @@ void Canvas::setFilter(const Texture::Filter &f)
 	if (!validateFilter(f, false))
 		throw love::Exception("Invalid texture filter.");
 
+	Graphics::flushStreamDrawsGlobal();
+
 	filter = f;
 	gl.bindTextureToUnit(this, 0, false);
 	gl.setTextureFilter(texType, filter);
@@ -365,6 +368,8 @@ void Canvas::setFilter(const Texture::Filter &f)
 
 bool Canvas::setWrap(const Texture::Wrap &w)
 {
+	Graphics::flushStreamDrawsGlobal();
+
 	bool success = true;
 	bool forceclamp = texType == TEXTURE_CUBE;
 	wrap = w;
@@ -400,6 +405,42 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 bool Canvas::setMipmapSharpness(float /*sharpness*/)
 {
 	return false;
+}
+
+void Canvas::setDepthSampleMode(Optional<CompareMode> mode)
+{
+	Texture::setDepthSampleMode(mode);
+
+	bool supported = gl.isDepthCompareSampleSupported();
+
+	if (mode.hasValue && !supported)
+		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
+
+	if (mode.hasValue)
+	{
+		Graphics::flushStreamDrawsGlobal();
+
+		gl.bindTextureToUnit(texType, texture, 0, false);
+		GLenum gltextype = OpenGL::getGLTextureType(texType);
+
+		// See the comment in depthstencil.h
+		GLenum glmode = OpenGL::getGLCompareMode(getReversedCompareMode(mode.value));
+
+		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_FUNC, glmode);
+		
+	}
+	else if (isPixelFormatDepth(format) && supported)
+	{
+		Graphics::flushStreamDrawsGlobal();
+
+		gl.bindTextureToUnit(texType, texture, 0, false);
+		GLenum gltextype = OpenGL::getGLTextureType(texType);
+
+		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+	}
+
+	depthCompareMode = mode;
 }
 
 ptrdiff_t Canvas::getHandle() const

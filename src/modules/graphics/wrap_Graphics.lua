@@ -50,6 +50,11 @@ GLSL.SYNTAX = [[
 #define ArrayImage sampler2DArray
 #define CubeImage samplerCube
 #define VolumeImage sampler3D
+#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
+	#define DepthImage sampler2DShadow
+	#define DepthArrayImage sampler2DArrayShadow
+	#define DepthCubeImage samplerCubeShadow
+#endif
 #define extern uniform
 #ifdef GL_EXT_texture_array
 #extension GL_EXT_texture_array : enable
@@ -77,6 +82,11 @@ GLSL.FUNCTIONS = [[
 	#endif
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
 		precision lowp sampler3D;
+	#endif
+	#if __VERSION__ >= 300
+		precision lowp sampler2DShadow;
+		precision lowp samplerCubeShadow;
+		precision lowp sampler2DArrayShadow;
 	#endif
 #endif
 

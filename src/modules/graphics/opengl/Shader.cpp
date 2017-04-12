@@ -173,6 +173,7 @@ void Shader::mapActiveUniforms()
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(gltype);
 		u.textureType = getUniformTextureType(gltype);
+		u.isDepthSampler = isDepthTextureType(gltype);
 
 		if (u.baseType == UNIFORM_MATRIX)
 			u.matrix = getMatrixSize(gltype);
@@ -675,22 +676,51 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 	// Bind the textures to the texture units.
 	for (int i = 0; i < count; i++)
 	{
-		if (textures[i] != nullptr)
-		{
-			if (textures[i]->getTextureType() != info->textureType || !textures[i]->isReadable())
-				continue;
+		Texture *tex = textures[i];
 
-			textures[i]->retain();
+		if (tex != nullptr)
+		{
+			if (!tex->isReadable())
+			{
+				if (internalUpdate)
+					continue;
+				else
+					throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
+			}
+			else if (info->isDepthSampler != tex->getDepthSampleMode().hasValue)
+			{
+				if (internalUpdate)
+					continue;
+				else if (info->isDepthSampler)
+					throw love::Exception("Depth comparison samplers in shaders can only be used with depth textures which have depth comparison set.");
+				else
+					throw love::Exception("Depth textures which have depth comparison set can only be used with depth/shadow samplers in shaders.");
+			}
+			else if (tex->getTextureType() != info->textureType)
+			{
+				if (internalUpdate)
+					continue;
+				else
+				{
+					const char *textypestr = "unknown";
+					const char *shadertextypestr = "unknown";
+					Texture::getConstant(tex->getTextureType(), textypestr);
+					Texture::getConstant(info->textureType, shadertextypestr);
+					throw love::Exception("Texture's type (%s) must match the type of %s (%s).", textypestr, info->name.c_str(), shadertextypestr);
+				}
+			}
+
+			tex->retain();
 		}
 
 		if (info->textures[i] != nullptr)
 			info->textures[i]->release();
 
-		info->textures[i] = textures[i];
+		info->textures[i] = tex;
 
 		GLuint gltex = 0;
 		if (textures[i] != nullptr)
-			gltex = (GLuint) textures[i]->getHandle();
+			gltex = (GLuint) tex->getHandle();
 		else
 			gltex = gl.getDefaultTexture(info->textureType);
 
@@ -707,11 +737,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 void Shader::flushStreamDraws() const
 {
 	if (current == this)
-	{
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		if (gfx != nullptr)
-			gfx->flushStreamDraws();
-	}
+		Graphics::flushStreamDrawsGlobal();
 }
 
 bool Shader::hasUniform(const std::string &name) const
@@ -1035,7 +1061,7 @@ TextureType Shader::getUniformTextureType(GLenum type) const
 		// 1D-typed textures are not supported.
 		return TEXTURE_MAX_ENUM;
 	case GL_SAMPLER_2D:
-	//case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
 		return TEXTURE_2D;
 	case GL_SAMPLER_2D_MULTISAMPLE:
 	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
@@ -1046,12 +1072,12 @@ TextureType Shader::getUniformTextureType(GLenum type) const
 		// Rectangle textures are not supported.
 		return TEXTURE_MAX_ENUM;
 	case GL_SAMPLER_2D_ARRAY:
-	//case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
 		return TEXTURE_2D_ARRAY;
 	case GL_SAMPLER_3D:
 		return TEXTURE_VOLUME;
 	case GL_SAMPLER_CUBE:
-	//case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_CUBE_SHADOW:
 		return TEXTURE_CUBE;
 	case GL_SAMPLER_CUBE_MAP_ARRAY:
 	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
@@ -1059,6 +1085,22 @@ TextureType Shader::getUniformTextureType(GLenum type) const
 		return TEXTURE_MAX_ENUM;
 	default:
 		return TEXTURE_MAX_ENUM;
+	}
+}
+
+bool Shader::isDepthTextureType(GLenum type) const
+{
+	switch (type)
+	{
+	case GL_SAMPLER_1D_SHADOW:
+	case GL_SAMPLER_1D_ARRAY_SHADOW:
+	case GL_SAMPLER_2D_SHADOW:
+	case GL_SAMPLER_2D_ARRAY_SHADOW:
+	case GL_SAMPLER_CUBE_SHADOW:
+	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+		return true;
+	default:
+		return false;
 	}
 }
 

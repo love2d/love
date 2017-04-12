@@ -128,7 +128,7 @@ public:
 
 		UniformType baseType;
 		TextureType textureType;
-		bool isDepthTexture;
+		bool isDepthSampler;
 		std::string name;
 
 		union
@@ -190,7 +190,7 @@ public:
 	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
 
 	TextureType getMainTextureType() const;
-	void checkMainTextureType(TextureType textype) const;
+	void checkMainTextureType(TextureType textype, bool isDepthSampler) const;
 	void checkMainTexture(Texture *texture) const;
 
 	virtual ptrdiff_t getHandle() const = 0;

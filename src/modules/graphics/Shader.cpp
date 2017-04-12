@@ -192,11 +192,14 @@ TextureType Shader::getMainTextureType() const
 	return info != nullptr ? info->textureType : TEXTURE_MAX_ENUM;
 }
 
-void Shader::checkMainTextureType(TextureType textype) const
+void Shader::checkMainTextureType(TextureType textype, bool isDepthSampler) const
 {
 	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
 
-	if (info != nullptr && info->textureType != TEXTURE_MAX_ENUM && info->textureType != textype)
+	if (info == nullptr)
+		return;
+
+	if (info->textureType != TEXTURE_MAX_ENUM && info->textureType != textype)
 	{
 		const char *textypestr = "unknown";
 		const char *shadertextypestr = "unknown";
@@ -204,14 +207,22 @@ void Shader::checkMainTextureType(TextureType textype) const
 		Texture::getConstant(info->textureType, shadertextypestr);
 		throw love::Exception("Texture's type (%s) must match the type of the shader's main texture type (%s).", textypestr, shadertextypestr);
 	}
+
+	if (info->isDepthSampler != isDepthSampler)
+	{
+		if (info->isDepthSampler)
+			throw love::Exception("Depth comparison samplers in shaders can only be used with depth textures which have depth comparison set.");
+		else
+			throw love::Exception("Depth textures which have depth comparison set can only be used with depth/shadow samplers in shaders.");
+	}
 }
 
-void Shader::checkMainTexture(Texture *texture) const
+void Shader::checkMainTexture(Texture *tex) const
 {
-	if (!texture->isReadable())
+	if (!tex->isReadable())
 		throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
 
-	checkMainTextureType(texture->getTextureType());
+	checkMainTextureType(tex->getTextureType(), tex->getDepthSampleMode().hasValue);
 }
 
 bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err)

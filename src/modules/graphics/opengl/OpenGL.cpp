@@ -987,6 +987,29 @@ GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
 
 }
 
+GLint OpenGL::getGLCompareMode(CompareMode mode)
+{
+	switch (mode)
+	{
+	case COMPARE_LESS:
+		return GL_LESS;
+	case COMPARE_LEQUAL:
+		return GL_LEQUAL;
+	case COMPARE_EQUAL:
+		return GL_EQUAL;
+	case COMPARE_GEQUAL:
+		return GL_GEQUAL;
+	case COMPARE_GREATER:
+		return GL_GREATER;
+	case COMPARE_NOTEQUAL:
+		return GL_NOTEQUAL;
+	case COMPARE_ALWAYS:
+		return GL_ALWAYS;
+	default:
+		return GL_NEVER;
+	}
+}
+
 void OpenGL::setTextureWrap(TextureType target, const graphics::Texture::Wrap &w)
 {
 	glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
@@ -1106,6 +1129,13 @@ bool OpenGL::isInstancingSupported() const
 {
 	return GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_3
 		|| GLAD_ARB_instanced_arrays || GLAD_EXT_instanced_arrays || GLAD_ANGLE_instanced_arrays;
+}
+
+bool OpenGL::isDepthCompareSampleSupported() const
+{
+	// Our official API only supports this in GLSL3 shaders, but unofficially
+	// the requirements are more lax.
+	return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_shadow_samplers;
 }
 
 int OpenGL::getMax2DTextureSize() const

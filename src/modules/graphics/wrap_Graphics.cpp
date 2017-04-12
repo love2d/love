@@ -489,12 +489,12 @@ int w_stencil(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
-	Graphics::StencilAction action = Graphics::STENCIL_REPLACE;
+	StencilAction action = STENCIL_REPLACE;
 
 	if (!lua_isnoneornil(L, 2))
 	{
 		const char *actionstr = luaL_checkstring(L, 2);
-		if (!Graphics::getConstant(actionstr, action))
+		if (!getConstant(actionstr, action))
 			return luaL_error(L, "Invalid stencil draw action: %s", actionstr);
 	}
 
@@ -522,13 +522,13 @@ int w_stencil(lua_State *L)
 int w_setStencilTest(lua_State *L)
 {
 	// COMPARE_ALWAYS effectively disables stencil testing.
-	Graphics::CompareMode compare = Graphics::COMPARE_ALWAYS;
+	CompareMode compare = COMPARE_ALWAYS;
 	int comparevalue = 0;
 
 	if (!lua_isnoneornil(L, 1))
 	{
 		const char *comparestr = luaL_checkstring(L, 1);
-		if (!Graphics::getConstant(comparestr, compare))
+		if (!getConstant(comparestr, compare))
 			return luaL_error(L, "Invalid compare mode: %s", comparestr);
 
 		comparevalue = (int) luaL_checknumber(L, 2);
@@ -540,13 +540,13 @@ int w_setStencilTest(lua_State *L)
 
 int w_getStencilTest(lua_State *L)
 {
-	Graphics::CompareMode compare = Graphics::COMPARE_ALWAYS;
+	CompareMode compare = COMPARE_ALWAYS;
 	int comparevalue = 1;
 
 	instance()->getStencilTest(compare, comparevalue);
 
 	const char *comparestr;
-	if (!Graphics::getConstant(compare, comparestr))
+	if (!getConstant(compare, comparestr))
 		return luaL_error(L, "Unknown compare mode.");
 
 	lua_pushstring(L, comparestr);

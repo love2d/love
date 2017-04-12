@@ -26,9 +26,11 @@
 #include "common/math.h"
 #include "common/pixelformat.h"
 #include "common/Exception.h"
+#include "common/Optional.h"
 #include "Drawable.h"
 #include "Quad.h"
 #include "vertex.h"
+#include "depthstencil.h"
 
 // C
 #include <stddef.h>
@@ -143,6 +145,9 @@ public:
 	virtual bool setMipmapSharpness(float sharpness) = 0;
 	float getMipmapSharpness() const;
 
+	virtual void setDepthSampleMode(Optional<CompareMode> mode = Optional<CompareMode>());
+	Optional<CompareMode> getDepthSampleMode() const;
+
 	Quad *getQuad() const;
 
 	virtual ptrdiff_t getHandle() const = 0;
@@ -184,6 +189,8 @@ protected:
 	Wrap wrap;
 
 	float mipmapSharpness;
+
+	Optional<CompareMode> depthCompareMode;
 
 	StrongRef<Quad> quad;
 

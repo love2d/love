@@ -28,6 +28,7 @@
 #include "graphics/Color.h"
 #include "graphics/Texture.h"
 #include "graphics/vertex.h"
+#include "graphics/depthstencil.h"
 #include "common/Matrix.h"
 
 // GLAD
@@ -326,6 +327,7 @@ public:
 	bool isClampZeroTextureWrapSupported() const;
 	bool isPixelShaderHighpSupported() const;
 	bool isInstancingSupported() const;
+	bool isDepthCompareSampleSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -379,6 +381,7 @@ public:
 	static GLenum getGLBufferUsage(vertex::Usage usage);
 	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
+	static GLint getGLCompareMode(CompareMode mode);
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
 	static bool isTexStorageSupported();

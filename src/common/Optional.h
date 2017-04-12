@@ -23,7 +23,7 @@
 namespace love
 {
 
-// Currently only meant for simple types.
+// Currently only meant for simple and small types.
 template <typename T>
 struct Optional
 {
@@ -40,8 +40,11 @@ struct Optional
 		, value(val)
 	{}
 
-private:
-
+	void set(T val)
+	{
+		hasValue = true;
+		value = val;
+	}
 };
 
 typedef Optional<bool> OptionalBool;

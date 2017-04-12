@@ -230,6 +230,17 @@ float Texture::getMipmapSharpness() const
 	return mipmapSharpness;
 }
 
+void Texture::setDepthSampleMode(Optional<CompareMode> mode)
+{
+	if (mode.hasValue && (!readable || !isPixelFormatDepthStencil(format)))
+		throw love::Exception("Only readable depth textures can have a depth sample compare mode.");
+}
+
+Optional<CompareMode> Texture::getDepthSampleMode() const
+{
+	return depthCompareMode;
+}
+
 Quad *Texture::getQuad() const
 {
 	return quad;

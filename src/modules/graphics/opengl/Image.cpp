@@ -380,6 +380,8 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 	if (w != oldd->getWidth() || h != oldd->getHeight())
 		throw love::Exception("Dimensions must match the texture's dimensions for the specified mipmap level.");
 
+	Graphics::flushStreamDrawsGlobal();
+
 	d->retain();
 	oldd->release();
 
@@ -397,6 +399,8 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 
 void Image::replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps)
 {
+	Graphics::flushStreamDrawsGlobal();
+
 	OpenGL::TempDebugGroup debuggroup("Image replace pixels");
 
 	gl.bindTextureToUnit(this, 0, false);
@@ -422,6 +426,8 @@ void Image::setFilter(const Texture::Filter &f)
 			throw love::Exception("Invalid texture filter.");
 	}
 
+	Graphics::flushStreamDrawsGlobal();
+
 	filter = f;
 
 	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
@@ -445,6 +451,8 @@ void Image::setFilter(const Texture::Filter &f)
 
 bool Image::setWrap(const Texture::Wrap &w)
 {
+	Graphics::flushStreamDrawsGlobal();
+
 	bool success = true;
 	bool forceclamp = texType == TEXTURE_CUBE;
 	wrap = w;
@@ -482,6 +490,8 @@ bool Image::setMipmapSharpness(float sharpness)
 	// OpenGL ES doesn't support LOD bias via glTexParameter.
 	if (!GLAD_VERSION_1_4)
 		return false;
+
+	Graphics::flushStreamDrawsGlobal();
 
 	// LOD bias has the range (-maxbias, maxbias)
 	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);

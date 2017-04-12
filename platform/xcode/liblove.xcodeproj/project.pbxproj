@@ -1132,6 +1132,8 @@
 		FAF140DB1E20934C00F898D2 /* InitializeDll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */; };
 		FAF140DC1E20934C00F898D2 /* InitializeDll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */; };
 		FAF140DD1E20934C00F898D2 /* InitializeDll.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF1403C1E20934C00F898D2 /* InitializeDll.h */; };
+		FAF1889F1E9DBC4B008C1479 /* depthstencil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */; };
+		FAF188A01E9DBC4B008C1479 /* depthstencil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1937,6 +1939,8 @@
 		FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitializeDll.cpp; sourceTree = "<group>"; };
 		FAF1403C1E20934C00F898D2 /* InitializeDll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitializeDll.h; sourceTree = "<group>"; };
 		FAF1889C1E9DA834008C1479 /* Optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Optional.h; sourceTree = "<group>"; };
+		FAF1889D1E9DBBC8008C1479 /* depthstencil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = depthstencil.h; sourceTree = "<group>"; };
+		FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = depthstencil.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2663,6 +2667,8 @@
 				FA1BA0A51E16F20600AA2803 /* Canvas.cpp */,
 				FA1BA0A61E16F20600AA2803 /* Canvas.h */,
 				FA0B7B881A95902C000E1D17 /* Color.h */,
+				FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */,
+				FAF1889D1E9DBBC8008C1479 /* depthstencil.h */,
 				FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */,
 				FA0B7B891A95902C000E1D17 /* Drawable.h */,
 				FA1BA09B1E16CFCE00AA2803 /* Font.cpp */,
@@ -4185,6 +4191,7 @@
 				FA0B7DDD1A95902C000E1D17 /* wrap_BezierCurve.cpp in Sources */,
 				FA0B7A2A1A958EA3000E1D17 /* b2BroadPhase.cpp in Sources */,
 				FA0B7A811A958EA3000E1D17 /* b2EdgeAndCircleContact.cpp in Sources */,
+				FAF188A01E9DBC4B008C1479 /* depthstencil.cpp in Sources */,
 				FA0B7D071A95902C000E1D17 /* wrap_File.cpp in Sources */,
 				FAD19A181DFF8CA200D5398A /* ImageDataBase.cpp in Sources */,
 				FA0B7AD01A958EA3000E1D17 /* peer.c in Sources */,
@@ -4545,6 +4552,7 @@
 				FA0B7DDC1A95902C000E1D17 /* wrap_BezierCurve.cpp in Sources */,
 				FA0B7A951A958EA3000E1D17 /* b2Joint.cpp in Sources */,
 				FA0B7D061A95902C000E1D17 /* wrap_File.cpp in Sources */,
+				FAF1889F1E9DBC4B008C1479 /* depthstencil.cpp in Sources */,
 				FA0B7A4E1A958EA3000E1D17 /* b2Draw.cpp in Sources */,
 				FAD19A171DFF8CA200D5398A /* ImageDataBase.cpp in Sources */,
 				FA27B3C01B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */,

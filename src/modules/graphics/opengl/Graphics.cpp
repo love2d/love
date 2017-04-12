@@ -354,12 +354,6 @@ void Graphics::flushStreamDraws()
 			prevdefaultshader = Shader::current;
 			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
 		}
-
-		if (!sbstate.texture->isReadable())
-			throw love::Exception("Textures with non-readable formats cannot be drawn.");
-
-		if (Shader::current)
-			Shader::current->checkMainTextureType(textype);
 	}
 
 	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
@@ -1236,45 +1230,15 @@ void Graphics::setStencilTest(CompareMode compare, int value)
 		return;
 	}
 
-	GLenum glcompare = GL_EQUAL;
-
 	/**
-	 * Q: Why are some of the compare modes inverted (e.g. COMPARE_LESS becomes
-	 * GL_GREATER)?
-	 *
-	 * A: OpenGL / GPUs do the comparison in the opposite way that makes sense
+	 * OpenGL / GPUs do the comparison in the opposite way that makes sense
 	 * for this API. For example, if the compare function is GL_GREATER then the
 	 * stencil test will pass if the reference value is greater than the value
 	 * in the stencil buffer. With our API it's more intuitive to assume that
 	 * setStencilTest(COMPARE_GREATER, 4) will make it pass if the stencil
 	 * buffer has a value greater than 4.
 	 **/
-
-	switch (compare)
-	{
-	case COMPARE_LESS:
-		glcompare = GL_GREATER;
-		break;
-	case COMPARE_LEQUAL:
-		glcompare = GL_GEQUAL;
-		break;
-	case COMPARE_EQUAL:
-	default:
-		glcompare = GL_EQUAL;
-		break;
-	case COMPARE_GEQUAL:
-		glcompare = GL_LEQUAL;
-		break;
-	case COMPARE_GREATER:
-		glcompare = GL_LESS;
-		break;
-	case COMPARE_NOTEQUAL:
-		glcompare = GL_NOTEQUAL;
-		break;
-	case COMPARE_ALWAYS:
-		glcompare = GL_ALWAYS;
-		break;
-	}
+	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(compare));
 
 	glEnable(GL_STENCIL_TEST);
 	glStencilFunc(glcompare, value, 0xFFFFFFFF);

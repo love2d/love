@@ -94,6 +94,7 @@ private:
 	MatrixSize getMatrixSize(GLenum type) const;
 	UniformType getUniformBaseType(GLenum type) const;
 	TextureType getUniformTextureType(GLenum type) const;
+	bool isDepthTextureType(GLenum type) const;
 
 	GLuint compileCode(ShaderStage stage, const std::string &code);
 

@@ -115,9 +115,14 @@ bool getConstant(const char *in, PixelFormat &out);
 bool isPixelFormatCompressed(PixelFormat format);
 
 /**
- * Gets whether the specified pixel format is a depth/stencil type.
+ * Gets whether the specified pixel format is a depth or stencil type.
  **/
 bool isPixelFormatDepthStencil(PixelFormat format);
+
+/**
+ * Gets whether the specified pixel format is a depth type.
+ **/
+bool isPixelFormatDepth(PixelFormat format);
 
 /**
  * Gets the size in bytes of the specified pixel format.
