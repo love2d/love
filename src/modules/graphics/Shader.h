@@ -128,6 +128,7 @@ public:
 
 		UniformType baseType;
 		TextureType textureType;
+		bool isDepthTexture;
 		std::string name;
 
 		union

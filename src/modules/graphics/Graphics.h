@@ -26,6 +26,7 @@
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "common/Vector.h"
+#include "common/Optional.h"
 #include "StreamBuffer.h"
 #include "vertex.h"
 #include "Color.h"
@@ -57,6 +58,8 @@ class ParticleSystem;
 class Text;
 class Video;
 class Buffer;
+
+typedef Optional<Colorf> OptionalColorf;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
 
@@ -253,12 +256,6 @@ public:
 		}
 	};
 
-	struct OptionalColorf
-	{
-		Colorf c;
-		bool enabled;
-	};
-
 	struct StreamDrawRequest
 	{
 		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
@@ -397,8 +394,8 @@ public:
 	 **/
 	void reset();
 
-	virtual void clear(Colorf color) = 0;
-	virtual void clear(const std::vector<OptionalColorf> &colors) = 0;
+	virtual void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
 
 	virtual void discard(const std::vector<bool> &colorbuffers, bool depthstencil) = 0;
 
@@ -525,7 +522,7 @@ public:
 	/**
 	 * Clear the stencil buffer in the active Canvas(es.)
 	 **/
-	virtual void clearStencil() = 0;
+	virtual void clearStencil(int value) = 0;
 
 	/**
 	 * Sets the enabled color components when rendering.

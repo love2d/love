@@ -703,15 +703,36 @@ void Graphics::endPass()
 	}
 }
 
-void Graphics::clear(Colorf c)
+void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
 {
-	flushStreamDraws();
+	if (c.hasValue || stencil.hasValue || depth.hasValue)
+		flushStreamDraws();
 
-	gammaCorrectColor(c);
-	glClearColor(c.r, c.g, c.b, c.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	GLbitfield flags = 0;
 
-	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
+	if (c.hasValue)
+	{
+		gammaCorrectColor(c.value);
+		glClearColor(c.value.r, c.value.g, c.value.b, c.value.a);
+		flags |= GL_COLOR_BUFFER_BIT;
+	}
+
+	if (stencil.hasValue)
+	{
+		glClearStencil(stencil.value);
+		flags |= GL_STENCIL_BUFFER_BIT;
+	}
+
+	if (depth.hasValue)
+	{
+		glClearDepth(depth.value);
+		flags |= GL_DEPTH_BUFFER_BIT;
+	}
+
+	if (flags != 0)
+		glClear(flags);
+
+	if (flags != 0 && gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
@@ -720,9 +741,9 @@ void Graphics::clear(Colorf c)
 	}
 }
 
-void Graphics::clear(const std::vector<OptionalColorf> &colors)
+void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth)
 {
-	if (colors.size() == 0)
+	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
 	int ncanvases = (int) states.back().renderTargets.colors.size();
@@ -730,8 +751,8 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 
 	if (ncolors <= 1 && ncanvases <= 1)
 	{
-		if (colors[0].enabled)
-			clear(colors[0].c);
+		if (colors[0].hasValue)
+			clear(colors[0].value, stencil, depth);
 
 		return;
 	}
@@ -742,10 +763,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 
 	for (int i = 0; i < ncolors; i++)
 	{
-		if (!colors[i].enabled)
+		if (!colors[i].hasValue)
 			continue;
 
-		Colorf c = colors[i].c;
+		Colorf c = colors[i].value;
 		gammaCorrectColor(c);
 
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
@@ -775,7 +796,22 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors)
 		glDrawBuffers(ncanvases, bufs);
 	}
 
-	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	GLbitfield flags = 0;
+
+	if (stencil.hasValue)
+	{
+		glClearStencil(stencil.value);
+		flags |= GL_STENCIL_BUFFER_BIT;
+	}
+
+	if (depth.hasValue)
+	{
+		glClearDepth(depth.value);
+		flags |= GL_DEPTH_BUFFER_BIT;
+	}
+
+	if (flags != 0)
+		glClear(flags);
 
 	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -1250,9 +1286,10 @@ void Graphics::setStencilTest()
 	setStencilTest(COMPARE_ALWAYS, 0);
 }
 
-void Graphics::clearStencil()
+void Graphics::clearStencil(int value)
 {
-	glClear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearStencil(value);
+	glClear(GL_STENCIL_BUFFER_BIT);
 }
 
 void Graphics::setColor(Colorf c)

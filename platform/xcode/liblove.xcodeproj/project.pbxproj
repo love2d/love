@@ -1936,6 +1936,7 @@
 		FAF140291E20934C00F898D2 /* ShaderLang.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaderLang.h; sourceTree = "<group>"; };
 		FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitializeDll.cpp; sourceTree = "<group>"; };
 		FAF1403C1E20934C00F898D2 /* InitializeDll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitializeDll.h; sourceTree = "<group>"; };
+		FAF1889C1E9DA834008C1479 /* Optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Optional.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2054,6 +2055,7 @@
 				FA0B79071A958E3B000E1D17 /* Module.h */,
 				FA0B79081A958E3B000E1D17 /* Object.cpp */,
 				FA0B79091A958E3B000E1D17 /* Object.h */,
+				FAF1889C1E9DA834008C1479 /* Optional.h */,
 				FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */,
 				FA9D8DD01DEB56C3002CD881 /* pixelformat.h */,
 				FA0B790C1A958E3B000E1D17 /* Reference.cpp */,

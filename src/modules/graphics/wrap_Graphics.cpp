@@ -65,46 +65,84 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	Colorf color;
+	OptionalColorf color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
+	std::vector<OptionalColorf> colors;
 
-	if (lua_isnoneornil(L, 1))
-		color.set(0.0, 0.0, 0.0, 0.0);
-	else if (lua_istable(L, 1))
+	OptionalInt stencil(0);
+	OptionalDouble depth(1.0);
+
+	int argtype = lua_type(L, 1);
+	int startidx = -1;
+
+	if (argtype == LUA_TTABLE)
 	{
-		std::vector<Graphics::OptionalColorf> colors((size_t) lua_gettop(L));
+		int maxn = lua_gettop(L);
+		colors.reserve(maxn);
 
-		for (int i = 0; i < lua_gettop(L); i++)
+		for (int i = 0; i < maxn; i++)
 		{
-			if (lua_isnoneornil(L, i + 1) || luax_objlen(L, i + 1) == 0)
+			argtype = lua_type(L, i + 1);
+
+			if (argtype == LUA_TNUMBER || argtype == LUA_TBOOLEAN)
 			{
-				colors[i].enabled = false;
+				startidx = i + 1;
+				break;
+			}
+			else if (argtype == LUA_TNIL || argtype == LUA_TNONE || luax_objlen(L, i + 1) == 0)
+			{
+				colors.push_back(OptionalColorf());
 				continue;
 			}
 
 			for (int j = 1; j <= 4; j++)
 				lua_rawgeti(L, i + 1, j);
 
-			colors[i].enabled = true;
-			colors[i].c.r = (float) luaL_checknumber(L, -4);
-			colors[i].c.g = (float) luaL_checknumber(L, -3);
-			colors[i].c.b = (float) luaL_checknumber(L, -2);
-			colors[i].c.a = (float) luaL_optnumber(L, -1, 1.0);
+			OptionalColorf c;
+			c.hasValue = true;
+			c.value.r = (float) luaL_checknumber(L, -4);
+			c.value.g = (float) luaL_checknumber(L, -3);
+			c.value.b = (float) luaL_checknumber(L, -2);
+			c.value.a = (float) luaL_optnumber(L, -1, 1.0);
+			colors.push_back(c);
 
 			lua_pop(L, 4);
 		}
-
-		luax_catchexcept(L, [&]() { instance()->clear(colors); });
-		return 0;
 	}
-	else
+	else if (argtype == LUA_TBOOLEAN)
 	{
-		color.r = (float) luaL_checknumber(L, 1);
-		color.g = (float) luaL_checknumber(L, 2);
-		color.b = (float) luaL_checknumber(L, 3);
-		color.a = (float) luaL_optnumber(L, 4, 1.0);
+		color.hasValue = luax_toboolean(L, 1);
+		startidx = 2;
+	}
+	else if (argtype != LUA_TNONE && argtype != LUA_TNIL)
+	{
+		color.hasValue = true;
+		color.value.r = (float) luaL_checknumber(L, 1);
+		color.value.g = (float) luaL_checknumber(L, 2);
+		color.value.b = (float) luaL_checknumber(L, 3);
+		color.value.a = (float) luaL_optnumber(L, 4, 1.0);
+		startidx = 5;
 	}
 
-	luax_catchexcept(L, [&]() { instance()->clear(color); });
+	if (startidx >= 0)
+	{
+		argtype = lua_type(L, startidx);
+		if (argtype == LUA_TBOOLEAN)
+			stencil.hasValue = luax_toboolean(L, startidx);
+		else if (argtype == LUA_TNUMBER)
+			stencil.value = (int) luaL_checkinteger(L, startidx);
+
+		argtype = lua_type(L, startidx + 1);
+		if (argtype == LUA_TBOOLEAN)
+			depth.hasValue = luax_toboolean(L, startidx + 1);
+		else if (argtype == LUA_TNUMBER)
+			depth.value = luaL_checknumber(L, startidx + 1);
+	}
+
+	if (colors.empty())
+		luax_catchexcept(L, [&]() { instance()->clear(color, stencil, depth); });
+	else
+		luax_catchexcept(L, [&]() { instance()->clear(colors, stencil, depth); });
+
 	return 0;
 }
 
@@ -128,8 +166,8 @@ int w_discard(lua_State *L)
 		colorbuffers = std::vector<bool>(numbuffers, discardcolor);
 	}
 
-	bool stencil = luax_optboolean(L, 2, true);
-	instance()->discard(colorbuffers, stencil);
+	bool depthstencil = luax_optboolean(L, 2, true);
+	instance()->discard(colorbuffers, depthstencil);
 	return 0;
 }
 
@@ -463,8 +501,13 @@ int w_stencil(lua_State *L)
 	int stencilvalue = (int) luaL_optnumber(L, 3, 1);
 
 	// Fourth argument: whether to keep the contents of the stencil buffer.
-	if (lua_toboolean(L, 4) == 0)
-		instance()->clearStencil();
+	int argtype = lua_type(L, 4);
+	if (argtype == LUA_TNONE || argtype == LUA_TNIL || (argtype == LUA_TBOOLEAN && luax_toboolean(L, 4) == false))
+		instance()->clearStencil(0);
+	else if (argtype == LUA_TNUMBER)
+		instance()->clearStencil((int) luaL_checkinteger(L, 4));
+	else if (argtype != LUA_TBOOLEAN)
+		luaL_checktype(L, 4, LUA_TBOOLEAN);
 
 	luax_catchexcept(L, [&](){ instance()->drawToStencilBuffer(action, stencilvalue); });
 

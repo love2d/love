@@ -60,7 +60,11 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 					gl.framebufferTexture(attachment, texType, texture, 0, layer, face);
 
 					if (isPixelFormatDepthStencil(format))
+					{
+						glClearDepth(1.0);
+						glClearStencil(0);
 						glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+					}
 					else
 					{
 						glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -116,7 +120,11 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 	if (status == GL_FRAMEBUFFER_COMPLETE && (reqsamples <= 1 || samples > 1))
 	{
 		if (isPixelFormatDepthStencil(pixelformat))
+		{
+			glClearDepth(1.0);
+			glClearStencil(0);
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
 		else
 		{
 			// Initialize the buffer to transparent black.

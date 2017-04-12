@@ -88,8 +88,8 @@ public:
 
 	void flushStreamDraws() override;
 
-	void clear(Colorf color) override;
-	void clear(const std::vector<OptionalColorf> &colors) override;
+	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
 
 	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override;
 
@@ -109,7 +109,7 @@ public:
 	void setStencilTest(CompareMode compare, int value) override;
 	void setStencilTest() override;
 
-	void clearStencil() override;
+	void clearStencil(int value) override;
 
 	void setColorMask(ColorMask mask) override;
 
