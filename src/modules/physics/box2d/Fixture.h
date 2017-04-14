@@ -211,7 +211,7 @@ public:
 protected:
 
 	Body *body;
-	fixtureudata *data;
+	fixtureudata *udata;
 	b2Fixture *fixture;
 };
 

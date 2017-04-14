@@ -69,7 +69,7 @@ public:
 	friend class Shape;
 	friend class Fixture;
 
-	// The Box2D body. (Should not be public?)
+	// Public because joints et al ask for b2body
 	b2Body *body;
 
 	/**

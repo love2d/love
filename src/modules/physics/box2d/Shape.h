@@ -24,7 +24,6 @@
 // LOVE
 #include "physics/Shape.h"
 #include "physics/box2d/Body.h"
-#include "common/Reference.h"
 
 // Box2D
 #include <Box2D/Box2D.h>

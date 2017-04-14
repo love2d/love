@@ -83,7 +83,7 @@ Reference *luax_refif(lua_State *L, int type)
 	// Create a reference only if the test succeeds.
 	if (lua_type(L, -1) == type)
 		r = new Reference(L);
-	else // Pop the value even if it fails (but also if it succeeds).
+	else // Pop the value manually if it fails (done by Reference if it succeeds).
 		lua_pop(L, 1);
 
 	return r;
