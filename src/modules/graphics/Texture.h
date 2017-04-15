@@ -124,18 +124,18 @@ public:
 
 	bool isReadable() const;
 
-	int getWidth() const;
-	int getHeight() const;
-	int getDepth() const;
+	int getWidth(int mip = 0) const;
+	int getHeight(int mip = 0) const;
+	int getDepth(int mip = 0) const;
 	int getLayerCount() const;
 	int getMipmapCount() const;
 
-	virtual int getPixelWidth() const;
-	virtual int getPixelHeight() const;
+	int getPixelWidth(int mip = 0) const;
+	int getPixelHeight(int mip = 0) const;
 
 	float getPixelDensity() const;
 
-	virtual void setFilter(const Filter &f) = 0;
+	virtual void setFilter(const Filter &f);
 	virtual const Filter &getFilter() const;
 
 	virtual bool setWrap(const Wrap &w) = 0;

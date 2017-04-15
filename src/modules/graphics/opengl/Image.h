@@ -86,8 +86,6 @@ private:
 
 	size_t textureMemorySize;
 
-	static float maxMipmapSharpness;
-
 }; // Image
 
 } // opengl

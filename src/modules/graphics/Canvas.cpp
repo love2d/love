@@ -29,15 +29,60 @@ namespace graphics
 love::Type Canvas::type("Canvas", &Texture::type);
 int Canvas::canvasCount = 0;
 
-Canvas::Canvas(TextureType textype)
-	: Texture(textype)
+Canvas::Canvas(const Settings &settings)
+	: Texture(settings.type)
 {
+	this->settings = settings;
+
+	width = settings.width;
+	height = settings.height;
+	pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
+	pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
+
+	format = settings.format;
+
+	if (texType == TEXTURE_VOLUME)
+		depth = settings.layers;
+	else if (texType == TEXTURE_2D_ARRAY)
+		layers = settings.layers;
+	else
+		layers = 1;
+
+	if (width <= 0 || height <= 0 || layers <= 0)
+		throw love::Exception("Canvas dimensions must be greater than 0.");
+
+	if (texType != TEXTURE_2D && settings.msaa > 1)
+		throw love::Exception("MSAA is only supported for Canvases with the 2D texture type.");
+
+	if (settings.readable.hasValue)
+		readable = settings.readable.value;
+	else
+		readable = !isPixelFormatDepthStencil(format);
+
+	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
+		throw love::Exception("Readable depth/stencil Canvases with MSAA are not currently supported.");
+
+	if ((!readable || settings.msaa > 1) && settings.mipmaps != MIPMAP_NONE)
+		throw love::Exception("Non-readable and MSAA textures cannot have mipmaps.");
+
+	mipmapCount = settings.mipmaps == MIPMAP_NONE ? 1 : getMipmapCount(pixelWidth, pixelHeight);
+
 	canvasCount++;
 }
 
 Canvas::~Canvas()
 {
 	canvasCount--;
+}
+
+Canvas::MipmapMode Canvas::getMipmapMode() const
+{
+	return settings.mipmaps;
+}
+
+int Canvas::getRequestedMSAA() const
+{
+	return settings.msaa;
 }
 
 void Canvas::draw(Graphics *gfx, Quad *q, const Matrix4 &t)
@@ -55,6 +100,25 @@ void Canvas::drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m)
 
 	Texture::drawLayer(gfx, layer, quad, m);
 }
+
+bool Canvas::getConstant(const char *in, MipmapMode &out)
+{
+	return mipmapModes.find(in, out);
+}
+
+bool Canvas::getConstant(MipmapMode in, const char *&out)
+{
+	return mipmapModes.find(in, out);
+}
+
+StringMap<Canvas::MipmapMode, Canvas::MIPMAP_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
+{
+	{ "none",   MIPMAP_NONE   },
+	{ "manual", MIPMAP_MANUAL },
+	{ "auto",   MIPMAP_AUTO   },
+};
+
+StringMap<Canvas::MipmapMode, Canvas::MIPMAP_MAX_ENUM> Canvas::mipmapModes(Canvas::mipmapEntries, sizeof(Canvas::mipmapEntries));
 
 } // graphics
 } // love

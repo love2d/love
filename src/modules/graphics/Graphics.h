@@ -292,10 +292,12 @@ public:
 	{
 		Canvas *canvas;
 		int slice;
+		int mipmap;
 
-		RenderTarget(Canvas *canvas, int slice = 0)
+		RenderTarget(Canvas *canvas, int slice = 0, int mipmap = 0)
 			: canvas(canvas)
 			, slice(slice)
+			, mipmap(mipmap)
 		{}
 
 		RenderTarget()
@@ -308,10 +310,12 @@ public:
 	{
 		StrongRef<Canvas> canvas;
 		int slice = 0;
+		int mipmap = 0;
 
-		RenderTargetStrongRef(Canvas *canvas, int slice = 0)
+		RenderTargetStrongRef(Canvas *canvas, int slice = 0, int mipmap = 0)
 			: canvas(canvas)
 			, slice(slice)
+			, mipmap(mipmap)
 		{}
 	};
 

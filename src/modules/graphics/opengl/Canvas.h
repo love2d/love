@@ -53,16 +53,12 @@ public:
 	void setDepthSampleMode(Optional<CompareMode> mode) override;
 	ptrdiff_t getHandle() const override;
 
-	love::image::ImageData *newImageData(love::image::Image *module, int slice, int x, int y, int w, int h) override;
+	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
+	void generateMipmaps() override;
 
 	int getMSAA() const override
 	{
 		return actualSamples;
-	}
-
-	int getRequestedMSAA() const override
-	{
-		return requestedSamples;
 	}
 
 	ptrdiff_t getRenderTargetHandle() const override
@@ -114,7 +110,6 @@ private:
 
 	GLenum status;
 
-	int requestedSamples;
 	int actualSamples;
 
 	size_t textureMemory;

@@ -23,6 +23,8 @@
 #include "image/Image.h"
 #include "image/ImageData.h"
 #include "Texture.h"
+#include "common/Optional.h"
+#include "common/StringMap.h"
 
 namespace love
 {
@@ -37,38 +39,55 @@ public:
 
 	static love::Type type;
 
+	enum MipmapMode
+	{
+		MIPMAP_NONE,
+		MIPMAP_MANUAL,
+		MIPMAP_AUTO,
+		MIPMAP_MAX_ENUM
+	};
+
 	struct Settings
 	{
-		// Defaults to true for color pixel formats, and false for depth/stencil.
-		struct Readable
-		{
-			bool set = false;
-			bool value = false;
-		};
-
 		int width  = 1;
 		int height = 1;
 		int layers = 1; // depth for 3D textures
+		MipmapMode mipmaps = MIPMAP_NONE;
 		PixelFormat format = PIXELFORMAT_NORMAL;
 		TextureType type = TEXTURE_2D;
 		float pixeldensity = 1.0f;
 		int msaa = 0;
-		Readable readable;
+		OptionalBool readable;
 	};
 
-	Canvas(TextureType textype);
+	Canvas(const Settings &settings);
 	virtual ~Canvas();
 
-	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int x, int y, int w, int h) = 0;
+	MipmapMode getMipmapMode() const;
+	int getRequestedMSAA() const;
+
+	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) = 0;
+	virtual void generateMipmaps() = 0;
 
 	virtual int getMSAA() const = 0;
-	virtual int getRequestedMSAA() const = 0;
 	virtual ptrdiff_t getRenderTargetHandle() const = 0;
 
 	void draw(Graphics *gfx, Quad *q, const Matrix4 &t) override;
 	void drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &t) override;
 
 	static int canvasCount;
+
+	static bool getConstant(const char *in, MipmapMode &out);
+	static bool getConstant(MipmapMode in, const char *&out);
+
+protected:
+
+	Settings settings;
+
+private:
+
+	static StringMap<MipmapMode, MIPMAP_MAX_ENUM>::Entry mipmapEntries[];
+	static StringMap<MipmapMode, MIPMAP_MAX_ENUM> mipmapModes;
 	
 }; // Canvas
 

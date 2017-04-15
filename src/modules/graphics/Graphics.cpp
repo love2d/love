@@ -301,7 +301,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		{
 			const auto &rt1 = sRTs.colors[i];
 			const auto &rt2 = curRTs.colors[i];
-			if (rt1.canvas.get() != rt2.canvas.get() || rt1.slice != rt2.slice)
+			if (rt1.canvas.get() != rt2.canvas.get() || rt1.slice != rt2.slice || rt1.mipmap != rt2.mipmap)
 			{
 				canvaseschanged = true;
 				break;
@@ -309,7 +309,8 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		}
 
 		if (!canvaseschanged && (sRTs.depthStencil.canvas.get() != curRTs.depthStencil.canvas.get()
-			|| sRTs.depthStencil.slice != curRTs.depthStencil.slice))
+			|| sRTs.depthStencil.slice != curRTs.depthStencil.slice
+			|| sRTs.depthStencil.mipmap != curRTs.depthStencil.mipmap))
 		{
 			canvaseschanged = true;
 		}
@@ -422,9 +423,9 @@ void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
 	targets.colors.reserve(rts.colors.size());
 
 	for (const auto &rt : rts.colors)
-		targets.colors.emplace_back(rt.canvas.get(), rt.slice);
+		targets.colors.emplace_back(rt.canvas.get(), rt.slice, rt.mipmap);
 
-	targets.depthStencil = RenderTarget(rts.depthStencil.canvas, rts.depthStencil.slice);
+	targets.depthStencil = RenderTarget(rts.depthStencil.canvas, rts.depthStencil.slice, rts.depthStencil.mipmap);
 
 	return setCanvas(targets);
 }
@@ -437,9 +438,9 @@ Graphics::RenderTargets Graphics::getCanvas() const
 	rts.colors.reserve(curRTs.colors.size());
 
 	for (const auto &rt : curRTs.colors)
-		rts.colors.emplace_back(rt.canvas.get(), rt.slice);
+		rts.colors.emplace_back(rt.canvas.get(), rt.slice, rt.mipmap);
 
-	rts.depthStencil = RenderTarget(curRTs.depthStencil.canvas, curRTs.depthStencil.slice);
+	rts.depthStencil = RenderTarget(curRTs.depthStencil.canvas, curRTs.depthStencil.slice, curRTs.depthStencil.mipmap);
 
 	return rts;
 }

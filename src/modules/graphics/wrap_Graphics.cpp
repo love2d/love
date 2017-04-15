@@ -251,6 +251,8 @@ static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
 	else if (type == TEXTURE_CUBE)
 		target.slice = luax_checkintflag(L, idx, "face") - 1;
 
+	target.mipmap = luax_intflag(L, idx, "mipmap", 1) - 1;
+
 	return target;
 }
 
@@ -308,9 +310,15 @@ int w_setCanvas(lua_State *L)
 
 			if (i == 1 && type != TEXTURE_2D)
 			{
-				target.slice = (int) luaL_checknumber(L, 2) - 1;
+				target.slice = (int) luaL_checknumber(L, i + 1) - 1;
+				target.mipmap = (int) luaL_optinteger(L, i + 2, 1) - 1;
 				targets.colors.push_back(target);
 				break;
+			}
+			else if (type == TEXTURE_2D && lua_isnumber(L, i + 1))
+			{
+				target.mipmap = (int) luaL_optinteger(L, i + 1, 1) - 1;
+				i++;
 			}
 
 			if (i > 1 && type != TEXTURE_2D)
@@ -332,7 +340,7 @@ int w_setCanvas(lua_State *L)
 
 static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
 {
-	lua_createtable(L, 1, 1);
+	lua_createtable(L, 1, 2);
 
 	luax_pushtype(L, rt.canvas);
 	lua_rawseti(L, -2, 1);
@@ -349,6 +357,9 @@ static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
 		lua_pushnumber(L, rt.slice + 1);
 		lua_setfield(L, -2, "face");
 	}
+
+	lua_pushnumber(L, rt.mipmap + 1);
+	lua_setfield(L, -2, "mipmap");
 }
 
 int w_getCanvas(lua_State *L)
@@ -362,17 +373,21 @@ int w_getCanvas(lua_State *L)
 		return 1;
 	}
 
-	bool hasNon2DTextureType = false;
-	for (const auto &rt : targets.colors)
+	bool shouldUseTablesVariant = targets.depthStencil.canvas != nullptr;
+
+	if (!shouldUseTablesVariant)
 	{
-		if (rt.canvas->getTextureType() != TEXTURE_2D)
+		for (const auto &rt : targets.colors)
 		{
-			hasNon2DTextureType = true;
-			break;
+			if (rt.mipmap != 0 || rt.canvas->getTextureType() != TEXTURE_2D)
+			{
+				shouldUseTablesVariant = true;
+				break;
+			}
 		}
 	}
 
-	if (hasNon2DTextureType || targets.depthStencil.canvas != nullptr)
+	if (shouldUseTablesVariant)
 	{
 		lua_createtable(L, ntargets, 0);
 
@@ -1063,7 +1078,7 @@ int w_newCanvas(lua_State *L)
 	if (!lua_isnoneornil(L, startidx))
 	{
 		settings.pixeldensity = (float) luax_numberflag(L, startidx, "pixeldensity", settings.pixeldensity);
-		settings.msaa = luax_intflag(L, startidx, "msaa", 0);
+		settings.msaa = luax_intflag(L, startidx, "msaa", settings.msaa);
 
 		lua_getfield(L, startidx, "format");
 		if (!lua_isnoneornil(L, -1))
@@ -1087,8 +1102,17 @@ int w_newCanvas(lua_State *L)
 		if (!lua_isnoneornil(L, -1))
 		{
 			luaL_checktype(L, -1, LUA_TBOOLEAN);
-			settings.readable.set = true;
+			settings.readable.hasValue = true;
 			settings.readable.value = luax_toboolean(L, -1);
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, startidx, "mipmaps");
+		if (!lua_isnoneornil(L, -1))
+		{
+			const char *str = luaL_checkstring(L, -1);
+			if (!Canvas::getConstant(str, settings.mipmaps))
+				return luaL_error(L, "Invalid Canvas mipmap mode: %s", str);
 		}
 		lua_pop(L, 1);
 	}

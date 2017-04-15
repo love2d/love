@@ -424,6 +424,11 @@ void OpenGL::initMaxValues()
 	else
 		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, limits);
 	maxPointSize = limits[1];
+
+	if (isSamplerLODBiasSupported())
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxLODBias);
+	else
+		maxLODBias = 0.0f;
 }
 
 void OpenGL::createDefaultTexture()
@@ -922,16 +927,10 @@ void OpenGL::deleteTexture(GLuint texture)
 
 void OpenGL::setTextureFilter(TextureType target, graphics::Texture::Filter &f)
 {
-	GLint gmin, gmag;
+	GLint gmin = f.min == Texture::FILTER_NEAREST ? GL_NEAREST : GL_LINEAR;
+	GLint gmag = f.mag == Texture::FILTER_NEAREST ? GL_NEAREST : GL_LINEAR;
 
-	if (f.mipmap == Texture::FILTER_NONE)
-	{
-		if (f.min == Texture::FILTER_NEAREST)
-			gmin = GL_NEAREST;
-		else // f.min == Texture::FILTER_LINEAR
-			gmin = GL_LINEAR;
-	}
-	else
+	if (f.mipmap != Texture::FILTER_NONE)
 	{
 		if (f.min == Texture::FILTER_NEAREST && f.mipmap == Texture::FILTER_NEAREST)
 			gmin = GL_NEAREST_MIPMAP_NEAREST;
@@ -943,17 +942,6 @@ void OpenGL::setTextureFilter(TextureType target, graphics::Texture::Filter &f)
 			gmin = GL_LINEAR_MIPMAP_LINEAR;
 		else
 			gmin = GL_LINEAR;
-	}
-
-	switch (f.mag)
-	{
-	case Texture::FILTER_NEAREST:
-		gmag = GL_NEAREST;
-		break;
-	case Texture::FILTER_LINEAR:
-	default:
-		gmag = GL_LINEAR;
-		break;
 	}
 
 	GLenum gltarget = getGLTextureType(target);
@@ -1138,6 +1126,11 @@ bool OpenGL::isDepthCompareSampleSupported() const
 	return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_shadow_samplers;
 }
 
+bool OpenGL::isSamplerLODBiasSupported() const
+{
+	return GLAD_VERSION_1_4;
+}
+
 int OpenGL::getMax2DTextureSize() const
 {
 	return std::max(max2DTextureSize, 1);
@@ -1181,6 +1174,11 @@ float OpenGL::getMaxPointSize() const
 float OpenGL::getMaxAnisotropy() const
 {
 	return maxAnisotropy;
+}
+
+float OpenGL::getMaxLODBias() const
+{
+	return maxLODBias;
 }
 
 void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
@@ -1748,10 +1746,14 @@ bool OpenGL::hasTextureFilteringSupport(PixelFormat pixelformat)
 {
 	switch (pixelformat)
 	{
+	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_RG16F:
 	case PIXELFORMAT_RGBA16F:
 		return GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear;
+	case PIXELFORMAT_R32F:
+	case PIXELFORMAT_RG32F:
 	case PIXELFORMAT_RGBA32F:
-		return GLAD_VERSION_1_1;
+		return GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear;
 	default:
 		return true;
 	}

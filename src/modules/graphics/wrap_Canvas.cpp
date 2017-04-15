@@ -91,32 +91,48 @@ int w_Canvas_newImageData(lua_State *L)
 	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
 
 	int slice = 0;
-	int x = 0;
-	int y = 0;
-	int w = canvas->getPixelWidth();
-	int h = canvas->getPixelHeight();
+	int mipmap = 0;
 
-	int startidx = 2;
+	Rect rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = canvas->getPixelWidth();
+	rect.h = canvas->getPixelHeight();
 
-	if (canvas->getTextureType() != TEXTURE_2D)
+	if (!lua_isnoneornil(L, 2))
 	{
-		slice = (int) luaL_checknumber(L, startidx);
-		startidx++;
-	}
+		rect.x = (int) luaL_checkinteger(L, 2);
+		rect.y = (int) luaL_checkinteger(L, 3);
+		rect.w = (int) luaL_checkinteger(L, 4);
+		rect.h = (int) luaL_checkinteger(L, 5);
 
-	if (!lua_isnoneornil(L, startidx))
-	{
-		x = (int) luaL_checknumber(L, startidx + 0);
-		y = (int) luaL_checknumber(L, startidx + 1);
-		w = (int) luaL_checknumber(L, startidx + 2);
-		h = (int) luaL_checknumber(L, startidx + 3);
+		slice = (int) luaL_optinteger(L, 6, 1) - 1;
+		mipmap = (int) luaL_optinteger(L, 7, 1) - 1;
 	}
 
 	love::image::ImageData *img = nullptr;
-	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, slice, x, y, w, h); });
+	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, slice, mipmap, rect); });
 
 	luax_pushtype(L, img);
 	img->release();
+	return 1;
+}
+
+int w_Canvas_generateMipmaps(lua_State *L)
+{
+	Canvas *c = luax_checkcanvas(L, 1);
+	luax_catchexcept(L, [&]() { c->generateMipmaps(); });
+	return 0;
+}
+
+int w_Canvas_getMipmapMode(lua_State *L)
+{
+	Canvas *c = luax_checkcanvas(L, 1);
+	const char *str;
+	if (!Canvas::getConstant(c->getMipmapMode(), str))
+		return luaL_error(L, "Unknown mipmap mode.");
+
+	lua_pushstring(L, str);
 	return 1;
 }
 
@@ -125,6 +141,8 @@ static const luaL_Reg w_Canvas_functions[] =
 	{ "getMSAA", w_Canvas_getMSAA },
 	{ "renderTo", w_Canvas_renderTo },
 	{ "newImageData", w_Canvas_newImageData },
+	{ "generateMipmaps", w_Canvas_generateMipmaps },
+	{ "getMipmapMode", w_Canvas_getMipmapMode },
 	{ 0, 0 }
 };
 

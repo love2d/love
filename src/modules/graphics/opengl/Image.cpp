@@ -33,8 +33,6 @@ namespace graphics
 namespace opengl
 {
 
-float Image::maxMipmapSharpness = 0.0f;
-
 Image::Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
 	: love::graphics::Image(Slices(textype), settings, false)
 	, texture(0)
@@ -98,8 +96,6 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 
 void Image::generateMipmaps()
 {
-	// The GL_GENERATE_MIPMAP texparameter is set in loadVolatile if we don't
-	// have support for glGenerateMipmap.
 	if (getMipmapCount() > 1 && !isCompressed() &&
 		(GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_object))
 	{
@@ -270,9 +266,6 @@ bool Image::loadVolatile()
 		filter.mipmap = FILTER_NONE;
 	}
 
-	if (maxMipmapSharpness == 0.0f && GLAD_VERSION_1_4)
-		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &maxMipmapSharpness);
-
 	glGenTextures(1, &texture);
 	gl.bindTextureToUnit(this, 0, false);
 
@@ -418,17 +411,7 @@ ptrdiff_t Image::getHandle() const
 
 void Image::setFilter(const Texture::Filter &f)
 {
-	if (!validateFilter(f, getMipmapCount() > 1))
-	{
-		if (f.mipmap != FILTER_NONE && getMipmapCount() == 1)
-			throw love::Exception("Non-mipmapped image cannot have mipmap filtering.");
-		else
-			throw love::Exception("Invalid texture filter.");
-	}
-
-	Graphics::flushStreamDrawsGlobal();
-
-	filter = f;
+	Texture::setFilter(f);
 
 	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
 	{
@@ -487,20 +470,22 @@ bool Image::setWrap(const Texture::Wrap &w)
 
 bool Image::setMipmapSharpness(float sharpness)
 {
-	// OpenGL ES doesn't support LOD bias via glTexParameter.
-	if (!GLAD_VERSION_1_4)
+	if (!gl.isSamplerLODBiasSupported())
 		return false;
 
 	Graphics::flushStreamDrawsGlobal();
 
-	// LOD bias has the range (-maxbias, maxbias)
-	mipmapSharpness = std::min(std::max(sharpness, -maxMipmapSharpness + 0.01f), maxMipmapSharpness - 0.01f);
+	float maxbias = gl.getMaxLODBias();
+	if (maxbias > 0.01f)
+		maxbias -= 0.0f;
+
+	mipmapSharpness = std::min(std::max(sharpness, -maxbias), maxbias);
 
 	gl.bindTextureToUnit(this, 0, false);
 
 	// negative bias is sharper
-	GLenum gltextype = OpenGL::getGLTextureType(texType);
-	glTexParameterf(gltextype, GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
+	glTexParameterf(gl.getGLTextureType(texType), GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
+
 	return true;
 }
 

@@ -518,15 +518,17 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		for (int i = 0; i < ncanvases; i++)
 		{
 			if (rts.colors[i].canvas != prevRTs.colors[i].canvas.get()
-				|| rts.colors[i].slice != prevRTs.colors[i].slice)
+				|| rts.colors[i].slice != prevRTs.colors[i].slice
+				|| rts.colors[i].mipmap != prevRTs.colors[i].mipmap)
 			{
 				modified = true;
 				break;
 			}
 		}
 
-		if (!modified && rts.depthStencil.canvas == prevRTs.depthStencil.canvas
-			&& rts.depthStencil.slice == prevRTs.depthStencil.slice)
+		if (!modified && (rts.depthStencil.canvas != prevRTs.depthStencil.canvas
+			|| rts.depthStencil.slice != prevRTs.depthStencil.slice
+			|| rts.depthStencil.mipmap != prevRTs.depthStencil.mipmap))
 		{
 			modified = true;
 		}
@@ -546,16 +548,23 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (isPixelFormatDepthStencil(firstformat))
 		throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
 
+	if (rts.colors[0].mipmap < 0 || rts.colors[0].mipmap >= firstcanvas->getMipmapCount())
+		throw love::Exception("Invalid mipmap level %d.", rts.colors[0].mipmap + 1);
+
 	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
-	int pixelwidth = firstcanvas->getPixelWidth();
-	int pixelheight = firstcanvas->getPixelHeight();
+	int pixelwidth = firstcanvas->getPixelWidth(rts.colors[0].mipmap);
+	int pixelheight = firstcanvas->getPixelHeight(rts.colors[0].mipmap);
 
 	for (int i = 1; i < ncanvases; i++)
 	{
 		love::graphics::Canvas *c = rts.colors[i].canvas;
 		PixelFormat format = c->getPixelFormat();
+		int mip = rts.colors[i].mipmap;
 
-		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
+		if (mip < 0 || mip >= c->getMipmapCount())
+			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+
+		if (c->getPixelWidth(mip) != pixelwidth || c->getPixelHeight(mip) != pixelheight)
 			throw love::Exception("All canvases must have the same pixel dimensions.");
 
 		if (!multiformatsupported && format != firstformat)
@@ -574,15 +583,19 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (rts.depthStencil.canvas != nullptr)
 	{
 		love::graphics::Canvas *c = rts.depthStencil.canvas;
+		int mip = rts.depthStencil.mipmap;
 
 		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
 			throw love::Exception("Only depth/stencil format Canvases can be used with the 'depthstencil' field of the table passed into setCanvas.");
 
-		if (c->getPixelWidth() != pixelwidth || c->getPixelHeight() != pixelheight)
+		if (c->getPixelWidth(mip) != pixelwidth || c->getPixelHeight(mip) != pixelheight)
 			throw love::Exception("All canvases must have the same pixel dimensions.");
 
 		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
 			throw love::Exception("All Canvases must have the same MSAA value.");
+
+		if (mip < 0 || mip >= c->getMipmapCount())
+			throw love::Exception("Invalid mipmap level %d.", mip + 1);
 	}
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
@@ -598,8 +611,8 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (state.scissor)
 		setScissor(state.scissorRect);
 
-	int w = firstcanvas->getWidth();
-	int h = firstcanvas->getHeight();
+	int w = firstcanvas->getWidth(rts.colors[0].mipmap);
+	int h = firstcanvas->getHeight(rts.colors[0].mipmap);
 	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
@@ -666,17 +679,19 @@ void Graphics::endPass()
 	flushStreamDraws();
 
 	auto &rts = states.back().renderTargets;
+	love::graphics::Canvas *depthstencil = rts.depthStencil.canvas.get();
 
 	// Discard the stencil buffer if we're using an internal cached one.
-	if (rts.depthStencil.canvas.get() == nullptr)
+	if (depthstencil == nullptr)
 		discard({}, true);
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
 	if (rts.colors.size() > 0 && rts.colors[0].canvas->getMSAA() > 1)
 	{
-		int w = rts.colors[0].canvas->getPixelWidth();
-		int h = rts.colors[0].canvas->getPixelHeight();
+		int mip = rts.colors[0].mipmap;
+		int w = rts.colors[0].canvas->getPixelWidth(mip);
+		int h = rts.colors[0].canvas->getPixelHeight(mip);
 
 		for (int i = 0; i < (int) rts.colors.size(); i++)
 		{
@@ -695,6 +710,16 @@ void Graphics::endPass()
 				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 	}
+
+	for (const auto &rt : rts.colors)
+	{
+		if (rt.canvas->getMipmapMode() == Canvas::MIPMAP_AUTO && rt.mipmap == 0)
+			rt.canvas->generateMipmaps();
+	}
+
+	int dsmipmap = rts.depthStencil.mipmap;
+	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAP_AUTO && dsmipmap == 0)
+		depthstencil->generateMipmaps();
 }
 
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
@@ -892,8 +917,9 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	}
 	else
 	{
-		int w = targets.colors[0].canvas->getPixelWidth();
-		int h = targets.colors[0].canvas->getPixelHeight();
+		int mip = targets.colors[0].mipmap;
+		int w = targets.colors[0].canvas->getPixelWidth(mip);
+		int h = targets.colors[0].canvas->getPixelHeight(mip);
 		int msaa = targets.colors[0].canvas->getMSAA();
 		int reqmsaa = targets.colors[0].canvas->getRequestedMSAA();
 
@@ -938,8 +964,9 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 
 					int layer = textype == TEXTURE_CUBE ? 0 : rt.slice;
 					int face = textype == TEXTURE_CUBE ? rt.slice : 0;
+					int level = rt.mipmap;
 
-					gl.framebufferTexture(attachment, textype, handle, 0, layer, face);
+					gl.framebufferTexture(attachment, textype, handle, level, layer, face);
 				}
 			}
 		};

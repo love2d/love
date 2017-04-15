@@ -40,32 +40,48 @@ int w_Texture_getTextureType(lua_State *L)
 	return 1;
 }
 
+static int w__optMipmap(lua_State *L, Texture *t, int idx)
+{
+	int mipmap = 0;
+
+	if (!lua_isnoneornil(L, idx))
+	{
+		mipmap = (int) luaL_checkinteger(L, idx) - 1;
+
+		if (mipmap < 0 || mipmap >= t->getMipmapCount())
+			luaL_error(L, "Invalid mipmap index: %d", mipmap + 1);
+	}
+
+	return mipmap;
+}
+
 int w_Texture_getWidth(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getWidth());
+	lua_pushnumber(L, t->getWidth(w__optMipmap(L, t, 2)));
 	return 1;
 }
 
 int w_Texture_getHeight(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getHeight());
+	lua_pushnumber(L, t->getHeight(w__optMipmap(L, t, 2)));
 	return 1;
 }
 
 int w_Texture_getDimensions(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getWidth());
-	lua_pushnumber(L, t->getHeight());
+	int mipmap = w__optMipmap(L, t, 2);
+	lua_pushnumber(L, t->getWidth(mipmap));
+	lua_pushnumber(L, t->getHeight(mipmap));
 	return 2;
 }
 
 int w_Texture_getDepth(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getDepth());
+	lua_pushnumber(L, t->getDepth(w__optMipmap(L, t, 2)));
 	return 1;
 }
 
@@ -86,22 +102,23 @@ int w_Texture_getMipmapCount(lua_State *L)
 int w_Texture_getPixelWidth(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getPixelWidth());
+	lua_pushnumber(L, t->getPixelWidth(w__optMipmap(L, t, 2)));
 	return 1;
 }
 
 int w_Texture_getPixelHeight(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getPixelHeight());
+	lua_pushnumber(L, t->getPixelHeight(w__optMipmap(L, t, 2)));
 	return 1;
 }
 
 int w_Texture_getPixelDimensions(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getPixelWidth());
-	lua_pushnumber(L, t->getPixelHeight());
+	int mipmap = w__optMipmap(L, t, 2);
+	lua_pushnumber(L, t->getPixelWidth(mipmap));
+	lua_pushnumber(L, t->getPixelHeight(mipmap));
 	return 2;
 }
 

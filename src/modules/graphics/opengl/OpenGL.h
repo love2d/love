@@ -328,6 +328,7 @@ public:
 	bool isPixelShaderHighpSupported() const;
 	bool isInstancingSupported() const;
 	bool isDepthCompareSampleSupported() const;
+	bool isSamplerLODBiasSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -362,6 +363,8 @@ public:
 	 * Texture filtering.
 	 **/
 	float getMaxAnisotropy() const;
+
+	float getMaxLODBias() const;
 
 
 	void updateTextureMemorySize(size_t oldsize, size_t newsize);
@@ -407,6 +410,7 @@ private:
 
 	bool pixelShaderHighpSupported;
 	float maxAnisotropy;
+	float maxLODBias;
 	int max2DTextureSize;
 	int max3DTextureSize;
 	int maxCubeTextureSize;

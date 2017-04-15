@@ -175,19 +175,19 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	}
 }
 
-int Texture::getWidth() const
+int Texture::getWidth(int mip) const
 {
-	return width;
+	return std::max(width >> mip, 1);
 }
 
-int Texture::getHeight() const
+int Texture::getHeight(int mip) const
 {
-	return height;
+	return std::max(height >> mip, 1);
 }
 
-int Texture::getDepth() const
+int Texture::getDepth(int mip) const
 {
-	return depth;
+	return std::max(depth >> mip, 1);
 }
 
 int Texture::getLayerCount() const
@@ -200,19 +200,34 @@ int Texture::getMipmapCount() const
 	return mipmapCount;
 }
 
-int Texture::getPixelWidth() const
+int Texture::getPixelWidth(int mip) const
 {
-	return pixelWidth;
+	return std::max(pixelWidth >> mip, 1);
 }
 
-int Texture::getPixelHeight() const
+int Texture::getPixelHeight(int mip) const
 {
-	return pixelHeight;
+	return std::max(pixelHeight >> mip, 1);
 }
 
 float Texture::getPixelDensity() const
 {
 	return (float) pixelHeight / (float) height;
+}
+
+void Texture::setFilter(const Filter &f)
+{
+	if (!validateFilter(f, getMipmapCount() > 1))
+	{
+		if (f.mipmap != FILTER_NONE && getMipmapCount() == 1)
+			throw love::Exception("Non-mipmapped texture cannot have mipmap filtering.");
+		else
+			throw love::Exception("Invalid texture filter.");
+	}
+
+	Graphics::flushStreamDrawsGlobal();
+
+	filter = f;
 }
 
 const Texture::Filter &Texture::getFilter() const

@@ -30,7 +30,7 @@ namespace graphics
 namespace opengl
 {
 
-static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int layers)
+static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int layers, int mips)
 {
 	// get currently bound fbo to reset to it later
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
@@ -48,16 +48,23 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 		// Make sure all faces and layers of the texture are initialized to
 		// transparent black. This is unfortunately probably pretty slow for
 		// 2D-array and 3D textures with a lot of layers...
-		for (int layer = layers - 1; layer >= 0; layer--)
+		for (int mip = mips - 1; mip >= 0; mip--)
 		{
-			for (int face = faces - 1; face >= 0; face--)
-			{
-				for (GLenum attachment : fmt.framebufferAttachments)
-				{
-					if (attachment == GL_NONE)
-						continue;
+			int nlayers = layers;
+			if (texType == TEXTURE_VOLUME)
+				nlayers = std::max(layers >> mip, 1);
 
-					gl.framebufferTexture(attachment, texType, texture, 0, layer, face);
+			for (int layer = nlayers - 1; layer >= 0; layer--)
+			{
+				for (int face = faces - 1; face >= 0; face--)
+				{
+					for (GLenum attachment : fmt.framebufferAttachments)
+					{
+						if (attachment == GL_NONE)
+							continue;
+
+						gl.framebufferTexture(attachment, texType, texture, mip, layer, face);
+					}
 
 					if (isPixelFormatDepthStencil(format))
 					{
@@ -146,41 +153,14 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 }
 
 Canvas::Canvas(const Settings &settings)
-	: love::graphics::Canvas(settings.type)
+	: love::graphics::Canvas(settings)
 	, fbo(0)
 	, texture(0)
     , renderbuffer(0)
-	, requestedSamples(settings.msaa)
 	, actualSamples(0)
 	, textureMemory(0)
 {
-	width = settings.width;
-	height = settings.height;
-	pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
-	pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
-
-	if (texType == TEXTURE_VOLUME)
-		depth = settings.layers;
-	else if (texType == TEXTURE_2D_ARRAY)
-		layers = settings.layers;
-	else
-		layers = 1;
-
-	if (width <= 0 || height <= 0 || layers <= 0)
-		throw love::Exception("Canvas dimensions must be greater than 0.");
-
-	if (texType != TEXTURE_2D && settings.msaa > 1)
-		throw love::Exception("MSAA is only supported for Canvases with the 2D texture type.");
-
-	format = getSizedFormat(settings.format);
-
-	if (settings.readable.set)
-		readable = settings.readable.value;
-	else
-		readable = !isPixelFormatDepthStencil(format);
-
-	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
-		throw love::Exception("Readable depth/stencil Canvases with MSAA are not currently supported.");
+	format = getSizedFormat(format);
 
 	initQuad();
 	loadVolatile();
@@ -212,7 +192,7 @@ bool Canvas::loadVolatile()
 		throw love::Exception("The %s%s canvas format is not supported by your OpenGL drivers.", fstr, readablestr);
 	}
 
-	if (requestedSamples > 1 && texType != TEXTURE_2D)
+	if (getRequestedMSAA() > 1 && texType != TEXTURE_2D)
 		throw love::Exception("MSAA is only supported for 2D texture types.");
 
 	if (!readable && texType != TEXTURE_2D)
@@ -221,7 +201,7 @@ bool Canvas::loadVolatile()
 	if (!gl.isTextureTypeSupported(texType))
 	{
 		const char *textypestr = "unknown";
-		getConstant(texType, textypestr);
+		Texture::getConstant(texType, textypestr);
 		throw love::Exception("%s textures are not supported on this system!", textypestr);
 	}
 
@@ -277,13 +257,14 @@ bool Canvas::loadVolatile()
 
 		setFilter(filter);
 		setWrap(wrap);
+		setMipmapSharpness(mipmapSharpness);
 		setDepthSampleMode(depthCompareMode);
 
 		while (glGetError() != GL_NO_ERROR)
 			/* Clear the error buffer. */;
 
 		bool isSRGB = format == PIXELFORMAT_sRGBA8;
-		if (!gl.rawTexStorage(texType, 1, format, isSRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers))
+		if (!gl.rawTexStorage(texType, mipmapCount, format, isSRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers))
 		{
 			status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
 			return false;
@@ -298,7 +279,7 @@ bool Canvas::loadVolatile()
 		}
 
 		// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
-		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers);
+		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers, mipmapCount);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 		{
@@ -313,7 +294,7 @@ bool Canvas::loadVolatile()
 
 	// getMaxRenderbufferSamples will be 0 on systems that don't support
 	// multisampled renderbuffers / don't export FBO multisample extensions.
-	actualSamples = requestedSamples;
+	actualSamples = getRequestedMSAA();
 	actualSamples = std::min(actualSamples, gl.getMaxRenderbufferSamples());
 	actualSamples = std::max(actualSamples, 0);
 	actualSamples = actualSamples == 1 ? 0 : actualSamples;
@@ -329,6 +310,9 @@ bool Canvas::loadVolatile()
 		textureMemory += (textureMemory * actualSamples);
 	else if (actualSamples > 0)
 		textureMemory *= actualSamples;
+
+	if (getMipmapCount() > 1)
+		textureMemory *= 1.33334;
 
 	gl.updateTextureMemorySize(prevmemsize, textureMemory);
 
@@ -356,12 +340,16 @@ void Canvas::unloadVolatile()
 
 void Canvas::setFilter(const Texture::Filter &f)
 {
-	if (!validateFilter(f, false))
-		throw love::Exception("Invalid texture filter.");
+	Texture::setFilter(f);
 
-	Graphics::flushStreamDrawsGlobal();
+	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
+	{
+		filter.mag = filter.min = FILTER_NEAREST;
 
-	filter = f;
+		if (filter.mipmap == FILTER_LINEAR)
+			filter.mipmap = FILTER_NEAREST;
+	}
+
 	gl.bindTextureToUnit(this, 0, false);
 	gl.setTextureFilter(texType, filter);
 }
@@ -402,9 +390,25 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 	return success;
 }
 
-bool Canvas::setMipmapSharpness(float /*sharpness*/)
+bool Canvas::setMipmapSharpness(float sharpness)
 {
-	return false;
+	if (!gl.isSamplerLODBiasSupported())
+		return false;
+
+	Graphics::flushStreamDrawsGlobal();
+
+	float maxbias = gl.getMaxLODBias();
+	if (maxbias > 0.01f)
+		maxbias -= 0.0f;
+
+	mipmapSharpness = std::min(std::max(sharpness, -maxbias), maxbias);
+
+	gl.bindTextureToUnit(this, 0, false);
+
+	// negative bias is sharper
+	glTexParameterf(gl.getGLTextureType(texType), GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
+
+	return true;
 }
 
 void Canvas::setDepthSampleMode(Optional<CompareMode> mode)
@@ -413,11 +417,11 @@ void Canvas::setDepthSampleMode(Optional<CompareMode> mode)
 
 	bool supported = gl.isDepthCompareSampleSupported();
 
-	if (mode.hasValue && !supported)
-		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
-
 	if (mode.hasValue)
 	{
+		if (!supported)
+			throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
+
 		Graphics::flushStreamDrawsGlobal();
 
 		gl.bindTextureToUnit(texType, texture, 0, false);
@@ -448,15 +452,18 @@ ptrdiff_t Canvas::getHandle() const
 	return texture;
 }
 
-love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int x, int y, int w, int h)
+love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
 {
 	if (!isReadable())
 		throw love::Exception("Canvas:newImageData cannot be called on non-readable Canvases.");
 
-	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > getPixelWidth() || (y + h) > getPixelHeight())
+	if (isPixelFormatDepthStencil(getPixelFormat()))
+		throw love::Exception("Canvas:newImageData cannot be called on Canvases with depth/stencil pixel formats.");
+
+	if (r.x < 0 || r.y < 0 || r.w <= 0 || r.h <= 0 || (r.x + r.w) > getPixelWidth(mipmap) || (r.y + r.h) > getPixelHeight(mipmap))
 		throw love::Exception("Invalid rectangle dimensions.");
 
-	if (slice < 0 || (texType == TEXTURE_VOLUME && slice >= depth)
+	if (slice < 0 || (texType == TEXTURE_VOLUME && slice >= getDepth(mipmap))
 		|| (texType == TEXTURE_2D_ARRAY && slice >= layers)
 		|| (texType == TEXTURE_CUBE && slice >= 6))
 	{
@@ -489,7 +496,7 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 		break;
 	}
 
-	love::image::ImageData *imagedata = module->newImageData(w, h, dataformat);
+	love::image::ImageData *imagedata = module->newImageData(r.w, r.h, dataformat);
 
 	bool isSRGB = false;
 	OpenGL::TextureFormat fmt = gl.convertPixelFormat(dataformat, false, isSRGB);
@@ -497,21 +504,36 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
 
-	if (slice > 0)
+	if (slice > 0 || mipmap > 0)
 	{
 		int layer = texType == TEXTURE_CUBE ? 0 : slice;
 		int face = texType == TEXTURE_CUBE ? slice : 0;
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, layer, face);
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, mipmap, layer, face);
 	}
 
-	glReadPixels(x, y, w, h, fmt.externalformat, fmt.type, imagedata->getData());
+	glReadPixels(r.x, r.y, r.w, r.h, fmt.externalformat, fmt.type, imagedata->getData());
 
-	if (slice > 0)
+	if (slice > 0 || mipmap > 0)
 		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 
 	return imagedata;
+}
+
+void Canvas::generateMipmaps()
+{
+	if (getMipmapCount() == 1 || getMipmapMode() == MIPMAP_NONE)
+		throw love::Exception("generateMipmaps can only be called on a Canvas which was created with mipmaps enabled.");
+
+	gl.bindTextureToUnit(this, 0, false);
+
+	GLenum gltextype = OpenGL::getGLTextureType(texType);
+
+	if (gl.bugs.generateMipmapsRequiresTexture2DEnable)
+		glEnable(gltextype);
+
+	glGenerateMipmap(gltextype);
 }
 
 PixelFormat Canvas::getSizedFormat(PixelFormat format)
