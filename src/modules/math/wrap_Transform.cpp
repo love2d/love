@@ -57,6 +57,13 @@ int w_Transform_apply(lua_State *L)
 	return 1;
 }
 
+int w_Transform_isAffine2DTransform(lua_State *L)
+{
+	Transform *t = luax_checktransform(L, 1);
+	luax_pushboolean(L, t->getMatrix().isAffine2DTransform());
+	return 1;
+}
+
 int w_Transform_translate(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
@@ -284,6 +291,7 @@ static const luaL_Reg functions[] =
 	{ "clone", w_Transform_clone },
 	{ "inverse", w_Transform_inverse },
 	{ "apply", w_Transform_apply },
+	{ "isAffine2DTransform", w_Transform_isAffine2DTransform },
 	{ "translate", w_Transform_translate },
 	{ "rotate", w_Transform_rotate },
 	{ "scale", w_Transform_scale },

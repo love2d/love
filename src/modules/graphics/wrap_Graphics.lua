@@ -204,7 +204,7 @@ GLSL.VERTEX = {
 #endif]],
 
 	FUNCTIONS = [[
-void updatePointSize() {
+void setPointSize() {
 #ifdef GL_ES
 	gl_PointSize = love_PointSize;
 #endif
@@ -224,7 +224,7 @@ vec4 position(mat4 transform_proj, vec4 vertpos);
 void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
-	updatePointSize();
+	setPointSize();
 	love_Position = position(TransformProjectionMatrix, VertexPosition);
 }]],
 }

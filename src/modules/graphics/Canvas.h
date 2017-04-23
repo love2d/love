@@ -41,10 +41,10 @@ public:
 
 	enum MipmapMode
 	{
-		MIPMAP_NONE,
-		MIPMAP_MANUAL,
-		MIPMAP_AUTO,
-		MIPMAP_MAX_ENUM
+		MIPMAPS_NONE,
+		MIPMAPS_MANUAL,
+		MIPMAPS_AUTO,
+		MIPMAPS_MAX_ENUM
 	};
 
 	struct Settings
@@ -52,7 +52,7 @@ public:
 		int width  = 1;
 		int height = 1;
 		int layers = 1; // depth for 3D textures
-		MipmapMode mipmaps = MIPMAP_NONE;
+		MipmapMode mipmaps = MIPMAPS_NONE;
 		PixelFormat format = PIXELFORMAT_NORMAL;
 		TextureType type = TEXTURE_2D;
 		float pixeldensity = 1.0f;
@@ -86,8 +86,8 @@ protected:
 
 private:
 
-	static StringMap<MipmapMode, MIPMAP_MAX_ENUM>::Entry mipmapEntries[];
-	static StringMap<MipmapMode, MIPMAP_MAX_ENUM> mipmapModes;
+	static StringMap<MipmapMode, MIPMAPS_MAX_ENUM>::Entry mipmapEntries[];
+	static StringMap<MipmapMode, MIPMAPS_MAX_ENUM> mipmapModes;
 	
 }; // Canvas
 

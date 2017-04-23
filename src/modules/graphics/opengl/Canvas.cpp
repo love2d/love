@@ -523,7 +523,7 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 
 void Canvas::generateMipmaps()
 {
-	if (getMipmapCount() == 1 || getMipmapMode() == MIPMAP_NONE)
+	if (getMipmapCount() == 1 || getMipmapMode() == MIPMAPS_NONE)
 		throw love::Exception("generateMipmaps can only be called on a Canvas which was created with mipmaps enabled.");
 
 	gl.bindTextureToUnit(this, 0, false);

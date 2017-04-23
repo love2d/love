@@ -713,12 +713,12 @@ void Graphics::endPass()
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.canvas->getMipmapMode() == Canvas::MIPMAP_AUTO && rt.mipmap == 0)
+		if (rt.canvas->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
 			rt.canvas->generateMipmaps();
 	}
 
 	int dsmipmap = rts.depthStencil.mipmap;
-	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAP_AUTO && dsmipmap == 0)
+	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
 		depthstencil->generateMipmaps();
 }
 

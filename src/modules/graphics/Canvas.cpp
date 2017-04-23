@@ -62,10 +62,10 @@ Canvas::Canvas(const Settings &settings)
 	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
 		throw love::Exception("Readable depth/stencil Canvases with MSAA are not currently supported.");
 
-	if ((!readable || settings.msaa > 1) && settings.mipmaps != MIPMAP_NONE)
+	if ((!readable || settings.msaa > 1) && settings.mipmaps != MIPMAPS_NONE)
 		throw love::Exception("Non-readable and MSAA textures cannot have mipmaps.");
 
-	mipmapCount = settings.mipmaps == MIPMAP_NONE ? 1 : getMipmapCount(pixelWidth, pixelHeight);
+	mipmapCount = settings.mipmaps == MIPMAPS_NONE ? 1 : getMipmapCount(pixelWidth, pixelHeight);
 
 	canvasCount++;
 }
@@ -111,14 +111,14 @@ bool Canvas::getConstant(MipmapMode in, const char *&out)
 	return mipmapModes.find(in, out);
 }
 
-StringMap<Canvas::MipmapMode, Canvas::MIPMAP_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
+StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
 {
-	{ "none",   MIPMAP_NONE   },
-	{ "manual", MIPMAP_MANUAL },
-	{ "auto",   MIPMAP_AUTO   },
+	{ "none",   MIPMAPS_NONE   },
+	{ "manual", MIPMAPS_MANUAL },
+	{ "auto",   MIPMAPS_AUTO   },
 };
 
-StringMap<Canvas::MipmapMode, Canvas::MIPMAP_MAX_ENUM> Canvas::mipmapModes(Canvas::mipmapEntries, sizeof(Canvas::mipmapEntries));
+StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM> Canvas::mipmapModes(Canvas::mipmapEntries, sizeof(Canvas::mipmapEntries));
 
 } // graphics
 } // love

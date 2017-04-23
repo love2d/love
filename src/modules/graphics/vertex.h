@@ -137,8 +137,13 @@ struct XYf_STPf_RGBAub
 };
 
 size_t getFormatStride(CommonFormat format);
+
 uint32 getFormatFlags(CommonFormat format);
+
+int getFormatPositionComponents(CommonFormat format);
+
 size_t getIndexDataSize(IndexDataType type);
+
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount);

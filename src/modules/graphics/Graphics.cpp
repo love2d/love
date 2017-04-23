@@ -593,6 +593,16 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	if (state.vertexCount == 0 && Shader::current != nullptr && req.texture != nullptr)
 		Shader::current->checkMainTexture(req.texture);
 
+	if (!getTransform().isAffine2DTransform())
+	{
+		for (CommonFormat fmt : req.formats)
+		{
+			int components = getFormatPositionComponents(fmt);
+			if (components > 0 && components < 3)
+				throw love::Exception("Obly affine 2D transforms are supported with auto-batched draws.");
+		}
+	}
+
 	bool shouldflush = false;
 	bool shouldresize = false;
 

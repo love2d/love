@@ -250,6 +250,12 @@ void Matrix4::shear(float kx, float ky)
 	this->operator *=(t);
 }
 
+bool Matrix4::isAffine2DTransform() const
+{
+	return fabsf(e[2] + e[3] + e[6] + e[7] + e[8] + e[9] + e[11] + e[14]) < 0.00001f
+		&& fabsf(e[10] + e[15] - 2.0f) < 0.00001f;
+}
+
 Matrix4 Matrix4::inverse() const
 {
 	Matrix4 inv;

@@ -79,6 +79,23 @@ uint32 getFormatFlags(CommonFormat format)
 	}
 }
 
+int getFormatPositionComponents(CommonFormat format)
+{
+	switch (format)
+	{
+	case CommonFormat::NONE:
+	case CommonFormat::RGBAub:
+		return 0;
+	case CommonFormat::XYf:
+	case CommonFormat::XYf_STf:
+	case CommonFormat::XYf_STPf:
+	case CommonFormat::XYf_STf_RGBAub:
+	case CommonFormat::XYf_STus_RGBAub:
+	case CommonFormat::XYf_STPf_RGBAub:
+		return 2;
+	}
+}
+
 size_t getIndexDataSize(IndexDataType type)
 {
 	switch (type)

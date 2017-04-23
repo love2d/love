@@ -196,6 +196,13 @@ public:
 	void transform(Vdst *dst, const Vsrc *src, int size) const;
 
 	/**
+	 * Gets whether this matrix is an affine 2D transform (if the only non-
+	 * identity elements are the upper-left 4x4 and 2 translation values in the
+	 * 4th column).
+	 **/
+	bool isAffine2DTransform() const;
+
+	/**
 	 * Computes and returns the inverse of the matrix.
 	 **/
 	Matrix4 inverse() const;
