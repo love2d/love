@@ -66,7 +66,7 @@ public:
 	MipmapMode getMipmapMode() const;
 	int getRequestedMSAA() const;
 
-	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) = 0;
+	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
 	virtual void generateMipmaps() = 0;
 
 	virtual int getMSAA() const = 0;

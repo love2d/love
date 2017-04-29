@@ -89,6 +89,53 @@ int Canvas::getRequestedMSAA() const
 	return settings.msaa;
 }
 
+love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
+{
+	if (!isReadable())
+		throw love::Exception("Canvas:newImageData cannot be called on non-readable Canvases.");
+
+	if (isPixelFormatDepthStencil(getPixelFormat()))
+		throw love::Exception("Canvas:newImageData cannot be called on Canvases with depth/stencil pixel formats.");
+
+	if (r.x < 0 || r.y < 0 || r.w <= 0 || r.h <= 0 || (r.x + r.w) > getPixelWidth(mipmap) || (r.y + r.h) > getPixelHeight(mipmap))
+		throw love::Exception("Invalid rectangle dimensions.");
+
+	if (slice < 0 || (texType == TEXTURE_VOLUME && slice >= getDepth(mipmap))
+		|| (texType == TEXTURE_2D_ARRAY && slice >= layers)
+		|| (texType == TEXTURE_CUBE && slice >= 6))
+	{
+		throw love::Exception("Invalid slice index.");
+	}
+
+	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr && gfx->isCanvasActive(this))
+		throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
+
+	PixelFormat dataformat;
+	switch (getPixelFormat())
+	{
+		case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
+			dataformat = PIXELFORMAT_RGBA16;
+			break;
+		case PIXELFORMAT_R16F:
+		case PIXELFORMAT_RG16F:
+		case PIXELFORMAT_RGBA16F:
+		case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
+			dataformat = PIXELFORMAT_RGBA16F;
+			break;
+		case PIXELFORMAT_R32F:
+		case PIXELFORMAT_RG32F:
+		case PIXELFORMAT_RGBA32F:
+			dataformat = PIXELFORMAT_RGBA32F;
+			break;
+		default:
+			dataformat = PIXELFORMAT_RGBA8;
+			break;
+	}
+
+	return module->newImageData(r.w, r.h, dataformat);
+}
+
 void Canvas::draw(Graphics *gfx, Quad *q, const Matrix4 &t)
 {
 	if (gfx->isCanvasActive(this))
