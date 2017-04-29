@@ -65,7 +65,11 @@ Canvas::Canvas(const Settings &settings)
 	if ((!readable || settings.msaa > 1) && settings.mipmaps != MIPMAPS_NONE)
 		throw love::Exception("Non-readable and MSAA textures cannot have mipmaps.");
 
-	mipmapCount = settings.mipmaps == MIPMAPS_NONE ? 1 : getMipmapCount(pixelWidth, pixelHeight);
+	if (settings.mipmaps != MIPMAPS_NONE)
+	{
+		mipmapCount = getMipmapCount(pixelWidth, pixelHeight);
+		filter.mipmap = defaultMipmapFilter;
+	}
 
 	canvasCount++;
 }

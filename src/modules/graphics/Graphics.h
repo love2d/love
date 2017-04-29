@@ -822,7 +822,7 @@ protected:
 
 		Texture::Filter defaultFilter = Texture::Filter();
 
-		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_NEAREST;
+		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_LINEAR;
 		float defaultMipmapSharpness = 0.0f;
 	};
 
