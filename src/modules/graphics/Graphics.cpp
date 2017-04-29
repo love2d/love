@@ -452,15 +452,31 @@ bool Graphics::isCanvasActive() const
 
 bool Graphics::isCanvasActive(love::graphics::Canvas *canvas) const
 {
-	const auto &curRTs = states.back().renderTargets;
+	const auto &rts = states.back().renderTargets;
 
-	for (const auto &rt : curRTs.colors)
+	for (const auto &rt : rts.colors)
 	{
 		if (rt.canvas.get() == canvas)
 			return true;
 	}
 
-	if (curRTs.depthStencil.canvas.get() == canvas)
+	if (rts.depthStencil.canvas.get() == canvas)
+		return true;
+
+	return false;
+}
+
+bool Graphics::isCanvasActive(Canvas *canvas, int slice) const
+{
+	const auto &rts = states.back().renderTargets;
+
+	for (const auto &rt : rts.colors)
+	{
+		if (rt.canvas.get() == canvas && rt.slice == slice)
+			return true;
+	}
+
+	if (rts.depthStencil.canvas.get() == canvas && rts.depthStencil.slice == slice)
 		return true;
 
 	return false;

@@ -467,6 +467,7 @@ public:
 	RenderTargets getCanvas() const;
 	bool isCanvasActive() const;
 	bool isCanvasActive(Canvas *canvas) const;
+	bool isCanvasActive(Canvas *canvas, int slice) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded

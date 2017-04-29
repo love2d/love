@@ -99,7 +99,7 @@ void Canvas::draw(Graphics *gfx, Quad *q, const Matrix4 &t)
 
 void Canvas::drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m)
 {
-	if (gfx->isCanvasActive(this))
+	if (gfx->isCanvasActive(this, layer))
 		throw love::Exception("Cannot render a Canvas to itself!");
 
 	Texture::drawLayer(gfx, layer, quad, m);
