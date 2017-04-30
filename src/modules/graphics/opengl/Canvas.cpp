@@ -454,11 +454,10 @@ ptrdiff_t Canvas::getHandle() const
 
 love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
 {
-	love::image::ImageData *imagedata = love::graphics::Canvas::newImageData(module, slice, mipmap, r);
-	PixelFormat dataformat = imagedata->getFormat();
+	love::image::ImageData *data = love::graphics::Canvas::newImageData(module, slice, mipmap, r);
 
 	bool isSRGB = false;
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(dataformat, false, isSRGB);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(data->getFormat(), false, isSRGB);
 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
@@ -470,14 +469,14 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, mipmap, layer, face);
 	}
 
-	glReadPixels(r.x, r.y, r.w, r.h, fmt.externalformat, fmt.type, imagedata->getData());
+	glReadPixels(r.x, r.y, r.w, r.h, fmt.externalformat, fmt.type, data->getData());
 
 	if (slice > 0 || mipmap > 0)
 		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 
-	return imagedata;
+	return data;
 }
 
 void Canvas::generateMipmaps()

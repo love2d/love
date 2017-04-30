@@ -54,37 +54,19 @@ public:
 
 	bool setMipmapSharpness(float sharpness) override;
 
-	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps) override;
-	void replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps) override;
-
-	bool isFormatLinear() const override;
-	bool isCompressed() const override;
-	MipmapsType getMipmapsType() const override;
-
 	static bool isFormatSupported(PixelFormat pixelformat);
 	static bool hasSRGBSupport();
 
 private:
 
-	void init(PixelFormat fmt, int w, int h, const Settings &settings);
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &rect, int level, int slice) override;
+	void generateMipmaps() override;
 
-	void generateMipmaps();
 	void loadDefaultTexture();
 	void loadData();
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &rect, int level, int slice);
-	void uploadImageData(love::image::ImageDataBase *d, int level, int slice);
 
 	// OpenGL texture identifier.
 	GLuint texture;
-
-	// Whether this Image is using a compressed texture.
-	bool compressed;
-
-	// True if the image wasn't able to be properly created and it had to fall
-	// back to a default texture.
-	bool usingDefaultTexture;
-
-	size_t textureMemorySize;
 
 }; // Image
 

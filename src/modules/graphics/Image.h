@@ -85,19 +85,24 @@ public:
 
 	virtual ~Image();
 
-	virtual void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps) = 0;
-	virtual void replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps) = 0;
+	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps);
+	void replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps);
 
-	virtual bool isFormatLinear() const = 0;
-	virtual bool isCompressed() const = 0;
-
-	virtual MipmapsType getMipmapsType() const = 0;
+	bool isFormatLinear() const;
+	bool isCompressed() const;
+	MipmapsType getMipmapsType() const;
 
 	static int imageCount;
 
 protected:
 
-	Image(const Slices &data, const Settings &settings, bool validatedata);
+	Image(const Slices &data, const Settings &settings);
+	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
+
+	void uploadImageData(love::image::ImageDataBase *d, int level, int slice);
+	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &rect, int level, int slice) = 0;
+
+	virtual void generateMipmaps() = 0;
 
 	// The settings used to initialize this Image.
 	Settings settings;
@@ -106,7 +111,19 @@ protected:
 
 	MipmapsType mipmapsType;
 	bool sRGB;
-	
+
+	// True if the image wasn't able to be properly created and it had to fall
+	// back to a default texture.
+	bool usingDefaultTexture;
+
+	size_t textureMemorySize;
+
+private:
+
+	Image(const Slices &data, const Settings &settings, bool validatedata);
+
+	void init(PixelFormat fmt, int w, int h, const Settings &settings);
+
 }; // Image
 
 } // graphics
