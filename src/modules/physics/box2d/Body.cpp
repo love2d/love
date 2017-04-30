@@ -67,8 +67,12 @@ Body::Body(b2Body *b)
 
 Body::~Body()
 {
-	if (udata != nullptr)
+	if (!udata)
+		return;
+
+	if (udata->ref)
 		delete udata->ref;
+
 	delete udata;
 }
 
@@ -521,6 +525,10 @@ void Body::destroy()
 	Memoizer::remove(body);
 	body = NULL;
 
+	// Remove userdata reference to avoid it sticking around after GC
+	if (udata && udata->ref)
+		udata->ref->unref();
+
 	// Box2D body destroyed. Release its reference to the love Body.
 	this->release();
 }
@@ -535,8 +543,10 @@ int Body::setUserData(lua_State *L)
 		body->SetUserData((void *) udata);
 	}
 
-	delete udata->ref;
-	udata->ref = new Reference(L);
+	if(!udata->ref)
+		udata->ref = new Reference();
+
+	udata->ref->ref(L);
 
 	return 0;
 }

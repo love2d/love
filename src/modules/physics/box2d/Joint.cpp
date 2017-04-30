@@ -61,8 +61,12 @@ Joint::Joint(Body *body1, Body *body2)
 
 Joint::~Joint()
 {
-	if (udata != nullptr)
+	if (!udata)
+		return;
+
+	if (udata->ref)
 		delete udata->ref;
+
 	delete udata;
 }
 
@@ -175,6 +179,11 @@ void Joint::destroyJoint(bool implicit)
 		world->world->DestroyJoint(joint);
 	Memoizer::remove(joint);
 	joint = NULL;
+
+	// Remove userdata reference to avoid it sticking around after GC
+	if (udata && udata->ref)
+		udata->ref->unref();
+
 	// Release the reference of the Box2D joint.
 	this->release();
 }
@@ -193,8 +202,16 @@ int Joint::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	delete udata->ref;
-	udata->ref = new Reference(L);
+	if (udata == nullptr)
+	{
+		udata = new jointudata();
+		joint->SetUserData((void *) udata);
+	}
+
+	if(!udata->ref)
+		udata->ref = new Reference();
+
+	udata->ref->ref(L);
 
 	return 0;
 }

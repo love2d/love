@@ -45,7 +45,7 @@ Reference::~Reference()
 
 void Reference::ref(lua_State *L)
 {
-	unref(); // Just to be safe.
+	unref(); // Previously created reference needs to be cleared
 	pinnedL = luax_getpinnedthread(L);
 	luax_insist(L, LUA_REGISTRYINDEX, REFERENCE_TABLE_NAME);
 	lua_insert(L, -2); // Move reference table behind value.
