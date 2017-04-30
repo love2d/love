@@ -314,6 +314,9 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		{
 			canvaseschanged = true;
 		}
+
+		if (sRTs.useTemporaryStencil != curRTs.useTemporaryStencil)
+			canvaseschanged = true;
 	}
 
 	if (canvaseschanged)
@@ -406,13 +409,14 @@ love::graphics::Shader *Graphics::getShader() const
 	return states.back().shader.get();
 }
 
-void Graphics::setCanvas(RenderTarget rt)
+void Graphics::setCanvas(RenderTarget rt, bool useStencil)
 {
 	if (rt.canvas == nullptr)
 		return setCanvas();
 
 	RenderTargets rts;
 	rts.colors.push_back(rt);
+	rts.useTemporaryStencil = useStencil;
 
 	setCanvas(rts);
 }
@@ -426,6 +430,7 @@ void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
 		targets.colors.emplace_back(rt.canvas.get(), rt.slice, rt.mipmap);
 
 	targets.depthStencil = RenderTarget(rts.depthStencil.canvas, rts.depthStencil.slice, rts.depthStencil.mipmap);
+	targets.useTemporaryStencil = rts.useTemporaryStencil;
 
 	return setCanvas(targets);
 }
@@ -441,13 +446,15 @@ Graphics::RenderTargets Graphics::getCanvas() const
 		rts.colors.emplace_back(rt.canvas.get(), rt.slice, rt.mipmap);
 
 	rts.depthStencil = RenderTarget(curRTs.depthStencil.canvas, curRTs.depthStencil.slice, curRTs.depthStencil.mipmap);
+	rts.useTemporaryStencil = curRTs.useTemporaryStencil;
 
 	return rts;
 }
 
 bool Graphics::isCanvasActive() const
 {
-	return !states.back().renderTargets.colors.empty();
+	const auto &rts = states.back().renderTargets;
+	return !rts.colors.empty() || rts.depthStencil.canvas != nullptr;
 }
 
 bool Graphics::isCanvasActive(love::graphics::Canvas *canvas) const

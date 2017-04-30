@@ -125,6 +125,11 @@ bool isPixelFormatDepthStencil(PixelFormat format);
 bool isPixelFormatDepth(PixelFormat format);
 
 /**
+ * Gets whether the specified pixel format is a stencil type.
+ **/
+bool isPixelFormatStencil(PixelFormat format);
+
+/**
  * Gets the size in bytes of the specified pixel format.
  * NOTE: Currently returns 0 for compressed formats.
  **/

@@ -323,9 +323,11 @@ public:
 	{
 		std::vector<RenderTarget> colors;
 		RenderTarget depthStencil;
+		bool useTemporaryStencil;
 
 		RenderTargets()
 			: depthStencil(nullptr)
+			, useTemporaryStencil(false)
 		{}
 	};
 
@@ -333,9 +335,11 @@ public:
 	{
 		std::vector<RenderTargetStrongRef> colors;
 		RenderTargetStrongRef depthStencil;
+		bool useTemporaryStencil;
 
 		RenderTargetsStrongRef()
 			: depthStencil(nullptr)
+			, useTemporaryStencil(false)
 		{}
 	};
 
@@ -459,7 +463,7 @@ public:
 
 	Shader *getShader() const;
 
-	void setCanvas(RenderTarget rt);
+	void setCanvas(RenderTarget rt, bool useStencil);
 	virtual void setCanvas(const RenderTargets &rts) = 0;
 	void setCanvas(const RenderTargetsStrongRef &rts);
 	virtual void setCanvas() = 0;

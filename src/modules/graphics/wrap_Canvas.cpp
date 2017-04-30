@@ -65,7 +65,7 @@ int w_Canvas_renderTo(lua_State *L)
 		if (oldtargets.depthStencil.canvas != nullptr)
 			oldtargets.depthStencil.canvas->retain();
 
-		luax_catchexcept(L, [&](){ graphics->setCanvas(rt); });
+		luax_catchexcept(L, [&](){ graphics->setCanvas(rt, false); });
 
 		lua_settop(L, 2); // make sure the function is on top of the stack
 		int status = lua_pcall(L, 0, 0, 0);

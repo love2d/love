@@ -533,6 +533,9 @@ void Graphics::setCanvas(const RenderTargets &rts)
 			modified = true;
 		}
 
+		if (rts.useTemporaryStencil != prevRTs.useTemporaryStencil)
+			modified = true;
+
 		if (!modified)
 			return;
 	}
@@ -631,6 +634,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		refs.colors.emplace_back(c.canvas, c.slice);
 
 	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.canvas, rts.depthStencil.slice);
+	refs.useTemporaryStencil = rts.useTemporaryStencil;
 
 	std::swap(state.renderTargets, refs);
 
@@ -682,7 +686,7 @@ void Graphics::endPass()
 	love::graphics::Canvas *depthstencil = rts.depthStencil.canvas.get();
 
 	// Discard the stencil buffer if we're using an internal cached one.
-	if (depthstencil == nullptr)
+	if (depthstencil == nullptr && rts.useTemporaryStencil)
 		discard({}, true);
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
@@ -907,6 +911,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 
 	if (targets.depthStencil.canvas != nullptr)
 		hashtargets[hashcount++] = targets.depthStencil;
+	else if (targets.useTemporaryStencil)
+		hashtargets[hashcount++] = RenderTarget(nullptr, -1, 0);
 
 	uint32 hash = XXH32(hashtargets, sizeof(RenderTarget) * hashcount, 0);
 	GLuint fbo = framebufferObjects[hash];
@@ -925,7 +931,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 
 		RenderTarget depthstencil = targets.depthStencil;
 
-		if (depthstencil.canvas == nullptr)
+		if (depthstencil.canvas == nullptr && targets.useTemporaryStencil)
 		{
 			depthstencil.canvas = getCachedStencilBuffer(w, h, reqmsaa);
 			depthstencil.slice = 0;
@@ -1176,8 +1182,13 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
+	const auto &rts = states.back().renderTargets;
+	love::graphics::Canvas *dscanvas = rts.depthStencil.canvas.get();
+
 	if (!isCanvasActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+	else if (isCanvasActive() && !rts.useTemporaryStencil && (dscanvas == nullptr || !isPixelFormatStencil(dscanvas->getPixelFormat())))
+		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
 
 	flushStreamDraws();
 
@@ -1237,9 +1248,6 @@ void Graphics::stopDrawToStencilBuffer()
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
-	if (compare != COMPARE_ALWAYS && !isCanvasActive() && !windowHasStencil)
-		throw love::Exception("The window must have stenciling enabled to use setStencilTest on the main screen.");
-
 	DisplayState &state = states.back();
 
 	if (state.stencilCompare != compare || state.stencilTestValue != value)

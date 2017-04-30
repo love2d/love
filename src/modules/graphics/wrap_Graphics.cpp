@@ -300,6 +300,9 @@ int w_setCanvas(lua_State *L)
 		else if (!lua_isnoneornil(L, -1))
 			targets.depthStencil.canvas = luax_checkcanvas(L, -1);
 		lua_pop(L, 1);
+
+		if (targets.depthStencil.canvas == nullptr)
+			targets.useTemporaryStencil = luax_boolflag(L, 1, "stencil", false);
 	}
 	else
 	{

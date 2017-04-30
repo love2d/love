@@ -346,7 +346,7 @@ void Image::unloadVolatile()
 void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps)
 {
 	// No effect if the texture hasn't been created yet.
-	if (texture == 0 || usingDefaultTexture)
+	if (getHandle() == 0 || usingDefaultTexture)
 		return;
 
 	if (d->getFormat() != getPixelFormat())

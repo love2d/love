@@ -131,6 +131,11 @@ bool isPixelFormatDepth(PixelFormat format)
 	return iformat >= (int) PIXELFORMAT_DEPTH16 && iformat <= (int) PIXELFORMAT_DEPTH32F_STENCIL8;
 }
 
+bool isPixelFormatStencil(PixelFormat format)
+{
+	return format == PIXELFORMAT_STENCIL8 || format == PIXELFORMAT_DEPTH24_STENCIL8 || format == PIXELFORMAT_DEPTH32F_STENCIL8;
+}
+
 size_t getPixelFormatSize(PixelFormat format)
 {
 	switch (format)
