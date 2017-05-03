@@ -8,6 +8,7 @@ Released: N/A
   * Fixed Shader:send and Shader:sendColor ignoring the last argument for an array.
   * Fixed a crash when love.graphics.pop is called after a love.window.setMode while the transformation stack was not empty.
   * Fixed BezierCurves to error instead of hanging in some situations.
+  * Fixed compilation of luasocket with newer luajit 2.1.0 beta versions.
 
   * Improved command line argument handling.
   * Improved seeking support, especially for short video files.
