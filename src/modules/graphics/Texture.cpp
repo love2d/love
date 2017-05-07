@@ -80,9 +80,9 @@ void Texture::initQuad()
 
 void Texture::setGraphicsMemorySize(int64 bytes)
 {
-	totalGraphicsMemory = std::max(totalGraphicsMemory - graphicsMemorySize, 0LL);
+	totalGraphicsMemory = std::max(totalGraphicsMemory - graphicsMemorySize, (int64) 0);
 
-	bytes = std::max(bytes, 0LL);
+	bytes = std::max(bytes, (int64) 0);
 	graphicsMemorySize = bytes;
 	totalGraphicsMemory += bytes;
 }
