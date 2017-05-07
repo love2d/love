@@ -126,13 +126,13 @@ public:
 	bool isImageFormatSupported(PixelFormat format) const override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
-	Stats getStats() const override;
 
 	Shader::Language getShaderLanguageTarget() const override;
 
 private:
 
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
+	void getAPIStats(int &drawcalls, int &shaderswitches) const override;
 
 	void endPass();
 	void bindCachedFBO(const RenderTargets &targets);

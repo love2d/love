@@ -126,7 +126,6 @@ love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
 	return new Canvas(settings);
 }
 
-
 love::graphics::Shader *Graphics::newShader(const Shader::ShaderSource &source)
 {
 	return new Shader(source);
@@ -1446,24 +1445,10 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	return info;
 }
 
-Graphics::Stats Graphics::getStats() const
+void Graphics::getAPIStats(int &drawcalls, int &shaderswitches) const
 {
-	int drawcalls = gl.stats.drawCalls;
-
-	if (streamBufferState.vertexCount > 0)
-		drawcalls++;
-
-	Stats stats;
-
-	stats.drawCalls = drawcalls;
-	stats.canvasSwitches = canvasSwitchCount;
-	stats.shaderSwitches = gl.stats.shaderSwitches;
-	stats.canvases = Canvas::canvasCount;
-	stats.images = Image::imageCount;
-	stats.fonts = Font::fontCount;
-	stats.textureMemory = gl.stats.textureMemory;
-
-	return stats;
+	drawcalls = gl.stats.drawCalls;
+	shaderswitches = gl.stats.shaderSwitches;
 }
 
 double Graphics::getSystemLimit(SystemLimit limittype) const

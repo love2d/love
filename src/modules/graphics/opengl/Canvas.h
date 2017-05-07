@@ -112,8 +112,6 @@ private:
 
 	int actualSamples;
 
-	size_t textureMemory;
-
 	static SupportedFormat supportedFormats[PIXELFORMAT_MAX_ENUM];
 	static SupportedFormat checkedFormats[PIXELFORMAT_MAX_ENUM];
 

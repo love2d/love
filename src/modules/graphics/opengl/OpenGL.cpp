@@ -1181,12 +1181,6 @@ float OpenGL::getMaxLODBias() const
 	return maxLODBias;
 }
 
-void OpenGL::updateTextureMemorySize(size_t oldsize, size_t newsize)
-{
-	int64 memsize = (int64) stats.textureMemory + ((int64) newsize - (int64) oldsize);
-	stats.textureMemory = (size_t) std::max(memsize, (int64) 0);
-}
-
 bool OpenGL::isCoreProfile() const
 {
 	return coreProfile;

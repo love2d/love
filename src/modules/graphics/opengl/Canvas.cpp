@@ -158,7 +158,6 @@ Canvas::Canvas(const Settings &settings)
 	, texture(0)
     , renderbuffer(0)
 	, actualSamples(0)
-	, textureMemory(0)
 {
 	format = getSizedFormat(format);
 
@@ -245,6 +244,13 @@ bool Canvas::loadVolatile()
 	renderbuffer = 0;
 	status = GL_FRAMEBUFFER_COMPLETE;
 
+	// getMaxRenderbufferSamples will be 0 on systems that don't support
+	// multisampled renderbuffers / don't export FBO multisample extensions.
+	actualSamples = getRequestedMSAA();
+	actualSamples = std::min(actualSamples, gl.getMaxRenderbufferSamples());
+	actualSamples = std::max(actualSamples, 0);
+	actualSamples = actualSamples == 1 ? 0 : actualSamples;
+
 	if (isReadable())
 	{
 		glGenTextures(1, &texture);
@@ -292,29 +298,19 @@ bool Canvas::loadVolatile()
 		}
 	}
 
-	// getMaxRenderbufferSamples will be 0 on systems that don't support
-	// multisampled renderbuffers / don't export FBO multisample extensions.
-	actualSamples = getRequestedMSAA();
-	actualSamples = std::min(actualSamples, gl.getMaxRenderbufferSamples());
-	actualSamples = std::max(actualSamples, 0);
-	actualSamples = actualSamples == 1 ? 0 : actualSamples;
-
 	if (!isReadable() || actualSamples > 0)
 		createRenderbuffer(pixelWidth, pixelHeight, actualSamples, format, renderbuffer);
 
-	size_t prevmemsize = textureMemory;
-
-	textureMemory = getPixelFormatSize(format) * pixelWidth * pixelHeight;
-
-	if (actualSamples > 0 && isReadable())
-		textureMemory += (textureMemory * actualSamples);
-	else if (actualSamples > 0)
-		textureMemory *= actualSamples;
-
+	int64 memsize = getPixelFormatSize(format) * pixelWidth * pixelHeight;
 	if (getMipmapCount() > 1)
-		textureMemory *= 1.33334;
+		memsize *= 1.33334;
 
-	gl.updateTextureMemorySize(prevmemsize, textureMemory);
+	if (actualSamples > 1 && isReadable())
+		memsize += getPixelFormatSize(format) * pixelWidth * pixelHeight * actualSamples;
+	else if (actualSamples > 1)
+		memsize *= actualSamples;
+
+	setGraphicsMemorySize(memsize);
 
 	return true;
 }
@@ -334,8 +330,7 @@ void Canvas::unloadVolatile()
 	renderbuffer = 0;
 	texture = 0;
 
-	gl.updateTextureMemorySize(textureMemory, 0);
-	textureMemory = 0;
+	setGraphicsMemorySize(0);
 }
 
 void Canvas::setFilter(const Texture::Filter &f)

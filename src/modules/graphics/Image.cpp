@@ -40,7 +40,6 @@ Image::Image(const Slices &data, const Settings &settings, bool validatedata)
 	, mipmapsType(settings.mipmaps ? MIPMAPS_GENERATED : MIPMAPS_NONE)
 	, sRGB(isGammaCorrect() && !settings.linear)
 	, usingDefaultTexture(false)
-	, textureMemorySize(0)
 {
 	if (validatedata && data.validate() == MIPMAPS_DATA)
 		mipmapsType = MIPMAPS_DATA;

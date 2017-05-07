@@ -114,9 +114,8 @@ public:
 
 	struct Stats
 	{
-		size_t textureMemory;
-		int    drawCalls;
-		int    shaderSwitches;
+		int drawCalls;
+		int shaderSwitches;
 	} stats;
 
 	struct Bugs
@@ -365,9 +364,6 @@ public:
 	float getMaxAnisotropy() const;
 
 	float getMaxLODBias() const;
-
-
-	void updateTextureMemorySize(size_t oldsize, size_t newsize);
 
 	/**
 	 * Gets whether the context is Core Profile OpenGL 3.2+.

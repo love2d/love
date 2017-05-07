@@ -27,6 +27,7 @@
 #include "common/pixelformat.h"
 #include "common/Exception.h"
 #include "common/Optional.h"
+#include "common/int.h"
 #include "Drawable.h"
 #include "Quad.h"
 #include "vertex.h"
@@ -101,12 +102,14 @@ public:
 		WrapMode r = WRAP_CLAMP;
 	};
 
-	Texture(TextureType texType);
-	virtual ~Texture();
-
 	static Filter defaultFilter;
 	static FilterMode defaultMipmapFilter;
 	static float defaultMipmapSharpness;
+
+	static int64 totalGraphicsMemory;
+
+	Texture(TextureType texType);
+	virtual ~Texture();
 
 	// Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
@@ -169,6 +172,7 @@ public:
 protected:
 
 	void initQuad();
+	void setGraphicsMemorySize(int64 size);
 
 	TextureType texType;
 
@@ -193,6 +197,8 @@ protected:
 	Optional<CompareMode> depthCompareMode;
 
 	StrongRef<Quad> quad;
+
+	int64 graphicsMemorySize;
 
 private:
 

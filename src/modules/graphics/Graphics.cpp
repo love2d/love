@@ -1113,6 +1113,24 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 }
 
+Graphics::Stats Graphics::getStats() const
+{
+	Stats stats;
+
+	getAPIStats(stats.drawCalls, stats.shaderSwitches);
+
+	if (streamBufferState.vertexCount > 0)
+		stats.drawCalls++;
+
+	stats.canvasSwitches = canvasSwitchCount;
+	stats.canvases = Canvas::canvasCount;
+	stats.images = Image::imageCount;
+	stats.fonts = Font::fontCount;
+	stats.textureMemory = Texture::totalGraphicsMemory;
+	
+	return stats;
+}
+
 void Graphics::push(StackType type)
 {
 	if (stackTypeStack.size() == MAX_USER_STACK_DEPTH)

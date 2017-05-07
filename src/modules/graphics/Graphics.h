@@ -27,6 +27,7 @@
 #include "common/StringMap.h"
 #include "common/Vector.h"
 #include "common/Optional.h"
+#include "common/int.h"
 #include "StreamBuffer.h"
 #include "vertex.h"
 #include "Color.h"
@@ -208,7 +209,7 @@ public:
 		int canvases;
 		int images;
 		int fonts;
-		size_t textureMemory;
+		int64 textureMemory;
 	};
 
 	struct ColorMask
@@ -725,7 +726,7 @@ public:
 	/**
 	 * Returns performance-related statistics.
 	 **/
-	virtual Stats getStats() const = 0;
+	Stats getStats() const;
 
 	void push(StackType type = STACK_TRANSFORM);
 	void pop();
@@ -854,6 +855,8 @@ protected:
 	};
 
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
+
+	virtual void getAPIStats(int &drawcalls, int &shaderswitches) const = 0;
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);

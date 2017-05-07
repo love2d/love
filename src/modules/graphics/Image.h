@@ -116,8 +116,6 @@ protected:
 	// back to a default texture.
 	bool usingDefaultTexture;
 
-	size_t textureMemorySize;
-
 private:
 
 	Image(const Slices &data, const Settings &settings, bool validatedata);

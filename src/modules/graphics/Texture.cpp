@@ -47,6 +47,7 @@ love::Type Texture::type("Texture", &Drawable::type);
 Texture::Filter Texture::defaultFilter;
 Texture::FilterMode Texture::defaultMipmapFilter = Texture::FILTER_LINEAR;
 float Texture::defaultMipmapSharpness = 0.0f;
+int64 Texture::totalGraphicsMemory = 0;
 
 Texture::Texture(TextureType texType)
 	: texType(texType)
@@ -62,17 +63,28 @@ Texture::Texture(TextureType texType)
 	, filter(defaultFilter)
 	, wrap()
 	, mipmapSharpness(defaultMipmapSharpness)
+	, graphicsMemorySize(0)
 {
 }
 
 Texture::~Texture()
 {
+	setGraphicsMemorySize(0);
 }
 
 void Texture::initQuad()
 {
 	Quad::Viewport v = {0, 0, (double) width, (double) height};
 	quad.set(new Quad(v, width, height), Acquire::NORETAIN);
+}
+
+void Texture::setGraphicsMemorySize(int64 bytes)
+{
+	totalGraphicsMemory = std::max(totalGraphicsMemory - graphicsMemorySize, 0LL);
+
+	bytes = std::max(bytes, 0LL);
+	graphicsMemorySize = bytes;
+	totalGraphicsMemory += bytes;
 }
 
 TextureType Texture::getTextureType() const

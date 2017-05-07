@@ -268,16 +268,15 @@ bool Image::loadVolatile()
 		throw;
 	}
 
-	size_t prevmemsize = textureMemorySize;
-	textureMemorySize = 0;
+	int64 memsize = 0;
 
 	for (int slice = 0; slice < data.getSliceCount(0); slice++)
-		textureMemorySize += data.get(slice, 0)->getSize();
+		memsize += data.get(slice, 0)->getSize();
 
 	if (getMipmapCount() > 1)
-		textureMemorySize *= 1.33334;
+		memsize *= 1.33334;
 
-	gl.updateTextureMemorySize(prevmemsize, textureMemorySize);
+	setGraphicsMemorySize(memsize);
 
 	usingDefaultTexture = false;
 	return true;
@@ -291,8 +290,7 @@ void Image::unloadVolatile()
 	gl.deleteTexture(texture);
 	texture = 0;
 
-	gl.updateTextureMemorySize(textureMemorySize, 0);
-	textureMemorySize = 0;
+	setGraphicsMemorySize(0);
 }
 
 ptrdiff_t Image::getHandle() const
