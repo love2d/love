@@ -134,7 +134,7 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	const XYf_STf *quadverts = q->getVertices();
 
 	Matrix4 t(gfx->getTransform(), localTransform);
-	t.transform(verts, quadverts, 4);
+	t.transformXY(verts, quadverts, 4);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -176,7 +176,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	const XYf_STf *quadverts = q->getVertices();
 
 	Matrix4 t(gfx->getTransform(), m);
-	t.transform(verts, quadverts, 4);
+	t.transformXY(verts, quadverts, 4);
 
 	for (int i = 0; i < 4; i++)
 	{

@@ -106,12 +106,12 @@ void Text::addTextData(const TextData &t)
 
 	// We only have formatted text if the align mode is valid.
 	if (t.align == Font::ALIGN_MAX_ENUM)
-		new_commands = font->generateVertices(t.codepoints, constantcolor, vertices, 0.0f, Vector(0.0f, 0.0f), &text_info);
+		new_commands = font->generateVertices(t.codepoints, constantcolor, vertices, 0.0f, Vector2(0.0f, 0.0f), &text_info);
 	else
 		new_commands = font->generateVerticesFormatted(t.codepoints, constantcolor, t.wrap, t.align, vertices, &text_info);
 
 	if (t.use_matrix)
-		t.matrix.transform(&vertices[0], &vertices[0], (int) vertices.size());
+		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
 
 	size_t voffset = vert_offset;
 

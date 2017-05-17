@@ -24,45 +24,26 @@
 // STD
 #include <cmath>
 
-// LOVE
-#include "Matrix.h"
-
 namespace love
 {
 
-/**
- * 2D Vector class.
- *
- * @author Anders Ruud
- * @date 2006-05-13
- **/
-class Vector
+struct Vector2
 {
-public:
-
-	// The components.
 	float x, y;
 
-	/**
-	 * Creates a new (1,1) Vector.
-	 **/
-	Vector();
+	Vector2()
+		: x(0.0f), y(0.0f)
+	{}
 
-	/**
-	 * Creates a new Vector.
-	 * @param x The x position/dimension.
-	 * @param y The y position/dimension.
-	 **/
-	Vector(float x, float y);
+	Vector2(float x, float y)
+		: x(x), y(y)
+	{}
 
 	/**
 	 * Gets the length of the Vector.
-	 * @return The length of the Vector.
-	 *
-	 * This method requires sqrtf() and should be used
-	 * carefully.
 	 **/
 	float getLength() const;
+	float getLengthSquare() const;
 
 	/**
 	 * Normalizes the Vector.
@@ -76,7 +57,7 @@ public:
 	 * To get the true (normalized) normal, use v.getNormal(1.0f / v.getLength())
 	 * @return A normal to the Vector.
 	 **/
-	Vector getNormal() const;
+	Vector2 getNormal() const;
 
 	/**
 	 * Gets a vector perpendicular to the Vector.
@@ -84,132 +65,177 @@ public:
 	 * @param scale factor to apply.
 	 * @return A normal to the Vector.
 	 **/
-	Vector getNormal(float scale) const;
+	Vector2 getNormal(float scale) const;
 
-	float cross(const Vector &v) const;
+	static inline float dot(const Vector2 &a, const Vector2 &b);
+	static inline float cross(const Vector2 &a, const Vector2 &b);
 
 	/**
 	 * Adds a Vector to this Vector.
-	 * @param v The Vector we want to add to this Vector.
-	 * @return The resulting Vector.
 	 **/
-	Vector operator + (const Vector &v) const;
+	Vector2 operator + (const Vector2 &v) const;
 
 	/**
-	 * Substracts a Vector to this Vector.
-	 * @param v The Vector we want to subtract to this Vector.
-	 * @return The resulting Vector.
+	 * Substracts a Vector from this Vector.
 	 **/
-	Vector operator - (const Vector &v) const;
+	Vector2 operator - (const Vector2 &v) const;
 
 	/**
-	 * Resizes a Vector by a scalar.
-	 * @param s The scalar with which to resize the Vector.
-	 * @return The resulting Vector.
+	 * Component-wise multiplies the Vector by a scalar.
 	 **/
-	Vector operator * (float s) const;
+	Vector2 operator * (float s) const;
 
 	/**
-	 * Resizes a Vector by a scalar.
-	 * @param s The scalar with which to resize the Vector.
-	 * @return The resulting Vector.
+	 * Component-wise divides the Vector by a scalar.
 	 **/
-	Vector operator / (float s) const;
+	Vector2 operator / (float s) const;
 
 	/**
-	 * Reverses the Vector.
-	 * @return The reversed Vector.
+	 * Component-wise negates the Vector.
 	 **/
-	Vector operator - () const;
+	Vector2 operator - () const;
 
 	/**
 	 * Adds a Vector to this Vector, and also saves changes in the first Vector.
-	 * @param v The Vector we want to add to this Vector.
 	 **/
-	void operator += (const Vector &v);
+	void operator += (const Vector2 &v);
 
 	/**
 	 * Subtracts a Vector to this Vector, and also saves changes in the first Vector.
-	 * @param v The Vector we want to subtract to this Vector.
 	 **/
-	void operator -= (const Vector &v);
+	void operator -= (const Vector2 &v);
 
 	/**
 	 * Resizes the Vector, and also saves changes in the first Vector.
-	 * @param s The scalar by which we want to resize the Vector.
 	 **/
 	void operator *= (float s);
 
 	/**
 	 * Resizes the Vector, and also saves changes in the first Vector.
-	 * @param s The scalar by which we want to resize the Vector.
 	 **/
 	void operator /= (float s);
 
-	/**
-	 * Calculates the dot product of two Vectors.
-	 * @return The dot product of the two Vectors.
-	 **/
-	float operator * (const Vector &v) const;
+	bool operator == (const Vector2 &v) const;
+	bool operator != (const Vector2 &v) const;
+
+}; // Vector2
+
+
+struct Vector3
+{
+	float x, y, z;
+
+	Vector3()
+		: x(0.0f), y(0.0f), z(0.0f)
+	{}
+
+	Vector3(float x, float y, float z)
+		: x(x), y(y), z(z)
+	{}
+
+	Vector3(const Vector2 &v)
+		: x(v.x), y(v.y), z(0.0f)
+	{}
 
 	/**
-	 * Calculates the cross product of two Vectors.
-	 * @return The cross product of the two Vectors.
+	 * Gets the length of the Vector.
 	 **/
-	float operator ^ (const Vector &v) const;
-
-	bool operator == (const Vector &v) const;
-
-	bool operator < (const Vector &v) const;
-	/**
-	 * Gets the x value of the Vector.
-	 * @return The x value of the Vector.
-	 **/
-	float getX() const;
+	float getLength() const;
+	float getLengthSquare() const;
 
 	/**
-	 * Gets the x value of the Vector.
-	 * @return The x value of the Vector.
+	 * Normalizes the Vector.
+	 * @param length Desired length of the vector.
+	 * @return The old length of the Vector.
 	 **/
-	float getY() const;
+	float normalize(float length = 1.0);
+
+	static inline float dot(const Vector3 &a, const Vector3 &b);
+	static inline Vector3 cross(const Vector3 &a, const Vector3 &b);
 
 	/**
-	 * Sets the x value of the Vector.
-	 * @param x The x value of the Vector.
+	 * Adds a Vector to this Vector.
 	 **/
-	void setX(float x);
+	Vector3 operator + (const Vector3 &v) const;
 
 	/**
-	 * Sets the x value of the Vector.
-	 * @param y The x value of the Vector.
+	 * Substracts a Vector from this Vector.
 	 **/
-	void setY(float y);
+	Vector3 operator - (const Vector3 &v) const;
 
-};
+	/**
+	 * Component-wise multiplies the Vector by a scalar.
+	 **/
+	Vector3 operator * (float s) const;
 
-inline float Vector::getLength() const
+	/**
+	 * Component-wise divides the Vector by a scalar.
+	 **/
+	Vector3 operator / (float s) const;
+
+	/**
+	 * Component-wise negates the Vector.
+	 **/
+	Vector3 operator - () const;
+
+	/**
+	 * Adds a Vector to this Vector, and also saves changes in the first Vector.
+	 **/
+	void operator += (const Vector3 &v);
+
+	/**
+	 * Subtracts a Vector to this Vector, and also saves changes in the first Vector.
+	 **/
+	void operator -= (const Vector3 &v);
+
+	/**
+	 * Resizes the Vector, and also saves changes in the first Vector.
+	 **/
+	void operator *= (float s);
+
+	/**
+	 * Resizes the Vector, and also saves changes in the first Vector.
+	 **/
+	void operator /= (float s);
+
+	bool operator == (const Vector3 &v) const;
+	bool operator != (const Vector3 &v) const;
+
+}; // Vector3
+
+
+inline float Vector2::getLength() const
 {
 	return sqrtf(x*x + y*y);
 }
 
-inline Vector Vector::getNormal() const
+inline float Vector2::getLengthSquare() const
 {
-	return Vector(-y, x);
+	return x*x + y*y;
 }
 
-inline Vector Vector::getNormal(float scale) const
+inline Vector2 Vector2::getNormal() const
 {
-	return Vector(-y * scale, x * scale);
+	return Vector2(-y, x);
 }
 
-inline float Vector::cross(const Vector &v) const
+inline Vector2 Vector2::getNormal(float scale) const
 {
-	return x * v.getY() - y * v.getX();
+	return Vector2(-y * scale, x * scale);
 }
 
-inline float Vector::normalize(float length)
+inline float Vector2::dot(const Vector2 &a, const Vector2 &b)
 {
+	return a.x * b.x + a.y * b.y;
+}
 
+inline float Vector2::cross(const Vector2 &a, const Vector2 &b)
+{
+	return a.x * b.y - a.y * b.x;
+}
+
+inline float Vector2::normalize(float length)
+{
 	float length_current = getLength();
 
 	if (length_current > 0)
@@ -218,113 +244,161 @@ inline float Vector::normalize(float length)
 	return length_current;
 }
 
-/**
- * Inline methods must have body in header.
- **/
-
-inline Vector::Vector()
-	: x(0.0f)
-	, y(0.0f)
+inline Vector2 Vector2::operator + (const Vector2 &v) const
 {
+	return Vector2(x + v.x, y + v.y);
 }
 
-inline Vector::Vector(float x, float y)
-	: x(x)
-	, y(y)
+inline Vector2 Vector2::operator - (const Vector2 &v) const
 {
+	return Vector2(x - v.x, y - v.y);
 }
 
-inline Vector Vector::operator + (const Vector &v) const
+inline Vector2 Vector2::operator * (float s) const
 {
-	return Vector(x + v.x, y + v.y);
+	return Vector2(x*s, y*s);
 }
 
-inline Vector Vector::operator - (const Vector &v) const
+inline Vector2 Vector2::operator / (float s) const
 {
-	return Vector(x - v.getX(), y - v.getY());
+	float invs = 1.0f / s;
+	return Vector2(x*invs, y*invs);
 }
 
-inline Vector Vector::operator * (float s) const
+inline Vector2 Vector2::operator - () const
 {
-	return Vector(x*s, y*s);
+	return Vector2(-x, -y);
 }
 
-inline Vector Vector::operator / (float s) const
+inline void Vector2::operator += (const Vector2 &v)
 {
-	return Vector(x/s, y/s);
+	x += v.x;
+	y += v.y;
 }
 
-inline Vector Vector::operator - () const
+inline void Vector2::operator -= (const Vector2 &v)
 {
-	return Vector(-x, -y);
+	x -= v.x;
+	y -= v.y;
 }
 
-inline void Vector::operator += (const Vector &v)
-{
-	x += v.getX();
-	y += v.getY();
-}
-
-inline void Vector::operator -= (const Vector &v)
-{
-	x -= v.getX();
-	y -= v.getY();
-}
-
-inline void Vector::operator *= (float s)
+inline void Vector2::operator *= (float s)
 {
 	x *= s;
 	y *= s;
 }
 
-inline void Vector::operator /= (float s)
+inline void Vector2::operator /= (float s)
 {
-	x /= s;
-	y /= s;
+	float invs = 1.0f / s;
+	x *= invs;
+	y *= invs;
 }
 
-inline float Vector::operator * (const Vector &v) const
+inline bool Vector2::operator == (const Vector2 &v) const
 {
-	return x * v.getX() + y * v.getY();
+	return x == v.x && y == v.y;
 }
 
-inline float Vector::operator ^ (const Vector &v) const
+inline bool Vector2::operator != (const Vector2 &v) const
 {
-	return cross(v);
+	return x != v.x || y != v.y;
 }
 
-inline bool Vector::operator == (const Vector &v) const
+
+inline float Vector3::getLength() const
 {
-	return getLength() == v.getLength();
+	return sqrtf(x*x + y*y + z*z);
 }
 
-inline bool Vector::operator < (const Vector &v) const
+inline float Vector3::getLengthSquare() const
 {
-	return getLength() < v.getLength();
+	return x*x + y*y + z*z;
 }
 
-/**
- * Accessor methods
- **/
-
-inline float Vector::getX() const
+inline float Vector3::dot(const Vector3 &a, const Vector3 &b)
 {
-	return x;
+	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-inline float Vector::getY() const
+inline Vector3 Vector3::cross(const Vector3 &a, const Vector3 &b)
 {
-	return y;
+	return Vector3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
 }
 
-inline void Vector::setX(float x)
+inline float Vector3::normalize(float length)
 {
-	this->x = x;
+	float length_current = getLength();
+
+	if (length_current > 0)
+		(*this) *= length / length_current;
+
+	return length_current;
 }
 
-inline void Vector::setY(float y)
+inline Vector3 Vector3::operator + (const Vector3 &v) const
 {
-	this->y = y;
+	return Vector3(x + v.x, y + v.y, z + v.z);
+}
+
+inline Vector3 Vector3::operator - (const Vector3 &v) const
+{
+	return Vector3(x - v.x, y - v.y, z - v.z);
+}
+
+inline Vector3 Vector3::operator * (float s) const
+{
+	return Vector3(x*s, y*s, z*s);
+}
+
+inline Vector3 Vector3::operator / (float s) const
+{
+	float invs = 1.0f / s;
+	return Vector3(x*invs, y*invs, z*invs);
+}
+
+inline Vector3 Vector3::operator - () const
+{
+	return Vector3(-x, -y, -z);
+}
+
+inline void Vector3::operator += (const Vector3 &v)
+{
+	x += v.x;
+	y += v.y;
+	z += v.z;
+}
+
+inline void Vector3::operator -= (const Vector3 &v)
+{
+	x -= v.x;
+	y -= v.y;
+	z -= v.z;
+}
+
+inline void Vector3::operator *= (float s)
+{
+	x *= s;
+	y *= s;
+	z *= s;
+}
+
+inline void Vector3::operator /= (float s)
+{
+	float invs = 1.0f / s;
+	x *= invs;
+	y *= invs;
+	z *= invs;
+}
+
+inline bool Vector3::operator == (const Vector3 &v) const
+{
+	return x == v.x && y == v.y && z == v.z;
+}
+
+inline bool Vector3::operator != (const Vector3 &v) const
+{
+	return x != v.x || y != v.y || z != v.z;
 }
 
 } //love

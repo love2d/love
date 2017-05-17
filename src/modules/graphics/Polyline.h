@@ -72,7 +72,7 @@ public:
 protected:
 
 	virtual void calc_overdraw_vertex_count(bool is_looping);
-	virtual void render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping);
+	virtual void render_overdraw(const std::vector<Vector2> &normals, float pixel_size, bool is_looping);
 	virtual void fill_color_array(Color constant_color, Color *colors);
 
 	/** Calculate line boundary points.
@@ -86,12 +86,12 @@ protected:
 	 * @param[in]     r       Next point on the line.
 	 * @param[in]     hw      Half line width (see Polyline.render()).
 	 */
-	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-	                        Vector &s, float &len_s, Vector &ns,
-	                        const Vector &q, const Vector &r, float hw) = 0;
+	virtual void renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+	                        Vector2 &s, float &len_s, Vector2 &ns,
+	                        const Vector2 &q, const Vector2 &r, float hw) = 0;
 
-	Vector *vertices;
-	Vector *overdraw;
+	Vector2 *vertices;
+	Vector2 *overdraw;
 	size_t vertex_count;
 	size_t overdraw_vertex_count;
 	vertex::TriangleIndexMode triangle_mode;
@@ -124,7 +124,7 @@ public:
 		// get rasterized. These vertices are in between the core line vertices
 		// and the overdraw vertices in the combined vertex array, so they still
 		// get "rendered" since we draw everything with one draw call.
-		memset(&this->vertices[vertex_count - 4], 0, sizeof(love::Vector) * 4);
+		memset(&this->vertices[vertex_count - 4], 0, sizeof(love::Vector2) * 4);
 
 		vertex_count -= 4;
 	}
@@ -132,11 +132,11 @@ public:
 protected:
 
 	virtual void calc_overdraw_vertex_count(bool is_looping);
-	virtual void render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping);
+	virtual void render_overdraw(const std::vector<Vector2> &normals, float pixel_size, bool is_looping);
 	virtual void fill_color_array(Color constant_color, Color *colors);
-	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-	                        Vector &s, float &len_s, Vector &ns,
-	                        const Vector &q, const Vector &r, float hw);
+	virtual void renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+	                        Vector2 &s, float &len_s, Vector2 &ns,
+	                        const Vector2 &q, const Vector2 &r, float hw);
 
 }; // NoneJoinPolyline
 
@@ -156,9 +156,9 @@ public:
 
 protected:
 
-	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-	                        Vector &s, float &len_s, Vector &ns,
-	                        const Vector &q, const Vector &r, float hw);
+	virtual void renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+	                        Vector2 &s, float &len_s, Vector2 &ns,
+	                        const Vector2 &q, const Vector2 &r, float hw);
 
 }; // MiterJoinPolyline
 
@@ -178,9 +178,9 @@ public:
 
 protected:
 
-	virtual void renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-	                        Vector &s, float &len_s, Vector &ns,
-	                        const Vector &q, const Vector &r, float hw);
+	virtual void renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+	                        Vector2 &s, float &len_s, Vector2 &ns,
+	                        const Vector2 &q, const Vector2 &r, float hw);
 
 }; // BevelJoinPolyline
 

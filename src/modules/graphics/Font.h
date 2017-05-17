@@ -101,7 +101,7 @@ public:
 	virtual ~Font();
 
 	std::vector<DrawCommand> generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantColor, std::vector<GlyphVertex> &vertices,
-	                                          float extra_spacing = 0.0f, Vector offset = {}, TextInfo *info = nullptr);
+	                                          float extra_spacing = 0.0f, Vector2 offset = {}, TextInfo *info = nullptr);
 
 	std::vector<DrawCommand> generateVerticesFormatted(const ColoredCodepoints &text, const Colorf &constantColor, float wrap, AlignMode align,
 	                                                   std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);

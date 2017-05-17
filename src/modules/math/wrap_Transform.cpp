@@ -255,7 +255,7 @@ int w_Transform_getMatrix(lua_State *L)
 int w_Transform_transformPoint(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
-	love::Vector p;
+	love::Vector2 p;
 	p.x = (float) luaL_checknumber(L, 2);
 	p.y = (float) luaL_checknumber(L, 3);
 	p = t->transformPoint(p);
@@ -267,7 +267,7 @@ int w_Transform_transformPoint(lua_State *L)
 int w_Transform_inverseTransformPoint(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
-	love::Vector p;
+	love::Vector2 p;
 	p.x = (float) luaL_checknumber(L, 2);
 	p.y = (float) luaL_checknumber(L, 3);
 	p = t->inverseTransformPoint(p);

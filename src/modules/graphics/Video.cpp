@@ -131,7 +131,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	Vertex *verts = (Vertex *) data.stream[0];
 
 	Matrix4 t(gfx->getTransform(), m);
-	t.transform(verts, vertices, 4);
+	t.transformXY(verts, vertices, 4);
 
 	Color c = toColor(gfx->getColor());
 

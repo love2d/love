@@ -743,8 +743,8 @@ public:
 	void applyTransform(love::math::Transform *transform);
 	void replaceTransform(love::math::Transform *transform);
 
-	Vector transformPoint(Vector point);
-	Vector inverseTransformPoint(Vector point);
+	Vector2 transformPoint(Vector2 point);
+	Vector2 inverseTransformPoint(Vector2 point);
 
 	virtual void flushStreamDraws() = 0;
 	StreamVertexData requestStreamDraw(const StreamDrawRequest &request);

@@ -83,7 +83,7 @@ int w_newRandomGenerator(lua_State *L)
 
 int w_newBezierCurve(lua_State *L)
 {
-	std::vector<Vector> points;
+	std::vector<Vector2> points;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -93,7 +93,7 @@ int w_newBezierCurve(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			points.push_back(v);
@@ -107,7 +107,7 @@ int w_newBezierCurve(lua_State *L)
 		points.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			points.push_back(v);
@@ -147,7 +147,7 @@ int w_newTransform(lua_State *L)
 
 int w_triangulate(lua_State *L)
 {
-	std::vector<love::Vector> vertices;
+	std::vector<love::Vector2> vertices;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -157,7 +157,7 @@ int w_triangulate(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
@@ -171,7 +171,7 @@ int w_triangulate(lua_State *L)
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);
@@ -217,7 +217,7 @@ int w_triangulate(lua_State *L)
 
 int w_isConvex(lua_State *L)
 {
-	std::vector<love::Vector> vertices;
+	std::vector<love::Vector2> vertices;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -227,7 +227,7 @@ int w_isConvex(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			love::Vector v;
+			love::Vector2 v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
@@ -241,7 +241,7 @@ int w_isConvex(lua_State *L)
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			love::Vector v;
+			love::Vector2 v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);

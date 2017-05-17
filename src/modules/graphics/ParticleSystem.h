@@ -182,7 +182,7 @@ public:
 	/**
 	 * Returns the position of the emitter.
 	 **/
-	const love::Vector &getPosition() const;
+	const love::Vector2 &getPosition() const;
 
 	/**
 	 * Moves the position of the center of the emitter.
@@ -249,7 +249,7 @@ public:
 	/**
 	 * Returns area spread parameters.
 	 **/
-	const love::Vector &getAreaSpreadParameters() const;
+	const love::Vector2 &getAreaSpreadParameters() const;
 
 	/**
 	 * Returns the angle of the area distribution (in radians).
@@ -338,7 +338,7 @@ public:
 	 * @param[out] min The minimum acceleration.
 	 * @param[out] max The maximum acceleration.
 	 **/
-	void getLinearAcceleration(love::Vector &min, love::Vector &max) const;
+	void getLinearAcceleration(love::Vector2 &min, love::Vector2 &max) const;
 
 	/**
 	 * Sets the radial acceleration (the acceleration towards the particle emitter).
@@ -480,7 +480,7 @@ public:
 	/**
 	 * Returns of the particle offset.
 	 **/
-	love::Vector getOffset() const;
+	love::Vector2 getOffset() const;
 
 	/**
 	 * Sets the color of the particles.
@@ -586,13 +586,13 @@ protected:
 		float lifetime;
 		float life;
 
-		love::Vector position;
+		love::Vector2 position;
 
 		// Particles gravitate towards this point.
-		love::Vector origin;
+		love::Vector2 origin;
 
-		love::Vector velocity;
-		love::Vector linearAcceleration;
+		love::Vector2 velocity;
+		love::Vector2 linearAcceleration;
 		float radialAcceleration;
 		float tangentialAcceleration;
 
@@ -648,12 +648,12 @@ protected:
 	float emitCounter;
 
 	// The relative position of the particle emitter.
-	love::Vector position;
-	love::Vector prevPosition;
+	love::Vector2 position;
+	love::Vector2 prevPosition;
 
 	// Emission area spread.
 	AreaSpreadDistribution areaSpreadDistribution;
-	love::Vector areaSpread;
+	love::Vector2 areaSpread;
 	float areaSpreadAngle;
 	bool areaSpreadIsRelativeDirection;
 
@@ -674,8 +674,8 @@ protected:
 	float speedMax;
 
 	// Acceleration along the x and y axes.
-	love::Vector linearAccelerationMin;
-	love::Vector linearAccelerationMax;
+	love::Vector2 linearAccelerationMin;
+	love::Vector2 linearAccelerationMax;
 
 	// Acceleration towards the emitter's center
 	float radialAccelerationMin;
@@ -702,7 +702,7 @@ protected:
 	float spinVariation;
 
 	// Offsets
-	love::Vector offset;
+	love::Vector2 offset;
 
 	// Is the ParticleSystem using a default offset?
 	bool defaultOffset;

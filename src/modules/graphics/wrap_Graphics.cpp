@@ -2587,7 +2587,7 @@ int w_replaceTransform(lua_State *L)
 
 int w_transformPoint(lua_State *L)
 {
-	Vector p;
+	Vector2 p;
 	p.x = (float) luaL_checknumber(L, 1);
 	p.y = (float) luaL_checknumber(L, 2);
 	p = instance()->transformPoint(p);
@@ -2598,7 +2598,7 @@ int w_transformPoint(lua_State *L)
 
 int w_inverseTransformPoint(lua_State *L)
 {
-	Vector p;
+	Vector2 p;
 	p.x = (float) luaL_checknumber(L, 1);
 	p.y = (float) luaL_checknumber(L, 2);
 	p = instance()->inverseTransformPoint(p);

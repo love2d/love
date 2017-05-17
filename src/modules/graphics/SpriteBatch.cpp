@@ -97,7 +97,7 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 	size_t offset = (index == -1 ? next : index) * format_stride * 4;
 	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
-	m.transform(verts, quadverts, 4);
+	m.transformXY(verts, quadverts, 4);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -142,7 +142,7 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 	size_t offset = (index == -1 ? next : index) * format_stride * 4;
 	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
-	m.transform(verts, quadverts, 4);
+	m.transformXY(verts, quadverts, 4);
 
 	for (int i = 0; i < 4; i++)
 	{

@@ -185,19 +185,22 @@ public:
 	void shear(float kx, float ky);
 
 	/**
-	 * Transforms an array of vertices by this Matrix. The sources and
-	 * destination arrays may be the same.
-	 *
-	 * @param dst Storage for the transformed vertices.
-	 * @param src The source vertices.
-	 * @param size The number of vertices.
+	 * Transforms an array of 2-component vertices by this Matrix. The source
+	 * and destination arrays may be the same.
 	 **/
 	template <typename Vdst, typename Vsrc>
-	void transform(Vdst *dst, const Vsrc *src, int size) const;
+	void transformXY(Vdst *dst, const Vsrc *src, int size) const;
+
+	/**
+	 * Transforms an array of 3-component vertices by this Matrix. The source
+	 * and destination arrays may be the same.
+	 **/
+	template <typename Vdst, typename Vsrc>
+	void transformXYZ(Vdst *dst, const Vsrc *src, int size) const;
 
 	/**
 	 * Gets whether this matrix is an affine 2D transform (if the only non-
-	 * identity elements are the upper-left 4x4 and 2 translation values in the
+	 * identity elements are the upper-left 2x2 and 2 translation values in the
 	 * 4th column).
 	 **/
 	bool isAffine2DTransform() const;
@@ -281,7 +284,7 @@ public:
 	 * Transforms an array of vertices by this matrix.
 	 **/
 	template <typename Vdst, typename Vsrc>
-	void transform(Vdst *dst, const Vsrc *src, int size) const;
+	void transformXY(Vdst *dst, const Vsrc *src, int size) const;
 
 private:
 
@@ -304,7 +307,7 @@ private:
 // | e3 e7 e11 e15 |
 
 template <typename Vdst, typename Vsrc>
-void Matrix4::transform(Vdst *dst, const Vsrc *src, int size) const
+void Matrix4::transformXY(Vdst *dst, const Vsrc *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{
@@ -317,6 +320,31 @@ void Matrix4::transform(Vdst *dst, const Vsrc *src, int size) const
 	}
 }
 
+//                 | x |
+//                 | y |
+//                 | z |
+//                 | 1 |
+// | e0 e4 e8  e12 |
+// | e1 e5 e9  e13 |
+// | e2 e6 e10 e14 |
+// | e3 e7 e11 e15 |
+
+template <typename Vdst, typename Vsrc>
+void Matrix4::transformXYZ(Vdst *dst, const Vsrc *src, int size) const
+{
+	for (int i = 0; i < size; i++)
+	{
+		// Store in temp variables in case src = dst
+		float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (e[ 8]*src[i].z) + (e[12]);
+		float y = (e[1]*src[i].x) + (e[5]*src[i].y) + (e[ 9]*src[i].z) + (e[13]);
+		float z = (e[2]*src[i].x) + (e[6]*src[i].y) + (e[10]*src[i].z) + (e[14]);
+
+		dst[i].x = x;
+		dst[i].y = y;
+		dst[i].z = z;
+	}
+}
+
 //            | x |
 //            | y |
 //            | 1 |
@@ -324,7 +352,7 @@ void Matrix4::transform(Vdst *dst, const Vsrc *src, int size) const
 // | e1 e4 e7 |
 // | e2 e5 e8 |
 template <typename Vdst, typename Vsrc>
-void Matrix3::transform(Vdst *dst, const Vsrc *src, int size) const
+void Matrix3::transformXY(Vdst *dst, const Vsrc *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{

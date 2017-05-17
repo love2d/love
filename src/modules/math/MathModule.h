@@ -49,10 +49,10 @@ class Transform;
 
 struct Triangle
 {
-	Triangle(const Vector &x, const Vector &y, const Vector &z)
+	Triangle(const Vector2 &x, const Vector2 &y, const Vector2 &z)
 		: a(x), b(y), c(z)
 	{}
-	Vector a, b, c;
+	Vector2 a, b, c;
 };
 
 enum EncodeFormat
@@ -68,7 +68,7 @@ enum EncodeFormat
  * @param polygon Polygon to triangulate. Must not intersect itself.
  * @return List of triangles the polygon is composed of.
  **/
-std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon);
+std::vector<Triangle> triangulate(const std::vector<love::Vector2> &polygon);
 
 /**
  * Checks whether a polygon is convex.
@@ -76,7 +76,7 @@ std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon);
  * @param polygon Polygon to test.
  * @return True if the polygon is convex, false otherwise.
  **/
-bool isConvex(const std::vector<love::Vector> &polygon);
+bool isConvex(const std::vector<love::Vector2> &polygon);
 
 /**
  * Converts a value from the sRGB (gamma) colorspace to linear RGB.
@@ -175,7 +175,7 @@ public:
 	/**
 	 * Creates a new bezier curve.
 	 **/
-	BezierCurve *newBezierCurve(const std::vector<Vector> &points);
+	BezierCurve *newBezierCurve(const std::vector<Vector2> &points);
 
 	Transform *newTransform();
 	Transform *newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);

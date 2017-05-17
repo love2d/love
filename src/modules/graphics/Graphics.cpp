@@ -622,7 +622,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		{
 			int components = getFormatPositionComponents(fmt);
 			if (components > 0 && components < 3)
-				throw love::Exception("Obly affine 2D transforms are supported with auto-batched draws.");
+				throw love::Exception("Only affine 2D transforms are supported with auto-batched draws.");
 		}
 	}
 
@@ -820,7 +820,7 @@ void Graphics::points(const float *coords, const Colorf *colors, size_t numpoint
 	StreamVertexData data = requestStreamDraw(req);
 
 	const Matrix4 &t = getTransform();
-	t.transform((Vector *) data.stream[0], (const Vector *) coords, req.vertexCount);
+	t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
 
 	Color *colordata = (Color *) data.stream[1];
 
@@ -1104,7 +1104,7 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 		StreamVertexData data = requestStreamDraw(req);
 		
 		const Matrix4 &t = getTransform();
-		t.transform((Vector *) data.stream[0], (const Vector *) coords, req.vertexCount);
+		t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
 		
 		Color c = toColor(getColor());
 		Color *colordata = (Color *) data.stream[1];
@@ -1243,19 +1243,19 @@ void Graphics::replaceTransform(love::math::Transform *transform)
 	pixelScaleStack.back() = (sx + sy) / 2.0;
 }
 
-Vector Graphics::transformPoint(Vector point)
+Vector2 Graphics::transformPoint(Vector2 point)
 {
-	Vector p;
-	transformStack.back().transform(&p, &point, 1);
+	Vector2 p;
+	transformStack.back().transformXY(&p, &point, 1);
 	return p;
 }
 
-Vector Graphics::inverseTransformPoint(Vector point)
+Vector2 Graphics::inverseTransformPoint(Vector2 point)
 {
-	Vector p;
+	Vector2 p;
 	// TODO: We should probably cache the inverse transform so we don't have to
 	// re-calculate it every time this is called.
-	transformStack.back().inverse().transform(&p, &point, 1);
+	transformStack.back().inverse().transformXY(&p, &point, 1);
 	return p;
 }
 

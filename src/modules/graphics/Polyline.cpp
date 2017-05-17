@@ -35,11 +35,11 @@ namespace graphics
 
 void Polyline::render(const float *coords, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw)
 {
-	static std::vector<Vector> anchors;
+	static std::vector<Vector2> anchors;
 	anchors.clear();
 	anchors.reserve(size_hint);
 
-	static std::vector<Vector> normals;
+	static std::vector<Vector2> normals;
 	normals.clear();
 	normals.reserve(size_hint);
 
@@ -49,25 +49,25 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 
 	// compute sleeve
 	bool is_looping = (coords[0] == coords[count - 2]) && (coords[1] == coords[count - 1]);
-	Vector s;
+	Vector2 s;
 	if (!is_looping) // virtual starting point at second point mirrored on first point
-		s = Vector(coords[2] - coords[0], coords[3] - coords[1]);
+		s = Vector2(coords[2] - coords[0], coords[3] - coords[1]);
 	else // virtual starting point at last vertex
-		s = Vector(coords[0] - coords[count - 4], coords[1] - coords[count - 3]);
+		s = Vector2(coords[0] - coords[count - 4], coords[1] - coords[count - 3]);
 
 	float len_s = s.getLength();
-	Vector ns = s.getNormal(halfwidth / len_s);
+	Vector2 ns = s.getNormal(halfwidth / len_s);
 
-	Vector q, r(coords[0], coords[1]);
+	Vector2 q, r(coords[0], coords[1]);
 	for (size_t i = 0; i + 3 < count; i += 2)
 	{
 		q = r;
-		r = Vector(coords[i + 2], coords[i + 3]);
+		r = Vector2(coords[i + 2], coords[i + 3]);
 		renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
 	}
 
 	q = r;
-	r = is_looping ? Vector(coords[2], coords[3]) : r + s;
+	r = is_looping ? Vector2(coords[2], coords[3]) : r + s;
 	renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
 
 	vertex_count = normals.size();
@@ -87,7 +87,7 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 	}
 
 	// Use a single linear array for both the regular and overdraw vertices.
-	vertices = new Vector[vertex_count + extra_vertices + overdraw_vertex_count];
+	vertices = new Vector2[vertex_count + extra_vertices + overdraw_vertex_count];
 
 	for (size_t i = 0; i < vertex_count; ++i)
 		vertices[i] = anchors[i] + normals[i];
@@ -107,9 +107,9 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 	}
 }
 
-void NoneJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-                                Vector &s, float &len_s, Vector &ns,
-                                const Vector &q, const Vector &r, float hw)
+void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+                                Vector2 &s, float &len_s, Vector2 &ns,
+                                const Vector2 &q, const Vector2 &r, float hw)
 {
 	//   ns1------ns2
 	//    |        |
@@ -170,19 +170,19 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vect
  *
  * the intersection points can be efficiently calculated using Cramer's rule.
  */
-void MiterJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-                                   Vector &s, float &len_s, Vector &ns,
-                                   const Vector &q, const Vector &r, float hw)
+void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+                                   Vector2 &s, float &len_s, Vector2 &ns,
+                                   const Vector2 &q, const Vector2 &r, float hw)
 {
-	Vector t    = (r - q);
+	Vector2 t    = (r - q);
 	float len_t = t.getLength();
-	Vector nt   = t.getNormal(hw / len_t);
+	Vector2 nt   = t.getNormal(hw / len_t);
 
 	anchors.push_back(q);
 	anchors.push_back(q);
 
-	float det = s ^ t;
-	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && s * t > 0)
+	float det = Vector2::cross(s, t);
+	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && Vector2::dot(s, t) > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
 		normals.push_back(ns);
@@ -191,8 +191,8 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vec
 	else
 	{
 		// cramers rule
-		float lambda = ((nt - ns) ^ t) / det;
-		Vector d = ns + s * lambda;
+		float lambda = Vector2::cross((nt - ns), t) / det;
+		Vector2 d = ns + s * lambda;
 		normals.push_back(d);
 		normals.push_back(-d);
 	}
@@ -219,18 +219,18 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vec
  *
  * uh1 = q + ns * w/2, uh2 = q + nt * w/2
  */
-void BevelJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vector> &normals,
-                                   Vector &s, float &len_s, Vector &ns,
-                                   const Vector &q, const Vector &r, float hw)
+void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
+                                   Vector2 &s, float &len_s, Vector2 &ns,
+                                   const Vector2 &q, const Vector2 &r, float hw)
 {
-	Vector t    = (r - q);
+	Vector2 t    = (r - q);
 	float len_t = t.getLength();
 
-	float det = s ^ t;
-	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && s * t > 0)
+	float det = Vector2::cross(s, t);
+	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && Vector2::dot(s, t) > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
-		Vector n = t.getNormal(hw / len_t);
+		Vector2 n = t.getNormal(hw / len_t);
 		anchors.push_back(q);
 		anchors.push_back(q);
 		normals.push_back(n);
@@ -241,9 +241,9 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector> &anchors, std::vector<Vec
 	}
 
 	// cramers rule
-	Vector nt= t.getNormal(hw / len_t);
-	float lambda = ((nt - ns) ^ t) / det;
-	Vector d = ns + s * lambda;
+	Vector2 nt= t.getNormal(hw / len_t);
+	float lambda = Vector2::cross((nt - ns), t) / det;
+	Vector2 d = ns + s * lambda;
 
 	anchors.push_back(q);
 	anchors.push_back(q);
@@ -273,7 +273,7 @@ void Polyline::calc_overdraw_vertex_count(bool is_looping)
 	overdraw_vertex_count = 2 * vertex_count + (is_looping ? 0 : 2);
 }
 
-void Polyline::render_overdraw(const std::vector<Vector> &normals, float pixel_size, bool is_looping)
+void Polyline::render_overdraw(const std::vector<Vector2> &normals, float pixel_size, bool is_looping)
 {
 	// upper segment
 	for (size_t i = 0; i + 1 < vertex_count; i += 2)
@@ -299,7 +299,7 @@ void Polyline::render_overdraw(const std::vector<Vector> &normals, float pixel_s
 	if (!is_looping)
 	{
 		// left edge
-		Vector spacer = (overdraw[1] - overdraw[3]);
+		Vector2 spacer = (overdraw[1] - overdraw[3]);
 		spacer.normalize(pixel_size);
 		overdraw[1] += spacer;
 		overdraw[overdraw_vertex_count - 3] += spacer;
@@ -322,7 +322,7 @@ void NoneJoinPolyline::calc_overdraw_vertex_count(bool /*is_looping*/)
 	overdraw_vertex_count = 4 * (vertex_count-2); // less than ideal
 }
 
-void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &/*normals*/, float pixel_size, bool /*is_looping*/)
+void NoneJoinPolyline::render_overdraw(const std::vector<Vector2> &/*normals*/, float pixel_size, bool /*is_looping*/)
 {
 	for (size_t i = 2; i + 3 < vertex_count; i += 4)
 	{
@@ -330,8 +330,8 @@ void NoneJoinPolyline::render_overdraw(const std::vector<Vector> &/*normals*/, f
 		// | / | <- main quad line
 		// v1-v3
 
-		Vector s = vertices[i+0] - vertices[i+2];
-		Vector t = vertices[i+0] - vertices[i+1];
+		Vector2 s = vertices[i+0] - vertices[i+2];
+		Vector2 t = vertices[i+0] - vertices[i+1];
 		s.normalize(pixel_size);
 		t.normalize(pixel_size);
 
@@ -380,7 +380,7 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
 	const Matrix4 &t = gfx->getTransform();
-	t.transform((Vector *) data.stream[0], vertices, total_vertex_count);
+	t.transformXY((Vector2 *) data.stream[0], vertices, total_vertex_count);
 
 	Color curcolor = toColor(gfx->getColor());
 	Color *colordata = (Color *) data.stream[1];

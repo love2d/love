@@ -177,9 +177,9 @@ int w_ParticleSystem_setPosition(lua_State *L)
 int w_ParticleSystem_getPosition(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	love::Vector pos = t->getPosition();
-	lua_pushnumber(L, pos.getX());
-	lua_pushnumber(L, pos.getY());
+	love::Vector2 pos = t->getPosition();
+	lua_pushnumber(L, pos.x);
+	lua_pushnumber(L, pos.y);
 	return 2;
 }
 
@@ -224,7 +224,7 @@ int w_ParticleSystem_getAreaSpread(lua_State *L)
 	ParticleSystem::AreaSpreadDistribution distribution = t-> getAreaSpreadDistribution();
 	const char *str;
 	ParticleSystem::getConstant(distribution, str);
-	const love::Vector &p = t->getAreaSpreadParameters();
+	const love::Vector2 &p = t->getAreaSpreadParameters();
 
 	lua_pushstring(L, str);
 	lua_pushnumber(L, p.x);
@@ -326,7 +326,7 @@ int w_ParticleSystem_setLinearAcceleration(lua_State *L)
 int w_ParticleSystem_getLinearAcceleration(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	love::Vector min, max;
+	love::Vector2 min, max;
 	t->getLinearAcceleration(min, max);
 	lua_pushnumber(L, min.x);
 	lua_pushnumber(L, min.y);
@@ -510,9 +510,9 @@ int w_ParticleSystem_setOffset(lua_State *L)
 int w_ParticleSystem_getOffset(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	love::Vector offset = t->getOffset();
-	lua_pushnumber(L, offset.getX());
-	lua_pushnumber(L, offset.getY());
+	love::Vector2 offset = t->getOffset();
+	lua_pushnumber(L, offset.x);
+	lua_pushnumber(L, offset.y);
 	return 2;
 }
 

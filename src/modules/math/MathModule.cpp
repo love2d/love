@@ -33,7 +33,7 @@
 #include <iostream>
 
 using std::list;
-using love::Vector;
+using love::Vector2;
 
 namespace
 {
@@ -117,14 +117,14 @@ love::uint8 *hexToBytes(const char *src, size_t srclen, size_t &dstlen)
 }
 
 // check if an angle is oriented counter clockwise
-inline bool is_oriented_ccw(const Vector &a, const Vector &b, const Vector &c)
+inline bool is_oriented_ccw(const Vector2 &a, const Vector2 &b, const Vector2 &c)
 {
 	// return det(b-a, c-a) >= 0
 	return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) >= 0;
 }
 
 // check if a and b are on the same side of the line c->d
-bool on_same_side(const Vector &a, const Vector &b, const Vector &c, const Vector &d)
+bool on_same_side(const Vector2 &a, const Vector2 &b, const Vector2 &c, const Vector2 &d)
 {
 	float px = d.x - c.x, py = d.y - c.y;
 	// return det(p, a-c) * det(p, b-c) >= 0
@@ -134,15 +134,15 @@ bool on_same_side(const Vector &a, const Vector &b, const Vector &c, const Vecto
 }
 
 // checks is p is contained in the triangle abc
-inline bool point_in_triangle(const Vector &p, const Vector &a, const Vector &b, const Vector &c)
+inline bool point_in_triangle(const Vector2 &p, const Vector2 &a, const Vector2 &b, const Vector2 &c)
 {
 	return on_same_side(p,a, b,c) && on_same_side(p,b, a,c) && on_same_side(p,c, a,b);
 }
 
 // checks if any vertex in `vertices' is in the triangle abc.
-bool any_point_in_triangle(const std::list<const Vector *> &vertices, const Vector &a, const Vector &b, const Vector &c)
+bool any_point_in_triangle(const std::list<const Vector2 *> &vertices, const Vector2 &a, const Vector2 &b, const Vector2 &c)
 {
-	for (const Vector *p : vertices)
+	for (const Vector2 *p : vertices)
 	{
 		if ((p != &a) && (p != &b) && (p != &c) && point_in_triangle(*p, a,b,c)) // oh god...
 			return true;
@@ -151,7 +151,7 @@ bool any_point_in_triangle(const std::list<const Vector *> &vertices, const Vect
 	return false;
 }
 
-inline bool is_ear(const Vector &a, const Vector &b, const Vector &c, const std::list<const Vector *> &vertices)
+inline bool is_ear(const Vector2 &a, const Vector2 &b, const Vector2 &c, const std::list<const Vector2 *> &vertices)
 {
 	return is_oriented_ccw(a,b,c) && !any_point_in_triangle(vertices, a,b,c);
 }
@@ -163,7 +163,7 @@ namespace love
 namespace math
 {
 
-std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon)
+std::vector<Triangle> triangulate(const std::vector<love::Vector2> &polygon)
 {
 	if (polygon.size() < 3)
 		throw love::Exception("Not a polygon");
@@ -176,7 +176,7 @@ std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon)
 	size_t idx_lm = 0;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
-		const love::Vector &lm = polygon[idx_lm], &p = polygon[i];
+		const love::Vector2 &lm = polygon[idx_lm], &p = polygon[i];
 		if (p.x < lm.x || (p.x == lm.x && p.y < lm.y))
 			idx_lm = i;
 		next_idx[i] = i+1;
@@ -190,7 +190,7 @@ std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon)
 		next_idx.swap(prev_idx);
 
 	// collect list of concave polygons
-	std::list<const love::Vector *> concave_vertices;
+	std::list<const love::Vector2 *> concave_vertices;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
 		if (!is_oriented_ccw(polygon[prev_idx[i]], polygon[i], polygon[next_idx[i]]))
@@ -205,7 +205,7 @@ std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon)
 	{
 		next = next_idx[current];
 		prev = prev_idx[current];
-		const Vector &a = polygon[prev], &b = polygon[current], &c = polygon[next];
+		const Vector2 &a = polygon[prev], &b = polygon[current], &c = polygon[next];
 		if (is_ear(a,b,c, concave_vertices))
 		{
 			triangles.push_back(Triangle(a,b,c));
@@ -228,7 +228,7 @@ std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon)
 	return triangles;
 }
 
-bool isConvex(const std::vector<love::Vector> &polygon)
+bool isConvex(const std::vector<love::Vector2> &polygon)
 {
 	if (polygon.size() < 3)
 		return false;
@@ -237,9 +237,9 @@ bool isConvex(const std::vector<love::Vector> &polygon)
 	// turning direction can be determined using the cross-product of
 	// the forward difference vectors
 	size_t i = polygon.size() - 2, j = polygon.size() - 1, k = 0;
-	Vector p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
-	Vector q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
-	float winding = p ^ q;
+	Vector2 p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
+	Vector2 q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
+	float winding = Vector2::cross(p, q);
 
 	while (k+1 < polygon.size())
 	{
@@ -249,7 +249,7 @@ bool isConvex(const std::vector<love::Vector> &polygon)
 		q.x = polygon[k].x - polygon[j].x;
 		q.y = polygon[k].y - polygon[j].y;
 
-		if ((p^q) * winding < 0)
+		if (Vector2::cross(p, q) * winding < 0)
 			return false;
 	}
 	return true;
@@ -370,7 +370,7 @@ RandomGenerator *Math::newRandomGenerator()
 	return new RandomGenerator();
 }
 
-BezierCurve *Math::newBezierCurve(const std::vector<Vector> &points)
+BezierCurve *Math::newBezierCurve(const std::vector<Vector2> &points)
 {
 	return new BezierCurve(points);
 }

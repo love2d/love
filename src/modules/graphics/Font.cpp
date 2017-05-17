@@ -373,7 +373,7 @@ float Font::getHeight() const
 	return (float) floorf(height / pixelDensity + 0.5f);
 }
 
-std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector offset, TextInfo *info)
+std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector2 offset, TextInfo *info)
 {
 	// Spacing counter and newline handling.
 	float dx = offset.x;
@@ -534,7 +534,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 		const auto &line = lines[i];
 
 		float width = (float) widths[i];
-		love::Vector offset(0.0f, floorf(y));
+		love::Vector2 offset(0.0f, floorf(y));
 		float extraspacing = 0.0f;
 
 		maxwidth = std::max(width, maxwidth);
@@ -621,7 +621,7 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 		GlyphVertex *vertexdata = (GlyphVertex *) data.stream[0];
 
 		memcpy(vertexdata, &vertices[cmd.startvertex], sizeof(GlyphVertex) * cmd.vertexcount);
-		m.transform(vertexdata, &vertices[cmd.startvertex], cmd.vertexcount);
+		m.transformXY(vertexdata, &vertices[cmd.startvertex], cmd.vertexcount);
 	}
 }
 

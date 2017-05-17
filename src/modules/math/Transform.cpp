@@ -104,17 +104,17 @@ void Transform::setTransformation(float x, float y, float a, float sx, float sy,
 	inverseDirty = true;
 }
 
-love::Vector Transform::transformPoint(love::Vector p) const
+love::Vector2 Transform::transformPoint(love::Vector2 p) const
 {
-	love::Vector result;
-	matrix.transform(&result, &p, 1);
+	love::Vector2 result;
+	matrix.transformXY(&result, &p, 1);
 	return result;
 }
 
-love::Vector Transform::inverseTransformPoint(love::Vector p)
+love::Vector2 Transform::inverseTransformPoint(love::Vector2 p)
 {
-	love::Vector result;
-	getInverseMatrix().transform(&result, &p, 1);
+	love::Vector2 result;
+	getInverseMatrix().transformXY(&result, &p, 1);
 	return result;
 }
 

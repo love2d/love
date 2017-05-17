@@ -168,11 +168,11 @@ ParticleSystem::~ParticleSystem()
 void ParticleSystem::resetOffset()
 {
 	if (quads.empty())
-		offset = love::Vector(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f);
+		offset = love::Vector2(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f);
 	else
 	{
 		Quad::Viewport v = quads[0]->getViewport();
-		offset = love::Vector(v.x*0.5f, v.y*0.5f);
+		offset = love::Vector2(v.x*0.5f, v.y*0.5f);
 	}
 }
 
@@ -253,7 +253,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	float min,max;
 
 	// Linearly interpolate between the previous and current emitter position.
-	love::Vector pos = prevPosition + (position - prevPosition) * t;
+	love::Vector2 pos = prevPosition + (position - prevPosition) * t;
 
 	min = particleLifeMin;
 	max = particleLifeMax;
@@ -275,58 +275,58 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	switch (areaSpreadDistribution)
 	{
 	case DISTRIBUTION_UNIFORM:
-		rand_x = (float) rng.random(-areaSpread.getX(), areaSpread.getX());
-		rand_y = (float) rng.random(-areaSpread.getY(), areaSpread.getY());
+		rand_x = (float) rng.random(-areaSpread.x, areaSpread.x);
+		rand_y = (float) rng.random(-areaSpread.y, areaSpread.y);
 		p->position.x += cosf(areaSpreadAngle) * rand_x - sinf(areaSpreadAngle) * rand_y;
 		p->position.y += sinf(areaSpreadAngle) * rand_x + cosf(areaSpreadAngle) * rand_y;
 		break;
 	case DISTRIBUTION_NORMAL:
-		rand_x = (float) rng.randomNormal(areaSpread.getX());
-		rand_y = (float) rng.randomNormal(areaSpread.getY());
+		rand_x = (float) rng.randomNormal(areaSpread.x);
+		rand_y = (float) rng.randomNormal(areaSpread.y);
 		p->position.x += cosf(areaSpreadAngle) * rand_x - sinf(areaSpreadAngle) * rand_y;
 		p->position.y += sinf(areaSpreadAngle) * rand_x + cosf(areaSpreadAngle) * rand_y;
 		break;
 	case DISTRIBUTION_ELLIPSE:
 		rand_x = (float) rng.random(-1, 1);
 		rand_y = (float) rng.random(-1, 1);
-		min = areaSpread.getX() * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
-		max = areaSpread.getY() * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
+		min = areaSpread.x * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
+		max = areaSpread.y * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
 		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
 		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
 		break;
 	case DISTRIBUTION_BORDER_ELLIPSE:
 		rand_x = (float) rng.random(0, LOVE_M_PI * 2);
-		min = cosf(rand_x) * areaSpread.getX();
-		max = sinf(rand_x) * areaSpread.getY();
+		min = cosf(rand_x) * areaSpread.x;
+		max = sinf(rand_x) * areaSpread.y;
 		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
 		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
 		break;
 	case DISTRIBUTION_BORDER_RECTANGLE:
-		rand_x = (float) rng.random((areaSpread.getX() + areaSpread.getY()) * -2, (areaSpread.getX() + areaSpread.getY()) * 2);
-		rand_y = areaSpread.getY() * 2;
+		rand_x = (float) rng.random((areaSpread.x + areaSpread.y) * -2, (areaSpread.x + areaSpread.y) * 2);
+		rand_y = areaSpread.y * 2;
 		if (rand_x < -rand_y)
 		{
-			min = rand_x + rand_y + areaSpread.getX();
-			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * -areaSpread.getY();
-			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * -areaSpread.getY();
+			min = rand_x + rand_y + areaSpread.x;
+			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * -areaSpread.y;
+			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * -areaSpread.y;
 		}
 		else if (rand_x < 0)
 		{
-			max = rand_x + areaSpread.getY();
-			p->position.x += cosf(areaSpreadAngle) * -areaSpread.getX() - sinf(areaSpreadAngle) * max;
-			p->position.y += sinf(areaSpreadAngle) * -areaSpread.getX() + cosf(areaSpreadAngle) * max;
+			max = rand_x + areaSpread.y;
+			p->position.x += cosf(areaSpreadAngle) * -areaSpread.x - sinf(areaSpreadAngle) * max;
+			p->position.y += sinf(areaSpreadAngle) * -areaSpread.x + cosf(areaSpreadAngle) * max;
 		}
 		else if (rand_x < rand_y)
 		{
-			max = rand_x - areaSpread.getY();
-			p->position.x += cosf(areaSpreadAngle) * areaSpread.getX() - sinf(areaSpreadAngle) * max;
-			p->position.y += sinf(areaSpreadAngle) * areaSpread.getX() + cosf(areaSpreadAngle) * max;
+			max = rand_x - areaSpread.y;
+			p->position.x += cosf(areaSpreadAngle) * areaSpread.x - sinf(areaSpreadAngle) * max;
+			p->position.y += sinf(areaSpreadAngle) * areaSpread.x + cosf(areaSpreadAngle) * max;
 		}
 		else
 		{
-			min = rand_x - rand_y - areaSpread.getX();
-			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * areaSpread.getY();
-			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * areaSpread.getY();
+			min = rand_x - rand_y - areaSpread.x;
+			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * areaSpread.y;
+			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * areaSpread.y;
 		}
 		break;
 	case DISTRIBUTION_NONE:
@@ -336,7 +336,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 
 	// Determine if the origin of each particle is the center of the area
 	if (areaSpreadIsRelativeDirection)
-		dir += atan2(p->position.y - pos.getY(), p->position.x - pos.getX());
+		dir += atan2(p->position.y - pos.y, p->position.x - pos.x);
 
 	p->origin = pos;
 
@@ -344,7 +344,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	max = speedMax;
 	float speed = (float) rng.random(min, max);
 
-	p->velocity = love::Vector(cosf(dir), sinf(dir)) * speed;
+	p->velocity = love::Vector2(cosf(dir), sinf(dir)) * speed;
 
 	p->linearAcceleration.x = (float) rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
 	p->linearAcceleration.y = (float) rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
@@ -554,36 +554,36 @@ void ParticleSystem::getParticleLifetime(float &min, float &max) const
 
 void ParticleSystem::setPosition(float x, float y)
 {
-	position = love::Vector(x, y);
+	position = love::Vector2(x, y);
 	prevPosition = position;
 }
 
-const love::Vector &ParticleSystem::getPosition() const
+const love::Vector2 &ParticleSystem::getPosition() const
 {
 	return position;
 }
 
 void ParticleSystem::moveTo(float x, float y)
 {
-	position = love::Vector(x, y);
+	position = love::Vector2(x, y);
 }
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)
 {
-	areaSpread = love::Vector(x, y);
+	areaSpread = love::Vector2(x, y);
 	areaSpreadDistribution = distribution;
 }
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle)
 {
-	areaSpread = love::Vector(x, y);
+	areaSpread = love::Vector2(x, y);
 	areaSpreadDistribution = distribution;
 	areaSpreadAngle = angle;
 }
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle, bool isRelativeDirection)
 {
-	areaSpread = love::Vector(x, y);
+	areaSpread = love::Vector2(x, y);
 	areaSpreadDistribution = distribution;
 	areaSpreadAngle = angle;
 	areaSpreadIsRelativeDirection = isRelativeDirection;
@@ -594,7 +594,7 @@ ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution
 	return areaSpreadDistribution;
 }
 
-const love::Vector &ParticleSystem::getAreaSpreadParameters() const
+const love::Vector2 &ParticleSystem::getAreaSpreadParameters() const
 {
 	return areaSpread;
 }
@@ -664,11 +664,11 @@ void ParticleSystem::setLinearAcceleration(float x, float y)
 
 void ParticleSystem::setLinearAcceleration(float xmin, float ymin, float xmax, float ymax)
 {
-	linearAccelerationMin = love::Vector(xmin, ymin);
-	linearAccelerationMax = love::Vector(xmax, ymax);
+	linearAccelerationMin = love::Vector2(xmin, ymin);
+	linearAccelerationMax = love::Vector2(xmax, ymax);
 }
 
-void ParticleSystem::getLinearAcceleration(love::Vector &min, love::Vector &max) const
+void ParticleSystem::getLinearAcceleration(love::Vector2 &min, love::Vector2 &max) const
 {
 	min = linearAccelerationMin;
 	max = linearAccelerationMax;
@@ -793,11 +793,11 @@ float ParticleSystem::getSpinVariation() const
 
 void ParticleSystem::setOffset(float x, float y)
 {
-	offset = love::Vector(x, y);
+	offset = love::Vector2(x, y);
 	defaultOffset = false;
 }
 
-love::Vector ParticleSystem::getOffset() const
+love::Vector2 ParticleSystem::getOffset() const
 {
 	return offset;
 }
@@ -950,8 +950,8 @@ void ParticleSystem::update(float dt)
 		else
 		{
 			// Temp variables.
-			love::Vector radial, tangential;
-			love::Vector ppos = p->position;
+			love::Vector2 radial, tangential;
+			love::Vector2 ppos = p->position;
 
 			// Get vector from particle center to particle.
 			radial = ppos - p->origin;
@@ -963,9 +963,9 @@ void ParticleSystem::update(float dt)
 
 			// Calculate tangential acceleration.
 			{
-				float a = tangential.getX();
-				tangential.setX(-tangential.getY());
-				tangential.setY(a);
+				float a = tangential.x;
+				tangential.x = -tangential.y;
+				tangential.y = a;
 			}
 
 			// Resize tangential.
@@ -1075,7 +1075,7 @@ bool ParticleSystem::prepareDraw(Graphics *gfx, const Matrix4 &m)
 
 		// particle vertices are image vertices transformed by particle info
 		t.setTransformation(p->position.x, p->position.y, p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
-		t.transform(pVerts, textureVerts, 4);
+		t.transformXY(pVerts, textureVerts, 4);
 
 		// Particle colors are stored as floats (0-1) but vertex colors are
 		// unsigned bytes (0-255).
