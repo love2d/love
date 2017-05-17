@@ -54,8 +54,10 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 {
 	using namespace vertex;
 
-	if (!prepareDraw(gfx, m))
+	if (!prepareDraw(gfx))
 		return;
+
+	Graphics::TempTransform transform(gfx, m);
 
 	if (Shader::current && texture.get())
 		Shader::current->checkMainTexture(texture);

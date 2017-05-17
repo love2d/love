@@ -612,7 +612,7 @@ protected:
 		int quadIndex;
 	};
 
-	bool prepareDraw(Graphics *gfx, const Matrix4 &m);
+	bool prepareDraw(Graphics *gfx);
 
 	// Pointer to the beginning of the allocated memory.
 	Particle *pMem;

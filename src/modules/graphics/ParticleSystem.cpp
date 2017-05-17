@@ -1048,7 +1048,7 @@ void ParticleSystem::update(float dt)
 	prevPosition = position;
 }
 
-bool ParticleSystem::prepareDraw(Graphics *gfx, const Matrix4 &m)
+bool ParticleSystem::prepareDraw(Graphics *gfx)
 {
 	uint32 pCount = getCount();
 
@@ -1056,8 +1056,6 @@ bool ParticleSystem::prepareDraw(Graphics *gfx, const Matrix4 &m)
 		return false;
 
 	gfx->flushStreamDraws();
-
-	Graphics::TempTransform transform(gfx, m);
 
 	const vertex::XYf_STf *textureVerts = texture->getQuad()->getVertices();
 	Vertex *pVerts = (Vertex *) buffer->map();
