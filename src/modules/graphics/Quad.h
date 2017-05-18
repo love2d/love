@@ -24,7 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/math.h"
-#include "vertex.h"
+#include "common/Vector.h"
 
 namespace love
 {
@@ -53,14 +53,16 @@ public:
 	double getTextureWidth() const;
 	double getTextureHeight() const;
 
-	const vertex::XYf_STf *getVertices() const;
+	const Vector2 *getVertexPositions() const { return vertexPositions; }
+	const Vector2 *getVertexTexCoords() const { return vertexTexCoords; }
 
 	void setLayer(int layer);
 	int getLayer() const;
 
 private:
 
-	vertex::XYf_STf vertices[4];
+	Vector2 vertexPositions[4];
+	Vector2 vertexTexCoords[4];
 
 	int arrayLayer;
 

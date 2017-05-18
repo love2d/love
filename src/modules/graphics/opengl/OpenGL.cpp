@@ -653,8 +653,19 @@ void OpenGL::setVertexPointers(vertex::CommonFormat format, size_t stride, size_
 	case CommonFormat::XYf:
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
 		break;
+	case CommonFormat::XYZf:
+		glVertexAttribPointer(ATTRIB_POS, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
+		break;
 	case CommonFormat::RGBAub:
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset));
+		break;
+	case CommonFormat::STf_RGBAub:
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(STf_RGBAub, s)));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(STf_RGBAub, color.r)));
+		break;
+	case CommonFormat::STPf_RGBAub:
+		glVertexAttribPointer(ATTRIB_TEXCOORD, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(STPf_RGBAub, s)));
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(STPf_RGBAub, color.r)));
 		break;
 	case CommonFormat::XYf_STf:
 		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, x)));

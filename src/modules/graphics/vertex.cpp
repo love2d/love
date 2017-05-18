@@ -29,6 +29,8 @@ namespace vertex
 {
 
 static_assert(sizeof(Color) == 4, "sizeof(Color) incorrect!");
+static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color), "sizeof(STf_RGBAub) incorrect!");
+static_assert(sizeof(STPf_RGBAub) == sizeof(float)*3 + sizeof(Color), "sizeof(STPf_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STf) == sizeof(float)*2 + sizeof(float)*2, "sizeof(XYf_STf) incorrect!");
 static_assert(sizeof(XYf_STPf) == sizeof(float)*2 + sizeof(float)*3, "sizeof(XYf_STPf) incorrect!");
 static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color), "sizeof(XYf_STf_RGBAub) incorrect!");
@@ -43,8 +45,14 @@ size_t getFormatStride(CommonFormat format)
 		return 0;
 	case CommonFormat::XYf:
 		return sizeof(float) * 2;
+	case CommonFormat::XYZf:
+		return sizeof(float) * 3;
 	case CommonFormat::RGBAub:
 		return sizeof(uint8) * 4;
+	case CommonFormat::STf_RGBAub:
+		return sizeof(STf_RGBAub);
+	case CommonFormat::STPf_RGBAub:
+		return sizeof(STPf_RGBAub);
 	case CommonFormat::XYf_STf:
 		return sizeof(XYf_STf);
 	case CommonFormat::XYf_STPf:
@@ -65,9 +73,13 @@ uint32 getFormatFlags(CommonFormat format)
 	case CommonFormat::NONE:
 		return 0;
 	case CommonFormat::XYf:
+	case CommonFormat::XYZf:
 		return ATTRIBFLAG_POS;
 	case CommonFormat::RGBAub:
 		return ATTRIBFLAG_COLOR;
+	case CommonFormat::STf_RGBAub:
+	case CommonFormat::STPf_RGBAub:
+		return ATTRIBFLAG_TEXCOORD | ATTRIB_COLOR;
 	case CommonFormat::XYf_STf:
 	case CommonFormat::XYf_STPf:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
@@ -75,7 +87,6 @@ uint32 getFormatFlags(CommonFormat format)
 	case CommonFormat::XYf_STus_RGBAub:
 	case CommonFormat::XYf_STPf_RGBAub:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
-
 	}
 }
 
@@ -85,6 +96,8 @@ int getFormatPositionComponents(CommonFormat format)
 	{
 	case CommonFormat::NONE:
 	case CommonFormat::RGBAub:
+	case CommonFormat::STf_RGBAub:
+	case CommonFormat::STPf_RGBAub:
 		return 0;
 	case CommonFormat::XYf:
 	case CommonFormat::XYf_STf:
@@ -93,6 +106,8 @@ int getFormatPositionComponents(CommonFormat format)
 	case CommonFormat::XYf_STus_RGBAub:
 	case CommonFormat::XYf_STPf_RGBAub:
 		return 2;
+	case CommonFormat::XYZf:
+		return 3;
 	}
 }
 

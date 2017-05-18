@@ -122,16 +122,25 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	if (Shader::current != nullptr)
 		Shader::current->setVideoTextures(images[0], images[1], images[2]);
 
+	const Matrix4 &tm = gfx->getTransform();
+	bool is2D = tm.isAffine2DTransform();
+
+	Matrix4 t(tm, m);
+
 	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::CommonFormat::XYf_STf_RGBAub;
+	req.formats[0] = vertex::getSinglePositionFormat(is2D);
+	req.formats[1] = vertex::CommonFormat::STf_RGBAub;
 	req.indexMode = vertex::TriangleIndexMode::QUADS;
 	req.vertexCount = 4;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
-	Vertex *verts = (Vertex *) data.stream[0];
 
-	Matrix4 t(gfx->getTransform(), m);
-	t.transformXY(verts, vertices, 4);
+	if (is2D)
+		t.transformXY((Vector2 *) data.stream[0], vertices, 4);
+	else
+		t.transformXY0((Vector3 *) data.stream[0], vertices, 4);
+
+	vertex::STf_RGBAub *verts = (vertex::STf_RGBAub *) data.stream[1];
 
 	Color c = toColor(gfx->getColor());
 

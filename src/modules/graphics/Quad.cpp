@@ -53,23 +53,15 @@ void Quad::refresh(const Quad::Viewport &v, double sw, double sh)
 	// 0---2
 	// | / |
 	// 1---3
-	vertices[0].x = 0.0f;
-	vertices[0].y = 0.0f;
-	vertices[1].x = 0.0f;
-	vertices[1].y = (float) v.h;
-	vertices[2].x = (float) v.w;
-	vertices[2].y = 0.0f;
-	vertices[3].x = (float) v.w;
-	vertices[3].y = (float) v.h;
+	vertexPositions[0] = Vector2(0.0f, 0.0f);
+	vertexPositions[1] = Vector2(0.0f, (float) v.h);
+	vertexPositions[2] = Vector2((float) v.w, 0.0f);
+	vertexPositions[3] = Vector2((float) v.w, (float) v.h);
 
-	vertices[0].s = (float) (v.x / sw);
-	vertices[0].t = (float) (v.y / sh);
-	vertices[1].s = (float) (v.x / sw);
-	vertices[1].t = (float) ((v.y + v.h) / sh);
-	vertices[2].s = (float) ((v.x + v.w) / sw);
-	vertices[2].t = (float) (v.y / sh);
-	vertices[3].s = (float) ((v.x + v.w) / sw);
-	vertices[3].t = (float) ((v.y + v.h) / sh);
+	vertexTexCoords[0] = Vector2((float) (v.x / sw), (float) (v.y / sh));
+	vertexTexCoords[1] = Vector2((float) (v.x / sw), (float) ((v.y + v.h) / sh));
+	vertexTexCoords[2] = Vector2((float) ((v.x + v.w) / sw), (float) (v.y / sh));
+	vertexTexCoords[3] = Vector2((float) ((v.x + v.w) / sw), (float) ((v.y + v.h) / sh));
 }
 
 void Quad::setViewport(const Quad::Viewport &v)
@@ -90,11 +82,6 @@ double Quad::getTextureWidth() const
 double Quad::getTextureHeight() const
 {
 	return sh;
-}
-
-const vertex::XYf_STf *Quad::getVertices() const
-{
-	return vertices;
 }
 
 void Quad::setLayer(int layer)

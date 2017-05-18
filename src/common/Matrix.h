@@ -192,6 +192,13 @@ public:
 	void transformXY(Vdst *dst, const Vsrc *src, int size) const;
 
 	/**
+	 * Transforms an array of 2-component vertices by this Matrix, and stores
+	 * them in an array of 3-component vertices.
+	 **/
+	template <typename Vdst, typename Vsrc>
+	void transformXY0(Vdst *dst, const Vsrc *src, int size) const;
+
+	/**
 	 * Transforms an array of 3-component vertices by this Matrix. The source
 	 * and destination arrays may be the same.
 	 **/
@@ -317,6 +324,22 @@ void Matrix4::transformXY(Vdst *dst, const Vsrc *src, int size) const
 
 		dst[i].x = x;
 		dst[i].y = y;
+	}
+}
+
+template <typename Vdst, typename Vsrc>
+void Matrix4::transformXY0(Vdst *dst, const Vsrc *src, int size) const
+{
+	for (int i = 0; i < size; i++)
+	{
+		// Store in temp variables in case src = dst
+		float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (0) + (e[12]);
+		float y = (e[1]*src[i].x) + (e[5]*src[i].y) + (0) + (e[13]);
+		float z = (e[2]*src[i].x) + (e[6]*src[i].y) + (0) + (e[14]);
+
+		dst[i].x = x;
+		dst[i].y = y;
+		dst[i].z = z;
 	}
 }
 

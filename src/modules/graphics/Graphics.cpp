@@ -616,16 +616,6 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	if (state.vertexCount == 0 && Shader::current != nullptr && req.texture != nullptr)
 		Shader::current->checkMainTexture(req.texture);
 
-	if (!getTransform().isAffine2DTransform())
-	{
-		for (CommonFormat fmt : req.formats)
-		{
-			int components = getFormatPositionComponents(fmt);
-			if (components > 0 && components < 3)
-				throw love::Exception("Only affine 2D transforms are supported with auto-batched draws.");
-		}
-	}
-
 	bool shouldflush = false;
 	bool shouldresize = false;
 
@@ -811,16 +801,21 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, Font *font, f
 
 void Graphics::points(const float *coords, const Colorf *colors, size_t numpoints)
 {
+	const Matrix4 &t = getTransform();
+	bool is2D = t.isAffine2DTransform();
+
 	StreamDrawRequest req;
 	req.primitiveMode = vertex::PrimitiveMode::POINTS;
-	req.formats[0] = vertex::CommonFormat::XYf;
+	req.formats[0] = vertex::getSinglePositionFormat(is2D);
 	req.formats[1] = vertex::CommonFormat::RGBAub;
 	req.vertexCount = (int) numpoints;
 
 	StreamVertexData data = requestStreamDraw(req);
 
-	const Matrix4 &t = getTransform();
-	t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+	if (is2D)
+		t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+	else
+		t.transformXY0((Vector3 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
 
 	Color *colordata = (Color *) data.stream[1];
 
@@ -1095,16 +1090,21 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 	else
 	{
+		const Matrix4 &t = getTransform();
+		bool is2D = t.isAffine2DTransform();
+
 		StreamDrawRequest req;
-		req.formats[0] = vertex::CommonFormat::XYf;
+		req.formats[0] = vertex::getSinglePositionFormat(is2D);
 		req.formats[1] = vertex::CommonFormat::RGBAub;
 		req.indexMode = vertex::TriangleIndexMode::FAN;
 		req.vertexCount = (int)count/2 - 1;
 
 		StreamVertexData data = requestStreamDraw(req);
-		
-		const Matrix4 &t = getTransform();
-		t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+
+		if (is2D)
+			t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+		else
+			t.transformXY0((Vector3 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
 		
 		Color c = toColor(getColor());
 		Color *colordata = (Color *) data.stream[1];

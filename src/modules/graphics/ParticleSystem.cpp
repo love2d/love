@@ -1057,7 +1057,9 @@ bool ParticleSystem::prepareDraw(Graphics *gfx)
 
 	gfx->flushStreamDraws();
 
-	const vertex::XYf_STf *textureVerts = texture->getQuad()->getVertices();
+	const Vector2 *positions = texture->getQuad()->getVertexPositions();
+	const Vector2 *texcoords = texture->getQuad()->getVertexTexCoords();
+
 	Vertex *pVerts = (Vertex *) buffer->map();
 	Particle *p = pHead;
 
@@ -1069,11 +1071,14 @@ bool ParticleSystem::prepareDraw(Graphics *gfx)
 	while (p)
 	{
 		if (useQuads)
-			textureVerts = quads[p->quadIndex]->getVertices();
+		{
+			positions = quads[p->quadIndex]->getVertexPositions();
+			texcoords = quads[p->quadIndex]->getVertexTexCoords();
+		}
 
 		// particle vertices are image vertices transformed by particle info
 		t.setTransformation(p->position.x, p->position.y, p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
-		t.transformXY(pVerts, textureVerts, 4);
+		t.transformXY(pVerts, positions, 4);
 
 		// Particle colors are stored as floats (0-1) but vertex colors are
 		// unsigned bytes (0-255).
@@ -1082,8 +1087,8 @@ bool ParticleSystem::prepareDraw(Graphics *gfx)
 		// set the texture coordinate and color data for particle vertices
 		for (int v = 0; v < 4; v++)
 		{
-			pVerts[v].s = textureVerts[v].s;
-			pVerts[v].t = textureVerts[v].t;
+			pVerts[v].s = texcoords[v].x;
+			pVerts[v].t = texcoords[v].y;
 			pVerts[v].color = c;
 		}
 

@@ -95,12 +95,27 @@ enum class CommonFormat
 {
 	NONE,
 	XYf,
+	XYZf,
 	RGBAub,
+	STf_RGBAub,
+	STPf_RGBAub,
 	XYf_STf,
 	XYf_STPf,
 	XYf_STf_RGBAub,
 	XYf_STus_RGBAub,
 	XYf_STPf_RGBAub,
+};
+
+struct STf_RGBAub
+{
+	float s, t;
+	Color color;
+};
+
+struct STPf_RGBAub
+{
+	float s, t, p;
+	Color color;
 };
 
 struct XYf_STf
@@ -141,6 +156,11 @@ size_t getFormatStride(CommonFormat format);
 uint32 getFormatFlags(CommonFormat format);
 
 int getFormatPositionComponents(CommonFormat format);
+
+inline CommonFormat getSinglePositionFormat(bool is2D)
+{
+	return is2D ? CommonFormat::XYf : CommonFormat::XYZf;
+}
 
 size_t getIndexDataSize(IndexDataType type);
 

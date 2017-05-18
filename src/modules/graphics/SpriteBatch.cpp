@@ -91,18 +91,19 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 	if (index == -1 && next >= size)
 		setBufferSize(size * 2);
 
-	const XYf_STf *quadverts = quad->getVertices();
+	const Vector2 *quadpositions = quad->getVertexPositions();
+	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
 	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
 	size_t offset = (index == -1 ? next : index) * format_stride * 4;
 	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
-	m.transformXY(verts, quadverts, 4);
+	m.transformXY(verts, quadpositions, 4);
 
 	for (int i = 0; i < 4; i++)
 	{
-		verts[i].s = quadverts[i].s;
-		verts[i].t = quadverts[i].t;
+		verts[i].s = quadtexcoords[i].x;
+		verts[i].t = quadtexcoords[i].y;
 		verts[i].color = color;
 	}
 
@@ -136,18 +137,19 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 	if (index == -1 && next >= size)
 		setBufferSize(size * 2);
 
-	const XYf_STf *quadverts = quad->getVertices();
+	const Vector2 *quadpositions = quad->getVertexPositions();
+	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
 	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
 	size_t offset = (index == -1 ? next : index) * format_stride * 4;
 	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
-	m.transformXY(verts, quadverts, 4);
+	m.transformXY(verts, quadpositions, 4);
 
 	for (int i = 0; i < 4; i++)
 	{
-		verts[i].s = quadverts[i].s;
-		verts[i].t = quadverts[i].t;
+		verts[i].s = quadtexcoords[i].x;
+		verts[i].t = quadtexcoords[i].y;
 		verts[i].p = (float) layer;
 		verts[i].color = color;
 	}

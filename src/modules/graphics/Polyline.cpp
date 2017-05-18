@@ -371,16 +371,21 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 	if (overdraw)
 		total_vertex_count = (int) (overdraw_vertex_start + overdraw_vertex_count);
 
+	const Matrix4 &t = gfx->getTransform();
+	bool is2D = t.isAffine2DTransform();
+
 	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::CommonFormat::XYf;
+	req.formats[0] = vertex::getSinglePositionFormat(is2D);
 	req.formats[1] = vertex::CommonFormat::RGBAub;
 	req.indexMode = triangle_mode;
 	req.vertexCount = total_vertex_count;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
-	const Matrix4 &t = gfx->getTransform();
-	t.transformXY((Vector2 *) data.stream[0], vertices, total_vertex_count);
+	if (is2D)
+		t.transformXY((Vector2 *) data.stream[0], vertices, total_vertex_count);
+	else
+		t.transformXY0((Vector3 *) data.stream[0], vertices, total_vertex_count);
 
 	Color curcolor = toColor(gfx->getColor());
 	Color *colordata = (Color *) data.stream[1];

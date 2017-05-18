@@ -122,25 +122,33 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 
 	Color c = toColor(gfx->getColor());
 
+	const Matrix4 &tm = gfx->getTransform();
+	bool is2D = tm.isAffine2DTransform();
+
+	Matrix4 t(tm, localTransform);
+
 	Graphics::StreamDrawRequest req;
-	req.formats[0] = CommonFormat::XYf_STf_RGBAub;
+	req.formats[0] = vertex::getSinglePositionFormat(is2D);
+	req.formats[1] = CommonFormat::STf_RGBAub;
 	req.indexMode = TriangleIndexMode::QUADS;
 	req.vertexCount = 4;
 	req.texture = this;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
-	XYf_STf_RGBAub *verts = (XYf_STf_RGBAub *) data.stream[0];
-	const XYf_STf *quadverts = q->getVertices();
+	if (is2D)
+		t.transformXY((Vector2 *) data.stream[0], q->getVertexPositions(), 4);
+	else
+		t.transformXY0((Vector3 *) data.stream[0], q->getVertexPositions(), 4);
 
-	Matrix4 t(gfx->getTransform(), localTransform);
-	t.transformXY(verts, quadverts, 4);
+	const Vector2 *texcoords = q->getVertexTexCoords();
+	vertex::STf_RGBAub *vertexdata = (vertex::STf_RGBAub *) data.stream[1];
 
 	for (int i = 0; i < 4; i++)
 	{
-		verts[i].s = quadverts[i].s;
-		verts[i].t = quadverts[i].t;
-		verts[i].color = c;
+		vertexdata[i].s = texcoords[i].x;
+		vertexdata[i].t = texcoords[i].y;
+		vertexdata[i].color = c;
 	}
 }
 
@@ -164,26 +172,34 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 
 	Color c = toColor(gfx->getColor());
 
+	const Matrix4 &tm = gfx->getTransform();
+	bool is2D = tm.isAffine2DTransform();
+
+	Matrix4 t(tm, m);
+
 	Graphics::StreamDrawRequest req;
-	req.formats[0] = CommonFormat::XYf_STPf_RGBAub;
+	req.formats[0] = vertex::getSinglePositionFormat(is2D);
+	req.formats[1] = CommonFormat::STPf_RGBAub;
 	req.indexMode = TriangleIndexMode::QUADS;
 	req.vertexCount = 4;
 	req.texture = this;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
-	XYf_STPf_RGBAub *verts = (XYf_STPf_RGBAub *) data.stream[0];
-	const XYf_STf *quadverts = q->getVertices();
+	if (is2D)
+		t.transformXY((Vector2 *) data.stream[0], q->getVertexPositions(), 4);
+	else
+		t.transformXY0((Vector3 *) data.stream[0], q->getVertexPositions(), 4);
 
-	Matrix4 t(gfx->getTransform(), m);
-	t.transformXY(verts, quadverts, 4);
+	const Vector2 *texcoords = q->getVertexTexCoords();
+	vertex::STPf_RGBAub *vertexdata = (vertex::STPf_RGBAub *) data.stream[1];
 
 	for (int i = 0; i < 4; i++)
 	{
-		verts[i].s = quadverts[i].s;
-		verts[i].t = quadverts[i].t;
-		verts[i].p = (float) layer;
-		verts[i].color = c;
+		vertexdata[i].s = texcoords[i].x;
+		vertexdata[i].t = texcoords[i].y;
+		vertexdata[i].p = (float) layer;
+		vertexdata[i].color = c;
 	}
 }
 
