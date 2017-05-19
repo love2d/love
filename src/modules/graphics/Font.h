@@ -238,7 +238,10 @@ private:
 	// ID which is incremented when the texture cache is invalidated.
 	uint32 textureCacheID;
 
-	static const int TEXTURE_PADDING = 1;
+	// 1 pixel of transparent padding between glyphs (so quads won't pick up
+	// other glyphs), plus one pixel of transparent padding that the quads will
+	// use, for edge antialiasing.
+	static const int TEXTURE_PADDING = 2;
 
 	// This will be used if the Rasterizer doesn't have a tab character itself.
 	static const int SPACES_PER_TAB = 4;

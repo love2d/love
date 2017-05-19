@@ -258,15 +258,20 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 
 		Color c(255, 255, 255, 255);
 
+		// Extrude the quad borders by 1 pixel. We have an extra pixel of
+		// transparent padding in the texture atlas, so the quad extrusion will
+		// add some antialiasing at the edges of the quad.
+		int o = 1;
+
 		// 0---2
 		// | / |
 		// 1---3
 		const GlyphVertex verts[4] =
 		{
-			{0.0f,           0.0f,           normToUint16((tX+0)/tWidth), normToUint16((tY+0)/tHeight), c},
-			{0.0f,           h/pixelDensity, normToUint16((tX+0)/tWidth), normToUint16((tY+h)/tHeight), c},
-			{w/pixelDensity, 0.0f,           normToUint16((tX+w)/tWidth), normToUint16((tY+0)/tHeight), c},
-			{w/pixelDensity, h/pixelDensity, normToUint16((tX+w)/tWidth), normToUint16((tY+h)/tHeight), c}
+			{float(-o),          float(-o),          normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
+			{float(-o),          (h+o)/pixelDensity, normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
+			{(w+o)/pixelDensity, float(-o),          normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
+			{(w+o)/pixelDensity, (h+o)/pixelDensity, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
 		};
 
 		// Copy vertex data to the glyph and set proper bearing.
