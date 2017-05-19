@@ -914,9 +914,11 @@ int Font::getDescent() const
 
 float Font::getBaseline() const
 {
-	// 1.25 is magic line height for true type fonts
-	if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
-		return floorf(getHeight() / 1.25f + 0.5f);
+	float ascent = getAscent();
+	if (ascent != 0.0f)
+		return ascent;
+	else if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
+		return floorf(getHeight() / 1.25f + 0.5f); // 1.25 is magic line height for true type fonts
 	else
 		return 0.0f;
 }
