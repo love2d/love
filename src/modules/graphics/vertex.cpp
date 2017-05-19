@@ -79,7 +79,7 @@ uint32 getFormatFlags(CommonFormat format)
 		return ATTRIBFLAG_COLOR;
 	case CommonFormat::STf_RGBAub:
 	case CommonFormat::STPf_RGBAub:
-		return ATTRIBFLAG_TEXCOORD | ATTRIB_COLOR;
+		return ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
 	case CommonFormat::XYf_STf:
 	case CommonFormat::XYf_STPf:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD;
