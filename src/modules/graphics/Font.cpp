@@ -379,7 +379,11 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 	float dx = offset.x;
 	float dy = offset.y;
 
-	float lineheight = getBaseline();
+	float heightoffset = 0.0f;
+
+	if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
+		heightoffset = getBaseline();
+
 	int maxwidth = 0;
 
 	// Keeps track of when we need to switch textures in our vertex array.
@@ -461,7 +465,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			{
 				vertices.push_back(glyph.vertices[j]);
 				vertices.back().x += dx;
-				vertices.back().y += dy + lineheight;
+				vertices.back().y += dy + heightoffset;
 				vertices.back().color = curcolor;
 			}
 
