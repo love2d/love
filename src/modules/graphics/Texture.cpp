@@ -183,6 +183,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	req.indexMode = TriangleIndexMode::QUADS;
 	req.vertexCount = 4;
 	req.texture = this;
+	req.standardShaderType = Shader::STANDARD_ARRAY;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 

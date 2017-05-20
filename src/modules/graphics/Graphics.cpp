@@ -388,19 +388,13 @@ void Graphics::setShader(love::graphics::Shader *shader)
 	if (shader == nullptr)
 		return setShader();
 
-	flushStreamDraws();
-
 	shader->attach();
-
 	states.back().shader.set(shader);
 }
 
 void Graphics::setShader()
 {
-	flushStreamDraws();
-
 	Shader::attachDefault(Shader::STANDARD_DEFAULT);
-
 	states.back().shader.set(nullptr);
 }
 
@@ -613,16 +607,14 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 
 	StreamBufferState &state = streamBufferState;
 
-	if (state.vertexCount == 0 && Shader::current != nullptr && req.texture != nullptr)
-		Shader::current->checkMainTexture(req.texture);
-
 	bool shouldflush = false;
 	bool shouldresize = false;
 
 	if (req.primitiveMode != state.primitiveMode
 		|| req.formats[0] != state.formats[0] || req.formats[1] != state.formats[1]
 		|| ((req.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
-		|| req.texture != state.texture)
+		|| req.texture != state.texture
+		|| req.standardShaderType != state.standardShaderType)
 	{
 		shouldflush = true;
 	}
@@ -681,7 +673,14 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		state.formats[0] = req.formats[0];
 		state.formats[1] = req.formats[1];
 		state.texture = req.texture;
+		state.standardShaderType = req.standardShaderType;
 	}
+
+	if (state.vertexCount == 0 && Shader::isDefaultActive())
+		Shader::attachDefault(state.standardShaderType);
+
+	if (state.vertexCount == 0 && Shader::current != nullptr && req.texture != nullptr)
+		Shader::current->checkMainTexture(req.texture);
 
 	if (shouldresize)
 	{

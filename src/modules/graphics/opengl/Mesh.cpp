@@ -99,10 +99,13 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 	if (instancecount > 1 && !gl.isInstancingSupported())
 		throw love::Exception("Instancing is not supported on this system.");
 
+	gfx->flushStreamDraws();
+
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
 	if (Shader::current && texture.get())
 		Shader::current->checkMainTexture(texture);
-
-	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 

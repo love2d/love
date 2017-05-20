@@ -107,21 +107,6 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 {
 	update();
 
-	gfx->flushStreamDraws();
-
-	bool usingdefaultshader = Shader::isDefaultActive();
-	Shader *prevdefaultshader = nullptr;
-
-	// If we're using the default shader, substitute the video version.
-	if (usingdefaultshader)
-	{
-		prevdefaultshader = Shader::current;
-		Shader::standardShaders[Shader::STANDARD_VIDEO]->attach();
-	}
-
-	if (Shader::current != nullptr)
-		Shader::current->setVideoTextures(images[0], images[1], images[2]);
-
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
 
@@ -132,6 +117,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	req.formats[1] = vertex::CommonFormat::STf_RGBAub;
 	req.indexMode = vertex::TriangleIndexMode::QUADS;
 	req.vertexCount = 4;
+	req.standardShaderType = Shader::STANDARD_VIDEO;
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
@@ -151,10 +137,10 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 		verts[i].color = c;
 	}
 
-	gfx->flushStreamDraws();
+	if (Shader::current != nullptr)
+		Shader::current->setVideoTextures(images[0], images[1], images[2]);
 
-	if (usingdefaultshader && prevdefaultshader != nullptr)
-		prevdefaultshader->attach();
+	gfx->flushStreamDraws();
 }
 
 void Video::update()

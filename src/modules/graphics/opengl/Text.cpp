@@ -45,10 +45,13 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	if (vbo == nullptr || draw_commands.empty())
 		return;
 
+	gfx->flushStreamDraws();
+
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
 	if (Shader::current)
 		Shader::current->checkMainTextureType(TEXTURE_2D, false);
-
-	gfx->flushStreamDraws();
 
 	OpenGL::TempDebugGroup debuggroup("Text object draw");
 

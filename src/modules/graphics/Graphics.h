@@ -242,6 +242,7 @@ public:
 		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
 		int vertexCount = 0;
 		Texture *texture = nullptr;
+		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 
 		StreamDrawRequest()
 		{
@@ -840,6 +841,7 @@ protected:
 		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
 		vertex::CommonFormat formats[2];
 		StrongRef<Texture> texture;
+		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 		int vertexCount = 0;
 		int indexCount = 0;
 

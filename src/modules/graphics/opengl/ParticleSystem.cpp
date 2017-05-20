@@ -59,6 +59,9 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 
 	Graphics::TempTransform transform(gfx, m);
 
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
 	if (Shader::current && texture.get())
 		Shader::current->checkMainTexture(texture);
 

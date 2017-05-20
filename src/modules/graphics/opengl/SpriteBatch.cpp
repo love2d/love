@@ -60,19 +60,15 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushStreamDraws();
 
-	Shader *prevdefaultshader = nullptr;
-
 	if (texture.get())
 	{
-		TextureType textype = texture->getTextureType();
-
-		if (textype == TEXTURE_2D_ARRAY && Shader::isDefaultActive())
+		if (Shader::isDefaultActive())
 		{
-			if (!Shader::standardShaders[Shader::STANDARD_ARRAY])
-				throw love::Exception("Standard array texture shader has not been initialized!");
+			Shader::StandardShader defaultshader = Shader::STANDARD_DEFAULT;
+			if (texture->getTextureType() == TEXTURE_2D_ARRAY)
+				defaultshader = Shader::STANDARD_ARRAY;
 
-			prevdefaultshader = Shader::current;
-			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
+			Shader::attachDefault(defaultshader);
 		}
 
 		if (Shader::current)
@@ -138,9 +134,6 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), gltype, indices);
 	}
-
-	if (prevdefaultshader != nullptr)
-		prevdefaultshader->attach();
 }
 
 } // opengl

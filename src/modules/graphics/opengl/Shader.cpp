@@ -522,6 +522,8 @@ void Shader::attach()
 {
 	if (current != this)
 	{
+		Graphics::flushStreamDrawsGlobal();
+
 		gl.useProgram(program);
 		current = this;
 		// retain/release happens in Graphics::setShader.
@@ -777,7 +779,7 @@ void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *cr
 		const UniformInfo *info = builtinUniformInfo[builtins[i]];
 
 		if (info != nullptr)
-			sendTextures(info, &textures[i], 1);
+			sendTextures(info, &textures[i], 1, true);
 	}
 }
 

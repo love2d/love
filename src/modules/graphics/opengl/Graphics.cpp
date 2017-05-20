@@ -339,22 +339,6 @@ void Graphics::flushStreamDraws()
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
 
-	love::graphics::Shader *prevdefaultshader = nullptr;
-
-	if (sbstate.texture.get())
-	{
-		TextureType textype = sbstate.texture->getTextureType();
-
-		if (textype == TEXTURE_2D_ARRAY && Shader::isDefaultActive())
-		{
-			if (!Shader::standardShaders[Shader::STANDARD_ARRAY])
-				throw love::Exception("Standard array texture shader has not been initialized!");
-
-			prevdefaultshader = Shader::current;
-			Shader::standardShaders[Shader::STANDARD_ARRAY]->attach();
-		}
-	}
-
 	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
 
 	uint32 attribs = 0;
@@ -434,9 +418,6 @@ void Graphics::flushStreamDraws()
 
 	streamBufferState.vertexCount = 0;
 	streamBufferState.indexCount = 0;
-
-	if (prevdefaultshader != nullptr)
-		prevdefaultshader->attach();
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
