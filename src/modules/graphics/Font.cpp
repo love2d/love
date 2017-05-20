@@ -434,6 +434,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			// Wrap newline, but do not print it.
 			dy += floorf(getHeight() * getLineHeight() + 0.5f);
 			dx = offset.x;
+			prevglyph = 0;
 			continue;
 		}
 
