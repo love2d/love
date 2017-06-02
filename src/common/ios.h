@@ -64,6 +64,16 @@ std::string getExecutablePath();
  **/
 void vibrate();
 
+/**
+ * Enable mix mode (e.g. with background music apps) and playback with a muted device.
+ **/
+void setAudioMixWithOthers(bool mixMode, bool playMuted);
+
+/**
+ * Returns whether another application is playing audio.
+ **/
+bool audioShouldBeSilenced();
+
 } // ios
 } // love
 

@@ -373,6 +373,10 @@ function love.init()
 			window = true,
 			video = true,
 		},
+		audio = {
+			mixmode = true,
+			playmuted = false,
+		},
 		console = false, -- Only relevant for windows.
 		identity = false,
 		appendidentity = false,
@@ -414,6 +418,10 @@ function love.init()
 
 	if love._setGammaCorrect then
 		love._setGammaCorrect(c.gammacorrect)
+	end
+
+	if love._setAudioMixMode then
+		love._setAudioMixMode(c.audio.mixmode, c.audio.playmuted)
 	end
 
 	-- Gets desired modules.

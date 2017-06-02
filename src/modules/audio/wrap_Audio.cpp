@@ -25,6 +25,7 @@
 #include "null/Audio.h"
 
 #include "common/runtime.h"
+#include "common/ios.h"
 
 // C++
 #include <iostream>
@@ -293,6 +294,16 @@ int w_getDistanceModel(lua_State *L)
 	return 1;
 }
 
+int w_getShouldBeSilenced(lua_State *L)
+{
+#ifdef LOVE_IOS
+	lua_pushboolean(L, love::ios::audioShouldBeSilenced());
+#else
+	lua_pushboolean(L, 0);
+#endif
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -318,6 +329,7 @@ static const luaL_Reg functions[] =
 	{ "stopRecording", w_stopRecording },*/
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
+	{ "getShouldBeSilenced", w_getShouldBeSilenced },
 	{ 0, 0 }
 };
 

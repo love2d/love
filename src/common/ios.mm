@@ -26,6 +26,7 @@
 #import <UIKit/UIKit.h>
 
 #import <AudioToolbox/AudioServices.h>
+#import <AVFoundation/AVFoundation.h>
 
 #include <vector>
 
@@ -342,6 +343,39 @@ void vibrate()
 	{
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 	}
+}
+
+void setAudioMixWithOthers(bool mixMode, bool playMuted)
+{
+	@autoreleasepool
+	{
+		NSError* err;
+		if (mixMode)
+		{
+			if (playMuted)
+			{
+				[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:&err];
+			}
+			else
+			{
+				[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&err];
+			}
+		}
+		else
+		{
+			if (playMuted)
+			{
+				[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&err];
+			}
+		}
+		if (err != nil)
+			NSLog(@"Error in AVAudioSession setCategory: %@", [err localizedDescription]);
+	}
+}
+
+bool audioShouldBeSilenced()
+{
+	return [[AVAudioSession sharedInstance] secondaryAudioShouldBeSilencedHint];
 }
 
 } // ios
