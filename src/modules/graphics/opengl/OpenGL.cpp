@@ -710,6 +710,14 @@ void OpenGL::setVertexPointers(vertex::CommonFormat format, love::graphics::Buff
 	setVertexPointers(format, stride, offset);
 }
 
+void OpenGL::clearDepth(double value)
+{
+	if (GLAD_ES_VERSION_2_0)
+		glClearDepthf((GLfloat) value);
+	else
+		glClearDepth(value);
+}
+
 void OpenGL::setViewport(const Rect &v)
 {
 	glViewport(v.x, v.y, v.w, v.h);

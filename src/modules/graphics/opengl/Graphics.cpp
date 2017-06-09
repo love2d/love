@@ -728,7 +728,7 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 
 	if (depth.hasValue)
 	{
-		glClearDepth(depth.value);
+		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
@@ -809,7 +809,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 
 	if (depth.hasValue)
 	{
-		glClearDepth(depth.value);
+		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 

@@ -225,6 +225,11 @@ public:
 	void setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t stride, size_t offset);
 
 	/**
+	 * Wrapper for glClearDepth and glClearDepthf.
+	 **/
+	void clearDepth(double value);
+
+	/**
 	 * Sets the OpenGL rendering viewport to the specified rectangle.
 	 * The y-coordinate starts at the top.
 	 **/

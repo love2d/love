@@ -68,7 +68,7 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 					if (isPixelFormatDepthStencil(format))
 					{
-						glClearDepth(1.0);
+						gl.clearDepth(1.0);
 						glClearStencil(0);
 						glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 					}
@@ -128,7 +128,7 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 	{
 		if (isPixelFormatDepthStencil(pixelformat))
 		{
-			glClearDepth(1.0);
+			gl.clearDepth(1.0);
 			glClearStencil(0);
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
