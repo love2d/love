@@ -137,17 +137,12 @@ private:
 	void endPass();
 	void bindCachedFBO(const RenderTargets &targets);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
-	love::graphics::Canvas *getCachedStencilBuffer(int w, int h, int samples);
 
 	void setDebug(bool enable);
 
 	std::unordered_map<uint32, GLuint> framebufferObjects;
-	std::vector<love::graphics::Canvas *> stencilBuffers;
-
 	QuadIndices *quadIndices;
-
 	bool windowHasStencil;
-
 	GLuint mainVAO;
 
 }; // Graphics

@@ -120,12 +120,8 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 		return;
 	}
 
-	Color c = toColor(gfx->getColor());
-
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
-
-	Matrix4 t(tm, localTransform);
 
 	Graphics::StreamDrawRequest req;
 	req.formats[0] = vertex::getSinglePositionFormat(is2D);
@@ -136,6 +132,8 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 
 	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
 
+	Matrix4 t(tm, localTransform);
+
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], q->getVertexPositions(), 4);
 	else
@@ -143,6 +141,8 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 
 	const Vector2 *texcoords = q->getVertexTexCoords();
 	vertex::STf_RGBAub *vertexdata = (vertex::STf_RGBAub *) data.stream[1];
+
+	Color c = toColor(gfx->getColor());
 
 	for (int i = 0; i < 4; i++)
 	{

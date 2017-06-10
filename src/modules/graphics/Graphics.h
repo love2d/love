@@ -193,6 +193,12 @@ public:
 		STACK_MAX_ENUM
 	};
 
+	enum TemporaryRenderTargetFlags
+	{
+		TEMPORARY_RT_DEPTH   = (1 << 0),
+		TEMPORARY_RT_STENCIL = (1 << 1),
+	};
+
 	struct RendererInfo
 	{
 		std::string name;
@@ -325,11 +331,11 @@ public:
 	{
 		std::vector<RenderTarget> colors;
 		RenderTarget depthStencil;
-		bool useTemporaryStencil;
+		uint32 temporaryRTFlags;
 
 		RenderTargets()
 			: depthStencil(nullptr)
-			, useTemporaryStencil(false)
+			, temporaryRTFlags(0)
 		{}
 	};
 
@@ -337,11 +343,11 @@ public:
 	{
 		std::vector<RenderTargetStrongRef> colors;
 		RenderTargetStrongRef depthStencil;
-		bool useTemporaryStencil;
+		uint32 temporaryRTFlags;
 
 		RenderTargetsStrongRef()
 			: depthStencil(nullptr)
-			, useTemporaryStencil(false)
+			, temporaryRTFlags(0)
 		{}
 	};
 
@@ -465,7 +471,7 @@ public:
 
 	Shader *getShader() const;
 
-	void setCanvas(RenderTarget rt, bool useStencil);
+	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
 	virtual void setCanvas(const RenderTargets &rts) = 0;
 	void setCanvas(const RenderTargetsStrongRef &rts);
 	virtual void setCanvas() = 0;
@@ -860,6 +866,8 @@ protected:
 
 	virtual void getAPIStats(int &drawcalls, int &shaderswitches) const = 0;
 
+	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
+
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
 
@@ -890,6 +898,8 @@ protected:
 
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypeStack;
+
+	std::vector<Canvas *> temporaryCanvases;
 
 	int canvasSwitchCount;
 

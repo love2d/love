@@ -315,7 +315,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 			canvaseschanged = true;
 		}
 
-		if (sRTs.useTemporaryStencil != curRTs.useTemporaryStencil)
+		if (sRTs.temporaryRTFlags != curRTs.temporaryRTFlags)
 			canvaseschanged = true;
 	}
 
@@ -403,14 +403,14 @@ love::graphics::Shader *Graphics::getShader() const
 	return states.back().shader.get();
 }
 
-void Graphics::setCanvas(RenderTarget rt, bool useStencil)
+void Graphics::setCanvas(RenderTarget rt, uint32 temporaryRTFlags)
 {
 	if (rt.canvas == nullptr)
 		return setCanvas();
 
 	RenderTargets rts;
 	rts.colors.push_back(rt);
-	rts.useTemporaryStencil = useStencil;
+	rts.temporaryRTFlags = temporaryRTFlags;
 
 	setCanvas(rts);
 }
@@ -424,7 +424,7 @@ void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
 		targets.colors.emplace_back(rt.canvas.get(), rt.slice, rt.mipmap);
 
 	targets.depthStencil = RenderTarget(rts.depthStencil.canvas, rts.depthStencil.slice, rts.depthStencil.mipmap);
-	targets.useTemporaryStencil = rts.useTemporaryStencil;
+	targets.temporaryRTFlags = rts.temporaryRTFlags;
 
 	return setCanvas(targets);
 }
@@ -440,7 +440,7 @@ Graphics::RenderTargets Graphics::getCanvas() const
 		rts.colors.emplace_back(rt.canvas.get(), rt.slice, rt.mipmap);
 
 	rts.depthStencil = RenderTarget(curRTs.depthStencil.canvas, curRTs.depthStencil.slice, curRTs.depthStencil.mipmap);
-	rts.useTemporaryStencil = curRTs.useTemporaryStencil;
+	rts.temporaryRTFlags = curRTs.temporaryRTFlags;
 
 	return rts;
 }
@@ -481,6 +481,36 @@ bool Graphics::isCanvasActive(Canvas *canvas, int slice) const
 		return true;
 
 	return false;
+}
+
+Canvas *Graphics::getTemporaryCanvas(PixelFormat format, int w, int h, int samples)
+{
+	love::graphics::Canvas *canvas = nullptr;
+
+	for (Canvas *c : temporaryCanvases)
+	{
+		if (c->getPixelFormat() == format && c->getPixelWidth() == w
+			&& c->getPixelHeight() == h && c->getRequestedMSAA() == samples)
+		{
+			canvas = c;
+			break;
+		}
+	}
+
+	if (canvas == nullptr)
+	{
+		Canvas::Settings settings;
+		settings.format = format;
+		settings.width = w;
+		settings.height = h;
+		settings.msaa = samples;
+
+		canvas = newCanvas(settings);
+
+		temporaryCanvases.push_back(canvas);
+	}
+
+	return canvas;
 }
 
 void Graphics::intersectScissor(const Rect &rect)
