@@ -420,10 +420,6 @@ function love.init()
 		love._setGammaCorrect(c.gammacorrect)
 	end
 
-	if love._setAudioMixMode then
-		love._setAudioMixMode(c.audio.mixmode, c.audio.playmuted)
-	end
-
 	-- Gets desired modules.
 	for k,v in ipairs{
 		"thread",
@@ -496,6 +492,10 @@ function love.init()
 			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
 			love.window.setIcon(love.image.newImageData(c.window.icon))
 		end
+	end
+
+	if love.audio then
+		love.audio.setMixMode(c.audio.mixmode, c.audio.playmuted)
 	end
 
 	-- Our first timestep, because window creation can take some time

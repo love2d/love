@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CEEB36EA1EE21DB90085BD77 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEEB36E91EE21DB90085BD77 /* AVFoundation.framework */; };
 		FA0B791B1A958E3B000E1D17 /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B78F71A958E3B000E1D17 /* b64.cpp */; };
 		FA0B791C1A958E3B000E1D17 /* b64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B78F71A958E3B000E1D17 /* b64.cpp */; };
 		FA0B791D1A958E3B000E1D17 /* b64.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B78F81A958E3B000E1D17 /* b64.h */; };
@@ -919,7 +918,6 @@
 
 /* Begin PBXFileReference section */
 		503971A86B7167A91B670FBA /* boot.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = boot.lua.h; sourceTree = "<group>"; };
-		CEEB36E91EE21DB90085BD77 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0B78DD1A958B90000E1D17 /* liblove.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblove.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA0B78F71A958E3B000E1D17 /* b64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b64.cpp; sourceTree = "<group>"; };
@@ -1599,7 +1597,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CEEB36EA1EE21DB90085BD77 /* AVFoundation.framework in Frameworks */,
 				FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */,
 				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
@@ -2827,7 +2824,6 @@
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				CEEB36E91EE21DB90085BD77 /* AVFoundation.framework */,
 				FA0B7EEB1A959125000E1D17 /* macosx */,
 			);
 			name = Frameworks;

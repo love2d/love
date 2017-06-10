@@ -23,7 +23,6 @@
 #include "common/version.h"
 #include "common/runtime.h"
 #include "common/wrap_Data.h"
-#include "common/ios.h"
 
 #include "love.h"
 
@@ -259,14 +258,6 @@ static int w__setGammaCorrect(lua_State *L)
 	return 0;
 }
 
-#ifdef LOVE_IOS
-static int w__setAudioMixMode(lua_State *L)
-{
-	love::ios::setAudioMixWithOthers(lua_toboolean(L, 1), lua_toboolean(L, 2));
-	return 0;
-}
-#endif
-
 int luaopen_love(lua_State *L)
 {
 	love::luax_insistpinnedthread(L);
@@ -299,11 +290,6 @@ int luaopen_love(lua_State *L)
 
 	lua_pushcfunction(L, w__setGammaCorrect);
 	lua_setfield(L, -2, "_setGammaCorrect");
-
-#ifdef LOVE_IOS
-	lua_pushcfunction(L, w__setAudioMixMode);
-	lua_setfield(L, -2, "_setAudioMixMode");
-#endif
 
 	lua_newtable(L);
 

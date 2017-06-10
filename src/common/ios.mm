@@ -349,25 +349,23 @@ void setAudioMixWithOthers(bool mixMode, bool playMuted)
 {
 	@autoreleasepool
 	{
-		NSError* err;
+		NSString *category = AVAudioSessionCategoryPlayback;
+		AVAudioSessionCategoryOptions options = 0;
+		NSError *err = nil;
+
 		if (mixMode)
 		{
 			if (playMuted)
-			{
-				[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:&err];
-			}
+				options = AVAudioSessionCategoryOptionMixWithOthers;
 			else
-			{
-				[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:&err];
-			}
+				category = AVAudioSessionCategoryAmbient;
 		}
-		else
+		else if (!playMuted)
 		{
-			if (playMuted)
-			{
-				[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&err];
-			}
+			category = AVAudioSessionCategorySoloAmbient;
 		}
+
+		[[AVAudioSession sharedInstance] setCategory:category withOptions:options error:&err];
 		if (err != nil)
 			NSLog(@"Error in AVAudioSession setCategory: %@", [err localizedDescription]);
 	}

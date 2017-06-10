@@ -25,7 +25,9 @@
 #include "null/Audio.h"
 
 #include "common/runtime.h"
+#ifdef LOVE_IOS
 #include "common/ios.h"
+#endif
 
 // C++
 #include <iostream>
@@ -294,6 +296,17 @@ int w_getDistanceModel(lua_State *L)
 	return 1;
 }
 
+#ifdef LOVE_IOS
+int w_setMixMode(lua_State *L)
+{
+	love::ios::setAudioMixWithOthers(lua_toboolean(L, 1), lua_toboolean(L, 2));
+#else
+int w_setMixMode(lua_State *)
+{
+#endif
+	return 0;
+}
+
 int w_getShouldBeSilenced(lua_State *L)
 {
 #ifdef LOVE_IOS
@@ -329,6 +342,7 @@ static const luaL_Reg functions[] =
 	{ "stopRecording", w_stopRecording },*/
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
+	{ "setMixMode", w_setMixMode },
 	{ "getShouldBeSilenced", w_getShouldBeSilenced },
 	{ 0, 0 }
 };
