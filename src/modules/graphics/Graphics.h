@@ -515,11 +515,6 @@ public:
 	void getStencilTest(CompareMode &compare, int &value);
 
 	/**
-	 * Clear the stencil buffer in the active Canvas(es.)
-	 **/
-	virtual void clearStencil(int value) = 0;
-
-	/**
 	 * Sets the enabled color components when rendering.
 	 **/
 	virtual void setColorMask(ColorMask mask) = 0;
@@ -704,6 +699,11 @@ public:
 	 * Gets whether a graphics feature is supported on this system.
 	 **/
 	virtual bool isSupported(Feature feature) const = 0;
+
+	/**
+	 * Gets whether the given texture type is supported on this system.
+	 **/
+	virtual bool isTextureTypeSupported(TextureType textype) const = 0;
 
 	/**
 	 * Gets the system-dependent numeric limit for the specified parameter.

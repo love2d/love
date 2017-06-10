@@ -735,7 +735,7 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 	if (flags != 0)
 		glClear(flags);
 
-	if (flags != 0 && gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
+	if (c.hasValue && gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
 		// This seems to be enough to fix the bug for me. Other methods I've
 		// tried (e.g. dummy draws) don't work in all cases.
@@ -1249,12 +1249,6 @@ void Graphics::setStencilTest()
 	setStencilTest(COMPARE_ALWAYS, 0);
 }
 
-void Graphics::clearStencil(int value)
-{
-	glClearStencil(value);
-	glClear(GL_STENCIL_BUFFER_BIT);
-}
-
 void Graphics::setColor(Colorf c)
 {
 	c.r = std::min(std::max(c.r, 0.0f), 1.0f);
@@ -1466,6 +1460,11 @@ bool Graphics::isSupported(Feature feature) const
 	default:
 		return false;
 	}
+}
+
+bool Graphics::isTextureTypeSupported(TextureType textype) const
+{
+	return gl.isTextureTypeSupported(textype);
 }
 
 bool Graphics::isCanvasFormatSupported(PixelFormat format) const

@@ -178,66 +178,6 @@ bool Canvas::loadVolatile()
 	if (texture != 0)
 		return true;
 
-	if (!Canvas::isSupported())
-		throw love::Exception("Canvases are not supported by your OpenGL drivers!");
-
-	if (!Canvas::isFormatSupported(format, readable))
-	{
-		const char *fstr = "rgba8";
-		const char *readablestr = "";
-		if (readable != !isPixelFormatDepthStencil(format))
-			readablestr = readable ? " readable" : " non-readable";
-		love::getConstant(Canvas::getSizedFormat(format), fstr);
-		throw love::Exception("The %s%s canvas format is not supported by your OpenGL drivers.", fstr, readablestr);
-	}
-
-	if (getRequestedMSAA() > 1 && texType != TEXTURE_2D)
-		throw love::Exception("MSAA is only supported for 2D texture types.");
-
-	if (!readable && texType != TEXTURE_2D)
-		throw love::Exception("Non-readable pixel formats are only supported for 2D texture types.");
-
-	if (!gl.isTextureTypeSupported(texType))
-	{
-		const char *textypestr = "unknown";
-		Texture::getConstant(texType, textypestr);
-		throw love::Exception("%s textures are not supported on this system!", textypestr);
-	}
-
-	switch (texType)
-	{
-	case TEXTURE_2D:
-		if (pixelWidth > gl.getMax2DTextureSize())
-			throw TextureTooLargeException("width", pixelWidth);
-		else if (pixelHeight > gl.getMax2DTextureSize())
-			throw TextureTooLargeException("height", pixelHeight);
-		break;
-	case TEXTURE_VOLUME:
-		if (pixelWidth > gl.getMax3DTextureSize())
-			throw TextureTooLargeException("width", pixelWidth);
-		else if (pixelHeight > gl.getMax3DTextureSize())
-			throw TextureTooLargeException("height", pixelHeight);
-		else if (depth > gl.getMax3DTextureSize())
-			throw TextureTooLargeException("depth", depth);
-		break;
-	case TEXTURE_2D_ARRAY:
-		if (pixelWidth > gl.getMax2DTextureSize())
-			throw TextureTooLargeException("width", pixelWidth);
-		else if (pixelHeight > gl.getMax2DTextureSize())
-			throw TextureTooLargeException("height", pixelHeight);
-		else if (layers > gl.getMaxTextureLayers())
-			throw TextureTooLargeException("array layer count", layers);
-		break;
-	case TEXTURE_CUBE:
-		if (pixelWidth != pixelHeight)
-			throw love::Exception("Cubemap textures must have equal width and height.");
-		else if (pixelWidth > gl.getMaxCubeTextureSize())
-			throw TextureTooLargeException("width", pixelWidth);
-		break;
-	default:
-		break;
-	}
-
 	OpenGL::TempDebugGroup debuggroup("Canvas load");
 
 	fbo = texture = 0;

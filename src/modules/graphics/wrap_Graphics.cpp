@@ -527,13 +527,17 @@ int w_stencil(lua_State *L)
 	int stencilvalue = (int) luaL_optnumber(L, 3, 1);
 
 	// Fourth argument: whether to keep the contents of the stencil buffer.
+	OptionalInt stencilclear;
 	int argtype = lua_type(L, 4);
 	if (argtype == LUA_TNONE || argtype == LUA_TNIL || (argtype == LUA_TBOOLEAN && luax_toboolean(L, 4) == false))
-		instance()->clearStencil(0);
+		stencilclear.set(0);
 	else if (argtype == LUA_TNUMBER)
-		instance()->clearStencil((int) luaL_checkinteger(L, 4));
+		stencilclear.set((int) luaL_checkinteger(L, 4));
 	else if (argtype != LUA_TBOOLEAN)
 		luaL_checktype(L, 4, LUA_TBOOLEAN);
+
+	if (stencilclear.hasValue)
+		instance()->clear(OptionalColorf(), stencilclear, OptionalDouble());
 
 	luax_catchexcept(L, [&](){ instance()->drawToStencilBuffer(action, stencilvalue); });
 

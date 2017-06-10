@@ -109,8 +109,6 @@ public:
 	void setStencilTest(CompareMode compare, int value) override;
 	void setStencilTest() override;
 
-	void clearStencil(int value) override;
-
 	void setColorMask(ColorMask mask) override;
 
 	void setBlendMode(BlendMode mode, BlendAlpha alphamode) override;
@@ -120,6 +118,7 @@ public:
 	void setWireframe(bool enable) override;
 
 	bool isSupported(Feature feature) const override;
+	bool isTextureTypeSupported(TextureType textype) const override;
 	double getSystemLimit(SystemLimit limittype) const override;
 	bool isCanvasFormatSupported(PixelFormat format) const override;
 	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;

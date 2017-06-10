@@ -71,6 +71,69 @@ Canvas::Canvas(const Settings &settings)
 		filter.mipmap = defaultMipmapFilter;
 	}
 
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+	if (!gfx->isCanvasFormatSupported(format, readable))
+	{
+		const char *fstr = "rgba8";
+		const char *readablestr = "";
+		if (readable != !isPixelFormatDepthStencil(format))
+			readablestr = readable ? " readable" : " non-readable";
+		love::getConstant(format, fstr);
+		throw love::Exception("The %s%s canvas format is not supported by your graphics drivers.", fstr, readablestr);
+	}
+
+	if (getRequestedMSAA() > 1 && texType != TEXTURE_2D)
+		throw love::Exception("MSAA is only supported for 2D texture types.");
+
+	if (!readable && texType != TEXTURE_2D)
+		throw love::Exception("Non-readable pixel formats are only supported for 2D texture types.");
+
+	if (!gfx->isTextureTypeSupported(texType))
+	{
+		const char *textypestr = "unknown";
+		Texture::getConstant(texType, textypestr);
+		throw love::Exception("%s textures are not supported on this system!", textypestr);
+	}
+
+	int maxsize = 0;
+	switch (texType)
+	{
+	case TEXTURE_2D:
+		maxsize = gfx->getSystemLimit(Graphics::LIMIT_TEXTURE_SIZE);
+		if (pixelWidth > maxsize)
+			throw TextureTooLargeException("width", pixelWidth);
+		else if (pixelHeight > maxsize)
+			throw TextureTooLargeException("height", pixelHeight);
+		break;
+	case TEXTURE_VOLUME:
+		maxsize = gfx->getSystemLimit(Graphics::LIMIT_VOLUME_TEXTURE_SIZE);
+		if (pixelWidth > maxsize)
+			throw TextureTooLargeException("width", pixelWidth);
+		else if (pixelHeight > maxsize)
+			throw TextureTooLargeException("height", pixelHeight);
+		else if (depth > maxsize)
+			throw TextureTooLargeException("depth", depth);
+		break;
+	case TEXTURE_2D_ARRAY:
+		maxsize = gfx->getSystemLimit(Graphics::LIMIT_TEXTURE_SIZE);
+		if (pixelWidth > maxsize)
+			throw TextureTooLargeException("width", pixelWidth);
+		else if (pixelHeight > maxsize)
+			throw TextureTooLargeException("height", pixelHeight);
+		else if (layers > gfx->getSystemLimit(Graphics::LIMIT_TEXTURE_LAYERS))
+			throw TextureTooLargeException("array layer count", layers);
+		break;
+	case TEXTURE_CUBE:
+		if (pixelWidth != pixelHeight)
+			throw love::Exception("Cubemap textures must have equal width and height.");
+		else if (pixelWidth > gfx->getSystemLimit(Graphics::LIMIT_CUBE_TEXTURE_SIZE))
+			throw TextureTooLargeException("width", pixelWidth);
+		break;
+	default:
+		break;
+	}
+
 	canvasCount++;
 }
 
