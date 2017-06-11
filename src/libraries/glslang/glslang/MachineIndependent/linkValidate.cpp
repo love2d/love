@@ -461,10 +461,12 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
     case EShLangTessEvaluation:
         if (inputPrimitive == ElgNone)
             error(infoSink, "At least one shader must specify an input layout primitive");
-        if (vertexSpacing == EvsNone)
-            vertexSpacing = EvsEqual;
-        if (vertexOrder == EvoNone)
-            vertexOrder = EvoCcw;
+        if (source == EShSourceGlsl) {
+            if (vertexSpacing == EvsNone)
+                vertexSpacing = EvsEqual;
+            if (vertexOrder == EvoNone)
+                vertexOrder = EvoCcw;
+        }
         break;
     case EShLangGeometry:
         if (inputPrimitive == ElgNone)
@@ -858,7 +860,7 @@ int TIntermediate::checkLocationRange(int set, const TIoRange& range, const TTyp
     return -1; // no collision
 }
 
-// Accumulate locations used for inputs, outputs, and uniforms, and check for collisions
+// Accumulate bindings and offsets, and check for collisions
 // as the accumulation is done.
 //
 // Returns < 0 if no collision, >= 0 if collision and the value returned is a colliding value.
@@ -1045,9 +1047,9 @@ unsigned int TIntermediate::computeTypeXfbSize(const TType& type, bool& contains
 
 const int baseAlignmentVec4Std140 = 16;
 
-// Return the size and alignment of a scalar.
+// Return the size and alignment of a component of the given type.
 // The size is returned in the 'size' parameter
-// Return value is the alignment of the type.
+// Return value is the alignment..
 int TIntermediate::getBaseAlignmentScalar(const TType& type, int& size)
 {
     switch (type.getBasicType()) {
@@ -1055,6 +1057,8 @@ int TIntermediate::getBaseAlignmentScalar(const TType& type, int& size)
     case EbtUint64:
     case EbtDouble:  size = 8; return 8;
 #ifdef AMD_EXTENSIONS
+    case EbtInt16:
+    case EbtUint16:
     case EbtFloat16: size = 2; return 2;
 #endif
     default:         size = 4; return 4;
@@ -1215,6 +1219,16 @@ int TIntermediate::getBaseAlignment(const TType& type, int& size, int& stride, b
     assert(0);  // all cases should be covered above
     size = baseAlignmentVec4Std140;
     return baseAlignmentVec4Std140;
+}
+
+// To aid the basic HLSL rule about crossing vec4 boundaries.
+bool TIntermediate::improperStraddle(const TType& type, int size, int offset)
+{
+    if (! type.isVector() || type.isArray())
+        return false;
+
+    return size <= 16 ? offset / 16 != (offset + size - 1) / 16
+                      : offset % 16 != 0;
 }
 
 } // end namespace glslang

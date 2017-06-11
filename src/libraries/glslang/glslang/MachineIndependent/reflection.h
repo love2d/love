@@ -57,11 +57,16 @@ class TObjectReflection {
 public:
     TObjectReflection(const TString& pName, const TType& pType, int pOffset, int pGLDefineType, int pSize, int pIndex) :
         name(pName), offset(pOffset),
-        glDefineType(pGLDefineType), size(pSize), index(pIndex), type(pType.clone()) { }
+        glDefineType(pGLDefineType), size(pSize), index(pIndex), counterIndex(-1), type(pType.clone()) { }
 
     void dump() const {
-        printf("%s: offset %d, type %x, size %d, index %d, binding %d\n",
+        printf("%s: offset %d, type %x, size %d, index %d, binding %d",
                name.c_str(), offset, glDefineType, size, index, getBinding() );
+
+        if (counterIndex != -1)
+            printf(", counter %d", counterIndex);
+
+        printf("\n");
     }
 
     const TType* const getType() const { return type; }
@@ -71,6 +76,7 @@ public:
     int glDefineType;
     int size;         // data size in bytes for a block, array size for a (non-block) object that's an array
     int index;
+    int counterIndex;
 
     static TObjectReflection badReflection() { return TObjectReflection(); }
 
@@ -89,7 +95,12 @@ protected:
 // The full reflection database
 class TReflection {
 public:
-    TReflection() : badReflection(TObjectReflection::badReflection()) { }
+    TReflection() : badReflection(TObjectReflection::badReflection())
+    { 
+        for (int dim=0; dim<3; ++dim)
+            localSize[dim] = 0;
+    }
+
     virtual ~TReflection() {}
 
     // grow the reflection stage by stage
@@ -135,10 +146,19 @@ public:
             return it->second;
     }
 
+    // see getIndex(const char*)
+    int getIndex(const TString& name) const { return getIndex(name.c_str()); }
+
+    // Thread local size
+    unsigned getLocalSize(int dim) const { return dim <= 2 ? localSize[dim] : 0; }
+
     void dump();
 
 protected:
     friend class glslang::TReflectionTraverser;
+
+    void buildCounterIndices();
+    void buildAttributeReflection(EShLanguage, const TIntermediate&);
 
     // Need a TString hash: typedef std::unordered_map<TString, int> TNameToIndex;
     typedef std::map<TString, int> TNameToIndex;
@@ -149,6 +169,8 @@ protected:
     TMapIndexToReflection indexToUniform;
     TMapIndexToReflection indexToUniformBlock;
     TMapIndexToReflection indexToAttribute;
+
+    unsigned int localSize[3];
 };
 
 } // end namespace glslang

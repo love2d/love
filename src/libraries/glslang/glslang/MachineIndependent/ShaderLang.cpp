@@ -442,7 +442,7 @@ bool DeduceVersionProfile(TInfoSink& infoSink, EShLanguage stage, bool versionNo
     bool correct = true;
 
     if (source == EShSourceHlsl) {
-        version = 450;          // TODO: GLSL parser is still used for builtins.
+        version = 500;          // shader model; currently a characteristic of glslang, not the input
         profile = ECoreProfile; // allow doubles in prototype parsing
         return correct;
     }
@@ -566,41 +566,6 @@ bool DeduceVersionProfile(TInfoSink& infoSink, EShLanguage stage, bool versionNo
         }
     }
 
-    // A meta check on the condition of the compiler itself...
-    switch (version) {
-
-    // ES versions
-    case 100:
-    case 300:
-        // versions are complete
-        break;
-
-    // Desktop versions
-    case 110:
-    case 120:
-    case 130:
-    case 140:
-    case 150:
-    case 330:
-        // versions are complete
-        break;
-
-    case 310:
-    case 400:
-    case 410:
-    case 420:
-    case 430:
-    case 440:
-    case 450:
-        infoSink.info << "Warning, version " << version << " is not yet complete; most version-specific features are present, but some are missing.\n";
-        break;
-
-    default:
-        infoSink.info << "Warning, version " << version << " is unknown.\n";
-        break;
-
-    }
-
     return correct;
 }
 
@@ -679,13 +644,13 @@ bool ProcessDeferred(
     // First, without using the preprocessor or parser, find the #version, so we know what
     // symbol tables, processing rules, etc. to set up.  This does not need the extra strings
     // outlined above, just the user shader.
-    int version;
-    EProfile profile;
     glslang::TInputScanner userInput(numStrings, &strings[numPre], &lengths[numPre]);  // no preamble
-    bool versionNotFirstToken;
-    bool versionNotFirst = userInput.scanVersion(version, profile, versionNotFirstToken);
+    int version = 0;
+    EProfile profile = ENoProfile;
+    bool versionNotFirstToken = false;
+    bool versionNotFirst = (messages & EShMsgReadHlsl) ? true : userInput.scanVersion(version, profile, versionNotFirstToken);
     bool versionNotFound = version == 0;
-    if (forceDefaultVersionAndProfile) {
+    if (forceDefaultVersionAndProfile && (messages & EShMsgReadHlsl) == 0) {
         if (! (messages & EShMsgSuppressWarnings) && ! versionNotFound &&
             (version != defaultVersion || profile != defaultProfile)) {
             compiler->infoSink.info << "Warning, (version, profile) forced to be ("
@@ -726,6 +691,13 @@ bool ProcessDeferred(
     intermediate.setSpv(spvVersion);
     if (spvVersion.vulkan >= 100)
         intermediate.setOriginUpperLeft();
+    if ((messages & EShMsgHlslOffsets) || (messages & EShMsgReadHlsl))
+        intermediate.setHlslOffsets();
+    if (messages & EShMsgDebugInfo) {
+        intermediate.setSourceFile(names[numPre]);
+        for (int s = 0; s < numStrings; ++s)
+            intermediate.addSourceText(strings[numPre]);
+    }
     SetupBuiltinSymbolTable(version, profile, spvVersion, source);
 
     TSymbolTable* cachedTable = SharedSymbolTables[MapVersionToIndex(version)]
@@ -1553,13 +1525,30 @@ void TShader::setSourceEntryPoint(const char* name)
     sourceEntryPointName = name;
 }
 
+// Set binding base for sampler types
 void TShader::setShiftSamplerBinding(unsigned int base) { intermediate->setShiftSamplerBinding(base); }
+// Set binding base for texture types (SRV)
 void TShader::setShiftTextureBinding(unsigned int base) { intermediate->setShiftTextureBinding(base); }
+// Set binding base for image types
 void TShader::setShiftImageBinding(unsigned int base)   { intermediate->setShiftImageBinding(base); }
+// Set binding base for uniform buffer objects (CBV)
 void TShader::setShiftUboBinding(unsigned int base)     { intermediate->setShiftUboBinding(base); }
+// Synonym for setShiftUboBinding, to match HLSL language.
+void TShader::setShiftCbufferBinding(unsigned int base) { intermediate->setShiftUboBinding(base); }
+// Set binding base for UAV (unordered access view)
+void TShader::setShiftUavBinding(unsigned int base)     { intermediate->setShiftUavBinding(base); }
+// Set binding base for SSBOs
+void TShader::setShiftSsboBinding(unsigned int base)    { intermediate->setShiftSsboBinding(base); }
+// Enables binding automapping using TIoMapper
 void TShader::setAutoMapBindings(bool map)              { intermediate->setAutoMapBindings(map); }
+// Fragile: currently within one stage: simple auto-assignment of location
+void TShader::setAutoMapLocations(bool map)              { intermediate->setAutoMapLocations(map); }
+// See comment above TDefaultHlslIoMapper in iomapper.cpp:
+void TShader::setHlslIoMapping(bool hlslIoMap)          { intermediate->setHlslIoMapping(hlslIoMap); }
 void TShader::setFlattenUniformArrays(bool flatten)     { intermediate->setFlattenUniformArrays(flatten); }
 void TShader::setNoStorageFormat(bool useUnknownFormat) { intermediate->setNoStorageFormat(useUnknownFormat); }
+void TShader::setResourceSetBinding(const std::vector<std::string>& base)   { intermediate->setResourceSetBinding(base); }
+void TShader::setTextureSamplerTransformMode(EShTextureSamplerTransformMode mode) { intermediate->setTextureSamplerTransformMode(mode); }
 
 //
 // Turn the shader strings into a parse tree in the TIntermediate.
@@ -1581,11 +1570,6 @@ bool TShader::parse(const TBuiltInResource* builtInResources, int defaultVersion
                            preamble, EShOptNone, builtInResources, defaultVersion,
                            defaultProfile, forceDefaultVersionAndProfile,
                            forwardCompatible, messages, *intermediate, includer, sourceEntryPointName);
-}
-
-bool TShader::parse(const TBuiltInResource* builtInResources, int defaultVersion, bool forwardCompatible, EShMessages messages)
-{
-    return parse(builtInResources, defaultVersion, ENoProfile, false, forwardCompatible, messages);
 }
 
 // Fill in a string with the result of preprocessing ShaderStrings
@@ -1775,6 +1759,7 @@ const char* TProgram::getUniformBlockName(int index) const   { return reflection
 int TProgram::getUniformBlockSize(int index) const           { return reflection->getUniformBlock(index).size; }
 int TProgram::getUniformIndex(const char* name) const        { return reflection->getIndex(name); }
 int TProgram::getUniformBlockIndex(int index) const          { return reflection->getUniform(index).index; }
+int TProgram::getUniformBlockCounterIndex(int index) const   { return reflection->getUniformBlock(index).counterIndex; }
 int TProgram::getUniformType(int index) const                { return reflection->getUniform(index).glDefineType; }
 int TProgram::getUniformBufferOffset(int index) const        { return reflection->getUniform(index).offset; }
 int TProgram::getUniformArraySize(int index) const           { return reflection->getUniform(index).size; }
@@ -1784,6 +1769,7 @@ int TProgram::getAttributeType(int index) const              { return reflection
 const TType* TProgram::getAttributeTType(int index) const    { return reflection->getAttribute(index).getType(); }
 const TType* TProgram::getUniformTType(int index) const      { return reflection->getUniform(index).getType(); }
 const TType* TProgram::getUniformBlockTType(int index) const { return reflection->getUniformBlock(index).getType(); }
+unsigned TProgram::getLocalSize(int dim) const               { return reflection->getLocalSize(dim); }
 
 void TProgram::dumpReflection()                      { reflection->dump(); }
 

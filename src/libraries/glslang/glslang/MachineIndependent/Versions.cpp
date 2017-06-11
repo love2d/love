@@ -195,6 +195,8 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_AMD_shader_explicit_vertex_parameter]     = EBhDisable;
     extensionBehavior[E_GL_AMD_gcn_shader]                           = EBhDisable;
     extensionBehavior[E_GL_AMD_gpu_shader_half_float]                = EBhDisable;
+    extensionBehavior[E_GL_AMD_texture_gather_bias_lod]              = EBhDisable;
+    extensionBehavior[E_GL_AMD_gpu_shader_int16]                     = EBhDisable;
 #endif
 
 #ifdef NV_EXTENSIONS
@@ -233,6 +235,10 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_OES_tessellation_point_size]  = EBhDisable;
     extensionBehavior[E_GL_OES_texture_buffer]           = EBhDisable;
     extensionBehavior[E_GL_OES_texture_cube_map_array]   = EBhDisable;
+
+    // EXT extensions
+    extensionBehavior[E_GL_EXT_device_group]             = EBhDisable;
+    extensionBehavior[E_GL_EXT_multiview]                = EBhDisable;
 }
 
 // Get code that is not part of a shared symbol table, is specific to this shader,
@@ -315,6 +321,8 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_AMD_shader_explicit_vertex_parameter 1\n"
             "#define GL_AMD_gcn_shader 1\n"
             "#define GL_AMD_gpu_shader_half_float 1\n"
+            "#define GL_AMD_texture_gather_bias_lod 1\n"
+            "#define GL_AMD_gpu_shader_int16 1\n"
 #endif
 
 #ifdef NV_EXTENSIONS
@@ -322,6 +330,22 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_NV_geometry_shader_passthrough 1\n"
             "#define GL_NV_viewport_array2 1\n"
 #endif
+            ;
+
+        if (version >= 150) {
+            // define GL_core_profile and GL_compatibility_profile
+            preamble += "#define GL_core_profile 1\n";
+
+            if (profile == ECompatibilityProfile)
+                preamble += "#define GL_compatibility_profile 1\n";
+        }
+    }
+
+    if ((profile != EEsProfile && version >= 140) ||
+        (profile == EEsProfile && version >= 310)) {
+        preamble += 
+            "#define GL_EXT_device_group 1\n"
+            "#define GL_EXT_multiview 1\n"
             ;
     }
 
@@ -479,6 +503,11 @@ void TParseVersions::requireNotRemoved(const TSourceLoc& loc, int profileMask, i
             error(loc, "no longer supported in", featureDesc, buf);
         }
     }
+}
+
+void TParseVersions::unimplemented(const TSourceLoc& loc, const char* featureDesc)
+{
+    error(loc, "feature not yet implemented", featureDesc, "");
 }
 
 // Returns true if at least one of the extensions in the extensions parameter is requested. Otherwise, returns false.
@@ -686,10 +715,21 @@ void TParseVersions::doubleCheck(const TSourceLoc& loc, const char* op)
 }
 
 #ifdef AMD_EXTENSIONS
+// Call for any operation needing GLSL 16-bit integer data-type support.
+void TParseVersions::int16Check(const TSourceLoc& loc, const char* op, bool builtIn)
+{
+    if (! builtIn) {
+        requireExtensions(loc, 1, &E_GL_AMD_gpu_shader_int16, "shader int16");
+        requireProfile(loc, ECoreProfile | ECompatibilityProfile, op);
+        profileRequires(loc, ECoreProfile, 450, nullptr, op);
+        profileRequires(loc, ECompatibilityProfile, 450, nullptr, op);
+    }
+}
+
 // Call for any operation needing GLSL float16 data-type support.
 void TParseVersions::float16Check(const TSourceLoc& loc, const char* op, bool builtIn)
 {
-    if (!builtIn) {
+    if (! builtIn) {
         requireExtensions(loc, 1, &E_GL_AMD_gpu_shader_half_float, "shader half float");
         requireProfile(loc, ECoreProfile | ECompatibilityProfile, op);
         profileRequires(loc, ECoreProfile, 450, nullptr, op);

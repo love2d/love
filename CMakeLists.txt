@@ -1297,9 +1297,7 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.h
-	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpMemory.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
-	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpSymbols.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.h
 )
