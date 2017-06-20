@@ -298,6 +298,8 @@ static const luaL_Reg functions[] =
 	{ "shear", w_Transform_shear },
 	{ "reset", w_Transform_reset },
 	{ "setTransformation", w_Transform_setTransformation },
+	{ "setMatrix", w_Transform_setMatrix },
+	{ "getMatrix", w_Transform_getMatrix },
 	{ "transformPoint", w_Transform_transformPoint },
 	{ "inverseTransformPoint", w_Transform_inverseTransformPoint },
 	{ "__mul", w_Transform__mul },
