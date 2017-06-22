@@ -33,6 +33,7 @@
 
 // STL
 #include <vector>
+#include <stack>
 
 // C
 #include <float.h>
@@ -99,7 +100,7 @@ public:
 
 	Source(Pool *pool, love::sound::SoundData *soundData);
 	Source(Pool *pool, love::sound::Decoder *decoder);
-	Source(Pool *pool, int sampleRate, int bitDepth, int channels);
+	Source(Pool *pool, int sampleRate, int bitDepth, int channels, int buffers);
 	Source(const Source &s);
 	virtual ~Source();
 
@@ -147,10 +148,11 @@ public:
 	virtual bool setFilter();
 	virtual bool getFilter(std::map<Filter::Parameter, float> &params);
 
-	virtual bool setSceneEffect(int slot, int effect);
-	virtual bool setSceneEffect(int slot, int effect, const std::map<Filter::Parameter, float> &params);
-	virtual bool setSceneEffect(int slot);
-	virtual bool getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params);
+	virtual bool setEffect(const char *effect);
+	virtual bool setEffect(const char *effect, const std::map<Filter::Parameter, float> &params);
+	virtual bool unsetEffect(const char *effect);
+	virtual bool getEffect(const char *effect, std::map<Filter::Parameter, float> &params);
+	virtual bool getEffectsList(std::vector<std::string> &list);
 
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
@@ -178,19 +180,14 @@ private:
 
 	int streamAtomic(ALuint buffer, love::sound::Decoder *d);
 
-	ALuint unusedBufferPeek();
-	ALuint unusedBufferPeekNext();
-	ALuint *unusedBufferPop();
-	void unusedBufferPush(ALuint buffer);
-	void unusedBufferQueue(ALuint buffer);
-	
 	Pool *pool = nullptr;
 	ALuint source = 0;
 	bool valid = false;
 
-	static const unsigned int MAX_BUFFERS = 8;
-	ALuint streamBuffers[MAX_BUFFERS];
-	ALuint unusedBuffers[MAX_BUFFERS];
+	const static int DEFAULT_BUFFERS = 8;
+	const static int MAX_BUFFERS = 64;
+	std::queue<ALuint> streamBuffers;
+	std::stack<ALuint> unusedBuffers;
 
 	StrongRef<StaticDataBuffer> staticBuffer;
 
@@ -226,12 +223,18 @@ private:
 	StrongRef<love::sound::Decoder> decoder;
 
 	unsigned int toLoop = 0;
-	int unusedBufferTop = -1;
 	ALsizei bufferedBytes = 0;
+	int buffers = 0;
 
 	Filter *directfilter = nullptr;
-	std::vector<Filter*> sendfilters;
-	std::vector<ALint> sendtargets;
+
+	struct effectmapStorage
+	{
+		Filter *filter;
+		ALuint slot, target;
+	};
+	std::map<std::string, struct effectmapStorage> effectmap;
+	std::stack<ALuint> slotlist;
 }; // Source
 
 } // openal

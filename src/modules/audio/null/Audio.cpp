@@ -51,7 +51,7 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *)
 	return new Source();
 }
 
-love::audio::Source *Audio::newSource(int, int, int)
+love::audio::Source *Audio::newSource(int, int, int, int)
 {
 	return new Source();
 }
@@ -168,17 +168,22 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 	this->distanceModel = distanceModel;
 }
 
-bool Audio::setSceneEffect(int, std::map<Effect::Parameter, float> &)
+bool Audio::setEffect(const char *, std::map<Effect::Parameter, float> &)
 {
 	return false;
 }
 
-bool Audio::setSceneEffect(int)
+bool Audio::unsetEffect(const char *)
 {
 	return false;
 }
 
-bool Audio::getSceneEffect(int, std::map<Effect::Parameter, float> &)
+bool Audio::getEffect(const char *, std::map<Effect::Parameter, float> &)
+{
+	return false;
+}
+
+bool Audio::getEffectsList(std::vector<std::string> &list)
 {
 	return false;
 }
