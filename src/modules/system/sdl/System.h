@@ -54,6 +54,8 @@ public:
 
 private:
 
+	bool isWindowOpen() const;
+
 	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM>::Entry powerEntries[];
 	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM> powerStates;
 

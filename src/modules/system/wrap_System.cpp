@@ -44,13 +44,15 @@ int w_getProcessorCount(lua_State *L)
 int w_setClipboardText(lua_State *L)
 {
 	const char *text = luaL_checkstring(L, 1);
-	instance()->setClipboardText(text);
+	luax_catchexcept(L, [&]() { instance()->setClipboardText(text); });
 	return 0;
 }
 
 int w_getClipboardText(lua_State *L)
 {
-	luax_pushstring(L, instance()->getClipboardText());
+	std::string text;
+	luax_catchexcept(L, [&]() { text = instance()->getClipboardText(); });
+	luax_pushstring(L, text);
 	return 1;
 }
 
