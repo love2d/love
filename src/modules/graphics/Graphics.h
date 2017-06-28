@@ -159,8 +159,6 @@ public:
 		FEATURE_LIGHTEN,
 		FEATURE_FULL_NPOT,
 		FEATURE_PIXEL_SHADER_HIGHP,
-		FEATURE_ARRAY_TEXTURE,
-		FEATURE_VOLUME_TEXTURE,
 		FEATURE_GLSL3,
 		FEATURE_INSTANCING,
 		FEATURE_MAX_ENUM
@@ -197,6 +195,13 @@ public:
 	{
 		TEMPORARY_RT_DEPTH   = (1 << 0),
 		TEMPORARY_RT_STENCIL = (1 << 1),
+	};
+
+	struct Capabilities
+	{
+		double limits[LIMIT_MAX_ENUM];
+		bool features[FEATURE_MAX_ENUM];
+		bool textureTypes[TEXTURE_MAX_ENUM];
 	};
 
 	struct RendererInfo
@@ -696,19 +701,10 @@ public:
 	void polygon(DrawMode mode, const float *coords, size_t count);
 
 	/**
-	 * Gets whether a graphics feature is supported on this system.
+	 * Gets the graphics capabilities (feature support, limit values, and
+	 * supported texture types) of this system.
 	 **/
-	virtual bool isSupported(Feature feature) const = 0;
-
-	/**
-	 * Gets whether the given texture type is supported on this system.
-	 **/
-	virtual bool isTextureTypeSupported(TextureType textype) const = 0;
-
-	/**
-	 * Gets the system-dependent numeric limit for the specified parameter.
-	 **/
-	virtual double getSystemLimit(SystemLimit limittype) const = 0;
+	const Capabilities &getCapabilities() const;
 
 	/**
 	 * Gets whether the specified pixel format is supported by Canvases or
@@ -864,6 +860,7 @@ protected:
 
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
 
+	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &drawcalls, int &shaderswitches) const = 0;
 
 	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
@@ -902,6 +899,8 @@ protected:
 	std::vector<Canvas *> temporaryCanvases;
 
 	int canvasSwitchCount;
+
+	Capabilities capabilities;
 
 	static const size_t MAX_USER_STACK_DEPTH = 64;
 

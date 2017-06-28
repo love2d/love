@@ -1926,6 +1926,7 @@ int w_setDefaultShaderCode(lua_State *L)
 
 int w_getSupported(lua_State *L)
 {
+	const Graphics::Capabilities &caps = instance()->getCapabilities();
 	lua_createtable(L, 0, (int) Graphics::FEATURE_MAX_ENUM);
 
 	for (int i = 0; i < (int) Graphics::FEATURE_MAX_ENUM; i++)
@@ -1936,7 +1937,7 @@ int w_getSupported(lua_State *L)
 		if (!Graphics::getConstant(feature, name))
 			continue;
 
-		luax_pushboolean(L, instance()->isSupported(feature));
+		luax_pushboolean(L, caps.features[i]);
 		lua_setfield(L, -2, name);
 	}
 
@@ -2011,6 +2012,26 @@ int w_getImageFormats(lua_State *L)
 	return w__getFormats(L, supported, ignore);
 }
 
+int w_getTextureTypes(lua_State *L)
+{
+	const Graphics::Capabilities &caps = instance()->getCapabilities();
+	lua_createtable(L, 0, (int) TEXTURE_MAX_ENUM);
+
+	for (int i = 0; i < (int) TEXTURE_MAX_ENUM; i++)
+	{
+		TextureType textype = (TextureType) i;
+		const char *name = nullptr;
+
+		if (!Texture::getConstant(textype, name))
+			continue;
+
+		lua_pushnumber(L, caps.textureTypes[i]);
+		lua_setfield(L, -2, name);
+	}
+
+	return 1;
+}
+
 int w_getRendererInfo(lua_State *L)
 {
 	Graphics::RendererInfo info;
@@ -2025,6 +2046,7 @@ int w_getRendererInfo(lua_State *L)
 
 int w_getSystemLimits(lua_State *L)
 {
+	const Graphics::Capabilities &caps = instance()->getCapabilities();
 	lua_createtable(L, 0, (int) Graphics::LIMIT_MAX_ENUM);
 
 	for (int i = 0; i < (int) Graphics::LIMIT_MAX_ENUM; i++)
@@ -2035,7 +2057,7 @@ int w_getSystemLimits(lua_State *L)
 		if (!Graphics::getConstant(limittype, name))
 			continue;
 
-		lua_pushnumber(L, instance()->getSystemLimit(limittype));
+		lua_pushnumber(L, caps.limits[i]);
 		lua_setfield(L, -2, name);
 	}
 
@@ -2685,6 +2707,7 @@ static const luaL_Reg functions[] =
 	{ "getImageFormats", w_getImageFormats },
 	{ "getRendererInfo", w_getRendererInfo },
 	{ "getSystemLimits", w_getSystemLimits },
+	{ "getTextureTypes", w_getTextureTypes },
 	{ "getStats", w_getStats },
 
 	{ "captureScreenshot", w_captureScreenshot },

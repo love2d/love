@@ -233,7 +233,7 @@ bool Shader::validate(Graphics *gfx, bool gles, const ShaderSource &source, bool
 		return false;
 	}
 
-	bool supportsGLSL3 = gfx->isSupported(Graphics::FEATURE_GLSL3);
+	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
 
 	int defaultversion = gles ? 100 : 120;
 	EProfile defaultprofile = ENoProfile;

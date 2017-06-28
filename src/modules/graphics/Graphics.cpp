@@ -112,6 +112,7 @@ Graphics::Graphics()
 	, streamBufferState()
 	, projectionMatrix()
 	, canvasSwitchCount(0)
+	, capabilities()
 {
 	transformStack.reserve(16);
 	transformStack.push_back(Matrix4());
@@ -1142,6 +1143,11 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 	}
 }
 
+const Graphics::Capabilities &Graphics::getCapabilities() const
+{
+	return capabilities;
+}
+
 Graphics::Stats Graphics::getStats() const
 {
 	Stats stats;
@@ -1451,8 +1457,6 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "lighten",            FEATURE_LIGHTEN              },
 	{ "fullnpot",           FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
-	{ "arraytexture",       FEATURE_ARRAY_TEXTURE        },
-	{ "volumetexture",      FEATURE_VOLUME_TEXTURE       },
 	{ "glsl3",              FEATURE_GLSL3                },
 	{ "instancing",         FEATURE_INSTANCING           },
 };

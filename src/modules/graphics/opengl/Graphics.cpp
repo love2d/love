@@ -202,6 +202,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	gl.setupContext();
 
 	created = true;
+	initCapabilities();
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
 
@@ -272,7 +273,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// We always need a default shader.
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
-		if (i == Shader::STANDARD_ARRAY && !isSupported(FEATURE_ARRAY_TEXTURE))
+		if (i == Shader::STANDARD_ARRAY && !capabilities.textureTypes[TEXTURE_2D_ARRAY])
 			continue;
 
 		if (!Shader::standardShaders[i])
@@ -1282,7 +1283,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 
 	if (mode == BLEND_LIGHTEN || mode == BLEND_DARKEN)
 	{
-		if (!isSupported(FEATURE_LIGHTEN))
+		if (!capabilities.features[FEATURE_LIGHTEN])
 			throw love::Exception("The 'lighten' and 'darken' blend modes are not supported on this system.");
 	}
 
@@ -1410,61 +1411,29 @@ void Graphics::getAPIStats(int &drawcalls, int &shaderswitches) const
 	shaderswitches = gl.stats.shaderSwitches;
 }
 
-double Graphics::getSystemLimit(SystemLimit limittype) const
+void Graphics::initCapabilities()
 {
-	switch (limittype)
-	{
-	case LIMIT_POINT_SIZE:
-		return (double) gl.getMaxPointSize();
-	case LIMIT_TEXTURE_SIZE:
-		return (double) gl.getMax2DTextureSize();
-	case LIMIT_TEXTURE_LAYERS:
-		return (double) gl.getMaxTextureLayers();
-	case LIMIT_VOLUME_TEXTURE_SIZE:
-		return (double) gl.getMax3DTextureSize();
-	case LIMIT_CUBE_TEXTURE_SIZE:
-		return (double) gl.getMaxCubeTextureSize();
-	case LIMIT_MULTI_CANVAS:
-		return (double) gl.getMaxRenderTargets();
-	case LIMIT_CANVAS_MSAA:
-		return (double) gl.getMaxRenderbufferSamples();
-	case LIMIT_ANISOTROPY:
-		return (double) gl.getMaxAnisotropy();
-	default:
-		return 0.0;
-	}
-}
+	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = Canvas::isMultiFormatMultiCanvasSupported();
+	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroTextureWrapSupported();
+	capabilities.features[FEATURE_LIGHTEN] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
+	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
+	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = gl.isPixelShaderHighpSupported();
+	capabilities.features[FEATURE_GLSL3] = GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
+	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
+	static_assert(FEATURE_MAX_ENUM == 7, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
-bool Graphics::isSupported(Feature feature) const
-{
-	switch (feature)
-	{
-	case FEATURE_MULTI_CANVAS_FORMATS:
-		return Canvas::isMultiFormatMultiCanvasSupported();
-	case FEATURE_CLAMP_ZERO:
-		return gl.isClampZeroTextureWrapSupported();
-	case FEATURE_LIGHTEN:
-		return GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
-	case FEATURE_FULL_NPOT:
-		return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
-	case FEATURE_PIXEL_SHADER_HIGHP:
-		return gl.isPixelShaderHighpSupported();
-	case FEATURE_ARRAY_TEXTURE:
-		return gl.isTextureTypeSupported(TEXTURE_2D_ARRAY);
-	case FEATURE_VOLUME_TEXTURE:
-		return gl.isTextureTypeSupported(TEXTURE_VOLUME);
-	case FEATURE_GLSL3:
-		return GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
-	case FEATURE_INSTANCING:
-		return gl.isInstancingSupported();
-	default:
-		return false;
-	}
-}
+	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
+	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();
+	capabilities.limits[LIMIT_TEXTURE_LAYERS] = gl.getMaxTextureLayers();
+	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = gl.getMax3DTextureSize();
+	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = gl.getMaxCubeTextureSize();
+	capabilities.limits[LIMIT_MULTI_CANVAS] = gl.getMaxRenderTargets();
+	capabilities.limits[LIMIT_CANVAS_MSAA] = gl.getMaxRenderbufferSamples();
+	capabilities.limits[LIMIT_ANISOTROPY] = gl.getMaxAnisotropy();
+	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
-bool Graphics::isTextureTypeSupported(TextureType textype) const
-{
-	return gl.isTextureTypeSupported(textype);
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
 }
 
 bool Graphics::isCanvasFormatSupported(PixelFormat format) const

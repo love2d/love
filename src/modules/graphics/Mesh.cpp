@@ -303,7 +303,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step)
 {
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (step == STEP_PER_INSTANCE && !gfx->isSupported(Graphics::FEATURE_INSTANCING))
+	if (step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Vertex attribute instancing is not supported on this system.");
 
 	if (mesh != this)

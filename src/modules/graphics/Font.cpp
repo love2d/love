@@ -99,7 +99,10 @@ Font::TextureSize Font::getNextTextureSize() const
 	int maxsize = 2048;
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
-		maxsize = (int) gfx->getSystemLimit(Graphics::LIMIT_TEXTURE_SIZE);
+	{
+		const auto &caps = gfx->getCapabilities();
+		maxsize = (int) caps.limits[Graphics::LIMIT_TEXTURE_SIZE];
+	}
 
 	int maxwidth  = std::min(8192, maxsize);
 	int maxheight = std::min(4096, maxsize);

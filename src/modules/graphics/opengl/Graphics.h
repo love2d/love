@@ -117,9 +117,6 @@ public:
 
 	void setWireframe(bool enable) override;
 
-	bool isSupported(Feature feature) const override;
-	bool isTextureTypeSupported(TextureType textype) const override;
-	double getSystemLimit(SystemLimit limittype) const override;
 	bool isCanvasFormatSupported(PixelFormat format) const override;
 	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
 	bool isImageFormatSupported(PixelFormat format) const override;
@@ -131,6 +128,7 @@ public:
 private:
 
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
+	void initCapabilities() override;
 	void getAPIStats(int &drawcalls, int &shaderswitches) const override;
 
 	void endPass();
