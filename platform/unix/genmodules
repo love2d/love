@@ -24,7 +24,7 @@ handlemodule()
 genmodules()
 {
 	LOVEROOT="$(pwd)"
-	cd src
+	cd ./src
 
 	printf "liblove${love_amsuffix}_la_SOURCES = \\\\\n"
 	sourcefind "common" | sed "s/^/    /"
@@ -34,7 +34,7 @@ genmodules()
 	local -a modulelist=()
 	local -a liblist=()
 
-	cd modules
+	cd ./modules
 	prefix="modules/"
 	for module in *; do
 		flags+=("module-$module")
@@ -140,7 +140,7 @@ endif
 
 # Compile scripts
 .lua.lua.h:
-	cd scripts; \
+	cd ./scripts; \
 	\$(LUA_EXECUTABLE) auto.lua \$<
 
 # libLÖVE
