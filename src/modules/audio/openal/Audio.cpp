@@ -96,6 +96,11 @@ Audio::Audio()
 	, poolThread(nullptr)
 	, distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
+#if defined(LOVE_LINUX)
+	// Temporarly block signals, as the thread inherits this mask
+	love::thread::disableSignals();
+#endif
+
 	// Passing null for default device.
 	device = alcOpenDevice(nullptr);
 
@@ -115,6 +120,10 @@ Audio::Audio()
 
 	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
 		throw love::Exception("Could not make context current.");
+
+#if defined(LOVE_LINUX)
+	love::thread::reenableSignals();
+#endif
 
 #ifdef ALC_EXT_EFX
 	initializeEFX();

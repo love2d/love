@@ -20,6 +20,10 @@
 
 #include "threads.h"
 
+#if defined(LOVE_LINUX)
+#include <signal.h>
+#endif
+
 namespace love
 {
 namespace thread
@@ -152,6 +156,22 @@ Conditional *ConditionalRef::operator->() const
 {
 	return conditional;
 }
+
+#if defined(LOVE_LINUX)
+static sigset_t oldset;
+
+void disableSignals()
+{
+	sigset_t newset;
+	sigfillset(&newset);
+	pthread_sigmask(SIG_SETMASK, &newset, &oldset);
+}
+
+void reenableSignals()
+{
+	pthread_sigmask(SIG_SETMASK, &oldset, nullptr);
+}
+#endif
 
 } // thread
 } // love
