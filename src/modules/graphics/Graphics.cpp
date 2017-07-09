@@ -1457,6 +1457,7 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "lighten",            FEATURE_LIGHTEN              },
 	{ "fullnpot",           FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
+	{ "shaderderivatives",  FEATURE_SHADER_DERIVATIVES   },
 	{ "glsl3",              FEATURE_GLSL3                },
 	{ "instancing",         FEATURE_INSTANCING           },
 };

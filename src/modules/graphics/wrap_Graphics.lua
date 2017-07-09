@@ -62,6 +62,9 @@ GLSL.SYNTAX = [[
 #ifdef GL_OES_texture_3D
 #extension GL_OES_texture_3D : enable
 #endif
+#ifdef GL_OES_standard_derivatives
+#extension GL_OES_standard_derivatives : enable
+#endif
 ]]
 
 -- Uniforms shared by the vertex and pixel shader stages.
