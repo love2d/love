@@ -276,8 +276,20 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		if (i == Shader::STANDARD_ARRAY && !capabilities.textureTypes[TEXTURE_2D_ARRAY])
 			continue;
 
-		if (!Shader::standardShaders[i])
-			Shader::standardShaders[i] = newShader(defaultShaderCode[i][target][gammacorrect]);
+		// Apparently some intel GMA drivers on windows fail to compile shaders
+		// which use array textures despite claiming support for the extension.
+		try
+		{
+			if (!Shader::standardShaders[i])
+				Shader::standardShaders[i] = newShader(defaultShaderCode[i][target][gammacorrect]);
+		}
+		catch (love::Exception &)
+		{
+			if (i == Shader::STANDARD_ARRAY)
+				capabilities.textureTypes[TEXTURE_2D_ARRAY] = false;
+			else
+				throw;
+		}
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
