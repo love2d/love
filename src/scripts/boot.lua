@@ -115,6 +115,8 @@ love.arg.options = {
 	game = { a = 1 }
 }
 
+love.arg.option_indexes = {}
+
 function love.arg.parse_option(m, i)
 	m.set = true
 
@@ -139,8 +141,11 @@ function love.arg.parse_options()
 		local m = string.match(arg[i], "^%-%-(.+)")
 
 		if m and love.arg.options[m] then
+			love.arg.option_indexes[i] = true
 			i = i + love.arg.parse_option(love.arg.options[m], i+1)
 		elseif not game then
+			love.arg.option_indexes[i] = true
+			love.arg.options.game.index  = i
 			game = i
 		end
 		i = i + 1
@@ -149,6 +154,31 @@ function love.arg.parse_options()
 	if not love.arg.options.game.set then
 		love.arg.parse_option(love.arg.options.game, game or 0)
 	end
+end
+
+-- Returns the arguments that are passed to your game via love.load() it holds
+-- the exact same arguments as the default 'arg' table, except the indexes are
+-- shifted such that your game source (eg. "game.love" for a file, "game.exe"
+-- for a fused game) is out[0]
+function love.arg.game_arguments(a)
+	local out = {}
+
+	local low = math.huge
+	for k, v in pairs(arg) do
+		if k < low then
+			low = k
+		end
+	end
+
+	local o = low
+	for i=low, #a do
+		if not love.arg.option_indexes[i] then
+			out[o] = a[i]
+			o = o + 1
+		end
+	end
+
+	return out
 end
 
 function love.createhandlers()
@@ -281,6 +311,13 @@ function love.boot()
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
+
+	if can_has_game then
+		-- the game source is in the exe so we should pass the argument we
+		-- originally though was the game to the app
+		love.arg.option_indexes[love.arg.options.game.index] = false
+	end
+
 	local is_fused_game = can_has_game or love.arg.options.fused.set
 
 	love.filesystem.setFused(is_fused_game)
@@ -516,7 +553,7 @@ function love.run()
 		love.math.setRandomSeed(os.time())
 	end
 
-	if love.load then love.load(arg) end
+	if love.load then love.load(love.arg.game_arguments(arg)) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then love.timer.step() end
