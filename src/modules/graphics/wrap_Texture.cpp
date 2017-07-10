@@ -210,11 +210,14 @@ int w_Texture_setWrap(lua_State *L)
 
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
+	const char *rstr = luaL_optstring(L, 4, sstr);
 
 	if (!Texture::getConstant(sstr, w.s))
 		return luaL_error(L, "Invalid wrap mode: %s", sstr);
 	if (!Texture::getConstant(tstr, w.t))
 		return luaL_error(L, "Invalid wrap mode, %s", tstr);
+	if (!Texture::getConstant(rstr, w.r))
+		return luaL_error(L, "Invalid wrap mode, %s", rstr);
 
 	luax_pushboolean(L, t->setWrap(w));
 	return 1;
@@ -239,7 +242,7 @@ int w_Texture_getWrap(lua_State *L)
 	lua_pushstring(L, sstr);
 	lua_pushstring(L, tstr);
 	lua_pushstring(L, rstr);
-	return 2;
+	return 3;
 }
 
 int w_Texture_getFormat(lua_State *L)
