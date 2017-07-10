@@ -429,7 +429,7 @@ bool Source::update()
 		case TYPE_QUEUE:
 		{
 			ALint processed;
-			ALuint buffers[this->buffers];
+			ALuint buffers[MAX_BUFFERS];
 
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 			alSourceUnqueueBuffers(source, processed, buffers);
