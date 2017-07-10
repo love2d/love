@@ -228,12 +228,12 @@ private:
 
 	Filter *directfilter = nullptr;
 
-	struct effectmapStorage
+	struct EffectMapStorage
 	{
 		Filter *filter;
 		ALuint slot, target;
 	};
-	std::map<std::string, struct effectmapStorage> effectmap;
+	std::map<std::string, struct EffectMapStorage> effectmap;
 	std::stack<ALuint> slotlist;
 }; // Source
 

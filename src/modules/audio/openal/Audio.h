@@ -137,12 +137,12 @@ private:
 	ALCcontext *context;
 
 	// The OpenAL effects
-	struct effectmapStorage
+	struct EffectMapStorage
 	{
 		Effect *effect;
 		ALuint slot;
 	};
-	std::map<std::string, struct effectmapStorage> effectmap;
+	std::map<std::string, struct EffectMapStorage> effectmap;
 	std::stack<ALuint> slotlist;
 	int MAX_SCENE_EFFECTS = 64;
 	int MAX_SOURCE_EFFECTS = 64;

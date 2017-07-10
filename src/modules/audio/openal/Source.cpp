@@ -392,7 +392,7 @@ bool Source::update()
 			if (!isFinished())
 			{
 				ALint processed;
-				ALuint buffers[this->buffers];
+				ALuint buffers[MAX_BUFFERS];
 				float curOffsetSamples, curOffsetSecs, newOffsetSamples, newOffsetSecs;
 				int freq = decoder->getSampleRate();
 
