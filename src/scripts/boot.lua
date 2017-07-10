@@ -156,10 +156,8 @@ function love.arg.parse_options()
 	end
 end
 
--- Returns the arguments that are passed to your game via love.load() it holds
--- the exact same arguments as the default 'arg' table, except the indexes are
--- shifted such that your game source (eg. "game.love" for a file, "game.exe"
--- for a fused game) is out[0]
+-- Returns the arguments that are passed to your game via love.load()
+-- arguments that were parsed as options are skipped.
 function love.arg.game_arguments(a)
 	local out = {}
 
