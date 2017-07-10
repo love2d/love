@@ -265,7 +265,10 @@ Source::Source(const Source &s)
 		directfilter = s.directfilter->clone();
 
 	for (auto e : s.effectmap)
-		effectmap[e.first] = { e.second.filter ? e.second.filter->clone() : nullptr, e.second.slot, e.second.target };
+	{
+		Filter *filter = e.second.filter ? e.second.filter->clone() : nullptr;
+		effectmap[e.first] = { filter, e.second.slot, e.second.target };
+	}
 
 	setFloatv(position, s.position);
 	setFloatv(velocity, s.velocity);
@@ -278,8 +281,10 @@ Source::Source(const Source &s)
 		for (auto e : effectmap)
 		{
 			if (e.second.slot)
+			{
 				push = false;
 				break;
+			}
 		}
 		if (push)
 			slotlist.push(i);
@@ -1408,7 +1413,7 @@ bool Source::setEffect(const char *name)
 bool Source::setEffect(const char *name, const std::map<Filter::Parameter, float> &params)
 {
 	ALuint slot, target;
-	Filter *filter;
+	Filter *filter = nullptr;
 
 	// effect with this name doesn't exist
 	if (!dynamic_cast<Audio*>(audiomodule())->getEffectID(name, target))

@@ -233,7 +233,7 @@ private:
 		Filter *filter;
 		ALuint slot, target;
 	};
-	std::map<std::string, struct EffectMapStorage> effectmap;
+	std::map<std::string, EffectMapStorage> effectmap;
 	std::stack<ALuint> slotlist;
 }; // Source
 
