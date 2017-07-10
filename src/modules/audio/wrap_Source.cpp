@@ -456,49 +456,58 @@ int w_Source_getFilter(lua_State *L)
 	return 1;
 }
 
-int w_Source_setSceneEffect(lua_State *L)
+int w_Source_setEffect(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
+	const char *namestr = luaL_checkstring(L, 2);
 
-	int slot = luaL_checknumber(L, 2) - 1;
-	if (lua_gettop(L) == 2)
+	// :setEffect(effect, false) = clear effect
+	if (lua_gettop(L) == 3 && lua_isboolean(L, 3) && !lua_toboolean(L, 3))
 	{
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot)); });
-		return 1;
-	}
-
-	int effect = luaL_checknumber(L, 3) - 1;
-	if (lua_gettop(L) == 3)
-	{
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect)); });
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->unsetEffect(namestr)); });
 		return 1;
 	}
 
 	std::map<Filter::Parameter, float> params;
 
-	if (setFilterReadFilter(L, 4, params) == 1)
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect, params)); });
+	if (setFilterReadFilter(L, 3, params) == 1)
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setEffect(namestr, params)); });
 	else
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setSceneEffect(slot, effect)); });
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setEffect(namestr)); });
 	return 1;
 }
 
-int w_Source_getSceneEffect(lua_State *L)
+int w_Source_getEffect(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	int slot = luaL_checknumber(L, 2) - 1;
+	const char *namestr = luaL_checkstring(L, 2);
 
-	int effect;
 	std::map<Filter::Parameter, float> params;
-	if (!t->getSceneEffect(slot, effect, params))
+	if (!t->getEffect(namestr, params))
 		return 0;
 
-	lua_pushnumber(L, effect + 1);
 	if (params.size() == 0)
-		return 1;
+		return 0;
 
 	getFilterWriteFilter(L, params);
-	return 2;
+	return 1;
+}
+
+int w_Source_getEffectsList(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	std::vector<std::string> list;
+	if (!t->getEffectsList(list))
+		return 0;
+
+	lua_createtable(L, 0, list.size());
+	for (unsigned int i = 0; i < list.size(); i++)
+	{
+		lua_pushnumber(L, i + 1);
+		lua_pushstring(L, list[i].c_str());
+		lua_rawset(L, -3);
+	}
+	return 1;
 }
 
 int w_Source_getFreeBufferCount(lua_State *L)
@@ -613,8 +622,9 @@ static const luaL_Reg w_Source_functions[] =
 
 	{ "setFilter", w_Source_setFilter },
 	{ "getFilter", w_Source_getFilter },
-	{ "setEffect", w_Source_setSceneEffect },
-	{ "getEffect", w_Source_getSceneEffect },
+	{ "setEffect", w_Source_setEffect },
+	{ "getEffect", w_Source_getEffect },
+	{ "getEffectsList", w_Source_getEffectsList },
 
 	{ "getFreeBufferCount", w_Source_getFreeBufferCount },
 	{ "queue", w_Source_queue },

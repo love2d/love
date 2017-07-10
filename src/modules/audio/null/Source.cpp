@@ -254,22 +254,27 @@ bool Source::getFilter(std::map<Filter::Parameter, float> &)
 	return false;
 }
 
-bool Source::setSceneEffect(int, int)
+bool Source::setEffect(const char *)
 {
 	return false;
 }
 
-bool Source::setSceneEffect(int, int, const std::map<Filter::Parameter, float> &)
+bool Source::setEffect(const char *, const std::map<Filter::Parameter, float> &)
 {
 	return false;
 }
 
-bool Source::setSceneEffect(int)
+bool Source::unsetEffect(const char *)
 {
 	return false;
 }
 
-bool Source::getSceneEffect(int, int &, std::map<Filter::Parameter, float> &)
+bool Source::getEffect(const char *, std::map<Filter::Parameter, float> &)
+{
+	return false;
+}
+
+bool Source::getEffectsList(std::vector<std::string> &)
 {
 	return false;
 }

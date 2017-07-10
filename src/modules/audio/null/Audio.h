@@ -47,7 +47,7 @@ public:
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
-	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels);
+	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers);
 	int getSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);
@@ -78,9 +78,10 @@ public:
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
 
-	bool setSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
-	bool setSceneEffect(int slot);
-	bool getSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
+	bool setEffect(const char *, std::map<Effect::Parameter, float> &params);
+	bool unsetEffect(const char *);
+	bool getEffect(const char *, std::map<Effect::Parameter, float> &params);
+	bool getEffectsList(std::vector<std::string> &list);
 	int getMaxSceneEffects() const;
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;

@@ -77,7 +77,7 @@ public:
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;
-	virtual Source *newSource(int sampleRate, int bitDepth, int channels) = 0;
+	virtual Source *newSource(int sampleRate, int bitDepth, int channels, int buffers) = 0;
 
 	/**
 	 * Gets the current number of simultaneous playing sources.
@@ -210,26 +210,33 @@ public:
 
 	/**
 	 * Sets scene EFX effect.
-	 * @param slot Slot to put effect into.
+	 * @param name Effect name to use.
 	 * @param fxparams Effect description table.
 	 * @return true if successful, false otherwise.
 	 */
-	virtual bool setSceneEffect(int slot, std::map<Effect::Parameter, float> &params) = 0;
+	virtual bool setEffect(const char *name, std::map<Effect::Parameter, float> &params) = 0;
 
 	/**
 	 * Removes scene EFX effect.
-	 * @param slot Effect slot to clear.
+	 * @param name Effect name to clear.
 	 * @return true if successful, false otherwise.
 	 */
-	virtual bool setSceneEffect(int slot) = 0;
+	virtual bool unsetEffect(const char *name) = 0;
 
 	/**
 	 * Gets scene EFX effect.
-	 * @param slot Slot from which to get effect.
+	 * @param name Effect name to get data from.
 	 * @param fxparams Effect description table.
 	 * @return true if effect was present, false otherwise.
 	 */
-	virtual bool getSceneEffect(int slot, std::map<Effect::Parameter, float> &params) = 0;
+	virtual bool getEffect(const char *name, std::map<Effect::Parameter, float> &params) = 0;
+
+	/**
+	 * Gets list of EFX effect names.
+	 * @param list List of EFX names to fill.
+	 * @return true if effect was present, false otherwise.
+	 */
+	virtual bool getEffectsList(std::vector<std::string> &list) = 0;
 
 	/**
 	 * Gets maximum number of scene EFX effects.

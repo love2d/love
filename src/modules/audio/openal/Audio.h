@@ -25,6 +25,7 @@
 #include <queue>
 #include <map>
 #include <vector>
+#include <stack>
 #include <cmath>
 
 // LOVE
@@ -83,7 +84,7 @@ public:
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
-	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels);
+	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers);
 	int getSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);
@@ -114,15 +115,15 @@ public:
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
 
-	bool setSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
-	bool setSceneEffect(int slot);
-	bool getSceneEffect(int slot, std::map<Effect::Parameter, float> &params);
+	bool setEffect(const char *name, std::map<Effect::Parameter, float> &params);
+	bool unsetEffect(const char *name);
+	bool getEffect(const char *name, std::map<Effect::Parameter, float> &params);
+	bool getEffectsList(std::vector<std::string> &list);
 	int getMaxSceneEffects() const;
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;
 
-	ALuint getSceneEffectID(int slot);
-	int getSceneEffectIndex(ALuint effect);
+	bool getEffectID(const char *name, ALuint &id);
 
 private:
 	void initializeEFX();
@@ -136,11 +137,15 @@ private:
 	ALCcontext *context;
 
 	// The OpenAL effects
-	std::vector<Effect*> effects;
-	std::vector<ALuint> effectSlots;
-	std::map<ALuint, int> effectIndex;
-	int MAX_SCENE_EFFECTS = 16;
-	int MAX_SOURCE_EFFECTS = 16;
+	struct EffectMapStorage
+	{
+		Effect *effect;
+		ALuint slot;
+	};
+	std::map<std::string, struct EffectMapStorage> effectmap;
+	std::stack<ALuint> slotlist;
+	int MAX_SCENE_EFFECTS = 64;
+	int MAX_SOURCE_EFFECTS = 64;
 
 	// The Pool.
 	Pool *pool;

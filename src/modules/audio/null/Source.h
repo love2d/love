@@ -86,10 +86,11 @@ public:
 	virtual bool setFilter();
 	virtual bool getFilter(std::map<Filter::Parameter, float> &params);
 
-	virtual bool setSceneEffect(int slot, int effect);
-	virtual bool setSceneEffect(int slot, int effect, const std::map<Filter::Parameter, float> &params);
-	virtual bool setSceneEffect(int slot);
-	virtual bool getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params);
+	virtual bool setEffect(const char *effect);
+	virtual bool setEffect(const char *effect, const std::map<Filter::Parameter, float> &params);
+	virtual bool unsetEffect(const char *effect);
+	virtual bool getEffect(const char *effect, std::map<Filter::Parameter, float> &params);
+	virtual bool getEffectsList(std::vector<std::string> &list);
 
 private:
 

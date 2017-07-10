@@ -124,8 +124,6 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	, sampleRate(soundData->getSampleRate())
 	, channels(soundData->getChannels())
 	, bitDepth(soundData->getBitDepth())
-	, sendfilters(audiomodule()->getMaxSourceEffects(), nullptr)
-	, sendtargets(audiomodule()->getMaxSourceEffects(), AL_EFFECTSLOT_NULL)
 {
 	ALenum fmt = Audio::getFormat(soundData->getBitDepth(), soundData->getChannels());
 	if (fmt == AL_NONE)
@@ -138,6 +136,9 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	setFloatv(position, z);
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
+
+	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+		slotlist.push(i);
 }
 
 Source::Source(Pool *pool, love::sound::Decoder *decoder)
@@ -147,46 +148,72 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	, channels(decoder->getChannels())
 	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
-	, unusedBufferTop(MAX_BUFFERS - 1)
-	, sendfilters(audiomodule()->getMaxSourceEffects(), nullptr)
-	, sendtargets(audiomodule()->getMaxSourceEffects(), AL_EFFECTSLOT_NULL)
+	, buffers(DEFAULT_BUFFERS)
 {
 	if (Audio::getFormat(decoder->getBitDepth(), decoder->getChannels()) == AL_NONE)
 		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
 
-	alGenBuffers(MAX_BUFFERS, streamBuffers);
-	for (unsigned int i = 0; i < MAX_BUFFERS; i++)
-		unusedBuffers[i] = streamBuffers[i];
+	for (int i = 0; i < buffers; i++)
+	{
+		ALuint buf;
+		alGenBuffers(1, &buf);
+		if (alGetError() == AL_NO_ERROR)
+			unusedBuffers.push(buf);
+		else
+		{
+			buffers = i;
+			break;
+		}
+	}
 
 	float z[3] = {0, 0, 0};
 
 	setFloatv(position, z);
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
+
+	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+		slotlist.push(i);
 }
 
-Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels)
+Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels, int buffers)
 	: love::audio::Source(Source::TYPE_QUEUE)
 	, pool(pool)
 	, sampleRate(sampleRate)
 	, channels(channels)
 	, bitDepth(bitDepth)
-	, sendfilters(audiomodule()->getMaxSourceEffects(), nullptr)
-	, sendtargets(audiomodule()->getMaxSourceEffects(), AL_EFFECTSLOT_NULL)
+	, buffers(buffers)
 {
 	ALenum fmt = Audio::getFormat(bitDepth, channels);
 	if (fmt == AL_NONE)
 		throw InvalidFormatException(channels, bitDepth);
 
-	alGenBuffers(MAX_BUFFERS, streamBuffers);
-	for (unsigned int i = 0; i < MAX_BUFFERS; i++)
-		unusedBuffers[i] = streamBuffers[i];
+	if (buffers < 1)
+		buffers = DEFAULT_BUFFERS;
+	if (buffers > MAX_BUFFERS)
+		buffers = MAX_BUFFERS;
+
+	for (int i = 0; i < buffers; i++)
+	{
+		ALuint buf;
+		alGenBuffers(1, &buf);
+		if (alGetError() == AL_NO_ERROR)
+			unusedBuffers.push(buf);
+		else
+		{
+			buffers = i;
+			break;
+		}
+	}
 
 	float z[3] = {0, 0, 0};
 
 	setFloatv(position, z);
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
+
+	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+		slotlist.push(i);
 }
 
 Source::Source(const Source &s)
@@ -211,9 +238,7 @@ Source::Source(const Source &s)
 	, bitDepth(s.bitDepth)
 	, decoder(nullptr)
 	, toLoop(0)
-	, unusedBufferTop(s.sourceType == TYPE_STREAM ? MAX_BUFFERS - 1 : -1)
-	, sendfilters(s.sendfilters)
-	, sendtargets(s.sendtargets)
+	, buffers(s.buffers)
 {
 	if (sourceType == TYPE_STREAM)
 	{
@@ -222,16 +247,43 @@ Source::Source(const Source &s)
 	}
 	if (sourceType != TYPE_STATIC)
 	{
-		alGenBuffers(MAX_BUFFERS, streamBuffers);
-		for (unsigned int i = 0; i < MAX_BUFFERS; i++)
-			unusedBuffers[i] = streamBuffers[i];
+		for (int i = 0; i < buffers; i++)
+		{
+			ALuint buf;
+			alGenBuffers(1, &buf);
+			if (alGetError() == AL_NO_ERROR)
+				unusedBuffers.push(buf);
+			else
+			{
+				buffers = i;
+				break;
+			}
+		}
 	}
+
 	if (s.directfilter)
 		directfilter = s.directfilter->clone();
+
+	for (auto e : s.effectmap)
+		effectmap[e.first] = { e.second.filter ? e.second.filter->clone() : nullptr, e.second.slot, e.second.target };
 
 	setFloatv(position, s.position);
 	setFloatv(velocity, s.velocity);
 	setFloatv(direction, s.direction);
+
+	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+	{
+		// filter out already taken slots
+		bool push = true;
+		for (auto e : effectmap)
+		{
+			if (e.second.slot)
+				push = false;
+				break;
+		}
+		if (push)
+			slotlist.push(i);
+	}
 }
 
 Source::~Source()
@@ -239,15 +291,26 @@ Source::~Source()
 	stop();
 
 	if (sourceType != TYPE_STATIC)
-		alDeleteBuffers(MAX_BUFFERS, streamBuffers);
+	{
+		while (!streamBuffers.empty())
+		{
+			alDeleteBuffers(1, &streamBuffers.front());
+			streamBuffers.pop();
+		}
+		while (!unusedBuffers.empty())
+		{
+			alDeleteBuffers(1, &unusedBuffers.top());
+			unusedBuffers.pop();
+		}
+	}
 
 	if (directfilter)
 		delete directfilter;
 
-	for (auto sf : sendfilters)
+	for (auto e : effectmap)
 	{
-		if (sf != nullptr)
-			delete sf;
+		if (e.second.filter)
+			delete e.second.filter;
 	}
 }
 
@@ -346,12 +409,16 @@ bool Source::update()
 				offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
 				for (unsigned int i = 0; i < (unsigned int)processed; i++)
-					unusedBufferPush(buffers[i]);
+					unusedBuffers.push(buffers[i]);
 
-				while (unusedBufferPeek() != AL_NONE)
+				while (!unusedBuffers.empty())
 				{
-					if(streamAtomic(unusedBufferPeek(), decoder.get()) > 0)
-						alSourceQueueBuffers(source, 1, unusedBufferPop());
+					auto b = unusedBuffers.top();
+					if (streamAtomic(b, decoder.get()) > 0)
+					{
+						alSourceQueueBuffers(source, 1, &b);
+						unusedBuffers.pop();
+					}
 					else
 						break;
 				}
@@ -359,7 +426,7 @@ bool Source::update()
 				return true;
 			}
 			return false;
-		case TYPE_QUEUE: 
+		case TYPE_QUEUE:
 		{
 			ALint processed;
 			ALuint buffers[MAX_BUFFERS];
@@ -372,7 +439,7 @@ bool Source::update()
 				ALint size;
 				alGetBufferi(buffers[i], AL_SIZE, &size);
 				bufferedBytes -= size;
-				unusedBufferPush(buffers[i]);
+				unusedBuffers.push(buffers[i]);
 			}
 			return !isFinished();
 		}
@@ -475,23 +542,21 @@ void Source::seek(float offset, Source::Unit unit)
 			}
 			else
 			{
-				ALint size;
-				ALuint buffer = unusedBufferPeek();
-
 				//emulate AL behavior, discarding buffer once playback head is past one
-				while (buffer != AL_NONE)
+				while (!unusedBuffers.empty())
 				{
+					ALint size;
+					auto buffer = unusedBuffers.top();
 					alGetBufferi(buffer, AL_SIZE, &size);
 
 					if (offsetSamples < size / (bitDepth / 8 * channels))
 						break;
 
-					unusedBufferPop();
-					buffer = unusedBufferPeek();
+					unusedBuffers.pop();
 					bufferedBytes -= size;
 					offsetSamples -= size / (bitDepth / 8 * channels);
 				}
-				if (buffer == AL_NONE)
+				if (unusedBuffers.empty())
 					offsetSamples = 0;
 				offsetSeconds = offsetSamples / sampleRate;
 			}
@@ -723,27 +788,18 @@ bool Source::queue(void *data, size_t length, int dataSampleRate, int dataBitDep
 
 	Lock l = pool->lock();
 
-	if (valid)
-	{
-		ALuint buffer = unusedBufferPeek();
-		if (buffer == AL_NONE)
-			return false;
+	if (unusedBuffers.empty())
+		return false;
 
-		alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
-		alSourceQueueBuffers(source, 1, &buffer);
-		unusedBufferPop();
-	}
-	else
-	{
-		ALuint buffer = unusedBufferPeekNext();
-		if (buffer == AL_NONE)
-			return false;
-
-		//stack acts as queue while stopped
-		alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
-		unusedBufferQueue(buffer);
-	}
+	auto buffer = unusedBuffers.top();
+	unusedBuffers.pop();
+	alBufferData(buffer, Audio::getFormat(bitDepth, channels), data, length, sampleRate);
 	bufferedBytes += length;
+
+	if (valid)
+		alSourceQueueBuffers(source, 1, &buffer);
+	else
+		streamBuffers.push(buffer);
 
 	return true;
 }
@@ -755,9 +811,9 @@ int Source::getFreeBufferCount() const
 		case TYPE_STATIC:
 			return 0;
 		case TYPE_STREAM:
-			return unusedBufferTop + 1;
+			return unusedBuffers.size();
 		case TYPE_QUEUE:
-			return valid ? unusedBufferTop + 1 : (int)MAX_BUFFERS - unusedBufferTop - 1;
+			return unusedBuffers.size();
 		case TYPE_MAX_ENUM:
 			return 0;
 	}
@@ -777,12 +833,14 @@ void Source::prepareAtomic()
 			alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
 			break;
 		case TYPE_STREAM:
-			while (unusedBufferPeek() != AL_NONE)
+			while (!unusedBuffers.empty())
 			{
-				if(streamAtomic(unusedBufferPeek(), decoder.get()) == 0)
+				auto b = unusedBuffers.top();
+				if (streamAtomic(b, decoder.get()) == 0)
 					break;
 
-				alSourceQueueBuffers(source, 1, unusedBufferPop());
+				alSourceQueueBuffers(source, 1, &b);
+				unusedBuffers.pop();
 
 				if (decoder->isFinished())
 					break;
@@ -790,14 +848,11 @@ void Source::prepareAtomic()
 			break;
 		case TYPE_QUEUE:
 		{
-			int top = unusedBufferTop;
-			//when queue source is stopped, loaded buffers are stored in unused buffers stack
-			while (unusedBufferPeek() != AL_NONE)
-				alSourceQueueBuffers(source, 1, unusedBufferPop());
-			//construct a stack of unused buffers (beyond the end of stack)
-			for (unsigned int i = top + 1; i < MAX_BUFFERS; i++)
-				unusedBufferPush(unusedBuffers[i]);
-
+			while (!streamBuffers.empty())
+			{
+				alSourceQueueBuffers(source, 1, &streamBuffers.front());
+				streamBuffers.pop();
+			}
 			break;
 		}
 		case TYPE_MAX_ENUM:
@@ -821,13 +876,10 @@ void Source::teardownAtomic()
 			//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
 			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
 			for (unsigned int i = 0; i < (unsigned int)queued; i++)
+			{
 				alSourceUnqueueBuffers(source, 1, &buffer);
-
-			// generate unused buffers list
-			for (unsigned int i = 0; i < MAX_BUFFERS; i++)
-				unusedBuffers[i] = streamBuffers[i];
-
-			unusedBufferTop = MAX_BUFFERS - 1;
+				unusedBuffers.push(buffer);
+			}
 			break;
 		}
 		case TYPE_QUEUE:
@@ -837,13 +889,10 @@ void Source::teardownAtomic()
 
 			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
 			for (unsigned int i = (unsigned int)queued; i > 0; i--)
+			{
 				alSourceUnqueueBuffers(source, 1, &buffer);
-
-			// generate unused buffers list
-			for (unsigned int i = 0; i < MAX_BUFFERS; i++)
-				unusedBuffers[i] = streamBuffers[i];
-
-			unusedBufferTop = -1;
+				unusedBuffers.push(buffer);
+			}
 			break;
 		}
 		case TYPE_MAX_ENUM:
@@ -912,7 +961,8 @@ void Source::resumeAtomic()
 	{
 		alSourcePlay(source);
 
-		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && unusedBufferTop == MAX_BUFFERS - 1))
+		//failed to play or nothing to play
+		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && unusedBuffers.empty()))
 			stop();
 	}
 }
@@ -1059,8 +1109,11 @@ void Source::reset()
 	alSourcef(source, AL_CONE_OUTER_GAINHF, cone.outerHighGain);
 	alSourcef(source, AL_ROOM_ROLLOFF_FACTOR, rolloffFactor); //reverb-specific rolloff
 	alSourcei(source, AL_DIRECT_FILTER, directfilter ? directfilter->getFilter() : AL_FILTER_NULL);
-	for (unsigned int i = 0; i < sendtargets.size(); i++)
-		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[i], i, sendfilters[i] ? sendfilters[i]->getFilter() : AL_FILTER_NULL);
+	// clear all send slots, then re-enable applied ones
+	for (int i = 0; i < audiomodule()->getMaxSourceEffects(); i++)
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, i, AL_FILTER_NULL);
+	for (auto i : effectmap)
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, i.second.target, i.second.slot, i.second.filter ? i.second.filter->getFilter() : AL_FILTER_NULL);
 	//alGetError();
 #endif
 }
@@ -1070,33 +1123,6 @@ void Source::setFloatv(float *dst, const float *src) const
 	dst[0] = src[0];
 	dst[1] = src[1];
 	dst[2] = src[2];
-}
-
-ALuint Source::unusedBufferPeek()
-{
-	return (unusedBufferTop < 0) ? AL_NONE : unusedBuffers[unusedBufferTop];
-}
-
-ALuint Source::unusedBufferPeekNext()
-{
-	return (unusedBufferTop >= (int)MAX_BUFFERS - 1) ? AL_NONE : unusedBuffers[unusedBufferTop + 1];
-}
-
-ALuint *Source::unusedBufferPop()
-{
-	return &unusedBuffers[unusedBufferTop--];
-}
-
-void Source::unusedBufferPush(ALuint buffer)
-{
-	unusedBuffers[++unusedBufferTop] = buffer;
-}
-
-void Source::unusedBufferQueue(ALuint buffer)
-{
-	for (unsigned int i = ++unusedBufferTop; i > 0; i--)
-		unusedBuffers[i] = unusedBuffers[i - 1];
-	unusedBuffers[0] = buffer;
 }
 
 int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
@@ -1123,7 +1149,7 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 		if (queued > processed)
 			toLoop = queued-processed;
 		else
-			toLoop = MAX_BUFFERS-processed;
+			toLoop = buffers-processed;
 		d->rewind();
 	}
 
@@ -1339,22 +1365,39 @@ bool Source::getFilter(std::map<Filter::Parameter, float> &params)
 	return true;
 }
 
-bool Source::setSceneEffect(int slot, int effect)
+bool Source::setEffect(const char *name)
 {
-	if (slot < 0 || slot >= (int)sendtargets.size())
+	ALuint slot, target;
+	Filter *filter;
+
+	// effect with this name doesn't exist
+	if (!dynamic_cast<Audio*>(audiomodule())->getEffectID(name, target))
 		return false;
 
-	sendtargets[slot] = dynamic_cast<Audio*>(audiomodule())->getSceneEffectID(effect);
+	auto iter = effectmap.find(name);
+	if (iter == effectmap.end())
+	{
+		// new send target needed but no more room
+		if (slotlist.empty())
+			return false;
 
-	if (sendfilters[slot])
-		delete sendfilters[slot];
+		slot = slotlist.top();
+		slotlist.pop();
+	}
+	else
+	{
+		slot = iter->second.slot;
+		filter = iter->second.filter;
 
-	sendfilters[slot] = nullptr;
+		if (filter)
+			delete filter;
+	}
+	effectmap[name] = {nullptr, slot, target};
 
 #ifdef ALC_EXT_EFX
 	if (valid)
 	{
-		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[slot], slot, AL_FILTER_NULL);
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, target, slot, AL_FILTER_NULL);
 		//alGetError();
 	}
 #endif
@@ -1362,39 +1405,59 @@ bool Source::setSceneEffect(int slot, int effect)
 	return true;
 }
 
-bool Source::setSceneEffect(int slot, int effect, const std::map<Filter::Parameter, float> &params)
+bool Source::setEffect(const char *name, const std::map<Filter::Parameter, float> &params)
 {
-	if (slot < 0 || slot >= (int)sendtargets.size())
+	ALuint slot, target;
+	Filter *filter;
+
+	// effect with this name doesn't exist
+	if (!dynamic_cast<Audio*>(audiomodule())->getEffectID(name, target))
 		return false;
 
-	sendtargets[slot] = dynamic_cast<Audio*>(audiomodule())->getSceneEffectID(effect);
+	auto iter = effectmap.find(name);
+	if (iter == effectmap.end())
+	{
+		// new send target needed but no more room
+		if (slotlist.empty())
+			return false;
 
-	if (!sendfilters[slot])
-		sendfilters[slot] = new Filter();
+		slot = slotlist.top();
+		slotlist.pop();
+	}
+	else
+	{
+		slot = iter->second.slot;
+		filter = iter->second.filter;
+	}
+	if (!filter)
+		filter = new Filter();
 
-	sendfilters[slot]->setParams(params);
+	effectmap[name] = {filter, slot, target};
+
+	filter->setParams(params);
 
 #ifdef ALC_EXT_EFX
 	if (valid)
 	{
 		//in case of failure contains AL_FILTER_NULL, a valid non-filter
-		alSource3i(source, AL_AUXILIARY_SEND_FILTER, sendtargets[slot], slot, sendfilters[slot]->getFilter());
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, target, slot, filter->getFilter());
 		//alGetError();
 	}
 #endif
 	return true;
 }
 
-bool Source::setSceneEffect(int slot)
+bool Source::unsetEffect(const char *name)
 {
-	if (slot < 0 || slot >= (int)sendtargets.size())
+	auto iter = effectmap.find(name);
+	if (iter == effectmap.end())
 		return false;
 
-	sendtargets[slot] = AL_EFFECTSLOT_NULL;
+	ALuint slot = iter->second.slot;
+	Filter *filter = iter->second.filter;
 
-	if (sendfilters[slot])
-		delete sendfilters[slot];
-	sendfilters[slot] = nullptr;
+	if (filter)
+		delete filter;
 
 #ifdef ALC_EXT_EFX
 	if (valid)
@@ -1403,22 +1466,32 @@ bool Source::setSceneEffect(int slot)
 		//alGetError();
 	}
 #endif
+	effectmap.erase(iter);
+	slotlist.push(slot);
+	return true;
+}
+
+bool Source::getEffect(const char *name, std::map<Filter::Parameter, float> &params)
+{
+	auto iter = effectmap.find(name);
+	if (iter == effectmap.end())
+		return false;
+
+	if (iter->second.filter)
+		params = iter->second.filter->getParams();
 
 	return true;
 }
 
-bool Source::getSceneEffect(int slot, int &effect, std::map<Filter::Parameter, float> &params)
+bool Source::getEffectsList(std::vector<std::string> &list)
 {
-	if (slot < 0 || slot >= (int)sendtargets.size())
+	if (effectmap.empty())
 		return false;
 
-	if (sendtargets[slot] == AL_EFFECTSLOT_NULL)
-		return false;
+	list.reserve(effectmap.size());
 
-	effect = dynamic_cast<Audio*>(audiomodule())->getSceneEffectIndex(sendtargets[slot]);
-
-	if(sendfilters[slot])
-		params = sendfilters[slot]->getParams();
+	for (auto i : effectmap)
+		list.push_back(i.first);
 
 	return true;
 }

@@ -84,7 +84,7 @@ int w_newQueueableSource(lua_State *L)
 	Source *t = nullptr;
 
 	luax_catchexcept(L, [&]() {
-		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3));
+		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3), (int)luaL_optnumber(L, 4, 0));
 	});
 
 	if (t != nullptr)
@@ -305,13 +305,13 @@ int w_getRecordingDevices(lua_State *L)
 	return 1;
 }
 
-int w_setSceneEffect(lua_State *L)
+int w_setEffect(lua_State *L)
 {
-	int slot = luaL_checknumber(L, 1) - 1;
+	const char *namestr = luaL_checkstring(L, 1);
 
-	if (lua_gettop(L) == 1 || (lua_gettop(L) == 2 && lua_isnoneornil(L, 2)))
+	if (lua_isnoneornil(L, 2) || (lua_gettop(L) == 2 && lua_isboolean(L, 2) && !lua_toboolean(L, 2)))
 	{
-		lua_pushboolean(L, instance()->setSceneEffect(slot));
+		lua_pushboolean(L, instance()->unsetEffect(namestr));
 		return 1;
 	}
 
@@ -405,17 +405,17 @@ int w_setSceneEffect(lua_State *L)
 		lua_pop(L, 1);
 	}
 
-	luax_catchexcept(L, [&]() { lua_pushboolean(L, instance()->setSceneEffect(slot, params)); });
+	luax_catchexcept(L, [&]() { lua_pushboolean(L, instance()->setEffect(namestr, params)); });
 	return 1;
 }
 
-int w_getSceneEffect(lua_State *L)
+int w_getEffect(lua_State *L)
 {
-	int slot = luaL_checknumber(L, 1) - 1;
+	const char *namestr = luaL_checkstring(L, 1);
 
 	std::map<Effect::Parameter, float> params;
 
-	if (!instance()->getSceneEffect(slot, params))
+	if (!instance()->getEffect(namestr, params))
 		return 0;
 
 	const char *keystr, *valstr;
@@ -463,6 +463,22 @@ int w_getSceneEffect(lua_State *L)
 	return 1;
 }
 
+int w_getEffectsList(lua_State *L)
+{
+	std::vector<std::string> list;
+	if (!instance()->getEffectsList(list))
+		return 0;
+
+	lua_createtable(L, 0, list.size());
+	for (unsigned int i = 0; i < list.size(); i++)
+	{
+		lua_pushnumber(L, i + 1);
+		lua_pushstring(L, list[i].c_str());
+		lua_rawset(L, -3);
+	}
+	return 1;
+}
+
 int w_getMaxSceneEffects(lua_State *L)
 {
 	lua_pushnumber(L, instance()->getMaxSceneEffects());
@@ -475,7 +491,7 @@ int w_getMaxSourceEffects(lua_State *L)
 	return 1;
 }
 
-int w_isSceneEffectsSupported(lua_State *L)
+int w_isEffectsSupported(lua_State *L)
 {
 	lua_pushboolean(L, instance()->isEFXsupported());
 	return 1;
@@ -505,11 +521,12 @@ static const luaL_Reg functions[] =
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
 	{ "getRecordingDevices", w_getRecordingDevices },
-	{ "setEffect", w_setSceneEffect },
-	{ "getEffect", w_getSceneEffect },
+	{ "setEffect", w_setEffect },
+	{ "getEffect", w_getEffect },
+	{ "getEffectsList", w_getEffectsList },
 	{ "getMaxSceneEffects", w_getMaxSceneEffects },
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
-	{ "isEffectsSupported", w_isSceneEffectsSupported },
+	{ "isEffectsSupported", w_isEffectsSupported },
 	{ 0, 0 }
 };
 
