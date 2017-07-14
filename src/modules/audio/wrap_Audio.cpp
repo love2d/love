@@ -307,16 +307,6 @@ int w_setMixMode(lua_State *)
 	return 0;
 }
 
-int w_getShouldBeSilenced(lua_State *L)
-{
-#ifdef LOVE_IOS
-	lua_pushboolean(L, love::ios::audioShouldBeSilenced());
-#else
-	lua_pushboolean(L, 0);
-#endif
-	return 1;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -343,7 +333,6 @@ static const luaL_Reg functions[] =
 	{ "setDistanceModel", w_setDistanceModel },
 	{ "getDistanceModel", w_getDistanceModel },
 	{ "setMixMode", w_setMixMode },
-	{ "getShouldBeSilenced", w_getShouldBeSilenced },
 	{ 0, 0 }
 };
 

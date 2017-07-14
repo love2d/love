@@ -93,6 +93,19 @@ int w_vibrate(lua_State *L)
 	return 0;
 }
 
+int w_hasBackgroundMusic(lua_State *L)
+{
+	try
+	{
+		lua_pushboolean(L, instance()->hasBackgroundMusic());
+	}
+	catch (love::Exception &)
+	{
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -102,6 +115,7 @@ static const luaL_Reg functions[] =
 	{ "getPowerInfo", w_getPowerInfo },
 	{ "openURL", w_openURL },
 	{ "vibrate", w_vibrate },
+	{ "hasBackgroundMusic", w_hasBackgroundMusic },
 	{ 0, 0 }
 };
 

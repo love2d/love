@@ -184,6 +184,17 @@ void System::vibrate(double seconds) const
 #endif
 }
 
+bool System::hasBackgroundMusic() const
+{
+#if defined(LOVE_ANDROID)
+	return love::android::hasBackgroundMusic();
+#elif defined(LOVE_IOS)
+	return love::ios::audioShouldBeSilenced();
+#else
+	throw love::Exception("Unsupported platform.");
+#endif
+}
+
 bool System::getConstant(const char *in, System::PowerState &out)
 {
 	return powerStates.find(in, out);
