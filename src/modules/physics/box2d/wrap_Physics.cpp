@@ -471,7 +471,7 @@ int w_getDistance(lua_State *L)
 
 int w_setMeter(lua_State *L)
 {
-	int arg1 = (int) luaL_checknumber(L, 1);
+	float arg1 = (float) luaL_checknumber(L, 1);
 	luax_catchexcept(L, [&](){ Physics::setMeter(arg1); });
 	return 0;
 

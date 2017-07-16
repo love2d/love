@@ -321,7 +321,7 @@ int w_setCanvas(lua_State *L)
 
 			if (i == 1 && type != TEXTURE_2D)
 			{
-				target.slice = (int) luaL_checknumber(L, i + 1) - 1;
+				target.slice = (int) luaL_checkinteger(L, i + 1) - 1;
 				target.mipmap = (int) luaL_optinteger(L, i + 2, 1) - 1;
 				targets.colors.push_back(target);
 				break;
@@ -470,10 +470,10 @@ int w_setScissor(lua_State *L)
 	}
 
 	Rect rect;
-	rect.x = (int) luaL_checknumber(L, 1);
-	rect.y = (int) luaL_checknumber(L, 2);
-	rect.w = (int) luaL_checknumber(L, 3);
-	rect.h = (int) luaL_checknumber(L, 4);
+	rect.x = (int) luaL_checkinteger(L, 1);
+	rect.y = (int) luaL_checkinteger(L, 2);
+	rect.w = (int) luaL_checkinteger(L, 3);
+	rect.h = (int) luaL_checkinteger(L, 4);
 
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -485,10 +485,10 @@ int w_setScissor(lua_State *L)
 int w_intersectScissor(lua_State *L)
 {
 	Rect rect;
-	rect.x = (int) luaL_checknumber(L, 1);
-	rect.y = (int) luaL_checknumber(L, 2);
-	rect.w = (int) luaL_checknumber(L, 3);
-	rect.h = (int) luaL_checknumber(L, 4);
+	rect.x = (int) luaL_checkinteger(L, 1);
+	rect.y = (int) luaL_checkinteger(L, 2);
+	rect.w = (int) luaL_checkinteger(L, 3);
+	rect.h = (int) luaL_checkinteger(L, 4);
 
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -524,7 +524,7 @@ int w_stencil(lua_State *L)
 			return luaL_error(L, "Invalid stencil draw action: %s", actionstr);
 	}
 
-	int stencilvalue = (int) luaL_optnumber(L, 3, 1);
+	int stencilvalue = (int) luaL_optinteger(L, 3, 1);
 
 	// Fourth argument: whether to keep the contents of the stencil buffer.
 	OptionalInt stencilclear;
@@ -561,7 +561,7 @@ int w_setStencilTest(lua_State *L)
 		if (!getConstant(comparestr, compare))
 			return luaL_error(L, "Invalid compare mode: %s", comparestr);
 
-		comparevalue = (int) luaL_checknumber(L, 2);
+		comparevalue = (int) luaL_checkinteger(L, 2);
 	}
 
 	luax_catchexcept(L, [&](){ instance()->setStencilTest(compare, comparevalue); });
@@ -942,14 +942,14 @@ int w_newQuad(lua_State *L)
 	}
 	else if (luax_istype(L, 6, Texture::type))
 	{
-		layer = (int) luaL_checknumber(L, 5) - 1;
+		layer = (int) luaL_checkinteger(L, 5) - 1;
 		Texture *texture = luax_checktexture(L, 6);
 		sw = texture->getWidth();
 		sh = texture->getHeight();
 	}
 	else if (!lua_isnoneornil(L, 7))
 	{
-		layer = (int) luaL_checknumber(L, 5) - 1;
+		layer = (int) luaL_checkinteger(L, 5) - 1;
 		sw = luaL_checknumber(L, 6);
 		sh = luaL_checknumber(L, 7);
 	}
@@ -1030,7 +1030,7 @@ int w_newSpriteBatch(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Texture *texture = luax_checktexture(L, 1);
-	int size = (int) luaL_optnumber(L, 2, 1000);
+	int size = (int) luaL_optinteger(L, 2, 1000);
 	vertex::Usage usage = vertex::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
@@ -1075,8 +1075,8 @@ int w_newCanvas(lua_State *L)
 	Canvas::Settings settings;
 
 	// check if width and height are given. else default to screen dimensions.
-	settings.width  = (int) luaL_optnumber(L, 1, instance()->getWidth());
-	settings.height = (int) luaL_optnumber(L, 2, instance()->getHeight());
+	settings.width  = (int) luaL_optinteger(L, 1, instance()->getWidth());
+	settings.height = (int) luaL_optinteger(L, 2, instance()->getHeight());
 
 	// Default to the screen's current pixel density scale.
 	settings.pixeldensity = instance()->getScreenPixelDensity();
@@ -1085,7 +1085,7 @@ int w_newCanvas(lua_State *L)
 
 	if (lua_isnumber(L, 3))
 	{
-		settings.layers = (int) luaL_checknumber(L, 3);
+		settings.layers = (int) luaL_checkinteger(L, 3);
 		settings.type = TEXTURE_2D_ARRAY;
 		startidx = 4;
 	}
@@ -1352,7 +1352,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	}
 	else
 	{
-		int count = (int) luaL_checknumber(L, 1);
+		int count = (int) luaL_checkinteger(L, 1);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, drawmode, usage); });
 	}
 
@@ -1397,7 +1397,7 @@ static Mesh *newCustomMesh(lua_State *L)
 			return nullptr;
 		}
 
-		format.components = (int) luaL_checknumber(L, -1);
+		format.components = (int) luaL_checkinteger(L, -1);
 		if (format.components <= 0 || format.components > 4)
 		{
 			luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", format.components);
@@ -1410,7 +1410,7 @@ static Mesh *newCustomMesh(lua_State *L)
 
 	if (lua_isnumber(L, 2))
 	{
-		int vertexcount = (int) luaL_checknumber(L, 2);
+		int vertexcount = (int) luaL_checkinteger(L, 2);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, vertexcount, drawmode, usage); });
 	}
 	else if (luax_istype(L, 2, Data::type))
@@ -2135,7 +2135,7 @@ int w_drawLayer(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
 	Quad *quad = nullptr;
-	int layer = (int) luaL_checknumber(L, 2) - 1;
+	int layer = (int) luaL_checkinteger(L, 2) - 1;
 	int startidx = 3;
 
 	if (luax_istype(L, startidx, Quad::type))
@@ -2403,7 +2403,7 @@ int w_rectangle(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h, rx, ry); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, 8);
+		int points = (int) luaL_checkinteger(L, 8);
 		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h, rx, ry, points); });
 	}
 
@@ -2425,7 +2425,7 @@ int w_circle(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->circle(mode, x, y, radius); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, 5);
+		int points = (int) luaL_checkinteger(L, 5);
 		luax_catchexcept(L, [&](){ instance()->circle(mode, x, y, radius, points); });
 	}
 
@@ -2448,7 +2448,7 @@ int w_ellipse(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->ellipse(mode, x, y, a, b); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, 6);
+		int points = (int) luaL_checkinteger(L, 6);
 		luax_catchexcept(L, [&](){ instance()->ellipse(mode, x, y, a, b, points); });
 	}
 
@@ -2485,7 +2485,7 @@ int w_arc(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, startidx + 5);
+		int points = (int) luaL_checkinteger(L, startidx + 5);
 		luax_catchexcept(L, [&](){ instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points); });
 	}
 

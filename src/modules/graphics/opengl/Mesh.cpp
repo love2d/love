@@ -96,7 +96,7 @@ void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, 
 	if (vertexCount <= 0 || instancecount <= 0)
 		return;
 
-	if (instancecount > 1 && !gl.isInstancingSupported())
+	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Instancing is not supported on this system.");
 
 	gfx->flushStreamDraws();

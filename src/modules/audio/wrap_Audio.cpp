@@ -84,7 +84,7 @@ int w_newQueueableSource(lua_State *L)
 	Source *t = nullptr;
 
 	luax_catchexcept(L, [&]() {
-		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3), (int)luaL_optnumber(L, 4, 0));
+		t = instance()->newSource((int)luaL_checkinteger(L, 1), (int)luaL_checkinteger(L, 2), (int)luaL_checkinteger(L, 3), (int)luaL_optinteger(L, 4, 0));
 	});
 
 	if (t != nullptr)

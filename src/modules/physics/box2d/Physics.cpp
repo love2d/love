@@ -31,7 +31,7 @@ namespace physics
 namespace box2d
 {
 
-int Physics::meter = Physics::DEFAULT_METER;
+float Physics::meter = Physics::DEFAULT_METER;
 
 const char *Physics::getName() const
 {
@@ -323,37 +323,37 @@ int Physics::getDistance(lua_State *L)
 	return 5;
 }
 
-void Physics::setMeter(int scale)
+void Physics::setMeter(float scale)
 {
 	if (scale < 1) throw love::Exception("Physics error: invalid meter");
 	Physics::meter = scale;
 }
 
-int Physics::getMeter()
+float Physics::getMeter()
 {
 	return meter;
 }
 
 void Physics::scaleDown(float &x, float &y)
 {
-	x /= (float)meter;
-	y /= (float)meter;
+	x /= meter;
+	y /= meter;
 }
 
 void Physics::scaleUp(float &x, float &y)
 {
-	x *= (float)meter;
-	y *= (float)meter;
+	x *= meter;
+	y *= meter;
 }
 
 float Physics::scaleDown(float f)
 {
-	return f/(float)meter;
+	return f/meter;
 }
 
 float Physics::scaleUp(float f)
 {
-	return f*(float)meter;
+	return f*meter;
 }
 
 b2Vec2 Physics::scaleDown(const b2Vec2 &v)

@@ -46,7 +46,7 @@ int w_Canvas_renderTo(lua_State *L)
 
 	if (rt.canvas->getTextureType() != TEXTURE_2D)
 	{
-		rt.slice = (int) luaL_checknumber(L, 2) - 1;
+		rt.slice = (int) luaL_checkinteger(L, 2) - 1;
 		startidx++;
 	}
 

@@ -36,7 +36,7 @@ int w_getDisplayCount(lua_State *L)
 
 int w_getDisplayName(lua_State *L)
 {
-	int index = (int) luaL_checknumber(L, 1) - 1;
+	int index = (int) luaL_checkinteger(L, 1) - 1;
 
 	const char *name = nullptr;
 	luax_catchexcept(L, [&](){ name = instance()->getDisplayName(index); });
@@ -105,8 +105,8 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.useposition = !(lua_isnoneornil(L, -2) && lua_isnoneornil(L, -1));
 	if (settings.useposition)
 	{
-		settings.x = (int) luaL_optnumber(L, -2, 0);
-		settings.y = (int) luaL_optnumber(L, -1, 0);
+		settings.x = (int) luaL_optinteger(L, -2, 0);
+		settings.y = (int) luaL_optinteger(L, -1, 0);
 	}
 	lua_pop(L, 2);
 
@@ -116,8 +116,8 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 
 int w_setMode(lua_State *L)
 {
-	int w = (int) luaL_checknumber(L, 1);
-	int h = (int) luaL_checknumber(L, 2);
+	int w = (int) luaL_checkinteger(L, 1);
+	int h = (int) luaL_checkinteger(L, 2);
 
 	if (lua_isnoneornil(L, 3))
 	{
@@ -150,8 +150,8 @@ int w_updateMode(lua_State *L)
 	if (lua_isnumber(L, 1))
 	{
 		idx = 3;
-		w = (int) luaL_checknumber(L, 1);
-		h = (int) luaL_checknumber(L, 2);
+		w = (int) luaL_checkinteger(L, 1);
+		h = (int) luaL_checkinteger(L, 2);
 	}
 
 	if (!lua_isnoneornil(L, idx))
@@ -232,7 +232,7 @@ int w_getFullscreenModes(lua_State *L)
 {
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 1))
-		displayindex = (int) luaL_checknumber(L, 1) - 1;
+		displayindex = (int) luaL_checkinteger(L, 1) - 1;
 	else
 	{
 		int x, y;
@@ -317,7 +317,7 @@ int w_getDesktopDimensions(lua_State *L)
 	int width = 0, height = 0;
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 1))
-		displayindex = (int) luaL_checknumber(L, 1) - 1;
+		displayindex = (int) luaL_checkinteger(L, 1) - 1;
 	else
 	{
 		int x, y;
@@ -331,12 +331,12 @@ int w_getDesktopDimensions(lua_State *L)
 
 int w_setPosition(lua_State *L)
 {
-	int x = (int) luaL_checknumber(L, 1);
-	int y = (int) luaL_checknumber(L, 2);
+	int x = (int) luaL_checkinteger(L, 1);
+	int y = (int) luaL_checkinteger(L, 2);
 
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 3))
-		displayindex = (int) luaL_checknumber(L, 3) - 1;
+		displayindex = (int) luaL_checkinteger(L, 3) - 1;
 	else
 	{
 		int x_unused, y_unused;
@@ -509,7 +509,7 @@ int w_showMessageBox(lua_State *L)
 		// Optional table entry specifying the button to use when enter is pressed.
 		lua_getfield(L, 3, "enterbutton");
 		if (!lua_isnoneornil(L, -1))
-			data.enterButtonIndex = (int) luaL_checknumber(L, -1) - 1;
+			data.enterButtonIndex = (int) luaL_checkinteger(L, -1) - 1;
 		else
 			data.enterButtonIndex = 0;
 		lua_pop(L, 1);
@@ -517,7 +517,7 @@ int w_showMessageBox(lua_State *L)
 		// Optional table entry specifying the button to use when esc is pressed.
 		lua_getfield(L, 3, "escapebutton");
 		if (!lua_isnoneornil(L, -1))
-			data.escapeButtonIndex = (int) luaL_checknumber(L, -1) - 1;
+			data.escapeButtonIndex = (int) luaL_checkinteger(L, -1) - 1;
 		else
 			data.escapeButtonIndex = (int) data.buttons.size() - 1;
 		lua_pop(L, 1);

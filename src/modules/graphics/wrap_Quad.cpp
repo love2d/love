@@ -77,7 +77,7 @@ int w_Quad_getTextureDimensions(lua_State *L)
 int w_Quad_setLayer(lua_State *L)
 {
 	Quad *quad = luax_checkquad(L, 1);
-	int layer = (int) luaL_checknumber(L, 2) - 1;
+	int layer = (int) luaL_checkinteger(L, 2) - 1;
 	quad->setLayer(layer);
 	return 0;
 }

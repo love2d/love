@@ -95,7 +95,7 @@ int w_Joystick_getHatCount(lua_State *L)
 int w_Joystick_getAxis(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	int axisindex = (int) luaL_checknumber(L, 2) - 1;
+	int axisindex = (int) luaL_checkinteger(L, 2) - 1;
 	lua_pushnumber(L, j->getAxis(axisindex));
 	return 1;
 }
@@ -114,7 +114,7 @@ int w_Joystick_getAxes(lua_State *L)
 int w_Joystick_getHat(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
-	int hatindex = (int) luaL_checknumber(L, 2) - 1;
+	int hatindex = (int) luaL_checkinteger(L, 2) - 1;
 
 	Joystick::Hat h = j->getHat(hatindex);
 
@@ -143,14 +143,14 @@ int w_Joystick_isDown(lua_State *L)
 		for (int i = 0; i < num; i++)
 		{
 			lua_rawgeti(L, 2, i + 1);
-			buttons.push_back((int) luaL_checknumber(L, -1) - 1);
+			buttons.push_back((int) luaL_checkinteger(L, -1) - 1);
 			lua_pop(L, 1);
 		}
 	}
 	else
 	{
 		for (int i = 0; i < num; i++)
-			buttons.push_back((int) luaL_checknumber(L, i + 2) - 1);
+			buttons.push_back((int) luaL_checkinteger(L, i + 2) - 1);
 	}
 
 	luax_pushboolean(L, j->isDown(buttons));
