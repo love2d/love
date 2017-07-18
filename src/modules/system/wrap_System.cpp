@@ -95,14 +95,7 @@ int w_vibrate(lua_State *L)
 
 int w_hasBackgroundMusic(lua_State *L)
 {
-	try
-	{
-		lua_pushboolean(L, instance()->hasBackgroundMusic());
-	}
-	catch (love::Exception &)
-	{
-		lua_pushnil(L);
-	}
+	lua_pushboolean(L, instance()->hasBackgroundMusic());
 	return 1;
 }
 

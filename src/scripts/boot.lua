@@ -374,8 +374,7 @@ function love.init()
 			video = true,
 		},
 		audio = {
-			mixmode = true,
-			playmuted = false,
+			mixwithsystem = true, -- Only relevant for Android / iOS.
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
@@ -495,7 +494,7 @@ function love.init()
 	end
 
 	if love.audio then
-		love.audio.setMixMode(c.audio.mixmode, c.audio.playmuted)
+		love.audio.setMixMode(c.audio.mixwithsystem)
 	end
 
 	-- Our first timestep, because window creation can take some time

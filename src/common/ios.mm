@@ -345,35 +345,26 @@ void vibrate()
 	}
 }
 
-void setAudioMixWithOthers(bool mixMode, bool playMuted)
+void setAudioMixWithOthers(bool mixEnabled)
 {
 	@autoreleasepool
 	{
-		NSString *category = AVAudioSessionCategoryPlayback;
-		AVAudioSessionCategoryOptions options = 0;
-		NSError *err = nil;
+		NSString *category = AVAudioSessionCategorySoloAmbient;
+		NSError *err;
 
-		if (mixMode)
-		{
-			if (playMuted)
-				options = AVAudioSessionCategoryOptionMixWithOthers;
-			else
-				category = AVAudioSessionCategoryAmbient;
-		}
-		else if (!playMuted)
-		{
-			category = AVAudioSessionCategorySoloAmbient;
-		}
+		if (mixEnabled)
+			category = AVAudioSessionCategoryAmbient;
 
-		[[AVAudioSession sharedInstance] setCategory:category withOptions:options error:&err];
-		if (err != nil)
+		if (![[AVAudioSession sharedInstance] setCategory:category error:&err])
 			NSLog(@"Error in AVAudioSession setCategory: %@", [err localizedDescription]);
 	}
 }
 
-bool audioShouldBeSilenced()
+bool hasBackgroundMusic()
 {
-	return [[AVAudioSession sharedInstance] secondaryAudioShouldBeSilencedHint];
+	if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(secondaryAudioShouldBeSilencedHint)])
+		return [[AVAudioSession sharedInstance] secondaryAudioShouldBeSilencedHint];
+	return false;
 }
 
 } // ios

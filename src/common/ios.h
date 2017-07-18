@@ -67,12 +67,12 @@ void vibrate();
 /**
  * Enable mix mode (e.g. with background music apps) and playback with a muted device.
  **/
-void setAudioMixWithOthers(bool mixMode, bool playMuted);
+void setAudioMixWithOthers(bool mixEnabled);
 
 /**
  * Returns whether another application is playing audio.
  **/
-bool audioShouldBeSilenced();
+bool hasBackgroundMusic();
 
 } // ios
 } // love

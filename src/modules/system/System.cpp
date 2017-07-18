@@ -189,9 +189,9 @@ bool System::hasBackgroundMusic() const
 #if defined(LOVE_ANDROID)
 	return love::android::hasBackgroundMusic();
 #elif defined(LOVE_IOS)
-	return love::ios::audioShouldBeSilenced();
+	return love::ios::hasBackgroundMusic();
 #else
-	throw love::Exception("Unsupported platform.");
+	return false;
 #endif
 }
 

@@ -299,7 +299,7 @@ int w_getDistanceModel(lua_State *L)
 #ifdef LOVE_IOS
 int w_setMixMode(lua_State *L)
 {
-	love::ios::setAudioMixWithOthers(lua_toboolean(L, 1), lua_toboolean(L, 2));
+	love::ios::setAudioMixWithOthers(lua_toboolean(L, 1));
 #else
 int w_setMixMode(lua_State *)
 {
