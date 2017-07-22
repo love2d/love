@@ -448,7 +448,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		else
 		{
 			sdlflags |= SDL_WINDOW_FULLSCREEN;
-			SDL_DisplayMode mode = {0, width, height, 0, 0};
+			SDL_DisplayMode mode = {0, width, height, 0, nullptr};
 
 			// Fullscreen window creation will bug out if no mode can be used.
 			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == nullptr)
@@ -738,9 +738,7 @@ const char *Window::getDisplayName(int displayindex) const
 	return name;
 }
 
-typedef Window::WindowSize WindowSize;
-
-std::vector<WindowSize> Window::getFullscreenSizes(int displayindex) const
+std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) const
 {
 	std::vector<WindowSize> sizes;
 
@@ -866,7 +864,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	int h = imgd->getHeight();
 	int pitch = imgd->getWidth() * 4;
 
-	SDL_Surface *sdlicon = 0;
+	SDL_Surface *sdlicon = nullptr;
 
 	{
 		// We don't want another thread modifying the ImageData mid-copy.
