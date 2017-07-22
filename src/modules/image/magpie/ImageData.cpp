@@ -20,6 +20,7 @@
 
 // LOVE
 #include "ImageData.h"
+#include "Image.h"
 
 namespace love
 {
@@ -28,19 +29,12 @@ namespace image
 namespace magpie
 {
 
-ImageData::ImageData(std::list<FormatHandler *> formatHandlers, love::filesystem::FileData *data)
-	: formatHandlers(formatHandlers)
-	, decodeHandler(nullptr)
+ImageData::ImageData(love::filesystem::FileData *data)
 {
-	for (FormatHandler *handler : formatHandlers)
-		handler->retain();
-
 	decode(data);
 }
 
-ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format)
-	: formatHandlers(formatHandlers)
-	, decodeHandler(nullptr)
+ImageData::ImageData(int width, int height, PixelFormat format)
 {
 	if (!validPixelFormat(format))
 		throw love::Exception("Unsupported pixel format for ImageData");
@@ -53,14 +47,9 @@ ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int h
 
 	// Set to black/transparency.
 	memset(data, 0, getSize());
-
-	for (FormatHandler *handler : formatHandlers)
-		handler->retain();
 }
 
-ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format, void *data, bool own)
-	: formatHandlers(formatHandlers)
-	, decodeHandler(nullptr)
+ImageData::ImageData(int width, int height, PixelFormat format, void *data, bool own)
 {
 	if (!validPixelFormat(format))
 		throw love::Exception("Unsupported pixel format for ImageData");
@@ -73,34 +62,23 @@ ImageData::ImageData(std::list<FormatHandler *> formatHandlers, int width, int h
 		this->data = (unsigned char *) data;
 	else
 		create(width, height, format, data);
-
-	for (FormatHandler *handler : formatHandlers)
-		handler->retain();
 }
 
 ImageData::ImageData(const ImageData &c)
-	: formatHandlers(c.formatHandlers)
-	, decodeHandler(nullptr)
 {
 	width = c.width;
 	height = c.height;
 	format = c.format;
-
-	for (FormatHandler *handler : formatHandlers)
-		handler->retain();
 
 	create(width, height, format, c.getData());
 }
 
 ImageData::~ImageData()
 {
-	if (decodeHandler)
+	if (decodeHandler.get())
 		decodeHandler->free(data);
 	else
 		delete[] data;
-
-	for (FormatHandler *handler : formatHandlers)
-		handler->release();
 }
 
 love::image::ImageData *ImageData::clone() const
@@ -133,7 +111,12 @@ void ImageData::decode(love::filesystem::FileData *data)
 	FormatHandler *decoder = nullptr;
 	FormatHandler::DecodedImage decodedimage;
 
-	for (FormatHandler *handler : formatHandlers)
+	auto module = dynamic_cast<Image *>(Module::getInstance<love::image::Image>(Module::M_IMAGE));
+
+	if (module == nullptr)
+		throw love::Exception("love.image must be loaded in order to decode an ImageData.");
+
+	for (FormatHandler *handler : module->getFormatHandlers())
 	{
 		if (handler->canDecode(data))
 		{
@@ -183,7 +166,12 @@ love::filesystem::FileData *ImageData::encode(EncodedFormat encodedFormat, const
 	rawimage.data = data;
 	rawimage.format = format;
 
-	for (FormatHandler *handler : formatHandlers)
+	auto module = dynamic_cast<Image *>(Module::getInstance<love::image::Image>(Module::M_IMAGE));
+
+	if (module == nullptr)
+		throw love::Exception("love.image must be loaded in order to encode an ImageData.");
+
+	for (FormatHandler *handler : module->getFormatHandlers())
 	{
 		if (handler->canEncode(format, encodedFormat))
 		{

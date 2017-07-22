@@ -79,17 +79,17 @@ const char *Image::getName() const
 
 love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
 {
-	return new ImageData(formatHandlers, data);
+	return new ImageData(data);
 }
 
 love::image::ImageData *Image::newImageData(int width, int height, PixelFormat format)
 {
-	return new ImageData(formatHandlers, width, height, format);
+	return new ImageData(width, height, format);
 }
 
 love::image::ImageData *Image::newImageData(int width, int height, PixelFormat format, void *data, bool own)
 {
-	return new ImageData(formatHandlers, width, height, format, data, own);
+	return new ImageData(width, height, format, data, own);
 }
 
 love::image::CompressedImageData *Image::newCompressedData(love::filesystem::FileData *data)
@@ -106,6 +106,11 @@ bool Image::isCompressed(love::filesystem::FileData *data)
 	}
 
 	return false;
+}
+
+const std::list<FormatHandler *> &Image::getFormatHandlers() const
+{
+	return formatHandlers;
 }
 
 } // magpie

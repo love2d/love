@@ -41,7 +41,7 @@ namespace magpie
  * multiple image libraries and determines the correct one to use on a
  * per-image basis at runtime.
  **/
-class Image : public love::image::Image
+class Image final : public love::image::Image
 {
 public:
 
@@ -49,15 +49,17 @@ public:
 	~Image();
 
 	// Implements Module.
-	const char *getName() const;
+	const char *getName() const override;
 
-	love::image::ImageData *newImageData(love::filesystem::FileData *data);
-	love::image::ImageData *newImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
-	love::image::ImageData *newImageData(int width, int height, PixelFormat format, void *data, bool own = false);
+	love::image::ImageData *newImageData(love::filesystem::FileData *data) override;
+	love::image::ImageData *newImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8) override;
+	love::image::ImageData *newImageData(int width, int height, PixelFormat format, void *data, bool own = false) override;
 
-	love::image::CompressedImageData *newCompressedData(love::filesystem::FileData *data);
+	love::image::CompressedImageData *newCompressedData(love::filesystem::FileData *data) override;
 
-	bool isCompressed(love::filesystem::FileData *data);
+	bool isCompressed(love::filesystem::FileData *data) override;
+
+	const std::list<FormatHandler *> &getFormatHandlers() const;
 
 private:
 

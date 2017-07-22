@@ -39,9 +39,9 @@ class ImageData : public love::image::ImageData
 {
 public:
 
-	ImageData(std::list<FormatHandler *> formatHandlers, love::filesystem::FileData *data);
-	ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
-	ImageData(std::list<FormatHandler *> formatHandlers, int width, int height, PixelFormat format, void *data, bool own);
+	ImageData(love::filesystem::FileData *data);
+	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
+	ImageData(int width, int height, PixelFormat format, void *data, bool own);
 	ImageData(const ImageData &c);
 	virtual ~ImageData();
 
@@ -57,12 +57,9 @@ private:
 	// Decode and load an encoded format.
 	void decode(love::filesystem::FileData *data);
 
-	// Image format handlers we can use for decoding and encoding.
-	std::list<FormatHandler *> formatHandlers;
-
 	// The format handler that was used to decode the ImageData. We need to know
 	// this so we can properly delete memory allocated by the decoder.
-	FormatHandler *decodeHandler;
+	StrongRef<FormatHandler> decodeHandler;
 
 }; // ImageData
 
