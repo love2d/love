@@ -1010,6 +1010,7 @@ void Graphics::present(void *screenshotCallbackData)
 	gl.stats.drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
 	canvasSwitchCount = 0;
+	drawCallsBatched = 0;
 }
 
 void Graphics::setScissor(const Rect &rect)

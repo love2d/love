@@ -216,6 +216,7 @@ public:
 	struct Stats
 	{
 		int drawCalls;
+		int drawCallsBatched;
 		int canvasSwitches;
 		int shaderSwitches;
 		int canvases;
@@ -900,6 +901,7 @@ protected:
 	std::vector<Canvas *> temporaryCanvases;
 
 	int canvasSwitchCount;
+	int drawCallsBatched;
 
 	Capabilities capabilities;
 

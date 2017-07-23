@@ -112,6 +112,7 @@ Graphics::Graphics()
 	, streamBufferState()
 	, projectionMatrix()
 	, canvasSwitchCount(0)
+	, drawCallsBatched(0)
 	, capabilities()
 {
 	transformStack.reserve(16);
@@ -879,6 +880,9 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		}
 	}
 
+	if (state.vertexCount > 0)
+		drawCallsBatched++;
+
 	state.vertexCount += req.vertexCount;
 	state.indexCount  += reqIndexCount;
 
@@ -1273,6 +1277,7 @@ Graphics::Stats Graphics::getStats() const
 		stats.drawCalls++;
 
 	stats.canvasSwitches = canvasSwitchCount;
+	stats.drawCallsBatched = drawCallsBatched;
 	stats.canvases = Canvas::canvasCount;
 	stats.images = Image::imageCount;
 	stats.fonts = Font::fontCount;

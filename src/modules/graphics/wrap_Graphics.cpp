@@ -2073,6 +2073,9 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.drawCalls);
 	lua_setfield(L, -2, "drawcalls");
 
+	lua_pushinteger(L, stats.drawCallsBatched);
+	lua_setfield(L, -2, "drawcallsbatched");
+
 	lua_pushinteger(L, stats.canvasSwitches);
 	lua_setfield(L, -2, "canvasswitches");
 
