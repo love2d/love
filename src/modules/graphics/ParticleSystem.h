@@ -569,6 +569,9 @@ public:
 	 **/
 	void update(float dt);
 
+	// Implements Drawable.
+	void draw(Graphics *gfx, const Matrix4 &m) override;
+
 	static bool getConstant(const char *in, AreaSpreadDistribution &out);
 	static bool getConstant(AreaSpreadDistribution in, const char *&out);
 
@@ -612,7 +615,7 @@ protected:
 		int quadIndex;
 	};
 
-	bool prepareDraw(Graphics *gfx);
+	virtual void drawInternal() const = 0;
 
 	// Pointer to the beginning of the allocated memory.
 	Particle *pMem;

@@ -97,7 +97,6 @@ public:
 
 	void setColor(Colorf c) override;
 
-	void setCanvas(const RenderTargets &rts) override;
 	void setCanvas() override;
 
 	void setScissor(const Rect &rect) override;
@@ -128,6 +127,7 @@ public:
 private:
 
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
+	void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;
 	void getAPIStats(int &drawcalls, int &shaderswitches) const override;
 

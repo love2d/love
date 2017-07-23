@@ -478,7 +478,7 @@ public:
 	Shader *getShader() const;
 
 	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
-	virtual void setCanvas(const RenderTargets &rts) = 0;
+	void setCanvas(const RenderTargets &rts);
 	void setCanvas(const RenderTargetsStrongRef &rts);
 	virtual void setCanvas() = 0;
 
@@ -860,6 +860,8 @@ protected:
 	};
 
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
+
+	virtual void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) = 0;
 
 	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &drawcalls, int &shaderswitches) const = 0;

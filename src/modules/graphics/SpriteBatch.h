@@ -32,6 +32,7 @@
 #include "Drawable.h"
 #include "Color.h"
 #include "Mesh.h"
+#include "vertex.h"
 
 namespace love
 {
@@ -105,6 +106,9 @@ public:
 	void setDrawRange();
 	bool getDrawRange(int &start, int &count) const;
 
+	// Implements Drawable.
+	void draw(Graphics *gfx, const Matrix4 &m) override;
+
 protected:
 
 	struct AttachedAttribute
@@ -118,6 +122,8 @@ protected:
 	 * Leaves existing sprite data intact when possible.
 	 **/
 	void setBufferSize(int newsize);
+
+	virtual void drawInternal(vertex::CommonFormat format, size_t indexbytestart, size_t indexcount) = 0;
 
 	StrongRef<Texture> texture;
 
@@ -133,7 +139,7 @@ protected:
 	bool color_active;
 
 	vertex::CommonFormat vertex_format;
-	size_t format_stride;
+	size_t vertex_stride;
 	
 	love::graphics::Buffer *array_buf;
 	QuadIndices quad_indices;

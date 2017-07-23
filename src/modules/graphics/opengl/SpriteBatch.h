@@ -37,8 +37,9 @@ public:
 	SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage);
 	virtual ~SpriteBatch();
 
-	// Implements Drawable.
-	void draw(Graphics *gfx, const Matrix4 &m) override;
+protected:
+
+	void drawInternal(vertex::CommonFormat format, size_t indexbytestart, size_t indexcount) override;
 
 }; // SpriteBatch
 

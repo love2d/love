@@ -564,9 +564,86 @@ bool Mesh::getDrawRange(int &start, int &count) const
 	return true;
 }
 
-void Mesh::draw(love::graphics::Graphics *gfx, const love::Matrix4 &m)
+void Mesh::draw(Graphics *gfx, const love::Matrix4 &m)
 {
 	drawInstanced(gfx, m, 1);
+}
+
+void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
+{
+	if (vertexCount <= 0 || instancecount <= 0)
+		return;
+
+	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
+		throw love::Exception("Instancing is not supported on this system.");
+
+	gfx->flushStreamDraws();
+
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
+	if (Shader::current && texture.get())
+		Shader::current->checkMainTexture(texture);
+
+	uint32 enabledattribs = 0;
+	uint32 instancedattribs = 0;
+
+	for (const auto &attrib : attachedAttributes)
+	{
+		if (!attrib.second.enabled)
+			continue;
+
+		love::graphics::Mesh *mesh = attrib.second.mesh;
+		int location = mesh->bindAttributeToShaderInput(attrib.second.index, attrib.first);
+
+		if (location >= 0)
+		{
+			uint32 bit = 1u << (uint32) location;
+
+			enabledattribs |= bit;
+
+			if (attrib.second.step == STEP_PER_INSTANCE)
+				instancedattribs |= bit;
+		}
+	}
+
+	// Not supported on all platforms or GL versions, I believe.
+	if (!(enabledattribs & ATTRIBFLAG_POS))
+		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
+
+	bool useindexbuffer = useIndexBuffer && ibo != nullptr && elementCount > 0;
+
+	int start = 0;
+	int count = 0;
+
+	if (useindexbuffer)
+	{
+		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
+		ibo->unmap();
+
+		start = std::min(std::max(0, rangeStart), (int) elementCount - 1);
+
+		count = (int) elementCount;
+		if (rangeCount > 0)
+			count = std::min(count, rangeCount);
+
+		count = std::min(count, (int) elementCount - start);
+	}
+	else
+	{
+		start = std::min(std::max(0, rangeStart), (int) vertexCount - 1);
+
+		count = (int) vertexCount;
+		if (rangeCount > 0)
+			count = std::min(count, rangeCount);
+
+		count = std::min(count, (int) vertexCount - start);
+	}
+
+	Graphics::TempTransform transform(gfx, m);
+
+	if (count > 0)
+		drawInternal(start, count, instancecount, useindexbuffer, enabledattribs, instancedattribs);
 }
 
 size_t Mesh::getAttribFormatSize(const AttribFormat &format)

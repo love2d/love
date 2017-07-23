@@ -51,52 +51,15 @@ SpriteBatch::~SpriteBatch()
 {
 }
 
-void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
+void SpriteBatch::drawInternal(vertex::CommonFormat format, size_t indexbytestart, size_t indexcount)
 {
-	using namespace vertex;
-
-	if (next == 0)
-		return;
-
-	gfx->flushStreamDraws();
-
-	if (texture.get())
-	{
-		if (Shader::isDefaultActive())
-		{
-			Shader::StandardShader defaultshader = Shader::STANDARD_DEFAULT;
-			if (texture->getTextureType() == TEXTURE_2D_ARRAY)
-				defaultshader = Shader::STANDARD_ARRAY;
-
-			Shader::attachDefault(defaultshader);
-		}
-
-		if (Shader::current)
-			Shader::current->checkMainTexture(texture);
-	}
-
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
-
-	Graphics::TempTransform transform(gfx, m);
-
-	gl.bindTextureToUnit(texture, 0, false);
-
-	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
-	array_buf->unmap();
-
-	CommonFormat format = vertex_format;
-
-	if (!color_active)
-	{
-		if (format == CommonFormat::XYf_STPf_RGBAub)
-			format = CommonFormat::XYf_STPf;
-		else
-			format = CommonFormat::XYf_STf;
-	}
 
 	uint32 enabledattribs = getFormatFlags(format);
 
-	gl.setVertexPointers(format, array_buf, format_stride, 0);
+	// We want attached attributes to override local attributes, so we should
+	// call this before binding attached attributes.
+	gl.setVertexPointers(format, array_buf, vertex_stride, 0);
 
 	for (const auto &it : attached_attributes)
 	{
@@ -114,26 +77,16 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	}
 
 	gl.useVertexAttribArrays(enabledattribs);
+	gl.bindTextureToUnit(texture, 0, false);
 
 	gl.prepareDraw();
 
-	int start = std::min(std::max(0, range_start), next - 1);
+	gl.bindBuffer(BUFFER_INDEX, (GLuint) quad_indices.getBuffer()->getHandle());
 
-	int count = next;
-	if (range_count > 0)
-		count = std::min(count, range_count);
+	const void *indices = BUFFER_OFFSET(indexbytestart);
+	GLenum gltype = OpenGL::getGLIndexDataType(quad_indices.getType());
 
-	count = std::min(count, next - start);
-
-	if (count > 0)
-	{
-		gl.bindBuffer(BUFFER_INDEX, (GLuint) quad_indices.getBuffer()->getHandle());
-
-		const void *indices = BUFFER_OFFSET(start * quad_indices.getElementSize());
-		GLenum gltype = OpenGL::getGLIndexDataType(quad_indices.getType());
-
-		gl.drawElements(GL_TRIANGLES, (GLsizei) quad_indices.getIndexCount(count), gltype, indices);
-	}
+	gl.drawElements(GL_TRIANGLES, (GLsizei) indexcount, gltype, indices);
 }
 
 } // opengl

@@ -62,9 +62,9 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	else
 		vertex_format = vertex::CommonFormat::XYf_STf_RGBAub;
 
-	format_stride = vertex::getFormatStride(vertex_format);
+	vertex_stride = vertex::getFormatStride(vertex_format);
 
-	size_t vertex_size = format_stride * 4 * size;
+	size_t vertex_size = vertex_stride * 4 * size;
 	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
 }
 
@@ -95,7 +95,7 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
 	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
-	size_t offset = (index == -1 ? next : index) * format_stride * 4;
+	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
 	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
 	m.transformXY(verts, quadpositions, 4);
@@ -107,7 +107,7 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 		verts[i].color = color;
 	}
 
-	array_buf->setMappedRangeModified(offset, format_stride * 4);
+	array_buf->setMappedRangeModified(offset, vertex_stride * 4);
 
 	// Increment counter.
 	if (index == -1)
@@ -141,7 +141,7 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
 	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
-	size_t offset = (index == -1 ? next : index) * format_stride * 4;
+	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
 	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
 	m.transformXY(verts, quadpositions, 4);
@@ -154,7 +154,7 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 		verts[i].color = color;
 	}
 
-	array_buf->setMappedRangeModified(offset, format_stride * 4);
+	array_buf->setMappedRangeModified(offset, vertex_stride * 4);
 
 	// Increment counter.
 	if (index == -1)
@@ -225,7 +225,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	if (newsize == size)
 		return;
 
-	size_t vertex_size = format_stride * 4 * newsize;
+	size_t vertex_size = vertex_stride * 4 * newsize;
 	love::graphics::Buffer *new_array_buf = nullptr;
 
 	int new_next = std::min(next, newsize);
@@ -236,7 +236,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getType(), array_buf->getUsage(), array_buf->getMapFlags());
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
-		size_t copy_size = format_stride * 4 * new_next;
+		size_t copy_size = vertex_stride * 4 * new_next;
 		array_buf->copyTo(0, copy_size, new_array_buf, 0);
 
 		quad_indices = QuadIndices(gfx, newsize);
@@ -305,6 +305,60 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 	start = range_start;
 	count = range_count;
 	return true;
+}
+
+void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
+{
+	using namespace vertex;
+
+	if (next == 0)
+		return;
+
+	gfx->flushStreamDraws();
+
+	if (texture.get())
+	{
+		if (Shader::isDefaultActive())
+		{
+			Shader::StandardShader defaultshader = Shader::STANDARD_DEFAULT;
+			if (texture->getTextureType() == TEXTURE_2D_ARRAY)
+				defaultshader = Shader::STANDARD_ARRAY;
+
+			Shader::attachDefault(defaultshader);
+		}
+
+		if (Shader::current)
+			Shader::current->checkMainTexture(texture);
+	}
+
+	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
+	array_buf->unmap();
+
+	CommonFormat format = vertex_format;
+
+	if (!color_active)
+	{
+		if (format == CommonFormat::XYf_STPf_RGBAub)
+			format = CommonFormat::XYf_STPf;
+		else
+			format = CommonFormat::XYf_STf;
+	}
+
+	int start = std::min(std::max(0, range_start), next - 1);
+
+	int count = next;
+	if (range_count > 0)
+		count = std::min(count, range_count);
+
+	count = std::min(count, next - start);
+
+	size_t indexbytestart = quad_indices.getIndexCount(start) * quad_indices.getElementSize();
+	size_t indexcount = quad_indices.getIndexCount(count);
+
+	Graphics::TempTransform transform(gfx, m);
+
+	if (count > 0)
+		drawInternal(format, indexbytestart, indexcount);
 }
 
 } // graphics

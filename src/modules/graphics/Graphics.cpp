@@ -430,6 +430,128 @@ void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
 	return setCanvas(targets);
 }
 
+void Graphics::setCanvas(const RenderTargets &rts)
+{
+	DisplayState &state = states.back();
+	int ncanvases = (int) rts.colors.size();
+
+	if (ncanvases == 0 && rts.depthStencil.canvas == nullptr)
+		return setCanvas();
+	else if (ncanvases == 0)
+		throw love::Exception("At least one color render target is required when using a custom depth/stencil buffer.");
+
+	const auto &prevRTs = state.renderTargets;
+
+	if (ncanvases == (int) prevRTs.colors.size())
+	{
+		bool modified = false;
+
+		for (int i = 0; i < ncanvases; i++)
+		{
+			if (rts.colors[i].canvas != prevRTs.colors[i].canvas.get()
+				|| rts.colors[i].slice != prevRTs.colors[i].slice
+				|| rts.colors[i].mipmap != prevRTs.colors[i].mipmap)
+			{
+				modified = true;
+				break;
+			}
+		}
+
+		if (!modified && (rts.depthStencil.canvas != prevRTs.depthStencil.canvas
+						  || rts.depthStencil.slice != prevRTs.depthStencil.slice
+						  || rts.depthStencil.mipmap != prevRTs.depthStencil.mipmap))
+		{
+			modified = true;
+		}
+
+		if (rts.temporaryRTFlags != prevRTs.temporaryRTFlags)
+			modified = true;
+
+		if (!modified)
+			return;
+	}
+
+	if (ncanvases > capabilities.limits[LIMIT_MULTI_CANVAS])
+		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
+
+	love::graphics::Canvas *firstcanvas = rts.colors[0].canvas;
+
+	bool multiformatsupported = capabilities.features[FEATURE_MULTI_CANVAS_FORMATS];
+	PixelFormat firstformat = firstcanvas->getPixelFormat();
+
+	if (isPixelFormatDepthStencil(firstformat))
+		throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
+
+	if (rts.colors[0].mipmap < 0 || rts.colors[0].mipmap >= firstcanvas->getMipmapCount())
+		throw love::Exception("Invalid mipmap level %d.", rts.colors[0].mipmap + 1);
+
+	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
+	int pixelw = firstcanvas->getPixelWidth(rts.colors[0].mipmap);
+	int pixelh = firstcanvas->getPixelHeight(rts.colors[0].mipmap);
+
+	for (int i = 1; i < ncanvases; i++)
+	{
+		love::graphics::Canvas *c = rts.colors[i].canvas;
+		PixelFormat format = c->getPixelFormat();
+		int mip = rts.colors[i].mipmap;
+
+		if (mip < 0 || mip >= c->getMipmapCount())
+			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+
+		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
+			throw love::Exception("All canvases must have the same pixel dimensions.");
+
+		if (!multiformatsupported && format != firstformat)
+			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
+
+		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
+			throw love::Exception("All Canvases must have the same MSAA value.");
+
+		if (isPixelFormatDepthStencil(format))
+			throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
+
+		if (format == PIXELFORMAT_sRGBA8)
+			hasSRGBcanvas = true;
+	}
+
+	if (rts.depthStencil.canvas != nullptr)
+	{
+		love::graphics::Canvas *c = rts.depthStencil.canvas;
+		int mip = rts.depthStencil.mipmap;
+
+		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
+			throw love::Exception("Only depth/stencil format Canvases can be used with the 'depthstencil' field of the table passed into setCanvas.");
+
+		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
+			throw love::Exception("All canvases must have the same pixel dimensions.");
+
+		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
+			throw love::Exception("All Canvases must have the same MSAA value.");
+
+		if (mip < 0 || mip >= c->getMipmapCount())
+			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+	}
+
+	int w = firstcanvas->getWidth(rts.colors[0].mipmap);
+	int h = firstcanvas->getHeight(rts.colors[0].mipmap);
+
+	flushStreamDraws();
+	setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
+
+	RenderTargetsStrongRef refs;
+	refs.colors.reserve(rts.colors.size());
+
+	for (auto c : rts.colors)
+		refs.colors.emplace_back(c.canvas, c.slice);
+
+	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.canvas, rts.depthStencil.slice);
+	refs.temporaryRTFlags = rts.temporaryRTFlags;
+
+	std::swap(state.renderTargets, refs);
+
+	canvasSwitchCount++;
+}
+
 Graphics::RenderTargets Graphics::getCanvas() const
 {
 	const auto &curRTs = states.back().renderTargets;

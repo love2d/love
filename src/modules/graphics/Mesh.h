@@ -195,10 +195,10 @@ public:
 
 	virtual int bindAttributeToShaderInput(int attributeindex, const std::string &inputname) = 0;
 
-	virtual void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount) = 0;
-
 	// Implements Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
+
+	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
@@ -222,6 +222,8 @@ protected:
 	void setupAttachedAttributes();
 	void calculateAttributeSizes();
 	size_t getAttributeOffset(size_t attribindex) const;
+
+	virtual void drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const = 0;
 
 	static size_t getAttribFormatSize(const AttribFormat &format);
 	static std::vector<AttribFormat> getDefaultVertexFormat();

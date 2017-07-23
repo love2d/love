@@ -50,20 +50,9 @@ ParticleSystem *ParticleSystem::clone()
 	return new ParticleSystem(*this);
 }
 
-void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
+void ParticleSystem::drawInternal() const
 {
 	using namespace vertex;
-
-	if (!prepareDraw(gfx))
-		return;
-
-	Graphics::TempTransform transform(gfx, m);
-
-	if (Shader::isDefaultActive())
-		Shader::attachDefault(Shader::STANDARD_DEFAULT);
-
-	if (Shader::current && texture.get())
-		Shader::current->checkMainTexture(texture);
 
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 

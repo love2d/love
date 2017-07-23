@@ -151,7 +151,7 @@ IndexDataType QuadIndices::getType(size_t s) const
 	return vertex::getIndexDataTypeFromMax(getIndexCount(s));
 }
 
-size_t QuadIndices::getElementSize()
+size_t QuadIndices::getElementSize() const
 {
 	return elementSize;
 }
