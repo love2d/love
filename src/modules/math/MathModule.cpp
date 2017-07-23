@@ -32,6 +32,9 @@
 #include <list>
 #include <iostream>
 
+// C
+#include <time.h>
+
 using std::list;
 using love::Vector2;
 
@@ -359,6 +362,10 @@ Math::Math()
 {
 	// prevent the runtime from free()-ing this
 	retain();
+
+	RandomGenerator::Seed seed;
+	seed.b64 = (uint64) time(nullptr);
+	rng.setSeed(seed);
 }
 
 Math::~Math()

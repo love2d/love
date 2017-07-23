@@ -511,11 +511,6 @@ function love.init()
 end
 
 function love.run()
-
-	if love.math then
-		love.math.setRandomSeed(os.time())
-	end
-
 	if love.load then love.load(arg) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
