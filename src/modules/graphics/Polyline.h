@@ -57,13 +57,13 @@ public:
 
 	/**
 	 * @param vertices      Vertices defining the core line segments
-	 * @param count         Number of coordinates (= size of the array vertices)
+	 * @param count         Number of vertices
 	 * @param size_hint     Expected number of vertices of the rendering sleeve around the core line.
 	 * @param halfwidth     linewidth / 2.
 	 * @param pixel_size    Dimension of one pixel on the screen in world coordinates.
 	 * @param draw_overdraw Fake antialias the line.
 	 */
-	void render(const float *vertices, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw);
+	void render(const Vector2 *vertices, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw);
 
 	/** Draws the line on the screen
 	 */
@@ -112,9 +112,9 @@ public:
 		: Polyline(vertex::TriangleIndexMode::QUADS)
 	{}
 
-	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
+	void render(const Vector2 *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
 	{
-		Polyline::render(vertices, count, 2 * count - 4, halfwidth, pixel_size, draw_overdraw);
+		Polyline::render(vertices, count, 4 * count - 4, halfwidth, pixel_size, draw_overdraw);
 
 		// discard the first and last two vertices. (these are redundant)
 		for (size_t i = 0; i < vertex_count - 4; ++i)
@@ -149,9 +149,9 @@ class MiterJoinPolyline : public Polyline
 {
 public:
 
-	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
+	void render(const Vector2 *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
 	{
-		Polyline::render(vertices, count, count, halfwidth, pixel_size, draw_overdraw);
+		Polyline::render(vertices, count, 2 * count, halfwidth, pixel_size, draw_overdraw);
 	}
 
 protected:
@@ -171,9 +171,9 @@ class BevelJoinPolyline : public Polyline
 {
 public:
 
-	void render(const float *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
+	void render(const Vector2 *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)
 	{
-		Polyline::render(vertices, count, 2 * count - 4, halfwidth, pixel_size, draw_overdraw);
+		Polyline::render(vertices, count, 4 * count - 4, halfwidth, pixel_size, draw_overdraw);
 	}
 
 protected:

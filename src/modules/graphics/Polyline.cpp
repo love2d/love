@@ -33,7 +33,7 @@ namespace love
 namespace graphics
 {
 
-void Polyline::render(const float *coords, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw)
+void Polyline::render(const Vector2 *coords, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw)
 {
 	static std::vector<Vector2> anchors;
 	anchors.clear();
@@ -48,26 +48,26 @@ void Polyline::render(const float *coords, size_t count, size_t size_hint, float
 		halfwidth -= pixel_size * 0.3f;
 
 	// compute sleeve
-	bool is_looping = (coords[0] == coords[count - 2]) && (coords[1] == coords[count - 1]);
+	bool is_looping = (coords[0] == coords[count - 1]);
 	Vector2 s;
 	if (!is_looping) // virtual starting point at second point mirrored on first point
-		s = Vector2(coords[2] - coords[0], coords[3] - coords[1]);
+		s = coords[1] - coords[0];
 	else // virtual starting point at last vertex
-		s = Vector2(coords[0] - coords[count - 4], coords[1] - coords[count - 3]);
+		s = coords[0] - coords[count - 2];
 
 	float len_s = s.getLength();
 	Vector2 ns = s.getNormal(halfwidth / len_s);
 
-	Vector2 q, r(coords[0], coords[1]);
-	for (size_t i = 0; i + 3 < count; i += 2)
+	Vector2 q, r(coords[0]);
+	for (size_t i = 0; i + 1 < count; i++)
 	{
 		q = r;
-		r = Vector2(coords[i + 2], coords[i + 3]);
+		r = coords[i + 1];
 		renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
 	}
 
 	q = r;
-	r = is_looping ? Vector2(coords[2], coords[3]) : r + s;
+	r = is_looping ? coords[1] : r + s;
 	renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
 
 	vertex_count = normals.size();

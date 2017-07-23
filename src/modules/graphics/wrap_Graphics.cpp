@@ -2279,23 +2279,23 @@ int w_points(lua_State *L)
 	if (args % 2 != 0 && !is_table_of_tables)
 		return luaL_error(L, "Number of vertex components must be a multiple of two");
 
-	int numpoints = args / 2;
+	int numpositions = args / 2;
 	if (is_table_of_tables)
-		numpoints = args;
+		numpositions = args;
 
-	float *coords = nullptr;
+	Vector2 *positions = nullptr;
 	Colorf *colors = nullptr;
 
 	if (is_table_of_tables)
 	{
-		size_t datasize = (sizeof(float) * 2 + sizeof(Colorf)) * numpoints;
+		size_t datasize = (sizeof(Vector2) + sizeof(Colorf)) * numpositions;
 		uint8 *data = instance()->getScratchBuffer<uint8>(datasize);
 
-		coords = (float *) data;
-		colors = (Colorf *) (data + sizeof(float) * numpoints * 2);
+		positions = (Vector2 *) data;
+		colors = (Colorf *) (data + sizeof(Vector2) * numpositions);
 	}
 	else
-		coords = instance()->getScratchBuffer<float>(numpoints * 2);
+		positions = instance()->getScratchBuffer<Vector2>(numpositions);
 
 	if (is_table)
 	{
@@ -2308,13 +2308,13 @@ int w_points(lua_State *L)
 				for (int j = 1; j <= 6; j++)
 					lua_rawgeti(L, -j, j);
 
-				coords[i * 2 + 0] = luax_tofloat(L, -6);
-				coords[i * 2 + 1] = luax_tofloat(L, -5);
+				positions[i].x = luax_tofloat(L, -6);
+				positions[i].y = luax_tofloat(L, -5);
 
-				colors[i].r = luaL_optnumber(L, -4, 1.0);
-				colors[i].g = luaL_optnumber(L, -3, 1.0);
-				colors[i].b = luaL_optnumber(L, -2, 1.0);
-				colors[i].a = luaL_optnumber(L, -1, 1.0);
+				colors[i].r = (float) luaL_optnumber(L, -4, 1.0);
+				colors[i].g = (float) luaL_optnumber(L, -3, 1.0);
+				colors[i].b = (float) luaL_optnumber(L, -2, 1.0);
+				colors[i].a = (float) luaL_optnumber(L, -1, 1.0);
 
 				lua_pop(L, 7);
 			}
@@ -2322,21 +2322,26 @@ int w_points(lua_State *L)
 		else
 		{
 			// points({x1, y1, x2, y2, ...})
-			for (int i = 0; i < args; i++)
+			for (int i = 0; i < numpositions; i++)
 			{
-				lua_rawgeti(L, 1, i + 1);
-				coords[i] = luax_tofloat(L, -1);
-				lua_pop(L, 1);
+				lua_rawgeti(L, 1, i * 2 + 1);
+				lua_rawgeti(L, 1, i * 2 + 2);
+				positions[i].x = luax_tofloat(L, -2);
+				positions[i].y = luax_tofloat(L, -1);
+				lua_pop(L, 2);
 			}
 		}
 	}
 	else
 	{
-		for (int i = 0; i < args; i++)
-			coords[i] = luax_tofloat(L, i + 1);
+		for (int i = 0; i < numpositions; i++)
+		{
+			positions[i].x = luax_tofloat(L, i * 2 + 1);
+			positions[i].y = luax_tofloat(L, i * 2 + 2);
+		}
 	}
 
-	luax_catchexcept(L, [&](){ instance()->points(coords, colors, numpoints); });
+	luax_catchexcept(L, [&](){ instance()->points(positions, colors, numpositions); });
 	return 0;
 }
 
@@ -2355,24 +2360,31 @@ int w_line(lua_State *L)
 	else if (args < 4)
 		return luaL_error(L, "Need at least two vertices to draw a line");
 
-	float *coords = instance()->getScratchBuffer<float>(args);
+	int numvertices = args / 2;
+
+	Vector2 *coords = instance()->getScratchBuffer<Vector2>(numvertices);
 	if (is_table)
 	{
-		for (int i = 0; i < args; ++i)
+		for (int i = 0; i < numvertices; ++i)
 		{
-			lua_rawgeti(L, 1, i + 1);
-			coords[i] = luax_tofloat(L, -1);
-			lua_pop(L, 1);
+			lua_rawgeti(L, 1, (i * 2) + 1);
+			lua_rawgeti(L, 1, (i * 2) + 2);
+			coords[i].x = luax_tofloat(L, -2);
+			coords[i].y = luax_tofloat(L, -1);
+			lua_pop(L, 2);
 		}
 	}
 	else
 	{
-		for (int i = 0; i < args; ++i)
-			coords[i] = luax_tofloat(L, i + 1);
+		for (int i = 0; i < numvertices; ++i)
+		{
+			coords[i].x = luax_tofloat(L, (i * 2) + 1);
+			coords[i].y = luax_tofloat(L, (i * 2) + 2);
+		}
 	}
 
 	luax_catchexcept(L,
-		[&](){ instance()->polyline(coords, args); }
+		[&](){ instance()->polyline(coords, numvertices); }
 	);
 
 	return 0;
@@ -2513,28 +2525,34 @@ int w_polygon(lua_State *L)
 	else if (args < 6)
 		return luaL_error(L, "Need at least three vertices to draw a polygon");
 
+	int numvertices = args / 2;
+
 	// fetch coords
-	float *coords = instance()->getScratchBuffer<float>(args + 2);
+	Vector2 *coords = instance()->getScratchBuffer<Vector2>(numvertices + 1);
 	if (is_table)
 	{
-		for (int i = 0; i < args; ++i)
+		for (int i = 0; i < numvertices; ++i)
 		{
-			lua_rawgeti(L, 2, i + 1);
-			coords[i] = luax_tofloat(L, -1);
-			lua_pop(L, 1);
+			lua_rawgeti(L, 2, (i * 2) + 1);
+			lua_rawgeti(L, 2, (i * 2) + 2);
+			coords[i].x = luax_tofloat(L, -2);
+			coords[i].y = luax_tofloat(L, -1);
+			lua_pop(L, 2);
 		}
 	}
 	else
 	{
-		for (int i = 0; i < args; ++i)
-			coords[i] = luax_tofloat(L, i + 2);
+		for (int i = 0; i < numvertices; ++i)
+		{
+			coords[i].x = luax_tofloat(L, (i * 2) + 2);
+			coords[i].y = luax_tofloat(L, (i * 2) + 3);
+		}
 	}
 
 	// make a closed loop
-	coords[args]   = coords[0];
-	coords[args+1] = coords[1];
+	coords[numvertices] = coords[0];
 
-	luax_catchexcept(L, [&](){ instance()->polygon(mode, coords, args+2); });
+	luax_catchexcept(L, [&](){ instance()->polygon(mode, coords, numvertices+1); });
 	return 0;
 }
 

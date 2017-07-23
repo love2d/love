@@ -951,7 +951,7 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, Font *font, f
  * Primitives (points, shapes, lines).
  **/
 
-void Graphics::points(const float *coords, const Colorf *colors, size_t numpoints)
+void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t numpoints)
 {
 	const Matrix4 &t = getTransform();
 	bool is2D = t.isAffine2DTransform();
@@ -965,9 +965,9 @@ void Graphics::points(const float *coords, const Colorf *colors, size_t numpoint
 	StreamVertexData data = requestStreamDraw(req);
 
 	if (is2D)
-		t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+		t.transformXY((Vector2 *) data.stream[0], positions, req.vertexCount);
 	else
-		t.transformXY0((Vector3 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+		t.transformXY0((Vector3 *) data.stream[0], positions, req.vertexCount);
 
 	Color *colordata = (Color *) data.stream[1];
 
@@ -1008,7 +1008,7 @@ int Graphics::calculateEllipsePoints(float rx, float ry) const
 	return std::max(points, 8);
 }
 
-void Graphics::polyline(const float *coords, size_t count)
+void Graphics::polyline(const Vector2 *vertices, size_t count)
 {
 	float halfwidth = getLineWidth() * 0.5f;
 	LineJoin linejoin = getLineJoin();
@@ -1019,27 +1019,27 @@ void Graphics::polyline(const float *coords, size_t count)
 	if (linejoin == LINE_JOIN_NONE)
 	{
 		NoneJoinPolyline line;
-		line.render(coords, count, halfwidth, pixelsize, linestyle == LINE_SMOOTH);
+		line.render(vertices, count, halfwidth, pixelsize, linestyle == LINE_SMOOTH);
 		line.draw(this);
 	}
 	else if (linejoin == LINE_JOIN_BEVEL)
 	{
 		BevelJoinPolyline line;
-		line.render(coords, count, halfwidth, pixelsize, linestyle == LINE_SMOOTH);
+		line.render(vertices, count, halfwidth, pixelsize, linestyle == LINE_SMOOTH);
 		line.draw(this);
 	}
 	else if (linejoin == LINE_JOIN_MITER)
 	{
 		MiterJoinPolyline line;
-		line.render(coords, count, halfwidth, pixelsize, linestyle == LINE_SMOOTH);
+		line.render(vertices, count, halfwidth, pixelsize, linestyle == LINE_SMOOTH);
 		line.draw(this);
 	}
 }
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 {
-	float coords[] = {x,y, x,y+h, x+w,y+h, x+w,y, x,y};
-	polygon(mode, coords, 5 * 2);
+	Vector2 coords[] = {Vector2(x,y), Vector2(x,y+h), Vector2(x+w,y+h), Vector2(x+w,y), Vector2(x,y)};
+	polygon(mode, coords, 5);
 }
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points)
@@ -1062,44 +1062,43 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 	const float half_pi = static_cast<float>(LOVE_M_PI / 2);
 	float angle_shift = half_pi / ((float) points + 1.0f);
 
-	int num_coords = (points + 2) * 8;
-	float *coords = getScratchBuffer<float>(num_coords + 2);
+	int num_coords = (points + 2) * 4;
+	Vector2 *coords = getScratchBuffer<Vector2>(num_coords + 1);
 	float phi = .0f;
 
 	for (int i = 0; i <= points + 2; ++i, phi += angle_shift)
 	{
-		coords[2 * i + 0] = x + rx * (1 - cosf(phi));
-		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
+		coords[i].x = x + rx * (1 - cosf(phi));
+		coords[i].y = y + ry * (1 - sinf(phi));
 	}
 
 	phi = half_pi;
 
 	for (int i = points + 2; i <= 2 * (points + 2); ++i, phi += angle_shift)
 	{
-		coords[2 * i + 0] = x + w - rx * (1 + cosf(phi));
-		coords[2 * i + 1] = y + ry * (1 - sinf(phi));
+		coords[i].x = x + w - rx * (1 + cosf(phi));
+		coords[i].y = y +     ry * (1 - sinf(phi));
 	}
 
 	phi = 2 * half_pi;
 
 	for (int i = 2 * (points + 2); i <= 3 * (points + 2); ++i, phi += angle_shift)
 	{
-		coords[2 * i + 0] = x + w - rx * (1 + cosf(phi));
-		coords[2 * i + 1] = y + h - ry * (1 + sinf(phi));
+		coords[i].x = x + w - rx * (1 + cosf(phi));
+		coords[i].y = y + h - ry * (1 + sinf(phi));
 	}
 
-	phi =  3 * half_pi;
+	phi = 3 * half_pi;
 
 	for (int i = 3 * (points + 2); i <= 4 * (points + 2); ++i, phi += angle_shift)
 	{
-		coords[2 * i + 0] = x + rx * (1 - cosf(phi));
-		coords[2 * i + 1] = y + h - ry * (1 + sinf(phi));
+		coords[i].x = x +     rx * (1 - cosf(phi));
+		coords[i].y = y + h - ry * (1 + sinf(phi));
 	}
 
-	coords[num_coords + 0] = coords[0];
-	coords[num_coords + 1] = coords[1];
+	coords[num_coords] = coords[0];
 
-	polygon(mode, coords, num_coords + 2);
+	polygon(mode, coords, num_coords + 1);
 }
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry)
@@ -1124,15 +1123,14 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 	float angle_shift = (two_pi / points);
 	float phi = .0f;
 
-	float *coords = getScratchBuffer<float>(2 * (points + 1));
+	Vector2 *coords = getScratchBuffer<Vector2>(points + 1);
 	for (int i = 0; i < points; ++i, phi += angle_shift)
 	{
-		coords[2*i+0] = x + a * cosf(phi);
-		coords[2*i+1] = y + b * sinf(phi);
+		coords[i].x = x + a * cosf(phi);
+		coords[i].y = y + b * sinf(phi);
 	}
 
-	coords[2*points+0] = coords[0];
-	coords[2*points+1] = coords[1];
+	coords[points] = coords[0];
 
 	polygon(mode, coords, (points + 1) * 2);
 }
@@ -1173,45 +1171,43 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 
 	float phi = angle1;
 
-	float *coords = nullptr;
+	Vector2 *coords = nullptr;
 	int num_coords = 0;
 
-	const auto createPoints = [&](float *coordinates)
+	const auto createPoints = [&](Vector2 *coordinates)
 	{
 		for (int i = 0; i <= points; ++i, phi += angle_shift)
 		{
-			coordinates[2 * i + 0] = x + radius * cosf(phi);
-			coordinates[2 * i + 1] = y + radius * sinf(phi);
+			coordinates[i].x = x + radius * cosf(phi);
+			coordinates[i].y = y + radius * sinf(phi);
 		}
 	};
 
 	if (arcmode == ARC_PIE)
 	{
-		num_coords = (points + 3) * 2;
-		coords = getScratchBuffer<float>(num_coords);
+		num_coords = points + 3;
+		coords = getScratchBuffer<Vector2>(num_coords);
 
-		coords[0] = coords[num_coords - 2] = x;
-		coords[1] = coords[num_coords - 1] = y;
+		coords[0] = coords[num_coords - 1] = Vector2(x, y);
 
-		createPoints(coords + 2);
+		createPoints(coords + 1);
 	}
 	else if (arcmode == ARC_OPEN)
 	{
-		num_coords = (points + 1) * 2;
-		coords = getScratchBuffer<float>(num_coords);
+		num_coords = points + 1;
+		coords = getScratchBuffer<Vector2>(num_coords);
 
 		createPoints(coords);
 	}
 	else // ARC_CLOSED
 	{
-		num_coords = (points + 2) * 2;
-		coords = getScratchBuffer<float>(num_coords);
+		num_coords = points + 2;
+		coords = getScratchBuffer<Vector2>(num_coords);
 
 		createPoints(coords);
 
 		// Connect the ends of the arc.
-		coords[num_coords - 2] = coords[0];
-		coords[num_coords - 1] = coords[1];
+		coords[num_coords - 1] = coords[0];
 	}
 
 	polygon(drawmode, coords, num_coords);
@@ -1229,13 +1225,10 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 	arc(drawmode, arcmode, x, y, radius, angle1, angle2, (int) (points + 0.5f));
 }
 
-/// @param mode    the draw mode
-/// @param coords  the coordinate array
-/// @param count   the number of coordinates/size of the array
-void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
+void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count)
 {
 	// coords is an array of a closed loop of vertices, i.e.
-	// coords[count-2] = coords[0], coords[count-1] = coords[1]
+	// coords[count-1] == coords[0]
 	if (mode == DRAW_LINE)
 	{
 		polyline(coords, count);
@@ -1249,14 +1242,14 @@ void Graphics::polygon(DrawMode mode, const float *coords, size_t count)
 		req.formats[0] = vertex::getSinglePositionFormat(is2D);
 		req.formats[1] = vertex::CommonFormat::RGBAub;
 		req.indexMode = vertex::TriangleIndexMode::FAN;
-		req.vertexCount = (int)count/2 - 1;
+		req.vertexCount = (int)count - 1;
 
 		StreamVertexData data = requestStreamDraw(req);
 
 		if (is2D)
-			t.transformXY((Vector2 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+			t.transformXY((Vector2 *) data.stream[0], coords, req.vertexCount);
 		else
-			t.transformXY0((Vector3 *) data.stream[0], (const Vector2 *) coords, req.vertexCount);
+			t.transformXY0((Vector3 *) data.stream[0], coords, req.vertexCount);
 		
 		Color c = toColor(getColor());
 		Color *colordata = (Color *) data.stream[1];
