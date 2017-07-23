@@ -30,10 +30,10 @@ namespace timer
 
 #define instance() (Module::getInstance<Timer>(Module::M_TIMER))
 
-int w_step(lua_State *)
+int w_step(lua_State *L)
 {
-	instance()->step();
-	return 0;
+	lua_pushnumber(L, instance()->step());
+	return 1;
 }
 
 int w_getDelta(lua_State *L)

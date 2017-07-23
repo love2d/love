@@ -61,7 +61,7 @@ Timer::Timer()
 	prevFpsUpdate = currTime = getTime();
 }
 
-void Timer::step()
+double Timer::step()
 {
 	// Frames rendered
 	frames++;
@@ -84,6 +84,8 @@ void Timer::step()
 		prevFpsUpdate = currTime;
 		frames = 0;
 	}
+
+	return dt;
 }
 
 void Timer::sleep(double seconds) const

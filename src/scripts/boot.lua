@@ -535,8 +535,7 @@ function love.run()
 
 		-- Update dt, as we'll be passing it to update
 		if love.timer then
-			love.timer.step()
-			dt = love.timer.getDelta()
+			dt = love.timer.step()
 		end
 
 		-- Call update and draw
