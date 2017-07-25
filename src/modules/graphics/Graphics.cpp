@@ -1136,7 +1136,7 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 
 	coords[points] = coords[0];
 
-	polygon(mode, coords, (points + 1) * 2);
+	polygon(mode, coords, points + 1);
 }
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b)
