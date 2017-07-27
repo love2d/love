@@ -1041,7 +1041,7 @@ void Source::stop(const std::vector<love::audio::Source*> &sources)
 			sourceIds.push_back(source->source);
 	}
 
-	alSourceStopv((ALsizei) sources.size(), &sourceIds[0]);
+	alSourceStopv((ALsizei) sourceIds.size(), &sourceIds[0]);
 
 	for (auto &_source : sources)
 	{
@@ -1068,7 +1068,7 @@ void Source::pause(const std::vector<love::audio::Source*> &sources)
 			sourceIds.push_back(source->source);
 	}
 
-	alSourcePausev((ALsizei) sources.size(), &sourceIds[0]);
+	alSourcePausev((ALsizei) sourceIds.size(), &sourceIds[0]);
 }
 
 std::vector<love::audio::Source*> Source::pause(Pool *pool)
