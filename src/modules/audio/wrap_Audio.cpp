@@ -115,16 +115,34 @@ static std::vector<Source*> readSourceList(lua_State *L, int n)
 	return sources;
 }
 
+static std::vector<Source*> readSourceVararg(lua_State *L, int i)
+{
+	const int top = lua_gettop(L);
+
+	if (i < 0)
+		i += top + 1;
+
+	int items = top - i + 1;
+	std::vector<Source*> sources(items);
+
+	for (int pos = 0; i <= top; i++, pos++)
+		sources[pos] = luax_checksource(L, i);
+
+	return sources;
+}
+
 int w_play(lua_State *L)
 {
 	if (lua_istable(L, 1))
-	{
 		luax_pushboolean(L, instance()->play(readSourceList(L, 1)));
-		return 1;
+	else if (lua_gettop(L) > 1)
+		luax_pushboolean(L, instance()->play(readSourceVararg(L, 1)));
+	else
+	{
+		Source *s = luax_checksource(L, 1);
+		luax_pushboolean(L, instance()->play(s));
 	}
 
-	Source *s = luax_checksource(L, 1);
-	luax_pushboolean(L, instance()->play(s));
 	return 1;
 }
 
@@ -134,6 +152,8 @@ int w_stop(lua_State *L)
 		instance()->stop();
 	else if (lua_istable(L, 1))
 		instance()->stop(readSourceList(L, 1));
+	else if (lua_gettop(L) > 1)
+		instance()->stop(readSourceVararg(L, 1));
 	else
 	{
 		Source *s = luax_checksource(L, 1);
@@ -158,6 +178,8 @@ int w_pause(lua_State *L)
 	}
 	else if (lua_istable(L, 1))
 		instance()->pause(readSourceList(L, 1));
+	else if (lua_gettop(L) > 1)
+		instance()->pause(readSourceVararg(L, 1));
 	else
 	{
 		Source *s = luax_checksource(L, 1);
