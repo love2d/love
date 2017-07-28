@@ -36,7 +36,6 @@ class RecordingDevice : public love::audio::RecordingDevice
 public:
 	RecordingDevice(const char *name);
 	virtual ~RecordingDevice();
-	virtual bool start();
 	virtual bool start(int samples, int sampleRate, int bitDepth, int channels);
 	virtual void stop();
 	virtual love::sound::SoundData *getData();

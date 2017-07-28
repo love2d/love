@@ -38,11 +38,6 @@ RecordingDevice::~RecordingDevice()
 {
 }
 
-bool RecordingDevice::start()
-{
-	return false;
-}
-
 bool RecordingDevice::start(int, int, int, int)
 {
 	return false;

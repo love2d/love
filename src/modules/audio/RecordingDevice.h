@@ -37,14 +37,13 @@ public:
 
 	static love::Type type;
 
+	static const int DEFAULT_SAMPLES = 8192;
+	static const int DEFAULT_SAMPLE_RATE = 8000;
+	static const int DEFAULT_BIT_DEPTH = 16;
+	static const int DEFAULT_CHANNELS = 1;
+
 	RecordingDevice();
 	virtual ~RecordingDevice();
-
-	/**
-	 * Begins audio input recording process. using default (previous) parameters.
-	 * @return True if recording started successfully.
-	 **/
-	virtual bool start() = 0;
 
 	/**
 	 * Begins audio input recording process.
@@ -96,6 +95,7 @@ public:
 	 * @return True if currently recording.
 	 **/
 	virtual bool isRecording() const = 0;
+
 }; //RecordingDevice
 
 } //audio

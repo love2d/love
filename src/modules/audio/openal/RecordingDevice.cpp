@@ -56,19 +56,8 @@ RecordingDevice::~RecordingDevice()
 	alcCaptureCloseDevice(device);
 }
 
-bool RecordingDevice::start()
-{
-	return start(samples, sampleRate, bitDepth, channels);
-}
-
 bool RecordingDevice::start(int samples, int sampleRate, int bitDepth, int channels)
 {
-	if (isRecording())
-	{
-		alcCaptureStop(device);
-		alcCaptureCloseDevice(device);
-	}
-
 	ALenum format = Audio::getFormat(bitDepth, channels);
 	if (format == AL_NONE)
 		throw InvalidFormatException(channels, bitDepth);
@@ -79,15 +68,20 @@ bool RecordingDevice::start(int samples, int sampleRate, int bitDepth, int chann
 	if (sampleRate <= 0)
 		throw love::Exception("Invalid sample rate.");
 
+	if (isRecording())
+		stop();
+
 	device = alcCaptureOpenDevice(name.c_str(), sampleRate, format, samples);
 	if (device == nullptr)
 		return false;
 
 	alcCaptureStart(device);
+
 	this->samples = samples;
 	this->sampleRate = sampleRate;
 	this->bitDepth = bitDepth;
 	this->channels = channels;
+
 	return true;
 }
 
