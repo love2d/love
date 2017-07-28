@@ -373,6 +373,9 @@ function love.init()
 			window = true,
 			video = true,
 		},
+		audio = {
+			mixwithsystem = true, -- Only relevant for Android / iOS.
+		},
 		console = false, -- Only relevant for windows.
 		identity = false,
 		appendidentity = false,
@@ -490,6 +493,10 @@ function love.init()
 			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
 			love.window.setIcon(love.image.newImageData(c.window.icon))
 		end
+	end
+
+	if love.audio then
+		love.audio.setMixMode(c.audio.mixwithsystem)
 	end
 
 	-- Our first timestep, because window creation can take some time

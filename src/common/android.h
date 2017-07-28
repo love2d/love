@@ -66,6 +66,8 @@ bool mkdir(const char *path);
 
 bool createStorageDirectories();
 
+bool hasBackgroundMusic();
+
 } // android
 } // love
 

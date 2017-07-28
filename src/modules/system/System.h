@@ -106,6 +106,14 @@ public:
 	 */
 	virtual void vibrate(double seconds) const;
 
+	/**
+	 * Gets if the user is playing music on background.
+	 * Throws an exception on unsupported platforms.
+	 *
+	 * @return Whether a music is playing on background.
+	 **/
+	bool hasBackgroundMusic() const;
+
 	static bool getConstant(const char *in, PowerState &out);
 	static bool getConstant(PowerState in, const char *&out);
 

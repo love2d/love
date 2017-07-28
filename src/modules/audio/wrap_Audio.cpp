@@ -25,6 +25,9 @@
 #include "null/Audio.h"
 
 #include "common/runtime.h"
+#ifdef LOVE_IOS
+#include "common/ios.h"
+#endif
 
 // C++
 #include <iostream>
@@ -519,6 +522,17 @@ int w_isEffectsSupported(lua_State *L)
 	return 1;
 }
 
+#ifdef LOVE_IOS
+int w_setMixMode(lua_State *L)
+{
+	love::ios::setAudioMixWithOthers(lua_toboolean(L, 1));
+#else
+int w_setMixMode(lua_State *)
+{
+#endif
+	return 0;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -549,6 +563,7 @@ static const luaL_Reg functions[] =
 	{ "getMaxSceneEffects", w_getMaxSceneEffects },
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
+	{ "setMixMode", w_setMixMode },
 	{ 0, 0 }
 };
 
