@@ -81,7 +81,7 @@ public:
 	bool setEffect(const char *, std::map<Effect::Parameter, float> &params);
 	bool unsetEffect(const char *);
 	bool getEffect(const char *, std::map<Effect::Parameter, float> &params);
-	bool getEffectsList(std::vector<std::string> &list);
+	bool getActiveEffects(std::vector<std::string> &list) const;
 	int getMaxSceneEffects() const;
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;

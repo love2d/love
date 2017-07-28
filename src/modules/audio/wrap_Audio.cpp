@@ -488,14 +488,13 @@ int w_getEffect(lua_State *L)
 	return 1;
 }
 
-int w_getEffectsList(lua_State *L)
+int w_getActiveEffects(lua_State *L)
 {
 	std::vector<std::string> list;
-	if (!instance()->getEffectsList(list))
-		return 0;
+	instance()->getActiveEffects(list);
 
-	lua_createtable(L, 0, list.size());
-	for (unsigned int i = 0; i < list.size(); i++)
+	lua_createtable(L, 0, (int) list.size());
+	for (int i = 0; i < (int) list.size(); i++)
 	{
 		lua_pushnumber(L, i + 1);
 		lua_pushstring(L, list[i].c_str());
@@ -559,7 +558,7 @@ static const luaL_Reg functions[] =
 	{ "getRecordingDevices", w_getRecordingDevices },
 	{ "setEffect", w_setEffect },
 	{ "getEffect", w_getEffect },
-	{ "getEffectsList", w_getEffectsList },
+	{ "getActiveEffects", w_getActiveEffects },
 	{ "getMaxSceneEffects", w_getMaxSceneEffects },
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },

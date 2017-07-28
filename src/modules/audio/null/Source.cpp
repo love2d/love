@@ -274,7 +274,7 @@ bool Source::getEffect(const char *, std::map<Filter::Parameter, float> &)
 	return false;
 }
 
-bool Source::getEffectsList(std::vector<std::string> &)
+bool Source::getActiveEffects(std::vector<std::string> &) const
 {
 	return false;
 }

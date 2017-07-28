@@ -236,7 +236,7 @@ public:
 	 * @param list List of EFX names to fill.
 	 * @return true if effect was present, false otherwise.
 	 */
-	virtual bool getEffectsList(std::vector<std::string> &list) = 0;
+	virtual bool getActiveEffects(std::vector<std::string> &list) const = 0;
 
 	/**
 	 * Gets maximum number of scene EFX effects.

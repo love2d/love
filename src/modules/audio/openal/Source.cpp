@@ -1488,7 +1488,7 @@ bool Source::getEffect(const char *name, std::map<Filter::Parameter, float> &par
 	return true;
 }
 
-bool Source::getEffectsList(std::vector<std::string> &list)
+bool Source::getActiveEffects(std::vector<std::string> &list) const
 {
 	if (effectmap.empty())
 		return false;

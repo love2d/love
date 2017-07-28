@@ -90,7 +90,7 @@ public:
 	virtual bool setEffect(const char *effect, const std::map<Filter::Parameter, float> &params);
 	virtual bool unsetEffect(const char *effect);
 	virtual bool getEffect(const char *effect, std::map<Filter::Parameter, float> &params);
-	virtual bool getEffectsList(std::vector<std::string> &list);
+	virtual bool getActiveEffects(std::vector<std::string> &list) const;
 
 private:
 
