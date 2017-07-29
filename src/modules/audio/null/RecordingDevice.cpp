@@ -57,19 +57,24 @@ int RecordingDevice::getSampleCount() const
 	return 0;
 }
 
+int RecordingDevice::getMaxSamples() const
+{
+	return 0;
+}
+
 int RecordingDevice::getSampleRate() const
 {
-	return 8000;
+	return 0;
 }
 
 int RecordingDevice::getBitDepth() const
 {
-	return 16;
+	return 0;
 }
 
 int RecordingDevice::getChannels() const
 {
-	return 1;
+	return 0;
 }
 
 const char *RecordingDevice::getName() const

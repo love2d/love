@@ -77,6 +77,11 @@ public:
 	virtual int getSampleCount() const = 0;
 
 	/**
+	 * Gets the maximum number of samples that will be buffered, as set by start().
+	 **/
+	virtual int getMaxSamples() const = 0;
+
+	/**
 	 * @return Sample rate for recording.
 	 **/
 	virtual int getSampleRate() const = 0;

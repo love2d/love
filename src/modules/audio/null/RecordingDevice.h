@@ -40,6 +40,7 @@ public:
 	virtual void stop();
 	virtual love::sound::SoundData *getData();
 	virtual const char *getName() const;
+	virtual int getMaxSamples() const;
 	virtual int getSampleCount() const;
 	virtual int getSampleRate() const;
 	virtual int getBitDepth() const;

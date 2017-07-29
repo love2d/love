@@ -36,7 +36,7 @@ int w_RecordingDevice_start(lua_State *L)
 {
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
 
-	int samples = d->getSampleCount();
+	int samples = d->getMaxSamples();
 	int samplerate = d->getSampleRate();
 	int bitdepth = d->getBitDepth();
 	int channels = d->getChannels();

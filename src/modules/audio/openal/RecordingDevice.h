@@ -57,6 +57,7 @@ public:
 	virtual love::sound::SoundData *getData();
 	virtual const char *getName() const;
 	virtual int getSampleCount() const;
+	virtual int getMaxSamples() const;
 	virtual int getSampleRate() const;
 	virtual int getBitDepth() const;
 	virtual int getChannels() const;

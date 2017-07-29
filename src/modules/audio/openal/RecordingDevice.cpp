@@ -49,11 +49,7 @@ RecordingDevice::RecordingDevice(const char *name)
 
 RecordingDevice::~RecordingDevice()
 {
-	if (!isRecording())
-		return;
-
-	alcCaptureStop(device);
-	alcCaptureCloseDevice(device);
+	stop();
 }
 
 bool RecordingDevice::start(int samples, int sampleRate, int bitDepth, int channels)
@@ -119,6 +115,11 @@ int RecordingDevice::getSampleCount() const
 	ALCint samples;
 	alcGetIntegerv(device, ALC_CAPTURE_SAMPLES, sizeof(ALCint), &samples);
 	return (int)samples;
+}
+
+int RecordingDevice::getMaxSamples() const
+{
+	return samples;
 }
 
 int RecordingDevice::getSampleRate() const
