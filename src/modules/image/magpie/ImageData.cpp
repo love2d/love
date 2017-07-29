@@ -22,6 +22,8 @@
 #include "ImageData.h"
 #include "Image.h"
 
+#include "filesystem/Filesystem.h"
+
 namespace love
 {
 namespace image
@@ -154,7 +156,7 @@ void ImageData::decode(love::filesystem::FileData *data)
 	decodeHandler = decoder;
 }
 
-love::filesystem::FileData *ImageData::encode(EncodedFormat encodedFormat, const char *filename)
+love::filesystem::FileData *ImageData::encode(EncodedFormat encodedFormat, const char *filename, bool writefile)
 {
 	FormatHandler *encoder = nullptr;
 	FormatHandler::EncodedImage encodedimage;
@@ -207,6 +209,27 @@ love::filesystem::FileData *ImageData::encode(EncodedFormat encodedFormat, const
 
 	memcpy(filedata->getData(), encodedimage.data, encodedimage.size);
 	encoder->free(encodedimage.data);
+
+	if (writefile)
+	{
+		auto fs = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
+
+		if (fs == nullptr)
+		{
+			filedata->release();
+			throw love::Exception("love.filesystem must be loaded in order to write an encoded ImageData to a file.");
+		}
+
+		try
+		{
+			fs->write(filename, filedata->getData(), filedata->getSize());
+		}
+		catch (love::Exception &)
+		{
+			filedata->release();
+			throw;
+		}
+	}
 
 	return filedata;
 }

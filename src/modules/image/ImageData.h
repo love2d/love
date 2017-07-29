@@ -111,7 +111,7 @@ public:
 	 * @param f The file to save the encoded image data to.
 	 * @param format The format of the encoded data.
 	 **/
-	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename) = 0;
+	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename, bool writefile) = 0;
 
 	love::thread::Mutex *getMutex() const;
 

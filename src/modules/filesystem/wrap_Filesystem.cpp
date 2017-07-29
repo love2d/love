@@ -459,11 +459,9 @@ int w_getDirectoryItems(lua_State *L)
 
 int w_lines(lua_State *L)
 {
-	File *file;
-
 	if (lua_isstring(L, 1))
 	{
-		file = instance()->newFile(lua_tostring(L, 1));
+		File *file = instance()->newFile(lua_tostring(L, 1));
 		bool success = false;
 
 		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
@@ -488,7 +486,7 @@ int w_load(lua_State *L)
 {
 	std::string filename = std::string(luaL_checkstring(L, 1));
 
-	Data *data = 0;
+	Data *data = nullptr;
 	try
 	{
 		data = instance()->read(filename.c_str());

@@ -439,8 +439,54 @@ static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *
 		delete ref;
 }
 
+static int screenshotSaveToFile(lua_State *L)
+{
+	image::ImageData *id = image::luax_checkimagedata(L, 1);
+
+	const char *filename = luaL_checkstring(L, lua_upvalueindex(1));
+	const char *ext = luaL_checkstring(L, lua_upvalueindex(2));
+
+	image::ImageData::EncodedFormat format;
+	if (!image::ImageData::getConstant(ext, format))
+		return 0;
+
+	try
+	{
+		id->encode(format, filename, true);
+	}
+	catch (love::Exception &e)
+	{
+		printf("Screenshot encoding or saving failed: %s", e.what());
+		// Do nothing...
+	}
+
+	return 0;
+}
+
 int w_captureScreenshot(lua_State *L)
 {
+	if (lua_isstring(L, 1))
+	{
+		std::string filename = luax_checkstring(L, 1);
+		std::string ext;
+
+		size_t dotpos = filename.rfind('.');
+
+		if (dotpos != std::string::npos)
+			ext = filename.substr(dotpos + 1);
+
+		std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+
+		image::ImageData::EncodedFormat format;
+		if (!image::ImageData::getConstant(ext.c_str(), format))
+			return luaL_error(L, "Invalid encoded image format: %s", ext.c_str());
+
+		lua_pushvalue(L, 1);
+		luax_pushstring(L, ext);
+		lua_pushcclosure(L, screenshotSaveToFile, 2);
+		lua_replace(L, 1);
+	}
+
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	Graphics::ScreenshotInfo info;

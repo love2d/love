@@ -22,6 +22,7 @@
 
 #include "common/wrap_Data.h"
 #include "filesystem/File.h"
+#include "filesystem/Filesystem.h"
 
 // Shove the wrap_ImageData.lua code directly into a raw string literal.
 static const char imagedata_lua[] =
@@ -276,18 +277,10 @@ int w_ImageData_encode(lua_State *L)
 	}
 
 	love::filesystem::FileData *filedata = nullptr;
-	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
+	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str(), hasfilename); });
 
 	luax_pushtype(L, filedata);
 	filedata->release();
-
-	if (hasfilename)
-	{
-		luax_getfunction(L, "filesystem", "write");
-		lua_pushvalue(L, 3); // filename
-		lua_pushvalue(L, -3); // FileData
-		lua_call(L, 2, 0);
-	}
 
 	return 1;
 }

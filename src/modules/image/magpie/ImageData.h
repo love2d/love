@@ -47,7 +47,7 @@ public:
 
 	// Implements image::ImageData.
 	virtual love::image::ImageData *clone() const;
-	virtual love::filesystem::FileData *encode(EncodedFormat encodedFormat, const char *filename);
+	virtual love::filesystem::FileData *encode(EncodedFormat encodedFormat, const char *filename, bool writefile);
 
 private:
 
