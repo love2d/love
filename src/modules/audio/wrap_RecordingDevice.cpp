@@ -36,15 +36,23 @@ int w_RecordingDevice_start(lua_State *L)
 {
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
 
-	int samples = (int) luaL_optinteger(L, 2, RecordingDevice::DEFAULT_SAMPLES);
-	int sampleRate = (int) luaL_optinteger(L, 3, RecordingDevice::DEFAULT_SAMPLE_RATE);
-	int bitDepth = (int) luaL_optinteger(L, 4, RecordingDevice::DEFAULT_BIT_DEPTH);
-	int channels = (int) (int) luaL_optinteger(L, 5, RecordingDevice::DEFAULT_CHANNELS);
+	int samples = d->getSampleCount();
+	int samplerate = d->getSampleRate();
+	int bitdepth = d->getBitDepth();
+	int channels = d->getChannels();
 
-	luax_catchexcept(L, [&](){
-		lua_pushboolean(L, d->start(samples, sampleRate, bitDepth, channels));
-	});
+	if (lua_gettop(L) > 1)
+	{
+		samples = (int) luaL_checkinteger(L, 2);
+		samplerate = (int) luaL_optinteger(L, 3, RecordingDevice::DEFAULT_SAMPLE_RATE);
+		bitdepth = (int) luaL_optinteger(L, 4, RecordingDevice::DEFAULT_BIT_DEPTH);
+		channels = (int) (int) luaL_optinteger(L, 5, RecordingDevice::DEFAULT_CHANNELS);
+	}
 
+	bool success = false;
+	luax_catchexcept(L, [&]() { success = d->start(samples, samplerate, bitdepth, channels); });
+
+	luax_pushboolean(L, success);
 	return 1;
 }
 
