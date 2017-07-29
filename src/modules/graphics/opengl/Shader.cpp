@@ -855,14 +855,14 @@ void Shader::updateBuiltinUniforms()
 	// Only upload the matrices if they've changed.
 	if (memcmp(curxform.getElements(), lastTransformMatrix.getElements(), sizeof(float) * 16) != 0)
 	{
-		GLint location = builtinUniforms[BUILTIN_MATRIX_TRANSFORM];
+		GLint location = builtinUniforms[BUILTIN_MATRIX_VIEW_FROM_LOCAL];
 		if (location >= 0)
 			glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
 
 		// Also upload the re-calculated normal matrix, if possible. The normal
 		// matrix is the transpose of the inverse of the rotation portion
 		// (top-left 3x3) of the transform matrix.
-		location = builtinUniforms[BUILTIN_MATRIX_NORMAL];
+		location = builtinUniforms[BUILTIN_MATRIX_VIEW_NORMAL_FROM_LOCAL];
 		if (location >= 0)
 		{
 			Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
@@ -875,7 +875,7 @@ void Shader::updateBuiltinUniforms()
 
 	if (memcmp(curproj.getElements(), lastProjectionMatrix.getElements(), sizeof(float) * 16) != 0)
 	{
-		GLint location = builtinUniforms[BUILTIN_MATRIX_PROJECTION];
+		GLint location = builtinUniforms[BUILTIN_MATRIX_CLIP_FROM_VIEW];
 		if (location >= 0)
 			glUniformMatrix4fv(location, 1, GL_FALSE, curproj.getElements());
 
@@ -885,7 +885,7 @@ void Shader::updateBuiltinUniforms()
 
 	if (tpmatrixneedsupdate)
 	{
-		GLint location = builtinUniforms[BUILTIN_MATRIX_TRANSFORM_PROJECTION];
+		GLint location = builtinUniforms[BUILTIN_MATRIX_CLIP_FROM_LOCAL];
 		if (location >= 0)
 		{
 			Matrix4 tp_matrix(curproj, curxform);

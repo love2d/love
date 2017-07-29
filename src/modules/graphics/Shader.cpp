@@ -351,16 +351,16 @@ StringMap<Shader::ShaderStage, Shader::STAGE_MAX_ENUM> Shader::stageNames(Shader
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {
-	{ "MainTex",                   BUILTIN_TEXTURE_MAIN                },
-	{ "love_VideoYChannel",        BUILTIN_TEXTURE_VIDEO_Y             },
-	{ "love_VideoCbChannel",       BUILTIN_TEXTURE_VIDEO_CB            },
-	{ "love_VideoCrChannel",       BUILTIN_TEXTURE_VIDEO_CR            },
-	{ "TransformMatrix",           BUILTIN_MATRIX_TRANSFORM            },
-	{ "ProjectionMatrix",          BUILTIN_MATRIX_PROJECTION           },
-	{ "TransformProjectionMatrix", BUILTIN_MATRIX_TRANSFORM_PROJECTION },
-	{ "NormalMatrix",              BUILTIN_MATRIX_NORMAL               },
-	{ "love_PointSize",            BUILTIN_POINT_SIZE                  },
-	{ "love_ScreenSize",           BUILTIN_SCREEN_SIZE                 },
+	{ "MainTex",             BUILTIN_TEXTURE_MAIN                  },
+	{ "love_VideoYChannel",  BUILTIN_TEXTURE_VIDEO_Y               },
+	{ "love_VideoCbChannel", BUILTIN_TEXTURE_VIDEO_CB              },
+	{ "love_VideoCrChannel", BUILTIN_TEXTURE_VIDEO_CR              },
+	{ "ViewSpaceFromLocal",  BUILTIN_MATRIX_VIEW_FROM_LOCAL        },
+	{ "ClipSpaceFromView",   BUILTIN_MATRIX_CLIP_FROM_VIEW         },
+	{ "ClipSpaceFromLocal",  BUILTIN_MATRIX_CLIP_FROM_LOCAL        },
+	{ "ViewNormalFromLocal", BUILTIN_MATRIX_VIEW_NORMAL_FROM_LOCAL },
+	{ "love_PointSize",      BUILTIN_POINT_SIZE                    },
+	{ "love_ScreenSize",     BUILTIN_SCREEN_SIZE                   },
 };
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));
