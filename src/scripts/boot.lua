@@ -496,7 +496,7 @@ function love.init()
 	end
 
 	if love.audio then
-		love.audio.setMixMode(c.audio.mixwithsystem)
+		love.audio.setMixWithSystem(c.audio.mixwithsystem)
 	end
 
 	-- Our first timestep, because window creation can take some time

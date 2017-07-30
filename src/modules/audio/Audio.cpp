@@ -13,17 +13,33 @@
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
- * 2. Altered Audio versions must be plainly marked as such, and must not be
+ * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any Audio distribution.
+ * 3. This notice may not be removed or altered from any source distribution.
  **/
 
 #include "Audio.h"
+#include "common/config.h"
+
+#ifdef LOVE_IOS
+#include "common/ios.h"
+#endif
 
 namespace love
 {
 namespace audio
 {
+
+bool Audio::setMixWithSystem(bool mix)
+{
+#ifdef LOVE_IOS
+	love::ios::setAudioMixWithOthers(mix);
+	return true;
+#else
+	LOVE_UNUSED(mix);
+	return false;
+#endif
+}
 
 StringMap<Audio::DistanceModel, Audio::DISTANCE_MAX_ENUM>::Entry Audio::distanceModelEntries[] =
 {
