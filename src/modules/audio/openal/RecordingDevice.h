@@ -65,10 +65,10 @@ public:
 
 private:
 
-	int samples = 0;
-	int sampleRate = 0;
-	int bitDepth = 0;
-	int channels = 0;
+	int samples = DEFAULT_SAMPLES;
+	int sampleRate = DEFAULT_SAMPLE_RATE;
+	int bitDepth = DEFAULT_BIT_DEPTH;
+	int channels = DEFAULT_CHANNELS;
 
 	std::string name;
 	ALCdevice *device = nullptr;
