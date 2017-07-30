@@ -190,7 +190,7 @@ bool File::write(const void *data, int64 size)
 	// Manually flush the buffer in BUFFER_LINE mode if we find a newline.
 	if (bufferMode == BUFFER_LINE && bufferSize > size)
 	{
-		if (memchr(data, '\n', (size_t) size) != NULL)
+		if (memchr(data, '\n', (size_t) size) != nullptr)
 			flush();
 	}
 

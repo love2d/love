@@ -366,7 +366,7 @@ int w_read(lua_State *L)
 	const char *filename = luaL_checkstring(L, 1);
 	int64 len = (int64) luaL_optinteger(L, 2, File::ALL);
 
-	Data *data = 0;
+	Data *data = nullptr;
 	try
 	{
 		data = instance()->read(filename, len);
@@ -376,7 +376,7 @@ int w_read(lua_State *L)
 		return luax_ioError(L, "%s", e.what());
 	}
 
-	if (data == 0)
+	if (data == nullptr)
 		return luax_ioError(L, "File could not be read.");
 
 	// Push the string.
@@ -395,7 +395,7 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 {
 	const char *filename = luaL_checkstring(L, 1);
 
-	const char *input = 0;
+	const char *input = nullptr;
 	size_t len = 0;
 
 	if (luax_istype(L, 2, love::Data::type))

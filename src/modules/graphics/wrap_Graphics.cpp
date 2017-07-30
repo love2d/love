@@ -24,6 +24,7 @@
 #include "image/ImageData.h"
 #include "image/Image.h"
 #include "font/Rasterizer.h"
+#include "filesystem/Filesystem.h"
 #include "filesystem/wrap_Filesystem.h"
 #include "video/VideoStream.h"
 #include "image/wrap_Image.h"
@@ -1190,34 +1191,32 @@ static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::Shad
 {
 	luax_checkgraphicscreated(L);
 
+	auto fs = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
+
 	// read any filepath arguments
 	for (int i = startidx; i < startidx + 2; i++)
 	{
 		if (!lua_isstring(L, i))
 			continue;
 
-		// call love.filesystem.isFile(arg_i)
-		luax_getfunction(L, "filesystem", "isFile");
-		lua_pushvalue(L, i);
-		lua_call(L, 1, 1);
+		size_t slen = 0;
+		const char *str = lua_tolstring(L, i, &slen);
 
-		bool isFile = luax_toboolean(L, -1);
-		lua_pop(L, 1);
-
-		if (isFile)
+		if (fs != nullptr && fs->isFile(str))
 		{
-			luax_getfunction(L, "filesystem", "read");
-			lua_pushvalue(L, i);
-			lua_call(L, 1, 1);
+			filesystem::FileData *fd = nullptr;
+			luax_catchexcept(L, [&](){ fd = fs->read(str); });
+
+			lua_pushlstring(L, (const char *) fd->getData(), fd->getSize());
+			fd->release();
+
 			lua_replace(L, i);
 		}
 		else
 		{
 			// Check if the argument looks like a filepath - we want a nicer
 			// error for misspelled filepath arguments.
-			size_t slen = 0;
-			const char *str = lua_tolstring(L, i, &slen);
-			if (slen > 0 && slen < 256 && !strchr(str, '\n'))
+			if (slen > 0 && slen < 64 && !strchr(str, '\n'))
 			{
 				const char *ext = strchr(str, '.');
 				if (ext != nullptr && !strchr(ext, ';') && !strchr(ext, ' '))
