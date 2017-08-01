@@ -561,6 +561,16 @@ void World::destroy()
 		return;
 	}
 
+	// Remove userdata reference to avoid it sticking around after GC
+	if (begin.ref)     begin.ref->unref();
+	if (end.ref)       end.ref->unref();
+	if (presolve.ref)  presolve.ref->unref();
+	if (postsolve.ref) postsolve.ref->unref();
+	if (filter.ref)    filter.ref->unref();
+
+	//disable callbacks
+	begin.ref = end.ref = presolve.ref = postsolve.ref = filter.ref = nullptr;
+
 	// Cleaning up the world.
 	b2Body *b = world->GetBodyList();
 	while (b)
@@ -577,13 +587,6 @@ void World::destroy()
 
 	world->DestroyBody(groundBody);
 	Memoizer::remove(world);
-
-	// Remove userdata reference to avoid it sticking around after GC
-	if (begin.ref)     begin.ref->unref();
-	if (end.ref)       end.ref->unref();
-	if (presolve.ref)  presolve.ref->unref();
-	if (postsolve.ref) postsolve.ref->unref();
-	if (filter.ref)    filter.ref->unref();
 
 	delete world;
 	world = nullptr;
