@@ -1189,22 +1189,36 @@ int w_newCanvas(lua_State *L)
 
 static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::ShaderSource &source)
 {
+	using namespace love::filesystem;
+
 	luax_checkgraphicscreated(L);
 
-	auto fs = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
+	auto fs = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
 
 	// read any filepath arguments
 	for (int i = startidx; i < startidx + 2; i++)
 	{
 		if (!lua_isstring(L, i))
+		{
+			if (luax_cangetfiledata(L, i))
+			{
+				FileData *fd = luax_getfiledata(L, i);
+
+				lua_pushlstring(L, (const char *) fd->getData(), fd->getSize());
+				fd->release();
+
+				lua_replace(L, i);
+			}
+
 			continue;
+		}
 
 		size_t slen = 0;
 		const char *str = lua_tolstring(L, i, &slen);
 
 		if (fs != nullptr && fs->isFile(str))
 		{
-			filesystem::FileData *fd = nullptr;
+			FileData *fd = nullptr;
 			luax_catchexcept(L, [&](){ fd = fs->read(str); });
 
 			lua_pushlstring(L, (const char *) fd->getData(), fd->getSize());
