@@ -366,7 +366,7 @@ int w_read(lua_State *L)
 	const char *filename = luaL_checkstring(L, 1);
 	int64 len = (int64) luaL_optinteger(L, 2, File::ALL);
 
-	Data *data = 0;
+	Data *data = nullptr;
 	try
 	{
 		data = instance()->read(filename, len);
@@ -376,7 +376,7 @@ int w_read(lua_State *L)
 		return luax_ioError(L, "%s", e.what());
 	}
 
-	if (data == 0)
+	if (data == nullptr)
 		return luax_ioError(L, "File could not be read.");
 
 	// Push the string.
@@ -395,7 +395,7 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 {
 	const char *filename = luaL_checkstring(L, 1);
 
-	const char *input = 0;
+	const char *input = nullptr;
 	size_t len = 0;
 
 	if (luax_istype(L, 2, love::Data::type))
@@ -459,11 +459,9 @@ int w_getDirectoryItems(lua_State *L)
 
 int w_lines(lua_State *L)
 {
-	File *file;
-
 	if (lua_isstring(L, 1))
 	{
-		file = instance()->newFile(lua_tostring(L, 1));
+		File *file = instance()->newFile(lua_tostring(L, 1));
 		bool success = false;
 
 		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
@@ -488,7 +486,7 @@ int w_load(lua_State *L)
 {
 	std::string filename = std::string(luaL_checkstring(L, 1));
 
-	Data *data = 0;
+	Data *data = nullptr;
 	try
 	{
 		data = instance()->read(filename.c_str());
@@ -634,6 +632,22 @@ int w_setCRequirePath(lua_State *L)
 	return 0;
 }
 
+static void replaceAll(std::string &str, const std::string &substr, const std::string &replacement)
+{
+	std::vector<size_t> locations;
+	size_t pos = 0;
+	size_t sublen = substr.length();
+
+	while ((pos = str.find(substr, pos)) != std::string::npos)
+	{
+		locations.push_back(pos);
+		pos += sublen;
+	}
+
+	for (int i = (int) locations.size() - 1; i >= 0; i--)
+		str.replace(locations[i], sublen, replacement);
+}
+
 int loader(lua_State *L)
 {
 	std::string modulename = luax_tostring(L, 1);
@@ -647,9 +661,7 @@ int loader(lua_State *L)
 	auto *inst = instance();
 	for (std::string element : inst->getRequirePath())
 	{
-		size_t pos = 0;
-		while ((pos = element.find('?', pos)) != std::string::npos)
-			element.replace(pos, 1, modulename);
+		replaceAll(element, "?", modulename);
 
 		if (inst->isFile(element.c_str()))
 		{
@@ -665,14 +677,16 @@ int loader(lua_State *L)
 	return 1;
 }
 
-inline const char *library_extension()
+static const char *library_extensions[] =
 {
 #ifdef LOVE_WINDOWS
-	return ".dll";
+	".dll"
+#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+	".dylib", ".so"
 #else
-	return ".so";
+	".so"
 #endif
-}
+};
 
 int extloader(lua_State *L)
 {
@@ -694,25 +708,31 @@ int extloader(lua_State *L)
 
 	void *handle = nullptr;
 	auto *inst = instance();
-	for (std::string element : inst->getCRequirePath())
+
+	for (const std::string &el : inst->getCRequirePath())
 	{
-		// Replace ?? with the filename and extension
-		size_t pos = element.find("??");
-		if (pos != std::string::npos)
-			element.replace(pos, 2, tokenized_name + library_extension());
-		// Or ? with just the filename
-		pos = element.find('?');
-		if (pos != std::string::npos)
-			element.replace(pos, 1, tokenized_name);
+		for (const char *ext : library_extensions)
+		{
+			std::string element = el;
 
-		if (!inst->isFile(element.c_str()))
-			continue;
+			// Replace ?? with the filename and extension
+			replaceAll(element, "??", tokenized_name + ext);
 
-		// Now resolve the full path, as we're bypassing physfs for the next part.
-		element = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
+			// And ? with just the filename
+			replaceAll(element, "?", tokenized_name);
 
-		handle = SDL_LoadObject(element.c_str());
-		// Can fail, for instance if it turned out the source was a zip
+			if (!inst->isFile(element.c_str()))
+				continue;
+
+			// Now resolve the full path, as we're bypassing physfs for the next part.
+			std::string filepath = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
+
+			handle = SDL_LoadObject(filepath.c_str());
+			// Can fail, for instance if it turned out the source was a zip
+			if (handle)
+				break;
+		}
+
 		if (handle)
 			break;
 	}

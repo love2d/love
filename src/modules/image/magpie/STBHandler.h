@@ -18,10 +18,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_STB_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_STB_HANDLER_H
+#pragma once
 
-#include "FormatHandler.h"
+#include "image/FormatHandler.h"
 
 namespace love
 {
@@ -37,24 +36,22 @@ namespace magpie
  * We could use stb_image to decode PNG as well, but performance and
  * comprehensive format support is lacking compared to some alternatives.
  **/
-class STBHandler : public FormatHandler
+class STBHandler final : public FormatHandler
 {
 public:
 
 	// Implements FormatHandler.
 
-	virtual bool canDecode(love::filesystem::FileData *data);
-	virtual bool canEncode(PixelFormat rawFormat, ImageData::EncodedFormat encodedFormat);
+	bool canDecode(love::filesystem::FileData *data) override;
+	bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat) override;
 
-	virtual DecodedImage decode(love::filesystem::FileData *data);
-	virtual EncodedImage encode(const DecodedImage &img, ImageData::EncodedFormat format);
+	DecodedImage decode(love::filesystem::FileData *data) override;
+	EncodedImage encode(const DecodedImage &img, EncodedFormat format) override;
 
-	virtual void free(unsigned char *mem);
+	void free(unsigned char *mem) override;
 
 }; // STBHandler
 
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_STB_HANDLER_H

@@ -408,6 +408,9 @@ function love.init()
 			window = true,
 			video = true,
 		},
+		audio = {
+			mixwithsystem = true, -- Only relevant for Android / iOS.
+		},
 		console = false, -- Only relevant for windows.
 		identity = false,
 		appendidentity = false,
@@ -527,6 +530,10 @@ function love.init()
 		end
 	end
 
+	if love.audio then
+		love.audio.setMixWithSystem(c.audio.mixwithsystem)
+	end
+
 	-- Our first timestep, because window creation can take some time
 	if love.timer then
 		love.timer.step()
@@ -546,11 +553,6 @@ function love.init()
 end
 
 function love.run()
-
-	if love.math then
-		love.math.setRandomSeed(os.time())
-	end
-
 	if love.load then love.load(love.arg.game_arguments(arg)) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
@@ -575,8 +577,7 @@ function love.run()
 
 		-- Update dt, as we'll be passing it to update
 		if love.timer then
-			love.timer.step()
-			dt = love.timer.getDelta()
+			dt = love.timer.step()
 		end
 
 		-- Call update and draw

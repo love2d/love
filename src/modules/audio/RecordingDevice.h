@@ -9,7 +9,7 @@
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented = 0; you must not
+ * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
@@ -37,14 +37,13 @@ public:
 
 	static love::Type type;
 
+	static const int DEFAULT_SAMPLES = 8192;
+	static const int DEFAULT_SAMPLE_RATE = 8000;
+	static const int DEFAULT_BIT_DEPTH = 16;
+	static const int DEFAULT_CHANNELS = 1;
+
 	RecordingDevice();
 	virtual ~RecordingDevice();
-
-	/**
-	 * Begins audio input recording process. using default (previous) parameters.
-	 * @return True if recording started successfully.
-	 **/
-	virtual bool start() = 0;
 
 	/**
 	 * Begins audio input recording process.
@@ -78,6 +77,11 @@ public:
 	virtual int getSampleCount() const = 0;
 
 	/**
+	 * Gets the maximum number of samples that will be buffered, as set by start().
+	 **/
+	virtual int getMaxSamples() const = 0;
+
+	/**
 	 * @return Sample rate for recording.
 	 **/
 	virtual int getSampleRate() const = 0;
@@ -96,6 +100,7 @@ public:
 	 * @return True if currently recording.
 	 **/
 	virtual bool isRecording() const = 0;
+
 }; //RecordingDevice
 
 } //audio

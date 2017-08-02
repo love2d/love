@@ -18,10 +18,9 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_EXR_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_EXR_HANDLER_H
+#pragma once
 
-#include "FormatHandler.h"
+#include "image/FormatHandler.h"
 
 namespace love
 {
@@ -40,10 +39,10 @@ public:
 	// Implements FormatHandler.
 
 	virtual bool canDecode(love::filesystem::FileData *data);
-	virtual bool canEncode(PixelFormat rawFormat, ImageData::EncodedFormat encodedFormat);
+	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
 
 	virtual DecodedImage decode(love::filesystem::FileData *data);
-	virtual EncodedImage encode(const DecodedImage &img, ImageData::EncodedFormat format);
+	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
 
 	virtual void free(unsigned char *mem);
 
@@ -52,5 +51,3 @@ public:
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_EXR_HANDLER_H

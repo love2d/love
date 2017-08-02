@@ -72,7 +72,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 	if (lua_type(L, 1) == LUA_TNUMBER || lua_isnone(L, 1))
 	{
 		// First argument is a number: use the default TrueType font.
-		int size = (int) luaL_optnumber(L, 1, 12);
+		int size = (int) luaL_optinteger(L, 1, 12);
 
 		const char *hintstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
 		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
@@ -98,7 +98,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 		else
 			d = filesystem::luax_getfiledata(L, 1);
 
-		int size = (int) luaL_optnumber(L, 2, 12);
+		int size = (int) luaL_optinteger(L, 2, 12);
 
 		const char *hintstr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
 		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
@@ -180,7 +180,7 @@ int w_newImageRasterizer(lua_State *L)
 
 	image::ImageData *d = luax_checktype<image::ImageData>(L, 1);
 	std::string glyphs = luax_checkstring(L, 2);
-	int extraspacing = (int) luaL_optnumber(L, 3, 0);
+	int extraspacing = (int) luaL_optinteger(L, 3, 0);
 	float pixeldensity = (float) luaL_optnumber(L, 4, 1.0);
 
 	luax_catchexcept(L, [&](){ t = instance()->newImageRasterizer(d, glyphs, extraspacing, pixeldensity); });

@@ -493,15 +493,15 @@ int w_Source_getEffect(lua_State *L)
 	return 1;
 }
 
-int w_Source_getEffectsList(lua_State *L)
+int w_Source_getActiveEffects(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	std::vector<std::string> list;
-	if (!t->getEffectsList(list))
-		return 0;
 
-	lua_createtable(L, 0, list.size());
-	for (unsigned int i = 0; i < list.size(); i++)
+	std::vector<std::string> list;
+	t->getActiveEffects(list);
+
+	lua_createtable(L, 0, (int) list.size());
+	for (int i = 0; i < (int) list.size(); i++)
 	{
 		lua_pushnumber(L, i + 1);
 		lua_pushstring(L, list[i].c_str());
@@ -624,7 +624,7 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getFilter", w_Source_getFilter },
 	{ "setEffect", w_Source_setEffect },
 	{ "getEffect", w_Source_getEffect },
-	{ "getEffectsList", w_Source_getEffectsList },
+	{ "getActiveEffects", w_Source_getActiveEffects },
 
 	{ "getFreeBufferCount", w_Source_getFreeBufferCount },
 	{ "queue", w_Source_queue },

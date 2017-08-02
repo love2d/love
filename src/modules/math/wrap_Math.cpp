@@ -354,7 +354,7 @@ int w_compress(lua_State *L)
 	if (fstr && !Compressor::getConstant(fstr, format))
 		return luaL_error(L, "Invalid compressed data format: %s", fstr);
 
-	int level = (int) luaL_optnumber(L, 3, -1);
+	int level = (int) luaL_optinteger(L, 3, -1);
 
 	CompressedData *cdata = nullptr;
 	if (lua_isstring(L, 1))

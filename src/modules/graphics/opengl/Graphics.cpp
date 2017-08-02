@@ -492,107 +492,9 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setCanvas(const RenderTargets &rts)
+void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
 {
-	DisplayState &state = states.back();
-	int ncanvases = (int) rts.colors.size();
-
-	if (ncanvases == 0 && rts.depthStencil.canvas == nullptr)
-		return setCanvas();
-	else if (ncanvases == 0)
-		throw love::Exception("At least one color render target is required when using a custom depth/stencil buffer.");
-
-	const auto &prevRTs = state.renderTargets;
-
-	if (ncanvases == (int) prevRTs.colors.size())
-	{
-		bool modified = false;
-
-		for (int i = 0; i < ncanvases; i++)
-		{
-			if (rts.colors[i].canvas != prevRTs.colors[i].canvas.get()
-				|| rts.colors[i].slice != prevRTs.colors[i].slice
-				|| rts.colors[i].mipmap != prevRTs.colors[i].mipmap)
-			{
-				modified = true;
-				break;
-			}
-		}
-
-		if (!modified && (rts.depthStencil.canvas != prevRTs.depthStencil.canvas
-			|| rts.depthStencil.slice != prevRTs.depthStencil.slice
-			|| rts.depthStencil.mipmap != prevRTs.depthStencil.mipmap))
-		{
-			modified = true;
-		}
-
-		if (rts.temporaryRTFlags != prevRTs.temporaryRTFlags)
-			modified = true;
-
-		if (!modified)
-			return;
-	}
-
-	if (ncanvases > gl.getMaxRenderTargets())
-		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
-
-	love::graphics::Canvas *firstcanvas = rts.colors[0].canvas;
-
-	bool multiformatsupported = Canvas::isMultiFormatMultiCanvasSupported();
-	PixelFormat firstformat = firstcanvas->getPixelFormat();
-
-	if (isPixelFormatDepthStencil(firstformat))
-		throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
-
-	if (rts.colors[0].mipmap < 0 || rts.colors[0].mipmap >= firstcanvas->getMipmapCount())
-		throw love::Exception("Invalid mipmap level %d.", rts.colors[0].mipmap + 1);
-
-	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
-	int pixelwidth = firstcanvas->getPixelWidth(rts.colors[0].mipmap);
-	int pixelheight = firstcanvas->getPixelHeight(rts.colors[0].mipmap);
-
-	for (int i = 1; i < ncanvases; i++)
-	{
-		love::graphics::Canvas *c = rts.colors[i].canvas;
-		PixelFormat format = c->getPixelFormat();
-		int mip = rts.colors[i].mipmap;
-
-		if (mip < 0 || mip >= c->getMipmapCount())
-			throw love::Exception("Invalid mipmap level %d.", mip + 1);
-
-		if (c->getPixelWidth(mip) != pixelwidth || c->getPixelHeight(mip) != pixelheight)
-			throw love::Exception("All canvases must have the same pixel dimensions.");
-
-		if (!multiformatsupported && format != firstformat)
-			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
-
-		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
-			throw love::Exception("All Canvases must have the same MSAA value.");
-
-		if (isPixelFormatDepthStencil(format))
-			throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
-
-		if (format == PIXELFORMAT_sRGBA8)
-			hasSRGBcanvas = true;
-	}
-
-	if (rts.depthStencil.canvas != nullptr)
-	{
-		love::graphics::Canvas *c = rts.depthStencil.canvas;
-		int mip = rts.depthStencil.mipmap;
-
-		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
-			throw love::Exception("Only depth/stencil format Canvases can be used with the 'depthstencil' field of the table passed into setCanvas.");
-
-		if (c->getPixelWidth(mip) != pixelwidth || c->getPixelHeight(mip) != pixelheight)
-			throw love::Exception("All canvases must have the same pixel dimensions.");
-
-		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
-			throw love::Exception("All Canvases must have the same MSAA value.");
-
-		if (mip < 0 || mip >= c->getMipmapCount())
-			throw love::Exception("Invalid mipmap level %d.", mip + 1);
-	}
+	const DisplayState &state = states.back();
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
 
@@ -600,15 +502,13 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 	bindCachedFBO(rts);
 
-	gl.setViewport({0, 0, pixelwidth, pixelheight});
+	gl.setViewport({0, 0, pixelw, pixelh});
 
 	// Re-apply the scissor if it was active, since the rectangle passed to
 	// glScissor is affected by the viewport dimensions.
 	if (state.scissor)
 		setScissor(state.scissorRect);
 
-	int w = firstcanvas->getWidth(rts.colors[0].mipmap);
-	int h = firstcanvas->getHeight(rts.colors[0].mipmap);
 	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
@@ -619,19 +519,6 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		else if (!hasSRGBcanvas && gl.hasFramebufferSRGB())
 			gl.setFramebufferSRGB(false);
 	}
-
-	RenderTargetsStrongRef refs;
-	refs.colors.reserve(rts.colors.size());
-
-	for (auto c : rts.colors)
-		refs.colors.emplace_back(c.canvas, c.slice);
-
-	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.canvas, rts.depthStencil.slice);
-	refs.temporaryRTFlags = rts.temporaryRTFlags;
-
-	std::swap(state.renderTargets, refs);
-
-	canvasSwitchCount++;
 }
 
 void Graphics::setCanvas()
@@ -643,6 +530,7 @@ void Graphics::setCanvas()
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas()");
 
+	flushStreamDraws();
 	endPass();
 
 	state.renderTargets = RenderTargetsStrongRef();
@@ -673,8 +561,6 @@ void Graphics::setCanvas()
 
 void Graphics::endPass()
 {
-	flushStreamDraws();
-
 	auto &rts = states.back().renderTargets;
 	love::graphics::Canvas *depthstencil = rts.depthStencil.canvas.get();
 
@@ -1013,6 +899,7 @@ void Graphics::present(void *screenshotCallbackData)
 	if (isCanvasActive())
 		throw love::Exception("present cannot be called while a Canvas is active.");
 
+	flushStreamDraws();
 	endPass();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
@@ -1123,6 +1010,7 @@ void Graphics::present(void *screenshotCallbackData)
 	gl.stats.drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
 	canvasSwitchCount = 0;
+	drawCallsBatched = 0;
 }
 
 void Graphics::setScissor(const Rect &rect)

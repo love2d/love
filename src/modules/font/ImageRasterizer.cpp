@@ -29,10 +29,7 @@ namespace love
 namespace font
 {
 
-inline bool equal(const love::image::pixel &a, const love::image::pixel &b)
-{
-	return (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a);
-}
+static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
 
 ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float pixeldensity)
 	: imageData(data)
@@ -79,17 +76,17 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 	// We don't want another thread modifying our ImageData mid-copy.
 	love::thread::Lock lock(imageData->getMutex());
 
-	love::image::pixel *gdpixels = (love::image::pixel *) g->getData();
-	love::image::pixel *imagepixels = (love::image::pixel *) imageData->getData();
+	Color *gdpixels = (Color *) g->getData();
+	const Color *imagepixels = (const Color *) imageData->getData();
 
 	// copy glyph pixels from imagedata to glyphdata
 	for (int i = 0; i < g->getWidth() * g->getHeight(); i++)
 	{
-		love::image::pixel p = imagepixels[it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width))];
+		Color p = imagepixels[it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width))];
 
 		// Use transparency instead of the spacer color
-		if (equal(p, spacer))
-			gdpixels[i].r = gdpixels[i].g = gdpixels[i].b = gdpixels[i].a = 0;
+		if (p == spacer)
+			gdpixels[i] = Color(0, 0, 0, 0);
 		else
 			gdpixels[i] = p;
 	}
@@ -99,7 +96,7 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 
 void ImageRasterizer::load()
 {
-	love::image::pixel *pixels = (love::image::pixel *) imageData->getData();
+	const Color *pixels = (const Color *) imageData->getData();
 
 	int imgw = imageData->getWidth();
 	int imgh = imageData->getHeight();
@@ -121,13 +118,13 @@ void ImageRasterizer::load()
 		start = end;
 
 		// Finds out where the first character starts
-		while (start < imgw && equal(pixels[start], spacer))
+		while (start < imgw && pixels[start] == spacer)
 			++start;
 
 		end = start;
 
 		// Find where glyph ends.
-		while (end < imgw && !equal(pixels[end], spacer))
+		while (end < imgw && pixels[end] != spacer)
 			++end;
 
 		if (start >= end)

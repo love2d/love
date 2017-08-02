@@ -63,7 +63,7 @@ static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int sta
 static int w_SpriteBatch_addLayer_or_setLayer(lua_State *L, SpriteBatch *t, int startidx, int index)
 {
 	Quad *quad = nullptr;
-	int layer = (int) luaL_checknumber(L, startidx) - 1;
+	int layer = (int) luaL_checkinteger(L, startidx) - 1;
 	startidx++;
 
 	if (luax_istype(L, startidx, Quad::type))
@@ -101,7 +101,7 @@ int w_SpriteBatch_add(lua_State *L)
 int w_SpriteBatch_set(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int index = (int) luaL_checknumber(L, 2) - 1;
+	int index = (int) luaL_checkinteger(L, 2) - 1;
 
 	w_SpriteBatch_add_or_set(L, t, 3, index);
 
@@ -121,7 +121,7 @@ int w_SpriteBatch_addLayer(lua_State *L)
 int w_SpriteBatch_setLayer(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	int index = (int) luaL_checknumber(L, 2) - 1;
+	int index = (int) luaL_checkinteger(L, 2) - 1;
 
 	w_SpriteBatch_addLayer_or_setLayer(L, t, 3, index);
 	
@@ -251,8 +251,8 @@ int w_SpriteBatch_setDrawRange(lua_State *L)
 		t->setDrawRange();
 	else
 	{
-		int start = (int) luaL_checknumber(L, 2) - 1;
-		int count = (int) luaL_checknumber(L, 3);
+		int start = (int) luaL_checkinteger(L, 2) - 1;
+		int count = (int) luaL_checkinteger(L, 3);
 		luax_catchexcept(L, [&](){ t->setDrawRange(start, count); });
 	}
 

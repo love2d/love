@@ -1048,14 +1048,20 @@ void ParticleSystem::update(float dt)
 	prevPosition = position;
 }
 
-bool ParticleSystem::prepareDraw(Graphics *gfx)
+void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 {
 	uint32 pCount = getCount();
 
 	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || buffer == nullptr)
-		return false;
+		return;
 
 	gfx->flushStreamDraws();
+
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
+	if (Shader::current && texture.get())
+		Shader::current->checkMainTexture(texture);
 
 	const Vector2 *positions = texture->getQuad()->getVertexPositions();
 	const Vector2 *texcoords = texture->getQuad()->getVertexTexCoords();
@@ -1098,7 +1104,8 @@ bool ParticleSystem::prepareDraw(Graphics *gfx)
 
 	buffer->unmap();
 
-	return true;
+	Graphics::TempTransform transform(gfx, m);
+	drawInternal();
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

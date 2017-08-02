@@ -23,7 +23,7 @@
 #include "common/Data.h"
 #include "common/StringMap.h"
 
-#include "magpie/Image.h"
+#include "Image.h"
 
 #include "filesystem/wrap_Filesystem.h"
 
@@ -39,8 +39,8 @@ int w_newImageData(lua_State *L)
 	// Case 1: width & height.
 	if (lua_isnumber(L, 1))
 	{
-		int w = (int) luaL_checknumber(L, 1);
-		int h = (int) luaL_checknumber(L, 2);
+		int w = (int) luaL_checkinteger(L, 1);
+		int h = (int) luaL_checkinteger(L, 2);
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 
@@ -154,7 +154,7 @@ extern "C" int luaopen_love_image(lua_State *L)
 	Image *instance = instance();
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new love::image::magpie::Image(); });
+		luax_catchexcept(L, [&](){ instance = new love::image::Image(); });
 	}
 	else
 		instance->retain();

@@ -152,7 +152,7 @@ public:
 	virtual bool setEffect(const char *effect, const std::map<Filter::Parameter, float> &params);
 	virtual bool unsetEffect(const char *effect);
 	virtual bool getEffect(const char *effect, std::map<Filter::Parameter, float> &params);
-	virtual bool getEffectsList(std::vector<std::string> &list);
+	virtual bool getActiveEffects(std::vector<std::string> &list) const;
 
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);

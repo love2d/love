@@ -474,7 +474,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-StrongRef<CompressedImageData::Memory> PVRHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> PVRHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -524,8 +524,8 @@ StrongRef<CompressedImageData::Memory> PVRHandler::parse(filesystem::FileData *f
 	if (filedata->getSize() < fileoffset + totalsize)
 		throw love::Exception("Could not parse PVR file: invalid size calculation.");
 
-	StrongRef<CompressedImageData::Memory> memory;
-	memory.set(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
+	StrongRef<CompressedMemory> memory;
+	memory.set(new CompressedMemory(totalsize), Acquire::NORETAIN);
 
 	size_t curoffset = 0;
 	const uint8 *filebytes = (uint8 *) filedata->getData() + fileoffset;
@@ -542,7 +542,7 @@ StrongRef<CompressedImageData::Memory> PVRHandler::parse(filesystem::FileData *f
 
 		memcpy(memory->data + curoffset, filebytes + curoffset, mipsize);
 
-		auto slice = new CompressedImageData::Slice(cformat, width, height, memory, curoffset, mipsize);
+		auto slice = new CompressedSlice(cformat, width, height, memory, curoffset, mipsize);
 		images.push_back(slice);
 		slice->release();
 

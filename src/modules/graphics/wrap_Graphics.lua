@@ -72,11 +72,18 @@ GLSL.UNIFORMS = [[
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
-uniform LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix;
-uniform LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix;
-uniform LOVE_HIGHP_OR_MEDIUMP mat4 TransformProjectionMatrix;
-uniform LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;]]
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ViewSpaceFromLocal;
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ClipSpaceFromView;
+uniform LOVE_HIGHP_OR_MEDIUMP mat4 ClipSpaceFromLocal;
+uniform LOVE_HIGHP_OR_MEDIUMP mat3 ViewNormalFromLocal;
+uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
+
+// Compatibility
+#define TransformMatrix ViewSpaceFromLocal
+#define ProjectionMatrix ClipSpaceFromView
+#define TransformProjectionMatrix ClipSpaceFromLocal
+#define NormalMatrix ViewNormalFromLocal
+]]
 
 GLSL.FUNCTIONS = [[
 #ifdef GL_ES
@@ -222,13 +229,13 @@ attribute vec4 ConstantColor;
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;
 
-vec4 position(mat4 transform_proj, vec4 vertpos);
+vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
 void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
 	setPointSize();
-	love_Position = position(TransformProjectionMatrix, VertexPosition);
+	love_Position = position(ClipSpaceFromLocal, VertexPosition);
 }]],
 }
 
@@ -424,8 +431,8 @@ end
 
 local defaultcode = {
 	vertex = [[
-vec4 position(mat4 transform_proj, vec4 vertpos) {
-	return transform_proj * vertpos;
+vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition) {
+	return clipSpaceFromLocal * localPosition;
 }]],
 	pixel = [[
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord) {

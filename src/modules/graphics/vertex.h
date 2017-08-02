@@ -22,7 +22,7 @@
 
 // LOVE
 #include "common/int.h"
-#include "Color.h"
+#include "common/Color.h"
 
 // C
 #include <stddef.h>

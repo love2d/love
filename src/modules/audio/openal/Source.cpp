@@ -1041,7 +1041,7 @@ void Source::stop(const std::vector<love::audio::Source*> &sources)
 			sourceIds.push_back(source->source);
 	}
 
-	alSourceStopv((ALsizei) sources.size(), &sourceIds[0]);
+	alSourceStopv((ALsizei) sourceIds.size(), &sourceIds[0]);
 
 	for (auto &_source : sources)
 	{
@@ -1068,7 +1068,7 @@ void Source::pause(const std::vector<love::audio::Source*> &sources)
 			sourceIds.push_back(source->source);
 	}
 
-	alSourcePausev((ALsizei) sources.size(), &sourceIds[0]);
+	alSourcePausev((ALsizei) sourceIds.size(), &sourceIds[0]);
 }
 
 std::vector<love::audio::Source*> Source::pause(Pool *pool)
@@ -1488,7 +1488,7 @@ bool Source::getEffect(const char *name, std::map<Filter::Parameter, float> &par
 	return true;
 }
 
-bool Source::getEffectsList(std::vector<std::string> &list)
+bool Source::getActiveEffects(std::vector<std::string> &list) const
 {
 	if (effectmap.empty())
 		return false;

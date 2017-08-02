@@ -22,6 +22,7 @@
 
 #include "common/wrap_Data.h"
 #include "filesystem/File.h"
+#include "filesystem/Filesystem.h"
 
 // Shove the wrap_ImageData.lua code directly into a raw string literal.
 static const char imagedata_lua[] =
@@ -158,8 +159,8 @@ static pushpixel pushFormats[PIXELFORMAT_MAX_ENUM] = {};
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = (int) luaL_checknumber(L, 2);
-	int y = (int) luaL_checknumber(L, 3);
+	int x = (int) luaL_checkinteger(L, 2);
+	int y = (int) luaL_checkinteger(L, 3);
 
 	PixelFormat format = t->getFormat();
 
@@ -172,8 +173,8 @@ int w_ImageData_getPixel(lua_State *L)
 int w_ImageData_setPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = (int) luaL_checknumber(L, 2);
-	int y = (int) luaL_checknumber(L, 3);
+	int x = (int) luaL_checkinteger(L, 2);
+	int y = (int) luaL_checkinteger(L, 3);
 
 	PixelFormat format = t->getFormat();
 
@@ -247,12 +248,12 @@ int w_ImageData_paste(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	ImageData *src = luax_checkimagedata(L, 2);
-	int dx = (int) luaL_checknumber(L, 3);
-	int dy = (int) luaL_checknumber(L, 4);
-	int sx = (int) luaL_optnumber(L, 5, 0);
-	int sy = (int) luaL_optnumber(L, 6, 0);
-	int sw = (int) luaL_optnumber(L, 7, src->getWidth());
-	int sh = (int) luaL_optnumber(L, 8, src->getHeight());
+	int dx = (int) luaL_checkinteger(L, 3);
+	int dy = (int) luaL_checkinteger(L, 4);
+	int sx = (int) luaL_optinteger(L, 5, 0);
+	int sy = (int) luaL_optinteger(L, 6, 0);
+	int sw = (int) luaL_optinteger(L, 7, src->getWidth());
+	int sh = (int) luaL_optinteger(L, 8, src->getHeight());
 	t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 	return 0;
 }
@@ -261,7 +262,7 @@ int w_ImageData_encode(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 
-	ImageData::EncodedFormat format;
+	FormatHandler::EncodedFormat format;
 	const char *fmt = luaL_checkstring(L, 2);
 	if (!ImageData::getConstant(fmt, format))
 		return luaL_error(L, "Invalid encoded image format '%s'.", fmt);
@@ -276,18 +277,10 @@ int w_ImageData_encode(lua_State *L)
 	}
 
 	love::filesystem::FileData *filedata = nullptr;
-	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
+	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str(), hasfilename); });
 
 	luax_pushtype(L, filedata);
 	filedata->release();
-
-	if (hasfilename)
-	{
-		luax_getfunction(L, "filesystem", "write");
-		lua_pushvalue(L, 3); // filename
-		lua_pushvalue(L, -3); // FileData
-		lua_call(L, 2, 0);
-	}
 
 	return 1;
 }

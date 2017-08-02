@@ -22,7 +22,7 @@
 #define LOVE_GRAPHICS_OPENGL_CANVAS_H
 
 #include "common/config.h"
-#include "graphics/Color.h"
+#include "common/Color.h"
 #include "common/int.h"
 #include "graphics/Canvas.h"
 #include "graphics/Volatile.h"

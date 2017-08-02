@@ -238,7 +238,7 @@ public:
 	 * Can be used with getPointer to calculate an offset into the array based
 	 * on a number of elements.
 	 **/
-	size_t getElementSize();
+	size_t getElementSize() const;
 
 	/**
 	 * Returns the pointer to the Buffer.

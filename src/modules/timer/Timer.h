@@ -42,9 +42,9 @@ public:
 
 	/**
 	 * Measures the time between this call and the previous call,
-	 * and updates internal values accordinly.
+	 * and updates internal values accordingly.
 	 **/
-	void step();
+	double step();
 
 	/**
 	 * Tries to sleep for the specified amount of time. The precision is

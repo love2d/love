@@ -20,6 +20,17 @@
 
 // LOVE
 #include "Image.h"
+#include "common/config.h"
+
+#include "magpie/PNGHandler.h"
+#include "magpie/STBHandler.h"
+#include "magpie/EXRHandler.h"
+
+#include "magpie/ddsHandler.h"
+#include "magpie/PVRHandler.h"
+#include "magpie/KTXHandler.h"
+#include "magpie/PKMHandler.h"
+#include "magpie/ASTCHandler.h"
 
 namespace love
 {
@@ -27,6 +38,79 @@ namespace image
 {
 
 love::Type Image::type("image", &Module::type);
+
+Image::Image()
+{
+	using namespace magpie;
+
+	halfInit(); // Makes sure half-float conversions can be used.
+
+	formatHandlers = {
+		new PNGHandler,
+		new STBHandler,
+		new EXRHandler,
+	};
+
+	compressedFormatHandlers = {
+		new DDSHandler,
+		new PVRHandler,
+		new KTXHandler,
+		new PKMHandler,
+		new ASTCHandler,
+	};
+}
+
+Image::~Image()
+{
+	// ImageData objects reference the FormatHandlers in our list, so we should
+	// release them instead of deleting them completely here.
+	for (FormatHandler *handler : formatHandlers)
+		handler->release();
+
+	for (CompressedFormatHandler *handler : compressedFormatHandlers)
+		handler->release();
+}
+
+const char *Image::getName() const
+{
+	return "love.image.magpie";
+}
+
+love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
+{
+	return new ImageData(data);
+}
+
+love::image::ImageData *Image::newImageData(int width, int height, PixelFormat format)
+{
+	return new ImageData(width, height, format);
+}
+
+love::image::ImageData *Image::newImageData(int width, int height, PixelFormat format, void *data, bool own)
+{
+	return new ImageData(width, height, format, data, own);
+}
+
+love::image::CompressedImageData *Image::newCompressedData(love::filesystem::FileData *data)
+{
+	return new CompressedImageData(compressedFormatHandlers, data);
+}
+
+bool Image::isCompressed(love::filesystem::FileData *data)
+{
+	for (CompressedFormatHandler *handler : compressedFormatHandlers)
+	{
+		if (handler->canParse(data))
+			return true;
+	}
+
+	return false;
+}
+
+const std::list<FormatHandler *> &Image::getFormatHandlers() const
+{
+	return formatHandlers;
+}
 
 ImageData *Image::newPastedImageData(ImageData *src, int sx, int sy, int w, int h)
 {

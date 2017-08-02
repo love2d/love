@@ -18,11 +18,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_ASTC_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_ASTC_HANDLER_H
+#pragma once
 
 #include "common/config.h"
-#include "CompressedFormatHandler.h"
+#include "image/CompressedFormatHandler.h"
 
 namespace love
 {
@@ -44,8 +43,8 @@ public:
 	// Implements CompressedFormatHandler.
 	bool canParse(const filesystem::FileData *data) override;
 
-	StrongRef<CompressedImageData::Memory> parse(filesystem::FileData *filedata,
-	        std::vector<StrongRef<CompressedImageData::Slice>> &images,
+	StrongRef<CompressedMemory> parse(filesystem::FileData *filedata,
+	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
 
 }; // ASTCHandler
@@ -53,5 +52,3 @@ public:
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_ASTC_HANDLER_H

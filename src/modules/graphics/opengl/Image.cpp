@@ -221,22 +221,8 @@ bool Image::loadVolatile()
 	glGenTextures(1, &texture);
 	gl.bindTextureToUnit(this, 0, false);
 
-	bool loaddefault = false;
-
-	int max2Dsize = gl.getMax2DTextureSize();
-	int max3Dsize = gl.getMax3DTextureSize();
-
-	if ((texType == TEXTURE_2D || texType == TEXTURE_2D_ARRAY) && (pixelWidth > max2Dsize || pixelHeight > max2Dsize))
-		loaddefault = true;
-	else if (texType == TEXTURE_2D_ARRAY && layers > gl.getMaxTextureLayers())
-		loaddefault = true;
-	else if (texType == TEXTURE_CUBE && (pixelWidth > gl.getMaxCubeTextureSize() || pixelWidth != pixelHeight))
-		loaddefault = true;
-	else if (texType == TEXTURE_VOLUME && (pixelWidth > max3Dsize || pixelHeight > max3Dsize || depth > max3Dsize))
-		loaddefault = true;
-
 	// Use a default texture if the size is too big for the system.
-	if (loaddefault)
+	if (!validateDimensions(false))
 	{
 		loadDefaultTexture();
 		return true;

@@ -84,7 +84,7 @@ int w_newQueueableSource(lua_State *L)
 	Source *t = nullptr;
 
 	luax_catchexcept(L, [&]() {
-		t = instance()->newSource((int)luaL_checknumber(L, 1), (int)luaL_checknumber(L, 2), (int)luaL_checknumber(L, 3), (int)luaL_optnumber(L, 4, 0));
+		t = instance()->newSource((int)luaL_checkinteger(L, 1), (int)luaL_checkinteger(L, 2), (int)luaL_checkinteger(L, 3), (int)luaL_optinteger(L, 4, 0));
 	});
 
 	if (t != nullptr)
@@ -115,16 +115,34 @@ static std::vector<Source*> readSourceList(lua_State *L, int n)
 	return sources;
 }
 
+static std::vector<Source*> readSourceVararg(lua_State *L, int i)
+{
+	const int top = lua_gettop(L);
+
+	if (i < 0)
+		i += top + 1;
+
+	int items = top - i + 1;
+	std::vector<Source*> sources(items);
+
+	for (int pos = 0; i <= top; i++, pos++)
+		sources[pos] = luax_checksource(L, i);
+
+	return sources;
+}
+
 int w_play(lua_State *L)
 {
 	if (lua_istable(L, 1))
-	{
 		luax_pushboolean(L, instance()->play(readSourceList(L, 1)));
-		return 1;
+	else if (lua_gettop(L) > 1)
+		luax_pushboolean(L, instance()->play(readSourceVararg(L, 1)));
+	else
+	{
+		Source *s = luax_checksource(L, 1);
+		luax_pushboolean(L, instance()->play(s));
 	}
 
-	Source *s = luax_checksource(L, 1);
-	luax_pushboolean(L, instance()->play(s));
 	return 1;
 }
 
@@ -134,6 +152,8 @@ int w_stop(lua_State *L)
 		instance()->stop();
 	else if (lua_istable(L, 1))
 		instance()->stop(readSourceList(L, 1));
+	else if (lua_gettop(L) > 1)
+		instance()->stop(readSourceVararg(L, 1));
 	else
 	{
 		Source *s = luax_checksource(L, 1);
@@ -158,6 +178,8 @@ int w_pause(lua_State *L)
 	}
 	else if (lua_istable(L, 1))
 		instance()->pause(readSourceList(L, 1));
+	else if (lua_gettop(L) > 1)
+		instance()->pause(readSourceVararg(L, 1));
 	else
 	{
 		Source *s = luax_checksource(L, 1);
@@ -463,14 +485,13 @@ int w_getEffect(lua_State *L)
 	return 1;
 }
 
-int w_getEffectsList(lua_State *L)
+int w_getActiveEffects(lua_State *L)
 {
 	std::vector<std::string> list;
-	if (!instance()->getEffectsList(list))
-		return 0;
+	instance()->getActiveEffects(list);
 
-	lua_createtable(L, 0, list.size());
-	for (unsigned int i = 0; i < list.size(); i++)
+	lua_createtable(L, 0, (int) list.size());
+	for (int i = 0; i < (int) list.size(); i++)
 	{
 		lua_pushnumber(L, i + 1);
 		lua_pushstring(L, list[i].c_str());
@@ -494,6 +515,12 @@ int w_getMaxSourceEffects(lua_State *L)
 int w_isEffectsSupported(lua_State *L)
 {
 	lua_pushboolean(L, instance()->isEFXsupported());
+	return 1;
+}
+
+int w_setMixWithSystem(lua_State *L)
+{
+	luax_pushboolean(L, instance()->setMixWithSystem(luax_toboolean(L, 1)));
 	return 1;
 }
 
@@ -523,10 +550,11 @@ static const luaL_Reg functions[] =
 	{ "getRecordingDevices", w_getRecordingDevices },
 	{ "setEffect", w_setEffect },
 	{ "getEffect", w_getEffect },
-	{ "getEffectsList", w_getEffectsList },
+	{ "getActiveEffects", w_getActiveEffects },
 	{ "getMaxSceneEffects", w_getMaxSceneEffects },
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
+	{ "setMixWithSystem", w_setMixWithSystem },
 	{ 0, 0 }
 };
 

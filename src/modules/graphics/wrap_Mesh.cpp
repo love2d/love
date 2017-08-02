@@ -386,7 +386,7 @@ int w_Mesh_setVertexMap(lua_State *L)
 
 		size_t datatypesize = vertex::getIndexDataSize(indextype);
 
-		int indexcount = (int) luaL_optnumber(L, 4, d->getSize() / datatypesize);
+		int indexcount = (int) luaL_optinteger(L, 4, d->getSize() / datatypesize);
 
 		if (indexcount < 1 || indexcount * datatypesize > d->getSize())
 			return luaL_error(L, "Invalid index count: %d", indexcount);
@@ -515,8 +515,8 @@ int w_Mesh_setDrawRange(lua_State *L)
 		t->setDrawRange();
 	else
 	{
-		int start = (int) luaL_checknumber(L, 2) - 1;
-		int count = (int) luaL_checknumber(L, 3);
+		int start = (int) luaL_checkinteger(L, 2) - 1;
+		int count = (int) luaL_checkinteger(L, 3);
 		luax_catchexcept(L, [&](){ t->setDrawRange(start, count); });
 	}
 

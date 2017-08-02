@@ -9,7 +9,7 @@
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented = 0; you must not
+ * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
@@ -38,11 +38,6 @@ RecordingDevice::~RecordingDevice()
 {
 }
 
-bool RecordingDevice::start()
-{
-	return false;
-}
-
 bool RecordingDevice::start(int, int, int, int)
 {
 	return false;
@@ -62,19 +57,24 @@ int RecordingDevice::getSampleCount() const
 	return 0;
 }
 
+int RecordingDevice::getMaxSamples() const
+{
+	return 0;
+}
+
 int RecordingDevice::getSampleRate() const
 {
-	return 8000;
+	return 0;
 }
 
 int RecordingDevice::getBitDepth() const
 {
-	return 16;
+	return 0;
 }
 
 int RecordingDevice::getChannels() const
 {
-	return 1;
+	return 0;
 }
 
 const char *RecordingDevice::getName() const

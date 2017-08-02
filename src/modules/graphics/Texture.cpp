@@ -317,6 +317,63 @@ int Texture::getMipmapCount(int w, int h, int d)
 	return (int) log2(std::max(std::max(w, h), d)) + 1;
 }
 
+bool Texture::validateDimensions(bool throwException) const
+{
+	bool success = true;
+
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx == nullptr)
+		return false;
+
+	const Graphics::Capabilities &caps = gfx->getCapabilities();
+
+	int max2Dsize   = (int) caps.limits[Graphics::LIMIT_TEXTURE_SIZE];
+	int max3Dsize   = (int) caps.limits[Graphics::LIMIT_VOLUME_TEXTURE_SIZE];
+	int maxcubesize = (int) caps.limits[Graphics::LIMIT_CUBE_TEXTURE_SIZE];
+	int maxlayers   = (int) caps.limits[Graphics::LIMIT_TEXTURE_LAYERS];
+
+	int largestdim = 0;
+	const char *largestname = nullptr;
+
+	if ((texType == TEXTURE_2D || texType == TEXTURE_2D_ARRAY) && (pixelWidth > max2Dsize || pixelHeight > max2Dsize))
+	{
+		success = false;
+		largestdim = std::max(pixelWidth, pixelHeight);
+		largestname = pixelWidth > pixelHeight ? "pixel width" : "pixel height";
+	}
+	else if (texType == TEXTURE_2D_ARRAY && layers > maxlayers)
+	{
+		success = false;
+		largestdim = layers;
+		largestname = "array layer count";
+	}
+	else if (texType == TEXTURE_CUBE && (pixelWidth > maxcubesize || pixelWidth != pixelHeight))
+	{
+		success = false;
+		largestdim = std::max(pixelWidth, pixelHeight);
+		largestname = pixelWidth > pixelHeight ? "pixel width" : "pixel height";
+
+		if (throwException && pixelWidth != pixelHeight)
+			throw love::Exception("Cubemap textures must have equal width and height.");
+	}
+	else if (texType == TEXTURE_VOLUME && (pixelWidth > max3Dsize || pixelHeight > max3Dsize || depth > max3Dsize))
+	{
+		success = false;
+		largestdim = std::max(std::max(pixelWidth, pixelHeight), depth);
+		if (largestdim == pixelWidth)
+			largestname = "pixel width";
+		else if (largestdim == pixelHeight)
+			largestname = "pixel height";
+		else
+			largestname = "pixel depth";
+	}
+
+	if (throwException && largestname != nullptr)
+		throw love::Exception("Cannot create texture: %s of %d is too large for this system.", largestname, largestdim);
+
+	return success;
+}
+
 bool Texture::getConstant(const char *in, TextureType &out)
 {
 	return texTypes.find(in, out);

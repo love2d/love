@@ -97,43 +97,7 @@ Canvas::Canvas(const Settings &settings)
 		throw love::Exception("%s textures are not supported on this system!", textypestr);
 	}
 
-	int maxsize = 0;
-	switch (texType)
-	{
-	case TEXTURE_2D:
-		maxsize = (int) caps.limits[Graphics::LIMIT_TEXTURE_SIZE];
-		if (pixelWidth > maxsize)
-			throw TextureTooLargeException("width", pixelWidth);
-		else if (pixelHeight > maxsize)
-			throw TextureTooLargeException("height", pixelHeight);
-		break;
-	case TEXTURE_VOLUME:
-		maxsize = (int) caps.limits[Graphics::LIMIT_VOLUME_TEXTURE_SIZE];
-		if (pixelWidth > maxsize)
-			throw TextureTooLargeException("width", pixelWidth);
-		else if (pixelHeight > maxsize)
-			throw TextureTooLargeException("height", pixelHeight);
-		else if (depth > maxsize)
-			throw TextureTooLargeException("depth", depth);
-		break;
-	case TEXTURE_2D_ARRAY:
-		maxsize = (int) caps.limits[Graphics::LIMIT_TEXTURE_SIZE];
-		if (pixelWidth > maxsize)
-			throw TextureTooLargeException("width", pixelWidth);
-		else if (pixelHeight > maxsize)
-			throw TextureTooLargeException("height", pixelHeight);
-		else if (layers > (int) caps.limits[Graphics::LIMIT_TEXTURE_LAYERS])
-			throw TextureTooLargeException("array layer count", layers);
-		break;
-	case TEXTURE_CUBE:
-		if (pixelWidth != pixelHeight)
-			throw love::Exception("Cubemap textures must have equal width and height.");
-		else if (pixelWidth > (int) caps.limits[Graphics::LIMIT_CUBE_TEXTURE_SIZE])
-			throw TextureTooLargeException("width", pixelWidth);
-		break;
-	default:
-		break;
-	}
+	validateDimensions(true);
 
 	canvasCount++;
 }

@@ -24,6 +24,7 @@
 #include "image/ImageData.h"
 #include "image/Image.h"
 #include "font/Rasterizer.h"
+#include "filesystem/Filesystem.h"
 #include "filesystem/wrap_Filesystem.h"
 #include "video/VideoStream.h"
 #include "image/wrap_Image.h"
@@ -321,7 +322,7 @@ int w_setCanvas(lua_State *L)
 
 			if (i == 1 && type != TEXTURE_2D)
 			{
-				target.slice = (int) luaL_checknumber(L, i + 1) - 1;
+				target.slice = (int) luaL_checkinteger(L, i + 1) - 1;
 				target.mipmap = (int) luaL_optinteger(L, i + 2, 1) - 1;
 				targets.colors.push_back(target);
 				break;
@@ -439,8 +440,54 @@ static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *
 		delete ref;
 }
 
+static int screenshotSaveToFile(lua_State *L)
+{
+	image::ImageData *id = image::luax_checkimagedata(L, 1);
+
+	const char *filename = luaL_checkstring(L, lua_upvalueindex(1));
+	const char *ext = luaL_checkstring(L, lua_upvalueindex(2));
+
+	image::FormatHandler::EncodedFormat format;
+	if (!image::ImageData::getConstant(ext, format))
+		return 0;
+
+	try
+	{
+		id->encode(format, filename, true);
+	}
+	catch (love::Exception &e)
+	{
+		printf("Screenshot encoding or saving failed: %s", e.what());
+		// Do nothing...
+	}
+
+	return 0;
+}
+
 int w_captureScreenshot(lua_State *L)
 {
+	if (lua_isstring(L, 1))
+	{
+		std::string filename = luax_checkstring(L, 1);
+		std::string ext;
+
+		size_t dotpos = filename.rfind('.');
+
+		if (dotpos != std::string::npos)
+			ext = filename.substr(dotpos + 1);
+
+		std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+
+		image::FormatHandler::EncodedFormat format;
+		if (!image::ImageData::getConstant(ext.c_str(), format))
+			return luaL_error(L, "Invalid encoded image format: %s", ext.c_str());
+
+		lua_pushvalue(L, 1);
+		luax_pushstring(L, ext);
+		lua_pushcclosure(L, screenshotSaveToFile, 2);
+		lua_replace(L, 1);
+	}
+
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	Graphics::ScreenshotInfo info;
@@ -470,10 +517,10 @@ int w_setScissor(lua_State *L)
 	}
 
 	Rect rect;
-	rect.x = (int) luaL_checknumber(L, 1);
-	rect.y = (int) luaL_checknumber(L, 2);
-	rect.w = (int) luaL_checknumber(L, 3);
-	rect.h = (int) luaL_checknumber(L, 4);
+	rect.x = (int) luaL_checkinteger(L, 1);
+	rect.y = (int) luaL_checkinteger(L, 2);
+	rect.w = (int) luaL_checkinteger(L, 3);
+	rect.h = (int) luaL_checkinteger(L, 4);
 
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -485,10 +532,10 @@ int w_setScissor(lua_State *L)
 int w_intersectScissor(lua_State *L)
 {
 	Rect rect;
-	rect.x = (int) luaL_checknumber(L, 1);
-	rect.y = (int) luaL_checknumber(L, 2);
-	rect.w = (int) luaL_checknumber(L, 3);
-	rect.h = (int) luaL_checknumber(L, 4);
+	rect.x = (int) luaL_checkinteger(L, 1);
+	rect.y = (int) luaL_checkinteger(L, 2);
+	rect.w = (int) luaL_checkinteger(L, 3);
+	rect.h = (int) luaL_checkinteger(L, 4);
 
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -524,7 +571,7 @@ int w_stencil(lua_State *L)
 			return luaL_error(L, "Invalid stencil draw action: %s", actionstr);
 	}
 
-	int stencilvalue = (int) luaL_optnumber(L, 3, 1);
+	int stencilvalue = (int) luaL_optinteger(L, 3, 1);
 
 	// Fourth argument: whether to keep the contents of the stencil buffer.
 	OptionalInt stencilclear;
@@ -561,7 +608,7 @@ int w_setStencilTest(lua_State *L)
 		if (!getConstant(comparestr, compare))
 			return luaL_error(L, "Invalid compare mode: %s", comparestr);
 
-		comparevalue = (int) luaL_checknumber(L, 2);
+		comparevalue = (int) luaL_checkinteger(L, 2);
 	}
 
 	luax_catchexcept(L, [&](){ instance()->setStencilTest(compare, comparevalue); });
@@ -942,14 +989,14 @@ int w_newQuad(lua_State *L)
 	}
 	else if (luax_istype(L, 6, Texture::type))
 	{
-		layer = (int) luaL_checknumber(L, 5) - 1;
+		layer = (int) luaL_checkinteger(L, 5) - 1;
 		Texture *texture = luax_checktexture(L, 6);
 		sw = texture->getWidth();
 		sh = texture->getHeight();
 	}
 	else if (!lua_isnoneornil(L, 7))
 	{
-		layer = (int) luaL_checknumber(L, 5) - 1;
+		layer = (int) luaL_checkinteger(L, 5) - 1;
 		sw = luaL_checknumber(L, 6);
 		sh = luaL_checknumber(L, 7);
 	}
@@ -1030,7 +1077,7 @@ int w_newSpriteBatch(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Texture *texture = luax_checktexture(L, 1);
-	int size = (int) luaL_optnumber(L, 2, 1000);
+	int size = (int) luaL_optinteger(L, 2, 1000);
 	vertex::Usage usage = vertex::USAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
@@ -1075,8 +1122,8 @@ int w_newCanvas(lua_State *L)
 	Canvas::Settings settings;
 
 	// check if width and height are given. else default to screen dimensions.
-	settings.width  = (int) luaL_optnumber(L, 1, instance()->getWidth());
-	settings.height = (int) luaL_optnumber(L, 2, instance()->getHeight());
+	settings.width  = (int) luaL_optinteger(L, 1, instance()->getWidth());
+	settings.height = (int) luaL_optinteger(L, 2, instance()->getHeight());
 
 	// Default to the screen's current pixel density scale.
 	settings.pixeldensity = instance()->getScreenPixelDensity();
@@ -1085,7 +1132,7 @@ int w_newCanvas(lua_State *L)
 
 	if (lua_isnumber(L, 3))
 	{
-		settings.layers = (int) luaL_checknumber(L, 3);
+		settings.layers = (int) luaL_checkinteger(L, 3);
 		settings.type = TEXTURE_2D_ARRAY;
 		startidx = 4;
 	}
@@ -1142,36 +1189,48 @@ int w_newCanvas(lua_State *L)
 
 static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::ShaderSource &source)
 {
+	using namespace love::filesystem;
+
 	luax_checkgraphicscreated(L);
+
+	auto fs = Module::getInstance<Filesystem>(Module::M_FILESYSTEM);
 
 	// read any filepath arguments
 	for (int i = startidx; i < startidx + 2; i++)
 	{
 		if (!lua_isstring(L, i))
-			continue;
-
-		// call love.filesystem.isFile(arg_i)
-		luax_getfunction(L, "filesystem", "isFile");
-		lua_pushvalue(L, i);
-		lua_call(L, 1, 1);
-
-		bool isFile = luax_toboolean(L, -1);
-		lua_pop(L, 1);
-
-		if (isFile)
 		{
-			luax_getfunction(L, "filesystem", "read");
-			lua_pushvalue(L, i);
-			lua_call(L, 1, 1);
+			if (luax_cangetfiledata(L, i))
+			{
+				FileData *fd = luax_getfiledata(L, i);
+
+				lua_pushlstring(L, (const char *) fd->getData(), fd->getSize());
+				fd->release();
+
+				lua_replace(L, i);
+			}
+
+			continue;
+		}
+
+		size_t slen = 0;
+		const char *str = lua_tolstring(L, i, &slen);
+
+		if (fs != nullptr && fs->isFile(str))
+		{
+			FileData *fd = nullptr;
+			luax_catchexcept(L, [&](){ fd = fs->read(str); });
+
+			lua_pushlstring(L, (const char *) fd->getData(), fd->getSize());
+			fd->release();
+
 			lua_replace(L, i);
 		}
 		else
 		{
 			// Check if the argument looks like a filepath - we want a nicer
 			// error for misspelled filepath arguments.
-			size_t slen = 0;
-			const char *str = lua_tolstring(L, i, &slen);
-			if (slen > 0 && slen < 256 && !strchr(str, '\n'))
+			if (slen > 0 && slen < 64 && !strchr(str, '\n'))
 			{
 				const char *ext = strchr(str, '.');
 				if (ext != nullptr && !strchr(ext, ';') && !strchr(ext, ' '))
@@ -1352,7 +1411,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	}
 	else
 	{
-		int count = (int) luaL_checknumber(L, 1);
+		int count = (int) luaL_checkinteger(L, 1);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, drawmode, usage); });
 	}
 
@@ -1397,7 +1456,7 @@ static Mesh *newCustomMesh(lua_State *L)
 			return nullptr;
 		}
 
-		format.components = (int) luaL_checknumber(L, -1);
+		format.components = (int) luaL_checkinteger(L, -1);
 		if (format.components <= 0 || format.components > 4)
 		{
 			luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", format.components);
@@ -1410,7 +1469,7 @@ static Mesh *newCustomMesh(lua_State *L)
 
 	if (lua_isnumber(L, 2))
 	{
-		int vertexcount = (int) luaL_checknumber(L, 2);
+		int vertexcount = (int) luaL_checkinteger(L, 2);
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, vertexcount, drawmode, usage); });
 	}
 	else if (luax_istype(L, 2, Data::type))
@@ -2073,6 +2132,9 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.drawCalls);
 	lua_setfield(L, -2, "drawcalls");
 
+	lua_pushinteger(L, stats.drawCallsBatched);
+	lua_setfield(L, -2, "drawcallsbatched");
+
 	lua_pushinteger(L, stats.canvasSwitches);
 	lua_setfield(L, -2, "canvasswitches");
 
@@ -2135,7 +2197,7 @@ int w_drawLayer(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
 	Quad *quad = nullptr;
-	int layer = (int) luaL_checknumber(L, 2) - 1;
+	int layer = (int) luaL_checkinteger(L, 2) - 1;
 	int startidx = 3;
 
 	if (luax_istype(L, startidx, Quad::type))
@@ -2279,23 +2341,23 @@ int w_points(lua_State *L)
 	if (args % 2 != 0 && !is_table_of_tables)
 		return luaL_error(L, "Number of vertex components must be a multiple of two");
 
-	int numpoints = args / 2;
+	int numpositions = args / 2;
 	if (is_table_of_tables)
-		numpoints = args;
+		numpositions = args;
 
-	float *coords = nullptr;
+	Vector2 *positions = nullptr;
 	Colorf *colors = nullptr;
 
 	if (is_table_of_tables)
 	{
-		size_t datasize = (sizeof(float) * 2 + sizeof(Colorf)) * numpoints;
+		size_t datasize = (sizeof(Vector2) + sizeof(Colorf)) * numpositions;
 		uint8 *data = instance()->getScratchBuffer<uint8>(datasize);
 
-		coords = (float *) data;
-		colors = (Colorf *) (data + sizeof(float) * numpoints * 2);
+		positions = (Vector2 *) data;
+		colors = (Colorf *) (data + sizeof(Vector2) * numpositions);
 	}
 	else
-		coords = instance()->getScratchBuffer<float>(numpoints * 2);
+		positions = instance()->getScratchBuffer<Vector2>(numpositions);
 
 	if (is_table)
 	{
@@ -2308,13 +2370,13 @@ int w_points(lua_State *L)
 				for (int j = 1; j <= 6; j++)
 					lua_rawgeti(L, -j, j);
 
-				coords[i * 2 + 0] = luax_tofloat(L, -6);
-				coords[i * 2 + 1] = luax_tofloat(L, -5);
+				positions[i].x = luax_tofloat(L, -6);
+				positions[i].y = luax_tofloat(L, -5);
 
-				colors[i].r = luaL_optnumber(L, -4, 1.0);
-				colors[i].g = luaL_optnumber(L, -3, 1.0);
-				colors[i].b = luaL_optnumber(L, -2, 1.0);
-				colors[i].a = luaL_optnumber(L, -1, 1.0);
+				colors[i].r = (float) luaL_optnumber(L, -4, 1.0);
+				colors[i].g = (float) luaL_optnumber(L, -3, 1.0);
+				colors[i].b = (float) luaL_optnumber(L, -2, 1.0);
+				colors[i].a = (float) luaL_optnumber(L, -1, 1.0);
 
 				lua_pop(L, 7);
 			}
@@ -2322,21 +2384,26 @@ int w_points(lua_State *L)
 		else
 		{
 			// points({x1, y1, x2, y2, ...})
-			for (int i = 0; i < args; i++)
+			for (int i = 0; i < numpositions; i++)
 			{
-				lua_rawgeti(L, 1, i + 1);
-				coords[i] = luax_tofloat(L, -1);
-				lua_pop(L, 1);
+				lua_rawgeti(L, 1, i * 2 + 1);
+				lua_rawgeti(L, 1, i * 2 + 2);
+				positions[i].x = luax_tofloat(L, -2);
+				positions[i].y = luax_tofloat(L, -1);
+				lua_pop(L, 2);
 			}
 		}
 	}
 	else
 	{
-		for (int i = 0; i < args; i++)
-			coords[i] = luax_tofloat(L, i + 1);
+		for (int i = 0; i < numpositions; i++)
+		{
+			positions[i].x = luax_tofloat(L, i * 2 + 1);
+			positions[i].y = luax_tofloat(L, i * 2 + 2);
+		}
 	}
 
-	luax_catchexcept(L, [&](){ instance()->points(coords, colors, numpoints); });
+	luax_catchexcept(L, [&](){ instance()->points(positions, colors, numpositions); });
 	return 0;
 }
 
@@ -2355,24 +2422,31 @@ int w_line(lua_State *L)
 	else if (args < 4)
 		return luaL_error(L, "Need at least two vertices to draw a line");
 
-	float *coords = instance()->getScratchBuffer<float>(args);
+	int numvertices = args / 2;
+
+	Vector2 *coords = instance()->getScratchBuffer<Vector2>(numvertices);
 	if (is_table)
 	{
-		for (int i = 0; i < args; ++i)
+		for (int i = 0; i < numvertices; ++i)
 		{
-			lua_rawgeti(L, 1, i + 1);
-			coords[i] = luax_tofloat(L, -1);
-			lua_pop(L, 1);
+			lua_rawgeti(L, 1, (i * 2) + 1);
+			lua_rawgeti(L, 1, (i * 2) + 2);
+			coords[i].x = luax_tofloat(L, -2);
+			coords[i].y = luax_tofloat(L, -1);
+			lua_pop(L, 2);
 		}
 	}
 	else
 	{
-		for (int i = 0; i < args; ++i)
-			coords[i] = luax_tofloat(L, i + 1);
+		for (int i = 0; i < numvertices; ++i)
+		{
+			coords[i].x = luax_tofloat(L, (i * 2) + 1);
+			coords[i].y = luax_tofloat(L, (i * 2) + 2);
+		}
 	}
 
 	luax_catchexcept(L,
-		[&](){ instance()->polyline(coords, args); }
+		[&](){ instance()->polyline(coords, numvertices); }
 	);
 
 	return 0;
@@ -2403,7 +2477,7 @@ int w_rectangle(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h, rx, ry); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, 8);
+		int points = (int) luaL_checkinteger(L, 8);
 		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h, rx, ry, points); });
 	}
 
@@ -2425,7 +2499,7 @@ int w_circle(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->circle(mode, x, y, radius); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, 5);
+		int points = (int) luaL_checkinteger(L, 5);
 		luax_catchexcept(L, [&](){ instance()->circle(mode, x, y, radius, points); });
 	}
 
@@ -2448,7 +2522,7 @@ int w_ellipse(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->ellipse(mode, x, y, a, b); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, 6);
+		int points = (int) luaL_checkinteger(L, 6);
 		luax_catchexcept(L, [&](){ instance()->ellipse(mode, x, y, a, b, points); });
 	}
 
@@ -2485,7 +2559,7 @@ int w_arc(lua_State *L)
 		luax_catchexcept(L, [&](){ instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2); });
 	else
 	{
-		int points = (int) luaL_checknumber(L, startidx + 5);
+		int points = (int) luaL_checkinteger(L, startidx + 5);
 		luax_catchexcept(L, [&](){ instance()->arc(drawmode, arcmode, x, y, radius, angle1, angle2, points); });
 	}
 
@@ -2513,28 +2587,34 @@ int w_polygon(lua_State *L)
 	else if (args < 6)
 		return luaL_error(L, "Need at least three vertices to draw a polygon");
 
+	int numvertices = args / 2;
+
 	// fetch coords
-	float *coords = instance()->getScratchBuffer<float>(args + 2);
+	Vector2 *coords = instance()->getScratchBuffer<Vector2>(numvertices + 1);
 	if (is_table)
 	{
-		for (int i = 0; i < args; ++i)
+		for (int i = 0; i < numvertices; ++i)
 		{
-			lua_rawgeti(L, 2, i + 1);
-			coords[i] = luax_tofloat(L, -1);
-			lua_pop(L, 1);
+			lua_rawgeti(L, 2, (i * 2) + 1);
+			lua_rawgeti(L, 2, (i * 2) + 2);
+			coords[i].x = luax_tofloat(L, -2);
+			coords[i].y = luax_tofloat(L, -1);
+			lua_pop(L, 2);
 		}
 	}
 	else
 	{
-		for (int i = 0; i < args; ++i)
-			coords[i] = luax_tofloat(L, i + 2);
+		for (int i = 0; i < numvertices; ++i)
+		{
+			coords[i].x = luax_tofloat(L, (i * 2) + 2);
+			coords[i].y = luax_tofloat(L, (i * 2) + 3);
+		}
 	}
 
 	// make a closed loop
-	coords[args]   = coords[0];
-	coords[args+1] = coords[1];
+	coords[numvertices] = coords[0];
 
-	luax_catchexcept(L, [&](){ instance()->polygon(mode, coords, args+2); });
+	luax_catchexcept(L, [&](){ instance()->polygon(mode, coords, numvertices+1); });
 	return 0;
 }
 

@@ -20,6 +20,8 @@
 
 // LOVE
 #include "STBHandler.h"
+#include "image/ImageData.h"
+#include "common/Color.h"
 
 static void loveSTBIAssert(bool test, const char *teststr)
 {
@@ -48,6 +50,8 @@ namespace image
 namespace magpie
 {
 
+static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
+
 bool STBHandler::canDecode(love::filesystem::FileData *data)
 {
 	int w = 0;
@@ -60,9 +64,9 @@ bool STBHandler::canDecode(love::filesystem::FileData *data)
 	return status == 1 && w > 0 && h > 0;
 }
 
-bool STBHandler::canEncode(PixelFormat rawFormat, ImageData::EncodedFormat encodedFormat)
+bool STBHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 {
-	return encodedFormat == ImageData::ENCODED_TGA && rawFormat == PIXELFORMAT_RGBA8;
+	return encodedFormat == ENCODED_TGA && rawFormat == PIXELFORMAT_RGBA8;
 }
 
 FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
@@ -97,7 +101,7 @@ FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
 	return img;
 }
 
-FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageData::EncodedFormat encodedFormat)
+FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, EncodedFormat encodedFormat)
 {
 	if (!canEncode(img.format, encodedFormat))
 		throw love::Exception("Invalid format.");
@@ -143,7 +147,7 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, ImageDat
 	memcpy(encimg.data + headerlen, img.data, img.width * img.height * bpp);
 
 	// convert the pixels from RGBA to BGRA.
-	pixel *encodedpixels = (pixel *) (encimg.data + headerlen);
+	Color *encodedpixels = (Color *) (encimg.data + headerlen);
 	for (int y = 0; y < img.height; y++)
 	{
 		for (int x = 0; x < img.width; x++)

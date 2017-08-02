@@ -174,6 +174,8 @@ protected:
 	void initQuad();
 	void setGraphicsMemorySize(int64 size);
 
+	bool validateDimensions(bool throwException) const;
+
 	TextureType texType;
 
 	PixelFormat format;

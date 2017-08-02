@@ -261,7 +261,8 @@ void OpenGL::initVendor()
 
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
 	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
-	if (strstr(vstr, "ATI Technologies"))
+	// http://opengl.gpuinfo.org/gl_stats_caps_single.php?listreportsbycap=GL_VENDOR
+	if (strstr(vstr, "ATI Technologies") || strstr(vstr, "AMD") || strstr(vstr, "Advanced Micro Devices"))
 		vendor = VENDOR_AMD;
 	else if (strstr(vstr, "NVIDIA"))
 		vendor = VENDOR_NVIDIA;

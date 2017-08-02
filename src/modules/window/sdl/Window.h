@@ -34,7 +34,7 @@ namespace window
 namespace sdl
 {
 
-class Window : public love::window::Window
+class Window final : public love::window::Window
 {
 public:
 

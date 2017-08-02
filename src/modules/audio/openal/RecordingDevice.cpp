@@ -9,7 +9,7 @@
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented = 0; you must not
+ * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
@@ -49,26 +49,11 @@ RecordingDevice::RecordingDevice(const char *name)
 
 RecordingDevice::~RecordingDevice()
 {
-	if (!isRecording())
-		return;
-
-	alcCaptureStop(device);
-	alcCaptureCloseDevice(device);
-}
-
-bool RecordingDevice::start()
-{
-	return start(samples, sampleRate, bitDepth, channels);
+	stop();
 }
 
 bool RecordingDevice::start(int samples, int sampleRate, int bitDepth, int channels)
 {
-	if (isRecording())
-	{
-		alcCaptureStop(device);
-		alcCaptureCloseDevice(device);
-	}
-
 	ALenum format = Audio::getFormat(bitDepth, channels);
 	if (format == AL_NONE)
 		throw InvalidFormatException(channels, bitDepth);
@@ -79,15 +64,20 @@ bool RecordingDevice::start(int samples, int sampleRate, int bitDepth, int chann
 	if (sampleRate <= 0)
 		throw love::Exception("Invalid sample rate.");
 
+	if (isRecording())
+		stop();
+
 	device = alcCaptureOpenDevice(name.c_str(), sampleRate, format, samples);
 	if (device == nullptr)
 		return false;
 
 	alcCaptureStart(device);
+
 	this->samples = samples;
 	this->sampleRate = sampleRate;
 	this->bitDepth = bitDepth;
 	this->channels = channels;
+
 	return true;
 }
 
@@ -125,6 +115,11 @@ int RecordingDevice::getSampleCount() const
 	ALCint samples;
 	alcGetIntegerv(device, ALC_CAPTURE_SAMPLES, sizeof(ALCint), &samples);
 	return (int)samples;
+}
+
+int RecordingDevice::getMaxSamples() const
+{
+	return samples;
 }
 
 int RecordingDevice::getSampleRate() const

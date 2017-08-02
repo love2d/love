@@ -235,5 +235,36 @@ int Text::getHeight(int index) const
 	return text_data[index].text_info.height;
 }
 
+void Text::draw(Graphics *gfx, const Matrix4 &m)
+{
+	if (vbo == nullptr || draw_commands.empty())
+		return;
+
+	gfx->flushStreamDraws();
+
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
+	if (Shader::current)
+		Shader::current->checkMainTextureType(TEXTURE_2D, false);
+
+	// Re-generate the text if the Font's texture cache was invalidated.
+	if (font->getTextureCacheID() != texture_cache_id)
+		regenerateVertices();
+
+	int totalverts = 0;
+	for (const Font::DrawCommand &cmd : draw_commands)
+		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
+
+	if ((size_t) totalverts / 4 > quadIndices.getSize())
+		quadIndices = QuadIndices(gfx, (size_t) totalverts / 4);
+
+	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
+
+	Graphics::TempTransform transform(gfx, m);
+
+	drawInternal(draw_commands);
+}
+
 } // graphics
 } // love

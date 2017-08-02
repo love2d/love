@@ -699,7 +699,7 @@ int w_ParticleSystem_reset(lua_State *L)
 int w_ParticleSystem_emit(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	int num = (int) luaL_checknumber(L, 2);
+	int num = (int) luaL_checkinteger(L, 2);
 	t->emit(num);
 	return 0;
 }

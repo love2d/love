@@ -183,7 +183,7 @@ int w_Text_getFont(lua_State *L)
 int w_Text_getWidth(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	int index = (int) luaL_optnumber(L, 2, 0) - 1;
+	int index = (int) luaL_optinteger(L, 2, 0) - 1;
 	lua_pushnumber(L, t->getWidth(index));
 	return 1;
 }
@@ -191,7 +191,7 @@ int w_Text_getWidth(lua_State *L)
 int w_Text_getHeight(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	int index = (int) luaL_optnumber(L, 2, 0) - 1;
+	int index = (int) luaL_optinteger(L, 2, 0) - 1;
 	lua_pushnumber(L, t->getHeight(index));
 	return 1;
 }
@@ -199,7 +199,7 @@ int w_Text_getHeight(lua_State *L)
 int w_Text_getDimensions(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
-	int index = (int) luaL_optnumber(L, 2, 0) - 1;
+	int index = (int) luaL_optinteger(L, 2, 0) - 1;
 	lua_pushnumber(L, t->getWidth(index));
 	lua_pushnumber(L, t->getHeight(index));
 	return 2;

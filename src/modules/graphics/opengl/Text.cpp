@@ -40,35 +40,9 @@ Text::~Text()
 {
 }
 
-void Text::draw(Graphics *gfx, const Matrix4 &m)
+void Text::drawInternal(const std::vector<Font::DrawCommand> &commands) const
 {
-	if (vbo == nullptr || draw_commands.empty())
-		return;
-
-	gfx->flushStreamDraws();
-
-	if (Shader::isDefaultActive())
-		Shader::attachDefault(Shader::STANDARD_DEFAULT);
-
-	if (Shader::current)
-		Shader::current->checkMainTextureType(TEXTURE_2D, false);
-
 	OpenGL::TempDebugGroup debuggroup("Text object draw");
-
-	// Re-generate the text if the Font's texture cache was invalidated.
-	if (font->getTextureCacheID() != texture_cache_id)
-		regenerateVertices();
-
-	int totalverts = 0;
-	for (const Font::DrawCommand &cmd : draw_commands)
-		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
-
-	if ((size_t) totalverts / 4 > quadIndices.getSize())
-		quadIndices = QuadIndices(gfx, (size_t) totalverts / 4);
-
-	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
-
-	Graphics::TempTransform transform(gfx, m);
 
 	gl.prepareDraw();
 
@@ -82,14 +56,12 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 
 	// We need a separate draw call for every section of the text which uses a
 	// different texture than the previous section.
-	for (const Font::DrawCommand &cmd : draw_commands)
+	for (const Font::DrawCommand &cmd : commands)
 	{
 		GLsizei count = (cmd.vertexcount / 4) * 6;
 		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
 
-		// TODO: Use glDrawElementsBaseVertex when supported?
 		gl.bindTextureToUnit(cmd.texture, 0, false);
-
 		gl.drawElements(GL_TRIANGLES, count, gltype, BUFFER_OFFSET(offset));
 	}
 }

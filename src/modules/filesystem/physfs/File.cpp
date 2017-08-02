@@ -65,7 +65,7 @@ bool File::open(Mode mode)
 		throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 	// Check whether the write directory is set.
-	if ((mode == MODE_APPEND || mode == MODE_WRITE) && (PHYSFS_getWriteDir() == 0) && !hack_setupWriteDirectory())
+	if ((mode == MODE_APPEND || mode == MODE_WRITE) && (PHYSFS_getWriteDir() == nullptr) && !hack_setupWriteDirectory())
 		throw love::Exception("Could not set write directory.");
 
 	// File already open?
@@ -151,8 +151,6 @@ int64 File::read(void *dst, int64 size)
 	int64 max = (int64)PHYSFS_fileLength(file);
 	size = (size == ALL) ? max : size;
 	size = (size > max) ? max : size;
-	// Sadly, we'll have to clamp to 32 bits here
-	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
@@ -160,6 +158,8 @@ int64 File::read(void *dst, int64 size)
 #ifdef LOVE_USE_PHYSFS_2_1
 	int64 read = PHYSFS_readBytes(file, dst, (PHYSFS_uint64) size);
 #else
+	// Sadly, we'll have to clamp to 32 bits here
+	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 	int64 read = (int64)PHYSFS_read(file, dst, 1, (PHYSFS_uint32) size);
 #endif
 
@@ -171,9 +171,6 @@ bool File::write(const void *data, int64 size)
 	if (!file || (mode != MODE_WRITE && mode != MODE_APPEND))
 		throw love::Exception("File is not opened for writing.");
 
-	// Another clamp, for the time being.
-	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
-
 	if (size < 0)
 		throw love::Exception("Invalid write size.");
 
@@ -181,6 +178,8 @@ bool File::write(const void *data, int64 size)
 #ifdef LOVE_USE_PHYSFS_2_1
 	int64 written = PHYSFS_writeBytes(file, data, (PHYSFS_uint64) size);
 #else
+	// Another clamp, for the time being.
+	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
 	int64 written = (int64) PHYSFS_write(file, data, 1, (PHYSFS_uint32) size);
 #endif
 
@@ -191,7 +190,7 @@ bool File::write(const void *data, int64 size)
 	// Manually flush the buffer in BUFFER_LINE mode if we find a newline.
 	if (bufferMode == BUFFER_LINE && bufferSize > size)
 	{
-		if (memchr(data, '\n', (size_t) size) != NULL)
+		if (memchr(data, '\n', (size_t) size) != nullptr)
 			flush();
 	}
 

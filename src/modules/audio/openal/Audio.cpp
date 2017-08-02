@@ -543,7 +543,7 @@ bool Audio::getEffect(const char *name, std::map<Effect::Parameter, float> &para
 	return true;
 }
 
-bool Audio::getEffectsList(std::vector<std::string> &list)
+bool Audio::getActiveEffects(std::vector<std::string> &list) const
 {
 	if (effectmap.empty())
 		return false;

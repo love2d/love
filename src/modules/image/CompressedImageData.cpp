@@ -27,58 +27,54 @@ namespace image
 
 love::Type CompressedImageData::type("CompressedImageData", &Data::type);
 
-CompressedImageData::Memory::Memory(size_t size)
-	: data(nullptr)
-	, size(size)
-{
-	try
-	{
-		data = new uint8[size];
-	}
-	catch (std::exception &)
-	{
-		throw love::Exception("Out of memory.");
-	}
-}
-
-CompressedImageData::Memory::~Memory()
-{
-	delete[] data;
-}
-
-CompressedImageData::Slice::Slice(PixelFormat format, int width, int height, Memory *memory, size_t offset, size_t size)
-	: memory(memory)
-	, offset(offset)
-	, dataSize(size)
-{
-	this->format = format;
-	this->width = width;
-	this->height = height;
-}
-
-CompressedImageData::Slice::Slice(const Slice &s)
-	: memory(s.memory)
-	, offset(s.offset)
-	, dataSize(s.dataSize)
-{
-	this->format = s.getFormat();
-	this->width = s.getWidth();
-	this->height = s.getHeight();
-}
-
-CompressedImageData::Slice::~Slice()
-{
-}
-
-CompressedImageData::Slice *CompressedImageData::Slice::clone() const
-{
-	return new Slice(*this);
-}
-
-CompressedImageData::CompressedImageData()
+CompressedImageData::CompressedImageData(const std::list<CompressedFormatHandler *> &formats, love::filesystem::FileData *filedata)
 	: format(PIXELFORMAT_UNKNOWN)
 	, sRGB(false)
 {
+	CompressedFormatHandler *parser = nullptr;
+
+	for (CompressedFormatHandler *handler : formats)
+	{
+		if (handler->canParse(filedata))
+		{
+			parser = handler;
+			break;
+		}
+	}
+
+	if (parser == nullptr)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+
+	memory = parser->parse(filedata, dataImages, format, sRGB);
+
+	if (memory == nullptr)
+		throw love::Exception("Could not parse compressed data.");
+
+	if (format == PIXELFORMAT_UNKNOWN)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+
+	if (dataImages.size() == 0 || memory->size == 0)
+		throw love::Exception("Could not parse compressed data: No valid data?");
+}
+
+CompressedImageData::CompressedImageData(const CompressedImageData &c)
+	: format(c.format)
+	, sRGB(c.sRGB)
+{
+	memory.set(new CompressedMemory(c.memory->size), Acquire::NORETAIN);
+	memcpy(memory->data, c.memory->data, memory->size);
+
+	for (const auto &i : c.dataImages)
+	{
+		auto slice = new CompressedSlice(i->getFormat(), i->getWidth(), i->getHeight(), memory, i->getOffset(), i->getSize());
+		dataImages.push_back(slice);
+		slice->release();
+	}
+}
+
+CompressedImageData *CompressedImageData::clone() const
+{
+	return new CompressedImageData(*this);
 }
 
 CompressedImageData::~CompressedImageData()
@@ -143,7 +139,7 @@ bool CompressedImageData::isSRGB() const
 	return sRGB;
 }
 
-CompressedImageData::Slice *CompressedImageData::getSlice(int slice, int miplevel) const
+CompressedSlice *CompressedImageData::getSlice(int slice, int miplevel) const
 {
 	checkSliceExists(slice, miplevel);
 

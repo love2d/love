@@ -18,19 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_COMPRESSED_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_COMPRESSED_HANDLER_H
+#pragma once
 
 // LOVE
-#include "filesystem/FileData.h"
-#include "image/CompressedImageData.h"
 #include "common/Object.h"
+#include "filesystem/FileData.h"
+#include "CompressedSlice.h"
 
 namespace love
 {
 namespace image
-{
-namespace magpie
 {
 
 /**
@@ -45,8 +42,8 @@ public:
 	virtual ~CompressedFormatHandler() {}
 
 	/**
-	 * Determines whether a particular FileData can be parsed as CompressedImageData
-	 * by this handler.
+	 * Determines whether a particular FileData can be parsed as
+	 * CompressedImageData by this handler.
 	 * @param data The data to parse.
 	 **/
 	virtual bool canParse(const filesystem::FileData *data) = 0;
@@ -56,21 +53,18 @@ public:
 	 * a single block of memory containing all the images.
 	 *
 	 * @param[in] filedata The data to parse.
-	 * @param[out] images The list of sub-images generated. Byte data is a pointer
-	 *             to the returned data.
+	 * @param[out] images The list of sub-images generated. Byte data is a
+	 *             pointer to the returned data.
 	 * @param[out] format The format of the Compressed Data.
 	 * @param[out] sRGB Whether the texture is sRGB-encoded.
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
-	virtual StrongRef<CompressedImageData::Memory> parse(filesystem::FileData *filedata,
-	               std::vector<StrongRef<CompressedImageData::Slice>> &images,
+	virtual StrongRef<CompressedMemory> parse(filesystem::FileData *filedata,
+	               std::vector<StrongRef<CompressedSlice>> &images,
 	               PixelFormat &format, bool &sRGB) = 0;
 
 }; // CompressedFormatHandler
 
-} // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_COMPRESSED_HANDLER_H

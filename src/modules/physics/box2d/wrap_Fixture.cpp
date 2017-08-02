@@ -164,9 +164,9 @@ int w_Fixture_setFilterData(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
 	int v[3];
-	v[0] = (int) luaL_checknumber(L, 2);
-	v[1] = (int) luaL_checknumber(L, 3);
-	v[2] = (int) luaL_checknumber(L, 4);
+	v[0] = (int) luaL_checkinteger(L, 2);
+	v[1] = (int) luaL_checkinteger(L, 3);
+	v[2] = (int) luaL_checkinteger(L, 4);
 	t->setFilterData(v);
 	return 0;
 }
@@ -249,7 +249,7 @@ int w_Fixture_getGroupIndex(lua_State *L)
 int w_Fixture_setGroupIndex(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	int i = (int) luaL_checknumber(L, 2);
+	int i = (int) luaL_checkinteger(L, 2);
 	t->setGroupIndex(i);
 	return 0;
 }

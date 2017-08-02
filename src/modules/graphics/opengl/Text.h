@@ -38,8 +38,9 @@ public:
 	Text(love::graphics::Graphics *gfx, love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
-	// Implements Drawable.
-	void draw(love::graphics::Graphics *gfx, const Matrix4 &m) override;
+protected:
+
+	void drawInternal(const std::vector<Font::DrawCommand> &commands) const override;
 
 }; // Text
 

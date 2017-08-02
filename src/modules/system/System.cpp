@@ -158,6 +158,17 @@ void System::vibrate(double seconds) const
 #endif
 }
 
+bool System::hasBackgroundMusic() const
+{
+#if defined(LOVE_ANDROID)
+	return love::android::hasBackgroundMusic();
+#elif defined(LOVE_IOS)
+	return love::ios::hasBackgroundMusic();
+#else
+	return false;
+#endif
+}
+
 bool System::getConstant(const char *in, System::PowerState &out)
 {
 	return powerStates.find(in, out);

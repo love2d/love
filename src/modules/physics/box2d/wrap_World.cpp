@@ -47,8 +47,8 @@ int w_World_update(lua_State *L)
 		luax_catchexcept(L, [&](){ t->update(dt); });
 	else
 	{
-		int velocityiterations = (int) luaL_checknumber(L, 3);
-		int positioniterations = (int) luaL_checknumber(L, 4);
+		int velocityiterations = (int) luaL_checkinteger(L, 3);
+		int positioniterations = (int) luaL_checkinteger(L, 4);
 		luax_catchexcept(L, [&](){ t->update(dt, velocityiterations, positioniterations); });
 	}
 

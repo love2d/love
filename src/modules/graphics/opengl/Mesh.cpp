@@ -91,94 +91,28 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	return attriblocation;
 }
 
-void Mesh::drawInstanced(love::graphics::Graphics *gfx, const love::Matrix4 &m, int instancecount)
+void Mesh::drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const
 {
-	if (vertexCount <= 0 || instancecount <= 0)
-		return;
-
-	if (instancecount > 1 && !gl.isInstancingSupported())
-		throw love::Exception("Instancing is not supported on this system.");
-
-	gfx->flushStreamDraws();
-
-	if (Shader::isDefaultActive())
-		Shader::attachDefault(Shader::STANDARD_DEFAULT);
-
-	if (Shader::current && texture.get())
-		Shader::current->checkMainTexture(texture);
-
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 
-	uint32 enabledattribs = 0;
-	uint32 instancedattribs = 0;
-
-	for (const auto &attrib : attachedAttributes)
-	{
-		if (!attrib.second.enabled)
-			continue;
-
-		love::graphics::Mesh *mesh = attrib.second.mesh;
-		int location = mesh->bindAttributeToShaderInput(attrib.second.index, attrib.first);
-
-		if (location >= 0)
-		{
-			uint32 bit = 1u << (uint32) location;
-
-			enabledattribs |= bit;
-
-			if (attrib.second.step == STEP_PER_INSTANCE)
-				instancedattribs |= bit;
-		}
-	}
-
-	// Not supported on all platforms or GL versions, I believe.
-	if (!(enabledattribs & ATTRIBFLAG_POS))
-		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
-
-	gl.useVertexAttribArrays(enabledattribs, instancedattribs);
-
+	gl.useVertexAttribArrays(attribflags, instancedattribflags);
 	gl.bindTextureToUnit(texture, 0, false);
-
-	Graphics::TempTransform transform(gfx, m);
-
 	gl.prepareDraw();
 
-	if (useIndexBuffer && ibo && elementCount > 0)
+	GLenum gldrawmode = getGLDrawMode(drawMode);
+
+	if (useindexbuffer)
 	{
-		// Use the custom vertex map (index buffer) to draw the vertices.
-		gl.bindBuffer(BUFFER_INDEX, (GLuint) ibo->getHandle());
-
-		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
-		ibo->unmap();
-
-		int start = std::min(std::max(0, rangeStart), (int) elementCount - 1);
-
-		int count = (int) elementCount;
-		if (rangeCount > 0)
-			count = std::min(count, rangeCount);
-
-		count = std::min(count, (int) elementCount - start);
-
 		size_t elementsize = vertex::getIndexDataSize(elementDataType);
 		const void *indices = BUFFER_OFFSET(start * elementsize);
 		GLenum type = OpenGL::getGLIndexDataType(elementDataType);
 
-		if (count > 0)
-			gl.drawElements(getGLDrawMode(drawMode), count, type, indices, instancecount);
+		gl.bindBuffer(BUFFER_INDEX, (GLuint) ibo->getHandle());
+		gl.drawElements(gldrawmode, count, type, indices, instancecount);
 	}
 	else
 	{
-		int start = std::min(std::max(0, rangeStart), (int) vertexCount - 1);
-
-		int count = (int) vertexCount;
-		if (rangeCount > 0)
-			count = std::min(count, rangeCount);
-
-		count = std::min(count, (int) vertexCount - start);
-
-		// Normal non-indexed drawing (no custom vertex map.)
-		if (count > 0)
-			gl.drawArrays(getGLDrawMode(drawMode), start, count, instancecount);
+		gl.drawArrays(gldrawmode, start, count, instancecount);
 	}
 }
 

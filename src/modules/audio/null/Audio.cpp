@@ -183,7 +183,7 @@ bool Audio::getEffect(const char *, std::map<Effect::Parameter, float> &)
 	return false;
 }
 
-bool Audio::getEffectsList(std::vector<std::string> &list)
+bool Audio::getActiveEffects(std::vector<std::string> &) const
 {
 	return false;
 }

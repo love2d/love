@@ -56,12 +56,12 @@ int w_Image_replacePixels(lua_State *L)
 
 	if (i->getTextureType() != TEXTURE_2D)
 	{
-		slice = (int) luaL_checknumber(L, 3) - 1;
+		slice = (int) luaL_checkinteger(L, 3) - 1;
 		if (!reloadmipmaps)
-			mipmap = (int) luaL_optnumber(L, 4, 1) - 1;
+			mipmap = (int) luaL_optinteger(L, 4, 1) - 1;
 	}
 	else if (!reloadmipmaps)
-		mipmap = (int) luaL_optnumber(L, 3, 1) - 1;
+		mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
 
 	luax_catchexcept(L, [&](){ i->replacePixels(id, slice, mipmap, reloadmipmaps); });
 	return 0;

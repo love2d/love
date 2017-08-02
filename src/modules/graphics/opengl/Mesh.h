@@ -44,7 +44,10 @@ public:
 	virtual ~Mesh();
 
 	int bindAttributeToShaderInput(int attributeindex, const std::string &inputname) override;
-	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount) override;
+
+protected:
+
+	void drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const override;
 
 private:
 

@@ -9,7 +9,7 @@
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented = 0; you must not
+ * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
@@ -49,26 +49,30 @@ namespace openal
 class RecordingDevice : public love::audio::RecordingDevice
 {
 public:
+
 	RecordingDevice(const char *name);
 	virtual ~RecordingDevice();
-	virtual bool start();
 	virtual bool start(int samples, int sampleRate, int bitDepth, int channels);
 	virtual void stop();
 	virtual love::sound::SoundData *getData();
 	virtual const char *getName() const;
 	virtual int getSampleCount() const;
+	virtual int getMaxSamples() const;
 	virtual int getSampleRate() const;
 	virtual int getBitDepth() const;
 	virtual int getChannels() const;
 	virtual bool isRecording() const;
 
 private:
-	int samples = 8192;
-	int sampleRate = 8000;
-	int bitDepth = 16;
-	int channels = 1;
+
+	int samples = DEFAULT_SAMPLES;
+	int sampleRate = DEFAULT_SAMPLE_RATE;
+	int bitDepth = DEFAULT_BIT_DEPTH;
+	int channels = DEFAULT_CHANNELS;
+
 	std::string name;
 	ALCdevice *device = nullptr;
+
 }; //RecordingDevice
 
 } //openal

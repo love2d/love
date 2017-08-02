@@ -28,9 +28,9 @@
 #include "common/Vector.h"
 #include "common/Optional.h"
 #include "common/int.h"
+#include "common/Color.h"
 #include "StreamBuffer.h"
 #include "vertex.h"
-#include "Color.h"
 #include "Texture.h"
 #include "Canvas.h"
 #include "Font.h"
@@ -216,6 +216,7 @@ public:
 	struct Stats
 	{
 		int drawCalls;
+		int drawCallsBatched;
 		int canvasSwitches;
 		int shaderSwitches;
 		int canvases;
@@ -478,7 +479,7 @@ public:
 	Shader *getShader() const;
 
 	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
-	virtual void setCanvas(const RenderTargets &rts) = 0;
+	void setCanvas(const RenderTargets &rts);
 	void setCanvas(const RenderTargetsStrongRef &rts);
 	virtual void setCanvas() = 0;
 
@@ -620,18 +621,16 @@ public:
 	void printf(const std::vector<Font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m);
 
 	/**
-	 * Draws a point at (x,y).
-	 * @param x Point along x-axis.
-	 * @param y Point along y-axis.
+	 * Draws a series of points at the specified positions.
 	 **/
-	void points(const float *coords, const Colorf *colors, size_t numpoints);
+	void points(const Vector2 *positions, const Colorf *colors, size_t numpoints);
 
 	/**
 	 * Draws a series of lines connecting the given vertices.
-	 * @param coords Vertex components (x1, y1, ..., xn, yn). If x1,y1 == xn,yn the line will be drawn closed.
-	 * @param count Number of items in the array, i.e. count = 2 * n
+	 * @param coords Vertex positions (v1, ..., vn). If v1 == vn the line will be drawn closed.
+	 * @param count Number of vertices.
 	 **/
-	void polyline(const float *coords, size_t count);
+	void polyline(const Vector2 *vertices, size_t count);
 
 	/**
 	 * Draws a rectangle.
@@ -696,10 +695,10 @@ public:
 	/**
 	 * Draws a polygon with an arbitrary number of vertices.
 	 * @param mode The type of drawing (line/filled).
-	 * @param coords Vertex components (x1, y1, x2, y2, etc.)
-	 * @param count Coord array size
+	 * @param coords Vertex positions.
+	 * @param count Vertex array size.
 	 **/
-	void polygon(DrawMode mode, const float *coords, size_t count);
+	void polygon(DrawMode mode, const Vector2 *vertices, size_t count);
 
 	/**
 	 * Gets the graphics capabilities (feature support, limit values, and
@@ -861,6 +860,8 @@ protected:
 
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
 
+	virtual void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) = 0;
+
 	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &drawcalls, int &shaderswitches) const = 0;
 
@@ -900,6 +901,7 @@ protected:
 	std::vector<Canvas *> temporaryCanvases;
 
 	int canvasSwitchCount;
+	int drawCallsBatched;
 
 	Capabilities capabilities;
 

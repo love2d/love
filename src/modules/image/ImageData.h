@@ -29,6 +29,7 @@
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
 #include "ImageDataBase.h"
+#include "FormatHandler.h"
 
 using love::thread::Mutex;
 
@@ -36,13 +37,6 @@ namespace love
 {
 namespace image
 {
-
-// Pixel format structure.
-struct pixel
-{
-	// Red, green, blue, alpha.
-	unsigned char r, g, b, a;
-};
 
 union Pixel
 {
@@ -61,14 +55,10 @@ public:
 
 	static love::Type type;
 
-	enum EncodedFormat
-	{
-		ENCODED_TGA,
-		ENCODED_PNG,
-		ENCODED_MAX_ENUM
-	};
-
-	ImageData();
+	ImageData(love::filesystem::FileData *data);
+	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
+	ImageData(int width, int height, PixelFormat format, void *data, bool own);
+	ImageData(const ImageData &c);
 	virtual ~ImageData();
 
 	/**
@@ -111,12 +101,12 @@ public:
 	 * @param f The file to save the encoded image data to.
 	 * @param format The format of the encoded data.
 	 **/
-	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename) = 0;
+	love::filesystem::FileData *encode(FormatHandler::EncodedFormat format, const char *filename, bool writefile) const;
 
 	love::thread::Mutex *getMutex() const;
 
 	// Implements ImageDataBase.
-	virtual ImageData *clone() const override = 0;
+	ImageData *clone() const override;
 	void *getData() const override;
 	size_t getSize() const override;
 	bool isSRGB() const override;
@@ -125,18 +115,8 @@ public:
 
 	static bool validPixelFormat(PixelFormat format);
 
-	static bool getConstant(const char *in, EncodedFormat &out);
-	static bool getConstant(EncodedFormat in, const char *&out);
-
-protected:
-
-	// The actual data.
-	unsigned char *data;
-
-	// We need to be thread-safe
-	// so we lock when we're accessing our
-	// data
-	love::thread::MutexRef mutex;
+	static bool getConstant(const char *in, FormatHandler::EncodedFormat &out);
+	static bool getConstant(FormatHandler::EncodedFormat in, const char *&out);
 
 private:
 
@@ -147,6 +127,21 @@ private:
 		half *f16;
 		float *f32;
 	};
+
+	// Create imagedata. Initialize with data if not null.
+	void create(int width, int height, PixelFormat format, void *data = nullptr);
+
+	// Decode and load an encoded format.
+	void decode(love::filesystem::FileData *data);
+
+	// The actual data.
+	unsigned char *data = nullptr;
+
+	love::thread::MutexRef mutex;
+
+	// The format handler that was used to decode the ImageData. We need to know
+	// this so we can properly delete memory allocated by the decoder.
+	StrongRef<FormatHandler> decodeHandler;
 
 	static void pasteRGBA8toRGBA16(Row src, Row dst, int w);
 	static void pasteRGBA8toRGBA16F(Row src, Row dst, int w);
@@ -164,8 +159,8 @@ private:
 	static void pasteRGBA32FtoRGBA16(Row src, Row dst, int w);
 	static void pasteRGBA32FtoRGBA16F(Row src, Row dst, int w);
 
-	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
-	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;
+	static StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
+	static StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM> encodedFormats;
 
 }; // ImageData
 

@@ -44,7 +44,10 @@ public:
 	virtual ~ParticleSystem();
 
 	ParticleSystem *clone() override;
-	void draw(Graphics *gfx, const Matrix4 &m) override;
+
+private:
+
+	void drawInternal() const override;
 
 }; // ParticleSystem
 

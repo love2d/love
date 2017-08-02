@@ -104,7 +104,7 @@ bool ASTCHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-StrongRef<CompressedImageData::Memory> ASTCHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> ASTCHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not an .astc file?)");
@@ -129,12 +129,12 @@ StrongRef<CompressedImageData::Memory> ASTCHandler::parse(filesystem::FileData *
 	if (totalsize + sizeof(header) > filedata->getSize())
 		throw love::Exception("Could not parse .astc file: file is too small.");
 
-	StrongRef<CompressedImageData::Memory> memory(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
+	StrongRef<CompressedMemory> memory(new CompressedMemory(totalsize), Acquire::NORETAIN);
 
 	// .astc files only store a single mipmap level.
 	memcpy(memory->data, (uint8 *) filedata->getData() + sizeof(ASTCHeader), totalsize);
 
-	images.emplace_back(new CompressedImageData::Slice(cformat, sizeX, sizeY, memory, 0, totalsize), Acquire::NORETAIN);
+	images.emplace_back(new CompressedSlice(cformat, sizeX, sizeY, memory, 0, totalsize), Acquire::NORETAIN);
 
 	format = cformat;
 	sRGB = false;
