@@ -117,7 +117,7 @@ love.arg.options = {
 
 love.arg.option_indexes = {}
 
-function love.arg.parse_option(m, i)
+function love.arg.parseOption(m, i)
 	m.set = true
 
 	if m.a > 0 then
@@ -130,7 +130,7 @@ function love.arg.parse_option(m, i)
 	return m.a
 end
 
-function love.arg.parse_options()
+function love.arg.parseOptions()
 
 	local game
 	local argc = #arg
@@ -142,7 +142,7 @@ function love.arg.parse_options()
 
 		if m and love.arg.options[m] then
 			love.arg.option_indexes[i] = true
-			i = i + love.arg.parse_option(love.arg.options[m], i+1)
+			i = i + love.arg.parseOption(love.arg.options[m], i+1)
 		elseif not game then
 			love.arg.option_indexes[i] = true
 			love.arg.options.game.index  = i
@@ -152,21 +152,16 @@ function love.arg.parse_options()
 	end
 
 	if not love.arg.options.game.set then
-		love.arg.parse_option(love.arg.options.game, game or 0)
+		love.arg.parseOption(love.arg.options.game, game or 0)
 	end
 end
 
 -- Returns the arguments that are passed to your game via love.load()
 -- arguments that were parsed as options are skipped.
-function love.arg.game_arguments(a)
+function love.arg.parseGameArguments(a)
 	local out = {}
 
-	local low = math.huge
-	for k, v in pairs(arg) do
-		if k < low then
-			low = k
-		end
-	end
+	local low = love.arg.getLow(a)
 
 	local o = low
 	for i=low, #a do
@@ -294,7 +289,7 @@ function love.boot()
 	-- This is absolutely needed.
 	require("love.filesystem")
 
-	love.arg.parse_options()
+	love.arg.parseOptions()
 
 	local o = love.arg.options
 
@@ -553,7 +548,7 @@ function love.init()
 end
 
 function love.run()
-	if love.load then love.load(love.arg.game_arguments(arg)) end
+	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then love.timer.step() end
