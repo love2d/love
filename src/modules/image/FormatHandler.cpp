@@ -26,8 +26,6 @@ namespace love
 {
 namespace image
 {
-namespace magpie
-{
 
 FormatHandler::FormatHandler()
 {
@@ -42,7 +40,7 @@ bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
 	return false;
 }
 
-bool FormatHandler::canEncode(PixelFormat /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
+bool FormatHandler::canEncode(PixelFormat /*rawFormat*/, EncodedFormat /*encodedFormat*/)
 {
 	return false;
 }
@@ -52,7 +50,7 @@ FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*
 	throw love::Exception("Image decoding is not implemented for this format backend.");
 }
 
-FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, ImageData::EncodedFormat /*format*/)
+FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, EncodedFormat /*format*/)
 {
 	throw love::Exception("Image encoding is not implemented for this format backend.");
 }
@@ -62,6 +60,5 @@ void FormatHandler::free(unsigned char *mem)
 	delete[] mem;
 }
 
-} // magpie
 } // image
 } // love

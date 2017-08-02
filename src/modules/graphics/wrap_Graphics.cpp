@@ -447,7 +447,7 @@ static int screenshotSaveToFile(lua_State *L)
 	const char *filename = luaL_checkstring(L, lua_upvalueindex(1));
 	const char *ext = luaL_checkstring(L, lua_upvalueindex(2));
 
-	image::ImageData::EncodedFormat format;
+	image::FormatHandler::EncodedFormat format;
 	if (!image::ImageData::getConstant(ext, format))
 		return 0;
 
@@ -478,7 +478,7 @@ int w_captureScreenshot(lua_State *L)
 
 		std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
-		image::ImageData::EncodedFormat format;
+		image::FormatHandler::EncodedFormat format;
 		if (!image::ImageData::getConstant(ext.c_str(), format))
 			return luaL_error(L, "Invalid encoded image format: %s", ext.c_str());
 

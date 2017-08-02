@@ -140,9 +140,9 @@ bool PNGHandler::canDecode(love::filesystem::FileData *data)
 	return status == 0 && width > 0 && height > 0;
 }
 
-bool PNGHandler::canEncode(PixelFormat rawFormat, ImageData::EncodedFormat encodedFormat)
+bool PNGHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 {
-	return encodedFormat == ImageData::ENCODED_PNG
+	return encodedFormat == ENCODED_PNG
 		&& (rawFormat == PIXELFORMAT_RGBA8 || rawFormat == PIXELFORMAT_RGBA16);
 }
 
@@ -199,7 +199,7 @@ PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
 	return img;
 }
 
-PNGHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, ImageData::EncodedFormat encodedFormat)
+FormatHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, EncodedFormat encodedFormat)
 {
 	if (!canEncode(img.format, encodedFormat))
 		throw love::Exception("PNG encoder cannot encode to non-PNG format.");

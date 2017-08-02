@@ -20,6 +20,7 @@
 
 // LOVE
 #include "EXRHandler.h"
+#include "common/halffloat.h"
 
 // tinyexr
 #define TINYEXR_IMPLEMENTATION
@@ -41,7 +42,7 @@ bool EXRHandler::canDecode(love::filesystem::FileData *data)
 	return ParseEXRVersionFromMemory(&version, (const unsigned char *) data->getData(), data->getSize()) == TINYEXR_SUCCESS;
 }
 
-bool EXRHandler::canEncode(PixelFormat /*rawFormat*/, ImageData::EncodedFormat /*encodedFormat*/)
+bool EXRHandler::canEncode(PixelFormat /*rawFormat*/, EncodedFormat /*encodedFormat*/)
 {
 	return false;
 }
@@ -186,7 +187,7 @@ FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
 	return img;
 }
 
-FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage & /*img*/, ImageData::EncodedFormat /*encodedFormat*/)
+FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage & /*img*/, EncodedFormat /*encodedFormat*/)
 {
 	throw love::Exception("Invalid format.");
 }

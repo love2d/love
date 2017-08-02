@@ -113,7 +113,7 @@ bool PKMHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-StrongRef<CompressedImageData::Memory> PKMHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> PKMHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -134,8 +134,8 @@ StrongRef<CompressedImageData::Memory> PKMHandler::parse(filesystem::FileData *f
 	// The rest of the file after the header is all texture data.
 	size_t totalsize = filedata->getSize() - sizeof(PKMHeader);
 
-	StrongRef<CompressedImageData::Memory> memory;
-	memory.set(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
+	StrongRef<CompressedMemory> memory;
+	memory.set(new CompressedMemory(totalsize), Acquire::NORETAIN);
 
 	// PKM files only store a single mipmap level.
 	memcpy(memory->data, (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
@@ -145,7 +145,7 @@ StrongRef<CompressedImageData::Memory> PKMHandler::parse(filesystem::FileData *f
 	int width = header.widthBig;
 	int height = header.heightBig;
 
-	images.emplace_back(new CompressedImageData::Slice(cformat, width, height, memory, 0, totalsize), Acquire::NORETAIN);
+	images.emplace_back(new CompressedSlice(cformat, width, height, memory, 0, totalsize), Acquire::NORETAIN);
 
 	format = cformat;
 	sRGB = false;

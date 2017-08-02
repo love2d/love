@@ -469,22 +469,9 @@
 		FA0B7D861A95902C000E1D17 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BC61A95902C000E1D17 /* ImageData.cpp */; };
 		FA0B7D871A95902C000E1D17 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BC61A95902C000E1D17 /* ImageData.cpp */; };
 		FA0B7D881A95902C000E1D17 /* ImageData.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BC71A95902C000E1D17 /* ImageData.h */; };
-		FA0B7D891A95902C000E1D17 /* CompressedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BC91A95902C000E1D17 /* CompressedImageData.cpp */; };
-		FA0B7D8A1A95902C000E1D17 /* CompressedImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BC91A95902C000E1D17 /* CompressedImageData.cpp */; };
-		FA0B7D8B1A95902C000E1D17 /* CompressedImageData.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BCA1A95902C000E1D17 /* CompressedImageData.h */; };
-		FA0B7D8C1A95902C000E1D17 /* CompressedFormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BCB1A95902C000E1D17 /* CompressedFormatHandler.h */; };
 		FA0B7D8D1A95902C000E1D17 /* ddsHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */; };
 		FA0B7D8E1A95902C000E1D17 /* ddsHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */; };
 		FA0B7D8F1A95902C000E1D17 /* ddsHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BCD1A95902C000E1D17 /* ddsHandler.h */; };
-		FA0B7D901A95902C000E1D17 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BCE1A95902C000E1D17 /* FormatHandler.cpp */; };
-		FA0B7D911A95902C000E1D17 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BCE1A95902C000E1D17 /* FormatHandler.cpp */; };
-		FA0B7D921A95902C000E1D17 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BCF1A95902C000E1D17 /* FormatHandler.h */; };
-		FA0B7D931A95902C000E1D17 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD01A95902C000E1D17 /* Image.cpp */; };
-		FA0B7D941A95902C000E1D17 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD01A95902C000E1D17 /* Image.cpp */; };
-		FA0B7D951A95902C000E1D17 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD11A95902C000E1D17 /* Image.h */; };
-		FA0B7D961A95902C000E1D17 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD21A95902C000E1D17 /* ImageData.cpp */; };
-		FA0B7D971A95902C000E1D17 /* ImageData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD21A95902C000E1D17 /* ImageData.cpp */; };
-		FA0B7D981A95902C000E1D17 /* ImageData.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD31A95902C000E1D17 /* ImageData.h */; };
 		FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */; };
 		FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */; };
 		FA0B7DA11A95902C000E1D17 /* KTXHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BD91A95902C000E1D17 /* KTXHandler.h */; };
@@ -948,6 +935,9 @@
 		FA91591E1CF1ED7500A7053F /* halffloat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91591C1CF1ED7500A7053F /* halffloat.cpp */; };
 		FA91591F1CF1ED7500A7053F /* halffloat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91591C1CF1ED7500A7053F /* halffloat.cpp */; };
 		FA9159201CF1ED7500A7053F /* halffloat.h in Headers */ = {isa = PBXBuildFile; fileRef = FA91591D1CF1ED7500A7053F /* halffloat.h */; };
+		FA93C4521F315B960087CCD4 /* CompressedFormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */; };
+		FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C4501F315B960087CCD4 /* FormatHandler.h */; };
+		FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA93C4511F315B960087CCD4 /* FormatHandler.cpp */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FA9D8DD11DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
 		FA9D8DD21DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
@@ -1036,6 +1026,10 @@
 		FADF543D1E3DAFF700012CC0 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */; };
 		FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE272511C05A15B00A67640 /* ParticleSystem.h */; };
+		FAECA1B21F3164700095D008 /* CompressedSlice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAECA1B01F3164700095D008 /* CompressedSlice.cpp */; };
+		FAECA1B31F3164700095D008 /* CompressedSlice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAECA1B01F3164700095D008 /* CompressedSlice.cpp */; };
+		FAECA1B41F3164700095D008 /* CompressedSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = FAECA1B11F3164700095D008 /* CompressedSlice.h */; };
+		FAECA1B51F31648A0095D008 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA93C4511F315B960087CCD4 /* FormatHandler.cpp */; };
 		FAF140531E20934C00F898D2 /* CodeGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF13FC21E20934C00F898D2 /* CodeGen.cpp */; };
 		FAF140541E20934C00F898D2 /* CodeGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF13FC21E20934C00F898D2 /* CodeGen.cpp */; };
 		FAF140551E20934C00F898D2 /* Link.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF13FC31E20934C00F898D2 /* Link.cpp */; };
@@ -1482,17 +1476,8 @@
 		FA0B7BC51A95902C000E1D17 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		FA0B7BC61A95902C000E1D17 /* ImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageData.cpp; sourceTree = "<group>"; };
 		FA0B7BC71A95902C000E1D17 /* ImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageData.h; sourceTree = "<group>"; };
-		FA0B7BC91A95902C000E1D17 /* CompressedImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedImageData.cpp; sourceTree = "<group>"; };
-		FA0B7BCA1A95902C000E1D17 /* CompressedImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedImageData.h; sourceTree = "<group>"; };
-		FA0B7BCB1A95902C000E1D17 /* CompressedFormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedFormatHandler.h; sourceTree = "<group>"; };
 		FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ddsHandler.cpp; sourceTree = "<group>"; };
 		FA0B7BCD1A95902C000E1D17 /* ddsHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ddsHandler.h; sourceTree = "<group>"; };
-		FA0B7BCE1A95902C000E1D17 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
-		FA0B7BCF1A95902C000E1D17 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
-		FA0B7BD01A95902C000E1D17 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
-		FA0B7BD11A95902C000E1D17 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
-		FA0B7BD21A95902C000E1D17 /* ImageData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageData.cpp; sourceTree = "<group>"; };
-		FA0B7BD31A95902C000E1D17 /* ImageData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageData.h; sourceTree = "<group>"; };
 		FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KTXHandler.cpp; sourceTree = "<group>"; };
 		FA0B7BD91A95902C000E1D17 /* KTXHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KTXHandler.h; sourceTree = "<group>"; };
 		FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PKMHandler.cpp; sourceTree = "<group>"; };
@@ -1808,6 +1793,9 @@
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA91591C1CF1ED7500A7053F /* halffloat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = halffloat.cpp; sourceTree = "<group>"; };
 		FA91591D1CF1ED7500A7053F /* halffloat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = halffloat.h; sourceTree = "<group>"; };
+		FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedFormatHandler.h; sourceTree = "<group>"; };
+		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
+		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
 		FA9D8DD01DEB56C3002CD881 /* pixelformat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pixelformat.h; sourceTree = "<group>"; };
@@ -1870,6 +1858,8 @@
 		FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Graphics.h; sourceTree = "<group>"; };
 		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
+		FAECA1B01F3164700095D008 /* CompressedSlice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedSlice.cpp; sourceTree = "<group>"; };
+		FAECA1B11F3164700095D008 /* CompressedSlice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CompressedSlice.h; sourceTree = "<group>"; };
 		FAF13FC21E20934C00F898D2 /* CodeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGen.cpp; sourceTree = "<group>"; };
 		FAF13FC31E20934C00F898D2 /* Link.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Link.cpp; sourceTree = "<group>"; };
 		FAF13FC51E20934C00F898D2 /* arrays.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arrays.h; sourceTree = "<group>"; };
@@ -2760,8 +2750,13 @@
 		FA0B7BC21A95902C000E1D17 /* image */ = {
 			isa = PBXGroup;
 			children = (
+				FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */,
 				FA0B7BC31A95902C000E1D17 /* CompressedImageData.cpp */,
 				FA0B7BC41A95902C000E1D17 /* CompressedImageData.h */,
+				FAECA1B01F3164700095D008 /* CompressedSlice.cpp */,
+				FAECA1B11F3164700095D008 /* CompressedSlice.h */,
+				FA93C4511F315B960087CCD4 /* FormatHandler.cpp */,
+				FA93C4501F315B960087CCD4 /* FormatHandler.h */,
 				FA9D8DDF1DEF843D002CD881 /* Image.cpp */,
 				FA0B7BC51A95902C000E1D17 /* Image.h */,
 				FA0B7BC61A95902C000E1D17 /* ImageData.cpp */,
@@ -2785,19 +2780,10 @@
 			children = (
 				FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */,
 				FA41A3C71C0A1F950084430C /* ASTCHandler.h */,
-				FA0B7BCB1A95902C000E1D17 /* CompressedFormatHandler.h */,
-				FA0B7BC91A95902C000E1D17 /* CompressedImageData.cpp */,
-				FA0B7BCA1A95902C000E1D17 /* CompressedImageData.h */,
 				FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */,
 				FA0B7BCD1A95902C000E1D17 /* ddsHandler.h */,
 				FA1557C11CE90BD200AFF582 /* EXRHandler.cpp */,
 				FA1557C21CE90BD200AFF582 /* EXRHandler.h */,
-				FA0B7BCE1A95902C000E1D17 /* FormatHandler.cpp */,
-				FA0B7BCF1A95902C000E1D17 /* FormatHandler.h */,
-				FA0B7BD01A95902C000E1D17 /* Image.cpp */,
-				FA0B7BD11A95902C000E1D17 /* Image.h */,
-				FA0B7BD21A95902C000E1D17 /* ImageData.cpp */,
-				FA0B7BD31A95902C000E1D17 /* ImageData.h */,
 				FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */,
 				FA0B7BD91A95902C000E1D17 /* KTXHandler.h */,
 				FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */,
@@ -3550,7 +3536,6 @@
 				FA76344C1E28722A0066EF9E /* StreamBuffer.h in Headers */,
 				217DFBF31D9F6D490055D849 /* mime.h in Headers */,
 				FA0B7B361A958EA3000E1D17 /* wuff_convert.h in Headers */,
-				FA0B7D981A95902C000E1D17 /* ImageData.h in Headers */,
 				FA0B7CDE1A95902C000E1D17 /* Source.h in Headers */,
 				FA0B7E141A95902C000E1D17 /* GearJoint.h in Headers */,
 				FA0B7D051A95902C000E1D17 /* wrap_DroppedFile.h in Headers */,
@@ -3612,6 +3597,7 @@
 				FA0B7CD21A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B79421A958E3B000E1D17 /* utf8.h in Headers */,
 				FA0B7D171A95902C000E1D17 /* Font.h in Headers */,
+				FAECA1B41F3164700095D008 /* CompressedSlice.h in Headers */,
 				FA0B7A6D1A958EA3000E1D17 /* b2World.h in Headers */,
 				FA0B7EAE1A95902C000E1D17 /* wrap_SoundData.h in Headers */,
 				FA0B7CFF1A95902C000E1D17 /* File.h in Headers */,
@@ -3661,6 +3647,7 @@
 				FA0B7E351A95902C000E1D17 /* WeldJoint.h in Headers */,
 				FA0B7E2F1A95902C000E1D17 /* RopeJoint.h in Headers */,
 				FA0B7D141A95902C000E1D17 /* Font.h in Headers */,
+				FA93C4521F315B960087CCD4 /* CompressedFormatHandler.h in Headers */,
 				FA0B7D411A95902C000E1D17 /* Mesh.h in Headers */,
 				FA0B7E591A95902C000E1D17 /* wrap_Joint.h in Headers */,
 				FA0B79351A958E3B000E1D17 /* macosx.h in Headers */,
@@ -3720,6 +3707,7 @@
 				FA0B7ECD1A95902C000E1D17 /* wrap_Channel.h in Headers */,
 				FAF140AF1E20934C00F898D2 /* osinclude.h in Headers */,
 				FA0B7A431A958EA3000E1D17 /* b2CircleShape.h in Headers */,
+				FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */,
 				FA0B7CD81A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B7CF61A95902C000E1D17 /* File.h in Headers */,
 				FA0B7E961A95902C000E1D17 /* Mpg123Decoder.h in Headers */,
@@ -3728,7 +3716,6 @@
 				FA0B7DD51A95902C000E1D17 /* BezierCurve.h in Headers */,
 				FA0B79271A958E3B000E1D17 /* int.h in Headers */,
 				FA27B3A21B498151008A9DCE /* VideoStream.h in Headers */,
-				FA0B7D8C1A95902C000E1D17 /* CompressedFormatHandler.h in Headers */,
 				FA0B7E531A95902C000E1D17 /* wrap_FrictionJoint.h in Headers */,
 				FA0B7EB71A95902C000E1D17 /* wrap_System.h in Headers */,
 				FA27B3A91B498151008A9DCE /* Video.h in Headers */,
@@ -3738,7 +3725,6 @@
 				FAB17BF21ABFB37500F9BA27 /* wrap_CompressedData.h in Headers */,
 				FA0B7E801A95902C000E1D17 /* Joint.h in Headers */,
 				FA0B7D2F1A95902C000E1D17 /* Drawable.h in Headers */,
-				FA0B7D951A95902C000E1D17 /* Image.h in Headers */,
 				217DFBE21D9F6D490055D849 /* ftp.lua.h in Headers */,
 				FA0B7EC41A95902C000E1D17 /* Thread.h in Headers */,
 				FA0B7DFF1A95902C000E1D17 /* ChainShape.h in Headers */,
@@ -3794,7 +3780,6 @@
 				FA0B7CF91A95902C000E1D17 /* FileData.h in Headers */,
 				FA0B7DA71A95902C000E1D17 /* PNGHandler.h in Headers */,
 				FA0B7AC41A958EA3000E1D17 /* protocol.h in Headers */,
-				FA0B7D8B1A95902C000E1D17 /* CompressedImageData.h in Headers */,
 				FAF140601E20934C00F898D2 /* revision.h in Headers */,
 				FAF140A21E20934C00F898D2 /* RemoveTree.h in Headers */,
 				FA0B7A8E1A958EA3000E1D17 /* b2DistanceJoint.h in Headers */,
@@ -3895,7 +3880,6 @@
 				FADF54041E3D77B500012CC0 /* wrap_Text.h in Headers */,
 				FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */,
 				FA0B7A511A958EA3000E1D17 /* b2GrowableStack.h in Headers */,
-				FA0B7D921A95902C000E1D17 /* FormatHandler.h in Headers */,
 				FAC756F61E4F99B400B91289 /* Effect.h in Headers */,
 				FA0B7ADD1A958EA3000E1D17 /* gladfuncs.hpp in Headers */,
 				FAF1405D1E20934C00F898D2 /* intermediate.h in Headers */,
@@ -4051,7 +4035,6 @@
 				FA0B7ABE1A958EA3000E1D17 /* compress.c in Sources */,
 				FA0B7CF21A95902C000E1D17 /* DroppedFile.cpp in Sources */,
 				FA4F2C141DE936FE00CA37D7 /* usocket.c in Sources */,
-				FA0B7D8A1A95902C000E1D17 /* CompressedImageData.cpp in Sources */,
 				FAF140831E20934C00F898D2 /* ParseContextBase.cpp in Sources */,
 				FA0B7AD21A958EA3000E1D17 /* protocol.c in Sources */,
 				FAF140A41E20934C00F898D2 /* Scan.cpp in Sources */,
@@ -4190,15 +4173,14 @@
 				FADF54211E3DA52C00012CC0 /* wrap_ParticleSystem.cpp in Sources */,
 				FA0B791C1A958E3B000E1D17 /* b64.cpp in Sources */,
 				FA1E88851DF363E100E808AA /* Filter.cpp in Sources */,
-				FA0B7D941A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */,
 				FA27B3A11B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7A5C1A958EA3000E1D17 /* b2Timer.cpp in Sources */,
 				FA0B7CEC1A95902C000E1D17 /* Event.cpp in Sources */,
 				FA27B3AB1B498151008A9DCE /* VideoStream.cpp in Sources */,
 				FA0B7A7E1A958EA3000E1D17 /* b2ContactSolver.cpp in Sources */,
-				FA0B7D971A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7E581A95902C000E1D17 /* wrap_Joint.cpp in Sources */,
+				FAECA1B51F31648A0095D008 /* FormatHandler.cpp in Sources */,
 				FA4F2C0A1DE936E600CA37D7 /* mime.c in Sources */,
 				FA0B7E311A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA0B7E491A95902C000E1D17 /* wrap_DistanceJoint.cpp in Sources */,
@@ -4287,13 +4269,13 @@
 				FA0B7DB21A95902C000E1D17 /* wrap_Image.cpp in Sources */,
 				FA0B7E891A95902C000E1D17 /* Decoder.cpp in Sources */,
 				FA0B7A591A958EA3000E1D17 /* b2StackAllocator.cpp in Sources */,
+				FAECA1B31F3164700095D008 /* CompressedSlice.cpp in Sources */,
 				FA0B7E3D1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
 				FA0B7D7A1A95902C000E1D17 /* Quad.cpp in Sources */,
 				FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */,
 				FA0B7DD41A95902C000E1D17 /* BezierCurve.cpp in Sources */,
 				FA0B7E7C1A95902C000E1D17 /* wrap_World.cpp in Sources */,
 				FA4F2C0E1DE936FE00CA37D7 /* tcp.c in Sources */,
-				FA0B7D911A95902C000E1D17 /* FormatHandler.cpp in Sources */,
 				FA0B7D431A95902C000E1D17 /* OpenGL.cpp in Sources */,
 				FA0B7DBF1A95902C000E1D17 /* JoystickModule.cpp in Sources */,
 				FA0B7D4F1A95902C000E1D17 /* SpriteBatch.cpp in Sources */,
@@ -4410,7 +4392,6 @@
 				FA0B7D091A95902C000E1D17 /* wrap_FileData.cpp in Sources */,
 				FA0B7B341A958EA3000E1D17 /* wuff_convert.c in Sources */,
 				FA0B7CF11A95902C000E1D17 /* DroppedFile.cpp in Sources */,
-				FA0B7D891A95902C000E1D17 /* CompressedImageData.cpp in Sources */,
 				FAF140821E20934C00F898D2 /* ParseContextBase.cpp in Sources */,
 				FA0B7D1E1A95902C000E1D17 /* ImageRasterizer.cpp in Sources */,
 				FAF140A31E20934C00F898D2 /* Scan.cpp in Sources */,
@@ -4545,7 +4526,6 @@
 				FA0B7A4E1A958EA3000E1D17 /* b2Draw.cpp in Sources */,
 				FAD19A171DFF8CA200D5398A /* ImageDataBase.cpp in Sources */,
 				FA27B3C01B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */,
-				FA0B7D931A95902C000E1D17 /* Image.cpp in Sources */,
 				FADF54201E3DA52C00012CC0 /* wrap_ParticleSystem.cpp in Sources */,
 				FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */,
 				FA1E88831DF363DB00E808AA /* Filter.cpp in Sources */,
@@ -4554,9 +4534,9 @@
 				FA0B7CEB1A95902C000E1D17 /* Event.cpp in Sources */,
 				FA1557C31CE90BD200AFF582 /* EXRHandler.cpp in Sources */,
 				FA27B3AA1B498151008A9DCE /* VideoStream.cpp in Sources */,
-				FA0B7D961A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7E571A95902C000E1D17 /* wrap_Joint.cpp in Sources */,
 				FA0B7E301A95902C000E1D17 /* Shape.cpp in Sources */,
+				FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */,
 				FA0B7E481A95902C000E1D17 /* wrap_DistanceJoint.cpp in Sources */,
 				FA0B7A8F1A958EA3000E1D17 /* b2FrictionJoint.cpp in Sources */,
 				FA0B792F1A958E3B000E1D17 /* Module.cpp in Sources */,
@@ -4597,6 +4577,7 @@
 				FA0B7E8B1A95902C000E1D17 /* FLACDecoder.cpp in Sources */,
 				FA0B7B3A1A958EA3000E1D17 /* wuff_memory.c in Sources */,
 				FA0B7A381A958EA3000E1D17 /* b2DynamicTree.cpp in Sources */,
+				FAECA1B21F3164700095D008 /* CompressedSlice.cpp in Sources */,
 				FA0B7D481A95902C000E1D17 /* Polyline.cpp in Sources */,
 				217DFC111D9F6D490055D849 /* usocket.c in Sources */,
 				FAF140751E20934C00F898D2 /* IntermTraverse.cpp in Sources */,
@@ -4647,7 +4628,6 @@
 				FA91591E1CF1ED7500A7053F /* halffloat.cpp in Sources */,
 				FA0B7E7B1A95902C000E1D17 /* wrap_World.cpp in Sources */,
 				FA0B7B281A958EA3000E1D17 /* simplexnoise1234.cpp in Sources */,
-				FA0B7D901A95902C000E1D17 /* FormatHandler.cpp in Sources */,
 				FA0B7D421A95902C000E1D17 /* OpenGL.cpp in Sources */,
 				FA0B7A671A958EA3000E1D17 /* b2Island.cpp in Sources */,
 				FA0B7DBE1A95902C000E1D17 /* JoystickModule.cpp in Sources */,

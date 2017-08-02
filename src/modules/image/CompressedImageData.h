@@ -25,10 +25,13 @@
 #include "common/StringMap.h"
 #include "common/int.h"
 #include "common/pixelformat.h"
-#include "ImageDataBase.h"
+#include "filesystem/FileData.h"
+#include "CompressedSlice.h"
+#include "CompressedFormatHandler.h"
 
 // STL
 #include <vector>
+#include <list>
 
 namespace love
 {
@@ -44,53 +47,16 @@ class CompressedImageData : public Data
 {
 public:
 
-	class Memory : public Object
-	{
-	public:
-
-		Memory(size_t size);
-		virtual ~Memory();
-
-		uint8 *data;
-		size_t size;
-
-	}; // Memory
-
-	// Compressed image data can have multiple mipmap levels, each represented
-	// by a sub-image.
-	class Slice : public ImageDataBase
-	{
-	public:
-
-		Slice(PixelFormat format, int width, int height, Memory *memory, size_t offset, size_t size);
-		Slice(const Slice &slice);
-		virtual ~Slice();
-
-		Slice *clone() const override;
-		void *getData() const override { return memory->data + offset; }
-		size_t getSize() const override { return dataSize; }
-		bool isSRGB() const override { return sRGB; }
-		size_t getOffset() const { return offset; }
-
-	private:
-
-		StrongRef<Memory> memory;
-
-		size_t offset;
-		size_t dataSize;
-		bool sRGB;
-
-	}; // Slice
-
 	static love::Type type;
 
-	CompressedImageData();
+	CompressedImageData(const std::list<CompressedFormatHandler *> &formats, love::filesystem::FileData *filedata);
+	CompressedImageData(const CompressedImageData &c);
 	virtual ~CompressedImageData();
 
 	// Implements Data.
-	virtual CompressedImageData *clone() const = 0;
-	virtual void *getData() const;
-	virtual size_t getSize() const;
+	CompressedImageData *clone() const override;
+	void *getData() const override;
+	size_t getSize() const override;
 
 	/**
 	 * Gets the number of mipmaps in this Compressed Image Data.
@@ -130,19 +96,18 @@ public:
 
 	bool isSRGB() const;
 
-	Slice *getSlice(int slice, int miplevel) const;
+	CompressedSlice *getSlice(int slice, int miplevel) const;
 
 protected:
 
 	PixelFormat format;
-
 	bool sRGB;
 
 	// Single block of memory containing all of the sub-images.
-	StrongRef<Memory> memory;
+	StrongRef<CompressedMemory> memory;
 
 	// Texture info for each mipmap level.
-	std::vector<StrongRef<Slice>> dataImages;
+	std::vector<StrongRef<CompressedSlice>> dataImages;
 
 	void checkSliceExists(int slice, int miplevel) const;
 

@@ -262,7 +262,7 @@ int w_ImageData_encode(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 
-	ImageData::EncodedFormat format;
+	FormatHandler::EncodedFormat format;
 	const char *fmt = luaL_checkstring(L, 2);
 	if (!ImageData::getConstant(fmt, format))
 		return luaL_error(L, "Invalid encoded image format '%s'.", fmt);

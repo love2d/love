@@ -18,37 +18,61 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#pragma once
-
-// LOVE
-#include "image/FormatHandler.h"
+#include "CompressedSlice.h"
+#include "common/Exception.h"
 
 namespace love
 {
 namespace image
 {
-namespace magpie
+
+CompressedMemory::CompressedMemory(size_t size)
+	: data(nullptr)
+	, size(size)
 {
+	try
+	{
+		data = new uint8[size];
+	}
+	catch (std::exception &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+}
 
-/**
- * Interface between ImageData and LodePNG.
- **/
-class PNGHandler : public FormatHandler
+CompressedMemory::~CompressedMemory()
 {
-public:
+	delete[] data;
+}
 
-	// Implements FormatHandler.
+CompressedSlice::CompressedSlice(PixelFormat format, int width, int height, CompressedMemory *memory, size_t offset, size_t size)
+	: memory(memory)
+	, offset(offset)
+	, dataSize(size)
+{
+	this->format = format;
+	this->width = width;
+	this->height = height;
+}
 
-	virtual bool canDecode(love::filesystem::FileData *data);
-	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
+CompressedSlice::CompressedSlice(const CompressedSlice &s)
+	: memory(s.memory)
+	, offset(s.offset)
+	, dataSize(s.dataSize)
+{
+	this->format = s.getFormat();
+	this->width = s.getWidth();
+	this->height = s.getHeight();
+}
 
-	virtual DecodedImage decode(love::filesystem::FileData *data);
-	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
+CompressedSlice::~CompressedSlice()
+{
+}
 
-	virtual void free(unsigned char *mem);
+CompressedSlice *CompressedSlice::clone() const
+{
+	return new CompressedSlice(*this);
+}
 
-}; // PNGHandler
-
-} // magpie
 } // image
 } // love

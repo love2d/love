@@ -297,7 +297,7 @@ bool KTXHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-StrongRef<CompressedImageData::Memory> KTXHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedImageData::Slice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> KTXHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
@@ -353,8 +353,8 @@ StrongRef<CompressedImageData::Memory> KTXHandler::parse(filesystem::FileData *f
 		fileoffset += mipsizepadded;
 	}
 
-	StrongRef<CompressedImageData::Memory> memory;
-	memory.set(new CompressedImageData::Memory(totalsize), Acquire::NORETAIN);
+	StrongRef<CompressedMemory> memory;
+	memory.set(new CompressedMemory(totalsize), Acquire::NORETAIN);
 
 	// Reset the file offset to the start of the file's image data.
 	fileoffset = sizeof(KTXHeader) + header.bytesOfKeyValueData;
@@ -377,7 +377,7 @@ StrongRef<CompressedImageData::Memory> KTXHandler::parse(filesystem::FileData *f
 
 		memcpy(memory->data + dataoffset, filebytes + fileoffset, mipsize);
 
-		auto slice = new CompressedImageData::Slice(cformat, width, height, memory, dataoffset, mipsize);
+		auto slice = new CompressedSlice(cformat, width, height, memory, dataoffset, mipsize);
 		images.push_back(slice);
 		slice->release();
 

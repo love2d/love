@@ -575,8 +575,13 @@ source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL
 #
 
 set(LOVE_SRC_MODULE_IMAGE_ROOT
+	src/modules/image/CompressedFormatHandler.h
 	src/modules/image/CompressedImageData.cpp
 	src/modules/image/CompressedImageData.h
+	src/modules/image/CompressedSlice.cpp
+	src/modules/image/CompressedSlice.h
+	src/modules/image/FormatHandler.cpp
+	src/modules/image/FormatHandler.h
 	src/modules/image/Image.cpp
 	src/modules/image/Image.h
 	src/modules/image/ImageData.cpp
@@ -594,17 +599,10 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/ASTCHandler.cpp
 	src/modules/image/magpie/ASTCHandler.h
-	src/modules/image/magpie/CompressedImageData.cpp
-	src/modules/image/magpie/CompressedImageData.h
-	src/modules/image/magpie/CompressedFormatHandler.h
 	src/modules/image/magpie/ddsHandler.cpp
 	src/modules/image/magpie/ddsHandler.h
 	src/modules/image/magpie/EXRHandler.cpp
 	src/modules/image/magpie/EXRHandler.h
-	src/modules/image/magpie/FormatHandler.cpp
-	src/modules/image/magpie/FormatHandler.h
-	src/modules/image/magpie/Image.cpp
-	src/modules/image/magpie/Image.h
 	src/modules/image/magpie/ImageData.cpp
 	src/modules/image/magpie/ImageData.h
 	src/modules/image/magpie/KTXHandler.cpp

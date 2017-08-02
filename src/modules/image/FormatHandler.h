@@ -18,19 +18,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_FORMAT_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_FORMAT_HANDLER_H
+#pragma once
 
 // LOVE
-#include "image/ImageData.h"
-#include "filesystem/FileData.h"
 #include "common/Object.h"
+#include "common/pixelformat.h"
+#include "filesystem/FileData.h"
 
 namespace love
 {
 namespace image
-{
-namespace magpie
 {
 
 /**
@@ -40,6 +37,13 @@ namespace magpie
 class FormatHandler : public love::Object
 {
 public:
+
+	enum EncodedFormat
+	{
+		ENCODED_TGA,
+		ENCODED_PNG,
+		ENCODED_MAX_ENUM
+	};
 
 	// Raw RGBA pixel data.
 	struct DecodedImage
@@ -76,7 +80,7 @@ public:
 	/**
 	 * Whether this format handler can encode to a particular format.
 	 **/
-	virtual bool canEncode(PixelFormat rawFormat, ImageData::EncodedFormat encodedFormat);
+	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
 
 	/**
 	 * Decodes an image from its encoded form into raw pixel data.
@@ -91,7 +95,7 @@ public:
 	 * @param format The format to encode to.
 	 * @return The encoded image data.
 	 **/
-	virtual EncodedImage encode(const DecodedImage &img, ImageData::EncodedFormat format);
+	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
 
 	/**
 	 * Frees memory allocated by the format handler.
@@ -100,8 +104,5 @@ public:
 
 }; // FormatHandler
 
-} // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_FORMAT_HANDLER_H

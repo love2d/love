@@ -18,37 +18,55 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_COMPRESSED_IMAGE_DATA_H
-#define LOVE_IMAGE_MAGPIE_COMPRESSED_IMAGE_DATA_H
+#pragma once
 
 // LOVE
-#include "CompressedFormatHandler.h"
-#include "filesystem/FileData.h"
-#include "image/CompressedImageData.h"
-
-// C++
-#include <list>
+#include "common/int.h"
+#include "common/pixelformat.h"
+#include "common/Object.h"
+#include "ImageDataBase.h"
 
 namespace love
 {
 namespace image
 {
-namespace magpie
-{
 
-class CompressedImageData : public love::image::CompressedImageData
+class CompressedMemory : public Object
 {
 public:
 
-	CompressedImageData(std::list<CompressedFormatHandler *> formats, love::filesystem::FileData *filedata);
-	CompressedImageData(const CompressedImageData &c);
-	virtual ~CompressedImageData();
+	CompressedMemory(size_t size);
+	virtual ~CompressedMemory();
 
-	virtual CompressedImageData *clone() const;
-}; // CompressedImageData
+	uint8 *data;
+	size_t size;
 
-} // magpie
+}; // CompressedMemory
+
+// Compressed image data can have multiple mipmap levels, each represented by a
+// sub-image.
+class CompressedSlice : public ImageDataBase
+{
+public:
+
+	CompressedSlice(PixelFormat format, int width, int height, CompressedMemory *memory, size_t offset, size_t size);
+	CompressedSlice(const CompressedSlice &slice);
+	virtual ~CompressedSlice();
+
+	CompressedSlice *clone() const override;
+	void *getData() const override { return memory->data + offset; }
+	size_t getSize() const override { return dataSize; }
+	bool isSRGB() const override { return sRGB; }
+	size_t getOffset() const { return offset; }
+
+private:
+
+	StrongRef<CompressedMemory> memory;
+	size_t offset;
+	size_t dataSize;
+	bool sRGB;
+
+}; // CompressedSlice
+
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_COMPRESSED_IMAGE_DATA_H
