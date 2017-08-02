@@ -603,8 +603,6 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/ddsHandler.h
 	src/modules/image/magpie/EXRHandler.cpp
 	src/modules/image/magpie/EXRHandler.h
-	src/modules/image/magpie/ImageData.cpp
-	src/modules/image/magpie/ImageData.h
 	src/modules/image/magpie/KTXHandler.cpp
 	src/modules/image/magpie/KTXHandler.h
 	src/modules/image/magpie/PKMHandler.cpp
