@@ -31,7 +31,7 @@
 
 // LOVE
 #include "graphics/Graphics.h"
-#include "graphics/Color.h"
+#include "common/Color.h"
 
 #include "image/Image.h"
 #include "image/ImageData.h"

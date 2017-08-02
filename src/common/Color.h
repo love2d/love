@@ -18,12 +18,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_COLOR_H
-#define LOVE_GRAPHICS_COLOR_H
+#ifndef LOVE_COLOR_H
+#define LOVE_COLOR_H
 
 namespace love
-{
-namespace graphics
 {
 
 template <typename T>
@@ -153,7 +151,6 @@ inline Colorf toColorf(Color c)
 	return Colorf(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
 }
 
-} // graphics
 } // love
 
-#endif // LOVE_GRAPHICS_COLOR_H
+#endif // LOVE_COLOR_H

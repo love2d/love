@@ -146,7 +146,12 @@ BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const st
 
 	// The parseConfig function will try to load any missing page images.
 	for (int i = 0; i < (int) imagelist.size(); i++)
+	{
+		if (imagelist[i]->getFormat() != PIXELFORMAT_RGBA8)
+			throw love::Exception("Only 32-bit RGBA images are supported in BMFonts.");
+
 		images[i] = imagelist[i];
+	}
 
 	std::string configtext((const char *) fontdef->getData(), fontdef->getSize());
 
@@ -296,29 +301,26 @@ GlyphData *BMFontRasterizer::getGlyphData(uint32 glyph) const
 		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8);
 
 	const BMFontCharacter &c = it->second;
-	GlyphData *g = new GlyphData(glyph, c.metrics, PIXELFORMAT_RGBA8);
-
 	const auto &imagepair = images.find(c.page);
 
 	if (imagepair == images.end())
-	{
-		g->release();
 		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8);
-	}
 
 	image::ImageData *imagedata = imagepair->second.get();
+	GlyphData *g = new GlyphData(glyph, c.metrics, PIXELFORMAT_RGBA8);
 
 	size_t pixelsize = imagedata->getPixelSize();
-	image::pixel *pixels = (image::pixel *) g->getData();
-	const image::pixel *ipixels = (const image::pixel *) imagedata->getData();
+
+	uint8 *pixels = (uint8 *) g->getData();
+	const uint8 *ipixels = (const uint8 *) imagedata->getData();
 
 	love::thread::Lock lock(imagedata->getMutex());
 
 	// Copy the subsection of the texture from the ImageData to the GlyphData.
 	for (int y = 0; y < c.metrics.height; y++)
 	{
-		size_t idindex = (c.y + y) * imagedata->getWidth() + c.x;
-		memcpy(&pixels[y * c.metrics.width], &ipixels[idindex], pixelsize * c.metrics.width);
+		size_t idindex = ((c.y + y) * imagedata->getWidth() + c.x) * pixelsize;
+		memcpy(&pixels[y * c.metrics.width * pixelsize], &ipixels[idindex], pixelsize * c.metrics.width);
 	}
 
 	return g;

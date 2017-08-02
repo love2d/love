@@ -38,13 +38,6 @@ namespace love
 namespace image
 {
 
-// Pixel format structure.
-struct pixel
-{
-	// Red, green, blue, alpha.
-	unsigned char r, g, b, a;
-};
-
 union Pixel
 {
 	uint8  rgba8[4];

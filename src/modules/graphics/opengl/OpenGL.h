@@ -25,7 +25,7 @@
 #include "common/config.h"
 #include "common/int.h"
 #include "common/math.h"
-#include "graphics/Color.h"
+#include "common/Color.h"
 #include "graphics/Texture.h"
 #include "graphics/vertex.h"
 #include "graphics/depthstencil.h"

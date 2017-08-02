@@ -415,7 +415,6 @@
 		FA0B7D2B1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B851A95902C000E1D17 /* wrap_Rasterizer.cpp */; };
 		FA0B7D2C1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B851A95902C000E1D17 /* wrap_Rasterizer.cpp */; };
 		FA0B7D2D1A95902C000E1D17 /* wrap_Rasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B861A95902C000E1D17 /* wrap_Rasterizer.h */; };
-		FA0B7D2E1A95902C000E1D17 /* Color.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B881A95902C000E1D17 /* Color.h */; };
 		FA0B7D2F1A95902C000E1D17 /* Drawable.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B891A95902C000E1D17 /* Drawable.h */; };
 		FA0B7D301A95902C000E1D17 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */; };
 		FA0B7D311A95902C000E1D17 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */; };
@@ -925,6 +924,7 @@
 		FA620A371AA2F8DB005DB4C2 /* wrap_Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */; };
 		FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
 		FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A391AA305F6005DB4C2 /* types.cpp */; };
+		FA6BDE5C1F31725300786805 /* Color.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6BDE5B1F31725300786805 /* Color.h */; };
 		FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7550A71AEBE276003E311E /* libluajit.a */; };
 		FA76344A1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344B1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
@@ -1439,7 +1439,6 @@
 		FA0B7B841A95902C000E1D17 /* wrap_GlyphData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_GlyphData.h; sourceTree = "<group>"; };
 		FA0B7B851A95902C000E1D17 /* wrap_Rasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Rasterizer.cpp; sourceTree = "<group>"; };
 		FA0B7B861A95902C000E1D17 /* wrap_Rasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Rasterizer.h; sourceTree = "<group>"; };
-		FA0B7B881A95902C000E1D17 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
 		FA0B7B891A95902C000E1D17 /* Drawable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Drawable.h; sourceTree = "<group>"; };
 		FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = Graphics.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		FA0B7B8B1A95902C000E1D17 /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
@@ -1785,6 +1784,7 @@
 		FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
 		FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA620A391AA305F6005DB4C2 /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
+		FA6BDE5B1F31725300786805 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
 		FA7550A71AEBE276003E311E /* libluajit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libluajit.a; sourceTree = "<group>"; };
 		FA7634481E28722A0066EF9E /* StreamBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamBuffer.cpp; sourceTree = "<group>"; };
 		FA7634491E28722A0066EF9E /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
@@ -2019,6 +2019,7 @@
 				FAA3A9AD1B7D465A00CED060 /* android.h */,
 				FA0B78F71A958E3B000E1D17 /* b64.cpp */,
 				FA0B78F81A958E3B000E1D17 /* b64.h */,
+				FA6BDE5B1F31725300786805 /* Color.h */,
 				FA0B78F91A958E3B000E1D17 /* config.h */,
 				FA9D8DD41DEF8411002CD881 /* Data.cpp */,
 				FA0B78FA1A958E3B000E1D17 /* Data.h */,
@@ -2650,7 +2651,6 @@
 				FADF53F71E3C7ACD00012CC0 /* Buffer.h */,
 				FA1BA0A51E16F20600AA2803 /* Canvas.cpp */,
 				FA1BA0A61E16F20600AA2803 /* Canvas.h */,
-				FA0B7B881A95902C000E1D17 /* Color.h */,
 				FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */,
 				FAF1889D1E9DBBC8008C1479 /* depthstencil.h */,
 				FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */,
@@ -3655,6 +3655,7 @@
 				FA0B7E771A95902C000E1D17 /* wrap_WeldJoint.h in Headers */,
 				FA0B7A911A958EA3000E1D17 /* b2FrictionJoint.h in Headers */,
 				FA0B7E291A95902C000E1D17 /* PulleyJoint.h in Headers */,
+				FA6BDE5C1F31725300786805 /* Color.h in Headers */,
 				FA0B7D471A95902C000E1D17 /* ParticleSystem.h in Headers */,
 				FA0B7E231A95902C000E1D17 /* PolygonShape.h in Headers */,
 				FA0B791E1A958E3B000E1D17 /* config.h in Headers */,
@@ -3861,7 +3862,6 @@
 				FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */,
 				FAF140A61E20934C00F898D2 /* ScanContext.h in Headers */,
 				FA0B7E4A1A95902C000E1D17 /* wrap_DistanceJoint.h in Headers */,
-				FA0B7D2E1A95902C000E1D17 /* Color.h in Headers */,
 				FA0B7A6A1A958EA3000E1D17 /* b2TimeStep.h in Headers */,
 				FA0B7A281A958EA3000E1D17 /* Box2D.h in Headers */,
 				FA0B7DE41A95902C000E1D17 /* wrap_RandomGenerator.h in Headers */,

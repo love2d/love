@@ -21,6 +21,7 @@
 // LOVE
 #include "STBHandler.h"
 #include "image/ImageData.h"
+#include "common/Color.h"
 
 static void loveSTBIAssert(bool test, const char *teststr)
 {
@@ -48,6 +49,8 @@ namespace image
 {
 namespace magpie
 {
+
+static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
 
 bool STBHandler::canDecode(love::filesystem::FileData *data)
 {
@@ -144,7 +147,7 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, EncodedF
 	memcpy(encimg.data + headerlen, img.data, img.width * img.height * bpp);
 
 	// convert the pixels from RGBA to BGRA.
-	pixel *encodedpixels = (pixel *) (encimg.data + headerlen);
+	Color *encodedpixels = (Color *) (encimg.data + headerlen);
 	for (int y = 0; y < img.height; y++)
 	{
 		for (int x = 0; x < img.width; x++)

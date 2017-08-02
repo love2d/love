@@ -255,6 +255,7 @@ endfunction()
 set(LOVE_SRC_COMMON
 	src/common/b64.cpp
 	src/common/b64.h
+	src/common/Color.h
 	src/common/config.h
 	src/common/Data.cpp
 	src/common/Data.h
@@ -474,7 +475,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Buffer.h
 	src/modules/graphics/Canvas.cpp
 	src/modules/graphics/Canvas.h
-	src/modules/graphics/Color.h
 	src/modules/graphics/depthstencil.cpp
 	src/modules/graphics/depthstencil.h
 	src/modules/graphics/Drawable.cpp

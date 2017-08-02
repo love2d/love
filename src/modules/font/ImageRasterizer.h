@@ -22,9 +22,9 @@
 #define LOVE_FONT_IMAGE_RASTERIZER_H
 
 // LOVE
-#include "filesystem/File.h"
 #include "font/Rasterizer.h"
 #include "image/ImageData.h"
+#include "common/Color.h"
 
 #include <map>
 
@@ -76,7 +76,7 @@ private:
 	std::map<uint32, ImageGlyphData> imageGlyphs;
 
 	// Color used to identify glyph separation in the source ImageData
-	love::image::pixel spacer;
+	Color spacer;
 
 }; // ImageRasterizer
 

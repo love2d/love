@@ -29,8 +29,8 @@
 // LOVE
 #include "common/math.h"
 #include "common/Matrix.h"
+#include "common/Color.h"
 #include "Drawable.h"
-#include "Color.h"
 #include "Mesh.h"
 #include "vertex.h"
 
