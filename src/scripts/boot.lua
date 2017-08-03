@@ -106,7 +106,7 @@ function love.arg.getLow(a)
 			m = k
 		end
 	end
-	return a[m]
+	return a[m], m
 end
 
 love.arg.options = {
@@ -115,7 +115,7 @@ love.arg.options = {
 	game = { a = 1 }
 }
 
-love.arg.option_indexes = {}
+love.arg.optionIndices = {}
 
 function love.arg.parseOption(m, i)
 	m.set = true
@@ -141,11 +141,11 @@ function love.arg.parseOptions()
 		local m = string.match(arg[i], "^%-%-(.+)")
 
 		if m and love.arg.options[m] then
-			love.arg.option_indexes[i] = true
+			love.arg.optionIndices[i] = true
 			i = i + love.arg.parseOption(love.arg.options[m], i+1)
 		elseif not game then
-			love.arg.option_indexes[i] = true
-			love.arg.options.game.index  = i
+			love.arg.optionIndices[i] = true
+			love.arg.options.game.index = i
 			game = i
 		end
 		i = i + 1
@@ -161,11 +161,11 @@ end
 function love.arg.parseGameArguments(a)
 	local out = {}
 
-	local low = love.arg.getLow(a)
+	local _, lowindex = love.arg.getLow(a)
 
-	local o = low
-	for i=low, #a do
-		if not love.arg.option_indexes[i] then
+	local o = lowindex
+	for i=lowindex, #a do
+		if not love.arg.optionIndices[i] then
 			out[o] = a[i]
 			o = o + 1
 		end
@@ -305,10 +305,10 @@ function love.boot()
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
 
-	if can_has_game then
+	if can_has_game and love.arg.options.game.index ~= nil then
 		-- the game source is in the exe so we should pass the argument we
 		-- originally though was the game to the app
-		love.arg.option_indexes[love.arg.options.game.index] = false
+		love.arg.optionIndices[love.arg.options.game.index] = false
 	end
 
 	local is_fused_game = can_has_game or love.arg.options.fused.set
