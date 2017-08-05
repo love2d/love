@@ -107,7 +107,7 @@ love::mouse::Cursor *Mouse::getCursor() const
 }
 
 
-bool Mouse::hasCursor() const
+bool Mouse::isCursorSupported() const
 {
 	return SDL_GetDefaultCursor() != nullptr;
 }

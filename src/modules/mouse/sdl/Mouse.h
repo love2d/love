@@ -53,7 +53,7 @@ public:
 
 	love::mouse::Cursor *getCursor() const override;
 
-	bool hasCursor() const override;
+	bool isCursorSupported() const override;
 
 	double getX() const override;
 	double getY() const override;

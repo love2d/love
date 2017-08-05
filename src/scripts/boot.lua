@@ -623,7 +623,7 @@ function love.errhand(msg)
 		love.mouse.setVisible(true)
 		love.mouse.setGrabbed(false)
 		love.mouse.setRelativeMode(false)
-		if love.mouse.hasCursor() then
+		if love.mouse.isCursorSupported() then
 			love.mouse.setCursor()
 		end
 	end

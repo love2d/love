@@ -51,7 +51,7 @@ public:
 
 	virtual Cursor *getCursor() const = 0;
 
-	virtual bool hasCursor() const = 0;
+	virtual bool isCursorSupported() const = 0;
 
 	virtual double getX() const = 0;
 	virtual double getY() const = 0;

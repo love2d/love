@@ -92,9 +92,9 @@ int w_getCursor(lua_State *L)
 	return 1;
 }
 
-int w_hasCursor(lua_State *L)
+int w_isCursorSupported(lua_State *L)
 {
-	luax_pushboolean(L, instance()->hasCursor());
+	luax_pushboolean(L, instance()->isCursorSupported());
 	return 1;
 }
 
@@ -214,7 +214,7 @@ static const luaL_Reg functions[] =
 	{ "getSystemCursor", w_getSystemCursor },
 	{ "setCursor", w_setCursor },
 	{ "getCursor", w_getCursor },
-	{ "hasCursor", w_hasCursor },
+	{ "isCursorSupported", w_isCursorSupported },
 	{ "getX", w_getX },
 	{ "getY", w_getY },
 	{ "setX", w_setX },
