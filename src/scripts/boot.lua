@@ -716,7 +716,7 @@ function love.errhand(msg)
 end
 
 local function deferErrhand(...)
-	local handler = love.errhand or error_printer
+	local handler = love.errorhandler or love.errhand or error_printer
 	return handler(...)
 end
 
