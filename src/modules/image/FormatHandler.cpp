@@ -35,7 +35,7 @@ FormatHandler::~FormatHandler()
 {
 }
 
-bool FormatHandler::canDecode(love::filesystem::FileData* /*data*/)
+bool FormatHandler::canDecode(Data* /*data*/)
 {
 	return false;
 }
@@ -45,7 +45,7 @@ bool FormatHandler::canEncode(PixelFormat /*rawFormat*/, EncodedFormat /*encoded
 	return false;
 }
 
-FormatHandler::DecodedImage FormatHandler::decode(love::filesystem::FileData* /*data*/)
+FormatHandler::DecodedImage FormatHandler::decode(Data* /*data*/)
 {
 	throw love::Exception("Image decoding is not implemented for this format backend.");
 }

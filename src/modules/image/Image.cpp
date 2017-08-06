@@ -76,7 +76,7 @@ const char *Image::getName() const
 	return "love.image.magpie";
 }
 
-love::image::ImageData *Image::newImageData(love::filesystem::FileData *data)
+love::image::ImageData *Image::newImageData(Data *data)
 {
 	return new ImageData(data);
 }
@@ -91,12 +91,12 @@ love::image::ImageData *Image::newImageData(int width, int height, PixelFormat f
 	return new ImageData(width, height, format, data, own);
 }
 
-love::image::CompressedImageData *Image::newCompressedData(love::filesystem::FileData *data)
+love::image::CompressedImageData *Image::newCompressedData(Data *data)
 {
 	return new CompressedImageData(compressedFormatHandlers, data);
 }
 
-bool Image::isCompressed(love::filesystem::FileData *data)
+bool Image::isCompressed(Data *data)
 {
 	for (CompressedFormatHandler *handler : compressedFormatHandlers)
 	{

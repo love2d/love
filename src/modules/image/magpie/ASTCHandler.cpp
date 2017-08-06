@@ -21,6 +21,7 @@
 // LOVE
 #include "ASTCHandler.h"
 #include "common/int.h"
+#include "common/Exception.h"
 
 namespace love
 {
@@ -86,7 +87,7 @@ static PixelFormat convertFormat(uint32 blockX, uint32 blockY, uint32 blockZ)
 
 } // Anonymous namespace.
 
-bool ASTCHandler::canParse(const filesystem::FileData *data)
+bool ASTCHandler::canParse(const Data *data)
 {
 	if (data->getSize() <= sizeof(ASTCHeader))
 		return false;
@@ -104,7 +105,7 @@ bool ASTCHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> ASTCHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> ASTCHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not an .astc file?)");

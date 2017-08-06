@@ -23,7 +23,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/pixelformat.h"
-#include "filesystem/FileData.h"
+#include "common/Data.h"
 
 namespace love
 {
@@ -75,7 +75,7 @@ public:
 	/**
 	 * Whether this format handler can decode a particular FileData.
 	 **/
-	virtual bool canDecode(love::filesystem::FileData *data);
+	virtual bool canDecode(Data *data);
 
 	/**
 	 * Whether this format handler can encode to a particular format.
@@ -87,7 +87,7 @@ public:
 	 * @param data The encoded data to decode.
 	 * @return The decoded pixel data.
 	 **/
-	virtual DecodedImage decode(love::filesystem::FileData *data);
+	virtual DecodedImage decode(Data *data);
 
 	/**
 	 * Encodes an image from raw pixel data into a particular format.

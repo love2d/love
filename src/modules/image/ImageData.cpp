@@ -31,7 +31,7 @@ namespace image
 
 love::Type ImageData::type("ImageData", &Data::type);
 
-ImageData::ImageData(love::filesystem::FileData *data)
+ImageData::ImageData(Data *data)
 {
 	decode(data);
 }
@@ -108,7 +108,7 @@ void ImageData::create(int width, int height, PixelFormat format, void *data)
 	this->format = format;
 }
 
-void ImageData::decode(love::filesystem::FileData *data)
+void ImageData::decode(Data *data)
 {
 	FormatHandler *decoder = nullptr;
 	FormatHandler::DecodedImage decodedimage;
@@ -132,8 +132,15 @@ void ImageData::decode(love::filesystem::FileData *data)
 
 	if (decodedimage.data == nullptr)
 	{
-		const std::string &name = data->getFilename();
-		throw love::Exception("Could not decode file '%s' to ImageData: unsupported file format", name.c_str());
+		auto filedata = dynamic_cast<filesystem::FileData *>(data);
+
+		if (filedata != nullptr)
+		{
+			const std::string &name = filedata->getFilename();
+			throw love::Exception("Could not decode file '%s' to ImageData: unsupported file format", name.c_str());
+		}
+		else
+			throw love::Exception("Could not decode data to ImageData: unsupported encoded format");
 	}
 
 	if (decodedimage.size != decodedimage.width * decodedimage.height * getPixelFormatSize(decodedimage.format))

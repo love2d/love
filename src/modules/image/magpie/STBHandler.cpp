@@ -20,7 +20,7 @@
 
 // LOVE
 #include "STBHandler.h"
-#include "image/ImageData.h"
+#include "common/Exception.h"
 #include "common/Color.h"
 
 static void loveSTBIAssert(bool test, const char *teststr)
@@ -52,7 +52,7 @@ namespace magpie
 
 static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
 
-bool STBHandler::canDecode(love::filesystem::FileData *data)
+bool STBHandler::canDecode(Data *data)
 {
 	int w = 0;
 	int h = 0;
@@ -69,7 +69,7 @@ bool STBHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 	return encodedFormat == ENCODED_TGA && rawFormat == PIXELFORMAT_RGBA8;
 }
 
-FormatHandler::DecodedImage STBHandler::decode(love::filesystem::FileData *data)
+FormatHandler::DecodedImage STBHandler::decode(Data *data)
 {
 	DecodedImage img;
 

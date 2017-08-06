@@ -23,6 +23,7 @@
 #include "wrap_File.h"
 #include "wrap_DroppedFile.h"
 #include "wrap_FileData.h"
+#include "common/wrap_Data.h"
 
 #include "physfs/Filesystem.h"
 
@@ -218,9 +219,47 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	return data;
 }
 
+Data *luax_getdata(lua_State *L, int idx)
+{
+	Data *data = nullptr;
+	File *file = nullptr;
+
+	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
+	{
+		file = luax_getfile(L, idx);
+		file->retain();
+	}
+	else if (luax_istype(L, idx, Data::type))
+	{
+		data = luax_checkdata(L, idx);
+		data->retain();
+	}
+
+	if (!data && !file)
+	{
+		luaL_argerror(L, idx, "filename, File, or Data expected");
+		return nullptr; // Never reached.
+	}
+
+	if (file)
+	{
+		luax_catchexcept(L,
+			[&]() { data = file->read(); },
+			[&](bool) { file->release(); }
+		);
+	}
+
+	return data;
+}
+
 bool luax_cangetfiledata(lua_State *L, int idx)
 {
 	return lua_isstring(L, idx) || luax_istype(L, idx, File::type) || luax_istype(L, idx, FileData::type);
+}
+
+bool luax_cangetdata(lua_State *L, int idx)
+{
+	return lua_isstring(L, idx) || luax_istype(L, idx, File::type) || luax_istype(L, idx, Data::type);
 }
 
 int w_newFileData(lua_State *L)

@@ -46,9 +46,9 @@ public:
 	virtual ~DDSHandler() {}
 
 	// Implements CompressedFormatHandler.
-	bool canParse(const filesystem::FileData *data) override;
+	bool canParse(const Data *data) override;
 
-	StrongRef<CompressedMemory> parse(filesystem::FileData *filedata,
+	StrongRef<CompressedMemory> parse(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
 

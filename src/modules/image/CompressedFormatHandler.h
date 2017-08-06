@@ -22,7 +22,7 @@
 
 // LOVE
 #include "common/Object.h"
-#include "filesystem/FileData.h"
+#include "common/Data.h"
 #include "CompressedSlice.h"
 
 namespace love
@@ -46,7 +46,7 @@ public:
 	 * CompressedImageData by this handler.
 	 * @param data The data to parse.
 	 **/
-	virtual bool canParse(const filesystem::FileData *data) = 0;
+	virtual bool canParse(const Data *data) = 0;
 
 	/**
 	 * Parses compressed image filedata into a list of sub-images and returns
@@ -60,7 +60,7 @@ public:
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
-	virtual StrongRef<CompressedMemory> parse(filesystem::FileData *filedata,
+	virtual StrongRef<CompressedMemory> parse(Data *filedata,
 	               std::vector<StrongRef<CompressedSlice>> &images,
 	               PixelFormat &format, bool &sRGB) = 0;
 

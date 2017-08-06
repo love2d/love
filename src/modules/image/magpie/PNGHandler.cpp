@@ -128,7 +128,7 @@ static unsigned zlibCompress(unsigned char **out, size_t *outsize, const unsigne
 	return 0; // Success.
 }
 
-bool PNGHandler::canDecode(love::filesystem::FileData *data)
+bool PNGHandler::canDecode(Data *data)
 {
 	unsigned int width = 0, height = 0;
 	unsigned char *indata = (unsigned char *) data->getData();
@@ -146,7 +146,7 @@ bool PNGHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 		&& (rawFormat == PIXELFORMAT_RGBA8 || rawFormat == PIXELFORMAT_RGBA16);
 }
 
-PNGHandler::DecodedImage PNGHandler::decode(love::filesystem::FileData *fdata)
+PNGHandler::DecodedImage PNGHandler::decode(Data *fdata)
 {
 	unsigned int width = 0, height = 0;
 	unsigned char *indata = (unsigned char *) fdata->getData();

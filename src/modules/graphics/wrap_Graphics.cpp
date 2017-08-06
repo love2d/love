@@ -631,10 +631,14 @@ int w_getStencilTest(lua_State *L)
 	return 2;
 }
 
-static void parsePixelDensity(love::filesystem::FileData *d, float *pixeldensity)
+static void parsePixelDensity(Data *d, float *pixeldensity)
 {
+	auto fd = dynamic_cast<love::filesystem::FileData *>(d);
+	if (fd == nullptr)
+		return;
+
 	// Parse a density scale of 2.0 from "image@2x.png".
-	const std::string &fname = d->getName();
+	const std::string &fname = fd->getName();
 
 	size_t namelen = fname.length();
 	size_t atpos = fname.rfind('@');
@@ -664,20 +668,20 @@ static Image::Settings w__optImageSettings(lua_State *L, int idx, const Image::S
 	return settings;
 }
 
-static std::pair<StrongRef<love::image::ImageData>, StrongRef<love::image::CompressedImageData>>
+static std::pair<StrongRef<image::ImageData>, StrongRef<image::CompressedImageData>>
 getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
 {
-	StrongRef<love::image::ImageData> idata;
-	StrongRef<love::image::CompressedImageData> cdata;
+	StrongRef<image::ImageData> idata;
+	StrongRef<image::CompressedImageData> cdata;
 
 	// Convert to ImageData / CompressedImageData, if necessary.
-	if (lua_isstring(L, idx) || luax_istype(L, idx, love::filesystem::File::type) || luax_istype(L, idx, love::filesystem::FileData::type))
+	if (lua_isstring(L, idx) || luax_istype(L, idx, filesystem::File::type) || luax_istype(L, idx, Data::type))
 	{
-		auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
+		auto imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
 		if (imagemodule == nullptr)
 			luaL_error(L, "Cannot load images without the love.image module.");
 
-		StrongRef<love::filesystem::FileData> fdata(love::filesystem::luax_getfiledata(L, idx), Acquire::NORETAIN);
+		StrongRef<Data> fdata(filesystem::luax_getdata(L, idx), Acquire::NORETAIN);
 
 		if (density != nullptr)
 			parsePixelDensity(fdata, density);
@@ -688,10 +692,10 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
 			luax_catchexcept(L, [&]() { idata.set(imagemodule->newImageData(fdata), Acquire::NORETAIN); });
 
 	}
-	else if (luax_istype(L, idx, love::image::CompressedImageData::type))
-		cdata.set(love::image::luax_checkcompressedimagedata(L, idx));
+	else if (luax_istype(L, idx, image::CompressedImageData::type))
+		cdata.set(image::luax_checkcompressedimagedata(L, idx));
 	else
-		idata.set(love::image::luax_checkimagedata(L, idx));
+		idata.set(image::luax_checkimagedata(L, idx));
 
 	return std::make_pair(idata, cdata);
 }

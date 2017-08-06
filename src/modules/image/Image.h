@@ -61,7 +61,7 @@ public:
 	 * @param data The FileData containing the encoded image data.
 	 * @return The new ImageData.
 	 **/
-	ImageData *newImageData(love::filesystem::FileData *data);
+	ImageData *newImageData(Data *data);
 
 	/**
 	 * Creates empty ImageData with the given size.
@@ -87,13 +87,13 @@ public:
 	 * @param data The FileData containing the compressed image data.
 	 * @return The new CompressedImageData.
 	 **/
-	CompressedImageData *newCompressedData(love::filesystem::FileData *data);
+	CompressedImageData *newCompressedData(Data *data);
 
 	/**
 	 * Determines whether a FileData is Compressed image data or not.
 	 * @param data The FileData to test.
 	 **/
-	bool isCompressed(love::filesystem::FileData *data);
+	bool isCompressed(Data *data);
 
 	std::vector<StrongRef<ImageData>> newCubeFaces(ImageData *src);
 	std::vector<StrongRef<ImageData>> newVolumeLayers(ImageData *src);

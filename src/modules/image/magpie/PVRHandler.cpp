@@ -21,6 +21,7 @@
 // LOVE
 #include "PVRHandler.h"
 #include "common/int.h"
+#include "common/Exception.h"
 
 // C++
 #include <algorithm>
@@ -453,7 +454,7 @@ size_t getMipLevelSize(const PVRTexHeaderV3 &header, int miplevel)
 } // Anonymous namespace.
 
 
-bool PVRHandler::canParse(const filesystem::FileData *data)
+bool PVRHandler::canParse(const Data *data)
 {
 	if (data->getSize() < sizeof(PVRTexHeaderV2) || data->getSize() < sizeof(PVRTexHeaderV3))
 		return false;
@@ -474,7 +475,7 @@ bool PVRHandler::canParse(const filesystem::FileData *data)
 	return false;
 }
 
-StrongRef<CompressedMemory> PVRHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> PVRHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");

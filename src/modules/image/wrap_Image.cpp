@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Image.h"
-
+#include "common/wrap_Data.h"
 #include "common/Data.h"
 #include "common/StringMap.h"
 
@@ -77,9 +77,9 @@ int w_newImageData(lua_State *L)
 		t->release();
 		return 1;
 	}
-	else if (filesystem::luax_cangetfiledata(L, 1)) // Case 2: File(Data).
+	else if (filesystem::luax_cangetfiledata(L, 1) || luax_istype(L, 1, Data::type)) // Case 2: File(Data).
 	{
-		filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+		Data *data = love::filesystem::luax_getdata(L, 1);
 
 		ImageData *t = nullptr;
 		luax_catchexcept(L,
@@ -99,7 +99,7 @@ int w_newImageData(lua_State *L)
 
 int w_newCompressedData(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+	Data *data = love::filesystem::luax_getdata(L, 1);
 
 	CompressedImageData *t = nullptr;
 	luax_catchexcept(L,
@@ -114,7 +114,7 @@ int w_newCompressedData(lua_State *L)
 
 int w_isCompressed(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+	Data *data = love::filesystem::luax_getdata(L, 1);
 	bool compressed = instance()->isCompressed(data);
 	data->release();
 

@@ -55,7 +55,7 @@ public:
 
 	static love::Type type;
 
-	ImageData(love::filesystem::FileData *data);
+	ImageData(Data *data);
 	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
 	ImageData(int width, int height, PixelFormat format, void *data, bool own);
 	ImageData(const ImageData &c);
@@ -132,7 +132,7 @@ private:
 	void create(int width, int height, PixelFormat format, void *data = nullptr);
 
 	// Decode and load an encoded format.
-	void decode(love::filesystem::FileData *data);
+	void decode(Data *data);
 
 	// The actual data.
 	unsigned char *data = nullptr;

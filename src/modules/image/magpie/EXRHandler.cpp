@@ -21,6 +21,7 @@
 // LOVE
 #include "EXRHandler.h"
 #include "common/halffloat.h"
+#include "common/Exception.h"
 
 // tinyexr
 #define TINYEXR_IMPLEMENTATION
@@ -36,7 +37,7 @@ namespace image
 namespace magpie
 {
 
-bool EXRHandler::canDecode(love::filesystem::FileData *data)
+bool EXRHandler::canDecode(Data *data)
 {
 	EXRVersion version;
 	return ParseEXRVersionFromMemory(&version, (const unsigned char *) data->getData(), data->getSize()) == TINYEXR_SUCCESS;
@@ -100,7 +101,7 @@ static T *loadEXRChannels(int width, int height, T *rgba[4], T one)
 	return data;
 }
 
-FormatHandler::DecodedImage EXRHandler::decode(love::filesystem::FileData *data)
+FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 {
 	const char *err = "unknown error";
 	auto mem = (const unsigned char *) data->getData();

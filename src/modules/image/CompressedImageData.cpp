@@ -27,7 +27,7 @@ namespace image
 
 love::Type CompressedImageData::type("CompressedImageData", &Data::type);
 
-CompressedImageData::CompressedImageData(const std::list<CompressedFormatHandler *> &formats, love::filesystem::FileData *filedata)
+CompressedImageData::CompressedImageData(const std::list<CompressedFormatHandler *> &formats, Data *filedata)
 	: format(PIXELFORMAT_UNKNOWN)
 	, sRGB(false)
 {

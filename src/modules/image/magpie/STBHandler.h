@@ -42,10 +42,10 @@ public:
 
 	// Implements FormatHandler.
 
-	bool canDecode(love::filesystem::FileData *data) override;
+	bool canDecode(Data *data) override;
 	bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat) override;
 
-	DecodedImage decode(love::filesystem::FileData *data) override;
+	DecodedImage decode(Data *data) override;
 	EncodedImage encode(const DecodedImage &img, EncodedFormat format) override;
 
 	void free(unsigned char *mem) override;

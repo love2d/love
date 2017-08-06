@@ -21,6 +21,7 @@
 // LOVE
 #include "PKMHandler.h"
 #include "common/int.h"
+#include "common/Exception.h"
 
 namespace love
 {
@@ -96,7 +97,7 @@ static PixelFormat convertFormat(uint16 texformat)
 
 } // Anonymous namespace.
 
-bool PKMHandler::canParse(const filesystem::FileData *data)
+bool PKMHandler::canParse(const Data *data)
 {
 	if (data->getSize() <= sizeof(PKMHeader))
 		return false;
@@ -113,7 +114,7 @@ bool PKMHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> PKMHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> PKMHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");

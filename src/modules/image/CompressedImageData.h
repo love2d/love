@@ -25,7 +25,6 @@
 #include "common/StringMap.h"
 #include "common/int.h"
 #include "common/pixelformat.h"
-#include "filesystem/FileData.h"
 #include "CompressedSlice.h"
 #include "CompressedFormatHandler.h"
 
@@ -49,7 +48,7 @@ public:
 
 	static love::Type type;
 
-	CompressedImageData(const std::list<CompressedFormatHandler *> &formats, love::filesystem::FileData *filedata);
+	CompressedImageData(const std::list<CompressedFormatHandler *> &formats, Data *filedata);
 	CompressedImageData(const CompressedImageData &c);
 	virtual ~CompressedImageData();
 

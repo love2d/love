@@ -21,6 +21,7 @@
 // LOVE
 #include "KTXHandler.h"
 #include "common/int.h"
+#include "common/Exception.h"
 
 // C
 #include <string.h>
@@ -280,7 +281,7 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 
 } // Anonymous namespace.
 
-bool KTXHandler::canParse(const filesystem::FileData *data)
+bool KTXHandler::canParse(const Data *data)
 {
 	if (data->getSize() < sizeof(KTXHeader))
 		return false;
@@ -297,7 +298,7 @@ bool KTXHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> KTXHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> KTXHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParse(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");

@@ -38,10 +38,10 @@ public:
 
 	// Implements FormatHandler.
 
-	virtual bool canDecode(love::filesystem::FileData *data);
+	virtual bool canDecode(Data *data);
 	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
 
-	virtual DecodedImage decode(love::filesystem::FileData *data);
+	virtual DecodedImage decode(Data *data);
 	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
 
 	virtual void free(unsigned char *mem);

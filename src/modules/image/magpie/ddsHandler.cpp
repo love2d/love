@@ -19,6 +19,7 @@
  **/
 
 #include "ddsHandler.h"
+#include "common/Exception.h"
 
 namespace love
 {
@@ -27,12 +28,12 @@ namespace image
 namespace magpie
 {
 
-bool DDSHandler::canParse(const filesystem::FileData *data)
+bool DDSHandler::canParse(const Data *data)
 {
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-StrongRef<CompressedMemory> DDSHandler::parse(filesystem::FileData *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> DDSHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
