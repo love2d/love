@@ -56,7 +56,13 @@ int w_newImageData(lua_State *L)
 		size_t numbytes = 0;
 		const char *bytes = nullptr;
 
-		if (!lua_isnoneornil(L, 4))
+		if (luax_istype(L, 4, Data::type))
+		{
+			Data *data = luax_checkdata(L, 4);
+			bytes = (const char *) data->getData();
+			numbytes = data->getSize();
+		}
+		else if (!lua_isnoneornil(L, 4))
 			bytes = luaL_checklstring(L, 4, &numbytes);
 
 		ImageData *t = nullptr;
