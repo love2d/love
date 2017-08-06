@@ -586,7 +586,7 @@ bool Filesystem::isDirectory(const char *dir) const
 	else
 		return false;
 #else
-	return PHYSFS_isDirectory(dir) != 0;
+	return PHYSFS_isDirectory(dir) != 0 && !isSymlink(dir);
 #endif
 }
 
@@ -595,7 +595,15 @@ bool Filesystem::isFile(const char *file) const
 	if (!PHYSFS_isInit())
 		return false;
 
-	return PHYSFS_exists(file) && !isDirectory(file);
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_Stat stat = {};
+	if (PHYSFS_stat(file, &stat))
+		return stat.filetype == PHYSFS_FILETYPE_REGULAR;
+	else
+		return false;
+#else
+	return PHYSFS_exists(file) && !isDirectory(file) && !isSymlink(file);
+#endif
 }
 
 bool Filesystem::isSymlink(const char *filename) const

@@ -83,7 +83,7 @@ int w_newImageData(lua_State *L)
 		t->release();
 		return 1;
 	}
-	else if (filesystem::luax_cangetfiledata(L, 1) || luax_istype(L, 1, Data::type)) // Case 2: File(Data).
+	else if (filesystem::luax_cangetdata(L, 1)) // Case 2: File(Data).
 	{
 		Data *data = love::filesystem::luax_getdata(L, 1);
 
