@@ -107,6 +107,11 @@ Reference *luax_refif(lua_State *L, int type);
 void luax_printstack(lua_State *L);
 
 /**
+ * Traceback function for use with lua_pcall. Calls debug.traceback.
+ **/
+int luax_traceback(lua_State *L);
+
+/**
  * Gets whether the value at idx is an array of tables.
  **/
 bool luax_isarrayoftables(lua_State *L, int idx);
