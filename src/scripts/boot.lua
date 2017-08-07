@@ -547,6 +547,10 @@ function love.init()
 	end
 end
 
+-----------------------------------------------------------
+-- Default callbacks.
+-----------------------------------------------------------
+
 function love.run()
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
@@ -592,11 +596,11 @@ function love.run()
 
 end
 
------------------------------------------------------------
--- Error screen.
------------------------------------------------------------
+local debug, print, error = debug, print, error
 
-local debug, print = debug, print
+function love.threaderror(t, err)
+	error("Thread error ("..tostring(t)..")\n\n"..err, 0)
+end
 
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
@@ -719,7 +723,6 @@ local function deferErrhand(...)
 	local handler = love.errorhandler or love.errhand or error_printer
 	return handler(...)
 end
-
 
 -----------------------------------------------------------
 -- The root of all calls.
