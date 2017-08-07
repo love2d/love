@@ -674,9 +674,13 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
 	StrongRef<image::ImageData> idata;
 	StrongRef<image::CompressedImageData> cdata;
 
-	// Convert to ImageData / CompressedImageData, if necessary.
-	if (lua_isstring(L, idx) || luax_istype(L, idx, filesystem::File::type) || luax_istype(L, idx, Data::type))
+	if (luax_istype(L, idx, image::ImageData::type))
+		idata.set(image::luax_checkimagedata(L, idx));
+	else if (luax_istype(L, idx, image::CompressedImageData::type))
+		cdata.set(image::luax_checkcompressedimagedata(L, idx));
+	else if (filesystem::luax_cangetdata(L, idx))
 	{
+		// Convert to ImageData / CompressedImageData.
 		auto imagemodule = Module::getInstance<image::Image>(Module::M_IMAGE);
 		if (imagemodule == nullptr)
 			luaL_error(L, "Cannot load images without the love.image module.");
@@ -690,10 +694,7 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
 			luax_catchexcept(L, [&]() { cdata.set(imagemodule->newCompressedData(fdata), Acquire::NORETAIN); });
 		else
 			luax_catchexcept(L, [&]() { idata.set(imagemodule->newImageData(fdata), Acquire::NORETAIN); });
-
 	}
-	else if (luax_istype(L, idx, image::CompressedImageData::type))
-		cdata.set(image::luax_checkcompressedimagedata(L, idx));
 	else
 		idata.set(image::luax_checkimagedata(L, idx));
 
