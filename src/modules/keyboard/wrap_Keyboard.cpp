@@ -58,8 +58,12 @@ int w_isDown(lua_State *L)
 		for (int i = 0; i < num; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			if (Keyboard::getConstant(luaL_checkstring(L, -1), k))
-				keylist.push_back(k);
+
+			const char *name = luaL_checkstring(L, -1);
+			if (!Keyboard::getConstant(name, k))
+				return luaL_error(L, "Invalid key constant: %s", name);
+
+			keylist.push_back(k);
 			lua_pop(L, 1);
 		}
 	}
@@ -67,8 +71,11 @@ int w_isDown(lua_State *L)
 	{
 		for (int i = 0; i < num; i++)
 		{
-			if (Keyboard::getConstant(luaL_checkstring(L, i+1), k))
-				keylist.push_back(k);
+			const char *name = luaL_checkstring(L, i + 1);
+			if (!Keyboard::getConstant(name, k))
+				return luaL_error(L, "Invalid key constant: %s", name);
+
+			keylist.push_back(k);
 		}
 	}
 
@@ -91,8 +98,12 @@ int w_isScancodeDown(lua_State *L)
 		for (int i = 0; i < num; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			if (Keyboard::getConstant(luaL_checkstring(L, -1), scancode))
-				scancodelist.push_back(scancode);
+
+			const char *name = luaL_checkstring(L, -1);
+			if (!Keyboard::getConstant(name, scancode))
+				return luaL_error(L, "Invalid scancode: %s", name);
+
+			scancodelist.push_back(scancode);
 			lua_pop(L, 1);
 		}
 	}
@@ -100,8 +111,11 @@ int w_isScancodeDown(lua_State *L)
 	{
 		for (int i = 0; i < num; i++)
 		{
-			if (Keyboard::getConstant(luaL_checkstring(L, i+1), scancode))
-				scancodelist.push_back(scancode);
+			const char *name = luaL_checkstring(L, i + 1);
+			if (!Keyboard::getConstant(name, scancode))
+				return luaL_error(L, "Invalid scancode: %s", name);
+
+			scancodelist.push_back(scancode);
 		}
 	}
 
