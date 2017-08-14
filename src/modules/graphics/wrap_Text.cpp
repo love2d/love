@@ -36,29 +36,10 @@ int w_Text_set(lua_State *L)
 {
 	Text *t = luax_checktext(L, 1);
 
-	if (lua_isnoneornil(L, 3))
-	{
-		// Single argument: unformatted text.
-		std::vector<Font::ColoredString> newtext;
-		luax_checkcoloredstring(L, 2, newtext);
-		luax_catchexcept(L, [&](){ t->set(newtext); });
-	}
-	else
-	{
-		// Multiple arguments: formatted text.
-		float wraplimit = (float) luaL_checknumber(L, 3);
+	std::vector<Font::ColoredString> newtext;
+	luax_checkcoloredstring(L, 2, newtext);
 
-		Font::AlignMode align;
-		const char *alignstr = luaL_checkstring(L, 4);
-		if (!Font::getConstant(alignstr, align))
-			return luaL_error(L, "Invalid align mode: %s", alignstr);
-
-		std::vector<Font::ColoredString> newtext;
-		luax_checkcoloredstring(L, 2, newtext);
-
-		luax_catchexcept(L, [&](){ t->set(newtext, wraplimit, align); });
-	}
-
+	luax_catchexcept(L, [&](){ t->set(newtext); });
 	return 0;
 }
 
