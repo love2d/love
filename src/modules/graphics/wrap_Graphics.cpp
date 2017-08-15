@@ -1168,9 +1168,8 @@ int w_newCanvas(lua_State *L)
 		lua_getfield(L, startidx, "readable");
 		if (!lua_isnoneornil(L, -1))
 		{
-			luaL_checktype(L, -1, LUA_TBOOLEAN);
 			settings.readable.hasValue = true;
-			settings.readable.value = luax_toboolean(L, -1);
+			settings.readable.value = luax_checkboolean(L, -1);
 		}
 		lua_pop(L, 1);
 
@@ -1327,8 +1326,7 @@ int w_newShader(lua_State *L)
 
 int w_validateShader(lua_State *L)
 {
-	luaL_checktype(L, 1, LUA_TBOOLEAN);
-	bool gles = luax_toboolean(L, 1);
+	bool gles = luax_checkboolean(L, 1);
 
 	Shader::ShaderSource source;
 	w_getShaderSource(L, 2, gles, source);
@@ -1712,10 +1710,10 @@ int w_setColorMask(lua_State *L)
 	}
 	else
 	{
-		mask.r = luax_toboolean(L, 1);
-		mask.g = luax_toboolean(L, 2);
-		mask.b = luax_toboolean(L, 3);
-		mask.a = luax_toboolean(L, 4);
+		mask.r = luax_checkboolean(L, 1);
+		mask.g = luax_checkboolean(L, 2);
+		mask.b = luax_checkboolean(L, 3);
+		mask.a = luax_checkboolean(L, 4);
 	}
 
 	instance()->setColorMask(mask);
@@ -1912,7 +1910,7 @@ int w_getPointSize(lua_State *L)
 
 int w_setWireframe(lua_State *L)
 {
-	instance()->setWireframe(luax_toboolean(L, 1));
+	instance()->setWireframe(luax_checkboolean(L, 1));
 	return 0;
 }
 
@@ -2033,9 +2031,7 @@ int w_getCanvasFormats(lua_State *L)
 
 	if (!lua_isnoneornil(L, 1))
 	{
-		luaL_checktype(L, 1, LUA_TBOOLEAN);
-
-		if (luax_toboolean(L, 1))
+		if (luax_checkboolean(L, 1))
 		{
 			supported = [](PixelFormat format) -> bool
 			{

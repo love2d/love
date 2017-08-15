@@ -315,7 +315,7 @@ int w_Mesh_setAttributeEnabled(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	bool enable = luax_toboolean(L, 3);
+	bool enable = luax_checkboolean(L, 3);
 	luax_catchexcept(L, [&](){ t->setAttributeEnabled(name, enable); });
 	return 0;
 }

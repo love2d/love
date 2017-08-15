@@ -53,7 +53,7 @@ int w_PrismaticJoint_getJointSpeed(lua_State *L)
 int w_PrismaticJoint_setMotorEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setMotorEnabled(arg1);
 	return 0;
 }
@@ -106,7 +106,7 @@ int w_PrismaticJoint_getMaxMotorForce(lua_State *L)
 int w_PrismaticJoint_setLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setLimitsEnabled(arg1);
 	return 0;
 }

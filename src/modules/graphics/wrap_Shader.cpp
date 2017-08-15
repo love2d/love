@@ -159,7 +159,7 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 
 	if (lua_isboolean(L, startidx))
 	{
-		columnmajor = lua_toboolean(L, startidx);
+		columnmajor = luax_toboolean(L, startidx);
 		startidx++;
 	}
 

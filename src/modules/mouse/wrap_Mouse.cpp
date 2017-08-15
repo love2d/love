@@ -170,7 +170,7 @@ int w_isDown(lua_State *L)
 
 int w_setVisible(lua_State *L)
 {
-	bool b = luax_toboolean(L, 1);
+	bool b = luax_checkboolean(L, 1);
 	instance()->setVisible(b);
 	return 0;
 }
@@ -183,7 +183,7 @@ int w_isVisible(lua_State *L)
 
 int w_setGrabbed(lua_State *L)
 {
-	bool b = luax_toboolean(L, 1);
+	bool b = luax_checkboolean(L, 1);
 	instance()->setGrabbed(b);
 	return 0;
 }
@@ -196,7 +196,7 @@ int w_isGrabbed(lua_State *L)
 
 int w_setRelativeMode(lua_State *L)
 {
-	bool relative = luax_toboolean(L, 1);
+	bool relative = luax_checkboolean(L, 1);
 	luax_pushboolean(L, instance()->setRelativeMode(relative));
 	return 1;
 }

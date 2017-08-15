@@ -72,7 +72,7 @@ int w_Fixture_setDensity(lua_State *L)
 int w_Fixture_setSensor(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setSensor(arg1);
 	return 0;
 }

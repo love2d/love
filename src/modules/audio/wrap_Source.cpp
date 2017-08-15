@@ -235,7 +235,7 @@ int w_Source_getCone(lua_State *L)
 int w_Source_setRelative(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	luax_catchexcept(L, [&](){ t->setRelative(luax_toboolean(L, 2)); });
+	luax_catchexcept(L, [&](){ t->setRelative(luax_checkboolean(L, 2)); });
 	return 0;
 }
 
@@ -249,7 +249,7 @@ int w_Source_isRelative(lua_State *L)
 int w_Source_setLooping(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	luax_catchexcept(L, [&](){ t->setLooping(luax_toboolean(L, 2)); });
+	luax_catchexcept(L, [&](){ t->setLooping(luax_checkboolean(L, 2)); });
 	return 0;
 }
 

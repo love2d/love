@@ -164,7 +164,7 @@ int Physics::newChainShape(lua_State *L)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
 	int vcount = argc/2;
-	bool loop = luax_toboolean(L, 1);
+	bool loop = luax_checkboolean(L, 1);
 	b2Vec2 *vecs = new b2Vec2[vcount];
 
 	if (istable)

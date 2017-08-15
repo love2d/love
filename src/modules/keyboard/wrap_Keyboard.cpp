@@ -33,7 +33,7 @@ namespace keyboard
 
 int w_setKeyRepeat(lua_State *L)
 {
-	instance()->setKeyRepeat(luax_toboolean(L, 1));
+	instance()->setKeyRepeat(luax_checkboolean(L, 1));
 	return 0;
 }
 
@@ -159,7 +159,7 @@ int w_getKeyFromScancode(lua_State *L)
 
 int w_setTextInput(lua_State *L)
 {
-	bool enable = luax_toboolean(L, 1);
+	bool enable = luax_checkboolean(L, 1);
 
 	if (lua_gettop(L) <= 1)
 		instance()->setTextInput(enable);

@@ -126,6 +126,12 @@ bool luax_isarrayoftables(lua_State *L, int idx);
 bool luax_toboolean(lua_State *L, int idx);
 
 /**
+ * Returns the boolean value at idx. Causes a Lua error if the value is not
+ * a boolean.
+ **/
+bool luax_checkboolean(lua_State *L, int idx);
+
+/**
  * Pushes a bool onto the stack. It's the same as lua_pushboolean,
  * but with bool instead of int.
  * @param L The Lua state.

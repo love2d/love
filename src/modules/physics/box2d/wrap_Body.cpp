@@ -456,7 +456,7 @@ int w_Body_isBullet(lua_State *L)
 int w_Body_setBullet(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setBullet(b);
 	return 0;
 }
@@ -478,7 +478,7 @@ int w_Body_isAwake(lua_State *L)
 int w_Body_setSleepingAllowed(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setSleepingAllowed(b);
 	return 0;
 }
@@ -493,7 +493,7 @@ int w_Body_isSleepingAllowed(lua_State *L)
 int w_Body_setActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	luax_catchexcept(L, [&](){ t->setActive(b); });
 	return 0;
 }
@@ -501,7 +501,7 @@ int w_Body_setActive(lua_State *L)
 int w_Body_setAwake(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setAwake(b);
 	return 0;
 }
@@ -509,7 +509,7 @@ int w_Body_setAwake(lua_State *L)
 int w_Body_setFixedRotation(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	luax_catchexcept(L, [&](){ t->setFixedRotation(b); });
 	return 0;
 }

@@ -52,7 +52,7 @@ int w_WheelJoint_getJointSpeed(lua_State *L)
 int w_WheelJoint_setMotorEnabled(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setMotorEnabled(arg1);
 	return 0;
 }

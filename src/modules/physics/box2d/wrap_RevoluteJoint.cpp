@@ -53,7 +53,7 @@ int w_RevoluteJoint_getJointSpeed(lua_State *L)
 int w_RevoluteJoint_setMotorEnabled(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setMotorEnabled(arg1);
 	return 0;
 }
@@ -106,7 +106,7 @@ int w_RevoluteJoint_getMaxMotorTorque(lua_State *L)
 int w_RevoluteJoint_setLimitsEnabled(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setLimitsEnabled(arg1);
 	return 0;
 }

@@ -251,7 +251,7 @@ int w_ParticleSystem_getAreaSpreadAngle(lua_State *L)
 int w_ParticleSystem_setAreaSpreadIsRelativeDirection(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setAreaSpreadIsRelativeDirection(arg1);
 	return 0;
 }
@@ -650,7 +650,7 @@ int w_ParticleSystem_getQuads(lua_State *L)
 int w_ParticleSystem_setRelativeRotation(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	t->setRelativeRotation(luax_toboolean(L, 2));
+	t->setRelativeRotation(luax_checkboolean(L, 2));
 	return 0;
 }
 

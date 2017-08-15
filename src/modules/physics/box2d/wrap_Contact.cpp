@@ -95,7 +95,7 @@ int w_Contact_setRestitution(lua_State *L)
 int w_Contact_setEnabled(lua_State *L)
 {
 	Contact *t = luax_checkcontact(L, 1);
-	bool e = luax_toboolean(L, 2);
+	bool e = luax_checkboolean(L, 2);
 	t->setEnabled(e);
 	return 0;
 }

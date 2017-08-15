@@ -137,7 +137,7 @@ int w_Transform_setMatrix(lua_State *L)
 	int idx = 2;
 	if (lua_isboolean(L, idx))
 	{
-		columnmajor = lua_toboolean(L, idx);
+		columnmajor = luax_toboolean(L, idx);
 		idx++;
 	}
 

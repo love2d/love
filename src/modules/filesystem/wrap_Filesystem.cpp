@@ -595,7 +595,7 @@ int w_getSize(lua_State *L)
 
 int w_setSymlinksEnabled(lua_State *L)
 {
-	instance()->setSymlinksEnabled(luax_toboolean(L, 1));
+	instance()->setSymlinksEnabled(luax_checkboolean(L, 1));
 	return 0;
 }
 

@@ -171,6 +171,12 @@ bool luax_toboolean(lua_State *L, int idx)
 	return (lua_toboolean(L, idx) != 0);
 }
 
+bool luax_checkboolean(lua_State *L, int idx)
+{
+	luaL_checktype(L, idx, LUA_TBOOLEAN);
+	return luax_toboolean(L, idx);
+}
+
 void luax_pushboolean(lua_State *L, bool b)
 {
 	lua_pushboolean(L, b ? 1 : 0);

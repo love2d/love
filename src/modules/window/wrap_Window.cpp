@@ -266,7 +266,7 @@ int w_getFullscreenModes(lua_State *L)
 
 int w_setFullscreen(lua_State *L)
 {
-	bool fullscreen = luax_toboolean(L, 1);
+	bool fullscreen = luax_checkboolean(L, 1);
 	Window::FullscreenType fstype = Window::FULLSCREEN_MAX_ENUM;
 
 	const char *typestr = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
@@ -375,7 +375,7 @@ int w_getIcon(lua_State *L)
 
 int w_setDisplaySleepEnabled(lua_State *L)
 {
-	instance()->setDisplaySleepEnabled(luax_toboolean(L, 1));
+	instance()->setDisplaySleepEnabled(luax_checkboolean(L, 1));
 	return 0;
 }
 

@@ -111,7 +111,7 @@ int w_World_translateOrigin(lua_State *L)
 int w_World_setSleepingAllowed(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setSleepingAllowed(b);
 	return 0;
 }
