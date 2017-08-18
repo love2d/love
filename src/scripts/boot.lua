@@ -27,13 +27,13 @@ love.arg = {}
 
 -- Replace any \ with /.
 function love.path.normalslashes(p)
-	return string.gsub(p, "\\", "/")
+	return p:gsub("\\", "/")
 end
 
 -- Makes sure there is a slash at the end
 -- of a path.
 function love.path.endslash(p)
-	if string.sub(p, string.len(p)-1) ~= "/" then
+	if p:sub(-1) ~= "/" then
 		return p .. "/"
 	else
 		return p
@@ -46,13 +46,13 @@ function love.path.abs(p)
 	local tmp = love.path.normalslashes(p)
 
 	-- Path is absolute if it starts with a "/".
-	if string.find(tmp, "/") == 1 then
+	if tmp:find("/") == 1 then
 		return true
 	end
 
 	-- Path is absolute if it starts with a
 	-- letter followed by a colon.
-	if string.find(tmp, "%a:") == 1 then
+	if tmp:find("%a:") == 1 then
 		return true
 	end
 
@@ -87,10 +87,10 @@ function love.path.leaf(p)
 	local last = p
 
 	while a do
-		a = string.find(p, "/", a+1)
+		a = p:find("/", a+1)
 
 		if a then
-			last = string.sub(p, a+1)
+			last = p:sub(a+1)
 		end
 	end
 
@@ -138,7 +138,7 @@ function love.arg.parseOptions()
 	local i = 1
 	while i <= argc do
 		-- Look for options.
-		local m = string.match(arg[i], "^%-%-(.+)")
+		local m = arg[i]:match("^%-%-(.+)")
 
 		if m and love.arg.options[m] then
 			love.arg.optionIndices[i] = true
@@ -602,6 +602,8 @@ function love.threaderror(t, err)
 	error("Thread error ("..tostring(t)..")\n\n"..err, 0)
 end
 
+local utf8 = require("utf8")
+
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 end
@@ -648,22 +650,34 @@ function love.errhand(msg)
 
 	love.graphics.origin()
 
+	local sanitizedmsg = {}
+	for char in msg:gmatch(utf8.charpattern) do
+		table.insert(sanitizedmsg, char)
+	end
+	sanitizedmsg = table.concat(sanitizedmsg)
+
 	local err = {}
 
 	table.insert(err, "Error\n")
-	table.insert(err, msg.."\n\n")
+	table.insert(err, sanitizedmsg)
 
-	for l in string.gmatch(trace, "(.-)\n") do
-		if not string.match(l, "boot.lua") then
-			l = string.gsub(l, "stack traceback:", "Traceback\n")
+	if #sanitizedmsg ~= #msg then
+		table.insert(err, "Invalid UTF-8 string in error message.")
+	end
+
+	table.insert(err, "\n")
+
+	for l in trace:gmatch("(.-)\n") do
+		if not l:match("boot.lua") then
+			l = l:gsub("stack traceback:", "Traceback\n")
 			table.insert(err, l)
 		end
 	end
 
 	local p = table.concat(err, "\n")
 
-	p = string.gsub(p, "\t", "")
-	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
+	p = p:gsub("\t", "")
+	p = p:gsub("%[string \"(.-)\"%]", "%1")
 
 	local function draw()
 		local pos = 70
