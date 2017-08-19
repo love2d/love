@@ -320,7 +320,7 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		GLSL.FUNCTIONS,
 		GLSL[stage].FUNCTIONS,
 		custom and GLSL[stage].MAIN_CUSTOM or GLSL[stage].MAIN,
-		(lang == "glsl3" or gles) and "#line 1" or "#line 0",
+		((lang == "glsl1" or glsl1on3) and not gles) and "#line 0" or "#line 1",
 		code,
 	}
 	return table_concat(lines, "\n")
@@ -403,9 +403,19 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 end
 
 function love.graphics._transformGLSLErrorMessages(message)
+	local compiling = true
 	local shadertype = message:match("Cannot compile (%a+) shader code")
+	if not shadertype then
+		compiling = false
+		shadertype = message:match("Error validating (%a+) shader")
+	end
 	if not shadertype then return message end
-	local lines = {"Cannot compile "..shadertype.." shader code:"}
+	local lines = {}
+	if compiling then
+		lines[#lines+1] = "Cannot compile "..shadertype.." shader code:"
+	else
+		lines[#lines+1] = "Error validating "..shadertype.." shader code:"
+	end
 	for l in message:gmatch("[^\n]+") do
 		-- nvidia compiler message:
 		-- 0(<linenumber>) : error/warning [NUMBER]: <error message>
@@ -414,14 +424,19 @@ function love.graphics._transformGLSLErrorMessages(message)
 			-- ati compiler message:
 			-- ERROR 0:<linenumber>: error/warning(#[NUMBER]) [ERRORNAME]: <errormessage>
 			linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
-			if not linenumber then
-				-- OSX compiler message (?):
-				-- ERROR: 0:<linenumber>: <errormessage>
-				what, linenumber, message = l:match("^(%w+): %d+:(%d+): (.+)$")
-			end
+		end
+		if not linenumber then
+			-- OSX compiler message (?):
+			-- ERROR: 0:<linenumber>: <errormessage>
+			what, linenumber, message = l:match("^(%w+): %d+:(%d+): (.+)$")
+		end
+		if not linenumber and l:match("^ERROR:") then
+			what = l
 		end
 		if linenumber and what and message then
 			lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber, what, message)
+		elseif what then
+			lines[#lines+1] = what
 		end
 	end
 	-- did not match any known error messages
