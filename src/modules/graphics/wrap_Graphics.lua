@@ -162,21 +162,18 @@ vec3 linearToGammaPrecise(vec3 c) {
 }
 vec4 linearToGammaPrecise(vec4 c) { return vec4(linearToGammaPrecise(c.rgb), c.a); }
 
-// pow(x, 2.2) isn't an amazing approximation, but at least it's efficient...
-mediump float gammaToLinearFast(mediump float c) { return pow(max(c, 0.0), 2.2); }
-mediump vec3 gammaToLinearFast(mediump vec3 c) { return pow(max(c, vec3(0.0)), vec3(2.2)); }
+// http://chilliant.blogspot.com.au/2012/08/srgb-approximations-for-hlsl.html?m=1
+
+mediump float gammaToLinearFast(mediump float c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }
+mediump vec3 gammaToLinearFast(mediump vec3 c) { return c * (c * (c * 0.305306011 + 0.682171111) + 0.012522878); }
 mediump vec4 gammaToLinearFast(mediump vec4 c) { return vec4(gammaToLinearFast(c.rgb), c.a); }
-mediump float linearToGammaFast(mediump float c) { return pow(max(c, 0.0), 1.0 / 2.2); }
-mediump vec3 linearToGammaFast(mediump vec3 c) { return pow(max(c, vec3(0.0)), vec3(1.0 / 2.2)); }
+
+mediump float linearToGammaFast(mediump float c) { return max(1.055 * pow(max(c, 0.0), 0.41666666) - 0.055, 0.0); }
+mediump vec3 linearToGammaFast(mediump vec3 c) { return max(1.055 * pow(max(c, vec3(0.0)), vec3(0.41666666)) - 0.055, vec3(0.0)); }
 mediump vec4 linearToGammaFast(mediump vec4 c) { return vec4(linearToGammaFast(c.rgb), c.a); }
 
-#ifdef LOVE_PRECISE_GAMMA
-	#define gammaToLinear gammaToLinearPrecise
-	#define linearToGamma linearToGammaPrecise
-#else
-	#define gammaToLinear gammaToLinearFast
-	#define linearToGamma linearToGammaFast
-#endif
+#define gammaToLinear gammaToLinearFast
+#define linearToGamma linearToGammaFast
 
 #ifdef LOVE_GAMMA_CORRECT
 	#define gammaCorrectColor gammaToLinear
@@ -196,8 +193,6 @@ mediump vec4 linearToGammaFast(mediump vec4 c) { return vec4(linearToGammaFast(c
 
 GLSL.VERTEX = {
 	HEADER = [[
-#define LOVE_PRECISE_GAMMA
-
 #define love_Position gl_Position
 
 #if __VERSION__ >= 130
