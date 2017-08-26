@@ -248,7 +248,7 @@ public:
 		}
 	};
 
-	struct StreamDrawRequest
+	struct StreamDrawCommand
 	{
 		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
 		vertex::CommonFormat formats[2];
@@ -257,7 +257,7 @@ public:
 		Texture *texture = nullptr;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 
-		StreamDrawRequest()
+		StreamDrawCommand()
 		{
 			// VS2013 can't initialize arrays in the above manner...
 			formats[1] = formats[0] = vertex::CommonFormat::NONE;
@@ -750,7 +750,7 @@ public:
 	Vector2 inverseTransformPoint(Vector2 point);
 
 	virtual void flushStreamDraws() = 0;
-	StreamVertexData requestStreamDraw(const StreamDrawRequest &request);
+	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
 
 	static void flushStreamDrawsGlobal();
 

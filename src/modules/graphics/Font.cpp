@@ -624,13 +624,13 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 
 	for (const DrawCommand &cmd : drawcommands)
 	{
-		Graphics::StreamDrawRequest req;
-		req.formats[0] = vertexFormat;
-		req.indexMode = vertex::TriangleIndexMode::QUADS;
-		req.vertexCount = cmd.vertexcount;
-		req.texture = cmd.texture;
+		Graphics::StreamDrawCommand streamcmd;
+		streamcmd.formats[0] = vertexFormat;
+		streamcmd.indexMode = vertex::TriangleIndexMode::QUADS;
+		streamcmd.vertexCount = cmd.vertexcount;
+		streamcmd.texture = cmd.texture;
 
-		Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+		Graphics::StreamVertexData data = gfx->requestStreamDraw(streamcmd);
 		GlyphVertex *vertexdata = (GlyphVertex *) data.stream[0];
 
 		memcpy(vertexdata, &vertices[cmd.startvertex], sizeof(GlyphVertex) * cmd.vertexcount);

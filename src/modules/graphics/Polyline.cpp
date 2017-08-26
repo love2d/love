@@ -374,13 +374,13 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 	const Matrix4 &t = gfx->getTransform();
 	bool is2D = t.isAffine2DTransform();
 
-	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::getSinglePositionFormat(is2D);
-	req.formats[1] = vertex::CommonFormat::RGBAub;
-	req.indexMode = triangle_mode;
-	req.vertexCount = total_vertex_count;
+	Graphics::StreamDrawCommand cmd;
+	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[1] = vertex::CommonFormat::RGBAub;
+	cmd.indexMode = triangle_mode;
+	cmd.vertexCount = total_vertex_count;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
 
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], vertices, total_vertex_count);

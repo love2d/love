@@ -123,14 +123,14 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
 
-	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::getSinglePositionFormat(is2D);
-	req.formats[1] = CommonFormat::STf_RGBAub;
-	req.indexMode = TriangleIndexMode::QUADS;
-	req.vertexCount = 4;
-	req.texture = this;
+	Graphics::StreamDrawCommand cmd;
+	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::STf_RGBAub;
+	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.vertexCount = 4;
+	cmd.texture = this;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
 
 	Matrix4 t(tm, localTransform);
 
@@ -177,15 +177,15 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 
 	Matrix4 t(tm, m);
 
-	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::getSinglePositionFormat(is2D);
-	req.formats[1] = CommonFormat::STPf_RGBAub;
-	req.indexMode = TriangleIndexMode::QUADS;
-	req.vertexCount = 4;
-	req.texture = this;
-	req.standardShaderType = Shader::STANDARD_ARRAY;
+	Graphics::StreamDrawCommand cmd;
+	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::STPf_RGBAub;
+	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.vertexCount = 4;
+	cmd.texture = this;
+	cmd.standardShaderType = Shader::STANDARD_ARRAY;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
 
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], q->getVertexPositions(), 4);

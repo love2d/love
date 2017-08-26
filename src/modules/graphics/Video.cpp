@@ -112,14 +112,14 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	Matrix4 t(tm, m);
 
-	Graphics::StreamDrawRequest req;
-	req.formats[0] = vertex::getSinglePositionFormat(is2D);
-	req.formats[1] = vertex::CommonFormat::STf_RGBAub;
-	req.indexMode = vertex::TriangleIndexMode::QUADS;
-	req.vertexCount = 4;
-	req.standardShaderType = Shader::STANDARD_VIDEO;
+	Graphics::StreamDrawCommand cmd;
+	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[1] = vertex::CommonFormat::STf_RGBAub;
+	cmd.indexMode = vertex::TriangleIndexMode::QUADS;
+	cmd.vertexCount = 4;
+	cmd.standardShaderType = Shader::STANDARD_VIDEO;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(req);
+	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
 
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], vertices, 4);

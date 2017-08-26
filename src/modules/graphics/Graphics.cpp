@@ -755,7 +755,7 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 	pendingScreenshotCallbacks.push_back(info);
 }
 
-Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &req)
+Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &cmd)
 {
 	using namespace vertex;
 
@@ -764,22 +764,22 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	bool shouldflush = false;
 	bool shouldresize = false;
 
-	if (req.primitiveMode != state.primitiveMode
-		|| req.formats[0] != state.formats[0] || req.formats[1] != state.formats[1]
-		|| ((req.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
-		|| req.texture != state.texture
-		|| req.standardShaderType != state.standardShaderType)
+	if (cmd.primitiveMode != state.primitiveMode
+		|| cmd.formats[0] != state.formats[0] || cmd.formats[1] != state.formats[1]
+		|| ((cmd.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
+		|| cmd.texture != state.texture
+		|| cmd.standardShaderType != state.standardShaderType)
 	{
 		shouldflush = true;
 	}
 
-	int totalvertices = state.vertexCount + req.vertexCount;
+	int totalvertices = state.vertexCount + cmd.vertexCount;
 
 	// We only support uint16 index buffers for now.
-	if (totalvertices > LOVE_UINT16_MAX && req.indexMode != TriangleIndexMode::NONE)
+	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TriangleIndexMode::NONE)
 		shouldflush = true;
 
-	int reqIndexCount = getIndexCount(req.indexMode, req.vertexCount);
+	int reqIndexCount = getIndexCount(cmd.indexMode, cmd.vertexCount);
 	size_t reqIndexSize = reqIndexCount * sizeof(uint16);
 
 	size_t newdatasizes[2] = {0, 0};
@@ -787,10 +787,10 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (req.formats[i] == CommonFormat::NONE)
+		if (cmd.formats[i] == CommonFormat::NONE)
 			continue;
 
-		size_t stride = getFormatStride(req.formats[i]);
+		size_t stride = getFormatStride(cmd.formats[i]);
 		size_t datasize = stride * totalvertices;
 
 		if (state.vbMap[i].data != nullptr && datasize > state.vbMap[i].size)
@@ -802,10 +802,10 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 			shouldresize = true;
 		}
 
-		newdatasizes[i] = stride * req.vertexCount;
+		newdatasizes[i] = stride * cmd.vertexCount;
 	}
 
-	if (req.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TriangleIndexMode::NONE)
 	{
 		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
 
@@ -823,18 +823,18 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	{
 		flushStreamDraws();
 
-		state.primitiveMode = req.primitiveMode;
-		state.formats[0] = req.formats[0];
-		state.formats[1] = req.formats[1];
-		state.texture = req.texture;
-		state.standardShaderType = req.standardShaderType;
+		state.primitiveMode = cmd.primitiveMode;
+		state.formats[0] = cmd.formats[0];
+		state.formats[1] = cmd.formats[1];
+		state.texture = cmd.texture;
+		state.standardShaderType = cmd.standardShaderType;
 	}
 
 	if (state.vertexCount == 0 && Shader::isDefaultActive())
 		Shader::attachDefault(state.standardShaderType);
 
-	if (state.vertexCount == 0 && Shader::current != nullptr && req.texture != nullptr)
-		Shader::current->checkMainTexture(req.texture);
+	if (state.vertexCount == 0 && Shader::current != nullptr && cmd.texture != nullptr)
+		Shader::current->checkMainTexture(cmd.texture);
 
 	if (shouldresize)
 	{
@@ -854,13 +854,13 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 		}
 	}
 
-	if (req.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TriangleIndexMode::NONE)
 	{
 		if (state.indexBufferMap.data == nullptr)
 			state.indexBufferMap = state.indexBuffer->map(reqIndexSize);
 
 		uint16 *indices = (uint16 *) state.indexBufferMap.data;
-		fillIndices(req.indexMode, state.vertexCount, req.vertexCount, indices);
+		fillIndices(cmd.indexMode, state.vertexCount, cmd.vertexCount, indices);
 
 		state.indexBufferMap.data += reqIndexSize;
 	}
@@ -883,7 +883,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawRequest &
 	if (state.vertexCount > 0)
 		drawCallsBatched++;
 
-	state.vertexCount += req.vertexCount;
+	state.vertexCount += cmd.vertexCount;
 	state.indexCount  += reqIndexCount;
 
 	return d;
@@ -960,18 +960,18 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	const Matrix4 &t = getTransform();
 	bool is2D = t.isAffine2DTransform();
 
-	StreamDrawRequest req;
-	req.primitiveMode = vertex::PrimitiveMode::POINTS;
-	req.formats[0] = vertex::getSinglePositionFormat(is2D);
-	req.formats[1] = vertex::CommonFormat::RGBAub;
-	req.vertexCount = (int) numpoints;
+	StreamDrawCommand cmd;
+	cmd.primitiveMode = vertex::PrimitiveMode::POINTS;
+	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[1] = vertex::CommonFormat::RGBAub;
+	cmd.vertexCount = (int) numpoints;
 
-	StreamVertexData data = requestStreamDraw(req);
+	StreamVertexData data = requestStreamDraw(cmd);
 
 	if (is2D)
-		t.transformXY((Vector2 *) data.stream[0], positions, req.vertexCount);
+		t.transformXY((Vector2 *) data.stream[0], positions, cmd.vertexCount);
 	else
-		t.transformXY0((Vector3 *) data.stream[0], positions, req.vertexCount);
+		t.transformXY0((Vector3 *) data.stream[0], positions, cmd.vertexCount);
 
 	Color *colordata = (Color *) data.stream[1];
 
@@ -982,7 +982,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 
 		if (isGammaCorrect())
 		{
-			for (int i = 0; i < req.vertexCount; i++)
+			for (int i = 0; i < cmd.vertexCount; i++)
 			{
 				Colorf ci = colors[i];
 				gammaCorrectColor(ci);
@@ -993,7 +993,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 		}
 		else
 		{
-			for (int i = 0; i < req.vertexCount; i++)
+			for (int i = 0; i < cmd.vertexCount; i++)
 				colordata[i] = toColor(nc * colors[i]);
 		}
 	}
@@ -1001,7 +1001,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	{
 		Color c = toColor(getColor());
 
-		for (int i = 0; i < req.vertexCount; i++)
+		for (int i = 0; i < cmd.vertexCount; i++)
 			colordata[i] = c;
 	}
 }
@@ -1242,22 +1242,22 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count)
 		const Matrix4 &t = getTransform();
 		bool is2D = t.isAffine2DTransform();
 
-		StreamDrawRequest req;
-		req.formats[0] = vertex::getSinglePositionFormat(is2D);
-		req.formats[1] = vertex::CommonFormat::RGBAub;
-		req.indexMode = vertex::TriangleIndexMode::FAN;
-		req.vertexCount = (int)count - 1;
+		StreamDrawCommand cmd;
+		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+		cmd.formats[1] = vertex::CommonFormat::RGBAub;
+		cmd.indexMode = vertex::TriangleIndexMode::FAN;
+		cmd.vertexCount = (int)count - 1;
 
-		StreamVertexData data = requestStreamDraw(req);
+		StreamVertexData data = requestStreamDraw(cmd);
 
 		if (is2D)
-			t.transformXY((Vector2 *) data.stream[0], coords, req.vertexCount);
+			t.transformXY((Vector2 *) data.stream[0], coords, cmd.vertexCount);
 		else
-			t.transformXY0((Vector3 *) data.stream[0], coords, req.vertexCount);
-		
+			t.transformXY0((Vector3 *) data.stream[0], coords, cmd.vertexCount);
+
 		Color c = toColor(getColor());
 		Color *colordata = (Color *) data.stream[1];
-		for (int i = 0; i < req.vertexCount; i++)
+		for (int i = 0; i < cmd.vertexCount; i++)
 			colordata[i] = c;
 	}
 }
