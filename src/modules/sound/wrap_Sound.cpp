@@ -53,7 +53,7 @@ int w_newDecoder(lua_State *L)
 
 int w_newSoundData(lua_State *L)
 {
-	SoundData *t = 0;
+	SoundData *t = nullptr;
 
 	if (lua_isnumber(L, 1))
 	{

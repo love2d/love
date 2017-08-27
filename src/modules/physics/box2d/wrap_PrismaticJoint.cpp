@@ -111,10 +111,10 @@ int w_PrismaticJoint_setLimitsEnabled(lua_State *L)
 	return 0;
 }
 
-int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
+int w_PrismaticJoint_areLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	luax_pushboolean(L, t->hasLimitsEnabled());
+	luax_pushboolean(L, t->areLimitsEnabled());
 	return 1;
 }
 
@@ -178,6 +178,12 @@ int w_PrismaticJoint_getReferenceAngle(lua_State *L)
 	return 1;
 }
 
+int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
+{
+	luax_markdeprecated(L, "PrismaticJoint:hasLimitsEnabled", DEPRECATED_RENAMED, "PrismaticJoint:areLimitsEnabled");
+	return w_PrismaticJoint_areLimitsEnabled(L);
+}
+
 static const luaL_Reg w_PrismaticJoint_functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
@@ -190,7 +196,7 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 	{ "getMotorForce", w_PrismaticJoint_getMotorForce },
 	{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
 	{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
-	{ "hasLimitsEnabled", w_PrismaticJoint_hasLimitsEnabled },
+	{ "areLimitsEnabled", w_PrismaticJoint_areLimitsEnabled },
 	{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
 	{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
 	{ "setLimits", w_PrismaticJoint_setLimits },
@@ -199,6 +205,10 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 	{ "getLimits", w_PrismaticJoint_getLimits },
 	{ "getAxis", w_PrismaticJoint_getAxis },
 	{ "getReferenceAngle", w_PrismaticJoint_getReferenceAngle },
+
+	// Deprecated
+	{ "hasLimitsEnabled", w_PrismaticJoint_hasLimitsEnabled },
+
 	{ 0, 0 }
 };
 

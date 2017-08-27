@@ -117,7 +117,7 @@ void PrismaticJoint::setLimitsEnabled(bool enable)
 	joint->EnableLimit(enable);
 }
 
-bool PrismaticJoint::hasLimitsEnabled() const
+bool PrismaticJoint::areLimitsEnabled() const
 {
 	return joint->IsLimitEnabled();
 }

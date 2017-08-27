@@ -111,10 +111,10 @@ int w_RevoluteJoint_setLimitsEnabled(lua_State *L)
 	return 0;
 }
 
-int w_RevoluteJoint_hasLimitsEnabled(lua_State *L)
+int w_RevoluteJoint_areLimitsEnabled(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	luax_pushboolean(L, t->hasLimitsEnabled());
+	luax_pushboolean(L, t->areLimitsEnabled());
 	return 1;
 }
 
@@ -171,6 +171,12 @@ int w_RevoluteJoint_getReferenceAngle(lua_State *L)
 	return 1;
 }
 
+int w_RevoluteJoint_hasLimitsEnabled(lua_State *L)
+{
+	luax_markdeprecated(L, "RevoluteJoint:hasLimitsEnabled", DEPRECATED_RENAMED, "RevoluteJoint:areLimitsEnabled");
+	return w_RevoluteJoint_areLimitsEnabled(L);
+}
+
 static const luaL_Reg w_RevoluteJoint_functions[] =
 {
 	{ "getJointAngle", w_RevoluteJoint_getJointAngle },
@@ -183,7 +189,7 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 	{ "getMotorTorque", w_RevoluteJoint_getMotorTorque },
 	{ "getMaxMotorTorque", w_RevoluteJoint_getMaxMotorTorque },
 	{ "setLimitsEnabled", w_RevoluteJoint_setLimitsEnabled },
-	{ "hasLimitsEnabled", w_RevoluteJoint_hasLimitsEnabled },
+	{ "areLimitsEnabled", w_RevoluteJoint_areLimitsEnabled },
 	{ "setUpperLimit", w_RevoluteJoint_setUpperLimit },
 	{ "setLowerLimit", w_RevoluteJoint_setLowerLimit },
 	{ "setLimits", w_RevoluteJoint_setLimits },
@@ -191,6 +197,10 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 	{ "getUpperLimit", w_RevoluteJoint_getUpperLimit },
 	{ "getLimits", w_RevoluteJoint_getLimits },
 	{ "getReferenceAngle", w_RevoluteJoint_getReferenceAngle },
+
+	// Deprecated
+	{ "hasLimitsEnabled", w_RevoluteJoint_hasLimitsEnabled },
+
 	{ 0, 0 }
 };
 

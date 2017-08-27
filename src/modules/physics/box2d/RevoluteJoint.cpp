@@ -116,7 +116,7 @@ void RevoluteJoint::setLimitsEnabled(bool enable)
 	joint->EnableLimit(enable);
 }
 
-bool RevoluteJoint::hasLimitsEnabled() const
+bool RevoluteJoint::areLimitsEnabled() const
 {
 	return joint->IsLimitEnabled();
 }

@@ -104,7 +104,7 @@ public:
 	/**
 	 * Checks whether limits are enabled.
 	 **/
-	bool hasLimitsEnabled() const;
+	bool areLimitsEnabled() const;
 
 	/**
 	 * Sets the upper limit in degrees.
