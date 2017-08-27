@@ -174,7 +174,7 @@ bool WaveDecoder::isSeekable()
 	return true;
 }
 
-int WaveDecoder::getChannels() const
+int WaveDecoder::getChannelCount() const
 {
 	return info.channels;
 }

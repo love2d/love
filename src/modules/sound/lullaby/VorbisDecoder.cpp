@@ -250,7 +250,7 @@ bool VorbisDecoder::isSeekable()
 	return (result != 0);
 }
 
-int VorbisDecoder::getChannels() const
+int VorbisDecoder::getChannelCount() const
 {
 	return vorbisInfo->channels;
 }

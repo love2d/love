@@ -258,7 +258,7 @@ bool CoreAudioDecoder::isSeekable()
 	return true;
 }
 
-int CoreAudioDecoder::getChannels() const
+int CoreAudioDecoder::getChannelCount() const
 {
 	return outputInfo.mChannelsPerFrame;
 }

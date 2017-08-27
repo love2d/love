@@ -60,7 +60,7 @@ public:
 	virtual int getMaxSamples() const;
 	virtual int getSampleRate() const;
 	virtual int getBitDepth() const;
-	virtual int getChannels() const;
+	virtual int getChannelCount() const;
 	virtual bool isRecording() const;
 
 private:

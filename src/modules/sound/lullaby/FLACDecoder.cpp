@@ -41,7 +41,7 @@ FLACDecoder::FLACDecoder(Data *data, const std::string &ext, int nbufferSize)
 	process_until_end_of_metadata();
 	process_single();
 	seek(0);
-	bufferSize = 256 * getBitDepth() * getChannels() * 2;
+	bufferSize = 256 * getBitDepth() * getChannelCount() * 2;
 	delete[](char *) buffer;
 	buffer = new char[bufferSize];
 }
@@ -93,7 +93,7 @@ bool FLACDecoder::isSeekable()
 	return true;
 }
 
-int FLACDecoder::getChannels() const
+int FLACDecoder::getChannelCount() const
 {
 	return get_channels();
 }

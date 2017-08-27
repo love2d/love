@@ -34,10 +34,10 @@ Decoder *luax_checkdecoder(lua_State *L, int idx)
 	return luax_checktype<Decoder>(L, idx);
 }
 
-int w_Decoder_getChannels(lua_State *L)
+int w_Decoder_getChannelCount(lua_State *L)
 {
 	Decoder *t = luax_checkdecoder(L, 1);
-	lua_pushinteger(L, t->getChannels());
+	lua_pushinteger(L, t->getChannelCount());
 	return 1;
 }
 
@@ -71,8 +71,8 @@ int w_Decoder_decode(lua_State *L)
 	{
 		luax_catchexcept(L, [&]() {
 			SoundData *s = instance()->newSoundData(t->getBuffer(),
-				decoded / (t->getBitDepth() / 8 * t->getChannels()),
-				t->getSampleRate(), t->getBitDepth(), t->getChannels());
+				decoded / (t->getBitDepth() / 8 * t->getChannelCount()),
+				t->getSampleRate(), t->getBitDepth(), t->getChannelCount());
 
 			luax_pushtype(L, s);
 			s->release();
@@ -96,14 +96,24 @@ int w_Decoder_seek(lua_State *L)
 	return 0;
 }
 
+int w_Decoder_getChannels(lua_State *L)
+{
+	luax_markdeprecated(L, "Decoder:getChannels", DEPRECATED_RENAMED, "Decoder:getChannelCount");
+	return w_Decoder_getChannelCount(L);
+}
+
 static const luaL_Reg w_Decoder_functions[] =
 {
-	{ "getChannels", w_Decoder_getChannels },
+	{ "getChannelCount", w_Decoder_getChannelCount },
 	{ "getBitDepth", w_Decoder_getBitDepth },
 	{ "getSampleRate", w_Decoder_getSampleRate },
 	{ "getDuration", w_Decoder_getDuration },
 	{ "decode", w_Decoder_decode },
 	{ "seek", w_Decoder_seek },
+
+	// Deprecated
+	{ "getChannels", w_Decoder_getChannels },
+
 	{ 0, 0 }
 };
 

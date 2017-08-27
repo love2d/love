@@ -224,7 +224,7 @@ float Source::getAirAbsorptionFactor() const
 	return absorptionFactor;
 }
 
-int Source::getChannels() const
+int Source::getChannelCount() const
 {
 	return 2;
 }

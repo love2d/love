@@ -83,7 +83,7 @@ SoundData::SoundData(Decoder *decoder)
 	if (data && bufferSize > size)
 		data = (uint8 *) realloc(data, size);
 
-	channels = decoder->getChannels();
+	channels = decoder->getChannelCount();
 	bitDepth = decoder->getBitDepth();
 	sampleRate = decoder->getSampleRate();
 }
@@ -115,7 +115,7 @@ SoundData::SoundData(const SoundData &c)
 	, bitDepth(0)
 	, channels(0)
 {
-	load(c.getSampleCount(), c.getSampleRate(), c.getBitDepth(), c.getChannels(), c.getData());
+	load(c.getSampleCount(), c.getSampleRate(), c.getBitDepth(), c.getChannelCount(), c.getData());
 }
 
 SoundData::~SoundData()
@@ -179,7 +179,7 @@ size_t SoundData::getSize() const
 	return size;
 }
 
-int SoundData::getChannels() const
+int SoundData::getChannelCount() const
 {
 	return channels;
 }

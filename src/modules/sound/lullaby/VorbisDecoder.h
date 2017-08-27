@@ -60,7 +60,7 @@ public:
 	bool seek(float s);
 	bool rewind();
 	bool isSeekable();
-	int getChannels() const;
+	int getChannelCount() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
 	double getDuration();

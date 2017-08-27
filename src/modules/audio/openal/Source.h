@@ -142,7 +142,7 @@ public:
 	virtual float getMaxDistance() const;
 	virtual void setAirAbsorptionFactor(float factor);
 	virtual float getAirAbsorptionFactor() const;
-	virtual int getChannels() const;
+	virtual int getChannelCount() const;
 
 	virtual bool setFilter(const std::map<Filter::Parameter, float> &params);
 	virtual bool setFilter();

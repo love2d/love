@@ -49,7 +49,7 @@ public:
 	void *getData() const;
 	size_t getSize() const;
 
-	virtual int getChannels() const;
+	virtual int getChannelCount() const;
 	virtual int getBitDepth() const;
 	virtual int getSampleRate() const;
 	virtual int getSampleCount() const;

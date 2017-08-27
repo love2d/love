@@ -122,12 +122,12 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	: love::audio::Source(Source::TYPE_STATIC)
 	, pool(pool)
 	, sampleRate(soundData->getSampleRate())
-	, channels(soundData->getChannels())
+	, channels(soundData->getChannelCount())
 	, bitDepth(soundData->getBitDepth())
 {
-	ALenum fmt = Audio::getFormat(soundData->getBitDepth(), soundData->getChannels());
+	ALenum fmt = Audio::getFormat(soundData->getBitDepth(), soundData->getChannelCount());
 	if (fmt == AL_NONE)
-		throw InvalidFormatException(soundData->getChannels(), soundData->getBitDepth());
+		throw InvalidFormatException(soundData->getChannelCount(), soundData->getBitDepth());
 
 	staticBuffer.set(new StaticDataBuffer(fmt, soundData->getData(), (ALsizei) soundData->getSize(), sampleRate), Acquire::NORETAIN);
 
@@ -145,13 +145,13 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	: love::audio::Source(Source::TYPE_STREAM)
 	, pool(pool)
 	, sampleRate(decoder->getSampleRate())
-	, channels(decoder->getChannels())
+	, channels(decoder->getChannelCount())
 	, bitDepth(decoder->getBitDepth())
 	, decoder(decoder)
 	, buffers(DEFAULT_BUFFERS)
 {
-	if (Audio::getFormat(decoder->getBitDepth(), decoder->getChannels()) == AL_NONE)
-		throw InvalidFormatException(decoder->getChannels(), decoder->getBitDepth());
+	if (Audio::getFormat(decoder->getBitDepth(), decoder->getChannelCount()) == AL_NONE)
+		throw InvalidFormatException(decoder->getChannelCount(), decoder->getBitDepth());
 
 	for (int i = 0; i < buffers; i++)
 	{
@@ -1138,7 +1138,7 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 	// OpenAL implementations are allowed to ignore 0-size alBufferData calls.
 	if (decoded > 0)
 	{
-		int fmt = Audio::getFormat(d->getBitDepth(), d->getChannels());
+		int fmt = Audio::getFormat(d->getBitDepth(), d->getChannelCount());
 
 		if (fmt != AL_NONE)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
@@ -1318,7 +1318,7 @@ float Source::getAirAbsorptionFactor() const
 	return absorptionFactor;
 }
 
-int Source::getChannels() const
+int Source::getChannelCount() const
 {
 	return channels;
 }

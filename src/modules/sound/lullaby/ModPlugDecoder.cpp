@@ -132,7 +132,7 @@ bool ModPlugDecoder::isSeekable()
 	return true;
 }
 
-int ModPlugDecoder::getChannels() const
+int ModPlugDecoder::getChannelCount() const
 {
 	return 2;
 }

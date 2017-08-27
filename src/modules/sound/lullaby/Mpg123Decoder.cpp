@@ -257,7 +257,7 @@ bool Mpg123Decoder::isSeekable()
 	return true;
 }
 
-int Mpg123Decoder::getChannels() const
+int Mpg123Decoder::getChannelCount() const
 {
 	return channels;
 }

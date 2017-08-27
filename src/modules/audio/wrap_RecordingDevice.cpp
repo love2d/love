@@ -39,7 +39,7 @@ int w_RecordingDevice_start(lua_State *L)
 	int samples = d->getMaxSamples();
 	int samplerate = d->getSampleRate();
 	int bitdepth = d->getBitDepth();
-	int channels = d->getChannels();
+	int channels = d->getChannelCount();
 
 	if (lua_gettop(L) > 1)
 	{
@@ -115,10 +115,10 @@ int w_RecordingDevice_getBitDepth(lua_State *L)
 	return 1;
 }
 
-int w_RecordingDevice_getChannels(lua_State *L)
+int w_RecordingDevice_getChannelCount(lua_State *L)
 {
 	RecordingDevice *d = luax_checkrecordingdevice(L, 1);
-	lua_pushnumber(L, d->getChannels());
+	lua_pushnumber(L, d->getChannelCount());
 	return 1;
 }
 
@@ -144,7 +144,7 @@ static const luaL_Reg w_RecordingDevice_functions[] =
 	{ "getSampleCount", w_RecordingDevice_getSampleCount },
 	{ "getSampleRate", w_RecordingDevice_getSampleRate },
 	{ "getBitDepth", w_RecordingDevice_getBitDepth },
-	{ "getChannels", w_RecordingDevice_getChannels },
+	{ "getChannelCount", w_RecordingDevice_getChannelCount },
 	{ "getName", w_RecordingDevice_getName },
 	{ "isRecording", w_RecordingDevice_isRecording },
 	{ 0, 0 }

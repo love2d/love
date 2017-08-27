@@ -45,7 +45,7 @@ local typemaxvals = {0x7F, 0x7FFF}
 local _getBitDepth = SoundData.getBitDepth
 local _getSampleCount = SoundData.getSampleCount
 local _getSampleRate = SoundData.getSampleRate
-local _getChannels = SoundData.getChannels
+local _getChannelCount = SoundData.getChannelCount
 local _getDuration = SoundData.getDuration
 local _release = SoundData.release
 
@@ -64,7 +64,7 @@ local objectcache = setmetatable({}, {
 			maxvalue = typemaxvals[bytedepth],
 			samplecount = _getSampleCount(sounddata),
 			samplerate = _getSampleRate(sounddata),
-			channels = _getChannels(sounddata),
+			channels = _getChannelCount(sounddata),
 			duration = _getDuration(sounddata),
 		}
 
@@ -131,7 +131,7 @@ function SoundData:getSampleRate()
 	return objectcache[self].samplerate
 end
 
-function SoundData:getChannels()
+function SoundData:getChannelCount()
 	return objectcache[self].channels
 end
 

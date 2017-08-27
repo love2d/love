@@ -94,7 +94,7 @@ public:
 	/**
 	 * @return Number of channels for recording.
 	 **/
-	virtual int getChannels() const = 0;
+	virtual int getChannelCount() const = 0;
 
 	/**
 	 * @return True if currently recording.

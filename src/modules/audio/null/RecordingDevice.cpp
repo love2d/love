@@ -72,7 +72,7 @@ int RecordingDevice::getBitDepth() const
 	return 0;
 }
 
-int RecordingDevice::getChannels() const
+int RecordingDevice::getChannelCount() const
 {
 	return 0;
 }

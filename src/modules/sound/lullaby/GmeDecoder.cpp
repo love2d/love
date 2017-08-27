@@ -132,7 +132,7 @@ bool GmeDecoder::isSeekable()
 	return true;
 }
 
-int GmeDecoder::getChannels() const
+int GmeDecoder::getChannelCount() const
 {
 	return 2;
 }

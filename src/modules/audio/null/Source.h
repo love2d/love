@@ -77,7 +77,7 @@ public:
 	virtual float getMaxDistance() const;
 	virtual void setAirAbsorptionFactor(float factor);
 	virtual float getAirAbsorptionFactor() const;
-	virtual int getChannels() const;
+	virtual int getChannelCount() const;
 
 	virtual int getFreeBufferCount() const;
 	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);

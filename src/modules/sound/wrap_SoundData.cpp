@@ -51,10 +51,10 @@ int w_SoundData_clone(lua_State *L)
 	return 1;
 }
 
-int w_SoundData_getChannels(lua_State *L)
+int w_SoundData_getChannelCount(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
-	lua_pushinteger(L, t->getChannels());
+	lua_pushinteger(L, t->getChannelCount());
 	return 1;
 }
 
@@ -105,16 +105,26 @@ int w_SoundData_getSample(lua_State *L)
 	return 1;
 }
 
+int w_SoundData_getChannels(lua_State *L)
+{
+	luax_markdeprecated(L, "SoundData:getChannels", DEPRECATED_RENAMED, "SoundData:getChannelCount");
+	return w_SoundData_getChannelCount(L);
+}
+
 static const luaL_Reg w_SoundData_functions[] =
 {
 	{ "clone", w_SoundData_clone },
-	{ "getChannels", w_SoundData_getChannels },
+	{ "getChannelCount", w_SoundData_getChannelCount },
 	{ "getBitDepth", w_SoundData_getBitDepth },
 	{ "getSampleRate", w_SoundData_getSampleRate },
 	{ "getSampleCount", w_SoundData_getSampleCount },
 	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },
+
+	// Deprecated
+	{ "getChannels", w_SoundData_getChannels },
+
 	{ 0, 0 }
 };
 

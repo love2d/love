@@ -107,7 +107,7 @@ public:
 	virtual void setAirAbsorptionFactor(float factor) = 0;
 	virtual float getAirAbsorptionFactor() const = 0;
 
-	virtual int getChannels() const = 0;
+	virtual int getChannelCount() const = 0;
 
 	virtual bool setFilter(const std::map<Filter::Parameter, float> &params) = 0;
 	virtual bool setFilter() = 0;

@@ -123,7 +123,7 @@ public:
 	 * Gets the number of channels in a stream. Supported values are 1 (mono) or 2 (stereo).
 	 * @return Either 1 for mono, 2 for stereo, or 0 on errors.
 	 **/
-	virtual int getChannels() const = 0;
+	virtual int getChannelCount() const = 0;
 
 	/**
 	 * Gets the number of bits per sample. Supported values are 8 or 16.

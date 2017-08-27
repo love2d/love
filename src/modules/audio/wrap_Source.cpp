@@ -338,10 +338,10 @@ int w_Source_setAirAbsorption(lua_State *L)
 	return 0;
 }
 
-int w_Source_getChannels(lua_State *L)
+int w_Source_getChannelCount(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	lua_pushinteger(L, t->getChannels());
+	lua_pushinteger(L, t->getChannelCount());
 	return 1;
 }
 
@@ -542,7 +542,7 @@ int w_Source_queue(lua_State *L)
 
 		luax_catchexcept(L, [&]() {
 			success = t->queue((unsigned char *)s->getData() + offset, length,
-			            s->getSampleRate(), s->getBitDepth(), s->getChannels());
+			            s->getSampleRate(), s->getBitDepth(), s->getChannelCount());
 		});
 	}
 	else if (lua_islightuserdata(L, 2))
@@ -578,6 +578,14 @@ int w_Source_getType(lua_State *L)
 
 	lua_pushstring(L, str);
 	return 1;
+}
+
+// Deprecated
+
+int w_Source_getChannels(lua_State *L)
+{
+	luax_markdeprecated(L, "Source:getChannels", DEPRECATED_RENAMED, "Source:getChannelCount");
+	return w_Source_getChannelCount(L);
 }
 
 static const luaL_Reg w_Source_functions[] =
@@ -618,7 +626,7 @@ static const luaL_Reg w_Source_functions[] =
 	{ "setRolloff", w_Source_setRolloff },
 	{ "getRolloff", w_Source_getRolloff },
 
-	{ "getChannels", w_Source_getChannels },
+	{ "getChannelCount", w_Source_getChannelCount },
 
 	{ "setFilter", w_Source_setFilter },
 	{ "getFilter", w_Source_getFilter },
@@ -630,6 +638,9 @@ static const luaL_Reg w_Source_functions[] =
 	{ "queue", w_Source_queue },
 
 	{ "getType", w_Source_getType },
+
+	// Deprecated
+	{ "getChannels", w_Source_getChannels },
 
 	{ 0, 0 }
 };
