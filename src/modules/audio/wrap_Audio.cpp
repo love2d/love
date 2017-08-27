@@ -37,9 +37,9 @@ namespace audio
 
 #define instance() (Module::getInstance<Audio>(Module::M_AUDIO))
 
-int w_getSourceCount(lua_State *L)
+int w_getActiveSourceCount(lua_State *L)
 {
-	lua_pushinteger(L, instance()->getSourceCount());
+	lua_pushinteger(L, instance()->getActiveSourceCount());
 	return 1;
 }
 
@@ -524,10 +524,16 @@ int w_setMixWithSystem(lua_State *L)
 	return 1;
 }
 
+int w_getSourceCount(lua_State *L)
+{
+	luax_markdeprecated(L, "love.audio.getSourceCount", DEPRECATED_RENAMED, "love.audio.getActiveSourceCount");
+	return w_getActiveSourceCount(L);
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
-	{ "getSourceCount", w_getSourceCount },
+	{ "getActiveSourceCount", w_getActiveSourceCount },
 	{ "newSource", w_newSource },
 	{ "newQueueableSource", w_newQueueableSource },
 	{ "play", w_play },
@@ -555,6 +561,10 @@ static const luaL_Reg functions[] =
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
 	{ "setMixWithSystem", w_setMixWithSystem },
+
+	// Deprecated
+	{ "getSourceCount", w_getSourceCount },
+
 	{ 0, 0 }
 };
 

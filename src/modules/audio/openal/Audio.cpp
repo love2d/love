@@ -234,9 +234,9 @@ love::audio::Source *Audio::newSource(int sampleRate, int bitDepth, int channels
 	return new Source(pool, sampleRate, bitDepth, channels, buffers);
 }
 
-int Audio::getSourceCount() const
+int Audio::getActiveSourceCount() const
 {
-	return pool->getSourceCount();
+	return pool->getActiveSourceCount();
 }
 
 int Audio::getMaxSources() const

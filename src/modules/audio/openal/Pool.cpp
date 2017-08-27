@@ -115,7 +115,7 @@ void Pool::update()
 		releaseSource(s);
 }
 
-int Pool::getSourceCount() const
+int Pool::getActiveSourceCount() const
 {
 	return (int) playing.size();
 }

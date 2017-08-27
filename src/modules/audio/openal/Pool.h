@@ -80,7 +80,7 @@ public:
 
 	void update();
 
-	int getSourceCount() const;
+	int getActiveSourceCount() const;
 	int getMaxSources() const;
 
 private:

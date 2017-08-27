@@ -85,7 +85,7 @@ public:
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
 	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers);
-	int getSourceCount() const;
+	int getActiveSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);
 	bool play(const std::vector<love::audio::Source*> &sources);

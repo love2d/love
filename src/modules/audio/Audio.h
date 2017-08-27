@@ -83,7 +83,7 @@ public:
 	 * Gets the current number of simultaneous playing sources.
 	 * @return The current number of simultaneous playing sources.
 	 **/
-	virtual int getSourceCount() const = 0;
+	virtual int getActiveSourceCount() const = 0;
 
 	/**
 	 * Gets the maximum supported number of simultaneous playing sources.

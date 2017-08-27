@@ -56,7 +56,7 @@ love::audio::Source *Audio::newSource(int, int, int, int)
 	return new Source();
 }
 
-int Audio::getSourceCount() const
+int Audio::getActiveSourceCount() const
 {
 	return 0;
 }
