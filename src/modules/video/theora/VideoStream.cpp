@@ -271,7 +271,6 @@ void VideoStream::rewind()
 void VideoStream::seekDecoder(double target)
 {
 	const double rewindThreshold = 0.01;
-	const double seekThreshold = 0.0001;
 
 	if (target < rewindThreshold)
 	{
