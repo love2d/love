@@ -79,6 +79,11 @@ void setDeprecationOutputEnabled(bool enable)
 	}
 }
 
+bool isDeprecationOutputEnabled()
+{
+	return outputEnabled;
+}
+
 std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 {
 	std::string notice;
