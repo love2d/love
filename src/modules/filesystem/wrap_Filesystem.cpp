@@ -19,6 +19,7 @@
  **/
 
 // LOVE
+#include "common/config.h"
 #include "wrap_Filesystem.h"
 #include "wrap_File.h"
 #include "wrap_DroppedFile.h"
@@ -34,6 +35,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 namespace love
 {
@@ -375,14 +377,14 @@ int w_getInfo(lua_State *L)
 		lua_setfield(L, -2, "type");
 
 		// Lua numbers (doubles) can't fit the full range of 64 bit ints.
-		info.size = std::min(info.size, 0x20000000000000LL);
+		info.size = std::min<int64>(info.size, 0x20000000000000LL);
 		if (info.size >= 0)
 		{
 			lua_pushnumber(L, (lua_Number) info.size);
 			lua_setfield(L, -2, "size");
 		}
 
-		info.modtime = std::min(info.modtime, 0x20000000000000LL);
+		info.modtime = std::min<int64>(info.modtime, 0x20000000000000LL);
 		if (info.modtime >= 0)
 		{
 			lua_pushnumber(L, (lua_Number) info.modtime);
