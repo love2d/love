@@ -1220,7 +1220,8 @@ static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::Shad
 		size_t slen = 0;
 		const char *str = lua_tolstring(L, i, &slen);
 
-		if (fs != nullptr && fs->isFile(str))
+		Filesystem::Info info = {};
+		if (fs != nullptr && fs->getInfo(str, info))
 		{
 			FileData *fd = nullptr;
 			luax_catchexcept(L, [&](){ fd = fs->read(str); });

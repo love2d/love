@@ -351,7 +351,7 @@ function love.boot()
 	-- before the save directory (the identity should be appended.)
 	pcall(love.filesystem.setIdentity, identity, true)
 
-	if can_has_game and not (love.filesystem.isFile("main.lua") or love.filesystem.isFile("conf.lua")) then
+	if can_has_game and not (love.filesystem.getInfo("main.lua") or love.filesystem.getInfo("conf.lua")) then
 		no_game_code = true
 	end
 
@@ -425,7 +425,7 @@ function love.init()
 
 	-- If config file exists, load it and allow it to update config table.
 	local confok, conferr
-	if (not love.conf) and love.filesystem and love.filesystem.isFile("conf.lua") then
+	if (not love.conf) and love.filesystem and love.filesystem.getInfo("conf.lua") then
 		confok, conferr = pcall(require, "conf")
 	end
 
@@ -539,7 +539,7 @@ function love.init()
 	if love.filesystem then
 		love.filesystem._setAndroidSaveExternal(c.externalstorage)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
-		if love.filesystem.isFile("main.lua") then
+		if love.filesystem.getInfo("main.lua") then
 			require("main")
 		end
 	end

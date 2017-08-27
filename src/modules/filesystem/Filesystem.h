@@ -25,6 +25,7 @@
 #include "common/config.h"
 #include "common/Module.h"
 #include "common/int.h"
+#include "common/StringMap.h"
 #include "FileData.h"
 #include "File.h"
 
@@ -60,6 +61,23 @@ namespace filesystem
 class Filesystem : public Module
 {
 public:
+
+	enum FileType
+	{
+		FILETYPE_FILE,
+		FILETYPE_DIRECTORY,
+		FILETYPE_SYMLINK,
+		FILETYPE_OTHER,
+		FILETYPE_MAX_ENUM
+	};
+
+	struct Info
+	{
+		// Numbers will be -1 if they cannot be determined.
+		int64 size;
+		int64 modtime;
+		FileType type;
+	};
 
 	static love::Type type;
 
@@ -167,28 +185,10 @@ public:
 	virtual std::string getRealDirectory(const char *filename) const = 0;
 
 	/**
-	 * Checks if a path exists.
-	 * @param path The path to check.
+	 * Gets information about the item at the specified filepath. Returns false
+	 * if nothing exists at the path.
 	 **/
-	virtual bool exists(const char *path) const = 0;
-
-	/**
-	 * Checks if a path is a directory.
-	 * @param dir The directory name to check.
-	 **/
-	virtual bool isDirectory(const char *dir) const = 0;
-
-	/**
-	 * Checks if a filename exists.
-	 * @param file The filename to check.
-	 **/
-	virtual bool isFile(const char *file) const = 0;
-
-	/**
-	 * Gets whether a filepath is actually a symlink.
-	 * Always returns false if symlinks are not enabled.
-	 **/
-	virtual bool isSymlink(const char *filename) const = 0;
+	virtual bool getInfo(const char *filepath, Info &info) const = 0;
 
 	/**
 	 * Creates a directory. Write dir must be set.
@@ -232,19 +232,6 @@ public:
 	virtual void getDirectoryItems(const char *dir, std::vector<std::string> &items) = 0;
 
 	/**
-	 * Gets the last modification time of a file, in seconds
-	 * since the Unix epoch.
-	 * @param filename The name of the file.
-	 **/
-	virtual int64 getLastModified(const char *filename) const = 0;
-
-	/**
-	 * Gets the size of a file in bytes.
-	 * @param filename The name of the file.
-	 **/
-	virtual int64 getSize(const char *filename) const = 0;
-
-	/**
 	 * Enable or disable symbolic link support in love.filesystem.
 	 **/
 	virtual void setSymlinksEnabled(bool enable) = 0;
@@ -274,10 +261,17 @@ public:
 	 **/
 	virtual std::string getExecutablePath() const;
 
+	static bool getConstant(const char *in, FileType &out);
+	static bool getConstant(FileType in, const char *&out);
+
 private:
 
-	//should we save external or internal for Android
+	// Should we save external or internal for Android
 	bool useExternal;
+
+	static StringMap<FileType, FILETYPE_MAX_ENUM>::Entry fileTypeEntries[];
+	static StringMap<FileType, FILETYPE_MAX_ENUM> fileTypes;
+
 }; // Filesystem
 
 } // filesystem

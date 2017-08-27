@@ -72,10 +72,7 @@ public:
 
 	std::string getRealDirectory(const char *filename) const;
 
-	bool exists(const char *path) const;
-	bool isDirectory(const char *dir) const;
-	bool isFile(const char *file) const;
-	bool isSymlink(const char *filename) const;
+	bool getInfo(const char *filepath, Info &info) const;
 
 	bool createDirectory(const char *dir);
 
@@ -86,9 +83,6 @@ public:
 	void append(const char *filename, const void *data, int64 size) const;
 
 	void getDirectoryItems(const char *dir, std::vector<std::string> &items);
-
-	int64 getLastModified(const char *filename) const;
-	int64 getSize(const char *filename) const;
 
 	void setSymlinksEnabled(bool enable);
 	bool areSymlinksEnabled() const;

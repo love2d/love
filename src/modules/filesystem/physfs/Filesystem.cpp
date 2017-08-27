@@ -566,60 +566,53 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
-bool Filesystem::exists(const char *path) const
-{
-	if (!PHYSFS_isInit())
-		return false;
-
-	return PHYSFS_exists(path) != 0;
-}
-
-bool Filesystem::isDirectory(const char *dir) const
+bool Filesystem::getInfo(const char *filepath, Info &info) const
 {
 	if (!PHYSFS_isInit())
 		return false;
 
 #ifdef LOVE_USE_PHYSFS_2_1
 	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(dir, &stat))
-		return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
+	if (!PHYSFS_stat(filepath, &stat))
+		return false;
+
+	info.size = (int64) stat.filesize;
+	info.modtime = (int64) stat.modtime;
+
+	if (stat.filetype == PHYSFS_FILETYPE_REGULAR)
+		info.type = FILETYPE_FILE;
+	else if (stat.filetype == PHYSFS_FILETYPE_DIRECTORY)
+		info.type = FILETYPE_DIRECTORY;
+	else if (stat.filetype == PHYSFS_FILETYPE_SYMLINK)
+		info.type = FILETYPE_SYMLINK;
 	else
-		return false;
+		info.type = FILETYPE_OTHER;
 #else
-	return PHYSFS_isDirectory(dir) != 0 && !isSymlink(dir);
-#endif
-}
-
-bool Filesystem::isFile(const char *file) const
-{
-	if (!PHYSFS_isInit())
+	if (!PHYSFS_exists(filepath))
 		return false;
 
-#ifdef LOVE_USE_PHYSFS_2_1
-	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(file, &stat))
-		return stat.filetype == PHYSFS_FILETYPE_REGULAR;
+	try
+	{
+		File file(filepath);
+		info.size = file.getSize();
+	}
+	catch (love::Exception &)
+	{
+		info.size = -1;
+	}
+
+	info.modtime = (int64) PHYSFS_getLastModTime(filepath);
+
+	if (PHYSFS_isSymbolicLink(filepath))
+		info.type = FILETYPE_SYMLINK;
+	else if (PHYSFS_isDirectory(filepath))
+		info.type = FILETYPE_DIRECTORY;
 	else
-		return false;
-#else
-	return PHYSFS_exists(file) && !isDirectory(file) && !isSymlink(file);
-#endif
-}
+		info.type = FILETYPE_FILE;
 
-bool Filesystem::isSymlink(const char *filename) const
-{
-	if (!PHYSFS_isInit())
-		return false;
-
-#ifdef LOVE_USE_PHYSFS_2_1
-	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(filename, &stat))
-		return stat.filetype == PHYSFS_FILETYPE_SYMLINK;
-	else
-		return false;
-#else
-	return PHYSFS_isSymbolicLink(filename) != 0;
 #endif
+
+	return true;
 }
 
 bool Filesystem::createDirectory(const char *dir)
@@ -696,34 +689,6 @@ void Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &it
 		items.push_back(*i);
 
 	PHYSFS_freeList(rc);
-}
-
-int64 Filesystem::getLastModified(const char *filename) const
-{
-	PHYSFS_sint64 time = -1;
-
-	if (!PHYSFS_isInit())
-		return -1;
-
-#ifdef LOVE_USE_PHYSFS_2_1
-	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(filename, &stat))
-		time = stat.modtime;
-#else
-	time = PHYSFS_getLastModTime(filename);
-#endif
-
-	if (time == -1)
-		throw love::Exception("Could not determine file modification date.");
-
-	return time;
-}
-
-int64 Filesystem::getSize(const char *filename) const
-{
-	File file(filename);
-	int64 size = file.getSize();
-	return size;
 }
 
 void Filesystem::setSymlinksEnabled(bool enable)

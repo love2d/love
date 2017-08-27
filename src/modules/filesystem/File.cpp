@@ -115,19 +115,19 @@ bool File::getConstant(BufferMode in, const char *&out)
 
 StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] =
 {
-	{"c", File::MODE_CLOSED},
-	{"r", File::MODE_READ},
-	{"w", File::MODE_WRITE},
-	{"a", File::MODE_APPEND},
+	{ "c", MODE_CLOSED },
+	{ "r", MODE_READ   },
+	{ "w", MODE_WRITE  },
+	{ "a", MODE_APPEND },
 };
 
 StringMap<File::Mode, File::MODE_MAX_ENUM> File::modes(File::modeEntries, sizeof(File::modeEntries));
 
 StringMap<File::BufferMode, File::BUFFER_MAX_ENUM>::Entry File::bufferModeEntries[] =
 {
-	{"none", File::BUFFER_NONE},
-	{"line", File::BUFFER_LINE},
-	{"full", File::BUFFER_FULL},
+	{ "none", BUFFER_NONE },
+	{ "line", BUFFER_LINE },
+	{ "full", BUFFER_FULL },
 };
 
 StringMap<File::BufferMode, File::BUFFER_MAX_ENUM> File::bufferModes(File::bufferModeEntries, sizeof(File::bufferModeEntries));

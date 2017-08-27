@@ -120,5 +120,25 @@ std::string Filesystem::getExecutablePath() const
 #endif
 }
 
+bool Filesystem::getConstant(const char *in, FileType &out)
+{
+	return fileTypes.find(in, out);
+}
+
+bool Filesystem::getConstant(FileType in, const char *&out)
+{
+	return fileTypes.find(in, out);
+}
+
+StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM>::Entry Filesystem::fileTypeEntries[] =
+{
+	{ "file",      FILETYPE_FILE      },
+	{ "directory", FILETYPE_DIRECTORY },
+	{ "symlink",   FILETYPE_SYMLINK   },
+	{ "other",     FILETYPE_OTHER     },
+};
+
+StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM> Filesystem::fileTypes(Filesystem::fileTypeEntries, sizeof(Filesystem::fileTypeEntries));
+
 } // filesystem
 } // love

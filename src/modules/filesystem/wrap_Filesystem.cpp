@@ -358,31 +358,40 @@ int w_getExecutablePath(lua_State *L)
 	return 1;
 }
 
-int w_exists(lua_State *L)
+int w_getInfo(lua_State *L)
 {
-	const char *arg = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->exists(arg));
-	return 1;
-}
+	const char *filepath = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
 
-int w_isDirectory(lua_State *L)
-{
-	const char *arg = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isDirectory(arg));
-	return 1;
-}
+	if (instance()->getInfo(filepath, info))
+	{
+		const char *typestr = nullptr;
+		if (!Filesystem::getConstant(info.type, typestr))
+			return luaL_error(L, "Unknown file type.");
 
-int w_isFile(lua_State *L)
-{
-	const char *arg = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isFile(arg));
-	return 1;
-}
+		lua_createtable(L, 0, 3);
 
-int w_isSymlink(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isSymlink(filename));
+		lua_pushstring(L, typestr);
+		lua_setfield(L, -2, "type");
+
+		// Lua numbers (doubles) can't fit the full range of 64 bit ints.
+		info.size = std::min(info.size, 0x20000000000000LL);
+		if (info.size >= 0)
+		{
+			lua_pushnumber(L, (lua_Number) info.size);
+			lua_setfield(L, -2, "size");
+		}
+
+		info.modtime = std::min(info.modtime, 0x20000000000000LL);
+		if (info.modtime >= 0)
+		{
+			lua_pushnumber(L, (lua_Number) info.modtime);
+			lua_setfield(L, -2, "modtime");
+		}
+	}
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 
@@ -551,48 +560,6 @@ int w_load(lua_State *L)
 	}
 }
 
-int w_getLastModified(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-
-	int64 time = 0;
-	try
-	{
-		time = instance()->getLastModified(filename);
-	}
-	catch (love::Exception &e)
-	{
-		return luax_ioError(L, "%s", e.what());
-	}
-
-	lua_pushnumber(L, static_cast<lua_Number>(time));
-	return 1;
-}
-
-int w_getSize(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-
-	int64 size = -1;
-	try
-	{
-		size = instance()->getSize(filename);
-	}
-	catch (love::Exception &e)
-	{
-		return luax_ioError(L, "%s", e.what());
-	}
-
-	// Error on failure or if size does not fit into a double precision floating-point number.
-	if (size == -1)
-		return luax_ioError(L, "Could not determine file size.");
-	else if (size >= 0x20000000000000LL)
-		return luax_ioError(L, "Size too large to fit into a Lua number!");
-
-	lua_pushnumber(L, (lua_Number) size);
-	return 1;
-}
-
 int w_setSymlinksEnabled(lua_State *L)
 {
 	instance()->setSymlinksEnabled(luax_checkboolean(L, 1));
@@ -702,7 +669,8 @@ int loader(lua_State *L)
 	{
 		replaceAll(element, "?", modulename);
 
-		if (inst->isFile(element.c_str()))
+		Filesystem::Info info = {};
+		if (inst->getInfo(element.c_str(), info) && info.type != Filesystem::FILETYPE_DIRECTORY)
 		{
 			lua_pop(L, 1);
 			lua_pushstring(L, element.c_str());
@@ -760,7 +728,8 @@ int extloader(lua_State *L)
 			// And ? with just the filename
 			replaceAll(element, "?", tokenized_name);
 
-			if (!inst->isFile(element.c_str()))
+			Filesystem::Info info = {};
+			if (!inst->getInfo(element.c_str(), info) || info.type == Filesystem::FILETYPE_DIRECTORY)
 				continue;
 
 			// Now resolve the full path, as we're bypassing physfs for the next part.
@@ -799,6 +768,85 @@ int extloader(lua_State *L)
 	return 1;
 }
 
+// Deprecated functions.
+
+int w_exists(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.exists", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *arg = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	luax_pushboolean(L, instance()->getInfo(arg, info));
+	return 1;
+}
+
+int w_isDirectory(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.exists", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *arg = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(arg, info);
+	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_DIRECTORY);
+	return 1;
+}
+
+int w_isFile(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.isFile", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *arg = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(arg, info);
+	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_FILE);
+	return 1;
+}
+
+int w_isSymlink(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.isSymlink", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *filename = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(filename, info);
+	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_SYMLINK);
+	return 1;
+}
+
+int w_getLastModified(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.getLastModified", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+
+	const char *filename = luaL_checkstring(L, 1);
+
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(filename, info);
+
+	if (!exists)
+		return luax_ioError(L, "File does not exist");
+	else if (info.modtime == -1)
+		return luax_ioError(L, "Could not determine file modification date.");
+
+	lua_pushnumber(L, (lua_Number) info.modtime);
+	return 1;
+}
+
+int w_getSize(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.getSize", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+
+	const char *filename = luaL_checkstring(L, 1);
+
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(filename, info);
+
+	if (!exists)
+		luax_ioError(L, "File does not exist");
+	else if (info.size == -1)
+		return luax_ioError(L, "Could not determine file size.");
+	else if (info.size >= 0x20000000000000LL)
+		return luax_ioError(L, "Size too large to fit into a Lua number!");
+
+	lua_pushnumber(L, (lua_Number) info.size);
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -820,10 +868,6 @@ static const luaL_Reg functions[] =
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "getRealDirectory", w_getRealDirectory },
 	{ "getExecutablePath", w_getExecutablePath },
-	{ "exists", w_exists },
-	{ "isDirectory", w_isDirectory },
-	{ "isFile", w_isFile },
-	{ "isSymlink", w_isSymlink },
 	{ "createDirectory", w_createDirectory },
 	{ "remove", w_remove },
 	{ "read", w_read },
@@ -832,8 +876,7 @@ static const luaL_Reg functions[] =
 	{ "getDirectoryItems", w_getDirectoryItems },
 	{ "lines", w_lines },
 	{ "load", w_load },
-	{ "getLastModified", w_getLastModified },
-	{ "getSize", w_getSize },
+	{ "getInfo", w_getInfo },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },
 	{ "newFileData", w_newFileData },
@@ -841,6 +884,15 @@ static const luaL_Reg functions[] =
 	{ "setRequirePath", w_setRequirePath },
 	{ "getCRequirePath", w_getCRequirePath },
 	{ "setCRequirePath", w_setCRequirePath },
+
+	// Deprecated.
+	{ "exists", w_exists },
+	{ "isDirectory", w_isDirectory },
+	{ "isFile", w_isFile },
+	{ "isSymlink", w_isSymlink },
+	{ "getLastModified", w_getLastModified },
+	{ "getSize", w_getSize },
+
 	{ 0, 0 }
 };
 
