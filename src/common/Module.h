@@ -59,6 +59,7 @@ public:
 		M_MAX_ENUM
 	};
 
+	Module();
 	virtual ~Module();
 
     /**

@@ -315,6 +315,8 @@ function love.boot()
 
 	love.filesystem.setFused(is_fused_game)
 
+	love.setDeprecationOutput(not love.filesystem.isFused())
+
 	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]

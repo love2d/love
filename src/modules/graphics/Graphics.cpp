@@ -27,6 +27,7 @@
 #include "window/Window.h"
 #include "Font.h"
 #include "Video.h"
+#include "common/deprecation.h"
 
 // C++
 #include <algorithm>
@@ -155,6 +156,16 @@ Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
 Font *Graphics::newFont(love::font::Rasterizer *data, const Texture::Filter &filter)
 {
 	return new Font(data, filter);
+}
+
+Font *Graphics::newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter)
+{
+	auto fontmodule = Module::getInstance<font::Font>(M_FONT);
+	if (!fontmodule)
+		throw love::Exception("Font module has not been loaded.");
+
+	StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(size, hinting), Acquire::NORETAIN);
+	return newFont(r.get(), filter);
 }
 
 Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
@@ -357,16 +368,7 @@ void Graphics::checkSetDefaultFont()
 
 	// Create a new default font if we don't have one yet.
 	if (!defaultFont.get())
-	{
-		auto fontmodule = Module::getInstance<font::Font>(M_FONT);
-		if (!fontmodule)
-			throw love::Exception("Font module has not been loaded.");
-
-		auto hinting = font::TrueTypeRasterizer::HINTING_NORMAL;
-		StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(12, hinting), Acquire::NORETAIN);
-
-		defaultFont.set(newFont(r.get()), Acquire::NORETAIN);
-	}
+		defaultFont.set(newDefaultFont(12, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
 
 	states.back().font.set(defaultFont.get());
 }

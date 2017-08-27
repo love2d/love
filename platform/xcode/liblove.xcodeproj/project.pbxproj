@@ -935,10 +935,16 @@
 		FA91591E1CF1ED7500A7053F /* halffloat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91591C1CF1ED7500A7053F /* halffloat.cpp */; };
 		FA91591F1CF1ED7500A7053F /* halffloat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91591C1CF1ED7500A7053F /* halffloat.cpp */; };
 		FA9159201CF1ED7500A7053F /* halffloat.h in Headers */ = {isa = PBXBuildFile; fileRef = FA91591D1CF1ED7500A7053F /* halffloat.h */; };
+		FA91DA8B1F377C3900C80E33 /* deprecation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91DA891F377C3900C80E33 /* deprecation.cpp */; };
+		FA91DA8C1F377C3900C80E33 /* deprecation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91DA891F377C3900C80E33 /* deprecation.cpp */; };
+		FA91DA8D1F377C3900C80E33 /* deprecation.h in Headers */ = {isa = PBXBuildFile; fileRef = FA91DA8A1F377C3900C80E33 /* deprecation.h */; };
 		FA93C4521F315B960087CCD4 /* CompressedFormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */; };
 		FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C4501F315B960087CCD4 /* FormatHandler.h */; };
 		FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA93C4511F315B960087CCD4 /* FormatHandler.cpp */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
+		FA9D53AC1F5307E900125C6B /* Deprecations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D53AA1F5307E900125C6B /* Deprecations.cpp */; };
+		FA9D53AD1F5307E900125C6B /* Deprecations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D53AA1F5307E900125C6B /* Deprecations.cpp */; };
+		FA9D53AE1F5307E900125C6B /* Deprecations.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9D53AB1F5307E900125C6B /* Deprecations.h */; };
 		FA9D8DD11DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
 		FA9D8DD21DEB56C3002CD881 /* pixelformat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */; };
 		FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */ = {isa = PBXBuildFile; fileRef = FA9D8DD01DEB56C3002CD881 /* pixelformat.h */; };
@@ -1793,10 +1799,14 @@
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA91591C1CF1ED7500A7053F /* halffloat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = halffloat.cpp; sourceTree = "<group>"; };
 		FA91591D1CF1ED7500A7053F /* halffloat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = halffloat.h; sourceTree = "<group>"; };
+		FA91DA891F377C3900C80E33 /* deprecation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = deprecation.cpp; sourceTree = "<group>"; };
+		FA91DA8A1F377C3900C80E33 /* deprecation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = deprecation.h; sourceTree = "<group>"; };
 		FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedFormatHandler.h; sourceTree = "<group>"; };
 		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
+		FA9D53AA1F5307E900125C6B /* Deprecations.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Deprecations.cpp; sourceTree = "<group>"; };
+		FA9D53AB1F5307E900125C6B /* Deprecations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Deprecations.h; sourceTree = "<group>"; };
 		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
 		FA9D8DD01DEB56C3002CD881 /* pixelformat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pixelformat.h; sourceTree = "<group>"; };
 		FA9D8DD41DEF8411002CD881 /* Data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Data.cpp; sourceTree = "<group>"; };
@@ -2025,6 +2035,8 @@
 				FA0B78FA1A958E3B000E1D17 /* Data.h */,
 				FA0B78FB1A958E3B000E1D17 /* delay.cpp */,
 				FA0B78FC1A958E3B000E1D17 /* delay.h */,
+				FA91DA891F377C3900C80E33 /* deprecation.cpp */,
+				FA91DA8A1F377C3900C80E33 /* deprecation.h */,
 				FA0B78FD1A958E3B000E1D17 /* EnumMap.h */,
 				FA0B78FE1A958E3B000E1D17 /* Exception.cpp */,
 				FA0B78FF1A958E3B000E1D17 /* Exception.h */,
@@ -2651,6 +2663,8 @@
 				FADF53F71E3C7ACD00012CC0 /* Buffer.h */,
 				FA1BA0A51E16F20600AA2803 /* Canvas.cpp */,
 				FA1BA0A61E16F20600AA2803 /* Canvas.h */,
+				FA9D53AA1F5307E900125C6B /* Deprecations.cpp */,
+				FA9D53AB1F5307E900125C6B /* Deprecations.h */,
 				FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */,
 				FAF1889D1E9DBBC8008C1479 /* depthstencil.h */,
 				FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */,
@@ -3740,6 +3754,7 @@
 				FA0B7D2A1A95902C000E1D17 /* wrap_GlyphData.h in Headers */,
 				FA0B7E741A95902C000E1D17 /* wrap_Shape.h in Headers */,
 				FA0B7A5D1A958EA3000E1D17 /* b2Timer.h in Headers */,
+				FA91DA8D1F377C3900C80E33 /* deprecation.h in Headers */,
 				FA0B7A4A1A958EA3000E1D17 /* b2Shape.h in Headers */,
 				FAF1407F1E20934C00F898D2 /* localintermediate.h in Headers */,
 				FAF1406B1E20934C00F898D2 /* glslang_tab.cpp.h in Headers */,
@@ -3777,6 +3792,7 @@
 				FA0B7E2C1A95902C000E1D17 /* RevoluteJoint.h in Headers */,
 				FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */,
 				FA0B7B2A1A958EA3000E1D17 /* simplexnoise1234.h in Headers */,
+				FA9D53AE1F5307E900125C6B /* Deprecations.h in Headers */,
 				FA0B7ADC1A958EA3000E1D17 /* glad.hpp in Headers */,
 				FA0B7CF91A95902C000E1D17 /* FileData.h in Headers */,
 				FA0B7DA71A95902C000E1D17 /* PNGHandler.h in Headers */,
@@ -4024,6 +4040,7 @@
 				FA0B7DB81A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B794B1A958E3B000E1D17 /* wrap_Data.cpp in Sources */,
 				FAB17BEC1ABFAF1800F9BA27 /* CompressedData.cpp in Sources */,
+				FA91DA8C1F377C3900C80E33 /* deprecation.cpp in Sources */,
 				FA0B7E401A95902C000E1D17 /* wrap_ChainShape.cpp in Sources */,
 				FA0B7DEC1A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7D871A95902C000E1D17 /* ImageData.cpp in Sources */,
@@ -4078,6 +4095,7 @@
 				FA0B7D3D1A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7B351A958EA3000E1D17 /* wuff_convert.c in Sources */,
 				FAF140941E20934C00F898D2 /* PpScanner.cpp in Sources */,
+				FA9D53AD1F5307E900125C6B /* Deprecations.cpp in Sources */,
 				FA0B7E431A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA0B7AA21A958EA3000E1D17 /* b2PulleyJoint.cpp in Sources */,
@@ -4381,6 +4399,7 @@
 				FA0B7DB71A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7A321A958EA3000E1D17 /* b2Collision.cpp in Sources */,
 				FAB17BEB1ABFAF1800F9BA27 /* CompressedData.cpp in Sources */,
+				FA91DA8B1F377C3900C80E33 /* deprecation.cpp in Sources */,
 				FA0B7E3F1A95902C000E1D17 /* wrap_ChainShape.cpp in Sources */,
 				FA0B7DEB1A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7D861A95902C000E1D17 /* ImageData.cpp in Sources */,
@@ -4435,6 +4454,7 @@
 				FA0B7CE51A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA0B792C1A958E3B000E1D17 /* Memoizer.cpp in Sources */,
 				FAF140931E20934C00F898D2 /* PpScanner.cpp in Sources */,
+				FA9D53AC1F5307E900125C6B /* Deprecations.cpp in Sources */,
 				FA0B7CCD1A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7DCA1A95902C000E1D17 /* Keyboard.cpp in Sources */,
 				FA0B7AA41A958EA3000E1D17 /* b2RevoluteJoint.cpp in Sources */,

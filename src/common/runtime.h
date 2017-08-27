@@ -23,6 +23,7 @@
 
 // LOVE
 #include "types.h"
+#include "deprecation.h"
 
 // Lua
 extern "C" {
@@ -446,6 +447,13 @@ lua_State *luax_insistpinnedthread(lua_State *L);
  * NOTE: This does not push anything to the stack.
  **/
 lua_State *luax_getpinnedthread(lua_State *L);
+
+/**
+ * Mark a function as deprecated. Should only be called inside wrapper function
+ * code.
+ **/
+void luax_markdeprecated(lua_State *L, const char *name);
+void luax_markdeprecated(lua_State *L, const char *name, DeprecationType type, const char *replacement);
 
 extern "C" { // Also called from luasocket
 	int luax_typerror(lua_State *L, int narg, const char *tname);

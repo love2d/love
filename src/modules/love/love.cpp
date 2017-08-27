@@ -21,6 +21,7 @@
 // LOVE
 #include "common/config.h"
 #include "common/version.h"
+#include "common/deprecation.h"
 #include "common/runtime.h"
 #include "common/wrap_Data.h"
 
@@ -258,6 +259,25 @@ static int w__setGammaCorrect(lua_State *L)
 	return 0;
 }
 
+static int w_love_setDeprecationOutput(lua_State *L)
+{
+	bool enable = love::luax_checkboolean(L, 1);
+	love::setDeprecationOutputEnabled(enable);
+	return 0;
+}
+
+static int w_love_hasDeprecationOutput(lua_State *L)
+{
+	love::luax_pushboolean(L, love::isDeprecationOutputEnabled());
+	return 1;
+}
+
+static int w_deprecation__gc(lua_State *)
+{
+	love::deinitDeprecation();
+	return 0;
+}
+
 int luaopen_love(lua_State *L)
 {
 	love::luax_insistpinnedthread(L);
@@ -323,6 +343,27 @@ int luaopen_love(lua_State *L)
 	lua_pushstring(L, "Unknown");
 #endif
 	lua_setfield(L, -2, "_os");
+
+	{
+		love::initDeprecation();
+
+		// Any old data that we can attach a metatable to, for __gc. We want to
+		// call deinitDeprecation when love is garbage collected.
+		lua_newuserdata(L, sizeof(int));
+
+		luaL_newmetatable(L, "love_deprecation");
+		lua_pushcfunction(L, w_deprecation__gc);
+		lua_setfield(L, -2, "__gc");
+		lua_setmetatable(L, -2);
+
+		lua_setfield(L, -2, "_deprecation");
+
+		lua_pushcfunction(L, w_love_setDeprecationOutput);
+		lua_setfield(L, -2, "setDeprecationOutput");
+
+		lua_pushcfunction(L, w_love_hasDeprecationOutput);
+		lua_setfield(L, -2, "hasDeprecationOutput");
+	}
 
 	// Preload module loaders.
 	for (int i = 0; modules[i].name != nullptr; i++)

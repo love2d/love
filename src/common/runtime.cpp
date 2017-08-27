@@ -786,6 +786,25 @@ lua_State *luax_getpinnedthread(lua_State *L)
 	return thread;
 }
 
+void luax_markdeprecated(lua_State *L, const char *name)
+{
+	luax_markdeprecated(L, name, DEPRECATED_NO_REPLACEMENT, nullptr);
+}
+
+void luax_markdeprecated(lua_State *L, const char *name, DeprecationType type, const char *replacement)
+{
+	MarkDeprecated deprecated(name, type, replacement);
+
+	if (deprecated.info != nullptr && deprecated.info->uses == 1)
+	{
+		luaL_where(L, 1);
+		const char *where = lua_tostring(L, -1);
+		if (where != nullptr)
+			deprecated.info->where = where;
+		lua_pop(L, 1);
+	}
+}
+
 extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 {
 	int argtype = lua_type(L, narg);

@@ -261,6 +261,8 @@ set(LOVE_SRC_COMMON
 	src/common/Data.h
 	src/common/delay.cpp
 	src/common/delay.h
+	src/common/deprecation.cpp
+	src/common/deprecation.h
 	src/common/EnumMap.h
 	src/common/Exception.cpp
 	src/common/Exception.h
@@ -477,6 +479,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Canvas.h
 	src/modules/graphics/depthstencil.cpp
 	src/modules/graphics/depthstencil.h
+	src/modules/graphics/Deprecations.cpp
+	src/modules/graphics/Deprecations.h
 	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
 	src/modules/graphics/Font.cpp
