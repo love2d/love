@@ -180,7 +180,7 @@ int w_PrismaticJoint_getReferenceAngle(lua_State *L)
 
 int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
 {
-	luax_markdeprecated(L, "PrismaticJoint:hasLimitsEnabled", DEPRECATED_RENAMED, "PrismaticJoint:areLimitsEnabled");
+	luax_markdeprecated(L, "PrismaticJoint:hasLimitsEnabled", API_METHOD, DEPRECATED_RENAMED, "PrismaticJoint:areLimitsEnabled");
 	return w_PrismaticJoint_areLimitsEnabled(L);
 }
 

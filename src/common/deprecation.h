@@ -28,16 +28,25 @@
 namespace love
 {
 
+enum APIType
+{
+	API_FUNCTION,
+	API_METHOD,
+	API_FIELD,
+	API_CONSTANT,
+};
+
 enum DeprecationType
 {
 	DEPRECATED_NO_REPLACEMENT,
-	DEPRECATED_REPLACEMENT,
+	DEPRECATED_REPLACED,
 	DEPRECATED_RENAMED,
 };
 
 struct DeprecationInfo
 {
 	DeprecationType type;
+	APIType apiType;
 	int64 uses;
 	std::string name;
 	std::string replacement;
@@ -62,8 +71,8 @@ struct GetDeprecated
 
 struct MarkDeprecated
 {
-	MarkDeprecated(const char *name);
-	MarkDeprecated(const char *name, DeprecationType type, const char *replacement);
+	MarkDeprecated(const char *name, APIType api);
+	MarkDeprecated(const char *name, APIType api, DeprecationType type, const char *replacement);
 	~MarkDeprecated();
 
 	DeprecationInfo *info;

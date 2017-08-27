@@ -91,9 +91,22 @@ std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 	if (usewhere)
 		notice += info.where;
 
-	notice += "Using deprecated function " + info.name;
+	notice += "Using deprecated ";
 
-	if (info.type == DEPRECATED_REPLACEMENT && !info.replacement.empty())
+	if (info.apiType == API_FUNCTION)
+		notice += "function ";
+	else if (info.apiType == API_METHOD)
+		notice += "method ";
+	else if (info.apiType == API_FIELD)
+		notice += "field ";
+	else if (info.apiType == API_CONSTANT)
+		notice += "constant ";
+	else
+		notice += "API ";
+
+	notice += info.name;
+
+	if (info.type == DEPRECATED_REPLACED && !info.replacement.empty())
 		notice += " (replaced by " + info.replacement + ")";
 	else if (info.type == DEPRECATED_RENAMED && !info.replacement.empty())
 		notice += " (renamed to " + info.replacement + ")";
@@ -114,12 +127,12 @@ GetDeprecated::~GetDeprecated()
 		mutex->unlock();
 }
 
-MarkDeprecated::MarkDeprecated(const char *name)
-	: MarkDeprecated(name, DEPRECATED_NO_REPLACEMENT, nullptr)
+MarkDeprecated::MarkDeprecated(const char *name, APIType api)
+	: MarkDeprecated(name, api, DEPRECATED_NO_REPLACEMENT, nullptr)
 {
 }
 
-MarkDeprecated::MarkDeprecated(const char *name, DeprecationType type, const char *replacement)
+MarkDeprecated::MarkDeprecated(const char *name, APIType api, DeprecationType type, const char *replacement)
 	: info(nullptr)
 {
 	if (mutex != nullptr)
@@ -137,6 +150,7 @@ MarkDeprecated::MarkDeprecated(const char *name, DeprecationType type, const cha
 		DeprecationInfo newinfo = {};
 
 		newinfo.type = type;
+		newinfo.apiType = api;
 		newinfo.uses = 1;
 		newinfo.name = name;
 

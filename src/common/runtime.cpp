@@ -786,14 +786,14 @@ lua_State *luax_getpinnedthread(lua_State *L)
 	return thread;
 }
 
-void luax_markdeprecated(lua_State *L, const char *name)
+void luax_markdeprecated(lua_State *L, const char *name, APIType api)
 {
-	luax_markdeprecated(L, name, DEPRECATED_NO_REPLACEMENT, nullptr);
+	luax_markdeprecated(L, name, api, DEPRECATED_NO_REPLACEMENT, nullptr);
 }
 
-void luax_markdeprecated(lua_State *L, const char *name, DeprecationType type, const char *replacement)
+void luax_markdeprecated(lua_State *L, const char *name, APIType api, DeprecationType type, const char *replacement)
 {
-	MarkDeprecated deprecated(name, type, replacement);
+	MarkDeprecated deprecated(name, api, type, replacement);
 
 	if (deprecated.info != nullptr && deprecated.info->uses == 1)
 	{

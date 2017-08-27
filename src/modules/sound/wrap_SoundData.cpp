@@ -107,7 +107,7 @@ int w_SoundData_getSample(lua_State *L)
 
 int w_SoundData_getChannels(lua_State *L)
 {
-	luax_markdeprecated(L, "SoundData:getChannels", DEPRECATED_RENAMED, "SoundData:getChannelCount");
+	luax_markdeprecated(L, "SoundData:getChannels", API_METHOD, DEPRECATED_RENAMED, "SoundData:getChannelCount");
 	return w_SoundData_getChannelCount(L);
 }
 

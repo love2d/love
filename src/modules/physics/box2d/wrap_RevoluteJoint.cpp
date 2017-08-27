@@ -173,7 +173,7 @@ int w_RevoluteJoint_getReferenceAngle(lua_State *L)
 
 int w_RevoluteJoint_hasLimitsEnabled(lua_State *L)
 {
-	luax_markdeprecated(L, "RevoluteJoint:hasLimitsEnabled", DEPRECATED_RENAMED, "RevoluteJoint:areLimitsEnabled");
+	luax_markdeprecated(L, "RevoluteJoint:hasLimitsEnabled", API_METHOD, DEPRECATED_RENAMED, "RevoluteJoint:areLimitsEnabled");
 	return w_RevoluteJoint_areLimitsEnabled(L);
 }
 

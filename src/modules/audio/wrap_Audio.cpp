@@ -526,7 +526,7 @@ int w_setMixWithSystem(lua_State *L)
 
 int w_getSourceCount(lua_State *L)
 {
-	luax_markdeprecated(L, "love.audio.getSourceCount", DEPRECATED_RENAMED, "love.audio.getActiveSourceCount");
+	luax_markdeprecated(L, "love.audio.getSourceCount", API_FUNCTION, DEPRECATED_RENAMED, "love.audio.getActiveSourceCount");
 	return w_getActiveSourceCount(L);
 }
 

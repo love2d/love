@@ -584,7 +584,7 @@ int w_Source_getType(lua_State *L)
 
 int w_Source_getChannels(lua_State *L)
 {
-	luax_markdeprecated(L, "Source:getChannels", DEPRECATED_RENAMED, "Source:getChannelCount");
+	luax_markdeprecated(L, "Source:getChannels", API_METHOD, DEPRECATED_RENAMED, "Source:getChannelCount");
 	return w_Source_getChannelCount(L);
 }
 

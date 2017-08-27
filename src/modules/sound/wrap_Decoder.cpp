@@ -98,7 +98,7 @@ int w_Decoder_seek(lua_State *L)
 
 int w_Decoder_getChannels(lua_State *L)
 {
-	luax_markdeprecated(L, "Decoder:getChannels", DEPRECATED_RENAMED, "Decoder:getChannelCount");
+	luax_markdeprecated(L, "Decoder:getChannels", API_METHOD, DEPRECATED_RENAMED, "Decoder:getChannelCount");
 	return w_Decoder_getChannelCount(L);
 }
 
