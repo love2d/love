@@ -2372,8 +2372,8 @@ int w_points(lua_State *L)
 				for (int j = 1; j <= 6; j++)
 					lua_rawgeti(L, -j, j);
 
-				positions[i].x = luax_tofloat(L, -6);
-				positions[i].y = luax_tofloat(L, -5);
+				positions[i].x = luax_checkfloat(L, -6);
+				positions[i].y = luax_checkfloat(L, -5);
 
 				colors[i].r = (float) luaL_optnumber(L, -4, 1.0);
 				colors[i].g = (float) luaL_optnumber(L, -3, 1.0);
@@ -2390,8 +2390,8 @@ int w_points(lua_State *L)
 			{
 				lua_rawgeti(L, 1, i * 2 + 1);
 				lua_rawgeti(L, 1, i * 2 + 2);
-				positions[i].x = luax_tofloat(L, -2);
-				positions[i].y = luax_tofloat(L, -1);
+				positions[i].x = luax_checkfloat(L, -2);
+				positions[i].y = luax_checkfloat(L, -1);
 				lua_pop(L, 2);
 			}
 		}
@@ -2400,8 +2400,8 @@ int w_points(lua_State *L)
 	{
 		for (int i = 0; i < numpositions; i++)
 		{
-			positions[i].x = luax_tofloat(L, i * 2 + 1);
-			positions[i].y = luax_tofloat(L, i * 2 + 2);
+			positions[i].x = luax_checkfloat(L, i * 2 + 1);
+			positions[i].y = luax_checkfloat(L, i * 2 + 2);
 		}
 	}
 
@@ -2433,8 +2433,8 @@ int w_line(lua_State *L)
 		{
 			lua_rawgeti(L, 1, (i * 2) + 1);
 			lua_rawgeti(L, 1, (i * 2) + 2);
-			coords[i].x = luax_tofloat(L, -2);
-			coords[i].y = luax_tofloat(L, -1);
+			coords[i].x = luax_checkfloat(L, -2);
+			coords[i].y = luax_checkfloat(L, -1);
 			lua_pop(L, 2);
 		}
 	}
@@ -2442,8 +2442,8 @@ int w_line(lua_State *L)
 	{
 		for (int i = 0; i < numvertices; ++i)
 		{
-			coords[i].x = luax_tofloat(L, (i * 2) + 1);
-			coords[i].y = luax_tofloat(L, (i * 2) + 2);
+			coords[i].x = luax_checkfloat(L, (i * 2) + 1);
+			coords[i].y = luax_checkfloat(L, (i * 2) + 2);
 		}
 	}
 
@@ -2599,8 +2599,8 @@ int w_polygon(lua_State *L)
 		{
 			lua_rawgeti(L, 2, (i * 2) + 1);
 			lua_rawgeti(L, 2, (i * 2) + 2);
-			coords[i].x = luax_tofloat(L, -2);
-			coords[i].y = luax_tofloat(L, -1);
+			coords[i].x = luax_checkfloat(L, -2);
+			coords[i].y = luax_checkfloat(L, -1);
 			lua_pop(L, 2);
 		}
 	}
@@ -2608,8 +2608,8 @@ int w_polygon(lua_State *L)
 	{
 		for (int i = 0; i < numvertices; ++i)
 		{
-			coords[i].x = luax_tofloat(L, (i * 2) + 2);
-			coords[i].y = luax_tofloat(L, (i * 2) + 3);
+			coords[i].x = luax_checkfloat(L, (i * 2) + 2);
+			coords[i].y = luax_checkfloat(L, (i * 2) + 3);
 		}
 	}
 
