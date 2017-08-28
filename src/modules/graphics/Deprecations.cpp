@@ -44,6 +44,9 @@ Deprecations::~Deprecations()
 
 void Deprecations::draw(Graphics *gfx)
 {
+	if (!isDeprecationOutputEnabled())
+		return;
+
 	GetDeprecated deprecations;
 
 	if (deprecations.all.empty())
