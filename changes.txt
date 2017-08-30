@@ -53,6 +53,7 @@ Released: N/A
   * Added a variant of Mesh:setVertexMap which accepts a Data object.
   * Added love.window.updateMode.
   * Added the ability to prevent love from creating a stencil buffer for the window.
+  * Added cycle detection to Variant's table serialization, cycles now cause an error, rather than a stack overflow.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed high-dpi functionality to require much less code (often none at all) for things to appear at the correct sizes and positions.

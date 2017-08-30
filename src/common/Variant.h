@@ -27,6 +27,7 @@
 
 #include <cstring>
 #include <vector>
+#include <set>
 
 namespace love
 {
@@ -63,7 +64,7 @@ public:
 
 	Type getType() const { return type; }
 
-	static Variant fromLua(lua_State *L, int n, bool allowTables = true);
+	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
 	void toLua(lua_State *L) const;
 
 private:

@@ -18,6 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include <memory>
+
 #include "Variant.h"
 #include "common/StringMap.h"
 
@@ -162,7 +164,7 @@ Variant &Variant::operator = (const Variant &v)
 	return *this;
 }
 
-Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
+Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 {
 	size_t len;
 	const char *str;
@@ -186,10 +188,22 @@ Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
 	case LUA_TNIL:
 		return Variant();
 	case LUA_TTABLE:
-		if (allowTables)
 		{
 			bool success = true;
+			std::unique_ptr<std::set<const void*>> tableSetPtr;
 			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
+
+			// If we had no tables argument, allocate one now, and store it in our unique_ptr
+			if (tableSet == nullptr)
+				tableSetPtr.reset(tableSet = new std::set<const void*>);
+
+			// Now make sure this table wasn't already serialised
+			{
+				const void *table = lua_topointer(L, n);
+				auto result = tableSet->insert(table);
+				if (!result.second) // insertion failed
+					throw love::Exception("Cycle detected in table");
+			}
 
 			size_t len = luax_objlen(L, -1);
 			if (len > 0)
@@ -199,7 +213,7 @@ Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
 
 			while (lua_next(L, n))
 			{
-				table->emplace_back(fromLua(L, -2), fromLua(L, -1));
+				table->emplace_back(fromLua(L, -2, tableSet), fromLua(L, -1, tableSet));
 				lua_pop(L, 1);
 
 				const auto &p = table->back();

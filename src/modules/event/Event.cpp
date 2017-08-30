@@ -63,7 +63,9 @@ Message *Message::fromLua(lua_State *L, int n)
 		if (lua_isnoneornil(L, n+i))
 			break;
 
-		vargs.push_back(Variant::fromLua(L, n+i));
+		luax_catchexcept(L, [&]() {
+			vargs.push_back(Variant::fromLua(L, n+i));
+		});
 
 		if (vargs.back().getType() == Variant::UNKNOWN)
 		{

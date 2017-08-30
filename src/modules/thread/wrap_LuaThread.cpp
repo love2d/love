@@ -38,7 +38,9 @@ int w_Thread_start(lua_State *L)
 
 	for (int i = 0; i < nargs; ++i)
 	{
-		args.push_back(Variant::fromLua(L, i+2));
+		luax_catchexcept(L, [&]() {
+			args.push_back(Variant::fromLua(L, i+2));
+		});
 
 		if (args.back().getType() == Variant::UNKNOWN)
 		{

@@ -33,21 +33,25 @@ Channel *luax_checkchannel(lua_State *L, int idx)
 int w_Channel_push(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	Variant var = Variant::fromLua(L, 2);
-	if (var.getType() == Variant::UNKNOWN)
-		return luaL_argerror(L, 2, "boolean, number, string, love type, or flat table expected");
-	uint64 id = c->push(var);
-	lua_pushnumber(L, (lua_Number) id);
+	luax_catchexcept(L, [&]() {
+		Variant var = Variant::fromLua(L, 2);
+		if (var.getType() == Variant::UNKNOWN)
+			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
+		uint64 id = c->push(var);
+		lua_pushnumber(L, (lua_Number) id);
+	});
 	return 1;
 }
 
 int w_Channel_supply(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	Variant var = Variant::fromLua(L, 2);
-	if (var.getType() == Variant::UNKNOWN)
-		return luaL_argerror(L, 2, "boolean, number, string, love type, or flat table expected");
-	c->supply(var);
+	luax_catchexcept(L, [&]() {
+		Variant var = Variant::fromLua(L, 2);
+		if (var.getType() == Variant::UNKNOWN)
+			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
+		c->supply(var);
+	});
 	return 0;
 }
 
