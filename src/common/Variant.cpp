@@ -198,9 +198,9 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 				tableSetPtr.reset(tableSet = new std::set<const void*>);
 
 			// Now make sure this table wasn't already serialised
+			const void *tablePointer = lua_topointer(L, n);
 			{
-				const void *table = lua_topointer(L, n);
-				auto result = tableSet->insert(table);
+				auto result = tableSet->insert(tablePointer);
 				if (!result.second) // insertion failed
 					throw love::Exception("Cycle detected in table");
 			}
@@ -223,6 +223,9 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 					break;
 				}
 			}
+
+			// And remove the table from the set again
+			tableSet->erase(tablePointer);
 
 			if (success)
 				return Variant(table);
