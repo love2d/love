@@ -21,7 +21,7 @@
 #pragma once
 
 #include "common/config.h"
-#include "image/CompressedFormatHandler.h"
+#include "image/FormatHandler.h"
 
 namespace love
 {
@@ -33,16 +33,16 @@ namespace magpie
 /**
  * Handles KTX files with compressed image data inside.
  **/
-class KTXHandler : public CompressedFormatHandler
+class KTXHandler : public FormatHandler
 {
 public:
 
 	virtual ~KTXHandler() {}
 
-	// Implements CompressedFormatHandler.
-	bool canParse(const Data *data) override;
+	// Implements FormatHandler.
+	bool canParseCompressed(Data *data) override;
 
-	StrongRef<CompressedMemory> parse(Data *filedata,
+	StrongRef<CompressedMemory> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
 

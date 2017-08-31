@@ -28,12 +28,12 @@ namespace image
 namespace magpie
 {
 
-bool DDSHandler::canParse(const Data *data)
+bool DDSHandler::canParseCompressed(Data *data)
 {
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-StrongRef<CompressedMemory> DDSHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!dds::isDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");

@@ -55,7 +55,17 @@ FormatHandler::EncodedImage FormatHandler::encode(const DecodedImage& /*img*/, E
 	throw love::Exception("Image encoding is not implemented for this format backend.");
 }
 
-void FormatHandler::free(unsigned char *mem)
+bool FormatHandler::canParseCompressed(Data* /*data*/)
+{
+	return false;
+}
+
+StrongRef<CompressedMemory> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/, bool& /*sRGB*/)
+{
+	throw love::Exception("Compressed image parsing is not implemented for this format backend.");
+}
+
+void FormatHandler::freeRawPixels(unsigned char *mem)
 {
 	delete[] mem;
 }

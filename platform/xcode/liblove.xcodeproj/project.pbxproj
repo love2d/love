@@ -938,7 +938,6 @@
 		FA91DA8B1F377C3900C80E33 /* deprecation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91DA891F377C3900C80E33 /* deprecation.cpp */; };
 		FA91DA8C1F377C3900C80E33 /* deprecation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA91DA891F377C3900C80E33 /* deprecation.cpp */; };
 		FA91DA8D1F377C3900C80E33 /* deprecation.h in Headers */ = {isa = PBXBuildFile; fileRef = FA91DA8A1F377C3900C80E33 /* deprecation.h */; };
-		FA93C4521F315B960087CCD4 /* CompressedFormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */; };
 		FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C4501F315B960087CCD4 /* FormatHandler.h */; };
 		FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA93C4511F315B960087CCD4 /* FormatHandler.cpp */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
@@ -1801,7 +1800,6 @@
 		FA91591D1CF1ED7500A7053F /* halffloat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = halffloat.h; sourceTree = "<group>"; };
 		FA91DA891F377C3900C80E33 /* deprecation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = deprecation.cpp; sourceTree = "<group>"; };
 		FA91DA8A1F377C3900C80E33 /* deprecation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = deprecation.h; sourceTree = "<group>"; };
-		FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedFormatHandler.h; sourceTree = "<group>"; };
 		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
@@ -2764,7 +2762,6 @@
 		FA0B7BC21A95902C000E1D17 /* image */ = {
 			isa = PBXGroup;
 			children = (
-				FA93C44F1F315B960087CCD4 /* CompressedFormatHandler.h */,
 				FA0B7BC31A95902C000E1D17 /* CompressedImageData.cpp */,
 				FA0B7BC41A95902C000E1D17 /* CompressedImageData.h */,
 				FAECA1B01F3164700095D008 /* CompressedSlice.cpp */,
@@ -3661,7 +3658,6 @@
 				FA0B7E351A95902C000E1D17 /* WeldJoint.h in Headers */,
 				FA0B7E2F1A95902C000E1D17 /* RopeJoint.h in Headers */,
 				FA0B7D141A95902C000E1D17 /* Font.h in Headers */,
-				FA93C4521F315B960087CCD4 /* CompressedFormatHandler.h in Headers */,
 				FA0B7D411A95902C000E1D17 /* Mesh.h in Headers */,
 				FA0B7E591A95902C000E1D17 /* wrap_Joint.h in Headers */,
 				FA0B79351A958E3B000E1D17 /* macosx.h in Headers */,

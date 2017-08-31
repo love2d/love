@@ -162,7 +162,7 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, EncodedF
 	return encimg;
 }
 
-void STBHandler::free(unsigned char *mem)
+void STBHandler::freeRawPixels(unsigned char *mem)
 {
 	// The STB decoder gave memory allocated directly by stb_image to the
 	// ImageData, so we use stb_image_free to delete it.

@@ -107,9 +107,6 @@ private:
 	// Image format handlers we can use for decoding and encoding ImageData.
 	std::list<FormatHandler *> formatHandlers;
 
-	// Compressed image format handers we can use for parsing CompressedImageData.
-	std::list<CompressedFormatHandler *> compressedFormatHandlers;
-
 }; // Image
 
 } // image

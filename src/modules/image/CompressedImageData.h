@@ -26,7 +26,7 @@
 #include "common/int.h"
 #include "common/pixelformat.h"
 #include "CompressedSlice.h"
-#include "CompressedFormatHandler.h"
+#include "FormatHandler.h"
 
 // STL
 #include <vector>
@@ -48,7 +48,7 @@ public:
 
 	static love::Type type;
 
-	CompressedImageData(const std::list<CompressedFormatHandler *> &formats, Data *filedata);
+	CompressedImageData(const std::list<FormatHandler *> &formats, Data *filedata);
 	CompressedImageData(const CompressedImageData &c);
 	virtual ~CompressedImageData();
 

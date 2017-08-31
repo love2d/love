@@ -49,9 +49,6 @@ Image::Image()
 		new PNGHandler,
 		new STBHandler,
 		new EXRHandler,
-	};
-
-	compressedFormatHandlers = {
 		new DDSHandler,
 		new PVRHandler,
 		new KTXHandler,
@@ -65,9 +62,6 @@ Image::~Image()
 	// ImageData objects reference the FormatHandlers in our list, so we should
 	// release them instead of deleting them completely here.
 	for (FormatHandler *handler : formatHandlers)
-		handler->release();
-
-	for (CompressedFormatHandler *handler : compressedFormatHandlers)
 		handler->release();
 }
 
@@ -93,14 +87,14 @@ love::image::ImageData *Image::newImageData(int width, int height, PixelFormat f
 
 love::image::CompressedImageData *Image::newCompressedData(Data *data)
 {
-	return new CompressedImageData(compressedFormatHandlers, data);
+	return new CompressedImageData(formatHandlers, data);
 }
 
 bool Image::isCompressed(Data *data)
 {
-	for (CompressedFormatHandler *handler : compressedFormatHandlers)
+	for (FormatHandler *handler : formatHandlers)
 	{
-		if (handler->canParse(data))
+		if (handler->canParseCompressed(data))
 			return true;
 	}
 

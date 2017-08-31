@@ -78,7 +78,7 @@ ImageData::ImageData(const ImageData &c)
 ImageData::~ImageData()
 {
 	if (decodeHandler.get())
-		decodeHandler->free(data);
+		decodeHandler->freeRawPixels(data);
 	else
 		delete[] data;
 }
@@ -145,13 +145,13 @@ void ImageData::decode(Data *data)
 
 	if (decodedimage.size != decodedimage.width * decodedimage.height * getPixelFormatSize(decodedimage.format))
 	{
-		decoder->free(decodedimage.data);
+		decoder->freeRawPixels(decodedimage.data);
 		throw love::Exception("Could not convert image!");
 	}
 
 	// Clean up any old data.
 	if (decodeHandler)
-		decodeHandler->free(this->data);
+		decodeHandler->freeRawPixels(this->data);
 	else
 		delete[] this->data;
 
@@ -210,12 +210,12 @@ love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encod
 	}
 	catch (love::Exception &)
 	{
-		encoder->free(encodedimage.data);
+		encoder->freeRawPixels(encodedimage.data);
 		throw;
 	}
 
 	memcpy(filedata->getData(), encodedimage.data, encodedimage.size);
-	encoder->free(encodedimage.data);
+	encoder->freeRawPixels(encodedimage.data);
 
 	if (writefile)
 	{

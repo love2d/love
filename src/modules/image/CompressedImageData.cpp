@@ -27,15 +27,15 @@ namespace image
 
 love::Type CompressedImageData::type("CompressedImageData", &Data::type);
 
-CompressedImageData::CompressedImageData(const std::list<CompressedFormatHandler *> &formats, Data *filedata)
+CompressedImageData::CompressedImageData(const std::list<FormatHandler *> &formats, Data *filedata)
 	: format(PIXELFORMAT_UNKNOWN)
 	, sRGB(false)
 {
-	CompressedFormatHandler *parser = nullptr;
+	FormatHandler *parser = nullptr;
 
-	for (CompressedFormatHandler *handler : formats)
+	for (FormatHandler *handler : formats)
 	{
-		if (handler->canParse(filedata))
+		if (handler->canParseCompressed(filedata))
 		{
 			parser = handler;
 			break;
@@ -45,7 +45,7 @@ CompressedImageData::CompressedImageData(const std::list<CompressedFormatHandler
 	if (parser == nullptr)
 		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	memory = parser->parse(filedata, dataImages, format, sRGB);
+	memory = parser->parseCompressed(filedata, dataImages, format, sRGB);
 
 	if (memory == nullptr)
 		throw love::Exception("Could not parse compressed data.");

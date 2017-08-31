@@ -22,8 +22,9 @@
 
 // LOVE
 #include "common/Object.h"
-#include "common/pixelformat.h"
 #include "common/Data.h"
+#include "common/pixelformat.h"
+#include "CompressedSlice.h"
 
 namespace love
 {
@@ -31,8 +32,8 @@ namespace image
 {
 
 /**
- * Base class for all ImageData encoder/decoder library interfaces.
- * We inherit from love::Object to take advantage of reference counting...
+ * Base class for all ImageData and CompressedImageData encoder/decoder library
+ * interfaces. We inherit from love::Object to take advantage of ref coounting.
  **/
 class FormatHandler : public love::Object
 {
@@ -66,41 +67,54 @@ public:
 	 * The default constructor is called when the Image module is initialized.
 	 **/
 	FormatHandler();
-
-	/**
-	 * The destructor is called when the Image module is uninitialized.
-	 **/
 	virtual ~FormatHandler();
 
 	/**
-	 * Whether this format handler can decode a particular FileData.
+	 * Whether this format handler can decode the given Data into raw pixels.
 	 **/
 	virtual bool canDecode(Data *data);
 
 	/**
-	 * Whether this format handler can encode to a particular format.
+	 * Whether this format handler can encode raw pixels to a particular format.
 	 **/
 	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
 
 	/**
 	 * Decodes an image from its encoded form into raw pixel data.
-	 * @param data The encoded data to decode.
-	 * @return The decoded pixel data.
 	 **/
 	virtual DecodedImage decode(Data *data);
 
 	/**
 	 * Encodes an image from raw pixel data into a particular format.
-	 * @param img The raw image data to encode.
-	 * @param format The format to encode to.
-	 * @return The encoded image data.
 	 **/
 	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
 
 	/**
-	 * Frees memory allocated by the format handler.
+	 * Whether this format handler can parse the given Data into a
+	 * CompressedImageData object.
 	 **/
-	virtual void free(unsigned char *mem);
+	virtual bool canParseCompressed(Data *data);
+
+	/**
+	 * Parses compressed image data into a list of sub-images and returns a
+	 * single block of memory containing all the images.
+	 *
+	 * @param[in] filedata The data to parse.
+	 * @param[out] images The list of sub-images generated. Byte data is a
+	 *             pointer to the returned data.
+	 * @param[out] format The format of the Compressed Data.
+	 * @param[out] sRGB Whether the texture is sRGB-encoded.
+	 *
+	 * @return The single block of memory containing the parsed images.
+	 **/
+	virtual StrongRef<CompressedMemory> parseCompressed(Data *filedata,
+	        std::vector<StrongRef<CompressedSlice>> &images,
+	        PixelFormat &format, bool &sRGB);
+
+	/**
+	 * Frees raw pixel memory allocated by the format handler.
+	 **/
+	virtual void freeRawPixels(unsigned char *mem);
 
 }; // FormatHandler
 

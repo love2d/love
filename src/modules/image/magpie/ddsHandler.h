@@ -21,7 +21,7 @@
 #pragma once
 
 // LOVE
-#include "image/CompressedFormatHandler.h"
+#include "image/FormatHandler.h"
 
 // dds parser
 #include "ddsparse/ddsparse.h"
@@ -39,16 +39,16 @@ namespace magpie
 /**
  * Interface between CompressedImageData and the ddsparse library.
  **/
-class DDSHandler : public CompressedFormatHandler
+class DDSHandler : public FormatHandler
 {
 public:
 
 	virtual ~DDSHandler() {}
 
-	// Implements CompressedFormatHandler.
-	bool canParse(const Data *data) override;
+	// Implements FormatHandler.
+	bool canParseCompressed(Data *data) override;
 
-	StrongRef<CompressedMemory> parse(Data *filedata,
+	StrongRef<CompressedMemory> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
 

@@ -97,7 +97,7 @@ static PixelFormat convertFormat(uint16 texformat)
 
 } // Anonymous namespace.
 
-bool PKMHandler::canParse(const Data *data)
+bool PKMHandler::canParseCompressed(Data *data)
 {
 	if (data->getSize() <= sizeof(PKMHeader))
 		return false;
@@ -114,9 +114,9 @@ bool PKMHandler::canParse(const Data *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> PKMHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
-	if (!canParse(filedata))
+	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
 
 	PKMHeader header = *(const PKMHeader *) filedata->getData();

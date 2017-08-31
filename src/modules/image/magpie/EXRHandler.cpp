@@ -193,7 +193,7 @@ FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage & /*img*/, Enc
 	throw love::Exception("Invalid format.");
 }
 
-void EXRHandler::free(unsigned char *mem)
+void EXRHandler::freeRawPixels(unsigned char *mem)
 {
 	delete[] mem;
 }

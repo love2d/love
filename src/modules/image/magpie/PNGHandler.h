@@ -45,7 +45,7 @@ public:
 	virtual DecodedImage decode(Data *data);
 	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
 
-	virtual void free(unsigned char *mem);
+	virtual void freeRawPixels(unsigned char *mem);
 
 }; // PNGHandler
 

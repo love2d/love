@@ -257,7 +257,7 @@ FormatHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, EncodedF
 	return encimg;
 }
 
-void PNGHandler::free(unsigned char *mem)
+void PNGHandler::freeRawPixels(unsigned char *mem)
 {
 	// LodePNG uses malloc, realloc, and free.
 	if (mem)

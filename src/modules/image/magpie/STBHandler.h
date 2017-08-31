@@ -48,7 +48,7 @@ public:
 	DecodedImage decode(Data *data) override;
 	EncodedImage encode(const DecodedImage &img, EncodedFormat format) override;
 
-	void free(unsigned char *mem) override;
+	void freeRawPixels(unsigned char *mem) override;
 
 }; // STBHandler
 

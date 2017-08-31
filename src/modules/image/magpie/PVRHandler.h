@@ -22,7 +22,7 @@
 
 // LOVE
 #include "common/config.h"
-#include "image/CompressedFormatHandler.h"
+#include "image/FormatHandler.h"
 
 namespace love
 {
@@ -31,16 +31,16 @@ namespace image
 namespace magpie
 {
 
-class PVRHandler : public CompressedFormatHandler
+class PVRHandler : public FormatHandler
 {
 public:
 
 	virtual ~PVRHandler() {}
 
-	// Implements CompressedFormatHandler.
-	bool canParse(const Data *data) override;
+	// Implements FormatHandler.
+	bool canParseCompressed(Data *data) override;
 
-	StrongRef<CompressedMemory> parse(Data *filedata,
+	StrongRef<CompressedMemory> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
 

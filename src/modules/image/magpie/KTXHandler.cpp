@@ -281,7 +281,7 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 
 } // Anonymous namespace.
 
-bool KTXHandler::canParse(const Data *data)
+bool KTXHandler::canParseCompressed(Data *data)
 {
 	if (data->getSize() < sizeof(KTXHeader))
 		return false;
@@ -298,9 +298,9 @@ bool KTXHandler::canParse(const Data *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> KTXHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> KTXHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
-	if (!canParse(filedata))
+	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
 
 	KTXHeader header = *(KTXHeader *) filedata->getData();

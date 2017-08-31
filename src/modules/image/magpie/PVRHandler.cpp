@@ -454,7 +454,7 @@ size_t getMipLevelSize(const PVRTexHeaderV3 &header, int miplevel)
 } // Anonymous namespace.
 
 
-bool PVRHandler::canParse(const Data *data)
+bool PVRHandler::canParseCompressed(Data *data)
 {
 	if (data->getSize() < sizeof(PVRTexHeaderV2) || data->getSize() < sizeof(PVRTexHeaderV3))
 		return false;
@@ -475,9 +475,9 @@ bool PVRHandler::canParse(const Data *data)
 	return false;
 }
 
-StrongRef<CompressedMemory> PVRHandler::parse(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<CompressedMemory> PVRHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
-	if (!canParse(filedata))
+	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
 
 	PVRTexHeaderV3 header3 = *(PVRTexHeaderV3 *) filedata->getData();

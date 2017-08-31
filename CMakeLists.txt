@@ -579,7 +579,6 @@ source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL
 #
 
 set(LOVE_SRC_MODULE_IMAGE_ROOT
-	src/modules/image/CompressedFormatHandler.h
 	src/modules/image/CompressedImageData.cpp
 	src/modules/image/CompressedImageData.h
 	src/modules/image/CompressedSlice.cpp
