@@ -67,7 +67,7 @@ void Deprecations::draw(Graphics *gfx)
 
 	float alpha = 1.0f;
 	if (delta > (showTime - fadeTime))
-		alpha = (float) (1.0 - (delta - showTime - fadeTime) / fadeTime);
+		alpha = (float) (1.0 - (delta - (showTime - fadeTime)) / fadeTime);
 
 	if (alpha <= 0.0f)
 		return;
