@@ -122,6 +122,8 @@ Font::TextureSize Font::getNextTextureSize() const
 bool Font::loadVolatile()
 {
 	textureCacheID++;
+	glyphs.clear();
+	images.clear();
 	createTexture();
 	return true;
 }
@@ -183,6 +185,8 @@ void Font::createTexture()
 
 void Font::unloadVolatile()
 {
+	glyphs.clear();
+	images.clear();
 }
 
 love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
