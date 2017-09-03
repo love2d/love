@@ -72,7 +72,11 @@ bool File::open(Mode mode)
 	if (file != nullptr)
 		return false;
 
+#ifdef LOVE_USE_PHYSFS_2_1
+	PHYSFS_getLastErrorCode();
+#else
 	PHYSFS_getLastError(); // Clear the error buffer.
+#endif
 	PHYSFS_File *handle = nullptr;
 
 	switch (mode)
@@ -92,7 +96,11 @@ bool File::open(Mode mode)
 
 	if (handle == nullptr)
 	{
+#ifdef LOVE_USE_PHYSFS_2_1
+		const char *err = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+#else
 		const char *err = PHYSFS_getLastError();
+#endif
 		if (err == nullptr)
 			err = "unknown error";
 		throw love::Exception("Could not open file %s (%s)", filename.c_str(), err);

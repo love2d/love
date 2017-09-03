@@ -124,7 +124,14 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
-		throw love::Exception("%s", PHYSFS_getLastError());
+	{
+#ifdef LOVE_USE_PHYSFS_2_1
+		const char *err = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+#else
+		const char *err = PHYSFS_getLastError();
+#endif
+		throw love::Exception("%s", err);
+	}
 
 	// Enable symlinks by default. Also fixes an issue in PhysFS 2.1-alpha.
 	setSymlinksEnabled(true);
