@@ -35,9 +35,7 @@
 // STD
 #include <string>
 
-// These platforms always use PhysFS 2.1.
-#if (defined(LOVE_IOS) || defined(LOVE_ANDROID)) \
-&& (PHYSFS_VER_MAJOR == 2 && PHYSFS_VER_MINOR >= 1)
+#if PHYSFS_VER_MAJOR > 2 || (PHYSFS_VER_MAJOR == 2 && PHYSFS_VER_MINOR >= 1)
 #define LOVE_USE_PHYSFS_2_1
 #endif
 
