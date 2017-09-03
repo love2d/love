@@ -18,13 +18,15 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
 #include "StreamBuffer.h"
 #include "OpenGL.h"
-#include "BufferSync.h"
+#include "FenceSync.h"
 #include "graphics/Volatile.h"
 #include "common/Exception.h"
 
 #include <vector>
+#include <algorithm>
 
 namespace love
 {
@@ -33,7 +35,8 @@ namespace graphics
 namespace opengl
 {
 
-static int BUFFER_FRAMES = 3;
+static const int BUFFER_FRAMES = 3;
+static const int MAX_SYNCS_PER_FRAME = 4;
 
 class StreamBufferClientMemory final : public love::graphics::StreamBuffer
 {
@@ -56,6 +59,11 @@ public:
 	virtual ~StreamBufferClientMemory()
 	{
 		delete[] data;
+	}
+
+	size_t getUsableSize() const override
+	{
+		return bufferSize;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -87,6 +95,7 @@ public:
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
 		, offset(0)
+		, frameOffset(0)
 	{
 		try
 		{
@@ -106,11 +115,17 @@ public:
 		delete[] data;
 	}
 
+	size_t getUsableSize() const override
+	{
+		return bufferSize - frameOffset;
+	}
+
 	MapInfo map(size_t minsize) override
 	{
 		if (offset + minsize > bufferSize)
 		{
 			offset = 0;
+			frameOffset = 0;
 			gl.bindBuffer(mode, vbo);
 			glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 		}
@@ -128,6 +143,12 @@ public:
 	void markUsed(size_t usedsize) override
 	{
 		offset += usedsize;
+		frameOffset += usedsize;
+	}
+
+	void nextFrame() override
+	{
+		frameOffset = 0;
 	}
 
 	ptrdiff_t getHandle() const override { return vbo; }
@@ -142,6 +163,7 @@ public:
 		glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 
 		offset = 0;
+		frameOffset = 0;
 
 		return true;
 	}
@@ -163,17 +185,69 @@ protected:
 	uint8 *data;
 
 	size_t offset;
+	size_t frameOffset;
 
 }; // StreamBufferSubDataOrphan
 
-class StreamBufferMapSync final : public love::graphics::StreamBuffer, public Volatile
+class StreamBufferSync : public love::graphics::StreamBuffer
+{
+public:
+
+	StreamBufferSync(BufferType type, size_t size)
+		: love::graphics::StreamBuffer(type, size)
+		, syncSize((size + MAX_SYNCS_PER_FRAME - 1) / MAX_SYNCS_PER_FRAME)
+		, frameIndex(0)
+		, frameGPUReadOffset(0)
+		, syncs()
+	{}
+
+	virtual ~StreamBufferSync() {}
+
+	void nextFrame() override
+	{
+		getCurrentSync()->fence();
+
+		frameIndex = (frameIndex + 1) % BUFFER_FRAMES;
+		frameGPUReadOffset = 0;
+	}
+
+	void markUsed(size_t usedsize) override
+	{
+		int firstSyncIndex = frameGPUReadOffset / syncSize;
+		int lastSyncIndex = std::min((frameGPUReadOffset + usedsize), bufferSize - 1) / syncSize;
+
+		// Insert fences for all sync buckets completely filled by this section
+		// of the data. The last bucket before the end of the frame will also be
+		// handled by nextFrame().
+		for (int i = firstSyncIndex; i < lastSyncIndex; i++)
+			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].fence();
+
+		frameGPUReadOffset += usedsize;
+	}
+
+protected:
+
+	const size_t syncSize;
+
+	int frameIndex;
+	size_t frameGPUReadOffset;
+
+	FenceSync syncs[MAX_SYNCS_PER_FRAME * BUFFER_FRAMES];
+
+	FenceSync *getCurrentSync()
+	{
+		return &syncs[frameIndex * MAX_SYNCS_PER_FRAME + frameGPUReadOffset / syncSize];
+	}
+
+}; // StreamBufferSync
+
+class StreamBufferMapSync final : public StreamBufferSync, public Volatile
 {
 public:
 
 	StreamBufferMapSync(BufferType type, size_t size)
-		: love::graphics::StreamBuffer(type, size)
+		: StreamBufferSync(type, size)
 		, vbo(0)
-		, gpuReadOffset(0)
 		, glMode(OpenGL::getGLBufferType(mode))
 	{
 		loadVolatile();
@@ -184,21 +258,32 @@ public:
 		unloadVolatile();
 	}
 
-	MapInfo map(size_t minsize) override
+	size_t getUsableSize() const override
+	{
+		return bufferSize - frameGPUReadOffset;
+	}
+
+	MapInfo map(size_t /*minsize*/) override
 	{
 		gl.bindBuffer(mode, vbo);
 
-		if (gpuReadOffset + minsize > bufferSize * BUFFER_FRAMES)
-			gpuReadOffset = 0;
-
 		MapInfo info;
-		info.size = bufferSize - (gpuReadOffset % bufferSize);
+		info.size = bufferSize - frameGPUReadOffset;
 
-		sync.wait(gpuReadOffset, info.size);
+		int firstSyncIndex = frameGPUReadOffset / syncSize;
+		int lastSyncIndex = (bufferSize - 1) / syncSize;
+
+		// We're mapping the full range of space left in the buffer, so we
+		// need to wait on all of it...
+		// FIXME: is it even worth it to have multiple sync objects per frame?
+		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
+			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
 
 		GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
 
-		info.data = (uint8 *) glMapBufferRange(glMode, gpuReadOffset, info.size, flags);
+		size_t mapoffset = (frameIndex * bufferSize) + frameGPUReadOffset;
+		info.data = (uint8 *) glMapBufferRange(glMode, mapoffset, info.size, flags);
+
 		return info;
 	}
 
@@ -208,13 +293,7 @@ public:
 		glFlushMappedBufferRange(glMode, 0, usedsize);
 		glUnmapBuffer(glMode);
 
-		return gpuReadOffset;
-	}
-
-	void markUsed(size_t usedsize) override
-	{
-		sync.lock(gpuReadOffset, usedsize);
-		gpuReadOffset += usedsize;
+		return (frameIndex * bufferSize) + frameGPUReadOffset;
 	}
 
 	ptrdiff_t getHandle() const override { return vbo; }
@@ -228,40 +307,38 @@ public:
 		gl.bindBuffer(mode, vbo);
 		glBufferData(glMode, bufferSize * BUFFER_FRAMES, nullptr, GL_STREAM_DRAW);
 
-		gpuReadOffset = 0;
+		frameGPUReadOffset = 0;
+		frameIndex = 0;
 
 		return true;
 	}
 
 	void unloadVolatile() override
 	{
-		if (vbo == 0)
-			return;
+		if (vbo != 0)
+		{
+			gl.deleteBuffer(vbo);
+			vbo = 0;
+		}
 
-		gl.deleteBuffer(vbo);
-		vbo = 0;
-
-		sync.cleanup();
+		for (FenceSync &sync : syncs)
+			sync.cleanup();
 	}
 
 private:
 
 	GLuint vbo;
-	size_t gpuReadOffset;
 	GLenum glMode;
-
-	BufferSync sync;
 
 }; // StreamBufferMapSync
 
-class StreamBufferPersistentMapSync final : public love::graphics::StreamBuffer, public Volatile
+class StreamBufferPersistentMapSync final : public StreamBufferSync, public Volatile
 {
 public:
 
 	StreamBufferPersistentMapSync(BufferType type, size_t size)
-		: love::graphics::StreamBuffer(type, size)
+		: StreamBufferSync(type, size)
 		, vbo(0)
-		, gpuReadOffset(0)
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
 	{
@@ -273,32 +350,37 @@ public:
 		unloadVolatile();
 	}
 
-	MapInfo map(size_t minsize) override
+	size_t getUsableSize() const override
 	{
-		if (gpuReadOffset + minsize > bufferSize * BUFFER_FRAMES)
-			gpuReadOffset = 0;
+		return bufferSize - frameGPUReadOffset;
+	}
 
+	MapInfo map(size_t /*minsize*/) override
+	{
 		MapInfo info;
-		info.size = bufferSize - (gpuReadOffset % bufferSize);
-		info.data = data + gpuReadOffset;
+		info.size = bufferSize - frameGPUReadOffset;
+		info.data = data + (frameIndex * bufferSize) + frameGPUReadOffset;
 
-		sync.wait(gpuReadOffset, info.size);
+		int firstSyncIndex = frameGPUReadOffset / syncSize;
+		int lastSyncIndex = (bufferSize - 1) / syncSize;
+
+		// We're mapping the full range of space left in the buffer, so we
+		// need to wait on all of it...
+		// FIXME: is it even worth it to have multiple sync objects per frame?
+		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
+			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
 
 		return info;
 	}
 
 	size_t unmap(size_t usedsize) override
 	{
+		size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
+
 		gl.bindBuffer(mode, vbo);
-		glFlushMappedBufferRange(glMode, gpuReadOffset, usedsize);
+		glFlushMappedBufferRange(glMode, offset, usedsize);
 
-		return gpuReadOffset;
-	}
-
-	void markUsed(size_t usedsize) override
-	{
-		sync.lock(gpuReadOffset, usedsize);
-		gpuReadOffset += usedsize;
+		return offset;
 	}
 
 	ptrdiff_t getHandle() const override { return vbo; }
@@ -317,32 +399,31 @@ public:
 		glBufferStorage(glMode, bufferSize * BUFFER_FRAMES, nullptr, storageflags);
 		data = (uint8 *) glMapBufferRange(glMode, 0, bufferSize * BUFFER_FRAMES, mapflags);
 
-		gpuReadOffset = 0;
+		frameGPUReadOffset = 0;
+		frameIndex = 0;
 
 		return true;
 	}
 
 	void unloadVolatile() override
 	{
-		if (vbo == 0)
-			return;
+		if (vbo != 0)
+		{
+			gl.bindBuffer(mode, vbo);
+			glUnmapBuffer(glMode);
+			gl.deleteBuffer(vbo);
+			vbo = 0;
+		}
 
-		gl.bindBuffer(mode, vbo);
-		glUnmapBuffer(glMode);
-		gl.deleteBuffer(vbo);
-		vbo = 0;
-
-		sync.cleanup();
+		for (FenceSync &sync : syncs)
+			sync.cleanup();
 	}
 
 private:
 
 	GLuint vbo;
-	size_t gpuReadOffset;
 	GLenum glMode;
 	uint8 *data;
-
-	BufferSync sync;
 
 }; // StreamBufferPersistentMapSync
 
@@ -350,13 +431,9 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 {
 	if (gl.isCoreProfile())
 	{
-		// FIXME: This is disabled until more efficient manual syncing can be
-		// implemented.
-#if 0
 		if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
 			return new StreamBufferPersistentMapSync(mode, size);
 		else
-#endif
 			return new StreamBufferSubDataOrphan(mode, size);
 	}
 	else

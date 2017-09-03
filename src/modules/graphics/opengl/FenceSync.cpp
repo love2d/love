@@ -19,7 +19,7 @@
  **/
 
 
-#include "BufferSync.h"
+#include "FenceSync.h"
 
 namespace love
 {
@@ -27,6 +27,59 @@ namespace graphics
 {
 namespace opengl
 {
+
+FenceSync::~FenceSync()
+{
+	cleanup();
+}
+
+bool FenceSync::fence()
+{
+	bool wasActive = sync != 0;
+
+	if (wasActive)
+		cleanup();
+
+	sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+	return !wasActive;
+}
+
+bool FenceSync::cpuWait()
+{
+	if (sync == 0)
+		return false;
+
+	GLbitfield flags = 0;
+	GLuint64 duration = 0;
+
+	while (true)
+	{
+		GLenum status = glClientWaitSync(sync, flags, duration);
+
+		if (status == GL_ALREADY_SIGNALED || status == GL_CONDITION_SATISFIED)
+			break;
+
+		if (status == GL_WAIT_FAILED)
+			break;
+
+		flags = GL_SYNC_FLUSH_COMMANDS_BIT;
+		duration = 1000000000; // 1 second in nanoseconds.
+	}
+
+	cleanup();
+
+	return true;
+}
+
+void FenceSync::cleanup()
+{
+	if (sync != 0)
+	{
+		glDeleteSync(sync);
+		sync = 0;
+	}
+}
 
 BufferSync::~BufferSync()
 {

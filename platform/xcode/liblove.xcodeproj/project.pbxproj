@@ -844,9 +844,9 @@
 		FA27B3C11B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */; };
 		FA27B3C21B4985BF008A9DCE /* wrap_VideoStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */; };
 		FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3C81B498623008A9DCE /* Theora.framework */; };
-		FA28EBD51E352DB5003446F4 /* BufferSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA28EBD31E352DB5003446F4 /* BufferSync.cpp */; };
-		FA28EBD61E352DB5003446F4 /* BufferSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA28EBD31E352DB5003446F4 /* BufferSync.cpp */; };
-		FA28EBD71E352DB5003446F4 /* BufferSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FA28EBD41E352DB5003446F4 /* BufferSync.h */; };
+		FA28EBD51E352DB5003446F4 /* FenceSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA28EBD31E352DB5003446F4 /* FenceSync.cpp */; };
+		FA28EBD61E352DB5003446F4 /* FenceSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA28EBD31E352DB5003446F4 /* FenceSync.cpp */; };
+		FA28EBD71E352DB5003446F4 /* FenceSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FA28EBD41E352DB5003446F4 /* FenceSync.h */; };
 		FA29C0051E12355B00268CD8 /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA29C0041E12355B00268CD8 /* StreamBuffer.cpp */; };
 		FA29C0061E12355B00268CD8 /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA29C0041E12355B00268CD8 /* StreamBuffer.cpp */; };
 		FA2AF6741DAD64970032B62C /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA2AF6731DAD64970032B62C /* vertex.cpp */; };
@@ -1738,8 +1738,8 @@
 		FA27B3C81B498623008A9DCE /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = /Library/Frameworks/Theora.framework; sourceTree = "<absolute>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
-		FA28EBD31E352DB5003446F4 /* BufferSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BufferSync.cpp; sourceTree = "<group>"; };
-		FA28EBD41E352DB5003446F4 /* BufferSync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BufferSync.h; sourceTree = "<group>"; };
+		FA28EBD31E352DB5003446F4 /* FenceSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FenceSync.cpp; sourceTree = "<group>"; };
+		FA28EBD41E352DB5003446F4 /* FenceSync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FenceSync.h; sourceTree = "<group>"; };
 		FA29C0041E12355B00268CD8 /* StreamBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamBuffer.cpp; sourceTree = "<group>"; };
 		FA2AF6711DAC76FF0032B62C /* vertex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vertex.h; sourceTree = "<group>"; };
 		FA2AF6721DAD62710032B62C /* StreamBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
@@ -2733,10 +2733,10 @@
 			children = (
 				FA0B7BA41A95902C000E1D17 /* Buffer.cpp */,
 				FA0B7BA51A95902C000E1D17 /* Buffer.h */,
-				FA28EBD31E352DB5003446F4 /* BufferSync.cpp */,
-				FA28EBD41E352DB5003446F4 /* BufferSync.h */,
 				FA0B7B8D1A95902C000E1D17 /* Canvas.cpp */,
 				FA0B7B8E1A95902C000E1D17 /* Canvas.h */,
+				FA28EBD31E352DB5003446F4 /* FenceSync.cpp */,
+				FA28EBD41E352DB5003446F4 /* FenceSync.h */,
 				FA0B7B911A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B921A95902C000E1D17 /* Graphics.h */,
 				FA0B7B931A95902C000E1D17 /* Image.cpp */,
@@ -3837,7 +3837,7 @@
 				FA0B7DDE1A95902C000E1D17 /* wrap_BezierCurve.h in Headers */,
 				FA0B7DED1A95902C000E1D17 /* Cursor.h in Headers */,
 				FA0B7E501A95902C000E1D17 /* wrap_Fixture.h in Headers */,
-				FA28EBD71E352DB5003446F4 /* BufferSync.h in Headers */,
+				FA28EBD71E352DB5003446F4 /* FenceSync.h in Headers */,
 				FADF542C1E3DAADA00012CC0 /* wrap_Mesh.h in Headers */,
 				FAA3A9B01B7D465A00CED060 /* android.h in Headers */,
 				217DFBDE1D9F6D490055D849 /* compat.h in Headers */,
@@ -4253,7 +4253,7 @@
 				FA57FB991AE1993600F2AD6D /* noise1234.cpp in Sources */,
 				FA0B7E221A95902C000E1D17 /* PolygonShape.cpp in Sources */,
 				FA0B7A651A958EA3000E1D17 /* b2Fixture.cpp in Sources */,
-				FA28EBD61E352DB5003446F4 /* BufferSync.cpp in Sources */,
+				FA28EBD61E352DB5003446F4 /* FenceSync.cpp in Sources */,
 				FA0B7D521A95902C000E1D17 /* Text.cpp in Sources */,
 				FA0B7DA31A95902C000E1D17 /* PKMHandler.cpp in Sources */,
 				FA0B7AB21A958EA3000E1D17 /* b2Rope.cpp in Sources */,
@@ -4613,7 +4613,7 @@
 				FA0B7EA61A95902C000E1D17 /* wrap_Decoder.cpp in Sources */,
 				217DFBF21D9F6D490055D849 /* mime.c in Sources */,
 				217DFBDF1D9F6D490055D849 /* except.c in Sources */,
-				FA28EBD51E352DB5003446F4 /* BufferSync.cpp in Sources */,
+				FA28EBD51E352DB5003446F4 /* FenceSync.cpp in Sources */,
 				FA0B7E1B1A95902C000E1D17 /* MouseJoint.cpp in Sources */,
 				FA0B7CF41A95902C000E1D17 /* File.cpp in Sources */,
 				FA0B7E331A95902C000E1D17 /* WeldJoint.cpp in Sources */,

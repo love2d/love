@@ -54,9 +54,12 @@ public:
 	size_t getSize() const { return bufferSize; }
 	BufferType getMode() const { return mode; }
 
+	virtual size_t getUsableSize() const = 0;
 	virtual MapInfo map(size_t minsize) = 0;
 	virtual size_t unmap(size_t usedsize) = 0;
 	virtual void markUsed(size_t usedsize) = 0;
+
+	virtual void nextFrame() {}
 
 	virtual ptrdiff_t getHandle() const = 0;
 

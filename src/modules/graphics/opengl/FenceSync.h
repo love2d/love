@@ -34,6 +34,22 @@ namespace graphics
 namespace opengl
 {
 
+class FenceSync
+{
+public:
+
+	~FenceSync();
+
+	bool fence();
+	bool cpuWait();
+	void cleanup();
+
+private:
+
+	GLsync sync;
+
+}; // FenceSync
+
 class BufferSync
 {
 public:

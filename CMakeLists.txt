@@ -542,10 +542,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Buffer.cpp
 	src/modules/graphics/opengl/Buffer.h
-	src/modules/graphics/opengl/BufferSync.cpp
-	src/modules/graphics/opengl/BufferSync.h
 	src/modules/graphics/opengl/Canvas.cpp
 	src/modules/graphics/opengl/Canvas.h
+	src/modules/graphics/opengl/FenceSync.cpp
+	src/modules/graphics/opengl/FenceSync.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp

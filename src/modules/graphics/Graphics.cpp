@@ -798,7 +798,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 		if (state.vbMap[i].data != nullptr && datasize > state.vbMap[i].size)
 			shouldflush = true;
 
-		if (datasize > state.vb[i]->getSize())
+		if (datasize > state.vb[i]->getUsableSize())
 		{
 			buffersizes[i] = std::max(datasize, state.vb[i]->getSize() * 2);
 			shouldresize = true;
@@ -814,7 +814,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 		if (state.indexBufferMap.data != nullptr && datasize > state.indexBufferMap.size)
 			shouldflush = true;
 
-		if (datasize > state.indexBuffer->getSize())
+		if (datasize > state.indexBuffer->getUsableSize())
 		{
 			buffersizes[2] = std::max(datasize, state.indexBuffer->getSize() * 2);
 			shouldresize = true;

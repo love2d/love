@@ -1004,6 +1004,10 @@ void Graphics::present(void *screenshotCallbackData)
 	glBindRenderbuffer(GL_RENDERBUFFER, info.info.uikit.colorbuffer);
 #endif
 
+	for (StreamBuffer *buffer : streamBufferState.vb)
+		buffer->nextFrame();
+	streamBufferState.indexBuffer->nextFrame();
+
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 	if (window != nullptr)
 		window->swapBuffers();
