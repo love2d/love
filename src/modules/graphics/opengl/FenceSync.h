@@ -38,6 +38,7 @@ class FenceSync
 {
 public:
 
+	FenceSync() {}
 	~FenceSync();
 
 	bool fence();
@@ -49,47 +50,6 @@ private:
 	GLsync sync;
 
 }; // FenceSync
-
-class BufferSync
-{
-public:
-
-	~BufferSync();
-
-	void lock(size_t start, size_t length);
-	void wait(size_t start, size_t length);
-	void cleanup();
-
-private:
-
-	struct Range
-	{
-		size_t offset;
-		size_t length;
-
-		bool overlaps(const Range &other) const
-		{
-			return offset < (other.offset + other.length)
-				&& other.offset < (offset + length);
-		}
-	};
-
-	struct Lock
-	{
-		Range range;
-		GLsync sync;
-
-		Lock(const Range &range, GLsync sync)
-			: range(range)
-			, sync(sync)
-		{}
-	};
-
-	void syncWait(GLsync sync);
-
-	std::vector<Lock> locks;
-
-}; // BufferSync
 
 } // opengl
 } // graphics

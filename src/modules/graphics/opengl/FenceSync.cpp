@@ -81,67 +81,6 @@ void FenceSync::cleanup()
 	}
 }
 
-BufferSync::~BufferSync()
-{
-	cleanup();
-}
-
-void BufferSync::lock(size_t start, size_t length)
-{
-	Range range = {start, length};
-	GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-	locks.emplace_back(range, sync);
-}
-
-void BufferSync::wait(size_t start, size_t length)
-{
-	Range range = {start, length};
-	int lockcount = (int) locks.size();
-
-	for (int i = 0; i < lockcount; i++)
-	{
-		if (range.overlaps(locks[i].range))
-		{
-			syncWait(locks[i].sync);
-			glDeleteSync(locks[i].sync);
-
-			locks[i] = locks[lockcount - 1];
-			locks.pop_back();
-
-			--lockcount;
-			--i;
-		}
-	}
-}
-
-void BufferSync::cleanup()
-{
-	for (const auto &lock : locks)
-		glDeleteSync(lock.sync);
-
-	locks.clear();
-}
-
-void BufferSync::syncWait(GLsync sync)
-{
-	GLbitfield flags = 0;
-	GLuint64 duration = 0;
-
-	while (true)
-	{
-		GLenum status = glClientWaitSync(sync, flags, duration);
-
-		if (status == GL_ALREADY_SIGNALED || status == GL_CONDITION_SATISFIED)
-			return;
-
-		if (status == GL_WAIT_FAILED)
-			return;
-
-		flags = GL_SYNC_FLUSH_COMMANDS_BIT;
-		duration = 1000000000; // 1 second in nanoseconds.
-	}
-}
-
 } // opengl
 } // graphics
 } // love
