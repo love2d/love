@@ -709,8 +709,8 @@ void Filesystem::setSymlinksEnabled(bool enable)
 		PHYSFS_getLinkedVersion(&version);
 
 		// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in
-		// PhysFS 2.1-alpha.
-		if (version.major == 2 && version.minor == 1)
+		// PhysFS 2.1.0-alpha.
+		if (version.major == 2 && version.minor == 1 && version.patch == 0)
 			return;
 	}
 
