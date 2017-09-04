@@ -101,8 +101,15 @@ void Buffer::unmapStream()
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
 	gl.bindBuffer(type, vbo);
-	glBufferData(target, (GLsizeiptr) getSize(), nullptr,    glusage);
-	glBufferData(target, (GLsizeiptr) getSize(), memory_map, glusage);
+	glBufferData(target, (GLsizeiptr) getSize(), nullptr, glusage);
+
+#if LOVE_WINDOWS
+	// TODO: Verify that this codepath is a useful optimization.
+	if (gl.getVendor() == OpenGL::VENDOR_INTEL)
+		glBufferData(target, (GLsizeiptr) getSize(), memory_map, glusage);
+	else
+#endif
+		glBufferSubData(target, 0, (GLsizeiptr) getSize(), memory_map);
 }
 
 void Buffer::unmap()
