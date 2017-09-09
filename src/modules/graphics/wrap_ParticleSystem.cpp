@@ -151,6 +151,10 @@ int w_ParticleSystem_setParticleLifetime(lua_State *L)
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	float arg2 = (float)luaL_optnumber(L, 3, arg1);
+
+	if (arg1 < 0.0f || arg2 < 0.0f)
+		return luaL_error(L, "Invalid particle lifetime (must be >= 0)");
+
 	t->setParticleLifetime(arg1, arg2);
 	return 0;
 }
