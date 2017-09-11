@@ -46,13 +46,19 @@ int w_Channel_push(lua_State *L)
 int w_Channel_supply(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
+	bool result = false;
 	luax_catchexcept(L, [&]() {
 		Variant var = Variant::fromLua(L, 2);
 		if (var.getType() == Variant::UNKNOWN)
 			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
-		c->supply(var);
+		if (lua_isnumber(L, 3))
+			result = c->supply(var, lua_tonumber(L, 3));
+		else
+			result = c->supply(var);
 	});
-	return 0;
+
+	luax_pushboolean(L, result);
+	return 1;
 }
 
 int w_Channel_pop(lua_State *L)
@@ -70,8 +76,17 @@ int w_Channel_demand(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
 	Variant var;
-	c->demand(&var);
-	var.toLua(L);
+	bool result = false;
+
+	if (lua_isnumber(L, 2))
+		result = c->demand(&var, lua_tonumber(L, 2));
+	else
+		result = c->demand(&var);
+
+	if (result)
+		var.toLua(L);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 

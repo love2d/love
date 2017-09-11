@@ -50,9 +50,11 @@ public:
 	static Channel *getChannel(const std::string &name);
 
 	uint64 push(const Variant &var);
-	void supply(const Variant &var); // blocking push
+	bool supply(const Variant &var); // blocking push
+	bool supply(const Variant &var, double timeout);
 	bool pop(Variant *var);
-	void demand(Variant *var); // blocking pop
+	bool demand(Variant *var); // blocking pop
+	bool demand(Variant *var, double timeout); // blocking pop
 	bool peek(Variant *var);
 	int getCount() const;
 	bool hasRead(uint64 id) const;

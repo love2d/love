@@ -22,6 +22,8 @@
 #include <map>
 #include <string>
 
+#include <timer/Timer.h>
+
 namespace love
 {
 namespace thread
@@ -88,13 +90,35 @@ uint64 Channel::push(const Variant &var)
 	return ++sent;
 }
 
-void Channel::supply(const Variant &var)
+bool Channel::supply(const Variant &var)
 {
 	Lock l(mutex);
 	uint64 id = push(var);
 
 	while (received < id)
 		cond->wait(mutex);
+
+	return true;
+}
+
+bool Channel::supply(const Variant &var, double timeout)
+{
+	Lock l(mutex);
+	uint64 id = push(var);
+
+	while (timeout >= 0)
+	{
+		if (received >= id)
+			return true;
+
+		double start = love::timer::Timer::getTime();
+		cond->wait(mutex, timeout*1000);
+		double stop = love::timer::Timer::getTime();
+
+		timeout -= (stop-start);
+	}
+
+	return false;
 }
 
 bool Channel::pop(Variant *var)
@@ -118,12 +142,33 @@ bool Channel::pop(Variant *var)
 	return true;
 }
 
-void Channel::demand(Variant *var)
+bool Channel::demand(Variant *var)
 {
 	Lock l(mutex);
 
 	while (!pop(var))
 		cond->wait(mutex);
+
+	return true;
+}
+
+bool Channel::demand(Variant *var, double timeout)
+{
+	Lock l(mutex);
+
+	while (timeout >= 0)
+	{
+		if (pop(var))
+			return true;
+
+		double start = love::timer::Timer::getTime();
+		cond->wait(mutex, timeout*1000);
+		double stop = love::timer::Timer::getTime();
+
+		timeout -= (stop-start);
+	}
+
+	return false;
 }
 
 bool Channel::peek(Variant *var)
