@@ -209,39 +209,6 @@ public:
 	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y);
 
 	/**
-	 * Sets the emission area spread parameters and distribution type. The interpretation of
-	 * the parameters depends on the distribution type:
-	 *
-	 * * None: Parameters are ignored. No area spread.
-	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
-	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
-	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
-	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
-	 * @param x First parameter. Interpretation depends on distribution type.
-	 * @param y Second parameter. Interpretation depends on distribution type.
-	 * @param distribution Distribution type
-	 * @param angle Angle for the distribution to be rotated by
-	 **/
-	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle);
-
-	/**
-	 * Sets the emission area spread parameters and distribution type. The interpretation of
-	 * the parameters depends on the distribution type:
-	 *
-	 * * None: Parameters are ignored. No area spread.
-	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
-	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
-	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
-	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
-	 * @param x First parameter. Interpretation depends on distribution type.
-	 * @param y Second parameter. Interpretation depends on distribution type.
-	 * @param distribution Distribution type
-	 * @param angle Angle for the distribution to be rotated by
-	 * @param isRelativeDirection whether to set direction of each particle to away from center
-	 **/
-	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle, bool isRelativeDirection);
-
-	/**
 	 * Returns area spread distribution type.
 	 **/
 	AreaSpreadDistribution getAreaSpreadDistribution() const;

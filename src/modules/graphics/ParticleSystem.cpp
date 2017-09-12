@@ -574,21 +574,6 @@ void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x,
 	areaSpreadDistribution = distribution;
 }
 
-void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle)
-{
-	areaSpread = love::Vector2(x, y);
-	areaSpreadDistribution = distribution;
-	areaSpreadAngle = angle;
-}
-
-void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y, float angle, bool isRelativeDirection)
-{
-	areaSpread = love::Vector2(x, y);
-	areaSpreadDistribution = distribution;
-	areaSpreadAngle = angle;
-	areaSpreadIsRelativeDirection = isRelativeDirection;
-}
-
 ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution() const
 {
 	return areaSpreadDistribution;
@@ -601,7 +586,7 @@ const love::Vector2 &ParticleSystem::getAreaSpreadParameters() const
 
 void ParticleSystem::setAreaSpreadAngle(float angle)
 {
-	this->areaSpreadAngle = angle;
+	areaSpreadAngle = angle;
 }
 
 float ParticleSystem::getAreaSpreadAngle() const
@@ -611,7 +596,7 @@ float ParticleSystem::getAreaSpreadAngle() const
 
 void ParticleSystem::setAreaSpreadIsRelativeDirection(bool isRelativeDirection)
 {
-	this->areaSpreadIsRelativeDirection = isRelativeDirection;
+	areaSpreadIsRelativeDirection = isRelativeDirection;
 }
 
 bool ParticleSystem::getAreaSpreadIsRelativeDirection() const

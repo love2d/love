@@ -201,8 +201,7 @@ int w_ParticleSystem_setAreaSpread(lua_State *L)
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
 
 	ParticleSystem::AreaSpreadDistribution distribution = ParticleSystem::DISTRIBUTION_NONE;
-	float x = 0.f, y = 0.f, angle = 0.f;
-	bool isRelativeDirection = false;
+	float x = 0.f, y = 0.f;
 
 	const char *str = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (str && !ParticleSystem::getConstant(str, distribution))
@@ -214,11 +213,9 @@ int w_ParticleSystem_setAreaSpread(lua_State *L)
 		y = (float) luaL_checknumber(L, 4);
 		if (x < 0.0f || y < 0.0f)
 			return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
-		angle = (float) luaL_optnumber(L, 5, 0.0);
-		isRelativeDirection = luax_optboolean(L, 6, false);
 	}
 
-	t->setAreaSpread(distribution, x, y, angle, isRelativeDirection);
+	t->setAreaSpread(distribution, x, y);
 	return 0;
 }
 
@@ -263,7 +260,7 @@ int w_ParticleSystem_setAreaSpreadIsRelativeDirection(lua_State *L)
 int w_ParticleSystem_getAreaSpreadIsRelativeDirection(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	lua_pushnumber(L, t->getAreaSpreadIsRelativeDirection());
+	luax_pushboolean(L, t->getAreaSpreadIsRelativeDirection());
 	return 1;
 }
 
