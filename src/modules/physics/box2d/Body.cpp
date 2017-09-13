@@ -427,7 +427,7 @@ World *Body::getWorld() const
 	return world;
 }
 
-int Body::getFixtureList(lua_State *L) const
+int Body::getFixtures(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Fixture *f = body->GetFixtureList();
@@ -447,7 +447,7 @@ int Body::getFixtureList(lua_State *L) const
 	return 1;
 }
 
-int Body::getJointList(lua_State *L) const
+int Body::getJoints(lua_State *L) const
 {
 	lua_newtable(L);
 	const b2JointEdge *je = body->GetJointList();
@@ -471,7 +471,7 @@ int Body::getJointList(lua_State *L) const
 	return 1;
 }
 
-int Body::getContactList(lua_State *L) const
+int Body::getContacts(lua_State *L) const
 {
 	lua_newtable(L);
 	const b2ContactEdge *ce = body->GetContactList();

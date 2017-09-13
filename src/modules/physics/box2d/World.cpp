@@ -461,7 +461,7 @@ int World::getContactCount() const
 	return world->GetContactCount();
 }
 
-int World::getBodyList(lua_State *L) const
+int World::getBodies(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Body *b = world->GetBodyList();
@@ -483,7 +483,7 @@ int World::getBodyList(lua_State *L) const
 	return 1;
 }
 
-int World::getJointList(lua_State *L) const
+int World::getJoints(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Joint *j = world->GetJointList();
@@ -501,7 +501,7 @@ int World::getJointList(lua_State *L) const
 	return 1;
 }
 
-int World::getContactList(lua_State *L) const
+int World::getContacts(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Contact *c = world->GetContactList();

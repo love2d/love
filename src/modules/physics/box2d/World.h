@@ -245,19 +245,19 @@ public:
 	 * Get an array of all the Bodies in the World.
 	 * @return An array of Bodies.
 	 **/
-	int getBodyList(lua_State *L) const;
+	int getBodies(lua_State *L) const;
 
 	/**
 	 * Get an array of all the Joints in the World.
 	 * @return An array of Joints.
 	 **/
-	int getJointList(lua_State *L) const;
+	int getJoints(lua_State *L) const;
 
 	/**
 	 * Get an array of all the Contacts in the World.
 	 * @return An array of Contacts.
 	 **/
-	int getContactList(lua_State *L) const;
+	int getContacts(lua_State *L) const;
 
 	/**
 	 * Gets the ground body.

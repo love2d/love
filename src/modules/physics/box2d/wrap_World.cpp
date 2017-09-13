@@ -151,30 +151,30 @@ int w_World_getContactCount(lua_State *L)
 	return 1;
 }
 
-int w_World_getBodyList(lua_State *L)
+int w_World_getBodies(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = t->getBodyList(L); });
+	luax_catchexcept(L, [&](){ ret = t->getBodies(L); });
 	return ret;
 }
 
-int w_World_getJointList(lua_State *L)
+int w_World_getJoints(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = t->getJointList(L); });
+	luax_catchexcept(L, [&](){ ret = t->getJoints(L); });
 	return ret;
 }
 
-int w_World_getContactList(lua_State *L)
+int w_World_getContacts(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = t->getContactList(L); });
+	luax_catchexcept(L, [&](){ ret = t->getContacts(L); });
 	return ret;
 }
 
@@ -208,6 +208,23 @@ int w_World_isDestroyed(lua_State *L)
 	return 1;
 }
 
+int w_World_getBodyList(lua_State *L)
+{
+	luax_markdeprecated(L, "World:getBodyList", API_METHOD, DEPRECATED_RENAMED, "World:getBodies");
+	return w_World_getBodies(L);
+}
+
+int w_World_getJointList(lua_State *L)
+{
+	luax_markdeprecated(L, "World:getJointList", API_METHOD, DEPRECATED_RENAMED, "World:getJoints");
+	return w_World_getJoints(L);
+}
+
+int w_World_getContactList(lua_State *L)
+{
+	luax_markdeprecated(L, "World:getContactList", API_METHOD, DEPRECATED_RENAMED, "World:getContacts");
+	return w_World_getContacts(L);
+}
 
 static const luaL_Reg w_World_functions[] =
 {
@@ -225,13 +242,19 @@ static const luaL_Reg w_World_functions[] =
 	{ "getBodyCount", w_World_getBodyCount },
 	{ "getJointCount", w_World_getJointCount },
 	{ "getContactCount", w_World_getContactCount },
-	{ "getBodyList", w_World_getBodyList },
-	{ "getJointList", w_World_getJointList },
-	{ "getContactList", w_World_getContactList },
+	{ "getBodies", w_World_getBodies },
+	{ "getJoints", w_World_getJoints },
+	{ "getContacts", w_World_getContacts },
 	{ "queryBoundingBox", w_World_queryBoundingBox },
 	{ "rayCast", w_World_rayCast },
 	{ "destroy", w_World_destroy },
 	{ "isDestroyed", w_World_isDestroyed },
+
+	// Deprecated
+	{ "getBodyList", w_World_getBodyList },
+	{ "getJointList", w_World_getJointList },
+	{ "getContactList", w_World_getContactList },
+
 	{ 0, 0 }
 };
 

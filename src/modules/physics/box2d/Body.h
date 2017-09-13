@@ -391,19 +391,19 @@ public:
 	 * Get an array of all the Fixtures attached to this Body.
 	 * @return An array of Fixtures.
 	 **/
-	int getFixtureList(lua_State *L) const;
+	int getFixtures(lua_State *L) const;
 
 	/**
 	 * Get an array of all Joints attached to this Body.
 	 **/
-	int getJointList(lua_State *L) const;
+	int getJoints(lua_State *L) const;
 
 	/**
 	 * Get an array of all active Contacts attached to this Body.
 	 * This list changes during World:update and you may miss some collisions
 	 * if you don't use the collision callbacks.
 	 **/
-	int getContactList(lua_State *L) const;
+	int getContacts(lua_State *L) const;
 
 	/**
 	 * Destroy this body.
