@@ -1144,6 +1144,8 @@ int w_newCanvas(lua_State *L)
 
 	if (!lua_isnoneornil(L, startidx))
 	{
+		luaL_checktype(L, startidx, LUA_TTABLE);
+
 		settings.pixeldensity = (float) luax_numberflag(L, startidx, "pixeldensity", settings.pixeldensity);
 		settings.msaa = luax_intflag(L, startidx, "msaa", settings.msaa);
 
