@@ -356,7 +356,7 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 
 		for (auto stick : activeSticks)
 		{
-			if (stick->isGamepad() || guid.compare(stick->getGUID()) != 0)
+			if (guid.compare(stick->getGUID()) != 0)
 				continue;
 
 			// Big hack time: open the index as a game controller and compare
@@ -365,12 +365,15 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 			if (controller == nullptr)
 				continue;
 
+			// GameController objects are reference-counted in SDL, so we don't want to
+			// have a joystick open when trying to re-initialize it
 			SDL_Joystick *sdlstick = SDL_GameControllerGetJoystick(controller);
-			if (sdlstick == (SDL_Joystick *) stick->getHandle())
-				stick->openGamepad(d_index);
-
-			// GameController objects are reference-counted in SDL.
+			bool open_gamepad = (sdlstick == (SDL_Joystick *) stick->getHandle());
 			SDL_GameControllerClose(controller);
+
+			// open as gamepad if necessary
+			if (open_gamepad)
+				stick->openGamepad(d_index);
 		}
 	}
 }
