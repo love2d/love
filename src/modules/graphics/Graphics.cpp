@@ -1303,25 +1303,30 @@ void Graphics::push(StackType type)
 	stackTypeStack.push_back(type);
 }
 
-void Graphics::pop()
+void Graphics::pop(PopMode mode)
 {
-	if (stackTypeStack.size() < 1)
+	size_t amount = mode == POP_ALL ? stackTypeStack.size() : 1;
+
+	if (stackTypeStack.size() < amount)
 		throw Exception("Minimum stack depth reached (more pops than pushes?)");
 
-	popTransform();
-	pixelScaleStack.pop_back();
-
-	if (stackTypeStack.back() == STACK_ALL)
+	for (size_t i = 0; i < amount; ++i)
 	{
-		DisplayState &newstate = states[states.size() - 2];
+		popTransform();
+		pixelScaleStack.pop_back();
 
-		restoreStateChecked(newstate);
+		if (stackTypeStack.back() == STACK_ALL)
+		{
+			DisplayState &newstate = states[states.size() - 2];
 
-		// The last two states in the stack should be equal now.
-		states.pop_back();
+			restoreStateChecked(newstate);
+
+			// The last two states in the stack should be equal now.
+			states.pop_back();
+		}
+
+		stackTypeStack.pop_back();
 	}
-	
-	stackTypeStack.pop_back();
 }
 
 /**
@@ -1515,6 +1520,16 @@ bool Graphics::getConstant(StackType in, const char *&out)
 	return stackTypes.find(in, out);
 }
 
+bool Graphics::getConstant(const char *in, PopMode &out)
+{
+	return popModes.find(in, out);
+}
+
+bool Graphics::getConstant(PopMode in, const char *&out)
+{
+	return popModes.find(in, out);
+}
+
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
 {
 	{ "line", DRAW_LINE },
@@ -1607,6 +1622,14 @@ StringMap<Graphics::StackType, Graphics::STACK_MAX_ENUM>::Entry Graphics::stackT
 };
 
 StringMap<Graphics::StackType, Graphics::STACK_MAX_ENUM> Graphics::stackTypes(Graphics::stackTypeEntries, sizeof(Graphics::stackTypeEntries));
+
+StringMap<Graphics::PopMode, Graphics::POP_MAX_ENUM>::Entry Graphics::popModeEntries[] =
+{
+	{ "one", POP_ONE },
+	{ "all", POP_ALL },
+};
+
+StringMap<Graphics::PopMode, Graphics::POP_MAX_ENUM> Graphics::popModes(Graphics::popModeEntries, sizeof(Graphics::popModeEntries));
 
 } // graphics
 } // love

@@ -194,6 +194,13 @@ public:
 		STACK_MAX_ENUM
 	};
 
+	enum PopMode
+	{
+		POP_ONE,
+		POP_ALL,
+		POP_MAX_ENUM
+	};
+
 	enum TemporaryRenderTargetFlags
 	{
 		TEMPORARY_RT_DEPTH   = (1 << 0),
@@ -735,7 +742,7 @@ public:
 	Stats getStats() const;
 
 	void push(StackType type = STACK_TRANSFORM);
-	void pop();
+	void pop(PopMode mode = POP_ONE);
 
 	const Matrix4 &getTransform() const;
 	const Matrix4 &getProjection() const;
@@ -797,6 +804,9 @@ public:
 
 	static bool getConstant(const char *in, StackType &out);
 	static bool getConstant(StackType in, const char *&out);
+
+	static bool getConstant(const char *in, PopMode &out);
+	static bool getConstant(PopMode in, const char *&out);
 
 	// Default shader code (a shader is always required internally.)
 	static Shader::ShaderSource defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
@@ -945,6 +955,9 @@ private:
 
 	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
 	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
+
+	static StringMap<PopMode, POP_MAX_ENUM>::Entry popModeEntries[];
+	static StringMap<PopMode, POP_MAX_ENUM> popModes;
 
 }; // Graphics
 

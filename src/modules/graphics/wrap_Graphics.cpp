@@ -2648,7 +2648,12 @@ int w_push(lua_State *L)
 
 int w_pop(lua_State *L)
 {
-	luax_catchexcept(L, [&](){ instance()->pop(); });
+	Graphics::PopMode mode = Graphics::POP_ONE;
+	const char *modestring = lua_isnoneornil(L, 1) ? nullptr : luaL_checkstring(L, 1);
+	if (modestring && !Graphics::getConstant(modestring, mode))
+		return luaL_error(L, "Invalid pop mode: %s", modestring);
+
+	luax_catchexcept(L, [&](){ instance()->pop(mode); });
 	return 0;
 }
 
