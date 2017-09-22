@@ -1992,7 +1992,11 @@ int w_setDefaultShaderCode(lua_State *L)
 int w_getSupported(lua_State *L)
 {
 	const Graphics::Capabilities &caps = instance()->getCapabilities();
-	lua_createtable(L, 0, (int) Graphics::FEATURE_MAX_ENUM);
+
+	if (lua_istable(L, 1))
+		lua_pushvalue(L, 1);
+	else
+		lua_createtable(L, 0, (int) Graphics::FEATURE_MAX_ENUM);
 
 	for (int i = 0; i < (int) Graphics::FEATURE_MAX_ENUM; i++)
 	{
@@ -2009,9 +2013,12 @@ int w_getSupported(lua_State *L)
 	return 1;
 }
 
-static int w__getFormats(lua_State *L, bool (*isFormatSupported)(PixelFormat), bool (*ignore)(PixelFormat))
+static int w__getFormats(lua_State *L, int idx, bool (*isFormatSupported)(PixelFormat), bool (*ignore)(PixelFormat))
 {
-	lua_createtable(L, 0, (int) PIXELFORMAT_MAX_ENUM);
+	if (lua_istable(L, idx))
+		lua_pushvalue(L, idx);
+	else
+		lua_createtable(L, 0, (int) PIXELFORMAT_MAX_ENUM);
 
 	for (int i = 0; i < (int) PIXELFORMAT_MAX_ENUM; i++)
 	{
@@ -2032,8 +2039,10 @@ int w_getCanvasFormats(lua_State *L)
 {
 	bool (*supported)(PixelFormat);
 
-	if (!lua_isnoneornil(L, 1))
+	int idx = 1;
+	if (lua_type(L, 1) == LUA_TBOOLEAN)
 	{
+		idx = 2;
 		if (luax_checkboolean(L, 1))
 		{
 			supported = [](PixelFormat format) -> bool
@@ -2057,7 +2066,7 @@ int w_getCanvasFormats(lua_State *L)
 		};
 	}
 
-	return w__getFormats(L, supported, isPixelFormatCompressed);
+	return w__getFormats(L, idx, supported, isPixelFormatCompressed);
 }
 
 int w_getImageFormats(lua_State *L)
@@ -2072,13 +2081,17 @@ int w_getImageFormats(lua_State *L)
 		return !(image::ImageData::validPixelFormat(format) || isPixelFormatCompressed(format));
 	};
 
-	return w__getFormats(L, supported, ignore);
+	return w__getFormats(L, 1, supported, ignore);
 }
 
 int w_getTextureTypes(lua_State *L)
 {
 	const Graphics::Capabilities &caps = instance()->getCapabilities();
-	lua_createtable(L, 0, (int) TEXTURE_MAX_ENUM);
+
+	if (lua_istable(L, 1))
+		lua_pushvalue(L, 1);
+	else
+		lua_createtable(L, 0, (int) TEXTURE_MAX_ENUM);
 
 	for (int i = 0; i < (int) TEXTURE_MAX_ENUM; i++)
 	{
@@ -2110,7 +2123,11 @@ int w_getRendererInfo(lua_State *L)
 int w_getSystemLimits(lua_State *L)
 {
 	const Graphics::Capabilities &caps = instance()->getCapabilities();
-	lua_createtable(L, 0, (int) Graphics::LIMIT_MAX_ENUM);
+
+	if (lua_istable(L, 1))
+		lua_pushvalue(L, 1);
+	else
+		lua_createtable(L, 0, (int) Graphics::LIMIT_MAX_ENUM);
 
 	for (int i = 0; i < (int) Graphics::LIMIT_MAX_ENUM; i++)
 	{
@@ -2131,7 +2148,10 @@ int w_getStats(lua_State *L)
 {
 	Graphics::Stats stats = instance()->getStats();
 
-	lua_createtable(L, 0, 7);
+	if (lua_istable(L, 1))
+		lua_pushvalue(L, 1);
+	else
+		lua_createtable(L, 0, 7);
 
 	lua_pushinteger(L, stats.drawCalls);
 	lua_setfield(L, -2, "drawcalls");

@@ -400,12 +400,15 @@ int setFilterReadFilter(lua_State *L, int idx, std::map<Filter::Parameter, float
 	return 1;
 }
 
-void getFilterWriteFilter(lua_State *L, std::map<Filter::Parameter, float> &params)
+void getFilterWriteFilter(lua_State *L, int idx, std::map<Filter::Parameter, float> &params)
 {
 	const char *keystr, *valstr;
 	Filter::Type type = static_cast<Filter::Type>((int)params[Filter::FILTER_TYPE]);
 
-	lua_createtable(L, 0, params.size());
+	if (lua_istable(L, idx))
+		lua_pushvalue(L, idx);
+	else
+		lua_createtable(L, 0, params.size());
 
 	for (auto p : params)
 	{
@@ -452,7 +455,7 @@ int w_Source_getFilter(lua_State *L)
 	if (!t->getFilter(params))
 		return 0;
 
-	getFilterWriteFilter(L, params);
+	getFilterWriteFilter(L, 2, params);
 	return 1;
 }
 
@@ -489,7 +492,7 @@ int w_Source_getEffect(lua_State *L)
 	if (params.size() == 0)
 		return 0;
 
-	getFilterWriteFilter(L, params);
+	getFilterWriteFilter(L, 3, params);
 	return 1;
 }
 

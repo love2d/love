@@ -171,7 +171,10 @@ int w_getMode(lua_State *L)
 	lua_pushnumber(L, w);
 	lua_pushnumber(L, h);
 
-	lua_newtable(L);
+	if (lua_istable(L, 1))
+		lua_pushvalue(L, 1);
+	else
+		lua_newtable(L);
 
 	const char *fstypestr = "desktop";
 	Window::getConstant(settings.fstype, fstypestr);

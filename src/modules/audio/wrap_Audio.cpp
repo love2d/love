@@ -443,7 +443,10 @@ int w_getEffect(lua_State *L)
 	const char *keystr, *valstr;
 	Effect::Type type = static_cast<Effect::Type>((int)params[Effect::EFFECT_TYPE]);
 
-	lua_createtable(L, 0, params.size());
+	if (lua_istable(L, 2))
+		lua_pushvalue(L, 2);
+	else
+		lua_createtable(L, 0, params.size());
 
 	for (auto p : params)
 	{

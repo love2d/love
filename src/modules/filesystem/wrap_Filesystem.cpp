@@ -371,7 +371,10 @@ int w_getInfo(lua_State *L)
 		if (!Filesystem::getConstant(info.type, typestr))
 			return luaL_error(L, "Unknown file type.");
 
-		lua_createtable(L, 0, 3);
+		if (lua_istable(L, 2))
+			lua_pushvalue(L, 2);
+		else
+			lua_createtable(L, 0, 3);
 
 		lua_pushstring(L, typestr);
 		lua_setfield(L, -2, "type");
