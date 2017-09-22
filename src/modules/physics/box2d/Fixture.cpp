@@ -76,9 +76,39 @@ Fixture::~Fixture()
 	delete udata;
 }
 
-Shape::Type Fixture::getType() const
+void Fixture::checkCreateShape()
 {
-	return Shape(fixture->GetShape(), false).getType();
+	if (shape.get() != nullptr || fixture == nullptr || fixture->GetShape() == nullptr)
+		return;
+
+	b2Shape *bshape = fixture->GetShape();
+
+	switch (bshape->GetType())
+	{
+	case b2Shape::e_circle:
+		shape.set(new CircleShape((b2CircleShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	case b2Shape::e_edge:
+		shape.set(new EdgeShape((b2EdgeShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	case b2Shape::e_polygon:
+		shape.set(new PolygonShape((b2PolygonShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	case b2Shape::e_chain:
+		shape.set(new ChainShape((b2ChainShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	default:
+		break;
+	}
+}
+
+Shape::Type Fixture::getType()
+{
+	checkCreateShape();
+	if (shape.get() == nullptr)
+		return Shape::SHAPE_INVALID;
+	else
+		return shape->getType();
 }
 
 void Fixture::setFriction(float friction)
@@ -126,12 +156,10 @@ Body *Fixture::getBody() const
 	return body;
 }
 
-Shape *Fixture::getShape() const
+Shape *Fixture::getShape()
 {
-	if (!fixture->GetShape())
-		return nullptr;
-
-	return new Shape(fixture->GetShape(), false);
+	checkCreateShape();
+	return shape;
 }
 
 bool Fixture::isValid() const
@@ -328,6 +356,8 @@ void Fixture::destroy(bool implicit)
 		body->world->destructFixtures.push_back(this);
 		return;
 	}
+
+	shape.set(nullptr);
 
 	if (!implicit && fixture != nullptr)
 		body->body->DestroyFixture(fixture);

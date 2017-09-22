@@ -79,12 +79,12 @@ public:
 	 * Gets the type of the Fixture's Shape. Useful for
 	 * debug drawing.
 	 **/
-	Shape::Type getType() const;
+	Shape::Type getType();
 
 	/**
 	 * Gets the Shape attached to this Fixture.
 	 **/
-	Shape *getShape() const;
+	Shape *getShape();
 
 	/**
 	 * Returns true if the fixture is active in a Box2D world.
@@ -212,9 +212,14 @@ public:
 
 protected:
 
+	void checkCreateShape();
+
 	Body *body;
 	fixtureudata *udata;
 	b2Fixture *fixture;
+
+	StrongRef<Shape> shape;
+
 };
 
 } // box2d

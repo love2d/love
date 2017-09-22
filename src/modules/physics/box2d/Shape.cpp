@@ -38,7 +38,7 @@ namespace box2d
 {
 
 Shape::Shape()
-	: shape(NULL)
+	: shape(nullptr)
 	, own(false)
 {
 }
@@ -58,7 +58,7 @@ Shape::~Shape()
 		Memoizer::remove(shape);
 		delete shape;
 	}
-	shape = 0;
+	shape = nullptr;
 }
 
 Shape::Type Shape::getType() const

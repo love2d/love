@@ -118,22 +118,22 @@ int w_Fixture_getBody(lua_State *L)
 int w_Fixture_getShape(lua_State *L)
 {
 	Fixture *t = luax_checkfixture(L, 1);
-	StrongRef<Shape> shape(t->getShape(), Acquire::NORETAIN);
-	if (shape.get() == nullptr)
+	Shape * shape = t->getShape();
+	if (shape == nullptr)
 		return 0;
 	switch (shape->getType())
 	{
 	case Shape::SHAPE_EDGE:
-		luax_pushtype(L, shape);
+		luax_pushtype(L, dynamic_cast<EdgeShape *>(shape));
 		break;
 	case Shape::SHAPE_CHAIN:
-		luax_pushtype(L, shape);
+		luax_pushtype(L, dynamic_cast<ChainShape *>(shape));
 		break;
 	case Shape::SHAPE_CIRCLE:
-		luax_pushtype(L, shape);
+		luax_pushtype(L, dynamic_cast<CircleShape *>(shape));
 		break;
 	case Shape::SHAPE_POLYGON:
-		luax_pushtype(L, shape);
+		luax_pushtype(L, dynamic_cast<PolygonShape *>(shape));
 		break;
 	default:
 		luax_pushtype(L, shape);
