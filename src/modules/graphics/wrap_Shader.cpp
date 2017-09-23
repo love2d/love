@@ -27,6 +27,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace love
 {
@@ -157,9 +158,14 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 {
 	bool columnmajor = false;
 
-	if (lua_isboolean(L, startidx))
+	if (lua_type(L, startidx) == LUA_TSTRING)
 	{
-		columnmajor = luax_toboolean(L, startidx);
+		const char *layoutstr = lua_tostring(L, startidx);
+		math::Transform::MatrixLayout layout;
+		if (!math::Transform::getConstant(layoutstr, layout))
+			return luaL_error(L, "Invalid matrix layout: %s", layoutstr);
+
+		columnmajor = (layout == math::Transform::MATRIX_COLUMN_MAJOR);
 		startidx++;
 	}
 
@@ -278,17 +284,8 @@ int w_Shader_sendTextures(lua_State *L, int startidx, Shader *shader, const Shad
 	return 0;
 }
 
-int w_Shader_send(lua_State *L)
+static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, const char *name)
 {
-	Shader *shader = luax_checkshader(L, 1);
-	const char *name = luaL_checkstring(L, 2);
-
-	const Shader::UniformInfo *info = shader->getUniformInfo(name);
-	if (info == nullptr)
-		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
-
-	int startidx = 3;
-
 	switch (info->baseType)
 	{
 	case Shader::UNIFORM_FLOAT:
@@ -308,6 +305,119 @@ int w_Shader_send(lua_State *L)
 	}
 }
 
+static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, bool colors)
+{
+	if (info->baseType == Shader::UNIFORM_SAMPLER)
+		return luaL_error(L, "Uniform sampler values (textures) cannot be sent to Shaders via Data objects.");
+
+	bool columnmajor = false;
+	if (info->baseType == Shader::UNIFORM_MATRIX && lua_type(L, startidx + 1) == LUA_TSTRING)
+	{
+		const char *layoutstr = lua_tostring(L, startidx + 1);
+		math::Transform::MatrixLayout layout;
+		if (!math::Transform::getConstant(layoutstr, layout))
+			return luaL_error(L, "Invalid matrix layout: %s", layoutstr);
+
+		columnmajor = (layout == math::Transform::MATRIX_COLUMN_MAJOR);
+		startidx++;
+	}
+
+	Data *data = luax_checktype<Data>(L, startidx);
+
+	size_t size = data->getSize();
+
+	ptrdiff_t offset = (ptrdiff_t) luaL_optinteger(L, startidx + 1, 0);
+	if (offset < 0)
+		return luaL_error(L, "Offset cannot be negative.");
+	else if ((size_t) offset >= size)
+		return luaL_error(L, "Offset must be less than the size of the Data.");
+
+	size_t uniformstride = info->dataSize / info->count;
+
+	if (!lua_isnoneornil(L, startidx + 2))
+	{
+		lua_Integer datasize = luaL_checkinteger(L, startidx + 2);
+		if (datasize <= 0)
+			return luaL_error(L, "Size must be greater than 0.");
+		else if ((size_t) datasize > size - offset)
+			return luaL_error(L, "Size and offset must fit within the Data's bounds.");
+		else if (size % uniformstride != 0)
+			return luaL_error(L, "Size must be a multiple of the uniform's size in bytes.");
+		else if (size > info->dataSize)
+			return luaL_error(L, "Size must not be greater than the uniform's total size in bytes.");
+
+		size = (size_t) datasize;
+	}
+	else
+	{
+		size -= offset;
+		size = std::min((size / uniformstride) * uniformstride, info->dataSize);
+	}
+
+	if (size == 0)
+		return luaL_error(L, "Size to copy must be greater than 0.");
+
+	int count = (int) (size / uniformstride);
+	const char *mem = (const char *) data->getData() + offset;
+
+	if (info->baseType != Shader::UNIFORM_MATRIX || columnmajor)
+		memcpy(info->data, mem, size);
+	else
+	{
+		int columns = info->matrix.columns;
+		int rows = info->matrix.rows;
+
+		const float *src = (const float *) mem;
+		float *dst = info->floats;
+
+		for (int i = 0; i < count; i++)
+		{
+			for (int row = 0; row < rows; row++)
+			{
+				for (int column = 0; column < columns; column++)
+					dst[column * rows + row] = src[row * columns + column];
+			}
+
+			src += columns * rows;
+			dst += columns * rows;
+		}
+	}
+
+	if (colors && graphics::isGammaCorrect())
+	{
+		// alpha is always linear (when present).
+		int components = info->components;
+		int gammacomponents = std::min(components, 3);
+		float *values = info->floats;
+
+		for (int i = 0; i < count; i++)
+		{
+			for (int j = 0; j < gammacomponents; j++)
+				values[i * components + j] = math::gammaToLinear(values[i * components + j]);
+		}
+	}
+
+	shader->updateUniform(info, count);
+	return 0;
+}
+
+int w_Shader_send(lua_State *L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+
+	const Shader::UniformInfo *info = shader->getUniformInfo(name);
+	if (info == nullptr)
+		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
+
+	int startidx = 3;
+
+	if (luax_istype(L, startidx, Data::type))
+		return w_Shader_sendData(L, startidx, shader, info, false);
+	else
+		return w_Shader_sendLuaValues(L, startidx, shader, info, name);
+}
+
 int w_Shader_sendColors(lua_State *L)
 {
 	Shader *shader = luax_checkshader(L, 1);
@@ -320,7 +430,10 @@ int w_Shader_sendColors(lua_State *L)
 	if (info->baseType != Shader::UNIFORM_FLOAT || info->components < 3)
 		return luaL_error(L, "sendColor can only be used on vec3 or vec4 uniforms.");
 
-	return w_Shader_sendFloats(L, 3, shader, info, true);
+	if (luax_istype(L, 3, Data::type))
+		return w_Shader_sendData(L, 3, shader, info, true);
+	else
+		return w_Shader_sendFloats(L, 3, shader, info, true);
 }
 
 int w_Shader_hasUniform(lua_State *L)

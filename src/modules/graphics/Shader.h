@@ -139,6 +139,8 @@ public:
 			unsigned int *uints;
 		};
 
+		size_t dataSize;
+
 		Texture **textures;
 	};
 

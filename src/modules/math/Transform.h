@@ -24,6 +24,7 @@
 #include "common/Object.h"
 #include "common/Matrix.h"
 #include "common/Vector.h"
+#include "common/StringMap.h"
 
 namespace love
 {
@@ -33,6 +34,13 @@ namespace math
 class Transform : public Object
 {
 public:
+
+	enum MatrixLayout
+	{
+		MATRIX_ROW_MAJOR,
+		MATRIX_COLUMN_MAJOR,
+		MATRIX_MAX_ENUM
+	};
 
 	static love::Type type;
 
@@ -61,6 +69,9 @@ public:
 	const Matrix4 &getMatrix() const;
 	void setMatrix(const Matrix4 &m);
 
+	static bool getConstant(const char *in, MatrixLayout &out);
+	static bool getConstant(MatrixLayout in, const char *&out);
+
 private:
 
 	inline const Matrix4 &getInverseMatrix()
@@ -77,6 +88,9 @@ private:
 	Matrix4 matrix;
 	bool inverseDirty;
 	Matrix4 inverseMatrix;
+
+	static StringMap<MatrixLayout, MATRIX_MAX_ENUM>::Entry matrixLayoutEntries[];
+	static StringMap<MatrixLayout, MATRIX_MAX_ENUM> matrixLayouts;
 
 }; // Transform
 

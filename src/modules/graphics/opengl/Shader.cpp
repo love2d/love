@@ -219,35 +219,35 @@ void Shader::mapActiveUniforms()
 		}
 		else
 		{
-			size_t datasize = 0;
+			u.dataSize = 0;
 
 			switch (u.baseType)
 			{
 			case UNIFORM_FLOAT:
-				datasize = sizeof(float) * u.components * u.count;
-				u.data = malloc(datasize);
+				u.dataSize = sizeof(float) * u.components * u.count;
+				u.data = malloc(u.dataSize);
 				break;
 			case UNIFORM_INT:
 			case UNIFORM_BOOL:
 			case UNIFORM_SAMPLER:
-				datasize = sizeof(int) * u.components * u.count;
-				u.data = malloc(datasize);
+				u.dataSize = sizeof(int) * u.components * u.count;
+				u.data = malloc(u.dataSize);
 				break;
 			case UNIFORM_UINT:
-				datasize = sizeof(unsigned int) * u.components * u.count;
-				u.data = malloc(datasize);
+				u.dataSize = sizeof(unsigned int) * u.components * u.count;
+				u.data = malloc(u.dataSize);
 				break;
 			case UNIFORM_MATRIX:
-				datasize = sizeof(float) * (u.matrix.rows * u.matrix.columns) * u.count;
-				u.data = malloc(datasize);
+				u.dataSize = sizeof(float) * (u.matrix.rows * u.matrix.columns) * u.count;
+				u.data = malloc(u.dataSize);
 				break;
 			default:
 				break;
 			}
 
-			if (datasize > 0)
+			if (u.dataSize > 0)
 			{
-				memset(u.data, 0, datasize);
+				memset(u.data, 0, u.dataSize);
 
 				if (u.baseType == UNIFORM_SAMPLER)
 				{

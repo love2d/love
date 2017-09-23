@@ -135,9 +135,14 @@ int w_Transform_setMatrix(lua_State *L)
 	bool columnmajor = false;
 
 	int idx = 2;
-	if (lua_isboolean(L, idx))
+	if (lua_type(L, idx) == LUA_TSTRING)
 	{
-		columnmajor = luax_toboolean(L, idx);
+		const char *layoutstr = lua_tostring(L, idx);
+		Transform::MatrixLayout layout;
+		if (!Transform::getConstant(layoutstr, layout))
+			return luaL_error(L, "Invalid matrix layout: %s", layoutstr);
+
+		columnmajor = (layout == Transform::MATRIX_COLUMN_MAJOR);
 		idx++;
 	}
 

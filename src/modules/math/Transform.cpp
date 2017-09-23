@@ -129,5 +129,23 @@ void Transform::setMatrix(const Matrix4 &m)
 	inverseDirty = true;
 }
 
+bool Transform::getConstant(const char *in, MatrixLayout &out)
+{
+	return matrixLayouts.find(in, out);
+}
+
+bool Transform::getConstant(MatrixLayout in, const char *&out)
+{
+	return matrixLayouts.find(in, out);
+}
+
+StringMap<Transform::MatrixLayout, Transform::MATRIX_MAX_ENUM>::Entry Transform::matrixLayoutEntries[] =
+{
+	{ "row",    MATRIX_ROW_MAJOR    },
+	{ "column", MATRIX_COLUMN_MAJOR },
+};
+
+StringMap<Transform::MatrixLayout, Transform::MATRIX_MAX_ENUM> Transform::matrixLayouts(Transform::matrixLayoutEntries, sizeof(Transform::matrixLayoutEntries));
+
 } // math
 } // love
