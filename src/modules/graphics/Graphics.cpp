@@ -128,10 +128,10 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	states.clear();
-
-	defaultFont.set(nullptr);
-
+	// Clean up standard shaders before the active shader. If we do it after,
+	// the active shader may try to activate a standard shader when deactivating
+	// itself, which will cause problems since it calls Graphics methods in the
+	// Graphics destructor.
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
 		if (Shader::standardShaders[i])
@@ -140,6 +140,10 @@ Graphics::~Graphics()
 			Shader::standardShaders[i] = nullptr;
 		}
 	}
+
+	states.clear();
+
+	defaultFont.set(nullptr);
 
 	delete streamBufferState.vb[0];
 	delete streamBufferState.vb[1];
