@@ -2648,6 +2648,12 @@ int w_flushBatch(lua_State *)
 	return 0;
 }
 
+int w_getStackDepth(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getStackDepth());
+	return 1;
+}
+
 int w_push(lua_State *L)
 {
 	Graphics::StackType stype = Graphics::STACK_TRANSFORM;
@@ -2668,12 +2674,7 @@ int w_push(lua_State *L)
 
 int w_pop(lua_State *L)
 {
-	Graphics::PopMode mode = Graphics::POP_ONE;
-	const char *modestring = lua_isnoneornil(L, 1) ? nullptr : luaL_checkstring(L, 1);
-	if (modestring && !Graphics::getConstant(modestring, mode))
-		return luaL_error(L, "Invalid pop mode: %s", modestring);
-
-	luax_catchexcept(L, [&](){ instance()->pop(mode); });
+	luax_catchexcept(L, [&](){ instance()->pop(); });
 	return 0;
 }
 
@@ -2857,6 +2858,7 @@ static const luaL_Reg functions[] =
 
 	{ "flushBatch", w_flushBatch },
 
+	{ "getStackDepth", w_getStackDepth },
 	{ "push", w_push },
 	{ "pop", w_pop },
 	{ "rotate", w_rotate },
