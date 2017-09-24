@@ -18,22 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_MATH_WRAP_COMPRESSED_DATA_H
-#define LOVE_MATH_WRAP_COMPRESSED_DATA_H
+#pragma once
 
 // LOVE
 #include "common/runtime.h"
-#include "CompressedData.h"
+#include "DataView.h"
 
 namespace love
 {
-namespace math
+namespace data
 {
 
-CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
-extern "C" int luaopen_compresseddata(lua_State *L);
+DataView *luax_checkdataview(lua_State *L, int idx);
+int luaopen_dataview(lua_State *L);
 
-} // math
+} // data
 } // love
-
-#endif // LOVE_MATH_WRAP_COMPRESSED_DATA_H

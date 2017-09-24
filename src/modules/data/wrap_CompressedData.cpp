@@ -18,56 +18,53 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_FileData.h"
-
-#include "data/wrap_Data.h"
+// LOVE
+#include "wrap_CompressedData.h"
+#include "wrap_Data.h"
 
 namespace love
 {
-namespace filesystem
+namespace data
 {
 
-FileData *luax_checkfiledata(lua_State *L, int idx)
+CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
 {
-	return luax_checktype<FileData>(L, idx);
+	return luax_checktype<CompressedData>(L, idx);
 }
 
-int w_FileData_clone(lua_State *L)
+int w_CompressedData_clone(lua_State *L)
 {
-	FileData *t = luax_checkfiledata(L, 1), *c = nullptr;
+	CompressedData *t = luax_checkcompresseddata(L, 1), *c = nullptr;
 	luax_catchexcept(L, [&](){ c = t->clone(); });
 	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }
 
-int w_FileData_getFilename(lua_State *L)
+int w_CompressedData_getFormat(lua_State *L)
 {
-	FileData *t = luax_checkfiledata(L, 1);
-	lua_pushstring(L, t->getFilename().c_str());
+	CompressedData *t = luax_checkcompresseddata(L, 1);
+
+	const char *fname = nullptr;
+	if (!Compressor::getConstant(t->getFormat(), fname))
+		return luaL_error(L, "Unknown compressed data format.");
+
+	lua_pushstring(L, fname);
 	return 1;
 }
 
-int w_FileData_getExtension(lua_State *L)
+static const luaL_Reg w_CompressedData_functions[] =
 {
-	FileData *t = luax_checkfiledata(L, 1);
-	lua_pushstring(L, t->getExtension().c_str());
-	return 1;
-}
-
-static const luaL_Reg w_FileData_functions[] =
-{
-	{ "clone", w_FileData_clone },
-	{ "getFilename", w_FileData_getFilename },
-	{ "getExtension", w_FileData_getExtension },
-
-	{ 0, 0 }
+	{ "clone", w_CompressedData_clone },
+	{ "getFormat", w_CompressedData_getFormat },
+	{ 0, 0 },
 };
 
-extern "C" int luaopen_filedata(lua_State *L)
+
+extern "C" int luaopen_compresseddata(lua_State *L)
 {
-	return luax_register_type(L, &FileData::type, data::w_Data_functions, w_FileData_functions, nullptr);
+	return luax_register_type(L, &CompressedData::type, w_Data_functions, w_CompressedData_functions, nullptr);
 }
 
-} // filesystem
+} // data
 } // love

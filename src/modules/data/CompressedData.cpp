@@ -23,7 +23,7 @@
 
 namespace love
 {
-namespace math
+namespace data
 {
 
 love::Type CompressedData::type("CompressedData", &Data::type);
@@ -99,5 +99,5 @@ size_t CompressedData::getSize() const
 	return dataSize;
 }
 
-} // math
+} // data
 } // love

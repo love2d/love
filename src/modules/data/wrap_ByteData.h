@@ -18,24 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FONT_WRAP_GLYPH_DATA_H
-#define LOVE_FONT_WRAP_GLYPH_DATA_H
+#pragma once
 
 // LOVE
 #include "common/runtime.h"
-#include "data/wrap_Data.h"
-
-#include "GlyphData.h"
+#include "ByteData.h"
 
 namespace love
 {
-namespace font
+namespace data
 {
 
-GlyphData *luax_checkglyphdata(lua_State *L, int idx);
-extern "C" int luaopen_glyphdata(lua_State *L);
+ByteData *luax_checkbytedata(lua_State *L, int idx);
+int luaopen_bytedata(lua_State *L);
 
-} // font
+} // data
 } // love
-
-#endif // LOVE_FONT_WRAP_GLYPH_DATA_H

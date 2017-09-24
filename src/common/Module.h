@@ -39,6 +39,7 @@ public:
 	enum ModuleType
 	{
 		M_AUDIO,
+		M_DATA,
 		M_EVENT,
 		M_FILESYSTEM,
 		M_FONT,
@@ -54,8 +55,8 @@ public:
 		M_THREAD,
 		M_TIMER,
 		M_TOUCH,
-		M_WINDOW,
 		M_VIDEO,
+		M_WINDOW,
 		M_MAX_ENUM
 	};
 

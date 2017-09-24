@@ -21,12 +21,14 @@
 #include "wrap_Math.h"
 #include "wrap_RandomGenerator.h"
 #include "wrap_BezierCurve.h"
-#include "wrap_CompressedData.h"
 #include "wrap_Transform.h"
 #include "MathModule.h"
 #include "BezierCurve.h"
 #include "Transform.h"
-#include "common/b64.h"
+
+#include "data/wrap_DataModule.h"
+#include "data/wrap_CompressedData.h"
+#include "data/DataModule.h"
 
 #include <cmath>
 #include <iostream>
@@ -348,6 +350,9 @@ int w_noise(lua_State *L)
 
 int w_compress(lua_State *L)
 {
+	using namespace love::data;
+	luax_markdeprecated(L, "love.math.compress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.compress");
+
 	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
 	Compressor::Format format = Compressor::FORMAT_LZ4;
 
@@ -370,11 +375,15 @@ int w_compress(lua_State *L)
 	}
 
 	luax_pushtype(L, cdata);
+	cdata->release();
 	return 1;
 }
 
 int w_decompress(lua_State *L)
 {
+	using namespace love::data;
+	luax_markdeprecated(L, "love.math.decompress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.decompress");
+
 	char *rawbytes = nullptr;
 	size_t rawsize = 0;
 
@@ -410,96 +419,6 @@ int w_decompress(lua_State *L)
 	lua_pushlstring(L, rawbytes, rawsize);
 	delete[] rawbytes;
 
-	return 1;
-}
-
-int w_encode(lua_State *L)
-{
-	const char *formatstr = luaL_checkstring(L, 1);
-	EncodeFormat format;
-	if (!getConstant(formatstr, format))
-		return luaL_error(L, "Invalid encode format: %s", formatstr);
-
-	size_t srclen = 0;
-	const char *src = nullptr;
-
-	if (luax_istype(L, 2, Data::type))
-	{
-		Data *data = luax_totype<Data>(L, 2);
-		src = (const char *) data->getData();
-		srclen = data->getSize();
-	}
-	else
-		src = luaL_checklstring(L, 2, &srclen);
-
-	size_t linelen = (size_t) luaL_optinteger(L, 3, 0);
-
-	size_t dstlen = 0;
-	char *dst = nullptr;
-	luax_catchexcept(L, [&](){ dst = encode(format, src, srclen, dstlen, linelen); });
-
-	if (dst != nullptr)
-		lua_pushlstring(L, dst, dstlen);
-	else
-		lua_pushstring(L, "");
-
-	delete[] dst;
-	return 1;
-}
-
-int w_decode(lua_State *L)
-{
-	const char *formatstr = luaL_checkstring(L, 1);
-	EncodeFormat format;
-	if (!getConstant(formatstr, format))
-		return luaL_error(L, "Invalid decode format: %s", formatstr);
-
-	size_t srclen = 0;
-	const char *src = nullptr;
-
-	if (luax_istype(L, 2, Data::type))
-	{
-		Data *data = luax_totype<Data>(L, 2);
-		src = (const char *) data->getData();
-		srclen = data->getSize();
-	}
-	else
-		src = luaL_checklstring(L, 2, &srclen);
-
-	size_t dstlen = 0;
-	char *dst = nullptr;
-	luax_catchexcept(L, [&](){ dst = decode(format, src, srclen, dstlen); });
-
-	if (dst != nullptr)
-		lua_pushlstring(L, dst, dstlen);
-	else
-		lua_pushstring(L, "");
-
-	delete[] dst;
-	return 1;
-}
-
-int w_hash(lua_State *L)
-{
-	const char *fstr = luaL_checkstring(L, 1);
-	HashFunction::Function function;
-	if (!HashFunction::getConstant(fstr, function))
-		return luaL_error(L, "Invalid hash function: %s", fstr);
-
-	std::string hash;
-	if (lua_isstring(L, 2))
-	{
-		size_t rawsize = 0;
-		const char *rawbytes = luaL_checklstring(L, 2, &rawsize);
-		luax_catchexcept(L, [&](){ hash = love::math::hash(function, rawbytes, rawsize); });
-	}
-	else
-	{
-		Data *rawdata = luax_checktype<Data>(L, 2);
-		luax_catchexcept(L, [&](){ hash = love::math::hash(function, rawdata); });
-	}
-
-	luax_pushstring(L, hash);
 	return 1;
 }
 
@@ -540,11 +459,11 @@ static const luaL_Reg functions[] =
 	{ "gammaToLinear", w_gammaToLinear },
 	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
+
+	// Deprecated.
 	{ "compress", w_compress },
 	{ "decompress", w_decompress },
-	{ "encode", w_encode },
-	{ "decode", w_decode },
-	{ "hash", w_hash },
+
 	{ 0, 0 }
 };
 
@@ -552,7 +471,6 @@ static const lua_CFunction types[] =
 {
 	luaopen_randomgenerator,
 	luaopen_beziercurve,
-	luaopen_compresseddata,
 	luaopen_transform,
 	0
 };

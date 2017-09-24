@@ -20,7 +20,7 @@
 
 #include "wrap_Rasterizer.h"
 
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 
 namespace love
 {

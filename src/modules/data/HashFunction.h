@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_MATH_HASH_FUNCTION_H
-#define LOVE_MATH_HASH_FUNCTION_H
+#pragma once
 
 // LOVE
 #include "common/Data.h"
@@ -28,12 +27,13 @@
 
 namespace love
 {
-namespace math
+namespace data
 {
 
 class HashFunction
 {
 public:
+
 	enum Function
 	{
 		FUNCTION_MD5,
@@ -43,6 +43,12 @@ public:
 		FUNCTION_SHA384,
 		FUNCTION_SHA512,
 		FUNCTION_MAX_ENUM
+	};
+
+	struct Value
+	{
+		char data[64]; // Maximum possible size (SHA512).
+		size_t size;
 	};
 
 	/**
@@ -62,9 +68,9 @@ public:
 	 * @param[in] function The selected hash function.
 	 * @param[in] input The input data to hash.
 	 * @param[in] length The length of the input data.
-	 * @return A string of bytes, representing the result of the hash function.
+	 * @param[out] output The result of the hash function.
 	 **/
-	virtual std::string hash(Function function, const char *input, uint64 length) const = 0;
+	virtual void hash(Function function, const char *input, uint64 length, Value &output) const = 0;
 
 	/**
 	 * @param[in] function The requested hash function.
@@ -76,14 +82,15 @@ public:
 	static bool getConstant(const Function &in, const char *&out);
 
 protected:
+
 	HashFunction() {}
 
 private:
+
 	static StringMap<Function, FUNCTION_MAX_ENUM>::Entry functionEntries[];
 	static StringMap<Function, FUNCTION_MAX_ENUM> functionNames;
+
 }; // HashFunction
 
-} // math
+} // data
 } // love
-
-#endif // LOVE_MATH_HASH_FUNCTION_H

@@ -18,15 +18,14 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_MATH_COMPRESSOR_H
-#define LOVE_MATH_COMPRESSOR_H
+#pragma once
 
 // LOVE
 #include "common/StringMap.h"
 
 namespace love
 {
-namespace math
+namespace data
 {
 
 /**
@@ -100,7 +99,5 @@ private:
 
 }; // Compressor
 
-} // math
+} // data
 } // love
-
-#endif // LOVE_MATH_COMPRESSOR_H

@@ -297,8 +297,6 @@ set(LOVE_SRC_COMMON
 	#src/common/Vector.cpp # Vector.cpp is empty.
 	src/common/Vector.h
 	src/common/version.h
-	src/common/wrap_Data.cpp
-	src/common/wrap_Data.h
 )
 
 if (APPLE)
@@ -365,6 +363,37 @@ set(LOVE_SRC_MODULE_AUDIO
 source_group("modules\\audio" FILES ${LOVE_SRC_MODULE_AUDIO_ROOT})
 source_group("modules\\audio\\null" FILES ${LOVE_SRC_MODULE_AUDIO_NULL})
 source_group("modules\\audio\\openal" FILES ${LOVE_SRC_MODULE_AUDIO_OPENAL})
+
+#
+# love.data
+#
+
+set(LOVE_SRC_MODULE_DATA
+	src/modules/data/ByteData.cpp
+	src/modules/data/ByteData.h
+	src/modules/data/CompressedData.cpp
+	src/modules/data/CompressedData.h
+	src/modules/data/Compressor.cpp
+	src/modules/data/Compressor.h
+	src/modules/data/DataModule.cpp
+	src/modules/data/DataModule.h
+	src/modules/data/DataView.cpp
+	src/modules/data/DataView.h
+	src/modules/data/HashFunction.cpp
+	src/modules/data/HashFunction.h
+	src/modules/data/wrap_ByteData.cpp
+	src/modules/data/wrap_ByteData.h
+	src/modules/data/wrap_CompressedData.cpp
+	src/modules/data/wrap_CompressedData.h
+	src/modules/data/wrap_Data.cpp
+	src/modules/data/wrap_Data.h
+	src/modules/data/wrap_DataModule.cpp
+	src/modules/data/wrap_DataModule.h
+	src/modules/data/wrap_DataView.cpp
+	src/modules/data/wrap_DataView.h
+)
+
+source_group("modules\\data" FILES ${LOVE_SRC_MODULE_DATA})
 
 #
 # love.event
@@ -686,12 +715,6 @@ source_group("modules\\keyboard\\sdl" FILES ${LOVE_SRC_MODULE_KEYBOARD_SDL})
 set(LOVE_SRC_MODULE_MATH
 	src/modules/math/BezierCurve.cpp
 	src/modules/math/BezierCurve.h
-	src/modules/math/CompressedData.cpp
-	src/modules/math/CompressedData.h
-	src/modules/math/Compressor.cpp
-	src/modules/math/Compressor.h
-	src/modules/math/HashFunction.cpp
-	src/modules/math/HashFunction.h
 	src/modules/math/MathModule.cpp
 	src/modules/math/MathModule.h
 	src/modules/math/RandomGenerator.cpp
@@ -700,8 +723,6 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/Transform.h
 	src/modules/math/wrap_BezierCurve.cpp
 	src/modules/math/wrap_BezierCurve.h
-	src/modules/math/wrap_CompressedData.cpp
-	src/modules/math/wrap_CompressedData.h
 	src/modules/math/wrap_Math.cpp
 	src/modules/math/wrap_Math.h
 	src/modules/math/wrap_RandomGenerator.cpp
@@ -1480,17 +1501,19 @@ add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
 target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET})
 
 #
-# Lua 5.3's UTF-8 library
+# APIs from Lua 5.3
 #
 
-set(LOVE_SRC_3P_LUAUTF8
-	src/libraries/luautf8/lprefix.h
-	src/libraries/luautf8/lutf8lib.c
-	src/libraries/luautf8/lutf8lib.h
+set(LOVE_SRC_3P_LUA53
+	src/libraries/lua53/lprefix.h
+	src/libraries/lua53/lstrlib.c
+	src/libraries/lua53/lstrlib.h
+	src/libraries/lua53/lutf8lib.c
+	src/libraries/lua53/lutf8lib.h
 )
 
-add_library(love_3p_luautf8 ${LOVE_SRC_3P_LUAUTF8})
-target_link_libraries(love_3p_luautf8 ${LOVE_LUA_LIBRARY})
+add_library(love_3p_lua53 ${LOVE_SRC_3P_LUA53})
+target_link_libraries(love_3p_lua53 ${LOVE_LUA_LIBRARY})
 
 #
 # lz4
@@ -1594,7 +1617,7 @@ set(LOVE_3P
 	love_3p_glslang
 	love_3p_lodepng
 	love_3p_luasocket
-	love_3p_luautf8
+	love_3p_lua53
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_wuff
@@ -1610,6 +1633,7 @@ set(LOVE_LIB_SRC
 	${LOVE_SRC_COMMON}
 	# Modules
 	${LOVE_SRC_MODULE_AUDIO}
+	${LOVE_SRC_MODULE_DATA}
 	${LOVE_SRC_MODULE_EVENT}
 	${LOVE_SRC_MODULE_FILESYSTEM}
 	${LOVE_SRC_MODULE_FONT}

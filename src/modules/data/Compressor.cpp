@@ -23,16 +23,14 @@
 #include "common/config.h"
 #include "common/int.h"
 
-// LZ4
 #include "libraries/lz4/lz4.h"
 #include "libraries/lz4/lz4hc.h"
 
-// zlib
 #include <zlib.h>
 
 namespace love
 {
-namespace math
+namespace data
 {
 
 class LZ4Compressor : public Compressor
@@ -383,12 +381,12 @@ bool Compressor::getConstant(Format in, const char *&out)
 
 StringMap<Compressor::Format, Compressor::FORMAT_MAX_ENUM>::Entry Compressor::formatEntries[] =
 {
-	{"lz4",  FORMAT_LZ4},
-	{"zlib", FORMAT_ZLIB},
-	{"gzip", FORMAT_GZIP},
+	{ "lz4",  FORMAT_LZ4  },
+	{ "zlib", FORMAT_ZLIB },
+	{ "gzip", FORMAT_GZIP },
 };
 
 StringMap<Compressor::Format, Compressor::FORMAT_MAX_ENUM> Compressor::formatNames(Compressor::formatEntries, sizeof(Compressor::formatEntries));
 
-} // math
+} // data
 } // love

@@ -18,62 +18,41 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_MATH_COMPRESSED_DATA_H
-#define LOVE_MATH_COMPRESSED_DATA_H
+#pragma once
 
-// LOVE
 #include "common/Data.h"
-#include "Compressor.h"
+
+#include <stddef.h>
 
 namespace love
 {
-namespace math
+namespace data
 {
 
-/**
- * Stores byte data compressed via Math::compress.
- **/
-class CompressedData : public love::Data
+class ByteData : public love::Data
 {
 public:
 
 	static love::Type type;
 
-	/**
-	 * Constructor just stores already-compressed data in the object.
-	 **/
-	CompressedData(Compressor::Format format, char *cdata, size_t compressedsize, size_t rawsize, bool own = true);
-	CompressedData(const CompressedData &c);
-	virtual ~CompressedData();
-
-	/**
-	 * Gets the format that was used to compress the data.
-	 **/
-	Compressor::Format getFormat() const;
-
-	/**
-	 * Gets the original (uncompressed) size of the compressed data. May return
-	 * 0 if the uncompressed size is unknown.
-	 **/
-	size_t getDecompressedSize() const;
+	ByteData(size_t size);
+	ByteData(const void *d, size_t size);
+	ByteData(const ByteData &d);
+	virtual ~ByteData();
 
 	// Implements Data.
-	CompressedData *clone() const override;
+	ByteData *clone() const override;
 	void *getData() const override;
 	size_t getSize() const override;
 
 private:
 
-	Compressor::Format format;
+	void create();
 
 	char *data;
-	size_t dataSize;
+	size_t size;
 
-	size_t originalSize;
+}; // ByteData
 
-}; // CompressedData
-
-} // math
+} // data
 } // love
-
-#endif // LOVE_MATH_COMPRESSED_DATA_H

@@ -20,7 +20,7 @@
 
 #include "wrap_ImageData.h"
 
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 #include "filesystem/File.h"
 #include "filesystem/Filesystem.h"
 
@@ -366,7 +366,7 @@ extern "C" int luaopen_imagedata(lua_State *L)
 	pushFormats[PIXELFORMAT_RGBA16F] = luax_pushpixel_rgba16f;
 	pushFormats[PIXELFORMAT_RGBA32F] = luax_pushpixel_rgba32f;
 
-	int ret = luax_register_type(L, &ImageData::type, w_Data_functions, w_ImageData_functions, nullptr);
+	int ret = luax_register_type(L, &ImageData::type, data::w_Data_functions, w_ImageData_functions, nullptr);
 
 	luax_gettypemetatable(L, ImageData::type);
 

@@ -20,7 +20,7 @@
 
 #include "wrap_SoundData.h"
 
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 
 // Shove the wrap_SoundData.lua code directly into a raw string literal.
 static const char sounddata_lua[] =
@@ -130,7 +130,7 @@ static const luaL_Reg w_SoundData_functions[] =
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	int ret = luax_register_type(L, &SoundData::type, w_Data_functions, w_SoundData_functions, nullptr);
+	int ret = luax_register_type(L, &SoundData::type, data::w_Data_functions, w_SoundData_functions, nullptr);
 
 	luax_gettypemetatable(L, SoundData::type);
 

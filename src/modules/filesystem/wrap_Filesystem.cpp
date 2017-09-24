@@ -24,7 +24,7 @@
 #include "wrap_File.h"
 #include "wrap_DroppedFile.h"
 #include "wrap_FileData.h"
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 
 #include "physfs/Filesystem.h"
 
@@ -233,7 +233,7 @@ Data *luax_getdata(lua_State *L, int idx)
 	}
 	else if (luax_istype(L, idx, Data::type))
 	{
-		data = luax_checkdata(L, idx);
+		data = data::luax_checkdata(L, idx);
 		data->retain();
 	}
 

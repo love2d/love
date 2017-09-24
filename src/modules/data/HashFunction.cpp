@@ -27,7 +27,7 @@
 
 namespace love
 {
-namespace math
+namespace data
 {
 
 namespace
@@ -69,7 +69,7 @@ public:
 		return function == FUNCTION_MD5;
 	}
 
-	std::string hash(Function function, const char *input, uint64 length) const override
+	void hash(Function function, const char *input, uint64 length, Value &output) const override
 	{
 		if (function != FUNCTION_MD5)
 			throw love::Exception("Hash function not supported by MD5 implementation");
@@ -141,12 +141,11 @@ public:
 
 		delete[] padded;
 
-		std::string hash(16, ' ');
-		hash.replace( 0, 4, (const char*) &a0, 4);
-		hash.replace( 4, 4, (const char*) &b0, 4);
-		hash.replace( 8, 4, (const char*) &c0, 4);
-		hash.replace(12, 4, (const char*) &d0, 4);
-		return hash;
+		memcpy(&output.data[ 0], &a0, 4);
+		memcpy(&output.data[ 4], &b0, 4);
+		memcpy(&output.data[ 8], &c0, 4);
+		memcpy(&output.data[12], &d0, 4);
+		output.size = 16;
 	}
 } md5;
 
@@ -189,7 +188,7 @@ public:
 		return function == FUNCTION_SHA1;
 	}
 
-	std::string hash(Function function, const char *input, uint64 length) const override
+	void hash(Function function, const char *input, uint64 length, Value &output) const override
 	{
 		if (function != FUNCTION_SHA1)
 			throw love::Exception("Hash function not supported by SHA1 implementation");
@@ -266,16 +265,15 @@ public:
 
 		delete[] padded;
 
-		std::string hash(20, ' ');
 		for (int i = 0; i < 20; i += 4)
 		{
-			hash[i+0] = (intermediate[i/4] >> 24) & 0xFF;
-			hash[i+1] = (intermediate[i/4] >> 16) & 0xFF;
-			hash[i+2] = (intermediate[i/4] >>  8) & 0xFF;
-			hash[i+3] = (intermediate[i/4] >>  0) & 0xFF;
+			output.data[i+0] = (intermediate[i/4] >> 24) & 0xFF;
+			output.data[i+1] = (intermediate[i/4] >> 16) & 0xFF;
+			output.data[i+2] = (intermediate[i/4] >>  8) & 0xFF;
+			output.data[i+3] = (intermediate[i/4] >>  0) & 0xFF;
 		}
 
-		return hash;
+		output.size = 20;
 	}
 } sha1;
 
@@ -296,7 +294,7 @@ public:
 		return function == FUNCTION_SHA224 || function == FUNCTION_SHA256;
 	}
 
-	std::string hash(Function function, const char *input, uint64 length) const override
+	void hash(Function function, const char *input, uint64 length, Value &output) const override
 	{
 		if (!isSupported(function))
 			throw love::Exception("Hash function not supported by SHA-224/SHA-256 implementation");
@@ -387,16 +385,15 @@ public:
 		if (function == FUNCTION_SHA224)
 			hashlength = 28;
 
-		std::string hash(hashlength, ' ');
 		for (int i = 0; i < hashlength; i += 4)
 		{
-			hash[i+0] = (intermediate[i/4] >> 24) & 0xFF;
-			hash[i+1] = (intermediate[i/4] >> 16) & 0xFF;
-			hash[i+2] = (intermediate[i/4] >>  8) & 0xFF;
-			hash[i+3] = (intermediate[i/4] >>  0) & 0xFF;
+			output.data[i+0] = (intermediate[i/4] >> 24) & 0xFF;
+			output.data[i+1] = (intermediate[i/4] >> 16) & 0xFF;
+			output.data[i+2] = (intermediate[i/4] >>  8) & 0xFF;
+			output.data[i+3] = (intermediate[i/4] >>  0) & 0xFF;
 		}
 
-		return hash;
+		output.size = hashlength;
 	}
 } sha256;
 
@@ -446,7 +443,7 @@ public:
 		return function == FUNCTION_SHA384 || function == FUNCTION_SHA512;
 	}
 
-	std::string hash(Function function, const char *input, uint64 length) const override
+	void hash(Function function, const char *input, uint64 length, Value &output) const override
 	{
 		if (!isSupported(function))
 			throw love::Exception("Hash function not supported by SHA-384/SHA-512 implementation");
@@ -541,20 +538,19 @@ public:
 		if (function == FUNCTION_SHA384)
 			hashlength = 48;
 
-		std::string hash(hashlength, ' ');
 		for (int i = 0; i < hashlength; i += 8)
 		{
-			hash[i+0] = (intermediates[i/8] >> 56) & 0xFF;
-			hash[i+1] = (intermediates[i/8] >> 48) & 0xFF;
-			hash[i+2] = (intermediates[i/8] >> 40) & 0xFF;
-			hash[i+3] = (intermediates[i/8] >> 32) & 0xFF;
-			hash[i+4] = (intermediates[i/8] >> 24) & 0xFF;
-			hash[i+5] = (intermediates[i/8] >> 16) & 0xFF;
-			hash[i+6] = (intermediates[i/8] >>  8) & 0xFF;
-			hash[i+7] = (intermediates[i/8] >>  0) & 0xFF;
+			output.data[i+0] = (intermediates[i/8] >> 56) & 0xFF;
+			output.data[i+1] = (intermediates[i/8] >> 48) & 0xFF;
+			output.data[i+2] = (intermediates[i/8] >> 40) & 0xFF;
+			output.data[i+3] = (intermediates[i/8] >> 32) & 0xFF;
+			output.data[i+4] = (intermediates[i/8] >> 24) & 0xFF;
+			output.data[i+5] = (intermediates[i/8] >> 16) & 0xFF;
+			output.data[i+6] = (intermediates[i/8] >>  8) & 0xFF;
+			output.data[i+7] = (intermediates[i/8] >>  0) & 0xFF;
 		}
 
-		return hash;
+		output.size = hashlength;
 	}
 } sha512;
 
@@ -636,5 +632,5 @@ StringMap<HashFunction::Function, HashFunction::FUNCTION_MAX_ENUM>::Entry HashFu
 
 StringMap<HashFunction::Function, HashFunction::FUNCTION_MAX_ENUM> HashFunction::functionNames(HashFunction::functionEntries, sizeof(HashFunction::functionEntries));
 
-} // math
+} // data
 } // love

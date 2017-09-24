@@ -139,6 +139,7 @@
 #else
 #	define LOVE_ENABLE_LOVE
 #	define LOVE_ENABLE_AUDIO
+#	define LOVE_ENABLE_DATA
 #	define LOVE_ENABLE_EVENT
 #	define LOVE_ENABLE_FILESYSTEM
 #	define LOVE_ENABLE_FONT
@@ -159,7 +160,7 @@
 
 #	define LOVE_ENABLE_ENET
 #	define LOVE_ENABLE_LUASOCKET
-#	define LOVE_ENABLE_LUAUTF8
+#	define LOVE_ENABLE_LUA53
 #endif
 
 // Check we have a sane configuration

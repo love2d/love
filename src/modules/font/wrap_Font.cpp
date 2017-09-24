@@ -92,7 +92,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 
 		if (luax_istype(L, 1, love::Data::type))
 		{
-			d = luax_checkdata(L, 1);
+			d = data::luax_checkdata(L, 1);
 			d->retain();
 		}
 		else

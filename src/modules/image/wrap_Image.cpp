@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Image.h"
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 #include "common/Data.h"
 #include "common/StringMap.h"
 
@@ -58,7 +58,7 @@ int w_newImageData(lua_State *L)
 
 		if (luax_istype(L, 4, Data::type))
 		{
-			Data *data = luax_checkdata(L, 4);
+			Data *data = data::luax_checkdata(L, 4);
 			bytes = (const char *) data->getData();
 			numbytes = data->getSize();
 		}

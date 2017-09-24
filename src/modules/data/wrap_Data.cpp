@@ -18,53 +18,52 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
-#include "wrap_CompressedData.h"
-#include "common/wrap_Data.h"
+#include "wrap_Data.h"
 
 namespace love
 {
-namespace math
+namespace data
 {
 
-CompressedData *luax_checkcompresseddata(lua_State *L, int idx)
+Data *luax_checkdata(lua_State *L, int idx)
 {
-	return luax_checktype<CompressedData>(L, idx);
+	return luax_checktype<Data>(L, idx);
 }
 
-int w_CompressedData_clone(lua_State *L)
+int w_Data_getString(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1), *c = nullptr;
-	luax_catchexcept(L, [&](){ c = t->clone(); });
-	luax_pushtype(L, c);
-	c->release();
+	Data *t = luax_checkdata(L, 1);
+	lua_pushlstring(L, (const char *) t->getData(), t->getSize());
 	return 1;
 }
 
-int w_CompressedData_getFormat(lua_State *L)
+int w_Data_getPointer(lua_State *L)
 {
-	CompressedData *t = luax_checkcompresseddata(L, 1);
-
-	const char *fname = nullptr;
-	if (!Compressor::getConstant(t->getFormat(), fname))
-		return luaL_error(L, "Unknown compressed data format.");
-
-	lua_pushstring(L, fname);
+	Data *t = luax_checkdata(L, 1);
+	lua_pushlightuserdata(L, t->getData());
 	return 1;
 }
 
-static const luaL_Reg w_CompressedData_functions[] =
+int w_Data_getSize(lua_State *L)
 {
-	{ "clone", w_CompressedData_clone },
-	{ "getFormat", w_CompressedData_getFormat },
-	{ 0, 0 },
+	Data *t = luax_checkdata(L, 1);
+	lua_pushnumber(L, (lua_Number) t->getSize());
+	return 1;
+}
+
+const luaL_Reg w_Data_functions[] =
+{
+	{ "getString", w_Data_getString },
+	{ "getPointer", w_Data_getPointer },
+	{ "getSize", w_Data_getSize },
+	{ 0, 0 }
 };
 
-
-extern "C" int luaopen_compresseddata(lua_State *L)
+int luaopen_data(lua_State *L)
 {
-	return luax_register_type(L, &CompressedData::type, w_Data_functions, w_CompressedData_functions, nullptr);
+	luax_register_type(L, &Data::type, w_Data_functions, nullptr);
+	return 0;
 }
 
-} // math
+} // data
 } // love

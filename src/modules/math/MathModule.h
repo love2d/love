@@ -22,9 +22,6 @@
 #define LOVE_MATH_MODMATH_H
 
 #include "RandomGenerator.h"
-#include "CompressedData.h"
-#include "Compressor.h"
-#include "HashFunction.h"
 
 // LOVE
 #include "common/Module.h"
@@ -53,13 +50,6 @@ struct Triangle
 		: a(x), b(y), c(z)
 	{}
 	Vector2 a, b, c;
-};
-
-enum EncodeFormat
-{
-	ENCODE_BASE64,
-	ENCODE_HEX,
-	ENCODE_MAX_ENUM
 };
 
 /**
@@ -97,59 +87,6 @@ static float noise1(float x);
 static float noise2(float x, float y);
 static float noise3(float x, float y, float z);
 static float noise4(float x, float y, float z, float w);
-
-/**
- * Compresses a block of memory using the given compression format.
- *
- * @param format The compression format to use.
- * @param rawdata The data to compress.
- * @param level The amount of compression to apply (between 0 and 9.)
- *              A value of -1 indicates the default amount of compression.
- *              Specific formats may not use every level.
- * @return The newly compressed data.
- **/
-CompressedData *compress(Compressor::Format format, Data *rawdata, int level = -1);
-CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level = -1);
-
-/**
- * Decompresses existing compressed data into raw bytes.
- *
- * @param[in] data The compressed data to decompress.
- * @param[out] decompressedsize The size in bytes of the decompressed data.
- * @return The newly decompressed data (allocated with new[]).
- **/
-char *decompress(CompressedData *data, size_t &decompressedsize);
-
-/**
- * Decompresses existing compressed data into raw bytes.
- *
- * @param[in] format The compression format the data is in.
- * @param[in] cbytes The compressed data to decompress.
- * @param[in] compressedsize The size in bytes of the compressed data.
- * @param[in,out] rawsize On input, the size in bytes of the original
- *               uncompressed data, or 0 if unknown. On return, the size in
- *               bytes of the newly decompressed data.
- * @return The newly decompressed data (allocated with new[]).
- **/
-char *decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize);
-
-char *encode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen, size_t linelen = 0);
-char *decode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen);
-
-/**
- * Hash the input, producing an set of bytes as output.
- *
- * @param[in] function The selected hash function.
- * @param[in] input The input data to hash.
- * @return An std::string of bytes, representing the result of the hash
- *         function.
- **/
-std::string hash(HashFunction::Function function, Data *input);
-std::string hash(HashFunction::Function function, const char *input, uint64_t size);
-
-
-bool getConstant(const char *in, EncodeFormat &out);
-bool getConstant(EncodeFormat in, const char *&out);
 
 
 class Math : public Module

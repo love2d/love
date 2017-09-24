@@ -23,7 +23,6 @@
 #include "common/version.h"
 #include "common/deprecation.h"
 #include "common/runtime.h"
-#include "common/wrap_Data.h"
 
 #include "love.h"
 
@@ -53,8 +52,8 @@
 #ifdef LOVE_ENABLE_ENET
 #	include "libraries/enet/lua-enet.h"
 #endif
-#ifdef LOVE_ENABLE_LUAUTF8
-#	include "libraries/luautf8/lutf8lib.h"
+#ifdef LOVE_ENABLE_LUA53
+#	include "libraries/lua53/lutf8lib.h"
 #endif
 
 // For love::graphics::setGammaCorrect.
@@ -73,6 +72,9 @@ extern "C"
 {
 #if defined(LOVE_ENABLE_AUDIO)
 	extern int luaopen_love_audio(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_DATA)
+	extern int luaopen_love_data(lua_State*);
 #endif
 #if defined(LOVE_ENABLE_EVENT)
 	extern int luaopen_love_event(lua_State*);
@@ -132,6 +134,9 @@ extern "C"
 static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_AUDIO)
 	{ "love.audio", luaopen_love_audio },
+#endif
+#if defined(LOVE_ENABLE_DATA)
+	{ "love.data", luaopen_love_data },
 #endif
 #if defined(LOVE_ENABLE_EVENT)
 	{ "love.event", luaopen_love_event },
@@ -369,8 +374,9 @@ int luaopen_love(lua_State *L)
 	for (int i = 0; modules[i].name != nullptr; i++)
 		love::luax_preload(L, modules[i].func, modules[i].name);
 
-	// Load "common" types.
-	love::w_Data_open(L);
+	// Necessary for Data-creating methods to work properly in Data subclasses.
+	love::luax_require(L, "love.data");
+	lua_pop(L, 1);
 
 #ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);
@@ -378,7 +384,7 @@ int luaopen_love(lua_State *L)
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");
 #endif
-#ifdef LOVE_ENABLE_LUAUTF8
+#ifdef LOVE_ENABLE_LUA53
 	love::luax_preload(L, luaopen_luautf8, "utf8");
 #endif
 

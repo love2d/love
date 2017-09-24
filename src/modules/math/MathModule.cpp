@@ -21,7 +21,6 @@
 // LOVE
 #include "MathModule.h"
 #include "common/Vector.h"
-#include "common/b64.h"
 #include "common/int.h"
 #include "common/StringMap.h"
 #include "BezierCurve.h"
@@ -40,84 +39,6 @@ using love::Vector2;
 
 namespace
 {
-
-static const char hexchars[] = "0123456789abcdef";
-
-char *bytesToHex(const love::uint8 *src, size_t srclen, size_t &dstlen)
-{
-	dstlen = srclen * 2;
-
-	if (dstlen == 0)
-		return nullptr;
-
-	char *dst = nullptr;
-	try
-	{
-		dst = new char[dstlen + 1];
-	}
-	catch (std::exception &)
-	{
-		throw love::Exception("Out of memory.");
-	}
-
-	for (size_t i = 0; i < srclen; i++)
-	{
-		love::uint8 b = src[i];
-		dst[i * 2 + 0] = hexchars[b >> 4];
-		dst[i * 2 + 1] = hexchars[b & 0xF];
-	}
-
-	dst[dstlen] = '\0';
-	return dst;
-}
-
-love::uint8 nibble(char c)
-{
-	if (c >= '0' && c <= '9')
-		return (love::uint8) (c - '0');
-
-	if (c >= 'A' && c <= 'F')
-		return (love::uint8) (c - 'A' + 0x0a);
-
-	if (c >= 'a' && c <= 'f')
-		return (love::uint8) (c - 'a' + 0x0a);
-
-	return 0;
-}
-
-love::uint8 *hexToBytes(const char *src, size_t srclen, size_t &dstlen)
-{
-	if (srclen >= 2 && src[0] == '0' && (src[1] == 'x' || src[1] == 'X'))
-	{
-		src += 2;
-		srclen -= 2;
-	}
-
-	dstlen = (srclen + 1) / 2;
-
-	if (dstlen == 0)
-		return nullptr;
-
-	love::uint8 *dst = nullptr;
-	try
-	{
-		dst = new love::uint8[dstlen];
-	}
-	catch (std::exception &)
-	{
-		throw love::Exception("Out of memory.");
-	}
-
-	for (size_t i = 0; i < dstlen; i++)
-	{
-		dst[i] = nibble(src[i * 2]) << 4;
-
-		if (i * 2 + 1 < srclen)
-			dst[i] |= nibble(src[i * 2 + 1]);
-	}
-
-	return dst;
-}
 
 // check if an angle is oriented counter clockwise
 inline bool is_oriented_ccw(const Vector2 &a, const Vector2 &b, const Vector2 &c)
@@ -280,81 +201,6 @@ float linearToGamma(float c)
 		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
 }
 
-CompressedData *compress(Compressor::Format format, love::Data *rawdata, int level)
-{
-	return compress(format, (const char *) rawdata->getData(), rawdata->getSize(), level);
-}
-
-CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
-{
-	Compressor *compressor = Compressor::getCompressor(format);
-
-	if (compressor == nullptr)
-		throw love::Exception("Invalid compression format.");
-
-	size_t compressedsize = 0;
-	char *cbytes = compressor->compress(format, rawbytes, rawsize, level, compressedsize);
-
-	CompressedData *data = nullptr;
-
-	try
-	{
-		data = new CompressedData(format, cbytes, compressedsize, rawsize, true);
-	}
-	catch (love::Exception &)
-	{
-		delete[] cbytes;
-		throw;
-	}
-
-	return data;
-}
-
-char *decompress(CompressedData *data, size_t &decompressedsize)
-{
-	size_t rawsize = data->getDecompressedSize();
-
-	char *rawbytes = decompress(data->getFormat(), (const char *) data->getData(),
-	                            data->getSize(), rawsize);
-
-	decompressedsize = rawsize;
-	return rawbytes;
-}
-
-char *decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
-{
-	Compressor *compressor = Compressor::getCompressor(format);
-
-	if (compressor == nullptr)
-		throw love::Exception("Invalid compression format.");
-
-	return compressor->decompress(format, cbytes, compressedsize, rawsize);
-}
-
-char *encode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen, size_t linelen)
-{
-	switch (format)
-	{
-	case ENCODE_BASE64:
-	default:
-		return b64_encode(src, srclen, linelen, dstlen);
-	case ENCODE_HEX:
-		return bytesToHex((const uint8 *) src, srclen, dstlen);
-	}
-}
-
-char *decode(EncodeFormat format, const char *src, size_t srclen, size_t &dstlen)
-{
-	switch (format)
-	{
-	case ENCODE_BASE64:
-	default:
-		return b64_decode(src, srclen, dstlen);
-	case ENCODE_HEX:
-		return (char *) hexToBytes(src, srclen, dstlen);
-	}
-}
-
 Math Math::instance;
 
 Math::Math()
@@ -390,38 +236,6 @@ Transform *Math::newTransform()
 Transform *Math::newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
 {
 	return new Transform(x, y, a, sx, sy, ox, oy, kx, ky);
-}
-
-std::string hash(HashFunction::Function function, Data *input)
-{
-	return hash(function, (const char*) input->getData(), input->getSize());
-}
-
-std::string hash(HashFunction::Function function, const char *input, uint64_t size)
-{
-	HashFunction *hashfunction = HashFunction::getHashFunction(function);
-	if (hashfunction == nullptr)
-		throw love::Exception("Invalid hash function.");
-
-	return hashfunction->hash(function, input, size);
-}
-
-static StringMap<EncodeFormat, ENCODE_MAX_ENUM>::Entry encoderEntries[] =
-{
-	{ "base64", ENCODE_BASE64 },
-	{ "hex",    ENCODE_HEX },
-};
-
-static StringMap<EncodeFormat, ENCODE_MAX_ENUM> encoders(encoderEntries, sizeof(encoderEntries));
-
-bool getConstant(const char *in, EncodeFormat &out)
-{
-	return encoders.find(in, out);
-}
-
-bool getConstant(EncodeFormat in, const char *&out)
-{
-	return encoders.find(in, out);
 }
 
 } // math

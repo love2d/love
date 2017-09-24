@@ -1,6 +1,6 @@
 
-#ifndef LUAUTF8_LUTF8LIB_H
-#define LUAUTF8_LUTF8LIB_H
+#ifndef LUA53_LUTF8LIB_H
+#define LUA53_LUTF8LIB_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,4 +14,4 @@ LUALIB_API int luaopen_luautf8(lua_State *L);
 }
 #endif
 
-#endif /* LOVE_LUAUTF8_LUTF8LIB_H */
+#endif /* LUA53_LUTF8LIB_H */

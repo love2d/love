@@ -18,24 +18,73 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FONT_WRAP_GLYPH_DATA_H
-#define LOVE_FONT_WRAP_GLYPH_DATA_H
+#include "ByteData.h"
+#include "common/Exception.h"
+#include "common/int.h"
 
-// LOVE
-#include "common/runtime.h"
-#include "data/wrap_Data.h"
-
-#include "GlyphData.h"
+#include <string.h>
 
 namespace love
 {
-namespace font
+namespace data
 {
 
-GlyphData *luax_checkglyphdata(lua_State *L, int idx);
-extern "C" int luaopen_glyphdata(lua_State *L);
+love::Type ByteData::type("ByteData", &Data::type);
 
-} // font
+ByteData::ByteData(size_t size)
+	: size(size)
+{
+	create();
+	memset(data, 0, size);
+}
+
+ByteData::ByteData(const void *d, size_t size)
+	: size(size)
+{
+	create();
+	memcpy(data, d, size);
+}
+
+ByteData::ByteData(const ByteData &d)
+	: size(d.size)
+{
+	create();
+}
+
+ByteData::~ByteData()
+{
+	delete[] data;
+}
+
+void ByteData::create()
+{
+	if (size == 0)
+		throw love::Exception("ByteData size must be greater than 0.");
+
+	try
+	{
+		data = new char[size];
+	}
+	catch (std::exception &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+}
+
+ByteData *ByteData::clone() const
+{
+	return new ByteData(*this);
+}
+
+void *ByteData::getData() const
+{
+	return data;
+}
+
+size_t ByteData::getSize() const
+{
+	return size;
+}
+
+} // data
 } // love
-
-#endif // LOVE_FONT_WRAP_GLYPH_DATA_H

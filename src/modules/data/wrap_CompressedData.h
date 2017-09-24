@@ -18,49 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_Data.h"
+#pragma once
+
+// LOVE
+#include "common/runtime.h"
+#include "CompressedData.h"
 
 namespace love
 {
-
-Data *luax_checkdata(lua_State *L, int idx)
+namespace data
 {
-	return luax_checktype<Data>(L, idx);
-}
 
-int w_Data_getString(lua_State *L)
-{
-	Data *t = luax_checkdata(L, 1);
-	lua_pushlstring(L, (const char *) t->getData(), t->getSize());
-	return 1;
-}
+CompressedData *luax_checkcompresseddata(lua_State *L, int idx);
+extern "C" int luaopen_compresseddata(lua_State *L);
 
-int w_Data_getPointer(lua_State *L)
-{
-	Data *t = luax_checkdata(L, 1);
-	lua_pushlightuserdata(L, t->getData());
-	return 1;
-}
-
-int w_Data_getSize(lua_State *L)
-{
-	Data *t = luax_checkdata(L, 1);
-	lua_pushnumber(L, (lua_Number) t->getSize());
-	return 1;
-}
-
-const luaL_Reg w_Data_functions[] =
-{
-	{ "getString", w_Data_getString },
-	{ "getPointer", w_Data_getPointer },
-	{ "getSize", w_Data_getSize },
-	{ 0, 0 }
-};
-
-int w_Data_open(lua_State *L)
-{
-	luax_register_type(L, &Data::type, w_Data_functions, nullptr);
-	return 0;
-}
-
+} // data
 } // love

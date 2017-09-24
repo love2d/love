@@ -18,24 +18,40 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FONT_WRAP_GLYPH_DATA_H
-#define LOVE_FONT_WRAP_GLYPH_DATA_H
+#pragma once
 
-// LOVE
-#include "common/runtime.h"
-#include "data/wrap_Data.h"
-
-#include "GlyphData.h"
+#include "common/Data.h"
 
 namespace love
 {
-namespace font
+namespace data
 {
 
-GlyphData *luax_checkglyphdata(lua_State *L, int idx);
-extern "C" int luaopen_glyphdata(lua_State *L);
+/**
+ * Contains a reference to a subsection of an existing Data object.
+ **/
+class DataView : public love::Data
+{
+public:
 
-} // font
+	static love::Type type;
+
+	DataView(Data *data, size_t offset, size_t size);
+	DataView(const DataView &d);
+	virtual ~DataView();
+
+	// Implements Data.
+	DataView *clone() const override;
+	void *getData() const override;
+	size_t getSize() const override;
+
+private:
+
+	StrongRef<Data> data;
+	size_t offset;
+	size_t size;
+
+}; // DataView
+
+} // data
 } // love
-
-#endif // LOVE_FONT_WRAP_GLYPH_DATA_H
