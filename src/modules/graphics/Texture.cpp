@@ -239,7 +239,7 @@ int Texture::getPixelHeight(int mip) const
 	return std::max(pixelHeight >> mip, 1);
 }
 
-float Texture::getPixelDensity() const
+float Texture::getDPIScale() const
 {
 	return (float) pixelHeight / (float) height;
 }

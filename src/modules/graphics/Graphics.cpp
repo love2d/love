@@ -172,9 +172,9 @@ Font *Graphics::newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinti
 	return newFont(r.get(), filter);
 }
 
-Video *Graphics::newVideo(love::video::VideoStream *stream, float pixeldensity)
+Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 {
-	return new Video(this, stream, pixeldensity);
+	return new Video(this, stream, dpiscale);
 }
 
 bool Graphics::validateShader(bool gles, const Shader::ShaderSource &source, std::string &err)
@@ -202,7 +202,7 @@ int Graphics::getPixelHeight() const
 	return pixelHeight;
 }
 
-double Graphics::getCurrentPixelDensity() const
+double Graphics::getCurrentDPIScale() const
 {
 	if (states.back().renderTargets.colors.size() > 0)
 	{
@@ -210,10 +210,10 @@ double Graphics::getCurrentPixelDensity() const
 		return (double) c->getPixelHeight() / (double) c->getHeight();
 	}
 
-	return getScreenPixelDensity();
+	return getScreenDPIScale();
 }
 
-double Graphics::getScreenPixelDensity() const
+double Graphics::getScreenDPIScale() const
 {
 	return (double) getPixelHeight() / (double) getHeight();
 }

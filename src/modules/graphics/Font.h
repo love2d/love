@@ -171,7 +171,7 @@ public:
 
 	void setFallbacks(const std::vector<Font *> &fallbacks);
 
-	float getPixelDensity() const;
+	float getDPIScale() const;
 
 	uint32 getTextureCacheID() const;
 
@@ -228,7 +228,7 @@ private:
 
 	Texture::Filter filter;
 
-	float pixelDensity;
+	float dpiScale;
 
 	int textureX, textureY;
 	int rowHeight;

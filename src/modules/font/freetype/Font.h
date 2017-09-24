@@ -46,7 +46,7 @@ public:
 	// Implements Font
 	Rasterizer *newRasterizer(love::filesystem::FileData *data) override;
 	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) override;
-	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, float pixeldensity, TrueTypeRasterizer::Hinting hinting) override;
+	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, float dpiscale, TrueTypeRasterizer::Hinting hinting) override;
 
 	// Implement Module
 	const char *getName() const override;

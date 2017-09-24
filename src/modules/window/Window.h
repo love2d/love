@@ -179,7 +179,7 @@ public:
 	virtual void windowToDPICoords(double *x, double *y) const = 0;
 	virtual void DPIToWindowCoords(double *x, double *y) const = 0;
 
-	virtual double getPixelDensity() const = 0;
+	virtual double getDPIScale() const = 0;
 
 	virtual double toPixels(double x) const = 0;
 	virtual void toPixels(double wx, double wy, double &px, double &py) const = 0;

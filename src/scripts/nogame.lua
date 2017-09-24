@@ -729,7 +729,7 @@ function love.nogame()
 
 		local ww, wh = love.graphics.getDimensions()
 
-		if love.window.getPixelDensity() > 1 then
+		if love.window.getDPIScale() > 1 then
 			mosaic_image = g_images.mosaic[2]
 		end
 

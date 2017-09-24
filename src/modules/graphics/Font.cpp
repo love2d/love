@@ -54,7 +54,7 @@ Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
 	, textureWidth(128)
 	, textureHeight(128)
 	, filter(f)
-	, pixelDensity(r->getPixelDensity())
+	, dpiScale(r->getDPIScale())
 	, useSpacesAsTab(false)
 	, textureCacheID(0)
 {
@@ -247,7 +247,7 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	Glyph g;
 
 	g.texture = 0;
-	g.spacing = floorf(gd->getAdvance() / pixelDensity + 0.5f);
+	g.spacing = floorf(gd->getAdvance() / dpiScale + 0.5f);
 
 	memset(g.vertices, 0, sizeof(GlyphVertex) * 4);
 
@@ -275,18 +275,18 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		// 1---3
 		const GlyphVertex verts[4] =
 		{
-			{float(-o),          float(-o),          normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
-			{float(-o),          (h+o)/pixelDensity, normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
-			{(w+o)/pixelDensity, float(-o),          normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
-			{(w+o)/pixelDensity, (h+o)/pixelDensity, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
+			{float(-o),      float(-o),      normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
+			{float(-o),      (h+o)/dpiScale, normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
+			{(w+o)/dpiScale, float(-o),      normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
+			{(w+o)/dpiScale, (h+o)/dpiScale, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
 		};
 
 		// Copy vertex data to the glyph and set proper bearing.
 		for (int i = 0; i < 4; i++)
 		{
 			g.vertices[i] = verts[i];
-			g.vertices[i].x += gd->getBearingX() / pixelDensity;
-			g.vertices[i].y -= gd->getBearingY() / pixelDensity;
+			g.vertices[i].x += gd->getBearingX() / dpiScale;
+			g.vertices[i].y -= gd->getBearingY() / dpiScale;
 		}
 
 		textureX += w + TEXTURE_PADDING;
@@ -321,7 +321,7 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	{
 		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
 		{
-			k = floorf(r->getKerning(leftglyph, rightglyph) / pixelDensity + 0.5f);
+			k = floorf(r->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f);
 			break;
 		}
 	}
@@ -382,7 +382,7 @@ void Font::getCodepointsFromString(const std::vector<ColoredString> &strs, Color
 
 float Font::getHeight() const
 {
-	return (float) floorf(height / pixelDensity + 0.5f);
+	return (float) floorf(height / dpiScale + 0.5f);
 }
 
 std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector2 offset, TextInfo *info)
@@ -921,12 +921,12 @@ const Texture::Filter &Font::getFilter() const
 
 int Font::getAscent() const
 {
-	return floorf(rasterizers[0]->getAscent() / pixelDensity + 0.5f);
+	return floorf(rasterizers[0]->getAscent() / dpiScale + 0.5f);
 }
 
 int Font::getDescent() const
 {
-	return floorf(rasterizers[0]->getDescent() / pixelDensity + 0.5f);
+	return floorf(rasterizers[0]->getDescent() / dpiScale + 0.5f);
 }
 
 float Font::getBaseline() const
@@ -992,9 +992,9 @@ void Font::setFallbacks(const std::vector<Font *> &fallbacks)
 		rasterizers.push_back(f->rasterizers[0]);
 }
 
-float Font::getPixelDensity() const
+float Font::getDPIScale() const
 {
-	return pixelDensity;
+	return dpiScale;
 }
 
 uint32 Font::getTextureCacheID() const

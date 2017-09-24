@@ -488,7 +488,7 @@ function love.graphics.newVideo(file, settings)
 	settings = settings == nil and {} or settings
 	if type(settings) ~= "table" then error("bad argument #2 to newVideo (expected table)", 2) end
 
-	local video = love.graphics._newVideo(file, settings.pixeldensity)
+	local video = love.graphics._newVideo(file, settings.dpiscale)
 	local source, success
 
 	if settings.audio ~= false and love.audio then

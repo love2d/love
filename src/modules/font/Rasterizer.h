@@ -120,12 +120,12 @@ public:
 
 	virtual DataType getDataType() const = 0;
 
-	float getPixelDensity() const;
+	float getDPIScale() const;
 
 protected:
 
 	FontMetrics metrics;
-	float pixelDensity;
+	float dpiScale;
 
 }; // Rasterizer
 

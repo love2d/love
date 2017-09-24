@@ -131,12 +131,12 @@ std::string BMFontLine::getAttributeString(const char *name) const
 } // anonymous namespace
 
 
-BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist, float pixeldensity)
+BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist, float dpiscale)
 	: fontSize(0)
 	, unicode(false)
 	, lineHeight(0)
 {
-	this->pixelDensity = pixeldensity;
+	this->dpiScale = dpiscale;
 
 	const std::string &filename = fontdef->getFilename();
 

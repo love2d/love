@@ -83,8 +83,8 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	pixelWidth = w;
 	pixelHeight = h;
 
-	width  = (int) (pixelWidth / settings.pixeldensity + 0.5);
-	height = (int) (pixelHeight / settings.pixeldensity + 0.5);
+	width  = (int) (pixelWidth / settings.dpiScale + 0.5);
+	height = (int) (pixelHeight / settings.dpiScale + 0.5);
 
 	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getMipmapCount(w, h);
 	format = fmt;

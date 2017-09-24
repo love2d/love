@@ -36,8 +36,8 @@ Canvas::Canvas(const Settings &settings)
 
 	width = settings.width;
 	height = settings.height;
-	pixelWidth = (int) ((width * settings.pixeldensity) + 0.5);
-	pixelHeight = (int) ((height * settings.pixeldensity) + 0.5);
+	pixelWidth = (int) ((width * settings.dpiScale) + 0.5);
+	pixelHeight = (int) ((height * settings.dpiScale) + 0.5);
 
 	format = settings.format;
 

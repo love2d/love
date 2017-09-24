@@ -58,17 +58,17 @@ Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 
 Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting)
 {
-	float pixeldensity = 1.0f;
+	float dpiscale = 1.0f;
 	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window != nullptr)
-		pixeldensity = window->getPixelDensity();
+		dpiscale = window->getDPIScale();
 
-	return newTrueTypeRasterizer(data, size, pixeldensity, hinting);
+	return newTrueTypeRasterizer(data, size, dpiscale, hinting);
 }
 
-Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, float pixeldensity, TrueTypeRasterizer::Hinting hinting)
+Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, float dpiscale, TrueTypeRasterizer::Hinting hinting)
 {
-	return new TrueTypeRasterizer(library, data, size, pixeldensity, hinting);
+	return new TrueTypeRasterizer(library, data, size, dpiscale, hinting);
 }
 
 const char *Font::getName() const

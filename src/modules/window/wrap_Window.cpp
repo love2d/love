@@ -419,9 +419,9 @@ int w_isVisible(lua_State *L)
 	return 1;
 }
 
-int w_getPixelDensity(lua_State *L)
+int w_getDPIScale(lua_State *L)
 {
-	lua_pushnumber(L, instance()->getPixelDensity());
+	lua_pushnumber(L, instance()->getDPIScale());
 	return 1;
 }
 
@@ -581,7 +581,7 @@ static const luaL_Reg functions[] =
 	{ "hasFocus", w_hasFocus },
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
-	{ "getPixelDensity", w_getPixelDensity },
+	{ "getDPIScale", w_getDPIScale },
 	{ "toPixels", w_toPixels },
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },

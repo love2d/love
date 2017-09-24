@@ -372,7 +372,7 @@ public:
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter);
 	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter = Texture::defaultFilter);
-	Video *newVideo(love::video::VideoStream *stream, float pixeldensity);
+	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
 	virtual SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) = 0;
 
@@ -450,8 +450,8 @@ public:
 	int getPixelWidth() const;
 	int getPixelHeight() const;
 
-	double getCurrentPixelDensity() const;
-	double getScreenPixelDensity() const;
+	double getCurrentDPIScale() const;
+	double getScreenDPIScale() const;
 
 	/**
 	 * Sets the current constant color.

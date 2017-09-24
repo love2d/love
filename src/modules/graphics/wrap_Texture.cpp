@@ -122,10 +122,10 @@ int w_Texture_getPixelDimensions(lua_State *L)
 	return 2;
 }
 
-int w_Texture_getPixelDensity(lua_State *L)
+int w_Texture_getDPIScale(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	lua_pushnumber(L, t->getPixelDensity());
+	lua_pushnumber(L, t->getDPIScale());
 	return 1;
 }
 
@@ -312,7 +312,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getPixelWidth", w_Texture_getPixelWidth },
 	{ "getPixelHeight", w_Texture_getPixelHeight },
 	{ "getPixelDimensions", w_Texture_getPixelDimensions },
-	{ "getPixelDensity", w_Texture_getPixelDensity },
+	{ "getDPIScale", w_Texture_getDPIScale },
 	{ "setFilter", w_Texture_setFilter },
 	{ "getFilter", w_Texture_getFilter },
 	{ "setMipmapFilter", w_Texture_setMipmapFilter },

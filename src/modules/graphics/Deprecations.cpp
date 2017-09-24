@@ -76,7 +76,7 @@ void Deprecations::draw(Graphics *gfx)
 	{
 		auto hinting = font::TrueTypeRasterizer::HINTING_NORMAL;
 
-		if (!isGammaCorrect() && gfx->getScreenPixelDensity() <= 1.0)
+		if (!isGammaCorrect() && gfx->getScreenDPIScale() <= 1.0)
 			hinting = font::TrueTypeRasterizer::HINTING_LIGHT;
 
 		font.set(gfx->newDefaultFont(9, hinting), Acquire::NORETAIN);

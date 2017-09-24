@@ -234,9 +234,9 @@ int w_getPixelDimensions(lua_State *L)
 	return 2;
 }
 
-int w_getPixelDensity(lua_State *L)
+int w_getDPIScale(lua_State *L)
 {
-	lua_pushnumber(L, instance()->getScreenPixelDensity());
+	lua_pushnumber(L, instance()->getScreenDPIScale());
 	return 1;
 }
 
@@ -631,7 +631,7 @@ int w_getStencilTest(lua_State *L)
 	return 2;
 }
 
-static void parsePixelDensity(Data *d, float *pixeldensity)
+static void parseDPIScale(Data *d, float *dpiscale)
 {
 	auto fd = dynamic_cast<love::filesystem::FileData *>(d);
 	if (fd == nullptr)
@@ -648,8 +648,8 @@ static void parsePixelDensity(Data *d, float *pixeldensity)
 	{
 		char *end = nullptr;
 		long density = strtol(fname.c_str() + atpos + 1, &end, 10);
-		if (end != nullptr && density > 0 && pixeldensity != nullptr)
-			*pixeldensity = (float) density;
+		if (end != nullptr && density > 0 && dpiscale != nullptr)
+			*dpiscale = (float) density;
 	}
 }
 
@@ -662,14 +662,14 @@ static Image::Settings w__optImageSettings(lua_State *L, int idx, const Image::S
 		luaL_checktype(L, idx, LUA_TTABLE);
 		settings.mipmaps = luax_boolflag(L, idx, "mipmaps", s.mipmaps);
 		settings.linear = luax_boolflag(L, idx, "linear", s.linear);
-		settings.pixeldensity = (float) luax_numberflag(L, idx, "pixeldensity", s.pixeldensity);
+		settings.dpiScale = (float) luax_numberflag(L, idx, "dpiscale", s.dpiScale);
 	}
 
 	return settings;
 }
 
 static std::pair<StrongRef<image::ImageData>, StrongRef<image::CompressedImageData>>
-getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
+getImageData(lua_State *L, int idx, bool allowcompressed, float *dpiscale)
 {
 	StrongRef<image::ImageData> idata;
 	StrongRef<image::CompressedImageData> cdata;
@@ -687,8 +687,8 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *density)
 
 		StrongRef<Data> fdata(filesystem::luax_getdata(L, idx), Acquire::NORETAIN);
 
-		if (density != nullptr)
-			parsePixelDensity(fdata, density);
+		if (dpiscale != nullptr)
+			parseDPIScale(fdata, dpiscale);
 
 		if (allowcompressed && imagemodule->isCompressed(fdata))
 			luax_catchexcept(L, [&]() { cdata.set(imagemodule->newCompressedData(fdata), Acquire::NORETAIN); });
@@ -724,7 +724,7 @@ int w_newCubeImage(lua_State *L)
 
 	if (!lua_istable(L, 1))
 	{
-		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		auto data = getImageData(L, 1, true, &settings.dpiScale);
 
 		std::vector<StrongRef<love::image::ImageData>> faces;
 
@@ -758,7 +758,7 @@ int w_newCubeImage(lua_State *L)
 				{
 					lua_rawgeti(L, -1, mip + 1);
 
-					auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? &settings.pixeldensity : nullptr);
+					auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? &settings.dpiScale : nullptr);
 					if (data.first.get())
 						slices.set(face, mip, data.first);
 					else
@@ -776,7 +776,7 @@ int w_newCubeImage(lua_State *L)
 			{
 				lua_rawgeti(L, 1, i + 1);
 
-				auto data = getImageData(L, -1, true, i == 0 ? &settings.pixeldensity : nullptr);
+				auto data = getImageData(L, -1, true, i == 0 ? &settings.dpiScale : nullptr);
 
 				if (data.first.get())
 				{
@@ -829,7 +829,7 @@ int w_newArrayImage(lua_State *L)
 				{
 					lua_rawgeti(L, -1, mip + 1);
 
-					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.pixeldensity : nullptr);
+					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.dpiScale : nullptr);
 					if (data.first.get())
 						slices.set(slice, mip, data.first);
 					else
@@ -844,7 +844,7 @@ int w_newArrayImage(lua_State *L)
 			for (int slice = 0; slice < tlen; slice++)
 			{
 				lua_rawgeti(L, 1, slice + 1);
-				auto data = getImageData(L, -1, true, slice == 0 ? &settings.pixeldensity : nullptr);
+				auto data = getImageData(L, -1, true, slice == 0 ? &settings.dpiScale : nullptr);
 				if (data.first.get())
 					slices.set(slice, 0, data.first);
 				else
@@ -856,7 +856,7 @@ int w_newArrayImage(lua_State *L)
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		auto data = getImageData(L, 1, true, &settings.dpiScale);
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
@@ -893,7 +893,7 @@ int w_newVolumeImage(lua_State *L)
 				{
 					lua_rawgeti(L, -1, mip + 1);
 
-					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.pixeldensity : nullptr);
+					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.dpiScale : nullptr);
 					if (data.first.get())
 						slices.set(slice, mip, data.first);
 					else
@@ -908,7 +908,7 @@ int w_newVolumeImage(lua_State *L)
 			for (int layer = 0; layer < tlen; layer++)
 			{
 				lua_rawgeti(L, 1, layer + 1);
-				auto data = getImageData(L, -1, true, layer == 0 ? &settings.pixeldensity : nullptr);
+				auto data = getImageData(L, -1, true, layer == 0 ? &settings.dpiScale : nullptr);
 				if (data.first.get())
 					slices.set(layer, 0, data.first);
 				else
@@ -920,7 +920,7 @@ int w_newVolumeImage(lua_State *L)
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		auto data = getImageData(L, 1, true, &settings.dpiScale);
 
 		if (data.first.get())
 		{
@@ -951,7 +951,7 @@ int w_newImage(lua_State *L)
 		for (int i = 0; i < n; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			auto data = getImageData(L, -1, true, i == 0 ? &settings.pixeldensity : nullptr);
+			auto data = getImageData(L, -1, true, i == 0 ? &settings.dpiScale : nullptr);
 			if (data.first.get())
 				slices.set(0, i, data.first);
 			else
@@ -961,7 +961,7 @@ int w_newImage(lua_State *L)
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, &settings.pixeldensity);
+		auto data = getImageData(L, 1, true, &settings.dpiScale);
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
@@ -1131,7 +1131,7 @@ int w_newCanvas(lua_State *L)
 	settings.height = (int) luaL_optinteger(L, 2, instance()->getHeight());
 
 	// Default to the screen's current pixel density scale.
-	settings.pixeldensity = instance()->getScreenPixelDensity();
+	settings.dpiScale = instance()->getScreenDPIScale();
 
 	int startidx = 3;
 
@@ -1146,7 +1146,7 @@ int w_newCanvas(lua_State *L)
 	{
 		luaL_checktype(L, startidx, LUA_TTABLE);
 
-		settings.pixeldensity = (float) luax_numberflag(L, startidx, "pixeldensity", settings.pixeldensity);
+		settings.dpiScale = (float) luax_numberflag(L, startidx, "dpiscale", settings.dpiScale);
 		settings.msaa = luax_intflag(L, startidx, "msaa", settings.msaa);
 
 		lua_getfield(L, startidx, "format");
@@ -1596,10 +1596,10 @@ int w_newVideo(lua_State *L)
 		luax_convobj(L, 1, "video", "newVideoStream");
 
 	auto stream = luax_checktype<love::video::VideoStream>(L, 1);
-	float pixeldensity = (float) luaL_optnumber(L, 2, 1.0);
+	float dpiscale = (float) luaL_optnumber(L, 2, 1.0);
 	Video *video = nullptr;
 
-	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream, pixeldensity); });
+	luax_catchexcept(L, [&]() { video = instance()->newVideo(stream, dpiscale); });
 
 	luax_pushtype(L, video);
 	video->release();
@@ -2838,7 +2838,7 @@ static const luaL_Reg functions[] =
 	{ "getPixelWidth", w_getPixelWidth },
 	{ "getPixelHeight", w_getPixelHeight },
 	{ "getPixelDimensions", w_getPixelDimensions },
-	{ "getPixelDensity", w_getPixelDensity },
+	{ "getDPIScale", w_getDPIScale },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },

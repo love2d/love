@@ -1027,13 +1027,13 @@ void Graphics::setScissor(const Rect &rect)
 
 	glEnable(GL_SCISSOR_TEST);
 
-	double density = getCurrentPixelDensity();
+	double dpiscale = getCurrentDPIScale();
 
 	Rect glrect;
-	glrect.x = (int) (rect.x * density);
-	glrect.y = (int) (rect.y * density);
-	glrect.w = (int) (rect.w * density);
-	glrect.h = (int) (rect.h * density);
+	glrect.x = (int) (rect.x * dpiscale);
+	glrect.y = (int) (rect.y * dpiscale);
+	glrect.w = (int) (rect.w * dpiscale);
+	glrect.h = (int) (rect.h * dpiscale);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
 	gl.setScissor(glrect, isCanvasActive());
@@ -1260,7 +1260,7 @@ void Graphics::setPointSize(float size)
 	if (streamBufferState.primitiveMode == vertex::PrimitiveMode::POINTS)
 		flushStreamDraws();
 
-	gl.setPointSize(size * getCurrentPixelDensity());
+	gl.setPointSize(size * getCurrentDPIScale());
 	states.back().pointSize = size;
 }
 

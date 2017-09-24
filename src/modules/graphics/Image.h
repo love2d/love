@@ -50,7 +50,7 @@ public:
 	{
 		bool mipmaps = false;
 		bool linear = false;
-		float pixeldensity = 1.0f;
+		float dpiScale = 1.0f;
 	};
 
 	struct Slices

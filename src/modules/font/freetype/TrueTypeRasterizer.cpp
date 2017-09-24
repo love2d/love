@@ -32,12 +32,12 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float pixeldensity, Hinting hinting)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float dpiscale, Hinting hinting)
 	: data(data)
 	, hinting(hinting)
 {
-	this->pixelDensity = pixeldensity;
-	size = floorf(size * pixeldensity + 0.5f);
+	this->dpiScale = dpiscale;
+	size = floorf(size * dpiscale + 0.5f);
 
 	if (size <= 0)
 		throw love::Exception("Invalid TrueType font size: %d", size);

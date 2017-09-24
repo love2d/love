@@ -55,7 +55,7 @@ public:
 		MipmapMode mipmaps = MIPMAPS_NONE;
 		PixelFormat format = PIXELFORMAT_NORMAL;
 		TextureType type = TEXTURE_2D;
-		float pixeldensity = 1.0f;
+		float dpiScale = 1.0f;
 		int msaa = 0;
 		OptionalBool readable;
 	};

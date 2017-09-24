@@ -136,7 +136,7 @@ public:
 	int getPixelWidth(int mip = 0) const;
 	int getPixelHeight(int mip = 0) const;
 
-	float getPixelDensity() const;
+	float getDPIScale() const;
 
 	virtual void setFilter(const Filter &f);
 	virtual const Filter &getFilter() const;

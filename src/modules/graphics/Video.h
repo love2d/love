@@ -41,7 +41,7 @@ public:
 
 	static love::Type type;
 
-	Video(Graphics *gfx, love::video::VideoStream *stream, float pixeldensity = 1.0f);
+	Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale = 1.0f);
 	virtual ~Video();
 
 	// Drawable

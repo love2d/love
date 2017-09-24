@@ -101,7 +101,7 @@ public:
 	void windowToDPICoords(double *x, double *y) const;
 	void DPIToWindowCoords(double *x, double *y) const;
 
-	double getPixelDensity() const;
+	double getDPIScale() const;
 
 	double toPixels(double x) const;
 	void toPixels(double wx, double wy, double &px, double &py) const;

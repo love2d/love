@@ -1026,7 +1026,7 @@ void Window::DPIToWindowCoords(double *x, double *y) const
 		*y = py;
 }
 
-double Window::getPixelDensity() const
+double Window::getDPIScale() const
 {
 #ifdef LOVE_ANDROID
 	return love::android::getScreenScale();
@@ -1037,24 +1037,24 @@ double Window::getPixelDensity() const
 
 double Window::toPixels(double x) const
 {
-	return x * getPixelDensity();
+	return x * getDPIScale();
 }
 
 void Window::toPixels(double wx, double wy, double &px, double &py) const
 {
-	double scale = getPixelDensity();
+	double scale = getDPIScale();
 	px = wx * scale;
 	py = wy * scale;
 }
 
 double Window::fromPixels(double x) const
 {
-	return x / getPixelDensity();
+	return x / getDPIScale();
 }
 
 void Window::fromPixels(double px, double py, double &wx, double &wy) const
 {
-	double scale = getPixelDensity();
+	double scale = getDPIScale();
 	wx = px / scale;
 	wy = py / scale;
 }

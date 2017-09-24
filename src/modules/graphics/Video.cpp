@@ -31,10 +31,10 @@ namespace graphics
 
 love::Type Video::type("Video", &Drawable::type);
 
-Video::Video(Graphics *gfx, love::video::VideoStream *stream, float pixeldensity)
+Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 	: stream(stream)
-	, width(stream->getWidth() / pixeldensity)
-	, height(stream->getHeight() / pixeldensity)
+	, width(stream->getWidth() / dpiscale)
+	, height(stream->getHeight() / dpiscale)
 	, filter(Texture::defaultFilter)
 {
 	filter.mipmap = Texture::FILTER_NONE;

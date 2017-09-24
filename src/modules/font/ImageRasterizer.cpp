@@ -31,13 +31,13 @@ namespace font
 
 static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
 
-ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float pixeldensity)
+ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float dpiscale)
 	: imageData(data)
 	, glyphs(glyphs)
 	, numglyphs(numglyphs)
 	, extraSpacing(extraspacing)
 {
-	this->pixelDensity = pixeldensity;
+	this->dpiScale = dpiscale;
 
 	if (data->getFormat() != PIXELFORMAT_RGBA8)
 		throw love::Exception("Only 32-bit RGBA images are supported in Image Fonts!");
