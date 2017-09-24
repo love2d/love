@@ -2434,17 +2434,21 @@ int w_points(lua_State *L)
 int w_line(lua_State *L)
 {
 	int args = lua_gettop(L);
+	int arg1type = lua_type(L, 1);
 	bool is_table = false;
-	if (args == 1 && lua_istable(L, 1))
+
+	if (args == 1 && arg1type == LUA_TTABLE)
 	{
 		args = (int) luax_objlen(L, 1);
 		is_table = true;
 	}
 
-	if (args % 2 != 0)
-		return luaL_error(L, "Number of vertex components must be a multiple of two");
+	if (arg1type != LUA_TTABLE && arg1type != LUA_TNUMBER)
+		return luax_typerror(L, 1, "table or number");
+	else if (args % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 	else if (args < 4)
-		return luaL_error(L, "Need at least two vertices to draw a line");
+		return luaL_error(L, "Need at least two vertices to draw a line.");
 
 	int numvertices = args / 2;
 
