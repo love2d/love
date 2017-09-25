@@ -81,7 +81,7 @@ AS_VAR_IF([enable_mpg123], [no],
 # Add flags for optional libraries
 AC_ARG_ENABLE([library-enet], [  --disable-library-enet    Turn off library enet], [], [enable_library_enet=yes])
 AC_ARG_ENABLE([library-luasocket], [  --disable-library-luasocket    Turn off library luasocket], [], [enable_library_luasocket=yes])
-AC_ARG_ENABLE([library-luautf8], [  --disable-library-luautf8    Turn off library luautf8], [], [enable_library_luautf8=yes])
+AC_ARG_ENABLE([library-lua53], [  --disable-library-lua53    Turn off library lua53 (lua 5.3 backports, required by love.data)], [], [enable_library_lua53=yes])
 
 # Select the libraries we need to build, based on the selected modules
 AS_VAR_IF([enable_module_physics], [yes], [enable_library_Box2D=yes], [enable_library_Box2D=no])
@@ -89,6 +89,7 @@ AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_l
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glslang=yes], [enable_library_glslang=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_lodepng=yes], [enable_library_lodepng=no])
+AS_VAR_IF([enable_module_data], [yes], [enable_library_lua53=yes], [])
 AS_VAR_IF([enable_module_math], [yes], [enable_library_lz4=yes], [enable_library_lz4=no])
 AS_VAR_IF([enable_module_math], [yes], [enable_library_noise1234=yes], [enable_library_noise1234=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_stb=yes], [enable_library_stb=no])
