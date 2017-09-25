@@ -69,10 +69,18 @@
 #include "lualib.h"
 #include "lstrlib.h"
 
+#if LUA_VERSION_NUM == 501
 typedef size_t lua_Unsigned;
+#endif
 
+#if LUA_VERSION_NUM == 501
+#	define LUAL_BUFFER53_BUFFER(B) (B)->b.buffer
+#else
+#	define LUAL_BUFFER53_BUFFER(B) (B)->b.initb
+#endif
 
 static void luaL_buffinit_53 (lua_State *L, luaL_Buffer_53 *B) {
+#if LUA_VERSION_NUM == 501
 	/* make it crash if used via pointer to a 5.1-style luaL_Buffer */
 	B->b.p = NULL;
 	B->b.L = NULL;
@@ -82,10 +90,14 @@ static void luaL_buffinit_53 (lua_State *L, luaL_Buffer_53 *B) {
 	B->capacity = LUAL_BUFFERSIZE;
 	B->nelems = 0;
 	B->L2 = L;
+#else
+	return luaL_buffinit(L, (luaL_Buffer*) B);
+#endif
 }
 
 
 static char *luaL_prepbuffsize_53 (luaL_Buffer_53 *B, size_t s) {
+#if LUA_VERSION_NUM == 501
 	if (B->capacity - B->nelems < s) { /* needs to grow */
 		char* newptr = NULL;
 		size_t newcap = B->capacity * 2;
@@ -101,6 +113,9 @@ static char *luaL_prepbuffsize_53 (luaL_Buffer_53 *B, size_t s) {
 		B->capacity = newcap;
 	}
 	return B->ptr+B->nelems;
+#else
+	return luaL_prepbuffsize((luaL_Buffer*) B, s);
+#endif
 }
 
 
@@ -120,12 +135,12 @@ static void luaL_addlstring_53 (luaL_Buffer_53 *B, const char *s, size_t l) {
 
 void lua53_pushresult (luaL_Buffer_53 *B) {
 	lua_pushlstring(B->L2, B->ptr, B->nelems);
-	if (B->ptr != B->b.buffer)
+	if (B->ptr != LUAL_BUFFER53_BUFFER(B))
 		lua_replace(B->L2, -2); /* remove userdata buffer */
 }
 
 void lua53_cleanupbuffer (luaL_Buffer_53 *B) {
-	if (B->ptr != B->b.buffer)
+	if (B->ptr != LUAL_BUFFER53_BUFFER(B))
 		lua_replace(B->L2, -1); /* remove userdata buffer */
 }
 

@@ -102,7 +102,7 @@ static std::vector<Source*> readSourceList(lua_State *L, int n)
 	if (n < 0)
 		n += lua_gettop(L) + 1;
 
-	int items = (int) lua_objlen(L, n);
+	int items = (int) luax_objlen(L, n);
 	std::vector<Source*> sources(items);
 
 	for (int i = 0; i < items; i++)
