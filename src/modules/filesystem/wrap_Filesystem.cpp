@@ -786,7 +786,7 @@ int w_exists(lua_State *L)
 
 int w_isDirectory(lua_State *L)
 {
-	luax_markdeprecated(L, "love.filesystem.exists", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	luax_markdeprecated(L, "love.filesystem.isDirectory", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
 	const char *arg = luaL_checkstring(L, 1);
 	Filesystem::Info info = {};
 	bool exists = instance()->getInfo(arg, info);
