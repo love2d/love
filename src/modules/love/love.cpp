@@ -61,9 +61,12 @@
 #	include "graphics/Graphics.h"
 #endif
 
-// Scripts
+// Put the boot.lua code directly into a raw string literal.
+static const char boot_lua[] =
+#include "boot.lua"
+;
+
 #include "scripts/nogame.lua.h"
-#include "scripts/boot.lua.h"
 
 // All modules define a c-accessible luaopen
 // so let's make use of those, instead
@@ -487,7 +490,7 @@ int luaopen_love_nogame(lua_State *L)
 
 int luaopen_love_boot(lua_State *L)
 {
-	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+	if (luaL_loadbuffer(L, boot_lua, sizeof(boot_lua), "boot.lua") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
