@@ -186,8 +186,7 @@ bool Canvas::loadVolatile()
 
 	// getMaxRenderbufferSamples will be 0 on systems that don't support
 	// multisampled renderbuffers / don't export FBO multisample extensions.
-	actualSamples = getRequestedMSAA();
-	actualSamples = std::min(actualSamples, gl.getMaxRenderbufferSamples());
+	actualSamples = std::min(getRequestedMSAA(), gl.getMaxRenderbufferSamples());
 	actualSamples = std::max(actualSamples, 0);
 	actualSamples = actualSamples == 1 ? 0 : actualSamples;
 

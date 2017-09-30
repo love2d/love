@@ -81,9 +81,22 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	vbo->unmap();
 
 	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
+	
+	GLenum datatype = 0;
+	switch (format.type)
+	{
+	case DATA_BYTE:
+		datatype = GL_UNSIGNED_BYTE;
+		break;
+	case DATA_FLOAT:
+		datatype = GL_FLOAT;
+		break;
+	default:
+		datatype = 0;
+		break;
+	}
 
 	const void *gloffset = BUFFER_OFFSET(getAttributeOffset(attributeindex));
-	GLenum datatype = getGLDataType(format.type);
 	GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
 
 	glVertexAttribPointer(attriblocation, format.components, datatype, normalized, (GLsizei) vertexStride, gloffset);
@@ -98,8 +111,24 @@ void Mesh::drawInternal(int start, int count, int instancecount, bool useindexbu
 	gl.useVertexAttribArrays(attribflags, instancedattribflags);
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
-
-	GLenum gldrawmode = getGLDrawMode(drawMode);
+	
+	GLenum gldrawmode = GL_TRIANGLES;
+	switch (drawMode)
+	{
+	case DRAWMODE_FAN:
+		gldrawmode = GL_TRIANGLE_FAN;
+		break;
+	case DRAWMODE_STRIP:
+		gldrawmode = GL_TRIANGLE_STRIP;
+		break;
+	case DRAWMODE_TRIANGLES:
+	default:
+		gldrawmode = GL_TRIANGLES;
+		break;
+	case DRAWMODE_POINTS:
+		gldrawmode = GL_POINTS;
+		break;
+	}
 
 	if (useindexbuffer)
 	{
@@ -113,35 +142,6 @@ void Mesh::drawInternal(int start, int count, int instancecount, bool useindexbu
 	else
 	{
 		gl.drawArrays(gldrawmode, start, count, instancecount);
-	}
-}
-
-GLenum Mesh::getGLDrawMode(DrawMode mode)
-{
-	switch (mode)
-	{
-	case DRAWMODE_FAN:
-		return GL_TRIANGLE_FAN;
-	case DRAWMODE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case DRAWMODE_TRIANGLES:
-	default:
-		return GL_TRIANGLES;
-	case DRAWMODE_POINTS:
-		return GL_POINTS;
-	}
-}
-
-GLenum Mesh::getGLDataType(DataType type)
-{
-	switch (type)
-	{
-	case DATA_BYTE:
-		return GL_UNSIGNED_BYTE;
-	case DATA_FLOAT:
-		return GL_FLOAT;
-	default:
-		return 0;
 	}
 }
 

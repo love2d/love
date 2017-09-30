@@ -49,11 +49,6 @@ protected:
 
 	void drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const override;
 
-private:
-
-	static GLenum getGLDrawMode(DrawMode mode);
-	static GLenum getGLDataType(DataType type);
-
 }; // Mesh
 
 } // opengl
