@@ -487,11 +487,8 @@ static void screenshotChannelCallback(const Graphics::ScreenshotInfo *info, love
 
 	if (channel != nullptr)
 	{
-		Proxy p;
-		p.type = &love::image::ImageData::type;
-		p.object = i;
 		if (i != nullptr)
-			channel->push(Variant(p.type, &p));
+			channel->push(Variant(&love::image::ImageData::type, i));
 
 		channel->release();
 	}

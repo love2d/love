@@ -85,10 +85,10 @@ Variant::Variant(love::Type *udatatype, void *userdata)
 {
 	if (udatatype != nullptr)
 	{
-		Proxy *p = (Proxy *) userdata;
-		data.userdata = p->object;
-		if (p->object)
-			p->object->retain();
+		love::Object *o = (love::Object *) userdata;
+		data.userdata = o;
+		if (o != nullptr)
+			o->retain();
 	}
 	else
 		data.userdata = userdata;

@@ -110,12 +110,8 @@ void LuaThread::onError()
 	if (!eventmodule)
 		return;
 
-	Proxy p;
-	p.type = &LuaThread::type;
-	p.object = this;
-
 	std::vector<Variant> vargs = {
-		Variant(p.type, &p),
+		Variant(&LuaThread::type, this),
 		Variant(error.c_str(), error.length())
 	};
 
