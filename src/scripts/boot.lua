@@ -1,7 +1,3 @@
-R"luastring"--(
--- DO NOT REMOVE THE ABOVE LINE. It is used to load this file as a C++ string.
--- There is a matching delimiter at the bottom of the file.
-
 --[[
 Copyright (c) 2006-2017 LOVE Development Team
 
@@ -45,7 +41,7 @@ function love.path.endslash(p)
 end
 
 -- Checks whether a path is absolute or not.
-function love.path.isAbsolute(p)
+function love.path.abs(p)
 
 	local tmp = love.path.normalslashes(p)
 
@@ -66,8 +62,9 @@ function love.path.isAbsolute(p)
 end
 
 -- Converts any path into a full path.
-function love.path.getFull(p)
-	if love.path.isAbsolute(p) then
+function love.path.getfull(p)
+
+	if love.path.abs(p) then
 		return love.path.normalslashes(p)
 	end
 
@@ -328,7 +325,7 @@ function love.boot()
 			nouri = uridecode(nouri:sub(8))
 		end
 
-		local full_source =  love.path.getFull(nouri)
+		local full_source =  love.path.getfull(nouri)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
 
 		-- Use the name of the source .love as the identity for now.
@@ -759,6 +756,3 @@ return function()
 
 	return retval == nil and 0 or retval
 end
-
--- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
---)luastring"--"
