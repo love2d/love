@@ -74,7 +74,8 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	StrongRef<Message> m(Message::fromLua(L, 1), Acquire::NORETAIN);
+	StrongRef<Message> m;
+	luax_catchexcept(L, [&]() { m.set(Message::fromLua(L, 1), Acquire::NORETAIN); });
 
 	luax_pushboolean(L, m.get() != nullptr);
 

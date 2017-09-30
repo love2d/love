@@ -44,7 +44,7 @@ public:
 		STRING,
 		SMALLSTRING,
 		LUSERDATA,
-		FUSERDATA,
+		LOVEOBJECT,
 		NIL,
 		TABLE
 	};
@@ -53,8 +53,8 @@ public:
 	Variant(bool boolean);
 	Variant(double number);
 	Variant(const char *string, size_t len);
-	Variant(void *userdata);
-	Variant(love::Type *udatatype, void *userdata);
+	Variant(void *lightuserdata);
+	Variant(love::Type *type, love::Object *object);
 	Variant(std::vector<std::pair<Variant, Variant>> *table);
 	Variant(const Variant &v);
 	Variant(Variant &&v);
@@ -102,7 +102,6 @@ private:
 	static const int MAX_SMALL_STRING_LENGTH = 15;
 
 	Type type;
-	love::Type *udatatype;
 
 	union Data
 	{
@@ -110,6 +109,7 @@ private:
 		double number;
 		SharedString *string;
 		void *userdata;
+		Proxy objectproxy;
 		SharedTable *table;
 		struct
 		{
