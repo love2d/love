@@ -978,17 +978,17 @@ void Graphics::present(void *screenshotCallbackData)
 			catch (love::Exception &)
 			{
 				delete[] screenshot;
-				info.callback(nullptr, info.ref, nullptr);
+				info.callback(&info, nullptr, nullptr);
 				for (int j = i + 1; j < (int) pendingScreenshotCallbacks.size(); j++)
 				{
 					const auto &ninfo = pendingScreenshotCallbacks[j];
-					ninfo.callback(nullptr, ninfo.ref, nullptr);
+					ninfo.callback(&ninfo, nullptr, nullptr);
 				}
 				pendingScreenshotCallbacks.clear();
 				throw;
 			}
 
-			info.callback(img, info.ref, screenshotCallbackData);
+			info.callback(&info, img, screenshotCallbackData);
 			img->release();
 		}
 

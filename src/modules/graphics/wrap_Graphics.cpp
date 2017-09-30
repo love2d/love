@@ -30,6 +30,7 @@
 #include "image/wrap_Image.h"
 #include "common/Reference.h"
 #include "math/wrap_Transform.h"
+#include "thread/wrap_Channel.h"
 
 #include "opengl/Graphics.h"
 
@@ -426,11 +427,19 @@ int w_getCanvas(lua_State *L)
 	}
 }
 
-static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *gd)
+static void screenshotFunctionCallback(const Graphics::ScreenshotInfo *info, love::image::ImageData *i, void *gd)
 {
-	if (i != nullptr)
+	if (info == nullptr)
+		return;
+
+	lua_State *L = (lua_State *) gd;
+	Reference *ref = (Reference *) info->data;
+
+	if (i != nullptr && L != nullptr)
 	{
-		lua_State *L = (lua_State *) gd;
+		if (ref == nullptr)
+			luaL_error(L, "Internal error in screenshot callback.");
+
 		ref->push(L);
 		delete ref;
 		luax_pushtype(L, i);
@@ -440,33 +449,66 @@ static void screenshotCallback(love::image::ImageData *i, Reference *ref, void *
 		delete ref;
 }
 
-static int screenshotSaveToFile(lua_State *L)
+struct ScreenshotFileInfo
 {
-	image::ImageData *id = image::luax_checkimagedata(L, 1);
-
-	const char *filename = luaL_checkstring(L, lua_upvalueindex(1));
-	const char *ext = luaL_checkstring(L, lua_upvalueindex(2));
-
+	std::string filename;
 	image::FormatHandler::EncodedFormat format;
-	if (!image::ImageData::getConstant(ext, format))
-		return 0;
+};
 
-	try
+static void screenshotFileCallback(const Graphics::ScreenshotInfo *info, love::image::ImageData *i, void * /*gd*/)
+{
+	if (info == nullptr)
+		return;
+
+	ScreenshotFileInfo *fileinfo = (ScreenshotFileInfo *) info->data;
+
+	if (i != nullptr && fileinfo != nullptr)
 	{
-		id->encode(format, filename, true);
-	}
-	catch (love::Exception &e)
-	{
-		printf("Screenshot encoding or saving failed: %s", e.what());
-		// Do nothing...
+		try
+		{
+			i->encode(fileinfo->format, fileinfo->filename.c_str(), true);
+		}
+		catch (love::Exception &e)
+		{
+			printf("Screenshot encoding or saving failed: %s", e.what());
+			// Do nothing...
+		}
 	}
 
-	return 0;
+	delete fileinfo;
+}
+
+static void screenshotChannelCallback(const Graphics::ScreenshotInfo *info, love::image::ImageData *i, void * /*gd*/)
+{
+	if (info == nullptr)
+		return;
+
+	auto *channel = (love::thread::Channel *) info->data;
+
+	if (channel != nullptr)
+	{
+		Proxy p;
+		p.type = &love::image::ImageData::type;
+		p.object = i;
+		if (i != nullptr)
+			channel->push(Variant(p.type, &p));
+
+		channel->release();
+	}
 }
 
 int w_captureScreenshot(lua_State *L)
 {
-	if (lua_isstring(L, 1))
+	Graphics::ScreenshotInfo info;
+
+	if (lua_isfunction(L, 1))
+	{
+		lua_pushvalue(L, 1);
+		info.data = luax_refif(L, LUA_TFUNCTION);
+		lua_pop(L, 1);
+		info.callback = screenshotFunctionCallback;
+	}
+	else if (lua_isstring(L, 1))
 	{
 		std::string filename = luax_checkstring(L, 1);
 		std::string ext;
@@ -482,24 +524,26 @@ int w_captureScreenshot(lua_State *L)
 		if (!image::ImageData::getConstant(ext.c_str(), format))
 			return luaL_error(L, "Invalid encoded image format: %s", ext.c_str());
 
-		lua_pushvalue(L, 1);
-		luax_pushstring(L, ext);
-		lua_pushcclosure(L, screenshotSaveToFile, 2);
-		lua_replace(L, 1);
+		ScreenshotFileInfo *fileinfo = new ScreenshotFileInfo;
+		fileinfo->filename = filename;
+		fileinfo->format = format;
+
+		info.data = fileinfo;
+		info.callback = screenshotFileCallback;
 	}
-
-	luaL_checktype(L, 1, LUA_TFUNCTION);
-
-	Graphics::ScreenshotInfo info;
-	info.callback = screenshotCallback;
-
-	lua_pushvalue(L, 1);
-	info.ref = luax_refif(L, LUA_TFUNCTION);
-	lua_pop(L, 1);
+	else if (luax_istype(L, 1, love::thread::Channel::type))
+	{
+		auto *channel = love::thread::luax_checkchannel(L, 1);
+		channel->retain();
+		info.data = channel;
+		info.callback = screenshotChannelCallback;
+	}
+	else
+		return luax_typerror(L, 1, "function, string, or Channel");
 
 	luax_catchexcept(L,
 		[&]() { instance()->captureScreenshot(info); },
-		[&](bool except) { if (except) delete info.ref; }
+		[&](bool except) { if (except) info.callback(&info, nullptr, nullptr); }
 	);
 
 	return 0;

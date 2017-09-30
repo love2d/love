@@ -52,8 +52,6 @@
 namespace love
 {
 
-class Reference;
-
 namespace graphics
 {
 
@@ -297,12 +295,13 @@ public:
 		Graphics *gfx;
 	};
 
-	typedef void (*ScreenshotCallback)(love::image::ImageData *i, Reference *ref, void *ud);
+	struct ScreenshotInfo;
+	typedef void (*ScreenshotCallback)(const ScreenshotInfo *info, love::image::ImageData *i, void *ud);
 
 	struct ScreenshotInfo
 	{
-		ScreenshotCallback callback;
-		Reference *ref;
+		ScreenshotCallback callback = nullptr;
+		void *data = nullptr;
 	};
 
 	struct RenderTarget
