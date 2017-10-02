@@ -139,6 +139,11 @@ bool Transform::getConstant(MatrixLayout in, const char *&out)
 	return matrixLayouts.find(in, out);
 }
 
+std::vector<std::string> Transform::getConstants(MatrixLayout)
+{
+	return matrixLayouts.getNames();
+}
+
 StringMap<Transform::MatrixLayout, Transform::MATRIX_MAX_ENUM>::Entry Transform::matrixLayoutEntries[] =
 {
 	{ "row",    MATRIX_ROW_MAJOR    },

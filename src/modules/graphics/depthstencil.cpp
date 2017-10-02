@@ -85,6 +85,11 @@ bool getConstant(StencilAction in, const char *&out)
 	return stencilActions.find(in, out);
 }
 
+std::vector<std::string> getConstants(StencilAction)
+{
+	return stencilActions.getNames();
+}
+
 bool getConstant(const char *in, CompareMode &out)
 {
 	return compareModes.find(in, out);
@@ -93,6 +98,11 @@ bool getConstant(const char *in, CompareMode &out)
 bool getConstant(CompareMode in, const char *&out)
 {
 	return compareModes.find(in, out);
+}
+
+std::vector<std::string> getConstants(CompareMode)
+{
+	return compareModes.getNames();
 }
 
 } // graphics

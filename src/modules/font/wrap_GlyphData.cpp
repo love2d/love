@@ -118,7 +118,7 @@ int w_GlyphData_getFormat(lua_State *L)
 
 	const char *str;
 	if (!getConstant(t->getFormat(), str))
-		return luaL_error(L, "unknown GlyphData format.");
+		return luax_enumerror(L, "pixel format", str);
 
 	lua_pushstring(L, str);
 	return 1;

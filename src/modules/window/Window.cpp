@@ -34,22 +34,27 @@ void Window::swapBuffers()
 {
 }
 
-bool Window::getConstant(const char *in, Window::FullscreenType &out)
+bool Window::getConstant(const char *in, FullscreenType &out)
 {
 	return fullscreenTypes.find(in, out);
 }
 
-bool Window::getConstant(Window::FullscreenType in, const char *&out)
+bool Window::getConstant(FullscreenType in, const char *&out)
 {
 	return fullscreenTypes.find(in, out);
 }
 
-bool Window::getConstant(const char *in, Window::Setting &out)
+std::vector<std::string> Window::getConstants(FullscreenType)
+{
+	return fullscreenTypes.getNames();
+}
+
+bool Window::getConstant(const char *in, Setting &out)
 {
 	return settings.find(in, out);
 }
 
-bool Window::getConstant(Window::Setting in, const char *&out)
+bool Window::getConstant(Setting in, const char *&out)
 {
 	return settings.find(in, out);
 }
@@ -62,6 +67,11 @@ bool Window::getConstant(const char *in, MessageBoxType &out)
 bool Window::getConstant(MessageBoxType in, const char *&out)
 {
 	return messageBoxTypes.find(in, out);
+}
+
+std::vector<std::string> Window::getConstants(MessageBoxType)
+{
+	return messageBoxTypes.getNames();
 }
 
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntries[] =

@@ -202,12 +202,15 @@ public:
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
+	static std::vector<std::string> getConstants(DrawMode);
 
 	static bool getConstant(const char *in, DataType &out);
 	static bool getConstant(DataType in, const char *&out);
+	static std::vector<std::string> getConstants(DataType);
 
 	static bool getConstant(const char *in, AttributeStep &out);
 	static bool getConstant(AttributeStep in, const char *&out);
+	static std::vector<std::string> getConstants(AttributeStep);
 
 protected:
 

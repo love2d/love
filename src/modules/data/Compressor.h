@@ -87,6 +87,7 @@ public:
 
 	static bool getConstant(const char *in, Format &out);
 	static bool getConstant(Format in, const char *&out);
+	static std::vector<std::string> getConstants(Format);
 
 protected:
 

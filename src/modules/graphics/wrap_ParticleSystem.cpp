@@ -99,7 +99,7 @@ int w_ParticleSystem_setInsertMode(lua_State *L)
 	ParticleSystem::InsertMode mode;
 	const char *str = luaL_checkstring(L, 2);
 	if (!ParticleSystem::getConstant(str, mode))
-		return luaL_error(L, "Invalid insert mode: '%s'", str);
+		return luax_enumerror(L, "insert mode", ParticleSystem::getConstants(mode), str);
 	t->setInsertMode(mode);
 	return 0;
 }
@@ -205,7 +205,7 @@ int w_ParticleSystem_setAreaSpread(lua_State *L)
 
 	const char *str = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (str && !ParticleSystem::getConstant(str, distribution))
-		return luaL_error(L, "Invalid particle distribution: %s", str);
+		return luax_enumerror(L, "particle distribution", ParticleSystem::getConstants(distribution), str);
 
 	if (distribution != ParticleSystem::DISTRIBUTION_NONE)
 	{

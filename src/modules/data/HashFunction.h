@@ -80,6 +80,7 @@ public:
 
 	static bool getConstant(const char *in, Function &out);
 	static bool getConstant(const Function &in, const char *&out);
+	static std::vector<std::string> getConstants(Function);
 
 protected:
 

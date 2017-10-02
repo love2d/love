@@ -23,6 +23,9 @@
 
 #include "Exception.h"
 
+#include <string>
+#include <vector>
+
 namespace love
 {
 
@@ -143,6 +146,18 @@ public:
 			hash = ((hash << 5) + hash) + c;
 
 		return hash;
+	}
+
+	std::vector<std::string> getNames() const
+	{
+		std::vector<std::string> names;
+		names.reserve(SIZE);
+
+		for (unsigned int i = 0; i < SIZE; ++i)
+			if (reverse[i] != nullptr)
+				names.emplace_back(reverse[i]);
+
+		return names;
 	}
 
 private:

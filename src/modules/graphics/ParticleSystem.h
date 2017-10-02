@@ -541,9 +541,11 @@ public:
 
 	static bool getConstant(const char *in, AreaSpreadDistribution &out);
 	static bool getConstant(AreaSpreadDistribution in, const char *&out);
+	static std::vector<std::string> getConstants(AreaSpreadDistribution);
 
 	static bool getConstant(const char *in, InsertMode &out);
 	static bool getConstant(InsertMode in, const char *&out);
+	static std::vector<std::string> getConstants(InsertMode);
 
 protected:
 

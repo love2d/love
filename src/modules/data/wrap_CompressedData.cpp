@@ -47,7 +47,7 @@ int w_CompressedData_getFormat(lua_State *L)
 
 	const char *fname = nullptr;
 	if (!Compressor::getConstant(t->getFormat(), fname))
-		return luaL_error(L, "Unknown compressed data format.");
+		return luax_enumerror(L, "compressed data format", Compressor::getConstants(Compressor::FORMAT_MAX_ENUM), fname);
 
 	lua_pushstring(L, fname);
 	return 1;

@@ -204,9 +204,11 @@ public:
 
 	static bool getConstant(const char *in, Mode &out);
 	static bool getConstant(Mode in, const char *&out);
+	static std::vector<std::string> getConstants(Mode);
 
 	static bool getConstant(const char *in, BufferMode &out);
 	static bool getConstant(BufferMode in, const char *&out);
+	static std::vector<std::string> getConstants(BufferMode);
 
 private:
 

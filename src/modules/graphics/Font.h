@@ -181,6 +181,7 @@ public:
 
 	static bool getConstant(const char *in, AlignMode &out);
 	static bool getConstant(AlignMode in, const char *&out);
+	static std::vector<std::string> getConstants(AlignMode);
 
 	static int fontCount;
 

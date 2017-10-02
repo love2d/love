@@ -107,7 +107,7 @@ int w_compress(lua_State *L)
 	Compressor::Format format = Compressor::FORMAT_LZ4;
 
 	if (!Compressor::getConstant(fstr, format))
-		return luaL_error(L, "Invalid compressed data format: %s", fstr);
+		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 	int level = (int) luaL_optinteger(L, 3, -1);
 
@@ -146,7 +146,7 @@ int w_decompress(lua_State *L)
 		const char *fstr = luaL_checkstring(L, 1);
 
 		if (!Compressor::getConstant(fstr, format))
-			return luaL_error(L, "Invalid compressed data format: %s", fstr);
+			return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 		size_t compressedsize = 0;
 		const char *cbytes = nullptr;
@@ -174,7 +174,7 @@ int w_encode(lua_State *L)
 	const char *formatstr = luaL_checkstring(L, 1);
 	EncodeFormat format;
 	if (!getConstant(formatstr, format))
-		return luaL_error(L, "Invalid encode format: %s", formatstr);
+		return luax_enumerror(L, "encode format", getConstants(format), formatstr);
 
 	size_t srclen = 0;
 	const char *src = nullptr;
@@ -208,7 +208,7 @@ int w_decode(lua_State *L)
 	const char *formatstr = luaL_checkstring(L, 1);
 	EncodeFormat format;
 	if (!getConstant(formatstr, format))
-		return luaL_error(L, "Invalid decode format: %s", formatstr);
+		return luax_enumerror(L, "decode format", getConstants(format), formatstr);
 
 	size_t srclen = 0;
 	const char *src = nullptr;
@@ -240,7 +240,7 @@ int w_hash(lua_State *L)
 	const char *fstr = luaL_checkstring(L, 1);
 	HashFunction::Function function;
 	if (!HashFunction::getConstant(fstr, function))
-		return luaL_error(L, "Invalid hash function: %s", fstr);
+		return luax_enumerror(L, "hash function", HashFunction::getConstants(function), fstr);
 
 	HashFunction::Value hashvalue;
 	if (lua_isstring(L, 2))

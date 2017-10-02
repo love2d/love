@@ -57,7 +57,7 @@ int w_getSystemCursor(lua_State *L)
 	Cursor::SystemCursor systemCursor;
 
 	if (!Cursor::getConstant(str, systemCursor))
-		return luaL_error(L, "Invalid system cursor type: %s", str);
+		return luax_enumerror(L, "system cursor type", str);
 
 	Cursor *cursor = 0;
 	luax_catchexcept(L, [&](){ cursor = instance()->getSystemCursor(systemCursor); });

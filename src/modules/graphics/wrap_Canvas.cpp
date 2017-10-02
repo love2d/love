@@ -130,7 +130,7 @@ int w_Canvas_getMipmapMode(lua_State *L)
 	Canvas *c = luax_checkcanvas(L, 1);
 	const char *str;
 	if (!Canvas::getConstant(c->getMipmapMode(), str))
-		return luaL_error(L, "Unknown mipmap mode.");
+		return luax_enumerror(L, "mipmap mode", Canvas::getConstants(Canvas::MIPMAPS_MAX_ENUM), str);
 
 	lua_pushstring(L, str);
 	return 1;

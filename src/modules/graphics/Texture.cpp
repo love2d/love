@@ -384,6 +384,11 @@ bool Texture::getConstant(TextureType in, const char *&out)
 	return texTypes.find(in, out);
 }
 
+std::vector<std::string> Texture::getConstants(TextureType)
+{
+	return texTypes.getNames();
+}
+
 bool Texture::getConstant(const char *in, FilterMode &out)
 {
 	return filterModes.find(in, out);
@@ -394,6 +399,11 @@ bool Texture::getConstant(FilterMode in, const char *&out)
 	return filterModes.find(in, out);
 }
 
+std::vector<std::string> Texture::getConstants(FilterMode)
+{
+	return filterModes.getNames();
+}
+
 bool Texture::getConstant(const char *in, WrapMode &out)
 {
 	return wrapModes.find(in, out);
@@ -402,6 +412,11 @@ bool Texture::getConstant(const char *in, WrapMode &out)
 bool Texture::getConstant(WrapMode in, const char *&out)
 {
 	return wrapModes.find(in, out);
+}
+
+std::vector<std::string> Texture::getConstants(WrapMode)
+{
+	return wrapModes.getNames();
 }
 
 StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry Texture::texTypeEntries[] =

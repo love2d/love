@@ -36,9 +36,14 @@ bool Body::getConstant(const char *in, Type &out)
 	return types.find(in, out);
 }
 
-bool Body::getConstant(Type in, const char  *&out)
+bool Body::getConstant(Type in, const char *&out)
 {
 	return types.find(in, out);
+}
+
+std::vector<std::string> Body::getConstants(Type)
+{
+	return types.getNames();
 }
 
 StringMap<Body::Type, Body::BODY_MAX_ENUM>::Entry Body::typeEntries[] =

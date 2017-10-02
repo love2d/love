@@ -162,12 +162,15 @@ public:
 
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
+	static std::vector<std::string> getConstants(TextureType);
 
 	static bool getConstant(const char *in, FilterMode &out);
 	static bool getConstant(FilterMode in, const char *&out);
+	static std::vector<std::string> getConstants(FilterMode);
 
 	static bool getConstant(const char *in, WrapMode &out);
 	static bool getConstant(WrapMode in, const char *&out);
+	static std::vector<std::string> getConstants(WrapMode);
 
 protected:
 

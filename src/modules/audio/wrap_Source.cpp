@@ -111,7 +111,7 @@ int w_Source_seek(lua_State *L)
 	Source::Unit u = Source::UNIT_SECONDS;
 	const char *unit = lua_isnoneornil(L, 3) ? 0 : lua_tostring(L, 3);
 	if (unit && !t->getConstant(unit, u))
-		return luaL_error(L, "Invalid Source time unit: %s", unit);
+		return luax_enumerror(L, "time unit", Source::getConstants(u), unit);
 
 	t->seek(offset, u);
 	return 0;
@@ -124,7 +124,7 @@ int w_Source_tell(lua_State *L)
 	Source::Unit u = Source::UNIT_SECONDS;
 	const char *unit = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
 	if (unit && !t->getConstant(unit, u))
-		return luaL_error(L, "Invalid Source time unit: %s", unit);
+		return luax_enumerror(L, "time unit", Source::getConstants(u), unit);
 
 	lua_pushnumber(L, t->tell(u));
 	return 1;
@@ -137,7 +137,7 @@ int w_Source_getDuration(lua_State *L)
 	Source::Unit u = Source::UNIT_SECONDS;
 	const char *unit = lua_isnoneornil(L, 2) ? 0 : lua_tostring(L, 2);
 	if (unit && !t->getConstant(unit, u))
-		return luaL_error(L, "Invalid Source time unit: %s", unit);
+		return luax_enumerror(L, "time unit", Source::getConstants(u), unit);
 
 	lua_pushnumber(L, t->getDuration(u));
 	return 1;
@@ -363,7 +363,7 @@ int setFilterReadFilter(lua_State *L, int idx, std::map<Filter::Parameter, float
 	Filter::Type type = Filter::TYPE_MAX_ENUM;
 	const char *typestr = luaL_checkstring(L, -1);
 	if (!Filter::getConstant(typestr, type))
-		return luaL_error(L, "Invalid Filter type: %s", typestr);
+		return luax_enumerror(L, "filter type", Filter::getConstants(type), typestr);
 
 	lua_pop(L, 1);
 	params[Filter::FILTER_TYPE] = static_cast<int>(type);

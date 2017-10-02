@@ -1444,6 +1444,11 @@ bool Graphics::getConstant(DrawMode in, const char *&out)
 	return drawModes.find(in, out);
 }
 
+std::vector<std::string> Graphics::getConstants(DrawMode)
+{
+	return drawModes.getNames();
+}
+
 bool Graphics::getConstant(const char *in, ArcMode &out)
 {
 	return arcModes.find(in, out);
@@ -1452,6 +1457,11 @@ bool Graphics::getConstant(const char *in, ArcMode &out)
 bool Graphics::getConstant(ArcMode in, const char *&out)
 {
 	return arcModes.find(in, out);
+}
+
+std::vector<std::string> Graphics::getConstants(ArcMode)
+{
+	return arcModes.getNames();
 }
 
 bool Graphics::getConstant(const char *in, BlendMode &out)
@@ -1464,6 +1474,11 @@ bool Graphics::getConstant(BlendMode in, const char *&out)
 	return blendModes.find(in, out);
 }
 
+std::vector<std::string> Graphics::getConstants(BlendMode)
+{
+	return blendModes.getNames();
+}
+
 bool Graphics::getConstant(const char *in, BlendAlpha &out)
 {
 	return blendAlphaModes.find(in, out);
@@ -1472,6 +1487,11 @@ bool Graphics::getConstant(const char *in, BlendAlpha &out)
 bool Graphics::getConstant(BlendAlpha in, const char *&out)
 {
 	return blendAlphaModes.find(in, out);
+}
+
+std::vector<std::string> Graphics::getConstants(BlendAlpha)
+{
+	return blendAlphaModes.getNames();
 }
 
 bool Graphics::getConstant(const char *in, LineStyle &out)
@@ -1484,6 +1504,11 @@ bool Graphics::getConstant(LineStyle in, const char *&out)
 	return lineStyles.find(in, out);
 }
 
+std::vector<std::string> Graphics::getConstants(LineStyle)
+{
+	return lineStyles.getNames();
+}
+
 bool Graphics::getConstant(const char *in, LineJoin &out)
 {
 	return lineJoins.find(in, out);
@@ -1492,6 +1517,11 @@ bool Graphics::getConstant(const char *in, LineJoin &out)
 bool Graphics::getConstant(LineJoin in, const char *&out)
 {
 	return lineJoins.find(in, out);
+}
+
+std::vector<std::string> Graphics::getConstants(LineJoin)
+{
+	return lineJoins.getNames();
 }
 
 bool Graphics::getConstant(const char *in, Feature &out)
@@ -1522,6 +1552,11 @@ bool Graphics::getConstant(const char *in, StackType &out)
 bool Graphics::getConstant(StackType in, const char *&out)
 {
 	return stackTypes.find(in, out);
+}
+
+std::vector<std::string> Graphics::getConstants(StackType)
+{
+	return stackTypes.getNames();
 }
 
 StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =

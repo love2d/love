@@ -109,6 +109,7 @@ public:
 
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char *&out);
+	static std::vector<std::string> getConstants(Type);
 	static bool getConstant(const char *in, Parameter &out, Type t);
 	static bool getConstant(Parameter in, const char *&out, Type t);
 	static ParameterType getParameterType(Parameter in);

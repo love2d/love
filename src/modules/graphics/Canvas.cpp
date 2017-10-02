@@ -190,6 +190,11 @@ bool Canvas::getConstant(MipmapMode in, const char *&out)
 	return mipmapModes.find(in, out);
 }
 
+std::vector<std::string> Canvas::getConstants(MipmapMode)
+{
+	return mipmapModes.getNames();
+}
+
 StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
 {
 	{ "none",   MIPMAPS_NONE   },

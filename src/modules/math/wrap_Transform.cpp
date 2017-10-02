@@ -140,7 +140,7 @@ int w_Transform_setMatrix(lua_State *L)
 		const char *layoutstr = lua_tostring(L, idx);
 		Transform::MatrixLayout layout;
 		if (!Transform::getConstant(layoutstr, layout))
-			return luaL_error(L, "Invalid matrix layout: %s", layoutstr);
+			return luax_enumerror(L, "matrix layout", Transform::getConstants(layout), layoutstr);
 
 		columnmajor = (layout == Transform::MATRIX_COLUMN_MAJOR);
 		idx++;

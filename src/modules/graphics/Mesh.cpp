@@ -659,14 +659,19 @@ size_t Mesh::getAttribFormatSize(const AttribFormat &format)
 	}
 }
 
-bool Mesh::getConstant(const char *in, Mesh::DrawMode &out)
+bool Mesh::getConstant(const char *in, DrawMode &out)
 {
 	return drawModes.find(in, out);
 }
 
-bool Mesh::getConstant(Mesh::DrawMode in, const char *&out)
+bool Mesh::getConstant(DrawMode in, const char *&out)
 {
 	return drawModes.find(in, out);
+}
+
+std::vector<std::string> Mesh::getConstants(DrawMode)
+{
+	return drawModes.getNames();
 }
 
 bool Mesh::getConstant(const char *in, DataType &out)
@@ -679,6 +684,11 @@ bool Mesh::getConstant(DataType in, const char *&out)
 	return dataTypes.find(in, out);
 }
 
+std::vector<std::string> Mesh::getConstants(DataType)
+{
+	return dataTypes.getNames();
+}
+
 bool Mesh::getConstant(const char *in, AttributeStep &out)
 {
 	return attributeSteps.find(in, out);
@@ -687,6 +697,11 @@ bool Mesh::getConstant(const char *in, AttributeStep &out)
 bool Mesh::getConstant(AttributeStep in, const char *&out)
 {
 	return attributeSteps.find(in, out);
+}
+
+std::vector<std::string> Mesh::getConstants(AttributeStep)
+{
+	return attributeSteps.getNames();
 }
 
 StringMap<Mesh::DrawMode, Mesh::DRAWMODE_MAX_ENUM>::Entry Mesh::drawModeEntries[] =

@@ -61,7 +61,7 @@ int w_isDown(lua_State *L)
 
 			const char *name = luaL_checkstring(L, -1);
 			if (!Keyboard::getConstant(name, k))
-				return luaL_error(L, "Invalid key constant: %s", name);
+				return luax_enumerror(L, "key constant", name);
 
 			keylist.push_back(k);
 			lua_pop(L, 1);
@@ -73,7 +73,7 @@ int w_isDown(lua_State *L)
 		{
 			const char *name = luaL_checkstring(L, i + 1);
 			if (!Keyboard::getConstant(name, k))
-				return luaL_error(L, "Invalid key constant: %s", name);
+				return luax_enumerror(L, "key constant", name);
 
 			keylist.push_back(k);
 		}
@@ -101,7 +101,7 @@ int w_isScancodeDown(lua_State *L)
 
 			const char *name = luaL_checkstring(L, -1);
 			if (!Keyboard::getConstant(name, scancode))
-				return luaL_error(L, "Invalid scancode: %s", name);
+				return luax_enumerror(L, "scancode", name);
 
 			scancodelist.push_back(scancode);
 			lua_pop(L, 1);
@@ -113,7 +113,7 @@ int w_isScancodeDown(lua_State *L)
 		{
 			const char *name = luaL_checkstring(L, i + 1);
 			if (!Keyboard::getConstant(name, scancode))
-				return luaL_error(L, "Invalid scancode: %s", name);
+				return luax_enumerror(L, "scancode", name);
 
 			scancodelist.push_back(scancode);
 		}
@@ -128,7 +128,7 @@ int w_getScancodeFromKey(lua_State *L)
 	const char *keystr = luaL_checkstring(L, 1);
 	Keyboard::Key key;
 	if (!Keyboard::getConstant(keystr, key))
-		return luaL_error(L, "Invalid key constant: %s", keystr);
+		return luax_enumerror(L, "key constant", keystr);
 
 	Keyboard::Scancode scancode = instance()->getScancodeFromKey(key);
 
@@ -145,7 +145,7 @@ int w_getKeyFromScancode(lua_State *L)
 	const char *scancodestr = luaL_checkstring(L, 1);
 	Keyboard::Scancode scancode;
 	if (!Keyboard::getConstant(scancodestr, scancode))
-		return luaL_error(L, "Invalid scancode: %s", scancodestr);
+		return luax_enumerror(L, "scancode", scancodestr);
 
 	Keyboard::Key key = instance()->getKeyFromScancode(scancode);
 

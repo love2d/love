@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cstdio>
+#include <sstream>
 
 namespace love
 {
@@ -830,6 +831,25 @@ extern "C" int luax_typerror(lua_State *L, int narg, const char *tname)
 
 	const char *msg = lua_pushfstring(L, "%s expected, got %s", tname, argtname);
 	return luaL_argerror(L, narg, msg);
+}
+
+int luax_enumerror(lua_State *L, const char *enumName, const char *value)
+{
+	return luaL_error(L, "Invalid %s: %s", enumName, value);
+}
+
+int luax_enumerror(lua_State *L, const char *enumName, const std::vector<std::string> &values, const char *value)
+{
+	std::stringstream valueStream;
+	bool first = true;
+	for (auto value : values)
+	{
+		valueStream << (first ? "'" : ", '") << value << "'";
+		first = false;
+	}
+
+	std::string valueString = valueStream.str();
+	return luaL_error(L, "Invalid %s '%s', expected one of: %s", enumName, value, valueString.c_str());
 }
 
 size_t luax_objlen(lua_State *L, int ndx)

@@ -48,6 +48,11 @@ bool Filter::getConstant(Type in, const char *&out)
 	return types.find(in, out);
 }
 
+std::vector<std::string> Filter::getConstants(Type)
+{
+	return types.getNames();
+}
+
 bool Filter::getConstant(const char *in, Parameter &out, Type t)
 {
 	return parameterNames[t].find(in, out);

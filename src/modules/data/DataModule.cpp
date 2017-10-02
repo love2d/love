@@ -263,5 +263,10 @@ bool getConstant(EncodeFormat in, const char *&out)
 	return encoders.find(in, out);
 }
 
+std::vector<std::string> getConstants(EncodeFormat)
+{
+	return encoders.getNames();
+}
+
 } // data
 } // love

@@ -64,5 +64,10 @@ bool Audio::getConstant(DistanceModel in, const char  *&out)
 	return distanceModels.find(in, out);
 }
 
+std::vector<std::string> Audio::getConstants(DistanceModel)
+{
+	return distanceModels.getNames();
+}
+
 } // audio
 } // love

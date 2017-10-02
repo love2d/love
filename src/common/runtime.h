@@ -459,6 +459,9 @@ extern "C" { // Also called from luasocket
 	int luax_typerror(lua_State *L, int narg, const char *tname);
 }
 
+int luax_enumerror(lua_State *L, const char *enumName, const char *value);
+int luax_enumerror(lua_State *L, const char *enumName, const std::vector<std::string> &values, const char *value);
+
 /**
  * Calls luax_objlen/lua_rawlen depending on version
  **/

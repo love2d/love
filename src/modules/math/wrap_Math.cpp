@@ -357,7 +357,7 @@ int w_compress(lua_State *L)
 	Compressor::Format format = Compressor::FORMAT_LZ4;
 
 	if (fstr && !Compressor::getConstant(fstr, format))
-		return luaL_error(L, "Invalid compressed data format: %s", fstr);
+		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 	int level = (int) luaL_optinteger(L, 3, -1);
 
@@ -399,7 +399,7 @@ int w_decompress(lua_State *L)
 		const char *fstr = luaL_checkstring(L, 2);
 
 		if (!Compressor::getConstant(fstr, format))
-			return luaL_error(L, "Invalid compressed data format: %s", fstr);
+			return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 		size_t compressedsize = 0;
 		const char *cbytes = nullptr;

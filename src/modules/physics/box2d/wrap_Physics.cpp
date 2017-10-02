@@ -74,7 +74,7 @@ int w_newBody(lua_State *L)
 	Body::Type btype = Body::BODY_STATIC;
 	const char *typestr = lua_isnoneornil(L, 4) ? 0 : lua_tostring(L, 4);
 	if (typestr && !Body::getConstant(typestr, btype))
-		return luaL_error(L, "Invalid Body type: %s", typestr);
+		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
 
 	Body *body;
 	luax_catchexcept(L, [&](){ body = instance()->newBody(world, x, y, btype); });

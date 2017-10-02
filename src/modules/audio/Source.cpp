@@ -51,6 +51,11 @@ bool Source::getConstant(Type in, const char  *&out)
 	return types.find(in, out);
 }
 
+std::vector<std::string> Source::getConstants(Type)
+{
+	return types.getNames();
+}
+
 bool Source::getConstant(const char *in, Unit &out)
 {
 	return units.find(in, out);
@@ -59,6 +64,11 @@ bool Source::getConstant(const char *in, Unit &out)
 bool Source::getConstant(Unit in, const char  *&out)
 {
 	return units.find(in, out);
+}
+
+std::vector<std::string> Source::getConstants(Unit)
+{
+	return units.getNames();
 }
 
 StringMap<Source::Type, Source::TYPE_MAX_ENUM>::Entry Source::typeEntries[] =

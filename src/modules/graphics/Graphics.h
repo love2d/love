@@ -773,21 +773,27 @@ public:
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);
+	static std::vector<std::string> getConstants(DrawMode);
 
 	static bool getConstant(const char *in, ArcMode &out);
 	static bool getConstant(ArcMode in, const char *&out);
+	static std::vector<std::string> getConstants(ArcMode);
 
 	static bool getConstant(const char *in, BlendMode &out);
 	static bool getConstant(BlendMode in, const char *&out);
+	static std::vector<std::string> getConstants(BlendMode);
 
 	static bool getConstant(const char *in, BlendAlpha &out);
 	static bool getConstant(BlendAlpha in, const char *&out);
+	static std::vector<std::string> getConstants(BlendAlpha);
 
 	static bool getConstant(const char *in, LineStyle &out);
 	static bool getConstant(LineStyle in, const char *&out);
+	static std::vector<std::string> getConstants(LineStyle);
 
 	static bool getConstant(const char *in, LineJoin &out);
 	static bool getConstant(LineJoin in, const char *&out);
+	static std::vector<std::string> getConstants(LineJoin);
 
 	static bool getConstant(const char *in, Feature &out);
 	static bool getConstant(Feature in, const char *&out);
@@ -797,6 +803,7 @@ public:
 
 	static bool getConstant(const char *in, StackType &out);
 	static bool getConstant(StackType in, const char *&out);
+	static std::vector<std::string> getConstants(StackType);
 
 	// Default shader code (a shader is always required internally.)
 	static Shader::ShaderSource defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];

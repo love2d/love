@@ -291,7 +291,7 @@ int w_Mesh_getVertexFormat(lua_State *L)
 	for (size_t i = 0; i < vertexformat.size(); i++)
 	{
 		if (!Mesh::getConstant(vertexformat[i].type, tname))
-			return luaL_error(L, "Unknown vertex attribute data type.");
+			return luax_enumerror(L, "vertex attribute data type", Mesh::getConstants(vertexformat[i].type), tname);
 
 		lua_createtable(L, 3, 0);
 
@@ -339,7 +339,7 @@ int w_Mesh_attachAttribute(lua_State *L)
 	Mesh::AttributeStep step = Mesh::STEP_PER_VERTEX;
 	const char *stepstr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
 	if (stepstr != nullptr && !Mesh::getConstant(stepstr, step))
-		return luaL_error(L, "Invalid vertex attribute step: %s", stepstr);
+		return luax_enumerror(L, "vertex attribute step", Mesh::getConstants(step), stepstr);
 
 	const char *attachname = luaL_optstring(L, 5, name);
 
@@ -382,7 +382,7 @@ int w_Mesh_setVertexMap(lua_State *L)
 		const char *indextypestr = luaL_checkstring(L, 3);
 		IndexDataType indextype;
 		if (!vertex::getConstant(indextypestr, indextype))
-			return luaL_error(L, "Invalid index data type: %s", indextypestr);
+			return luax_enumerror(L, "index data type", vertex::getConstants(indextype), indextypestr);
 
 		size_t datatypesize = vertex::getIndexDataSize(indextype);
 
@@ -488,7 +488,7 @@ int w_Mesh_setDrawMode(lua_State *L)
 	Mesh::DrawMode mode;
 
 	if (!Mesh::getConstant(str, mode))
-		return luaL_error(L, "Invalid mesh draw mode: %s", str);
+		return luax_enumerror(L, "mesh draw mode", Mesh::getConstants(mode), str);
 
 	t->setDrawMode(mode);
 	return 0;

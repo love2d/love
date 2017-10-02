@@ -79,6 +79,7 @@ public:
 
 	static bool getConstant(const char *in, MipmapMode &out);
 	static bool getConstant(MipmapMode in, const char *&out);
+	static std::vector<std::string> getConstants(MipmapMode);
 
 protected:
 

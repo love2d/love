@@ -248,6 +248,7 @@ public:
 
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char *&out);
+	static std::vector<std::string> getConstants(Type);
 	static bool getConstant(const char *in, Waveform &out);
 	static bool getConstant(Waveform in, const char *&out);
 	//static bool getConstant(const char *in, Direction &out);

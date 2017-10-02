@@ -103,6 +103,11 @@ bool File::getConstant(Mode in, const char *&out)
 	return modes.find(in, out);
 }
 
+std::vector<std::string> File::getConstants(Mode)
+{
+	return modes.getNames();
+}
+
 bool File::getConstant(const char *in, BufferMode &out)
 {
 	return bufferModes.find(in, out);
@@ -111,6 +116,11 @@ bool File::getConstant(const char *in, BufferMode &out)
 bool File::getConstant(BufferMode in, const char *&out)
 {
 	return bufferModes.find(in, out);
+}
+
+std::vector<std::string> File::getConstants(BufferMode)
+{
+	return bufferModes.getNames();
 }
 
 StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] =

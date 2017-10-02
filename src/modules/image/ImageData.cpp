@@ -502,6 +502,11 @@ bool ImageData::getConstant(FormatHandler::EncodedFormat in, const char *&out)
 	return encodedFormats.find(in, out);
 }
 
+std::vector<std::string> ImageData::getConstants(FormatHandler::EncodedFormat)
+{
+	return encodedFormats.getNames();
+}
+
 StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM>::Entry ImageData::encodedFormatEntries[] =
 {
 	{"tga", FormatHandler::ENCODED_TGA},

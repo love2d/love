@@ -150,7 +150,7 @@ int w_newFile(lua_State *L)
 	{
 		str = luaL_checkstring(L, 2);
 		if (!File::getConstant(str, mode))
-			return luaL_error(L, "Incorrect file open mode: %s", str);
+			return luax_enumerror(L, "file open mode", File::getConstants(mode), str);
 	}
 
 	File *t = instance()->newFile(filename);

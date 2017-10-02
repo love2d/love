@@ -379,6 +379,11 @@ bool Compressor::getConstant(Format in, const char *&out)
 	return formatNames.find(in, out);
 }
 
+std::vector<std::string> Compressor::getConstants(Format)
+{
+	return formatNames.getNames();
+}
+
 StringMap<Compressor::Format, Compressor::FORMAT_MAX_ENUM>::Entry Compressor::formatEntries[] =
 {
 	{ "lz4",  FORMAT_LZ4  },

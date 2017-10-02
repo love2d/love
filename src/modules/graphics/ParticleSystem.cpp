@@ -1103,6 +1103,11 @@ bool ParticleSystem::getConstant(AreaSpreadDistribution in, const char *&out)
 	return distributions.find(in, out);
 }
 
+std::vector<std::string> ParticleSystem::getConstants(AreaSpreadDistribution)
+{
+	return distributions.getNames();
+}
+
 bool ParticleSystem::getConstant(const char *in, InsertMode &out)
 {
 	return insertModes.find(in, out);
@@ -1111,6 +1116,11 @@ bool ParticleSystem::getConstant(const char *in, InsertMode &out)
 bool ParticleSystem::getConstant(InsertMode in, const char *&out)
 {
 	return insertModes.find(in, out);
+}
+
+std::vector<std::string> ParticleSystem::getConstants(InsertMode)
+{
+	return insertModes.getNames();
 }
 
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM>::Entry ParticleSystem::distributionsEntries[] =

@@ -265,7 +265,7 @@ int w_ImageData_encode(lua_State *L)
 	FormatHandler::EncodedFormat format;
 	const char *fmt = luaL_checkstring(L, 2);
 	if (!ImageData::getConstant(fmt, format))
-		return luaL_error(L, "Invalid encoded image format '%s'.", fmt);
+		return luax_enumerror(L, "encoded image format", ImageData::getConstants(format), fmt);
 
 	bool hasfilename = false;
 

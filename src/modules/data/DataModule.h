@@ -96,6 +96,7 @@ void hash(HashFunction::Function function, const char *input, uint64_t size, Has
 
 bool getConstant(const char *in, EncodeFormat &out);
 bool getConstant(EncodeFormat in, const char *&out);
+std::vector<std::string> getConstants(EncodeFormat);
 
 
 class DataModule : public Module

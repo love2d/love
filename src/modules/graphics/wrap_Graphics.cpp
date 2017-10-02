@@ -519,7 +519,7 @@ int w_captureScreenshot(lua_State *L)
 
 		image::FormatHandler::EncodedFormat format;
 		if (!image::ImageData::getConstant(ext.c_str(), format))
-			return luaL_error(L, "Invalid encoded image format: %s", ext.c_str());
+			return luax_enumerror(L, "encoded image format", image::ImageData::getConstants(format), ext.c_str());
 
 		ScreenshotFileInfo *fileinfo = new ScreenshotFileInfo;
 		fileinfo->filename = filename;
@@ -609,7 +609,7 @@ int w_stencil(lua_State *L)
 	{
 		const char *actionstr = luaL_checkstring(L, 2);
 		if (!getConstant(actionstr, action))
-			return luaL_error(L, "Invalid stencil draw action: %s", actionstr);
+			return luax_enumerror(L, "stencil draw action", getConstants(action), actionstr);
 	}
 
 	int stencilvalue = (int) luaL_optinteger(L, 3, 1);
@@ -647,7 +647,7 @@ int w_setStencilTest(lua_State *L)
 	{
 		const char *comparestr = luaL_checkstring(L, 1);
 		if (!getConstant(comparestr, compare))
-			return luaL_error(L, "Invalid compare mode: %s", comparestr);
+			return luax_enumerror(L, "compare mode", getConstants(compare), comparestr);
 
 		comparevalue = (int) luaL_checkinteger(L, 2);
 	}
@@ -1129,7 +1129,7 @@ int w_newSpriteBatch(lua_State *L)
 	{
 		const char *usagestr = luaL_checkstring(L, 3);
 		if (!vertex::getConstant(usagestr, usage))
-			return luaL_error(L, "Invalid usage hint: %s", usagestr);
+			return luax_enumerror(L, "usage hint", vertex::getConstants(usage), usagestr);
 	}
 
 	SpriteBatch *t = nullptr;
@@ -1195,7 +1195,7 @@ int w_newCanvas(lua_State *L)
 		{
 			const char *str = luaL_checkstring(L, -1);
 			if (!getConstant(str, settings.format))
-				return luaL_error(L, "Invalid pixel format: %s", str);
+				return luax_enumerror(L, "pixel format", str);
 		}
 		lua_pop(L, 1);
 
@@ -1204,7 +1204,7 @@ int w_newCanvas(lua_State *L)
 		{
 			const char *str = luaL_checkstring(L, -1);
 			if (!Texture::getConstant(str, settings.type))
-				return luaL_error(L, "Invalid texture type: %s", str);
+				return luax_enumerror(L, "texture type", Texture::getConstants(settings.type), str);
 		}
 		lua_pop(L, 1);
 
@@ -1221,7 +1221,7 @@ int w_newCanvas(lua_State *L)
 		{
 			const char *str = luaL_checkstring(L, -1);
 			if (!Canvas::getConstant(str, settings.mipmaps))
-				return luaL_error(L, "Invalid Canvas mipmap mode: %s", str);
+				return luax_enumerror(L, "Canvas mipmap mode", Canvas::getConstants(settings.mipmaps), str);
 		}
 		lua_pop(L, 1);
 	}
@@ -1394,7 +1394,7 @@ static vertex::Usage luax_optmeshusage(lua_State *L, int idx, vertex::Usage def)
 	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
 	if (usagestr && !vertex::getConstant(usagestr, def))
-		luaL_error(L, "Invalid usage hint: %s", usagestr);
+		luax_enumerror(L, "usage hint", vertex::getConstants(def), usagestr);
 
 	return def;
 }
@@ -1404,7 +1404,7 @@ static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode
 	const char *modestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
 	if (modestr && !Mesh::getConstant(modestr, def))
-		luaL_error(L, "Invalid mesh draw mode: %s", modestr);
+		luax_enumerror(L, "mesh draw mode", Mesh::getConstants(def), modestr);
 
 	return def;
 }
@@ -1499,7 +1499,7 @@ static Mesh *newCustomMesh(lua_State *L)
 		const char *tname = luaL_checkstring(L, -2);
 		if (!Mesh::getConstant(tname, format.type))
 		{
-			luaL_error(L, "Invalid Mesh vertex data type name: %s", tname);
+			luax_enumerror(L, "Mesh vertex data type name", Mesh::getConstants(format.type), tname);
 			return nullptr;
 		}
 
@@ -1782,14 +1782,14 @@ int w_setBlendMode(lua_State *L)
 	Graphics::BlendMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Invalid blend mode: %s", str);
+		return luax_enumerror(L, "blend mode", Graphics::getConstants(mode), str);
 
 	Graphics::BlendAlpha alphamode = Graphics::BLENDALPHA_MULTIPLY;
 	if (!lua_isnoneornil(L, 2))
 	{
 		const char *alphastr = luaL_checkstring(L, 2);
 		if (!Graphics::getConstant(alphastr, alphamode))
-			return luaL_error(L, "Invalid blend alpha mode: %s", alphastr);
+			return luax_enumerror(L, "blend alpha mode", Graphics::getConstants(alphamode), alphastr);
 	}
 
 	luax_catchexcept(L, [&](){ instance()->setBlendMode(mode, alphamode); });
@@ -1823,9 +1823,9 @@ int w_setDefaultFilter(lua_State *L)
 	const char *magstr = luaL_optstring(L, 2, minstr);
 
 	if (!Texture::getConstant(minstr, f.min))
-		return luaL_error(L, "Invalid filter mode: %s", minstr);
+		return luax_enumerror(L, "filter mode", Texture::getConstants(f.min), minstr);
 	if (!Texture::getConstant(magstr, f.mag))
-		return luaL_error(L, "Invalid filter mode: %s", magstr);
+		return luax_enumerror(L, "filter mode", Texture::getConstants(f.mag), magstr);
 
 	f.anisotropy = (float) luaL_optnumber(L, 3, 1.0);
 
@@ -1856,7 +1856,7 @@ int w_setDefaultMipmapFilter(lua_State *L)
 	{
 		const char *str = luaL_checkstring(L, 1);
 		if (!Texture::getConstant(str, filter))
-			return luaL_error(L, "Invalid filter mode: %s", str);
+			return luax_enumerror(L, "filter mode", Texture::getConstants(filter), str);
 	}
 
 	float sharpness = (float) luaL_optnumber(L, 2, 0);
@@ -1896,7 +1896,7 @@ int w_setLineStyle(lua_State *L)
 	Graphics::LineStyle style;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, style))
-		return luaL_error(L, "Invalid line style: %s", str);
+		return luax_enumerror(L, "line style", Graphics::getConstants(style), str);
 
 	instance()->setLineStyle(style);
 	return 0;
@@ -1907,7 +1907,7 @@ int w_setLineJoin(lua_State *L)
 	Graphics::LineJoin join;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, join))
-		return luaL_error(L, "Invalid line join mode: %s", str);
+		return luax_enumerror(L, "line join", Graphics::getConstants(join), str);
 
 	instance()->setLineJoin(join);
 	return 0;
@@ -2373,7 +2373,7 @@ int w_printf(lua_State *L)
 
 	const char *astr = lua_isnoneornil(L, formatidx + 1) ? nullptr : luaL_checkstring(L, formatidx + 1);
 	if (astr != nullptr && !Font::getConstant(astr, align))
-		return luaL_error(L, "Incorrect alignment: %s", astr);
+		return luax_enumerror(L, "alignment", Font::getConstants(align), astr);
 
 	if (font != nullptr)
 		luax_catchexcept(L, [&](){ instance()->printf(str, font, wrap, align, m); });
@@ -2526,7 +2526,7 @@ int w_rectangle(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Invalid draw mode: %s", str);
+		return luax_enumerror(L, "draw mode", Graphics::getConstants(mode), str);
 
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
@@ -2558,7 +2558,7 @@ int w_circle(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Invalid draw mode: %s", str);
+		return luax_enumerror(L, "draw mode", Graphics::getConstants(mode), str);
 
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
@@ -2580,7 +2580,7 @@ int w_ellipse(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Invalid draw mode: %s", str);
+		return luax_enumerror(L, "draw mode", Graphics::getConstants(mode), str);
 
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
@@ -2603,7 +2603,7 @@ int w_arc(lua_State *L)
 	Graphics::DrawMode drawmode;
 	const char *drawstr = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(drawstr, drawmode))
-		return luaL_error(L, "Invalid draw mode: %s", drawstr);
+		return luax_enumerror(L, "draw mode", Graphics::getConstants(drawmode), drawstr);
 
 	int startidx = 2;
 
@@ -2613,7 +2613,7 @@ int w_arc(lua_State *L)
 	{
 		const char *arcstr = luaL_checkstring(L, 2);
 		if (!Graphics::getConstant(arcstr, arcmode))
-			return luaL_error(L, "Invalid arc mode: %s", arcstr);
+			return luax_enumerror(L, "arc mode", Graphics::getConstants(arcmode), arcstr);
 
 		startidx = 3;
 	}
@@ -2642,7 +2642,7 @@ int w_polygon(lua_State *L)
 	Graphics::DrawMode mode;
 	const char *str = luaL_checkstring(L, 1);
 	if (!Graphics::getConstant(str, mode))
-		return luaL_error(L, "Invalid draw mode: %s", str);
+		return luax_enumerror(L, "draw mode", Graphics::getConstants(mode), str);
 
 	bool is_table = false;
 	if (args == 1 && lua_istable(L, 2))
@@ -2704,7 +2704,7 @@ int w_push(lua_State *L)
 	Graphics::StackType stype = Graphics::STACK_TRANSFORM;
 	const char *sname = lua_isnoneornil(L, 1) ? nullptr : luaL_checkstring(L, 1);
 	if (sname && !Graphics::getConstant(sname, stype))
-		return luaL_error(L, "Invalid graphics stack type: %s", sname);
+		return luax_enumerror(L, "graphics stack type", Graphics::getConstants(stype), sname);
 
 	luax_catchexcept(L, [&](){ instance()->push(stype); });
 

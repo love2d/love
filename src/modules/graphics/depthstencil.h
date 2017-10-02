@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <vector>
+#include <string>
+
 namespace love
 {
 namespace graphics
@@ -60,9 +63,11 @@ CompareMode getReversedCompareMode(CompareMode mode);
 
 bool getConstant(const char *in, StencilAction &out);
 bool getConstant(StencilAction in, const char *&out);
+std::vector<std::string> getConstants(StencilAction);
 
 bool getConstant(const char *in, CompareMode &out);
 bool getConstant(CompareMode in, const char *&out);
+std::vector<std::string> getConstants(CompareMode);
 
 } // graphics
 } // love

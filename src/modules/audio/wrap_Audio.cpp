@@ -51,7 +51,7 @@ int w_newSource(lua_State *L)
 	{
 		const char *stypestr = luaL_checkstring(L, 2);
 		if (stypestr && !Source::getConstant(stypestr, stype))
-			return luaL_error(L, "Invalid source type: %s", stypestr);
+			return luax_enumerror(L, "source type", Source::getConstants(stype), stypestr);
 	}
 
 	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
@@ -297,7 +297,7 @@ int w_setDistanceModel(lua_State *L)
 	const char *modelStr = luaL_checkstring(L, 1);
 	Audio::DistanceModel distanceModel;
 	if (!Audio::getConstant(modelStr, distanceModel))
-		return luaL_error(L, "Invalid distance model: %s", modelStr);
+		return luax_enumerror(L, "distance model", Audio::getConstants(distanceModel), modelStr);
 	instance()->setDistanceModel(distanceModel);
 	return 0;
 }
@@ -351,7 +351,7 @@ int w_setEffect(lua_State *L)
 	Effect::Type type = Effect::TYPE_MAX_ENUM;
 	const char *typestr = luaL_checkstring(L, -1);
 	if (!Effect::getConstant(typestr, type))
-		return luaL_error(L, "Invalid Effect type: %s", typestr);
+		return luax_enumerror(L, "effect type", Effect::getConstants(type), typestr);
 
 	lua_pop(L, 1);
 	std::map<Effect::Parameter, float> params;
@@ -386,7 +386,7 @@ int w_setEffect(lua_State *L)
 				paramstr = lua_tostring(L, -1);
 				Effect::Waveform waveform;
 				if (!Effect::getConstant(paramstr, waveform))
-					return luaL_error(L, "Invalid waveform type: %s", paramstr);
+					return luax_enumerror(L, "waveform type", paramstr);
 				params[param] = static_cast<int>(waveform);
 				break;
 			}

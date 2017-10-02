@@ -126,8 +126,10 @@ public:
 
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char  *&out);
+	static std::vector<std::string> getConstants(Type);
 	static bool getConstant(const char *in, Unit &out);
 	static bool getConstant(Unit in, const char  *&out);
+	static std::vector<std::string> getConstants(Unit);
 
 protected:
 

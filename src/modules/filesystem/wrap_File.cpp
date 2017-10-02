@@ -77,7 +77,7 @@ int w_File_open(lua_State *L)
 	File::Mode mode;
 
 	if (!File::getConstant(str, mode))
-		return luaL_error(L, "Incorrect file open mode: %s", str);
+		return luax_enumerror(L, "file open mode", File::getConstants(mode), str);
 
 	try
 	{
@@ -353,7 +353,7 @@ int w_File_setBuffer(lua_State *L)
 
 	File::BufferMode bufmode;
 	if (!File::getConstant(str, bufmode))
-		return luaL_error(L, "Incorrect file buffer mode: %s", str);
+		return luax_enumerror(L, "file buffer mode", File::getConstants(bufmode), str);
 
 	bool success = false;
 	try

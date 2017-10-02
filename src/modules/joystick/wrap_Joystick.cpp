@@ -172,7 +172,7 @@ int w_Joystick_getGamepadAxis(lua_State *L)
 	Joystick::GamepadAxis axis;
 
 	if (!joystick::Joystick::getConstant(str, axis))
-		return luaL_error(L, "Invalid gamepad axis: %s", str);
+		return luax_enumerror(L, "gamepad axis", str);
 
 	lua_pushnumber(L, j->getGamepadAxis(axis));
 	return 1;
@@ -201,7 +201,7 @@ int w_Joystick_isGamepadDown(lua_State *L)
 			const char *str = luaL_checkstring(L, -1);
 
 			if (!joystick::Joystick::getConstant(str, button))
-				return luaL_error(L, "Invalid gamepad button: %s", str);
+				return luax_enumerror(L, "gamepad button", str);
 
 			buttons.push_back(button);
 
@@ -215,7 +215,7 @@ int w_Joystick_isGamepadDown(lua_State *L)
 			const char *str = luaL_checkstring(L, i + 2);
 
 			if (!joystick::Joystick::getConstant(str, button))
-				return luaL_error(L, "Invalid gamepad button: %s", str);
+				return luax_enumerror(L, "gamepad button", str);
 
 			buttons.push_back(button);
 		}
@@ -237,7 +237,7 @@ int w_Joystick_getGamepadMapping(lua_State *L)
 	else if (Joystick::getConstant(gpbindstr, gpinput.button))
 		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
 	else
-		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
+		return luax_enumerror(L, "gamepad axis/button", gpbindstr);
 
 	Joystick::JoystickInput jinput;
 	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;

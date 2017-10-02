@@ -52,7 +52,7 @@ int w_Text_setf(lua_State *L)
 	Font::AlignMode align;
 	const char *alignstr = luaL_checkstring(L, 4);
 	if (!Font::getConstant(alignstr, align))
-		return luaL_error(L, "Invalid align mode: %s", alignstr);
+		return luax_enumerror(L, "align mode", Font::getConstants(align), alignstr);
 
 	std::vector<Font::ColoredString> newtext;
 	luax_checkcoloredstring(L, 2, newtext);
@@ -111,7 +111,7 @@ int w_Text_addf(lua_State *L)
 	const char *alignstr = luaL_checkstring(L, 4);
 
 	if (!Font::getConstant(alignstr, align))
-		return luaL_error(L, "Invalid align mode: %s", alignstr);
+		return luax_enumerror(L, "align mode", Font::getConstants(align), alignstr);
 
 	if (luax_istype(L, 5, math::Transform::type))
 	{

@@ -47,6 +47,12 @@ bool Effect::getConstant(Type in, const char *&out)
 {
 	return types.find(in, out);
 }
+
+std::vector<std::string> Effect::getConstants(Type)
+{
+	return types.getNames();
+}
+
 /*
 bool Effect::getConstant(const char *in, Phoneme &out)
 {

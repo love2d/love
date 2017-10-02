@@ -254,6 +254,11 @@ bool getConstant(IndexDataType in, const char *&out)
 	return indexTypes.find(in, out);
 }
 
+std::vector<std::string> getConstants(IndexDataType)
+{
+	return indexTypes.getNames();
+}
+
 bool getConstant(const char *in, Usage &out)
 {
 	return usages.find(in, out);
@@ -262,6 +267,11 @@ bool getConstant(const char *in, Usage &out)
 bool getConstant(Usage in, const char *&out)
 {
 	return usages.find(in, out);
+}
+
+std::vector<std::string> getConstants(Usage)
+{
+	return usages.getNames();
 }
 
 } // vertex

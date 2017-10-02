@@ -48,6 +48,7 @@ public:
 
 	static bool getConstant(const char *in, Hinting &out);
 	static bool getConstant(Hinting in, const char *&out);
+	static std::vector<std::string> getConstants(Hinting);
 
 private:
 

@@ -163,7 +163,7 @@ int w_Shader_sendMatrices(lua_State *L, int startidx, Shader *shader, const Shad
 		const char *layoutstr = lua_tostring(L, startidx);
 		math::Transform::MatrixLayout layout;
 		if (!math::Transform::getConstant(layoutstr, layout))
-			return luaL_error(L, "Invalid matrix layout: %s", layoutstr);
+			return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
 
 		columnmajor = (layout == math::Transform::MATRIX_COLUMN_MAJOR);
 		startidx++;
@@ -316,7 +316,7 @@ static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const S
 		const char *layoutstr = lua_tostring(L, startidx + 1);
 		math::Transform::MatrixLayout layout;
 		if (!math::Transform::getConstant(layoutstr, layout))
-			return luaL_error(L, "Invalid matrix layout: %s", layoutstr);
+			return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
 
 		columnmajor = (layout == math::Transform::MATRIX_COLUMN_MAJOR);
 		startidx++;

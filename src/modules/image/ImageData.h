@@ -117,6 +117,7 @@ public:
 
 	static bool getConstant(const char *in, FormatHandler::EncodedFormat &out);
 	static bool getConstant(FormatHandler::EncodedFormat in, const char *&out);
+	static std::vector<std::string> getConstants(FormatHandler::EncodedFormat);
 
 private:
 

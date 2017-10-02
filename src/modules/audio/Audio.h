@@ -69,6 +69,7 @@ public:
 
 	static bool getConstant(const char *in, DistanceModel &out);
 	static bool getConstant(DistanceModel in, const char  *&out);
+	static std::vector<std::string> getConstants(DistanceModel);
 
 	virtual ~Audio() {}
 

@@ -76,7 +76,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 
 		const char *hintstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
 		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
-			return luaL_error(L, "Invalid TrueType font hinting mode: %s", hintstr);
+			return luax_enumerror(L, "TrueType font hinting mode", TrueTypeRasterizer::getConstants(hinting), hintstr);
 
 		if (lua_isnoneornil(L, 3))
 			luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, hinting); });
@@ -102,7 +102,7 @@ int w_newTrueTypeRasterizer(lua_State *L)
 
 		const char *hintstr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
 		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
-			return luaL_error(L, "Invalid TrueType font hinting mode: %s", hintstr);
+			return luax_enumerror(L, "TrueType font hinting mode", TrueTypeRasterizer::getConstants(hinting), hintstr);
 
 		if (lua_isnoneornil(L, 4))
 		{

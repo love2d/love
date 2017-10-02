@@ -145,9 +145,9 @@ int w_Font_setFilter(lua_State *L)
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
 	if (!Texture::getConstant(minstr, f.min))
-		return luaL_error(L, "Invalid filter mode: %s", minstr);
+		return luax_enumerror(L, "filter mode", Texture::getConstants(f.min), minstr);
 	if (!Texture::getConstant(magstr, f.mag))
-		return luaL_error(L, "Invalid filter mode: %s", magstr);
+		return luax_enumerror(L, "filter mode", Texture::getConstants(f.mag), magstr);
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 

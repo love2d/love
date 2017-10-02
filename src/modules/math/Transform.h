@@ -71,6 +71,7 @@ public:
 
 	static bool getConstant(const char *in, MatrixLayout &out);
 	static bool getConstant(MatrixLayout in, const char *&out);
+	static std::vector<std::string> getConstants(MatrixLayout);
 
 private:
 

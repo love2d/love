@@ -35,6 +35,11 @@ bool TrueTypeRasterizer::getConstant(Hinting in, const char *&out)
 	return hintings.find(in, out);
 }
 
+std::vector<std::string> TrueTypeRasterizer::getConstants(Hinting)
+{
+	return hintings.getNames();
+}
+
 StringMap<TrueTypeRasterizer::Hinting, TrueTypeRasterizer::HINTING_MAX_ENUM>::Entry TrueTypeRasterizer::hintingEntries[] =
 {
 	{"normal", HINTING_NORMAL},

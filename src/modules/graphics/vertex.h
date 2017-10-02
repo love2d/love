@@ -26,6 +26,8 @@
 
 // C
 #include <stddef.h>
+#include <vector>
+#include <string>
 
 namespace love
 {
@@ -176,9 +178,11 @@ bool getConstant(VertexAttribID in, const char *&out);
 
 bool getConstant(const char *in, IndexDataType &out);
 bool getConstant(IndexDataType in, const char *&out);
+std::vector<std::string> getConstants(IndexDataType);
 
 bool getConstant(const char *in, Usage &out);
 bool getConstant(Usage in, const char *&out);
+std::vector<std::string> getConstants(Usage);
 
 } // vertex
 

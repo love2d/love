@@ -67,7 +67,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 		Window::Setting setting;
 
 		if (!Window::getConstant(key, setting))
-			return luaL_error(L, "Invalid window setting: %s", key);
+			return luax_enumerror(L, "window setting", key);
 
 		lua_pop(L, 1);
 	}
@@ -77,7 +77,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	{
 		const char *typestr = luaL_checkstring(L, -1);
 		if (!Window::getConstant(typestr, settings.fstype))
-			return luaL_error(L, "Invalid fullscreen type: %s", typestr);
+			return luax_enumerror(L, "fullscreen type", Window::getConstants(settings.fstype), typestr);
 	}
 	lua_pop(L, 1);
 
@@ -274,7 +274,7 @@ int w_setFullscreen(lua_State *L)
 
 	const char *typestr = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (typestr && !Window::getConstant(typestr, fstype))
-		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
+		return luax_enumerror(L, "fullscreen type", Window::getConstants(fstype), typestr);
 
 	bool success = false;
 	luax_catchexcept(L, [&]() {
@@ -527,7 +527,7 @@ int w_showMessageBox(lua_State *L)
 
 		const char *typestr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
 		if (typestr && !Window::getConstant(typestr, data.type))
-			return luaL_error(L, "Invalid messagebox type: %s", typestr);
+			return luax_enumerror(L, "messagebox type", Window::getConstants(data.type), typestr);
 
 		data.attachToWindow = luax_optboolean(L, 5, true);
 
@@ -538,7 +538,7 @@ int w_showMessageBox(lua_State *L)
 	{
 		const char *typestr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
 		if (typestr && !Window::getConstant(typestr, data.type))
-			return luaL_error(L, "Invalid messagebox type: %s", typestr);
+			return luax_enumerror(L, "messagebox type", Window::getConstants(data.type), typestr);
 
 		data.attachToWindow = luax_optboolean(L, 4, true);
 

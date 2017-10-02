@@ -79,13 +79,13 @@ int w_setGamepadMapping(lua_State *L)
 	else if (Joystick::getConstant(gpbindstr, gpinput.button))
 		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
 	else
-		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
+		return luax_enumerror(L, "gamepad axis/button", gpbindstr);
 
 	const char *jinputtypestr = luaL_checkstring(L, 3);
 	Joystick::JoystickInput jinput;
 
 	if (!Joystick::getConstant(jinputtypestr, jinput.type))
-		return luaL_error(L, "Invalid joystick input type: %s", jinputtypestr);
+		return luax_enumerror(L, "joystick input type", jinputtypestr);
 
 	const char *hatstr;
 	switch (jinput.type)
@@ -101,10 +101,10 @@ int w_setGamepadMapping(lua_State *L)
 		jinput.hat.index = (int) luaL_checkinteger(L, 4) - 1;
 		hatstr = luaL_checkstring(L, 5);
 		if (!Joystick::getConstant(hatstr, jinput.hat.value))
-			return luaL_error(L, "Invalid joystick hat: %s", hatstr);
+			return luax_enumerror(L, "joystick hat", hatstr);
 		break;
 	default:
-		return luaL_error(L, "Invalid joystick input type: %s", jinputtypestr);
+		return luax_enumerror(L, "joystick input type", jinputtypestr);
 	}
 
 	bool success = false;

@@ -50,7 +50,7 @@ int w_newImageData(lua_State *L)
 		{
 			const char *fstr = luaL_checkstring(L, 3);
 			if (!getConstant(fstr, format))
-				return luaL_error(L, "Invalid pixel format: %s", fstr);
+				return luax_enumerror(L, "pixel format", fstr);
 		}
 
 		size_t numbytes = 0;

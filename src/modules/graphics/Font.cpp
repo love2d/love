@@ -1012,6 +1012,11 @@ bool Font::getConstant(AlignMode in, const char  *&out)
 	return alignModes.find(in, out);
 }
 
+std::vector<std::string> Font::getConstants(AlignMode)
+{
+	return alignModes.getNames();
+}
+
 StringMap<Font::AlignMode, Font::ALIGN_MAX_ENUM>::Entry Font::alignModeEntries[] =
 {
 	{ "left", ALIGN_LEFT },

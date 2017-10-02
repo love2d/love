@@ -35,7 +35,7 @@ int w_Texture_getTextureType(lua_State *L)
 	Texture *t = luax_checktexture(L, 1);
 	const char *tstr;
 	if (!Texture::getConstant(t->getTextureType(), tstr))
-		return luaL_error(L, "unknown texture type");
+		return luax_enumerror(L, "texture type", Texture::getConstants(TEXTURE_MAX_ENUM), tstr);
 	lua_pushstring(L, tstr);
 	return 1;
 }
@@ -138,9 +138,9 @@ int w_Texture_setFilter(lua_State *L)
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
 	if (!Texture::getConstant(minstr, f.min))
-		return luaL_error(L, "Invalid filter mode: %s", minstr);
+		return luax_enumerror(L, "filter mode", Texture::getConstants(f.min), minstr);
 	if (!Texture::getConstant(magstr, f.mag))
-		return luaL_error(L, "Invalid filter mode: %s", magstr);
+		return luax_enumerror(L, "filter mode", Texture::getConstants(f.mag), magstr);
 
 	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
 
@@ -178,7 +178,7 @@ int w_Texture_setMipmapFilter(lua_State *L)
 	{
 		const char *mipmapstr = luaL_checkstring(L, 2);
 		if (!Texture::getConstant(mipmapstr, f.mipmap))
-			return luaL_error(L, "Invalid filter mode: %s", mipmapstr);
+			return luax_enumerror(L, "filter mode", Texture::getConstants(f.mipmap), mipmapstr);
 	}
 
 	luax_catchexcept(L, [&](){ t->setFilter(f); });
@@ -213,11 +213,11 @@ int w_Texture_setWrap(lua_State *L)
 	const char *rstr = luaL_optstring(L, 4, sstr);
 
 	if (!Texture::getConstant(sstr, w.s))
-		return luaL_error(L, "Invalid wrap mode: %s", sstr);
+		return luax_enumerror(L, "wrap mode", Texture::getConstants(w.s), sstr);
 	if (!Texture::getConstant(tstr, w.t))
-		return luaL_error(L, "Invalid wrap mode, %s", tstr);
+		return luax_enumerror(L, "wrap mode", Texture::getConstants(w.t), tstr);
 	if (!Texture::getConstant(rstr, w.r))
-		return luaL_error(L, "Invalid wrap mode, %s", rstr);
+		return luax_enumerror(L, "wrap mode", Texture::getConstants(w.r), rstr);
 
 	luax_pushboolean(L, t->setWrap(w));
 	return 1;
@@ -275,7 +275,7 @@ int w_Texture_setDepthSampleMode(lua_State *L)
 
 		mode.hasValue = true;
 		if (!getConstant(str, mode.value))
-			return luaL_error(L, "Invalid compare mode: %s", str);
+			return luax_enumerror(L, "compare mode", getConstants(mode.value), str);
 	}
 
 	luax_catchexcept(L, [&]() { t->setDepthSampleMode(mode); });

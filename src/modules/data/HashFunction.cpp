@@ -619,6 +619,10 @@ bool HashFunction::getConstant(const Function &in, const char *&out)
 {
 	return functionNames.find(in, out);
 }
+std::vector<std::string> HashFunction::getConstants(Function)
+{
+	return functionNames.getNames();
+}
 
 StringMap<HashFunction::Function, HashFunction::FUNCTION_MAX_ENUM>::Entry HashFunction::functionEntries[] =
 {

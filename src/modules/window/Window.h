@@ -198,9 +198,11 @@ public:
 
 	static bool getConstant(const char *in, FullscreenType &out);
 	static bool getConstant(FullscreenType in, const char *&out);
+	static std::vector<std::string> getConstants(FullscreenType);
 
 	static bool getConstant(const char *in, MessageBoxType &out);
 	static bool getConstant(MessageBoxType in, const char *&out);
+	static std::vector<std::string> getConstants(MessageBoxType);
 
 private:
 
