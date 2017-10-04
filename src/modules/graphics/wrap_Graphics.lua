@@ -306,7 +306,7 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 	stage = stage:upper()
 	local lines = {
 		GLSL.VERSION[lang][gles],
-		"#define "..stage,
+		"#define " ..stage .. " " .. stage,
 		glsl1on3 and "#define LOVE_GLSL1_ON_GLSL3 1" or "",
 		gammacorrect and "#define LOVE_GAMMA_CORRECT 1" or "",
 		GLSL.SYNTAX,
