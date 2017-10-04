@@ -223,6 +223,14 @@ void SoundData::setSample(int i, float sample)
 	}
 }
 
+void SoundData::setSample(int i, int channel, float sample)
+{
+	if (channel < 1 || channel > channels)
+		throw love::Exception("Attempt to set sample from out-of-range channel!");
+
+	return setSample(i * channels + (channel - 1), sample);
+}
+
 float SoundData::getSample(int i) const
 {
 	// Check range.
@@ -240,6 +248,14 @@ float SoundData::getSample(int i) const
 		// 8-bit sample values are unsigned internally.
 		return ((float) data[i] - 128.0f) / 127.0f;
 	}
+}
+
+float SoundData::getSample(int i, int channel) const
+{
+	if (channel < 1 || channel > channels)
+		throw love::Exception("Attempt to get sample from out-of-range channel!");
+
+	return getSample(i * channels + (channel - 1));
 }
 
 } // sound

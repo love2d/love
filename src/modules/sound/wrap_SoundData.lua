@@ -76,12 +76,20 @@ local objectcache = setmetatable({}, {
 
 -- Overwrite existing functions with new FFI versions.
 
-function SoundData:getSample(i)
+function SoundData:getSample(i, channel)
 	if type(i) ~= "number" then error("bad argument #1 to SoundData:getSample (expected number)", 2) end
+	if channel ~= nil and type(channel) ~= "number" then error("bad argument #2 to SoundData:getSample (expected number)", 2) end
 
 	i = floor(i)
 
 	local p = objectcache[self]
+
+	if channel then
+		if channel < 1 or channel > p.channels then
+			error("Attempt to get sample from out-of-range channel!", 2)
+		end
+		i = i * p.channels + (channel-1)
+	end
 
 	if not (i >= 0 and i < p.size/p.bytedepth) then
 		error("Attempt to get out-of-range sample!", 2)
@@ -96,13 +104,25 @@ function SoundData:getSample(i)
 	end
 end
 
-function SoundData:setSample(i, sample)
+function SoundData:setSample(i, channel, sample)
 	if type(i) ~= "number" then error("bad argument #1 to SoundData:setSample (expected number)", 2) end
+	if sample ~= nil then
+		if type(channel) ~= "number" then error("bad argument #2 to SoundData:setSample (expected number)", 2) end
+	else
+		sample, channel = channel, nil
+	end
 	if type(sample) ~= "number" then error("bad argument #2 to SoundData:setSample (expected number)", 2) end
 
 	i = floor(i)
 
 	local p = objectcache[self]
+
+	if channel then
+		if channel < 1 or channel > p.channels then
+			error("Attempt to set sample from out-of-range channel!", 2)
+		end
+		i = i * p.channels + (channel-1)
+	end
 
 	if not (i >= 0 and i < p.size/p.bytedepth) then
 		error("Attempt to set out-of-range sample!", 2)

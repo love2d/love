@@ -57,7 +57,9 @@ public:
 	virtual float getDuration() const;
 
 	void setSample(int i, float sample);
+	void setSample(int i, int channel, float sample);
 	float getSample(int i) const;
+	float getSample(int i, int channel) const;
 
 private:
 
