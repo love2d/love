@@ -25,6 +25,8 @@
 #include "World.h"
 #include "Physics.h"
 
+#include <float.h>
+
 namespace love
 {
 namespace physics
@@ -78,6 +80,12 @@ float MouseJoint::getMaxForce() const
 
 void MouseJoint::setFrequency(float hz)
 {
+	// This is kind of a crappy check. The frequency is used in an internal
+	// box2d calculation whose result must be > FLT_EPSILON, but other variables
+	// go into that calculation...
+	if (hz <= FLT_EPSILON * 2)
+		throw love::Exception("MouseJoint frequency must be a positive number.");
+
 	joint->SetFrequency(hz);
 }
 

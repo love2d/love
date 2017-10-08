@@ -70,7 +70,7 @@ int w_MouseJoint_setFrequency(lua_State *L)
 {
 	MouseJoint *t = luax_checkmousejoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setFrequency(arg1);
+	luax_catchexcept(L, [&]() { t->setFrequency(arg1); });
 	return 0;
 }
 
