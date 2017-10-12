@@ -65,6 +65,7 @@ private:
 
 	bool streamInited;
 	int videoSerial;
+	bool eos;
 
 	void readPage();
 	StreamType determineType();

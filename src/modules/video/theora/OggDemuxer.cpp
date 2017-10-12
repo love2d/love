@@ -31,6 +31,7 @@ OggDemuxer::OggDemuxer(love::filesystem::File *file)
 	: file(file)
 	, streamInited(false)
 	, videoSerial(0)
+	, eos(false)
 {
 	ogg_sync_init(&sync);
 }
@@ -66,8 +67,8 @@ bool OggDemuxer::readPacket(ogg_packet &packet, bool mustSucceed)
 		do
 		{
 			// We need to read another page, but there is none, we're at the end
-			if (ogg_page_eos(&page) && !mustSucceed)
-				return true;
+			if (ogg_page_serialno(&page) == videoSerial && ogg_page_eos(&page) && !mustSucceed)
+				return eos = true;
 
 			readPage();
 		} while (ogg_page_serialno(&page) != videoSerial);
@@ -75,7 +76,7 @@ bool OggDemuxer::readPacket(ogg_packet &packet, bool mustSucceed)
 		ogg_stream_pagein(&stream, &page);
 	}
 
-	return false;
+	return eos = false;
 }
 
 void OggDemuxer::resync()
@@ -87,7 +88,7 @@ void OggDemuxer::resync()
 
 bool OggDemuxer::isEos() const
 {
-	return ogg_page_eos(&page);
+	return eos;
 }
 
 const std::string &OggDemuxer::getFilename() const
@@ -116,6 +117,7 @@ OggDemuxer::StreamType OggDemuxer::findStream()
 {
 	if (streamInited)
 	{
+		eos = false;
 		file->seek(0);
 		ogg_stream_clear(&stream);
 		ogg_sync_reset(&sync);
@@ -143,7 +145,6 @@ OggDemuxer::StreamType OggDemuxer::findStream()
 		}
 
 		ogg_stream_clear(&stream);
-		ogg_sync_reset(&sync);
 	}
 
 	streamInited = false;
@@ -156,6 +157,8 @@ OggDemuxer::StreamType OggDemuxer::findStream()
 bool OggDemuxer::seek(ogg_packet &packet, double target, std::function<double(int64)> getTime)
 {
 	static const double rewindThreshold = 0.01;
+
+	eos = false;
 
 	if (target < rewindThreshold)
 	{
@@ -185,6 +188,7 @@ bool OggDemuxer::seek(ogg_packet &packet, double target, std::function<double(in
 			// EOS, so we're definitely past our target (or the target is past
 			// the end)
 			high = pos;
+			eos = false;
 
 			// And a workaround for single-page files:
 			if (high < rewindThreshold)
