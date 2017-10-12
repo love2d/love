@@ -27,6 +27,7 @@
 #include "common/int.h"
 #include "filesystem/File.h"
 #include "thread/threads.h"
+#include "OggDemuxer.h"
 
 // OGG/Theora
 #include <ogg/ogg.h>
@@ -40,11 +41,11 @@ namespace video
 namespace theora
 {
 
-class VideoStream : public love::video::VideoStream
+class TheoraVideoStream : public love::video::VideoStream
 {
 public:
-	VideoStream(love::filesystem::File *file);
-	~VideoStream();
+	TheoraVideoStream(love::filesystem::File *file);
+	~TheoraVideoStream();
 
 	const void *getFrontBuffer() const;
 	size_t getSize() const;
@@ -61,14 +62,10 @@ public:
 	void threadedFillBackBuffer(double dt);
 
 private:
-	StrongRef<love::filesystem::File> file;
+	OggDemuxer demuxer;
 
 	bool headerParsed;
-	bool streamInited;
-	int videoSerial;
-	ogg_sync_state sync;
-	ogg_stream_state stream;
-	ogg_page page;
+
 	ogg_packet packet;
 
 	th_info videoInfo;
@@ -86,15 +83,11 @@ private:
 
 	double lastFrame;
 	double nextFrame;
-	bool eos;
 	unsigned int lagCounter;
 
-	void readPage();
-	bool readPacket(bool mustSucceed = false); // true if eos
 	void parseHeader();
-	void rewind();
 	void seekDecoder(double target);
-}; // VideoStream
+}; // TheoraVideoStream
 
 } // theora
 } // video

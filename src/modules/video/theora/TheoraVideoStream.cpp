@@ -22,7 +22,7 @@
 #include <iostream>
 
 // LOVE
-#include "VideoStream.h"
+#include "TheoraVideoStream.h"
 
 using love::filesystem::File;
 
@@ -33,19 +33,18 @@ namespace video
 namespace theora
 {
 
-VideoStream::VideoStream(love::filesystem::File *file)
-	: file(file)
+TheoraVideoStream::TheoraVideoStream(love::filesystem::File *file)
+	: demuxer(file)
 	, headerParsed(false)
-	, streamInited(false)
-	, videoSerial(0)
 	, decoder(nullptr)
 	, frameReady(false)
 	, lastFrame(0)
 	, nextFrame(0)
-	, eos(false)
 	, lagCounter(0)
 {
-	ogg_sync_init(&sync);
+	if (demuxer.findStream() != OggDemuxer::TYPE_THEORA)
+		throw love::Exception("Invalid video file, video is not theora");
+
 	th_info_init(&videoInfo);
 
 	frontBuffer = new Frame();
@@ -60,29 +59,24 @@ VideoStream::VideoStream(love::filesystem::File *file)
 		delete backBuffer;
 		delete frontBuffer;
 		th_info_clear(&videoInfo);
-		ogg_sync_clear(&sync);
 		throw ex;
 	}
 
 	frameSync.set(new DeltaSync(), Acquire::NORETAIN);
 }
 
-VideoStream::~VideoStream()
+TheoraVideoStream::~TheoraVideoStream()
 {
 	if (decoder)
 		th_decode_free(decoder);
 
 	th_info_clear(&videoInfo);
-	if (headerParsed)
-		ogg_stream_clear(&stream);
-
-	ogg_sync_clear(&sync);
 
 	delete frontBuffer;
 	delete backBuffer;
 }
 
-int VideoStream::getWidth() const
+int TheoraVideoStream::getWidth() const
 {
 	if (headerParsed)
 		return videoInfo.pic_width;
@@ -90,7 +84,7 @@ int VideoStream::getWidth() const
 		return 0;
 }
 
-int VideoStream::getHeight() const
+int TheoraVideoStream::getHeight() const
 {
 	if (headerParsed)
 		return videoInfo.pic_height;
@@ -98,72 +92,30 @@ int VideoStream::getHeight() const
 		return 0;
 }
 
-const std::string &VideoStream::getFilename() const
+const std::string &TheoraVideoStream::getFilename() const
 {
-	return file->getFilename();
+	return demuxer.getFilename();
 }
 
-void VideoStream::setSync(FrameSync *frameSync)
+void TheoraVideoStream::setSync(FrameSync *frameSync)
 {
 	love::thread::Lock l(bufferMutex);
 	this->frameSync = frameSync;
 }
 
-const void *VideoStream::getFrontBuffer() const
+const void *TheoraVideoStream::getFrontBuffer() const
 {
 	return frontBuffer;
 }
 
-size_t VideoStream::getSize() const
+size_t TheoraVideoStream::getSize() const
 {
 	return sizeof(Frame);
 }
 
-bool VideoStream::isPlaying() const
+bool TheoraVideoStream::isPlaying() const
 {
-	return frameSync->isPlaying() && !eos;
-}
-
-void VideoStream::readPage()
-{
-	char *syncBuffer = nullptr;
-	while (ogg_sync_pageout(&sync, &page) != 1)
-	{
-		if (syncBuffer && !headerParsed && ogg_stream_check(&stream))
-			throw love::Exception("Invalid stream");
-
-		syncBuffer = ogg_sync_buffer(&sync, 8192);
-		size_t read = file->read(syncBuffer, 8192);
-		ogg_sync_wrote(&sync, read);
-	}
-}
-
-bool VideoStream::readPacket(bool mustSucceed)
-{
-	if (!streamInited)
-	{
-		readPage();
-		videoSerial = ogg_page_serialno(&page);
-		ogg_stream_init(&stream, videoSerial);
-		streamInited = true;
-		ogg_stream_pagein(&stream, &page);
-	}
-
-	while (ogg_stream_packetout(&stream, &packet) != 1)
-	{
-		do
-		{
-			// We need to read another page, but there is none, we're at the end
-			if (ogg_page_eos(&page) && !mustSucceed)
-				return eos = true;
-
-			readPage();
-		} while (ogg_page_serialno(&page) != videoSerial);
-
-		ogg_stream_pagein(&stream, &page);
-	}
-
-	return false;
+	return frameSync->isPlaying() && !demuxer.isEos();
 }
 
 template<typename T>
@@ -181,7 +133,7 @@ inline void scaleFormat(th_pixel_fmt fmt, T &x, T &y)
 	}
 }
 
-void VideoStream::parseHeader()
+void TheoraVideoStream::parseHeader()
 {
 	if (headerParsed)
 		return;
@@ -191,16 +143,8 @@ void VideoStream::parseHeader()
 	th_comment_init(&comment);
 	int ret;
 
-	do
-	{
-		readPacket();
-		ret = th_decode_headerin(&videoInfo, &comment, &setupInfo, &packet);
-		if (ret == TH_ENOTFORMAT)
-		{
-			ogg_stream_clear(&stream);
-			streamInited = false;
-		}
-	} while(ret < 0 && !ogg_page_eos(&page));
+	demuxer.readPacket(packet);
+	ret = th_decode_headerin(&videoInfo, &comment, &setupInfo, &packet);
 
 	if (ret < 0)
 	{
@@ -210,7 +154,7 @@ void VideoStream::parseHeader()
 
 	while (ret > 0)
 	{
-		readPacket();
+		demuxer.readPacket(packet);
 		ret = th_decode_headerin(&videoInfo, &comment, &setupInfo, &packet);
 	}
 
@@ -246,111 +190,21 @@ void VideoStream::parseHeader()
 	th_decode_packetin(decoder, &packet, nullptr);
 }
 
-// Arbitrary seeking isn't supported yet, but rewinding is
-void VideoStream::rewind()
+void TheoraVideoStream::seekDecoder(double target)
 {
-	// Seek our data stream back to the start
-	file->seek(0);
+	bool success = demuxer.seek(packet, target, [this](int64 granulepos) {
+		return th_granule_time(decoder, granulepos);
+	});
 
-	// Break our sync, and discard the rest of the page
-	ogg_sync_reset(&sync);
-	ogg_sync_pageseek(&sync, &page);
-
-	// Read our first page/packet from the stream again
-	readPacket(true);
-
-	// Now tell theora we're at frame 1 (not 0!)
-	int64 granPos = 1;
-	th_decode_ctl(decoder, TH_DECCTL_SET_GRANPOS, &granPos, sizeof(granPos));
-
-	// Force a redraw, since this will always be less than the sync's position
-	lastFrame = nextFrame = -1;
-	eos = false;
-}
-
-void VideoStream::seekDecoder(double target)
-{
-	const double rewindThreshold = 0.01;
-
-	if (target < rewindThreshold)
-	{
-		rewind();
+	if (!success)
 		return;
-	}
-
-	double low = 0;
-	double high = file->getSize();
-
-	while (high-low > rewindThreshold)
-	{
-		// Determine our next binary search position
-		double pos = (high+low)/2;
-		file->seek(pos);
-
-		// Break sync
-		ogg_sync_reset(&sync);
-		ogg_sync_pageseek(&sync, &page);
-
-		// Read a page
-		readPacket(false);
-		if (eos)
-		{
-			// EOS, so we're definitely past our target (or the target is past
-			// the end)
-			high = pos;
-			eos = false;
-
-			// And a workaround for single-page files:
-			if (high < rewindThreshold)
-				rewind();
-			else
-				continue;
-		}
-
-		// Now search all packets in this page
-		int result = -1;
-		for (int i = 0; i < ogg_page_packets(&page); ++i)
-		{
-			if (i > 0)
-				readPacket(true);
-
-			// Determine if this is the right place
-			double curTime = th_granule_time(decoder, packet.granulepos);
-			double nextTime = th_granule_time(decoder, packet.granulepos+1);
-
-			if (curTime == -1)
-				continue; // Invalid granule position (magic?)
-			else if (curTime <= target && nextTime > target)
-			{
-				// the current frame should be displaying right now
-				result = 0;
-				break;
-			}
-			else if (curTime > target)
-			{
-				// No need to check the other packets, they're all past
-				// this one
-				result = 1;
-				break;
-			}
-		}
-
-		// The sign of result determines the direction
-		if (result == 0)
-			break;
-		else if (result < 0)
-			low = pos;
-		else
-			high = pos;
-	}
 
 	// Now update theora and our decoder on this new position of ours
 	lastFrame = nextFrame = -1;
-	eos = false;
 	th_decode_ctl(decoder, TH_DECCTL_SET_GRANPOS, &packet.granulepos, sizeof(packet.granulepos));
 }
 
-void VideoStream::threadedFillBackBuffer(double dt)
+void TheoraVideoStream::threadedFillBackBuffer(double dt)
 {
 	// Synchronize
 	frameSync->update(dt);
@@ -362,7 +216,7 @@ void VideoStream::threadedFillBackBuffer(double dt)
 
 	// If we're at the end of the stream, or if we're displaying the right frame
 	// stop here
-	if (eos || position < nextFrame)
+	if (demuxer.isEos() || position < nextFrame)
 		return;
 
 	th_ycbcr_buffer bufferinfo;
@@ -371,7 +225,7 @@ void VideoStream::threadedFillBackBuffer(double dt)
 	ogg_int64_t granulePosition;
 	do
 	{
-		if (readPacket())
+		if (demuxer.readPacket(packet))
 			return;
 	} while (th_decode_packetin(decoder, &packet, &granulePosition) != 0);
 	lastFrame = nextFrame;
@@ -413,7 +267,7 @@ void VideoStream::threadedFillBackBuffer(double dt)
 	if (position > nextFrame)
 	{
 		if (++lagCounter > 5)
-			seek(position);
+			seekDecoder(position);
 	}
 	else
 		lagCounter = 0;
@@ -422,14 +276,14 @@ void VideoStream::threadedFillBackBuffer(double dt)
 	frameReady = true;
 }
 
-void VideoStream::fillBackBuffer()
+void TheoraVideoStream::fillBackBuffer()
 {
 	// Done in worker thread
 }
 
-bool VideoStream::swapBuffers()
+bool TheoraVideoStream::swapBuffers()
 {
-	if (eos)
+	if (demuxer.isEos())
 		return false;
 
 	love::thread::Lock l(bufferMutex);

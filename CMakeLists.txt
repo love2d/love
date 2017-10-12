@@ -1048,8 +1048,10 @@ set(LOVE_SRC_MODULE_VIDEO_ROOT
 set(LOVE_SRC_MODULE_VIDEO_THEORA
 	src/modules/video/theora/Video.cpp
 	src/modules/video/theora/Video.h
-	src/modules/video/theora/VideoStream.cpp
-	src/modules/video/theora/VideoStream.h
+	src/modules/video/theora/OggDemuxer.cpp
+	src/modules/video/theora/OggDemuxer.h
+	src/modules/video/theora/TheoraVideoStream.cpp
+	src/modules/video/theora/TheoraVideoStream.h
 )
 
 set(LOVE_SRC_MODULE_VIDEO

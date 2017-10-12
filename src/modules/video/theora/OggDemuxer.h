@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2016 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,18 +18,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_VIDEO_THEORA_VIDEO_H
-#define LOVE_VIDEO_THEORA_VIDEO_H
+#ifndef LOVE_VIDEO_THEORA_OGGDEMUXER_H
+#define LOVE_VIDEO_THEORA_OGGDEMUXER_H
 
 // STL
-#include <vector>
+#include <functional>
 
 // LOVE
 #include "filesystem/File.h"
-#include "video/Video.h"
-#include "thread/threads.h"
-#include "video/VideoStream.h"
-#include "TheoraVideoStream.h"
+
+// OGG
+#include <ogg/ogg.h>
 
 namespace love
 {
@@ -38,48 +37,41 @@ namespace video
 namespace theora
 {
 
-class Worker;
-
-class Video : public love::video::Video
+class OggDemuxer
 {
 public:
-	Video();
-	virtual ~Video();
+	enum StreamType
+	{
+		TYPE_THEORA,
+		TYPE_UNKNOWN,
+	};
 
-	// Implements Module
-	virtual const char *getName() const;
+	OggDemuxer(love::filesystem::File *file);
+	~OggDemuxer();
 
-	VideoStream *newVideoStream(love::filesystem::File* file);
-
-private:
-	Worker *workerThread;
-}; // Video
-
-class Worker : public love::thread::Threadable
-{
-public:
-	Worker();
-	virtual ~Worker();
-
-	// Implements Threadable
-	void threadFunction();
-
-	void addStream(TheoraVideoStream *stream);
-	// Frees itself!
-	void stop();
+	StreamType findStream();
+	bool readPacket(ogg_packet &packet, bool mustSucceed = false);
+	void resync();
+	bool isEos() const;
+	const std::string &getFilename() const;
+	bool seek(ogg_packet &packet, double target, std::function<double(int64)> getTime);
 
 private:
+	StrongRef<love::filesystem::File> file;
 
-	std::vector<StrongRef<TheoraVideoStream>> streams;
+	ogg_sync_state sync;
+	ogg_stream_state stream;
+	ogg_page page;
 
-	love::thread::MutexRef mutex;
-	love::thread::ConditionalRef cond;
+	bool streamInited;
+	int videoSerial;
 
-	bool stopping;
-}; // Worker
+	void readPage();
+	StreamType determineType();
+}; // OggDemuxer
 
 } // theora
 } // video
 } // love
 
-#endif // LOVE_VIDEO_THEORA_VIDEO_H
+#endif // LOVE_VIDEO_THEORA_OGGDEMUXER_H
