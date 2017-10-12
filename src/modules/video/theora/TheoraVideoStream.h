@@ -83,7 +83,6 @@ private:
 
 	double lastFrame;
 	double nextFrame;
-	unsigned int lagCounter;
 
 	void parseHeader();
 	void seekDecoder(double target);

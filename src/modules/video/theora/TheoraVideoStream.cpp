@@ -40,7 +40,6 @@ TheoraVideoStream::TheoraVideoStream(love::filesystem::File *file)
 	, frameReady(false)
 	, lastFrame(0)
 	, nextFrame(0)
-	, lagCounter(0)
 {
 	if (demuxer.findStream() != OggDemuxer::TYPE_THEORA)
 		throw love::Exception("Invalid video file, video is not theora");
@@ -214,66 +213,65 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 	if (position < lastFrame)
 		seekDecoder(position);
 
-	// If we're at the end of the stream, or if we're displaying the right frame
-	// stop here
-	if (demuxer.isEos() || position < nextFrame)
-		return;
-
-	th_ycbcr_buffer bufferinfo;
-	th_decode_ycbcr_out(decoder, bufferinfo);
-
-	ogg_int64_t granulePosition;
-	do
+	// Until we are at the end of the stream, or we are displaying the right frame
+	unsigned int lagCounter = 0;
+	while (!demuxer.isEos() && position >= nextFrame)
 	{
-		if (demuxer.readPacket(packet))
-			return;
-	} while (th_decode_packetin(decoder, &packet, &granulePosition) != 0);
-	lastFrame = nextFrame;
-	nextFrame = th_granule_time(decoder, granulePosition);
-
-	{
-		// Don't swap whilst we're writing to the backbuffer
-		love::thread::Lock l(bufferMutex);
-		frameReady = false;
-	}
-
-	for (int y = 0; y < backBuffer->yh; ++y)
-	{
-		memcpy(backBuffer->yplane+backBuffer->yw*y,
-				bufferinfo[0].data+
-					bufferinfo[0].stride*(y+yPlaneYOffset)+yPlaneXOffset,
-				backBuffer->yw);
-	}
-
-	for (int y = 0; y < backBuffer->ch; ++y)
-	{
-		memcpy(backBuffer->cbplane+backBuffer->cw*y,
-				bufferinfo[1].data+
-					bufferinfo[1].stride*(y+cPlaneYOffset)+cPlaneXOffset,
-				backBuffer->cw);
-	}
-
-	for (int y = 0; y < backBuffer->ch; ++y)
-	{
-		memcpy(backBuffer->crplane+backBuffer->cw*y,
-				bufferinfo[2].data+
-					bufferinfo[2].stride*(y+cPlaneYOffset)+cPlaneXOffset,
-				backBuffer->cw);
-	}
-
-	// Seeking forwards:
-	// If we're still not on the right frame, either we're lagging or we're seeking
-	// After 5 frames, go for a seek. This is not ideal.. but what is
-	if (position > nextFrame)
-	{
-		if (++lagCounter > 5)
+		// If we can't catch up, seek
+		if (lagCounter++ > 5)
+		{
 			seekDecoder(position);
-	}
-	else
-		lagCounter = 0;
+			lagCounter = 0;
+		}
 
-	love::thread::Lock l(bufferMutex);
-	frameReady = true;
+		th_ycbcr_buffer bufferinfo;
+		th_decode_ycbcr_out(decoder, bufferinfo);
+
+		ogg_int64_t granulePosition;
+		do
+		{
+			if (demuxer.readPacket(packet))
+				return;
+		} while (th_decode_packetin(decoder, &packet, &granulePosition) != 0);
+		lastFrame = nextFrame;
+		nextFrame = th_granule_time(decoder, granulePosition);
+
+		// Don't swap whilst we're writing to the backbuffer
+		{
+			love::thread::Lock l(bufferMutex);
+			frameReady = false;
+		}
+
+		for (int y = 0; y < backBuffer->yh; ++y)
+		{
+			memcpy(backBuffer->yplane+backBuffer->yw*y,
+					bufferinfo[0].data+
+						bufferinfo[0].stride*(y+yPlaneYOffset)+yPlaneXOffset,
+					backBuffer->yw);
+		}
+
+		for (int y = 0; y < backBuffer->ch; ++y)
+		{
+			memcpy(backBuffer->cbplane+backBuffer->cw*y,
+					bufferinfo[1].data+
+						bufferinfo[1].stride*(y+cPlaneYOffset)+cPlaneXOffset,
+					backBuffer->cw);
+		}
+
+		for (int y = 0; y < backBuffer->ch; ++y)
+		{
+			memcpy(backBuffer->crplane+backBuffer->cw*y,
+					bufferinfo[2].data+
+						bufferinfo[2].stride*(y+cPlaneYOffset)+cPlaneXOffset,
+					backBuffer->cw);
+		}
+
+		// Re-enable swapping
+		{
+			love::thread::Lock l(bufferMutex);
+			frameReady = true;
+		}
+	}
 }
 
 void TheoraVideoStream::fillBackBuffer()
