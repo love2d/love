@@ -171,6 +171,16 @@ bool OggDemuxer::seek(ogg_packet &packet, double target, std::function<double(in
 	double low = 0;
 	double high = file->getSize();
 
+	// If we know our current position, we can drastically decrease the search area
+	if (packet.granulepos != -1)
+	{
+		double currentTime = getTime(packet.granulepos);
+		if (currentTime < target)
+			low = file->tell();
+		else if (currentTime > target)
+			high = file->tell();
+	}
+
 	while (high-low > rewindThreshold)
 	{
 		// Determine our next binary search position
