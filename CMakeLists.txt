@@ -287,6 +287,7 @@ set(LOVE_SRC_COMMON
 	src/common/runtime.h
 	src/common/Stream.cpp
 	src/common/Stream.h
+	src/common/StringMap.cpp
 	src/common/StringMap.h
 	src/common/types.cpp
 	src/common/types.h
