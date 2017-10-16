@@ -129,6 +129,8 @@ double Timer::getTime()
 	static const double timerPeriod = getTimerPeriod();
 
 #if defined(LOVE_LINUX)
+	(void) timerPeriod; // Unused on linux
+
 	double mt;
 	// Check for POSIX timers and monotonic clocks. If not supported, use the gettimeofday fallback.
 #if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK) \
