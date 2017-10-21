@@ -83,7 +83,7 @@ bool ShaderStage::loadVolatile()
 	GLint status = GL_FALSE;
 	glGetShaderiv(glShader, GL_COMPILE_STATUS, &status);
 
-	if (glShader == GL_FALSE)
+	if (status == GL_FALSE)
 	{
 		glDeleteShader(glShader);
 		throw love::Exception("Cannot compile %s shader code:\n%s", typestr, warnings.c_str());
