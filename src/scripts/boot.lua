@@ -579,9 +579,7 @@ function love.run()
 		end
 
 		-- Update dt, as we'll be passing it to update
-		if love.timer then
-			dt = love.timer.step()
-		end
+		if love.timer then dt = love.timer.step() end
 
 		-- Call update and draw
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
