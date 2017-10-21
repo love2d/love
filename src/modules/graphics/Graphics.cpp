@@ -22,6 +22,7 @@
 #include "Graphics.h"
 #include "Buffer.h"
 #include "math/MathModule.h"
+#include "data/DataModule.h"
 #include "Polyline.h"
 #include "font/Font.h"
 #include "window/Window.h"
@@ -100,7 +101,7 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
-Shader::ShaderSource Graphics::defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
+Graphics::DefaultShaderCode Graphics::defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
 
 Graphics::Graphics()
 	: width(0)
@@ -115,6 +116,7 @@ Graphics::Graphics()
 	, canvasSwitchCount(0)
 	, drawCallsBatched(0)
 	, capabilities()
+	, cachedShaderStages()
 {
 	transformStack.reserve(16);
 	transformStack.push_back(Matrix4());
@@ -149,6 +151,9 @@ Graphics::~Graphics()
 	delete streamBufferState.vb[1];
 	delete streamBufferState.indexBuffer;
 
+	for (int i = 0; i < (int) ShaderStage::STAGE_MAX_ENUM; i++)
+		cachedShaderStages[i].clear();
+
 	Shader::deinitialize();
 }
 
@@ -177,9 +182,77 @@ Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 	return new Video(this, stream, dpiscale);
 }
 
-bool Graphics::validateShader(bool gles, const Shader::ShaderSource &source, std::string &err)
+ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &optsource)
 {
-	return Shader::validate(this, gles, source, true, err);
+	if (stage == ShaderStage::STAGE_MAX_ENUM)
+		throw love::Exception("Invalid shader stage.");
+
+	const std::string &source = optsource.empty() ? getCurrentDefaultShaderCode().source[stage] : optsource;
+
+	ShaderStage *s = nullptr;
+	std::string cachekey;
+
+	if (!source.empty())
+	{
+		data::HashFunction::Value hashvalue;
+		data::hash(data::HashFunction::FUNCTION_SHA1, source.c_str(), source.size(), hashvalue);
+
+		cachekey = std::string(hashvalue.data, hashvalue.size);
+
+		auto it = cachedShaderStages[stage].find(cachekey);
+		if (it != cachedShaderStages[stage].end())
+		{
+			s = it->second;
+			s->retain();
+		}
+	}
+
+	if (s == nullptr)
+	{
+		s = newShaderStageInternal(stage, cachekey, source, getRenderer() == RENDERER_OPENGLES);
+		if (!cachekey.empty())
+			cachedShaderStages[stage][cachekey] = s;
+	}
+
+	return s;
+}
+
+void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)
+{
+	cachedShaderStages[type].erase(hashkey);
+}
+
+Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
+{
+	if (vertex.empty() && pixel.empty())
+		throw love::Exception("Error creating shader: no source code!");
+
+	StrongRef<ShaderStage> vertexstage(newShaderStage(ShaderStage::STAGE_VERTEX, vertex), Acquire::NORETAIN);
+	StrongRef<ShaderStage> pixelstage(newShaderStage(ShaderStage::STAGE_PIXEL, pixel), Acquire::NORETAIN);
+
+	return newShaderInternal(vertexstage.get(), pixelstage.get());
+}
+
+bool Graphics::validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err)
+{
+	if (vertex.empty() && pixel.empty())
+	{
+		err = "Error validating shader: no source code!";
+		return false;
+	}
+
+	StrongRef<ShaderStage> vertexstage;
+	StrongRef<ShaderStage> pixelstage;
+
+	// Don't use cached shader stages, since the gles flag may not match the
+	// current renderer.
+	if (!vertex.empty())
+		vertexstage.set(new ShaderStageForValidation(this, ShaderStage::STAGE_VERTEX, vertex, gles), Acquire::NORETAIN);
+
+	if (!pixel.empty())
+		pixelstage.set(new ShaderStageForValidation(this, ShaderStage::STAGE_PIXEL, pixel, gles), Acquire::NORETAIN);
+
+	return Shader::validate(vertexstage.get(), pixelstage.get(), err);
 }
 
 int Graphics::getWidth() const
@@ -1425,9 +1498,12 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-const Shader::ShaderSource &Graphics::getCurrentDefaultShaderCode() const
+const Graphics::DefaultShaderCode &Graphics::getCurrentDefaultShaderCode() const
 {
-	return defaultShaderCode[Shader::STANDARD_DEFAULT][getShaderLanguageTarget()][isGammaCorrect() ? 1 : 0];
+	int languageindex = (int) getShaderLanguageTarget();
+	int gammaindex = isGammaCorrect() ? 1 : 0;
+
+	return defaultShaderCode[Shader::STANDARD_DEFAULT][languageindex][gammaindex];
 }
 
 /**

@@ -34,6 +34,7 @@
 #include "Texture.h"
 #include "Canvas.h"
 #include "Font.h"
+#include "ShaderStage.h"
 #include "Shader.h"
 #include "Quad.h"
 #include "Mesh.h"
@@ -44,6 +45,7 @@
 #include "font/Rasterizer.h"
 #include "font/Font.h"
 #include "video/VideoStream.h"
+#include "data/HashFunction.h"
 
 // C++
 #include <string>
@@ -359,6 +361,11 @@ public:
 		{}
 	};
 
+	struct DefaultShaderCode
+	{
+		std::string source[ShaderStage::STAGE_MAX_ENUM];
+	};
+
 	Graphics();
 	virtual ~Graphics();
 
@@ -378,7 +385,9 @@ public:
 	virtual ParticleSystem *newParticleSystem(Texture *texture, int size) = 0;
 
 	virtual Canvas *newCanvas(const Canvas::Settings &settings) = 0;
-	virtual Shader *newShader(const Shader::ShaderSource &source) = 0;
+
+	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
+	Shader *newShader(const std::string &vertex, const std::string &pixel);
 
 	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
 
@@ -390,7 +399,7 @@ public:
 
 	virtual Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {}) = 0;
 
-	bool validateShader(bool gles, const Shader::ShaderSource &source, std::string &err);
+	bool validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err);
 
 	/**
 	 * Resets the current color, background color, line style, and so forth.
@@ -758,7 +767,9 @@ public:
 	static void flushStreamDrawsGlobal();
 
 	virtual Shader::Language getShaderLanguageTarget() const = 0;
-	const Shader::ShaderSource &getCurrentDefaultShaderCode() const;
+	const DefaultShaderCode &getCurrentDefaultShaderCode() const;
+
+	void cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &cachekey);
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)
@@ -806,7 +817,7 @@ public:
 	static std::vector<std::string> getConstants(StackType);
 
 	// Default shader code (a shader is always required internally.)
-	static Shader::ShaderSource defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
+	static DefaultShaderCode defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
 
 protected:
 
@@ -868,6 +879,8 @@ protected:
 		}
 	};
 
+	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
+	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
 
 	virtual void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) = 0;
@@ -925,6 +938,8 @@ private:
 	int calculateEllipsePoints(float rx, float ry) const;
 
 	std::vector<uint8> scratchBuffer;
+
+	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[ShaderStage::STAGE_MAX_ENUM];
 
 	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
 	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;

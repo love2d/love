@@ -24,6 +24,7 @@
 #include "common/Object.h"
 #include "common/StringMap.h"
 #include "Texture.h"
+#include "ShaderStage.h"
 
 // STL
 #include <string>
@@ -57,13 +58,6 @@ public:
 		LANGUAGE_GLSL3,
 		LANGUAGE_ESSL3,
 		LANGUAGE_MAX_ENUM
-	};
-
-	enum ShaderStage
-	{
-		STAGE_VERTEX,
-		STAGE_PIXEL,
-		STAGE_MAX_ENUM
 	};
 
 	// Built-in uniform variables.
@@ -101,12 +95,6 @@ public:
 		STANDARD_VIDEO,
 		STANDARD_ARRAY,
 		STANDARD_MAX_ENUM
-	};
-
-	struct ShaderSource
-	{
-		std::string vertex;
-		std::string pixel;
 	};
 
 	struct MatrixSize
@@ -150,7 +138,7 @@ public:
 	// Pointer to the default Shader.
 	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
-	Shader(const ShaderSource &source);
+	Shader(ShaderStage *vertex, ShaderStage *pixel);
 	virtual ~Shader();
 
 	/**
@@ -197,7 +185,7 @@ public:
 
 	virtual ptrdiff_t getHandle() const = 0;
 
-	static bool validate(Graphics *gfx, bool gles, const ShaderSource &source, bool checkWithDefaults, std::string &err);
+	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
@@ -205,34 +193,17 @@ public:
 	static bool getConstant(const char *in, Language &out);
 	static bool getConstant(Language in, const char *&out);
 
-	static bool getConstant(const char *in, ShaderStage &out);
-	static bool getConstant(ShaderStage in, const char *&out);
-
 	static bool getConstant(const char *in, BuiltinUniform &out);
 	static bool getConstant(BuiltinUniform in, const char *&out);
 
 protected:
 
-	struct CachedShaderStage
-	{
-		int referenceCount;
-		ShaderStage stage;
-		glslang::TShader *glslangShader;
-		ptrdiff_t handle;
-	};
-
-	// Source code used for this Shader.
-	ShaderSource shaderSource;
-
-	static std::map<std::string, CachedShaderStage> cachedShaders;
+	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
 
 private:
 
 	static StringMap<Language, LANGUAGE_MAX_ENUM>::Entry languageEntries[];
 	static StringMap<Language, LANGUAGE_MAX_ENUM> languages;
-
-	static StringMap<ShaderStage, STAGE_MAX_ENUM>::Entry stageNameEntries[];
-	static StringMap<ShaderStage, STAGE_MAX_ENUM> stageNames;
 	
 	// Names for the built-in uniform variables.
 	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];

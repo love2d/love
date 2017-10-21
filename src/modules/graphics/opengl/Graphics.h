@@ -68,7 +68,6 @@ public:
 	love::graphics::ParticleSystem *newParticleSystem(Texture *texture, int size) override;
 
 	love::graphics::Canvas *newCanvas(const Canvas::Settings &settings) override;
-	love::graphics::Shader *newShader(const Shader::ShaderSource &source) override;
 
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
 
@@ -126,6 +125,8 @@ public:
 
 private:
 
+	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
+	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
 	void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;

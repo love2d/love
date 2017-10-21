@@ -52,14 +52,6 @@ enum TextureType
 	TEXTURE_MAX_ENUM
 };
 
-class TextureTooLargeException : public love::Exception
-{
-public:
-	TextureTooLargeException(const char *dimname, int pix)
-		: Exception("Cannot create texture: %s of %d pixels is too large for this system.", dimname, pix)
-	{}
-};
-
 /**
  * Base class for 2D textures. All textures can be drawn with Quads, have a
  * width and height, and have filter and wrap modes.

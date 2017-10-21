@@ -1234,7 +1234,7 @@ int w_newCanvas(lua_State *L)
 	return 1;
 }
 
-static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::ShaderSource &source)
+static int w_getShaderSource(lua_State *L, int startidx, bool gles, std::string &vertexsource, std::string &pixelsource)
 {
 	using namespace love::filesystem;
 
@@ -1315,17 +1315,17 @@ static int w_getShaderSource(lua_State *L, int startidx, bool gles, Shader::Shad
 
 	// vertex shader code
 	if (lua_isstring(L, -2))
-		source.vertex = luax_checkstring(L, -2);
+		vertexsource = luax_checkstring(L, -2);
 	else if (has_arg1 && has_arg2)
 		return luaL_error(L, "Could not parse vertex shader code (missing 'position' function?)");
 
 	// pixel shader code
 	if (lua_isstring(L, -1))
-		source.pixel = luax_checkstring(L, -1);
+		pixelsource = luax_checkstring(L, -1);
 	else if (has_arg1 && has_arg2)
 		return luaL_error(L, "Could not parse pixel shader code (missing 'effect' function?)");
 
-	if (source.vertex.empty() && source.pixel.empty())
+	if (vertexsource.empty() && pixelsource.empty())
 	{
 		// Original args had source code, but effectCodeToGLSL couldn't translate it
 		for (int i = startidx; i < startidx + 2; i++)
@@ -1342,13 +1342,13 @@ int w_newShader(lua_State *L)
 {
 	bool gles = instance()->getRenderer() == Graphics::RENDERER_OPENGLES;
 
-	Shader::ShaderSource source;
-	w_getShaderSource(L, 1, gles, source);
+	std::string vertexsource, pixelsource;
+	w_getShaderSource(L, 1, gles, vertexsource, pixelsource);
 
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance()->newShader(source);
+		Shader *shader = instance()->newShader(vertexsource, pixelsource);
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1372,11 +1372,20 @@ int w_validateShader(lua_State *L)
 {
 	bool gles = luax_checkboolean(L, 1);
 
-	Shader::ShaderSource source;
-	w_getShaderSource(L, 2, gles, source);
+	std::string vertexsource, pixelsource;
+	w_getShaderSource(L, 2, gles, vertexsource, pixelsource);
 
+	bool success = true;
 	std::string err;
-	bool success = instance()->validateShader(gles, source, err);
+	try
+	{
+		success = instance()->validateShader(gles, vertexsource, pixelsource, err);
+	}
+	catch (love::Exception &e)
+	{
+		success = false;
+		err = e.what();
+	}
 
 	luax_pushboolean(L, success);
 
@@ -2007,23 +2016,21 @@ int w_setDefaultShaderCode(lua_State *L)
 			lua_getfield(L, -3, "videopixel");
 			lua_getfield(L, -4, "arraypixel");
 
-			Shader::ShaderSource code;
-			code.vertex = luax_checkstring(L, -4);
-			code.pixel = luax_checkstring(L, -3);
-
-			Shader::ShaderSource videocode;
-			videocode.vertex = luax_checkstring(L, -4);
-			videocode.pixel = luax_checkstring(L, -2);
-
-			Shader::ShaderSource arraycode;
-			arraycode.vertex = luax_checkstring(L, -4);
-			arraycode.pixel = luax_checkstring(L, -1);
+			std::string vertex = luax_checkstring(L, -4);
+			std::string pixel = luax_checkstring(L, -3);
+			std::string videopixel = luax_checkstring(L, -2);
+			std::string arraypixel = luax_checkstring(L, -1);
 
 			lua_pop(L, 5);
 
-			Graphics::defaultShaderCode[Shader::STANDARD_DEFAULT][lang][i] = code;
-			Graphics::defaultShaderCode[Shader::STANDARD_VIDEO][lang][i] = videocode;
-			Graphics::defaultShaderCode[Shader::STANDARD_ARRAY][lang][i] = arraycode;
+			Graphics::defaultShaderCode[Shader::STANDARD_DEFAULT][lang][i].source[ShaderStage::STAGE_VERTEX] = vertex;
+			Graphics::defaultShaderCode[Shader::STANDARD_DEFAULT][lang][i].source[ShaderStage::STAGE_PIXEL] = pixel;
+
+			Graphics::defaultShaderCode[Shader::STANDARD_VIDEO][lang][i].source[ShaderStage::STAGE_VERTEX] = vertex;
+			Graphics::defaultShaderCode[Shader::STANDARD_VIDEO][lang][i].source[ShaderStage::STAGE_PIXEL] = videopixel;
+
+			Graphics::defaultShaderCode[Shader::STANDARD_ARRAY][lang][i].source[ShaderStage::STAGE_VERTEX] = vertex;
+			Graphics::defaultShaderCode[Shader::STANDARD_ARRAY][lang][i].source[ShaderStage::STAGE_PIXEL] = arraypixel;
 		}
 	}
 

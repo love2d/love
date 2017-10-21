@@ -47,8 +47,7 @@ public:
 	 * Creates a new Shader using a list of source codes.
 	 * Source must contain either vertex or pixel shader code, or both.
 	 **/
-	Shader(const ShaderSource &source);
-
+	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
 	virtual ~Shader();
 
 	// Implements Volatile
@@ -96,15 +95,10 @@ private:
 	TextureType getUniformTextureType(GLenum type) const;
 	bool isDepthTextureType(GLenum type) const;
 
-	GLuint compileCode(ShaderStage stage, const std::string &code);
-
 	void flushStreamDraws() const;
 
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;
-
-	// Shader compiler warning strings for individual shader stages.
-	std::map<ShaderStage, std::string> shaderWarnings;
 
 	// volatile
 	GLuint program;

@@ -30,6 +30,7 @@
 #include "window/Window.h"
 #include "Buffer.h"
 #include "Text.h"
+#include "ShaderStage.h"
 
 #include "libraries/xxHash/xxhash.h"
 
@@ -126,9 +127,14 @@ love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
 	return new Canvas(settings);
 }
 
-love::graphics::Shader *Graphics::newShader(const Shader::ShaderSource &source)
+love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
-	return new Shader(source);
+	return new ShaderStage(this, stage, source, gles, cachekey);
+}
+
+love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
+{
+	return new Shader(vertex, pixel);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
@@ -281,7 +287,10 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		try
 		{
 			if (!Shader::standardShaders[i])
-				Shader::standardShaders[i] = newShader(defaultShaderCode[i][target][gammacorrect]);
+			{
+				const auto &code = defaultShaderCode[i][target][gammacorrect];
+				Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
+			}
 		}
 		catch (love::Exception &)
 		{

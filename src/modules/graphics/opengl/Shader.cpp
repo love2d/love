@@ -36,8 +36,8 @@ namespace graphics
 namespace opengl
 {
 
-Shader::Shader(const ShaderSource &source)
-	: love::graphics::Shader(source)
+Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
+	: love::graphics::Shader(vertex, pixel)
 	, program(0)
 	, builtinUniforms()
 	, builtinUniformInfo()
@@ -71,71 +71,6 @@ Shader::~Shader()
 			delete[] p.second.textures;
 		}
 	}
-}
-
-GLuint Shader::compileCode(ShaderStage stage, const std::string &code)
-{
-	GLenum glstage;
-	const char *typestr;
-
-	if (!getConstant(stage, typestr))
-		typestr = "";
-
-	switch (stage)
-	{
-	case STAGE_VERTEX:
-		glstage = GL_VERTEX_SHADER;
-		break;
-	case STAGE_PIXEL:
-		glstage = GL_FRAGMENT_SHADER;
-		break;
-	default:
-		throw love::Exception("Cannot create shader object: unknown shader type.");
-		break;
-	}
-
-	GLuint shaderid = glCreateShader(glstage);
-
-	if (shaderid == 0)
-	{
-		if (glGetError() == GL_INVALID_ENUM)
-			throw love::Exception("Cannot create %s shader object: %s shaders not supported.", typestr, typestr);
-		else
-			throw love::Exception("Cannot create %s shader object.", typestr);
-	}
-
-	const char *src = code.c_str();
-	GLint srclen = (GLint) code.length();
-	glShaderSource(shaderid, 1, (const GLchar **)&src, &srclen);
-
-	glCompileShader(shaderid);
-
-	GLint infologlen;
-	glGetShaderiv(shaderid, GL_INFO_LOG_LENGTH, &infologlen);
-
-	// Get any warnings the shader compiler may have produced.
-	if (infologlen > 0)
-	{
-		GLchar *infolog = new GLchar[infologlen];
-		glGetShaderInfoLog(shaderid, infologlen, nullptr, infolog);
-
-		// Save any warnings for later querying.
-		shaderWarnings[stage] = infolog;
-
-		delete[] infolog;
-	}
-
-	GLint status;
-	glGetShaderiv(shaderid, GL_COMPILE_STATUS, &status);
-
-	if (status == GL_FALSE)
-	{
-		glDeleteShader(shaderid);
-		throw love::Exception("Cannot compile %s shader code:\n%s",
-		                      typestr, shaderWarnings[stage].c_str());
-	}
-
-	return shaderid;
 }
 
 void Shader::mapActiveUniforms()
@@ -376,38 +311,22 @@ bool Shader::loadVolatile()
 	textureUnits.clear();
 	textureUnits.push_back(TextureUnit());
 
-	std::vector<GLuint> shaderids;
-
-	auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
-	const ShaderSource &defaults = gfx->getCurrentDefaultShaderCode();
-
-	// The shader program must have both vertex and pixel shader stages.
-	const std::string &vertexcode = shaderSource.vertex.empty() ? defaults.vertex : shaderSource.vertex;
-	const std::string &pixelcode = shaderSource.pixel.empty() ? defaults.pixel : shaderSource.pixel;
-
-	try
+	for (const auto &stage : stages)
 	{
-		shaderids.push_back(compileCode(STAGE_VERTEX, vertexcode));
-		shaderids.push_back(compileCode(STAGE_PIXEL, pixelcode));
-	}
-	catch (love::Exception &)
-	{
-		for (GLuint id : shaderids)
-			glDeleteShader(id);
-		throw;
+		if (stage.get() != nullptr)
+			stage->loadVolatile();
 	}
 
 	program = glCreateProgram();
 
 	if (program == 0)
-	{
-		for (GLuint id : shaderids)
-			glDeleteShader(id);
 		throw love::Exception("Cannot create shader program object.");
-	}
 
-	for (GLuint id : shaderids)
-		glAttachShader(program, id);
+	for (const auto &stage : stages)
+	{
+		if (stage.get() != nullptr)
+			glAttachShader(program, (GLuint) stage->getHandle());
+	}
 
 	// Bind generic vertex attribute indices to names in the shader.
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
@@ -418,10 +337,6 @@ bool Shader::loadVolatile()
 	}
 
 	glLinkProgram(program);
-
-	// Flag shaders for auto-deletion when the program object is deleted.
-	for (GLuint id : shaderids)
-		glDeleteShader(id);
 
 	GLint status;
 	glGetProgramiv(program, GL_LINK_STATUS, &status);
@@ -477,8 +392,6 @@ void Shader::unloadVolatile()
 	// And the locations of any built-in uniform variables.
 	for (int i = 0; i < int(BUILTIN_MAX_ENUM); i++)
 		builtinUniforms[i] = -1;
-
-	shaderWarnings.clear();
 }
 
 std::string Shader::getProgramWarnings() const
@@ -506,11 +419,15 @@ std::string Shader::getWarnings() const
 	std::string warnings;
 	const char *stagestr;
 
-	// Get the individual shader stage warnings
-	for (const auto &warning : shaderWarnings)
+	for (const auto &stage : stages)
 	{
-		if (getConstant(warning.first, stagestr))
-			warnings += std::string(stagestr) + std::string(" shader:\n") + warning.second;
+		if (stage.get() == nullptr)
+			continue;
+
+		const std::string &stagewarnings = stage->getWarnings();
+
+		if (ShaderStage::getConstant(stage->getStageType(), stagestr))
+			warnings += std::string(stagestr) + std::string(" shader:\n") + stagewarnings;
 	}
 
 	warnings += getProgramWarnings();
