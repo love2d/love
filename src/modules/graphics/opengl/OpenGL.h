@@ -380,8 +380,10 @@ public:
 	 **/
 	Vendor getVendor() const;
 
+	static GLenum getGLPrimitiveType(PrimitiveType type);
 	static GLenum getGLBufferType(BufferType type);
 	static GLenum getGLIndexDataType(IndexDataType type);
+	static GLenum getGLVertexDataType(vertex::DataType type, GLboolean &normalized);
 	static GLenum getGLBufferUsage(vertex::Usage usage);
 	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);

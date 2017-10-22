@@ -124,6 +124,21 @@ size_t getIndexDataSize(IndexDataType type)
 	}
 }
 
+size_t getDataTypeSize(DataType datatype)
+{
+	switch (datatype)
+	{
+	case DATA_UNORM8:
+		return sizeof(uint8);
+	case DATA_UNORM16:
+		return sizeof(uint16);
+	case DATA_FLOAT:
+		return sizeof(float);
+	default:
+		return 0;
+	}
+}
+
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue)
 {
 	IndexDataType types[] = {INDEX_UINT16, INDEX_UINT32};
@@ -234,6 +249,33 @@ static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
 
 static StringMap<Usage, USAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
 
+static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM>::Entry primitiveTypeEntries[] =
+{
+	{ "fan",       PRIMITIVE_TRIANGLE_FAN   },
+	{ "strip",     PRIMITIVE_TRIANGLE_STRIP },
+	{ "triangles", PRIMITIVE_TRIANGLES      },
+	{ "points",    PRIMITIVE_POINTS         },
+};
+
+static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM> primitiveTypes(primitiveTypeEntries, sizeof(primitiveTypeEntries));
+
+static StringMap<AttributeStep, STEP_MAX_ENUM>::Entry attributeStepEntries[] =
+{
+	{ "pervertex",   STEP_PER_VERTEX   },
+	{ "perinstance", STEP_PER_INSTANCE },
+};
+
+static StringMap<AttributeStep, STEP_MAX_ENUM> attributeSteps(attributeStepEntries, sizeof(attributeStepEntries));
+
+static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[] =
+{
+	{ "byte",    DATA_UNORM8  }, // Legacy / more user-friendly name...
+	{ "unorm16", DATA_UNORM16 },
+	{ "float",   DATA_FLOAT   },
+};
+
+static StringMap<DataType, DATA_MAX_ENUM> dataTypes(dataTypeEntries, sizeof(dataTypeEntries));
+
 bool getConstant(const char *in, VertexAttribID &out)
 {
 	return attribNames.find(in, out);
@@ -272,6 +314,36 @@ bool getConstant(Usage in, const char *&out)
 std::vector<std::string> getConstants(Usage)
 {
 	return usages.getNames();
+}
+
+bool getConstant(const char *in, PrimitiveType &out)
+{
+	return primitiveTypes.find(in, out);
+}
+
+bool getConstant(PrimitiveType in, const char *&out)
+{
+	return primitiveTypes.find(in, out);
+}
+
+std::vector<std::string> getConstants(PrimitiveType)
+{
+	return primitiveTypes.getNames();
+}
+
+bool getConstant(const char *in, AttributeStep &out)
+{
+	return attributeSteps.find(in, out);
+}
+
+bool getConstant(AttributeStep in, const char *&out)
+{
+	return attributeSteps.find(in, out);
+}
+
+std::vector<std::string> getConstants(AttributeStep)
+{
+	return attributeSteps.getNames();
 }
 
 } // vertex

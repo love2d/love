@@ -49,9 +49,9 @@ std::vector<Mesh::AttribFormat> Mesh::getDefaultVertexFormat()
 {
 	// Corresponds to the love::Vertex struct.
 	std::vector<Mesh::AttribFormat> vertexformat = {
-		{getBuiltinAttribName(ATTRIB_POS),      Mesh::DATA_FLOAT, 2},
-		{getBuiltinAttribName(ATTRIB_TEXCOORD), Mesh::DATA_FLOAT, 2},
-		{getBuiltinAttribName(ATTRIB_COLOR),    Mesh::DATA_BYTE,  4},
+		{ getBuiltinAttribName(ATTRIB_POS),      vertex::DATA_FLOAT,  2 },
+		{ getBuiltinAttribName(ATTRIB_TEXCOORD), vertex::DATA_FLOAT,  2 },
+		{ getBuiltinAttribName(ATTRIB_COLOR),    vertex::DATA_UNORM8, 4 },
 	};
 
 	return vertexformat;
@@ -59,16 +59,16 @@ std::vector<Mesh::AttribFormat> Mesh::getDefaultVertexFormat()
 
 love::Type Mesh::type("Mesh", &Drawable::type);
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
 	, vbo(nullptr)
 	, vertexCount(0)
 	, vertexStride(0)
 	, ibo(nullptr)
 	, useIndexBuffer(false)
-	, elementCount(0)
-	, elementDataType(INDEX_UINT16)
-	, drawMode(drawmode)
+	, indexCount(0)
+	, indexDataType(INDEX_UINT16)
+	, primitiveType(drawmode)
 	, rangeStart(-1)
 	, rangeCount(-1)
 {
@@ -76,7 +76,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	calculateAttributeSizes();
 
 	vertexCount = datasize / vertexStride;
-	elementDataType = vertex::getIndexDataTypeFromMax(vertexCount);
+	indexDataType = vertex::getIndexDataTypeFromMax(vertexCount);
 
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
@@ -86,16 +86,16 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
 	, vbo(nullptr)
 	, vertexCount((size_t) vertexcount)
 	, vertexStride(0)
 	, ibo(nullptr)
 	, useIndexBuffer(false)
-	, elementCount(0)
-	, elementDataType(vertex::getIndexDataTypeFromMax(vertexcount))
-	, drawMode(drawmode)
+	, indexCount(0)
+	, indexDataType(vertex::getIndexDataTypeFromMax(vertexcount))
+	, primitiveType(drawmode)
 	, rangeStart(-1)
 	, rangeCount(-1)
 {
@@ -149,16 +149,18 @@ void Mesh::calculateAttributeSizes()
 
 	for (const AttribFormat &format : vertexFormat)
 	{
-		// Hardware really doesn't like attributes that aren't 32 bit-aligned.
-		if (format.type == DATA_BYTE && format.components != 4)
-			throw love::Exception("byte vertex attributes must have 4 components.");
+		size_t size = vertex::getDataTypeSize(format.type) * format.components;
 
 		if (format.components <= 0 || format.components > 4)
 			throw love::Exception("Vertex attributes must have between 1 and 4 components.");
 
+		// Hardware really doesn't like attributes that aren't 32 bit-aligned.
+		if (size % 4 != 0)
+			throw love::Exception("Vertex attributes must have enough components to be a multiple of 32 bits.");
+
 		// Total size in bytes of each attribute in a single vertex.
-		attributeSizes.push_back(getAttribFormatSize(format));
-		stride += attributeSizes.back();
+		attributeSizes.push_back(size);
+		stride += size;
 	}
 
 	vertexStride = stride;
@@ -258,15 +260,13 @@ const std::vector<Mesh::AttribFormat> &Mesh::getVertexFormat() const
 	return vertexFormat;
 }
 
-Mesh::DataType Mesh::getAttributeInfo(int attribindex, int &components) const
+vertex::DataType Mesh::getAttributeInfo(int attribindex, int &components) const
 {
 	if (attribindex < 0 || attribindex >= (int) vertexFormat.size())
 		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
 
-	DataType type = vertexFormat[attribindex].type;
 	components = vertexFormat[attribindex].components;
-
-	return type;
+	return vertexFormat[attribindex].type;
 }
 
 int Mesh::getAttributeIndex(const std::string &name) const
@@ -417,9 +417,9 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	}
 
 	useIndexBuffer = true;
-	elementCount = map.size();
+	indexCount = map.size();
 
-	if (!ibo || elementCount == 0)
+	if (!ibo || indexCount == 0)
 		return;
 
 	Buffer::Mapper ibomap(*ibo);
@@ -436,7 +436,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 		break;
 	}
 
-	elementDataType = datatype;
+	indexDataType = datatype;
 }
 
 void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasize)
@@ -453,16 +453,16 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 		ibo = gfx->newBuffer(datasize, nullptr, BUFFER_INDEX, vbo->getUsage(), Buffer::MAP_READ);
 	}
 
-	elementCount = datasize / vertex::getIndexDataSize(datatype);
+	indexCount = datasize / vertex::getIndexDataSize(datatype);
 
-	if (!ibo || elementCount == 0)
+	if (!ibo || indexCount == 0)
 		return;
 
 	Buffer::Mapper ibomap(*ibo);
 	memcpy(ibomap.get(), data, datasize);
 
 	useIndexBuffer = true;
-	elementDataType = datatype;
+	indexDataType = datatype;
 }
 
 void Mesh::setVertexMap()
@@ -487,23 +487,23 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 		return false;
 
 	map.clear();
-	map.reserve(elementCount);
+	map.reserve(indexCount);
 
-	if (!ibo || elementCount == 0)
+	if (!ibo || indexCount == 0)
 		return true;
 
 	// We unmap the buffer in Mesh::draw, Mesh::setVertexMap, and Mesh::flush.
 	void *buffer = ibo->map();
 
 	// Fill the vector from the buffer.
-	switch (elementDataType)
+	switch (indexDataType)
 	{
 	case INDEX_UINT16:
-		copyFromIndexBuffer<uint16>(buffer, elementCount, map);
+		copyFromIndexBuffer<uint16>(buffer, indexCount, map);
 		break;
 	case INDEX_UINT32:
 	default:
-		copyFromIndexBuffer<uint32>(buffer, elementCount, map);
+		copyFromIndexBuffer<uint32>(buffer, indexCount, map);
 		break;
 	}
 
@@ -512,7 +512,7 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 
 size_t Mesh::getVertexMapCount() const
 {
-	return elementCount;
+	return indexCount;
 }
 
 void Mesh::setTexture(Texture *tex)
@@ -530,14 +530,14 @@ Texture *Mesh::getTexture() const
 	return texture.get();
 }
 
-void Mesh::setDrawMode(DrawMode mode)
+void Mesh::setDrawMode(PrimitiveType mode)
 {
-	drawMode = mode;
+	primitiveType = mode;
 }
 
-Mesh::DrawMode Mesh::getDrawMode() const
+PrimitiveType Mesh::getDrawMode() const
 {
-	return drawMode;
+	return primitiveType;
 }
 
 void Mesh::setDrawRange(int start, int count)
@@ -611,7 +611,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (!(enabledattribs & ATTRIBFLAG_POS))
 		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
 
-	bool useindexbuffer = useIndexBuffer && ibo != nullptr && elementCount > 0;
+	bool useindexbuffer = useIndexBuffer && ibo != nullptr && indexCount > 0;
 
 	int start = 0;
 	int count = 0;
@@ -621,13 +621,13 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
 
-		start = std::min(std::max(0, rangeStart), (int) elementCount - 1);
+		start = std::min(std::max(0, rangeStart), (int) indexCount - 1);
 
-		count = (int) elementCount;
+		count = (int) indexCount;
 		if (rangeCount > 0)
 			count = std::min(count, rangeCount);
 
-		count = std::min(count, (int) elementCount - start);
+		count = std::min(count, (int) indexCount - start);
 	}
 	else
 	{
@@ -645,90 +645,6 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (count > 0)
 		drawInternal(start, count, instancecount, useindexbuffer, enabledattribs, instancedattribs);
 }
-
-size_t Mesh::getAttribFormatSize(const AttribFormat &format)
-{
-	switch (format.type)
-	{
-	case DATA_BYTE:
-		return format.components * sizeof(uint8);
-	case DATA_FLOAT:
-		return format.components * sizeof(float);
-	default:
-		return 0;
-	}
-}
-
-bool Mesh::getConstant(const char *in, DrawMode &out)
-{
-	return drawModes.find(in, out);
-}
-
-bool Mesh::getConstant(DrawMode in, const char *&out)
-{
-	return drawModes.find(in, out);
-}
-
-std::vector<std::string> Mesh::getConstants(DrawMode)
-{
-	return drawModes.getNames();
-}
-
-bool Mesh::getConstant(const char *in, DataType &out)
-{
-	return dataTypes.find(in, out);
-}
-
-bool Mesh::getConstant(DataType in, const char *&out)
-{
-	return dataTypes.find(in, out);
-}
-
-std::vector<std::string> Mesh::getConstants(DataType)
-{
-	return dataTypes.getNames();
-}
-
-bool Mesh::getConstant(const char *in, AttributeStep &out)
-{
-	return attributeSteps.find(in, out);
-}
-
-bool Mesh::getConstant(AttributeStep in, const char *&out)
-{
-	return attributeSteps.find(in, out);
-}
-
-std::vector<std::string> Mesh::getConstants(AttributeStep)
-{
-	return attributeSteps.getNames();
-}
-
-StringMap<Mesh::DrawMode, Mesh::DRAWMODE_MAX_ENUM>::Entry Mesh::drawModeEntries[] =
-{
-	{ "fan",       DRAWMODE_FAN       },
-	{ "strip",     DRAWMODE_STRIP     },
-	{ "triangles", DRAWMODE_TRIANGLES },
-	{ "points",    DRAWMODE_POINTS    },
-};
-
-StringMap<Mesh::DrawMode, Mesh::DRAWMODE_MAX_ENUM> Mesh::drawModes(Mesh::drawModeEntries, sizeof(Mesh::drawModeEntries));
-
-StringMap<Mesh::DataType, Mesh::DATA_MAX_ENUM>::Entry Mesh::dataTypeEntries[] =
-{
-	{ "byte", DATA_BYTE   },
-	{ "float", DATA_FLOAT },
-};
-
-StringMap<Mesh::DataType, Mesh::DATA_MAX_ENUM> Mesh::dataTypes(Mesh::dataTypeEntries, sizeof(Mesh::dataTypeEntries));
-
-StringMap<Mesh::AttributeStep, Mesh::STEP_MAX_ENUM>::Entry Mesh::attributeStepEntries[] =
-{
-	{ "pervertex",   STEP_PER_VERTEX   },
-	{ "perinstance", STEP_PER_INSTANCE },
-};
-
-StringMap<Mesh::AttributeStep, Mesh::STEP_MAX_ENUM> Mesh::attributeSteps(Mesh::attributeStepEntries, sizeof(Mesh::attributeStepEntries));
 
 } // graphics
 } // love

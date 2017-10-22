@@ -217,11 +217,6 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 	return s;
 }
 
-void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)
-{
-	cachedShaderStages[type].erase(hashkey);
-}
-
 Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
 {
 	if (vertex.empty() && pixel.empty())
@@ -231,6 +226,21 @@ Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
 	StrongRef<ShaderStage> pixelstage(newShaderStage(ShaderStage::STAGE_PIXEL, pixel), Acquire::NORETAIN);
 
 	return newShaderInternal(vertexstage.get(), pixelstage.get());
+}
+
+Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage)
+{
+	return newMesh(Mesh::getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+{
+	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
+}
+
+void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)
+{
+	cachedShaderStages[type].erase(hashkey);
 }
 
 bool Graphics::validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err)
@@ -1040,7 +1050,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	bool is2D = t.isAffine2DTransform();
 
 	StreamDrawCommand cmd;
-	cmd.primitiveMode = vertex::PrimitiveMode::POINTS;
+	cmd.primitiveMode = PRIMITIVE_POINTS;
 	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 	cmd.formats[1] = vertex::CommonFormat::RGBAub;
 	cmd.vertexCount = (int) numpoints;

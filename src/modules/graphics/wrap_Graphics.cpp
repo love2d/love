@@ -1408,12 +1408,12 @@ static vertex::Usage luax_optmeshusage(lua_State *L, int idx, vertex::Usage def)
 	return def;
 }
 
-static Mesh::DrawMode luax_optmeshdrawmode(lua_State *L, int idx, Mesh::DrawMode def)
+static PrimitiveType luax_optmeshdrawmode(lua_State *L, int idx, PrimitiveType def)
 {
 	const char *modestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	if (modestr && !Mesh::getConstant(modestr, def))
-		luax_enumerror(L, "mesh draw mode", Mesh::getConstants(def), modestr);
+	if (modestr && !vertex::getConstant(modestr, def))
+		luax_enumerror(L, "mesh draw mode", vertex::getConstants(def), modestr);
 
 	return def;
 }
@@ -1422,7 +1422,7 @@ static Mesh *newStandardMesh(lua_State *L)
 {
 	Mesh *t = nullptr;
 
-	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 2, Mesh::DRAWMODE_FAN);
+	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
 	vertex::Usage usage = luax_optmeshusage(L, 3, vertex::USAGE_DYNAMIC);
 
 	// First argument is a table of standard vertices, or the number of
@@ -1482,7 +1482,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	// the number of vertices.
 	std::vector<Mesh::AttribFormat> vertexformat;
 
-	Mesh::DrawMode drawmode = luax_optmeshdrawmode(L, 3, Mesh::DRAWMODE_FAN);
+	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
 	vertex::Usage usage = luax_optmeshusage(L, 4, vertex::USAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
@@ -1506,9 +1506,9 @@ static Mesh *newCustomMesh(lua_State *L)
 		format.name = luaL_checkstring(L, -3);
 
 		const char *tname = luaL_checkstring(L, -2);
-		if (!Mesh::getConstant(tname, format.type))
+		if (!vertex::getConstant(tname, format.type))
 		{
-			luax_enumerror(L, "Mesh vertex data type name", Mesh::getConstants(format.type), tname);
+			luax_enumerror(L, "Mesh vertex data type name", vertex::getConstants(format.type), tname);
 			return nullptr;
 		}
 

@@ -57,6 +57,7 @@ public:
 	// Implements Shader.
 	void attach() override;
 	std::string getWarnings() const override;
+	int getVertexAttributeIndex(const std::string &name) override;
 	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
@@ -64,8 +65,6 @@ public:
 	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override;
 	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) override;
-
-	GLint getAttribLocation(const std::string &name);
 
 	void updateScreenParams();
 	void updatePointSize(float size);

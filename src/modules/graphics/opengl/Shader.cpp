@@ -669,7 +669,7 @@ ptrdiff_t Shader::getHandle() const
 	return program;
 }
 
-GLint Shader::getAttribLocation(const std::string &name)
+int Shader::getVertexAttributeIndex(const std::string &name)
 {
 	auto it = attributes.find(name);
 	if (it != attributes.end())

@@ -142,22 +142,12 @@ love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, Buffe
 	return new Buffer(size, data, type, usage, mapflags);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage)
-{
-	return new Mesh(this, vertices, drawmode, usage);
-}
-
-love::graphics::Mesh *Graphics::newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
-{
-	return new Mesh(this, vertexcount, drawmode, usage);
-}
-
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
@@ -387,17 +377,7 @@ void Graphics::flushStreamDraws()
 	if (attribs == 0)
 		return;
 
-	GLenum glmode = GL_ZERO;
-
-	switch (sbstate.primitiveMode)
-	{
-	case PrimitiveMode::TRIANGLES:
-		glmode = GL_TRIANGLES;
-		break;
-	case PrimitiveMode::POINTS:
-		glmode = GL_POINTS;
-		break;
-	}
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(sbstate.primitiveMode);
 
 	Colorf nc = gl.getConstantColor();
 	if (attribs & ATTRIBFLAG_COLOR)
@@ -419,10 +399,10 @@ void Graphics::flushStreamDraws()
 
 		sbstate.indexBufferMap = StreamBuffer::MapInfo();
 
-		gl.drawElements(glmode, sbstate.indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offset));
+		gl.drawElements(glprimitivetype, sbstate.indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offset));
 	}
 	else
-		gl.drawArrays(glmode, 0, sbstate.vertexCount);
+		gl.drawArrays(glprimitivetype, 0, sbstate.vertexCount);
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -1266,7 +1246,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 
 void Graphics::setPointSize(float size)
 {
-	if (streamBufferState.primitiveMode == vertex::PrimitiveMode::POINTS)
+	if (streamBufferState.primitiveMode == PRIMITIVE_POINTS)
 		flushStreamDraws();
 
 	gl.setPointSize(size * getCurrentDPIScale());

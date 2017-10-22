@@ -35,11 +35,8 @@ class Mesh final : public love::graphics::Mesh
 {
 public:
 
-	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage);
-	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage);
-
-	Mesh(graphics::Graphics *gfx, const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage);
-	Mesh(graphics::Graphics *gfx, int vertexcount, DrawMode drawmode, vertex::Usage usage);
+	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
 
 	virtual ~Mesh();
 

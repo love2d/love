@@ -67,6 +67,23 @@ enum IndexDataType
 	INDEX_MAX_ENUM
 };
 
+// http://escience.anu.edu.au/lecture/cg/surfaceModeling/image/surfaceModeling015.png
+enum PrimitiveType
+{
+	PRIMITIVE_TRIANGLES,
+	PRIMITIVE_TRIANGLE_STRIP,
+	PRIMITIVE_TRIANGLE_FAN,
+	PRIMITIVE_POINTS,
+	PRIMITIVE_MAX_ENUM
+};
+
+enum AttributeStep
+{
+	STEP_PER_VERTEX,
+	STEP_PER_INSTANCE,
+	STEP_MAX_ENUM
+};
+
 namespace vertex
 {
 
@@ -79,10 +96,12 @@ enum Usage
 	USAGE_MAX_ENUM
 };
 
-enum class PrimitiveMode
+enum DataType
 {
-	TRIANGLES,
-	POINTS,
+	DATA_UNORM8,
+	DATA_UNORM16,
+	DATA_FLOAT,
+	DATA_MAX_ENUM
 };
 
 enum class TriangleIndexMode
@@ -165,6 +184,7 @@ inline CommonFormat getSinglePositionFormat(bool is2D)
 }
 
 size_t getIndexDataSize(IndexDataType type);
+size_t getDataTypeSize(DataType datatype);
 
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
 
@@ -183,6 +203,18 @@ std::vector<std::string> getConstants(IndexDataType);
 bool getConstant(const char *in, Usage &out);
 bool getConstant(Usage in, const char *&out);
 std::vector<std::string> getConstants(Usage);
+
+bool getConstant(const char *in, PrimitiveType &out);
+bool getConstant(PrimitiveType in, const char *&out);
+std::vector<std::string> getConstants(PrimitiveType);
+
+bool getConstant(const char *in, AttributeStep &out);
+bool getConstant(AttributeStep in, const char *&out);
+std::vector<std::string> getConstants(AttributeStep);
+
+bool getConstant(const char *in, DataType &out);
+bool getConstant(DataType in, const char *&out);
+std::vector<std::string> getConstants(DataType);
 
 } // vertex
 

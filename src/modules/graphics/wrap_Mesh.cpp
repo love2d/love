@@ -37,7 +37,7 @@ Mesh *luax_checkmesh(lua_State *L, int idx)
 	return luax_checktype<Mesh>(L, idx);
 }
 
-static inline size_t writeByteData(lua_State *L, int startidx, int components, char *data)
+static inline size_t writeUnorm8Data(lua_State *L, int startidx, int components, char *data)
 {
 	uint8 *componentdata = (uint8 *) data;
 
@@ -45,6 +45,16 @@ static inline size_t writeByteData(lua_State *L, int startidx, int components, c
 		componentdata[i] = (uint8) (luaL_optnumber(L, startidx + i, 1.0) * 255.0);
 
 	return sizeof(uint8) * components;
+}
+
+static inline size_t writeUnorm16Data(lua_State *L, int startidx, int components, char *data)
+{
+	uint16 *componentdata = (uint16 *) data;
+
+	for (int i = 0; i < components; i++)
+		componentdata[i] = (uint16) (luaL_optnumber(L, startidx + i, 1.0) * 65535.0);
+
+	return sizeof(uint16) * components;
 }
 
 static inline size_t writeFloatData(lua_State *L, int startidx, int components, char *data)
@@ -57,20 +67,22 @@ static inline size_t writeFloatData(lua_State *L, int startidx, int components, 
 	return sizeof(float) * components;
 }
 
-char *luax_writeAttributeData(lua_State *L, int startidx, Mesh::DataType type, int components, char *data)
+char *luax_writeAttributeData(lua_State *L, int startidx, vertex::DataType type, int components, char *data)
 {
 	switch (type)
 	{
-	case Mesh::DATA_BYTE:
-		return data + writeByteData(L, startidx, components, data);
-	case Mesh::DATA_FLOAT:
+	case vertex::DATA_UNORM8:
+		return data + writeUnorm8Data(L, startidx, components, data);
+	case vertex::DATA_UNORM16:
+		return data + writeUnorm16Data(L, startidx, components, data);
+	case vertex::DATA_FLOAT:
 		return data + writeFloatData(L, startidx, components, data);
 	default:
 		return data;
 	}
 }
 
-static inline size_t readByteData(lua_State *L, int components, const char *data)
+static inline size_t readUnorm8Data(lua_State *L, int components, const char *data)
 {
 	const uint8 *componentdata = (const uint8 *) data;
 
@@ -78,6 +90,16 @@ static inline size_t readByteData(lua_State *L, int components, const char *data
 		lua_pushnumber(L, (lua_Number) componentdata[i] / 255.0);
 
 	return sizeof(uint8) * components;
+}
+
+static inline size_t readUnorm16Data(lua_State *L, int components, const char *data)
+{
+	const uint16 *componentdata = (const uint16 *) data;
+
+	for (int i = 0; i < components; i++)
+		lua_pushnumber(L, (lua_Number) componentdata[i] / 65535.0);
+
+	return sizeof(uint16) * components;
 }
 
 static inline size_t readFloatData(lua_State *L, int components, const char *data)
@@ -90,13 +112,15 @@ static inline size_t readFloatData(lua_State *L, int components, const char *dat
 	return sizeof(float) * components;
 }
 
-const char *luax_readAttributeData(lua_State *L, Mesh::DataType type, int components, const char *data)
+const char *luax_readAttributeData(lua_State *L, vertex::DataType type, int components, const char *data)
 {
 	switch (type)
 	{
-	case Mesh::DATA_BYTE:
-		return data + readByteData(L, components, data);
-	case Mesh::DATA_FLOAT:
+	case vertex::DATA_UNORM8:
+		return data + readUnorm8Data(L, components, data);
+	case vertex::DATA_UNORM16:
+		return data + readUnorm16Data(L, components, data);
+	case vertex::DATA_FLOAT:
 		return data + readFloatData(L, components, data);
 	default:
 		return data;
@@ -239,7 +263,7 @@ int w_Mesh_setVertexAttribute(lua_State *L)
 	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
 	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	Mesh::DataType type;
+	vertex::DataType type;
 	int components;
 	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
 
@@ -259,7 +283,7 @@ int w_Mesh_getVertexAttribute(lua_State *L)
 	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
 	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	Mesh::DataType type;
+	vertex::DataType type;
 	int components;
 	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
 
@@ -290,8 +314,8 @@ int w_Mesh_getVertexFormat(lua_State *L)
 
 	for (size_t i = 0; i < vertexformat.size(); i++)
 	{
-		if (!Mesh::getConstant(vertexformat[i].type, tname))
-			return luax_enumerror(L, "vertex attribute data type", Mesh::getConstants(vertexformat[i].type), tname);
+		if (!vertex::getConstant(vertexformat[i].type, tname))
+			return luax_enumerror(L, "vertex attribute data type", vertex::getConstants(vertexformat[i].type), tname);
 
 		lua_createtable(L, 3, 0);
 
@@ -336,10 +360,10 @@ int w_Mesh_attachAttribute(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 	Mesh *mesh = luax_checkmesh(L, 3);
 
-	Mesh::AttributeStep step = Mesh::STEP_PER_VERTEX;
+	AttributeStep step = STEP_PER_VERTEX;
 	const char *stepstr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
-	if (stepstr != nullptr && !Mesh::getConstant(stepstr, step))
-		return luax_enumerror(L, "vertex attribute step", Mesh::getConstants(step), stepstr);
+	if (stepstr != nullptr && !vertex::getConstant(stepstr, step))
+		return luax_enumerror(L, "vertex attribute step", vertex::getConstants(step), stepstr);
 
 	const char *attachname = luaL_optstring(L, 5, name);
 
@@ -485,10 +509,10 @@ int w_Mesh_setDrawMode(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 	const char *str = luaL_checkstring(L, 2);
-	Mesh::DrawMode mode;
+	PrimitiveType mode;
 
-	if (!Mesh::getConstant(str, mode))
-		return luax_enumerror(L, "mesh draw mode", Mesh::getConstants(mode), str);
+	if (!vertex::getConstant(str, mode))
+		return luax_enumerror(L, "mesh draw mode", vertex::getConstants(mode), str);
 
 	t->setDrawMode(mode);
 	return 0;
@@ -497,10 +521,10 @@ int w_Mesh_setDrawMode(lua_State *L)
 int w_Mesh_getDrawMode(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	Mesh::DrawMode mode = t->getDrawMode();
+	PrimitiveType mode = t->getDrawMode();
 	const char *str;
 
-	if (!Mesh::getConstant(mode, str))
+	if (!vertex::getConstant(mode, str))
 		return luaL_error(L, "Unknown mesh draw mode.");
 
 	lua_pushstring(L, str);

@@ -161,6 +161,8 @@ public:
 	 **/
 	virtual std::string getWarnings() const = 0;
 
+	virtual int getVertexAttributeIndex(const std::string &name) = 0;
+
 	virtual const UniformInfo *getUniformInfo(const std::string &name) const = 0;
 	virtual const UniformInfo *getUniformInfo(BuiltinUniform builtin) const = 0;
 

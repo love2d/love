@@ -52,41 +52,15 @@ public:
 
 	static love::Type type;
 
-	// How the Mesh's vertices are used when drawing.
-	// http://escience.anu.edu.au/lecture/cg/surfaceModeling/image/surfaceModeling015.png
-	enum DrawMode
-	{
-		DRAWMODE_FAN,
-		DRAWMODE_STRIP,
-		DRAWMODE_TRIANGLES,
-		DRAWMODE_POINTS,
-		DRAWMODE_MAX_ENUM
-	};
-
-	// The type of data a vertex attribute can store.
-	enum DataType
-	{
-		DATA_BYTE,
-		DATA_FLOAT,
-		DATA_MAX_ENUM
-	};
-
-	enum AttributeStep
-	{
-		STEP_PER_VERTEX,
-		STEP_PER_INSTANCE,
-		STEP_MAX_ENUM
-	};
-
 	struct AttribFormat
 	{
 		std::string name;
-		DataType type;
+		vertex::DataType type;
 		int components; // max 4
 	};
 
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage);
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage);
+	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
 
 	virtual ~Mesh();
 
@@ -122,7 +96,7 @@ public:
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
 	const std::vector<AttribFormat> &getVertexFormat() const;
-	DataType getAttributeInfo(int attribindex, int &components) const;
+	vertex::DataType getAttributeInfo(int attribindex, int &components) const;
 	int getAttributeIndex(const std::string &name) const;
 
 	/**
@@ -186,8 +160,8 @@ public:
 	/**
 	 * Sets the draw mode used when drawing the Mesh.
 	 **/
-	void setDrawMode(DrawMode mode);
-	DrawMode getDrawMode() const;
+	void setDrawMode(PrimitiveType mode);
+	PrimitiveType getDrawMode() const;
 
 	void setDrawRange(int start, int count);
 	void setDrawRange();
@@ -200,17 +174,7 @@ public:
 
 	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
 
-	static bool getConstant(const char *in, DrawMode &out);
-	static bool getConstant(DrawMode in, const char *&out);
-	static std::vector<std::string> getConstants(DrawMode);
-
-	static bool getConstant(const char *in, DataType &out);
-	static bool getConstant(DataType in, const char *&out);
-	static std::vector<std::string> getConstants(DataType);
-
-	static bool getConstant(const char *in, AttributeStep &out);
-	static bool getConstant(AttributeStep in, const char *&out);
-	static std::vector<std::string> getConstants(AttributeStep);
+	static std::vector<AttribFormat> getDefaultVertexFormat();
 
 protected:
 
@@ -228,9 +192,6 @@ protected:
 
 	virtual void drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const = 0;
 
-	static size_t getAttribFormatSize(const AttribFormat &format);
-	static std::vector<AttribFormat> getDefaultVertexFormat();
-
 	std::vector<AttribFormat> vertexFormat;
 	std::vector<size_t> attributeSizes;
 
@@ -245,30 +206,19 @@ protected:
 	// avoid memory allocations when using Mesh::setVertex etc.
 	char *vertexScratchBuffer;
 
-	// Element (vertex index) buffer, for the vertex map.
+	// Index buffer, for the vertex map.
 	Buffer *ibo;
 	bool useIndexBuffer;
-	size_t elementCount;
-	IndexDataType elementDataType;
-	
-	DrawMode drawMode;
-	
+	size_t indexCount;
+	IndexDataType indexDataType;
+
+	PrimitiveType primitiveType;
+
 	int rangeStart;
 	int rangeCount;
-	
+
 	StrongRef<Texture> texture;
 
-private:
-	
-	static StringMap<DrawMode, DRAWMODE_MAX_ENUM>::Entry drawModeEntries[];
-	static StringMap<DrawMode, DRAWMODE_MAX_ENUM> drawModes;
-	
-	static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[];
-	static StringMap<DataType, DATA_MAX_ENUM> dataTypes;
-	
-	static StringMap<AttributeStep, STEP_MAX_ENUM>::Entry attributeStepEntries[];
-	static StringMap<AttributeStep, STEP_MAX_ENUM> attributeSteps;
-	
 }; // Mesh
 
 } // graphics

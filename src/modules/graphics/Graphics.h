@@ -252,7 +252,7 @@ public:
 
 	struct StreamDrawCommand
 	{
-		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
+		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
 		vertex::CommonFormat formats[2];
 		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
 		int vertexCount = 0;
@@ -391,11 +391,11 @@ public:
 
 	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
 
-	virtual Mesh *newMesh(const std::vector<Vertex> &vertices, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
-	virtual Mesh *newMesh(int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
+	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
 
-	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
-	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, Mesh::DrawMode drawmode, vertex::Usage usage) = 0;
+	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage) = 0;
+	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage) = 0;
 
 	virtual Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {}) = 0;
 
@@ -861,7 +861,7 @@ protected:
 		StreamBuffer *vb[2];
 		StreamBuffer *indexBuffer = nullptr;
 
-		vertex::PrimitiveMode primitiveMode = vertex::PrimitiveMode::TRIANGLES;
+		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
 		vertex::CommonFormat formats[2];
 		StrongRef<Texture> texture;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;

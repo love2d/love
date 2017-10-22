@@ -504,6 +504,25 @@ void OpenGL::prepareDraw()
 	}
 }
 
+GLenum OpenGL::getGLPrimitiveType(PrimitiveType type)
+{
+	switch (type)
+	{
+	case PRIMITIVE_TRIANGLES:
+		return GL_TRIANGLES;
+	case PRIMITIVE_TRIANGLE_STRIP:
+		return GL_TRIANGLE_STRIP;
+	case PRIMITIVE_TRIANGLE_FAN:
+		return GL_TRIANGLE_FAN;
+	case PRIMITIVE_POINTS:
+		return GL_POINTS;
+	case PRIMITIVE_MAX_ENUM:
+		return GL_ZERO;
+	}
+
+	return GL_ZERO;
+}
+
 GLenum OpenGL::getGLBufferType(BufferType type)
 {
 	switch (type)
@@ -549,6 +568,28 @@ GLenum OpenGL::getGLIndexDataType(IndexDataType type)
 	default:
 		return GL_ZERO;
 	}
+}
+
+GLenum OpenGL::getGLVertexDataType(vertex::DataType type, GLboolean &normalized)
+{
+	normalized = GL_FALSE;
+
+	switch (type)
+	{
+	case vertex::DATA_UNORM8:
+		normalized = GL_TRUE;
+		return GL_UNSIGNED_BYTE;
+	case vertex::DATA_UNORM16:
+		normalized = GL_TRUE;
+		return GL_UNSIGNED_SHORT;
+	case vertex::DATA_FLOAT:
+		normalized = GL_FALSE;
+		return GL_FLOAT;
+	case vertex::DATA_MAX_ENUM:
+		return GL_ZERO;
+	}
+
+	return GL_ZERO;
 }
 
 GLenum OpenGL::getGLBufferUsage(vertex::Usage usage)

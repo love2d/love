@@ -35,23 +35,13 @@ namespace graphics
 namespace opengl
 {
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, DrawMode drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
 	: love::graphics::Mesh(gfx, vertexformat, data, datasize, drawmode, usage)
 {
 }
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, DrawMode drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
 	: love::graphics::Mesh(gfx, vertexformat, vertexcount, drawmode, usage)
-{
-}
-
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Vertex> &vertices, DrawMode drawmode, vertex::Usage usage)
-	: Mesh(gfx, getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage)
-{
-}
-
-Mesh::Mesh(graphics::Graphics *gfx, int vertexcount, DrawMode drawmode, vertex::Usage usage)
-	: Mesh(gfx, getDefaultVertexFormat(), vertexcount, drawmode, usage)
 {
 }
 
@@ -71,7 +61,7 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	if (vertex::getConstant(inputname.c_str(), builtinattrib))
 		attriblocation = (GLint) builtinattrib;
 	else if (Shader::current)
-		attriblocation = ((Shader *) Shader::current)->getAttribLocation(inputname);
+		attriblocation = Shader::current->getVertexAttributeIndex(inputname);
 
 	// The active shader might not use this vertex attribute name.
 	if (attriblocation < 0)
@@ -81,23 +71,11 @@ int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inpu
 	vbo->unmap();
 
 	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
-	
-	GLenum datatype = 0;
-	switch (format.type)
-	{
-	case DATA_BYTE:
-		datatype = GL_UNSIGNED_BYTE;
-		break;
-	case DATA_FLOAT:
-		datatype = GL_FLOAT;
-		break;
-	default:
-		datatype = 0;
-		break;
-	}
+
+	GLboolean normalized = GL_FALSE;
+	GLenum datatype = OpenGL::getGLVertexDataType(format.type, normalized);
 
 	const void *gloffset = BUFFER_OFFSET(getAttributeOffset(attributeindex));
-	GLboolean normalized = (datatype == GL_UNSIGNED_BYTE);
 
 	glVertexAttribPointer(attriblocation, format.components, datatype, normalized, (GLsizei) vertexStride, gloffset);
 
@@ -111,37 +89,21 @@ void Mesh::drawInternal(int start, int count, int instancecount, bool useindexbu
 	gl.useVertexAttribArrays(attribflags, instancedattribflags);
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
-	
-	GLenum gldrawmode = GL_TRIANGLES;
-	switch (drawMode)
-	{
-	case DRAWMODE_FAN:
-		gldrawmode = GL_TRIANGLE_FAN;
-		break;
-	case DRAWMODE_STRIP:
-		gldrawmode = GL_TRIANGLE_STRIP;
-		break;
-	case DRAWMODE_TRIANGLES:
-	default:
-		gldrawmode = GL_TRIANGLES;
-		break;
-	case DRAWMODE_POINTS:
-		gldrawmode = GL_POINTS;
-		break;
-	}
+
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(primitiveType);
 
 	if (useindexbuffer)
 	{
-		size_t elementsize = vertex::getIndexDataSize(elementDataType);
+		size_t elementsize = vertex::getIndexDataSize(indexDataType);
 		const void *indices = BUFFER_OFFSET(start * elementsize);
-		GLenum type = OpenGL::getGLIndexDataType(elementDataType);
+		GLenum indextype = OpenGL::getGLIndexDataType(indexDataType);
 
 		gl.bindBuffer(BUFFER_INDEX, (GLuint) ibo->getHandle());
-		gl.drawElements(gldrawmode, count, type, indices, instancecount);
+		gl.drawElements(glprimitivetype, count, indextype, indices, instancecount);
 	}
 	else
 	{
-		gl.drawArrays(gldrawmode, start, count, instancecount);
+		gl.drawArrays(glprimitivetype, start, count, instancecount);
 	}
 }
 
