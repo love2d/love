@@ -346,6 +346,21 @@ std::vector<std::string> getConstants(AttributeStep)
 	return attributeSteps.getNames();
 }
 
+bool getConstant(const char *in, DataType &out)
+{
+	return dataTypes.find(in, out);
+}
+
+bool getConstant(DataType in, const char *&out)
+{
+	return dataTypes.find(in, out);
+}
+
+std::vector<std::string> getConstants(DataType)
+{
+	return dataTypes.getNames();
+}
+
 } // vertex
 } // graphics
 } // love
