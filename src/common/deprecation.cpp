@@ -28,8 +28,8 @@
 namespace love
 {
 
-static std::map<std::string, DeprecationInfo> deprecated;
-static std::vector<const DeprecationInfo *> deprecatedList;
+static std::map<std::string, DeprecationInfo> *deprecated = nullptr;
+static std::vector<const DeprecationInfo *> *deprecatedList = nullptr;
 
 static std::atomic<int> initCount;
 
@@ -39,17 +39,28 @@ static bool outputEnabled = false;
 void initDeprecation()
 {
 	if (initCount.fetch_add(1) == 0)
+	{
 		mutex = thread::newMutex();
+
+		// These are heap-allocated because we want to clear them on deinit,
+		// and deinit may be called when the program is shutting down in the
+		// middle of static variable cleanup (eg in the Math module destructor).
+		// Calling std::map::clear() in that case was causing segfaults.
+		deprecated = new std::map<std::string, DeprecationInfo>();
+		deprecatedList = new std::vector<const DeprecationInfo *>();
+	}
 }
 
 void deinitDeprecation()
 {
 	if (initCount.fetch_sub(1) == 1)
 	{
-		deprecatedList.clear();
-		deprecated.clear();
-
+		delete deprecated;
+		delete deprecatedList;
 		delete mutex;
+
+		deprecated = nullptr;
+		deprecatedList = nullptr;
 		mutex = nullptr;
 	}
 }
@@ -115,7 +126,7 @@ std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 }
 
 GetDeprecated::GetDeprecated()
-	: all(deprecatedList)
+	: all(*deprecatedList)
 {
 	if (mutex != nullptr)
 		mutex->lock();
@@ -138,9 +149,9 @@ MarkDeprecated::MarkDeprecated(const char *name, APIType api, DeprecationType ty
 	if (mutex != nullptr)
 		mutex->lock();
 
-	auto it = deprecated.find(name);
+	auto it = deprecated->find(name);
 
-	if (it != deprecated.end())
+	if (it != deprecated->end())
 	{
 		it->second.uses++;
 		info = &it->second;
@@ -157,10 +168,10 @@ MarkDeprecated::MarkDeprecated(const char *name, APIType api, DeprecationType ty
 		if (replacement != nullptr)
 			newinfo.replacement = replacement;
 
-		auto inserted = deprecated.insert(std::make_pair(newinfo.name, newinfo));
+		auto inserted = deprecated->insert(std::make_pair(newinfo.name, newinfo));
 
 		info = &inserted.first->second;
-		deprecatedList.push_back(info);
+		deprecatedList->push_back(info);
 	}
 }
 
