@@ -323,6 +323,8 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 	auto it = attachedAttributes.find(name);
 	if (it != attachedAttributes.end())
 		oldattrib = it->second;
+	else if (attachedAttributes.size() + 1 > vertex::Attributes::MAX)
+		throw love::Exception("A maximum of %d attributes can be attached at once.", vertex::Attributes::MAX);
 
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
@@ -585,30 +587,48 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (Shader::current && texture.get())
 		Shader::current->checkMainTexture(texture);
 
-	uint32 enabledattribs = 0;
-	uint32 instancedattribs = 0;
+	vertex::Attributes attributes;
+	vertex::Buffers buffers;
+
+	int activebuffers = 0;
 
 	for (const auto &attrib : attachedAttributes)
 	{
 		if (!attrib.second.enabled)
 			continue;
 
-		love::graphics::Mesh *mesh = attrib.second.mesh;
-		int location = mesh->bindAttributeToShaderInput(attrib.second.index, attrib.first);
+		Mesh *mesh = attrib.second.mesh;
+		int attributeindex = -1;
 
-		if (location >= 0)
+		// If the attribute is one of the LOVE-defined ones, use the constant
+		// attribute index for it, otherwise query the index from the shader.
+		VertexAttribID builtinattrib;
+		if (vertex::getConstant(attrib.first.c_str(), builtinattrib))
+			attributeindex = (int) builtinattrib;
+		else if (Shader::current)
+			attributeindex = Shader::current->getVertexAttributeIndex(attrib.first);
+
+		if (attributeindex >= 0)
 		{
-			uint32 bit = 1u << (uint32) location;
+			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
+			mesh->vbo->unmap();
 
-			enabledattribs |= bit;
+			const auto &formats = mesh->getVertexFormat();
+			const auto &format = formats[attrib.second.index];
 
-			if (attrib.second.step == STEP_PER_INSTANCE)
-				instancedattribs |= bit;
+			uint16 offset = (uint16) mesh->getAttributeOffset(attrib.second.index);
+			uint16 stride = (uint16) mesh->getVertexStride();
+
+			attributes.set(attributeindex, format.type, format.components, offset, stride, activebuffers, attrib.second.step);
+
+			// TODO: Ideally we want to reuse buffers with the same stride+step.
+			buffers.set(activebuffers, mesh->vbo, 0);
+			activebuffers++;
 		}
 	}
 
 	// Not supported on all platforms or GL versions, I believe.
-	if (!(enabledattribs & ATTRIBFLAG_POS))
+	if (!attributes.isEnabled(ATTRIB_POS))
 		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
 
 	bool useindexbuffer = useIndexBuffer && ibo != nullptr && indexCount > 0;
@@ -643,7 +663,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	Graphics::TempTransform transform(gfx, m);
 
 	if (count > 0)
-		drawInternal(start, count, instancecount, useindexbuffer, enabledattribs, instancedattribs);
+		drawInternal(start, count, instancecount, useindexbuffer, attributes, buffers);
 }
 
 } // graphics

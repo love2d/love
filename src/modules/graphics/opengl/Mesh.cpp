@@ -49,44 +49,11 @@ Mesh::~Mesh()
 {
 }
 
-int Mesh::bindAttributeToShaderInput(int attributeindex, const std::string &inputname)
-{
-	const AttribFormat &format = vertexFormat[attributeindex];
-
-	GLint attriblocation = -1;
-
-	// If the attribute is one of the LOVE-defined ones, use the constant
-	// attribute index for it, otherwise query the index from the shader.
-	VertexAttribID builtinattrib;
-	if (vertex::getConstant(inputname.c_str(), builtinattrib))
-		attriblocation = (GLint) builtinattrib;
-	else if (Shader::current)
-		attriblocation = Shader::current->getVertexAttributeIndex(inputname);
-
-	// The active shader might not use this vertex attribute name.
-	if (attriblocation < 0)
-		return attriblocation;
-
-	// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-	vbo->unmap();
-
-	gl.bindBuffer(BUFFER_VERTEX, (GLuint) vbo->getHandle());
-
-	GLboolean normalized = GL_FALSE;
-	GLenum datatype = OpenGL::getGLVertexDataType(format.type, normalized);
-
-	const void *gloffset = BUFFER_OFFSET(getAttributeOffset(attributeindex));
-
-	glVertexAttribPointer(attriblocation, format.components, datatype, normalized, (GLsizei) vertexStride, gloffset);
-
-	return attriblocation;
-}
-
-void Mesh::drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const
+void Mesh::drawInternal(int start, int count, int instancecount, bool useindexbuffer, const vertex::Attributes &attributes, const vertex::Buffers &buffers) const
 {
 	OpenGL::TempDebugGroup debuggroup("Mesh draw");
 
-	gl.useVertexAttribArrays(attribflags, instancedattribflags);
+	gl.setVertexAttributes(attributes, buffers);
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
 

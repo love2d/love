@@ -34,6 +34,8 @@ namespace love
 namespace graphics
 {
 
+class Resource;
+
 // Vertex attribute indices used in shaders by LOVE. The values map to OpenGL
 // generic vertex attribute indices.
 enum VertexAttribID
@@ -170,6 +172,119 @@ struct XYf_STPf_RGBAub
 	float x, y;
 	float s, t, p;
 	Color color;
+};
+
+struct Buffers
+{
+	static const unsigned int MAX = 32;
+
+	uint32 usebits = 0;
+
+	struct
+	{
+		Resource *buffer;
+		size_t offset;
+	} info[MAX];
+
+	void set(unsigned int index, Resource *r, size_t offset)
+	{
+		usebits |= (1u << index);
+		info[index] = {r, offset};
+	}
+
+	void disable(unsigned int index) { usebits &= (1u << index); }
+	void clear() { usebits = 0; }
+};
+
+struct AttributeInfo
+{
+	uint8 bufferindex;
+	DataType type : 8;
+	uint16 components;
+	uint16 offsetfromvertex;
+	uint16 stride;
+};
+
+struct Attributes
+{
+	static const unsigned int MAX = 32;
+
+	uint32 enablebits = 0;
+	uint32 instancebits = 0;
+
+	union
+	{
+		AttributeInfo attribs[MAX];
+		uint64 data[MAX];
+	};
+
+	Attributes() {}
+	Attributes(CommonFormat format, uint8 bufferindex)
+	{
+		setCommonFormat(format, bufferindex);
+	}
+
+	void set(unsigned int index, DataType type, uint16 components, uint16 offsetfromvertex, uint16 stride, uint8 bufferindex, AttributeStep step = STEP_PER_VERTEX)
+	{
+		uint32 bit = (1u << index);
+
+		enablebits |= bit;
+
+		if (step == STEP_PER_INSTANCE)
+			instancebits |= bit;
+		else
+			instancebits &= ~bit;
+
+		attribs[index].bufferindex = bufferindex;
+		attribs[index].type = type;
+		attribs[index].components = components;
+		attribs[index].offsetfromvertex = offsetfromvertex;
+		attribs[index].stride = stride;
+	}
+
+	void disable(unsigned int index)
+	{
+		enablebits &= ~(1u << index);
+	}
+
+	void clear()
+	{
+		enablebits = 0;
+	}
+
+	bool isEnabled(unsigned int index) const
+	{
+		return (enablebits & (1u << index)) != 0;
+	}
+
+	AttributeStep getStep(unsigned int index) const
+	{
+		return (instancebits & (1u << index)) != 0 ? STEP_PER_INSTANCE : STEP_PER_VERTEX;
+	}
+
+	void setCommonFormat(CommonFormat format, uint8 bufferindex);
+
+	bool operator == (const Attributes &other) const
+	{
+		if (enablebits != other.enablebits)
+			return false;
+
+		uint32 instancediff = instancebits ^ other.instancebits;
+
+		for (unsigned int i = 0; i < MAX; i++)
+		{
+			if (isEnabled(i))
+			{
+				if (instancediff & (1u << i))
+					return false;
+
+				if (data[i] != other.data[i])
+					return false;
+			}
+		}
+
+		return true;
+	}
 };
 
 size_t getFormatStride(CommonFormat format);

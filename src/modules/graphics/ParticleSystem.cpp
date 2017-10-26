@@ -93,6 +93,7 @@ ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	, offset(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f)
 	, defaultOffset(true)
 	, relativeRotation(false)
+	, vertexAttributes(vertex::CommonFormat::XYf_STf_RGBAub, 0)
 	, buffer(nullptr)
 	, quadIndices(gfx, size)
 {
@@ -154,6 +155,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, colors(p.colors)
 	, quads(p.quads)
 	, relativeRotation(p.relativeRotation)
+	, vertexAttributes(p.vertexAttributes)
 	, buffer(nullptr)
 	, quadIndices(p.quadIndices)
 {
@@ -1089,8 +1091,11 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 
 	buffer->unmap();
 
+	vertex::Buffers vertexbuffers;
+	vertexbuffers.set(0, buffer, 0);
+
 	Graphics::TempTransform transform(gfx, m);
-	drawInternal();
+	drawInternal(vertexAttributes, vertexbuffers);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

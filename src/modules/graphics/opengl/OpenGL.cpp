@@ -172,7 +172,7 @@ void OpenGL::setupContext()
 	else
 		state.instancedAttribArrays = 0;
 
-	useVertexAttribArrays(0, 0);
+	setVertexAttributes(vertex::Attributes(), vertex::Buffers());
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -647,109 +647,50 @@ void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *i
 	++stats.drawCalls;
 }
 
-void OpenGL::useVertexAttribArrays(uint32 arraybits, uint32 instancedbits)
+void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers)
 {
-	uint32 diff = arraybits ^ state.enabledAttribArrays;
-	uint32 instancediff = instancedbits ^ state.instancedAttribArrays;
+	uint32 enablediff = attributes.enablebits ^ state.enabledAttribArrays;
+	uint32 instancediff = attributes.instancebits ^ state.instancedAttribArrays;
 
-	if (diff == 0 && instancediff == 0)
-		return;
-
-	// Max 32 attributes. As of when this was written, no GL driver exposes more
-	// than 32. Lets hope that doesn't change...
-	for (uint32 i = 0; i < 32; i++)
+	for (uint32 i = 0; i < vertex::Attributes::MAX; i++)
 	{
 		uint32 bit = 1u << i;
 
-		if (diff & bit)
+		if (enablediff & bit)
 		{
-			if (arraybits & bit)
+			if (attributes.enablebits & bit)
 				glEnableVertexAttribArray(i);
 			else
 				glDisableVertexAttribArray(i);
 		}
 
 		if (instancediff & bit)
-			glVertexAttribDivisor(i, (instancedbits & bit) != 0 ? 1 : 0);
+			glVertexAttribDivisor(i, (attributes.instancebits & bit) != 0 ? 1 : 0);
+
+		if (attributes.enablebits & bit)
+		{
+			const auto &attrib = attributes.attribs[i];
+			const auto &bufferinfo = buffers.info[attrib.bufferindex];
+
+			GLboolean normalized = GL_FALSE;
+			GLenum gltype = getGLVertexDataType(attrib.type, normalized);
+
+			const void *offsetpointer = BUFFER_OFFSET(bufferinfo.offset + attrib.offsetfromvertex);
+
+			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
+			glVertexAttribPointer(i, attrib.components, gltype, normalized, attrib.stride, offsetpointer);
+		}
 	}
 
-	state.enabledAttribArrays = arraybits;
-	state.instancedAttribArrays = instancedbits;
+	state.enabledAttribArrays = attributes.enablebits;
+	state.instancedAttribArrays = attributes.instancebits;
 
 	// glDisableVertexAttribArray will make the constant value for a vertex
 	// attribute undefined. We rely on the per-vertex color attribute being
 	// white when no per-vertex color is used, so we set it here.
 	// FIXME: Is there a better place to do this?
-	if ((diff & ATTRIBFLAG_COLOR) && !(arraybits & ATTRIBFLAG_COLOR))
+	if ((enablediff & ATTRIBFLAG_COLOR) && !(attributes.enablebits & ATTRIBFLAG_COLOR))
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
-}
-
-void OpenGL::setVertexPointers(vertex::CommonFormat format, size_t stride, size_t offset)
-{
-	using namespace vertex;
-
-	switch (format)
-	{
-	case CommonFormat::NONE:
-		break;
-	case CommonFormat::XYf:
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
-		break;
-	case CommonFormat::XYZf:
-		glVertexAttribPointer(ATTRIB_POS, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset));
-		break;
-	case CommonFormat::RGBAub:
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset));
-		break;
-	case CommonFormat::STf_RGBAub:
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(STf_RGBAub, s)));
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(STf_RGBAub, color.r)));
-		break;
-	case CommonFormat::STPf_RGBAub:
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(STPf_RGBAub, s)));
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(STPf_RGBAub, color.r)));
-		break;
-	case CommonFormat::XYf_STf:
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, x)));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf, s)));
-		break;
-	case CommonFormat::XYf_STPf:
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STPf, x)));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STPf, s)));
-		break;
-	case CommonFormat::XYf_STf_RGBAub:
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, x)));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, s)));
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STf_RGBAub, color.r)));
-		break;
-	case CommonFormat::XYf_STus_RGBAub:
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, x)));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 2, GL_UNSIGNED_SHORT, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, s)));
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STus_RGBAub, color.r)));
-		break;
-	case CommonFormat::XYf_STPf_RGBAub:
-		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STPf_RGBAub, x)));
-		glVertexAttribPointer(ATTRIB_TEXCOORD, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STPf_RGBAub, s)));
-		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, stride, BUFFER_OFFSET(offset + offsetof(XYf_STPf_RGBAub, color.r)));
-		break;
-	}
-}
-
-void OpenGL::setVertexPointers(vertex::CommonFormat format, size_t offset)
-{
-	setVertexPointers(format, getFormatStride(format), offset);
-}
-
-void OpenGL::setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t offset)
-{
-	bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
-	setVertexPointers(format, offset);
-}
-
-void OpenGL::setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t stride, size_t offset)
-{
-	bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
-	setVertexPointers(format, stride, offset);
 }
 
 void OpenGL::clearDepth(double value)

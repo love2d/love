@@ -167,8 +167,6 @@ public:
 	void setDrawRange();
 	bool getDrawRange(int &start, int &count) const;
 
-	virtual int bindAttributeToShaderInput(int attributeindex, const std::string &inputname) = 0;
-
 	// Implements Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
@@ -177,6 +175,8 @@ public:
 	static std::vector<AttribFormat> getDefaultVertexFormat();
 
 protected:
+
+	friend class SpriteBatch;
 
 	struct AttachedAttribute
 	{
@@ -190,7 +190,7 @@ protected:
 	void calculateAttributeSizes();
 	size_t getAttributeOffset(size_t attribindex) const;
 
-	virtual void drawInternal(int start, int count, int instancecount, bool useindexbuffer, uint32 attribflags, uint32 instancedattribflags) const = 0;
+	virtual void drawInternal(int start, int count, int instancecount, bool useindexbuffer, const vertex::Attributes &attributes, const vertex::Buffers &buffers) const = 0;
 
 	std::vector<AttribFormat> vertexFormat;
 	std::vector<size_t> attributeSizes;

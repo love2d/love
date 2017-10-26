@@ -584,7 +584,7 @@ protected:
 		int quadIndex;
 	};
 
-	virtual void drawInternal() const = 0;
+	virtual void drawInternal(const vertex::Attributes &attributes, const vertex::Buffers &buffers) const = 0;
 
 	// Pointer to the beginning of the allocated memory.
 	Particle *pMem;
@@ -687,6 +687,7 @@ protected:
 
 	bool relativeRotation;
 
+	const vertex::Attributes vertexAttributes;
 	Buffer *buffer;
 
 	// Vertex index buffer.

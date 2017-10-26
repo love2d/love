@@ -123,7 +123,7 @@ protected:
 	 **/
 	void setBufferSize(int newsize);
 
-	virtual void drawInternal(vertex::CommonFormat format, size_t indexbytestart, size_t indexcount) = 0;
+	virtual void drawInternal(size_t indexbytestart, size_t indexcount, const vertex::Attributes &attributes, const vertex::Buffers &buffers) = 0;
 
 	StrongRef<Texture> texture;
 

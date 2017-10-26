@@ -86,6 +86,10 @@ protected:
 	virtual void drawInternal(const std::vector<Font::DrawCommand> &commands) const = 0;
 
 	StrongRef<Font> font;
+
+	vertex::Attributes vertexAttributes;
+	vertex::Buffers vertexBuffers;
+
 	Buffer *vbo;
 	QuadIndices quadIndices;
 

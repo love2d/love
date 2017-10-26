@@ -24,6 +24,7 @@
 #include "common/config.h"
 #include "common/int.h"
 #include "vertex.h"
+#include "Resource.h"
 
 // C
 #include <stddef.h>
@@ -38,7 +39,7 @@ class Graphics;
 /**
  * A block of GPU-owned memory. Currently meant for internal use.
  **/
-class Buffer
+class Buffer : public Resource
 {
 public:
 
@@ -90,11 +91,6 @@ public:
 	 * NOTE: Buffer::fill calls this internally for you.
 	 **/
 	virtual void setMappedRangeModified(size_t offset, size_t size) = 0;
-
-	/**
-	 * Gets the backend-specific handle for this Buffer.
-	 **/
-	virtual ptrdiff_t getHandle() const = 0;
 
 	/**
 	 * Fill a portion of the buffer with data and marks the range as modified.

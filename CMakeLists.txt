@@ -527,6 +527,7 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Polyline.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
+	src/modules/graphics/Resource.h
 	src/modules/graphics/Shader.cpp
 	src/modules/graphics/Shader.h
 	src/modules/graphics/ShaderStage.cpp

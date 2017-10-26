@@ -1730,6 +1730,7 @@
 		FA0B7CCC1A95902C000E1D17 /* wrap_Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Window.h; sourceTree = "<group>"; };
 		FA0B7EF01A959D2C000E1D17 /* ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios.h; sourceTree = "<group>"; };
 		FA0B7EF11A959D2C000E1D17 /* ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ios.mm; sourceTree = "<group>"; };
+		FA10DD7B1F9EC24E00E1FE3D /* Resource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Resource.h; sourceTree = "<group>"; };
 		FA1557BF1CE90A2C00AFF582 /* tinyexr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tinyexr.h; sourceTree = "<group>"; };
 		FA1557C11CE90BD200AFF582 /* EXRHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EXRHandler.cpp; sourceTree = "<group>"; };
 		FA1557C21CE90BD200AFF582 /* EXRHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EXRHandler.h; sourceTree = "<group>"; };
@@ -2725,6 +2726,7 @@
 				FA0B7B9C1A95902C000E1D17 /* Polyline.h */,
 				FA0B7BBC1A95902C000E1D17 /* Quad.cpp */,
 				FA0B7BBD1A95902C000E1D17 /* Quad.h */,
+				FA10DD7B1F9EC24E00E1FE3D /* Resource.h */,
 				FA1BA0AF1E16FD0800AA2803 /* Shader.cpp */,
 				FA1BA0B01E16FD0800AA2803 /* Shader.h */,
 				FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */,

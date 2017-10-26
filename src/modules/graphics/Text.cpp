@@ -32,6 +32,7 @@ love::Type Text::type("Text", &Drawable::type);
 
 Text::Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
+	, vertexAttributes(Font::vertexFormat, 0)
 	, vbo(nullptr)
 	, quadIndices(gfx, 20)
 	, vert_offset(0)
@@ -68,6 +69,8 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 
 		delete vbo;
 		vbo = new_vbo;
+
+		vertexBuffers.set(0, vbo, 0);
 	}
 
 	if (vbo != nullptr && datasize > 0)

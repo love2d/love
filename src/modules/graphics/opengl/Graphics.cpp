@@ -353,7 +353,9 @@ void Graphics::flushStreamDraws()
 
 	OpenGL::TempDebugGroup debuggroup("Stream vertices flush and draw");
 
-	uint32 attribs = 0;
+	Attributes attributes;
+	Buffers buffers;
+
 	size_t usedsizes[3] = {0, 0, 0};
 
 	for (int i = 0; i < 2; i++)
@@ -361,26 +363,20 @@ void Graphics::flushStreamDraws()
 		if (sbstate.formats[i] == CommonFormat::NONE)
 			continue;
 
+		attributes.setCommonFormat(sbstate.formats[i], (uint8) i);
+
 		usedsizes[i] = getFormatStride(sbstate.formats[i]) * sbstate.vertexCount;
 
-		love::graphics::StreamBuffer *buffer = sbstate.vb[i];
-
-		gl.bindBuffer(BUFFER_VERTEX, (GLuint) buffer->getHandle());
-		size_t offset = buffer->unmap(usedsizes[i]);
-
+		size_t offset = sbstate.vb[i]->unmap(usedsizes[i]);
+		buffers.set(i, sbstate.vb[i], offset);
 		sbstate.vbMap[i] = StreamBuffer::MapInfo();
-
-		gl.setVertexPointers(sbstate.formats[i], offset);
-		attribs |= getFormatFlags(sbstate.formats[i]);
 	}
 
-	if (attribs == 0)
+	if (attributes.enablebits == 0)
 		return;
 
-	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(sbstate.primitiveMode);
-
 	Colorf nc = gl.getConstantColor();
-	if (attribs & ATTRIBFLAG_COLOR)
+	if (attributes.isEnabled(ATTRIB_COLOR))
 		gl.setConstantColor(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
 	pushIdentityTransform();
@@ -388,7 +384,9 @@ void Graphics::flushStreamDraws()
 	gl.prepareDraw();
 	gl.bindTextureToUnit(sbstate.texture, 0, false);
 
-	gl.useVertexAttribArrays(attribs);
+	gl.setVertexAttributes(attributes, buffers);
+
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(sbstate.primitiveMode);
 
 	if (sbstate.indexCount > 0)
 	{
@@ -415,7 +413,7 @@ void Graphics::flushStreamDraws()
 
 	popTransform();
 
-	if (attribs & ATTRIB_CONSTANTCOLOR)
+	if (attributes.isEnabled(ATTRIB_COLOR))
 		gl.setConstantColor(nc);
 
 	streamBufferState.vertexCount = 0;

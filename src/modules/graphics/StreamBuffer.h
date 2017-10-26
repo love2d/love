@@ -23,6 +23,7 @@
 // LOVE
 #include "common/int.h"
 #include "vertex.h"
+#include "Resource.h"
 
 // C
 #include <cstddef>
@@ -32,7 +33,7 @@ namespace love
 namespace graphics
 {
 
-class StreamBuffer
+class StreamBuffer : public Resource
 {
 public:
 
@@ -60,8 +61,6 @@ public:
 	virtual void markUsed(size_t usedsize) = 0;
 
 	virtual void nextFrame() {}
-
-	virtual ptrdiff_t getHandle() const = 0;
 
 protected:
 

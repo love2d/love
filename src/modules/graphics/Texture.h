@@ -32,6 +32,7 @@
 #include "Quad.h"
 #include "vertex.h"
 #include "depthstencil.h"
+#include "Resource.h"
 
 // C
 #include <stddef.h>
@@ -56,7 +57,7 @@ enum TextureType
  * Base class for 2D textures. All textures can be drawn with Quads, have a
  * width and height, and have filter and wrap modes.
  **/
-class Texture : public Drawable
+class Texture : public Drawable, public Resource
 {
 public:
 
@@ -144,8 +145,6 @@ public:
 	Optional<CompareMode> getDepthSampleMode() const;
 
 	Quad *getQuad() const;
-
-	virtual ptrdiff_t getHandle() const = 0;
 
 	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 

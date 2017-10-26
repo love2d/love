@@ -45,9 +45,7 @@ void Text::drawInternal(const std::vector<Font::DrawCommand> &commands) const
 	OpenGL::TempDebugGroup debuggroup("Text object draw");
 
 	gl.prepareDraw();
-
-	gl.setVertexPointers(Font::vertexFormat, vbo, 0);
-	gl.useVertexAttribArrays(vertex::getFormatFlags(Font::vertexFormat));
+	gl.setVertexAttributes(vertexAttributes, vertexBuffers);
 
 	const GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());
 	const size_t elemsize = quadIndices.getElementSize();

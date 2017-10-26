@@ -47,7 +47,7 @@ public:
 
 private:
 
-	void drawInternal() const override;
+	void drawInternal(const vertex::Attributes &attributes, const vertex::Buffers &buffers) const override;
 
 }; // ParticleSystem
 

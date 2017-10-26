@@ -37,6 +37,8 @@ static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + size
 static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color), "sizeof(XYf_STus_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color), "sizeof(XYf_STPf_RGBAub) incorrect!");
 
+static_assert(sizeof(AttributeInfo) == sizeof(uint64), "sizeof(AttributeInfo) incorrect!");
+
 size_t getFormatStride(CommonFormat format)
 {
 	switch (format)
@@ -220,6 +222,57 @@ void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount,
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices)
 {
 	fillIndicesT(mode, vertexStart, vertexCount, indices);
+}
+
+void Attributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
+{
+	uint16 stride = (uint16) getFormatStride(format);
+
+	switch (format)
+	{
+	case CommonFormat::NONE:
+		break;
+	case CommonFormat::XYf:
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		break;
+	case CommonFormat::XYZf:
+		set(ATTRIB_POS, DATA_FLOAT, 3, 0, stride, bufferindex);
+		break;
+	case CommonFormat::RGBAub:
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, 0, stride, bufferindex);
+		break;
+	case CommonFormat::STf_RGBAub:
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2), stride, bufferindex);
+		break;
+	case CommonFormat::STPf_RGBAub:
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, 0, stride, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 3), stride, bufferindex);
+		break;
+	case CommonFormat::XYf_STf:
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), stride, bufferindex);
+		break;
+	case CommonFormat::XYf_STPf:
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), stride, bufferindex);
+		break;
+	case CommonFormat::XYf_STf_RGBAub:
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), stride, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 4), stride, bufferindex);
+		break;
+	case CommonFormat::XYf_STus_RGBAub:
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_UNORM16, 2, uint16(sizeof(float) * 2), stride, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), stride, bufferindex);
+		break;
+	case CommonFormat::XYf_STPf_RGBAub:
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), stride, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 5), stride, bufferindex);
+		break;
+	}
 }
 
 static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =

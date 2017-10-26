@@ -51,32 +51,11 @@ SpriteBatch::~SpriteBatch()
 {
 }
 
-void SpriteBatch::drawInternal(vertex::CommonFormat format, size_t indexbytestart, size_t indexcount)
+void SpriteBatch::drawInternal(size_t indexbytestart, size_t indexcount, const vertex::Attributes &attributes, const vertex::Buffers &buffers)
 {
 	OpenGL::TempDebugGroup debuggroup("SpriteBatch draw");
 
-	uint32 enabledattribs = getFormatFlags(format);
-
-	// We want attached attributes to override local attributes, so we should
-	// call this before binding attached attributes.
-	gl.setVertexPointers(format, array_buf, vertex_stride, 0);
-
-	for (const auto &it : attached_attributes)
-	{
-		Mesh *mesh = it.second.mesh.get();
-
-		// We have to do this check here as wll because setBufferSize can be
-		// called after attachAttribute.
-		if (mesh->getVertexCount() < (size_t) next * 4)
-			throw love::Exception("Mesh with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
-
-		int location = mesh->bindAttributeToShaderInput(it.second.index, it.first);
-
-		if (location >= 0)
-			enabledattribs |= 1u << (uint32) location;
-	}
-
-	gl.useVertexAttribArrays(enabledattribs);
+	gl.setVertexAttributes(attributes, buffers);
 	gl.bindTextureToUnit(texture, 0, false);
 
 	gl.prepareDraw();

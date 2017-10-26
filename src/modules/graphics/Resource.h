@@ -20,31 +20,21 @@
 
 #pragma once
 
-// LOVE
-#include "graphics/Mesh.h"
-#include "OpenGL.h"
+#include <stddef.h>
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-class Mesh final : public love::graphics::Mesh
+class Resource
 {
 public:
 
-	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
-	virtual ~Mesh();
+	virtual ~Resource() {}
+	virtual ptrdiff_t getHandle() const = 0;
 
-protected:
+}; // Resource
 
-	void drawInternal(int start, int count, int instancecount, bool useindexbuffer, const vertex::Attributes &attributes, const vertex::Buffers &buffers) const override;
-
-}; // Mesh
-
-} // opengl
 } // graphics
 } // love

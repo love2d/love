@@ -25,6 +25,7 @@
 #include "common/StringMap.h"
 #include "Texture.h"
 #include "ShaderStage.h"
+#include "Resource.h"
 
 // STL
 #include <string>
@@ -45,7 +46,7 @@ namespace graphics
 class Graphics;
 
 // A GLSL shader
-class Shader : public Object
+class Shader : public Object, public Resource
 {
 public:
 
@@ -184,8 +185,6 @@ public:
 	TextureType getMainTextureType() const;
 	void checkMainTextureType(TextureType textype, bool isDepthSampler) const;
 	void checkMainTexture(Texture *texture) const;
-
-	virtual ptrdiff_t getHandle() const = 0;
 
 	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
 

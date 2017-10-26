@@ -50,17 +50,14 @@ ParticleSystem *ParticleSystem::clone()
 	return new ParticleSystem(*this);
 }
 
-void ParticleSystem::drawInternal() const
+void ParticleSystem::drawInternal(const vertex::Attributes &attributes, const vertex::Buffers &buffers) const
 {
-	using namespace vertex;
-
 	OpenGL::TempDebugGroup debuggroup("ParticleSystem draw");
 
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.prepareDraw();
 
-	gl.useVertexAttribArrays(getFormatFlags(CommonFormat::XYf_STf_RGBAub));
-	gl.setVertexPointers(CommonFormat::XYf_STf_RGBAub, buffer, 0);
+	gl.setVertexAttributes(attributes, buffers);
 
 	GLsizei count = (GLsizei) quadIndices.getIndexCount(getCount());
 	GLenum gltype = OpenGL::getGLIndexDataType(quadIndices.getType());

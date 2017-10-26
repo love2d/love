@@ -39,7 +39,7 @@ public:
 
 protected:
 
-	void drawInternal(vertex::CommonFormat format, size_t indexbytestart, size_t indexcount) override;
+	void drawInternal(size_t indexbytestart, size_t indexcount, const vertex::Attributes &attributes, const vertex::Buffers &buffers) override;
 
 }; // SpriteBatch
 

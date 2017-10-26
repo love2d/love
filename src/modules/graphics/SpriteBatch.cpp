@@ -334,14 +334,55 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
-	CommonFormat format = vertex_format;
+	Attributes attributes;
+	Buffers buffers;
 
-	if (!color_active)
 	{
-		if (format == CommonFormat::XYf_STPf_RGBAub)
-			format = CommonFormat::XYf_STPf;
-		else
-			format = CommonFormat::XYf_STf;
+		buffers.set(0, array_buf, 0);
+		attributes.setCommonFormat(vertex_format, 0);
+
+		if (!color_active)
+			attributes.disable(ATTRIB_COLOR);
+	}
+
+	int activebuffers = 1;
+
+	for (const auto &it : attached_attributes)
+	{
+		Mesh *mesh = it.second.mesh.get();
+
+		// We have to do this check here as wll because setBufferSize can be
+		// called after attachAttribute.
+		if (mesh->getVertexCount() < (size_t) next * 4)
+			throw love::Exception("Mesh with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
+
+		int attributeindex = -1;
+
+		// If the attribute is one of the LOVE-defined ones, use the constant
+		// attribute index for it, otherwise query the index from the shader.
+		VertexAttribID builtinattrib;
+		if (vertex::getConstant(it.first.c_str(), builtinattrib))
+			attributeindex = (int) builtinattrib;
+		else if (Shader::current)
+			attributeindex = Shader::current->getVertexAttributeIndex(it.first);
+
+		if (attributeindex >= 0)
+		{
+			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
+			mesh->vbo->unmap();
+
+			const auto &formats = mesh->getVertexFormat();
+			const auto &format = formats[it.second.index];
+
+			uint16 offset = (uint16) mesh->getAttributeOffset(it.second.index);
+			uint16 stride = (uint16) mesh->getVertexStride();
+
+			attributes.set(attributeindex, format.type, format.components, offset, stride, activebuffers);
+
+			// TODO: Ideally we want to reuse buffers with the same stride+step.
+			buffers.set(activebuffers, mesh->vbo, 0);
+			activebuffers++;
+		}
 	}
 
 	int start = std::min(std::max(0, range_start), next - 1);
@@ -358,7 +399,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::TempTransform transform(gfx, m);
 
 	if (count > 0)
-		drawInternal(format, indexbytestart, indexcount);
+		drawInternal(indexbytestart, indexcount, attributes, buffers);
 }
 
 } // graphics

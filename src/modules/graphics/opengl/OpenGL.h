@@ -46,6 +46,7 @@ namespace love
 namespace graphics
 {
 
+class Resource;
 class Buffer;
 
 namespace opengl
@@ -206,23 +207,7 @@ public:
 	void drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instancecount = 1);
 	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount = 1);
 
-	/**
-	 * Sets the enabled vertex attribute arrays based on the specified attribute
-	 * bits. Each bit in the uint32 represents an enabled attribute array index.
-	 * For example, useVertexAttribArrays(1 << 0) will enable attribute index 0.
-	 * See the VertexAttribFlags enum for the standard vertex attributes.
-	 * This function *must* be used instead of glEnable/DisableVertexAttribArray.
-	 **/
-	void useVertexAttribArrays(uint32 arraybits, uint32 instancedbits = 0);
-
-	/**
-	 * Calls glVertexAttribPointer appropriately for each attribute used in the
-	 * specified format.
-	 **/
-	void setVertexPointers(vertex::CommonFormat format, size_t offset);
-	void setVertexPointers(vertex::CommonFormat format, size_t stride, size_t offset);
-	void setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t offset);
-	void setVertexPointers(vertex::CommonFormat format, love::graphics::Buffer *buffer, size_t stride, size_t offset);
+	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers);
 
 	/**
 	 * Wrapper for glClearDepth and glClearDepthf.
