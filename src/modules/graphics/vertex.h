@@ -212,11 +212,7 @@ struct Attributes
 	uint32 enablebits = 0;
 	uint32 instancebits = 0;
 
-	union
-	{
-		AttributeInfo attribs[MAX];
-		uint64 data[MAX];
-	};
+	AttributeInfo attribs[MAX];
 
 	Attributes() {}
 	Attributes(CommonFormat format, uint8 bufferindex)
@@ -263,28 +259,6 @@ struct Attributes
 	}
 
 	void setCommonFormat(CommonFormat format, uint8 bufferindex);
-
-	bool operator == (const Attributes &other) const
-	{
-		if (enablebits != other.enablebits)
-			return false;
-
-		uint32 instancediff = instancebits ^ other.instancebits;
-
-		for (unsigned int i = 0; i < MAX; i++)
-		{
-			if (isEnabled(i))
-			{
-				if (instancediff & (1u << i))
-					return false;
-
-				if (data[i] != other.data[i])
-					return false;
-			}
-		}
-
-		return true;
-	}
 };
 
 size_t getFormatStride(CommonFormat format);

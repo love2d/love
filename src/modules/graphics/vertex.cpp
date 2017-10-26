@@ -37,8 +37,6 @@ static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + size
 static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color), "sizeof(XYf_STus_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color), "sizeof(XYf_STPf_RGBAub) incorrect!");
 
-static_assert(sizeof(AttributeInfo) == sizeof(uint64), "sizeof(AttributeInfo) incorrect!");
-
 size_t getFormatStride(CommonFormat format)
 {
 	switch (format)
