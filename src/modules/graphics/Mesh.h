@@ -174,7 +174,7 @@ public:
 
 	static std::vector<AttribFormat> getDefaultVertexFormat();
 
-protected:
+private:
 
 	friend class SpriteBatch;
 
@@ -189,8 +189,6 @@ protected:
 	void setupAttachedAttributes();
 	void calculateAttributeSizes();
 	size_t getAttributeOffset(size_t attribindex) const;
-
-	virtual void drawInternal(int start, int count, int instancecount, bool useindexbuffer, const vertex::Attributes &attributes, const vertex::Buffers &buffers) const = 0;
 
 	std::vector<AttribFormat> vertexFormat;
 	std::vector<size_t> attributeSizes;

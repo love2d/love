@@ -29,7 +29,6 @@
 #include "math/MathModule.h"
 #include "window/Window.h"
 #include "Buffer.h"
-#include "Text.h"
 #include "ShaderStage.h"
 
 #include "libraries/xxHash/xxhash.h"
@@ -112,16 +111,6 @@ love::graphics::Image *Graphics::newImage(TextureType textype, PixelFormat forma
 	return new Image(textype, format, width, height, slices, settings);
 }
 
-love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
-{
-	return new SpriteBatch(this, texture, size, usage);
-}
-
-love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
-{
-	return new ParticleSystem(this, texture, size);
-}
-
 love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
 {
 	return new Canvas(settings);
@@ -140,21 +129,6 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
 {
 	return new Buffer(size, data, type, usage, mapflags);
-}
-
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
-{
-	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
-}
-
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
-{
-	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
-}
-
-love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
-{
-	return new Text(this, font, text);
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
@@ -418,6 +392,30 @@ void Graphics::flushStreamDraws()
 
 	streamBufferState.vertexCount = 0;
 	streamBufferState.indexCount = 0;
+}
+
+void Graphics::draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, love::graphics::Texture *texture)
+{
+	gl.prepareDraw();
+	gl.setVertexAttributes(attribs, buffers);
+	gl.bindTextureToUnit(texture, 0, false);
+
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(primtype);
+	gl.drawArrays(glprimitivetype, vertexstart, vertexcount, instancecount);
+}
+
+void Graphics::drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, love::graphics::Texture *texture)
+{
+	gl.prepareDraw();
+	gl.setVertexAttributes(attribs, buffers);
+	gl.bindTextureToUnit(texture, 0, false);
+
+	const void *gloffset = BUFFER_OFFSET(indexoffset);
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(primtype);
+	GLenum gldatatype = OpenGL::getGLIndexDataType(datatype);
+
+	gl.bindBuffer(BUFFER_INDEX, indexbuffer->getHandle());
+	gl.drawElements(glprimitivetype, indexcount, gldatatype, gloffset, instancecount);
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)

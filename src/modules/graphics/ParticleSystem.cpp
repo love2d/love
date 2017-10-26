@@ -167,6 +167,11 @@ ParticleSystem::~ParticleSystem()
 	deleteBuffers();
 }
 
+ParticleSystem *ParticleSystem::clone()
+{
+	return new ParticleSystem(*this);
+}
+
 void ParticleSystem::resetOffset()
 {
 	if (quads.empty())
@@ -1095,7 +1100,9 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	vertexbuffers.set(0, buffer, 0);
 
 	Graphics::TempTransform transform(gfx, m);
-	drawInternal(vertexAttributes, vertexbuffers);
+
+	int count = quadIndices.getIndexCount(getCount());
+	gfx->drawIndexed(PRIMITIVE_TRIANGLES, count, 1, quadIndices.getType(), quadIndices.getBuffer(), 0, vertexAttributes, vertexbuffers, texture);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

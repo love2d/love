@@ -99,7 +99,7 @@ public:
 	 * duplicate any existing particles from this ParticleSystem, just the
 	 * settable parameters.
 	 **/
-	virtual ParticleSystem *clone() = 0;
+	ParticleSystem *clone();
 
 	/**
 	 * Sets the texture used in the particle system.
@@ -116,7 +116,7 @@ public:
 	 * Clears the current buffer and allocates the appropriate amount of space for the buffer.
 	 * @param size The new buffer size.
 	 **/
-	virtual void setBufferSize(uint32 size);
+	void setBufferSize(uint32 size);
 
 	/**
 	 * Returns the total amount of particles this ParticleSystem can have active
@@ -547,7 +547,7 @@ public:
 	static bool getConstant(InsertMode in, const char *&out);
 	static std::vector<std::string> getConstants(InsertMode);
 
-protected:
+private:
 
 	// Represents a single particle.
 	struct Particle
@@ -584,7 +584,19 @@ protected:
 		int quadIndex;
 	};
 
-	virtual void drawInternal(const vertex::Attributes &attributes, const vertex::Buffers &buffers) const = 0;
+	void resetOffset();
+
+	void createBuffers(size_t size);
+	void deleteBuffers();
+
+	void addParticle(float t);
+	Particle *removeParticle(Particle *p);
+
+	// Called by addParticle.
+	void initParticle(Particle *p, float t);
+	void insertTop(Particle *p);
+	void insertBottom(Particle *p);
+	void insertRandom(Particle *p);
 
 	// Pointer to the beginning of the allocated memory.
 	Particle *pMem;
@@ -692,22 +704,6 @@ protected:
 
 	// Vertex index buffer.
 	QuadIndices quadIndices;
-
-private:
-
-	void resetOffset();
-
-	void createBuffers(size_t size);
-	void deleteBuffers();
-
-	void addParticle(float t);
-	Particle *removeParticle(Particle *p);
-
-	// Called by addParticle.
-	void initParticle(Particle *p, float t);
-	void insertTop(Particle *p);
-	void insertBottom(Particle *p);
-	void insertRandom(Particle *p);
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;

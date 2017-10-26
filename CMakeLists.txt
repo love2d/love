@@ -583,22 +583,14 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
 	src/modules/graphics/opengl/Image.h
-	src/modules/graphics/opengl/Mesh.cpp
-	src/modules/graphics/opengl/Mesh.h
 	src/modules/graphics/opengl/OpenGL.cpp
 	src/modules/graphics/opengl/OpenGL.h
-	src/modules/graphics/opengl/ParticleSystem.cpp
-	src/modules/graphics/opengl/ParticleSystem.h
 	src/modules/graphics/opengl/Shader.cpp
 	src/modules/graphics/opengl/Shader.h
 	src/modules/graphics/opengl/ShaderStage.cpp
 	src/modules/graphics/opengl/ShaderStage.h
-	src/modules/graphics/opengl/SpriteBatch.cpp
-	src/modules/graphics/opengl/SpriteBatch.h
 	src/modules/graphics/opengl/StreamBuffer.cpp
 	src/modules/graphics/opengl/StreamBuffer.h
-	src/modules/graphics/opengl/Text.cpp
-	src/modules/graphics/opengl/Text.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS

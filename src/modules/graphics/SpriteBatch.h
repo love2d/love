@@ -109,7 +109,7 @@ public:
 	// Implements Drawable.
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
-protected:
+private:
 
 	struct AttachedAttribute
 	{
@@ -122,8 +122,6 @@ protected:
 	 * Leaves existing sprite data intact when possible.
 	 **/
 	void setBufferSize(int newsize);
-
-	virtual void drawInternal(size_t indexbytestart, size_t indexcount, const vertex::Attributes &attributes, const vertex::Buffers &buffers) = 0;
 
 	StrongRef<Texture> texture;
 

@@ -37,11 +37,8 @@
 #include "image/ImageData.h"
 
 #include "Image.h"
-#include "SpriteBatch.h"
-#include "ParticleSystem.h"
 #include "Canvas.h"
 #include "Shader.h"
-#include "Mesh.h"
 
 namespace love
 {
@@ -63,18 +60,8 @@ public:
 
 	love::graphics::Image *newImage(const Image::Slices &data, const Image::Settings &settings) override;
 	love::graphics::Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) override;
-
-	love::graphics::SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) override;
-	love::graphics::ParticleSystem *newParticleSystem(Texture *texture, int size) override;
-
 	love::graphics::Canvas *newCanvas(const Canvas::Settings &settings) override;
-
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
-
-	love::graphics::Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage) override;
-	love::graphics::Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage) override;
-
-	love::graphics::Text *newText(love::graphics::Font *font, const std::vector<Font::ColoredString> &text = {}) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
@@ -83,6 +70,9 @@ public:
 	void setActive(bool active) override;
 
 	void flushStreamDraws() override;
+
+	void draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) override;
+	void drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;

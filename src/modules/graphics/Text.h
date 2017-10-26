@@ -66,7 +66,7 @@ public:
 	// Implements Drawable.
 	void draw(love::graphics::Graphics *gfx, const Matrix4 &m) override;
 
-protected:
+private:
 
 	struct TextData
 	{
@@ -82,8 +82,6 @@ protected:
 	void uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset);
 	void regenerateVertices();
 	void addTextData(const TextData &s);
-
-	virtual void drawInternal(const std::vector<Font::DrawCommand> &commands) const = 0;
 
 	StrongRef<Font> font;
 

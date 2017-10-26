@@ -631,12 +631,12 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (!attributes.isEnabled(ATTRIB_POS))
 		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
 
-	bool useindexbuffer = useIndexBuffer && ibo != nullptr && indexCount > 0;
+	Graphics::TempTransform transform(gfx, m);
 
 	int start = 0;
 	int count = 0;
 
-	if (useindexbuffer)
+	if (useIndexBuffer && ibo != nullptr && indexCount > 0)
 	{
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
@@ -648,6 +648,10 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 			count = std::min(count, rangeCount);
 
 		count = std::min(count, (int) indexCount - start);
+
+		size_t offset = start * vertex::getIndexDataSize(indexDataType);
+		if (count > 0)
+			gfx->drawIndexed(primitiveType, count, instancecount, indexDataType, ibo, offset, attributes, buffers, texture);
 	}
 	else
 	{
@@ -658,12 +662,9 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 			count = std::min(count, rangeCount);
 
 		count = std::min(count, (int) vertexCount - start);
+
+		gfx->draw(primitiveType, start, count, instancecount, attributes, buffers, texture);
 	}
-
-	Graphics::TempTransform transform(gfx, m);
-
-	if (count > 0)
-		drawInternal(start, count, instancecount, useindexbuffer, attributes, buffers);
 }
 
 } // graphics

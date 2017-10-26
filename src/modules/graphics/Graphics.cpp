@@ -26,8 +26,11 @@
 #include "Polyline.h"
 #include "font/Font.h"
 #include "window/Window.h"
+#include "SpriteBatch.h"
+#include "ParticleSystem.h"
 #include "Font.h"
 #include "Video.h"
+#include "Text.h"
 #include "common/deprecation.h"
 
 // C++
@@ -182,6 +185,16 @@ Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 	return new Video(this, stream, dpiscale);
 }
 
+love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
+{
+	return new SpriteBatch(this, texture, size, usage);
+}
+
+love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
+{
+	return new ParticleSystem(this, texture, size);
+}
+
 ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &optsource)
 {
 	if (stage == ShaderStage::STAGE_MAX_ENUM)
@@ -236,6 +249,21 @@ Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawm
 Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
 {
 	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
+}
+
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+{
+	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
+}
+
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
+{
+	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
+}
+
+love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
+{
+	return new Text(this, font, text);
 }
 
 void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)

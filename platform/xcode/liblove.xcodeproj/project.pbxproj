@@ -421,27 +421,15 @@
 		FA0B7D3C1A95902C000E1D17 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B931A95902C000E1D17 /* Image.cpp */; };
 		FA0B7D3D1A95902C000E1D17 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B931A95902C000E1D17 /* Image.cpp */; };
 		FA0B7D3E1A95902C000E1D17 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B941A95902C000E1D17 /* Image.h */; };
-		FA0B7D3F1A95902C000E1D17 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B951A95902C000E1D17 /* Mesh.cpp */; };
-		FA0B7D401A95902C000E1D17 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B951A95902C000E1D17 /* Mesh.cpp */; };
-		FA0B7D411A95902C000E1D17 /* Mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B961A95902C000E1D17 /* Mesh.h */; };
 		FA0B7D421A95902C000E1D17 /* OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B971A95902C000E1D17 /* OpenGL.cpp */; };
 		FA0B7D431A95902C000E1D17 /* OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B971A95902C000E1D17 /* OpenGL.cpp */; };
 		FA0B7D441A95902C000E1D17 /* OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B981A95902C000E1D17 /* OpenGL.h */; };
-		FA0B7D451A95902C000E1D17 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B991A95902C000E1D17 /* ParticleSystem.cpp */; };
-		FA0B7D461A95902C000E1D17 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B991A95902C000E1D17 /* ParticleSystem.cpp */; };
-		FA0B7D471A95902C000E1D17 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B9A1A95902C000E1D17 /* ParticleSystem.h */; };
 		FA0B7D481A95902C000E1D17 /* Polyline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B9B1A95902C000E1D17 /* Polyline.cpp */; };
 		FA0B7D491A95902C000E1D17 /* Polyline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B9B1A95902C000E1D17 /* Polyline.cpp */; };
 		FA0B7D4A1A95902C000E1D17 /* Polyline.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B9C1A95902C000E1D17 /* Polyline.h */; };
 		FA0B7D4B1A95902C000E1D17 /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B9D1A95902C000E1D17 /* Shader.cpp */; };
 		FA0B7D4C1A95902C000E1D17 /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B9D1A95902C000E1D17 /* Shader.cpp */; };
 		FA0B7D4D1A95902C000E1D17 /* Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B9E1A95902C000E1D17 /* Shader.h */; };
-		FA0B7D4E1A95902C000E1D17 /* SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B9F1A95902C000E1D17 /* SpriteBatch.cpp */; };
-		FA0B7D4F1A95902C000E1D17 /* SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B9F1A95902C000E1D17 /* SpriteBatch.cpp */; };
-		FA0B7D501A95902C000E1D17 /* SpriteBatch.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */; };
-		FA0B7D511A95902C000E1D17 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA11A95902C000E1D17 /* Text.cpp */; };
-		FA0B7D521A95902C000E1D17 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA11A95902C000E1D17 /* Text.cpp */; };
-		FA0B7D531A95902C000E1D17 /* Text.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA21A95902C000E1D17 /* Text.h */; };
 		FA0B7D551A95902C000E1D17 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* Buffer.cpp */; };
 		FA0B7D561A95902C000E1D17 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7BA41A95902C000E1D17 /* Buffer.cpp */; };
 		FA0B7D571A95902C000E1D17 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7BA51A95902C000E1D17 /* Buffer.h */; };
@@ -1480,20 +1468,12 @@
 		FA0B7B921A95902C000E1D17 /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
 		FA0B7B931A95902C000E1D17 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		FA0B7B941A95902C000E1D17 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
-		FA0B7B951A95902C000E1D17 /* Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mesh.cpp; sourceTree = "<group>"; };
-		FA0B7B961A95902C000E1D17 /* Mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
 		FA0B7B971A95902C000E1D17 /* OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGL.cpp; sourceTree = "<group>"; };
 		FA0B7B981A95902C000E1D17 /* OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGL.h; sourceTree = "<group>"; };
-		FA0B7B991A95902C000E1D17 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
-		FA0B7B9A1A95902C000E1D17 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		FA0B7B9B1A95902C000E1D17 /* Polyline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polyline.cpp; sourceTree = "<group>"; };
 		FA0B7B9C1A95902C000E1D17 /* Polyline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Polyline.h; sourceTree = "<group>"; };
 		FA0B7B9D1A95902C000E1D17 /* Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shader.cpp; sourceTree = "<group>"; };
 		FA0B7B9E1A95902C000E1D17 /* Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shader.h; sourceTree = "<group>"; };
-		FA0B7B9F1A95902C000E1D17 /* SpriteBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteBatch.cpp; sourceTree = "<group>"; };
-		FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteBatch.h; sourceTree = "<group>"; };
-		FA0B7BA11A95902C000E1D17 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
-		FA0B7BA21A95902C000E1D17 /* Text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
 		FA0B7BA41A95902C000E1D17 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		FA0B7BA51A95902C000E1D17 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		FA0B7BBC1A95902C000E1D17 /* Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Quad.cpp; sourceTree = "<group>"; };
@@ -2788,22 +2768,14 @@
 				FA0B7B921A95902C000E1D17 /* Graphics.h */,
 				FA0B7B931A95902C000E1D17 /* Image.cpp */,
 				FA0B7B941A95902C000E1D17 /* Image.h */,
-				FA0B7B951A95902C000E1D17 /* Mesh.cpp */,
-				FA0B7B961A95902C000E1D17 /* Mesh.h */,
 				FA0B7B971A95902C000E1D17 /* OpenGL.cpp */,
 				FA0B7B981A95902C000E1D17 /* OpenGL.h */,
-				FA0B7B991A95902C000E1D17 /* ParticleSystem.cpp */,
-				FA0B7B9A1A95902C000E1D17 /* ParticleSystem.h */,
 				FA0B7B9D1A95902C000E1D17 /* Shader.cpp */,
 				FA0B7B9E1A95902C000E1D17 /* Shader.h */,
 				FA3C5E451F8D80CA0003C579 /* ShaderStage.cpp */,
 				FA3C5E461F8D80CA0003C579 /* ShaderStage.h */,
-				FA0B7B9F1A95902C000E1D17 /* SpriteBatch.cpp */,
-				FA0B7BA01A95902C000E1D17 /* SpriteBatch.h */,
 				FA7634481E28722A0066EF9E /* StreamBuffer.cpp */,
 				FA7634491E28722A0066EF9E /* StreamBuffer.h */,
-				FA0B7BA11A95902C000E1D17 /* Text.cpp */,
-				FA0B7BA21A95902C000E1D17 /* Text.h */,
 			);
 			path = opengl;
 			sourceTree = "<group>";
@@ -3606,7 +3578,6 @@
 				FA0B7D4A1A95902C000E1D17 /* Polyline.h in Headers */,
 				FAF1405C1E20934C00F898D2 /* InitializeGlobals.h in Headers */,
 				FA0B7DB31A95902C000E1D17 /* wrap_Image.h in Headers */,
-				FA0B7D531A95902C000E1D17 /* Text.h in Headers */,
 				FAF140591E20934C00F898D2 /* Common.h in Headers */,
 				FA0B7EC31A95902C000E1D17 /* threads.h in Headers */,
 				FA0B7AC21A958EA3000E1D17 /* enet.h in Headers */,
@@ -3748,7 +3719,6 @@
 				FA0B7E351A95902C000E1D17 /* WeldJoint.h in Headers */,
 				FA0B7E2F1A95902C000E1D17 /* RopeJoint.h in Headers */,
 				FA0B7D141A95902C000E1D17 /* Font.h in Headers */,
-				FA0B7D411A95902C000E1D17 /* Mesh.h in Headers */,
 				FA0B7E591A95902C000E1D17 /* wrap_Joint.h in Headers */,
 				FA0B79351A958E3B000E1D17 /* macosx.h in Headers */,
 				FA0B7A631A958EA3000E1D17 /* b2ContactManager.h in Headers */,
@@ -3756,7 +3726,6 @@
 				FA0B7A911A958EA3000E1D17 /* b2FrictionJoint.h in Headers */,
 				FA0B7E291A95902C000E1D17 /* PulleyJoint.h in Headers */,
 				FA6BDE5C1F31725300786805 /* Color.h in Headers */,
-				FA0B7D471A95902C000E1D17 /* ParticleSystem.h in Headers */,
 				FA0B7E231A95902C000E1D17 /* PolygonShape.h in Headers */,
 				FA0B791E1A958E3B000E1D17 /* config.h in Headers */,
 				FAB17BE81ABFAA9000F9BA27 /* lz4.h in Headers */,
@@ -3814,7 +3783,6 @@
 				FA0B7CF61A95902C000E1D17 /* File.h in Headers */,
 				FA0B7E961A95902C000E1D17 /* Mpg123Decoder.h in Headers */,
 				FADF54091E3D78F700012CC0 /* Video.h in Headers */,
-				FA0B7D501A95902C000E1D17 /* SpriteBatch.h in Headers */,
 				FAA54ACB1F91660400A8FA7B /* TheoraVideoStream.h in Headers */,
 				FA0B7DD51A95902C000E1D17 /* BezierCurve.h in Headers */,
 				FA0B79271A958E3B000E1D17 /* int.h in Headers */,
@@ -4151,7 +4119,6 @@
 				FA0B7D1F1A95902C000E1D17 /* ImageRasterizer.cpp in Sources */,
 				FA0B7EA41A95902C000E1D17 /* SoundData.cpp in Sources */,
 				FA0B7D041A95902C000E1D17 /* wrap_DroppedFile.cpp in Sources */,
-				FA0B7D461A95902C000E1D17 /* ParticleSystem.cpp in Sources */,
 				FAF1406A1E20934C00F898D2 /* glslang_tab.cpp in Sources */,
 				FA91591F1CF1ED7500A7053F /* halffloat.cpp in Sources */,
 				FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */,
@@ -4239,7 +4206,6 @@
 				FA0B7DF21A95902C000E1D17 /* wrap_Cursor.cpp in Sources */,
 				FA0B7E011A95902C000E1D17 /* CircleShape.cpp in Sources */,
 				FA0B7E461A95902C000E1D17 /* wrap_Contact.cpp in Sources */,
-				FA0B7D401A95902C000E1D17 /* Mesh.cpp in Sources */,
 				FA0B7D161A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EB61A95902C000E1D17 /* wrap_System.cpp in Sources */,
 				FA0B7DAC1A95902C000E1D17 /* STBHandler.cpp in Sources */,
@@ -4353,7 +4319,6 @@
 				FA0B7E221A95902C000E1D17 /* PolygonShape.cpp in Sources */,
 				FA0B7A651A958EA3000E1D17 /* b2Fixture.cpp in Sources */,
 				FA28EBD61E352DB5003446F4 /* FenceSync.cpp in Sources */,
-				FA0B7D521A95902C000E1D17 /* Text.cpp in Sources */,
 				FA0B7DA31A95902C000E1D17 /* PKMHandler.cpp in Sources */,
 				FA0B7AB21A958EA3000E1D17 /* b2Rope.cpp in Sources */,
 				FAB17BF61ABFC4B100F9BA27 /* lz4hc.c in Sources */,
@@ -4392,7 +4357,6 @@
 				FA4F2C0E1DE936FE00CA37D7 /* tcp.c in Sources */,
 				FA0B7D431A95902C000E1D17 /* OpenGL.cpp in Sources */,
 				FA0B7DBF1A95902C000E1D17 /* JoystickModule.cpp in Sources */,
-				FA0B7D4F1A95902C000E1D17 /* SpriteBatch.cpp in Sources */,
 				FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */,
 				FA0B7A9F1A958EA3000E1D17 /* b2PrismaticJoint.cpp in Sources */,
 				FA1BA0AD1E16F9EE00AA2803 /* wrap_Canvas.cpp in Sources */,
@@ -4521,7 +4485,6 @@
 				FA0B7EA31A95902C000E1D17 /* SoundData.cpp in Sources */,
 				FA0B7D031A95902C000E1D17 /* wrap_DroppedFile.cpp in Sources */,
 				FA0B79291A958E3B000E1D17 /* Matrix.cpp in Sources */,
-				FA0B7D451A95902C000E1D17 /* ParticleSystem.cpp in Sources */,
 				FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */,
 				FAF140691E20934C00F898D2 /* glslang_tab.cpp in Sources */,
 				FA0B7ABF1A958EA3000E1D17 /* host.c in Sources */,
@@ -4608,7 +4571,6 @@
 				FA0B7DF11A95902C000E1D17 /* wrap_Cursor.cpp in Sources */,
 				FA0B7E001A95902C000E1D17 /* CircleShape.cpp in Sources */,
 				FA0B7E451A95902C000E1D17 /* wrap_Contact.cpp in Sources */,
-				FA0B7D3F1A95902C000E1D17 /* Mesh.cpp in Sources */,
 				217DFBE71D9F6D490055D849 /* inet.c in Sources */,
 				FA0B7D151A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EB51A95902C000E1D17 /* wrap_System.cpp in Sources */,
@@ -4718,7 +4680,6 @@
 				FA0B7D551A95902C000E1D17 /* Buffer.cpp in Sources */,
 				FA57FB981AE1993600F2AD6D /* noise1234.cpp in Sources */,
 				FA0B7E211A95902C000E1D17 /* PolygonShape.cpp in Sources */,
-				FA0B7D511A95902C000E1D17 /* Text.cpp in Sources */,
 				FA0B7DA21A95902C000E1D17 /* PKMHandler.cpp in Sources */,
 				FA0B7ABA1A958EA3000E1D17 /* callbacks.c in Sources */,
 				FAB17BF51ABFC4B100F9BA27 /* lz4hc.c in Sources */,
@@ -4760,7 +4721,6 @@
 				FA0B7D421A95902C000E1D17 /* OpenGL.cpp in Sources */,
 				FA0B7A671A958EA3000E1D17 /* b2Island.cpp in Sources */,
 				FA0B7DBE1A95902C000E1D17 /* JoystickModule.cpp in Sources */,
-				FA0B7D4E1A95902C000E1D17 /* SpriteBatch.cpp in Sources */,
 				FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */,
 				FA0B7ACD1A958EA3000E1D17 /* packet.c in Sources */,
 				FA0B7A921A958EA3000E1D17 /* b2GearJoint.cpp in Sources */,

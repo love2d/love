@@ -380,9 +380,8 @@ public:
 	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter = Texture::defaultFilter);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
-	virtual SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage) = 0;
-
-	virtual ParticleSystem *newParticleSystem(Texture *texture, int size) = 0;
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
+	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	virtual Canvas *newCanvas(const Canvas::Settings &settings) = 0;
 
@@ -393,11 +392,10 @@ public:
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage);
 	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
 
-	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage) = 0;
-	virtual Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage) = 0;
-
-	virtual Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {}) = 0;
+	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
 	bool validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err);
 
@@ -760,6 +758,9 @@ public:
 
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
+
+	virtual void draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) = 0;
+	virtual void drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) = 0;
 
 	virtual void flushStreamDraws() = 0;
 	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);

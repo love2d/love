@@ -399,7 +399,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::TempTransform transform(gfx, m);
 
 	if (count > 0)
-		drawInternal(indexbytestart, indexcount, attributes, buffers);
+		gfx->drawIndexed(PRIMITIVE_TRIANGLES, indexcount, 1, quad_indices.getType(), quad_indices.getBuffer(), indexbytestart, attributes, buffers, texture);
 }
 
 } // graphics
