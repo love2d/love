@@ -1006,6 +1006,73 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 	return d;
 }
 
+void Graphics::flushStreamDraws()
+{
+	using namespace vertex;
+
+	auto &sbstate = streamBufferState;
+
+	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
+		return;
+
+	Attributes attributes;
+	Buffers buffers;
+
+	size_t usedsizes[3] = {0, 0, 0};
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (sbstate.formats[i] == CommonFormat::NONE)
+			continue;
+
+		attributes.setCommonFormat(sbstate.formats[i], (uint8) i);
+
+		usedsizes[i] = getFormatStride(sbstate.formats[i]) * sbstate.vertexCount;
+
+		size_t offset = sbstate.vb[i]->unmap(usedsizes[i]);
+		buffers.set(i, sbstate.vb[i], offset);
+		sbstate.vbMap[i] = StreamBuffer::MapInfo();
+	}
+
+	if (attributes.enablebits == 0)
+		return;
+
+	Colorf nc = getColor();
+	if (attributes.isEnabled(ATTRIB_COLOR))
+		setColor(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+
+	pushIdentityTransform();
+
+	if (sbstate.indexCount > 0)
+	{
+		usedsizes[2] = sizeof(uint16) * sbstate.indexCount;
+		size_t offset = sbstate.indexBuffer->unmap(usedsizes[2]);
+
+		sbstate.indexBufferMap = StreamBuffer::MapInfo();
+
+		drawIndexed(sbstate.primitiveMode, sbstate.indexCount, 1, INDEX_UINT16, sbstate.indexBuffer, offset, attributes, buffers, sbstate.texture);
+	}
+	else
+		draw(sbstate.primitiveMode, 0, sbstate.vertexCount, 1, attributes, buffers, sbstate.texture);
+
+	for (int i = 0; i < 2; i++)
+	{
+		if (usedsizes[i] > 0)
+			sbstate.vb[i]->markUsed(usedsizes[i]);
+	}
+
+	if (usedsizes[2] > 0)
+		sbstate.indexBuffer->markUsed(usedsizes[2]);
+
+	popTransform();
+
+	if (attributes.isEnabled(ATTRIB_COLOR))
+		setColor(nc);
+
+	streamBufferState.vertexCount = 0;
+	streamBufferState.indexCount = 0;
+}
+
 void Graphics::flushStreamDrawsGlobal()
 {
 	Graphics *instance = getInstance<Graphics>(M_GRAPHICS);

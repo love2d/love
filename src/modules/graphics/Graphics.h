@@ -762,7 +762,7 @@ public:
 	virtual void draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) = 0;
 	virtual void drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) = 0;
 
-	virtual void flushStreamDraws() = 0;
+	void flushStreamDraws();
 	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
 
 	static void flushStreamDrawsGlobal();
