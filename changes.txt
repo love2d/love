@@ -9,12 +9,14 @@ Released: N/A
   * Added audio input support.
   * Added Source filters: low gain, high gain and band pass.
   * Added audio effect APIs (reverb, echo, etc.)
+  * Added variants of SoundData:getSample/setSample which take a channel parameter.
+  * Added variants of all table-with-fields-returning get* functions, the new variants take an existing table to fill in.
   * Added a variant to World:update, which accepts the number of iterations to run. The defaults are now 8 and 3.
   * Added a click count argument to love.mousepressed and love.mousereleased.
   * Added love.filesystem.get/setCRequirePath, and use that to find c libraries for require.
   * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
-  * Added love.math.encode/decode, which support hex and base64.
-  * Added love.math.hash, which supports MD5, SHA-1 and the SHA-2 family.
+  * Added variants of Channel:demand and Channel:supply which take a timeout argument.
+  * Added love.data module. It includes hex/base64 encoding functions, MD5 and SHA hashing, string packing, and more.
   * Added Transform objects to love.math.
   * Added support for different ImageData formats, including RGBA8 (the default), RGBA16, RGBA16F, and RGBA32F.
   * Added the ability to load Radiance HDR, OpenEXR, and 16 bit PNG images.
@@ -34,6 +36,7 @@ Released: N/A
   * Added love.graphics.drawLayer and SpriteBatch:add/setLayer for easily drawing layers of Array Textures.
   * Added variants of love.graphics.print and printf which take a Font argument.
   * Added variants of love.graphics.clear to control how the active depth and stencil buffers are cleared.
+  * Added love.graphics.getStackDepth.
   * Added love.graphics.flushBatch for manually flushing automatically batched draws.
   * Added SpriteBatch:setDrawRange.
   * Added per-shader opt in support for the GLSL 3.30 and GLSL ES 3.00 shading languages.
@@ -42,6 +45,7 @@ Released: N/A
   * Added Shader:hasUniform.
   * Added support for non-square shader uniform matrices on desktop platforms and on mobile GLSL 3.
   * Added Shader:send(matrixname, is_column_major, matrix, ...) which specifies how to interpret the matrix table arguments.
+  * Added Shader:send variants which accept a Data object.
   * Added 'borderellipse' and 'borderrectangle' ParticleSystem distributions.
   * Added ParticleSystem:set/getAreaSpreadAngle and set/getAreaSpreadIsRelativeDirection.
   * Added love.graphics.captureScreenshot (replaces love.graphics.newScreenshot).
@@ -62,7 +66,7 @@ Released: N/A
   * Added 'drawcallsbatched' to love.graphics.getStats.
 
   * Changed all color values to be in the range 0-1, rather than 0-255.
-  * Changed high-dpi functionality to require much less code (often none at all) for things to appear at the correct sizes and positions.
+  * Changed high-dpi functionality to require much less code (often none at all) for graphics to appear at the correct sizes and positions.
   * Changed love.graphics.print and friends to ignore carriage returns.
   * Changed the 'multiply' blend mode to error if not used with the 'premultiplied' blend alpha mode, since the formula only works with that anyway.
   * Changed some love.graphics, love.window, and love.event APIs to cause an error if a Canvas is active.
@@ -77,23 +81,30 @@ Released: N/A
   * Fixed a memory leak when sending love objects to threads which never load that object's module.
   * Fixed os.execute always returning -1 in Linux.
   * Fixed the default reference angle for WeldJoint, PrismaticJoint, and RevoluteJoint.
-  * Fixed love.graphics.set/getClipboard text to error instead of crashing, when a window hasn't been created.
+  * Fixed Fixture:getShape to reuse the existing internal Fixture-owned shape.
+  * Fixed MouseJoint:setFrequency to error instead of crashing if a frequency of 0 is set.
+  * Fixed love.system.set/getClipboardText to error instead of crashing, when a window hasn't been created.
   * Fixed Joystick:getGamepadMapping to work with xinput controllers.
+  * Fixed love.joystick.setGamepadMapping's replacement code.
   * Fixed baseline calculation when rendering text.
   * Fixed VaryingTexCoords and love_ScreenSize in shaders to be 'highp' in OpenGL ES, when supported.
+  * Fixed ParticleSystem:setParticleLifetime to error if a negative value is given.
+  * Fixed video playback to work with a wider range of Ogg Theora files.
+  * Fixed video seeking to be faster.
   * Fixed error in default error handler when the error message contains non UTF-8 bytes.
-  * Fixed love.joystick.setGamepadMapping's replacement code.
 
   * Improved performance when drawing textures, shapes, lines, and points by automatically batching their draw calls together when possible.
   * Improved performance of Shader:send when the Shader is not active.
   * Improved performance of love.math.randomNormal when LuaJIT's JIT compiler is enabled. 
 
-  * Renamed love.window.getPixelScale to love.window.getPixelDensity.
+  * Renamed love.window.getPixelScale to love.window.getDPIScale.
   * Renamed love.mouse.hasCursor to love.mouse.isCursorSupported.
   * Renamed love.errhand to love.errorhandler.
   * Renamed Source/SoundData/Decoder:getChannels to getChannelCount.
   * Renamed PrismaticJoint/RevoluteJoint:hasLimitsEnabled to areLimitsEnabled.
   * Renamed love.audio.getSourceCount to love.audio.getActiveSourceCount.
+  * Renamed love.math.compress/decompress to love.data.compress/decompress, and updated the argument order.
+  * Renamed all get[Object]List functions to get[Object]s.
 
   * Removed the default source type for love.audio.newSource.
   * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
@@ -107,15 +118,18 @@ Released: N/A
     * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
     * Removed love.window.isCreated (use love.window.isOpen instead).
 
+  * Updated invalid enum value error messages to show a list of the valid enum values.
   * Updated Source:seek to work if the Source isn't playing.
   * Updated love.event.poll to stop allocating memory unnecessarily.
   * Updated love.math.random to have improved numeric distribution.
   * Updated love.graphics to support Core Profile OpenGL 3.3+ when available.
   * Updated shaders to always expose derivative functions (dFdx, dFdy, fwidth) when available in OpenGL ES.
+  * Updated shaders to allow using VERTEX and PIXEL in shader code.
   * Updated love.graphics.circle/ellipse/arc/rectangle to take transformation scale into account when determining the number of segments to use.
   * Updated Font glyph generation to improve antialiasing.
   * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
   * Updated love.graphics.newImage to treat file names ending with "@2x", "@3x", etc. as a pixel density scale factor if none is explicitly supplied.
+  * Updated the error message when bad values are given to love.graphics.line.
   * Updated luasocket to version 3.0rc1.
 
 LOVE 0.10.3 [Super Toast]
