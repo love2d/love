@@ -564,14 +564,14 @@ function love.run()
 	local dt = 0
 
 	-- Main loop time.
-	while true do
+	return function()
 		-- Process events.
 		if love.event then
 			love.event.pump()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
-						return a
+						return a or 0
 					end
 				end
 				love.handlers[name](a,b,c,d,e,f)
@@ -700,14 +700,14 @@ function love.errhand(msg)
 		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
 	end
 
-	while true do
+	return function()
 		love.event.pump()
 
 		for e, a, b, c in love.event.poll() do
 			if e == "quit" then
-				return
+				return 1
 			elseif e == "keypressed" and a == "escape" then
-				return
+				return 1
 			elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
 				copyToClipboard()
 			elseif e == "touchpressed" then
@@ -719,7 +719,7 @@ function love.errhand(msg)
 				end
 				local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
 				if pressed == 1 then
-					return
+					return 1
 				elseif pressed == 3 then
 					copyToClipboard()
 				end
@@ -735,22 +735,47 @@ function love.errhand(msg)
 
 end
 
-local function deferErrhand(...)
-	local handler = love.errorhandler or love.errhand or error_printer
-	return handler(...)
-end
-
 -----------------------------------------------------------
 -- The root of all calls.
 -----------------------------------------------------------
 
 return function()
-	local result = xpcall(love.boot, error_printer)
-	if not result then return 1 end
-	local result = xpcall(love.init, deferErrhand)
-	if not result then return 1 end
-	local result, retval = xpcall(love.run, deferErrhand)
-	if not result then return 1 end
+	local func
+	local inerror = false
 
-	return retval == nil and 0 or retval
+	local function deferErrhand(...)
+		local errhand = love.errorhandler or love.errhand
+		local handler = (not inerror and errhand) or error_printer
+		inerror = true
+		func = handler(...)
+	end
+
+	local function earlyinit()
+		-- If love.boot fails, return 1 and finish immediately
+		local result = xpcall(love.boot, error_printer)
+		if not result then return 1 end
+
+		-- If love.init or love.run fails, don't return a value,
+		-- as we want the error handler to take over
+		result = xpcall(love.init, deferErrhand)
+		if not result then return end
+
+		-- NOTE: We can't assign to func directly, as we'd
+		-- overwrite the result of deferErrhand with nil on error
+		local main
+		result, main = xpcall(love.run, deferErrhand)
+		if result then
+			func = main
+		end
+	end
+
+	func = earlyinit
+
+	while func do
+		local _, retval = xpcall(func, deferErrhand)
+		if retval then return retval end
+		coroutine.yield()
+	end
+
+	return 1
 end

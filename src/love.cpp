@@ -252,8 +252,14 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	lua_pushstring(L, "love.boot");
 	lua_call(L, 1, 1);
 
-	// Call the returned boot function.
-	lua_call(L, 0, 1);
+	// Turn the returned boot function into a coroutine and call it until done.
+	lua_newthread(L);
+	lua_pushvalue(L, -2);
+	int stackpos = lua_gettop(L);
+	while (lua_resume(L, 0) == LUA_YIELD)
+	{
+		lua_pop(L, lua_gettop(L) - stackpos);
+	}
 
 	retval = 0;
 	DoneAction done = DONE_QUIT;
