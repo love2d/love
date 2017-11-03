@@ -123,6 +123,7 @@ function love.arg.parseOption(m, i)
 	if m.a > 0 then
 		m.arg = {}
 		for j=i,i+m.a-1 do
+			love.arg.optionIndices[j] = true
 			table.insert(m.arg, arg[j])
 		end
 	end
@@ -138,14 +139,18 @@ function love.arg.parseOptions()
 	local i = 1
 	while i <= argc do
 		-- Look for options.
-		local m = arg[i]:match("^%-%-(.+)")
+		local m = arg[i]:match("^%-%-(.*)")
 
-		if m and love.arg.options[m] then
+		if m and m ~= "" and love.arg.options[m] and not love.arg.options[m].set then
 			love.arg.optionIndices[i] = true
 			i = i + love.arg.parseOption(love.arg.options[m], i+1)
-		elseif not game then
+		elseif m == "" then -- handle '--' as an option
 			love.arg.optionIndices[i] = true
-			love.arg.options.game.index = i
+			if not game then -- handle '--' followed by game name
+				game = i + 1
+			end
+			break
+		elseif not game then
 			game = i
 		end
 		i = i + 1
@@ -289,10 +294,6 @@ function love.boot()
 	-- This is absolutely needed.
 	require("love.filesystem")
 
-	love.arg.parseOptions()
-
-	local o = love.arg.options
-
 	local arg0 = love.arg.getLow(arg)
 	love.filesystem.init(arg0)
 
@@ -305,11 +306,15 @@ function love.boot()
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
 
-	if can_has_game and love.arg.options.game.index ~= nil then
-		-- the game source is in the exe so we should pass the argument we
-		-- originally though was the game to the app
-		love.arg.optionIndices[love.arg.options.game.index] = false
+	-- It's a fused game, don't parse --game argument
+	if can_has_game then
+		love.arg.options.game.set = true
 	end
+
+	-- Parse options now that we know which options we're looking for.
+	love.arg.parseOptions()
+
+	local o = love.arg.options
 
 	local is_fused_game = can_has_game or love.arg.options.fused.set
 
