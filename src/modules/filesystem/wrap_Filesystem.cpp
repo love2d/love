@@ -531,7 +531,9 @@ int w_lines(lua_State *L)
 	else
 		return luaL_argerror(L, 1, "expected filename.");
 
-	lua_pushcclosure(L, w_File_lines_i, 1);
+	lua_pushstring(L, ""); // buffer
+	lua_pushstring(L, 0); // buffer offset
+	lua_pushcclosure(L, w_File_lines_i, 3);
 	return 1;
 }
 

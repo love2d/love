@@ -222,10 +222,12 @@ int w_File_seek(lua_State *L)
 
 int w_File_lines_i(lua_State *L)
 {
-	const int bufsize = 1024;
-	char buf[bufsize];
-	int linesize = 0;
-	bool newline = false;
+	// The upvalues:
+	//   - File
+	//   - read buffer (string)
+	//   - read buffer offset (number)
+	//   - file position (number, optional)
+	//   - restore userpos (bool, optional)
 
 	File *file = luax_checktype<File>(L, lua_upvalueindex(1));
 
@@ -233,99 +235,100 @@ int w_File_lines_i(lua_State *L)
 	if (file->getMode() != File::MODE_READ)
 		return luaL_error(L, "File needs to stay in read mode.");
 
-	int64 pos = file->tell();
-	int64 userpos = -1;
+	// Get the current (lua-side) buffer info
+	size_t len;
+	const char *buffer = lua_tolstring(L, lua_upvalueindex(2), &len);
+	int offset = lua_tointeger(L, lua_upvalueindex(3));
 
-	if (lua_isnoneornil(L, lua_upvalueindex(2)) == 0)
+	// Find our next line
+	const char *start = buffer+offset;
+	const char *end = reinterpret_cast<const char*>(memchr(start, '\n', len-offset));
+
+	// If there are no more lines in the buffer, keep adding more data until we
+	// found another line or EOF
+	if (!end && !file->isEOF())
 	{
-		// User may have changed the file position.
-		userpos = pos;
-		pos = (int64) lua_tonumber(L, lua_upvalueindex(2));
-		if (userpos != pos)
-			file->seek(pos);
-	}
+		const int readbufsize = 1024;
+		char readbuf[readbufsize];
 
-	while (!newline && !file->isEOF())
-	{
-		// This 64-bit to 32-bit integer cast should be safe as it never exceeds bufsize.
-		int read = (int) file->read(buf, bufsize);
-		if (read < 0)
-			return luaL_error(L, "Could not read from file.");
+		// Build new buffer
+		luaL_Buffer storage;
+		luaL_buffinit(L, &storage);
+		luaL_addlstring(&storage, start, len-offset);
 
-		linesize += read;
-
-		for (int i = 0; i < read; i++)
+		// If the user has changed the position, we need to seek back first
+		int64 pos = file->tell();
+		int64 userpos = -1;
+		if (!lua_isnoneornil(L, lua_upvalueindex(4)))
 		{
-			if (buf[i] == '\n')
-			{
-				linesize -= read - i;
-				newline = true;
-				break;
-			}
+			userpos = pos;
+			pos = (int64) lua_tonumber(L, lua_upvalueindex(4));
+			if (userpos != pos)
+				file->seek(pos);
+			else
+				userpos = -1;
 		}
-	}
 
-	if (newline || (file->isEOF() && linesize > 0))
-	{
-		if (linesize < bufsize)
+		// Keep reading until newline or EOF
+		while (!file->isEOF())
 		{
-			// We have the line in the buffer on the stack. No 'new' and 'read' needed.
-			lua_pushlstring(L, buf, linesize > 0 && buf[linesize - 1] == '\r' ? linesize - 1 : linesize);
-			if (userpos < 0)
-				file->seek(pos + linesize + 1);
-		}
-		else
-		{
-			char *str = 0;
-			try
-			{
-				str = new char[linesize + 1];
-			}
-			catch(std::bad_alloc &)
-			{
-				// Can't lua_error (longjmp) in exception handlers.
-			}
-
-			if (!str)
-				return luaL_error(L, "Out of memory.");
-
-			file->seek(pos);
-
-			// Read the \n anyway and save us a call to seek.
-			if (file->read(str, linesize + 1) == -1)
-			{
-				delete [] str;
+			int read = (int) file->read(readbuf, readbufsize);
+			if (read < 0)
 				return luaL_error(L, "Could not read from file.");
-			}
 
-			lua_pushlstring(L, str, str[linesize - 1] == '\r' ? linesize - 1 : linesize);
-			delete [] str;
+			luaL_addlstring(&storage, readbuf, read);
+
+			// If we found a newline now, break
+			if (memchr(readbuf, '\n', read))
+				break;
 		}
 
-		if (userpos >= 0)
-		{
-			// Save new position in upvalue.
-			lua_pushnumber(L, (lua_Number)(pos + linesize + 1));
-			lua_replace(L, lua_upvalueindex(2));
+		// Possibly seek back to the user position
+		if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(5)))
 			file->seek(userpos);
-		}
 
-		return 1;
+		// We've now got a new buffer, replace the old one
+		luaL_pushresult(&storage);
+		lua_replace(L, lua_upvalueindex(2));
+		buffer = lua_tolstring(L, lua_upvalueindex(2), &len);
+		offset = 0;
+		start = buffer;
+		end = reinterpret_cast<const char*>(memchr(start, '\n', len));
 	}
 
-	// EOF reached.
-	if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(3)))
-		file->seek(userpos);
-	else
-		file->close();
+	if (!end && file->isEOF())
+		end = buffer+len-1;
 
-	return 0;
+	// We've found the next line, update our offset upvalue and return
+	offset = end-buffer+1;
+	lua_pushinteger(L, offset);
+	lua_replace(L, lua_upvalueindex(3));
+
+	// If we're past the end, terminate (as we must be at EOF)
+	if (start == buffer+len)
+	{
+		file->close();
+		return 0;
+	}
+
+	// Unless we're at EOF, end points at '\n', so let's take that (and an
+	// optional '\r') off
+	if (end >= start && *end == '\n')
+		--end;
+	if (end >= start && *end == '\r')
+		--end;
+
+	// Note: inclusive because *end contains the last character in the string
+	lua_pushlstring(L, start, end-start+1);
+	return 1;
 }
 
 int w_File_lines(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
 
+	lua_pushstring(L, ""); // buffer
+	lua_pushnumber(L, 0); // buffer offset
 	lua_pushnumber(L, 0); // File position.
 	luax_pushboolean(L, file->getMode() != File::MODE_CLOSED); // Save current file mode.
 
@@ -341,7 +344,7 @@ int w_File_lines(lua_State *L)
 			return luaL_error(L, "Could not open file.");
 	}
 
-	lua_pushcclosure(L, w_File_lines_i, 3);
+	lua_pushcclosure(L, w_File_lines_i, 5);
 	return 1;
 }
 
