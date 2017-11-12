@@ -24,6 +24,7 @@
 #include "FenceSync.h"
 #include "graphics/Volatile.h"
 #include "common/Exception.h"
+#include "common/memory.h"
 
 #include <vector>
 #include <algorithm>
@@ -427,11 +428,121 @@ private:
 
 }; // StreamBufferPersistentMapSync
 
+class StreamBufferPinnedMemory final : public StreamBufferSync, public Volatile
+{
+public:
+
+	StreamBufferPinnedMemory(BufferType type, size_t size)
+		: StreamBufferSync(type, size)
+		, vbo(0)
+		, glMode(OpenGL::getGLBufferType(mode))
+		, data(nullptr)
+		, alignedSize(0)
+	{
+		size_t alignment = getPageSize();
+		alignedSize = alignUp(size * BUFFER_FRAMES, alignment);
+
+		if (!alignedMalloc((void **) &data, alignedSize, alignment))
+			throw love::Exception("Out of memory.");
+
+		loadVolatile();
+	}
+
+	~StreamBufferPinnedMemory()
+	{
+		unloadVolatile();
+		alignedFree(data);
+	}
+
+	size_t getUsableSize() const override
+	{
+		return bufferSize - frameGPUReadOffset;
+	}
+
+	MapInfo map(size_t /*minsize*/) override
+	{
+		MapInfo info;
+		info.size = bufferSize - frameGPUReadOffset;
+		info.data = data + (frameIndex * bufferSize) + frameGPUReadOffset;
+
+		int firstSyncIndex = frameGPUReadOffset / syncSize;
+		int lastSyncIndex = (bufferSize - 1) / syncSize;
+
+		// We're mapping the full range of space left in the buffer, so we
+		// need to wait on all of it...
+		// FIXME: is it even worth it to have multiple sync objects per frame?
+		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
+			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
+
+		return info;
+	}
+
+	size_t unmap(size_t usedsize) override
+	{
+		size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
+
+		gl.bindBuffer(mode, vbo);
+		glFlushMappedBufferRange(glMode, offset, usedsize);
+
+		return offset;
+	}
+
+	ptrdiff_t getHandle() const override { return vbo; }
+
+	bool loadVolatile() override
+	{
+		if (vbo != 0)
+			return true;
+
+		glGenBuffers(1, &vbo);
+
+		glBindBuffer(GL_EXTERNAL_VIRTUAL_MEMORY_BUFFER_AMD, vbo);
+		glBufferData(GL_EXTERNAL_VIRTUAL_MEMORY_BUFFER_AMD, alignedSize, data, GL_STREAM_DRAW);
+
+		frameGPUReadOffset = 0;
+		frameIndex = 0;
+
+		return true;
+	}
+
+	void unloadVolatile() override
+	{
+		if (vbo != 0)
+		{
+			// Make sure the GPU has completed work using the memory before
+			// freeing it. TODO: Do we need a full glFinish() or is this
+			// sufficient?
+			glFlush();
+			for (FenceSync &sync : syncs)
+				sync.cpuWait();
+
+			gl.bindBuffer(mode, vbo);
+			gl.deleteBuffer(vbo);
+			vbo = 0;
+		}
+
+		for (FenceSync &sync : syncs)
+			sync.cleanup();
+	}
+
+private:
+
+	GLuint vbo;
+	GLenum glMode;
+	uint8 *data;
+	size_t alignedSize;
+
+}; // StreamBufferPinnedMemory
+
 love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 {
 	if (gl.isCoreProfile())
 	{
-		if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
+		// AMD's pinned memory seems to be faster than persistent mapping, on
+		// AMD GPUs.
+		if (GLAD_AMD_pinned_memory)
+			return new StreamBufferPinnedMemory(mode, size);
+		else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
 			return new StreamBufferPersistentMapSync(mode, size);
 		else
 			return new StreamBufferSubDataOrphan(mode, size);

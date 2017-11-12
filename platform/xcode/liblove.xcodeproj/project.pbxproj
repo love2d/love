@@ -885,6 +885,9 @@
 		FA4F2C121DE936FE00CA37D7 /* unixtcp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCF1D9F6D490055D849 /* unixtcp.c */; };
 		FA4F2C131DE936FE00CA37D7 /* unixudp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD11D9F6D490055D849 /* unixudp.c */; };
 		FA4F2C141DE936FE00CA37D7 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
+		FA56AA381FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
+		FA56AA391FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
+		FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = FA56AA371FAFF02000A43D5F /* memory.h */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
@@ -1772,6 +1775,8 @@
 		FA4F2BE01DE6650600CA37D7 /* Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Transform.h; sourceTree = "<group>"; };
 		FA4F2BE11DE6650600CA37D7 /* wrap_Transform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Transform.cpp; sourceTree = "<group>"; };
 		FA4F2BE21DE6650600CA37D7 /* wrap_Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Transform.h; sourceTree = "<group>"; };
+		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
+		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
@@ -2084,6 +2089,8 @@
 				FA0B79031A958E3B000E1D17 /* Matrix.h */,
 				FA0B79041A958E3B000E1D17 /* Memoizer.cpp */,
 				FA0B79051A958E3B000E1D17 /* Memoizer.h */,
+				FA56AA361FAFF02000A43D5F /* memory.cpp */,
+				FA56AA371FAFF02000A43D5F /* memory.h */,
 				FA0B79061A958E3B000E1D17 /* Module.cpp */,
 				FA0B79071A958E3B000E1D17 /* Module.h */,
 				FA0B79081A958E3B000E1D17 /* Object.cpp */,
@@ -3687,6 +3694,7 @@
 				FA9D8DDB1DEF8411002CD881 /* Stream.h in Headers */,
 				FA0B7AA91A958EA3000E1D17 /* b2RopeJoint.h in Headers */,
 				FACA02F71F5E396B0084B28F /* wrap_DataModule.h in Headers */,
+				FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */,
 				FA0B7E441A95902C000E1D17 /* wrap_CircleShape.h in Headers */,
 				FA0B7EB41A95902C000E1D17 /* System.h in Headers */,
 				FAF1405A1E20934C00F898D2 /* ConstantUnion.h in Headers */,
@@ -4195,6 +4203,7 @@
 				FA1583E21E196180005E603B /* wrap_Shader.cpp in Sources */,
 				FA0B7AB91A958EA3000E1D17 /* enet.cpp in Sources */,
 				FA0B7E281A95902C000E1D17 /* PulleyJoint.cpp in Sources */,
+				FA56AA391FAFF02000A43D5F /* memory.cpp in Sources */,
 				FA0B7A4C1A958EA3000E1D17 /* b2BlockAllocator.cpp in Sources */,
 				FAF1409E1E20934C00F898D2 /* reflection.cpp in Sources */,
 				FA15DFAE1F9B8D360042AB22 /* lutf8lib.c in Sources */,
@@ -4561,6 +4570,7 @@
 				FA0B7E271A95902C000E1D17 /* PulleyJoint.cpp in Sources */,
 				FA1BA0B71E17043400AA2803 /* wrap_Shader.cpp in Sources */,
 				FA0B7B301A958EA3000E1D17 /* wuff.c in Sources */,
+				FA56AA381FAFF02000A43D5F /* memory.cpp in Sources */,
 				FA0B7E031A95902C000E1D17 /* Contact.cpp in Sources */,
 				FA0B7D821A95902C000E1D17 /* CompressedImageData.cpp in Sources */,
 				FAF1409D1E20934C00F898D2 /* reflection.cpp in Sources */,

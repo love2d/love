@@ -274,6 +274,8 @@ set(LOVE_SRC_COMMON
 	src/common/Matrix.h
 	src/common/Memoizer.cpp
 	src/common/Memoizer.h
+	src/common/memory.cpp
+	src/common/memory.h
 	src/common/Module.cpp
 	src/common/Module.h
 	src/common/Object.cpp
