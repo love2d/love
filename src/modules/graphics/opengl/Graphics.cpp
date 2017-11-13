@@ -287,8 +287,8 @@ void Graphics::unSetMode()
 	for (const auto &pair : framebufferObjects)
 		gl.deleteFramebuffer(pair.second);
 
-	for (auto c : temporaryCanvases)
-		c->release();
+	for (auto temp : temporaryCanvases)
+		temp.canvas->release();
 
 	framebufferObjects.clear();
 	temporaryCanvases.clear();
@@ -924,6 +924,19 @@ void Graphics::present(void *screenshotCallbackData)
 	gl.stats.shaderSwitches = 0;
 	canvasSwitchCount = 0;
 	drawCallsBatched = 0;
+
+	// This assumes temporary canvases will only be used within a render pass.
+	for (int i = (int) temporaryCanvases.size() - 1; i >= 0; i--)
+	{
+		if (temporaryCanvases[i].framesSinceUse >= MAX_TEMPORARY_CANVAS_UNUSED_FRAMES)
+		{
+			temporaryCanvases[i].canvas->release();
+			temporaryCanvases[i] = temporaryCanvases.back();
+			temporaryCanvases.pop_back();
+		}
+		else
+			temporaryCanvases[i].framesSinceUse++;
+	}
 }
 
 void Graphics::setScissor(const Rect &rect)

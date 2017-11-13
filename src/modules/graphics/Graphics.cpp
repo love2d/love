@@ -728,12 +728,14 @@ Canvas *Graphics::getTemporaryCanvas(PixelFormat format, int w, int h, int sampl
 {
 	love::graphics::Canvas *canvas = nullptr;
 
-	for (Canvas *c : temporaryCanvases)
+	for (TemporaryCanvas &temp : temporaryCanvases)
 	{
+		Canvas *c = temp.canvas;
 		if (c->getPixelFormat() == format && c->getPixelWidth() == w
 			&& c->getPixelHeight() == h && c->getRequestedMSAA() == samples)
 		{
 			canvas = c;
+			temp.framesSinceUse = 0;
 			break;
 		}
 	}
@@ -748,7 +750,7 @@ Canvas *Graphics::getTemporaryCanvas(PixelFormat format, int w, int h, int sampl
 
 		canvas = newCanvas(settings);
 
-		temporaryCanvases.push_back(canvas);
+		temporaryCanvases.emplace_back(canvas);
 	}
 
 	return canvas;

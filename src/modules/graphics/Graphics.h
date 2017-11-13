@@ -880,6 +880,17 @@ protected:
 		}
 	};
 
+	struct TemporaryCanvas
+	{
+		Canvas *canvas;
+		int framesSinceUse;
+
+		TemporaryCanvas(Canvas *c)
+			: canvas(c)
+			, framesSinceUse(0)
+		{}
+	};
+
 	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
@@ -922,7 +933,7 @@ protected:
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypeStack;
 
-	std::vector<Canvas *> temporaryCanvases;
+	std::vector<TemporaryCanvas> temporaryCanvases;
 
 	int canvasSwitchCount;
 	int drawCallsBatched;
@@ -932,6 +943,7 @@ protected:
 	Deprecations deprecations;
 
 	static const size_t MAX_USER_STACK_DEPTH = 64;
+	static const int MAX_TEMPORARY_CANVAS_UNUSED_FRAMES = 16;
 
 private:
 
