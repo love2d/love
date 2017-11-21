@@ -479,10 +479,22 @@ int w_maximize(lua_State *)
 	return 0;
 }
 
+int w_restore(lua_State *)
+{
+	instance()->restore();
+	return 0;
+}
+
 int w_isMaximized(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isMaximized());
-	return 0;
+	return 1;
+}
+
+int w_isMinimized(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isMinimized());
+	return 1;
 }
 
 int w_showMessageBox(lua_State *L)
@@ -586,7 +598,9 @@ static const luaL_Reg functions[] =
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },
 	{ "maximize", w_maximize },
+	{ "restore", w_restore },
 	{ "isMaximized", w_isMaximized },
+	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },
 	{ "requestAttention", w_requestAttention },
 	{ 0, 0 }

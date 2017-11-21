@@ -77,8 +77,10 @@ public:
 
 	void minimize();
 	void maximize();
+	void restore();
 
 	bool isMaximized() const;
+	bool isMinimized() const;
 
 	void swapBuffers();
 

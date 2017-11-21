@@ -914,9 +914,23 @@ void Window::maximize()
 	}
 }
 
+void Window::restore()
+{
+	if (window != nullptr)
+	{
+		SDL_RestoreWindow(window);
+		updateSettings(settings, true);
+	}
+}
+
 bool Window::isMaximized() const
 {
 	return window != nullptr && (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED);
+}
+
+bool Window::isMinimized() const
+{
+	return window != nullptr && (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED);
 }
 
 void Window::swapBuffers()
