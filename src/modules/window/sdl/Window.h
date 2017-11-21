@@ -41,83 +41,83 @@ public:
 	Window();
 	~Window();
 
-	void setGraphics(graphics::Graphics *graphics);
+	void setGraphics(graphics::Graphics *graphics) override;
 
-	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr);
-	void getWindow(int &width, int &height, WindowSettings &settings);
+	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) override;
+	void getWindow(int &width, int &height, WindowSettings &settings) override;
 
-	void close();
+	void close() override;
 
-	bool setFullscreen(bool fullscreen, FullscreenType fstype);
-	bool setFullscreen(bool fullscreen);
+	bool setFullscreen(bool fullscreen, FullscreenType fstype) override;
+	bool setFullscreen(bool fullscreen) override;
 
-	bool onSizeChanged(int width, int height);
+	bool onSizeChanged(int width, int height) override;
 
-	int getDisplayCount() const;
+	int getDisplayCount() const override;
 
-	const char *getDisplayName(int displayindex) const;
+	const char *getDisplayName(int displayindex) const override;
 
-	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
+	std::vector<WindowSize> getFullscreenSizes(int displayindex) const override;
 
-	void getDesktopDimensions(int displayindex, int &width, int &height) const;
+	void getDesktopDimensions(int displayindex, int &width, int &height) const override;
 
-	void setPosition(int x, int y, int displayindex);
-	void getPosition(int &x, int &y, int &displayindex);
+	void setPosition(int x, int y, int displayindex) override;
+	void getPosition(int &x, int &y, int &displayindex) override;
 
-	bool isOpen() const;
+	bool isOpen() const override;
 
-	void setWindowTitle(const std::string &title);
-	const std::string &getWindowTitle() const;
+	void setWindowTitle(const std::string &title) override;
+	const std::string &getWindowTitle() const override;
 
-	bool setIcon(love::image::ImageData *imgd);
-	love::image::ImageData *getIcon();
+	bool setIcon(love::image::ImageData *imgd) override;
+	love::image::ImageData *getIcon() override;
 
-	void setDisplaySleepEnabled(bool enable);
-	bool isDisplaySleepEnabled() const;
+	void setDisplaySleepEnabled(bool enable) override;
+	bool isDisplaySleepEnabled() const override;
 
-	void minimize();
-	void maximize();
-	void restore();
+	void minimize() override;
+	void maximize() override;
+	void restore() override;
 
-	bool isMaximized() const;
-	bool isMinimized() const;
+	bool isMaximized() const override;
+	bool isMinimized() const override;
 
-	void swapBuffers();
+	void swapBuffers() override;
 
-	bool hasFocus() const;
-	bool hasMouseFocus() const;
+	bool hasFocus() const override;
+	bool hasMouseFocus() const override;
 
-	bool isVisible() const;
+	bool isVisible() const override;
 
-	void setMouseGrab(bool grab);
-	bool isMouseGrabbed() const;
+	void setMouseGrab(bool grab) override;
+	bool isMouseGrabbed() const override;
 
-	int getWidth() const;
-	int getHeight() const;
-	int getPixelWidth() const;
-	int getPixelHeight() const;
+	int getWidth() const override;
+	int getHeight() const override;
+	int getPixelWidth() const override;
+	int getPixelHeight() const override;
 
-	void windowToPixelCoords(double *x, double *y) const;
-	void pixelToWindowCoords(double *x, double *y) const;
+	void windowToPixelCoords(double *x, double *y) const override;
+	void pixelToWindowCoords(double *x, double *y) const override;
 
-	void windowToDPICoords(double *x, double *y) const;
-	void DPIToWindowCoords(double *x, double *y) const;
+	void windowToDPICoords(double *x, double *y) const override;
+	void DPIToWindowCoords(double *x, double *y) const override;
 
-	double getDPIScale() const;
+	double getDPIScale() const override;
 
-	double toPixels(double x) const;
-	void toPixels(double wx, double wy, double &px, double &py) const;
-	double fromPixels(double x) const;
-	void fromPixels(double px, double py, double &wx, double &wy) const;
+	double toPixels(double x) const override;
+	void toPixels(double wx, double wy, double &px, double &py) const override;
+	double fromPixels(double x) const override;
+	void fromPixels(double px, double py, double &wx, double &wy) const override;
 
-	const void *getHandle() const;
+	const void *getHandle() const override;
 
-	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow);
-	int showMessageBox(const MessageBoxData &data);
+	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) override;
+	int showMessageBox(const MessageBoxData &data) override;
 
-	void requestAttention(bool continuous);
+	void requestAttention(bool continuous) override;
 
-	const char *getName() const;
+	const char *getName() const override;
 
 private:
 
