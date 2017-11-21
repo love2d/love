@@ -264,7 +264,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
 			lua_rawgeti(L, 1, i);
-			color[i - 1] = (float) luaL_checknumber(L, -1);
+			color[i - 1] = (float) luax_checknumberclamped01(L, -1);
 			numcomponents++;
 		}
 
@@ -275,7 +275,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 		int n = lua_gettop(L);
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
-			color[i - 1] = (float) luaL_checknumber(L, i);
+			color[i - 1] = (float) luax_checknumberclamped01(L, i);
 			numcomponents++;
 		}
 	}

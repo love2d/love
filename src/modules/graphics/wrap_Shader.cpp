@@ -52,13 +52,13 @@ static int _getCount(lua_State *L, int startidx, const Shader::UniformInfo *info
 	return std::min(std::max(lua_gettop(L) - startidx + 1, 1), info->count);
 }
 
-template <typename T>
+template <typename T, typename luaT, luaT (*checknum)(lua_State *, int)>
 static void _updateNumbers(lua_State *L, int startidx, T *values, int components, int count)
 {
 	if (components == 1)
 	{
 		for (int i = 0; i < count; ++i)
-			values[i] = (T) luaL_checknumber(L, startidx + i);
+			values[i] = (T) checknum(L, startidx + i);
 	}
 	else
 	{
@@ -69,7 +69,7 @@ static void _updateNumbers(lua_State *L, int startidx, T *values, int components
 			for (int k = 1; k <= components; k++)
 			{
 				lua_rawgeti(L, startidx + i, k);
-				values[i * components + k - 1] = (T) luaL_checknumber(L, -1);
+				values[i * components + k - 1] = (T) checknum(L, -1);
 			}
 
 			lua_pop(L, components);
@@ -83,7 +83,10 @@ int w_Shader_sendFloats(lua_State *L, int startidx, Shader *shader, const Shader
 	int components = info->components;
 	float *values = info->floats;
 
-	_updateNumbers(L, startidx, values, components, count);
+	if (colors)
+		_updateNumbers<float, lua_Number, luax_checknumberclamped01>(L, startidx, values, components, count);
+	else
+		_updateNumbers<float, lua_Number, luaL_checknumber>(L, startidx, values, components, count);
 
 	if (colors && graphics::isGammaCorrect())
 	{
@@ -104,7 +107,7 @@ int w_Shader_sendFloats(lua_State *L, int startidx, Shader *shader, const Shader
 int w_Shader_sendInts(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
 	int count = _getCount(L, startidx, info);
-	_updateNumbers(L, startidx, info->ints, info->components, count);
+	_updateNumbers<int, lua_Integer, luaL_checkinteger>(L, startidx, info->ints, info->components, count);
 	luax_catchexcept(L, [&]() { shader->updateUniform(info, count); });
 	return 0;
 }
@@ -112,7 +115,7 @@ int w_Shader_sendInts(lua_State *L, int startidx, Shader *shader, const Shader::
 int w_Shader_sendUnsignedInts(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
 {
 	int count = _getCount(L, startidx, info);
-	_updateNumbers(L, startidx, info->uints, info->components, count);
+	_updateNumbers<unsigned int, lua_Integer, luaL_checkinteger>(L, startidx, info->uints, info->components, count);
 	luax_catchexcept(L, [&]() { shader->updateUniform(info, count); });
 	return 0;
 }

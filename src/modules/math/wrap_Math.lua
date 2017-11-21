@@ -26,6 +26,11 @@ local love_math, ffifuncspointer = ...
 
 local type, tonumber, error = type, tonumber, error
 local floor = math.floor
+local min, max = math.min, math.max
+
+local function clamp01(x)
+	return min(max(x, 0), 1)
+end
 
 local rng = love_math._getRandomGenerator()
 
@@ -95,7 +100,7 @@ end
 
 local function gammaToLinear(c)
 	if c ~= nil then
-		return tonumber(ffifuncs.gammaToLinear(c))
+		return tonumber(ffifuncs.gammaToLinear(clamp01(c)))
 	end
 	return c
 end
@@ -110,7 +115,7 @@ end
 
 local function linearToGamma(c)
 	if c ~= nil then
-		return tonumber(ffifuncs.linearToGamma(c))
+		return tonumber(ffifuncs.linearToGamma(clamp01(c)))
 	end
 	return c
 end

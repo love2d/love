@@ -88,22 +88,20 @@ int w_ImageData_getDimensions(lua_State *L)
 	return 2;
 }
 
-// TODO: rgba16f
-
 static void luax_checkpixel_rgba8(lua_State *L, int startidx, Pixel &p)
 {
 	for (int i = 0; i < 3; i++)
-		p.rgba8[i] = (uint8) (luaL_checknumber(L, startidx + i) * 255.0);
+		p.rgba8[i] = (uint8) (luax_checknumberclamped01(L, startidx + i) * 255.0);
 
-	p.rgba8[3] = (uint8) (luaL_optnumber(L, startidx + 3, 1.0) * 255.0);
+	p.rgba8[3] = (uint8) (luax_optnumberclamped01(L, startidx + 3, 1.0) * 255.0);
 }
 
 static void luax_checkpixel_rgba16(lua_State *L, int startidx, Pixel &p)
 {
 	for (int i = 0; i < 3; i++)
-		p.rgba16[i] = (uint16) (luaL_checknumber(L, startidx + i) * 65535.0);
+		p.rgba16[i] = (uint16) (luax_checknumberclamped01(L, startidx + i) * 65535.0);
 
-	p.rgba16[3] = (uint16) (luaL_optnumber(L, startidx + 3, 1.0) * 65535.0);
+	p.rgba16[3] = (uint16) (luax_optnumberclamped01(L, startidx + 3, 1.0) * 65535.0);
 }
 
 static void luax_checkpixel_rgba16f(lua_State *L, int startidx, Pixel &p)

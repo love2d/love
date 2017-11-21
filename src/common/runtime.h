@@ -22,6 +22,7 @@
 #define LOVE_RUNTIME_H
 
 // LOVE
+#include "config.h"
 #include "types.h"
 #include "deprecation.h"
 
@@ -35,6 +36,7 @@ extern "C" {
 
 // C++
 #include <exception>
+#include <algorithm>
 
 namespace love
 {
@@ -202,6 +204,16 @@ inline float luax_tofloat(lua_State *L, int idx)
 inline float luax_checkfloat(lua_State *L, int idx)
 {
 	return static_cast<float>(luaL_checknumber(L, idx));
+}
+
+inline lua_Number luax_checknumberclamped01(lua_State *L, int idx)
+{
+	return std::min(std::max(luaL_checknumber(L, idx), 0.0), 1.0);
+}
+
+inline lua_Number luax_optnumberclamped01(lua_State *L, int idx, double def)
+{
+	return std::min(std::max(luaL_optnumber(L, idx, def), 0.0), 1.0);
 }
 
 /**

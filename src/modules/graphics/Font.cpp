@@ -947,7 +947,7 @@ bool Font::hasGlyph(uint32 glyph) const
 		if (r->hasGlyph(glyph))
 			return true;
 	}
-	
+
 	return false;
 }
 
@@ -955,7 +955,7 @@ bool Font::hasGlyphs(const std::string &text) const
 {
 	if (text.size() == 0)
 		return false;
-	
+
 	try
 	{
 		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
@@ -973,7 +973,7 @@ bool Font::hasGlyphs(const std::string &text) const
 	{
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
-	
+
 	return true;
 }
 
@@ -984,9 +984,9 @@ void Font::setFallbacks(const std::vector<Font *> &fallbacks)
 		if (f->rasterizers[0]->getDataType() != this->rasterizers[0]->getDataType())
 			throw love::Exception("Font fallbacks must be of the same font type.");
 	}
-	
+
 	rasterizers.resize(1);
-	
+
 	// NOTE: this won't invalidate already-rasterized glyphs.
 	for (const Font *f : fallbacks)
 		rasterizers.push_back(f->rasterizers[0]);

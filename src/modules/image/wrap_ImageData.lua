@@ -28,9 +28,14 @@ local ImageData = ImageData_mt.__index
 local tonumber, assert, error = tonumber, assert, error
 local type, pcall = type, pcall
 local floor = math.floor
+local min, max = math.min, math.max
 
 local function inside(x, y, w, h)
 	return x >= 0 and x < w and y >= 0 and y < h
+end
+
+local function clamp01(x)
+	return min(max(x, 0), 1)
 end
 
 -- Implement thread-safe ImageData:mapPixel regardless of whether the FFI is
@@ -111,10 +116,10 @@ local conversions = {
 			return tonumber(self.r) / 255, tonumber(self.g) / 255, tonumber(self.b) / 255, tonumber(self.a) / 255
 		end,
 		fromlua = function(self, r, g, b, a)
-			self.r = r * 255
-			self.g = g * 255
-			self.b = b * 255
-			self.a = a == nil and 255 or a * 255
+			self.r = clamp01(r) * 255
+			self.g = clamp01(g) * 255
+			self.b = clamp01(b) * 255
+			self.a = a == nil and 255 or clamp01(a) * 255
 		end,
 	},
 	rgba16 = {
@@ -123,10 +128,10 @@ local conversions = {
 			return tonumber(self.r) / 65535, tonumber(self.g) / 65535, tonumber(self.b) / 65535, tonumber(self.a) / 65535
 		end,
 		fromlua = function(self, r, g, b, a)
-			self.r = r * 65535
-			self.g = g * 65535
-			self.b = b * 65535
-			self.a = a == nil and 65535 or a * 65535
+			self.r = clamp01(r) * 65535
+			self.g = clamp01(g) * 65535
+			self.b = clamp01(b) * 65535
+			self.a = a == nil and 65535 or clamp01(a) * 65535
 		end,
 	},
 	rgba16f = {

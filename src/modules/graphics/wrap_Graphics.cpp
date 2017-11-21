@@ -2445,10 +2445,10 @@ int w_points(lua_State *L)
 				positions[i].x = luax_checkfloat(L, -6);
 				positions[i].y = luax_checkfloat(L, -5);
 
-				colors[i].r = (float) luaL_optnumber(L, -4, 1.0);
-				colors[i].g = (float) luaL_optnumber(L, -3, 1.0);
-				colors[i].b = (float) luaL_optnumber(L, -2, 1.0);
-				colors[i].a = (float) luaL_optnumber(L, -1, 1.0);
+				colors[i].r = (float) luax_optnumberclamped01(L, -4, 1.0);
+				colors[i].g = (float) luax_optnumberclamped01(L, -3, 1.0);
+				colors[i].b = (float) luax_optnumberclamped01(L, -2, 1.0);
+				colors[i].a = (float) luax_optnumberclamped01(L, -1, 1.0);
 
 				lua_pop(L, 7);
 			}

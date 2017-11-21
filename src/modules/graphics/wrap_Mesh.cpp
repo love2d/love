@@ -42,7 +42,7 @@ static inline size_t writeUnorm8Data(lua_State *L, int startidx, int components,
 	uint8 *componentdata = (uint8 *) data;
 
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (uint8) (luaL_optnumber(L, startidx + i, 1.0) * 255.0);
+		componentdata[i] = (uint8) (luax_optnumberclamped01(L, startidx + i, 1.0) * 255.0);
 
 	return sizeof(uint8) * components;
 }
@@ -52,7 +52,7 @@ static inline size_t writeUnorm16Data(lua_State *L, int startidx, int components
 	uint16 *componentdata = (uint16 *) data;
 
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (uint16) (luaL_optnumber(L, startidx + i, 1.0) * 65535.0);
+		componentdata[i] = (uint16) (luax_optnumberclamped01(L, startidx + i, 1.0) * 65535.0);
 
 	return sizeof(uint16) * components;
 }
