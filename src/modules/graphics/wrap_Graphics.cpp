@@ -1454,10 +1454,10 @@ static Mesh *newStandardMesh(lua_State *L)
 			v.s = (float) luaL_optnumber(L, -6, 0.0);
 			v.t = (float) luaL_optnumber(L, -5, 0.0);
 
-			v.color.r = (unsigned char) (luaL_optnumber(L, -4, 1.0) * 255.0);
-			v.color.g = (unsigned char) (luaL_optnumber(L, -3, 1.0) * 255.0);
-			v.color.b = (unsigned char) (luaL_optnumber(L, -2, 1.0) * 255.0);
-			v.color.a = (unsigned char) (luaL_optnumber(L, -1, 1.0) * 255.0);
+			v.color.r = (unsigned char) (luax_optnumberclamped01(L, -4, 1.0) * 255.0);
+			v.color.g = (unsigned char) (luax_optnumberclamped01(L, -3, 1.0) * 255.0);
+			v.color.b = (unsigned char) (luax_optnumberclamped01(L, -2, 1.0) * 255.0);
+			v.color.a = (unsigned char) (luax_optnumberclamped01(L, -1, 1.0) * 255.0);
 
 			lua_pop(L, 9);
 			vertices.push_back(v);
