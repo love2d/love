@@ -365,7 +365,9 @@ int w_getPosition(lua_State *L)
 int w_setIcon(lua_State *L)
 {
 	image::ImageData *i = luax_checktype<image::ImageData>(L, 1);
-	luax_pushboolean(L, instance()->setIcon(i));
+	bool success = false;
+	luax_catchexcept(L, [&]() { success = instance()->setIcon(i); });
+	luax_pushboolean(L, success);
 	return 1;
 }
 

@@ -842,6 +842,9 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	if (!imgd)
 		return false;
 
+	if (imgd->getFormat() != PIXELFORMAT_RGBA8)
+		throw love::Exception("setIcon only accepts 32-bit RGBA images.");
+
 	icon.set(imgd);
 
 	if (!window)
@@ -862,14 +865,15 @@ bool Window::setIcon(love::image::ImageData *imgd)
 
 	int w = imgd->getWidth();
 	int h = imgd->getHeight();
-	int pitch = imgd->getWidth() * 4;
+	int bytesperpixel = (int) getPixelFormatSize(imgd->getFormat());
+	int pitch = w * bytesperpixel;
 
 	SDL_Surface *sdlicon = nullptr;
 
 	{
 		// We don't want another thread modifying the ImageData mid-copy.
 		love::thread::Lock lock(imgd->getMutex());
-		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
+		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
 	}
 
 	if (!sdlicon)
