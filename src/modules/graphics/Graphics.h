@@ -942,7 +942,7 @@ protected:
 
 	Deprecations deprecations;
 
-	static const size_t MAX_USER_STACK_DEPTH = 64;
+	static const size_t MAX_USER_STACK_DEPTH = 128;
 	static const int MAX_TEMPORARY_CANVAS_UNUSED_FRAMES = 16;
 
 private:
