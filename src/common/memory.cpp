@@ -38,7 +38,7 @@ bool alignedMalloc(void **mem, size_t size, size_t alignment)
 	*mem = _aligned_malloc(size, alignment);
 	return *mem != nullptr;
 #else
-	return posix_memalign(mem, alignment, size) != 0;
+	return posix_memalign(mem, alignment, size) == 0;
 #endif
 }
 
