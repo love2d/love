@@ -405,6 +405,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 
 	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
 
+	flushStreamDraws();
 	endPass();
 
 	bindCachedFBO(rts);
@@ -499,6 +500,32 @@ void Graphics::endPass()
 			else
 				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
+	}
+
+	if (depthstencil != nullptr && depthstencil->getMSAA() > 1 && depthstencil->isReadable())
+	{
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, ((Canvas *) depthstencil)->getFBO());
+
+		if (GLAD_APPLE_framebuffer_multisample)
+			glResolveMultisampleFramebufferAPPLE();
+		else
+		{
+			int mip = rts.depthStencil.mipmap;
+			int w = depthstencil->getPixelWidth(mip);
+			int h = depthstencil->getPixelHeight(mip);
+			PixelFormat format = depthstencil->getPixelFormat();
+
+			GLbitfield mask = 0;
+
+			if (isPixelFormatDepth(format))
+				mask |= GL_DEPTH_BUFFER_BIT;
+			if (isPixelFormatStencil(format))
+				mask |= GL_STENCIL_BUFFER_BIT;
+
+			if (mask != 0)
+				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, mask, GL_NEAREST);
+		}
+
 	}
 
 	for (const auto &rt : rts.colors)
@@ -709,11 +736,13 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	}
 	else
 	{
-		int mip = targets.colors[0].mipmap;
-		int w = targets.colors[0].canvas->getPixelWidth(mip);
-		int h = targets.colors[0].canvas->getPixelHeight(mip);
-		int msaa = targets.colors[0].canvas->getMSAA();
-		int reqmsaa = targets.colors[0].canvas->getRequestedMSAA();
+		RenderTarget firstRT = targets.getFirstTarget();
+
+		int mip = firstRT.mipmap;
+		int w = firstRT.canvas->getPixelWidth(mip);
+		int h = firstRT.canvas->getPixelHeight(mip);
+		int msaa = firstRT.canvas->getMSAA();
+		int reqmsaa = firstRT.canvas->getRequestedMSAA();
 
 		RenderTarget depthstencil = targets.depthStencil;
 

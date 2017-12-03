@@ -347,6 +347,11 @@ public:
 			: depthStencil(nullptr)
 			, temporaryRTFlags(0)
 		{}
+
+		const RenderTarget &getFirstTarget() const
+		{
+			return colors.empty() ? depthStencil : colors[0];
+		}
 	};
 
 	struct RenderTargetsStrongRef
@@ -359,6 +364,11 @@ public:
 			: depthStencil(nullptr)
 			, temporaryRTFlags(0)
 		{}
+
+		const RenderTargetStrongRef &getFirstTarget() const
+		{
+			return colors.empty() ? depthStencil : colors[0];
+		}
 	};
 
 	struct DefaultShaderCode

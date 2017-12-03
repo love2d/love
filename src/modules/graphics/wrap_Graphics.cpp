@@ -300,11 +300,12 @@ int w_setCanvas(lua_State *L)
 		uint32 tempstencilflag = Graphics::TEMPORARY_RT_STENCIL;
 
 		lua_getfield(L, 1, "depthstencil");
-		if (lua_istable(L, -1))
+		int dstype = lua_type(L, -1);
+		if (dstype == LUA_TTABLE)
 			targets.depthStencil = checkRenderTarget(L, -1);
-		else if (lua_isboolean(L, -1))
+		else if (dstype == LUA_TBOOLEAN)
 			targets.temporaryRTFlags |= luax_toboolean(L, -1) ? (tempdepthflag | tempstencilflag) : 0;
-		else if (!lua_isnoneornil(L, -1))
+		else if (dstype != LUA_TNONE && dstype != LUA_TNIL)
 			targets.depthStencil.canvas = luax_checkcanvas(L, -1);
 		lua_pop(L, 1);
 
@@ -342,7 +343,7 @@ int w_setCanvas(lua_State *L)
 	}
 
 	luax_catchexcept(L, [&]() {
-		if (targets.colors.size() > 0)
+		if (targets.getFirstTarget().canvas != nullptr)
 			instance()->setCanvas(targets);
 		else
 			instance()->setCanvas();

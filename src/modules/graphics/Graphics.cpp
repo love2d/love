@@ -317,7 +317,7 @@ double Graphics::getCurrentDPIScale() const
 {
 	if (states.back().renderTargets.colors.size() > 0)
 	{
-		Canvas *c = states.back().renderTargets.colors[0].canvas;
+		Canvas *c = states.back().renderTargets.getFirstTarget().canvas.get();
 		return (double) c->getPixelHeight() / (double) c->getHeight();
 	}
 
@@ -555,8 +555,6 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 	if (ncanvases == 0 && rts.depthStencil.canvas == nullptr)
 		return setCanvas();
-	else if (ncanvases == 0)
-		throw love::Exception("At least one color render target is required when using a custom depth/stencil buffer.");
 
 	const auto &prevRTs = state.renderTargets;
 
@@ -592,20 +590,24 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (ncanvases > capabilities.limits[LIMIT_MULTI_CANVAS])
 		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
 
-	love::graphics::Canvas *firstcanvas = rts.colors[0].canvas;
+	RenderTarget firsttarget = rts.getFirstTarget();
+	love::graphics::Canvas *firstcanvas = firsttarget.canvas;
 
 	bool multiformatsupported = capabilities.features[FEATURE_MULTI_CANVAS_FORMATS];
-	PixelFormat firstformat = firstcanvas->getPixelFormat();
 
-	if (isPixelFormatDepthStencil(firstformat))
+	PixelFormat firstcolorformat = PIXELFORMAT_UNKNOWN;
+	if (!rts.colors.empty())
+		firstcolorformat = rts.colors[0].canvas->getPixelFormat();
+
+	if (isPixelFormatDepthStencil(firstcolorformat))
 		throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
 
-	if (rts.colors[0].mipmap < 0 || rts.colors[0].mipmap >= firstcanvas->getMipmapCount())
-		throw love::Exception("Invalid mipmap level %d.", rts.colors[0].mipmap + 1);
+	if (firsttarget.mipmap < 0 || firsttarget.mipmap >= firstcanvas->getMipmapCount())
+		throw love::Exception("Invalid mipmap level %d.", firsttarget.mipmap + 1);
 
-	bool hasSRGBcanvas = firstformat == PIXELFORMAT_sRGBA8;
-	int pixelw = firstcanvas->getPixelWidth(rts.colors[0].mipmap);
-	int pixelh = firstcanvas->getPixelHeight(rts.colors[0].mipmap);
+	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8;
+	int pixelw = firstcanvas->getPixelWidth(firsttarget.mipmap);
+	int pixelh = firstcanvas->getPixelHeight(firsttarget.mipmap);
 
 	for (int i = 1; i < ncanvases; i++)
 	{
@@ -619,7 +621,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
 			throw love::Exception("All canvases must have the same pixel dimensions.");
 
-		if (!multiformatsupported && format != firstformat)
+		if (!multiformatsupported && format != firstcolorformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
 		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
@@ -650,8 +652,8 @@ void Graphics::setCanvas(const RenderTargets &rts)
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
 	}
 
-	int w = firstcanvas->getWidth(rts.colors[0].mipmap);
-	int h = firstcanvas->getHeight(rts.colors[0].mipmap);
+	int w = firstcanvas->getWidth(firsttarget.mipmap);
+	int h = firstcanvas->getHeight(firsttarget.mipmap);
 
 	flushStreamDraws();
 	setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
