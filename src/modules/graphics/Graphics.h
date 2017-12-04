@@ -717,7 +717,7 @@ public:
 	 * @param coords Vertex positions.
 	 * @param count Vertex array size.
 	 **/
-	void polygon(DrawMode mode, const Vector2 *vertices, size_t count);
+	void polygon(DrawMode mode, const Vector2 *vertices, size_t count, bool skipLastFilledVertex = true);
 
 	/**
 	 * Gets the graphics capabilities (feature support, limit values, and

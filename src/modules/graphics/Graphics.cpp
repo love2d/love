@@ -1316,7 +1316,20 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 	float angle_shift = (two_pi / points);
 	float phi = .0f;
 
-	Vector2 *coords = getScratchBuffer<Vector2>(points + 1);
+	// 1 extra point at the end for a closed loop, and 1 extra point at the
+	// start in filled mode for the vertex in the center of the ellipse.
+	int extrapoints = 1 + (mode == DRAW_FILL ? 1 : 0);
+
+	Vector2 *polygoncoords = getScratchBuffer<Vector2>(points + extrapoints);
+	Vector2 *coords = polygoncoords;
+
+	if (mode == DRAW_FILL)
+	{
+		coords[0].x = x;
+		coords[0].y = y;
+		coords++;
+	}
+
 	for (int i = 0; i < points; ++i, phi += angle_shift)
 	{
 		coords[i].x = x + a * cosf(phi);
@@ -1325,7 +1338,8 @@ void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b, int po
 
 	coords[points] = coords[0];
 
-	polygon(mode, coords, points + 1);
+	// Last argument to polygon(): don't skip the last vertex in fill mode.
+	polygon(mode, polygoncoords, points + extrapoints, false);
 }
 
 void Graphics::ellipse(DrawMode mode, float x, float y, float a, float b)
@@ -1418,7 +1432,7 @@ void Graphics::arc(DrawMode drawmode, ArcMode arcmode, float x, float y, float r
 	arc(drawmode, arcmode, x, y, radius, angle1, angle2, (int) (points + 0.5f));
 }
 
-void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count)
+void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool skipLastFilledVertex)
 {
 	// coords is an array of a closed loop of vertices, i.e.
 	// coords[count-1] == coords[0]
@@ -1435,7 +1449,7 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count)
 		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 		cmd.formats[1] = vertex::CommonFormat::RGBAub;
 		cmd.indexMode = vertex::TriangleIndexMode::FAN;
-		cmd.vertexCount = (int)count - 1;
+		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		StreamVertexData data = requestStreamDraw(cmd);
 
