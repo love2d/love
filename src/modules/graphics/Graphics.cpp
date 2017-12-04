@@ -117,6 +117,7 @@ Graphics::Graphics()
 	, streamBufferState()
 	, projectionMatrix()
 	, canvasSwitchCount(0)
+	, drawCalls(0)
 	, drawCallsBatched(0)
 	, capabilities()
 	, cachedShaderStages()
@@ -1459,8 +1460,9 @@ Graphics::Stats Graphics::getStats() const
 {
 	Stats stats;
 
-	getAPIStats(stats.drawCalls, stats.shaderSwitches);
+	getAPIStats(stats.shaderSwitches);
 
+	stats.drawCalls = drawCalls;
 	if (streamBufferState.vertexCount > 0)
 		stats.drawCalls++;
 

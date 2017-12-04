@@ -323,7 +323,13 @@ void Graphics::draw(PrimitiveType primtype, int vertexstart, int vertexcount, in
 	gl.bindTextureToUnit(texture, 0, false);
 
 	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(primtype);
-	gl.drawArrays(glprimitivetype, vertexstart, vertexcount, instancecount);
+
+	if (instancecount > 1)
+		glDrawArraysInstanced(glprimitivetype, vertexstart, vertexcount, instancecount);
+	else
+		glDrawArrays(glprimitivetype, vertexstart, vertexcount);
+
+	++drawCalls;
 }
 
 void Graphics::drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, love::graphics::Texture *texture)
@@ -337,7 +343,13 @@ void Graphics::drawIndexed(PrimitiveType primtype, int indexcount, int instancec
 	GLenum gldatatype = OpenGL::getGLIndexDataType(datatype);
 
 	gl.bindBuffer(BUFFER_INDEX, indexbuffer->getHandle());
-	gl.drawElements(glprimitivetype, indexcount, gldatatype, gloffset, instancecount);
+
+	if (instancecount > 1)
+		glDrawElementsInstanced(glprimitivetype, indexcount, gldatatype, gloffset, instancecount);
+	else
+		glDrawElements(glprimitivetype, indexcount, gldatatype, gloffset);
+
+	++drawCalls;
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
@@ -949,7 +961,7 @@ void Graphics::present(void *screenshotCallbackData)
 		window->swapBuffers();
 
 	// Reset the per-frame stat counts.
-	gl.stats.drawCalls = 0;
+	drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
 	canvasSwitchCount = 0;
 	drawCallsBatched = 0;
@@ -1260,9 +1272,8 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	return info;
 }
 
-void Graphics::getAPIStats(int &drawcalls, int &shaderswitches) const
+void Graphics::getAPIStats(int &shaderswitches) const
 {
-	drawcalls = gl.stats.drawCalls;
 	shaderswitches = gl.stats.shaderSwitches;
 }
 

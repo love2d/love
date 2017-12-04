@@ -142,23 +142,23 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 	PixelFormat dataformat;
 	switch (getPixelFormat())
 	{
-		case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
-			dataformat = PIXELFORMAT_RGBA16;
-			break;
-		case PIXELFORMAT_R16F:
-		case PIXELFORMAT_RG16F:
-		case PIXELFORMAT_RGBA16F:
-		case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
-			dataformat = PIXELFORMAT_RGBA16F;
-			break;
-		case PIXELFORMAT_R32F:
-		case PIXELFORMAT_RG32F:
-		case PIXELFORMAT_RGBA32F:
-			dataformat = PIXELFORMAT_RGBA32F;
-			break;
-		default:
-			dataformat = PIXELFORMAT_RGBA8;
-			break;
+	case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
+		dataformat = PIXELFORMAT_RGBA16;
+		break;
+	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_RG16F:
+	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
+		dataformat = PIXELFORMAT_RGBA16F;
+		break;
+	case PIXELFORMAT_R32F:
+	case PIXELFORMAT_RG32F:
+	case PIXELFORMAT_RGBA32F:
+		dataformat = PIXELFORMAT_RGBA32F;
+		break;
+	default:
+		dataformat = PIXELFORMAT_RGBA8;
+		break;
 	}
 
 	return module->newImageData(r.w, r.h, dataformat);

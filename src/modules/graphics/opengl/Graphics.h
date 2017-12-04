@@ -115,7 +115,7 @@ private:
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
 	void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;
-	void getAPIStats(int &drawcalls, int &shaderswitches) const override;
+	void getAPIStats(int &shaderswitches) const override;
 
 	void endPass();
 	void bindCachedFBO(const RenderTargets &targets);

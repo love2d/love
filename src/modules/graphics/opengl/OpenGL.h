@@ -115,7 +115,6 @@ public:
 
 	struct Stats
 	{
-		int drawCalls;
 		int shaderSwitches;
 	} stats;
 
@@ -201,12 +200,8 @@ public:
 	void deleteBuffer(GLuint buffer);
 
 	/**
-	 * glDrawArrays and glDrawElements which increment the draw-call counter by
-	 * themselves.
+	 * Set all vertex attribute state.
 	 **/
-	void drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instancecount = 1);
-	void drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount = 1);
-
 	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers);
 
 	/**

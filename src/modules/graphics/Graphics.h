@@ -908,7 +908,7 @@ protected:
 	virtual void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) = 0;
 
 	virtual void initCapabilities() = 0;
-	virtual void getAPIStats(int &drawcalls, int &shaderswitches) const = 0;
+	virtual void getAPIStats(int &shaderswitches) const = 0;
 
 	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
 
@@ -946,6 +946,7 @@ protected:
 	std::vector<TemporaryCanvas> temporaryCanvases;
 
 	int canvasSwitchCount;
+	int drawCalls;
 	int drawCallsBatched;
 
 	Capabilities capabilities;

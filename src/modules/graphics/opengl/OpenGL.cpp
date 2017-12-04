@@ -627,26 +627,6 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	}
 }
 
-void OpenGL::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
-{
-	if (instancecount > 1)
-		glDrawArraysInstanced(mode, first, count, instancecount);
-	else
-		glDrawArrays(mode, first, count);
-
-	++stats.drawCalls;
-}
-
-void OpenGL::drawElements(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount)
-{
-	if (instancecount > 1)
-		glDrawElementsInstanced(mode, count, type, indices, instancecount);
-	else
-		glDrawElements(mode, count, type, indices);
-
-	++stats.drawCalls;
-}
-
 void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers)
 {
 	uint32 enablediff = attributes.enablebits ^ state.enabledAttribArrays;
