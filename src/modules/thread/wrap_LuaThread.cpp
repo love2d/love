@@ -27,7 +27,7 @@ namespace thread
 
 LuaThread *luax_checkthread(lua_State *L, int idx)
 {
-	return luax_checktype<LuaThread>(L, idx, THREAD_THREAD_ID);
+	return luax_checktype<LuaThread>(L, idx);
 }
 
 int w_Thread_start(lua_State *L)
@@ -38,7 +38,9 @@ int w_Thread_start(lua_State *L)
 
 	for (int i = 0; i < nargs; ++i)
 	{
-		args.push_back(Variant::fromLua(L, i+2));
+		luax_catchexcept(L, [&]() {
+			args.push_back(Variant::fromLua(L, i+2));
+		});
 
 		if (args.back().getType() == Variant::UNKNOWN)
 		{
@@ -87,7 +89,7 @@ static const luaL_Reg w_Thread_functions[] =
 
 extern "C" int luaopen_thread(lua_State *L)
 {
-	return luax_register_type(L, THREAD_THREAD_ID, "Thread", w_Thread_functions, nullptr);
+	return luax_register_type(L, &LuaThread::type, w_Thread_functions, nullptr);
 }
 
 } // thread

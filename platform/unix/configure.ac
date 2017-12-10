@@ -1,4 +1,4 @@
-AC_INIT([love], [HEAD])
+AC_INIT([love], [0.11.0])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([platform/unix])
 AC_CONFIG_MACRO_DIR([platform/unix/m4])
@@ -19,6 +19,7 @@ AC_LANG([C++])
 
 dnl Workaround for old aclocal versions
 m4_include([platform/unix/cpp11.m4])
+m4_include([platform/unix/deps.m4])
 
 includes=
 
@@ -44,70 +45,68 @@ AS_VAR_IF([enable_stbi_sse2_override], [no], [], #else
 
 # --with-lua and --with-luaversion
 AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],
-			[], [with_lua=luajit])
+	[], [with_lua=luajit])
 AC_ARG_WITH([luaversion], [AS_HELP_STRING([--with-luaversion], [Select the lua version])],
-			[], [with_luaversion=5.1])
+	[], [with_luaversion=5.1])
 
-# pkg-config libraries
-AM_PATH_SDL2([], [], [LOVE_MSG_ERROR([SDL 2])])
 with_clean_luaversion=`printf ${with_luaversion} | sed 's/\.//g'`
-PKG_CHECK_MODULES([lua], [${with_lua}${with_luaversion}], [lua_found=yes],
-	[PKG_CHECK_MODULES([lua], [${with_lua}${with_clean_luaversion}], [lua_found=yes],
-	[PKG_CHECK_MODULES([lua], [${with_lua}], [lua_found=yes], [lua_found=no])])])
-PKG_CHECK_MODULES([freetype2], [freetype2], [], [LOVE_MSG_ERROR([FreeType2])])
-PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])
-PKG_CHECK_MODULES([libmodplug], [libmodplug], [], [LOVE_MSG_ERROR([libmodplug])])
-PKG_CHECK_MODULES([vorbisfile], [vorbisfile], [], [LOVE_MSG_ERROR([libvorbis and libvorbisfile])])
-PKG_CHECK_MODULES([zlib], [zlib], [], [LOVE_MSG_ERROR([zlib])])
-PKG_CHECK_MODULES([theora], [theoradec], [], [LOVE_MSG_ERROR([libtheora])])
 
-# Other libraries
-AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])
-AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])
+# Generated sources for enabling/disabling modules
+m4_include([configure-modules-pre.ac])
 
-# Lua, treated seperately because of --with-lua
-AS_VAR_IF([lua_found], [yes],
-		  #if
-		  [
-		   luaheaders_found=yes
-		   AC_MSG_CHECKING([for library containing lua_call])
-		   AC_MSG_RESULT([${lua_LIBS}])],
-		  #else
-		  [
-		   AC_MSG_WARN([Could not find pkg-config definition for ${with_lua}${with_luaversion} or ${with_lua}${with_clean_luaversion}${with_lua}, falling back to manual detection])
-		   AC_SEARCH_LIBS([lua_call], ["${with_lua}${with_luaversion}" "${with_lua}"], [],
-						  [LOVE_MSG_ERROR([$with_lua])])
-		   luaheaders_found=no
-		   AC_CHECK_HEADER(["${with_lua}${with_luaversion}/lua.h"], [luaheaders_found=yes includes="$includes -I/usr/include/${with_lua}${with_luaversion}"], [])
-		   AC_CHECK_HEADER(["${with_lua}/lua.h"], [luaheaders_found=yes includes="$includes -I/usr/include/${with_lua}"], [])])
-AS_VAR_IF([luaheaders_found], [yes], [], #else
-		  [
-		   AC_MSG_WARN([Could not locate lua headers for ${with_lua}${with_luaversion} or ${with_lua}, you probably need to specify them with CPPFLAGS])])
-
-# mpg123, treated seperately because it can be disabled (default on)
-# also not pkg-config because of the FILE_OFFSET_BITS.. bit
+# Other features that can be enabled/disabled
 AC_ARG_ENABLE([mpg123], AC_HELP_STRING([--disable-mpg123], [Disable mp3 support, for patent-free builds]), [], [enable_mpg123=yes])
+AC_ARG_ENABLE([gme], AC_HELP_STRING([--enable-gme], [Enable GME support, for more chiptuney goodness]), [], [enable_gme=no])
+
+# Dependencies we always use
+ACLOVE_DEP_LUA
+ACLOVE_DEP_SDL2
+ACLOVE_DEP_LIBM
+ACLOVE_DEP_ZLIB
+
+# Conditional dependencies
+AS_VAR_IF([enable_module_audio], [yes], [ACLOVE_DEP_OPENAL], [])
+AS_VAR_IF([enable_module_filesystem], [yes], [ACLOVE_DEP_PHYSFS], [])
+AS_VAR_IF([enable_module_font], [yes], [ACLOVE_DEP_FREETYPE2], [])
+AS_VAR_IF([enable_module_sound], [yes], [
+	ACLOVE_DEP_LIBMODPLUG
+	ACLOVE_DEP_VORBISFILE
+], [enable_mpg123=no])
+AS_VAR_IF([enable_module_video], [yes], [ACLOVE_DEP_THEORA], [])
+AS_VAR_IF([enable_gme], [yes], [ACLOVE_DEP_GME], [])
 AS_VAR_IF([enable_mpg123], [no],
 	  AC_DEFINE([LOVE_NOMPG123], [], [Build without mpg123]),
-	  # else
-	  AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [],
-					 [LOVE_MSG_ERROR([libmpg123])])
-	  AC_SEARCH_LIBS([mpg123_seek_64], [mpg123],
-					 AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]),
-					 AC_SUBST([FILE_OFFSET],[])))
+	  [ACLOVE_DEP_MPG123])
 
-# GME, treated seperately because it can be enabled (default off)
-AC_ARG_ENABLE([gme], AC_HELP_STRING([--enable-gme], [Enable GME support, for more chiptuney goodness]), [], [enable_gme=no])
-AS_VAR_IF([enable_gme], [yes],
-	  AC_SEARCH_LIBS([gme_open_data], [gme], [], [LOVE_MSG_ERROR([gme])])
-	  AC_DEFINE([LOVE_SUPPORT_GME], [], [Enable gme])
-	  AC_CHECK_HEADER([gme/gme.h], [includes="$includes -I/usr/include/gme"], []))
+# Add flags for optional libraries
+AC_ARG_ENABLE([library-enet], [  --disable-library-enet    Turn off library enet], [], [enable_library_enet=yes])
+AC_ARG_ENABLE([library-luasocket], [  --disable-library-luasocket    Turn off library luasocket], [], [enable_library_luasocket=yes])
+AC_ARG_ENABLE([library-lua53], [  --disable-library-lua53    Turn off library lua53 (lua 5.3 backports, required by love.data)], [], [enable_library_lua53=yes])
+
+# Select the libraries we need to build, based on the selected modules
+AS_VAR_IF([enable_module_physics], [yes], [enable_library_Box2D=yes], [enable_library_Box2D=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_library_ddsparse=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glslang=yes], [enable_library_glslang=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_lodepng=yes], [enable_library_lodepng=no])
+AS_VAR_IF([enable_module_data], [yes], [enable_library_lua53=yes], [])
+AS_VAR_IF([enable_module_math], [yes], [enable_library_lz4=yes], [enable_library_lz4=no])
+AS_VAR_IF([enable_module_math], [yes], [enable_library_noise1234=yes], [enable_library_noise1234=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_stb=yes], [enable_library_stb=no])
+AS_VAR_IF([enable_module_image], [yes], [enable_library_tinyexr=yes], [enable_library_tinyexr=no])
+AS_VAR_IF([enable_module_sound], [yes], [enable_library_Wuff=yes], [enable_library_Wuff=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_xxHash=yes], [enable_library_xxHash=no])
+
+# Utf8 is required by both graphics and font, so enable if either is enabled
+enable_library_utf8=no
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_utf8=yes], [])
+AS_VAR_IF([enable_module_font], [yes], [enable_library_utf8=yes], [])
 
 # libenet check for socklen_t
-AC_CHECK_TYPE([socklen_t], [AC_DEFINE([HAS_SOCKLEN_T], [1], [Define if socklen_t exists.] )], , 
-              #include <sys/types.h>
-              #include <sys/socket.h>
-)
+ACLOVE_SOCKLEN_T
+
+# Generated sources for enabling/disabling modules
+m4_include([configure-modules-post.ac])
 
 # Optionally build the executable (default on)
 AC_ARG_ENABLE([exe],
@@ -127,8 +126,6 @@ AS_VAR_IF([LUA_EXECUTABLE], [:],
 
 # Set our includes as automake variable
 AC_SUBST([LOVE_INCLUDES], ["$includes"])
-
-m4_include([configure-modules.ac])
 
 AC_CONFIG_FILES([
 	Makefile

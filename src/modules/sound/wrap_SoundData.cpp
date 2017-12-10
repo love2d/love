@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 
 #include "wrap_SoundData.h"
 
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 
 // Shove the wrap_SoundData.lua code directly into a raw string literal.
 static const char sounddata_lua[] =
@@ -39,13 +39,22 @@ namespace sound
 
 SoundData *luax_checksounddata(lua_State *L, int idx)
 {
-	return luax_checktype<SoundData>(L, idx, SOUND_SOUND_DATA_ID);
+	return luax_checktype<SoundData>(L, idx);
 }
 
-int w_SoundData_getChannels(lua_State *L)
+int w_SoundData_clone(lua_State *L)
+{
+	SoundData *t = luax_checksounddata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
+int w_SoundData_getChannelCount(lua_State *L)
 {
 	SoundData *t = luax_checksounddata(L, 1);
-	lua_pushinteger(L, t->getChannels());
+	lua_pushinteger(L, t->getChannelCount());
 	return 1;
 }
 
@@ -81,9 +90,19 @@ int w_SoundData_setSample(lua_State *L)
 {
 	SoundData *sd = luax_checksounddata(L, 1);
 	int i = (int) luaL_checkinteger(L, 2);
-	float sample = (float) luaL_checknumber(L, 3);
 
-	luax_catchexcept(L, [&](){ sd->setSample(i, sample); });
+	if (lua_gettop(L) > 3)
+	{
+		int channel = luaL_checkinteger(L, 3);
+		float sample = (float) luaL_checknumber(L, 4);
+		luax_catchexcept(L, [&](){ sd->setSample(i, channel, sample); });
+	}
+	else
+	{
+		float sample = (float) luaL_checknumber(L, 3);
+		luax_catchexcept(L, [&](){ sd->setSample(i, sample); });
+	}
+
 	return 0;
 }
 
@@ -92,27 +111,44 @@ int w_SoundData_getSample(lua_State *L)
 	SoundData *sd = luax_checksounddata(L, 1);
 	int i = (int) luaL_checkinteger(L, 2);
 
-	luax_catchexcept(L, [&](){ lua_pushnumber(L, sd->getSample(i)); });
+	if (lua_gettop(L) > 2)
+	{
+		int channel = luaL_checkinteger(L, 3);
+		luax_catchexcept(L, [&](){ lua_pushnumber(L, sd->getSample(i, channel)); });
+	}
+	else
+		luax_catchexcept(L, [&](){ lua_pushnumber(L, sd->getSample(i)); });
 	return 1;
+}
+
+int w_SoundData_getChannels(lua_State *L)
+{
+	luax_markdeprecated(L, "SoundData:getChannels", API_METHOD, DEPRECATED_RENAMED, "SoundData:getChannelCount");
+	return w_SoundData_getChannelCount(L);
 }
 
 static const luaL_Reg w_SoundData_functions[] =
 {
-	{ "getChannels", w_SoundData_getChannels },
+	{ "clone", w_SoundData_clone },
+	{ "getChannelCount", w_SoundData_getChannelCount },
 	{ "getBitDepth", w_SoundData_getBitDepth },
 	{ "getSampleRate", w_SoundData_getSampleRate },
 	{ "getSampleCount", w_SoundData_getSampleCount },
 	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },
+
+	// Deprecated
+	{ "getChannels", w_SoundData_getChannels },
+
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_sounddata(lua_State *L)
 {
-	int ret = luax_register_type(L, SOUND_SOUND_DATA_ID, "SoundData", w_Data_functions, w_SoundData_functions, nullptr);
+	int ret = luax_register_type(L, &SoundData::type, data::w_Data_functions, w_SoundData_functions, nullptr);
 
-	luax_gettypemetatable(L, SOUND_SOUND_DATA_ID);
+	luax_gettypemetatable(L, SoundData::type);
 
 	// Load and execute SoundData.lua, sending the metatable as an argument.
 	if (lua_istable(L, -1))

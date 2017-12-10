@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,13 @@ namespace love
  **/
 class Matrix4
 {
+private:
+
+	static void multiply(const Matrix4 &a, const Matrix4 &b, float t[16]);
+
 public:
+
+	static void multiply(const Matrix4 &a, const Matrix4 &b, Matrix4 &result);
 
 	/**
 	 * Creates a new identity matrix.
@@ -47,14 +53,21 @@ public:
 	Matrix4(float t00, float t10, float t01, float t11, float x, float y);
 
 	/**
+	 * Creates a new matrix from the specified elements. Be sure to pass
+	 * exactly 16 elements in!
+	 **/
+	Matrix4(const float elements[16]);
+
+	/**
+	 * Creates a new matrix from the result of multiplying the two specified
+	 * matrices.
+	 **/
+	Matrix4(const Matrix4 &a, const Matrix4 &b);
+
+	/**
 	 * Creates a new matrix set to a transformation.
 	 **/
 	Matrix4(float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky);
-
-	/**
-	 * Destructor.
-	 **/
-	~Matrix4();
 
 	/**
 	 * Multiplies this Matrix with another Matrix, changing neither.
@@ -106,6 +119,12 @@ public:
 	 * @param ky Shear along y-axis.
 	 **/
 	void setShear(float kx, float ky);
+
+	/**
+	 * Calculates the scale factors for a 2D affine transform. The output values
+	 * are absolute (not signed).
+	 **/
+	void getApproximateScale(float &sx, float &sy) const;
 	
 	/**
 	 * Sets a transformation's values directly. Useful if you want to modify them inplace,
@@ -166,21 +185,42 @@ public:
 	void shear(float kx, float ky);
 
 	/**
-	 * Transforms an array of vertices by this Matrix. The sources and
-	 * destination arrays may be the same.
-	 *
-	 * @param dst Storage for the transformed vertices.
-	 * @param src The source vertices.
-	 * @param size The number of vertices.
+	 * Transforms an array of 2-component vertices by this Matrix. The source
+	 * and destination arrays may be the same.
 	 **/
-	template <typename V>
-	void transform(V *dst, const V *src, int size) const;
+	template <typename Vdst, typename Vsrc>
+	void transformXY(Vdst *dst, const Vsrc *src, int size) const;
 
 	/**
-	 * Creates a new orthographic projection matrix with depth in the range of
-	 * [-1, 1].
+	 * Transforms an array of 2-component vertices by this Matrix, and stores
+	 * them in an array of 3-component vertices.
 	 **/
-	static Matrix4 ortho(float left, float right, float bottom, float top);
+	template <typename Vdst, typename Vsrc>
+	void transformXY0(Vdst *dst, const Vsrc *src, int size) const;
+
+	/**
+	 * Transforms an array of 3-component vertices by this Matrix. The source
+	 * and destination arrays may be the same.
+	 **/
+	template <typename Vdst, typename Vsrc>
+	void transformXYZ(Vdst *dst, const Vsrc *src, int size) const;
+
+	/**
+	 * Gets whether this matrix is an affine 2D transform (if the only non-
+	 * identity elements are the upper-left 2x2 and 2 translation values in the
+	 * 4th column).
+	 **/
+	bool isAffine2DTransform() const;
+
+	/**
+	 * Computes and returns the inverse of the matrix.
+	 **/
+	Matrix4 inverse() const;
+
+	/**
+	 * Creates a new orthographic projection matrix.
+	 **/
+	static Matrix4 ortho(float left, float right, float bottom, float top, float near, float far);
 
 private:
 
@@ -249,8 +289,8 @@ public:
 	/**
 	 * Transforms an array of vertices by this matrix.
 	 **/
-	template <typename V>
-	void transform(V *dst, const V *src, int size) const;
+	template <typename Vdst, typename Vsrc>
+	void transformXY(Vdst *dst, const Vsrc *src, int size) const;
 
 private:
 
@@ -272,8 +312,8 @@ private:
 // | e2 e6 e10 e14 |
 // | e3 e7 e11 e15 |
 
-template <typename V>
-void Matrix4::transform(V *dst, const V *src, int size) const
+template <typename Vdst, typename Vsrc>
+void Matrix4::transformXY(Vdst *dst, const Vsrc *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{
@@ -286,14 +326,55 @@ void Matrix4::transform(V *dst, const V *src, int size) const
 	}
 }
 
+template <typename Vdst, typename Vsrc>
+void Matrix4::transformXY0(Vdst *dst, const Vsrc *src, int size) const
+{
+	for (int i = 0; i < size; i++)
+	{
+		// Store in temp variables in case src = dst
+		float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (0) + (e[12]);
+		float y = (e[1]*src[i].x) + (e[5]*src[i].y) + (0) + (e[13]);
+		float z = (e[2]*src[i].x) + (e[6]*src[i].y) + (0) + (e[14]);
+
+		dst[i].x = x;
+		dst[i].y = y;
+		dst[i].z = z;
+	}
+}
+
+//                 | x |
+//                 | y |
+//                 | z |
+//                 | 1 |
+// | e0 e4 e8  e12 |
+// | e1 e5 e9  e13 |
+// | e2 e6 e10 e14 |
+// | e3 e7 e11 e15 |
+
+template <typename Vdst, typename Vsrc>
+void Matrix4::transformXYZ(Vdst *dst, const Vsrc *src, int size) const
+{
+	for (int i = 0; i < size; i++)
+	{
+		// Store in temp variables in case src = dst
+		float x = (e[0]*src[i].x) + (e[4]*src[i].y) + (e[ 8]*src[i].z) + (e[12]);
+		float y = (e[1]*src[i].x) + (e[5]*src[i].y) + (e[ 9]*src[i].z) + (e[13]);
+		float z = (e[2]*src[i].x) + (e[6]*src[i].y) + (e[10]*src[i].z) + (e[14]);
+
+		dst[i].x = x;
+		dst[i].y = y;
+		dst[i].z = z;
+	}
+}
+
 //            | x |
 //            | y |
 //            | 1 |
 // | e0 e3 e6 |
 // | e1 e4 e7 |
 // | e2 e5 e8 |
-template <typename V>
-void Matrix3::transform(V *dst, const V *src, int size) const
+template <typename Vdst, typename Vsrc>
+void Matrix3::transformXY(Vdst *dst, const Vsrc *src, int size) const
 {
 	for (int i = 0; i < size; i++)
 	{

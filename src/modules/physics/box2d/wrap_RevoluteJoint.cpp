@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 RevoluteJoint *luax_checkrevolutejoint(lua_State *L, int idx)
 {
-	RevoluteJoint *j = luax_checktype<RevoluteJoint>(L, idx, PHYSICS_REVOLUTE_JOINT_ID);
+	RevoluteJoint *j = luax_checktype<RevoluteJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -53,7 +53,7 @@ int w_RevoluteJoint_getJointSpeed(lua_State *L)
 int w_RevoluteJoint_setMotorEnabled(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setMotorEnabled(arg1);
 	return 0;
 }
@@ -106,15 +106,15 @@ int w_RevoluteJoint_getMaxMotorTorque(lua_State *L)
 int w_RevoluteJoint_setLimitsEnabled(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setLimitsEnabled(arg1);
 	return 0;
 }
 
-int w_RevoluteJoint_hasLimitsEnabled(lua_State *L)
+int w_RevoluteJoint_areLimitsEnabled(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	luax_pushboolean(L, t->hasLimitsEnabled());
+	luax_pushboolean(L, t->areLimitsEnabled());
 	return 1;
 }
 
@@ -171,6 +171,12 @@ int w_RevoluteJoint_getReferenceAngle(lua_State *L)
 	return 1;
 }
 
+int w_RevoluteJoint_hasLimitsEnabled(lua_State *L)
+{
+	luax_markdeprecated(L, "RevoluteJoint:hasLimitsEnabled", API_METHOD, DEPRECATED_RENAMED, "RevoluteJoint:areLimitsEnabled");
+	return w_RevoluteJoint_areLimitsEnabled(L);
+}
+
 static const luaL_Reg w_RevoluteJoint_functions[] =
 {
 	{ "getJointAngle", w_RevoluteJoint_getJointAngle },
@@ -183,7 +189,7 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 	{ "getMotorTorque", w_RevoluteJoint_getMotorTorque },
 	{ "getMaxMotorTorque", w_RevoluteJoint_getMaxMotorTorque },
 	{ "setLimitsEnabled", w_RevoluteJoint_setLimitsEnabled },
-	{ "hasLimitsEnabled", w_RevoluteJoint_hasLimitsEnabled },
+	{ "areLimitsEnabled", w_RevoluteJoint_areLimitsEnabled },
 	{ "setUpperLimit", w_RevoluteJoint_setUpperLimit },
 	{ "setLowerLimit", w_RevoluteJoint_setLowerLimit },
 	{ "setLimits", w_RevoluteJoint_setLimits },
@@ -191,12 +197,16 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 	{ "getUpperLimit", w_RevoluteJoint_getUpperLimit },
 	{ "getLimits", w_RevoluteJoint_getLimits },
 	{ "getReferenceAngle", w_RevoluteJoint_getReferenceAngle },
+
+	// Deprecated
+	{ "hasLimitsEnabled", w_RevoluteJoint_hasLimitsEnabled },
+
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_revolutejoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_REVOLUTE_JOINT_ID, "RevoluteJoint", w_Joint_functions, w_RevoluteJoint_functions, nullptr);
+	return luax_register_type(L, &RevoluteJoint::type, w_Joint_functions, w_RevoluteJoint_functions, nullptr);
 }
 
 } // box2d

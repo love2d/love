@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -107,6 +107,7 @@ Filesystem::Filesystem()
 	, fusedSet(false)
 {
 	requirePath = {"?.lua", "?/init.lua"};
+	cRequirePath = {"??"};
 }
 
 Filesystem::~Filesystem()
@@ -123,7 +124,14 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
-		throw love::Exception("%s", PHYSFS_getLastError());
+	{
+#ifdef LOVE_USE_PHYSFS_2_1
+		const char *err = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+#else
+		const char *err = PHYSFS_getLastError();
+#endif
+		throw love::Exception("%s", err);
+	}
 
 	// Enable symlinks by default. Also fixes an issue in PhysFS 2.1-alpha.
 	setSymlinksEnabled(true);
@@ -456,30 +464,6 @@ love::filesystem::File *Filesystem::newFile(const char *filename) const
 	return new File(filename);
 }
 
-FileData *Filesystem::newFileData(void *data, unsigned int size, const char *filename) const
-{
-	FileData *fd = new FileData(size, std::string(filename));
-
-	// Copy the data into FileData.
-	memcpy(fd->getData(), data, size);
-
-	return fd;
-}
-
-FileData *Filesystem::newFileData(const char *b64, const char *filename) const
-{
-	int size = (int) strlen(b64);
-	int outsize = 0;
-	char *dst = b64_decode(b64, size, outsize);
-	FileData *fd = new FileData(outsize, std::string(filename));
-
-	// Copy the data into FileData.
-	memcpy(fd->getData(), dst, outsize);
-	delete [] dst;
-
-	return fd;
-}
-
 const char *Filesystem::getWorkingDirectory()
 {
 	if (cwd.empty())
@@ -589,52 +573,53 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
-bool Filesystem::exists(const char *path) const
-{
-	if (!PHYSFS_isInit())
-		return false;
-
-	return PHYSFS_exists(path) != 0;
-}
-
-bool Filesystem::isDirectory(const char *dir) const
+bool Filesystem::getInfo(const char *filepath, Info &info) const
 {
 	if (!PHYSFS_isInit())
 		return false;
 
 #ifdef LOVE_USE_PHYSFS_2_1
 	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(dir, &stat))
-		return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
+	if (!PHYSFS_stat(filepath, &stat))
+		return false;
+
+	info.size = (int64) stat.filesize;
+	info.modtime = (int64) stat.modtime;
+
+	if (stat.filetype == PHYSFS_FILETYPE_REGULAR)
+		info.type = FILETYPE_FILE;
+	else if (stat.filetype == PHYSFS_FILETYPE_DIRECTORY)
+		info.type = FILETYPE_DIRECTORY;
+	else if (stat.filetype == PHYSFS_FILETYPE_SYMLINK)
+		info.type = FILETYPE_SYMLINK;
 	else
-		return false;
+		info.type = FILETYPE_OTHER;
 #else
-	return PHYSFS_isDirectory(dir) != 0;
-#endif
-}
-
-bool Filesystem::isFile(const char *file) const
-{
-	if (!PHYSFS_isInit())
+	if (!PHYSFS_exists(filepath))
 		return false;
 
-	return PHYSFS_exists(file) && !isDirectory(file);
-}
+	try
+	{
+		File file(filepath);
+		info.size = file.getSize();
+	}
+	catch (love::Exception &)
+	{
+		info.size = -1;
+	}
 
-bool Filesystem::isSymlink(const char *filename) const
-{
-	if (!PHYSFS_isInit())
-		return false;
+	info.modtime = (int64) PHYSFS_getLastModTime(filepath);
 
-#ifdef LOVE_USE_PHYSFS_2_1
-	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(filename, &stat))
-		return stat.filetype == PHYSFS_FILETYPE_SYMLINK;
+	if (PHYSFS_isSymbolicLink(filepath))
+		info.type = FILETYPE_SYMLINK;
+	else if (PHYSFS_isDirectory(filepath))
+		info.type = FILETYPE_DIRECTORY;
 	else
-		return false;
-#else
-	return PHYSFS_isSymbolicLink(filename) != 0;
+		info.type = FILETYPE_FILE;
+
 #endif
+
+	return true;
 }
 
 bool Filesystem::createDirectory(const char *dir)
@@ -713,34 +698,6 @@ void Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &it
 	PHYSFS_freeList(rc);
 }
 
-int64 Filesystem::getLastModified(const char *filename) const
-{
-	PHYSFS_sint64 time = -1;
-
-	if (!PHYSFS_isInit())
-		return -1;
-
-#ifdef LOVE_USE_PHYSFS_2_1
-	PHYSFS_Stat stat = {};
-	if (PHYSFS_stat(filename, &stat))
-		time = stat.modtime;
-#else
-	time = PHYSFS_getLastModTime(filename);
-#endif
-
-	if (time == -1)
-		throw love::Exception("Could not determine file modification date.");
-
-	return time;
-}
-
-int64 Filesystem::getSize(const char *filename) const
-{
-	File file(filename);
-	int64 size = file.getSize();
-	return size;
-}
-
 void Filesystem::setSymlinksEnabled(bool enable)
 {
 	if (!PHYSFS_isInit())
@@ -752,8 +709,8 @@ void Filesystem::setSymlinksEnabled(bool enable)
 		PHYSFS_getLinkedVersion(&version);
 
 		// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in
-		// PhysFS 2.1-alpha.
-		if (version.major == 2 && version.minor == 1)
+		// PhysFS 2.1.0-alpha.
+		if (version.major == 2 && version.minor == 1 && version.patch == 0)
 			return;
 	}
 
@@ -771,6 +728,11 @@ bool Filesystem::areSymlinksEnabled() const
 std::vector<std::string> &Filesystem::getRequirePath()
 {
 	return requirePath;
+}
+
+std::vector<std::string> &Filesystem::getCRequirePath()
+{
+	return cRequirePath;
 }
 
 void Filesystem::allowMountingForPath(const std::string &path)

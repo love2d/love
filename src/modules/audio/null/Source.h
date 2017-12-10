@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "audio/Source.h"
+#include "audio/Filter.h"
 
 namespace love
 {
@@ -42,10 +43,7 @@ public:
 	virtual bool play();
 	virtual void stop();
 	virtual void pause();
-	virtual void resume();
-	virtual void rewind();
-	virtual bool isStopped() const;
-	virtual bool isPaused() const;
+	virtual bool isPlaying() const;
 	virtual bool isFinished() const;
 	virtual bool update();
 	virtual void setPitch(float pitch);
@@ -61,8 +59,8 @@ public:
 	virtual void getVelocity(float *v) const;
 	virtual void setDirection(float *v);
 	virtual void getDirection(float *v) const;
-	virtual void setCone(float innerAngle, float outerAngle, float outerVolume);
-	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume) const;
+	virtual void setCone(float innerAngle, float outerAngle, float outerVolume, float outerHighGain);
+	virtual void getCone(float &innerAngle, float &outerAngle, float &outerVolume, float &outerHighGain) const;
 	virtual void setRelative(bool enable);
 	virtual bool isRelative() const;
 	void setLooping(bool looping);
@@ -77,7 +75,22 @@ public:
 	virtual float getRolloffFactor() const;
 	virtual void setMaxDistance(float distance);
 	virtual float getMaxDistance() const;
-	virtual int getChannels() const;
+	virtual void setAirAbsorptionFactor(float factor);
+	virtual float getAirAbsorptionFactor() const;
+	virtual int getChannelCount() const;
+
+	virtual int getFreeBufferCount() const;
+	virtual bool queue(void *data, size_t length, int dataSampleRate, int dataBitDepth, int dataChannels);
+
+	virtual bool setFilter(const std::map<Filter::Parameter, float> &params);
+	virtual bool setFilter();
+	virtual bool getFilter(std::map<Filter::Parameter, float> &params);
+
+	virtual bool setEffect(const char *effect);
+	virtual bool setEffect(const char *effect, const std::map<Filter::Parameter, float> &params);
+	virtual bool unsetEffect(const char *effect);
+	virtual bool getEffect(const char *effect, std::map<Filter::Parameter, float> &params);
+	virtual bool getActiveEffects(std::vector<std::string> &list) const;
 
 private:
 
@@ -86,6 +99,7 @@ private:
 	float coneInnerAngle;
 	float coneOuterAngle;
 	float coneOuterVolume;
+	float coneOuterHighGain;
 	bool relative;
 	bool looping;
 	float minVolume;
@@ -93,6 +107,7 @@ private:
 	float referenceDistance;
 	float rolloffFactor;
 	float maxDistance;
+	float absorptionFactor;
 
 }; // Source
 

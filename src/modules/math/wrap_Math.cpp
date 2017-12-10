@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,9 +21,14 @@
 #include "wrap_Math.h"
 #include "wrap_RandomGenerator.h"
 #include "wrap_BezierCurve.h"
-#include "wrap_CompressedData.h"
+#include "wrap_Transform.h"
 #include "MathModule.h"
 #include "BezierCurve.h"
+#include "Transform.h"
+
+#include "data/wrap_DataModule.h"
+#include "data/wrap_CompressedData.h"
+#include "data/DataModule.h"
 
 #include <cmath>
 #include <iostream>
@@ -42,7 +47,7 @@ namespace math
 int w__getRandomGenerator(lua_State *L)
 {
 	RandomGenerator *t = Math::instance.getRandomGenerator();
-	luax_pushtype(L, MATH_RANDOM_GENERATOR_ID, t);
+	luax_pushtype(L, t);
 	return 1;
 }
 
@@ -73,14 +78,14 @@ int w_newRandomGenerator(lua_State *L)
 			return luaL_error(L, "%s", lua_tostring(L, -1));
 	}
 
-	luax_pushtype(L, MATH_RANDOM_GENERATOR_ID, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
 
 int w_newBezierCurve(lua_State *L)
 {
-	std::vector<Vector> points;
+	std::vector<Vector2> points;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -90,7 +95,7 @@ int w_newBezierCurve(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			points.push_back(v);
@@ -104,7 +109,7 @@ int w_newBezierCurve(lua_State *L)
 		points.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			points.push_back(v);
@@ -112,14 +117,39 @@ int w_newBezierCurve(lua_State *L)
 	}
 
 	BezierCurve *curve = Math::instance.newBezierCurve(points);
-	luax_pushtype(L, MATH_BEZIER_CURVE_ID, curve);
+	luax_pushtype(L, curve);
 	curve->release();
+	return 1;
+}
+
+int w_newTransform(lua_State *L)
+{
+	Transform *t = nullptr;
+
+	if (lua_isnoneornil(L, 1))
+		t = Math::instance.newTransform();
+	else
+	{
+		float x =  (float) luaL_checknumber(L, 1);
+		float y =  (float) luaL_checknumber(L, 2);
+		float a =  (float) luaL_optnumber(L, 3, 0.0);
+		float sx = (float) luaL_optnumber(L, 4, 1.0);
+		float sy = (float) luaL_optnumber(L, 5, sx);
+		float ox = (float) luaL_optnumber(L, 6, 0.0);
+		float oy = (float) luaL_optnumber(L, 7, 0.0);
+		float kx = (float) luaL_optnumber(L, 8, 0.0);
+		float ky = (float) luaL_optnumber(L, 9, 0.0);
+		t = Math::instance.newTransform(x, y, a, sx, sy, ox, oy, kx, ky);
+	}
+
+	luax_pushtype(L, t);
+	t->release();
 	return 1;
 }
 
 int w_triangulate(lua_State *L)
 {
-	std::vector<love::Vector> vertices;
+	std::vector<love::Vector2> vertices;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -129,7 +159,7 @@ int w_triangulate(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
@@ -143,7 +173,7 @@ int w_triangulate(lua_State *L)
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			Vector v;
+			Vector2 v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);
@@ -159,7 +189,7 @@ int w_triangulate(lua_State *L)
 		if (vertices.size() == 3)
 			triangles.push_back(Triangle(vertices[0], vertices[1], vertices[2]));
 		else
-			triangles = Math::instance.triangulate(vertices);
+			triangles = triangulate(vertices);
 	});
 
 	lua_createtable(L, (int) triangles.size(), 0);
@@ -189,7 +219,7 @@ int w_triangulate(lua_State *L)
 
 int w_isConvex(lua_State *L)
 {
-	std::vector<love::Vector> vertices;
+	std::vector<love::Vector2> vertices;
 	if (lua_istable(L, 1))
 	{
 		int top = (int) luax_objlen(L, 1);
@@ -199,7 +229,7 @@ int w_isConvex(lua_State *L)
 			lua_rawgeti(L, 1, i);
 			lua_rawgeti(L, 1, i+1);
 
-			love::Vector v;
+			love::Vector2 v;
 			v.x = (float) luaL_checknumber(L, -2);
 			v.y = (float) luaL_checknumber(L, -1);
 			vertices.push_back(v);
@@ -213,14 +243,14 @@ int w_isConvex(lua_State *L)
 		vertices.reserve(top / 2);
 		for (int i = 1; i <= top; i += 2)
 		{
-			love::Vector v;
+			love::Vector2 v;
 			v.x = (float) luaL_checknumber(L, i);
 			v.y = (float) luaL_checknumber(L, i+1);
 			vertices.push_back(v);
 		}
 	}
 
-	luax_pushboolean(L, Math::instance.isConvex(vertices));
+	luax_pushboolean(L, isConvex(vertices));
 	return 1;
 }
 
@@ -234,7 +264,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
 			lua_rawgeti(L, 1, i);
-			color[i - 1] = (float) luaL_checknumber(L, -1) / 255.0f;
+			color[i - 1] = (float) luax_checknumberclamped01(L, -1);
 			numcomponents++;
 		}
 
@@ -245,7 +275,7 @@ static int getGammaArgs(lua_State *L, float color[4])
 		int n = lua_gettop(L);
 		for (int i = 1; i <= n && i <= 4; i++)
 		{
-			color[i - 1] = (float) luaL_checknumber(L, i) / 255.0f;
+			color[i - 1] = (float) luax_checknumberclamped01(L, i);
 			numcomponents++;
 		}
 	}
@@ -265,8 +295,8 @@ int w_gammaToLinear(lua_State *L)
 	{
 		// Alpha should always be linear.
 		if (i < 3)
-			color[i] = Math::instance.gammaToLinear(color[i]);
-		lua_pushnumber(L, color[i] * 255);
+			color[i] = gammaToLinear(color[i]);
+		lua_pushnumber(L, color[i]);
 	}
 
 	return numcomponents;
@@ -281,8 +311,8 @@ int w_linearToGamma(lua_State *L)
 	{
 		// Alpha should always be linear.
 		if (i < 3)
-			color[i] = Math::instance.linearToGamma(color[i]);
-		lua_pushnumber(L, color[i] * 255);
+			color[i] = linearToGamma(color[i]);
+		lua_pushnumber(L, color[i]);
 	}
 
 	return numcomponents;
@@ -301,16 +331,16 @@ int w_noise(lua_State *L)
 	switch (nargs)
 	{
 	case 1:
-		val = Math::instance.noise(args[0]);
+		val = noise1(args[0]);
 		break;
 	case 2:
-		val = Math::instance.noise(args[0], args[1]);
+		val = noise2(args[0], args[1]);
 		break;
 	case 3:
-		val = Math::instance.noise(args[0], args[1], args[2]);
+		val = noise3(args[0], args[1], args[2]);
 		break;
 	case 4:
-		val = Math::instance.noise(args[0], args[1], args[2], args[3]);
+		val = noise4(args[0], args[1], args[2], args[3]);
 		break;
 	}
 
@@ -320,41 +350,48 @@ int w_noise(lua_State *L)
 
 int w_compress(lua_State *L)
 {
+	using namespace love::data;
+	luax_markdeprecated(L, "love.math.compress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.compress");
+
 	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
 	Compressor::Format format = Compressor::FORMAT_LZ4;
 
 	if (fstr && !Compressor::getConstant(fstr, format))
-		return luaL_error(L, "Invalid compressed data format: %s", fstr);
+		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
-	int level = (int) luaL_optnumber(L, 3, -1);
+	int level = (int) luaL_optinteger(L, 3, -1);
 
 	CompressedData *cdata = nullptr;
 	if (lua_isstring(L, 1))
 	{
 		size_t rawsize = 0;
 		const char *rawbytes = luaL_checklstring(L, 1, &rawsize);
-		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawbytes, rawsize, level); });
+		luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 1, DATA_ID);
-		luax_catchexcept(L, [&](){ cdata = Math::instance.compress(format, rawdata, level); });
+		Data *rawdata = luax_checktype<Data>(L, 1);
+		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
 	}
 
-	luax_pushtype(L, MATH_COMPRESSED_DATA_ID, cdata);
+	luax_pushtype(L, cdata);
+	cdata->release();
 	return 1;
 }
 
 int w_decompress(lua_State *L)
 {
+	using namespace love::data;
+	luax_markdeprecated(L, "love.math.decompress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.decompress");
+
 	char *rawbytes = nullptr;
 	size_t rawsize = 0;
 
-	if (luax_istype(L, 1, MATH_COMPRESSED_DATA_ID))
+	if (luax_istype(L, 1, CompressedData::type))
 	{
 		CompressedData *data = luax_checkcompresseddata(L, 1);
 		rawsize = data->getDecompressedSize();
-		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(data, rawsize); });
+		luax_catchexcept(L, [&](){ rawbytes = decompress(data, rawsize); });
 	}
 	else
 	{
@@ -362,21 +399,21 @@ int w_decompress(lua_State *L)
 		const char *fstr = luaL_checkstring(L, 2);
 
 		if (!Compressor::getConstant(fstr, format))
-			return luaL_error(L, "Invalid compressed data format: %s", fstr);
+			return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 		size_t compressedsize = 0;
 		const char *cbytes = nullptr;
 
-		if (luax_istype(L, 1, DATA_ID))
+		if (luax_istype(L, 1, Data::type))
 		{
-			Data *data = luax_checktype<Data>(L, 1, DATA_ID);
+			Data *data = luax_checktype<Data>(L, 1);
 			cbytes = (const char *) data->getData();
 			compressedsize = data->getSize();
 		}
 		else
 			cbytes = luaL_checklstring(L, 1, &compressedsize);
 
-		luax_catchexcept(L, [&](){ rawbytes = Math::instance.decompress(format, cbytes, compressedsize, rawsize); });
+		luax_catchexcept(L, [&](){ rawbytes = decompress(format, cbytes, compressedsize, rawsize); });
 	}
 
 	lua_pushlstring(L, rawbytes, rawsize);
@@ -399,31 +436,13 @@ struct FFI_Math
 
 static FFI_Math ffifuncs =
 {
-	[](float x) -> float // noise1
-	{
-		return Math::instance.noise(x);
-	},
-	[](float x, float y) -> float // noise2
-	{
-		return Math::instance.noise(x, y);
-	},
-	[](float x, float y, float z) -> float // noise3
-	{
-		return Math::instance.noise(x, y, z);
-	},
-	[](float x, float y, float z, float w) -> float // noise4
-	{
-		return Math::instance.noise(x, y, z, w);
-	},
+	noise1,
+	noise2,
+	noise3,
+	noise4,
 
-	[](float c) -> float // gammaToLinear
-	{
-		return Math::instance.gammaToLinear(c);
-	},
-	[](float c) -> float // linearToGamma
-	{
-		return Math::instance.linearToGamma(c);
-	}
+	gammaToLinear,
+	linearToGamma,
 };
 
 // List of functions to wrap.
@@ -434,13 +453,17 @@ static const luaL_Reg functions[] =
 	{ "_getRandomGenerator", w__getRandomGenerator },
 	{ "newRandomGenerator", w_newRandomGenerator },
 	{ "newBezierCurve", w_newBezierCurve },
+	{ "newTransform", w_newTransform },
 	{ "triangulate", w_triangulate },
 	{ "isConvex", w_isConvex },
 	{ "gammaToLinear", w_gammaToLinear },
 	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
+
+	// Deprecated.
 	{ "compress", w_compress },
 	{ "decompress", w_decompress },
+
 	{ 0, 0 }
 };
 
@@ -448,7 +471,7 @@ static const lua_CFunction types[] =
 {
 	luaopen_randomgenerator,
 	luaopen_beziercurve,
-	luaopen_compresseddata,
+	luaopen_transform,
 	0
 };
 
@@ -459,7 +482,7 @@ extern "C" int luaopen_love_math(lua_State *L)
 	WrappedModule w;
 	w.module = &Math::instance;
 	w.name = "math";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

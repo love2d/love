@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,8 @@ namespace joystick
 class Joystick : public Object
 {
 public:
+
+	static love::Type type;
 
 	// Joystick hat values.
 	enum Hat
@@ -149,6 +151,8 @@ public:
 
 	virtual float getGamepadAxis(GamepadAxis axis) const = 0;
 	virtual bool isGamepadDown(const std::vector<GamepadButton> &blist) const = 0;
+
+	virtual JoystickInput getGamepadMapping(const GamepadInput &input) const = 0;
 
 	virtual void *getHandle() const = 0;
 

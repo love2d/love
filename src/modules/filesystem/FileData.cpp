@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,8 @@ namespace love
 namespace filesystem
 {
 
+love::Type FileData::type("FileData", &Data::type);
+
 FileData::FileData(uint64 size, const std::string &filename)
 	: data(nullptr)
 	, size((size_t) size)
@@ -43,8 +45,33 @@ FileData::FileData(uint64 size, const std::string &filename)
 		throw love::Exception("Out of memory.");
 	}
 
-	if (filename.rfind('.') != std::string::npos)
-		extension = filename.substr(filename.rfind('.')+1);
+	size_t dotpos = filename.rfind('.');
+
+	if (dotpos != std::string::npos)
+	{
+		extension = filename.substr(dotpos + 1);
+		name = filename.substr(0, dotpos);
+	}
+	else
+		name = filename;
+}
+
+FileData::FileData(const FileData &c)
+	: data(nullptr)
+	, size(c.size)
+	, filename(c.filename)
+	, extension(c.extension)
+	, name(c.name)
+{
+	try
+	{
+		data = new char[(size_t) size];
+	}
+	catch (std::bad_alloc &)
+	{
+		throw love::Exception("Out of memory.");
+	}
+	memcpy(data, c.data, size);
 }
 
 FileData::~FileData()
@@ -52,9 +79,14 @@ FileData::~FileData()
 	delete [] data;
 }
 
+FileData *FileData::clone() const
+{
+	return new FileData(*this);
+}
+
 void *FileData::getData() const
 {
-	return (void *)data;
+	return data;
 }
 
 size_t FileData::getSize() const
@@ -73,23 +105,10 @@ const std::string &FileData::getExtension() const
 	return extension;
 }
 
-bool FileData::getConstant(const char *in, Decoder &out)
+const std::string &FileData::getName() const
 {
-	return decoders.find(in, out);
+	return name;
 }
-
-bool FileData::getConstant(Decoder in, const char *&out)
-{
-	return decoders.find(in, out);
-}
-
-StringMap<FileData::Decoder, FileData::DECODE_MAX_ENUM>::Entry FileData::decoderEntries[] =
-{
-	{"file", FileData::FILE},
-	{"base64", FileData::BASE64},
-};
-
-StringMap<FileData::Decoder, FileData::DECODE_MAX_ENUM> FileData::decoders(FileData::decoderEntries, sizeof(FileData::decoderEntries));
 
 } // filesystem
 } // love

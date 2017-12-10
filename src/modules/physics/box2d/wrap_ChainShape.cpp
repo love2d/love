@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@ namespace box2d
 
 ChainShape *luax_checkchainshape(lua_State *L, int idx)
 {
-	return luax_checktype<ChainShape>(L, idx, PHYSICS_CHAIN_SHAPE_ID);
+	return luax_checktype<ChainShape>(L, idx);
 }
 
 int w_ChainShape_setNextVertex(lua_State *L)
@@ -65,10 +65,10 @@ int w_ChainShape_setPreviousVertex(lua_State *L)
 int w_ChainShape_getChildEdge(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	int index = (int) luaL_checknumber(L, 2) - 1; // Convert from 1-based index
+	int index = (int) luaL_checkinteger(L, 2) - 1; // Convert from 1-based index
 	EdgeShape *e = 0;
 	luax_catchexcept(L, [&](){ e = c->getChildEdge(index); });
-	luax_pushtype(L, PHYSICS_EDGE_SHAPE_ID, e);
+	luax_pushtype(L, e);
 	e->release();
 	return 1;
 }
@@ -84,7 +84,7 @@ int w_ChainShape_getVertexCount(lua_State *L)
 int w_ChainShape_getPoint(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	int index = (int) luaL_checknumber(L, 2) - 1; // Convert from 1-based index
+	int index = (int) luaL_checkinteger(L, 2) - 1; // Convert from 1-based index
 	b2Vec2 v;
 	luax_catchexcept(L, [&](){ v = c->getPoint(index); });
 	lua_pushnumber(L, v.x);
@@ -149,7 +149,7 @@ static const luaL_Reg w_ChainShape_functions[] =
 
 extern "C" int luaopen_chainshape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CHAIN_SHAPE_ID, "ChainShape", w_Shape_functions, w_ChainShape_functions, nullptr);
+	return luax_register_type(L, &ChainShape::type, w_Shape_functions, w_ChainShape_functions, nullptr);
 }
 
 } // box2d

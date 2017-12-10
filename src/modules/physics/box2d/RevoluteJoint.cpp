@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,8 @@ namespace physics
 {
 namespace box2d
 {
+
+love::Type RevoluteJoint::type("RevoluteJoint", &Joint::type);
 
 RevoluteJoint::RevoluteJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, bool collideConnected)
 	: Joint(body1, body2)
@@ -114,7 +116,7 @@ void RevoluteJoint::setLimitsEnabled(bool enable)
 	joint->EnableLimit(enable);
 }
 
-bool RevoluteJoint::hasLimitsEnabled() const
+bool RevoluteJoint::areLimitsEnabled() const
 {
 	return joint->IsLimitEnabled();
 }

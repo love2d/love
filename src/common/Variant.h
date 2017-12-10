@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
 
 #include <cstring>
 #include <vector>
+#include <set>
 
 namespace love
 {
@@ -43,7 +44,7 @@ public:
 		STRING,
 		SMALLSTRING,
 		LUSERDATA,
-		FUSERDATA,
+		LOVEOBJECT,
 		NIL,
 		TABLE
 	};
@@ -52,8 +53,8 @@ public:
 	Variant(bool boolean);
 	Variant(double number);
 	Variant(const char *string, size_t len);
-	Variant(void *userdata);
-	Variant(love::Type udatatype, void *userdata);
+	Variant(void *lightuserdata);
+	Variant(love::Type *type, love::Object *object);
 	Variant(std::vector<std::pair<Variant, Variant>> *table);
 	Variant(const Variant &v);
 	Variant(Variant &&v);
@@ -63,7 +64,7 @@ public:
 
 	Type getType() const { return type; }
 
-	static Variant fromLua(lua_State *L, int n, bool allowTables = true);
+	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
 	void toLua(lua_State *L) const;
 
 private:
@@ -101,7 +102,6 @@ private:
 	static const int MAX_SMALL_STRING_LENGTH = 15;
 
 	Type type;
-	love::Type udatatype;
 
 	union Data
 	{
@@ -109,6 +109,7 @@ private:
 		double number;
 		SharedString *string;
 		void *userdata;
+		Proxy objectproxy;
 		SharedTable *table;
 		struct
 		{

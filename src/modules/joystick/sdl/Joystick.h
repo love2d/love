@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,39 +44,41 @@ public:
 
 	virtual ~Joystick();
 
-	bool open(int deviceindex);
-	void close();
+	bool open(int deviceindex) override;
+	void close() override;
 
-	bool isConnected() const;
+	bool isConnected() const override;
 
-	const char *getName() const;
+	const char *getName() const override;
 
-	int getAxisCount() const;
-	int getButtonCount() const;
-	int getHatCount() const;
+	int getAxisCount() const override;
+	int getButtonCount() const override;
+	int getHatCount() const override;
 
-	float getAxis(int axisindex) const;
-	std::vector<float> getAxes() const;
-	Hat getHat(int hatindex) const;
+	float getAxis(int axisindex) const override;
+	std::vector<float> getAxes() const override;
+	Hat getHat(int hatindex) const override;
 
-	bool isDown(const std::vector<int> &buttonlist) const;
+	bool isDown(const std::vector<int> &buttonlist) const override;
 
-	bool openGamepad(int deviceindex);
-	bool isGamepad() const;
+	bool openGamepad(int deviceindex) override;
+	bool isGamepad() const override;
 
-	float getGamepadAxis(GamepadAxis axis) const;
-	bool isGamepadDown(const std::vector<GamepadButton> &blist) const;
+	float getGamepadAxis(GamepadAxis axis) const override;
+	bool isGamepadDown(const std::vector<GamepadButton> &blist) const override;
 
-	void *getHandle() const;
+	JoystickInput getGamepadMapping(const GamepadInput &input) const override;
 
-	std::string getGUID() const;
-	int getInstanceID() const;
-	int getID() const;
+	void *getHandle() const override;
 
-	bool isVibrationSupported();
-	bool setVibration(float left, float right, float duration = -1.0f);
-	bool setVibration();
-	void getVibration(float &left, float &right);
+	std::string getGUID() const override;
+	int getInstanceID() const override;
+	int getID() const override;
+
+	bool isVibrationSupported() override;
+	bool setVibration(float left, float right, float duration = -1.0f) override;
+	bool setVibration() override;
+	void getVibration(float &left, float &right) override;
 
 	static bool getConstant(Hat in, Uint8 &out);
 	static bool getConstant(Uint8 in, Hat &out);

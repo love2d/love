@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,8 @@ namespace love
 namespace filesystem
 {
 
+love::Type Filesystem::type("filesystem", &Module::type);
+
 Filesystem::Filesystem()
 {
 }
@@ -58,6 +60,13 @@ void Filesystem::setAndroidSaveExternal(bool useExternal)
 bool Filesystem::isAndroidSaveExternal() const
 { 
 	return useExternal;
+}
+
+FileData *Filesystem::newFileData(const void *data, size_t size, const char *filename) const
+{
+	FileData *fd = new FileData(size, std::string(filename));
+	memcpy(fd->getData(), data, size);
+	return fd;
 }
 
 bool Filesystem::isRealDirectory(const std::string &path) const
@@ -110,6 +119,26 @@ std::string Filesystem::getExecutablePath() const
 #error Missing implementation for Filesystem::getExecutablePath!
 #endif
 }
+
+bool Filesystem::getConstant(const char *in, FileType &out)
+{
+	return fileTypes.find(in, out);
+}
+
+bool Filesystem::getConstant(FileType in, const char *&out)
+{
+	return fileTypes.find(in, out);
+}
+
+StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM>::Entry Filesystem::fileTypeEntries[] =
+{
+	{ "file",      FILETYPE_FILE      },
+	{ "directory", FILETYPE_DIRECTORY },
+	{ "symlink",   FILETYPE_SYMLINK   },
+	{ "other",     FILETYPE_OTHER     },
+};
+
+StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM> Filesystem::fileTypes(Filesystem::fileTypeEntries, sizeof(Filesystem::fileTypeEntries));
 
 } // filesystem
 } // love

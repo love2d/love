@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -241,15 +241,15 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	std::string insertstr = gpinputname + ":" + joyinputstr + ",";
 
 	// We should replace any existing gamepad bind.
-	size_t findpos = mapstr.find(std::string(", ") + gpinputname + ":");
+	size_t findpos = mapstr.find("," + gpinputname + ":");
 	if (findpos != std::string::npos)
 	{
 		// The bind string ends at the next comma, or the end of the string.
-		size_t endpos = mapstr.find_first_of(',', findpos);
+		size_t endpos = mapstr.find_first_of(',', findpos + 1);
 		if (endpos == std::string::npos)
 			endpos = mapstr.length() - 1;
 
-		mapstr.replace(findpos, endpos - findpos + 1, insertstr);
+		mapstr.replace(findpos + 1, endpos - findpos + 1, insertstr);
 	}
 	else
 	{
@@ -269,54 +269,6 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 		checkGamepads(guid);
 
 	return status >= 0;
-}
-
-Joystick::JoystickInput JoystickModule::getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput)
-{
-	// All SDL joystick GUID strings are 32 characters.
-	if (guid.length() != 32)
-		throw love::Exception("Invalid joystick GUID: %s", guid.c_str());
-
-	Joystick::JoystickInput jinput;
-	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
-
-	SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(guid.c_str());
-
-	std::string mapstr;
-
-	char *sdlmapstr = SDL_GameControllerMappingForGUID(sdlguid);
-	if (!sdlmapstr)
-		return jinput;
-
-	mapstr = sdlmapstr;
-	SDL_free(sdlmapstr);
-
-	std::string gpbindname = stringFromGamepadInput(gpinput);
-
-	size_t findpos = mapstr.find(std::string(",") + gpbindname + ":");
-	if (findpos == std::string::npos)
-		return jinput;
-
-	size_t endpos = mapstr.find_first_of(',', findpos + 1);
-	if (endpos == std::string::npos)
-	{
-		// Assume end-of-string if we can't find the next comma.
-		endpos = mapstr.length() - 1;
-	}
-
-	if (endpos >= mapstr.length())
-		return jinput; // Something went wrong.
-
-	// Strip out the trailing comma from our search position, if it exists.
-	if (mapstr[endpos] == ',')
-		endpos--;
-
-	// New start position: comma + gamepadinputlength + ":".
-	findpos += 1 + gpbindname.length() + 1;
-	std::string jbindstr = mapstr.substr(findpos, endpos - findpos + 1);
-
-	jinput = JoystickInputFromString(jbindstr);
-	return jinput;
 }
 
 std::string JoystickModule::stringFromGamepadInput(Joystick::GamepadInput gpinput) const
@@ -344,51 +296,6 @@ std::string JoystickModule::stringFromGamepadInput(Joystick::GamepadInput gpinpu
 		throw love::Exception("Invalid gamepad axis/button.");
 
 	return std::string(gpinputname);
-}
-
-Joystick::JoystickInput JoystickModule::JoystickInputFromString(const std::string &str) const
-{
-	Joystick::JoystickInput jinput;
-	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
-
-	// Return an invalid value rather than throwing an exception.
-	if (str.length() < 2)
-		return jinput;
-
-	// The input type will always be the first character in the string.
-	char inputtype = str[0];
-	std::string bindvalues = str.substr(1);
-
-	Uint8 sdlhat;
-	switch (inputtype)
-	{
-	case 'a':
-		jinput.type = Joystick::INPUT_TYPE_AXIS;
-		jinput.axis = (int) strtol(bindvalues.c_str(), nullptr, 10);
-		break;
-	case 'b':
-		jinput.type = Joystick::INPUT_TYPE_BUTTON;
-		jinput.button = (int) strtol(bindvalues.c_str(), nullptr, 10);
-		break;
-	case 'h':
-		// Hat string syntax is "index.value".
-		if (bindvalues.length() < 3)
-			break;
-		jinput.type = Joystick::INPUT_TYPE_HAT;
-		jinput.hat.index = (int) strtol(bindvalues.substr(0, 1).c_str(), nullptr, 10);
-		sdlhat = (Uint8) strtol(bindvalues.substr(2).c_str(), nullptr, 10);
-		if (!Joystick::getConstant(sdlhat, jinput.hat.value))
-		{
-			// Return an invalid value if we can't find the hat constant.
-			jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
-			return jinput;
-		}
-		break;
-	default:
-		break;
-	}
-
-	return jinput;
 }
 
 void JoystickModule::removeBindFromMapString(std::string &mapstr, const std::string &joybindstr) const

@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2006-2016 LOVE Development Team
+Copyright (c) 2006-2017 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -633,7 +633,7 @@ function love.nogame()
 	end
 
 	function Toast:center()
-		local ww, wh = love.window.fromPixels(love.graphics.getDimensions())
+		local ww, wh = love.graphics.getDimensions()
 		self.x = math.floor(ww / 2 / 32) * 32 + 16
 		self.y = math.floor(wh / 2 / 32) * 32 + 16
 	end
@@ -727,10 +727,9 @@ function love.nogame()
 	function Mosaic:init()
 		local mosaic_image = g_images.mosaic[1]
 
-		local sw, sh = mosaic_image:getDimensions()
-		local ww, wh = love.window.fromPixels(love.graphics.getDimensions())
+		local ww, wh = love.graphics.getDimensions()
 
-		if love.window.getPixelScale() > 1 then
+		if love.window.getDPIScale() > 1 then
 			mosaic_image = g_images.mosaic[2]
 		end
 
@@ -738,7 +737,7 @@ function love.nogame()
 		local SIZE_Y = math.floor(wh / 32 + 2)
 		local SIZE = SIZE_X * SIZE_Y
 
-		self.batch = love.graphics.newSpriteBatch(mosaic_image, SIZE, "stream")
+		self.image = mosaic_image
 		self.pieces = {}
 		self.color_t = 1
 		self.generation = 1
@@ -746,32 +745,23 @@ function love.nogame()
 		local COLORS = {}
 
 		for _,color in ipairs({
-			{ 240, 240, 240 }, -- WHITE (ish)
-			{ 232, 104, 162}, -- PINK
-			{ 69, 155, 168 }, -- BLUE
-			{ 67, 93, 119 }, -- DARK BLUE
+			{ 15/16, 15/16, 15/16 }, -- WHITE (ish)
+			{ 232/255, 104/255, 162/255 }, -- PINK
+			{ 69/255, 155/255, 168/255 }, -- BLUE
+			{ 67/255, 93/255, 119/255 }, -- DARK BLUE
 		}) do
 			table.insert(COLORS, color)
 			table.insert(COLORS, color)
 		end
 
 		-- Insert only once. This way it appears half as often.
-		table.insert(COLORS, { 220, 239, 113 }) -- LIME
+		table.insert(COLORS, { 220/255, 239/255, 113/255 }) -- LIME
 
-		-- When using the higher-res mosaic sprite sheet, we want to draw its
-		-- sprites at the same scale as the regular-resolution one, because
-		-- we'll globally love.graphics.scale *everything* by the screen's
-		-- pixel density ratio.
-		-- We can avoid a lot of Quad scaling by taking advantage of the fact
-		-- that Quads use normalized texture coordinates internally - if we use 
-		-- the 'source image size' and quad size of the @1x image for the Quads
-		-- even when rendering them using the @2x image, it will automatically
-		-- scale as expected.
 		local QUADS = {
-			love.graphics.newQuad(0,  0,  32, 32, sw, sh),
-			love.graphics.newQuad(0,  32, 32, 32, sw, sh),
-			love.graphics.newQuad(32, 32, 32, 32, sw, sh),
-			love.graphics.newQuad(32, 0,  32, 32, sw, sh),
+			love.graphics.newQuad(0,  0,  32, 32, mosaic_image),
+			love.graphics.newQuad(0,  32, 32, 32, mosaic_image),
+			love.graphics.newQuad(32, 32, 32, 32, mosaic_image),
+			love.graphics.newQuad(32, 0,  32, 32, mosaic_image),
 		}
 
 		local exclude_left = math.floor(ww / 2 / 32)
@@ -844,22 +834,22 @@ function love.nogame()
 		end
 
 		local GLYPHS = {
-			N = love.graphics.newQuad(0,  64, 32, 32, sw, sh),
-			O = love.graphics.newQuad(32, 64, 32, 32, sw, sh),
-			G = love.graphics.newQuad(0,  96, 32, 32, sw, sh),
-			A = love.graphics.newQuad(32, 96, 32, 32, sw, sh),
-			M = love.graphics.newQuad(64, 96, 32, 32, sw, sh),
-			E = love.graphics.newQuad(96, 96, 32, 32, sw, sh),
+			N = love.graphics.newQuad(0,  64, 32, 32, mosaic_image),
+			O = love.graphics.newQuad(32, 64, 32, 32, mosaic_image),
+			G = love.graphics.newQuad(0,  96, 32, 32, mosaic_image),
+			A = love.graphics.newQuad(32, 96, 32, 32, mosaic_image),
+			M = love.graphics.newQuad(64, 96, 32, 32, mosaic_image),
+			E = love.graphics.newQuad(96, 96, 32, 32, mosaic_image),
 
-			U = love.graphics.newQuad(64, 0,  32, 32, sw, sh),
-			P = love.graphics.newQuad(96, 0,  32, 32, sw, sh),
-			o = love.graphics.newQuad(64, 32, 32, 32, sw, sh),
-			S = love.graphics.newQuad(96, 32, 32, 32, sw, sh),
-			R = love.graphics.newQuad(64, 64, 32, 32, sw, sh),
-			T = love.graphics.newQuad(96, 64, 32, 32, sw, sh),
+			U = love.graphics.newQuad(64, 0,  32, 32, mosaic_image),
+			P = love.graphics.newQuad(96, 0,  32, 32, mosaic_image),
+			o = love.graphics.newQuad(64, 32, 32, 32, mosaic_image),
+			S = love.graphics.newQuad(96, 32, 32, 32, mosaic_image),
+			R = love.graphics.newQuad(64, 64, 32, 32, mosaic_image),
+			T = love.graphics.newQuad(96, 64, 32, 32, mosaic_image),
 		}
 
-		local INITIAL_TEXT_COLOR = { 240, 240, 240 }
+		local INITIAL_TEXT_COLOR = { 15/16, 15/16, 15/16 }
 
 		local put_text = function(str, offset, x, y)
 			local idx = offset + SIZE_X * y + x
@@ -915,8 +905,6 @@ function love.nogame()
 	end
 
 	function Mosaic:draw()
-		self.batch:clear()
-		love.graphics.setColor(255, 255, 255, 64)
 		for idx,piece in ipairs(self.pieces) do
 			local ct = 1 - self.color_t
 			local c0 = piece.color.prev
@@ -925,18 +913,18 @@ function love.nogame()
 			local g = easeOut(ct, c0[2], c1[2] - c0[2], 1)
 			local b = easeOut(ct, c0[3], c1[3] - c0[3], 1)
 
-			self.batch:setColor(r, g, b)
-			self.batch:add(piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
+			love.graphics.setColor(r, g, b)
+			love.graphics.draw(self.image, piece.quad, piece.x, piece.y, piece.r, 1, 1, 16, 16)
 		end
-		love.graphics.setColor(255, 255, 255, 255)
-		love.graphics.draw(self.batch, 0, 0)
+		love.graphics.setColor(1, 1, 1, 1)
 	end
 
 	function love.load()
-		love.graphics.setBackgroundColor(136, 193, 206)
+		love.graphics.setBackgroundColor(136/255, 193/255, 206/255)
 
-		local function load_image(file, name)
-			return love.graphics.newImage(love.filesystem.newFileData(file, name:gsub("_", "."), "base64"))
+		local function load_image(file, name, flags)
+			local decoded = love.data.decode("base64", file)
+			return love.graphics.newImage(love.filesystem.newFileData(decoded, name:gsub("_", ".")), flags)
 		end
 
 		g_images = {}
@@ -964,12 +952,9 @@ function love.nogame()
 	end
 
 	function love.draw()
-		love.graphics.setColor(255, 255, 255)
-		love.graphics.push()
-		love.graphics.scale(love.window.getPixelScale())
+		love.graphics.setColor(1, 1, 1)
 		g_entities.mosaic:draw()
 		g_entities.toast:draw()
-		love.graphics.pop()
 	end
 
 	function love.resize(w, h)
@@ -990,10 +975,17 @@ function love.nogame()
 		end
 	end
 
-	function love.mousepressed(x, y, b)
+	function love.mousepressed(x, y, b, istouch, clicks)
 		local tx = x / love.graphics.getWidth()
 		local ty = y / love.graphics.getHeight()
 		g_entities.toast:look_at(tx, ty)
+
+		-- Double-tap the screen (when using a touch screen) to exit.
+		if istouch and clicks == 2 then
+			if love.window.showMessageBox("Exit No-Game Screen", "", {"OK", "Cancel"}) == 1 then
+				love.event.quit()
+			end
+		end
 	end
 
 	function love.mousemoved(x, y)
@@ -1001,25 +993,6 @@ function love.nogame()
 			local tx = x / love.graphics.getWidth()
 			local ty = y / love.graphics.getHeight()
 			g_entities.toast:look_at(tx, ty)
-		end
-	end
-
-	local last_touch = {time=0, x=0, y=0}
-
-	function love.touchpressed(id, x, y, pressure)
-		-- Double-tap the screen (when using a touch screen) to exit.
-		if #love.touch.getTouches() == 1 then
-			local dist = math.sqrt((x-last_touch.x)^2 + (y-last_touch.y)^2)
-			local difftime = love.timer.getTime() - last_touch.time
-			if difftime < 0.3 and dist < 50 then
-				if love.window.showMessageBox("Exit No-Game Screen", "", {"OK", "Cancel"}) == 1 then
-					love.event.quit()
-				end
-			end
-
-			last_touch.time = love.timer.getTime()
-			last_touch.x = x
-			last_touch.y = y
 		end
 	end
 

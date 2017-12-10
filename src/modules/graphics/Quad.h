@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/math.h"
+#include "common/Vector.h"
 
 namespace love
 {
@@ -33,6 +34,8 @@ namespace graphics
 class Quad : public Object
 {
 public:
+
+	static love::Type type;
 
 	struct Viewport
 	{
@@ -50,11 +53,18 @@ public:
 	double getTextureWidth() const;
 	double getTextureHeight() const;
 
-	const Vertex *getVertices() const;
+	const Vector2 *getVertexPositions() const { return vertexPositions; }
+	const Vector2 *getVertexTexCoords() const { return vertexTexCoords; }
+
+	void setLayer(int layer);
+	int getLayer() const;
 
 private:
 
-	Vertex vertices[4];
+	Vector2 vertexPositions[4];
+	Vector2 vertexTexCoords[4];
+
+	int arrayLayer;
 
 	Viewport viewport;
 	double sw;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,11 @@
 
 #include "sdl/Event.h"
 
+// Shove the wrap_Event.lua code directly into a raw string literal.
+static const char event_lua[] =
+#include "wrap_Event.lua"
+;
+
 namespace love
 {
 namespace event
@@ -47,21 +52,16 @@ static int w_poll_i(lua_State *L)
 	return 0;
 }
 
-int w_poll(lua_State *L)
+int w_pump(lua_State *L)
 {
-	lua_pushcclosure(L, &w_poll_i, 0);
-	return 1;
-}
-
-int w_pump(lua_State *)
-{
-	instance()->pump();
+	luax_catchexcept(L, [&]() { instance()->pump(); });
 	return 0;
 }
 
 int w_wait(lua_State *L)
 {
-	Message *m = instance()->wait();
+	Message *m = nullptr;
+	luax_catchexcept(L, [&]() { m = instance()->wait(); });
 	if (m)
 	{
 		int args = m->toLua(L);
@@ -74,7 +74,8 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	StrongRef<Message> m(Message::fromLua(L, 1), Acquire::NORETAIN);
+	StrongRef<Message> m;
+	luax_catchexcept(L, [&]() { m.set(Message::fromLua(L, 1), Acquire::NORETAIN); });
 
 	luax_pushboolean(L, m.get() != nullptr);
 
@@ -85,18 +86,20 @@ int w_push(lua_State *L)
 	return 1;
 }
 
-int w_clear(lua_State *)
+int w_clear(lua_State *L)
 {
-	instance()->clear();
+	luax_catchexcept(L, [&]() { instance()->clear(); });
 	return 0;
 }
 
 int w_quit(lua_State *L)
 {
-	std::vector<Variant> args = {Variant::fromLua(L, 1)};
+	luax_catchexcept(L, [&]() {
+		std::vector<Variant> args = {Variant::fromLua(L, 1)};
 
-	StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
-	instance()->push(m);
+		StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
+		instance()->push(m);
+	});
 
 	luax_pushboolean(L, true);
 	return 1;
@@ -106,7 +109,7 @@ int w_quit(lua_State *L)
 static const luaL_Reg functions[] =
 {
 	{ "pump", w_pump },
-	{ "poll", w_poll },
+	{ "poll_i", w_poll_i },
 	{ "wait", w_wait },
 	{ "push", w_push },
 	{ "clear", w_clear },
@@ -127,11 +130,16 @@ extern "C" int luaopen_love_event(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "event";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = nullptr;
 
 	int ret = luax_register_module(L, w);
+
+	if (luaL_loadbuffer(L, (const char *)event_lua, sizeof(event_lua), "wrap_Event.lua") == 0)
+		lua_call(L, 0, 0);
+	else
+		lua_error(L);
 
 	return ret;
 }

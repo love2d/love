@@ -61,22 +61,22 @@ int w_newThread(lua_State *L)
 		else
 			luax_convobj(L, 1, "filesystem", "newFileData");
 	}
-	else if (luax_istype(L, 1, FILESYSTEM_FILE_ID))
+	else if (luax_istype(L, 1, love::filesystem::File::type))
 		luax_convobj(L, 1, "filesystem", "newFileData");
 
-	if (luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+	if (luax_istype(L, 1, love::filesystem::FileData::type))
 	{
-		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1, FILESYSTEM_FILE_DATA_ID);
+		love::filesystem::FileData *fdata = luax_checktype<love::filesystem::FileData>(L, 1);
 		name = std::string("@") + fdata->getFilename();
 		data = fdata;
 	}
 	else
 	{
-		data = luax_checktype<love::Data>(L, 1, DATA_ID);
+		data = luax_checktype<love::Data>(L, 1);
 	}
 
 	LuaThread *t = instance()->newThread(name, data);
-	luax_pushtype(L, THREAD_THREAD_ID, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -84,7 +84,7 @@ int w_newThread(lua_State *L)
 int w_newChannel(lua_State *L)
 {
 	Channel *c = instance()->newChannel();
-	luax_pushtype(L, THREAD_CHANNEL_ID, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }
@@ -93,7 +93,7 @@ int w_getChannel(lua_State *L)
 {
 	std::string name = luax_checkstring(L, 1);
 	Channel *c = instance()->getChannel(name);
-	luax_pushtype(L, THREAD_CHANNEL_ID, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }
@@ -126,7 +126,7 @@ extern "C" int luaopen_love_thread(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "thread";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = module_functions;
 	w.types = types;
 

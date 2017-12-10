@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 // LOVE
 #include "ASTCHandler.h"
 #include "common/int.h"
+#include "common/Exception.h"
 
 namespace love
 {
@@ -47,46 +48,46 @@ struct ASTCHeader
 };
 #pragma pack(pop)
 
-static CompressedImageData::Format convertFormat(uint32 blockX, uint32 blockY, uint32 blockZ)
+static PixelFormat convertFormat(uint32 blockX, uint32 blockY, uint32 blockZ)
 {
 	if (blockZ > 1)
-		return CompressedImageData::FORMAT_UNKNOWN;
+		return PIXELFORMAT_UNKNOWN;
 
 	if (blockX == 4 && blockY == 4)
-		return CompressedImageData::FORMAT_ASTC_4x4;
+		return PIXELFORMAT_ASTC_4x4;
 	else if (blockX == 5 && blockY == 4)
-		return CompressedImageData::FORMAT_ASTC_5x4;
+		return PIXELFORMAT_ASTC_5x4;
 	else if (blockX == 5 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_5x5;
+		return PIXELFORMAT_ASTC_5x5;
 	else if (blockX == 6 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_6x5;
+		return PIXELFORMAT_ASTC_6x5;
 	else if (blockX == 6 && blockY == 6)
-		return CompressedImageData::FORMAT_ASTC_6x6;
+		return PIXELFORMAT_ASTC_6x6;
 	else if (blockX == 8 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_8x5;
+		return PIXELFORMAT_ASTC_8x5;
 	else if (blockX == 8 && blockY == 6)
-		return CompressedImageData::FORMAT_ASTC_8x6;
+		return PIXELFORMAT_ASTC_8x6;
 	else if (blockX == 8 && blockY == 8)
-		return CompressedImageData::FORMAT_ASTC_8x8;
+		return PIXELFORMAT_ASTC_8x8;
 	else if (blockX == 10 && blockY == 5)
-		return CompressedImageData::FORMAT_ASTC_10x5;
+		return PIXELFORMAT_ASTC_10x5;
 	else if (blockX == 10 && blockY == 6)
-		return CompressedImageData::FORMAT_ASTC_10x6;
+		return PIXELFORMAT_ASTC_10x6;
 	else if (blockX == 10 && blockY == 8)
-		return CompressedImageData::FORMAT_ASTC_10x8;
+		return PIXELFORMAT_ASTC_10x8;
 	else if (blockX == 10 && blockY == 10)
-		return CompressedImageData::FORMAT_ASTC_10x10;
+		return PIXELFORMAT_ASTC_10x10;
 	else if (blockX == 12 && blockY == 10)
-		return CompressedImageData::FORMAT_ASTC_12x10;
+		return PIXELFORMAT_ASTC_12x10;
 	else if (blockX == 12 && blockY == 12)
-		return CompressedImageData::FORMAT_ASTC_12x12;
+		return PIXELFORMAT_ASTC_12x12;
 
-	return CompressedImageData::FORMAT_UNKNOWN;
+	return PIXELFORMAT_UNKNOWN;
 }
 
 } // Anonymous namespace.
 
-bool ASTCHandler::canParse(const filesystem::FileData *data)
+bool ASTCHandler::canParseCompressed(Data *data)
 {
 	if (data->getSize() <= sizeof(ASTCHeader))
 		return false;
@@ -104,16 +105,16 @@ bool ASTCHandler::canParse(const filesystem::FileData *data)
 	return true;
 }
 
-uint8 *ASTCHandler::parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB)
+StrongRef<CompressedMemory> ASTCHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
-	if (!canParse(filedata))
+	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not an .astc file?)");
 
 	ASTCHeader header = *(const ASTCHeader *) filedata->getData();
 
-	CompressedImageData::Format cformat = convertFormat(header.blockdimX, header.blockdimY, header.blockdimZ);
+	PixelFormat cformat = convertFormat(header.blockdimX, header.blockdimY, header.blockdimZ);
 
-	if (cformat == CompressedImageData::FORMAT_UNKNOWN)
+	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse .astc file: unsupported ASTC format %dx%dx%d.", header.blockdimX, header.blockdimY, header.blockdimZ);
 
 	uint32 sizeX = header.sizeX[0] + (header.sizeX[1] << 8) + (header.sizeX[2] << 16);
@@ -129,35 +130,17 @@ uint8 *ASTCHandler::parse(filesystem::FileData *filedata, std::vector<Compressed
 	if (totalsize + sizeof(header) > filedata->getSize())
 		throw love::Exception("Could not parse .astc file: file is too small.");
 
-	uint8 *data = nullptr;
-
-	try
-	{
-		data = new uint8[totalsize];
-	}
-	catch (std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory.");
-	}
+	StrongRef<CompressedMemory> memory(new CompressedMemory(totalsize), Acquire::NORETAIN);
 
 	// .astc files only store a single mipmap level.
-	memcpy(data, (uint8 *) filedata->getData() + sizeof(ASTCHeader), totalsize);
+	memcpy(memory->data, (uint8 *) filedata->getData() + sizeof(ASTCHeader), totalsize);
 
-	CompressedImageData::SubImage mip;
+	images.emplace_back(new CompressedSlice(cformat, sizeX, sizeY, memory, 0, totalsize), Acquire::NORETAIN);
 
-	mip.width = sizeX;
-	mip.height = sizeY;
-
-	mip.size = totalsize;
-	mip.data = data;
-
-	images.push_back(mip);
-
-	dataSize = totalsize;
 	format = cformat;
 	sRGB = false;
 
-	return data;
+	return memory;
 }
 
 } // magpie

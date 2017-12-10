@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -76,9 +76,9 @@ static int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files 
 			   ogg_int64_t offset	/*offset from the point we wish to seek to*/,
 			   int whence			/*where we want to seek to*/)
 {
-	int         spaceToEOF;   // How much more we can read till we hit the EOF marker
-	ogg_int64_t actualOffset; // How much we can actually offset it by
-	SOggFile   *vorbisData;   // The data we passed in (for the typecast)
+	int64    spaceToEOF;   // How much more we can read till we hit the EOF marker
+	int64    actualOffset; // How much we can actually offset it by
+	SOggFile *vorbisData;  // The data we passed in (for the typecast)
 
 	// Get the data in the right format
 	vorbisData = (SOggFile *) datasource;
@@ -103,7 +103,7 @@ static int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files 
 		else
 			actualOffset = spaceToEOF;
 		// Seek from our currrent location
-		vorbisData->dataRead += (int)actualOffset;
+		vorbisData->dataRead += actualOffset;
 		break;
 	case SEEK_END: // Seek from the end of the file
 		if (offset < 0)
@@ -147,7 +147,7 @@ VorbisDecoder::VorbisDecoder(Data *data, const std::string &ext, int bufferSize)
 
 	// Initialize OGG file
 	oggFile.dataPtr = (const char *) data->getData();
-	oggFile.dataSize = (int) data->getSize();
+	oggFile.dataSize = data->getSize();
 	oggFile.dataRead = 0;
 
 	// Open Vorbis handle
@@ -250,7 +250,7 @@ bool VorbisDecoder::isSeekable()
 	return (result != 0);
 }
 
-int VorbisDecoder::getChannels() const
+int VorbisDecoder::getChannelCount() const
 {
 	return vorbisInfo->channels;
 }

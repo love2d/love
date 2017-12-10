@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type World::type("World", &Object::type);
+
 World::ContactCallback::ContactCallback()
 	: ref(nullptr)
 	, L(nullptr)
@@ -57,7 +59,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 		{
 			Fixture *a = (Fixture *)Memoizer::find(contact->GetFixtureA());
 			if (a != nullptr)
-				luax_pushtype(L, PHYSICS_FIXTURE_ID, a);
+				luax_pushtype(L, a);
 			else
 				throw love::Exception("A fixture has escaped Memoizer!");
 		}
@@ -66,7 +68,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 		{
 			Fixture *b = (Fixture *)Memoizer::find(contact->GetFixtureB());
 			if (b != nullptr)
-				luax_pushtype(L, PHYSICS_FIXTURE_ID, b);
+				luax_pushtype(L, b);
 			else
 				throw love::Exception("A fixture has escaped Memoizer!");
 		}
@@ -77,7 +79,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 		else
 			cobj->retain();
 
-		luax_pushtype(L, PHYSICS_CONTACT_ID, cobj);
+		luax_pushtype(L, cobj);
 		cobj->release();
 
 		int args = 3;
@@ -128,8 +130,8 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 	if (ref != nullptr && L != nullptr)
 	{
 		ref->push(L);
-		luax_pushtype(L, PHYSICS_FIXTURE_ID, a);
-		luax_pushtype(L, PHYSICS_FIXTURE_ID, b);
+		luax_pushtype(L, a);
+		luax_pushtype(L, b);
 		lua_call(L, 2, 1);
 		return luax_toboolean(L, -1);
 	}
@@ -155,7 +157,7 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 		Fixture *f = (Fixture *)Memoizer::find(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, PHYSICS_FIXTURE_ID, f);
+		luax_pushtype(L, f);
 		lua_call(L, 1, 1);
 		bool cont = luax_toboolean(L, -1);
 		lua_pop(L, 1);
@@ -184,7 +186,7 @@ float32 World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &
 		Fixture *f = (Fixture *)Memoizer::find(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, PHYSICS_FIXTURE_ID, f);
+		luax_pushtype(L, f);
 		b2Vec2 scaledPoint = Physics::scaleUp(point);
 		lua_pushnumber(L, scaledPoint.x);
 		lua_pushnumber(L, scaledPoint.y);
@@ -251,7 +253,12 @@ World::~World()
 
 void World::update(float dt)
 {
-	world->Step(dt, 8, 6);
+	update(dt, 8, 3); // Box2D 2.3's recommended defaults.
+}
+
+void World::update(float dt, int velocityIterations, int positionIterations)
+{
+	world->Step(dt, velocityIterations, positionIterations);
 
 	// Destroy all objects marked during the time step.
 	for (Body *b : destructBodies)
@@ -454,7 +461,7 @@ int World::getContactCount() const
 	return world->GetContactCount();
 }
 
-int World::getBodyList(lua_State *L) const
+int World::getBodies(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Body *b = world->GetBodyList();
@@ -468,7 +475,7 @@ int World::getBodyList(lua_State *L) const
 		Body *body = (Body *)Memoizer::find(b);
 		if (!body)
 			throw love::Exception("A body has escaped Memoizer!");
-		luax_pushtype(L, PHYSICS_BODY_ID, body);
+		luax_pushtype(L, body);
 		lua_rawseti(L, -2, i);
 		i++;
 	}
@@ -476,7 +483,7 @@ int World::getBodyList(lua_State *L) const
 	return 1;
 }
 
-int World::getJointList(lua_State *L) const
+int World::getJoints(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Joint *j = world->GetJointList();
@@ -486,7 +493,7 @@ int World::getJointList(lua_State *L) const
 		if (!j) break;
 		Joint *joint = (Joint *)Memoizer::find(j);
 		if (!joint) throw love::Exception("A joint has escaped Memoizer!");
-		luax_pushtype(L, PHYSICS_JOINT_ID, joint);
+		luax_pushtype(L, joint);
 		lua_rawseti(L, -2, i);
 		i++;
 	}
@@ -494,7 +501,7 @@ int World::getJointList(lua_State *L) const
 	return 1;
 }
 
-int World::getContactList(lua_State *L) const
+int World::getContacts(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Contact *c = world->GetContactList();
@@ -507,7 +514,7 @@ int World::getContactList(lua_State *L) const
 			contact = new Contact(c);
 		else
 			contact->retain();
-		luax_pushtype(L, PHYSICS_CONTACT_ID, contact);
+		luax_pushtype(L, contact);
 		contact->release();
 		lua_rawseti(L, -2, i);
 		i++;

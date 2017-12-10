@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,16 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H
-#define LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H
+#pragma once
 
 // LOVE
 #include "common/Data.h"
 #include "common/StringMap.h"
 #include "common/int.h"
+#include "common/pixelformat.h"
+#include "CompressedSlice.h"
+#include "FormatHandler.h"
 
 // STL
 #include <vector>
+#include <list>
 
 namespace love
 {
@@ -43,70 +46,27 @@ class CompressedImageData : public Data
 {
 public:
 
-	// Recognized compressed image data formats.
-	enum Format
-	{
-		FORMAT_UNKNOWN,
-		FORMAT_DXT1,
-		FORMAT_DXT3,
-		FORMAT_DXT5,
-		FORMAT_BC4,
-		FORMAT_BC4s,
-		FORMAT_BC5,
-		FORMAT_BC5s,
-		FORMAT_BC6H,
-		FORMAT_BC6Hs,
-		FORMAT_BC7,
-		FORMAT_PVR1_RGB2,
-		FORMAT_PVR1_RGB4,
-		FORMAT_PVR1_RGBA2,
-		FORMAT_PVR1_RGBA4,
-		FORMAT_ETC1,
-		FORMAT_ETC2_RGB,
-		FORMAT_ETC2_RGBA,
-		FORMAT_ETC2_RGBA1,
-		FORMAT_EAC_R,
-		FORMAT_EAC_Rs,
-		FORMAT_EAC_RG,
-		FORMAT_EAC_RGs,
-		FORMAT_ASTC_4x4,
-		FORMAT_ASTC_5x4,
-		FORMAT_ASTC_5x5,
-		FORMAT_ASTC_6x5,
-		FORMAT_ASTC_6x6,
-		FORMAT_ASTC_8x5,
-		FORMAT_ASTC_8x6,
-		FORMAT_ASTC_8x8,
-		FORMAT_ASTC_10x5,
-		FORMAT_ASTC_10x6,
-		FORMAT_ASTC_10x8,
-		FORMAT_ASTC_10x10,
-		FORMAT_ASTC_12x10,
-		FORMAT_ASTC_12x12,
-		FORMAT_MAX_ENUM
-	};
+	static love::Type type;
 
-	// Compressed image data can have multiple mipmap levels, each represented
-	// by a sub-image.
-	struct SubImage
-	{
-		int width, height;
-		size_t size;
-		uint8 *data; // Should not have ownership of the data.
-	};
-
-	CompressedImageData();
+	CompressedImageData(const std::list<FormatHandler *> &formats, Data *filedata);
+	CompressedImageData(const CompressedImageData &c);
 	virtual ~CompressedImageData();
 
 	// Implements Data.
-	virtual void *getData() const;
-	virtual size_t getSize() const;
+	CompressedImageData *clone() const override;
+	void *getData() const override;
+	size_t getSize() const override;
 
 	/**
 	 * Gets the number of mipmaps in this Compressed Image Data.
 	 * Includes the base image level.
 	 **/
-	int getMipmapCount() const;
+	int getMipmapCount(int slice = 0) const;
+
+	/**
+	 * Gets the number of slices (array layers, cube faces, 3D layers, etc.)
+	 **/
+	int getSliceCount(int mip = 0) const;
 
 	/**
 	 * Gets the size in bytes of a sub-image at the specified mipmap level.
@@ -131,36 +91,26 @@ public:
 	/**
 	 * Gets the format of the compressed data.
 	 **/
-	Format getFormat() const;
+	PixelFormat getFormat() const;
 
 	bool isSRGB() const;
 
-	static bool getConstant(const char *in, Format &out);
-	static bool getConstant(Format in, const char *&out);
+	CompressedSlice *getSlice(int slice, int miplevel) const;
 
 protected:
 
-	Format format;
-
+	PixelFormat format;
 	bool sRGB;
 
 	// Single block of memory containing all of the sub-images.
-	uint8 *data;
-	size_t dataSize;
+	StrongRef<CompressedMemory> memory;
 
 	// Texture info for each mipmap level.
-	std::vector<SubImage> dataImages;
+	std::vector<StrongRef<CompressedSlice>> dataImages;
 
-	void checkMipmapLevelExists(int miplevel) const;
-
-private:
-
-	static StringMap<Format, FORMAT_MAX_ENUM>::Entry formatEntries[];
-	static StringMap<Format, FORMAT_MAX_ENUM> formats;
+	void checkSliceExists(int slice, int miplevel) const;
 
 }; // CompressedImageData
 
 } // image
 } // love
-
-#endif // LOVE_IMAGE_COMPRESSED_IMAGE_DATA_H

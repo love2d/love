@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@ namespace physics
 namespace box2d
 {
 
-int Physics::meter = Physics::DEFAULT_METER;
+float Physics::meter = Physics::DEFAULT_METER;
 
 const char *Physics::getName() const
 {
@@ -146,7 +146,7 @@ int Physics::newPolygonShape(lua_State *L)
 	}
 
 	PolygonShape *p = new PolygonShape(s);
-	luax_pushtype(L, PHYSICS_POLYGON_SHAPE_ID, p);
+	luax_pushtype(L, p);
 	p->release();
 	return 1;
 }
@@ -164,7 +164,7 @@ int Physics::newChainShape(lua_State *L)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
 	int vcount = argc/2;
-	bool loop = luax_toboolean(L, 1);
+	bool loop = luax_checkboolean(L, 1);
 	b2Vec2 *vecs = new b2Vec2[vcount];
 
 	if (istable)
@@ -208,7 +208,7 @@ int Physics::newChainShape(lua_State *L)
 	delete[] vecs;
 
 	ChainShape *c = new ChainShape(s);
-	luax_pushtype(L, PHYSICS_CHAIN_SHAPE_ID, c);
+	luax_pushtype(L, c);
 	c->release();
 	return 1;
 }
@@ -296,8 +296,8 @@ Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 
 int Physics::getDistance(lua_State *L)
 {
-	Fixture *fixtureA = luax_checktype<Fixture>(L, 1, PHYSICS_FIXTURE_ID);
-	Fixture *fixtureB = luax_checktype<Fixture>(L, 2, PHYSICS_FIXTURE_ID);
+	Fixture *fixtureA = luax_checktype<Fixture>(L, 1);
+	Fixture *fixtureB = luax_checktype<Fixture>(L, 2);
 	b2DistanceProxy pA, pB;
 	b2DistanceInput i;
 	b2DistanceOutput o;
@@ -323,37 +323,37 @@ int Physics::getDistance(lua_State *L)
 	return 5;
 }
 
-void Physics::setMeter(int scale)
+void Physics::setMeter(float scale)
 {
 	if (scale < 1) throw love::Exception("Physics error: invalid meter");
 	Physics::meter = scale;
 }
 
-int Physics::getMeter()
+float Physics::getMeter()
 {
 	return meter;
 }
 
 void Physics::scaleDown(float &x, float &y)
 {
-	x /= (float)meter;
-	y /= (float)meter;
+	x /= meter;
+	y /= meter;
 }
 
 void Physics::scaleUp(float &x, float &y)
 {
-	x *= (float)meter;
-	y *= (float)meter;
+	x *= meter;
+	y *= meter;
 }
 
 float Physics::scaleDown(float f)
 {
-	return f/(float)meter;
+	return f/meter;
 }
 
 float Physics::scaleUp(float f)
 {
-	return f*(float)meter;
+	return f*meter;
 }
 
 b2Vec2 Physics::scaleDown(const b2Vec2 &v)

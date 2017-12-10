@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,8 +21,8 @@
 // LOVE
 #include "common/config.h"
 #include "common/version.h"
+#include "common/deprecation.h"
 #include "common/runtime.h"
-#include "common/wrap_Data.h"
 
 #include "love.h"
 
@@ -52,8 +52,8 @@
 #ifdef LOVE_ENABLE_ENET
 #	include "libraries/enet/lua-enet.h"
 #endif
-#ifdef LOVE_ENABLE_LUAUTF8
-#	include "libraries/luautf8/lutf8lib.h"
+#ifdef LOVE_ENABLE_LUA53
+#	include "libraries/lua53/lutf8lib.h"
 #endif
 
 // For love::graphics::setGammaCorrect.
@@ -72,6 +72,9 @@ extern "C"
 {
 #if defined(LOVE_ENABLE_AUDIO)
 	extern int luaopen_love_audio(lua_State*);
+#endif
+#if defined(LOVE_ENABLE_DATA)
+	extern int luaopen_love_data(lua_State*);
 #endif
 #if defined(LOVE_ENABLE_EVENT)
 	extern int luaopen_love_event(lua_State*);
@@ -132,6 +135,9 @@ static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_AUDIO)
 	{ "love.audio", luaopen_love_audio },
 #endif
+#if defined(LOVE_ENABLE_DATA)
+	{ "love.data", luaopen_love_data },
+#endif
 #if defined(LOVE_ENABLE_EVENT)
 	{ "love.event", luaopen_love_event },
 #endif
@@ -168,11 +174,11 @@ static const luaL_Reg modules[] = {
 #if defined(LOVE_ENABLE_SYSTEM)
 	{ "love.system", luaopen_love_system },
 #endif
-#if defined(LOVE_ENABLE_TIMER)
-	{ "love.timer", luaopen_love_timer },
-#endif
 #if defined(LOVE_ENABLE_THREAD)
 	{ "love.thread", luaopen_love_thread },
+#endif
+#if defined(LOVE_ENABLE_TIMER)
+	{ "love.timer", luaopen_love_timer },
 #endif
 #if defined(LOVE_ENABLE_TOUCH)
 	{ "love.touch", luaopen_love_touch },
@@ -225,9 +231,9 @@ static int w_love_isVersionCompatible(lua_State *L)
 		version = luaL_checkstring(L, 1);
 	else
 	{
-		int major = (int) luaL_checknumber(L, 1);
-		int minor = (int) luaL_checknumber(L, 2);
-		int rev   = (int) luaL_checknumber(L, 3);
+		int major = (int) luaL_checkinteger(L, 1);
+		int minor = (int) luaL_checkinteger(L, 2);
+		int rev   = (int) luaL_checkinteger(L, 3);
 
 		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
 		// array of version strings.
@@ -255,6 +261,25 @@ static int w__setGammaCorrect(lua_State *L)
 #ifdef LOVE_ENABLE_GRAPHICS
 	love::graphics::setGammaCorrect((bool) lua_toboolean(L, 1));
 #endif
+	return 0;
+}
+
+static int w_love_setDeprecationOutput(lua_State *L)
+{
+	bool enable = love::luax_checkboolean(L, 1);
+	love::setDeprecationOutputEnabled(enable);
+	return 0;
+}
+
+static int w_love_hasDeprecationOutput(lua_State *L)
+{
+	love::luax_pushboolean(L, love::isDeprecationOutputEnabled());
+	return 1;
+}
+
+static int w_deprecation__gc(lua_State *)
+{
+	love::deinitDeprecation();
 	return 0;
 }
 
@@ -324,12 +349,34 @@ int luaopen_love(lua_State *L)
 #endif
 	lua_setfield(L, -2, "_os");
 
+	{
+		love::initDeprecation();
+
+		// Any old data that we can attach a metatable to, for __gc. We want to
+		// call deinitDeprecation when love is garbage collected.
+		lua_newuserdata(L, sizeof(int));
+
+		luaL_newmetatable(L, "love_deprecation");
+		lua_pushcfunction(L, w_deprecation__gc);
+		lua_setfield(L, -2, "__gc");
+		lua_setmetatable(L, -2);
+
+		lua_setfield(L, -2, "_deprecation");
+
+		lua_pushcfunction(L, w_love_setDeprecationOutput);
+		lua_setfield(L, -2, "setDeprecationOutput");
+
+		lua_pushcfunction(L, w_love_hasDeprecationOutput);
+		lua_setfield(L, -2, "hasDeprecationOutput");
+	}
+
 	// Preload module loaders.
 	for (int i = 0; modules[i].name != nullptr; i++)
 		love::luax_preload(L, modules[i].func, modules[i].name);
 
-	// Load "common" types.
-	love::w_Data_open(L);
+	// Necessary for Data-creating methods to work properly in Data subclasses.
+	love::luax_require(L, "love.data");
+	lua_pop(L, 1);
 
 #ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);
@@ -337,7 +384,7 @@ int luaopen_love(lua_State *L)
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");
 #endif
-#ifdef LOVE_ENABLE_LUAUTF8
+#ifdef LOVE_ENABLE_LUA53
 	love::luax_preload(L, luaopen_luautf8, "utf8");
 #endif
 

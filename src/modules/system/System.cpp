@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,20 +42,6 @@
 #include <spawn.h>
 #endif
 
-#if defined(LOVE_LINUX)
-static void sigchld_handler(int sig)
-{
-	// Because waitpid can set errno, we need to save it.
-	auto old = errno;
-
-	// Reap whilst there are children waiting to be reaped.
-	while (waitpid(-1, nullptr, WNOHANG) > 0)
-		;
-
-	errno = old;
-}
-#endif
-
 namespace love
 {
 namespace system
@@ -63,18 +49,6 @@ namespace system
 
 System::System()
 {
-#if defined(LOVE_LINUX)
-	// Enable automatic cleanup of zombie processes
-	// NOTE: We're using our own handler, instead of SA_NOCLDWAIT because the
-	// latter breaks wait, and thus os.execute.
-	// NOTE: This isn't perfect, due to multithreading our SIGCHLD can happen
-	// on a different thread than the one calling wait(), thus causing a race.
-	struct sigaction act = {0};
-	sigemptyset(&act.sa_mask);
-	act.sa_handler = sigchld_handler;
-	act.sa_flags = SA_RESTART;
-	sigaction(SIGCHLD, &act, nullptr);
-#endif
 }
 
 std::string System::getOS() const

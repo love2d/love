@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,17 @@
 #include "wrap_Joint.h"
 #include "common/StringMap.h"
 #include "Body.h"
+#include "DistanceJoint.h"
+#include "RevoluteJoint.h"
+#include "PrismaticJoint.h"
+#include "MouseJoint.h"
+#include "PulleyJoint.h"
+#include "GearJoint.h"
+#include "FrictionJoint.h"
+#include "WeldJoint.h"
+#include "WheelJoint.h"
+#include "RopeJoint.h"
+#include "MotorJoint.h"
 
 namespace love
 {
@@ -38,27 +49,27 @@ void luax_pushjoint(lua_State *L, Joint *j)
 	switch (j->getType())
 	{
 	case Joint::JOINT_DISTANCE:
-		return luax_pushtype(L, PHYSICS_DISTANCE_JOINT_ID, j);
+		return luax_pushtype(L, DistanceJoint::type, j);
 	case Joint::JOINT_REVOLUTE:
-		return luax_pushtype(L, PHYSICS_REVOLUTE_JOINT_ID, j);
+		return luax_pushtype(L, RevoluteJoint::type, j);
 	case Joint::JOINT_PRISMATIC:
-		return luax_pushtype(L, PHYSICS_PRISMATIC_JOINT_ID, j);
+		return luax_pushtype(L, PrismaticJoint::type, j);
 	case Joint::JOINT_MOUSE:
-		return luax_pushtype(L, PHYSICS_MOUSE_JOINT_ID, j);
+		return luax_pushtype(L, MouseJoint::type, j);
 	case Joint::JOINT_PULLEY:
-		return luax_pushtype(L, PHYSICS_PULLEY_JOINT_ID, j);
+		return luax_pushtype(L, PulleyJoint::type, j);
 	case Joint::JOINT_GEAR:
-		return luax_pushtype(L, PHYSICS_GEAR_JOINT_ID, j);
+		return luax_pushtype(L, GearJoint::type, j);
 	case Joint::JOINT_FRICTION:
-		return luax_pushtype(L, PHYSICS_FRICTION_JOINT_ID, j);
+		return luax_pushtype(L, FrictionJoint::type, j);
 	case Joint::JOINT_WELD:
-		return luax_pushtype(L, PHYSICS_WELD_JOINT_ID, j);
+		return luax_pushtype(L, WeldJoint::type, j);
 	case Joint::JOINT_WHEEL:
-		return luax_pushtype(L, PHYSICS_WHEEL_JOINT_ID, j);
+		return luax_pushtype(L, WheelJoint::type, j);
 	case Joint::JOINT_ROPE:
-		return luax_pushtype(L, PHYSICS_ROPE_JOINT_ID, j);
+		return luax_pushtype(L, RopeJoint::type, j);
 	case Joint::JOINT_MOTOR:
-		return luax_pushtype(L, PHYSICS_MOTOR_JOINT_ID, j);
+		return luax_pushtype(L, MotorJoint::type, j);
 	default:
 		return lua_pushnil(L);
 	}
@@ -66,7 +77,7 @@ void luax_pushjoint(lua_State *L, Joint *j)
 
 Joint *luax_checkjoint(lua_State *L, int idx)
 {
-	Joint *t = luax_checktype<Joint>(L, idx, PHYSICS_JOINT_ID);
+	Joint *t = luax_checktype<Joint>(L, idx);
 	if (!t->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return t;
@@ -92,8 +103,8 @@ int w_Joint_getBodies(lua_State *L)
 		b2 = t->getBodyB();
 	});
 
-	luax_pushtype(L, PHYSICS_BODY_ID, b1);
-	luax_pushtype(L, PHYSICS_BODY_ID, b2);
+	luax_pushtype(L, b1);
+	luax_pushtype(L, b2);
 	return 2;
 }
 
@@ -149,7 +160,7 @@ int w_Joint_destroy(lua_State *L)
 
 int w_Joint_isDestroyed(lua_State *L)
 {
-	Joint *t = luax_checktype<Joint>(L, 1, PHYSICS_JOINT_ID);
+	Joint *t = luax_checktype<Joint>(L, 1);
 	luax_pushboolean(L, !t->isValid());
 	return 1;
 }
@@ -171,7 +182,7 @@ const luaL_Reg w_Joint_functions[] =
 
 extern "C" int luaopen_joint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_JOINT_ID, "Joint", w_Joint_functions, nullptr);
+	return luax_register_type(L, &Joint::type, w_Joint_functions, nullptr);
 }
 
 } // box2d

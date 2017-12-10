@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,8 @@ namespace love
 namespace physics
 {
 
+love::Type Body::type("Body", &Object::type);
+
 Body::~Body()
 {
 }
@@ -34,9 +36,14 @@ bool Body::getConstant(const char *in, Type &out)
 	return types.find(in, out);
 }
 
-bool Body::getConstant(Type in, const char  *&out)
+bool Body::getConstant(Type in, const char *&out)
 {
 	return types.find(in, out);
+}
+
+std::vector<std::string> Body::getConstants(Type)
+{
+	return types.getNames();
 }
 
 StringMap<Body::Type, Body::BODY_MAX_ENUM>::Entry Body::typeEntries[] =

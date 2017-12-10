@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,9 @@ namespace love
 {
 namespace thread
 {
+
+love::Type LuaThread::type("Thread", &Threadable::type);
+
 LuaThread::LuaThread(const std::string &name, love::Data *code)
 	: code(code)
 	, name(name)
@@ -63,6 +66,9 @@ void LuaThread::threadFunction()
 	luax_require(L, "love.filesystem");
 	lua_pop(L, 1);
 
+	lua_pushcfunction(L, luax_traceback);
+	int tracebackidx = lua_gettop(L);
+
 	if (luaL_loadbuffer(L, (const char *) code->getData(), code->getSize(), name.c_str()) != 0)
 		error = luax_tostring(L, -1);
 	else
@@ -74,7 +80,7 @@ void LuaThread::threadFunction()
 
 		args.clear();
 
-		if (lua_pcall(L, pushedargs, 0, 0) != 0)
+		if (lua_pcall(L, pushedargs, 0, tracebackidx) != 0)
 			error = luax_tostring(L, -1);
 	}
 
@@ -104,12 +110,8 @@ void LuaThread::onError()
 	if (!eventmodule)
 		return;
 
-	Proxy p;
-	p.type = THREAD_THREAD_ID;
-	p.object = this;
-
 	std::vector<Variant> vargs = {
-		Variant(p.type, &p),
+		Variant(&LuaThread::type, this),
 		Variant(error.c_str(), error.length())
 	};
 

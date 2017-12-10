@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
 
 // LOVE
 #include "common/Variant.h"
+#include "common/int.h"
 #include "threads.h"
 
 namespace love
@@ -41,17 +42,22 @@ friend int w_Channel_performAtomic(lua_State *);
 
 public:
 
+	static love::Type type;
+
 	Channel();
 	~Channel();
 
 	static Channel *getChannel(const std::string &name);
 
-	unsigned long push(const Variant &var);
-	void supply(const Variant &var); // blocking push
+	uint64 push(const Variant &var);
+	bool supply(const Variant &var); // blocking push
+	bool supply(const Variant &var, double timeout);
 	bool pop(Variant *var);
-	void demand(Variant *var); // blocking pop
+	bool demand(Variant *var); // blocking pop
+	bool demand(Variant *var, double timeout); // blocking pop
 	bool peek(Variant *var);
-	int getCount();
+	int getCount() const;
+	bool hasRead(uint64 id) const;
 	void clear();
 
 private:
@@ -66,8 +72,8 @@ private:
 	bool named;
 	std::string name;
 
-	unsigned long sent;
-	unsigned long received;
+	uint64 sent;
+	uint64 received;
 
 }; // Channel
 

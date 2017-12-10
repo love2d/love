@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,14 +24,19 @@
 // STD
 #include <queue>
 #include <map>
+#include <vector>
+#include <stack>
 #include <cmath>
 
 // LOVE
 #include "audio/Audio.h"
+#include "audio/RecordingDevice.h"
+#include "audio/Filter.h"
 #include "common/config.h"
 #include "sound/SoundData.h"
 
 #include "Source.h"
+#include "Effect.h"
 #include "Pool.h"
 #include "thread/threads.h"
 
@@ -64,23 +69,32 @@ public:
 	Audio();
 	~Audio();
 
+	/**
+	 * Gets the OpenAL format identifier based on number of
+	 * channels and bits.
+	 * @param channels.
+	 * @param bitDepth Either 8-bit samples, or 16-bit samples.
+	 * @return One of AL_FORMAT_*, or AL_NONE if unsupported format.
+	 **/
+	static ALenum getFormat(int bitDepth, int channels);
+
 	// Implements Module.
 	const char *getName() const;
 
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
-	int getSourceCount() const;
+	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers);
+	int getActiveSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);
+	bool play(const std::vector<love::audio::Source*> &sources);
 	void stop(love::audio::Source *source);
+	void stop(const std::vector<love::audio::Source*> &sources);
 	void stop();
 	void pause(love::audio::Source *source);
-	void pause();
-	void resume(love::audio::Source *source);
-	void resume();
-	void rewind(love::audio::Source *source);
-	void rewind();
+	void pause(const std::vector<love::audio::Source*> &sources);
+	std::vector<love::audio::Source*> pause();
 	void setVolume(float volume);
 	float getVolume() const;
 
@@ -93,25 +107,45 @@ public:
 
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
+	//void setMeter(float scale);
+	//float getMeter() const;
 
-	void record();
-	love::sound::SoundData *getRecordedData();
-	love::sound::SoundData *stopRecording(bool returnData);
-	bool canRecord();
+	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
 
-private:
+	bool setEffect(const char *name, std::map<Effect::Parameter, float> &params);
+	bool unsetEffect(const char *name);
+	bool getEffect(const char *name, std::map<Effect::Parameter, float> &params);
+	bool getActiveEffects(std::vector<std::string> &list) const;
+	int getMaxSceneEffects() const;
+	int getMaxSourceEffects() const;
+	bool isEFXsupported() const;
 
+	bool getEffectID(const char *name, ALuint &id);
+
+private:
+	void initializeEFX();
 	// The OpenAL device.
 	ALCdevice *device;
 
-	// The OpenAL capture device (microphone).
-	ALCdevice *capture;
+	// The OpenAL capture devices.
+	std::vector<love::audio::RecordingDevice*> capture;
 
 	// The OpenAL context.
 	ALCcontext *context;
+
+	// The OpenAL effects
+	struct EffectMapStorage
+	{
+		Effect *effect;
+		ALuint slot;
+	};
+	std::map<std::string, struct EffectMapStorage> effectmap;
+	std::stack<ALuint> slotlist;
+	int MAX_SCENE_EFFECTS = 64;
+	int MAX_SOURCE_EFFECTS = 64;
 
 	// The Pool.
 	Pool *pool;
@@ -139,8 +173,49 @@ private:
 	PoolThread *poolThread;
 
 	DistanceModel distanceModel;
-
+	//float metersPerUnit = 1.0;
 }; // Audio
+
+#ifdef ALC_EXT_EFX
+ // Effect objects
+extern LPALGENEFFECTS alGenEffects;
+extern LPALDELETEEFFECTS alDeleteEffects;
+extern LPALISEFFECT alIsEffect;
+extern LPALEFFECTI alEffecti;
+extern LPALEFFECTIV alEffectiv;
+extern LPALEFFECTF alEffectf;
+extern LPALEFFECTFV alEffectfv;
+extern LPALGETEFFECTI alGetEffecti;
+extern LPALGETEFFECTIV alGetEffectiv;
+extern LPALGETEFFECTF alGetEffectf;
+extern LPALGETEFFECTFV alGetEffectfv;
+
+//Filter objects
+extern LPALGENFILTERS alGenFilters;
+extern LPALDELETEFILTERS alDeleteFilters;
+extern LPALISFILTER alIsFilter;
+extern LPALFILTERI alFilteri;
+extern LPALFILTERIV alFilteriv;
+extern LPALFILTERF alFilterf;
+extern LPALFILTERFV alFilterfv;
+extern LPALGETFILTERI alGetFilteri;
+extern LPALGETFILTERIV alGetFilteriv;
+extern LPALGETFILTERF alGetFilterf;
+extern LPALGETFILTERFV alGetFilterfv;
+
+// Auxiliary slot object
+extern LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots;
+extern LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots;
+extern LPALISAUXILIARYEFFECTSLOT alIsAuxiliaryEffectSlot;
+extern LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti;
+extern LPALAUXILIARYEFFECTSLOTIV alAuxiliaryEffectSlotiv;
+extern LPALAUXILIARYEFFECTSLOTF alAuxiliaryEffectSlotf;
+extern LPALAUXILIARYEFFECTSLOTFV alAuxiliaryEffectSlotfv;
+extern LPALGETAUXILIARYEFFECTSLOTI alGetAuxiliaryEffectSloti;
+extern LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
+extern LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
+extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
+#endif
 
 } // openal
 } // audio

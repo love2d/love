@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,8 @@ namespace love
 {
 namespace sound
 {
+
+love::Type SoundData::type("SoundData", &Data::type);
 
 SoundData::SoundData(Decoder *decoder)
 	: data(0)
@@ -81,7 +83,7 @@ SoundData::SoundData(Decoder *decoder)
 	if (data && bufferSize > size)
 		data = (uint8 *) realloc(data, size);
 
-	channels = decoder->getChannels();
+	channels = decoder->getChannelCount();
 	bitDepth = decoder->getBitDepth();
 	sampleRate = decoder->getSampleRate();
 }
@@ -106,10 +108,25 @@ SoundData::SoundData(void *d, int samples, int sampleRate, int bitDepth, int cha
 	load(samples, sampleRate, bitDepth, channels, d);
 }
 
+SoundData::SoundData(const SoundData &c)
+	: data(0)
+	, size(0)
+	, sampleRate(0)
+	, bitDepth(0)
+	, channels(0)
+{
+	load(c.getSampleCount(), c.getSampleRate(), c.getBitDepth(), c.getChannelCount(), c.getData());
+}
+
 SoundData::~SoundData()
 {
 	if (data != 0)
 		free(data);
+}
+
+SoundData *SoundData::clone() const
+{
+	return new SoundData(*this);
 }
 
 void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, void *newData)
@@ -162,7 +179,7 @@ size_t SoundData::getSize() const
 	return size;
 }
 
-int SoundData::getChannels() const
+int SoundData::getChannelCount() const
 {
 	return channels;
 }
@@ -206,6 +223,14 @@ void SoundData::setSample(int i, float sample)
 	}
 }
 
+void SoundData::setSample(int i, int channel, float sample)
+{
+	if (channel < 1 || channel > channels)
+		throw love::Exception("Attempt to set sample from out-of-range channel!");
+
+	return setSample(i * channels + (channel - 1), sample);
+}
+
 float SoundData::getSample(int i) const
 {
 	// Check range.
@@ -223,6 +248,14 @@ float SoundData::getSample(int i) const
 		// 8-bit sample values are unsigned internally.
 		return ((float) data[i] - 128.0f) / 127.0f;
 	}
+}
+
+float SoundData::getSample(int i, int channel) const
+{
+	if (channel < 1 || channel > channels)
+		throw love::Exception("Attempt to get sample from out-of-range channel!");
+
+	return getSample(i * channels + (channel - 1));
 }
 
 } // sound

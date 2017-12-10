@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2006-2016 LOVE Development Team
+Copyright (c) 2006-2017 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -27,13 +27,13 @@ love.arg = {}
 
 -- Replace any \ with /.
 function love.path.normalslashes(p)
-	return string.gsub(p, "\\", "/")
+	return p:gsub("\\", "/")
 end
 
 -- Makes sure there is a slash at the end
 -- of a path.
 function love.path.endslash(p)
-	if string.sub(p, string.len(p)-1) ~= "/" then
+	if p:sub(-1) ~= "/" then
 		return p .. "/"
 	else
 		return p
@@ -46,13 +46,13 @@ function love.path.abs(p)
 	local tmp = love.path.normalslashes(p)
 
 	-- Path is absolute if it starts with a "/".
-	if string.find(tmp, "/") == 1 then
+	if tmp:find("/") == 1 then
 		return true
 	end
 
 	-- Path is absolute if it starts with a
 	-- letter followed by a colon.
-	if string.find(tmp, "%a:") == 1 then
+	if tmp:find("%a:") == 1 then
 		return true
 	end
 
@@ -87,10 +87,10 @@ function love.path.leaf(p)
 	local last = p
 
 	while a do
-		a = string.find(p, "/", a+1)
+		a = p:find("/", a+1)
 
 		if a then
-			last = string.sub(p, a+1)
+			last = p:sub(a+1)
 		end
 	end
 
@@ -106,7 +106,7 @@ function love.arg.getLow(a)
 			m = k
 		end
 	end
-	return a[m]
+	return a[m], m
 end
 
 love.arg.options = {
@@ -115,12 +115,15 @@ love.arg.options = {
 	game = { a = 1 }
 }
 
-function love.arg.parse_option(m, i)
+love.arg.optionIndices = {}
+
+function love.arg.parseOption(m, i)
 	m.set = true
 
 	if m.a > 0 then
 		m.arg = {}
 		for j=i,i+m.a-1 do
+			love.arg.optionIndices[j] = true
 			table.insert(m.arg, arg[j])
 		end
 	end
@@ -128,7 +131,7 @@ function love.arg.parse_option(m, i)
 	return m.a
 end
 
-function love.arg.parse_options()
+function love.arg.parseOptions()
 
 	local game
 	local argc = #arg
@@ -136,10 +139,17 @@ function love.arg.parse_options()
 	local i = 1
 	while i <= argc do
 		-- Look for options.
-		local m = string.match(arg[i], "^%-%-(.+)")
+		local m = arg[i]:match("^%-%-(.*)")
 
-		if m and love.arg.options[m] then
-			i = i + love.arg.parse_option(love.arg.options[m], i+1)
+		if m and m ~= "" and love.arg.options[m] and not love.arg.options[m].set then
+			love.arg.optionIndices[i] = true
+			i = i + love.arg.parseOption(love.arg.options[m], i+1)
+		elseif m == "" then -- handle '--' as an option
+			love.arg.optionIndices[i] = true
+			if not game then -- handle '--' followed by game name
+				game = i + 1
+			end
+			break
 		elseif not game then
 			game = i
 		end
@@ -147,8 +157,26 @@ function love.arg.parse_options()
 	end
 
 	if not love.arg.options.game.set then
-		love.arg.parse_option(love.arg.options.game, game or 0)
+		love.arg.parseOption(love.arg.options.game, game or 0)
 	end
+end
+
+-- Returns the arguments that are passed to your game via love.load()
+-- arguments that were parsed as options are skipped.
+function love.arg.parseGameArguments(a)
+	local out = {}
+
+	local _, lowindex = love.arg.getLow(a)
+
+	local o = lowindex
+	for i=lowindex, #a do
+		if not love.arg.optionIndices[i] then
+			out[o] = a[i]
+			o = o + 1
+		end
+	end
+
+	return out
 end
 
 function love.createhandlers()
@@ -170,11 +198,11 @@ function love.createhandlers()
 		mousemoved = function (x,y,dx,dy,t)
 			if love.mousemoved then return love.mousemoved(x,y,dx,dy,t) end
 		end,
-		mousepressed = function (x,y,b,t)
-			if love.mousepressed then return love.mousepressed(x,y,b,t) end
+		mousepressed = function (x,y,b,t,c)
+			if love.mousepressed then return love.mousepressed(x,y,b,t,c) end
 		end,
-		mousereleased = function (x,y,b,t)
-			if love.mousereleased then return love.mousereleased(x,y,b,t) end
+		mousereleased = function (x,y,b,t,c)
+			if love.mousereleased then return love.mousereleased(x,y,b,t,c) end
 		end,
 		wheelmoved = function (x,y)
 			if love.wheelmoved then return love.wheelmoved(x,y) end
@@ -266,10 +294,6 @@ function love.boot()
 	-- This is absolutely needed.
 	require("love.filesystem")
 
-	love.arg.parse_options()
-
-	local o = love.arg.options
-
 	local arg0 = love.arg.getLow(arg)
 	love.filesystem.init(arg0)
 
@@ -281,9 +305,22 @@ function love.boot()
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
+
+	-- It's a fused game, don't parse --game argument
+	if can_has_game then
+		love.arg.options.game.set = true
+	end
+
+	-- Parse options now that we know which options we're looking for.
+	love.arg.parseOptions()
+
+	local o = love.arg.options
+
 	local is_fused_game = can_has_game or love.arg.options.fused.set
 
 	love.filesystem.setFused(is_fused_game)
+
+	love.setDeprecationOutput(not love.filesystem.isFused())
 
 	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
@@ -319,7 +356,7 @@ function love.boot()
 	-- before the save directory (the identity should be appended.)
 	pcall(love.filesystem.setIdentity, identity, true)
 
-	if can_has_game and not (love.filesystem.isFile("main.lua") or love.filesystem.isFile("conf.lua")) then
+	if can_has_game and not (love.filesystem.getInfo("main.lua") or love.filesystem.getInfo("conf.lua")) then
 		no_game_code = true
 	end
 
@@ -347,7 +384,7 @@ function love.init()
 			fullscreen = false,
 			fullscreentype = "desktop",
 			display = 1,
-			vsync = true,
+			vsync = 1,
 			msaa = 0,
 			borderless = false,
 			resizable = false,
@@ -355,6 +392,7 @@ function love.init()
 			highdpi = false,
 		},
 		modules = {
+			data = true,
 			event = true,
 			keyboard = true,
 			mouse = true,
@@ -393,7 +431,7 @@ function love.init()
 
 	-- If config file exists, load it and allow it to update config table.
 	local confok, conferr
-	if (not love.conf) and love.filesystem and love.filesystem.isFile("conf.lua") then
+	if (not love.conf) and love.filesystem and love.filesystem.getInfo("conf.lua") then
 		confok, conferr = pcall(require, "conf")
 	end
 
@@ -421,6 +459,7 @@ function love.init()
 
 	-- Gets desired modules.
 	for k,v in ipairs{
+		"data",
 		"thread",
 		"timer",
 		"event",
@@ -476,6 +515,8 @@ function love.init()
 			fullscreentype = c.window.fullscreentype,
 			vsync = c.window.vsync,
 			msaa = c.window.msaa,
+			stencil = c.window.stencil,
+			depth = c.window.depth,
 			resizable = c.window.resizable,
 			minwidth = c.window.minwidth,
 			minheight = c.window.minheight,
@@ -494,7 +535,7 @@ function love.init()
 	end
 
 	if love.audio then
-		love.audio.setMixMode(c.audio.mixwithsystem)
+		love.audio.setMixWithSystem(c.audio.mixwithsystem)
 	end
 
 	-- Our first timestep, because window creation can take some time
@@ -505,7 +546,7 @@ function love.init()
 	if love.filesystem then
 		love.filesystem._setAndroidSaveExternal(c.externalstorage)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
-		if love.filesystem.isFile("main.lua") then
+		if love.filesystem.getInfo("main.lua") then
 			require("main")
 		end
 	end
@@ -515,13 +556,12 @@ function love.init()
 	end
 end
 
+-----------------------------------------------------------
+-- Default callbacks.
+-----------------------------------------------------------
+
 function love.run()
-
-	if love.math then
-		love.math.setRandomSeed(os.time())
-	end
-
-	if love.load then love.load(arg) end
+	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then love.timer.step() end
@@ -529,14 +569,14 @@ function love.run()
 	local dt = 0
 
 	-- Main loop time.
-	while true do
+	return function()
 		-- Process events.
 		if love.event then
 			love.event.pump()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
-						return a
+						return a or 0
 					end
 				end
 				love.handlers[name](a,b,c,d,e,f)
@@ -544,18 +584,17 @@ function love.run()
 		end
 
 		-- Update dt, as we'll be passing it to update
-		if love.timer then
-			love.timer.step()
-			dt = love.timer.getDelta()
-		end
+		if love.timer then dt = love.timer.step() end
 
 		-- Call update and draw
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 
 		if love.graphics and love.graphics.isActive() then
-			love.graphics.clear(love.graphics.getBackgroundColor())
 			love.graphics.origin()
+			love.graphics.clear(love.graphics.getBackgroundColor())
+
 			if love.draw then love.draw() end
+
 			love.graphics.present()
 		end
 
@@ -564,11 +603,13 @@ function love.run()
 
 end
 
------------------------------------------------------------
--- Error screen.
------------------------------------------------------------
+local debug, print, error = debug, print, error
 
-local debug, print = debug, print
+function love.threaderror(t, err)
+	error("Thread error ("..tostring(t)..")\n\n"..err, 0)
+end
+
+local utf8 = require("utf8")
 
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
@@ -595,7 +636,7 @@ function love.errhand(msg)
 		love.mouse.setVisible(true)
 		love.mouse.setGrabbed(false)
 		love.mouse.setRelativeMode(false)
-		if love.mouse.hasCursor() then
+		if love.mouse.isCursorSupported() then
 			love.mouse.setCursor()
 		end
 	end
@@ -606,37 +647,48 @@ function love.errhand(msg)
 		end
 	end
 	if love.audio then love.audio.stop() end
-	love.graphics.reset()
-	local font = love.graphics.setNewFont(math.floor(love.window.toPixels(14)))
 
-	love.graphics.setBackgroundColor(89, 157, 220)
-	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.reset()
+	local font = love.graphics.setNewFont(14)
+
+	love.graphics.setColor(1, 1, 1, 1)
 
 	local trace = debug.traceback()
 
-	love.graphics.clear(love.graphics.getBackgroundColor())
 	love.graphics.origin()
+
+	local sanitizedmsg = {}
+	for char in msg:gmatch(utf8.charpattern) do
+		table.insert(sanitizedmsg, char)
+	end
+	sanitizedmsg = table.concat(sanitizedmsg)
 
 	local err = {}
 
 	table.insert(err, "Error\n")
-	table.insert(err, msg.."\n\n")
+	table.insert(err, sanitizedmsg)
 
-	for l in string.gmatch(trace, "(.-)\n") do
-		if not string.match(l, "boot.lua") then
-			l = string.gsub(l, "stack traceback:", "Traceback\n")
+	if #sanitizedmsg ~= #msg then
+		table.insert(err, "Invalid UTF-8 string in error message.")
+	end
+
+	table.insert(err, "\n")
+
+	for l in trace:gmatch("(.-)\n") do
+		if not l:match("boot.lua") then
+			l = l:gsub("stack traceback:", "Traceback\n")
 			table.insert(err, l)
 		end
 	end
 
 	local p = table.concat(err, "\n")
 
-	p = string.gsub(p, "\t", "")
-	p = string.gsub(p, "%[string \"(.-)\"%]", "%1")
+	p = p:gsub("\t", "")
+	p = p:gsub("%[string \"(.-)\"%]", "%1")
 
 	local function draw()
-		local pos = love.window.toPixels(70)
-		love.graphics.clear(love.graphics.getBackgroundColor())
+		local pos = 70
+		love.graphics.clear(89/255, 157/255, 220/255)
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
 		love.graphics.present()
 	end
@@ -653,14 +705,14 @@ function love.errhand(msg)
 		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
 	end
 
-	while true do
+	return function()
 		love.event.pump()
 
 		for e, a, b, c in love.event.poll() do
 			if e == "quit" then
-				return
+				return 1
 			elseif e == "keypressed" and a == "escape" then
-				return
+				return 1
 			elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
 				copyToClipboard()
 			elseif e == "touchpressed" then
@@ -672,7 +724,7 @@ function love.errhand(msg)
 				end
 				local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
 				if pressed == 1 then
-					return
+					return 1
 				elseif pressed == 3 then
 					copyToClipboard()
 				end
@@ -688,23 +740,47 @@ function love.errhand(msg)
 
 end
 
-local function deferErrhand(...)
-	local handler = love.errhand or error_printer
-	return handler(...)
-end
-
-
 -----------------------------------------------------------
 -- The root of all calls.
 -----------------------------------------------------------
 
 return function()
-	local result = xpcall(love.boot, error_printer)
-	if not result then return 1 end
-	local result = xpcall(love.init, deferErrhand)
-	if not result then return 1 end
-	local result, retval = xpcall(love.run, deferErrhand)
-	if not result then return 1 end
+	local func
+	local inerror = false
 
-	return retval == nil and 0 or retval
+	local function deferErrhand(...)
+		local errhand = love.errorhandler or love.errhand
+		local handler = (not inerror and errhand) or error_printer
+		inerror = true
+		func = handler(...)
+	end
+
+	local function earlyinit()
+		-- If love.boot fails, return 1 and finish immediately
+		local result = xpcall(love.boot, error_printer)
+		if not result then return 1 end
+
+		-- If love.init or love.run fails, don't return a value,
+		-- as we want the error handler to take over
+		result = xpcall(love.init, deferErrhand)
+		if not result then return end
+
+		-- NOTE: We can't assign to func directly, as we'd
+		-- overwrite the result of deferErrhand with nil on error
+		local main
+		result, main = xpcall(love.run, deferErrhand)
+		if result then
+			func = main
+		end
+	end
+
+	func = earlyinit
+
+	while func do
+		local _, retval = xpcall(func, deferErrhand)
+		if retval then return retval end
+		coroutine.yield()
+	end
+
+	return 1
 end

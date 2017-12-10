@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,8 +23,6 @@
 // LOVE
 #include "wrap_Timer.h"
 
-#include "sdl/Timer.h"
-
 namespace love
 {
 namespace timer
@@ -32,10 +30,10 @@ namespace timer
 
 #define instance() (Module::getInstance<Timer>(Module::M_TIMER))
 
-int w_step(lua_State *)
+int w_step(lua_State *L)
 {
-	instance()->step();
-	return 0;
+	lua_pushnumber(L, instance()->step());
+	return 1;
 }
 
 int w_getDelta(lua_State *L)
@@ -86,7 +84,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 	Timer *instance = instance();
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new love::timer::sdl::Timer(); });
+		luax_catchexcept(L, [&](){ instance = new love::timer::Timer(); });
 	}
 	else
 		instance->retain();
@@ -94,7 +92,7 @@ extern "C" int luaopen_love_timer(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "timer";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = 0;
 

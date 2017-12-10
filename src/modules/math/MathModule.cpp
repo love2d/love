@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,88 +21,73 @@
 // LOVE
 #include "MathModule.h"
 #include "common/Vector.h"
+#include "common/int.h"
+#include "common/StringMap.h"
 #include "BezierCurve.h"
+#include "Transform.h"
 
 // STL
 #include <cmath>
 #include <list>
 #include <iostream>
 
+// C
+#include <time.h>
+
 using std::list;
-using love::Vector;
+using love::Vector2;
 
 namespace
 {
-	// check if an angle is oriented counter clockwise
-	inline bool is_oriented_ccw(const Vector &a, const Vector &b, const Vector &c)
-	{
-		// return det(b-a, c-a) >= 0
-		return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) >= 0;
-	}
 
-	// check if a and b are on the same side of the line c->d
-	bool on_same_side(const Vector &a, const Vector &b, const Vector &c, const Vector &d)
-	{
-		float px = d.x - c.x, py = d.y - c.y;
-		// return det(p, a-c) * det(p, b-c) >= 0
-		float l = px * (a.y - c.y) - py * (a.x - c.x);
-		float m = px * (b.y - c.y) - py * (b.x - c.x);
-		return l * m >= 0;
-	}
-
-	// checks is p is contained in the triangle abc
-	inline bool point_in_triangle(const Vector &p, const Vector &a, const Vector &b, const Vector &c)
-	{
-		return on_same_side(p,a, b,c) && on_same_side(p,b, a,c) && on_same_side(p,c, a,b);
-	}
-
-	// checks if any vertex in `vertices' is in the triangle abc.
-	bool any_point_in_triangle(const list<const Vector *> &vertices, const Vector &a, const Vector &b, const Vector &c)
-	{
-		for (const Vector *p : vertices)
-		{
-			if ((p != &a) && (p != &b) && (p != &c) && point_in_triangle(*p, a,b,c)) // oh god...
-				return true;
-		}
-
-		return false;
-	}
-
-	inline bool is_ear(const Vector &a, const Vector &b, const Vector &c, const list<const Vector *> &vertices)
-	{
-		return is_oriented_ccw(a,b,c) && !any_point_in_triangle(vertices, a,b,c);
-	}
+// check if an angle is oriented counter clockwise
+inline bool is_oriented_ccw(const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
+	// return det(b-a, c-a) >= 0
+	return ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) >= 0;
 }
+
+// check if a and b are on the same side of the line c->d
+bool on_same_side(const Vector2 &a, const Vector2 &b, const Vector2 &c, const Vector2 &d)
+{
+	float px = d.x - c.x, py = d.y - c.y;
+	// return det(p, a-c) * det(p, b-c) >= 0
+	float l = px * (a.y - c.y) - py * (a.x - c.x);
+	float m = px * (b.y - c.y) - py * (b.x - c.x);
+	return l * m >= 0;
+}
+
+// checks is p is contained in the triangle abc
+inline bool point_in_triangle(const Vector2 &p, const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
+	return on_same_side(p,a, b,c) && on_same_side(p,b, a,c) && on_same_side(p,c, a,b);
+}
+
+// checks if any vertex in `vertices' is in the triangle abc.
+bool any_point_in_triangle(const std::list<const Vector2 *> &vertices, const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
+	for (const Vector2 *p : vertices)
+	{
+		if ((p != &a) && (p != &b) && (p != &c) && point_in_triangle(*p, a,b,c)) // oh god...
+			return true;
+	}
+
+	return false;
+}
+
+inline bool is_ear(const Vector2 &a, const Vector2 &b, const Vector2 &c, const std::list<const Vector2 *> &vertices)
+{
+	return is_oriented_ccw(a,b,c) && !any_point_in_triangle(vertices, a,b,c);
+}
+
+} // anonymous namespace
 
 namespace love
 {
 namespace math
 {
 
-Math Math::instance;
-
-Math::Math()
-	: rng()
-{
-	// prevent the runtime from free()-ing this
-	retain();
-}
-
-Math::~Math()
-{
-}
-
-RandomGenerator *Math::newRandomGenerator()
-{
-	return new RandomGenerator();
-}
-
-BezierCurve *Math::newBezierCurve(const std::vector<Vector> &points)
-{
-	return new BezierCurve(points);
-}
-
-std::vector<Triangle> Math::triangulate(const std::vector<love::Vector> &polygon)
+std::vector<Triangle> triangulate(const std::vector<love::Vector2> &polygon)
 {
 	if (polygon.size() < 3)
 		throw love::Exception("Not a polygon");
@@ -115,7 +100,7 @@ std::vector<Triangle> Math::triangulate(const std::vector<love::Vector> &polygon
 	size_t idx_lm = 0;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
-		const love::Vector &lm = polygon[idx_lm], &p = polygon[i];
+		const love::Vector2 &lm = polygon[idx_lm], &p = polygon[i];
 		if (p.x < lm.x || (p.x == lm.x && p.y < lm.y))
 			idx_lm = i;
 		next_idx[i] = i+1;
@@ -129,7 +114,7 @@ std::vector<Triangle> Math::triangulate(const std::vector<love::Vector> &polygon
 		next_idx.swap(prev_idx);
 
 	// collect list of concave polygons
-	list<const love::Vector *> concave_vertices;
+	std::list<const love::Vector2 *> concave_vertices;
 	for (size_t i = 0; i < polygon.size(); ++i)
 	{
 		if (!is_oriented_ccw(polygon[prev_idx[i]], polygon[i], polygon[next_idx[i]]))
@@ -144,7 +129,7 @@ std::vector<Triangle> Math::triangulate(const std::vector<love::Vector> &polygon
 	{
 		next = next_idx[current];
 		prev = prev_idx[current];
-		const Vector &a = polygon[prev], &b = polygon[current], &c = polygon[next];
+		const Vector2 &a = polygon[prev], &b = polygon[current], &c = polygon[next];
 		if (is_ear(a,b,c, concave_vertices))
 		{
 			triangles.push_back(Triangle(a,b,c));
@@ -167,7 +152,7 @@ std::vector<Triangle> Math::triangulate(const std::vector<love::Vector> &polygon
 	return triangles;
 }
 
-bool Math::isConvex(const std::vector<love::Vector> &polygon)
+bool isConvex(const std::vector<love::Vector2> &polygon)
 {
 	if (polygon.size() < 3)
 		return false;
@@ -176,9 +161,9 @@ bool Math::isConvex(const std::vector<love::Vector> &polygon)
 	// turning direction can be determined using the cross-product of
 	// the forward difference vectors
 	size_t i = polygon.size() - 2, j = polygon.size() - 1, k = 0;
-	Vector p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
-	Vector q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
-	float winding = p ^ q;
+	Vector2 p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
+	Vector2 q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
+	float winding = Vector2::cross(p, q);
 
 	while (k+1 < polygon.size())
 	{
@@ -188,7 +173,7 @@ bool Math::isConvex(const std::vector<love::Vector> &polygon)
 		q.x = polygon[k].x - polygon[j].x;
 		q.y = polygon[k].y - polygon[j].y;
 
-		if ((p^q) * winding < 0)
+		if (Vector2::cross(p, q) * winding < 0)
 			return false;
 	}
 	return true;
@@ -197,7 +182,7 @@ bool Math::isConvex(const std::vector<love::Vector> &polygon)
 /**
  * http://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
  **/
-float Math::gammaToLinear(float c) const
+float gammaToLinear(float c)
 {
 	if (c <= 0.04045f)
 		return c / 12.92f;
@@ -208,7 +193,7 @@ float Math::gammaToLinear(float c) const
 /**
  * http://en.wikipedia.org/wiki/SRGB#The_forward_transformation_.28CIE_xyY_or_CIE_XYZ_to_sRGB.29
  **/
-float Math::linearToGamma(float c) const
+float linearToGamma(float c)
 {
 	if (c <= 0.0031308f)
 		return c * 12.92f;
@@ -216,55 +201,41 @@ float Math::linearToGamma(float c) const
 		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
 }
 
-CompressedData *Math::compress(Compressor::Format format, love::Data *rawdata, int level)
+Math Math::instance;
+
+Math::Math()
+	: rng()
 {
-	return compress(format, (const char *) rawdata->getData(), rawdata->getSize(), level);
+	// prevent the runtime from free()-ing this
+	retain();
+
+	RandomGenerator::Seed seed;
+	seed.b64 = (uint64) time(nullptr);
+	rng.setSeed(seed);
 }
 
-CompressedData *Math::compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
+Math::~Math()
 {
-	Compressor *compressor = Compressor::getCompressor(format);
-
-	if (compressor == nullptr)
-		throw love::Exception("Invalid compression format.");
-
-	size_t compressedsize = 0;
-	char *cbytes = compressor->compress(format, rawbytes, rawsize, level, compressedsize);
-
-	CompressedData *data = nullptr;
-
-	try
-	{
-		data = new CompressedData(format, cbytes, compressedsize, rawsize, true);
-	}
-	catch (love::Exception &)
-	{
-		delete[] cbytes;
-		throw;
-	}
-
-	return data;
 }
 
-char *Math::decompress(CompressedData *data, size_t &decompressedsize)
+RandomGenerator *Math::newRandomGenerator()
 {
-	size_t rawsize = data->getDecompressedSize();
-
-	char *rawbytes = decompress(data->getFormat(), (const char *) data->getData(),
-	                            data->getSize(), rawsize);
-
-	decompressedsize = rawsize;
-	return rawbytes;
+	return new RandomGenerator();
 }
 
-char *Math::decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize)
+BezierCurve *Math::newBezierCurve(const std::vector<Vector2> &points)
 {
-	Compressor *compressor = Compressor::getCompressor(format);
+	return new BezierCurve(points);
+}
 
-	if (compressor == nullptr)
-		throw love::Exception("Invalid compression format.");
+Transform *Math::newTransform()
+{
+	return new Transform();
+}
 
-	return compressor->decompress(format, cbytes, compressedsize, rawsize);
+Transform *Math::newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky)
+{
+	return new Transform(x, y, a, sx, sy, ox, oy, kx, ky);
 }
 
 } // math

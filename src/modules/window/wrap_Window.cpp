@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@ int w_getDisplayCount(lua_State *L)
 
 int w_getDisplayName(lua_State *L)
 {
-	int index = (int) luaL_checknumber(L, 1) - 1;
+	int index = (int) luaL_checkinteger(L, 1) - 1;
 
 	const char *name = nullptr;
 	luax_catchexcept(L, [&](){ name = instance()->getDisplayName(index); });
@@ -52,22 +52,13 @@ static const char *settingName(Window::Setting setting)
 	return name;
 }
 
-int w_setMode(lua_State *L)
+static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 {
-	int w = (int) luaL_checknumber(L, 1);
-	int h = (int) luaL_checknumber(L, 2);
-
-	if (lua_isnoneornil(L, 3))
-	{
-		luax_pushboolean(L, instance()->setWindow(w, h, nullptr));
-		return 1;
-	}
-
-	luaL_checktype(L, 3, LUA_TTABLE);
+	luaL_checktype(L, idx, LUA_TTABLE);
 
 	// We want to error for invalid / misspelled window attributes.
 	lua_pushnil(L);
-	while (lua_next(L, 3))
+	while (lua_next(L, idx))
 	{
 		if (lua_type(L, -2) != LUA_TSTRING)
 			return luax_typerror(L, -2, "string");
@@ -76,54 +67,99 @@ int w_setMode(lua_State *L)
 		Window::Setting setting;
 
 		if (!Window::getConstant(key, setting))
-			return luaL_error(L, "Invalid window setting: %s", key);
+			return luax_enumerror(L, "window setting", key);
 
 		lua_pop(L, 1);
 	}
 
-	WindowSettings settings;
-
-	lua_getfield(L, 3, settingName(Window::SETTING_FULLSCREEN_TYPE));
+	lua_getfield(L, idx, settingName(Window::SETTING_FULLSCREEN_TYPE));
 	if (!lua_isnoneornil(L, -1))
 	{
 		const char *typestr = luaL_checkstring(L, -1);
 		if (!Window::getConstant(typestr, settings.fstype))
-			return luaL_error(L, "Invalid fullscreen type: %s", typestr);
-	}
-	else
-	{
-		// Default to desktop fullscreen mode.
-		settings.fstype = Window::FULLSCREEN_DESKTOP;
+			return luax_enumerror(L, "fullscreen type", Window::getConstants(settings.fstype), typestr);
 	}
 	lua_pop(L, 1);
 
-	settings.fullscreen = luax_boolflag(L, 3, settingName(Window::SETTING_FULLSCREEN), false);
-	settings.vsync = luax_boolflag(L, 3, settingName(Window::SETTING_VSYNC), true);
-	settings.msaa = luax_intflag(L, 3, settingName(Window::SETTING_MSAA), 0);
-	settings.resizable = luax_boolflag(L, 3, settingName(Window::SETTING_RESIZABLE), false);
-	settings.minwidth = luax_intflag(L, 3, settingName(Window::SETTING_MIN_WIDTH), 1);
-	settings.minheight = luax_intflag(L, 3, settingName(Window::SETTING_MIN_HEIGHT), 1);
-	settings.borderless = luax_boolflag(L, 3, settingName(Window::SETTING_BORDERLESS), false);
-	settings.centered = luax_boolflag(L, 3, settingName(Window::SETTING_CENTERED), true);
-	settings.display = luax_intflag(L, 3, settingName(Window::SETTING_DISPLAY), 1) - 1;
-	settings.highdpi = luax_boolflag(L, 3, settingName(Window::SETTING_HIGHDPI), false);
+	settings.fullscreen = luax_boolflag(L, idx, settingName(Window::SETTING_FULLSCREEN), settings.fullscreen);
+	settings.msaa = luax_intflag(L, idx, settingName(Window::SETTING_MSAA), settings.msaa);
+	settings.stencil = luax_boolflag(L, idx, settingName(Window::SETTING_STENCIL), settings.stencil);
+	settings.depth = luax_intflag(L, idx, settingName(Window::SETTING_DEPTH), settings.depth);
+	settings.resizable = luax_boolflag(L, idx, settingName(Window::SETTING_RESIZABLE), settings.resizable);
+	settings.minwidth = luax_intflag(L, idx, settingName(Window::SETTING_MIN_WIDTH), settings.minwidth);
+	settings.minheight = luax_intflag(L, idx, settingName(Window::SETTING_MIN_HEIGHT), settings.minheight);
+	settings.borderless = luax_boolflag(L, idx, settingName(Window::SETTING_BORDERLESS), settings.borderless);
+	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
+	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
+	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
 
-	lua_getfield(L, 3, settingName(Window::SETTING_X));
-	lua_getfield(L, 3, settingName(Window::SETTING_Y));
+	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
+	if (lua_isnumber(L, -1))
+		settings.vsync = (int) lua_tointeger(L, -1);
+	else if (lua_isboolean(L, -1))
+		settings.vsync = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, settingName(Window::SETTING_X));
+	lua_getfield(L, idx, settingName(Window::SETTING_Y));
 	settings.useposition = !(lua_isnoneornil(L, -2) && lua_isnoneornil(L, -1));
 	if (settings.useposition)
 	{
-		settings.x = (int) luaL_optnumber(L, -2, 0);
-		settings.y = (int) luaL_optnumber(L, -1, 0);
+		settings.x = (int) luaL_optinteger(L, -2, 0);
+		settings.y = (int) luaL_optinteger(L, -1, 0);
 	}
 	lua_pop(L, 2);
 
 	// We don't explicitly set the refresh rate, it's "read-only".
+	return 0;
+}
+
+int w_setMode(lua_State *L)
+{
+	int w = (int) luaL_checkinteger(L, 1);
+	int h = (int) luaL_checkinteger(L, 2);
+
+	if (lua_isnoneornil(L, 3))
+	{
+		luax_catchexcept(L, [&](){ luax_pushboolean(L, instance()->setWindow(w, h, nullptr)); });
+		return 1;
+	}
+
+	// Defaults come from WindowSettings itself.
+	WindowSettings settings;
+
+	readWindowSettings(L, 3, settings);
 
 	luax_catchexcept(L,
 		[&](){ luax_pushboolean(L, instance()->setWindow(w, h, &settings)); }
 	);
 
+	return 1;
+}
+
+int w_updateMode(lua_State *L)
+{
+	int w, h;
+	WindowSettings settings;
+	instance()->getWindow(w, h, settings);
+
+	if (lua_gettop(L) == 0)
+		return luaL_error(L, "Expected at least one argument");
+
+	int idx = 1;
+	if (lua_isnumber(L, 1))
+	{
+		idx = 3;
+		w = (int) luaL_checkinteger(L, 1);
+		h = (int) luaL_checkinteger(L, 2);
+	}
+
+	if (!lua_isnoneornil(L, idx))
+		readWindowSettings(L, idx, settings);
+
+	luax_catchexcept(L,
+		[&](){ luax_pushboolean(L, instance()->setWindow(w, h, &settings)); }
+	);
 	return 1;
 }
 
@@ -135,7 +171,10 @@ int w_getMode(lua_State *L)
 	lua_pushnumber(L, w);
 	lua_pushnumber(L, h);
 
-	lua_newtable(L);
+	if (lua_istable(L, 1))
+		lua_pushvalue(L, 1);
+	else
+		lua_newtable(L);
 
 	const char *fstypestr = "desktop";
 	Window::getConstant(settings.fstype, fstypestr);
@@ -146,11 +185,17 @@ int w_getMode(lua_State *L)
 	luax_pushboolean(L, settings.fullscreen);
 	lua_setfield(L, -2, settingName(Window::SETTING_FULLSCREEN));
 
-	luax_pushboolean(L, settings.vsync);
+	lua_pushinteger(L, settings.vsync);
 	lua_setfield(L, -2, settingName(Window::SETTING_VSYNC));
 
 	lua_pushinteger(L, settings.msaa);
 	lua_setfield(L, -2, settingName(Window::SETTING_MSAA));
+
+	luax_pushboolean(L, settings.stencil);
+	lua_setfield(L, -2, settingName(Window::SETTING_STENCIL));
+
+	lua_pushinteger(L, settings.depth);
+	lua_setfield(L, -2, settingName(Window::SETTING_DEPTH));
 
 	luax_pushboolean(L, settings.resizable);
 	lua_setfield(L, -2, settingName(Window::SETTING_RESIZABLE));
@@ -190,7 +235,7 @@ int w_getFullscreenModes(lua_State *L)
 {
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 1))
-		displayindex = (int) luaL_checknumber(L, 1) - 1;
+		displayindex = (int) luaL_checkinteger(L, 1) - 1;
 	else
 	{
 		int x, y;
@@ -224,18 +269,20 @@ int w_getFullscreenModes(lua_State *L)
 
 int w_setFullscreen(lua_State *L)
 {
-	bool fullscreen = luax_toboolean(L, 1);
+	bool fullscreen = luax_checkboolean(L, 1);
 	Window::FullscreenType fstype = Window::FULLSCREEN_MAX_ENUM;
 
 	const char *typestr = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
 	if (typestr && !Window::getConstant(typestr, fstype))
-		return luaL_error(L, "Invalid fullscreen type: %s", typestr);
+		return luax_enumerror(L, "fullscreen type", Window::getConstants(fstype), typestr);
 
 	bool success = false;
-	if (fstype == Window::FULLSCREEN_MAX_ENUM)
-		success = instance()->setFullscreen(fullscreen);
-	else
-		success = instance()->setFullscreen(fullscreen, fstype);
+	luax_catchexcept(L, [&]() {
+		if (fstype == Window::FULLSCREEN_MAX_ENUM)
+			success = instance()->setFullscreen(fullscreen);
+		else
+			success = instance()->setFullscreen(fullscreen, fstype);
+	});
 
 	luax_pushboolean(L, success);
 	return 1;
@@ -262,9 +309,9 @@ int w_isOpen(lua_State *L)
 	return 1;
 }
 
-int w_close(lua_State * /*L*/)
+int w_close(lua_State *L)
 {
-	instance()->close();
+	luax_catchexcept(L, [&]() { instance()->close(); });
 	return 0;
 }
 
@@ -273,7 +320,7 @@ int w_getDesktopDimensions(lua_State *L)
 	int width = 0, height = 0;
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 1))
-		displayindex = (int) luaL_checknumber(L, 1) - 1;
+		displayindex = (int) luaL_checkinteger(L, 1) - 1;
 	else
 	{
 		int x, y;
@@ -287,12 +334,12 @@ int w_getDesktopDimensions(lua_State *L)
 
 int w_setPosition(lua_State *L)
 {
-	int x = (int) luaL_checknumber(L, 1);
-	int y = (int) luaL_checknumber(L, 2);
+	int x = (int) luaL_checkinteger(L, 1);
+	int y = (int) luaL_checkinteger(L, 2);
 
 	int displayindex = 0;
 	if (!lua_isnoneornil(L, 3))
-		displayindex = (int) luaL_checknumber(L, 3) - 1;
+		displayindex = (int) luaL_checkinteger(L, 3) - 1;
 	else
 	{
 		int x_unused, y_unused;
@@ -317,21 +364,23 @@ int w_getPosition(lua_State *L)
 
 int w_setIcon(lua_State *L)
 {
-	image::ImageData *i = luax_checktype<image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
-	luax_pushboolean(L, instance()->setIcon(i));
+	image::ImageData *i = luax_checktype<image::ImageData>(L, 1);
+	bool success = false;
+	luax_catchexcept(L, [&]() { success = instance()->setIcon(i); });
+	luax_pushboolean(L, success);
 	return 1;
 }
 
 int w_getIcon(lua_State *L)
 {
 	image::ImageData *i = instance()->getIcon();
-	luax_pushtype(L, IMAGE_IMAGE_DATA_ID, i);
+	luax_pushtype(L, i);
 	return 1;
 }
 
 int w_setDisplaySleepEnabled(lua_State *L)
 {
-	instance()->setDisplaySleepEnabled(luax_toboolean(L, 1));
+	instance()->setDisplaySleepEnabled(luax_checkboolean(L, 1));
 	return 0;
 }
 
@@ -372,9 +421,9 @@ int w_isVisible(lua_State *L)
 	return 1;
 }
 
-int w_getPixelScale(lua_State *L)
+int w_getDPIScale(lua_State *L)
 {
-	lua_pushnumber(L, instance()->getPixelScale());
+	lua_pushnumber(L, instance()->getDPIScale());
 	return 1;
 }
 
@@ -432,10 +481,22 @@ int w_maximize(lua_State *)
 	return 0;
 }
 
+int w_restore(lua_State *)
+{
+	instance()->restore();
+	return 0;
+}
+
 int w_isMaximized(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isMaximized());
-	return 0;
+	return 1;
+}
+
+int w_isMinimized(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isMinimized());
+	return 1;
 }
 
 int w_showMessageBox(lua_State *L)
@@ -465,7 +526,7 @@ int w_showMessageBox(lua_State *L)
 		// Optional table entry specifying the button to use when enter is pressed.
 		lua_getfield(L, 3, "enterbutton");
 		if (!lua_isnoneornil(L, -1))
-			data.enterButtonIndex = (int) luaL_checknumber(L, -1) - 1;
+			data.enterButtonIndex = (int) luaL_checkinteger(L, -1) - 1;
 		else
 			data.enterButtonIndex = 0;
 		lua_pop(L, 1);
@@ -473,14 +534,14 @@ int w_showMessageBox(lua_State *L)
 		// Optional table entry specifying the button to use when esc is pressed.
 		lua_getfield(L, 3, "escapebutton");
 		if (!lua_isnoneornil(L, -1))
-			data.escapeButtonIndex = (int) luaL_checknumber(L, -1) - 1;
+			data.escapeButtonIndex = (int) luaL_checkinteger(L, -1) - 1;
 		else
 			data.escapeButtonIndex = (int) data.buttons.size() - 1;
 		lua_pop(L, 1);
 
 		const char *typestr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
 		if (typestr && !Window::getConstant(typestr, data.type))
-			return luaL_error(L, "Invalid messagebox type: %s", typestr);
+			return luax_enumerror(L, "messagebox type", Window::getConstants(data.type), typestr);
 
 		data.attachToWindow = luax_optboolean(L, 5, true);
 
@@ -491,7 +552,7 @@ int w_showMessageBox(lua_State *L)
 	{
 		const char *typestr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
 		if (typestr && !Window::getConstant(typestr, data.type))
-			return luaL_error(L, "Invalid messagebox type: %s", typestr);
+			return luax_enumerror(L, "messagebox type", Window::getConstants(data.type), typestr);
 
 		data.attachToWindow = luax_optboolean(L, 4, true);
 
@@ -515,12 +576,12 @@ static const luaL_Reg functions[] =
 	{ "getDisplayCount", w_getDisplayCount },
 	{ "getDisplayName", w_getDisplayName },
 	{ "setMode", w_setMode },
+	{ "updateMode", w_updateMode },
 	{ "getMode", w_getMode },
 	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
 	{ "isOpen", w_isOpen },
-	{ "isCreated", w_isOpen }, // For compatibility with old error handlers...
 	{ "close", w_close },
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setPosition", w_setPosition },
@@ -534,12 +595,14 @@ static const luaL_Reg functions[] =
 	{ "hasFocus", w_hasFocus },
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
-	{ "getPixelScale", w_getPixelScale },
+	{ "getDPIScale", w_getDPIScale },
 	{ "toPixels", w_toPixels },
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },
 	{ "maximize", w_maximize },
+	{ "restore", w_restore },
 	{ "isMaximized", w_isMaximized },
+	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },
 	{ "requestAttention", w_requestAttention },
 	{ 0, 0 }
@@ -556,7 +619,7 @@ extern "C" int luaopen_love_window(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "window";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = 0;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,79 +34,90 @@ namespace window
 namespace sdl
 {
 
-class Window : public love::window::Window
+class Window final : public love::window::Window
 {
 public:
 
 	Window();
 	~Window();
 
-	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr);
-	void getWindow(int &width, int &height, WindowSettings &settings);
+	void setGraphics(graphics::Graphics *graphics) override;
 
-	void close();
+	bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) override;
+	void getWindow(int &width, int &height, WindowSettings &settings) override;
 
-	bool setFullscreen(bool fullscreen, FullscreenType fstype);
-	bool setFullscreen(bool fullscreen);
+	void close() override;
 
-	bool onSizeChanged(int width, int height);
+	bool setFullscreen(bool fullscreen, FullscreenType fstype) override;
+	bool setFullscreen(bool fullscreen) override;
 
-	int getDisplayCount() const;
+	bool onSizeChanged(int width, int height) override;
 
-	const char *getDisplayName(int displayindex) const;
+	int getDisplayCount() const override;
 
-	std::vector<WindowSize> getFullscreenSizes(int displayindex) const;
+	const char *getDisplayName(int displayindex) const override;
 
-	void getDesktopDimensions(int displayindex, int &width, int &height) const;
+	std::vector<WindowSize> getFullscreenSizes(int displayindex) const override;
 
-	void setPosition(int x, int y, int displayindex);
-	void getPosition(int &x, int &y, int &displayindex);
+	void getDesktopDimensions(int displayindex, int &width, int &height) const override;
 
-	bool isOpen() const;
+	void setPosition(int x, int y, int displayindex) override;
+	void getPosition(int &x, int &y, int &displayindex) override;
 
-	void setWindowTitle(const std::string &title);
-	const std::string &getWindowTitle() const;
+	bool isOpen() const override;
 
-	bool setIcon(love::image::ImageData *imgd);
-	love::image::ImageData *getIcon();
+	void setWindowTitle(const std::string &title) override;
+	const std::string &getWindowTitle() const override;
 
-	void setDisplaySleepEnabled(bool enable);
-	bool isDisplaySleepEnabled() const;
+	bool setIcon(love::image::ImageData *imgd) override;
+	love::image::ImageData *getIcon() override;
 
-	void minimize();
-	void maximize();
+	void setDisplaySleepEnabled(bool enable) override;
+	bool isDisplaySleepEnabled() const override;
 
-	bool isMaximized() const;
+	void minimize() override;
+	void maximize() override;
+	void restore() override;
 
-	void swapBuffers();
+	bool isMaximized() const override;
+	bool isMinimized() const override;
 
-	bool hasFocus() const;
-	bool hasMouseFocus() const;
+	void swapBuffers() override;
 
-	bool isVisible() const;
+	bool hasFocus() const override;
+	bool hasMouseFocus() const override;
 
-	void setMouseGrab(bool grab);
-	bool isMouseGrabbed() const;
+	bool isVisible() const override;
 
-	void getPixelDimensions(int &w, int &h) const;
-	void windowToPixelCoords(double *x, double *y) const;
-	void pixelToWindowCoords(double *x, double *y) const;
+	void setMouseGrab(bool grab) override;
+	bool isMouseGrabbed() const override;
 
-	double getPixelScale() const;
+	int getWidth() const override;
+	int getHeight() const override;
+	int getPixelWidth() const override;
+	int getPixelHeight() const override;
 
-	double toPixels(double x) const;
-	void toPixels(double wx, double wy, double &px, double &py) const;
-	double fromPixels(double x) const;
-	void fromPixels(double px, double py, double &wx, double &wy) const;
+	void windowToPixelCoords(double *x, double *y) const override;
+	void pixelToWindowCoords(double *x, double *y) const override;
 
-	const void *getHandle() const;
+	void windowToDPICoords(double *x, double *y) const override;
+	void DPIToWindowCoords(double *x, double *y) const override;
 
-	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow);
-	int showMessageBox(const MessageBoxData &data);
+	double getDPIScale() const override;
 
-	void requestAttention(bool continuous);
+	double toPixels(double x) const override;
+	void toPixels(double wx, double wy, double &px, double &py) const override;
+	double fromPixels(double x) const override;
+	void fromPixels(double px, double py, double &wx, double &wy) const override;
 
-	const char *getName() const;
+	const void *getHandle() const override;
+
+	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) override;
+	int showMessageBox(const MessageBoxData &data) override;
+
+	void requestAttention(bool continuous) override;
+
+	const char *getName() const override;
 
 private:
 
@@ -118,10 +129,11 @@ private:
 		bool debug;
 	};
 
-	void setGLFramebufferAttributes(int msaa, bool sRGB);
+	void setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth);
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
-	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa);
+	std::vector<ContextAttribs> getContextAttribsList() const;
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport);
@@ -146,6 +158,9 @@ private:
 
 	bool displayedWindowError;
 	bool hasSDL203orEarlier;
+	ContextAttribs contextAttribs;
+
+	StrongRef<graphics::Graphics> graphics;
 
 }; // Window
 

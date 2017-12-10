@@ -27,27 +27,38 @@ namespace thread
 
 Channel *luax_checkchannel(lua_State *L, int idx)
 {
-	return luax_checktype<Channel>(L, idx, THREAD_CHANNEL_ID);
+	return luax_checktype<Channel>(L, idx);
 }
 
 int w_Channel_push(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	Variant var = Variant::fromLua(L, 2);
-	if (var.getType() == Variant::UNKNOWN)
-		return luaL_argerror(L, 2, "boolean, number, string, love type, or flat table expected");
-	c->push(var);
-	return 0;
+	luax_catchexcept(L, [&]() {
+		Variant var = Variant::fromLua(L, 2);
+		if (var.getType() == Variant::UNKNOWN)
+			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
+		uint64 id = c->push(var);
+		lua_pushnumber(L, (lua_Number) id);
+	});
+	return 1;
 }
 
 int w_Channel_supply(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
-	Variant var = Variant::fromLua(L, 2);
-	if (var.getType() == Variant::UNKNOWN)
-		return luaL_argerror(L, 2, "boolean, number, string, love type, or flat table expected");
-	c->supply(var);
-	return 0;
+	bool result = false;
+	luax_catchexcept(L, [&]() {
+		Variant var = Variant::fromLua(L, 2);
+		if (var.getType() == Variant::UNKNOWN)
+			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
+		if (lua_isnumber(L, 3))
+			result = c->supply(var, lua_tonumber(L, 3));
+		else
+			result = c->supply(var);
+	});
+
+	luax_pushboolean(L, result);
+	return 1;
 }
 
 int w_Channel_pop(lua_State *L)
@@ -65,8 +76,17 @@ int w_Channel_demand(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
 	Variant var;
-	c->demand(&var);
-	var.toLua(L);
+	bool result = false;
+
+	if (lua_isnumber(L, 2))
+		result = c->demand(&var, lua_tonumber(L, 2));
+	else
+		result = c->demand(&var);
+
+	if (result)
+		var.toLua(L);
+	else
+		lua_pushnil(L);
 	return 1;
 }
 
@@ -85,6 +105,14 @@ int w_Channel_getCount(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
 	lua_pushnumber(L, c->getCount());
+	return 1;
+}
+
+int w_Channel_hasRead(lua_State *L)
+{
+	Channel *c = luax_checkchannel(L, 1);
+	uint64 id = (uint64) luaL_checknumber(L, 2);
+	luax_pushboolean(L, c->hasRead(id));
 	return 1;
 }
 
@@ -130,6 +158,7 @@ static const luaL_Reg w_Channel_functions[] =
 	{ "demand", w_Channel_demand },
 	{ "peek", w_Channel_peek },
 	{ "getCount", w_Channel_getCount },
+	{ "hasRead", w_Channel_hasRead },
 	{ "clear", w_Channel_clear },
 	{ "performAtomic", w_Channel_performAtomic },
 	{ 0, 0 }
@@ -137,7 +166,7 @@ static const luaL_Reg w_Channel_functions[] =
 
 extern "C" int luaopen_channel(lua_State *L)
 {
-	return luax_register_type(L, THREAD_CHANNEL_ID, "Channel", w_Channel_functions, nullptr);
+	return luax_register_type(L, &Channel::type, w_Channel_functions, nullptr);
 }
 
 } // thread

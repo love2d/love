@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,9 @@
 #define LOVE_RUNTIME_H
 
 // LOVE
+#include "config.h"
 #include "types.h"
+#include "deprecation.h"
 
 // Lua
 extern "C" {
@@ -34,6 +36,7 @@ extern "C" {
 
 // C++
 #include <exception>
+#include <algorithm>
 
 namespace love
 {
@@ -42,6 +45,9 @@ namespace love
 class Object;
 class Module;
 class Reference;
+
+template<typename T>
+class StrongRef;
 
 /**
  * Registries represent special tables which can be accessed with
@@ -62,7 +68,7 @@ enum Registry
 struct Proxy
 {
 	// Holds type information (see types.h).
-	Type type;
+	love::Type *type;
 
 	// Pointer to the actual object.
 	Object *object;
@@ -80,7 +86,7 @@ struct WrappedModule
 	const char *name;
 
 	// The type of this module.
-	love::Type type;
+	love::Type *type;
 
 	// The functions of the module (last element {0,0}).
 	const luaL_Reg *functions;
@@ -104,6 +110,16 @@ Reference *luax_refif(lua_State *L, int type);
 void luax_printstack(lua_State *L);
 
 /**
+ * Traceback function for use with lua_pcall. Calls debug.traceback.
+ **/
+int luax_traceback(lua_State *L);
+
+/**
+ * Gets whether the value at idx is an array of tables.
+ **/
+bool luax_isarrayoftables(lua_State *L, int idx);
+
+/**
  * Converts the value at idx to a bool. It follow the same rules
  * as lua_toboolean, but returns a bool instead of an int.
  * @param L The Lua state.
@@ -111,6 +127,12 @@ void luax_printstack(lua_State *L);
  * @return True if the value evaluates to true, false otherwise.
  **/
 bool luax_toboolean(lua_State *L, int idx);
+
+/**
+ * Returns the boolean value at idx. Causes a Lua error if the value is not
+ * a boolean.
+ **/
+bool luax_checkboolean(lua_State *L, int idx);
 
 /**
  * Pushes a bool onto the stack. It's the same as lua_pushboolean,
@@ -158,6 +180,9 @@ void luax_pushstring(lua_State *L, const std::string &str);
 
 bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
 int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
+double luax_numberflag(lua_State *L, int table_index, const char *key, double defaultValue);
+
+int luax_checkintflag(lua_State *L, int table_index, const char *key);
 
 /**
  * Convert the value at the specified index to an Lua number, and then
@@ -179,6 +204,16 @@ inline float luax_tofloat(lua_State *L, int idx)
 inline float luax_checkfloat(lua_State *L, int idx)
 {
 	return static_cast<float>(luaL_checknumber(L, idx));
+}
+
+inline lua_Number luax_checknumberclamped01(lua_State *L, int idx)
+{
+	return std::min(std::max(luaL_checknumber(L, idx), 0.0), 1.0);
+}
+
+inline lua_Number luax_optnumberclamped01(lua_State *L, int idx, double def)
+{
+	return std::min(std::max(luaL_optnumber(L, idx, def), 0.0), 1.0);
 }
 
 /**
@@ -246,16 +281,17 @@ int luax_preload(lua_State *L, lua_CFunction f, const char *name);
 
 /**
  * Register a new type.
+ * NOTE: The type is passed by pointer instead of reference because calling va_start
+ * on a reference is undefined behaviour.
  * @param type The type.
- * @param name The type's human-readable name
  * @param ... The list of lists of member functions for the type. (of type luaL_Reg*)
  **/
-int luax_register_type(lua_State *L, love::Type type, const char *name, ...);
+int luax_register_type(lua_State *L, love::Type *type, ...);
 
 /**
  * Pushes the metatable of the specified type onto the stack.
 **/
-void luax_gettypemetatable(lua_State *L, love::Type type);
+void luax_gettypemetatable(lua_State *L, love::Type &type);
 
 /**
  * Do a table.insert from C
@@ -283,7 +319,19 @@ int luax_register_searcher(lua_State *L, lua_CFunction f, int pos = -1);
  * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
-void luax_pushtype(lua_State *L, const love::Type type, love::Object *object);
+void luax_pushtype(lua_State *L, love::Type &type, love::Object *object);
+
+template <typename T>
+void luax_pushtype(lua_State *L, T *object)
+{
+	luax_pushtype(L, T::type, object);
+}
+
+template <typename T>
+void luax_pushtype(lua_State *L, StrongRef<T> &object)
+{
+	luax_pushtype(L, T::type, object);
+}
 
 /**
  * Creates a new Lua representation of the given object *without* checking if it
@@ -296,7 +344,7 @@ void luax_pushtype(lua_State *L, const love::Type type, love::Object *object);
  * @param type The type information of the object.
  * @param object The pointer to the actual object.
  **/
-void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object);
+void luax_rawnewtype(lua_State *L, love::Type &type, love::Object *object);
 
 /**
  * Checks whether the value at idx is a certain type.
@@ -305,7 +353,7 @@ void luax_rawnewtype(lua_State *L, love::Type type, love::Object *object);
  * @param type The type to check for.
  * @return True if the value is Proxy of the specified type, false otherwise.
  **/
-bool luax_istype(lua_State *L, int idx, love::Type type);
+bool luax_istype(lua_State *L, int idx, love::Type &type);
 
 /**
  * Gets the function love.module.function and puts it on top of the stack (alone). If the
@@ -412,9 +460,19 @@ lua_State *luax_insistpinnedthread(lua_State *L);
  **/
 lua_State *luax_getpinnedthread(lua_State *L);
 
+/**
+ * Mark a function as deprecated. Should only be called inside wrapper function
+ * code.
+ **/
+void luax_markdeprecated(lua_State *L, const char *name, APIType api);
+void luax_markdeprecated(lua_State *L, const char *name, APIType api, DeprecationType type, const char *replacement);
+
 extern "C" { // Also called from luasocket
 	int luax_typerror(lua_State *L, int narg, const char *tname);
 }
+
+int luax_enumerror(lua_State *L, const char *enumName, const char *value);
+int luax_enumerror(lua_State *L, const char *enumName, const std::vector<std::string> &values, const char *value);
 
 /**
  * Calls luax_objlen/lua_rawlen depending on version
@@ -434,32 +492,38 @@ extern "C" { // Called by enet and luasocket
  * @param type The type bit.
  **/
 template <typename T>
-T *luax_checktype(lua_State *L, int idx, love::Type type)
+T *luax_checktype(lua_State *L, int idx, const love::Type &type)
 {
 	if (lua_type(L, idx) != LUA_TUSERDATA)
 	{
-		const char *name = "Invalid";
-		getTypeName(type, name);
+		const char *name = type.getName();
 		luax_typerror(L, idx, name);
 	}
 
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-	if (u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM || !typeFlags[u->type][type])
+	if (u->type == nullptr || !u->type->isa(type))
 	{
-		const char *name = "Invalid";
-		getTypeName(type, name);
+		const char *name = type.getName();
 		luax_typerror(L, idx, name);
 	}
+
+	if (u->object == nullptr)
+		luaL_error(L, "Cannot use object after it has been released.");
 
 	return (T *)u->object;
 }
 
 template <typename T>
-T *luax_getmodule(lua_State *L, love::Type type)
+T *luax_checktype(lua_State *L, int idx)
 {
-	const char *name = "Invalid";
-	getTypeName(type, name);
+	return luax_checktype<T>(L, idx, T::type);
+}
+
+template <typename T>
+T *luax_getmodule(lua_State *L, const love::Type &type)
+{
+	const char *name = type.getName();
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -469,7 +533,7 @@ T *luax_getmodule(lua_State *L, love::Type type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if (u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM || !typeFlags[u->type][type])
+	if (u->type == nullptr || !u->type->isa(type))
 		luaL_error(L, "Incorrect module %s", name);
 
 	lua_pop(L, 2);
@@ -478,10 +542,15 @@ T *luax_getmodule(lua_State *L, love::Type type)
 }
 
 template <typename T>
-T *luax_optmodule(lua_State *L, love::Type type)
+T *luax_getmodule(lua_State *L)
 {
-	const char *name = "Invalid";
-	getTypeName(type, name);
+	return luax_getmodule<T>(L, T::type);
+}
+
+template <typename T>
+T *luax_optmodule(lua_State *L, const love::Type &type)
+{
+	const char *name = type.getName();
 
 	luax_insistregistry(L, REGISTRY_MODULES);
 	lua_getfield(L, -1, name);
@@ -494,12 +563,18 @@ T *luax_optmodule(lua_State *L, love::Type type)
 
 	Proxy *u = (Proxy *)lua_touserdata(L, -1);
 
-	if (!typeFlags[u->type][type])
+	if (!u->type->isa(type))
 		luaL_error(L, "Incorrect module %s", name);
 
 	lua_pop(L, 2);
 
 	return (T *) u->object;
+}
+
+template <typename T>
+T *luax_optmodule(lua_State *L)
+{
+	return luax_optmodule<T>(L, T::type);
 }
 
 /**
@@ -511,12 +586,23 @@ T *luax_optmodule(lua_State *L, love::Type type)
  * @param type The type of the object.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, love::Type /*type*/)
+T *luax_totype(lua_State *L, int idx, const love::Type& /*type*/)
 {
-	return (T *)(((Proxy *)lua_touserdata(L, idx))->object);
+	T *o = (T *)(((Proxy *)lua_touserdata(L, idx))->object);
+
+	if (o == nullptr)
+		luaL_error(L, "Cannot use object after it has been released.");
+
+	return o;
 }
 
-Type luax_type(lua_State *L, int idx);
+template <typename T>
+T *luax_totype(lua_State *L, int idx)
+{
+	return luax_totype<T>(L, idx, T::type);
+}
+
+Type *luax_type(lua_State *L, int idx);
 
 /**
  * Converts any exceptions thrown by the passed lambda function into a Lua error.

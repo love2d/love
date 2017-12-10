@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -55,20 +55,7 @@ void Source::pause()
 {
 }
 
-void Source::resume()
-{
-}
-
-void Source::rewind()
-{
-}
-
-bool Source::isStopped() const
-{
-	return true;
-}
-
-bool Source::isPaused() const
+bool Source::isPlaying() const
 {
 	return false;
 }
@@ -141,18 +128,20 @@ void Source::getDirection(float *) const
 {
 }
 
-void Source::setCone(float innerAngle, float outerAngle, float outerVolume)
+void Source::setCone(float innerAngle, float outerAngle, float outerVolume, float outerHighGain)
 {
 	coneInnerAngle = innerAngle;
 	coneOuterAngle = outerAngle;
 	coneOuterVolume = outerVolume;
+	coneOuterHighGain = outerHighGain;
 }
 
-void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume) const
+void Source::getCone(float &innerAngle, float &outerAngle, float &outerVolume, float &outerHighGain) const
 {
 	innerAngle = coneInnerAngle;
 	outerAngle = coneOuterAngle;
 	outerVolume = coneOuterVolume;
+	outerHighGain = coneOuterHighGain;
 }
 
 void Source::setRelative(bool enable)
@@ -225,9 +214,69 @@ float Source::getMaxDistance() const
 	return this->maxDistance;
 }
 
-int Source::getChannels() const
+void Source::setAirAbsorptionFactor(float factor)
+{
+	absorptionFactor = factor;
+}
+
+float Source::getAirAbsorptionFactor() const
+{
+	return absorptionFactor;
+}
+
+int Source::getChannelCount() const
 {
 	return 2;
+}
+
+int Source::getFreeBufferCount() const
+{
+	return 0;
+}
+
+bool Source::queue(void *, size_t, int, int, int)
+{
+	return false;
+}
+
+bool Source::setFilter(const std::map<Filter::Parameter, float> &)
+{
+	return false;
+}
+
+bool Source::setFilter()
+{
+	return false;
+}
+
+bool Source::getFilter(std::map<Filter::Parameter, float> &)
+{
+	return false;
+}
+
+bool Source::setEffect(const char *)
+{
+	return false;
+}
+
+bool Source::setEffect(const char *, const std::map<Filter::Parameter, float> &)
+{
+	return false;
+}
+
+bool Source::unsetEffect(const char *)
+{
+	return false;
+}
+
+bool Source::getEffect(const char *, std::map<Filter::Parameter, float> &)
+{
+	return false;
+}
+
+bool Source::getActiveEffects(std::vector<std::string> &) const
+{
+	return false;
 }
 
 } // null

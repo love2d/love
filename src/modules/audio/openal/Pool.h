@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,12 +24,14 @@
 // STD
 #include <queue>
 #include <map>
+#include <vector>
 #include <cmath>
 
 // LOVE
 #include "common/config.h"
 #include "common/Exception.h"
 #include "thread/threads.h"
+#include "audio/Source.h"
 
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
@@ -78,35 +80,23 @@ public:
 
 	void update();
 
-	int getSourceCount() const;
+	int getActiveSourceCount() const;
 	int getMaxSources() const;
 
-	bool play(Source *source, ALuint &out);
-	void stop();
-	void stop(Source *source);
-	void pause();
-	void pause(Source *source);
-	void resume();
-	void resume(Source *source);
-	void rewind();
-	void rewind(Source *source);
-	void softRewind(Source *source);
-	void seek(Source *source, float offset, void *unit);
-	float tell(Source *source, void *unit);
-	double getDuration(Source *source, void *unit);
-
 private:
+
+	friend class Source;
+	LOVE_WARN_UNUSED thread::Lock lock();
+	std::vector<love::audio::Source*> getPlayingSources();
 
 	/**
 	 * Makes the specified OpenAL source available for use.
 	 * @param source The OpenAL source.
 	 **/
-	void release(Source *source);
+	bool releaseSource(Source *source, bool stop = true);
 
-	ALuint findi(const Source *source) const;
-
+	bool assignSource(Source *source, ALuint &out, char &wasPlaying);
 	bool findSource(Source *source, ALuint &out);
-	bool removeSource(Source *source);
 
 	// Maximum possible number of OpenAL sources the pool attempts to generate.
 	static const int MAX_SOURCES = 64;

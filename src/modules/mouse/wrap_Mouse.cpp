@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 #include "common/config.h"
 
 #include "sdl/Mouse.h"
+#include "filesystem/File.h"
 
 namespace love
 {
@@ -36,16 +37,16 @@ int w_newCursor(lua_State *L)
 {
 	Cursor *cursor = nullptr;
 
-	if (lua_isstring(L, 1) || luax_istype(L, 1, FILESYSTEM_FILE_ID) || luax_istype(L, 1, FILESYSTEM_FILE_DATA_ID))
+	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
 		luax_convobj(L, 1, "image", "newImageData");
 
-	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1, IMAGE_IMAGE_DATA_ID);
-	int hotx = (int) luaL_optnumber(L, 2, 0);
-	int hoty = (int) luaL_optnumber(L, 3, 0);
+	love::image::ImageData *data = luax_checktype<love::image::ImageData>(L, 1);
+	int hotx = (int) luaL_optinteger(L, 2, 0);
+	int hoty = (int) luaL_optinteger(L, 3, 0);
 
 	luax_catchexcept(L, [&](){ cursor = instance()->newCursor(data, hotx, hoty); });
 
-	luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
+	luax_pushtype(L, cursor);
 	cursor->release();
 	return 1;
 }
@@ -56,12 +57,12 @@ int w_getSystemCursor(lua_State *L)
 	Cursor::SystemCursor systemCursor;
 
 	if (!Cursor::getConstant(str, systemCursor))
-		return luaL_error(L, "Invalid system cursor type: %s", str);
+		return luax_enumerror(L, "system cursor type", str);
 
 	Cursor *cursor = 0;
 	luax_catchexcept(L, [&](){ cursor = instance()->getSystemCursor(systemCursor); });
 
-	luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
+	luax_pushtype(L, cursor);
 	return 1;
 }
 
@@ -84,16 +85,16 @@ int w_getCursor(lua_State *L)
 	Cursor *cursor = instance()->getCursor();
 
 	if (cursor)
-		luax_pushtype(L, MOUSE_CURSOR_ID, cursor);
+		luax_pushtype(L, cursor);
 	else
 		lua_pushnil(L);
 
 	return 1;
 }
 
-int w_hasCursor(lua_State *L)
+int w_isCursorSupported(lua_State *L)
 {
-	luax_pushboolean(L, instance()->hasCursor());
+	luax_pushboolean(L, instance()->isCursorSupported());
 	return 1;
 }
 
@@ -153,14 +154,14 @@ int w_isDown(lua_State *L)
 		for (int i = 0; i < num; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			buttons.push_back((int) luaL_checknumber(L, -1));
+			buttons.push_back((int) luaL_checkinteger(L, -1));
 			lua_pop(L, 1);
 		}
 	}
 	else
 	{
 		for (int i = 0; i < num; i++)
-			buttons.push_back((int) luaL_checknumber(L, i + 1));
+			buttons.push_back((int) luaL_checkinteger(L, i + 1));
 	}
 
 	luax_pushboolean(L, instance()->isDown(buttons));
@@ -169,7 +170,7 @@ int w_isDown(lua_State *L)
 
 int w_setVisible(lua_State *L)
 {
-	bool b = luax_toboolean(L, 1);
+	bool b = luax_checkboolean(L, 1);
 	instance()->setVisible(b);
 	return 0;
 }
@@ -182,7 +183,7 @@ int w_isVisible(lua_State *L)
 
 int w_setGrabbed(lua_State *L)
 {
-	bool b = luax_toboolean(L, 1);
+	bool b = luax_checkboolean(L, 1);
 	instance()->setGrabbed(b);
 	return 0;
 }
@@ -195,7 +196,7 @@ int w_isGrabbed(lua_State *L)
 
 int w_setRelativeMode(lua_State *L)
 {
-	bool relative = luax_toboolean(L, 1);
+	bool relative = luax_checkboolean(L, 1);
 	luax_pushboolean(L, instance()->setRelativeMode(relative));
 	return 1;
 }
@@ -213,7 +214,7 @@ static const luaL_Reg functions[] =
 	{ "getSystemCursor", w_getSystemCursor },
 	{ "setCursor", w_setCursor },
 	{ "getCursor", w_getCursor },
-	{ "hasCursor", w_hasCursor },
+	{ "isCursorSupported", w_isCursorSupported },
 	{ "getX", w_getX },
 	{ "getY", w_getY },
 	{ "setX", w_setX },
@@ -250,7 +251,7 @@ extern "C" int luaopen_love_mouse(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "mouse";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

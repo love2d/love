@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 #	define LOVE_WINDOWS 1
 	// If _USING_V110_SDK71_ is defined it means we are using the xp toolset.
 #	if defined(_MSC_VER) && (_MSC_VER >= 1700) && !_USING_V110_SDK71_
-#	include <winapifamily.h>
+#		include <winapifamily.h>
 #		if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #			define LOVE_WINDOWS_UWP 1
 #			define LOVE_NO_MODPLUG 1
@@ -60,6 +60,22 @@
 #	define LOVE_LITTLE_ENDIAN 1
 #endif
 
+// SSE instructions.
+#if defined(__SSE__)
+#	define LOVE_SIMD_SSE
+#elif defined(_MSC_VER)
+#	if defined(_M_AMD64) || defined(_M_X64)
+#		define LOVE_SIMD_SSE
+#	elif _M_IX86_FP
+#		define LOVE_SIMD_SSE
+#	endif
+#endif
+
+// NEON instructions.
+#if defined(__ARM_NEON)
+#	define LOVE_SIMD_NEON
+#endif
+
 // Warnings.
 #ifndef _CRT_SECURE_NO_WARNINGS
 #	define _CRT_SECURE_NO_WARNINGS
@@ -68,6 +84,16 @@
 // Preferably, and ironically, this macro should go unused.
 #ifndef LOVE_UNUSED
 #	define LOVE_UNUSED(x) (void)sizeof(x)
+#endif
+
+
+// Warn on unused return values
+#ifdef __GNUC__
+#	define LOVE_WARN_UNUSED __attribute__((warn_unused_result))
+#elif _MSC_VER
+#	define LOVE_WARN_UNUSED _Check_return_
+#else
+#	define LOVE_WARN_UNUSED
 #endif
 
 #ifndef LOVE_BUILD
@@ -111,51 +137,30 @@
 #		define LOVE_LITTLE_ENDIAN 1
 #	endif
 #else
-#	define LOVE_ENABLE_AUDIO
-#	define LOVE_ENABLE_AUDIO_NULL
-#	define LOVE_ENABLE_AUDIO_OPENAL
-#	define LOVE_ENABLE_BOX2D
-#	define LOVE_ENABLE_DDSPARSE
-#	define LOVE_ENABLE_ENET
-#	define LOVE_ENABLE_EVENT
-#	define LOVE_ENABLE_EVENT_SDL
-#	define LOVE_ENABLE_FILESYSTEM
-#	define LOVE_ENABLE_FILESYSTEM_PHYSFS
-#	define LOVE_ENABLE_FONT
-#	define LOVE_ENABLE_FONT_FREETYPE
-#	define LOVE_ENABLE_GRAPHICS
-#	define LOVE_ENABLE_GRAPHICS_OPENGL
-#	define LOVE_ENABLE_IMAGE
-#	define LOVE_ENABLE_IMAGE_MAGPIE
-#	define LOVE_ENABLE_JOYSTICK
-#	define LOVE_ENABLE_JOYSTICK_SDL
-#	define LOVE_ENABLE_KEYBOARD
-#	define LOVE_ENABLE_KEYBOARD_SDL
 #	define LOVE_ENABLE_LOVE
-#	define LOVE_ENABLE_LUASOCKET
-#	define LOVE_ENABLE_LUAUTF8
+#	define LOVE_ENABLE_AUDIO
+#	define LOVE_ENABLE_DATA
+#	define LOVE_ENABLE_EVENT
+#	define LOVE_ENABLE_FILESYSTEM
+#	define LOVE_ENABLE_FONT
+#	define LOVE_ENABLE_GRAPHICS
+#	define LOVE_ENABLE_IMAGE
+#	define LOVE_ENABLE_JOYSTICK
+#	define LOVE_ENABLE_KEYBOARD
 #	define LOVE_ENABLE_MATH
 #	define LOVE_ENABLE_MOUSE
-#	define LOVE_ENABLE_MOUSE_SDL
-#	define LOVE_ENABLE_NOISE1234
 #	define LOVE_ENABLE_PHYSICS
-#	define LOVE_ENABLE_PHYSICS_BOX2D
 #	define LOVE_ENABLE_SOUND
-#	define LOVE_ENABLE_SOUND_LULLABY
 #	define LOVE_ENABLE_SYSTEM
-#	define LOVE_ENABLE_SYSTEM_SDL
 #	define LOVE_ENABLE_THREAD
-#	define LOVE_ENABLE_THREAD_SDL
 #	define LOVE_ENABLE_TIMER
-#	define LOVE_ENABLE_TIMER_SDL
 #	define LOVE_ENABLE_TOUCH
-#	define LOVE_ENABLE_TOUCH_SDL
-#	define LOVE_ENABLE_UTF8
 #	define LOVE_ENABLE_VIDEO
-#	define LOVE_ENABLE_VIDEO_THEORA
 #	define LOVE_ENABLE_WINDOW
-#	define LOVE_ENABLE_WINDOW_SDL
-#	define LOVE_ENABLE_WUFF
+
+#	define LOVE_ENABLE_ENET
+#	define LOVE_ENABLE_LUASOCKET
+#	define LOVE_ENABLE_LUA53
 #endif
 
 // Check we have a sane configuration

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,14 +56,12 @@ public:
 	int getJoystickCount() const;
 
 	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
-	Joystick::JoystickInput getGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput);
 	void loadGamepadMappings(const std::string &mappings);
 	std::string saveGamepadMappings();
 
 private:
 
 	std::string stringFromGamepadInput(Joystick::GamepadInput gpinput) const;
-	Joystick::JoystickInput JoystickInputFromString(const std::string &str) const;
 	void removeBindFromMapString(std::string &mapstr, const std::string &joybindstr) const;
 
 	void checkGamepads(const std::string &guid) const;

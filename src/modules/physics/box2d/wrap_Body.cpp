@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 Body *luax_checkbody(lua_State *L, int idx)
 {
-	Body *b = luax_checktype<Body>(L, idx, PHYSICS_BODY_ID);
+	Body *b = luax_checktype<Body>(L, idx);
 	if (b->body == 0)
 		luaL_error(L, "Attempt to use destroyed body.");
 	return b;
@@ -456,7 +456,7 @@ int w_Body_isBullet(lua_State *L)
 int w_Body_setBullet(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setBullet(b);
 	return 0;
 }
@@ -478,7 +478,7 @@ int w_Body_isAwake(lua_State *L)
 int w_Body_setSleepingAllowed(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setSleepingAllowed(b);
 	return 0;
 }
@@ -493,7 +493,7 @@ int w_Body_isSleepingAllowed(lua_State *L)
 int w_Body_setActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	luax_catchexcept(L, [&](){ t->setActive(b); });
 	return 0;
 }
@@ -501,7 +501,7 @@ int w_Body_setActive(lua_State *L)
 int w_Body_setAwake(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	t->setAwake(b);
 	return 0;
 }
@@ -509,7 +509,7 @@ int w_Body_setAwake(lua_State *L)
 int w_Body_setFixedRotation(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	bool b = luax_toboolean(L, 2);
+	bool b = luax_checkboolean(L, 2);
 	luax_catchexcept(L, [&](){ t->setFixedRotation(b); });
 	return 0;
 }
@@ -526,34 +526,34 @@ int w_Body_getWorld(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	World *world = t->getWorld();
-	luax_pushtype(L, PHYSICS_WORLD_ID, world);
+	luax_pushtype(L, world);
 	return 1;
 }
 
-int w_Body_getFixtureList(lua_State *L)
+int w_Body_getFixtures(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	int n = 0;
-	luax_catchexcept(L, [&](){ n = t->getFixtureList(L); });
+	luax_catchexcept(L, [&](){ n = t->getFixtures(L); });
 	return n;
 }
 
-int w_Body_getJointList(lua_State *L)
+int w_Body_getJoints(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	int n = 0;
-	luax_catchexcept(L, [&](){ n = t->getJointList(L); });
+	luax_catchexcept(L, [&](){ n = t->getJoints(L); });
 	return n;
 }
 
-int w_Body_getContactList(lua_State *L)
+int w_Body_getContacts(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	int n = 0;
-	luax_catchexcept(L, [&](){ n = t->getContactList(L); });
+	luax_catchexcept(L, [&](){ n = t->getContacts(L); });
 	return n;
 }
 
@@ -566,7 +566,7 @@ int w_Body_destroy(lua_State *L)
 
 int w_Body_isDestroyed(lua_State *L)
 {
-	Body *b = luax_checktype<Body>(L, 1, PHYSICS_BODY_ID);
+	Body *b = luax_checktype<Body>(L, 1);
 	luax_pushboolean(L, b->body == nullptr);
 	return 1;
 }
@@ -583,6 +583,24 @@ int w_Body_getUserData(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	return t->getUserData(L);
+}
+
+int w_Body_getFixtureList(lua_State *L)
+{
+	luax_markdeprecated(L, "Body:getFixtureList", API_METHOD, DEPRECATED_RENAMED, "Body:getFixtures");
+	return w_Body_getFixtures(L);
+}
+
+int w_Body_getJointList(lua_State *L)
+{
+	luax_markdeprecated(L, "Body:getJointList", API_METHOD, DEPRECATED_RENAMED, "Body:getJoints");
+	return w_Body_getJoints(L);
+}
+
+int w_Body_getContactList(lua_State *L)
+{
+	luax_markdeprecated(L, "Body:getContactList", API_METHOD, DEPRECATED_RENAMED, "Body:getContacts");
+	return w_Body_getContacts(L);
 }
 
 static const luaL_Reg w_Body_functions[] =
@@ -638,19 +656,25 @@ static const luaL_Reg w_Body_functions[] =
 	{ "setFixedRotation", w_Body_setFixedRotation },
 	{ "isFixedRotation", w_Body_isFixedRotation },
 	{ "getWorld", w_Body_getWorld },
-	{ "getFixtureList", w_Body_getFixtureList },
-	{ "getJointList", w_Body_getJointList },
-	{ "getContactList", w_Body_getContactList },
+	{ "getFixtures", w_Body_getFixtures },
+	{ "getJoints", w_Body_getJoints },
+	{ "getContacts", w_Body_getContacts },
 	{ "destroy", w_Body_destroy },
 	{ "isDestroyed", w_Body_isDestroyed },
 	{ "setUserData", w_Body_setUserData },
 	{ "getUserData", w_Body_getUserData },
+
+	// Deprectaed
+	{ "getFixtureList", w_Body_getFixtureList },
+	{ "getJointList", w_Body_getJointList },
+	{ "getContactList", w_Body_getContactList },
+
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_body(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_BODY_ID, "Body", w_Body_functions, nullptr);
+	return luax_register_type(L, &Body::type, w_Body_functions, nullptr);
 }
 
 } // box2d

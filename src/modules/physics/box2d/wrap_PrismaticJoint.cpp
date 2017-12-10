@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 PrismaticJoint *luax_checkprismaticjoint(lua_State *L, int idx)
 {
-	PrismaticJoint *j = luax_checktype<PrismaticJoint>(L, idx, PHYSICS_PRISMATIC_JOINT_ID);
+	PrismaticJoint *j = luax_checktype<PrismaticJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -53,7 +53,7 @@ int w_PrismaticJoint_getJointSpeed(lua_State *L)
 int w_PrismaticJoint_setMotorEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setMotorEnabled(arg1);
 	return 0;
 }
@@ -106,15 +106,15 @@ int w_PrismaticJoint_getMaxMotorForce(lua_State *L)
 int w_PrismaticJoint_setLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	bool arg1 = luax_toboolean(L, 2);
+	bool arg1 = luax_checkboolean(L, 2);
 	t->setLimitsEnabled(arg1);
 	return 0;
 }
 
-int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
+int w_PrismaticJoint_areLimitsEnabled(lua_State *L)
 {
 	PrismaticJoint *t = luax_checkprismaticjoint(L, 1);
-	luax_pushboolean(L, t->hasLimitsEnabled());
+	luax_pushboolean(L, t->areLimitsEnabled());
 	return 1;
 }
 
@@ -178,6 +178,12 @@ int w_PrismaticJoint_getReferenceAngle(lua_State *L)
 	return 1;
 }
 
+int w_PrismaticJoint_hasLimitsEnabled(lua_State *L)
+{
+	luax_markdeprecated(L, "PrismaticJoint:hasLimitsEnabled", API_METHOD, DEPRECATED_RENAMED, "PrismaticJoint:areLimitsEnabled");
+	return w_PrismaticJoint_areLimitsEnabled(L);
+}
+
 static const luaL_Reg w_PrismaticJoint_functions[] =
 {
 	{ "getJointTranslation", w_PrismaticJoint_getJointTranslation },
@@ -190,7 +196,7 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 	{ "getMotorForce", w_PrismaticJoint_getMotorForce },
 	{ "getMaxMotorForce", w_PrismaticJoint_getMaxMotorForce },
 	{ "setLimitsEnabled", w_PrismaticJoint_setLimitsEnabled },
-	{ "hasLimitsEnabled", w_PrismaticJoint_hasLimitsEnabled },
+	{ "areLimitsEnabled", w_PrismaticJoint_areLimitsEnabled },
 	{ "setUpperLimit", w_PrismaticJoint_setUpperLimit },
 	{ "setLowerLimit", w_PrismaticJoint_setLowerLimit },
 	{ "setLimits", w_PrismaticJoint_setLimits },
@@ -199,12 +205,16 @@ static const luaL_Reg w_PrismaticJoint_functions[] =
 	{ "getLimits", w_PrismaticJoint_getLimits },
 	{ "getAxis", w_PrismaticJoint_getAxis },
 	{ "getReferenceAngle", w_PrismaticJoint_getReferenceAngle },
+
+	// Deprecated
+	{ "hasLimitsEnabled", w_PrismaticJoint_hasLimitsEnabled },
+
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_prismaticjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_PRISMATIC_JOINT_ID, "PrismaticJoint", w_Joint_functions, w_PrismaticJoint_functions, nullptr);
+	return luax_register_type(L, &PrismaticJoint::type, w_Joint_functions, w_PrismaticJoint_functions, nullptr);
 }
 
 } // box2d

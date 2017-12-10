@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,8 @@
 
 // LOVE
 #include "common/Data.h"
-#include "Decoder.h"
+#include "common/int.h"
+#include "sound/Decoder.h"
 
 // vorbis
 #define OV_EXCLUDE_STATIC_CALLBACKS
@@ -41,8 +42,8 @@ namespace lullaby
 struct SOggFile
 {
 	const char *dataPtr;	// Pointer to the data in memory
-	int dataSize;	// Size of the data
-	int dataRead;	// How much we've read so far
+	int64 dataSize;	// Size of the data
+	int64 dataRead;	// How much we've read so far
 };
 
 class VorbisDecoder : public Decoder
@@ -59,7 +60,7 @@ public:
 	bool seek(float s);
 	bool rewind();
 	bool isSeekable();
-	int getChannels() const;
+	int getChannelCount() const;
 	int getBitDepth() const;
 	int getSampleRate() const;
 	double getDuration();

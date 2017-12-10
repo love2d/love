@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,8 @@ class Body : public Object
 {
 public:
 
+	static love::Type type;
+
 	enum Type
 	{
 		BODY_INVALID,
@@ -47,6 +49,7 @@ public:
 
 	static bool getConstant(const char *in, Type &out);
 	static bool getConstant(Type in, const char  *&out);
+	static std::vector<std::string> getConstants(Type);
 
 private:
 

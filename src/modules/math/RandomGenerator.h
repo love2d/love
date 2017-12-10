@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,6 +41,8 @@ class RandomGenerator : public Object
 {
 public:
 
+	static love::Type type;
+
 	union Seed
 	{
 		uint64 b64;
@@ -73,7 +75,13 @@ public:
 	 **/
 	inline double random()
 	{
-		return double(rand()) / (double(std::numeric_limits<uint64>::max()) + 1.0);
+		uint64 r = rand();
+
+		// From http://xoroshiro.di.unimi.it
+		union { uint64 i; double d; } u;
+		u.i = ((0x3FFULL) << 52) | (r >> 12);
+
+		return u.d - 1.0;
 	}
 
 	/**

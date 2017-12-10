@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,8 @@ namespace physics
 {
 namespace box2d
 {
+
+love::Type WheelJoint::type("WheelJoint", &Joint::type);
 
 WheelJoint::WheelJoint(Body *body1, Body *body2, float xA, float yA, float xB, float yB, float ax, float ay, bool collideConnected)
 	: Joint(body1, body2)

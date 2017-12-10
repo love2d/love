@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -9,7 +9,7 @@
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
- * 1. The origin of this software must not be misrepresented = 0; you must not
+ * 1. The origin of this software must not be misrepresented; you must not
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
@@ -21,9 +21,15 @@
 #ifndef LOVE_AUDIO_AUDIO_H
 #define LOVE_AUDIO_AUDIO_H
 
+// STL
+#include <vector>
+
+// LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "Source.h"
+#include "Effect.h"
+#include "RecordingDevice.h"
 
 namespace love
 {
@@ -63,6 +69,7 @@ public:
 
 	static bool getConstant(const char *in, DistanceModel &out);
 	static bool getConstant(DistanceModel in, const char  *&out);
+	static std::vector<std::string> getConstants(DistanceModel);
 
 	virtual ~Audio() {}
 
@@ -71,12 +78,13 @@ public:
 
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;
+	virtual Source *newSource(int sampleRate, int bitDepth, int channels, int buffers) = 0;
 
 	/**
 	 * Gets the current number of simultaneous playing sources.
 	 * @return The current number of simultaneous playing sources.
 	 **/
-	virtual int getSourceCount() const = 0;
+	virtual int getActiveSourceCount() const = 0;
 
 	/**
 	 * Gets the maximum supported number of simultaneous playing sources.
@@ -91,10 +99,22 @@ public:
 	virtual bool play(Source *source) = 0;
 
 	/**
+	 * Play the specified Sources.
+	 * @param sources The Sources to play.
+	 **/
+	virtual bool play(const std::vector<Source*> &sources) = 0;
+
+	/**
 	 * Stops playback on the specified source.
 	 * @param source The source on which to stop the playback.
 	 **/
 	virtual void stop(Source *source) = 0;
+
+	/**
+	 * Stops playback on the specified sources.
+	 * @param sources The sources on which to stop the playback.
+	 **/
+	virtual void stop(const std::vector<Source*> &sources) = 0;
 
 	/**
 	 * Stops all playing audio.
@@ -108,32 +128,15 @@ public:
 	virtual void pause(Source *source) = 0;
 
 	/**
+	 * Pauses playback on the specified sources.
+	 * @param sources The sources on which to pause the playback.
+	 **/
+	virtual void pause(const std::vector<Source*> &sources) = 0;
+
+	/**
 	 * Pauses all audio.
 	 **/
-	virtual void pause() = 0;
-
-	/**
-	 * Resumes playback on the specified source.
-	 * @param source The source on which to resume the playback.
-	 **/
-	virtual void resume(Source *source) = 0;
-
-	/**
-	 * Resumes all audio.
-	 **/
-	virtual void resume() = 0;
-
-	/**
-	 * Rewinds the specified source. Whatever is playing on this
-	 * source gets rewound to the start.
-	 * @param source The source to rewind.
-	 **/
-	virtual void rewind(Source *source) = 0;
-
-	/**
-	 * Rewinds all playing audio.
-	 **/
-	virtual void rewind() = 0;
+	virtual std::vector<Source*> pause() = 0;
 
 	/**
 	 * Sets the master volume, where 0.0f is min (off) and 1.0f is max.
@@ -187,36 +190,12 @@ public:
 
 	virtual void setDopplerScale(float scale) = 0;
 	virtual float getDopplerScale() const = 0;
-
+	//virtual void setMeter(float scale) = 0;
+	//virtual float getMeter() const = 0;
 	/**
-	 * Begins recording audio input from the microphone.
+	 * @return Reference to a vector of pointers to recording devices. May be empty.
 	 **/
-	virtual void record() = 0;
-
-	/**
-	 * Gets a section of recorded audio.
-	 * Per OpenAL, the measurement begins from the start of the
-	 * audio data in memory, which is after the last time this function
-	 * was called. If this function has not been called yet this recording
-	 * session, it just grabs from the beginning.
-	 * @return All the recorded SoundData thus far.
-	 **/
-	virtual love::sound::SoundData *getRecordedData() = 0;
-
-	/**
-	 * Stops recording and, if passed true, returns all the recorded audio
-	 * not already gotten by getRecordedData.
-	 * @param returnData Whether to return recorded audio.
-	 * @return if returnData, all the recorded audio yet to be gotten,
-	 * otherwise NULL.
-	 **/
-	virtual love::sound::SoundData *stopRecording(bool returnData) = 0;
-
-	/**
-	 * Checks whether LOVE is able to record audio input.
-	 * @return hasMic Whether LOVE has a microphone enabled.
-	 **/
-	virtual bool canRecord() = 0;
+	virtual const std::vector<RecordingDevice*> &getRecordingDevices() = 0;
 
 	/**
 	 * Gets the distance model used for attenuation.
@@ -229,6 +208,60 @@ public:
 	 * @param distanceModel Distance model.
 	 */
 	virtual void setDistanceModel(DistanceModel distanceModel) = 0;
+
+	/**
+	 * Sets scene EFX effect.
+	 * @param name Effect name to use.
+	 * @param fxparams Effect description table.
+	 * @return true if successful, false otherwise.
+	 */
+	virtual bool setEffect(const char *name, std::map<Effect::Parameter, float> &params) = 0;
+
+	/**
+	 * Removes scene EFX effect.
+	 * @param name Effect name to clear.
+	 * @return true if successful, false otherwise.
+	 */
+	virtual bool unsetEffect(const char *name) = 0;
+
+	/**
+	 * Gets scene EFX effect.
+	 * @param name Effect name to get data from.
+	 * @param fxparams Effect description table.
+	 * @return true if effect was present, false otherwise.
+	 */
+	virtual bool getEffect(const char *name, std::map<Effect::Parameter, float> &params) = 0;
+
+	/**
+	 * Gets list of EFX effect names.
+	 * @param list List of EFX names to fill.
+	 * @return true if effect was present, false otherwise.
+	 */
+	virtual bool getActiveEffects(std::vector<std::string> &list) const = 0;
+
+	/**
+	 * Gets maximum number of scene EFX effects.
+	 * @return number of effects.
+	 */
+	virtual int getMaxSceneEffects() const = 0;
+
+	/**
+	 * Gets maximum number of source EFX effects.
+	 * @return number of effects.
+	 */
+	virtual int getMaxSourceEffects() const = 0;
+
+	/**
+	 * Gets EFX (or analog) availability.
+	 * @return true if supported.
+	 */
+	virtual bool isEFXsupported() const = 0;
+
+	/**
+	 * Sets whether audio from other apps mixes with love.audio or is muted,
+	 * on supported platforms.
+	 **/
+	bool setMixWithSystem(bool mix);
 
 private:
 

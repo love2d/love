@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2016 LOVE Development Team
+# Copyright (c) 2006-2017 LOVE Development Team
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -255,27 +255,41 @@ endfunction()
 set(LOVE_SRC_COMMON
 	src/common/b64.cpp
 	src/common/b64.h
+	src/common/Color.h
 	src/common/config.h
+	src/common/Data.cpp
 	src/common/Data.h
 	src/common/delay.cpp
 	src/common/delay.h
+	src/common/deprecation.cpp
+	src/common/deprecation.h
 	src/common/EnumMap.h
 	src/common/Exception.cpp
 	src/common/Exception.h
+	src/common/halffloat.cpp
+	src/common/halffloat.h
 	src/common/int.h
 	src/common/math.h
 	src/common/Matrix.cpp
 	src/common/Matrix.h
 	src/common/Memoizer.cpp
 	src/common/Memoizer.h
+	src/common/memory.cpp
+	src/common/memory.h
 	src/common/Module.cpp
 	src/common/Module.h
 	src/common/Object.cpp
 	src/common/Object.h
+	src/common/Optional.h
+	src/common/pixelformat.cpp
+	src/common/pixelformat.h
 	src/common/Reference.cpp
 	src/common/Reference.h
 	src/common/runtime.cpp
 	src/common/runtime.h
+	src/common/Stream.cpp
+	src/common/Stream.h
+	src/common/StringMap.cpp
 	src/common/StringMap.h
 	src/common/types.cpp
 	src/common/types.h
@@ -286,8 +300,6 @@ set(LOVE_SRC_COMMON
 	#src/common/Vector.cpp # Vector.cpp is empty.
 	src/common/Vector.h
 	src/common/version.h
-	src/common/wrap_Data.cpp
-	src/common/wrap_Data.h
 )
 
 if (APPLE)
@@ -307,10 +319,18 @@ set(LOVE_SRC_MODULE_AUDIO_ROOT
 	src/modules/audio/Audio.h
 	src/modules/audio/Source.cpp
 	src/modules/audio/Source.h
+	src/modules/audio/RecordingDevice.cpp
+	src/modules/audio/RecordingDevice.h
+	src/modules/audio/Filter.cpp
+	src/modules/audio/Filter.h
+	src/modules/audio/Effect.cpp
+	src/modules/audio/Effect.h
 	src/modules/audio/wrap_Audio.cpp
 	src/modules/audio/wrap_Audio.h
 	src/modules/audio/wrap_Source.cpp
 	src/modules/audio/wrap_Source.h
+	src/modules/audio/wrap_RecordingDevice.cpp
+	src/modules/audio/wrap_RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO_NULL
@@ -318,6 +338,8 @@ set(LOVE_SRC_MODULE_AUDIO_NULL
 	src/modules/audio/null/Audio.h
 	src/modules/audio/null/Source.cpp
 	src/modules/audio/null/Source.h
+	src/modules/audio/null/RecordingDevice.cpp
+	src/modules/audio/null/RecordingDevice.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO_OPENAL
@@ -327,6 +349,12 @@ set(LOVE_SRC_MODULE_AUDIO_OPENAL
 	src/modules/audio/openal/Pool.h
 	src/modules/audio/openal/Source.cpp
 	src/modules/audio/openal/Source.h
+	src/modules/audio/openal/RecordingDevice.cpp
+	src/modules/audio/openal/RecordingDevice.h
+	src/modules/audio/openal/Filter.cpp
+	src/modules/audio/openal/Filter.h
+	src/modules/audio/openal/Effect.cpp
+	src/modules/audio/openal/Effect.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO
@@ -338,6 +366,37 @@ set(LOVE_SRC_MODULE_AUDIO
 source_group("modules\\audio" FILES ${LOVE_SRC_MODULE_AUDIO_ROOT})
 source_group("modules\\audio\\null" FILES ${LOVE_SRC_MODULE_AUDIO_NULL})
 source_group("modules\\audio\\openal" FILES ${LOVE_SRC_MODULE_AUDIO_OPENAL})
+
+#
+# love.data
+#
+
+set(LOVE_SRC_MODULE_DATA
+	src/modules/data/ByteData.cpp
+	src/modules/data/ByteData.h
+	src/modules/data/CompressedData.cpp
+	src/modules/data/CompressedData.h
+	src/modules/data/Compressor.cpp
+	src/modules/data/Compressor.h
+	src/modules/data/DataModule.cpp
+	src/modules/data/DataModule.h
+	src/modules/data/DataView.cpp
+	src/modules/data/DataView.h
+	src/modules/data/HashFunction.cpp
+	src/modules/data/HashFunction.h
+	src/modules/data/wrap_ByteData.cpp
+	src/modules/data/wrap_ByteData.h
+	src/modules/data/wrap_CompressedData.cpp
+	src/modules/data/wrap_CompressedData.h
+	src/modules/data/wrap_Data.cpp
+	src/modules/data/wrap_Data.h
+	src/modules/data/wrap_DataModule.cpp
+	src/modules/data/wrap_DataModule.h
+	src/modules/data/wrap_DataView.cpp
+	src/modules/data/wrap_DataView.h
+)
+
+source_group("modules\\data" FILES ${LOVE_SRC_MODULE_DATA})
 
 #
 # love.event
@@ -446,71 +505,94 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 #
 
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
-	src/modules/graphics/Color.h
+	src/modules/graphics/Buffer.cpp
+	src/modules/graphics/Buffer.h
+	src/modules/graphics/Canvas.cpp
+	src/modules/graphics/Canvas.h
+	src/modules/graphics/depthstencil.cpp
+	src/modules/graphics/depthstencil.h
+	src/modules/graphics/Deprecations.cpp
+	src/modules/graphics/Deprecations.h
+	src/modules/graphics/Drawable.cpp
 	src/modules/graphics/Drawable.h
+	src/modules/graphics/Font.cpp
+	src/modules/graphics/Font.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
+	src/modules/graphics/Image.cpp
+	src/modules/graphics/Image.h
+	src/modules/graphics/Mesh.cpp
+	src/modules/graphics/Mesh.h
 	src/modules/graphics/ParticleSystem.cpp
 	src/modules/graphics/ParticleSystem.h
+	src/modules/graphics/Polyline.cpp
+	src/modules/graphics/Polyline.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
+	src/modules/graphics/Resource.h
+	src/modules/graphics/Shader.cpp
+	src/modules/graphics/Shader.h
+	src/modules/graphics/ShaderStage.cpp
+	src/modules/graphics/ShaderStage.h
+	src/modules/graphics/SpriteBatch.cpp
+	src/modules/graphics/SpriteBatch.h
+	src/modules/graphics/StreamBuffer.cpp
+	src/modules/graphics/StreamBuffer.h
+	src/modules/graphics/Text.cpp
+	src/modules/graphics/Text.h
 	src/modules/graphics/Texture.cpp
 	src/modules/graphics/Texture.h
+	src/modules/graphics/vertex.cpp
+	src/modules/graphics/vertex.h
+	src/modules/graphics/Video.cpp
+	src/modules/graphics/Video.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
+	src/modules/graphics/wrap_Canvas.cpp
+	src/modules/graphics/wrap_Canvas.h
+	src/modules/graphics/wrap_Font.cpp
+	src/modules/graphics/wrap_Font.h
+	src/modules/graphics/wrap_Graphics.cpp
+	src/modules/graphics/wrap_Graphics.h
+	src/modules/graphics/wrap_Image.cpp
+	src/modules/graphics/wrap_Image.h
+	src/modules/graphics/wrap_Mesh.cpp
+	src/modules/graphics/wrap_Mesh.h
+	src/modules/graphics/wrap_ParticleSystem.cpp
+	src/modules/graphics/wrap_ParticleSystem.h
 	src/modules/graphics/wrap_Quad.cpp
 	src/modules/graphics/wrap_Quad.h
+	src/modules/graphics/wrap_Shader.cpp
+	src/modules/graphics/wrap_Shader.h
+	src/modules/graphics/wrap_SpriteBatch.cpp
+	src/modules/graphics/wrap_SpriteBatch.h
 	src/modules/graphics/wrap_Texture.cpp
 	src/modules/graphics/wrap_Texture.h
+	src/modules/graphics/wrap_Text.cpp
+	src/modules/graphics/wrap_Text.h
+	src/modules/graphics/wrap_Video.cpp
+	src/modules/graphics/wrap_Video.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
+	src/modules/graphics/opengl/Buffer.cpp
+	src/modules/graphics/opengl/Buffer.h
 	src/modules/graphics/opengl/Canvas.cpp
 	src/modules/graphics/opengl/Canvas.h
-	src/modules/graphics/opengl/Font.cpp
-	src/modules/graphics/opengl/Font.h
-	src/modules/graphics/opengl/GLBuffer.cpp
-	src/modules/graphics/opengl/GLBuffer.h
+	src/modules/graphics/opengl/FenceSync.cpp
+	src/modules/graphics/opengl/FenceSync.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
 	src/modules/graphics/opengl/Image.cpp
 	src/modules/graphics/opengl/Image.h
-	src/modules/graphics/opengl/Mesh.cpp
-	src/modules/graphics/opengl/Mesh.h
 	src/modules/graphics/opengl/OpenGL.cpp
 	src/modules/graphics/opengl/OpenGL.h
-	src/modules/graphics/opengl/ParticleSystem.cpp
-	src/modules/graphics/opengl/ParticleSystem.h
-	src/modules/graphics/opengl/Polyline.cpp
-	src/modules/graphics/opengl/Polyline.h
 	src/modules/graphics/opengl/Shader.cpp
 	src/modules/graphics/opengl/Shader.h
-	src/modules/graphics/opengl/SpriteBatch.cpp
-	src/modules/graphics/opengl/SpriteBatch.h
-	src/modules/graphics/opengl/Text.cpp
-	src/modules/graphics/opengl/Text.h
-	src/modules/graphics/opengl/Video.cpp
-	src/modules/graphics/opengl/Video.h
-	src/modules/graphics/opengl/wrap_Canvas.cpp
-	src/modules/graphics/opengl/wrap_Canvas.h
-	src/modules/graphics/opengl/wrap_Font.cpp
-	src/modules/graphics/opengl/wrap_Font.h
-	src/modules/graphics/opengl/wrap_Graphics.cpp
-	src/modules/graphics/opengl/wrap_Graphics.h
-	src/modules/graphics/opengl/wrap_Image.cpp
-	src/modules/graphics/opengl/wrap_Image.h
-	src/modules/graphics/opengl/wrap_Mesh.cpp
-	src/modules/graphics/opengl/wrap_Mesh.h
-	src/modules/graphics/opengl/wrap_ParticleSystem.cpp
-	src/modules/graphics/opengl/wrap_ParticleSystem.h
-	src/modules/graphics/opengl/wrap_Shader.cpp
-	src/modules/graphics/opengl/wrap_Shader.h
-	src/modules/graphics/opengl/wrap_SpriteBatch.cpp
-	src/modules/graphics/opengl/wrap_SpriteBatch.h
-	src/modules/graphics/opengl/wrap_Text.cpp
-	src/modules/graphics/opengl/wrap_Text.h
-	src/modules/graphics/opengl/wrap_Video.cpp
-	src/modules/graphics/opengl/wrap_Video.h
+	src/modules/graphics/opengl/ShaderStage.cpp
+	src/modules/graphics/opengl/ShaderStage.h
+	src/modules/graphics/opengl/StreamBuffer.cpp
+	src/modules/graphics/opengl/StreamBuffer.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
@@ -528,9 +610,16 @@ source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL
 set(LOVE_SRC_MODULE_IMAGE_ROOT
 	src/modules/image/CompressedImageData.cpp
 	src/modules/image/CompressedImageData.h
+	src/modules/image/CompressedSlice.cpp
+	src/modules/image/CompressedSlice.h
+	src/modules/image/FormatHandler.cpp
+	src/modules/image/FormatHandler.h
+	src/modules/image/Image.cpp
 	src/modules/image/Image.h
 	src/modules/image/ImageData.cpp
 	src/modules/image/ImageData.h
+	src/modules/image/ImageDataBase.cpp
+	src/modules/image/ImageDataBase.h
 	src/modules/image/wrap_CompressedImageData.cpp
 	src/modules/image/wrap_CompressedImageData.h
 	src/modules/image/wrap_Image.cpp
@@ -542,17 +631,10 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/ASTCHandler.cpp
 	src/modules/image/magpie/ASTCHandler.h
-	src/modules/image/magpie/CompressedImageData.cpp
-	src/modules/image/magpie/CompressedImageData.h
-	src/modules/image/magpie/CompressedFormatHandler.h
 	src/modules/image/magpie/ddsHandler.cpp
 	src/modules/image/magpie/ddsHandler.h
-	src/modules/image/magpie/FormatHandler.cpp
-	src/modules/image/magpie/FormatHandler.h
-	src/modules/image/magpie/Image.cpp
-	src/modules/image/magpie/Image.h
-	src/modules/image/magpie/ImageData.cpp
-	src/modules/image/magpie/ImageData.h
+	src/modules/image/magpie/EXRHandler.cpp
+	src/modules/image/magpie/EXRHandler.h
 	src/modules/image/magpie/KTXHandler.cpp
 	src/modules/image/magpie/KTXHandler.h
 	src/modules/image/magpie/PKMHandler.cpp
@@ -633,22 +715,20 @@ source_group("modules\\keyboard\\sdl" FILES ${LOVE_SRC_MODULE_KEYBOARD_SDL})
 set(LOVE_SRC_MODULE_MATH
 	src/modules/math/BezierCurve.cpp
 	src/modules/math/BezierCurve.h
-	src/modules/math/CompressedData.cpp
-	src/modules/math/CompressedData.h
-	src/modules/math/Compressor.cpp
-	src/modules/math/Compressor.h
 	src/modules/math/MathModule.cpp
 	src/modules/math/MathModule.h
 	src/modules/math/RandomGenerator.cpp
 	src/modules/math/RandomGenerator.h
+	src/modules/math/Transform.cpp
+	src/modules/math/Transform.h
 	src/modules/math/wrap_BezierCurve.cpp
 	src/modules/math/wrap_BezierCurve.h
-	src/modules/math/wrap_CompressedData.cpp
-	src/modules/math/wrap_CompressedData.h
 	src/modules/math/wrap_Math.cpp
 	src/modules/math/wrap_Math.h
 	src/modules/math/wrap_RandomGenerator.cpp
 	src/modules/math/wrap_RandomGenerator.h
+	src/modules/math/wrap_Transform.cpp
+	src/modules/math/wrap_Transform.h
 )
 
 source_group("modules\\math" FILES ${LOVE_SRC_MODULE_MATH})
@@ -809,6 +889,7 @@ source_group("modules\\physics\\box2d" FILES ${LOVE_SRC_MODULE_PHYSICS_BOX2D})
 #
 
 set(LOVE_SRC_MODULE_SOUND_ROOT
+	src/modules/sound/Decoder.cpp
 	src/modules/sound/Decoder.h
 	src/modules/sound/Sound.cpp
 	src/modules/sound/Sound.h
@@ -823,8 +904,6 @@ set(LOVE_SRC_MODULE_SOUND_ROOT
 )
 
 set(LOVE_SRC_MODULE_SOUND_LULLABY
-	src/modules/sound/lullaby/Decoder.cpp
-	src/modules/sound/lullaby/Decoder.h
 	src/modules/sound/lullaby/FLACDecoder.cpp
 	src/modules/sound/lullaby/FLACDecoder.h
 	src/modules/sound/lullaby/GmeDecoder.cpp
@@ -920,25 +999,14 @@ source_group("modules\\thread\\sdl" FILES ${LOVE_SRC_MODULE_THREAD_SDL})
 # love.timer
 #
 
-set(LOVE_SRC_MODULE_TIMER_ROOT
+set(LOVE_SRC_MODULE_TIMER
 	src/modules/timer/Timer.cpp
 	src/modules/timer/Timer.h
 	src/modules/timer/wrap_Timer.cpp
 	src/modules/timer/wrap_Timer.h
 )
 
-set(LOVE_SRC_MODULE_TIMER_SDL
-	src/modules/timer/sdl/Timer.cpp
-	src/modules/timer/sdl/Timer.h
-)
-
-set(LOVE_SRC_MODULE_TIMER
-	${LOVE_SRC_MODULE_TIMER_ROOT}
-	${LOVE_SRC_MODULE_TIMER_SDL}
-)
-
-source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER_ROOT})
-source_group("modules\\timer\\sdl" FILES ${LOVE_SRC_MODULE_TIMER_SDL})
+source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER})
 
 #
 # love.touch
@@ -980,8 +1048,10 @@ set(LOVE_SRC_MODULE_VIDEO_ROOT
 set(LOVE_SRC_MODULE_VIDEO_THEORA
 	src/modules/video/theora/Video.cpp
 	src/modules/video/theora/Video.h
-	src/modules/video/theora/VideoStream.cpp
-	src/modules/video/theora/VideoStream.h
+	src/modules/video/theora/OggDemuxer.cpp
+	src/modules/video/theora/OggDemuxer.h
+	src/modules/video/theora/TheoraVideoStream.cpp
+	src/modules/video/theora/TheoraVideoStream.h
 )
 
 set(LOVE_SRC_MODULE_VIDEO
@@ -1221,6 +1291,121 @@ set(LOVE_SRC_3P_GLAD
 add_library(love_3p_glad ${LOVE_SRC_3P_GLAD})
 
 #
+# glslang
+#
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN
+	src/libraries/glslang/glslang/GenericCodeGen/CodeGen.cpp
+	src/libraries/glslang/glslang/GenericCodeGen/Link.cpp
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
+	src/libraries/glslang/glslang/Include/arrays.h
+	src/libraries/glslang/glslang/Include/BaseTypes.h
+	src/libraries/glslang/glslang/Include/Common.h
+	src/libraries/glslang/glslang/Include/ConstantUnion.h
+	src/libraries/glslang/glslang/Include/InfoSink.h
+	src/libraries/glslang/glslang/Include/InitializeGlobals.h
+	src/libraries/glslang/glslang/Include/intermediate.h
+	src/libraries/glslang/glslang/Include/PoolAlloc.h
+	src/libraries/glslang/glslang/Include/ResourceLimits.h
+	src/libraries/glslang/glslang/Include/revision.h
+	src/libraries/glslang/glslang/Include/ShHandle.h
+	src/libraries/glslang/glslang/Include/Types.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.h
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
+	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR}
+	src/libraries/glslang/glslang/MachineIndependent/Constant.cpp
+	src/libraries/glslang/glslang/MachineIndependent/gl_types.h
+	src/libraries/glslang/glslang/MachineIndependent/glslang_tab.cpp
+	src/libraries/glslang/glslang/MachineIndependent/glslang_tab.cpp.h
+	src/libraries/glslang/glslang/MachineIndependent/InfoSink.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Initialize.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Initialize.h
+	src/libraries/glslang/glslang/MachineIndependent/Intermediate.cpp
+	src/libraries/glslang/glslang/MachineIndependent/intermOut.cpp
+	src/libraries/glslang/glslang/MachineIndependent/IntermTraverse.cpp
+	src/libraries/glslang/glslang/MachineIndependent/iomapper.cpp
+	src/libraries/glslang/glslang/MachineIndependent/iomapper.h
+	src/libraries/glslang/glslang/MachineIndependent/limits.cpp
+	src/libraries/glslang/glslang/MachineIndependent/linkValidate.cpp
+	src/libraries/glslang/glslang/MachineIndependent/LiveTraverser.h
+	src/libraries/glslang/glslang/MachineIndependent/localintermediate.h
+	src/libraries/glslang/glslang/MachineIndependent/parseConst.cpp
+	src/libraries/glslang/glslang/MachineIndependent/ParseContextBase.cpp
+	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.cpp
+	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.h
+	src/libraries/glslang/glslang/MachineIndependent/parseVersions.h
+	src/libraries/glslang/glslang/MachineIndependent/PoolAlloc.cpp
+	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
+	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.h
+	src/libraries/glslang/glslang/MachineIndependent/reflection.cpp
+	src/libraries/glslang/glslang/MachineIndependent/reflection.h
+	src/libraries/glslang/glslang/MachineIndependent/RemoveTree.cpp
+	src/libraries/glslang/glslang/MachineIndependent/RemoveTree.h
+	src/libraries/glslang/glslang/MachineIndependent/Scan.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Scan.h
+	src/libraries/glslang/glslang/MachineIndependent/ScanContext.h
+	src/libraries/glslang/glslang/MachineIndependent/ShaderLang.cpp
+	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.cpp
+	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.h
+	src/libraries/glslang/glslang/MachineIndependent/Versions.cpp
+	src/libraries/glslang/glslang/MachineIndependent/Versions.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
+	src/libraries/glslang/glslang/OSDependent/osinclude.h
+)
+
+if(MSVC)
+	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
+		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
+		src/libraries/glslang/glslang/OSDependent/Windows/main.cpp
+		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
+	)
+else()
+	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
+		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
+		src/libraries/glslang/glslang/OSDependent/Unix/ossource.cpp
+	)
+endif()
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC
+	src/libraries/glslang/glslang/Public/ShaderLang.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC}
+)
+
+set(LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL
+	src/libraries/glslang/OGLCompilersDLL/InitializeDll.cpp
+	src/libraries/glslang/OGLCompilersDLL/InitializeDll.h
+)
+
+set(LOVE_SRC_3P_GLSLANG
+	${LOVE_SRC_3P_GLSLANG_GLSLANG}
+	${LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL}
+)
+
+add_library(love_3p_glslang ${LOVE_SRC_3P_GLSLANG})
+
+#
 # LodePNG
 #
 
@@ -1245,23 +1430,27 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/auxiliar.h
 	src/libraries/luasocket/libluasocket/buffer.c
 	src/libraries/luasocket/libluasocket/buffer.h
+	src/libraries/luasocket/libluasocket/compat.c
+	src/libraries/luasocket/libluasocket/compat.h
 	src/libraries/luasocket/libluasocket/except.c
 	src/libraries/luasocket/libluasocket/except.h
 	src/libraries/luasocket/libluasocket/ftp.lua.h
+	src/libraries/luasocket/libluasocket/headers.lua.h
 	src/libraries/luasocket/libluasocket/http.lua.h
 	src/libraries/luasocket/libluasocket/inet.c
 	src/libraries/luasocket/libluasocket/inet.h
 	src/libraries/luasocket/libluasocket/io.c
 	src/libraries/luasocket/libluasocket/io.h
 	src/libraries/luasocket/libluasocket/ltn12.lua.h
-	src/libraries/luasocket/libluasocket/lua.h
 	src/libraries/luasocket/libluasocket/luasocket.c
 	src/libraries/luasocket/libluasocket/luasocket.h
+	src/libraries/luasocket/libluasocket/mbox.lua.h
 	src/libraries/luasocket/libluasocket/mime.c
 	src/libraries/luasocket/libluasocket/mime.h
 	src/libraries/luasocket/libluasocket/mime.lua.h
 	src/libraries/luasocket/libluasocket/options.c
 	src/libraries/luasocket/libluasocket/options.h
+	src/libraries/luasocket/libluasocket/pierror.h
 	src/libraries/luasocket/libluasocket/select.c
 	src/libraries/luasocket/libluasocket/select.h
 	src/libraries/luasocket/libluasocket/smtp.lua.h
@@ -1277,15 +1466,29 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/url.lua.h
 )
 
+set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET)
+
 if(MSVC)
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
 		src/libraries/luasocket/libluasocket/wsocket.c
 		src/libraries/luasocket/libluasocket/wsocket.h
 	)
+
+	set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET
+		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
+		ws2_32.lib
+	)
 else()
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+		src/libraries/luasocket/libluasocket/serial.c
+		src/libraries/luasocket/libluasocket/unix.c
+		src/libraries/luasocket/libluasocket/unix.h
+		src/libraries/luasocket/libluasocket/unixtcp.c
+		src/libraries/luasocket/libluasocket/unixtcp.h
+		src/libraries/luasocket/libluasocket/unixudp.c
+		src/libraries/luasocket/libluasocket/unixudp.h
 		src/libraries/luasocket/libluasocket/usocket.c
 		src/libraries/luasocket/libluasocket/usocket.h
 	)
@@ -1297,20 +1500,22 @@ set(LOVE_SRC_3P_LUASOCKET
 )
 
 add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
-target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET})
 
 #
-# Lua 5.3's UTF-8 library
+# APIs from Lua 5.3
 #
 
-set(LOVE_SRC_3P_LUAUTF8
-	src/libraries/luautf8/lprefix.h
-	src/libraries/luautf8/lutf8lib.c
-	src/libraries/luautf8/lutf8lib.h
+set(LOVE_SRC_3P_LUA53
+	src/libraries/lua53/lprefix.h
+	src/libraries/lua53/lstrlib.c
+	src/libraries/lua53/lstrlib.h
+	src/libraries/lua53/lutf8lib.c
+	src/libraries/lua53/lutf8lib.h
 )
 
-add_library(love_3p_luautf8 ${LOVE_SRC_3P_LUAUTF8})
-target_link_libraries(love_3p_luautf8 ${LOVE_LUA_LIBRARY})
+add_library(love_3p_lua53 ${LOVE_SRC_3P_LUA53})
+target_link_libraries(love_3p_lua53 ${LOVE_LUA_LIBRARY})
 
 #
 # lz4
@@ -1349,6 +1554,16 @@ set(LOVE_SRC_3P_STB
 # stb_image has no implementation files of its own.
 
 #
+# tiny exr
+#
+
+set(LOVE_SRC_3P_TINEXR
+	src/libraries/tinyexr/tinyexr.h
+)
+
+# tinyexr has no implementation files of its own.
+
+#
 # utf8
 #
 
@@ -1385,17 +1600,30 @@ set(LOVE_SRC_3P_WUFF
 
 add_library(love_3p_wuff ${LOVE_SRC_3P_WUFF})
 
+#
+# xxHash
+#
+
+set(LOVE_SRC_3P_XXHASH
+	src/libraries/xxHash/xxhash.c
+	src/libraries/xxHash/xxhash.h
+)
+
+add_library(love_3p_xxhash ${LOVE_SRC_3P_XXHASH})
+
 set(LOVE_3P
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
 	love_3p_glad
+	love_3p_glslang
 	love_3p_lodepng
 	love_3p_luasocket
-	love_3p_luautf8
+	love_3p_lua53
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_wuff
+	love_3p_xxhash
 )
 
 love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)
@@ -1407,6 +1635,7 @@ set(LOVE_LIB_SRC
 	${LOVE_SRC_COMMON}
 	# Modules
 	${LOVE_SRC_MODULE_AUDIO}
+	${LOVE_SRC_MODULE_DATA}
 	${LOVE_SRC_MODULE_EVENT}
 	${LOVE_SRC_MODULE_FILESYSTEM}
 	${LOVE_SRC_MODULE_FONT}

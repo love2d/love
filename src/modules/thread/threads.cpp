@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,10 @@
 
 #include "threads.h"
 
+#if defined(LOVE_LINUX)
+#include <signal.h>
+#endif
+
 namespace love
 {
 namespace thread
@@ -37,9 +41,16 @@ Lock::Lock(Mutex &m)
 	mutex->lock();
 }
 
+Lock::Lock(Lock &&other)
+{
+	mutex = other.mutex;
+	other.mutex = nullptr;
+}
+
 Lock::~Lock()
 {
-	mutex->unlock();
+	if (mutex)
+		mutex->unlock();
 }
 
 EmptyLock::EmptyLock()
@@ -73,6 +84,8 @@ void EmptyLock::setLock(Mutex &m)
 
 	mutex = &m;
 }
+
+love::Type Threadable::type("Threadable", &Object::type);
 
 Threadable::Threadable()
 {
@@ -143,6 +156,22 @@ Conditional *ConditionalRef::operator->() const
 {
 	return conditional;
 }
+
+#if defined(LOVE_LINUX)
+static sigset_t oldset;
+
+void disableSignals()
+{
+	sigset_t newset;
+	sigfillset(&newset);
+	pthread_sigmask(SIG_SETMASK, &newset, &oldset);
+}
+
+void reenableSignals()
+{
+	pthread_sigmask(SIG_SETMASK, &oldset, nullptr);
+}
+#endif
 
 } // thread
 } // love

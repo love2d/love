@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,8 @@ namespace love
 
 void sleep(unsigned int ms)
 {
+	// We don't need to initialize the SDL timer subsystem for SDL_Delay to
+	// function - and doing so causes SDL to create a worker thread.
 	SDL_Delay(ms);
 }
 

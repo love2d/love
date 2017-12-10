@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,9 @@
 
 #include "wrap_ImageData.h"
 
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 #include "filesystem/File.h"
+#include "filesystem/Filesystem.h"
 
 // Shove the wrap_ImageData.lua code directly into a raw string literal.
 static const char imagedata_lua[] =
@@ -40,7 +41,29 @@ namespace image
 
 ImageData *luax_checkimagedata(lua_State *L, int idx)
 {
-	return luax_checktype<ImageData>(L, idx, IMAGE_IMAGE_DATA_ID);
+	return luax_checktype<ImageData>(L, idx);
+}
+
+int w_ImageData_clone(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
+int w_ImageData_getFormat(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1);
+	PixelFormat format = t->getFormat();
+	const char *fstr = nullptr;
+
+	if (!getConstant(format, fstr))
+		return luaL_error(L, "Unknown pixel format.");
+
+	lua_pushstring(L, fstr);
+	return 1;
 }
 
 int w_ImageData_getWidth(lua_State *L)
@@ -65,79 +88,110 @@ int w_ImageData_getDimensions(lua_State *L)
 	return 2;
 }
 
+static void luax_checkpixel_rgba8(lua_State *L, int startidx, Pixel &p)
+{
+	for (int i = 0; i < 3; i++)
+		p.rgba8[i] = (uint8) (luax_checknumberclamped01(L, startidx + i) * 255.0);
+
+	p.rgba8[3] = (uint8) (luax_optnumberclamped01(L, startidx + 3, 1.0) * 255.0);
+}
+
+static void luax_checkpixel_rgba16(lua_State *L, int startidx, Pixel &p)
+{
+	for (int i = 0; i < 3; i++)
+		p.rgba16[i] = (uint16) (luax_checknumberclamped01(L, startidx + i) * 65535.0);
+
+	p.rgba16[3] = (uint16) (luax_optnumberclamped01(L, startidx + 3, 1.0) * 65535.0);
+}
+
+static void luax_checkpixel_rgba16f(lua_State *L, int startidx, Pixel &p)
+{
+	for (int i = 0; i < 3; i++)
+		p.rgba16f[i] = floatToHalf((float) luaL_checknumber(L, startidx + i));
+
+	p.rgba16f[3] = floatToHalf((float) luaL_optnumber(L, startidx + 3, 1.0));
+}
+
+static void luax_checkpixel_rgba32f(lua_State *L, int startidx, Pixel &p)
+{
+	for (int i = 0; i < 3; i++)
+		p.rgba32f[i] = (float) luaL_checknumber(L, startidx + i);
+
+	p.rgba32f[3] = (float) luaL_optnumber(L, startidx + 3, 1.0);
+}
+
+static int luax_pushpixel_rgba8(lua_State *L, const Pixel &p)
+{
+	for (int i = 0; i < 4; i++)
+		lua_pushnumber(L, (lua_Number) p.rgba8[i] / 255.0);
+	return 4;
+}
+
+static int luax_pushpixel_rgba16(lua_State *L, const Pixel &p)
+{
+	for (int i = 0; i < 4; i++)
+		lua_pushnumber(L, (lua_Number) p.rgba16[i] / 65535.0);
+	return 4;
+}
+
+static int luax_pushpixel_rgba16f(lua_State *L, const Pixel &p)
+{
+	for (int i = 0; i < 4; i++)
+		lua_pushnumber(L, (lua_Number) halfToFloat(p.rgba16f[i]));
+	return 4;
+}
+
+static int luax_pushpixel_rgba32f(lua_State *L, const Pixel &p)
+{
+	for (int i = 0; i < 4; i++)
+		lua_pushnumber(L, (lua_Number) p.rgba32f[i]);
+	return 4;
+}
+
+typedef void(*checkpixel)(lua_State *L, int startidx, Pixel &p);
+typedef int(*pushpixel)(lua_State *L, const Pixel &p);
+
+static checkpixel checkFormats[PIXELFORMAT_MAX_ENUM] = {};
+static pushpixel pushFormats[PIXELFORMAT_MAX_ENUM] = {};
+
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = (int) luaL_checknumber(L, 2);
-	int y = (int) luaL_checknumber(L, 3);
-	pixel c;
+	int x = (int) luaL_checkinteger(L, 2);
+	int y = (int) luaL_checkinteger(L, 3);
 
-	luax_catchexcept(L, [&](){ c = t->getPixel(x, y); });
+	PixelFormat format = t->getFormat();
 
-	lua_pushnumber(L, c.r);
-	lua_pushnumber(L, c.g);
-	lua_pushnumber(L, c.b);
-	lua_pushnumber(L, c.a);
-	return 4;
+	Pixel p;
+	luax_catchexcept(L, [&](){ t->getPixel(x, y, p); });
+
+	return pushFormats[format](L, p);
 }
 
 int w_ImageData_setPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
-	int x = (int) luaL_checknumber(L, 2);
-	int y = (int) luaL_checknumber(L, 3);
-	pixel c;
+	int x = (int) luaL_checkinteger(L, 2);
+	int y = (int) luaL_checkinteger(L, 3);
+
+	PixelFormat format = t->getFormat();
+
+	Pixel p;
 
 	if (lua_istable(L, 4))
 	{
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 4, i);
 
-		c.r = (unsigned char)luaL_checkinteger(L, -4);
-		c.g = (unsigned char)luaL_checkinteger(L, -3);
-		c.b = (unsigned char)luaL_checkinteger(L, -2);
-		c.a = (unsigned char)luaL_optinteger(L, -1, 255);
+		checkFormats[format](L, -4, p);
 
 		lua_pop(L, 4);
 	}
 	else
-	{
-		c.r = (unsigned char)luaL_checkinteger(L, 4);
-		c.g = (unsigned char)luaL_checkinteger(L, 5);
-		c.b = (unsigned char)luaL_checkinteger(L, 6);
-		c.a = (unsigned char)luaL_optinteger(L, 7, 255);
-	}
+		checkFormats[format](L, 4, p);
 
-	luax_catchexcept(L, [&](){ t->setPixel(x, y, c); });
+	luax_catchexcept(L, [&](){ t->setPixel(x, y, p); });
 	return 0;
-}
-
-// Gets the result of luaL_where as a string.
-static std::string luax_getwhere(lua_State *L, int level)
-{
-	luaL_where(L, level);
-
-	const char *str = lua_tostring(L, -1);
-	std::string where;
-	if (str)
-		where = str;
-
-	lua_pop(L, 1);
-	return where;
-}
-
-// Generates a Lua error with a nice error string when a return value of a
-// called function is not a number.
-static int luax_retnumbererror(lua_State *L, int level, int retnum, int ttype)
-{
-	if (ttype == LUA_TNUMBER)
-		return 0;
-
-	const char *where = luax_getwhere(L, level).c_str();
-	const char *ttypename = lua_typename(L, ttype);
-
-	return luaL_error(L, "%sbad return value #%d (number expected, got %s)",
-	                     where, retnum, ttypename);
 }
 
 // ImageData:mapPixel. Not thread-safe! See wrap_ImageData.lua for the thread-
@@ -156,45 +210,32 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 	if (!(t->inside(sx, sy) && t->inside(sx+w-1, sy+h-1)))
 		return luaL_error(L, "Invalid rectangle dimensions.");
 
-	// Cache-friendlier loop. :)
+	int iw = t->getWidth();
+
+	PixelFormat format = t->getFormat();
+
+	auto checkpixel = checkFormats[format];
+	auto pushpixel = pushFormats[format];
+
+	uint8 *data = (uint8 *) t->getData();
+	size_t pixelsize = t->getPixelSize();
+
 	for (int y = sy; y < sy+h; y++)
 	{
 		for (int x = sx; x < sx+w; x++)
 		{
-			lua_pushvalue(L, 2);
+			Pixel *pixeldata = (Pixel *) (data + (y * iw + x) * pixelsize);
+
+			lua_pushvalue(L, 2); // ImageData
 			lua_pushnumber(L, x);
 			lua_pushnumber(L, y);
-			pixel c = t->getPixelUnsafe(x, y);
-			lua_pushnumber(L, c.r);
-			lua_pushnumber(L, c.g);
-			lua_pushnumber(L, c.b);
-			lua_pushnumber(L, c.a);
+
+			pushpixel(L, *pixeldata);
+
 			lua_call(L, 6, 4);
 
-			// If we used luaL_checkX / luaL_optX then we would get messy error
-			// messages (e.g. Error: bad argument #-1 to '?'), so while this is
-			// messier code, at least the errors are a bit more descriptive.
-
-			// Treat the pixel as an array for less code duplication. :(
-			unsigned char *parray = (unsigned char *) &c;
-			for (int i = 0; i < 4; i++)
-			{
-				int ttype = lua_type(L, -4 + i);
-
-				if (ttype == LUA_TNUMBER)
-					parray[i] = (unsigned char) lua_tonumber(L, -4 + i);
-				else if (i == 3 && (ttype == LUA_TNONE || ttype == LUA_TNIL))
-					parray[i] = 255; // Alpha component defaults to 255.
-				else
-					// Error (level 2 because this is function will be wrapped.)
-					return luax_retnumbererror(L, 2, i + 1, ttype);
-			}
-
-			// Pop return values.
-			lua_pop(L, 4);
-
-			// We're locking the entire function, instead of each setPixel call.
-			t->setPixelUnsafe(x, y, c);
+			checkpixel(L, -4, *pixeldata);
+			lua_pop(L, 4); // Pop return values.
 		}
 	}
 
@@ -205,12 +246,12 @@ int w_ImageData_paste(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	ImageData *src = luax_checkimagedata(L, 2);
-	int dx = (int) luaL_checknumber(L, 3);
-	int dy = (int) luaL_checknumber(L, 4);
-	int sx = (int) luaL_optnumber(L, 5, 0);
-	int sy = (int) luaL_optnumber(L, 6, 0);
-	int sw = (int) luaL_optnumber(L, 7, src->getWidth());
-	int sh = (int) luaL_optnumber(L, 8, src->getHeight());
+	int dx = (int) luaL_checkinteger(L, 3);
+	int dy = (int) luaL_checkinteger(L, 4);
+	int sx = (int) luaL_optinteger(L, 5, 0);
+	int sy = (int) luaL_optinteger(L, 6, 0);
+	int sw = (int) luaL_optinteger(L, 7, src->getWidth());
+	int sh = (int) luaL_optinteger(L, 8, src->getHeight());
 	t->paste((love::image::ImageData *)src, dx, dy, sx, sy, sw, sh);
 	return 0;
 }
@@ -219,10 +260,10 @@ int w_ImageData_encode(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 
-	ImageData::EncodedFormat format;
+	FormatHandler::EncodedFormat format;
 	const char *fmt = luaL_checkstring(L, 2);
 	if (!ImageData::getConstant(fmt, format))
-		return luaL_error(L, "Invalid encoded image format '%s'.", fmt);
+		return luax_enumerror(L, "encoded image format", ImageData::getConstants(format), fmt);
 
 	bool hasfilename = false;
 
@@ -234,18 +275,10 @@ int w_ImageData_encode(lua_State *L)
 	}
 
 	love::filesystem::FileData *filedata = nullptr;
-	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str()); });
+	luax_catchexcept(L, [&](){ filedata = t->encode(format, filename.c_str(), hasfilename); });
 
-	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, filedata);
+	luax_pushtype(L, filedata);
 	filedata->release();
-
-	if (hasfilename)
-	{
-		luax_getfunction(L, "filesystem", "write");
-		lua_pushvalue(L, 3); // filename
-		lua_pushvalue(L, -3); // FileData
-		lua_call(L, 2, 0);
-	}
 
 	return 1;
 }
@@ -275,6 +308,9 @@ struct FFI_ImageData
 {
 	void (*lockMutex)(Proxy *p);
 	void (*unlockMutex)(Proxy *p);
+
+	float (*halfToFloat)(half h);
+	half (*floatToHalf)(float f);
 };
 
 static FFI_ImageData ffifuncs =
@@ -291,11 +327,16 @@ static FFI_ImageData ffifuncs =
 	{
 		ImageData *i = (ImageData *) p->object;
 		i->getMutex()->unlock();
-	}
+	},
+
+	halfToFloat,
+	floatToHalf,
 };
 
 static const luaL_Reg w_ImageData_functions[] =
 {
+	{ "clone", w_ImageData_clone },
+	{ "getFormat", w_ImageData_getFormat },
 	{ "getWidth", w_ImageData_getWidth },
 	{ "getHeight", w_ImageData_getHeight },
 	{ "getDimensions", w_ImageData_getDimensions },
@@ -313,9 +354,19 @@ static const luaL_Reg w_ImageData_functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	int ret = luax_register_type(L, IMAGE_IMAGE_DATA_ID, "ImageData", w_Data_functions, w_ImageData_functions, nullptr);
+	checkFormats[PIXELFORMAT_RGBA8]   = luax_checkpixel_rgba8;
+	checkFormats[PIXELFORMAT_RGBA16]  = luax_checkpixel_rgba16;
+	checkFormats[PIXELFORMAT_RGBA16F] = luax_checkpixel_rgba16f;
+	checkFormats[PIXELFORMAT_RGBA32F] = luax_checkpixel_rgba32f;
 
-	luax_gettypemetatable(L, IMAGE_IMAGE_DATA_ID);
+	pushFormats[PIXELFORMAT_RGBA8]   = luax_pushpixel_rgba8;
+	pushFormats[PIXELFORMAT_RGBA16]  = luax_pushpixel_rgba16;
+	pushFormats[PIXELFORMAT_RGBA16F] = luax_pushpixel_rgba16f;
+	pushFormats[PIXELFORMAT_RGBA32F] = luax_pushpixel_rgba32f;
+
+	int ret = luax_register_type(L, &ImageData::type, data::w_Data_functions, w_ImageData_functions, nullptr);
+
+	luax_gettypemetatable(L, ImageData::type);
 
 	// Load and execute ImageData.lua, sending the metatable and the ffi
 	// functions struct pointer as arguments.

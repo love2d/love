@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,7 @@ Pool::Pool()
 
 Pool::~Pool()
 {
-	stop();
+	Source::stop(this);
 
 	// Free all sources.
 	alDeleteSources(totalSources, sources);
@@ -103,24 +103,19 @@ void Pool::update()
 {
 	thread::Lock lock(mutex);
 
-	std::map<Source *, ALuint>::iterator i = playing.begin();
+	std::vector<Source *> torelease;
 
-	while (i != playing.end())
+	for (const auto &i : playing)
 	{
-		if (!i->first->update())
-		{
-			i->first->stopAtomic();
-			i->first->rewindAtomic();
-			i->first->release();
-			available.push(i->second);
-			playing.erase(i++);
-		}
-		else
-			i++;
+		if (!i.first->update())
+			torelease.push_back(i.first);
 	}
+
+	for (Source *s : torelease)
+		releaseSource(s);
 }
 
-int Pool::getSourceCount() const
+int Pool::getActiveSourceCount() const
 {
 	return (int) playing.size();
 }
@@ -130,181 +125,66 @@ int Pool::getMaxSources() const
 	return totalSources;
 }
 
-bool Pool::play(Source *source, ALuint &out)
+bool Pool::assignSource(Source *source, ALuint &out, char &wasPlaying)
 {
-	thread::Lock lock(mutex);
-
-	bool ok = true;
 	out = 0;
 
-	bool alreadyPlaying = findSource(source, out);
-
-	if (!alreadyPlaying)
-	{
-		// Try to play.
-		if (!available.empty())
-		{
-			// Get the first available source.
-			out = available.front();
-
-			// Remove it.
-			available.pop();
-
-			// Insert into map of playing sources.
-			playing.insert(std::pair<Source *, ALuint>(source, out));
-
-			source->retain();
-
-			ok = source->playAtomic();
-		}
-		else
-		{
-			ok = false;
-		}
-	}
-	else
-	{
-		ok = true;
-	}
-
-	return ok;
-}
-
-void Pool::stop()
-{
-	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-	{
-		i.first->stopAtomic();
-		i.first->rewindAtomic();
-		i.first->release();
-		available.push(i.second);
-	}
-
-	playing.clear();
-}
-
-void Pool::stop(Source *source)
-{
-	thread::Lock lock(mutex);
-	removeSource(source);
-}
-
-void Pool::pause()
-{
-	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-		i.first->pauseAtomic();
-}
-
-void Pool::pause(Source *source)
-{
-	thread::Lock lock(mutex);
-	ALuint out;
 	if (findSource(source, out))
-		source->pauseAtomic();
+		return wasPlaying = true;
+
+	wasPlaying = false;
+
+	if (available.empty())
+		return false;
+
+	out = available.front();
+	available.pop();
+
+	playing.insert(std::make_pair(source, out));
+	source->retain();
+	return true;
 }
 
-void Pool::resume()
+bool Pool::releaseSource(Source *source, bool stop)
 {
-	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-		i.first->resumeAtomic();
-}
+	ALuint s;
 
-void Pool::resume(Source *source)
-{
-	thread::Lock lock(mutex);
-	ALuint out;
-	if (findSource(source, out))
-		source->resumeAtomic();
-}
-
-void Pool::rewind()
-{
-	thread::Lock lock(mutex);
-	for (const auto &i : playing)
-		i.first->rewindAtomic();
-}
-
-// For those times we don't need it backed.
-void Pool::softRewind(Source *source)
-{
-	thread::Lock lock(mutex);
-	source->rewindAtomic();
-}
-
-void Pool::rewind(Source *source)
-{
-	thread::Lock lock(mutex);
-	source->rewindAtomic();
-}
-
-void Pool::release(Source *source)
-{
-	ALuint s = findi(source);
-
-	if (s != 0)
+	if (findSource(source, s))
 	{
+		if (stop)
+			source->stopAtomic();
+		source->release();
 		available.push(s);
 		playing.erase(source);
-	}
-}
-
-void Pool::seek(Source *source, float offset, void *unit)
-{
-	thread::Lock lock(mutex);
-	return source->seekAtomic(offset, unit);
-}
-
-float Pool::tell(Source *source, void *unit)
-{
-	thread::Lock lock(mutex);
-	return source->tellAtomic(unit);
-}
-
-double Pool::getDuration(Source *source, void *unit)
-{
-	thread::Lock lock(mutex);
-	return source->getDurationAtomic(unit);
-}
-
-ALuint Pool::findi(const Source *source) const
-{
-	std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
-
-	if (i != playing.end())
-		return i->second;
-
-	return 0;
-}
-
-bool Pool::findSource(Source *source, ALuint &out)
-{
-	std::map<Source *, ALuint>::const_iterator i = playing.find((Source *)source);
-
-	bool found = i != playing.end();
-
-	if (found)
-		out = i->second;
-
-	return found;
-}
-
-bool Pool::removeSource(Source *source)
-{
-	std::map<Source *, ALuint>::iterator i = playing.find((Source *)source);
-
-	if (i != playing.end())
-	{
-		source->stopAtomic();
-		available.push(i->second);
-		playing.erase(i++);
-		source->release();
 		return true;
 	}
 
 	return false;
+}
+
+bool Pool::findSource(Source *source, ALuint &out)
+{
+	std::map<Source *, ALuint>::const_iterator i = playing.find(source);
+
+	if (i == playing.end())
+		return false;
+
+	out = i->second;
+	return true;
+}
+
+thread::Lock Pool::lock()
+{
+	return thread::Lock(mutex);
+}
+
+std::vector<love::audio::Source*> Pool::getPlayingSources()
+{
+	std::vector<love::audio::Source*> sources;
+	sources.reserve(playing.size());
+	for (auto &i : playing)
+		sources.push_back(i.first);
+	return sources;
 }
 
 } // openal

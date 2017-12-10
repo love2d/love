@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,6 +38,8 @@ namespace box2d
 class PrismaticJoint : public Joint
 {
 public:
+
+	static love::Type type;
 
 	/**
 	 * Creates a new PrismaticJoint connecting body1 and body2.
@@ -102,7 +104,7 @@ public:
 	/**
 	 * Checks whether limits are enabled.
 	 **/
-	bool hasLimitsEnabled() const;
+	bool areLimitsEnabled() const;
 
 	/**
 	 * Sets the upper limit, usually in meters.

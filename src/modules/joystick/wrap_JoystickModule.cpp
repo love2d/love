@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,7 +40,7 @@ int w_getJoysticks(lua_State *L)
 	for (int i = 0; i < stickcount; i++)
 	{
 		Joystick *stick = instance()->getJoystick(i);
-		luax_pushtype(L, JOYSTICK_JOYSTICK_ID, stick);
+		luax_pushtype(L, stick);
 		lua_rawseti(L, -2, i + 1);
 	}
 
@@ -79,101 +79,38 @@ int w_setGamepadMapping(lua_State *L)
 	else if (Joystick::getConstant(gpbindstr, gpinput.button))
 		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
 	else
-		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
+		return luax_enumerror(L, "gamepad axis/button", gpbindstr);
 
 	const char *jinputtypestr = luaL_checkstring(L, 3);
 	Joystick::JoystickInput jinput;
 
 	if (!Joystick::getConstant(jinputtypestr, jinput.type))
-		return luaL_error(L, "Invalid joystick input type: %s", jinputtypestr);
+		return luax_enumerror(L, "joystick input type", jinputtypestr);
 
 	const char *hatstr;
 	switch (jinput.type)
 	{
 	case Joystick::INPUT_TYPE_AXIS:
-		jinput.axis = (int) luaL_checknumber(L, 4) - 1;
+		jinput.axis = (int) luaL_checkinteger(L, 4) - 1;
 		break;
 	case Joystick::INPUT_TYPE_BUTTON:
-		jinput.button = (int) luaL_checknumber(L, 4) - 1;
+		jinput.button = (int) luaL_checkinteger(L, 4) - 1;
 		break;
 	case Joystick::INPUT_TYPE_HAT:
 		// Hats need both a hat index and a hat value.
-		jinput.hat.index = (int) luaL_checknumber(L, 4) - 1;
+		jinput.hat.index = (int) luaL_checkinteger(L, 4) - 1;
 		hatstr = luaL_checkstring(L, 5);
 		if (!Joystick::getConstant(hatstr, jinput.hat.value))
-			return luaL_error(L, "Invalid joystick hat: %s", hatstr);
+			return luax_enumerror(L, "joystick hat", hatstr);
 		break;
 	default:
-		return luaL_error(L, "Invalid joystick input type: %s", jinputtypestr);
+		return luax_enumerror(L, "joystick input type", jinputtypestr);
 	}
 
 	bool success = false;
 	luax_catchexcept(L, [&](){ success = instance()->setGamepadMapping(guid, gpinput, jinput); });
 
 	luax_pushboolean(L, success);
-	return 1;
-}
-
-int w_getGamepadMapping(lua_State *L)
-{
-	std::string guid;
-
-	// Accept either a GUID string or a Joystick object. This way we can re-use
-	// the function for Joystick:getGamepadMapping.
-	if (lua_type(L, 1) == LUA_TSTRING)
-		guid = luax_checkstring(L, 1);
-	else
-	{
-		Joystick *stick = luax_checkjoystick(L, 1);
-		guid = stick->getGUID();
-	}
-
-	const char *gpbindstr = luaL_checkstring(L, 2);
-	Joystick::GamepadInput gpinput;
-
-	if (Joystick::getConstant(gpbindstr, gpinput.axis))
-		gpinput.type = Joystick::INPUT_TYPE_AXIS;
-	else if (Joystick::getConstant(gpbindstr, gpinput.button))
-		gpinput.type = Joystick::INPUT_TYPE_BUTTON;
-	else
-		return luaL_error(L, "Invalid gamepad axis/button: %s", gpbindstr);
-
-	Joystick::JoystickInput jinput;
-	jinput.type = Joystick::INPUT_TYPE_MAX_ENUM;
-
-	luax_catchexcept(L, [&](){ jinput = instance()->getGamepadMapping(guid, gpinput); });
-
-	if (jinput.type == Joystick::INPUT_TYPE_MAX_ENUM)
-		return 0;
-
-	const char *inputtypestr;
-	if (!Joystick::getConstant(jinput.type, inputtypestr))
-		return luaL_error(L, "Unknown joystick input type.");
-
-	lua_pushstring(L, inputtypestr);
-
-	const char *hatstr;
-	switch (jinput.type)
-	{
-	case Joystick::INPUT_TYPE_AXIS:
-		lua_pushinteger(L, jinput.axis + 1);
-		return 2;
-	case Joystick::INPUT_TYPE_BUTTON:
-		lua_pushinteger(L, jinput.button + 1);
-		return 2;
-	case Joystick::INPUT_TYPE_HAT:
-		lua_pushinteger(L, jinput.hat.index + 1);
-		if (Joystick::getConstant(jinput.hat.value, hatstr))
-		{
-			lua_pushstring(L, hatstr);
-			return 3;
-		}
-		else
-			return luaL_error(L, "Unknown joystick hat.");
-	default:
-		break; // ?
-	}
-
 	return 1;
 }
 
@@ -229,7 +166,6 @@ static const luaL_Reg functions[] =
 	{ "getJoysticks", w_getJoysticks },
 	{ "getJoystickCount", w_getJoystickCount },
 	{ "setGamepadMapping", w_setGamepadMapping },
-	{ "getGamepadMapping", w_getGamepadMapping },
 	{ "loadGamepadMappings", w_loadGamepadMappings },
 	{ "saveGamepadMappings", w_saveGamepadMappings },
 	{ 0, 0 }
@@ -254,7 +190,7 @@ extern "C" int luaopen_love_joystick(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "joystick";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

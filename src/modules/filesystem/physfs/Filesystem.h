@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -64,9 +64,6 @@ public:
 
 	love::filesystem::File *newFile(const char *filename) const;
 
-	FileData *newFileData(void *data, unsigned int size, const char *filename) const;
-	FileData *newFileData(const char *b64, const char *filename) const;
-
 	const char *getWorkingDirectory();
 	std::string getUserDirectory();
 	std::string getAppdataDirectory();
@@ -75,10 +72,7 @@ public:
 
 	std::string getRealDirectory(const char *filename) const;
 
-	bool exists(const char *path) const;
-	bool isDirectory(const char *dir) const;
-	bool isFile(const char *file) const;
-	bool isSymlink(const char *filename) const;
+	bool getInfo(const char *filepath, Info &info) const;
 
 	bool createDirectory(const char *dir);
 
@@ -90,13 +84,11 @@ public:
 
 	void getDirectoryItems(const char *dir, std::vector<std::string> &items);
 
-	int64 getLastModified(const char *filename) const;
-	int64 getSize(const char *filename) const;
-
 	void setSymlinksEnabled(bool enable);
 	bool areSymlinksEnabled() const;
 
 	std::vector<std::string> &getRequirePath();
+	std::vector<std::string> &getCRequirePath();
 
 	void allowMountingForPath(const std::string &path);
 
@@ -127,6 +119,7 @@ private:
 
 	// Search path for require
 	std::vector<std::string> requirePath;
+	std::vector<std::string> cRequirePath;
 
 	std::vector<std::string> allowedMountPaths;
 

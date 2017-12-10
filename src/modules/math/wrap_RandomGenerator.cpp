@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ RandomGenerator::Seed luax_checkrandomseed(lua_State *L, int idx)
 
 RandomGenerator *luax_checkrandomgenerator(lua_State *L, int idx)
 {
-	return luax_checktype<RandomGenerator>(L, idx, MATH_RANDOM_GENERATOR_ID);
+	return luax_checktype<RandomGenerator>(L, idx);
 }
 
 int w_RandomGenerator__random(lua_State *L)
@@ -119,6 +119,7 @@ int w_RandomGenerator_getState(lua_State *L)
 struct FFI_RandomGenerator
 {
 	double (*random)(Proxy *p);
+	double (*randomNormal)(Proxy *p, double stddev, double mean);
 };
 
 static FFI_RandomGenerator ffifuncs =
@@ -126,11 +127,21 @@ static FFI_RandomGenerator ffifuncs =
 	[](Proxy *p) -> double // random()
 	{
 		// FIXME: We need better type-checking...
-		if (p == nullptr || !typeFlags[p->type][MATH_RANDOM_GENERATOR_ID])
+		if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(RandomGenerator::type))
 			return 0.0;
 
 		RandomGenerator *rng = (RandomGenerator *) p->object;
 		return rng->random();
+	},
+
+	[](Proxy *p, double stdddev, double mean) -> double // randomNormal
+	{
+		// FIXME: We need better type-checking...
+		if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(RandomGenerator::type))
+			return 0.0;
+
+		RandomGenerator *rng = (RandomGenerator *) p->object;
+		return rng->randomNormal(stdddev) + mean;
 	}
 };
 
@@ -147,9 +158,9 @@ static const luaL_Reg w_RandomGenerator_functions[] =
 
 extern "C" int luaopen_randomgenerator(lua_State *L)
 {
-	int n = luax_register_type(L, MATH_RANDOM_GENERATOR_ID, "RandomGenerator", w_RandomGenerator_functions, nullptr);
+	int n = luax_register_type(L, &RandomGenerator::type, w_RandomGenerator_functions, nullptr);
 
-	luax_gettypemetatable(L, MATH_RANDOM_GENERATOR_ID);
+	luax_gettypemetatable(L, RandomGenerator::type);
 
 	// Load and execute wrap_RandomGenerator.lua, sending the metatable and the
 	// ffi functions struct pointer as arguments.

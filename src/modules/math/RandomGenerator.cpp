@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,8 @@ static uint64 wangHash64(uint64 key)
 	key = key + (key << 31);
 	return key;
 }
+
+love::Type RandomGenerator::type("RandomGenerator", &Object::type);
 
 // 64 bit Xorshift implementation taken from the end of Sec. 3 (page 4) in
 // George Marsaglia, "Xorshift RNGs", Journal of Statistical Software, Vol.8 (Issue 14), 2003

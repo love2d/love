@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@ class BMFontRasterizer : public Rasterizer
 {
 public:
 
-	BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist);
+	BMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &imagelist, float dpiscale);
 	virtual ~BMFontRasterizer();
 
 	// Implements Rasterizer.
@@ -51,6 +51,7 @@ public:
 	int getGlyphCount() const override;
 	bool hasGlyph(uint32 glyph) const override;
 	float getKerning(uint32 leftglyph, uint32 rightglyph) const override;
+	DataType getDataType() const override;
 
 	static bool accepts(love::filesystem::FileData *fontdef);
 

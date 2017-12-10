@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSiz
 	ModPlug_SetSettings(&settings);
 
 	// Load the module.
-	plug = ModPlug_Load(data->getData(), data->getSize());
+	plug = ModPlug_Load(data->getData(), (int) data->getSize());
 
 	if (plug == 0)
 		throw love::Exception("Could not load file with ModPlug.");
@@ -121,7 +121,7 @@ bool ModPlugDecoder::rewind()
 {
 	// Let's reload.
 	ModPlug_Unload(plug);
-	plug = ModPlug_Load(data->getData(), data->getSize());
+	plug = ModPlug_Load(data->getData(), (int) data->getSize());
 	ModPlug_SetMasterVolume(plug, 128);
 	eof = false;
 	return (plug != 0);
@@ -132,7 +132,7 @@ bool ModPlugDecoder::isSeekable()
 	return true;
 }
 
-int ModPlugDecoder::getChannels() const
+int ModPlugDecoder::getChannelCount() const
 {
 	return 2;
 }

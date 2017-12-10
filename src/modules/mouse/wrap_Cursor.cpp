@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ namespace mouse
 
 Cursor *luax_checkcursor(lua_State *L, int idx)
 {
-	return luax_checktype<Cursor>(L, idx, MOUSE_CURSOR_ID);
+	return luax_checktype<Cursor>(L, idx);
 }
 
 int w_Cursor_getType(lua_State *L)
@@ -61,7 +61,7 @@ static const luaL_Reg w_Cursor_functions[] =
 
 extern "C" int luaopen_cursor(lua_State *L)
 {
-	return luax_register_type(L, MOUSE_CURSOR_ID, "Cursor", w_Cursor_functions, nullptr);
+	return luax_register_type(L, &Cursor::type, w_Cursor_functions, nullptr);
 }
 
 } // mouse

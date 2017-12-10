@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,7 @@
 #include "common/Exception.h"
 #include "audio/Audio.h"
 #include "common/config.h"
+#include "timer/Timer.h"
 
 #include <cmath>
 
@@ -43,26 +44,30 @@ namespace sdl
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
-static void windowToPixelCoords(double *x, double *y)
+static void windowToDPICoords(double *x, double *y)
 {
 	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
-		window->windowToPixelCoords(x, y);
+		window->windowToDPICoords(x, y);
 }
 
 #ifndef LOVE_MACOSX
-static void normalizedToPixelCoords(double *x, double *y)
+static void normalizedToDPICoords(double *x, double *y)
 {
-	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
-	int w = 1, h = 1;
+	double w = 1.0, h = 1.0;
 
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
-		window->getPixelDimensions(w, h);
+	{
+		w = window->getWidth();
+		h = window->getHeight();
+		window->windowToDPICoords(&w, &h);
+	}
 
 	if (x)
-		*x = ((*x) * (double) w);
+		*x = ((*x) * w);
 	if (y)
-		*y = ((*y) * (double) h);
+		*y = ((*y) * h);
 }
 #endif
 
@@ -111,6 +116,8 @@ Event::~Event()
 
 void Event::pump()
 {
+	exceptionIfInRenderPass();
+
 	SDL_Event e;
 
 	while (SDL_PollEvent(&e))
@@ -126,6 +133,8 @@ void Event::pump()
 
 Message *Event::wait()
 {
+	exceptionIfInRenderPass();
+
 	SDL_Event e;
 
 	if (SDL_WaitEvent(&e) != 1)
@@ -136,6 +145,8 @@ Message *Event::wait()
 
 void Event::clear()
 {
+	exceptionIfInRenderPass();
+
 	SDL_Event e;
 
 	while (SDL_PollEvent(&e))
@@ -146,7 +157,18 @@ void Event::clear()
 	love::event::Event::clear();
 }
 
-Message *Event::convert(const SDL_Event &e) const
+void Event::exceptionIfInRenderPass()
+{
+	// Some core OS graphics functionality (e.g. swap buffers on some platforms)
+	// happens inside SDL_PumpEvents - which is called by SDL_PollEvent and
+	// friends. It's probably a bad idea to call those functions while a Canvas
+	// is active.
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr && gfx->isCanvasActive())
+		throw love::Exception("Cannot call this function while a Canvas is active in love.graphics.");
+}
+
+Message *Event::convert(const SDL_Event &e)
 {
 	Message *msg = nullptr;
 
@@ -231,8 +253,8 @@ Message *Event::convert(const SDL_Event &e) const
 			double y = (double) e.motion.y;
 			double xrel = (double) e.motion.xrel;
 			double yrel = (double) e.motion.yrel;
-			windowToPixelCoords(&x, &y);
-			windowToPixelCoords(&xrel, &yrel);
+			windowToDPICoords(&x, &y);
+			windowToDPICoords(&xrel, &yrel);
 			vargs.emplace_back(x);
 			vargs.emplace_back(y);
 			vargs.emplace_back(xrel);
@@ -244,8 +266,7 @@ Message *Event::convert(const SDL_Event &e) const
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
 		{
-			// SDL uses button index 3 for the right mouse button, but we use
-			// index 2.
+			// SDL uses button 3 for the right mouse button, but we use button 2
 			int button = e.button.button;
 			switch (button)
 			{
@@ -257,16 +278,17 @@ Message *Event::convert(const SDL_Event &e) const
 				break;
 			}
 
-			double x = (double) e.button.x;
-			double y = (double) e.button.y;
-			windowToPixelCoords(&x, &y);
-			vargs.emplace_back(x);
-			vargs.emplace_back(y);
+			double px = (double) e.button.x;
+			double py = (double) e.button.y;
+			windowToDPICoords(&px, &py);
+			vargs.emplace_back(px);
+			vargs.emplace_back(py);
 			vargs.emplace_back((double) button);
 			vargs.emplace_back(e.button.which == SDL_TOUCH_MOUSEID);
-			msg = new Message((e.type == SDL_MOUSEBUTTONDOWN) ?
-							  "mousepressed" : "mousereleased",
-							  vargs);
+			vargs.emplace_back((double) e.button.clicks);
+
+			bool down = e.type == SDL_MOUSEBUTTONDOWN;
+			msg = new Message(down ? "mousepressed" : "mousereleased", vargs);
 		}
 		break;
 	case SDL_MOUSEWHEEL:
@@ -295,15 +317,15 @@ Message *Event::convert(const SDL_Event &e) const
 		if (touchNormalizationBug || fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
 		{
 			touchNormalizationBug = true;
-			windowToPixelCoords(&touchinfo.x, &touchinfo.y);
-			windowToPixelCoords(&touchinfo.dx, &touchinfo.dy);
+			windowToDPICoords(&touchinfo.x, &touchinfo.y);
+			windowToDPICoords(&touchinfo.dx, &touchinfo.dy);
 		}
 		else
 #endif
 		{
-			// SDL's coords are normalized to [0, 1], but we want them in pixels.
-			normalizedToPixelCoords(&touchinfo.x, &touchinfo.y);
-			normalizedToPixelCoords(&touchinfo.dx, &touchinfo.dy);
+			// SDL's coords are normalized to [0, 1], but we want screen coords.
+			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
+			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
 		}
 
 		// We need to update the love.touch.sdl internal state from here.
@@ -361,12 +383,10 @@ Message *Event::convert(const SDL_Event &e) const
 			}
 			else
 			{
-				Proxy proxy;
-				proxy.object = new love::filesystem::DroppedFile(e.drop.file);
-				proxy.type = FILESYSTEM_DROPPED_FILE_ID;
-				vargs.emplace_back(proxy.type, &proxy);
+				auto *file = new love::filesystem::DroppedFile(e.drop.file);
+				vargs.emplace_back(&love::filesystem::DroppedFile::type, file);
 				msg = new Message("filedropped", vargs);
-				proxy.object->release();
+				file->release();
 			}
 		}
 		SDL_free(e.drop.file);
@@ -396,7 +416,8 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	std::vector<Variant> vargs;
 	vargs.reserve(4);
 
-	Proxy proxy;
+	love::Type *joysticktype = &love::joystick::Joystick::type;
+	love::joystick::Joystick *stick = nullptr;
 	love::joystick::Joystick::Hat hat;
 	love::joystick::Joystick::GamepadButton padbutton;
 	love::joystick::Joystick::GamepadAxis padaxis;
@@ -406,12 +427,11 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	{
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		proxy.type = JOYSTICK_JOYSTICK_ID;
-		proxy.object = joymodule->getJoystickFromID(e.jbutton.which);
-		if (!proxy.object)
+		stick = joymodule->getJoystickFromID(e.jbutton.which);
+		if (!stick)
 			break;
 
-		vargs.emplace_back(proxy.type, (void *) &proxy);
+		vargs.emplace_back(joysticktype, stick);
 		vargs.emplace_back((double)(e.jbutton.button+1));
 		msg = new Message((e.type == SDL_JOYBUTTONDOWN) ?
 						  "joystickpressed" : "joystickreleased",
@@ -419,12 +439,11 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		break;
 	case SDL_JOYAXISMOTION:
 		{
-			proxy.type = JOYSTICK_JOYSTICK_ID;
-			proxy.object = joymodule->getJoystickFromID(e.jaxis.which);
-			if (!proxy.object)
+			stick = joymodule->getJoystickFromID(e.jaxis.which);
+			if (!stick)
 				break;
 
-			vargs.emplace_back(proxy.type, (void *) &proxy);
+			vargs.emplace_back(joysticktype, stick);
 			vargs.emplace_back((double)(e.jaxis.axis+1));
 			float value = joystick::Joystick::clampval(e.jaxis.value / 32768.0f);
 			vargs.emplace_back((double) value);
@@ -435,12 +454,11 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!joystick::sdl::Joystick::getConstant(e.jhat.value, hat) || !joystick::Joystick::getConstant(hat, txt))
 			break;
 
-		proxy.type = JOYSTICK_JOYSTICK_ID;
-		proxy.object = joymodule->getJoystickFromID(e.jhat.which);
-		if (!proxy.object)
+		stick = joymodule->getJoystickFromID(e.jhat.which);
+		if (!stick)
 			break;
 
-		vargs.emplace_back(proxy.type, (void *) &proxy);
+		vargs.emplace_back(joysticktype, stick);
 		vargs.emplace_back((double)(e.jhat.hat+1));
 		vargs.emplace_back(txt, strlen(txt));
 		msg = new Message("joystickhat", vargs);
@@ -453,12 +471,11 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		if (!joystick::Joystick::getConstant(padbutton, txt))
 			break;
 
-		proxy.type = JOYSTICK_JOYSTICK_ID;
-		proxy.object = joymodule->getJoystickFromID(e.cbutton.which);
-		if (!proxy.object)
+		stick = joymodule->getJoystickFromID(e.cbutton.which);
+		if (!stick)
 			break;
 
-		vargs.emplace_back(proxy.type, (void *) &proxy);
+		vargs.emplace_back(joysticktype, stick);
 		vargs.emplace_back(txt, strlen(txt));
 		msg = new Message(e.type == SDL_CONTROLLERBUTTONDOWN ?
 						  "gamepadpressed" : "gamepadreleased", vargs);
@@ -469,13 +486,11 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			if (!joystick::Joystick::getConstant(padaxis, txt))
 				break;
 
-			proxy.type = JOYSTICK_JOYSTICK_ID;
-			proxy.object = joymodule->getJoystickFromID(e.caxis.which);
-			if (!proxy.object)
+			stick = joymodule->getJoystickFromID(e.caxis.which);
+			if (!stick)
 				break;
 
-			vargs.emplace_back(proxy.type, (void *) &proxy);
-
+			vargs.emplace_back(joysticktype, stick);
 			vargs.emplace_back(txt, strlen(txt));
 			float value = joystick::Joystick::clampval(e.caxis.value / 32768.0f);
 			vargs.emplace_back((double) value);
@@ -484,22 +499,20 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		break;
 	case SDL_JOYDEVICEADDED:
 		// jdevice.which is the joystick device index.
-		proxy.object = joymodule->addJoystick(e.jdevice.which);
-		proxy.type = JOYSTICK_JOYSTICK_ID;
-		if (proxy.object)
+		stick = joymodule->addJoystick(e.jdevice.which);
+		if (stick)
 		{
-			vargs.emplace_back(proxy.type, (void *) &proxy);
+			vargs.emplace_back(joysticktype, stick);
 			msg = new Message("joystickadded", vargs);
 		}
 		break;
 	case SDL_JOYDEVICEREMOVED:
 		// jdevice.which is the joystick instance ID now.
-		proxy.object = joymodule->getJoystickFromID(e.jdevice.which);
-		proxy.type = JOYSTICK_JOYSTICK_ID;
-		if (proxy.object)
+		stick = joymodule->getJoystickFromID(e.jdevice.which);
+		if (stick)
 		{
-			joymodule->removeJoystick((joystick::Joystick *) proxy.object);
-			vargs.emplace_back(proxy.type, (void *) &proxy);
+			joymodule->removeJoystick(stick);
+			vargs.emplace_back(joysticktype, stick);
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
@@ -510,7 +523,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	return msg;
 }
 
-Message *Event::convertWindowEvent(const SDL_Event &e) const
+Message *Event::convertWindowEvent(const SDL_Event &e)
 {
 	Message *msg = nullptr;
 
@@ -518,6 +531,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 	vargs.reserve(4);
 
 	window::Window *win = nullptr;
+	graphics::Graphics *gfx = nullptr;
 
 	if (e.type != SDL_WINDOWEVENT)
 		return nullptr;
@@ -541,17 +555,29 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 		break;
 	case SDL_WINDOWEVENT_RESIZED:
 		{
-			int px_w = e.window.data1;
-			int px_h = e.window.data2;
+			double width  = e.window.data1;
+			double height = e.window.data2;
 
-			SDL_Window *sdlwin = SDL_GetWindowFromID(e.window.windowID);
-			if (sdlwin)
-				SDL_GL_GetDrawableSize(sdlwin, &px_w, &px_h);
+			gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+			win = Module::getInstance<window::Window>(Module::M_WINDOW);
 
-			vargs.emplace_back((double) px_w);
-			vargs.emplace_back((double) px_h);
-			vargs.emplace_back((double) e.window.data1);
-			vargs.emplace_back((double) e.window.data2);
+			// WINDOWEVENT_SIZE_CHANGED will always occur before RESIZED.
+			// The size values in the Window aren't necessarily the same as the
+			// graphics size, which is what we want to output.
+			if (gfx)
+			{
+				width  = gfx->getWidth();
+				height = gfx->getHeight();
+			}
+			else if (win)
+			{
+				width  = win->getWidth();
+				height = win->getHeight();
+				windowToDPICoords(&width, &height);
+			}
+
+			vargs.emplace_back(width);
+			vargs.emplace_back(height);
 			msg = new Message("resize", vargs);
 		}
 		break;
@@ -563,16 +589,24 @@ Message *Event::convertWindowEvent(const SDL_Event &e) const
 	case SDL_WINDOWEVENT_MINIMIZED:
 	case SDL_WINDOWEVENT_RESTORED:
 #ifdef LOVE_ANDROID
-	{
-		auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO);
-		if (audio)
+		if (auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO))
 		{
 			if (e.window.event == SDL_WINDOWEVENT_MINIMIZED)
-				audio->pause();
+			{
+				for (auto &src : pausedSources)
+					src->release();
+				pausedSources = audio->pause();
+				for (auto &src : pausedSources)
+					src->retain();
+			}
 			else if (e.window.event == SDL_WINDOWEVENT_RESTORED)
-				audio->resume();
+			{
+				audio->play(pausedSources);
+				for (auto &src : pausedSources)
+					src->release();
+				pausedSources.resize(0);
+			}
 		}
-	}
 #endif
 		break;
 	}

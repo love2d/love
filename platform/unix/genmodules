@@ -3,20 +3,15 @@
 love_suffix="$1"
 love_amsuffix="$(echo "$love_suffix" | sed 's/\-/_/g' | sed 's/\./_/g')"
 
-flags=""
+flags=()
 upper()
 {
 	echo "$@" | tr '[:lower:]' '[:upper:]'
 }
 
-implfind()
-{
-	find "$1" -maxdepth 1 -type d -exec basename '{}' \; | grep -v "^\." | tail -n +2
-}
-
 sourcefind()
 {
-	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.lch" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude"
+	find "$1" $2 -type f \( -iname "*.c" -o -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" -o -iname "*.lch" -o -iname "*.lua" \) | awk "{print \"./$prefix\"\$0\" \\\\\"}" | grep -v -f"$LOVEROOT/platform/unix/exclude" | sort
 }
 
 handlemodule()
@@ -26,82 +21,90 @@ handlemodule()
 	printf "$DEFINENAME"
 }
 
-handleimpl()
-{
-	module="$1"
-	implementation="$2"
-	name="$3"
-
-	printf "if $name\n"
-	FILES="$(sourcefind "$module/$implementation" | sed "s/^/    /")"
-	if [[ "x$FILES" != "x" ]]; then
-		printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
-		printf "${FILES:0:${#FILES}-2}\n"
-	fi
-	printf "endif\n\n"
-}
-
 genmodules()
 {
 	LOVEROOT="$(pwd)"
-	cd src
+	cd ./src
 
 	printf "liblove${love_amsuffix}_la_SOURCES = \\\\\n"
 	sourcefind "common" | sed "s/^/    /"
 	FILES="$(sourcefind "scripts" | sed "s/^/    /")"
 	printf "${FILES:0:${#FILES}-2}\n\n"
 
-	cd modules
+	local -a modulelist=()
+	local -a liblist=()
+
+	cd ./modules
 	prefix="modules/"
 	for module in *; do
-		NAME=$(handlemodule "$module")
-		flags="$flags module-$module"
+		flags+=("module-$module")
 
-		printf "if $NAME\n"
-
-		for implementation in $(implfind "$module"); do
-			flags="$flags implementation-$module-$implementation"
-			handleimpl "$module" "$implementation" "LOVE_IMPLEMENTATION_$(upper "$module")_$(upper "$implementation")"
-		done
-
-		FILES="$(sourcefind "$module" "-maxdepth 1" | sed "s/^/    /")"
+		FILES="$(sourcefind "$module" | sed "s/^/    /")"
 		if [[ "x$FILES" != "x" ]]; then
-			printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
-			printf "${FILES:0:${#FILES}-2}\n"
+			printf "liblove_module_$module = \\\\\n"
+			printf "${FILES:0:${#FILES}-2}\n\n"
+			modulelist+=("$module")
 		fi
 
-		printf "endif\n\n"
+		if [[ "$module" = "sound" ]]; then
+			printf "if !LOVE_NOMPG123\n"
+			printf "liblove_module_$module += \\\\\n"
+			printf "\t./modules/sound/lullaby/Mpg123Decoder.cpp \\\\\n"
+			printf "\t./modules/sound/lullaby/Mpg123Decoder.h\n"
+			printf "endif\n\n"
+		fi
 	done
 
 	cd ../libraries
 	prefix="libraries/"
 	for library in *; do
-		NAME="LOVE_LIBRARY_$(upper "$library")"
-		flags="$flags library-$library"
+		flags+=("library-$library")
 		FILES="$(sourcefind "$library" | sed "s/^/    /")"
 
 		if [[ ${#FILES} -gt 2 ]]; then
-			printf "if $NAME\n"
-			printf "liblove${love_amsuffix}_la_SOURCES += \\\\\n"
-			printf "${FILES:0:${#FILES}-2}\nendif\n\n"
+			printf "liblove_library_$library = \\\\\n"
+			printf "${FILES:0:${#FILES}-2}\n\n"
+			liblist+=("$library")
 		fi
 	done
+
+	for module in "${modulelist[@]}"; do
+		NAME=$(handlemodule "$module")
+		printf "if $NAME\n"
+		printf "liblove${love_amsuffix}_la_SOURCES += \$(liblove_module_$module)\n"
+		printf "endif\n\n"
+	done
+
+	for library in "${liblist[@]}"; do
+		NAME="LOVE_LIBRARY_$(upper "$library")"
+		printf "if $NAME\n"
+		printf "liblove${love_amsuffix}_la_SOURCES += \$(liblove_library_$library)\n"
+		printf "endif\n\n"
+	done
+
 	cd ../..
 }
 
 genflags()
 {
-	for flag in $flags; do
-		prettyflag="$(echo "$flag" | sed 's/-/ love./' | sed 's/-/./g')"
-		varflag="enable_$(echo "$flag" | sed 's/^[^-]*-//' | sed 's/[^a-zA-Z0-9]/_/')"
-		defineflag="LOVE_ENABLE_$(upper $(echo $flag | sed 's/^[^-]*-//' | sed 's/-/_/g'))"
+	printf > configure-modules-pre.ac
+	printf > configure-modules-post.ac
+	for flag in "${flags[@]}"; do
+		prettyflag="$(echo "$flag" | sed -e 's/-/ love./' -e 's/-/./g')"
+		varflag="enable_$(echo "$flag" | sed -e 's/[^a-zA-Z0-9]/_/')"
+		defineflag="LOVE_ENABLE_$(upper $(echo $flag | sed -e 's/^[^-]*-//' -e 's/-/_/g'))"
 		amflag="$(upper $(echo love-$flag | sed 's/-/_/g'))"
-		printf "AC_ARG_ENABLE([$flag], [  --disable-$flag    Turn off $prettyflag], [], [$varflag=true])\n"
-		printf "AH_TEMPLATE([$defineflag], [])\n"
-		printf "if test x\"\$$varflag\" = xtrue; then\n"
-		printf "    AC_DEFINE([$defineflag], [])\n"
-		printf "fi\n"
-		printf "AM_CONDITIONAL([$amflag], [test x\$$varflag = xtrue])\n\n"
+
+		# Don't generate an --enable rule for libraries
+		if [[ "$(echo $flag | sed -e '/^library-/d')" != "" ]]; then
+			printf "AC_ARG_ENABLE([$flag], [  --disable-$flag    Turn off $prettyflag], [], [$varflag=yes])\n" >> configure-modules-pre.ac
+		fi
+
+		printf "AH_TEMPLATE([$defineflag], [])\n" >> configure-modules-post.ac
+		printf "if test x\"\$$varflag\" = xyes; then\n" >> configure-modules-post.ac
+		printf "    AC_DEFINE([$defineflag], [])\n" >> configure-modules-post.ac
+		printf "fi\n" >> configure-modules-post.ac
+		printf "AM_CONDITIONAL([$amflag], [test x\$$varflag = xyes])\n\n" >> configure-modules-post.ac
 	done
 }
 
@@ -137,33 +140,26 @@ endif
 
 # Compile scripts
 .lua.lua.h:
-	cd scripts; \
+	cd ./scripts; \
 	\$(LUA_EXECUTABLE) auto.lua \$<
 
 # libLÖVE
 lib_LTLIBRARIES = liblove${love_suffix}.la
-liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS)
+liblove${love_amsuffix}_la_LDFLAGS = -module -export-dynamic \$(LDFLAGS) -release \$(PACKAGE_VERSION)
 liblove${love_amsuffix}_la_LIBADD = \
 	\$(SDL_LIBS) \$(freetype2_LIBS) \$(lua_LIBS)\
 	\$(openal_LIBS) \$(zlib_LIBS) \$(libmodplug_LIBS)\
 	\$(vorbisfile_LIBS) \$(theora_LIBS)
+
 EOF
 
 genmodules >> src/Makefile.am
 
-cat >> src/Makefile.am << EOF
-if !LOVE_NOMPG123
-liblove${love_amsuffix}_la_SOURCES += \\
-    ./modules/sound/lullaby/Mpg123Decoder.cpp \\
-    ./modules/sound/lullaby/Mpg123Decoder.h
-endif
-EOF
-
 echo "src/Makefile.am is updated! ^.^"
 
 echo "Generating configure-modules.ac"
-genflags > configure-modules.ac
-cat >> configure-modules.ac << EOF
+genflags
+cat >> configure-modules-post.ac << EOF
 AC_SUBST([LOVE_SUFFIX], [${love_suffix}])
 EOF
 echo "configure-modules.ac is updated! ^.^"

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,25 +18,27 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include <memory>
+
 #include "Variant.h"
 #include "common/StringMap.h"
 
 namespace love
 {
 
-static love::Type extractudatatype(lua_State *L, int idx)
+static Proxy *tryextractproxy(lua_State *L, int idx)
 {
 	Proxy *u = (Proxy *)lua_touserdata(L, idx);
 
-	if (u == nullptr || u->type <= INVALID_ID || u->type >= TYPE_MAX_ENUM)
-		return INVALID_ID;
+	if (u == nullptr || u->type == nullptr)
+		return nullptr;
 
 	// We could get rid of the dynamic_cast for more performance, but it would
 	// be less safe...
 	if (dynamic_cast<Object *>(u->object) != nullptr)
-		return u->type;
+		return u;
 
-	return INVALID_ID;
+	return nullptr;
 }
 
 Variant::Variant()
@@ -71,24 +73,20 @@ Variant::Variant(const char *string, size_t len)
 	}
 }
 
-Variant::Variant(void *userdata)
+Variant::Variant(void *lightuserdata)
 	: type(LUSERDATA)
 {
-	data.userdata = userdata;
+	data.userdata = lightuserdata;
 }
 
-Variant::Variant(love::Type udatatype, void *userdata)
-	: type(FUSERDATA)
-	, udatatype(udatatype)
+Variant::Variant(love::Type *lovetype, love::Object *object)
+	: type(LOVEOBJECT)
 {
-	if (udatatype != INVALID_ID)
-	{
-		Proxy *p = (Proxy *) userdata;
-		data.userdata = p->object;
-		p->object->retain();
-	}
-	else
-		data.userdata = userdata;
+	data.objectproxy.type = lovetype;
+	data.objectproxy.object = object;
+
+	if (data.objectproxy.object != nullptr)
+		data.objectproxy.object->retain();
 }
 
 // Variant gets ownership of the vector.
@@ -100,20 +98,18 @@ Variant::Variant(std::vector<std::pair<Variant, Variant>> *table)
 
 Variant::Variant(const Variant &v)
 	: type(v.type)
-	, udatatype(v.udatatype)
 	, data(v.data)
 {
 	if (type == STRING)
 		data.string->retain();
-	else if (type == FUSERDATA)
-		((love::Object *) data.userdata)->retain();
+	else if (type == LOVEOBJECT && data.objectproxy.object != nullptr)
+		data.objectproxy.object->retain();
 	else if (type == TABLE)
 		data.table->retain();
 }
 
 Variant::Variant(Variant &&v)
 	: type(std::move(v.type))
-	, udatatype(std::move(v.udatatype))
 	, data(std::move(v.data))
 {
 	v.type = NIL;
@@ -121,49 +117,41 @@ Variant::Variant(Variant &&v)
 
 Variant::~Variant()
 {
-	switch (type)
-	{
-	case STRING:
+	if (type == STRING)
 		data.string->release();
-		break;
-	case FUSERDATA:
-		((love::Object *) data.userdata)->release();
-		break;
-	case TABLE:
+	else if (type == LOVEOBJECT && data.objectproxy.object != nullptr)
+		data.objectproxy.object->release();
+	else if (type == TABLE)
 		data.table->release();
-		break;
-	default:
-		break;
-	}
 }
 
 Variant &Variant::operator = (const Variant &v)
 {
 	if (v.type == STRING)
 		v.data.string->retain();
-	else if (v.type == FUSERDATA)
-		((love::Object *) v.data.userdata)->retain();
+	else if (v.type == LOVEOBJECT && v.data.objectproxy.object != nullptr)
+		v.data.objectproxy.object->retain();
 	else if (v.type == TABLE)
 		v.data.table->retain();
 
 	if (type == STRING)
 		data.string->release();
-	else if (type == FUSERDATA)
-		((love::Object *) v.data.userdata)->release();
+	else if (type == LOVEOBJECT && data.objectproxy.object != nullptr)
+		data.objectproxy.object->release();
 	else if (type == TABLE)
 		data.table->release();
 
 	type = v.type;
 	data = v.data;
-	udatatype = v.udatatype;
 
 	return *this;
 }
 
-Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
+Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 {
 	size_t len;
 	const char *str;
+	Proxy *p = nullptr;
 
 	if (n < 0) // Fix the stack position, we might modify it later
 		n += lua_gettop(L) + 1;
@@ -180,14 +168,33 @@ Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
 	case LUA_TLIGHTUSERDATA:
 		return Variant(lua_touserdata(L, n));
 	case LUA_TUSERDATA:
-		return Variant(extractudatatype(L, n), lua_touserdata(L, n));
+		p = tryextractproxy(L, n);
+		if (p != nullptr)
+			return Variant(p->type, p->object);
+		else
+		{
+			luax_typerror(L, n, "love type");
+			return Variant();
+		}
 	case LUA_TNIL:
 		return Variant();
 	case LUA_TTABLE:
-		if (allowTables)
 		{
 			bool success = true;
+			std::unique_ptr<std::set<const void*>> tableSetPtr;
 			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
+
+			// If we had no tables argument, allocate one now, and store it in our unique_ptr
+			if (tableSet == nullptr)
+				tableSetPtr.reset(tableSet = new std::set<const void*>);
+
+			// Now make sure this table wasn't already serialised
+			const void *tablePointer = lua_topointer(L, n);
+			{
+				auto result = tableSet->insert(tablePointer);
+				if (!result.second) // insertion failed
+					throw love::Exception("Cycle detected in table");
+			}
 
 			size_t len = luax_objlen(L, -1);
 			if (len > 0)
@@ -197,7 +204,7 @@ Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
 
 			while (lua_next(L, n))
 			{
-				table->emplace_back(fromLua(L, -2), fromLua(L, -1));
+				table->emplace_back(fromLua(L, -2, tableSet), fromLua(L, -1, tableSet));
 				lua_pop(L, 1);
 
 				const auto &p = table->back();
@@ -207,6 +214,9 @@ Variant Variant::fromLua(lua_State *L, int n, bool allowTables)
 					break;
 				}
 			}
+
+			// And remove the table from the set again
+			tableSet->erase(tablePointer);
 
 			if (success)
 				return Variant(table);
@@ -240,14 +250,8 @@ void Variant::toLua(lua_State *L) const
 	case LUSERDATA:
 		lua_pushlightuserdata(L, data.userdata);
 		break;
-	case FUSERDATA:
-		if (udatatype != INVALID_ID)
-			luax_pushtype(L, udatatype, (love::Object *) data.userdata);
-		else
-			lua_pushlightuserdata(L, data.userdata);
-		// I know this is not the same
-		// sadly, however, it's the most
-		// I can do (at the moment).
+	case LOVEOBJECT:
+		luax_pushtype(L, *data.objectproxy.type, data.objectproxy.object);
 		break;
 	case TABLE:
 	{

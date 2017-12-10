@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,8 @@ namespace love
 {
 namespace font
 {
+
+love::Type Rasterizer::type("Rasterizer", &Object::type);
 
 Rasterizer::~Rasterizer()
 {
@@ -98,6 +100,11 @@ bool Rasterizer::hasGlyphs(const std::string &text) const
 float Rasterizer::getKerning(uint32 /*leftglyph*/, uint32 /*rightglyph*/) const
 {
 	return 0.0f;
+}
+
+float Rasterizer::getDPIScale() const
+{
+	return dpiScale;
 }
 
 } // font

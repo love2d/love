@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ Timer::Timer()
 	prevFpsUpdate = currTime = getTime();
 }
 
-void Timer::step()
+double Timer::step()
 {
 	// Frames rendered
 	frames++;
@@ -84,6 +84,8 @@ void Timer::step()
 		prevFpsUpdate = currTime;
 		frames = 0;
 	}
+
+	return dt;
 }
 
 void Timer::sleep(double seconds) const
@@ -127,6 +129,8 @@ double Timer::getTime()
 	static const double timerPeriod = getTimerPeriod();
 
 #if defined(LOVE_LINUX)
+	(void) timerPeriod; // Unused on linux
+
 	double mt;
 	// Check for POSIX timers and monotonic clocks. If not supported, use the gettimeofday fallback.
 #if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK) \

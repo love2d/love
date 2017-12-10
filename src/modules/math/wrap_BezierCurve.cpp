@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace math
 
 BezierCurve *luax_checkbeziercurve(lua_State *L, int idx)
 {
-	return luax_checktype<BezierCurve>(L, idx, MATH_BEZIER_CURVE_ID);
+	return luax_checktype<BezierCurve>(L, idx);
 }
 
 int w_BezierCurve_getDegree(lua_State *L)
@@ -44,7 +44,7 @@ int w_BezierCurve_getDerivative(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	BezierCurve *deriv = new BezierCurve(curve->getDerivative());
-	luax_pushtype(L, MATH_BEZIER_CURVE_ID, deriv);
+	luax_pushtype(L, deriv);
 	deriv->release();
 	return 1;
 }
@@ -52,13 +52,13 @@ int w_BezierCurve_getDerivative(lua_State *L)
 int w_BezierCurve_getControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int idx = (int) luaL_checknumber(L, 2);
+	int idx = (int) luaL_checkinteger(L, 2);
 
 	if (idx > 0) // 1-indexing
 		idx--;
 
 	luax_catchexcept(L, [&]() {
-		Vector v = curve->getControlPoint(idx);
+		Vector2 v = curve->getControlPoint(idx);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 	});
@@ -69,14 +69,14 @@ int w_BezierCurve_getControlPoint(lua_State *L)
 int w_BezierCurve_setControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int idx = (int) luaL_checknumber(L, 2);
+	int idx = (int) luaL_checkinteger(L, 2);
 	float vx = (float) luaL_checknumber(L, 3);
 	float vy = (float) luaL_checknumber(L, 4);
 
 	if (idx > 0) // 1-indexing
 		idx--;
 
-	luax_catchexcept(L, [&](){ curve->setControlPoint(idx, Vector(vx,vy)); });
+	luax_catchexcept(L, [&](){ curve->setControlPoint(idx, Vector2(vx,vy)); });
 	return 0;
 }
 
@@ -85,19 +85,19 @@ int w_BezierCurve_insertControlPoint(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	float vx = (float) luaL_checknumber(L, 2);
 	float vy = (float) luaL_checknumber(L, 3);
-	int idx = (int) luaL_optnumber(L, 4, -1);
+	int idx = (int) luaL_optinteger(L, 4, -1);
 
 	if (idx > 0) // 1-indexing
 		idx--;
 
-	luax_catchexcept(L, [&](){ curve->insertControlPoint(Vector(vx,vy), idx); });
+	luax_catchexcept(L, [&](){ curve->insertControlPoint(Vector2(vx,vy), idx); });
 	return 0;
 }
 
 int w_BezierCurve_removeControlPoint(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int idx = (int) luaL_checknumber(L, 2);
+	int idx = (int) luaL_checkinteger(L, 2);
 
 	if (idx > 0) // 1-indexing
 		idx--;
@@ -118,7 +118,7 @@ int w_BezierCurve_translate(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	float dx = (float) luaL_checknumber(L, 2);
 	float dy = (float) luaL_checknumber(L, 3);
-	curve->translate(Vector(dx,dy));
+	curve->translate(Vector2(dx,dy));
 	return 0;
 }
 
@@ -128,7 +128,7 @@ int w_BezierCurve_rotate(lua_State *L)
 	double phi = luaL_checknumber(L, 2);
 	float ox = (float) luaL_optnumber(L, 3, 0);
 	float oy = (float) luaL_optnumber(L, 4, 0);
-	curve->rotate(phi, Vector(ox,oy));
+	curve->rotate(phi, Vector2(ox,oy));
 	return 0;
 }
 
@@ -138,7 +138,7 @@ int w_BezierCurve_scale(lua_State *L)
 	double s = luaL_checknumber(L, 2);
 	float ox = (float) luaL_optnumber(L, 3, 0);
 	float oy = (float) luaL_optnumber(L, 4, 0);
-	curve->scale(s, Vector(ox,oy));
+	curve->scale(s, Vector2(ox,oy));
 	return 0;
 }
 
@@ -148,7 +148,7 @@ int w_BezierCurve_evaluate(lua_State *L)
 	double t = luaL_checknumber(L, 2);
 
 	luax_catchexcept(L, [&]() {
-		Vector v = curve->evaluate(t);
+		Vector2 v = curve->evaluate(t);
 		lua_pushnumber(L, v.x);
 		lua_pushnumber(L, v.y);
 	});
@@ -165,7 +165,7 @@ int w_BezierCurve_getSegment(lua_State *L)
 
 	BezierCurve *segment;
 	luax_catchexcept(L, [&](){ segment = curve->getSegment(t1, t2); });
-	luax_pushtype(L, MATH_BEZIER_CURVE_ID, segment);
+	luax_pushtype(L, segment);
 	segment->release();
 
 	return 1;
@@ -174,9 +174,9 @@ int w_BezierCurve_getSegment(lua_State *L)
 int w_BezierCurve_render(lua_State *L)
 {
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
-	int accuracy = (int) luaL_optnumber(L, 2, 5);
+	int accuracy = (int) luaL_optinteger(L, 2, 5);
 
-	std::vector<Vector> points;
+	std::vector<Vector2> points;
 	luax_catchexcept(L, [&](){ points = curve->render(accuracy); });
 
 	lua_createtable(L, (int) points.size() * 2, 0);
@@ -196,13 +196,13 @@ int w_BezierCurve_renderSegment(lua_State *L)
 	BezierCurve *curve = luax_checkbeziercurve(L, 1);
 	double start = luaL_checknumber(L, 2);
 	double end = luaL_checknumber(L, 3);
-	int accuracy = luaL_optinteger(L, 4, 5);
+	int accuracy = (int) luaL_optinteger(L, 4, 5);
 
-	std::vector<Vector> points;
+	std::vector<Vector2> points;
 	luax_catchexcept(L, [&](){ points = curve->renderSegment(start, end, accuracy); });
 
-	lua_createtable(L, points.size()*2, 0);
-	for (size_t i = 0; i < points.size(); ++i)
+	lua_createtable(L, (int) points.size() * 2, 0);
+	for (int i = 0; i < (int) points.size(); ++i)
 	{
 		lua_pushnumber(L, points[i].x);
 		lua_rawseti(L, -2, 2*i+1);
@@ -234,7 +234,7 @@ static const luaL_Reg w_BezierCurve_functions[] =
 
 extern "C" int luaopen_beziercurve(lua_State *L)
 {
-	return luax_register_type(L, MATH_BEZIER_CURVE_ID, "BezierCurve", w_BezierCurve_functions, nullptr);
+	return luax_register_type(L, &BezierCurve::type, w_BezierCurve_functions, nullptr);
 }
 
 } // math

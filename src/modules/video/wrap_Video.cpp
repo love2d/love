@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ int w_newVideoStream(lua_State *L)
 		stream = instance()->newVideoStream(file);
 	});
 
-	luax_pushtype(L, VIDEO_VIDEO_STREAM_ID, stream);
+	luax_pushtype(L, stream);
 	stream->release();
 	return 1;
 }
@@ -75,7 +75,7 @@ extern "C" int luaopen_love_video(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "video";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = types;
 

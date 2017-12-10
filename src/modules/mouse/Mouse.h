@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -51,7 +51,7 @@ public:
 
 	virtual Cursor *getCursor() const = 0;
 
-	virtual bool hasCursor() const = 0;
+	virtual bool isCursorSupported() const = 0;
 
 	virtual double getX() const = 0;
 	virtual double getY() const = 0;

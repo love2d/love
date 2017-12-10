@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,21 +24,44 @@
 // LOVE
 #include "common/StringMap.h"
 #include "common/math.h"
+#include "common/pixelformat.h"
+#include "common/Exception.h"
+#include "common/Optional.h"
+#include "common/int.h"
 #include "Drawable.h"
 #include "Quad.h"
+#include "vertex.h"
+#include "depthstencil.h"
+#include "Resource.h"
+
+// C
+#include <stddef.h>
 
 namespace love
 {
 namespace graphics
 {
 
+class Graphics;
+
+enum TextureType
+{
+	TEXTURE_2D,
+	TEXTURE_VOLUME,
+	TEXTURE_2D_ARRAY,
+	TEXTURE_CUBE,
+	TEXTURE_MAX_ENUM
+};
+
 /**
  * Base class for 2D textures. All textures can be drawn with Quads, have a
  * width and height, and have filter and wrap modes.
  **/
-class Texture : public Drawable
+class Texture : public Drawable, public Resource
 {
 public:
+
+	static love::Type type;
 
 	enum WrapMode
 	{
@@ -69,66 +92,114 @@ public:
 	{
 		WrapMode s = WRAP_CLAMP;
 		WrapMode t = WRAP_CLAMP;
+		WrapMode r = WRAP_CLAMP;
 	};
 
-	Texture();
+	static Filter defaultFilter;
+	static FilterMode defaultMipmapFilter;
+	static float defaultMipmapSharpness;
+
+	static int64 totalGraphicsMemory;
+
+	Texture(TextureType texType);
 	virtual ~Texture();
+
+	// Drawable.
+	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 	/**
 	 * Draws the texture using the specified transformation with a Quad applied.
-	 *
-	 * @param quad The Quad object to use to draw the object.
-	 * @param x The position of the object along the x-axis.
-	 * @param y The position of the object along the y-axis.
-	 * @param angle The angle of the object (in radians).
-	 * @param sx The scale factor along the x-axis.
-	 * @param sy The scale factor along the y-axis.
-	 * @param ox The origin offset along the x-axis.
-	 * @param oy The origin offset along the y-axis.
-	 * @param kx Shear along the x-axis.
-	 * @param ky Shear along the y-axis.
 	 **/
-	virtual void drawq(Quad *quad, float x, float y, float angle, float sx, float sy, float ox, float oy, float kx, float ky) = 0;
+	virtual void draw(Graphics *gfx, Quad *quad, const Matrix4 &m);
 
-	virtual int getWidth() const;
-	virtual int getHeight() const;
+	void drawLayer(Graphics *gfx, int layer, const Matrix4 &m);
+	virtual void drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m);
 
-	virtual void setFilter(const Filter &f) = 0;
+	TextureType getTextureType() const;
+	PixelFormat getPixelFormat() const;
+
+	bool isReadable() const;
+
+	int getWidth(int mip = 0) const;
+	int getHeight(int mip = 0) const;
+	int getDepth(int mip = 0) const;
+	int getLayerCount() const;
+	int getMipmapCount() const;
+
+	int getPixelWidth(int mip = 0) const;
+	int getPixelHeight(int mip = 0) const;
+
+	float getDPIScale() const;
+
+	virtual void setFilter(const Filter &f);
 	virtual const Filter &getFilter() const;
 
 	virtual bool setWrap(const Wrap &w) = 0;
 	virtual const Wrap &getWrap() const;
 
-	virtual const Vertex *getVertices() const;
+	// Sets the mipmap texture LOD bias (sharpness) value.
+	virtual bool setMipmapSharpness(float sharpness) = 0;
+	float getMipmapSharpness() const;
 
-	virtual const void *getHandle() const = 0;
+	virtual void setDepthSampleMode(Optional<CompareMode> mode = Optional<CompareMode>());
+	Optional<CompareMode> getDepthSampleMode() const;
 
-	// The default filter.
-	static void setDefaultFilter(const Filter &f);
-	static const Filter &getDefaultFilter();
+	Quad *getQuad() const;
 
 	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 
+	static int getMipmapCount(int w, int h);
+	static int getMipmapCount(int w, int h, int d);
+
+	static bool getConstant(const char *in, TextureType &out);
+	static bool getConstant(TextureType in, const char *&out);
+	static std::vector<std::string> getConstants(TextureType);
+
 	static bool getConstant(const char *in, FilterMode &out);
-	static bool getConstant(FilterMode in, const char  *&out);
+	static bool getConstant(FilterMode in, const char *&out);
+	static std::vector<std::string> getConstants(FilterMode);
 
 	static bool getConstant(const char *in, WrapMode &out);
-	static bool getConstant(WrapMode in, const char  *&out);
+	static bool getConstant(WrapMode in, const char *&out);
+	static std::vector<std::string> getConstants(WrapMode);
 
 protected:
+
+	void initQuad();
+	void setGraphicsMemorySize(int64 size);
+
+	bool validateDimensions(bool throwException) const;
+
+	TextureType texType;
+
+	PixelFormat format;
+	bool readable;
 
 	int width;
 	int height;
 
+	int depth;
+	int layers;
+	int mipmapCount;
+
+	int pixelWidth;
+	int pixelHeight;
+
 	Filter filter;
 	Wrap wrap;
 
-	Vertex vertices[4];
+	float mipmapSharpness;
+
+	Optional<CompareMode> depthCompareMode;
+
+	StrongRef<Quad> quad;
+
+	int64 graphicsMemorySize;
 
 private:
 
-	// The default texture filter.
-	static Filter defaultFilter;
+	static StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry texTypeEntries[];
+	static StringMap<TextureType, TEXTURE_MAX_ENUM> texTypes;
 
 	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
 	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,8 @@ public:
 	// Friends.
 	friend class World;
 	friend class World::ContactCallback;
+
+	static love::Type type;
 
 	/**
 	 * Creates a new Contact by copying a Box2D contact

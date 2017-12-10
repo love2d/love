@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,8 @@ namespace love
 {
 namespace filesystem
 {
+
+love::Type File::type("File", &Object::type);
 
 File::~File()
 {
@@ -101,6 +103,11 @@ bool File::getConstant(Mode in, const char *&out)
 	return modes.find(in, out);
 }
 
+std::vector<std::string> File::getConstants(Mode)
+{
+	return modes.getNames();
+}
+
 bool File::getConstant(const char *in, BufferMode &out)
 {
 	return bufferModes.find(in, out);
@@ -111,21 +118,26 @@ bool File::getConstant(BufferMode in, const char *&out)
 	return bufferModes.find(in, out);
 }
 
+std::vector<std::string> File::getConstants(BufferMode)
+{
+	return bufferModes.getNames();
+}
+
 StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] =
 {
-	{"c", File::MODE_CLOSED},
-	{"r", File::MODE_READ},
-	{"w", File::MODE_WRITE},
-	{"a", File::MODE_APPEND},
+	{ "c", MODE_CLOSED },
+	{ "r", MODE_READ   },
+	{ "w", MODE_WRITE  },
+	{ "a", MODE_APPEND },
 };
 
 StringMap<File::Mode, File::MODE_MAX_ENUM> File::modes(File::modeEntries, sizeof(File::modeEntries));
 
 StringMap<File::BufferMode, File::BUFFER_MAX_ENUM>::Entry File::bufferModeEntries[] =
 {
-	{"none", File::BUFFER_NONE},
-	{"line", File::BUFFER_LINE},
-	{"full", File::BUFFER_FULL},
+	{ "none", BUFFER_NONE },
+	{ "line", BUFFER_LINE },
+	{ "full", BUFFER_FULL },
 };
 
 StringMap<File::BufferMode, File::BUFFER_MAX_ENUM> File::bufferModes(File::bufferModeEntries, sizeof(File::bufferModeEntries));

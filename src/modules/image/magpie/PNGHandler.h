@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,11 +18,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_PNG_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_PNG_HANDLER_H
+#pragma once
 
 // LOVE
-#include "FormatHandler.h"
+#include "image/FormatHandler.h"
 
 namespace love
 {
@@ -40,18 +39,16 @@ public:
 
 	// Implements FormatHandler.
 
-	virtual bool canDecode(love::filesystem::FileData *data);
-	virtual bool canEncode(ImageData::EncodedFormat format);
+	virtual bool canDecode(Data *data);
+	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
 
-	virtual DecodedImage decode(love::filesystem::FileData *data);
-	virtual EncodedImage encode(const DecodedImage &img, ImageData::EncodedFormat format);
+	virtual DecodedImage decode(Data *data);
+	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
 
-	virtual void free(unsigned char *mem);
+	virtual void freeRawPixels(unsigned char *mem);
 
 }; // PNGHandler
 
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_PNG_HANDLER_H

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,7 @@ class DefaultFontData : public love::Data
 {
 public:
 
+	Data *clone() const override { return new DefaultFontData(); }
 	void *getData() const override { return Vera_ttf; }
 	size_t getSize() const override { return sizeof(Vera_ttf); }
 };
@@ -47,12 +48,18 @@ Rasterizer *Font::newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hi
 	return newTrueTypeRasterizer(data.get(), size, hinting);
 }
 
-Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images)
+Rasterizer *Font::newTrueTypeRasterizer(int size, float dpiscale, TrueTypeRasterizer::Hinting hinting)
 {
-	return new BMFontRasterizer(fontdef, images);
+	StrongRef<DefaultFontData> data(new DefaultFontData, Acquire::NORETAIN);
+	return newTrueTypeRasterizer(data.get(), size, dpiscale, hinting);
 }
 
-Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::string &text, int extraspacing)
+Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images, float dpiscale)
+{
+	return new BMFontRasterizer(fontdef, images, dpiscale);
+}
+
+Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::string &text, int extraspacing, float dpiscale)
 {
 	std::vector<uint32> glyphs;
 	glyphs.reserve(text.size());
@@ -70,12 +77,12 @@ Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::st
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
-	return newImageRasterizer(data, &glyphs[0], (int) glyphs.size(), extraspacing);
+	return newImageRasterizer(data, &glyphs[0], (int) glyphs.size(), extraspacing, dpiscale);
 }
 
-Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing)
+Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float dpiscale)
 {
-	return new ImageRasterizer(data, glyphs, numglyphs, extraspacing);
+	return new ImageRasterizer(data, glyphs, numglyphs, extraspacing, dpiscale);
 }
 
 GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)

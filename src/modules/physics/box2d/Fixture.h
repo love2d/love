@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,6 +61,8 @@ class Fixture : public Object
 public:
 	friend class Physics;
 
+	static love::Type type;
+
 	/**
 	 * Creates a Fixture.
 	 **/
@@ -77,12 +79,12 @@ public:
 	 * Gets the type of the Fixture's Shape. Useful for
 	 * debug drawing.
 	 **/
-	Shape::Type getType() const;
+	Shape::Type getType();
 
 	/**
 	 * Gets the Shape attached to this Fixture.
 	 **/
-	Shape *getShape() const;
+	Shape *getShape();
 
 	/**
 	 * Returns true if the fixture is active in a Box2D world.
@@ -210,9 +212,14 @@ public:
 
 protected:
 
+	void checkCreateShape();
+
 	Body *body;
 	fixtureudata *udata;
 	b2Fixture *fixture;
+
+	StrongRef<Shape> shape;
+
 };
 
 } // box2d

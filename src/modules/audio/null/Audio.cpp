@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -51,7 +51,12 @@ love::audio::Source *Audio::newSource(love::sound::SoundData *)
 	return new Source();
 }
 
-int Audio::getSourceCount() const
+love::audio::Source *Audio::newSource(int, int, int, int)
+{
+	return new Source();
+}
+
+int Audio::getActiveSourceCount() const
 {
 	return 0;
 }
@@ -66,7 +71,16 @@ bool Audio::play(love::audio::Source *)
 	return false;
 }
 
+bool Audio::play(const std::vector<love::audio::Source*>&)
+{
+	return false;
+}
+
 void Audio::stop(love::audio::Source *)
+{
+}
+
+void Audio::stop(const std::vector<love::audio::Source*>&)
 {
 }
 
@@ -78,24 +92,13 @@ void Audio::pause(love::audio::Source *)
 {
 }
 
-void Audio::pause()
+void Audio::pause(const std::vector<love::audio::Source*>&)
 {
 }
 
-void Audio::resume(love::audio::Source *)
+std::vector<love::audio::Source*> Audio::pause()
 {
-}
-
-void Audio::resume()
-{
-}
-
-void Audio::rewind(love::audio::Source *)
-{
-}
-
-void Audio::rewind()
-{
+	return {};
 }
 
 void Audio::setVolume(float volume)
@@ -140,24 +143,19 @@ float Audio::getDopplerScale() const
 {
 	return 1.0f;
 }
-
-void Audio::record()
+/*
+void setMeter(float)
 {
 }
 
-love::sound::SoundData *Audio::getRecordedData()
+float getMeter() const
 {
-	return NULL;
+	return 1.0f;
 }
-
-love::sound::SoundData *Audio::stopRecording(bool)
+*/
+const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
-	return NULL;
-}
-
-bool Audio::canRecord()
-{
-	return false;
+	return capture;
 }
 
 Audio::DistanceModel Audio::getDistanceModel() const
@@ -168,6 +166,41 @@ Audio::DistanceModel Audio::getDistanceModel() const
 void Audio::setDistanceModel(DistanceModel distanceModel)
 {
 	this->distanceModel = distanceModel;
+}
+
+bool Audio::setEffect(const char *, std::map<Effect::Parameter, float> &)
+{
+	return false;
+}
+
+bool Audio::unsetEffect(const char *)
+{
+	return false;
+}
+
+bool Audio::getEffect(const char *, std::map<Effect::Parameter, float> &)
+{
+	return false;
+}
+
+bool Audio::getActiveEffects(std::vector<std::string> &) const
+{
+	return false;
+}
+
+int Audio::getMaxSceneEffects() const
+{
+	return 0;
+}
+
+int Audio::getMaxSourceEffects() const
+{
+	return 0;
+}
+
+bool Audio::isEFXsupported() const
+{
+	return false;
 }
 
 } // null

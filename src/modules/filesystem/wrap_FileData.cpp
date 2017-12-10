@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 
 #include "wrap_FileData.h"
 
-#include "common/wrap_Data.h"
+#include "data/wrap_Data.h"
 
 namespace love
 {
@@ -29,7 +29,16 @@ namespace filesystem
 
 FileData *luax_checkfiledata(lua_State *L, int idx)
 {
-	return luax_checktype<FileData>(L, idx, FILESYSTEM_FILE_DATA_ID);
+	return luax_checktype<FileData>(L, idx);
+}
+
+int w_FileData_clone(lua_State *L)
+{
+	FileData *t = luax_checkfiledata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
 }
 
 int w_FileData_getFilename(lua_State *L)
@@ -48,6 +57,7 @@ int w_FileData_getExtension(lua_State *L)
 
 static const luaL_Reg w_FileData_functions[] =
 {
+	{ "clone", w_FileData_clone },
 	{ "getFilename", w_FileData_getFilename },
 	{ "getExtension", w_FileData_getExtension },
 
@@ -56,7 +66,7 @@ static const luaL_Reg w_FileData_functions[] =
 
 extern "C" int luaopen_filedata(lua_State *L)
 {
-	return luax_register_type(L, FILESYSTEM_FILE_DATA_ID, "FileData", w_Data_functions, w_FileData_functions, nullptr);
+	return luax_register_type(L, &FileData::type, data::w_Data_functions, w_FileData_functions, nullptr);
 }
 
 } // filesystem

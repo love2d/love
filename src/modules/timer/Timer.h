@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,38 +37,39 @@ public:
 	virtual ~Timer() {}
 
 	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_TIMER; }
+	ModuleType getModuleType() const override { return M_TIMER; }
+	const char *getName() const override { return "love.timer"; }
 
 	/**
 	 * Measures the time between this call and the previous call,
-	 * and updates internal values accordinly.
+	 * and updates internal values accordingly.
 	 **/
-	virtual void step();
+	double step();
 
 	/**
 	 * Tries to sleep for the specified amount of time. The precision is
 	 * usually 1ms.
 	 * @param seconds The number of seconds to sleep for.
 	 **/
-	virtual void sleep(double seconds) const;
+	void sleep(double seconds) const;
 
 	/**
 	 * Gets the time between the last two frames, assuming step is called
 	 * each frame.
 	 **/
-	virtual double getDelta() const;
+	double getDelta() const;
 
 	/**
 	 * Gets the average FPS over the last second. Beucase the value is only updated
 	 * once per second, it does not look erratic when displayed on screen.
 	 * @return The "current" FPS.
 	 **/
-	virtual int getFPS() const;
+	int getFPS() const;
 
 	/**
 	 * Gets the average delta time (seconds per frame) over the last second.
 	 **/
-	virtual double getAverageDelta() const;
+	double getAverageDelta() const;
 
 	/**
 	 * Gets the amount of time passed since an unspecified time. Useful for

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -105,7 +105,7 @@ extern "C" int luaopen_love_touch(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "touch";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = nullptr;
 

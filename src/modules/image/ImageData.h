@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,13 +18,18 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_IMAGE_DATA_H
-#define LOVE_IMAGE_IMAGE_DATA_H
+#pragma once
 
 // LOVE
 #include "common/Data.h"
+#include "common/StringMap.h"
+#include "common/int.h"
+#include "common/pixelformat.h"
+#include "common/halffloat.h"
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
+#include "ImageDataBase.h"
+#include "FormatHandler.h"
 
 using love::thread::Mutex;
 
@@ -33,28 +38,27 @@ namespace love
 namespace image
 {
 
-// Pixel format structure.
-struct pixel
+union Pixel
 {
-	// Red, green, blue, alpha.
-	unsigned char r, g, b, a;
+	uint8  rgba8[4];
+	uint16 rgba16[4];
+	half   rgba16f[4];
+	float  rgba32f[4];
 };
 
 /**
  * Represents raw pixel data.
  **/
-class ImageData : public Data
+class ImageData : public ImageDataBase
 {
 public:
 
-	enum EncodedFormat
-	{
-		ENCODED_TGA,
-		ENCODED_PNG,
-		ENCODED_MAX_ENUM
-	};
+	static love::Type type;
 
-	ImageData();
+	ImageData(Data *data);
+	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
+	ImageData(int width, int height, PixelFormat format, void *data, bool own);
+	ImageData(const ImageData &c);
 	virtual ~ImageData();
 
 	/**
@@ -77,30 +81,12 @@ public:
 	bool inside(int x, int y) const;
 
 	/**
-	 * Gets the width of this ImageData.
-	 * @return The width of this ImageData.
-	 **/
-	int getWidth() const;
-
-	/**
-	 * Gets the height of this ImageData.
-	 * @return The height of this ImageData.
-	 **/
-	int getHeight() const;
-
-	/**
 	 * Sets the pixel at location (x,y).
 	 * @param x The location along the x-axis.
 	 * @param y The location along the y-axis.
 	 * @param p The color to use for the given location.
 	 **/
-	void setPixel(int x, int y, pixel p);
-
-	/**
-	 * Sets the pixel at location (x,y).
-	 * Not thread-safe, and doesn't verify the coordinates!
-	 **/
-	void setPixelUnsafe(int x, int y, pixel p);
+	void setPixel(int x, int y, const Pixel &p);
 
 	/**
 	 * Gets the pixel at location (x,y).
@@ -108,54 +94,76 @@ public:
 	 * @param y The location along the y-axis.
 	 * @return The color for the given location.
 	 **/
-	pixel getPixel(int x, int y) const;
-
-	/**
-	 * Gets the pixel at location (x,y).
-	 * Not thread-safe, and doesn't verify the coordinates!
-	 **/
-	pixel getPixelUnsafe(int x, int y) const;
+	void getPixel(int x, int y, Pixel &p) const;
 
 	/**
 	 * Encodes raw pixel data into a given format.
 	 * @param f The file to save the encoded image data to.
 	 * @param format The format of the encoded data.
 	 **/
-	virtual love::filesystem::FileData *encode(EncodedFormat format, const char *filename) = 0;
+	love::filesystem::FileData *encode(FormatHandler::EncodedFormat format, const char *filename, bool writefile) const;
 
 	love::thread::Mutex *getMutex() const;
 
-	// Implements Data.
-	virtual void *getData() const;
-	virtual size_t getSize() const;
+	// Implements ImageDataBase.
+	ImageData *clone() const override;
+	void *getData() const override;
+	size_t getSize() const override;
+	bool isSRGB() const override;
 
-	static bool getConstant(const char *in, EncodedFormat &out);
-	static bool getConstant(EncodedFormat in, const char *&out);
+	size_t getPixelSize() const;
 
-protected:
+	static bool validPixelFormat(PixelFormat format);
 
-	// The width of the image data.
-	int width;
-
-	// The height of the image data.
-	int height;
-
-	// The actual data.
-	unsigned char *data;
-
-	// We need to be thread-safe
-	// so we lock when we're accessing our
-	// data
-	love::thread::MutexRef mutex;
+	static bool getConstant(const char *in, FormatHandler::EncodedFormat &out);
+	static bool getConstant(FormatHandler::EncodedFormat in, const char *&out);
+	static std::vector<std::string> getConstants(FormatHandler::EncodedFormat);
 
 private:
 
-	static StringMap<EncodedFormat, ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
-	static StringMap<EncodedFormat, ENCODED_MAX_ENUM> encodedFormats;
+	union Row
+	{
+		uint8 *u8;
+		uint16 *u16;
+		half *f16;
+		float *f32;
+	};
+
+	// Create imagedata. Initialize with data if not null.
+	void create(int width, int height, PixelFormat format, void *data = nullptr);
+
+	// Decode and load an encoded format.
+	void decode(Data *data);
+
+	// The actual data.
+	unsigned char *data = nullptr;
+
+	love::thread::MutexRef mutex;
+
+	// The format handler that was used to decode the ImageData. We need to know
+	// this so we can properly delete memory allocated by the decoder.
+	StrongRef<FormatHandler> decodeHandler;
+
+	static void pasteRGBA8toRGBA16(Row src, Row dst, int w);
+	static void pasteRGBA8toRGBA16F(Row src, Row dst, int w);
+	static void pasteRGBA8toRGBA32F(Row src, Row dst, int w);
+
+	static void pasteRGBA16toRGBA8(Row src, Row dst, int w);
+	static void pasteRGBA16toRGBA16F(Row src, Row dst, int w);
+	static void pasteRGBA16toRGBA32F(Row src, Row dst, int w);
+
+	static void pasteRGBA16FtoRGBA8(Row src, Row dst, int w);
+	static void pasteRGBA16FtoRGBA16(Row src, Row dst, int w);
+	static void pasteRGBA16FtoRGBA32F(Row src, Row dst, int w);
+
+	static void pasteRGBA32FtoRGBA8(Row src, Row dst, int w);
+	static void pasteRGBA32FtoRGBA16(Row src, Row dst, int w);
+	static void pasteRGBA32FtoRGBA16F(Row src, Row dst, int w);
+
+	static StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM>::Entry encodedFormatEntries[];
+	static StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM> encodedFormats;
 
 }; // ImageData
 
 } // image
 } // love
-
-#endif // LOVE_IMAGE_IMAGE_DATA_H

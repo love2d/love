@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,8 @@ class Sound : public Module
 
 public:
 
+	static love::Type type;
+
 	virtual ~Sound();
 
 	// Implements Module.
@@ -65,6 +67,18 @@ public:
 	 * @return A new SoundData object, or zero in case of errors.
 	 **/
 	SoundData *newSoundData(int samples, int sampleRate, int bitDepth, int channels);
+
+	/**
+	 * Creates a new SoundData with the specified number of samples and format
+	 * and loads data from specified buffer.
+	 * @param data Buffer to load data from.
+	 * @param samples The number of samples.
+	 * @param sampleRate Number of samples per second.
+	 * @param bitDepth Bits per sample (8 or 16).
+	 * @param channels Either 1 for mono, or 2 for stereo.
+	 * @return A new SoundData object, or zero in case of errors.
+	 **/
+	SoundData *newSoundData(void *data, int samples, int sampleRate, int bitDepth, int channels);
 
 	/**
 	 * Attempts to find a decoder for the encoded sound data in the

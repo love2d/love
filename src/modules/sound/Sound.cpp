@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,8 @@ namespace love
 namespace sound
 {
 
+love::Type Sound::type("Sound", &Module::type);
+
 Sound::~Sound()
 {
 }
@@ -39,6 +41,10 @@ SoundData *Sound::newSoundData(int samples, int sampleRate, int bitDepth, int ch
 	return new SoundData(samples, sampleRate, bitDepth, channels);
 }
 
+SoundData *Sound::newSoundData(void *data, int samples, int sampleRate, int bitDepth, int channels)
+{
+	return new SoundData(data, samples, sampleRate, bitDepth, channels);
+}
 
 } // sound
 } // love

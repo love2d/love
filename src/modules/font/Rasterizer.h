@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,14 @@ struct FontMetrics
 class Rasterizer : public Object
 {
 public:
+
+	enum DataType
+	{
+		DATA_TRUETYPE,
+		DATA_IMAGE,
+	};
+
+	static love::Type type;
 
 	virtual ~Rasterizer();
 
@@ -110,9 +118,14 @@ public:
 	 **/
 	virtual float getKerning(uint32 leftglyph, uint32 rightglyph) const;
 
+	virtual DataType getDataType() const = 0;
+
+	float getDPIScale() const;
+
 protected:
 
 	FontMetrics metrics;
+	float dpiScale;
 
 }; // Rasterizer
 

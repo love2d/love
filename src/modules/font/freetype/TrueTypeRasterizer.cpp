@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,10 @@
 
 // LOVE
 #include "TrueTypeRasterizer.h"
-
 #include "common/Exception.h"
+
+// C
+#include <math.h>
 
 namespace love
 {
@@ -30,10 +32,13 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, Hinting hinting)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float dpiscale, Hinting hinting)
 	: data(data)
 	, hinting(hinting)
 {
+	this->dpiScale = dpiscale;
+	size = floorf(size * dpiscale + 0.5f);
+
 	if (size <= 0)
 		throw love::Exception("Invalid TrueType font size: %d", size);
 
@@ -76,7 +81,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	FT_Glyph ftglyph;
 
 	FT_Error err = FT_Err_Ok;
-	FT_ULong loadoption = hintingToLoadOption(hinting);
+	FT_UInt loadoption = hintingToLoadOption(hinting);
 
 	// Initialize
 	err = FT_Load_Glyph(face, FT_Get_Char_Index(face, glyph), FT_LOAD_DEFAULT | loadoption);
@@ -108,7 +113,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.width = bitmap.width;
 	glyphMetrics.advance = (int) (ftglyph->advance.x >> 16);
 
-	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, GlyphData::FORMAT_LUMINANCE_ALPHA);
+	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, PIXELFORMAT_LA8);
 
 	const uint8 *pixels = bitmap.buffer;
 	uint8 *dest = (uint8 *) glyphData->getData();
@@ -176,6 +181,11 @@ float TrueTypeRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
 	return float(kerning.x >> 6);
 }
 
+Rasterizer::DataType TrueTypeRasterizer::getDataType() const
+{
+	return DATA_TRUETYPE;
+}
+
 bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
 {
 	const FT_Byte *fbase = (const FT_Byte *) data->getData();
@@ -185,7 +195,7 @@ bool TrueTypeRasterizer::accepts(FT_Library library, love::Data *data)
 	return FT_New_Memory_Face(library, fbase, fsize, -1, nullptr) == 0;
 }
 
-FT_ULong TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
+FT_UInt TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
 {
 	switch (hint)
 	{

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -292,13 +292,13 @@ public:
 	 * Sets the number of pixels in one meter.
 	 * @param scale The number of pixels in one meter. (1m ~= 3.3ft).
 	 **/
-	static void setMeter(int scale);
+	static void setMeter(float scale);
 
 	/**
 	 * Gets the number of pixels in one meter.
 	 * @return The number of pixels in one meter. (1m ~= 3.3ft).
 	 **/
-	static int getMeter();
+	static float getMeter();
 
 	/**
 	 * Scales a value down according to the current meter in pixels.
@@ -359,7 +359,7 @@ public:
 private:
 
 	// The length of one meter in pixels.
-	static int meter;
+	static float meter;
 }; // Physics
 
 } // box2d

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,8 +22,6 @@
 #define LOVE_MATH_MODMATH_H
 
 #include "RandomGenerator.h"
-#include "CompressedData.h"
-#include "Compressor.h"
 
 // LOVE
 #include "common/Module.h"
@@ -43,15 +41,53 @@ namespace love
 namespace math
 {
 
+class BezierCurve;
+class Transform;
+
 struct Triangle
 {
-	Triangle(const Vector &x, const Vector &y, const Vector &z)
-	: a(x), b(y), c(z)
+	Triangle(const Vector2 &x, const Vector2 &y, const Vector2 &z)
+		: a(x), b(y), c(z)
 	{}
-	Vector a, b, c;
+	Vector2 a, b, c;
 };
 
-class BezierCurve;
+/**
+ * Triangulate a simple polygon.
+ *
+ * @param polygon Polygon to triangulate. Must not intersect itself.
+ * @return List of triangles the polygon is composed of.
+ **/
+std::vector<Triangle> triangulate(const std::vector<love::Vector2> &polygon);
+
+/**
+ * Checks whether a polygon is convex.
+ *
+ * @param polygon Polygon to test.
+ * @return True if the polygon is convex, false otherwise.
+ **/
+bool isConvex(const std::vector<love::Vector2> &polygon);
+
+/**
+ * Converts a value from the sRGB (gamma) colorspace to linear RGB.
+ **/
+float gammaToLinear(float c);
+
+/**
+ * Converts a value from linear RGB to the sRGB (gamma) colorspace.
+ **/
+float linearToGamma(float c);
+
+/**
+ * Calculate noise for the specified coordinate(s).
+ *
+ * @return Noise value in the range of [0, 1].
+ **/
+static float noise1(float x);
+static float noise2(float x, float y);
+static float noise3(float x, float y, float z);
+static float noise4(float x, float y, float z, float w);
+
 
 class Math : public Module
 {
@@ -76,7 +112,10 @@ public:
 	/**
 	 * Creates a new bezier curve.
 	 **/
-	BezierCurve *newBezierCurve(const std::vector<Vector> &points);
+	BezierCurve *newBezierCurve(const std::vector<Vector2> &points);
+
+	Transform *newTransform();
+	Transform *newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
 
 	// Implements Module.
 	virtual ModuleType getModuleType() const
@@ -89,77 +128,6 @@ public:
 		return "love.math";
 	}
 
-	/**
-	 * Triangulate a simple polygon.
-	 *
-	 * @param polygon Polygon to triangulate. Must not intersect itself.
-	 * @return List of triangles the polygon is composed of.
-	 **/
-	std::vector<Triangle> triangulate(const std::vector<love::Vector> &polygon);
-
-	/**
-	 * Checks whether a polygon is convex.
-	 *
-	 * @param polygon Polygon to test.
-	 * @return True if the polygon is convex, false otherwise.
-	 **/
-	bool isConvex(const std::vector<love::Vector> &polygon);
-
-	/**
-	 * Converts a value from the sRGB (gamma) colorspace to linear RGB.
-	 **/
-	float gammaToLinear(float c) const;
-
-	/**
-	 * Converts a value from linear RGB to the sRGB (gamma) colorspace.
-	 **/
-	float linearToGamma(float c) const;
-
-	/**
-	 * Calculate noise for the specified coordinate(s).
-	 *
-	 * @return Noise value in the range of [0, 1].
-	 **/
-	float noise(float x) const;
-	float noise(float x, float y) const;
-	float noise(float x, float y, float z) const;
-	float noise(float x, float y, float z, float w) const;
-
-	/**
-	 * Compresses a block of memory using the given compression format.
-	 *
-	 * @param format The compression format to use.
-	 * @param rawdata The data to compress.
-	 * @param level The amount of compression to apply (between 0 and 9.)
-	 *              A value of -1 indicates the default amount of compression.
-	 *              Specific formats may not use every level.
-	 * @return The newly compressed data.
-	 **/
-	CompressedData *compress(Compressor::Format format, Data *rawdata, int level = -1);
-	CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level = -1);
-
-	/**
-	 * Decompresses existing compressed data into raw bytes.
-	 *
-	 * @param[in] data The compressed data to decompress.
-	 * @param[out] decompressedsize The size in bytes of the decompressed data.
-	 * @return The newly decompressed data (allocated with new[]).
-	 **/
-	char *decompress(CompressedData *data, size_t &decompressedsize);
-
-	/**
-	 * Decompresses existing compressed data into raw bytes.
-	 *
-	 * @param[in] format The compression format the data is in.
-	 * @param[in] cbytes The compressed data to decompress.
-	 * @param[in] compressedsize The size in bytes of the compressed data.
-	 * @param[in,out] rawsize On input, the size in bytes of the original
-	 *               uncompressed data, or 0 if unknown. On return, the size in
-	 *               bytes of the newly decompressed data.
-	 * @return The newly decompressed data (allocated with new[]).
-	 **/
-	char *decompress(Compressor::Format format, const char *cbytes, size_t compressedsize, size_t &rawsize);
-
 	static Math instance;
 
 private:
@@ -168,12 +136,13 @@ private:
 
 }; // Math
 
-inline float Math::noise(float x) const
+
+static inline float noise1(float x)
 {
 	return SimplexNoise1234::noise(x) * 0.5f + 0.5f;
 }
 
-inline float Math::noise(float x, float y) const
+static inline float noise2(float x, float y)
 {
 	return SimplexNoise1234::noise(x, y) * 0.5f + 0.5f;
 }
@@ -181,12 +150,12 @@ inline float Math::noise(float x, float y) const
 // Perlin noise is used instead of Simplex noise in the 3D and 4D cases to avoid
 // patent issues.
 
-inline float Math::noise(float x, float y, float z) const
+static inline float noise3(float x, float y, float z)
 {
 	return Noise1234::noise(x, y, z) * 0.5f + 0.5f;
 }
 
-inline float Math::noise(float x, float y, float z, float w) const
+static inline float noise4(float x, float y, float z, float w)
 {
 	return Noise1234::noise(x, y, z, w) * 0.5f + 0.5f;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,12 +28,12 @@ namespace filesystem
 
 DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
 {
-	return luax_checktype<DroppedFile>(L, idx, FILESYSTEM_DROPPED_FILE_ID);
+	return luax_checktype<DroppedFile>(L, idx);
 }
 
 extern "C" int luaopen_droppedfile(lua_State *L)
 {
-	return luax_register_type(L, FILESYSTEM_DROPPED_FILE_ID, "DroppedFile", w_File_functions, nullptr);
+	return luax_register_type(L, &DroppedFile::type, w_File_functions, nullptr);
 }
 
 } // filesystem

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,34 +22,14 @@
 #include <map>
 #include <string>
 
-namespace
-{
-union uslong
-{
-	unsigned long u;
-	long i;
-};
-
-// target <= current, but semi-wrapsafe, one wrap, anyway
-inline bool past(unsigned int target, unsigned int current)
-{
-	if (target > current)
-		return false;
-	if (target == current)
-		return true;
-
-	uslong t, c;
-	t.u = target;
-	c.u = current;
-
-	return !(t.i < 0 && c.i > 0);
-}
-}
+#include <timer/Timer.h>
 
 namespace love
 {
 namespace thread
 {
+
+love::Type Channel::type("Channel", &Object::type);
 static std::map<std::string, Channel *> namedChannels;
 static Mutex *namedChannelMutex;
 
@@ -61,7 +41,6 @@ Channel *Channel::getChannel(const std::string &name)
 	Lock lock(namedChannelMutex);
 
 	auto it = namedChannels.find(name);
-
 	if (it != namedChannels.end())
 	{
 		it->second->retain();
@@ -96,7 +75,7 @@ Channel::~Channel()
 	}
 }
 
-unsigned long Channel::push(const Variant &var)
+uint64 Channel::push(const Variant &var)
 {
 	Lock l(mutex);
 
@@ -111,13 +90,35 @@ unsigned long Channel::push(const Variant &var)
 	return ++sent;
 }
 
-void Channel::supply(const Variant &var)
+bool Channel::supply(const Variant &var)
 {
 	Lock l(mutex);
-	unsigned long id = push(var);
+	uint64 id = push(var);
 
-	while (!past(id, received))
+	while (received < id)
 		cond->wait(mutex);
+
+	return true;
+}
+
+bool Channel::supply(const Variant &var, double timeout)
+{
+	Lock l(mutex);
+	uint64 id = push(var);
+
+	while (timeout >= 0)
+	{
+		if (received >= id)
+			return true;
+
+		double start = love::timer::Timer::getTime();
+		cond->wait(mutex, timeout*1000);
+		double stop = love::timer::Timer::getTime();
+
+		timeout -= (stop-start);
+	}
+
+	return false;
 }
 
 bool Channel::pop(Variant *var)
@@ -141,12 +142,33 @@ bool Channel::pop(Variant *var)
 	return true;
 }
 
-void Channel::demand(Variant *var)
+bool Channel::demand(Variant *var)
 {
 	Lock l(mutex);
 
 	while (!pop(var))
 		cond->wait(mutex);
+
+	return true;
+}
+
+bool Channel::demand(Variant *var, double timeout)
+{
+	Lock l(mutex);
+
+	while (timeout >= 0)
+	{
+		if (pop(var))
+			return true;
+
+		double start = love::timer::Timer::getTime();
+		cond->wait(mutex, timeout*1000);
+		double stop = love::timer::Timer::getTime();
+
+		timeout -= (stop-start);
+	}
+
+	return false;
 }
 
 bool Channel::peek(Variant *var)
@@ -160,10 +182,16 @@ bool Channel::peek(Variant *var)
 	return true;
 }
 
-int Channel::getCount()
+int Channel::getCount() const
 {
 	Lock l(mutex);
 	return (int) queue.size();
+}
+
+bool Channel::hasRead(uint64 id) const
+{
+	Lock l(mutex);
+	return received >= id;
 }
 
 void Channel::clear()

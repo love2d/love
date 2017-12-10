@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 Contact *luax_checkcontact(lua_State *L, int idx)
 {
-	Contact *c = luax_checktype<Contact>(L, idx, PHYSICS_CONTACT_ID);
+	Contact *c = luax_checktype<Contact>(L, idx);
 	if (!c->isValid())
 		luaL_error(L, "Attempt to use destroyed contact.");
 	return c;
@@ -95,7 +95,7 @@ int w_Contact_setRestitution(lua_State *L)
 int w_Contact_setEnabled(lua_State *L)
 {
 	Contact *t = luax_checkcontact(L, 1);
-	bool e = luax_toboolean(L, 2);
+	bool e = luax_checkboolean(L, 2);
 	t->setEnabled(e);
 	return 0;
 }
@@ -146,14 +146,14 @@ int w_Contact_getFixtures(lua_State *L)
 	Fixture *b = nullptr;
 	luax_catchexcept(L, [&](){ t->getFixtures(a, b); });
 
-	luax_pushtype(L, PHYSICS_FIXTURE_ID, a);
-	luax_pushtype(L, PHYSICS_FIXTURE_ID, b);
+	luax_pushtype(L, a);
+	luax_pushtype(L, b);
 	return 2;
 }
 
 int w_Contact_isDestroyed(lua_State *L)
 {
-	Contact *c = luax_checktype<Contact>(L, 1, PHYSICS_CONTACT_ID);
+	Contact *c = luax_checktype<Contact>(L, 1);
 	luax_pushboolean(L, !c->isValid());
 	return 1;
 }
@@ -181,7 +181,7 @@ static const luaL_Reg w_Contact_functions[] =
 
 extern "C" int luaopen_contact(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_CONTACT_ID, "Contact", w_Contact_functions, nullptr);
+	return luax_register_type(L, &Contact::type, w_Contact_functions, nullptr);
 }
 
 } // box2d

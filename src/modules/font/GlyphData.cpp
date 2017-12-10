@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,19 +33,42 @@ namespace love
 namespace font
 {
 
-GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, GlyphData::Format f)
+love::Type GlyphData::type("GlyphData", &Data::type);
+
+GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, PixelFormat f)
 	: glyph(glyph)
 	, metrics(glyphMetrics)
 	, data(nullptr)
 	, format(f)
 {
+	if (f != PIXELFORMAT_LA8 && f != PIXELFORMAT_RGBA8)
+		throw love::Exception("Invalid GlyphData pixel format.");
+
 	if (metrics.width > 0 && metrics.height > 0)
 		data = new uint8[metrics.width * metrics.height * getPixelSize()];
+}
+
+GlyphData::GlyphData(const GlyphData &c)
+	: glyph(c.glyph)
+	, metrics(c.metrics)
+	, data(nullptr)
+	, format(c.format)
+{
+	if (metrics.width > 0 && metrics.height > 0)
+	{
+		data = new uint8[metrics.width * metrics.height * getPixelSize()];
+		memcpy(data, c.data, c.getSize());
+	}
 }
 
 GlyphData::~GlyphData()
 {
 	delete[] data;
+}
+
+GlyphData *GlyphData::clone() const
+{
+	return new GlyphData(*this);
 }
 
 void *GlyphData::getData() const
@@ -55,14 +78,7 @@ void *GlyphData::getData() const
 
 size_t GlyphData::getPixelSize() const
 {
-	switch (format)
-	{
-	case FORMAT_LUMINANCE_ALPHA:
-		return 2;
-	case FORMAT_RGBA:
-	default:
-		return 4;
-	}
+	return getPixelFormatSize(format);
 }
 
 void *GlyphData::getData(int x, int y) const
@@ -148,28 +164,10 @@ int GlyphData::getMaxY() const
 	return getBearingY();
 }
 
-GlyphData::Format GlyphData::getFormat() const
+PixelFormat GlyphData::getFormat() const
 {
 	return format;
 }
-
-bool GlyphData::getConstant(const char *in, GlyphData::Format &out)
-{
-	return formats.find(in, out);
-}
-
-bool GlyphData::getConstant(GlyphData::Format in, const char *&out)
-{
-	return formats.find(in, out);
-}
-
-StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM>::Entry GlyphData::formatEntries[] =
-{
-	{"luminancealpha", FORMAT_LUMINANCE_ALPHA},
-	{"rgba", FORMAT_RGBA},
-};
-
-StringMap<GlyphData::Format, GlyphData::FORMAT_MAX_ENUM> GlyphData::formats(GlyphData::formatEntries, sizeof(GlyphData::formatEntries));
 
 } // font
 } // love

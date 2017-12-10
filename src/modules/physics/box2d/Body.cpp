@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -427,7 +427,7 @@ World *Body::getWorld() const
 	return world;
 }
 
-int Body::getFixtureList(lua_State *L) const
+int Body::getFixtures(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Fixture *f = body->GetFixtureList();
@@ -439,7 +439,7 @@ int Body::getFixtureList(lua_State *L) const
 		Fixture *fixture = (Fixture *)Memoizer::find(f);
 		if (!fixture)
 			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, PHYSICS_FIXTURE_ID, fixture);
+		luax_pushtype(L, fixture);
 		lua_rawseti(L, -2, i);
 		i++;
 	}
@@ -447,7 +447,7 @@ int Body::getFixtureList(lua_State *L) const
 	return 1;
 }
 
-int Body::getJointList(lua_State *L) const
+int Body::getJoints(lua_State *L) const
 {
 	lua_newtable(L);
 	const b2JointEdge *je = body->GetJointList();
@@ -471,7 +471,7 @@ int Body::getJointList(lua_State *L) const
 	return 1;
 }
 
-int Body::getContactList(lua_State *L) const
+int Body::getContacts(lua_State *L) const
 {
 	lua_newtable(L);
 	const b2ContactEdge *ce = body->GetContactList();
@@ -487,7 +487,7 @@ int Body::getContactList(lua_State *L) const
 		else
 			contact->retain();
 
-		luax_pushtype(L, PHYSICS_CONTACT_ID, contact);
+		luax_pushtype(L, contact);
 		contact->release();
 		lua_rawseti(L, -2, i);
 		i++;

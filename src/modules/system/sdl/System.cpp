@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,7 @@
 
 // LOVE
 #include "System.h"
+#include "window/Window.h"
 
 // SDL
 #include <SDL_clipboard.h>
@@ -46,13 +47,27 @@ int System::getProcessorCount() const
 	return SDL_GetCPUCount();
 }
 
+bool System::isWindowOpen() const
+{
+	auto window = Module::getInstance<window::Window>(M_WINDOW);
+	return window != nullptr && window->isOpen();
+}
+
 void System::setClipboardText(const std::string &text) const
 {
+	// SDL requires the video subsystem to be initialized and a window to be
+	// opened in order for clipboard text to work, on at least some platforms.
+	if (!isWindowOpen())
+		throw love::Exception("A window must be created in order for setClipboardText to function properly.");
+
 	SDL_SetClipboardText(text.c_str());
 }
 
 std::string System::getClipboardText() const
 {
+	if (!isWindowOpen())
+		throw love::Exception("A window must be created in order for getClipboardText to function properly.");
+
 	std::string text("");
 
 	char *ctext = SDL_GetClipboardText();

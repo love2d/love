@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 #define LOVE_OBJECT_H
 
 #include <atomic>
+#include "types.h"
 
 namespace love
 {
@@ -37,6 +38,8 @@ namespace love
 class Object
 {
 public:
+
+	static love::Type type;
 
 	/**
 	 * Constructor. Sets reference count to one.

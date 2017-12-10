@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,8 @@ namespace physics
 {
 namespace box2d
 {
+
+love::Type Fixture::type("Fixture", &Object::type);
 
 Fixture::Fixture(Body *body, Shape *shape, float density)
 	: body(body)
@@ -74,9 +76,39 @@ Fixture::~Fixture()
 	delete udata;
 }
 
-Shape::Type Fixture::getType() const
+void Fixture::checkCreateShape()
 {
-	return Shape(fixture->GetShape(), false).getType();
+	if (shape.get() != nullptr || fixture == nullptr || fixture->GetShape() == nullptr)
+		return;
+
+	b2Shape *bshape = fixture->GetShape();
+
+	switch (bshape->GetType())
+	{
+	case b2Shape::e_circle:
+		shape.set(new CircleShape((b2CircleShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	case b2Shape::e_edge:
+		shape.set(new EdgeShape((b2EdgeShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	case b2Shape::e_polygon:
+		shape.set(new PolygonShape((b2PolygonShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	case b2Shape::e_chain:
+		shape.set(new ChainShape((b2ChainShape *) bshape, false), Acquire::NORETAIN);
+		break;
+	default:
+		break;
+	}
+}
+
+Shape::Type Fixture::getType()
+{
+	checkCreateShape();
+	if (shape.get() == nullptr)
+		return Shape::SHAPE_INVALID;
+	else
+		return shape->getType();
 }
 
 void Fixture::setFriction(float friction)
@@ -124,12 +156,10 @@ Body *Fixture::getBody() const
 	return body;
 }
 
-Shape *Fixture::getShape() const
+Shape *Fixture::getShape()
 {
-	if (!fixture->GetShape())
-		return nullptr;
-
-	return new Shape(fixture->GetShape(), false);
+	checkCreateShape();
+	return shape;
 }
 
 bool Fixture::isValid() const
@@ -278,7 +308,7 @@ int Fixture::rayCast(lua_State *L) const
 	float p2x = Physics::scaleDown((float)luaL_checknumber(L, 3));
 	float p2y = Physics::scaleDown((float)luaL_checknumber(L, 4));
 	float maxFraction = (float)luaL_checknumber(L, 5);
-	int childIndex = (int) luaL_optnumber(L, 6, 1) - 1; // Convert from 1-based index
+	int childIndex = (int) luaL_optinteger(L, 6, 1) - 1; // Convert from 1-based index
 	b2RayCastInput input;
 	input.p1.Set(p1x, p1y);
 	input.p2.Set(p2x, p2y);
@@ -294,7 +324,7 @@ int Fixture::rayCast(lua_State *L) const
 
 int Fixture::getBoundingBox(lua_State *L) const
 {
-	int childIndex = (int) luaL_optnumber(L, 1, 1) - 1; // Convert from 1-based index
+	int childIndex = (int) luaL_optinteger(L, 1, 1) - 1; // Convert from 1-based index
 	b2AABB box;
 	luax_catchexcept(L, [&]() { box = fixture->GetAABB(childIndex); });
 	box = Physics::scaleUp(box);
@@ -326,6 +356,8 @@ void Fixture::destroy(bool implicit)
 		body->world->destructFixtures.push_back(this);
 		return;
 	}
+
+	shape.set(nullptr);
 
 	if (!implicit && fixture != nullptr)
 		body->body->DestroyFixture(fixture);

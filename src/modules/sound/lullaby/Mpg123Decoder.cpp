@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -157,7 +157,7 @@ Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
 		mpg123_format_none(handle);
 		mpg123_format(handle, rate, channels, MPG123_ENC_SIGNED_16);
 
-		sampleRate = rate;
+		sampleRate = (int) rate;
 	}
 	catch (love::Exception &)
 	{
@@ -257,7 +257,7 @@ bool Mpg123Decoder::isSeekable()
 	return true;
 }
 
-int Mpg123Decoder::getChannels() const
+int Mpg123Decoder::getChannelCount() const
 {
 	return channels;
 }

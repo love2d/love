@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -62,6 +62,7 @@ Window::Window()
 	, context(nullptr)
 	, displayedWindowError(false)
 	, hasSDL203orEarlier(false)
+	, contextAttribs()
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
@@ -78,10 +79,17 @@ Window::~Window()
 {
 	close();
 
+	graphics.set(nullptr);
+
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
+void Window::setGraphics(graphics::Graphics *graphics)
+{
+	this->graphics.set(graphics);
+}
+
+void Window::setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth)
 {
 	// Set GL window / framebuffer attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -89,7 +97,8 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencil ? 8 : 0);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
 	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
@@ -122,6 +131,8 @@ void Window::setGLContextAttributes(const ContextAttribs &attribs)
 
 	if (attribs.gles)
 		profilemask = SDL_GL_CONTEXT_PROFILE_ES;
+	else if (attribs.versionMajor * 10 + attribs.versionMinor >= 32)
+		profilemask |= SDL_GL_CONTEXT_PROFILE_CORE;
 	else if (attribs.debug)
 		profilemask = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
 
@@ -182,8 +193,14 @@ bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversi
 	return true;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa)
+std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 {
+	// If we already have a set of context attributes that we know work, just
+	// return that. love.graphics doesn't really support switching GL versions
+	// after the first initialization.
+	if (contextAttribs.versionMajor > 0)
+		return std::vector<ContextAttribs>{contextAttribs};
+
 	bool preferGLES = false;
 
 #ifdef LOVE_GRAPHICS_USE_OPENGLES
@@ -218,39 +235,42 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	}
 
 	// Do we want a debug context?
-	const char *debughint = SDL_GetHint("LOVE_GRAPHICS_DEBUG");
-	bool debug = (debughint != nullptr && debughint[0] != '0');
+	bool debug = love::graphics::isDebugEnabled();
 
-	// Different context attribute profiles to try.
-	std::vector<ContextAttribs> attribslist = {
-		{2, 1, false, debug}, // OpenGL 2.1.
-		{3, 0, true,  debug}, // OpenGL ES 3.
-		{2, 0, true,  debug}, // OpenGL ES 2.
-	};
+	const char *preferGL2hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL2");
+	bool preferGL2 = (preferGL2hint != nullptr && preferGL2hint[0] != '0');
 
-	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
-	bool removeES3 = hasSDL203orEarlier;
+	std::vector<ContextAttribs> glcontexts = {{2, 1, false, debug}};
+	glcontexts.insert(preferGL2 ? glcontexts.end() : glcontexts.begin(), {3, 3, false, debug});
+
+	std::vector<ContextAttribs> glescontexts = {{2, 0, true, debug}};
 
 	// While UWP SDL is above 2.0.4, it still doesn't support OpenGL ES 3+
-#ifdef LOVE_WINDOWS_UWP
-	removeES3 = true;
+#ifndef LOVE_WINDOWS_UWP
+	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
+	if (!hasSDL203orEarlier)
+		glescontexts.insert(preferGL2 ? glescontexts.end() : glescontexts.begin(), {3, 0, true, debug});
 #endif
-	
-	if (removeES3)
+
+	std::vector<ContextAttribs> attribslist;
+
+	if (preferGLES)
 	{
-		auto it = attribslist.begin();
-		while (it != attribslist.end())
-		{
-			if (it->gles && it->versionMajor >= 3)
-				it = attribslist.erase(it);
-			else
-				++it;
-		}
+		attribslist.insert(attribslist.end(), glescontexts.begin(), glescontexts.end());
+		attribslist.insert(attribslist.end(), glcontexts.begin(), glcontexts.end());
+	}
+	else
+	{
+		attribslist.insert(attribslist.end(), glcontexts.begin(), glcontexts.end());
+		attribslist.insert(attribslist.end(), glescontexts.begin(), glescontexts.end());
 	}
 
-	// Move OpenGL ES to the front of the list if we should prefer GLES.
-	if (preferGLES)
-		std::rotate(attribslist.begin(), attribslist.begin() + 1, attribslist.end());
+	return attribslist;
+}
+
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth)
+{
+	std::vector<ContextAttribs> attribslist = getContextAttribsList();
 
 	std::string windowerror;
 	std::string contexterror;
@@ -313,7 +333,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		int curMSAA  = msaa;
 		bool curSRGB = love::graphics::isGammaCorrect();
 
-		setGLFramebufferAttributes(curMSAA, curSRGB);
+		setGLFramebufferAttributes(curMSAA, curSRGB, stencil, depth);
 		setGLContextAttributes(attribs);
 
 		windowerror.clear();
@@ -324,7 +344,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (!window && curMSAA > 0)
 		{
 			// The MSAA setting could have caused the failure.
-			setGLFramebufferAttributes(0, curSRGB);
+			setGLFramebufferAttributes(0, curSRGB, stencil, depth);
 			if (create(attribs))
 				curMSAA = 0;
 		}
@@ -332,7 +352,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (!window && curSRGB)
 		{
 			// same with sRGB.
-			setGLFramebufferAttributes(curMSAA, false);
+			setGLFramebufferAttributes(curMSAA, false, stencil, depth);
 			if (create(attribs))
 				curSRGB = false;
 		}
@@ -340,7 +360,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		if (!window && curMSAA > 0 && curSRGB)
 		{
 			// Or both!
-			setGLFramebufferAttributes(0, false);
+			setGLFramebufferAttributes(0, false, stencil, depth);
 			if (create(attribs))
 			{
 				curMSAA = 0;
@@ -350,6 +370,9 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 		if (window && context)
 		{
+			// Store the successful context attributes so we can re-use them in
+			// subsequent calls to createWindowAndContext.
+			contextAttribs = attribs;
 			love::graphics::setGammaCorrect(curSRGB);
 			break;
 		}
@@ -386,6 +409,12 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 bool Window::setWindow(int width, int height, WindowSettings *settings)
 {
+	if (!graphics.get())
+		graphics.set(Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS));
+
+	if (graphics.get() && graphics->isCanvasActive())
+		throw love::Exception("setMode cannot be called while a Canvas is active in love.graphics.");
+
 	WindowSettings f;
 
 	if (settings)
@@ -419,7 +448,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		else
 		{
 			sdlflags |= SDL_WINDOW_FULLSCREEN;
-			SDL_DisplayMode mode = {0, width, height, 0, 0};
+			SDL_DisplayMode mode = {0, width, height, 0, nullptr};
 
 			// Fullscreen window creation will bug out if no mode can be used.
 			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == nullptr)
@@ -466,7 +495,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	close();
 
-	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa))
+	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.stencil, f.depth))
 		return false;
 
 	// Make sure the window keeps any previously set icon.
@@ -483,13 +512,21 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	SDL_GL_SetSwapInterval(f.vsync ? 1 : 0);
+	SDL_GL_SetSwapInterval(f.vsync);
+
+	// Check if adaptive vsync was requested but not supported, and fall back
+	// to regular vsync if so.
+	if (f.vsync == -1 && SDL_GL_GetSwapInterval() != -1)
+		SDL_GL_SetSwapInterval(1);
 
 	updateSettings(f, false);
 
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->setMode(pixelWidth, pixelHeight);
+	if (graphics.get())
+	{
+		double scaledw, scaledh;
+		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
+		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
+	}
 
 #ifdef LOVE_ANDROID
 	love::android::setImmersive(f.fullscreen);
@@ -508,9 +545,12 @@ bool Window::onSizeChanged(int width, int height)
 
 	SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->setViewportSize(pixelWidth, pixelHeight);
+	if (graphics.get())
+	{
+		double scaledw, scaledh;
+		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
+		graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+	}
 
 	return true;
 }
@@ -568,7 +608,10 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	settings.msaa = (buffers > 0 ? samples : 0);
-	settings.vsync = SDL_GL_GetSwapInterval() != 0;
+	settings.vsync = SDL_GL_GetSwapInterval();
+
+	settings.stencil = newsettings.stencil;
+	settings.depth = newsettings.depth;
 
 	SDL_DisplayMode dmode = {};
 	SDL_GetCurrentDisplayMode(settings.display, &dmode);
@@ -576,12 +619,12 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	// May be 0 if the refresh rate can't be determined.
 	settings.refreshrate = (double) dmode.refresh_rate;
 
-	if (updateGraphicsViewport)
+	// Update the viewport size now instead of waiting for event polling.
+	if (updateGraphicsViewport && graphics.get())
 	{
-		// Update the viewport size now instead of waiting for event polling.
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		if (gfx != nullptr)
-			gfx->setViewportSize(pixelWidth, pixelHeight);
+		double scaledw, scaledh;
+		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
+		graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
 	}
 }
 
@@ -598,9 +641,13 @@ void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
 
 void Window::close()
 {
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		gfx->unSetMode();
+	if (graphics.get())
+	{
+		if (graphics->isCanvasActive())
+			throw love::Exception("close cannot be called while a Canvas is active in love.graphics.");
+
+		graphics->unSetMode();
+	}
 
 	if (context)
 	{
@@ -625,6 +672,9 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 {
 	if (!window)
 		return false;
+
+	if (graphics.get() && graphics->isCanvasActive())
+		throw love::Exception("setFullscreen cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings newsettings = settings;
 	newsettings.fullscreen = fullscreen;
@@ -688,9 +738,7 @@ const char *Window::getDisplayName(int displayindex) const
 	return name;
 }
 
-typedef Window::WindowSize WindowSize;
-
-std::vector<WindowSize> Window::getFullscreenSizes(int displayindex) const
+std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) const
 {
 	std::vector<WindowSize> sizes;
 
@@ -794,6 +842,9 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	if (!imgd)
 		return false;
 
+	if (imgd->getFormat() != PIXELFORMAT_RGBA8)
+		throw love::Exception("setIcon only accepts 32-bit RGBA images.");
+
 	icon.set(imgd);
 
 	if (!window)
@@ -814,14 +865,15 @@ bool Window::setIcon(love::image::ImageData *imgd)
 
 	int w = imgd->getWidth();
 	int h = imgd->getHeight();
-	int pitch = imgd->getWidth() * 4;
+	int bytesperpixel = (int) getPixelFormatSize(imgd->getFormat());
+	int pitch = w * bytesperpixel;
 
-	SDL_Surface *sdlicon = 0;
+	SDL_Surface *sdlicon = nullptr;
 
 	{
 		// We don't want another thread modifying the ImageData mid-copy.
 		love::thread::Lock lock(imgd->getMutex());
-		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
+		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
 	}
 
 	if (!sdlicon)
@@ -866,9 +918,23 @@ void Window::maximize()
 	}
 }
 
+void Window::restore()
+{
+	if (window != nullptr)
+	{
+		SDL_RestoreWindow(window);
+		updateSettings(settings, true);
+	}
+}
+
 bool Window::isMaximized() const
 {
 	return window != nullptr && (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED);
+}
+
+bool Window::isMinimized() const
+{
+	return window != nullptr && (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED);
 }
 
 void Window::swapBuffers()
@@ -906,11 +972,26 @@ bool Window::isMouseGrabbed() const
 		return mouseGrabbed;
 }
 
-void Window::getPixelDimensions(int &w, int &h) const
+int Window::getWidth() const
 {
-	w = pixelWidth;
-	h = pixelHeight;
+	return windowWidth;
 }
+
+int Window::getHeight() const
+{
+	return windowHeight;
+}
+
+int Window::getPixelWidth() const
+{
+	return pixelWidth;
+}
+
+int Window::getPixelHeight() const
+{
+	return pixelHeight;
+}
+
 
 void Window::windowToPixelCoords(double *x, double *y) const
 {
@@ -928,7 +1009,42 @@ void Window::pixelToWindowCoords(double *x, double *y) const
 		*y = (*y) * ((double) windowHeight / (double) pixelHeight);
 }
 
-double Window::getPixelScale() const
+void Window::windowToDPICoords(double *x, double *y) const
+{
+	double px = x != nullptr ? *x : 0.0;
+	double py = y != nullptr ? *y : 0.0;
+
+	windowToPixelCoords(&px, &py);
+
+	double dpix = 0.0;
+	double dpiy = 0.0;
+
+	fromPixels(px, py, dpix, dpiy);
+
+	if (x != nullptr)
+		*x = dpix;
+	if (y != nullptr)
+		*y = dpiy;
+}
+
+void Window::DPIToWindowCoords(double *x, double *y) const
+{
+	double dpix = x != nullptr ? *x : 0.0;
+	double dpiy = y != nullptr ? *y : 0.0;
+
+	double px = 0.0;
+	double py = 0.0;
+
+	toPixels(dpix, dpiy, px, py);
+	pixelToWindowCoords(&px, &py);
+
+	if (x != nullptr)
+		*x = px;
+	if (y != nullptr)
+		*y = py;
+}
+
+double Window::getDPIScale() const
 {
 #ifdef LOVE_ANDROID
 	return love::android::getScreenScale();
@@ -939,24 +1055,24 @@ double Window::getPixelScale() const
 
 double Window::toPixels(double x) const
 {
-	return x * getPixelScale();
+	return x * getDPIScale();
 }
 
 void Window::toPixels(double wx, double wy, double &px, double &py) const
 {
-	double scale = getPixelScale();
+	double scale = getDPIScale();
 	px = wx * scale;
 	py = wy * scale;
 }
 
 double Window::fromPixels(double x) const
 {
-	return x / getPixelScale();
+	return x / getDPIScale();
 }
 
 void Window::fromPixels(double px, double py, double &wx, double &wy) const
 {
-	double scale = getPixelScale();
+	double scale = getDPIScale();
 	wx = px / scale;
 	wy = py / scale;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,10 +19,12 @@
  **/
 
 // LOVE
+#include "common/config.h"
 #include "wrap_Filesystem.h"
 #include "wrap_File.h"
 #include "wrap_DroppedFile.h"
 #include "wrap_FileData.h"
+#include "data/wrap_Data.h"
 
 #include "physfs/Filesystem.h"
 
@@ -33,6 +35,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 namespace love
 {
@@ -113,9 +116,9 @@ int w_mount(lua_State *L)
 {
 	std::string archive;
 
-	if (luax_istype(L, 1, FILESYSTEM_DROPPED_FILE_ID))
+	if (luax_istype(L, 1, DroppedFile::type))
 	{
-		DroppedFile *file = luax_totype<DroppedFile>(L, 1, FILESYSTEM_DROPPED_FILE_ID);
+		DroppedFile *file = luax_totype<DroppedFile>(L, 1);
 		archive = file->getFilename();
 	}
 	else
@@ -147,7 +150,7 @@ int w_newFile(lua_State *L)
 	{
 		str = luaL_checkstring(L, 2);
 		if (!File::getConstant(str, mode))
-			return luaL_error(L, "Incorrect file open mode: %s", str);
+			return luax_enumerror(L, "file open mode", File::getConstants(mode), str);
 	}
 
 	File *t = instance()->newFile(filename);
@@ -166,7 +169,7 @@ int w_newFile(lua_State *L)
 		}
 	}
 
-	luax_pushtype(L, FILESYSTEM_FILE_ID, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -190,12 +193,12 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	FileData *data = nullptr;
 	File *file = nullptr;
 
-	if (lua_isstring(L, idx) || luax_istype(L, idx, FILESYSTEM_FILE_ID))
+	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
 		file = luax_getfile(L, idx);
 		file->retain();
 	}
-	else if (luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID))
+	else if (luax_istype(L, idx, FileData::type))
 	{
 		data = luax_checkfiledata(L, idx);
 		data->retain();
@@ -218,9 +221,47 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	return data;
 }
 
+Data *luax_getdata(lua_State *L, int idx)
+{
+	Data *data = nullptr;
+	File *file = nullptr;
+
+	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
+	{
+		file = luax_getfile(L, idx);
+		file->retain();
+	}
+	else if (luax_istype(L, idx, Data::type))
+	{
+		data = data::luax_checkdata(L, idx);
+		data->retain();
+	}
+
+	if (!data && !file)
+	{
+		luaL_argerror(L, idx, "filename, File, or Data expected");
+		return nullptr; // Never reached.
+	}
+
+	if (file)
+	{
+		luax_catchexcept(L,
+			[&]() { data = file->read(); },
+			[&](bool) { file->release(); }
+		);
+	}
+
+	return data;
+}
+
 bool luax_cangetfiledata(lua_State *L, int idx)
 {
-	return lua_isstring(L, idx) || luax_istype(L, idx, FILESYSTEM_FILE_ID) || luax_istype(L, idx, FILESYSTEM_FILE_DATA_ID);
+	return lua_isstring(L, idx) || luax_istype(L, idx, File::type) || luax_istype(L, idx, FileData::type);
+}
+
+bool luax_cangetdata(lua_State *L, int idx)
+{
+	return lua_isstring(L, idx) || luax_istype(L, idx, File::type) || luax_istype(L, idx, Data::type);
 }
 
 int w_newFileData(lua_State *L)
@@ -233,7 +274,7 @@ int w_newFileData(lua_State *L)
 			luax_convobj(L, 1, "filesystem", "newFile");
 
 		// Get FileData from the File.
-		if (luax_istype(L, 1, FILESYSTEM_FILE_ID))
+		if (luax_istype(L, 1, File::type))
 		{
 			File *file = luax_checkfile(L, 1);
 
@@ -246,7 +287,7 @@ int w_newFileData(lua_State *L)
 			{
 				return luax_ioError(L, "%s", e.what());
 			}
-			luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, data);
+			luax_pushtype(L, data);
 			return 1;
 		}
 		else
@@ -256,28 +297,11 @@ int w_newFileData(lua_State *L)
 	size_t length = 0;
 	const char *str = luaL_checklstring(L, 1, &length);
 	const char *filename = luaL_checkstring(L, 2);
-	const char *decstr = lua_isstring(L, 3) ? lua_tostring(L, 3) : 0;
 
-	FileData::Decoder decoder = FileData::FILE;
+	FileData *t = nullptr;
+	luax_catchexcept(L, [&](){ t = instance()->newFileData(str, length, filename); });
 
-	if (decstr && !FileData::getConstant(decstr, decoder))
-		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
-
-	FileData *t = 0;
-
-	switch (decoder)
-	{
-	case FileData::FILE:
-		t = instance()->newFileData((void *)str, (int)length, filename);
-		break;
-	case FileData::BASE64:
-		t = instance()->newFileData(str, filename);
-		break;
-	default:
-		return luaL_error(L, "Invalid FileData decoder: %s", decstr);
-	}
-
-	luax_pushtype(L, FILESYSTEM_FILE_DATA_ID, t);
+	luax_pushtype(L, t);
 	t->release();
 	return 1;
 }
@@ -336,31 +360,43 @@ int w_getExecutablePath(lua_State *L)
 	return 1;
 }
 
-int w_exists(lua_State *L)
+int w_getInfo(lua_State *L)
 {
-	const char *arg = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->exists(arg));
-	return 1;
-}
+	const char *filepath = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
 
-int w_isDirectory(lua_State *L)
-{
-	const char *arg = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isDirectory(arg));
-	return 1;
-}
+	if (instance()->getInfo(filepath, info))
+	{
+		const char *typestr = nullptr;
+		if (!Filesystem::getConstant(info.type, typestr))
+			return luaL_error(L, "Unknown file type.");
 
-int w_isFile(lua_State *L)
-{
-	const char *arg = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isFile(arg));
-	return 1;
-}
+		if (lua_istable(L, 2))
+			lua_pushvalue(L, 2);
+		else
+			lua_createtable(L, 0, 3);
 
-int w_isSymlink(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-	luax_pushboolean(L, instance()->isSymlink(filename));
+		lua_pushstring(L, typestr);
+		lua_setfield(L, -2, "type");
+
+		// Lua numbers (doubles) can't fit the full range of 64 bit ints.
+		info.size = std::min<int64>(info.size, 0x20000000000000LL);
+		if (info.size >= 0)
+		{
+			lua_pushnumber(L, (lua_Number) info.size);
+			lua_setfield(L, -2, "size");
+		}
+
+		info.modtime = std::min<int64>(info.modtime, 0x20000000000000LL);
+		if (info.modtime >= 0)
+		{
+			lua_pushnumber(L, (lua_Number) info.modtime);
+			lua_setfield(L, -2, "modtime");
+		}
+	}
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 
@@ -383,7 +419,7 @@ int w_read(lua_State *L)
 	const char *filename = luaL_checkstring(L, 1);
 	int64 len = (int64) luaL_optinteger(L, 2, File::ALL);
 
-	Data *data = 0;
+	Data *data = nullptr;
 	try
 	{
 		data = instance()->read(filename, len);
@@ -393,7 +429,7 @@ int w_read(lua_State *L)
 		return luax_ioError(L, "%s", e.what());
 	}
 
-	if (data == 0)
+	if (data == nullptr)
 		return luax_ioError(L, "File could not be read.");
 
 	// Push the string.
@@ -412,12 +448,12 @@ static int w_write_or_append(lua_State *L, File::Mode mode)
 {
 	const char *filename = luaL_checkstring(L, 1);
 
-	const char *input = 0;
+	const char *input = nullptr;
 	size_t len = 0;
 
-	if (luax_istype(L, 2, DATA_ID))
+	if (luax_istype(L, 2, love::Data::type))
 	{
-		love::Data *data = luax_totype<love::Data>(L, 2, DATA_ID);
+		love::Data *data = luax_totype<love::Data>(L, 2);
 		input = (const char *) data->getData();
 		len = data->getSize();
 	}
@@ -476,11 +512,9 @@ int w_getDirectoryItems(lua_State *L)
 
 int w_lines(lua_State *L)
 {
-	File *file;
-
 	if (lua_isstring(L, 1))
 	{
-		file = instance()->newFile(lua_tostring(L, 1));
+		File *file = instance()->newFile(lua_tostring(L, 1));
 		bool success = false;
 
 		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
@@ -491,13 +525,15 @@ int w_lines(lua_State *L)
 			return luaL_error(L, "Could not open file.");
 		}
 
-		luax_pushtype(L, FILESYSTEM_FILE_ID, file);
+		luax_pushtype(L, file);
 		file->release();
 	}
 	else
 		return luaL_argerror(L, 1, "expected filename.");
 
-	lua_pushcclosure(L, w_File_lines_i, 1);
+	lua_pushstring(L, ""); // buffer
+	lua_pushstring(L, 0); // buffer offset
+	lua_pushcclosure(L, w_File_lines_i, 3);
 	return 1;
 }
 
@@ -505,7 +541,7 @@ int w_load(lua_State *L)
 {
 	std::string filename = std::string(luaL_checkstring(L, 1));
 
-	Data *data = 0;
+	Data *data = nullptr;
 	try
 	{
 		data = instance()->read(filename.c_str());
@@ -531,51 +567,9 @@ int w_load(lua_State *L)
 	}
 }
 
-int w_getLastModified(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-
-	int64 time = 0;
-	try
-	{
-		time = instance()->getLastModified(filename);
-	}
-	catch (love::Exception &e)
-	{
-		return luax_ioError(L, "%s", e.what());
-	}
-
-	lua_pushnumber(L, static_cast<lua_Number>(time));
-	return 1;
-}
-
-int w_getSize(lua_State *L)
-{
-	const char *filename = luaL_checkstring(L, 1);
-
-	int64 size = -1;
-	try
-	{
-		size = instance()->getSize(filename);
-	}
-	catch (love::Exception &e)
-	{
-		return luax_ioError(L, "%s", e.what());
-	}
-
-	// Error on failure or if size does not fit into a double precision floating-point number.
-	if (size == -1)
-		return luax_ioError(L, "Could not determine file size.");
-	else if (size >= 0x20000000000000LL)
-		return luax_ioError(L, "Size too large to fit into a Lua number!");
-
-	lua_pushnumber(L, (lua_Number) size);
-	return 1;
-}
-
 int w_setSymlinksEnabled(lua_State *L)
 {
-	instance()->setSymlinksEnabled(luax_toboolean(L, 1));
+	instance()->setSymlinksEnabled(luax_checkboolean(L, 1));
 	return 0;
 }
 
@@ -590,6 +584,24 @@ int w_getRequirePath(lua_State *L)
 	std::stringstream path;
 	bool seperator = false;
 	for (auto &element : instance()->getRequirePath())
+	{
+		if (seperator)
+			path << ";";
+		else
+			seperator = true;
+
+		path << element;
+	}
+
+	luax_pushstring(L, path.str());
+	return 1;
+}
+
+int w_getCRequirePath(lua_State *L)
+{
+	std::stringstream path;
+	bool seperator = false;
+	for (auto &element : instance()->getCRequirePath())
 	{
 		if (seperator)
 			path << ";";
@@ -618,6 +630,37 @@ int w_setRequirePath(lua_State *L)
 	return 0;
 }
 
+int w_setCRequirePath(lua_State *L)
+{
+	std::string element = luax_checkstring(L, 1);
+	auto &requirePath = instance()->getCRequirePath();
+
+	requirePath.clear();
+	std::stringstream path;
+	path << element;
+
+	while(std::getline(path, element, ';'))
+		requirePath.push_back(element);
+
+	return 0;
+}
+
+static void replaceAll(std::string &str, const std::string &substr, const std::string &replacement)
+{
+	std::vector<size_t> locations;
+	size_t pos = 0;
+	size_t sublen = substr.length();
+
+	while ((pos = str.find(substr, pos)) != std::string::npos)
+	{
+		locations.push_back(pos);
+		pos += sublen;
+	}
+
+	for (int i = (int) locations.size() - 1; i >= 0; i--)
+		str.replace(locations[i], sublen, replacement);
+}
+
 int loader(lua_State *L)
 {
 	std::string modulename = luax_tostring(L, 1);
@@ -631,11 +674,10 @@ int loader(lua_State *L)
 	auto *inst = instance();
 	for (std::string element : inst->getRequirePath())
 	{
-		size_t pos = 0;
-		while ((pos = element.find('?', pos)) != std::string::npos)
-			element.replace(pos, 1, modulename);
+		replaceAll(element, "?", modulename);
 
-		if (inst->isFile(element.c_str()))
+		Filesystem::Info info = {};
+		if (inst->getInfo(element.c_str(), info) && info.type != Filesystem::FILETYPE_DIRECTORY)
 		{
 			lua_pop(L, 1);
 			lua_pushstring(L, element.c_str());
@@ -649,14 +691,16 @@ int loader(lua_State *L)
 	return 1;
 }
 
-inline const char *library_extension()
+static const char *library_extensions[] =
 {
 #ifdef LOVE_WINDOWS
-	return ".dll";
+	".dll"
+#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+	".dylib", ".so"
 #else
-	return ".so";
+	".so"
 #endif
-}
+};
 
 int extloader(lua_State *L)
 {
@@ -664,6 +708,9 @@ int extloader(lua_State *L)
 	std::string tokenized_name(filename);
 	std::string tokenized_function(filename);
 
+	// We need both the tokenized filename (dots replaced with slashes)
+	// and the tokenized function name (dots replaced with underscores)
+	// NOTE: Lua's loader queries more names than this one.
 	for (unsigned int i = 0; i < tokenized_name.size(); i++)
 	{
 		if (tokenized_name[i] == '.')
@@ -673,32 +720,36 @@ int extloader(lua_State *L)
 		}
 	}
 
-	tokenized_name += library_extension();
-
 	void *handle = nullptr;
+	auto *inst = instance();
 
-	// If the game is fused, try looking for the DLL in the game's read paths.
-	if (instance()->isFused())
+	for (const std::string &el : inst->getCRequirePath())
 	{
-		try
+		for (const char *ext : library_extensions)
 		{
-			std::string dir = instance()->getRealDirectory(tokenized_name.c_str());
+			std::string element = el;
 
-			// We don't want to look in the game's source, because it can be a
-			// zip sometimes and a folder other times.
-			if (dir.find(instance()->getSource()) == std::string::npos)
-				handle = SDL_LoadObject((dir + LOVE_PATH_SEPARATOR + tokenized_name).c_str());
-		}
-		catch (love::Exception &)
-		{
-			// Nothing...
-		}
-	}
+			// Replace ?? with the filename and extension
+			replaceAll(element, "??", tokenized_name + ext);
 
-	if (!handle)
-	{
-		std::string path = std::string(instance()->getAppdataDirectory()) + LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR + tokenized_name;
-		handle = SDL_LoadObject(path.c_str());
+			// And ? with just the filename
+			replaceAll(element, "?", tokenized_name);
+
+			Filesystem::Info info = {};
+			if (!inst->getInfo(element.c_str(), info) || info.type == Filesystem::FILETYPE_DIRECTORY)
+				continue;
+
+			// Now resolve the full path, as we're bypassing physfs for the next part.
+			std::string filepath = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
+
+			handle = SDL_LoadObject(filepath.c_str());
+			// Can fail, for instance if it turned out the source was a zip
+			if (handle)
+				break;
+		}
+
+		if (handle)
+			break;
 	}
 
 	if (!handle)
@@ -707,6 +758,8 @@ int extloader(lua_State *L)
 		return 1;
 	}
 
+	// We look for both loveopen_ and luaopen_, so libraries with specific love support
+	// can tell when they've been loaded by love.
 	void *func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
 	if (!func)
 		func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
@@ -719,6 +772,85 @@ int extloader(lua_State *L)
 	}
 
 	lua_pushcfunction(L, (lua_CFunction) func);
+	return 1;
+}
+
+// Deprecated functions.
+
+int w_exists(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.exists", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *arg = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	luax_pushboolean(L, instance()->getInfo(arg, info));
+	return 1;
+}
+
+int w_isDirectory(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.isDirectory", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *arg = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(arg, info);
+	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_DIRECTORY);
+	return 1;
+}
+
+int w_isFile(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.isFile", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *arg = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(arg, info);
+	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_FILE);
+	return 1;
+}
+
+int w_isSymlink(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.isSymlink", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+	const char *filename = luaL_checkstring(L, 1);
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(filename, info);
+	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_SYMLINK);
+	return 1;
+}
+
+int w_getLastModified(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.getLastModified", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+
+	const char *filename = luaL_checkstring(L, 1);
+
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(filename, info);
+
+	if (!exists)
+		return luax_ioError(L, "File does not exist");
+	else if (info.modtime == -1)
+		return luax_ioError(L, "Could not determine file modification date.");
+
+	lua_pushnumber(L, (lua_Number) info.modtime);
+	return 1;
+}
+
+int w_getSize(lua_State *L)
+{
+	luax_markdeprecated(L, "love.filesystem.getSize", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
+
+	const char *filename = luaL_checkstring(L, 1);
+
+	Filesystem::Info info = {};
+	bool exists = instance()->getInfo(filename, info);
+
+	if (!exists)
+		luax_ioError(L, "File does not exist");
+	else if (info.size == -1)
+		return luax_ioError(L, "Could not determine file size.");
+	else if (info.size >= 0x20000000000000LL)
+		return luax_ioError(L, "Size too large to fit into a Lua number!");
+
+	lua_pushnumber(L, (lua_Number) info.size);
 	return 1;
 }
 
@@ -743,10 +875,6 @@ static const luaL_Reg functions[] =
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "getRealDirectory", w_getRealDirectory },
 	{ "getExecutablePath", w_getExecutablePath },
-	{ "exists", w_exists },
-	{ "isDirectory", w_isDirectory },
-	{ "isFile", w_isFile },
-	{ "isSymlink", w_isSymlink },
 	{ "createDirectory", w_createDirectory },
 	{ "remove", w_remove },
 	{ "read", w_read },
@@ -755,13 +883,23 @@ static const luaL_Reg functions[] =
 	{ "getDirectoryItems", w_getDirectoryItems },
 	{ "lines", w_lines },
 	{ "load", w_load },
-	{ "getLastModified", w_getLastModified },
-	{ "getSize", w_getSize },
+	{ "getInfo", w_getInfo },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },
 	{ "newFileData", w_newFileData },
 	{ "getRequirePath", w_getRequirePath },
 	{ "setRequirePath", w_setRequirePath },
+	{ "getCRequirePath", w_getCRequirePath },
+	{ "setCRequirePath", w_setCRequirePath },
+
+	// Deprecated.
+	{ "exists", w_exists },
+	{ "isDirectory", w_isDirectory },
+	{ "isFile", w_isFile },
+	{ "isSymlink", w_isSymlink },
+	{ "getLastModified", w_getLastModified },
+	{ "getSize", w_getSize },
+
 	{ 0, 0 }
 };
 
@@ -790,7 +928,7 @@ extern "C" int luaopen_love_filesystem(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "filesystem";
-	w.type = MODULE_FILESYSTEM_ID;
+	w.type = &Filesystem::type;
 	w.functions = functions;
 	w.types = types;
 

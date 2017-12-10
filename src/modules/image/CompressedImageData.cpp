@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,12 +25,56 @@ namespace love
 namespace image
 {
 
-CompressedImageData::CompressedImageData()
-	: format(FORMAT_UNKNOWN)
+love::Type CompressedImageData::type("CompressedImageData", &Data::type);
+
+CompressedImageData::CompressedImageData(const std::list<FormatHandler *> &formats, Data *filedata)
+	: format(PIXELFORMAT_UNKNOWN)
 	, sRGB(false)
-	, data(nullptr)
-	, dataSize(0)
 {
+	FormatHandler *parser = nullptr;
+
+	for (FormatHandler *handler : formats)
+	{
+		if (handler->canParseCompressed(filedata))
+		{
+			parser = handler;
+			break;
+		}
+	}
+
+	if (parser == nullptr)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+
+	memory = parser->parseCompressed(filedata, dataImages, format, sRGB);
+
+	if (memory == nullptr)
+		throw love::Exception("Could not parse compressed data.");
+
+	if (format == PIXELFORMAT_UNKNOWN)
+		throw love::Exception("Could not parse compressed data: Unknown format.");
+
+	if (dataImages.size() == 0 || memory->size == 0)
+		throw love::Exception("Could not parse compressed data: No valid data?");
+}
+
+CompressedImageData::CompressedImageData(const CompressedImageData &c)
+	: format(c.format)
+	, sRGB(c.sRGB)
+{
+	memory.set(new CompressedMemory(c.memory->size), Acquire::NORETAIN);
+	memcpy(memory->data, c.memory->data, memory->size);
+
+	for (const auto &i : c.dataImages)
+	{
+		auto slice = new CompressedSlice(i->getFormat(), i->getWidth(), i->getHeight(), memory, i->getOffset(), i->getSize());
+		dataImages.push_back(slice);
+		slice->release();
+	}
+}
+
+CompressedImageData *CompressedImageData::clone() const
+{
+	return new CompressedImageData(*this);
 }
 
 CompressedImageData::~CompressedImageData()
@@ -39,48 +83,53 @@ CompressedImageData::~CompressedImageData()
 
 size_t CompressedImageData::getSize() const
 {
-	return dataSize;
+	return memory->size;
 }
 
 void *CompressedImageData::getData() const
 {
-	return data;
+	return memory->data;
 }
 
-int CompressedImageData::getMipmapCount() const
+int CompressedImageData::getMipmapCount(int /*slice*/) const
 {
 	return (int) dataImages.size();
 }
 
+int CompressedImageData::getSliceCount(int /*mip*/) const
+{
+	return 1;
+}
+
 size_t CompressedImageData::getSize(int miplevel) const
 {
-	checkMipmapLevelExists(miplevel);
+	checkSliceExists(0, miplevel);
 
-	return dataImages[miplevel].size;
+	return dataImages[miplevel]->getSize();
 }
 
 void *CompressedImageData::getData(int miplevel) const
 {
-	checkMipmapLevelExists(miplevel);
+	checkSliceExists(0, miplevel);
 
-	return &dataImages[miplevel].data[0];
+	return dataImages[miplevel]->getData();
 }
 
 int CompressedImageData::getWidth(int miplevel) const
 {
-	checkMipmapLevelExists(miplevel);
+	checkSliceExists(0, miplevel);
 
-	return dataImages[miplevel].width;
+	return dataImages[miplevel]->getWidth();
 }
 
 int CompressedImageData::getHeight(int miplevel) const
 {
-	checkMipmapLevelExists(miplevel);
+	checkSliceExists(0, miplevel);
 
-	return dataImages[miplevel].height;
+	return dataImages[miplevel]->getHeight();
 }
 
-CompressedImageData::Format CompressedImageData::getFormat() const
+PixelFormat CompressedImageData::getFormat() const
 {
 	return format;
 }
@@ -90,64 +139,21 @@ bool CompressedImageData::isSRGB() const
 	return sRGB;
 }
 
-void CompressedImageData::checkMipmapLevelExists(int miplevel) const
+CompressedSlice *CompressedImageData::getSlice(int slice, int miplevel) const
 {
+	checkSliceExists(slice, miplevel);
+
+	return dataImages[miplevel].get();
+}
+
+void CompressedImageData::checkSliceExists(int slice, int miplevel) const
+{
+	if (slice != 0)
+		throw love::Exception("Slice index %d does not exists", slice + 1);
+
 	if (miplevel < 0 || miplevel >= (int) dataImages.size())
 		throw love::Exception("Mipmap level %d does not exist", miplevel + 1);
 }
-
-bool CompressedImageData::getConstant(const char *in, CompressedImageData::Format &out)
-{
-	return formats.find(in, out);
-}
-
-bool CompressedImageData::getConstant(CompressedImageData::Format in, const char *&out)
-{
-	return formats.find(in, out);
-}
-
-StringMap<CompressedImageData::Format, CompressedImageData::FORMAT_MAX_ENUM>::Entry CompressedImageData::formatEntries[] =
-{
-	{"unknown", FORMAT_UNKNOWN},
-	{"DXT1", FORMAT_DXT1},
-	{"DXT3", FORMAT_DXT3},
-	{"DXT5", FORMAT_DXT5},
-	{"BC4", FORMAT_BC4},
-	{"BC4s", FORMAT_BC4s},
-	{"BC5", FORMAT_BC5},
-	{"BC5s", FORMAT_BC5s},
-	{"BC6h", FORMAT_BC6H},
-	{"BC6hs", FORMAT_BC6Hs},
-	{"BC7", FORMAT_BC7},
-	{"PVR1rgb2", FORMAT_PVR1_RGB2},
-	{"PVR1rgb4", FORMAT_PVR1_RGB4},
-	{"PVR1rgba2", FORMAT_PVR1_RGBA2},
-	{"PVR1rgba4", FORMAT_PVR1_RGBA4},
-	{"ETC1", FORMAT_ETC1},
-	{"ETC2rgb", FORMAT_ETC2_RGB},
-	{"ETC2rgba", FORMAT_ETC2_RGBA},
-	{"ETC2rgba1", FORMAT_ETC2_RGBA1},
-	{"EACr", FORMAT_EAC_R},
-	{"EACrs", FORMAT_EAC_Rs},
-	{"EACrg", FORMAT_EAC_RG},
-	{"EACrgs", FORMAT_EAC_RGs},
-	{"ASTC4x4", FORMAT_ASTC_4x4},
-	{"ASTC5x4", FORMAT_ASTC_5x4},
-	{"ASTC5x5", FORMAT_ASTC_5x5},
-	{"ASTC6x5", FORMAT_ASTC_6x5},
-	{"ASTC6x6", FORMAT_ASTC_6x6},
-	{"ASTC8x5", FORMAT_ASTC_8x5},
-	{"ASTC8x6", FORMAT_ASTC_8x6},
-	{"ASTC8x8", FORMAT_ASTC_8x8},
-	{"ASTC10x5", FORMAT_ASTC_10x5},
-	{"ASTC10x6", FORMAT_ASTC_10x6},
-	{"ASTC10x8", FORMAT_ASTC_10x8},
-	{"ASTC10x10", FORMAT_ASTC_10x10},
-	{"ASTC12x10", FORMAT_ASTC_12x10},
-	{"ASTC12x12", FORMAT_ASTC_12x12},
-};
-
-StringMap<CompressedImageData::Format, CompressedImageData::FORMAT_MAX_ENUM> CompressedImageData::formats(CompressedImageData::formatEntries, sizeof(CompressedImageData::formatEntries));
 
 } // image
 } // love

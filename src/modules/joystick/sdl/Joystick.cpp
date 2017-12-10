@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -246,6 +246,59 @@ bool Joystick::isGamepadDown(const std::vector<GamepadButton> &blist) const
 	}
 
 	return false;
+}
+
+Joystick::JoystickInput Joystick::getGamepadMapping(const GamepadInput &input) const
+{
+	Joystick::JoystickInput jinput;
+	jinput.type = INPUT_TYPE_MAX_ENUM;
+
+	if (!isGamepad())
+		return jinput;
+
+	SDL_GameControllerButtonBind sdlbind = {};
+	sdlbind.bindType = SDL_CONTROLLER_BINDTYPE_NONE;
+
+	SDL_GameControllerButton sdlbutton;
+	SDL_GameControllerAxis sdlaxis;
+
+	switch (input.type)
+	{
+	case INPUT_TYPE_BUTTON:
+		if (getConstant(input.button, sdlbutton))
+			sdlbind = SDL_GameControllerGetBindForButton(controller, sdlbutton);
+		break;
+	case INPUT_TYPE_AXIS:
+		if (getConstant(input.axis, sdlaxis))
+			sdlbind = SDL_GameControllerGetBindForAxis(controller, sdlaxis);
+		break;
+	default:
+		break;
+	}
+
+	switch (sdlbind.bindType)
+	{
+	case SDL_CONTROLLER_BINDTYPE_BUTTON:
+		jinput.type = INPUT_TYPE_BUTTON;
+		jinput.button = sdlbind.value.button;
+		break;
+	case SDL_CONTROLLER_BINDTYPE_AXIS:
+		jinput.type = INPUT_TYPE_AXIS;
+		jinput.axis = sdlbind.value.axis;
+		break;
+	case SDL_CONTROLLER_BINDTYPE_HAT:
+		if (getConstant(sdlbind.value.hat.hat_mask, jinput.hat.value))
+		{
+			jinput.type = INPUT_TYPE_HAT;
+			jinput.hat.index = sdlbind.value.hat.hat;
+		}
+		break;
+	case SDL_CONTROLLER_BINDTYPE_NONE:
+	default:
+		break;
+	}
+
+	return jinput;
 }
 
 void *Joystick::getHandle() const

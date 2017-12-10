@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,16 @@ namespace font
 
 GlyphData *luax_checkglyphdata(lua_State *L, int idx)
 {
-	return luax_checktype<GlyphData>(L, idx, FONT_GLYPH_DATA_ID);
+	return luax_checktype<GlyphData>(L, idx);
+}
+
+int w_GlyphData_clone(lua_State *L)
+{
+	GlyphData *t = luax_checkglyphdata(L, 1), *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
 }
 
 int w_GlyphData_getWidth(lua_State *L)
@@ -108,8 +117,8 @@ int w_GlyphData_getFormat(lua_State *L)
 	GlyphData *t = luax_checkglyphdata(L, 1);
 
 	const char *str;
-	if (!GlyphData::getConstant(t->getFormat(), str))
-		return luaL_error(L, "unknown GlyphData format.");
+	if (!getConstant(t->getFormat(), str))
+		return luax_enumerror(L, "pixel format", str);
 
 	lua_pushstring(L, str);
 	return 1;
@@ -117,6 +126,7 @@ int w_GlyphData_getFormat(lua_State *L)
 
 const luaL_Reg w_GlyphData_functions[] =
 {
+	{ "clone", w_GlyphData_clone },
 	{ "getWidth", w_GlyphData_getWidth },
 	{ "getHeight", w_GlyphData_getHeight },
 	{ "getDimensions", w_GlyphData_getDimensions },
@@ -131,7 +141,7 @@ const luaL_Reg w_GlyphData_functions[] =
 
 extern "C" int luaopen_glyphdata(lua_State *L)
 {
-	return luax_register_type(L, FONT_GLYPH_DATA_ID, "GlyphData", w_Data_functions, w_GlyphData_functions, nullptr);
+	return luax_register_type(L, &GlyphData::type, data::w_Data_functions, w_GlyphData_functions, nullptr);
 }
 
 } // font

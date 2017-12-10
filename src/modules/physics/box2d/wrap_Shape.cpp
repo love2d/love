@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 Shape *luax_checkshape(lua_State *L, int idx)
 {
-	return luax_checktype<Shape>(L, idx, PHYSICS_SHAPE_ID);
+	return luax_checktype<Shape>(L, idx);
 }
 
 int w_Shape_getType(lua_State *L)
@@ -108,7 +108,7 @@ const luaL_Reg w_Shape_functions[] =
 
 extern "C" int luaopen_shape(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_SHAPE_ID, "Shape", w_Shape_functions, nullptr);
+	return luax_register_type(L, &Shape::type, w_Shape_functions, nullptr);
 }
 
 } // box2d

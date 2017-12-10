@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,9 @@ Message *Message::fromLua(lua_State *L, int n)
 		if (lua_isnoneornil(L, n+i))
 			break;
 
-		vargs.push_back(Variant::fromLua(L, n+i));
+		luax_catchexcept(L, [&]() {
+			vargs.push_back(Variant::fromLua(L, n+i));
+		});
 
 		if (vargs.back().getType() == Variant::UNKNOWN)
 		{

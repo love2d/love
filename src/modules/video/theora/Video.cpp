@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,7 @@ Video::~Video()
 
 VideoStream *Video::newVideoStream(love::filesystem::File *file)
 {
-	VideoStream *stream = new VideoStream(file);
+	TheoraVideoStream *stream = new TheoraVideoStream(file);
 	workerThread->addStream(stream);
 	return stream;
 }
@@ -67,7 +67,7 @@ Worker::~Worker()
 	stop();
 }
 
-void Worker::addStream(VideoStream *stream)
+void Worker::addStream(TheoraVideoStream *stream)
 {
 	love::thread::Lock l(mutex);
 	streams.push_back(stream);
@@ -110,7 +110,7 @@ void Worker::threadFunction()
 
 		for (auto it = streams.begin(); it != streams.end(); ++it)
 		{
-			VideoStream *stream = *it;
+			TheoraVideoStream *stream = *it;
 			if (stream->getReferenceCount() == 1)
 			{
 				// We're the only ones left

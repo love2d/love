@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,10 +22,11 @@
 #define LOVE_FILESYSTEM_FILE_DATA_H
 
 // LOVE
-#include <string>
 #include "common/Data.h"
-#include "common/StringMap.h"
 #include "common/int.h"
+#include "common/Exception.h"
+
+#include <string>
 
 namespace love
 {
@@ -36,26 +37,21 @@ class FileData : public Data
 {
 public:
 
-	enum Decoder
-	{
-		FILE,
-		BASE64,
-		DECODE_MAX_ENUM
-	}; // Decoder
+	static love::Type type;
 
 	FileData(uint64 size, const std::string &filename);
+	FileData(const FileData &c);
 
 	virtual ~FileData();
 
 	// Implements Data.
+	FileData *clone() const;
 	void *getData() const;
 	size_t getSize() const;
 
 	const std::string &getFilename() const;
 	const std::string &getExtension() const;
-
-	static bool getConstant(const char *in, Decoder &out);
-	static bool getConstant(Decoder in, const char *&out);
+	const std::string &getName() const;
 
 private:
 
@@ -71,8 +67,8 @@ private:
 	// The extension (without dot). Used to identify file type.
 	std::string extension;
 
-	static StringMap<Decoder, DECODE_MAX_ENUM>::Entry decoderEntries[];
-	static StringMap<Decoder, DECODE_MAX_ENUM> decoders;
+	// The file name without the extension (and without the dot).
+	std::string name;
 
 }; // FileData
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,19 +34,19 @@ namespace sdl
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
-static void windowToPixelCoords(double *x, double *y)
+static void windowToDPICoords(double *x, double *y)
 {
 	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
-		window->windowToPixelCoords(x, y);
+		window->windowToDPICoords(x, y);
 }
 
 // And vice versa for setting mouse coordinates.
-static void pixelToWindowCoords(double *x, double *y)
+static void DPIToWindowCoords(double *x, double *y)
 {
 	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
-		window->pixelToWindowCoords(x, y);
+		window->DPIToWindowCoords(x, y);
 }
 
 const char *Mouse::getName() const
@@ -107,7 +107,7 @@ love::mouse::Cursor *Mouse::getCursor() const
 }
 
 
-bool Mouse::hasCursor() const
+bool Mouse::isCursorSupported() const
 {
 	return SDL_GetDefaultCursor() != nullptr;
 }
@@ -118,7 +118,7 @@ double Mouse::getX() const
 	SDL_GetMouseState(&x, nullptr);
 
 	double dx = (double) x;
-	windowToPixelCoords(&dx, nullptr);
+	windowToDPICoords(&dx, nullptr);
 
 	return dx;
 }
@@ -129,7 +129,7 @@ double Mouse::getY() const
 	SDL_GetMouseState(nullptr, &y);
 
 	double dy = (double) y;
-	windowToPixelCoords(nullptr, &dy);
+	windowToDPICoords(nullptr, &dy);
 
 	return dy;
 }
@@ -141,7 +141,7 @@ void Mouse::getPosition(double &x, double &y) const
 
 	x = (double) mx;
 	y = (double) my;
-	windowToPixelCoords(&x, &y);
+	windowToDPICoords(&x, &y);
 }
 
 void Mouse::setPosition(double x, double y)
@@ -152,7 +152,7 @@ void Mouse::setPosition(double x, double y)
 	if (window)
 		handle = (SDL_Window *) window->getHandle();
 
-	pixelToWindowCoords(&x, &y);
+	DPIToWindowCoords(&x, &y);
 	SDL_WarpMouseInWindow(handle, (int) x, (int) y);
 
 	// SDL_WarpMouse doesn't directly update SDL's internal mouse state in Linux

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 //LOVE
 #include "common/config.h"
 #include "ParticleSystem.h"
+#include "Graphics.h"
 
 #include "common/math.h"
 #include "modules/math/RandomGenerator.h"
@@ -50,7 +51,9 @@ float calculate_variation(float inner, float outer, float var)
 
 } // anonymous namespace
 
-ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
+love::Type ParticleSystem::type("ParticleSystem", &Drawable::type);
+
+ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	: pMem(nullptr)
 	, pFree(nullptr)
 	, pHead(nullptr)
@@ -63,6 +66,8 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, emissionRate(0)
 	, emitCounter(0)
 	, areaSpreadDistribution(DISTRIBUTION_NONE)
+	, areaSpreadAngle(0)
+	, areaSpreadIsRelativeDirection(false)
 	, lifetime(-1)
 	, life(0)
 	, particleLifeMin(0)
@@ -88,12 +93,19 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, offset(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f)
 	, defaultOffset(true)
 	, relativeRotation(false)
+	, vertexAttributes(vertex::CommonFormat::XYf_STf_RGBAub, 0)
+	, buffer(nullptr)
+	, quadIndices(gfx, size)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
 
+	if (texture->getTextureType() != TEXTURE_2D)
+		throw love::Exception("Only 2D textures can be used with ParticleSystems.");
+
 	sizes.push_back(1.0f);
 	colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+
 	setBufferSize(size);
 }
 
@@ -113,6 +125,8 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, prevPosition(p.prevPosition)
 	, areaSpreadDistribution(p.areaSpreadDistribution)
 	, areaSpread(p.areaSpread)
+	, areaSpreadAngle(p.areaSpreadAngle)
+	, areaSpreadIsRelativeDirection(p.areaSpreadIsRelativeDirection)
 	, lifetime(p.lifetime)
 	, life(p.lifetime) // Initialize with the maximum life time.
 	, particleLifeMin(p.particleLifeMin)
@@ -141,6 +155,9 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, colors(p.colors)
 	, quads(p.quads)
 	, relativeRotation(p.relativeRotation)
+	, vertexAttributes(p.vertexAttributes)
+	, buffer(nullptr)
+	, quadIndices(p.quadIndices)
 {
 	setBufferSize(maxParticles);
 }
@@ -150,14 +167,19 @@ ParticleSystem::~ParticleSystem()
 	deleteBuffers();
 }
 
+ParticleSystem *ParticleSystem::clone()
+{
+	return new ParticleSystem(*this);
+}
+
 void ParticleSystem::resetOffset()
 {
 	if (quads.empty())
-		offset = love::Vector(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f);
+		offset = love::Vector2(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f);
 	else
 	{
 		Quad::Viewport v = quads[0]->getViewport();
-		offset = love::Vector(v.x*0.5f, v.y*0.5f);
+		offset = love::Vector2(v.x*0.5f, v.y*0.5f);
 	}
 }
 
@@ -167,6 +189,13 @@ void ParticleSystem::createBuffers(size_t size)
 	{
 		pFree = pMem = new Particle[size];
 		maxParticles = (uint32) size;
+
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+		size_t bytes = sizeof(Vertex) * size * 4;
+		buffer = gfx->newBuffer(bytes, nullptr, BUFFER_VERTEX, vertex::USAGE_STREAM, 0);
+
+		quadIndices = QuadIndices(gfx, size);
 	}
 	catch (std::bad_alloc &)
 	{
@@ -177,10 +206,11 @@ void ParticleSystem::createBuffers(size_t size)
 
 void ParticleSystem::deleteBuffers()
 {
-	// Clean up for great gracefulness!
 	delete[] pMem;
+	delete buffer;
 
 	pMem = nullptr;
+	buffer = nullptr;
 	maxParticles = 0;
 	activeParticles = 0;
 }
@@ -230,7 +260,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	float min,max;
 
 	// Linearly interpolate between the previous and current emitter position.
-	love::Vector pos = prevPosition + (position - prevPosition) * t;
+	love::Vector2 pos = prevPosition + (position - prevPosition) * t;
 
 	min = particleLifeMin;
 	max = particleLifeMax;
@@ -242,27 +272,78 @@ void ParticleSystem::initParticle(Particle *p, float t)
 
 	p->position = pos;
 
+	min = direction - spread/2.0f;
+	max = direction + spread/2.0f;
+	float dir = (float) rng.random(min, max);
+
+	// In this switch statement, variables 'rand_y', 'min', and 'max'
+	// are sometimes reused as data stores for performance reasons
 	float rand_x, rand_y;
 	switch (areaSpreadDistribution)
 	{
 	case DISTRIBUTION_UNIFORM:
-		p->position.x += (float) rng.random(-areaSpread.getX(), areaSpread.getX());
-		p->position.y += (float) rng.random(-areaSpread.getY(), areaSpread.getY());
+		rand_x = (float) rng.random(-areaSpread.x, areaSpread.x);
+		rand_y = (float) rng.random(-areaSpread.y, areaSpread.y);
+		p->position.x += cosf(areaSpreadAngle) * rand_x - sinf(areaSpreadAngle) * rand_y;
+		p->position.y += sinf(areaSpreadAngle) * rand_x + cosf(areaSpreadAngle) * rand_y;
 		break;
 	case DISTRIBUTION_NORMAL:
-		p->position.x += (float) rng.randomNormal(areaSpread.getX());
-		p->position.y += (float) rng.randomNormal(areaSpread.getY());
+		rand_x = (float) rng.randomNormal(areaSpread.x);
+		rand_y = (float) rng.randomNormal(areaSpread.y);
+		p->position.x += cosf(areaSpreadAngle) * rand_x - sinf(areaSpreadAngle) * rand_y;
+		p->position.y += sinf(areaSpreadAngle) * rand_x + cosf(areaSpreadAngle) * rand_y;
 		break;
 	case DISTRIBUTION_ELLIPSE:
 		rand_x = (float) rng.random(-1, 1);
 		rand_y = (float) rng.random(-1, 1);
-		p->position.x += areaSpread.getX() * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
-		p->position.y += areaSpread.getY() * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
+		min = areaSpread.x * (rand_x * sqrt(1 - 0.5f*pow(rand_y, 2)));
+		max = areaSpread.y * (rand_y * sqrt(1 - 0.5f*pow(rand_x, 2)));
+		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
+		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
+		break;
+	case DISTRIBUTION_BORDER_ELLIPSE:
+		rand_x = (float) rng.random(0, LOVE_M_PI * 2);
+		min = cosf(rand_x) * areaSpread.x;
+		max = sinf(rand_x) * areaSpread.y;
+		p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * max;
+		p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * max;
+		break;
+	case DISTRIBUTION_BORDER_RECTANGLE:
+		rand_x = (float) rng.random((areaSpread.x + areaSpread.y) * -2, (areaSpread.x + areaSpread.y) * 2);
+		rand_y = areaSpread.y * 2;
+		if (rand_x < -rand_y)
+		{
+			min = rand_x + rand_y + areaSpread.x;
+			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * -areaSpread.y;
+			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * -areaSpread.y;
+		}
+		else if (rand_x < 0)
+		{
+			max = rand_x + areaSpread.y;
+			p->position.x += cosf(areaSpreadAngle) * -areaSpread.x - sinf(areaSpreadAngle) * max;
+			p->position.y += sinf(areaSpreadAngle) * -areaSpread.x + cosf(areaSpreadAngle) * max;
+		}
+		else if (rand_x < rand_y)
+		{
+			max = rand_x - areaSpread.y;
+			p->position.x += cosf(areaSpreadAngle) * areaSpread.x - sinf(areaSpreadAngle) * max;
+			p->position.y += sinf(areaSpreadAngle) * areaSpread.x + cosf(areaSpreadAngle) * max;
+		}
+		else
+		{
+			min = rand_x - rand_y - areaSpread.x;
+			p->position.x += cosf(areaSpreadAngle) * min - sinf(areaSpreadAngle) * areaSpread.y;
+			p->position.y += sinf(areaSpreadAngle) * min + cosf(areaSpreadAngle) * areaSpread.y;
+		}
 		break;
 	case DISTRIBUTION_NONE:
 	default:
 		break;
 	}
+
+	// Determine if the origin of each particle is the center of the area
+	if (areaSpreadIsRelativeDirection)
+		dir += atan2(p->position.y - pos.y, p->position.x - pos.x);
 
 	p->origin = pos;
 
@@ -270,11 +351,7 @@ void ParticleSystem::initParticle(Particle *p, float t)
 	max = speedMax;
 	float speed = (float) rng.random(min, max);
 
-	min = direction - spread/2.0f;
-	max = direction + spread/2.0f;
-	float dir = (float) rng.random(min, max);
-
-	p->velocity = love::Vector(cosf(dir), sinf(dir)) * speed;
+	p->velocity = love::Vector2(cosf(dir), sinf(dir)) * speed;
 
 	p->linearAcceleration.x = (float) rng.random(linearAccelerationMin.x, linearAccelerationMax.x);
 	p->linearAcceleration.y = (float) rng.random(linearAccelerationMin.y, linearAccelerationMax.y);
@@ -418,6 +495,9 @@ ParticleSystem::Particle *ParticleSystem::removeParticle(Particle *p)
 
 void ParticleSystem::setTexture(Texture *tex)
 {
+	if (texture->getTextureType() != TEXTURE_2D)
+		throw love::Exception("Only 2D textures can be used with ParticleSystems.");
+
 	texture.set(tex);
 
 	if (defaultOffset)
@@ -481,23 +561,23 @@ void ParticleSystem::getParticleLifetime(float &min, float &max) const
 
 void ParticleSystem::setPosition(float x, float y)
 {
-	position = love::Vector(x, y);
+	position = love::Vector2(x, y);
 	prevPosition = position;
 }
 
-const love::Vector &ParticleSystem::getPosition() const
+const love::Vector2 &ParticleSystem::getPosition() const
 {
 	return position;
 }
 
 void ParticleSystem::moveTo(float x, float y)
 {
-	position = love::Vector(x, y);
+	position = love::Vector2(x, y);
 }
 
 void ParticleSystem::setAreaSpread(AreaSpreadDistribution distribution, float x, float y)
 {
-	areaSpread = love::Vector(x, y);
+	areaSpread = love::Vector2(x, y);
 	areaSpreadDistribution = distribution;
 }
 
@@ -506,9 +586,29 @@ ParticleSystem::AreaSpreadDistribution ParticleSystem::getAreaSpreadDistribution
 	return areaSpreadDistribution;
 }
 
-const love::Vector &ParticleSystem::getAreaSpreadParameters() const
+const love::Vector2 &ParticleSystem::getAreaSpreadParameters() const
 {
 	return areaSpread;
+}
+
+void ParticleSystem::setAreaSpreadAngle(float angle)
+{
+	areaSpreadAngle = angle;
+}
+
+float ParticleSystem::getAreaSpreadAngle() const
+{
+	return areaSpreadAngle;
+}
+
+void ParticleSystem::setAreaSpreadIsRelativeDirection(bool isRelativeDirection)
+{
+	areaSpreadIsRelativeDirection = isRelativeDirection;
+}
+
+bool ParticleSystem::getAreaSpreadIsRelativeDirection() const
+{
+	return areaSpreadIsRelativeDirection;
 }
 
 void ParticleSystem::setDirection(float direction)
@@ -556,11 +656,11 @@ void ParticleSystem::setLinearAcceleration(float x, float y)
 
 void ParticleSystem::setLinearAcceleration(float xmin, float ymin, float xmax, float ymax)
 {
-	linearAccelerationMin = love::Vector(xmin, ymin);
-	linearAccelerationMax = love::Vector(xmax, ymax);
+	linearAccelerationMin = love::Vector2(xmin, ymin);
+	linearAccelerationMax = love::Vector2(xmax, ymax);
 }
 
-void ParticleSystem::getLinearAcceleration(love::Vector &min, love::Vector &max) const
+void ParticleSystem::getLinearAcceleration(love::Vector2 &min, love::Vector2 &max) const
 {
 	min = linearAccelerationMin;
 	max = linearAccelerationMax;
@@ -685,11 +785,11 @@ float ParticleSystem::getSpinVariation() const
 
 void ParticleSystem::setOffset(float x, float y)
 {
-	offset = love::Vector(x, y);
+	offset = love::Vector2(x, y);
 	defaultOffset = false;
 }
 
-love::Vector ParticleSystem::getOffset() const
+love::Vector2 ParticleSystem::getOffset() const
 {
 	return offset;
 }
@@ -698,30 +798,19 @@ void ParticleSystem::setColor(const std::vector<Colorf> &newColors)
 {
 	colors = newColors;
 
-	for (Colorf &c : colors)
+	// We don't support colors outside of [0,1] when drawing the ParticleSystem.
+	for (auto &c : colors)
 	{
-		// We want to store the colors as [0, 1], rather than [0, 255].
-		c.r /= 255.0f;
-		c.g /= 255.0f;
-		c.b /= 255.0f;
-		c.a /= 255.0f;
+		c.r = std::min(std::max(c.r, 0.0f), 1.0f);
+		c.g = std::min(std::max(c.g, 0.0f), 1.0f);
+		c.b = std::min(std::max(c.b, 0.0f), 1.0f);
+		c.a = std::min(std::max(c.a, 0.0f), 1.0f);
 	}
 }
 
 std::vector<Colorf> ParticleSystem::getColor() const
 {
-	// The particle system stores colors in the range of [0, 1]...
-	std::vector<Colorf> ncolors(colors);
-
-	for (Colorf &c : ncolors)
-	{
-		c.r *= 255.0f;
-		c.g *= 255.0f;
-		c.b *= 255.0f;
-		c.a *= 255.0f;
-	}
-
-	return ncolors;
+	return colors;
 }
 
 void ParticleSystem::setQuads(const std::vector<Quad *> &newQuads)
@@ -853,8 +942,8 @@ void ParticleSystem::update(float dt)
 		else
 		{
 			// Temp variables.
-			love::Vector radial, tangential;
-			love::Vector ppos = p->position;
+			love::Vector2 radial, tangential;
+			love::Vector2 ppos = p->position;
 
 			// Get vector from particle center to particle.
 			radial = ppos - p->origin;
@@ -866,9 +955,9 @@ void ParticleSystem::update(float dt)
 
 			// Calculate tangential acceleration.
 			{
-				float a = tangential.getX();
-				tangential.setX(-tangential.getY());
-				tangential.setY(a);
+				float a = tangential.x;
+				tangential.x = -tangential.y;
+				tangential.y = a;
 			}
 
 			// Resize tangential.
@@ -951,6 +1040,76 @@ void ParticleSystem::update(float dt)
 	prevPosition = position;
 }
 
+void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
+{
+	uint32 pCount = getCount();
+
+	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || buffer == nullptr)
+		return;
+
+	gfx->flushStreamDraws();
+
+	if (Shader::isDefaultActive())
+		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+
+	if (Shader::current && texture.get())
+		Shader::current->checkMainTexture(texture);
+
+	const Vector2 *positions = texture->getQuad()->getVertexPositions();
+	const Vector2 *texcoords = texture->getQuad()->getVertexTexCoords();
+
+	Vertex *pVerts = (Vertex *) buffer->map();
+	Particle *p = pHead;
+
+	bool useQuads = !quads.empty();
+
+	Matrix3 t;
+
+	// set the vertex data for each particle (transformation, texcoords, color)
+	while (p)
+	{
+		if (useQuads)
+		{
+			positions = quads[p->quadIndex]->getVertexPositions();
+			texcoords = quads[p->quadIndex]->getVertexTexCoords();
+		}
+
+		// particle vertices are image vertices transformed by particle info
+		t.setTransformation(p->position.x, p->position.y, p->angle, p->size, p->size, offset.x, offset.y, 0.0f, 0.0f);
+		t.transformXY(pVerts, positions, 4);
+
+		// Particle colors are stored as floats (0-1) but vertex colors are
+		// unsigned bytes (0-255).
+		Color c = toColor(p->color);
+
+		// set the texture coordinate and color data for particle vertices
+		for (int v = 0; v < 4; v++)
+		{
+			pVerts[v].s = texcoords[v].x;
+			pVerts[v].t = texcoords[v].y;
+			pVerts[v].color = c;
+		}
+
+		pVerts += 4;
+		p = p->next;
+	}
+
+	buffer->unmap();
+
+	vertex::Buffers vertexbuffers;
+	vertexbuffers.set(0, buffer, 0);
+
+	Graphics::TempTransform transform(gfx, m);
+
+	Graphics::DrawIndexedCommand cmd(&vertexAttributes, &vertexbuffers, quadIndices.getBuffer());
+	cmd.primitiveType = PRIMITIVE_TRIANGLES;
+	cmd.indexBufferOffset = 0;
+	cmd.indexCount = (int) quadIndices.getIndexCount(pCount);
+	cmd.indexType = quadIndices.getType();
+	cmd.texture = texture;
+	gfx->draw(cmd);
+}
+
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
 {
 	return distributions.find(in, out);
@@ -959,6 +1118,11 @@ bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)
 bool ParticleSystem::getConstant(AreaSpreadDistribution in, const char *&out)
 {
 	return distributions.find(in, out);
+}
+
+std::vector<std::string> ParticleSystem::getConstants(AreaSpreadDistribution)
+{
+	return distributions.getNames();
 }
 
 bool ParticleSystem::getConstant(const char *in, InsertMode &out)
@@ -971,12 +1135,19 @@ bool ParticleSystem::getConstant(InsertMode in, const char *&out)
 	return insertModes.find(in, out);
 }
 
+std::vector<std::string> ParticleSystem::getConstants(InsertMode)
+{
+	return insertModes.getNames();
+}
+
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM>::Entry ParticleSystem::distributionsEntries[] =
 {
 	{ "none",    DISTRIBUTION_NONE },
 	{ "uniform", DISTRIBUTION_UNIFORM },
 	{ "normal",  DISTRIBUTION_NORMAL },
 	{ "ellipse",  DISTRIBUTION_ELLIPSE },
+	{ "borderellipse",  DISTRIBUTION_BORDER_ELLIPSE },
+	{ "borderrectangle",  DISTRIBUTION_BORDER_RECTANGLE }
 };
 
 StringMap<ParticleSystem::AreaSpreadDistribution, ParticleSystem::DISTRIBUTION_MAX_ENUM> ParticleSystem::distributions(ParticleSystem::distributionsEntries, sizeof(ParticleSystem::distributionsEntries));

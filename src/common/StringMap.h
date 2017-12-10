@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,15 @@
 #define LOVE_STRING_MAP_H
 
 #include "Exception.h"
+
+#include <string>
+#include <vector>
+
+// As StringMap instantiates std::vector<std::string> for instances that use
+// getNames(), we end up with multiple copies in the object files. This
+// declaration means we only emit it once (in StringMap.cpp).
+extern template class std::vector<std::string>;
+extern template decltype(std::vector<std::string>().emplace_back("")) std::vector<std::string>::emplace_back<const char *const&>(const char *const&);
 
 namespace love
 {
@@ -143,6 +152,18 @@ public:
 			hash = ((hash << 5) + hash) + c;
 
 		return hash;
+	}
+
+	std::vector<std::string> getNames() const
+	{
+		std::vector<std::string> names;
+		names.reserve(SIZE);
+
+		for (unsigned int i = 0; i < SIZE; ++i)
+			if (reverse[i] != nullptr)
+				names.emplace_back(reverse[i]);
+
+		return names;
 	}
 
 private:

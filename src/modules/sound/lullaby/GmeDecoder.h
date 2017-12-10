@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 
 // LOVE
 #include "common/Data.h"
-#include "Decoder.h"
+#include "sound/Decoder.h"
 
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
 #include <Game_Music_Emu/gme.h>
@@ -54,7 +54,7 @@ public:
 	bool seek(float s);
 	bool rewind();
 	bool isSeekable();
-	int getChannels() const;
+	int getChannelCount() const;
 	int getBitDepth() const;
 	double getDuration();
 

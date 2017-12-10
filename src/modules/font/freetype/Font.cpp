@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,9 +20,12 @@
 
 #include "Font.h"
 
+// LOVE
 #include "TrueTypeRasterizer.h"
 #include "font/BMFontRasterizer.h"
+#include "window/Window.h"
 
+// C++
 #include <string.h>
 
 namespace love
@@ -48,14 +51,24 @@ Rasterizer *Font::newRasterizer(love::filesystem::FileData *data)
 	if (TrueTypeRasterizer::accepts(library, data))
 		return newTrueTypeRasterizer(data, 12, TrueTypeRasterizer::HINTING_NORMAL);
 	else if (BMFontRasterizer::accepts(data))
-		return newBMFontRasterizer(data, {});
+		return newBMFontRasterizer(data, {}, 1.0f);
 
 	throw love::Exception("Invalid font file: %s", data->getFilename().c_str());
 }
 
 Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting)
 {
-	return new TrueTypeRasterizer(library, data, size, hinting);
+	float dpiscale = 1.0f;
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	if (window != nullptr)
+		dpiscale = window->getDPIScale();
+
+	return newTrueTypeRasterizer(data, size, dpiscale, hinting);
+}
+
+Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, float dpiscale, TrueTypeRasterizer::Hinting hinting)
+{
+	return new TrueTypeRasterizer(library, data, size, dpiscale, hinting);
 }
 
 const char *Font::getName() const

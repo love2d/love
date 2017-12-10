@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,11 +38,17 @@ class Data : public Object
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Destructor.
 	 **/
 	virtual ~Data() {}
 
+	/**
+	 * Creates a duplicate of Data derived class instance.
+	 **/
+	virtual Data *clone() const = 0;
 	/**
 	 * Gets a pointer to the data. This pointer will obviously not
 	 * be valid if the Data object is destroyed.

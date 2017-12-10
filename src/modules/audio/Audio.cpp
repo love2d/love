@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -13,17 +13,33 @@
  *    claim that you wrote the original software. If you use this software
  *    in a product, an acknowledgment in the product documentation would be
  *    appreciated but is not required.
- * 2. Altered Audio versions must be plainly marked as such, and must not be
+ * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any Audio distribution.
+ * 3. This notice may not be removed or altered from any source distribution.
  **/
 
 #include "Audio.h"
+#include "common/config.h"
+
+#ifdef LOVE_IOS
+#include "common/ios.h"
+#endif
 
 namespace love
 {
 namespace audio
 {
+
+bool Audio::setMixWithSystem(bool mix)
+{
+#ifdef LOVE_IOS
+	love::ios::setAudioMixWithOthers(mix);
+	return true;
+#else
+	LOVE_UNUSED(mix);
+	return false;
+#endif
+}
 
 StringMap<Audio::DistanceModel, Audio::DISTANCE_MAX_ENUM>::Entry Audio::distanceModelEntries[] =
 {
@@ -46,6 +62,11 @@ bool Audio::getConstant(const char *in, DistanceModel &out)
 bool Audio::getConstant(DistanceModel in, const char  *&out)
 {
 	return distanceModels.find(in, out);
+}
+
+std::vector<std::string> Audio::getConstants(DistanceModel)
+{
+	return distanceModels.getNames();
 }
 
 } // audio

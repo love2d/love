@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ namespace graphics
 
 Quad *luax_checkquad(lua_State *L, int idx)
 {
-	return luax_checktype<Quad>(L, idx, GRAPHICS_QUAD_ID);
+	return luax_checktype<Quad>(L, idx);
 }
 
 int w_Quad_setViewport(lua_State *L)
@@ -74,17 +74,34 @@ int w_Quad_getTextureDimensions(lua_State *L)
 	return 2;
 }
 
+int w_Quad_setLayer(lua_State *L)
+{
+	Quad *quad = luax_checkquad(L, 1);
+	int layer = (int) luaL_checkinteger(L, 2) - 1;
+	quad->setLayer(layer);
+	return 0;
+}
+
+int w_Quad_getLayer(lua_State *L)
+{
+	Quad *quad = luax_checkquad(L, 1);
+	lua_pushnumber(L, quad->getLayer() + 1);
+	return 1;
+}
+
 static const luaL_Reg w_Quad_functions[] =
 {
 	{ "setViewport", w_Quad_setViewport },
 	{ "getViewport", w_Quad_getViewport },
 	{ "getTextureDimensions", w_Quad_getTextureDimensions },
+	{ "setLayer", w_Quad_setLayer },
+	{ "getLayer", w_Quad_getLayer },
 	{ 0, 0 }
 };
 
 extern "C" int luaopen_quad(lua_State *L)
 {
-	return luax_register_type(L, GRAPHICS_QUAD_ID, "Quad", w_Quad_functions, nullptr);
+	return luax_register_type(L, &Quad::type, w_Quad_functions, nullptr);
 }
 
 } // graphics

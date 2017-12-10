@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,12 @@
 
 namespace love
 {
+
+namespace graphics
+{
+class Graphics;
+}
+
 namespace window
 {
 
@@ -50,6 +56,8 @@ public:
 		SETTING_FULLSCREEN_TYPE,
 		SETTING_VSYNC,
 		SETTING_MSAA,
+		SETTING_STENCIL,
+		SETTING_DEPTH,
 		SETTING_RESIZABLE,
 		SETTING_MIN_WIDTH,
 		SETTING_MIN_HEIGHT,
@@ -108,6 +116,8 @@ public:
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_WINDOW; }
 
+	virtual void setGraphics(graphics::Graphics *graphics) = 0;
+
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
 	virtual void getWindow(int &width, int &height, WindowSettings &settings) = 0;
 
@@ -142,8 +152,10 @@ public:
 
 	virtual void minimize() = 0;
 	virtual void maximize() = 0;
+	virtual void restore() = 0;
 
 	virtual bool isMaximized() const = 0;
+	virtual bool isMinimized() const = 0;
 
 	// default no-op implementation
 	virtual void swapBuffers();
@@ -156,13 +168,20 @@ public:
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;
 
-	virtual void getPixelDimensions(int &w, int &h) const = 0;
+	virtual int getWidth() const = 0;
+	virtual int getHeight() const = 0;
+	virtual int getPixelWidth() const = 0;
+	virtual int getPixelHeight() const = 0;
+
 	// Note: window-space coordinates are not necessarily the same as
 	// density-independent units (which toPixels and fromPixels use.)
 	virtual void windowToPixelCoords(double *x, double *y) const = 0;
 	virtual void pixelToWindowCoords(double *x, double *y) const = 0;
 
-	virtual double getPixelScale() const = 0;
+	virtual void windowToDPICoords(double *x, double *y) const = 0;
+	virtual void DPIToWindowCoords(double *x, double *y) const = 0;
+
+	virtual double getDPIScale() const = 0;
 
 	virtual double toPixels(double x) const = 0;
 	virtual void toPixels(double wx, double wy, double &px, double &py) const = 0;
@@ -181,9 +200,11 @@ public:
 
 	static bool getConstant(const char *in, FullscreenType &out);
 	static bool getConstant(FullscreenType in, const char *&out);
+	static std::vector<std::string> getConstants(FullscreenType);
 
 	static bool getConstant(const char *in, MessageBoxType &out);
 	static bool getConstant(MessageBoxType in, const char *&out);
+	static std::vector<std::string> getConstants(MessageBoxType);
 
 private:
 
@@ -202,8 +223,10 @@ struct WindowSettings
 {
 	bool fullscreen = false;
 	Window::FullscreenType fstype = Window::FULLSCREEN_DESKTOP;
-	bool vsync = true;
+	int vsync = 1;
 	int msaa = 0;
+	bool stencil = true;
+	int depth = 0;
 	bool resizable = false;
 	int minwidth = 1;
 	int minheight = 1;

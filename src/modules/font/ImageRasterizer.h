@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,9 +22,9 @@
 #define LOVE_FONT_IMAGE_RASTERIZER_H
 
 // LOVE
-#include "filesystem/File.h"
 #include "font/Rasterizer.h"
 #include "image/ImageData.h"
+#include "common/Color.h"
 
 #include <map>
 
@@ -39,14 +39,16 @@ namespace font
 class ImageRasterizer : public Rasterizer
 {
 public:
-	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs, int extraspacing);
+	ImageRasterizer(love::image::ImageData *imageData, uint32 *glyphs, int numglyphs, int extraspacing, float dpiscale);
 	virtual ~ImageRasterizer();
 
 	// Implement Rasterizer
-	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(uint32 glyph) const;
-	virtual int getGlyphCount() const;
-	virtual bool hasGlyph(uint32 glyph) const;
+	int getLineHeight() const override;
+	GlyphData *getGlyphData(uint32 glyph) const override;
+	int getGlyphCount() const override;
+	bool hasGlyph(uint32 glyph) const override;
+	DataType getDataType() const override;
+
 
 private:
 
@@ -74,7 +76,7 @@ private:
 	std::map<uint32, ImageGlyphData> imageGlyphs;
 
 	// Color used to identify glyph separation in the source ImageData
-	love::image::pixel spacer;
+	Color spacer;
 
 }; // ImageRasterizer
 

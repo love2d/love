@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,21 +44,22 @@ class TrueTypeRasterizer : public love::font::TrueTypeRasterizer
 {
 public:
 
-	TrueTypeRasterizer(FT_Library library, love::Data *data, int size, Hinting hinting);
+	TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float dpiscale, Hinting hinting);
 	virtual ~TrueTypeRasterizer();
 
 	// Implement Rasterizer
-	virtual int getLineHeight() const;
-	virtual GlyphData *getGlyphData(uint32 glyph) const;
-	virtual int getGlyphCount() const;
-	virtual bool hasGlyph(uint32 glyph) const;
-	virtual float getKerning(uint32 leftglyph, uint32 rightglyph) const;
+	int getLineHeight() const override;
+	GlyphData *getGlyphData(uint32 glyph) const override;
+	int getGlyphCount() const override;
+	bool hasGlyph(uint32 glyph) const override;
+	float getKerning(uint32 leftglyph, uint32 rightglyph) const override;
+	DataType getDataType() const override;
 
 	static bool accepts(FT_Library library, love::Data *data);
 
 private:
 
-	static FT_ULong hintingToLoadOption(Hinting hinting);
+	static FT_UInt hintingToLoadOption(Hinting hinting);
 
 	// TrueType face
 	FT_Face face;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 
 // LOVE
 #include "event/Event.h"
+#include "audio/Source.h"
 
 // SDL
 #include <SDL_events.h>
@@ -68,12 +69,18 @@ public:
 
 private:
 
-	Message *convert(const SDL_Event &e) const;
+	void exceptionIfInRenderPass();
+
+	Message *convert(const SDL_Event &e);
 	Message *convertJoystickEvent(const SDL_Event &e) const;
-	Message *convertWindowEvent(const SDL_Event &e) const;
+	Message *convertWindowEvent(const SDL_Event &e);
 
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
+
+#ifdef LOVE_ANDROID
+	std::vector<love::audio::Source*> pausedSources;
+#endif
 
 }; // Event
 

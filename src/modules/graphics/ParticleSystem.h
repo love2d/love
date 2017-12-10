@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,10 +25,11 @@
 #include "common/int.h"
 #include "common/math.h"
 #include "common/Vector.h"
+#include "common/Color.h"
 #include "Drawable.h"
-#include "Color.h"
 #include "Quad.h"
 #include "Texture.h"
+#include "Buffer.h"
 
 // STL
 #include <vector>
@@ -38,6 +39,8 @@ namespace love
 namespace graphics
 {
 
+class Graphics;
+
 /**
  * A class for creating, moving and drawing particles.
  * A big thanks to bobthebloke.org
@@ -45,8 +48,11 @@ namespace graphics
 class ParticleSystem : public Drawable
 {
 public:
+
+	static love::Type type;
+
 	/**
-	 * Type of distribution new particles are drawn from: None, uniform, normal, ellipse.
+	 * Type of distribution new particles are drawn from: None, uniform, normal, ellipse, borderellipse, borderrectangle.
 	 */
 	enum AreaSpreadDistribution
 	{
@@ -54,6 +60,8 @@ public:
 		DISTRIBUTION_UNIFORM,
 		DISTRIBUTION_NORMAL,
 		DISTRIBUTION_ELLIPSE,
+		DISTRIBUTION_BORDER_ELLIPSE,
+		DISTRIBUTION_BORDER_RECTANGLE,
 		DISTRIBUTION_MAX_ENUM
 	};
 
@@ -78,7 +86,7 @@ public:
 	/**
 	 * Creates a particle system with the specified buffer size and texture.
 	 **/
-	ParticleSystem(Texture *texture, uint32 buffer);
+	ParticleSystem(Graphics *gfx, Texture *texture, uint32 buffer);
 	ParticleSystem(const ParticleSystem &p);
 
 	/**
@@ -91,7 +99,7 @@ public:
 	 * duplicate any existing particles from this ParticleSystem, just the
 	 * settable parameters.
 	 **/
-	virtual ParticleSystem *clone() = 0;
+	ParticleSystem *clone();
 
 	/**
 	 * Sets the texture used in the particle system.
@@ -108,7 +116,7 @@ public:
 	 * Clears the current buffer and allocates the appropriate amount of space for the buffer.
 	 * @param size The new buffer size.
 	 **/
-	virtual void setBufferSize(uint32 size);
+	void setBufferSize(uint32 size);
 
 	/**
 	 * Returns the total amount of particles this ParticleSystem can have active
@@ -174,7 +182,7 @@ public:
 	/**
 	 * Returns the position of the emitter.
 	 **/
-	const love::Vector &getPosition() const;
+	const love::Vector2 &getPosition() const;
 
 	/**
 	 * Moves the position of the center of the emitter.
@@ -189,9 +197,11 @@ public:
 	 * Sets the emission area spread parameters and distribution type. The interpretation of
 	 * the parameters depends on the distribution type:
 	 *
-	 * * None:    Parameters are ignored. No area spread.
+	 * * None: Parameters are ignored. No area spread.
 	 * * Uniform: Parameters denote maximal (symmetric) displacement from emitter position.
-	 * * Normal:  Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
+	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
+	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
 	 * @param x First parameter. Interpretation depends on distribution type.
 	 * @param y Second parameter. Interpretation depends on distribution type.
 	 * @param distribution Distribution type
@@ -206,7 +216,31 @@ public:
 	/**
 	 * Returns area spread parameters.
 	 **/
-	const love::Vector &getAreaSpreadParameters() const;
+	const love::Vector2 &getAreaSpreadParameters() const;
+
+	/**
+	 * Returns the angle of the area distribution (in radians).
+	 **/
+	float getAreaSpreadAngle() const;
+
+	/**
+	 * Sets the angle of the area distribution
+	 * @param angle The angle (in radians).
+	 **/
+	void setAreaSpreadAngle(float angle);
+
+	/**
+	 * Returns true if particles spawn relative to the center of the 
+	 * shape area or false if they will use the setDirection parameter
+	 **/
+	bool getAreaSpreadIsRelativeDirection() const;
+
+	/**
+	 * Sets if particles starting direction is away from the center of the
+	 * area spread or the setDirection parameter
+	 * @param isRelativeDirection boolean use relative direction from center
+	 **/
+	void setAreaSpreadIsRelativeDirection(bool isRelativeDirection);
 
 	/**
 	 * Sets the direction of the particle emitter.
@@ -271,7 +305,7 @@ public:
 	 * @param[out] min The minimum acceleration.
 	 * @param[out] max The maximum acceleration.
 	 **/
-	void getLinearAcceleration(love::Vector &min, love::Vector &max) const;
+	void getLinearAcceleration(love::Vector2 &min, love::Vector2 &max) const;
 
 	/**
 	 * Sets the radial acceleration (the acceleration towards the particle emitter).
@@ -413,7 +447,7 @@ public:
 	/**
 	 * Returns of the particle offset.
 	 **/
-	love::Vector getOffset() const;
+	love::Vector2 getOffset() const;
 
 	/**
 	 * Sets the color of the particles.
@@ -502,13 +536,18 @@ public:
 	 **/
 	void update(float dt);
 
+	// Implements Drawable.
+	void draw(Graphics *gfx, const Matrix4 &m) override;
+
 	static bool getConstant(const char *in, AreaSpreadDistribution &out);
 	static bool getConstant(AreaSpreadDistribution in, const char *&out);
+	static std::vector<std::string> getConstants(AreaSpreadDistribution);
 
 	static bool getConstant(const char *in, InsertMode &out);
 	static bool getConstant(InsertMode in, const char *&out);
+	static std::vector<std::string> getConstants(InsertMode);
 
-protected:
+private:
 
 	// Represents a single particle.
 	struct Particle
@@ -519,13 +558,13 @@ protected:
 		float lifetime;
 		float life;
 
-		love::Vector position;
+		love::Vector2 position;
 
 		// Particles gravitate towards this point.
-		love::Vector origin;
+		love::Vector2 origin;
 
-		love::Vector velocity;
-		love::Vector linearAcceleration;
+		love::Vector2 velocity;
+		love::Vector2 linearAcceleration;
 		float radialAcceleration;
 		float tangentialAcceleration;
 
@@ -544,6 +583,20 @@ protected:
 
 		int quadIndex;
 	};
+
+	void resetOffset();
+
+	void createBuffers(size_t size);
+	void deleteBuffers();
+
+	void addParticle(float t);
+	Particle *removeParticle(Particle *p);
+
+	// Called by addParticle.
+	void initParticle(Particle *p, float t);
+	void insertTop(Particle *p);
+	void insertBottom(Particle *p);
+	void insertRandom(Particle *p);
 
 	// Pointer to the beginning of the allocated memory.
 	Particle *pMem;
@@ -579,12 +632,14 @@ protected:
 	float emitCounter;
 
 	// The relative position of the particle emitter.
-	love::Vector position;
-	love::Vector prevPosition;
+	love::Vector2 position;
+	love::Vector2 prevPosition;
 
 	// Emission area spread.
 	AreaSpreadDistribution areaSpreadDistribution;
-	love::Vector areaSpread;
+	love::Vector2 areaSpread;
+	float areaSpreadAngle;
+	bool areaSpreadIsRelativeDirection;
 
 	// The lifetime of the particle emitter (-1 means infinite) and the life it has left.
 	float lifetime;
@@ -603,8 +658,8 @@ protected:
 	float speedMax;
 
 	// Acceleration along the x and y axes.
-	love::Vector linearAccelerationMin;
-	love::Vector linearAccelerationMax;
+	love::Vector2 linearAccelerationMin;
+	love::Vector2 linearAccelerationMax;
 
 	// Acceleration towards the emitter's center
 	float radialAccelerationMin;
@@ -631,7 +686,7 @@ protected:
 	float spinVariation;
 
 	// Offsets
-	love::Vector offset;
+	love::Vector2 offset;
 
 	// Is the ParticleSystem using a default offset?
 	bool defaultOffset;
@@ -644,21 +699,11 @@ protected:
 
 	bool relativeRotation;
 
-private:
+	const vertex::Attributes vertexAttributes;
+	Buffer *buffer;
 
-	void resetOffset();
-
-	void createBuffers(size_t size);
-	void deleteBuffers();
-
-	void addParticle(float t);
-	Particle *removeParticle(Particle *p);
-
-	// Called by addParticle.
-	void initParticle(Particle *p, float t);
-	void insertTop(Particle *p);
-	void insertBottom(Particle *p);
-	void insertRandom(Particle *p);
+	// Vertex index buffer.
+	QuadIndices quadIndices;
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;

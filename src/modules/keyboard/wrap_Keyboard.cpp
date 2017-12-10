@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@ namespace keyboard
 
 int w_setKeyRepeat(lua_State *L)
 {
-	instance()->setKeyRepeat(luax_toboolean(L, 1));
+	instance()->setKeyRepeat(luax_checkboolean(L, 1));
 	return 0;
 }
 
@@ -58,8 +58,12 @@ int w_isDown(lua_State *L)
 		for (int i = 0; i < num; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			if (Keyboard::getConstant(luaL_checkstring(L, -1), k))
-				keylist.push_back(k);
+
+			const char *name = luaL_checkstring(L, -1);
+			if (!Keyboard::getConstant(name, k))
+				return luax_enumerror(L, "key constant", name);
+
+			keylist.push_back(k);
 			lua_pop(L, 1);
 		}
 	}
@@ -67,8 +71,11 @@ int w_isDown(lua_State *L)
 	{
 		for (int i = 0; i < num; i++)
 		{
-			if (Keyboard::getConstant(luaL_checkstring(L, i+1), k))
-				keylist.push_back(k);
+			const char *name = luaL_checkstring(L, i + 1);
+			if (!Keyboard::getConstant(name, k))
+				return luax_enumerror(L, "key constant", name);
+
+			keylist.push_back(k);
 		}
 	}
 
@@ -91,8 +98,12 @@ int w_isScancodeDown(lua_State *L)
 		for (int i = 0; i < num; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			if (Keyboard::getConstant(luaL_checkstring(L, -1), scancode))
-				scancodelist.push_back(scancode);
+
+			const char *name = luaL_checkstring(L, -1);
+			if (!Keyboard::getConstant(name, scancode))
+				return luax_enumerror(L, "scancode", name);
+
+			scancodelist.push_back(scancode);
 			lua_pop(L, 1);
 		}
 	}
@@ -100,8 +111,11 @@ int w_isScancodeDown(lua_State *L)
 	{
 		for (int i = 0; i < num; i++)
 		{
-			if (Keyboard::getConstant(luaL_checkstring(L, i+1), scancode))
-				scancodelist.push_back(scancode);
+			const char *name = luaL_checkstring(L, i + 1);
+			if (!Keyboard::getConstant(name, scancode))
+				return luax_enumerror(L, "scancode", name);
+
+			scancodelist.push_back(scancode);
 		}
 	}
 
@@ -114,7 +128,7 @@ int w_getScancodeFromKey(lua_State *L)
 	const char *keystr = luaL_checkstring(L, 1);
 	Keyboard::Key key;
 	if (!Keyboard::getConstant(keystr, key))
-		return luaL_error(L, "Invalid key constant: %s", keystr);
+		return luax_enumerror(L, "key constant", keystr);
 
 	Keyboard::Scancode scancode = instance()->getScancodeFromKey(key);
 
@@ -131,7 +145,7 @@ int w_getKeyFromScancode(lua_State *L)
 	const char *scancodestr = luaL_checkstring(L, 1);
 	Keyboard::Scancode scancode;
 	if (!Keyboard::getConstant(scancodestr, scancode))
-		return luaL_error(L, "Invalid scancode: %s", scancodestr);
+		return luax_enumerror(L, "scancode", scancodestr);
 
 	Keyboard::Key key = instance()->getKeyFromScancode(scancode);
 
@@ -145,7 +159,7 @@ int w_getKeyFromScancode(lua_State *L)
 
 int w_setTextInput(lua_State *L)
 {
-	bool enable = luax_toboolean(L, 1);
+	bool enable = luax_checkboolean(L, 1);
 
 	if (lua_gettop(L) <= 1)
 		instance()->setTextInput(enable);
@@ -201,7 +215,7 @@ extern "C" int luaopen_love_keyboard(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "keyboard";
-	w.type = MODULE_ID;
+	w.type = &Module::type;
 	w.functions = functions;
 	w.types = 0;
 

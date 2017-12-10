@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -53,6 +53,8 @@ public:
 	PowerState getPowerInfo(int &seconds, int &percent) const;
 
 private:
+
+	bool isWindowOpen() const;
 
 	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM>::Entry powerEntries[];
 	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM> powerStates;

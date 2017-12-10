@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,12 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_IMAGE_MAGPIE_PVR_HANDLER_H
-#define LOVE_IMAGE_MAGPIE_PVR_HANDLER_H
+#pragma once
 
 // LOVE
 #include "common/config.h"
-#include "CompressedFormatHandler.h"
+#include "image/FormatHandler.h"
 
 namespace love
 {
@@ -32,20 +31,21 @@ namespace image
 namespace magpie
 {
 
-class PVRHandler : public CompressedFormatHandler
+class PVRHandler : public FormatHandler
 {
 public:
 
 	virtual ~PVRHandler() {}
 
-	// Implements CompressedFormatHandler.
-	virtual bool canParse(const filesystem::FileData *data);
-	virtual uint8 *parse(filesystem::FileData *filedata, std::vector<CompressedImageData::SubImage> &images, size_t &dataSize, CompressedImageData::Format &format, bool &sRGB);
+	// Implements FormatHandler.
+	bool canParseCompressed(Data *data) override;
+
+	StrongRef<CompressedMemory> parseCompressed(Data *filedata,
+	        std::vector<StrongRef<CompressedSlice>> &images,
+	        PixelFormat &format, bool &sRGB) override;
 
 }; // PVRHandler
 
 } // magpie
 } // image
 } // love
-
-#endif // LOVE_IMAGE_MAGPIE_PVR_HANDLER_H

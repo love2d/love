@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ namespace box2d
 
 GearJoint *luax_checkgearjoint(lua_State *L, int idx)
 {
-	GearJoint *j = luax_checktype<GearJoint>(L, idx, PHYSICS_GEAR_JOINT_ID);
+	GearJoint *j = luax_checktype<GearJoint>(L, idx);
 	if (!j->isValid())
 		luaL_error(L, "Attempt to use destroyed joint.");
 	return j;
@@ -77,7 +77,7 @@ static const luaL_Reg w_GearJoint_functions[] =
 
 extern "C" int luaopen_gearjoint(lua_State *L)
 {
-	return luax_register_type(L, PHYSICS_GEAR_JOINT_ID, "GearJoint", w_Joint_functions, w_GearJoint_functions, nullptr);
+	return luax_register_type(L, &GearJoint::type, w_Joint_functions, w_GearJoint_functions, nullptr);
 }
 
 } // box2d

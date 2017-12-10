@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include "audio/Audio.h"
 
+#include "RecordingDevice.h"
 #include "Source.h"
 
 namespace love
@@ -46,17 +47,17 @@ public:
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);
-	int getSourceCount() const;
+	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers);
+	int getActiveSourceCount() const;
 	int getMaxSources() const;
 	bool play(love::audio::Source *source);
+	bool play(const std::vector<love::audio::Source*> &sources);
 	void stop(love::audio::Source *source);
+	void stop(const std::vector<love::audio::Source*> &sources);
 	void stop();
 	void pause(love::audio::Source *source);
-	void pause();
-	void resume(love::audio::Source *source);
-	void resume();
-	void rewind(love::audio::Source *source);
-	void rewind();
+	void pause(const std::vector<love::audio::Source*> &sources);
+	std::vector<love::audio::Source*> pause();
 	void setVolume(float volume);
 	float getVolume() const;
 
@@ -69,18 +70,26 @@ public:
 
 	void setDopplerScale(float scale);
 	float getDopplerScale() const;
+	//void setMeter(float scale);
+	//float getMeter() const;
 
-	void record();
-	love::sound::SoundData *getRecordedData();
-	love::sound::SoundData *stopRecording(bool returnData);
-	bool canRecord();
+	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
 
 	DistanceModel getDistanceModel() const;
 	void setDistanceModel(DistanceModel distanceModel);
 
+	bool setEffect(const char *, std::map<Effect::Parameter, float> &params);
+	bool unsetEffect(const char *);
+	bool getEffect(const char *, std::map<Effect::Parameter, float> &params);
+	bool getActiveEffects(std::vector<std::string> &list) const;
+	int getMaxSceneEffects() const;
+	int getMaxSourceEffects() const;
+	bool isEFXsupported() const;
+
 private:
 	float volume;
 	DistanceModel distanceModel;
+	std::vector<love::audio::RecordingDevice*> capture;
 
 }; // Audio
 

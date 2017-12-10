@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,11 +19,11 @@
  **/
 
 #include "wrap_Image.h"
-
+#include "data/wrap_Data.h"
 #include "common/Data.h"
 #include "common/StringMap.h"
 
-#include "magpie/Image.h"
+#include "Image.h"
 
 #include "filesystem/wrap_Filesystem.h"
 
@@ -36,22 +36,37 @@ namespace image
 
 int w_newImageData(lua_State *L)
 {
-	// Case 1: Integers.
+	// Case 1: width & height.
 	if (lua_isnumber(L, 1))
 	{
-		int w = (int) luaL_checknumber(L, 1);
-		int h = (int) luaL_checknumber(L, 2);
+		int w = (int) luaL_checkinteger(L, 1);
+		int h = (int) luaL_checkinteger(L, 2);
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
+
+		PixelFormat format = PIXELFORMAT_RGBA8;
+
+		if (!lua_isnoneornil(L, 3))
+		{
+			const char *fstr = luaL_checkstring(L, 3);
+			if (!getConstant(fstr, format))
+				return luax_enumerror(L, "pixel format", fstr);
+		}
 
 		size_t numbytes = 0;
 		const char *bytes = nullptr;
 
-		if (!lua_isnoneornil(L, 3))
-			bytes = luaL_checklstring(L, 3, &numbytes);
+		if (luax_istype(L, 4, Data::type))
+		{
+			Data *data = data::luax_checkdata(L, 4);
+			bytes = (const char *) data->getData();
+			numbytes = data->getSize();
+		}
+		else if (!lua_isnoneornil(L, 4))
+			bytes = luaL_checklstring(L, 4, &numbytes);
 
 		ImageData *t = nullptr;
-		luax_catchexcept(L, [&](){ t = instance()->newImageData(w, h); });
+		luax_catchexcept(L, [&](){ t = instance()->newImageData(w, h, format); });
 
 		if (bytes)
 		{
@@ -64,13 +79,13 @@ int w_newImageData(lua_State *L)
 			memcpy(t->getData(), bytes, t->getSize());
 		}
 
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}
-	else if (filesystem::luax_cangetfiledata(L, 1)) // Case 2: File(Data).
+	else if (filesystem::luax_cangetdata(L, 1)) // Case 2: File(Data).
 	{
-		filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+		Data *data = love::filesystem::luax_getdata(L, 1);
 
 		ImageData *t = nullptr;
 		luax_catchexcept(L,
@@ -78,7 +93,7 @@ int w_newImageData(lua_State *L)
 			[&](bool) { data->release(); }
 		);
 
-		luax_pushtype(L, IMAGE_IMAGE_DATA_ID, t);
+		luax_pushtype(L, t);
 		t->release();
 		return 1;
 	}
@@ -90,7 +105,7 @@ int w_newImageData(lua_State *L)
 
 int w_newCompressedData(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+	Data *data = love::filesystem::luax_getdata(L, 1);
 
 	CompressedImageData *t = nullptr;
 	luax_catchexcept(L,
@@ -98,19 +113,29 @@ int w_newCompressedData(lua_State *L)
 		[&](bool) { data->release(); }
 	);
 
-	luax_pushtype(L, IMAGE_COMPRESSED_IMAGE_DATA_ID, t);
+	luax_pushtype(L, CompressedImageData::type, t);
 	t->release();
 	return 1;
 }
 
 int w_isCompressed(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
+	Data *data = love::filesystem::luax_getdata(L, 1);
 	bool compressed = instance()->isCompressed(data);
 	data->release();
 
 	luax_pushboolean(L, compressed);
 	return 1;
+}
+
+int w_newCubeFaces(lua_State *L)
+{
+	ImageData *id = luax_checkimagedata(L, 1);
+	std::vector<StrongRef<ImageData>> faces;
+	luax_catchexcept(L, [&](){ faces = instance()->newCubeFaces(id); });
+	for (auto face : faces)
+		luax_pushtype(L, face);
+	return (int) faces.size();
 }
 
 // List of functions to wrap.
@@ -119,6 +144,7 @@ static const luaL_Reg functions[] =
 	{ "newImageData",  w_newImageData },
 	{ "newCompressedData", w_newCompressedData },
 	{ "isCompressed", w_isCompressed },
+	{ "newCubeFaces", w_newCubeFaces },
 	{ 0, 0 }
 };
 
@@ -134,7 +160,7 @@ extern "C" int luaopen_love_image(lua_State *L)
 	Image *instance = instance();
 	if (instance == nullptr)
 	{
-		luax_catchexcept(L, [&](){ instance = new love::image::magpie::Image(); });
+		luax_catchexcept(L, [&](){ instance = new love::image::Image(); });
 	}
 	else
 		instance->retain();
@@ -142,7 +168,7 @@ extern "C" int luaopen_love_image(lua_State *L)
 	WrappedModule w;
 	w.module = instance;
 	w.name = "image";
-	w.type = MODULE_IMAGE_ID;
+	w.type = &Image::type;
 	w.functions = functions;
 	w.types = types;
 

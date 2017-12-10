@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2016 LOVE Development Team
+ * Copyright (c) 2006-2017 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,12 +25,16 @@
 #include "World.h"
 #include "Physics.h"
 
+#include <float.h>
+
 namespace love
 {
 namespace physics
 {
 namespace box2d
 {
+
+love::Type MouseJoint::type("MouseJoint", &Joint::type);
 
 MouseJoint::MouseJoint(Body *body1, float x, float y)
 	: Joint(body1)
@@ -76,6 +80,12 @@ float MouseJoint::getMaxForce() const
 
 void MouseJoint::setFrequency(float hz)
 {
+	// This is kind of a crappy check. The frequency is used in an internal
+	// box2d calculation whose result must be > FLT_EPSILON, but other variables
+	// go into that calculation...
+	if (hz <= FLT_EPSILON * 2)
+		throw love::Exception("MouseJoint frequency must be a positive number.");
+
 	joint->SetFrequency(hz);
 }
 
