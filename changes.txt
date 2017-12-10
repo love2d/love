@@ -12,6 +12,7 @@ Released: N/A
   * Added variants of SoundData:getSample/setSample which take a channel parameter.
   * Added variants of all table-with-fields-returning get* functions, the new variants take an existing table to fill in.
   * Added a variant to World:update, which accepts the number of iterations to run. The defaults are now 8 and 3.
+  * Added RopeJoint:setMaxLength.
   * Added a click count argument to love.mousepressed and love.mousereleased.
   * Added love.filesystem.get/setCRequirePath, and use that to find c libraries for require.
   * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
@@ -32,6 +33,9 @@ Released: N/A
   * Added optional 'depthstencil' field to the table passed into love.graphics.setCanvas, for using a depth/stencil Canvas.
   * Added optional 'depth' and 'stencil' boolean fields to the table passed into setCanvas, for enabling depth and stencil buffers if 'depthstencil' isn't used.
   * Added shadow sampler support for Canvases.
+  * Added love.graphics.setDepthMode for using the depth buffer for depth testing/writes. Depth values of rendered objects can only be set via shaders.
+  * Added love.graphics.setMeshCullMode, for culling back- or front-facing triangles when drawing a Mesh.
+  * Added love.graphics.setFrontFaceWinding.
   * Added variant of love.graphics.getCanvasFormats which takes a 'readable' boolean.
   * Added love.graphics.drawLayer and SpriteBatch:add/setLayer for easily drawing layers of Array Textures.
   * Added variants of love.graphics.print and printf which take a Font argument.
@@ -56,6 +60,8 @@ Released: N/A
   * Added Mesh:detachAttribute.
   * Added a variant of Mesh:setVertexMap which accepts a Data object.
   * Added love.window.updateMode.
+  * Added love.window.isMinimized.
+  * Added love.window.restore.
   * Added the ability to prevent love from creating a stencil buffer for the window.
   * Added cycle detection to Variant's table serialization, cycles now cause an error, rather than a stack overflow.
   * Added love.graphics.newShader File and FileData variants.
@@ -77,7 +83,9 @@ Released: N/A
   * Changed enet to no longer set the 'enet' global, again matching luasocket.
   * Changed Source seeking behaviour, all kinds of Sources now behave similarly when seeking past the boundaries.
   * Changed love.timer.step, it now returns dt.
+  * Changed love.run and love.errhand to return a function for their main loop, which gets called until love quits.
 
+  * Fixed error in default error handler when the error message contains non UTF-8 bytes.
   * Fixed a memory leak when sending love objects to threads which never load that object's module.
   * Fixed os.execute always returning -1 in Linux.
   * Fixed the default reference angle for WeldJoint, PrismaticJoint, and RevoluteJoint.
@@ -89,13 +97,18 @@ Released: N/A
   * Fixed baseline calculation when rendering text.
   * Fixed VaryingTexCoords and love_ScreenSize in shaders to be 'highp' in OpenGL ES, when supported.
   * Fixed ParticleSystem:setParticleLifetime to error if a negative value is given.
+  * Fixed Shader:send and Shader:sendColor ignoring the last argument for an array.
+  * Fixed a crash when love.graphics.pop is called after a love.window.setMode while the transformation stack was not empty.
+  * Fixed love.window.isMaximized.
   * Fixed video playback to work with a wider range of Ogg Theora files.
   * Fixed video seeking to be faster.
-  * Fixed error in default error handler when the error message contains non UTF-8 bytes.
+  * Fixed BezierCurves to error instead of hanging in some situations.
+  * Fixed compilation of luasocket with newer luajit 2.1.0 beta versions.
 
   * Improved performance when drawing textures, shapes, lines, and points by automatically batching their draw calls together when possible.
   * Improved performance of Shader:send when the Shader is not active.
-  * Improved performance of love.math.randomNormal when LuaJIT's JIT compiler is enabled. 
+  * Improved performance of love.math.randomNormal when LuaJIT's JIT compiler is enabled.
+  * Improved performance of love.filesystem.lines and File:lines, especially when reading from a file inside a zip/.love.
 
   * Renamed love.window.getPixelScale to love.window.getDPIScale.
   * Renamed love.mouse.hasCursor to love.mouse.isCursorSupported.
@@ -118,6 +131,7 @@ Released: N/A
     * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
     * Removed love.window.isCreated (use love.window.isOpen instead).
 
+  * Updated and improved command line argument handling.
   * Updated invalid enum value error messages to show a list of the valid enum values.
   * Updated Source:seek to work if the Source isn't playing.
   * Updated love.event.poll to stop allocating memory unnecessarily.
@@ -130,25 +144,10 @@ Released: N/A
   * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
   * Updated love.graphics.newImage to treat file names ending with "@2x", "@3x", etc. as a pixel density scale factor if none is explicitly supplied.
   * Updated the error message when bad values are given to love.graphics.line.
-  * Updated luasocket to version 3.0rc1.
-
-LOVE 0.10.3 [Super Toast]
--------------------------
-
-Released: N/A
-
-  * Added RopeJoint:setMaxLength.
-
-  * Fixed Shader:send and Shader:sendColor ignoring the last argument for an array.
-  * Fixed a crash when love.graphics.pop is called after a love.window.setMode while the transformation stack was not empty.
-  * Fixed BezierCurves to error instead of hanging in some situations.
-  * Fixed compilation of luasocket with newer luajit 2.1.0 beta versions.
-
-  * Improved command line argument handling.
-  * Improved seeking support, especially for short video files.
-
+  * Updated the maximum love.graphics transformation/state stack depth from 64 to 128.
   * Updated the default error handler to allow copying the error to the clipboard when the user decides to do so.
   * Updated love.filesystem.setRequirePath to support multiple template '?' characters in each path.
+  * Updated luasocket to version 3.0rc1.
 
 LOVE 0.10.2 [Super Toast]
 -------------------------
