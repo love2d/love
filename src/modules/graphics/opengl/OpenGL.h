@@ -92,6 +92,16 @@ public:
 		FRAMEBUFFER_ALL  = (FRAMEBUFFER_READ | FRAMEBUFFER_DRAW),
 	};
 
+	enum EnableState
+	{
+		ENABLE_DEPTH_TEST,
+		ENABLE_STENCIL_TEST,
+		ENABLE_SCISSOR_TEST,
+		ENABLE_FACE_CULL,
+		ENABLE_FRAMEBUFFER_SRGB,
+		ENABLE_MAX_ENUM
+	};
+
 	struct TextureFormat
 	{
 		GLenum internalformat = 0;
@@ -205,6 +215,11 @@ public:
 	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers);
 
 	/**
+	 * Wrapper for glCullFace which eliminates redundant state setting.
+	 **/
+	void setCullMode(CullMode mode);
+
+	/**
 	 * Wrapper for glClearDepth and glClearDepthf.
 	 **/
 	void clearDepth(double value);
@@ -236,10 +251,10 @@ public:
 	float getPointSize() const;
 
 	/**
-	 * Calls glEnable/glDisable(GL_FRAMEBUFFER_SRGB).
+	 * State-tracked version of glEnable.
 	 **/
-	void setFramebufferSRGB(bool enable);
-	bool hasFramebufferSRGB() const;
+	void setEnableState(EnableState state, bool enable);
+	bool isStateEnabled(EnableState state) const;
 
 	/**
 	 * Binds a Framebuffer Object to the specified target.
@@ -249,6 +264,12 @@ public:
 	void deleteFramebuffer(GLuint framebuffer);
 
 	void framebufferTexture(GLenum attachment, TextureType texType, GLuint texture, int level, int layer = 0, int face = 0);
+
+	/**
+	 * Calls glDepthMask.
+	 **/
+	void setDepthWrites(bool enable);
+	bool hasDepthWrites() const;
 
 	/**
 	 * Calls glUseProgram.
@@ -415,7 +436,10 @@ private:
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM];
 
-		// Currently active texture unit.
+		bool enableState[ENABLE_MAX_ENUM];
+
+		GLenum faceCullMode;
+
 		int curTextureUnit;
 
 		uint32 enabledAttribArrays;
@@ -429,9 +453,9 @@ private:
 
 		float pointSize;
 
-		GLuint boundFramebuffers[2];
+		bool depthWritesEnabled;
 
-		bool framebufferSRGBEnabled;
+		GLuint boundFramebuffers[2];
 
 		GLuint defaultTexture[TEXTURE_MAX_ENUM];
 

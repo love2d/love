@@ -385,6 +385,8 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		}
 	}
 
+	Graphics::DrawIndexedCommand cmd(&attributes, &buffers, quad_indices.getBuffer());
+
 	int start = std::min(std::max(0, range_start), next - 1);
 
 	int count = next;
@@ -393,13 +395,15 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	count = std::min(count, next - start);
 
-	size_t indexbytestart = quad_indices.getIndexCount(start) * quad_indices.getElementSize();
-	size_t indexcount = quad_indices.getIndexCount(count);
+	cmd.indexBufferOffset = quad_indices.getIndexCount(start) * quad_indices.getElementSize();
+	cmd.indexCount = (int) quad_indices.getIndexCount(count);
+	cmd.indexType = quad_indices.getType();
+	cmd.texture = texture;
 
 	Graphics::TempTransform transform(gfx, m);
 
 	if (count > 0)
-		gfx->drawIndexed(PRIMITIVE_TRIANGLES, indexcount, 1, quad_indices.getType(), quad_indices.getBuffer(), indexbytestart, attributes, buffers, texture);
+		gfx->draw(cmd);
 }
 
 } // graphics

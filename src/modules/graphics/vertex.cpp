@@ -327,6 +327,23 @@ static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[] =
 
 static StringMap<DataType, DATA_MAX_ENUM> dataTypes(dataTypeEntries, sizeof(dataTypeEntries));
 
+static StringMap<CullMode, CULL_MAX_ENUM>::Entry cullModeEntries[] =
+{
+	{ "none",  CULL_NONE  },
+	{ "back",  CULL_BACK  },
+	{ "front", CULL_FRONT },
+};
+
+static StringMap<CullMode, CULL_MAX_ENUM> cullModes(cullModeEntries, sizeof(cullModeEntries));
+
+static StringMap<Winding, WINDING_MAX_ENUM>::Entry windingEntries[] =
+{
+	{ "cw",  WINDING_CW  },
+	{ "ccw", WINDING_CCW },
+};
+
+static StringMap<Winding, WINDING_MAX_ENUM> windings(windingEntries, sizeof(windingEntries));
+
 bool getConstant(const char *in, VertexAttribID &out)
 {
 	return attribNames.find(in, out);
@@ -410,6 +427,36 @@ bool getConstant(DataType in, const char *&out)
 std::vector<std::string> getConstants(DataType)
 {
 	return dataTypes.getNames();
+}
+
+bool getConstant(const char *in, CullMode &out)
+{
+	return cullModes.find(in, out);
+}
+
+bool getConstant(CullMode in, const char *&out)
+{
+	return cullModes.find(in, out);
+}
+
+std::vector<std::string> getConstants(CullMode)
+{
+	return cullModes.getNames();
+}
+
+bool getConstant(const char *in, Winding &out)
+{
+	return windings.find(in, out);
+}
+
+bool getConstant(Winding in, const char *&out)
+{
+	return windings.find(in, out);
+}
+
+std::vector<std::string> getConstants(Winding)
+{
+	return windings.getNames();
 }
 
 } // vertex

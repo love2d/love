@@ -34,19 +34,12 @@ CompareMode getReversedCompareMode(CompareMode mode)
 		return COMPARE_GREATER;
 	case COMPARE_LEQUAL:
 		return COMPARE_GEQUAL;
-	case COMPARE_EQUAL:
-		return COMPARE_EQUAL;
 	case COMPARE_GEQUAL:
 		return COMPARE_LEQUAL;
 	case COMPARE_GREATER:
 		return COMPARE_LESS;
-	case COMPARE_NOTEQUAL:
-		return COMPARE_NOTEQUAL;
-	case COMPARE_ALWAYS:
-		return COMPARE_ALWAYS;
-	case COMPARE_MAX_ENUM:
 	default:
-		return COMPARE_MAX_ENUM;
+		return mode;
 	}
 }
 
@@ -71,6 +64,7 @@ static StringMap<CompareMode, COMPARE_MAX_ENUM>::Entry compareModeEntries[] =
 	{ "greater",  COMPARE_GREATER  },
 	{ "notequal", COMPARE_NOTEQUAL },
 	{ "always",   COMPARE_ALWAYS   },
+	{ "never",    COMPARE_NEVER    },
 };
 
 static StringMap<CompareMode, COMPARE_MAX_ENUM> compareModes(compareModeEntries, sizeof(compareModeEntries));

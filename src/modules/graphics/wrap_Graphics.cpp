@@ -1962,6 +1962,84 @@ int w_getPointSize(lua_State *L)
 	return 1;
 }
 
+int w_setDepthMode(lua_State *L)
+{
+	if (lua_isnoneornil(L, 1) && lua_isnoneornil(L, 2))
+		luax_catchexcept(L, [&]() { instance()->setDepthMode(); });
+	else
+	{
+		CompareMode compare = COMPARE_ALWAYS;
+		const char *str = luaL_checkstring(L, 1);
+		bool write = luax_checkboolean(L, 2);
+
+		if (!getConstant(str, compare))
+			return luax_enumerror(L, "compare mode", getConstants(compare), str);
+
+		luax_catchexcept(L, [&]() { instance()->setDepthMode(compare, write); });
+	}
+
+	return 0;
+}
+
+int w_getDepthMode(lua_State *L)
+{
+	CompareMode compare = COMPARE_ALWAYS;
+	bool write = false;
+	instance()->getDepthMode(compare, write);
+
+	const char *str;
+	if (!getConstant(compare, str))
+		return luaL_error(L, "Unknown compare mode");
+
+	lua_pushstring(L, str);
+	luax_pushboolean(L, write);
+	return 2;
+}
+
+int w_setMeshCullMode(lua_State *L)
+{
+	const char *str = luaL_checkstring(L, 1);
+	CullMode mode;
+
+	if (!vertex::getConstant(str, mode))
+		return luax_enumerror(L, "cull mode", vertex::getConstants(mode), str);
+
+	luax_catchexcept(L, [&]() { instance()->setMeshCullMode(mode); });
+	return 0;
+}
+
+int w_getMeshCullMode(lua_State *L)
+{
+	CullMode mode = instance()->getMeshCullMode();
+	const char *str;
+	if (!vertex::getConstant(mode, str))
+		return luaL_error(L, "Unknown cull mode");
+	lua_pushstring(L, str);
+	return 1;
+}
+
+int w_setFrontFaceWinding(lua_State *L)
+{
+	const char *str = luaL_checkstring(L, 1);
+	vertex::Winding winding;
+
+	if (!vertex::getConstant(str, winding))
+		return luax_enumerror(L, "vertex winding", vertex::getConstants(winding), str);
+
+	luax_catchexcept(L, [&]() { instance()->setFrontFaceWinding(winding); });
+	return 0;
+}
+
+int w_getFrontFaceWinding(lua_State *L)
+{
+	vertex::Winding winding = instance()->getFrontFaceWinding();
+	const char *str;
+	if (!vertex::getConstant(winding, str))
+		return luaL_error(L, "Unknown vertex winding");
+	lua_pushstring(L, str);
+	return 1;
+}
+
 int w_setWireframe(lua_State *L)
 {
 	instance()->setWireframe(luax_checkboolean(L, 1));
@@ -2858,6 +2936,12 @@ static const luaL_Reg functions[] =
 	{ "getLineJoin", w_getLineJoin },
 	{ "setPointSize", w_setPointSize },
 	{ "getPointSize", w_getPointSize },
+	{ "setDepthMode", w_setDepthMode },
+	{ "getDepthMode", w_getDepthMode },
+	{ "setMeshCullMode", w_setMeshCullMode },
+	{ "getMeshCullMode", w_getMeshCullMode },
+	{ "setFrontFaceWinding", w_setFrontFaceWinding },
+	{ "getFrontFaceWinding", w_getFrontFaceWinding },
 	{ "setWireframe", w_setWireframe },
 	{ "isWireframe", w_isWireframe },
 

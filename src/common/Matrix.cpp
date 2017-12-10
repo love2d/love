@@ -382,16 +382,17 @@ Matrix4 Matrix4::inverse() const
 	return inv;
 }
 
-Matrix4 Matrix4::ortho(float left, float right, float bottom, float top)
+Matrix4 Matrix4::ortho(float left, float right, float bottom, float top, float near, float far)
 {
 	Matrix4 m;
 
 	m.e[0] = 2.0f / (right - left);
 	m.e[5] = 2.0f / (top - bottom);
-	m.e[10] = -1.0;
+	m.e[10] = -2.0f / (far - near);
 
 	m.e[12] = -(right + left) / (right - left);
 	m.e[13] = -(top + bottom) / (top - bottom);
+	m.e[14] = -(far + near) / (far - near);
 
 	return m;
 }

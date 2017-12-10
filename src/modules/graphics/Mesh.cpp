@@ -633,37 +633,49 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 	Graphics::TempTransform transform(gfx, m);
 
-	int start = 0;
-	int count = 0;
-
 	if (useIndexBuffer && ibo != nullptr && indexCount > 0)
 	{
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
 		ibo->unmap();
 
-		start = std::min(std::max(0, rangeStart), (int) indexCount - 1);
+		Graphics::DrawIndexedCommand cmd(&attributes, &buffers, ibo);
 
-		count = (int) indexCount;
+		cmd.primitiveType = primitiveType;
+		cmd.indexType = indexDataType;
+		cmd.instanceCount = instancecount;
+		cmd.texture = texture;
+		cmd.cullMode = gfx->getMeshCullMode();
+
+		int start = std::min(std::max(0, rangeStart), (int) indexCount - 1);
+		cmd.indexBufferOffset = start * vertex::getIndexDataSize(indexDataType);
+
+		cmd.indexCount = (int) indexCount;
 		if (rangeCount > 0)
-			count = std::min(count, rangeCount);
+			cmd.indexCount = std::min(cmd.indexCount, rangeCount);
 
-		count = std::min(count, (int) indexCount - start);
+		cmd.indexCount = std::min(cmd.indexCount, (int) indexCount - start);
 
-		size_t offset = start * vertex::getIndexDataSize(indexDataType);
-		if (count > 0)
-			gfx->drawIndexed(primitiveType, count, instancecount, indexDataType, ibo, offset, attributes, buffers, texture);
+		if (cmd.indexCount > 0)
+			gfx->draw(cmd);
 	}
-	else
+	else if (vertexCount > 0)
 	{
-		start = std::min(std::max(0, rangeStart), (int) vertexCount - 1);
+		Graphics::DrawCommand cmd(&attributes, &buffers);
 
-		count = (int) vertexCount;
+		cmd.primitiveType = primitiveType;
+		cmd.vertexStart = std::min(std::max(0, rangeStart), (int) vertexCount - 1);
+
+		cmd.vertexCount = (int) vertexCount;
 		if (rangeCount > 0)
-			count = std::min(count, rangeCount);
+			cmd.vertexCount = std::min(cmd.vertexCount, rangeCount);
 
-		count = std::min(count, (int) vertexCount - start);
+		cmd.vertexCount = std::min(cmd.vertexCount, (int) vertexCount - cmd.vertexStart);
+		cmd.instanceCount = instancecount;
+		cmd.texture = texture;
+		cmd.cullMode = gfx->getMeshCullMode();
 
-		gfx->draw(primitiveType, start, count, instancecount, attributes, buffers, texture);
+		if (cmd.vertexCount > 0)
+			gfx->draw(cmd);
 	}
 }
 

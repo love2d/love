@@ -471,7 +471,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 		// Add kerning to the current horizontal offset.
 		dx += getKerning(prevglyph, g);
 
-		if (glyph.texture != 0)
+		if (glyph.texture != nullptr)
 		{
 			// Copy the vertices and set their colors and relative positions.
 			for (int j = 0; j < 4; j++)

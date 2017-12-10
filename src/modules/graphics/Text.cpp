@@ -266,15 +266,16 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 
 	Graphics::TempTransform transform(gfx, m);
 
+	Graphics::DrawIndexedCommand drawcmd(&vertexAttributes, &vertexBuffers, quadIndices.getBuffer());
+	drawcmd.indexType = quadIndices.getType();
 	size_t elemsize = quadIndices.getElementSize();
-	IndexDataType datatype = quadIndices.getType();
-	Buffer *indexbuffer = quadIndices.getBuffer();
 
 	for (const Font::DrawCommand &cmd : draw_commands)
 	{
-		int count = (cmd.vertexcount / 4) * 6;
-		size_t offset = (cmd.startvertex / 4) * 6 * elemsize;
-		gfx->drawIndexed(PRIMITIVE_TRIANGLES, count, 1, datatype, indexbuffer, offset, vertexAttributes, vertexBuffers, cmd.texture);
+		drawcmd.indexCount = (cmd.vertexcount / 4) * 6;
+		drawcmd.indexBufferOffset = (cmd.startvertex / 4) * 6 * elemsize;
+		drawcmd.texture = cmd.texture;
+		gfx->draw(drawcmd);
 	}
 }
 

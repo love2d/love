@@ -1101,8 +1101,13 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 
 	Graphics::TempTransform transform(gfx, m);
 
-	int count = quadIndices.getIndexCount(getCount());
-	gfx->drawIndexed(PRIMITIVE_TRIANGLES, count, 1, quadIndices.getType(), quadIndices.getBuffer(), 0, vertexAttributes, vertexbuffers, texture);
+	Graphics::DrawIndexedCommand cmd(&vertexAttributes, &vertexbuffers, quadIndices.getBuffer());
+	cmd.primitiveType = PRIMITIVE_TRIANGLES;
+	cmd.indexBufferOffset = 0;
+	cmd.indexCount = (int) quadIndices.getIndexCount(pCount);
+	cmd.indexType = quadIndices.getType();
+	cmd.texture = texture;
+	gfx->draw(cmd);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

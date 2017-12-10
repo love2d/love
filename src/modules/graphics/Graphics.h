@@ -250,6 +250,54 @@ public:
 		}
 	};
 
+	struct DrawCommand
+	{
+		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
+
+		const vertex::Attributes *attributes;
+		const vertex::Buffers *buffers;
+
+		int vertexStart = 0;
+		int vertexCount = 0;
+		int instanceCount = 1;
+
+		Texture *texture = nullptr;
+
+		// TODO: This should be moved out to a state transition API?
+		CullMode cullMode = CULL_NONE;
+
+		DrawCommand(const vertex::Attributes *attribs, const vertex::Buffers *buffers)
+			: attributes(attribs)
+			, buffers(buffers)
+		{}
+	};
+
+	struct DrawIndexedCommand
+	{
+		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
+
+		const vertex::Attributes *attributes;
+		const vertex::Buffers *buffers;
+
+		int indexCount = 0;
+		int instanceCount = 1;
+
+		IndexDataType indexType = INDEX_UINT16;
+		Resource *indexBuffer;
+		size_t indexBufferOffset = 0;
+
+		Texture *texture = nullptr;
+
+		// TODO: This should be moved out to a state transition API?
+		CullMode cullMode = CULL_NONE;
+
+		DrawIndexedCommand(const vertex::Attributes *attribs, const vertex::Buffers *buffers, Resource *indexbuffer)
+			: attributes(attribs)
+			, buffers(buffers)
+			, indexBuffer(indexbuffer)
+		{}
+	};
+
 	struct StreamDrawCommand
 	{
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
@@ -537,8 +585,18 @@ public:
 	 * Sets whether stencil testing is enabled.
 	 **/
 	virtual void setStencilTest(CompareMode compare, int value) = 0;
-	virtual void setStencilTest() = 0;
-	void getStencilTest(CompareMode &compare, int &value);
+	void setStencilTest();
+	void getStencilTest(CompareMode &compare, int &value) const;
+
+	virtual void setDepthMode(CompareMode compare, bool write) = 0;
+	void setDepthMode();
+	void getDepthMode(CompareMode &compare, bool &write) const;
+
+	void setMeshCullMode(CullMode cull);
+	CullMode getMeshCullMode() const;
+
+	virtual void setFrontFaceWinding(vertex::Winding winding) = 0;
+	vertex::Winding getFrontFaceWinding() const;
 
 	/**
 	 * Sets the enabled color components when rendering.
@@ -769,8 +827,8 @@ public:
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
 
-	virtual void draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) = 0;
-	virtual void drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) = 0;
+	virtual void draw(const DrawCommand &cmd) = 0;
+	virtual void draw(const DrawIndexedCommand &cmd) = 0;
 
 	void flushStreamDraws();
 	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
@@ -851,6 +909,12 @@ protected:
 
 		CompareMode stencilCompare = COMPARE_ALWAYS;
 		int stencilTestValue = 0;
+
+		CompareMode depthTest = COMPARE_ALWAYS;
+		bool depthWrite = false;
+
+		CullMode meshCullMode = CULL_NONE;
+		vertex::Winding winding = vertex::WINDING_CCW;
 
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;

@@ -374,6 +374,10 @@ void Graphics::restoreState(const DisplayState &s)
 		setScissor();
 
 	setStencilTest(s.stencilCompare, s.stencilTestValue);
+	setDepthMode(s.depthTest, s.depthWrite);
+
+	setMeshCullMode(s.meshCullMode);
+	setFrontFaceWinding(s.winding);
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
@@ -416,6 +420,14 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	if (s.stencilCompare != cur.stencilCompare || s.stencilTestValue != cur.stencilTestValue)
 		setStencilTest(s.stencilCompare, s.stencilTestValue);
+
+	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
+		setDepthMode(s.depthTest, s.depthWrite);
+
+	setMeshCullMode(s.meshCullMode);
+
+	if (s.winding != cur.winding)
+		setFrontFaceWinding(s.winding);
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
@@ -788,11 +800,44 @@ bool Graphics::getScissor(Rect &rect) const
 	return state.scissor;
 }
 
-void Graphics::getStencilTest(CompareMode &compare, int &value)
+void Graphics::setStencilTest()
+{
+	setStencilTest(COMPARE_ALWAYS, 0);
+}
+
+void Graphics::getStencilTest(CompareMode &compare, int &value) const
 {
 	const DisplayState &state = states.back();
 	compare = state.stencilCompare;
 	value = state.stencilTestValue;
+}
+
+void Graphics::setDepthMode()
+{
+	setDepthMode(COMPARE_ALWAYS, false);
+}
+
+void Graphics::getDepthMode(CompareMode &compare, bool &write) const
+{
+	const DisplayState &state = states.back();
+	compare = state.depthTest;
+	write = state.depthWrite;
+}
+
+void Graphics::setMeshCullMode(CullMode cull)
+{
+	// Handled inside the draw() graphics API implementations.
+	states.back().meshCullMode = cull;
+}
+
+CullMode Graphics::getMeshCullMode() const
+{
+	return states.back().meshCullMode;
+}
+
+vertex::Winding Graphics::getFrontFaceWinding() const
+{
+	return states.back().winding;
 }
 
 Graphics::ColorMask Graphics::getColorMask() const
@@ -1051,14 +1096,26 @@ void Graphics::flushStreamDraws()
 	if (sbstate.indexCount > 0)
 	{
 		usedsizes[2] = sizeof(uint16) * sbstate.indexCount;
-		size_t offset = sbstate.indexBuffer->unmap(usedsizes[2]);
+
+		DrawIndexedCommand cmd(&attributes, &buffers, sbstate.indexBuffer);
+		cmd.primitiveType = sbstate.primitiveMode;
+		cmd.indexCount = sbstate.indexCount;
+		cmd.indexType = INDEX_UINT16;
+		cmd.indexBufferOffset = sbstate.indexBuffer->unmap(usedsizes[2]);
+		cmd.texture = sbstate.texture;
+		draw(cmd);
 
 		sbstate.indexBufferMap = StreamBuffer::MapInfo();
-
-		drawIndexed(sbstate.primitiveMode, sbstate.indexCount, 1, INDEX_UINT16, sbstate.indexBuffer, offset, attributes, buffers, sbstate.texture);
 	}
 	else
-		draw(sbstate.primitiveMode, 0, sbstate.vertexCount, 1, attributes, buffers, sbstate.texture);
+	{
+		DrawCommand cmd(&attributes, &buffers);
+		cmd.primitiveType = sbstate.primitiveMode;
+		cmd.vertexStart = 0;
+		cmd.vertexCount = sbstate.vertexCount;
+		cmd.texture = sbstate.texture;
+		draw(cmd);
+	}
 
 	for (int i = 0; i < 2; i++)
 	{

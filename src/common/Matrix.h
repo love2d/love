@@ -218,10 +218,9 @@ public:
 	Matrix4 inverse() const;
 
 	/**
-	 * Creates a new orthographic projection matrix with depth in the range of
-	 * [-1, 1].
+	 * Creates a new orthographic projection matrix.
 	 **/
-	static Matrix4 ortho(float left, float right, float bottom, float top);
+	static Matrix4 ortho(float left, float right, float bottom, float top, float near, float far);
 
 private:
 

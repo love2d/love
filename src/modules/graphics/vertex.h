@@ -86,6 +86,14 @@ enum AttributeStep
 	STEP_MAX_ENUM
 };
 
+enum CullMode
+{
+	CULL_NONE,
+	CULL_BACK,
+	CULL_FRONT,
+	CULL_MAX_ENUM
+};
+
 namespace vertex
 {
 
@@ -104,6 +112,13 @@ enum DataType
 	DATA_UNORM16,
 	DATA_FLOAT,
 	DATA_MAX_ENUM
+};
+
+enum Winding
+{
+	WINDING_CW,
+	WINDING_CCW,
+	WINDING_MAX_ENUM
 };
 
 enum class TriangleIndexMode
@@ -304,6 +319,14 @@ std::vector<std::string> getConstants(AttributeStep);
 bool getConstant(const char *in, DataType &out);
 bool getConstant(DataType in, const char *&out);
 std::vector<std::string> getConstants(DataType);
+
+bool getConstant(const char *in, CullMode &out);
+bool getConstant(CullMode in, const char *&out);
+std::vector<std::string> getConstants(CullMode);
+
+bool getConstant(const char *in, Winding &out);
+bool getConstant(Winding in, const char *&out);
+std::vector<std::string> getConstants(Winding);
 
 } // vertex
 

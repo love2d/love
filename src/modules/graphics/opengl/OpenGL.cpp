@@ -191,13 +191,22 @@ void OpenGL::setupContext()
 		state.boundFramebuffers[i] = std::numeric_limits<GLuint>::max();
 	bindFramebuffer(FRAMEBUFFER_ALL, getDefaultFBO());
 
+	setEnableState(ENABLE_DEPTH_TEST, state.enableState[ENABLE_DEPTH_TEST]);
+	setEnableState(ENABLE_STENCIL_TEST, state.enableState[ENABLE_STENCIL_TEST]);
+	setEnableState(ENABLE_SCISSOR_TEST, state.enableState[ENABLE_SCISSOR_TEST]);
+	setEnableState(ENABLE_FACE_CULL, state.enableState[ENABLE_FACE_CULL]);
+
 	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
 		|| GLAD_EXT_sRGB_write_control)
 	{
-		state.framebufferSRGBEnabled = (glIsEnabled(GL_FRAMEBUFFER_SRGB) == GL_TRUE);
+		setEnableState(ENABLE_FRAMEBUFFER_SRGB, state.enableState[ENABLE_FRAMEBUFFER_SRGB]);
 	}
 	else
-		state.framebufferSRGBEnabled = false;
+		state.enableState[ENABLE_FRAMEBUFFER_SRGB] = false;
+
+	GLint faceCull = GL_BACK;
+	glGetIntegerv(GL_CULL_FACE_MODE, &faceCull);
+	state.faceCullMode = faceCull;
 
 	for (int i = 0; i < (int) BUFFER_MAX_ENUM; i++)
 	{
@@ -227,6 +236,8 @@ void OpenGL::setupContext()
 
 	glActiveTexture(GL_TEXTURE0);
 	state.curTextureUnit = 0;
+
+	setDepthWrites(state.depthWritesEnabled);
 
 	createDefaultTexture();
 
@@ -673,6 +684,24 @@ void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const ver
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+void OpenGL::setCullMode(CullMode mode)
+{
+	bool enabled = mode != CULL_NONE;
+
+	if (enabled != isStateEnabled(ENABLE_FACE_CULL))
+		setEnableState(ENABLE_FACE_CULL, enabled);
+
+	if (enabled)
+	{
+		GLenum glmode = mode == CULL_BACK ? GL_BACK : GL_FRONT;
+		if (glmode != state.faceCullMode)
+		{
+			glCullFace(glmode);
+			state.faceCullMode = glmode;
+		}
+	}
+}
+
 void OpenGL::clearDepth(double value)
 {
 	if (GLAD_ES_VERSION_2_0)
@@ -729,19 +758,42 @@ float OpenGL::getPointSize() const
 	return state.pointSize;
 }
 
-void OpenGL::setFramebufferSRGB(bool enable)
+void OpenGL::setEnableState(EnableState enablestate, bool enable)
 {
-	if (enable)
-		glEnable(GL_FRAMEBUFFER_SRGB);
-	else
-		glDisable(GL_FRAMEBUFFER_SRGB);
+	GLenum glstate = GL_NONE;
 
-	state.framebufferSRGBEnabled = enable;
+	switch (enablestate)
+	{
+	case ENABLE_DEPTH_TEST:
+		glstate = GL_DEPTH_TEST;
+		break;
+	case ENABLE_STENCIL_TEST:
+		glstate = GL_STENCIL_TEST;
+		break;
+	case ENABLE_SCISSOR_TEST:
+		glstate = GL_SCISSOR_TEST;
+		break;
+	case ENABLE_FACE_CULL:
+		glstate = GL_CULL_FACE;
+		break;
+	case ENABLE_FRAMEBUFFER_SRGB:
+		glstate = GL_FRAMEBUFFER_SRGB;
+		break;
+	case ENABLE_MAX_ENUM:
+		break;
+	}
+
+	if (enable)
+		glEnable(glstate);
+	else
+		glDisable(glstate);
+
+	state.enableState[enablestate] = enable;
 }
 
-bool OpenGL::hasFramebufferSRGB() const
+bool OpenGL::isStateEnabled(EnableState enablestate) const
 {
-	return state.framebufferSRGBEnabled;
+	return state.enableState[enablestate];
 }
 
 void OpenGL::bindFramebuffer(FramebufferTarget target, GLuint framebuffer)
@@ -814,6 +866,17 @@ void OpenGL::framebufferTexture(GLenum attachment, TextureType texType, GLuint t
 	default:
 		break;
 	}
+}
+
+void OpenGL::setDepthWrites(bool enable)
+{
+	glDepthMask(enable ? GL_TRUE : GL_FALSE);
+	state.depthWritesEnabled = enable;
+}
+
+bool OpenGL::hasDepthWrites() const
+{
+	return state.depthWritesEnabled;
 }
 
 void OpenGL::useProgram(GLuint program)
@@ -954,7 +1017,6 @@ GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
 	case Texture::WRAP_MIRRORED_REPEAT:
 		return GL_MIRRORED_REPEAT;
 	}
-
 }
 
 GLint OpenGL::getGLCompareMode(CompareMode mode)
@@ -975,6 +1037,8 @@ GLint OpenGL::getGLCompareMode(CompareMode mode)
 		return GL_NOTEQUAL;
 	case COMPARE_ALWAYS:
 		return GL_ALWAYS;
+	case COMPARE_NEVER:
+		return GL_NEVER;
 	default:
 		return GL_NEVER;
 	}

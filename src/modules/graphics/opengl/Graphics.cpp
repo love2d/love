@@ -149,7 +149,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 			setScissor(states.back().scissorRect);
 
 		// Set up the projection matrix
-		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
 	}
 }
 
@@ -206,7 +206,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		|| GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB)
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-			gl.setFramebufferSRGB(isGammaCorrect());
+			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
 	}
 	else
 		setGammaCorrect(false);
@@ -316,38 +316,40 @@ void Graphics::setActive(bool enable)
 	active = enable;
 }
 
-void Graphics::draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, love::graphics::Texture *texture)
+void Graphics::draw(const DrawCommand &cmd)
 {
 	gl.prepareDraw();
-	gl.setVertexAttributes(attribs, buffers);
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.setVertexAttributes(*cmd.attributes, *cmd.buffers);
+	gl.bindTextureToUnit(cmd.texture, 0, false);
+	gl.setCullMode(cmd.cullMode);
 
-	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(primtype);
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
 
-	if (instancecount > 1)
-		glDrawArraysInstanced(glprimitivetype, vertexstart, vertexcount, instancecount);
+	if (cmd.instanceCount > 1)
+		glDrawArraysInstanced(glprimitivetype, cmd.vertexStart, cmd.vertexCount, cmd.instanceCount);
 	else
-		glDrawArrays(glprimitivetype, vertexstart, vertexcount);
+		glDrawArrays(glprimitivetype, cmd.vertexStart, cmd.vertexCount);
 
 	++drawCalls;
 }
 
-void Graphics::drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, love::graphics::Texture *texture)
+void Graphics::draw(const DrawIndexedCommand &cmd)
 {
 	gl.prepareDraw();
-	gl.setVertexAttributes(attribs, buffers);
-	gl.bindTextureToUnit(texture, 0, false);
+	gl.setVertexAttributes(*cmd.attributes, *cmd.buffers);
+	gl.bindTextureToUnit(cmd.texture, 0, false);
+	gl.setCullMode(cmd.cullMode);
 
-	const void *gloffset = BUFFER_OFFSET(indexoffset);
-	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(primtype);
-	GLenum gldatatype = OpenGL::getGLIndexDataType(datatype);
+	const void *gloffset = BUFFER_OFFSET(cmd.indexBufferOffset);
+	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
+	GLenum gldatatype = OpenGL::getGLIndexDataType(cmd.indexType);
 
-	gl.bindBuffer(BUFFER_INDEX, indexbuffer->getHandle());
+	gl.bindBuffer(BUFFER_INDEX, cmd.indexBuffer->getHandle());
 
-	if (instancecount > 1)
-		glDrawElementsInstanced(glprimitivetype, indexcount, gldatatype, gloffset, instancecount);
+	if (cmd.instanceCount > 1)
+		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
 	else
-		glDrawElements(glprimitivetype, indexcount, gldatatype, gloffset);
+		glDrawElements(glprimitivetype, cmd.indexCount, gldatatype, gloffset);
 
 	++drawCalls;
 }
@@ -424,20 +426,22 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 
 	gl.setViewport({0, 0, pixelw, pixelh});
 
+	// Flip front face winding when rendering to a canvas, since our projection
+	// matrix is flipped.
+	glFrontFace(state.winding == vertex::WINDING_CW ? GL_CCW : GL_CW);
+
 	// Re-apply the scissor if it was active, since the rectangle passed to
 	// glScissor is affected by the viewport dimensions.
 	if (state.scissor)
 		setScissor(state.scissorRect);
 
-	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h);
+	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
-		if (hasSRGBcanvas && !gl.hasFramebufferSRGB())
-			gl.setFramebufferSRGB(true);
-		else if (!hasSRGBcanvas && gl.hasFramebufferSRGB())
-			gl.setFramebufferSRGB(false);
+		if (hasSRGBcanvas != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
+			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBcanvas);
 	}
 }
 
@@ -453,6 +457,10 @@ void Graphics::setCanvas()
 	flushStreamDraws();
 	endPass();
 
+	// Re-apply the correct front face winding, since it may have been flipped
+	// if we were previously rendering to a canvas.
+	glFrontFace(state.winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
+
 	state.renderTargets = RenderTargetsStrongRef();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
@@ -466,14 +474,12 @@ void Graphics::setCanvas()
 
 	// The projection matrix is flipped compared to rendering to a canvas, due
 	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0);
+	projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
 
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
-		if (isGammaCorrect() && !gl.hasFramebufferSRGB())
-			gl.setFramebufferSRGB(true);
-		else if (!isGammaCorrect() && gl.hasFramebufferSRGB())
-			gl.setFramebufferSRGB(false);
+		if (isGammaCorrect() != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
+			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
 	}
 
 	canvasSwitchCount++;
@@ -571,14 +577,22 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
 
+	bool hadDepthWrites = gl.hasDepthWrites();
+
 	if (depth.hasValue)
 	{
+		if (!hadDepthWrites) // glDepthMask also affects glClear.
+			gl.setDepthWrites(true);
+
 		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flags != 0)
 		glClear(flags);
+
+	if (depth.hasValue && !hadDepthWrites)
+		gl.setDepthWrites(hadDepthWrites);
 
 	if (c.hasValue && gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -652,14 +666,22 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
 
+	bool hadDepthWrites = gl.hasDepthWrites();
+
 	if (depth.hasValue)
 	{
+		if (!hadDepthWrites) // glDepthMask also affects glClear.
+			gl.setDepthWrites(true);
+
 		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flags != 0)
 		glClear(flags);
+
+	if (depth.hasValue && !hadDepthWrites)
+		gl.setDepthWrites(hadDepthWrites);
 
 	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -986,7 +1008,8 @@ void Graphics::setScissor(const Rect &rect)
 
 	DisplayState &state = states.back();
 
-	glEnable(GL_SCISSOR_TEST);
+	if (!gl.isStateEnabled(OpenGL::ENABLE_SCISSOR_TEST))
+		gl.setEnableState(OpenGL::ENABLE_SCISSOR_TEST, true);
 
 	double dpiscale = getCurrentDPIScale();
 
@@ -1009,7 +1032,9 @@ void Graphics::setScissor()
 		flushStreamDraws();
 
 	states.back().scissor = false;
-	glDisable(GL_SCISSOR_TEST);
+
+	if (gl.isStateEnabled(OpenGL::ENABLE_SCISSOR_TEST))
+		gl.setEnableState(OpenGL::ENABLE_SCISSOR_TEST, false);
 }
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
@@ -1055,7 +1080,9 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 	}
 
 	// The stencil test must be enabled in order to write to the stencil buffer.
-	glEnable(GL_STENCIL_TEST);
+	if (!gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
+		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, true);
+
 	glStencilFunc(GL_ALWAYS, value, 0xFFFFFFFF);
 	glStencilOp(GL_KEEP, GL_KEEP, glaction);
 }
@@ -1093,7 +1120,8 @@ void Graphics::setStencilTest(CompareMode compare, int value)
 
 	if (compare == COMPARE_ALWAYS)
 	{
-		glDisable(GL_STENCIL_TEST);
+		if (gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
+			gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, false);
 		return;
 	}
 
@@ -1107,14 +1135,48 @@ void Graphics::setStencilTest(CompareMode compare, int value)
 	 **/
 	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(compare));
 
-	glEnable(GL_STENCIL_TEST);
+	if (!gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
+		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, true);
+
 	glStencilFunc(glcompare, value, 0xFFFFFFFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
-void Graphics::setStencilTest()
+void Graphics::setDepthMode(CompareMode compare, bool write)
 {
-	setStencilTest(COMPARE_ALWAYS, 0);
+	DisplayState &state = states.back();
+
+	if (state.depthTest != compare || state.depthWrite != write)
+		flushStreamDraws();
+
+	state.depthTest = compare;
+	state.depthWrite = write;
+
+	bool depthenable = compare != COMPARE_ALWAYS || write;
+
+	if (depthenable != gl.isStateEnabled(OpenGL::ENABLE_DEPTH_TEST))
+		gl.setEnableState(OpenGL::ENABLE_DEPTH_TEST, depthenable);
+
+	if (depthenable)
+	{
+		glDepthFunc(OpenGL::getGLCompareMode(compare));
+		glDepthMask(write ? GL_TRUE : GL_FALSE);
+	}
+}
+
+void Graphics::setFrontFaceWinding(vertex::Winding winding)
+{
+	DisplayState &state = states.back();
+
+	if (state.winding != winding)
+		flushStreamDraws();
+
+	state.winding = winding;
+
+	if (isCanvasActive())
+		winding = winding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+
+	glFrontFace(winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
 }
 
 void Graphics::setColor(Colorf c)
@@ -1142,12 +1204,6 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 	if (mode != states.back().blendMode || alphamode != states.back().blendAlphaMode)
 		flushStreamDraws();
 
-	GLenum func   = GL_FUNC_ADD;
-	GLenum srcRGB = GL_ONE;
-	GLenum srcA   = GL_ONE;
-	GLenum dstRGB = GL_ZERO;
-	GLenum dstA   = GL_ZERO;
-
 	if (mode == BLEND_LIGHTEN || mode == BLEND_DARKEN)
 	{
 		if (!capabilities.features[FEATURE_LIGHTEN])
@@ -1169,6 +1225,12 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 			break;
 		}
 	}
+
+	GLenum func   = GL_FUNC_ADD;
+	GLenum srcRGB = GL_ONE;
+	GLenum srcA   = GL_ONE;
+	GLenum dstRGB = GL_ZERO;
+	GLenum dstA   = GL_ZERO;
 
 	switch (mode)
 	{

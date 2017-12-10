@@ -69,8 +69,8 @@ public:
 
 	void setActive(bool active) override;
 
-	void draw(PrimitiveType primtype, int vertexstart, int vertexcount, int instancecount, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) override;
-	void drawIndexed(PrimitiveType primtype, int indexcount, int instancecount, IndexDataType datatype, Resource *indexbuffer, size_t indexoffset, const vertex::Attributes &attribs, const vertex::Buffers &buffers, Texture *texture) override;
+	void draw(const DrawCommand &cmd) override;
+	void draw(const DrawIndexedCommand &cmd) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -90,7 +90,10 @@ public:
 	void stopDrawToStencilBuffer() override;
 
 	void setStencilTest(CompareMode compare, int value) override;
-	void setStencilTest() override;
+
+	void setDepthMode(CompareMode compare, bool write) override;
+
+	void setFrontFaceWinding(vertex::Winding winding) override;
 
 	void setColorMask(ColorMask mask) override;
 
