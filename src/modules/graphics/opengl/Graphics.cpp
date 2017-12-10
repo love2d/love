@@ -608,14 +608,12 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	int ncanvases = (int) states.back().renderTargets.colors.size();
-	int ncolors = std::min((int) colors.size(), ncanvases);
+	int ncolorcanvases = (int) states.back().renderTargets.colors.size();
+	int ncolors = std::min((int) colors.size(), ncolorcanvases);
 
-	if (ncolors <= 1 && ncanvases <= 1)
+	if (ncolors <= 1 && ncolorcanvases <= 1)
 	{
-		if (colors[0].hasValue)
-			clear(colors[0].value, stencil, depth);
-
+		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
 		return;
 	}
 
@@ -652,10 +650,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	{
 		GLenum bufs[MAX_COLOR_RENDER_TARGETS];
 
-		for (int i = 0; i < ncanvases; i++)
+		for (int i = 0; i < ncolorcanvases; i++)
 			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
 
-		glDrawBuffers(ncanvases, bufs);
+		glDrawBuffers(ncolorcanvases, bufs);
 	}
 
 	GLbitfield flags = 0;
@@ -1160,7 +1158,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	if (depthenable)
 	{
 		glDepthFunc(OpenGL::getGLCompareMode(compare));
-		glDepthMask(write ? GL_TRUE : GL_FALSE);
+		gl.setDepthWrites(write);
 	}
 }
 

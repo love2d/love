@@ -453,7 +453,7 @@ private:
 
 		float pointSize;
 
-		bool depthWritesEnabled;
+		bool depthWritesEnabled = true;
 
 		GLuint boundFramebuffers[2];
 
