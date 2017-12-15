@@ -26,11 +26,7 @@
 #include "filesystem/File.h"
 
 // PhysFS
-#ifdef LOVE_APPLE_USE_FRAMEWORKS
-#include <physfs/physfs.h>
-#else
-#include <physfs.h>
-#endif
+#include "libraries/physfs/physfs.h"
 
 // STD
 #include <string>

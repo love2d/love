@@ -29,11 +29,7 @@
 #include "File.h"
 
 // PhysFS
-#ifdef LOVE_APPLE_USE_FRAMEWORKS
-#include <physfs/physfs.h>
-#else
-#include <physfs.h>
-#endif
+#include "libraries/physfs/physfs.h"
 
 // For great CWD. (Current Working Directory)
 // Using this instead of boost::filesystem which totally

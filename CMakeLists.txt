@@ -97,7 +97,6 @@ if(MEGA)
 		${MEGA_LIBTHEORA}
 		${MEGA_MODPLUG}
 		${MEGA_OPENAL}
-		${MEGA_PHYSFS}
 		${MEGA_SDL2MAIN}
 		${MEGA_SDL2}
 		${MEGA_ZLIB}
@@ -172,7 +171,6 @@ Please see http://bitbucket.org/rude/megasource
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
 	find_package(OpenGL REQUIRED)
-	find_package(PhysFS REQUIRED)
 	find_package(SDL2 REQUIRED)
 	find_package(Theora REQUIRED)
 	find_package(Vorbis REQUIRED)
@@ -182,7 +180,6 @@ Please see http://bitbucket.org/rude/megasource
 
 	set(LOVE_INCLUDE_DIRS
 		${SDL2_INCLUDE_DIR}
-		${PHYSFS_INCLUDE_DIR}
 		${FREETYPE_INCLUDE_DIRS}
 		${VORBIS_INCLUDE_DIR}
 	)
@@ -193,7 +190,6 @@ Please see http://bitbucket.org/rude/megasource
 		${FREETYPE_LIBRARY}
 		${OPENAL_LIBRARY}
 		${MODPLUG_LIBRARY}
-		${PHYSFS_LIBRARY}
 		${THEORA_LIBRARY}
 		${THEORADEC_LIBRARY}
 		${VORBISFILE_LIBRARY}
@@ -1544,6 +1540,49 @@ set(LOVE_SRC_3P_NOISE1234
 add_library(love_3p_noise1234 ${LOVE_SRC_3P_NOISE1234})
 
 #
+# physfs
+#
+
+set(LOVE_SRC_3P_PHYSFS
+	src/libraries/physfs/physfs_archiver_7z.c
+	src/libraries/physfs/physfs_archiver_dir.c
+	src/libraries/physfs/physfs_archiver_grp.c
+	src/libraries/physfs/physfs_archiver_hog.c
+	src/libraries/physfs/physfs_archiver_iso9660.c
+	src/libraries/physfs/physfs_archiver_mvl.c
+	src/libraries/physfs/physfs_archiver_qpak.c
+	src/libraries/physfs/physfs_archiver_slb.c
+	src/libraries/physfs/physfs_archiver_unpacked.c
+	src/libraries/physfs/physfs_archiver_vdf.c
+	src/libraries/physfs/physfs_archiver_wad.c
+	src/libraries/physfs/physfs_archiver_zip.c
+	src/libraries/physfs/physfs_byteorder.c
+	src/libraries/physfs/physfs_casefolding.h
+	src/libraries/physfs/physfs_internal.h
+	src/libraries/physfs/physfs_lzmasdk.h
+	src/libraries/physfs/physfs_miniz.h
+	src/libraries/physfs/physfs_platform_haiku.cpp
+	src/libraries/physfs/physfs_platform_os2.c
+	src/libraries/physfs/physfs_platform_posix.c
+	src/libraries/physfs/physfs_platform_qnx.c
+	src/libraries/physfs/physfs_platform_unix.c
+	src/libraries/physfs/physfs_platform_windows.c
+	src/libraries/physfs/physfs_platform_winrt.cpp
+	src/libraries/physfs/physfs_platforms.h
+	src/libraries/physfs/physfs_unicode.c
+	src/libraries/physfs/physfs.c
+	src/libraries/physfs/physfs.h
+)
+
+if(APPLE)
+	set(LOVE_SRC_3P_PHYSFS ${LOVE_SRC_3P_PHYSFS}
+		src/libraries/physfs/physfs_platform_apple.m
+	)
+endif()
+
+add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
+
+#
 # stb_image
 #
 
@@ -1557,7 +1596,7 @@ set(LOVE_SRC_3P_STB
 # tiny exr
 #
 
-set(LOVE_SRC_3P_TINEXR
+set(LOVE_SRC_3P_TINYEXR
 	src/libraries/tinyexr/tinyexr.h
 )
 
@@ -1622,11 +1661,12 @@ set(LOVE_3P
 	love_3p_lua53
 	love_3p_lz4
 	love_3p_noise1234
+	love_3p_physfs
 	love_3p_wuff
 	love_3p_xxhash
 )
 
-love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket)
+love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket love_3p_physfs)
 
 #
 # liblove

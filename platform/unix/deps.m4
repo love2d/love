@@ -19,9 +19,6 @@ AC_DEFUN([ACLOVE_DEP_THEORA], [
 AC_DEFUN([ACLOVE_DEP_LIBM], [
 	AC_SEARCH_LIBS([sqrt], [m], [], [LOVE_MSG_ERROR([the C math library])])])
 
-AC_DEFUN([ACLOVE_DEP_PHYSFS], [
-	AC_SEARCH_LIBS([PHYSFS_init], [physfs], [], [LOVE_MSG_ERROR([PhysicsFS])])])
-
 AC_DEFUN([ACLOVE_DEP_SDL2], [
 	AM_PATH_SDL2([], [], [LOVE_MSG_ERROR([SDL 2])])])
 
