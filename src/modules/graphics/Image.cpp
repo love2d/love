@@ -86,13 +86,14 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	width  = (int) (pixelWidth / settings.dpiScale + 0.5);
 	height = (int) (pixelHeight / settings.dpiScale + 0.5);
 
-	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getMipmapCount(w, h);
 	format = fmt;
 
 	if (isCompressed() && mipmapsType == MIPMAPS_GENERATED)
 		mipmapsType = MIPMAPS_NONE;
 
-	if (getMipmapCount() > 1)
+	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getMipmapCount(w, h);
+
+	if (mipmapCount > 1)
 		filter.mipmap = defaultMipmapFilter;
 
 	initQuad();
