@@ -31,10 +31,6 @@
 // STD
 #include <string>
 
-#if PHYSFS_VER_MAJOR > 2 || (PHYSFS_VER_MAJOR == 2 && PHYSFS_VER_MINOR >= 1)
-#define LOVE_USE_PHYSFS_2_1
-#endif
-
 namespace love
 {
 namespace filesystem

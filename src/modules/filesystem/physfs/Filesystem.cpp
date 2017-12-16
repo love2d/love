@@ -120,16 +120,9 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
-	{
-#ifdef LOVE_USE_PHYSFS_2_1
-		const char *err = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
-#else
-		const char *err = PHYSFS_getLastError();
-#endif
-		throw love::Exception("%s", err);
-	}
+		throw love::Exception("%s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
 
-	// Enable symlinks by default. Also fixes an issue in PhysFS 2.1-alpha.
+	// Enable symlinks by default.
 	setSymlinksEnabled(true);
 }
 
@@ -197,13 +190,7 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	// We don't want old read-only save paths to accumulate when we set a new
 	// identity.
 	if (!old_save_path.empty())
-	{
-#ifdef LOVE_USE_PHYSFS_2_1
 		PHYSFS_unmount(old_save_path.c_str());
-#else
-		PHYSFS_removeFromSearchPath(old_save_path.c_str());
-#endif
-	}
 
 	// Try to add the save directory to the search path.
 	// (No error on fail, it means that the path doesn't exist).
@@ -448,11 +435,7 @@ bool Filesystem::unmount(const char *archive)
 	if (!mountPoint)
 		return false;
 
-#ifdef LOVE_USE_PHYSFS_2_1
 	return PHYSFS_unmount(realPath.c_str()) != 0;
-#else
-	return PHYSFS_removeFromSearchPath(realPath.c_str()) != 0;
-#endif
 }
 
 love::filesystem::File *Filesystem::newFile(const char *filename) const
@@ -564,7 +547,7 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	const char *dir = PHYSFS_getRealDir(filename);
 
 	if (dir == nullptr)
-		throw love::Exception("File does not exist.");
+		throw love::Exception("File does not exist on disk.");
 
 	return std::string(dir);
 }
@@ -574,7 +557,6 @@ bool Filesystem::getInfo(const char *filepath, Info &info) const
 	if (!PHYSFS_isInit())
 		return false;
 
-#ifdef LOVE_USE_PHYSFS_2_1
 	PHYSFS_Stat stat = {};
 	if (!PHYSFS_stat(filepath, &stat))
 		return false;
@@ -590,30 +572,6 @@ bool Filesystem::getInfo(const char *filepath, Info &info) const
 		info.type = FILETYPE_SYMLINK;
 	else
 		info.type = FILETYPE_OTHER;
-#else
-	if (!PHYSFS_exists(filepath))
-		return false;
-
-	try
-	{
-		File file(filepath);
-		info.size = file.getSize();
-	}
-	catch (love::Exception &)
-	{
-		info.size = -1;
-	}
-
-	info.modtime = (int64) PHYSFS_getLastModTime(filepath);
-
-	if (PHYSFS_isSymbolicLink(filepath))
-		info.type = FILETYPE_SYMLINK;
-	else if (PHYSFS_isDirectory(filepath))
-		info.type = FILETYPE_DIRECTORY;
-	else
-		info.type = FILETYPE_FILE;
-
-#endif
 
 	return true;
 }
@@ -698,17 +656,6 @@ void Filesystem::setSymlinksEnabled(bool enable)
 {
 	if (!PHYSFS_isInit())
 		return;
-
-	if (!enable)
-	{
-		PHYSFS_Version version = {};
-		PHYSFS_getLinkedVersion(&version);
-
-		// FIXME: This is a workaround for a bug in PHYSFS_enumerateFiles in
-		// PhysFS 2.1.0-alpha.
-		if (version.major == 2 && version.minor == 1 && version.patch == 0)
-			return;
-	}
 
 	PHYSFS_permitSymbolicLinks(enable ? 1 : 0);
 }

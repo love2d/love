@@ -333,7 +333,7 @@ Image::MipmapsType Image::Slices::validate() const
 		if (textureType == TEXTURE_VOLUME)
 			mipslices = std::max(mipslices / 2, 1);
 	}
-	
+
 	if (mipcount > 1)
 		return MIPMAPS_DATA;
 	else

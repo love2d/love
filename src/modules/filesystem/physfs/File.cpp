@@ -72,11 +72,7 @@ bool File::open(Mode mode)
 	if (file != nullptr)
 		return false;
 
-#ifdef LOVE_USE_PHYSFS_2_1
 	PHYSFS_getLastErrorCode();
-#else
-	PHYSFS_getLastError(); // Clear the error buffer.
-#endif
 	PHYSFS_File *handle = nullptr;
 
 	switch (mode)
@@ -96,11 +92,7 @@ bool File::open(Mode mode)
 
 	if (handle == nullptr)
 	{
-#ifdef LOVE_USE_PHYSFS_2_1
 		const char *err = PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
-#else
-		const char *err = PHYSFS_getLastError();
-#endif
 		if (err == nullptr)
 			err = "unknown error";
 		throw love::Exception("Could not open file %s (%s)", filename.c_str(), err);
@@ -163,15 +155,7 @@ int64 File::read(void *dst, int64 size)
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
 
-#ifdef LOVE_USE_PHYSFS_2_1
-	int64 read = PHYSFS_readBytes(file, dst, (PHYSFS_uint64) size);
-#else
-	// Sadly, we'll have to clamp to 32 bits here
-	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
-	int64 read = (int64)PHYSFS_read(file, dst, 1, (PHYSFS_uint32) size);
-#endif
-
-	return read;
+	return PHYSFS_readBytes(file, dst, (PHYSFS_uint64) size);
 }
 
 bool File::write(const void *data, int64 size)
@@ -183,13 +167,7 @@ bool File::write(const void *data, int64 size)
 		throw love::Exception("Invalid write size.");
 
 	// Try to write.
-#ifdef LOVE_USE_PHYSFS_2_1
 	int64 written = PHYSFS_writeBytes(file, data, (PHYSFS_uint64) size);
-#else
-	// Another clamp, for the time being.
-	size = (size > LOVE_UINT32_MAX) ? LOVE_UINT32_MAX : size;
-	int64 written = (int64) PHYSFS_write(file, data, 1, (PHYSFS_uint32) size);
-#endif
 
 	// Check that correct amount of data was written.
 	if (written != size)
