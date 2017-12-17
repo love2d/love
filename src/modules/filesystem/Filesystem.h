@@ -135,7 +135,9 @@ public:
 	virtual const char *getSource() const = 0;
 
 	virtual bool mount(const char *archive, const char *mountpoint, bool appendToPath = false) = 0;
+	virtual bool mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath = false) = 0;
 	virtual bool unmount(const char *archive) = 0;
+	virtual bool unmount(Data *data) = 0;
 
 	/**
 	 * Creates a new file.

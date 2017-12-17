@@ -397,10 +397,32 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath) != 0;
 }
 
+bool Filesystem::mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath)
+{
+	if (!PHYSFS_isInit())
+		return false;
+
+	if (PHYSFS_mountMemory(data->getData(), data->getSize(), nullptr, archivename, mountpoint, appendToPath) != 0)
+	{
+		mountedData[archivename] = data;
+		return true;
+	}
+
+	return false;
+}
+
 bool Filesystem::unmount(const char *archive)
 {
 	if (!PHYSFS_isInit() || !archive)
 		return false;
+
+	auto datait = mountedData.find(archive);
+
+	if (datait != mountedData.end() && PHYSFS_unmount(archive) != 0)
+	{
+		mountedData.erase(datait);
+		return true;
+	}
 
 	std::string realPath;
 	std::string sourceBase = getSourceBaseDirectory();
@@ -436,6 +458,20 @@ bool Filesystem::unmount(const char *archive)
 		return false;
 
 	return PHYSFS_unmount(realPath.c_str()) != 0;
+}
+
+bool Filesystem::unmount(Data *data)
+{
+	for (const auto &datapair : mountedData)
+	{
+		if (datapair.second.get() == data)
+		{
+			std::string archive = datapair.first;
+			return unmount(archive.c_str());
+		}
+	}
+
+	return false;
 }
 
 love::filesystem::File *Filesystem::newFile(const char *filename) const

@@ -116,7 +116,29 @@ int w_mount(lua_State *L)
 {
 	std::string archive;
 
-	if (luax_istype(L, 1, DroppedFile::type))
+	if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = love::data::luax_checkdata(L, 1);
+		int startidx = 2;
+
+		if (luax_istype(L, 1, FileData::type) && !lua_isstring(L, 3))
+		{
+			FileData *filedata = luax_checkfiledata(L, 1);
+			archive = filedata->getFilename();
+			startidx = 2;
+		}
+		else
+		{
+			archive = luax_checkstring(L, 2);
+			startidx = 3;
+		}
+
+		const char *mountpoint = luaL_checkstring(L, startidx + 0);
+		bool append = luax_optboolean(L, startidx + 1, false);
+
+		luax_pushboolean(L, instance()->mount(data, archive.c_str(), mountpoint, append));
+	}
+	else if (luax_istype(L, 1, DroppedFile::type))
 	{
 		DroppedFile *file = luax_totype<DroppedFile>(L, 1);
 		archive = file->getFilename();
@@ -133,9 +155,16 @@ int w_mount(lua_State *L)
 
 int w_unmount(lua_State *L)
 {
-	const char *archive = luaL_checkstring(L, 1);
-
-	luax_pushboolean(L, instance()->unmount(archive));
+	if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = love::data::luax_checkdata(L, 1);
+		luax_pushboolean(L, instance()->unmount(data));
+	}
+	else
+	{
+		const char *archive = luaL_checkstring(L, 1);
+		luax_pushboolean(L, instance()->unmount(archive));
+	}
 	return 1;
 }
 
