@@ -23,8 +23,12 @@
 #include "common/halffloat.h"
 #include "common/Exception.h"
 
+// zlib (for tinyexr)
+#include <zlib.h>
+
 // tinyexr
 #define TINYEXR_IMPLEMENTATION
+#define TINYEXR_USE_MINIZ 0
 #include "libraries/tinyexr/tinyexr.h"
 
 // C
@@ -124,7 +128,7 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	if (ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, mem, memsize, &err) != TINYEXR_SUCCESS)
 		throw love::Exception("Could not parse EXR image header: %s", err);
 
-	if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, &err) != TINYEXR_SUCCESS)
+	if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, memsize, &err) != TINYEXR_SUCCESS)
 		throw love::Exception("Could not decode EXR image: %s", err);
 
 	int pixelType = exrHeader.pixel_types[0];
