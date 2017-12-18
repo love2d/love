@@ -1043,6 +1043,32 @@ TIntermTyped* TIntermediate::addShapeConversion(const TType& type, TIntermTyped*
     // The new node that handles the conversion
     TOperator constructorOp = mapTypeToConstructorOp(type);
 
+    // HLSL has custom semantics for scalar->mat shape conversions.
+    if (source == EShSourceHlsl) {
+        if (node->getType().isScalarOrVec1() && type.isMatrix()) {
+
+            // HLSL semantics: the scalar (or vec1) is replicated to every component of the matrix.  Left to its
+            // own devices, the constructor from a scalar would populate the diagonal.  This forces replication
+            // to every matrix element.
+
+            // Note that if the node is complex (e.g, a function call), we don't want to duplicate it here
+            // repeatedly, so we copy it to a temp, then use the temp.
+            const int matSize = type.getMatrixRows() * type.getMatrixCols();
+            TIntermAggregate* rhsAggregate = new TIntermAggregate();
+
+            const bool isSimple = (node->getAsSymbolNode() != nullptr) || (node->getAsConstantUnion() != nullptr);
+
+            if (!isSimple) {
+                assert(0); // TODO: use node replicator service when available.
+            }
+            
+            for (int x=0; x<matSize; ++x)
+                rhsAggregate->getSequence().push_back(node);
+
+            return setAggregateOperator(rhsAggregate, constructorOp, type, node->getLoc());
+        }
+    }
+
     // scalar -> vector or vec1 -> vector or
     // vector -> scalar or
     // bigger vector -> smaller vector
@@ -1588,7 +1614,7 @@ TIntermAggregate* TIntermediate::makeAggregate(const TSourceLoc& loc)
 //
 // Returns the selection node created.
 //
-TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermNodePair nodePair, const TSourceLoc& loc)
+TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermNodePair nodePair, const TSourceLoc& loc, TSelectionControl control)
 {
     //
     // Don't prune the false path for compile-time constants; it's needed
@@ -1597,6 +1623,7 @@ TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermNodePair no
 
     TIntermSelection* node = new TIntermSelection(cond, nodePair.node1, nodePair.node2);
     node->setLoc(loc);
+    node->setSelectionControl(control);
 
     return node;
 }
@@ -1639,12 +1666,12 @@ TIntermTyped* TIntermediate::addMethod(TIntermTyped* object, const TType& type, 
 //
 // Returns the selection node created, or nullptr if one could not be.
 //
-TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermTyped* trueBlock, TIntermTyped* falseBlock, const TSourceLoc& loc)
+TIntermTyped* TIntermediate::addSelection(TIntermTyped* cond, TIntermTyped* trueBlock, TIntermTyped* falseBlock, const TSourceLoc& loc, TSelectionControl control)
 {
     // If it's void, go to the if-then-else selection()
     if (trueBlock->getBasicType() == EbtVoid && falseBlock->getBasicType() == EbtVoid) {
         TIntermNodePair pair = { trueBlock, falseBlock };
-        return addSelection(cond, pair, loc);
+        return addSelection(cond, pair, loc, control);
     }
 
     //
@@ -2447,6 +2474,11 @@ bool TIntermediate::promoteBinary(TIntermBinary& node)
                 return false;
             node.setLeft(left);
             node.setRight(right);
+
+            // Update the original base assumption on result type..
+            node.setType(left->getType());
+            node.getWritableType().getQualifier().clear();
+
             break;
 
         default:
@@ -3143,10 +3175,10 @@ TIntermTyped* TIntermediate::promoteConstantUnion(TBasicType promoteTo, TIntermC
                             node->getLoc());
 }
 
-void TIntermAggregate::addToPragmaTable(const TPragmaTable& pTable)
+void TIntermAggregate::setPragmaTable(const TPragmaTable& pTable)
 {
-    assert(!pragmaTable);
-    pragmaTable = new TPragmaTable();
+    assert(pragmaTable == nullptr);
+    pragmaTable = new TPragmaTable;
     *pragmaTable = pTable;
 }
 
@@ -3160,6 +3192,11 @@ bool TIntermediate::specConstantPropagates(const TIntermTyped& node1, const TInt
 }
 
 struct TextureUpgradeAndSamplerRemovalTransform : public TIntermTraverser {
+    void visitSymbol(TIntermSymbol* symbol) override {
+        if (symbol->getBasicType() == EbtSampler && symbol->getType().getSampler().isTexture()) {
+            symbol->getWritableType().getSampler().combined = true;
+        }
+    }
     bool visitAggregate(TVisit, TIntermAggregate* ag) override {
         using namespace std;
         TIntermSequence& seq = ag->getSequence();
@@ -3173,17 +3210,11 @@ struct TextureUpgradeAndSamplerRemovalTransform : public TIntermTraverser {
         });
         seq.erase(newEnd, seq.end());
         // replace constructors with sampler/textures
-        // update textures into sampled textures
         for_each(seq.begin(), seq.end(), [](TIntermNode*& node) {
-            TIntermSymbol* symbol = node->getAsSymbolNode();
-            if (!symbol) {
-                TIntermAggregate *constructor = node->getAsAggregate();
-                if (constructor && constructor->getOp() == EOpConstructTextureSampler) {
-                    if (!constructor->getSequence().empty())
-                        node = constructor->getSequence()[0];
-                }
-            } else if (symbol->getBasicType() == EbtSampler && symbol->getType().getSampler().isTexture()) {
-                symbol->getWritableType().getSampler().combined = true;
+            TIntermAggregate *constructor = node->getAsAggregate();
+            if (constructor && constructor->getOp() == EOpConstructTextureSampler) {
+                if (!constructor->getSequence().empty())
+                    node = constructor->getSequence()[0];
             }
         });
         return true;
@@ -3195,5 +3226,21 @@ void TIntermediate::performTextureUpgradeAndSamplerRemovalTransformation(TInterm
     TextureUpgradeAndSamplerRemovalTransform transform;
     root->traverse(&transform);
 }
+
+const char* TIntermediate::getResourceName(TResourceType res)
+{
+    switch (res) {
+    case EResSampler: return "shift-sampler-binding";
+    case EResTexture: return "shift-texture-binding";
+    case EResImage:   return "shift-image-binding";
+    case EResUbo:     return "shift-UBO-binding";
+    case EResSsbo:    return "shift-ssbo-binding";
+    case EResUav:     return "shift-uav-binding";
+    default:
+        assert(0); // internal error: should only be called with valid resource types.
+        return nullptr;
+    }
+}
+
 
 } // end namespace glslang

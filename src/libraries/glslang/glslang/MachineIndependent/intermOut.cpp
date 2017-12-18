@@ -196,6 +196,7 @@ bool TOutputTraverser::visitBinary(TVisit /* visit */, TIntermBinary* node)
     case EOpLogicalOr:  out.debug << "logical-or";   break;
     case EOpLogicalXor: out.debug << "logical-xor"; break;
     case EOpLogicalAnd: out.debug << "logical-and"; break;
+
     default: out.debug << "<unknown op>";
     }
 
@@ -431,10 +432,13 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpMaxInvocationsExclusiveScanNonUniform:  out.debug << "maxInvocationsExclusiveScanNonUniform";   break;
     case EOpAddInvocationsExclusiveScanNonUniform:  out.debug << "addInvocationsExclusiveScanNonUniform";   break;
 
-    case EOpMbcnt:                      out.debug << "mbcnt";                       break;
+    case EOpMbcnt:                  out.debug << "mbcnt";                       break;
 
-    case EOpCubeFaceIndex:          out.debug << "cubeFaceIndex";         break;
-    case EOpCubeFaceCoord:          out.debug << "cubeFaceCoord";         break;
+    case EOpCubeFaceIndex:          out.debug << "cubeFaceIndex";               break;
+    case EOpCubeFaceCoord:          out.debug << "cubeFaceCoord";               break;
+
+    case EOpFragmentMaskFetch:      out.debug << "fragmentMaskFetchAMD";        break;
+    case EOpFragmentFetch:          out.debug << "fragmentFetchAMD";            break;
 
     case EOpConvBoolToFloat16:      out.debug << "Convert bool to float16";     break;
     case EOpConvIntToFloat16:       out.debug << "Convert int to float16";      break;
@@ -487,6 +491,9 @@ bool TOutputTraverser::visitUnary(TVisit /* visit */, TIntermUnary* node)
     case EOpConvUint16ToInt64:      out.debug << "Convert uint16 to int64";     break;
     case EOpConvUint16ToUint64:     out.debug << "Convert uint16 to uint64";    break;
 #endif
+
+    case EOpSubpassLoad:   out.debug << "subpassLoad";   break;
+    case EOpSubpassLoadMS: out.debug << "subpassLoadMS"; break;
 
     default: out.debug.message(EPrefixError, "Bad unary op");
     }
@@ -682,6 +689,16 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpAtomicExchange:             out.debug << "AtomicExchange";        break;
     case EOpAtomicCompSwap:             out.debug << "AtomicCompSwap";        break;
 
+    case EOpAtomicCounterAdd:           out.debug << "AtomicCounterAdd";      break;
+    case EOpAtomicCounterSubtract:      out.debug << "AtomicCounterSubtract"; break;
+    case EOpAtomicCounterMin:           out.debug << "AtomicCounterMin";      break;
+    case EOpAtomicCounterMax:           out.debug << "AtomicCounterMax";      break;
+    case EOpAtomicCounterAnd:           out.debug << "AtomicCounterAnd";      break;
+    case EOpAtomicCounterOr:            out.debug << "AtomicCounterOr";       break;
+    case EOpAtomicCounterXor:           out.debug << "AtomicCounterXor";      break;
+    case EOpAtomicCounterExchange:      out.debug << "AtomicCounterExchange"; break;
+    case EOpAtomicCounterCompSwap:      out.debug << "AtomicCounterCompSwap"; break;
+
     case EOpImageQuerySize:             out.debug << "imageQuerySize";        break;
     case EOpImageQuerySamples:          out.debug << "imageQuerySamples";     break;
     case EOpImageLoad:                  out.debug << "imageLoad";             break;
@@ -694,6 +711,10 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpImageAtomicXor:             out.debug << "imageAtomicXor";        break;
     case EOpImageAtomicExchange:        out.debug << "imageAtomicExchange";   break;
     case EOpImageAtomicCompSwap:        out.debug << "imageAtomicCompSwap";   break;
+#ifdef AMD_EXTENSIONS
+    case EOpImageLoadLod:               out.debug << "imageLoadLod";          break;
+    case EOpImageStoreLod:              out.debug << "imageStoreLod";         break;
+#endif
 
     case EOpTextureQuerySize:           out.debug << "textureSize";           break;
     case EOpTextureQueryLod:            out.debug << "textureQueryLod";       break;
@@ -746,6 +767,7 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpSparseTextureGatherLod:         out.debug << "sparseTextureGatherLod";          break;
     case EOpSparseTextureGatherLodOffset:   out.debug << "sparseTextureGatherLodOffset";    break;
     case EOpSparseTextureGatherLodOffsets:  out.debug << "sparseTextureGatherLodOffsets";   break;
+    case EOpSparseImageLoadLod:             out.debug << "sparseImageLoadLod";              break;
 #endif
 
     case EOpAddCarry:                   out.debug << "addCarry";              break;
@@ -769,9 +791,13 @@ bool TOutputTraverser::visitAggregate(TVisit /* visit */, TIntermAggregate* node
     case EOpGenMul:                     out.debug << "mul";                   break;
 
     case EOpAllMemoryBarrierWithGroupSync:    out.debug << "AllMemoryBarrierWithGroupSync";    break;
-    case EOpGroupMemoryBarrierWithGroupSync: out.debug << "GroupMemoryBarrierWithGroupSync"; break;
+    case EOpDeviceMemoryBarrier:              out.debug << "DeviceMemoryBarrier";              break;
+    case EOpDeviceMemoryBarrierWithGroupSync: out.debug << "DeviceMemoryBarrierWithGroupSync"; break;
     case EOpWorkgroupMemoryBarrier:           out.debug << "WorkgroupMemoryBarrier";           break;
     case EOpWorkgroupMemoryBarrierWithGroupSync: out.debug << "WorkgroupMemoryBarrierWithGroupSync"; break;
+
+    case EOpSubpassLoad:   out.debug << "subpassLoad";   break;
+    case EOpSubpassLoadMS: out.debug << "subpassLoadMS"; break;
 
     default: out.debug.message(EPrefixError, "Bad aggregation op");
     }
@@ -1085,6 +1111,8 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
             infoSink.debug << "gl_FragCoord origin is upper left\n";
         if (earlyFragmentTests)
             infoSink.debug << "using early_fragment_tests\n";
+        if (postDepthCoverage)
+            infoSink.debug << "using post_depth_coverage\n";
         if (depthLayout != EldNone)
             infoSink.debug << "using " << TQualifier::getLayoutDepthString(depthLayout) << "\n";
         if (blendEquations != 0) {

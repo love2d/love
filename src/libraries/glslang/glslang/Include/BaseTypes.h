@@ -193,10 +193,12 @@ enum TBuiltInVariable {
     EbvFragColor,
     EbvFragData,
     EbvFragDepth,
+    EbvFragStencilRef,
     EbvSampleId,
     EbvSamplePosition,
     EbvSampleMask,
     EbvHelperInvocation,
+
 #ifdef AMD_EXTENSIONS
     EbvBaryCoordNoPersp,
     EbvBaryCoordNoPerspCentroid,
@@ -216,13 +218,13 @@ enum TBuiltInVariable {
     EbvSecondaryViewportMaskNV,
     EbvPositionPerViewNV,
     EbvViewportMaskPerViewNV,
+    EbvFragFullyCoveredNV,
 #endif 
 
     // HLSL built-ins that live only temporarily, until they get remapped
     // to one of the above.
     EbvFragDepthGreater,
     EbvFragDepthLesser,
-    EbvStencilRef,
     EbvGsOutputStream,
     EbvOutputPatch,
     EbvInputPatch,
@@ -329,10 +331,12 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvFragColor:            return "FragColor";
     case EbvFragData:             return "FragData";
     case EbvFragDepth:            return "FragDepth";
+    case EbvFragStencilRef:       return "FragStencilRef";
     case EbvSampleId:             return "SampleId";
     case EbvSamplePosition:       return "SamplePosition";
     case EbvSampleMask:           return "SampleMaskIn";
     case EbvHelperInvocation:     return "HelperInvocation";
+
 #ifdef AMD_EXTENSIONS
     case EbvBaryCoordNoPersp:           return "BaryCoordNoPersp";
     case EbvBaryCoordNoPerspCentroid:   return "BaryCoordNoPerspCentroid";
@@ -352,6 +356,7 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvSecondaryViewportMaskNV:    return "SecondaryViewportMaskNV";
     case EbvPositionPerViewNV:          return "PositionPerViewNV";
     case EbvViewportMaskPerViewNV:      return "ViewportMaskPerViewNV";
+    case EbvFragFullyCoveredNV:         return "FragFullyCoveredNV";
 #endif 
     default:                      return "unknown built-in variable";
     }
