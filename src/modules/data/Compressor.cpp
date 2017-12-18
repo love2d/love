@@ -72,7 +72,7 @@ public:
 		// Use LZ4-HC for compression level 9 and higher.
 		int csize = 0;
 		if (level > 8)
-			csize = LZ4_compress_HC(data, compressedbytes + headersize, (int) dataSize, maxdestsize, 0);
+			csize = LZ4_compress_HC(data, compressedbytes + headersize, (int) dataSize, maxdestsize, LZ4HC_CLEVEL_DEFAULT);
 		else
 			csize = LZ4_compress_default(data, compressedbytes + headersize, (int) dataSize, maxdestsize);
 

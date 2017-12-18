@@ -1017,6 +1017,7 @@
 		FAC7CD911FE35E95006A60C7 /* physfs_archiver_grp.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD741FE35E95006A60C7 /* physfs_archiver_grp.c */; };
 		FAC7CD921FE35E95006A60C7 /* physfs_archiver_hog.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD751FE35E95006A60C7 /* physfs_archiver_hog.c */; };
 		FAC7CD931FE35E95006A60C7 /* physfs_archiver_zip.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD761FE35E95006A60C7 /* physfs_archiver_zip.c */; };
+		FAC7CD961FE755B4006A60C7 /* lz4opt.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC7CD951FE755B3006A60C7 /* lz4opt.h */; };
 		FACA02EC1F5E396B0084B28F /* CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02E01F5E396B0084B28F /* CompressedData.cpp */; };
 		FACA02ED1F5E396B0084B28F /* CompressedData.h in Headers */ = {isa = PBXBuildFile; fileRef = FACA02E11F5E396B0084B28F /* CompressedData.h */; };
 		FACA02EE1F5E396B0084B28F /* Compressor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02E21F5E396B0084B28F /* Compressor.cpp */; };
@@ -1915,6 +1916,7 @@
 		FAC7CD741FE35E95006A60C7 /* physfs_archiver_grp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = physfs_archiver_grp.c; sourceTree = "<group>"; };
 		FAC7CD751FE35E95006A60C7 /* physfs_archiver_hog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = physfs_archiver_hog.c; sourceTree = "<group>"; };
 		FAC7CD761FE35E95006A60C7 /* physfs_archiver_zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = physfs_archiver_zip.c; sourceTree = "<group>"; };
+		FAC7CD951FE755B3006A60C7 /* lz4opt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4opt.h; sourceTree = "<group>"; };
 		FACA02E01F5E396B0084B28F /* CompressedData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedData.cpp; sourceTree = "<group>"; };
 		FACA02E11F5E396B0084B28F /* CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompressedData.h; sourceTree = "<group>"; };
 		FACA02E21F5E396B0084B28F /* Compressor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Compressor.cpp; sourceTree = "<group>"; };
@@ -3434,6 +3436,7 @@
 				FAB17BE51ABFAA9000F9BA27 /* lz4.h */,
 				FAB17BF31ABFC4B100F9BA27 /* lz4hc.c */,
 				FAB17BF41ABFC4B100F9BA27 /* lz4hc.h */,
+				FAC7CD951FE755B3006A60C7 /* lz4opt.h */,
 			);
 			path = lz4;
 			sourceTree = "<group>";
@@ -4025,6 +4028,7 @@
 				217DFBE01D9F6D490055D849 /* except.h in Headers */,
 				FA0B79311A958E3B000E1D17 /* Module.h in Headers */,
 				217DFBF51D9F6D490055D849 /* mime.lua.h in Headers */,
+				FAC7CD961FE755B4006A60C7 /* lz4opt.h in Headers */,
 				FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */,
 				FAF140A61E20934C00F898D2 /* ScanContext.h in Headers */,
 				FA0B7E4A1A95902C000E1D17 /* wrap_DistanceJoint.h in Headers */,

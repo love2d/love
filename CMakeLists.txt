@@ -1522,6 +1522,7 @@ set(LOVE_SRC_3P_LZ4
 	src/libraries/lz4/lz4.h
 	src/libraries/lz4/lz4hc.c
 	src/libraries/lz4/lz4hc.h
+	src/libraries/lz4/lz4opt.h
 )
 
 add_library(love_3p_lz4 ${LOVE_SRC_3P_LZ4})
