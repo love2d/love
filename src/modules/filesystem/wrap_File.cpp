@@ -24,6 +24,8 @@
 #include "common/Exception.h"
 #include "common/int.h"
 
+#include "data/wrap_DataModule.h"
+
 namespace love
 {
 namespace filesystem
@@ -108,9 +110,18 @@ int w_File_isOpen(lua_State *L)
 int w_File_read(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	StrongRef<Data> d = nullptr;
+	StrongRef<FileData> d = nullptr;
 
-	int64 size = (int64) luaL_optnumber(L, 2, (lua_Number) File::ALL);
+	love::data::ContainerType ctype = love::data::CONTAINER_STRING;
+
+	int startidx = 2;
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		ctype = love::data::luax_checkcontainertype(L, 2);
+		startidx = 3;
+	}
+
+	int64 size = (int64) luaL_optnumber(L, startidx, (lua_Number) File::ALL);
 
 	try
 	{
@@ -121,9 +132,21 @@ int w_File_read(lua_State *L)
 		return luax_ioError(L, "%s", e.what());
 	}
 
-	lua_pushlstring(L, (const char *) d->getData(), d->getSize());
-	lua_pushnumber(L, d->getSize());
-	return 2;
+	int nret = 0;
+
+	if (ctype == love::data::CONTAINER_DATA)
+	{
+		luax_pushtype(L, d.get());
+		nret = 1;
+	}
+	else
+	{
+		lua_pushlstring(L, (const char *) d->getData(), d->getSize());
+		lua_pushinteger(L, d->getSize());
+		nret = 2;
+	}
+
+	return nret;
 }
 
 int w_File_write(lua_State *L)

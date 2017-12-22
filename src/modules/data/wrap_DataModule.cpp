@@ -321,7 +321,7 @@ int w_hash(lua_State *L)
 	return 1;
 }
 
-static int w_pack(lua_State *L)
+int w_pack(lua_State *L)
 {
 	ContainerType ctype = luax_checkcontainertype(L, 1);
 	const char *fmt = luaL_checkstring(L, 2);

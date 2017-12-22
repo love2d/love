@@ -25,6 +25,7 @@
 #include "wrap_DroppedFile.h"
 #include "wrap_FileData.h"
 #include "data/wrap_Data.h"
+#include "data/wrap_DataModule.h"
 
 #include "physfs/Filesystem.h"
 
@@ -445,10 +446,19 @@ int w_remove(lua_State *L)
 
 int w_read(lua_State *L)
 {
-	const char *filename = luaL_checkstring(L, 1);
-	int64 len = (int64) luaL_optinteger(L, 2, File::ALL);
+	love::data::ContainerType ctype = love::data::CONTAINER_STRING;
+	int startidx = 1;
 
-	Data *data = nullptr;
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		ctype = love::data::luax_checkcontainertype(L, 1);
+		startidx = 2;
+	}
+
+	const char *filename = luaL_checkstring(L, startidx + 0);
+	int64 len = (int64) luaL_optinteger(L, startidx + 1, File::ALL);
+
+	FileData *data = nullptr;
 	try
 	{
 		data = instance()->read(filename, len);
@@ -461,16 +471,24 @@ int w_read(lua_State *L)
 	if (data == nullptr)
 		return luax_ioError(L, "File could not be read.");
 
-	// Push the string.
-	lua_pushlstring(L, (const char *) data->getData(), data->getSize());
+	int nret = 0;
 
-	// Push the size.
-	lua_pushinteger(L, data->getSize());
+	if (ctype == love::data::CONTAINER_DATA)
+	{
+		luax_pushtype(L, data);
+		nret = 1;
+	}
+	else
+	{
+		lua_pushlstring(L, (const char *) data->getData(), data->getSize());
+		lua_pushinteger(L, data->getSize());
+		nret = 2;
+	}
 
 	// Lua has a copy now, so we can free it.
 	data->release();
 
-	return 2;
+	return nret;
 }
 
 static int w_write_or_append(lua_State *L, File::Mode mode)
