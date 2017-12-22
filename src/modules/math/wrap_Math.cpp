@@ -360,19 +360,20 @@ int w_compress(lua_State *L)
 		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 	int level = (int) luaL_optinteger(L, 3, -1);
+	size_t rawsize = 0;
+	const char *rawbytes = nullptr;
 
-	CompressedData *cdata = nullptr;
 	if (lua_isstring(L, 1))
-	{
-		size_t rawsize = 0;
-		const char *rawbytes = luaL_checklstring(L, 1, &rawsize);
-		luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
-	}
+		rawbytes = luaL_checklstring(L, 1, &rawsize);
 	else
 	{
 		Data *rawdata = luax_checktype<Data>(L, 1);
-		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
+		rawsize = rawdata->getSize();
+		rawbytes = (const char *) rawdata->getData();
 	}
+
+	CompressedData *cdata = nullptr;
+	luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
 
 	luax_pushtype(L, cdata);
 	cdata->release();

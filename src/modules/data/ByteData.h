@@ -37,6 +37,7 @@ public:
 
 	ByteData(size_t size);
 	ByteData(const void *d, size_t size);
+	ByteData(void *d, size_t size, bool own);
 	ByteData(const ByteData &d);
 	virtual ~ByteData();
 

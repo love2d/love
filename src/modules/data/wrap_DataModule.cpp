@@ -41,6 +41,15 @@ namespace love
 namespace data
 {
 
+ContainerType luax_checkcontainertype(lua_State *L, int idx)
+{
+	const char *str = luaL_checkstring(L, idx);
+	ContainerType ctype = CONTAINER_STRING;
+	if (!getConstant(str, ctype))
+		luax_enumerror(L, "container type", getConstants(ctype), str);
+	return ctype;
+}
+
 int w_newDataView(lua_State *L)
 {
 	Data *data = luax_checkdata(L, 1);
@@ -103,38 +112,47 @@ int w_newByteData(lua_State *L)
 
 int w_compress(lua_State *L)
 {
-	const char *fstr = luaL_checkstring(L, 1);
+	ContainerType ctype = luax_checkcontainertype(L, 1);
+
+	const char *fstr = luaL_checkstring(L, 2);
 	Compressor::Format format = Compressor::FORMAT_LZ4;
 
 	if (!Compressor::getConstant(fstr, format))
 		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
-	int level = (int) luaL_optinteger(L, 3, -1);
+	int level = (int) luaL_optinteger(L, 4, -1);
+	size_t rawsize = 0;
+	const char *rawbytes = nullptr;
 
-	CompressedData *cdata = nullptr;
-	if (lua_isstring(L, 2))
-	{
-		size_t rawsize = 0;
-		const char *rawbytes = luaL_checklstring(L, 2, &rawsize);
-		luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
-	}
+	if (lua_isstring(L, 3))
+		rawbytes = luaL_checklstring(L, 3, &rawsize);
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 2);
-		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
+		Data *rawdata = luax_checktype<Data>(L, 3);
+		rawsize = rawdata->getSize();
+		rawbytes = (const char *) rawdata->getData();
 	}
 
-	luax_pushtype(L, cdata);
+	CompressedData *cdata = nullptr;
+	luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
+
+	if (ctype == CONTAINER_DATA)
+		luax_pushtype(L, cdata);
+	else
+		lua_pushlstring(L, (const char *) cdata->getData(), cdata->getSize());
+
 	cdata->release();
 	return 1;
 }
 
 int w_decompress(lua_State *L)
 {
+	ContainerType ctype = luax_checkcontainertype(L, 1);
+
 	char *rawbytes = nullptr;
 	size_t rawsize = 0;
 
-	if (luax_istype(L, 1, CompressedData::type))
+	if (luax_istype(L, 2, CompressedData::type))
 	{
 		CompressedData *data = luax_checkcompresseddata(L, 1);
 		rawsize = data->getDecompressedSize();
@@ -143,7 +161,7 @@ int w_decompress(lua_State *L)
 	else
 	{
 		Compressor::Format format = Compressor::FORMAT_LZ4;
-		const char *fstr = luaL_checkstring(L, 1);
+		const char *fstr = luaL_checkstring(L, 2);
 
 		if (!Compressor::getConstant(fstr, format))
 			return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
@@ -151,27 +169,39 @@ int w_decompress(lua_State *L)
 		size_t compressedsize = 0;
 		const char *cbytes = nullptr;
 
-		if (luax_istype(L, 2, Data::type))
+		if (luax_istype(L, 3, Data::type))
 		{
 			Data *data = luax_checktype<Data>(L, 2);
 			cbytes = (const char *) data->getData();
 			compressedsize = data->getSize();
 		}
 		else
-			cbytes = luaL_checklstring(L, 2, &compressedsize);
+			cbytes = luaL_checklstring(L, 3, &compressedsize);
 
 		luax_catchexcept(L, [&](){ rawbytes = decompress(format, cbytes, compressedsize, rawsize); });
 	}
 
-	lua_pushlstring(L, rawbytes, rawsize);
-	delete[] rawbytes;
+	if (ctype == CONTAINER_DATA)
+	{
+		ByteData *data = nullptr;
+		luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(rawbytes, rawsize, true); });
+		luax_pushtype(L, Data::type, data);
+		data->release();
+	}
+	else
+	{
+		lua_pushlstring(L, rawbytes, rawsize);
+		delete[] rawbytes;
+	}
 
 	return 1;
 }
 
 int w_encode(lua_State *L)
 {
-	const char *formatstr = luaL_checkstring(L, 1);
+	ContainerType ctype = luax_checkcontainertype(L, 1);
+
+	const char *formatstr = luaL_checkstring(L, 2);
 	EncodeFormat format;
 	if (!getConstant(formatstr, format))
 		return luax_enumerror(L, "encode format", getConstants(format), formatstr);
@@ -179,33 +209,50 @@ int w_encode(lua_State *L)
 	size_t srclen = 0;
 	const char *src = nullptr;
 
-	if (luax_istype(L, 2, Data::type))
+	if (luax_istype(L, 3, Data::type))
 	{
-		Data *data = luax_totype<Data>(L, 2);
+		Data *data = luax_totype<Data>(L, 3);
 		src = (const char *) data->getData();
 		srclen = data->getSize();
 	}
 	else
-		src = luaL_checklstring(L, 2, &srclen);
+		src = luaL_checklstring(L, 3, &srclen);
 
-	size_t linelen = (size_t) luaL_optinteger(L, 3, 0);
+	size_t linelen = (size_t) luaL_optinteger(L, 4, 0);
 
 	size_t dstlen = 0;
 	char *dst = nullptr;
 	luax_catchexcept(L, [&](){ dst = encode(format, src, srclen, dstlen, linelen); });
 
-	if (dst != nullptr)
-		lua_pushlstring(L, dst, dstlen);
-	else
-		lua_pushstring(L, "");
+	if (ctype == CONTAINER_DATA)
+	{
+		ByteData *data = nullptr;
+		if (dst != nullptr)
+			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(dst, dstlen, true); });
+		else
+			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(0); });
 
-	delete[] dst;
+		luax_pushtype(L, Data::type, data);
+		data->release();
+	}
+	else
+	{
+		if (dst != nullptr)
+			lua_pushlstring(L, dst, dstlen);
+		else
+			lua_pushstring(L, "");
+
+		delete[] dst;
+	}
+
 	return 1;
 }
 
 int w_decode(lua_State *L)
 {
-	const char *formatstr = luaL_checkstring(L, 1);
+	ContainerType ctype = luax_checkcontainertype(L, 1);
+
+	const char *formatstr = luaL_checkstring(L, 2);
 	EncodeFormat format;
 	if (!getConstant(formatstr, format))
 		return luax_enumerror(L, "decode format", getConstants(format), formatstr);
@@ -213,25 +260,40 @@ int w_decode(lua_State *L)
 	size_t srclen = 0;
 	const char *src = nullptr;
 
-	if (luax_istype(L, 2, Data::type))
+	if (luax_istype(L, 3, Data::type))
 	{
-		Data *data = luax_totype<Data>(L, 2);
+		Data *data = luax_totype<Data>(L, 3);
 		src = (const char *) data->getData();
 		srclen = data->getSize();
 	}
 	else
-		src = luaL_checklstring(L, 2, &srclen);
+		src = luaL_checklstring(L, 3, &srclen);
 
 	size_t dstlen = 0;
 	char *dst = nullptr;
 	luax_catchexcept(L, [&](){ dst = decode(format, src, srclen, dstlen); });
 
-	if (dst != nullptr)
-		lua_pushlstring(L, dst, dstlen);
-	else
-		lua_pushstring(L, "");
+	if (ctype == CONTAINER_DATA)
+	{
+		ByteData *data = nullptr;
+		if (dst != nullptr)
+			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(dst, dstlen, true); });
+		else
+			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(0); });
 
-	delete[] dst;
+		luax_pushtype(L, Data::type, data);
+		data->release();
+	}
+	else
+	{
+		if (dst != nullptr)
+			lua_pushlstring(L, dst, dstlen);
+		else
+			lua_pushstring(L, "");
+
+		delete[] dst;
+	}
+
 	return 1;
 }
 
@@ -259,13 +321,14 @@ int w_hash(lua_State *L)
 	return 1;
 }
 
-static int w_pack(lua_State *L, bool data)
+static int w_pack(lua_State *L)
 {
-	const char *fmt = luaL_checkstring(L, 1);
+	ContainerType ctype = luax_checkcontainertype(L, 1);
+	const char *fmt = luaL_checkstring(L, 2);
 	luaL_Buffer_53 b;
-	lua53_str_pack(L, fmt, 2, &b);
+	lua53_str_pack(L, fmt, 3, &b);
 
-	if (data)
+	if (ctype == CONTAINER_DATA)
 	{
 		Data *d = nullptr;
 		luax_catchexcept(L, [&]() { d = DataModule::instance.newByteData(b.nelems); });
@@ -279,16 +342,6 @@ static int w_pack(lua_State *L, bool data)
 		lua53_pushresult(&b);
 
 	return 1;
-}
-
-int w_packString(lua_State *L)
-{
-	return w_pack(L, false);
-}
-
-int w_packData(lua_State *L)
-{
-	return w_pack(L, true);
 }
 
 int w_unpack(lua_State *L)
@@ -321,8 +374,7 @@ static const luaL_Reg functions[] =
 	{ "decode", w_decode },
 	{ "hash", w_hash },
 
-	{ "packString", w_packString },
-	{ "packData", w_packData },
+	{ "pack", w_pack },
 	{ "unpack", w_unpack },
 	{ "getPackedSize", lua53_str_packsize },
 

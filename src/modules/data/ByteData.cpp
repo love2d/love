@@ -45,10 +45,23 @@ ByteData::ByteData(const void *d, size_t size)
 	memcpy(data, d, size);
 }
 
+ByteData::ByteData(void *d, size_t size, bool own)
+	: size(size)
+{
+	if (own)
+		data = (char *) d;
+	else
+	{
+		create();
+		memcpy(data, d, size);
+	}
+}
+
 ByteData::ByteData(const ByteData &d)
 	: size(d.size)
 {
 	create();
+	memcpy(data, d.data, size);
 }
 
 ByteData::~ByteData()

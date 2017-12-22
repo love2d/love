@@ -25,10 +25,10 @@ function love.nogame()
 
 	R = {}
 
-	R.bg = {}
+	R.bg = {[1]={}, [2]={}}
 
 	-- cloud_1.png
-	R.bg.cloud_1_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[1].cloud_1_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAALEAAABUCAYAAADNoNb0AAAGqElEQVR4nO3de6wcVR0H8M\
 	+lL20bX1iItFANVEEkpai1tWBJg6JEkxrwCWrAlEpMNdHYaDSpJjU+Eo0mmqBi+odKUuID\
 	Y4xExFdjhJJqRYKCYkzUP6RCedWalkv949wmze3O3t3ZmXNm7/19kv3j7u7M+e293zs7c2\
@@ -63,9 +63,9 @@ function love.nogame()
 	HtxVbsr7PwKMOTfo/1uE66aUgIw3pQys96NQNMczdjnI/NuFa6j2/cEixUeUq668Au3Dr1\
 	80iavKPocc+TZhDaKN0WdxVOFdNizUWH8DD+gnvxq6nHI0020kaIQ8gqhuyHsRchDmMvQh\
 	zGXoQ4jL3/A4htWI/rxYLaAAAAAElFTkSuQmCC\
-	"), "cloud_1.png")
+	")
 	-- cloud_1@2x.png
-	R.bg.cloud_1_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[2].cloud_1_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAAWIAAACoCAYAAADaWOQcAAAOEElEQVR4nO3debQfZX3H8f\
 	cl4SZkITkmshmwIYgBTVgLZRMwBiwuOaCCqCig4illq2KL2x+etmqtWFcqirGlLlXcDngE\
 	BbHUKEKhKkILFRO2YpEkEiGQQLjpH98bEvAmmZnfzDyzvF/n3HNzYGaeLwn5/J77zLMMrV\
@@ -136,9 +136,9 @@ function love.nogame()
 	odAExIWpGkJlsL3Ezsd/M94HrgyaQVbUUbgviZJhBT4OYBLyCOsN4V2AGYSRxoKqnbHgWW\
 	E6fJ3wssA24DfkmcFrQ2XWn5tTGIJalTUk5fkyRhEEtScgaxJCVmEEtSYgaxJCVmEEtSYg\
 	axJCVmEEtSYgaxJCX2/5ixqodpMZm+AAAAAElFTkSuQmCC\
-	"), "cloud_1@2x.png")
+	")
 	-- cloud_2.png
-	R.bg.cloud_2_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[1].cloud_2_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAALEAAABUCAYAAADNoNb0AAAF0klEQVR4nO3dW4hVVRzH8e\
 	8cc2w0M6uZhjE1m0lNsbLsOj5FXgoyKlMLSqMxYx6znsughzDMh56sibALFSEUpFQiFUVk\
 	SdJDNF2s7DZYUGNTDU7j9PA/kWSkc87/v9dl/z/gy6hr/w/nx5q1115r7YaRkRGcS1kldA\
@@ -169,9 +169,9 @@ function love.nogame()
 	iZA13IAXMuTwP88z0PFXXRohfF9wBzkXGyy8s25Lst/DduyLcnXQTciwz8x4YqwtVlCAnv\
 	RmBPqCJieBljMzJ+ugY5t6I1bDnuGPqQ5ZTbkamzH8OWE0eInauLbxR1yfMQu+R5iF3yPM\
 	QueX8BzokhiMHuRk0AAAAASUVORK5CYII=\
-	"), "cloud_2.png")
+	")
 	-- cloud_2@2x.png
-	R.bg.cloud_2_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[2].cloud_2_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAAWIAAACoCAYAAADaWOQcAAAMXUlEQVR4nO3de6zf8x3H8e\
 	fR9kQxpZ2WCkqrOlKrul9Kmds2m5lths0lw1oWhMzcZtnMNrK4zUzS2NjFzDW2mWxzN5Ni\
 	ZshQrbmUMkxrSteq7o+PE1XV8/ud8/v93p/P9/t8JJKmOel55cjvdd6/z+/z/Xy6lixZgi\
@@ -234,9 +234,9 @@ function love.nogame()
 	KwG7AfsC+wbmwcqdKeA24ArgduBd6OjZMHi/i9uoCtgB2B7YHtcFqW+uNpYDpwD+moyvsp\
 	/KS0drCIJSlY1bevSVL2LGJJCmYRS1Iwi1iSglnEkhTMIpakYBaxJAWziCUpmEUsScH+D0\
 	EmR28m6dqwAAAAAElFTkSuQmCC\
-	"), "cloud_2@2x.png")
+	")
 	-- cloud_3.png
-	R.bg.cloud_3_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[1].cloud_3_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAALEAAABUCAYAAADNoNb0AAAFhklEQVR4nO3dWYxfUxwH8E\
 	+rElGh1tSe1NJUiMTEFtEmJR5ILEG8iC1p8SAhggdeRCW1e6JCiCdLBKkSsST2pfYtDCFE\
 	SSNFhDZ9YOrhZGTKjLbTmfn9zr3n89zMfPs/3zn/c+89995pGzZs0DQ1mx4doGm2VitxU7\
@@ -266,9 +266,9 @@ function love.nogame()
 	8rkOqKjA1DcTjzQDZ+FCnKi+P8gMhvCC8krcx1R6kanmEo+0h3IEvUCZSeZq73wezTpl88\
 	57eBnP4afQRBOgKyVueqx9BTfVayVuqtdK3FSvlbip3t9rOy6aUG6iAgAAAABJRU5ErkJg\
 	gg==\
-	"), "cloud_3.png")
+	")
 	-- cloud_3@2x.png
-	R.bg.cloud_3_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[2].cloud_3_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAAWIAAACoCAYAAADaWOQcAAALhklEQVR4nO3daaxdVRnG8f\
 	8tpUUopdQKSEtb5qkBQSwEiUBDUagyiBIpiVZAQcBqkDAlihJAgZKIUEIIKE4Eq0yCTEJB\
 	YtFiDEhoGVqGho7QkDKUoUDrh3Xh9HLnc88579p7/39Jk/bTfdqc/fS96661dtu6deuQJM\
@@ -327,9 +327,9 @@ function love.nogame()
 	fGUUk9QzqSfzfpbu13Y+MILOKcbUG6gH4vYE9SMW9Lupxe6s0a4HngWeB/wGOkC9tfjgyl\
 	rlnEkhTMfcSSFMwilqRgFrEkBbOIJSmYRSxJwSxiSQpmEUtSMItYkoJZxJIU7P83pECPnM\
 	xUCgAAAABJRU5ErkJggg==\
-	"), "cloud_3@2x.png")
+	")
 	-- cloud_4.png
-	R.bg.cloud_4_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[1].cloud_4_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAALEAAABUCAYAAADNoNb0AAAFz0lEQVR4nO3dW4hfxR0H8M\
 	+mGhuNxqLWe0niNUaNEol3tJrY4L312tYbIlpB0BcVvDy1YIgoKqioEGKfKlgo2IcGqigY\
 	xIiYxtYoahSLNWhDi7fqJnH7MCsmMSy7c+bc9v/7wJ9AsjPze/juyfzPmZkzNDIyIoQ+m9\
@@ -360,9 +360,9 @@ function love.nogame()
 	mO69p2vxrzpd+69TWNEfphvZSD+WoIMM28oHwarsK1WFD3YKEzVmEZfi+dRVybJkK8pVk4\
 	09bvsdtdO+/TC2VsknZkrJMeXLyIZ/FeUwU0HeIQioujqELvRYhD70WIQ+9FiEPvRYhD7/\
 	0fHvIyRu6OJTkAAAAASUVORK5CYII=\
-	"), "cloud_4.png")
+	")
 	-- cloud_4@2x.png
-	R.bg.cloud_4_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.bg[2].cloud_4_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAAWIAAACoCAYAAADaWOQcAAAMOklEQVR4nO3de+zXVR3H8e\
 	dP7oKCCoLITUEylJuXykQltQJvXbzNQZnlJS0vMFeuZWpO29yylO4zMZelkq2823Rqma6G\
 	U1DLNPCSBojmBVkR6K8/zu9niL/r93Len8/3+3xsTOZl56VzLw7ncy4tra2tSJLibBUdQJ\
@@ -424,11 +424,12 @@ function love.nogame()
 	MBc4EBgVG0dSBVYDvwfuAG4n4Kn7HBq5iLe0K+nB0qnAZGAC6amm4cC2cbGkpvcG8DLplY\
 	xngaeAx0hvyK2Mi5VPMxWxJBWSa6iSFMwilqRgFrEkBbOIJSmYRSxJwSxiSQpmEUtSMItY\
 	koJZxJIUzCKWpGAWsSQF+x/RmkrWbHB7LQAAAABJRU5ErkJggg==\
-	"), "cloud_4@2x.png")
-	R.chain = {}
+	")
+
+	R.chain = {[1]={}, [2]={}}
 
 	-- a.png
-	R.chain.a_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].a_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAADj0lEQVRIic2WTWwUZRjHf/\
 	OxM/vRtSnttgsYSttN2yUBWqQKWC1BE6iGBj3IAcHoRcWLiRxMTCTiyejRqCeNPejBkxSQ\
 	Fg6GxEjSkLYgEmDXrwjFOmtry352Zl4Pg4WZnd2uhhD+yVze93me3zPvx/O8khCCeyn5nt\
@@ -448,9 +449,9 @@ function love.nogame()
 	rtaAk8CI9ftsR+7z7zDPXqsKUzbECL+4DTURTwF7gIu+SdX4xDho/fKnVvo+jfmTgcjkQI\
 	DUFEZZ04DW14bavaoIfIKzjPOVAi4H/FdxYB8wCPRwu1xlgCngJDCMc+iqqlbgXdN9+y69\
 	a/oHeH87HFWBERQAAAAASUVORK5CYII=\
-	"), "a.png")
+	")
 	-- a@2x.png
-	R.chain.a_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].a_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAH3ElEQVRoge2aXWwVxxXHf7\
 	O7d++XDcQOBgzYOMHUNg00JHyHD4coLYSEVn1paJq0iCZqm1YofUirfqjNQ6u+oJY0ahu5\
 	fWgDEZEipfBQERRaaMCQNnGggCDU2MSNqQMmYPD1/dqdPqz3foB39861rYaIv3SlmdkzZ8\
@@ -491,9 +492,9 @@ function love.nogame()
 	7L2BevOlM4lUVUhBGVEfQZt2E0TEavvyEJcxr4Gc56H52BY3wRaMPwZZ5UGReBMtK5RPSF\
 	j9tFoJEwESf0vxQngDwLJwzpRhASOCGRM8Bx4ACwj3G4yjVeBD82+MTfNrxF8GbHLYI3O/\
 	4HzN2+0cWu1vEAAAAASUVORK5CYII=\
-	"), "a@2x.png")
+	")
 	-- e.png
-	R.chain.e_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].e_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAADrElEQVRIic2WW2hcVRSGv3\
 	OZk8wtJjhpUk1bk6a1sZhqsVJFLFpQIxIRivhQBd+kogQvCIooFJ8K9cHQF5+kbz6UqkGJ\
 	BEVF0ZRaBkxtNZOml9w6k06ayXQm55y9tw+niXPOmWlSLaU/zMu/11r/WmfP3v/WlFLcTO\
@@ -514,9 +515,9 @@ function love.nogame()
 	E7WzNAL1W8cCVB8LxxP7BPnMla9vAY7mgWlS+BK9BakhhtjVg72jG33GED/XhPkrBnrVJw\
 	CS3AXqAHb1+WLocc3jkbBA5TYUP/V/CG4ZZ9l94w/AMIA3oLRCGsQwAAAABJRU5ErkJggg\
 	==\
-	"), "e.png")
+	")
 	-- e@2x.png
-	R.chain.e_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].e_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAH2klEQVRoge2ae4xVRx3HPz\
 	PnnPvYe/cur12WLQu7FBrYllJgC6VgTZfGKqBNaku0sSYkbRq1GEhMmviI1uh/YjVg1JTE\
 	pDWgRIlajAGxKLUFAWlB3UIXlvdjW3bZ133fc8Y/zj2Xvbt7zz3n7qKl4ZtsMr85v5n5fe\
@@ -557,9 +558,9 @@ function love.nogame()
 	hZE5XKISIBRCxkR7eba9FmTAYhhjY9BXwL2IF9TFWOcXwIJPOPeF7LP+rxi0y+7WPKflT0\
 	oXkINBqcp1wPAK3YMdbp5CN12PGeLuyowTHsu+dNecp1swh+aPCRf214m+CtjtsEb3X8F5\
 	Lt7GKi5gIEAAAAAElFTkSuQmCC\
-	"), "e@2x.png")
+	")
 	-- g.png
-	R.chain.g_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].g_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAADvElEQVRIidWWTUxcVRTHf/\
 	d9DcwM00FomYYAQ9uhbdIUUWNrmtqA2pguqk3UBYp148LEdKELv5aaNHFRTWpMTGy0lcYY\
 	MW60Ma0BGrW18hUhEW0tjICKM1CgwLxh3rx3XQzFecMwUGOaepK3+Z/zzu+ee+479wkpJb\
@@ -580,9 +581,9 @@ function love.nogame()
 	pbdmHs3hwHHseR57PbshYgQAXwJlI+aQ2MqakfhrCHryGvJ8FyEOVe1OpSjHvC6DurbTTl\
 	I+AVYHylhKsBM9spRBhoBvYDO4CyRe8kMEBm604jZRSxvKqbA/7Hdtv+Jv5/gX8Djf96T7\
 	NLXZQAAAAASUVORK5CYII=\
-	"), "g.png")
+	")
 	-- g@2x.png
-	R.chain.g_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].g_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAIJ0lEQVRoge2aWZBU1RnHf+\
 	feXuf2DMyAs7AYlgEGnLBETQVBEkFMjKIVLYwlSbRSZVW0ECV5yYsVH5JKkVS5lSmtSpFo\
 	MDFWEhcCWAYTDMNmRjZFBhhHBodtmBmYpffue08ebndPd9F36Z4hAYv/073nfuec//+e7T\
@@ -624,9 +625,9 @@ function love.nogame()
 	QeAnGSK5SwgylkI/fo5UezfGmQGMvggkdZAS/B5EpR+1YSzq1PF4ZzXkdiIZ9GFeQHiWMl\
 	otH6N9jeQB4EHMA8pyYvPbMT2nP3IZXSMphlpgGbAQmAd8CbMbZ33fGOZVkU+Bw5jLz7+4\
 	zC8CXZb4wt9VuyrwSsdVgVc6rgq80vFfbDnjk7U4d3EAAAAASUVORK5CYII=\
-	"), "g@2x.png")
+	")
 	-- m.png
-	R.chain.m_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].m_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAADkUlEQVRIic2WXWwUVRTHf3\
 	dmdva7RLst21Zql1ZsqxBoKvKRCOqDAhF50wRNNCFR8UGMEh+MEjE+GI36pM8SP2J8MAoG\
 	LYkPJoQSTFpNCrHtVjSUQrtrW7a70935uD5srZ2d6W4lhPBP5mHOuff+zr33zDkjpJTcTC\
@@ -646,9 +647,9 @@ function love.nogame()
 	tQbcBZywL02vLXx62pPylVI3NBB5dhtaR3IU2AcM+QZV4xcjTrnFHLT/mNJL/WmssQwyWw\
 	ApEYkoautt6Pel0Dqbi8AnwBHKp+SrWsB/lQT2A7uAjfxXrrLAANAHHAOu1lpopcAbplv2\
 	v/SG6R/27zmuL3E50QAAAABJRU5ErkJggg==\
-	"), "m.png")
+	")
 	-- m@2x.png
-	R.chain.m_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].m_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAH/klEQVRoge2aaXBVZxnHf+\
 	855557c29CAkIMWUGaNCRsJh22KGVRRqCVOnXGkUGxiqPW4mD9UJ2Oy/jFGT/gSNvROti6\
 	QRWXD8VlFKUlU0ixVqQ0gCxDIAKlkJClufu9rx/OPTd3ydmyaOnwn7kz533P8z7LPed53u\
@@ -690,9 +691,9 @@ function love.nogame()
 	7izUhpmFPM8A38Hw94kpOMkHgT6SOcwTG8dBoIQ0DhE98HY7CDQWyjFK/yswCshzMMqQ5m\
 	d+GKMkcg7jw/ow8CJTcJRrqgx82+Adf9rwjoG3O+4YeLvjv1Ru0JflEZTtAAAAAElFTkSu\
 	QmCC\
-	"), "m@2x.png")
+	")
 	-- n.png
-	R.chain.n_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].n_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAADbElEQVRIidWWTWxUVRSAv/\
 	v+Zt60dChQWlNpB1NqF9aimFajMjVRsSWwUEJcYI0LNNG4MJjoojHG+LdgZ3TXGDEmRuOC\
 	aDCAfxijEWP4SRcCBQpF+bHTTpmZN9P3d13M1On0dV4HYgie5OW9d+495zvn3fvOuUJKyY\
@@ -711,9 +712,9 @@ function love.nogame()
 	bbwHYWFG4I74cbgS/csUurrA9/wTt+JRSktC3D3NGLcV/HJLANXx5iQXZLAQFaKHb8IffE\
 	RWEfPoN3ehJ/0gJfIhpN1PZG9LvbMda3e2jKxxQ7/uVqDpcCzkkC2AE8AtwBzLWGKWAUOA\
 	h8gpRnEcGsrgf4n8lNe0z8/wL/AWkORFUNbGW+AAAAAElFTkSuQmCC\
-	"), "n.png")
+	")
 	-- n@2x.png
-	R.chain.n_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].n_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAHaElEQVRoge2aa2wU1xXHf/\
 	PY99rgEAdDjTEBHEgbwisENSmPUJSYCslRqZK2n5qoqlRF1Cpp0yp8qPoBNaUNTZXHJ0RV\
 	KSlIlULV1ORVSExFAzVJREJqXjHQ2BQ3xsbe987M7Yfx7M7indnZ9W5TR/5/unPvufee/9\
@@ -752,9 +753,9 @@ function love.nogame()
 	t1cZN9tcD0L3djvrxJHbrV/I0kAnwLM29f6W8kx4G9mB6KN6+7BKpJ0I4mYDNmbHU5MA8z\
 	8mXtvRSmsejDNPsnMPP+FQZgnVErgv83+Nz/qzZNcKpjmuBUxzTBqY7/AmDdgoJ+h2mjAA\
 	AAAElFTkSuQmCC\
-	"), "n@2x.png")
+	")
 	-- o.png
-	R.chain.o_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].o_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAGXRFWHRTb2Z0d2FyZQBBZG\
 	9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBh\
 	Y2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4On\
@@ -791,9 +792,9 @@ function love.nogame()
 	62ELoSvYDZsXRFrm/3hs8/gvZ+4OfvlKkuCmMhpJJ57ALeTKj9kyfGGUS1DfKzNij19MTo\
 	6IcekinPJPDTUiAWZEHMzyQRCTep7x6rJwYYoQ34CacIDYSIPmKsbBxt99mcx9LD/w/hhO\
 	2bAAMAGcakBZrrNusAAAAASUVORK5CYII=\
-	"), "o.png")
+	")
 	-- o@2x.png
-	R.chain.o_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].o_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAH90lEQVRoge2abXAV1RnHf/\
 	ty3/NKEhJeApeEgLEqUSRNeBGKIjO2aFvHStXWji3TdjqljF/amVpbO5WxnSlDazuj0mod\
 	2xlKYaTDDFYEq4DyYkcGSwjUxIaEAAkQyMvNzb27e7cfNnvvDZI9uzfJWBz+n/acfZ5z/v\
@@ -834,9 +835,9 @@ function love.nogame()
 	WST+QSQjYqgV8BDwDpg3Wzfwjt5FmM9oukuvut/2lCR4r4kYvCKJWTUGsqkMsLstsysUbG\
 	T7EuC40Z43kRaDbWtZLVWJORF/RgCXsOODFehGB8BdpQgSVYByP1WMKjgJ1siWHdmGgGjg\
 	C7sXYGwvxKLpgIgf9X+NTfNrwu8FrHdYHXOv4HXDGZ3/Dil9AAAAAASUVORK5CYII=\
-	"), "o@2x.png")
+	")
 	-- square.png
-	R.chain.square_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[1].square_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAACHklEQVRIie2VzWsTQRjGn9\
 	l2t7GktmmLJiD1YPw4+HHwIIqi9FCw0D9AsRRF/Ac82LNQ/wJPQi+CV48WROqhgrZGglJJ\
 	CYKGQm1Mk7j5aHdms/N4sFg/ss2uloKlA3MYeN/nN8+8vO8IktjOZWwrbRe4I4DtoTM8CX\
@@ -849,9 +850,9 @@ function love.nogame()
 	SxqV7APrRB8pSuZItq9uKPPlSvzlKX3+ZJHtdOYesa/6fmT+rap0U1N0j1eoi68iFD8oCW\
 	5a2dNBvjrQaSCV3LvdG13BOSe7WqhtJoWcM/SqBsQLvr9TMhrO5Q+aGB/7p2/o+/C/z/gd\
 	8AcTpAf+9BGPQAAAAASUVORK5CYII=\
-	"), "square.png")
+	")
 	-- square@2x.png
-	R.chain.square_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.chain[2].square_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAADpElEQVRoge2Zb2hVZRzHP+\
 	c558w796c5YbG1miaVu9tKeucLEyosK7GwIChEhjGKIRYGUYkyohgRMkYGG4kU6asiYrKi\
 	ImS+KMIgWLoWrJW4zMlWY+rN8+fbiy0ha5b3nHPlyPnAgQv3PN/n9+Gee5/n+V1LEtcy5m\
@@ -871,11 +872,12 @@ function love.nogame()
 	243C2M+CQOI9mS5JCk+8p8JQowpD9fNXw1/NJ09Se5LNp8S7WpK2S1Iw8eGc5JEmBb8MSN\
 	KspPuTnr8Ugkh6XFIhOPWxgskhSRqXtKoUcyfZVbuU1cy1JIaBLczthBKnlIJXhey/ibST\
 	CaadTDDtZIJpJxNMO5lg2skE0841L/gnbItHb7ZckqQAAAAASUVORK5CYII=\
-	"), "square@2x.png")
-	R.duckloon = {}
+	")
+
+	R.duckloon = {[1]={}, [2]={}}
 
 	-- blink.png
-	R.duckloon.blink_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.duckloon[1].blink_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAAJEAAADNCAYAAAC4lJKvAAAAGXRFWHRTb2Z0d2FyZQBBZG\
 	9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBh\
 	Y2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4On\
@@ -1141,9 +1143,9 @@ function love.nogame()
 	PgQs002cYwcQDZasRfVUfALXzw69+T9ZBvoxBGmd+9INNXf1rkvQn/0Y12V780PyBpw0XG\
 	Yw5tmFbustI2+fkPEQb9Yoa+ecx/o4DiAaLFkLa8o4aPTcie3aMdYPLBrWxTlh86T2cq9c\
 	Ups9BstgGcREg2UA0WAZQDRYBhANlsHS2vL/BRgAoPt28wv5YoIAAAAASUVORK5CYII=\
-	"), "blink.png")
+	")
 	-- blink@2x.png
-	R.duckloon.blink_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.duckloon[2].blink_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAASIAAAGaCAYAAACrJ06uAAAgAElEQVR4nOy9ebgtx1XY+6\
 	veZ7izZku2hCQs2Vi2CDaW55HEDA/C4ITwEfIygJmS90gg+RiSEHDyMhBI+PICL/BIXh4v\
 	jEmwGY0J4IlBHmIDxpPAA5Y8SbakK+le3XvPOXv3en90VfeqVdW9e8/7nLvX9917urqqa1\
@@ -1833,9 +1835,9 @@ function love.nogame()
 	lo2IrLqXwAX5S+nhItPfGas/9/Kwn+gChHwT0qH6lNtHcqhW5VZu83wrq27UOu+x4ATfta\
 	+4VJ9+w2gPyKqUsiCysrIauWzTzMrKauSyILKyshq5LIisrKxGLgsiKyurkcuCyMrKauSy\
 	ILKyshq5LIisrKxGLgsiKyurkeu/ABHELVe8zEuIAAAAAElFTkSuQmCC\
-	"), "blink@2x.png")
+	")
 	-- normal.png
-	R.duckloon.normal_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.duckloon[1].normal_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAAJEAAADNCAYAAAC4lJKvAAAgAElEQVR4nO2debwlR3WYv9\
 	N3e+vMaEbLaB0JARISMouMRywCJIyNQTHEISEQb8EsxiRxTBwbnIBJMI632NgxJpFXYvDC\
 	ajAy2CARVgkQi8SmXRqN0Db7vJm33O6ukz+qqru6b/d999533zLSO7/fTHdXV1dXV33vnF\
@@ -2120,9 +2122,9 @@ function love.nogame()
 	WXrwBnm4RDUROkZQA+jf3arZWZ2aM6N4fMzq5TFddfKmesNwWO/eGVhZigmZ+7lu5HLkOa\
 	NoZaml2aP/yt9avgBpJNiDZlxbI5OtuUFcsmRJuyYtmEaFNWLP8frUcjd38kwVYAAAAASU\
 	VORK5CYII=\
-	"), "normal.png")
+	")
 	-- normal@2x.png
-	R.duckloon.normal_2x_png = love.filesystem.newFileData(love.data.decode("base64", "\
+	R.duckloon[2].normal_png = love.data.decode("data", "base64", "\
 	iVBORw0KGgoAAAANSUhEUgAAASIAAAGaCAYAAACrJ06uAAAgAElEQVR4nOy9ebgtx1XY+6\
 	ve+5xzZ83WiCRbtmwNBGPJFjaeADMEYoiJkwckIY/JEF5IIHwBkhAwCUkg08tLeIGQvDwS\
 	EiCMBmwMOJ4YPOERD5IH2ZIs25KQdCXdq3vvOWd3r/zRVd2rVlf37j2dvc+5e33fvaerq7\
@@ -2822,7 +2824,7 @@ function love.nogame()
 	R2a/Mzb9wmvieaJLEPLNSI/6M+8eyaY6VVuFzfOdnLpR66IngRd9177mU3/2raPdIKdKyo\
 	HIyclp5HJDMycnp5HLgcjJyWnkciBycnIauRyInJycRi4HIicnp5HLgcjJyWnkciBycnIa\
 	uRyInJycRq7/D3Tgxzs5ujSKAAAAAElFTkSuQmCC\
-	"), "normal@2x.png")
+	")
 
 	-- 30log.lua begins
 	local function require_30log()
@@ -3167,37 +3169,38 @@ function love.nogame()
 		love.graphics.setBackgroundColor(43/255, 165/255, 223/255)
 		love.physics.setMeter(64)
 
-		local hdpi = love.window.getDPIScale() > 1
+		local dpiscale = love.window.getDPIScale() > 1 and 2 or 1
+		local settings = {dpiscale = dpiscale}
 
-		R.chain.n = hdpi and R.chain.n_2x_png or R.chain.n_png
-		R.chain.o = hdpi and R.chain.o_2x_png or R.chain.o_png
-		R.chain.g = hdpi and R.chain.g_2x_png or R.chain.g_png
-		R.chain.a = hdpi and R.chain.a_2x_png or R.chain.a_png
-		R.chain.m = hdpi and R.chain.m_2x_png or R.chain.m_png
-		R.chain.e = hdpi and R.chain.e_2x_png or R.chain.e_png
-		R.chain.square = hdpi and R.chain.square_2x_png or R.chain.square_png
-		R.duckloon.blink = hdpi and R.duckloon.blink_2x_png or R.duckloon.blink_png
-		R.duckloon.normal = hdpi and R.duckloon.normal_2x_png or R.duckloon.normal_png
-		R.bg.cloud_1 = hdpi and R.bg.cloud_1_2x_png or R.bg.cloud_1_png
-		R.bg.cloud_2 = hdpi and R.bg.cloud_2_2x_png or R.bg.cloud_2_png
-		R.bg.cloud_3 = hdpi and R.bg.cloud_3_2x_png or R.bg.cloud_3_png
-		R.bg.cloud_4 = hdpi and R.bg.cloud_4_2x_png or R.bg.cloud_4_png
+		R.chain.n = R.chain[dpiscale].n_png
+		R.chain.o = R.chain[dpiscale].o_png
+		R.chain.g = R.chain[dpiscale].g_png
+		R.chain.a = R.chain[dpiscale].a_png
+		R.chain.m = R.chain[dpiscale].m_png
+		R.chain.e = R.chain[dpiscale].e_png
+		R.chain.square = R.chain[dpiscale].square_png
+		R.duckloon.blink = R.duckloon[dpiscale].blink_png
+		R.duckloon.normal = R.duckloon[dpiscale].normal_png
+		R.bg.cloud_1 = R.bg[dpiscale].cloud_1_png
+		R.bg.cloud_2 = R.bg[dpiscale].cloud_2_png
+		R.bg.cloud_3 = R.bg[dpiscale].cloud_3_png
+		R.bg.cloud_4 = R.bg[dpiscale].cloud_4_png
 
-		img_duckloon_normal = love.graphics.newImage(R.duckloon.normal)
-		img_duckloon_blink = love.graphics.newImage(R.duckloon.blink)
+		img_duckloon_normal = love.graphics.newImage(R.duckloon.normal, settings)
+		img_duckloon_blink = love.graphics.newImage(R.duckloon.blink, settings)
 
-		img_n = love.graphics.newImage(R.chain.n)
-		img_o = love.graphics.newImage(R.chain.o)
-		img_g = love.graphics.newImage(R.chain.g)
-		img_a = love.graphics.newImage(R.chain.a)
-		img_m = love.graphics.newImage(R.chain.m)
-		img_e = love.graphics.newImage(R.chain.e)
-		img_square = love.graphics.newImage(R.chain.square)
+		img_n = love.graphics.newImage(R.chain.n, settings)
+		img_o = love.graphics.newImage(R.chain.o, settings)
+		img_g = love.graphics.newImage(R.chain.g, settings)
+		img_a = love.graphics.newImage(R.chain.a, settings)
+		img_m = love.graphics.newImage(R.chain.m, settings)
+		img_e = love.graphics.newImage(R.chain.e, settings)
+		img_square = love.graphics.newImage(R.chain.square, settings)
 
-		img_cloud_1 = love.graphics.newImage(R.bg.cloud_1)
-		img_cloud_2 = love.graphics.newImage(R.bg.cloud_2)
-		img_cloud_3 = love.graphics.newImage(R.bg.cloud_3)
-		img_cloud_4 = love.graphics.newImage(R.bg.cloud_4)
+		img_cloud_1 = love.graphics.newImage(R.bg.cloud_1, settings)
+		img_cloud_2 = love.graphics.newImage(R.bg.cloud_2, settings)
+		img_cloud_3 = love.graphics.newImage(R.bg.cloud_3, settings)
+		img_cloud_4 = love.graphics.newImage(R.bg.cloud_4, settings)
 
 		cloud_images = {
 			img_cloud_1,
