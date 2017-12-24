@@ -18,9 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "common/config.h"
 #include "Buffer.h"
 #include "Graphics.h"
 #include "common/Exception.h"
+
+#include <algorithm> // std::min
 
 namespace love
 {
