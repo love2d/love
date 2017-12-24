@@ -440,21 +440,15 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	{
 		for (size_t i = 0; i < sRTs.colors.size() && i < curRTs.colors.size(); i++)
 		{
-			const auto &rt1 = sRTs.colors[i];
-			const auto &rt2 = curRTs.colors[i];
-			if (rt1.canvas.get() != rt2.canvas.get() || rt1.slice != rt2.slice || rt1.mipmap != rt2.mipmap)
+			if (sRTs.colors[i] != curRTs.colors[i])
 			{
 				canvaseschanged = true;
 				break;
 			}
 		}
 
-		if (!canvaseschanged && (sRTs.depthStencil.canvas.get() != curRTs.depthStencil.canvas.get()
-			|| sRTs.depthStencil.slice != curRTs.depthStencil.slice
-			|| sRTs.depthStencil.mipmap != curRTs.depthStencil.mipmap))
-		{
+		if (!canvaseschanged && sRTs.depthStencil != curRTs.depthStencil)
 			canvaseschanged = true;
-		}
 
 		if (sRTs.temporaryRTFlags != curRTs.temporaryRTFlags)
 			canvaseschanged = true;
@@ -577,21 +571,15 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 		for (int i = 0; i < ncanvases; i++)
 		{
-			if (rts.colors[i].canvas != prevRTs.colors[i].canvas.get()
-				|| rts.colors[i].slice != prevRTs.colors[i].slice
-				|| rts.colors[i].mipmap != prevRTs.colors[i].mipmap)
+			if (rts.colors[i] != prevRTs.colors[i])
 			{
 				modified = true;
 				break;
 			}
 		}
 
-		if (!modified && (rts.depthStencil.canvas != prevRTs.depthStencil.canvas
-						  || rts.depthStencil.slice != prevRTs.depthStencil.slice
-						  || rts.depthStencil.mipmap != prevRTs.depthStencil.mipmap))
-		{
+		if (!modified && rts.depthStencil != prevRTs.depthStencil)
 			modified = true;
-		}
 
 		if (rts.temporaryRTFlags != prevRTs.temporaryRTFlags)
 			modified = true;

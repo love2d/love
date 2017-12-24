@@ -354,6 +354,8 @@ public:
 		void *data = nullptr;
 	};
 
+	struct RenderTargetStrongRef;
+
 	struct RenderTarget
 	{
 		Canvas *canvas;
@@ -370,6 +372,16 @@ public:
 			: canvas(nullptr)
 			, slice(0)
 		{}
+
+		bool operator != (const RenderTarget &other) const
+		{
+			return canvas != other.canvas || slice != other.slice || mipmap != other.mipmap;
+		}
+
+		bool operator != (const RenderTargetStrongRef &other) const
+		{
+			return canvas != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+		}
 	};
 
 	struct RenderTargetStrongRef
@@ -383,6 +395,16 @@ public:
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
+
+		bool operator != (const RenderTargetStrongRef &other) const
+		{
+			return canvas.get() != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+		}
+
+		bool operator != (const RenderTarget &other) const
+		{
+			return canvas.get() != other.canvas || slice != other.slice || mipmap != other.mipmap;
+		}
 	};
 
 	struct RenderTargets

@@ -95,7 +95,7 @@ ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	, relativeRotation(false)
 	, vertexAttributes(vertex::CommonFormat::XYf_STf_RGBAub, 0)
 	, buffer(nullptr)
-	, quadIndices(gfx, size)
+	, quadIndices(gfx)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
@@ -195,7 +195,7 @@ void ParticleSystem::createBuffers(size_t size)
 		size_t bytes = sizeof(Vertex) * size * 4;
 		buffer = gfx->newBuffer(bytes, nullptr, BUFFER_VERTEX, vertex::USAGE_STREAM, 0);
 
-		quadIndices = QuadIndices(gfx, size);
+		quadIndices = QuadIndices(gfx);
 	}
 	catch (std::bad_alloc &)
 	{
@@ -1094,20 +1094,14 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 		p = p->next;
 	}
 
+	Graphics::TempTransform transform(gfx, m);
+
 	buffer->unmap();
 
 	vertex::Buffers vertexbuffers;
 	vertexbuffers.set(0, buffer, 0);
 
-	Graphics::TempTransform transform(gfx, m);
-
-	Graphics::DrawIndexedCommand cmd(&vertexAttributes, &vertexbuffers, quadIndices.getBuffer());
-	cmd.primitiveType = PRIMITIVE_TRIANGLES;
-	cmd.indexBufferOffset = 0;
-	cmd.indexCount = (int) quadIndices.getIndexCount(pCount);
-	cmd.indexType = quadIndices.getType();
-	cmd.texture = texture;
-	gfx->draw(cmd);
+	quadIndices.draw(gfx, 0, pCount, vertexAttributes, vertexbuffers, texture);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

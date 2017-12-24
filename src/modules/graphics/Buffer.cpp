@@ -42,82 +42,35 @@ Buffer::~Buffer()
 
 // QuadIndices
 
-size_t QuadIndices::maxSize = 0;
-size_t QuadIndices::elementSize = 0;
+static const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
+static const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
+
 size_t QuadIndices::objectCount = 0;
 
 Buffer *QuadIndices::indexBuffer = nullptr;
-char *QuadIndices::indices = nullptr;
 
-QuadIndices::QuadIndices(Graphics *gfx, size_t size)
-	: size(size)
+QuadIndices::QuadIndices(Graphics *gfx)
 {
-	// The upper limit is the maximum of uint32 divided by six (the number
-	// of indices per size) and divided by the size of uint32. This guarantees
-	// no overflows when calculating the array size in bytes.
-	if (size == 0 || size > ((uint32) -1) / 6 / sizeof(uint32))
-		throw love::Exception("Invalid number of quads.");
-
-	// Create a new / larger buffer if needed.
-	if (indexBuffer == nullptr || size > maxSize)
+	if (indexBuffer == nullptr)
 	{
-		Buffer *newbuffer = nullptr;
-		char *newindices = nullptr;
+		size_t buffersize = sizeof(uint16) * MAX_QUADS_PER_DRAW * 6;
 
-		// Depending on the size, a switch to int and more memory is needed.
-		IndexDataType targettype = getType(size);
-		size_t elemsize = vertex::getIndexDataSize(targettype);
+		indexBuffer = gfx->newBuffer(buffersize, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
 
-		size_t buffersize = elemsize * 6 * size;
-
-		try
-		{
-			newbuffer = gfx->newBuffer(buffersize, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
-			newindices = new char[buffersize];
-		}
-		catch (std::bad_alloc &)
-		{
-			delete newbuffer;
-			delete[] newindices;
-			throw love::Exception("Out of memory.");
-		}
-
-		// Allocation of the new Buffer succeeded.
-		// The old Buffer can now be deleted.
-		delete indexBuffer;
-		indexBuffer = newbuffer;
-
-		delete[] indices;
-		indices = newindices;
-
-		maxSize = size;
-		elementSize = elemsize;
-
-		switch (targettype)
-		{
-		case INDEX_UINT16:
-			fill<uint16>();
-			break;
-		case INDEX_UINT32:
-			fill<uint32>();
-			break;
-		case INDEX_MAX_ENUM:
-			break;
-		}
+		Buffer::Mapper map(*indexBuffer);
+		vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, MAX_VERTICES_PER_DRAW, (uint16 *) map.get());
 	}
 
 	objectCount++;
 }
 
-QuadIndices::QuadIndices(const QuadIndices &other)
-: size(other.size)
+QuadIndices::QuadIndices(const QuadIndices &)
 {
 	objectCount++;
 }
 
-QuadIndices &QuadIndices::operator = (const QuadIndices &other)
+QuadIndices &QuadIndices::operator = (const QuadIndices &)
 {
-	size = other.size;
 	return *this;
 }
 
@@ -130,47 +83,59 @@ QuadIndices::~QuadIndices()
 	{
 		delete indexBuffer;
 		indexBuffer = nullptr;
-
-		delete[] indices;
-		indices = nullptr;
 	}
 }
 
-size_t QuadIndices::getSize() const
+static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::Buffers &buffers, int vertexcount)
 {
-	return size;
+	// TODO: Figure out a better way to avoid touching the same buffer multiple
+	// times, if multiple attributes share the buffer.
+	uint32 touchedbuffers = 0;
+
+	for (unsigned int i = 0; i < vertex::Attributes::MAX; i++)
+	{
+		if (!attributes.isEnabled(i))
+			continue;
+
+		auto &attrib = attributes.attribs[i];
+
+		uint32 bufferbit = 1u << attrib.bufferindex;
+		if ((touchedbuffers & bufferbit) == 0)
+		{
+			touchedbuffers |= bufferbit;
+			buffers.info[attrib.bufferindex].offset += attrib.stride * vertexcount;
+		}
+	}
 }
 
-size_t QuadIndices::getIndexCount(size_t elements) const
+void QuadIndices::draw(Graphics *gfx, int quadstart, int quadcount, const vertex::Attributes &attributes, vertex::Buffers buffers, Texture *texture)
 {
-	return elements * 6;
-}
+	Graphics::DrawIndexedCommand cmd(&attributes, &buffers, indexBuffer);
+	cmd.primitiveType = PRIMITIVE_TRIANGLES;
+	cmd.indexBufferOffset = 0;
+	cmd.indexType = INDEX_UINT16;
+	cmd.texture = texture;
 
-IndexDataType QuadIndices::getType(size_t s) const
-{
-	return vertex::getIndexDataTypeFromMax(getIndexCount(s));
-}
+	// TODO: We can use glDrawElementsBaseVertex when supported, instead of
+	// advancing the vertex offset.
+	if (quadstart > 0)
+		advanceVertexOffsets(attributes, buffers, quadstart * 4);
 
-size_t QuadIndices::getElementSize() const
-{
-	return elementSize;
+	for (int quadindex = 0; quadindex < quadcount; quadindex += MAX_QUADS_PER_DRAW)
+	{
+		int quaddrawcount = std::min(MAX_QUADS_PER_DRAW, quadcount - quadindex);
+
+		if (quadindex > 0)
+			advanceVertexOffsets(attributes, buffers, quaddrawcount * 4);
+
+		cmd.indexCount = quaddrawcount * 6;
+		gfx->draw(cmd);
+	}
 }
 
 Buffer *QuadIndices::getBuffer() const
 {
 	return indexBuffer;
-}
-
-const void *QuadIndices::getIndices(size_t offset) const
-{
-	return indices + offset;
-}
-
-template <typename T>
-void QuadIndices::fill()
-{
-	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, maxSize * 4, (T *) indices);
-	indexBuffer->fill(0, indexBuffer->getSize(), indices);
 }
 
 } // graphics

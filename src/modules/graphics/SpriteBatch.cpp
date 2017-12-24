@@ -47,7 +47,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	, color(255, 255, 255, 255)
 	, color_active(false)
 	, array_buf(nullptr)
-	, quad_indices(gfx, size)
+	, quad_indices(gfx)
 	, range_start(-1)
 	, range_count(-1)
 {
@@ -238,8 +238,6 @@ void SpriteBatch::setBufferSize(int newsize)
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		size_t copy_size = vertex_stride * 4 * new_next;
 		array_buf->copyTo(0, copy_size, new_array_buf, 0);
-
-		quad_indices = QuadIndices(gfx, newsize);
 	}
 	catch (love::Exception &)
 	{
@@ -385,7 +383,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		}
 	}
 
-	Graphics::DrawIndexedCommand cmd(&attributes, &buffers, quad_indices.getBuffer());
+	Graphics::TempTransform transform(gfx, m);
 
 	int start = std::min(std::max(0, range_start), next - 1);
 
@@ -395,15 +393,8 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	count = std::min(count, next - start);
 
-	cmd.indexBufferOffset = quad_indices.getIndexCount(start) * quad_indices.getElementSize();
-	cmd.indexCount = (int) quad_indices.getIndexCount(count);
-	cmd.indexType = quad_indices.getType();
-	cmd.texture = texture;
-
-	Graphics::TempTransform transform(gfx, m);
-
 	if (count > 0)
-		gfx->draw(cmd);
+		quad_indices.draw(gfx, start, count, attributes, buffers, texture);
 }
 
 } // graphics

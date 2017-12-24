@@ -232,7 +232,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// index buffer objects, since the shared index buffer used by QuadIndices
 	// objects is destroyed when the last object is destroyed.
 	if (quadIndices == nullptr)
-		quadIndices = new QuadIndices(this, 20);
+		quadIndices = new QuadIndices(this);
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -543,7 +543,6 @@ void Graphics::endPass()
 			if (mask != 0)
 				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, mask, GL_NEAREST);
 		}
-
 	}
 
 	for (const auto &rt : rts.colors)

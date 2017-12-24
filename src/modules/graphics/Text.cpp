@@ -34,7 +34,7 @@ Text::Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &te
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
 	, vbo(nullptr)
-	, quadIndices(gfx, 20)
+	, quadIndices(gfx)
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -259,24 +259,12 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	for (const Font::DrawCommand &cmd : draw_commands)
 		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
 
-	if ((size_t) totalverts / 4 > quadIndices.getSize())
-		quadIndices = QuadIndices(gfx, (size_t) totalverts / 4);
-
 	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
 
 	Graphics::TempTransform transform(gfx, m);
 
-	Graphics::DrawIndexedCommand drawcmd(&vertexAttributes, &vertexBuffers, quadIndices.getBuffer());
-	drawcmd.indexType = quadIndices.getType();
-	size_t elemsize = quadIndices.getElementSize();
-
 	for (const Font::DrawCommand &cmd : draw_commands)
-	{
-		drawcmd.indexCount = (cmd.vertexcount / 4) * 6;
-		drawcmd.indexBufferOffset = (cmd.startvertex / 4) * 6 * elemsize;
-		drawcmd.texture = cmd.texture;
-		gfx->draw(drawcmd);
-	}
+		quadIndices.draw(gfx, cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, cmd.texture);
 }
 
 } // graphics
