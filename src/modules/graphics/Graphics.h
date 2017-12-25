@@ -851,6 +851,7 @@ public:
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
+	virtual void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::Buffers &buffers, Texture *texture) = 0;
 
 	void flushStreamDraws();
 	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
@@ -996,6 +997,8 @@ protected:
 	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &shaderswitches) const = 0;
 
+	void createQuadIndexBuffer();
+
 	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
 
 	void restoreState(const DisplayState &s);
@@ -1034,6 +1037,8 @@ protected:
 	int canvasSwitchCount;
 	int drawCalls;
 	int drawCallsBatched;
+
+	Buffer *quadIndexBuffer;
 
 	Capabilities capabilities;
 

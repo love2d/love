@@ -55,8 +55,7 @@ namespace opengl
 {
 
 Graphics::Graphics()
-	: quadIndices(nullptr)
-	, windowHasStencil(false)
+	: windowHasStencil(false)
 	, mainVAO(0)
 {
 	gl = OpenGL();
@@ -87,8 +86,6 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	if (quadIndices)
-		delete quadIndices;
 }
 
 const char *Graphics::getName() const
@@ -226,13 +223,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	if (!Volatile::loadAll())
 		::printf("Could not reload all volatile objects.\n");
 
-	// Create a quad indices object owned by love.graphics, so at least one
-	// QuadIndices object is alive at all times while love.graphics is alive.
-	// This makes sure there aren't too many expensive destruction/creations of
-	// index buffer objects, since the shared index buffer used by QuadIndices
-	// objects is destroyed when the last object is destroyed.
-	if (quadIndices == nullptr)
-		quadIndices = new QuadIndices(this);
+	createQuadIndexBuffer();
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -352,6 +343,76 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 		glDrawElements(glprimitivetype, cmd.indexCount, gldatatype, gloffset);
 
 	++drawCalls;
+}
+
+static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::Buffers &buffers, int vertexcount)
+{
+	// TODO: Figure out a better way to avoid touching the same buffer multiple
+	// times, if multiple attributes share the buffer.
+	uint32 touchedbuffers = 0;
+
+	for (unsigned int i = 0; i < vertex::Attributes::MAX; i++)
+	{
+		if (!attributes.isEnabled(i))
+			continue;
+
+		auto &attrib = attributes.attribs[i];
+
+		uint32 bufferbit = 1u << attrib.bufferindex;
+		if ((touchedbuffers & bufferbit) == 0)
+		{
+			touchedbuffers |= bufferbit;
+			buffers.info[attrib.bufferindex].offset += attrib.stride * vertexcount;
+		}
+	}
+}
+
+void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::Buffers &buffers, love::graphics::Texture *texture)
+{
+	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
+	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
+
+	gl.prepareDraw();
+	gl.bindTextureToUnit(texture, 0, false);
+	gl.setCullMode(CULL_NONE);
+
+	gl.bindBuffer(BUFFER_INDEX, quadIndexBuffer->getHandle());
+
+	if (gl.isBaseVertexSupported())
+	{
+		gl.setVertexAttributes(attributes, buffers);
+
+		int basevertex = start;
+
+		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+		{
+			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+			glDrawElementsBaseVertex(GL_TRIANGLES, quadcount * 6, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0), basevertex);
+			++drawCalls;
+
+			basevertex += quadcount * 4;
+		}
+	}
+	else
+	{
+		vertex::Buffers bufferscopy = buffers;
+		if (start > 0)
+			advanceVertexOffsets(attributes, bufferscopy, start * 4);
+
+		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+		{
+			gl.setVertexAttributes(attributes, bufferscopy);
+
+			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+			glDrawElements(GL_TRIANGLES, quadcount * 6, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+			++drawCalls;
+
+			if (count > MAX_QUADS_PER_DRAW)
+				advanceVertexOffsets(attributes, bufferscopy, quadcount * 4);
+		}
+	}
 }
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)

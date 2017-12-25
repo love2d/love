@@ -95,7 +95,6 @@ ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
 	, relativeRotation(false)
 	, vertexAttributes(vertex::CommonFormat::XYf_STf_RGBAub, 0)
 	, buffer(nullptr)
-	, quadIndices(gfx)
 {
 	if (size == 0 || size > MAX_PARTICLES)
 		throw love::Exception("Invalid ParticleSystem size.");
@@ -157,7 +156,6 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, relativeRotation(p.relativeRotation)
 	, vertexAttributes(p.vertexAttributes)
 	, buffer(nullptr)
-	, quadIndices(p.quadIndices)
 {
 	setBufferSize(maxParticles);
 }
@@ -194,8 +192,6 @@ void ParticleSystem::createBuffers(size_t size)
 
 		size_t bytes = sizeof(Vertex) * size * 4;
 		buffer = gfx->newBuffer(bytes, nullptr, BUFFER_VERTEX, vertex::USAGE_STREAM, 0);
-
-		quadIndices = QuadIndices(gfx);
 	}
 	catch (std::bad_alloc &)
 	{
@@ -1101,7 +1097,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	vertex::Buffers vertexbuffers;
 	vertexbuffers.set(0, buffer, 0);
 
-	quadIndices.draw(gfx, 0, pCount, vertexAttributes, vertexbuffers, texture);
+	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, texture);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

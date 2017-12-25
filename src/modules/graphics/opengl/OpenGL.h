@@ -334,6 +334,7 @@ public:
 	bool isInstancingSupported() const;
 	bool isDepthCompareSampleSupported() const;
 	bool isSamplerLODBiasSupported() const;
+	bool isBaseVertexSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -413,6 +414,8 @@ private:
 	bool contextInitialized;
 
 	bool pixelShaderHighpSupported;
+	bool baseVertexSupported;
+
 	float maxAnisotropy;
 	float maxLODBias;
 	int max2DTextureSize;

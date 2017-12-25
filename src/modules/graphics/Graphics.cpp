@@ -119,6 +119,7 @@ Graphics::Graphics()
 	, canvasSwitchCount(0)
 	, drawCalls(0)
 	, drawCallsBatched(0)
+	, quadIndexBuffer(nullptr)
 	, capabilities()
 	, cachedShaderStages()
 {
@@ -134,6 +135,8 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	delete quadIndexBuffer;
+
 	// Clean up standard shaders before the active shader. If we do it after,
 	// the active shader may try to activate a standard shader when deactivating
 	// itself, which will cause problems since it calls Graphics methods in the
@@ -159,6 +162,18 @@ Graphics::~Graphics()
 		cachedShaderStages[i].clear();
 
 	Shader::deinitialize();
+}
+
+void Graphics::createQuadIndexBuffer()
+{
+	if (quadIndexBuffer != nullptr)
+		return;
+
+	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
+	quadIndexBuffer = newBuffer(size, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
+
+	Buffer::Mapper map(*quadIndexBuffer);
+	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)

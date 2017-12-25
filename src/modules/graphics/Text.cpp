@@ -34,7 +34,6 @@ Text::Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &te
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
 	, vbo(nullptr)
-	, quadIndices(gfx)
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -264,7 +263,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::TempTransform transform(gfx, m);
 
 	for (const Font::DrawCommand &cmd : draw_commands)
-		quadIndices.draw(gfx, cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, cmd.texture);
+		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, cmd.texture);
 }
 
 } // graphics

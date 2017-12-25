@@ -89,7 +89,6 @@ private:
 	vertex::Buffers vertexBuffers;
 
 	Buffer *vbo;
-	QuadIndices quadIndices;
 
 	std::vector<Font::DrawCommand> draw_commands;
 

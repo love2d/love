@@ -47,7 +47,6 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	, color(255, 255, 255, 255)
 	, color_active(false)
 	, array_buf(nullptr)
-	, quad_indices(gfx)
 	, range_start(-1)
 	, range_count(-1)
 {
@@ -394,7 +393,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	count = std::min(count, next - start);
 
 	if (count > 0)
-		quad_indices.draw(gfx, start, count, attributes, buffers, texture);
+		gfx->drawQuads(start, count, attributes, buffers, texture);
 }
 
 } // graphics

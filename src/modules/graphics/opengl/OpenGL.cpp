@@ -95,6 +95,7 @@ OpenGL::OpenGL()
 	: stats()
 	, contextInitialized(false)
 	, pixelShaderHighpSupported(false)
+	, baseVertexSupported(false)
 	, maxAnisotropy(1.0f)
 	, max2DTextureSize(0)
 	, max3DTextureSize(0)
@@ -375,6 +376,32 @@ void OpenGL::initOpenGLFunctions()
 		fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
 		fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
 	}
+
+	if (!GLAD_VERSION_3_2 && !GLAD_ES_VERSION_3_2 && !GLAD_ARB_draw_elements_base_vertex)
+	{
+		if (GLAD_OES_draw_elements_base_vertex)
+		{
+			fp_glDrawElementsBaseVertex = fp_glDrawElementsBaseVertexOES;
+
+			if (GLAD_ES_VERSION_3_0)
+			{
+				fp_glDrawRangeElementsBaseVertex = fp_glDrawRangeElementsBaseVertexOES;
+				fp_glDrawElementsInstancedBaseVertex = fp_glDrawElementsInstancedBaseVertexOES;
+			}
+
+		}
+		else if (GLAD_EXT_draw_elements_base_vertex)
+		{
+			fp_glDrawElementsBaseVertex = fp_glDrawElementsBaseVertexEXT;
+
+			if (GLAD_ES_VERSION_3_0)
+			{
+				fp_glDrawRangeElementsBaseVertex = fp_glDrawRangeElementsBaseVertexEXT;
+				fp_glDrawElementsInstancedBaseVertex = fp_glDrawElementsInstancedBaseVertexEXT;
+			}
+
+		}
+	}
 }
 
 void OpenGL::initMaxValues()
@@ -388,6 +415,9 @@ void OpenGL::initMaxValues()
 	}
 	else
 		pixelShaderHighpSupported = true;
+
+	baseVertexSupported = GLAD_VERSION_3_2 || GLAD_ES_VERSION_3_2 || GLAD_ARB_draw_elements_base_vertex
+		|| GLAD_OES_draw_elements_base_vertex || GLAD_EXT_draw_elements_base_vertex;
 
 	// We'll need this value to clamp anisotropy.
 	if (GLAD_EXT_texture_filter_anisotropic)
@@ -1175,6 +1205,11 @@ bool OpenGL::isDepthCompareSampleSupported() const
 bool OpenGL::isSamplerLODBiasSupported() const
 {
 	return GLAD_VERSION_1_4;
+}
+
+bool OpenGL::isBaseVertexSupported() const
+{
+	return baseVertexSupported;
 }
 
 int OpenGL::getMax2DTextureSize() const

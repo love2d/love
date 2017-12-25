@@ -702,9 +702,6 @@ private:
 	const vertex::Attributes vertexAttributes;
 	Buffer *buffer;
 
-	// Vertex index buffer.
-	QuadIndices quadIndices;
-
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM> distributions;
 

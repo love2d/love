@@ -140,8 +140,7 @@ private:
 	size_t vertex_stride;
 	
 	love::graphics::Buffer *array_buf;
-	QuadIndices quad_indices;
-	
+
 	std::unordered_map<std::string, AttachedAttribute> attached_attributes;
 	
 	int range_start;

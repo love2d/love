@@ -71,6 +71,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
+	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::Buffers &buffers, Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -127,7 +128,6 @@ private:
 	void setDebug(bool enable);
 
 	std::unordered_map<uint32, GLuint> framebufferObjects;
-	QuadIndices *quadIndices;
 	bool windowHasStencil;
 	GLuint mainVAO;
 

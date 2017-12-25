@@ -34,9 +34,6 @@ namespace love
 namespace graphics
 {
 
-class Graphics;
-class Texture;
-
 /**
  * A block of GPU-owned memory. Currently meant for internal use.
  **/
@@ -149,58 +146,6 @@ protected:
 	bool is_mapped;
 	
 }; // Buffer
-
-/**
- * QuadIndices manages one shared Buffer that stores the indices for an element
- * array. Vertex arrays using the vertex structure (or anything else that can
- * use the pattern below) can request a size and use it for the indexed draw
- * call.
- *
- *  indices[i*6 + 0] = i*4 + 0;
- *  indices[i*6 + 1] = i*4 + 1;
- *  indices[i*6 + 2] = i*4 + 2;
- *
- *  indices[i*6 + 3] = i*4 + 2;
- *  indices[i*6 + 4] = i*4 + 1;
- *  indices[i*6 + 5] = i*4 + 3;
- *
- * There will always be a large enough Buffer around until all QuadIndices
- * instances have been deleted.
- *
- * Q: Why have something like QuadIndices?
- * A: The indices for the SpriteBatch do not change, only the array size varies.
- * Using one Buffer for all element arrays removes this duplicated data and
- * saves some memory.
- */
-class QuadIndices
-{
-public:
-
-	/**
-	 * Adds an entry to the list of sizes and resizes the Buffer
-	 * if needed. A size of 1 allocates a group of 6 indices for 4 vertices
-	 * creating 1 face.
-	 */
-	QuadIndices(Graphics *gfx);
-
-	QuadIndices(const QuadIndices &other);
-	QuadIndices &operator = (const QuadIndices &other);
-
-	/**
-	 * Removes an entry from the list of sizes and resizes the GLBuffer
-	 * if needed.
-	 */
-	~QuadIndices();
-
-	void draw(Graphics *gfx, int quadstart, int quadcount, const vertex::Attributes &attributes, vertex::Buffers buffers, Texture *texture);
-	Buffer *getBuffer() const;
-
-private:
-
-	static size_t objectCount;
-	static Buffer *indexBuffer;
-
-}; // QuadIndices
 
 } // graphics
 } // love
