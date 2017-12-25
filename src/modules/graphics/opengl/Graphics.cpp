@@ -382,7 +382,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	{
 		gl.setVertexAttributes(attributes, buffers);
 
-		int basevertex = start;
+		int basevertex = start * 4;
 
 		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
 		{
