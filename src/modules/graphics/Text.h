@@ -39,7 +39,7 @@ public:
 
 	static love::Type type;
 
-	Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &text = {});
+	Text(Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
 	void set(const std::vector<Font::ColoredString> &text);

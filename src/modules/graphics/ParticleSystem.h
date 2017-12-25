@@ -86,7 +86,7 @@ public:
 	/**
 	 * Creates a particle system with the specified buffer size and texture.
 	 **/
-	ParticleSystem(Graphics *gfx, Texture *texture, uint32 buffer);
+	ParticleSystem(Texture *texture, uint32 buffer);
 	ParticleSystem(const ParticleSystem &p);
 
 	/**

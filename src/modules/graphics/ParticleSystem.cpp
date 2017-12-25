@@ -53,7 +53,7 @@ float calculate_variation(float inner, float outer, float var)
 
 love::Type ParticleSystem::type("ParticleSystem", &Drawable::type);
 
-ParticleSystem::ParticleSystem(Graphics *gfx, Texture *texture, uint32 size)
+ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	: pMem(nullptr)
 	, pFree(nullptr)
 	, pHead(nullptr)

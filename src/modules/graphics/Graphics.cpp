@@ -208,7 +208,7 @@ love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size
 
 love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 {
-	return new ParticleSystem(this, texture, size);
+	return new ParticleSystem(texture, size);
 }
 
 ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &optsource)
@@ -279,7 +279,7 @@ love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &v
 
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
-	return new Text(this, font, text);
+	return new Text(font, text);
 }
 
 void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)

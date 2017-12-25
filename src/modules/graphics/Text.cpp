@@ -30,7 +30,7 @@ namespace graphics
 
 love::Type Text::type("Text", &Drawable::type);
 
-Text::Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &text)
+Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
 	, vbo(nullptr)
