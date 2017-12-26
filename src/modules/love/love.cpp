@@ -34,6 +34,14 @@
 #include <windows.h>
 #endif // LOVE_WINDOWS
 
+#ifdef LOVE_ANDROID
+#include <SDL.h>
+extern "C"
+{
+#include "luajit.h"
+}
+#endif // LOVE_ANDROID
+
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 #include <fcntl.h>
 #include <io.h>
@@ -202,6 +210,39 @@ int w__openConsole(lua_State *L);
 int w__setAccelerometerAsJoystick(lua_State *L);
 #endif
 
+#ifdef LOVE_ANDROID
+static int w_print_sdl_log(lua_State *L)
+{
+	int nargs = lua_gettop(L);
+
+	lua_getglobal(L, "tostring");
+
+	std::string outstring;
+
+	for (int i = 1; i <= nargs; i++)
+	{
+		// Call tostring(arg) and leave the result on the top of the stack.
+		lua_pushvalue(L, -1);
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1);
+
+		const char *s = lua_tostring(L, -1);
+		if (s == nullptr)
+			return luaL_error(L, "'tostring' must return a string to 'print'");
+
+		if (i > 1)
+			outstring += "\t";
+
+		outstring += s;
+
+		lua_pop(L, 1); // Pop the result of tostring(arg).
+	}
+
+	SDL_Log("[LOVE] %s", outstring.c_str());
+	return 0;
+}
+#endif
+
 const char *love_version()
 {
 	// Do not refer to love::VERSION here, the linker
@@ -302,6 +343,11 @@ int luaopen_love(lua_State *L)
 
 	lua_pushstring(L, love::VERSION_CODENAME);
 	lua_setfield(L, -2, "_version_codename");
+
+#ifdef LOVE_ANDROID
+	luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
+	lua_register(L, "print", w_print_sdl_log);
+#endif
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 	lua_pushcfunction(L, w__openConsole);
