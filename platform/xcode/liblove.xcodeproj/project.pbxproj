@@ -890,7 +890,6 @@
 		FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = FA56AA371FAFF02000A43D5F /* memory.h */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
-		FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6716C719D900860150 /* FreeType.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
 		FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6F16C719F000860150 /* mpg123.framework */; };
 		FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* Ogg.framework */; };
@@ -1039,6 +1038,7 @@
 		FAD19A171DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
 		FAD19A181DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
 		FAD19A191DFF8CA200D5398A /* ImageDataBase.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD19A161DFF8CA200D5398A /* ImageDataBase.h */; };
+		FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAD43ECB1FF312D800831BB8 /* freetype.framework */; };
 		FADF53F81E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53F91E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53FA1E3C7ACD00012CC0 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53F71E3C7ACD00012CC0 /* Buffer.h */; };
@@ -1806,7 +1806,6 @@
 		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
 		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
-		FA577A6716C719D900860150 /* FreeType.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FreeType.framework; path = /Library/Frameworks/FreeType.framework; sourceTree = "<absolute>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA577A7116C719F400860150 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
@@ -1931,6 +1930,7 @@
 		FACA02EB1F5E396B0084B28F /* wrap_DataModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DataModule.h; sourceTree = "<group>"; };
 		FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDataBase.cpp; sourceTree = "<group>"; };
 		FAD19A161DFF8CA200D5398A /* ImageDataBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageDataBase.h; sourceTree = "<group>"; };
+		FAD43ECB1FF312D800831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = /Library/Frameworks/freetype.framework; sourceTree = "<absolute>"; };
 		FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		FADF53F71E3C7ACD00012CC0 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		FADF53FB1E3D74F200012CC0 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
@@ -2054,8 +2054,8 @@
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
+				FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
-				FA577AC216C7512D00860150 /* FreeType.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
 				FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */,
@@ -3262,10 +3262,10 @@
 		FA0B7EEB1A959125000E1D17 /* macosx */ = {
 			isa = PBXGroup;
 			children = (
+				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
 				FA27B3C81B498623008A9DCE /* Theora.framework */,
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
-				FA577A6716C719D900860150 /* FreeType.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
@@ -5229,15 +5229,16 @@
 					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/macosx/Frameworks/FreeType.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
-					/Library/Frameworks/FreeType.framework/Headers,
+					/Library/Frameworks/freetype.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
 				);
@@ -5267,15 +5268,16 @@
 					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/macosx/Frameworks/FreeType.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
-					/Library/Frameworks/FreeType.framework/Headers,
+					/Library/Frameworks/freetype.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
 				);
@@ -5306,15 +5308,16 @@
 					"$(PROJECT_DIR)/macosx/Frameworks",
 					/Library/Frameworks,
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/macosx/Frameworks/FreeType.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
-					/Library/Frameworks/FreeType.framework/Headers,
+					/Library/Frameworks/freetype.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
 				);
