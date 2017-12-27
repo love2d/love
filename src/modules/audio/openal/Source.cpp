@@ -1000,11 +1000,19 @@ bool Source::play(const std::vector<love::audio::Source*> &sources)
 	toPlay.reserve(sources.size());
 	for (size_t i = 0; i < sources.size(); i++)
 	{
-		if (wasPlaying[i])
+		// If the source was paused, wasPlaying[i] will be true but we still
+		// want to resume it. We don't want to call alSourcePlay on sources
+		// that are actually playing though.
+		if (wasPlaying[i] && sources[i]->isPlaying())
 			continue;
-		Source *source = (Source*) sources[i];
-		source->source = ids[i];
-		source->prepareAtomic();
+
+		if (!wasPlaying[i])
+		{
+			Source *source = (Source*) sources[i];
+			source->source = ids[i];
+			source->prepareAtomic();
+		}
+
 		toPlay.push_back(ids[i]);
 	}
 
