@@ -62,7 +62,7 @@ function love.path.abs(p)
 end
 
 -- Converts any path into a full path.
-function love.path.getfull(p)
+function love.path.getFull(p)
 
 	if love.path.abs(p) then
 		return love.path.normalslashes(p)
@@ -287,6 +287,7 @@ local function uridecode(s)
 end
 
 local no_game_code = false
+local invalid_game_path = nil
 
 -- This can't be overridden.
 function love.boot()
@@ -302,6 +303,9 @@ function love.boot()
 		-- This shouldn't happen, but just in case we'll fall back to arg0.
 		exepath = arg0
 	end
+
+	no_game_code = false
+	invalid_game_path = nil
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
@@ -330,8 +334,12 @@ function love.boot()
 			nouri = uridecode(nouri:sub(8))
 		end
 
-		local full_source =  love.path.getfull(nouri)
+		local full_source = love.path.getFull(nouri)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
+
+		if not can_has_game then
+			invalid_game_path = full_source
+		end
 
 		-- Use the name of the source .love as the identity for now.
 		identity = love.path.leaf(full_source)
@@ -552,7 +560,9 @@ function love.init()
 	end
 
 	if no_game_code then
-		error("No code to run\nYour game might be packaged incorrectly\nMake sure main.lua is at the top level of the zip")
+		error("No code to run\nYour game might be packaged incorrectly.\nMake sure main.lua is at the top level of the zip.")
+	elseif invalid_game_path then
+		error("Cannot load game at path '" .. invalid_game_path .. "'.\nMake sure a folder exists at the specified path.")
 	end
 end
 
