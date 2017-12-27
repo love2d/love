@@ -778,7 +778,7 @@ int w_newCubeImage(lua_State *L)
 				slices.set(i, 0, faces[i]);
 		}
 		else
-			slices.add(data.second, 0, 0, true, true);
+			slices.add(data.second, 0, 0, true, settings.mipmaps);
 	}
 	else
 	{
@@ -836,7 +836,7 @@ int w_newCubeImage(lua_State *L)
 						slices.set(i, 0, data.first);
 				}
 				else
-					slices.add(data.second, i, 0, false, true);
+					slices.add(data.second, i, 0, false, settings.mipmaps);
 			}
 		}
 
@@ -890,7 +890,7 @@ int w_newArrayImage(lua_State *L)
 				if (data.first.get())
 					slices.set(slice, 0, data.first);
 				else
-					slices.add(data.second, slice, 0, false, true);
+					slices.add(data.second, slice, 0, false, settings.mipmaps);
 			}
 		}
 
@@ -902,7 +902,7 @@ int w_newArrayImage(lua_State *L)
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
-			slices.add(data.second, 0, 0, true, true);
+			slices.add(data.second, 0, 0, true, settings.mipmaps);
 	}
 
 	settings = w__optImageSettings(L, 2, settings);
@@ -954,7 +954,7 @@ int w_newVolumeImage(lua_State *L)
 				if (data.first.get())
 					slices.set(layer, 0, data.first);
 				else
-					slices.add(data.second, layer, 0, false, true);
+					slices.add(data.second, layer, 0, false, settings.mipmaps);
 			}
 		}
 
@@ -973,7 +973,7 @@ int w_newVolumeImage(lua_State *L)
 				slices.set(i, 0, layers[i]);
 		}
 		else
-			slices.add(data.second, 0, 0, true, true);
+			slices.add(data.second, 0, 0, true, settings.mipmaps);
 	}
 
 	settings = w__optImageSettings(L, 2, settings);
@@ -1007,7 +1007,7 @@ int w_newImage(lua_State *L)
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
-			slices.add(data.second, 0, 0, false, true);
+			slices.add(data.second, 0, 0, false, settings.mipmaps);
 	}
 
 	settings = w__optImageSettings(L, 2, settings);
