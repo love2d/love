@@ -60,9 +60,6 @@ Graphics::Graphics()
 {
 	gl = OpenGL();
 
-	states.reserve(10);
-	states.push_back(DisplayState());
-
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 
 	if (window != nullptr)

@@ -47,6 +47,20 @@ public:
 		MIPMAPS_MAX_ENUM
 	};
 
+	enum SettingType
+	{
+		SETTING_WIDTH,
+		SETTING_HEIGHT,
+		SETTING_LAYERS,
+		SETTING_MIPMAPS,
+		SETTING_FORMAT,
+		SETTING_TYPE,
+		SETTING_DPI_SCALE,
+		SETTING_MSAA,
+		SETTING_READABLE,
+		SETTING_MAX_ENUM
+	};
+
 	struct Settings
 	{
 		int width  = 1;
@@ -81,6 +95,11 @@ public:
 	static bool getConstant(MipmapMode in, const char *&out);
 	static std::vector<std::string> getConstants(MipmapMode);
 
+	static bool getConstant(const char *in, SettingType &out);
+	static bool getConstant(SettingType in, const char *&out);
+	static const char *getConstant(SettingType in);
+	static std::vector<std::string> getConstants(SettingType);
+
 protected:
 
 	Settings settings;
@@ -89,6 +108,9 @@ private:
 
 	static StringMap<MipmapMode, MIPMAPS_MAX_ENUM>::Entry mipmapEntries[];
 	static StringMap<MipmapMode, MIPMAPS_MAX_ENUM> mipmapModes;
+
+	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
+	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;
 	
 }; // Canvas
 

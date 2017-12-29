@@ -129,6 +129,9 @@ Graphics::Graphics()
 	pixelScaleStack.reserve(16);
 	pixelScaleStack.push_back(1);
 
+	states.reserve(10);
+	states.push_back(DisplayState());
+
 	if (!Shader::initialize())
 		throw love::Exception("Shader support failed to initialize!");
 }

@@ -195,6 +195,28 @@ std::vector<std::string> Canvas::getConstants(MipmapMode)
 	return mipmapModes.getNames();
 }
 
+bool Canvas::getConstant(const char *in, SettingType &out)
+{
+	return settingTypes.find(in, out);
+}
+
+bool Canvas::getConstant(SettingType in, const char *&out)
+{
+	return settingTypes.find(in, out);
+}
+
+const char *Canvas::getConstant(SettingType in)
+{
+	const char *name = nullptr;
+	getConstant(in, name);
+	return name;
+}
+
+std::vector<std::string> Canvas::getConstants(SettingType)
+{
+	return settingTypes.getNames();
+}
+
 StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
 {
 	{ "none",   MIPMAPS_NONE   },
@@ -203,6 +225,20 @@ StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEnt
 };
 
 StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM> Canvas::mipmapModes(Canvas::mipmapEntries, sizeof(Canvas::mipmapEntries));
+
+StringMap<Canvas::SettingType, Canvas::SETTING_MAX_ENUM>::Entry Canvas::settingTypeEntries[] =
+{
+	// Width / height / layers are currently omittted because they're separate
+	// arguments to newCanvas in the wrapper code.
+	{ "mipmaps",  SETTING_MIPMAPS   },
+	{ "format",   SETTING_FORMAT    },
+	{ "type",     SETTING_TYPE      },
+	{ "dpiscale", SETTING_DPI_SCALE },
+	{ "msaa",     SETTING_MSAA      },
+	{ "readable", SETTING_READABLE  },
+};
+
+StringMap<Canvas::SettingType, Canvas::SETTING_MAX_ENUM> Canvas::settingTypes(Canvas::settingTypeEntries, sizeof(Canvas::settingTypeEntries));
 
 } // graphics
 } // love

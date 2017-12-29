@@ -701,10 +701,11 @@ static Image::Settings w__optImageSettings(lua_State *L, int idx, const Image::S
 
 	if (!lua_isnoneornil(L, idx))
 	{
-		luaL_checktype(L, idx, LUA_TTABLE);
-		settings.mipmaps = luax_boolflag(L, idx, "mipmaps", s.mipmaps);
-		settings.linear = luax_boolflag(L, idx, "linear", s.linear);
-		settings.dpiScale = (float) luax_numberflag(L, idx, "dpiscale", s.dpiScale);
+		luax_checktablefields<Image::SettingType>(L, idx, "image setting name", Image::getConstant);
+
+		settings.mipmaps = luax_boolflag(L, idx, Image::getConstant(Image::SETTING_MIPMAPS), s.mipmaps);
+		settings.linear = luax_boolflag(L, idx, Image::getConstant(Image::SETTING_LINEAR), s.linear);
+		settings.dpiScale = (float) luax_numberflag(L, idx, Image::getConstant(Image::SETTING_DPI_SCALE), s.dpiScale);
 	}
 
 	return settings;
@@ -1186,12 +1187,12 @@ int w_newCanvas(lua_State *L)
 
 	if (!lua_isnoneornil(L, startidx))
 	{
-		luaL_checktype(L, startidx, LUA_TTABLE);
+		luax_checktablefields<Canvas::SettingType>(L, startidx, "canvas setting name", Canvas::getConstant);
 
-		settings.dpiScale = (float) luax_numberflag(L, startidx, "dpiscale", settings.dpiScale);
-		settings.msaa = luax_intflag(L, startidx, "msaa", settings.msaa);
+		settings.dpiScale = (float) luax_numberflag(L, startidx, Canvas::getConstant(Canvas::SETTING_DPI_SCALE), settings.dpiScale);
+		settings.msaa = luax_intflag(L, startidx, Canvas::getConstant(Canvas::SETTING_MSAA), settings.msaa);
 
-		lua_getfield(L, startidx, "format");
+		lua_getfield(L, startidx, Canvas::getConstant(Canvas::SETTING_FORMAT));
 		if (!lua_isnoneornil(L, -1))
 		{
 			const char *str = luaL_checkstring(L, -1);
@@ -1200,7 +1201,7 @@ int w_newCanvas(lua_State *L)
 		}
 		lua_pop(L, 1);
 
-		lua_getfield(L, startidx, "type");
+		lua_getfield(L, startidx, Canvas::getConstant(Canvas::SETTING_TYPE));
 		if (!lua_isnoneornil(L, -1))
 		{
 			const char *str = luaL_checkstring(L, -1);
@@ -1209,7 +1210,7 @@ int w_newCanvas(lua_State *L)
 		}
 		lua_pop(L, 1);
 
-		lua_getfield(L, startidx, "readable");
+		lua_getfield(L, startidx, Canvas::getConstant(Canvas::SETTING_READABLE));
 		if (!lua_isnoneornil(L, -1))
 		{
 			settings.readable.hasValue = true;
@@ -1217,7 +1218,7 @@ int w_newCanvas(lua_State *L)
 		}
 		lua_pop(L, 1);
 
-		lua_getfield(L, startidx, "mipmaps");
+		lua_getfield(L, startidx, Canvas::getConstant(Canvas::SETTING_MIPMAPS));
 		if (!lua_isnoneornil(L, -1))
 		{
 			const char *str = luaL_checkstring(L, -1);

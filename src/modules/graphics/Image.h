@@ -46,6 +46,14 @@ public:
 		MIPMAPS_GENERATED,
 	};
 
+	enum SettingType
+	{
+		SETTING_MIPMAPS,
+		SETTING_LINEAR,
+		SETTING_DPI_SCALE,
+		SETTING_MAX_ENUM
+	};
+
 	struct Settings
 	{
 		bool mipmaps = false;
@@ -94,6 +102,11 @@ public:
 
 	static int imageCount;
 
+	static bool getConstant(const char *in, SettingType &out);
+	static bool getConstant(SettingType in, const char *&out);
+	static const char *getConstant(SettingType in);
+	static std::vector<std::string> getConstants(SettingType);
+
 protected:
 
 	Image(const Slices &data, const Settings &settings);
@@ -121,6 +134,9 @@ private:
 	Image(const Slices &data, const Settings &settings, bool validatedata);
 
 	void init(PixelFormat fmt, int w, int h, const Settings &settings);
+
+	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
+	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;
 
 }; // Image
 

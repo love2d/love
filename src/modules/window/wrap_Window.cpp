@@ -54,23 +54,7 @@ static const char *settingName(Window::Setting setting)
 
 static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 {
-	luaL_checktype(L, idx, LUA_TTABLE);
-
-	// We want to error for invalid / misspelled window attributes.
-	lua_pushnil(L);
-	while (lua_next(L, idx))
-	{
-		if (lua_type(L, -2) != LUA_TSTRING)
-			return luax_typerror(L, -2, "string");
-
-		const char *key = luaL_checkstring(L, -2);
-		Window::Setting setting;
-
-		if (!Window::getConstant(key, setting))
-			return luax_enumerror(L, "window setting", key);
-
-		lua_pop(L, 1);
-	}
+	luax_checktablefields<Window::Setting>(L, idx, "window setting", Window::getConstant);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_FULLSCREEN_TYPE));
 	if (!lua_isnoneornil(L, -1))

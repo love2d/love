@@ -474,6 +474,28 @@ extern "C" { // Also called from luasocket
 int luax_enumerror(lua_State *L, const char *enumName, const char *value);
 int luax_enumerror(lua_State *L, const char *enumName, const std::vector<std::string> &values, const char *value);
 
+template <typename T>
+void luax_checktablefields(lua_State *L, int idx, const char *enumName, bool (*getConstant)(const char *, T &))
+{
+	luaL_checktype(L, idx, LUA_TTABLE);
+
+	// We want to error for invalid / misspelled fields in the table.
+	lua_pushnil(L);
+	while (lua_next(L, idx))
+	{
+		if (lua_type(L, -2) != LUA_TSTRING)
+			luax_typerror(L, -2, "string");
+
+		const char *key = luaL_checkstring(L, -2);
+		T constantvalue;
+
+		if (!getConstant(key, constantvalue))
+			luax_enumerror(L, enumName, key);
+
+		lua_pop(L, 1);
+	}
+}
+
 /**
  * Calls luax_objlen/lua_rawlen depending on version
  **/

@@ -340,5 +340,36 @@ Image::MipmapsType Image::Slices::validate() const
 		return MIPMAPS_NONE;
 }
 
+bool Image::getConstant(const char *in, SettingType &out)
+{
+	return settingTypes.find(in, out);
+}
+
+bool Image::getConstant(SettingType in, const char *&out)
+{
+	return settingTypes.find(in, out);
+}
+
+const char *Image::getConstant(SettingType in)
+{
+	const char *name = nullptr;
+	getConstant(in, name);
+	return name;
+}
+
+std::vector<std::string> Image::getConstants(SettingType)
+{
+	return settingTypes.getNames();
+}
+
+StringMap<Image::SettingType, Image::SETTING_MAX_ENUM>::Entry Image::settingTypeEntries[] =
+{
+	{ "mipmaps",  SETTING_MIPMAPS   },
+	{ "linear",   SETTING_LINEAR    },
+	{ "dpiscale", SETTING_DPI_SCALE },
+};
+
+StringMap<Image::SettingType, Image::SETTING_MAX_ENUM> Image::settingTypes(Image::settingTypeEntries, sizeof(Image::settingTypeEntries));
+
 } // graphics
 } // love
