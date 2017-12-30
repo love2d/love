@@ -967,7 +967,7 @@ void Source::resumeAtomic()
 		alSourcePlay(source);
 
 		//failed to play or nothing to play
-		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && unusedBuffers.empty()))
+		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && (int) unusedBuffers.size() == buffers))
 			stop();
 	}
 }
