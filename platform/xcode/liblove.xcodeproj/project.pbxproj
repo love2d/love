@@ -826,7 +826,7 @@
 		FA27B3C01B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */; };
 		FA27B3C11B4985BF008A9DCE /* wrap_VideoStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */; };
 		FA27B3C21B4985BF008A9DCE /* wrap_VideoStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */; };
-		FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3C81B498623008A9DCE /* Theora.framework */; };
+		FA27B3C91B498623008A9DCE /* theora.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA27B3C81B498623008A9DCE /* theora.framework */; };
 		FA28EBD51E352DB5003446F4 /* FenceSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA28EBD31E352DB5003446F4 /* FenceSync.cpp */; };
 		FA28EBD61E352DB5003446F4 /* FenceSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA28EBD31E352DB5003446F4 /* FenceSync.cpp */; };
 		FA28EBD71E352DB5003446F4 /* FenceSync.h in Headers */ = {isa = PBXBuildFile; fileRef = FA28EBD41E352DB5003446F4 /* FenceSync.h */; };
@@ -892,9 +892,9 @@
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
 		FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6F16C719F000860150 /* mpg123.framework */; };
-		FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* Ogg.framework */; };
+		FA577AC816C7513C00860150 /* ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* ogg.framework */; };
 		FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7C16C71A2600860150 /* OpenGL.framework */; };
-		FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* Vorbis.framework */; };
+		FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* vorbis.framework */; };
 		FA57FB981AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB991AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA57FB971AE1993600F2AD6D /* noise1234.h */; };
@@ -1771,7 +1771,7 @@
 		FA27B39C1B498151008A9DCE /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_VideoStream.cpp; sourceTree = "<group>"; };
 		FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_VideoStream.h; sourceTree = "<group>"; };
-		FA27B3C81B498623008A9DCE /* Theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Theora.framework; path = /Library/Frameworks/Theora.framework; sourceTree = "<absolute>"; };
+		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = /Library/Frameworks/theora.framework; sourceTree = "<absolute>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA28EBD31E352DB5003446F4 /* FenceSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FenceSync.cpp; sourceTree = "<group>"; };
@@ -1808,8 +1808,8 @@
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
-		FA577A7116C719F400860150 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
-		FA577A7716C71A0800860150 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
+		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Library/Frameworks/ogg.framework; sourceTree = "<absolute>"; };
+		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Library/Frameworks/vorbis.framework; sourceTree = "<absolute>"; };
 		FA577A7916C71A1700860150 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		FA577A7C16C71A2600860150 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FA577A8216C71A5300860150 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
@@ -2049,7 +2049,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA27B3C91B498623008A9DCE /* Theora.framework in Frameworks */,
+				FA27B3C91B498623008A9DCE /* theora.framework in Frameworks */,
 				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
@@ -2058,9 +2058,9 @@
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
-				FA577AC816C7513C00860150 /* Ogg.framework in Frameworks */,
+				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
-				FA577ACD16C7514C00860150 /* Vorbis.framework in Frameworks */,
+				FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3262,19 +3262,19 @@
 		FA0B7EEB1A959125000E1D17 /* macosx */ = {
 			isa = PBXGroup;
 			children = (
-				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
-				FA27B3C81B498623008A9DCE /* Theora.framework */,
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
+				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
 				FA577A6F16C719F000860150 /* mpg123.framework */,
-				FA577A7116C719F400860150 /* Ogg.framework */,
+				FA577A7116C719F400860150 /* ogg.framework */,
 				FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */,
 				FA577A7C16C71A2600860150 /* OpenGL.framework */,
 				FA9B4A0716E1578300074F42 /* SDL2.framework */,
-				FA577A7716C71A0800860150 /* Vorbis.framework */,
+				FA27B3C81B498623008A9DCE /* theora.framework */,
+				FA577A7716C71A0800860150 /* vorbis.framework */,
 			);
 			name = macosx;
 			sourceTree = "<group>";
