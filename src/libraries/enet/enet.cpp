@@ -712,8 +712,14 @@ static int peer_send(lua_State *l) {
 	ENetPacket *packet = read_packet(l, 2, &channel_id);
 
 	// printf("sending, channel_id=%d\n", channel_id);
-	enet_peer_send(peer, channel_id, packet);
-	return 0;
+	int ret = enet_peer_send(peer, channel_id, packet);
+	if (ret < 0) {
+		enet_packet_destroy(packet);
+	}
+
+	lua_pushinteger(l, ret);
+
+	return 1;
 }
 
 static const struct luaL_Reg enet_funcs [] = {
