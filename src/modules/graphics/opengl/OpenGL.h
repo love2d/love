@@ -153,6 +153,13 @@ public:
 		bool generateMipmapsRequiresTexture2DEnable;
 
 		/**
+		 * Report: Intel HD 4000 on Windows hangs during glClientWaitSync.
+		 * I found this when googling the issue:
+		 * https://github.com/mjn33/planetgen/commit/235e23873a22e219fffdd9ede706c1051aa0f107
+		 **/
+		bool clientWaitSyncStalls;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *

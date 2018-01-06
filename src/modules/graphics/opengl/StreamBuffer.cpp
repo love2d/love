@@ -538,14 +538,17 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 {
 	if (gl.isCoreProfile())
 	{
-		// AMD's pinned memory seems to be faster than persistent mapping, on
-		// AMD GPUs.
-		if (GLAD_AMD_pinned_memory)
-			return new StreamBufferPinnedMemory(mode, size);
-		else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
-			return new StreamBufferPersistentMapSync(mode, size);
-		else
-			return new StreamBufferSubDataOrphan(mode, size);
+		if (!gl.bugs.clientWaitSyncStalls)
+		{
+			// AMD's pinned memory seems to be faster than persistent mapping,
+			// on AMD GPUs.
+			if (GLAD_AMD_pinned_memory)
+				return new StreamBufferPinnedMemory(mode, size);
+			else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
+				return new StreamBufferPersistentMapSync(mode, size);
+		}
+
+		return new StreamBufferSubDataOrphan(mode, size);
 	}
 	else
 		return new StreamBufferClientMemory(mode, size);

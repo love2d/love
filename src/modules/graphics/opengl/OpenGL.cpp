@@ -147,6 +147,15 @@ bool OpenGL::initContext()
 	}
 #endif
 
+#ifdef LOVE_WINDOWS
+	if (getVendor() == VENDOR_INTEL && gl.isCoreProfile())
+	{
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "HD Graphics 4000") || strstr(device, "HD Graphics 2500"))
+			bugs.clientWaitSyncStalls = true;
+	}
+#endif
+
 	contextInitialized = true;
 
 	return true;
