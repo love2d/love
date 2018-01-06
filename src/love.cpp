@@ -151,6 +151,10 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+		const char *err = nullptr;
+		love_openConsole(err);
+#endif
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
 		retval = 0;
 		return DONE_QUIT;

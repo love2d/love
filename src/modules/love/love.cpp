@@ -455,15 +455,13 @@ static bool IsWindowsVistaOrGreater()
 	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, mask) != FALSE;
 }
 
-int w__openConsole(lua_State *L)
+bool love_openConsole(const char *&err)
 {
 	static bool is_open = false;
+	err = nullptr;
 
 	if (is_open)
-	{
-		love::luax_pushboolean(L, is_open);
-		return 1;
-	}
+		return true;
 
 	is_open = true;
 
@@ -476,8 +474,8 @@ int w__openConsole(lua_State *L)
 		if (!AllocConsole())
 		{
 			is_open = false;
-			love::luax_pushboolean(L, is_open);
-			return 1;
+			err = "Could not create console.";
+			return is_open;
 		}
 
 		SetConsoleTitle(TEXT("LOVE Console"));
@@ -495,20 +493,38 @@ int w__openConsole(lua_State *L)
 
 	// Redirect stdout.
 	fp = freopen("CONOUT$", "w", stdout);
-	if (L && fp == NULL)
-		return luaL_error(L, "Console redirection of stdout failed.");
+	if (fp == NULL)
+	{
+		err = "Console redirection of stdout failed.";
+		return is_open;
+	}
 
 	// Redirect stdin.
 	fp = freopen("CONIN$", "r", stdin);
-	if (L && fp == NULL)
-		return luaL_error(L, "Console redirection of stdin failed.");
+	if (fp == NULL)
+	{
+		err = "Console redirection of stdin failed.";
+		return is_open;
+	}
 
 	// Redirect stderr.
 	fp = freopen("CONOUT$", "w", stderr);
-	if (L && fp == NULL)
-		return luaL_error(L, "Console redirection of stderr failed.");
+	if (fp == NULL)
+	{
+		err = "Console redirection of stderr failed.";
+		return is_open;
+	}
 
-	love::luax_pushboolean(L, is_open);
+	return is_open;
+}
+
+int w__openConsole(lua_State *L)
+{
+	const char *err = nullptr;
+	bool isopen = love_openConsole(err);
+	if (err != nullptr)
+		return luaL_error(L, err);
+	love::luax_pushboolean(L, isopen);
 	return 1;
 }
 

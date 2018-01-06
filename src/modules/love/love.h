@@ -38,6 +38,10 @@ LOVE_EXPORT int luaopen_love(lua_State *L);
 LOVE_EXPORT int luaopen_love_nogame(lua_State *L);
 LOVE_EXPORT int luaopen_love_boot(lua_State *L);
 
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+LOVE_EXPORT bool love_openConsole(const char *&err);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
