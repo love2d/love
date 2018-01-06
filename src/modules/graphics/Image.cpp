@@ -91,7 +91,7 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	if (isCompressed() && mipmapsType == MIPMAPS_GENERATED)
 		mipmapsType = MIPMAPS_NONE;
 
-	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getMipmapCount(w, h);
+	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h);
 
 	if (mipmapCount > 1)
 		filter.mipmap = defaultMipmapFilter;
@@ -280,9 +280,10 @@ Image::MipmapsType Image::Slices::validate() const
 
 	int w = firstdata->getWidth();
 	int h = firstdata->getHeight();
+	int depth = textureType == TEXTURE_VOLUME ? slicecount : 1;
 	PixelFormat format = firstdata->getFormat();
 
-	int expectedmips = Texture::getMipmapCount(w, h);
+	int expectedmips = Texture::getTotalMipmapCount(w, h, depth);
 
 	if (mipcount != expectedmips && mipcount != 1)
 		throw love::Exception("Image does not have all required mipmap levels (expected %d, got %d)", expectedmips, mipcount);

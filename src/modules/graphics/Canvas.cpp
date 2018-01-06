@@ -67,7 +67,7 @@ Canvas::Canvas(const Settings &settings)
 
 	if (settings.mipmaps != MIPMAPS_NONE)
 	{
-		mipmapCount = getMipmapCount(pixelWidth, pixelHeight);
+		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
 		filter.mipmap = defaultMipmapFilter;
 	}
 

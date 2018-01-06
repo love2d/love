@@ -307,12 +307,12 @@ bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)
 	return true;
 }
 
-int Texture::getMipmapCount(int w, int h)
+int Texture::getTotalMipmapCount(int w, int h)
 {
 	return (int) log2(std::max(w, h)) + 1;
 }
 
-int Texture::getMipmapCount(int w, int h, int d)
+int Texture::getTotalMipmapCount(int w, int h, int d)
 {
 	return (int) log2(std::max(std::max(w, h), d)) + 1;
 }

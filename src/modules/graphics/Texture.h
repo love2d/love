@@ -148,8 +148,8 @@ public:
 
 	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 
-	static int getMipmapCount(int w, int h);
-	static int getMipmapCount(int w, int h, int d);
+	static int getTotalMipmapCount(int w, int h);
+	static int getTotalMipmapCount(int w, int h, int d);
 
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
