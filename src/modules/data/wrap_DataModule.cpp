@@ -154,7 +154,7 @@ int w_decompress(lua_State *L)
 
 	if (luax_istype(L, 2, CompressedData::type))
 	{
-		CompressedData *data = luax_checkcompresseddata(L, 1);
+		CompressedData *data = luax_checkcompresseddata(L, 2);
 		rawsize = data->getDecompressedSize();
 		luax_catchexcept(L, [&](){ rawbytes = decompress(data, rawsize); });
 	}
