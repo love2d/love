@@ -91,7 +91,7 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	if (isCompressed() && mipmapsType == MIPMAPS_GENERATED)
 		mipmapsType = MIPMAPS_NONE;
 
-	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h);
+	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h, depth);
 
 	if (mipmapCount > 1)
 		filter.mipmap = defaultMipmapFilter;
@@ -99,7 +99,7 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	initQuad();
 }
 
-void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice)
+void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice, const Rect &rect)
 {
 	love::image::ImageData *id = dynamic_cast<love::image::ImageData *>(d);
 
@@ -107,11 +107,10 @@ void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice)
 	if (id != nullptr)
 		lock.setLock(id->getMutex());
 
-	Rect rect = {0, 0, d->getWidth(), d->getHeight()};
-	uploadByteData(d->getFormat(), d->getData(), d->getSize(), rect, level, slice);
+	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect);
 }
 
-void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps)
+void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, const Rect &rect, bool reloadmipmaps)
 {
 	// No effect if the texture hasn't been created yet.
 	if (getHandle() == 0 || usingDefaultTexture)
@@ -121,13 +120,22 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 		throw love::Exception("Pixel formats must match.");
 
 	if (mipmap < 0 || (mipmapsType != MIPMAPS_DATA && mipmap > 0) || mipmap >= getMipmapCount())
-		throw love::Exception("Invalid image mipmap index.");
+		throw love::Exception("Invalid image mipmap index %d.", mipmap + 1);
 
 	if (slice < 0 || (texType == TEXTURE_CUBE && slice >= 6)
-		|| (texType == TEXTURE_VOLUME && slice >= std::max(getDepth() >> mipmap, 1))
+		|| (texType == TEXTURE_VOLUME && slice >= getDepth(mipmap))
 		|| (texType == TEXTURE_2D_ARRAY && slice >= getLayerCount()))
 	{
-		throw love::Exception("Invalid image slice index.");
+		throw love::Exception("Invalid image slice index %d.", slice + 1);
+	}
+
+	int mipw = getPixelWidth(mipmap);
+	int miph = getPixelHeight(mipmap);
+
+	if (rect.x < 0 || rect.y < 0 || rect.w <= 0 || rect.h <= 0
+		|| (rect.x + rect.w) > mipw || (rect.y + rect.h) > miph)
+	{
+		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d Image.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
 	}
 
 	love::image::ImageDataBase *oldd = data.get(slice, mipmap);
@@ -135,30 +143,27 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 	if (oldd == nullptr)
 		throw love::Exception("Image does not store ImageData!");
 
-	int w = d->getWidth();
-	int h = d->getHeight();
+	Rect currect = {0, 0, oldd->getWidth(), oldd->getHeight()};
+	Rect newdrect = {0, 0, d->getWidth(), d->getHeight()};
 
-	if (w != oldd->getWidth() || h != oldd->getHeight())
-		throw love::Exception("Dimensions must match the texture's dimensions for the specified mipmap level.");
+	// We can only replace the internal Data (used when reloading due to setMode)
+	// if the dimensions match.
+	if (rect == currect && rect == newdrect)
+		data.set(slice, mipmap, d);
 
 	Graphics::flushStreamDrawsGlobal();
 
-	d->retain();
-	oldd->release();
-
-	data.set(slice, mipmap, d);
-
-	uploadImageData(d, mipmap, slice);
+	uploadImageData(d, mipmap, slice, rect);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
 }
 
-void Image::replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps)
+void Image::replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps)
 {
 	Graphics::flushStreamDrawsGlobal();
 
-	uploadByteData(format, data, size, rect, mipmap, slice);
+	uploadByteData(format, data, size, mipmap, slice, rect);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();

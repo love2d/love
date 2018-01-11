@@ -157,7 +157,7 @@ void Font::createTexture()
 	std::vector<uint8> emptydata(size.width * size.height * bpp, 0);
 
 	Rect rect = {0, 0, size.width, size.height};
-	image->replacePixels(emptydata.data(), emptydata.size(), rect, 0, 0, false);
+	image->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
 
 	images.emplace_back(image, Acquire::NORETAIN);
 
@@ -258,7 +258,7 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		g.texture = image;
 
 		Rect rect = {textureX, textureY, gd->getWidth(), gd->getHeight()};
-		image->replacePixels(gd->getData(), gd->getSize(), rect, 0, 0, false);
+		image->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;

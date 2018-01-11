@@ -93,8 +93,8 @@ public:
 
 	virtual ~Image();
 
-	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps);
-	void replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps);
+	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
+	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
 
 	bool isFormatLinear() const;
 	bool isCompressed() const;
@@ -112,8 +112,8 @@ protected:
 	Image(const Slices &data, const Settings &settings);
 	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
 
-	void uploadImageData(love::image::ImageDataBase *d, int level, int slice);
-	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &rect, int level, int slice) = 0;
+	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, const Rect &rect);
+	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) = 0;
 
 	virtual void generateMipmaps() = 0;
 

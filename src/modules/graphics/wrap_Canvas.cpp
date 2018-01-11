@@ -92,12 +92,7 @@ int w_Canvas_newImageData(lua_State *L)
 
 	int slice = 0;
 	int mipmap = 0;
-
-	Rect rect;
-	rect.x = 0;
-	rect.y = 0;
-	rect.w = canvas->getPixelWidth();
-	rect.h = canvas->getPixelHeight();
+	Rect rect = {0, 0, canvas->getPixelWidth(), canvas->getPixelHeight()};
 
 	if (!lua_isnoneornil(L, 2))
 	{

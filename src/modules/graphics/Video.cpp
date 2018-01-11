@@ -88,7 +88,7 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 		size_t size = bpp * widths[i] * heights[i];
 
 		Rect rect = {0, 0, widths[i], heights[i]};
-		img->replacePixels(data[i], size, rect, 0, 0, false);
+		img->replacePixels(data[i], size, 0, 0, rect, false);
 
 		images[i].set(img, Acquire::NORETAIN);
 	}
@@ -163,7 +163,7 @@ void Video::update()
 			size_t size = bpp * widths[i] * heights[i];
 
 			Rect rect = {0, 0, widths[i], heights[i]};
-			images[i]->replacePixels(data[i], size, rect, 0, 0, false);
+			images[i]->replacePixels(data[i], size, 0, 0, rect, false);
 		}
 	}
 }

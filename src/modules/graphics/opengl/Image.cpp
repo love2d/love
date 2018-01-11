@@ -85,7 +85,7 @@ void Image::loadDefaultTexture()
 	int slices = texType == TEXTURE_CUBE ? 6 : 1;
 	Rect rect = {0, 0, 2, 2};
 	for (int slice = 0; slice < slices; slice++)
-		uploadByteData(PIXELFORMAT_RGBA8, px, sizeof(px), rect, 0, slice);
+		uploadByteData(PIXELFORMAT_RGBA8, px, sizeof(px), 0, slice, rect);
 }
 
 void Image::loadData()
@@ -133,7 +133,10 @@ void Image::loadData()
 			love::image::ImageDataBase *id = data.get(slice, mip);
 
 			if (id != nullptr)
-				uploadImageData(id, mip, slice);
+			{
+				Rect r = {0, 0, id->getWidth(), id->getHeight()};
+				uploadImageData(id, mip, slice, r);
+			}
 		}
 
 		w = std::max(w / 2, 1);
@@ -147,7 +150,7 @@ void Image::loadData()
 		generateMipmaps();
 }
 
-void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &r, int level, int slice)
+void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
 {
 	OpenGL::TempDebugGroup debuggroup("Image data upload");
 
