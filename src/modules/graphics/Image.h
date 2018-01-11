@@ -93,7 +93,7 @@ public:
 
 	virtual ~Image();
 
-	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
+	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps);
 	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
 
 	bool isFormatLinear() const;
@@ -112,7 +112,7 @@ protected:
 	Image(const Slices &data, const Settings &settings);
 	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
 
-	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, const Rect &rect);
+	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
 	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) = 0;
 
 	virtual void generateMipmaps() = 0;

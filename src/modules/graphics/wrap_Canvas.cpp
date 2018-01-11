@@ -94,15 +94,17 @@ int w_Canvas_newImageData(lua_State *L)
 	int mipmap = 0;
 	Rect rect = {0, 0, canvas->getPixelWidth(), canvas->getPixelHeight()};
 
-	if (!lua_isnoneornil(L, 2))
-	{
-		rect.x = (int) luaL_checkinteger(L, 2);
-		rect.y = (int) luaL_checkinteger(L, 3);
-		rect.w = (int) luaL_checkinteger(L, 4);
-		rect.h = (int) luaL_checkinteger(L, 5);
+	if (canvas->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 2) - 1;
 
-		slice = (int) luaL_optinteger(L, 6, 1) - 1;
-		mipmap = (int) luaL_optinteger(L, 7, 1) - 1;
+	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+
+	if (!lua_isnoneornil(L, 4))
+	{
+		rect.x = (int) luaL_checkinteger(L, 4);
+		rect.y = (int) luaL_checkinteger(L, 5);
+		rect.w = (int) luaL_checkinteger(L, 6);
+		rect.h = (int) luaL_checkinteger(L, 7);
 	}
 
 	love::image::ImageData *img = nullptr;

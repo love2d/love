@@ -99,7 +99,7 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	initQuad();
 }
 
-void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice, const Rect &rect)
+void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y)
 {
 	love::image::ImageData *id = dynamic_cast<love::image::ImageData *>(d);
 
@@ -107,10 +107,11 @@ void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice,
 	if (id != nullptr)
 		lock.setLock(id->getMutex());
 
+	Rect rect = {x, y, d->getWidth(), d->getHeight()};
 	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect);
 }
 
-void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, const Rect &rect, bool reloadmipmaps)
+void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
 {
 	// No effect if the texture hasn't been created yet.
 	if (getHandle() == 0 || usingDefaultTexture)
@@ -129,6 +130,8 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 		throw love::Exception("Invalid image slice index %d.", slice + 1);
 	}
 
+	Rect rect = {x, y, d->getWidth(), d->getHeight()};
+
 	int mipw = getPixelWidth(mipmap);
 	int miph = getPixelHeight(mipmap);
 
@@ -144,16 +147,18 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 		throw love::Exception("Image does not store ImageData!");
 
 	Rect currect = {0, 0, oldd->getWidth(), oldd->getHeight()};
-	Rect newdrect = {0, 0, d->getWidth(), d->getHeight()};
 
 	// We can only replace the internal Data (used when reloading due to setMode)
-	// if the dimensions match.
-	if (rect == currect && rect == newdrect)
+	// if the dimensions match. We also don't currently support partial updates
+	// of compressed textures.
+	if (rect == currect)
 		data.set(slice, mipmap, d);
+	else if (isPixelFormatCompressed(d->getFormat()))
+		throw love::Exception("Compressed textures only support replacing the entire Image.");
 
 	Graphics::flushStreamDrawsGlobal();
 
-	uploadImageData(d, mipmap, slice, rect);
+	uploadImageData(d, mipmap, slice, x, y);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();

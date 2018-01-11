@@ -133,10 +133,7 @@ void Image::loadData()
 			love::image::ImageDataBase *id = data.get(slice, mip);
 
 			if (id != nullptr)
-			{
-				Rect r = {0, 0, id->getWidth(), id->getHeight()};
-				uploadImageData(id, mip, slice, r);
-			}
+				uploadImageData(id, mip, slice, 0, 0);
 		}
 
 		w = std::max(w / 2, 1);
