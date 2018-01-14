@@ -102,6 +102,23 @@ bool Texture::isReadable() const
 	return readable;
 }
 
+bool Texture::isValidSlice(int slice) const
+{
+	if (slice < 0)
+		return false;
+
+	if (texType == TEXTURE_CUBE)
+		return slice < 6;
+	else if (texType == TEXTURE_VOLUME)
+		return slice < depth;
+	else if (texType == TEXTURE_2D_ARRAY)
+		return slice < layers;
+	else if (slice > 0)
+		return false;
+
+	return true;
+}
+
 void Texture::draw(Graphics *gfx, const Matrix4 &m)
 {
 	draw(gfx, quad, m);

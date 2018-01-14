@@ -82,8 +82,6 @@ public:
 
 	void setColor(Colorf c) override;
 
-	void setCanvas() override;
-
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 

@@ -578,7 +578,10 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	DisplayState &state = states.back();
 	int ncanvases = (int) rts.colors.size();
 
-	if (ncanvases == 0 && rts.depthStencil.canvas == nullptr)
+	RenderTarget firsttarget = rts.getFirstTarget();
+	love::graphics::Canvas *firstcanvas = firsttarget.canvas;
+
+	if (firstcanvas == nullptr)
 		return setCanvas();
 
 	const auto &prevRTs = state.renderTargets;
@@ -609,9 +612,6 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (ncanvases > capabilities.limits[LIMIT_MULTI_CANVAS])
 		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
 
-	RenderTarget firsttarget = rts.getFirstTarget();
-	love::graphics::Canvas *firstcanvas = firsttarget.canvas;
-
 	bool multiformatsupported = capabilities.features[FEATURE_MULTI_CANVAS_FORMATS];
 
 	PixelFormat firstcolorformat = PIXELFORMAT_UNKNOWN;
@@ -624,6 +624,9 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (firsttarget.mipmap < 0 || firsttarget.mipmap >= firstcanvas->getMipmapCount())
 		throw love::Exception("Invalid mipmap level %d.", firsttarget.mipmap + 1);
 
+	if (!firstcanvas->isValidSlice(firsttarget.slice))
+		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
+
 	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8;
 	int pixelw = firstcanvas->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firstcanvas->getPixelHeight(firsttarget.mipmap);
@@ -633,9 +636,13 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		love::graphics::Canvas *c = rts.colors[i].canvas;
 		PixelFormat format = c->getPixelFormat();
 		int mip = rts.colors[i].mipmap;
+		int slice = rts.colors[i].slice;
 
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+
+		if (!c->isValidSlice(slice))
+			throw love::Exception("Invalid slice index: %d.", slice + 1);
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
 			throw love::Exception("All canvases must have the same pixel dimensions.");
@@ -657,6 +664,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	{
 		love::graphics::Canvas *c = rts.depthStencil.canvas;
 		int mip = rts.depthStencil.mipmap;
+		int slice = rts.depthStencil.slice;
 
 		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
 			throw love::Exception("Only depth/stencil format Canvases can be used with the 'depthstencil' field of the table passed into setCanvas.");
@@ -669,6 +677,9 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+
+		if (!c->isValidSlice(slice))
+			throw love::Exception("Invalid slice index: %d.", slice + 1);
 	}
 
 	int w = firstcanvas->getWidth(firsttarget.mipmap);
@@ -681,13 +692,27 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	refs.colors.reserve(rts.colors.size());
 
 	for (auto c : rts.colors)
-		refs.colors.emplace_back(c.canvas, c.slice);
+		refs.colors.emplace_back(c.canvas, c.slice, c.mipmap);
 
 	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.canvas, rts.depthStencil.slice);
 	refs.temporaryRTFlags = rts.temporaryRTFlags;
 
 	std::swap(state.renderTargets, refs);
 
+	canvasSwitchCount++;
+}
+
+void Graphics::setCanvas()
+{
+	DisplayState &state = states.back();
+
+	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.canvas == nullptr)
+		return;
+
+	flushStreamDraws();
+	setCanvasInternal(RenderTargets(), width, height, pixelWidth, pixelHeight, isGammaCorrect());
+
+	state.renderTargets = RenderTargetsStrongRef();
 	canvasSwitchCount++;
 }
 

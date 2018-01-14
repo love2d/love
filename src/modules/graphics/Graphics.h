@@ -570,7 +570,7 @@ public:
 	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
 	void setCanvas(const RenderTargets &rts);
 	void setCanvas(const RenderTargetsStrongRef &rts);
-	virtual void setCanvas() = 0;
+	void setCanvas();
 
 	RenderTargets getCanvas() const;
 	bool isCanvasActive() const;

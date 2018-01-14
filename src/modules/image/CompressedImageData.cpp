@@ -91,7 +91,7 @@ void *CompressedImageData::getData() const
 	return memory->data;
 }
 
-int CompressedImageData::getMipmapCount(int /*slice*/) const
+int CompressedImageData::getMipmapCount() const
 {
 	return (int) dataImages.size();
 }

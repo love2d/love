@@ -120,6 +120,8 @@ public:
 
 	bool isReadable() const;
 
+	bool isValidSlice(int slice) const;
+
 	int getWidth(int mip = 0) const;
 	int getHeight(int mip = 0) const;
 	int getDepth(int mip = 0) const;

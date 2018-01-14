@@ -475,25 +475,41 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 {
 	const DisplayState &state = states.back();
 
-	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
+	OpenGL::TempDebugGroup debuggroup("setCanvas");
 
 	flushStreamDraws();
 	endPass();
 
-	bindCachedFBO(rts);
+	bool iswindow = rts.getFirstTarget().canvas == nullptr;
+	vertex::Winding vertexwinding = state.winding;
+
+	if (iswindow)
+	{
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
+
+		// The projection matrix is flipped compared to rendering to a canvas, due
+		// to OpenGL considering (0,0) bottom-left instead of top-left.
+		projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
+	}
+	else
+	{
+		bindCachedFBO(rts);
+
+		projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
+
+		// Flip front face winding when rendering to a canvas, since our
+		// projection matrix is flipped.
+		vertexwinding = vertexwinding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+	}
+
+	glFrontFace(vertexwinding == vertex::WINDING_CW ? GL_CW : GL_CCW);
 
 	gl.setViewport({0, 0, pixelw, pixelh});
-
-	// Flip front face winding when rendering to a canvas, since our projection
-	// matrix is flipped.
-	glFrontFace(state.winding == vertex::WINDING_CW ? GL_CCW : GL_CW);
 
 	// Re-apply the scissor if it was active, since the rectangle passed to
 	// glScissor is affected by the viewport dimensions.
 	if (state.scissor)
 		setScissor(state.scissorRect);
-
-	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
@@ -501,46 +517,6 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 		if (hasSRGBcanvas != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
 			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBcanvas);
 	}
-}
-
-void Graphics::setCanvas()
-{
-	DisplayState &state = states.back();
-
-	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.canvas == nullptr)
-		return;
-
-	OpenGL::TempDebugGroup debuggroup("setCanvas()");
-
-	flushStreamDraws();
-	endPass();
-
-	// Re-apply the correct front face winding, since it may have been flipped
-	// if we were previously rendering to a canvas.
-	glFrontFace(state.winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
-
-	state.renderTargets = RenderTargetsStrongRef();
-
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
-
-	gl.setViewport({0, 0, pixelWidth, pixelHeight});
-
-	// Re-apply the scissor if it was active, since the rectangle passed to
-	// glScissor is affected by the viewport dimensions.
-	if (state.scissor)
-		setScissor(state.scissorRect);
-
-	// The projection matrix is flipped compared to rendering to a canvas, due
-	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
-
-	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-	{
-		if (isGammaCorrect() != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
-			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
-	}
-
-	canvasSwitchCount++;
 }
 
 void Graphics::endPass()

@@ -61,7 +61,7 @@ public:
 	 * Gets the number of mipmaps in this Compressed Image Data.
 	 * Includes the base image level.
 	 **/
-	int getMipmapCount(int slice = 0) const;
+	int getMipmapCount() const;
 
 	/**
 	 * Gets the number of slices (array layers, cube faces, 3D layers, etc.)
