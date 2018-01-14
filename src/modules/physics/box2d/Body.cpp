@@ -422,6 +422,22 @@ bool Body::isFixedRotation() const
 	return body->IsFixedRotation();
 }
 
+bool Body::isTouching(Body *other) const
+{
+	const b2ContactEdge *ce = body->GetContactList();
+	b2Body *otherbody = other->body;
+
+	while (ce != nullptr)
+	{
+		if (ce->other == otherbody)
+			return true;
+
+		ce = ce->next;
+	}
+
+	return false;
+}
+
 World *Body::getWorld() const
 {
 	return world;

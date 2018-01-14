@@ -522,6 +522,14 @@ int w_Body_isFixedRotation(lua_State *L)
 	return 1;
 }
 
+int w_Body_isTouching(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	Body *other = luax_checkbody(L, 2);
+	luax_pushboolean(L, t->isTouching(other));
+	return 1;
+}
+
 int w_Body_getWorld(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -655,6 +663,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "setAwake", w_Body_setAwake },
 	{ "setFixedRotation", w_Body_setFixedRotation },
 	{ "isFixedRotation", w_Body_isFixedRotation },
+	{ "isTouching", w_Body_isTouching },
 	{ "getWorld", w_Body_getWorld },
 	{ "getFixtures", w_Body_getFixtures },
 	{ "getJoints", w_Body_getJoints },

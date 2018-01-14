@@ -382,6 +382,8 @@ public:
 	void setFixedRotation(bool fixed);
 	bool isFixedRotation() const;
 
+	bool isTouching(Body *other) const;
+
 	/**
 	 * Get the World this Body resides in.
 	 */
