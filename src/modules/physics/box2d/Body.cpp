@@ -429,7 +429,7 @@ bool Body::isTouching(Body *other) const
 
 	while (ce != nullptr)
 	{
-		if (ce->other == otherbody)
+		if (ce->other == otherbody && ce->contact != nullptr && ce->contact->IsTouching())
 			return true;
 
 		ce = ce->next;
