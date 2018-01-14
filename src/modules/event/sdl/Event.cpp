@@ -116,7 +116,7 @@ Event::~Event()
 
 void Event::pump()
 {
-	exceptionIfInRenderPass();
+	exceptionIfInRenderPass("love.event.pump");
 
 	SDL_Event e;
 
@@ -133,7 +133,7 @@ void Event::pump()
 
 Message *Event::wait()
 {
-	exceptionIfInRenderPass();
+	exceptionIfInRenderPass("love.event.wait");
 
 	SDL_Event e;
 
@@ -145,7 +145,7 @@ Message *Event::wait()
 
 void Event::clear()
 {
-	exceptionIfInRenderPass();
+	exceptionIfInRenderPass("love.event.clear");
 
 	SDL_Event e;
 
@@ -157,7 +157,7 @@ void Event::clear()
 	love::event::Event::clear();
 }
 
-void Event::exceptionIfInRenderPass()
+void Event::exceptionIfInRenderPass(const char *name)
 {
 	// Some core OS graphics functionality (e.g. swap buffers on some platforms)
 	// happens inside SDL_PumpEvents - which is called by SDL_PollEvent and
@@ -165,7 +165,7 @@ void Event::exceptionIfInRenderPass()
 	// is active.
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr && gfx->isCanvasActive())
-		throw love::Exception("Cannot call this function while a Canvas is active in love.graphics.");
+		throw love::Exception("%s cannot be called while a Canvas is active in love.graphics.", name);
 }
 
 Message *Event::convert(const SDL_Event &e)

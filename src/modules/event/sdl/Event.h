@@ -69,7 +69,7 @@ public:
 
 private:
 
-	void exceptionIfInRenderPass();
+	void exceptionIfInRenderPass(const char *name);
 
 	Message *convert(const SDL_Event &e);
 	Message *convertJoystickEvent(const SDL_Event &e) const;
