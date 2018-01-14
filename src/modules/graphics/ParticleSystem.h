@@ -202,45 +202,19 @@ public:
 	 * * Normal: Parameters denote the standard deviation in x and y direction. x and y are assumed to be uncorrelated.
 	 * * borderellipse: Parameter causes particle distribution around outside of ellipse
 	 * * borderrectangle: Parameter causes particle distribution around outside of rectangle
+	 * @param distribution Distribution type
 	 * @param x First parameter. Interpretation depends on distribution type.
 	 * @param y Second parameter. Interpretation depends on distribution type.
-	 * @param distribution Distribution type
+	 * @param angle The angle of the emission area (in radians).
+	 * @param directionRelativeToCenter whether the initial direction of
+	 *        particles points away from the center of the emission area.
 	 **/
-	void setAreaSpread(AreaSpreadDistribution distribution, float x, float y);
-
-	/**
-	 * Returns area spread distribution type.
-	 **/
-	AreaSpreadDistribution getAreaSpreadDistribution() const;
+	void setEmissionArea(AreaSpreadDistribution distribution, float x, float y, float angle, bool directionRelativeToCenter);
 
 	/**
 	 * Returns area spread parameters.
 	 **/
-	const love::Vector2 &getAreaSpreadParameters() const;
-
-	/**
-	 * Returns the angle of the area distribution (in radians).
-	 **/
-	float getAreaSpreadAngle() const;
-
-	/**
-	 * Sets the angle of the area distribution
-	 * @param angle The angle (in radians).
-	 **/
-	void setAreaSpreadAngle(float angle);
-
-	/**
-	 * Returns true if particles spawn relative to the center of the 
-	 * shape area or false if they will use the setDirection parameter
-	 **/
-	bool getAreaSpreadIsRelativeDirection() const;
-
-	/**
-	 * Sets if particles starting direction is away from the center of the
-	 * area spread or the setDirection parameter
-	 * @param isRelativeDirection boolean use relative direction from center
-	 **/
-	void setAreaSpreadIsRelativeDirection(bool isRelativeDirection);
+	AreaSpreadDistribution getEmissionArea(love::Vector2 &params, float &angle, bool &directionRelativeToCenter) const;
 
 	/**
 	 * Sets the direction of the particle emitter.
@@ -636,10 +610,10 @@ private:
 	love::Vector2 prevPosition;
 
 	// Emission area spread.
-	AreaSpreadDistribution areaSpreadDistribution;
-	love::Vector2 areaSpread;
-	float areaSpreadAngle;
-	bool areaSpreadIsRelativeDirection;
+	AreaSpreadDistribution emissionAreaDistribution;
+	love::Vector2 emissionArea;
+	float emissionAreaAngle;
+	bool directionRelativeToEmissionCenter;
 
 	// The lifetime of the particle emitter (-1 means infinite) and the life it has left.
 	float lifetime;
