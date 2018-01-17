@@ -12,12 +12,15 @@ Released: N/A
   * Added variants of SoundData:getSample/setSample which take a channel parameter.
   * Added variants of all table-with-fields-returning get* functions, the new variants take an existing table to fill in.
   * Added a variant to World:update, which accepts the number of iterations to run. The defaults are now 8 and 3.
+  * Added Body:isTouching.
   * Added RopeJoint:setMaxLength.
   * Added a click count argument to love.mousepressed and love.mousereleased.
+  * Added variants of love.filesystem.mount which accept a Data or FileData object containing zipped data.
   * Added love.filesystem.get/setCRequirePath, and use that to find c libraries for require.
+  * Added variants of File:read and love.filesystem.read which take an enum to determine whether they return a FileData or a string.
+  * Added love.data module. It includes hex/base64 encoding functions, MD5 and SHA hashing, string packing, compression APIs, and more.
   * Added Channel:hasRead, which checks if a message has been read. Takes an id, which Channel:push will now return.
   * Added variants of Channel:demand and Channel:supply which take a timeout argument.
-  * Added love.data module. It includes hex/base64 encoding functions, MD5 and SHA hashing, string packing, and more.
   * Added Transform objects to love.math.
   * Added support for different ImageData formats, including RGBA8 (the default), RGBA16, RGBA16F, and RGBA32F.
   * Added the ability to load Radiance HDR, OpenEXR, and 16 bit PNG images.
@@ -25,10 +28,12 @@ Released: N/A
   * Added the ability to specify a per-object pixel density scale factor when creating Images, Canvases, Fonts, and Videos. Affects drawing.
   * Added Texture:getPixelWidth/Height and love.graphics.getPixelWidth/Height.
   * Added Texture:getPixelDensity, love.graphics.getPixelDensity, and Font:getPixelDensity.
+  * Added Texture:getMipmapCount, getFormat, getLayerCount, getDepth, and getTextureType.
   * Added Array, Cubemap, and Volume texture types and corresponding Image and Canvas APIs.
   * Added love.graphics.getTextureTypes, returns a table with fields indicating support for each texture type.
   * Added mipmapping support to Canvases, including both auto-generated mipmaps and manually rendering to a specific mipmap level.
   * Added 'stencil8', 'depth24stencil8', 'depth32fstencil8', 'depth16', 'depth24', and 'depth32f' pixel formats for Canvases.
+  * Added variant of love.graphics.newCanvas which accepts a table of settings.
   * Added optional 'readable' boolean field to the table passed into love.graphics.newCanvas.
   * Added optional 'depthstencil' field to the table passed into love.graphics.setCanvas, for using a depth/stencil Canvas.
   * Added optional 'depth' and 'stencil' boolean fields to the table passed into setCanvas, for enabling depth and stencil buffers if 'depthstencil' isn't used.
@@ -40,6 +45,8 @@ Released: N/A
   * Added love.graphics.drawLayer and SpriteBatch:add/setLayer for easily drawing layers of Array Textures.
   * Added variants of love.graphics.print and printf which take a Font argument.
   * Added variants of love.graphics.clear to control how the active depth and stencil buffers are cleared.
+  * Added love.graphics.applyTransform and love.graphics.replaceTransform.
+  * Added love.graphics.transformPoint and love.graphics.inverseTransformPoint.
   * Added love.graphics.getStackDepth.
   * Added love.graphics.flushBatch for manually flushing automatically batched draws.
   * Added SpriteBatch:setDrawRange.
@@ -51,6 +58,7 @@ Released: N/A
   * Added Shader:send(matrixname, is_column_major, matrix, ...) which specifies how to interpret the matrix table arguments.
   * Added Shader:send variants which accept a Data object.
   * Added 'borderellipse' and 'borderrectangle' ParticleSystem distributions.
+  * Added variant of ParticleSystem:setEmissionArea which accepts an area angle and a flag for whether particle directions are relative to the center of the area.
   * Added ParticleSystem:set/getAreaSpreadAngle and set/getAreaSpreadIsRelativeDirection.
   * Added love.graphics.captureScreenshot (replaces love.graphics.newScreenshot).
   * Added 'glsl3', 'instancing', 'fullnpot','pixelshaderhighp', and 'shaderderivatives' graphics features.
@@ -71,6 +79,36 @@ Released: N/A
   * Added love.filesystem.getInfo.
   * Added 'drawcallsbatched' to love.graphics.getStats.
 
+  * Deprecated love.filesystem.exists / isFile / isDirectory / isSymlink / getLastModified / getSize (use getInfo instead).
+  * Deprecated love.math.compress / decompress (use love.data.compress / decompress instead).
+
+  * - All renamed APIs are formally deprecated rather than completely removed.
+  * Renamed love.window.getPixelScale to love.window.getDPIScale.
+  * Renamed love.mouse.hasCursor to love.mouse.isCursorSupported.
+  * Renamed ParticleSystem:setAreaSpread to ParticleSystem:setEmissionArea.
+  * Renamed love.errhand to love.errorhandler.
+  * Renamed Source/SoundData/Decoder:getChannels to getChannelCount.
+  * Renamed PrismaticJoint/RevoluteJoint:hasLimitsEnabled to areLimitsEnabled.
+  * Renamed love.audio.getSourceCount to love.audio.getActiveSourceCount.
+  * Renamed all get[Object]List functions to get[Object]s.
+
+  * Removed the default source type for love.audio.newSource.
+  * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
+  * Removed the no-argument variant of Text:set, use Text:clear instead.
+  * Removed love.graphics.getCompressedImageFormats, use love.graphics.getImageFormats instead.
+  * Removed the 'void effects(...)' pixel shader entry point. Use the new 'void effect()' instead.
+  * Removed Shader:getExternVariable, use Shader:hasUniform instead.
+  * Removed love.graphics.newScreenshot, use love.graphics.captureScreenshot instead.
+  * Removed deprecated enet function host:socket_get_address.
+  * Removed functions deprecated in LÖVE 0.10.2:
+    * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
+    * Removed love.window.isCreated (use love.window.isOpen instead).
+
+  * Improved performance when drawing textures, shapes, lines, and points by automatically batching their draw calls together when possible.
+  * Improved performance of Shader:send when the Shader is not active.
+  * Improved performance of love.math.randomNormal when LuaJIT's JIT compiler is enabled.
+  * Improved performance of love.filesystem.lines and File:lines, especially when reading from a file inside a zip/.love.
+
   * Changed all color values to be in the range 0-1, rather than 0-255.
   * Changed high-dpi functionality to require much less code (often none at all) for graphics to appear at the correct sizes and positions.
   * Changed love.graphics.print and friends to ignore carriage returns.
@@ -85,8 +123,30 @@ Released: N/A
   * Changed love.timer.step, it now returns dt.
   * Changed love.run and love.errhand to return a function for their main loop, which gets called until love quits.
 
+  * Updated and improved command line argument handling.
+  * Updated the boot sequence to show an error instead of the no-game screen, if a nonexistant folder is passed in as the source game directory.
+  * Updated 'love.exe --version' on Windows to print to the parent console.
+  * Updated Android print rerouting and JIT compilation disabling to apply inside threads.
+  * Updated invalid enum value error messages to show a list of the valid enum values.
+  * Updated Source:seek to work if the Source isn't playing.
+  * Updated love.event.poll to stop allocating memory unnecessarily.
+  * Updated love.math.random to have improved numeric distribution.
+  * Updated love.graphics to support Core Profile OpenGL 3.3+ when available.
+  * Updated shaders to always expose derivative functions (dFdx, dFdy, fwidth) when available in OpenGL ES.
+  * Updated shaders to allow using VERTEX and PIXEL in shader code.
+  * Updated love.graphics.circle/ellipse/arc/rectangle to take transformation scale into account when determining the number of segments to use.
+  * Updated Font glyph generation to improve antialiasing.
+  * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
+  * Updated love.graphics.newImage to treat file names ending with "@2x", "@3x", etc. as a pixel density scale factor if none is explicitly supplied.
+  * Updated the error message when bad values are given to love.graphics.line.
+  * Updated the maximum love.graphics transformation/state stack depth from 64 to 128.
+  * Updated the default error handler to allow copying the error to the clipboard when the user decides to do so.
+  * Updated love.filesystem.setRequirePath to support multiple template '?' characters in each path.
+  * Updated luasocket to version 3.0rc1.
+
   * Fixed error in default error handler when the error message contains non UTF-8 bytes.
   * Fixed a memory leak when sending love objects to threads which never load that object's module.
+  * Fixed a memory leak in enet when peer:send fails.
   * Fixed os.execute always returning -1 in Linux.
   * Fixed the default reference angle for WeldJoint, PrismaticJoint, and RevoluteJoint.
   * Fixed Fixture:getShape to reuse the existing internal Fixture-owned shape.
@@ -104,50 +164,6 @@ Released: N/A
   * Fixed video seeking to be faster.
   * Fixed BezierCurves to error instead of hanging in some situations.
   * Fixed compilation of luasocket with newer luajit 2.1.0 beta versions.
-
-  * Improved performance when drawing textures, shapes, lines, and points by automatically batching their draw calls together when possible.
-  * Improved performance of Shader:send when the Shader is not active.
-  * Improved performance of love.math.randomNormal when LuaJIT's JIT compiler is enabled.
-  * Improved performance of love.filesystem.lines and File:lines, especially when reading from a file inside a zip/.love.
-
-  * Renamed love.window.getPixelScale to love.window.getDPIScale.
-  * Renamed love.mouse.hasCursor to love.mouse.isCursorSupported.
-  * Renamed love.errhand to love.errorhandler.
-  * Renamed Source/SoundData/Decoder:getChannels to getChannelCount.
-  * Renamed PrismaticJoint/RevoluteJoint:hasLimitsEnabled to areLimitsEnabled.
-  * Renamed love.audio.getSourceCount to love.audio.getActiveSourceCount.
-  * Renamed love.math.compress/decompress to love.data.compress/decompress, and updated the argument order.
-  * Renamed all get[Object]List functions to get[Object]s.
-
-  * Removed the default source type for love.audio.newSource.
-  * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
-  * Removed the no-argument variant of Text:set, use Text:clear instead.
-  * Removed love.graphics.getCompressedImageFormats, use love.graphics.getImageFormats instead.
-  * Removed the 'void effects(...)' pixel shader entry point. Use the new 'void effect()' instead.
-  * Removed Shader:getExternVariable, use Shader:hasUniform instead.
-  * Removed love.graphics.newScreenshot, use love.graphics.captureScreenshot instead.
-  * Removed deprecated enet function host:socket_get_address.
-  * Removed functions deprecated in LÖVE 0.10.2:
-    * Removed Shader:sendInt, Shader:sendBoolean, Shader:sentFloat, Shader:sendMatrix, and Shader:sendTexture (use Shader:send instead).
-    * Removed love.window.isCreated (use love.window.isOpen instead).
-
-  * Updated and improved command line argument handling.
-  * Updated invalid enum value error messages to show a list of the valid enum values.
-  * Updated Source:seek to work if the Source isn't playing.
-  * Updated love.event.poll to stop allocating memory unnecessarily.
-  * Updated love.math.random to have improved numeric distribution.
-  * Updated love.graphics to support Core Profile OpenGL 3.3+ when available.
-  * Updated shaders to always expose derivative functions (dFdx, dFdy, fwidth) when available in OpenGL ES.
-  * Updated shaders to allow using VERTEX and PIXEL in shader code.
-  * Updated love.graphics.circle/ellipse/arc/rectangle to take transformation scale into account when determining the number of segments to use.
-  * Updated Font glyph generation to improve antialiasing.
-  * Updated Canvas:newImageData to return an ImageData with a format that matches the Canvas' as closely as possible.
-  * Updated love.graphics.newImage to treat file names ending with "@2x", "@3x", etc. as a pixel density scale factor if none is explicitly supplied.
-  * Updated the error message when bad values are given to love.graphics.line.
-  * Updated the maximum love.graphics transformation/state stack depth from 64 to 128.
-  * Updated the default error handler to allow copying the error to the clipboard when the user decides to do so.
-  * Updated love.filesystem.setRequirePath to support multiple template '?' characters in each path.
-  * Updated luasocket to version 3.0rc1.
 
 LOVE 0.10.2 [Super Toast]
 -------------------------
