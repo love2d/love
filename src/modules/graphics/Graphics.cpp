@@ -334,11 +334,9 @@ int Graphics::getPixelHeight() const
 
 double Graphics::getCurrentDPIScale() const
 {
-	if (states.back().renderTargets.colors.size() > 0)
-	{
-		Canvas *c = states.back().renderTargets.getFirstTarget().canvas.get();
-		return (double) c->getPixelHeight() / (double) c->getHeight();
-	}
+	const auto &rt = states.back().renderTargets.getFirstTarget();
+	if (rt.canvas.get())
+		return rt.canvas->getDPIScale();
 
 	return getScreenDPIScale();
 }
