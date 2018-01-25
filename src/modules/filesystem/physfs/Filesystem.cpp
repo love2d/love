@@ -224,57 +224,29 @@ bool Filesystem::setSource(const char *source)
 	if (!love::android::createStorageDirectories())
 		SDL_Log("Error creating storage directories!");
 
-	char* game_archive_ptr = NULL;
-	size_t game_archive_size = 0;
-	bool archive_loaded = false;
+	new_search_path = love::android::getSelectedGameFile();
 
-	// try to load the game that was sent to LÖVE via a Intent
-	archive_loaded = love::android::loadGameArchiveToMemory(love::android::getSelectedGameFile(), &game_archive_ptr, &game_archive_size);
-
-	if (!archive_loaded)
+	// try mounting first, if that fails, load to memory and mount
+	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
 	{
-		// try to load the game in the assets/ folder
-		archive_loaded = love::android::loadGameArchiveToMemory("game.love", &game_archive_ptr, &game_archive_size);
-	}
-
-	if (archive_loaded)
-	{
-		if (!PHYSFS_mountMemory(game_archive_ptr, game_archive_size, love::android::freeGameArchiveMemory, "archive.zip", "/", 0))
+		// PHYSFS cannot yet mount a zip file inside an .apk
+		SDL_Log("Mounting %s did not work. Loading to memory.",
+				new_search_path.c_str());
+		char* game_archive_ptr = NULL;
+		size_t game_archive_size = 0;
+		if (!love::android::loadGameArchiveToMemory(
+					new_search_path.c_str(), &game_archive_ptr,
+					&game_archive_size))
 		{
-			SDL_Log("Mounting of in-memory game archive failed!");
-			love::android::freeGameArchiveMemory(game_archive_ptr);
+			SDL_Log("Failure memory loading archive %s", new_search_path.c_str());
 			return false;
 		}
-	}
-	else
-	{
-		// try to load the game in the directory that was sent to LÖVE via an
-		// Intent ...
-		std::string game_path = std::string(love::android::getSelectedGameFile());
-
-		if (game_path == "")
+		if (!PHYSFS_mountMemory(
+			    game_archive_ptr, game_archive_size,
+			    love::android::freeGameArchiveMemory, "archive.zip", "/", 0))
 		{
-			// ... or fall back to the game at /sdcard/lovegame
-			game_path = "/sdcard/lovegame/";
-		}
-
-		SDL_RWops *sdcard_main = SDL_RWFromFile(std::string(game_path + "main.lua").c_str(), "rb");
-
-		if (sdcard_main)
-		{
-			new_search_path = game_path;
-			sdcard_main->close(sdcard_main);
-
-			if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
-			{
-				SDL_Log("mounting of %s failed", new_search_path.c_str());
-				return false;
-			}
-		}
-		else
-		{
-			// Neither assets/game.love or /sdcard/lovegame was mounted
-			// sucessfully, therefore simply fail.
+			SDL_Log("Failure mounting in-memory archive.");
+			love::android::freeGameArchiveMemory(game_archive_ptr);
 			return false;
 		}
 	}
