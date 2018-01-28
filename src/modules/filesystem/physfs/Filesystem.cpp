@@ -120,7 +120,7 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 	if (!PHYSFS_init(arg0))
-		throw love::Exception("%s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+		throw love::Exception("Failed to initialize filesystem: %s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
 
 	// Enable symlinks by default.
 	setSymlinksEnabled(true);
