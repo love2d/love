@@ -695,20 +695,28 @@ static void parseDPIScale(Data *d, float *dpiscale)
 	}
 }
 
-static Image::Settings w__optImageSettings(lua_State *L, int idx, const Image::Settings &s)
+static Image::Settings w__optImageSettings(lua_State *L, int idx, bool &setdpiscale)
 {
-	Image::Settings settings = s;
+	Image::Settings s;
 
+	setdpiscale = false;
 	if (!lua_isnoneornil(L, idx))
 	{
 		luax_checktablefields<Image::SettingType>(L, idx, "image setting name", Image::getConstant);
 
-		settings.mipmaps = luax_boolflag(L, idx, Image::getConstant(Image::SETTING_MIPMAPS), s.mipmaps);
-		settings.linear = luax_boolflag(L, idx, Image::getConstant(Image::SETTING_LINEAR), s.linear);
-		settings.dpiScale = (float) luax_numberflag(L, idx, Image::getConstant(Image::SETTING_DPI_SCALE), s.dpiScale);
+		s.mipmaps = luax_boolflag(L, idx, Image::getConstant(Image::SETTING_MIPMAPS), s.mipmaps);
+		s.linear = luax_boolflag(L, idx, Image::getConstant(Image::SETTING_LINEAR), s.linear);
+
+		lua_getfield(L, idx, Image::getConstant(Image::SETTING_DPI_SCALE));
+		if (lua_isnumber(L, -1))
+		{
+			s.dpiScale = (float) lua_tonumber(L, -1);
+			setdpiscale = true;
+		}
+		lua_pop(L, 1);
 	}
 
-	return settings;
+	return s;
 }
 
 static std::pair<StrongRef<image::ImageData>, StrongRef<image::CompressedImageData>>
@@ -761,13 +769,16 @@ int w_newCubeImage(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Image::Slices slices(TEXTURE_CUBE);
-	Image::Settings settings;
+
+	bool dpiscaleset = false;
+	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
+	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
 	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
 
 	if (!lua_istable(L, 1))
 	{
-		auto data = getImageData(L, 1, true, &settings.dpiScale);
+		auto data = getImageData(L, 1, true, autodpiscale);
 
 		std::vector<StrongRef<love::image::ImageData>> faces;
 
@@ -801,7 +812,7 @@ int w_newCubeImage(lua_State *L)
 				{
 					lua_rawgeti(L, -1, mip + 1);
 
-					auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? &settings.dpiScale : nullptr);
+					auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? autodpiscale : nullptr);
 					if (data.first.get())
 						slices.set(face, mip, data.first);
 					else
@@ -819,7 +830,7 @@ int w_newCubeImage(lua_State *L)
 			{
 				lua_rawgeti(L, 1, i + 1);
 
-				auto data = getImageData(L, -1, true, i == 0 ? &settings.dpiScale : nullptr);
+				auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
 
 				if (data.first.get())
 				{
@@ -844,7 +855,6 @@ int w_newCubeImage(lua_State *L)
 		lua_pop(L, tlen);
 	}
 
-	settings = w__optImageSettings(L, 2, settings);
 	return w__pushNewImage(L, slices, settings);
 }
 
@@ -853,7 +863,10 @@ int w_newArrayImage(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Image::Slices slices(TEXTURE_2D_ARRAY);
-	Image::Settings settings;
+
+	bool dpiscaleset = false;
+	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
+	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
 	if (lua_istable(L, 1))
 	{
@@ -872,7 +885,7 @@ int w_newArrayImage(lua_State *L)
 				{
 					lua_rawgeti(L, -1, mip + 1);
 
-					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.dpiScale : nullptr);
+					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
 					if (data.first.get())
 						slices.set(slice, mip, data.first);
 					else
@@ -887,7 +900,7 @@ int w_newArrayImage(lua_State *L)
 			for (int slice = 0; slice < tlen; slice++)
 			{
 				lua_rawgeti(L, 1, slice + 1);
-				auto data = getImageData(L, -1, true, slice == 0 ? &settings.dpiScale : nullptr);
+				auto data = getImageData(L, -1, true, slice == 0 ? autodpiscale : nullptr);
 				if (data.first.get())
 					slices.set(slice, 0, data.first);
 				else
@@ -899,14 +912,13 @@ int w_newArrayImage(lua_State *L)
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, &settings.dpiScale);
+		auto data = getImageData(L, 1, true, autodpiscale);
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
 			slices.add(data.second, 0, 0, true, settings.mipmaps);
 	}
 
-	settings = w__optImageSettings(L, 2, settings);
 	return w__pushNewImage(L, slices, settings);
 }
 
@@ -917,7 +929,10 @@ int w_newVolumeImage(lua_State *L)
 	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
 
 	Image::Slices slices(TEXTURE_VOLUME);
-	Image::Settings settings;
+
+	bool dpiscaleset = false;
+	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
+	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
 	if (lua_istable(L, 1))
 	{
@@ -936,7 +951,7 @@ int w_newVolumeImage(lua_State *L)
 				{
 					lua_rawgeti(L, -1, mip + 1);
 
-					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? &settings.dpiScale : nullptr);
+					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
 					if (data.first.get())
 						slices.set(slice, mip, data.first);
 					else
@@ -951,7 +966,7 @@ int w_newVolumeImage(lua_State *L)
 			for (int layer = 0; layer < tlen; layer++)
 			{
 				lua_rawgeti(L, 1, layer + 1);
-				auto data = getImageData(L, -1, true, layer == 0 ? &settings.dpiScale : nullptr);
+				auto data = getImageData(L, -1, true, layer == 0 ? autodpiscale : nullptr);
 				if (data.first.get())
 					slices.set(layer, 0, data.first);
 				else
@@ -963,7 +978,7 @@ int w_newVolumeImage(lua_State *L)
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, &settings.dpiScale);
+		auto data = getImageData(L, 1, true, autodpiscale);
 
 		if (data.first.get())
 		{
@@ -977,7 +992,6 @@ int w_newVolumeImage(lua_State *L)
 			slices.add(data.second, 0, 0, true, settings.mipmaps);
 	}
 
-	settings = w__optImageSettings(L, 2, settings);
 	return w__pushNewImage(L, slices, settings);
 }
 
@@ -986,7 +1000,10 @@ int w_newImage(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Image::Slices slices(TEXTURE_2D);
-	Image::Settings settings;
+
+	bool dpiscaleset = false;
+	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
+	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
 	if (lua_istable(L, 1))
 	{
@@ -994,7 +1011,7 @@ int w_newImage(lua_State *L)
 		for (int i = 0; i < n; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			auto data = getImageData(L, -1, true, i == 0 ? &settings.dpiScale : nullptr);
+			auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
 			if (data.first.get())
 				slices.set(0, i, data.first);
 			else
@@ -1004,14 +1021,13 @@ int w_newImage(lua_State *L)
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, &settings.dpiScale);
+		auto data = getImageData(L, 1, true, autodpiscale);
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
 			slices.add(data.second, 0, 0, false, settings.mipmaps);
 	}
 
-	settings = w__optImageSettings(L, 2, settings);
 	return w__pushNewImage(L, slices, settings);
 }
 

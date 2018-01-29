@@ -161,17 +161,15 @@ bool isConvex(const std::vector<love::Vector2> &polygon)
 	// turning direction can be determined using the cross-product of
 	// the forward difference vectors
 	size_t i = polygon.size() - 2, j = polygon.size() - 1, k = 0;
-	Vector2 p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
-	Vector2 q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
+	Vector2 p(polygon[j] - polygon[i]);
+	Vector2 q(polygon[k] - polygon[j]);
 	float winding = Vector2::cross(p, q);
 
 	while (k+1 < polygon.size())
 	{
 		i = j; j = k; k++;
-		p.x = polygon[j].x - polygon[i].x;
-		p.y = polygon[j].y - polygon[i].y;
-		q.x = polygon[k].x - polygon[j].x;
-		q.y = polygon[k].y - polygon[j].y;
+		p = polygon[j] - polygon[i];
+		q = polygon[k] - polygon[j];
 
 		if (Vector2::cross(p, q) * winding < 0)
 			return false;

@@ -39,6 +39,10 @@ struct Vector2
 		: x(x), y(y)
 	{}
 
+	Vector2(const Vector2 &v)
+		: x(v.x), y(v.y)
+	{}
+
 	/**
 	 * Gets the length of the Vector.
 	 **/
