@@ -112,6 +112,9 @@ void Text::addTextData(const TextData &t)
 	else
 		new_commands = font->generateVerticesFormatted(t.codepoints, constantcolor, t.wrap, t.align, vertices, &text_info);
 
+	if (vertices.empty())
+		return;
+
 	if (t.use_matrix)
 		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
 
