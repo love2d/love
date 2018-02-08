@@ -38,7 +38,7 @@ static const char cd64[]="|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$
  **/
 static void b64_encode_block(char in[3], char out[4], int len)
 {
-	out[0] = (char) cb64[(int)(in[0] >> 2)];
+	out[0] = (char) cb64[(int)((in[0] & 0xfc) >> 2)];
 	out[1] = (char) cb64[(int)(((in[0] & 0x03) << 4) | ((in[1] & 0xf0) >> 4))];
 	out[2] = (char) (len > 1 ? cb64[(int)(((in[1] & 0x0f) << 2) | ((in[2] & 0xc0) >> 6))] : '=');
 	out[3] = (char) (len > 2 ? cb64[(int)(in[2] & 0x3f)] : '=');
