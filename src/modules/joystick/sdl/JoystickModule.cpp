@@ -432,7 +432,9 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		}
 	}
 
-	if (!success)
+	// Don't error when an empty string is given, since saveGamepadMappings can
+	// produce an empty string if there are no recently seen gamepads to save.
+	if (!success && !mappings.empty())
 		throw love::Exception("Invalid gamepad mappings.");
 }
 
