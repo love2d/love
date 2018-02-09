@@ -174,6 +174,8 @@ Please see http://bitbucket.org/rude/megasource
 	find_package(SDL2 REQUIRED)
 	find_package(Theora REQUIRED)
 	find_package(Vorbis REQUIRED)
+	find_package(ZLIB REQUIRED)
+	find_package(Ogg REQUIRED)
 
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
@@ -182,6 +184,11 @@ Please see http://bitbucket.org/rude/megasource
 		${SDL2_INCLUDE_DIR}
 		${FREETYPE_INCLUDE_DIRS}
 		${VORBIS_INCLUDE_DIR}
+		${OPENAL_INCLUDE_DIR}
+		${ZLIB_INCLUDE_DIRS}
+		${MODPLUG_INCLUDE_DIR}
+		${OGG_INCLUDE_DIR}
+		${THEORA_INCLUDE_DIR}
 	)
 
 	set(LOVE_LINK_LIBRARIES
@@ -194,13 +201,19 @@ Please see http://bitbucket.org/rude/megasource
 		${THEORADEC_LIBRARY}
 		${VORBISFILE_LIBRARY}
 		${LOVE_LUA_LIBRARY}
+		${OGG_LIBRARY}
+		${ZLIB_LIBRARY}
 	)
-	
+
 	if(LOVE_MPG123)
 		find_package(MPG123 REQUIRED)
 		set(LOVE_LINK_LIBRARIES
 			${LOVE_LINK_LIBRARIES}
 			${MPG123_LIBRARY}
+		)
+		set(LOVE_INCLUDE_DIRS
+			${LOVE_INCLUDE_DIRS}
+			${MPG123_INCLUDE_DIR}
 		)
 	endif()
 
