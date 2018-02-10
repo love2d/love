@@ -282,14 +282,12 @@ int w_File_lines_i(lua_State *L)
 		// If the user has changed the position, we need to seek back first
 		int64 pos = file->tell();
 		int64 userpos = -1;
-		if (!lua_isnoneornil(L, lua_upvalueindex(4)))
+		if (luax_toboolean(L, lua_upvalueindex(5)))
 		{
 			userpos = pos;
 			pos = (int64) lua_tonumber(L, lua_upvalueindex(4));
 			if (userpos != pos)
 				file->seek(pos);
-			else
-				userpos = -1;
 		}
 
 		// Keep reading until newline or EOF
@@ -353,7 +351,7 @@ int w_File_lines(lua_State *L)
 	lua_pushstring(L, ""); // buffer
 	lua_pushnumber(L, 0); // buffer offset
 	lua_pushnumber(L, 0); // File position.
-	luax_pushboolean(L, file->getMode() != File::MODE_CLOSED); // Save current file mode.
+	luax_pushboolean(L, file->getMode() != File::MODE_CLOSED); // Save current file position.
 
 	if (file->getMode() != File::MODE_READ)
 	{
