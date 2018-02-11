@@ -267,6 +267,8 @@ int w_File_lines_i(lua_State *L)
 	const char *start = buffer+offset;
 	const char *end = reinterpret_cast<const char*>(memchr(start, '\n', len-offset));
 
+	bool seekBack = luax_toboolean(L, lua_upvalueindex(5));
+
 	// If there are no more lines in the buffer, keep adding more data until we
 	// found another line or EOF
 	if (!end && !file->isEOF())
@@ -282,7 +284,7 @@ int w_File_lines_i(lua_State *L)
 		// If the user has changed the position, we need to seek back first
 		int64 pos = file->tell();
 		int64 userpos = -1;
-		if (luax_toboolean(L, lua_upvalueindex(5)))
+		if (seekBack)
 		{
 			userpos = pos;
 			pos = (int64) lua_tonumber(L, lua_upvalueindex(4));
@@ -305,8 +307,13 @@ int w_File_lines_i(lua_State *L)
 		}
 
 		// Possibly seek back to the user position
-		if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(5)))
+		// But make sure to save our target position too
+		if (seekBack)
+		{
+			lua_pushnumber(L, file->tell());
+			lua_replace(L, lua_upvalueindex(4));
 			file->seek(userpos);
+		}
 
 		// We've now got a new buffer, replace the old one
 		luaL_pushresult(&storage);
