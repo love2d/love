@@ -21,6 +21,8 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 	$ ./configure
 	$ make
 
+When using a source release, automagic has already been run, and the first step can be skipped.
+
 ###Mac OS X
 Download the required frameworks from [here][dependencies] and place them in `/Library/Frameworks/`.
 
