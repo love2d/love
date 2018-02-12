@@ -366,7 +366,7 @@ static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
 		lua_pushnumber(L, rt.slice + 1);
 		lua_setfield(L, -2, "layer");
 	}
-	else if (type == TEXTURE_VOLUME)
+	else if (type == TEXTURE_CUBE)
 	{
 		lua_pushnumber(L, rt.slice + 1);
 		lua_setfield(L, -2, "face");
