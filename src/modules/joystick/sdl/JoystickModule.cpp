@@ -199,8 +199,18 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	}
 	else
 	{
-		// Use a generic name if we have to create a new mapping string.
-		mapstr = guid + ",Controller,";
+		std::string name = "Controller";
+
+		for (love::joystick::Joystick *stick : joysticks)
+		{
+			if (stick->getGUID() == guid)
+			{
+				name = stick->getName();
+				break;
+			}
+		}
+
+		mapstr = guid + "," + name + ",";
 	}
 
 	std::stringstream joyinputstream;
