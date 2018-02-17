@@ -324,7 +324,7 @@ int w_File_lines_i(lua_State *L)
 		end = reinterpret_cast<const char*>(memchr(start, '\n', len));
 	}
 
-	if (!end && file->isEOF())
+	if (!end)
 		end = buffer+len-1;
 
 	// We've found the next line, update our offset upvalue and return
