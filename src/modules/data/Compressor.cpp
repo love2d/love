@@ -198,6 +198,8 @@ private:
 		int windowbits = 15;
 		if (format == FORMAT_GZIP)
 			windowbits += 16; // This tells zlib to use a gzip header.
+		else if (format == FORMAT_DEFLATE)
+			windowbits = -windowbits;
 
 		int err = deflateInit2(&stream, level, Z_DEFLATED, windowbits, 8, Z_DEFAULT_STRATEGY);
 
@@ -217,7 +219,7 @@ private:
 		return deflateEnd(&stream);
 	}
 
-	int zlibDecompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen)
+	int zlibDecompress(Format format, Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen)
 	{
 		z_stream stream = {};
 
@@ -229,6 +231,9 @@ private:
 
 		// 15 is the default. Adding 32 makes zlib auto-detect the header type.
 		int windowbits = 15 + 32;
+
+		if (format == FORMAT_DEFLATE)
+			windowbits = -15;
 
 		int err = inflateInit2(&stream, windowbits);
 
@@ -324,7 +329,7 @@ public:
 			}
 
 			uLongf destLen = (uLongf) rawsize;
-			int status = zlibDecompress((Bytef *) rawbytes, &destLen, (const Bytef *) data, (uLong) dataSize);
+			int status = zlibDecompress(format, (Bytef *) rawbytes, &destLen, (const Bytef *) data, (uLong) dataSize);
 
 			if (status == Z_OK)
 			{
@@ -348,7 +353,7 @@ public:
 
 	bool isSupported(Format format) const override
 	{
-		return format == FORMAT_ZLIB || format == FORMAT_GZIP;
+		return format == FORMAT_ZLIB || format == FORMAT_GZIP || format == FORMAT_DEFLATE;
 	}
 
 }; // zlibCompressor
@@ -386,9 +391,10 @@ std::vector<std::string> Compressor::getConstants(Format)
 
 StringMap<Compressor::Format, Compressor::FORMAT_MAX_ENUM>::Entry Compressor::formatEntries[] =
 {
-	{ "lz4",  FORMAT_LZ4  },
-	{ "zlib", FORMAT_ZLIB },
-	{ "gzip", FORMAT_GZIP },
+	{ "lz4",     FORMAT_LZ4     },
+	{ "zlib",    FORMAT_ZLIB    },
+	{ "gzip",    FORMAT_GZIP    },
+	{ "deflate", FORMAT_DEFLATE },
 };
 
 StringMap<Compressor::Format, Compressor::FORMAT_MAX_ENUM> Compressor::formatNames(Compressor::formatEntries, sizeof(Compressor::formatEntries));
