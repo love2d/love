@@ -408,7 +408,7 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 	if (defaultname.length() == 0)
 	{
 		//use some safe basic parameters - 8 kHz, 8 bits, 1 channel
-		ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, 8, 1);
+		ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, AL_FORMAT_MONO8, 1024);
 		if (alGetError() == AL_NO_ERROR)
 		{
 			defaultname = alcGetString(defaultdevice, ALC_CAPTURE_DEVICE_SPECIFIER);

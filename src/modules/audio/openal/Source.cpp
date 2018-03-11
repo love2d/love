@@ -610,36 +610,36 @@ double Source::getDuration(Unit unit)
 
 	switch (sourceType)
 	{
-		case TYPE_STATIC:
-		{
-			ALsizei size = staticBuffer->getSize();
-			ALsizei samples = (size / channels) / (bitDepth / 8);
+	case TYPE_STATIC:
+	{
+		ALsizei size = staticBuffer->getSize();
+		ALsizei samples = (size / channels) / (bitDepth / 8);
 
-			if (unit == UNIT_SAMPLES)
-				return (double) samples;
-			else
-				return (double) samples / (double) sampleRate;
-		}
-		case TYPE_STREAM:
-		{
-			double seconds = decoder->getDuration();
+		if (unit == UNIT_SAMPLES)
+			return (double) samples;
+		else
+			return (double) samples / (double) sampleRate;
+	}
+	case TYPE_STREAM:
+	{
+		double seconds = decoder->getDuration();
 
-			if (unit == UNIT_SECONDS)
-				return seconds;
-			else
-				return seconds * decoder->getSampleRate();
-		}
-		case TYPE_QUEUE:
-		{
-			ALsizei samples = (bufferedBytes / channels) / (bitDepth / 8);
+		if (unit == UNIT_SECONDS)
+			return seconds;
+		else
+			return seconds * decoder->getSampleRate();
+	}
+	case TYPE_QUEUE:
+	{
+		ALsizei samples = (bufferedBytes / channels) / (bitDepth / 8);
 
-			if (unit == UNIT_SAMPLES)
-				return (double)samples;
-			else
-				return (double)samples / (double)sampleRate;
-		}
-		case TYPE_MAX_ENUM:
-			return 0.0;
+		if (unit == UNIT_SAMPLES)
+			return (double)samples;
+		else
+			return (double)samples / (double)sampleRate;
+	}
+	case TYPE_MAX_ENUM:
+		return 0.0;
 	}
 	return 0.0;
 }
@@ -813,14 +813,14 @@ int Source::getFreeBufferCount() const
 {
 	switch (sourceType) //why not :^)
 	{
-		case TYPE_STATIC:
-			return 0;
-		case TYPE_STREAM:
-			return unusedBuffers.size();
-		case TYPE_QUEUE:
-			return unusedBuffers.size();
-		case TYPE_MAX_ENUM:
-			return 0;
+	case TYPE_STATIC:
+		return 0;
+	case TYPE_STREAM:
+		return unusedBuffers.size();
+	case TYPE_QUEUE:
+		return unusedBuffers.size();
+	case TYPE_MAX_ENUM:
+		return 0;
 	}
 	return 0;
 }
@@ -834,34 +834,34 @@ void Source::prepareAtomic()
 
 	switch (sourceType)
 	{
-		case TYPE_STATIC:
-			alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
-			break;
-		case TYPE_STREAM:
-			while (!unusedBuffers.empty())
-			{
-				auto b = unusedBuffers.top();
-				if (streamAtomic(b, decoder.get()) == 0)
-					break;
-
-				alSourceQueueBuffers(source, 1, &b);
-				unusedBuffers.pop();
-
-				if (decoder->isFinished())
-					break;
-			}
-			break;
-		case TYPE_QUEUE:
+	case TYPE_STATIC:
+		alSourcei(source, AL_BUFFER, staticBuffer->getBuffer());
+		break;
+	case TYPE_STREAM:
+		while (!unusedBuffers.empty())
 		{
-			while (!streamBuffers.empty())
-			{
-				alSourceQueueBuffers(source, 1, &streamBuffers.front());
-				streamBuffers.pop();
-			}
-			break;
+			auto b = unusedBuffers.top();
+			if (streamAtomic(b, decoder.get()) == 0)
+				break;
+
+			alSourceQueueBuffers(source, 1, &b);
+			unusedBuffers.pop();
+
+			if (decoder->isFinished())
+				break;
 		}
-		case TYPE_MAX_ENUM:
-			break;
+		break;
+	case TYPE_QUEUE:
+	{
+		while (!streamBuffers.empty())
+		{
+			alSourceQueueBuffers(source, 1, &streamBuffers.front());
+			streamBuffers.pop();
+		}
+		break;
+	}
+	case TYPE_MAX_ENUM:
+		break;
 	}
 }
 
@@ -869,39 +869,39 @@ void Source::teardownAtomic()
 {
 	switch (sourceType)
 	{
-		case TYPE_STATIC:
-			break;
-		case TYPE_STREAM:
-		{
-			ALint queued;
-			ALuint buffer;
+	case TYPE_STATIC:
+		break;
+	case TYPE_STREAM:
+	{
+		ALint queued;
+		ALuint buffer;
 
-			decoder->seek(0);
-			// drain buffers
-			//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
-			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-			for (unsigned int i = 0; i < (unsigned int)queued; i++)
-			{
-				alSourceUnqueueBuffers(source, 1, &buffer);
-				unusedBuffers.push(buffer);
-			}
-			break;
-		}
-		case TYPE_QUEUE:
+		decoder->seek(0);
+		// drain buffers
+		//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
+		alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
+		for (unsigned int i = 0; i < (unsigned int)queued; i++)
 		{
-			ALint queued;
-			ALuint buffer;
-
-			alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-			for (unsigned int i = (unsigned int)queued; i > 0; i--)
-			{
-				alSourceUnqueueBuffers(source, 1, &buffer);
-				unusedBuffers.push(buffer);
-			}
-			break;
+			alSourceUnqueueBuffers(source, 1, &buffer);
+			unusedBuffers.push(buffer);
 		}
-		case TYPE_MAX_ENUM:
-			break;
+		break;
+	}
+	case TYPE_QUEUE:
+	{
+		ALint queued;
+		ALuint buffer;
+
+		alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
+		for (unsigned int i = (unsigned int)queued; i > 0; i--)
+		{
+			alSourceUnqueueBuffers(source, 1, &buffer);
+			unusedBuffers.push(buffer);
+		}
+		break;
+	}
+	case TYPE_MAX_ENUM:
+		break;
 	}
 
 	alSourcei(source, AL_BUFFER, AL_NONE);
