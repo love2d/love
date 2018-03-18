@@ -97,7 +97,7 @@ This distribution contains code from the following projects (full license text b
 			Copyright 2011 The Android Open Source Project
 		- examples/alhrtf.c examples/allatency.c examples/alloopback.c examples/alreverb.c examples/alstream.c examples/altonegen.c examples/common/alhelpers.c examples/common/sdl_sound.c utils/openal-info.c
 			License: MIT/Expat
-			Copyright © 2010, 2015 Chris Robinson <email removed>
+			Copyright © 2010, 2015 Chris Robinson <chris.kcat@gmail.com>
 		- examples/alffplay.c
 			License: unclear, presumed LGPL 2.1 or higher
 			Copyright © 2003 Fabrice Bellard
