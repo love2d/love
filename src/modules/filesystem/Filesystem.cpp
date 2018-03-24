@@ -130,6 +130,11 @@ bool Filesystem::getConstant(FileType in, const char *&out)
 	return fileTypes.find(in, out);
 }
 
+std::vector<std::string> Filesystem::getConstants(FileType)
+{
+	return fileTypes.getNames();
+}
+
 StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM>::Entry Filesystem::fileTypeEntries[] =
 {
 	{ "file",      FILETYPE_FILE      },

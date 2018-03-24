@@ -265,6 +265,7 @@ public:
 
 	static bool getConstant(const char *in, FileType &out);
 	static bool getConstant(FileType in, const char *&out);
+	static std::vector<std::string> getConstants(FileType);
 
 private:
 

@@ -395,14 +395,31 @@ int w_getInfo(lua_State *L)
 	const char *filepath = luaL_checkstring(L, 1);
 	Filesystem::Info info = {};
 
+	int startidx = 2;
+	Filesystem::FileType filtertype = Filesystem::FILETYPE_MAX_ENUM;
+	if (lua_isstring(L, startidx))
+	{
+		const char *typestr = luaL_checkstring(L, startidx);
+		if (!Filesystem::getConstant(typestr, filtertype))
+			return luax_enumerror(L, "file type", Filesystem::getConstants(filtertype), typestr);
+
+		startidx++;
+	}
+
 	if (instance()->getInfo(filepath, info))
 	{
+		if (filtertype != Filesystem::FILETYPE_MAX_ENUM && info.type != filtertype)
+		{
+			lua_pushnil(L);
+			return 1;
+		}
+
 		const char *typestr = nullptr;
 		if (!Filesystem::getConstant(info.type, typestr))
 			return luaL_error(L, "Unknown file type.");
 
-		if (lua_istable(L, 2))
-			lua_pushvalue(L, 2);
+		if (lua_istable(L, startidx))
+			lua_pushvalue(L, startidx);
 		else
 			lua_createtable(L, 0, 3);
 

@@ -93,7 +93,7 @@ Released: N/A
   * Renamed all get[Object]List functions to get[Object]s.
 
   * Removed the default source type for love.audio.newSource.
-  * Removed variant of love.filesystem.newFileData which takes base64 data, use love.math.decode instead.
+  * Removed variant of love.filesystem.newFileData which takes base64 data, use love.data.decode instead.
   * Removed the no-argument variant of Text:set, use Text:clear instead.
   * Removed love.graphics.getCompressedImageFormats, use love.graphics.getImageFormats instead.
   * Removed the 'void effects(...)' pixel shader entry point. Use the new 'void effect()' instead.
