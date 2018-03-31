@@ -1,7 +1,7 @@
-LOVE 0.11.0 []
+LOVE 11.0 [Mysterious Mysteries]
 --------------
 
-Released: N/A
+Released: 2018-04-01
 
   * Added Object:release.
   * Added Data:clone.
@@ -78,6 +78,7 @@ Released: N/A
   * Added deprecation warnings, on by default for non-fused games.
   * Added love.filesystem.getInfo.
   * Added 'drawcallsbatched' to love.graphics.getStats.
+  * Added support for header-less DEFLATE to love.data.compress/decompress.
 
   * Deprecated love.filesystem.exists / isFile / isDirectory / isSymlink / getLastModified / getSize (use getInfo instead).
   * Deprecated love.math.compress / decompress (use love.data.compress / decompress instead).
@@ -143,6 +144,8 @@ Released: N/A
   * Updated the default error handler to allow copying the error to the clipboard when the user decides to do so.
   * Updated love.filesystem.setRequirePath to support multiple template '?' characters in each path.
   * Updated luasocket to version 3.0rc1.
+  * Updated love.joystick.loadGamepadMappings so it doesn't error when given an empty string.
+  * Updated love.joystick.setGamepadMapping to use the controller's name for the new mapping when possible.
 
   * Fixed error in default error handler when the error message contains non UTF-8 bytes.
   * Fixed a memory leak when sending love objects to threads which never load that object's module.
