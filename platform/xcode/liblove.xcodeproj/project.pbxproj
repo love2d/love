@@ -900,7 +900,6 @@
 		FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA57FB971AE1993600F2AD6D /* noise1234.h */; };
 		FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA59A2D61C0649BB00328DBA /* libtheora.a */; };
-		FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */; };
 		FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AB1A96D2EC00C6FC8F /* libogg.a */; };
 		FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */; };
 		FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */; };
@@ -1082,6 +1081,31 @@
 		FADF543D1E3DAFF700012CC0 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */; };
 		FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE272511C05A15B00A67640 /* ParticleSystem.h */; };
+		FAE64A7E2071359C00BC7981 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE64A7D2071359C00BC7981 /* libfreetype.a */; };
+		FAE64A7F207135AD00BC7981 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE64A7D2071359C00BC7981 /* libfreetype.a */; };
+		FAE64A802071362A00BC7981 /* physfs_archiver_7z.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5D1FE35E95006A60C7 /* physfs_archiver_7z.c */; };
+		FAE64A812071363100BC7981 /* physfs_archiver_dir.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6C1FE35E95006A60C7 /* physfs_archiver_dir.c */; };
+		FAE64A822071363100BC7981 /* physfs_archiver_grp.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD741FE35E95006A60C7 /* physfs_archiver_grp.c */; };
+		FAE64A832071363100BC7981 /* physfs_archiver_hog.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD751FE35E95006A60C7 /* physfs_archiver_hog.c */; };
+		FAE64A842071363100BC7981 /* physfs_archiver_iso9660.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6E1FE35E95006A60C7 /* physfs_archiver_iso9660.c */; };
+		FAE64A852071363100BC7981 /* physfs_archiver_mvl.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD611FE35E95006A60C7 /* physfs_archiver_mvl.c */; };
+		FAE64A862071363100BC7981 /* physfs_archiver_qpak.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6F1FE35E95006A60C7 /* physfs_archiver_qpak.c */; };
+		FAE64A872071363100BC7981 /* physfs_archiver_slb.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5F1FE35E95006A60C7 /* physfs_archiver_slb.c */; };
+		FAE64A882071363100BC7981 /* physfs_archiver_unpacked.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD671FE35E95006A60C7 /* physfs_archiver_unpacked.c */; };
+		FAE64A892071363100BC7981 /* physfs_archiver_vdf.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6A1FE35E95006A60C7 /* physfs_archiver_vdf.c */; };
+		FAE64A8A2071363100BC7981 /* physfs_archiver_wad.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD621FE35E95006A60C7 /* physfs_archiver_wad.c */; };
+		FAE64A8B2071363100BC7981 /* physfs_archiver_zip.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD761FE35E95006A60C7 /* physfs_archiver_zip.c */; };
+		FAE64A8C2071363100BC7981 /* physfs_byteorder.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6D1FE35E95006A60C7 /* physfs_byteorder.c */; };
+		FAE64A8D2071363500BC7981 /* physfs_platform_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6B1FE35E95006A60C7 /* physfs_platform_apple.m */; };
+		FAE64A8E2071363A00BC7981 /* physfs_platform_posix.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD721FE35E95006A60C7 /* physfs_platform_posix.c */; };
+		FAE64A8F2071364200BC7981 /* physfs_platform_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5E1FE35E95006A60C7 /* physfs_platform_unix.c */; };
+		FAE64A902071364800BC7981 /* physfs_unicode.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD681FE35E95006A60C7 /* physfs_unicode.c */; };
+		FAE64A912071364800BC7981 /* physfs.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5C1FE35E95006A60C7 /* physfs.c */; };
+		FAE64A922071364B00BC7981 /* physfs_platform_winrt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD601FE35E95006A60C7 /* physfs_platform_winrt.cpp */; };
+		FAE64A932071365100BC7981 /* physfs_platform_haiku.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD651FE35E95006A60C7 /* physfs_platform_haiku.cpp */; };
+		FAE64A942071365100BC7981 /* physfs_platform_os2.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD641FE35E95006A60C7 /* physfs_platform_os2.c */; };
+		FAE64A952071365100BC7981 /* physfs_platform_qnx.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5B1FE35E95006A60C7 /* physfs_platform_qnx.c */; };
+		FAE64A962071365100BC7981 /* physfs_platform_windows.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD661FE35E95006A60C7 /* physfs_platform_windows.c */; };
 		FAECA1B21F3164700095D008 /* CompressedSlice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAECA1B01F3164700095D008 /* CompressedSlice.cpp */; };
 		FAECA1B31F3164700095D008 /* CompressedSlice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAECA1B01F3164700095D008 /* CompressedSlice.cpp */; };
 		FAECA1B41F3164700095D008 /* CompressedSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = FAECA1B11F3164700095D008 /* CompressedSlice.h */; };
@@ -1819,7 +1843,6 @@
 		FA57FB961AE1993600F2AD6D /* noise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = noise1234.cpp; sourceTree = "<group>"; };
 		FA57FB971AE1993600F2AD6D /* noise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = noise1234.h; sourceTree = "<group>"; };
 		FA59A2D61C0649BB00328DBA /* libtheora.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtheora.a; sourceTree = "<group>"; };
-		FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libFreetype2.a; sourceTree = "<group>"; };
 		FA5D24AB1A96D2EC00C6FC8F /* libogg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libogg.a; sourceTree = "<group>"; };
 		FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbis.a; sourceTree = "<group>"; };
 		FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libSDL2.a; sourceTree = "<group>"; };
@@ -1961,6 +1984,7 @@
 		FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Graphics.h; sourceTree = "<group>"; };
 		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
+		FAE64A7D2071359C00BC7981 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfreetype.a; sourceTree = "<group>"; };
 		FAECA1B01F3164700095D008 /* CompressedSlice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedSlice.cpp; sourceTree = "<group>"; };
 		FAECA1B11F3164700095D008 /* CompressedSlice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CompressedSlice.h; sourceTree = "<group>"; };
 		FAF13FC21E20934C00F898D2 /* CodeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGen.cpp; sourceTree = "<group>"; };
@@ -2036,10 +2060,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */,
+				FAE64A7F207135AD00BC7981 /* libfreetype.a in Frameworks */,
 				FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */,
 				FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */,
 				FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */,
-				FA5D24B01A96D2EC00C6FC8F /* libFreetype2.a in Frameworks */,
 				FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */,
 				FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */,
 			);
@@ -2055,6 +2079,7 @@
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */,
+				FAE64A7E2071359C00BC7981 /* libfreetype.a in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
@@ -3375,7 +3400,7 @@
 		FA5D24A41A96D2EC00C6FC8F /* freetype */ = {
 			isa = PBXGroup;
 			children = (
-				FA5D24A51A96D2EC00C6FC8F /* libFreetype2.a */,
+				FAE64A7D2071359C00BC7981 /* libfreetype.a */,
 			);
 			name = freetype;
 			path = ios/libraries/freetype;
@@ -4153,6 +4178,7 @@
 			files = (
 				FA0B7DE01A95902C000E1D17 /* wrap_Math.cpp in Sources */,
 				FA0B7DA91A95902C000E1D17 /* PVRHandler.cpp in Sources */,
+				FAE64A842071363100BC7981 /* physfs_archiver_iso9660.c in Sources */,
 				FA0B7EC61A95902C000E1D17 /* ThreadModule.cpp in Sources */,
 				FA0B7D2C1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
 				FADF54081E3D78F700012CC0 /* Video.cpp in Sources */,
@@ -4172,6 +4198,7 @@
 				FAF140651E20934C00F898D2 /* Constant.cpp in Sources */,
 				FA0B7ED91A95902D000E1D17 /* wrap_Timer.cpp in Sources */,
 				FAF1407D1E20934C00F898D2 /* linkValidate.cpp in Sources */,
+				FAE64A872071363100BC7981 /* physfs_archiver_slb.c in Sources */,
 				FA0B7DD11A95902C000E1D17 /* love.cpp in Sources */,
 				FA15DFAF1F9B8D390042AB22 /* lstrlib.c in Sources */,
 				FA0B7AB61A958EA3000E1D17 /* ddsparse.cpp in Sources */,
@@ -4182,6 +4209,7 @@
 				FACA02FB1F5E397E0084B28F /* HashFunction.cpp in Sources */,
 				FAF140A81E20934C00F898D2 /* ShaderLang.cpp in Sources */,
 				FA1BA09E1E16CFCE00AA2803 /* Font.cpp in Sources */,
+				FAE64A8A2071363100BC7981 /* physfs_archiver_wad.c in Sources */,
 				FA0B7ECC1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
 				FA0B7E6D1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7A5F1A958EA3000E1D17 /* b2Body.cpp in Sources */,
@@ -4213,6 +4241,7 @@
 				FA0B7AD21A958EA3000E1D17 /* protocol.c in Sources */,
 				FAF140A41E20934C00F898D2 /* Scan.cpp in Sources */,
 				FA0B7D1F1A95902C000E1D17 /* ImageRasterizer.cpp in Sources */,
+				FAE64A952071365100BC7981 /* physfs_platform_qnx.c in Sources */,
 				FA0B7EA41A95902C000E1D17 /* SoundData.cpp in Sources */,
 				FA0B7D041A95902C000E1D17 /* wrap_DroppedFile.cpp in Sources */,
 				FAF1406A1E20934C00F898D2 /* glslang_tab.cpp in Sources */,
@@ -4235,6 +4264,7 @@
 				FAF140811E20934C00F898D2 /* parseConst.cpp in Sources */,
 				FA4F2C121DE936FE00CA37D7 /* unixtcp.c in Sources */,
 				FA0B7EB91A95902C000E1D17 /* Channel.cpp in Sources */,
+				FAE64A962071365100BC7981 /* physfs_platform_windows.c in Sources */,
 				FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */,
 				FA0B7A3F1A958EA3000E1D17 /* b2ChainShape.cpp in Sources */,
 				FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */,
@@ -4254,6 +4284,8 @@
 				FAF140941E20934C00F898D2 /* PpScanner.cpp in Sources */,
 				FA9D53AD1F5307E900125C6B /* Deprecations.cpp in Sources */,
 				FA0B7E431A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
+				FAE64A912071364800BC7981 /* physfs.c in Sources */,
+				FAE64A852071363100BC7981 /* physfs_archiver_mvl.c in Sources */,
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA0B7AA21A958EA3000E1D17 /* b2PulleyJoint.cpp in Sources */,
 				FA9D8DDE1DEF842A002CD881 /* Drawable.cpp in Sources */,
@@ -4282,6 +4314,7 @@
 				FA0B7A991A958EA3000E1D17 /* b2MotorJoint.cpp in Sources */,
 				FA0B7AD51A958EA3000E1D17 /* unix.c in Sources */,
 				FAB17BE71ABFAA9000F9BA27 /* lz4.c in Sources */,
+				FAE64A902071364800BC7981 /* physfs_unicode.c in Sources */,
 				FA4F2BE71DE6650D00CA37D7 /* Transform.cpp in Sources */,
 				FA0B7A531A958EA3000E1D17 /* b2Math.cpp in Sources */,
 				FAF140A11E20934C00F898D2 /* RemoveTree.cpp in Sources */,
@@ -4302,6 +4335,7 @@
 				FA0B7B311A958EA3000E1D17 /* wuff.c in Sources */,
 				FA0B7DF21A95902C000E1D17 /* wrap_Cursor.cpp in Sources */,
 				FA0B7E011A95902C000E1D17 /* CircleShape.cpp in Sources */,
+				FAE64A8C2071363100BC7981 /* physfs_byteorder.c in Sources */,
 				FA0B7E461A95902C000E1D17 /* wrap_Contact.cpp in Sources */,
 				FA0B7D161A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EB61A95902C000E1D17 /* wrap_System.cpp in Sources */,
@@ -4319,8 +4353,10 @@
 				FA0B7EBC1A95902C000E1D17 /* LuaThread.cpp in Sources */,
 				FA0B7A871A958EA3000E1D17 /* b2PolygonAndCircleContact.cpp in Sources */,
 				FA0B7EF21A959D2C000E1D17 /* ios.mm in Sources */,
+				FAE64A802071362A00BC7981 /* physfs_archiver_7z.c in Sources */,
 				FA0B7D3A1A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA4F2BB21DE1E4B400CA37D7 /* RecordingDevice.cpp in Sources */,
+				FAE64A922071364B00BC7981 /* physfs_platform_winrt.cpp in Sources */,
 				FA0B7A2D1A958EA3000E1D17 /* b2CollideCircle.cpp in Sources */,
 				FA4F2C0F1DE936FE00CA37D7 /* timeout.c in Sources */,
 				FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */,
@@ -4328,6 +4364,7 @@
 				FA0B7DC21A95902C000E1D17 /* wrap_Joystick.cpp in Sources */,
 				FA0B7CD41A95902C000E1D17 /* Source.cpp in Sources */,
 				FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */,
+				FAE64A812071363100BC7981 /* physfs_archiver_dir.c in Sources */,
 				FA0B7CD11A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA4F2B7B1DE0181B00CA37D7 /* xxhash.c in Sources */,
 				FA0B7D131A95902C000E1D17 /* Font.cpp in Sources */,
@@ -4363,24 +4400,28 @@
 				FA0B7E491A95902C000E1D17 /* wrap_DistanceJoint.cpp in Sources */,
 				FA0B7A391A958EA3000E1D17 /* b2DynamicTree.cpp in Sources */,
 				FA4F2C101DE936FE00CA37D7 /* udp.c in Sources */,
+				FAE64A8F2071364200BC7981 /* physfs_platform_unix.c in Sources */,
 				FA0B7A681A958EA3000E1D17 /* b2Island.cpp in Sources */,
 				FA0B7E2B1A95902C000E1D17 /* RevoluteJoint.cpp in Sources */,
 				FA0B7B291A958EA3000E1D17 /* simplexnoise1234.cpp in Sources */,
 				FA0B7D261A95902C000E1D17 /* wrap_Font.cpp in Sources */,
 				FA4F2BB31DE1E4B800CA37D7 /* RecordingDevice.cpp in Sources */,
 				FA4F2C071DE936DA00CA37D7 /* inet.c in Sources */,
+				FAE64A8B2071363100BC7981 /* physfs_archiver_zip.c in Sources */,
 				FA4F2C0B1DE936EA00CA37D7 /* options.c in Sources */,
 				FA4F2C0D1DE936F100CA37D7 /* serial.c in Sources */,
 				FA0B7E0A1A95902C000E1D17 /* EdgeShape.cpp in Sources */,
 				FADF54301E3DABF600012CC0 /* SpriteBatch.cpp in Sources */,
 				FA0B7CF81A95902C000E1D17 /* FileData.cpp in Sources */,
 				FA0B7DA61A95902C000E1D17 /* PNGHandler.cpp in Sources */,
+				FAE64A932071365100BC7981 /* physfs_platform_haiku.cpp in Sources */,
 				FA0B7E981A95902C000E1D17 /* Sound.cpp in Sources */,
 				FA0B7E371A95902C000E1D17 /* WheelJoint.cpp in Sources */,
 				FA0B7A8A1A958EA3000E1D17 /* b2PolygonContact.cpp in Sources */,
 				FA4F2C0C1DE936ED00CA37D7 /* select.c in Sources */,
 				FA0B7D8E1A95902C000E1D17 /* ddsHandler.cpp in Sources */,
 				FA0B7DFE1A95902C000E1D17 /* ChainShape.cpp in Sources */,
+				FAE64A892071363100BC7981 /* physfs_archiver_vdf.c in Sources */,
 				FA0B7A451A958EA3000E1D17 /* b2EdgeShape.cpp in Sources */,
 				FA15DFB21F9B8D840042AB22 /* TheoraVideoStream.cpp in Sources */,
 				FAF1406D1E20934C00F898D2 /* InfoSink.cpp in Sources */,
@@ -4393,9 +4434,11 @@
 				FA0B7E071A95902C000E1D17 /* DistanceJoint.cpp in Sources */,
 				FADF543C1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */,
 				FA0B7A331A958EA3000E1D17 /* b2Collision.cpp in Sources */,
+				FAE64A942071365100BC7981 /* physfs_platform_os2.c in Sources */,
 				FA0B7E5E1A95902C000E1D17 /* wrap_MouseJoint.cpp in Sources */,
 				FA0B7B3B1A958EA3000E1D17 /* wuff_memory.c in Sources */,
 				FA0B79411A958E3B000E1D17 /* utf8.cpp in Sources */,
+				FAE64A862071363100BC7981 /* physfs_archiver_qpak.c in Sources */,
 				FA0B7ADF1A958EA3000E1D17 /* lodepng.cpp in Sources */,
 				FA0B7D341A95902C000E1D17 /* Canvas.cpp in Sources */,
 				FAF140761E20934C00F898D2 /* IntermTraverse.cpp in Sources */,
@@ -4423,6 +4466,7 @@
 				FA0B7EA71A95902C000E1D17 /* wrap_Decoder.cpp in Sources */,
 				FA0B7E1C1A95902C000E1D17 /* MouseJoint.cpp in Sources */,
 				FA29C0061E12355B00268CD8 /* StreamBuffer.cpp in Sources */,
+				FAE64A882071363100BC7981 /* physfs_archiver_unpacked.c in Sources */,
 				FA0B7CF51A95902C000E1D17 /* File.cpp in Sources */,
 				FA0B7E341A95902C000E1D17 /* WeldJoint.cpp in Sources */,
 				FA4F2C091DE936E200CA37D7 /* luasocket.c in Sources */,
@@ -4440,6 +4484,7 @@
 				FA0B7EE61A95902D000E1D17 /* Window.cpp in Sources */,
 				FA0B7E3A1A95902C000E1D17 /* World.cpp in Sources */,
 				FA0B79471A958E3B000E1D17 /* Vector.cpp in Sources */,
+				FAE64A832071363100BC7981 /* physfs_archiver_hog.c in Sources */,
 				FAC756F71E4F99BC00B91289 /* Effect.cpp in Sources */,
 				FA0B7E7F1A95902C000E1D17 /* Joint.cpp in Sources */,
 				FA0B7DB21A95902C000E1D17 /* wrap_Image.cpp in Sources */,
@@ -4457,7 +4502,9 @@
 				FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */,
 				FA0B7A9F1A958EA3000E1D17 /* b2PrismaticJoint.cpp in Sources */,
 				FA1BA0AD1E16F9EE00AA2803 /* wrap_Canvas.cpp in Sources */,
+				FAE64A822071363100BC7981 /* physfs_archiver_grp.c in Sources */,
 				FA0B79331A958E3B000E1D17 /* Object.cpp in Sources */,
+				FAE64A8D2071363500BC7981 /* physfs_platform_apple.m in Sources */,
 				FA0B7E5B1A95902C000E1D17 /* wrap_MotorJoint.cpp in Sources */,
 				FA0B79441A958E3B000E1D17 /* Variant.cpp in Sources */,
 				FA9D8DDA1DEF8411002CD881 /* Stream.cpp in Sources */,
@@ -4506,6 +4553,7 @@
 				FA0B79251A958E3B000E1D17 /* Exception.cpp in Sources */,
 				FA0B7D291A95902C000E1D17 /* wrap_GlyphData.cpp in Sources */,
 				FA0B7DE31A95902C000E1D17 /* wrap_RandomGenerator.cpp in Sources */,
+				FAE64A8E2071363A00BC7981 /* physfs_platform_posix.c in Sources */,
 				FA0B7AD71A958EA3000E1D17 /* win32.c in Sources */,
 				FA15DFB11F9B8D820042AB22 /* OggDemuxer.cpp in Sources */,
 				FA0B7D0D1A95902C000E1D17 /* wrap_Filesystem.cpp in Sources */,
@@ -4956,7 +5004,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -5020,7 +5068,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -5204,7 +5252,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
@@ -5244,7 +5292,10 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios/libraries/freetype",
+				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5283,7 +5334,10 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios/libraries/freetype",
+				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5323,7 +5377,10 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/ios/libraries/freetype",
+				);
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,

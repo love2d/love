@@ -11,12 +11,12 @@ git checkout v2.1
 ISDKP=$(xcrun --sdk iphoneos --show-sdk-path)
 ICC=$(xcrun --sdk iphoneos --find clang)
 
-ISDKF="-arch armv7 -isysroot $ISDKP -mios-version-min=6.0"
+ISDKF="-arch armv7 -isysroot $ISDKP -mios-version-min=8.0"
 make clean
 make -j8 HOST_CC="clang -m32 -arch i386" CROSS="$(dirname $ICC)/" TARGET_FLAGS="$ISDKF" TARGET_SYS=iOS
 cp src/libluajit.a ../libraries/luajit/libluajit_arm7.a
 
-ISDKF="-arch arm64 -isysroot $ISDKP -mios-version-min=6.0"
+ISDKF="-arch arm64 -isysroot $ISDKP -mios-version-min=8.0"
 make clean
 make -j8 CROSS="$(dirname $ICC)/" TARGET_FLAGS="$ISDKF" TARGET_SYS=iOS
 cp src/libluajit.a ../libraries/luajit/libluajit_arm64.a
@@ -27,12 +27,12 @@ cp src/libluajit.a ../libraries/luajit/libluajit_arm64.a
 ISDKP=$(xcrun --sdk iphonesimulator --show-sdk-path)
 ICC=$(xcrun --sdk iphonesimulator --find clang)
 
-ISDKF="-arch i386 -isysroot $ISDKP -mios-simulator-version-min=6.0"
+ISDKF="-arch i386 -isysroot $ISDKP -mios-simulator-version-min=8.0"
 make clean
 make -j8 HOST_CC="clang -m32 -arch i386" CROSS="$(dirname $ICC)/" TARGET_FLAGS="$ISDKF" TARGET_SYS=iOS
 cp src/libluajit.a ../libraries/luajit/libluajit_x86.a
 
-ISDKF="-arch x86_64 -isysroot $ISDKP -mios-simulator-version-min=6.0"
+ISDKF="-arch x86_64 -isysroot $ISDKP -mios-simulator-version-min=8.0"
 make clean
 make -j8 CROSS="$(dirname $ICC)/" TARGET_FLAGS="$ISDKF" TARGET_SYS=iOS
 cp src/libluajit.a ../libraries/luajit/libluajit_x86_64.a
