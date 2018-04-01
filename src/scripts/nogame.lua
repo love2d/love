@@ -3248,6 +3248,15 @@ function love.nogame()
 		g_frame_count = g_frame_count + 1
 	end
 
+	function love.mousepressed(x, y, b, istouch, clicks)
+		-- Double-tap the screen (when using a touch screen) to exit.
+		if istouch and clicks == 2 then
+			if love.window.showMessageBox("Exit No-Game Screen", "", {"OK", "Cancel"}) == 1 then
+				love.event.quit()
+			end
+		end
+	end
+
 	function love.resize()
 		create_world()
 	end
