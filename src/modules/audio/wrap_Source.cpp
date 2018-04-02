@@ -564,7 +564,7 @@ int w_Source_queue(lua_State *L)
 		});
 	}
 	else
-		return luax_typerror(L, 1, "Sound Data or lightuserdata");
+		return luax_typerror(L, 2, "SoundData or lightuserdata");
 
 	luax_pushboolean(L, success);
 	return 1;
