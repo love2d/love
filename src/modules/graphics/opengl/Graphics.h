@@ -40,6 +40,8 @@
 #include "Canvas.h"
 #include "Shader.h"
 
+#include "libraries/xxHash/xxhash.h"
+
 namespace love
 {
 
@@ -110,7 +112,29 @@ public:
 
 	Shader::Language getShaderLanguageTarget() const override;
 
+	// Internal use.
+	void cleanupCanvas(Canvas *canvas);
+
 private:
+
+	struct CachedFBOHasher
+	{
+		size_t operator() (const RenderTargets &rts) const
+		{
+			RenderTarget hashtargets[MAX_COLOR_RENDER_TARGETS + 1];
+			int hashcount = 0;
+
+			for (size_t i = 0; i < rts.colors.size(); i++)
+				hashtargets[hashcount++] = rts.colors[i];
+
+			if (rts.depthStencil.canvas != nullptr)
+				hashtargets[hashcount++] = rts.depthStencil;
+			else if (rts.temporaryRTFlags != 0)
+				hashtargets[hashcount++] = RenderTarget(nullptr, -1, rts.temporaryRTFlags);
+
+			return XXH32(hashtargets, sizeof(RenderTarget) * hashcount, 0);
+		}
+	};
 
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
@@ -125,7 +149,7 @@ private:
 
 	void setDebug(bool enable);
 
-	std::unordered_map<uint32, GLuint> framebufferObjects;
+	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
 

@@ -422,6 +422,24 @@ public:
 		{
 			return colors.empty() ? depthStencil : colors[0];
 		}
+
+		bool operator == (const RenderTargets &other) const
+		{
+			size_t ncolors = colors.size();
+			if (ncolors != other.colors.size())
+				return false;
+
+			for (size_t i = 0; i < ncolors; i++)
+			{
+				if (colors[i] != other.colors[i])
+					return false;
+			}
+
+			if (depthStencil != other.depthStencil || temporaryRTFlags != other.temporaryRTFlags)
+				return false;
+
+			return true;
+		}
 	};
 
 	struct RenderTargetsStrongRef

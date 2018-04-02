@@ -628,6 +628,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8;
 	int pixelw = firstcanvas->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firstcanvas->getPixelHeight(firsttarget.mipmap);
+	int reqmsaa = firstcanvas->getRequestedMSAA();
 
 	for (int i = 1; i < ncanvases; i++)
 	{
@@ -648,7 +649,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		if (!multiformatsupported && format != firstcolorformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
-		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
+		if (c->getRequestedMSAA() != reqmsaa)
 			throw love::Exception("All Canvases must have the same MSAA value.");
 
 		if (isPixelFormatDepthStencil(format))
@@ -684,7 +685,33 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	int h = firstcanvas->getHeight(firsttarget.mipmap);
 
 	flushStreamDraws();
-	setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
+
+	if (rts.depthStencil.canvas == nullptr && rts.temporaryRTFlags != 0)
+	{
+		bool wantsdepth   = (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0;
+		bool wantsstencil = (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0;
+
+		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
+		if (wantsdepth && wantsstencil)
+			dsformat = PIXELFORMAT_DEPTH24_STENCIL8;
+		else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24, false))
+			dsformat = PIXELFORMAT_DEPTH24;
+		else if (wantsdepth)
+			dsformat = PIXELFORMAT_DEPTH16;
+		else if (wantsstencil)
+			dsformat = PIXELFORMAT_STENCIL8;
+
+		// We want setCanvasInternal to have a pointer to the temporary RT, but
+		// we don't want to directly store it in the main graphics state.
+		RenderTargets realRTs = rts;
+
+		realRTs.depthStencil.canvas = getTemporaryCanvas(dsformat, pixelw, pixelh, reqmsaa);
+		realRTs.depthStencil.slice = 0;
+
+		setCanvasInternal(realRTs, w, h, pixelw, pixelh, hasSRGBcanvas);
+	}
+	else
+		setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
 
 	RenderTargetsStrongRef refs;
 	refs.colors.reserve(rts.colors.size());

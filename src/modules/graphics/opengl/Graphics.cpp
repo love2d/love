@@ -779,21 +779,38 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
+void Graphics::cleanupCanvas(Canvas *canvas)
+{
+	for (auto it = framebufferObjects.begin(); it != framebufferObjects.end(); /**/)
+	{
+		bool hascanvas = false;
+		const auto &rts = it->first;
+
+		for (const RenderTarget &rt : rts.colors)
+		{
+			if (rt.canvas == canvas)
+			{
+				hascanvas = true;
+				break;
+			}
+		}
+
+		hascanvas = hascanvas || rts.depthStencil.canvas == canvas;
+
+		if (hascanvas)
+		{
+			if (isCreated())
+				gl.deleteFramebuffer(it->second);
+			it = framebufferObjects.erase(it);
+		}
+		else
+			++it;
+	}
+}
+
 void Graphics::bindCachedFBO(const RenderTargets &targets)
 {
-	RenderTarget hashtargets[MAX_COLOR_RENDER_TARGETS + 1];
-	int hashcount = 0;
-
-	for (int i = 0; i < (int) targets.colors.size(); i++)
-		hashtargets[hashcount++] = targets.colors[i];
-
-	if (targets.depthStencil.canvas != nullptr)
-		hashtargets[hashcount++] = targets.depthStencil;
-	else if (targets.temporaryRTFlags != 0)
-		hashtargets[hashcount++] = RenderTarget(nullptr, -1, targets.temporaryRTFlags);
-
-	uint32 hash = XXH32(hashtargets, sizeof(RenderTarget) * hashcount, 0);
-	GLuint fbo = framebufferObjects[hash];
+	GLuint fbo = framebufferObjects[targets];
 
 	if (fbo != 0)
 	{
@@ -801,34 +818,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	}
 	else
 	{
-		RenderTarget firstRT = targets.getFirstTarget();
-
-		int mip = firstRT.mipmap;
-		int w = firstRT.canvas->getPixelWidth(mip);
-		int h = firstRT.canvas->getPixelHeight(mip);
-		int msaa = firstRT.canvas->getMSAA();
-		int reqmsaa = firstRT.canvas->getRequestedMSAA();
-
-		RenderTarget depthstencil = targets.depthStencil;
-
-		if (depthstencil.canvas == nullptr && targets.temporaryRTFlags != 0)
-		{
-			bool wantsdepth   = (targets.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0;
-			bool wantsstencil = (targets.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0;
-
-			PixelFormat dsformat = PIXELFORMAT_STENCIL8;
-			if (wantsdepth && wantsstencil)
-				dsformat = PIXELFORMAT_DEPTH24_STENCIL8;
-			else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24, false))
-				dsformat = PIXELFORMAT_DEPTH24;
-			else if (wantsdepth)
-				dsformat = PIXELFORMAT_DEPTH16;
-			else if (wantsstencil)
-				dsformat = PIXELFORMAT_STENCIL8;
-
-			depthstencil.canvas = getTemporaryCanvas(dsformat, w, h, reqmsaa);
-			depthstencil.slice = 0;
-		}
+		int msaa = targets.getFirstTarget().canvas->getMSAA();
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
@@ -873,8 +863,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		for (const auto &rt : targets.colors)
 			attachCanvas(rt);
 
-		if (depthstencil.canvas != nullptr)
-			attachCanvas(depthstencil);
+		if (targets.depthStencil.canvas != nullptr)
+			attachCanvas(targets.depthStencil);
 
 		if (ncolortargets > 1)
 			glDrawBuffers(ncolortargets, drawbuffers);
@@ -887,8 +877,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 			const char *sstr = OpenGL::framebufferStatusString(status);
 			throw love::Exception("Could not create Framebuffer Object! %s", sstr);
 		}
-		
-		framebufferObjects[hash] = fbo;
+
+		framebufferObjects[targets] = fbo;
 	}
 }
 
