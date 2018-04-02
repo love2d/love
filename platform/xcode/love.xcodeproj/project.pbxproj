@@ -13,7 +13,6 @@
 		A9255F58104324E100BA1496 /* ogg.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255F51104324D700BA1496 /* ogg.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A93E6E5510420B57007D418B /* Lua.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; };
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
-		A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9D307E9106635C3004FEDF8 /* physfs.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F169A6109E824900FC83D1 /* mpg123.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		CE73F8001EEB64150052DAB3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE73F7FF1EEB64150052DAB3 /* AVFoundation.framework */; };
@@ -89,7 +88,6 @@
 				FAD43ED01FF3136500831BB8 /* freetype.framework in Copy Frameworks */,
 				A9F169AC109E825000FC83D1 /* mpg123.framework in Copy Frameworks */,
 				A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */,
-				A9D307F2106635D3004FEDF8 /* physfs.framework in Copy Frameworks */,
 				A9255F58104324E100BA1496 /* ogg.framework in Copy Frameworks */,
 				A9255E031043195A00BA1496 /* vorbis.framework in Copy Frameworks */,
 				A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */,
@@ -108,7 +106,6 @@
 		A93E6E4710420B4A007D418B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		A93E6E5310420B57007D418B /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
 		A97E3842132A9EDE00198A2F /* love-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "love-macosx.plist"; path = "macosx/love-macosx.plist"; sourceTree = "<group>"; };
-		A9D307E9106635C3004FEDF8 /* physfs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = physfs.framework; path = /Library/Frameworks/physfs.framework; sourceTree = "<absolute>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
 		A9F169A6109E824900FC83D1 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		CE73F7FF1EEB64150052DAB3 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -236,7 +233,6 @@
 				A9255F51104324D700BA1496 /* ogg.framework */,
 				FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */,
 				A93E6E4710420B4A007D418B /* OpenGL.framework */,
-				A9D307E9106635C3004FEDF8 /* physfs.framework */,
 				FA9B4A0916E1579F00074F42 /* SDL2.framework */,
 				FA27B3CA1B498696008A9DCE /* theora.framework */,
 				A9255E021043195A00BA1496 /* vorbis.framework */,
