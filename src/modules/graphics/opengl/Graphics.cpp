@@ -642,7 +642,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		return;
 
 	int ncolorcanvases = (int) states.back().renderTargets.colors.size();
-	int ncolors = std::min((int) colors.size(), ncolorcanvases);
+	int ncolors = (int) colors.size();
 
 	if (ncolors <= 1 && ncolorcanvases <= 1)
 	{
@@ -653,6 +653,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	flushStreamDraws();
 
 	bool drawbuffersmodified = false;
+	ncolors = std::min(ncolors, ncolorcanvases);
 
 	for (int i = 0; i < ncolors; i++)
 	{
