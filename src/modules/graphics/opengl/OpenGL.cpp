@@ -705,7 +705,7 @@ void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const ver
 			GLboolean normalized = GL_FALSE;
 			GLenum gltype = getGLVertexDataType(attrib.type, normalized);
 
-			const void *offsetpointer = BUFFER_OFFSET(bufferinfo.offset + attrib.offsetfromvertex);
+			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetfromvertex);
 
 			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
 			glVertexAttribPointer(i, attrib.components, gltype, normalized, attrib.stride, offsetpointer);

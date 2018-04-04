@@ -21,6 +21,7 @@
 #include "wrap_JoystickModule.h"
 #include "wrap_Joystick.h"
 
+#include "filesystem/Filesystem.h"
 #include "filesystem/wrap_Filesystem.h"
 
 #include "sdl/JoystickModule.h"
@@ -116,15 +117,15 @@ int w_setGamepadMapping(lua_State *L)
 
 int w_loadGamepadMappings(lua_State *L)
 {
-	bool isfile = true;
-	std::string mappings;
+	bool isfile = false;
+	std::string mappings = luax_checkstring(L, 1);
 
-	if (lua_isstring(L, 1))
+	auto fs = Module::getInstance<love::filesystem::Filesystem>(Module::M_FILESYSTEM);
+	if (fs)
 	{
-		lua_pushvalue(L, 1);
-		luax_convobj(L, -1, "filesystem", "isFile");
-		isfile = luax_toboolean(L, -1);
-		lua_pop(L, 1);
+		love::filesystem::Filesystem::Info info = {};
+		bool exists = fs->getInfo(mappings.c_str(), info);
+		isfile = exists && info.type == love::filesystem::Filesystem::FILETYPE_FILE;
 	}
 
 	if (isfile)
@@ -132,7 +133,6 @@ int w_loadGamepadMappings(lua_State *L)
 		love::filesystem::FileData *fd = love::filesystem::luax_getfiledata(L, 1);
 		mappings = std::string((const char *) fd->getData(), fd->getSize());
 		fd->release();
-
 	}
 	else
 		mappings = luax_checkstring(L, 1);
