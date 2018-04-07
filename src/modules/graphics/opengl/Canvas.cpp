@@ -510,6 +510,18 @@ bool Canvas::isFormatSupported(PixelFormat format, bool readable)
 	GLuint texture = 0;
 	GLuint renderbuffer = 0;
 
+	// Avoid the test for depth/stencil formats - not every GL version
+	// guarantees support for depth/stencil-only render targets (which we would
+	// need for the test below to work), and we already do some finagling in
+	// convertPixelFormat to try to use the best-supported internal
+	// depth/stencil format for a particular driver.
+	if (isPixelFormatDepthStencil(format))
+	{
+		checkedFormats[format].set(readable, true);
+		supportedFormats[format].set(readable, true);
+		return true;
+	}
+
 	bool unusedSRGB = false;
 	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, unusedSRGB);
 
