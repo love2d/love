@@ -77,7 +77,7 @@ Window::Window()
 
 Window::~Window()
 {
-	close();
+	close(false);
 
 	graphics.set(nullptr);
 
@@ -413,7 +413,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		graphics.set(Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS));
 
 	if (graphics.get() && graphics->isCanvasActive())
-		throw love::Exception("setMode cannot be called while a Canvas is active in love.graphics.");
+		throw love::Exception("love.window.setMode cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings f;
 
@@ -641,10 +641,15 @@ void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
 
 void Window::close()
 {
+	close(true);
+}
+
+void Window::close(bool allowExceptions)
+{
 	if (graphics.get())
 	{
-		if (graphics->isCanvasActive())
-			throw love::Exception("close cannot be called while a Canvas is active in love.graphics.");
+		if (allowExceptions && graphics->isCanvasActive())
+			throw love::Exception("love.window.close cannot be called while a Canvas is active in love.graphics.");
 
 		graphics->unSetMode();
 	}
@@ -674,7 +679,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		return false;
 
 	if (graphics.get() && graphics->isCanvasActive())
-		throw love::Exception("setFullscreen cannot be called while a Canvas is active in love.graphics.");
+		throw love::Exception("love.window.setFullscreen cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings newsettings = settings;
 	newsettings.fullscreen = fullscreen;

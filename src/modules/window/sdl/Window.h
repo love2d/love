@@ -121,6 +121,8 @@ public:
 
 private:
 
+	void close(bool allowExceptions);
+
 	struct ContextAttribs
 	{
 		int versionMajor;
