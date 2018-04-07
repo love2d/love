@@ -36,8 +36,8 @@ namespace box2d
 
 love::Type ChainShape::type("ChainShape", &Shape::type);
 
-ChainShape::ChainShape(b2ChainShape *c, bool loop, bool own)
-	: Shape(c, own), loop(loop)
+ChainShape::ChainShape(b2ChainShape *c, bool own)
+	: Shape(c, own)
 {
 }
 
@@ -47,11 +47,6 @@ ChainShape::~ChainShape()
 
 void ChainShape::setNextVertex(float x, float y)
 {
-	if (loop)
-	{
-		throw love::Exception("Physics error: Can't call setNextVertex on a loop ChainShape");
-		return;
-	}
 	b2Vec2 v(x, y);
 	b2ChainShape *c = (b2ChainShape *)shape;
 	c->SetNextVertex(Physics::scaleDown(v));
@@ -65,11 +60,6 @@ void ChainShape::setNextVertex()
 
 void ChainShape::setPreviousVertex(float x, float y)
 {
-	if (loop)
-	{
-		throw love::Exception("Physics error: Can't call setPreviousVertex on a loop ChainShape");
-		return;
-	}
 	b2Vec2 v(x, y);
 	b2ChainShape *c = (b2ChainShape *)shape;
 	c->SetPrevVertex(Physics::scaleDown(v));

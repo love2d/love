@@ -45,7 +45,7 @@ public:
 	 * Create a new ChainShape from a Box2D chain shape.
 	 * @param c The chain shape.
 	 **/
-	ChainShape(b2ChainShape *c, bool loop = false, bool own = true);
+	ChainShape(b2ChainShape *c, bool own = true);
 
 	virtual ~ChainShape();
 
@@ -103,9 +103,6 @@ public:
 	 **/
 	const b2Vec2 *getPoints() const;
 
-private:
-	// True if this ChainShape is a loop.
-	bool loop;
 };
 
 } // box2d
