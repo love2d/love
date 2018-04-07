@@ -439,22 +439,6 @@ int luaopen_love(lua_State *L)
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-// Mostly taken from the Windows 8.1 SDK's VersionHelpers.h.
-static bool IsWindowsVistaOrGreater()
-{
-	OSVERSIONINFOEXW osvi = {sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0};
-
-	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
-	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-	osvi.wServicePackMajor = 0;
-
-	DWORDLONG majorversionmask = VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL);
-	DWORDLONG versionmask = VerSetConditionMask(majorversionmask, VER_MINORVERSION, VER_GREATER_EQUAL);
-	DWORDLONG mask = VerSetConditionMask(versionmask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
-
-	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, mask) != FALSE;
-}
-
 bool love_openConsole(const char *&err)
 {
 	static bool is_open = false;
@@ -465,11 +449,18 @@ bool love_openConsole(const char *&err)
 
 	is_open = true;
 
-	// FIXME: we don't call AttachConsole in Windows XP because it seems to
-	// break later AllocConsole calls if it fails. A better workaround might be
-	// possible, but it's hard to find a WinXP system to test on these days...
-	if (!IsWindowsVistaOrGreater() || !AttachConsole(ATTACH_PARENT_PROCESS))
+	if (!AttachConsole(ATTACH_PARENT_PROCESS))
 	{
+		DWORD winerr = GetLastError();
+
+		if (winerr == ERROR_ACCESS_DENIED)
+		{
+			// The process is already attached to a console. We'll assume stdout
+			// and friends are already being directed there.
+			is_open = true;
+			return is_open;
+		}
+
 		// Create our own console if we can't attach to an existing one.
 		if (!AllocConsole())
 		{
