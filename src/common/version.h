@@ -25,12 +25,12 @@ namespace love
 {
 
 // Version stuff.
-#define LOVE_VERSION_STRING "11.0"
+#define LOVE_VERSION_STRING "11.1"
 static const int VERSION_MAJOR = 11;
-static const int VERSION_MINOR = 0;
+static const int VERSION_MINOR = 1;
 static const int VERSION_REV = 0;
 static const char *VERSION = LOVE_VERSION_STRING;
-static const char *VERSION_COMPATIBILITY[] =  { VERSION, 0 };
+static const char *VERSION_COMPATIBILITY[] =  { VERSION, "11.0", 0 };
 static const char *VERSION_CODENAME = "Mysterious Mysteries";
 
 } // love

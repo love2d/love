@@ -1,5 +1,19 @@
+LOVE 11.1 [Mysterious Mysteries]
+--------------------------------
+
+Released: N/A
+
+* Fixed love.graphics.setCanvas failing randomly.
+* Fixed love.graphics.clear(colortable) when no Canvas is active.
+* Fixed stencil and depth support on older phones.
+* Fixed love.event.quit causing crashes and other unexpected behaviour if a Canvas is active.
+* Fixed Fixture:getShape crashing when returning a ChainShape.
+* Fixed love.joystick.loadJoystickMappings outputting a deprecation warning about love.filesystem.isFile.
+* Fixed Source:queue to show the correct argument name in the error message when an invalid data parameter is given.
+* Fixed t.console=true causing an error on Windows if lovec.exe is used.
+
 LOVE 11.0 [Mysterious Mysteries]
---------------
+--------------------------------
 
 Released: 2018-04-01
 
