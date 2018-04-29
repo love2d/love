@@ -69,6 +69,19 @@ int w_Body_getPosition(lua_State *L)
 	return 2;
 }
 
+int w_Body_getTransform(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+
+	float x_o, y_o;
+	t->getPosition(x_o, y_o);
+	lua_pushnumber(L, x_o);
+	lua_pushnumber(L, y_o);
+	lua_pushnumber(L, t->getAngle());
+
+	return 3;
+}
+
 int w_Body_getLinearVelocity(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -617,6 +630,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getY", w_Body_getY },
 	{ "getAngle", w_Body_getAngle },
 	{ "getPosition", w_Body_getPosition },
+	{ "getTransform", w_Body_getTransform },
 	{ "getLinearVelocity", w_Body_getLinearVelocity },
 	{ "getWorldCenter", w_Body_getWorldCenter },
 	{ "getLocalCenter", w_Body_getLocalCenter },
