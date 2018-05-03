@@ -676,6 +676,11 @@ int luax_catchexcept(lua_State *L, const T& func, const F& finallyfunc)
 	return 0;
 }
 
+/**
+ * Compatibility shim for lua_resume
+ **/
+int luax_resume(lua_State *L, int nargs);
+
 } // love
 
 #endif // LOVE_RUNTIME_H
