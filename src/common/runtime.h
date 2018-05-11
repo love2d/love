@@ -678,8 +678,9 @@ int luax_catchexcept(lua_State *L, const T& func, const F& finallyfunc)
 
 /**
  * Compatibility shim for lua_resume
+ * Exported because it's used in the launcher
  **/
-int luax_resume(lua_State *L, int nargs);
+LOVE_EXPORT int luax_resume(lua_State *L, int nargs);
 
 } // love
 
