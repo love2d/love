@@ -171,7 +171,7 @@ int w_decompress(lua_State *L)
 
 		if (luax_istype(L, 3, Data::type))
 		{
-			Data *data = luax_checktype<Data>(L, 2);
+			Data *data = luax_checktype<Data>(L, 3);
 			cbytes = (const char *) data->getData();
 			compressedsize = data->getSize();
 		}
