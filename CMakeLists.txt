@@ -66,6 +66,10 @@ endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
+if(POLICY CMP0072)
+	cmake_policy(SET CMP0072 NEW)
+endif()
+
 find_package(OpenGL)
 
 if(MEGA)
