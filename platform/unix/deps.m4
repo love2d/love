@@ -22,6 +22,9 @@ AC_DEFUN([ACLOVE_DEP_LIBM], [
 AC_DEFUN([ACLOVE_DEP_SDL2], [
 	AM_PATH_SDL2([], [], [LOVE_MSG_ERROR([SDL 2])])])
 
+AC_DEFUN([ACLOVE_DEP_PTHREAD], [
+	AC_SEARCH_LIBS([pthread_create], [pthread], [], [LOVE_MSG_ERROR([the POSIX threads library])])])
+
 # does not use pkg-config because of the FILE_OFFSET_BITS.. bit
 AC_DEFUN([ACLOVE_DEP_MPG123], [
 	AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [],

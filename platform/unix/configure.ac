@@ -63,6 +63,7 @@ ACLOVE_DEP_LUA
 ACLOVE_DEP_SDL2
 ACLOVE_DEP_LIBM
 ACLOVE_DEP_ZLIB
+ACLOVE_DEP_PTHREAD
 
 # Conditional dependencies
 AS_VAR_IF([enable_module_audio], [yes], [ACLOVE_DEP_OPENAL], [])
