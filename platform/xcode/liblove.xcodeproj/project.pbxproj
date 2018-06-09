@@ -1081,7 +1081,6 @@
 		FADF543D1E3DAFF700012CC0 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */; };
 		FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE272511C05A15B00A67640 /* ParticleSystem.h */; };
-		FAE64A7E2071359C00BC7981 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE64A7D2071359C00BC7981 /* libfreetype.a */; };
 		FAE64A7F207135AD00BC7981 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE64A7D2071359C00BC7981 /* libfreetype.a */; };
 		FAE64A802071362A00BC7981 /* physfs_archiver_7z.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5D1FE35E95006A60C7 /* physfs_archiver_7z.c */; };
 		FAE64A812071363100BC7981 /* physfs_archiver_dir.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6C1FE35E95006A60C7 /* physfs_archiver_dir.c */; };
@@ -2079,7 +2078,6 @@
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */,
-				FAE64A7E2071359C00BC7981 /* libfreetype.a in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
