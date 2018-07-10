@@ -1,5 +1,5 @@
-love@LOVE_SUFFIX@ (0.11.0~pre3420ppa3) trusty; urgency=medium
+love@LOVE_SUFFIX@ (11.2~pre3458ppa1) trusty; urgency=medium
 
   * Upstream testing release
 
- -- Bart van Strien <bart.bes@gmail.com>  Sat, 31 Mar 2018 13:50:30 +0200
+ -- Bart van Strien <bart.bes@gmail.com>  Tue, 10 Jul 2018 19:22:30 +0200
