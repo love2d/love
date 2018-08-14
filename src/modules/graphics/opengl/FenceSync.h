@@ -38,7 +38,7 @@ class FenceSync
 {
 public:
 
-	FenceSync() {}
+	FenceSync() : sync(0) {}
 	~FenceSync();
 
 	bool fence();
