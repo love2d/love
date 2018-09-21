@@ -290,7 +290,7 @@ int w_setCanvas(lua_State *L)
 				targets.colors.emplace_back(luax_checkcanvas(L, -1), 0);
 
 				if (targets.colors.back().canvas->getTextureType() != TEXTURE_2D)
-					return luaL_error(L, "The table-of-tables variant of setCanvas must be used with non-2D Canvases.");
+					return luaL_error(L, "Non-2D canvases must use the table-of-tables variant of setCanvas.");
 			}
 
 			lua_pop(L, 1);
