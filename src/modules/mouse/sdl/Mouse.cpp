@@ -57,6 +57,9 @@ const char *Mouse::getName() const
 Mouse::Mouse()
 	: curCursor(nullptr)
 {
+	// SDL may need the video subsystem in order to clean up the cursor when
+	// quitting. Subsystems are reference-counted.
+	SDL_InitSubSystem(SDL_INIT_VIDEO);
 }
 
 Mouse::~Mouse()
@@ -66,6 +69,8 @@ Mouse::~Mouse()
 
 	for (auto &c : systemCursors)
 		c.second->release();
+
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, int hoty)
