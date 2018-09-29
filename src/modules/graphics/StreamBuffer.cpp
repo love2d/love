@@ -28,6 +28,7 @@ namespace graphics
 
 StreamBuffer::StreamBuffer(BufferType mode, size_t size)
 	: bufferSize(size)
+	, frameGPUReadOffset(0)
 	, mode(mode)
 {
 }

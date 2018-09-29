@@ -62,11 +62,6 @@ public:
 		delete[] data;
 	}
 
-	size_t getUsableSize() const override
-	{
-		return bufferSize;
-	}
-
 	MapInfo map(size_t /*minsize*/) override
 	{
 		return MapInfo(data, bufferSize);
@@ -96,7 +91,6 @@ public:
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
 		, offset(0)
-		, frameOffset(0)
 	{
 		try
 		{
@@ -116,17 +110,12 @@ public:
 		delete[] data;
 	}
 
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameOffset;
-	}
-
 	MapInfo map(size_t minsize) override
 	{
 		if (offset + minsize > bufferSize)
 		{
 			offset = 0;
-			frameOffset = 0;
+			frameGPUReadOffset = 0;
 			gl.bindBuffer(mode, vbo);
 			glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 		}
@@ -144,12 +133,12 @@ public:
 	void markUsed(size_t usedsize) override
 	{
 		offset += usedsize;
-		frameOffset += usedsize;
+		frameGPUReadOffset += usedsize;
 	}
 
 	void nextFrame() override
 	{
-		frameOffset = 0;
+		frameGPUReadOffset = 0;
 	}
 
 	ptrdiff_t getHandle() const override { return vbo; }
@@ -164,7 +153,7 @@ public:
 		glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 
 		offset = 0;
-		frameOffset = 0;
+		frameGPUReadOffset = 0;
 
 		return true;
 	}
@@ -186,7 +175,6 @@ protected:
 	uint8 *data;
 
 	size_t offset;
-	size_t frameOffset;
 
 }; // StreamBufferSubDataOrphan
 
@@ -198,7 +186,6 @@ public:
 		: love::graphics::StreamBuffer(type, size)
 		, syncSize((size + MAX_SYNCS_PER_FRAME - 1) / MAX_SYNCS_PER_FRAME)
 		, frameIndex(0)
-		, frameGPUReadOffset(0)
 		, syncs()
 	{}
 
@@ -231,7 +218,6 @@ protected:
 	const size_t syncSize;
 
 	int frameIndex;
-	size_t frameGPUReadOffset;
 
 	FenceSync syncs[MAX_SYNCS_PER_FRAME * BUFFER_FRAMES];
 
@@ -257,11 +243,6 @@ public:
 	~StreamBufferMapSync()
 	{
 		unloadVolatile();
-	}
-
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameGPUReadOffset;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -349,11 +330,6 @@ public:
 	~StreamBufferPersistentMapSync()
 	{
 		unloadVolatile();
-	}
-
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameGPUReadOffset;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -452,11 +428,6 @@ public:
 	{
 		unloadVolatile();
 		alignedFree(data);
-	}
-
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameGPUReadOffset;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
