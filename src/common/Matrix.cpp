@@ -29,6 +29,10 @@
 #include <xmmintrin.h>
 #endif
 
+#if defined(LOVE_SIMD_NEON)
+#include <arm_neon.h>
+#endif
+
 namespace love
 {
 
@@ -43,9 +47,6 @@ namespace love
 
 void Matrix4::multiply(const Matrix4 &a, const Matrix4 &b, float t[16])
 {
-	// NOTE: in my testing with ARM NEON instructions (on an iPhone 6 with arm64)
-	// it performed slightly worse than the regular add/multiply code. Further
-	// investigation would be useful.
 #if defined(LOVE_SIMD_SSE)
 
 	// We can't guarantee 16-bit alignment (e.g. for heap-allocated Matrix4
@@ -69,6 +70,38 @@ void Matrix4::multiply(const Matrix4 &a, const Matrix4 &b, float t[16])
 
 		_mm_storeu_ps(&t[4*i], col);
 	}
+
+#elif defined(LOVE_SIMD_NEON)
+
+	float32x4_t cola1 = vld1q_f32(&a.e[0]);
+	float32x4_t cola2 = vld1q_f32(&a.e[4]);
+	float32x4_t cola3 = vld1q_f32(&a.e[8]);
+	float32x4_t cola4 = vld1q_f32(&a.e[12]);
+
+	float32x4_t col1 = vmulq_n_f32(cola1, b.e[0]);
+	col1 = vmlaq_n_f32(col1, cola2, b.e[1]);
+	col1 = vmlaq_n_f32(col1, cola3, b.e[2]);
+	col1 = vmlaq_n_f32(col1, cola4, b.e[3]);
+
+	float32x4_t col2 = vmulq_n_f32(cola1, b.e[4]);
+	col2 = vmlaq_n_f32(col2, cola2, b.e[5]);
+	col2 = vmlaq_n_f32(col2, cola3, b.e[6]);
+	col2 = vmlaq_n_f32(col2, cola4, b.e[7]);
+
+	float32x4_t col3 = vmulq_n_f32(cola1, b.e[8]);
+	col3 = vmlaq_n_f32(col3, cola2, b.e[9]);
+	col3 = vmlaq_n_f32(col3, cola3, b.e[10]);
+	col3 = vmlaq_n_f32(col3, cola4, b.e[11]);
+
+	float32x4_t col4 = vmulq_n_f32(cola1, b.e[12]);
+	col4 = vmlaq_n_f32(col4, cola2, b.e[13]);
+	col4 = vmlaq_n_f32(col4, cola3, b.e[14]);
+	col4 = vmlaq_n_f32(col4, cola4, b.e[15]);
+
+	vst1q_f32(&t[0], col1);
+	vst1q_f32(&t[4], col2);
+	vst1q_f32(&t[8], col3);
+	vst1q_f32(&t[12], col4);
 
 #else
 
