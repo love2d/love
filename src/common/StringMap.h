@@ -30,7 +30,6 @@
 // getNames(), we end up with multiple copies in the object files. This
 // declaration means we only emit it once (in StringMap.cpp).
 extern template class std::vector<std::string>;
-extern template decltype(std::vector<std::string>().emplace_back("")) std::vector<std::string>::emplace_back<const char *const&>(const char *const&);
 
 namespace love
 {
