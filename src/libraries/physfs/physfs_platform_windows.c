@@ -566,7 +566,6 @@ char *__PHYSFS_platformCalcUserDir(void)
     else
     {
         DWORD psize = 0;
-        WCHAR dummy = 0;
         LPWSTR wstr = NULL;
         BOOL rc = 0;
 
@@ -575,7 +574,14 @@ char *__PHYSFS_platformCalcUserDir(void)
          *  psize. Also note that the second parameter can't be
          *  NULL or the function fails.
          */
-        rc = pGetDir(accessToken, &dummy, &psize);
+        /*
+         *  EDIT: (03.10.2018) after Windows 10 Update 1809 psize will be zero 
+         *  if something other than NULL is passed for the second argument.
+         *  Passing NULL now makes GetUserProfileDirectoryW fail (rc == 0)
+         *  and psize receives the correct user directory length.
+         *  It seems to work fine on Windows 7 and Windows 10 Update 1803 too
+         */
+        rc = pGetDir(accessToken, NULL, &psize);
         GOTO_IF(rc, PHYSFS_ERR_OS_ERROR, done);  /* should have failed! */
 
         /* Allocate memory for the profile directory */
