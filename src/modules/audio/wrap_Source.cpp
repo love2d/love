@@ -338,6 +338,13 @@ int w_Source_setAirAbsorption(lua_State *L)
 	return 0;
 }
 
+int w_Source_getAirAbsorption(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_catchexcept(L, [&](){ lua_pushnumber(L, t->getAirAbsorptionFactor()); });
+	return 1;
+}
+
 int w_Source_getChannelCount(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -628,6 +635,8 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getAttenuationDistances", w_Source_getAttenuationDistances },
 	{ "setRolloff", w_Source_setRolloff },
 	{ "getRolloff", w_Source_getRolloff },
+	{ "setAirAbsorption", w_Source_setAirAbsorption },
+	{ "getAirAbsorption", w_Source_getAirAbsorption },
 
 	{ "getChannelCount", w_Source_getChannelCount },
 
