@@ -1,3 +1,20 @@
+LOVE 11.2 [Mysterious Mysteries]
+--------------------------------
+
+Released: N/A
+
+* Added Source:setAirAbsorption and Source:getAirAbsorption.
+* Added Body:setTransform and Body:getTransform.
+
+* Improved performance of love.graphics.draw slightly on iOS and Android.
+
+* Fixed filesystem initialization on Windows 10 update 1809.
+* Fixed compatibility with Lua 5.2 and 5.3.
+* Fixed the explicit format + Data argument variant of love.data.decompress.
+* Fixed love.joystick.setGamepadMapping not being able to change existing mappings.
+* Fixed a crash on quit on Linux if a custom cursor is active when quitting.
+* Fixed a love.graphics.setCanvas error message to be less confusing.
+
 LOVE 11.1 [Mysterious Mysteries]
 --------------------------------
 
