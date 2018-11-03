@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
@@ -32,6 +33,7 @@ import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.os.Vibrator;
 import android.support.annotation.Keep;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.widget.Toast;
@@ -42,6 +44,7 @@ public class GameActivity extends SDLActivity {
     private static DisplayMetrics metrics = new DisplayMetrics();
     private static String gamePath = "";
     private static Context context;
+    private static GameActivity singleton;
     private static Vibrator vibrator = null;
     private static boolean immersiveActive = false;
     private static boolean mustCacheArchive = false;
@@ -52,6 +55,7 @@ public class GameActivity extends SDLActivity {
                 "c++_shared",
                 "mpg123",
                 "openal",
+                "hidapi",
                 "love",
         };
     }
@@ -60,6 +64,7 @@ public class GameActivity extends SDLActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("GameActivity", "started");
 
+        singleton = this;
         context = this.getApplicationContext();
 
         String permission = "android.permission.VIBRATE";
@@ -140,9 +145,12 @@ public class GameActivity extends SDLActivity {
                     gamePath = "game.love";
             } else {
                 // If no game.love was found fall back to the game in <external storage>/lovegame
-                File ext = Environment.getExternalStorageDirectory();
-                if ((new File(ext, "/lovegame/main.lua")).exists()) {
-                    gamePath = ext.getPath() + "/lovegame/";
+                if (singleton.hasExternalStoragePermission())
+                {
+                    File ext = Environment.getExternalStorageDirectory();
+                    if ((new File(ext, "/lovegame/main.lua")).exists()) {
+                        gamePath = ext.getPath() + "/lovegame/";
+                    }
                 }
             }
         }
@@ -229,7 +237,10 @@ public class GameActivity extends SDLActivity {
 
     public static String getGamePath() {
         Log.d("GameActivity", "called getGamePath(), game path = " + gamePath);
-        return gamePath;
+        if (gamePath.length() > 0 && singleton.hasExternalStoragePermission())
+            return gamePath;
+        else
+            return "";
     }
 
     public static DisplayMetrics getMetrics() {
@@ -242,12 +253,19 @@ public class GameActivity extends SDLActivity {
         }
     }
 
-    public static void openURL(String url) {
+    public static boolean openURL(String url) {
         Log.d("GameActivity", "opening url = " + url);
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setData(Uri.parse(url));
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(i);
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(i);
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 
     /**
@@ -310,5 +328,57 @@ public class GameActivity extends SDLActivity {
     public boolean hasBackgroundMusic() {
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         return audioManager.isMusicActive();
+    }
+
+    protected final int[] externalStorageRequestRes = new int[1];
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1)
+        {
+            synchronized (externalStorageRequestRes)
+            {
+                externalStorageRequestRes[0] = grantResults[0];
+                externalStorageRequestRes.notify();
+            }
+        }
+    }
+
+    protected Activity self;
+    @Keep
+    public boolean hasExternalStoragePermission()
+    {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            {
+                self = this;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        ActivityCompat.requestPermissions(self, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    }
+                });
+
+                synchronized (externalStorageRequestRes)
+                {
+                    try
+                    {
+                        externalStorageRequestRes.wait();
+                    }
+                    catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                        return false;
+                    }
+
+                }
+                return ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            }
+        } else
+            return true;
+        return false;
     }
 }
