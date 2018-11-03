@@ -143,19 +143,22 @@ public class GameActivity extends SDLActivity {
                     gamePath = destination_file;
                 else
                     gamePath = "game.love";
-            } else {
-                // If no game.love was found fall back to the game in <external storage>/lovegame
-                if (singleton.hasExternalStoragePermission())
-                {
-                    File ext = Environment.getExternalStorageDirectory();
-                    if ((new File(ext, "/lovegame/main.lua")).exists()) {
-                        gamePath = ext.getPath() + "/lovegame/";
-                    }
-                }
             }
         }
 
         Log.d("GameActivity", "new gamePath: " + gamePath);
+    }
+
+    protected void checkLovegameFolder()
+    {
+        // If no game.love was found fall back to the game in <external storage>/lovegame
+        if (singleton.hasExternalStoragePermission())
+        {
+            File ext = Environment.getExternalStorageDirectory();
+            if ((new File(ext, "/lovegame/main.lua")).exists()) {
+                gamePath = ext.getPath() + "/lovegame/";
+            }
+        }
     }
 
     @Override
@@ -240,7 +243,13 @@ public class GameActivity extends SDLActivity {
         if (gamePath.length() > 0 && singleton.hasExternalStoragePermission())
             return gamePath;
         else
-            return "";
+        {
+            singleton.checkLovegameFolder();
+            if (gamePath.length() > 0)
+                return gamePath;
+        }
+
+        return "";
     }
 
     public static DisplayMetrics getMetrics() {
@@ -352,7 +361,7 @@ public class GameActivity extends SDLActivity {
     {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
         {
-            if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
             {
                 self = this;
                 runOnUiThread(new Runnable() {
