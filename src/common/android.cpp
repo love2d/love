@@ -123,14 +123,14 @@ bool openURL(const std::string &url)
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jclass activity = env->FindClass("org/love2d/android/GameActivity");
 
-	jmethodID openURL= env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)V");
+	jmethodID openURL = env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)Z");
 	jstring url_jstring = (jstring) env->NewStringUTF(url.c_str());
 
-	env->CallStaticVoidMethod(activity, openURL, url_jstring);
+	jboolean result = env->CallStaticBooleanMethod(activity, openURL, url_jstring);
 
 	env->DeleteLocalRef(url_jstring);
 	env->DeleteLocalRef(activity);
-	return true;
+	return result;
 }
 
 void vibrate(double seconds)
