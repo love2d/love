@@ -148,6 +148,7 @@ void Shader::mapActiveUniforms()
 		if (oldu != olduniforms.end())
 		{
 			u.data = oldu->second.data;
+			u.dataSize = oldu->second.dataSize;
 			u.textures = oldu->second.textures;
 
 			updateUniform(&u, u.count, true);

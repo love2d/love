@@ -13,6 +13,7 @@ Released: N/A
 * Fixed the explicit format + Data argument variant of love.data.decompress.
 * Fixed love.joystick.setGamepadMapping not being able to change existing mappings.
 * Fixed a crash on quit on Linux if a custom cursor is active when quitting.
+* Fixed a crash in the Data variant of Shader:send when it's called after love.window.setMode.
 * Fixed a love.graphics.setCanvas error message to be less confusing.
 
 LOVE 11.1 [Mysterious Mysteries]
