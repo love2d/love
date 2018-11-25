@@ -1,7 +1,7 @@
 LOVE 11.2 [Mysterious Mysteries]
 --------------------------------
 
-Released: N/A
+Released: 2018-11-25
 
 * Added Source:setAirAbsorption and Source:getAirAbsorption.
 * Added Body:setTransform and Body:getTransform.
