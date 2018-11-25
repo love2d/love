@@ -87,7 +87,7 @@ public:
 		if (length % 64 < 56)
 			paddedLength += 56-length%64;
 		if (length % 64 > 56)
-			paddedlength += 120-length%64;
+			paddedLength += 120-length%64;
 		uint8 *padded = new uint8[paddedLength+8];
 		memcpy(padded, input, length-1);
 		memset(padded+length, 0, paddedLength-length);
@@ -182,7 +182,7 @@ const uint32 MD5::constants[64] = {
 
 /**
  * The following implementation was based on the text, not the code listings,
- * in RFC3174. I believe this means no copyright other than that of the LÃ–VE
+ * in RFC3174. I believe this means no copyright other than that of the LÖVE
  * Development Team applies.
  **/
 class SHA1 : public HashFunction
