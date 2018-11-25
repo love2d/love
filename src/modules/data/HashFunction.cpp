@@ -79,16 +79,21 @@ public:
 		uint32 c0 = 0x98badcfe;
 		uint32 d0 = 0x10325476;
 
+		// Consider the appended 1bit into the length
+		length++;
+
 		// Do the required padding
 		uint64 paddedLength = length;
 		if (length % 64 < 56)
 			paddedLength += 56-length%64;
 		if (length % 64 > 56)
-			paddedLength += 120-length%64;
+			paddedlength += 120-length%64;
 		uint8 *padded = new uint8[paddedLength+8];
-		memcpy(padded, input, length);
+		memcpy(padded, input, length-1);
 		memset(padded+length, 0, paddedLength-length);
-		padded[length] = 0x80;
+		padded[length-1] = 0x80;
+
+		//Now we need the length in bits
 		*((uint64*) &padded[paddedLength]) = length*8;
 		paddedLength += 8;
 
@@ -197,18 +202,21 @@ public:
 			0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0
 		};
 
-		// Same padding as for md5, but then big-endian
+		// Consider the appended 1bit into the length
+		length++;
+
+		// Do the required padding
 		uint64 paddedLength = length;
 		if (length % 64 < 56)
 			paddedLength += 56-length%64;
 		if (length % 64 > 56)
 			paddedLength += 120-length%64;
 		uint8 *padded = new uint8[paddedLength+8];
-		memcpy(padded, input, length);
+		memcpy(padded, input, length-1);
 		memset(padded+length, 0, paddedLength-length);
-		padded[length] = 0x80;
+		padded[length-1] = 0x80;
 
-		// Now we need the length in bits
+		// Now we need the length in bits (big endian)
 		length *= 8;
 		for (int i = 0; i < 8; ++i, ++paddedLength)
 			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
@@ -299,18 +307,21 @@ public:
 		if (!isSupported(function))
 			throw love::Exception("Hash function not supported by SHA-224/SHA-256 implementation");
 
-		// Same padding as for sha1
+		// Consider the appended 1bit into the length
+		length++;
+
+		// Do the required padding (same as SHA1)
 		uint64 paddedLength = length;
 		if (length % 64 < 56)
 			paddedLength += 56-length%64;
 		if (length % 64 > 56)
 			paddedLength += 120-length%64;
 		uint8 *padded = new uint8[paddedLength+8];
-		memcpy(padded, input, length);
+		memcpy(padded, input, length-1);
 		memset(padded+length, 0, paddedLength-length);
-		padded[length] = 0x80;
+		padded[length-1] = 0x80;
 
-		// Now we need the length in bits
+		// Now we need the length in bits (big endian)
 		length *= 8;
 		for (int i = 0; i < 8; ++i, ++paddedLength)
 			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
@@ -429,7 +440,7 @@ const uint32 SHA256::constants[64] = {
 /**
  * This implementation was based on the description in RFC-6234.
  **/
-// SHA-2: SHA-224 and SHA-256
+// SHA-2: SHA-384 and SHA-512
 class SHA512 : public HashFunction
 {
 private:
@@ -454,6 +465,10 @@ public:
 		else
 			memcpy(intermediates, initial512, sizeof(intermediates));
 
+		// Consider the appended 1bit into the length
+		length++;
+
+		//Do the required padding
 		uint64 paddedLength = length;
 		if (length % 128 < 112)
 			paddedLength += 112-length%128;
@@ -461,11 +476,11 @@ public:
 			paddedLength += 240-length%128;
 		uint8 *padded = new uint8[paddedLength+16];
 		paddedLength += 8;
-		memcpy(padded, input, length);
+		memcpy(padded, input, length-1);
 		memset(padded+length, 0, paddedLength-length);
-		padded[length] = 0x80;
+		padded[length-1] = 0x80;
 
-		// Now we need the length in bits, note we only write a 64-bit int, so
+		// Now we need the length in bits (big endian), note we only write a 64-bit int, so
 		// we have filled the first 8 bytes with zeroes
 		length *= 8;
 		for (int i = 0; i < 8; ++i, ++paddedLength)
