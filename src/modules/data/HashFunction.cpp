@@ -608,6 +608,7 @@ HashFunction *HashFunction::getHashFunction(Function function)
 		return nullptr;
 	// No default for compiler warnings
 	}
+    return nullptr;
 }
 
 bool HashFunction::getConstant(const char *in, Function &out)

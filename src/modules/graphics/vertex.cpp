@@ -64,6 +64,7 @@ size_t getFormatStride(CommonFormat format)
 	case CommonFormat::XYf_STPf_RGBAub:
 		return sizeof(XYf_STPf_RGBAub);
 	}
+	return 0;
 }
 
 uint32 getFormatFlags(CommonFormat format)
@@ -88,6 +89,7 @@ uint32 getFormatFlags(CommonFormat format)
 	case CommonFormat::XYf_STPf_RGBAub:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
 	}
+	return 0;
 }
 
 int getFormatPositionComponents(CommonFormat format)
@@ -109,6 +111,7 @@ int getFormatPositionComponents(CommonFormat format)
 	case CommonFormat::XYZf:
 		return 3;
 	}
+	return 0;
 }
 
 size_t getIndexDataSize(IndexDataType type)
@@ -157,6 +160,7 @@ int getIndexCount(TriangleIndexMode mode, int vertexCount)
 	case TriangleIndexMode::QUADS:
 		return vertexCount * 6 / 4;
 	}
+	return 0;
 }
 
 template <typename T>
