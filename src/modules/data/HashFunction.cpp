@@ -79,22 +79,20 @@ public:
 		uint32 c0 = 0x98badcfe;
 		uint32 d0 = 0x10325476;
 
-		// Consider the appended 1bit into the length
-		length++;
+		//Do the required padding (MD5, SHA1 and SHA2 use the same padding)
+		uint64 paddedLength = length + 1; //Consider the appended bit
+		if (paddedLength % 64 < 56)
+			paddedLength += 56 - paddedLength % 64;
+		if (paddedLength % 64 > 56)
+			paddedLength += 120 - paddedLength % 64;
 
-		// Do the required padding
-		uint64 paddedLength = length;
-		if (length % 64 < 56)
-			paddedLength += 56-length%64;
-		if (length % 64 > 56)
-			paddedLength += 120-length%64;
-		uint8 *padded = new uint8[paddedLength+8];
-		memcpy(padded, input, length-1);
-		memset(padded+length, 0, paddedLength-length);
-		padded[length-1] = 0x80;
+		uint8 *padded = new uint8[paddedLength + 8];
+		memcpy(padded, input, length);
+		memset(padded + length, 0, paddedLength - length);
+		padded[length] = 0x80;
 
 		//Now we need the length in bits
-		*((uint64*) &padded[paddedLength]) = length*8;
+		*((uint64*) &padded[paddedLength]) = length * 8;
 		paddedLength += 8;
 
 		for (uint64 i = 0; i < paddedLength; i += 64)
@@ -182,7 +180,7 @@ const uint32 MD5::constants[64] = {
 
 /**
  * The following implementation was based on the text, not the code listings,
- * in RFC3174. I believe this means no copyright other than that of the LÖVE
+ * in RFC3174. I believe this means no copyright other than that of the Lï¿½VE
  * Development Team applies.
  **/
 class SHA1 : public HashFunction
@@ -202,24 +200,22 @@ public:
 			0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0
 		};
 
-		// Consider the appended 1bit into the length
-		length++;
+		//Do the required padding (MD5, SHA1 and SHA2 use the same padding)
+		uint64 paddedLength = length + 1; //Consider the appended bit
+		if (paddedLength % 64 < 56)
+			paddedLength += 56 - paddedLength % 64;
+		if (paddedLength % 64 > 56)
+			paddedLength += 120 - paddedLength % 64;
 
-		// Do the required padding
-		uint64 paddedLength = length;
-		if (length % 64 < 56)
-			paddedLength += 56-length%64;
-		if (length % 64 > 56)
-			paddedLength += 120-length%64;
-		uint8 *padded = new uint8[paddedLength+8];
-		memcpy(padded, input, length-1);
-		memset(padded+length, 0, paddedLength-length);
-		padded[length-1] = 0x80;
+		uint8 *padded = new uint8[paddedLength + 8];
+		memcpy(padded, input, length);
+		memset(padded + length, 0, paddedLength - length);
+		padded[length] = 0x80;
 
 		// Now we need the length in bits (big endian)
 		length *= 8;
 		for (int i = 0; i < 8; ++i, ++paddedLength)
-			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
+			padded[paddedLength] = (length >> (56 - i * 8)) & 0xFF;
 
 		// Allocate our extended words
 		uint32 words[80];
@@ -307,24 +303,22 @@ public:
 		if (!isSupported(function))
 			throw love::Exception("Hash function not supported by SHA-224/SHA-256 implementation");
 
-		// Consider the appended 1bit into the length
-		length++;
+		//Do the required padding (MD5, SHA1 and SHA2 use the same padding)
+		uint64 paddedLength = length + 1; //Consider the appended bit
+		if (paddedLength % 64 < 56)
+			paddedLength += 56 - paddedLength % 64;
+		if (paddedLength % 64 > 56)
+			paddedLength += 120 - paddedLength % 64;
 
-		// Do the required padding (same as SHA1)
-		uint64 paddedLength = length;
-		if (length % 64 < 56)
-			paddedLength += 56-length%64;
-		if (length % 64 > 56)
-			paddedLength += 120-length%64;
-		uint8 *padded = new uint8[paddedLength+8];
-		memcpy(padded, input, length-1);
-		memset(padded+length, 0, paddedLength-length);
-		padded[length-1] = 0x80;
+		uint8 *padded = new uint8[paddedLength + 8];
+		memcpy(padded, input, length);
+		memset(padded + length, 0, paddedLength - length);
+		padded[length] = 0x80;
 
 		// Now we need the length in bits (big endian)
 		length *= 8;
 		for (int i = 0; i < 8; ++i, ++paddedLength)
-			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
+			padded[paddedLength] = (length >> (56 - i * 8)) & 0xFF;
 
 		uint32 intermediate[8];
 		if (function == FUNCTION_SHA224)
@@ -465,26 +459,24 @@ public:
 		else
 			memcpy(intermediates, initial512, sizeof(intermediates));
 
-		// Consider the appended 1bit into the length
-		length++;
-
 		//Do the required padding
-		uint64 paddedLength = length;
-		if (length % 128 < 112)
-			paddedLength += 112-length%128;
-		if (length % 128 > 112)
-			paddedLength += 240-length%128;
-		uint8 *padded = new uint8[paddedLength+16];
+		uint64 paddedLength = length + 1; //Consider the appended bit
+		if (paddedLength % 128 < 112)
+			paddedLength += 112 - paddedLength % 128;
+		if (paddedLength % 128 > 112)
+			paddedLength += 240 - paddedLength % 128;
+
+		uint8 *padded = new uint8[paddedLength + 16];
 		paddedLength += 8;
-		memcpy(padded, input, length-1);
-		memset(padded+length, 0, paddedLength-length);
-		padded[length-1] = 0x80;
+		memcpy(padded, input, length);
+		memset(padded + length, 0, paddedLength - length);
+		padded[length] = 0x80;
 
 		// Now we need the length in bits (big endian), note we only write a 64-bit int, so
 		// we have filled the first 8 bytes with zeroes
 		length *= 8;
 		for (int i = 0; i < 8; ++i, ++paddedLength)
-			padded[paddedLength] = (length >> (56-i*8)) & 0xFF;
+			padded[paddedLength] = (length >> (56 - i * 8)) & 0xFF;
 
 		// Allocate our extended words
 		uint64 words[80];
