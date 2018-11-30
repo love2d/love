@@ -464,7 +464,7 @@ int w_Source_setEffect(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	const char *namestr = luaL_checkstring(L, 2);
 
-	const bool isBool = lua_gettop(L) == 3 && lua_isboolean(L, 3);
+	const bool isBool = lua_gettop(L) >= 3 && lua_isboolean(L, 3);
 
 	// :setEffect(effect, false) = clear effect
 	if (isBool && !lua_toboolean(L, 3))
