@@ -1091,7 +1091,7 @@ int w_newFont(lua_State *L)
 		for (int i = 0; i < lua_gettop(L); i++)
 			idxs.push_back(i + 1);
 
-		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newRasterizer");
+		luax_convobj(L, idxs, "font", "newRasterizer");
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
@@ -1122,7 +1122,7 @@ int w_newImageFont(lua_State *L)
 		for (int i = 0; i < lua_gettop(L); i++)
 			idxs.push_back(i + 1);
 
-		luax_convobj(L, &idxs[0], (int) idxs.size(), "font", "newImageRasterizer");
+		luax_convobj(L, idxs, "font", "newImageRasterizer");
 	}
 
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);

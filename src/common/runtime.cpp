@@ -623,7 +623,7 @@ int luax_convobj(lua_State *L, int idx, const char *mod, const char *fn)
 	return 0;
 }
 
-int luax_convobj(lua_State *L, int idxs[], int n, const char *mod, const char *fn)
+int luax_convobj(lua_State *L, const int idxs[], int n, const char *mod, const char *fn)
 {
 	luax_getfunction(L, mod, fn);
 	for (int i = 0; i < n; i++)
@@ -638,6 +638,12 @@ int luax_convobj(lua_State *L, int idxs[], int n, const char *mod, const char *f
 	return 0;
 }
 
+int luax_convobj(lua_State *L, const std::vector<int>& idxs, const char *module, const char *function)
+{
+	const int *idxPtr = idxs.size() > 0 ? &idxs[0] : nullptr;
+	return luax_convobj(L, idxPtr, (int) idxs.size(), module, function);
+}
+
 int luax_pconvobj(lua_State *L, int idx, const char *mod, const char *fn)
 {
 	// Convert string to a file.
@@ -649,7 +655,7 @@ int luax_pconvobj(lua_State *L, int idx, const char *mod, const char *fn)
 	return ret;
 }
 
-int luax_pconvobj(lua_State *L, int idxs[], int n, const char *mod, const char *fn)
+int luax_pconvobj(lua_State *L, const int idxs[], int n, const char *mod, const char *fn)
 {
 	luax_getfunction(L, mod, fn);
 	for (int i = 0; i < n; i++)
@@ -660,6 +666,12 @@ int luax_pconvobj(lua_State *L, int idxs[], int n, const char *mod, const char *
 	if (ret == 0)
 		lua_replace(L, idxs[0]); // Replace the initial argument with the new object.
 	return ret;
+}
+
+int luax_pconvobj(lua_State *L, const std::vector<int>& idxs, const char *module, const char *function)
+{
+	const int *idxPtr = idxs.size() > 0 ? &idxs[0] : nullptr;
+	return luax_pconvobj(L, idxPtr, (int) idxs.size(), module, function);
 }
 
 int luax_insist(lua_State *L, int idx, const char *k)
