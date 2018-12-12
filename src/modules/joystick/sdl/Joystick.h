@@ -110,13 +110,15 @@ private:
 	{
 		float left  = 0.0f;
 		float right = 0.0f;
-		SDL_HapticEffect effect = {};
+		SDL_HapticEffect effect;
 		Uint16 data[4];
 		int id = -1;
 		Uint32 endtime = SDL_HAPTIC_INFINITY;
 
+		// Old versions of VS2013 have trouble with initializing these in-line.
 		Vibration()
-			: data() // VS2013 can't initialize the array above...
+			: effect()
+			, data()
 		{}
 
 	} vibration;
