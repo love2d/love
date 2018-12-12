@@ -36,8 +36,9 @@ namespace graphics
 namespace opengl
 {
 
-static const int BUFFER_FRAMES = 3;
-static const int MAX_SYNCS_PER_FRAME = 4;
+// Typically this should be 3 frames, but we only do per-frame syncing right now
+// so we add an extra frame to reduce the (small) chance of stalls.
+static const int BUFFER_FRAMES = 4;
 
 class StreamBufferClientMemory final : public love::graphics::StreamBuffer
 {
@@ -184,7 +185,6 @@ public:
 
 	StreamBufferSync(BufferType type, size_t size)
 		: love::graphics::StreamBuffer(type, size)
-		, syncSize((size + MAX_SYNCS_PER_FRAME - 1) / MAX_SYNCS_PER_FRAME)
 		, frameIndex(0)
 		, syncs()
 	{}
@@ -193,7 +193,9 @@ public:
 
 	void nextFrame() override
 	{
-		getCurrentSync()->fence();
+		// Insert a GPU fence for this frame's section of the data, we'll wait
+		// for it when we try to map that data for writing in subsequent frames.
+		syncs[frameIndex].fence();
 
 		frameIndex = (frameIndex + 1) % BUFFER_FRAMES;
 		frameGPUReadOffset = 0;
@@ -201,30 +203,16 @@ public:
 
 	void markUsed(size_t usedsize) override
 	{
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = std::min((frameGPUReadOffset + usedsize), bufferSize - 1) / syncSize;
-
-		// Insert fences for all sync buckets completely filled by this section
-		// of the data. The last bucket before the end of the frame will also be
-		// handled by nextFrame().
-		for (int i = firstSyncIndex; i < lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].fence();
+		// We insert a fence for all data from this frame at the end of the
+		// frame (in nextFrame), rather than doing anything more fine-grained.
 
 		frameGPUReadOffset += usedsize;
 	}
 
 protected:
 
-	const size_t syncSize;
-
 	int frameIndex;
-
-	FenceSync syncs[MAX_SYNCS_PER_FRAME * BUFFER_FRAMES];
-
-	FenceSync *getCurrentSync()
-	{
-		return &syncs[frameIndex * MAX_SYNCS_PER_FRAME + frameGPUReadOffset / syncSize];
-	}
+	FenceSync syncs[BUFFER_FRAMES];
 
 }; // StreamBufferSync
 
@@ -249,17 +237,11 @@ public:
 	{
 		gl.bindBuffer(mode, vbo);
 
+		// Make sure this frame's section of the buffer is done being used.
+		syncs[frameIndex].cpuWait();
+
 		MapInfo info;
 		info.size = bufferSize - frameGPUReadOffset;
-
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = (bufferSize - 1) / syncSize;
-
-		// We're mapping the full range of space left in the buffer, so we
-		// need to wait on all of it...
-		// FIXME: is it even worth it to have multiple sync objects per frame?
-		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
 
 		GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
 
@@ -334,19 +316,12 @@ public:
 
 	MapInfo map(size_t /*minsize*/) override
 	{
+		// Make sure this frame's section of the buffer is done being used.
+		syncs[frameIndex].cpuWait();
+
 		MapInfo info;
 		info.size = bufferSize - frameGPUReadOffset;
 		info.data = data + (frameIndex * bufferSize) + frameGPUReadOffset;
-
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = (bufferSize - 1) / syncSize;
-
-		// We're mapping the full range of space left in the buffer, so we
-		// need to wait on all of it...
-		// FIXME: is it even worth it to have multiple sync objects per frame?
-		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
-
 		return info;
 	}
 
@@ -432,19 +407,12 @@ public:
 
 	MapInfo map(size_t /*minsize*/) override
 	{
+		// Make sure this frame's section of the buffer is done being used.
+		syncs[frameIndex].cpuWait();
+
 		MapInfo info;
 		info.size = bufferSize - frameGPUReadOffset;
 		info.data = data + (frameIndex * bufferSize) + frameGPUReadOffset;
-
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = (bufferSize - 1) / syncSize;
-
-		// We're mapping the full range of space left in the buffer, so we
-		// need to wait on all of it...
-		// FIXME: is it even worth it to have multiple sync objects per frame?
-		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
-
 		return info;
 	}
 
