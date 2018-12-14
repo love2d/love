@@ -1850,6 +1850,7 @@
 		FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
 		FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Texture.h; sourceTree = "<group>"; };
 		FA620A391AA305F6005DB4C2 /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
+		FA665DC321C34C900074BBD6 /* wrap_GraphicsShader.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_GraphicsShader.lua; sourceTree = "<group>"; };
 		FA6A2B641F5F7B6B0074C308 /* wrap_Data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Data.h; sourceTree = "<group>"; };
 		FA6A2B651F5F7B6B0074C308 /* wrap_Data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Data.cpp; sourceTree = "<group>"; };
 		FA6A2B681F5F7F560074C308 /* DataView.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DataView.cpp; sourceTree = "<group>"; };
@@ -2817,6 +2818,7 @@
 				FADF54391E3DAFF700012CC0 /* wrap_Graphics.cpp */,
 				FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */,
 				FADF54371E3DAFBA00012CC0 /* wrap_Graphics.lua */,
+				FA665DC321C34C900074BBD6 /* wrap_GraphicsShader.lua */,
 				FADF54191E3DA46C00012CC0 /* wrap_Image.cpp */,
 				FADF541A1E3DA46C00012CC0 /* wrap_Image.h */,
 				FADF54281E3DAADA00012CC0 /* wrap_Mesh.cpp */,
