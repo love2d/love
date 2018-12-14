@@ -244,10 +244,20 @@ GLSL.PIXEL = {
 
 #if __VERSION__ >= 130
 	#define varying in
-	layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
-	#define love_PixelColor love_Canvases[0]
+	// Some drivers seem to make the pixel shader do more work when multiple
+	// pixel shader outputs are defined, even when only one is actually used.
+	// TODO: We should use reflection or something instead of this, to determine
+	// how many outputs are actually used in the shader code.
+	#ifdef LOVE_MULTI_CANVAS
+		layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
+		#define love_PixelColor love_Canvases[0]
+	#else
+		layout(location = 0) out vec4 love_PixelColor;
+	#endif
 #else
-	#define love_Canvases gl_FragData
+	#ifdef LOVE_MULTI_CANVAS
+		#define love_Canvases gl_FragData
+	#endif
 	#define love_PixelColor gl_FragColor
 #endif
 
@@ -302,13 +312,14 @@ local function getLanguageTarget(code)
 	return (code:match("^%s*#pragma language (%w+)")) or "glsl1"
 end
 
-local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom)
+local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multicanvas)
 	stage = stage:upper()
 	local lines = {
 		GLSL.VERSION[lang][gles],
 		"#define " ..stage .. " " .. stage,
 		glsl1on3 and "#define LOVE_GLSL1_ON_GLSL3 1" or "",
 		gammacorrect and "#define LOVE_GAMMA_CORRECT 1" or "",
+		multicanvas and "#define LOVE_MULTI_CANVAS 1" or "",
 		GLSL.SYNTAX,
 		GLSL[stage].HEADER,
 		GLSL.UNIFORMS,
@@ -328,9 +339,9 @@ end
 local function isPixelCode(code)
 	if code:match("vec4%s+effect%s*%(") then
 		return true
-	elseif code:match("void%s+effect%s*%(") then
-		-- custom effect function
-		return true, true
+	elseif code:match("void%s+effect%s*%(") then -- custom effect function
+		local multicanvas = code:match("love_Canvases") ~= nil
+		return true, true, multicanvas
 	else
 		return false
 	end
@@ -339,16 +350,18 @@ end
 function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	local vertexcode, pixelcode
 	local is_custompixel = false -- whether pixel code has "effects" function instead of "effect"
+	local is_multicanvas = false
 
 	if arg1 then
 		if isVertexCode(arg1) then
 			vertexcode = arg1 -- first arg contains vertex shader code
 		end
 
-		local ispixel, isCustomPixel = isPixelCode(arg1)
+		local ispixel, isCustomPixel, isMultiCanvas = isPixelCode(arg1)
 		if ispixel then
 			pixelcode = arg1 -- first arg contains pixel shader code
 			is_custompixel = isCustomPixel
+			is_multicanvas = isMultiCanvas
 		end
 	end
 	
@@ -357,10 +370,11 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 			vertexcode = arg2 -- second arg contains vertex shader code
 		end
 
-		local ispixel, isCustomPixel = isPixelCode(arg2)
+		local ispixel, isCustomPixel, isMultiCanvas = isPixelCode(arg2)
 		if ispixel then
 			pixelcode = arg2 -- second arg contains pixel shader code
 			is_custompixel = isCustomPixel
+			is_multicanvas = isMultiCanvas
 		end
 	end
 
@@ -391,7 +405,7 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect)
 	end
 	if pixelcode then
-		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel)
+		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel, is_multicanvas)
 	end
 
 	return vertexcode, pixelcode
