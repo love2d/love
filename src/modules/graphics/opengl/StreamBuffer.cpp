@@ -485,6 +485,16 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 				return new StreamBufferPinnedMemory(mode, size);
 			else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
 				return new StreamBufferPersistentMapSync(mode, size);
+
+			// Most modern drivers have a separate internal thread which queues
+			// GL commands for the GPU. The queue causes mapping to stall until
+			// the items in the queue are flushed, which makes this approach
+			// slow on most drivers. On macOS, having a separate driver thread
+			// is opt-in via an API, and we don't do it, so we can use this
+			// instead of the (potentially slower) SubData approach.
+#ifdef LOVE_MACOSX
+			return new StreamBufferMapSync(mode, size);
+#endif
 		}
 
 		return new StreamBufferSubDataOrphan(mode, size);
