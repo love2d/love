@@ -213,12 +213,8 @@ void hash(HashFunction::Function function, const char *input, uint64_t size, Has
 	hashfunction->hash(function, input, size, output);
 }
 
-DataModule DataModule::instance;
-
 DataModule::DataModule()
 {
-	// prevent the runtime from free()-ing this
-	retain();
 }
 
 DataModule::~DataModule()

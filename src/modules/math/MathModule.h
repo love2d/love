@@ -91,12 +91,9 @@ static float noise4(float x, float y, float z, float w);
 
 class Math : public Module
 {
-private:
-
-	RandomGenerator rng;
-
 public:
 
+	Math();
 	virtual ~Math();
 
 	RandomGenerator *getRandomGenerator()
@@ -128,11 +125,9 @@ public:
 		return "love.math";
 	}
 
-	static Math instance;
-
 private:
 
-	Math();
+	RandomGenerator rng;
 
 }; // Math
 

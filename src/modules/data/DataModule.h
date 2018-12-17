@@ -114,6 +114,7 @@ class DataModule : public Module
 {
 public:
 
+	DataModule();
 	virtual ~DataModule();
 
 	// Implements Module.
@@ -124,12 +125,6 @@ public:
 	ByteData *newByteData(size_t size);
 	ByteData *newByteData(const void *d, size_t size);
 	ByteData *newByteData(void *d, size_t size, bool own);
-
-	static DataModule instance;
-
-private:
-
-	DataModule();
 
 }; // DataModule
 

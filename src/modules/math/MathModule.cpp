@@ -199,14 +199,9 @@ float linearToGamma(float c)
 		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
 }
 
-Math Math::instance;
-
 Math::Math()
 	: rng()
 {
-	// prevent the runtime from free()-ing this
-	retain();
-
 	RandomGenerator::Seed seed;
 	seed.b64 = (uint64) time(nullptr);
 	rng.setSeed(seed);

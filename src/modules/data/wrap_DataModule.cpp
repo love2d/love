@@ -41,6 +41,8 @@ namespace love
 namespace data
 {
 
+#define instance() (Module::getInstance<DataModule>(Module::M_DATA))
+
 ContainerType luax_checkcontainertype(lua_State *L, int idx)
 {
 	const char *str = luaL_checkstring(L, idx);
@@ -60,7 +62,7 @@ int w_newDataView(lua_State *L)
 	if (offset < 0 || size < 0)
 		return luaL_error(L, "DataView offset and size must not be negative.");
 
-	DataView *d = DataModule::instance.newDataView(data, (size_t) offset, (size_t) size);
+	DataView *d = instance()->newDataView(data, (size_t) offset, (size_t) size);
 	luax_pushtype(L, d);
 	d->release();
 
@@ -89,20 +91,20 @@ int w_newByteData(lua_State *L)
 			return luaL_error(L, "Offset and size arguments must fit within the given Data's size.");
 
 		const char *bytes = (const char *) data->getData() + offset;
-		luax_catchexcept(L, [&]() { d = DataModule::instance.newByteData(bytes, (size_t) size); });
+		luax_catchexcept(L, [&]() { d = instance()->newByteData(bytes, (size_t) size); });
 	}
 	else if (lua_type(L, 1) == LUA_TSTRING)
 	{
 		size_t size = 0;
 		const char *data = luaL_checklstring(L, 1, &size);
-		luax_catchexcept(L, [&]() { d = DataModule::instance.newByteData(data, size); });
+		luax_catchexcept(L, [&]() { d = instance()->newByteData(data, size); });
 	}
 	else
 	{
 		lua_Integer size = luaL_checkinteger(L, 1);
 		if (size <= 0)
 			return luaL_error(L, "Data size must be a positive number.");
-		luax_catchexcept(L, [&]() { d = DataModule::instance.newByteData((size_t) size); });
+		luax_catchexcept(L, [&]() { d = instance()->newByteData((size_t) size); });
 	}
 
 	luax_pushtype(L, d);
@@ -184,7 +186,7 @@ int w_decompress(lua_State *L)
 	if (ctype == CONTAINER_DATA)
 	{
 		ByteData *data = nullptr;
-		luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(rawbytes, rawsize, true); });
+		luax_catchexcept(L, [&]() { data = instance()->newByteData(rawbytes, rawsize, true); });
 		luax_pushtype(L, Data::type, data);
 		data->release();
 	}
@@ -228,9 +230,9 @@ int w_encode(lua_State *L)
 	{
 		ByteData *data = nullptr;
 		if (dst != nullptr)
-			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(dst, dstlen, true); });
+			luax_catchexcept(L, [&]() { data = instance()->newByteData(dst, dstlen, true); });
 		else
-			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(0); });
+			luax_catchexcept(L, [&]() { data = instance()->newByteData(0); });
 
 		luax_pushtype(L, Data::type, data);
 		data->release();
@@ -277,9 +279,9 @@ int w_decode(lua_State *L)
 	{
 		ByteData *data = nullptr;
 		if (dst != nullptr)
-			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(dst, dstlen, true); });
+			luax_catchexcept(L, [&]() { data = instance()->newByteData(dst, dstlen, true); });
 		else
-			luax_catchexcept(L, [&]() { data = DataModule::instance.newByteData(0); });
+			luax_catchexcept(L, [&]() { data = instance()->newByteData(0); });
 
 		luax_pushtype(L, Data::type, data);
 		data->release();
@@ -331,7 +333,7 @@ int w_pack(lua_State *L)
 	if (ctype == CONTAINER_DATA)
 	{
 		Data *d = nullptr;
-		luax_catchexcept(L, [&]() { d = DataModule::instance.newByteData(b.nelems); });
+		luax_catchexcept(L, [&]() { d = instance()->newByteData(b.nelems); });
 		memcpy(d->getData(), b.ptr, d->getSize());
 
 		lua53_cleanupbuffer(&b);
@@ -392,10 +394,16 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_data(lua_State *L)
 {
-	DataModule::instance.retain();
+	DataModule *instance = instance();
+	if (instance == nullptr)
+	{
+		luax_catchexcept(L, [&](){ instance = new DataModule(); });
+	}
+	else
+		instance->retain();
 
 	WrappedModule w;
-	w.module = &DataModule::instance;
+	w.module = instance;
 	w.name = "data";
 	w.type = &Module::type;
 	w.functions = functions;
