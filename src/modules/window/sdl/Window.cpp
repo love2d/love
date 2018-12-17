@@ -743,6 +743,26 @@ const char *Window::getDisplayName(int displayindex) const
 	return name;
 }
 
+Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
+{
+	// TODO: We can expose this everywhere, we just need to watch out for the
+	// SDL binary being older than the headers on Linux.
+#if SDL_VERSION_ATLEAST(2, 0, 9) && (defined(LOVE_ANDROID) || !defined(LOVE_LINUX))
+	switch (SDL_GetDisplayOrientation(displayindex))
+	{
+		case SDL_ORIENTATION_UNKNOWN: return ORIENTATION_UNKNOWN;
+		case SDL_ORIENTATION_LANDSCAPE: return ORIENTATION_LANDSCAPE;
+		case SDL_ORIENTATION_LANDSCAPE_FLIPPED: return ORIENTATION_LANDSCAPE_FLIPPED;
+		case SDL_ORIENTATION_PORTRAIT: return ORIENTATION_PORTRAIT;
+		case SDL_ORIENTATION_PORTRAIT_FLIPPED: return ORIENTATION_PORTRAIT_FLIPPED;
+	}
+#else
+	LOVE_UNUSED(displayindex);
+#endif
+
+	return ORIENTATION_UNKNOWN;
+}
+
 std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) const
 {
 	std::vector<WindowSize> sizes;

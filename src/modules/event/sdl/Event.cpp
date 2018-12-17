@@ -369,6 +369,41 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_WINDOWEVENT:
 		msg = convertWindowEvent(e);
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+	case SDL_DISPLAYEVENT:
+		if (e.display.event == SDL_DISPLAYEVENT_ORIENTATION)
+		{
+			auto orientation = window::Window::ORIENTATION_UNKNOWN;
+			switch ((SDL_DisplayOrientation) e.display.data1)
+			{
+			case SDL_ORIENTATION_UNKNOWN:
+			default:
+				orientation = window::Window::ORIENTATION_UNKNOWN;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE:
+				orientation = window::Window::ORIENTATION_LANDSCAPE;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+				orientation = window::Window::ORIENTATION_LANDSCAPE_FLIPPED;
+				break;
+			case SDL_ORIENTATION_PORTRAIT:
+				orientation = window::Window::ORIENTATION_PORTRAIT;
+				break;
+			case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+				orientation = window::Window::ORIENTATION_PORTRAIT_FLIPPED;
+				break;
+			}
+
+			if (!window::Window::getConstant(orientation, txt))
+				txt = "unknown";
+
+			vargs.emplace_back((double)(e.display.display + 1));
+			vargs.emplace_back(txt);
+
+			msg = new Message("displayrotated", vargs);
+		}
+		break;
+#endif
 	case SDL_DROPFILE:
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)

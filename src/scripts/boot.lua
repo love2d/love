@@ -272,6 +272,9 @@ function love.createhandlers()
 			collectgarbage()
 			collectgarbage()
 		end,
+		displayrotated = function (display, orient)
+			if love.displayrotated then return love.displayrotated(display, orient) end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)

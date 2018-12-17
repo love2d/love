@@ -86,6 +86,16 @@ public:
 		MESSAGEBOX_MAX_ENUM
 	};
 
+	enum DisplayOrientation
+	{
+		ORIENTATION_UNKNOWN,
+		ORIENTATION_LANDSCAPE,
+		ORIENTATION_LANDSCAPE_FLIPPED,
+		ORIENTATION_PORTRAIT,
+		ORIENTATION_PORTRAIT_FLIPPED,
+		ORIENTATION_MAX_ENUM
+	};
+
 	struct WindowSize
 	{
 		int width;
@@ -131,6 +141,8 @@ public:
 	virtual int getDisplayCount() const = 0;
 
 	virtual const char *getDisplayName(int displayindex) const = 0;
+
+	virtual DisplayOrientation getDisplayOrientation(int displayindex) const = 0;
 
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
@@ -206,6 +218,10 @@ public:
 	static bool getConstant(MessageBoxType in, const char *&out);
 	static std::vector<std::string> getConstants(MessageBoxType);
 
+	static bool getConstant(const char *in, DisplayOrientation &out);
+	static bool getConstant(DisplayOrientation in, const char *&out);
+	static std::vector<std::string> getConstants(DisplayOrientation);
+
 private:
 
 	static StringMap<Setting, SETTING_MAX_ENUM>::Entry settingEntries[];
@@ -216,6 +232,9 @@ private:
 
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
+
+	static StringMap<DisplayOrientation, ORIENTATION_MAX_ENUM>::Entry orientationEntries[];
+	static StringMap<DisplayOrientation, ORIENTATION_MAX_ENUM> orientations;
 
 }; // Window
 

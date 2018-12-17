@@ -215,6 +215,25 @@ int w_getMode(lua_State *L)
 	return 3;
 }
 
+int w_getDisplayOrientation(lua_State *L)
+{
+	int displayindex = 0;
+	if (!lua_isnoneornil(L, 1))
+		displayindex = (int) luaL_checkinteger(L, 1) - 1;
+	else
+	{
+		int x, y;
+		instance()->getPosition(x, y, displayindex);
+	}
+
+	const char *orientationstr = nullptr;
+	if (!Window::getConstant(instance()->getDisplayOrientation(displayindex), orientationstr))
+		return luaL_error(L, "Unknown display orientation type.");
+
+	lua_pushstring(L, orientationstr);
+	return 1;
+}
+
 int w_getFullscreenModes(lua_State *L)
 {
 	int displayindex = 0;
@@ -562,6 +581,7 @@ static const luaL_Reg functions[] =
 	{ "setMode", w_setMode },
 	{ "updateMode", w_updateMode },
 	{ "getMode", w_getMode },
+	{ "getDisplayOrientation", w_getDisplayOrientation },
 	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
