@@ -58,6 +58,28 @@ function love_math.getRandomState()
 	return rng:getState()
 end
 
+function love_math.colorToBytes(r, g, b, a)
+	if type(r) == "table" then
+		r, g, b, a = r[1], r[2], r[3], r[4]
+	end
+	r = floor(clamp01(r) * 255 + 0.5)
+	g = floor(clamp01(g) * 255 + 0.5)
+	b = floor(clamp01(b) * 255 + 0.5)
+	a = a ~= nil and floor(clamp01(a) * 255 + 0.5) or nil
+	return r, g, b, a
+end
+
+function love_math.colorFromBytes(r, g, b, a)
+	if type(r) == "table" then
+		r, g, b, a = r[1], r[2], r[3], r[4]
+	end
+	r = clamp01(floor(r + 0.5) / 255)
+	g = clamp01(floor(g + 0.5) / 255)
+	b = clamp01(floor(b + 0.5) / 255)
+	a = a ~= nil and clamp01(floor(a + 0.5) / 255) or nil
+	return r, g, b, a
+end
+
 if type(jit) ~= "table" or not jit.status() then
 	-- LuaJIT's FFI is *much* slower than LOVE's regular methods when the JIT
 	-- compiler is disabled.
