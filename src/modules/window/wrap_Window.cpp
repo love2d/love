@@ -381,6 +381,23 @@ int w_getIcon(lua_State *L)
 	return 1;
 }
 
+int w_setVSync(lua_State *L)
+{
+	int vsync = 0;
+	if (lua_type(L, 1) == LUA_TBOOLEAN)
+		vsync = lua_toboolean(L, 1);
+	else
+		vsync = (int)luaL_checkinteger(L, 1);
+	instance()->setVSync(vsync);
+	return 0;
+}
+
+int w_getVSync(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getVSync());
+	return 1;
+}
+
 int w_setDisplaySleepEnabled(lua_State *L)
 {
 	instance()->setDisplaySleepEnabled(luax_checkboolean(L, 1));
@@ -592,6 +609,8 @@ static const luaL_Reg functions[] =
 	{ "getPosition", w_getPosition },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
+	{ "setVSync", w_setVSync },
+	{ "getVSync", w_getVSync },
 	{ "setDisplaySleepEnabled", w_setDisplaySleepEnabled },
 	{ "isDisplaySleepEnabled", w_isDisplaySleepEnabled },
 	{ "setTitle", w_setTitle },

@@ -74,6 +74,9 @@ public:
 	bool setIcon(love::image::ImageData *imgd) override;
 	love::image::ImageData *getIcon() override;
 
+	void setVSync(int vsync) override;
+	int getVSync() const override;
+
 	void setDisplaySleepEnabled(bool enable) override;
 	bool isDisplaySleepEnabled() const override;
 

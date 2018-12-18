@@ -512,12 +512,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	SDL_GL_SetSwapInterval(f.vsync);
-
-	// Check if adaptive vsync was requested but not supported, and fall back
-	// to regular vsync if so.
-	if (f.vsync == -1 && SDL_GL_GetSwapInterval() != -1)
-		SDL_GL_SetSwapInterval(1);
+	setVSync(f.vsync);
 
 	updateSettings(f, false);
 
@@ -608,7 +603,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	settings.msaa = (buffers > 0 ? samples : 0);
-	settings.vsync = SDL_GL_GetSwapInterval();
+	settings.vsync = getVSync();
 
 	settings.stencil = newsettings.stencil;
 	settings.depth = newsettings.depth;
@@ -913,6 +908,24 @@ bool Window::setIcon(love::image::ImageData *imgd)
 love::image::ImageData *Window::getIcon()
 {
 	return icon.get();
+}
+
+void Window::setVSync(int vsync)
+{
+	if (context == nullptr)
+		return;
+
+	SDL_GL_SetSwapInterval(vsync);
+
+	// Check if adaptive vsync was requested but not supported, and fall back
+	// to regular vsync if so.
+	if (vsync == -1 && SDL_GL_GetSwapInterval() != -1)
+		SDL_GL_SetSwapInterval(1);
+}
+
+int Window::getVSync() const
+{
+	return context != nullptr ? SDL_GL_GetSwapInterval() : 0;
 }
 
 void Window::setDisplaySleepEnabled(bool enable)

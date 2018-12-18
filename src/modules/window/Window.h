@@ -159,6 +159,9 @@ public:
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 	virtual love::image::ImageData *getIcon() = 0;
 
+	virtual void setVSync(int vsync) = 0;
+	virtual int getVSync() const = 0;
+
 	virtual void setDisplaySleepEnabled(bool enable) = 0;
 	virtual bool isDisplaySleepEnabled() const = 0;
 
