@@ -1,3 +1,19 @@
+LOVE 11.3 [Mysterious Mysteries]
+--------------------------------
+
+Released: N/A
+
+* Added love.math.colorToBytes and love.math.colorFromBytes.
+* Added love.window.getDisplayOrientation and a love.displayrotated callback.
+* Added love.window.get/setVSync, to allow setting vsync without recreating the window.
+
+* Fixed the deprecation system not fully restarting when love.event.quit("restart") is used.
+* Fixed love.math.hash returning an incorrect hash for certain input sizes.
+* Fixed Source:setEffect(name, true) and Source:getEffect(name) when the effect has no associated Filter.
+* Fixed love.audio.newSource(filename, "queue") to cause a Lua error.
+* Fixed a pixel shader performance regression on some graphics drivers when OpenGL 3 or OpenGL ES 3 is used.
+* Fixed automatic batching performance to be more consistent on macOS.
+
 LOVE 11.2 [Mysterious Mysteries]
 --------------------------------
 
