@@ -49,10 +49,8 @@ public:
 	int toLua(lua_State *L);
 	static Message *fromLua(lua_State *L, int n);
 
-private:
-
-	std::string name;
-	std::vector<Variant> args;
+	const std::string name;
+	const std::vector<Variant> args;
 
 }; // Message
 
