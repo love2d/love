@@ -36,6 +36,8 @@ class Variant
 {
 public:
 
+	static const int MAX_SMALL_STRING_LENGTH = 15;
+
 	enum Type
 	{
 		UNKNOWN = 0,
@@ -47,6 +49,51 @@ public:
 		LOVEOBJECT,
 		NIL,
 		TABLE
+	};
+
+	class SharedString : public love::Object
+	{
+	public:
+
+		SharedString(const char *string, size_t len)
+		: len(len)
+		{
+			str = new char[len+1];
+			memcpy(str, string, len);
+		}
+		virtual ~SharedString() { delete[] str; }
+
+		char *str;
+		size_t len;
+	};
+
+	class SharedTable : public love::Object
+	{
+	public:
+
+		SharedTable(std::vector<std::pair<Variant, Variant>> *table)
+		: table(table)
+		{
+		}
+
+		virtual ~SharedTable() { delete table; }
+
+		std::vector<std::pair<Variant, Variant>> *table;
+	};
+
+	union Data
+	{
+		bool boolean;
+		double number;
+		SharedString *string;
+		void *userdata;
+		Proxy objectproxy;
+		SharedTable *table;
+		struct
+		{
+			char str[MAX_SMALL_STRING_LENGTH];
+			uint8 len;
+		} smallstring;
 	};
 
 	Variant();
@@ -63,60 +110,15 @@ public:
 	Variant &operator = (const Variant &v);
 
 	Type getType() const { return type; }
+	const Data &getData() const { return data; }
 
 	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
 	void toLua(lua_State *L) const;
 
 private:
 
-	class SharedString : public love::Object
-	{
-	public:
-
-		SharedString(const char *string, size_t len)
-			: len(len)
-		{
-			str = new char[len+1];
-			memcpy(str, string, len);
-		}
-		virtual ~SharedString() { delete[] str; }
-
-		char *str;
-		size_t len;
-	};
-
-	class SharedTable : public love::Object
-	{
-	public:
-
-		SharedTable(std::vector<std::pair<Variant, Variant>> *table)
-			: table(table)
-		{
-		}
-
-		virtual ~SharedTable() { delete table; }
-
-		std::vector<std::pair<Variant, Variant>> *table;
-	};
-
-	static const int MAX_SMALL_STRING_LENGTH = 15;
-
 	Type type;
-
-	union Data
-	{
-		bool boolean;
-		double number;
-		SharedString *string;
-		void *userdata;
-		Proxy objectproxy;
-		SharedTable *table;
-		struct
-		{
-			char str[MAX_SMALL_STRING_LENGTH];
-			uint8 len;
-		} smallstring;
-	} data;
+	Data data;
 
 }; // Variant
 } // love
