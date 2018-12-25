@@ -160,6 +160,16 @@ public:
 		bool clientWaitSyncStalls;
 
 		/**
+		 * glTexStorage on some older AMD/ATI graphics drivers on Windows seems
+		 * to break subsequent sub-rectangle glTexSubImage calls after an
+		 * initial full-size one (determined after some investigation with an
+		 * affected user on Discord.)
+		 * https://bitbucket.org/rude/love/issues/1436/bug-with-lovegraphicsprint-on-older-ati
+		 *
+		 **/
+		bool texStorageBreaksSubImage;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *

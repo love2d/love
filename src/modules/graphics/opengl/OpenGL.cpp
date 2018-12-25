@@ -156,6 +156,18 @@ bool OpenGL::initContext()
 	}
 #endif
 
+#ifdef LOVE_WINDOWS
+	if (getVendor() == VENDOR_AMD)
+	{
+		// Radeon HD drivers switched from "ATI Radeon" to "AMD Radeon" around
+		// the 7000 series. We'll assume this bug doesn't affect those newer
+		// GPUs / drivers.
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "ATI Radeon HD "))
+			bugs.texStorageBreaksSubImage = true;
+	}
+#endif
+
 	contextInitialized = true;
 
 	return true;
@@ -282,7 +294,7 @@ void OpenGL::initVendor()
 
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
 	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
-	// http://opengl.gpuinfo.org/gl_stats_caps_single.php?listreportsbycap=GL_VENDOR
+	// https://opengl.gpuinfo.org/displaycapability.php?name=GL_VENDOR
 	if (strstr(vstr, "ATI Technologies") || strstr(vstr, "AMD") || strstr(vstr, "Advanced Micro Devices"))
 		vendor = VENDOR_AMD;
 	else if (strstr(vstr, "NVIDIA"))
@@ -1167,6 +1179,9 @@ bool OpenGL::isTexStorageSupported()
 	if (GLAD_ES_VERSION_3_0)
 		supportsTexStorage = true;
 #endif
+
+	if (gl.bugs.texStorageBreaksSubImage)
+		supportsTexStorage = false;
 
 	return supportsTexStorage;
 }
