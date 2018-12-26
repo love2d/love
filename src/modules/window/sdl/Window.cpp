@@ -850,7 +850,9 @@ Rect Window::getSafeArea() const
 		return love::ios::getSafeArea(window);
 #endif
 
-	return {0, 0, getWidth(), getHeight()};
+	double dw, dh;
+	fromPixels(pixelWidth, pixelHeight, dw, dh);
+	return {0, 0, (int) dw, (int) dh};
 }
 
 bool Window::isOpen() const
