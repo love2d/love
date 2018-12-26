@@ -526,7 +526,7 @@ int w_isEffectsSupported(lua_State *L)
 
 int w_setMixWithSystem(lua_State *L)
 {
-	luax_pushboolean(L, instance()->setMixWithSystem(luax_checkboolean(L, 1)));
+	luax_pushboolean(L, Audio::setMixWithSystem(luax_checkboolean(L, 1)));
 	return 1;
 }
 

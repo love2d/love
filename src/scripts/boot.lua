@@ -468,6 +468,10 @@ function love.init()
 		love._setGammaCorrect(c.gammacorrect)
 	end
 
+	if love._setAudioMixWithSystem and c.audio then
+		love._setAudioMixWithSystem(c.audio.mixwithsystem)
+	end
+
 	-- Gets desired modules.
 	for k,v in ipairs{
 		"data",
@@ -543,10 +547,6 @@ function love.init()
 			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
 			love.window.setIcon(love.image.newImageData(c.window.icon))
 		end
-	end
-
-	if love.audio then
-		love.audio.setMixWithSystem(c.audio.mixwithsystem)
 	end
 
 	-- Our first timestep, because window creation can take some time

@@ -261,7 +261,7 @@ public:
 	 * Sets whether audio from other apps mixes with love.audio or is muted,
 	 * on supported platforms.
 	 **/
-	bool setMixWithSystem(bool mix);
+	static bool setMixWithSystem(bool mix);
 
 private:
 

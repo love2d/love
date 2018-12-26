@@ -69,6 +69,11 @@ extern "C"
 #	include "graphics/Graphics.h"
 #endif
 
+// For love::audio::Audio::setMixWithSystem.
+#ifdef LOVE_ENABLE_AUDIO
+#	include "audio/Audio.h"
+#endif
+
 // Scripts
 #include "scripts/nogame.lua.h"
 #include "scripts/boot.lua.h"
@@ -305,6 +310,19 @@ static int w__setGammaCorrect(lua_State *L)
 	return 0;
 }
 
+static int w__setAudioMixWithSystem(lua_State *L)
+{
+	bool success = false;
+
+#ifdef LOVE_ENABLE_AUDIO
+	bool mix = love::luax_checkboolean(L, 1);
+	success = love::audio::Audio::setMixWithSystem(mix);
+#endif
+
+	love::luax_pushboolean(L, success);
+	return 1;
+}
+
 static int w_love_setDeprecationOutput(lua_State *L)
 {
 	bool enable = love::luax_checkboolean(L, 1);
@@ -361,6 +379,11 @@ int luaopen_love(lua_State *L)
 
 	lua_pushcfunction(L, w__setGammaCorrect);
 	lua_setfield(L, -2, "_setGammaCorrect");
+
+	// Exposed here because we need to be able to call it before the audio
+	// module is initialized.
+	lua_pushcfunction(L, w__setAudioMixWithSystem);
+	lua_setfield(L, -2, "_setAudioMixWithSystem");
 
 	lua_newtable(L);
 

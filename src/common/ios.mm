@@ -347,7 +347,7 @@ void vibrate()
 	}
 }
 
-void setAudioMixWithOthers(bool mixEnabled)
+bool setAudioMixWithOthers(bool mixEnabled)
 {
 	@autoreleasepool
 	{
@@ -357,8 +357,11 @@ void setAudioMixWithOthers(bool mixEnabled)
 		if (mixEnabled)
 			category = AVAudioSessionCategoryAmbient;
 
-		if (![[AVAudioSession sharedInstance] setCategory:category error:&err])
+		bool success = [[AVAudioSession sharedInstance] setCategory:category error:&err];
+		if (!success)
 			NSLog(@"Error in AVAudioSession setCategory: %@", [err localizedDescription]);
+
+		return success;
 	}
 }
 

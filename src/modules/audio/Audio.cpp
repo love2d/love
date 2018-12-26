@@ -33,8 +33,7 @@ namespace audio
 bool Audio::setMixWithSystem(bool mix)
 {
 #ifdef LOVE_IOS
-	love::ios::setAudioMixWithOthers(mix);
-	return true;
+	return love::ios::setAudioMixWithOthers(mix);
 #else
 	LOVE_UNUSED(mix);
 	return false;
