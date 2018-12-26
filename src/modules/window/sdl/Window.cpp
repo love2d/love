@@ -27,6 +27,10 @@
 #include "common/android.h"
 #endif
 
+#ifdef LOVE_IOS
+#include "common/ios.h"
+#endif
+
 // C++
 #include <iostream>
 #include <vector>
@@ -837,6 +841,16 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 		x -= displaybounds.x;
 		y -= displaybounds.y;
 	}
+}
+
+Rect Window::getSafeArea() const
+{
+#ifdef LOVE_IOS
+	if (window != nullptr)
+		return love::ios::getSafeArea(window);
+#endif
+
+	return {0, 0, getWidth(), getHeight()};
 }
 
 bool Window::isOpen() const

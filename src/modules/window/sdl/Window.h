@@ -66,6 +66,8 @@ public:
 	void setPosition(int x, int y, int displayindex) override;
 	void getPosition(int &x, int &y, int &displayindex) override;
 
+	Rect getSafeArea() const override;
+
 	bool isOpen() const override;
 
 	void setWindowTitle(const std::string &title) override;

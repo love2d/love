@@ -365,6 +365,16 @@ int w_getPosition(lua_State *L)
 	return 3;
 }
 
+int w_getSafeArea(lua_State *L)
+{
+	Rect area = instance()->getSafeArea();
+	lua_pushnumber(L, area.x);
+	lua_pushnumber(L, area.y);
+	lua_pushnumber(L, area.w);
+	lua_pushnumber(L, area.h);
+	return 4;
+}
+
 int w_setIcon(lua_State *L)
 {
 	image::ImageData *i = luax_checktype<image::ImageData>(L, 1);
@@ -607,6 +617,7 @@ static const luaL_Reg functions[] =
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setPosition", w_setPosition },
 	{ "getPosition", w_getPosition },
+	{ "getSafeArea", w_getSafeArea },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
 	{ "setVSync", w_setVSync },

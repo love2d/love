@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "common/math.h"
 #include "image/ImageData.h"
 
 // C++
@@ -150,6 +151,8 @@ public:
 
 	virtual void setPosition(int x, int y, int displayindex) = 0;
 	virtual void getPosition(int &x, int &y, int &displayindex) = 0;
+
+	virtual Rect getSafeArea() const = 0;
 
 	virtual bool isOpen() const = 0;
 
