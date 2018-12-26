@@ -1,6 +1,7 @@
+#ifndef _PCH_H
+#define _PCH_H
 //
-// Copyright (C) 2013 LunarG, Inc.
-//
+// Copyright (C) 2018 The Khronos Group Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,61 +33,17 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
-
-//
-// This holds context specific to the GLSL scanner, which
-// sits between the preprocessor scanner and parser.
-//
-
-#pragma once
-
+#include <sstream>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <climits>
+#include <iostream>
+#include <sstream>
+#include <memory>
+#include "SymbolTable.h"
 #include "ParseHelper.h"
+#include "Scan.h"
+#include "ScanContext.h"
 
-namespace glslang {
-
-class TPpContext;
-class TPpToken;
-class TParserToken;
-
-class TScanContext {
-public:
-    explicit TScanContext(TParseContextBase& pc) :
-        parseContext(pc),
-        afterType(false), afterStruct(false),
-        field(false) { }
-    virtual ~TScanContext() { }
-
-    static void fillInKeywordMap();
-    static void deleteKeywordMap();
-
-    int tokenize(TPpContext*, TParserToken&);
-
-protected:
-    TScanContext(TScanContext&);
-    TScanContext& operator=(TScanContext&);
-
-    int tokenizeIdentifier();
-    int identifierOrType();
-    int reservedWord();
-    int identifierOrReserved(bool reserved);
-    int es30ReservedFromGLSL(int version);
-    int nonreservedKeyword(int esVersion, int nonEsVersion);
-    int precisionKeyword();
-    int matNxM();
-    int dMat();
-    int firstGenerationImage(bool inEs310);
-    int secondGenerationImage();
-
-    TParseContextBase& parseContext;
-    bool afterType;           // true if we've recognized a type, so can only be looking for an identifier
-    bool afterStruct;         // true if we've recognized the STRUCT keyword, so can only be looking for an identifier
-    bool field;               // true if we're on a field, right after a '.'
-    TSourceLoc loc;
-    TParserToken* parserToken;
-    TPpToken* ppToken;
-
-    const char* tokenText;
-    int keyword;
-};
-
-} // end namespace glslang
+#endif /* _PCH_H */

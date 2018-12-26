@@ -1339,6 +1339,8 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
 
 set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR}
+	src/libraries/glslang/glslang/MachineIndependent/attribute.cpp
+	src/libraries/glslang/glslang/MachineIndependent/attribute.h
 	src/libraries/glslang/glslang/MachineIndependent/Constant.cpp
 	src/libraries/glslang/glslang/MachineIndependent/gl_types.h
 	src/libraries/glslang/glslang/MachineIndependent/glslang_tab.cpp
@@ -1360,6 +1362,8 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.cpp
 	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.h
 	src/libraries/glslang/glslang/MachineIndependent/parseVersions.h
+	src/libraries/glslang/glslang/MachineIndependent/pch.cpp
+	src/libraries/glslang/glslang/MachineIndependent/pch.h
 	src/libraries/glslang/glslang/MachineIndependent/PoolAlloc.cpp
 	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
 	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.h

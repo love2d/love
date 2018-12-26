@@ -1,5 +1,6 @@
 //
 // Copyright (C) 2013 LunarG, Inc.
+// Copyright (C) 2015-2018 Google, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -80,6 +81,7 @@ NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stack>
 #include <unordered_map>
+#include <sstream>
 
 #include "../ParseHelper.h"
 
@@ -92,13 +94,16 @@ namespace glslang {
 
 class TPpToken {
 public:
-    TPpToken() : space(false), i64val(0)
+    TPpToken() { clear(); }
+    void clear()
     {
+        space = false;
+        i64val = 0;
         loc.init();
         name[0] = 0;
     }
 
-    // This is used for comparing macro definitions, so checks what is relevant for that.
+    // Used for comparing macro definitions, so checks what is relevant for that.
     bool operator==(const TPpToken& right)
     {
         return space == right.space &&
@@ -108,15 +113,17 @@ public:
     bool operator!=(const TPpToken& right) { return ! operator==(right); }
 
     TSourceLoc loc;
-    bool space;  // true if a space (for white space or a removed comment) should also be recognized, in front of the token returned
-
+    // True if a space (for white space or a removed comment) should also be
+    // recognized, in front of the token returned:
+    bool space;
+    // Numeric value of the token:
     union {
         int ival;
         double dval;
         long long i64val;
     };
-
-    char   name[MaxTokenLength + 1];
+    // Text string of the token:
+    char name[MaxTokenLength + 1];
 };
 
 class TStringAtomMap {
@@ -176,6 +183,13 @@ protected:
 };
 
 class TInputScanner;
+
+enum MacroExpandResult {
+    MacroExpandNotStarted, // macro not expanded, which might not be an error
+    MacroExpandError,      // a clear error occurred while expanding, no expansion
+    MacroExpandStarted,    // macro expansion process has started
+    MacroExpandUndef       // macro is undefined and will be expanded
+};
 
 // This class is the result of turning a huge pile of C code communicating through globals
 // into a class.  This was done to allowing instancing to attain thread safety.
@@ -254,12 +268,12 @@ public:
     //
 
     struct MacroSymbol {
-        MacroSymbol() : emptyArgs(0), busy(0), undef(0) { }
+        MacroSymbol() : functionLike(0), busy(0), undef(0) { }
         TVector<int> args;
         TokenStream body;
-        unsigned emptyArgs : 1;
-        unsigned busy      : 1;
-        unsigned undef     : 1;
+        unsigned functionLike : 1;  // 0 means object-like, 1 means function-like
+        unsigned busy         : 1;
+        unsigned undef        : 1;
     };
 
     typedef TMap<int, MacroSymbol> TSymbolMap;
@@ -394,7 +408,7 @@ protected:
     int readCPPline(TPpToken * ppToken);
     int scanHeaderName(TPpToken* ppToken, char delimit);
     TokenStream* PrescanMacroArg(TokenStream&, TPpToken*, bool newLineOkay);
-    int MacroExpand(TPpToken* ppToken, bool expandUndef, bool newLineOkay);
+    MacroExpandResult MacroExpand(TPpToken* ppToken, bool expandUndef, bool newLineOkay);
 
     //
     // From PpTokens.cpp
@@ -520,7 +534,7 @@ protected:
               prologue_(prologue),
               epilogue_(epilogue),
               includedFile_(includedFile),
-              scanner(3, strings, lengths, names, 0, 0, true),
+              scanner(3, strings, lengths, nullptr, 0, 0, true),
               prevScanner(nullptr),
               stringInput(pp, scanner)
         {
@@ -535,9 +549,9 @@ protected:
               scanner.setLine(startLoc.line);
               scanner.setString(startLoc.string);
 
-              scanner.setFile(startLoc.name, 0);
-              scanner.setFile(startLoc.name, 1);
-              scanner.setFile(startLoc.name, 2);
+              scanner.setFile(startLoc.name->c_str(), 0);
+              scanner.setFile(startLoc.name->c_str(), 1);
+              scanner.setFile(startLoc.name->c_str(), 2);
         }
 
         // tInput methods:
@@ -577,8 +591,6 @@ protected:
         const char* strings[3];
         // Length of str_, passed to scanner constructor.
         size_t lengths[3];
-        // String names
-        const char* names[3];
         // Scans over str_.
         TInputScanner scanner;
         // The previous effective scanner before the scanner in this instance
@@ -615,6 +627,8 @@ protected:
     std::string rootFileName;
     std::stack<TShader::Includer::IncludeResult*> includeStack;
     std::string currentSourceFile;
+
+    std::istringstream strtodStream;
 };
 
 } // end namespace glslang

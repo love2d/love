@@ -813,6 +813,12 @@
 		FA1E88831DF363DB00E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E88811DF363DB00E808AA /* Filter.cpp */; };
 		FA1E88841DF363DB00E808AA /* Filter.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E88821DF363DB00E808AA /* Filter.h */; };
 		FA1E88851DF363E100E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E88811DF363DB00E808AA /* Filter.cpp */; };
+		FA24348421D401CB00B8918A /* pch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348021D401CB00B8918A /* pch.cpp */; };
+		FA24348521D401CB00B8918A /* pch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348021D401CB00B8918A /* pch.cpp */; };
+		FA24348621D401CB00B8918A /* attribute.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348121D401CB00B8918A /* attribute.h */; };
+		FA24348721D401CB00B8918A /* attribute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348221D401CB00B8918A /* attribute.cpp */; };
+		FA24348821D401CB00B8918A /* attribute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348221D401CB00B8918A /* attribute.cpp */; };
+		FA24348921D401CB00B8918A /* pch.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348321D401CB00B8918A /* pch.h */; };
 		FA27B39D1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39E1B498151008A9DCE /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA27B38A1B498151008A9DCE /* Video.cpp */; };
 		FA27B39F1B498151008A9DCE /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FA27B38B1B498151008A9DCE /* Video.h */; };
@@ -1785,6 +1791,10 @@
 		FA1E887D1DF363CD00E808AA /* Filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filter.h; sourceTree = "<group>"; };
 		FA1E88811DF363DB00E808AA /* Filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Filter.cpp; sourceTree = "<group>"; };
 		FA1E88821DF363DB00E808AA /* Filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filter.h; sourceTree = "<group>"; };
+		FA24348021D401CB00B8918A /* pch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pch.cpp; sourceTree = "<group>"; };
+		FA24348121D401CB00B8918A /* attribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = attribute.h; sourceTree = "<group>"; };
+		FA24348221D401CB00B8918A /* attribute.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attribute.cpp; sourceTree = "<group>"; };
+		FA24348321D401CB00B8918A /* pch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pch.h; sourceTree = "<group>"; };
 		FA27B38A1B498151008A9DCE /* Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
 		FA27B38B1B498151008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
 		FA27B3931B498151008A9DCE /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
@@ -3583,6 +3593,8 @@
 		FAF13FD21E20934C00F898D2 /* MachineIndependent */ = {
 			isa = PBXGroup;
 			children = (
+				FA24348221D401CB00B8918A /* attribute.cpp */,
+				FA24348121D401CB00B8918A /* attribute.h */,
 				FAF13FD31E20934C00F898D2 /* Constant.cpp */,
 				FAF13FD41E20934C00F898D2 /* gl_types.h */,
 				FAF13FD61E20934C00F898D2 /* glslang_tab.cpp */,
@@ -3604,6 +3616,8 @@
 				FAF13FE61E20934C00F898D2 /* ParseHelper.cpp */,
 				FAF13FE71E20934C00F898D2 /* ParseHelper.h */,
 				FAF13FE81E20934C00F898D2 /* parseVersions.h */,
+				FA24348021D401CB00B8918A /* pch.cpp */,
+				FA24348321D401CB00B8918A /* pch.h */,
 				FAF13FE91E20934C00F898D2 /* PoolAlloc.cpp */,
 				FAF13FEA1E20934C00F898D2 /* preprocessor */,
 				FAF13FF41E20934C00F898D2 /* propagateNoContraction.cpp */,
@@ -3812,6 +3826,7 @@
 				FAF1405A1E20934C00F898D2 /* ConstantUnion.h in Headers */,
 				FAF140A51E20934C00F898D2 /* Scan.h in Headers */,
 				FA0B7CE11A95902C000E1D17 /* Source.h in Headers */,
+				FA24348621D401CB00B8918A /* attribute.h in Headers */,
 				FA1BA0AE1E16F9EE00AA2803 /* wrap_Canvas.h in Headers */,
 				FAF140901E20934C00F898D2 /* PpContext.h in Headers */,
 				FA0B7E621A95902C000E1D17 /* wrap_Physics.h in Headers */,
@@ -3991,6 +4006,7 @@
 				FA0B7D111A95902C000E1D17 /* BMFontRasterizer.h in Headers */,
 				217DFBE61D9F6D490055D849 /* http.lua.h in Headers */,
 				FA0B7E3E1A95902C000E1D17 /* wrap_Body.h in Headers */,
+				FA24348921D401CB00B8918A /* pch.h in Headers */,
 				FAF140991E20934C00F898D2 /* PpTokens.h in Headers */,
 				FA0B7A571A958EA3000E1D17 /* b2Settings.h in Headers */,
 				FAF1405B1E20934C00F898D2 /* InfoSink.h in Headers */,
@@ -4227,6 +4243,7 @@
 				FA91DA8C1F377C3900C80E33 /* deprecation.cpp in Sources */,
 				FA6A2B6B1F5F7F560074C308 /* DataView.cpp in Sources */,
 				FA0B7E401A95902C000E1D17 /* wrap_ChainShape.cpp in Sources */,
+				FA24348521D401CB00B8918A /* pch.cpp in Sources */,
 				FA0B7DEC1A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7D871A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7E101A95902C000E1D17 /* FrictionJoint.cpp in Sources */,
@@ -4302,6 +4319,7 @@
 				FA0B7CDD1A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7DC51A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
 				FA0B7E701A95902C000E1D17 /* wrap_RopeJoint.cpp in Sources */,
+				FA24348821D401CB00B8918A /* attribute.cpp in Sources */,
 				FACA02FC1F5E39810084B28F /* wrap_CompressedData.cpp in Sources */,
 				FAF140AD1E20934C00F898D2 /* Versions.cpp in Sources */,
 				FA0B7A7B1A958EA3000E1D17 /* b2Contact.cpp in Sources */,
@@ -4617,6 +4635,7 @@
 				FA0B7DB71A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7A321A958EA3000E1D17 /* b2Collision.cpp in Sources */,
 				FA91DA8B1F377C3900C80E33 /* deprecation.cpp in Sources */,
+				FA24348421D401CB00B8918A /* pch.cpp in Sources */,
 				FA0B7E3F1A95902C000E1D17 /* wrap_ChainShape.cpp in Sources */,
 				FA0B7DEB1A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7D861A95902C000E1D17 /* ImageData.cpp in Sources */,
@@ -4692,6 +4711,7 @@
 				FA0B7CDC1A95902C000E1D17 /* Source.cpp in Sources */,
 				FA0B7DC41A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
 				FA0B7E6F1A95902C000E1D17 /* wrap_RopeJoint.cpp in Sources */,
+				FA24348721D401CB00B8918A /* attribute.cpp in Sources */,
 				FA0B7AB51A958EA3000E1D17 /* ddsparse.cpp in Sources */,
 				FACA02F41F5E396B0084B28F /* wrap_CompressedData.cpp in Sources */,
 				FAF140AC1E20934C00F898D2 /* Versions.cpp in Sources */,

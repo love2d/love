@@ -281,8 +281,6 @@ public:
     pool_allocator(TPoolAllocator& a) : allocator(a) { }
     pool_allocator(const pool_allocator<T>& p) : allocator(p.allocator) { }
 
-    pool_allocator& operator=(const pool_allocator&) { return *this; }
-
     template<class Other>
         pool_allocator(const pool_allocator<Other>& p) : allocator(p.getAllocator()) { }
 
@@ -310,6 +308,7 @@ public:
     TPoolAllocator& getAllocator() const { return allocator; }
 
 protected:
+    pool_allocator& operator=(const pool_allocator&) { return *this; }
     TPoolAllocator& allocator;
 };
 
