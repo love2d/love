@@ -91,7 +91,7 @@ public:
 		, vbo(0)
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
-		, offset(0)
+		, orphan(false)
 	{
 		try
 		{
@@ -111,35 +111,36 @@ public:
 		delete[] data;
 	}
 
-	MapInfo map(size_t minsize) override
+	MapInfo map(size_t /*minsize*/) override
 	{
-		if (offset + minsize > bufferSize)
+		if (orphan)
 		{
-			offset = 0;
+			orphan = false;
 			frameGPUReadOffset = 0;
 			gl.bindBuffer(mode, vbo);
 			glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 		}
 
-		return MapInfo(data, bufferSize - offset);
+		return MapInfo(data, bufferSize - frameGPUReadOffset);
 	}
 
 	size_t unmap(size_t usedsize) override
 	{
 		gl.bindBuffer(mode, vbo);
-		glBufferSubData(glMode, offset, usedsize, data);
-		return offset;
+		glBufferSubData(glMode, frameGPUReadOffset, usedsize, data);
+		return frameGPUReadOffset;
 	}
 
 	void markUsed(size_t usedsize) override
 	{
-		offset += usedsize;
 		frameGPUReadOffset += usedsize;
 	}
 
 	void nextFrame() override
 	{
+		// Orphan the buffer before its first use in the next frame.
 		frameGPUReadOffset = 0;
+		orphan = true;
 	}
 
 	ptrdiff_t getHandle() const override { return vbo; }
@@ -153,8 +154,8 @@ public:
 		gl.bindBuffer(mode, vbo);
 		glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 
-		offset = 0;
 		frameGPUReadOffset = 0;
+		orphan = false;
 
 		return true;
 	}
@@ -175,7 +176,7 @@ protected:
 
 	uint8 *data;
 
-	size_t offset;
+	bool orphan;
 
 }; // StreamBufferSubDataOrphan
 
