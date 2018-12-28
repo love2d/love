@@ -456,7 +456,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 		// If findGlyph invalidates the texture cache, re-start the loop.
 		if (cacheid != textureCacheID)
 		{
-			i = 0;
+			i = -1; // The next iteration will increment this to 0.
 			maxwidth = 0;
 			dx = offset.x;
 			dy = offset.y;
