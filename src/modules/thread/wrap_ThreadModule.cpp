@@ -94,7 +94,6 @@ int w_getChannel(lua_State *L)
 	std::string name = luax_checkstring(L, 1);
 	Channel *c = instance()->getChannel(name);
 	luax_pushtype(L, c);
-	c->release();
 	return 1;
 }
 

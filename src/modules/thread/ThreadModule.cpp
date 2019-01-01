@@ -37,7 +37,15 @@ Channel *ThreadModule::newChannel()
 
 Channel *ThreadModule::getChannel(const std::string &name)
 {
-	return Channel::getChannel(name);
+	Lock lock(namedChannelMutex);
+
+	auto it = namedChannels.find(name);
+	if (it != namedChannels.end())
+		return it->second;
+
+	Channel *c = new Channel();
+	namedChannels[name].set(c, Acquire::NORETAIN);
+	return c;
 }
 
 const char *ThreadModule::getName() const

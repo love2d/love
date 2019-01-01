@@ -19,8 +19,6 @@
  **/
 
 #include "Channel.h"
-#include <map>
-#include <string>
 
 #include <timer/Timer.h>
 
@@ -30,59 +28,20 @@ namespace thread
 {
 
 love::Type Channel::type("Channel", &Object::type);
-static std::map<std::string, Channel *> namedChannels;
-static Mutex *namedChannelMutex;
-
-Channel *Channel::getChannel(const std::string &name)
-{
-	if (!namedChannelMutex)
-		namedChannelMutex = newMutex();
-
-	Lock lock(namedChannelMutex);
-
-	auto it = namedChannels.find(name);
-	if (it != namedChannels.end())
-	{
-		it->second->retain();
-		return it->second;
-	}
-
-	namedChannels[name] = new Channel(name);
-	return namedChannels[name];
-}
 
 Channel::Channel()
-	: named(false)
-	, sent(0)
-	, received(0)
-{
-}
-
-Channel::Channel(const std::string &name)
-	: named(true)
-	, name(name)
-	, sent(0)
+	: sent(0)
 	, received(0)
 {
 }
 
 Channel::~Channel()
 {
-	if (named)
-	{
-		Lock l(namedChannelMutex);
-		namedChannels.erase(name);
-	}
 }
 
 uint64 Channel::push(const Variant &var)
 {
 	Lock l(mutex);
-
-	// Keep a reference to ourselves
-	// if we're non-empty and named.
-	if (named && queue.empty())
-		retain();
 
 	queue.push(var);
 	cond->broadcast();
@@ -133,11 +92,6 @@ bool Channel::pop(Variant *var)
 
 	received++;
 	cond->broadcast();
-
-	// Release our reference to ourselves
-	// if we're empty and named.
-	if (named && queue.empty())
-		release();
 
 	return true;
 }
@@ -208,11 +162,6 @@ void Channel::clear()
 	// Finish all the supply waits
 	received = sent;
 	cond->broadcast();
-
-	// Once again, release our own
-	// reference if we're named.
-	if (named)
-		release();
 }
 
 void Channel::lockMutex()

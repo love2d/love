@@ -23,6 +23,7 @@
 
 // STL
 #include <string>
+#include <map>
 
 // LOVE
 #include "common/Data.h"
@@ -50,6 +51,11 @@ public:
 	// Implements Module.
 	virtual const char *getName() const;
 	virtual ModuleType getModuleType() const { return M_THREAD; }
+
+private:
+
+	std::map<std::string, StrongRef<Channel>> namedChannels;
+	MutexRef namedChannelMutex;
 
 }; // ThreadModule
 
