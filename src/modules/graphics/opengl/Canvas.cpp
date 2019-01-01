@@ -590,6 +590,15 @@ bool Canvas::isFormatSupported(PixelFormat format, bool readable)
 	return supported;
 }
 
+void Canvas::resetFormatSupport()
+{
+	for (int i = 0; i < (int)PIXELFORMAT_MAX_ENUM; i++)
+	{
+		checkedFormats[i].readable = false;
+		checkedFormats[i].nonreadable = false;
+	}
+}
+
 } // opengl
 } // graphics
 } // love

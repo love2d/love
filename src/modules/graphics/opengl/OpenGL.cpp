@@ -23,6 +23,7 @@
 #include "OpenGL.h"
 
 #include "Shader.h"
+#include "Canvas.h"
 #include "common/Exception.h"
 
 #include "graphics/Graphics.h"
@@ -264,6 +265,13 @@ void OpenGL::setupContext()
 	createDefaultTexture();
 
 	contextInitialized = true;
+
+#ifdef LOVE_ANDROID
+	// This can't be done in initContext with the rest of the bug checks because
+	// Canvas::isFormatSupported relies on state initialized here / after init.
+	if (GLAD_ES_VERSION_3_0 && !Canvas::isFormatSupported(PIXELFORMAT_R8))
+		bugs.brokenR8PixelFormat = true;
+#endif
 }
 
 void OpenGL::deInitContext()
@@ -1315,7 +1323,8 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	switch (pixelformat)
 	{
 	case PIXELFORMAT_R8:
-		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
+		if ((GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
+			&& !gl.bugs.brokenR8PixelFormat)
 		{
 			f.internalformat = GL_R8;
 			f.externalformat = GL_RED;

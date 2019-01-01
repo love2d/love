@@ -170,6 +170,14 @@ public:
 		bool texStorageBreaksSubImage;
 
 		/**
+		 * An Android device with an Adreno 630 (supposedly GLES3.2-capable)
+		 * fails with GL_INVALID_OPERATION in glTexImage2D if the image is
+		 * GL_R8, despite the GLES 3.0 spec mandating support for that format.
+		 * It's possible more Adreno GPUs / drivers are affected as well.
+		 **/
+		bool brokenR8PixelFormat;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *

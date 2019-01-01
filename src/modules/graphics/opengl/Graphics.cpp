@@ -59,6 +59,7 @@ Graphics::Graphics()
 	, mainVAO(0)
 {
 	gl = OpenGL();
+	Canvas::resetFormatSupport();
 
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 
