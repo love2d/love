@@ -19,6 +19,7 @@
  **/
 
 #include "Reference.h"
+#include "runtime.h"
 
 namespace love
 {

@@ -56,7 +56,7 @@ public:
 	public:
 
 		SharedString(const char *string, size_t len)
-		: len(len)
+			: len(len)
 		{
 			str = new char[len+1];
 			memcpy(str, string, len);
@@ -72,7 +72,7 @@ public:
 	public:
 
 		SharedTable(std::vector<std::pair<Variant, Variant>> *table)
-		: table(table)
+			: table(table)
 		{
 		}
 

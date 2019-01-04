@@ -21,8 +21,7 @@
 #ifndef LOVE_REFERENCE_H
 #define LOVE_REFERENCE_H
 
-// LOVE
-#include "runtime.h"
+struct lua_State;
 
 namespace love
 {

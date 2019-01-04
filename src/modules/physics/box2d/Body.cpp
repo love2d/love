@@ -512,21 +512,6 @@ int Body::getContacts(lua_State *L) const
 	return 1;
 }
 
-b2Vec2 Body::getVector(lua_State *L)
-{
-	love::luax_assert_argc(L, 2, 2);
-	b2Vec2 v((float)lua_tonumber(L, 1), (float)lua_tonumber(L, 2));
-	lua_pop(L, 2);
-	return v;
-}
-
-int Body::pushVector(lua_State *L, const b2Vec2 &v)
-{
-	lua_pushnumber(L, v.x);
-	lua_pushnumber(L, v.y);
-	return 2;
-}
-
 void Body::destroy()
 {
 	if (world->world->IsLocked())

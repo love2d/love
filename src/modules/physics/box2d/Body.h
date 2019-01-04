@@ -426,17 +426,6 @@ public:
 
 private:
 
-	/**
-	 * Gets a 2d vector from the arguments on the stack.
-	 **/
-	b2Vec2 getVector(lua_State *L);
-
-	/**
-	 * Pushed the x- and y-components of a vector on
-	 * the stack.
-	 **/
-	int pushVector(lua_State *L, const b2Vec2 &v);
-
 	// FIXME: This should be a weak reference, rather than being completely
 	// unowned?
 	World *world;
