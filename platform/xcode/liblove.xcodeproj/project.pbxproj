@@ -2062,6 +2062,7 @@
 		FAF1889C1E9DA834008C1479 /* Optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Optional.h; sourceTree = "<group>"; };
 		FAF1889D1E9DBBC8008C1479 /* depthstencil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = depthstencil.h; sourceTree = "<group>"; };
 		FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = depthstencil.cpp; sourceTree = "<group>"; };
+		FAF949FD21DEE8B7001CD27E /* wrap_Event.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Event.lua; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2688,6 +2689,7 @@
 				FA0B7B551A95902C000E1D17 /* sdl */,
 				FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */,
 				FA8951A11AA2EDF300EC385A /* wrap_Event.h */,
+				FAF949FD21DEE8B7001CD27E /* wrap_Event.lua */,
 			);
 			path = event;
 			sourceTree = "<group>";
