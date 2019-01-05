@@ -26,6 +26,9 @@
 #include "Physics.h"
 #include "common/Reference.h"
 
+// Needed for World::getJoints. It should be moved to wrapper code...
+#include "wrap_Joint.h"
+
 namespace love
 {
 namespace physics
@@ -503,7 +506,7 @@ int World::getJoints(lua_State *L) const
 		if (!j) break;
 		Joint *joint = (Joint *)findObject(j);
 		if (!joint) throw love::Exception("A joint has escaped Memoizer!");
-		luax_pushtype(L, joint);
+		luax_pushjoint(L, joint);
 		lua_rawseti(L, -2, i);
 		i++;
 	}
