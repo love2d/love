@@ -23,9 +23,6 @@
 // STD
 #include <bitset>
 
-// LOVE
-#include "common/Memoizer.h"
-
 // Module
 #include "Body.h"
 #include "World.h"
@@ -107,7 +104,7 @@ Body *Joint::getBodyA() const
 	if (b2body == nullptr)
 		return nullptr;
 
-	Body *body = (Body *) Memoizer::find(b2body);
+	Body *body = (Body *) world->findObject(b2body);
 	if (body == nullptr)
 		throw love::Exception("A body has escaped Memoizer!");
 
@@ -120,7 +117,7 @@ Body *Joint::getBodyB() const
 	if (b2body == nullptr)
 		return nullptr;
 
-	Body *body = (Body *) Memoizer::find(b2body);
+	Body *body = (Body *) world->findObject(b2body);
 	if (body == nullptr)
 		throw love::Exception("A body has escaped Memoizer!");
 
@@ -129,7 +126,7 @@ Body *Joint::getBodyB() const
 
 bool Joint::isValid() const
 {
-	return joint != 0;
+	return joint != nullptr;
 }
 
 int Joint::getAnchors(lua_State *L)
@@ -159,7 +156,7 @@ b2Joint *Joint::createJoint(b2JointDef *def)
 {
 	def->userData = udata;
 	joint = world->world->CreateJoint(def);
-	Memoizer::add(joint, this);
+	world->registerObject(joint, this);
 	// Box2D joint has a reference to this love Joint.
 	this->retain();
 	return joint;
@@ -175,9 +172,9 @@ void Joint::destroyJoint(bool implicit)
 		return;
 	}
 
-	if (!implicit && joint != 0)
+	if (!implicit && joint != nullptr)
 		world->world->DestroyJoint(joint);
-	Memoizer::remove(joint);
+	world->unregisterObject(joint);
 	joint = NULL;
 
 	// Remove userdata reference to avoid it sticking around after GC

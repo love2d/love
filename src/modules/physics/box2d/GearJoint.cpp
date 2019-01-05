@@ -23,7 +23,6 @@
 // Module
 #include "Body.h"
 #include "World.h"
-#include "common/Memoizer.h"
 
 namespace love
 {
@@ -69,7 +68,7 @@ Joint *GearJoint::getJointA() const
 	if (b2joint == nullptr)
 		return nullptr;
 
-	Joint *j = (Joint *) Memoizer::find(b2joint);
+	Joint *j = (Joint *) world->findObject(b2joint);
 	if (j == nullptr)
 		throw love::Exception("A joint has escaped Memoizer!");
 
@@ -82,7 +81,7 @@ Joint *GearJoint::getJointB() const
 	if (b2joint == nullptr)
 		return nullptr;
 
-	Joint *j = (Joint *) Memoizer::find(b2joint);
+	Joint *j = (Joint *) world->findObject(b2joint);
 	if (j == nullptr)
 		throw love::Exception("A joint has escaped Memoizer!");
 

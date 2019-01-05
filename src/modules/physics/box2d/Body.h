@@ -77,11 +77,6 @@ public:
 	 **/
 	Body(World *world, b2Vec2 p, Type type);
 
-	/**
-	 * Create a Body from an extant b2Body.
-	 **/
-	Body(b2Body *b);
-
 	virtual ~Body();
 
 	/**

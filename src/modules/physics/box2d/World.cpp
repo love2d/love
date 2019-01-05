@@ -24,7 +24,6 @@
 #include "Shape.h"
 #include "Contact.h"
 #include "Physics.h"
-#include "common/Memoizer.h"
 #include "common/Reference.h"
 
 namespace love
@@ -36,9 +35,10 @@ namespace box2d
 
 love::Type World::type("World", &Object::type);
 
-World::ContactCallback::ContactCallback()
+World::ContactCallback::ContactCallback(World *world)
 	: ref(nullptr)
 	, L(nullptr)
+	, world(world)
 {
 }
 
@@ -57,7 +57,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 
 		// Push first fixture.
 		{
-			Fixture *a = (Fixture *)Memoizer::find(contact->GetFixtureA());
+			Fixture *a = (Fixture *)world->findObject(contact->GetFixtureA());
 			if (a != nullptr)
 				luax_pushtype(L, a);
 			else
@@ -66,16 +66,16 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 
 		// Push second fixture.
 		{
-			Fixture *b = (Fixture *)Memoizer::find(contact->GetFixtureB());
+			Fixture *b = (Fixture *)world->findObject(contact->GetFixtureB());
 			if (b != nullptr)
 				luax_pushtype(L, b);
 			else
 				throw love::Exception("A fixture has escaped Memoizer!");
 		}
 
-		Contact *cobj = (Contact *)Memoizer::find(contact);
+		Contact *cobj = (Contact *)world->findObject(contact);
 		if (!cobj)
-			cobj = new Contact(contact);
+			cobj = new Contact(world, contact);
 		else
 			cobj->retain();
 
@@ -138,8 +138,9 @@ bool World::ContactFilter::process(Fixture *a, Fixture *b)
 	return true;
 }
 
-World::QueryCallback::QueryCallback(lua_State *L, int idx)
-	: L(L)
+World::QueryCallback::QueryCallback(World *world, lua_State *L, int idx)
+	: world(world)
+	, L(L)
 	, funcidx(idx)
 {
 	luaL_checktype(L, funcidx, LUA_TFUNCTION);
@@ -154,7 +155,7 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 	if (L != nullptr)
 	{
 		lua_pushvalue(L, funcidx);
-		Fixture *f = (Fixture *)Memoizer::find(fixture);
+		Fixture *f = (Fixture *)world->findObject(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, f);
@@ -167,8 +168,9 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 	return true;
 }
 
-World::RayCastCallback::RayCastCallback(lua_State *L, int idx)
-	: L(L)
+World::RayCastCallback::RayCastCallback(World *world, lua_State *L, int idx)
+	: world(world)
+	, L(L)
 	, funcidx(idx)
 {
 	luaL_checktype(L, funcidx, LUA_TFUNCTION);
@@ -183,7 +185,7 @@ float32 World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &
 	if (L != nullptr)
 	{
 		lua_pushvalue(L, funcidx);
-		Fixture *f = (Fixture *)Memoizer::find(fixture);
+		Fixture *f = (Fixture *)world->findObject(fixture);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, f);
@@ -206,14 +208,14 @@ float32 World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &
 
 void World::SayGoodbye(b2Fixture *fixture)
 {
-	Fixture *f = (Fixture *)Memoizer::find(fixture);
+	Fixture *f = (Fixture *)findObject(fixture);
 	// Hint implicit destruction with true.
 	if (f) f->destroy(true);
 }
 
 void World::SayGoodbye(b2Joint *joint)
 {
-	Joint *j = (Joint *)Memoizer::find(joint);
+	Joint *j = (Joint *)findObject(joint);
 	// Hint implicit destruction with true.
 	if (j) j->destroyJoint(true);
 }
@@ -221,6 +223,10 @@ void World::SayGoodbye(b2Joint *joint)
 World::World()
 	: world(nullptr)
 	, destructWorld(false)
+	, begin(this)
+	, end(this)
+	, presolve(this)
+	, postsolve(this)
 {
 	world = new b2World(b2Vec2(0,0));
 	world->SetAllowSleeping(true);
@@ -229,12 +235,16 @@ World::World()
 	world->SetDestructionListener(this);
 	b2BodyDef def;
 	groundBody = world->CreateBody(&def);
-	Memoizer::add(world, this);
+	registerObject(world, this);
 }
 
 World::World(b2Vec2 gravity, bool sleep)
 	: world(nullptr)
 	, destructWorld(false)
+	, begin(this)
+	, end(this)
+	, presolve(this)
+	, postsolve(this)
 {
 	world = new b2World(Physics::scaleDown(gravity));
 	world->SetAllowSleeping(sleep);
@@ -243,7 +253,7 @@ World::World(b2Vec2 gravity, bool sleep)
 	world->SetDestructionListener(this);
 	b2BodyDef def;
 	groundBody = world->CreateBody(&def);
-	Memoizer::add(world, this);
+	registerObject(world, this);
 }
 
 World::~World()
@@ -297,8 +307,8 @@ void World::EndContact(b2Contact *contact)
 	end.process(contact);
 
 	// Letting the Contact know that the b2Contact will be destroyed any second.
-	Contact *c = (Contact *)Memoizer::find(contact);
-	if (c != NULL)
+	Contact *c = (Contact *)findObject(contact);
+	if (c != nullptr)
 		c->invalidate();
 }
 
@@ -316,8 +326,8 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse)
 bool World::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB)
 {
 	// Fixtures should be memoized, if we created them
-	Fixture *a = (Fixture *)Memoizer::find(fixtureA);
-	Fixture *b = (Fixture *)Memoizer::find(fixtureB);
+	Fixture *a = (Fixture *)findObject(fixtureA);
+	Fixture *b = (Fixture *)findObject(fixtureB);
 	if (!a || !b)
 		throw love::Exception("A fixture has escaped Memoizer!");
 	return filter.process(a, b);
@@ -472,7 +482,7 @@ int World::getBodies(lua_State *L) const
 			break;
 		if (b == groundBody)
 			continue;
-		Body *body = (Body *)Memoizer::find(b);
+		Body *body = (Body *)findObject(b);
 		if (!body)
 			throw love::Exception("A body has escaped Memoizer!");
 		luax_pushtype(L, body);
@@ -491,7 +501,7 @@ int World::getJoints(lua_State *L) const
 	do
 	{
 		if (!j) break;
-		Joint *joint = (Joint *)Memoizer::find(j);
+		Joint *joint = (Joint *)findObject(j);
 		if (!joint) throw love::Exception("A joint has escaped Memoizer!");
 		luax_pushtype(L, joint);
 		lua_rawseti(L, -2, i);
@@ -501,7 +511,7 @@ int World::getJoints(lua_State *L) const
 	return 1;
 }
 
-int World::getContacts(lua_State *L) const
+int World::getContacts(lua_State *L)
 {
 	lua_newtable(L);
 	b2Contact *c = world->GetContactList();
@@ -509,9 +519,9 @@ int World::getContacts(lua_State *L) const
 	do
 	{
 		if (!c) break;
-		Contact *contact = (Contact *)Memoizer::find(c);
+		Contact *contact = (Contact *)findObject(c);
 		if (!contact)
-			contact = new Contact(c);
+			contact = new Contact(this, c);
 		else
 			contact->retain();
 		luax_pushtype(L, contact);
@@ -538,7 +548,7 @@ int World::queryBoundingBox(lua_State *L)
 	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
 	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
 	luaL_checktype(L, 5, LUA_TFUNCTION);
-	QueryCallback query(L, 5);
+	QueryCallback query(this, L, 5);
 	world->QueryAABB(&query, box);
 	return 0;
 }
@@ -552,7 +562,7 @@ int World::rayCast(lua_State *L)
 	b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
 	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
 	luaL_checktype(L, 5, LUA_TFUNCTION);
-	RayCastCallback raycast(L, 5);
+	RayCastCallback raycast(this, L, 5);
 	world->RayCast(&raycast, v1, v2);
 	return 0;
 }
@@ -586,17 +596,36 @@ void World::destroy()
 		b = b->GetNext();
 		if (t == groundBody)
 			continue;
-		Body *body = (Body *)Memoizer::find(t);
+		Body *body = (Body *)findObject(t);
 		if (!body)
 			throw love::Exception("A body has escaped Memoizer!");
 		body->destroy();
 	}
 
 	world->DestroyBody(groundBody);
-	Memoizer::remove(world);
+	unregisterObject(world);
 
 	delete world;
 	world = nullptr;
+}
+
+void World::registerObject(void *b2object, love::Object *object)
+{
+	box2dObjectMap[b2object] = object;
+}
+
+void World::unregisterObject(void *b2object)
+{
+	box2dObjectMap.erase(b2object);
+}
+
+love::Object *World::findObject(void *b2object) const
+{
+	auto it = box2dObjectMap.find(b2object);
+	if (it != box2dObjectMap.end())
+		return it->second;
+	else
+		return nullptr;
 }
 
 } // box2d

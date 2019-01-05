@@ -38,6 +38,8 @@ namespace physics
 namespace box2d
 {
 
+class World;
+
 /**
  * This struct is stored in a void pointer
  * in the Box2D Fixture class. For now, all we
@@ -67,11 +69,6 @@ public:
 	 * Creates a Fixture.
 	 **/
 	Fixture(Body *body, Shape *shape, float density);
-
-	/**
-	 * Creates a Fixture.
-	 **/
-	Fixture(b2Fixture *f);
 
 	virtual ~Fixture();
 

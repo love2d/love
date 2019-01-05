@@ -153,7 +153,7 @@ private:
 	// The Box2D joint object.
 	b2Joint *joint;
 
-};
+}; // Joint
 
 } // box2d
 } // physics

@@ -25,8 +25,6 @@
 #include "World.h"
 #include "Physics.h"
 
-#include "common/Memoizer.h"
-
 namespace love
 {
 namespace physics

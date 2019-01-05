@@ -28,6 +28,7 @@
 
 // STD
 #include <vector>
+#include <unordered_map>
 
 // Box2D
 #include <Box2D/Box2D.h>
@@ -73,7 +74,8 @@ public:
 	public:
 		Reference *ref;
 		lua_State *L;
-		ContactCallback();
+		World *world;
+		ContactCallback(World *world);
 		~ContactCallback();
 		void process(b2Contact *contact, const b2ContactImpulse *impulse = NULL);
 	};
@@ -91,10 +93,11 @@ public:
 	class QueryCallback : public b2QueryCallback
 	{
 	public:
-		QueryCallback(lua_State *L, int idx);
+		QueryCallback(World *world, lua_State *L, int idx);
 		~QueryCallback();
 		virtual bool ReportFixture(b2Fixture *fixture);
 	private:
+		World *world;
 		lua_State *L;
 		int funcidx;
 	};
@@ -102,10 +105,11 @@ public:
 	class RayCastCallback : public b2RayCastCallback
 	{
 	public:
-		RayCastCallback(lua_State *L, int idx);
+		RayCastCallback(World *world, lua_State *L, int idx);
 		~RayCastCallback();
 		virtual float32 ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float32 fraction);
 	private:
+		World *world;
 		lua_State *L;
 		int funcidx;
 	};
@@ -257,7 +261,7 @@ public:
 	 * Get an array of all the Contacts in the World.
 	 * @return An array of Contacts.
 	 **/
-	int getContacts(lua_State *L) const;
+	int getContacts(lua_State *L);
 
 	/**
 	 * Gets the ground body.
@@ -280,6 +284,10 @@ public:
 	 **/
 	void destroy();
 
+	void registerObject(void *b2object, love::Object *object);
+	void unregisterObject(void *b2object);
+	love::Object *findObject(void *b2object) const;
+
 private:
 
 	// Pointer to the Box2D world.
@@ -297,7 +305,10 @@ private:
 	// Contact callbacks.
 	ContactCallback begin, end, presolve, postsolve;
 	ContactFilter filter;
-};
+
+	std::unordered_map<void *, love::Object *> box2dObjectMap;
+
+}; // World
 
 } // box2d
 } // physics

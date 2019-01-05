@@ -57,7 +57,7 @@ public:
 	 * data pointed to.
 	 * @param contact Pointer to the Box2D contact.
 	 **/
-	Contact(b2Contact *contact);
+	Contact(World *world, b2Contact *contact);
 
 	virtual ~Contact();
 
@@ -159,6 +159,8 @@ private:
 
 	// The Box2D contact.
 	b2Contact *contact;
+
+	World *world;
 };
 
 } // box2d

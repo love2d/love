@@ -25,8 +25,6 @@
 #include "World.h"
 #include "Physics.h"
 
-#include "common/Memoizer.h"
-
 // STD
 #include <bitset>
 
@@ -51,18 +49,7 @@ Fixture::Fixture(Body *body, Shape *shape, float density)
 	def.density = density;
 	fixture = body->body->CreateFixture(&def);
 	this->retain();
-	Memoizer::add(fixture, this);
-}
-
-Fixture::Fixture(b2Fixture *f)
-	: fixture(f)
-{
-	udata = (fixtureudata *)f->GetUserData();
-	body = (Body *)Memoizer::find(f->GetBody());
-	if (!body)
-		body = new Body(f->GetBody());
-	this->retain();
-	Memoizer::add(fixture, this);
+	body->world->registerObject(fixture, this);
 }
 
 Fixture::~Fixture()
@@ -361,7 +348,7 @@ void Fixture::destroy(bool implicit)
 
 	if (!implicit && fixture != nullptr)
 		body->body->DestroyFixture(fixture);
-	Memoizer::remove(fixture);
+	body->world->unregisterObject(fixture);
 	fixture = nullptr;
 
 	// Remove userdata reference to avoid it sticking around after GC
