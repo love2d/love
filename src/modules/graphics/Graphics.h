@@ -829,7 +829,7 @@ public:
 	 **/
 	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
 	virtual bool isCanvasFormatSupported(PixelFormat format, bool readable) const = 0;
-	virtual bool isImageFormatSupported(PixelFormat format) const = 0;
+	virtual bool isImageFormatSupported(PixelFormat format, bool sRGB = false) const = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.

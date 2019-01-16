@@ -54,8 +54,7 @@ public:
 
 	bool setMipmapSharpness(float sharpness) override;
 
-	static bool isFormatSupported(PixelFormat pixelformat);
-	static bool hasSRGBSupport();
+	static bool isFormatSupported(PixelFormat pixelformat, bool sRGB);
 
 private:
 

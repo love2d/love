@@ -1398,9 +1398,9 @@ bool Graphics::isCanvasFormatSupported(PixelFormat format, bool readable) const
 	return Canvas::isFormatSupported(format, readable);
 }
 
-bool Graphics::isImageFormatSupported(PixelFormat format) const
+bool Graphics::isImageFormatSupported(PixelFormat format, bool sRGB) const
 {
-	return Image::isFormatSupported(format);
+	return Image::isFormatSupported(format, sRGB);
 }
 
 Shader::Language Graphics::getShaderLanguageTarget() const

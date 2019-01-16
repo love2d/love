@@ -185,22 +185,8 @@ bool Image::loadVolatile()
 
 	OpenGL::TempDebugGroup debuggroup("Image load");
 
-	if (!OpenGL::isPixelFormatSupported(format, false, true, sRGB))
+	if (!isCompressed())
 	{
-		const char *str;
-		if (love::getConstant(format, str))
-		{
-			throw love::Exception("Cannot create image: "
-			                      "%s%s images are not supported on this system.", sRGB ? "sRGB " : "", str);
-		}
-		else
-			throw love::Exception("cannot create image: format is not supported on this system.");
-	}
-	else if (!isCompressed())
-	{
-		if (sRGB && !hasSRGBSupport())
-			throw love::Exception("sRGB images are not supported on this system.");
-
 		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
 		if (sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
 			&& mipmapsType != MIPMAPS_DATA)
@@ -365,14 +351,9 @@ bool Image::setMipmapSharpness(float sharpness)
 	return true;
 }
 
-bool Image::isFormatSupported(PixelFormat pixelformat)
+bool Image::isFormatSupported(PixelFormat pixelformat, bool sRGB)
 {
-	return OpenGL::isPixelFormatSupported(pixelformat, false, true, false);
-}
-
-bool Image::hasSRGBSupport()
-{
-	return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
+	return OpenGL::isPixelFormatSupported(pixelformat, false, true, sRGB);
 }
 
 } // opengl

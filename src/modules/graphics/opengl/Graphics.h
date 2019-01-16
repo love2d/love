@@ -106,7 +106,7 @@ public:
 
 	bool isCanvasFormatSupported(PixelFormat format) const override;
 	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
-	bool isImageFormatSupported(PixelFormat format) const override;
+	bool isImageFormatSupported(PixelFormat format, bool sRGB) const override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 
