@@ -130,19 +130,33 @@ const char *luax_readAttributeData(lua_State *L, vertex::DataType type, int comp
 int w_Mesh_setVertices(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	size_t vertoffset = (size_t) luaL_optnumber(L, 3, 1) - 1;
 
-	if (vertoffset >= t->getVertexCount())
-		return luaL_error(L, "Invalid vertex start index (must be between 1 and %d)", (int) t->getVertexCount());
+	int vertstart = (int) luaL_optnumber(L, 3, 1) - 1;
+
+	int vertcount = -1;
+	if (!lua_isnoneornil(L, 4))
+	{
+		vertcount = (int) luaL_checknumber(L, 4);
+		if (vertcount <= 0)
+			return luaL_error(L, "Vertex count must be greater than 0.");
+	}
 
 	size_t stride = t->getVertexStride();
-	size_t byteoffset = vertoffset * stride;
+	size_t byteoffset = vertstart * stride;
+	int totalverts = (int) t->getVertexCount();
+
+	if (vertstart >= totalverts)
+		return luaL_error(L, "Invalid vertex start index (must be between 1 and %d)", totalverts);
 
 	if (luax_istype(L, 2, Data::type))
 	{
 		Data *d = luax_checktype<Data>(L, 2);
 
-		size_t datasize = std::min(d->getSize(), (t->getVertexCount() - vertoffset) * stride);
+		vertcount = vertcount >= 0 ? vertcount : (totalverts - vertstart);
+		if (vertstart + vertcount > totalverts)
+			return luaL_error(L, "Too many vertices (expected at most %d, got %d)", totalverts - vertstart, vertcount);
+
+		size_t datasize = std::min(d->getSize(), vertcount * stride);
 		char *bytedata = (char *) t->mapVertexData() + byteoffset;
 
 		memcpy(bytedata, d->getData(), datasize);
@@ -152,10 +166,11 @@ int w_Mesh_setVertices(lua_State *L)
 	}
 
 	luaL_checktype(L, 2, LUA_TTABLE);
-	int nvertices = (int) luax_objlen(L, 2);
+	int tablelen = (int) luax_objlen(L, 2);
 
-	if (vertoffset + nvertices > t->getVertexCount())
-		return luaL_error(L, "Too many vertices (expected at most %d, got %d)", (int) t->getVertexCount() - (int) vertoffset, (int) nvertices);
+	vertcount = vertcount >= 0 ? std::min(vertcount, tablelen) : tablelen;
+	if (vertstart + vertcount > totalverts)
+		return luaL_error(L, "Too many vertices (expected at most %d, got %d)", totalverts - vertstart, vertcount);
 
 	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
 
@@ -165,7 +180,7 @@ int w_Mesh_setVertices(lua_State *L)
 
 	char *data = (char *) t->mapVertexData() + byteoffset;
 
-	for (int i = 0; i < nvertices; i++)
+	for (int i = 0; i < vertcount; i++)
 	{
 		// get vertices[vertindex]
 		lua_rawgeti(L, 2, i + 1);
@@ -181,14 +196,13 @@ int w_Mesh_setVertices(lua_State *L)
 		{
 			// Fetch the values from Lua and store them in data buffer.
 			data = luax_writeAttributeData(L, idx, format.type, format.components, data);
-
 			idx += format.components;
 		}
 
 		lua_pop(L, ncomponents + 1);
 	}
 
-	t->unmapVertexData(byteoffset, nvertices * stride);
+	t->unmapVertexData(byteoffset, vertcount * stride);
 	return 0;
 }
 
