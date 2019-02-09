@@ -98,7 +98,10 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 	jmethodID methodID = env->GetMethodID(clazz, "initializeSafeArea", "()Z");
 	bool hasSafeArea = false;
 
-	if ((hasSafeArea = env->CallBooleanMethod(activity, methodID)))
+	if (methodID == nullptr)
+		// NoSuchMethodException is thrown in case methodID is null
+		env->ExceptionClear();
+	else if ((hasSafeArea = env->CallBooleanMethod(activity, methodID)))
 	{
 		top = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaTop", "I"));
 		left = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaLeft", "I"));
