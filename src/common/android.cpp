@@ -90,6 +90,31 @@ double getScreenScale()
 	return result;
 }
 
+bool getSafeArea(int &top, int &left, int &bottom, int &right)
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "initializeSafeArea", "()Z");
+	bool hasSafeArea = false;
+
+	if (methodID == nullptr)
+		// NoSuchMethodException is thrown in case methodID is null
+		env->ExceptionClear();
+	else if ((hasSafeArea = env->CallBooleanMethod(activity, methodID)))
+	{
+		top = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaTop", "I"));
+		left = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaLeft", "I"));
+		bottom = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaBottom", "I"));
+		right = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaRight", "I"));
+	}
+
+	env->DeleteLocalRef(clazz);
+	env->DeleteLocalRef(activity);
+
+	return hasSafeArea;
+}
+
 const char *getSelectedGameFile()
 {
 	static const char *path = NULL;

@@ -45,6 +45,12 @@ bool getImmersive();
 double getScreenScale();
 
 /**
+ * Gets the window safe area, e.g. phone with notch display.
+ * Returns false if safe area is not set.
+ **/
+bool getSafeArea(int &top, int &left, int &bottom, int &right);
+
+/**
  * Gets the selected love file in the device filesystem.
  **/
 const char *getSelectedGameFile();

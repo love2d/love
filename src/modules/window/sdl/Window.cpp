@@ -845,9 +845,24 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 
 Rect Window::getSafeArea() const
 {
-#ifdef LOVE_IOS
+#if defined(LOVE_IOS)
 	if (window != nullptr)
 		return love::ios::getSafeArea(window);
+#elif defined(LOVE_ANDROID)
+	if (window != nullptr)
+	{
+		int top, left, bottom, right;
+
+		if (love::android::getSafeArea(top, left, bottom, right))
+		{
+			// DisplayCutout API returns safe area in pixels
+			// and is affected by display orientation.
+			double safeLeft, safeTop, safeWidth, safeHeight;
+			fromPixels(left, top, safeLeft, safeTop);
+			fromPixels(pixelWidth - left - right, pixelHeight - top - bottom, safeWidth, safeHeight);
+			return {(int) safeLeft, (int) safeTop, (int) safeWidth, (int) safeHeight};
+		}
+	}
 #endif
 
 	double dw, dh;
