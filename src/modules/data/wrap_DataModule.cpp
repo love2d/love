@@ -62,7 +62,8 @@ int w_newDataView(lua_State *L)
 	if (offset < 0 || size < 0)
 		return luaL_error(L, "DataView offset and size must not be negative.");
 
-	DataView *d = instance()->newDataView(data, (size_t) offset, (size_t) size);
+	DataView *d;
+	luax_catchexcept(L, [&]() { d = instance()->newDataView(data, (size_t) offset, (size_t) size); });
 	luax_pushtype(L, d);
 	d->release();
 
