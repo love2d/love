@@ -1,4 +1,4 @@
-LÃ–VE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, Mac OS X, Linux, Android, and iOS.
+LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, Mac OS X, Linux, Android, and iOS.
 
 [![Build Status: Windows](https://ci.appveyor.com/api/projects/status/u1a69u5o5ej1pus4?svg=true)](https://ci.appveyor.com/project/AlexSzpakowski/love)
 
@@ -11,10 +11,10 @@ If you need further help, feel free to ask on our [forums][forums], and last but
 Compilation
 -----------
 
-###Windows
+### Windows
 Follow the instructions at the [megasource][megasource] repository page.
 
-###*nix
+### *nix
 Run `platform/unix/automagic` from the repository root, then run ./configure and make.
 
 	$ platform/unix/automagic
@@ -23,12 +23,12 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 
 When using a source release, automagic has already been run, and the first step can be skipped.
 
-###Mac OS X
+### Mac OS X
 Download the required frameworks from [here][dependencies] and place them in `/Library/Frameworks/`.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
-###iOS
+### iOS
 Download the required libraries from [here][dependencies-ios] and place the `include` and `libraries` folders
 into the `platform/xcode/ios` folder.
 
@@ -36,7 +36,7 @@ Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the
 
 See `readme-iOS.rtf` for more information.
 
-###Android
+### Android
 Visit the [Android build repository][android-repository] for build instructions.
 
 Repository information
