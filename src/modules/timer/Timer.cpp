@@ -90,7 +90,7 @@ double Timer::step()
 
 void Timer::sleep(double seconds) const
 {
-	if (seconds > 0)
+	if (seconds >= 0)
 		love::sleep((unsigned int)(seconds*1000));
 }
 
