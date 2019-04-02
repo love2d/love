@@ -45,8 +45,6 @@ Canvas::Canvas(const Settings &settings)
 		depth = settings.layers;
 	else if (texType == TEXTURE_2D_ARRAY)
 		layers = settings.layers;
-	else
-		layers = 1;
 
 	if (width <= 0 || height <= 0 || layers <= 0)
 		throw love::Exception("Canvas dimensions must be greater than 0.");

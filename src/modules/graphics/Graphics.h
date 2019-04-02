@@ -371,6 +371,7 @@ public:
 		RenderTarget()
 			: canvas(nullptr)
 			, slice(0)
+			, mipmap(0)
 		{}
 
 		bool operator != (const RenderTarget &other) const

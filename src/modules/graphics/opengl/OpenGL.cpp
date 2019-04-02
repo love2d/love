@@ -1654,7 +1654,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		break;
 
 	default:
-		printf("Unhandled pixel format when converting to OpenGL enums!");
+		printf("Unhandled pixel format %d when converting to OpenGL enums!", pixelformat);
 		break;
 	}
 
