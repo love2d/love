@@ -821,6 +821,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	else
 	{
 		int msaa = targets.getFirstTarget().canvas->getMSAA();
+		bool hasDS = targets.depthStencil.canvas != nullptr;
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
@@ -865,11 +866,21 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		for (const auto &rt : targets.colors)
 			attachCanvas(rt);
 
-		if (targets.depthStencil.canvas != nullptr)
+		if (hasDS)
 			attachCanvas(targets.depthStencil);
 
 		if (ncolortargets > 1)
 			glDrawBuffers(ncolortargets, drawbuffers);
+		else if (ncolortargets == 0 && hasDS && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+		{
+			// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
+			GLenum none = GL_NONE;
+			if (GLAD_ES_VERSION_3_0)
+				glDrawBuffers(1, &none);
+			else
+				glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 

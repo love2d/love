@@ -41,6 +41,17 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 	if (texture != 0)
 	{
+		if (isPixelFormatDepthStencil(format) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+		{
+			// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
+			GLenum none = GL_NONE;
+			if (GLAD_ES_VERSION_3_0)
+				glDrawBuffers(1, &none);
+			else
+				glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
+
 		bool unusedSRGB = false;
 		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
 
@@ -108,6 +119,17 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 	GLuint fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
+
+	if (isPixelFormatDepthStencil(pixelformat) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+	{
+		// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
+		GLenum none = GL_NONE;
+		if (GLAD_ES_VERSION_3_0)
+			glDrawBuffers(1, &none);
+		else
+			glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+	}
 
 	glGenRenderbuffers(1, &buffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, buffer);
