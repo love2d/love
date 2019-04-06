@@ -43,7 +43,7 @@ const unsigned char %s[] =
 -- - input file name
 
 
-function auto(name)
+local function auto(name)
 	--the input file name
 	local src = name .. ".lua"
 	--and the output one
@@ -84,13 +84,15 @@ function auto(name)
 			counter = -1
 			--append the output to what we had, plus a newline character (0x0a is newline)
 			out_data = ("%s%s0x0a,"):format(out_data, line:gsub("\r", ""):gsub(".", tohex))
+		else
+			out_data = out_data .. "\n\t0x0a,"
 		end
 	end
 	--close our input
 	src_file:close()
 
 	--open, write and close the output
-	out_file = io.open(dst, "wb")
+	local out_file = io.open(dst, "wb")
 	--see pattern above
 	out_file:write(pattern:format(src, cpp_name, out_data, src))
 	out_file:close()
