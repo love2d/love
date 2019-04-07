@@ -162,35 +162,44 @@ void __PHYSFS_smallFree(void *ptr);
 #define free(x) Do not use free() directly.
 /* !!! FIXME: add alloca check here. */
 
+
+/* by default, enable things, so builds can opt out of a few things they
+   want to avoid. But you can build with this #defined to 0 if you would
+   like to turn off everything except a handful of things you opt into. */
+#ifndef PHYSFS_SUPPORTS_DEFAULT
+#define PHYSFS_SUPPORTS_DEFAULT 1
+#endif
+
+
 #ifndef PHYSFS_SUPPORTS_ZIP
-#define PHYSFS_SUPPORTS_ZIP 1
+#define PHYSFS_SUPPORTS_ZIP PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_7Z
-#define PHYSFS_SUPPORTS_7Z 1
+#define PHYSFS_SUPPORTS_7Z PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_GRP
-#define PHYSFS_SUPPORTS_GRP 1
+#define PHYSFS_SUPPORTS_GRP PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_HOG
-#define PHYSFS_SUPPORTS_HOG 1
+#define PHYSFS_SUPPORTS_HOG PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_MVL
-#define PHYSFS_SUPPORTS_MVL 1
+#define PHYSFS_SUPPORTS_MVL PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_WAD
-#define PHYSFS_SUPPORTS_WAD 1
+#define PHYSFS_SUPPORTS_WAD PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_QPAK
-#define PHYSFS_SUPPORTS_QPAK 1
+#define PHYSFS_SUPPORTS_QPAK PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_SLB
-#define PHYSFS_SUPPORTS_SLB 1
+#define PHYSFS_SUPPORTS_SLB PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_ISO9660
-#define PHYSFS_SUPPORTS_ISO9660 1
+#define PHYSFS_SUPPORTS_ISO9660 PHYSFS_SUPPORTS_DEFAULT
 #endif
 #ifndef PHYSFS_SUPPORTS_VDF
-#define PHYSFS_SUPPORTS_VDF 1
+#define PHYSFS_SUPPORTS_VDF PHYSFS_SUPPORTS_DEFAULT
 #endif
 
 #if PHYSFS_SUPPORTS_7Z

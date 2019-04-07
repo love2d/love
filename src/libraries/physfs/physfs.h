@@ -225,11 +225,11 @@ extern "C" {
 
 #if defined(PHYSFS_DECL)
 /* do nothing. */
-#elif (defined _MSC_VER)
+#elif defined(_MSC_VER)
 #define PHYSFS_DECL __declspec(dllexport)
-#elif (defined __SUNPRO_C)
+#elif defined(__SUNPRO_C)
 #define PHYSFS_DECL __global
-#elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
+#elif ((__GNUC__ >= 3) && (!defined(__EMX__)) && (!defined(sun)))
 #define PHYSFS_DECL __attribute__((visibility("default")))
 #else
 #define PHYSFS_DECL
@@ -433,8 +433,8 @@ typedef struct PHYSFS_Version
 
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 #define PHYSFS_VER_MAJOR 3
-#define PHYSFS_VER_MINOR 0
-#define PHYSFS_VER_PATCH 1
+#define PHYSFS_VER_MINOR 1
+#define PHYSFS_VER_PATCH 0
 #endif  /* DOXYGEN_SHOULD_IGNORE_THIS */
 
 
@@ -3843,6 +3843,46 @@ PHYSFS_DECL int PHYSFS_deregisterArchiver(const char *ext);
 
 
 /* Everything above this line is part of the PhysicsFS 2.1 API. */
+
+
+/**
+ * \fn int PHYSFS_setRoot(const char *archive, const char *subdir)
+ * \brief Make a subdirectory of an archive its root directory.
+ *
+ * This lets you narrow down the accessible files in a specific archive. For
+ *  example, if you have x.zip with a file in y/z.txt, mounted to /a, if you
+ *  call PHYSFS_setRoot("x.zip", "/y"), then the call
+ *  PHYSFS_openRead("/a/z.txt") will succeed.
+ *
+ * You can change an archive's root at any time, altering the interpolated
+ *  file tree (depending on where paths shift, a different archive may be
+ *  providing various files). If you set the root to NULL or "/", the
+ *  archive will be treated as if no special root was set (as if the archive
+ *  was just mounted normally).
+ *
+ * Changing the root only affects future operations on pathnames; a file
+ *  that was opened from a path that changed due to a setRoot will not be
+ *  affected.
+ *
+ * Setting a new root is not limited to archives in the search path; you may
+ *  set one on the write dir, too, which might be useful if you have files
+ *  open for write and thus can't change the write dir at the moment.
+ *
+ * It is not an error to set a subdirectory that does not exist to be the
+ *  root of an archive; however, no files will be visible in this case. If
+ *  the missing directories end up getting created (a mkdir to the physical
+ *  filesystem, etc) then this will be reflected in the interpolated tree.
+ *
+ *    \param archive dir/archive on which to change root.
+ *    \param subdir new subdirectory to make the root of this archive.
+ *   \return nonzero on success, zero on failure. Use
+ *           PHYSFS_getLastErrorCode() to obtain the specific error.
+ */
+PHYSFS_DECL int PHYSFS_setRoot(const char *archive, const char *subdir);
+
+
+/* Everything above this line is part of the PhysicsFS 3.1 API. */
+
 
 #ifdef __cplusplus
 }

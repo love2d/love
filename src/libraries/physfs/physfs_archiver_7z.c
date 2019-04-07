@@ -203,6 +203,8 @@ static void SZIP_closeArchive(void *opaque)
     SZIPinfo *info = (SZIPinfo *) opaque;
     if (info)
     {
+        if (info->io)
+            info->io->destroy(info->io);
         SzArEx_Free(&info->db, &SZIP_SzAlloc);
         __PHYSFS_DirTreeDeinit(&info->tree);
         allocator.Free(info);
