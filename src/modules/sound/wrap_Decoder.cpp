@@ -34,6 +34,16 @@ Decoder *luax_checkdecoder(lua_State *L, int idx)
 	return luax_checktype<Decoder>(L, idx);
 }
 
+int w_Decoder_clone(lua_State *L)
+{
+	Decoder *t = luax_checkdecoder(L, 1);
+	Decoder *c = nullptr;
+	luax_catchexcept(L, [&]() { c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 int w_Decoder_getChannelCount(lua_State *L)
 {
 	Decoder *t = luax_checkdecoder(L, 1);
@@ -104,6 +114,7 @@ int w_Decoder_getChannels(lua_State *L)
 
 static const luaL_Reg w_Decoder_functions[] =
 {
+	{ "clone", w_Decoder_clone },
 	{ "getChannelCount", w_Decoder_getChannelCount },
 	{ "getBitDepth", w_Decoder_getBitDepth },
 	{ "getSampleRate", w_Decoder_getSampleRate },
