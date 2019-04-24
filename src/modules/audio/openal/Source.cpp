@@ -863,6 +863,9 @@ void Source::prepareAtomic()
 	case TYPE_MAX_ENUM:
 		break;
 	}
+
+	// Seek to the current/pending offset.
+	alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 }
 
 void Source::teardownAtomic()
@@ -919,16 +922,9 @@ bool Source::playAtomic(ALuint source)
 	// Clear errors.
 	alGetError();
 
-	// Seek to the current/pending offset before playing. If this call happens
-	// immediately after alSourcePlay it could introduce a click depending on
-	// the platform, because the source is asynchronously playing by then.
-	alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-
-	bool success = alGetError() == AL_NO_ERROR;
-
 	alSourcePlay(source);
 
-	success &= alGetError() == AL_NO_ERROR;
+	bool success = alGetError() == AL_NO_ERROR;
 
 	if (sourceType == TYPE_STREAM)
 	{
