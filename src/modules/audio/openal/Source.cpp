@@ -137,7 +137,7 @@ Source::Source(Pool *pool, love::sound::SoundData *soundData)
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
 
-	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+	for (int i = 0; i < audiomodule()->getMaxSourceEffects(); i++)
 		slotlist.push(i);
 }
 
@@ -172,7 +172,7 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
 
-	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+	for (int i = 0; i < audiomodule()->getMaxSourceEffects(); i++)
 		slotlist.push(i);
 }
 
@@ -212,7 +212,7 @@ Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels, int buffe
 	setFloatv(velocity, z);
 	setFloatv(direction, z);
 
-	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+	for (int i = 0; i < audiomodule()->getMaxSourceEffects(); i++)
 		slotlist.push(i);
 }
 
@@ -274,7 +274,7 @@ Source::Source(const Source &s)
 	setFloatv(velocity, s.velocity);
 	setFloatv(direction, s.direction);
 
-	for (unsigned int i = 0; i < (unsigned int)audiomodule()->getMaxSourceEffects(); i++)
+	for (int i = 0; i < audiomodule()->getMaxSourceEffects(); i++)
 	{
 		// filter out already taken slots
 		bool push = true;
@@ -413,7 +413,7 @@ bool Source::update()
 				offsetSamples += (curOffsetSamples - newOffsetSamples);
 				offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
-				for (unsigned int i = 0; i < (unsigned int)processed; i++)
+				for (int i = 0; i < processed; i++)
 					unusedBuffers.push(buffers[i]);
 
 				while (!unusedBuffers.empty())
@@ -439,7 +439,7 @@ bool Source::update()
 			alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 			alSourceUnqueueBuffers(source, processed, buffers);
 
-			for (unsigned int i = 0; i < (unsigned int)processed; i++)
+			for (int i = 0; i < processed; i++)
 			{
 				ALint size;
 				alGetBufferi(buffers[i], AL_SIZE, &size);
