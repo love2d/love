@@ -396,36 +396,39 @@ bool Source::update()
 		case TYPE_STREAM:
 			if (!isFinished())
 			{
-				ALint processed;
-				ALuint buffers[MAX_BUFFERS];
-				float curOffsetSamples, curOffsetSecs, newOffsetSamples, newOffsetSecs;
 				int freq = decoder->getSampleRate();
 
-				alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
-				curOffsetSecs = curOffsetSamples / freq;
-
+				ALint processed;
 				alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
-				alSourceUnqueueBuffers(source, processed, buffers);
 
-				alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
-				newOffsetSecs = newOffsetSamples / freq;
-
-				offsetSamples += (curOffsetSamples - newOffsetSamples);
-				offsetSeconds += (curOffsetSecs - newOffsetSecs);
-
-				for (int i = 0; i < processed; i++)
-					unusedBuffers.push(buffers[i]);
-
-				while (!unusedBuffers.empty())
+				// It would theoretically be better to unqueue all processed
+				// buffers in a single call to alSourceUnqueueBuffers, but on
+				// iOS I observed occasional (every ~5-10 seconds) pops in the
+				// streaming source test I was using, when doing that. Perhaps
+				// there was a bug in this code when I was testing, or maybe
+				// this code runs into the same problem but now it's much harder
+				// to reproduce. The test I used is the play-stop-play .love
+				// from https://bitbucket.org/rude/love/issues/1484/
+				while (processed--)
 				{
-					auto b = unusedBuffers.top();
-					if (streamAtomic(b, decoder.get()) > 0)
-					{
-						alSourceQueueBuffers(source, 1, &b);
-						unusedBuffers.pop();
-					}
+					float curOffsetSamples, curOffsetSecs;
+					alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
+					curOffsetSecs = curOffsetSamples / freq;
+
+					ALuint buffer;
+					alSourceUnqueueBuffers(source, 1, &buffer);
+
+					float newOffsetSamples, newOffsetSecs;
+					alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
+					newOffsetSecs = newOffsetSamples / freq;
+
+					offsetSamples += (curOffsetSamples - newOffsetSamples);
+					offsetSeconds += (curOffsetSecs - newOffsetSecs);
+
+					if (streamAtomic(buffer, decoder.get()) > 0)
+						alSourceQueueBuffers(source, 1, &buffer);
 					else
-						break;
+						unusedBuffers.push(buffer);
 				}
 
 				return true;
