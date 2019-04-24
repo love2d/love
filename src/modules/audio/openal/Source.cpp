@@ -876,31 +876,32 @@ void Source::teardownAtomic()
 		break;
 	case TYPE_STREAM:
 	{
-		ALint queued;
-		ALuint buffer;
+		ALint queued = 0;
+		ALuint buffers[MAX_BUFFERS];
 
 		decoder->seek(0);
-		// drain buffers
-		//since we only unqueue 1 buffer, it's OK to use singular variable pointer instead of array
+
+		// Drain buffers.
+		// NOTE: The Apple implementation of OpenAL on iOS doesn't return
+		// correct buffer ids for single alSourceUnqueueBuffers calls past the
+		// first queued buffer, so we must unqueue them all at once.
 		alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-		for (unsigned int i = 0; i < (unsigned int)queued; i++)
-		{
-			alSourceUnqueueBuffers(source, 1, &buffer);
-			unusedBuffers.push(buffer);
-		}
+		alSourceUnqueueBuffers(source, queued, buffers);
+
+		for (int i = 0; i < queued; i++)
+			unusedBuffers.push(buffers[i]);
 		break;
 	}
 	case TYPE_QUEUE:
 	{
 		ALint queued;
-		ALuint buffer;
+		ALuint buffers[MAX_BUFFERS];
 
 		alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
-		for (unsigned int i = (unsigned int)queued; i > 0; i--)
-		{
-			alSourceUnqueueBuffers(source, 1, &buffer);
-			unusedBuffers.push(buffer);
-		}
+		alSourceUnqueueBuffers(source, queued, buffers);
+
+		for (int i = 0; i < queued; i++)
+			unusedBuffers.push(buffers[i]);
 		break;
 	}
 	case TYPE_MAX_ENUM:
