@@ -919,9 +919,16 @@ bool Source::playAtomic(ALuint source)
 	// Clear errors.
 	alGetError();
 
-	alSourcePlay(source);
+	// Seek to the current/pending offset before playing. If this call happens
+	// immediately after alSourcePlay it could introduce a click depending on
+	// the platform, because the source is asynchronously playing by then.
+	alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
 
 	bool success = alGetError() == AL_NO_ERROR;
+
+	alSourcePlay(source);
+
+	success &= alGetError() == AL_NO_ERROR;
 
 	if (sourceType == TYPE_STREAM)
 	{
@@ -929,17 +936,14 @@ bool Source::playAtomic(ALuint source)
 		if (!isPlaying())
 			success = false;
 	}
-	else if (success)
-	{
-		alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
-		success = alGetError() == AL_NO_ERROR;
-	}
 
 	if (!success)
 	{
 		valid = true; //stop() needs source to be valid
 		stop();
 	}
+
+	// Static sources: reset the pending offset since it's not valid anymore.
 	if (sourceType != TYPE_STREAM)
 		offsetSamples = offsetSeconds = 0;
 
