@@ -284,6 +284,86 @@ void ImageData::getPixel(int x, int y, Pixel &p) const
 	memcpy(&p, data + ((y * width + x) * pixelsize), pixelsize);
 }
 
+union Row
+{
+	uint8 *u8;
+	uint16 *u16;
+	half *f16;
+	float *f32;
+};
+
+static void pasteRGBA8toRGBA16(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u16[i] = (uint16) src.u8[i] << 8u;
+}
+
+static void pasteRGBA8toRGBA16F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f16[i] = floatToHalf(src.u8[i] / 255.0f);
+}
+
+static void pasteRGBA8toRGBA32F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f32[i] = src.u8[i] / 255.0f;
+}
+
+static void pasteRGBA16toRGBA8(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u8[i] = src.u16[i] >> 8u;
+}
+
+static void pasteRGBA16toRGBA16F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f16[i] = floatToHalf(src.u16[i] / 65535.0f);
+}
+
+static void pasteRGBA16toRGBA32F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f32[i] = src.u16[i] / 65535.0f;
+}
+
+static void pasteRGBA16FtoRGBA8(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u8[i] = (uint8) (halfToFloat(src.f16[i]) * 255.0f);
+}
+
+static void pasteRGBA16FtoRGBA16(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u16[i] = (uint16) (halfToFloat(src.f16[i]) * 65535.0f);
+}
+
+static void pasteRGBA16FtoRGBA32F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f32[i] = halfToFloat(src.f16[i]);
+}
+
+static void pasteRGBA32FtoRGBA8(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u8[i] = (uint8) (src.f32[i] * 255.0f);
+}
+
+static void pasteRGBA32FtoRGBA16(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.u16[i] = (uint16) (src.f32[i] * 65535.0f);
+}
+
+static void pasteRGBA32FtoRGBA16F(Row src, Row dst, int w)
+{
+	for (int i = 0; i < w * 4; i++)
+		dst.f16[i] = (uint16) floatToHalf(src.f32[i]);
+}
+
 void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, int sh)
 {
 	PixelFormat dstformat = getFormat();
@@ -396,78 +476,6 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 	}
 }
 
-void ImageData::pasteRGBA8toRGBA16(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.u16[i] = (uint16) src.u8[i] << 8u;
-}
-
-void ImageData::pasteRGBA8toRGBA16F(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = floatToHalf(src.u8[i] / 255.0f);
-}
-
-void ImageData::pasteRGBA8toRGBA32F(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.f32[i] = src.u8[i] / 255.0f;
-}
-
-void ImageData::pasteRGBA16toRGBA8(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.u8[i] = src.u16[i] >> 8u;
-}
-
-void ImageData::pasteRGBA16toRGBA16F(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = floatToHalf(src.u16[i] / 65535.0f);
-}
-
-void ImageData::pasteRGBA16toRGBA32F(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.f32[i] = src.u16[i] / 65535.0f;
-}
-
-void ImageData::pasteRGBA16FtoRGBA8(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.u8[i] = (uint8) (halfToFloat(src.f16[i]) * 255.0f);
-}
-
-void ImageData::pasteRGBA16FtoRGBA16(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.u16[i] = (uint16) (halfToFloat(src.f16[i]) * 65535.0f);
-}
-
-void ImageData::pasteRGBA16FtoRGBA32F(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.f32[i] = halfToFloat(src.f16[i]);
-}
-
-void ImageData::pasteRGBA32FtoRGBA8(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.u8[i] = (uint8) (src.f32[i] * 255.0f);
-}
-
-void ImageData::pasteRGBA32FtoRGBA16(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.u16[i] = (uint16) (src.f32[i] * 65535.0f);
-}
-
-void ImageData::pasteRGBA32FtoRGBA16F(Row src, Row dst, int w)
-{
-	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = (uint16) floatToHalf(src.f32[i]);
-}
-
 love::thread::Mutex *ImageData::getMutex() const
 {
 	return mutex;
@@ -482,9 +490,17 @@ bool ImageData::validPixelFormat(PixelFormat format)
 {
 	switch (format)
 	{
+	case PIXELFORMAT_R8:
+	case PIXELFORMAT_RG8:
 	case PIXELFORMAT_RGBA8:
+	case PIXELFORMAT_R16:
+	case PIXELFORMAT_RG16:
 	case PIXELFORMAT_RGBA16:
+	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_RG16F:
 	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_R32F:
+	case PIXELFORMAT_RG32F:
 	case PIXELFORMAT_RGBA32F:
 		return true;
 	default:

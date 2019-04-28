@@ -86,32 +86,47 @@ typedef struct FFI_ImageData
 	half (*floatToHalf)(float f);
 } FFI_ImageData;
 
-typedef struct ImageData_Pixel_RGBA8
-{
-	uint8_t r, g, b, a;
-} ImageData_Pixel_RGBA8;
+struct ImageData_Pixel_R8 { uint8_t r; };
+struct ImageData_Pixel_RG8 { uint8_t r, g; };
+struct ImageData_Pixel_RGBA8 { uint8_t r, g, b, a; };
 
-typedef struct ImageData_Pixel_RGBA16
-{
-	uint16_t r, g, b, a;
-} ImageData_Pixel_RGBA16;
+struct ImageData_Pixel_R16 { uint16_t r; };
+struct ImageData_Pixel_RG16 { uint16_t r, g; };
+struct ImageData_Pixel_RGBA16 { uint16_t r, g, b, a; };
 
-typedef struct ImageData_Pixel_RGBA16F
-{
-	half r, g, b, a;
-} ImageData_Pixel_RGBA16F;
+struct ImageData_Pixel_R16F { half r; };
+struct ImageData_Pixel_RG16F { half r, g; };
+struct ImageData_Pixel_RGBA16F { half r, g, b, a; };
 
-typedef struct ImageData_Pixel_RGBA32F
-{
-	float r, g, b, a;
-} ImageData_Pixel_RGBA32F;
+struct ImageData_Pixel_R32F { float r; };
+struct ImageData_Pixel_RG32F { float r, g; };
+struct ImageData_Pixel_RGBA32F { float r, g, b, a; };
 ]])
 
 local ffifuncs = ffi.cast("FFI_ImageData *", ffifuncspointer)
 
 local conversions = {
+	r8 = {
+		pointer = ffi.typeof("struct ImageData_Pixel_R8 *"),
+		tolua = function(self)
+			return tonumber(self.r) / 255, 0, 0, 1
+		end,
+		fromlua = function(self, r)
+			self.r = clamp01(r) * 255
+		end,
+	},
+	rg8 = {
+		pointer = ffi.typeof("struct ImageData_Pixel_RG8 *"),
+		tolua = function(self)
+			return tonumber(self.r) / 255, tonumber(self.g) / 255, 0, 1
+		end,
+		fromlua = function(self, r, g)
+			self.r = clamp01(r) * 255
+			self.g = clamp01(g) * 255
+		end,
+	},
 	rgba8 = {
-		pointer = ffi.typeof("ImageData_Pixel_RGBA8 *"),
+		pointer = ffi.typeof("struct ImageData_Pixel_RGBA8 *"),
 		tolua = function(self)
 			return tonumber(self.r) / 255, tonumber(self.g) / 255, tonumber(self.b) / 255, tonumber(self.a) / 255
 		end,
@@ -122,8 +137,27 @@ local conversions = {
 			self.a = a == nil and 255 or clamp01(a) * 255
 		end,
 	},
+	r16 = {
+		pointer = ffi.typeof("struct ImageData_Pixel_R16 *"),
+		tolua = function(self)
+			return tonumber(self.r) / 65535, 0, 0, 1
+		end,
+		fromlua = function(self, r)
+			self.r = clamp01(r) * 65535
+		end,
+	},
+	rg16 = {
+		pointer = ffi.typeof("struct ImageData_Pixel_RG16 *"),
+		tolua = function(self)
+			return tonumber(self.r) / 65535, tonumber(self.g) / 65535, 0, 1
+		end,
+		fromlua = function(self, r, g)
+			self.r = clamp01(r) * 65535
+			self.g = clamp01(g) * 65535
+		end,
+	},
 	rgba16 = {
-		pointer = ffi.typeof("ImageData_Pixel_RGBA16 *"),
+		pointer = ffi.typeof("struct ImageData_Pixel_RGBA16 *"),
 		tolua = function(self)
 			return tonumber(self.r) / 65535, tonumber(self.g) / 65535, tonumber(self.b) / 65535, tonumber(self.a) / 65535
 		end,
@@ -134,8 +168,27 @@ local conversions = {
 			self.a = a == nil and 65535 or clamp01(a) * 65535
 		end,
 	},
+	r16f = {
+		pointer = ffi.typeof("struct ImageData_Pixel_R16F *"),
+		tolua = function(self)
+			return tonumber(ffifuncs.halfToFloat(self.r)), 0, 0, 1
+		end,
+		fromlua = function(self, r)
+			self.r = ffifuncs.floatToHalf(r)
+		end,
+	},
+	rg16f = {
+		pointer = ffi.typeof("struct ImageData_Pixel_RG16F *"),
+		tolua = function(self)
+			return tonumber(ffifuncs.halfToFloat(self.r)), tonumber(ffifuncs.halfToFloat(self.g)), 0, 1
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = ffifuncs.floatToHalf(r)
+			self.g = ffifuncs.floatToHalf(g)
+		end,
+	},
 	rgba16f = {
-		pointer = ffi.typeof("ImageData_Pixel_RGBA16F *"),
+		pointer = ffi.typeof("struct ImageData_Pixel_RGBA16F *"),
 		tolua = function(self)
 			return tonumber(ffifuncs.halfToFloat(self.r)),
 			       tonumber(ffifuncs.halfToFloat(self.g)),
@@ -149,8 +202,27 @@ local conversions = {
 			self.a = ffifuncs.floatToHalf(a == nil and 1.0 or a)
 		end,
 	},
+	r32f = {
+		pointer = ffi.typeof("struct ImageData_Pixel_R32F *"),
+		tolua = function(self)
+			return tonumber(self.r), 0, 0, 1
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = r
+		end,
+	},
+	rg32f = {
+		pointer = ffi.typeof("struct ImageData_Pixel_RG32F *"),
+		tolua = function(self)
+			return tonumber(self.r), tonumber(self.g), 0, 1
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.r = r
+			self.g = g
+		end,
+	},
 	rgba32f = {
-		pointer = ffi.typeof("ImageData_Pixel_RGBA32F *"),
+		pointer = ffi.typeof("struct ImageData_Pixel_RGBA32F *"),
 		tolua = function(self)
 			return tonumber(self.r), tonumber(self.g), tonumber(self.b), tonumber(self.a)
 		end,
