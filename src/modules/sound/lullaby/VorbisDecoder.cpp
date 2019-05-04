@@ -128,8 +128,8 @@ static long vorbisTell(void *datasource	/* ptr to the data that the vorbis files
  * END CALLBACK FUNCTIONS
  **/
 
-VorbisDecoder::VorbisDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+VorbisDecoder::VorbisDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, duration(-2.0)
 {
 	// Initialize callbacks
@@ -182,7 +182,7 @@ bool VorbisDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *VorbisDecoder::clone()
 {
-	return new VorbisDecoder(data.get(), ext, bufferSize);
+	return new VorbisDecoder(data.get(), bufferSize);
 }
 
 int VorbisDecoder::decode()

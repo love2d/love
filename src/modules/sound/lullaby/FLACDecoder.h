@@ -40,7 +40,7 @@ namespace lullaby
 class FLACDecoder : public Decoder, public FLAC::Decoder::Stream
 {
 public:
-	FLACDecoder(Data *data, const std::string &ext, int bufferSize);
+	FLACDecoder(Data *data, int bufferSize);
 	~FLACDecoder();
 
 	static bool accepts(const std::string &ext);

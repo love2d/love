@@ -46,7 +46,7 @@ class WaveDecoder : public Decoder
 {
 public:
 
-	WaveDecoder(Data *data, const std::string &ext, int bufferSize);
+	WaveDecoder(Data *data, int bufferSize);
 	virtual ~WaveDecoder();
 
 	static bool accepts(const std::string &ext);

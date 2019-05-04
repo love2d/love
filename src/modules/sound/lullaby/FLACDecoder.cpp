@@ -32,8 +32,8 @@ namespace sound
 namespace lullaby
 {
 
-FLACDecoder::FLACDecoder(Data *data, const std::string &ext, int nbufferSize)
-	: Decoder(data, ext, nbufferSize)
+FLACDecoder::FLACDecoder(Data *data, int nbufferSize)
+	: Decoder(data, nbufferSize)
 	, pos(0)
 {
 	init();
@@ -69,7 +69,7 @@ bool FLACDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *FLACDecoder::clone()
 {
-	return new FLACDecoder(data.get(), ext, bufferSize);
+	return new FLACDecoder(data.get(), bufferSize);
 }
 
 int FLACDecoder::decode()

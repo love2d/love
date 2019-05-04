@@ -58,7 +58,7 @@ class Mpg123Decoder : public Decoder
 {
 public:
 
-	Mpg123Decoder(Data *data, const std::string &ext, int bufferSize);
+	Mpg123Decoder(Data *data, int bufferSize);
 	virtual ~Mpg123Decoder();
 
 	static bool accepts(const std::string &ext);

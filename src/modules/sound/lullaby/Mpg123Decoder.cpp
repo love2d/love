@@ -107,8 +107,8 @@ static void cleanup_callback(void *)
 
 bool Mpg123Decoder::inited = false;
 
-Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+Mpg123Decoder::Mpg123Decoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, decoder_file(data)
 	, handle(0)
 	, channels(MPG123_STEREO)
@@ -196,7 +196,7 @@ void Mpg123Decoder::quit()
 
 love::sound::Decoder *Mpg123Decoder::clone()
 {
-	return new Mpg123Decoder(data.get(), ext, bufferSize);
+	return new Mpg123Decoder(data.get(), bufferSize);
 }
 
 int Mpg123Decoder::decode()

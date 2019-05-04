@@ -63,8 +63,8 @@ SInt64 getSizeFunc(void *inClientData)
 }
 } // anonymous namespace
 
-CoreAudioDecoder::CoreAudioDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+CoreAudioDecoder::CoreAudioDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, audioFile(nullptr)
 	, extAudioFile(nullptr)
 	, inputInfo()
@@ -195,7 +195,7 @@ bool CoreAudioDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *CoreAudioDecoder::clone()
 {
-	return new CoreAudioDecoder(data.get(), ext, bufferSize);
+	return new CoreAudioDecoder(data.get(), bufferSize);
 }
 
 int CoreAudioDecoder::decode()

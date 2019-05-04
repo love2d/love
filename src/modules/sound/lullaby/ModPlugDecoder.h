@@ -47,7 +47,7 @@ class ModPlugDecoder : public Decoder
 {
 public:
 
-	ModPlugDecoder(Data *data, const std::string &ext, int bufferSize);
+	ModPlugDecoder(Data *data, int bufferSize);
 	virtual ~ModPlugDecoder();
 
 	static bool accepts(const std::string &ext);

@@ -73,26 +73,26 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 		/* nothing */;
 #ifndef LOVE_NO_MODPLUG
 	else if (ModPlugDecoder::accepts(ext))
-		decoder = new ModPlugDecoder(data, ext, bufferSize);
+		decoder = new ModPlugDecoder(data, bufferSize);
 #endif // LOVE_NO_MODPLUG
 #ifndef LOVE_NOMPG123
 	else if (Mpg123Decoder::accepts(ext))
-		decoder = new Mpg123Decoder(data, ext, bufferSize);
+		decoder = new Mpg123Decoder(data, bufferSize);
 #endif // LOVE_NOMPG123
 	else if (VorbisDecoder::accepts(ext))
-		decoder = new VorbisDecoder(data, ext, bufferSize);
+		decoder = new VorbisDecoder(data, bufferSize);
 #ifdef LOVE_SUPPORT_GME
 	else if (GmeDecoder::accepts(ext))
-		decoder = new GmeDecoder(data, ext, bufferSize);
+		decoder = new GmeDecoder(data, bufferSize);
 #endif // LOVE_SUPPORT_GME
 #ifdef LOVE_SUPPORT_COREAUDIO
 	else if (CoreAudioDecoder::accepts(ext))
-		decoder = new CoreAudioDecoder(data, ext, bufferSize);
+		decoder = new CoreAudioDecoder(data, bufferSize);
 #endif
 	else if (WaveDecoder::accepts(ext))
-		decoder = new WaveDecoder(data, ext, bufferSize);
+		decoder = new WaveDecoder(data, bufferSize);
 	/*else if (FLACDecoder::accepts(ext))
-		decoder = new FLACDecoder(data, ext, bufferSize);*/
+		decoder = new FLACDecoder(data, bufferSize);*/
 
 	// else if (OtherDecoder::accept(ext))
 

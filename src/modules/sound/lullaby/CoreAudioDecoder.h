@@ -47,7 +47,7 @@ class CoreAudioDecoder : public Decoder
 {
 public:
 
-	CoreAudioDecoder(Data *data, const std::string &ext, int bufferSize);
+	CoreAudioDecoder(Data *data, int bufferSize);
 	virtual ~CoreAudioDecoder();
 
 	static bool accepts(const std::string &ext);

@@ -32,8 +32,8 @@ namespace sound
 namespace lullaby
 {
 
-GmeDecoder::GmeDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+GmeDecoder::GmeDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, emu(0)
 	, num_tracks(0)
 	, cur_track(0)
@@ -86,7 +86,7 @@ bool GmeDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *GmeDecoder::clone()
 {
-	return new GmeDecoder(data.get(), ext, bufferSize);
+	return new GmeDecoder(data.get(), bufferSize);
 }
 
 int GmeDecoder::decode()

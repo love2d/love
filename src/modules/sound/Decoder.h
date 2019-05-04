@@ -41,7 +41,7 @@ public:
 
 	static love::Type type;
 
-	Decoder(Data *data, const std::string &ext, int bufferSize);
+	Decoder(Data *data, int bufferSize);
 	virtual ~Decoder();
 
 	/**
@@ -148,9 +148,6 @@ protected:
 	// The encoded data. This should be replaced with buffered file
 	// reads in the future.
 	StrongRef<Data> data;
-
-	// File extension.
-	std::string ext;
 
 	// When the decoder decodes data incrementally, it writes
 	// this many bytes at a time (at most).

@@ -44,7 +44,7 @@ class GmeDecoder : public Decoder
 {
 public:
 
-	GmeDecoder(Data *data, const std::string &ext, int bufferSize);
+	GmeDecoder(Data *data, int bufferSize);
 	virtual ~GmeDecoder();
 
 	static bool accepts(const std::string &ext);

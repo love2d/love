@@ -50,7 +50,7 @@ class VorbisDecoder : public Decoder
 {
 public:
 
-	VorbisDecoder(Data *data, const std::string &ext, int bufferSize);
+	VorbisDecoder(Data *data, int bufferSize);
 	virtual ~VorbisDecoder();
 
 	static bool accepts(const std::string &ext);

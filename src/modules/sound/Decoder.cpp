@@ -29,9 +29,8 @@ namespace sound
 
 love::Type Decoder::type("Decoder", &Object::type);
 
-Decoder::Decoder(Data *data, const std::string &ext, int bufferSize)
+Decoder::Decoder(Data *data, int bufferSize)
 	: data(data)
-	, ext(ext)
 	, bufferSize(bufferSize)
 	, sampleRate(DEFAULT_SAMPLE_RATE)
 	, buffer(0)

@@ -60,8 +60,8 @@ static wuff_sint32 tell_callback(void *userdata, wuff_uint64 *offset)
 wuff_callback WaveDecoderCallbacks = {read_callback, seek_callback, tell_callback};
 
 
-WaveDecoder::WaveDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+WaveDecoder::WaveDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 {
 	dataFile.data = (char *) data->getData();
 	dataFile.size = data->getSize();
@@ -117,7 +117,7 @@ bool WaveDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *WaveDecoder::clone()
 {
-	return new WaveDecoder(data.get(), ext, bufferSize);
+	return new WaveDecoder(data.get(), bufferSize);
 }
 
 int WaveDecoder::decode()
