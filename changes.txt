@@ -8,6 +8,8 @@ Released: N/A
 * Added love.window.get/setVSync, to allow setting vsync without recreating the window.
 * Added love.window.getSafeArea, currently only fully implemented on iOS.
 
+* Changed audio file type detection, so it probes all supported backends for unrecognized extensions.
+
 * Fixed the deprecation system not fully restarting when love.event.quit("restart") is used.
 * Fixed love.math.hash returning an incorrect hash for certain input sizes.
 * Fixed t.audio.mixwithsystem.

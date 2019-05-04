@@ -21,6 +21,7 @@
 #include "common/config.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "Sound.h"
 
@@ -37,6 +38,27 @@
 #ifdef LOVE_SUPPORT_COREAUDIO
 #	include "CoreAudioDecoder.h"
 #endif
+
+struct DecoderImpl
+{
+	love::sound::Decoder *(*create)(love::filesystem::FileData *data, int bufferSize);
+	bool (*accepts)(const std::string& ext);
+};
+
+template<typename DecoderType>
+DecoderImpl DecoderImplFor()
+{
+	DecoderImpl decoderImpl;
+	decoderImpl.create = [](love::filesystem::FileData *data, int bufferSize) -> love::sound::Decoder*
+	{
+		return new DecoderType(data, bufferSize);
+	};
+	decoderImpl.accepts = [](const std::string& ext) -> bool
+	{
+		return DecoderType::accepts(ext);
+	};
+	return decoderImpl;
+}
 
 namespace love
 {
@@ -66,37 +88,53 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	std::string ext = data->getExtension();
 	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
-	sound::Decoder *decoder = nullptr;
-
-	// Find a suitable decoder here, and return it.
-	if (false)
-		/* nothing */;
+	std::vector<DecoderImpl> possibleDecoders = {
 #ifndef LOVE_NO_MODPLUG
-	else if (ModPlugDecoder::accepts(ext))
-		decoder = new ModPlugDecoder(data, bufferSize);
+		DecoderImplFor<ModPlugDecoder>(),
 #endif // LOVE_NO_MODPLUG
 #ifndef LOVE_NOMPG123
-	else if (Mpg123Decoder::accepts(ext))
-		decoder = new Mpg123Decoder(data, bufferSize);
+		DecoderImplFor<Mpg123Decoder>(),
 #endif // LOVE_NOMPG123
-	else if (VorbisDecoder::accepts(ext))
-		decoder = new VorbisDecoder(data, bufferSize);
+		DecoderImplFor<VorbisDecoder>(),
 #ifdef LOVE_SUPPORT_GME
-	else if (GmeDecoder::accepts(ext))
-		decoder = new GmeDecoder(data, bufferSize);
+		DecoderImplFor<GmeDecoder>(),
 #endif // LOVE_SUPPORT_GME
 #ifdef LOVE_SUPPORT_COREAUDIO
-	else if (CoreAudioDecoder::accepts(ext))
-		decoder = new CoreAudioDecoder(data, bufferSize);
+		DecoderImplFor<CoreAudioDecoder>(),
 #endif
-	else if (WaveDecoder::accepts(ext))
-		decoder = new WaveDecoder(data, bufferSize);
-	/*else if (FLACDecoder::accepts(ext))
-		decoder = new FLACDecoder(data, bufferSize);*/
+		DecoderImplFor<WaveDecoder>(),
+		// DecoderImplFor<FLACDecoder>(),
+		// DecoderImplFor<OtherDecoder>(),
+	};
 
-	// else if (OtherDecoder::accept(ext))
+	// First find a matching decoder based on extension
+	for (DecoderImpl &possibleDecoder : possibleDecoders)
+	{
+		if (possibleDecoder.accepts(ext))
+			return possibleDecoder.create(data, bufferSize);
+	}
 
-	return decoder;
+	// If that fails, start probing instead
+	std::stringstream decodingErrors;
+	decodingErrors << "Failed to determine file type:\n";
+	for (DecoderImpl &possibleDecoder : possibleDecoders)
+	{
+		try
+		{
+			sound::Decoder *decoder = possibleDecoder.create(data, bufferSize);
+			return decoder;
+		}
+		catch (love::Exception &e)
+		{
+			decodingErrors << e.what() << '\n';
+		}
+	}
+
+	// Probing failed too, bail with the accumulated errors
+	throw love::Exception(decodingErrors.str().c_str());
+
+	// Unreachable, but here to prevent (possible) warnings
+	return nullptr;
 }
 
 } // lullaby
