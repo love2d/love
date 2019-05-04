@@ -158,6 +158,12 @@ Mpg123Decoder::Mpg123Decoder(Data *data, int bufferSize)
 		mpg123_format(handle, rate, channels, MPG123_ENC_SIGNED_16);
 
 		sampleRate = (int) rate;
+
+		// Force a read, so we can determine if it's actually an mp3
+		struct mpg123_frameinfo info;
+		ret = mpg123_info(handle, &info);
+		if (ret != MPG123_OK)
+			throw love::Exception("Could not read mp3 data.");
 	}
 	catch (love::Exception &)
 	{
