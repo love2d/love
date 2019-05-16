@@ -232,7 +232,6 @@ Source::Source(const Source &s)
 	, maxDistance(s.maxDistance)
 	, cone(s.cone)
 	, offsetSamples(0)
-	, offsetSeconds(0)
 	, sampleRate(s.sampleRate)
 	, channels(s.channels)
 	, bitDepth(s.bitDepth)
@@ -396,8 +395,6 @@ bool Source::update()
 		case TYPE_STREAM:
 			if (!isFinished())
 			{
-				int freq = decoder->getSampleRate();
-
 				ALint processed;
 				alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 
@@ -411,19 +408,16 @@ bool Source::update()
 				// from https://bitbucket.org/rude/love/issues/1484/
 				while (processed--)
 				{
-					float curOffsetSamples, curOffsetSecs;
-					alGetSourcef(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
-					curOffsetSecs = curOffsetSamples / freq;
+					int curOffsetSamples;
+					alGetSourcei(source, AL_SAMPLE_OFFSET, &curOffsetSamples);
 
 					ALuint buffer;
 					alSourceUnqueueBuffers(source, 1, &buffer);
 
-					float newOffsetSamples, newOffsetSecs;
-					alGetSourcef(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
-					newOffsetSecs = newOffsetSamples / freq;
+					int newOffsetSamples;
+					alGetSourcei(source, AL_SAMPLE_OFFSET, &newOffsetSamples);
 
 					offsetSamples += (curOffsetSamples - newOffsetSamples);
-					offsetSeconds += (curOffsetSecs - newOffsetSecs);
 
 					if (streamAtomic(buffer, decoder.get()) > 0)
 						alSourceQueueBuffers(source, 1, &buffer);
@@ -504,7 +498,8 @@ void Source::seek(float offset, Source::Unit unit)
 {
 	Lock l = pool->lock();
 
-	float offsetSamples, offsetSeconds;
+	int offsetSamples = 0;
+	float offsetSeconds = 0.0f;
 
 	switch (unit)
 	{
@@ -525,7 +520,7 @@ void Source::seek(float offset, Source::Unit unit)
 		case TYPE_STATIC:
 			if (valid)
 			{
-				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+				alSourcei(source, AL_SAMPLE_OFFSET, offsetSamples);
 				offsetSamples = offsetSeconds = 0;
 			}
 			break;
@@ -545,7 +540,7 @@ void Source::seek(float offset, Source::Unit unit)
 		case TYPE_QUEUE:
 			if (valid)
 			{
-				alSourcef(source, AL_SAMPLE_OFFSET, offsetSamples);
+				alSourcei(source, AL_SAMPLE_OFFSET, offsetSamples);
 				offsetSamples = offsetSeconds = 0;
 			}
 			else
@@ -580,31 +575,23 @@ void Source::seek(float offset, Source::Unit unit)
 		return;
 	}
 	this->offsetSamples = offsetSamples;
-	this->offsetSeconds = offsetSeconds;
 }
 
 float Source::tell(Source::Unit unit)
 {
 	Lock l = pool->lock();
 
-	float offset = 0.0f;
+	int offset = 0;
 
-	switch (unit)
-	{
-	case Source::UNIT_SAMPLES:
-		if (valid)
-			alGetSourcef(source, AL_SAMPLE_OFFSET, &offset);
-		offset += offsetSamples;
-		break;
-	case Source::UNIT_SECONDS:
-	default:
-		if (valid)
-			alGetSourcef(source, AL_SEC_OFFSET, &offset);
-		offset += offsetSeconds;
-		break;
-	}
+	if (valid)
+		alGetSourcei(source, AL_SAMPLE_OFFSET, &offset);
 
-	return offset;
+	offset += offsetSamples;
+
+	if (unit == UNIT_SECONDS)
+		return offset / (float)sampleRate;
+	else
+		return offset;
 }
 
 double Source::getDuration(Unit unit)
@@ -915,7 +902,7 @@ void Source::teardownAtomic()
 
 	toLoop = 0;
 	valid = false;
-	offsetSamples = offsetSeconds = 0;
+	offsetSamples = 0;
 }
 
 bool Source::playAtomic(ALuint source)
@@ -945,7 +932,7 @@ bool Source::playAtomic(ALuint source)
 
 	// Static sources: reset the pending offset since it's not valid anymore.
 	if (sourceType != TYPE_STREAM)
-		offsetSamples = offsetSeconds = 0;
+		offsetSamples = 0;
 
 	return success;
 }
@@ -1030,7 +1017,7 @@ bool Source::play(const std::vector<love::audio::Source*> &sources)
 		source->valid = source->valid || success;
 
 		if (success && source->sourceType != TYPE_STREAM)
-			source->offsetSamples = source->offsetSeconds = 0;
+			source->offsetSamples = 0;
 	}
 
 	return success;
@@ -1175,7 +1162,6 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 		if (--toLoop == 0)
 		{
 			offsetSamples = 0;
-			offsetSeconds = 0;
 		}
 	}
 

@@ -213,8 +213,7 @@ private:
 		float outerHighGain = 1.0f;
 	} cone;
 
-	float offsetSamples = 0.0f;
-	float offsetSeconds = 0.0f;
+	int offsetSamples = 0;
 
 	int sampleRate = 0;
 	int channels = 0;
