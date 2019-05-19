@@ -274,12 +274,18 @@ static int w_love_isVersionCompatible(lua_State *L)
 	std::string version;
 
 	if (lua_type(L, 1) == LUA_TSTRING)
+	{
 		version = luaL_checkstring(L, 1);
+
+		// Convert major.minor to major.minor.revision.
+		if (std::count(version.begin(), version.end(), '.') < 2)
+			version.append(".0");
+	}
 	else
 	{
 		int major = (int) luaL_checkinteger(L, 1);
 		int minor = (int) luaL_checkinteger(L, 2);
-		int rev   = (int) luaL_checkinteger(L, 3);
+		int rev   = (int) luaL_optinteger(L, 3, 0);
 
 		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
 		// array of version strings.
@@ -291,7 +297,13 @@ static int w_love_isVersionCompatible(lua_State *L)
 
 	for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
 	{
-		if (version.compare(love::VERSION_COMPATIBILITY[i]) != 0)
+		std::string v(love::VERSION_COMPATIBILITY[i]);
+
+		// Convert major.minor to major.minor.revision.
+		if (std::count(v.begin(), v.end(), '.') < 2)
+			v.append(".0");
+
+		if (version.compare(v) != 0)
 			continue;
 
 		lua_pushboolean(L, true);
