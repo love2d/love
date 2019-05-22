@@ -213,6 +213,9 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 	if (position < lastFrame)
 		seekDecoder(position);
 
+	th_ycbcr_buffer bufferinfo;
+	bool hasFrame = false;
+
 	// Until we are at the end of the stream, or we are displaying the right frame
 	unsigned int framesBehind = 0;
 	bool failedSeek = false;
@@ -226,8 +229,8 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 			failedSeek = true;
 		}
 
-		th_ycbcr_buffer bufferinfo;
 		th_decode_ycbcr_out(decoder, bufferinfo);
+		hasFrame = true;
 
 		ogg_int64_t granulePosition;
 		do
@@ -237,7 +240,11 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 		} while (th_decode_packetin(decoder, &packet, &granulePosition) != 0);
 		lastFrame = nextFrame;
 		nextFrame = th_granule_time(decoder, granulePosition);
+	}
 
+	// Only swap once, even if we read many frames to get here
+	if (hasFrame)
+	{
 		// Don't swap whilst we're writing to the backbuffer
 		{
 			love::thread::Lock l(bufferMutex);
