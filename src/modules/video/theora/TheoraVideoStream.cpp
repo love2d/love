@@ -214,14 +214,16 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 		seekDecoder(position);
 
 	// Until we are at the end of the stream, or we are displaying the right frame
-	unsigned int lagCounter = 0;
+	unsigned int framesBehind = 0;
+	bool failedSeek = false;
 	while (!demuxer.isEos() && position >= nextFrame)
 	{
 		// If we can't catch up, seek
-		if (lagCounter++ > 5)
+		if (framesBehind++ > 5 && !failedSeek)
 		{
 			seekDecoder(position);
-			lagCounter = 0;
+			framesBehind = 0;
+			failedSeek = true;
 		}
 
 		th_ycbcr_buffer bufferinfo;
