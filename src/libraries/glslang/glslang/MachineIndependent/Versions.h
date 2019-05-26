@@ -74,7 +74,7 @@ inline const char* ProfileName(EProfile profile)
 }
 
 //
-// What source rules, validation rules, target language, etc. are needed
+// What source rules, validation rules, target language, etc. are needed or
 // desired for SPIR-V?
 //
 // 0 means a target or rule set is not enabled (ignore rules from that entity).
@@ -110,6 +110,7 @@ const char* const E_GL_OES_standard_derivatives         = "GL_OES_standard_deriv
 const char* const E_GL_EXT_frag_depth                   = "GL_EXT_frag_depth";
 const char* const E_GL_OES_EGL_image_external           = "GL_OES_EGL_image_external";
 const char* const E_GL_OES_EGL_image_external_essl3     = "GL_OES_EGL_image_external_essl3";
+const char* const E_GL_EXT_YUV_target                   = "GL_EXT_YUV_target";
 const char* const E_GL_EXT_shader_texture_lod           = "GL_EXT_shader_texture_lod";
 const char* const E_GL_EXT_shadow_samplers              = "GL_EXT_shadow_samplers";
 
@@ -170,6 +171,8 @@ const char* const E_GL_EXT_nonuniform_qualifier             = "GL_EXT_nonuniform
 const char* const E_GL_EXT_samplerless_texture_functions    = "GL_EXT_samplerless_texture_functions";
 const char* const E_GL_EXT_scalar_block_layout              = "GL_EXT_scalar_block_layout";
 const char* const E_GL_EXT_fragment_invocation_density      = "GL_EXT_fragment_invocation_density";
+const char* const E_GL_EXT_buffer_reference                 = "GL_EXT_buffer_reference";
+const char* const E_GL_EXT_buffer_reference2                = "GL_EXT_buffer_reference2";
 
 // Arrays of extensions for the above viewportEXTs duplications
 
@@ -223,6 +226,8 @@ const char* const E_GL_NV_mesh_shader                           = "GL_NV_mesh_sh
 const char* const viewportEXTs[] = { E_GL_ARB_shader_viewport_layer_array, E_GL_NV_viewport_array2 };
 const int Num_viewportEXTs = sizeof(viewportEXTs) / sizeof(viewportEXTs[0]);
 #endif
+
+const char* const E_GL_NV_cooperative_matrix                    = "GL_NV_cooperative_matrix";
 
 // AEP
 const char* const E_GL_ANDROID_extension_pack_es31a             = "GL_ANDROID_extension_pack_es31a";

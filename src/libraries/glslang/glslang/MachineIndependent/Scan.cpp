@@ -592,6 +592,8 @@ void TScanContext::fillInKeywordMap()
 
     (*KeywordMap)["samplerExternalOES"] =      SAMPLEREXTERNALOES; // GL_OES_EGL_image_external
 
+    (*KeywordMap)["__samplerExternal2DY2YEXT"] = SAMPLEREXTERNAL2DY2YEXT; // GL_EXT_YUV_target
+
     (*KeywordMap)["sampler"] =                 SAMPLER;
     (*KeywordMap)["samplerShadow"] =           SAMPLERSHADOW;
 
@@ -712,6 +714,8 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["taskNV"] =                  PERTASKNV;
 #endif
 
+    (*KeywordMap)["fcoopmatNV"] =              FCOOPMATNV;
+
     ReservedSet = new std::unordered_set<const char*, str_hash, str_eq>;
 
     ReservedSet->insert("common");
@@ -776,7 +780,7 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
         loc = ppToken.loc;
         parserToken->sType.lex.loc = loc;
         switch (token) {
-        case ';':  afterType = false;   return SEMICOLON;
+        case ';':  afterType = false; afterBuffer = false; return SEMICOLON;
         case ',':  afterType = false;   return COMMA;
         case ':':                       return COLON;
         case '=':  afterType = false;   return EQUAL;
@@ -798,7 +802,7 @@ int TScanContext::tokenize(TPpContext* pp, TParserToken& token)
         case '?':                       return QUESTION;
         case '[':                       return LEFT_BRACKET;
         case ']':                       return RIGHT_BRACKET;
-        case '{':  afterStruct = false; return LEFT_BRACE;
+        case '{':  afterStruct = false; afterBuffer = false; return LEFT_BRACE;
         case '}':                       return RIGHT_BRACE;
         case '\\':
             parseContext.error(loc, "illegal use of escape character", "\\", "");
@@ -945,6 +949,7 @@ int TScanContext::tokenizeIdentifier()
         return keyword;
 
     case BUFFER:
+        afterBuffer = true;
         if ((parseContext.profile == EEsProfile && parseContext.version < 310) ||
             (parseContext.profile != EEsProfile && parseContext.version < 430))
             return identifierOrType();
@@ -1428,6 +1433,13 @@ int TScanContext::tokenizeIdentifier()
             return keyword;
         return identifierOrType();
 
+    case SAMPLEREXTERNAL2DY2YEXT:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_EXT_YUV_target))
+            return keyword;
+        return identifierOrType();
+
     case TEXTURE2D:
     case TEXTURECUBE:
     case TEXTURECUBEARRAY:
@@ -1621,6 +1633,13 @@ int TScanContext::tokenizeIdentifier()
         return identifierOrType();
 #endif
 
+    case FCOOPMATNV:
+        afterType = true;
+        if (parseContext.symbolTable.atBuiltInLevel() ||
+            parseContext.extensionTurnedOn(E_GL_NV_cooperative_matrix))
+            return keyword;
+        return identifierOrType();
+
     default:
         parseContext.infoSink.info.message(EPrefixInternalError, "Unknown glslang keyword", loc);
         return 0;
@@ -1636,7 +1655,9 @@ int TScanContext::identifierOrType()
     parserToken->sType.lex.symbol = parseContext.symbolTable.find(*parserToken->sType.lex.string);
     if ((afterType == false && afterStruct == false) && parserToken->sType.lex.symbol != nullptr) {
         if (const TVariable* variable = parserToken->sType.lex.symbol->getAsVariable()) {
-            if (variable->isUserType()) {
+            if (variable->isUserType() &&
+                // treat redeclaration of forward-declared buffer/uniform reference as an identifier
+                !(variable->getType().getBasicType() == EbtReference && afterBuffer)) {
                 afterType = true;
 
                 return TYPE_NAME;

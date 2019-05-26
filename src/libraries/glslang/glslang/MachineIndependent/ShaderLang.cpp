@@ -377,6 +377,8 @@ bool InitializeSymbolTables(TInfoSink& infoSink, TSymbolTable** commonTable,  TS
                                    infoSink, commonTable, symbolTables);
 #endif
 
+
+
     return true;
 }
 
@@ -472,6 +474,16 @@ void SetupBuiltinSymbolTable(int version, EProfile profile, const SpvVersion& sp
     SetThreadPoolAllocator(&previousAllocator);
 
     glslang::ReleaseGlobalLock();
+}
+
+// Function to Print all builtins
+void DumpBuiltinSymbolTable(TInfoSink& infoSink, const TSymbolTable& symbolTable)
+{
+    infoSink.debug << "BuiltinSymbolTable {\n";
+
+    symbolTable.dump(infoSink, true);
+
+    infoSink.debug << "}\n";
 }
 
 // Return true if the shader was correctly specified for version/profile/stage.
@@ -879,8 +891,11 @@ bool ProcessDeferred(
         intermediate.setHlslOffsets();
     if (messages & EShMsgDebugInfo) {
         intermediate.setSourceFile(names[numPre]);
-        for (int s = 0; s < numStrings; ++s)
-            intermediate.addSourceText(strings[numPre + s]);
+        for (int s = 0; s < numStrings; ++s) {
+            // The string may not be null-terminated, so make sure we provide
+            // the length along with the string.
+            intermediate.addSourceText(strings[numPre + s], lengths[numPre + s]);
+        }
     }
     SetupBuiltinSymbolTable(version, profile, spvVersion, source);
 
@@ -901,6 +916,9 @@ bool ProcessDeferred(
                                     stage, source)) {
         return false;
     }
+
+    if (messages & EShMsgBuiltinSymbolTable)
+        DumpBuiltinSymbolTable(compiler->infoSink, *symbolTable);
 
     //
     // Now we can process the full shader under proper symbols and rules.
@@ -1332,7 +1350,7 @@ void ShDestruct(ShHandle handle)
 //
 // Cleanup symbol tables
 //
-int __fastcall ShFinalize()
+int ShFinalize()
 {
     glslang::GetGlobalLock();
     --NumberOfClients;
@@ -1963,12 +1981,27 @@ const char* TProgram::getInfoDebugLog()
 // Reflection implementation.
 //
 
-bool TProgram::buildReflection()
+bool TProgram::buildReflection(int opts)
 {
     if (! linked || reflection)
         return false;
 
-    reflection = new TReflection;
+    int firstStage = EShLangVertex, lastStage = EShLangFragment;
+
+    if (opts & EShReflectionIntermediateIO) {
+        // if we're reflecting intermediate I/O, determine the first and last stage linked and use those as the
+        // boundaries for which stages generate pipeline inputs/outputs
+        firstStage = EShLangCount;
+        lastStage = 0;
+        for (int s = 0; s < EShLangCount; ++s) {
+            if (intermediate[s]) {
+                firstStage = std::min(firstStage, s);
+                lastStage = std::max(lastStage, s);
+            }
+        }
+    }
+
+    reflection = new TReflection((EShReflectionOptions)opts, (EShLanguage)firstStage, (EShLanguage)lastStage);
 
     for (int s = 0; s < EShLangCount; ++s) {
         if (intermediate[s]) {
@@ -1980,27 +2013,23 @@ bool TProgram::buildReflection()
     return true;
 }
 
-int TProgram::getNumLiveUniformVariables() const             { return reflection->getNumUniforms(); }
-int TProgram::getNumLiveUniformBlocks() const                { return reflection->getNumUniformBlocks(); }
-const char* TProgram::getUniformName(int index) const        { return reflection->getUniform(index).name.c_str(); }
-const char* TProgram::getUniformBlockName(int index) const   { return reflection->getUniformBlock(index).name.c_str(); }
-int TProgram::getUniformBlockSize(int index) const           { return reflection->getUniformBlock(index).size; }
-int TProgram::getUniformIndex(const char* name) const        { return reflection->getIndex(name); }
-int TProgram::getUniformBinding(int index) const             { return reflection->getUniform(index).getBinding(); }
-EShLanguageMask TProgram::getUniformStages(int index) const  { return reflection->getUniform(index).stages; }
-int TProgram::getUniformBlockBinding(int index) const        { return reflection->getUniformBlock(index).getBinding(); }
-int TProgram::getUniformBlockIndex(int index) const          { return reflection->getUniform(index).index; }
-int TProgram::getUniformBlockCounterIndex(int index) const   { return reflection->getUniformBlock(index).counterIndex; }
-int TProgram::getUniformType(int index) const                { return reflection->getUniform(index).glDefineType; }
-int TProgram::getUniformBufferOffset(int index) const        { return reflection->getUniform(index).offset; }
-int TProgram::getUniformArraySize(int index) const           { return reflection->getUniform(index).size; }
-int TProgram::getNumLiveAttributes() const                   { return reflection->getNumAttributes(); }
-const char* TProgram::getAttributeName(int index) const      { return reflection->getAttribute(index).name.c_str(); }
-int TProgram::getAttributeType(int index) const              { return reflection->getAttribute(index).glDefineType; }
-const TType* TProgram::getAttributeTType(int index) const    { return reflection->getAttribute(index).getType(); }
-const TType* TProgram::getUniformTType(int index) const      { return reflection->getUniform(index).getType(); }
-const TType* TProgram::getUniformBlockTType(int index) const { return reflection->getUniformBlock(index).getType(); }
-unsigned TProgram::getLocalSize(int dim) const               { return reflection->getLocalSize(dim); }
+unsigned TProgram::getLocalSize(int dim) const                      { return reflection->getLocalSize(dim); }
+int TProgram::getReflectionIndex(const char* name) const            { return reflection->getIndex(name); }
+
+int TProgram::getNumUniformVariables() const                          { return reflection->getNumUniforms(); }
+const TObjectReflection& TProgram::getUniform(int index) const        { return reflection->getUniform(index); }
+int TProgram::getNumUniformBlocks() const                             { return reflection->getNumUniformBlocks(); }
+const TObjectReflection& TProgram::getUniformBlock(int index) const   { return reflection->getUniformBlock(index); }
+int TProgram::getNumPipeInputs() const                                { return reflection->getNumPipeInputs(); }
+const TObjectReflection& TProgram::getPipeInput(int index) const      { return reflection->getPipeInput(index); }
+int TProgram::getNumPipeOutputs() const                               { return reflection->getNumPipeOutputs(); }
+const TObjectReflection& TProgram::getPipeOutput(int index) const     { return reflection->getPipeOutput(index); }
+int TProgram::getNumBufferVariables() const                           { return reflection->getNumBufferVariables(); }
+const TObjectReflection& TProgram::getBufferVariable(int index) const { return reflection->getBufferVariable(index); }
+int TProgram::getNumBufferBlocks() const                              { return reflection->getNumStorageBuffers(); }
+const TObjectReflection& TProgram::getBufferBlock(int index) const    { return reflection->getStorageBufferBlock(index); }
+int TProgram::getNumAtomicCounters() const                            { return reflection->getNumAtomicCounters(); }
+const TObjectReflection& TProgram::getAtomicCounter(int index) const  { return reflection->getAtomicCounter(index); }
 
 void TProgram::dumpReflection()                      { reflection->dump(); }
 
