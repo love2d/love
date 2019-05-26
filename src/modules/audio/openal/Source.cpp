@@ -425,6 +425,18 @@ bool Source::update()
 						unusedBuffers.push(buffer);
 				}
 
+				while (!unusedBuffers.empty())
+				{
+					ALuint b = unusedBuffers.top();
+					if (streamAtomic(b, decoder.get()) > 0)
+					{
+						alSourceQueueBuffers(source, 1, &b);
+						unusedBuffers.pop();
+					}
+					else
+						break;
+				}
+
 				return true;
 			}
 			return false;
@@ -869,7 +881,8 @@ void Source::teardownAtomic()
 		ALint queued = 0;
 		ALuint buffers[MAX_BUFFERS];
 
-		decoder->seek(0);
+		// Some decoders (e.g. ModPlug) can rewind() more reliably than seek(0).
+		decoder->rewind();
 
 		// Drain buffers.
 		// NOTE: The Apple implementation of OpenAL on iOS doesn't return
