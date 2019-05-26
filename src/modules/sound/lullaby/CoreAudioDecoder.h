@@ -54,7 +54,7 @@ public:
 
 	love::sound::Decoder *clone();
 	int decode();
-	bool seek(float s);
+	bool seek(double s);
 	bool rewind();
 	bool isSeekable();
 	int getChannelCount() const;

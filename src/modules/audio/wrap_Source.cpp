@@ -105,7 +105,7 @@ int w_Source_getVolume(lua_State *L)
 int w_Source_seek(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	float offset = (float)luaL_checknumber(L, 2);
+	double offset = luaL_checknumber(L, 2);
 	if (offset < 0)
 		return luaL_argerror(L, 2, "can't seek to a negative position");
 

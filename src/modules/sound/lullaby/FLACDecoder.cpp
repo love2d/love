@@ -78,9 +78,9 @@ int FLACDecoder::decode()
 	return bufferSize;
 }
 
-bool FLACDecoder::seek(float s)
+bool FLACDecoder::seek(double s)
 {
-	return seek_absolute((int)(s*1000.0f));
+	return seek_absolute((int)(s*1000.0));
 }
 
 bool FLACDecoder::rewind()

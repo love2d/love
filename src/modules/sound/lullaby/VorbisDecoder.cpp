@@ -209,7 +209,7 @@ int VorbisDecoder::decode()
 	return size;
 }
 
-bool VorbisDecoder::seek(float s)
+bool VorbisDecoder::seek(double s)
 {
 	int result = 0;
 

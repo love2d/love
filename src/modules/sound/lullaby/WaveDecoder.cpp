@@ -143,7 +143,7 @@ int WaveDecoder::decode()
 	return (int) size;
 }
 
-bool WaveDecoder::seek(float s)
+bool WaveDecoder::seek(double s)
 {
 	int wuff_status = wuff_seek(handle, (wuff_uint64) (s * info.sample_rate));
 

@@ -72,8 +72,8 @@ public:
 	virtual void setVolume(float volume) = 0;
 	virtual float getVolume() const = 0;
 
-	virtual void seek(float offset, Unit unit) = 0;
-	virtual float tell(Unit unit) = 0;
+	virtual void seek(double offset, Unit unit) = 0;
+	virtual double tell(Unit unit) = 0;
 	virtual double getDuration(Unit unit) = 0;
 
 	// all float * v must be of size 3

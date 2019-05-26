@@ -50,8 +50,8 @@ public:
 	virtual float getPitch() const;
 	virtual void setVolume(float volume);
 	virtual float getVolume() const;
-	virtual void seek(float offset, Unit unit);
-	virtual float tell(Unit unit);
+	virtual void seek(double offset, Unit unit);
+	virtual double tell(Unit unit);
 	virtual double getDuration(Unit unit);
 	virtual void setPosition(float *v);
 	virtual void getPosition(float *v) const;

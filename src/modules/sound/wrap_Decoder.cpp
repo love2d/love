@@ -96,7 +96,7 @@ int w_Decoder_decode(lua_State *L)
 int w_Decoder_seek(lua_State *L)
 {
 	Decoder *t = luax_checkdecoder(L, 1);
-	float offset = luaL_checknumber(L, 2);
+	double offset = luaL_checknumber(L, 2);
 	if (offset < 0)
 		return luaL_argerror(L, 2, "can't seek to a negative position");
 	else if (offset == 0)

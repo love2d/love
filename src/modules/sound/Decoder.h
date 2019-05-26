@@ -98,7 +98,7 @@ public:
 	 * @param s The position in the stream in seconds.
 	 * @return True if success, false on fail/unsupported.
 	 **/
-	virtual bool seek(float s) = 0;
+	virtual bool seek(double s) = 0;
 
 	/**
 	 * Rewinds the stream to the start.

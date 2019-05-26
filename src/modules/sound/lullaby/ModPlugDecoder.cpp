@@ -111,9 +111,9 @@ int ModPlugDecoder::decode()
 	return r;
 }
 
-bool ModPlugDecoder::seek(float s)
+bool ModPlugDecoder::seek(double s)
 {
-	ModPlug_Seek(plug, (int)(s*1000.0f));
+	ModPlug_Seek(plug, (int)(s*1000.0));
 	return true;
 }
 

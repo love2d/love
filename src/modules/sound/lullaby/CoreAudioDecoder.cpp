@@ -227,7 +227,7 @@ int CoreAudioDecoder::decode()
 	return size;
 }
 
-bool CoreAudioDecoder::seek(float s)
+bool CoreAudioDecoder::seek(double s)
 {
 	OSStatus err = ExtAudioFileSeek(extAudioFile, (SInt64) (s * inputInfo.mSampleRate));
 

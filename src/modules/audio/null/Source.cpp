@@ -90,11 +90,11 @@ float Source::getVolume() const
 	return volume;
 }
 
-void Source::seek(float, Source::Unit)
+void Source::seek(double, Source::Unit)
 {
 }
 
-float Source::tell(Source::Unit)
+double Source::tell(Source::Unit)
 {
 	return 0.0f;
 }

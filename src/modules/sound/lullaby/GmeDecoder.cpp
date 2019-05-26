@@ -109,9 +109,9 @@ int GmeDecoder::decode()
 	return bufferSize;
 }
 
-bool GmeDecoder::seek(float s)
+bool GmeDecoder::seek(double s)
 {
-	return gme_seek(emu, static_cast<long>(s * 1000.f)) != 0;
+	return gme_seek(emu, static_cast<long>(s * 1000.0)) != 0;
 }
 
 bool GmeDecoder::rewind()

@@ -232,7 +232,7 @@ int Mpg123Decoder::decode()
 	return size;
 }
 
-bool Mpg123Decoder::seek(float s)
+bool Mpg123Decoder::seek(double s)
 {
 	off_t offset = (off_t) (s * (double) sampleRate);
 
