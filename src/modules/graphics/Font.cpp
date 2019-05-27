@@ -153,9 +153,19 @@ void Font::createTexture()
 	image->setFilter(filter);
 
 	{
-		// Initialize the texture with transparent black.
 		size_t bpp = getPixelFormatSize(pixelFormat);
-		std::vector<uint8> emptydata(size.width * size.height * bpp, 0);
+		size_t pixelcount = size.width * size.height;
+
+		// Initialize the texture with transparent white for Luminance-Alpha
+		// formats (since we keep luminance constant and vary alpha in those
+		// glyphs), and transparent black otherwise.
+		std::vector<uint8> emptydata(pixelcount * bpp, 0);
+
+		if (pixelFormat == PIXELFORMAT_LA8)
+		{
+			for (size_t i = 0; i < pixelcount; i++)
+				emptydata[i * 2 + 0] = 255;
+		}
 
 		Rect rect = {0, 0, size.width, size.height};
 		image->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
