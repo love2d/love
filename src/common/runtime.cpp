@@ -241,7 +241,7 @@ double luax_numberflag(lua_State *L, int table_index, const char *key, double de
 {
 	lua_getfield(L, table_index, key);
 
-	int retval;
+	double retval;
 	if (!lua_isnumber(L, -1))
 		retval = defaultValue;
 	else
