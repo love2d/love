@@ -164,7 +164,7 @@ bool OpenGL::initContext()
 		// the 7000 series. We'll assume this bug doesn't affect those newer
 		// GPUs / drivers.
 		const char *device = (const char *) glGetString(GL_RENDERER);
-		if (strstr(device, "ATI Radeon HD "))
+		if (strstr(device, "ATI Radeon HD ") || strstr(device, "ATI Mobility Radeon HD"))
 			bugs.texStorageBreaksSubImage = true;
 	}
 #endif
