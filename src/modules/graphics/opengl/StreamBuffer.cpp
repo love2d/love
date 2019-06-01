@@ -206,7 +206,6 @@ public:
 	{
 		// We insert a fence for all data from this frame at the end of the
 		// frame (in nextFrame), rather than doing anything more fine-grained.
-
 		frameGPUReadOffset += usedsize;
 	}
 
@@ -427,13 +426,9 @@ public:
 		return info;
 	}
 
-	size_t unmap(size_t usedsize) override
+	size_t unmap(size_t /*usedsize*/) override
 	{
 		size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
-
-		gl.bindBuffer(mode, vbo);
-		glFlushMappedBufferRange(glMode, offset, usedsize);
-
 		return offset;
 	}
 
