@@ -301,11 +301,14 @@ class StreamBufferPersistentMapSync final : public StreamBufferSync, public Vola
 {
 public:
 
-	StreamBufferPersistentMapSync(BufferType type, size_t size)
+	// Coherent mapping is supposedly faster on intel/nvidia aside from a couple
+	// old nvidia GPUs.
+	StreamBufferPersistentMapSync(BufferType type, size_t size, bool coherent = true)
 		: StreamBufferSync(type, size)
 		, vbo(0)
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
+		, coherent(coherent)
 	{
 		loadVolatile();
 	}
@@ -330,8 +333,11 @@ public:
 	{
 		size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
 
-		gl.bindBuffer(mode, vbo);
-		glFlushMappedBufferRange(glMode, offset, usedsize);
+		if (!coherent)
+		{
+			gl.bindBuffer(mode, vbo);
+			glFlushMappedBufferRange(glMode, offset, usedsize);
+		}
 
 		return offset;
 	}
@@ -347,7 +353,10 @@ public:
 		gl.bindBuffer(mode, vbo);
 
 		GLbitfield storageflags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
-		GLbitfield mapflags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
+		GLbitfield mapflags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+
+		storageflags |= (coherent ? GL_MAP_COHERENT_BIT : 0);
+		mapflags |= (coherent ? GL_MAP_COHERENT_BIT : GL_MAP_FLUSH_EXPLICIT_BIT);
 
 		glBufferStorage(glMode, bufferSize * BUFFER_FRAMES, nullptr, storageflags);
 		data = (uint8 *) glMapBufferRange(glMode, 0, bufferSize * BUFFER_FRAMES, mapflags);
@@ -377,6 +386,7 @@ private:
 	GLuint vbo;
 	GLenum glMode;
 	uint8 *data;
+	bool coherent;
 
 }; // StreamBufferPersistentMapSync
 
