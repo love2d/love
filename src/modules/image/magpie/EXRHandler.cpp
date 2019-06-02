@@ -118,18 +118,26 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	EXRImage exrImage;
 	InitEXRImage(&exrImage);
 
-	EXRVersion exrVersion;
-	if (ParseEXRVersionFromMemory(&exrVersion, mem, memsize) != TINYEXR_SUCCESS)
-		throw love::Exception("Could not parse EXR image header.");
+	try
+	{
+		EXRVersion exrVersion;
+		if (ParseEXRVersionFromMemory(&exrVersion, mem, memsize) != TINYEXR_SUCCESS)
+			throw love::Exception("Could not parse EXR image header.");
 
-	if (exrVersion.multipart || exrVersion.non_image || exrVersion.tiled)
-		throw love::Exception("Multi-part, tiled, and non-image EXR files are not supported.");
+		if (exrVersion.multipart || exrVersion.non_image || exrVersion.tiled)
+			throw love::Exception("Multi-part, tiled, and non-image EXR files are not supported.");
 
-	if (ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, mem, memsize, &err) != TINYEXR_SUCCESS)
-		throw love::Exception("Could not parse EXR image header: %s", err);
+		if (ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, mem, memsize, &err) != TINYEXR_SUCCESS)
+			throw love::Exception("Could not parse EXR image header: %s", err);
 
-	if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, memsize, &err) != TINYEXR_SUCCESS)
-		throw love::Exception("Could not decode EXR image: %s", err);
+		if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, memsize, &err) != TINYEXR_SUCCESS)
+			throw love::Exception("Could not decode EXR image: %s", err);
+	}
+	catch (love::Exception &)
+	{
+		FreeEXRErrorMessage(err);
+		throw;
+	}
 
 	int pixelType = exrHeader.pixel_types[0];
 
