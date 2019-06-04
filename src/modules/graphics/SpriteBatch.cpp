@@ -93,7 +93,7 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 	const Vector2 *quadpositions = quad->getVertexPositions();
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
-	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
+	// Always keep the buffer mapped when adding data (it'll be unmapped on draw.)
 	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
 	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
@@ -139,7 +139,7 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 	const Vector2 *quadpositions = quad->getVertexPositions();
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
-	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
+	// Always keep the buffer mapped when adding data (it'll be unmapped on draw.)
 	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
 	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
@@ -328,7 +328,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			Shader::current->checkMainTexture(texture);
 	}
 
-	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
+	// Make sure the buffer isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
 	Attributes attributes;
@@ -366,7 +366,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			mesh->vbo->unmap();
+			mesh->vertexBuffer->unmap();
 
 			const auto &formats = mesh->getVertexFormat();
 			const auto &format = formats[it.second.index];
@@ -377,7 +377,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			attributes.set(attributeindex, format.type, format.components, offset, stride, activebuffers);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.
-			buffers.set(activebuffers, mesh->vbo, 0);
+			buffers.set(activebuffers, mesh->vertexBuffer, 0);
 			activebuffers++;
 		}
 	}

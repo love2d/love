@@ -196,7 +196,7 @@ private:
 	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
 
 	// Vertex buffer, for the vertex data.
-	Buffer *vbo;
+	Buffer *vertexBuffer;
 	size_t vertexCount;
 	size_t vertexStride;
 
@@ -205,7 +205,7 @@ private:
 	char *vertexScratchBuffer;
 
 	// Index buffer, for the vertex map.
-	Buffer *ibo;
+	Buffer *indexBuffer;
 	bool useIndexBuffer;
 	size_t indexCount;
 	IndexDataType indexDataType;
