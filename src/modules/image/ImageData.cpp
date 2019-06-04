@@ -32,18 +32,16 @@ namespace image
 love::Type ImageData::type("ImageData", &Data::type);
 
 ImageData::ImageData(Data *data)
+	: ImageDataBase(PIXELFORMAT_UNKNOWN, 0, 0)
 {
 	decode(data);
 }
 
 ImageData::ImageData(int width, int height, PixelFormat format)
+	: ImageDataBase(format, width, height)
 {
 	if (!validPixelFormat(format))
 		throw love::Exception("Unsupported pixel format for ImageData");
-
-	this->width = width;
-	this->height = height;
-	this->format = format;
 
 	create(width, height, format);
 
@@ -52,13 +50,10 @@ ImageData::ImageData(int width, int height, PixelFormat format)
 }
 
 ImageData::ImageData(int width, int height, PixelFormat format, void *data, bool own)
+	: ImageDataBase(format, width, height)
 {
 	if (!validPixelFormat(format))
 		throw love::Exception("Unsupported pixel format for ImageData");
-
-	this->width = width;
-	this->height = height;
-	this->format = format;
 
 	if (own)
 		this->data = (unsigned char *) data;
@@ -67,11 +62,8 @@ ImageData::ImageData(int width, int height, PixelFormat format, void *data, bool
 }
 
 ImageData::ImageData(const ImageData &c)
+	: ImageDataBase(c.format, c.width, c.height)
 {
-	width = c.width;
-	height = c.height;
-	format = c.format;
-
 	create(width, height, format, c.getData());
 }
 

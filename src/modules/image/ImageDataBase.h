@@ -33,7 +33,6 @@ class ImageDataBase : public Data
 {
 public:
 
-	ImageDataBase();
 	virtual ~ImageDataBase() {}
 
 	PixelFormat getFormat() const;
@@ -44,6 +43,8 @@ public:
 	virtual bool isSRGB() const = 0;
 
 protected:
+
+	ImageDataBase(PixelFormat format, int width, int height);
 
 	PixelFormat format;
 	int width;

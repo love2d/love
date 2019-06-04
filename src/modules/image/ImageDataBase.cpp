@@ -25,10 +25,10 @@ namespace love
 namespace image
 {
 
-ImageDataBase::ImageDataBase()
-	: format(PIXELFORMAT_UNKNOWN)
-	, width(0)
-	, height(0)
+ImageDataBase::ImageDataBase(PixelFormat format, int width, int height)
+	: format(format)
+	, width(width)
+	, height(height)
 {
 }
 

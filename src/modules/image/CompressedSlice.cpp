@@ -46,23 +46,19 @@ CompressedMemory::~CompressedMemory()
 }
 
 CompressedSlice::CompressedSlice(PixelFormat format, int width, int height, CompressedMemory *memory, size_t offset, size_t size)
-	: memory(memory)
+	: ImageDataBase(format, width, height)
+	, memory(memory)
 	, offset(offset)
 	, dataSize(size)
 {
-	this->format = format;
-	this->width = width;
-	this->height = height;
 }
 
 CompressedSlice::CompressedSlice(const CompressedSlice &s)
-	: memory(s.memory)
+	: ImageDataBase(s.getFormat(), s.getWidth(), s.getHeight())
+	, memory(s.memory)
 	, offset(s.offset)
 	, dataSize(s.dataSize)
 {
-	this->format = s.getFormat();
-	this->width = s.getWidth();
-	this->height = s.getHeight();
 }
 
 CompressedSlice::~CompressedSlice()
