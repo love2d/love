@@ -21,13 +21,11 @@
 #ifndef LOVE_SOUND_LULLABY_FLAC_DECODER_H
 #define LOVE_SOUND_LULLABY_FLAC_DECODER_H
 
-#if 0
-
 // LOVE
 #include "common/Data.h"
 #include "sound/Decoder.h"
 
-#include <FLAC++/decoder.h>
+#include "dr_flac/dr_flac.h"
 #include <string.h>
 
 namespace love
@@ -37,7 +35,7 @@ namespace sound
 namespace lullaby
 {
 
-class FLACDecoder : public Decoder, public FLAC::Decoder::Stream
+class FLACDecoder : public Decoder
 {
 public:
 	FLACDecoder(Data *data, int bufferSize);
@@ -54,24 +52,12 @@ public:
 	int getSampleRate() const;
 	double getDuration();
 
-	//needed for FLAC
-	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte buffer[], size_t *bytes);
-	FLAC__StreamDecoderSeekStatus seek_callback(FLAC__uint64 offset);
-	FLAC__StreamDecoderTellStatus tell_callback(FLAC__uint64 *offset);
-	FLAC__StreamDecoderLengthStatus length_callback(FLAC__uint64 *length);
-	bool eof_callback();
-	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame *frame, const FLAC__int32 *const buffer[]);
-	void metadata_callback(const FLAC__StreamMetadata *metadata);
-	void error_callback(FLAC__StreamDecoderErrorStatus status);
-
 private:
-	int pos;
+	drflac *flac;
 }; // Decoder
 
 } // lullaby
 } // sound
 } // love
-
-#endif // 0
 
 #endif // LOVE_SOUND_LULLABY_FLAC_DECODER_H

@@ -74,6 +74,12 @@ This distribution contains code from the following projects (full license text b
 		You can contact the author at :
 		- xxHash source repository : https://github.com/Cyan4973/xxHash
 
+ - dr_flac
+	Website: https://github.com/mackron/dr_libs
+	Source download: https://github.com/mackron/dr_libs/blob/41bc0e8/dr_flac.h
+	License: MIT/Expat
+	Copyright 2018 David Reid
+
  - libmpg123
      Website: http://www.mpg123.de/
      Source download: http://sourceforge.net/projects/mpg123/files/latest/download

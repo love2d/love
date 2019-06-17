@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#if 0
-
+#define DR_FLAC_IMPLEMENTATION
 #include "FLACDecoder.h"
 
 #include <set>
@@ -33,29 +32,27 @@ namespace lullaby
 {
 
 FLACDecoder::FLACDecoder(Data *data, int nbufferSize)
-	: Decoder(data, nbufferSize)
-	, pos(0)
+: Decoder(data, nbufferSize)
 {
-	init();
-	init_ogg();
-	process_until_end_of_metadata();
-	process_single();
-	seek(0);
-	bufferSize = 256 * getBitDepth() * getChannelCount() * 2;
-	delete[](char *) buffer;
-	buffer = new char[bufferSize];
+	flac = drflac_open_memory(data->getData(), data->getSize());
+	if (flac == nullptr)
+		throw love::Exception("Could not load FLAC file");
 }
 
 FLACDecoder::~FLACDecoder()
 {
-	finish();
+	drflac_close(flac);
 }
 
 bool FLACDecoder::accepts(const std::string &ext)
 {
+	// dr_flac supports FLAC encapsulated in Ogg, but unfortunately
+	// LOVE detects .ogg extension as Vorbis. It would be a good idea
+	// to always probe in the future (see #1487 and commit ccf9e63).
+	// Please remove once it's no longer the case.
 	static const std::string supported[] =
 	{
-		"flac", ""
+		"flac", "ogg"
 	};
 
 	for (int i = 0; !(supported[i].empty()); i++)
@@ -74,18 +71,31 @@ love::sound::Decoder *FLACDecoder::clone()
 
 int FLACDecoder::decode()
 {
-	process_single();
-	return bufferSize;
+	// `bufferSize` is in bytes, so divide by 2.
+	drflac_uint64 readed = drflac_read_pcm_frames_s16(flac, bufferSize / 2 / flac->channels, (drflac_int16 *) buffer);
+	readed = readed * 2 * flac->channels;
+
+	if (readed < bufferSize)
+		eof = true;
+
+	return (int) readed;
 }
 
 bool FLACDecoder::seek(double s)
 {
-	return seek_absolute((int)(s*1000.0));
+	double duration = getDuration();
+	drflac_uint64 seekPosition = (drflac_uint64) (s * ((double) flac->totalPCMFrameCount) / duration);
+
+	drflac_bool32 result = drflac_seek_to_pcm_frame(flac, seekPosition);
+	if (result)
+		eof = false;
+
+	return result;
 }
 
 bool FLACDecoder::rewind()
 {
-	return seek_absolute(0);
+	return seek(0);
 }
 
 bool FLACDecoder::isSeekable()
@@ -95,97 +105,25 @@ bool FLACDecoder::isSeekable()
 
 int FLACDecoder::getChannelCount() const
 {
-	return get_channels();
+	return flac->channels;
 }
 
 int FLACDecoder::getBitDepth() const
 {
-	return get_bits_per_sample();
+	return 16;
 }
 
 int FLACDecoder::getSampleRate() const
 {
-	return get_sample_rate();
+	return flac->sampleRate;
 }
 
 double FLACDecoder::getDuration()
 {
-	return -1;
+	return ((double) flac->totalPCMFrameCount) / ((double) flac->sampleRate);
 }
 
-FLAC__StreamDecoderReadStatus FLACDecoder::read_callback(FLAC__byte buffer[], size_t *bytes)
-{
-	int size = data->getSize();
-	char *d = (char *) data->getData() + pos;
-	if (pos >= size)
-	{
-		eof = true;
-		return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
-	}
-	if (pos+*bytes <= (unsigned int)size)
-	{
-		memcpy(buffer, d, *bytes);
-		pos = pos+*bytes;
-	}
-	else
-	{
-		memcpy(buffer, d, size-pos);
-		 *bytes = size-pos;
-		pos = size;
-	}
-	return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
-}
-
-FLAC__StreamDecoderSeekStatus FLACDecoder::seek_callback(FLAC__uint64 offset)
-{
-	pos = (int)offset;
-	return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
-}
-
-FLAC__StreamDecoderTellStatus FLACDecoder::tell_callback(FLAC__uint64 *offset)
-{
-	 *offset = pos;
-	return FLAC__STREAM_DECODER_TELL_STATUS_OK;
-}
-
-FLAC__StreamDecoderLengthStatus FLACDecoder::length_callback(FLAC__uint64 *length)
-{
-	 *length = data->getSize();
-	return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
-}
-
-bool FLACDecoder::eof_callback()
-{
-	eof = (pos >= data->getSize());
-	return eof;
-}
-
-FLAC__StreamDecoderWriteStatus FLACDecoder::write_callback(const FLAC__Frame *frame, const FLAC__int32 *const fbuffer[])
-{
-	int i, j;
-	for (i = 0, j = 0; i < bufferSize; i += 4, j++)
-	{
-		((char *)buffer)[i] = fbuffer[0][j];
-		((char *)buffer)[i+1] = fbuffer[0][j] >> 8;
-		((char *)buffer)[i+2] = fbuffer[1][j];
-		((char *)buffer)[i+3] = fbuffer[1][j] >> 8;
-	}
-	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-}
-
-void FLACDecoder::metadata_callback(const FLAC__StreamMetadata *metadata)
-{
-	//we do nothing with metadata...
-	return;
-}
-
-void FLACDecoder::error_callback(FLAC__StreamDecoderErrorStatus status)
-{
-	//wow.. error, let's throw one (please clean this part up sometime)
-	throw love::Exception("FLAC error: %s!", FLAC__StreamDecoderErrorStatusString[status]);
-}
 } // lullaby
 } // sound
 } // love
 
-#endif // 0
