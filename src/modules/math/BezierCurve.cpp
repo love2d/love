@@ -69,14 +69,11 @@ void subdivide(vector<love::Vector2> &points, int k)
 	subdivide(right, k-1);
 
 	// merge (right is in reversed order)
-	// By this point the 'left' array has a point at the end that's collinear
-	// with other points. It's still needed for the subdivide calls above but we
-	// can get rid of it here.
-	points.resize(left.size() + right.size() - 2);
-	for (size_t i = 0; i < left.size() - 1; ++i)
+	points.resize(left.size() + right.size() - 1);
+	for (size_t i = 0; i < left.size(); ++i)
 		points[i] = left[i];
 	for (size_t i = 1; i < right.size(); ++i)
-		points[i-1 + left.size() - 1] = right[right.size() - i - 1];
+		points[i-1 + left.size()] = right[right.size() - i - 1];
 }
 
 }
