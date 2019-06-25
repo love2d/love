@@ -29,7 +29,7 @@
 #include "VorbisDecoder.h"
 #include "GmeDecoder.h"
 #include "WaveDecoder.h"
-//#include "FLACDecoder.h"
+#include "FLACDecoder.h"
 
 #ifndef LOVE_NOMPG123
 #	include "Mpg123Decoder.h"
@@ -103,7 +103,7 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 		DecoderImplFor<CoreAudioDecoder>(),
 #endif
 		DecoderImplFor<WaveDecoder>(),
-		// DecoderImplFor<FLACDecoder>(),
+		DecoderImplFor<FLACDecoder>(),
 		// DecoderImplFor<OtherDecoder>(),
 	};
 
