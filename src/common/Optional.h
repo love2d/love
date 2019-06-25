@@ -27,8 +27,8 @@ namespace love
 template <typename T>
 struct Optional
 {
-	bool hasValue;
 	T value;
+	bool hasValue;
 
 	Optional()
 		: hasValue(false)
