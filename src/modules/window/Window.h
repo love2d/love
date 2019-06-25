@@ -25,6 +25,7 @@
 #include "common/Module.h"
 #include "common/StringMap.h"
 #include "common/math.h"
+#include "common/Optional.h"
 #include "image/ImageData.h"
 
 // C++
@@ -66,6 +67,7 @@ public:
 		SETTING_CENTERED,
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
+		SETTING_USE_DPISCALE,
 		SETTING_REFRESHRATE,
 		SETTING_X,
 		SETTING_Y,
@@ -200,6 +202,7 @@ public:
 	virtual void DPIToWindowCoords(double *x, double *y) const = 0;
 
 	virtual double getDPIScale() const = 0;
+	virtual double getNativeDPIScale() const = 0;
 
 	virtual double toPixels(double x) const = 0;
 	virtual void toPixels(double wx, double wy, double &px, double &py) const = 0;
@@ -259,6 +262,7 @@ struct WindowSettings
 	bool centered = true;
 	int display = 0;
 	bool highdpi = false;
+	bool usedpiscale = true;
 	double refreshrate = 0.0;
 	bool useposition = false;
 	int x = 0;

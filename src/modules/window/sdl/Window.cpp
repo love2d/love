@@ -593,6 +593,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	getPosition(settings.x, settings.y, settings.display);
 
 	settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+	settings.usedpiscale = newsettings.usedpiscale;
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen mode
 	if (settings.fullscreen && settings.fstype == FULLSCREEN_EXCLUSIVE)
@@ -1114,6 +1115,11 @@ void Window::DPIToWindowCoords(double *x, double *y) const
 }
 
 double Window::getDPIScale() const
+{
+	return settings.usedpiscale ? getNativeDPIScale() : 1.0;
+}
+
+double Window::getNativeDPIScale() const
 {
 #ifdef LOVE_ANDROID
 	return love::android::getScreenScale();

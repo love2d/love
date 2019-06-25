@@ -111,6 +111,7 @@ public:
 	void DPIToWindowCoords(double *x, double *y) const override;
 
 	double getDPIScale() const override;
+	double getNativeDPIScale() const override;
 
 	double toPixels(double x) const override;
 	void toPixels(double wx, double wy, double &px, double &py) const override;

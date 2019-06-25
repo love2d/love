@@ -76,6 +76,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
 	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
 	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
+	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
 	if (lua_isnumber(L, -1))
@@ -202,6 +203,9 @@ int w_getMode(lua_State *L)
 
 	luax_pushboolean(L, settings.highdpi);
 	lua_setfield(L, -2, settingName(Window::SETTING_HIGHDPI));
+
+	luax_pushboolean(L, settings.usedpiscale);
+	lua_setfield(L, -2, settingName(Window::SETTING_USE_DPISCALE));
 
 	lua_pushnumber(L, settings.refreshrate);
 	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));
@@ -457,6 +461,12 @@ int w_getDPIScale(lua_State *L)
 	return 1;
 }
 
+int w_getNativeDPIScale(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getNativeDPIScale());
+	return 1;
+}
+
 int w_toPixels(lua_State *L)
 {
 	double wx = luaL_checknumber(L, 1);
@@ -630,6 +640,7 @@ static const luaL_Reg functions[] =
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
 	{ "getDPIScale", w_getDPIScale },
+	{ "nativeDPIScale", w_getNativeDPIScale },
 	{ "toPixels", w_toPixels },
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },
