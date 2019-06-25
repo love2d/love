@@ -72,19 +72,18 @@ love::sound::Decoder *FLACDecoder::clone()
 int FLACDecoder::decode()
 {
 	// `bufferSize` is in bytes, so divide by 2.
-	drflac_uint64 readed = drflac_read_pcm_frames_s16(flac, bufferSize / 2 / flac->channels, (drflac_int16 *) buffer);
-	readed = readed * 2 * flac->channels;
+	drflac_uint64 read = drflac_read_pcm_frames_s16(flac, bufferSize / 2 / flac->channels, (drflac_int16 *) buffer);
+	read *= 2 * flac->channels;
 
-	if (readed < bufferSize)
+	if ((int) read < bufferSize)
 		eof = true;
 
-	return (int) readed;
+	return (int) read;
 }
 
 bool FLACDecoder::seek(double s)
 {
-	double duration = getDuration();
-	drflac_uint64 seekPosition = (drflac_uint64) (s * ((double) flac->totalPCMFrameCount) / duration);
+	drflac_uint64 seekPosition = (drflac_uint64) (s * flac->sampleRate);
 
 	drflac_bool32 result = drflac_seek_to_pcm_frame(flac, seekPosition);
 	if (result)
