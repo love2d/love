@@ -1008,7 +1008,7 @@ static DRFLAC_INLINE drflac_bool32 drflac_has_sse2()
                 return DRFLAC_FALSE;
             #else
                 int info[4];
-                drflac_cpuid(info, 1);
+                drflac__cpuid(info, 1);
                 return (info[3] & (1 << 26)) != 0;
             #endif
         #endif
@@ -1033,7 +1033,7 @@ static DRFLAC_INLINE drflac_bool32 drflac_has_sse41()
                 return DRFLAC_FALSE;
             #else
                 int info[4];
-                drflac_cpuid(info, 1);
+                drflac__cpuid(info, 1);
                 return (info[2] & (1 << 19)) != 0;
             #endif
         #endif
