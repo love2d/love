@@ -1248,6 +1248,16 @@ set(LOVE_SRC_3P_DDSPARSE
 add_library(love_3p_ddsparse ${LOVE_SRC_3P_DDSPARSE})
 
 #
+# dr_flac
+#
+
+set(LOVE_SRC_3P_DRFLAC
+	src/libraries/dr_flac/dr_flac.h
+)
+
+# dr_flac has no implementation files of its own.
+
+#
 # enet
 #
 

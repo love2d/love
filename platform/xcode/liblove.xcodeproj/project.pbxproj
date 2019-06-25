@@ -849,6 +849,7 @@
 		FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA41A3C71C0A1F950084430C /* ASTCHandler.h */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
+		FA4C22D122C2E11000BFBB7C /* dr_flac.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4C22D022C2E11000BFBB7C /* dr_flac.h */; };
 		FA4F2B791DE0125B00CA37D7 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2B771DE0125B00CA37D7 /* xxhash.c */; };
 		FA4F2B7A1DE0125B00CA37D7 /* xxhash.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4F2B781DE0125B00CA37D7 /* xxhash.h */; };
 		FA4F2B7B1DE0181B00CA37D7 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2B771DE0125B00CA37D7 /* xxhash.c */; };
@@ -1817,6 +1818,7 @@
 		FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = ASTCHandler.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		FA41A3C71C0A1F950084430C /* ASTCHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = ASTCHandler.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
+		FA4C22D022C2E11000BFBB7C /* dr_flac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dr_flac.h; sourceTree = "<group>"; };
 		FA4F2B771DE0125B00CA37D7 /* xxhash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
 		FA4F2B781DE0125B00CA37D7 /* xxhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
 		FA4F2BA21DE1E36400CA37D7 /* RecordingDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordingDevice.cpp; sourceTree = "<group>"; };
@@ -2207,6 +2209,7 @@
 			children = (
 				FA0B794E1A958EA3000E1D17 /* Box2D */,
 				FA0B79B41A958EA3000E1D17 /* ddsparse */,
+				FA4C22CF22C2E11000BFBB7C /* dr_flac */,
 				FA0B79B81A958EA3000E1D17 /* enet */,
 				FA0B79D31A958EA3000E1D17 /* glad */,
 				FAF13FBF1E20934C00F898D2 /* glslang */,
@@ -3345,6 +3348,14 @@
 			path = theora;
 			sourceTree = "<group>";
 		};
+		FA4C22CF22C2E11000BFBB7C /* dr_flac */ = {
+			isa = PBXGroup;
+			children = (
+				FA4C22D022C2E11000BFBB7C /* dr_flac.h */,
+			);
+			path = dr_flac;
+			sourceTree = "<group>";
+		};
 		FA4F2B761DE0125B00CA37D7 /* xxHash */ = {
 			isa = PBXGroup;
 			children = (
@@ -3895,6 +3906,7 @@
 				FA4F2BAD1DE1E37000CA37D7 /* RecordingDevice.h in Headers */,
 				FA0B792B1A958E3B000E1D17 /* Matrix.h in Headers */,
 				FA0B7DA41A95902C000E1D17 /* PKMHandler.h in Headers */,
+				FA4C22D122C2E11000BFBB7C /* dr_flac.h in Headers */,
 				FA0B7AC81A958EA3000E1D17 /* utility.h in Headers */,
 				217DFC0E1D9F6D490055D849 /* unixudp.h in Headers */,
 				FA0B791F1A958E3B000E1D17 /* Data.h in Headers */,
