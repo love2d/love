@@ -31,19 +31,19 @@ struct Optional
 	bool hasValue;
 
 	Optional()
-		: hasValue(false)
-		, value(T())
+		: value(T())
+		, hasValue(false)
 	{}
 
 	Optional(T val)
-		: hasValue(true)
-		, value(val)
+		: value(val)
+		, hasValue(true)
 	{}
 
 	void set(T val)
 	{
-		hasValue = true;
 		value = val;
+		hasValue = true;
 	}
 };
 
