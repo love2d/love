@@ -241,7 +241,7 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 	}
 
 	// cramers rule
-	Vector2 nt= t.getNormal(hw / len_t);
+	Vector2 nt = t.getNormal(hw / len_t);
 	float lambda = Vector2::cross((nt - ns), t) / det;
 	Vector2 d = ns + s * lambda;
 
@@ -286,7 +286,7 @@ void Polyline::render_overdraw(const std::vector<Vector2> &normals, float pixel_
 	{
 		size_t k = vertex_count - i - 1;
 		overdraw[vertex_count + i]   = vertices[k];
-		overdraw[vertex_count + i+1] = vertices[k] + normals[k] * (pixel_size / normals[i].getLength());
+		overdraw[vertex_count + i+1] = vertices[k] + normals[k] * (pixel_size / normals[k].getLength());
 	}
 
 	// if not looping, the outer overdraw vertices need to be displaced
