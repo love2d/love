@@ -75,6 +75,8 @@ public:
 	int getInstanceID() const override;
 	int getID() const override;
 
+	void getDeviceInfo(int &vendorID, int &productID, int &productVersion) const override;
+
 	bool isVibrationSupported() override;
 	bool setVibration(float left, float right, float duration = -1.0f) override;
 	bool setVibration() override;

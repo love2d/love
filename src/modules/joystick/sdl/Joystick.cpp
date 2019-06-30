@@ -322,6 +322,24 @@ int Joystick::getID() const
 	return id;
 }
 
+void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 6)
+	if (joyhandle != nullptr)
+	{
+		vendorID = SDL_JoystickGetVendor(joyhandle);
+		productID = SDL_JoystickGetProduct(joyhandle);
+		productVersion = SDL_JoystickGetProductVersion(joyhandle);
+	}
+	else
+#endif
+	{
+		vendorID = 0;
+		productID = 0;
+		productVersion = 0;
+	}
+}
+
 bool Joystick::checkCreateHaptic()
 {
 	if (!isConnected())
