@@ -2250,7 +2250,7 @@ int w_getTextureTypes(lua_State *L)
 		if (!Texture::getConstant(textype, name))
 			continue;
 
-		lua_pushnumber(L, caps.textureTypes[i]);
+		luax_pushboolean(L, caps.textureTypes[i]);
 		lua_setfield(L, -2, name);
 	}
 
