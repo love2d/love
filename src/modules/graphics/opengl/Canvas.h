@@ -66,11 +66,6 @@ public:
 		return renderbuffer != 0 ? renderbuffer : texture;
 	}
 
-	inline GLenum getStatus() const
-	{
-		return status;
-	}
-
 	inline GLuint getFBO() const
 	{
 		return fbo;
