@@ -3,8 +3,11 @@ LOVE 11.3 [Mysterious Mysteries]
 
 Released: N/A
 
+* Added support for FLAC audio files.
 * Added Decoder:clone.
+* Added Joystick:getDeviceInfo.
 * Added love.math.colorToBytes and love.math.colorFromBytes.
+* Added 'usedpiscale' boolean (true by default) to love.window.setMode and love.conf. Disables automatic DPI scaling when false.
 * Added love.window.getDisplayOrientation and a love.displayrotated callback.
 * Added love.window.get/setVSync, to allow setting vsync without recreating the window.
 * Added love.window.getSafeArea.
@@ -15,6 +18,7 @@ Released: N/A
 
 * Fixed boot.lua's line numbers in stack traces to match its source code.
 * Fixed the deprecation system not fully restarting when love.event.quit("restart") is used.
+* Fixed love.isVersionCompatible.
 * Fixed named Channels persisting across love.event.quit("restart") occurrences.
 * Fixed race conditions when different love.physics Worlds are used in different threads.
 * Fixed World:getJoints to return the fully resolved type of the Joint, instead of the base type.
@@ -30,12 +34,17 @@ Released: N/A
 * Fixed Source:setEffect(name, true) and Source:getEffect(name) when the effect has no associated Filter.
 * Fixed love.audio.newSource(filename, "queue") to cause a Lua error.
 * Fixed Source:setPitch to error if the given pitch is <= 0, NaN, or infinity.
+* Fixed video seeking and pausing in various scenarios.
 * Fixed video playback support on some Adreno-based Android devices.
+* Fixed black fringes around text in some situations.
+* Fixed extreme flickering when text moves along non-integer coordinates.
 * Fixed the first character in a string sometimes not being processed during text vertex generation.
+* Fixed love.graphics.getTextureTypes to return a table with boolean values in its fields instead of number values.
 * Fixed a pixel shader performance regression on some graphics drivers when OpenGL 3 or OpenGL ES 3 is used.
 * Fixed text not showing up on Radeon HD 3000-series graphics cards on Windows.
+* Fixed non-integer DPI scale values being truncated to integers in love.graphics.newCanvas.
 * Fixed creating depth canvases on Windows systems when using an Intel HD 3000 GPU.
-* Fixed automatic batching performance to be more consistent on macOS and older Windows and Linux systems.
+* Fixed automatic batching performance to be more consistent on all operating systems.
 * Fixed gammaToLinearPrecise in shaders not being as precise as it should be.
 
 LOVE 11.2 [Mysterious Mysteries]
