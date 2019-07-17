@@ -6,7 +6,7 @@ Documentation
 -------------
 
 We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], our [Dscord server][discord], or our IRC channel [#love on OFTC][irc].
+If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our IRC channel [#love on OFTC][irc].
 
 Compilation
 -----------
