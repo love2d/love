@@ -209,6 +209,13 @@ void luax_pushstring(lua_State *L, const std::string &str)
 	lua_pushlstring(L, str.data(), str.size());
 }
 
+void luax_pushpointerasstring(lua_State *L, const void *pointer)
+{
+	char str[sizeof(void *)];
+	memcpy(str, &pointer, sizeof(void *));
+	lua_pushlstring(L, str, sizeof(void *));
+}
+
 bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue)
 {
 	lua_getfield(L, table_index, key);
@@ -452,7 +459,7 @@ int luax_register_type(lua_State *L, love::Type *type, ...)
 	return 0;
 }
 
-void luax_gettypemetatable(lua_State *L, love::Type &type)
+void luax_gettypemetatable(lua_State *L, const love::Type &type)
 {
 	const char *name = type.getName();
 	lua_getfield(L, LUA_REGISTRYINDEX, name);
@@ -884,6 +891,27 @@ void luax_register(lua_State *L, const char *name, const luaL_Reg *l)
 		lua_pushvalue(L, -1);
 		lua_setglobal(L, name);
 	}
+}
+
+void luax_runwrapper(lua_State *L, const char *filedata, size_t datalen, const char *filename, const love::Type &type, void *ffifuncs)
+{
+	luax_gettypemetatable(L, type);
+
+	// Load and execute ImageData.lua, sending the metatable and the ffi
+	// functions struct pointer as arguments.
+	if (lua_istable(L, -1))
+	{
+		luaL_loadbuffer(L, filedata, datalen, filename);
+		lua_pushvalue(L, -2);
+		if (ffifuncs != nullptr)
+			luax_pushpointerasstring(L, ffifuncs);
+		else
+			lua_pushnil(L);
+		lua_call(L, 2, 0);
+	}
+
+	// Pop the metatable.
+	lua_pop(L, 1);
 }
 
 Type *luax_type(lua_State *L, int idx)

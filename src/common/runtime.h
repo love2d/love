@@ -177,6 +177,14 @@ std::string luax_checkstring(lua_State *L, int idx);
  **/
 void luax_pushstring(lua_State *L, const std::string &str);
 
+/**
+ * Pushes a pointer onto the stack as a string (i.e. a new string with a length
+ * of 4 or 8 will be created, containing the given address in its bytes).
+ * This is a workaround for lua_pushlightuserdata not working on systems which
+ * use more than the lower 47 bits of address space, when LuaJIT is used.
+ **/
+void luax_pushpointerasstring(lua_State *L, const void *pointer);
+
 
 bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
 int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
@@ -291,7 +299,7 @@ int luax_register_type(lua_State *L, love::Type *type, ...);
 /**
  * Pushes the metatable of the specified type onto the stack.
 **/
-void luax_gettypemetatable(lua_State *L, love::Type &type);
+void luax_gettypemetatable(lua_State *L, const love::Type &type);
 
 /**
  * Do a table.insert from C
@@ -498,6 +506,8 @@ void luax_checktablefields(lua_State *L, int idx, const char *enumName, bool (*g
 	}
 }
 
+void luax_runwrapper(lua_State *L, const char *filedata, size_t datalen, const char *filename, const love::Type &type, void *ffifuncs);
+
 /**
  * Calls luax_objlen/lua_rawlen depending on version
  **/
@@ -542,6 +552,15 @@ template <typename T>
 T *luax_checktype(lua_State *L, int idx)
 {
 	return luax_checktype<T>(L, idx, T::type);
+}
+
+template <typename T>
+T *luax_ffi_checktype(Proxy *p, const love::Type &type = T::type)
+{
+	// FIXME: We need better type-checking...
+	if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(type))
+		return nullptr;
+	return (T *) p->object;
 }
 
 template <typename T>

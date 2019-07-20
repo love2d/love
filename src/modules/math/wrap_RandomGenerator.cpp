@@ -126,22 +126,14 @@ static FFI_RandomGenerator ffifuncs =
 {
 	[](Proxy *p) -> double // random()
 	{
-		// FIXME: We need better type-checking...
-		if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(RandomGenerator::type))
-			return 0.0;
-
-		RandomGenerator *rng = (RandomGenerator *) p->object;
-		return rng->random();
+		auto rng = luax_ffi_checktype<RandomGenerator>(p);
+		return rng != nullptr ? rng->random() : 0.0;
 	},
 
 	[](Proxy *p, double stdddev, double mean) -> double // randomNormal
 	{
-		// FIXME: We need better type-checking...
-		if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(RandomGenerator::type))
-			return 0.0;
-
-		RandomGenerator *rng = (RandomGenerator *) p->object;
-		return rng->randomNormal(stdddev) + mean;
+		auto rng = luax_ffi_checktype<RandomGenerator>(p);
+		return rng != nullptr ? (rng->randomNormal(stdddev) + mean) : 0.0;
 	}
 };
 
@@ -160,20 +152,7 @@ extern "C" int luaopen_randomgenerator(lua_State *L)
 {
 	int n = luax_register_type(L, &RandomGenerator::type, w_RandomGenerator_functions, nullptr);
 
-	luax_gettypemetatable(L, RandomGenerator::type);
-
-	// Load and execute wrap_RandomGenerator.lua, sending the metatable and the
-	// ffi functions struct pointer as arguments.
-	if (lua_istable(L, -1))
-	{
-		luaL_loadbuffer(L, randomgenerator_lua, sizeof(randomgenerator_lua), "wrap_RandomGenerator.lua");
-		lua_pushvalue(L, -2);
-		lua_pushlightuserdata(L, &ffifuncs);
-		lua_call(L, 2, 0);
-	}
-
-	// Pop the metatable.
-	lua_pop(L, 1);
+	luax_runwrapper(L, randomgenerator_lua, sizeof(randomgenerator_lua), "RandomGenerator.lua", RandomGenerator::type, &ffifuncs);
 
 	return n;
 }

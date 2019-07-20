@@ -22,7 +22,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
-local ImageData_mt, ffifuncspointer = ...
+local ImageData_mt, ffifuncspointer_str = ...
 local ImageData = ImageData_mt.__index
 
 local tonumber, assert, error = tonumber, assert, error
@@ -103,7 +103,7 @@ struct ImageData_Pixel_RG32F { float r, g; };
 struct ImageData_Pixel_RGBA32F { float r, g, b, a; };
 ]])
 
-local ffifuncs = ffi.cast("FFI_ImageData *", ffifuncspointer)
+local ffifuncs = ffi.cast("FFI_ImageData **", ffifuncspointer_str)[0]
 
 local conversions = {
 	r8 = {

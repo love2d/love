@@ -116,7 +116,9 @@ static const luaL_Reg w_CompressedImageData_functions[] =
 
 extern "C" int luaopen_compressedimagedata(lua_State *L)
 {
-	return luax_register_type(L, &CompressedImageData::type, data::w_Data_functions, w_CompressedImageData_functions, nullptr);
+	int ret = luax_register_type(L, &CompressedImageData::type, data::w_Data_functions, w_CompressedImageData_functions, nullptr);
+	love::data::luax_rundatawrapper(L, CompressedImageData::type);
+	return ret;
 }
 
 } // image

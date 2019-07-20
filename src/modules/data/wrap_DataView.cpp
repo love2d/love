@@ -39,6 +39,7 @@ static const luaL_Reg w_DataView_functions[] =
 int luaopen_dataview(lua_State *L)
 {
 	luax_register_type(L, &DataView::type, w_Data_functions, w_DataView_functions, nullptr);
+	love::data::luax_rundatawrapper(L, DataView::type);
 	return 0;
 }
 

@@ -29,6 +29,7 @@ namespace love
 namespace data
 {
 
+void luax_rundatawrapper(lua_State *L, const love::Type &type);
 Data *luax_checkdata(lua_State *L, int idx);
 int luaopen_data(lua_State *L);
 extern const luaL_Reg w_Data_functions[];

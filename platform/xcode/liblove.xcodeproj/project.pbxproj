@@ -1811,6 +1811,7 @@
 		FA2AF6731DAD64970032B62C /* vertex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vertex.cpp; sourceTree = "<group>"; };
 		FA2E9BFE1C19E00C0004A1EE /* wrap_RandomGenerator.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_RandomGenerator.lua; sourceTree = "<group>"; };
 		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		FA34AF6A22E2977700F77015 /* wrap_Data.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Data.lua; sourceTree = "<group>"; };
 		FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderStage.cpp; sourceTree = "<group>"; };
 		FA3C5E411F8C368C0003C579 /* ShaderStage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderStage.h; sourceTree = "<group>"; };
 		FA3C5E451F8D80CA0003C579 /* ShaderStage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderStage.cpp; sourceTree = "<group>"; };
@@ -3539,6 +3540,7 @@
 				FACA02E91F5E396B0084B28F /* wrap_CompressedData.h */,
 				FA6A2B651F5F7B6B0074C308 /* wrap_Data.cpp */,
 				FA6A2B641F5F7B6B0074C308 /* wrap_Data.h */,
+				FA34AF6A22E2977700F77015 /* wrap_Data.lua */,
 				FACA02EA1F5E396B0084B28F /* wrap_DataModule.cpp */,
 				FACA02EB1F5E396B0084B28F /* wrap_DataModule.h */,
 				FA6A2B6E1F5F845F0074C308 /* wrap_DataView.cpp */,

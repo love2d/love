@@ -148,18 +148,8 @@ extern "C" int luaopen_sounddata(lua_State *L)
 {
 	int ret = luax_register_type(L, &SoundData::type, data::w_Data_functions, w_SoundData_functions, nullptr);
 
-	luax_gettypemetatable(L, SoundData::type);
-
-	// Load and execute SoundData.lua, sending the metatable as an argument.
-	if (lua_istable(L, -1))
-	{
-		luaL_loadbuffer(L, sounddata_lua, sizeof(sounddata_lua), "SoundData.lua");
-		lua_pushvalue(L, -2);
-		lua_call(L, 1, 0);
-	}
-
-	// Pop the metatable.
-	lua_pop(L, 1);
+	love::data::luax_rundatawrapper(L, SoundData::type);
+	luax_runwrapper(L, sounddata_lua, sizeof(sounddata_lua), "SoundData.lua", SoundData::type, nullptr);
 
 	return ret;
 }
