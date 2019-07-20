@@ -58,19 +58,24 @@ Variant::Variant(double number)
 	data.number = number;
 }
 
-Variant::Variant(const char *string, size_t len)
+Variant::Variant(const char *str, size_t len)
 {
 	if (len <= MAX_SMALL_STRING_LENGTH)
 	{
 		type = SMALLSTRING;
-		memcpy(data.smallstring.str, string, len);
+		memcpy(data.smallstring.str, str, len);
 		data.smallstring.len = (uint8) len;
 	}
 	else
 	{
 		type = STRING;
-		data.string = new SharedString(string, len);
+		data.string = new SharedString(str, len);
 	}
+}
+
+Variant::Variant(const std::string &str)
+	: Variant(str.c_str(), str.length())
+{
 }
 
 Variant::Variant(void *lightuserdata)
