@@ -22,7 +22,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
-local love_math, ffifuncspointer = ...
+local love_math, ffifuncspointer_str = ...
 
 local type, tonumber, error = type, tonumber, error
 local floor = math.floor
@@ -103,7 +103,7 @@ typedef struct FFI_Math
 } FFI_Math;
 ]])
 
-local ffifuncs = ffi.cast("FFI_Math *", ffifuncspointer)
+local ffifuncs = ffi.cast("FFI_Math **", ffifuncspointer_str)[0]
 
 
 -- Overwrite some regular love.math functions with FFI implementations.
