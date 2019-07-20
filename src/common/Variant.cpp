@@ -186,12 +186,13 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 	case LUA_TTABLE:
 		{
 			bool success = true;
-			std::unique_ptr<std::set<const void*>> tableSetPtr;
+			std::set<const void *> topTableSet;
 			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
 
-			// If we had no tables argument, allocate one now, and store it in our unique_ptr
+			// We can use a pointer to a stack-allocated variable because it's
+			// never used after the stack-allocated variable is destroyed.
 			if (tableSet == nullptr)
-				tableSetPtr.reset(tableSet = new std::set<const void*>);
+				tableSet = &topTableSet;
 
 			// Now make sure this table wasn't already serialised
 			const void *tablePointer = lua_topointer(L, n);
