@@ -488,24 +488,17 @@ int w_read(lua_State *L)
 	if (data == nullptr)
 		return luax_ioError(L, "File could not be read.");
 
-	int nret = 0;
-
 	if (ctype == love::data::CONTAINER_DATA)
-	{
 		luax_pushtype(L, data);
-		nret = 1;
-	}
 	else
-	{
 		lua_pushlstring(L, (const char *) data->getData(), data->getSize());
-		lua_pushinteger(L, data->getSize());
-		nret = 2;
-	}
+
+	lua_pushinteger(L, data->getSize());
 
 	// Lua has a copy now, so we can free it.
 	data->release();
 
-	return nret;
+	return 2;
 }
 
 static int w_write_or_append(lua_State *L, File::Mode mode)
