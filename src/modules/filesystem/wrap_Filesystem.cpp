@@ -138,6 +138,7 @@ int w_mount(lua_State *L)
 		bool append = luax_optboolean(L, startidx + 1, false);
 
 		luax_pushboolean(L, instance()->mount(data, archive.c_str(), mountpoint, append));
+		return 1;
 	}
 	else if (luax_istype(L, 1, DroppedFile::type))
 	{
