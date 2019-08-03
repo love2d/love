@@ -720,7 +720,7 @@ static void replaceAll(std::string &str, const std::string &substr, const std::s
 
 int loader(lua_State *L)
 {
-	std::string modulename = luax_tostring(L, 1);
+	std::string modulename = luax_checkstring(L, 1);
 
 	for (char &c : modulename)
 	{
@@ -761,7 +761,7 @@ static const char *library_extensions[] =
 
 int extloader(lua_State *L)
 {
-	const char *filename = lua_tostring(L, -1);
+	std::string filename = luax_checkstring(L, 1);
 	std::string tokenized_name(filename);
 	std::string tokenized_function(filename);
 
