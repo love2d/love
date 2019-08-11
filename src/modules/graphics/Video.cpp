@@ -96,6 +96,8 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 Video::~Video()
 {
+	if (source)
+		source->stop();
 }
 
 love::video::VideoStream *Video::getStream()
