@@ -214,7 +214,10 @@ File *luax_getfile(lua_State *L, int idx)
 		file = instance()->newFile(filename);
 	}
 	else
+	{
 		file = luax_checkfile(L, idx);
+		file->retain();
+	}
 
 	return file;
 }
@@ -227,7 +230,6 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
 		file = luax_getfile(L, idx);
-		file->retain();
 	}
 	else if (luax_istype(L, idx, FileData::type))
 	{
@@ -260,7 +262,6 @@ Data *luax_getdata(lua_State *L, int idx)
 	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
 		file = luax_getfile(L, idx);
-		file->retain();
 	}
 	else if (luax_istype(L, idx, Data::type))
 	{
