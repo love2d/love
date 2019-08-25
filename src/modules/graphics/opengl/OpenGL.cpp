@@ -195,7 +195,7 @@ void OpenGL::setupContext()
 	else
 		state.instancedAttribArrays = 0;
 
-	setVertexAttributes(vertex::Attributes(), vertex::Buffers());
+	setVertexAttributes(vertex::Attributes(), vertex::BufferBindings());
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -697,49 +697,60 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	}
 }
 
-void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers)
+void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::BufferBindings &buffers)
 {
-	uint32 enablediff = attributes.enablebits ^ state.enabledAttribArrays;
-	uint32 instancediff = attributes.instancebits ^ state.instancedAttribArrays;
+	uint32 enablediff = attributes.enableBits ^ state.enabledAttribArrays;
+	uint32 instanceattribbits = 0;
+	uint32 allbits = attributes.enableBits | state.enabledAttribArrays;
 
-	for (uint32 i = 0; i < vertex::Attributes::MAX; i++)
+	uint32 i = 0;
+	while (allbits)
 	{
 		uint32 bit = 1u << i;
 
 		if (enablediff & bit)
 		{
-			if (attributes.enablebits & bit)
+			if (attributes.enableBits & bit)
 				glEnableVertexAttribArray(i);
 			else
 				glDisableVertexAttribArray(i);
 		}
 
-		if (instancediff & bit)
-			glVertexAttribDivisor(i, (attributes.instancebits & bit) != 0 ? 1 : 0);
-
-		if (attributes.enablebits & bit)
+		if (attributes.enableBits & bit)
 		{
 			const auto &attrib = attributes.attribs[i];
-			const auto &bufferinfo = buffers.info[attrib.bufferindex];
+			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
+			const auto &bufferinfo = buffers.info[attrib.bufferIndex];
+
+			uint32 bufferbit = 1u << attrib.bufferIndex;
+			uint32 divisor = (attributes.instanceBits & bufferbit) != 0 ? 1 : 0;
+			uint32 divisorbit = divisor << i;
+			instanceattribbits |= divisorbit;
+
+			if ((state.enabledAttribArrays & bit) ^ divisorbit)
+				glVertexAttribDivisor(i, divisor);
 
 			GLboolean normalized = GL_FALSE;
 			GLenum gltype = getGLVertexDataType(attrib.type, normalized);
 
-			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetfromvertex);
+			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
 			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
-			glVertexAttribPointer(i, attrib.components, gltype, normalized, attrib.stride, offsetpointer);
+			glVertexAttribPointer(i, attrib.components, gltype, normalized, layout.stride, offsetpointer);
 		}
+
+		i++;
+		allbits >>= 1;
 	}
 
-	state.enabledAttribArrays = attributes.enablebits;
-	state.instancedAttribArrays = attributes.instancebits;
+	state.enabledAttribArrays = attributes.enableBits;
+	state.instancedAttribArrays = instanceattribbits | (state.instancedAttribArrays & (~attributes.enableBits));
 
 	// glDisableVertexAttribArray will make the constant value for a vertex
 	// attribute undefined. We rely on the per-vertex color attribute being
 	// white when no per-vertex color is used, so we set it here.
 	// FIXME: Is there a better place to do this?
-	if ((enablediff & ATTRIBFLAG_COLOR) && !(attributes.enablebits & ATTRIBFLAG_COLOR))
+	if ((enablediff & ATTRIBFLAG_COLOR) && !(attributes.enableBits & ATTRIBFLAG_COLOR))
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 

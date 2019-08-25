@@ -1122,7 +1122,7 @@ void Graphics::flushStreamDraws()
 		return;
 
 	Attributes attributes;
-	Buffers buffers;
+	BufferBindings buffers;
 
 	size_t usedsizes[3] = {0, 0, 0};
 
@@ -1140,7 +1140,7 @@ void Graphics::flushStreamDraws()
 		sbstate.vbMap[i] = StreamBuffer::MapInfo();
 	}
 
-	if (attributes.enablebits == 0)
+	if (attributes.enableBits == 0)
 		return;
 
 	Colorf nc = getColor();

@@ -343,7 +343,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	++drawCalls;
 }
 
-static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::Buffers &buffers, int vertexcount)
+static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::BufferBindings &buffers, int vertexcount)
 {
 	// TODO: Figure out a better way to avoid touching the same buffer multiple
 	// times, if multiple attributes share the buffer.
@@ -356,16 +356,17 @@ static inline void advanceVertexOffsets(const vertex::Attributes &attributes, ve
 
 		auto &attrib = attributes.attribs[i];
 
-		uint32 bufferbit = 1u << attrib.bufferindex;
+		uint32 bufferbit = 1u << attrib.bufferIndex;
 		if ((touchedbuffers & bufferbit) == 0)
 		{
 			touchedbuffers |= bufferbit;
-			buffers.info[attrib.bufferindex].offset += attrib.stride * vertexcount;
+			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
+			buffers.info[attrib.bufferIndex].offset += layout.stride * vertexcount;
 		}
 	}
 }
 
-void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::Buffers &buffers, love::graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture)
 {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
@@ -394,7 +395,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	}
 	else
 	{
-		vertex::Buffers bufferscopy = buffers;
+		vertex::BufferBindings bufferscopy = buffers;
 		if (start > 0)
 			advanceVertexOffsets(attributes, bufferscopy, start * 4);
 
