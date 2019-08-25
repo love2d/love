@@ -219,8 +219,6 @@ struct AttributeInfo
 	uint16 offsetFromVertex;
 };
 
-static_assert(sizeof(AttributeInfo) == 4, "AttributeInfo struct size should be 4 bytes");
-
 struct BufferLayout
 {
 	uint16 stride;
