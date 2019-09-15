@@ -82,18 +82,24 @@ static Format parseDX10Format(DXGIFormat fmt)
 	{
 	case DXGI_FORMAT_BC1_TYPELESS:
 	case DXGI_FORMAT_BC1_UNORM:
-	case DXGI_FORMAT_BC1_UNORM_SRGB:
 		f = FORMAT_DXT1;
+		break;
+	case DXGI_FORMAT_BC1_UNORM_SRGB:
+		f = FORMAT_DXT1srgb;
 		break;
 	case DXGI_FORMAT_BC2_TYPELESS:
 	case DXGI_FORMAT_BC2_UNORM:
-	case DXGI_FORMAT_BC2_UNORM_SRGB:
 		f = FORMAT_DXT3;
+		break;
+	case DXGI_FORMAT_BC2_UNORM_SRGB:
+		f = FORMAT_DXT3srgb;
 		break;
 	case DXGI_FORMAT_BC3_TYPELESS:
 	case DXGI_FORMAT_BC3_UNORM:
-	case DXGI_FORMAT_BC3_UNORM_SRGB:
 		f = FORMAT_DXT5;
+		break;
+	case DXGI_FORMAT_BC3_UNORM_SRGB:
+		f = FORMAT_DXT5srgb;
 		break;
 	case DXGI_FORMAT_BC4_TYPELESS:
 	case DXGI_FORMAT_BC4_UNORM:
@@ -126,7 +132,7 @@ static Format parseDX10Format(DXGIFormat fmt)
 	default:
 		break;
 	}
-	
+
 	return f;
 }
 
@@ -146,7 +152,6 @@ bool isDDS(const void *data, size_t dataSize)
 	offset += sizeof(uint32_t);
 
 	DDSHeader *header = (DDSHeader *) &readData[offset];
-
 
 	// Verify header to validate DDS data.
 	if (header->size != sizeof(DDSHeader) || header->format.size != sizeof(DDSPixelFormat))
@@ -242,12 +247,15 @@ size_t Parser::parseImageSize(Format fmt, int width, int height) const
 	switch (fmt)
 	{
 	case FORMAT_DXT1:
+	case FORMAT_DXT1srgb:
 	case FORMAT_BC4:
 	case FORMAT_BC4s:
 		numBytesPerBlock = 8;
 		break;
 	case FORMAT_DXT3:
+	case FORMAT_DXT3srgb:
 	case FORMAT_DXT5:
+	case FORMAT_DXT5srgb:
 	case FORMAT_BC5s:
 	case FORMAT_BC5:
 	case FORMAT_BC6H:

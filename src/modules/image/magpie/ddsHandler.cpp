@@ -96,9 +96,18 @@ PixelFormat DDSHandler::convertFormat(dds::Format ddsformat, bool &sRGB)
 	{
 	case dds::FORMAT_DXT1:
 		return PIXELFORMAT_DXT1;
+	case dds::FORMAT_DXT1srgb:
+		sRGB = true;
+		return PIXELFORMAT_DXT1;
 	case dds::FORMAT_DXT3:
 		return PIXELFORMAT_DXT3;
+	case dds::FORMAT_DXT3srgb:
+		sRGB = true;
+		return PIXELFORMAT_DXT3;
 	case dds::FORMAT_DXT5:
+		return PIXELFORMAT_DXT5;
+	case dds::FORMAT_DXT5srgb:
+		sRGB = true;
 		return PIXELFORMAT_DXT5;
 	case dds::FORMAT_BC4:
 		return PIXELFORMAT_BC4;

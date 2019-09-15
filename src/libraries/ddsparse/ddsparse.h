@@ -36,8 +36,11 @@ namespace dds
 enum Format
 {
 	FORMAT_DXT1,
+	FORMAT_DXT1srgb,
 	FORMAT_DXT3,
+	FORMAT_DXT3srgb,
 	FORMAT_DXT5,
+	FORMAT_DXT5srgb,
 	FORMAT_BC4,
 	FORMAT_BC4s,
 	FORMAT_BC5,
