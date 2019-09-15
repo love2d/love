@@ -28,14 +28,14 @@ namespace graphics
 namespace vertex
 {
 
-static_assert(sizeof(Color) == 4, "sizeof(Color) incorrect!");
-static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color), "sizeof(STf_RGBAub) incorrect!");
-static_assert(sizeof(STPf_RGBAub) == sizeof(float)*3 + sizeof(Color), "sizeof(STPf_RGBAub) incorrect!");
+static_assert(sizeof(Color32) == 4, "sizeof(Color32) incorrect!");
+static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color32), "sizeof(STf_RGBAub) incorrect!");
+static_assert(sizeof(STPf_RGBAub) == sizeof(float)*3 + sizeof(Color32), "sizeof(STPf_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STf) == sizeof(float)*2 + sizeof(float)*2, "sizeof(XYf_STf) incorrect!");
 static_assert(sizeof(XYf_STPf) == sizeof(float)*2 + sizeof(float)*3, "sizeof(XYf_STPf) incorrect!");
-static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color), "sizeof(XYf_STf_RGBAub) incorrect!");
-static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color), "sizeof(XYf_STus_RGBAub) incorrect!");
-static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color), "sizeof(XYf_STPf_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color32), "sizeof(XYf_STf_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color32), "sizeof(XYf_STus_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color32), "sizeof(XYf_STPf_RGBAub) incorrect!");
 
 size_t getFormatStride(CommonFormat format)
 {
@@ -277,7 +277,7 @@ void Attributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 	}
 }
 
-static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
+static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
 {
 	{ "VertexPosition", ATTRIB_POS           },
 	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
@@ -285,7 +285,7 @@ static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
 	{ "ConstantColor",  ATTRIB_CONSTANTCOLOR },
 };
 
-static StringMap<VertexAttribID, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
+static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
 
 static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
 {
@@ -348,12 +348,12 @@ static StringMap<Winding, WINDING_MAX_ENUM>::Entry windingEntries[] =
 
 static StringMap<Winding, WINDING_MAX_ENUM> windings(windingEntries, sizeof(windingEntries));
 
-bool getConstant(const char *in, VertexAttribID &out)
+bool getConstant(const char *in, BuiltinVertexAttribute &out)
 {
 	return attribNames.find(in, out);
 }
 
-bool getConstant(VertexAttribID in, const char *&out)
+bool getConstant(BuiltinVertexAttribute in, const char *&out)
 {
 	return attribNames.find(in, out);
 }

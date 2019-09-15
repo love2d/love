@@ -275,7 +275,7 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
 
-		Color c(255, 255, 255, 255);
+		Color32 c(255, 255, 255, 255);
 
 		// Extrude the quad borders by 1 pixel. We have an extra pixel of
 		// transparent padding in the texture atlas, so the quad extrusion will
@@ -421,7 +421,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 	Colorf linearconstantcolor = gammaCorrectColor(constantcolor);
 
-	Color curcolor = toColor(constantcolor);
+	Color32 curcolor = toColor32(constantcolor);
 	int curcolori = -1;
 	int ncolors = (int) codepoints.colors.size();
 
@@ -442,7 +442,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			c *= linearconstantcolor;
 			unGammaCorrectColor(c);
 
-			curcolor = toColor(c);
+			curcolor = toColor32(c);
 		}
 
 		if (g == '\n')
@@ -476,7 +476,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			vertices.resize(vertstartsize);
 			prevglyph = 0;
 			curcolori = -1;
-			curcolor = toColor(constantcolor);
+			curcolor = toColor32(constantcolor);
 			continue;
 		}
 

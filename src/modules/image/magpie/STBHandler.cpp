@@ -50,7 +50,7 @@ namespace image
 namespace magpie
 {
 
-static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
+static_assert(sizeof(Color32) == 4, "sizeof(Color32) must equal 4 bytes!");
 
 bool STBHandler::canDecode(Data *data)
 {
@@ -147,7 +147,7 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, EncodedF
 	memcpy(encimg.data + headerlen, img.data, img.width * img.height * bpp);
 
 	// convert the pixels from RGBA to BGRA.
-	Color *encodedpixels = (Color *) (encimg.data + headerlen);
+	Color32 *encodedpixels = (Color32 *) (encimg.data + headerlen);
 	for (int y = 0; y < img.height; y++)
 	{
 		for (int x = 0; x < img.width; x++)

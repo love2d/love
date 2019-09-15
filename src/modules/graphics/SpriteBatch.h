@@ -133,7 +133,7 @@ private:
 
 	// Current color. This color, if present, will be applied to the next
 	// added sprite.
-	Color color;
+	Color32 color;
 	bool color_active;
 
 	vertex::CommonFormat vertex_format;

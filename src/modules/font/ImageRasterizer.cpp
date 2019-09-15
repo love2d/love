@@ -29,7 +29,7 @@ namespace love
 namespace font
 {
 
-static_assert(sizeof(Color) == 4, "sizeof(Color) must equal 4 bytes!");
+static_assert(sizeof(Color32) == 4, "sizeof(Color32) must equal 4 bytes!");
 
 ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float dpiscale)
 	: imageData(data)
@@ -76,17 +76,17 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 	// We don't want another thread modifying our ImageData mid-copy.
 	love::thread::Lock lock(imageData->getMutex());
 
-	Color *gdpixels = (Color *) g->getData();
-	const Color *imagepixels = (const Color *) imageData->getData();
+	Color32 *gdpixels = (Color32 *) g->getData();
+	const Color32 *imagepixels = (const Color32 *) imageData->getData();
 
 	// copy glyph pixels from imagedata to glyphdata
 	for (int i = 0; i < g->getWidth() * g->getHeight(); i++)
 	{
-		Color p = imagepixels[it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width))];
+		Color32 p = imagepixels[it->second.x + (i % gm.width) + (imageData->getWidth() * (i / gm.width))];
 
 		// Use transparency instead of the spacer color
 		if (p == spacer)
-			gdpixels[i] = Color(0, 0, 0, 0);
+			gdpixels[i] = Color32(0, 0, 0, 0);
 		else
 			gdpixels[i] = p;
 	}
@@ -96,7 +96,7 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 
 void ImageRasterizer::load()
 {
-	const Color *pixels = (const Color *) imageData->getData();
+	auto pixels = (const Color32 *) imageData->getData();
 
 	int imgw = imageData->getWidth();
 	int imgh = imageData->getHeight();

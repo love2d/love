@@ -1275,7 +1275,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	else
 		t.transformXY0((Vector3 *) data.stream[0], positions, cmd.vertexCount);
 
-	Color *colordata = (Color *) data.stream[1];
+	Color32 *colordata = (Color32 *) data.stream[1];
 
 	if (colors)
 	{
@@ -1290,18 +1290,18 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 				gammaCorrectColor(ci);
 				ci *= nc;
 				unGammaCorrectColor(ci);
-				colordata[i] = toColor(ci);
+				colordata[i] = toColor32(ci);
 			}
 		}
 		else
 		{
 			for (int i = 0; i < cmd.vertexCount; i++)
-				colordata[i] = toColor(nc * colors[i]);
+				colordata[i] = toColor32(nc * colors[i]);
 		}
 	}
 	else
 	{
-		Color c = toColor(getColor());
+		Color32 c = toColor32(getColor());
 
 		for (int i = 0; i < cmd.vertexCount; i++)
 			colordata[i] = c;
@@ -1571,8 +1571,8 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		else
 			t.transformXY0((Vector3 *) data.stream[0], coords, cmd.vertexCount);
 
-		Color c = toColor(getColor());
-		Color *colordata = (Color *) data.stream[1];
+		Color32 c = toColor32(getColor());
+		Color32 *colordata = (Color32 *) data.stream[1];
 		for (int i = 0; i < cmd.vertexCount; i++)
 			colordata[i] = c;
 	}

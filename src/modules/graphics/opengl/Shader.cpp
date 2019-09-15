@@ -333,7 +333,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (vertex::getConstant((VertexAttribID) i, name))
+		if (vertex::getConstant((BuiltinVertexAttribute) i, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -356,7 +356,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (vertex::getConstant(VertexAttribID(i), name))
+		if (vertex::getConstant(BuiltinVertexAttribute(i), name))
 			builtinAttributes[i] = glGetAttribLocation(program, name);
 		else
 			builtinAttributes[i] = -1;

@@ -150,7 +150,7 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	const Vector2 *texcoords = q->getVertexTexCoords();
 	vertex::STf_RGBAub *vertexdata = (vertex::STf_RGBAub *) data.stream[1];
 
-	Color c = toColor(gfx->getColor());
+	Color32 c = toColor32(gfx->getColor());
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -178,7 +178,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	if (layer < 0 || layer >= layers)
 		throw love::Exception("Invalid layer: %d (Texture has %d layers)", layer + 1, layers);
 
-	Color c = toColor(gfx->getColor());
+	Color32 c = toColor32(gfx->getColor());
 
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();

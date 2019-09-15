@@ -34,7 +34,7 @@ namespace love
 namespace graphics
 {
 
-static const char *getBuiltinAttribName(VertexAttribID attribid)
+static const char *getBuiltinAttribName(BuiltinVertexAttribute attribid)
 {
 	const char *name = "";
 	vertex::getConstant(attribid, name);
@@ -602,7 +602,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		VertexAttribID builtinattrib;
+		BuiltinVertexAttribute builtinattrib;
 		if (vertex::getConstant(attrib.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)

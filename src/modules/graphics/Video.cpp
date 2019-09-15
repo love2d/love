@@ -42,7 +42,7 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 	stream->fillBackBuffer();
 
 	for (int i = 0; i < 4; i++)
-		vertices[i].color = Color(255, 255, 255, 255);
+		vertices[i].color = Color32(255, 255, 255, 255);
 
 	// Vertices are ordered for use with triangle strips:
 	// 0---2
@@ -130,7 +130,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	vertex::STf_RGBAub *verts = (vertex::STf_RGBAub *) data.stream[1];
 
-	Color c = toColor(gfx->getColor());
+	Color32 c = toColor32(gfx->getColor());
 
 	for (int i = 0; i < 4; i++)
 	{

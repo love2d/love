@@ -196,13 +196,13 @@ void SpriteBatch::setColor(const Colorf &c)
 	cclamped.b = std::min(std::max(c.b, 0.0f), 1.0f);
 	cclamped.a = std::min(std::max(c.a, 0.0f), 1.0f);
 
-	this->color = toColor(cclamped);
+	this->color = toColor32(cclamped);
 }
 
 void SpriteBatch::setColor()
 {
 	color_active = false;
-	color = Color(255, 255, 255, 255);
+	color = Color32(255, 255, 255, 255);
 }
 
 Colorf SpriteBatch::getColor(bool &active) const
@@ -357,7 +357,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		VertexAttribID builtinattrib;
+		BuiltinVertexAttribute builtinattrib;
 		if (vertex::getConstant(it.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)

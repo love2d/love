@@ -38,7 +38,7 @@ class Resource;
 
 // Vertex attribute indices used in shaders by LOVE. The values map to GPU
 // generic vertex attribute indices.
-enum VertexAttribID
+enum BuiltinVertexAttribute
 {
 	ATTRIB_POS = 0,
 	ATTRIB_TEXCOORD,
@@ -47,7 +47,7 @@ enum VertexAttribID
 	ATTRIB_MAX_ENUM
 };
 
-enum VertexAttribFlags
+enum BuiltinVertexAttributeFlag
 {
 	ATTRIBFLAG_POS = 1 << ATTRIB_POS,
 	ATTRIBFLAG_TEXCOORD = 1 << ATTRIB_TEXCOORD,
@@ -147,13 +147,13 @@ enum class CommonFormat
 struct STf_RGBAub
 {
 	float s, t;
-	Color color;
+	Color32 color;
 };
 
 struct STPf_RGBAub
 {
 	float s, t, p;
-	Color color;
+	Color32 color;
 };
 
 struct XYf_STf
@@ -172,21 +172,21 @@ struct XYf_STf_RGBAub
 {
 	float x, y;
 	float s, t;
-	Color color;
+	Color32 color;
 };
 
 struct XYf_STus_RGBAub
 {
 	float  x, y;
 	uint16 s, t;
-	Color  color;
+	Color32 color;
 };
 
 struct XYf_STPf_RGBAub
 {
 	float x, y;
 	float s, t, p;
-	Color color;
+	Color32 color;
 };
 
 struct BufferBindings
@@ -306,8 +306,8 @@ int getIndexCount(TriangleIndexMode mode, int vertexCount);
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
-bool getConstant(const char *in, VertexAttribID &out);
-bool getConstant(VertexAttribID in, const char *&out);
+bool getConstant(const char *in, BuiltinVertexAttribute &out);
+bool getConstant(BuiltinVertexAttribute in, const char *&out);
 
 bool getConstant(const char *in, IndexDataType &out);
 bool getConstant(IndexDataType in, const char *&out);

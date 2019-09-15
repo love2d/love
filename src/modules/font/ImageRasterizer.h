@@ -76,7 +76,7 @@ private:
 	std::map<uint32, ImageGlyphData> imageGlyphs;
 
 	// Color used to identify glyph separation in the source ImageData
-	Color spacer;
+	Color32 spacer;
 
 }; // ImageRasterizer
 

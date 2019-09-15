@@ -387,8 +387,8 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 	else
 		t.transformXY0((Vector3 *) data.stream[0], vertices, total_vertex_count);
 
-	Color curcolor = toColor(gfx->getColor());
-	Color *colordata = (Color *) data.stream[1];
+	Color32 curcolor = toColor32(gfx->getColor());
+	Color32 *colordata = (Color32 *) data.stream[1];
 
 	for (int i = 0; i < (int) vertex_count; i++)
 		colordata[i] = curcolor;
@@ -397,21 +397,21 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 		fill_color_array(curcolor, colordata + overdraw_vertex_start);
 }
 
-void Polyline::fill_color_array(Color constant_color, Color *colors)
+void Polyline::fill_color_array(Color32 constant_color, Color32 *colors)
 {
 	for (size_t i = 0; i < overdraw_vertex_count; ++i)
 	{
-		Color c = constant_color;
+		Color32 c = constant_color;
 		c.a *= (i+1) % 2; // avoids branching. equiv to if (i%2 == 1) c.a = 0;
 		colors[i] = c;
 	}
 }
 
-void NoneJoinPolyline::fill_color_array(Color constant_color, Color *colors)
+void NoneJoinPolyline::fill_color_array(Color32 constant_color, Color32 *colors)
 {
 	for (size_t i = 0; i < overdraw_vertex_count; ++i)
 	{
-		Color c = constant_color;
+		Color32 c = constant_color;
 		c.a *= (i & 3) < 2; // if (i % 4 == 2 || i % 4 == 3) c.a = 0
 		colors[i] = c;
 	}

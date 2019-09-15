@@ -135,18 +135,18 @@ ColorT<T> operator/(const ColorT<T> &a, T s)
 	return tmp /= s;
 }
 
-typedef ColorT<unsigned char> Color;
+typedef ColorT<unsigned char> Color32;
 typedef ColorT<float> Colorf;
 
-inline Color toColor(Colorf cf)
+inline Color32 toColor32(Colorf cf)
 {
-	return Color((unsigned char) (cf.r * 255.0f),
+	return Color32((unsigned char) (cf.r * 255.0f),
 	             (unsigned char) (cf.g * 255.0f),
 	             (unsigned char) (cf.b * 255.0f),
 	             (unsigned char) (cf.a * 255.0f));
 }
 
-inline Colorf toColorf(Color c)
+inline Colorf toColorf(Color32 c)
 {
 	return Colorf(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
 }
