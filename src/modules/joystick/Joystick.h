@@ -153,6 +153,7 @@ public:
 	virtual bool isGamepadDown(const std::vector<GamepadButton> &blist) const = 0;
 
 	virtual JoystickInput getGamepadMapping(const GamepadInput &input) const = 0;
+	virtual std::string getGamepadMappingString() const = 0;
 
 	virtual void *getHandle() const = 0;
 

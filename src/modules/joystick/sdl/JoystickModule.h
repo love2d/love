@@ -45,19 +45,21 @@ public:
 	virtual ~JoystickModule();
 
 	// Implements Module.
-	const char *getName() const;
+	const char *getName() const override;
 
 	// Implements JoystickModule.
-	love::joystick::Joystick *addJoystick(int deviceindex);
-	void removeJoystick(love::joystick::Joystick *joystick);
-	love::joystick::Joystick *getJoystickFromID(int instanceid);
-	love::joystick::Joystick *getJoystick(int joyindex);
-	int getIndex(const love::joystick::Joystick *joystick);
-	int getJoystickCount() const;
+	love::joystick::Joystick *addJoystick(int deviceindex) override;
+	void removeJoystick(love::joystick::Joystick *joystick) override;
+	love::joystick::Joystick *getJoystickFromID(int instanceid) override;
+	love::joystick::Joystick *getJoystick(int joyindex) override;
+	int getIndex(const love::joystick::Joystick *joystick) override;
+	int getJoystickCount() const override;
 
-	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput);
-	void loadGamepadMappings(const std::string &mappings);
-	std::string saveGamepadMappings();
+	bool setGamepadMapping(const std::string &guid, Joystick::GamepadInput gpinput, Joystick::JoystickInput joyinput) override;
+	void loadGamepadMappings(const std::string &mappings) override;
+
+	std::string getGamepadMappingString(const std::string &guid) const override;
+	std::string saveGamepadMappings() override;
 
 private:
 

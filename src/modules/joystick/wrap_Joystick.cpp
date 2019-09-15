@@ -292,6 +292,17 @@ int w_Joystick_getGamepadMapping(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_getGamepadMappingString(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	std::string mapping = j->getGamepadMappingString();
+	if (mapping.empty())
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, mapping);
+	return 1;
+}
+
 int w_Joystick_isVibrationSupported(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
@@ -351,6 +362,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
 	{ "getGamepadMapping", w_Joystick_getGamepadMapping },
+	{ "getGamepadMappingString", w_Joystick_getGamepadMappingString },
 
 	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
 	{ "setVibration", w_Joystick_setVibration },

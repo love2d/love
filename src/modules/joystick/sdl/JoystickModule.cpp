@@ -451,6 +451,25 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		throw love::Exception("Invalid gamepad mappings.");
 }
 
+std::string JoystickModule::getGamepadMappingString(const std::string &guid) const
+{
+	SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(guid.c_str());
+
+	char *sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+	if (sdlmapping == nullptr)
+		return "";
+
+	std::string mapping(sdlmapping);
+	SDL_free(sdlmapping);
+
+	// Matches SDL_GameControllerAddMappingsFromRW.
+	if (mapping.find_last_of(',') != mapping.length() - 1)
+		mapping += ",";
+	mapping += "platform:" + std::string(SDL_GetPlatform());
+
+	return mapping;
+}
+
 std::string JoystickModule::saveGamepadMappings()
 {
 	std::string mappings;

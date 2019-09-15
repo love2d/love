@@ -301,6 +301,33 @@ Joystick::JoystickInput Joystick::getGamepadMapping(const GamepadInput &input) c
 	return jinput;
 }
 
+std::string Joystick::getGamepadMappingString() const
+{
+	char *sdlmapping = nullptr;
+
+	if (controller != nullptr)
+		sdlmapping = SDL_GameControllerMapping(controller);
+
+	if (sdlmapping == nullptr)
+	{
+		SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(pguid.c_str());
+		sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+	}
+
+	if (sdlmapping == nullptr)
+		return "";
+
+	std::string mappingstr(sdlmapping);
+	SDL_free(sdlmapping);
+
+	// Matches SDL_GameControllerAddMappingsFromRW.
+	if (mappingstr.find_last_of(',') != mappingstr.length() - 1)
+		mappingstr += ",";
+	mappingstr += "platform:" + std::string(SDL_GetPlatform());
+
+	return mappingstr;
+}
+
 void *Joystick::getHandle() const
 {
 	return joyhandle;

@@ -68,6 +68,7 @@ public:
 	bool isGamepadDown(const std::vector<GamepadButton> &blist) const override;
 
 	JoystickInput getGamepadMapping(const GamepadInput &input) const override;
+	std::string getGamepadMappingString() const override;
 
 	void *getHandle() const override;
 
