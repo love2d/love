@@ -184,12 +184,16 @@ static void luax_checkpixel_rgba32f(lua_State *L, int startidx, Pixel &p)
 	luax_checkpixel_float32<4>(L, startidx, p);
 }
 
+static lua_Number fillValues[] = {0.0, 0.0, 0.0, 1.0};
+
 template <int components>
 static int luax_pushpixel_unorm8(lua_State *L, const Pixel &p)
 {
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) p.rgba8[i] / 255.0);
-	return components;
+	for (int i = components; i < 4; i++)
+		lua_pushnumber(L, fillValues[i]);
+	return 4;
 }
 
 template <int components>
@@ -197,7 +201,9 @@ static int luax_pushpixel_unorm16(lua_State *L, const Pixel &p)
 {
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) p.rgba16[i] / 65535.0);
-	return components;
+	for (int i = components; i < 4; i++)
+		lua_pushnumber(L, fillValues[i]);
+	return 4;
 }
 
 template <int components>
@@ -205,7 +211,9 @@ static int luax_pushpixel_float16(lua_State *L, const Pixel &p)
 {
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) halfToFloat(p.rgba16f[i]));
-	return components;
+	for (int i = components; i < 4; i++)
+		lua_pushnumber(L, fillValues[i]);
+	return 4;
 }
 
 template <int components>
@@ -213,7 +221,9 @@ static int luax_pushpixel_float32(lua_State *L, const Pixel &p)
 {
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) p.rgba32f[i]);
-	return components;
+	for (int i = components; i < 4; i++)
+		lua_pushnumber(L, fillValues[i]);
+	return 4;
 }
 
 static int luax_pushpixel_r8(lua_State *L, const Pixel &p)
