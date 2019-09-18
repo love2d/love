@@ -23,9 +23,6 @@
 // LOVE
 #include "image/FormatHandler.h"
 
-// dds parser
-#include "ddsparse/ddsparse.h"
-
 // STL
 #include <string>
 
@@ -46,15 +43,12 @@ public:
 	virtual ~DDSHandler() {}
 
 	// Implements FormatHandler.
+	bool canDecode(Data *data) override;
+	DecodedImage decode(Data *data) override;
 	bool canParseCompressed(Data *data) override;
-
 	StrongRef<CompressedMemory> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
-
-private:
-
-	static PixelFormat convertFormat(dds::Format ddsformat, bool &sRGB);
 
 }; // DDSHandler
 
