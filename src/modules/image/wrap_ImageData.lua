@@ -258,7 +258,7 @@ local conversions = {
 			g = clamp01(g) * 0xF
 			b = clamp01(b) * 0xF
 			a = a == nil and 0xF or clamp01(a) * 0xF
-			self.rgba = bit.bor(a, bit.lshift(b, 4), bit.lshift(g, 8), bit.lshift(r, 12))
+			self.rgba = bit.bor(bit.lshift(r, 12), bit.lshift(g, 8), bit.lshift(b, 4), a)
 		end,
 	},
 	rgb5a1 = {
