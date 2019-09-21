@@ -44,6 +44,8 @@ union Pixel
 	uint16 rgba16[4];
 	half   rgba16f[4];
 	float  rgba32f[4];
+	uint16 packed16;
+	uint32 packed32;
 };
 
 /**
@@ -114,6 +116,7 @@ public:
 	size_t getPixelSize() const;
 
 	static bool validPixelFormat(PixelFormat format);
+	static bool canPaste(PixelFormat src, PixelFormat dst);
 
 	static bool getConstant(const char *in, FormatHandler::EncodedFormat &out);
 	static bool getConstant(FormatHandler::EncodedFormat in, const char *&out);

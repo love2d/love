@@ -73,6 +73,9 @@ end
 local status, ffi = pcall(require, "ffi")
 if not status then return end
 
+local bitstatus, bit = pcall(require, "bit")
+if not bitstatus then return end
+
 pcall(ffi.cdef, [[
 typedef struct Proxy Proxy;
 typedef uint16_t half;
@@ -101,6 +104,11 @@ struct ImageData_Pixel_RGBA16F { half r, g, b, a; };
 struct ImageData_Pixel_R32F { float r; };
 struct ImageData_Pixel_RG32F { float r, g; };
 struct ImageData_Pixel_RGBA32F { float r, g, b, a; };
+
+struct ImageData_Pixel_RGBA4 { uint16_t rgba; };
+struct ImageData_Pixel_RGB5A1 { uint16_t rgba; };
+struct ImageData_Pixel_RGB565 { uint16_t rgb; };
+struct ImageData_Pixel_RGB10A2 { uint32_t rgba; };
 ]])
 
 local ffifuncs = ffi.cast("FFI_ImageData **", ffifuncspointer_str)[0]
@@ -112,7 +120,7 @@ local conversions = {
 			return tonumber(self.r) / 255, 0, 0, 1
 		end,
 		fromlua = function(self, r)
-			self.r = clamp01(r) * 255
+			self.r = (clamp01(r) * 255) + 0.5
 		end,
 	},
 	rg8 = {
@@ -121,8 +129,8 @@ local conversions = {
 			return tonumber(self.r) / 255, tonumber(self.g) / 255, 0, 1
 		end,
 		fromlua = function(self, r, g)
-			self.r = clamp01(r) * 255
-			self.g = clamp01(g) * 255
+			self.r = (clamp01(r) * 255) + 0.5
+			self.g = (clamp01(g) * 255) + 0.5
 		end,
 	},
 	rgba8 = {
@@ -131,10 +139,10 @@ local conversions = {
 			return tonumber(self.r) / 255, tonumber(self.g) / 255, tonumber(self.b) / 255, tonumber(self.a) / 255
 		end,
 		fromlua = function(self, r, g, b, a)
-			self.r = clamp01(r) * 255
-			self.g = clamp01(g) * 255
-			self.b = clamp01(b) * 255
-			self.a = a == nil and 255 or clamp01(a) * 255
+			self.r = (clamp01(r) * 255) + 0.5
+			self.g = (clamp01(g) * 255) + 0.5
+			self.b = (clamp01(b) * 255) + 0.5
+			self.a = a == nil and 255 or (clamp01(a) * 255) + 0.5
 		end,
 	},
 	r16 = {
@@ -143,7 +151,7 @@ local conversions = {
 			return tonumber(self.r) / 65535, 0, 0, 1
 		end,
 		fromlua = function(self, r)
-			self.r = clamp01(r) * 65535
+			self.r = (clamp01(r) * 65535) + 0.5
 		end,
 	},
 	rg16 = {
@@ -152,8 +160,8 @@ local conversions = {
 			return tonumber(self.r) / 65535, tonumber(self.g) / 65535, 0, 1
 		end,
 		fromlua = function(self, r, g)
-			self.r = clamp01(r) * 65535
-			self.g = clamp01(g) * 65535
+			self.r = (clamp01(r) * 65535) + 0.5
+			self.g = (clamp01(g) * 65535) + 0.5
 		end,
 	},
 	rgba16 = {
@@ -162,10 +170,10 @@ local conversions = {
 			return tonumber(self.r) / 65535, tonumber(self.g) / 65535, tonumber(self.b) / 65535, tonumber(self.a) / 65535
 		end,
 		fromlua = function(self, r, g, b, a)
-			self.r = clamp01(r) * 65535
-			self.g = clamp01(g) * 65535
-			self.b = clamp01(b) * 65535
-			self.a = a == nil and 65535 or clamp01(a) * 65535
+			self.r = (clamp01(r) * 65535) + 0.5
+			self.g = (clamp01(g) * 65535) + 0.5
+			self.b = (clamp01(b) * 65535) + 0.5
+			self.a = a == nil and 65535 or (clamp01(a) * 65535) + 0.5
 		end,
 	},
 	r16f = {
@@ -231,6 +239,84 @@ local conversions = {
 			self.g = g
 			self.b = b
 			self.a = a == nil and 1.0 or a
+		end,
+	},
+	rgba4 = {
+		-- LSB->MSB: [a, b, g, r]
+		pointer = ffi.typeof("struct ImageData_Pixel_RGBA4 *"),
+		tolua = function(self)
+			local rgba = self.rgba
+			local a = tonumber(bit.band(rgba, 0xF)) / 0xF
+			local b = tonumber(bit.band(bit.rshift(rgba, 4), 0xF)) / 0xF
+			local g = tonumber(bit.band(bit.rshift(rgba, 8), 0xF)) / 0xF
+			local r = tonumber(bit.rshift(rgba, 12)) / 0xF
+			return r, g, b, a
+		end,
+		fromlua = function(self, r, g, b, a)
+			-- bit functions round internally.
+			r = clamp01(r) * 0xF
+			g = clamp01(g) * 0xF
+			b = clamp01(b) * 0xF
+			a = a == nil and 0xF or clamp01(a) * 0xF
+			self.rgba = bit.bor(a, bit.lshift(b, 4), bit.lshift(g, 8), bit.lshift(r, 12))
+		end,
+	},
+	rgb5a1 = {
+		-- LSB->MSB: [a, b, g, r]
+		pointer = ffi.typeof("struct ImageData_Pixel_RGB5A1 *"),
+		tolua = function(self)
+			local rgba = self.rgba
+			local r = tonumber(bit.band(bit.rshift(rgba, 11), 0x1F)) / 0x1F
+			local g = tonumber(bit.band(bit.rshift(rgba,  6), 0x1F)) / 0x1F
+			local b = tonumber(bit.band(bit.rshift(rgba,  1), 0x1F)) / 0x1F
+			local a = tonumber(bit.band(rgba, 0x1))
+			return r, g, b, a
+		end,
+		fromlua = function(self, r, g, b, a)
+			-- bit functions round internally.
+			r = clamp01(r) * 0x1F
+			g = clamp01(g) * 0x1F
+			b = clamp01(b) * 0x1F
+			a = a == nil and 1 or clamp01(a)
+			self.rgba = bit.bor(bit.lshift(r, 11), bit.lshift(g, 6), bit.lshift(b, 1), a)
+		end,
+	},
+	rgb565 = {
+		-- LSB->MSB: [b, g, r]
+		pointer = ffi.typeof("struct ImageData_Pixel_RGB565 *"),
+		tolua = function(self)
+			local rgb = self.rgb
+			local r = bit.band(bit.rshift(rgb, 11), 0x1F) / 0x1F
+			local g = bit.band(bit.rshift(rgb, 5), 0x3F) / 0x3F
+			local b = bit.band(rgb, 0x1F) / 0x1F
+			return r, g, b, 1
+		end,
+		fromlua = function(self, r, g, b)
+			-- bit functions round internally.
+			r = clamp01(r) * 0x1F
+			g = clamp01(g) * 0x3F
+			b = clamp01(b) * 0x1F
+			self.rgb = bit.bor(bit.lshift(r, 11), bit.lshift(g, 5), b)
+		end,
+	},
+	rgb10a2 = {
+		-- LSB->MSB: [r, g, b, a]
+		pointer = ffi.typeof("struct ImageData_Pixel_RGB10A2 *"),
+		tolua = function(self)
+			local rgba = self.rgba
+			local r = tonumber(bit.band(rgba, 0x3FF)) / 0x3FF
+			local g = tonumber(bit.band(bit.rshift(rgba, 10), 0x3FF)) / 0x3FF
+			local b = tonumber(bit.band(bit.rshift(rgba, 20), 0x3FF)) / 0x3FF
+			local a = tonumber(bit.rshift(rgba, 30)) / 0x3
+			return r, g, b, a
+		end,
+		fromlua = function(self, r, g, b, a)
+			-- bit functions round internally.
+			r = clamp01(r) * 0x3FF
+			g = clamp01(g) * 0x3FF
+			b = clamp01(b) * 0x3FF
+			a = a == nil and 0x3 or clamp01(a) * 0x3
+			self.rgba = bit.bor(r, bit.lshift(g, 10), bit.lshift(b, 20), bit.lshift(a, 30))
 		end,
 	},
 }

@@ -463,7 +463,7 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 				pasteRGBA32FtoRGBA16F(rowsrc, rowdst, sw);
 
 			else
-				throw love::Exception("Unsupported pixel format combination in ImageData:paste!");
+				throw love::Exception("Unsupported pixel format combination in ImageData:paste.");
 		}
 	}
 }
@@ -494,10 +494,30 @@ bool ImageData::validPixelFormat(PixelFormat format)
 	case PIXELFORMAT_R32F:
 	case PIXELFORMAT_RG32F:
 	case PIXELFORMAT_RGBA32F:
+	case PIXELFORMAT_RGBA4:
+	case PIXELFORMAT_RGB5A1:
+	case PIXELFORMAT_RGB565:
+	case PIXELFORMAT_RGB10A2:
 		return true;
 	default:
 		return false;
 	}
+}
+
+bool ImageData::canPaste(PixelFormat src, PixelFormat dst)
+{
+	if (src == dst)
+		return true;
+
+	if (!(src == PIXELFORMAT_RGBA8 || src == PIXELFORMAT_RGBA16
+		|| src == PIXELFORMAT_RGBA16F || src == PIXELFORMAT_RGBA32F))
+		return false;
+
+	if (!(dst == PIXELFORMAT_RGBA8 || dst == PIXELFORMAT_RGBA16
+		|| dst == PIXELFORMAT_RGBA16F || dst == PIXELFORMAT_RGBA32F))
+		return false;
+
+	return true;
 }
 
 bool ImageData::getConstant(const char *in, FormatHandler::EncodedFormat &out)
