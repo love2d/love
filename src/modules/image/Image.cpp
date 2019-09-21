@@ -43,7 +43,7 @@ Image::Image()
 {
 	using namespace magpie;
 
-	halfInit(); // Makes sure half-float conversions can be used.
+	float16Init(); // Makes sure half-float conversions can be used.
 
 	formatHandlers = {
 		new PNGHandler,

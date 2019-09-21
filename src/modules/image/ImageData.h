@@ -25,7 +25,7 @@
 #include "common/StringMap.h"
 #include "common/int.h"
 #include "common/pixelformat.h"
-#include "common/halffloat.h"
+#include "common/floattypes.h"
 #include "filesystem/FileData.h"
 #include "thread/threads.h"
 #include "ImageDataBase.h"
@@ -40,12 +40,12 @@ namespace image
 
 union Pixel
 {
-	uint8  rgba8[4];
-	uint16 rgba16[4];
-	half   rgba16f[4];
-	float  rgba32f[4];
-	uint16 packed16;
-	uint32 packed32;
+	uint8   rgba8[4];
+	uint16  rgba16[4];
+	float16 rgba16f[4];
+	float   rgba32f[4];
+	uint16  packed16;
+	uint32  packed32;
 };
 
 /**

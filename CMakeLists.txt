@@ -279,8 +279,8 @@ set(LOVE_SRC_COMMON
 	src/common/EnumMap.h
 	src/common/Exception.cpp
 	src/common/Exception.h
-	src/common/halffloat.cpp
-	src/common/halffloat.h
+	src/common/floattypes.cpp
+	src/common/floattypes.h
 	src/common/int.h
 	src/common/math.h
 	src/common/Matrix.cpp

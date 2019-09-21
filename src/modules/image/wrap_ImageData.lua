@@ -78,15 +78,23 @@ if not bitstatus then return end
 
 pcall(ffi.cdef, [[
 typedef struct Proxy Proxy;
-typedef uint16_t half;
+typedef uint16_t float16;
+typedef uint16_t float11;
+typedef uint16_t float10;
 
 typedef struct FFI_ImageData
 {
 	void (*lockMutex)(Proxy *p);
 	void (*unlockMutex)(Proxy *p);
 
-	float (*halfToFloat)(half h);
-	half (*floatToHalf)(float f);
+	float (*float16to32)(float16 f);
+	float16 (*float32to16)(float f);
+
+	float (*float11to32)(float11 f);
+	float11 (*float32to11)(float f);
+
+	float (*float10to32)(float10 f);
+	float10 (*float32to10)(float f);
 } FFI_ImageData;
 
 struct ImageData_Pixel_R8 { uint8_t r; };
@@ -97,9 +105,9 @@ struct ImageData_Pixel_R16 { uint16_t r; };
 struct ImageData_Pixel_RG16 { uint16_t r, g; };
 struct ImageData_Pixel_RGBA16 { uint16_t r, g, b, a; };
 
-struct ImageData_Pixel_R16F { half r; };
-struct ImageData_Pixel_RG16F { half r, g; };
-struct ImageData_Pixel_RGBA16F { half r, g, b, a; };
+struct ImageData_Pixel_R16F { float16 r; };
+struct ImageData_Pixel_RG16F { float16 r, g; };
+struct ImageData_Pixel_RGBA16F { float16 r, g, b, a; };
 
 struct ImageData_Pixel_R32F { float r; };
 struct ImageData_Pixel_RG32F { float r, g; };
@@ -109,6 +117,7 @@ struct ImageData_Pixel_RGBA4 { uint16_t rgba; };
 struct ImageData_Pixel_RGB5A1 { uint16_t rgba; };
 struct ImageData_Pixel_RGB565 { uint16_t rgb; };
 struct ImageData_Pixel_RGB10A2 { uint32_t rgba; };
+struct ImageData_Pixel_RG11B10F { uint32_t rgb; };
 ]])
 
 local ffifuncs = ffi.cast("FFI_ImageData **", ffifuncspointer_str)[0]
@@ -179,35 +188,35 @@ local conversions = {
 	r16f = {
 		pointer = ffi.typeof("struct ImageData_Pixel_R16F *"),
 		tolua = function(self)
-			return tonumber(ffifuncs.halfToFloat(self.r)), 0, 0, 1
+			return tonumber(ffifuncs.float16to32(self.r)), 0, 0, 1
 		end,
 		fromlua = function(self, r)
-			self.r = ffifuncs.floatToHalf(r)
+			self.r = ffifuncs.float32to16(r)
 		end,
 	},
 	rg16f = {
 		pointer = ffi.typeof("struct ImageData_Pixel_RG16F *"),
 		tolua = function(self)
-			return tonumber(ffifuncs.halfToFloat(self.r)), tonumber(ffifuncs.halfToFloat(self.g)), 0, 1
+			return tonumber(ffifuncs.float16to32(self.r)), tonumber(ffifuncs.float16to32(self.g)), 0, 1
 		end,
 		fromlua = function(self, r, g, b, a)
-			self.r = ffifuncs.floatToHalf(r)
-			self.g = ffifuncs.floatToHalf(g)
+			self.r = ffifuncs.float32to16(r)
+			self.g = ffifuncs.float32to16(g)
 		end,
 	},
 	rgba16f = {
 		pointer = ffi.typeof("struct ImageData_Pixel_RGBA16F *"),
 		tolua = function(self)
-			return tonumber(ffifuncs.halfToFloat(self.r)),
-			       tonumber(ffifuncs.halfToFloat(self.g)),
-			       tonumber(ffifuncs.halfToFloat(self.b)),
-			       tonumber(ffifuncs.halfToFloat(self.a))
+			return tonumber(ffifuncs.float16to32(self.r)),
+			       tonumber(ffifuncs.float16to32(self.g)),
+			       tonumber(ffifuncs.float16to32(self.b)),
+			       tonumber(ffifuncs.float16to32(self.a))
 		end,
 		fromlua = function(self, r, g, b, a)
-			self.r = ffifuncs.floatToHalf(r)
-			self.g = ffifuncs.floatToHalf(g)
-			self.b = ffifuncs.floatToHalf(b)
-			self.a = ffifuncs.floatToHalf(a == nil and 1.0 or a)
+			self.r = ffifuncs.float32to16(r)
+			self.g = ffifuncs.float32to16(g)
+			self.b = ffifuncs.float32to16(b)
+			self.a = ffifuncs.float32to16(a == nil and 1.0 or a)
 		end,
 	},
 	r32f = {
@@ -317,6 +326,24 @@ local conversions = {
 			b = clamp01(b) * 0x3FF
 			a = a == nil and 0x3 or clamp01(a) * 0x3
 			self.rgba = bit.bor(r, bit.lshift(g, 10), bit.lshift(b, 20), bit.lshift(a, 30))
+		end,
+	},
+	rg11b10f = {
+		-- LSB->MSB: [r, g, b]
+		pointer = ffi.typeof("struct ImageData_Pixel_RG11B10F *"),
+		tolua = function(self)
+			local rgb = self.rgb
+			local r = tonumber(ffifuncs.float11to32(bit.band(rgb, 0x7FF)))
+			local g = tonumber(ffifuncs.float11to32(bit.band(bit.rshift(rgb, 11), 0x7FF)))
+			local b = tonumber(ffifuncs.float10to32(bit.band(bit.rshift(rgb, 22), 0x3FF)))
+			return r, g, b, 1
+		end,
+		fromlua = function(self, r, g, b, a)
+			self.rgb = bit.bor(
+				ffifuncs.float32to11(r),
+				bit.lshift(ffifuncs.float32to11(g), 11),
+				bit.lshift(ffifuncs.float32to10(b), 22)
+			)
 		end,
 	},
 }

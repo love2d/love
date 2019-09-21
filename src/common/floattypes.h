@@ -18,21 +18,26 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_HALF_FLOAT_H
-#define LOVE_HALF_FLOAT_H
+#pragma once
 
 #include "int.h"
 
 namespace love
 {
 
-typedef uint16 half;
+typedef uint16 float16;
+typedef uint16 float11;
+typedef uint16 float10;
 
-void halfInit();
+void float16Init();
 
-float halfToFloat(half h);
-half floatToHalf(float f);
+float float16to32(float16 f);
+float16 float32to16(float f);
+
+float float11to32(float11 f);
+float11 float32to11(float f);
+
+float float10to32(float10 f);
+float10 float32to10(float f);
 
 } // love
-
-#endif // LOVE_HALF_FLOAT_H

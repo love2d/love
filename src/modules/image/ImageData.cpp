@@ -280,7 +280,7 @@ union Row
 {
 	uint8 *u8;
 	uint16 *u16;
-	half *f16;
+	float16 *f16;
 	float *f32;
 };
 
@@ -293,7 +293,7 @@ static void pasteRGBA8toRGBA16(Row src, Row dst, int w)
 static void pasteRGBA8toRGBA16F(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = floatToHalf(src.u8[i] / 255.0f);
+		dst.f16[i] = float32to16(src.u8[i] / 255.0f);
 }
 
 static void pasteRGBA8toRGBA32F(Row src, Row dst, int w)
@@ -311,7 +311,7 @@ static void pasteRGBA16toRGBA8(Row src, Row dst, int w)
 static void pasteRGBA16toRGBA16F(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = floatToHalf(src.u16[i] / 65535.0f);
+		dst.f16[i] = float32to16(src.u16[i] / 65535.0f);
 }
 
 static void pasteRGBA16toRGBA32F(Row src, Row dst, int w)
@@ -323,19 +323,19 @@ static void pasteRGBA16toRGBA32F(Row src, Row dst, int w)
 static void pasteRGBA16FtoRGBA8(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.u8[i] = (uint8) (halfToFloat(src.f16[i]) * 255.0f);
+		dst.u8[i] = (uint8) (float16to32(src.f16[i]) * 255.0f);
 }
 
 static void pasteRGBA16FtoRGBA16(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.u16[i] = (uint16) (halfToFloat(src.f16[i]) * 65535.0f);
+		dst.u16[i] = (uint16) (float16to32(src.f16[i]) * 65535.0f);
 }
 
 static void pasteRGBA16FtoRGBA32F(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.f32[i] = halfToFloat(src.f16[i]);
+		dst.f32[i] = float16to32(src.f16[i]);
 }
 
 static void pasteRGBA32FtoRGBA8(Row src, Row dst, int w)
@@ -353,7 +353,7 @@ static void pasteRGBA32FtoRGBA16(Row src, Row dst, int w)
 static void pasteRGBA32FtoRGBA16F(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = (uint16) floatToHalf(src.f32[i]);
+		dst.f16[i] = (uint16) float32to16(src.f32[i]);
 }
 
 void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, int sh)
@@ -498,6 +498,7 @@ bool ImageData::validPixelFormat(PixelFormat format)
 	case PIXELFORMAT_RGB5A1:
 	case PIXELFORMAT_RGB565:
 	case PIXELFORMAT_RGB10A2:
+	case PIXELFORMAT_RG11B10F:
 		return true;
 	default:
 		return false;

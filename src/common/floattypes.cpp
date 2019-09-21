@@ -18,14 +18,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "halffloat.h"
+#include "floattypes.h"
+
+#include <limits>
+#include <cmath>
 
 namespace love
 {
 
 // Code from ftp://www.fox-toolkit.org/pub/fasthalffloatconversion.pdf
 
-static bool initialized = false;
+static bool halfInitialized = false;
 
 // tables for half -> float conversions
 static uint32 mantissatable[2048];
@@ -54,15 +57,15 @@ static uint32 convertMantissa(uint32 i)
 	return m | e; // Return combined number
 }
 
-void halfInit()
+void float16Init()
 {
-	if (initialized)
+	if (halfInitialized)
 		return;
 
-	initialized = true;
+	halfInitialized = true;
 
 
-	// tables for half -> float conversions.
+	// tables for float16 -> float32 conversions.
 
 	mantissatable[0] = 0;
 
@@ -93,7 +96,7 @@ void halfInit()
 	}
 
 
-	// tables for float -> half conversions.
+	// tables for float32 -> float16 conversions.
 
 	for (uint32 i = 0; i < 256; i++)
 	{
@@ -137,20 +140,115 @@ void halfInit()
 	}
 }
 
-float halfToFloat(half h)
+static inline uint32 asuint32(float f)
 {
-	union { float f; uint32 i; } conv;
+	union { float f; uint32 u; } conv;
+	conv.f = f;
+	return conv.u;
+}
 
-	conv.i = mantissatable[offsettable[h >> 10] + (h & 0x3FF)] + exponenttable[h >> 10];
+static inline float asfloat32(uint32 u)
+{
+	union { float f; uint32 u; } conv;
+	conv.u = u;
 	return conv.f;
 }
 
-half floatToHalf(float f)
+float float16to32(float16 f)
 {
-	union { float f; uint32 i; } conv;
-	conv.f = f;
+	return asfloat32(mantissatable[offsettable[f >> 10] + (f & 0x3FF)] + exponenttable[f >> 10]);
+}
 
-	return basetable[(conv.i >> 23) & 0x1FF] + ((conv.i & 0x007FFFFF) >> shifttable[(conv.i >> 23) & 0x1FF]);
+float16 float32to16(float f)
+{
+	uint32 u = asuint32(f);
+	return basetable[(u >> 23) & 0x1FF] + ((u & 0x007FFFFF) >> shifttable[(u >> 23) & 0x1FF]);
+}
+
+// Adapted from https://stackoverflow.com/questions/41532085/how-to-pack-unpack-11-and-10-bit-floats-in-javascript-for-webgl2
+
+float float11to32(float11 f)
+{
+	uint16 exponent = f >> 6;
+	uint16 mantissa = f & 0x3F;
+
+	if (exponent == 0)
+		return mantissa == 0 ? 0 : powf(2.0f, -14.0f) * (mantissa / 64.0f);
+
+	if (exponent < 31)
+		return powf(2.0f, exponent - 15) * (1.0f + mantissa / 64.0f);
+
+	return mantissa == 0 ? std::numeric_limits<float>::infinity() : std::numeric_limits<float>::quiet_NaN();
+}
+
+float11 float32to11(float f)
+{
+	const uint16 EXPONENT_BITS = 0x1F;
+	const uint16 EXPONENT_SHIFT = 6;
+	const uint16 EXPONENT_BIAS = 15;
+	const uint16 MANTISSA_BITS = 0x3F;
+	const uint16 MANTISSA_SHIFT = (23 - EXPONENT_SHIFT);
+	const uint16 MAX_EXPONENT = (EXPONENT_BITS << EXPONENT_SHIFT);
+
+	uint32 u = asuint32(f);
+
+	if (u & 0x80000000)
+		return 0; // Negative values go to 0.
+
+	// Map exponent to the range [-127,128]
+	int32 exponent = (int32)((u >> 23) & 0xFF) - 127;
+	uint32 mantissa = u & 0x007FFFFF;
+
+	if (exponent > 15) // Infinity or NaN
+		return MAX_EXPONENT | (exponent == 128 ? (mantissa & MANTISSA_BITS) : 0);
+	else if (exponent <= -15)
+		return 0;
+
+	exponent += EXPONENT_BIAS;
+
+	return ((uint16)exponent << EXPONENT_SHIFT) | (mantissa >> MANTISSA_SHIFT);
+}
+
+float float10to32(float10 f)
+{
+	uint16 exponent = f >> 5;
+	uint16 mantissa = f & 0x1F;
+
+	if (exponent == 0)
+		return mantissa == 0 ? 0 : powf(2.0f, -14.0f) * (mantissa / 32.0f);
+
+	if (exponent < 31)
+		return powf(2.0f, exponent - 15) * (1.0f + mantissa / 32.0f);
+
+	return mantissa == 0 ? std::numeric_limits<float>::infinity() : std::numeric_limits<float>::quiet_NaN();
+}
+
+float10 float32to10(float f)
+{
+	const uint16 EXPONENT_BITS = 0x1F;
+	const uint16 EXPONENT_SHIFT = 5;
+	const uint16 EXPONENT_BIAS = 15;
+	const uint16 MANTISSA_BITS = 0x1F;
+	const uint16 MANTISSA_SHIFT = (23 - EXPONENT_SHIFT);
+	const uint16 MAX_EXPONENT = (EXPONENT_BITS << EXPONENT_SHIFT);
+
+	uint32 u = asuint32(f);
+
+	if (u & 0x80000000)
+		return 0; // Negative values go to 0.
+
+	// Map exponent to the range [-127,128]
+	int32 exponent = (int32)((u >> 23) & 0xFF) - 127;
+	uint32 mantissa = u & 0x007FFFFF;
+
+	if (exponent > 15) // Infinity or NaN
+		return MAX_EXPONENT | (exponent == 128 ? (mantissa & MANTISSA_BITS) : 0);
+	else if (exponent <= -15)
+		return 0;
+
+	exponent += EXPONENT_BIAS;
+
+	return ((uint16)exponent << EXPONENT_SHIFT) | (mantissa >> MANTISSA_SHIFT);
 }
 
 } // love

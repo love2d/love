@@ -20,7 +20,7 @@
 
 // LOVE
 #include "EXRHandler.h"
-#include "common/halffloat.h"
+#include "common/floattypes.h"
 #include "common/Exception.h"
 
 // zlib (for tinyexr)
@@ -157,12 +157,12 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	{
 		img.format = PIXELFORMAT_RGBA16F;
 
-		half *rgba[4] = {nullptr};
+		float16 *rgba[4] = {nullptr};
 		getEXRChannels(exrHeader, exrImage, rgba);
 
 		try
 		{
-			img.data = (unsigned char *) loadEXRChannels(img.width, img.height, rgba, floatToHalf(1.0f));
+			img.data = (unsigned char *) loadEXRChannels(img.width, img.height, rgba, float32to16(1.0f));
 		}
 		catch (love::Exception &)
 		{
