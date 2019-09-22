@@ -22,6 +22,8 @@
 #include "Image.h"
 #include "filesystem/Filesystem.h"
 
+#include <algorithm> // min/max
+
 using love::thread::Lock;
 
 namespace love
