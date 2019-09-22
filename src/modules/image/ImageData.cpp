@@ -617,13 +617,13 @@ static void pasteRGBA16toRGBA32F(Row src, Row dst, int w)
 static void pasteRGBA16FtoRGBA8(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.u8[i] = (uint8) (float16to32(src.f16[i]) * 255.0f);
+		dst.u8[i] = (uint8) (clamp01(float16to32(src.f16[i])) * 255.0f + 0.5f);
 }
 
 static void pasteRGBA16FtoRGBA16(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.u16[i] = (uint16) (float16to32(src.f16[i]) * 65535.0f);
+		dst.u16[i] = (uint16) (clamp01(float16to32(src.f16[i])) * 65535.0f + 0.5f);
 }
 
 static void pasteRGBA16FtoRGBA32F(Row src, Row dst, int w)
@@ -635,19 +635,19 @@ static void pasteRGBA16FtoRGBA32F(Row src, Row dst, int w)
 static void pasteRGBA32FtoRGBA8(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.u8[i] = (uint8) (src.f32[i] * 255.0f);
+		dst.u8[i] = (uint8) (clamp01(src.f32[i]) * 255.0f + 0.5f);
 }
 
 static void pasteRGBA32FtoRGBA16(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.u16[i] = (uint16) (src.f32[i] * 65535.0f);
+		dst.u16[i] = (uint16) (clamp01(src.f32[i]) * 65535.0f + 0.5f);
 }
 
 static void pasteRGBA32FtoRGBA16F(Row src, Row dst, int w)
 {
 	for (int i = 0; i < w * 4; i++)
-		dst.f16[i] = (uint16) float32to16(src.f32[i]);
+		dst.f16[i] = float32to16(src.f32[i]);
 }
 
 void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, int sh)
