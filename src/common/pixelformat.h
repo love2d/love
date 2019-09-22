@@ -135,4 +135,9 @@ bool isPixelFormatStencil(PixelFormat format);
  **/
 size_t getPixelFormatSize(PixelFormat format);
 
+/**
+ * Gets the number of color components in the given pixel format.
+ **/
+int getPixelFormatColorComponents(PixelFormat format);
+
 } // love

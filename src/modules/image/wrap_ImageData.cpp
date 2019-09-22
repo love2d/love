@@ -88,320 +88,20 @@ int w_ImageData_getDimensions(lua_State *L)
 	return 2;
 }
 
-template <int components>
-static void luax_checkpixel_unorm8(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < std::min(components, 3); i++)
-		p.rgba8[i] = (uint8) ((luax_checknumberclamped01(L, startidx + i) * 255.0) + 0.5);
-	if (components > 3)
-		p.rgba8[3] = (uint8) ((luax_optnumberclamped01(L, startidx + 3, 1.0) * 255.0) + 0.5);
-}
-
-template <int components>
-static void luax_checkpixel_unorm16(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < std::min(components, 3); i++)
-		p.rgba16[i] = (uint16) ((luax_checknumberclamped01(L, startidx + i) * 65535.0) + 0.5);
-	if (components > 3)
-		p.rgba16[3] = (uint16) ((luax_optnumberclamped01(L, startidx + 3, 1.0) * 65535.0) + 0.5);
-}
-
-template <int components>
-static void luax_checkpixel_float16(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < std::min(components, 3); i++)
-		p.rgba16f[i] = float32to16((float) luaL_checknumber(L, startidx + i));
-	 if (components > 3)
-		p.rgba16f[3] = float32to16((float) luaL_optnumber(L, startidx + 3, 1.0));
-}
-
-template <int components>
-static void luax_checkpixel_float32(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < std::min(components, 3); i++)
-		p.rgba32f[i] = (float) luaL_checknumber(L, startidx + i);
-	if (components > 3)
-		p.rgba32f[3] = (float) luaL_optnumber(L, startidx + 3, 1.0);
-}
-
-static void luax_checkpixel_r8(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_unorm8<1>(L, startidx, p);
-}
-
-static void luax_checkpixel_rg8(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_unorm8<2>(L, startidx, p);
-}
-
-static void luax_checkpixel_rgba8(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_unorm8<4>(L, startidx, p);
-}
-
-static void luax_checkpixel_r16(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_unorm16<1>(L, startidx, p);
-}
-
-static void luax_checkpixel_rg16(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_unorm16<2>(L, startidx, p);
-}
-
-static void luax_checkpixel_rgba16(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_unorm16<4>(L, startidx, p);
-}
-
-static void luax_checkpixel_r16f(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_float16<1>(L, startidx, p);
-}
-
-static void luax_checkpixel_rg16f(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_float16<2>(L, startidx, p);
-}
-
-static void luax_checkpixel_rgba16f(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_float16<4>(L, startidx, p);
-}
-
-static void luax_checkpixel_r32f(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_float32<1>(L, startidx, p);
-}
-
-static void luax_checkpixel_rg32f(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_float32<2>(L, startidx, p);
-}
-
-static void luax_checkpixel_rgba32f(lua_State *L, int startidx, Pixel &p)
-{
-	luax_checkpixel_float32<4>(L, startidx, p);
-}
-
-static void luax_checkpixel_rgba4(lua_State *L, int startidx, Pixel &p)
-{
-	// LSB->MSB: [a, b, g, r]
-	uint16 r = (uint16) ((luax_checknumberclamped01(L, startidx + 0) * 0xF) + 0.5);
-	uint16 g = (uint16) ((luax_checknumberclamped01(L, startidx + 1) * 0xF) + 0.5);
-	uint16 b = (uint16) ((luax_checknumberclamped01(L, startidx + 2) * 0xF) + 0.5);
-	uint16 a = (uint16) ((luax_optnumberclamped01(L, startidx + 3, 1.0) * 0xF) + 0.5);
-	p.packed16 = (r << 12) | (g << 8) | (b << 4) | (a << 0);
-}
-
-static void luax_checkpixel_rgb5a1(lua_State *L, int startidx, Pixel &p)
-{
-	// LSB->MSB: [a, b, g, r]
-	uint16 r = (uint16) ((luax_checknumberclamped01(L, startidx + 0) * 0x1F) + 0.5);
-	uint16 g = (uint16) ((luax_checknumberclamped01(L, startidx + 1) * 0x1F) + 0.5);
-	uint16 b = (uint16) ((luax_checknumberclamped01(L, startidx + 2) * 0x1F) + 0.5);
-	uint16 a = (uint16) ((luax_optnumberclamped01(L, startidx + 3, 1.0) * 0x1) + 0.5);
-	p.packed16 = (r << 11) | (g << 6) | (b << 1) | (a << 0);
-}
-
-static void luax_checkpixel_rgb565(lua_State *L, int startidx, Pixel &p)
-{
-	// LSB->MSB: [b, g, r]
-	uint16 r = (uint16) ((luax_checknumberclamped01(L, startidx + 0) * 0x1F) + 0.5);
-	uint16 g = (uint16) ((luax_checknumberclamped01(L, startidx + 1) * 0x3F) + 0.5);
-	uint16 b = (uint16) ((luax_checknumberclamped01(L, startidx + 2) * 0x1F) + 0.5);
-	p.packed16 = (r << 11) | (g << 5) | (b << 0);
-}
-
-static void luax_checkpixel_rgb10a2(lua_State *L, int startidx, Pixel &p)
-{
-	// LSB->MSB: [r, g, b, a]
-	uint32 r = (uint32) ((luax_checknumberclamped01(L, startidx + 0) * 0x3FF) + 0.5);
-	uint32 g = (uint32) ((luax_checknumberclamped01(L, startidx + 1) * 0x3FF) + 0.5);
-	uint32 b = (uint32) ((luax_checknumberclamped01(L, startidx + 2) * 0x3FF) + 0.5);
-	uint32 a = (uint32) ((luax_optnumberclamped01(L, startidx + 3, 1.0) * 0x3) + 0.5);
-	p.packed32 = (r << 0) | (g << 10) | (b << 20) | (a << 30);
-}
-
-static void luax_checkpixel_rg11b10f(lua_State *L, int startidx, Pixel &p)
-{
-	// LSB->MSB: [r, g, b]
-	float11 r = float32to11((float) luaL_checknumber(L, startidx + 0));
-	float11 g = float32to11((float) luaL_checknumber(L, startidx + 1));
-	float10 b = float32to10((float) luaL_checknumber(L, startidx + 2));
-	p.packed32 = (r << 0) | (g << 11) | (b << 22);
-}
-
-static lua_Number fillValues[] = {0.0, 0.0, 0.0, 1.0};
-
-template <int components>
-static int luax_pushpixel_unorm8(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) p.rgba8[i] / 255.0);
-	for (int i = components; i < 4; i++)
-		lua_pushnumber(L, fillValues[i]);
-	return 4;
-}
-
-template <int components>
-static int luax_pushpixel_unorm16(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) p.rgba16[i] / 65535.0);
-	for (int i = components; i < 4; i++)
-		lua_pushnumber(L, fillValues[i]);
-	return 4;
-}
-
-template <int components>
-static int luax_pushpixel_float16(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) float16to32(p.rgba16f[i]));
-	for (int i = components; i < 4; i++)
-		lua_pushnumber(L, fillValues[i]);
-	return 4;
-}
-
-template <int components>
-static int luax_pushpixel_float32(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) p.rgba32f[i]);
-	for (int i = components; i < 4; i++)
-		lua_pushnumber(L, fillValues[i]);
-	return 4;
-}
-
-static int luax_pushpixel_r8(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_unorm8<1>(L, p);
-}
-
-static int luax_pushpixel_rg8(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_unorm8<2>(L, p);
-}
-
-static int luax_pushpixel_rgba8(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_unorm8<4>(L, p);
-}
-
-static int luax_pushpixel_r16(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_unorm16<1>(L, p);
-}
-
-static int luax_pushpixel_rg16(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_unorm16<2>(L, p);
-}
-
-static int luax_pushpixel_rgba16(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_unorm16<4>(L, p);
-}
-
-static int luax_pushpixel_r16f(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_float16<1>(L, p);
-}
-
-static int luax_pushpixel_rg16f(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_float16<2>(L, p);
-}
-
-static int luax_pushpixel_rgba16f(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_float16<4>(L, p);
-}
-
-static int luax_pushpixel_r32f(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_float32<1>(L, p);
-}
-
-static int luax_pushpixel_rg32f(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_float32<2>(L, p);
-}
-
-static int luax_pushpixel_rgba32f(lua_State *L, const Pixel &p)
-{
-	return luax_pushpixel_float32<4>(L, p);
-}
-
-static int luax_pushpixel_rgba4(lua_State *L, const Pixel &p)
-{
-	// LSB->MSB: [a, b, g, r]
-	lua_pushnumber(L, ((p.packed16 >> 12) & 0xF) / (double)0xF);
-	lua_pushnumber(L, ((p.packed16 >>  8) & 0xF) / (double)0xF);
-	lua_pushnumber(L, ((p.packed16 >>  4) & 0xF) / (double)0xF);
-	lua_pushnumber(L, ((p.packed16 >>  0) & 0xF) / (double)0xF);
-	return 4;
-}
-
-static int luax_pushpixel_rgb5a1(lua_State *L, const Pixel &p)
-{
-	// LSB->MSB: [a, b, g, r]
-	lua_pushnumber(L, ((p.packed16 >> 11) & 0x1F) / (double)0x1F);
-	lua_pushnumber(L, ((p.packed16 >>  6) & 0x1F) / (double)0x1F);
-	lua_pushnumber(L, ((p.packed16 >>  1) & 0x1F) / (double)0x1F);
-	lua_pushnumber(L, ((p.packed16 >>  0) & 0x1)  / (double)0x1);
-	return 4;
-}
-
-static int luax_pushpixel_rgb565(lua_State *L, const Pixel &p)
-{
-	// LSB->MSB: [b, g, r]
-	lua_pushnumber(L, ((p.packed16 >> 11) & 0x1F) / (double)0x1F);
-	lua_pushnumber(L, ((p.packed16 >>  5) & 0x3F) / (double)0x3F);
-	lua_pushnumber(L, ((p.packed16 >>  0) & 0x1F) / (double)0x1F);
-	lua_pushnumber(L, 1.0);
-	return 4;
-}
-
-static int luax_pushpixel_rgb10a2(lua_State *L, const Pixel &p)
-{
-	// LSB->MSB: [r, g, b, a]
-	lua_pushnumber(L, ((p.packed32 >>  0) & 0x3FF) / (double)0x3FF);
-	lua_pushnumber(L, ((p.packed32 >> 10) & 0x3FF) / (double)0x3FF);
-	lua_pushnumber(L, ((p.packed32 >> 20) & 0x3FF) / (double)0x3FF);
-	lua_pushnumber(L, ((p.packed32 >> 30) & 0x3)   / (double)0x3);
-	return 4;
-}
-
-static int luax_pushpixel_rg11b10f(lua_State *L, const Pixel &p)
-{
-	// LSB->MSB: [r, g, b]
-	lua_pushnumber(L, float11to32((float11) ((p.packed32 >>  0) & 0x7FF)));
-	lua_pushnumber(L, float11to32((float11) ((p.packed32 >> 11) & 0x7FF)));
-	lua_pushnumber(L, float10to32((float10) ((p.packed32 >> 22) & 0x3FF)));
-	lua_pushnumber(L, 1.0);
-	return 4;
-}
-
-typedef void(*checkpixel)(lua_State *L, int startidx, Pixel &p);
-typedef int(*pushpixel)(lua_State *L, const Pixel &p);
-
-static checkpixel checkFormats[PIXELFORMAT_MAX_ENUM] = {};
-static pushpixel pushFormats[PIXELFORMAT_MAX_ENUM] = {};
-
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	int x = (int) luaL_checkinteger(L, 2);
 	int y = (int) luaL_checkinteger(L, 3);
 
-	PixelFormat format = t->getFormat();
+	Colorf c;
+	luax_catchexcept(L, [&](){ t->getPixel(x, y, c); });
 
-	Pixel p;
-	luax_catchexcept(L, [&](){ t->getPixel(x, y, p); });
-
-	return pushFormats[format](L, p);
+	lua_pushnumber(L, c.r);
+	lua_pushnumber(L, c.g);
+	lua_pushnumber(L, c.b);
+	lua_pushnumber(L, c.a);
+	return 4;
 }
 
 int w_ImageData_setPixel(lua_State *L)
@@ -410,23 +110,37 @@ int w_ImageData_setPixel(lua_State *L)
 	int x = (int) luaL_checkinteger(L, 2);
 	int y = (int) luaL_checkinteger(L, 3);
 
-	PixelFormat format = t->getFormat();
+	int components = getPixelFormatColorComponents(t->getFormat());
 
-	Pixel p;
+	Colorf c;
 
 	if (lua_istable(L, 4))
 	{
-		for (int i = 1; i <= 4; i++)
-			lua_rawgeti(L, 4, i);
+		for (int i = 1; i <= components; i++)
+			lua_rawgeti(L, components, i);
 
-		checkFormats[format](L, -4, p);
+		c.r = (float) luaL_checknumber(L, -components);
+		if (components > 1)
+			c.g = (float) luaL_checknumber(L, (-components) + 1);
+		if (components > 2)
+			c.b = (float) luaL_checknumber(L, (-components) + 2);
+		if (components > 3)
+			c.a = (float) luaL_optnumber(L, (-components) + 3, 1.0);
 
-		lua_pop(L, 4);
+		lua_pop(L, components);
 	}
 	else
-		checkFormats[format](L, 4, p);
+	{
+		c.r = (float) luaL_checknumber(L, 4);
+		if (components > 1)
+			c.g = (float) luaL_checknumber(L, 5);
+		if (components > 2)
+			c.b = (float) luaL_checknumber(L, 6);
+		if (components > 3)
+			c.a = (float) luaL_optnumber(L, 7, 1.0);
+	}
 
-	luax_catchexcept(L, [&](){ t->setPixel(x, y, p); });
+	luax_catchexcept(L, [&](){ t->setPixel(x, y, c); });
 	return 0;
 }
 
@@ -449,9 +163,10 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 	int iw = t->getWidth();
 
 	PixelFormat format = t->getFormat();
+	int components = getPixelFormatColorComponents(format);
 
-	auto checkpixel = checkFormats[format];
-	auto pushpixel = pushFormats[format];
+	auto pixelsetfunction = t->getPixelSetFunction();
+	auto pixelgetfunction = t->getPixelGetFunction();
 
 	uint8 *data = (uint8 *) t->getData();
 	size_t pixelsize = t->getPixelSize();
@@ -460,17 +175,33 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 	{
 		for (int x = sx; x < sx+w; x++)
 		{
-			Pixel *pixeldata = (Pixel *) (data + (y * iw + x) * pixelsize);
+			auto pixeldata = (ImageData::Pixel *) (data + (y * iw + x) * pixelsize);
+
+			Colorf c;
+			pixelgetfunction(pixeldata, c);
 
 			lua_pushvalue(L, 2); // ImageData
+
 			lua_pushnumber(L, x);
 			lua_pushnumber(L, y);
 
-			pushpixel(L, *pixeldata);
+			lua_pushnumber(L, c.r);
+			lua_pushnumber(L, c.g);
+			lua_pushnumber(L, c.b);
+			lua_pushnumber(L, c.a);
 
 			lua_call(L, 6, 4);
 
-			checkpixel(L, -4, *pixeldata);
+			c.r = (float) luaL_checknumber(L, -4);
+			if (components > 1)
+				c.g = (float) luaL_checknumber(L, -3);
+			if (components > 2)
+				c.b = (float) luaL_checknumber(L, -2);
+			if (components > 3)
+				c.a = (float) luaL_optnumber(L, -1, 1.0);
+
+			pixelsetfunction(c, pixeldata);
+
 			lua_pop(L, 4); // Pop return values.
 		}
 	}
@@ -600,42 +331,6 @@ static const luaL_Reg w_ImageData_functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	checkFormats[PIXELFORMAT_R8]       = luax_checkpixel_r8;
-	checkFormats[PIXELFORMAT_RG8]      = luax_checkpixel_rg8;
-	checkFormats[PIXELFORMAT_RGBA8]    = luax_checkpixel_rgba8;
-	checkFormats[PIXELFORMAT_R16]      = luax_checkpixel_r16;
-	checkFormats[PIXELFORMAT_RG16]     = luax_checkpixel_rg16;
-	checkFormats[PIXELFORMAT_RGBA16]   = luax_checkpixel_rgba16;
-	checkFormats[PIXELFORMAT_R16F]     = luax_checkpixel_r16f;
-	checkFormats[PIXELFORMAT_RG16F]    = luax_checkpixel_rg16f;
-	checkFormats[PIXELFORMAT_RGBA16F]  = luax_checkpixel_rgba16f;
-	checkFormats[PIXELFORMAT_R32F]     = luax_checkpixel_r32f;
-	checkFormats[PIXELFORMAT_RG32F]    = luax_checkpixel_rg32f;
-	checkFormats[PIXELFORMAT_RGBA32F]  = luax_checkpixel_rgba32f;
-	checkFormats[PIXELFORMAT_RGBA4]    = luax_checkpixel_rgba4;
-	checkFormats[PIXELFORMAT_RGB5A1]   = luax_checkpixel_rgb5a1;
-	checkFormats[PIXELFORMAT_RGB565]   = luax_checkpixel_rgb565;
-	checkFormats[PIXELFORMAT_RGB10A2]  = luax_checkpixel_rgb10a2;
-	checkFormats[PIXELFORMAT_RG11B10F] = luax_checkpixel_rg11b10f;
-
-	pushFormats[PIXELFORMAT_R8]       = luax_pushpixel_r8;
-	pushFormats[PIXELFORMAT_RG8]      = luax_pushpixel_rg8;
-	pushFormats[PIXELFORMAT_RGBA8]    = luax_pushpixel_rgba8;
-	pushFormats[PIXELFORMAT_R16]      = luax_pushpixel_r16;
-	pushFormats[PIXELFORMAT_RG16]     = luax_pushpixel_rg16;
-	pushFormats[PIXELFORMAT_RGBA16]   = luax_pushpixel_rgba16;
-	pushFormats[PIXELFORMAT_R16F]     = luax_pushpixel_r16f;
-	pushFormats[PIXELFORMAT_RG16F]    = luax_pushpixel_rg16f;
-	pushFormats[PIXELFORMAT_RGBA16F]  = luax_pushpixel_rgba16f;
-	pushFormats[PIXELFORMAT_R32F]     = luax_pushpixel_r32f;
-	pushFormats[PIXELFORMAT_RG32F]    = luax_pushpixel_rg32f;
-	pushFormats[PIXELFORMAT_RGBA32F]  = luax_pushpixel_rgba32f;
-	pushFormats[PIXELFORMAT_RGBA4]    = luax_pushpixel_rgba4;
-	pushFormats[PIXELFORMAT_RGB5A1]   = luax_pushpixel_rgb5a1;
-	pushFormats[PIXELFORMAT_RGB565]   = luax_pushpixel_rgb565;
-	pushFormats[PIXELFORMAT_RGB10A2]  = luax_pushpixel_rgb10a2;
-	pushFormats[PIXELFORMAT_RG11B10F] = luax_pushpixel_rg11b10f;
-
 	int ret = luax_register_type(L, &ImageData::type, data::w_Data_functions, w_ImageData_functions, nullptr);
 
 	love::data::luax_rundatawrapper(L, ImageData::type);

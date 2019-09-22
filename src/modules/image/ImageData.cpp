@@ -98,6 +98,9 @@ void ImageData::create(int width, int height, PixelFormat format, void *data)
 
 	decodeHandler = nullptr;
 	this->format = format;
+
+	pixelSetFunction = getPixelSetFunction(format);
+	pixelGetFunction = getPixelGetFunction(format);
 }
 
 void ImageData::decode(Data *data)
@@ -153,6 +156,9 @@ void ImageData::decode(Data *data)
 	this->format = decodedimage.format;
 
 	decodeHandler = decoder;
+
+	pixelSetFunction = getPixelSetFunction(format);
+	pixelGetFunction = getPixelGetFunction(format);
 }
 
 love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encodedFormat, const char *filename, bool writefile) const
@@ -253,27 +259,313 @@ bool ImageData::inside(int x, int y) const
 	return x >= 0 && x < getWidth() && y >= 0 && y < getHeight();
 }
 
-void ImageData::setPixel(int x, int y, const Pixel &p)
+static float clamp01(float x)
+{
+	return std::min(std::max(x, 0.0f), 1.0f);
+}
+
+static void setPixelR8(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba8[0] = (uint8) (clamp01(c.r) * 255.0f + 0.5f);
+}
+
+static void setPixelRG8(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba8[0] = (uint8) (clamp01(c.r) * 255.0f + 0.5f);
+	p->rgba8[1] = (uint8) (clamp01(c.g) * 255.0f + 0.5f);
+}
+
+static void setPixelRGBA8(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba8[0] = (uint8) (clamp01(c.r) * 255.0f + 0.5f);
+	p->rgba8[1] = (uint8) (clamp01(c.g) * 255.0f + 0.5f);
+	p->rgba8[2] = (uint8) (clamp01(c.b) * 255.0f + 0.5f);
+	p->rgba8[3] = (uint8) (clamp01(c.a) * 255.0f + 0.5f);
+}
+
+static void setPixelR16(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba16[0] = (uint16) (clamp01(c.r) * 65535.0f + 0.5f);
+}
+
+static void setPixelRG16(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba16[0] = (uint16) (clamp01(c.r) * 65535.0f + 0.5f);
+	p->rgba16[1] = (uint16) (clamp01(c.g) * 65535.0f + 0.5f);
+}
+
+static void setPixelRGBA16(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba16[0] = (uint16) (clamp01(c.r) * 65535.0f + 0.5f);
+	p->rgba16[1] = (uint16) (clamp01(c.b) * 65535.0f + 0.5f);
+	p->rgba16[2] = (uint16) (clamp01(c.g) * 65535.0f + 0.5f);
+	p->rgba16[3] = (uint16) (clamp01(c.a) * 65535.0f + 0.5f);
+}
+
+static void setPixelR16F(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba16f[0] = float32to16(c.r);
+}
+
+static void setPixelRG16F(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba16f[0] = float32to16(c.r);
+	p->rgba16f[1] = float32to16(c.g);
+}
+
+static void setPixelRGBA16F(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba16f[0] = float32to16(c.r);
+	p->rgba16f[1] = float32to16(c.g);
+	p->rgba16f[2] = float32to16(c.b);
+	p->rgba16f[3] = float32to16(c.a);
+}
+
+static void setPixelR32F(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba32f[0] = c.r;
+}
+
+static void setPixelRG32F(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba32f[0] = c.r;
+	p->rgba32f[1] = c.g;
+}
+
+static void setPixelRGBA32F(const Colorf &c, ImageData::Pixel *p)
+{
+	p->rgba32f[0] = c.r;
+	p->rgba32f[1] = c.g;
+	p->rgba32f[2] = c.b;
+	p->rgba32f[3] = c.a;
+}
+
+static void setPixelRGBA4(const Colorf &c, ImageData::Pixel *p)
+{
+	// LSB->MSB: [a, b, g, r]
+	uint16 r = (uint16) (clamp01(c.r) * 0xF + 0.5);
+	uint16 g = (uint16) (clamp01(c.g) * 0xF + 0.5);
+	uint16 b = (uint16) (clamp01(c.b) * 0xF + 0.5);
+	uint16 a = (uint16) (clamp01(c.a) * 0xF + 0.5);
+	p->packed16 = (r << 12) | (g << 8) | (b << 4) | (a << 0);
+}
+
+static void setPixelRGB5A1(const Colorf &c, ImageData::Pixel *p)
+{
+	// LSB->MSB: [a, b, g, r]
+	uint16 r = (uint16) (clamp01(c.r) * 0x1F + 0.5);
+	uint16 g = (uint16) (clamp01(c.g) * 0x1F + 0.5);
+	uint16 b = (uint16) (clamp01(c.b) * 0x1F + 0.5);
+	uint16 a = (uint16) (clamp01(c.a) * 0x1 + 0.5);
+	p->packed16 = (r << 11) | (g << 6) | (b << 1) | (a << 0);
+}
+
+static void setPixelRGB565(const Colorf &c, ImageData::Pixel *p)
+{
+	// LSB->MSB: [b, g, r]
+	uint16 r = (uint16) (clamp01(c.r) * 0x1F + 0.5);
+	uint16 g = (uint16) (clamp01(c.g) * 0x3F + 0.5);
+	uint16 b = (uint16) (clamp01(c.b) * 0x1F + 0.5);
+	p->packed16 = (r << 11) | (g << 5) | (b << 0);
+}
+
+static void setPixelRGB10A2(const Colorf &c, ImageData::Pixel *p)
+{
+	// LSB->MSB: [r, g, b, a]
+	uint32 r = (uint32) (clamp01(c.r) * 0x3FF + 0.5);
+	uint32 g = (uint32) (clamp01(c.g) * 0x3FF + 0.5);
+	uint32 b = (uint32) (clamp01(c.b) * 0x3FF + 0.5);
+	uint32 a = (uint32) (clamp01(c.a) * 0x3 + 0.5);
+	p->packed32 = (r << 0) | (g << 10) | (b << 20) | (a << 30);
+}
+
+static void setPixelRG11B10F(const Colorf &c, ImageData::Pixel *p)
+{
+	// LSB->MSB: [r, g, b]
+	float11 r = float32to11(c.r);
+	float11 g = float32to11(c.g);
+	float10 b = float32to10(c.b);
+	p->packed32 = (r << 0) | (g << 11) | (b << 22);
+}
+
+static void getPixelR8(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba8[0] / 255.0f;
+	c.g = 0.0f;
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRG8(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba8[0] / 255.0f;
+	c.g = p->rgba8[1] / 255.0f;
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRGBA8(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba8[0] / 255.0f;
+	c.g = p->rgba8[1] / 255.0f;
+	c.b = p->rgba8[2] / 255.0f;
+	c.a = p->rgba8[3] / 255.0f;
+}
+
+static void getPixelR16(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba16[0] / 65535.0f;
+	c.g = 0.0f;
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRG16(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba16[0] / 65535.0f;
+	c.g = p->rgba16[1] / 65535.0f;
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRGBA16(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba16[0] / 65535.0f;
+	c.g = p->rgba16[1] / 65535.0f;
+	c.b = p->rgba16[2] / 65535.0f;
+	c.a = p->rgba16[3] / 65535.0f;
+}
+
+static void getPixelR16F(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = float16to32(p->rgba16f[0]);
+	c.g = 0.0f;
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRG16F(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = float16to32(p->rgba16f[0]);
+	c.g = float16to32(p->rgba16f[1]);
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRGBA16F(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = float16to32(p->rgba16f[0]);
+	c.g = float16to32(p->rgba16f[1]);
+	c.b = float16to32(p->rgba16f[2]);
+	c.a = float16to32(p->rgba16f[3]);
+}
+
+static void getPixelR32F(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba32f[0];
+	c.g = 0.0f;
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRG32F(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba32f[0];
+	c.g = p->rgba32f[1];
+	c.b = 0.0f;
+	c.a = 1.0f;
+}
+
+static void getPixelRGBA32F(const ImageData::Pixel *p, Colorf &c)
+{
+	c.r = p->rgba32f[0];
+	c.g = p->rgba32f[1];
+	c.b = p->rgba32f[2];
+	c.a = p->rgba32f[3];
+}
+
+static void getPixelRGBA4(const ImageData::Pixel *p, Colorf &c)
+{
+	// LSB->MSB: [a, b, g, r]
+	c.r = ((p->packed16 >> 12) & 0xF) / (float)0xF;
+	c.g = ((p->packed16 >>  8) & 0xF) / (float)0xF;
+	c.b = ((p->packed16 >>  4) & 0xF) / (float)0xF;
+	c.a = ((p->packed16 >>  0) & 0xF) / (float)0xF;
+}
+
+static void getPixelRGB5A1(const ImageData::Pixel *p, Colorf &c)
+{
+	// LSB->MSB: [a, b, g, r]
+	c.r = ((p->packed16 >> 11) & 0x1F) / (float)0x1F;
+	c.g = ((p->packed16 >>  6) & 0x1F) / (float)0x1F;
+	c.b = ((p->packed16 >>  1) & 0x1F) / (float)0x1F;
+	c.a = ((p->packed16 >>  0) & 0x1)  / (float)0x1;
+}
+
+static void getPixelRGB565(const ImageData::Pixel *p, Colorf &c)
+{
+	// LSB->MSB: [b, g, r]
+	c.r = ((p->packed16 >> 11) & 0x1F) / (float)0x1F;
+	c.g = ((p->packed16 >>  5) & 0x3F) / (float)0x3F;
+	c.b = ((p->packed16 >>  0) & 0x1F) / (float)0x1F;
+	c.a = 1.0f;
+}
+
+static void getPixelRGB10A2(const ImageData::Pixel *p, Colorf &c)
+{
+	// LSB->MSB: [r, g, b, a]
+	c.r = ((p->packed32 >>  0) & 0x3FF) / (float)0x3FF;
+	c.g = ((p->packed32 >> 10) & 0x3FF) / (float)0x3FF;
+	c.b = ((p->packed32 >> 20) & 0x3FF) / (float)0x3FF;
+	c.a = ((p->packed32 >> 30) & 0x3)   / (float)0x3;
+}
+
+static void getPixelRG11B10F(const ImageData::Pixel *p, Colorf &c)
+{
+	// LSB->MSB: [r, g, b]
+	c.r = float11to32((float11) ((p->packed32 >>  0) & 0x7FF));
+	c.g = float11to32((float11) ((p->packed32 >> 11) & 0x7FF));
+	c.b = float10to32((float10) ((p->packed32 >> 22) & 0x3FF));
+	c.a = 1.0f;
+}
+
+void ImageData::setPixel(int x, int y, const Colorf &c)
 {
 	if (!inside(x, y))
 		throw love::Exception("Attempt to set out-of-range pixel!");
 
 	size_t pixelsize = getPixelSize();
-	unsigned char *pixeldata = data + ((y * width + x) * pixelsize);
+	Pixel *p = (Pixel *) (data + ((y * width + x) * pixelsize));
+
+	if (pixelSetFunction == nullptr)
+		throw love::Exception("Unhandled pixel format %d in ImageData::setPixel", format);
 
 	Lock lock(mutex);
-	memcpy(pixeldata, &p, pixelsize);
+
+	pixelSetFunction(c, p);
 }
 
-void ImageData::getPixel(int x, int y, Pixel &p) const
+void ImageData::getPixel(int x, int y, Colorf &c) const
 {
 	if (!inside(x, y))
 		throw love::Exception("Attempt to get out-of-range pixel!");
 
 	size_t pixelsize = getPixelSize();
+	const Pixel *p = (const Pixel *) (data + ((y * width + x) * pixelsize));
+
+	if (pixelGetFunction == nullptr)
+		throw love::Exception("Unhandled pixel format %d in ImageData::setPixel", format);
 
 	Lock lock(mutex);
-	memcpy(&p, data + ((y * width + x) * pixelsize), pixelsize);
+
+	pixelGetFunction(p, c);
+}
+
+Colorf ImageData::getPixel(int x, int y) const
+{
+	Colorf c;
+	getPixel(x, y, c);
+	return c;
 }
 
 union Row
@@ -519,6 +811,56 @@ bool ImageData::canPaste(PixelFormat src, PixelFormat dst)
 		return false;
 
 	return true;
+}
+
+ImageData::PixelSetFunction ImageData::getPixelSetFunction(PixelFormat format)
+{
+	switch (format)
+	{
+		case PIXELFORMAT_R8: return setPixelR8;
+		case PIXELFORMAT_RG8: return setPixelRG8;
+		case PIXELFORMAT_RGBA8: return setPixelRGBA8;
+		case PIXELFORMAT_R16: return setPixelR16;
+		case PIXELFORMAT_RG16: return setPixelRG16;
+		case PIXELFORMAT_RGBA16: return setPixelRGBA16;
+		case PIXELFORMAT_R16F: return setPixelR16F;
+		case PIXELFORMAT_RG16F: return setPixelRG16F;
+		case PIXELFORMAT_RGBA16F: return setPixelRGBA16F;
+		case PIXELFORMAT_R32F: return setPixelR32F;
+		case PIXELFORMAT_RG32F: return setPixelRG32F;
+		case PIXELFORMAT_RGBA32F: return setPixelRGBA32F;
+		case PIXELFORMAT_RGBA4: return setPixelRGBA4;
+		case PIXELFORMAT_RGB5A1: return setPixelRGB5A1;
+		case PIXELFORMAT_RGB565: return setPixelRGB565;
+		case PIXELFORMAT_RGB10A2: return setPixelRGB10A2;
+		case PIXELFORMAT_RG11B10F: return setPixelRG11B10F;
+		default: return nullptr;
+	}
+}
+
+ImageData::PixelGetFunction ImageData::getPixelGetFunction(PixelFormat format)
+{
+	switch (format)
+	{
+		case PIXELFORMAT_R8: return getPixelR8;
+		case PIXELFORMAT_RG8: return getPixelRG8;
+		case PIXELFORMAT_RGBA8: return getPixelRGBA8;
+		case PIXELFORMAT_R16: return getPixelR16;
+		case PIXELFORMAT_RG16: return getPixelRG16;
+		case PIXELFORMAT_RGBA16: return getPixelRGBA16;
+		case PIXELFORMAT_R16F: return getPixelR16F;
+		case PIXELFORMAT_RG16F: return getPixelRG16F;
+		case PIXELFORMAT_RGBA16F: return getPixelRGBA16F;
+		case PIXELFORMAT_R32F: return getPixelR32F;
+		case PIXELFORMAT_RG32F: return getPixelRG32F;
+		case PIXELFORMAT_RGBA32F: return getPixelRGBA32F;
+		case PIXELFORMAT_RGBA4: return getPixelRGBA4;
+		case PIXELFORMAT_RGB5A1: return getPixelRGB5A1;
+		case PIXELFORMAT_RGB565: return getPixelRGB565;
+		case PIXELFORMAT_RGB10A2: return getPixelRGB10A2;
+		case PIXELFORMAT_RG11B10F: return getPixelRG11B10F;
+		default: return nullptr;
+	}
 }
 
 bool ImageData::getConstant(const char *in, FormatHandler::EncodedFormat &out)
