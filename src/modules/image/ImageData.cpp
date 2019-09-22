@@ -710,6 +710,9 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 	uint8 *s = (uint8 *) src->getData();
 	uint8 *d = (uint8 *) getData();
 
+	auto getfunction = src->pixelGetFunction;
+	auto setfunction = pixelSetFunction;
+
 	// If the dimensions match up, copy the entire memory stream in one go
 	if (srcformat == dstformat && (sw == dstW && dstW == srcW && sh == dstH && dstH == srcH))
 	{
@@ -755,7 +758,17 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 				pasteRGBA32FtoRGBA16F(rowsrc, rowdst, sw);
 
 			else
-				throw love::Exception("Unsupported pixel format combination in ImageData:paste.");
+			{
+				// Slow path: convert src -> Colorf -> dst.
+				Colorf c;
+				for (int x = 0; x < sw; x++)
+				{
+					auto srcp = (const Pixel *) (rowsrc.u8 + x * srcpixelsize);
+					auto dstp = (Pixel *) (rowdst.u8 + x * dstpixelsize);
+					getfunction(srcp, c);
+					setfunction(c, dstp);
+				}
+			}
 		}
 	}
 }
