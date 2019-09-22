@@ -32,11 +32,12 @@ namespace image
 namespace magpie
 {
 
-static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB)
+static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB, bool &bgra)
 {
 	using namespace dds::dxinfo;
 
 	sRGB = false;
+	bgra = false;
 
 	switch (dxformat)
 	{
@@ -133,6 +134,13 @@ static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB)
 	case DXGI_FORMAT_B5G5R5A1_UNORM:
 		return PIXELFORMAT_RGB5A1;
 
+	case DXGI_FORMAT_B8G8R8A8_UNORM:
+	case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+	case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+		sRGB = (dxformat == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB);
+		bgra = true;
+		return PIXELFORMAT_RGBA8;
+
 	case DXGI_FORMAT_BC6H_TYPELESS:
 	case DXGI_FORMAT_BC6H_UF16:
 		return PIXELFORMAT_BC6H;
@@ -157,7 +165,8 @@ bool DDSHandler::canDecode(Data *data)
 
 	DXGIFormat dxformat = dds::getDDSPixelFormat(data->getData(), data->getSize());
 	bool isSRGB = false;
-	PixelFormat format = convertFormat(dxformat, isSRGB);
+	bool bgra = false;
+	PixelFormat format = convertFormat(dxformat, isSRGB, bgra);
 
 	return ImageData::validPixelFormat(format);
 }
@@ -169,7 +178,8 @@ FormatHandler::DecodedImage DDSHandler::decode(Data *data)
 	dds::Parser parser(data->getData(), data->getSize());
 
 	bool isSRGB = false;
-	img.format = convertFormat(parser.getFormat(), isSRGB);
+	bool bgra = false;
+	img.format = convertFormat(parser.getFormat(), isSRGB, bgra);
 
 	if (!ImageData::validPixelFormat(img.format))
 		throw love::Exception("Could not parse DDS pixel data: Unsupported format.");
@@ -195,6 +205,22 @@ FormatHandler::DecodedImage DDSHandler::decode(Data *data)
 	img.width = ddsimg->width;
 	img.height = ddsimg->height;
 
+	// Swap red and blue channels for incoming BGRA data.
+	if (bgra)
+	{
+		for (int y = 0; y < img.height; y++)
+		{
+			for (int x = 0; x < img.width; x++)
+			{
+				size_t offset = (y * img.width + x) * 4;
+				uint8 b = img.data[offset + 0];
+				uint8 r = img.data[offset + 2];
+				img.data[offset + 0] = r;
+				img.data[offset + 2] = b;
+			}
+		}
+	}
+
 	return img;
 }
 
@@ -210,6 +236,7 @@ StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vec
 
 	PixelFormat texformat = PIXELFORMAT_UNKNOWN;
 	bool isSRGB = false;
+	bool bgra = false;
 
 	StrongRef<CompressedMemory> memory;
 	size_t dataSize = 0;
@@ -219,7 +246,7 @@ StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vec
 	// Attempt to parse the dds file.
 	dds::Parser parser(filedata->getData(), filedata->getSize());
 
-	texformat = convertFormat(parser.getFormat(), isSRGB);
+	texformat = convertFormat(parser.getFormat(), isSRGB, bgra);
 
 	if (texformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse compressed data: Unsupported format.");
