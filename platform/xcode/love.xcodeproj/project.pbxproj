@@ -133,6 +133,7 @@
 		FAC1A448196F5DC600125284 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = license.txt; path = ../../license.txt; sourceTree = "<group>"; };
 		FAD43ECF1FF3133700831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = /Library/Frameworks/freetype.framework; sourceTree = "<absolute>"; };
 		FAE64A9C2072738600BC7981 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS11.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+		FAF5F96C233965DF0030A68A /* love.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = love.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,11 +198,12 @@
 			isa = PBXGroup;
 			children = (
 				FA5D249A1A96CF4300C6FC8F /* Images.xcassets */,
-				FA577A9D16C7262E00860150 /* Source */,
-				FA5D24A01A96CF7200C6FC8F /* Supporting Files */,
-				1058C7A0FEA54F0111CA2CBB /* Frameworks */,
+				FAF5F96C233965DF0030A68A /* love.entitlements */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				1058C7A0FEA54F0111CA2CBB /* Frameworks */,
+				FA5D24A01A96CF7200C6FC8F /* Supporting Files */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				FA577A9D16C7262E00860150 /* Source */,
 				FA577A9316C7217800860150 /* liblove.xcodeproj */,
 			);
 			name = love;
@@ -435,7 +437,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
+				CODE_SIGN_ENTITLEMENTS = love.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
@@ -465,8 +470,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
+				CODE_SIGN_ENTITLEMENTS = love.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
@@ -884,8 +892,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
+				CODE_SIGN_ENTITLEMENTS = love.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
