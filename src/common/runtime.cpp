@@ -35,6 +35,13 @@
 #include <cmath>
 #include <sstream>
 
+// VS2013 doesn't support alignof
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+#define LOVE_ALIGNOF(x) __alignof(x)
+#else
+#define LOVE_ALIGNOF(x) alignof(x)
+#endif
+
 namespace love
 {
 
@@ -98,7 +105,7 @@ static lua_Number luax_computeloveobjectkey(lua_State *L, love::Object *object)
 	// use more than 53 bits if their alignment is guaranteed to be more than 1.
 	// For example an alignment requirement of 8 means we can shift the
 	// pointer's bits by 3.
-	const size_t minalign = alignof(std::max_align_t);
+	const size_t minalign = LOVE_ALIGNOF(std::max_align_t);
 	uintptr_t key = (uintptr_t) object;
 
 	if ((key & (minalign - 1)) != 0)
@@ -107,7 +114,7 @@ static lua_Number luax_computeloveobjectkey(lua_State *L, love::Object *object)
 				   "(pointer is %p but alignment should be %d)", object, minalign);
 	}
 
-	static const size_t shift = (size_t) log2(alignof(std::max_align_t));
+	static const size_t shift = (size_t) log2(LOVE_ALIGNOF(std::max_align_t));
 
 	key >>= shift;
 
