@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <iostream>
 #include <cstdio>
+#include <cstddef>
+#include <cmath>
 #include <sstream>
 
 namespace love
@@ -84,6 +86,38 @@ static int w__eq(lua_State *L)
 	return 1;
 }
 
+// For use with the love object pointer -> Proxy pointer registry.
+// Using the pointer directly via lightuserdata would be ideal, but LuaJIT
+// cannot use lightuserdata with more than 47 bits whereas some newer arm64
+// architectures allow pointers which use more than that.
+static lua_Number luax_computeloveobjectkey(lua_State *L, love::Object *object)
+{
+	// love objects should be allocated on the heap, and thus are subject
+	// to the alignment rules of operator new / malloc. Lua numbers (doubles)
+	// can store all possible integers up to 2^53. We can store pointers that
+	// use more than 53 bits if their alignment is guaranteed to be more than 1.
+	// For example an alignment requirement of 8 means we can shift the
+	// pointer's bits by 3.
+	const size_t minalign = alignof(std::max_align_t);
+	uintptr_t key = (uintptr_t) object;
+
+	if ((key & (minalign - 1)) != 0)
+	{
+		luaL_error(L, "Cannot push love object to Lua: unexpected alignment "
+				   "(pointer is %p but alignment should be %d)", object, minalign);
+	}
+
+	static const size_t shift = (size_t) log2(alignof(std::max_align_t));
+
+	key >>= shift;
+
+	// Make sure our key isn't larger than 2^53.
+	if (key > 0x20000000000000ULL)
+		luaL_error(L, "Cannot push love object to Lua: pointer value %p is too large", object);
+
+	return (lua_Number) key;
+}
+
 static int w__release(lua_State *L)
 {
 	Proxy *p = (Proxy *) lua_touserdata(L, 1);
@@ -100,7 +134,8 @@ static int w__release(lua_State *L)
 		if (lua_istable(L, -1))
 		{
 			// loveobjects[object] = nil
-			lua_pushlightuserdata(L, object);
+			lua_Number objectkey = luax_computeloveobjectkey(L, object);
+			lua_pushnumber(L, objectkey);
 			lua_pushnil(L);
 			lua_settable(L, -3);
 		}
@@ -557,14 +592,16 @@ void luax_pushtype(lua_State *L, love::Type &type, love::Object *object)
 	luax_getregistry(L, REGISTRY_OBJECTS);
 
 	// The table might not exist - it should be insisted in luax_register_type.
-	if (!lua_istable(L, -1))
+	if (lua_isnoneornil(L, -1))
 	{
 		lua_pop(L, 1);
 		return luax_rawnewtype(L, type, object);
 	}
 
+	lua_Number objectkey = luax_computeloveobjectkey(L, object);
+
 	// Get the value of loveobjects[object] on the stack.
-	lua_pushlightuserdata(L, object);
+	lua_pushnumber(L, objectkey);
 	lua_gettable(L, -2);
 
 	// If the Proxy userdata isn't in the instantiated types table yet, add it.
@@ -574,7 +611,7 @@ void luax_pushtype(lua_State *L, love::Type &type, love::Object *object)
 
 		luax_rawnewtype(L, type, object);
 
-		lua_pushlightuserdata(L, object);
+		lua_pushnumber(L, objectkey);
 		lua_pushvalue(L, -2);
 
 		// loveobjects[object] = Proxy.
