@@ -21,6 +21,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef _WIN32
+#define NOMINMAX
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
