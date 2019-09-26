@@ -104,6 +104,8 @@ void RandomGenerator::setSeed(RandomGenerator::Seed newseed)
 	} while (newseed.b64 == 0);
 
 	rng_state = newseed;
+
+	last_randomnormal = std::numeric_limits<double>::infinity();
 }
 
 RandomGenerator::Seed RandomGenerator::getSeed() const
@@ -129,6 +131,8 @@ void RandomGenerator::setState(const std::string &statestr)
 		throw love::Exception("Invalid random state: %s", statestr.c_str());
 
 	rng_state = state;
+
+	last_randomnormal = std::numeric_limits<double>::infinity();
 }
 
 std::string RandomGenerator::getState() const
