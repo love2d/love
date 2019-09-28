@@ -727,7 +727,7 @@ void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const ver
 			uint32 divisorbit = divisor << i;
 			instanceattribbits |= divisorbit;
 
-			if ((state.enabledAttribArrays & bit) ^ divisorbit)
+			if ((state.instancedAttribArrays & bit) ^ divisorbit)
 				glVertexAttribDivisor(i, divisor);
 
 			GLboolean normalized = GL_FALSE;
