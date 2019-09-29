@@ -425,6 +425,7 @@ function love.init()
 		},
 		audio = {
 			mixwithsystem = true, -- Only relevant for Android / iOS.
+			mic = false, -- Only relevant for Android.
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
@@ -469,8 +470,14 @@ function love.init()
 		love._setGammaCorrect(c.gammacorrect)
 	end
 
-	if love._setAudioMixWithSystem and c.audio then
-		love._setAudioMixWithSystem(c.audio.mixwithsystem)
+	if love._setAudioMixWithSystem then
+		if c.audio and c.audio.mixwithsystem ~= nil then
+			love._setAudioMixWithSystem(c.audio.mixwithsystem)
+		end
+	end
+
+	if love._requestRecordingPermission then
+		love._requestRecordingPermission(c.audio and c.audio.mic)
 	end
 
 	-- Gets desired modules.

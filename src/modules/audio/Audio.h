@@ -45,6 +45,34 @@ class SoundData;
 namespace audio
 {
 
+/*
+ * In some platforms (notably Android), recording from mic
+ * requires user permission. This function sets whetever to
+ * request the permission later or not.
+ */
+void setRequestRecordingPermission(bool rec);
+
+/*
+ * Gets whetever recording permission will be requested.
+ */
+bool getRequestRecordingPermission();
+
+/*
+ * Gets whetever recording permission is granted.
+ */
+bool hasRecordingPermission();
+
+/*
+ * Request recording permission. This is blocking function.
+ */
+void requestRecordingPermission();
+
+/*
+ * In case recording permission is not granted, this
+ * function shows the dialog about the recording permission.
+ */
+void showRecordingPermissionMissingDialog();
+
 /**
  * The Audio module is responsible for playing back raw sound samples.
  **/

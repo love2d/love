@@ -266,6 +266,59 @@ bool hasBackgroundMusic()
 	return result;
 }
 
+bool hasRecordingPermission()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "hasRecordAudioPermission", "()Z");
+	jboolean result = false;
+
+	if (methodID == nullptr)
+		env->ExceptionClear();
+	else
+		result = env->CallBooleanMethod(activity, methodID);
+
+	env->DeleteLocalRef(activity);
+	env->DeleteLocalRef(clazz);
+
+	return result;
+}
+
+
+void requestRecordingPermission()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "requestRecordAudioPermission", "()V");
+
+	if (methodID == nullptr)
+		env->ExceptionClear();
+	else
+		env->CallVoidMethod(activity, methodID);
+
+	env->DeleteLocalRef(clazz);
+	env->DeleteLocalRef(activity);
+}
+
+void showRecordingPermissionMissingDialog()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "showRecordingAudioPermissionMissingDialog", "()V");
+
+	if (methodID == nullptr)
+		env->ExceptionClear();
+	else
+		env->CallVoidMethod(activity, methodID);
+
+	env->DeleteLocalRef(clazz);
+	env->DeleteLocalRef(activity);
+}
+
 } // android
 } // love
 
