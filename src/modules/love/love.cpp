@@ -335,6 +335,14 @@ static int w__setAudioMixWithSystem(lua_State *L)
 	return 1;
 }
 
+static int w__requestRecordingPermission(lua_State *L)
+{
+#ifdef LOVE_ENABLE_AUDIO
+	love::audio::setRequestRecordingPermission((bool) lua_toboolean(L, 1));
+#endif
+	return 0;
+}
+
 static int w_love_setDeprecationOutput(lua_State *L)
 {
 	bool enable = love::luax_checkboolean(L, 1);
@@ -396,6 +404,8 @@ int luaopen_love(lua_State *L)
 	// module is initialized.
 	lua_pushcfunction(L, w__setAudioMixWithSystem);
 	lua_setfield(L, -2, "_setAudioMixWithSystem");
+	lua_pushcfunction(L, w__requestRecordingPermission);
+	lua_setfield(L, -2, "_requestRecordingPermission");
 
 	lua_newtable(L);
 
