@@ -640,7 +640,7 @@ static const luaL_Reg functions[] =
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
 	{ "getDPIScale", w_getDPIScale },
-	{ "nativeDPIScale", w_getNativeDPIScale },
+	{ "getNativeDPIScale", w_getNativeDPIScale },
 	{ "toPixels", w_toPixels },
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },
