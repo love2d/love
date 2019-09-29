@@ -471,7 +471,9 @@ function love.init()
 	end
 
 	if love._setAudioMixWithSystem then
-		love._setAudioMixWithSystem(c.audio and c.audio.mixwithsystem)
+		if c.audio and c.audio.mixwithsystem ~= nil then
+			love._setAudioMixWithSystem(c.audio.mixwithsystem)
+		end
 	end
 
 	if love._requestRecordingPermission then
