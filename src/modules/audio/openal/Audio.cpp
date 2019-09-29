@@ -101,6 +101,15 @@ Audio::Audio()
 	love::thread::disableSignals();
 #endif
 
+	// Before opening new device, check if recording
+	// is requested.
+	if (getRequestRecordingPermission())
+	{
+		if (!hasRecordingPermission())
+			// Request recording permission on some OSes.
+			requestRecordingPermission();
+	}
+
 	// Passing null for default device.
 	device = alcOpenDevice(nullptr);
 
@@ -399,6 +408,14 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 
 const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
+	// If recording permission is not granted, inform user about it
+	// and return empty list.
+	if (!hasRecordingPermission())
+	{
+		showRecordingPermissionMissingDialog();
+		return {};
+	}
+
 	std::vector<std::string> devnames;
 	std::vector<love::audio::RecordingDevice*> devices;
 
