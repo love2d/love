@@ -272,13 +272,13 @@ bool hasRecordingPermission()
 	jobject activity = (jobject) SDL_AndroidGetActivity();
 
 	jclass clazz(env->GetObjectClass(activity));
-	jmethodID method_id = env->GetMethodID(clazz, "hasRecordAudioPermission", "()Z");
+	jmethodID methodID = env->GetMethodID(clazz, "hasRecordAudioPermission", "()Z");
 	jboolean result = false;
 
 	if (methodID == nullptr)
 		env->ExceptionClear();
 	else
-		result = env->CallBooleanMethod(activity, method_id);
+		result = env->CallBooleanMethod(activity, methodID);
 
 	env->DeleteLocalRef(activity);
 	env->DeleteLocalRef(clazz);
@@ -287,7 +287,7 @@ bool hasRecordingPermission()
 }
 
 
-void showRecordingPermissionMissingDialog()
+void requestRecordingPermission()
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jobject activity = (jobject) SDL_AndroidGetActivity();

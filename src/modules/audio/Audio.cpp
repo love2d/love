@@ -61,7 +61,7 @@ void requestRecordingPermission()
 #endif
 }
 
-void _showRecordingPermissionMissingDialog()
+void showRecordingPermissionMissingDialog()
 {
 #ifdef LOVE_ANDROID
 	love::android::showRecordingPermissionMissingDialog();
