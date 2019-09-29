@@ -408,16 +408,17 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 
 const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 {
-	// If recording permission is not granted, inform user about it
-	// and return empty list.
-	if (!hasRecordingPermission())
-	{
-		showRecordingPermissionMissingDialog();
-		return {};
-	}
-
 	std::vector<std::string> devnames;
 	std::vector<love::audio::RecordingDevice*> devices;
+
+	// If recording permission is not granted, inform user about it
+	// and return empty list.
+	if (!hasRecordingPermission() && getRequestRecordingPermission())
+	{
+		showRecordingPermissionMissingDialog();
+		capture.clear();
+		return capture;
+	}
 
 	std::string defaultname(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
 
