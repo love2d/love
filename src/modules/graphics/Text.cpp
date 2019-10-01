@@ -111,20 +111,22 @@ void Text::addTextData(const TextData &t)
 	else
 		new_commands = font->generateVerticesFormatted(t.codepoints, constantcolor, t.wrap, t.align, vertices, &text_info);
 
+	size_t voffset = vert_offset;
+
+	// Must be before the early exit below.
+	if (!t.append_vertices)
+	{
+		voffset = 0;
+		vert_offset = 0;
+		draw_commands.clear();
+		text_data.clear();
+	}
+
 	if (vertices.empty())
 		return;
 
 	if (t.use_matrix)
 		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
-
-	size_t voffset = vert_offset;
-
-	if (!t.append_vertices)
-	{
-		voffset = 0;
-		draw_commands.clear();
-		text_data.clear();
-	}
 
 	uploadVertices(vertices, voffset);
 
