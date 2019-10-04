@@ -189,11 +189,7 @@ void OpenGL::setupContext()
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
 
 	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
-
-	if (GLAD_ES_VERSION_3_0 || isCoreProfile())
-		state.instancedAttribArrays = state.enabledAttribArrays;
-	else
-		state.instancedAttribArrays = 0;
+	state.instancedAttribArrays = 0;
 
 	setVertexAttributes(vertex::Attributes(), vertex::BufferBindings());
 
