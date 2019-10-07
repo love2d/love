@@ -1,20 +1,16 @@
 LOCAL_PATH:= $(call my-dir)
-
-# libogg
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := liblove
-LOCAL_CFLAGS    := -fexceptions -g -Dlinux -Dunix \
-	-DHAVE_GCC_DESTRUCTOR=1 -DOPT_GENERIC -DREAL_IS_FLOAT \
-	-DGL_GLEXT_PROTOTYPES -DAL_ALEXT_PROTOTYPES
+LOCAL_CFLAGS    := -g -DGL_GLEXT_PROTOTYPES -DAL_ALEXT_PROTOTYPES
 
 LOCAL_CPPFLAGS  := ${LOCAL_CFLAGS} 
 
 # I don't think there's armeabi-v7a device without NEON instructions in 2018
 LOCAL_ARM_NEON := true
 
-ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
-	# ARM64 does have socklen_t
+ifeq ($(IS_ANDROID_21),yes)
+	# API21 defines socklen_t
 	LOCAL_CFLAGS += -DHAS_SOCKLEN_T=1
 endif
 
@@ -24,19 +20,8 @@ LOCAL_C_INCLUDES  :=  \
 	${LOCAL_PATH}/src/libraries/ \
 	${LOCAL_PATH}/src/libraries/enet/libenet/include \
 	${LOCAL_PATH}/src/libraries/physfs \
-	${LOCAL_PATH}/src/libraries/glslang/glslang/Include \
-	${LOCAL_PATH}/../SDL2-2.0.9/include \
-	${LOCAL_PATH}/../openal-soft-1.18.2/include \
-	${LOCAL_PATH}/../openal-soft-1.18.2/OpenAL32/Include \
-	${LOCAL_PATH}/../freetype2-android/include \
-	${LOCAL_PATH}/../freetype2-android/src \
-	${LOCAL_PATH}/../mpg123-1.17.0/src/libmpg123 \
-	${LOCAL_PATH}/../libmodplug-0.8.8.4/src \
-	${LOCAL_PATH}/../libvorbis-1.3.5/include \
-	${LOCAL_PATH}/../LuaJIT-2.1/src \
-	${LOCAL_PATH}/../libogg-1.3.2/include \
-	${LOCAL_PATH}/../libtheora-1.2.0alpha1/include 
-		
+	${LOCAL_PATH}/src/libraries/glslang/glslang/Include
+
 LOCAL_SRC_FILES := \
 	$(filter-out \
 	  src/libraries/luasocket/libluasocket/wsocket.c \
@@ -111,17 +96,13 @@ LOCAL_SRC_FILES := \
   $(wildcard ${LOCAL_PATH}/src/libraries/xxHash/*.c) \
   ))
 
-LOCAL_CXXFLAGS := -std=c++0x
-
+LOCAL_CXXFLAGS := -std=c++11
 LOCAL_SHARED_LIBRARIES := libopenal libmpg123 
-
 LOCAL_STATIC_LIBRARIES := libvorbis libogg libtheora libmodplug libfreetype libluajit SDL2_static
 
 # $(info liblove: include dirs $(LOCAL_C_INCLUDES))
 # $(info liblove: src files $(LOCAL_SRC_FILES))
 
-SDL_PATH := ../SDL2-2.0.9
-LOCAL_SRC_FILES += $(SDL_PATH)/src/main/android/SDL_android_main.c 
 LOCAL_LDLIBS := -lz -lGLESv1_CM -lGLESv2 -ldl -landroid
 LOCAL_LDFLAGS := -Wl,--allow-multiple-definition
 
