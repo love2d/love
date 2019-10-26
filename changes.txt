@@ -4,18 +4,24 @@ LOVE 11.3 [Mysterious Mysteries]
 Released: N/A
 
 * Added support for FLAC audio files.
+* Added support for microphone recording on Android.
+* Added t.audio.mic (false by default). On Android, setting it to true requests microphone recording permission from the user.
 * Added Decoder:clone.
+* Added Data:getFFIPointer.
 * Added Joystick:getDeviceInfo.
+* Added Joystick:getGamepadMappingString and love.joystick.getGamepadMappingString(guid).
 * Added love.math.colorToBytes and love.math.colorFromBytes.
 * Added 'usedpiscale' boolean (true by default) to love.window.setMode and love.conf. Disables automatic DPI scaling when false.
 * Added love.window.getDisplayOrientation and a love.displayrotated callback.
 * Added love.window.get/setVSync, to allow setting vsync without recreating the window.
 * Added love.window.getSafeArea.
 * Added an optional vertex count parameter to Mesh:setVertices.
-* Added support for r8, rg8, r16, rg16, r16f, rg16f, r32f, and rg32f formats in ImageData and Images.
+* Added support for rgba4, rgb5a1, rgb565, rgb10a2, rg11b10f, r8, rg8, r16, rg16, r16f, rg16f, r32f, and rg32f formats in ImageData and Images.
+* Added support for loading .dds files that contain uncompressed pixel data.
 
 * Changed audio file type detection, so it probes all supported backends for unrecognized extensions.
 
+* Fixed "bad lightuserdata" errors when running love on some arm64 devices.
 * Fixed boot.lua's line numbers in stack traces to match its source code.
 * Fixed the deprecation system not fully restarting when love.event.quit("restart") is used.
 * Fixed love.isVersionCompatible.
@@ -23,8 +29,13 @@ Released: N/A
 * Fixed race conditions when different love.physics Worlds are used in different threads.
 * Fixed World:getJoints to return the fully resolved type of the Joint, instead of the base type.
 * Fixed love.timer.sleep(0) to return control to the OS scheduler instead of being a no-op.
+* Fixed love.math.randomNormal incorrectly using cached state after love.math.setRandomSeed or setRandomState.
 * Fixed love.data.hash returning an incorrect hash for certain input sizes.
 * Fixed love.data.newByteData to cause a Lua error instead of crashing when invalid arguments are used.
+* Fixed the Data-returning variant of love.filesystem.read and File:read to return the number of bytes that were read.
+* Fixed love.filesystem's require loaders to error instead of crashing when no argument is given.
+* Fixed love.filesystem.mount(Data).
+* Fixed a memory leak when loading files in some situations.
 * Fixed t.audio.mixwithsystem.
 * Fixed audio clicks immediately after playing a Source on iOS.
 * Fixed Source:play + Source:stop + Source:play looping the first few ms of sound for streaming Sources on iOS.
@@ -35,17 +46,21 @@ Released: N/A
 * Fixed love.audio.newSource(filename, "queue") to cause a Lua error.
 * Fixed Source:setPitch to error if the given pitch is <= 0, NaN, or infinity.
 * Fixed video seeking and pausing in various scenarios.
+* Fixed an audio Source memory leak when a Video gets garbage collected after playing it.
 * Fixed video playback support on some Adreno-based Android devices.
 * Fixed black fringes around text in some situations.
 * Fixed extreme flickering when text moves along non-integer coordinates.
 * Fixed the first character in a string sometimes not being processed during text vertex generation.
+* Fixed Text:set(" ") not clearing any previously set text in a Text object.
 * Fixed love.graphics.getTextureTypes to return a table with boolean values in its fields instead of number values.
+* Fixed lines not rendering properly if a single line has more than 65,000 vertices.
 * Fixed a pixel shader performance regression on some graphics drivers when OpenGL 3 or OpenGL ES 3 is used.
 * Fixed text not showing up on Radeon HD 3000-series graphics cards on Windows.
 * Fixed non-integer DPI scale values being truncated to integers in love.graphics.newCanvas.
 * Fixed creating depth canvases on Windows systems when using an Intel HD 3000 GPU.
 * Fixed automatic batching performance to be more consistent on all operating systems.
 * Fixed gammaToLinearPrecise in shaders not being as precise as it should be.
+* Fixed ImageData:paste and ImageData:setPixel to have more consistent clamping and rounding of color values when different formats are used.
 
 LOVE 11.2 [Mysterious Mysteries]
 --------------------------------
