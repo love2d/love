@@ -1,7 +1,7 @@
 LOVE 11.3 [Mysterious Mysteries]
 --------------------------------
 
-Released: N/A
+Released: 2019-10-27
 
 * Added support for FLAC audio files.
 * Added support for microphone recording on Android.
