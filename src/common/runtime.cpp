@@ -941,7 +941,7 @@ void luax_runwrapper(lua_State *L, const char *filedata, size_t datalen, const c
 {
 	luax_gettypemetatable(L, type);
 
-	// Load and execute ImageData.lua, sending the metatable and the ffi
+	// Load and execute the given Lua file, sending the metatable and the ffi
 	// functions struct pointer as arguments.
 	if (lua_istable(L, -1))
 	{

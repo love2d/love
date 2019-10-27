@@ -368,7 +368,7 @@ local objectcache = setmetatable({}, {
 			width = width,
 			height = height,
 			format = format,
-			pointer = ffi.cast(conv.pointer, imagedata:getPointer()),
+			pointer = ffi.cast(conv.pointer, imagedata:getFFIPointer()),
 			tolua = conv.tolua,
 			fromlua = conv.fromlua,
 		}
