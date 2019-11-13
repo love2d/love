@@ -191,6 +191,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	// Set pixel row alignment
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 	// Always enable seamless cubemap filtering when possible.
 	if (GLAD_VERSION_3_2 || GLAD_ARB_seamless_cube_map)
