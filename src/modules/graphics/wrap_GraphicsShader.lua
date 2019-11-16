@@ -30,6 +30,7 @@ local GLSL = {}
 GLSL.VERSION = { -- index using [target][gles]
 	glsl1 = {[false]="#version 120",      [true]="#version 100"},
 	glsl3 = {[false]="#version 330 core", [true]="#version 300 es"},
+	glsl4 = {[false]="#version 430 core", [true]="#version 310 es"},
 }
 
 GLSL.SYNTAX = [[
@@ -374,7 +375,9 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 		end
 	end
 
-	local supportsGLSL3 = love.graphics.getSupported().glsl3
+	local graphicsfeatures = love.graphics.getSupported()
+	local supportsGLSL3 = graphicsfeatures.glsl3
+	local supportsGLSL4 = graphicsfeatures.glsl4
 	local gammacorrect = love.graphics.isGammaCorrect()
 
 	local targetlang = getLanguageTarget(pixelcode or vertexcode)
@@ -383,7 +386,11 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	end
 
 	if targetlang == "glsl3" and not supportsGLSL3 then
-		error("GLSL 3 shaders are not supported on this system!", 2)
+		error("GLSL 3 shaders are not supported on this system.", 2)
+	end
+
+	if targetlang == "glsl4" and not supportsGLSL4 then
+		error("GLSL 4 shaders are not supported on this system.", 2)
 	end
 
 	if targetlang ~= nil and not GLSL.VERSION[targetlang] then

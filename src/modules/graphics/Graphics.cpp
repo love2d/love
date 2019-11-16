@@ -1939,6 +1939,7 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
 	{ "shaderderivatives",  FEATURE_SHADER_DERIVATIVES   },
 	{ "glsl3",              FEATURE_GLSL3                },
+	{ "glsl4",              FEATURE_GLSL4                },
 	{ "instancing",         FEATURE_INSTANCING           },
 };
 

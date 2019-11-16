@@ -223,8 +223,8 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 
 			// Prior to SDL 2.0.4, backends that use OpenGL ES didn't properly
 			// ask for a sRGB framebuffer when requested by SDL_GL_SetAttribute.
-			// FIXME: This doesn't account for windowing backends that sometimes
-			// use EGL, e.g. the X11 and windows SDL backends.
+			// This doesn't account for windowing backends that sometimes use
+			// EGL, e.g. the X11 and windows SDL backends.
 			if (hasSDL203orEarlier)
 				graphics::setGammaCorrect(false);
 
@@ -244,17 +244,33 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	const char *preferGL2hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL2");
 	bool preferGL2 = (preferGL2hint != nullptr && preferGL2hint[0] != '0');
 
-	std::vector<ContextAttribs> glcontexts = {{2, 1, false, debug}};
-	glcontexts.insert(preferGL2 ? glcontexts.end() : glcontexts.begin(), {3, 3, false, debug});
+	const char *preferGL3hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL3");
+	bool preferGL3 = (preferGL3hint != nullptr && preferGL3hint[0] != '0');
 
-	std::vector<ContextAttribs> glescontexts = {{2, 0, true, debug}};
+	std::vector<ContextAttribs> glcontexts =
+	{
+		{4, 3, false, debug},
+		{3, 3, false, debug},
+		{2, 1, false, debug},
+	};
 
-	// While UWP SDL is above 2.0.4, it still doesn't support OpenGL ES 3+
-#ifndef LOVE_WINDOWS_UWP
-	// OpenGL ES 3+ contexts are only properly supported in SDL 2.0.4+.
-	if (!hasSDL203orEarlier)
-		glescontexts.insert(preferGL2 ? glescontexts.end() : glescontexts.begin(), {3, 0, true, debug});
-#endif
+	std::vector<ContextAttribs> glescontexts =
+	{
+		{3, 1, true, debug},
+		{3, 0, true, debug},
+		{2, 0, true, debug}
+	};
+
+	if (preferGL2)
+	{
+		std::swap(glcontexts[0], glcontexts[2]);
+		std::swap(glescontexts[0], glescontexts[2]);
+	}
+	else if (preferGL3)
+	{
+		std::swap(glcontexts[0], glcontexts[1]);
+		std::swap(glescontexts[0], glescontexts[1]);
+	}
 
 	std::vector<ContextAttribs> attribslist;
 
