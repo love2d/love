@@ -11,7 +11,7 @@ set(LUAJIT_SEARCH_PATHS
 
 find_path(LUAJIT_INCLUDE_DIR
 	NAMES luajit.h
-	PATH_SUFFIXES include include/luajit-2.0
+	PATH_SUFFIXES include include/luajit-2.0 include/luajit-2.1
 	PATHS ${LUAJIT_SEARCH_PATHS})
 
 find_library(LUAJIT_LIBRARY

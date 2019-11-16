@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,6 +38,8 @@ namespace physics
 namespace box2d
 {
 
+class World;
+
 /**
  * This struct is stored in a void pointer
  * in the Box2D Fixture class. For now, all we
@@ -67,11 +69,6 @@ public:
 	 * Creates a Fixture.
 	 **/
 	Fixture(Body *body, Shape *shape, float density);
-
-	/**
-	 * Creates a Fixture.
-	 **/
-	Fixture(b2Fixture *f);
 
 	virtual ~Fixture();
 

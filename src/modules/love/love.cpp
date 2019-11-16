@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,14 @@
 #include <windows.h>
 #endif // LOVE_WINDOWS
 
+#ifdef LOVE_ANDROID
+#include <SDL.h>
+extern "C"
+{
+#include "luajit.h"
+}
+#endif // LOVE_ANDROID
+
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 #include <fcntl.h>
 #include <io.h>
@@ -59,6 +67,11 @@
 // For love::graphics::setGammaCorrect.
 #ifdef LOVE_ENABLE_GRAPHICS
 #	include "graphics/Graphics.h"
+#endif
+
+// For love::audio::Audio::setMixWithSystem.
+#ifdef LOVE_ENABLE_AUDIO
+#	include "audio/Audio.h"
 #endif
 
 // Scripts
@@ -202,6 +215,39 @@ int w__openConsole(lua_State *L);
 int w__setAccelerometerAsJoystick(lua_State *L);
 #endif
 
+#ifdef LOVE_ANDROID
+static int w_print_sdl_log(lua_State *L)
+{
+	int nargs = lua_gettop(L);
+
+	lua_getglobal(L, "tostring");
+
+	std::string outstring;
+
+	for (int i = 1; i <= nargs; i++)
+	{
+		// Call tostring(arg) and leave the result on the top of the stack.
+		lua_pushvalue(L, -1);
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1);
+
+		const char *s = lua_tostring(L, -1);
+		if (s == nullptr)
+			return luaL_error(L, "'tostring' must return a string to 'print'");
+
+		if (i > 1)
+			outstring += "\t";
+
+		outstring += s;
+
+		lua_pop(L, 1); // Pop the result of tostring(arg).
+	}
+
+	SDL_Log("[LOVE] %s", outstring.c_str());
+	return 0;
+}
+#endif
+
 const char *love_version()
 {
 	// Do not refer to love::VERSION here, the linker
@@ -228,12 +274,18 @@ static int w_love_isVersionCompatible(lua_State *L)
 	std::string version;
 
 	if (lua_type(L, 1) == LUA_TSTRING)
+	{
 		version = luaL_checkstring(L, 1);
+
+		// Convert major.minor to major.minor.revision.
+		if (std::count(version.begin(), version.end(), '.') < 2)
+			version.append(".0");
+	}
 	else
 	{
 		int major = (int) luaL_checkinteger(L, 1);
 		int minor = (int) luaL_checkinteger(L, 2);
-		int rev   = (int) luaL_checkinteger(L, 3);
+		int rev   = (int) luaL_optinteger(L, 3, 0);
 
 		// Convert the numbers to a string, since VERSION_COMPATIBILITY is an
 		// array of version strings.
@@ -245,7 +297,13 @@ static int w_love_isVersionCompatible(lua_State *L)
 
 	for (int i = 0; love::VERSION_COMPATIBILITY[i] != nullptr; i++)
 	{
-		if (version.compare(love::VERSION_COMPATIBILITY[i]) != 0)
+		std::string v(love::VERSION_COMPATIBILITY[i]);
+
+		// Convert major.minor to major.minor.revision.
+		if (std::count(v.begin(), v.end(), '.') < 2)
+			v.append(".0");
+
+		if (version.compare(v) != 0)
 			continue;
 
 		lua_pushboolean(L, true);
@@ -260,6 +318,27 @@ static int w__setGammaCorrect(lua_State *L)
 {
 #ifdef LOVE_ENABLE_GRAPHICS
 	love::graphics::setGammaCorrect((bool) lua_toboolean(L, 1));
+#endif
+	return 0;
+}
+
+static int w__setAudioMixWithSystem(lua_State *L)
+{
+	bool success = false;
+
+#ifdef LOVE_ENABLE_AUDIO
+	bool mix = love::luax_checkboolean(L, 1);
+	success = love::audio::Audio::setMixWithSystem(mix);
+#endif
+
+	love::luax_pushboolean(L, success);
+	return 1;
+}
+
+static int w__requestRecordingPermission(lua_State *L)
+{
+#ifdef LOVE_ENABLE_AUDIO
+	love::audio::setRequestRecordingPermission((bool) lua_toboolean(L, 1));
 #endif
 	return 0;
 }
@@ -303,6 +382,11 @@ int luaopen_love(lua_State *L)
 	lua_pushstring(L, love::VERSION_CODENAME);
 	lua_setfield(L, -2, "_version_codename");
 
+#ifdef LOVE_ANDROID
+	luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
+	lua_register(L, "print", w_print_sdl_log);
+#endif
+
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 	lua_pushcfunction(L, w__openConsole);
 	lua_setfield(L, -2, "_openConsole");
@@ -315,6 +399,13 @@ int luaopen_love(lua_State *L)
 
 	lua_pushcfunction(L, w__setGammaCorrect);
 	lua_setfield(L, -2, "_setGammaCorrect");
+
+	// Exposed here because we need to be able to call it before the audio
+	// module is initialized.
+	lua_pushcfunction(L, w__setAudioMixWithSystem);
+	lua_setfield(L, -2, "_setAudioMixWithSystem");
+	lua_pushcfunction(L, w__requestRecordingPermission);
+	lua_setfield(L, -2, "_requestRecordingPermission");
 
 	lua_newtable(L);
 
@@ -393,45 +484,34 @@ int luaopen_love(lua_State *L)
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-// Mostly taken from the Windows 8.1 SDK's VersionHelpers.h.
-static bool IsWindowsVistaOrGreater()
-{
-	OSVERSIONINFOEXW osvi = {sizeof(osvi), 0, 0, 0, 0, {0}, 0, 0};
-
-	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
-	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-	osvi.wServicePackMajor = 0;
-
-	DWORDLONG majorversionmask = VerSetConditionMask(0, VER_MAJORVERSION, VER_GREATER_EQUAL);
-	DWORDLONG versionmask = VerSetConditionMask(majorversionmask, VER_MINORVERSION, VER_GREATER_EQUAL);
-	DWORDLONG mask = VerSetConditionMask(versionmask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
-
-	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, mask) != FALSE;
-}
-
-int w__openConsole(lua_State *L)
+bool love_openConsole(const char *&err)
 {
 	static bool is_open = false;
+	err = nullptr;
 
 	if (is_open)
-	{
-		love::luax_pushboolean(L, is_open);
-		return 1;
-	}
+		return true;
 
 	is_open = true;
 
-	// FIXME: we don't call AttachConsole in Windows XP because it seems to
-	// break later AllocConsole calls if it fails. A better workaround might be
-	// possible, but it's hard to find a WinXP system to test on these days...
-	if (!IsWindowsVistaOrGreater() || !AttachConsole(ATTACH_PARENT_PROCESS))
+	if (!AttachConsole(ATTACH_PARENT_PROCESS))
 	{
+		DWORD winerr = GetLastError();
+
+		if (winerr == ERROR_ACCESS_DENIED)
+		{
+			// The process is already attached to a console. We'll assume stdout
+			// and friends are already being directed there.
+			is_open = true;
+			return is_open;
+		}
+
 		// Create our own console if we can't attach to an existing one.
 		if (!AllocConsole())
 		{
 			is_open = false;
-			love::luax_pushboolean(L, is_open);
-			return 1;
+			err = "Could not create console.";
+			return is_open;
 		}
 
 		SetConsoleTitle(TEXT("LOVE Console"));
@@ -449,20 +529,38 @@ int w__openConsole(lua_State *L)
 
 	// Redirect stdout.
 	fp = freopen("CONOUT$", "w", stdout);
-	if (L && fp == NULL)
-		return luaL_error(L, "Console redirection of stdout failed.");
+	if (fp == NULL)
+	{
+		err = "Console redirection of stdout failed.";
+		return is_open;
+	}
 
 	// Redirect stdin.
 	fp = freopen("CONIN$", "r", stdin);
-	if (L && fp == NULL)
-		return luaL_error(L, "Console redirection of stdin failed.");
+	if (fp == NULL)
+	{
+		err = "Console redirection of stdin failed.";
+		return is_open;
+	}
 
 	// Redirect stderr.
 	fp = freopen("CONOUT$", "w", stderr);
-	if (L && fp == NULL)
-		return luaL_error(L, "Console redirection of stderr failed.");
+	if (fp == NULL)
+	{
+		err = "Console redirection of stderr failed.";
+		return is_open;
+	}
 
-	love::luax_pushboolean(L, is_open);
+	return is_open;
+}
+
+int w__openConsole(lua_State *L)
+{
+	const char *err = nullptr;
+	bool isopen = love_openConsole(err);
+	if (err != nullptr)
+		return luaL_error(L, err);
+	love::luax_pushboolean(L, isopen);
 	return 1;
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,8 @@
 // LOVE
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "common/math.h"
+#include "common/Optional.h"
 #include "image/ImageData.h"
 
 // C++
@@ -65,6 +67,7 @@ public:
 		SETTING_CENTERED,
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
+		SETTING_USE_DPISCALE,
 		SETTING_REFRESHRATE,
 		SETTING_X,
 		SETTING_Y,
@@ -84,6 +87,16 @@ public:
 		MESSAGEBOX_WARNING,
 		MESSAGEBOX_INFO,
 		MESSAGEBOX_MAX_ENUM
+	};
+
+	enum DisplayOrientation
+	{
+		ORIENTATION_UNKNOWN,
+		ORIENTATION_LANDSCAPE,
+		ORIENTATION_LANDSCAPE_FLIPPED,
+		ORIENTATION_PORTRAIT,
+		ORIENTATION_PORTRAIT_FLIPPED,
+		ORIENTATION_MAX_ENUM
 	};
 
 	struct WindowSize
@@ -132,12 +145,16 @@ public:
 
 	virtual const char *getDisplayName(int displayindex) const = 0;
 
+	virtual DisplayOrientation getDisplayOrientation(int displayindex) const = 0;
+
 	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
 
 	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
 
 	virtual void setPosition(int x, int y, int displayindex) = 0;
 	virtual void getPosition(int &x, int &y, int &displayindex) = 0;
+
+	virtual Rect getSafeArea() const = 0;
 
 	virtual bool isOpen() const = 0;
 
@@ -146,6 +163,9 @@ public:
 
 	virtual bool setIcon(love::image::ImageData *imgd) = 0;
 	virtual love::image::ImageData *getIcon() = 0;
+
+	virtual void setVSync(int vsync) = 0;
+	virtual int getVSync() const = 0;
 
 	virtual void setDisplaySleepEnabled(bool enable) = 0;
 	virtual bool isDisplaySleepEnabled() const = 0;
@@ -182,6 +202,7 @@ public:
 	virtual void DPIToWindowCoords(double *x, double *y) const = 0;
 
 	virtual double getDPIScale() const = 0;
+	virtual double getNativeDPIScale() const = 0;
 
 	virtual double toPixels(double x) const = 0;
 	virtual void toPixels(double wx, double wy, double &px, double &py) const = 0;
@@ -206,6 +227,10 @@ public:
 	static bool getConstant(MessageBoxType in, const char *&out);
 	static std::vector<std::string> getConstants(MessageBoxType);
 
+	static bool getConstant(const char *in, DisplayOrientation &out);
+	static bool getConstant(DisplayOrientation in, const char *&out);
+	static std::vector<std::string> getConstants(DisplayOrientation);
+
 private:
 
 	static StringMap<Setting, SETTING_MAX_ENUM>::Entry settingEntries[];
@@ -216,6 +241,9 @@ private:
 
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
 	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
+
+	static StringMap<DisplayOrientation, ORIENTATION_MAX_ENUM>::Entry orientationEntries[];
+	static StringMap<DisplayOrientation, ORIENTATION_MAX_ENUM> orientations;
 
 }; // Window
 
@@ -234,6 +262,7 @@ struct WindowSettings
 	bool centered = true;
 	int display = 0;
 	bool highdpi = false;
+	bool usedpiscale = true;
 	double refreshrate = 0.0;
 	bool useposition = false;
 	int x = 0;

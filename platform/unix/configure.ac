@@ -1,4 +1,4 @@
-AC_INIT([love], [0.11.0])
+AC_INIT([love], [11.3])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([platform/unix])
 AC_CONFIG_MACRO_DIR([platform/unix/m4])
@@ -63,10 +63,10 @@ ACLOVE_DEP_LUA
 ACLOVE_DEP_SDL2
 ACLOVE_DEP_LIBM
 ACLOVE_DEP_ZLIB
+ACLOVE_DEP_PTHREAD
 
 # Conditional dependencies
 AS_VAR_IF([enable_module_audio], [yes], [ACLOVE_DEP_OPENAL], [])
-AS_VAR_IF([enable_module_filesystem], [yes], [ACLOVE_DEP_PHYSFS], [])
 AS_VAR_IF([enable_module_font], [yes], [ACLOVE_DEP_FREETYPE2], [])
 AS_VAR_IF([enable_module_sound], [yes], [
 	ACLOVE_DEP_LIBMODPLUG
@@ -84,6 +84,7 @@ AC_ARG_ENABLE([library-luasocket], [  --disable-library-luasocket    Turn off li
 AC_ARG_ENABLE([library-lua53], [  --disable-library-lua53    Turn off library lua53 (lua 5.3 backports, required by love.data)], [], [enable_library_lua53=yes])
 
 # Select the libraries we need to build, based on the selected modules
+AS_VAR_IF([enable_module_filesystem], [yes], [enable_library_physfs=yes], [enable_library_physfs=no])
 AS_VAR_IF([enable_module_physics], [yes], [enable_library_Box2D=yes], [enable_library_Box2D=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_library_ddsparse=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])

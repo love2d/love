@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2017 LOVE Development Team
+* Copyright (c) 2006-2019 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -39,7 +39,7 @@ public:
 
 	static love::Type type;
 
-	Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &text = {});
+	Text(Font *font, const std::vector<Font::ColoredString> &text = {});
 	virtual ~Text();
 
 	void set(const std::vector<Font::ColoredString> &text);
@@ -86,10 +86,9 @@ private:
 	StrongRef<Font> font;
 
 	vertex::Attributes vertexAttributes;
-	vertex::Buffers vertexBuffers;
+	vertex::BufferBindings vertexBuffers;
 
-	Buffer *vbo;
-	QuadIndices quadIndices;
+	Buffer *vertex_buffer;
 
 	std::vector<Font::DrawCommand> draw_commands;
 

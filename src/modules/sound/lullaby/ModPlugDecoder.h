@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,14 +47,14 @@ class ModPlugDecoder : public Decoder
 {
 public:
 
-	ModPlugDecoder(Data *data, const std::string &ext, int bufferSize);
+	ModPlugDecoder(Data *data, int bufferSize);
 	virtual ~ModPlugDecoder();
 
 	static bool accepts(const std::string &ext);
 
 	love::sound::Decoder *clone();
 	int decode();
-	bool seek(float s);
+	bool seek(double s);
 	bool rewind();
 	bool isSeekable();
 	int getChannelCount() const;

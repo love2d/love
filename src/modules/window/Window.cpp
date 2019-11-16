@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -74,6 +74,21 @@ std::vector<std::string> Window::getConstants(MessageBoxType)
 	return messageBoxTypes.getNames();
 }
 
+bool Window::getConstant(const char *in, DisplayOrientation &out)
+{
+	return orientations.find(in, out);
+}
+
+bool Window::getConstant(DisplayOrientation in, const char *&out)
+{
+	return orientations.find(in, out);
+}
+
+std::vector<std::string> Window::getConstants(DisplayOrientation)
+{
+	return orientations.getNames();
+}
+
 StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntries[] =
 {
 	{"fullscreen", SETTING_FULLSCREEN},
@@ -89,6 +104,7 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"centered", SETTING_CENTERED},
 	{"display", SETTING_DISPLAY},
 	{"highdpi", SETTING_HIGHDPI},
+	{"usedpiscale", SETTING_USE_DPISCALE},
 	{"refreshrate", SETTING_REFRESHRATE},
 	{"x", SETTING_X},
 	{"y", SETTING_Y},
@@ -112,6 +128,17 @@ StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM>::Entry Window::me
 };
 
 StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM> Window::messageBoxTypes(Window::messageBoxTypeEntries, sizeof(Window::messageBoxTypeEntries));
+
+StringMap<Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM>::Entry Window::orientationEntries[] =
+{
+	{"unknown", ORIENTATION_UNKNOWN},
+	{"landscape", ORIENTATION_LANDSCAPE},
+	{"landscapeflipped", ORIENTATION_LANDSCAPE_FLIPPED},
+	{"portrait", ORIENTATION_PORTRAIT},
+	{"portraitflipped", ORIENTATION_PORTRAIT_FLIPPED},
+};
+
+StringMap<Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM> Window::orientations(Window::orientationEntries, sizeof(Window::orientationEntries));
 
 } // window
 } // love

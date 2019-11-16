@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -88,84 +88,20 @@ int w_ImageData_getDimensions(lua_State *L)
 	return 2;
 }
 
-static void luax_checkpixel_rgba8(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < 3; i++)
-		p.rgba8[i] = (uint8) (luax_checknumberclamped01(L, startidx + i) * 255.0);
-
-	p.rgba8[3] = (uint8) (luax_optnumberclamped01(L, startidx + 3, 1.0) * 255.0);
-}
-
-static void luax_checkpixel_rgba16(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < 3; i++)
-		p.rgba16[i] = (uint16) (luax_checknumberclamped01(L, startidx + i) * 65535.0);
-
-	p.rgba16[3] = (uint16) (luax_optnumberclamped01(L, startidx + 3, 1.0) * 65535.0);
-}
-
-static void luax_checkpixel_rgba16f(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < 3; i++)
-		p.rgba16f[i] = floatToHalf((float) luaL_checknumber(L, startidx + i));
-
-	p.rgba16f[3] = floatToHalf((float) luaL_optnumber(L, startidx + 3, 1.0));
-}
-
-static void luax_checkpixel_rgba32f(lua_State *L, int startidx, Pixel &p)
-{
-	for (int i = 0; i < 3; i++)
-		p.rgba32f[i] = (float) luaL_checknumber(L, startidx + i);
-
-	p.rgba32f[3] = (float) luaL_optnumber(L, startidx + 3, 1.0);
-}
-
-static int luax_pushpixel_rgba8(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < 4; i++)
-		lua_pushnumber(L, (lua_Number) p.rgba8[i] / 255.0);
-	return 4;
-}
-
-static int luax_pushpixel_rgba16(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < 4; i++)
-		lua_pushnumber(L, (lua_Number) p.rgba16[i] / 65535.0);
-	return 4;
-}
-
-static int luax_pushpixel_rgba16f(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < 4; i++)
-		lua_pushnumber(L, (lua_Number) halfToFloat(p.rgba16f[i]));
-	return 4;
-}
-
-static int luax_pushpixel_rgba32f(lua_State *L, const Pixel &p)
-{
-	for (int i = 0; i < 4; i++)
-		lua_pushnumber(L, (lua_Number) p.rgba32f[i]);
-	return 4;
-}
-
-typedef void(*checkpixel)(lua_State *L, int startidx, Pixel &p);
-typedef int(*pushpixel)(lua_State *L, const Pixel &p);
-
-static checkpixel checkFormats[PIXELFORMAT_MAX_ENUM] = {};
-static pushpixel pushFormats[PIXELFORMAT_MAX_ENUM] = {};
-
 int w_ImageData_getPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	int x = (int) luaL_checkinteger(L, 2);
 	int y = (int) luaL_checkinteger(L, 3);
 
-	PixelFormat format = t->getFormat();
+	Colorf c;
+	luax_catchexcept(L, [&](){ t->getPixel(x, y, c); });
 
-	Pixel p;
-	luax_catchexcept(L, [&](){ t->getPixel(x, y, p); });
-
-	return pushFormats[format](L, p);
+	lua_pushnumber(L, c.r);
+	lua_pushnumber(L, c.g);
+	lua_pushnumber(L, c.b);
+	lua_pushnumber(L, c.a);
+	return 4;
 }
 
 int w_ImageData_setPixel(lua_State *L)
@@ -174,23 +110,37 @@ int w_ImageData_setPixel(lua_State *L)
 	int x = (int) luaL_checkinteger(L, 2);
 	int y = (int) luaL_checkinteger(L, 3);
 
-	PixelFormat format = t->getFormat();
+	int components = getPixelFormatColorComponents(t->getFormat());
 
-	Pixel p;
+	Colorf c;
 
 	if (lua_istable(L, 4))
 	{
-		for (int i = 1; i <= 4; i++)
-			lua_rawgeti(L, 4, i);
+		for (int i = 1; i <= components; i++)
+			lua_rawgeti(L, components, i);
 
-		checkFormats[format](L, -4, p);
+		c.r = (float) luaL_checknumber(L, -components);
+		if (components > 1)
+			c.g = (float) luaL_checknumber(L, (-components) + 1);
+		if (components > 2)
+			c.b = (float) luaL_checknumber(L, (-components) + 2);
+		if (components > 3)
+			c.a = (float) luaL_optnumber(L, (-components) + 3, 1.0);
 
-		lua_pop(L, 4);
+		lua_pop(L, components);
 	}
 	else
-		checkFormats[format](L, 4, p);
+	{
+		c.r = (float) luaL_checknumber(L, 4);
+		if (components > 1)
+			c.g = (float) luaL_checknumber(L, 5);
+		if (components > 2)
+			c.b = (float) luaL_checknumber(L, 6);
+		if (components > 3)
+			c.a = (float) luaL_optnumber(L, 7, 1.0);
+	}
 
-	luax_catchexcept(L, [&](){ t->setPixel(x, y, p); });
+	luax_catchexcept(L, [&](){ t->setPixel(x, y, c); });
 	return 0;
 }
 
@@ -213,9 +163,10 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 	int iw = t->getWidth();
 
 	PixelFormat format = t->getFormat();
+	int components = getPixelFormatColorComponents(format);
 
-	auto checkpixel = checkFormats[format];
-	auto pushpixel = pushFormats[format];
+	auto pixelsetfunction = t->getPixelSetFunction();
+	auto pixelgetfunction = t->getPixelGetFunction();
 
 	uint8 *data = (uint8 *) t->getData();
 	size_t pixelsize = t->getPixelSize();
@@ -224,17 +175,33 @@ int w_ImageData__mapPixelUnsafe(lua_State *L)
 	{
 		for (int x = sx; x < sx+w; x++)
 		{
-			Pixel *pixeldata = (Pixel *) (data + (y * iw + x) * pixelsize);
+			auto pixeldata = (ImageData::Pixel *) (data + (y * iw + x) * pixelsize);
+
+			Colorf c;
+			pixelgetfunction(pixeldata, c);
 
 			lua_pushvalue(L, 2); // ImageData
+
 			lua_pushnumber(L, x);
 			lua_pushnumber(L, y);
 
-			pushpixel(L, *pixeldata);
+			lua_pushnumber(L, c.r);
+			lua_pushnumber(L, c.g);
+			lua_pushnumber(L, c.b);
+			lua_pushnumber(L, c.a);
 
 			lua_call(L, 6, 4);
 
-			checkpixel(L, -4, *pixeldata);
+			c.r = (float) luaL_checknumber(L, -4);
+			if (components > 1)
+				c.g = (float) luaL_checknumber(L, -3);
+			if (components > 2)
+				c.b = (float) luaL_checknumber(L, -2);
+			if (components > 3)
+				c.a = (float) luaL_optnumber(L, -1, 1.0);
+
+			pixelsetfunction(c, pixeldata);
+
 			lua_pop(L, 4); // Pop return values.
 		}
 	}
@@ -309,8 +276,14 @@ struct FFI_ImageData
 	void (*lockMutex)(Proxy *p);
 	void (*unlockMutex)(Proxy *p);
 
-	float (*halfToFloat)(half h);
-	half (*floatToHalf)(float f);
+	float (*float16to32)(float16 f);
+	float16 (*float32to16)(float f);
+
+	float (*float11to32)(float11 f);
+	float11 (*float32to11)(float f);
+
+	float (*float10to32)(float10 f);
+	float10 (*float32to10)(float f);
 };
 
 static FFI_ImageData ffifuncs =
@@ -329,8 +302,12 @@ static FFI_ImageData ffifuncs =
 		i->getMutex()->unlock();
 	},
 
-	halfToFloat,
-	floatToHalf,
+	float16to32,
+	float32to16,
+	float11to32,
+	float32to11,
+	float10to32,
+	float32to10,
 };
 
 static const luaL_Reg w_ImageData_functions[] =
@@ -354,32 +331,10 @@ static const luaL_Reg w_ImageData_functions[] =
 
 extern "C" int luaopen_imagedata(lua_State *L)
 {
-	checkFormats[PIXELFORMAT_RGBA8]   = luax_checkpixel_rgba8;
-	checkFormats[PIXELFORMAT_RGBA16]  = luax_checkpixel_rgba16;
-	checkFormats[PIXELFORMAT_RGBA16F] = luax_checkpixel_rgba16f;
-	checkFormats[PIXELFORMAT_RGBA32F] = luax_checkpixel_rgba32f;
-
-	pushFormats[PIXELFORMAT_RGBA8]   = luax_pushpixel_rgba8;
-	pushFormats[PIXELFORMAT_RGBA16]  = luax_pushpixel_rgba16;
-	pushFormats[PIXELFORMAT_RGBA16F] = luax_pushpixel_rgba16f;
-	pushFormats[PIXELFORMAT_RGBA32F] = luax_pushpixel_rgba32f;
-
 	int ret = luax_register_type(L, &ImageData::type, data::w_Data_functions, w_ImageData_functions, nullptr);
 
-	luax_gettypemetatable(L, ImageData::type);
-
-	// Load and execute ImageData.lua, sending the metatable and the ffi
-	// functions struct pointer as arguments.
-	if (lua_istable(L, -1))
-	{
-		luaL_loadbuffer(L, imagedata_lua, sizeof(imagedata_lua), "ImageData.lua");
-		lua_pushvalue(L, -2);
-		lua_pushlightuserdata(L, &ffifuncs);
-		lua_call(L, 2, 0);
-	}
-
-	// Pop the metatable.
-	lua_pop(L, 1);
+	love::data::luax_rundatawrapper(L, ImageData::type);
+	luax_runwrapper(L, imagedata_lua, sizeof(imagedata_lua), "ImageData.lua", ImageData::type, &ffifuncs);
 
 	return ret;
 }

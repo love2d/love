@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,6 @@
 #include "World.h"
 #include "Physics.h"
 
-#include "common/Memoizer.h"
-
 // STD
 #include <bitset>
 
@@ -47,17 +45,12 @@ Shape::Shape(b2Shape *shape, bool own)
 	: shape(shape)
 	, own(own)
 {
-	if (own)
-		Memoizer::add(shape, this);
 }
 
 Shape::~Shape()
 {
 	if (shape && own)
-	{
-		Memoizer::remove(shape);
 		delete shape;
-	}
 	shape = nullptr;
 }
 

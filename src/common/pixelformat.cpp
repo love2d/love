@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -172,6 +172,38 @@ size_t getPixelFormatSize(PixelFormat format)
 		return 16;
 	default:
 		// TODO: compressed formats
+		return 0;
+	}
+}
+
+int getPixelFormatColorComponents(PixelFormat format)
+{
+	switch (format)
+	{
+	case PIXELFORMAT_R8:
+	case PIXELFORMAT_R16:
+	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_R32F:
+		return 1;
+	case PIXELFORMAT_RG8:
+	case PIXELFORMAT_RG16:
+	case PIXELFORMAT_RG16F:
+	case PIXELFORMAT_RG32F:
+	case PIXELFORMAT_LA8:
+		return 2;
+	case PIXELFORMAT_RGB565:
+	case PIXELFORMAT_RG11B10F:
+		return 3;
+	case PIXELFORMAT_RGBA8:
+	case PIXELFORMAT_sRGBA8:
+	case PIXELFORMAT_RGBA16:
+	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_RGBA32F:
+	case PIXELFORMAT_RGBA4:
+	case PIXELFORMAT_RGB5A1:
+	case PIXELFORMAT_RGB10A2:
+		return 4;
+	default:
 		return 0;
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,8 @@
 #include <vector>
 
 #include <SDL_events.h>
+#include <SDL_video.h>
+#include <SDL_syswm.h>
 
 static NSArray *getLovesInDocuments();
 static bool deleteFileInDocuments(NSString *filename);
@@ -345,7 +347,7 @@ void vibrate()
 	}
 }
 
-void setAudioMixWithOthers(bool mixEnabled)
+bool setAudioMixWithOthers(bool mixEnabled)
 {
 	@autoreleasepool
 	{
@@ -355,16 +357,55 @@ void setAudioMixWithOthers(bool mixEnabled)
 		if (mixEnabled)
 			category = AVAudioSessionCategoryAmbient;
 
-		if (![[AVAudioSession sharedInstance] setCategory:category error:&err])
+		bool success = [[AVAudioSession sharedInstance] setCategory:category error:&err];
+		if (!success)
 			NSLog(@"Error in AVAudioSession setCategory: %@", [err localizedDescription]);
+
+		return success;
 	}
 }
 
 bool hasBackgroundMusic()
 {
-	if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(secondaryAudioShouldBeSilencedHint)])
-		return [[AVAudioSession sharedInstance] secondaryAudioShouldBeSilencedHint];
-	return false;
+	@autoreleasepool
+	{
+		AVAudioSession *session = [AVAudioSession sharedInstance];
+		if ([session respondsToSelector:@selector(secondaryAudioShouldBeSilencedHint)])
+			return session.secondaryAudioShouldBeSilencedHint;
+		return false;
+	}
+}
+
+Rect getSafeArea(SDL_Window *window)
+{
+	@autoreleasepool
+	{
+		Rect rect = {};
+		SDL_GetWindowSize(window, &rect.w, &rect.h);
+
+		SDL_SysWMinfo info = {};
+		SDL_VERSION(&info.version);
+		if (SDL_GetWindowWMInfo(window, &info))
+		{
+			UIView *view = info.info.uikit.window.rootViewController.view;
+			if (@available(iOS 11.0, tvOS 11.0, *))
+			{
+				UIEdgeInsets insets = view.safeAreaInsets;
+
+				rect.x += insets.left;
+				rect.w -= insets.left;
+
+				rect.w -= insets.right;
+
+				rect.y += insets.top;
+				rect.h -= insets.top;
+
+				rect.h -= insets.bottom;
+			}
+		}
+
+		return rect;
+	}
 }
 
 } // ios

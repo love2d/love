@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,6 +19,7 @@
  **/
 
 #include "common/version.h"
+#include "common/runtime.h"
 #include "modules/love/love.h"
 #include <SDL.h>
 
@@ -42,14 +43,6 @@ extern "C" {
 
 #ifdef LOVE_IOS
 #include "common/ios.h"
-#endif
-
-#ifdef LOVE_ANDROID
-#include "common/android.h"
-extern "C" 
-{
-#include "luajit.h"
-}
 #endif
 
 #ifdef LOVE_WINDOWS
@@ -140,39 +133,6 @@ static int love_preload(lua_State *L, lua_CFunction f, const char *name)
 	return 0;
 }
 
-#ifdef LOVE_ANDROID
-static int l_print_sdl_log(lua_State *L)
-{
-	int nargs = lua_gettop(L);
-
-	lua_getglobal(L, "tostring");
-
-	std::string outstring;
-
-	for (int i = 1; i <= nargs; i++)
-	{
-		// Call tostring(arg) and leave the result on the top of the stack.
-		lua_pushvalue(L, -1);
-		lua_pushvalue(L, i);
-		lua_call(L, 1, 1);
-
-		const char *s = lua_tostring(L, -1);
-		if (s == nullptr)
-			return luaL_error(L, "'tostring' must return a string to 'print'");
-
-		if (i > 1)
-			outstring += "\t";
-
-		outstring += s;
-
-		lua_pop(L, 1); // Pop the result of tostring(arg).
-	}
-
-	SDL_Log("[LOVE] %s", outstring.c_str());
-	return 0;
-}
-#endif
-
 enum DoneAction
 {
 	DONE_QUIT,
@@ -192,6 +152,10 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
+#ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
+		const char *err = nullptr;
+		love_openConsole(err);
+#endif
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
 		retval = 0;
 		return DONE_QUIT;
@@ -200,11 +164,6 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
-
-#ifdef LOVE_ANDROID
-	luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE| LUAJIT_MODE_OFF);
-	lua_register(L, "print", l_print_sdl_log);
-#endif
 
 	// Add love to package.preload for easy requiring.
 	love_preload(L, luaopen_love, "love");
@@ -256,10 +215,8 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	lua_newthread(L);
 	lua_pushvalue(L, -2);
 	int stackpos = lua_gettop(L);
-	while (lua_resume(L, 0) == LUA_YIELD)
-	{
+	while (love::luax_resume(L, 0) == LUA_YIELD)
 		lua_pop(L, lua_gettop(L) - stackpos);
-	}
 
 	retval = 0;
 	DoneAction done = DONE_QUIT;

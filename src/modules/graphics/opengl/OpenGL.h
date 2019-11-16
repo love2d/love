@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -153,6 +153,31 @@ public:
 		bool generateMipmapsRequiresTexture2DEnable;
 
 		/**
+		 * Report: Intel HD 4000 on Windows hangs during glClientWaitSync.
+		 * I found this when googling the issue:
+		 * https://github.com/mjn33/planetgen/commit/235e23873a22e219fffdd9ede706c1051aa0f107
+		 **/
+		bool clientWaitSyncStalls;
+
+		/**
+		 * glTexStorage on some older AMD/ATI graphics drivers on Windows seems
+		 * to break subsequent sub-rectangle glTexSubImage calls after an
+		 * initial full-size one (determined after some investigation with an
+		 * affected user on Discord.)
+		 * https://bitbucket.org/rude/love/issues/1436/bug-with-lovegraphicsprint-on-older-ati
+		 *
+		 **/
+		bool texStorageBreaksSubImage;
+
+		/**
+		 * An Android device with an Adreno 630 (supposedly GLES3.2-capable)
+		 * fails with GL_INVALID_OPERATION in glTexImage2D if the image is
+		 * GL_R8, despite the GLES 3.0 spec mandating support for that format.
+		 * It's possible more Adreno GPUs / drivers are affected as well.
+		 **/
+		bool brokenR8PixelFormat;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *
@@ -212,7 +237,7 @@ public:
 	/**
 	 * Set all vertex attribute state.
 	 **/
-	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers);
+	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::BufferBindings &buffers);
 
 	/**
 	 * Wrapper for glCullFace which eliminates redundant state setting.
@@ -334,6 +359,7 @@ public:
 	bool isInstancingSupported() const;
 	bool isDepthCompareSampleSupported() const;
 	bool isSamplerLODBiasSupported() const;
+	bool isBaseVertexSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -413,6 +439,8 @@ private:
 	bool contextInitialized;
 
 	bool pixelShaderHighpSupported;
+	bool baseVertexSupported;
+
 	float maxAnisotropy;
 	float maxLODBias;
 	int max2DTextureSize;
@@ -453,7 +481,7 @@ private:
 
 		float pointSize;
 
-		bool depthWritesEnabled;
+		bool depthWritesEnabled = true;
 
 		GLuint boundFramebuffers[2];
 

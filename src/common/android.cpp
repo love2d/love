@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -90,6 +90,31 @@ double getScreenScale()
 	return result;
 }
 
+bool getSafeArea(int &top, int &left, int &bottom, int &right)
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "initializeSafeArea", "()Z");
+	bool hasSafeArea = false;
+
+	if (methodID == nullptr)
+		// NoSuchMethodException is thrown in case methodID is null
+		env->ExceptionClear();
+	else if ((hasSafeArea = env->CallBooleanMethod(activity, methodID)))
+	{
+		top = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaTop", "I"));
+		left = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaLeft", "I"));
+		bottom = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaBottom", "I"));
+		right = env->GetIntField(activity, env->GetFieldID(clazz, "safeAreaRight", "I"));
+	}
+
+	env->DeleteLocalRef(clazz);
+	env->DeleteLocalRef(activity);
+
+	return hasSafeArea;
+}
+
 const char *getSelectedGameFile()
 {
 	static const char *path = NULL;
@@ -123,14 +148,14 @@ bool openURL(const std::string &url)
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jclass activity = env->FindClass("org/love2d/android/GameActivity");
 
-	jmethodID openURL= env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)V");
+	jmethodID openURL = env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)Z");
 	jstring url_jstring = (jstring) env->NewStringUTF(url.c_str());
 
-	env->CallStaticVoidMethod(activity, openURL, url_jstring);
+	jboolean result = env->CallStaticBooleanMethod(activity, openURL, url_jstring);
 
 	env->DeleteLocalRef(url_jstring);
 	env->DeleteLocalRef(activity);
-	return true;
+	return result;
 }
 
 void vibrate(double seconds)
@@ -239,6 +264,59 @@ bool hasBackgroundMusic()
 	env->DeleteLocalRef(clazz);
 
 	return result;
+}
+
+bool hasRecordingPermission()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "hasRecordAudioPermission", "()Z");
+	jboolean result = false;
+
+	if (methodID == nullptr)
+		env->ExceptionClear();
+	else
+		result = env->CallBooleanMethod(activity, methodID);
+
+	env->DeleteLocalRef(activity);
+	env->DeleteLocalRef(clazz);
+
+	return result;
+}
+
+
+void requestRecordingPermission()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "requestRecordAudioPermission", "()V");
+
+	if (methodID == nullptr)
+		env->ExceptionClear();
+	else
+		env->CallVoidMethod(activity, methodID);
+
+	env->DeleteLocalRef(clazz);
+	env->DeleteLocalRef(activity);
+}
+
+void showRecordingPermissionMissingDialog()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz(env->GetObjectClass(activity));
+	jmethodID methodID = env->GetMethodID(clazz, "showRecordingAudioPermissionMissingDialog", "()V");
+
+	if (methodID == nullptr)
+		env->ExceptionClear();
+	else
+		env->CallVoidMethod(activity, methodID);
+
+	env->DeleteLocalRef(clazz);
+	env->DeleteLocalRef(activity);
 }
 
 } // android

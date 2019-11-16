@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,8 +36,9 @@ namespace graphics
 namespace opengl
 {
 
-static const int BUFFER_FRAMES = 3;
-static const int MAX_SYNCS_PER_FRAME = 4;
+// Typically this should be 3 frames, but we only do per-frame syncing right now
+// so we add an extra frame to reduce the (small) chance of stalls.
+static const int BUFFER_FRAMES = 4;
 
 class StreamBufferClientMemory final : public love::graphics::StreamBuffer
 {
@@ -60,11 +61,6 @@ public:
 	virtual ~StreamBufferClientMemory()
 	{
 		delete[] data;
-	}
-
-	size_t getUsableSize() const override
-	{
-		return bufferSize;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -95,8 +91,7 @@ public:
 		, vbo(0)
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
-		, offset(0)
-		, frameOffset(0)
+		, orphan(false)
 	{
 		try
 		{
@@ -116,40 +111,36 @@ public:
 		delete[] data;
 	}
 
-	size_t getUsableSize() const override
+	MapInfo map(size_t /*minsize*/) override
 	{
-		return bufferSize - frameOffset;
-	}
-
-	MapInfo map(size_t minsize) override
-	{
-		if (offset + minsize > bufferSize)
+		if (orphan)
 		{
-			offset = 0;
-			frameOffset = 0;
+			orphan = false;
+			frameGPUReadOffset = 0;
 			gl.bindBuffer(mode, vbo);
 			glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 		}
 
-		return MapInfo(data, bufferSize - offset);
+		return MapInfo(data, bufferSize - frameGPUReadOffset);
 	}
 
 	size_t unmap(size_t usedsize) override
 	{
 		gl.bindBuffer(mode, vbo);
-		glBufferSubData(glMode, offset, usedsize, data);
-		return offset;
+		glBufferSubData(glMode, frameGPUReadOffset, usedsize, data);
+		return frameGPUReadOffset;
 	}
 
 	void markUsed(size_t usedsize) override
 	{
-		offset += usedsize;
-		frameOffset += usedsize;
+		frameGPUReadOffset += usedsize;
 	}
 
 	void nextFrame() override
 	{
-		frameOffset = 0;
+		// Orphan the buffer before its first use in the next frame.
+		frameGPUReadOffset = 0;
+		orphan = true;
 	}
 
 	ptrdiff_t getHandle() const override { return vbo; }
@@ -163,8 +154,8 @@ public:
 		gl.bindBuffer(mode, vbo);
 		glBufferData(glMode, bufferSize, nullptr, GL_STREAM_DRAW);
 
-		offset = 0;
-		frameOffset = 0;
+		frameGPUReadOffset = 0;
+		orphan = false;
 
 		return true;
 	}
@@ -185,8 +176,7 @@ protected:
 
 	uint8 *data;
 
-	size_t offset;
-	size_t frameOffset;
+	bool orphan;
 
 }; // StreamBufferSubDataOrphan
 
@@ -196,9 +186,7 @@ public:
 
 	StreamBufferSync(BufferType type, size_t size)
 		: love::graphics::StreamBuffer(type, size)
-		, syncSize((size + MAX_SYNCS_PER_FRAME - 1) / MAX_SYNCS_PER_FRAME)
 		, frameIndex(0)
-		, frameGPUReadOffset(0)
 		, syncs()
 	{}
 
@@ -206,7 +194,9 @@ public:
 
 	void nextFrame() override
 	{
-		getCurrentSync()->fence();
+		// Insert a GPU fence for this frame's section of the data, we'll wait
+		// for it when we try to map that data for writing in subsequent frames.
+		syncs[frameIndex].fence();
 
 		frameIndex = (frameIndex + 1) % BUFFER_FRAMES;
 		frameGPUReadOffset = 0;
@@ -214,31 +204,15 @@ public:
 
 	void markUsed(size_t usedsize) override
 	{
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = std::min((frameGPUReadOffset + usedsize), bufferSize - 1) / syncSize;
-
-		// Insert fences for all sync buckets completely filled by this section
-		// of the data. The last bucket before the end of the frame will also be
-		// handled by nextFrame().
-		for (int i = firstSyncIndex; i < lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].fence();
-
+		// We insert a fence for all data from this frame at the end of the
+		// frame (in nextFrame), rather than doing anything more fine-grained.
 		frameGPUReadOffset += usedsize;
 	}
 
 protected:
 
-	const size_t syncSize;
-
 	int frameIndex;
-	size_t frameGPUReadOffset;
-
-	FenceSync syncs[MAX_SYNCS_PER_FRAME * BUFFER_FRAMES];
-
-	FenceSync *getCurrentSync()
-	{
-		return &syncs[frameIndex * MAX_SYNCS_PER_FRAME + frameGPUReadOffset / syncSize];
-	}
+	FenceSync syncs[BUFFER_FRAMES];
 
 }; // StreamBufferSync
 
@@ -259,26 +233,15 @@ public:
 		unloadVolatile();
 	}
 
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameGPUReadOffset;
-	}
-
 	MapInfo map(size_t /*minsize*/) override
 	{
 		gl.bindBuffer(mode, vbo);
 
+		// Make sure this frame's section of the buffer is done being used.
+		syncs[frameIndex].cpuWait();
+
 		MapInfo info;
 		info.size = bufferSize - frameGPUReadOffset;
-
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = (bufferSize - 1) / syncSize;
-
-		// We're mapping the full range of space left in the buffer, so we
-		// need to wait on all of it...
-		// FIXME: is it even worth it to have multiple sync objects per frame?
-		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
 
 		GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
 
@@ -337,11 +300,14 @@ class StreamBufferPersistentMapSync final : public StreamBufferSync, public Vola
 {
 public:
 
-	StreamBufferPersistentMapSync(BufferType type, size_t size)
+	// Coherent mapping is supposedly faster on intel/nvidia aside from a couple
+	// old nvidia GPUs.
+	StreamBufferPersistentMapSync(BufferType type, size_t size, bool coherent = true)
 		: StreamBufferSync(type, size)
 		, vbo(0)
 		, glMode(OpenGL::getGLBufferType(mode))
 		, data(nullptr)
+		, coherent(coherent)
 	{
 		loadVolatile();
 	}
@@ -351,26 +317,14 @@ public:
 		unloadVolatile();
 	}
 
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameGPUReadOffset;
-	}
-
 	MapInfo map(size_t /*minsize*/) override
 	{
+		// Make sure this frame's section of the buffer is done being used.
+		syncs[frameIndex].cpuWait();
+
 		MapInfo info;
 		info.size = bufferSize - frameGPUReadOffset;
 		info.data = data + (frameIndex * bufferSize) + frameGPUReadOffset;
-
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = (bufferSize - 1) / syncSize;
-
-		// We're mapping the full range of space left in the buffer, so we
-		// need to wait on all of it...
-		// FIXME: is it even worth it to have multiple sync objects per frame?
-		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
-
 		return info;
 	}
 
@@ -378,8 +332,11 @@ public:
 	{
 		size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
 
-		gl.bindBuffer(mode, vbo);
-		glFlushMappedBufferRange(glMode, offset, usedsize);
+		if (!coherent)
+		{
+			gl.bindBuffer(mode, vbo);
+			glFlushMappedBufferRange(glMode, offset, usedsize);
+		}
 
 		return offset;
 	}
@@ -395,7 +352,10 @@ public:
 		gl.bindBuffer(mode, vbo);
 
 		GLbitfield storageflags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
-		GLbitfield mapflags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
+		GLbitfield mapflags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
+
+		storageflags |= (coherent ? GL_MAP_COHERENT_BIT : 0);
+		mapflags |= (coherent ? GL_MAP_COHERENT_BIT : GL_MAP_FLUSH_EXPLICIT_BIT);
 
 		glBufferStorage(glMode, bufferSize * BUFFER_FRAMES, nullptr, storageflags);
 		data = (uint8 *) glMapBufferRange(glMode, 0, bufferSize * BUFFER_FRAMES, mapflags);
@@ -425,6 +385,7 @@ private:
 	GLuint vbo;
 	GLenum glMode;
 	uint8 *data;
+	bool coherent;
 
 }; // StreamBufferPersistentMapSync
 
@@ -454,36 +415,20 @@ public:
 		alignedFree(data);
 	}
 
-	size_t getUsableSize() const override
-	{
-		return bufferSize - frameGPUReadOffset;
-	}
-
 	MapInfo map(size_t /*minsize*/) override
 	{
+		// Make sure this frame's section of the buffer is done being used.
+		syncs[frameIndex].cpuWait();
+
 		MapInfo info;
 		info.size = bufferSize - frameGPUReadOffset;
 		info.data = data + (frameIndex * bufferSize) + frameGPUReadOffset;
-
-		int firstSyncIndex = frameGPUReadOffset / syncSize;
-		int lastSyncIndex = (bufferSize - 1) / syncSize;
-
-		// We're mapping the full range of space left in the buffer, so we
-		// need to wait on all of it...
-		// FIXME: is it even worth it to have multiple sync objects per frame?
-		for (int i = firstSyncIndex; i <= lastSyncIndex; i++)
-			syncs[frameIndex * MAX_SYNCS_PER_FRAME + i].cpuWait();
-
 		return info;
 	}
 
-	size_t unmap(size_t usedsize) override
+	size_t unmap(size_t /*usedsize*/) override
 	{
 		size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
-
-		gl.bindBuffer(mode, vbo);
-		glFlushMappedBufferRange(glMode, offset, usedsize);
-
 		return offset;
 	}
 
@@ -538,14 +483,27 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 {
 	if (gl.isCoreProfile())
 	{
-		// AMD's pinned memory seems to be faster than persistent mapping, on
-		// AMD GPUs.
-		if (GLAD_AMD_pinned_memory)
-			return new StreamBufferPinnedMemory(mode, size);
-		else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
-			return new StreamBufferPersistentMapSync(mode, size);
-		else
-			return new StreamBufferSubDataOrphan(mode, size);
+		if (!gl.bugs.clientWaitSyncStalls)
+		{
+			// AMD's pinned memory seems to be faster than persistent mapping,
+			// on AMD GPUs.
+			if (GLAD_AMD_pinned_memory)
+				return new StreamBufferPinnedMemory(mode, size);
+			else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
+				return new StreamBufferPersistentMapSync(mode, size);
+
+			// Most modern drivers have a separate internal thread which queues
+			// GL commands for the GPU. The queue causes mapping to stall until
+			// the items in the queue are flushed, which makes this approach
+			// slow on most drivers. On macOS, having a separate driver thread
+			// is opt-in via an API, and we don't do it, so we can use this
+			// instead of the (potentially slower) SubData approach.
+#ifdef LOVE_MACOSX
+			return new StreamBufferMapSync(mode, size);
+#endif
+		}
+
+		return new StreamBufferSubDataOrphan(mode, size);
 	}
 	else
 		return new StreamBufferClientMemory(mode, size);

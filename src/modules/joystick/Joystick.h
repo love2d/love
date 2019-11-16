@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -153,12 +153,15 @@ public:
 	virtual bool isGamepadDown(const std::vector<GamepadButton> &blist) const = 0;
 
 	virtual JoystickInput getGamepadMapping(const GamepadInput &input) const = 0;
+	virtual std::string getGamepadMappingString() const = 0;
 
 	virtual void *getHandle() const = 0;
 
 	virtual std::string getGUID() const = 0;
 	virtual int getInstanceID() const = 0;
 	virtual int getID() const = 0;
+
+	virtual void getDeviceInfo(int &vendorID, int &productID, int &productVersion) const = 0;
 
 	virtual bool isVibrationSupported() = 0;
 	virtual bool setVibration(float left, float right, float duration = -1.0f) = 0;

@@ -35,7 +35,8 @@ Description: 2D game engine - runtime
 Package: love@LOVE_SUFFIX@
 Architecture: any
 Depends: ${misc:Depends},
-         ${shlibs:Depends}
+         ${shlibs:Depends},
+         liblove@LOVE_SUFFIX@0 (= ${binary:Version})
 Description: 2D game engine
  LOVE is a free 2D game engine which enables easy game creation in Lua.
 

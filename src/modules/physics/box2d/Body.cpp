@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,7 +21,6 @@
 #include "Body.h"
 
 #include "common/math.h"
-#include "common/Memoizer.h"
 
 #include "Shape.h"
 #include "Fixture.h"
@@ -51,18 +50,7 @@ Body::Body(World *world, b2Vec2 p, Body::Type type)
 	// Box2D body holds a reference to the love Body.
 	this->retain();
 	this->setType(type);
-	Memoizer::add(body, this);
-}
-
-Body::Body(b2Body *b)
-	: body(b)
-	, udata(nullptr)
-{
-	udata = (bodyudata *) b->GetUserData();
-	world = (World *) Memoizer::find(b->GetWorld());
-	// Box2D body holds a reference to the love Body.
-	this->retain();
-	Memoizer::add(body, this);
+	world->registerObject(body, this);
 }
 
 Body::~Body()
@@ -422,6 +410,22 @@ bool Body::isFixedRotation() const
 	return body->IsFixedRotation();
 }
 
+bool Body::isTouching(Body *other) const
+{
+	const b2ContactEdge *ce = body->GetContactList();
+	b2Body *otherbody = other->body;
+
+	while (ce != nullptr)
+	{
+		if (ce->other == otherbody && ce->contact != nullptr && ce->contact->IsTouching())
+			return true;
+
+		ce = ce->next;
+	}
+
+	return false;
+}
+
 World *Body::getWorld() const
 {
 	return world;
@@ -436,7 +440,7 @@ int Body::getFixtures(lua_State *L) const
 	{
 		if (!f)
 			break;
-		Fixture *fixture = (Fixture *)Memoizer::find(f);
+		Fixture *fixture = (Fixture *)world->findObject(f);
 		if (!fixture)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, fixture);
@@ -458,7 +462,7 @@ int Body::getJoints(lua_State *L) const
 		if (!je)
 			break;
 
-		Joint *joint = (Joint *) Memoizer::find(je->joint);
+		Joint *joint = (Joint *) world->findObject(je->joint);
 		if (!joint)
 			throw love::Exception("A joint has escaped Memoizer!");
 
@@ -481,9 +485,9 @@ int Body::getContacts(lua_State *L) const
 		if (!ce)
 			break;
 
-		Contact *contact = (Contact *) Memoizer::find(ce->contact);
+		Contact *contact = (Contact *) world->findObject(ce->contact);
 		if (!contact)
-			contact = new Contact(ce->contact);
+			contact = new Contact(world, ce->contact);
 		else
 			contact->retain();
 
@@ -494,21 +498,6 @@ int Body::getContacts(lua_State *L) const
 	}
 	while ((ce = ce->next));
 	return 1;
-}
-
-b2Vec2 Body::getVector(lua_State *L)
-{
-	love::luax_assert_argc(L, 2, 2);
-	b2Vec2 v((float)lua_tonumber(L, 1), (float)lua_tonumber(L, 2));
-	lua_pop(L, 2);
-	return v;
-}
-
-int Body::pushVector(lua_State *L, const b2Vec2 &v)
-{
-	lua_pushnumber(L, v.x);
-	lua_pushnumber(L, v.y);
-	return 2;
 }
 
 void Body::destroy()
@@ -522,7 +511,7 @@ void Body::destroy()
 	}
 
 	world->world->DestroyBody(body);
-	Memoizer::remove(body);
+	world->unregisterObject(body);
 	body = NULL;
 
 	// Remove userdata reference to avoid it sticking around after GC

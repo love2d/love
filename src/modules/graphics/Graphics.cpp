@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -119,6 +119,7 @@ Graphics::Graphics()
 	, canvasSwitchCount(0)
 	, drawCalls(0)
 	, drawCallsBatched(0)
+	, quadIndexBuffer(nullptr)
 	, capabilities()
 	, cachedShaderStages()
 {
@@ -128,12 +129,17 @@ Graphics::Graphics()
 	pixelScaleStack.reserve(16);
 	pixelScaleStack.push_back(1);
 
+	states.reserve(10);
+	states.push_back(DisplayState());
+
 	if (!Shader::initialize())
 		throw love::Exception("Shader support failed to initialize!");
 }
 
 Graphics::~Graphics()
 {
+	delete quadIndexBuffer;
+
 	// Clean up standard shaders before the active shader. If we do it after,
 	// the active shader may try to activate a standard shader when deactivating
 	// itself, which will cause problems since it calls Graphics methods in the
@@ -159,6 +165,18 @@ Graphics::~Graphics()
 		cachedShaderStages[i].clear();
 
 	Shader::deinitialize();
+}
+
+void Graphics::createQuadIndexBuffer()
+{
+	if (quadIndexBuffer != nullptr)
+		return;
+
+	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
+	quadIndexBuffer = newBuffer(size, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
+
+	Buffer::Mapper map(*quadIndexBuffer);
+	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -193,7 +211,7 @@ love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size
 
 love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, int size)
 {
-	return new ParticleSystem(this, texture, size);
+	return new ParticleSystem(texture, size);
 }
 
 ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &optsource)
@@ -264,7 +282,7 @@ love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &v
 
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
-	return new Text(this, font, text);
+	return new Text(font, text);
 }
 
 void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)
@@ -316,11 +334,9 @@ int Graphics::getPixelHeight() const
 
 double Graphics::getCurrentDPIScale() const
 {
-	if (states.back().renderTargets.colors.size() > 0)
-	{
-		Canvas *c = states.back().renderTargets.getFirstTarget().canvas.get();
-		return (double) c->getPixelHeight() / (double) c->getHeight();
-	}
+	const auto &rt = states.back().renderTargets.getFirstTarget();
+	if (rt.canvas.get())
+		return rt.canvas->getDPIScale();
 
 	return getScreenDPIScale();
 }
@@ -440,21 +456,15 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	{
 		for (size_t i = 0; i < sRTs.colors.size() && i < curRTs.colors.size(); i++)
 		{
-			const auto &rt1 = sRTs.colors[i];
-			const auto &rt2 = curRTs.colors[i];
-			if (rt1.canvas.get() != rt2.canvas.get() || rt1.slice != rt2.slice || rt1.mipmap != rt2.mipmap)
+			if (sRTs.colors[i] != curRTs.colors[i])
 			{
 				canvaseschanged = true;
 				break;
 			}
 		}
 
-		if (!canvaseschanged && (sRTs.depthStencil.canvas.get() != curRTs.depthStencil.canvas.get()
-			|| sRTs.depthStencil.slice != curRTs.depthStencil.slice
-			|| sRTs.depthStencil.mipmap != curRTs.depthStencil.mipmap))
-		{
+		if (!canvaseschanged && sRTs.depthStencil != curRTs.depthStencil)
 			canvaseschanged = true;
-		}
 
 		if (sRTs.temporaryRTFlags != curRTs.temporaryRTFlags)
 			canvaseschanged = true;
@@ -566,7 +576,10 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	DisplayState &state = states.back();
 	int ncanvases = (int) rts.colors.size();
 
-	if (ncanvases == 0 && rts.depthStencil.canvas == nullptr)
+	RenderTarget firsttarget = rts.getFirstTarget();
+	love::graphics::Canvas *firstcanvas = firsttarget.canvas;
+
+	if (firstcanvas == nullptr)
 		return setCanvas();
 
 	const auto &prevRTs = state.renderTargets;
@@ -577,21 +590,15 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 		for (int i = 0; i < ncanvases; i++)
 		{
-			if (rts.colors[i].canvas != prevRTs.colors[i].canvas.get()
-				|| rts.colors[i].slice != prevRTs.colors[i].slice
-				|| rts.colors[i].mipmap != prevRTs.colors[i].mipmap)
+			if (rts.colors[i] != prevRTs.colors[i])
 			{
 				modified = true;
 				break;
 			}
 		}
 
-		if (!modified && (rts.depthStencil.canvas != prevRTs.depthStencil.canvas
-						  || rts.depthStencil.slice != prevRTs.depthStencil.slice
-						  || rts.depthStencil.mipmap != prevRTs.depthStencil.mipmap))
-		{
+		if (!modified && rts.depthStencil != prevRTs.depthStencil)
 			modified = true;
-		}
 
 		if (rts.temporaryRTFlags != prevRTs.temporaryRTFlags)
 			modified = true;
@@ -602,9 +609,6 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 	if (ncanvases > capabilities.limits[LIMIT_MULTI_CANVAS])
 		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
-
-	RenderTarget firsttarget = rts.getFirstTarget();
-	love::graphics::Canvas *firstcanvas = firsttarget.canvas;
 
 	bool multiformatsupported = capabilities.features[FEATURE_MULTI_CANVAS_FORMATS];
 
@@ -618,18 +622,26 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (firsttarget.mipmap < 0 || firsttarget.mipmap >= firstcanvas->getMipmapCount())
 		throw love::Exception("Invalid mipmap level %d.", firsttarget.mipmap + 1);
 
+	if (!firstcanvas->isValidSlice(firsttarget.slice))
+		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
+
 	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8;
 	int pixelw = firstcanvas->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firstcanvas->getPixelHeight(firsttarget.mipmap);
+	int reqmsaa = firstcanvas->getRequestedMSAA();
 
 	for (int i = 1; i < ncanvases; i++)
 	{
 		love::graphics::Canvas *c = rts.colors[i].canvas;
 		PixelFormat format = c->getPixelFormat();
 		int mip = rts.colors[i].mipmap;
+		int slice = rts.colors[i].slice;
 
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+
+		if (!c->isValidSlice(slice))
+			throw love::Exception("Invalid slice index: %d.", slice + 1);
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
 			throw love::Exception("All canvases must have the same pixel dimensions.");
@@ -637,7 +649,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		if (!multiformatsupported && format != firstcolorformat)
 			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
 
-		if (c->getRequestedMSAA() != firstcanvas->getRequestedMSAA())
+		if (c->getRequestedMSAA() != reqmsaa)
 			throw love::Exception("All Canvases must have the same MSAA value.");
 
 		if (isPixelFormatDepthStencil(format))
@@ -651,6 +663,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	{
 		love::graphics::Canvas *c = rts.depthStencil.canvas;
 		int mip = rts.depthStencil.mipmap;
+		int slice = rts.depthStencil.slice;
 
 		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
 			throw love::Exception("Only depth/stencil format Canvases can be used with the 'depthstencil' field of the table passed into setCanvas.");
@@ -663,25 +676,68 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
+
+		if (!c->isValidSlice(slice))
+			throw love::Exception("Invalid slice index: %d.", slice + 1);
 	}
 
 	int w = firstcanvas->getWidth(firsttarget.mipmap);
 	int h = firstcanvas->getHeight(firsttarget.mipmap);
 
 	flushStreamDraws();
-	setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
+
+	if (rts.depthStencil.canvas == nullptr && rts.temporaryRTFlags != 0)
+	{
+		bool wantsdepth   = (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0;
+		bool wantsstencil = (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0;
+
+		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
+		if (wantsdepth && wantsstencil)
+			dsformat = PIXELFORMAT_DEPTH24_STENCIL8;
+		else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24, false))
+			dsformat = PIXELFORMAT_DEPTH24;
+		else if (wantsdepth)
+			dsformat = PIXELFORMAT_DEPTH16;
+		else if (wantsstencil)
+			dsformat = PIXELFORMAT_STENCIL8;
+
+		// We want setCanvasInternal to have a pointer to the temporary RT, but
+		// we don't want to directly store it in the main graphics state.
+		RenderTargets realRTs = rts;
+
+		realRTs.depthStencil.canvas = getTemporaryCanvas(dsformat, pixelw, pixelh, reqmsaa);
+		realRTs.depthStencil.slice = 0;
+
+		setCanvasInternal(realRTs, w, h, pixelw, pixelh, hasSRGBcanvas);
+	}
+	else
+		setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
 
 	RenderTargetsStrongRef refs;
 	refs.colors.reserve(rts.colors.size());
 
 	for (auto c : rts.colors)
-		refs.colors.emplace_back(c.canvas, c.slice);
+		refs.colors.emplace_back(c.canvas, c.slice, c.mipmap);
 
 	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.canvas, rts.depthStencil.slice);
 	refs.temporaryRTFlags = rts.temporaryRTFlags;
 
 	std::swap(state.renderTargets, refs);
 
+	canvasSwitchCount++;
+}
+
+void Graphics::setCanvas()
+{
+	DisplayState &state = states.back();
+
+	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.canvas == nullptr)
+		return;
+
+	flushStreamDraws();
+	setCanvasInternal(RenderTargets(), width, height, pixelWidth, pixelHeight, isGammaCorrect());
+
+	state.renderTargets = RenderTargetsStrongRef();
 	canvasSwitchCount++;
 }
 
@@ -1066,7 +1122,7 @@ void Graphics::flushStreamDraws()
 		return;
 
 	Attributes attributes;
-	Buffers buffers;
+	BufferBindings buffers;
 
 	size_t usedsizes[3] = {0, 0, 0};
 
@@ -1084,7 +1140,7 @@ void Graphics::flushStreamDraws()
 		sbstate.vbMap[i] = StreamBuffer::MapInfo();
 	}
 
-	if (attributes.enablebits == 0)
+	if (attributes.enableBits == 0)
 		return;
 
 	Colorf nc = getColor();
@@ -1219,7 +1275,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	else
 		t.transformXY0((Vector3 *) data.stream[0], positions, cmd.vertexCount);
 
-	Color *colordata = (Color *) data.stream[1];
+	Color32 *colordata = (Color32 *) data.stream[1];
 
 	if (colors)
 	{
@@ -1234,18 +1290,18 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 				gammaCorrectColor(ci);
 				ci *= nc;
 				unGammaCorrectColor(ci);
-				colordata[i] = toColor(ci);
+				colordata[i] = toColor32(ci);
 			}
 		}
 		else
 		{
 			for (int i = 0; i < cmd.vertexCount; i++)
-				colordata[i] = toColor(nc * colors[i]);
+				colordata[i] = toColor32(nc * colors[i]);
 		}
 	}
 	else
 	{
-		Color c = toColor(getColor());
+		Color32 c = toColor32(getColor());
 
 		for (int i = 0; i < cmd.vertexCount; i++)
 			colordata[i] = c;
@@ -1515,8 +1571,8 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		else
 			t.transformXY0((Vector3 *) data.stream[0], coords, cmd.vertexCount);
 
-		Color c = toColor(getColor());
-		Color *colordata = (Color *) data.stream[1];
+		Color32 c = toColor32(getColor());
+		Color32 *colordata = (Color32 *) data.stream[1];
 		for (int i = 0; i < cmd.vertexCount; i++)
 			colordata[i] = c;
 	}

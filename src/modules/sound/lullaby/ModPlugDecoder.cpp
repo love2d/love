@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,8 @@ namespace sound
 namespace lullaby
 {
 
-ModPlugDecoder::ModPlugDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+ModPlugDecoder::ModPlugDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, plug(0)
 	, duration(-2.0)
 {
@@ -98,7 +98,7 @@ bool ModPlugDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *ModPlugDecoder::clone()
 {
-	return new ModPlugDecoder(data.get(), ext, bufferSize);
+	return new ModPlugDecoder(data.get(), bufferSize);
 }
 
 int ModPlugDecoder::decode()
@@ -111,9 +111,9 @@ int ModPlugDecoder::decode()
 	return r;
 }
 
-bool ModPlugDecoder::seek(float s)
+bool ModPlugDecoder::seek(double s)
 {
-	ModPlug_Seek(plug, (int)(s*1000.0f));
+	ModPlug_Seek(plug, (int)(s*1000.0));
 	return true;
 }
 

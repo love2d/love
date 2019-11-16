@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ public:
 	 * Gets the number of mipmaps in this Compressed Image Data.
 	 * Includes the base image level.
 	 **/
-	int getMipmapCount(int slice = 0) const;
+	int getMipmapCount() const;
 
 	/**
 	 * Gets the number of slices (array layers, cube faces, 3D layers, etc.)

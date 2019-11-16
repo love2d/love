@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -54,12 +54,11 @@ public:
 
 	bool setMipmapSharpness(float sharpness) override;
 
-	static bool isFormatSupported(PixelFormat pixelformat);
-	static bool hasSRGBSupport();
+	static bool isFormatSupported(PixelFormat pixelformat, bool sRGB);
 
 private:
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &rect, int level, int slice) override;
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
 	void generateMipmaps() override;
 
 	void loadDefaultTexture();

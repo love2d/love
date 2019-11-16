@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,14 +28,14 @@ namespace graphics
 namespace vertex
 {
 
-static_assert(sizeof(Color) == 4, "sizeof(Color) incorrect!");
-static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color), "sizeof(STf_RGBAub) incorrect!");
-static_assert(sizeof(STPf_RGBAub) == sizeof(float)*3 + sizeof(Color), "sizeof(STPf_RGBAub) incorrect!");
+static_assert(sizeof(Color32) == 4, "sizeof(Color32) incorrect!");
+static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color32), "sizeof(STf_RGBAub) incorrect!");
+static_assert(sizeof(STPf_RGBAub) == sizeof(float)*3 + sizeof(Color32), "sizeof(STPf_RGBAub) incorrect!");
 static_assert(sizeof(XYf_STf) == sizeof(float)*2 + sizeof(float)*2, "sizeof(XYf_STf) incorrect!");
 static_assert(sizeof(XYf_STPf) == sizeof(float)*2 + sizeof(float)*3, "sizeof(XYf_STPf) incorrect!");
-static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color), "sizeof(XYf_STf_RGBAub) incorrect!");
-static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color), "sizeof(XYf_STus_RGBAub) incorrect!");
-static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color), "sizeof(XYf_STPf_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STf_RGBAub) == sizeof(float)*2 + sizeof(float)*2 + sizeof(Color32), "sizeof(XYf_STf_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STus_RGBAub) == sizeof(float)*2 + sizeof(uint16)*2 + sizeof(Color32), "sizeof(XYf_STus_RGBAub) incorrect!");
+static_assert(sizeof(XYf_STPf_RGBAub) == sizeof(float)*2 + sizeof(float)*3 + sizeof(Color32), "sizeof(XYf_STPf_RGBAub) incorrect!");
 
 size_t getFormatStride(CommonFormat format)
 {
@@ -64,6 +64,7 @@ size_t getFormatStride(CommonFormat format)
 	case CommonFormat::XYf_STPf_RGBAub:
 		return sizeof(XYf_STPf_RGBAub);
 	}
+	return 0;
 }
 
 uint32 getFormatFlags(CommonFormat format)
@@ -88,6 +89,7 @@ uint32 getFormatFlags(CommonFormat format)
 	case CommonFormat::XYf_STPf_RGBAub:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
 	}
+	return 0;
 }
 
 int getFormatPositionComponents(CommonFormat format)
@@ -109,6 +111,7 @@ int getFormatPositionComponents(CommonFormat format)
 	case CommonFormat::XYZf:
 		return 3;
 	}
+	return 0;
 }
 
 size_t getIndexDataSize(IndexDataType type)
@@ -157,6 +160,7 @@ int getIndexCount(TriangleIndexMode mode, int vertexCount)
 	case TriangleIndexMode::QUADS:
 		return vertexCount * 6 / 4;
 	}
+	return 0;
 }
 
 template <typename T>
@@ -224,56 +228,56 @@ void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount,
 
 void Attributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 {
-	uint16 stride = (uint16) getFormatStride(format);
+	setBufferLayout(bufferindex, (uint16) getFormatStride(format));
 
 	switch (format)
 	{
 	case CommonFormat::NONE:
 		break;
 	case CommonFormat::XYf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
 		break;
 	case CommonFormat::XYZf:
-		set(ATTRIB_POS, DATA_FLOAT, 3, 0, stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 3, 0, bufferindex);
 		break;
 	case CommonFormat::RGBAub:
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, 0, stride, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, 0, bufferindex);
 		break;
 	case CommonFormat::STf_RGBAub:
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, 0, stride, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2), stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::STPf_RGBAub:
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, 0, stride, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 3), stride, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, 0, bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 3), bufferindex);
 		break;
 	case CommonFormat::XYf_STf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STPf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STf_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), stride, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 4), stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 4), bufferindex);
 		break;
 	case CommonFormat::XYf_STus_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_UNORM16, 2, uint16(sizeof(float) * 2), stride, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_UNORM16, 2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STPf_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, stride, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), stride, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 5), stride, bufferindex);
+		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 5), bufferindex);
 		break;
 	}
 }
 
-static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
+static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
 {
 	{ "VertexPosition", ATTRIB_POS           },
 	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
@@ -281,7 +285,7 @@ static StringMap<VertexAttribID, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
 	{ "ConstantColor",  ATTRIB_CONSTANTCOLOR },
 };
 
-static StringMap<VertexAttribID, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
+static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
 
 static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
 {
@@ -344,12 +348,12 @@ static StringMap<Winding, WINDING_MAX_ENUM>::Entry windingEntries[] =
 
 static StringMap<Winding, WINDING_MAX_ENUM> windings(windingEntries, sizeof(windingEntries));
 
-bool getConstant(const char *in, VertexAttribID &out)
+bool getConstant(const char *in, BuiltinVertexAttribute &out)
 {
 	return attribNames.find(in, out);
 }
 
-bool getConstant(VertexAttribID in, const char *&out)
+bool getConstant(BuiltinVertexAttribute in, const char *&out)
 {
 	return attribNames.find(in, out);
 }

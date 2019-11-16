@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -60,8 +60,8 @@ static wuff_sint32 tell_callback(void *userdata, wuff_uint64 *offset)
 wuff_callback WaveDecoderCallbacks = {read_callback, seek_callback, tell_callback};
 
 
-WaveDecoder::WaveDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+WaveDecoder::WaveDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 {
 	dataFile.data = (char *) data->getData();
 	dataFile.size = data->getSize();
@@ -117,7 +117,7 @@ bool WaveDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *WaveDecoder::clone()
 {
-	return new WaveDecoder(data.get(), ext, bufferSize);
+	return new WaveDecoder(data.get(), bufferSize);
 }
 
 int WaveDecoder::decode()
@@ -143,7 +143,7 @@ int WaveDecoder::decode()
 	return (int) size;
 }
 
-bool WaveDecoder::seek(float s)
+bool WaveDecoder::seek(double s)
 {
 	int wuff_status = wuff_seek(handle, (wuff_uint64) (s * info.sample_rate));
 

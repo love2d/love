@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,8 +21,10 @@
 #include "Audio.h"
 #include "common/config.h"
 
-#ifdef LOVE_IOS
+#if defined(LOVE_IOS)
 #include "common/ios.h"
+#elif defined(LOVE_ANDROID)
+#include "common/android.h"
 #endif
 
 namespace love
@@ -30,11 +32,46 @@ namespace love
 namespace audio
 {
 
+static bool requestRecPermission = false;
+
+void setRequestRecordingPermission(bool rec)
+{
+	requestRecPermission = rec;
+}
+
+bool getRequestRecordingPermission()
+{
+	return requestRecPermission;
+}
+
+bool hasRecordingPermission()
+{
+#if defined(LOVE_ANDROID)
+	return love::android::hasRecordingPermission();
+#else
+	// Always available(?)
+	return true;
+#endif
+}
+
+void requestRecordingPermission()
+{
+#ifdef LOVE_ANDROID
+	love::android::requestRecordingPermission();
+#endif
+}
+
+void showRecordingPermissionMissingDialog()
+{
+#ifdef LOVE_ANDROID
+	love::android::showRecordingPermissionMissingDialog();
+#endif
+}
+
 bool Audio::setMixWithSystem(bool mix)
 {
 #ifdef LOVE_IOS
-	love::ios::setAudioMixWithOthers(mix);
-	return true;
+	return love::ios::setAudioMixWithOthers(mix);
 #else
 	LOVE_UNUSED(mix);
 	return false;

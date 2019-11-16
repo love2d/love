@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -135,7 +135,9 @@ public:
 	virtual const char *getSource() const = 0;
 
 	virtual bool mount(const char *archive, const char *mountpoint, bool appendToPath = false) = 0;
+	virtual bool mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath = false) = 0;
 	virtual bool unmount(const char *archive) = 0;
+	virtual bool unmount(Data *data) = 0;
 
 	/**
 	 * Creates a new file.
@@ -263,6 +265,7 @@ public:
 
 	static bool getConstant(const char *in, FileType &out);
 	static bool getConstant(FileType in, const char *&out);
+	static std::vector<std::string> getConstants(FileType);
 
 private:
 

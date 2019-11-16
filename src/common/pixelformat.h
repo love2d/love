@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -51,11 +51,11 @@ enum PixelFormat
 	PIXELFORMAT_LA8, // Same as RG8, but accessed as (L, L, L, A)
 
 	// packed formats
-	PIXELFORMAT_RGBA4,
-	PIXELFORMAT_RGB5A1,
-	PIXELFORMAT_RGB565,
-	PIXELFORMAT_RGB10A2,
-	PIXELFORMAT_RG11B10F,
+	PIXELFORMAT_RGBA4,    // LSB->MSB: [a, b, g, r]
+	PIXELFORMAT_RGB5A1,   // LSB->MSB: [a, b, g, r]
+	PIXELFORMAT_RGB565,   // LSB->MSB: [b, g, r]
+	PIXELFORMAT_RGB10A2,  // LSB->MSB: [r, g, b, a]
+	PIXELFORMAT_RG11B10F, // LSB->MSB: [r, g, b]
 
 	// depth/stencil formats
 	PIXELFORMAT_STENCIL8,
@@ -134,5 +134,10 @@ bool isPixelFormatStencil(PixelFormat format);
  * NOTE: Currently returns 0 for compressed formats.
  **/
 size_t getPixelFormatSize(PixelFormat format);
+
+/**
+ * Gets the number of color components in the given pixel format.
+ **/
+int getPixelFormatColorComponents(PixelFormat format);
 
 } // love

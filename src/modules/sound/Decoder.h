@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,7 @@ public:
 
 	static love::Type type;
 
-	Decoder(Data *data, const std::string &ext, int bufferSize);
+	Decoder(Data *data, int bufferSize);
 	virtual ~Decoder();
 
 	/**
@@ -98,7 +98,7 @@ public:
 	 * @param s The position in the stream in seconds.
 	 * @return True if success, false on fail/unsupported.
 	 **/
-	virtual bool seek(float s) = 0;
+	virtual bool seek(double s) = 0;
 
 	/**
 	 * Rewinds the stream to the start.
@@ -148,9 +148,6 @@ protected:
 	// The encoded data. This should be replaced with buffered file
 	// reads in the future.
 	StrongRef<Data> data;
-
-	// File extension.
-	std::string ext;
 
 	// When the decoder decodes data incrementally, it writes
 	// this many bytes at a time (at most).

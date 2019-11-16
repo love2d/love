@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,11 +20,15 @@
 
 // LOVE
 #include "EXRHandler.h"
-#include "common/halffloat.h"
+#include "common/floattypes.h"
 #include "common/Exception.h"
+
+// zlib (for tinyexr)
+#include <zlib.h>
 
 // tinyexr
 #define TINYEXR_IMPLEMENTATION
+#define TINYEXR_USE_MINIZ 0
 #include "libraries/tinyexr/tinyexr.h"
 
 // C
@@ -114,18 +118,26 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	EXRImage exrImage;
 	InitEXRImage(&exrImage);
 
-	EXRVersion exrVersion;
-	if (ParseEXRVersionFromMemory(&exrVersion, mem, memsize) != TINYEXR_SUCCESS)
-		throw love::Exception("Could not parse EXR image header.");
+	try
+	{
+		EXRVersion exrVersion;
+		if (ParseEXRVersionFromMemory(&exrVersion, mem, memsize) != TINYEXR_SUCCESS)
+			throw love::Exception("Could not parse EXR image header.");
 
-	if (exrVersion.multipart || exrVersion.non_image || exrVersion.tiled)
-		throw love::Exception("Multi-part, tiled, and non-image EXR files are not supported.");
+		if (exrVersion.multipart || exrVersion.non_image || exrVersion.tiled)
+			throw love::Exception("Multi-part, tiled, and non-image EXR files are not supported.");
 
-	if (ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, mem, memsize, &err) != TINYEXR_SUCCESS)
-		throw love::Exception("Could not parse EXR image header: %s", err);
+		if (ParseEXRHeaderFromMemory(&exrHeader, &exrVersion, mem, memsize, &err) != TINYEXR_SUCCESS)
+			throw love::Exception("Could not parse EXR image header: %s", err);
 
-	if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, &err) != TINYEXR_SUCCESS)
-		throw love::Exception("Could not decode EXR image: %s", err);
+		if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, memsize, &err) != TINYEXR_SUCCESS)
+			throw love::Exception("Could not decode EXR image: %s", err);
+	}
+	catch (love::Exception &)
+	{
+		FreeEXRErrorMessage(err);
+		throw;
+	}
 
 	int pixelType = exrHeader.pixel_types[0];
 
@@ -145,12 +157,12 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	{
 		img.format = PIXELFORMAT_RGBA16F;
 
-		half *rgba[4] = {nullptr};
+		float16 *rgba[4] = {nullptr};
 		getEXRChannels(exrHeader, exrImage, rgba);
 
 		try
 		{
-			img.data = (unsigned char *) loadEXRChannels(img.width, img.height, rgba, floatToHalf(1.0f));
+			img.data = (unsigned char *) loadEXRChannels(img.width, img.height, rgba, float32to16(1.0f));
 		}
 		catch (love::Exception &)
 		{

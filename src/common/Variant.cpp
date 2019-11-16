@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,19 +58,24 @@ Variant::Variant(double number)
 	data.number = number;
 }
 
-Variant::Variant(const char *string, size_t len)
+Variant::Variant(const char *str, size_t len)
 {
 	if (len <= MAX_SMALL_STRING_LENGTH)
 	{
 		type = SMALLSTRING;
-		memcpy(data.smallstring.str, string, len);
+		memcpy(data.smallstring.str, str, len);
 		data.smallstring.len = (uint8) len;
 	}
 	else
 	{
 		type = STRING;
-		data.string = new SharedString(string, len);
+		data.string = new SharedString(str, len);
 	}
+}
+
+Variant::Variant(const std::string &str)
+	: Variant(str.c_str(), str.length())
+{
 }
 
 Variant::Variant(void *lightuserdata)
@@ -181,12 +186,13 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 	case LUA_TTABLE:
 		{
 			bool success = true;
-			std::unique_ptr<std::set<const void*>> tableSetPtr;
+			std::set<const void *> topTableSet;
 			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
 
-			// If we had no tables argument, allocate one now, and store it in our unique_ptr
+			// We can use a pointer to a stack-allocated variable because it's
+			// never used after the stack-allocated variable is destroyed.
 			if (tableSet == nullptr)
-				tableSetPtr.reset(tableSet = new std::set<const void*>);
+				tableSet = &topTableSet;
 
 			// Now make sure this table wasn't already serialised
 			const void *tablePointer = lua_topointer(L, n);

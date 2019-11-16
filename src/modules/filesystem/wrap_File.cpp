@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,8 @@
 #include "common/Data.h"
 #include "common/Exception.h"
 #include "common/int.h"
+
+#include "data/wrap_DataModule.h"
 
 namespace love
 {
@@ -108,9 +110,18 @@ int w_File_isOpen(lua_State *L)
 int w_File_read(lua_State *L)
 {
 	File *file = luax_checkfile(L, 1);
-	StrongRef<Data> d = nullptr;
+	StrongRef<FileData> d = nullptr;
 
-	int64 size = (int64) luaL_optnumber(L, 2, (lua_Number) File::ALL);
+	love::data::ContainerType ctype = love::data::CONTAINER_STRING;
+
+	int startidx = 2;
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		ctype = love::data::luax_checkcontainertype(L, 2);
+		startidx = 3;
+	}
+
+	int64 size = (int64) luaL_optnumber(L, startidx, (lua_Number) File::ALL);
 
 	try
 	{
@@ -121,8 +132,13 @@ int w_File_read(lua_State *L)
 		return luax_ioError(L, "%s", e.what());
 	}
 
-	lua_pushlstring(L, (const char *) d->getData(), d->getSize());
-	lua_pushnumber(L, d->getSize());
+	if (ctype == love::data::CONTAINER_DATA)
+		luax_pushtype(L, d.get());
+	else
+		lua_pushlstring(L, (const char *) d->getData(), d->getSize());
+
+	lua_pushinteger(L, d->getSize());
+
 	return 2;
 }
 
@@ -244,6 +260,8 @@ int w_File_lines_i(lua_State *L)
 	const char *start = buffer+offset;
 	const char *end = reinterpret_cast<const char*>(memchr(start, '\n', len-offset));
 
+	bool seekBack = luax_toboolean(L, lua_upvalueindex(5));
+
 	// If there are no more lines in the buffer, keep adding more data until we
 	// found another line or EOF
 	if (!end && !file->isEOF())
@@ -259,14 +277,12 @@ int w_File_lines_i(lua_State *L)
 		// If the user has changed the position, we need to seek back first
 		int64 pos = file->tell();
 		int64 userpos = -1;
-		if (!lua_isnoneornil(L, lua_upvalueindex(4)))
+		if (seekBack)
 		{
 			userpos = pos;
 			pos = (int64) lua_tonumber(L, lua_upvalueindex(4));
 			if (userpos != pos)
 				file->seek(pos);
-			else
-				userpos = -1;
 		}
 
 		// Keep reading until newline or EOF
@@ -284,8 +300,13 @@ int w_File_lines_i(lua_State *L)
 		}
 
 		// Possibly seek back to the user position
-		if (userpos >= 0 && luax_toboolean(L, lua_upvalueindex(5)))
+		// But make sure to save our target position too
+		if (seekBack)
+		{
+			lua_pushnumber(L, file->tell());
+			lua_replace(L, lua_upvalueindex(4));
 			file->seek(userpos);
+		}
 
 		// We've now got a new buffer, replace the old one
 		luaL_pushresult(&storage);
@@ -296,7 +317,7 @@ int w_File_lines_i(lua_State *L)
 		end = reinterpret_cast<const char*>(memchr(start, '\n', len));
 	}
 
-	if (!end && file->isEOF())
+	if (!end)
 		end = buffer+len-1;
 
 	// We've found the next line, update our offset upvalue and return
@@ -330,7 +351,7 @@ int w_File_lines(lua_State *L)
 	lua_pushstring(L, ""); // buffer
 	lua_pushnumber(L, 0); // buffer offset
 	lua_pushnumber(L, 0); // File position.
-	luax_pushboolean(L, file->getMode() != File::MODE_CLOSED); // Save current file mode.
+	luax_pushboolean(L, file->getMode() != File::MODE_CLOSED); // Save current file position.
 
 	if (file->getMode() != File::MODE_READ)
 	{

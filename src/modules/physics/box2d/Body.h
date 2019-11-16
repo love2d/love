@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -76,11 +76,6 @@ public:
 	 * Create a Body at position p.
 	 **/
 	Body(World *world, b2Vec2 p, Type type);
-
-	/**
-	 * Create a Body from an extant b2Body.
-	 **/
-	Body(b2Body *b);
 
 	virtual ~Body();
 
@@ -382,6 +377,8 @@ public:
 	void setFixedRotation(bool fixed);
 	bool isFixedRotation() const;
 
+	bool isTouching(Body *other) const;
+
 	/**
 	 * Get the World this Body resides in.
 	 */
@@ -423,17 +420,6 @@ public:
 	int getUserData(lua_State *L);
 
 private:
-
-	/**
-	 * Gets a 2d vector from the arguments on the stack.
-	 **/
-	b2Vec2 getVector(lua_State *L);
-
-	/**
-	 * Pushed the x- and y-components of a vector on
-	 * the stack.
-	 **/
-	int pushVector(lua_State *L, const b2Vec2 &v);
 
 	// FIXME: This should be a weak reference, rather than being completely
 	// unowned?

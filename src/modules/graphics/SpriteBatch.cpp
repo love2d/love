@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,6 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	, color(255, 255, 255, 255)
 	, color_active(false)
 	, array_buf(nullptr)
-	, quad_indices(gfx, size)
 	, range_start(-1)
 	, range_count(-1)
 {
@@ -94,7 +93,7 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 	const Vector2 *quadpositions = quad->getVertexPositions();
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
-	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
+	// Always keep the buffer mapped when adding data (it'll be unmapped on draw.)
 	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
 	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
@@ -140,7 +139,7 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 	const Vector2 *quadpositions = quad->getVertexPositions();
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
-	// Always keep the VBO mapped when adding data (it'll be unmapped on draw.)
+	// Always keep the buffer mapped when adding data (it'll be unmapped on draw.)
 	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
 	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
 
@@ -197,13 +196,13 @@ void SpriteBatch::setColor(const Colorf &c)
 	cclamped.b = std::min(std::max(c.b, 0.0f), 1.0f);
 	cclamped.a = std::min(std::max(c.a, 0.0f), 1.0f);
 
-	this->color = toColor(cclamped);
+	this->color = toColor32(cclamped);
 }
 
 void SpriteBatch::setColor()
 {
 	color_active = false;
-	color = Color(255, 255, 255, 255);
+	color = Color32(255, 255, 255, 255);
 }
 
 Colorf SpriteBatch::getColor(bool &active) const
@@ -238,8 +237,6 @@ void SpriteBatch::setBufferSize(int newsize)
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		size_t copy_size = vertex_stride * 4 * new_next;
 		array_buf->copyTo(0, copy_size, new_array_buf, 0);
-
-		quad_indices = QuadIndices(gfx, newsize);
 	}
 	catch (love::Exception &)
 	{
@@ -331,11 +328,11 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			Shader::current->checkMainTexture(texture);
 	}
 
-	// Make sure the VBO isn't mapped when we draw (sends data to GPU if needed.)
+	// Make sure the buffer isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
 	Attributes attributes;
-	Buffers buffers;
+	BufferBindings buffers;
 
 	{
 		buffers.set(0, array_buf, 0);
@@ -360,7 +357,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		VertexAttribID builtinattrib;
+		BuiltinVertexAttribute builtinattrib;
 		if (vertex::getConstant(it.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)
@@ -369,7 +366,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			mesh->vbo->unmap();
+			mesh->vertexBuffer->unmap();
 
 			const auto &formats = mesh->getVertexFormat();
 			const auto &format = formats[it.second.index];
@@ -377,15 +374,16 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			uint16 offset = (uint16) mesh->getAttributeOffset(it.second.index);
 			uint16 stride = (uint16) mesh->getVertexStride();
 
-			attributes.set(attributeindex, format.type, format.components, offset, stride, activebuffers);
+			attributes.set(attributeindex, format.type, (uint8) format.components, offset, activebuffers);
+			attributes.setBufferLayout(activebuffers, stride);
 
-			// TODO: Ideally we want to reuse buffers with the same stride+step.
-			buffers.set(activebuffers, mesh->vbo, 0);
+			// TODO: We should reuse buffer bindings with the same buffer+stride+step.
+			buffers.set(activebuffers, mesh->vertexBuffer, 0);
 			activebuffers++;
 		}
 	}
 
-	Graphics::DrawIndexedCommand cmd(&attributes, &buffers, quad_indices.getBuffer());
+	Graphics::TempTransform transform(gfx, m);
 
 	int start = std::min(std::max(0, range_start), next - 1);
 
@@ -395,15 +393,8 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	count = std::min(count, next - start);
 
-	cmd.indexBufferOffset = quad_indices.getIndexCount(start) * quad_indices.getElementSize();
-	cmd.indexCount = (int) quad_indices.getIndexCount(count);
-	cmd.indexType = quad_indices.getType();
-	cmd.texture = texture;
-
-	Graphics::TempTransform transform(gfx, m);
-
 	if (count > 0)
-		gfx->draw(cmd);
+		gfx->drawQuads(start, count, attributes, buffers, texture);
 }
 
 } // graphics

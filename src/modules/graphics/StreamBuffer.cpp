@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,7 @@ namespace graphics
 
 StreamBuffer::StreamBuffer(BufferType mode, size_t size)
 	: bufferSize(size)
+	, frameGPUReadOffset(0)
 	, mode(mode)
 {
 }

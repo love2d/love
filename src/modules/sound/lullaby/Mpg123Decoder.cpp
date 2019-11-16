@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -107,8 +107,8 @@ static void cleanup_callback(void *)
 
 bool Mpg123Decoder::inited = false;
 
-Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+Mpg123Decoder::Mpg123Decoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, decoder_file(data)
 	, handle(0)
 	, channels(MPG123_STEREO)
@@ -158,6 +158,12 @@ Mpg123Decoder::Mpg123Decoder(Data *data, const std::string &ext, int bufferSize)
 		mpg123_format(handle, rate, channels, MPG123_ENC_SIGNED_16);
 
 		sampleRate = (int) rate;
+
+		// Force a read, so we can determine if it's actually an mp3
+		struct mpg123_frameinfo info;
+		ret = mpg123_info(handle, &info);
+		if (ret != MPG123_OK)
+			throw love::Exception("Could not read mp3 data.");
 	}
 	catch (love::Exception &)
 	{
@@ -196,7 +202,7 @@ void Mpg123Decoder::quit()
 
 love::sound::Decoder *Mpg123Decoder::clone()
 {
-	return new Mpg123Decoder(data.get(), ext, bufferSize);
+	return new Mpg123Decoder(data.get(), bufferSize);
 }
 
 int Mpg123Decoder::decode()
@@ -226,7 +232,7 @@ int Mpg123Decoder::decode()
 	return size;
 }
 
-bool Mpg123Decoder::seek(float s)
+bool Mpg123Decoder::seek(double s)
 {
 	off_t offset = (off_t) (s * (double) sampleRate);
 

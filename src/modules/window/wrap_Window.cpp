@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -54,23 +54,7 @@ static const char *settingName(Window::Setting setting)
 
 static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 {
-	luaL_checktype(L, idx, LUA_TTABLE);
-
-	// We want to error for invalid / misspelled window attributes.
-	lua_pushnil(L);
-	while (lua_next(L, idx))
-	{
-		if (lua_type(L, -2) != LUA_TSTRING)
-			return luax_typerror(L, -2, "string");
-
-		const char *key = luaL_checkstring(L, -2);
-		Window::Setting setting;
-
-		if (!Window::getConstant(key, setting))
-			return luax_enumerror(L, "window setting", key);
-
-		lua_pop(L, 1);
-	}
+	luax_checktablefields<Window::Setting>(L, idx, "window setting", Window::getConstant);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_FULLSCREEN_TYPE));
 	if (!lua_isnoneornil(L, -1))
@@ -92,6 +76,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
 	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
 	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
+	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
 	if (lua_isnumber(L, -1))
@@ -219,6 +204,9 @@ int w_getMode(lua_State *L)
 	luax_pushboolean(L, settings.highdpi);
 	lua_setfield(L, -2, settingName(Window::SETTING_HIGHDPI));
 
+	luax_pushboolean(L, settings.usedpiscale);
+	lua_setfield(L, -2, settingName(Window::SETTING_USE_DPISCALE));
+
 	lua_pushnumber(L, settings.refreshrate);
 	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));
 
@@ -229,6 +217,25 @@ int w_getMode(lua_State *L)
 	lua_setfield(L, -2, settingName(Window::SETTING_Y));
 
 	return 3;
+}
+
+int w_getDisplayOrientation(lua_State *L)
+{
+	int displayindex = 0;
+	if (!lua_isnoneornil(L, 1))
+		displayindex = (int) luaL_checkinteger(L, 1) - 1;
+	else
+	{
+		int x, y;
+		instance()->getPosition(x, y, displayindex);
+	}
+
+	const char *orientationstr = nullptr;
+	if (!Window::getConstant(instance()->getDisplayOrientation(displayindex), orientationstr))
+		return luaL_error(L, "Unknown display orientation type.");
+
+	lua_pushstring(L, orientationstr);
+	return 1;
 }
 
 int w_getFullscreenModes(lua_State *L)
@@ -362,6 +369,16 @@ int w_getPosition(lua_State *L)
 	return 3;
 }
 
+int w_getSafeArea(lua_State *L)
+{
+	Rect area = instance()->getSafeArea();
+	lua_pushnumber(L, area.x);
+	lua_pushnumber(L, area.y);
+	lua_pushnumber(L, area.w);
+	lua_pushnumber(L, area.h);
+	return 4;
+}
+
 int w_setIcon(lua_State *L)
 {
 	image::ImageData *i = luax_checktype<image::ImageData>(L, 1);
@@ -375,6 +392,23 @@ int w_getIcon(lua_State *L)
 {
 	image::ImageData *i = instance()->getIcon();
 	luax_pushtype(L, i);
+	return 1;
+}
+
+int w_setVSync(lua_State *L)
+{
+	int vsync = 0;
+	if (lua_type(L, 1) == LUA_TBOOLEAN)
+		vsync = lua_toboolean(L, 1);
+	else
+		vsync = (int)luaL_checkinteger(L, 1);
+	instance()->setVSync(vsync);
+	return 0;
+}
+
+int w_getVSync(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getVSync());
 	return 1;
 }
 
@@ -424,6 +458,12 @@ int w_isVisible(lua_State *L)
 int w_getDPIScale(lua_State *L)
 {
 	lua_pushnumber(L, instance()->getDPIScale());
+	return 1;
+}
+
+int w_getNativeDPIScale(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getNativeDPIScale());
 	return 1;
 }
 
@@ -578,6 +618,7 @@ static const luaL_Reg functions[] =
 	{ "setMode", w_setMode },
 	{ "updateMode", w_updateMode },
 	{ "getMode", w_getMode },
+	{ "getDisplayOrientation", w_getDisplayOrientation },
 	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },
 	{ "getFullscreen", w_getFullscreen },
@@ -586,8 +627,11 @@ static const luaL_Reg functions[] =
 	{ "getDesktopDimensions", w_getDesktopDimensions },
 	{ "setPosition", w_setPosition },
 	{ "getPosition", w_getPosition },
+	{ "getSafeArea", w_getSafeArea },
 	{ "setIcon", w_setIcon },
 	{ "getIcon", w_getIcon },
+	{ "setVSync", w_setVSync },
+	{ "getVSync", w_getVSync },
 	{ "setDisplaySleepEnabled", w_setDisplaySleepEnabled },
 	{ "isDisplaySleepEnabled", w_isDisplaySleepEnabled },
 	{ "setTitle", w_setTitle },
@@ -596,6 +640,7 @@ static const luaL_Reg functions[] =
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
 	{ "getDPIScale", w_getDPIScale },
+	{ "getNativeDPIScale", w_getNativeDPIScale },
 	{ "toPixels", w_toPixels },
 	{ "fromPixels", w_fromPixels },
 	{ "minimize", w_minimize },

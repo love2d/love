@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -90,11 +90,11 @@ float Source::getVolume() const
 	return volume;
 }
 
-void Source::seek(float, Source::Unit)
+void Source::seek(double, Source::Unit)
 {
 }
 
-float Source::tell(Source::Unit)
+double Source::tell(Source::Unit)
 {
 	return 0.0f;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,7 @@
 #include "OpenGL.h"
 
 #include "Shader.h"
+#include "Canvas.h"
 #include "common/Exception.h"
 
 #include "graphics/Graphics.h"
@@ -95,6 +96,7 @@ OpenGL::OpenGL()
 	: stats()
 	, contextInitialized(false)
 	, pixelShaderHighpSupported(false)
+	, baseVertexSupported(false)
 	, maxAnisotropy(1.0f)
 	, max2DTextureSize(0)
 	, max3DTextureSize(0)
@@ -146,6 +148,27 @@ bool OpenGL::initContext()
 	}
 #endif
 
+#ifdef LOVE_WINDOWS
+	if (getVendor() == VENDOR_INTEL && gl.isCoreProfile())
+	{
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "HD Graphics 4000") || strstr(device, "HD Graphics 2500"))
+			bugs.clientWaitSyncStalls = true;
+	}
+#endif
+
+#ifdef LOVE_WINDOWS
+	if (getVendor() == VENDOR_AMD)
+	{
+		// Radeon HD drivers switched from "ATI Radeon" to "AMD Radeon" around
+		// the 7000 series. We'll assume this bug doesn't affect those newer
+		// GPUs / drivers.
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "ATI Radeon HD ") || strstr(device, "ATI Mobility Radeon HD"))
+			bugs.texStorageBreaksSubImage = true;
+	}
+#endif
+
 	contextInitialized = true;
 
 	return true;
@@ -166,13 +189,9 @@ void OpenGL::setupContext()
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
 
 	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
+	state.instancedAttribArrays = 0;
 
-	if (GLAD_ES_VERSION_3_0 || isCoreProfile())
-		state.instancedAttribArrays = state.enabledAttribArrays;
-	else
-		state.instancedAttribArrays = 0;
-
-	setVertexAttributes(vertex::Attributes(), vertex::Buffers());
+	setVertexAttributes(vertex::Attributes(), vertex::BufferBindings());
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -242,6 +261,13 @@ void OpenGL::setupContext()
 	createDefaultTexture();
 
 	contextInitialized = true;
+
+#ifdef LOVE_ANDROID
+	// This can't be done in initContext with the rest of the bug checks because
+	// Canvas::isFormatSupported relies on state initialized here / after init.
+	if (GLAD_ES_VERSION_3_0 && !Canvas::isFormatSupported(PIXELFORMAT_R8))
+		bugs.brokenR8PixelFormat = true;
+#endif
 }
 
 void OpenGL::deInitContext()
@@ -272,7 +298,7 @@ void OpenGL::initVendor()
 
 	// http://feedback.wildfiregames.com/report/opengl/feature/GL_VENDOR
 	// http://stackoverflow.com/questions/2093594/opengl-extensions-available-on-different-android-devices
-	// http://opengl.gpuinfo.org/gl_stats_caps_single.php?listreportsbycap=GL_VENDOR
+	// https://opengl.gpuinfo.org/displaycapability.php?name=GL_VENDOR
 	if (strstr(vstr, "ATI Technologies") || strstr(vstr, "AMD") || strstr(vstr, "Advanced Micro Devices"))
 		vendor = VENDOR_AMD;
 	else if (strstr(vstr, "NVIDIA"))
@@ -375,6 +401,32 @@ void OpenGL::initOpenGLFunctions()
 		fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
 		fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
 	}
+
+	if (!GLAD_VERSION_3_2 && !GLAD_ES_VERSION_3_2 && !GLAD_ARB_draw_elements_base_vertex)
+	{
+		if (GLAD_OES_draw_elements_base_vertex)
+		{
+			fp_glDrawElementsBaseVertex = fp_glDrawElementsBaseVertexOES;
+
+			if (GLAD_ES_VERSION_3_0)
+			{
+				fp_glDrawRangeElementsBaseVertex = fp_glDrawRangeElementsBaseVertexOES;
+				fp_glDrawElementsInstancedBaseVertex = fp_glDrawElementsInstancedBaseVertexOES;
+			}
+
+		}
+		else if (GLAD_EXT_draw_elements_base_vertex)
+		{
+			fp_glDrawElementsBaseVertex = fp_glDrawElementsBaseVertexEXT;
+
+			if (GLAD_ES_VERSION_3_0)
+			{
+				fp_glDrawRangeElementsBaseVertex = fp_glDrawRangeElementsBaseVertexEXT;
+				fp_glDrawElementsInstancedBaseVertex = fp_glDrawElementsInstancedBaseVertexEXT;
+			}
+
+		}
+	}
 }
 
 void OpenGL::initMaxValues()
@@ -388,6 +440,9 @@ void OpenGL::initMaxValues()
 	}
 	else
 		pixelShaderHighpSupported = true;
+
+	baseVertexSupported = GLAD_VERSION_3_2 || GLAD_ES_VERSION_3_2 || GLAD_ARB_draw_elements_base_vertex
+		|| GLAD_OES_draw_elements_base_vertex || GLAD_EXT_draw_elements_base_vertex;
 
 	// We'll need this value to clamp anisotropy.
 	if (GLAD_EXT_texture_filter_anisotropic)
@@ -638,49 +693,60 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	}
 }
 
-void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::Buffers &buffers)
+void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::BufferBindings &buffers)
 {
-	uint32 enablediff = attributes.enablebits ^ state.enabledAttribArrays;
-	uint32 instancediff = attributes.instancebits ^ state.instancedAttribArrays;
+	uint32 enablediff = attributes.enableBits ^ state.enabledAttribArrays;
+	uint32 instanceattribbits = 0;
+	uint32 allbits = attributes.enableBits | state.enabledAttribArrays;
 
-	for (uint32 i = 0; i < vertex::Attributes::MAX; i++)
+	uint32 i = 0;
+	while (allbits)
 	{
 		uint32 bit = 1u << i;
 
 		if (enablediff & bit)
 		{
-			if (attributes.enablebits & bit)
+			if (attributes.enableBits & bit)
 				glEnableVertexAttribArray(i);
 			else
 				glDisableVertexAttribArray(i);
 		}
 
-		if (instancediff & bit)
-			glVertexAttribDivisor(i, (attributes.instancebits & bit) != 0 ? 1 : 0);
-
-		if (attributes.enablebits & bit)
+		if (attributes.enableBits & bit)
 		{
 			const auto &attrib = attributes.attribs[i];
-			const auto &bufferinfo = buffers.info[attrib.bufferindex];
+			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
+			const auto &bufferinfo = buffers.info[attrib.bufferIndex];
+
+			uint32 bufferbit = 1u << attrib.bufferIndex;
+			uint32 divisor = (attributes.instanceBits & bufferbit) != 0 ? 1 : 0;
+			uint32 divisorbit = divisor << i;
+			instanceattribbits |= divisorbit;
+
+			if ((state.instancedAttribArrays & bit) ^ divisorbit)
+				glVertexAttribDivisor(i, divisor);
 
 			GLboolean normalized = GL_FALSE;
 			GLenum gltype = getGLVertexDataType(attrib.type, normalized);
 
-			const void *offsetpointer = BUFFER_OFFSET(bufferinfo.offset + attrib.offsetfromvertex);
+			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
 			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
-			glVertexAttribPointer(i, attrib.components, gltype, normalized, attrib.stride, offsetpointer);
+			glVertexAttribPointer(i, attrib.components, gltype, normalized, layout.stride, offsetpointer);
 		}
+
+		i++;
+		allbits >>= 1;
 	}
 
-	state.enabledAttribArrays = attributes.enablebits;
-	state.instancedAttribArrays = attributes.instancebits;
+	state.enabledAttribArrays = attributes.enableBits;
+	state.instancedAttribArrays = instanceattribbits | (state.instancedAttribArrays & (~attributes.enableBits));
 
 	// glDisableVertexAttribArray will make the constant value for a vertex
 	// attribute undefined. We rely on the per-vertex color attribute being
 	// white when no per-vertex color is used, so we set it here.
 	// FIXME: Is there a better place to do this?
-	if ((enablediff & ATTRIBFLAG_COLOR) && !(attributes.enablebits & ATTRIBFLAG_COLOR))
+	if ((enablediff & ATTRIBFLAG_COLOR) && !(attributes.enableBits & ATTRIBFLAG_COLOR))
 		glVertexAttrib4f(ATTRIB_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
@@ -1129,6 +1195,9 @@ bool OpenGL::isTexStorageSupported()
 		supportsTexStorage = true;
 #endif
 
+	if (gl.bugs.texStorageBreaksSubImage)
+		supportsTexStorage = false;
+
 	return supportsTexStorage;
 }
 
@@ -1175,6 +1244,11 @@ bool OpenGL::isDepthCompareSampleSupported() const
 bool OpenGL::isSamplerLODBiasSupported() const
 {
 	return GLAD_VERSION_1_4;
+}
+
+bool OpenGL::isBaseVertexSupported() const
+{
+	return baseVertexSupported;
 }
 
 int OpenGL::getMax2DTextureSize() const
@@ -1256,7 +1330,8 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	switch (pixelformat)
 	{
 	case PIXELFORMAT_R8:
-		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
+		if ((GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
+			&& !gl.bugs.brokenR8PixelFormat)
 		{
 			f.internalformat = GL_R8;
 			f.externalformat = GL_RED;
@@ -1586,7 +1661,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		break;
 
 	default:
-		printf("Unhandled pixel format when converting to OpenGL enums!");
+		printf("Unhandled pixel format %d when converting to OpenGL enums!", pixelformat);
 		break;
 	}
 
@@ -1646,7 +1721,9 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		if (rendertarget)
 			return false;
 		else
-			return (GLAD_VERSION_1_1 && GLAD_EXT_texture_rg) || (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg));
+			return GLAD_VERSION_3_0
+				|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
+				|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg));
 	case PIXELFORMAT_RGBA16:
 		if (rendertarget)
 			return false;

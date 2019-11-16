@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,11 @@
 
 #ifdef LOVE_IOS
 
+#include "common/math.h"
+
 #include <string>
+
+struct SDL_Window;
 
 namespace love
 {
@@ -67,12 +71,18 @@ void vibrate();
 /**
  * Enable mix mode (e.g. with background music apps) and playback with a muted device.
  **/
-void setAudioMixWithOthers(bool mixEnabled);
+bool setAudioMixWithOthers(bool mixEnabled);
 
 /**
  * Returns whether another application is playing audio.
  **/
 bool hasBackgroundMusic();
+
+/**
+ * Gets the area in the window that is safe for UI to render to (not covered by
+ * the status bar, notch, etc.)
+ **/
+Rect getSafeArea(SDL_Window *window);
 
 } // ios
 } // love

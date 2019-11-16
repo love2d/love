@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -17,34 +17,27 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  **/
- 
-#include "Memoizer.h"
 
-#include <unordered_map>
+#pragma once
+
+#include "int.h"
 
 namespace love
 {
 
-static std::unordered_map<void *, void *> objectMap;
+typedef uint16 float16;
+typedef uint16 float11;
+typedef uint16 float10;
 
-void Memoizer::add(void *key, void *val)
-{
-	objectMap[key] = val;
-}
+void float16Init();
 
-void Memoizer::remove(void *key)
-{
-	objectMap.erase(key);
-}
+float float16to32(float16 f);
+float16 float32to16(float f);
 
-void *Memoizer::find(void *key)
-{
-	auto it = objectMap.find(key);
+float float11to32(float11 f);
+float11 float32to11(float f);
 
-	if (it != objectMap.end())
-		return it->second;
-	else
-		return nullptr;
-}
+float float10to32(float10 f);
+float10 float32to10(float f);
 
 } // love

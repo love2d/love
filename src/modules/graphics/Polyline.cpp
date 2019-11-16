@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -241,7 +241,7 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 	}
 
 	// cramers rule
-	Vector2 nt= t.getNormal(hw / len_t);
+	Vector2 nt = t.getNormal(hw / len_t);
 	float lambda = Vector2::cross((nt - ns), t) / det;
 	Vector2 d = ns + s * lambda;
 
@@ -286,7 +286,7 @@ void Polyline::render_overdraw(const std::vector<Vector2> &normals, float pixel_
 	{
 		size_t k = vertex_count - i - 1;
 		overdraw[vertex_count + i]   = vertices[k];
-		overdraw[vertex_count + i+1] = vertices[k] + normals[k] * (pixel_size / normals[i].getLength());
+		overdraw[vertex_count + i+1] = vertices[k] + normals[k] * (pixel_size / normals[k].getLength());
 	}
 
 	// if not looping, the outer overdraw vertices need to be displaced
@@ -367,51 +367,75 @@ Polyline::~Polyline()
 
 void Polyline::draw(love::graphics::Graphics *gfx)
 {
-	int total_vertex_count = (int) vertex_count;
-	if (overdraw)
-		total_vertex_count = (int) (overdraw_vertex_start + overdraw_vertex_count);
-
 	const Matrix4 &t = gfx->getTransform();
 	bool is2D = t.isAffine2DTransform();
+	Color32 curcolor = toColor32(gfx->getColor());
 
-	Graphics::StreamDrawCommand cmd;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-	cmd.formats[1] = vertex::CommonFormat::RGBAub;
-	cmd.indexMode = triangle_mode;
-	cmd.vertexCount = total_vertex_count;
+	int overdraw_start = (int) overdraw_vertex_start;
+	int overdraw_count = (int) overdraw_vertex_count;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
-
-	if (is2D)
-		t.transformXY((Vector2 *) data.stream[0], vertices, total_vertex_count);
-	else
-		t.transformXY0((Vector3 *) data.stream[0], vertices, total_vertex_count);
-
-	Color curcolor = toColor(gfx->getColor());
-	Color *colordata = (Color *) data.stream[1];
-
-	for (int i = 0; i < (int) vertex_count; i++)
-		colordata[i] = curcolor;
-
+	int total_vertex_count = (int) vertex_count;
 	if (overdraw)
-		fill_color_array(curcolor, colordata + overdraw_vertex_start);
+		total_vertex_count = overdraw_start + overdraw_count;
+
+	// love's automatic batching can only deal with < 65k vertices per draw.
+	// uint16_max - 3 is evenly divisible by 6 (needed for quads mode).
+	int maxvertices = LOVE_UINT16_MAX - 3;
+
+	int advance = maxvertices;
+	if (triangle_mode == vertex::TriangleIndexMode::STRIP)
+		advance -= 2;
+
+	for (int vertex_start = 0; vertex_start < total_vertex_count; vertex_start += advance)
+	{
+		const Vector2 *verts = vertices + vertex_start;
+
+		Graphics::StreamDrawCommand cmd;
+		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+		cmd.formats[1] = vertex::CommonFormat::RGBAub;
+		cmd.indexMode = triangle_mode;
+		cmd.vertexCount = std::min(maxvertices, total_vertex_count - vertex_start);
+
+		Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
+
+		if (is2D)
+			t.transformXY((Vector2 *) data.stream[0], verts, cmd.vertexCount);
+		else
+			t.transformXY0((Vector3 *) data.stream[0], verts, cmd.vertexCount);
+
+		Color32 *colordata = (Color32 *) data.stream[1];
+
+		// Constant vertex color up to the overdraw vertices.
+		for (int i = 0; i < std::min(cmd.vertexCount, (int) vertex_count - vertex_start); i++)
+			colordata[i] = curcolor;
+
+		int colorcount = 0;
+		if (overdraw)
+			colorcount = std::min(cmd.vertexCount, overdraw_count - (vertex_start - overdraw_start));
+
+		if (colorcount > 0)
+		{
+			Color32 *colors = colordata + std::max(0, (overdraw_start - vertex_start));
+			fill_color_array(curcolor, colors, colorcount);
+		}
+	}
 }
 
-void Polyline::fill_color_array(Color constant_color, Color *colors)
+void Polyline::fill_color_array(Color32 constant_color, Color32 *colors, int count)
 {
-	for (size_t i = 0; i < overdraw_vertex_count; ++i)
+	for (int i = 0; i < count; ++i)
 	{
-		Color c = constant_color;
+		Color32 c = constant_color;
 		c.a *= (i+1) % 2; // avoids branching. equiv to if (i%2 == 1) c.a = 0;
 		colors[i] = c;
 	}
 }
 
-void NoneJoinPolyline::fill_color_array(Color constant_color, Color *colors)
+void NoneJoinPolyline::fill_color_array(Color32 constant_color, Color32 *colors, int count)
 {
-	for (size_t i = 0; i < overdraw_vertex_count; ++i)
+	for (int i = 0; i < count; ++i)
 	{
-		Color c = constant_color;
+		Color32 c = constant_color;
 		c.a *= (i & 3) < 2; // if (i % 4 == 2 || i % 4 == 3) c.a = 0
 		colors[i] = c;
 	}

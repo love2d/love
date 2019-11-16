@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@ namespace love
 namespace graphics
 {
 
-static const char *getBuiltinAttribName(VertexAttribID attribid)
+static const char *getBuiltinAttribName(BuiltinVertexAttribute attribid)
 {
 	const char *name = "";
 	vertex::getConstant(attribid, name);
@@ -61,10 +61,10 @@ love::Type Mesh::type("Mesh", &Drawable::type);
 
 Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
-	, vbo(nullptr)
+	, vertexBuffer(nullptr)
 	, vertexCount(0)
 	, vertexStride(0)
-	, ibo(nullptr)
+	, indexBuffer(nullptr)
 	, useIndexBuffer(false)
 	, indexCount(0)
 	, indexDataType(INDEX_UINT16)
@@ -81,17 +81,17 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vbo = gfx->newBuffer(datasize, data, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	vertexBuffer = gfx->newBuffer(datasize, data, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
 
 Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
 	: vertexFormat(vertexformat)
-	, vbo(nullptr)
+	, vertexBuffer(nullptr)
 	, vertexCount((size_t) vertexcount)
 	, vertexStride(0)
-	, ibo(nullptr)
+	, indexBuffer(nullptr)
 	, useIndexBuffer(false)
 	, indexCount(0)
 	, indexDataType(vertex::getIndexDataTypeFromMax(vertexcount))
@@ -107,20 +107,20 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vbo = gfx->newBuffer(buffersize, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	vertexBuffer = gfx->newBuffer(buffersize, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
 
 	// Initialize the buffer's contents to 0.
-	memset(vbo->map(), 0, buffersize);
-	vbo->setMappedRangeModified(0, vbo->getSize());
-	vbo->unmap();
+	memset(vertexBuffer->map(), 0, buffersize);
+	vertexBuffer->setMappedRangeModified(0, vertexBuffer->getSize());
+	vertexBuffer->unmap();
 
 	vertexScratchBuffer = new char[vertexStride];
 }
 
 Mesh::~Mesh()
 {
-	delete vbo;
-	delete ibo;
+	delete vertexBuffer;
+	delete indexBuffer;
 	delete vertexScratchBuffer;
 
 	for (const auto &attrib : attachedAttributes)
@@ -184,10 +184,10 @@ void Mesh::setVertex(size_t vertindex, const void *data, size_t datasize)
 	size_t offset = vertindex * vertexStride;
 	size_t size = std::min(datasize, vertexStride);
 
-	uint8 *bufferdata = (uint8 *) vbo->map();
+	uint8 *bufferdata = (uint8 *) vertexBuffer->map();
 	memcpy(bufferdata + offset, data, size);
 
-	vbo->setMappedRangeModified(offset, size);
+	vertexBuffer->setMappedRangeModified(offset, size);
 }
 
 size_t Mesh::getVertex(size_t vertindex, void *data, size_t datasize)
@@ -198,8 +198,8 @@ size_t Mesh::getVertex(size_t vertindex, void *data, size_t datasize)
 	size_t offset = vertindex * vertexStride;
 	size_t size = std::min(datasize, vertexStride);
 
-	// We're relying on vbo->map() returning read/write data... ew.
-	const uint8 *bufferdata = (const uint8 *) vbo->map();
+	// We're relying on map() returning read/write data... ew.
+	const uint8 *bufferdata = (const uint8 *) vertexBuffer->map();
 	memcpy(data, bufferdata + offset, size);
 
 	return size;
@@ -221,10 +221,10 @@ void Mesh::setVertexAttribute(size_t vertindex, int attribindex, const void *dat
 	size_t offset = vertindex * vertexStride + getAttributeOffset(attribindex);
 	size_t size = std::min(datasize, attributeSizes[attribindex]);
 
-	uint8 *bufferdata = (uint8 *) vbo->map();
+	uint8 *bufferdata = (uint8 *) vertexBuffer->map();
 	memcpy(bufferdata + offset, data, size);
 
-	vbo->setMappedRangeModified(offset, size);
+	vertexBuffer->setMappedRangeModified(offset, size);
 }
 
 size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, size_t datasize)
@@ -238,8 +238,8 @@ size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, s
 	size_t offset = vertindex * vertexStride + getAttributeOffset(attribindex);
 	size_t size = std::min(datasize, attributeSizes[attribindex]);
 
-	// We're relying on vbo->map() returning read/write data... ew.
-	const uint8 *bufferdata = (const uint8 *) vbo->map();
+	// We're relying on map() returning read/write data... ew.
+	const uint8 *bufferdata = (const uint8 *) vertexBuffer->map();
 	memcpy(data, bufferdata + offset, size);
 
 	return size;
@@ -363,21 +363,21 @@ bool Mesh::detachAttribute(const std::string &name)
 
 void *Mesh::mapVertexData()
 {
-	return vbo->map();
+	return vertexBuffer->map();
 }
 
 void Mesh::unmapVertexData(size_t modifiedoffset, size_t modifiedsize)
 {
-	vbo->setMappedRangeModified(modifiedoffset, modifiedsize);
-	vbo->unmap();
+	vertexBuffer->setMappedRangeModified(modifiedoffset, modifiedsize);
+	vertexBuffer->unmap();
 }
 
 void Mesh::flush()
 {
-	vbo->unmap();
+	vertexBuffer->unmap();
 
-	if (ibo != nullptr)
-		ibo->unmap();
+	if (indexBuffer != nullptr)
+		indexBuffer->unmap();
 }
 
 /**
@@ -406,25 +406,25 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	// Calculate the size in bytes of the index buffer data.
 	size_t size = map.size() * vertex::getIndexDataSize(datatype);
 
-	if (ibo && size > ibo->getSize())
+	if (indexBuffer && size > indexBuffer->getSize())
 	{
-		delete ibo;
-		ibo = nullptr;
+		delete indexBuffer;
+		indexBuffer = nullptr;
 	}
 
-	if (!ibo && size > 0)
+	if (!indexBuffer && size > 0)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		ibo = gfx->newBuffer(size, nullptr, BUFFER_INDEX, vbo->getUsage(), Buffer::MAP_READ);
+		indexBuffer = gfx->newBuffer(size, nullptr, BUFFER_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
 	}
 
 	useIndexBuffer = true;
 	indexCount = map.size();
 
-	if (!ibo || indexCount == 0)
+	if (!indexBuffer || indexCount == 0)
 		return;
 
-	Buffer::Mapper ibomap(*ibo);
+	Buffer::Mapper ibomap(*indexBuffer);
 
 	// Fill the buffer with the index values from the vector.
 	switch (datatype)
@@ -443,24 +443,24 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 
 void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasize)
 {
-	if (ibo && datasize > ibo->getSize())
+	if (indexBuffer && datasize > indexBuffer->getSize())
 	{
-		delete ibo;
-		ibo = nullptr;
+		delete indexBuffer;
+		indexBuffer = nullptr;
 	}
 
-	if (!ibo && datasize > 0)
+	if (!indexBuffer && datasize > 0)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		ibo = gfx->newBuffer(datasize, nullptr, BUFFER_INDEX, vbo->getUsage(), Buffer::MAP_READ);
+		indexBuffer = gfx->newBuffer(datasize, nullptr, BUFFER_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
 	}
 
 	indexCount = datasize / vertex::getIndexDataSize(datatype);
 
-	if (!ibo || indexCount == 0)
+	if (!indexBuffer || indexCount == 0)
 		return;
 
-	Buffer::Mapper ibomap(*ibo);
+	Buffer::Mapper ibomap(*indexBuffer);
 	memcpy(ibomap.get(), data, datasize);
 
 	useIndexBuffer = true;
@@ -491,11 +491,11 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 	map.clear();
 	map.reserve(indexCount);
 
-	if (!ibo || indexCount == 0)
+	if (!indexBuffer || indexCount == 0)
 		return true;
 
 	// We unmap the buffer in Mesh::draw, Mesh::setVertexMap, and Mesh::flush.
-	void *buffer = ibo->map();
+	void *buffer = indexBuffer->map();
 
 	// Fill the vector from the buffer.
 	switch (indexDataType)
@@ -588,7 +588,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		Shader::current->checkMainTexture(texture);
 
 	vertex::Attributes attributes;
-	vertex::Buffers buffers;
+	vertex::BufferBindings buffers;
 
 	int activebuffers = 0;
 
@@ -602,7 +602,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		VertexAttribID builtinattrib;
+		BuiltinVertexAttribute builtinattrib;
 		if (vertex::getConstant(attrib.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)
@@ -611,7 +611,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			mesh->vbo->unmap();
+			mesh->vertexBuffer->unmap();
 
 			const auto &formats = mesh->getVertexFormat();
 			const auto &format = formats[attrib.second.index];
@@ -619,10 +619,11 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 			uint16 offset = (uint16) mesh->getAttributeOffset(attrib.second.index);
 			uint16 stride = (uint16) mesh->getVertexStride();
 
-			attributes.set(attributeindex, format.type, format.components, offset, stride, activebuffers, attrib.second.step);
+			attributes.set(attributeindex, format.type, (uint8) format.components, offset, activebuffers);
+			attributes.setBufferLayout(activebuffers, stride, attrib.second.step);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.
-			buffers.set(activebuffers, mesh->vbo, 0);
+			buffers.set(activebuffers, mesh->vertexBuffer, 0);
 			activebuffers++;
 		}
 	}
@@ -633,12 +634,12 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 	Graphics::TempTransform transform(gfx, m);
 
-	if (useIndexBuffer && ibo != nullptr && indexCount > 0)
+	if (useIndexBuffer && indexBuffer != nullptr && indexCount > 0)
 	{
 		// Make sure the index buffer isn't mapped (sends data to GPU if needed.)
-		ibo->unmap();
+		indexBuffer->unmap();
 
-		Graphics::DrawIndexedCommand cmd(&attributes, &buffers, ibo);
+		Graphics::DrawIndexedCommand cmd(&attributes, &buffers, indexBuffer);
 
 		cmd.primitiveType = primitiveType;
 		cmd.indexType = indexDataType;

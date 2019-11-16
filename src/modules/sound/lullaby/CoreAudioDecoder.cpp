@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,8 +63,8 @@ SInt64 getSizeFunc(void *inClientData)
 }
 } // anonymous namespace
 
-CoreAudioDecoder::CoreAudioDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+CoreAudioDecoder::CoreAudioDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, audioFile(nullptr)
 	, extAudioFile(nullptr)
 	, inputInfo()
@@ -195,7 +195,7 @@ bool CoreAudioDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *CoreAudioDecoder::clone()
 {
-	return new CoreAudioDecoder(data.get(), ext, bufferSize);
+	return new CoreAudioDecoder(data.get(), bufferSize);
 }
 
 int CoreAudioDecoder::decode()
@@ -227,7 +227,7 @@ int CoreAudioDecoder::decode()
 	return size;
 }
 
-bool CoreAudioDecoder::seek(float s)
+bool CoreAudioDecoder::seek(double s)
 {
 	OSStatus err = ExtAudioFileSeek(extAudioFile, (SInt64) (s * inputInfo.mSampleRate));
 

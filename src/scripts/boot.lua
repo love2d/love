@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2006-2017 LOVE Development Team
+Copyright (c) 2006-2019 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -62,7 +62,7 @@ function love.path.abs(p)
 end
 
 -- Converts any path into a full path.
-function love.path.getfull(p)
+function love.path.getFull(p)
 
 	if love.path.abs(p) then
 		return love.path.normalslashes(p)
@@ -272,6 +272,9 @@ function love.createhandlers()
 			collectgarbage()
 			collectgarbage()
 		end,
+		displayrotated = function (display, orient)
+			if love.displayrotated then return love.displayrotated(display, orient) end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)
@@ -287,6 +290,7 @@ local function uridecode(s)
 end
 
 local no_game_code = false
+local invalid_game_path = nil
 
 -- This can't be overridden.
 function love.boot()
@@ -302,6 +306,9 @@ function love.boot()
 		-- This shouldn't happen, but just in case we'll fall back to arg0.
 		exepath = arg0
 	end
+
+	no_game_code = false
+	invalid_game_path = nil
 
 	-- Is this one of those fancy "fused" games?
 	local can_has_game = pcall(love.filesystem.setSource, exepath)
@@ -330,8 +337,12 @@ function love.boot()
 			nouri = uridecode(nouri:sub(8))
 		end
 
-		local full_source =  love.path.getfull(nouri)
+		local full_source = love.path.getFull(nouri)
 		can_has_game = pcall(love.filesystem.setSource, full_source)
+
+		if not can_has_game then
+			invalid_game_path = full_source
+		end
 
 		-- Use the name of the source .love as the identity for now.
 		identity = love.path.leaf(full_source)
@@ -390,6 +401,7 @@ function love.init()
 			resizable = false,
 			centered = true,
 			highdpi = false,
+			usedpiscale = true,
 		},
 		modules = {
 			data = true,
@@ -413,6 +425,7 @@ function love.init()
 		},
 		audio = {
 			mixwithsystem = true, -- Only relevant for Android / iOS.
+			mic = false, -- Only relevant for Android.
 		},
 		console = false, -- Only relevant for windows.
 		identity = false,
@@ -455,6 +468,16 @@ function love.init()
 
 	if love._setGammaCorrect then
 		love._setGammaCorrect(c.gammacorrect)
+	end
+
+	if love._setAudioMixWithSystem then
+		if c.audio and c.audio.mixwithsystem ~= nil then
+			love._setAudioMixWithSystem(c.audio.mixwithsystem)
+		end
+	end
+
+	if love._requestRecordingPermission then
+		love._requestRecordingPermission(c.audio and c.audio.mic)
 	end
 
 	-- Gets desired modules.
@@ -524,6 +547,7 @@ function love.init()
 			centered = c.window.centered,
 			display = c.window.display,
 			highdpi = c.window.highdpi,
+			usedpiscale = c.window.usedpiscale,
 			x = c.window.x,
 			y = c.window.y,
 		}), "Could not set window mode")
@@ -532,10 +556,6 @@ function love.init()
 			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
 			love.window.setIcon(love.image.newImageData(c.window.icon))
 		end
-	end
-
-	if love.audio then
-		love.audio.setMixWithSystem(c.audio.mixwithsystem)
 	end
 
 	-- Our first timestep, because window creation can take some time
@@ -552,7 +572,9 @@ function love.init()
 	end
 
 	if no_game_code then
-		error("No code to run\nYour game might be packaged incorrectly\nMake sure main.lua is at the top level of the zip")
+		error("No code to run\nYour game might be packaged incorrectly.\nMake sure main.lua is at the top level of the zip.")
+	elseif invalid_game_path then
+		error("Cannot load game at path '" .. invalid_game_path .. "'.\nMake sure a folder exists at the specified path.")
 	end
 end
 

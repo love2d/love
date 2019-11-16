@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -57,12 +57,16 @@ public:
 
 	const char *getDisplayName(int displayindex) const override;
 
+	DisplayOrientation getDisplayOrientation(int displayindex) const override;
+
 	std::vector<WindowSize> getFullscreenSizes(int displayindex) const override;
 
 	void getDesktopDimensions(int displayindex, int &width, int &height) const override;
 
 	void setPosition(int x, int y, int displayindex) override;
 	void getPosition(int &x, int &y, int &displayindex) override;
+
+	Rect getSafeArea() const override;
 
 	bool isOpen() const override;
 
@@ -71,6 +75,9 @@ public:
 
 	bool setIcon(love::image::ImageData *imgd) override;
 	love::image::ImageData *getIcon() override;
+
+	void setVSync(int vsync) override;
+	int getVSync() const override;
 
 	void setDisplaySleepEnabled(bool enable) override;
 	bool isDisplaySleepEnabled() const override;
@@ -104,6 +111,7 @@ public:
 	void DPIToWindowCoords(double *x, double *y) const override;
 
 	double getDPIScale() const override;
+	double getNativeDPIScale() const override;
 
 	double toPixels(double x) const override;
 	void toPixels(double wx, double wy, double &px, double &py) const override;
@@ -120,6 +128,8 @@ public:
 	const char *getName() const override;
 
 private:
+
+	void close(bool allowExceptions);
 
 	struct ContextAttribs
 	{

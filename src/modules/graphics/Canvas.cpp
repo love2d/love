@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,8 +45,6 @@ Canvas::Canvas(const Settings &settings)
 		depth = settings.layers;
 	else if (texType == TEXTURE_2D_ARRAY)
 		layers = settings.layers;
-	else
-		layers = 1;
 
 	if (width <= 0 || height <= 0 || layers <= 0)
 		throw love::Exception("Canvas dimensions must be greater than 0.");
@@ -67,7 +65,7 @@ Canvas::Canvas(const Settings &settings)
 
 	if (settings.mipmaps != MIPMAPS_NONE)
 	{
-		mipmapCount = getMipmapCount(pixelWidth, pixelHeight);
+		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
 		filter.mipmap = defaultMipmapFilter;
 	}
 
@@ -139,26 +137,15 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 	if (gfx != nullptr && gfx->isCanvasActive(this))
 		throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
 
-	PixelFormat dataformat;
-	switch (getPixelFormat())
-	{
-	case PIXELFORMAT_RGB10A2: // FIXME: Conversions aren't supported in GLES
-		dataformat = PIXELFORMAT_RGBA16;
-		break;
-	case PIXELFORMAT_R16F:
-	case PIXELFORMAT_RG16F:
-	case PIXELFORMAT_RGBA16F:
-	case PIXELFORMAT_RG11B10F: // FIXME: Conversions aren't supported in GLES
-		dataformat = PIXELFORMAT_RGBA16F;
-		break;
-	case PIXELFORMAT_R32F:
-	case PIXELFORMAT_RG32F:
-	case PIXELFORMAT_RGBA32F:
-		dataformat = PIXELFORMAT_RGBA32F;
-		break;
-	default:
+	PixelFormat dataformat = getPixelFormat();
+	if (dataformat == PIXELFORMAT_sRGBA8)
 		dataformat = PIXELFORMAT_RGBA8;
-		break;
+
+	if (!image::ImageData::validPixelFormat(dataformat))
+	{
+		const char *formatname = "unknown";
+		love::getConstant(dataformat, formatname);
+		throw love::Exception("ImageData with the '%s' pixel format is not supported.", formatname);
 	}
 
 	return module->newImageData(r.w, r.h, dataformat);
@@ -195,6 +182,28 @@ std::vector<std::string> Canvas::getConstants(MipmapMode)
 	return mipmapModes.getNames();
 }
 
+bool Canvas::getConstant(const char *in, SettingType &out)
+{
+	return settingTypes.find(in, out);
+}
+
+bool Canvas::getConstant(SettingType in, const char *&out)
+{
+	return settingTypes.find(in, out);
+}
+
+const char *Canvas::getConstant(SettingType in)
+{
+	const char *name = nullptr;
+	getConstant(in, name);
+	return name;
+}
+
+std::vector<std::string> Canvas::getConstants(SettingType)
+{
+	return settingTypes.getNames();
+}
+
 StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
 {
 	{ "none",   MIPMAPS_NONE   },
@@ -203,6 +212,20 @@ StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEnt
 };
 
 StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM> Canvas::mipmapModes(Canvas::mipmapEntries, sizeof(Canvas::mipmapEntries));
+
+StringMap<Canvas::SettingType, Canvas::SETTING_MAX_ENUM>::Entry Canvas::settingTypeEntries[] =
+{
+	// Width / height / layers are currently omittted because they're separate
+	// arguments to newCanvas in the wrapper code.
+	{ "mipmaps",  SETTING_MIPMAPS   },
+	{ "format",   SETTING_FORMAT    },
+	{ "type",     SETTING_TYPE      },
+	{ "dpiscale", SETTING_DPI_SCALE },
+	{ "msaa",     SETTING_MSAA      },
+	{ "readable", SETTING_READABLE  },
+};
+
+StringMap<Canvas::SettingType, Canvas::SETTING_MAX_ENUM> Canvas::settingTypes(Canvas::settingTypeEntries, sizeof(Canvas::settingTypeEntries));
 
 } // graphics
 } // love

@@ -1,7 +1,7 @@
 /**
  * Simple DDS data parser for compressed 2D textures.
  *
- * Copyright (c) 2013-2017 Alex Szpakowski
+ * Copyright (c) 2013-2019 Alex Szpakowski
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,8 @@ enum DDPF
 	DDPF_FOURCC      = 0x000004,
 	DDPF_RGB         = 0x000040,
 	DDPF_YUV         = 0x000200,
-	DDPF_LUMINANCE   = 0x020000
+	DDPF_LUMINANCE   = 0x020000,
+	DDPF_BUMPDUDV    = 0x080000,
 };
 
 enum D3D10ResourceDimension

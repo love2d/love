@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -55,14 +55,11 @@ namespace opengl
 {
 
 Graphics::Graphics()
-	: quadIndices(nullptr)
-	, windowHasStencil(false)
+	: windowHasStencil(false)
 	, mainVAO(0)
 {
 	gl = OpenGL();
-
-	states.reserve(10);
-	states.push_back(DisplayState());
+	Canvas::resetFormatSupport();
 
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 
@@ -87,8 +84,6 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	if (quadIndices)
-		delete quadIndices;
 }
 
 const char *Graphics::getName() const
@@ -196,6 +191,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	// Set pixel row alignment
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 	// Always enable seamless cubemap filtering when possible.
 	if (GLAD_VERSION_3_2 || GLAD_ARB_seamless_cube_map)
@@ -226,13 +222,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	if (!Volatile::loadAll())
 		::printf("Could not reload all volatile objects.\n");
 
-	// Create a quad indices object owned by love.graphics, so at least one
-	// QuadIndices object is alive at all times while love.graphics is alive.
-	// This makes sure there aren't too many expensive destruction/creations of
-	// index buffer objects, since the shared index buffer used by QuadIndices
-	// objects is destroyed when the last object is destroyed.
-	if (quadIndices == nullptr)
-		quadIndices = new QuadIndices(this, 20);
+	createQuadIndexBuffer();
 
 	// Restore the graphics state.
 	restoreState(states.back());
@@ -354,6 +344,77 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	++drawCalls;
 }
 
+static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::BufferBindings &buffers, int vertexcount)
+{
+	// TODO: Figure out a better way to avoid touching the same buffer multiple
+	// times, if multiple attributes share the buffer.
+	uint32 touchedbuffers = 0;
+
+	for (unsigned int i = 0; i < vertex::Attributes::MAX; i++)
+	{
+		if (!attributes.isEnabled(i))
+			continue;
+
+		auto &attrib = attributes.attribs[i];
+
+		uint32 bufferbit = 1u << attrib.bufferIndex;
+		if ((touchedbuffers & bufferbit) == 0)
+		{
+			touchedbuffers |= bufferbit;
+			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
+			buffers.info[attrib.bufferIndex].offset += layout.stride * vertexcount;
+		}
+	}
+}
+
+void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture)
+{
+	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
+	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
+
+	gl.prepareDraw();
+	gl.bindTextureToUnit(texture, 0, false);
+	gl.setCullMode(CULL_NONE);
+
+	gl.bindBuffer(BUFFER_INDEX, quadIndexBuffer->getHandle());
+
+	if (gl.isBaseVertexSupported())
+	{
+		gl.setVertexAttributes(attributes, buffers);
+
+		int basevertex = start * 4;
+
+		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+		{
+			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+			glDrawElementsBaseVertex(GL_TRIANGLES, quadcount * 6, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0), basevertex);
+			++drawCalls;
+
+			basevertex += quadcount * 4;
+		}
+	}
+	else
+	{
+		vertex::BufferBindings bufferscopy = buffers;
+		if (start > 0)
+			advanceVertexOffsets(attributes, bufferscopy, start * 4);
+
+		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+		{
+			gl.setVertexAttributes(attributes, bufferscopy);
+
+			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+			glDrawElements(GL_TRIANGLES, quadcount * 6, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+			++drawCalls;
+
+			if (count > MAX_QUADS_PER_DRAW)
+				advanceVertexOffsets(attributes, bufferscopy, quadcount * 4);
+		}
+	}
+}
+
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
 {
 	// Human-readable strings for the debug info.
@@ -417,25 +478,41 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 {
 	const DisplayState &state = states.back();
 
-	OpenGL::TempDebugGroup debuggroup("setCanvas(...)");
+	OpenGL::TempDebugGroup debuggroup("setCanvas");
 
 	flushStreamDraws();
 	endPass();
 
-	bindCachedFBO(rts);
+	bool iswindow = rts.getFirstTarget().canvas == nullptr;
+	vertex::Winding vertexwinding = state.winding;
+
+	if (iswindow)
+	{
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
+
+		// The projection matrix is flipped compared to rendering to a canvas, due
+		// to OpenGL considering (0,0) bottom-left instead of top-left.
+		projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
+	}
+	else
+	{
+		bindCachedFBO(rts);
+
+		projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
+
+		// Flip front face winding when rendering to a canvas, since our
+		// projection matrix is flipped.
+		vertexwinding = vertexwinding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+	}
+
+	glFrontFace(vertexwinding == vertex::WINDING_CW ? GL_CW : GL_CCW);
 
 	gl.setViewport({0, 0, pixelw, pixelh});
-
-	// Flip front face winding when rendering to a canvas, since our projection
-	// matrix is flipped.
-	glFrontFace(state.winding == vertex::WINDING_CW ? GL_CCW : GL_CW);
 
 	// Re-apply the scissor if it was active, since the rectangle passed to
 	// glScissor is affected by the viewport dimensions.
 	if (state.scissor)
 		setScissor(state.scissorRect);
-
-	projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
 
 	// Make sure the correct sRGB setting is used when drawing to the canvases.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
@@ -443,46 +520,6 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 		if (hasSRGBcanvas != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
 			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBcanvas);
 	}
-}
-
-void Graphics::setCanvas()
-{
-	DisplayState &state = states.back();
-
-	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.canvas == nullptr)
-		return;
-
-	OpenGL::TempDebugGroup debuggroup("setCanvas()");
-
-	flushStreamDraws();
-	endPass();
-
-	// Re-apply the correct front face winding, since it may have been flipped
-	// if we were previously rendering to a canvas.
-	glFrontFace(state.winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
-
-	state.renderTargets = RenderTargetsStrongRef();
-
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
-
-	gl.setViewport({0, 0, pixelWidth, pixelHeight});
-
-	// Re-apply the scissor if it was active, since the rectangle passed to
-	// glScissor is affected by the viewport dimensions.
-	if (state.scissor)
-		setScissor(state.scissorRect);
-
-	// The projection matrix is flipped compared to rendering to a canvas, due
-	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
-
-	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
-	{
-		if (isGammaCorrect() != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
-			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
-	}
-
-	canvasSwitchCount++;
 }
 
 void Graphics::endPass()
@@ -543,7 +580,6 @@ void Graphics::endPass()
 			if (mask != 0)
 				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, mask, GL_NEAREST);
 		}
-
 	}
 
 	for (const auto &rt : rts.colors)
@@ -608,20 +644,19 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	int ncanvases = (int) states.back().renderTargets.colors.size();
-	int ncolors = std::min((int) colors.size(), ncanvases);
+	int ncolorcanvases = (int) states.back().renderTargets.colors.size();
+	int ncolors = (int) colors.size();
 
-	if (ncolors <= 1 && ncanvases <= 1)
+	if (ncolors <= 1 && ncolorcanvases <= 1)
 	{
-		if (colors[0].hasValue)
-			clear(colors[0].value, stencil, depth);
-
+		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
 		return;
 	}
 
 	flushStreamDraws();
 
 	bool drawbuffersmodified = false;
+	ncolors = std::min(ncolors, ncolorcanvases);
 
 	for (int i = 0; i < ncolors; i++)
 	{
@@ -652,10 +687,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	{
 		GLenum bufs[MAX_COLOR_RENDER_TARGETS];
 
-		for (int i = 0; i < ncanvases; i++)
+		for (int i = 0; i < ncolorcanvases; i++)
 			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
 
-		glDrawBuffers(ncanvases, bufs);
+		glDrawBuffers(ncolorcanvases, bufs);
 	}
 
 	GLbitfield flags = 0;
@@ -748,21 +783,38 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
+void Graphics::cleanupCanvas(Canvas *canvas)
+{
+	for (auto it = framebufferObjects.begin(); it != framebufferObjects.end(); /**/)
+	{
+		bool hascanvas = false;
+		const auto &rts = it->first;
+
+		for (const RenderTarget &rt : rts.colors)
+		{
+			if (rt.canvas == canvas)
+			{
+				hascanvas = true;
+				break;
+			}
+		}
+
+		hascanvas = hascanvas || rts.depthStencil.canvas == canvas;
+
+		if (hascanvas)
+		{
+			if (isCreated())
+				gl.deleteFramebuffer(it->second);
+			it = framebufferObjects.erase(it);
+		}
+		else
+			++it;
+	}
+}
+
 void Graphics::bindCachedFBO(const RenderTargets &targets)
 {
-	RenderTarget hashtargets[MAX_COLOR_RENDER_TARGETS + 1];
-	int hashcount = 0;
-
-	for (int i = 0; i < (int) targets.colors.size(); i++)
-		hashtargets[hashcount++] = targets.colors[i];
-
-	if (targets.depthStencil.canvas != nullptr)
-		hashtargets[hashcount++] = targets.depthStencil;
-	else if (targets.temporaryRTFlags != 0)
-		hashtargets[hashcount++] = RenderTarget(nullptr, -1, targets.temporaryRTFlags);
-
-	uint32 hash = XXH32(hashtargets, sizeof(RenderTarget) * hashcount, 0);
-	GLuint fbo = framebufferObjects[hash];
+	GLuint fbo = framebufferObjects[targets];
 
 	if (fbo != 0)
 	{
@@ -770,34 +822,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	}
 	else
 	{
-		RenderTarget firstRT = targets.getFirstTarget();
-
-		int mip = firstRT.mipmap;
-		int w = firstRT.canvas->getPixelWidth(mip);
-		int h = firstRT.canvas->getPixelHeight(mip);
-		int msaa = firstRT.canvas->getMSAA();
-		int reqmsaa = firstRT.canvas->getRequestedMSAA();
-
-		RenderTarget depthstencil = targets.depthStencil;
-
-		if (depthstencil.canvas == nullptr && targets.temporaryRTFlags != 0)
-		{
-			bool wantsdepth   = (targets.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0;
-			bool wantsstencil = (targets.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0;
-
-			PixelFormat dsformat = PIXELFORMAT_STENCIL8;
-			if (wantsdepth && wantsstencil)
-				dsformat = PIXELFORMAT_DEPTH24_STENCIL8;
-			else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24, false))
-				dsformat = PIXELFORMAT_DEPTH24;
-			else if (wantsdepth)
-				dsformat = PIXELFORMAT_DEPTH16;
-			else if (wantsstencil)
-				dsformat = PIXELFORMAT_STENCIL8;
-
-			depthstencil.canvas = getTemporaryCanvas(dsformat, w, h, reqmsaa);
-			depthstencil.slice = 0;
-		}
+		int msaa = targets.getFirstTarget().canvas->getMSAA();
+		bool hasDS = targets.depthStencil.canvas != nullptr;
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
@@ -842,11 +868,21 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		for (const auto &rt : targets.colors)
 			attachCanvas(rt);
 
-		if (depthstencil.canvas != nullptr)
-			attachCanvas(depthstencil);
+		if (hasDS)
+			attachCanvas(targets.depthStencil);
 
 		if (ncolortargets > 1)
 			glDrawBuffers(ncolortargets, drawbuffers);
+		else if (ncolortargets == 0 && hasDS && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+		{
+			// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
+			GLenum none = GL_NONE;
+			if (GLAD_ES_VERSION_3_0)
+				glDrawBuffers(1, &none);
+			else
+				glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -856,8 +892,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 			const char *sstr = OpenGL::framebufferStatusString(status);
 			throw love::Exception("Could not create Framebuffer Object! %s", sstr);
 		}
-		
-		framebufferObjects[hash] = fbo;
+
+		framebufferObjects[targets] = fbo;
 	}
 }
 
@@ -1160,7 +1196,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	if (depthenable)
 	{
 		glDepthFunc(OpenGL::getGLCompareMode(compare));
-		glDepthMask(write ? GL_TRUE : GL_FALSE);
+		gl.setDepthWrites(write);
 	}
 }
 
@@ -1375,9 +1411,9 @@ bool Graphics::isCanvasFormatSupported(PixelFormat format, bool readable) const
 	return Canvas::isFormatSupported(format, readable);
 }
 
-bool Graphics::isImageFormatSupported(PixelFormat format) const
+bool Graphics::isImageFormatSupported(PixelFormat format, bool sRGB) const
 {
-	return Image::isFormatSupported(format);
+	return Image::isFormatSupported(format, sRGB);
 }
 
 Shader::Language Graphics::getShaderLanguageTarget() const

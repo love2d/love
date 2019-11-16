@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -52,6 +52,9 @@ int w_newSource(lua_State *L)
 		const char *stypestr = luaL_checkstring(L, 2);
 		if (stypestr && !Source::getConstant(stypestr, stype))
 			return luax_enumerror(L, "source type", Source::getConstants(stype), stypestr);
+
+		if (stype == Source::TYPE_QUEUE)
+			return luaL_error(L, "Cannot create queueable sources using newSource. Use newQueueableSource instead.");
 	}
 
 	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
@@ -523,7 +526,7 @@ int w_isEffectsSupported(lua_State *L)
 
 int w_setMixWithSystem(lua_State *L)
 {
-	luax_pushboolean(L, instance()->setMixWithSystem(luax_checkboolean(L, 1)));
+	luax_pushboolean(L, Audio::setMixWithSystem(luax_checkboolean(L, 1)));
 	return 1;
 }
 

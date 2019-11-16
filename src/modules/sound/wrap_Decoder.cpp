@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,16 @@ namespace sound
 Decoder *luax_checkdecoder(lua_State *L, int idx)
 {
 	return luax_checktype<Decoder>(L, idx);
+}
+
+int w_Decoder_clone(lua_State *L)
+{
+	Decoder *t = luax_checkdecoder(L, 1);
+	Decoder *c = nullptr;
+	luax_catchexcept(L, [&]() { c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
 }
 
 int w_Decoder_getChannelCount(lua_State *L)
@@ -86,7 +96,7 @@ int w_Decoder_decode(lua_State *L)
 int w_Decoder_seek(lua_State *L)
 {
 	Decoder *t = luax_checkdecoder(L, 1);
-	float offset = luaL_checknumber(L, 2);
+	double offset = luaL_checknumber(L, 2);
 	if (offset < 0)
 		return luaL_argerror(L, 2, "can't seek to a negative position");
 	else if (offset == 0)
@@ -104,6 +114,7 @@ int w_Decoder_getChannels(lua_State *L)
 
 static const luaL_Reg w_Decoder_functions[] =
 {
+	{ "clone", w_Decoder_clone },
 	{ "getChannelCount", w_Decoder_getChannelCount },
 	{ "getBitDepth", w_Decoder_getBitDepth },
 	{ "getSampleRate", w_Decoder_getSampleRate },

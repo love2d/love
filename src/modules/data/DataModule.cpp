@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -117,11 +117,6 @@ namespace love
 namespace data
 {
 
-CompressedData *compress(Compressor::Format format, love::Data *rawdata, int level)
-{
-	return compress(format, (const char *) rawdata->getData(), rawdata->getSize(), level);
-}
-
 CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level)
 {
 	Compressor *compressor = Compressor::getCompressor(format);
@@ -218,12 +213,8 @@ void hash(HashFunction::Function function, const char *input, uint64_t size, Has
 	hashfunction->hash(function, input, size, output);
 }
 
-DataModule DataModule::instance;
-
 DataModule::DataModule()
 {
-	// prevent the runtime from free()-ing this
-	retain();
 }
 
 DataModule::~DataModule()
@@ -245,6 +236,11 @@ ByteData *DataModule::newByteData(const void *d, size_t size)
 	return new ByteData(d, size);
 }
 
+ByteData *DataModule::newByteData(void *d, size_t size, bool own)
+{
+	return new ByteData(d, size, own);
+}
+
 static StringMap<EncodeFormat, ENCODE_MAX_ENUM>::Entry encoderEntries[] =
 {
 	{ "base64", ENCODE_BASE64 },
@@ -252,6 +248,14 @@ static StringMap<EncodeFormat, ENCODE_MAX_ENUM>::Entry encoderEntries[] =
 };
 
 static StringMap<EncodeFormat, ENCODE_MAX_ENUM> encoders(encoderEntries, sizeof(encoderEntries));
+
+static StringMap<ContainerType, CONTAINER_MAX_ENUM>::Entry containerEntries[] =
+{
+	{ "data",   CONTAINER_DATA   },
+	{ "string", CONTAINER_STRING },
+};
+
+static StringMap<ContainerType, CONTAINER_MAX_ENUM> containers(containerEntries, sizeof(containerEntries));
 
 bool getConstant(const char *in, EncodeFormat &out)
 {
@@ -266,6 +270,21 @@ bool getConstant(EncodeFormat in, const char *&out)
 std::vector<std::string> getConstants(EncodeFormat)
 {
 	return encoders.getNames();
+}
+
+bool getConstant(const char *in, ContainerType &out)
+{
+	return containers.find(in, out);
+}
+
+bool getConstant(ContainerType in, const char *&out)
+{
+	return containers.find(in, out);
+}
+
+std::vector<std::string> getConstants(ContainerType)
+{
+	return containers.getNames();
 }
 
 } // data

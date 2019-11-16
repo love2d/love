@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -177,6 +177,14 @@ std::string luax_checkstring(lua_State *L, int idx);
  **/
 void luax_pushstring(lua_State *L, const std::string &str);
 
+/**
+ * Pushes a pointer onto the stack as a string (i.e. a new string with a length
+ * of 4 or 8 will be created, containing the given address in its bytes).
+ * This is a workaround for lua_pushlightuserdata not working on systems which
+ * use more than the lower 47 bits of address space, when LuaJIT is used.
+ **/
+void luax_pushpointerasstring(lua_State *L, const void *pointer);
+
 
 bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultValue);
 int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
@@ -291,7 +299,7 @@ int luax_register_type(lua_State *L, love::Type *type, ...);
 /**
  * Pushes the metatable of the specified type onto the stack.
 **/
-void luax_gettypemetatable(lua_State *L, love::Type &type);
+void luax_gettypemetatable(lua_State *L, const love::Type &type);
 
 /**
  * Do a table.insert from C
@@ -389,11 +397,13 @@ int luax_convobj(lua_State *L, int idx, const char *module, const char *function
  * @param module The module in the love table.
  * @param function The function in the module.
  **/
-int luax_convobj(lua_State *L, int idxs[], int n, const char *module, const char *function);
+int luax_convobj(lua_State *L, const int idxs[], int n, const char *module, const char *function);
+int luax_convobj(lua_State *L, const std::vector<int>& idxs, const char *module, const char *function);
 
 // pcall versions of the above
 int luax_pconvobj(lua_State *L, int idx, const char *module, const char *function);
-int luax_pconvobj(lua_State *L, int idxs[], int n, const char *module, const char *function);
+int luax_pconvobj(lua_State *L, const int idxs[], int n, const char *module, const char *function);
+int luax_pconvobj(lua_State *L, const std::vector<int>& idxs, const char *module, const char *function);
 
 /**
  * 'Insist' that a table 'k' exists in the table at idx. Insistence involves that the
@@ -474,6 +484,30 @@ extern "C" { // Also called from luasocket
 int luax_enumerror(lua_State *L, const char *enumName, const char *value);
 int luax_enumerror(lua_State *L, const char *enumName, const std::vector<std::string> &values, const char *value);
 
+template <typename T>
+void luax_checktablefields(lua_State *L, int idx, const char *enumName, bool (*getConstant)(const char *, T &))
+{
+	luaL_checktype(L, idx, LUA_TTABLE);
+
+	// We want to error for invalid / misspelled fields in the table.
+	lua_pushnil(L);
+	while (lua_next(L, idx))
+	{
+		if (lua_type(L, -2) != LUA_TSTRING)
+			luax_typerror(L, -2, "string");
+
+		const char *key = luaL_checkstring(L, -2);
+		T constantvalue;
+
+		if (!getConstant(key, constantvalue))
+			luax_enumerror(L, enumName, key);
+
+		lua_pop(L, 1);
+	}
+}
+
+void luax_runwrapper(lua_State *L, const char *filedata, size_t datalen, const char *filename, const love::Type &type, void *ffifuncs);
+
 /**
  * Calls luax_objlen/lua_rawlen depending on version
  **/
@@ -518,6 +552,15 @@ template <typename T>
 T *luax_checktype(lua_State *L, int idx)
 {
 	return luax_checktype<T>(L, idx, T::type);
+}
+
+template <typename T>
+T *luax_ffi_checktype(Proxy *p, const love::Type &type = T::type)
+{
+	// FIXME: We need better type-checking...
+	if (p == nullptr || p->object == nullptr || p->type == nullptr || !p->type->isa(type))
+		return nullptr;
+	return (T *) p->object;
 }
 
 template <typename T>
@@ -653,6 +696,12 @@ int luax_catchexcept(lua_State *L, const T& func, const F& finallyfunc)
 
 	return 0;
 }
+
+/**
+ * Compatibility shim for lua_resume
+ * Exported because it's used in the launcher
+ **/
+LOVE_EXPORT int luax_resume(lua_State *L, int nargs);
 
 } // love
 

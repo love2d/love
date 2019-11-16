@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,8 +32,8 @@ namespace sound
 namespace lullaby
 {
 
-GmeDecoder::GmeDecoder(Data *data, const std::string &ext, int bufferSize)
-	: Decoder(data, ext, bufferSize)
+GmeDecoder::GmeDecoder(Data *data, int bufferSize)
+	: Decoder(data, bufferSize)
 	, emu(0)
 	, num_tracks(0)
 	, cur_track(0)
@@ -86,7 +86,7 @@ bool GmeDecoder::accepts(const std::string &ext)
 
 love::sound::Decoder *GmeDecoder::clone()
 {
-	return new GmeDecoder(data.get(), ext, bufferSize);
+	return new GmeDecoder(data.get(), bufferSize);
 }
 
 int GmeDecoder::decode()
@@ -109,9 +109,9 @@ int GmeDecoder::decode()
 	return bufferSize;
 }
 
-bool GmeDecoder::seek(float s)
+bool GmeDecoder::seek(double s)
 {
-	return gme_seek(emu, static_cast<long>(s * 1000.f)) != 0;
+	return gme_seek(emu, static_cast<long>(s * 1000.0)) != 0;
 }
 
 bool GmeDecoder::rewind()

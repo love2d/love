@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -116,7 +116,7 @@ Event::~Event()
 
 void Event::pump()
 {
-	exceptionIfInRenderPass();
+	exceptionIfInRenderPass("love.event.pump");
 
 	SDL_Event e;
 
@@ -133,7 +133,7 @@ void Event::pump()
 
 Message *Event::wait()
 {
-	exceptionIfInRenderPass();
+	exceptionIfInRenderPass("love.event.wait");
 
 	SDL_Event e;
 
@@ -145,7 +145,7 @@ Message *Event::wait()
 
 void Event::clear()
 {
-	exceptionIfInRenderPass();
+	exceptionIfInRenderPass("love.event.clear");
 
 	SDL_Event e;
 
@@ -157,7 +157,7 @@ void Event::clear()
 	love::event::Event::clear();
 }
 
-void Event::exceptionIfInRenderPass()
+void Event::exceptionIfInRenderPass(const char *name)
 {
 	// Some core OS graphics functionality (e.g. swap buffers on some platforms)
 	// happens inside SDL_PumpEvents - which is called by SDL_PollEvent and
@@ -165,7 +165,7 @@ void Event::exceptionIfInRenderPass()
 	// is active.
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr && gfx->isCanvasActive())
-		throw love::Exception("Cannot call this function while a Canvas is active in love.graphics.");
+		throw love::Exception("%s cannot be called while a Canvas is active in love.graphics.", name);
 }
 
 Message *Event::convert(const SDL_Event &e)
@@ -369,6 +369,41 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_WINDOWEVENT:
 		msg = convertWindowEvent(e);
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+	case SDL_DISPLAYEVENT:
+		if (e.display.event == SDL_DISPLAYEVENT_ORIENTATION)
+		{
+			auto orientation = window::Window::ORIENTATION_UNKNOWN;
+			switch ((SDL_DisplayOrientation) e.display.data1)
+			{
+			case SDL_ORIENTATION_UNKNOWN:
+			default:
+				orientation = window::Window::ORIENTATION_UNKNOWN;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE:
+				orientation = window::Window::ORIENTATION_LANDSCAPE;
+				break;
+			case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+				orientation = window::Window::ORIENTATION_LANDSCAPE_FLIPPED;
+				break;
+			case SDL_ORIENTATION_PORTRAIT:
+				orientation = window::Window::ORIENTATION_PORTRAIT;
+				break;
+			case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+				orientation = window::Window::ORIENTATION_PORTRAIT_FLIPPED;
+				break;
+			}
+
+			if (!window::Window::getConstant(orientation, txt))
+				txt = "unknown";
+
+			vargs.emplace_back((double)(e.display.display + 1));
+			vargs.emplace_back(txt);
+
+			msg = new Message("displayrotated", vargs);
+		}
+		break;
+#endif
 	case SDL_DROPFILE:
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)

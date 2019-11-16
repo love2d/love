@@ -152,7 +152,17 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     case EvqBuffer:
         if (node->getQualifier().readonly)
             message = "can't modify a readonly buffer";
+#ifdef NV_EXTENSIONS
+        if (node->getQualifier().layoutShaderRecordNV)
+            message = "can't modify a shaderrecordnv qualified buffer";
+#endif
         break;
+#ifdef NV_EXTENSIONS
+    case EvqHitAttrNV:
+        if (language != EShLangIntersectNV)
+            message = "cannot modify hitAttributeNV in this stage";
+        break;
+#endif
 
     default:
         //
@@ -168,6 +178,11 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtVoid:
             message = "can't modify void";
             break;
+#ifdef NV_EXTENSIONS
+        case EbtAccStructNV:
+            message = "can't modify accelerationStructureNV";
+            break;
+#endif
         default:
             break;
         }
@@ -228,10 +243,36 @@ void TParseContextBase::rValueErrorCheck(const TSourceLoc& loc, const char* op, 
 // must still be valid.
 // It is okay if the symbol's type will be subsequently edited;
 // the modifications will be tracked.
+// Order is preserved, to avoid creating novel forward references.
 void TParseContextBase::trackLinkage(TSymbol& symbol)
 {
     if (!parsingBuiltins)
         linkageSymbols.push_back(&symbol);
+}
+
+// Ensure index is in bounds, correct if necessary.
+// Give an error if not.
+void TParseContextBase::checkIndex(const TSourceLoc& loc, const TType& type, int& index)
+{
+    if (index < 0) {
+        error(loc, "", "[", "index out of range '%d'", index);
+        index = 0;
+    } else if (type.isArray()) {
+        if (type.isSizedArray() && index >= type.getOuterArraySize()) {
+            error(loc, "", "[", "array index out of range '%d'", index);
+            index = type.getOuterArraySize() - 1;
+        }
+    } else if (type.isVector()) {
+        if (index >= type.getVectorSize()) {
+            error(loc, "", "[", "vector index out of range '%d'", index);
+            index = type.getVectorSize() - 1;
+        }
+    } else if (type.isMatrix()) {
+        if (index >= type.getMatrixCols()) {
+            error(loc, "", "[", "matrix index out of range '%d'", index);
+            index = type.getMatrixCols() - 1;
+        }
+    }
 }
 
 // Make a shared symbol have a non-shared version that can be edited by the current
@@ -544,6 +585,10 @@ void TParseContextBase::growGlobalUniformBlock(const TSourceLoc& loc, TType& mem
         firstNewMember = 0;
     }
 
+    // Update with binding and set
+    globalUniformBlock->getWritableType().getQualifier().layoutBinding = globalUniformBinding;
+    globalUniformBlock->getWritableType().getQualifier().layoutSet = globalUniformSet;
+
     // Add the requested member as a member to the global block.
     TType* type = new TType;
     type->shallowCopy(memberType);
@@ -573,7 +618,7 @@ void TParseContextBase::finish()
     if (parsingBuiltins)
         return;
 
-    // Transfer the linkage symbols to AST nodes
+    // Transfer the linkage symbols to AST nodes, preserving order.
     TIntermAggregate* linkage = new TIntermAggregate;
     for (auto i = linkageSymbols.begin(); i != linkageSymbols.end(); ++i)
         intermediate.addSymbolLinkageNode(linkage, **i);

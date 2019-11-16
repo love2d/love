@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -100,6 +100,15 @@ Audio::Audio()
 	// Temporarly block signals, as the thread inherits this mask
 	love::thread::disableSignals();
 #endif
+
+	// Before opening new device, check if recording
+	// is requested.
+	if (getRequestRecordingPermission())
+	{
+		if (!hasRecordingPermission())
+			// Request recording permission on some OSes.
+			requestRecordingPermission();
+	}
 
 	// Passing null for default device.
 	device = alcOpenDevice(nullptr);
@@ -402,13 +411,22 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 	std::vector<std::string> devnames;
 	std::vector<love::audio::RecordingDevice*> devices;
 
+	// If recording permission is not granted, inform user about it
+	// and return empty list.
+	if (!hasRecordingPermission() && getRequestRecordingPermission())
+	{
+		showRecordingPermissionMissingDialog();
+		capture.clear();
+		return capture;
+	}
+
 	std::string defaultname(alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER));
 
 	//no device name obtained from AL, fallback to reading from device
 	if (defaultname.length() == 0)
 	{
 		//use some safe basic parameters - 8 kHz, 8 bits, 1 channel
-		ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, 8, 1);
+		ALCdevice *defaultdevice = alcCaptureOpenDevice(NULL, 8000, AL_FORMAT_MONO8, 1024);
 		if (alGetError() == AL_NO_ERROR)
 		{
 			defaultname = alcGetString(defaultdevice, ALC_CAPTURE_DEVICE_SPECIFIER);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,6 @@
 
 // STL
 #include <queue>
-#include <string>
 
 // LOVE
 #include "common/Variant.h"
@@ -47,8 +46,6 @@ public:
 	Channel();
 	~Channel();
 
-	static Channel *getChannel(const std::string &name);
-
 	uint64 push(const Variant &var);
 	bool supply(const Variant &var); // blocking push
 	bool supply(const Variant &var, double timeout);
@@ -62,15 +59,12 @@ public:
 
 private:
 
-	Channel(const std::string &name);
 	void lockMutex();
 	void unlockMutex();
 
 	MutexRef mutex;
 	ConditionalRef cond;
 	std::queue<Variant> queue;
-	bool named;
-	std::string name;
 
 	uint64 sent;
 	uint64 received;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -255,7 +255,7 @@ public:
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
 		const vertex::Attributes *attributes;
-		const vertex::Buffers *buffers;
+		const vertex::BufferBindings *buffers;
 
 		int vertexStart = 0;
 		int vertexCount = 0;
@@ -266,7 +266,7 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawCommand(const vertex::Attributes *attribs, const vertex::Buffers *buffers)
+		DrawCommand(const vertex::Attributes *attribs, const vertex::BufferBindings *buffers)
 			: attributes(attribs)
 			, buffers(buffers)
 		{}
@@ -277,7 +277,7 @@ public:
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
 		const vertex::Attributes *attributes;
-		const vertex::Buffers *buffers;
+		const vertex::BufferBindings *buffers;
 
 		int indexCount = 0;
 		int instanceCount = 1;
@@ -291,7 +291,7 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawIndexedCommand(const vertex::Attributes *attribs, const vertex::Buffers *buffers, Resource *indexbuffer)
+		DrawIndexedCommand(const vertex::Attributes *attribs, const vertex::BufferBindings *buffers, Resource *indexbuffer)
 			: attributes(attribs)
 			, buffers(buffers)
 			, indexBuffer(indexbuffer)
@@ -354,6 +354,8 @@ public:
 		void *data = nullptr;
 	};
 
+	struct RenderTargetStrongRef;
+
 	struct RenderTarget
 	{
 		Canvas *canvas;
@@ -369,7 +371,18 @@ public:
 		RenderTarget()
 			: canvas(nullptr)
 			, slice(0)
+			, mipmap(0)
 		{}
+
+		bool operator != (const RenderTarget &other) const
+		{
+			return canvas != other.canvas || slice != other.slice || mipmap != other.mipmap;
+		}
+
+		bool operator != (const RenderTargetStrongRef &other) const
+		{
+			return canvas != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+		}
 	};
 
 	struct RenderTargetStrongRef
@@ -383,6 +396,16 @@ public:
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
+
+		bool operator != (const RenderTargetStrongRef &other) const
+		{
+			return canvas.get() != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+		}
+
+		bool operator != (const RenderTarget &other) const
+		{
+			return canvas.get() != other.canvas || slice != other.slice || mipmap != other.mipmap;
+		}
 	};
 
 	struct RenderTargets
@@ -399,6 +422,24 @@ public:
 		const RenderTarget &getFirstTarget() const
 		{
 			return colors.empty() ? depthStencil : colors[0];
+		}
+
+		bool operator == (const RenderTargets &other) const
+		{
+			size_t ncolors = colors.size();
+			if (ncolors != other.colors.size())
+				return false;
+
+			for (size_t i = 0; i < ncolors; i++)
+			{
+				if (colors[i] != other.colors[i])
+					return false;
+			}
+
+			if (depthStencil != other.depthStencil || temporaryRTFlags != other.temporaryRTFlags)
+				return false;
+
+			return true;
 		}
 	};
 
@@ -548,7 +589,7 @@ public:
 	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
 	void setCanvas(const RenderTargets &rts);
 	void setCanvas(const RenderTargetsStrongRef &rts);
-	virtual void setCanvas() = 0;
+	void setCanvas();
 
 	RenderTargets getCanvas() const;
 	bool isCanvasActive() const;
@@ -789,7 +830,7 @@ public:
 	 **/
 	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
 	virtual bool isCanvasFormatSupported(PixelFormat format, bool readable) const = 0;
-	virtual bool isImageFormatSupported(PixelFormat format) const = 0;
+	virtual bool isImageFormatSupported(PixelFormat format, bool sRGB = false) const = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.
@@ -829,6 +870,7 @@ public:
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
+	virtual void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) = 0;
 
 	void flushStreamDraws();
 	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
@@ -974,6 +1016,8 @@ protected:
 	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &shaderswitches) const = 0;
 
+	void createQuadIndexBuffer();
+
 	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
 
 	void restoreState(const DisplayState &s);
@@ -1012,6 +1056,8 @@ protected:
 	int canvasSwitchCount;
 	int drawCalls;
 	int drawCallsBatched;
+
+	Buffer *quadIndexBuffer;
 
 	Capabilities capabilities;
 

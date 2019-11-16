@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,10 @@
 
 #ifdef LOVE_ANDROID
 #include "common/android.h"
+#endif
+
+#ifdef LOVE_IOS
+#include "common/ios.h"
 #endif
 
 // C++
@@ -77,7 +81,7 @@ Window::Window()
 
 Window::~Window()
 {
-	close();
+	close(false);
 
 	graphics.set(nullptr);
 
@@ -413,7 +417,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		graphics.set(Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS));
 
 	if (graphics.get() && graphics->isCanvasActive())
-		throw love::Exception("setMode cannot be called while a Canvas is active in love.graphics.");
+		throw love::Exception("love.window.setMode cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings f;
 
@@ -512,12 +516,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	SDL_RaiseWindow(window);
 
-	SDL_GL_SetSwapInterval(f.vsync);
-
-	// Check if adaptive vsync was requested but not supported, and fall back
-	// to regular vsync if so.
-	if (f.vsync == -1 && SDL_GL_GetSwapInterval() != -1)
-		SDL_GL_SetSwapInterval(1);
+	setVSync(f.vsync);
 
 	updateSettings(f, false);
 
@@ -594,6 +593,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	getPosition(settings.x, settings.y, settings.display);
 
 	settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+	settings.usedpiscale = newsettings.usedpiscale;
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen mode
 	if (settings.fullscreen && settings.fstype == FULLSCREEN_EXCLUSIVE)
@@ -608,7 +608,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
 
 	settings.msaa = (buffers > 0 ? samples : 0);
-	settings.vsync = SDL_GL_GetSwapInterval();
+	settings.vsync = getVSync();
 
 	settings.stencil = newsettings.stencil;
 	settings.depth = newsettings.depth;
@@ -641,10 +641,15 @@ void Window::getWindow(int &width, int &height, WindowSettings &newsettings)
 
 void Window::close()
 {
+	close(true);
+}
+
+void Window::close(bool allowExceptions)
+{
 	if (graphics.get())
 	{
-		if (graphics->isCanvasActive())
-			throw love::Exception("close cannot be called while a Canvas is active in love.graphics.");
+		if (allowExceptions && graphics->isCanvasActive())
+			throw love::Exception("love.window.close cannot be called while a Canvas is active in love.graphics.");
 
 		graphics->unSetMode();
 	}
@@ -674,7 +679,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 		return false;
 
 	if (graphics.get() && graphics->isCanvasActive())
-		throw love::Exception("setFullscreen cannot be called while a Canvas is active in love.graphics.");
+		throw love::Exception("love.window.setFullscreen cannot be called while a Canvas is active in love.graphics.");
 
 	WindowSettings newsettings = settings;
 	newsettings.fullscreen = fullscreen;
@@ -736,6 +741,26 @@ const char *Window::getDisplayName(int displayindex) const
 		throw love::Exception("Invalid display index: %d", displayindex + 1);
 
 	return name;
+}
+
+Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
+{
+	// TODO: We can expose this everywhere, we just need to watch out for the
+	// SDL binary being older than the headers on Linux.
+#if SDL_VERSION_ATLEAST(2, 0, 9) && (defined(LOVE_ANDROID) || !defined(LOVE_LINUX))
+	switch (SDL_GetDisplayOrientation(displayindex))
+	{
+		case SDL_ORIENTATION_UNKNOWN: return ORIENTATION_UNKNOWN;
+		case SDL_ORIENTATION_LANDSCAPE: return ORIENTATION_LANDSCAPE;
+		case SDL_ORIENTATION_LANDSCAPE_FLIPPED: return ORIENTATION_LANDSCAPE_FLIPPED;
+		case SDL_ORIENTATION_PORTRAIT: return ORIENTATION_PORTRAIT;
+		case SDL_ORIENTATION_PORTRAIT_FLIPPED: return ORIENTATION_PORTRAIT_FLIPPED;
+	}
+#else
+	LOVE_UNUSED(displayindex);
+#endif
+
+	return ORIENTATION_UNKNOWN;
 }
 
 std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) const
@@ -819,6 +844,33 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 	}
 }
 
+Rect Window::getSafeArea() const
+{
+#if defined(LOVE_IOS)
+	if (window != nullptr)
+		return love::ios::getSafeArea(window);
+#elif defined(LOVE_ANDROID)
+	if (window != nullptr)
+	{
+		int top, left, bottom, right;
+
+		if (love::android::getSafeArea(top, left, bottom, right))
+		{
+			// DisplayCutout API returns safe area in pixels
+			// and is affected by display orientation.
+			double safeLeft, safeTop, safeWidth, safeHeight;
+			fromPixels(left, top, safeLeft, safeTop);
+			fromPixels(pixelWidth - left - right, pixelHeight - top - bottom, safeWidth, safeHeight);
+			return {(int) safeLeft, (int) safeTop, (int) safeWidth, (int) safeHeight};
+		}
+	}
+#endif
+
+	double dw, dh;
+	fromPixels(pixelWidth, pixelHeight, dw, dh);
+	return {0, 0, (int) dw, (int) dh};
+}
+
 bool Window::isOpen() const
 {
 	return open;
@@ -888,6 +940,24 @@ bool Window::setIcon(love::image::ImageData *imgd)
 love::image::ImageData *Window::getIcon()
 {
 	return icon.get();
+}
+
+void Window::setVSync(int vsync)
+{
+	if (context == nullptr)
+		return;
+
+	SDL_GL_SetSwapInterval(vsync);
+
+	// Check if adaptive vsync was requested but not supported, and fall back
+	// to regular vsync if so.
+	if (vsync == -1 && SDL_GL_GetSwapInterval() != -1)
+		SDL_GL_SetSwapInterval(1);
+}
+
+int Window::getVSync() const
+{
+	return context != nullptr ? SDL_GL_GetSwapInterval() : 0;
 }
 
 void Window::setDisplaySleepEnabled(bool enable)
@@ -1045,6 +1115,11 @@ void Window::DPIToWindowCoords(double *x, double *y) const
 }
 
 double Window::getDPIScale() const
+{
+	return settings.usedpiscale ? getNativeDPIScale() : 1.0;
+}
+
+double Window::getNativeDPIScale() const
 {
 #ifdef LOVE_ANDROID
 	return love::android::getScreenScale();

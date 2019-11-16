@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,8 +43,6 @@ Image::Image(const Slices &data, const Settings &settings, bool validatedata)
 {
 	if (validatedata && data.validate() == MIPMAPS_DATA)
 		mipmapsType = MIPMAPS_DATA;
-
-	++imageCount;
 }
 
 Image::Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
@@ -80,25 +78,41 @@ Image::~Image()
 
 void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 {
+	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr && !gfx->isImageFormatSupported(fmt, sRGB))
+	{
+		const char *str;
+		if (love::getConstant(fmt, str))
+		{
+			throw love::Exception("Cannot create image: "
+								  "%s%s images are not supported on this system.", sRGB ? "sRGB " : "", str);
+		}
+		else
+			throw love::Exception("cannot create image: format is not supported on this system.");
+	}
+
 	pixelWidth = w;
 	pixelHeight = h;
 
 	width  = (int) (pixelWidth / settings.dpiScale + 0.5);
 	height = (int) (pixelHeight / settings.dpiScale + 0.5);
 
-	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getMipmapCount(w, h);
 	format = fmt;
 
 	if (isCompressed() && mipmapsType == MIPMAPS_GENERATED)
 		mipmapsType = MIPMAPS_NONE;
 
-	if (getMipmapCount() > 1)
+	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h, depth);
+
+	if (mipmapCount > 1)
 		filter.mipmap = defaultMipmapFilter;
 
 	initQuad();
+
+	++imageCount;
 }
 
-void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice)
+void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y)
 {
 	love::image::ImageData *id = dynamic_cast<love::image::ImageData *>(d);
 
@@ -106,11 +120,11 @@ void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice)
 	if (id != nullptr)
 		lock.setLock(id->getMutex());
 
-	Rect rect = {0, 0, d->getWidth(), d->getHeight()};
-	uploadByteData(d->getFormat(), d->getData(), d->getSize(), rect, level, slice);
+	Rect rect = {x, y, d->getWidth(), d->getHeight()};
+	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect);
 }
 
-void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, bool reloadmipmaps)
+void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
 {
 	// No effect if the texture hasn't been created yet.
 	if (getHandle() == 0 || usingDefaultTexture)
@@ -120,13 +134,24 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 		throw love::Exception("Pixel formats must match.");
 
 	if (mipmap < 0 || (mipmapsType != MIPMAPS_DATA && mipmap > 0) || mipmap >= getMipmapCount())
-		throw love::Exception("Invalid image mipmap index.");
+		throw love::Exception("Invalid image mipmap index %d.", mipmap + 1);
 
 	if (slice < 0 || (texType == TEXTURE_CUBE && slice >= 6)
-		|| (texType == TEXTURE_VOLUME && slice >= std::max(getDepth() >> mipmap, 1))
+		|| (texType == TEXTURE_VOLUME && slice >= getDepth(mipmap))
 		|| (texType == TEXTURE_2D_ARRAY && slice >= getLayerCount()))
 	{
-		throw love::Exception("Invalid image slice index.");
+		throw love::Exception("Invalid image slice index %d.", slice + 1);
+	}
+
+	Rect rect = {x, y, d->getWidth(), d->getHeight()};
+
+	int mipw = getPixelWidth(mipmap);
+	int miph = getPixelHeight(mipmap);
+
+	if (rect.x < 0 || rect.y < 0 || rect.w <= 0 || rect.h <= 0
+		|| (rect.x + rect.w) > mipw || (rect.y + rect.h) > miph)
+	{
+		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d Image.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
 	}
 
 	love::image::ImageDataBase *oldd = data.get(slice, mipmap);
@@ -134,30 +159,29 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 	if (oldd == nullptr)
 		throw love::Exception("Image does not store ImageData!");
 
-	int w = d->getWidth();
-	int h = d->getHeight();
+	Rect currect = {0, 0, oldd->getWidth(), oldd->getHeight()};
 
-	if (w != oldd->getWidth() || h != oldd->getHeight())
-		throw love::Exception("Dimensions must match the texture's dimensions for the specified mipmap level.");
+	// We can only replace the internal Data (used when reloading due to setMode)
+	// if the dimensions match. We also don't currently support partial updates
+	// of compressed textures.
+	if (rect == currect)
+		data.set(slice, mipmap, d);
+	else if (isPixelFormatCompressed(d->getFormat()))
+		throw love::Exception("Compressed textures only support replacing the entire Image.");
 
 	Graphics::flushStreamDrawsGlobal();
 
-	d->retain();
-	oldd->release();
-
-	data.set(slice, mipmap, d);
-
-	uploadImageData(d, mipmap, slice);
+	uploadImageData(d, mipmap, slice, x, y);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
 }
 
-void Image::replacePixels(const void *data, size_t size, const Rect &rect, int slice, int mipmap, bool reloadmipmaps)
+void Image::replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps)
 {
 	Graphics::flushStreamDrawsGlobal();
 
-	uploadByteData(format, data, size, rect, mipmap, slice);
+	uploadByteData(format, data, size, mipmap, slice, rect);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
@@ -279,9 +303,10 @@ Image::MipmapsType Image::Slices::validate() const
 
 	int w = firstdata->getWidth();
 	int h = firstdata->getHeight();
+	int depth = textureType == TEXTURE_VOLUME ? slicecount : 1;
 	PixelFormat format = firstdata->getFormat();
 
-	int expectedmips = Texture::getMipmapCount(w, h);
+	int expectedmips = Texture::getTotalMipmapCount(w, h, depth);
 
 	if (mipcount != expectedmips && mipcount != 1)
 		throw love::Exception("Image does not have all required mipmap levels (expected %d, got %d)", expectedmips, mipcount);
@@ -332,12 +357,43 @@ Image::MipmapsType Image::Slices::validate() const
 		if (textureType == TEXTURE_VOLUME)
 			mipslices = std::max(mipslices / 2, 1);
 	}
-	
+
 	if (mipcount > 1)
 		return MIPMAPS_DATA;
 	else
 		return MIPMAPS_NONE;
 }
+
+bool Image::getConstant(const char *in, SettingType &out)
+{
+	return settingTypes.find(in, out);
+}
+
+bool Image::getConstant(SettingType in, const char *&out)
+{
+	return settingTypes.find(in, out);
+}
+
+const char *Image::getConstant(SettingType in)
+{
+	const char *name = nullptr;
+	getConstant(in, name);
+	return name;
+}
+
+std::vector<std::string> Image::getConstants(SettingType)
+{
+	return settingTypes.getNames();
+}
+
+StringMap<Image::SettingType, Image::SETTING_MAX_ENUM>::Entry Image::settingTypeEntries[] =
+{
+	{ "mipmaps",  SETTING_MIPMAPS   },
+	{ "linear",   SETTING_LINEAR    },
+	{ "dpiscale", SETTING_DPI_SCALE },
+};
+
+StringMap<Image::SettingType, Image::SETTING_MAX_ENUM> Image::settingTypes(Image::settingTypeEntries, sizeof(Image::settingTypeEntries));
 
 } // graphics
 } // love

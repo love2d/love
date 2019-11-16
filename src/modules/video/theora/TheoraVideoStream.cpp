@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -213,19 +213,24 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 	if (position < lastFrame)
 		seekDecoder(position);
 
+	th_ycbcr_buffer bufferinfo;
+	bool hasFrame = false;
+
 	// Until we are at the end of the stream, or we are displaying the right frame
-	unsigned int lagCounter = 0;
+	unsigned int framesBehind = 0;
+	bool failedSeek = false;
 	while (!demuxer.isEos() && position >= nextFrame)
 	{
 		// If we can't catch up, seek
-		if (lagCounter++ > 5)
+		if (framesBehind++ > 5 && !failedSeek)
 		{
 			seekDecoder(position);
-			lagCounter = 0;
+			framesBehind = 0;
+			failedSeek = true;
 		}
 
-		th_ycbcr_buffer bufferinfo;
 		th_decode_ycbcr_out(decoder, bufferinfo);
+		hasFrame = true;
 
 		ogg_int64_t granulePosition;
 		do
@@ -235,7 +240,11 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 		} while (th_decode_packetin(decoder, &packet, &granulePosition) != 0);
 		lastFrame = nextFrame;
 		nextFrame = th_granule_time(decoder, granulePosition);
+	}
 
+	// Only swap once, even if we read many frames to get here
+	if (hasFrame)
+	{
 		// Don't swap whilst we're writing to the backbuffer
 		{
 			love::thread::Lock l(bufferMutex);
@@ -282,6 +291,9 @@ void TheoraVideoStream::fillBackBuffer()
 bool TheoraVideoStream::swapBuffers()
 {
 	if (demuxer.isEos())
+		return false;
+
+	if (!frameSync->isPlaying())
 		return false;
 
 	love::thread::Lock l(bufferMutex);

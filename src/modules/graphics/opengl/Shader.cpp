@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -148,6 +148,7 @@ void Shader::mapActiveUniforms()
 		if (oldu != olduniforms.end())
 		{
 			u.data = oldu->second.data;
+			u.dataSize = oldu->second.dataSize;
 			u.textures = oldu->second.textures;
 
 			updateUniform(&u, u.count, true);
@@ -332,7 +333,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (vertex::getConstant((VertexAttribID) i, name))
+		if (vertex::getConstant((BuiltinVertexAttribute) i, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -355,7 +356,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (vertex::getConstant(VertexAttribID(i), name))
+		if (vertex::getConstant(BuiltinVertexAttribute(i), name))
 			builtinAttributes[i] = glGetAttribLocation(program, name);
 		else
 			builtinAttributes[i] = -1;

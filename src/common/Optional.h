@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,23 +27,23 @@ namespace love
 template <typename T>
 struct Optional
 {
-	bool hasValue;
 	T value;
+	bool hasValue;
 
 	Optional()
-		: hasValue(false)
-		, value(T())
+		: value(T())
+		, hasValue(false)
 	{}
 
 	Optional(T val)
-		: hasValue(true)
-		, value(val)
+		: value(val)
+		, hasValue(true)
 	{}
 
 	void set(T val)
 	{
-		hasValue = true;
 		value = val;
+		hasValue = true;
 	}
 };
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 #include "wrap_DroppedFile.h"
 #include "wrap_FileData.h"
 #include "data/wrap_Data.h"
+#include "data/wrap_DataModule.h"
 
 #include "physfs/Filesystem.h"
 
@@ -116,7 +117,30 @@ int w_mount(lua_State *L)
 {
 	std::string archive;
 
-	if (luax_istype(L, 1, DroppedFile::type))
+	if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = love::data::luax_checkdata(L, 1);
+		int startidx = 2;
+
+		if (luax_istype(L, 1, FileData::type) && !lua_isstring(L, 3))
+		{
+			FileData *filedata = luax_checkfiledata(L, 1);
+			archive = filedata->getFilename();
+			startidx = 2;
+		}
+		else
+		{
+			archive = luax_checkstring(L, 2);
+			startidx = 3;
+		}
+
+		const char *mountpoint = luaL_checkstring(L, startidx + 0);
+		bool append = luax_optboolean(L, startidx + 1, false);
+
+		luax_pushboolean(L, instance()->mount(data, archive.c_str(), mountpoint, append));
+		return 1;
+	}
+	else if (luax_istype(L, 1, DroppedFile::type))
 	{
 		DroppedFile *file = luax_totype<DroppedFile>(L, 1);
 		archive = file->getFilename();
@@ -133,9 +157,16 @@ int w_mount(lua_State *L)
 
 int w_unmount(lua_State *L)
 {
-	const char *archive = luaL_checkstring(L, 1);
-
-	luax_pushboolean(L, instance()->unmount(archive));
+	if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = love::data::luax_checkdata(L, 1);
+		luax_pushboolean(L, instance()->unmount(data));
+	}
+	else
+	{
+		const char *archive = luaL_checkstring(L, 1);
+		luax_pushboolean(L, instance()->unmount(archive));
+	}
 	return 1;
 }
 
@@ -183,7 +214,10 @@ File *luax_getfile(lua_State *L, int idx)
 		file = instance()->newFile(filename);
 	}
 	else
+	{
 		file = luax_checkfile(L, idx);
+		file->retain();
+	}
 
 	return file;
 }
@@ -196,7 +230,6 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
 		file = luax_getfile(L, idx);
-		file->retain();
 	}
 	else if (luax_istype(L, idx, FileData::type))
 	{
@@ -229,7 +262,6 @@ Data *luax_getdata(lua_State *L, int idx)
 	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
 		file = luax_getfile(L, idx);
-		file->retain();
 	}
 	else if (luax_istype(L, idx, Data::type))
 	{
@@ -365,14 +397,31 @@ int w_getInfo(lua_State *L)
 	const char *filepath = luaL_checkstring(L, 1);
 	Filesystem::Info info = {};
 
+	int startidx = 2;
+	Filesystem::FileType filtertype = Filesystem::FILETYPE_MAX_ENUM;
+	if (lua_isstring(L, startidx))
+	{
+		const char *typestr = luaL_checkstring(L, startidx);
+		if (!Filesystem::getConstant(typestr, filtertype))
+			return luax_enumerror(L, "file type", Filesystem::getConstants(filtertype), typestr);
+
+		startidx++;
+	}
+
 	if (instance()->getInfo(filepath, info))
 	{
+		if (filtertype != Filesystem::FILETYPE_MAX_ENUM && info.type != filtertype)
+		{
+			lua_pushnil(L);
+			return 1;
+		}
+
 		const char *typestr = nullptr;
 		if (!Filesystem::getConstant(info.type, typestr))
 			return luaL_error(L, "Unknown file type.");
 
-		if (lua_istable(L, 2))
-			lua_pushvalue(L, 2);
+		if (lua_istable(L, startidx))
+			lua_pushvalue(L, startidx);
 		else
 			lua_createtable(L, 0, 3);
 
@@ -416,10 +465,19 @@ int w_remove(lua_State *L)
 
 int w_read(lua_State *L)
 {
-	const char *filename = luaL_checkstring(L, 1);
-	int64 len = (int64) luaL_optinteger(L, 2, File::ALL);
+	love::data::ContainerType ctype = love::data::CONTAINER_STRING;
+	int startidx = 1;
 
-	Data *data = nullptr;
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		ctype = love::data::luax_checkcontainertype(L, 1);
+		startidx = 2;
+	}
+
+	const char *filename = luaL_checkstring(L, startidx + 0);
+	int64 len = (int64) luaL_optinteger(L, startidx + 1, File::ALL);
+
+	FileData *data = nullptr;
 	try
 	{
 		data = instance()->read(filename, len);
@@ -432,10 +490,11 @@ int w_read(lua_State *L)
 	if (data == nullptr)
 		return luax_ioError(L, "File could not be read.");
 
-	// Push the string.
-	lua_pushlstring(L, (const char *) data->getData(), data->getSize());
+	if (ctype == love::data::CONTAINER_DATA)
+		luax_pushtype(L, data);
+	else
+		lua_pushlstring(L, (const char *) data->getData(), data->getSize());
 
-	// Push the size.
 	lua_pushinteger(L, data->getSize());
 
 	// Lua has a copy now, so we can free it.
@@ -663,7 +722,7 @@ static void replaceAll(std::string &str, const std::string &substr, const std::s
 
 int loader(lua_State *L)
 {
-	std::string modulename = luax_tostring(L, 1);
+	std::string modulename = luax_checkstring(L, 1);
 
 	for (char &c : modulename)
 	{
@@ -704,7 +763,7 @@ static const char *library_extensions[] =
 
 int extloader(lua_State *L)
 {
-	const char *filename = lua_tostring(L, -1);
+	std::string filename = luax_checkstring(L, 1);
 	std::string tokenized_name(filename);
 	std::string tokenized_function(filename);
 

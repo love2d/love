@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -68,12 +68,15 @@ public:
 	bool isGamepadDown(const std::vector<GamepadButton> &blist) const override;
 
 	JoystickInput getGamepadMapping(const GamepadInput &input) const override;
+	std::string getGamepadMappingString() const override;
 
 	void *getHandle() const override;
 
 	std::string getGUID() const override;
 	int getInstanceID() const override;
 	int getID() const override;
+
+	void getDeviceInfo(int &vendorID, int &productID, int &productVersion) const override;
 
 	bool isVibrationSupported() override;
 	bool setVibration(float left, float right, float duration = -1.0f) override;
@@ -110,13 +113,15 @@ private:
 	{
 		float left  = 0.0f;
 		float right = 0.0f;
-		SDL_HapticEffect effect = {};
+		SDL_HapticEffect effect;
 		Uint16 data[4];
 		int id = -1;
 		Uint32 endtime = SDL_HAPTIC_INFINITY;
 
+		// Old versions of VS2013 have trouble with initializing these in-line.
 		Vibration()
-			: data() // VS2013 can't initialize the array above...
+			: effect()
+			, data()
 		{}
 
 	} vibration;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 #include "common/int.h"
 
 #include <cstring>
+#include <string>
 #include <vector>
 #include <set>
 
@@ -35,6 +36,8 @@ namespace love
 class Variant
 {
 public:
+
+	static const int MAX_SMALL_STRING_LENGTH = 15;
 
 	enum Type
 	{
@@ -49,26 +52,6 @@ public:
 		TABLE
 	};
 
-	Variant();
-	Variant(bool boolean);
-	Variant(double number);
-	Variant(const char *string, size_t len);
-	Variant(void *lightuserdata);
-	Variant(love::Type *type, love::Object *object);
-	Variant(std::vector<std::pair<Variant, Variant>> *table);
-	Variant(const Variant &v);
-	Variant(Variant &&v);
-	~Variant();
-
-	Variant &operator = (const Variant &v);
-
-	Type getType() const { return type; }
-
-	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
-	void toLua(lua_State *L) const;
-
-private:
-
 	class SharedString : public love::Object
 	{
 	public:
@@ -77,6 +60,7 @@ private:
 			: len(len)
 		{
 			str = new char[len+1];
+			str[len] = '\0';
 			memcpy(str, string, len);
 		}
 		virtual ~SharedString() { delete[] str; }
@@ -99,10 +83,6 @@ private:
 		std::vector<std::pair<Variant, Variant>> *table;
 	};
 
-	static const int MAX_SMALL_STRING_LENGTH = 15;
-
-	Type type;
-
 	union Data
 	{
 		bool boolean;
@@ -116,7 +96,32 @@ private:
 			char str[MAX_SMALL_STRING_LENGTH];
 			uint8 len;
 		} smallstring;
-	} data;
+	};
+
+	Variant();
+	Variant(bool boolean);
+	Variant(double number);
+	Variant(const char *str, size_t len);
+	Variant(const std::string &str);
+	Variant(void *lightuserdata);
+	Variant(love::Type *type, love::Object *object);
+	Variant(std::vector<std::pair<Variant, Variant>> *table);
+	Variant(const Variant &v);
+	Variant(Variant &&v);
+	~Variant();
+
+	Variant &operator = (const Variant &v);
+
+	Type getType() const { return type; }
+	const Data &getData() const { return data; }
+
+	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
+	void toLua(lua_State *L) const;
+
+private:
+
+	Type type;
+	Data data;
 
 }; // Variant
 } // love

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -69,6 +69,20 @@ int w_Joystick_getGUID(lua_State *L)
 	Joystick *j = luax_checkjoystick(L, 1);
 	luax_pushstring(L, j->getGUID());
 	return 1;
+}
+
+int w_Joystick_getDeviceInfo(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	int vendorID = 0, productID = 0, productVersion = 0;
+	j->getDeviceInfo(vendorID, productID, productVersion);
+
+	lua_pushnumber(L, vendorID);
+	lua_pushnumber(L, productID);
+	lua_pushnumber(L, productVersion);
+
+	return 3;
 }
 
 int w_Joystick_getAxisCount(lua_State *L)
@@ -278,6 +292,17 @@ int w_Joystick_getGamepadMapping(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_getGamepadMappingString(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	std::string mapping = j->getGamepadMappingString();
+	if (mapping.empty())
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, mapping);
+	return 1;
+}
+
 int w_Joystick_isVibrationSupported(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
@@ -324,6 +349,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getName", w_Joystick_getName },
 	{ "getID", w_Joystick_getID },
 	{ "getGUID", w_Joystick_getGUID },
+	{ "getDeviceInfo", w_Joystick_getDeviceInfo },
 	{ "getAxisCount", w_Joystick_getAxisCount },
 	{ "getButtonCount", w_Joystick_getButtonCount },
 	{ "getHatCount", w_Joystick_getHatCount },
@@ -336,6 +362,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
 	{ "getGamepadMapping", w_Joystick_getGamepadMapping },
+	{ "getGamepadMappingString", w_Joystick_getGamepadMappingString },
 
 	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
 	{ "setVibration", w_Joystick_setVibration },

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -161,17 +161,15 @@ bool isConvex(const std::vector<love::Vector2> &polygon)
 	// turning direction can be determined using the cross-product of
 	// the forward difference vectors
 	size_t i = polygon.size() - 2, j = polygon.size() - 1, k = 0;
-	Vector2 p(polygon[j].x - polygon[i].x, polygon[j].y - polygon[i].y);
-	Vector2 q(polygon[k].x - polygon[j].x, polygon[k].y - polygon[j].y);
+	Vector2 p(polygon[j] - polygon[i]);
+	Vector2 q(polygon[k] - polygon[j]);
 	float winding = Vector2::cross(p, q);
 
 	while (k+1 < polygon.size())
 	{
 		i = j; j = k; k++;
-		p.x = polygon[j].x - polygon[i].x;
-		p.y = polygon[j].y - polygon[i].y;
-		q.x = polygon[k].x - polygon[j].x;
-		q.y = polygon[k].y - polygon[j].y;
+		p = polygon[j] - polygon[i];
+		q = polygon[k] - polygon[j];
 
 		if (Vector2::cross(p, q) * winding < 0)
 			return false;
@@ -201,14 +199,9 @@ float linearToGamma(float c)
 		return 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
 }
 
-Math Math::instance;
-
 Math::Math()
 	: rng()
 {
-	// prevent the runtime from free()-ing this
-	retain();
-
 	RandomGenerator::Seed seed;
 	seed.b64 = (uint64) time(nullptr);
 	rng.setSeed(seed);

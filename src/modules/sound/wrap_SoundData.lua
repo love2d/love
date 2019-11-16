@@ -3,7 +3,7 @@ R"luastring"--(
 -- There is a matching delimiter at the bottom of the file.
 
 --[[
-Copyright (c) 2006-2017 LOVE Development Team
+Copyright (c) 2006-2019 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -55,7 +55,7 @@ local objectcache = setmetatable({}, {
 	__mode = "k",
 	__index = function(self, sounddata)
 		local bytedepth = _getBitDepth(sounddata) / 8
-		local pointer = ffi.cast(datatypes[bytedepth], sounddata:getPointer())
+		local pointer = ffi.cast(datatypes[bytedepth], sounddata:getFFIPointer())
 
 		local p = {
 			bytedepth = bytedepth,

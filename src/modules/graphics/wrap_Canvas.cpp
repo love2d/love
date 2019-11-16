@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -92,22 +92,19 @@ int w_Canvas_newImageData(lua_State *L)
 
 	int slice = 0;
 	int mipmap = 0;
+	Rect rect = {0, 0, canvas->getPixelWidth(), canvas->getPixelHeight()};
 
-	Rect rect;
-	rect.x = 0;
-	rect.y = 0;
-	rect.w = canvas->getPixelWidth();
-	rect.h = canvas->getPixelHeight();
+	if (canvas->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 2) - 1;
 
-	if (!lua_isnoneornil(L, 2))
+	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+
+	if (!lua_isnoneornil(L, 4))
 	{
-		rect.x = (int) luaL_checkinteger(L, 2);
-		rect.y = (int) luaL_checkinteger(L, 3);
-		rect.w = (int) luaL_checkinteger(L, 4);
-		rect.h = (int) luaL_checkinteger(L, 5);
-
-		slice = (int) luaL_optinteger(L, 6, 1) - 1;
-		mipmap = (int) luaL_optinteger(L, 7, 1) - 1;
+		rect.x = (int) luaL_checkinteger(L, 4);
+		rect.y = (int) luaL_checkinteger(L, 5);
+		rect.w = (int) luaL_checkinteger(L, 6);
+		rect.h = (int) luaL_checkinteger(L, 7);
 	}
 
 	love::image::ImageData *img = nullptr;

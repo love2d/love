@@ -3,7 +3,7 @@ R"luastring"--(
 -- There is a matching delimiter at the bottom of the file.
 
 --[[
-Copyright (c) 2006-2017 LOVE Development Team
+Copyright (c) 2006-2019 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
-local RandomGenerator_mt, ffifuncspointer = ...
+local RandomGenerator_mt, ffifuncspointer_str = ...
 local RandomGenerator = RandomGenerator_mt.__index
 
 local type, tonumber, error = type, tonumber, error
@@ -67,7 +67,7 @@ typedef struct FFI_RandomGenerator
 } FFI_RandomGenerator;
 ]])
 
-local ffifuncs = ffi.cast("FFI_RandomGenerator *", ffifuncspointer)
+local ffifuncs = ffi.cast("FFI_RandomGenerator **", ffifuncspointer_str)[0]
 
 
 -- Overwrite some regular love.math functions with FFI implementations.

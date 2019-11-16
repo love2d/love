@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,11 +30,10 @@ namespace graphics
 
 love::Type Text::type("Text", &Drawable::type);
 
-Text::Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &text)
+Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
-	, vbo(nullptr)
-	, quadIndices(gfx, 20)
+	, vertex_buffer(nullptr)
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -43,40 +42,39 @@ Text::Text(Graphics *gfx, Font *font, const std::vector<Font::ColoredString> &te
 
 Text::~Text()
 {
-	delete vbo;
+	delete vertex_buffer;
 }
 
 void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset)
 {
 	size_t offset = vertoffset * sizeof(Font::GlyphVertex);
 	size_t datasize = vertices.size() * sizeof(Font::GlyphVertex);
-	uint8 *vbodata = nullptr;
 
 	// If we haven't created a VBO or the vertices are too big, make a new one.
-	if (datasize > 0 && (!vbo || (offset + datasize) > vbo->getSize()))
+	if (datasize > 0 && (!vertex_buffer || (offset + datasize) > vertex_buffer->getSize()))
 	{
 		// Make it bigger than necessary to reduce potential future allocations.
 		size_t newsize = size_t((offset + datasize) * 1.5);
 
-		if (vbo != nullptr)
-			newsize = std::max(size_t(vbo->getSize() * 1.5), newsize);
+		if (vertex_buffer != nullptr)
+			newsize = std::max(size_t(vertex_buffer->getSize() * 1.5), newsize);
 
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-		Buffer *new_vbo = gfx->newBuffer(newsize, nullptr, BUFFER_VERTEX, vertex::USAGE_DYNAMIC, 0);
+		Buffer *new_buffer = gfx->newBuffer(newsize, nullptr, BUFFER_VERTEX, vertex::USAGE_DYNAMIC, 0);
 
-		if (vbo != nullptr)
-			vbo->copyTo(0, vbo->getSize(), new_vbo, 0);
+		if (vertex_buffer != nullptr)
+			vertex_buffer->copyTo(0, vertex_buffer->getSize(), new_buffer, 0);
 
-		delete vbo;
-		vbo = new_vbo;
+		delete vertex_buffer;
+		vertex_buffer = new_buffer;
 
-		vertexBuffers.set(0, vbo, 0);
+		vertexBuffers.set(0, vertex_buffer, 0);
 	}
 
-	if (vbo != nullptr && datasize > 0)
+	if (vertex_buffer != nullptr && datasize > 0)
 	{
-		vbodata = (uint8 *) vbo->map();
-		memcpy(vbodata + offset, &vertices[0], datasize);
+		uint8 *bufferdata = (uint8 *) vertex_buffer->map();
+		memcpy(bufferdata + offset, &vertices[0], datasize);
 		// We unmap when we draw, to avoid unnecessary full map()/unmap() calls.
 	}
 }
@@ -113,17 +111,22 @@ void Text::addTextData(const TextData &t)
 	else
 		new_commands = font->generateVerticesFormatted(t.codepoints, constantcolor, t.wrap, t.align, vertices, &text_info);
 
-	if (t.use_matrix)
-		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
-
 	size_t voffset = vert_offset;
 
+	// Must be before the early exit below.
 	if (!t.append_vertices)
 	{
 		voffset = 0;
+		vert_offset = 0;
 		draw_commands.clear();
 		text_data.clear();
 	}
+
+	if (vertices.empty())
+		return;
+
+	if (t.use_matrix)
+		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
 
 	uploadVertices(vertices, voffset);
 
@@ -220,10 +223,10 @@ int Text::getWidth(int index) const
 {
 	if (index < 0)
 		index = std::max((int) text_data.size() - 1, 0);
-	
+
 	if (index >= (int) text_data.size())
 		return 0;
-	
+
 	return text_data[index].text_info.width;
 }
 
@@ -231,16 +234,16 @@ int Text::getHeight(int index) const
 {
 	if (index < 0)
 		index = std::max((int) text_data.size() - 1, 0);
-	
+
 	if (index >= (int) text_data.size())
 		return 0;
-	
+
 	return text_data[index].text_info.height;
 }
 
 void Text::draw(Graphics *gfx, const Matrix4 &m)
 {
-	if (vbo == nullptr || draw_commands.empty())
+	if (vertex_buffer == nullptr || draw_commands.empty())
 		return;
 
 	gfx->flushStreamDraws();
@@ -259,24 +262,12 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	for (const Font::DrawCommand &cmd : draw_commands)
 		totalverts = std::max(cmd.startvertex + cmd.vertexcount, totalverts);
 
-	if ((size_t) totalverts / 4 > quadIndices.getSize())
-		quadIndices = QuadIndices(gfx, (size_t) totalverts / 4);
-
-	vbo->unmap(); // Make sure all pending data is flushed to the GPU.
+	vertex_buffer->unmap(); // Make sure all pending data is flushed to the GPU.
 
 	Graphics::TempTransform transform(gfx, m);
 
-	Graphics::DrawIndexedCommand drawcmd(&vertexAttributes, &vertexBuffers, quadIndices.getBuffer());
-	drawcmd.indexType = quadIndices.getType();
-	size_t elemsize = quadIndices.getElementSize();
-
 	for (const Font::DrawCommand &cmd : draw_commands)
-	{
-		drawcmd.indexCount = (cmd.vertexcount / 4) * 6;
-		drawcmd.indexBufferOffset = (cmd.startvertex / 4) * 6 * elemsize;
-		drawcmd.texture = cmd.texture;
-		gfx->draw(drawcmd);
-	}
+		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, cmd.texture);
 }
 
 } // graphics

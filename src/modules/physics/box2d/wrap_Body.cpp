@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -67,6 +67,19 @@ int w_Body_getPosition(lua_State *L)
 	lua_pushnumber(L, y_o);
 
 	return 2;
+}
+
+int w_Body_getTransform(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+
+	float x_o, y_o;
+	t->getPosition(x_o, y_o);
+	lua_pushnumber(L, x_o);
+	lua_pushnumber(L, y_o);
+	lua_pushnumber(L, t->getAngle());
+
+	return 3;
 }
 
 int w_Body_getLinearVelocity(lua_State *L)
@@ -250,6 +263,19 @@ int w_Body_setY(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
 	luax_catchexcept(L, [&](){ t->setY(arg1); });
+	return 0;
+}
+
+int w_Body_setTransform(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	float angle = (float)luaL_checknumber(L, 4);
+	luax_catchexcept(L, [&](){
+		t->setPosition(x, y);
+		t->setAngle(angle);
+	});
 	return 0;
 }
 
@@ -522,6 +548,14 @@ int w_Body_isFixedRotation(lua_State *L)
 	return 1;
 }
 
+int w_Body_isTouching(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	Body *other = luax_checkbody(L, 2);
+	luax_pushboolean(L, t->isTouching(other));
+	return 1;
+}
+
 int w_Body_getWorld(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -609,6 +643,8 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getY", w_Body_getY },
 	{ "getAngle", w_Body_getAngle },
 	{ "getPosition", w_Body_getPosition },
+	{ "getTransform", w_Body_getTransform },
+	{ "setTransform", w_Body_setTransform },
 	{ "getLinearVelocity", w_Body_getLinearVelocity },
 	{ "getWorldCenter", w_Body_getWorldCenter },
 	{ "getLocalCenter", w_Body_getLocalCenter },
@@ -655,6 +691,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "setAwake", w_Body_setAwake },
 	{ "setFixedRotation", w_Body_setFixedRotation },
 	{ "isFixedRotation", w_Body_isFixedRotation },
+	{ "isTouching", w_Body_isTouching },
 	{ "getWorld", w_Body_getWorld },
 	{ "getFixtures", w_Body_getFixtures },
 	{ "getJoints", w_Body_getJoints },

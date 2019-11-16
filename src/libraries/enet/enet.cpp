@@ -21,8 +21,18 @@
  * THE SOFTWARE.
  */
 
+#ifdef _WIN32
+#define NOMINMAX
+#endif
+
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <stdint.h>
+
+#include <cstdio>
+#include <cstddef>
+#include <algorithm>
 
 extern "C" {
 #define LUA_COMPAT_ALL
@@ -101,10 +111,50 @@ static size_t find_peer_index(lua_State *l, ENetHost *enet_host, ENetPeer *peer)
 	return peer_index;
 }
 
+// VS2013 doesn't support alignof
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+#define ENET_ALIGNOF(x) __alignof(x)
+#else
+#define ENET_ALIGNOF(x) alignof(x)
+#endif
+
+// For use with the enet_peers registry.
+// Using the pointer directly via lightuserdata would be ideal, but LuaJIT
+// cannot use lightuserdata with more than 47 bits whereas some newer arm64
+// architectures allow pointers which use more than that.
+static lua_Number compute_peer_key(lua_State *L, ENetPeer *peer)
+{
+	// ENet peers are be allocated on the heap in an array. Lua numbers
+	// (doubles) can store all possible integers up to 2^53. We can store
+	// pointers that use more than 53 bits if their alignment is guaranteed to
+	// be more than 1. For example an alignment requirement of 8 means we can
+	// shift the pointer's bits by 3.
+	const size_t minalign = std::min(ENET_ALIGNOF(ENetPeer), ENET_ALIGNOF(std::max_align_t));
+	uintptr_t key = (uintptr_t) peer;
+
+	if ((key & (minalign - 1)) != 0)
+	{
+		luaL_error(L, "Cannot push enet peer to Lua: unexpected alignment "
+				   "(pointer is %p but alignment should be %d)", peer, minalign);
+	}
+
+	static const size_t shift = (size_t) log2((double) minalign);
+
+	key >>= shift;
+
+	// Make sure our key isn't larger than 2^53.
+	if (key > 0x20000000000000ULL)
+		luaL_error(L, "Cannot push enet peer to Lua: pointer value %p is too large", peer);
+
+	return (lua_Number) key;
+}
+
 static void push_peer(lua_State *l, ENetPeer *peer) {
+	lua_Number key = compute_peer_key(l, peer);
+
 	// try to find in peer table
 	lua_getfield(l, LUA_REGISTRYINDEX, "enet_peers");
-	lua_pushlightuserdata(l, peer);
+	lua_pushnumber(l, key);
 	lua_gettable(l, -2);
 
 	if (lua_isnil(l, -1)) {
@@ -115,7 +165,7 @@ static void push_peer(lua_State *l, ENetPeer *peer) {
 		luaL_getmetatable(l, "enet_peer");
 		lua_setmetatable(l, -2);
 
-		lua_pushlightuserdata(l, peer);
+		lua_pushnumber(l, key);
 		lua_pushvalue(l, -2);
 
 		lua_settable(l, -4);
@@ -712,8 +762,14 @@ static int peer_send(lua_State *l) {
 	ENetPacket *packet = read_packet(l, 2, &channel_id);
 
 	// printf("sending, channel_id=%d\n", channel_id);
-	enet_peer_send(peer, channel_id, packet);
-	return 0;
+	int ret = enet_peer_send(peer, channel_id, packet);
+	if (ret < 0) {
+		enet_packet_destroy(packet);
+	}
+
+	lua_pushinteger(l, ret);
+
+	return 1;
 }
 
 static const struct luaL_Reg enet_funcs [] = {

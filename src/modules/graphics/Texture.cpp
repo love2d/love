@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,15 +26,6 @@
 // C
 #include <cmath>
 #include <algorithm>
-
-#ifdef LOVE_ANDROID
-// log2 is not declared in the math.h shipped with the Android NDK
-static inline double log2(double n)
-{
-	// log(n)/log(2) is log2.
-	return std::log(n) / std::log(2);
-}
-#endif
 
 
 namespace love
@@ -102,6 +93,23 @@ bool Texture::isReadable() const
 	return readable;
 }
 
+bool Texture::isValidSlice(int slice) const
+{
+	if (slice < 0)
+		return false;
+
+	if (texType == TEXTURE_CUBE)
+		return slice < 6;
+	else if (texType == TEXTURE_VOLUME)
+		return slice < depth;
+	else if (texType == TEXTURE_2D_ARRAY)
+		return slice < layers;
+	else if (slice > 0)
+		return false;
+
+	return true;
+}
+
 void Texture::draw(Graphics *gfx, const Matrix4 &m)
 {
 	draw(gfx, quad, m);
@@ -142,7 +150,7 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	const Vector2 *texcoords = q->getVertexTexCoords();
 	vertex::STf_RGBAub *vertexdata = (vertex::STf_RGBAub *) data.stream[1];
 
-	Color c = toColor(gfx->getColor());
+	Color32 c = toColor32(gfx->getColor());
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -170,7 +178,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	if (layer < 0 || layer >= layers)
 		throw love::Exception("Invalid layer: %d (Texture has %d layers)", layer + 1, layers);
 
-	Color c = toColor(gfx->getColor());
+	Color32 c = toColor32(gfx->getColor());
 
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
@@ -307,12 +315,12 @@ bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)
 	return true;
 }
 
-int Texture::getMipmapCount(int w, int h)
+int Texture::getTotalMipmapCount(int w, int h)
 {
 	return (int) log2(std::max(w, h)) + 1;
 }
 
-int Texture::getMipmapCount(int w, int h, int d)
+int Texture::getTotalMipmapCount(int w, int h, int d)
 {
 	return (int) log2(std::max(std::max(w, h), d)) + 1;
 }

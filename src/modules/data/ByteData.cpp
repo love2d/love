@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,10 +45,23 @@ ByteData::ByteData(const void *d, size_t size)
 	memcpy(data, d, size);
 }
 
+ByteData::ByteData(void *d, size_t size, bool own)
+	: size(size)
+{
+	if (own)
+		data = (char *) d;
+	else
+	{
+		create();
+		memcpy(data, d, size);
+	}
+}
+
 ByteData::ByteData(const ByteData &d)
 	: size(d.size)
 {
 	create();
+	memcpy(data, d.data, size);
 }
 
 ByteData::~ByteData()

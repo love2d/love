@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -91,12 +91,9 @@ static float noise4(float x, float y, float z, float w);
 
 class Math : public Module
 {
-private:
-
-	RandomGenerator rng;
-
 public:
 
+	Math();
 	virtual ~Math();
 
 	RandomGenerator *getRandomGenerator()
@@ -128,11 +125,9 @@ public:
 		return "love.math";
 	}
 
-	static Math instance;
-
 private:
 
-	Math();
+	RandomGenerator rng;
 
 }; // Math
 

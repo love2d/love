@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -301,6 +301,33 @@ Joystick::JoystickInput Joystick::getGamepadMapping(const GamepadInput &input) c
 	return jinput;
 }
 
+std::string Joystick::getGamepadMappingString() const
+{
+	char *sdlmapping = nullptr;
+
+	if (controller != nullptr)
+		sdlmapping = SDL_GameControllerMapping(controller);
+
+	if (sdlmapping == nullptr)
+	{
+		SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(pguid.c_str());
+		sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+	}
+
+	if (sdlmapping == nullptr)
+		return "";
+
+	std::string mappingstr(sdlmapping);
+	SDL_free(sdlmapping);
+
+	// Matches SDL_GameControllerAddMappingsFromRW.
+	if (mappingstr.find_last_of(',') != mappingstr.length() - 1)
+		mappingstr += ",";
+	mappingstr += "platform:" + std::string(SDL_GetPlatform());
+
+	return mappingstr;
+}
+
 void *Joystick::getHandle() const
 {
 	return joyhandle;
@@ -320,6 +347,24 @@ int Joystick::getInstanceID() const
 int Joystick::getID() const
 {
 	return id;
+}
+
+void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 6)
+	if (joyhandle != nullptr)
+	{
+		vendorID = SDL_JoystickGetVendor(joyhandle);
+		productID = SDL_JoystickGetProduct(joyhandle);
+		productVersion = SDL_JoystickGetProductVersion(joyhandle);
+	}
+	else
+#endif
+	{
+		vendorID = 0;
+		productID = 0;
+		productVersion = 0;
+	}
 }
 
 bool Joystick::checkCreateHaptic()

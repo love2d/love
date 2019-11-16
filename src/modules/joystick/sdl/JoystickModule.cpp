@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -199,8 +199,18 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 	}
 	else
 	{
-		// Use a generic name if we have to create a new mapping string.
-		mapstr = guid + ",Controller,";
+		std::string name = "Controller";
+
+		for (love::joystick::Joystick *stick : joysticks)
+		{
+			if (stick->getGUID() == guid)
+			{
+				name = stick->getName();
+				break;
+			}
+		}
+
+		mapstr = guid + "," + name + ",";
 	}
 
 	std::stringstream joyinputstream;
@@ -346,7 +356,7 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 
 		for (auto stick : activeSticks)
 		{
-			if (stick->isGamepad() || guid.compare(stick->getGUID()) != 0)
+			if (guid.compare(stick->getGUID()) != 0)
 				continue;
 
 			// Big hack time: open the index as a game controller and compare
@@ -355,12 +365,15 @@ void JoystickModule::checkGamepads(const std::string &guid) const
 			if (controller == nullptr)
 				continue;
 
+			// GameController objects are reference-counted in SDL, so we don't want to
+			// have a joystick open when trying to re-initialize it
 			SDL_Joystick *sdlstick = SDL_GameControllerGetJoystick(controller);
-			if (sdlstick == (SDL_Joystick *) stick->getHandle())
-				stick->openGamepad(d_index);
-
-			// GameController objects are reference-counted in SDL.
+			bool open_gamepad = (sdlstick == (SDL_Joystick *) stick->getHandle());
 			SDL_GameControllerClose(controller);
+
+			// open as gamepad if necessary
+			if (open_gamepad)
+				stick->openGamepad(d_index);
 		}
 	}
 }
@@ -432,8 +445,29 @@ void JoystickModule::loadGamepadMappings(const std::string &mappings)
 		}
 	}
 
-	if (!success)
+	// Don't error when an empty string is given, since saveGamepadMappings can
+	// produce an empty string if there are no recently seen gamepads to save.
+	if (!success && !mappings.empty())
 		throw love::Exception("Invalid gamepad mappings.");
+}
+
+std::string JoystickModule::getGamepadMappingString(const std::string &guid) const
+{
+	SDL_JoystickGUID sdlguid = SDL_JoystickGetGUIDFromString(guid.c_str());
+
+	char *sdlmapping = SDL_GameControllerMappingForGUID(sdlguid);
+	if (sdlmapping == nullptr)
+		return "";
+
+	std::string mapping(sdlmapping);
+	SDL_free(sdlmapping);
+
+	// Matches SDL_GameControllerAddMappingsFromRW.
+	if (mapping.find_last_of(',') != mapping.length() - 1)
+		mapping += ",";
+	mapping += "platform:" + std::string(SDL_GetPlatform());
+
+	return mapping;
 }
 
 std::string JoystickModule::saveGamepadMappings()

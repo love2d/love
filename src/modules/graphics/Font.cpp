@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2017 LOVE Development Team
+* Copyright (c) 2006-2019 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -152,12 +152,24 @@ void Font::createTexture()
 	image = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
 	image->setFilter(filter);
 
-	// Initialize the texture with transparent black.
-	size_t bpp = getPixelFormatSize(pixelFormat);
-	std::vector<uint8> emptydata(size.width * size.height * bpp, 0);
+	{
+		size_t bpp = getPixelFormatSize(pixelFormat);
+		size_t pixelcount = size.width * size.height;
 
-	Rect rect = {0, 0, size.width, size.height};
-	image->replacePixels(emptydata.data(), emptydata.size(), rect, 0, 0, false);
+		// Initialize the texture with transparent white for Luminance-Alpha
+		// formats (since we keep luminance constant and vary alpha in those
+		// glyphs), and transparent black otherwise.
+		std::vector<uint8> emptydata(pixelcount * bpp, 0);
+
+		if (pixelFormat == PIXELFORMAT_LA8)
+		{
+			for (size_t i = 0; i < pixelcount; i++)
+				emptydata[i * 2 + 0] = 255;
+		}
+
+		Rect rect = {0, 0, size.width, size.height};
+		image->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
+	}
 
 	images.emplace_back(image, Acquire::NORETAIN);
 
@@ -258,12 +270,12 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		g.texture = image;
 
 		Rect rect = {textureX, textureY, gd->getWidth(), gd->getHeight()};
-		image->replacePixels(gd->getData(), gd->getSize(), rect, 0, 0, false);
+		image->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
 
-		Color c(255, 255, 255, 255);
+		Color32 c(255, 255, 255, 255);
 
 		// Extrude the quad borders by 1 pixel. We have an extra pixel of
 		// transparent padding in the texture atlas, so the quad extrusion will
@@ -409,7 +421,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 	Colorf linearconstantcolor = gammaCorrectColor(constantcolor);
 
-	Color curcolor = toColor(constantcolor);
+	Color32 curcolor = toColor32(constantcolor);
 	int curcolori = -1;
 	int ncolors = (int) codepoints.colors.size();
 
@@ -430,7 +442,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			c *= linearconstantcolor;
 			unGammaCorrectColor(c);
 
-			curcolor = toColor(c);
+			curcolor = toColor32(c);
 		}
 
 		if (g == '\n')
@@ -456,7 +468,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 		// If findGlyph invalidates the texture cache, re-start the loop.
 		if (cacheid != textureCacheID)
 		{
-			i = 0;
+			i = -1; // The next iteration will increment this to 0.
 			maxwidth = 0;
 			dx = offset.x;
 			dy = offset.y;
@@ -464,7 +476,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			vertices.resize(vertstartsize);
 			prevglyph = 0;
 			curcolori = -1;
-			curcolor = toColor(constantcolor);
+			curcolor = toColor32(constantcolor);
 			continue;
 		}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -85,7 +85,7 @@ void Image::loadDefaultTexture()
 	int slices = texType == TEXTURE_CUBE ? 6 : 1;
 	Rect rect = {0, 0, 2, 2};
 	for (int slice = 0; slice < slices; slice++)
-		uploadByteData(PIXELFORMAT_RGBA8, px, sizeof(px), rect, 0, slice);
+		uploadByteData(PIXELFORMAT_RGBA8, px, sizeof(px), 0, slice, rect);
 }
 
 void Image::loadData()
@@ -133,7 +133,7 @@ void Image::loadData()
 			love::image::ImageDataBase *id = data.get(slice, mip);
 
 			if (id != nullptr)
-				uploadImageData(id, mip, slice);
+				uploadImageData(id, mip, slice, 0, 0);
 		}
 
 		w = std::max(w / 2, 1);
@@ -147,7 +147,7 @@ void Image::loadData()
 		generateMipmaps();
 }
 
-void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, const Rect &r, int level, int slice)
+void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
 {
 	OpenGL::TempDebugGroup debuggroup("Image data upload");
 
@@ -185,22 +185,8 @@ bool Image::loadVolatile()
 
 	OpenGL::TempDebugGroup debuggroup("Image load");
 
-	if (!OpenGL::isPixelFormatSupported(format, false, true, sRGB))
+	if (!isCompressed())
 	{
-		const char *str;
-		if (love::getConstant(format, str))
-		{
-			throw love::Exception("Cannot create image: "
-			                      "%s%s images are not supported on this system.", sRGB ? "sRGB " : "", str);
-		}
-		else
-			throw love::Exception("cannot create image: format is not supported on this system.");
-	}
-	else if (!isCompressed())
-	{
-		if (sRGB && !hasSRGBSupport())
-			throw love::Exception("sRGB images are not supported on this system.");
-
 		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
 		if (sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
 			&& mipmapsType != MIPMAPS_DATA)
@@ -365,14 +351,9 @@ bool Image::setMipmapSharpness(float sharpness)
 	return true;
 }
 
-bool Image::isFormatSupported(PixelFormat pixelformat)
+bool Image::isFormatSupported(PixelFormat pixelformat, bool sRGB)
 {
-	return OpenGL::isPixelFormatSupported(pixelformat, false, true, false);
-}
-
-bool Image::hasSRGBSupport()
-{
-	return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
+	return OpenGL::isPixelFormatSupported(pixelformat, false, true, sRGB);
 }
 
 } // opengl

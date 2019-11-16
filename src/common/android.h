@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,6 +45,12 @@ bool getImmersive();
 double getScreenScale();
 
 /**
+ * Gets the window safe area, e.g. phone with notch display.
+ * Returns false if safe area is not set.
+ **/
+bool getSafeArea(int &top, int &left, int &bottom, int &right);
+
+/**
  * Gets the selected love file in the device filesystem.
  **/
 const char *getSelectedGameFile();
@@ -67,6 +73,12 @@ bool mkdir(const char *path);
 bool createStorageDirectories();
 
 bool hasBackgroundMusic();
+
+bool hasRecordingPermission();
+
+void requestRecordingPermission();
+
+void showRecordingPermissionMissingDialog();
 
 } // android
 } // love

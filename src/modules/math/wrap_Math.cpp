@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,9 +44,11 @@ namespace love
 namespace math
 {
 
+#define instance() (Module::getInstance<Math>(Module::M_MATH))
+
 int w__getRandomGenerator(lua_State *L)
 {
-	RandomGenerator *t = Math::instance.getRandomGenerator();
+	RandomGenerator *t = instance()->getRandomGenerator();
 	luax_pushtype(L, t);
 	return 1;
 }
@@ -57,7 +59,7 @@ int w_newRandomGenerator(lua_State *L)
 	if (lua_gettop(L) > 0)
 		s = luax_checkrandomseed(L, 1);
 
-	RandomGenerator *t = Math::instance.newRandomGenerator();
+	RandomGenerator *t = instance()->newRandomGenerator();
 
 	if (lua_gettop(L) > 0)
 	{
@@ -116,7 +118,7 @@ int w_newBezierCurve(lua_State *L)
 		}
 	}
 
-	BezierCurve *curve = Math::instance.newBezierCurve(points);
+	BezierCurve *curve = instance()->newBezierCurve(points);
 	luax_pushtype(L, curve);
 	curve->release();
 	return 1;
@@ -127,7 +129,7 @@ int w_newTransform(lua_State *L)
 	Transform *t = nullptr;
 
 	if (lua_isnoneornil(L, 1))
-		t = Math::instance.newTransform();
+		t = instance()->newTransform();
 	else
 	{
 		float x =  (float) luaL_checknumber(L, 1);
@@ -139,7 +141,7 @@ int w_newTransform(lua_State *L)
 		float oy = (float) luaL_optnumber(L, 7, 0.0);
 		float kx = (float) luaL_optnumber(L, 8, 0.0);
 		float ky = (float) luaL_optnumber(L, 9, 0.0);
-		t = Math::instance.newTransform(x, y, a, sx, sy, ox, oy, kx, ky);
+		t = instance()->newTransform(x, y, a, sx, sy, ox, oy, kx, ky);
 	}
 
 	luax_pushtype(L, t);
@@ -360,19 +362,20 @@ int w_compress(lua_State *L)
 		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
 
 	int level = (int) luaL_optinteger(L, 3, -1);
+	size_t rawsize = 0;
+	const char *rawbytes = nullptr;
 
-	CompressedData *cdata = nullptr;
 	if (lua_isstring(L, 1))
-	{
-		size_t rawsize = 0;
-		const char *rawbytes = luaL_checklstring(L, 1, &rawsize);
-		luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
-	}
+		rawbytes = luaL_checklstring(L, 1, &rawsize);
 	else
 	{
 		Data *rawdata = luax_checktype<Data>(L, 1);
-		luax_catchexcept(L, [&](){ cdata = compress(format, rawdata, level); });
+		rawsize = rawdata->getSize();
+		rawbytes = (const char *) rawdata->getData();
 	}
+
+	CompressedData *cdata = nullptr;
+	luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
 
 	luax_pushtype(L, cdata);
 	cdata->release();
@@ -477,10 +480,16 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_math(lua_State *L)
 {
-	Math::instance.retain();
+	Math *instance = instance();
+	if (instance == nullptr)
+	{
+		luax_catchexcept(L, [&](){ instance = new Math(); });
+	}
+	else
+		instance->retain();
 
 	WrappedModule w;
-	w.module = &Math::instance;
+	w.module = instance;
 	w.name = "math";
 	w.type = &Module::type;
 	w.functions = functions;
@@ -491,7 +500,7 @@ extern "C" int luaopen_love_math(lua_State *L)
 	// Execute wrap_Math.lua, sending the math table and ffifuncs pointer as args.
 	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "wrap_Math.lua");
 	lua_pushvalue(L, -2);
-	lua_pushlightuserdata(L, &ffifuncs);
+	luax_pushpointerasstring(L, &ffifuncs);
 	lua_call(L, 2, 0);
 
 	return n;

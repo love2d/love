@@ -6,35 +6,37 @@ Documentation
 -------------
 
 We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], and last but not least there's the irc channel [#love on OFTC][irc].
+If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our IRC channel [#love on OFTC][irc].
 
 Compilation
 -----------
 
-###Windows
+### Windows
 Follow the instructions at the [megasource][megasource] repository page.
 
-###*nix
+### *nix
 Run `platform/unix/automagic` from the repository root, then run ./configure and make.
 
 	$ platform/unix/automagic
 	$ ./configure
 	$ make
 
-###Mac OS X
+When using a source release, automagic has already been run, and the first step can be skipped.
+
+### macOS
 Download the required frameworks from [here][dependencies] and place them in `/Library/Frameworks/`.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
-###iOS
-Download the required libraries from [here][dependencies-ios] and place the `include` and `libraries` folders
-into the `platform/xcode/ios` folder.
+### iOS
+Download the `ios-libraries` zip file corresponding to the LÖVE version being used from [here][dependencies-ios],
+unzip it, and place the `include` and `libraries` subfolders into LÖVE's `platform/xcode/ios` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
 See `readme-iOS.rtf` for more information.
 
-###Android
+### Android
 Visit the [Android build repository][android-repository] for build instructions.
 
 Repository information
@@ -51,7 +53,7 @@ Experimental changes are developed in the separate [love-experiments][love-exper
 Contributing
 ------------
 
-The best places to contribute are through the Bitbucket issue tracker and the official IRC channel.
+The best places to contribute are through the Bitbucket issue tracker and the official Discord server or IRC channel.
 For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
 
 Builds
@@ -74,7 +76,6 @@ Dependencies
 - OpenAL
 - Lua / LuaJIT / LLVM-lua
 - FreeType
-- PhysicsFS
 - ModPlug
 - mpg123
 - Vorbisfile
@@ -83,9 +84,10 @@ Dependencies
 [site]: http://love2d.org
 [wiki]: http://love2d.org/wiki
 [forums]: http://love2d.org/forums
+[discord]: https://discord.gg/rhUets9
 [irc]: irc://irc.oftc.net/love
 [dependencies]: http://love2d.org/sdk
-[dependencies-ios]: https://bitbucket.org/rude/love/downloads/love-0.10.0-ios-libraries.zip
+[dependencies-ios]: https://bitbucket.org/rude/love/downloads/
 [megasource]: https://bitbucket.org/rude/megasource
 [builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable

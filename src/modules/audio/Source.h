@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -72,8 +72,8 @@ public:
 	virtual void setVolume(float volume) = 0;
 	virtual float getVolume() const = 0;
 
-	virtual void seek(float offset, Unit unit) = 0;
-	virtual float tell(Unit unit) = 0;
+	virtual void seek(double offset, Unit unit) = 0;
+	virtual double tell(Unit unit) = 0;
 	virtual double getDuration(Unit unit) = 0;
 
 	// all float * v must be of size 3

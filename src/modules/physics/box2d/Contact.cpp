@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,8 +22,6 @@
 #include "World.h"
 #include "Physics.h"
 
-#include "common/Memoizer.h"
-
 namespace love
 {
 namespace physics
@@ -33,10 +31,11 @@ namespace box2d
 
 love::Type Contact::type("Contact", &Object::type);
 
-Contact::Contact(b2Contact *contact)
+Contact::Contact(World *world, b2Contact *contact)
 	: contact(contact)
+	, world(world)
 {
-	Memoizer::add(contact, this);
+	world->registerObject(contact, this);
 }
 
 Contact::~Contact()
@@ -48,14 +47,14 @@ void Contact::invalidate()
 {
 	if (contact != NULL)
 	{
-		Memoizer::remove(contact);
+		world->unregisterObject(contact);
 		contact = NULL;
 	}
 }
 
 bool Contact::isValid()
 {
-	return contact != NULL ? true : false;
+	return contact != NULL;
 }
 
 int Contact::getPositions(lua_State *L)
@@ -146,8 +145,8 @@ void Contact::getChildren(int &childA, int &childB)
 
 void Contact::getFixtures(Fixture *&fixtureA, Fixture *&fixtureB)
 {
-	fixtureA = (Fixture *) Memoizer::find(contact->GetFixtureA());
-	fixtureB = (Fixture *) Memoizer::find(contact->GetFixtureB());
+	fixtureA = (Fixture *) world->findObject(contact->GetFixtureA());
+	fixtureB = (Fixture *) world->findObject(contact->GetFixtureB());
 
 	if (!fixtureA || !fixtureB)
 		throw love::Exception("A fixture has escaped Memoizer!");

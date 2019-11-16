@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 #include "wrap_JoystickModule.h"
 #include "wrap_Joystick.h"
 
+#include "filesystem/Filesystem.h"
 #include "filesystem/wrap_Filesystem.h"
 
 #include "sdl/JoystickModule.h"
@@ -116,15 +117,15 @@ int w_setGamepadMapping(lua_State *L)
 
 int w_loadGamepadMappings(lua_State *L)
 {
-	bool isfile = true;
-	std::string mappings;
+	bool isfile = false;
+	std::string mappings = luax_checkstring(L, 1);
 
-	if (lua_isstring(L, 1))
+	auto fs = Module::getInstance<love::filesystem::Filesystem>(Module::M_FILESYSTEM);
+	if (fs)
 	{
-		lua_pushvalue(L, 1);
-		luax_convobj(L, -1, "filesystem", "isFile");
-		isfile = luax_toboolean(L, -1);
-		lua_pop(L, 1);
+		love::filesystem::Filesystem::Info info = {};
+		bool exists = fs->getInfo(mappings.c_str(), info);
+		isfile = exists && info.type == love::filesystem::Filesystem::FILETYPE_FILE;
 	}
 
 	if (isfile)
@@ -132,7 +133,6 @@ int w_loadGamepadMappings(lua_State *L)
 		love::filesystem::FileData *fd = love::filesystem::luax_getfiledata(L, 1);
 		mappings = std::string((const char *) fd->getData(), fd->getSize());
 		fd->release();
-
 	}
 	else
 		mappings = luax_checkstring(L, 1);
@@ -160,6 +160,17 @@ int w_saveGamepadMappings(lua_State *L)
 	return 1;
 }
 
+int w_getGamepadMappingString(lua_State *L)
+{
+	const char *guid = luaL_checkstring(L, 1);
+	std::string mapping = instance()->getGamepadMappingString(guid);
+	if (mapping.empty())
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, mapping);
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -168,6 +179,7 @@ static const luaL_Reg functions[] =
 	{ "setGamepadMapping", w_setGamepadMapping },
 	{ "loadGamepadMappings", w_loadGamepadMappings },
 	{ "saveGamepadMappings", w_saveGamepadMappings },
+	{ "getGamepadMappingString", w_getGamepadMappingString },
 	{ 0, 0 }
 };
 

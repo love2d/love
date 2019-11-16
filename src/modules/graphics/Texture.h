@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -120,6 +120,8 @@ public:
 
 	bool isReadable() const;
 
+	bool isValidSlice(int slice) const;
+
 	int getWidth(int mip = 0) const;
 	int getHeight(int mip = 0) const;
 	int getDepth(int mip = 0) const;
@@ -148,8 +150,8 @@ public:
 
 	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 
-	static int getMipmapCount(int w, int h);
-	static int getMipmapCount(int w, int h, int d);
+	static int getTotalMipmapCount(int w, int h);
+	static int getTotalMipmapCount(int w, int h, int d);
 
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);

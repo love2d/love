@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,7 @@
 
 #include "Canvas.h"
 #include "graphics/Graphics.h"
+#include "Graphics.h"
 
 #include <algorithm> // For min/max
 
@@ -40,6 +41,17 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 	if (texture != 0)
 	{
+		if (isPixelFormatDepthStencil(format) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+		{
+			// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
+			GLenum none = GL_NONE;
+			if (GLAD_ES_VERSION_3_0)
+				glDrawBuffers(1, &none);
+			else
+				glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
+
 		bool unusedSRGB = false;
 		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
 
@@ -107,6 +119,17 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 	GLuint fbo = 0;
 	glGenFramebuffers(1, &fbo);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
+
+	if (isPixelFormatDepthStencil(pixelformat) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+	{
+		// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
+		GLenum none = GL_NONE;
+		if (GLAD_ES_VERSION_3_0)
+			glDrawBuffers(1, &none);
+		else
+			glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+	}
 
 	glGenRenderbuffers(1, &buffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, buffer);
@@ -270,6 +293,15 @@ bool Canvas::loadVolatile()
 
 void Canvas::unloadVolatile()
 {
+	if (fbo != 0 || renderbuffer != 0 || texture != 0)
+	{
+		// This is a bit ugly, but we need some way to destroy the cached FBO
+		// when this Canvas' texture is destroyed.
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+		if (gfx != nullptr)
+			gfx->cleanupCanvas(this);
+	}
+
 	if (fbo != 0)
 		gl.deleteFramebuffer(fbo);
 
@@ -503,6 +535,18 @@ bool Canvas::isFormatSupported(PixelFormat format, bool readable)
 	GLuint texture = 0;
 	GLuint renderbuffer = 0;
 
+	// Avoid the test for depth/stencil formats - not every GL version
+	// guarantees support for depth/stencil-only render targets (which we would
+	// need for the test below to work), and we already do some finagling in
+	// convertPixelFormat to try to use the best-supported internal
+	// depth/stencil format for a particular driver.
+	if (isPixelFormatDepthStencil(format))
+	{
+		checkedFormats[format].set(readable, true);
+		supportedFormats[format].set(readable, true);
+		return true;
+	}
+
 	bool unusedSRGB = false;
 	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, unusedSRGB);
 
@@ -566,6 +610,15 @@ bool Canvas::isFormatSupported(PixelFormat format, bool readable)
 	supportedFormats[format].set(readable, supported);
 
 	return supported;
+}
+
+void Canvas::resetFormatSupport()
+{
+	for (int i = 0; i < (int)PIXELFORMAT_MAX_ENUM; i++)
+	{
+		checkedFormats[i].readable = false;
+		checkedFormats[i].nonreadable = false;
+	}
 }
 
 } // opengl

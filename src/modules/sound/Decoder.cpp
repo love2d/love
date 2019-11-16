@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,9 +29,8 @@ namespace sound
 
 love::Type Decoder::type("Decoder", &Object::type);
 
-Decoder::Decoder(Data *data, const std::string &ext, int bufferSize)
+Decoder::Decoder(Data *data, int bufferSize)
 	: data(data)
-	, ext(ext)
 	, bufferSize(bufferSize)
 	, sampleRate(DEFAULT_SAMPLE_RATE)
 	, buffer(0)

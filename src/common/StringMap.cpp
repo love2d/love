@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,4 +22,3 @@
 
 // See the header
 template class std::vector<std::string>;
-template decltype(std::vector<std::string>().emplace_back("")) std::vector<std::string>::emplace_back<const char *const&>(const char *const&);

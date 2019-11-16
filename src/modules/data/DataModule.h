@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,17 +42,24 @@ enum EncodeFormat
 	ENCODE_MAX_ENUM
 };
 
+enum ContainerType
+{
+	CONTAINER_DATA,
+	CONTAINER_STRING,
+	CONTAINER_MAX_ENUM
+};
+
 /**
  * Compresses a block of memory using the given compression format.
  *
  * @param format The compression format to use.
- * @param rawdata The data to compress.
+ * @param rawbytes The data to compress.
+ * @param rawsize The size in bytes of the data to compress.
  * @param level The amount of compression to apply (between 0 and 9.)
  *              A value of -1 indicates the default amount of compression.
  *              Specific formats may not use every level.
  * @return The newly compressed data.
  **/
-CompressedData *compress(Compressor::Format format, Data *rawdata, int level = -1);
 CompressedData *compress(Compressor::Format format, const char *rawbytes, size_t rawsize, int level = -1);
 
 /**
@@ -98,11 +105,16 @@ bool getConstant(const char *in, EncodeFormat &out);
 bool getConstant(EncodeFormat in, const char *&out);
 std::vector<std::string> getConstants(EncodeFormat);
 
+bool getConstant(const char *in, ContainerType &out);
+bool getConstant(ContainerType in, const char *&out);
+std::vector<std::string> getConstants(ContainerType);
+
 
 class DataModule : public Module
 {
 public:
 
+	DataModule();
 	virtual ~DataModule();
 
 	// Implements Module.
@@ -112,12 +124,7 @@ public:
 	DataView *newDataView(Data *data, size_t offset, size_t size);
 	ByteData *newByteData(size_t size);
 	ByteData *newByteData(const void *d, size_t size);
-
-	static DataModule instance;
-
-private:
-
-	DataModule();
+	ByteData *newByteData(void *d, size_t size, bool own);
 
 }; // DataModule
 

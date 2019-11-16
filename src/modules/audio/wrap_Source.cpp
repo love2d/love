@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -71,10 +71,11 @@ int w_Source_setPitch(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
 	float p = (float)luaL_checknumber(L, 2);
+	if (p != p)
+		return luaL_error(L, "Pitch cannot be NaN.");
 	if (p > std::numeric_limits<lua_Number>::max() ||
-			p < std::numeric_limits<lua_Number>::min() ||
-			p != p)
-		return luaL_error(L, "Pitch has to be finite and not NaN.");
+			p <= 0.0f)
+		return luaL_error(L, "Pitch has to be non-zero, positive, finite number.");
 	t->setPitch(p);
 	return 0;
 }
@@ -104,7 +105,7 @@ int w_Source_getVolume(lua_State *L)
 int w_Source_seek(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
-	float offset = (float)luaL_checknumber(L, 2);
+	double offset = luaL_checknumber(L, 2);
 	if (offset < 0)
 		return luaL_argerror(L, 2, "can't seek to a negative position");
 
@@ -338,6 +339,13 @@ int w_Source_setAirAbsorption(lua_State *L)
 	return 0;
 }
 
+int w_Source_getAirAbsorption(lua_State *L)
+{
+	Source *t = luax_checksource(L, 1);
+	luax_catchexcept(L, [&](){ lua_pushnumber(L, t->getAirAbsorptionFactor()); });
+	return 1;
+}
+
 int w_Source_getChannelCount(lua_State *L)
 {
 	Source *t = luax_checksource(L, 1);
@@ -464,8 +472,10 @@ int w_Source_setEffect(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	const char *namestr = luaL_checkstring(L, 2);
 
+	const bool isBool = lua_gettop(L) >= 3 && lua_isboolean(L, 3);
+
 	// :setEffect(effect, false) = clear effect
-	if (lua_gettop(L) == 3 && lua_isboolean(L, 3) && !lua_toboolean(L, 3))
+	if (isBool && !lua_toboolean(L, 3))
 	{
 		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->unsetEffect(namestr)); });
 		return 1;
@@ -473,10 +483,11 @@ int w_Source_setEffect(lua_State *L)
 
 	std::map<Filter::Parameter, float> params;
 
-	if (setFilterReadFilter(L, 3, params) == 1)
-		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setEffect(namestr, params)); });
-	else
+	// :setEffect(effect, [true]) = set effect without filter
+	if (isBool || setFilterReadFilter(L, 3, params) == 0)
 		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setEffect(namestr)); });
+	else
+		luax_catchexcept(L, [&]() { lua_pushboolean(L, t->setEffect(namestr, params)); });
 	return 1;
 }
 
@@ -487,13 +498,20 @@ int w_Source_getEffect(lua_State *L)
 
 	std::map<Filter::Parameter, float> params;
 	if (!t->getEffect(namestr, params))
-		return 0;
+	{
+		luax_pushboolean(L, false);
+		return 1;
+	}
 
+	luax_pushboolean(L, true);
+
+	// No filter associated, return nil as second argument
 	if (params.size() == 0)
-		return 0;
+		return 1;
 
+	// Return filter settings as second argument
 	getFilterWriteFilter(L, 3, params);
-	return 1;
+	return 2;
 }
 
 int w_Source_getActiveEffects(lua_State *L)
@@ -564,7 +582,7 @@ int w_Source_queue(lua_State *L)
 		});
 	}
 	else
-		return luax_typerror(L, 1, "Sound Data or lightuserdata");
+		return luax_typerror(L, 2, "SoundData or lightuserdata");
 
 	luax_pushboolean(L, success);
 	return 1;
@@ -628,6 +646,8 @@ static const luaL_Reg w_Source_functions[] =
 	{ "getAttenuationDistances", w_Source_getAttenuationDistances },
 	{ "setRolloff", w_Source_setRolloff },
 	{ "getRolloff", w_Source_getRolloff },
+	{ "setAirAbsorption", w_Source_setAirAbsorption },
+	{ "getAirAbsorption", w_Source_getAirAbsorption },
 
 	{ "getChannelCount", w_Source_getChannelCount },
 

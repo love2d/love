@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017 LOVE Development Team
+ * Copyright (c) 2006-2019 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,8 @@
 #include "Canvas.h"
 #include "Shader.h"
 
+#include "libraries/xxHash/xxhash.h"
+
 namespace love
 {
 
@@ -71,6 +73,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
+	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -80,8 +83,6 @@ public:
 	void present(void *screenshotCallbackData) override;
 
 	void setColor(Colorf c) override;
-
-	void setCanvas() override;
 
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
@@ -105,13 +106,35 @@ public:
 
 	bool isCanvasFormatSupported(PixelFormat format) const override;
 	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
-	bool isImageFormatSupported(PixelFormat format) const override;
+	bool isImageFormatSupported(PixelFormat format, bool sRGB) const override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 
 	Shader::Language getShaderLanguageTarget() const override;
 
+	// Internal use.
+	void cleanupCanvas(Canvas *canvas);
+
 private:
+
+	struct CachedFBOHasher
+	{
+		size_t operator() (const RenderTargets &rts) const
+		{
+			RenderTarget hashtargets[MAX_COLOR_RENDER_TARGETS + 1];
+			int hashcount = 0;
+
+			for (size_t i = 0; i < rts.colors.size(); i++)
+				hashtargets[hashcount++] = rts.colors[i];
+
+			if (rts.depthStencil.canvas != nullptr)
+				hashtargets[hashcount++] = rts.depthStencil;
+			else if (rts.temporaryRTFlags != 0)
+				hashtargets[hashcount++] = RenderTarget(nullptr, -1, rts.temporaryRTFlags);
+
+			return XXH32(hashtargets, sizeof(RenderTarget) * hashcount, 0);
+		}
+	};
 
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
@@ -126,8 +149,7 @@ private:
 
 	void setDebug(bool enable);
 
-	std::unordered_map<uint32, GLuint> framebufferObjects;
-	QuadIndices *quadIndices;
+	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
 
