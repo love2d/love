@@ -69,9 +69,6 @@ public:
 	void updatePointSize(float size);
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
 
-	static std::string getGLSLVersion();
-	static bool isSupported();
-
 private:
 
 	struct TextureUnit
