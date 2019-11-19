@@ -1718,17 +1718,11 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 			return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
 	case PIXELFORMAT_R16:
 	case PIXELFORMAT_RG16:
-		if (rendertarget)
-			return false;
-		else
-			return GLAD_VERSION_3_0
-				|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
-				|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg));
+		return GLAD_VERSION_3_0
+			|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
+			|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg));
 	case PIXELFORMAT_RGBA16:
-		if (rendertarget)
-			return false;
-		else
-			return GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16;
+		return GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16;
 	case PIXELFORMAT_R16F:
 	case PIXELFORMAT_RG16F:
 		if (GLAD_VERSION_1_0)
