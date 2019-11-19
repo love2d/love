@@ -71,17 +71,38 @@ GLSL.UNIFORMS = [[
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
-uniform LOVE_HIGHP_OR_MEDIUMP mat4 ViewSpaceFromLocal;
-uniform LOVE_HIGHP_OR_MEDIUMP mat4 ClipSpaceFromView;
-uniform LOVE_HIGHP_OR_MEDIUMP mat4 ClipSpaceFromLocal;
-uniform LOVE_HIGHP_OR_MEDIUMP mat3 ViewNormalFromLocal;
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
+uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
 
-// Compatibility
-#define TransformMatrix ViewSpaceFromLocal
-#define ProjectionMatrix ClipSpaceFromView
-#define TransformProjectionMatrix ClipSpaceFromLocal
-#define NormalMatrix ViewNormalFromLocal
+LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix = mat4(
+   love_UniformsPerDraw[0],
+   love_UniformsPerDraw[1],
+   love_UniformsPerDraw[2],
+   love_UniformsPerDraw[3]
+);
+
+LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix = mat4(
+   love_UniformsPerDraw[4],
+   love_UniformsPerDraw[5],
+   love_UniformsPerDraw[6],
+   love_UniformsPerDraw[7]
+);
+
+LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix = mat3(
+   love_UniformsPerDraw[8].xyz,
+   love_UniformsPerDraw[9].xyz,
+   love_UniformsPerDraw[10].xyz
+);
+
+LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize = love_UniformsPerDraw[11];
+LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor = love_UniformsPerDraw[12];
+
+#define TransformProjectionMatrix (ProjectionMatrix * TransformMatrix)
+
+// Alternate names
+#define ViewSpaceFromLocal TransformMatrix
+#define ClipSpaceFromView ProjectionMatrix
+#define ClipSpaceFromLocal TransformProjectionMatrix
+#define ViewNormalFromLocal NormalMatrix
 ]]
 
 GLSL.FUNCTIONS = [[
@@ -218,7 +239,6 @@ void setPointSize() {
 attribute vec4 VertexPosition;
 attribute vec4 VertexTexCoord;
 attribute vec4 VertexColor;
-attribute vec4 ConstantColor;
 
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;

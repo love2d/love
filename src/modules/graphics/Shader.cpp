@@ -34,6 +34,8 @@ namespace love
 namespace graphics
 {
 
+static_assert(sizeof(Shader::BuiltinUniformData) == sizeof(float) * 4 * 13, "Update the array in wrap_GraphicsShader.lua if this changes.");
+
 love::Type Shader::type("Shader", &Object::type);
 
 Shader *Shader::current = nullptr;
@@ -187,16 +189,12 @@ StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM> Shader::languages(Shader:
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry Shader::builtinNameEntries[] =
 {
-	{ "MainTex",             BUILTIN_TEXTURE_MAIN                  },
-	{ "love_VideoYChannel",  BUILTIN_TEXTURE_VIDEO_Y               },
-	{ "love_VideoCbChannel", BUILTIN_TEXTURE_VIDEO_CB              },
-	{ "love_VideoCrChannel", BUILTIN_TEXTURE_VIDEO_CR              },
-	{ "ViewSpaceFromLocal",  BUILTIN_MATRIX_VIEW_FROM_LOCAL        },
-	{ "ClipSpaceFromView",   BUILTIN_MATRIX_CLIP_FROM_VIEW         },
-	{ "ClipSpaceFromLocal",  BUILTIN_MATRIX_CLIP_FROM_LOCAL        },
-	{ "ViewNormalFromLocal", BUILTIN_MATRIX_VIEW_NORMAL_FROM_LOCAL },
-	{ "love_PointSize",      BUILTIN_POINT_SIZE                    },
-	{ "love_ScreenSize",     BUILTIN_SCREEN_SIZE                   },
+	{ "MainTex",              BUILTIN_TEXTURE_MAIN      },
+	{ "love_VideoYChannel",   BUILTIN_TEXTURE_VIDEO_Y   },
+	{ "love_VideoCbChannel",  BUILTIN_TEXTURE_VIDEO_CB  },
+	{ "love_VideoCrChannel",  BUILTIN_TEXTURE_VIDEO_CR  },
+	{ "love_UniformsPerDraw", BUILTIN_UNIFORMS_PER_DRAW },
+	{ "love_PointSize",       BUILTIN_POINT_SIZE        },
 };
 
 StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> Shader::builtinNames(Shader::builtinNameEntries, sizeof(Shader::builtinNameEntries));

@@ -309,7 +309,7 @@ void Graphics::setActive(bool enable)
 
 void Graphics::draw(const DrawCommand &cmd)
 {
-	gl.prepareDraw();
+	gl.prepareDraw(this);
 	gl.setVertexAttributes(*cmd.attributes, *cmd.buffers);
 	gl.bindTextureToUnit(cmd.texture, 0, false);
 	gl.setCullMode(cmd.cullMode);
@@ -326,7 +326,7 @@ void Graphics::draw(const DrawCommand &cmd)
 
 void Graphics::draw(const DrawIndexedCommand &cmd)
 {
-	gl.prepareDraw();
+	gl.prepareDraw(this);
 	gl.setVertexAttributes(*cmd.attributes, *cmd.buffers);
 	gl.bindTextureToUnit(cmd.texture, 0, false);
 	gl.setCullMode(cmd.cullMode);
@@ -373,7 +373,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
 
-	gl.prepareDraw();
+	gl.prepareDraw(this);
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.setCullMode(CULL_NONE);
 
@@ -1222,8 +1222,6 @@ void Graphics::setColor(Colorf c)
 	c.g = std::min(std::max(c.g, 0.0f), 1.0f);
 	c.b = std::min(std::max(c.b, 0.0f), 1.0f);
 	c.a = std::min(std::max(c.a, 0.0f), 1.0f);
-
-	gl.setConstantColor(c);
 
 	states.back().color = c;
 }

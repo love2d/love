@@ -220,7 +220,7 @@ public:
 	 * Set up necessary state (LOVE-provided shader uniforms, etc.) for drawing.
 	 * This *MUST* be called directly before OpenGL drawing functions.
 	 **/
-	void prepareDraw();
+	void prepareDraw(love::graphics::Graphics *gfx);
 
 	/**
 	 * State-tracked glBindBuffer.
@@ -261,13 +261,6 @@ public:
 	 * The y-coordinate starts at the top and is flipped internally.
 	 **/
 	void setScissor(const Rect &v, bool canvasActive);
-
-	/**
-	 * Sets the constant color (vertex attribute). This may be applied
-	 * internally at draw-time. This gets gamma-corrected internally as well.
-	 **/
-	void setConstantColor(const Colorf &color);
-	const Colorf &getConstantColor() const;
 
 	/**
 	 * Sets the global point size.
@@ -472,9 +465,6 @@ private:
 
 		uint32 enabledAttribArrays;
 		uint32 instancedAttribArrays;
-
-		Colorf constantColor;
-		Colorf lastConstantColor;
 
 		Rect viewport;
 		Rect scissor;

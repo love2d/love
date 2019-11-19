@@ -42,8 +42,6 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 	, builtinUniforms()
 	, builtinUniformInfo()
 	, builtinAttributes()
-	, canvasWasActive(false)
-	, lastViewport()
 	, lastPointSize(0.0f)
 {
 	// load shader source and create program object
@@ -297,16 +295,7 @@ bool Shader::loadVolatile()
 {
 	OpenGL::TempDebugGroup debuggroup("Shader load");
 
-    // Recreating the shader program will invalidate uniforms that rely on these.
-	canvasWasActive = false;
-    lastViewport = Rect();
-
 	lastPointSize = -1.0f;
-
-	// Invalidate the cached matrices by setting some elements to NaN.
-	float nan = std::numeric_limits<float>::quiet_NaN();
-	lastProjectionMatrix.setTranslation(nan, nan);
-	lastTransformMatrix.setTranslation(nan, nan);
 
 	// zero out active texture list
 	textureUnits.clear();
@@ -367,7 +356,6 @@ bool Shader::loadVolatile()
 		// make sure glUseProgram gets called.
 		current = nullptr;
 		attach();
-		updateBuiltinUniforms();
 	}
 
 	return true;
@@ -701,46 +689,6 @@ void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *cr
 	}
 }
 
-void Shader::updateScreenParams()
-{
-	Rect view = gl.getViewport();
-
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	bool canvasActive = gfx->isCanvasActive();
-
-	if ((view == lastViewport && canvasWasActive == canvasActive) || current != this)
-		return;
-
-	// In the shader, we do pixcoord.y = gl_FragCoord.y * params.z + params.w.
-	// This lets us flip pixcoord.y when needed, to be consistent (drawing with
-	// no Canvas active makes the y-values for pixel coordinates flipped.)
-	GLfloat params[] = {
-		(GLfloat) view.w, (GLfloat) view.h,
-		0.0f, 0.0f,
-	};
-
-	if (canvasActive)
-	{
-		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
-		params[2] = 1.0f;
-		params[3] = 0.0f;
-	}
-	else
-	{
-		// gl_FragCoord.y is flipped when drawing to the screen, so we un-flip:
-		// pixcoord.y = gl_FragCoord.y * -1.0 + height.
-		params[2] = -1.0f;
-		params[3] = (GLfloat) view.h;
-	}
-
-	GLint location = builtinUniforms[BUILTIN_SCREEN_SIZE];
-	if (location >= 0)
-		glUniform4fv(location, 1, params);
-
-	canvasWasActive = canvasActive;
-	lastViewport = view;
-}
-
 void Shader::updatePointSize(float size)
 {
 	if (size == lastPointSize || current != this)
@@ -753,63 +701,59 @@ void Shader::updatePointSize(float size)
 	lastPointSize = size;
 }
 
-void Shader::updateBuiltinUniforms()
+void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH)
 {
 	if (current != this)
 		return;
 
-	updateScreenParams();
-
 	if (GLAD_ES_VERSION_2_0)
 		updatePointSize(gl.getPointSize());
 
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	BuiltinUniformData data;
 
-	const Matrix4 &curproj = gfx->getProjection();
-	const Matrix4 &curxform = gfx->getTransform();
+	data.transformMatrix = gfx->getTransform();
+	data.projectionMatrix = gfx->getProjection();
 
-	bool tpmatrixneedsupdate = false;
-
-	// Only upload the matrices if they've changed.
-	if (memcmp(curxform.getElements(), lastTransformMatrix.getElements(), sizeof(float) * 16) != 0)
+	// The normal matrix is the transpose of the inverse of the rotation portion
+	// (top-left 3x3) of the transform matrix.
 	{
-		GLint location = builtinUniforms[BUILTIN_MATRIX_VIEW_FROM_LOCAL];
-		if (location >= 0)
-			glUniformMatrix4fv(location, 1, GL_FALSE, curxform.getElements());
-
-		// Also upload the re-calculated normal matrix, if possible. The normal
-		// matrix is the transpose of the inverse of the rotation portion
-		// (top-left 3x3) of the transform matrix.
-		location = builtinUniforms[BUILTIN_MATRIX_VIEW_NORMAL_FROM_LOCAL];
-		if (location >= 0)
+		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
+		const float *e = normalmatrix.getElements();
+		for (int i = 0; i < 3; i++)
 		{
-			Matrix3 normalmatrix = Matrix3(curxform).transposedInverse();
-			glUniformMatrix3fv(location, 1, GL_FALSE, normalmatrix.getElements());
-		}
-
-		tpmatrixneedsupdate = true;
-		lastTransformMatrix = curxform;
-	}
-
-	if (memcmp(curproj.getElements(), lastProjectionMatrix.getElements(), sizeof(float) * 16) != 0)
-	{
-		GLint location = builtinUniforms[BUILTIN_MATRIX_CLIP_FROM_VIEW];
-		if (location >= 0)
-			glUniformMatrix4fv(location, 1, GL_FALSE, curproj.getElements());
-
-		tpmatrixneedsupdate = true;
-		lastProjectionMatrix = curproj;
-	}
-
-	if (tpmatrixneedsupdate)
-	{
-		GLint location = builtinUniforms[BUILTIN_MATRIX_CLIP_FROM_LOCAL];
-		if (location >= 0)
-		{
-			Matrix4 tp_matrix(curproj, curxform);
-			glUniformMatrix4fv(location, 1, GL_FALSE, tp_matrix.getElements());
+			data.normalMatrix[i].x = e[i * 3 + 0];
+			data.normalMatrix[i].y = e[i * 3 + 1];
+			data.normalMatrix[i].z = e[i * 3 + 2];
+			data.normalMatrix[i].w = 0.0f;
 		}
 	}
+
+	data.screenSizeParams.x = viewportW;
+	data.screenSizeParams.y = viewportH;
+
+	// The shader does pixcoord.y = gl_FragCoord.y * params.z + params.w.
+	// This lets us flip pixcoord.y when needed, to be consistent (drawing
+	// with no Canvas active makes the pixel coordinates y-flipped.)
+	if (gfx->isCanvasActive())
+	{
+		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
+		data.screenSizeParams.z = 1.0f;
+		data.screenSizeParams.w = 0.0f;
+	}
+	else
+	{
+		// gl_FragCoord.y is flipped when drawing to the screen, so we
+		// un-flip: pixcoord.y = gl_FragCoord.y * -1.0 + height.
+		data.screenSizeParams.z = -1.0f;
+		data.screenSizeParams.w = viewportH;
+	}
+
+	data.constantColor = gfx->getColor();
+	gammaCorrectColor(data.constantColor);
+
+	GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
+	if (location >= 0)
+		glUniform4fv(location, 13, (const GLfloat *) &data);
 }
 
 std::string Shader::getGLSLVersion()

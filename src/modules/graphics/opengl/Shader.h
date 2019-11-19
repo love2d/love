@@ -66,9 +66,8 @@ public:
 	ptrdiff_t getHandle() const override;
 	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) override;
 
-	void updateScreenParams();
 	void updatePointSize(float size);
-	void updateBuiltinUniforms();
+	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
 
 	static std::string getGLSLVersion();
 	static bool isSupported();
@@ -119,13 +118,7 @@ private:
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
 
-	bool canvasWasActive;
-	Rect lastViewport;
-
 	float lastPointSize;
-
-	Matrix4 lastTransformMatrix;
-	Matrix4 lastProjectionMatrix;
 
 }; // Shader
 

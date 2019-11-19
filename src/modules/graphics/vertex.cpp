@@ -282,7 +282,6 @@ static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM>::Entry attribNameEntri
 	{ "VertexPosition", ATTRIB_POS           },
 	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
 	{ "VertexColor",    ATTRIB_COLOR         },
-	{ "ConstantColor",  ATTRIB_CONSTANTCOLOR },
 };
 
 static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));

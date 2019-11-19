@@ -110,10 +110,6 @@ OpenGL::OpenGL()
 	, vendor(VENDOR_UNKNOWN)
 	, state()
 {
-	state.constantColor = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
-
-	float nan = std::numeric_limits<float>::quiet_NaN();
-	state.lastConstantColor = Colorf(nan, nan, nan, nan);
 }
 
 bool OpenGL::initContext()
@@ -183,7 +179,6 @@ void OpenGL::setupContext()
 
 	GLfloat glcolor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	glVertexAttrib4fv(ATTRIB_COLOR, glcolor);
-	glVertexAttrib4fv(ATTRIB_CONSTANTCOLOR, glcolor);
 
 	GLint maxvertexattribs = 1;
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxvertexattribs);
@@ -553,20 +548,15 @@ void OpenGL::createDefaultTexture()
 	}
 }
 
-void OpenGL::prepareDraw()
+void OpenGL::prepareDraw(love::graphics::Graphics *gfx)
 {
 	TempDebugGroup debuggroup("Prepare OpenGL draw");
 
 	// Make sure the active shader's love-provided uniforms are up to date.
 	if (Shader::current != nullptr)
-		((Shader *)Shader::current)->updateBuiltinUniforms();
-
-	if (state.constantColor != state.lastConstantColor)
 	{
-		state.lastConstantColor = state.constantColor;
-		Colorf c = state.constantColor;
-		gammaCorrectColor(c);
-		glVertexAttrib4f(ATTRIB_CONSTANTCOLOR, c.r, c.g, c.b, c.a);
+		Rect viewport = getViewport();
+		((Shader *)Shader::current)->updateBuiltinUniforms(gfx, viewport.w, viewport.h);
 	}
 }
 
@@ -799,16 +789,6 @@ void OpenGL::setScissor(const Rect &v, bool canvasActive)
 	}
 
 	state.scissor = v;
-}
-
-void OpenGL::setConstantColor(const Colorf &color)
-{
-	state.constantColor = color;
-}
-
-const Colorf &OpenGL::getConstantColor() const
-{
-	return state.constantColor;
 }
 
 void OpenGL::setPointSize(float size)
