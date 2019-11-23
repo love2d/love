@@ -434,41 +434,6 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	return vertexcode, pixelcode
 end
 
-function love.graphics._transformGLSLErrorMessages(message)
-	local shadertype = message:match("Cannot compile (%a+) shader code")
-	local compiling = shadertype ~= nil
-	if not shadertype then
-		shadertype = message:match("Error validating (%a+) shader")
-	end
-	if not shadertype then return message end
-	local lines = {}
-	local prefix = compiling and "Cannot compile " or "Error validating "
-	lines[#lines+1] = prefix..shadertype.." shader code:"
-	for l in message:gmatch("[^\n]+") do
-		-- nvidia: 0(<linenumber>) : error/warning [NUMBER]: <error message>
-		local linenumber, what, message = l:match("^0%((%d+)%)%s*:%s*(%w+)[^:]+:%s*(.+)$")
-		if not linenumber then
-			-- AMD: ERROR 0:<linenumber>: error/warning(#[NUMBER]) [ERRORNAME]: <errormessage>
-			linenumber, what, message = l:match("^%w+: 0:(%d+):%s*(%w+)%([^%)]+%)%s*(.+)$")
-		end
-		if not linenumber then
-			-- macOS (?): ERROR: 0:<linenumber>: <errormessage>
-			what, linenumber, message = l:match("^(%w+): %d+:(%d+): (.+)$")
-		end
-		if not linenumber and l:match("^ERROR:") then
-			what = l
-		end
-		if linenumber and what and message then
-			lines[#lines+1] = ("Line %d: %s: %s"):format(linenumber, what, message)
-		elseif what then
-			lines[#lines+1] = what
-		end
-	end
-	-- did not match any known error messages
-	if #lines == 1 then return message end
-	return table_concat(lines, "\n")
-end
-
 local defaultcode = {
 	vertex = [[
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition) {
