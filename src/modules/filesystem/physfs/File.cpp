@@ -32,10 +32,14 @@ namespace love
 namespace filesystem
 {
 
-extern bool hack_setupWriteDirectory();
-
 namespace physfs
 {
+
+static bool setupWriteDirectory()
+{
+	auto fs = Module::getInstance<love::filesystem::Filesystem>(Module::M_FILESYSTEM);
+	return fs != nullptr && fs->setupWriteDirectory();
+}
 
 File::File(const std::string &filename)
 	: filename(filename)
@@ -65,7 +69,7 @@ bool File::open(Mode mode)
 		throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 	// Check whether the write directory is set.
-	if ((mode == MODE_APPEND || mode == MODE_WRITE) && (PHYSFS_getWriteDir() == nullptr) && !hack_setupWriteDirectory())
+	if ((mode == MODE_APPEND || mode == MODE_WRITE) && (PHYSFS_getWriteDir() == nullptr) && !setupWriteDirectory())
 		throw love::Exception("Could not set write directory.");
 
 	// File already open?

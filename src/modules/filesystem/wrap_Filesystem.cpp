@@ -45,13 +45,6 @@ namespace filesystem
 
 #define instance() (Module::getInstance<Filesystem>(Module::M_FILESYSTEM))
 
-bool hack_setupWriteDirectory()
-{
-	if (instance() != 0)
-		return instance()->setupWriteDirectory();
-	return false;
-}
-
 int w_init(lua_State *L)
 {
 	const char *arg0 = luaL_checkstring(L, 1);
