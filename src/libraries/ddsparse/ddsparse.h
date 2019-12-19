@@ -105,7 +105,7 @@ public:
 private:
 
 	size_t parseImageSize(dxinfo::DXGIFormat fmt, int width, int height) const;
-	bool parseTexData(const uint8_t *data, size_t dataSize, dxinfo::DXGIFormat fmt, int w, int h, int mips);
+	bool parseTexData(const uint8_t *data, size_t dataSize, dxinfo::DXGIFormat fmt, int w, int h, int nb_mips);
 	bool parseData(const void *data, size_t dataSize);
 
 	std::vector<Image> texData;
