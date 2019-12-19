@@ -195,26 +195,9 @@ bool File::flush()
 	return PHYSFS_flush(file) != 0;
 }
 
-#ifdef LOVE_WINDOWS
-// MSVC doesn't like the 'this' keyword
-// well, we'll use 'that'.
-// It zigs, we zag.
-inline bool test_eof(File *that, PHYSFS_File *)
-{
-	int64 pos = that->tell();
-	int64 size = that->getSize();
-	return pos == -1 || size == -1 || pos >= size;
-}
-#else
-inline bool test_eof(File *, PHYSFS_File *file)
-{
-	return PHYSFS_eof(file);
-}
-#endif
-
 bool File::isEOF()
 {
-	return file == nullptr || test_eof(this, file);
+	return file == nullptr || PHYSFS_eof(file);
 }
 
 int64 File::tell()
