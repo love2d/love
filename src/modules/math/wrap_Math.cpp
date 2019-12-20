@@ -26,10 +26,6 @@
 #include "BezierCurve.h"
 #include "Transform.h"
 
-#include "data/wrap_DataModule.h"
-#include "data/wrap_CompressedData.h"
-#include "data/DataModule.h"
-
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -350,81 +346,6 @@ int w_noise(lua_State *L)
 	return 1;
 }
 
-int w_compress(lua_State *L)
-{
-	using namespace love::data;
-	luax_markdeprecated(L, "love.math.compress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.compress");
-
-	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
-	Compressor::Format format = Compressor::FORMAT_LZ4;
-
-	if (fstr && !Compressor::getConstant(fstr, format))
-		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
-
-	int level = (int) luaL_optinteger(L, 3, -1);
-	size_t rawsize = 0;
-	const char *rawbytes = nullptr;
-
-	if (lua_isstring(L, 1))
-		rawbytes = luaL_checklstring(L, 1, &rawsize);
-	else
-	{
-		Data *rawdata = luax_checktype<Data>(L, 1);
-		rawsize = rawdata->getSize();
-		rawbytes = (const char *) rawdata->getData();
-	}
-
-	CompressedData *cdata = nullptr;
-	luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
-
-	luax_pushtype(L, cdata);
-	cdata->release();
-	return 1;
-}
-
-int w_decompress(lua_State *L)
-{
-	using namespace love::data;
-	luax_markdeprecated(L, "love.math.decompress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.decompress");
-
-	char *rawbytes = nullptr;
-	size_t rawsize = 0;
-
-	if (luax_istype(L, 1, CompressedData::type))
-	{
-		CompressedData *data = luax_checkcompresseddata(L, 1);
-		rawsize = data->getDecompressedSize();
-		luax_catchexcept(L, [&](){ rawbytes = decompress(data, rawsize); });
-	}
-	else
-	{
-		Compressor::Format format = Compressor::FORMAT_LZ4;
-		const char *fstr = luaL_checkstring(L, 2);
-
-		if (!Compressor::getConstant(fstr, format))
-			return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
-
-		size_t compressedsize = 0;
-		const char *cbytes = nullptr;
-
-		if (luax_istype(L, 1, Data::type))
-		{
-			Data *data = luax_checktype<Data>(L, 1);
-			cbytes = (const char *) data->getData();
-			compressedsize = data->getSize();
-		}
-		else
-			cbytes = luaL_checklstring(L, 1, &compressedsize);
-
-		luax_catchexcept(L, [&](){ rawbytes = decompress(format, cbytes, compressedsize, rawsize); });
-	}
-
-	lua_pushlstring(L, rawbytes, rawsize);
-	delete[] rawbytes;
-
-	return 1;
-}
-
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
@@ -462,10 +383,6 @@ static const luaL_Reg functions[] =
 	{ "gammaToLinear", w_gammaToLinear },
 	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
-
-	// Deprecated.
-	{ "compress", w_compress },
-	{ "decompress", w_decompress },
 
 	{ 0, 0 }
 };

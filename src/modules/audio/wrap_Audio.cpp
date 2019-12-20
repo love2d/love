@@ -530,12 +530,6 @@ int w_setMixWithSystem(lua_State *L)
 	return 1;
 }
 
-int w_getSourceCount(lua_State *L)
-{
-	luax_markdeprecated(L, "love.audio.getSourceCount", API_FUNCTION, DEPRECATED_RENAMED, "love.audio.getActiveSourceCount");
-	return w_getActiveSourceCount(L);
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -567,9 +561,6 @@ static const luaL_Reg functions[] =
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
 	{ "setMixWithSystem", w_setMixWithSystem },
-
-	// Deprecated
-	{ "getSourceCount", w_getSourceCount },
 
 	{ 0, 0 }
 };

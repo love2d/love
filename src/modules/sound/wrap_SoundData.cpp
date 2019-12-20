@@ -121,12 +121,6 @@ int w_SoundData_getSample(lua_State *L)
 	return 1;
 }
 
-int w_SoundData_getChannels(lua_State *L)
-{
-	luax_markdeprecated(L, "SoundData:getChannels", API_METHOD, DEPRECATED_RENAMED, "SoundData:getChannelCount");
-	return w_SoundData_getChannelCount(L);
-}
-
 static const luaL_Reg w_SoundData_functions[] =
 {
 	{ "clone", w_SoundData_clone },
@@ -137,9 +131,6 @@ static const luaL_Reg w_SoundData_functions[] =
 	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },
-
-	// Deprecated
-	{ "getChannels", w_SoundData_getChannels },
 
 	{ 0, 0 }
 };

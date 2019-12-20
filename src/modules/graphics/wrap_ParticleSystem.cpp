@@ -713,52 +713,6 @@ int w_ParticleSystem_update(lua_State *L)
 	return 0;
 }
 
-// Deprecated functions.
-
-int w_ParticleSystem_setAreaSpread(lua_State *L)
-{
-	luax_markdeprecated(L, "ParticleSystem:setAreaSpread", API_METHOD, DEPRECATED_REPLACED, "ParticleSystem:setEmissionArea");
-
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-
-	ParticleSystem::AreaSpreadDistribution distribution = ParticleSystem::DISTRIBUTION_NONE;
-	float x = 0.f, y = 0.f;
-
-	const char *str = lua_isnoneornil(L, 2) ? 0 : luaL_checkstring(L, 2);
-	if (str && !ParticleSystem::getConstant(str, distribution))
-		return luax_enumerror(L, "particle distribution", ParticleSystem::getConstants(distribution), str);
-
-	if (distribution != ParticleSystem::DISTRIBUTION_NONE)
-	{
-		x = (float) luaL_checknumber(L, 3);
-		y = (float) luaL_checknumber(L, 4);
-		if (x < 0.0f || y < 0.0f)
-			return luaL_error(L, "Invalid area spread parameters (must be >= 0)");
-	}
-
-	t->setEmissionArea(distribution, x, y, 0.0f, false);
-	return 0;
-}
-
-int w_ParticleSystem_getAreaSpread(lua_State *L)
-{
-	luax_markdeprecated(L, "ParticleSystem:getAreaSpread", API_METHOD, DEPRECATED_REPLACED, "ParticleSystem:getEmissionArea");
-
-	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	love::Vector2 p;
-	float angle;
-	bool unused;
-	ParticleSystem::AreaSpreadDistribution distribution = t->getEmissionArea(p, angle, unused);
-	const char *str;
-	ParticleSystem::getConstant(distribution, str);
-
-	lua_pushstring(L, str);
-	lua_pushnumber(L, p.x);
-	lua_pushnumber(L, p.y);
-
-	return 3;
-}
-
 static const luaL_Reg w_ParticleSystem_functions[] =
 {
 	{ "clone", w_ParticleSystem_clone },
@@ -821,10 +775,6 @@ static const luaL_Reg w_ParticleSystem_functions[] =
 	{ "isPaused", w_ParticleSystem_isPaused },
 	{ "isStopped", w_ParticleSystem_isStopped },
 	{ "update", w_ParticleSystem_update },
-
-	// Deprecated.
-	{ "setAreaSpread", w_ParticleSystem_setAreaSpread },
-	{ "getAreaSpread", w_ParticleSystem_getAreaSpread },
 
 	{ 0, 0 }
 };

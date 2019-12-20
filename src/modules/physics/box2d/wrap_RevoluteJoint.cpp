@@ -171,12 +171,6 @@ int w_RevoluteJoint_getReferenceAngle(lua_State *L)
 	return 1;
 }
 
-int w_RevoluteJoint_hasLimitsEnabled(lua_State *L)
-{
-	luax_markdeprecated(L, "RevoluteJoint:hasLimitsEnabled", API_METHOD, DEPRECATED_RENAMED, "RevoluteJoint:areLimitsEnabled");
-	return w_RevoluteJoint_areLimitsEnabled(L);
-}
-
 static const luaL_Reg w_RevoluteJoint_functions[] =
 {
 	{ "getJointAngle", w_RevoluteJoint_getJointAngle },
@@ -197,9 +191,6 @@ static const luaL_Reg w_RevoluteJoint_functions[] =
 	{ "getUpperLimit", w_RevoluteJoint_getUpperLimit },
 	{ "getLimits", w_RevoluteJoint_getLimits },
 	{ "getReferenceAngle", w_RevoluteJoint_getReferenceAngle },
-
-	// Deprecated
-	{ "hasLimitsEnabled", w_RevoluteJoint_hasLimitsEnabled },
 
 	{ 0, 0 }
 };

@@ -106,12 +106,6 @@ int w_Decoder_seek(lua_State *L)
 	return 0;
 }
 
-int w_Decoder_getChannels(lua_State *L)
-{
-	luax_markdeprecated(L, "Decoder:getChannels", API_METHOD, DEPRECATED_RENAMED, "Decoder:getChannelCount");
-	return w_Decoder_getChannelCount(L);
-}
-
 static const luaL_Reg w_Decoder_functions[] =
 {
 	{ "clone", w_Decoder_clone },
@@ -121,9 +115,6 @@ static const luaL_Reg w_Decoder_functions[] =
 	{ "getDuration", w_Decoder_getDuration },
 	{ "decode", w_Decoder_decode },
 	{ "seek", w_Decoder_seek },
-
-	// Deprecated
-	{ "getChannels", w_Decoder_getChannels },
 
 	{ 0, 0 }
 };
