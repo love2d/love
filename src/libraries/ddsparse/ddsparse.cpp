@@ -555,12 +555,12 @@ size_t Parser::parseImageSize(DXGIFormat fmt, int width, int height) const
 	return bytes;
 }
 
-bool Parser::parseTexData(const uint8_t *data, size_t dataSize, DXGIFormat fmt, int w, int h, int mips)
+bool Parser::parseTexData(const uint8_t *data, size_t dataSize, DXGIFormat fmt, int w, int h, int nb_mips)
 {
 	size_t offset = 0;
 	std::vector<Image> newTexData;
 
-	for (int i = 0; i < mips; i++)
+	for (int i = 0; i < nb_mips; i++)
 	{
 		Image img;
 		img.width = w;
@@ -631,9 +631,9 @@ bool Parser::parseData(const void *data, size_t dataSize)
 	int w = header->width;
 	int h = header->height;
 
-	int mips = std::max((int) header->mipMapCount, 1);
+	int nb_mips = std::max((int) header->mipMapCount, 1);
 
-	return parseTexData(&readData[offset], dataSize - offset, format, w, h, mips);
+	return parseTexData(&readData[offset], dataSize - offset, format, w, h, nb_mips);
 }
 
 } // dds
