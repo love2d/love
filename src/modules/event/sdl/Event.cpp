@@ -20,7 +20,7 @@
 
 #include "Event.h"
 
-#include "filesystem/DroppedFile.h"
+#include "filesystem/NativeFile.h"
 #include "filesystem/Filesystem.h"
 #include "keyboard/sdl/Keyboard.h"
 #include "joystick/JoystickModule.h"
@@ -418,8 +418,8 @@ Message *Event::convert(const SDL_Event &e)
 			}
 			else
 			{
-				auto *file = new love::filesystem::DroppedFile(e.drop.file);
-				vargs.emplace_back(&love::filesystem::DroppedFile::type, file);
+				auto *file = new love::filesystem::NativeFile(e.drop.file);
+				vargs.emplace_back(&love::filesystem::NativeFile::type, file);
 				msg = new Message("filedropped", vargs);
 				file->release();
 			}

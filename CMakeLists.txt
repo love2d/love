@@ -438,22 +438,22 @@ source_group("modules\\event\\sdl" FILES ${LOVE_SRC_MODULE_EVENT_SDL})
 #
 
 set(LOVE_SRC_MODULE_FILESYSTEM_ROOT
-	src/modules/filesystem/DroppedFile.cpp
-	src/modules/filesystem/DroppedFile.h
 	src/modules/filesystem/File.cpp
 	src/modules/filesystem/File.h
 	src/modules/filesystem/FileData.cpp
 	src/modules/filesystem/FileData.h
 	src/modules/filesystem/Filesystem.cpp
 	src/modules/filesystem/Filesystem.h
-	src/modules/filesystem/wrap_DroppedFile.cpp
-	src/modules/filesystem/wrap_DroppedFile.h
+	src/modules/filesystem/NativeFile.cpp
+	src/modules/filesystem/NativeFile.h
 	src/modules/filesystem/wrap_File.cpp
 	src/modules/filesystem/wrap_File.h
 	src/modules/filesystem/wrap_FileData.cpp
 	src/modules/filesystem/wrap_FileData.h
 	src/modules/filesystem/wrap_Filesystem.cpp
 	src/modules/filesystem/wrap_Filesystem.h
+	src/modules/filesystem/wrap_NativeFile.cpp
+	src/modules/filesystem/wrap_NativeFile.h
 )
 
 set(LOVE_SRC_MODULE_FILESYSTEM_PHYSFS

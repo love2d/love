@@ -18,23 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_DroppedFile.h"
-#include "wrap_File.h"
+#pragma once
+
+// LOVE
+#include "common/runtime.h"
+#include "NativeFile.h"
 
 namespace love
 {
 namespace filesystem
 {
 
-DroppedFile *luax_checkdroppedfile(lua_State *L, int idx)
-{
-	return luax_checktype<DroppedFile>(L, idx);
-}
-
-extern "C" int luaopen_droppedfile(lua_State *L)
-{
-	return luax_register_type(L, &DroppedFile::type, w_File_functions, nullptr);
-}
+NativeFile *luax_checknativefile(lua_State *L, int idx);
+extern "C" int luaopen_nativefile(lua_State *L);
 
 } // filesystem
 } // love

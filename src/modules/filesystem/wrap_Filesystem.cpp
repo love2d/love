@@ -22,7 +22,7 @@
 #include "common/config.h"
 #include "wrap_Filesystem.h"
 #include "wrap_File.h"
-#include "wrap_DroppedFile.h"
+#include "wrap_NativeFile.h"
 #include "wrap_FileData.h"
 #include "data/wrap_Data.h"
 #include "data/wrap_DataModule.h"
@@ -133,9 +133,9 @@ int w_mount(lua_State *L)
 		luax_pushboolean(L, instance()->mount(data, archive.c_str(), mountpoint, append));
 		return 1;
 	}
-	else if (luax_istype(L, 1, DroppedFile::type))
+	else if (luax_istype(L, 1, NativeFile::type))
 	{
-		DroppedFile *file = luax_totype<DroppedFile>(L, 1);
+		NativeFile *file = luax_totype<NativeFile>(L, 1);
 		archive = file->getFilename();
 	}
 	else
@@ -958,7 +958,7 @@ static const luaL_Reg functions[] =
 static const lua_CFunction types[] =
 {
 	luaopen_file,
-	luaopen_droppedfile,
+	luaopen_nativefile,
 	luaopen_filedata,
 	0
 };

@@ -19,7 +19,7 @@
  **/
 
 // LOVE
-#include "DroppedFile.h"
+#include "NativeFile.h"
 #include "common/utf8.h"
 
 // Assume POSIX or Visual Studio.
@@ -37,9 +37,9 @@ namespace love
 namespace filesystem
 {
 
-love::Type DroppedFile::type("DroppedFile", &File::type);
+love::Type NativeFile::type("NativeFile", &File::type);
 
-DroppedFile::DroppedFile(const std::string &filename)
+NativeFile::NativeFile(const std::string &filename)
 	: filename(filename)
 	, file(nullptr)
 	, mode(MODE_CLOSED)
@@ -48,13 +48,13 @@ DroppedFile::DroppedFile(const std::string &filename)
 {
 }
 
-DroppedFile::~DroppedFile()
+NativeFile::~NativeFile()
 {
 	if (mode != MODE_CLOSED)
 		close();
 }
 
-bool DroppedFile::open(Mode newmode)
+bool NativeFile::open(Mode newmode)
 {
 	if (newmode == MODE_CLOSED)
 		return true;
@@ -88,7 +88,7 @@ bool DroppedFile::open(Mode newmode)
 	return file != nullptr;
 }
 
-bool DroppedFile::close()
+bool NativeFile::close()
 {
 	if (file == nullptr || fclose(file) != 0)
 		return false;
@@ -99,12 +99,12 @@ bool DroppedFile::close()
 	return true;
 }
 
-bool DroppedFile::isOpen() const
+bool NativeFile::isOpen() const
 {
 	return mode != MODE_CLOSED && file != nullptr;
 }
 
-int64 DroppedFile::getSize()
+int64 NativeFile::getSize()
 {
 #ifdef LOVE_WINDOWS
 
@@ -129,7 +129,7 @@ int64 DroppedFile::getSize()
 #endif
 }
 
-int64 DroppedFile::read(void *dst, int64 size)
+int64 NativeFile::read(void *dst, int64 size)
 {
 	if (!file || mode != MODE_READ)
 		throw love::Exception("File is not opened for reading.");
@@ -142,7 +142,7 @@ int64 DroppedFile::read(void *dst, int64 size)
 	return (int64) read;
 }
 
-bool DroppedFile::write(const void *data, int64 size)
+bool NativeFile::write(const void *data, int64 size)
 {
 	if (!file || (mode != MODE_WRITE && mode != MODE_APPEND))
 		throw love::Exception("File is not opened for writing.");
@@ -155,7 +155,7 @@ bool DroppedFile::write(const void *data, int64 size)
 	return written == size;
 }
 
-bool DroppedFile::flush()
+bool NativeFile::flush()
 {
 	if (!file || (mode != MODE_WRITE && mode != MODE_APPEND))
 		throw love::Exception("File is not opened for writing.");
@@ -163,12 +163,12 @@ bool DroppedFile::flush()
 	return fflush(file) == 0;
 }
 
-bool DroppedFile::isEOF()
+bool NativeFile::isEOF()
 {
 	return file == nullptr || feof(file) != 0;
 }
 
-int64 DroppedFile::tell()
+int64 NativeFile::tell()
 {
 	if (file == nullptr)
 		return -1;
@@ -176,12 +176,12 @@ int64 DroppedFile::tell()
 	return (int64) ftell(file);
 }
 
-bool DroppedFile::seek(uint64 pos)
+bool NativeFile::seek(uint64 pos)
 {
 	return file != nullptr && fseek(file, (long) pos, SEEK_SET) == 0;
 }
 
-bool DroppedFile::setBuffer(BufferMode bufmode, int64 size)
+bool NativeFile::setBuffer(BufferMode bufmode, int64 size)
 {
 	if (size < 0)
 		return false;
@@ -190,7 +190,7 @@ bool DroppedFile::setBuffer(BufferMode bufmode, int64 size)
 		size = 0;
 
 	// If the file isn't open, we'll make sure the buffer values are set in
-	// DroppedFile::open.
+	// NativeFile::open.
 	if (!isOpen())
 	{
 		bufferMode = bufmode;
@@ -222,23 +222,23 @@ bool DroppedFile::setBuffer(BufferMode bufmode, int64 size)
 	return true;
 }
 
-File::BufferMode DroppedFile::getBuffer(int64 &size) const
+File::BufferMode NativeFile::getBuffer(int64 &size) const
 {
 	size = bufferSize;
 	return bufferMode;
 }
 
-const std::string &DroppedFile::getFilename() const
+const std::string &NativeFile::getFilename() const
 {
 	return filename;
 }
 
-File::Mode DroppedFile::getMode() const
+File::Mode NativeFile::getMode() const
 {
 	return mode;
 }
 
-const char *DroppedFile::getModeString(Mode mode)
+const char *NativeFile::getModeString(Mode mode)
 {
 	switch (mode)
 	{

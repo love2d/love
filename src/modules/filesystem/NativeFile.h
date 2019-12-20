@@ -18,9 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_DROPPED_FILE_H
-#define LOVE_FILESYSTEM_DROPPED_FILE_H
-
 // LOVE
 #include "common/config.h"
 #include "File.h"
@@ -34,17 +31,16 @@ namespace filesystem
 {
 
 /**
- * File which is created when a user drags and drops an actual file onto the
- * LOVE game. Uses C's stdio. Filenames are system-dependent full paths.
+ * File which uses C's stdio. Filenames are system-dependent full paths.
  **/
-class DroppedFile : public File
+class NativeFile : public File
 {
 public:
 
 	static love::Type type;
 
-	DroppedFile(const std::string &filename);
-	virtual ~DroppedFile();
+	NativeFile(const std::string &filename);
+	virtual ~NativeFile();
 
 	// Implements File.
 	using File::read;
@@ -77,9 +73,7 @@ private:
 	BufferMode bufferMode;
 	int64 bufferSize;
 
-}; // DroppedFile
+}; // NativeFile
 
 } // filesystem
 } // love
-
-#endif // LOVE_FILESYSTEM_DROPPED_FILE_H
