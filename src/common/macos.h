@@ -18,18 +18,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_OSX_H
-#define LOVE_OSX_H
+#pragma once
 
 #include "config.h"
 
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOS
 
 #include <string>
 
 namespace love
 {
-namespace macosx
+namespace macos
 {
 
 std::string getAppdataDirectory();
@@ -57,9 +56,7 @@ std::string getExecutablePath();
  **/
 void requestAttention(bool continuous);
 
-} // macosx
+} // macos
 } // love
 
-#endif // LOVE_MACOSX
-
-#endif // LOVE_OSX_H
+#endif // LOVE_MACOS

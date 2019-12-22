@@ -498,7 +498,7 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 			// slow on most drivers. On macOS, having a separate driver thread
 			// is opt-in via an API, and we don't do it, so we can use this
 			// instead of the (potentially slower) SubData approach.
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOS
 			return new StreamBufferMapSync(mode, size);
 #endif
 		}

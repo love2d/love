@@ -427,7 +427,7 @@ int luaopen_love(lua_State *L)
 	lua_pushstring(L, "UWP");
 #elif LOVE_WINDOWS
 	lua_pushstring(L, "Windows");
-#elif defined(LOVE_MACOSX)
+#elif defined(LOVE_MACOS)
 	lua_pushstring(L, "OS X");
 #elif defined(LOVE_IOS)
 	lua_pushstring(L, "iOS");

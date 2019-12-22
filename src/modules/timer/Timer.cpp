@@ -26,7 +26,7 @@
 
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
 #include <mach/mach_time.h>
 #include <sys/time.h>
 #elif defined(LOVE_LINUX)
@@ -111,7 +111,7 @@ double Timer::getAverageDelta() const
 
 double Timer::getTimerPeriod()
 {
-#if defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
 	mach_timebase_info_data_t info;
 	mach_timebase_info(&info);
 	return (double) info.numer / (double) info.denom / 1000000000.0;
@@ -147,7 +147,7 @@ double Timer::getTime()
 #endif
 		mt = getTimeOfDay();
 	return mt;
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
 	return (double) mach_absolute_time() * timerPeriod;
 #elif defined(LOVE_WINDOWS)
 	LARGE_INTEGER microTime;

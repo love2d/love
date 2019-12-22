@@ -36,10 +36,10 @@ extern "C" {
 #include <windows.h>
 #endif // LOVE_WINDOWS
 
-#ifdef LOVE_MACOSX
-#include "common/macosx.h"
+#ifdef LOVE_MACOS
+#include "common/macos.h"
 #include <unistd.h>
-#endif // LOVE_MACOSX
+#endif // LOVE_MACOS
 
 #ifdef LOVE_IOS
 #include "common/ios.h"
@@ -75,14 +75,14 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 			temp_argv.push_back(std::string(argv[i]));
 	}
 
-#ifdef LOVE_MACOSX
+#ifdef LOVE_MACOS
 	// Check for a drop file string, if the app wasn't launched in a terminal.
 	// Checking for the terminal is a pretty big hack, but works around an issue
 	// where OS X will switch Spaces if the terminal launching love is in its
 	// own full-screen Space.
 	std::string dropfilestr;
 	if (!isatty(STDIN_FILENO))
-		dropfilestr = love::macosx::checkDropEvents();
+		dropfilestr = love::macos::checkDropEvents();
 
 	if (!dropfilestr.empty())
 		temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
@@ -92,8 +92,8 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 		// If it exists, add the love file in love.app/Contents/Resources/ to argv.
 		std::string loveResourcesPath;
 		bool fused = true;
-#if defined(LOVE_MACOSX)
-		loveResourcesPath = love::macosx::getLoveInResources();
+#if defined(LOVE_MACOS)
+		loveResourcesPath = love::macos::getLoveInResources();
 #elif defined(LOVE_IOS)
 		loveResourcesPath = love::ios::getLoveInResources(fused);
 #endif

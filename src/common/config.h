@@ -45,7 +45,7 @@
 #	if TARGET_OS_IPHONE
 #		define LOVE_IOS 1
 #	elif TARGET_OS_MAC
-#		define LOVE_MACOSX 1
+#		define LOVE_MACOS 1
 #	endif
 #endif
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
@@ -117,7 +117,7 @@
 #	define NOMINMAX
 #endif
 
-#if defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
@@ -164,7 +164,7 @@
 #endif
 
 // Check we have a sane configuration
-#if !defined(LOVE_WINDOWS) && !defined(LOVE_LINUX) && !defined(LOVE_IOS) && !defined(LOVE_MACOSX) && !defined(LOVE_ANDROID)
+#if !defined(LOVE_WINDOWS) && !defined(LOVE_LINUX) && !defined(LOVE_IOS) && !defined(LOVE_MACOS) && !defined(LOVE_ANDROID)
 #	error Could not detect target platform
 #endif
 #if !defined(LOVE_LITTLE_ENDIAN) && !defined(LOVE_BIG_ENDIAN)

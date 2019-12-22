@@ -46,8 +46,8 @@
 #	include "common/ios.h"
 #endif
 
-#ifdef LOVE_MACOSX
-#	include "common/macosx.h"
+#ifdef LOVE_MACOS
+#	include "common/macos.h"
 #endif
 
 #include <string>
@@ -500,8 +500,8 @@ std::string Filesystem::getAppdataDirectory()
 		wchar_t *w_appdata = _wgetenv(L"APPDATA");
 		appdata = to_utf8(w_appdata);
 		replace_char(appdata, '\\', '/');
-#elif defined(LOVE_MACOSX)
-		appdata = normalize(love::macosx::getAppdataDirectory());
+#elif defined(LOVE_MACOS)
+		appdata = normalize(love::macos::getAppdataDirectory());
 #elif defined(LOVE_IOS)
 		appdata = normalize(love::ios::getAppdataDirectory());
 #elif defined(LOVE_LINUX)

@@ -747,7 +747,7 @@ static const char *library_extensions[] =
 {
 #ifdef LOVE_WINDOWS
 	".dll"
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
 	".dylib", ".so"
 #else
 	".so"

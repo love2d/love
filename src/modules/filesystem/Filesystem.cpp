@@ -26,8 +26,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(LOVE_MACOSX)
-#include "common/macosx.h"
+#if defined(LOVE_MACOS)
+#include "common/macos.h"
 #elif defined(LOVE_IOS)
 #include "common/ios.h"
 #elif defined(LOVE_WINDOWS)
@@ -92,8 +92,8 @@ bool Filesystem::isRealDirectory(const std::string &path) const
 
 std::string Filesystem::getExecutablePath() const
 {
-#if defined(LOVE_MACOSX)
-	return love::macosx::getExecutablePath();
+#if defined(LOVE_MACOS)
+	return love::macos::getExecutablePath();
 #elif defined(LOVE_IOS)
 	return love::ios::getExecutablePath();
 #elif defined(LOVE_WINDOWS)

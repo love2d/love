@@ -44,8 +44,8 @@
 
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
-#elif defined(LOVE_MACOSX)
-#include "common/macosx.h"
+#elif defined(LOVE_MACOS)
+#include "common/macos.h"
 #endif
 
 #ifndef APIENTRY
@@ -1259,9 +1259,9 @@ void Window::requestAttention(bool continuous)
 		FlashWindowEx(&flashinfo);
 	}
 
-#elif defined(LOVE_MACOSX)
+#elif defined(LOVE_MACOS)
 
-	love::macosx::requestAttention(continuous);
+	love::macos::requestAttention(continuous);
 
 #else
 
