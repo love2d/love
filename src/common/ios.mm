@@ -287,20 +287,24 @@ std::string getLoveInResources(bool &fused)
 	return path;
 }
 
-std::string getAppdataDirectory()
+static std::string getUserDirectory(NSSearchPathDirectory dir)
 {
-	NSSearchPathDirectory searchdir = NSApplicationSupportDirectory;
 	std::string path;
 
 	@autoreleasepool
 	{
-		NSArray *dirs = NSSearchPathForDirectoriesInDomains(searchdir, NSUserDomainMask, YES);
+		NSArray<NSURL *> *dirs = [[NSFileManager defaultManager] URLsForDirectory:dir inDomains:NSUserDomainMask];
 
 		if (dirs.count > 0)
-			path = [dirs[0] UTF8String];
+			path = [dirs[0].path UTF8String];
 	}
 
 	return path;
+}
+
+std::string getAppdataDirectory()
+{
+	return getUserDirectory(NSApplicationSupportDirectory);
 }
 
 std::string getHomeDirectory()

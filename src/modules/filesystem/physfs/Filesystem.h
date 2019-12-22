@@ -86,7 +86,7 @@ public:
 	void write(const char *filename, const void *data, int64 size) const override;
 	void append(const char *filename, const void *data, int64 size) const override;
 
-	void getDirectoryItems(const char *dir, std::vector<std::string> &items) override;
+	bool getDirectoryItems(const char *dir, std::vector<std::string> &items) override;
 
 	void setSymlinksEnabled(bool enable) override;
 	bool areSymlinksEnabled() const override;

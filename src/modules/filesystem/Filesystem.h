@@ -231,7 +231,7 @@ public:
 	 * This "native" method returns a table of all
 	 * files in a given directory.
 	 **/
-	virtual void getDirectoryItems(const char *dir, std::vector<std::string> &items) = 0;
+	virtual bool getDirectoryItems(const char *dir, std::vector<std::string> &items) = 0;
 
 	/**
 	 * Enable or disable symbolic link support in love.filesystem.

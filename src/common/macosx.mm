@@ -36,6 +36,26 @@ namespace love
 namespace macosx
 {
 
+static std::string getUserDirectory(NSSearchPathDirectory dir)
+{
+	std::string path;
+
+	@autoreleasepool
+	{
+		NSArray<NSURL *> *dirs = [[NSFileManager defaultManager] URLsForDirectory:dir inDomains:NSUserDomainMask];
+
+		if (dirs.count > 0)
+			path = [dirs[0].path UTF8String];
+	}
+
+	return path;
+}
+
+std::string getAppdataDirectory()
+{
+	return getUserDirectory(NSApplicationSupportDirectory);
+}
+
 std::string getLoveInResources()
 {
 	std::string path;

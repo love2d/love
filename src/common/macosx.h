@@ -32,6 +32,8 @@ namespace love
 namespace macosx
 {
 
+std::string getAppdataDirectory();
+
 /**
  * Returns the filepath of the first detected love file in the Resources folder
  * in the main bundle (love.app.)

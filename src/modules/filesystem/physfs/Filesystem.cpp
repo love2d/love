@@ -46,6 +46,10 @@
 #	include "common/ios.h"
 #endif
 
+#ifdef LOVE_MACOSX
+#	include "common/macosx.h"
+#endif
+
 #include <string>
 
 #ifdef LOVE_ANDROID
@@ -497,9 +501,7 @@ std::string Filesystem::getAppdataDirectory()
 		appdata = to_utf8(w_appdata);
 		replace_char(appdata, '\\', '/');
 #elif defined(LOVE_MACOSX)
-		std::string udir = getUserDirectory();
-		udir.append("/Library/Application Support");
-		appdata = normalize(udir);
+		appdata = normalize(love::macosx::getAppdataDirectory());
 #elif defined(LOVE_IOS)
 		appdata = normalize(love::ios::getAppdataDirectory());
 #elif defined(LOVE_LINUX)
@@ -644,20 +646,21 @@ void Filesystem::append(const char *filename, const void *data, int64 size) cons
 		throw love::Exception("Data could not be written.");
 }
 
-void Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &items)
+bool Filesystem::getDirectoryItems(const char *dir, std::vector<std::string> &items)
 {
 	if (!PHYSFS_isInit())
-		return;
+		return false;
 
 	char **rc = PHYSFS_enumerateFiles(dir);
 
 	if (rc == nullptr)
-		return;
+		return false;
 
 	for (char **i = rc; *i != 0; i++)
 		items.push_back(*i);
 
 	PHYSFS_freeList(rc);
+	return true;
 }
 
 void Filesystem::setSymlinksEnabled(bool enable)
