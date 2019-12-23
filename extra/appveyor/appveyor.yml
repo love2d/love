@@ -13,7 +13,7 @@ environment:
     - PLATFORM: x64
       VCVARSALL_PLATFORM: x86_amd64
       GENERATOR: "Visual Studio 16 2019"
-      VSARCH: "Win64"
+      VSARCH: "x64"
 
 init:
 # Make VS 2019 command line tools available
