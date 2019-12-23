@@ -1,6 +1,6 @@
 version: 11.3.{build}
 
-image: Visual Studio 2013
+image: Visual Studio 2019
 
 shallow_clone: true
 
@@ -8,14 +8,16 @@ environment:
   matrix:
     - PLATFORM: x86
       VCVARSALL_PLATFORM: x86
-      GENERATOR: "Visual Studio 12"
+      GENERATOR: "Visual Studio 16 2019"
+      VSARCH: "Win32"
     - PLATFORM: x64
       VCVARSALL_PLATFORM: x86_amd64
-      GENERATOR: "Visual Studio 12 Win64"
+      GENERATOR: "Visual Studio 16 2019"
+      VSARCH: "Win64"
 
 init:
-# Make VS 2013 command line tools available
-- call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCVARSALL_PLATFORM%
+# Make VS 2019 command line tools available
+- call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCVARSALL_PLATFORM%
 
 install:
 # We need to install NSIS to create the packaged installer executable.
@@ -35,7 +37,7 @@ install:
 - move love libs\love
 
 before_build:
-- cmake -G "%GENERATOR%" -H. -Bbuild
+- cmake -G "%GENERATOR%" -A "%VSARCH%" -H. -Bbuild
 
 build_script:
 - cmake --build build --target PACKAGE --config Release
