@@ -37,6 +37,8 @@
 #ifdef LOVE_WINDOWS
 #	include <windows.h>
 #	include <direct.h>
+#	include <initguid.h>
+#	include <Shlobj.h>
 #else
 #	include <sys/param.h>
 #	include <unistd.h>
@@ -497,8 +499,17 @@ std::string Filesystem::getAppdataDirectory()
 #ifdef LOVE_WINDOWS_UWP
 		appdata = getUserDirectory();
 #elif defined(LOVE_WINDOWS)
-		wchar_t *w_appdata = _wgetenv(L"APPDATA");
-		appdata = to_utf8(w_appdata);
+		PWSTR path = nullptr;
+		if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &path)))
+		{
+			appdata = to_utf8(path);
+			CoTaskMemFree(path);
+		}
+		else
+		{
+			wchar_t *w_appdata = _wgetenv(L"APPDATA");
+			appdata = to_utf8(w_appdata);
+		}
 		replace_char(appdata, '\\', '/');
 #elif defined(LOVE_MACOS)
 		appdata = normalize(love::macos::getAppdataDirectory());
