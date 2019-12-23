@@ -39,6 +39,7 @@
 #	include <direct.h>
 #	include <initguid.h>
 #	include <Shlobj.h>
+#	include <Knownfolders.h>
 #else
 #	include <sys/param.h>
 #	include <unistd.h>
