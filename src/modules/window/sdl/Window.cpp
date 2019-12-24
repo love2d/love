@@ -910,7 +910,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	if (!imgd)
 		return false;
 
-	if (imgd->getFormat() != PIXELFORMAT_RGBA8)
+	if (imgd->getFormat() != PIXELFORMAT_RGBA8_UNORM)
 		throw love::Exception("setIcon only accepts 32-bit RGBA images.");
 
 	icon.set(imgd);

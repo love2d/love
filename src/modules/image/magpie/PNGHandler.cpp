@@ -143,7 +143,7 @@ bool PNGHandler::canDecode(Data *data)
 bool PNGHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 {
 	return encodedFormat == ENCODED_PNG
-		&& (rawFormat == PIXELFORMAT_RGBA8 || rawFormat == PIXELFORMAT_RGBA16);
+		&& (rawFormat == PIXELFORMAT_RGBA8_UNORM || rawFormat == PIXELFORMAT_RGBA16_UNORM);
 }
 
 PNGHandler::DecodedImage PNGHandler::decode(Data *fdata)
@@ -182,7 +182,7 @@ PNGHandler::DecodedImage PNGHandler::decode(Data *fdata)
 	img.width  = (int) width;
 	img.height = (int) height;
 	img.size   = width * height * (state.info_raw.bitdepth * 4 / 8);
-	img.format = state.info_raw.bitdepth == 16 ? PIXELFORMAT_RGBA16 : PIXELFORMAT_RGBA8;
+	img.format = state.info_raw.bitdepth == 16 ? PIXELFORMAT_RGBA16_UNORM : PIXELFORMAT_RGBA8_UNORM;
 
 	// LodePNG keeps raw 16 bit images stored as big-endian.
 #ifndef LOVE_BIG_ENDIAN
@@ -209,7 +209,7 @@ FormatHandler::EncodedImage PNGHandler::encode(const DecodedImage &img, EncodedF
 	lodepng::State state;
 
 	state.info_raw.colortype = LCT_RGBA;
-	state.info_raw.bitdepth = img.format == PIXELFORMAT_RGBA16 ? 16 : 8;
+	state.info_raw.bitdepth = img.format == PIXELFORMAT_RGBA16_UNORM ? 16 : 8;
 
 	state.info_png.color.colortype = LCT_RGBA;
 	state.info_png.color.bitdepth = state.info_raw.bitdepth;

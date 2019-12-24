@@ -41,7 +41,7 @@ GlyphData::GlyphData(uint32 glyph, GlyphMetrics glyphMetrics, PixelFormat f)
 	, data(nullptr)
 	, format(f)
 {
-	if (f != PIXELFORMAT_LA8 && f != PIXELFORMAT_RGBA8)
+	if (f != PIXELFORMAT_LA8_UNORM && f != PIXELFORMAT_RGBA8_UNORM)
 		throw love::Exception("Invalid GlyphData pixel format.");
 
 	if (metrics.width > 0 && metrics.height > 0)

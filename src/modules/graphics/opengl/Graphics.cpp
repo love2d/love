@@ -980,7 +980,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 			try
 			{
-				img = imagemodule->newImageData(w, h, PIXELFORMAT_RGBA8, screenshot);
+				img = imagemodule->newImageData(w, h, PIXELFORMAT_RGBA8_UNORM, screenshot);
 			}
 			catch (love::Exception &)
 			{

@@ -44,7 +44,7 @@ int w_newImageData(lua_State *L)
 		if (w <= 0 || h <= 0)
 			return luaL_error(L, "Invalid image size.");
 
-		PixelFormat format = PIXELFORMAT_RGBA8;
+		PixelFormat format = PIXELFORMAT_RGBA8_UNORM;
 
 		if (!lua_isnoneornil(L, 3))
 		{

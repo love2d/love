@@ -245,7 +245,7 @@ bool Canvas::loadVolatile()
 		while (glGetError() != GL_NO_ERROR)
 			/* Clear the error buffer. */;
 
-		bool isSRGB = format == PIXELFORMAT_sRGBA8;
+		bool isSRGB = format == PIXELFORMAT_sRGBA8_UNORM;
 		if (!gl.rawTexStorage(texType, mipmapCount, format, isSRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers))
 		{
 			status = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
@@ -480,14 +480,14 @@ PixelFormat Canvas::getSizedFormat(PixelFormat format)
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
-			return PIXELFORMAT_sRGBA8;
-		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8, true, true, false))
+			return PIXELFORMAT_sRGBA8_UNORM;
+		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, true, true, false))
 			// 32-bit render targets don't have guaranteed support on GLES2.
-			return PIXELFORMAT_RGBA4;
+			return PIXELFORMAT_RGBA4_UNORM;
 		else
-			return PIXELFORMAT_RGBA8;
+			return PIXELFORMAT_RGBA8_UNORM;
 	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16F;
+		return PIXELFORMAT_RGBA16_FLOAT;
 	default:
 		return format;
 	}

@@ -39,7 +39,7 @@ ImageRasterizer::ImageRasterizer(love::image::ImageData *data, uint32 *glyphs, i
 {
 	this->dpiScale = dpiscale;
 
-	if (data->getFormat() != PIXELFORMAT_RGBA8)
+	if (data->getFormat() != PIXELFORMAT_RGBA8_UNORM)
 		throw love::Exception("Only 32-bit RGBA images are supported in Image Fonts!");
 
 	load();
@@ -68,7 +68,7 @@ GlyphData *ImageRasterizer::getGlyphData(uint32 glyph) const
 
 	gm.height = metrics.height;
 
-	GlyphData *g = new GlyphData(glyph, gm, PIXELFORMAT_RGBA8);
+	GlyphData *g = new GlyphData(glyph, gm, PIXELFORMAT_RGBA8_UNORM);
 
 	if (gm.width == 0)
 		return g;

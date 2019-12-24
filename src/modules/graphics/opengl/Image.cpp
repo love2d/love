@@ -76,7 +76,7 @@ void Image::loadDefaultTexture()
 	setFilter(filter);
 
 	bool isSRGB = false;
-	gl.rawTexStorage(texType, 1, PIXELFORMAT_RGBA8, isSRGB, 2, 2, 1);
+	gl.rawTexStorage(texType, 1, PIXELFORMAT_RGBA8_UNORM, isSRGB, 2, 2, 1);
 
 	// A nice friendly checkerboard to signify invalid textures...
 	GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xFF,0xA0,0xA0,0xFF,
@@ -85,7 +85,7 @@ void Image::loadDefaultTexture()
 	int slices = texType == TEXTURE_CUBE ? 6 : 1;
 	Rect rect = {0, 0, 2, 2};
 	for (int slice = 0; slice < slices; slice++)
-		uploadByteData(PIXELFORMAT_RGBA8, px, sizeof(px), 0, slice, rect);
+		uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect);
 }
 
 void Image::loadData()

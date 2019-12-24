@@ -525,9 +525,9 @@ void OpenGL::createDefaultTexture()
 		setTextureFilter(type, filter);
 
 		bool isSRGB = false;
-		rawTexStorage(type, 1, PIXELFORMAT_RGBA8, isSRGB, 1, 1);
+		rawTexStorage(type, 1, PIXELFORMAT_RGBA8_UNORM, isSRGB, 1, 1);
 
-		TextureFormat fmt = convertPixelFormat(PIXELFORMAT_RGBA8, false, isSRGB);
+		TextureFormat fmt = convertPixelFormat(PIXELFORMAT_RGBA8_UNORM, false, isSRGB);
 
 		int slices = type == TEXTURE_CUBE ? 6 : 1;
 
@@ -1298,18 +1298,18 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	f.framebufferAttachments[0] = GL_COLOR_ATTACHMENT0;
 	f.framebufferAttachments[1] = GL_NONE;
 
-	if (pixelformat == PIXELFORMAT_RGBA8 && isSRGB)
-		pixelformat = PIXELFORMAT_sRGBA8;
-	else if (pixelformat == PIXELFORMAT_ETC1)
+	if (pixelformat == PIXELFORMAT_RGBA8_UNORM && isSRGB)
+		pixelformat = PIXELFORMAT_sRGBA8_UNORM;
+	else if (pixelformat == PIXELFORMAT_ETC1_UNORM)
 	{
 		// The ETC2 format can load ETC1 textures.
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
-			pixelformat = PIXELFORMAT_ETC2_RGB;
+			pixelformat = PIXELFORMAT_ETC2_RGB_UNORM;
 	}
 
 	switch (pixelformat)
 	{
-	case PIXELFORMAT_R8:
+	case PIXELFORMAT_R8_UNORM:
 		if ((GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
 			&& !gl.bugs.brokenR8PixelFormat)
 		{
@@ -1323,17 +1323,17 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		}
 		f.type = GL_UNSIGNED_BYTE;
 		break;
-	case PIXELFORMAT_RG8:
+	case PIXELFORMAT_RG8_UNORM:
 		f.internalformat = GL_RG8;
 		f.externalformat = GL_RG;
 		f.type = GL_UNSIGNED_BYTE;
 		break;
-	case PIXELFORMAT_RGBA8:
+	case PIXELFORMAT_RGBA8_UNORM:
 		f.internalformat = GL_RGBA8;
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_BYTE;
 		break;
-	case PIXELFORMAT_sRGBA8:
+	case PIXELFORMAT_sRGBA8_UNORM:
 		f.internalformat = GL_SRGB8_ALPHA8;
 		f.type = GL_UNSIGNED_BYTE;
 		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
@@ -1341,22 +1341,22 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		else
 			f.externalformat = GL_RGBA;
 		break;
-	case PIXELFORMAT_R16:
+	case PIXELFORMAT_R16_UNORM:
 		f.internalformat = GL_R16;
 		f.externalformat = GL_RED;
 		f.type = GL_UNSIGNED_SHORT;
 		break;
-	case PIXELFORMAT_RG16:
+	case PIXELFORMAT_RG16_UNORM:
 		f.internalformat = GL_RG16;
 		f.externalformat = GL_RG;
 		f.type = GL_UNSIGNED_SHORT;
 		break;
-	case PIXELFORMAT_RGBA16:
+	case PIXELFORMAT_RGBA16_UNORM:
 		f.internalformat = GL_RGBA16;
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_SHORT;
 		break;
-	case PIXELFORMAT_R16F:
+	case PIXELFORMAT_R16_FLOAT:
 		f.internalformat = GL_R16F;
 		f.externalformat = GL_RED;
 		if (GLAD_OES_texture_half_float)
@@ -1364,7 +1364,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		else
 			f.type = GL_HALF_FLOAT;
 		break;
-	case PIXELFORMAT_RG16F:
+	case PIXELFORMAT_RG16_FLOAT:
 		f.internalformat = GL_RG16F;
 		f.externalformat = GL_RG;
 		if (GLAD_OES_texture_half_float)
@@ -1372,7 +1372,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		else
 			f.type = GL_HALF_FLOAT;
 		break;
-	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_RGBA16_FLOAT:
 		f.internalformat = GL_RGBA16F;
 		f.externalformat = GL_RGBA;
 		if (GLAD_OES_texture_half_float)
@@ -1380,23 +1380,23 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		else
 			f.type = GL_HALF_FLOAT;
 		break;
-	case PIXELFORMAT_R32F:
+	case PIXELFORMAT_R32_FLOAT:
 		f.internalformat = GL_R32F;
 		f.externalformat = GL_RED;
 		f.type = GL_FLOAT;
 		break;
-	case PIXELFORMAT_RG32F:
+	case PIXELFORMAT_RG32_FLOAT:
 		f.internalformat = GL_RG32F;
 		f.externalformat = GL_RG;
 		f.type = GL_FLOAT;
 		break;
-	case PIXELFORMAT_RGBA32F:
+	case PIXELFORMAT_RGBA32_FLOAT:
 		f.internalformat = GL_RGBA32F;
 		f.externalformat = GL_RGBA;
 		f.type = GL_FLOAT;
 		break;
 
-	case PIXELFORMAT_LA8:
+	case PIXELFORMAT_LA8_UNORM:
 		if (gl.isCoreProfile() || GLAD_ES_VERSION_3_0)
 		{
 			f.internalformat = GL_RG8;
@@ -1414,27 +1414,27 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		}
 		break;
 
-	case PIXELFORMAT_RGBA4:
+	case PIXELFORMAT_RGBA4_UNORM:
 		f.internalformat = GL_RGBA4;
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_SHORT_4_4_4_4;
 		break;
-	case PIXELFORMAT_RGB5A1:
+	case PIXELFORMAT_RGB5A1_UNORM:
 		f.internalformat = GL_RGB5_A1;
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_SHORT_5_5_5_1;
 		break;
-	case PIXELFORMAT_RGB565:
+	case PIXELFORMAT_RGB565_UNORM:
 		f.internalformat = GL_RGB565;
 		f.externalformat = GL_RGB;
 		f.type = GL_UNSIGNED_SHORT_5_6_5;
 		break;
-	case PIXELFORMAT_RGB10A2:
+	case PIXELFORMAT_RGB10A2_UNORM:
 		f.internalformat = GL_RGB10_A2;
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_INT_2_10_10_10_REV;
 		break;
-	case PIXELFORMAT_RG11B10F:
+	case PIXELFORMAT_RG11B10_FLOAT:
 		f.internalformat = GL_R11F_G11F_B10F;
 		f.externalformat = GL_RGB;
 		f.type = GL_UNSIGNED_INT_10F_11F_11F_REV;
@@ -1466,14 +1466,14 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		}
 		break;
 
-	case PIXELFORMAT_DEPTH16:
+	case PIXELFORMAT_DEPTH16_UNORM:
 		f.internalformat = GL_DEPTH_COMPONENT16;
 		f.externalformat = GL_DEPTH_COMPONENT;
 		f.type = GL_UNSIGNED_SHORT;
 		f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
 		break;
 
-	case PIXELFORMAT_DEPTH24:
+	case PIXELFORMAT_DEPTH24_UNORM:
 		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0 && !GLAD_OES_depth24 && GLAD_OES_packed_depth_stencil)
 		{
 			f.internalformat = GL_DEPTH24_STENCIL8;
@@ -1491,14 +1491,14 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		}
 		break;
 
-	case PIXELFORMAT_DEPTH32F:
+	case PIXELFORMAT_DEPTH32_FLOAT:
 		f.internalformat = GL_DEPTH_COMPONENT32F;
 		f.externalformat = GL_DEPTH_COMPONENT;
 		f.type = GL_FLOAT;
 		f.framebufferAttachments[0] = GL_DEPTH_ATTACHMENT;
 		break;
 
-	case PIXELFORMAT_DEPTH24_STENCIL8:
+	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
 		f.internalformat = GL_DEPTH24_STENCIL8;
 		f.externalformat = GL_DEPTH_STENCIL;
 		f.type = GL_UNSIGNED_INT_24_8;
@@ -1513,87 +1513,87 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		}
 		break;
 
-	case PIXELFORMAT_DEPTH32F_STENCIL8:
+	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
 		f.internalformat = GL_DEPTH32F_STENCIL8;
 		f.externalformat = GL_DEPTH_STENCIL;
 		f.type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 		f.framebufferAttachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
 		break;
 
-	case PIXELFORMAT_DXT1:
+	case PIXELFORMAT_DXT1_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		break;
-	case PIXELFORMAT_DXT3:
+	case PIXELFORMAT_DXT3_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 		break;
-	case PIXELFORMAT_DXT5:
+	case PIXELFORMAT_DXT5_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		break;
-	case PIXELFORMAT_BC4:
+	case PIXELFORMAT_BC4_UNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RED_RGTC1;
 		break;
-	case PIXELFORMAT_BC4s:
+	case PIXELFORMAT_BC4_SNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_RED_RGTC1;
 		break;
-	case PIXELFORMAT_BC5:
+	case PIXELFORMAT_BC5_UNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RG_RGTC2;
 		break;
-	case PIXELFORMAT_BC5s:
+	case PIXELFORMAT_BC5_SNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_RG_RGTC2;
 		break;
-	case PIXELFORMAT_BC6H:
+	case PIXELFORMAT_BC6H_UFLOAT:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
 		break;
-	case PIXELFORMAT_BC6Hs:
+	case PIXELFORMAT_BC6H_FLOAT:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
 		break;
-	case PIXELFORMAT_BC7:
+	case PIXELFORMAT_BC7_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM : GL_COMPRESSED_RGBA_BPTC_UNORM;
 		break;
-	case PIXELFORMAT_PVR1_RGB2:
+	case PIXELFORMAT_PVR1_RGB2_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT : GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
 		break;
-	case PIXELFORMAT_PVR1_RGB4:
+	case PIXELFORMAT_PVR1_RGB4_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT : GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
 		break;
-	case PIXELFORMAT_PVR1_RGBA2:
+	case PIXELFORMAT_PVR1_RGBA2_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT : GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 		break;
-	case PIXELFORMAT_PVR1_RGBA4:
+	case PIXELFORMAT_PVR1_RGBA4_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT : GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 		break;
-	case PIXELFORMAT_ETC1:
+	case PIXELFORMAT_ETC1_UNORM:
 		isSRGB = false;
 		f.internalformat = GL_ETC1_RGB8_OES;
 		break;
-	case PIXELFORMAT_ETC2_RGB:
+	case PIXELFORMAT_ETC2_RGB_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ETC2 : GL_COMPRESSED_RGB8_ETC2;
 		break;
-	case PIXELFORMAT_ETC2_RGBA:
+	case PIXELFORMAT_ETC2_RGBA_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC : GL_COMPRESSED_RGBA8_ETC2_EAC;
 		break;
-	case PIXELFORMAT_ETC2_RGBA1:
+	case PIXELFORMAT_ETC2_RGBA1_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 : GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 		break;
-	case PIXELFORMAT_EAC_R:
+	case PIXELFORMAT_EAC_R_UNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_R11_EAC;
 		break;
-	case PIXELFORMAT_EAC_Rs:
+	case PIXELFORMAT_EAC_R_SNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_R11_EAC;
 		break;
-	case PIXELFORMAT_EAC_RG:
+	case PIXELFORMAT_EAC_RG_UNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RG11_EAC;
 		break;
-	case PIXELFORMAT_EAC_RGs:
+	case PIXELFORMAT_EAC_RG_SNORM:
 		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_RG11_EAC;
 		break;
@@ -1647,13 +1647,13 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 
 	if (!isPixelFormatCompressed(pixelformat))
 	{
-		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 && pixelformat == PIXELFORMAT_LA8)
+		if (GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 && pixelformat == PIXELFORMAT_LA8_UNORM)
 			&& !renderbuffer && !isTexStorageSupported())
 		{
 			f.internalformat = f.externalformat;
 		}
 
-		if (pixelformat != PIXELFORMAT_sRGBA8)
+		if (pixelformat != PIXELFORMAT_sRGBA8_UNORM)
 			isSRGB = false;
 	}
 
@@ -1665,25 +1665,25 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 	if (rendertarget && isPixelFormatCompressed(pixelformat))
 		return false;
 
-	if (pixelformat == PIXELFORMAT_RGBA8 && isSRGB)
-		pixelformat = PIXELFORMAT_sRGBA8;
+	if (pixelformat == PIXELFORMAT_RGBA8_UNORM && isSRGB)
+		pixelformat = PIXELFORMAT_sRGBA8_UNORM;
 
 	switch (pixelformat)
 	{
-	case PIXELFORMAT_R8:
-	case PIXELFORMAT_RG8:
+	case PIXELFORMAT_R8_UNORM:
+	case PIXELFORMAT_RG8_UNORM:
 		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
 			return true;
-		else if (pixelformat == PIXELFORMAT_R8 && !rendertarget && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
+		else if (pixelformat == PIXELFORMAT_R8_UNORM && !rendertarget && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
 			return true; // We'll use OpenGL's luminance format internally.
 		else
 			return false;
-	case PIXELFORMAT_RGBA8:
+	case PIXELFORMAT_RGBA8_UNORM:
 		if (rendertarget)
 			return GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
 		else
 			return true;
-	case PIXELFORMAT_sRGBA8:
+	case PIXELFORMAT_sRGBA8_UNORM:
 		if (rendertarget)
 		{
 			if (GLAD_VERSION_1_0)
@@ -1696,37 +1696,37 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		}
 		else
 			return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
-	case PIXELFORMAT_R16:
-	case PIXELFORMAT_RG16:
+	case PIXELFORMAT_R16_UNORM:
+	case PIXELFORMAT_RG16_UNORM:
 		return GLAD_VERSION_3_0
 			|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
 			|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg));
-	case PIXELFORMAT_RGBA16:
+	case PIXELFORMAT_RGBA16_UNORM:
 		return GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16;
-	case PIXELFORMAT_R16F:
-	case PIXELFORMAT_RG16F:
+	case PIXELFORMAT_R16_FLOAT:
+	case PIXELFORMAT_RG16_FLOAT:
 		if (GLAD_VERSION_1_0)
 			return GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel && GLAD_ARB_texture_rg);
 		else if (rendertarget && !GLAD_EXT_color_buffer_half_float)
 			return false;
 		else
 			return GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg);
-	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_RGBA16_FLOAT:
 		if (GLAD_VERSION_1_0)
 			return GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel);
 		else if (rendertarget && !GLAD_EXT_color_buffer_half_float)
 			return false;
 		else
 			return GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float;
-	case PIXELFORMAT_R32F:
-	case PIXELFORMAT_RG32F:
+	case PIXELFORMAT_R32_FLOAT:
+	case PIXELFORMAT_RG32_FLOAT:
 		if (GLAD_VERSION_1_0)
 			return GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_texture_rg);
 		else if (!rendertarget)
 			return GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_float && GLAD_EXT_texture_rg);
 		else
 			return false;
-	case PIXELFORMAT_RGBA32F:
+	case PIXELFORMAT_RGBA32_FLOAT:
 		if (GLAD_VERSION_1_0)
 			return GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
 		else if (!rendertarget)
@@ -1734,17 +1734,17 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return false;
 
-	case PIXELFORMAT_LA8:
+	case PIXELFORMAT_LA8_UNORM:
 		return !rendertarget;
 
-	case PIXELFORMAT_RGBA4:
-	case PIXELFORMAT_RGB5A1:
+	case PIXELFORMAT_RGBA4_UNORM:
+	case PIXELFORMAT_RGB5A1_UNORM:
 		return true;
-	case PIXELFORMAT_RGB565:
+	case PIXELFORMAT_RGB565_UNORM:
 		return GLAD_ES_VERSION_2_0 || GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
-	case PIXELFORMAT_RGB10A2:
+	case PIXELFORMAT_RGB10A2_UNORM:
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0;
-	case PIXELFORMAT_RG11B10F:
+	case PIXELFORMAT_RG11B10_FLOAT:
 		if (rendertarget)
 			return GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float;
 		else
@@ -1753,7 +1753,7 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 	case PIXELFORMAT_STENCIL8:
 		return rendertarget && !readable;
 
-	case PIXELFORMAT_DEPTH16:
+	case PIXELFORMAT_DEPTH16_UNORM:
 		if (!rendertarget)
 			return false;
 		else if (readable)
@@ -1761,7 +1761,7 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return true;
 
-	case PIXELFORMAT_DEPTH24:
+	case PIXELFORMAT_DEPTH24_UNORM:
 		if (!rendertarget)
 			return false;
 		else if (readable)
@@ -1769,7 +1769,7 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth24 || GLAD_OES_depth_texture;
 
-	case PIXELFORMAT_DEPTH24_STENCIL8:
+	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
 		if (!rendertarget)
 			return false;
 		else if (readable)
@@ -1777,40 +1777,40 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil;
 
-	case PIXELFORMAT_DEPTH32F:
-	case PIXELFORMAT_DEPTH32F_STENCIL8:
+	case PIXELFORMAT_DEPTH32_FLOAT:
+	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
 		return rendertarget && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_depth_buffer_float);
 
-	case PIXELFORMAT_DXT1:
+	case PIXELFORMAT_DXT1_UNORM:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;
-	case PIXELFORMAT_DXT3:
+	case PIXELFORMAT_DXT3_UNORM:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3;
-	case PIXELFORMAT_DXT5:
+	case PIXELFORMAT_DXT5_UNORM:
 		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5;
-	case PIXELFORMAT_BC4:
-	case PIXELFORMAT_BC4s:
-	case PIXELFORMAT_BC5:
-	case PIXELFORMAT_BC5s:
+	case PIXELFORMAT_BC4_UNORM:
+	case PIXELFORMAT_BC4_SNORM:
+	case PIXELFORMAT_BC5_UNORM:
+	case PIXELFORMAT_BC5_SNORM:
 		return (GLAD_VERSION_3_0 || GLAD_ARB_texture_compression_rgtc || GLAD_EXT_texture_compression_rgtc);
-	case PIXELFORMAT_BC6H:
-	case PIXELFORMAT_BC6Hs:
-	case PIXELFORMAT_BC7:
+	case PIXELFORMAT_BC6H_UFLOAT:
+	case PIXELFORMAT_BC6H_FLOAT:
+	case PIXELFORMAT_BC7_UNORM:
 		return GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc;
-	case PIXELFORMAT_PVR1_RGB2:
-	case PIXELFORMAT_PVR1_RGB4:
-	case PIXELFORMAT_PVR1_RGBA2:
-	case PIXELFORMAT_PVR1_RGBA4:
+	case PIXELFORMAT_PVR1_RGB2_UNORM:
+	case PIXELFORMAT_PVR1_RGB4_UNORM:
+	case PIXELFORMAT_PVR1_RGBA2_UNORM:
+	case PIXELFORMAT_PVR1_RGBA4_UNORM:
 		return isSRGB ? GLAD_EXT_pvrtc_sRGB : GLAD_IMG_texture_compression_pvrtc;
-	case PIXELFORMAT_ETC1:
+	case PIXELFORMAT_ETC1_UNORM:
 		// ETC2 support guarantees ETC1 support as well.
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture;
-	case PIXELFORMAT_ETC2_RGB:
-	case PIXELFORMAT_ETC2_RGBA:
-	case PIXELFORMAT_ETC2_RGBA1:
-	case PIXELFORMAT_EAC_R:
-	case PIXELFORMAT_EAC_Rs:
-	case PIXELFORMAT_EAC_RG:
-	case PIXELFORMAT_EAC_RGs:
+	case PIXELFORMAT_ETC2_RGB_UNORM:
+	case PIXELFORMAT_ETC2_RGBA_UNORM:
+	case PIXELFORMAT_ETC2_RGBA1_UNORM:
+	case PIXELFORMAT_EAC_R_UNORM:
+	case PIXELFORMAT_EAC_R_SNORM:
+	case PIXELFORMAT_EAC_RG_UNORM:
+	case PIXELFORMAT_EAC_RG_SNORM:
 		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility;
 	case PIXELFORMAT_ASTC_4x4:
 	case PIXELFORMAT_ASTC_5x4:
@@ -1837,13 +1837,13 @@ bool OpenGL::hasTextureFilteringSupport(PixelFormat pixelformat)
 {
 	switch (pixelformat)
 	{
-	case PIXELFORMAT_R16F:
-	case PIXELFORMAT_RG16F:
-	case PIXELFORMAT_RGBA16F:
+	case PIXELFORMAT_R16_FLOAT:
+	case PIXELFORMAT_RG16_FLOAT:
+	case PIXELFORMAT_RGBA16_FLOAT:
 		return GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear;
-	case PIXELFORMAT_R32F:
-	case PIXELFORMAT_RG32F:
-	case PIXELFORMAT_RGBA32F:
+	case PIXELFORMAT_R32_FLOAT:
+	case PIXELFORMAT_RG32_FLOAT:
+	case PIXELFORMAT_RGBA32_FLOAT:
 		return GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear;
 	default:
 		return true;

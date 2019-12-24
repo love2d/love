@@ -79,12 +79,12 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 	for (int i = 0; i < 3; i++)
 	{
-		Image *img = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8, widths[i], heights[i], 1, settings);
+		Image *img = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8_UNORM, widths[i], heights[i], 1, settings);
 
 		img->setFilter(filter);
 		img->setWrap(wrap);
 
-		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8);
+		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8_UNORM);
 		size_t size = bpp * widths[i] * heights[i];
 
 		Rect rect = {0, 0, widths[i], heights[i]};
@@ -161,7 +161,7 @@ void Video::update()
 
 		for (int i = 0; i < 3; i++)
 		{
-			size_t bpp = getPixelFormatSize(PIXELFORMAT_R8);
+			size_t bpp = getPixelFormatSize(PIXELFORMAT_R8_UNORM);
 			size_t size = bpp * widths[i] * heights[i];
 
 			Rect rect = {0, 0, widths[i], heights[i]};

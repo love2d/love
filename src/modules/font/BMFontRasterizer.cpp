@@ -147,7 +147,7 @@ BMFontRasterizer::BMFontRasterizer(love::filesystem::FileData *fontdef, const st
 	// The parseConfig function will try to load any missing page images.
 	for (int i = 0; i < (int) imagelist.size(); i++)
 	{
-		if (imagelist[i]->getFormat() != PIXELFORMAT_RGBA8)
+		if (imagelist[i]->getFormat() != PIXELFORMAT_RGBA8_UNORM)
 			throw love::Exception("Only 32-bit RGBA images are supported in BMFonts.");
 
 		images[i] = imagelist[i];
@@ -211,7 +211,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 				ImageData *imagedata = imagemodule->newImageData(data.get());
 
-				if (imagedata->getFormat() != PIXELFORMAT_RGBA8)
+				if (imagedata->getFormat() != PIXELFORMAT_RGBA8_UNORM)
 				{
 					imagedata->release();
 					throw love::Exception("Only 32-bit RGBA images are supported in BMFonts.");
@@ -298,16 +298,16 @@ GlyphData *BMFontRasterizer::getGlyphData(uint32 glyph) const
 
 	// Return an empty GlyphData if we don't have the glyph character.
 	if (it == characters.end())
-		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8);
+		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8_UNORM);
 
 	const BMFontCharacter &c = it->second;
 	const auto &imagepair = images.find(c.page);
 
 	if (imagepair == images.end())
-		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8);
+		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8_UNORM);
 
 	image::ImageData *imagedata = imagepair->second.get();
-	GlyphData *g = new GlyphData(glyph, c.metrics, PIXELFORMAT_RGBA8);
+	GlyphData *g = new GlyphData(glyph, c.metrics, PIXELFORMAT_RGBA8_UNORM);
 
 	size_t pixelsize = imagedata->getPixelSize();
 

@@ -625,7 +625,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (!firstcanvas->isValidSlice(firsttarget.slice))
 		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
 
-	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8;
+	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8_UNORM;
 	int pixelw = firstcanvas->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firstcanvas->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firstcanvas->getRequestedMSAA();
@@ -655,7 +655,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		if (isPixelFormatDepthStencil(format))
 			throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
 
-		if (format == PIXELFORMAT_sRGBA8)
+		if (format == PIXELFORMAT_sRGBA8_UNORM)
 			hasSRGBcanvas = true;
 	}
 
@@ -693,11 +693,11 @@ void Graphics::setCanvas(const RenderTargets &rts)
 
 		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
 		if (wantsdepth && wantsstencil)
-			dsformat = PIXELFORMAT_DEPTH24_STENCIL8;
-		else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24, false))
-			dsformat = PIXELFORMAT_DEPTH24;
+			dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+		else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24_UNORM, false))
+			dsformat = PIXELFORMAT_DEPTH24_UNORM;
 		else if (wantsdepth)
-			dsformat = PIXELFORMAT_DEPTH16;
+			dsformat = PIXELFORMAT_DEPTH16_UNORM;
 		else if (wantsstencil)
 			dsformat = PIXELFORMAT_STENCIL8;
 

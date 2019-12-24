@@ -49,7 +49,7 @@ public:
 	// Raw RGBA pixel data.
 	struct DecodedImage
 	{
-		PixelFormat format = PIXELFORMAT_RGBA8;
+		PixelFormat format = PIXELFORMAT_RGBA8_UNORM;
 		int width   = 0;
 		int height  = 0;
 		size_t size = 0;

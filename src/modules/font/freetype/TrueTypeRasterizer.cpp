@@ -113,7 +113,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	glyphMetrics.width = bitmap.width;
 	glyphMetrics.advance = (int) (ftglyph->advance.x >> 16);
 
-	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, PIXELFORMAT_LA8);
+	GlyphData *glyphData = new GlyphData(glyph, glyphMetrics, PIXELFORMAT_LA8_UNORM);
 
 	const uint8 *pixels = bitmap.buffer;
 	uint8 *dest = (uint8 *) glyphData->getData();

@@ -155,7 +155,7 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 
 	if (pixelType == TINYEXR_PIXELTYPE_HALF)
 	{
-		img.format = PIXELFORMAT_RGBA16F;
+		img.format = PIXELFORMAT_RGBA16_FLOAT;
 
 		float16 *rgba[4] = {nullptr};
 		getEXRChannels(exrHeader, exrImage, rgba);
@@ -172,7 +172,7 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	}
 	else if (pixelType == TINYEXR_PIXELTYPE_FLOAT)
 	{
-		img.format = PIXELFORMAT_RGBA32F;
+		img.format = PIXELFORMAT_RGBA32_FLOAT;
 
 		float *rgba[4] = {nullptr};
 		getEXRChannels(exrHeader, exrImage, rgba);

@@ -69,7 +69,7 @@ public:
 	 * @param height The height of the ImageData.
 	 * @return The new ImageData.
 	 **/
-	ImageData *newImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
+	ImageData *newImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8_UNORM);
 
 	/**
 	 * Creates empty ImageData with the given size.

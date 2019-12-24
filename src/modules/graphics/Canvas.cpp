@@ -138,8 +138,8 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 		throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
 
 	PixelFormat dataformat = getPixelFormat();
-	if (dataformat == PIXELFORMAT_sRGBA8)
-		dataformat = PIXELFORMAT_RGBA8;
+	if (dataformat == PIXELFORMAT_sRGBA8_UNORM)
+		dataformat = PIXELFORMAT_RGBA8_UNORM;
 
 	if (!image::ImageData::validPixelFormat(dataformat))
 	{

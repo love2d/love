@@ -161,7 +161,7 @@ void Font::createTexture()
 		// glyphs), and transparent black otherwise.
 		std::vector<uint8> emptydata(pixelcount * bpp, 0);
 
-		if (pixelFormat == PIXELFORMAT_LA8)
+		if (pixelFormat == PIXELFORMAT_LA8_UNORM)
 		{
 			for (size_t i = 0; i < pixelcount; i++)
 				emptydata[i * 2 + 0] = 255;
