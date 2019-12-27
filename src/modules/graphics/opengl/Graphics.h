@@ -98,7 +98,7 @@ public:
 
 	void setColorMask(ColorChannelMask mask) override;
 
-	void setBlendMode(BlendMode mode, BlendAlpha alphamode) override;
+	void setBlendState(const BlendState &blend) override;
 
 	void setPointSize(float size) override;
 

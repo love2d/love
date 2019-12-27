@@ -137,7 +137,8 @@ public:
 	{
 		FEATURE_MULTI_CANVAS_FORMATS,
 		FEATURE_CLAMP_ZERO,
-		FEATURE_LIGHTEN,
+		FEATURE_BLENDMINMAX,
+		FEATURE_LIGHTEN, // Deprecated
 		FEATURE_FULL_NPOT,
 		FEATURE_PIXEL_SHADER_HIGHP,
 		FEATURE_SHADER_DERIVATIVES,
@@ -607,14 +608,16 @@ public:
 	ColorChannelMask getColorMask() const;
 
 	/**
-	 * Sets the current blend mode.
+	 * High-level blend mode.
 	 **/
-	virtual void setBlendMode(BlendMode mode, BlendAlpha alphamode) = 0;
+	void setBlendMode(BlendMode mode, BlendAlpha alphamode);
+	BlendMode getBlendMode(BlendAlpha &alphamode) const;
 
 	/**
-	 * Gets the current blend mode.
+	 * Low-level blend state.
 	 **/
-	BlendMode getBlendMode(BlendAlpha &alphamode) const;
+	virtual void setBlendState(const BlendState &blend) = 0;
+	const BlendState &getBlendState() const;
 
 	/**
 	 * Sets the default filter for images, canvases, and fonts.
@@ -886,8 +889,7 @@ protected:
 		Colorf color = Colorf(1.0, 1.0, 1.0, 1.0);
 		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 1.0);
 
-		BlendMode blendMode = BLEND_ALPHA;
-		BlendAlpha blendAlphaMode = BLENDALPHA_MULTIPLY;
+		BlendState blend;
 
 		float lineWidth = 1.0f;
 		LineStyle lineStyle = LINE_SMOOTH;

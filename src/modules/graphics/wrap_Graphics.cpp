@@ -1847,6 +1847,90 @@ int w_getBlendMode(lua_State *L)
 	return 2;
 }
 
+static BlendOperation luax_checkblendop(lua_State *L, int idx)
+{
+	BlendOperation op = BLENDOP_ADD;
+	const char *str = luaL_checkstring(L, idx);
+	if (!getConstant(str, op))
+		luax_enumerror(L, "blend operation", getConstants(op), str);
+	return op;
+}
+
+static BlendFactor luax_checkblendfactor(lua_State *L, int idx)
+{
+	BlendFactor factor = BLENDFACTOR_ZERO;
+	const char *str = luaL_checkstring(L, idx);
+	if (!getConstant(str, factor))
+		luax_enumerror(L, "blend factor", getConstants(factor), str);
+	return factor;
+}
+
+static void luax_pushblendop(lua_State *L, BlendOperation op)
+{
+	const char *str;
+	if (!getConstant(op, str))
+		luaL_error(L, "unknown blend operation");
+	lua_pushstring(L, str);
+}
+
+static void luax_pushblendfactor(lua_State *L, BlendFactor factor)
+{
+	const char *str;
+	if (!getConstant(factor, str))
+		luaL_error(L, "unknown blend factor");
+	lua_pushstring(L, str);
+}
+
+int w_setBlendState(lua_State *L)
+{
+	BlendState state;
+
+	if (!lua_isnoneornil(L, 1))
+	{
+		state.enable = true;
+		if (lua_gettop(L) >= 4)
+		{
+			state.operationRGB = luax_checkblendop(L, 1);
+			state.operationA = luax_checkblendop(L, 2);
+			state.srcFactorRGB = luax_checkblendfactor(L, 3);
+			state.srcFactorA = luax_checkblendfactor(L, 4);
+			state.dstFactorRGB = luax_checkblendfactor(L, 5);
+			state.dstFactorA = luax_checkblendfactor(L, 6);
+		}
+		else
+		{
+			state.operationRGB = state.operationA = luax_checkblendop(L, 1);
+			state.srcFactorRGB = state.srcFactorA = luax_checkblendfactor(L, 2);
+			state.dstFactorRGB = state.dstFactorA = luax_checkblendfactor(L, 3);
+		}
+	}
+
+	luax_catchexcept(L, [&](){ instance()->setBlendState(state); });
+	return 0;
+}
+
+int w_getBlendState(lua_State *L)
+{
+	const BlendState &state = instance()->getBlendState();
+
+	if (state.enable)
+	{
+		luax_pushblendop(L, state.operationRGB);
+		luax_pushblendop(L, state.operationA);
+		luax_pushblendfactor(L, state.srcFactorRGB);
+		luax_pushblendfactor(L, state.srcFactorA);
+		luax_pushblendfactor(L, state.dstFactorRGB);
+		luax_pushblendfactor(L, state.dstFactorA);
+	}
+	else
+	{
+		for (int i = 0; i < 6; i++)
+			lua_pushnil(L);
+	}
+
+	return 6;
+}
+
 int w_setDefaultFilter(lua_State *L)
 {
 	Texture::Filter f;
@@ -2946,6 +3030,8 @@ static const luaL_Reg functions[] =
 	{ "getColorMask", w_getColorMask },
 	{ "setBlendMode", w_setBlendMode },
 	{ "getBlendMode", w_getBlendMode },
+	{ "setBlendState", w_setBlendState },
+	{ "getBlendState", w_getBlendState },
 	{ "setDefaultFilter", w_setDefaultFilter },
 	{ "getDefaultFilter", w_getDefaultFilter },
 	{ "setDefaultMipmapFilter", w_setDefaultMipmapFilter },

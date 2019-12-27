@@ -26,54 +26,89 @@ namespace love
 namespace graphics
 {
 
-BlendState getBlendState(BlendMode mode, BlendAlpha alphamode)
+// These are all with premultiplied alpha. computeBlendState adjusts for
+// alpha-multiply if needed.
+static const BlendState states[BLEND_MAX_ENUM] =
 {
-	BlendState s;
+	// BLEND_ALPHA
+	{BLENDOP_ADD, BLENDOP_ADD, BLENDFACTOR_ONE, BLENDFACTOR_ONE, BLENDFACTOR_ONE_MINUS_SRC_ALPHA, BLENDFACTOR_ONE_MINUS_SRC_ALPHA},
 
-	s.enable = mode != BLEND_NONE;
-	s.operationRGB = BLENDOP_ADD;
-	s.operationA = BLENDOP_ADD;
+	// BLEND_ADD
+	{BLENDOP_ADD, BLENDOP_ADD, BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDFACTOR_ONE, BLENDFACTOR_ONE},
 
-	switch (mode)
-	{
-	case BLEND_ALPHA:
-		s.srcFactorRGB = s.srcFactorA = BLENDFACTOR_ONE;
-		s.dstFactorRGB = s.dstFactorA = BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-		break;
-	case BLEND_MULTIPLY:
-		s.srcFactorRGB = s.srcFactorA = BLENDFACTOR_DST_COLOR;
-		s.dstFactorRGB = s.dstFactorA = BLENDFACTOR_ZERO;
-		break;
-	case BLEND_SUBTRACT:
-		s.operationRGB = s.operationA = BLENDOP_REVERSE_SUBTRACT;
-	case BLEND_ADD:
-		s.srcFactorRGB = BLENDFACTOR_ONE;
-		s.srcFactorA = BLENDFACTOR_ZERO;
-		s.dstFactorRGB = s.dstFactorA = BLENDFACTOR_ONE;
-		break;
-	case BLEND_LIGHTEN:
-		s.operationRGB = s.operationA = BLENDOP_MAX;
-		break;
-	case BLEND_DARKEN:
-		s.operationRGB = s.operationA = BLENDOP_MIN;
-		break;
-	case BLEND_SCREEN:
-		s.srcFactorRGB = s.srcFactorA = BLENDFACTOR_ONE;
-		s.dstFactorRGB = s.dstFactorA = BLENDFACTOR_ONE_MINUS_SRC_COLOR;
-		break;
-	case BLEND_REPLACE:
-	case BLEND_NONE:
-	default:
-		s.srcFactorRGB = s.srcFactorA = BLENDFACTOR_ONE;
-		s.dstFactorRGB = s.dstFactorA = BLENDFACTOR_ZERO;
-		break;
-	}
+	// BLEND_SUBTRACT
+	{BLENDOP_REVERSE_SUBTRACT, BLENDOP_REVERSE_SUBTRACT, BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDFACTOR_ONE, BLENDFACTOR_ONE},
+
+	// BLEND_MULTIPLY
+	{BLENDOP_ADD, BLENDOP_ADD, BLENDFACTOR_DST_COLOR, BLENDFACTOR_DST_COLOR, BLENDFACTOR_ZERO, BLENDFACTOR_ZERO},
+
+	// BLEND_LIGHTEN
+	{BLENDOP_MAX, BLENDOP_MAX, BLENDFACTOR_ZERO, BLENDFACTOR_ZERO, BLENDFACTOR_ONE, BLENDFACTOR_ONE},
+
+	// BLEND_DARKEN
+	{BLENDOP_MAX, BLENDOP_MAX, BLENDFACTOR_ONE, BLENDFACTOR_ONE, BLENDFACTOR_ONE, BLENDFACTOR_ONE},
+
+	// BLEND_SCREEN
+	{BLENDOP_ADD, BLENDOP_ADD, BLENDFACTOR_ONE, BLENDFACTOR_ONE, BLENDFACTOR_ONE_MINUS_SRC_COLOR, BLENDFACTOR_ONE_MINUS_SRC_COLOR},
+
+	// BLEND_REPLACE
+	{BLENDOP_ADD, BLENDOP_ADD, BLENDFACTOR_ONE, BLENDFACTOR_ONE, BLENDFACTOR_ZERO, BLENDFACTOR_ZERO},
+
+	// BLEND_NONE
+	{},
+
+	// BLEND_CUSTOM - N/A
+	{},
+};
+
+BlendState computeBlendState(BlendMode mode, BlendAlpha alphamode)
+{
+	BlendState s = states[mode];
 
 	// We can only do alpha-multiplication when srcRGB would have been unmodified.
 	if (s.srcFactorRGB == BLENDFACTOR_ONE && alphamode == BLENDALPHA_MULTIPLY && mode != BLEND_NONE)
 		s.srcFactorRGB = BLENDFACTOR_SRC_ALPHA;
 
 	return s;
+}
+
+BlendMode computeBlendMode(BlendState s, BlendAlpha &alphamode)
+{
+	if (!s.enable)
+	{
+		alphamode = BLENDALPHA_PREMULTIPLIED;
+		return BLEND_NONE;
+	}
+
+	// Temporarily disable alpha multiplication when comparing to our list.
+	bool alphamultiply = s.srcFactorRGB == BLENDFACTOR_SRC_ALPHA;
+	if (alphamultiply)
+		s.srcFactorRGB = BLENDFACTOR_ONE;
+
+	for (int i = 0; i < (int) BLEND_MAX_ENUM; i++)
+	{
+		if (i != (int) BLEND_CUSTOM && states[i] == s)
+		{
+			alphamode = alphamultiply ? BLENDALPHA_MULTIPLY : BLENDALPHA_PREMULTIPLIED;
+			return (BlendMode) i;
+		}
+	}
+
+	alphamode = BLENDALPHA_PREMULTIPLIED;
+	return BLEND_CUSTOM;
+}
+
+bool isAlphaMultiplyBlendSupported(BlendMode mode)
+{
+	switch (mode)
+	{
+	case BLEND_LIGHTEN:
+	case BLEND_DARKEN:
+	case BLEND_MULTIPLY:
+		return false;
+	default:
+		return true;
+	}
 }
 
 CompareMode getReversedCompareMode(CompareMode mode)
@@ -99,6 +134,7 @@ static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[] =
 	{ "screen",   BLEND_SCREEN   },
 	{ "replace",  BLEND_REPLACE  },
 	{ "none",     BLEND_NONE     },
+	{ "custom",   BLEND_CUSTOM   },
 };
 
 static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes(blendModeEntries, sizeof(blendModeEntries));

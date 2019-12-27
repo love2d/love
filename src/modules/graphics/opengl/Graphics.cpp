@@ -1268,46 +1268,29 @@ void Graphics::setColorMask(ColorChannelMask mask)
 	states.back().colorMask = mask;
 }
 
-void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
+void Graphics::setBlendState(const BlendState &blend)
 {
-	if (mode != states.back().blendMode || alphamode != states.back().blendAlphaMode)
+	if (!(blend == states.back().blend))
 		flushStreamDraws();
 
-	if (mode == BLEND_LIGHTEN || mode == BLEND_DARKEN)
+	if (blend.operationRGB == BLENDOP_MAX || blend.operationA == BLENDOP_MAX
+		|| blend.operationRGB == BLENDOP_MIN || blend.operationA == BLENDOP_MIN)
 	{
-		if (!capabilities.features[FEATURE_LIGHTEN])
-			throw love::Exception("The 'lighten' and 'darken' blend modes are not supported on this system.");
+		if (!capabilities.features[FEATURE_BLENDMINMAX])
+			throw love::Exception("The 'min' and 'max' blend operations are not supported on this system.");
 	}
 
-	if (alphamode != BLENDALPHA_PREMULTIPLIED)
-	{
-		const char *modestr = "unknown";
-		switch (mode)
-		{
-		case BLEND_LIGHTEN:
-		case BLEND_DARKEN:
-		case BLEND_MULTIPLY:
-			love::graphics::getConstant(mode, modestr);
-			throw love::Exception("The '%s' blend mode must be used with premultiplied alpha.", modestr);
-			break;
-		default:
-			break;
-		}
-	}
-
-	BlendState state = getBlendState(mode, alphamode);
-	GLenum opRGB  = getGLBlendOperation(state.operationRGB);
-	GLenum opA    = getGLBlendOperation(state.operationA);
-	GLenum srcRGB = getGLBlendFactor(state.srcFactorRGB);
-	GLenum srcA   = getGLBlendFactor(state.srcFactorA);
-	GLenum dstRGB = getGLBlendFactor(state.dstFactorRGB);
-	GLenum dstA   = getGLBlendFactor(state.dstFactorA);
+	GLenum opRGB  = getGLBlendOperation(blend.operationRGB);
+	GLenum opA    = getGLBlendOperation(blend.operationA);
+	GLenum srcRGB = getGLBlendFactor(blend.srcFactorRGB);
+	GLenum srcA   = getGLBlendFactor(blend.srcFactorA);
+	GLenum dstRGB = getGLBlendFactor(blend.dstFactorRGB);
+	GLenum dstA   = getGLBlendFactor(blend.dstFactorA);
 
 	glBlendEquationSeparate(opRGB, opA);
 	glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
 
-	states.back().blendMode = mode;
-	states.back().blendAlphaMode = alphamode;
+	states.back().blend = blend;
 }
 
 void Graphics::setPointSize(float size)
@@ -1375,14 +1358,15 @@ void Graphics::initCapabilities()
 {
 	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = Canvas::isMultiFormatMultiCanvasSupported();
 	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroTextureWrapSupported();
-	capabilities.features[FEATURE_LIGHTEN] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
+	capabilities.features[FEATURE_BLENDMINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
+	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLENDMINMAX];
 	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = gl.isPixelShaderHighpSupported();
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_standard_derivatives;
 	capabilities.features[FEATURE_GLSL3] = GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
-	static_assert(FEATURE_MAX_ENUM == 9, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

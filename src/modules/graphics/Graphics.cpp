@@ -376,7 +376,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setColor(s.color);
 	setBackgroundColor(s.backgroundColor);
 
-	setBlendMode(s.blendMode, s.blendAlphaMode);
+	setBlendState(s.blend);
 
 	setLineWidth(s.lineWidth);
 	setLineStyle(s.lineStyle);
@@ -415,8 +415,8 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	setBackgroundColor(s.backgroundColor);
 
-	if (s.blendMode != cur.blendMode || s.blendAlphaMode != cur.blendAlphaMode)
-		setBlendMode(s.blendMode, s.blendAlphaMode);
+	if (!(s.blend == cur.blend))
+		setBlendState(s.blend);
 
 	// These are just simple assignments.
 	setLineWidth(s.lineWidth);
@@ -901,10 +901,26 @@ ColorChannelMask Graphics::getColorMask() const
 	return states.back().colorMask;
 }
 
+void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
+{
+	if (alphamode == BLENDALPHA_MULTIPLY && !isAlphaMultiplyBlendSupported(mode))
+	{
+		const char *modestr = "unknown";
+		love::graphics::getConstant(mode, modestr);
+		throw love::Exception("The '%s' blend mode must be used with premultiplied alpha.", modestr);
+	}
+
+	setBlendState(computeBlendState(mode, alphamode));
+}
+
 BlendMode Graphics::getBlendMode(BlendAlpha &alphamode) const
 {
-	alphamode = states.back().blendAlphaMode;
-	return states.back().blendMode;
+	return computeBlendMode(states.back().blend, alphamode);
+}
+
+const BlendState &Graphics::getBlendState() const
+{
+	return states.back().blend;
 }
 
 void Graphics::setDefaultFilter(const Texture::Filter &f)
@@ -1881,6 +1897,7 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 {
 	{ "multicanvasformats", FEATURE_MULTI_CANVAS_FORMATS },
 	{ "clampzero",          FEATURE_CLAMP_ZERO           },
+	{ "blendminmax",        FEATURE_BLENDMINMAX          },
 	{ "lighten",            FEATURE_LIGHTEN              },
 	{ "fullnpot",           FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },

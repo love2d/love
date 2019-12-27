@@ -34,7 +34,7 @@ namespace graphics
 
 class Shader;
 
-enum BlendMode // High level wrappers
+enum BlendMode // High level wrappers. Order is important (see renderstate.cpp)
 {
 	BLEND_ALPHA,
 	BLEND_ADD,
@@ -45,6 +45,7 @@ enum BlendMode // High level wrappers
 	BLEND_SCREEN,
 	BLEND_REPLACE,
 	BLEND_NONE,
+	BLEND_CUSTOM,
 	BLEND_MAX_ENUM
 };
 
@@ -117,6 +118,18 @@ struct BlendState
 	BlendFactor dstFactorRGB = BLENDFACTOR_ZERO;
 	BlendFactor dstFactorA = BLENDFACTOR_ZERO;
 
+	BlendState() {}
+
+	BlendState(BlendOperation opRGB, BlendOperation opA, BlendFactor srcRGB, BlendFactor srcA, BlendFactor dstRGB, BlendFactor dstA)
+		: enable(true)
+		, operationRGB(opRGB)
+		, operationA(opA)
+		, srcFactorRGB(srcRGB)
+		, srcFactorA(srcA)
+		, dstFactorRGB(dstRGB)
+		, dstFactorA(dstA)
+	{}
+
 	bool operator == (const BlendState &b) const
 	{
 		return enable == b.enable
@@ -176,7 +189,9 @@ struct ScissorState
 	bool enable = false;
 };
 
-BlendState getBlendState(BlendMode mode, BlendAlpha alphamode);
+BlendState computeBlendState(BlendMode mode, BlendAlpha alphamode);
+BlendMode computeBlendMode(BlendState s, BlendAlpha &alphamode);
+bool isAlphaMultiplyBlendSupported(BlendMode mode);
 
 /**
  * GPU APIs do the comparison in the opposite way of what makes sense for some
