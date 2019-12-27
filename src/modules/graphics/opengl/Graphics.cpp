@@ -206,7 +206,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	// Enable blending
-	glEnable(GL_BLEND);
+	gl.setEnableState(OpenGL::ENABLE_BLEND, true);
 
 	// Auto-generated mipmaps should be the best quality possible
 	if (!gl.isCoreProfile())
@@ -1280,15 +1280,21 @@ void Graphics::setBlendState(const BlendState &blend)
 			throw love::Exception("The 'min' and 'max' blend operations are not supported on this system.");
 	}
 
-	GLenum opRGB  = getGLBlendOperation(blend.operationRGB);
-	GLenum opA    = getGLBlendOperation(blend.operationA);
-	GLenum srcRGB = getGLBlendFactor(blend.srcFactorRGB);
-	GLenum srcA   = getGLBlendFactor(blend.srcFactorA);
-	GLenum dstRGB = getGLBlendFactor(blend.dstFactorRGB);
-	GLenum dstA   = getGLBlendFactor(blend.dstFactorA);
+	if (blend.enable != gl.isStateEnabled(OpenGL::ENABLE_BLEND))
+		gl.setEnableState(OpenGL::ENABLE_BLEND, blend.enable);
 
-	glBlendEquationSeparate(opRGB, opA);
-	glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
+	if (blend.enable)
+	{
+		GLenum opRGB  = getGLBlendOperation(blend.operationRGB);
+		GLenum opA    = getGLBlendOperation(blend.operationA);
+		GLenum srcRGB = getGLBlendFactor(blend.srcFactorRGB);
+		GLenum srcA   = getGLBlendFactor(blend.srcFactorA);
+		GLenum dstRGB = getGLBlendFactor(blend.dstFactorRGB);
+		GLenum dstA   = getGLBlendFactor(blend.dstFactorA);
+
+		glBlendEquationSeparate(opRGB, opA);
+		glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
+	}
 
 	states.back().blend = blend;
 }

@@ -205,6 +205,7 @@ void OpenGL::setupContext()
 		state.boundFramebuffers[i] = std::numeric_limits<GLuint>::max();
 	bindFramebuffer(FRAMEBUFFER_ALL, getDefaultFBO());
 
+	setEnableState(ENABLE_BLEND, state.enableState[ENABLE_BLEND]);
 	setEnableState(ENABLE_DEPTH_TEST, state.enableState[ENABLE_DEPTH_TEST]);
 	setEnableState(ENABLE_STENCIL_TEST, state.enableState[ENABLE_STENCIL_TEST]);
 	setEnableState(ENABLE_SCISSOR_TEST, state.enableState[ENABLE_SCISSOR_TEST]);
@@ -810,6 +811,9 @@ void OpenGL::setEnableState(EnableState enablestate, bool enable)
 
 	switch (enablestate)
 	{
+	case ENABLE_BLEND:
+		glstate = GL_BLEND;
+		break;
 	case ENABLE_DEPTH_TEST:
 		glstate = GL_DEPTH_TEST;
 		break;

@@ -94,6 +94,7 @@ public:
 
 	enum EnableState
 	{
+		ENABLE_BLEND,
 		ENABLE_DEPTH_TEST,
 		ENABLE_STENCIL_TEST,
 		ENABLE_SCISSOR_TEST,
