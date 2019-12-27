@@ -67,6 +67,7 @@ public:
 	{
 		WRAP_CLAMP,
 		WRAP_CLAMP_ZERO,
+		WRAP_CLAMP_ONE,
 		WRAP_REPEAT,
 		WRAP_MIRRORED_REPEAT,
 		WRAP_MAX_ENUM
@@ -152,6 +153,8 @@ public:
 
 	static int getTotalMipmapCount(int w, int h);
 	static int getTotalMipmapCount(int w, int h, int d);
+
+	static bool isClampZeroOrOne(WrapMode w) { return w == WRAP_CLAMP_ZERO || w == WRAP_CLAMP_ONE; }
 
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);

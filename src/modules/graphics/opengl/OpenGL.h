@@ -348,7 +348,7 @@ public:
 	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth = 1);
 
 	bool isTextureTypeSupported(TextureType type) const;
-	bool isClampZeroTextureWrapSupported() const;
+	bool isClampZeroOneTextureWrapSupported() const;
 	bool isPixelShaderHighpSupported() const;
 	bool isInstancingSupported() const;
 	bool isDepthCompareSampleSupported() const;

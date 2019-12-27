@@ -450,6 +450,7 @@ StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM>::Entry Texture::wrapModeEnt
 {
 	{ "clamp", WRAP_CLAMP },
 	{ "clampzero", WRAP_CLAMP_ZERO },
+	{ "clampone", WRAP_CLAMP_ONE },
 	{ "repeat", WRAP_REPEAT },
 	{ "mirroredrepeat", WRAP_MIRRORED_REPEAT },
 };

@@ -1363,7 +1363,7 @@ void Graphics::getAPIStats(int &shaderswitches) const
 void Graphics::initCapabilities()
 {
 	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = Canvas::isMultiFormatMultiCanvasSupported();
-	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroTextureWrapSupported();
+	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroOneTextureWrapSupported();
 	capabilities.features[FEATURE_BLENDMINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
 	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLENDMINMAX];
 	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;

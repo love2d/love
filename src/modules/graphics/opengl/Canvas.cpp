@@ -357,11 +357,11 @@ bool Canvas::setWrap(const Texture::Wrap &w)
 		wrap.s = wrap.t = wrap.r = WRAP_CLAMP;
 	}
 
-	if (!gl.isClampZeroTextureWrapSupported())
+	if (!gl.isClampZeroOneTextureWrapSupported())
 	{
-		if (wrap.s == WRAP_CLAMP_ZERO) wrap.s = WRAP_CLAMP;
-		if (wrap.t == WRAP_CLAMP_ZERO) wrap.t = WRAP_CLAMP;
-		if (wrap.r == WRAP_CLAMP_ZERO) wrap.r = WRAP_CLAMP;
+		if (isClampZeroOrOne(wrap.s)) wrap.s = WRAP_CLAMP;
+		if (isClampZeroOrOne(wrap.t)) wrap.t = WRAP_CLAMP;
+		if (isClampZeroOrOne(wrap.r)) wrap.r = WRAP_CLAMP;
 	}
 
 	gl.bindTextureToUnit(this, 0, false);

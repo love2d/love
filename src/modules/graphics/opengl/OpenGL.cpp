@@ -1061,6 +1061,7 @@ GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
 	default:
 		return GL_CLAMP_TO_EDGE;
 	case Texture::WRAP_CLAMP_ZERO:
+	case Texture::WRAP_CLAMP_ONE:
 		return GL_CLAMP_TO_BORDER;
 	case Texture::WRAP_REPEAT:
 		return GL_REPEAT;
@@ -1094,13 +1095,29 @@ GLint OpenGL::getGLCompareMode(CompareMode mode)
 	}
 }
 
+static bool isClampOne(Texture::WrapMode mode)
+{
+	return mode == Texture::WRAP_CLAMP_ONE;
+}
+
 void OpenGL::setTextureWrap(TextureType target, const graphics::Texture::Wrap &w)
 {
-	glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
-	glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
+	GLenum textype = getGLTextureType(target);
+
+	if (Texture::isClampZeroOrOne(w.s) || Texture::isClampZeroOrOne(w.t) || Texture::isClampZeroOrOne(w.r))
+	{
+		GLfloat c[] = {0.0f, 0.0f, 0.0f, 0.0f};
+		if (isClampOne(w.s) || isClampOne(w.t) || isClampOne(w.r))
+			c[0] = c[1] = c[2] = c[3] = 1.0f;
+
+		glTexParameterfv(textype, GL_TEXTURE_BORDER_COLOR, c);
+	}
+
+	glTexParameteri(textype, GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
+	glTexParameteri(textype, GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
 
 	if (target == TEXTURE_VOLUME)
-		glTexParameteri(getGLTextureType(target), GL_TEXTURE_WRAP_R, getGLWrapMode(w.r));
+		glTexParameteri(textype, GL_TEXTURE_WRAP_R, getGLWrapMode(w.r));
 }
 
 bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth)
@@ -1202,7 +1219,7 @@ bool OpenGL::isTextureTypeSupported(TextureType type) const
 	}
 }
 
-bool OpenGL::isClampZeroTextureWrapSupported() const
+bool OpenGL::isClampZeroOneTextureWrapSupported() const
 {
 	return GLAD_VERSION_1_3 || GLAD_EXT_texture_border_clamp || GLAD_NV_texture_border_clamp;
 }
