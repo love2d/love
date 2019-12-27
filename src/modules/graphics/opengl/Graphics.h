@@ -96,7 +96,7 @@ public:
 
 	void setFrontFaceWinding(vertex::Winding winding) override;
 
-	void setColorMask(ColorMask mask) override;
+	void setColorMask(ColorChannelMask mask) override;
 
 	void setBlendMode(BlendMode mode, BlendAlpha alphamode) override;
 

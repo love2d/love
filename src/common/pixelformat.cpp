@@ -32,20 +32,21 @@ static StringMap<PixelFormat, PIXELFORMAT_MAX_ENUM>::Entry formatEntries[] =
 	{ "hdr",     PIXELFORMAT_HDR     },
 
 	{ "r8",      PIXELFORMAT_R8_UNORM     },
+	{ "r16",     PIXELFORMAT_R16_UNORM    },
+	{ "r16f",    PIXELFORMAT_R16_FLOAT    },
+	{ "r32f",    PIXELFORMAT_R32_FLOAT    },
+
 	{ "rg8",     PIXELFORMAT_RG8_UNORM    },
+	{ "la8",     PIXELFORMAT_LA8_UNORM    },
+	{ "rg16",    PIXELFORMAT_RG16_UNORM   },
+	{ "rg16f",   PIXELFORMAT_RG16_FLOAT   },
+	{ "rg32f",   PIXELFORMAT_RG32_FLOAT   },
+
 	{ "rgba8",   PIXELFORMAT_RGBA8_UNORM  },
 	{ "srgba8",  PIXELFORMAT_sRGBA8_UNORM },
-	{ "r16",     PIXELFORMAT_R16_UNORM    },
-	{ "rg16",    PIXELFORMAT_RG16_UNORM   },
 	{ "rgba16",  PIXELFORMAT_RGBA16_UNORM },
-	{ "r16f",    PIXELFORMAT_R16_FLOAT    },
-	{ "rg16f",   PIXELFORMAT_RG16_FLOAT   },
 	{ "rgba16f", PIXELFORMAT_RGBA16_FLOAT },
-	{ "r32f",    PIXELFORMAT_R32_FLOAT    },
-	{ "rg32f",   PIXELFORMAT_RG32_FLOAT   },
 	{ "rgba32f", PIXELFORMAT_RGBA32_FLOAT },
-
-	{ "la8",     PIXELFORMAT_LA8_UNORM    },
 
 	{ "rgba4",    PIXELFORMAT_RGBA4_UNORM    },
 	{ "rgb5a1",   PIXELFORMAT_RGB5A1_UNORM   },

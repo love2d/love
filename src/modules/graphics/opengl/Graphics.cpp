@@ -54,6 +54,40 @@ namespace graphics
 namespace opengl
 {
 
+static GLenum getGLBlendOperation(BlendOperation op)
+{
+	switch (op)
+	{
+		case BLENDOP_ADD: return GL_FUNC_ADD;
+		case BLENDOP_SUBTRACT: return GL_FUNC_SUBTRACT;
+		case BLENDOP_REVERSE_SUBTRACT: return GL_FUNC_REVERSE_SUBTRACT;
+		case BLENDOP_MIN: return GL_MIN;
+		case BLENDOP_MAX: return GL_MAX;
+		case BLENDOP_MAX_ENUM: return 0;
+	}
+	return 0;
+}
+
+static GLenum getGLBlendFactor(BlendFactor factor)
+{
+	switch (factor)
+	{
+		case BLENDFACTOR_ZERO: return GL_ZERO;
+		case BLENDFACTOR_ONE: return GL_ONE;
+		case BLENDFACTOR_SRC_COLOR: return GL_SRC_COLOR;
+		case BLENDFACTOR_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+		case BLENDFACTOR_SRC_ALPHA: return GL_SRC_ALPHA;
+		case BLENDFACTOR_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+		case BLENDFACTOR_DST_COLOR: return GL_DST_COLOR;
+		case BLENDFACTOR_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+		case BLENDFACTOR_DST_ALPHA: return GL_DST_ALPHA;
+		case BLENDFACTOR_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+		case BLENDFACTOR_SRC_ALPHA_SATURATED: return GL_SRC_ALPHA_SATURATE;
+		case BLENDFACTOR_MAX_ENUM: return 0;
+	}
+	return 0;
+}
+
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
@@ -1226,7 +1260,7 @@ void Graphics::setColor(Colorf c)
 	states.back().color = c;
 }
 
-void Graphics::setColorMask(ColorMask mask)
+void Graphics::setColorMask(ColorChannelMask mask)
 {
 	flushStreamDraws();
 
@@ -1253,7 +1287,7 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 		case BLEND_LIGHTEN:
 		case BLEND_DARKEN:
 		case BLEND_MULTIPLY:
-			getConstant(mode, modestr);
+			love::graphics::getConstant(mode, modestr);
 			throw love::Exception("The '%s' blend mode must be used with premultiplied alpha.", modestr);
 			break;
 		default:
@@ -1261,52 +1295,15 @@ void Graphics::setBlendMode(BlendMode mode, BlendAlpha alphamode)
 		}
 	}
 
-	GLenum func   = GL_FUNC_ADD;
-	GLenum srcRGB = GL_ONE;
-	GLenum srcA   = GL_ONE;
-	GLenum dstRGB = GL_ZERO;
-	GLenum dstA   = GL_ZERO;
+	BlendState state = getBlendState(mode, alphamode);
+	GLenum opRGB  = getGLBlendOperation(state.operationRGB);
+	GLenum opA    = getGLBlendOperation(state.operationA);
+	GLenum srcRGB = getGLBlendFactor(state.srcFactorRGB);
+	GLenum srcA   = getGLBlendFactor(state.srcFactorA);
+	GLenum dstRGB = getGLBlendFactor(state.dstFactorRGB);
+	GLenum dstA   = getGLBlendFactor(state.dstFactorA);
 
-	switch (mode)
-	{
-	case BLEND_ALPHA:
-		srcRGB = srcA = GL_ONE;
-		dstRGB = dstA = GL_ONE_MINUS_SRC_ALPHA;
-		break;
-	case BLEND_MULTIPLY:
-		srcRGB = srcA = GL_DST_COLOR;
-		dstRGB = dstA = GL_ZERO;
-		break;
-	case BLEND_SUBTRACT:
-		func = GL_FUNC_REVERSE_SUBTRACT;
-	case BLEND_ADD:
-		srcRGB = GL_ONE;
-		srcA = GL_ZERO;
-		dstRGB = dstA = GL_ONE;
-		break;
-	case BLEND_LIGHTEN:
-		func = GL_MAX;
-		break;
-	case BLEND_DARKEN:
-		func = GL_MIN;
-		break;
-	case BLEND_SCREEN:
-		srcRGB = srcA = GL_ONE;
-		dstRGB = dstA = GL_ONE_MINUS_SRC_COLOR;
-		break;
-	case BLEND_REPLACE:
-	case BLEND_NONE:
-	default:
-		srcRGB = srcA = GL_ONE;
-		dstRGB = dstA = GL_ZERO;
-		break;
-	}
-
-	// We can only do alpha-multiplication when srcRGB would have been unmodified.
-	if (srcRGB == GL_ONE && alphamode == BLENDALPHA_MULTIPLY && mode != BLEND_NONE)
-		srcRGB = GL_SRC_ALPHA;
-
-	glBlendEquation(func);
+	glBlendEquationSeparate(opRGB, opA);
 	glBlendFuncSeparate(srcRGB, dstRGB, srcA, dstA);
 
 	states.back().blendMode = mode;

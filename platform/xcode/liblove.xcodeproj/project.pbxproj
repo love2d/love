@@ -975,6 +975,9 @@
 		FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */; };
+		FAC271E523B5B5B400C200D3 /* renderstate.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC271E323B5B5B400C200D3 /* renderstate.h */; };
+		FAC271E623B5B5B400C200D3 /* renderstate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC271E423B5B5B400C200D3 /* renderstate.cpp */; };
+		FAC271E723B5B5B400C200D3 /* renderstate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC271E423B5B5B400C200D3 /* renderstate.cpp */; };
 		FAC756F51E4F99B400B91289 /* Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC756F31E4F99B400B91289 /* Effect.cpp */; };
 		FAC756F61E4F99B400B91289 /* Effect.h in Headers */ = {isa = PBXBuildFile; fileRef = FAC756F41E4F99B400B91289 /* Effect.h */; };
 		FAC756F71E4F99BC00B91289 /* Effect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAC756F31E4F99B400B91289 /* Effect.cpp */; };
@@ -1204,8 +1207,6 @@
 		FAF140DB1E20934C00F898D2 /* InitializeDll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */; };
 		FAF140DC1E20934C00F898D2 /* InitializeDll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */; };
 		FAF140DD1E20934C00F898D2 /* InitializeDll.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF1403C1E20934C00F898D2 /* InitializeDll.h */; };
-		FAF1889F1E9DBC4B008C1479 /* depthstencil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */; };
-		FAF188A01E9DBC4B008C1479 /* depthstencil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1904,6 +1905,8 @@
 		FAB17BF41ABFC4B100F9BA27 /* lz4hc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4hc.h; sourceTree = "<group>"; };
 		FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrueTypeRasterizer.cpp; sourceTree = "<group>"; };
 		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
+		FAC271E323B5B5B400C200D3 /* renderstate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = renderstate.h; sourceTree = "<group>"; };
+		FAC271E423B5B5B400C200D3 /* renderstate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = renderstate.cpp; sourceTree = "<group>"; };
 		FAC734C11B2E021A00AB460A /* wrap_SoundData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_SoundData.lua; sourceTree = "<group>"; };
 		FAC734C21B2E628700AB460A /* wrap_ImageData.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_ImageData.lua; sourceTree = "<group>"; };
 		FAC756F31E4F99B400B91289 /* Effect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Effect.cpp; sourceTree = "<group>"; };
@@ -2057,8 +2060,6 @@
 		FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitializeDll.cpp; sourceTree = "<group>"; };
 		FAF1403C1E20934C00F898D2 /* InitializeDll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitializeDll.h; sourceTree = "<group>"; };
 		FAF1889C1E9DA834008C1479 /* Optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Optional.h; sourceTree = "<group>"; };
-		FAF1889D1E9DBBC8008C1479 /* depthstencil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = depthstencil.h; sourceTree = "<group>"; };
-		FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = depthstencil.cpp; sourceTree = "<group>"; };
 		FAF949FD21DEE8B7001CD27E /* wrap_Event.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Event.lua; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -2781,8 +2782,6 @@
 				FA1BA0A61E16F20600AA2803 /* Canvas.h */,
 				FA9D53AA1F5307E900125C6B /* Deprecations.cpp */,
 				FA9D53AB1F5307E900125C6B /* Deprecations.h */,
-				FAF1889E1E9DBC4B008C1479 /* depthstencil.cpp */,
-				FAF1889D1E9DBBC8008C1479 /* depthstencil.h */,
 				FA9D8DDC1DEF842A002CD881 /* Drawable.cpp */,
 				FA0B7B891A95902C000E1D17 /* Drawable.h */,
 				FA1BA09B1E16CFCE00AA2803 /* Font.cpp */,
@@ -2800,6 +2799,8 @@
 				FA0B7B9C1A95902C000E1D17 /* Polyline.h */,
 				FA0B7BBC1A95902C000E1D17 /* Quad.cpp */,
 				FA0B7BBD1A95902C000E1D17 /* Quad.h */,
+				FAC271E423B5B5B400C200D3 /* renderstate.cpp */,
+				FAC271E323B5B5B400C200D3 /* renderstate.h */,
 				FA10DD7B1F9EC24E00E1FE3D /* Resource.h */,
 				FA1BA0AF1E16FD0800AA2803 /* Shader.cpp */,
 				FA1BA0B01E16FD0800AA2803 /* Shader.h */,
@@ -3724,6 +3725,7 @@
 				FA0B7CCF1A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B7EC01A95902C000E1D17 /* Thread.h in Headers */,
 				FA0B7E9C1A95902C000E1D17 /* VorbisDecoder.h in Headers */,
+				FAC271E523B5B5B400C200D3 /* renderstate.h in Headers */,
 				FAC756FB1E4F99D200B91289 /* Effect.h in Headers */,
 				FAC7CD901FE35E95006A60C7 /* physfs_miniz.h in Headers */,
 				FA0B791D1A958E3B000E1D17 /* b64.h in Headers */,
@@ -4300,6 +4302,7 @@
 				FA0B7E0D1A95902C000E1D17 /* Fixture.cpp in Sources */,
 				FADF53FE1E3D74F200012CC0 /* Text.cpp in Sources */,
 				FA0B7D191A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
+				FAC271E723B5B5B400C200D3 /* renderstate.cpp in Sources */,
 				FA0B7CFB1A95902C000E1D17 /* Filesystem.cpp in Sources */,
 				FA0B7D3D1A95902C000E1D17 /* Image.cpp in Sources */,
 				FA0B7B351A958EA3000E1D17 /* wuff_convert.c in Sources */,
@@ -4402,7 +4405,6 @@
 				FA0B7A2A1A958EA3000E1D17 /* b2BroadPhase.cpp in Sources */,
 				FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */,
 				FA0B7A811A958EA3000E1D17 /* b2EdgeAndCircleContact.cpp in Sources */,
-				FAF188A01E9DBC4B008C1479 /* depthstencil.cpp in Sources */,
 				FA0B7D071A95902C000E1D17 /* wrap_File.cpp in Sources */,
 				FA6A2B751F60B6710074C308 /* ByteData.cpp in Sources */,
 				FAD19A181DFF8CA200D5398A /* ImageDataBase.cpp in Sources */,
@@ -4623,6 +4625,7 @@
 				FA0B7ECB1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
 				FACA02F21F5E396B0084B28F /* HashFunction.cpp in Sources */,
 				FAF140A71E20934C00F898D2 /* ShaderLang.cpp in Sources */,
+				FAC271E623B5B5B400C200D3 /* renderstate.cpp in Sources */,
 				FA1BA09D1E16CFCE00AA2803 /* Font.cpp in Sources */,
 				FA0B7E6C1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7A5E1A958EA3000E1D17 /* b2Body.cpp in Sources */,
@@ -4797,7 +4800,6 @@
 				FA0B7DDC1A95902C000E1D17 /* wrap_BezierCurve.cpp in Sources */,
 				FA0B7A951A958EA3000E1D17 /* b2Joint.cpp in Sources */,
 				FA0B7D061A95902C000E1D17 /* wrap_File.cpp in Sources */,
-				FAF1889F1E9DBC4B008C1479 /* depthstencil.cpp in Sources */,
 				FAC7CD871FE35E95006A60C7 /* physfs_archiver_vdf.c in Sources */,
 				FA0B7A4E1A958EA3000E1D17 /* b2Draw.cpp in Sources */,
 				FAD19A171DFF8CA200D5398A /* ImageDataBase.cpp in Sources */,

@@ -896,12 +896,12 @@ vertex::Winding Graphics::getFrontFaceWinding() const
 	return states.back().winding;
 }
 
-Graphics::ColorMask Graphics::getColorMask() const
+ColorChannelMask Graphics::getColorMask() const
 {
 	return states.back().colorMask;
 }
 
-Graphics::BlendMode Graphics::getBlendMode(BlendAlpha &alphamode) const
+BlendMode Graphics::getBlendMode(BlendAlpha &alphamode) const
 {
 	alphamode = states.back().blendAlphaMode;
 	return states.back().blendMode;
@@ -1778,36 +1778,6 @@ std::vector<std::string> Graphics::getConstants(ArcMode)
 	return arcModes.getNames();
 }
 
-bool Graphics::getConstant(const char *in, BlendMode &out)
-{
-	return blendModes.find(in, out);
-}
-
-bool Graphics::getConstant(BlendMode in, const char *&out)
-{
-	return blendModes.find(in, out);
-}
-
-std::vector<std::string> Graphics::getConstants(BlendMode)
-{
-	return blendModes.getNames();
-}
-
-bool Graphics::getConstant(const char *in, BlendAlpha &out)
-{
-	return blendAlphaModes.find(in, out);
-}
-
-bool Graphics::getConstant(BlendAlpha in, const char *&out)
-{
-	return blendAlphaModes.find(in, out);
-}
-
-std::vector<std::string> Graphics::getConstants(BlendAlpha)
-{
-	return blendAlphaModes.getNames();
-}
-
 bool Graphics::getConstant(const char *in, LineStyle &out)
 {
 	return lineStyles.find(in, out);
@@ -1889,29 +1859,6 @@ StringMap<Graphics::ArcMode, Graphics::ARC_MAX_ENUM>::Entry Graphics::arcModeEnt
 };
 
 StringMap<Graphics::ArcMode, Graphics::ARC_MAX_ENUM> Graphics::arcModes(Graphics::arcModeEntries, sizeof(Graphics::arcModeEntries));
-
-StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM>::Entry Graphics::blendModeEntries[] =
-{
-	{ "alpha",    BLEND_ALPHA    },
-	{ "add",      BLEND_ADD      },
-	{ "subtract", BLEND_SUBTRACT },
-	{ "multiply", BLEND_MULTIPLY },
-	{ "lighten",  BLEND_LIGHTEN  },
-	{ "darken",   BLEND_DARKEN   },
-	{ "screen",   BLEND_SCREEN   },
-	{ "replace",  BLEND_REPLACE  },
-	{ "none",     BLEND_NONE     },
-};
-
-StringMap<Graphics::BlendMode, Graphics::BLEND_MAX_ENUM> Graphics::blendModes(Graphics::blendModeEntries, sizeof(Graphics::blendModeEntries));
-
-StringMap<Graphics::BlendAlpha, Graphics::BLENDALPHA_MAX_ENUM>::Entry Graphics::blendAlphaEntries[] =
-{
-	{ "alphamultiply", BLENDALPHA_MULTIPLY      },
-	{ "premultiplied", BLENDALPHA_PREMULTIPLIED },
-};
-
-StringMap<Graphics::BlendAlpha, Graphics::BLENDALPHA_MAX_ENUM> Graphics::blendAlphaModes(Graphics::blendAlphaEntries, sizeof(Graphics::blendAlphaEntries));
 
 StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] =
 {

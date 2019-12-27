@@ -520,8 +520,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Buffer.h
 	src/modules/graphics/Canvas.cpp
 	src/modules/graphics/Canvas.h
-	src/modules/graphics/depthstencil.cpp
-	src/modules/graphics/depthstencil.h
 	src/modules/graphics/Deprecations.cpp
 	src/modules/graphics/Deprecations.h
 	src/modules/graphics/Drawable.cpp
@@ -540,6 +538,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Polyline.h
 	src/modules/graphics/Quad.cpp
 	src/modules/graphics/Quad.h
+	src/modules/graphics/renderstate.cpp
+	src/modules/graphics/renderstate.h
 	src/modules/graphics/Resource.h
 	src/modules/graphics/Shader.cpp
 	src/modules/graphics/Shader.h

@@ -31,7 +31,7 @@
 #include "Drawable.h"
 #include "Quad.h"
 #include "vertex.h"
-#include "depthstencil.h"
+#include "renderstate.h"
 #include "Resource.h"
 
 // C

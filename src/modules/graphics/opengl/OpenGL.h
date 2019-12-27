@@ -28,7 +28,7 @@
 #include "common/Color.h"
 #include "graphics/Texture.h"
 #include "graphics/vertex.h"
-#include "graphics/depthstencil.h"
+#include "graphics/renderstate.h"
 #include "common/Matrix.h"
 
 // GLAD

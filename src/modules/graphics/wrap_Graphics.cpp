@@ -1777,7 +1777,7 @@ int w_getFont(lua_State *L)
 
 int w_setColorMask(lua_State *L)
 {
-	Graphics::ColorMask mask;
+	ColorChannelMask mask;
 
 	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
@@ -1799,7 +1799,7 @@ int w_setColorMask(lua_State *L)
 
 int w_getColorMask(lua_State *L)
 {
-	Graphics::ColorMask mask = instance()->getColorMask();
+	ColorChannelMask mask = instance()->getColorMask();
 
 	luax_pushboolean(L, mask.r);
 	luax_pushboolean(L, mask.g);
@@ -1811,17 +1811,17 @@ int w_getColorMask(lua_State *L)
 
 int w_setBlendMode(lua_State *L)
 {
-	Graphics::BlendMode mode;
+	BlendMode mode;
 	const char *str = luaL_checkstring(L, 1);
-	if (!Graphics::getConstant(str, mode))
-		return luax_enumerror(L, "blend mode", Graphics::getConstants(mode), str);
+	if (!getConstant(str, mode))
+		return luax_enumerror(L, "blend mode", getConstants(mode), str);
 
-	Graphics::BlendAlpha alphamode = Graphics::BLENDALPHA_MULTIPLY;
+	BlendAlpha alphamode = BLENDALPHA_MULTIPLY;
 	if (!lua_isnoneornil(L, 2))
 	{
 		const char *alphastr = luaL_checkstring(L, 2);
-		if (!Graphics::getConstant(alphastr, alphamode))
-			return luax_enumerror(L, "blend alpha mode", Graphics::getConstants(alphamode), alphastr);
+		if (!getConstant(alphastr, alphamode))
+			return luax_enumerror(L, "blend alpha mode", getConstants(alphamode), alphastr);
 	}
 
 	luax_catchexcept(L, [&](){ instance()->setBlendMode(mode, alphamode); });
@@ -1833,13 +1833,13 @@ int w_getBlendMode(lua_State *L)
 	const char *str;
 	const char *alphastr;
 
-	Graphics::BlendAlpha alphamode;
-	Graphics::BlendMode mode = instance()->getBlendMode(alphamode);
+	BlendAlpha alphamode;
+	BlendMode mode = instance()->getBlendMode(alphamode);
 
-	if (!Graphics::getConstant(mode, str))
+	if (!getConstant(mode, str))
 		return luaL_error(L, "Unknown blend mode");
 
-	if (!Graphics::getConstant(alphamode, alphastr))
+	if (!getConstant(alphamode, alphastr))
 		return luaL_error(L, "Unknown blend alpha mode");
 
 	lua_pushstring(L, str);

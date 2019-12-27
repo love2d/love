@@ -40,7 +40,7 @@
 #include "Mesh.h"
 #include "Image.h"
 #include "Deprecations.h"
-#include "depthstencil.h"
+#include "renderstate.h"
 #include "math/Transform.h"
 #include "font/Rasterizer.h"
 #include "font/Font.h"
@@ -116,27 +116,6 @@ public:
 		ARC_CLOSED,
 		ARC_PIE,
 		ARC_MAX_ENUM
-	};
-
-	enum BlendMode
-	{
-		BLEND_ALPHA,
-		BLEND_ADD,
-		BLEND_SUBTRACT,
-		BLEND_MULTIPLY,
-		BLEND_LIGHTEN,
-		BLEND_DARKEN,
-		BLEND_SCREEN,
-		BLEND_REPLACE,
-		BLEND_NONE,
-		BLEND_MAX_ENUM
-	};
-
-	enum BlendAlpha
-	{
-		BLENDALPHA_MULTIPLY,
-		BLENDALPHA_PREMULTIPLIED,
-		BLENDALPHA_MAX_ENUM
 	};
 
 	enum LineStyle
@@ -226,29 +205,6 @@ public:
 		int images;
 		int fonts;
 		int64 textureMemory;
-	};
-
-	struct ColorMask
-	{
-		bool r, g, b, a;
-
-		ColorMask()
-			: r(true), g(true), b(true), a(true)
-		{}
-
-		ColorMask(bool _r, bool _g, bool _b, bool _a)
-			: r(_r), g(_g), b(_b), a(_a)
-		{}
-
-		bool operator == (const ColorMask &m) const
-		{
-			return r == m.r && g == m.g && b == m.b && a == m.a;
-		}
-
-		bool operator != (const ColorMask &m) const
-		{
-			return !(operator == (m));
-		}
 	};
 
 	struct DrawCommand
@@ -643,12 +599,12 @@ public:
 	/**
 	 * Sets the enabled color components when rendering.
 	 **/
-	virtual void setColorMask(ColorMask mask) = 0;
+	virtual void setColorMask(ColorChannelMask mask) = 0;
 
 	/**
 	 * Gets the current color mask.
 	 **/
-	ColorMask getColorMask() const;
+	ColorChannelMask getColorMask() const;
 
 	/**
 	 * Sets the current blend mode.
@@ -902,14 +858,6 @@ public:
 	static bool getConstant(ArcMode in, const char *&out);
 	static std::vector<std::string> getConstants(ArcMode);
 
-	static bool getConstant(const char *in, BlendMode &out);
-	static bool getConstant(BlendMode in, const char *&out);
-	static std::vector<std::string> getConstants(BlendMode);
-
-	static bool getConstant(const char *in, BlendAlpha &out);
-	static bool getConstant(BlendAlpha in, const char *&out);
-	static std::vector<std::string> getConstants(BlendAlpha);
-
 	static bool getConstant(const char *in, LineStyle &out);
 	static bool getConstant(LineStyle in, const char *&out);
 	static std::vector<std::string> getConstants(LineStyle);
@@ -964,7 +912,7 @@ protected:
 
 		RenderTargetsStrongRef renderTargets;
 
-		ColorMask colorMask = ColorMask(true, true, true, true);
+		ColorChannelMask colorMask;
 
 		bool wireframe = false;
 
@@ -1081,12 +1029,6 @@ private:
 
 	static StringMap<ArcMode, ARC_MAX_ENUM>::Entry arcModeEntries[];
 	static StringMap<ArcMode, ARC_MAX_ENUM> arcModes;
-
-	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
-	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
-
-	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM>::Entry blendAlphaEntries[];
-	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM> blendAlphaModes;
 
 	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
 	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;

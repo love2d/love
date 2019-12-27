@@ -407,7 +407,7 @@ void Canvas::setDepthSampleMode(Optional<CompareMode> mode)
 		gl.bindTextureToUnit(texType, texture, 0, false);
 		GLenum gltextype = OpenGL::getGLTextureType(texType);
 
-		// See the comment in depthstencil.h
+		// See the comment in renderstate.h
 		GLenum glmode = OpenGL::getGLCompareMode(getReversedCompareMode(mode.value));
 
 		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
