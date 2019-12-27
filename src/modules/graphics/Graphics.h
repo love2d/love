@@ -889,7 +889,7 @@ protected:
 		Colorf color = Colorf(1.0, 1.0, 1.0, 1.0);
 		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 1.0);
 
-		BlendState blend;
+		BlendState blend = computeBlendState(BLEND_ALPHA, BLENDALPHA_MULTIPLY);
 
 		float lineWidth = 1.0f;
 		LineStyle lineStyle = LINE_SMOOTH;
