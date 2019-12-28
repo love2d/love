@@ -95,10 +95,10 @@ Variant::Variant(love::Type *lovetype, love::Object *object)
 }
 
 // Variant gets ownership of the vector.
-Variant::Variant(std::vector<std::pair<Variant, Variant>> *table)
+Variant::Variant(SharedTable *table)
 	: type(TABLE)
 {
-	data.table = new SharedTable(table);
+	data.table = table;
 }
 
 Variant::Variant(const Variant &v)
@@ -187,7 +187,7 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 		{
 			bool success = true;
 			std::set<const void *> topTableSet;
-			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
+			SharedTable *table = new SharedTable();
 
 			// We can use a pointer to a stack-allocated variable because it's
 			// never used after the stack-allocated variable is destroyed.
@@ -204,16 +204,16 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 
 			size_t len = luax_objlen(L, -1);
 			if (len > 0)
-				table->reserve(len);
+				table->pairs.reserve(len);
 
 			lua_pushnil(L);
 
 			while (lua_next(L, n))
 			{
-				table->emplace_back(fromLua(L, -2, tableSet), fromLua(L, -1, tableSet));
+				table->pairs.emplace_back(fromLua(L, -2, tableSet), fromLua(L, -1, tableSet));
 				lua_pop(L, 1);
 
-				const auto &p = table->back();
+				const auto &p = table->pairs.back();
 				if (p.first.getType() == UNKNOWN || p.second.getType() == UNKNOWN)
 				{
 					success = false;
@@ -227,7 +227,7 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 			if (success)
 				return Variant(table);
 			else
-				delete table;
+				table->release();
 		}
 		break;
 	}
@@ -261,14 +261,14 @@ void Variant::toLua(lua_State *L) const
 		break;
 	case TABLE:
 	{
-		std::vector<std::pair<Variant, Variant>> *table = data.table->table;
-		int tsize = (int) table->size();
+		std::vector<std::pair<Variant, Variant>> &table = data.table->pairs;
+		int tsize = (int) table.size();
 
 		lua_createtable(L, 0, tsize);
 
 		for (int i = 0; i < tsize; ++i)
 		{
-			std::pair<Variant, Variant> &kv = (*table)[i];
+			std::pair<Variant, Variant> &kv = table[i];
 			kv.first.toLua(L);
 			kv.second.toLua(L);
 			lua_settable(L, -3);

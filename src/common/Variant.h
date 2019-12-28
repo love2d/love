@@ -73,14 +73,10 @@ public:
 	{
 	public:
 
-		SharedTable(std::vector<std::pair<Variant, Variant>> *table)
-			: table(table)
-		{
-		}
+		SharedTable() {}
+		virtual ~SharedTable() {}
 
-		virtual ~SharedTable() { delete table; }
-
-		std::vector<std::pair<Variant, Variant>> *table;
+		std::vector<std::pair<Variant, Variant>> pairs;
 	};
 
 	union Data
@@ -105,7 +101,7 @@ public:
 	Variant(const std::string &str);
 	Variant(void *lightuserdata);
 	Variant(love::Type *type, love::Object *object);
-	Variant(std::vector<std::pair<Variant, Variant>> *table);
+	Variant(SharedTable *table);
 	Variant(const Variant &v);
 	Variant(Variant &&v);
 	~Variant();
