@@ -598,7 +598,7 @@ function love.run()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
-						return a or 0
+						return a or 0, b
 					end
 				end
 				love.handlers[name](a,b,c,d,e,f)
@@ -799,8 +799,8 @@ return function()
 	func = earlyinit
 
 	while func do
-		local _, retval = xpcall(func, deferErrhand)
-		if retval then return retval end
+		local _, retval, restartvalue = xpcall(func, deferErrhand)
+		if retval then return retval, restartvalue end
 		coroutine.yield()
 	end
 

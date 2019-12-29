@@ -20,6 +20,7 @@
 
 #include "common/version.h"
 #include "common/runtime.h"
+#include "common/Variant.h"
 #include "modules/love/love.h"
 #include <SDL.h>
 
@@ -139,7 +140,7 @@ enum DoneAction
 	DONE_RESTART,
 };
 
-static DoneAction runlove(int argc, char **argv, int &retval)
+static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &restartvalue)
 {
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 	int hack_argc = 0;
@@ -203,6 +204,11 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 		lua_setfield(L, -2, "_exe");
 	}
 
+	// Set love.restart = restartvalue, and clear restartvalue.
+	restartvalue.toLua(L);
+	lua_setfield(L, -2, "restart");
+	restartvalue = love::Variant();
+
 	// Pop the love table returned by require "love".
 	lua_pop(L, 1);
 
@@ -223,10 +229,19 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 
 	// if love.boot() returns "restart", we'll start up again after closing this
 	// Lua state.
-	if (lua_type(L, -1) == LUA_TSTRING && strcmp(lua_tostring(L, -1), "restart") == 0)
-		done = DONE_RESTART;
-	if (lua_isnumber(L, -1))
-		retval = (int) lua_tonumber(L, -1);
+	int retidx = stackpos;
+	if (!lua_isnoneornil(L, retidx))
+	{
+		if (lua_type(L, retidx) == LUA_TSTRING && strcmp(lua_tostring(L, retidx), "restart") == 0)
+			done = DONE_RESTART;
+		if (lua_isnumber(L, retidx))
+			retval = (int) lua_tonumber(L, retidx);
+
+		// Disallow userdata (love objects) from being referenced by the restart
+		// value.
+		if (retidx < lua_gettop(L))
+			restartvalue = love::Variant::fromLua(L, retidx + 1, false);
+	}
 
 	lua_close(L);
 
@@ -253,10 +268,11 @@ int main(int argc, char **argv)
 
 	int retval = 0;
 	DoneAction done = DONE_QUIT;
+	love::Variant restartvalue;
 
 	do
 	{
-		done = runlove(argc, argv, retval);
+		done = runlove(argc, argv, retval, restartvalue);
 
 #ifdef LOVE_IOS
 		// on iOS we should never programmatically exit the app, so we'll just

@@ -22,8 +22,9 @@
 
 // LOVE
 #include "common/runtime.h"
-
 #include "sdl/Event.h"
+
+#include <algorithm>
 
 // Shove the wrap_Event.lua code directly into a raw string literal.
 static const char event_lua[] =
@@ -95,7 +96,26 @@ int w_clear(lua_State *L)
 int w_quit(lua_State *L)
 {
 	luax_catchexcept(L, [&]() {
-		std::vector<Variant> args = {Variant::fromLua(L, 1)};
+		std::vector<Variant> args;
+		for (int i = 1; i <= std::max(1, lua_gettop(L)); i++)
+			args.push_back(Variant::fromLua(L, i));
+
+		StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
+		instance()->push(m);
+	});
+
+	luax_pushboolean(L, true);
+	return 1;
+}
+
+int w_restart(lua_State *L)
+{
+	luax_catchexcept(L, [&]() {
+		std::vector<Variant> args;
+		args.emplace_back("restart", strlen("restart"));
+
+		for (int i = 1; i <= lua_gettop(L); i++)
+			args.push_back(Variant::fromLua(L, i));
 
 		StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
 		instance()->push(m);
@@ -114,6 +134,7 @@ static const luaL_Reg functions[] =
 	{ "push", w_push },
 	{ "clear", w_clear },
 	{ "quit", w_quit },
+	{ "restart", w_restart },
 	{ 0, 0 }
 };
 

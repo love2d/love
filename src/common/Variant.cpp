@@ -152,7 +152,7 @@ Variant &Variant::operator = (const Variant &v)
 	return *this;
 }
 
-Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
+Variant Variant::fromLua(lua_State *L, int n, bool allowuserdata, std::set<const void*> *tableSet)
 {
 	size_t len;
 	const char *str;
@@ -173,6 +173,11 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 	case LUA_TLIGHTUSERDATA:
 		return Variant(lua_touserdata(L, n));
 	case LUA_TUSERDATA:
+		if (!allowuserdata)
+		{
+			luax_typerror(L, n, "copyable Lua value");
+			return Variant();
+		}
 		p = tryextractproxy(L, n);
 		if (p != nullptr)
 			return Variant(p->type, p->object);
@@ -187,7 +192,6 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 		{
 			bool success = true;
 			std::set<const void *> topTableSet;
-			SharedTable *table = new SharedTable();
 
 			// We can use a pointer to a stack-allocated variable because it's
 			// never used after the stack-allocated variable is destroyed.
@@ -202,6 +206,8 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 					throw love::Exception("Cycle detected in table");
 			}
 
+			SharedTable *table = new SharedTable();
+
 			size_t len = luax_objlen(L, -1);
 			if (len > 0)
 				table->pairs.reserve(len);
@@ -210,7 +216,7 @@ Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
 
 			while (lua_next(L, n))
 			{
-				table->pairs.emplace_back(fromLua(L, -2, tableSet), fromLua(L, -1, tableSet));
+				table->pairs.emplace_back(fromLua(L, -2, allowuserdata, tableSet), fromLua(L, -1, allowuserdata, tableSet));
 				lua_pop(L, 1);
 
 				const auto &p = table->pairs.back();

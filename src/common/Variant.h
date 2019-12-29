@@ -111,7 +111,7 @@ public:
 	Type getType() const { return type; }
 	const Data &getData() const { return data; }
 
-	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
+	static Variant fromLua(lua_State *L, int n, bool allowuserdata = true, std::set<const void*> *tableSet = nullptr);
 	void toLua(lua_State *L) const;
 
 private:
