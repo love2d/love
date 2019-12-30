@@ -67,24 +67,17 @@ public:
 	Texture *getTexture() const;
 
 	/**
-	 * Set the current color for this SpriteBatch. The sprites added
-	 * after this call will use this color. Note that global color
-	 * will not longer apply to the SpriteBatch if this is used.
+	 * Set the current color for this SpriteBatch. The sprites added after this
+	 * call will use this color.
 	 *
 	 * @param color The color to use for the following sprites.
 	 */
 	void setColor(const Colorf &color);
 
 	/**
-	 * Disable per-sprite colors for this SpriteBatch. The next call to
-	 * draw will use the global color for all sprites.
-	 */
-	void setColor();
-
-	/**
 	 * Get the current color for this SpriteBatch.
 	 **/
-	Colorf getColor(bool &active) const;
+	Colorf getColor() const;
 
 	/**
 	 * Get the number of sprites currently in this SpriteBatch.
@@ -131,10 +124,9 @@ private:
 	// The next free element.
 	int next;
 
-	// Current color. This color, if present, will be applied to the next
-	// added sprite.
+	// Current color. This color will be applied to the next added sprite.
 	Color32 color;
-	bool color_active;
+	Colorf colorf;
 
 	vertex::CommonFormat vertex_format;
 	size_t vertex_stride;

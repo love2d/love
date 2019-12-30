@@ -45,7 +45,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	, size(size)
 	, next(0)
 	, color(255, 255, 255, 255)
-	, color_active(false)
+	, colorf(1.0f, 1.0f, 1.0f, 1.0f)
 	, array_buf(nullptr)
 	, range_start(-1)
 	, range_count(-1)
@@ -188,27 +188,17 @@ Texture *SpriteBatch::getTexture() const
 
 void SpriteBatch::setColor(const Colorf &c)
 {
-	color_active = true;
+	colorf.r = std::min(std::max(c.r, 0.0f), 1.0f);
+	colorf.g = std::min(std::max(c.g, 0.0f), 1.0f);
+	colorf.b = std::min(std::max(c.b, 0.0f), 1.0f);
+	colorf.a = std::min(std::max(c.a, 0.0f), 1.0f);
 
-	Colorf cclamped;
-	cclamped.r = std::min(std::max(c.r, 0.0f), 1.0f);
-	cclamped.g = std::min(std::max(c.g, 0.0f), 1.0f);
-	cclamped.b = std::min(std::max(c.b, 0.0f), 1.0f);
-	cclamped.a = std::min(std::max(c.a, 0.0f), 1.0f);
-
-	this->color = toColor32(cclamped);
+	color = toColor32(colorf);
 }
 
-void SpriteBatch::setColor()
+Colorf SpriteBatch::getColor() const
 {
-	color_active = false;
-	color = Color32(255, 255, 255, 255);
-}
-
-Colorf SpriteBatch::getColor(bool &active) const
-{
-	active = color_active;
-	return toColorf(color);
+	return colorf;
 }
 
 int SpriteBatch::getCount() const
@@ -337,9 +327,6 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	{
 		buffers.set(0, array_buf, 0);
 		attributes.setCommonFormat(vertex_format, 0);
-
-		if (!color_active)
-			attributes.disable(ATTRIB_COLOR);
 	}
 
 	int activebuffers = 1;

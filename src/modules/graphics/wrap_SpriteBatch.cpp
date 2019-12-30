@@ -171,12 +171,7 @@ int w_SpriteBatch_setColor(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Colorf c;
 
-	if (lua_gettop(L) <= 1)
-	{
-		t->setColor();
-		return 0;
-	}
-	else if (lua_istable(L, 2))
+	if (lua_istable(L, 2))
 	{
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 2, i);
@@ -204,18 +199,12 @@ int w_SpriteBatch_setColor(lua_State *L)
 int w_SpriteBatch_getColor(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	bool active = false;
-	Colorf color = t->getColor(active);
-
-	// getColor returns null if no color is set.
-	if (!active)
-		return 0;
+	Colorf color = t->getColor();
 
 	lua_pushnumber(L, color.r);
 	lua_pushnumber(L, color.g);
 	lua_pushnumber(L, color.b);
 	lua_pushnumber(L, color.a);
-
 	return 4;
 }
 
