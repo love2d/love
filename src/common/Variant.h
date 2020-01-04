@@ -21,6 +21,7 @@
 #ifndef LOVE_VARIANT_H
 #define LOVE_VARIANT_H
 
+#include "common/config.h"
 #include "common/runtime.h"
 #include "common/Object.h"
 #include "common/int.h"
@@ -33,7 +34,7 @@
 namespace love
 {
 
-class Variant
+class LOVE_EXPORT Variant
 {
 public:
 
