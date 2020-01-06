@@ -454,12 +454,9 @@ public:
 	{
 		if (vbo != 0)
 		{
-			// Make sure the GPU has completed work using the memory before
-			// freeing it. TODO: Do we need a full glFinish() or is this
-			// sufficient?
-			glFlush();
-			for (FenceSync &sync : syncs)
-				sync.cpuWait();
+			// Make sure the GPU has completed all work before freeing the
+			// memory. glFlush+sync.cpuWait doesn't seem to be enough.
+			glFinish();
 
 			gl.bindBuffer(mode, vbo);
 			gl.deleteBuffer(vbo);
