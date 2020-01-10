@@ -1423,9 +1423,38 @@ set(LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL
 	src/libraries/glslang/OGLCompilersDLL/InitializeDll.h
 )
 
+set(LOVE_SRC_3P_GLSLANG_SPIRV
+	src/libraries/glslang/SPIRV/bitutils.h
+	src/libraries/glslang/SPIRV/disassemble.cpp
+	src/libraries/glslang/SPIRV/disassemble.h
+	src/libraries/glslang/SPIRV/doc.cpp
+	src/libraries/glslang/SPIRV/doc.h
+	src/libraries/glslang/SPIRV/GLSL.ext.AMD.h
+	src/libraries/glslang/SPIRV/GLSL.ext.EXT.h
+	src/libraries/glslang/SPIRV/GLSL.ext.KHR.h
+	src/libraries/glslang/SPIRV/GLSL.ext.NV.h
+	src/libraries/glslang/SPIRV/GLSL.std.450.h
+	src/libraries/glslang/SPIRV/GlslangToSpv.cpp
+	src/libraries/glslang/SPIRV/GlslangToSpv.h
+	src/libraries/glslang/SPIRV/hex_float.h
+	src/libraries/glslang/SPIRV/InReadableOrder.cpp
+	src/libraries/glslang/SPIRV/Logger.cpp
+	src/libraries/glslang/SPIRV/Logger.h
+	src/libraries/glslang/SPIRV/spirv.hpp
+	src/libraries/glslang/SPIRV/SpvBuilder.cpp
+	src/libraries/glslang/SPIRV/SpvBuilder.h
+	src/libraries/glslang/SPIRV/spvIR.h
+	src/libraries/glslang/SPIRV/SpvPostProcess.cpp
+	src/libraries/glslang/SPIRV/SPVRemapper.cpp
+	src/libraries/glslang/SPIRV/SPVRemapper.h
+	src/libraries/glslang/SPIRV/SpvTools.cpp
+	src/libraries/glslang/SPIRV/SpvTools.h
+)
+
 set(LOVE_SRC_3P_GLSLANG
 	${LOVE_SRC_3P_GLSLANG_GLSLANG}
 	${LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL}
+	${LOVE_SRC_3P_GLSLANG_SPIRV}
 )
 
 add_library(love_3p_glslang ${LOVE_SRC_3P_GLSLANG})
