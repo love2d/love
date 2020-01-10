@@ -22,7 +22,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 --]]
 
-local table_concat = table.concat
+local table_concat, table_insert = table.concat, table.insert
 local ipairs = ipairs
 
 local GLSL = {}
@@ -73,28 +73,14 @@ GLSL.UNIFORMS = [[
 // We *really* don't want to use mediump for these in vertex shaders though.
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
 
-LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix = mat4(
-   love_UniformsPerDraw[0],
-   love_UniformsPerDraw[1],
-   love_UniformsPerDraw[2],
-   love_UniformsPerDraw[3]
-);
+// These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
+// do it as an initializer.
+LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix;
+LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix;
+LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
 
-LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix = mat4(
-   love_UniformsPerDraw[4],
-   love_UniformsPerDraw[5],
-   love_UniformsPerDraw[6],
-   love_UniformsPerDraw[7]
-);
-
-LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix = mat3(
-   love_UniformsPerDraw[8].xyz,
-   love_UniformsPerDraw[9].xyz,
-   love_UniformsPerDraw[10].xyz
-);
-
-LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize = love_UniformsPerDraw[11];
-LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor = love_UniformsPerDraw[12];
+LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
+LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor;
 
 #define TransformProjectionMatrix (ProjectionMatrix * TransformMatrix)
 
@@ -103,6 +89,31 @@ LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor = love_UniformsPerDraw[12];
 #define ClipSpaceFromView ProjectionMatrix
 #define ClipSpaceFromLocal TransformProjectionMatrix
 #define ViewNormalFromLocal NormalMatrix
+
+void love_initializeBuiltinUniforms() {
+	TransformMatrix = mat4(
+	   love_UniformsPerDraw[0],
+	   love_UniformsPerDraw[1],
+	   love_UniformsPerDraw[2],
+	   love_UniformsPerDraw[3]
+	);
+
+	ProjectionMatrix = mat4(
+	   love_UniformsPerDraw[4],
+	   love_UniformsPerDraw[5],
+	   love_UniformsPerDraw[6],
+	   love_UniformsPerDraw[7]
+	);
+
+	NormalMatrix = mat3(
+	   love_UniformsPerDraw[8].xyz,
+	   love_UniformsPerDraw[9].xyz,
+	   love_UniformsPerDraw[10].xyz
+	);
+
+	love_ScreenSize = love_UniformsPerDraw[11];
+	ConstantColor = love_UniformsPerDraw[12];
+}
 ]]
 
 GLSL.FUNCTIONS = [[
@@ -246,6 +257,7 @@ varying vec4 VaryingColor;
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
 void main() {
+	love_initializeBuiltinUniforms();
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
 	setPointSize();
@@ -312,6 +324,7 @@ varying mediump vec4 VaryingColor;
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
 
 void main() {
+	love_initializeBuiltinUniforms();
 	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }]],
 
@@ -322,6 +335,7 @@ varying mediump vec4 VaryingColor;
 void effect();
 
 void main() {
+	love_initializeBuiltinUniforms();
 	effect();
 }]],
 }
