@@ -26,7 +26,7 @@ install:
 - for /D %%i in (*) do @if "%%i" NEQ "love" @move %%i love\%%i
 - for %%i in (*) do @if "%%i" NEQ "appveyor.yml" @move %%i love\%%i
 # clone megasource and move into top directory.
-- hg clone https://bitbucket.org/rude/megasource megasource
+- git clone --depth 1 https://github.com/love2d/megasource.git megasource
 - cd megasource
 - for /D %%i in (*) do @move %%i ..\%%i
 - for %%i in (*) do @move %%i ..\%%i
