@@ -28,11 +28,15 @@
 
 // C
 #include <stddef.h>
+#include <string>
+#include <vector>
 
 namespace love
 {
 namespace graphics
 {
+
+class Graphics;
 
 /**
  * A block of GPU-owned memory. Currently meant for internal use.
@@ -47,16 +51,90 @@ public:
 		MAP_READ = (1 << 1),
 	};
 
-	Buffer(size_t size, BufferType type, vertex::Usage usage, uint32 mapflags);
+	enum DataType
+	{
+		DATA_FLOAT,
+		DATA_FLOAT_VEC2,
+		DATA_FLOAT_VEC3,
+		DATA_FLOAT_VEC4,
+
+		DATA_FLOAT_MAT2X2,
+		DATA_FLOAT_MAT2X3,
+		DATA_FLOAT_MAT2X4,
+
+		DATA_FLOAT_MAT3X2,
+		DATA_FLOAT_MAT3X3,
+		DATA_FLOAT_MAT3X4,
+
+		DATA_FLOAT_MAT4X2,
+		DATA_FLOAT_MAT4X3,
+		DATA_FLOAT_MAT4X4,
+
+		DATA_INT32,
+		DATA_INT32_VEC2,
+		DATA_INT32_VEC3,
+		DATA_INT32_VEC4,
+
+		DATA_UINT32,
+		DATA_UINT32_VEC2,
+		DATA_UINT32_VEC3,
+		DATA_UINT32_VEC4,
+
+		DATA_SNORM8_VEC4,
+
+		DATA_UNORM8_VEC4,
+
+		DATA_INT8_VEC4,
+
+		DATA_UINT8_VEC4,
+
+		DATA_SNORM16,
+		DATA_SNORM16_VEC2,
+		DATA_SNORM16_VEC4,
+
+		DATA_UNORM16,
+		DATA_UNORM16_VEC2,
+		DATA_UNORM16_VEC4,
+
+		DATA_INT16,
+		DATA_INT16_VEC2,
+		DATA_INT16_VEC4,
+
+		DATA_UINT16,
+		DATA_UINT16_VEC2,
+		DATA_UINT16_VEC4,
+
+		DATA_BOOL,
+		DATA_BOOL_VEC2,
+		DATA_BOOL_VEC3,
+		DATA_BOOL_VEC4,
+
+		DATA_MAX_ENUM
+	};
+
+	struct DataMember
+	{
+		std::string name;
+		DataType type;
+		int arraySize;
+	};
+
+	struct Settings
+	{
+		BufferTypeFlags typeFlags;
+		MapFlags mapFlags;
+		vertex::Usage usage;
+	};
+
+	Buffer(size_t size, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags);
+	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &format, size_t arraylength);
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
-
-	BufferType getType() const { return type; }
-
+	BufferTypeFlags getTypeFlags() const { return typeFlags; }
 	vertex::Usage getUsage() const { return usage; }
-
-	bool isMapped() const { return is_mapped; }
+	bool isMapped() const { return mapped; }
+	uint32 getMapFlags() const { return mapFlags; }
 
 	/**
 	 * Map the Buffer to client memory.
@@ -92,36 +170,22 @@ public:
 	 **/
 	virtual void copyTo(size_t offset, size_t size, Buffer *other, size_t otheroffset) = 0;
 
-	uint32 getMapFlags() const { return map_flags; }
-
 	class Mapper
 	{
 	public:
 
-		/**
-		 * Memory-maps a Buffer.
-		 */
 		Mapper(Buffer &buffer)
 			: buf(buffer)
 		{
 			elems = buf.map();
 		}
 
-		/**
-		 * unmaps the buffer
-		 */
 		~Mapper()
 		{
 			buf.unmap();
 		}
 
-		/**
-		 * Get pointer to memory mapped region
-		 */
-		void *get()
-		{
-			return elems;
-		}
+		void *get() { return elems; }
 
 	private:
 
@@ -130,20 +194,22 @@ public:
 
 	}; // Mapper
 
+//	static size_t getDataTypeSize(DataType type, bool uniform)
+
 protected:
 
 	// The size of the buffer, in bytes.
 	size_t size;
 
 	// The type of the buffer object.
-	BufferType type;
+	BufferTypeFlags typeFlags;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	vertex::Usage usage;
 	
-	uint32 map_flags;
+	uint32 mapFlags;
 
-	bool is_mapped;
+	bool mapped;
 	
 }; // Buffer
 

@@ -191,7 +191,7 @@ void ParticleSystem::createBuffers(size_t size)
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 		size_t bytes = sizeof(Vertex) * size * 4;
-		buffer = gfx->newBuffer(bytes, nullptr, BUFFER_VERTEX, vertex::USAGE_STREAM, 0);
+		buffer = gfx->newBuffer(bytes, nullptr, BUFFERFLAG_VERTEX, vertex::USAGE_STREAM, 0);
 	}
 	catch (std::bad_alloc &)
 	{

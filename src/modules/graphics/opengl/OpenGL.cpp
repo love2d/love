@@ -588,6 +588,10 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 		return GL_ARRAY_BUFFER;
 	case BUFFER_INDEX:
 		return GL_ELEMENT_ARRAY_BUFFER;
+	case BUFFER_UNIFORM:
+		return GL_UNIFORM_BUFFER;
+	case BUFFER_SHADER_STORAGE:
+		return GL_SHADER_STORAGE_BUFFER;
 	case BUFFER_MAX_ENUM:
 		return GL_ZERO;
 	}

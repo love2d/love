@@ -445,7 +445,10 @@ public:
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
 	Shader *newShader(const std::string &vertex, const std::string &pixel);
 
-	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
+	virtual Buffer *newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags) = 0;
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataMember> &format, size_t arraylength) = 0;
+
+//	Buffer *newIndexBuffer(IndexDataType dataType, const void *indices, size_t bytesize, vertex::Usage usage, uint32 mapflags) = 0;
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage);
 	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage);

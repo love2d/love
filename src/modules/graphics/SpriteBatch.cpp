@@ -64,7 +64,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 	vertex_stride = vertex::getFormatStride(vertex_format);
 
 	size_t vertex_size = vertex_stride * 4 * size;
-	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
+	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
 }
 
 SpriteBatch::~SpriteBatch()
@@ -222,7 +222,7 @@ void SpriteBatch::setBufferSize(int newsize)
 	try
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getType(), array_buf->getUsage(), array_buf->getMapFlags());
+		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getTypeFlags(), array_buf->getUsage(), array_buf->getMapFlags());
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		size_t copy_size = vertex_stride * 4 * new_next;

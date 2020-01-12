@@ -173,7 +173,7 @@ void Graphics::createQuadIndexBuffer()
 		return;
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
-	quadIndexBuffer = newBuffer(size, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
+	quadIndexBuffer = newBuffer(size, nullptr, BUFFERFLAG_INDEX, vertex::USAGE_STATIC, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
 	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());

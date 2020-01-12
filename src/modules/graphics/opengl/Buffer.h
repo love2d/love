@@ -39,7 +39,7 @@ class Buffer final : public love::graphics::Buffer, public Volatile
 {
 public:
 
-	Buffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags);
+	Buffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags);
 	virtual ~Buffer();
 
 	void *map() override;
@@ -62,16 +62,17 @@ private:
 	void unmapStatic(size_t offset, size_t size);
 	void unmapStream();
 
+	BufferType mapType;
 	GLenum target;
 
 	// The VBO identifier. Assigned by OpenGL.
 	GLuint vbo;
 
 	// A pointer to mapped memory.
-	char *memory_map;
+	char *memoryMap;
 
-	size_t modified_offset;
-	size_t modified_size;
+	size_t modifiedOffset;
+	size_t modifiedSize;
 
 }; // Buffer
 

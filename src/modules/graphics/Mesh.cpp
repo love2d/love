@@ -81,7 +81,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vertexBuffer = gfx->newBuffer(datasize, data, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	vertexBuffer = gfx->newBuffer(datasize, data, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
@@ -107,7 +107,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vertexBuffer = gfx->newBuffer(buffersize, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	vertexBuffer = gfx->newBuffer(buffersize, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
 
 	// Initialize the buffer's contents to 0.
 	memset(vertexBuffer->map(), 0, buffersize);
@@ -420,7 +420,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	if (!indexBuffer && size > 0)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		indexBuffer = gfx->newBuffer(size, nullptr, BUFFER_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
+		indexBuffer = gfx->newBuffer(size, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
 	}
 
 	useIndexBuffer = true;
@@ -457,7 +457,7 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 	if (!indexBuffer && datasize > 0)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		indexBuffer = gfx->newBuffer(datasize, nullptr, BUFFER_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
+		indexBuffer = gfx->newBuffer(datasize, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
 	}
 
 	indexCount = datasize / vertex::getIndexDataSize(datatype);

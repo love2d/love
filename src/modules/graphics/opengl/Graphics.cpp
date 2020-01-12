@@ -155,9 +155,15 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 	return new Shader(vertex, pixel);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
+love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags)
 {
-	return new Buffer(size, data, type, usage, mapflags);
+	return new Buffer(size, data, typeflags, usage, mapflags);
+}
+
+love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataMember> &format, size_t arraylength)
+{
+	// TODO
+	return nullptr;
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)

@@ -19,19 +19,46 @@
  **/
 
 #include "Buffer.h"
+#include "Graphics.h"
 
 namespace love
 {
 namespace graphics
 {
 
-Buffer::Buffer(size_t size, BufferType type, vertex::Usage usage, uint32 mapflags)
+Buffer::Buffer(size_t size, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags)
 	: size(size)
-	, type(type)
+	, typeFlags(typeflags)
 	, usage(usage)
-	, map_flags(mapflags)
-	, is_mapped(false)
+	, mapFlags(mapflags)
+	, mapped(false)
 {
+}
+
+Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &format, size_t arraylength)
+	: Buffer(0, settings.typeFlags, settings.usage, settings.mapFlags)
+{
+	bool uniformbuffer = settings.typeFlags & BUFFERFLAG_UNIFORM;
+	bool indexbuffer = settings.typeFlags & BUFFERFLAG_INDEX;
+	bool vertexbuffer = settings.typeFlags & BUFFERFLAG_VERTEX;
+	bool ssbuffer = settings.typeFlags & BUFFERFLAG_SHADER_STORAGE;
+
+	if (indexbuffer && format.size() > 1)
+		throw love::Exception("test");
+
+	for (const auto &member : format)
+	{
+		if (indexbuffer)
+		{
+			if (member.type != DATA_UINT16 && member.type != DATA_UINT32)
+				throw love::Exception("test");
+		}
+
+		if (uniformbuffer)
+		{
+			
+		}
+	}
 }
 
 Buffer::~Buffer()

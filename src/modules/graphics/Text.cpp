@@ -60,7 +60,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 			newsize = std::max(size_t(vertex_buffer->getSize() * 1.5), newsize);
 
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-		Buffer *new_buffer = gfx->newBuffer(newsize, nullptr, BUFFER_VERTEX, vertex::USAGE_DYNAMIC, 0);
+		Buffer *new_buffer = gfx->newBuffer(newsize, nullptr, BUFFERFLAG_VERTEX, vertex::USAGE_DYNAMIC, 0);
 
 		if (vertex_buffer != nullptr)
 			vertex_buffer->copyTo(0, vertex_buffer->getSize(), new_buffer, 0);
