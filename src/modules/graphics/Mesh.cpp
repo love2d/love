@@ -73,7 +73,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	, rangeCount(-1)
 {
 	setupAttachedAttributes();
-	calculateAttributeSizes();
+	calculateAttributeSizes(gfx);
 
 	vertexCount = datasize / vertexStride;
 	indexDataType = vertex::getIndexDataTypeFromMax(vertexCount);
@@ -103,7 +103,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 		throw love::Exception("Invalid number of vertices (%d).", vertexcount);
 
 	setupAttachedAttributes();
-	calculateAttributeSizes();
+	calculateAttributeSizes(gfx);
 
 	size_t buffersize = vertexCount * vertexStride;
 
@@ -143,8 +143,10 @@ void Mesh::setupAttachedAttributes()
 	}
 }
 
-void Mesh::calculateAttributeSizes()
+void Mesh::calculateAttributeSizes(Graphics *gfx)
 {
+	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
+
 	size_t stride = 0;
 
 	for (const AttribFormat &format : vertexFormat)
@@ -157,6 +159,9 @@ void Mesh::calculateAttributeSizes()
 		// Hardware really doesn't like attributes that aren't 32 bit-aligned.
 		if (size % 4 != 0)
 			throw love::Exception("Vertex attributes must have enough components to be a multiple of 32 bits.");
+
+		if (vertex::isDataTypeInteger(format.type) && !supportsGLSL3)
+			throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
 
 		// Total size in bytes of each attribute in a single vertex.
 		attributeSizes.push_back(size);

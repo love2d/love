@@ -37,91 +37,135 @@ Mesh *luax_checkmesh(lua_State *L, int idx)
 	return luax_checktype<Mesh>(L, idx);
 }
 
-static inline size_t writeUnorm8Data(lua_State *L, int startidx, int components, char *data)
+static const double defaultComponents[] = {0.0, 0.0, 0.0, 1.0};
+
+template <typename T>
+static inline size_t writeData(lua_State *L, int startidx, int components, char *data)
 {
-	uint8 *componentdata = (uint8 *) data;
+	auto componentdata = (T *) data;
 
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (uint8) (luax_optnumberclamped01(L, startidx + i, 1.0) * 255.0);
+		componentdata[i] = (T) (luaL_optnumber(L, startidx + i, defaultComponents[i]));
 
-	return sizeof(uint8) * components;
+	return sizeof(T) * components;
 }
 
-static inline size_t writeUnorm16Data(lua_State *L, int startidx, int components, char *data)
+template <typename T>
+static inline size_t writeSNormData(lua_State *L, int startidx, int components, char *data)
 {
-	uint16 *componentdata = (uint16 *) data;
+	auto componentdata = (T *) data;
+	auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (uint16) (luax_optnumberclamped01(L, startidx + i, 1.0) * 65535.0);
+		componentdata[i] = (T) (luax_optnumberclamped(L, startidx + i, -1.0, 1.0, defaultComponents[i]) * maxval);
 
-	return sizeof(uint16) * components;
+	return sizeof(T) * components;
 }
 
-static inline size_t writeFloatData(lua_State *L, int startidx, int components, char *data)
+template <typename T>
+static inline size_t writeUNormData(lua_State *L, int startidx, int components, char *data)
 {
-	float *componentdata = (float *) data;
+	auto componentdata = (T *) data;
+	auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
-		componentdata[i] = (float) luaL_optnumber(L, startidx + i, 0);
+		componentdata[i] = (T) (luax_optnumberclamped01(L, startidx + i, 1.0) * maxval);
 
-	return sizeof(float) * components;
+	return sizeof(T) * components;
 }
 
 char *luax_writeAttributeData(lua_State *L, int startidx, vertex::DataType type, int components, char *data)
 {
 	switch (type)
 	{
+	case vertex::DATA_SNORM8:
+		return data + writeSNormData<int8>(L, startidx, components, data);
 	case vertex::DATA_UNORM8:
-		return data + writeUnorm8Data(L, startidx, components, data);
+		return data + writeUNormData<uint8>(L, startidx, components, data);
+	case vertex::DATA_INT8:
+		return data + writeData<int8>(L, startidx, components, data);
+	case vertex::DATA_UINT8:
+		return data + writeData<uint8>(L, startidx, components, data);
+	case vertex::DATA_SNORM16:
+		return data + writeSNormData<int16>(L, startidx, components, data);
 	case vertex::DATA_UNORM16:
-		return data + writeUnorm16Data(L, startidx, components, data);
+		return data + writeUNormData<uint16>(L, startidx, components, data);
+	case vertex::DATA_INT16:
+		return data + writeData<int16>(L, startidx, components, data);
+	case vertex::DATA_UINT16:
+		return data + writeData<uint16>(L, startidx, components, data);
+	case vertex::DATA_INT32:
+		return data + writeData<int32>(L, startidx, components, data);
+	case vertex::DATA_UINT32:
+		return data + writeData<uint32>(L, startidx, components, data);
 	case vertex::DATA_FLOAT:
-		return data + writeFloatData(L, startidx, components, data);
+		return data + writeData<float>(L, startidx, components, data);
 	default:
 		return data;
 	}
 }
 
-static inline size_t readUnorm8Data(lua_State *L, int components, const char *data)
+template <typename T>
+static inline size_t readData(lua_State *L, int components, const char *data)
 {
-	const uint8 *componentdata = (const uint8 *) data;
+	auto componentdata = (const T *) data;
 
 	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) componentdata[i] / 255.0);
+		lua_pushnumber(L, (lua_Number) componentdata[i]);
 
-	return sizeof(uint8) * components;
+	return sizeof(T) * components;
 }
 
-static inline size_t readUnorm16Data(lua_State *L, int components, const char *data)
+template <typename T>
+static inline size_t readSNormData(lua_State *L, int components, const char *data)
 {
-	const uint16 *componentdata = (const uint16 *) data;
+	auto componentdata = (const T *) data;
+	auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, (lua_Number) componentdata[i] / 65535.0);
+		lua_pushnumber(L, std::max(-1.0, (lua_Number) componentdata[i] / (lua_Number)maxval));
 
-	return sizeof(uint16) * components;
+	return sizeof(T) * components;
 }
 
-static inline size_t readFloatData(lua_State *L, int components, const char *data)
+template <typename T>
+static inline size_t readUNormData(lua_State *L, int components, const char *data)
 {
-	const float *componentdata = (const float *) data;
+	auto componentdata = (const T *) data;
+	auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
-		lua_pushnumber(L, componentdata[i]);
+		lua_pushnumber(L, (lua_Number) componentdata[i] / (lua_Number)maxval);
 
-	return sizeof(float) * components;
+	return sizeof(T) * components;
 }
 
 const char *luax_readAttributeData(lua_State *L, vertex::DataType type, int components, const char *data)
 {
 	switch (type)
 	{
+	case vertex::DATA_SNORM8:
+		return data + readSNormData<int8>(L, components, data);
 	case vertex::DATA_UNORM8:
-		return data + readUnorm8Data(L, components, data);
+		return data + readUNormData<uint8>(L, components, data);
+	case vertex::DATA_INT8:
+		return data + readData<int8>(L, components, data);
+	case vertex::DATA_UINT8:
+		return data + readData<uint8>(L, components, data);
+	case vertex::DATA_SNORM16:
+		return data + readSNormData<int16>(L, components, data);
 	case vertex::DATA_UNORM16:
-		return data + readUnorm16Data(L, components, data);
+		return data + readUNormData<uint16>(L, components, data);
+	case vertex::DATA_INT16:
+		return data + readData<int16>(L, components, data);
+	case vertex::DATA_UINT16:
+		return data + readData<uint16>(L, components, data);
+	case vertex::DATA_INT32:
+		return data + readData<int32>(L, components, data);
+	case vertex::DATA_UINT32:
+		return data + readData<uint32>(L, components, data);
 	case vertex::DATA_FLOAT:
-		return data + readFloatData(L, components, data);
+		return data + readData<float>(L, components, data);
 	default:
 		return data;
 	}

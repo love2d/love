@@ -187,7 +187,7 @@ private:
 	};
 
 	void setupAttachedAttributes();
-	void calculateAttributeSizes();
+	void calculateAttributeSizes(Graphics *gfx);
 	size_t getAttributeOffset(size_t attribindex) const;
 
 	std::vector<AttribFormat> vertexFormat;

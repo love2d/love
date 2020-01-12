@@ -1529,7 +1529,9 @@ static Mesh *newCustomMesh(lua_State *L)
 		format.name = luaL_checkstring(L, -3);
 
 		const char *tname = luaL_checkstring(L, -2);
-		if (!vertex::getConstant(tname, format.type))
+		if (strcmp(tname, "byte") == 0) // Legacy name.
+			format.type = vertex::DATA_UNORM8;
+		else if (!vertex::getConstant(tname, format.type))
 		{
 			luax_enumerror(L, "Mesh vertex data type name", vertex::getConstants(format.type), tname);
 			return nullptr;

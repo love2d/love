@@ -106,9 +106,21 @@ enum Usage
 
 enum DataType
 {
+	DATA_SNORM8,
 	DATA_UNORM8,
+	DATA_INT8,
+	DATA_UINT8,
+
+	DATA_SNORM16,
 	DATA_UNORM16,
+	DATA_INT16,
+	DATA_UINT16,
+
+	DATA_INT32,
+	DATA_UINT32,
+
 	DATA_FLOAT,
+
 	DATA_MAX_ENUM
 };
 
@@ -296,6 +308,7 @@ inline CommonFormat getSinglePositionFormat(bool is2D)
 
 size_t getIndexDataSize(IndexDataType type);
 size_t getDataTypeSize(DataType datatype);
+bool isDataTypeInteger(DataType datatype);
 
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
 

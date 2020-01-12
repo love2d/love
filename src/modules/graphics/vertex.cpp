@@ -41,28 +41,17 @@ size_t getFormatStride(CommonFormat format)
 {
 	switch (format)
 	{
-	case CommonFormat::NONE:
-		return 0;
-	case CommonFormat::XYf:
-		return sizeof(float) * 2;
-	case CommonFormat::XYZf:
-		return sizeof(float) * 3;
-	case CommonFormat::RGBAub:
-		return sizeof(uint8) * 4;
-	case CommonFormat::STf_RGBAub:
-		return sizeof(STf_RGBAub);
-	case CommonFormat::STPf_RGBAub:
-		return sizeof(STPf_RGBAub);
-	case CommonFormat::XYf_STf:
-		return sizeof(XYf_STf);
-	case CommonFormat::XYf_STPf:
-		return sizeof(XYf_STPf);
-	case CommonFormat::XYf_STf_RGBAub:
-		return sizeof(XYf_STf_RGBAub);
-	case CommonFormat::XYf_STus_RGBAub:
-		return sizeof(XYf_STus_RGBAub);
-	case CommonFormat::XYf_STPf_RGBAub:
-		return sizeof(XYf_STPf_RGBAub);
+		case CommonFormat::NONE: return 0;
+		case CommonFormat::XYf: return sizeof(float) * 2;
+		case CommonFormat::XYZf: return sizeof(float) * 3;
+		case CommonFormat::RGBAub: return sizeof(uint8) * 4;
+		case CommonFormat::STf_RGBAub: return sizeof(STf_RGBAub);
+		case CommonFormat::STPf_RGBAub: return sizeof(STPf_RGBAub);
+		case CommonFormat::XYf_STf: return sizeof(XYf_STf);
+		case CommonFormat::XYf_STPf: return sizeof(XYf_STPf);
+		case CommonFormat::XYf_STf_RGBAub: return sizeof(XYf_STf_RGBAub);
+		case CommonFormat::XYf_STus_RGBAub: return sizeof(XYf_STus_RGBAub);
+		case CommonFormat::XYf_STPf_RGBAub: return sizeof(XYf_STPf_RGBAub);
 	}
 	return 0;
 }
@@ -118,12 +107,9 @@ size_t getIndexDataSize(IndexDataType type)
 {
 	switch (type)
 	{
-	case INDEX_UINT16:
-		return sizeof(uint16);
-	case INDEX_UINT32:
-		return sizeof(uint32);
-	default:
-		return 0;
+		case INDEX_UINT16: return sizeof(uint16);
+		case INDEX_UINT32: return sizeof(uint32);
+		default: return 0;
 	}
 }
 
@@ -131,14 +117,40 @@ size_t getDataTypeSize(DataType datatype)
 {
 	switch (datatype)
 	{
+	case DATA_SNORM8:
 	case DATA_UNORM8:
+	case DATA_INT8:
+	case DATA_UINT8:
 		return sizeof(uint8);
+	case DATA_SNORM16:
 	case DATA_UNORM16:
+	case DATA_INT16:
+	case DATA_UINT16:
 		return sizeof(uint16);
+	case DATA_INT32:
+	case DATA_UINT32:
+		return sizeof(uint32);
 	case DATA_FLOAT:
 		return sizeof(float);
-	default:
+	case DATA_MAX_ENUM:
 		return 0;
+	}
+	return 0;
+}
+
+bool isDataTypeInteger(DataType datatype)
+{
+	switch (datatype)
+	{
+	case DATA_INT8:
+	case DATA_UINT8:
+	case DATA_INT16:
+	case DATA_UINT16:
+	case DATA_INT32:
+	case DATA_UINT32:
+		return true;
+	default:
+		return false;
 	}
 }
 
@@ -323,8 +335,16 @@ static StringMap<AttributeStep, STEP_MAX_ENUM> attributeSteps(attributeStepEntri
 
 static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[] =
 {
-	{ "byte",    DATA_UNORM8  }, // Legacy / more user-friendly name...
+	{ "snorm8",  DATA_SNORM8  },
+	{ "unorm8",  DATA_UNORM8  },
+	{ "int8",    DATA_INT8    },
+	{ "uint8",   DATA_UINT8   },
+	{ "snorm16", DATA_SNORM16 },
 	{ "unorm16", DATA_UNORM16 },
+	{ "int16",   DATA_INT16   },
+	{ "uint16",  DATA_UINT16  },
+	{ "int32",   DATA_INT32   },
+	{ "uint32",  DATA_UINT32  },
 	{ "float",   DATA_FLOAT   },
 };
 

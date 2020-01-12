@@ -627,18 +627,43 @@ GLenum OpenGL::getGLIndexDataType(IndexDataType type)
 	}
 }
 
-GLenum OpenGL::getGLVertexDataType(vertex::DataType type, GLboolean &normalized)
+GLenum OpenGL::getGLVertexDataType(vertex::DataType type, GLboolean &normalized, bool &intformat)
 {
 	normalized = GL_FALSE;
+	intformat = false;
 
 	switch (type)
 	{
+	case vertex::DATA_SNORM8:
+		normalized = GL_TRUE;
+		return GL_BYTE;
 	case vertex::DATA_UNORM8:
 		normalized = GL_TRUE;
 		return GL_UNSIGNED_BYTE;
+	case vertex::DATA_INT8:
+		intformat = true;
+		return GL_BYTE;
+	case vertex::DATA_UINT8:
+		intformat = true;
+		return GL_UNSIGNED_BYTE;
+	case vertex::DATA_SNORM16:
+		normalized = GL_TRUE;
+		return GL_SHORT;
 	case vertex::DATA_UNORM16:
 		normalized = GL_TRUE;
 		return GL_UNSIGNED_SHORT;
+	case vertex::DATA_INT16:
+		intformat = true;
+		return GL_SHORT;
+	case vertex::DATA_UINT16:
+		intformat = true;
+		return GL_UNSIGNED_SHORT;
+	case vertex::DATA_INT32:
+		intformat = true;
+		return GL_INT;
+	case vertex::DATA_UINT32:
+		intformat = true;
+		return GL_UNSIGNED_INT;
 	case vertex::DATA_FLOAT:
 		normalized = GL_FALSE;
 		return GL_FLOAT;
@@ -718,12 +743,17 @@ void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const ver
 				glVertexAttribDivisor(i, divisor);
 
 			GLboolean normalized = GL_FALSE;
-			GLenum gltype = getGLVertexDataType(attrib.type, normalized);
+			bool intformat = false;
+			GLenum gltype = getGLVertexDataType(attrib.type, normalized, intformat);
 
 			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
 			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
-			glVertexAttribPointer(i, attrib.components, gltype, normalized, layout.stride, offsetpointer);
+
+			if (intformat)
+				glVertexAttribIPointer(i, attrib.components, gltype, layout.stride, offsetpointer);
+			else
+				glVertexAttribPointer(i, attrib.components, gltype, normalized, layout.stride, offsetpointer);
 		}
 
 		i++;
