@@ -1,0 +1,51 @@
+name: continuous-integration
+on: [push, pull_request]
+
+jobs:
+  linux-os:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Update APT
+      run: sudo apt-get update
+    - name: Install Dependencies
+      run: |
+        sudo apt-get install --assume-yes build-essential autotools-dev automake libtool pkg-config \
+                                          libfreetype6-dev libluajit-5.1-dev libsdl2-dev libopenal-dev \
+                                          libogg-dev libvorbis-dev libmodplug-dev libmpg123-dev libtheora-dev
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Pre-Configure
+      run: $PWD/platform/unix/automagic
+    - name: Configure
+      run: mkdir build && cd build && ../configure
+    - name: Build
+      run: cd build && make -j2
+  windows-os:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [Win32, x64]
+    steps:
+    - name: Clone Megasource
+      uses: actions/checkout@v2
+      with:
+        path: megasource
+        repository: love2d/megasource
+        ref: master
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: megasource/libs/love
+    - name: Configure
+      shell: cmd
+      env:
+        PLATFORM: ${{ matrix.platform }}
+      run: cmake -Bbuild -Hmegasource -T v141 -A %PLATFORM% -DCMAKE_INSTALL_PREFIX=%CD%\install
+    - name: Install
+      shell: cmd
+      run: cmake --build build --config Release --target install
+    - name: Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: love
+        path: install
