@@ -1133,7 +1133,7 @@ void Graphics::flushStreamDraws()
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
 
-	Attributes attributes;
+	VertexAttributes attributes;
 	BufferBindings buffers;
 
 	size_t usedsizes[3] = {0, 0, 0};

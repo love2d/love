@@ -230,7 +230,7 @@ struct BufferBindings
 	void clear() { useBits = 0; }
 };
 
-struct AttributeInfo
+struct VertexAttributeInfo
 {
 	uint8 bufferIndex;
 	DataType type : 4;
@@ -238,23 +238,23 @@ struct AttributeInfo
 	uint16 offsetFromVertex;
 };
 
-struct BufferLayout
+struct VertexBufferLayout
 {
 	uint16 stride;
 };
 
-struct Attributes
+struct VertexAttributes
 {
 	static const uint32 MAX = 32;
 
 	uint32 enableBits = 0; // indexed by attribute
 	uint32 instanceBits = 0; // indexed by buffer
 
-	AttributeInfo attribs[MAX];
-	BufferLayout bufferLayouts[BufferBindings::MAX];
+	VertexAttributeInfo attribs[MAX];
+	VertexBufferLayout bufferLayouts[BufferBindings::MAX];
 
-	Attributes() {}
-	Attributes(CommonFormat format, uint8 bufferindex)
+	VertexAttributes() {}
+	VertexAttributes(CommonFormat format, uint8 bufferindex)
 	{
 		setCommonFormat(format, bufferindex);
 	}

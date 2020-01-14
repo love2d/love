@@ -238,7 +238,7 @@ public:
 	/**
 	 * Set all vertex attribute state.
 	 **/
-	void setVertexAttributes(const Attributes &attributes, const BufferBindings &buffers);
+	void setVertexAttributes(const VertexAttributes &attributes, const BufferBindings &buffers);
 
 	/**
 	 * Wrapper for glCullFace which eliminates redundant state setting.

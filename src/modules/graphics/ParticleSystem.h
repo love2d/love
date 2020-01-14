@@ -744,7 +744,7 @@ private:
 
 	bool relativeRotation;
 
-	const Attributes vertexAttributes;
+	const VertexAttributes vertexAttributes;
 	Buffer *buffer;
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];

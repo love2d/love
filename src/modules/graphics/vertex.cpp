@@ -236,7 +236,7 @@ void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount,
 	fillIndicesT(mode, vertexStart, vertexCount, indices);
 }
 
-void Attributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
+void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 {
 	setBufferLayout(bufferindex, (uint16) getFormatStride(format));
 

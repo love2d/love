@@ -328,8 +328,8 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 	auto it = attachedAttributes.find(name);
 	if (it != attachedAttributes.end())
 		oldattrib = it->second;
-	else if (attachedAttributes.size() + 1 > Attributes::MAX)
-		throw love::Exception("A maximum of %d attributes can be attached at once.", Attributes::MAX);
+	else if (attachedAttributes.size() + 1 > VertexAttributes::MAX)
+		throw love::Exception("A maximum of %d attributes can be attached at once.", VertexAttributes::MAX);
 
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
@@ -580,7 +580,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (Shader::current && texture.get())
 		Shader::current->checkMainTexture(texture);
 
-	Attributes attributes;
+	VertexAttributes attributes;
 	BufferBindings buffers;
 
 	int activebuffers = 0;

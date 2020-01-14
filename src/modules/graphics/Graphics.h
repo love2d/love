@@ -212,7 +212,7 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const Attributes *attributes;
+		const VertexAttributes *attributes;
 		const BufferBindings *buffers;
 
 		int vertexStart = 0;
@@ -224,7 +224,7 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawCommand(const Attributes *attribs, const BufferBindings *buffers)
+		DrawCommand(const VertexAttributes *attribs, const BufferBindings *buffers)
 			: attributes(attribs)
 			, buffers(buffers)
 		{}
@@ -234,7 +234,7 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const Attributes *attributes;
+		const VertexAttributes *attributes;
 		const BufferBindings *buffers;
 
 		int indexCount = 0;
@@ -249,7 +249,7 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawIndexedCommand(const Attributes *attribs, const BufferBindings *buffers, Resource *indexbuffer)
+		DrawIndexedCommand(const VertexAttributes *attribs, const BufferBindings *buffers, Resource *indexbuffer)
 			: attributes(attribs)
 			, buffers(buffers)
 			, indexBuffer(indexbuffer)
@@ -833,7 +833,7 @@ public:
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
-	virtual void drawQuads(int start, int count, const Attributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
+	virtual void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
 
 	void flushStreamDraws();
 	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);

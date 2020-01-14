@@ -315,7 +315,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	// Make sure the buffer isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
-	Attributes attributes;
+	VertexAttributes attributes;
 	BufferBindings buffers;
 
 	{

@@ -186,7 +186,7 @@ void OpenGL::setupContext()
 	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
 	state.instancedAttribArrays = 0;
 
-	setVertexAttributes(Attributes(), BufferBindings());
+	setVertexAttributes(VertexAttributes(), BufferBindings());
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -713,7 +713,7 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	}
 }
 
-void OpenGL::setVertexAttributes(const Attributes &attributes, const BufferBindings &buffers)
+void OpenGL::setVertexAttributes(const VertexAttributes &attributes, const BufferBindings &buffers)
 {
 	uint32 enablediff = attributes.enableBits ^ state.enabledAttribArrays;
 	uint32 instanceattribbits = 0;

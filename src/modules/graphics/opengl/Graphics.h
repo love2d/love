@@ -74,7 +74,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const Attributes &attributes, const BufferBindings &buffers, Texture *texture) override;
+	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
