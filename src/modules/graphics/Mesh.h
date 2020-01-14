@@ -55,12 +55,12 @@ public:
 	struct AttribFormat
 	{
 		std::string name;
-		vertex::DataType type;
+		DataType type;
 		int components; // max 4
 	};
 
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
 
 	virtual ~Mesh();
 
@@ -96,7 +96,7 @@ public:
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
 	const std::vector<AttribFormat> &getVertexFormat() const;
-	vertex::DataType getAttributeInfo(int attribindex, int &components) const;
+	DataType getAttributeInfo(int attribindex, int &components) const;
 	int getAttributeIndex(const std::string &name) const;
 
 	/**
@@ -196,7 +196,7 @@ private:
 	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
 
 	// Vertex buffer, for the vertex data.
-	Buffer *vertexBuffer;
+	StrongRef<Buffer> vertexBuffer;
 	size_t vertexCount;
 	size_t vertexStride;
 
@@ -205,7 +205,7 @@ private:
 	char *vertexScratchBuffer;
 
 	// Index buffer, for the vertex map.
-	Buffer *indexBuffer;
+	StrongRef<Buffer> indexBuffer;
 	bool useIndexBuffer;
 	size_t indexCount;
 	IndexDataType indexDataType;

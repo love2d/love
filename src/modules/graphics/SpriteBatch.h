@@ -51,7 +51,7 @@ public:
 
 	static love::Type type;
 
-	SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage);
+	SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage usage);
 	virtual ~SpriteBatch();
 
 	int add(const Matrix4 &m, int index = -1);
@@ -128,7 +128,7 @@ private:
 	Color32 color;
 	Colorf colorf;
 
-	vertex::CommonFormat vertex_format;
+	CommonFormat vertex_format;
 	size_t vertex_stride;
 	
 	love::graphics::Buffer *array_buf;

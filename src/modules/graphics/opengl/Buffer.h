@@ -39,7 +39,7 @@ class Buffer final : public love::graphics::Buffer, public Volatile
 {
 public:
 
-	Buffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags);
+	Buffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags);
 	virtual ~Buffer();
 
 	void *map() override;

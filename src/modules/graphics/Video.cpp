@@ -115,9 +115,9 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	Matrix4 t(tm, m);
 
 	Graphics::StreamDrawCommand cmd;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-	cmd.formats[1] = vertex::CommonFormat::STf_RGBAub;
-	cmd.indexMode = vertex::TriangleIndexMode::QUADS;
+	cmd.formats[0] = getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::STf_RGBAub;
+	cmd.indexMode = TriangleIndexMode::QUADS;
 	cmd.vertexCount = 4;
 	cmd.standardShaderType = Shader::STANDARD_VIDEO;
 
@@ -128,7 +128,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	else
 		t.transformXY0((Vector3 *) data.stream[0], vertices, 4);
 
-	vertex::STf_RGBAub *verts = (vertex::STf_RGBAub *) data.stream[1];
+	STf_RGBAub *verts = (STf_RGBAub *) data.stream[1];
 
 	Color32 c = toColor32(gfx->getColor());
 

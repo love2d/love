@@ -155,7 +155,7 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 	return new Shader(vertex, pixel);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags)
+love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
 {
 	return new Buffer(size, data, typeflags, usage, mapflags);
 }
@@ -385,13 +385,13 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	++drawCalls;
 }
 
-static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::BufferBindings &buffers, int vertexcount)
+static inline void advanceVertexOffsets(const Attributes &attributes, BufferBindings &buffers, int vertexcount)
 {
 	// TODO: Figure out a better way to avoid touching the same buffer multiple
 	// times, if multiple attributes share the buffer.
 	uint32 touchedbuffers = 0;
 
-	for (unsigned int i = 0; i < vertex::Attributes::MAX; i++)
+	for (unsigned int i = 0; i < Attributes::MAX; i++)
 	{
 		if (!attributes.isEnabled(i))
 			continue;
@@ -408,7 +408,7 @@ static inline void advanceVertexOffsets(const vertex::Attributes &attributes, ve
 	}
 }
 
-void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, const Attributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
 {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
@@ -437,7 +437,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	}
 	else
 	{
-		vertex::BufferBindings bufferscopy = buffers;
+		BufferBindings bufferscopy = buffers;
 		if (start > 0)
 			advanceVertexOffsets(attributes, bufferscopy, start * 4);
 
@@ -525,7 +525,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 	endPass();
 
 	bool iswindow = rts.getFirstTarget().canvas == nullptr;
-	vertex::Winding vertexwinding = state.winding;
+	Winding vertexwinding = state.winding;
 
 	if (iswindow)
 	{
@@ -543,10 +543,10 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 
 		// Flip front face winding when rendering to a canvas, since our
 		// projection matrix is flipped.
-		vertexwinding = vertexwinding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+		vertexwinding = vertexwinding == WINDING_CW ? WINDING_CCW : WINDING_CW;
 	}
 
-	glFrontFace(vertexwinding == vertex::WINDING_CW ? GL_CW : GL_CCW);
+	glFrontFace(vertexwinding == WINDING_CW ? GL_CW : GL_CCW);
 
 	gl.setViewport({0, 0, pixelw, pixelh});
 
@@ -1241,7 +1241,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	}
 }
 
-void Graphics::setFrontFaceWinding(vertex::Winding winding)
+void Graphics::setFrontFaceWinding(Winding winding)
 {
 	DisplayState &state = states.back();
 
@@ -1251,9 +1251,9 @@ void Graphics::setFrontFaceWinding(vertex::Winding winding)
 	state.winding = winding;
 
 	if (isCanvasActive())
-		winding = winding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+		winding = winding == WINDING_CW ? WINDING_CCW : WINDING_CW;
 
-	glFrontFace(winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
+	glFrontFace(winding == WINDING_CW ? GL_CW : GL_CCW);
 }
 
 void Graphics::setColor(Colorf c)

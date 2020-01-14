@@ -93,7 +93,7 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, offset(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f)
 	, defaultOffset(true)
 	, relativeRotation(false)
-	, vertexAttributes(vertex::CommonFormat::XYf_STf_RGBAub, 0)
+	, vertexAttributes(CommonFormat::XYf_STf_RGBAub, 0)
 	, buffer(nullptr)
 {
 	if (size == 0 || size > MAX_PARTICLES)
@@ -191,7 +191,7 @@ void ParticleSystem::createBuffers(size_t size)
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 		size_t bytes = sizeof(Vertex) * size * 4;
-		buffer = gfx->newBuffer(bytes, nullptr, BUFFERFLAG_VERTEX, vertex::USAGE_STREAM, 0);
+		buffer = gfx->newBuffer(bytes, nullptr, BUFFERFLAG_VERTEX, BUFFERUSAGE_STREAM, 0);
 	}
 	catch (std::bad_alloc &)
 	{
@@ -203,7 +203,7 @@ void ParticleSystem::createBuffers(size_t size)
 void ParticleSystem::deleteBuffers()
 {
 	delete[] pMem;
-	delete buffer;
+	buffer->release();
 
 	pMem = nullptr;
 	buffer = nullptr;
@@ -1080,7 +1080,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 
 	Graphics::TempTransform transform(gfx, m);
 
-	vertex::BufferBindings vertexbuffers;
+	BufferBindings vertexbuffers;
 	vertexbuffers.set(0, buffer, 0);
 
 	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, texture);

@@ -186,7 +186,7 @@ void OpenGL::setupContext()
 	state.enabledAttribArrays = (uint32) ((1ull << uint32(maxvertexattribs)) - 1);
 	state.instancedAttribArrays = 0;
 
-	setVertexAttributes(vertex::Attributes(), vertex::BufferBindings());
+	setVertexAttributes(Attributes(), BufferBindings());
 
 	// Get the current viewport.
 	glGetIntegerv(GL_VIEWPORT, (GLint *) &state.viewport.x);
@@ -631,62 +631,62 @@ GLenum OpenGL::getGLIndexDataType(IndexDataType type)
 	}
 }
 
-GLenum OpenGL::getGLVertexDataType(vertex::DataType type, GLboolean &normalized, bool &intformat)
+GLenum OpenGL::getGLVertexDataType(DataType type, GLboolean &normalized, bool &intformat)
 {
 	normalized = GL_FALSE;
 	intformat = false;
 
 	switch (type)
 	{
-	case vertex::DATA_SNORM8:
+	case DATA_SNORM8:
 		normalized = GL_TRUE;
 		return GL_BYTE;
-	case vertex::DATA_UNORM8:
+	case DATA_UNORM8:
 		normalized = GL_TRUE;
 		return GL_UNSIGNED_BYTE;
-	case vertex::DATA_INT8:
+	case DATA_INT8:
 		intformat = true;
 		return GL_BYTE;
-	case vertex::DATA_UINT8:
+	case DATA_UINT8:
 		intformat = true;
 		return GL_UNSIGNED_BYTE;
-	case vertex::DATA_SNORM16:
+	case DATA_SNORM16:
 		normalized = GL_TRUE;
 		return GL_SHORT;
-	case vertex::DATA_UNORM16:
+	case DATA_UNORM16:
 		normalized = GL_TRUE;
 		return GL_UNSIGNED_SHORT;
-	case vertex::DATA_INT16:
+	case DATA_INT16:
 		intformat = true;
 		return GL_SHORT;
-	case vertex::DATA_UINT16:
+	case DATA_UINT16:
 		intformat = true;
 		return GL_UNSIGNED_SHORT;
-	case vertex::DATA_INT32:
+	case DATA_INT32:
 		intformat = true;
 		return GL_INT;
-	case vertex::DATA_UINT32:
+	case DATA_UINT32:
 		intformat = true;
 		return GL_UNSIGNED_INT;
-	case vertex::DATA_FLOAT:
+	case DATA_FLOAT:
 		normalized = GL_FALSE;
 		return GL_FLOAT;
-	case vertex::DATA_MAX_ENUM:
+	case DATA_MAX_ENUM:
 		return GL_ZERO;
 	}
 
 	return GL_ZERO;
 }
 
-GLenum OpenGL::getGLBufferUsage(vertex::Usage usage)
+GLenum OpenGL::getGLBufferUsage(BufferUsage usage)
 {
 	switch (usage)
 	{
-	case vertex::USAGE_STREAM:
+	case BUFFERUSAGE_STREAM:
 		return GL_STREAM_DRAW;
-	case vertex::USAGE_DYNAMIC:
+	case BUFFERUSAGE_DYNAMIC:
 		return GL_DYNAMIC_DRAW;
-	case vertex::USAGE_STATIC:
+	case BUFFERUSAGE_STATIC:
 		return GL_STATIC_DRAW;
 	default:
 		return 0;
@@ -713,7 +713,7 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	}
 }
 
-void OpenGL::setVertexAttributes(const vertex::Attributes &attributes, const vertex::BufferBindings &buffers)
+void OpenGL::setVertexAttributes(const Attributes &attributes, const BufferBindings &buffers)
 {
 	uint32 enablediff = attributes.enableBits ^ state.enabledAttribArrays;
 	uint32 instanceattribbits = 0;

@@ -35,7 +35,7 @@ namespace graphics
 namespace opengl
 {
 
-Buffer::Buffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags)
+Buffer::Buffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
 	: love::graphics::Buffer(size, typeflags, usage, mapflags)
 	, vbo(0)
 	, memoryMap(nullptr)
@@ -141,13 +141,13 @@ void Buffer::unmap()
 	{
 		switch (getUsage())
 		{
-		case vertex::USAGE_STATIC:
+		case BUFFERUSAGE_STATIC:
 			unmapStatic(modifiedOffset, modifiedSize);
 			break;
-		case vertex::USAGE_STREAM:
+		case BUFFERUSAGE_STREAM:
 			unmapStream();
 			break;
-		case vertex::USAGE_DYNAMIC:
+		case BUFFERUSAGE_DYNAMIC:
 		default:
 			// It's probably more efficient to treat it like a streaming buffer if
 			// at least a third of its contents have been modified during the map().

@@ -1147,12 +1147,12 @@ int w_newSpriteBatch(lua_State *L)
 
 	Texture *texture = luax_checktexture(L, 1);
 	int size = (int) luaL_optinteger(L, 2, 1000);
-	vertex::Usage usage = vertex::USAGE_DYNAMIC;
+	BufferUsage usage = BUFFERUSAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
 		const char *usagestr = luaL_checkstring(L, 3);
-		if (!vertex::getConstant(usagestr, usage))
-			return luax_enumerror(L, "usage hint", vertex::getConstants(usage), usagestr);
+		if (!getConstant(usagestr, usage))
+			return luax_enumerror(L, "usage hint", getConstants(usage), usagestr);
 	}
 
 	SpriteBatch *t = nullptr;
@@ -1421,12 +1421,12 @@ int w_validateShader(lua_State *L)
 	return 1;
 }
 
-static vertex::Usage luax_optmeshusage(lua_State *L, int idx, vertex::Usage def)
+static BufferUsage luax_optmeshusage(lua_State *L, int idx, BufferUsage def)
 {
 	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	if (usagestr && !vertex::getConstant(usagestr, def))
-		luax_enumerror(L, "usage hint", vertex::getConstants(def), usagestr);
+	if (usagestr && !getConstant(usagestr, def))
+		luax_enumerror(L, "usage hint", getConstants(def), usagestr);
 
 	return def;
 }
@@ -1435,8 +1435,8 @@ static PrimitiveType luax_optmeshdrawmode(lua_State *L, int idx, PrimitiveType d
 {
 	const char *modestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	if (modestr && !vertex::getConstant(modestr, def))
-		luax_enumerror(L, "mesh draw mode", vertex::getConstants(def), modestr);
+	if (modestr && !getConstant(modestr, def))
+		luax_enumerror(L, "mesh draw mode", getConstants(def), modestr);
 
 	return def;
 }
@@ -1446,7 +1446,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
-	vertex::Usage usage = luax_optmeshusage(L, 3, vertex::USAGE_DYNAMIC);
+	BufferUsage usage = luax_optmeshusage(L, 3, BUFFERUSAGE_DYNAMIC);
 
 	// First argument is a table of standard vertices, or the number of
 	// standard vertices.
@@ -1506,7 +1506,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	std::vector<Mesh::AttribFormat> vertexformat;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
-	vertex::Usage usage = luax_optmeshusage(L, 4, vertex::USAGE_DYNAMIC);
+	BufferUsage usage = luax_optmeshusage(L, 4, BUFFERUSAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
 	if (!lua_istable(L, -1))
@@ -1530,10 +1530,10 @@ static Mesh *newCustomMesh(lua_State *L)
 
 		const char *tname = luaL_checkstring(L, -2);
 		if (strcmp(tname, "byte") == 0) // Legacy name.
-			format.type = vertex::DATA_UNORM8;
-		else if (!vertex::getConstant(tname, format.type))
+			format.type = DATA_UNORM8;
+		else if (!getConstant(tname, format.type))
 		{
-			luax_enumerror(L, "Mesh vertex data type name", vertex::getConstants(format.type), tname);
+			luax_enumerror(L, "Mesh vertex data type name", getConstants(format.type), tname);
 			return nullptr;
 		}
 
@@ -2109,8 +2109,8 @@ int w_setMeshCullMode(lua_State *L)
 	const char *str = luaL_checkstring(L, 1);
 	CullMode mode;
 
-	if (!vertex::getConstant(str, mode))
-		return luax_enumerror(L, "cull mode", vertex::getConstants(mode), str);
+	if (!getConstant(str, mode))
+		return luax_enumerror(L, "cull mode", getConstants(mode), str);
 
 	luax_catchexcept(L, [&]() { instance()->setMeshCullMode(mode); });
 	return 0;
@@ -2120,7 +2120,7 @@ int w_getMeshCullMode(lua_State *L)
 {
 	CullMode mode = instance()->getMeshCullMode();
 	const char *str;
-	if (!vertex::getConstant(mode, str))
+	if (!getConstant(mode, str))
 		return luaL_error(L, "Unknown cull mode");
 	lua_pushstring(L, str);
 	return 1;
@@ -2129,10 +2129,10 @@ int w_getMeshCullMode(lua_State *L)
 int w_setFrontFaceWinding(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
-	vertex::Winding winding;
+	Winding winding;
 
-	if (!vertex::getConstant(str, winding))
-		return luax_enumerror(L, "vertex winding", vertex::getConstants(winding), str);
+	if (!getConstant(str, winding))
+		return luax_enumerror(L, "vertex winding", getConstants(winding), str);
 
 	luax_catchexcept(L, [&]() { instance()->setFrontFaceWinding(winding); });
 	return 0;
@@ -2140,9 +2140,9 @@ int w_setFrontFaceWinding(lua_State *L)
 
 int w_getFrontFaceWinding(lua_State *L)
 {
-	vertex::Winding winding = instance()->getFrontFaceWinding();
+	Winding winding = instance()->getFrontFaceWinding();
 	const char *str;
-	if (!vertex::getConstant(winding, str))
+	if (!getConstant(winding, str))
 		return luaL_error(L, "Unknown vertex winding");
 	lua_pushstring(L, str);
 	return 1;

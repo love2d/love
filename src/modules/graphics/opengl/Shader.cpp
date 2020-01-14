@@ -23,6 +23,7 @@
 
 #include "Shader.h"
 #include "Graphics.h"
+#include "graphics/vertex.h"
 
 // C++
 #include <algorithm>
@@ -322,7 +323,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (vertex::getConstant((BuiltinVertexAttribute) i, name))
+		if (graphics::getConstant((BuiltinVertexAttribute) i, name))
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
@@ -345,7 +346,7 @@ bool Shader::loadVolatile()
 	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
 	{
 		const char *name = nullptr;
-		if (vertex::getConstant(BuiltinVertexAttribute(i), name))
+		if (graphics::getConstant(BuiltinVertexAttribute(i), name))
 			builtinAttributes[i] = glGetAttribLocation(program, name);
 		else
 			builtinAttributes[i] = -1;

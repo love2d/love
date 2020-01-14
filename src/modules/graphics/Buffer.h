@@ -23,6 +23,7 @@
 // LOVE
 #include "common/config.h"
 #include "common/int.h"
+#include "common/Object.h"
 #include "vertex.h"
 #include "Resource.h"
 
@@ -41,9 +42,11 @@ class Graphics;
 /**
  * A block of GPU-owned memory. Currently meant for internal use.
  **/
-class Buffer : public Resource
+class Buffer : public love::Object, public Resource
 {
 public:
+
+	static love::Type type;
 
 	enum MapFlags
 	{
@@ -112,6 +115,28 @@ public:
 		DATA_MAX_ENUM
 	};
 
+	enum DataTypeBase
+	{
+		DATA_BASE_FLOAT,
+		DATA_BASE_INT,
+		DATA_BASE_UINT,
+		DATA_BASE_SNORM,
+		DATA_BASE_UNORM,
+		DATA_BASE_BOOL,
+	};
+
+	struct DataTypeInfo
+	{
+		DataTypeBase baseType;
+		bool isMatrix;
+		int components;
+		int matrixRows;
+		int matrixColumns;
+		size_t componentSize;
+		size_t packedAlignment;
+		size_t packedSize;
+	};
+
 	struct DataMember
 	{
 		std::string name;
@@ -123,16 +148,16 @@ public:
 	{
 		BufferTypeFlags typeFlags;
 		MapFlags mapFlags;
-		vertex::Usage usage;
+		BufferUsage usage;
 	};
 
-	Buffer(size_t size, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags);
+	Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags);
 	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &format, size_t arraylength);
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
 	BufferTypeFlags getTypeFlags() const { return typeFlags; }
-	vertex::Usage getUsage() const { return usage; }
+	BufferUsage getUsage() const { return usage; }
 	bool isMapped() const { return mapped; }
 	uint32 getMapFlags() const { return mapFlags; }
 
@@ -196,7 +221,13 @@ public:
 
 //	static size_t getDataTypeSize(DataType type, bool uniform)
 
+	const DataTypeInfo &getDataTypeInfo(DataType type);
+
 protected:
+
+	std::vector<DataMember> format;
+	std::vector<size_t> memberOffsets;
+	size_t arrayStride;
 
 	// The size of the buffer, in bytes.
 	size_t size;
@@ -205,7 +236,7 @@ protected:
 	BufferTypeFlags typeFlags;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
-	vertex::Usage usage;
+	BufferUsage usage;
 	
 	uint32 mapFlags;
 

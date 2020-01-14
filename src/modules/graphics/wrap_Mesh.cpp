@@ -74,31 +74,31 @@ static inline size_t writeUNormData(lua_State *L, int startidx, int components, 
 	return sizeof(T) * components;
 }
 
-char *luax_writeAttributeData(lua_State *L, int startidx, vertex::DataType type, int components, char *data)
+char *luax_writeAttributeData(lua_State *L, int startidx, DataType type, int components, char *data)
 {
 	switch (type)
 	{
-	case vertex::DATA_SNORM8:
+	case DATA_SNORM8:
 		return data + writeSNormData<int8>(L, startidx, components, data);
-	case vertex::DATA_UNORM8:
+	case DATA_UNORM8:
 		return data + writeUNormData<uint8>(L, startidx, components, data);
-	case vertex::DATA_INT8:
+	case DATA_INT8:
 		return data + writeData<int8>(L, startidx, components, data);
-	case vertex::DATA_UINT8:
+	case DATA_UINT8:
 		return data + writeData<uint8>(L, startidx, components, data);
-	case vertex::DATA_SNORM16:
+	case DATA_SNORM16:
 		return data + writeSNormData<int16>(L, startidx, components, data);
-	case vertex::DATA_UNORM16:
+	case DATA_UNORM16:
 		return data + writeUNormData<uint16>(L, startidx, components, data);
-	case vertex::DATA_INT16:
+	case DATA_INT16:
 		return data + writeData<int16>(L, startidx, components, data);
-	case vertex::DATA_UINT16:
+	case DATA_UINT16:
 		return data + writeData<uint16>(L, startidx, components, data);
-	case vertex::DATA_INT32:
+	case DATA_INT32:
 		return data + writeData<int32>(L, startidx, components, data);
-	case vertex::DATA_UINT32:
+	case DATA_UINT32:
 		return data + writeData<uint32>(L, startidx, components, data);
-	case vertex::DATA_FLOAT:
+	case DATA_FLOAT:
 		return data + writeData<float>(L, startidx, components, data);
 	default:
 		return data;
@@ -140,31 +140,31 @@ static inline size_t readUNormData(lua_State *L, int components, const char *dat
 	return sizeof(T) * components;
 }
 
-const char *luax_readAttributeData(lua_State *L, vertex::DataType type, int components, const char *data)
+const char *luax_readAttributeData(lua_State *L, DataType type, int components, const char *data)
 {
 	switch (type)
 	{
-	case vertex::DATA_SNORM8:
+	case DATA_SNORM8:
 		return data + readSNormData<int8>(L, components, data);
-	case vertex::DATA_UNORM8:
+	case DATA_UNORM8:
 		return data + readUNormData<uint8>(L, components, data);
-	case vertex::DATA_INT8:
+	case DATA_INT8:
 		return data + readData<int8>(L, components, data);
-	case vertex::DATA_UINT8:
+	case DATA_UINT8:
 		return data + readData<uint8>(L, components, data);
-	case vertex::DATA_SNORM16:
+	case DATA_SNORM16:
 		return data + readSNormData<int16>(L, components, data);
-	case vertex::DATA_UNORM16:
+	case DATA_UNORM16:
 		return data + readUNormData<uint16>(L, components, data);
-	case vertex::DATA_INT16:
+	case DATA_INT16:
 		return data + readData<int16>(L, components, data);
-	case vertex::DATA_UINT16:
+	case DATA_UINT16:
 		return data + readData<uint16>(L, components, data);
-	case vertex::DATA_INT32:
+	case DATA_INT32:
 		return data + readData<int32>(L, components, data);
-	case vertex::DATA_UINT32:
+	case DATA_UINT32:
 		return data + readData<uint32>(L, components, data);
-	case vertex::DATA_FLOAT:
+	case DATA_FLOAT:
 		return data + readData<float>(L, components, data);
 	default:
 		return data;
@@ -321,7 +321,7 @@ int w_Mesh_setVertexAttribute(lua_State *L)
 	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
 	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	vertex::DataType type;
+	DataType type;
 	int components;
 	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
 
@@ -341,7 +341,7 @@ int w_Mesh_getVertexAttribute(lua_State *L)
 	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
 	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	vertex::DataType type;
+	DataType type;
 	int components;
 	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
 
@@ -372,8 +372,8 @@ int w_Mesh_getVertexFormat(lua_State *L)
 
 	for (size_t i = 0; i < vertexformat.size(); i++)
 	{
-		if (!vertex::getConstant(vertexformat[i].type, tname))
-			return luax_enumerror(L, "vertex attribute data type", vertex::getConstants(vertexformat[i].type), tname);
+		if (!getConstant(vertexformat[i].type, tname))
+			return luax_enumerror(L, "vertex attribute data type", getConstants(vertexformat[i].type), tname);
 
 		lua_createtable(L, 3, 0);
 
@@ -420,8 +420,8 @@ int w_Mesh_attachAttribute(lua_State *L)
 
 	AttributeStep step = STEP_PER_VERTEX;
 	const char *stepstr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
-	if (stepstr != nullptr && !vertex::getConstant(stepstr, step))
-		return luax_enumerror(L, "vertex attribute step", vertex::getConstants(step), stepstr);
+	if (stepstr != nullptr && !getConstant(stepstr, step))
+		return luax_enumerror(L, "vertex attribute step", getConstants(step), stepstr);
 
 	const char *attachname = luaL_optstring(L, 5, name);
 
@@ -463,10 +463,10 @@ int w_Mesh_setVertexMap(lua_State *L)
 
 		const char *indextypestr = luaL_checkstring(L, 3);
 		IndexDataType indextype;
-		if (!vertex::getConstant(indextypestr, indextype))
-			return luax_enumerror(L, "index data type", vertex::getConstants(indextype), indextypestr);
+		if (!getConstant(indextypestr, indextype))
+			return luax_enumerror(L, "index data type", getConstants(indextype), indextypestr);
 
-		size_t datatypesize = vertex::getIndexDataSize(indextype);
+		size_t datatypesize = getIndexDataSize(indextype);
 
 		int indexcount = (int) luaL_optinteger(L, 4, d->getSize() / datatypesize);
 
@@ -569,8 +569,8 @@ int w_Mesh_setDrawMode(lua_State *L)
 	const char *str = luaL_checkstring(L, 2);
 	PrimitiveType mode;
 
-	if (!vertex::getConstant(str, mode))
-		return luax_enumerror(L, "mesh draw mode", vertex::getConstants(mode), str);
+	if (!getConstant(str, mode))
+		return luax_enumerror(L, "mesh draw mode", getConstants(mode), str);
 
 	t->setDrawMode(mode);
 	return 0;
@@ -582,7 +582,7 @@ int w_Mesh_getDrawMode(lua_State *L)
 	PrimitiveType mode = t->getDrawMode();
 	const char *str;
 
-	if (!vertex::getConstant(mode, str))
+	if (!getConstant(mode, str))
 		return luaL_error(L, "Unknown mesh draw mode.");
 
 	lua_pushstring(L, str);

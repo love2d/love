@@ -238,7 +238,7 @@ public:
 	/**
 	 * Set all vertex attribute state.
 	 **/
-	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::BufferBindings &buffers);
+	void setVertexAttributes(const Attributes &attributes, const BufferBindings &buffers);
 
 	/**
 	 * Wrapper for glCullFace which eliminates redundant state setting.
@@ -404,8 +404,8 @@ public:
 	static GLenum getGLPrimitiveType(PrimitiveType type);
 	static GLenum getGLBufferType(BufferType type);
 	static GLenum getGLIndexDataType(IndexDataType type);
-	static GLenum getGLVertexDataType(vertex::DataType type, GLboolean &normalized, bool &intformat);
-	static GLenum getGLBufferUsage(vertex::Usage usage);
+	static GLenum getGLVertexDataType(DataType type, GLboolean &normalized, bool &intformat);
+	static GLenum getGLBufferUsage(BufferUsage usage);
 	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);

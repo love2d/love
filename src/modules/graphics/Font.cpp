@@ -45,7 +45,7 @@ static inline uint16 normToUint16(double n)
 love::Type Font::type("Font", &Object::type);
 int Font::fontCount = 0;
 
-const vertex::CommonFormat Font::vertexFormat = vertex::CommonFormat::XYf_STus_RGBAub;
+const CommonFormat Font::vertexFormat = CommonFormat::XYf_STus_RGBAub;
 
 Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
 	: rasterizers({r})
@@ -642,7 +642,7 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 	{
 		Graphics::StreamDrawCommand streamcmd;
 		streamcmd.formats[0] = vertexFormat;
-		streamcmd.indexMode = vertex::TriangleIndexMode::QUADS;
+		streamcmd.indexMode = TriangleIndexMode::QUADS;
 		streamcmd.vertexCount = cmd.vertexcount;
 		streamcmd.texture = cmd.texture;
 

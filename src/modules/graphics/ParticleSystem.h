@@ -558,6 +558,77 @@ private:
 		int quadIndex;
 	};
 
+	struct Emitter
+	{
+		// Pointer to the beginning of the allocated memory.
+		Particle *pMem;
+
+		// Pointer to a free particle.
+		Particle *pFree;
+
+		// Pointer to the start of the linked list.
+		Particle *pHead;
+
+		// Pointer to the end of the linked list.
+		Particle *pTail;
+
+		// Whether the particle emitter is active.
+		bool active;
+
+		// Insert mode of new particles.
+		InsertMode insertMode;
+
+		// The number of active particles.
+		uint32 activeParticles;
+
+		// The emission rate (particles/sec).
+		float emissionRate;
+
+		// Used to determine when a particle should be emitted.
+		float emitCounter;
+
+		// The relative position of the particle emitter.
+		love::Vector2 position;
+		love::Vector2 prevPosition;
+
+		// Emission area spread.
+		AreaSpreadDistribution emissionAreaDistribution;
+		love::Vector2 emissionArea;
+		float emissionAreaAngle;
+		bool directionRelativeToEmissionCenter;
+
+		// The lifetime of the particle emitter (-1 means infinite) and the life it has left.
+		float lifetime;
+		float life;
+
+		// The particle life.
+		float particleLifeMin;
+		float particleLifeMax;
+
+		// The direction (and spread) the particles will be emitted in. Measured in radians.
+		float direction;
+		float spread;
+
+		// The speed.
+		float speedMin;
+		float speedMax;
+
+		// Acceleration along the x and y axes.
+		love::Vector2 linearAccelerationMin;
+		love::Vector2 linearAccelerationMax;
+
+		// Acceleration towards the emitter's center
+		float radialAccelerationMin;
+		float radialAccelerationMax;
+
+		// Acceleration perpendicular to the particle's direction.
+		float tangentialAccelerationMin;
+		float tangentialAccelerationMax;
+
+		float linearDampingMin;
+		float linearDampingMax;
+	};
+
 	void resetOffset();
 
 	void createBuffers(size_t size);
@@ -673,7 +744,7 @@ private:
 
 	bool relativeRotation;
 
-	const vertex::Attributes vertexAttributes;
+	const Attributes vertexAttributes;
 	Buffer *buffer;
 
 	static StringMap<AreaSpreadDistribution, DISTRIBUTION_MAX_ENUM>::Entry distributionsEntries[];

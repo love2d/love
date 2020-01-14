@@ -37,7 +37,7 @@ namespace graphics
 static const char *getBuiltinAttribName(BuiltinVertexAttribute attribid)
 {
 	const char *name = "";
-	vertex::getConstant(attribid, name);
+	getConstant(attribid, name);
 	return name;
 }
 
@@ -49,9 +49,9 @@ std::vector<Mesh::AttribFormat> Mesh::getDefaultVertexFormat()
 {
 	// Corresponds to the love::Vertex struct.
 	std::vector<Mesh::AttribFormat> vertexformat = {
-		{ getBuiltinAttribName(ATTRIB_POS),      vertex::DATA_FLOAT,  2 },
-		{ getBuiltinAttribName(ATTRIB_TEXCOORD), vertex::DATA_FLOAT,  2 },
-		{ getBuiltinAttribName(ATTRIB_COLOR),    vertex::DATA_UNORM8, 4 },
+		{ getBuiltinAttribName(ATTRIB_POS),      DATA_FLOAT,  2 },
+		{ getBuiltinAttribName(ATTRIB_TEXCOORD), DATA_FLOAT,  2 },
+		{ getBuiltinAttribName(ATTRIB_COLOR),    DATA_UNORM8, 4 },
 	};
 
 	return vertexformat;
@@ -59,7 +59,7 @@ std::vector<Mesh::AttribFormat> Mesh::getDefaultVertexFormat()
 
 love::Type Mesh::type("Mesh", &Drawable::type);
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
 	: vertexFormat(vertexformat)
 	, vertexBuffer(nullptr)
 	, vertexCount(0)
@@ -76,17 +76,18 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	calculateAttributeSizes(gfx);
 
 	vertexCount = datasize / vertexStride;
-	indexDataType = vertex::getIndexDataTypeFromMax(vertexCount);
+	indexDataType = getIndexDataTypeFromMax(vertexCount);
 
 	if (vertexCount == 0)
 		throw love::Exception("Data size is too small for specified vertex attribute formats.");
 
-	vertexBuffer = gfx->newBuffer(datasize, data, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	auto buffer = gfx->newBuffer(datasize, data, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	vertexBuffer.set(buffer, Acquire::NORETAIN);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 	: vertexFormat(vertexformat)
 	, vertexBuffer(nullptr)
 	, vertexCount((size_t) vertexcount)
@@ -94,7 +95,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	, indexBuffer(nullptr)
 	, useIndexBuffer(false)
 	, indexCount(0)
-	, indexDataType(vertex::getIndexDataTypeFromMax(vertexcount))
+	, indexDataType(getIndexDataTypeFromMax(vertexcount))
 	, primitiveType(drawmode)
 	, rangeStart(-1)
 	, rangeCount(-1)
@@ -107,7 +108,8 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 
 	size_t buffersize = vertexCount * vertexStride;
 
-	vertexBuffer = gfx->newBuffer(buffersize, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	auto buffer = gfx->newBuffer(buffersize, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
+	vertexBuffer.set(buffer, Acquire::NORETAIN);
 
 	// Initialize the buffer's contents to 0.
 	memset(vertexBuffer->map(), 0, buffersize);
@@ -119,8 +121,6 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 
 Mesh::~Mesh()
 {
-	delete vertexBuffer;
-	delete indexBuffer;
 	delete vertexScratchBuffer;
 
 	for (const auto &attrib : attachedAttributes)
@@ -151,7 +151,7 @@ void Mesh::calculateAttributeSizes(Graphics *gfx)
 
 	for (const AttribFormat &format : vertexFormat)
 	{
-		size_t size = vertex::getDataTypeSize(format.type) * format.components;
+		size_t size = getDataTypeSize(format.type) * format.components;
 
 		if (format.components <= 0 || format.components > 4)
 			throw love::Exception("Vertex attributes must have between 1 and 4 components.");
@@ -160,7 +160,7 @@ void Mesh::calculateAttributeSizes(Graphics *gfx)
 		if (size % 4 != 0)
 			throw love::Exception("Vertex attributes must have enough components to be a multiple of 32 bits.");
 
-		if (vertex::isDataTypeInteger(format.type) && !supportsGLSL3)
+		if (isDataTypeInteger(format.type) && !supportsGLSL3)
 			throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
 
 		// Total size in bytes of each attribute in a single vertex.
@@ -265,7 +265,7 @@ const std::vector<Mesh::AttribFormat> &Mesh::getVertexFormat() const
 	return vertexFormat;
 }
 
-vertex::DataType Mesh::getAttributeInfo(int attribindex, int &components) const
+DataType Mesh::getAttributeInfo(int attribindex, int &components) const
 {
 	if (attribindex < 0 || attribindex >= (int) vertexFormat.size())
 		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
@@ -328,8 +328,8 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 	auto it = attachedAttributes.find(name);
 	if (it != attachedAttributes.end())
 		oldattrib = it->second;
-	else if (attachedAttributes.size() + 1 > vertex::Attributes::MAX)
-		throw love::Exception("A maximum of %d attributes can be attached at once.", vertex::Attributes::MAX);
+	else if (attachedAttributes.size() + 1 > Attributes::MAX)
+		throw love::Exception("A maximum of %d attributes can be attached at once.", Attributes::MAX);
 
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
@@ -406,21 +406,15 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
 	size_t maxval = getVertexCount();
 
-	IndexDataType datatype = vertex::getIndexDataTypeFromMax(maxval);
+	IndexDataType datatype = getIndexDataTypeFromMax(maxval);
 
 	// Calculate the size in bytes of the index buffer data.
-	size_t size = map.size() * vertex::getIndexDataSize(datatype);
+	size_t size = map.size() * getIndexDataSize(datatype);
 
-	if (indexBuffer && size > indexBuffer->getSize())
-	{
-		delete indexBuffer;
-		indexBuffer = nullptr;
-	}
-
-	if (!indexBuffer && size > 0)
+	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize())
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		indexBuffer = gfx->newBuffer(size, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
+		indexBuffer.set(gfx->newBuffer(size, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ), Acquire::NORETAIN);
 	}
 
 	useIndexBuffer = true;
@@ -448,19 +442,13 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 
 void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasize)
 {
-	if (indexBuffer && datasize > indexBuffer->getSize())
-	{
-		delete indexBuffer;
-		indexBuffer = nullptr;
-	}
-
-	if (!indexBuffer && datasize > 0)
+	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize())
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		indexBuffer = gfx->newBuffer(datasize, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ);
+		indexBuffer.set(gfx->newBuffer(datasize, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ), Acquire::NORETAIN);
 	}
 
-	indexCount = datasize / vertex::getIndexDataSize(datatype);
+	indexCount = datasize / getIndexDataSize(datatype);
 
 	if (!indexBuffer || indexCount == 0)
 		return;
@@ -592,8 +580,8 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (Shader::current && texture.get())
 		Shader::current->checkMainTexture(texture);
 
-	vertex::Attributes attributes;
-	vertex::BufferBindings buffers;
+	Attributes attributes;
+	BufferBindings buffers;
 
 	int activebuffers = 0;
 
@@ -608,7 +596,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
 		BuiltinVertexAttribute builtinattrib;
-		if (vertex::getConstant(attrib.first.c_str(), builtinattrib))
+		if (getConstant(attrib.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)
 			attributeindex = Shader::current->getVertexAttributeIndex(attrib.first);
@@ -653,7 +641,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		cmd.cullMode = gfx->getMeshCullMode();
 
 		int start = std::min(std::max(0, rangeStart), (int) indexCount - 1);
-		cmd.indexBufferOffset = start * vertex::getIndexDataSize(indexDataType);
+		cmd.indexBufferOffset = start * getIndexDataSize(indexDataType);
 
 		cmd.indexCount = (int) indexCount;
 		if (rangeCount > 0)

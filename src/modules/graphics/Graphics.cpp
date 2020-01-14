@@ -173,10 +173,10 @@ void Graphics::createQuadIndexBuffer()
 		return;
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
-	quadIndexBuffer = newBuffer(size, nullptr, BUFFERFLAG_INDEX, vertex::USAGE_STATIC, 0);
+	quadIndexBuffer = newBuffer(size, nullptr, BUFFERFLAG_INDEX, BUFFERUSAGE_STATIC, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
-	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
+	fillIndices(TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -204,7 +204,7 @@ Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 	return new Video(this, stream, dpiscale);
 }
 
-love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
+love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, BufferUsage usage)
 {
 	return new SpriteBatch(this, texture, size, usage);
 }
@@ -260,22 +260,22 @@ Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
 	return newShaderInternal(vertexstage.get(), pixelstage.get());
 }
 
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage)
+Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage)
 {
 	return newMesh(Mesh::getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage);
 }
 
-Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 {
 	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
@@ -891,7 +891,7 @@ CullMode Graphics::getMeshCullMode() const
 	return states.back().meshCullMode;
 }
 
-vertex::Winding Graphics::getFrontFaceWinding() const
+Winding Graphics::getFrontFaceWinding() const
 {
 	return states.back().winding;
 }
@@ -996,8 +996,6 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 
 Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &cmd)
 {
-	using namespace vertex;
-
 	StreamBufferState &state = streamBufferState;
 
 	bool shouldflush = false;
@@ -1130,8 +1128,6 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 
 void Graphics::flushStreamDraws()
 {
-	using namespace vertex;
-
 	auto &sbstate = streamBufferState;
 
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
@@ -1280,8 +1276,8 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 
 	StreamDrawCommand cmd;
 	cmd.primitiveMode = PRIMITIVE_POINTS;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-	cmd.formats[1] = vertex::CommonFormat::RGBAub;
+	cmd.formats[0] = getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::RGBAub;
 	cmd.vertexCount = (int) numpoints;
 
 	StreamVertexData data = requestStreamDraw(cmd);
@@ -1575,9 +1571,9 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		bool is2D = t.isAffine2DTransform();
 
 		StreamDrawCommand cmd;
-		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-		cmd.formats[1] = vertex::CommonFormat::RGBAub;
-		cmd.indexMode = vertex::TriangleIndexMode::FAN;
+		cmd.formats[0] = getSinglePositionFormat(is2D);
+		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.indexMode = TriangleIndexMode::FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		StreamVertexData data = requestStreamDraw(cmd);

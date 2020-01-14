@@ -63,7 +63,7 @@ public:
 	love::graphics::Image *newImage(const Image::Slices &data, const Image::Settings &settings) override;
 	love::graphics::Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) override;
 	love::graphics::Canvas *newCanvas(const Canvas::Settings &settings) override;
-	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags) override;
+	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataMember> &format, size_t arraylength) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
@@ -74,7 +74,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) override;
+	void drawQuads(int start, int count, const Attributes &attributes, const BufferBindings &buffers, Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -95,7 +95,7 @@ public:
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
-	void setFrontFaceWinding(vertex::Winding winding) override;
+	void setFrontFaceWinding(Winding winding) override;
 
 	void setColorMask(ColorChannelMask mask) override;
 

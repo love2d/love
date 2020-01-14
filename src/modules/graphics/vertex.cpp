@@ -25,8 +25,6 @@ namespace love
 {
 namespace graphics
 {
-namespace vertex
-{
 
 static_assert(sizeof(Color32) == 4, "sizeof(Color32) incorrect!");
 static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color32), "sizeof(STf_RGBAub) incorrect!");
@@ -306,14 +304,14 @@ static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
 
 static StringMap<IndexDataType, INDEX_MAX_ENUM> indexTypes(indexTypeEntries, sizeof(indexTypeEntries));
 
-static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
+static StringMap<BufferUsage, BUFFERUSAGE_MAX_ENUM>::Entry usageEntries[] =
 {
-	{ "stream",  USAGE_STREAM  },
-	{ "dynamic", USAGE_DYNAMIC },
-	{ "static",  USAGE_STATIC  },
+	{ "stream",  BUFFERUSAGE_STREAM  },
+	{ "dynamic", BUFFERUSAGE_DYNAMIC },
+	{ "static",  BUFFERUSAGE_STATIC  },
 };
 
-static StringMap<Usage, USAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
+static StringMap<BufferUsage, BUFFERUSAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
 
 static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM>::Entry primitiveTypeEntries[] =
 {
@@ -392,17 +390,17 @@ std::vector<std::string> getConstants(IndexDataType)
 	return indexTypes.getNames();
 }
 
-bool getConstant(const char *in, Usage &out)
+bool getConstant(const char *in, BufferUsage &out)
 {
 	return usages.find(in, out);
 }
 
-bool getConstant(Usage in, const char *&out)
+bool getConstant(BufferUsage in, const char *&out)
 {
 	return usages.find(in, out);
 }
 
-std::vector<std::string> getConstants(Usage)
+std::vector<std::string> getConstants(BufferUsage)
 {
 	return usages.getNames();
 }
@@ -482,6 +480,5 @@ std::vector<std::string> getConstants(Winding)
 	return windings.getNames();
 }
 
-} // vertex
 } // graphics
 } // love

@@ -40,7 +40,7 @@ namespace graphics
 
 love::Type SpriteBatch::type("SpriteBatch", &Drawable::type);
 
-SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage)
+SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage usage)
 	: texture(texture)
 	, size(size)
 	, next(0)
@@ -57,11 +57,11 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 		throw love::Exception("A texture must be used when creating a SpriteBatch.");
 
 	if (texture->getTextureType() == TEXTURE_2D_ARRAY)
-		vertex_format = vertex::CommonFormat::XYf_STPf_RGBAub;
+		vertex_format = CommonFormat::XYf_STPf_RGBAub;
 	else
-		vertex_format = vertex::CommonFormat::XYf_STf_RGBAub;
+		vertex_format = CommonFormat::XYf_STf_RGBAub;
 
-	vertex_stride = vertex::getFormatStride(vertex_format);
+	vertex_stride = getFormatStride(vertex_format);
 
 	size_t vertex_size = vertex_stride * 4 * size;
 	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
@@ -79,8 +79,6 @@ int SpriteBatch::add(const Matrix4 &m, int index /*= -1*/)
 
 int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 {
-	using namespace vertex;
-
 	if (vertex_format == CommonFormat::XYf_STPf_RGBAub)
 		return addLayer(quad->getLayer(), quad, m, index);
 
@@ -122,8 +120,6 @@ int SpriteBatch::addLayer(int layer, const Matrix4 &m, int index)
 
 int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 {
-	using namespace vertex;
-
 	if (vertex_format != CommonFormat::XYf_STPf_RGBAub)
 		throw love::Exception("addLayer can only be called on a SpriteBatch that uses an Array Texture!");
 
@@ -296,8 +292,6 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 
 void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
-	using namespace vertex;
-
 	if (next == 0)
 		return;
 
@@ -345,7 +339,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
 		BuiltinVertexAttribute builtinattrib;
-		if (vertex::getConstant(it.first.c_str(), builtinattrib))
+		if (getConstant(it.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)
 			attributeindex = Shader::current->getVertexAttributeIndex(it.first);

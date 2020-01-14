@@ -26,7 +26,16 @@ namespace love
 namespace graphics
 {
 
-Buffer::Buffer(size_t size, BufferTypeFlags typeflags, vertex::Usage usage, uint32 mapflags)
+static const Buffer::DataTypeInfo dataTypeInfo[]
+{
+	// baseType, isMatrix, components, rows, columns, componentSize, packedAlign, packedSize
+	{ Buffer::DATA_BASE_FLOAT, false, 1, 0, 0, sizeof(float), 4, 4 }, // DATA_FLOAT
+
+};
+
+love::Type Buffer::type("GraphicsBuffer", &Object::type);
+
+Buffer::Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
 	: size(size)
 	, typeFlags(typeflags)
 	, usage(usage)
@@ -38,6 +47,11 @@ Buffer::Buffer(size_t size, BufferTypeFlags typeflags, vertex::Usage usage, uint
 Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &format, size_t arraylength)
 	: Buffer(0, settings.typeFlags, settings.usage, settings.mapFlags)
 {
+	if (format.size() == 0)
+		throw love::Exception("Data format must contain values.");
+
+	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
+
 	bool uniformbuffer = settings.typeFlags & BUFFERFLAG_UNIFORM;
 	bool indexbuffer = settings.typeFlags & BUFFERFLAG_INDEX;
 	bool vertexbuffer = settings.typeFlags & BUFFERFLAG_VERTEX;
@@ -46,17 +60,36 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMe
 	if (indexbuffer && format.size() > 1)
 		throw love::Exception("test");
 
+	size_t offset = 0;
+	size_t stride = 0;
+
 	for (const auto &member : format)
 	{
+		DataType type = member.type;
+		const DataTypeInfo &info = getDataTypeInfo(type);
+
 		if (indexbuffer)
 		{
-			if (member.type != DATA_UINT16 && member.type != DATA_UINT32)
-				throw love::Exception("test");
+			if (type != DATA_UINT16 && type != DATA_UINT32)
+				throw love::Exception("Index buffers only support uint16 and uint32 data types.");
+		}
+
+		if (vertexbuffer)
+		{
+			if (info.isMatrix)
+				throw love::Exception("matrix types are not supported in vertex buffers.");
+
+			if (info.baseType == DATA_BASE_BOOL)
+				throw love::Exception("bool types are not supported in vertex buffers.");
+
+			if ((info.baseType == DATA_BASE_INT || info.baseType == DATA_BASE_UINT) && !supportsGLSL3)
+				throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
 		}
 
 		if (uniformbuffer)
 		{
-			
+			if (info.componentSize != 4)
+				throw love::Exception("");
 		}
 	}
 }

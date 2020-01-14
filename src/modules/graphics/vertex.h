@@ -102,16 +102,13 @@ enum CullMode
 	CULL_MAX_ENUM
 };
 
-namespace vertex
+// The expected usage pattern of buffer data.
+enum BufferUsage
 {
-
-// The expected usage pattern of vertex data.
-enum Usage
-{
-	USAGE_STREAM,
-	USAGE_DYNAMIC,
-	USAGE_STATIC,
-	USAGE_MAX_ENUM
+	BUFFERUSAGE_STREAM,
+	BUFFERUSAGE_DYNAMIC,
+	BUFFERUSAGE_STATIC,
+	BUFFERUSAGE_MAX_ENUM
 };
 
 enum DataType
@@ -194,6 +191,8 @@ struct XYf_STf_RGBAub
 	float s, t;
 	Color32 color;
 };
+
+typedef XYf_STf_RGBAub Vertex;
 
 struct XYf_STus_RGBAub
 {
@@ -334,9 +333,9 @@ bool getConstant(const char *in, IndexDataType &out);
 bool getConstant(IndexDataType in, const char *&out);
 std::vector<std::string> getConstants(IndexDataType);
 
-bool getConstant(const char *in, Usage &out);
-bool getConstant(Usage in, const char *&out);
-std::vector<std::string> getConstants(Usage);
+bool getConstant(const char *in, BufferUsage &out);
+bool getConstant(BufferUsage in, const char *&out);
+std::vector<std::string> getConstants(BufferUsage);
 
 bool getConstant(const char *in, PrimitiveType &out);
 bool getConstant(PrimitiveType in, const char *&out);
@@ -357,10 +356,6 @@ std::vector<std::string> getConstants(CullMode);
 bool getConstant(const char *in, Winding &out);
 bool getConstant(Winding in, const char *&out);
 std::vector<std::string> getConstants(Winding);
-
-} // vertex
-
-typedef vertex::XYf_STf_RGBAub Vertex;
 
 } // graphics
 } // love
