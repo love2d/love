@@ -26,13 +26,6 @@ namespace love
 namespace graphics
 {
 
-static const Buffer::DataTypeInfo dataTypeInfo[]
-{
-	// baseType, isMatrix, components, rows, columns, componentSize, packedAlign, packedSize
-	{ Buffer::DATA_BASE_FLOAT, false, 1, 0, 0, sizeof(float), 4, 4 }, // DATA_FLOAT
-
-};
-
 love::Type Buffer::type("GraphicsBuffer", &Object::type);
 
 Buffer::Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
@@ -65,12 +58,12 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMe
 
 	for (const auto &member : format)
 	{
-		DataType type = member.type;
-		const DataTypeInfo &info = getDataTypeInfo(type);
+		DataFormat format = member.format;
+		const DataFormatInfo &info = getDataFormatInfo(format);
 
 		if (indexbuffer)
 		{
-			if (type != DATA_UINT16 && type != DATA_UINT32)
+			if (format != DATAFORMAT_UINT16 && format != DATAFORMAT_UINT32)
 				throw love::Exception("Index buffers only support uint16 and uint32 data types.");
 		}
 
@@ -79,10 +72,10 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMe
 			if (info.isMatrix)
 				throw love::Exception("matrix types are not supported in vertex buffers.");
 
-			if (info.baseType == DATA_BASE_BOOL)
+			if (info.baseType == DATA_BASETYPE_BOOL)
 				throw love::Exception("bool types are not supported in vertex buffers.");
 
-			if ((info.baseType == DATA_BASE_INT || info.baseType == DATA_BASE_UINT) && !supportsGLSL3)
+			if ((info.baseType == DATA_BASETYPE_INT || info.baseType == DATA_BASETYPE_UINT) && !supportsGLSL3)
 				throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
 		}
 

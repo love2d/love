@@ -54,93 +54,10 @@ public:
 		MAP_READ = (1 << 1),
 	};
 
-	enum DataType
-	{
-		DATA_FLOAT,
-		DATA_FLOAT_VEC2,
-		DATA_FLOAT_VEC3,
-		DATA_FLOAT_VEC4,
-
-		DATA_FLOAT_MAT2X2,
-		DATA_FLOAT_MAT2X3,
-		DATA_FLOAT_MAT2X4,
-
-		DATA_FLOAT_MAT3X2,
-		DATA_FLOAT_MAT3X3,
-		DATA_FLOAT_MAT3X4,
-
-		DATA_FLOAT_MAT4X2,
-		DATA_FLOAT_MAT4X3,
-		DATA_FLOAT_MAT4X4,
-
-		DATA_INT32,
-		DATA_INT32_VEC2,
-		DATA_INT32_VEC3,
-		DATA_INT32_VEC4,
-
-		DATA_UINT32,
-		DATA_UINT32_VEC2,
-		DATA_UINT32_VEC3,
-		DATA_UINT32_VEC4,
-
-		DATA_SNORM8_VEC4,
-
-		DATA_UNORM8_VEC4,
-
-		DATA_INT8_VEC4,
-
-		DATA_UINT8_VEC4,
-
-		DATA_SNORM16,
-		DATA_SNORM16_VEC2,
-		DATA_SNORM16_VEC4,
-
-		DATA_UNORM16,
-		DATA_UNORM16_VEC2,
-		DATA_UNORM16_VEC4,
-
-		DATA_INT16,
-		DATA_INT16_VEC2,
-		DATA_INT16_VEC4,
-
-		DATA_UINT16,
-		DATA_UINT16_VEC2,
-		DATA_UINT16_VEC4,
-
-		DATA_BOOL,
-		DATA_BOOL_VEC2,
-		DATA_BOOL_VEC3,
-		DATA_BOOL_VEC4,
-
-		DATA_MAX_ENUM
-	};
-
-	enum DataTypeBase
-	{
-		DATA_BASE_FLOAT,
-		DATA_BASE_INT,
-		DATA_BASE_UINT,
-		DATA_BASE_SNORM,
-		DATA_BASE_UNORM,
-		DATA_BASE_BOOL,
-	};
-
-	struct DataTypeInfo
-	{
-		DataTypeBase baseType;
-		bool isMatrix;
-		int components;
-		int matrixRows;
-		int matrixColumns;
-		size_t componentSize;
-		size_t packedAlignment;
-		size_t packedSize;
-	};
-
 	struct DataMember
 	{
 		std::string name;
-		DataType type;
+		DataFormat format;
 		int arraySize;
 	};
 
@@ -218,10 +135,6 @@ public:
 		void *elems;
 
 	}; // Mapper
-
-//	static size_t getDataTypeSize(DataType type, bool uniform)
-
-	const DataTypeInfo &getDataTypeInfo(DataType type);
 
 protected:
 

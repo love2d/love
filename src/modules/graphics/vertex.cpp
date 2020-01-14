@@ -101,6 +101,71 @@ int getFormatPositionComponents(CommonFormat format)
 	return 0;
 }
 
+// Order here relies on order of DataFormat enum.
+static const DataFormatInfo dataFormatInfo[]
+{
+	// baseType, isMatrix, components, rows, columns, componentSize, align, size
+	{ DATA_BASETYPE_FLOAT, false, 1, 0, 0, 4, 4, 4  }, // DATAFORMAT_FLOAT
+	{ DATA_BASETYPE_FLOAT, false, 2, 0, 0, 4, 4, 8  }, // DATAFORMAT_FLOAT_VEC2
+	{ DATA_BASETYPE_FLOAT, false, 3, 0, 0, 4, 4, 12 }, // DATAFORMAT_FLOAT_VEC3
+	{ DATA_BASETYPE_FLOAT, false, 4, 0, 0, 4, 4, 16 }, // DATAFORMAT_FLOAT_VEC4
+
+	{ DATA_BASETYPE_FLOAT, true, 0, 2, 2, 4, 4, 16 }, // DATAFORMAT_FLOAT_MAT2X2
+	{ DATA_BASETYPE_FLOAT, true, 0, 2, 3, 4, 4, 24 }, // DATAFORMAT_FLOAT_MAT2X3
+	{ DATA_BASETYPE_FLOAT, true, 0, 2, 4, 4, 4, 32 }, // DATAFORMAT_FLOAT_MAT2X4
+
+	{ DATA_BASETYPE_FLOAT, true, 0, 3, 2, 4, 4, 24 }, // DATAFORMAT_FLOAT_MAT3X2
+	{ DATA_BASETYPE_FLOAT, true, 0, 3, 3, 4, 4, 36 }, // DATAFORMAT_FLOAT_MAT3X3
+	{ DATA_BASETYPE_FLOAT, true, 0, 3, 4, 4, 4, 48 }, // DATAFORMAT_FLOAT_MAT3X4
+
+	{ DATA_BASETYPE_FLOAT, true, 0, 4, 2, 4, 4, 32 }, // DATAFORMAT_FLOAT_MAT4X2
+	{ DATA_BASETYPE_FLOAT, true, 0, 4, 3, 4, 4, 48 }, // DATAFORMAT_FLOAT_MAT4X3
+	{ DATA_BASETYPE_FLOAT, true, 0, 4, 4, 4, 4, 64 }, // DATAFORMAT_FLOAT_MAT4X4
+
+	{ DATA_BASETYPE_INT, false, 1, 0, 0, 4, 4, 4  }, // DATAFORMAT_INT32
+	{ DATA_BASETYPE_INT, false, 2, 0, 0, 4, 4, 8  }, // DATAFORMAT_INT32_VEC2
+	{ DATA_BASETYPE_INT, false, 3, 0, 0, 4, 4, 12 }, // DATAFORMAT_INT32_VEC3
+	{ DATA_BASETYPE_INT, false, 4, 0, 0, 4, 4, 16 }, // DATAFORMAT_INT32_VEC4
+
+	{ DATA_BASETYPE_UINT, false, 1, 0, 0, 4, 4, 4  }, // DATAFORMAT_UINT32
+	{ DATA_BASETYPE_UINT, false, 2, 0, 0, 4, 4, 8  }, // DATAFORMAT_UINT32_VEC2
+	{ DATA_BASETYPE_UINT, false, 3, 0, 0, 4, 4, 12 }, // DATAFORMAT_UINT32_VEC3
+	{ DATA_BASETYPE_UINT, false, 4, 0, 0, 4, 4, 16 }, // DATAFORMAT_UINT32_VEC4
+
+	{ DATA_BASETYPE_SNORM, false, 4, 0, 0, 1, 1, 4 }, // DATAFORMAT_SNORM8_VEC4
+	{ DATA_BASETYPE_UNORM, false, 4, 0, 0, 1, 1, 4 }, // DATAFORMAT_UNORM8_VEC4
+	{ DATA_BASETYPE_INT,   false, 4, 0, 0, 1, 1, 4 }, // DATAFORMAT_INT8_VEC4
+	{ DATA_BASETYPE_UINT,  false, 4, 0, 0, 1, 1, 4 }, // DATAFORMAT_UINT8_VEC4
+
+	{ DATA_BASETYPE_SNORM, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
+	{ DATA_BASETYPE_SNORM, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
+	{ DATA_BASETYPE_SNORM, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+
+	{ DATA_BASETYPE_UNORM, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
+	{ DATA_BASETYPE_UNORM, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
+	{ DATA_BASETYPE_UNORM, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+
+	{ DATA_BASETYPE_INT, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
+	{ DATA_BASETYPE_INT, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
+	{ DATA_BASETYPE_INT, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+
+	{ DATA_BASETYPE_UINT, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
+	{ DATA_BASETYPE_UINT, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
+	{ DATA_BASETYPE_UINT, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+
+	{ DATA_BASETYPE_BOOL, false, 1, 0, 0, 4, 4, 4  }, // DATAFORMAT_BOOL
+	{ DATA_BASETYPE_BOOL, false, 2, 0, 0, 4, 4, 8  }, // DATAFORMAT_BOOL_VEC2
+	{ DATA_BASETYPE_BOOL, false, 3, 0, 0, 4, 4, 12 }, // DATAFORMAT_BOOL_VEC3
+	{ DATA_BASETYPE_BOOL, false, 4, 0, 0, 4, 4, 16 }, // DATAFORMAT_BOOL_VEC4
+};
+
+static_assert((sizeof(dataFormatInfo) / sizeof(DataFormatInfo)) == DATAFORMAT_MAX_ENUM, "dataFormatInfo array size must match number of DataFormat enum values.");
+
+const DataFormatInfo &getDataFormatInfo(DataFormat format)
+{
+	return dataFormatInfo[format];
+}
+
 size_t getIndexDataSize(IndexDataType type)
 {
 	switch (type)
