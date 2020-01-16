@@ -23,6 +23,7 @@
 // LOVE
 #include "common/int.h"
 #include "common/Color.h"
+#include "common/StringMap.h"
 
 // C
 #include <stddef.h>
@@ -131,6 +132,7 @@ enum DataType
 	DATA_MAX_ENUM
 };
 
+// Value types used when interfacing with the GPU (vertex and shader data).
 // The order of this enum affects the dataFormatInfo array.
 enum DataFormat
 {
@@ -413,36 +415,16 @@ int getIndexCount(TriangleIndexMode mode, int vertexCount);
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
-bool getConstant(const char *in, BuiltinVertexAttribute &out);
-bool getConstant(BuiltinVertexAttribute in, const char *&out);
-
-bool getConstant(const char *in, IndexDataType &out);
-bool getConstant(IndexDataType in, const char *&out);
-std::vector<std::string> getConstants(IndexDataType);
-
-bool getConstant(const char *in, BufferUsage &out);
-bool getConstant(BufferUsage in, const char *&out);
-std::vector<std::string> getConstants(BufferUsage);
-
-bool getConstant(const char *in, PrimitiveType &out);
-bool getConstant(PrimitiveType in, const char *&out);
-std::vector<std::string> getConstants(PrimitiveType);
-
-bool getConstant(const char *in, AttributeStep &out);
-bool getConstant(AttributeStep in, const char *&out);
-std::vector<std::string> getConstants(AttributeStep);
-
-bool getConstant(const char *in, DataType &out);
-bool getConstant(DataType in, const char *&out);
-std::vector<std::string> getConstants(DataType);
-
-bool getConstant(const char *in, CullMode &out);
-bool getConstant(CullMode in, const char *&out);
-std::vector<std::string> getConstants(CullMode);
-
-bool getConstant(const char *in, Winding &out);
-bool getConstant(Winding in, const char *&out);
-std::vector<std::string> getConstants(Winding);
+DECLARE_STRINGMAP(BuiltinVertexAttribute);
+DECLARE_STRINGMAP(IndexDataType);
+DECLARE_STRINGMAP(BufferUsage);
+DECLARE_STRINGMAP(PrimitiveType);
+DECLARE_STRINGMAP(AttributeStep);
+DECLARE_STRINGMAP(DataType);
+DECLARE_STRINGMAP(DataFormat);
+DECLARE_STRINGMAP(DataBaseType);
+DECLARE_STRINGMAP(CullMode);
+DECLARE_STRINGMAP(Winding);
 
 } // graphics
 } // love

@@ -219,8 +219,7 @@ bool isDataTypeInteger(DataType datatype)
 
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue)
 {
-	IndexDataType types[] = {INDEX_UINT16, INDEX_UINT32};
-	return types[maxvalue > LOVE_UINT16_MAX ? 1 : 0];
+	return maxvalue > LOVE_UINT16_MAX ? INDEX_UINT32 : INDEX_UINT16;
 }
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount)
@@ -352,51 +351,46 @@ void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 	}
 }
 
-static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
+DEFINE_STRINGMAP_BEGIN(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 {
 	{ "VertexPosition", ATTRIB_POS           },
 	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
 	{ "VertexColor",    ATTRIB_COLOR         },
-};
+}
+DEFINE_STRINGMAP_END(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 
-static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
-
-static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
+DEFINE_STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 {
 	{ "uint16", INDEX_UINT16 },
 	{ "uint32", INDEX_UINT32 },
-};
+}
+DEFINE_STRINGMAP_END(IndexDataType, INDEX_MAX_ENUM, indexType)
 
-static StringMap<IndexDataType, INDEX_MAX_ENUM> indexTypes(indexTypeEntries, sizeof(indexTypeEntries));
-
-static StringMap<BufferUsage, BUFFERUSAGE_MAX_ENUM>::Entry usageEntries[] =
+DEFINE_STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
 {
 	{ "stream",  BUFFERUSAGE_STREAM  },
 	{ "dynamic", BUFFERUSAGE_DYNAMIC },
 	{ "static",  BUFFERUSAGE_STATIC  },
-};
+}
+DEFINE_STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
 
-static StringMap<BufferUsage, BUFFERUSAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
-
-static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM>::Entry primitiveTypeEntries[] =
+DEFINE_STRINGMAP_BEGIN(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 {
 	{ "fan",       PRIMITIVE_TRIANGLE_FAN   },
 	{ "strip",     PRIMITIVE_TRIANGLE_STRIP },
 	{ "triangles", PRIMITIVE_TRIANGLES      },
 	{ "points",    PRIMITIVE_POINTS         },
-};
+}
+DEFINE_STRINGMAP_END(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 
-static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM> primitiveTypes(primitiveTypeEntries, sizeof(primitiveTypeEntries));
-
-static StringMap<AttributeStep, STEP_MAX_ENUM>::Entry attributeStepEntries[] =
+DEFINE_STRINGMAP_BEGIN(AttributeStep, STEP_MAX_ENUM, attributeStep)
 {
 	{ "pervertex",   STEP_PER_VERTEX   },
 	{ "perinstance", STEP_PER_INSTANCE },
-};
+}
+DEFINE_STRINGMAP_END(AttributeStep, STEP_MAX_ENUM, attributeStep)
 
-static StringMap<AttributeStep, STEP_MAX_ENUM> attributeSteps(attributeStepEntries, sizeof(attributeStepEntries));
-
-static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[] =
+DEFINE_STRINGMAP_BEGIN(DataType, DATA_MAX_ENUM, dataType)
 {
 	{ "snorm8",  DATA_SNORM8  },
 	{ "unorm8",  DATA_UNORM8  },
@@ -409,141 +403,91 @@ static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[] =
 	{ "int32",   DATA_INT32   },
 	{ "uint32",  DATA_UINT32  },
 	{ "float",   DATA_FLOAT   },
-};
+}
+DEFINE_STRINGMAP_END(DataType, DATA_MAX_ENUM, dataType)
 
-static StringMap<DataType, DATA_MAX_ENUM> dataTypes(dataTypeEntries, sizeof(dataTypeEntries));
+DEFINE_STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
+{
+	{ "float",     DATAFORMAT_FLOAT      },
+	{ "floatvec2", DATAFORMAT_FLOAT_VEC2 },
+	{ "floatvec3", DATAFORMAT_FLOAT_VEC3 },
+	{ "floatvec4", DATAFORMAT_FLOAT_VEC4 },
 
-static StringMap<CullMode, CULL_MAX_ENUM>::Entry cullModeEntries[] =
+	{ "floatmat2x2", DATAFORMAT_FLOAT_MAT2X2 },
+	{ "floatmat2x3", DATAFORMAT_FLOAT_MAT2X3 },
+	{ "floatmat2x4", DATAFORMAT_FLOAT_MAT2X4 },
+
+	{ "floatmat3x2", DATAFORMAT_FLOAT_MAT3X2 },
+	{ "floatmat3x3", DATAFORMAT_FLOAT_MAT3X3 },
+	{ "floatmat3x4", DATAFORMAT_FLOAT_MAT3X4 },
+
+	{ "floatmat4x2", DATAFORMAT_FLOAT_MAT4X2 },
+	{ "floatmat4x3", DATAFORMAT_FLOAT_MAT4X3 },
+	{ "floatmat4x4", DATAFORMAT_FLOAT_MAT4X4 },
+
+	{ "int32",     DATAFORMAT_INT32      },
+	{ "int32vec2", DATAFORMAT_INT32_VEC2 },
+	{ "int32vec3", DATAFORMAT_INT32_VEC3 },
+	{ "int32vec4", DATAFORMAT_INT32_VEC4 },
+
+	{ "uint32",     DATAFORMAT_UINT32      },
+	{ "uint32vec2", DATAFORMAT_UINT32_VEC2 },
+	{ "uint32vec3", DATAFORMAT_UINT32_VEC3 },
+	{ "uint32vec4", DATAFORMAT_UINT32_VEC4 },
+
+	{ "snorm8vec4", DATAFORMAT_SNORM8_VEC4 },
+	{ "unorm8vec4", DATAFORMAT_UNORM8_VEC4 },
+	{ "int8vec4",   DATAFORMAT_INT8_VEC4   },
+	{ "uint8vec4",  DATAFORMAT_UINT8_VEC4  },
+
+	{ "snorm16",     DATAFORMAT_SNORM16      },
+	{ "snorm16vec2", DATAFORMAT_SNORM16_VEC2 },
+	{ "snorm16vec4", DATAFORMAT_SNORM16_VEC4 },
+
+	{ "unorm16",     DATAFORMAT_UNORM16      },
+	{ "unorm16vec2", DATAFORMAT_UNORM16_VEC2 },
+	{ "unorm16vec4", DATAFORMAT_UNORM16_VEC4 },
+
+	{ "int16",     DATAFORMAT_INT16      },
+	{ "int16vec2", DATAFORMAT_INT16_VEC2 },
+	{ "int16vec4", DATAFORMAT_INT16_VEC4 },
+
+	{ "uint16",     DATAFORMAT_UINT16      },
+	{ "uint16vec2", DATAFORMAT_UINT16_VEC2 },
+	{ "uint16vec4", DATAFORMAT_UINT16_VEC4 },
+
+	{ "bool",     DATAFORMAT_BOOL      },
+	{ "boolvec2", DATAFORMAT_BOOL_VEC2 },
+	{ "boolvec3", DATAFORMAT_BOOL_VEC3 },
+	{ "boolvec4", DATAFORMAT_BOOL_VEC4 },
+}
+DEFINE_STRINGMAP_END(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
+
+DEFINE_STRINGMAP_BEGIN(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
+{
+	{ "float", DATA_BASETYPE_FLOAT },
+	{ "int",   DATA_BASETYPE_INT   },
+	{ "uint",  DATA_BASETYPE_UINT  },
+	{ "snorm", DATA_BASETYPE_SNORM },
+	{ "unorm", DATA_BASETYPE_UNORM },
+	{ "bool",  DATA_BASETYPE_BOOL  },
+}
+DEFINE_STRINGMAP_END(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
+
+DEFINE_STRINGMAP_BEGIN(CullMode, CULL_MAX_ENUM, cullMode)
 {
 	{ "none",  CULL_NONE  },
 	{ "back",  CULL_BACK  },
 	{ "front", CULL_FRONT },
-};
+}
+DEFINE_STRINGMAP_END(CullMode, CULL_MAX_ENUM, cullMode)
 
-static StringMap<CullMode, CULL_MAX_ENUM> cullModes(cullModeEntries, sizeof(cullModeEntries));
-
-static StringMap<Winding, WINDING_MAX_ENUM>::Entry windingEntries[] =
+DEFINE_STRINGMAP_BEGIN(Winding, WINDING_MAX_ENUM, winding)
 {
 	{ "cw",  WINDING_CW  },
 	{ "ccw", WINDING_CCW },
-};
-
-static StringMap<Winding, WINDING_MAX_ENUM> windings(windingEntries, sizeof(windingEntries));
-
-bool getConstant(const char *in, BuiltinVertexAttribute &out)
-{
-	return attribNames.find(in, out);
 }
-
-bool getConstant(BuiltinVertexAttribute in, const char *&out)
-{
-	return attribNames.find(in, out);
-}
-
-bool getConstant(const char *in, IndexDataType &out)
-{
-	return indexTypes.find(in, out);
-}
-
-bool getConstant(IndexDataType in, const char *&out)
-{
-	return indexTypes.find(in, out);
-}
-
-std::vector<std::string> getConstants(IndexDataType)
-{
-	return indexTypes.getNames();
-}
-
-bool getConstant(const char *in, BufferUsage &out)
-{
-	return usages.find(in, out);
-}
-
-bool getConstant(BufferUsage in, const char *&out)
-{
-	return usages.find(in, out);
-}
-
-std::vector<std::string> getConstants(BufferUsage)
-{
-	return usages.getNames();
-}
-
-bool getConstant(const char *in, PrimitiveType &out)
-{
-	return primitiveTypes.find(in, out);
-}
-
-bool getConstant(PrimitiveType in, const char *&out)
-{
-	return primitiveTypes.find(in, out);
-}
-
-std::vector<std::string> getConstants(PrimitiveType)
-{
-	return primitiveTypes.getNames();
-}
-
-bool getConstant(const char *in, AttributeStep &out)
-{
-	return attributeSteps.find(in, out);
-}
-
-bool getConstant(AttributeStep in, const char *&out)
-{
-	return attributeSteps.find(in, out);
-}
-
-std::vector<std::string> getConstants(AttributeStep)
-{
-	return attributeSteps.getNames();
-}
-
-bool getConstant(const char *in, DataType &out)
-{
-	return dataTypes.find(in, out);
-}
-
-bool getConstant(DataType in, const char *&out)
-{
-	return dataTypes.find(in, out);
-}
-
-std::vector<std::string> getConstants(DataType)
-{
-	return dataTypes.getNames();
-}
-
-bool getConstant(const char *in, CullMode &out)
-{
-	return cullModes.find(in, out);
-}
-
-bool getConstant(CullMode in, const char *&out)
-{
-	return cullModes.find(in, out);
-}
-
-std::vector<std::string> getConstants(CullMode)
-{
-	return cullModes.getNames();
-}
-
-bool getConstant(const char *in, Winding &out)
-{
-	return windings.find(in, out);
-}
-
-bool getConstant(Winding in, const char *&out)
-{
-	return windings.find(in, out);
-}
-
-std::vector<std::string> getConstants(Winding)
-{
-	return windings.getNames();
-}
+DEFINE_STRINGMAP_END(Winding, WINDING_MAX_ENUM, winding)
 
 } // graphics
 } // love

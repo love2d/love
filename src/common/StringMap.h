@@ -182,6 +182,21 @@ private:
 
 }; // StringMap
 
+#define DECLARE_STRINGMAP(type) \
+bool getConstant(const char *in, type &out); \
+bool getConstant(type in, const char *&out); \
+std::vector<std::string> getConstants(type); \
+
+#define DEFINE_STRINGMAP_BEGIN(type, count, name) \
+static StringMap<type, count>::Entry name##Entries[] =
+
+#define DEFINE_STRINGMAP_END(type, count, name) \
+; \
+static StringMap<type, count> name##s(name##Entries, sizeof(name##Entries)); \
+bool getConstant(const char *in, type &out) { return name##s.find(in, out); } \
+bool getConstant(type in, const char *&out) { return name##s.find(in, out); } \
+std::vector<std::string> getConstants(type) { return name##s.getNames(); }
+
 } // love
 
 #endif // LOVE_STRING_MAP_H
