@@ -3134,6 +3134,7 @@ static const lua_CFunction types[] =
 	luaopen_font,
 	luaopen_image,
 	luaopen_quad,
+	luaopen_graphicsbuffer,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_canvas,
