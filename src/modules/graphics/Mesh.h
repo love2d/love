@@ -92,6 +92,8 @@ public:
 	 **/
 	size_t getVertexStride() const;
 
+	Buffer *getVertexBuffer() const;
+
 	/**
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
@@ -106,10 +108,10 @@ public:
 	bool isAttributeEnabled(const std::string &name) const;
 
 	/**
-	 * Attaches a vertex attribute from another Mesh to this one. The attribute
-	 * will be used when drawing this Mesh.
+	 * Attaches a vertex attribute from another vertex buffer to this Mesh. The
+	 * attribute will be used when drawing this Mesh.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
+	void attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
 
 	void *mapVertexData();
@@ -180,7 +182,7 @@ private:
 
 	struct AttachedAttribute
 	{
-		Mesh *mesh;
+		Buffer *buffer;
 		int index;
 		AttributeStep step;
 		bool enabled;

@@ -320,8 +320,7 @@ struct BufferBindings
 struct VertexAttributeInfo
 {
 	uint8 bufferIndex;
-	DataType type : 4;
-	uint8 components : 4;
+	DataFormat format : 8;
 	uint16 offsetFromVertex;
 };
 
@@ -346,13 +345,12 @@ struct VertexAttributes
 		setCommonFormat(format, bufferindex);
 	}
 
-	void set(uint32 index, DataType type, uint8 components, uint16 offsetfromvertex, uint8 bufferindex)
+	void set(uint32 index, DataFormat format, uint16 offsetfromvertex, uint8 bufferindex)
 	{
 		enableBits |= (1u << index);
 
 		attribs[index].bufferIndex = bufferindex;
-		attribs[index].type = type;
-		attribs[index].components = components;
+		attribs[index].format = format;
 		attribs[index].offsetFromVertex = offsetfromvertex;
 	}
 

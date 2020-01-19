@@ -416,7 +416,17 @@ int w_Mesh_attachAttribute(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Mesh *mesh = luax_checkmesh(L, 3);
+
+	Buffer *buffer = nullptr;
+	if (luax_istype(L, 3, Buffer::type))
+	{
+		buffer = luax_checktype<Buffer>(L, 3);
+	}
+	else
+	{
+		Mesh *mesh = luax_checkmesh(L, 3);
+		buffer = mesh->getVertexBuffer();
+	}
 
 	AttributeStep step = STEP_PER_VERTEX;
 	const char *stepstr = lua_isnoneornil(L, 4) ? nullptr : luaL_checkstring(L, 4);
@@ -425,7 +435,7 @@ int w_Mesh_attachAttribute(lua_State *L)
 
 	const char *attachname = luaL_optstring(L, 5, name);
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, mesh, attachname, step); });
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, attachname, step); });
 	return 0;
 }
 

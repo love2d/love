@@ -125,8 +125,8 @@ Mesh::~Mesh()
 
 	for (const auto &attrib : attachedAttributes)
 	{
-		if (attrib.second.mesh != this)
-			attrib.second.mesh->release();
+		if (attrib.second.buffer != nullptr && attrib.second.buffer != vertexBuffer.get())
+			attrib.second.buffer->release();
 	}
 }
 
@@ -139,7 +139,7 @@ void Mesh::setupAttachedAttributes()
 		if (attachedAttributes.find(name) != attachedAttributes.end())
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes[name] = {this, (int) i, STEP_PER_VERTEX, true};
+		attachedAttributes[name] = {nullptr, (int) i, STEP_PER_VERTEX, true};
 	}
 }
 
@@ -260,6 +260,11 @@ size_t Mesh::getVertexStride() const
 	return vertexStride;
 }
 
+Buffer *Mesh::getVertexBuffer() const
+{
+	return vertexBuffer;
+}
+
 const std::vector<Mesh::AttribFormat> &Mesh::getVertexFormat() const
 {
 	return vertexFormat;
@@ -305,22 +310,14 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 	return it->second.enabled;
 }
 
-void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step)
+void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step)
 {
+	if ((buffer->getTypeFlags() & BUFFER_VERTEX) == 0)
+		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Vertex attribute instancing is not supported on this system.");
-
-	if (mesh != this)
-	{
-		for (const auto &it : mesh->attachedAttributes)
-		{
-			// If the supplied Mesh has attached attributes of its own, then we
-			// prevent it from being attached to avoid reference cycles.
-			if (it.second.mesh != mesh)
-				throw love::Exception("Cannot attach a Mesh which has attached Meshes of its own.");
-		}
-	}
 
 	AttachedAttribute oldattrib = {};
 	AttachedAttribute newattrib = {};
@@ -331,34 +328,33 @@ void Mesh::attachAttribute(const std::string &name, Mesh *mesh, const std::strin
 	else if (attachedAttributes.size() + 1 > VertexAttributes::MAX)
 		throw love::Exception("A maximum of %d attributes can be attached at once.", VertexAttributes::MAX);
 
-	newattrib.mesh = mesh;
-	newattrib.enabled = oldattrib.mesh ? oldattrib.enabled : true;
-	newattrib.index = mesh->getAttributeIndex(attachname);
+	newattrib.buffer = buffer;
+	newattrib.enabled = oldattrib.buffer ? oldattrib.enabled : true;
+	newattrib.index = buffer->getDataMemberIndex(attachname);
 	newattrib.step = step;
 
 	if (newattrib.index < 0)
-		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", attachname.c_str());
+		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
 
-	if (newattrib.mesh != this)
-		newattrib.mesh->retain();
+	newattrib.buffer->retain();
 
 	attachedAttributes[name] = newattrib;
 
-	if (oldattrib.mesh && oldattrib.mesh != this)
-		oldattrib.mesh->release();
+	if (oldattrib.buffer)
+		oldattrib.buffer->release();
 }
 
 bool Mesh::detachAttribute(const std::string &name)
 {
 	auto it = attachedAttributes.find(name);
 
-	if (it != attachedAttributes.end() && it->second.mesh != this)
+	if (it != attachedAttributes.end() && it->second.buffer != vertexBuffer.get())
 	{
-		it->second.mesh->release();
+		it->second.buffer->release();
 		attachedAttributes.erase(it);
 
 		if (getAttributeIndex(name) != -1)
-			attachAttribute(name, this, name);
+			attachAttribute(name, vertexBuffer, name);
 
 		return true;
 	}
@@ -590,7 +586,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		if (!attrib.second.enabled)
 			continue;
 
-		Mesh *mesh = attrib.second.mesh;
+		Buffer *buffer = attrib.second.buffer;
 		int attributeindex = -1;
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
@@ -604,19 +600,18 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			mesh->vertexBuffer->unmap();
+			buffer->unmap();
 
-			const auto &formats = mesh->getVertexFormat();
-			const auto &format = formats[attrib.second.index];
+			const auto &member = buffer->getDataMember(attrib.second.index);
 
-			uint16 offset = (uint16) mesh->getAttributeOffset(attrib.second.index);
-			uint16 stride = (uint16) mesh->getVertexStride();
+			uint16 offset = (uint16) buffer->getMemberOffset(attrib.second.index);
+			uint16 stride = (uint16) buffer->getArrayStride();
 
-			attributes.set(attributeindex, format.type, (uint8) format.components, offset, activebuffers);
+			attributes.set(attributeindex, member.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride, attrib.second.step);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.
-			buffers.set(activebuffers, mesh->vertexBuffer, 0);
+			buffers.set(activebuffers, buffer, 0);
 			activebuffers++;
 		}
 	}

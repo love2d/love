@@ -631,47 +631,151 @@ GLenum OpenGL::getGLIndexDataType(IndexDataType type)
 	}
 }
 
-GLenum OpenGL::getGLVertexDataType(DataType type, GLboolean &normalized, bool &intformat)
+GLenum OpenGL::getGLVertexDataType(DataFormat format, int &components, GLboolean &normalized, bool &intformat)
 {
 	normalized = GL_FALSE;
 	intformat = false;
+	components = 1;
 
-	switch (type)
+	switch (format)
 	{
-	case DATA_SNORM8:
-		normalized = GL_TRUE;
-		return GL_BYTE;
-	case DATA_UNORM8:
-		normalized = GL_TRUE;
-		return GL_UNSIGNED_BYTE;
-	case DATA_INT8:
-		intformat = true;
-		return GL_BYTE;
-	case DATA_UINT8:
-		intformat = true;
-		return GL_UNSIGNED_BYTE;
-	case DATA_SNORM16:
-		normalized = GL_TRUE;
-		return GL_SHORT;
-	case DATA_UNORM16:
-		normalized = GL_TRUE;
-		return GL_UNSIGNED_SHORT;
-	case DATA_INT16:
-		intformat = true;
-		return GL_SHORT;
-	case DATA_UINT16:
-		intformat = true;
-		return GL_UNSIGNED_SHORT;
-	case DATA_INT32:
+	case DATAFORMAT_FLOAT:
+		components = 1;
+		return GL_FLOAT;
+	case DATAFORMAT_FLOAT_VEC2:
+		components = 2;
+		return GL_FLOAT;
+	case DATAFORMAT_FLOAT_VEC3:
+		components = 3;
+		return GL_FLOAT;
+	case DATAFORMAT_FLOAT_VEC4:
+		components = 4;
+		return GL_FLOAT;
+
+	case DATAFORMAT_FLOAT_MAT2X2:
+	case DATAFORMAT_FLOAT_MAT2X3:
+	case DATAFORMAT_FLOAT_MAT2X4:
+	case DATAFORMAT_FLOAT_MAT3X2:
+	case DATAFORMAT_FLOAT_MAT3X3:
+	case DATAFORMAT_FLOAT_MAT3X4:
+	case DATAFORMAT_FLOAT_MAT4X2:
+	case DATAFORMAT_FLOAT_MAT4X3:
+	case DATAFORMAT_FLOAT_MAT4X4:
+		return GL_ZERO;
+
+	case DATAFORMAT_INT32:
+		components = 1;
 		intformat = true;
 		return GL_INT;
-	case DATA_UINT32:
+	case DATAFORMAT_INT32_VEC2:
+		components = 2;
+		intformat = true;
+		return GL_INT;
+	case DATAFORMAT_INT32_VEC3:
+		components = 3;
+		intformat = true;
+		return GL_INT;
+	case DATAFORMAT_INT32_VEC4:
+		components = 4;
+		intformat = true;
+		return GL_INT;
+
+	case DATAFORMAT_UINT32:
+		components = 1;
 		intformat = true;
 		return GL_UNSIGNED_INT;
-	case DATA_FLOAT:
-		normalized = GL_FALSE;
-		return GL_FLOAT;
-	case DATA_MAX_ENUM:
+	case DATAFORMAT_UINT32_VEC2:
+		components = 2;
+		intformat = true;
+		return GL_UNSIGNED_INT;
+	case DATAFORMAT_UINT32_VEC3:
+		components = 3;
+		intformat = true;
+		return GL_UNSIGNED_INT;
+	case DATAFORMAT_UINT32_VEC4:
+		components = 4;
+		intformat = true;
+		return GL_UNSIGNED_INT;
+
+	case DATAFORMAT_SNORM8_VEC4:
+		components = 4;
+		normalized = GL_TRUE;
+		return GL_BYTE;
+
+	case DATAFORMAT_UNORM8_VEC4:
+		components = 4;
+		normalized = GL_TRUE;
+		return GL_UNSIGNED_BYTE;
+
+	case DATAFORMAT_INT8_VEC4:
+		components = 4;
+		intformat = true;
+		return GL_BYTE;
+
+	case DATAFORMAT_UINT8_VEC4:
+		components = 4;
+		intformat = true;
+		return GL_UNSIGNED_BYTE;
+
+	case DATAFORMAT_SNORM16:
+		components = 1;
+		normalized = GL_TRUE;
+		return GL_SHORT;
+	case DATAFORMAT_SNORM16_VEC2:
+		components = 2;
+		normalized = GL_TRUE;
+		return GL_BYTE;
+	case DATAFORMAT_SNORM16_VEC4:
+		components = 4;
+		normalized = GL_TRUE;
+		return GL_BYTE;
+
+	case DATAFORMAT_UNORM16:
+		components = 1;
+		normalized = GL_TRUE;
+		return GL_UNSIGNED_SHORT;
+	case DATAFORMAT_UNORM16_VEC2:
+		components = 2;
+		normalized = GL_TRUE;
+		return GL_UNSIGNED_SHORT;
+	case DATAFORMAT_UNORM16_VEC4:
+		components = 4;
+		normalized = GL_TRUE;
+		return GL_UNSIGNED_SHORT;
+
+	case DATAFORMAT_INT16:
+		components = 1;
+		intformat = true;
+		return GL_SHORT;
+	case DATAFORMAT_INT16_VEC2:
+		components = 2;
+		intformat = true;
+		return GL_SHORT;
+	case DATAFORMAT_INT16_VEC4:
+		components = 4;
+		intformat = true;
+		return GL_SHORT;
+
+	case DATAFORMAT_UINT16:
+		components = 1;
+		intformat = true;
+		return GL_UNSIGNED_SHORT;
+	case DATAFORMAT_UINT16_VEC2:
+		components = 2;
+		intformat = true;
+		return GL_UNSIGNED_SHORT;
+	case DATAFORMAT_UINT16_VEC4:
+		components = 4;
+		intformat = true;
+		return GL_UNSIGNED_SHORT;
+
+	case DATAFORMAT_BOOL:
+	case DATAFORMAT_BOOL_VEC2:
+	case DATAFORMAT_BOOL_VEC3:
+	case DATAFORMAT_BOOL_VEC4:
+		return GL_ZERO;
+
+	case DATAFORMAT_MAX_ENUM:
 		return GL_ZERO;
 	}
 
@@ -746,18 +850,19 @@ void OpenGL::setVertexAttributes(const VertexAttributes &attributes, const Buffe
 			if ((state.instancedAttribArrays & bit) ^ divisorbit)
 				glVertexAttribDivisor(i, divisor);
 
+			int components = 0;
 			GLboolean normalized = GL_FALSE;
 			bool intformat = false;
-			GLenum gltype = getGLVertexDataType(attrib.type, normalized, intformat);
+			GLenum gltype = getGLVertexDataType(attrib.format, components, normalized, intformat);
 
 			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
 			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
 
 			if (intformat)
-				glVertexAttribIPointer(i, attrib.components, gltype, layout.stride, offsetpointer);
+				glVertexAttribIPointer(i, components, gltype, layout.stride, offsetpointer);
 			else
-				glVertexAttribPointer(i, attrib.components, gltype, normalized, layout.stride, offsetpointer);
+				glVertexAttribPointer(i, components, gltype, normalized, layout.stride, offsetpointer);
 		}
 
 		i++;

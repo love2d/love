@@ -226,9 +226,19 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Mesh *m = luax_checktype<Mesh>(L, 3);
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, m); });
+	Buffer *buffer = nullptr;
+	if (luax_istype(L, 3, Buffer::type))
+	{
+		buffer = luax_checktype<Buffer>(L, 3);
+	}
+	else
+	{
+		Mesh *mesh = luax_checktype<Mesh>(L, 3);
+		buffer = mesh->getVertexBuffer();
+	}
+
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer); });
 	return 0;
 }
 

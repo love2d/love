@@ -309,44 +309,44 @@ void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 	case CommonFormat::NONE:
 		break;
 	case CommonFormat::XYf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
 		break;
 	case CommonFormat::XYZf:
-		set(ATTRIB_POS, DATA_FLOAT, 3, 0, bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC3, 0, bufferindex);
 		break;
 	case CommonFormat::RGBAub:
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, 0, bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, 0, bufferindex);
 		break;
 	case CommonFormat::STf_RGBAub:
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::STPf_RGBAub:
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, 0, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 3), bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, 0, bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 3), bufferindex);
 		break;
 	case CommonFormat::XYf_STf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC2, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STPf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STf_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 4), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 4), bufferindex);
 		break;
 	case CommonFormat::XYf_STus_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_UNORM16, 2, uint16(sizeof(float) * 2), bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_UNORM16_VEC2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STPf_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 5), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 5), bufferindex);
 		break;
 	}
 }

@@ -29,7 +29,9 @@ namespace graphics
 love::Type Buffer::type("GraphicsBuffer", &Object::type);
 
 Buffer::Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
-	: size(size)
+	: arrayLength(0)
+	, arrayStride(0)
+	, size(size)
 	, typeFlags(typeflags)
 	, usage(usage)
 	, mapFlags(mapflags)
@@ -37,11 +39,13 @@ Buffer::Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32
 {
 }
 
-Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &format, size_t arraylength)
+Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &dataMembers, size_t arraylength)
 	: Buffer(0, settings.typeFlags, settings.usage, settings.mapFlags)
 {
-	if (format.size() == 0)
+	if (dataMembers.size() == 0)
 		throw love::Exception("Data format must contain values.");
+
+	this->dataMembers = dataMembers;
 
 	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
 
@@ -50,13 +54,13 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMe
 	bool vertexbuffer = settings.typeFlags & BUFFERFLAG_VERTEX;
 	bool ssbuffer = settings.typeFlags & BUFFERFLAG_SHADER_STORAGE;
 
-	if (indexbuffer && format.size() > 1)
+	if (indexbuffer && dataMembers.size() > 1)
 		throw love::Exception("test");
 
 	size_t offset = 0;
 	size_t stride = 0;
 
-	for (const auto &member : format)
+	for (const auto &member : dataMembers)
 	{
 		DataFormat format = member.format;
 		const DataFormatInfo &info = getDataFormatInfo(format);
@@ -85,10 +89,25 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMe
 				throw love::Exception("");
 		}
 	}
+
+	this->arrayLength = arraylength;
+	this->arrayStride = stride;
+	this->size = stride * arraylength;
 }
 
 Buffer::~Buffer()
 {
+}
+
+int Buffer::getDataMemberIndex(const std::string &name) const
+{
+	for (size_t i = 0; i < dataMembers.size(); i++)
+	{
+		if (dataMembers[i].name == name)
+			return (int) i;
+	}
+
+	return -1;
 }
 
 } // graphics

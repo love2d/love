@@ -93,7 +93,7 @@ public:
 	 * Attaches a specific vertex attribute from a Mesh to this SpriteBatch.
 	 * The vertex attribute will be used when drawing the SpriteBatch.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh);
+	void attachAttribute(const std::string &name, Buffer *buffer);
 
 	void setDrawRange(int start, int count);
 	void setDrawRange();
@@ -106,7 +106,7 @@ private:
 
 	struct AttachedAttribute
 	{
-		StrongRef<Mesh> mesh;
+		StrongRef<Buffer> buffer;
 		int index;
 	};
 

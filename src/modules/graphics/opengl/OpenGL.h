@@ -404,7 +404,7 @@ public:
 	static GLenum getGLPrimitiveType(PrimitiveType type);
 	static GLenum getGLBufferType(BufferType type);
 	static GLenum getGLIndexDataType(IndexDataType type);
-	static GLenum getGLVertexDataType(DataType type, GLboolean &normalized, bool &intformat);
+	static GLenum getGLVertexDataType(DataFormat format, int &components, GLboolean &normalized, bool &intformat);
 	static GLenum getGLBufferUsage(BufferUsage usage);
 	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(Texture::WrapMode wmode);

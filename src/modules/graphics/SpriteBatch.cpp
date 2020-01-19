@@ -244,24 +244,27 @@ int SpriteBatch::getBufferSize() const
 	return size;
 }
 
-void SpriteBatch::attachAttribute(const std::string &name, Mesh *mesh)
+void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer)
 {
+	if ((buffer->getTypeFlags() & BUFFER_VERTEX) == 0)
+		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a SpriteBatch vertex attribute.");
+
 	AttachedAttribute oldattrib = {};
 	AttachedAttribute newattrib = {};
 
-	if (mesh->getVertexCount() < (size_t) next * 4)
-		throw love::Exception("Mesh has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", next*4);
+	if (buffer->getArrayLength() < (size_t) next * 4)
+		throw love::Exception("Buffer has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", next*4);
 
 	auto it = attached_attributes.find(name);
 	if (it != attached_attributes.end())
 		oldattrib = it->second;
 
-	newattrib.index = mesh->getAttributeIndex(name);
+	newattrib.index = buffer->getDataMemberIndex(name);
 
 	if (newattrib.index < 0)
-		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", name.c_str());
+		throw love::Exception("The specified Buffer does not have a vertex attribute named '%s'", name.c_str());
 
-	newattrib.mesh = mesh;
+	newattrib.buffer = buffer;
 
 	attached_attributes[name] = newattrib;
 }
@@ -327,12 +330,12 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	for (const auto &it : attached_attributes)
 	{
-		Mesh *mesh = it.second.mesh.get();
+		Buffer *buffer = it.second.buffer.get();
 
 		// We have to do this check here as wll because setBufferSize can be
 		// called after attachAttribute.
-		if (mesh->getVertexCount() < (size_t) next * 4)
-			throw love::Exception("Mesh with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
+		if (buffer->getArrayLength() < (size_t) next * 4)
+			throw love::Exception("Buffer with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
 
 		int attributeindex = -1;
 
@@ -347,19 +350,18 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			mesh->vertexBuffer->unmap();
+			buffer->unmap();
 
-			const auto &formats = mesh->getVertexFormat();
-			const auto &format = formats[it.second.index];
+			const auto &member = buffer->getDataMember(it.second.index);
 
-			uint16 offset = (uint16) mesh->getAttributeOffset(it.second.index);
-			uint16 stride = (uint16) mesh->getVertexStride();
+			uint16 offset = (uint16) buffer->getMemberOffset(it.second.index);
+			uint16 stride = (uint16) buffer->getArrayStride();
 
-			attributes.set(attributeindex, format.type, (uint8) format.components, offset, activebuffers);
+			attributes.set(attributeindex, member.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride);
 
 			// TODO: We should reuse buffer bindings with the same buffer+stride+step.
-			buffers.set(activebuffers, mesh->vertexBuffer, 0);
+			buffers.set(activebuffers, buffer, 0);
 			activebuffers++;
 		}
 	}

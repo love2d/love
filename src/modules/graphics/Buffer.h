@@ -69,7 +69,7 @@ public:
 	};
 
 	Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags);
-	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &format, size_t arraylength);
+	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &members, size_t arraylength);
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
@@ -77,6 +77,13 @@ public:
 	BufferUsage getUsage() const { return usage; }
 	bool isMapped() const { return mapped; }
 	uint32 getMapFlags() const { return mapFlags; }
+
+	size_t getArrayLength() const { return arrayLength; }
+	size_t getArrayStride() const { return arrayStride; }
+	const std::vector<DataMember> &getDataMembers() const { return dataMembers; }
+	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
+	size_t getMemberOffset(int index) const { return memberOffsets[index]; }
+	int getDataMemberIndex(const std::string &name) const;
 
 	/**
 	 * Map the Buffer to client memory.
@@ -138,8 +145,9 @@ public:
 
 protected:
 
-	std::vector<DataMember> format;
+	std::vector<DataMember> dataMembers;
 	std::vector<size_t> memberOffsets;
+	size_t arrayLength;
 	size_t arrayStride;
 
 	// The size of the buffer, in bytes.
