@@ -380,36 +380,6 @@ local function isPixelCode(code)
 	end
 end
 
-local function includeShader(path, dir, global)
-
-end
-
-local function preprocessIncludes(code, dir, level)
-	local output = {}
-
-	local linecount = 0
-	for line in code:gmatch("[^\r\n]+") do
-		linecount = linecount + 1
-
-		if line:match("^%s*#include") then
-			local localpath = line:match("^%s*#include%s*\"(.*)\"")
-			local globalpath = line:match("^%s*#include%s*<(.*)>")
-			--local
-			if localpath then
-				--table_insert(output, )
-			elseif globalpath then
-
-			else
-
-			end
-		else
-			table_insert(output, line)
-		end
-	end
-
-	return table_concat(output, "\n")
-end
-
 function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	local vertexcode, pixelcode
 	local is_custompixel = false -- whether pixel code has "effects" function instead of "effect"
