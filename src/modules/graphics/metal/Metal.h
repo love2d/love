@@ -20,36 +20,29 @@
 
 #pragma once
 
-#include "graphics/ShaderStage.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "graphics/Texture.h"
+#include "common/pixelformat.h"
+
+#import <Metal/Metal.h>
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+namespace metal
 {
 
-class ShaderStage final : public love::graphics::ShaderStage, public Volatile
+class Metal
 {
 public:
 
-	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
-	virtual ~ShaderStage();
+	static MTLTextureType getTextureType(TextureType type, int msaa);
+	static MTLPixelFormat convertPixelFormat(PixelFormat format, bool &isSRGB);
 
-	ptrdiff_t getHandle() const override { return glShader; }
+}; // Metal
 
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+extern Metal metal;
 
-private:
-
-	GLuint glShader;
-
-}; // ShaderStage
-
-} // opengl
+} // metal
 } // graphics
 } // love

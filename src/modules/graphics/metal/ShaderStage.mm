@@ -19,8 +19,6 @@
  **/
 
 #include "ShaderStage.h"
-#include "common/Exception.h"
-#include "Graphics.h"
 
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
 
@@ -135,13 +133,14 @@ namespace love
 {
 namespace graphics
 {
-
-ShaderStage::ShaderStage(Graphics *gfx, StageType stage, const std::string &glsl, bool gles, const std::string &cachekey)
-	: stageType(stage)
-	, source(glsl)
-	, cacheKey(cachekey)
-	, glslangValidationShader(nullptr)
+namespace metal
 {
+
+ShaderStage::ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey)
+	: love::graphics::ShaderStage(gfx, stage, source, gles, cachekey)
+{
+	using namespace glslang;
+
 	EShLanguage glslangStage = EShLangCount;
 	if (stage == STAGE_VERTEX)
 		glslangStage = EShLangVertex;
@@ -150,67 +149,44 @@ ShaderStage::ShaderStage(Graphics *gfx, StageType stage, const std::string &glsl
 	else
 		throw love::Exception("Cannot compile shader stage: unknown stage type.");
 
-	auto glslangShader = new glslang::TShader(glslangStage);
+	glslangShader = new TShader(glslangStage);
 
-	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
-	int defaultversion = gles ? 100 : 120;
-	EProfile defaultprofile = ENoProfile;
+	// We can't reuse the validation glslang shader object in the base class,
+	// because we need these options set (and the language set to >= 300).
+	glslangShader->setEnvInput(EShSourceGlsl, glslangStage, EShClientNone, 0);
+	glslangShader->setEnvClient(EShClientOpenGL, EShTargetOpenGL_450);
+	glslangShader->setEnvTarget(EShTargetSpv, EShTargetSpv_1_0);
+	glslangShader->setAutoMapLocations(true);
+	glslangShader->setAutoMapBindings(true);
 
-	const char *csrc = glsl.c_str();
-	int srclen = (int) glsl.length();
+	const char *csrc = source.c_str();
+	int srclen = (int) source.length();
 	glslangShader->setStringsWithLengths(&csrc, &srclen, 1);
 
+	int defaultversion = gles ? 300 : 330;
+	EProfile defaultprofile = ENoProfile;
 	bool forcedefault = false;
-	if (source.find("#define LOVE_GLSL1_ON_GLSL3") != std::string::npos)
-		forcedefault = true;
-
-	bool forwardcompat = supportsGLSL3 && !forcedefault;
+	bool forwardcompat = true;
 
 	if (!glslangShader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 	{
 		const char *stagename = "unknown";
 		getConstant(stage, stagename);
 
-		std::string err = "Error validating " + std::string(stagename) + " shader:\n\n"
+		std::string err = "Error parsing " + std::string(stagename) + " shader:\n\n"
 			+ std::string(glslangShader->getInfoLog()) + "\n"
 			+ std::string(glslangShader->getInfoDebugLog());
 
 		delete glslangShader;
 		throw love::Exception("%s", err.c_str());
 	}
-
-	glslangValidationShader = glslangShader;
 }
 
 ShaderStage::~ShaderStage()
 {
-	if (!cacheKey.empty())
-	{
-		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-		if (gfx != nullptr)
-			gfx->cleanupCachedShaderStage(stageType, cacheKey);
-	}
-
-	delete glslangValidationShader;
+	delete glslangShader;
 }
 
-bool ShaderStage::getConstant(const char *in, StageType &out)
-{
-	return stageNames.find(in, out);
-}
-
-bool ShaderStage::getConstant(StageType in, const char *&out)
-{
-	return stageNames.find(in, out);
-}
-
-StringMap<ShaderStage::StageType, ShaderStage::STAGE_MAX_ENUM>::Entry ShaderStage::stageNameEntries[] =
-{
-	{ "vertex", STAGE_VERTEX },
-	{ "pixel",  STAGE_PIXEL  },
-};
-
-StringMap<ShaderStage::StageType, ShaderStage::STAGE_MAX_ENUM> ShaderStage::stageNames(ShaderStage::stageNameEntries, sizeof(ShaderStage::stageNameEntries));
-
+} // metal
 } // graphics
 } // love

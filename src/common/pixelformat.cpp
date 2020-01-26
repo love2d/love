@@ -177,6 +177,57 @@ size_t getPixelFormatSize(PixelFormat format)
 	}
 }
 
+size_t getPixelFormatRowStride(PixelFormat format, int width)
+{
+	switch (format)
+	{
+	case PIXELFORMAT_R8_UNORM:
+	case PIXELFORMAT_STENCIL8:
+		return 1 * width;
+	case PIXELFORMAT_RG8_UNORM:
+	case PIXELFORMAT_R16_UNORM:
+	case PIXELFORMAT_R16_FLOAT:
+	case PIXELFORMAT_LA8_UNORM:
+	case PIXELFORMAT_RGBA4_UNORM:
+	case PIXELFORMAT_RGB5A1_UNORM:
+	case PIXELFORMAT_RGB565_UNORM:
+	case PIXELFORMAT_DEPTH16_UNORM:
+		return 2 * width;
+	case PIXELFORMAT_RGBA8_UNORM:
+	case PIXELFORMAT_sRGBA8_UNORM:
+	case PIXELFORMAT_RG16_UNORM:
+	case PIXELFORMAT_RG16_FLOAT:
+	case PIXELFORMAT_R32_FLOAT:
+	case PIXELFORMAT_RGB10A2_UNORM:
+	case PIXELFORMAT_RG11B10_FLOAT:
+	case PIXELFORMAT_DEPTH24_UNORM:
+	case PIXELFORMAT_DEPTH32_FLOAT:
+	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
+		return 4 * width;
+	case PIXELFORMAT_RGBA16_UNORM:
+	case PIXELFORMAT_RGBA16_FLOAT:
+	case PIXELFORMAT_RG32_FLOAT:
+	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
+		return 8 * width;
+	case PIXELFORMAT_RGBA32_FLOAT:
+		return 16 * width;
+	case PIXELFORMAT_DXT1_UNORM:
+	case PIXELFORMAT_DXT3_UNORM:
+	case PIXELFORMAT_BC4_UNORM:
+	case PIXELFORMAT_BC4_SNORM:
+		return width; // TODO: block size?
+	case PIXELFORMAT_DXT5_UNORM:
+		return 2 * width;
+	case PIXELFORMAT_UNKNOWN:
+	case PIXELFORMAT_NORMAL:
+	case PIXELFORMAT_HDR:
+	case PIXELFORMAT_MAX_ENUM:
+		return 0;
+	}
+
+	return 0;
+}
+
 int getPixelFormatColorComponents(PixelFormat format)
 {
 	switch (format)

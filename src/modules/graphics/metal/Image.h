@@ -20,36 +20,46 @@
 
 #pragma once
 
-#include "graphics/ShaderStage.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "common/config.h"
+#include "common/Color.h"
+#include "common/int.h"
+#include "graphics/Image.h"
+#include "Metal.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+namespace metal
 {
 
-class ShaderStage final : public love::graphics::ShaderStage, public Volatile
+class Image final : public love::graphics::Image
 {
 public:
 
-	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
-	virtual ~ShaderStage();
+	Image(id<MTLDevice> device, const Slices &data, const Settings &settings);
+	Image(id<MTLDevice> device, TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
+	virtual ~Image();
 
-	ptrdiff_t getHandle() const override { return glShader; }
+	ptrdiff_t getHandle() const override { return (ptrdiff_t) texture; }
 
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	void setFilter(const Texture::Filter &f) override;
+	bool setWrap(const Texture::Wrap &w) override;
+
+	bool setMipmapSharpness(float sharpness) override;
 
 private:
 
-	GLuint glShader;
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
+	void generateMipmaps() override;
 
-}; // ShaderStage
+	void create(id<MTLDevice> device);
 
-} // opengl
+	id<MTLTexture> texture;
+	id<MTLSamplerState> sampler;
+
+}; // Image
+
+} // metal
 } // graphics
 } // love

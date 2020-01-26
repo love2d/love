@@ -137,6 +137,7 @@ bool isPixelFormatStencil(PixelFormat format);
  * NOTE: Currently returns 0 for compressed formats.
  **/
 size_t getPixelFormatSize(PixelFormat format);
+size_t getPixelFormatRowStride(PixelFormat format, int width);
 
 /**
  * Gets the number of color components in the given pixel format.

@@ -20,36 +20,18 @@
 
 #pragma once
 
-#include "graphics/ShaderStage.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "graphics/StreamBuffer.h"
+#include "Metal.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+namespace metal
 {
 
-class ShaderStage final : public love::graphics::ShaderStage, public Volatile
-{
-public:
+love::graphics::StreamBuffer *CreateStreamBuffer(id<MTLDevice> device, BufferType mode, size_t size);
 
-	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
-	virtual ~ShaderStage();
-
-	ptrdiff_t getHandle() const override { return glShader; }
-
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
-
-private:
-
-	GLuint glShader;
-
-}; // ShaderStage
-
-} // opengl
+} // metal
 } // graphics
 } // love

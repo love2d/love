@@ -20,36 +20,53 @@
 
 #pragma once
 
-#include "graphics/ShaderStage.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "common/config.h"
+#include "common/Color.h"
+#include "common/int.h"
+#include "graphics/Canvas.h"
+#include "Metal.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+namespace metal
 {
 
-class ShaderStage final : public love::graphics::ShaderStage, public Volatile
+class Canvas final : public love::graphics::Canvas
 {
 public:
 
-	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
-	virtual ~ShaderStage();
+	Canvas(id<MTLDevice> device, const Settings &settings);
+	virtual ~Canvas();
 
-	ptrdiff_t getHandle() const override { return glShader; }
+	// Implements Texture.
+	void setFilter(const Texture::Filter &f) override;
+	bool setWrap(const Texture::Wrap &w) override;
+	bool setMipmapSharpness(float sharpness) override;
+	void setDepthSampleMode(Optional<CompareMode> mode) override;
+	ptrdiff_t getHandle() const override { return (ptrdiff_t) texture; }
 
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
+	void generateMipmaps() override;
+
+	int getMSAA() const override
+	{
+		return 0;
+	}
+
+	ptrdiff_t getRenderTargetHandle() const override
+	{
+		return (ptrdiff_t) texture;
+	}
 
 private:
 
-	GLuint glShader;
+	id<MTLTexture> texture;
+	id<MTLTexture> resolveTexture;
 
-}; // ShaderStage
+}; // Canvas
 
-} // opengl
+} // metal
 } // graphics
 } // love

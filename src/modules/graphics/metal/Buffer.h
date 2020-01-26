@@ -20,36 +20,40 @@
 
 #pragma once
 
-#include "graphics/ShaderStage.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "graphics/Buffer.h"
+#include "Metal.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+namespace metal
 {
 
-class ShaderStage final : public love::graphics::ShaderStage, public Volatile
+class Buffer final : public love::graphics::Buffer
 {
 public:
 
-	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
-	virtual ~ShaderStage();
+	Buffer(id<MTLDevice> device, size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags);
+	virtual ~Buffer();
 
-	ptrdiff_t getHandle() const override { return glShader; }
+	void *map() override;
+	void unmap() override;
+	void setMappedRangeModified(size_t offset, size_t size) override;
+	void fill(size_t offset, size_t size, const void *data) override;
+	ptrdiff_t getHandle() const override { return (ptrdiff_t) buffer; }
 
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
 private:
 
-	GLuint glShader;
+	id<MTLBuffer> buffer;
+	char *memoryMap;
 
-}; // ShaderStage
+	NSRange mappedRange;
 
-} // opengl
+}; // Buffer
+
+} // metal
 } // graphics
 } // love

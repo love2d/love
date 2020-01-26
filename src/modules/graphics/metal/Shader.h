@@ -20,36 +20,44 @@
 
 #pragma once
 
-#include "graphics/ShaderStage.h"
-#include "graphics/Volatile.h"
-#include "OpenGL.h"
+#include "graphics/Shader.h"
+#include "graphics/Graphics.h"
+#include "Metal.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
+namespace metal
 {
 
-class ShaderStage final : public love::graphics::ShaderStage, public Volatile
+class Shader final : public love::graphics::Shader
 {
 public:
 
-	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
-	virtual ~ShaderStage();
+	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
+	virtual ~Shader();
 
-	ptrdiff_t getHandle() const override { return glShader; }
-
-	// Implements Volatile.
-	bool loadVolatile() override;
-	void unloadVolatile() override;
+	// Implements Shader.
+	void attach() override;
+	std::string getWarnings() const override;
+	int getVertexAttributeIndex(const std::string &name) override;
+	const UniformInfo *getUniformInfo(const std::string &name) const override;
+	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
+	void updateUniform(const UniformInfo *info, int count) override;
+	void sendTextures(const UniformInfo *info, Texture **textures, int count) override;
+	bool hasUniform(const std::string &name) const override;
+	ptrdiff_t getHandle() const override;
+	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) override;
 
 private:
 
-	GLuint glShader;
+	id<MTLLibrary> library;
 
-}; // ShaderStage
+}; // Metal
 
-} // opengl
+extern Metal metal;
+
+} // metal
 } // graphics
 } // love

@@ -22,6 +22,7 @@
 #include "common/config.h"
 
 #include "Shader.h"
+#include "ShaderStage.h"
 #include "Graphics.h"
 
 // C++
@@ -304,7 +305,7 @@ bool Shader::loadVolatile()
 	for (const auto &stage : stages)
 	{
 		if (stage.get() != nullptr)
-			stage->loadVolatile();
+			((ShaderStage*)stage.get())->loadVolatile();
 	}
 
 	program = glCreateProgram();

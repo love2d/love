@@ -133,10 +133,10 @@ bool Shader::validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err)
 	glslang::TProgram program;
 
 	if (vertex != nullptr)
-		program.addShader(vertex->getGLSLangShader());
+		program.addShader(vertex->getGLSLangValidationShader());
 
 	if (pixel != nullptr)
-		program.addShader(pixel->getGLSLangShader());
+		program.addShader(pixel->getGLSLangValidationShader());
 
 	if (!program.link(EShMsgDefault))
 	{
