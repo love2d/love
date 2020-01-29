@@ -34,7 +34,7 @@ namespace lullaby
 FLACDecoder::FLACDecoder(Data *data, int nbufferSize)
 : Decoder(data, nbufferSize)
 {
-	flac = drflac_open_memory(data->getData(), data->getSize());
+	flac = drflac_open_memory(data->getData(), data->getSize(), nullptr);
 	if (flac == nullptr)
 		throw love::Exception("Could not load FLAC file");
 }
@@ -52,7 +52,7 @@ bool FLACDecoder::accepts(const std::string &ext)
 	// Please remove once it's no longer the case.
 	static const std::string supported[] =
 	{
-		"flac", "ogg"
+		"flac", "ogg", ""
 	};
 
 	for (int i = 0; !(supported[i].empty()); i++)
@@ -125,4 +125,3 @@ double FLACDecoder::getDuration()
 } // lullaby
 } // sound
 } // love
-
