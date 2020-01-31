@@ -133,6 +133,22 @@ static MTLBlendFactor getMTLBlendFactor(BlendFactor factor)
 	return MTLBlendFactorZero;
 }
 
+love::graphics::Graphics *createInstance()
+{
+	love::graphics::Graphics *instance = nullptr;
+
+	try
+	{
+		instance = new Graphics();
+	}
+	catch (love::Exception &e)
+	{
+		printf("Cannot create Metal renderer: %s\n", e.what());
+	}
+
+	return instance;
+}
+
 Graphics::Graphics()
 	: device(nil)
 	, commandQueue(nil)
@@ -933,6 +949,30 @@ void Graphics::setBlendState(const BlendState &blend)
 		states.back().blend = blend;
 		dirtyRenderState |= STATEBIT_BLEND;
 	}
+}
+
+Graphics::Renderer Graphics::getRenderer() const
+{
+	return RENDERER_METAL;
+}
+
+bool Graphics::usesGLSLES() const
+{
+#ifdef LOVE_IOS
+	return true;
+#else
+	return false;
+#endif
+}
+
+Graphics::RendererInfo Graphics::getRendererInfo() const
+{
+	RendererInfo info;
+	info.name = "Metal";
+	info.version = "1"; // TODO
+	info.vendor = ""; // TODO
+	info.device = device.name.UTF8String;
+	return info;
 }
 
 } // metal

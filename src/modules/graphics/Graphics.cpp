@@ -32,6 +32,7 @@
 #include "Video.h"
 #include "Text.h"
 #include "common/deprecation.h"
+#include "common/config.h"
 
 // C++
 #include <algorithm>
@@ -105,6 +106,36 @@ bool isDebugEnabled()
 love::Type Graphics::type("graphics", &Module::type);
 
 Graphics::DefaultShaderCode Graphics::defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
+
+namespace opengl { extern love::graphics::Graphics *createInstance(); }
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+namespace metal { extern love::graphics::Graphics *createInstance(); }
+#endif
+
+Graphics *Graphics::createInstance(const std::vector<Renderer> &renderers)
+{
+	Graphics *instance = Module::getInstance<Graphics>(M_GRAPHICS);
+
+	if (instance != nullptr)
+		instance->retain();
+	else
+	{
+		for (auto renderer : renderers)
+		{
+			if (renderer == RENDERER_OPENGL)
+				instance = opengl::createInstance();
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+			if (renderer == RENDERER_METAL)
+				instance = metal::createInstance();
+#endif
+
+			if (instance != nullptr)
+				break;
+		}
+	}
+
+	return instance;
+}
 
 Graphics::Graphics()
 	: width(0)
@@ -241,7 +272,7 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 
 	if (s == nullptr)
 	{
-		s = newShaderStageInternal(stage, cachekey, source, getRenderer() == RENDERER_OPENGLES);
+		s = newShaderStageInternal(stage, cachekey, source, usesGLSLES());
 		if (!cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
 	}

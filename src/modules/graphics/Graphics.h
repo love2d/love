@@ -151,7 +151,7 @@ public:
 	enum Renderer
 	{
 		RENDERER_OPENGL = 0,
-		RENDERER_OPENGLES,
+		RENDERER_METAL,
 		RENDERER_MAX_ENUM
 	};
 
@@ -798,6 +798,11 @@ public:
 	virtual Renderer getRenderer() const = 0;
 
 	/**
+	 * Whether shaders will use GLSL ES or not (mobile shaders).
+	 **/
+	virtual bool usesGLSLES() const = 0;
+
+	/**
 	 * Returns system-dependent renderer information.
 	 * Returned strings can vary greatly between systems! Do not rely on it for
 	 * anything!
@@ -852,6 +857,8 @@ public:
 
 		return (T *) scratchBuffer.data();
 	}
+
+	static Graphics *createInstance(const std::vector<Renderer> &renderers);
 
 	static bool getConstant(const char *in, DrawMode &out);
 	static bool getConstant(DrawMode in, const char *&out);

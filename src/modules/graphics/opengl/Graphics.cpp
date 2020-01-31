@@ -88,6 +88,22 @@ static GLenum getGLBlendFactor(BlendFactor factor)
 	return 0;
 }
 
+love::graphics::Graphics *createInstance()
+{
+	love::graphics::Graphics *instance = nullptr;
+
+	try
+	{
+		instance = new Graphics();
+	}
+	catch (love::Exception &e)
+	{
+		printf("Cannot create OpenGL renderer: %s\n", e.what());
+	}
+
+	return instance;
+}
+
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
@@ -1322,7 +1338,12 @@ void Graphics::setWireframe(bool enable)
 
 Graphics::Renderer Graphics::getRenderer() const
 {
-	return GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
+	return RENDERER_OPENGL;
+}
+
+bool Graphics::usesGLSLES() const
+{
+	return GLAD_ES_VERSION_2_0;
 }
 
 Graphics::RendererInfo Graphics::getRendererInfo() const

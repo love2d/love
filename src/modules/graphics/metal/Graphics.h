@@ -88,6 +88,7 @@ public:
 	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
 	bool isImageFormatSupported(PixelFormat format, bool sRGB) const override;
 	Renderer getRenderer() const override;
+	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
 
 	Shader::Language getShaderLanguageTarget() const override;

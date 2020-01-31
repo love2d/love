@@ -63,7 +63,10 @@ Window::Window()
 	: open(false)
 	, mouseGrabbed(false)
 	, window(nullptr)
-	, context(nullptr)
+	, glcontext(nullptr)
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	, metalView(nullptr)
+#endif
 	, displayedWindowError(false)
 	, hasSDL203orEarlier(false)
 	, contextAttribs()
@@ -82,9 +85,7 @@ Window::Window()
 Window::~Window()
 {
 	close(false);
-
 	graphics.set(nullptr);
-
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
@@ -288,9 +289,9 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	return attribslist;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth)
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Graphics::Renderer renderer, int msaa, bool stencil, int depth)
 {
-	std::vector<ContextAttribs> attribslist = getContextAttribsList();
+	bool needsglcontext = (windowflags & SDL_WINDOW_OPENGL) != 0;
 
 	std::string windowerror;
 	std::string contexterror;
@@ -302,12 +303,12 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	// Also, apparently some Intel drivers on Windows give back a Microsoft
 	// OpenGL 1.1 software renderer context when high MSAA values are requested!
 
-	const auto create = [&](ContextAttribs attribs) -> bool
+	const auto create = [&](const ContextAttribs *attribs) -> bool
 	{
-		if (context)
+		if (glcontext)
 		{
-			SDL_GL_DeleteContext(context);
-			context = nullptr;
+			SDL_GL_DeleteContext(glcontext);
+			glcontext = nullptr;
 		}
 
 		if (window)
@@ -325,80 +326,112 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			return false;
 		}
 
-		context = SDL_GL_CreateContext(window);
-
-		if (!context)
-			contexterror = std::string(SDL_GetError());
-
-		// Make sure the context's version is at least what we requested.
-		if (context && !checkGLVersion(attribs, glversion))
+		if (attribs != nullptr)
 		{
-			SDL_GL_DeleteContext(context);
-			context = nullptr;
-		}
+			glcontext = SDL_GL_CreateContext(window);
 
-		if (!context)
-		{
-			SDL_DestroyWindow(window);
-			window = nullptr;
-			return false;
+			if (!glcontext)
+				contexterror = std::string(SDL_GetError());
+
+			// Make sure the context's version is at least what we requested.
+			if (glcontext && !checkGLVersion(*attribs, glversion))
+			{
+				SDL_GL_DeleteContext(glcontext);
+				glcontext = nullptr;
+			}
+
+			if (!glcontext)
+			{
+				SDL_DestroyWindow(window);
+				window = nullptr;
+				return false;
+			}
 		}
 
 		return true;
 	};
 
-	// Try each context profile in order.
-	for (ContextAttribs attribs : attribslist)
+	if (renderer == graphics::Graphics::RENDERER_OPENGL)
 	{
-		int curMSAA  = msaa;
-		bool curSRGB = love::graphics::isGammaCorrect();
+		std::vector<ContextAttribs> attribslist = getContextAttribsList();
 
-		setGLFramebufferAttributes(curMSAA, curSRGB, stencil, depth);
-		setGLContextAttributes(attribs);
-
-		windowerror.clear();
-		contexterror.clear();
-
-		create(attribs);
-
-		if (!window && curMSAA > 0)
+		// Try each context profile in order.
+		for (ContextAttribs attribs : attribslist)
 		{
-			// The MSAA setting could have caused the failure.
-			setGLFramebufferAttributes(0, curSRGB, stencil, depth);
-			if (create(attribs))
-				curMSAA = 0;
-		}
+			int curMSAA  = msaa;
+			bool curSRGB = love::graphics::isGammaCorrect();
 
-		if (!window && curSRGB)
-		{
-			// same with sRGB.
-			setGLFramebufferAttributes(curMSAA, false, stencil, depth);
-			if (create(attribs))
-				curSRGB = false;
-		}
+			setGLFramebufferAttributes(curMSAA, curSRGB, stencil, depth);
+			setGLContextAttributes(attribs);
 
-		if (!window && curMSAA > 0 && curSRGB)
-		{
-			// Or both!
-			setGLFramebufferAttributes(0, false, stencil, depth);
-			if (create(attribs))
+			windowerror.clear();
+			contexterror.clear();
+
+			create(&attribs);
+
+			if (!window && curMSAA > 0)
 			{
-				curMSAA = 0;
-				curSRGB = false;
+				// The MSAA setting could have caused the failure.
+				setGLFramebufferAttributes(0, curSRGB, stencil, depth);
+				if (create(&attribs))
+					curMSAA = 0;
+			}
+
+			if (!window && curSRGB)
+			{
+				// same with sRGB.
+				setGLFramebufferAttributes(curMSAA, false, stencil, depth);
+				if (create(&attribs))
+					curSRGB = false;
+			}
+
+			if (!window && curMSAA > 0 && curSRGB)
+			{
+				// Or both!
+				setGLFramebufferAttributes(0, false, stencil, depth);
+				if (create(&attribs))
+				{
+					curMSAA = 0;
+					curSRGB = false;
+				}
+			}
+
+			if (window && glcontext)
+			{
+				// Store the successful context attributes so we can re-use them in
+				// subsequent calls to createWindowAndContext.
+				contextAttribs = attribs;
+				love::graphics::setGammaCorrect(curSRGB);
+				break;
 			}
 		}
+	}
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	else if (renderer == graphics::Graphics::RENDERER_METAL)
+	{
+		if (create(nullptr) && window != nullptr)
+			metalView = SDL_Metal_CreateView(window);
 
-		if (window && context)
+		if (metalView == nullptr && window != nullptr)
 		{
-			// Store the successful context attributes so we can re-use them in
-			// subsequent calls to createWindowAndContext.
-			contextAttribs = attribs;
-			love::graphics::setGammaCorrect(curSRGB);
-			break;
+			SDL_DestroyWindow(window);
+			window = nullptr;
+			// TODO: error message
 		}
 	}
+#endif
+	else
+	{
+		create(nullptr);
+	}
 
-	if (!context || !window)
+	bool failed = window == nullptr;
+	failed |= (needsglcontext && !glcontext);
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+
+#endif
+
+	if (failed)
 	{
 		std::string title = "Unable to create OpenGL window";
 		std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
@@ -435,6 +468,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (graphics.get() && graphics->isCanvasActive())
 		throw love::Exception("love.window.setMode cannot be called while a Canvas is active in love.graphics.");
 
+	auto renderer = graphics->getRenderer();
+
 	WindowSettings f;
 
 	if (settings)
@@ -454,7 +489,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		height = mode.h;
 	}
 
-	Uint32 sdlflags = SDL_WINDOW_OPENGL;
+	Uint32 sdlflags = 0;
+
+	if (renderer == graphics::Graphics::RENDERER_OPENGL)
+		sdlflags |= SDL_WINDOW_OPENGL;
 
 	// On Android we always must have fullscreen type FULLSCREEN_TYPE_DESKTOP
 #ifdef LOVE_ANDROID
@@ -515,7 +553,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	close();
 
-	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.stencil, f.depth))
+	if (!createWindowAndContext(x, y, width, height, sdlflags, renderer, f.msaa, f.stencil, f.depth))
 		return false;
 
 	// Make sure the window keeps any previously set icon.
@@ -670,11 +708,19 @@ void Window::close(bool allowExceptions)
 		graphics->unSetMode();
 	}
 
-	if (context)
+	if (glcontext)
 	{
-		SDL_GL_DeleteContext(context);
-		context = nullptr;
+		SDL_GL_DeleteContext(glcontext);
+		glcontext = nullptr;
 	}
+
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	if (metalView)
+	{
+		SDL_Metal_DestroyView(metalView);
+		metalView = nullptr;
+	}
+#endif
 
 	if (window)
 	{
@@ -726,7 +772,7 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
-		SDL_GL_MakeCurrent(window, context);
+		SDL_GL_MakeCurrent(window, glcontext);
 		updateSettings(newsettings, true);
 
 		// Apparently this gets un-set when we exit fullscreen (at least in OS X).
@@ -960,7 +1006,7 @@ love::image::ImageData *Window::getIcon()
 
 void Window::setVSync(int vsync)
 {
-	if (context == nullptr)
+	if (glcontext == nullptr)
 		return;
 
 	SDL_GL_SetSwapInterval(vsync);
@@ -973,7 +1019,7 @@ void Window::setVSync(int vsync)
 
 int Window::getVSync() const
 {
-	return context != nullptr ? SDL_GL_GetSwapInterval() : 0;
+	return glcontext != nullptr ? SDL_GL_GetSwapInterval() : 0;
 }
 
 void Window::setDisplaySleepEnabled(bool enable)
