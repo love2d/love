@@ -43,7 +43,7 @@ jobs:
       run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% -DCMAKE_INSTALL_PREFIX=%CD%\install
     - name: Install
       shell: cmd
-      run: cmake --build build --config Release --target install
+      run: cmake --build build --config Release --target install -j2
     - name: Artifact
       uses: actions/upload-artifact@v1
       with:
