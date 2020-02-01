@@ -69,9 +69,9 @@ void Image::create(id<MTLDevice> device)
 	if (texture == nil)
 		throw love::Exception("Out of graphics memory.");
 
-	int mipcount = getMipmapCount();
-	int slicecount = 1;
+	int mipcount = mipmapsType == MIPMAPS_GENERATED ? 1 : getMipmapCount();
 
+	int slicecount = 1;
 	if (texType == TEXTURE_VOLUME)
 		slicecount = getDepth();
 	else if (texType == TEXTURE_2D_ARRAY)
@@ -79,28 +79,14 @@ void Image::create(id<MTLDevice> device)
 	else if (texType == TEXTURE_CUBE)
 		slicecount = 6;
 
-	if (mipmapsType == MIPMAPS_GENERATED)
-		mipcount = 1;
-
-	int w = pixelWidth;
-	int h = pixelHeight;
-	int d = depth;
-
 	for (int mip = 0; mip < mipcount; mip++)
 	{
 		for (int slice = 0; slice < slicecount; slice++)
 		{
 			love::image::ImageDataBase *imgd = data.get(slice, mip);
-
 			if (imgd != nullptr)
 				uploadImageData(imgd, mip, slice, 0, 0);
 		}
-
-		w = std::max(w / 2, 1);
-		h = std::max(h / 2, 1);
-
-		if (texType == TEXTURE_VOLUME)
-			d = std::max(d / 2, 1);
 	}
 
 	if (mipmapsType == MIPMAPS_GENERATED)
