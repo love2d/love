@@ -19,6 +19,7 @@
  **/
 
 #include "Metal.h"
+#include "common/config.h"
 
 namespace love
 {
@@ -141,7 +142,11 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 		mtlformat = MTLPixelFormatDepth32Float;
 		break;
 	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
+#ifdef LOVE_IOS
+		mtlformat = MTLPixelFormatDepth32Float_Stencil8;
+#else
 		mtlformat = MTLPixelFormatDepth24Unorm_Stencil8;
+#endif
 		break;
 	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
 		mtlformat = MTLPixelFormatDepth32Float_Stencil8;
@@ -241,44 +246,101 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 		break;
 	case PIXELFORMAT_ETC2_RGBA1_UNORM:
 #ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatETC2_RGBA1_sRGB : MTLPixelFormatETC2_RGBA1;
+		mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8A1_sRGB : MTLPixelFormatETC2_RGB8A1;
 #endif
 		break;
 	case PIXELFORMAT_EAC_R_UNORM:
+#ifdef LOVE_IOS
+		mtlformat = MTLPixelFormatEAC_R11Unorm;
+#endif
 		break;
 	case PIXELFORMAT_EAC_R_SNORM:
+#ifdef LOVE_IOS
+		isSRGB = false;
+		mtlformat = MTLPixelFormatEAC_R11Snorm;
+#endif
 		break;
 	case PIXELFORMAT_EAC_RG_UNORM:
+#ifdef LOVE_IOS
+		isSRGB = false;
+		mtlformat = MTLPixelFormatEAC_RG11Unorm;
+#endif
 		break;
 	case PIXELFORMAT_EAC_RG_SNORM:
+#ifdef LOVE_IOS
+		isSRGB = false;
+		mtlformat = MTLPixelFormatEAC_RG11Snorm;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_4x4:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_4x4_sRGB : MTLPixelFormatASTC_4x4_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_5x4:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_5x4_sRGB : MTLPixelFormatASTC_5x4_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_5x5:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_5x5_sRGB : MTLPixelFormatASTC_5x5_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_6x5:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_6x5_sRGB : MTLPixelFormatASTC_6x5_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_6x6:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_6x6_sRGB : MTLPixelFormatASTC_6x6_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_8x5:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_8x5_sRGB : MTLPixelFormatASTC_8x5_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_8x6:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_8x6_sRGB : MTLPixelFormatASTC_8x6_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_8x8:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_8x8_sRGB : MTLPixelFormatASTC_8x8_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_10x5:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_10x5_sRGB : MTLPixelFormatASTC_10x5_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_10x6:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_10x6_sRGB : MTLPixelFormatASTC_10x6_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_10x8:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_10x8_sRGB : MTLPixelFormatASTC_10x8_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_10x10:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_10x10_sRGB : MTLPixelFormatASTC_10x10_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_12x10:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_12x10_sRGB : MTLPixelFormatASTC_12x10_LDR;
+#endif
 		break;
 	case PIXELFORMAT_ASTC_12x12:
+#ifdef LOVE_IOS
+		mtlformat = isSRGB ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
+#endif
 		break;
 
 	case PIXELFORMAT_UNKNOWN:
