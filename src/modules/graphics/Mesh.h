@@ -174,7 +174,7 @@ private:
 
 	struct AttachedAttribute
 	{
-		Buffer *buffer;
+		StrongRef<Buffer> buffer;
 		int index;
 		AttributeStep step;
 		bool enabled;

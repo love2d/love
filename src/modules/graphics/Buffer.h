@@ -158,23 +158,11 @@ public:
 	{
 	public:
 
-		Mapper(Buffer &buffer)
-			: buf(buffer)
-		{
-			elems = buf.map();
-		}
+		Mapper(Buffer &buffer) : buffer(buffer) { data = buffer.map(); }
+		~Mapper() { buffer.unmap(); }
 
-		~Mapper()
-		{
-			buf.unmap();
-		}
-
-		void *get() { return elems; }
-
-	private:
-
-		Buffer &buf;
-		void *elems;
+		Buffer &buffer;
+		void *data;
 
 	}; // Mapper
 

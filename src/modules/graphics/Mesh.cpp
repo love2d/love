@@ -118,12 +118,6 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 Mesh::~Mesh()
 {
 	delete vertexScratchBuffer;
-
-	for (const auto &attrib : attachedAttributes)
-	{
-		if (attrib.second.buffer != nullptr && attrib.second.buffer != vertexBuffer.get())
-			attrib.second.buffer->release();
-	}
 }
 
 void Mesh::setupAttachedAttributes()
@@ -282,28 +276,22 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::s
 		throw love::Exception("A maximum of %d attributes can be attached at once.", VertexAttributes::MAX);
 
 	newattrib.buffer = buffer;
-	newattrib.enabled = oldattrib.buffer ? oldattrib.enabled : true;
+	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
 	newattrib.index = buffer->getDataMemberIndex(attachname);
 	newattrib.step = step;
 
 	if (newattrib.index < 0)
 		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
 
-	newattrib.buffer->retain();
-
 	attachedAttributes[name] = newattrib;
-
-	if (oldattrib.buffer)
-		oldattrib.buffer->release();
 }
 
 bool Mesh::detachAttribute(const std::string &name)
 {
 	auto it = attachedAttributes.find(name);
 
-	if (it != attachedAttributes.end() && it->second.buffer != vertexBuffer.get())
+	if (it != attachedAttributes.end())
 	{
-		it->second.buffer->release();
 		attachedAttributes.erase(it);
 
 		if (getAttributeIndex(name) != -1)
@@ -340,7 +328,7 @@ void Mesh::flush()
 template <typename T>
 static void copyToIndexBuffer(const std::vector<uint32> &indices, Buffer::Mapper &buffermap, size_t maxval)
 {
-	T *elems = (T *) buffermap.get();
+	T *elems = (T *) buffermap.data;
 
 	for (size_t i = 0; i < indices.size(); i++)
 	{
@@ -405,7 +393,7 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 		return;
 
 	Buffer::Mapper ibomap(*indexBuffer);
-	memcpy(ibomap.get(), data, datasize);
+	memcpy(ibomap.data, data, datasize);
 
 	useIndexBuffer = true;
 	indexDataType = datatype;
@@ -541,7 +529,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		if (!attrib.second.enabled)
 			continue;
 
-		Buffer *buffer = attrib.second.buffer;
+		Buffer *buffer = attrib.second.buffer.get();
 		int attributeindex = -1;
 
 		// If the attribute is one of the LOVE-defined ones, use the constant

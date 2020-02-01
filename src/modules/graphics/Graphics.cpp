@@ -176,7 +176,7 @@ void Graphics::createQuadIndexBuffer()
 	quadIndexBuffer = newIndexBuffer(INDEX_UINT16, nullptr, size, BUFFERUSAGE_STATIC, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
-	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
+	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
