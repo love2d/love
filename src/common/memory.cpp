@@ -24,7 +24,9 @@
 #include <stdlib.h>
 
 #ifdef LOVE_WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <malloc.h>
+#include <Windows.h>
 #else
 #include <unistd.h> // Assume POSIX support.
 #endif
@@ -54,8 +56,15 @@ void alignedFree(void *mem)
 size_t getPageSize()
 {
 #ifdef LOVE_WINDOWS
-	// TODO: Do an actual query.
-	return 4096;
+	static DWORD size = 0;
+	if (size == 0)
+	{
+		SYSTEM_INFO si;
+		GetSystemInfo(&si);
+		size = si.dwPageSize;
+	}
+
+	return (size_t) size;
 #else
 	static const long size = sysconf(_SC_PAGESIZE);
 	return size > 0 ? (size_t) size : 4096;

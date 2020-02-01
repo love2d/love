@@ -1,6 +1,6 @@
 # luasocket src/makefile
 #
-# Definitions in this section can be overriden on the command line or in the
+# Definitions in this section can be overridden on the command line or in the
 # environment.
 #
 # These are equivalent:

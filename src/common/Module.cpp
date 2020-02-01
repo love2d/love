@@ -113,15 +113,18 @@ void Module::registerInstance(Module *instance)
 
 	registry.insert(make_pair(name, instance));
 
-	ModuleType moduletype = instance->getModuleType();
+	ModuleType mtype = instance->getModuleType();
 
-	if (instances[moduletype] != nullptr)
+	if (mtype != M_UNKNOWN)
 	{
-		printf("Warning: overwriting module instance %s with new instance %s\n",
-			   instances[moduletype]->getName(), instance->getName());
-	}
+		if (instances[mtype] != nullptr)
+		{
+			printf("Warning: overwriting module instance %s with new instance %s\n",
+				   instances[mtype]->getName(), instance->getName());
+		}
 
-	instances[moduletype] = instance;
+		instances[mtype] = instance;
+	}
 }
 
 Module *Module::getInstance(const std::string &name)
