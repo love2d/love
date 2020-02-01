@@ -40,7 +40,7 @@ namespace graphics
 class Graphics;
 
 /**
- * A block of GPU-owned memory. Currently meant for internal use.
+ * A block of GPU-owned memory.
  **/
 class Buffer : public love::Object, public Resource
 {
@@ -50,30 +50,65 @@ public:
 
 	enum MapFlags
 	{
+		MAP_NONE = 0,
 		MAP_EXPLICIT_RANGE_MODIFY = (1 << 0), // see setMappedRangeModified.
 		MAP_READ = (1 << 1),
 	};
 
-	struct DataMember
+	enum TypeFlags
+	{
+		TYPEFLAG_NONE = 0,
+		TYPEFLAG_VERTEX = 1 << BUFFERTYPE_VERTEX,
+		TYPEFLAG_INDEX = 1 << BUFFERTYPE_INDEX,
+		TYPEFLAG_UNIFORM = 1 << BUFFERTYPE_UNIFORM,
+		TYPEFLAG_SHADER_STORAGE = 1 << BUFFERTYPE_SHADER_STORAGE,
+	};
+
+	struct DataDeclaration
 	{
 		std::string name;
 		DataFormat format;
 		int arraySize;
+
+		DataDeclaration(const std::string &name, DataFormat format, int arraySize = 0)
+			: name(name)
+			, format(format)
+			, arraySize(arraySize)
+		{}
+	};
+
+	struct DataMember
+	{
+		DataDeclaration decl;
+		DataFormatInfo info;
+		size_t offset;
+
+		DataMember(const DataDeclaration &decl)
+			: decl(decl)
+			, info(getDataFormatInfo(decl.format))
+			, offset(0)
+		{}
 	};
 
 	struct Settings
 	{
-		BufferTypeFlags typeFlags;
+		TypeFlags typeFlags;
 		MapFlags mapFlags;
 		BufferUsage usage;
+
+		Settings(uint32 typeflags, uint32 mapflags, BufferUsage usage)
+			: typeFlags((TypeFlags)typeflags)
+			, mapFlags((MapFlags)mapflags)
+			, usage(usage)
+		{}
 	};
 
-	Buffer(size_t size, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags);
-	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataMember> &members, size_t arraylength);
+	Buffer(const Settings &settings, const void *data, size_t size);
+	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
-	BufferTypeFlags getTypeFlags() const { return typeFlags; }
+	TypeFlags getTypeFlags() const { return typeFlags; }
 	BufferUsage getUsage() const { return usage; }
 	bool isMapped() const { return mapped; }
 	uint32 getMapFlags() const { return mapFlags; }
@@ -82,7 +117,7 @@ public:
 	size_t getArrayStride() const { return arrayStride; }
 	const std::vector<DataMember> &getDataMembers() const { return dataMembers; }
 	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
-	size_t getMemberOffset(int index) const { return memberOffsets[index]; }
+	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
 
 	/**
@@ -146,7 +181,6 @@ public:
 protected:
 
 	std::vector<DataMember> dataMembers;
-	std::vector<size_t> memberOffsets;
 	size_t arrayLength;
 	size_t arrayStride;
 
@@ -154,7 +188,7 @@ protected:
 	size_t size;
 
 	// The type of the buffer object.
-	BufferTypeFlags typeFlags;
+	TypeFlags typeFlags;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	BufferUsage usage;

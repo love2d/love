@@ -132,7 +132,7 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	Graphics::StreamDrawCommand cmd;
 	cmd.formats[0] = getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STf_RGBAub;
-	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.indexMode = TRIANGLEINDEX_QUADS;
 	cmd.vertexCount = 4;
 	cmd.texture = this;
 
@@ -184,7 +184,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	Graphics::StreamDrawCommand cmd;
 	cmd.formats[0] = getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STPf_RGBAub;
-	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.indexMode = TRIANGLEINDEX_QUADS;
 	cmd.vertexCount = 4;
 	cmd.texture = this;
 	cmd.standardShaderType = Shader::STANDARD_ARRAY;

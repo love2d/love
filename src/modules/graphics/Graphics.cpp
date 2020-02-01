@@ -173,10 +173,10 @@ void Graphics::createQuadIndexBuffer()
 		return;
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
-	quadIndexBuffer = newBuffer(size, nullptr, BUFFERFLAG_INDEX, BUFFERUSAGE_STATIC, 0);
+	quadIndexBuffer = newIndexBuffer(INDEX_UINT16, nullptr, size, BUFFERUSAGE_STATIC, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
-	fillIndices(TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
+	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -260,6 +260,17 @@ Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
 	return newShaderInternal(vertexstage.get(), pixelstage.get());
 }
 
+Buffer *Graphics::newIndexBuffer(IndexDataType dataType, const void *indices, size_t size, BufferUsage usage, uint32 mapflags)
+{
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, mapflags, usage);
+
+	std::vector<Buffer::DataDeclaration> format = {
+		{ "index", getIndexDataFormat(dataType), 0 }
+	};
+
+	return newBuffer(settings, format, indices, size, 0);
+}
+
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage)
 {
 	return newMesh(Mesh::getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage);
@@ -270,12 +281,12 @@ Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, BufferUsage usa
 	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
+love::graphics::Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
@@ -1003,7 +1014,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 
 	if (cmd.primitiveMode != state.primitiveMode
 		|| cmd.formats[0] != state.formats[0] || cmd.formats[1] != state.formats[1]
-		|| ((cmd.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
+		|| ((cmd.indexMode != TRIANGLEINDEX_NONE) != (state.indexCount > 0))
 		|| cmd.texture != state.texture
 		|| cmd.standardShaderType != state.standardShaderType)
 	{
@@ -1013,7 +1024,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 	int totalvertices = state.vertexCount + cmd.vertexCount;
 
 	// We only support uint16 index buffers for now.
-	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TriangleIndexMode::NONE)
+	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TRIANGLEINDEX_NONE)
 		shouldflush = true;
 
 	int reqIndexCount = getIndexCount(cmd.indexMode, cmd.vertexCount);
@@ -1042,7 +1053,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 		newdatasizes[i] = stride * cmd.vertexCount;
 	}
 
-	if (cmd.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TRIANGLEINDEX_NONE)
 	{
 		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
 
@@ -1080,18 +1091,18 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 			if (state.vb[i]->getSize() < buffersizes[i])
 			{
 				delete state.vb[i];
-				state.vb[i] = newStreamBuffer(BUFFER_VERTEX, buffersizes[i]);
+				state.vb[i] = newStreamBuffer(BUFFERTYPE_VERTEX, buffersizes[i]);
 			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
 		{
 			delete state.indexBuffer;
-			state.indexBuffer = newStreamBuffer(BUFFER_INDEX, buffersizes[2]);
+			state.indexBuffer = newStreamBuffer(BUFFERTYPE_INDEX, buffersizes[2]);
 		}
 	}
 
-	if (cmd.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TRIANGLEINDEX_NONE)
 	{
 		if (state.indexBufferMap.data == nullptr)
 			state.indexBufferMap = state.indexBuffer->map(reqIndexSize);
@@ -1573,7 +1584,7 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		StreamDrawCommand cmd;
 		cmd.formats[0] = getSinglePositionFormat(is2D);
 		cmd.formats[1] = CommonFormat::RGBAub;
-		cmd.indexMode = TriangleIndexMode::FAN;
+		cmd.indexMode = TRIANGLEINDEX_FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		StreamVertexData data = requestStreamDraw(cmd);

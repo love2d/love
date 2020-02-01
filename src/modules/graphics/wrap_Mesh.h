@@ -30,8 +30,8 @@ namespace love
 namespace graphics
 {
 
-char *luax_writeAttributeData(lua_State *L, int startidx, DataType type, int components, char *data);
-const char *luax_readAttributeData(lua_State *L, DataType type, int components, const char *data);
+char *luax_writeAttributeData(lua_State *L, int startidx, DataFormat format, int components, char *data);
+const char *luax_readAttributeData(lua_State *L, DataFormat format, int components, const char *data);
 
 Mesh *luax_checkmesh(lua_State *L, int idx);
 extern "C" int luaopen_mesh(lua_State *L);

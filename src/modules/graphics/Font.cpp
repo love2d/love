@@ -642,7 +642,7 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 	{
 		Graphics::StreamDrawCommand streamcmd;
 		streamcmd.formats[0] = vertexFormat;
-		streamcmd.indexMode = TriangleIndexMode::QUADS;
+		streamcmd.indexMode = TRIANGLEINDEX_QUADS;
 		streamcmd.vertexCount = cmd.vertexcount;
 		streamcmd.texture = cmd.texture;
 

@@ -42,7 +42,8 @@ Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 
 Text::~Text()
 {
-	delete vertex_buffer;
+	if (vertex_buffer)
+		vertex_buffer->release();
 }
 
 void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset)
@@ -60,12 +61,13 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 			newsize = std::max(size_t(vertex_buffer->getSize() * 1.5), newsize);
 
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-		Buffer *new_buffer = gfx->newBuffer(newsize, nullptr, BUFFERFLAG_VERTEX, BUFFERUSAGE_DYNAMIC, 0);
+		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_DYNAMIC);
+		Buffer *new_buffer = gfx->newBuffer(settings, nullptr, newsize);
 
 		if (vertex_buffer != nullptr)
 			vertex_buffer->copyTo(0, vertex_buffer->getSize(), new_buffer, 0);
 
-		delete vertex_buffer;
+		vertex_buffer->release();
 		vertex_buffer = new_buffer;
 
 		vertexBuffers.set(0, vertex_buffer, 0);

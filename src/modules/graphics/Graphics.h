@@ -260,7 +260,7 @@ public:
 	{
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
 		CommonFormat formats[2];
-		TriangleIndexMode indexMode = TriangleIndexMode::NONE;
+		TriangleIndexMode indexMode = TRIANGLEINDEX_NONE;
 		int vertexCount = 0;
 		Texture *texture = nullptr;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
@@ -445,15 +445,15 @@ public:
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
 	Shader *newShader(const std::string &vertex, const std::string &pixel);
 
-	virtual Buffer *newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags) = 0;
-	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataMember> &format, size_t arraylength) = 0;
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, const void *data, size_t size) = 0;
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 
-//	Buffer *newIndexBuffer(IndexDataType dataType, const void *indices, size_t bytesize, vertex::Usage usage, uint32 mapflags) = 0;
+	Buffer *newIndexBuffer(IndexDataType dataType, const void *indices, size_t size, BufferUsage usage, uint32 mapflags);
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage);
 	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, BufferUsage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 

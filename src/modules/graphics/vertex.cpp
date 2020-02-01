@@ -137,21 +137,18 @@ static const DataFormatInfo dataFormatInfo[]
 	{ DATA_BASETYPE_INT,   false, 4, 0, 0, 1, 1, 4 }, // DATAFORMAT_INT8_VEC4
 	{ DATA_BASETYPE_UINT,  false, 4, 0, 0, 1, 1, 4 }, // DATAFORMAT_UINT8_VEC4
 
-	{ DATA_BASETYPE_SNORM, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
 	{ DATA_BASETYPE_SNORM, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
 	{ DATA_BASETYPE_SNORM, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
 
-	{ DATA_BASETYPE_UNORM, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
-	{ DATA_BASETYPE_UNORM, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
-	{ DATA_BASETYPE_UNORM, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+	{ DATA_BASETYPE_UNORM, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_UNORM16_VEC2
+	{ DATA_BASETYPE_UNORM, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_UNORM16_VEC4
 
-	{ DATA_BASETYPE_INT, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
-	{ DATA_BASETYPE_INT, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
-	{ DATA_BASETYPE_INT, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+	{ DATA_BASETYPE_INT, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_INT16_VEC2
+	{ DATA_BASETYPE_INT, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_INT16_VEC4
 
-	{ DATA_BASETYPE_UINT, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_SNORM16
-	{ DATA_BASETYPE_UINT, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
-	{ DATA_BASETYPE_UINT, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+	{ DATA_BASETYPE_UINT, false, 1, 0, 0, 2, 2, 2 }, // DATAFORMAT_UINT16
+	{ DATA_BASETYPE_UINT, false, 2, 0, 0, 2, 2, 4 }, // DATAFORMAT_UINT16_VEC2
+	{ DATA_BASETYPE_UINT, false, 4, 0, 0, 2, 2, 8 }, // DATAFORMAT_UINT16_VEC4
 
 	{ DATA_BASETYPE_BOOL, false, 1, 0, 0, 4, 4, 4  }, // DATAFORMAT_BOOL
 	{ DATA_BASETYPE_BOOL, false, 2, 0, 0, 4, 4, 8  }, // DATAFORMAT_BOOL_VEC2
@@ -176,62 +173,26 @@ size_t getIndexDataSize(IndexDataType type)
 	}
 }
 
-size_t getDataTypeSize(DataType datatype)
-{
-	switch (datatype)
-	{
-	case DATA_SNORM8:
-	case DATA_UNORM8:
-	case DATA_INT8:
-	case DATA_UINT8:
-		return sizeof(uint8);
-	case DATA_SNORM16:
-	case DATA_UNORM16:
-	case DATA_INT16:
-	case DATA_UINT16:
-		return sizeof(uint16);
-	case DATA_INT32:
-	case DATA_UINT32:
-		return sizeof(uint32);
-	case DATA_FLOAT:
-		return sizeof(float);
-	case DATA_MAX_ENUM:
-		return 0;
-	}
-	return 0;
-}
-
-bool isDataTypeInteger(DataType datatype)
-{
-	switch (datatype)
-	{
-	case DATA_INT8:
-	case DATA_UINT8:
-	case DATA_INT16:
-	case DATA_UINT16:
-	case DATA_INT32:
-	case DATA_UINT32:
-		return true;
-	default:
-		return false;
-	}
-}
-
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue)
 {
 	return maxvalue > LOVE_UINT16_MAX ? INDEX_UINT32 : INDEX_UINT16;
+}
+
+DataFormat getIndexDataFormat(IndexDataType type)
+{
+	return type == INDEX_UINT32 ? DATAFORMAT_UINT32 : DATAFORMAT_UINT16;
 }
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount)
 {
 	switch (mode)
 	{
-	case TriangleIndexMode::NONE:
+	case TRIANGLEINDEX_NONE:
 		return 0;
-	case TriangleIndexMode::STRIP:
-	case TriangleIndexMode::FAN:
+	case TRIANGLEINDEX_STRIP:
+	case TRIANGLEINDEX_FAN:
 		return 3 * (vertexCount - 2);
-	case TriangleIndexMode::QUADS:
+	case TRIANGLEINDEX_QUADS:
 		return vertexCount * 6 / 4;
 	}
 	return 0;
@@ -242,9 +203,9 @@ static void fillIndicesT(TriangleIndexMode mode, T vertexStart, T vertexCount, T
 {
 	switch (mode)
 	{
-	case TriangleIndexMode::NONE:
+	case TRIANGLEINDEX_NONE:
 		break;
-	case TriangleIndexMode::STRIP:
+	case TRIANGLEINDEX_STRIP:
 		{
 			int i = 0;
 			for (T index = 0; index < vertexCount - 2; index++)
@@ -255,7 +216,7 @@ static void fillIndicesT(TriangleIndexMode mode, T vertexStart, T vertexCount, T
 			}
 		}
 		break;
-	case TriangleIndexMode::FAN:
+	case TRIANGLEINDEX_FAN:
 		{
 			int i = 0;
 			for (T index = 2; index < vertexCount; index++)
@@ -266,7 +227,7 @@ static void fillIndicesT(TriangleIndexMode mode, T vertexStart, T vertexCount, T
 			}
 		}
 		break;
-	case TriangleIndexMode::QUADS:
+	case TRIANGLEINDEX_QUADS:
 		{
 			// 0---2
 			// | / |
@@ -390,21 +351,13 @@ DEFINE_STRINGMAP_BEGIN(AttributeStep, STEP_MAX_ENUM, attributeStep)
 }
 DEFINE_STRINGMAP_END(AttributeStep, STEP_MAX_ENUM, attributeStep)
 
-DEFINE_STRINGMAP_BEGIN(DataType, DATA_MAX_ENUM, dataType)
+DEFINE_STRINGMAP_BEGIN(DataTypeDeprecated, DATADEPRECATED_MAX_ENUM, dataType)
 {
-	{ "snorm8",  DATA_SNORM8  },
-	{ "unorm8",  DATA_UNORM8  },
-	{ "int8",    DATA_INT8    },
-	{ "uint8",   DATA_UINT8   },
-	{ "snorm16", DATA_SNORM16 },
-	{ "unorm16", DATA_UNORM16 },
-	{ "int16",   DATA_INT16   },
-	{ "uint16",  DATA_UINT16  },
-	{ "int32",   DATA_INT32   },
-	{ "uint32",  DATA_UINT32  },
-	{ "float",   DATA_FLOAT   },
+	{ "unorm8",  DATADEPRECATED_UNORM8  },
+	{ "unorm16", DATADEPRECATED_UNORM16 },
+	{ "float",   DATADEPRECATED_FLOAT   },
 }
-DEFINE_STRINGMAP_END(DataType, DATA_MAX_ENUM, dataType)
+DEFINE_STRINGMAP_END(DataTypeDeprecated, DATADEPRECATED_MAX_ENUM, dataType)
 
 DEFINE_STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 {
@@ -440,15 +393,12 @@ DEFINE_STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 	{ "int8vec4",   DATAFORMAT_INT8_VEC4   },
 	{ "uint8vec4",  DATAFORMAT_UINT8_VEC4  },
 
-	{ "snorm16",     DATAFORMAT_SNORM16      },
 	{ "snorm16vec2", DATAFORMAT_SNORM16_VEC2 },
 	{ "snorm16vec4", DATAFORMAT_SNORM16_VEC4 },
 
-	{ "unorm16",     DATAFORMAT_UNORM16      },
 	{ "unorm16vec2", DATAFORMAT_UNORM16_VEC2 },
 	{ "unorm16vec4", DATAFORMAT_UNORM16_VEC4 },
 
-	{ "int16",     DATAFORMAT_INT16      },
 	{ "int16vec2", DATAFORMAT_INT16_VEC2 },
 	{ "int16vec4", DATAFORMAT_INT16_VEC4 },
 

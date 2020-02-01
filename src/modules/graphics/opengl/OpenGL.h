@@ -453,7 +453,7 @@ private:
 	// Tracked OpenGL state.
 	struct
 	{
-		GLuint boundBuffers[BUFFER_MAX_ENUM];
+		GLuint boundBuffers[BUFFERTYPE_MAX_ENUM];
 
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM];

@@ -52,15 +52,8 @@ public:
 
 	static love::Type type;
 
-	struct AttribFormat
-	{
-		std::string name;
-		DataType type;
-		int components; // max 4
-	};
-
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
 
 	virtual ~Mesh();
 
@@ -97,8 +90,7 @@ public:
 	/**
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
-	const std::vector<AttribFormat> &getVertexFormat() const;
-	DataType getAttributeInfo(int attribindex, int &components) const;
+	const std::vector<Buffer::DataMember> &getVertexFormat() const;
 	int getAttributeIndex(const std::string &name) const;
 
 	/**
@@ -174,7 +166,7 @@ public:
 
 	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
 
-	static std::vector<AttribFormat> getDefaultVertexFormat();
+	static std::vector<Buffer::DataDeclaration> getDefaultVertexFormat();
 
 private:
 
@@ -189,11 +181,8 @@ private:
 	};
 
 	void setupAttachedAttributes();
-	void calculateAttributeSizes(Graphics *gfx);
-	size_t getAttributeOffset(size_t attribindex) const;
 
-	std::vector<AttribFormat> vertexFormat;
-	std::vector<size_t> attributeSizes;
+	std::vector<Buffer::DataMember> vertexFormat;
 
 	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
 

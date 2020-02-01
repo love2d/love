@@ -54,7 +54,7 @@ template <typename T>
 static inline size_t writeSNormData(lua_State *L, int startidx, int components, char *data)
 {
 	auto componentdata = (T *) data;
-	auto maxval = std::numeric_limits<T>::max();
+	const auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		componentdata[i] = (T) (luax_optnumberclamped(L, startidx + i, -1.0, 1.0, defaultComponents[i]) * maxval);
@@ -66,7 +66,7 @@ template <typename T>
 static inline size_t writeUNormData(lua_State *L, int startidx, int components, char *data)
 {
 	auto componentdata = (T *) data;
-	auto maxval = std::numeric_limits<T>::max();
+	const auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		componentdata[i] = (T) (luax_optnumberclamped01(L, startidx + i, 1.0) * maxval);
@@ -74,32 +74,54 @@ static inline size_t writeUNormData(lua_State *L, int startidx, int components, 
 	return sizeof(T) * components;
 }
 
-char *luax_writeAttributeData(lua_State *L, int startidx, DataType type, int components, char *data)
+char *luax_writeAttributeData(lua_State *L, int startidx, DataFormat format, int components, char *data)
 {
-	switch (type)
+	switch (format)
 	{
-	case DATA_SNORM8:
-		return data + writeSNormData<int8>(L, startidx, components, data);
-	case DATA_UNORM8:
-		return data + writeUNormData<uint8>(L, startidx, components, data);
-	case DATA_INT8:
-		return data + writeData<int8>(L, startidx, components, data);
-	case DATA_UINT8:
-		return data + writeData<uint8>(L, startidx, components, data);
-	case DATA_SNORM16:
-		return data + writeSNormData<int16>(L, startidx, components, data);
-	case DATA_UNORM16:
-		return data + writeUNormData<uint16>(L, startidx, components, data);
-	case DATA_INT16:
-		return data + writeData<int16>(L, startidx, components, data);
-	case DATA_UINT16:
-		return data + writeData<uint16>(L, startidx, components, data);
-	case DATA_INT32:
-		return data + writeData<int32>(L, startidx, components, data);
-	case DATA_UINT32:
-		return data + writeData<uint32>(L, startidx, components, data);
-	case DATA_FLOAT:
+	case DATAFORMAT_FLOAT:
+	case DATAFORMAT_FLOAT_VEC2:
+	case DATAFORMAT_FLOAT_VEC3:
+	case DATAFORMAT_FLOAT_VEC4:
 		return data + writeData<float>(L, startidx, components, data);
+
+	case DATAFORMAT_INT32:
+	case DATAFORMAT_INT32_VEC2:
+	case DATAFORMAT_INT32_VEC3:
+	case DATAFORMAT_INT32_VEC4:
+		return data + writeData<int32>(L, startidx, components, data);
+
+	case DATAFORMAT_UINT32:
+	case DATAFORMAT_UINT32_VEC2:
+	case DATAFORMAT_UINT32_VEC3:
+	case DATAFORMAT_UINT32_VEC4:
+		return data + writeData<uint32>(L, startidx, components, data);
+
+	case DATAFORMAT_SNORM8_VEC4:
+		return data + writeSNormData<int8>(L, startidx, 4, data);
+	case DATAFORMAT_UNORM8_VEC4:
+		return data + writeUNormData<uint8>(L, startidx, 4, data);
+	case DATAFORMAT_INT8_VEC4:
+		return data + writeData<int8>(L, startidx, 4, data);
+	case DATAFORMAT_UINT8_VEC4:
+		return data + writeData<uint8>(L, startidx, 4, data);
+
+	case DATAFORMAT_SNORM16_VEC2:
+	case DATAFORMAT_SNORM16_VEC4:
+		return data + writeSNormData<int16>(L, startidx, components, data);
+
+	case DATAFORMAT_UNORM16_VEC2:
+	case DATAFORMAT_UNORM16_VEC4:
+		return data + writeUNormData<uint16>(L, startidx, components, data);
+
+	case DATAFORMAT_INT16_VEC2:
+	case DATAFORMAT_INT16_VEC4:
+		return data + writeData<int16>(L, startidx, components, data);
+
+	case DATAFORMAT_UINT16:
+	case DATAFORMAT_UINT16_VEC2:
+	case DATAFORMAT_UINT16_VEC4:
+		return data + writeData<uint16>(L, startidx, components, data);
+
 	default:
 		return data;
 	}
@@ -108,7 +130,7 @@ char *luax_writeAttributeData(lua_State *L, int startidx, DataType type, int com
 template <typename T>
 static inline size_t readData(lua_State *L, int components, const char *data)
 {
-	auto componentdata = (const T *) data;
+	const auto componentdata = (const T *) data;
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) componentdata[i]);
@@ -119,8 +141,8 @@ static inline size_t readData(lua_State *L, int components, const char *data)
 template <typename T>
 static inline size_t readSNormData(lua_State *L, int components, const char *data)
 {
-	auto componentdata = (const T *) data;
-	auto maxval = std::numeric_limits<T>::max();
+	const auto componentdata = (const T *) data;
+	const auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, std::max(-1.0, (lua_Number) componentdata[i] / (lua_Number)maxval));
@@ -131,8 +153,8 @@ static inline size_t readSNormData(lua_State *L, int components, const char *dat
 template <typename T>
 static inline size_t readUNormData(lua_State *L, int components, const char *data)
 {
-	auto componentdata = (const T *) data;
-	auto maxval = std::numeric_limits<T>::max();
+	const auto componentdata = (const T *) data;
+	const auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) componentdata[i] / (lua_Number)maxval);
@@ -140,32 +162,54 @@ static inline size_t readUNormData(lua_State *L, int components, const char *dat
 	return sizeof(T) * components;
 }
 
-const char *luax_readAttributeData(lua_State *L, DataType type, int components, const char *data)
+const char *luax_readAttributeData(lua_State *L, DataFormat format, int components, const char *data)
 {
-	switch (type)
+	switch (format)
 	{
-	case DATA_SNORM8:
-		return data + readSNormData<int8>(L, components, data);
-	case DATA_UNORM8:
-		return data + readUNormData<uint8>(L, components, data);
-	case DATA_INT8:
-		return data + readData<int8>(L, components, data);
-	case DATA_UINT8:
-		return data + readData<uint8>(L, components, data);
-	case DATA_SNORM16:
-		return data + readSNormData<int16>(L, components, data);
-	case DATA_UNORM16:
-		return data + readUNormData<uint16>(L, components, data);
-	case DATA_INT16:
-		return data + readData<int16>(L, components, data);
-	case DATA_UINT16:
-		return data + readData<uint16>(L, components, data);
-	case DATA_INT32:
-		return data + readData<int32>(L, components, data);
-	case DATA_UINT32:
-		return data + readData<uint32>(L, components, data);
-	case DATA_FLOAT:
+	case DATAFORMAT_FLOAT:
+	case DATAFORMAT_FLOAT_VEC2:
+	case DATAFORMAT_FLOAT_VEC3:
+	case DATAFORMAT_FLOAT_VEC4:
 		return data + readData<float>(L, components, data);
+
+	case DATAFORMAT_INT32:
+	case DATAFORMAT_INT32_VEC2:
+	case DATAFORMAT_INT32_VEC3:
+	case DATAFORMAT_INT32_VEC4:
+		return data + readData<int32>(L, components, data);
+
+	case DATAFORMAT_UINT32:
+	case DATAFORMAT_UINT32_VEC2:
+	case DATAFORMAT_UINT32_VEC3:
+	case DATAFORMAT_UINT32_VEC4:
+		return data + readData<uint32>(L, components, data);
+
+	case DATAFORMAT_SNORM8_VEC4:
+		return data + readSNormData<int8>(L, 4, data);
+	case DATAFORMAT_UNORM8_VEC4:
+		return data + readUNormData<uint8>(L, 4, data);
+	case DATAFORMAT_INT8_VEC4:
+		return data + readData<int8>(L, 4, data);
+	case DATAFORMAT_UINT8_VEC4:
+		return data + readData<uint8>(L, 4, data);
+
+	case DATAFORMAT_SNORM16_VEC2:
+	case DATAFORMAT_SNORM16_VEC4:
+		return data + readSNormData<int16>(L, components, data);
+
+	case DATAFORMAT_UNORM16_VEC2:
+	case DATAFORMAT_UNORM16_VEC4:
+		return data + readUNormData<uint16>(L, components, data);
+
+	case DATAFORMAT_INT16_VEC2:
+	case DATAFORMAT_INT16_VEC4:
+		return data + readData<int16>(L, components, data);
+
+	case DATAFORMAT_UINT16:
+	case DATAFORMAT_UINT16_VEC2:
+	case DATAFORMAT_UINT16_VEC4:
+		return data + readData<uint16>(L, components, data);
+
 	default:
 		return data;
 	}
@@ -216,11 +260,11 @@ int w_Mesh_setVertices(lua_State *L)
 	if (vertstart + vertcount > totalverts)
 		return luaL_error(L, "Too many vertices (expected at most %d, got %d)", totalverts - vertstart, vertcount);
 
-	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+	const std::vector<Buffer::DataMember> &vertexformat = t->getVertexFormat();
 
 	int ncomponents = 0;
-	for (const Mesh::AttribFormat &format : vertexformat)
-		ncomponents += format.components;
+	for (const Buffer::DataMember &member : vertexformat)
+		ncomponents += member.info.components;
 
 	char *data = (char *) t->mapVertexData() + byteoffset;
 
@@ -236,11 +280,11 @@ int w_Mesh_setVertices(lua_State *L)
 
 		int idx = -ncomponents;
 
-		for (const Mesh::AttribFormat &format : vertexformat)
+		for (const Buffer::DataMember &member : vertexformat)
 		{
 			// Fetch the values from Lua and store them in data buffer.
-			data = luax_writeAttributeData(L, idx, format.type, format.components, data);
-			idx += format.components;
+			data = luax_writeAttributeData(L, idx, member.decl.format, member.info.components, data);
+			idx += member.info.components;
 		}
 
 		lua_pop(L, ncomponents + 1);
@@ -257,7 +301,7 @@ int w_Mesh_setVertex(lua_State *L)
 
 	bool istable = lua_istable(L, 3);
 
-	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+	const std::vector<Buffer::DataMember> &vertexformat = t->getVertexFormat();
 
 	char *data = (char *) t->getVertexScratchBuffer();
 	char *writtendata = data;
@@ -266,25 +310,28 @@ int w_Mesh_setVertex(lua_State *L)
 
 	if (istable)
 	{
-		for (const Mesh::AttribFormat &format : vertexformat)
+		for (const Buffer::DataMember &member : vertexformat)
 		{
-			for (int i = idx; i < idx + format.components; i++)
+			int components = member.info.components;
+
+			for (int i = idx; i < idx + components; i++)
 				lua_rawgeti(L, 3, i);
 
 			// Fetch the values from Lua and store them in data buffer.
-			writtendata = luax_writeAttributeData(L, -format.components, format.type, format.components, writtendata);
+			writtendata = luax_writeAttributeData(L, -components, member.decl.format, components, writtendata);
 
-			idx += format.components;
-			lua_pop(L, format.components);
+			idx += components;
+			lua_pop(L, components);
 		}
 	}
 	else
 	{
-		for (const Mesh::AttribFormat &format : vertexformat)
+		for (const Buffer::DataMember &member : vertexformat)
 		{
 			// Fetch the values from Lua and store them in data buffer.
-			writtendata = luax_writeAttributeData(L, idx, format.type, format.components, writtendata);
-			idx += format.components;
+			int components = member.info.components;
+			writtendata = luax_writeAttributeData(L, idx, member.decl.format, components, writtendata);
+			idx += components;
 		}
 	}
 
@@ -297,7 +344,7 @@ int w_Mesh_getVertex(lua_State *L)
 	Mesh *t = luax_checkmesh(L, 1);
 	size_t index = (size_t) luaL_checkinteger(L, 2) - 1;
 
-	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+	const std::vector<Buffer::DataMember> &vertexformat = t->getVertexFormat();
 
 	char *data = (char *) t->getVertexScratchBuffer();
 	const char *readdata = data;
@@ -306,10 +353,11 @@ int w_Mesh_getVertex(lua_State *L)
 
 	int n = 0;
 
-	for (const Mesh::AttribFormat &format : vertexformat)
+	for (const Buffer::DataMember &member : vertexformat)
 	{
-		readdata = luax_readAttributeData(L, format.type, format.components, readdata);
-		n += format.components;
+		int components = member.info.components;
+		readdata = luax_readAttributeData(L, member.decl.format, components, readdata);
+		n += components;
 	}
 
 	return n;
@@ -321,15 +369,18 @@ int w_Mesh_setVertexAttribute(lua_State *L)
 	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
 	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	DataType type;
-	int components;
-	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
+	const auto &vertexformat = t->getVertexFormat();
+
+	if (attribindex < 0 || attribindex >= (int) vertexformat.size())
+		return luaL_error(L, "Invalid vertex attribute index: %d", attribindex + 1);
+
+	const Buffer::DataMember &member = vertexformat[attribindex];
 
 	// Maximum possible size for a single vertex attribute.
 	char data[sizeof(float) * 4];
 
 	// Fetch the values from Lua and store them in the data buffer.
-	luax_writeAttributeData(L, 4, type, components, data);
+	luax_writeAttributeData(L, 4, member.decl.format, member.info.components, data);
 
 	luax_catchexcept(L, [&](){ t->setVertexAttribute(vertindex, attribindex, data, sizeof(float) * 4); });
 	return 0;
@@ -341,17 +392,20 @@ int w_Mesh_getVertexAttribute(lua_State *L)
 	size_t vertindex = (size_t) luaL_checkinteger(L, 2) - 1;
 	int attribindex = (int) luaL_checkinteger(L, 3) - 1;
 
-	DataType type;
-	int components;
-	luax_catchexcept(L, [&](){ type = t->getAttributeInfo(attribindex, components); });
+	const auto &vertexformat = t->getVertexFormat();
+
+	if (attribindex < 0 || attribindex >= (int) vertexformat.size())
+		return luaL_error(L, "Invalid vertex attribute index: %d", attribindex + 1);
+
+	const Buffer::DataMember &member = vertexformat[attribindex];
 
 	// Maximum possible size for a single vertex attribute.
 	char data[sizeof(float) * 4];
 
 	luax_catchexcept(L, [&](){ t->getVertexAttribute(vertindex, attribindex, data, sizeof(float) * 4); });
 
-	luax_readAttributeData(L, type, components, data);
-	return components;
+	luax_readAttributeData(L, member.decl.format, member.info.components, data);
+	return member.info.components;
 }
 
 int w_Mesh_getVertexCount(lua_State *L)
@@ -365,28 +419,27 @@ int w_Mesh_getVertexFormat(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
 
-	const std::vector<Mesh::AttribFormat> &vertexformat = t->getVertexFormat();
+	const std::vector<Buffer::DataMember> &vertexformat = t->getVertexFormat();
 	lua_createtable(L, (int) vertexformat.size(), 0);
 
 	const char *tname = nullptr;
 
 	for (size_t i = 0; i < vertexformat.size(); i++)
 	{
-		if (!getConstant(vertexformat[i].type, tname))
-			return luax_enumerror(L, "vertex attribute data type", getConstants(vertexformat[i].type), tname);
+		const auto &decl = vertexformat[i].decl;
+
+		if (!getConstant(decl.format, tname))
+			return luax_enumerror(L, "vertex attribute data type", getConstants(decl.format), tname);
 
 		lua_createtable(L, 3, 0);
 
-		lua_pushstring(L, vertexformat[i].name.c_str());
+		lua_pushstring(L, decl.name.c_str());
 		lua_rawseti(L, -2, 1);
 
 		lua_pushstring(L, tname);
 		lua_rawseti(L, -2, 2);
 
-		lua_pushinteger(L, vertexformat[i].components);
-		lua_rawseti(L, -2, 3);
-
-		// format[i] = {name, type, components}
+		// format[i] = {name, type}
 		lua_rawseti(L, -2, (int) i + 1);
 	}
 

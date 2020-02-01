@@ -1503,7 +1503,7 @@ static Mesh *newCustomMesh(lua_State *L)
 
 	// First argument is the vertex format, second is a table of vertices or
 	// the number of vertices.
-	std::vector<Mesh::AttribFormat> vertexformat;
+	std::vector<Buffer::DataDeclaration> vertexformat;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
 	BufferUsage usage = luax_optmeshusage(L, 4, BUFFERUSAGE_DYNAMIC);
@@ -1525,27 +1525,35 @@ static Mesh *newCustomMesh(lua_State *L)
 		for (int j = 1; j <= 3; j++)
 			lua_rawgeti(L, -j, j);
 
-		Mesh::AttribFormat format;
-		format.name = luaL_checkstring(L, -3);
+		const char *name = luaL_checkstring(L, -3);
 
+		DataFormat format = DATAFORMAT_FLOAT;
 		const char *tname = luaL_checkstring(L, -2);
-		if (strcmp(tname, "byte") == 0) // Legacy name.
-			format.type = DATA_UNORM8;
-		else if (!getConstant(tname, format.type))
-		{
-			luax_enumerror(L, "Mesh vertex data type name", getConstants(format.type), tname);
-			return nullptr;
-		}
 
-		format.components = (int) luaL_checkinteger(L, -1);
-		if (format.components <= 0 || format.components > 4)
+		if (!getConstant(tname, format))
 		{
-			luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", format.components);
-			return nullptr;
+			DataTypeDeprecated legacyType = DATADEPRECATED_FLOAT;
+
+			if (strcmp(tname, "byte") == 0) // Legacy name.
+				legacyType = DATADEPRECATED_UNORM8;
+			else if (!getConstant(tname, legacyType))
+			{
+				luax_enumerror(L, "Mesh vertex data format name", getConstants(format), tname);
+				return nullptr;
+			}
+
+			int components = (int) luaL_checkinteger(L, -1);
+			if (components <= 0 || components > 4)
+			{
+				luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", components);
+				return nullptr;
+			}
+
+			// TODO: convert legacy type+components to new format enum.
 		}
 
 		lua_pop(L, 4);
-		vertexformat.push_back(format);
+		vertexformat.emplace_back(name, format);
 	}
 
 	if (lua_isnumber(L, 2))
@@ -1570,10 +1578,6 @@ static Mesh *newCustomMesh(lua_State *L)
 		}
 		lua_pop(L, 1);
 
-		int vertexcomponents = 0;
-		for (const Mesh::AttribFormat &format : vertexformat)
-			vertexcomponents += format.components;
-
 		size_t numvertices = luax_objlen(L, 2);
 
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, numvertices, drawmode, usage); });
@@ -1590,7 +1594,8 @@ static Mesh *newCustomMesh(lua_State *L)
 			int n = 0;
 			for (size_t i = 0; i < vertexformat.size(); i++)
 			{
-				int components = vertexformat[i].components;
+				const auto &info = getDataFormatInfo(vertexformat[i].format);
+				int components = info.components;
 
 				// get vertices[vertindex][n]
 				for (int c = 0; c < components; c++)
@@ -1600,7 +1605,7 @@ static Mesh *newCustomMesh(lua_State *L)
 				}
 
 				// Fetch the values from Lua and store them in data buffer.
-				luax_writeAttributeData(L, -components, vertexformat[i].type, components, data);
+				luax_writeAttributeData(L, -components, vertexformat[i].format, components, data);
 
 				lua_pop(L, components);
 

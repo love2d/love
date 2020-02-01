@@ -44,7 +44,7 @@ class Polyline
 {
 public:
 
-	Polyline(TriangleIndexMode mode = TriangleIndexMode::STRIP)
+	Polyline(TriangleIndexMode mode = TRIANGLEINDEX_STRIP)
 		: vertices(nullptr)
 		, overdraw(nullptr)
 		, vertex_count(0)
@@ -109,7 +109,7 @@ class NoneJoinPolyline : public Polyline
 public:
 
 	NoneJoinPolyline()
-		: Polyline(TriangleIndexMode::QUADS)
+		: Polyline(TRIANGLEINDEX_QUADS)
 	{}
 
 	void render(const Vector2 *vertices, size_t count, float halfwidth, float pixel_size, bool draw_overdraw)

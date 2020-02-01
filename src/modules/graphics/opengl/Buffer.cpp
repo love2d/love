@@ -35,21 +35,34 @@ namespace graphics
 namespace opengl
 {
 
-Buffer::Buffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
-	: love::graphics::Buffer(size, typeflags, usage, mapflags)
-	, vbo(0)
-	, memoryMap(nullptr)
-	, modifiedOffset(0)
-	, modifiedSize(0)
+Buffer::Buffer(const Settings &settings, const void *data, size_t size)
+	: love::graphics::Buffer(settings, data, size)
 {
-	if (typeflags & BUFFERFLAG_VERTEX)
-		mapType = BUFFER_VERTEX;
-	else if (typeflags & BUFFERFLAG_INDEX)
-		mapType = BUFFER_INDEX;
-	else if (mapflags & BUFFERFLAG_UNIFORM)
-		mapType = BUFFER_UNIFORM;
-	else if (mapflags & BUFFERFLAG_SHADER_STORAGE)
-		mapType = BUFFER_SHADER_STORAGE;
+	initialize(data);
+}
+
+Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
+	: love::graphics::Buffer(gfx, settings, format, data, size, arraylength)
+{
+	initialize(data);
+}
+
+Buffer::~Buffer()
+{
+	unloadVolatile();
+	delete[] memoryMap;
+}
+
+void Buffer::initialize(const void *data)
+{
+	if (typeFlags & TYPEFLAG_VERTEX)
+		mapType = BUFFERTYPE_VERTEX;
+	else if (typeFlags & TYPEFLAG_INDEX)
+		mapType = BUFFERTYPE_INDEX;
+	else if (typeFlags & TYPEFLAG_UNIFORM)
+		mapType = BUFFERTYPE_UNIFORM;
+	else if (typeFlags & TYPEFLAG_SHADER_STORAGE)
+		mapType = BUFFERTYPE_SHADER_STORAGE;
 
 	target = OpenGL::getGLBufferType(mapType);
 
@@ -72,12 +85,34 @@ Buffer::Buffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferU
 	}
 }
 
-Buffer::~Buffer()
+bool Buffer::loadVolatile()
 {
-	if (vbo != 0)
-		unload();
+	return load(true);
+}
 
-	delete[] memoryMap;
+void Buffer::unloadVolatile()
+{
+	mapped = false;
+	if (vbo != 0)
+		gl.deleteBuffer(vbo);
+	vbo = 0;
+}
+
+bool Buffer::load(bool restore)
+{
+	glGenBuffers(1, &vbo);
+	gl.bindBuffer(mapType, vbo);
+
+	while (glGetError() != GL_NO_ERROR)
+		/* Clear the error buffer. */;
+
+	// Copy the old buffer only if 'restore' was requested.
+	const GLvoid *src = restore ? memoryMap : nullptr;
+
+	// Note that if 'src' is '0', no data will be copied.
+	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
+
+	return (glGetError() == GL_NO_ERROR);
 }
 
 void *Buffer::map()
@@ -202,40 +237,6 @@ ptrdiff_t Buffer::getHandle() const
 void Buffer::copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset)
 {
 	other->fill(otheroffset, size, memoryMap + offset);
-}
-
-bool Buffer::loadVolatile()
-{
-	return load(true);
-}
-
-void Buffer::unloadVolatile()
-{
-	unload();
-}
-
-bool Buffer::load(bool restore)
-{
-	glGenBuffers(1, &vbo);
-	gl.bindBuffer(mapType, vbo);
-
-	while (glGetError() != GL_NO_ERROR)
-		/* Clear the error buffer. */;
-
-	// Copy the old buffer only if 'restore' was requested.
-	const GLvoid *src = restore ? memoryMap : nullptr;
-
-	// Note that if 'src' is '0', no data will be copied.
-	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
-
-	return (glGetError() == GL_NO_ERROR);
-}
-
-void Buffer::unload()
-{
-	mapped = false;
-	gl.deleteBuffer(vbo);
-	vbo = 0;
 }
 
 } // opengl

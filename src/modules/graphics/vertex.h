@@ -56,19 +56,11 @@ enum BuiltinVertexAttributeFlags
 
 enum BufferType
 {
-	BUFFER_VERTEX = 0,
-	BUFFER_INDEX,
-	BUFFER_UNIFORM,
-	BUFFER_SHADER_STORAGE,
-	BUFFER_MAX_ENUM
-};
-
-enum BufferTypeFlags
-{
-	BUFFERFLAG_VERTEX = 1 << BUFFER_VERTEX,
-	BUFFERFLAG_INDEX = 1 << BUFFER_INDEX,
-	BUFFERFLAG_UNIFORM = 1 << BUFFER_UNIFORM,
-	BUFFERFLAG_SHADER_STORAGE = 1 << BUFFER_SHADER_STORAGE,
+	BUFFERTYPE_VERTEX = 0,
+	BUFFERTYPE_INDEX,
+	BUFFERTYPE_UNIFORM,
+	BUFFERTYPE_SHADER_STORAGE,
+	BUFFERTYPE_MAX_ENUM
 };
 
 enum IndexDataType
@@ -112,24 +104,12 @@ enum BufferUsage
 	BUFFERUSAGE_MAX_ENUM
 };
 
-enum DataType
+enum DataTypeDeprecated
 {
-	DATA_SNORM8,
-	DATA_UNORM8,
-	DATA_INT8,
-	DATA_UINT8,
-
-	DATA_SNORM16,
-	DATA_UNORM16,
-	DATA_INT16,
-	DATA_UINT16,
-
-	DATA_INT32,
-	DATA_UINT32,
-
-	DATA_FLOAT,
-
-	DATA_MAX_ENUM
+	DATADEPRECATED_UNORM8,
+	DATADEPRECATED_UNORM16,
+	DATADEPRECATED_FLOAT,
+	DATADEPRECATED_MAX_ENUM
 };
 
 // Value types used when interfacing with the GPU (vertex and shader data).
@@ -164,22 +144,16 @@ enum DataFormat
 	DATAFORMAT_UINT32_VEC4,
 
 	DATAFORMAT_SNORM8_VEC4,
-
 	DATAFORMAT_UNORM8_VEC4,
-
 	DATAFORMAT_INT8_VEC4,
-
 	DATAFORMAT_UINT8_VEC4,
 
-	DATAFORMAT_SNORM16,
 	DATAFORMAT_SNORM16_VEC2,
 	DATAFORMAT_SNORM16_VEC4,
 
-	DATAFORMAT_UNORM16,
 	DATAFORMAT_UNORM16_VEC2,
 	DATAFORMAT_UNORM16_VEC4,
 
-	DATAFORMAT_INT16,
 	DATAFORMAT_INT16_VEC2,
 	DATAFORMAT_INT16_VEC4,
 
@@ -213,12 +187,12 @@ enum Winding
 	WINDING_MAX_ENUM
 };
 
-enum class TriangleIndexMode
+enum TriangleIndexMode
 {
-	NONE,
-	STRIP,
-	FAN,
-	QUADS,
+	TRIANGLEINDEX_NONE,
+	TRIANGLEINDEX_STRIP,
+	TRIANGLEINDEX_FAN,
+	TRIANGLEINDEX_QUADS,
 };
 
 enum class CommonFormat
@@ -403,10 +377,8 @@ inline CommonFormat getSinglePositionFormat(bool is2D)
 const DataFormatInfo &getDataFormatInfo(DataFormat format);
 
 size_t getIndexDataSize(IndexDataType type);
-size_t getDataTypeSize(DataType datatype);
-bool isDataTypeInteger(DataType datatype);
-
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
+DataFormat getIndexDataFormat(IndexDataType type);
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount);
 
@@ -418,7 +390,7 @@ DECLARE_STRINGMAP(IndexDataType);
 DECLARE_STRINGMAP(BufferUsage);
 DECLARE_STRINGMAP(PrimitiveType);
 DECLARE_STRINGMAP(AttributeStep);
-DECLARE_STRINGMAP(DataType);
+DECLARE_STRINGMAP(DataTypeDeprecated);
 DECLARE_STRINGMAP(DataFormat);
 DECLARE_STRINGMAP(DataBaseType);
 DECLARE_STRINGMAP(CullMode);

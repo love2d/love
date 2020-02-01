@@ -117,7 +117,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::StreamDrawCommand cmd;
 	cmd.formats[0] = getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STf_RGBAub;
-	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.indexMode = TRIANGLEINDEX_QUADS;
 	cmd.vertexCount = 4;
 	cmd.standardShaderType = Shader::STANDARD_VIDEO;
 

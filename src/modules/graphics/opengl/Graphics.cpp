@@ -155,15 +155,14 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 	return new Shader(vertex, pixel);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferTypeFlags typeflags, BufferUsage usage, uint32 mapflags)
+love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const void *data, size_t size)
 {
-	return new Buffer(size, data, typeflags, usage, mapflags);
+	return new Buffer(settings, data, size);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataMember> &format, size_t arraylength)
+love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
-	// TODO
-	return nullptr;
+	return new Buffer(this, settings, format, data, size, arraylength);
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
@@ -254,9 +253,9 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		streamBufferState.vb[0] = CreateStreamBuffer(BUFFER_VERTEX, 1024 * 1024 * 1);
-		streamBufferState.vb[1] = CreateStreamBuffer(BUFFER_VERTEX, 256  * 1024 * 1);
-		streamBufferState.indexBuffer = CreateStreamBuffer(BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		streamBufferState.vb[0] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 1024 * 1024 * 1);
+		streamBufferState.vb[1] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 256  * 1024 * 1);
+		streamBufferState.indexBuffer = CreateStreamBuffer(BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	// Reload all volatile objects.
@@ -375,7 +374,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
 	GLenum gldatatype = OpenGL::getGLIndexDataType(cmd.indexType);
 
-	gl.bindBuffer(BUFFER_INDEX, cmd.indexBuffer->getHandle());
+	gl.bindBuffer(BUFFERTYPE_INDEX, cmd.indexBuffer->getHandle());
 
 	if (cmd.instanceCount > 1)
 		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
@@ -417,7 +416,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.setCullMode(CULL_NONE);
 
-	gl.bindBuffer(BUFFER_INDEX, quadIndexBuffer->getHandle());
+	gl.bindBuffer(BUFFERTYPE_INDEX, quadIndexBuffer->getHandle());
 
 	if (gl.isBaseVertexSupported())
 	{

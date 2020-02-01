@@ -45,13 +45,13 @@ static_assert(offsetof(Vertex, x) == sizeof(float) * 0, "Incorrect position offs
 static_assert(offsetof(Vertex, s) == sizeof(float) * 2, "Incorrect texture coordinate offset in Vertex struct");
 static_assert(offsetof(Vertex, color.r) == sizeof(float) * 4, "Incorrect color offset in Vertex struct");
 
-std::vector<Mesh::AttribFormat> Mesh::getDefaultVertexFormat()
+std::vector<Buffer::DataDeclaration> Mesh::getDefaultVertexFormat()
 {
 	// Corresponds to the love::Vertex struct.
-	std::vector<Mesh::AttribFormat> vertexformat = {
-		{ getBuiltinAttribName(ATTRIB_POS),      DATA_FLOAT,  2 },
-		{ getBuiltinAttribName(ATTRIB_TEXCOORD), DATA_FLOAT,  2 },
-		{ getBuiltinAttribName(ATTRIB_COLOR),    DATA_UNORM8, 4 },
+	std::vector<Buffer::DataDeclaration> vertexformat = {
+		{ getBuiltinAttribName(ATTRIB_POS),      DATAFORMAT_FLOAT_VEC2,  0 },
+		{ getBuiltinAttribName(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2,  0 },
+		{ getBuiltinAttribName(ATTRIB_COLOR),    DATAFORMAT_UNORM8_VEC4, 0 },
 	};
 
 	return vertexformat;
@@ -59,9 +59,8 @@ std::vector<Mesh::AttribFormat> Mesh::getDefaultVertexFormat()
 
 love::Type Mesh::type("Mesh", &Drawable::type);
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
-	: vertexFormat(vertexformat)
-	, vertexBuffer(nullptr)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
+	: vertexBuffer(nullptr)
 	, vertexCount(0)
 	, vertexStride(0)
 	, indexBuffer(nullptr)
@@ -72,24 +71,22 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	, rangeStart(-1)
 	, rangeCount(-1)
 {
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ, usage);
+	vertexBuffer.set(gfx->newBuffer(settings, vertexformat, data, datasize, 0), Acquire::NORETAIN);
+
+	vertexCount = vertexBuffer->getArrayLength();
+	vertexStride = vertexBuffer->getArrayStride();
+	vertexFormat = vertexBuffer->getDataMembers();
+
 	setupAttachedAttributes();
-	calculateAttributeSizes(gfx);
 
-	vertexCount = datasize / vertexStride;
 	indexDataType = getIndexDataTypeFromMax(vertexCount);
-
-	if (vertexCount == 0)
-		throw love::Exception("Data size is too small for specified vertex attribute formats.");
-
-	auto buffer = gfx->newBuffer(datasize, data, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
-	vertexBuffer.set(buffer, Acquire::NORETAIN);
 
 	vertexScratchBuffer = new char[vertexStride];
 }
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
-	: vertexFormat(vertexformat)
-	, vertexBuffer(nullptr)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
+	: vertexBuffer(nullptr)
 	, vertexCount((size_t) vertexcount)
 	, vertexStride(0)
 	, indexBuffer(nullptr)
@@ -103,16 +100,15 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<AttribFormat> &vertexforma
 	if (vertexcount <= 0)
 		throw love::Exception("Invalid number of vertices (%d).", vertexcount);
 
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ, usage);
+	vertexBuffer.set(gfx->newBuffer(settings, vertexformat, nullptr, 0, vertexcount), Acquire::NORETAIN);
+
+	vertexStride = vertexBuffer->getArrayStride();
+	vertexFormat = vertexBuffer->getDataMembers();
+
 	setupAttachedAttributes();
-	calculateAttributeSizes(gfx);
 
-	size_t buffersize = vertexCount * vertexStride;
-
-	auto buffer = gfx->newBuffer(buffersize, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY | Buffer::MAP_READ);
-	vertexBuffer.set(buffer, Acquire::NORETAIN);
-
-	// Initialize the buffer's contents to 0.
-	memset(vertexBuffer->map(), 0, buffersize);
+	memset(vertexBuffer->map(), 0, vertexBuffer->getSize());
 	vertexBuffer->setMappedRangeModified(0, vertexBuffer->getSize());
 	vertexBuffer->unmap();
 
@@ -134,51 +130,13 @@ void Mesh::setupAttachedAttributes()
 {
 	for (size_t i = 0; i < vertexFormat.size(); i++)
 	{
-		const std::string &name = vertexFormat[i].name;
+		const std::string &name = vertexFormat[i].decl.name;
 
 		if (attachedAttributes.find(name) != attachedAttributes.end())
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes[name] = {nullptr, (int) i, STEP_PER_VERTEX, true};
+		attachedAttributes[name] = {vertexBuffer, (int) i, STEP_PER_VERTEX, true};
 	}
-}
-
-void Mesh::calculateAttributeSizes(Graphics *gfx)
-{
-	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
-
-	size_t stride = 0;
-
-	for (const AttribFormat &format : vertexFormat)
-	{
-		size_t size = getDataTypeSize(format.type) * format.components;
-
-		if (format.components <= 0 || format.components > 4)
-			throw love::Exception("Vertex attributes must have between 1 and 4 components.");
-
-		// Hardware really doesn't like attributes that aren't 32 bit-aligned.
-		if (size % 4 != 0)
-			throw love::Exception("Vertex attributes must have enough components to be a multiple of 32 bits.");
-
-		if (isDataTypeInteger(format.type) && !supportsGLSL3)
-			throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
-
-		// Total size in bytes of each attribute in a single vertex.
-		attributeSizes.push_back(size);
-		stride += size;
-	}
-
-	vertexStride = stride;
-}
-
-size_t Mesh::getAttributeOffset(size_t attribindex) const
-{
-	size_t offset = 0;
-
-	for (size_t i = 0; i < attribindex; i++)
-		offset += attributeSizes[i];
-
-	return offset;
 }
 
 void Mesh::setVertex(size_t vertindex, const void *data, size_t datasize)
@@ -223,8 +181,10 @@ void Mesh::setVertexAttribute(size_t vertindex, int attribindex, const void *dat
 	if (attribindex >= (int) vertexFormat.size())
 		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
 
-	size_t offset = vertindex * vertexStride + getAttributeOffset(attribindex);
-	size_t size = std::min(datasize, attributeSizes[attribindex]);
+	const auto &member = vertexFormat[attribindex];
+
+	size_t offset = vertindex * vertexStride + member.offset;
+	size_t size = std::min(datasize, member.info.size);
 
 	uint8 *bufferdata = (uint8 *) vertexBuffer->map();
 	memcpy(bufferdata + offset, data, size);
@@ -240,8 +200,10 @@ size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, s
 	if (attribindex >= (int) vertexFormat.size())
 		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
 
-	size_t offset = vertindex * vertexStride + getAttributeOffset(attribindex);
-	size_t size = std::min(datasize, attributeSizes[attribindex]);
+	const auto &member = vertexFormat[attribindex];
+
+	size_t offset = vertindex * vertexStride + member.offset;
+	size_t size = std::min(datasize, member.info.size);
 
 	// We're relying on map() returning read/write data... ew.
 	const uint8 *bufferdata = (const uint8 *) vertexBuffer->map();
@@ -265,25 +227,16 @@ Buffer *Mesh::getVertexBuffer() const
 	return vertexBuffer;
 }
 
-const std::vector<Mesh::AttribFormat> &Mesh::getVertexFormat() const
+const std::vector<Buffer::DataMember> &Mesh::getVertexFormat() const
 {
 	return vertexFormat;
-}
-
-DataType Mesh::getAttributeInfo(int attribindex, int &components) const
-{
-	if (attribindex < 0 || attribindex >= (int) vertexFormat.size())
-		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
-
-	components = vertexFormat[attribindex].components;
-	return vertexFormat[attribindex].type;
 }
 
 int Mesh::getAttributeIndex(const std::string &name) const
 {
 	for (int i = 0; i < (int) vertexFormat.size(); i++)
 	{
-		if (vertexFormat[i].name == name)
+		if (vertexFormat[i].decl.name == name)
 			return i;
 	}
 
@@ -312,7 +265,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step)
 {
-	if ((buffer->getTypeFlags() & BUFFER_VERTEX) == 0)
+	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
 		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
@@ -410,7 +363,8 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize())
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		indexBuffer.set(gfx->newBuffer(size, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ), Acquire::NORETAIN);
+		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, vertexBuffer->getUsage());
+		indexBuffer.set(gfx->newBuffer(settings, nullptr, size), Acquire::NORETAIN);
 	}
 
 	useIndexBuffer = true;
@@ -441,7 +395,8 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize())
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		indexBuffer.set(gfx->newBuffer(datasize, nullptr, BUFFERFLAG_INDEX, vertexBuffer->getUsage(), Buffer::MAP_READ), Acquire::NORETAIN);
+		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, vertexBuffer->getUsage());
+		indexBuffer.set(gfx->newBuffer(settings, nullptr, datasize), Acquire::NORETAIN);
 	}
 
 	indexCount = datasize / getIndexDataSize(datatype);
@@ -607,7 +562,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 			uint16 offset = (uint16) buffer->getMemberOffset(attrib.second.index);
 			uint16 stride = (uint16) buffer->getArrayStride();
 
-			attributes.set(attributeindex, member.format, offset, activebuffers);
+			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride, attrib.second.step);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.

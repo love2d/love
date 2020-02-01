@@ -64,7 +64,8 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage 
 	vertex_stride = getFormatStride(vertex_format);
 
 	size_t vertex_size = vertex_stride * 4 * size;
-	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFERFLAG_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, usage);
+	array_buf = gfx->newBuffer(settings, nullptr, vertex_size);
 }
 
 SpriteBatch::~SpriteBatch()
@@ -218,7 +219,8 @@ void SpriteBatch::setBufferSize(int newsize)
 	try
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getTypeFlags(), array_buf->getUsage(), array_buf->getMapFlags());
+		Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getMapFlags(), array_buf->getUsage());
+		new_array_buf = gfx->newBuffer(settings, nullptr, vertex_size);
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		size_t copy_size = vertex_stride * 4 * new_next;
@@ -246,7 +248,7 @@ int SpriteBatch::getBufferSize() const
 
 void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer)
 {
-	if ((buffer->getTypeFlags() & BUFFER_VERTEX) == 0)
+	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
 		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a SpriteBatch vertex attribute.");
 
 	AttachedAttribute oldattrib = {};
@@ -357,7 +359,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			uint16 offset = (uint16) buffer->getMemberOffset(it.second.index);
 			uint16 stride = (uint16) buffer->getArrayStride();
 
-			attributes.set(attributeindex, member.format, offset, activebuffers);
+			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride);
 
 			// TODO: We should reuse buffer bindings with the same buffer+stride+step.

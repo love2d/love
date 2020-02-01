@@ -223,7 +223,7 @@ void OpenGL::setupContext()
 	glGetIntegerv(GL_CULL_FACE_MODE, &faceCull);
 	state.faceCullMode = faceCull;
 
-	for (int i = 0; i < (int) BUFFER_MAX_ENUM; i++)
+	for (int i = 0; i < (int) BUFFERTYPE_MAX_ENUM; i++)
 	{
 		state.boundBuffers[i] = 0;
 		glBindBuffer(getGLBufferType((BufferType) i), 0);
@@ -584,15 +584,15 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 {
 	switch (type)
 	{
-	case BUFFER_VERTEX:
+	case BUFFERTYPE_VERTEX:
 		return GL_ARRAY_BUFFER;
-	case BUFFER_INDEX:
+	case BUFFERTYPE_INDEX:
 		return GL_ELEMENT_ARRAY_BUFFER;
-	case BUFFER_UNIFORM:
+	case BUFFERTYPE_UNIFORM:
 		return GL_UNIFORM_BUFFER;
-	case BUFFER_SHADER_STORAGE:
+	case BUFFERTYPE_SHADER_STORAGE:
 		return GL_SHADER_STORAGE_BUFFER;
-	case BUFFER_MAX_ENUM:
+	case BUFFERTYPE_MAX_ENUM:
 		return GL_ZERO;
 	}
 
@@ -717,10 +717,6 @@ GLenum OpenGL::getGLVertexDataType(DataFormat format, int &components, GLboolean
 		intformat = true;
 		return GL_UNSIGNED_BYTE;
 
-	case DATAFORMAT_SNORM16:
-		components = 1;
-		normalized = GL_TRUE;
-		return GL_SHORT;
 	case DATAFORMAT_SNORM16_VEC2:
 		components = 2;
 		normalized = GL_TRUE;
@@ -730,10 +726,6 @@ GLenum OpenGL::getGLVertexDataType(DataFormat format, int &components, GLboolean
 		normalized = GL_TRUE;
 		return GL_BYTE;
 
-	case DATAFORMAT_UNORM16:
-		components = 1;
-		normalized = GL_TRUE;
-		return GL_UNSIGNED_SHORT;
 	case DATAFORMAT_UNORM16_VEC2:
 		components = 2;
 		normalized = GL_TRUE;
@@ -743,10 +735,6 @@ GLenum OpenGL::getGLVertexDataType(DataFormat format, int &components, GLboolean
 		normalized = GL_TRUE;
 		return GL_UNSIGNED_SHORT;
 
-	case DATAFORMAT_INT16:
-		components = 1;
-		intformat = true;
-		return GL_SHORT;
 	case DATAFORMAT_INT16_VEC2:
 		components = 2;
 		intformat = true;
@@ -810,7 +798,7 @@ void OpenGL::deleteBuffer(GLuint buffer)
 {
 	glDeleteBuffers(1, &buffer);
 
-	for (int i = 0; i < (int) BUFFER_MAX_ENUM; i++)
+	for (int i = 0; i < (int) BUFFERTYPE_MAX_ENUM; i++)
 	{
 		if (state.boundBuffers[i] == buffer)
 			state.boundBuffers[i] = 0;
@@ -857,7 +845,7 @@ void OpenGL::setVertexAttributes(const VertexAttributes &attributes, const Buffe
 
 			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
-			bindBuffer(BUFFER_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
+			bindBuffer(BUFFERTYPE_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
 
 			if (intformat)
 				glVertexAttribIPointer(i, components, gltype, layout.stride, offsetpointer);
