@@ -429,7 +429,7 @@ public:
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
-	virtual Image *newImage(const Image::Slices &data, const Image::Settings &settings) = 0;
+	virtual Image *newImage(const Texture::Slices &data, const Image::Settings &settings) = 0;
 	virtual Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);

@@ -130,7 +130,7 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-love::graphics::Image *Graphics::newImage(const Image::Slices &data, const Image::Settings &settings)
+love::graphics::Image *Graphics::newImage(const Texture::Slices &data, const Image::Settings &settings)
 {
 	return new Image(data, settings);
 }

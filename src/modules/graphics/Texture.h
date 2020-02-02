@@ -33,6 +33,8 @@
 #include "vertex.h"
 #include "renderstate.h"
 #include "Resource.h"
+#include "image/ImageData.h"
+#include "image/CompressedImageData.h"
 
 // C
 #include <stddef.h>
@@ -95,6 +97,43 @@ public:
 		WrapMode t = WRAP_CLAMP;
 		WrapMode r = WRAP_CLAMP;
 	};
+
+	enum MipmapsType
+	{
+		MIPMAPS_NONE,
+		MIPMAPS_DATA,
+		MIPMAPS_GENERATED,
+	};
+
+	struct Slices
+	{
+	public:
+
+		Slices(TextureType textype);
+
+		void clear();
+		void set(int slice, int mipmap, love::image::ImageDataBase *data);
+		love::image::ImageDataBase *get(int slice, int mipmap) const;
+
+		void add(love::image::CompressedImageData *cdata, int startslice, int startmip, bool addallslices, bool addallmips);
+
+		int getSliceCount(int mip = 0) const;
+		int getMipmapCount(int slice = 0) const;
+
+		bool validate() const;
+
+		TextureType getTextureType() const { return textureType; }
+
+	private:
+
+		TextureType textureType;
+
+		// For 2D/Cube/2DArray texture types, each element in the data array has
+		// an array of mipmap levels. For 3D texture types, each mipmap level
+		// has an array of layers.
+		std::vector<std::vector<StrongRef<love::image::ImageDataBase>>> data;
+
+	}; // Slices
 
 	static Filter defaultFilter;
 	static FilterMode defaultMipmapFilter;

@@ -757,7 +757,7 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *dpiscale)
 	return std::make_pair(idata, cdata);
 }
 
-static int w__pushNewImage(lua_State *L, Image::Slices &slices, const Image::Settings &settings)
+static int w__pushNewImage(lua_State *L, Texture::Slices &slices, const Image::Settings &settings)
 {
 	StrongRef<Image> i;
 	luax_catchexcept(L,
@@ -773,7 +773,7 @@ int w_newCubeImage(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	Image::Slices slices(TEXTURE_CUBE);
+	Texture::Slices slices(TEXTURE_CUBE);
 
 	bool dpiscaleset = false;
 	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
@@ -867,7 +867,7 @@ int w_newArrayImage(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	Image::Slices slices(TEXTURE_2D_ARRAY);
+	Texture::Slices slices(TEXTURE_2D_ARRAY);
 
 	bool dpiscaleset = false;
 	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
@@ -933,7 +933,7 @@ int w_newVolumeImage(lua_State *L)
 
 	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
 
-	Image::Slices slices(TEXTURE_VOLUME);
+	Texture::Slices slices(TEXTURE_VOLUME);
 
 	bool dpiscaleset = false;
 	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
@@ -1004,7 +1004,7 @@ int w_newImage(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
-	Image::Slices slices(TEXTURE_2D);
+	Texture::Slices slices(TEXTURE_2D);
 
 	bool dpiscaleset = false;
 	Image::Settings settings = w__optImageSettings(L, 2, dpiscaleset);

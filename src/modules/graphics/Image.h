@@ -24,8 +24,6 @@
 #include "common/config.h"
 #include "common/StringMap.h"
 #include "common/math.h"
-#include "image/ImageData.h"
-#include "image/CompressedImageData.h"
 #include "Texture.h"
 
 namespace love
@@ -38,13 +36,6 @@ class Image : public Texture
 public:
 
 	static love::Type type;
-
-	enum MipmapsType
-	{
-		MIPMAPS_NONE,
-		MIPMAPS_DATA,
-		MIPMAPS_GENERATED,
-	};
 
 	enum SettingType
 	{
@@ -60,36 +51,6 @@ public:
 		bool linear = false;
 		float dpiScale = 1.0f;
 	};
-
-	struct Slices
-	{
-	public:
-
-		Slices(TextureType textype);
-
-		void clear();
-		void set(int slice, int mipmap, love::image::ImageDataBase *data);
-		love::image::ImageDataBase *get(int slice, int mipmap) const;
-
-		void add(love::image::CompressedImageData *cdata, int startslice, int startmip, bool addallslices, bool addallmips);
-
-		int getSliceCount(int mip = 0) const;
-		int getMipmapCount(int slice = 0) const;
-
-		MipmapsType validate() const;
-
-		TextureType getTextureType() const { return textureType; }
-
-	private:
-
-		TextureType textureType;
-
-		// For 2D/Cube/2DArray texture types, each element in the data array has
-		// an array of mipmap levels. For 3D texture types, each mipmap level
-		// has an array of layers.
-		std::vector<std::vector<StrongRef<love::image::ImageDataBase>>> data;
-
-	}; // Slices
 
 	virtual ~Image();
 
