@@ -36,7 +36,6 @@ int Image::imageCount = 0;
 Image::Image(const Slices &data, const Settings &settings, bool validatedata)
 	: Texture(data.getTextureType())
 	, settings(settings)
-	, data(data)
 	, mipmapsType(settings.mipmaps ? MIPMAPS_GENERATED : MIPMAPS_NONE)
 	, sRGB(isGammaCorrect() && !settings.linear)
 	, usingDefaultTexture(false)
@@ -63,11 +62,11 @@ Image::Image(const Slices &slices, const Settings &settings)
 	: Image(slices, settings, true)
 {
 	if (texType == TEXTURE_2D_ARRAY)
-		this->layers = data.getSliceCount();
+		this->layers = slices.getSliceCount();
 	else if (texType == TEXTURE_VOLUME)
-		this->depth = data.getSliceCount();
+		this->depth = slices.getSliceCount();
 
-	love::image::ImageDataBase *slice = data.get(0, 0);
+	love::image::ImageDataBase *slice = slices.get(0, 0);
 	init(slice->getFormat(), slice->getWidth(), slice->getHeight(), settings);
 }
 
@@ -121,7 +120,7 @@ void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice,
 		lock.setLock(id->getMutex());
 
 	Rect rect = {x, y, d->getWidth(), d->getHeight()};
-	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect);
+	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect, d);
 }
 
 void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
@@ -154,19 +153,8 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d Image.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
 	}
 
-	love::image::ImageDataBase *oldd = data.get(slice, mipmap);
-
-	if (oldd == nullptr)
-		throw love::Exception("Image does not store ImageData!");
-
-	Rect currect = {0, 0, oldd->getWidth(), oldd->getHeight()};
-
-	// We can only replace the internal Data (used when reloading due to setMode)
-	// if the dimensions match. We also don't currently support partial updates
-	// of compressed textures.
-	if (rect == currect)
-		data.set(slice, mipmap, d);
-	else if (isPixelFormatCompressed(d->getFormat()))
+	// We don't currently support partial updates of compressed textures.
+	if (isPixelFormatCompressed(d->getFormat()) && (rect.x != 0 || rect.y != 0 || rect.w != mipw || rect.h != miph))
 		throw love::Exception("Compressed textures only support replacing the entire Image.");
 
 	Graphics::flushStreamDrawsGlobal();
@@ -181,7 +169,7 @@ void Image::replacePixels(const void *data, size_t size, int slice, int mipmap, 
 {
 	Graphics::flushStreamDrawsGlobal();
 
-	uploadByteData(format, data, size, mipmap, slice, rect);
+	uploadByteData(format, data, size, mipmap, slice, rect, nullptr);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();

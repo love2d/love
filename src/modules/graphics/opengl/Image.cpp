@@ -35,6 +35,7 @@ namespace opengl
 
 Image::Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
 	: love::graphics::Image(textype, format, width, height, slices, settings)
+	, slices(textype)
 	, texture(0)
 {
 	loadVolatile();
@@ -42,6 +43,7 @@ Image::Image(TextureType textype, PixelFormat format, int width, int height, int
 
 Image::Image(const Slices &slices, const Settings &settings)
 	: love::graphics::Image(slices, settings)
+	, slices(slices)
 	, texture(0)
 {
 	loadVolatile();
@@ -85,7 +87,7 @@ void Image::loadDefaultTexture()
 	int slices = texType == TEXTURE_CUBE ? 6 : 1;
 	Rect rect = {0, 0, 2, 2};
 	for (int slice = 0; slice < slices; slice++)
-		uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect);
+		uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect, nullptr);
 }
 
 void Image::loadData()
@@ -120,8 +122,8 @@ void Image::loadData()
 
 			if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
 			{
-				for (int slice = 0; slice < data.getSliceCount(mip); slice++)
-					mipsize += data.get(slice, mip)->getSize();
+				for (int slice = 0; slice < slices.getSliceCount(mip); slice++)
+					mipsize += slices.get(slice, mip)->getSize();
 			}
 
 			GLenum gltarget = OpenGL::getGLTextureType(texType);
@@ -130,7 +132,7 @@ void Image::loadData()
 
 		for (int slice = 0; slice < slicecount; slice++)
 		{
-			love::image::ImageDataBase *id = data.get(slice, mip);
+			love::image::ImageDataBase *id = slices.get(slice, mip);
 
 			if (id != nullptr)
 				uploadImageData(id, mip, slice, 0, 0);
@@ -147,8 +149,18 @@ void Image::loadData()
 		generateMipmaps();
 }
 
-void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd)
 {
+	love::image::ImageDataBase *oldd = slices.get(slice, level);
+
+	// We can only replace the internal Data (used when reloading due to setMode)
+	// if the dimensions match.
+	if (imgd != nullptr && oldd != nullptr && oldd->getWidth() == imgd->getWidth()
+		&& oldd->getHeight() == imgd->getHeight())
+	{
+		slices.set(slice, level, imgd);
+	}
+
 	OpenGL::TempDebugGroup debuggroup("Image data upload");
 
 	gl.bindTextureToUnit(this, 0, false);
@@ -242,8 +254,8 @@ bool Image::loadVolatile()
 
 	int64 memsize = 0;
 
-	for (int slice = 0; slice < data.getSliceCount(0); slice++)
-		memsize += data.get(slice, 0)->getSize();
+	for (int slice = 0; slice < slices.getSliceCount(0); slice++)
+		memsize += slices.get(slice, 0)->getSize();
 
 	if (getMipmapCount() > 1)
 		memsize *= 1.33334;
