@@ -785,12 +785,14 @@ public:
 	const Capabilities &getCapabilities() const;
 
 	/**
-	 * Gets whether the specified pixel format is supported by Canvases or
-	 * Images.
+	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
-	virtual bool isCanvasFormatSupported(PixelFormat format, bool readable) const = 0;
-	virtual bool isImageFormatSupported(PixelFormat format, bool sRGB = false) const = 0;
+	virtual PixelFormat getSizedFormat(PixelFormat format) const = 0;
+
+	/**
+	 * Gets whether the specified pixel format is supported.
+	 **/
+	virtual bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.

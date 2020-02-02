@@ -72,7 +72,7 @@ Canvas::Canvas(const Settings &settings)
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	const Graphics::Capabilities &caps = gfx->getCapabilities();
 
-	if (!gfx->isCanvasFormatSupported(format, readable))
+	if (!gfx->isPixelFormatSupported(format, true, readable, false))
 	{
 		const char *fstr = "rgba8";
 		const char *readablestr = "";

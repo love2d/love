@@ -104,9 +104,8 @@ public:
 
 	void setWireframe(bool enable) override;
 
-	bool isCanvasFormatSupported(PixelFormat format) const override;
-	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
-	bool isImageFormatSupported(PixelFormat format, bool sRGB) const override;
+	PixelFormat getSizedFormat(PixelFormat format) const override;
+	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 
@@ -152,6 +151,9 @@ private:
 	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
+
+	// [rendertarget][readable][srgb]
+	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];
 
 }; // Graphics
 

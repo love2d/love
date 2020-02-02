@@ -196,7 +196,9 @@ Canvas::Canvas(const Settings &settings)
     , renderbuffer(0)
 	, actualSamples(0)
 {
-	format = getSizedFormat(format);
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr)
+		format = gfx->getSizedFormat(format);
 
 	initQuad();
 	loadVolatile();
@@ -474,151 +476,9 @@ void Canvas::generateMipmaps()
 	glGenerateMipmap(gltextype);
 }
 
-PixelFormat Canvas::getSizedFormat(PixelFormat format)
-{
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_sRGBA8_UNORM;
-		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, true, true, false))
-			// 32-bit render targets don't have guaranteed support on GLES2.
-			return PIXELFORMAT_RGBA4_UNORM;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
-bool Canvas::isSupported()
-{
-	return GLAD_ES_VERSION_2_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_EXT_framebuffer_object;
-}
-
 bool Canvas::isMultiFormatMultiCanvasSupported()
 {
 	return gl.getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
-}
-
-Canvas::SupportedFormat Canvas::supportedFormats[] = {};
-Canvas::SupportedFormat Canvas::checkedFormats[] = {};
-
-bool Canvas::isFormatSupported(PixelFormat format)
-{
-	return isFormatSupported(format, !isPixelFormatDepthStencil(format));
-}
-
-bool Canvas::isFormatSupported(PixelFormat format, bool readable)
-{
-	if (!isSupported())
-		return false;
-
-	const char *fstr = "?";
-	love::getConstant(format, fstr);
-
-	bool supported = true;
-	format = getSizedFormat(format);
-
-	if (!OpenGL::isPixelFormatSupported(format, true, readable, false))
-		return false;
-
-	if (checkedFormats[format].get(readable))
-		return supportedFormats[format].get(readable);
-
-	// Even though we might have the necessary OpenGL version or extension,
-	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
-	// a texture to a FBO whose format the driver doesn't like. So we should
-	// test with an actual FBO.
-	GLuint texture = 0;
-	GLuint renderbuffer = 0;
-
-	// Avoid the test for depth/stencil formats - not every GL version
-	// guarantees support for depth/stencil-only render targets (which we would
-	// need for the test below to work), and we already do some finagling in
-	// convertPixelFormat to try to use the best-supported internal
-	// depth/stencil format for a particular driver.
-	if (isPixelFormatDepthStencil(format))
-	{
-		checkedFormats[format].set(readable, true);
-		supportedFormats[format].set(readable, true);
-		return true;
-	}
-
-	bool unusedSRGB = false;
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, unusedSRGB);
-
-	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
-
-	GLuint fbo = 0;
-	glGenFramebuffers(1, &fbo);
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
-
-	// Make sure at least something is bound to a color attachment. I believe
-	// this is required on ES2 but I'm not positive.
-	if (isPixelFormatDepthStencil(format))
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
-
-	if (readable)
-	{
-		glGenTextures(1, &texture);
-		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
-
-		Texture::Filter f;
-		f.min = f.mag = Texture::FILTER_NEAREST;
-		gl.setTextureFilter(TEXTURE_2D, f);
-
-		Texture::Wrap w;
-		gl.setTextureWrap(TEXTURE_2D, w);
-
-		unusedSRGB = false;
-		gl.rawTexStorage(TEXTURE_2D, 1, format, unusedSRGB, 1, 1);
-	}
-	else
-	{
-		glGenRenderbuffers(1, &renderbuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, 1, 1);
-	}
-
-	for (GLenum attachment : fmt.framebufferAttachments)
-	{
-		if (attachment == GL_NONE)
-			continue;
-
-		if (readable)
-			gl.framebufferTexture(attachment, TEXTURE_2D, texture, 0, 0, 0);
-		else
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer);
-	}
-
-	supported = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
-	gl.deleteFramebuffer(fbo);
-
-	if (texture != 0)
-		gl.deleteTexture(texture);
-
-	if (renderbuffer != 0)
-		glDeleteRenderbuffers(1, &renderbuffer);
-
-	// Cache the result so we don't do this for every isFormatSupported call.
-	checkedFormats[format].set(readable, true);
-	supportedFormats[format].set(readable, supported);
-
-	return supported;
-}
-
-void Canvas::resetFormatSupport()
-{
-	for (int i = 0; i < (int)PIXELFORMAT_MAX_ENUM; i++)
-	{
-		checkedFormats[i].readable = false;
-		checkedFormats[i].nonreadable = false;
-	}
 }
 
 } // opengl

@@ -54,8 +54,6 @@ public:
 
 	bool setMipmapSharpness(float sharpness) override;
 
-	static bool isFormatSupported(PixelFormat pixelformat, bool sRGB);
-
 private:
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;

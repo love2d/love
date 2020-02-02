@@ -79,7 +79,7 @@ Image::~Image()
 void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 {
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr && !gfx->isImageFormatSupported(fmt, sRGB))
+	if (gfx != nullptr && !gfx->isPixelFormatSupported(fmt, false, true, sRGB))
 	{
 		const char *str;
 		if (love::getConstant(fmt, str))

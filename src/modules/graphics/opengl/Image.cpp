@@ -351,11 +351,6 @@ bool Image::setMipmapSharpness(float sharpness)
 	return true;
 }
 
-bool Image::isFormatSupported(PixelFormat pixelformat, bool sRGB)
-{
-	return OpenGL::isPixelFormatSupported(pixelformat, false, true, sRGB);
-}
-
 } // opengl
 } // graphics
 } // love

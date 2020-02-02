@@ -71,33 +71,9 @@ public:
 		return fbo;
 	}
 
-	static PixelFormat getSizedFormat(PixelFormat format);
-	static bool isSupported();
 	static bool isMultiFormatMultiCanvasSupported();
-	static bool isFormatSupported(PixelFormat format, bool readable);
-	static bool isFormatSupported(PixelFormat format);
-	static void resetFormatSupport();
 
 private:
-
-	struct SupportedFormat
-	{
-		bool readable = false;
-		bool nonreadable = false;
-
-		bool get(bool getreadable)
-		{
-			return getreadable ? readable : nonreadable;
-		}
-
-		void set(bool setreadable, bool val)
-		{
-			if (setreadable)
-				readable = val;
-			else
-				nonreadable = val;
-		}
-	};
 
 	GLuint fbo;
 
@@ -107,9 +83,6 @@ private:
 	GLenum status;
 
 	int actualSamples;
-
-	static SupportedFormat supportedFormats[PIXELFORMAT_MAX_ENUM];
-	static SupportedFormat checkedFormats[PIXELFORMAT_MAX_ENUM];
 
 }; // Canvas
 

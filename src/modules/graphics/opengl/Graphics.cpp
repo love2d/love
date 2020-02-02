@@ -91,9 +91,9 @@ static GLenum getGLBlendFactor(BlendFactor factor)
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
+	, supportedFormats()
 {
 	gl = OpenGL();
-	Canvas::resetFormatSupport();
 
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 
@@ -1388,19 +1388,127 @@ void Graphics::initCapabilities()
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
 }
 
-bool Graphics::isCanvasFormatSupported(PixelFormat format) const
+PixelFormat Graphics::getSizedFormat(PixelFormat format) const
 {
-	return Canvas::isFormatSupported(format);
+	switch (format)
+	{
+	case PIXELFORMAT_NORMAL:
+		if (isGammaCorrect())
+			return PIXELFORMAT_sRGBA8_UNORM;
+		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, true, true, false))
+			// 32-bit render targets don't have guaranteed support on GLES2.
+			return PIXELFORMAT_RGBA4_UNORM;
+		else
+			return PIXELFORMAT_RGBA8_UNORM;
+	case PIXELFORMAT_HDR:
+		return PIXELFORMAT_RGBA16_FLOAT;
+	default:
+		return format;
+	}
 }
 
-bool Graphics::isCanvasFormatSupported(PixelFormat format, bool readable) const
+bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
 {
-	return Canvas::isFormatSupported(format, readable);
-}
+	format = getSizedFormat(format);
 
-bool Graphics::isImageFormatSupported(PixelFormat format, bool sRGB) const
-{
-	return Image::isFormatSupported(format, sRGB);
+	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
+	{
+		format = PIXELFORMAT_sRGBA8_UNORM;
+		sRGB = false;
+	}
+
+	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
+
+	if (supported.hasValue)
+		return supported.value;
+
+	if (!OpenGL::isPixelFormatSupported(format, rendertarget, readable, sRGB))
+	{
+		supported.set(false);
+		return supported.value;
+	}
+
+	if (!rendertarget)
+	{
+		supported.set(true);
+		return supported.value;
+	}
+
+	// Even though we might have the necessary OpenGL version or extension,
+	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
+	// a texture to a FBO whose format the driver doesn't like. So we should
+	// test with an actual FBO.
+	GLuint texture = 0;
+	GLuint renderbuffer = 0;
+
+	// Avoid the test for depth/stencil formats - not every GL version
+	// guarantees support for depth/stencil-only render targets (which we would
+	// need for the test below to work), and we already do some finagling in
+	// convertPixelFormat to try to use the best-supported internal
+	// depth/stencil format for a particular driver.
+	if (isPixelFormatDepthStencil(format))
+	{
+		supported.set(true);
+		return true;
+	}
+
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, sRGB);
+
+	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
+
+	// Make sure at least something is bound to a color attachment. I believe
+	// this is required on ES2 but I'm not positive.
+	if (isPixelFormatDepthStencil(format))
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
+
+	if (readable)
+	{
+		glGenTextures(1, &texture);
+		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
+
+		Texture::Filter f;
+		f.min = f.mag = Texture::FILTER_NEAREST;
+		gl.setTextureFilter(TEXTURE_2D, f);
+
+		Texture::Wrap w;
+		gl.setTextureWrap(TEXTURE_2D, w);
+
+		gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
+	}
+	else
+	{
+		glGenRenderbuffers(1, &renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, 1, 1);
+	}
+
+	for (GLenum attachment : fmt.framebufferAttachments)
+	{
+		if (attachment == GL_NONE)
+			continue;
+
+		if (readable)
+			gl.framebufferTexture(attachment, TEXTURE_2D, texture, 0, 0, 0);
+		else
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer);
+	}
+
+	supported.set(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+	gl.deleteFramebuffer(fbo);
+
+	if (texture != 0)
+		gl.deleteTexture(texture);
+
+	if (renderbuffer != 0)
+		glDeleteRenderbuffers(1, &renderbuffer);
+
+	return supported.value;
 }
 
 Shader::Language Graphics::getShaderLanguageTarget() const

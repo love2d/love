@@ -694,7 +694,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
 		if (wantsdepth && wantsstencil)
 			dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		else if (wantsdepth && isCanvasFormatSupported(PIXELFORMAT_DEPTH24_UNORM, false))
+		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, true, false, false))
 			dsformat = PIXELFORMAT_DEPTH24_UNORM;
 		else if (wantsdepth)
 			dsformat = PIXELFORMAT_DEPTH16_UNORM;

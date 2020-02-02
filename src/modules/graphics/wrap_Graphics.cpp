@@ -2282,14 +2282,14 @@ int w_getCanvasFormats(lua_State *L)
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isCanvasFormatSupported(format, true);
+				return instance()->isPixelFormatSupported(format, true, true, false);
 			};
 		}
 		else
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isCanvasFormatSupported(format, false);
+				return instance()->isPixelFormatSupported(format, true, false, false);
 			};
 		}
 	}
@@ -2297,7 +2297,8 @@ int w_getCanvasFormats(lua_State *L)
 	{
 		supported = [](PixelFormat format) -> bool
 		{
-			return instance()->isCanvasFormatSupported(format);
+			bool readable = !isPixelFormatDepthStencil(format);
+			return instance()->isPixelFormatSupported(format, true, readable, false);
 		};
 	}
 
@@ -2308,7 +2309,7 @@ int w_getImageFormats(lua_State *L)
 {
 	const auto supported = [](PixelFormat format) -> bool
 	{
-		return instance()->isImageFormatSupported(format);
+		return instance()->isPixelFormatSupported(format, false, true, false);
 	};
 
 	const auto ignore = [](PixelFormat format) -> bool
