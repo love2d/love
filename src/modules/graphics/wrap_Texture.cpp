@@ -143,6 +143,13 @@ int w_Texture_isCompressed(lua_State *L)
 	return 1;
 }
 
+int w_Texture_getMSAA(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushinteger(L, t->getMSAA());
+	return 1;
+}
+
 int w_Texture_setFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
@@ -330,6 +337,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getDPIScale", w_Texture_getDPIScale },
 	{ "isFormatLinear", w_Texture_isFormatLinear },
 	{ "isCompressed", w_Texture_isCompressed },
+	{ "getMSAA", w_Texture_getMSAA },
 	{ "setFilter", w_Texture_setFilter },
 	{ "getFilter", w_Texture_getFilter },
 	{ "setMipmapFilter", w_Texture_setMipmapFilter },

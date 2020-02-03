@@ -78,12 +78,8 @@ public:
 	virtual ~Canvas();
 
 	MipmapMode getMipmapMode() const;
-	int getRequestedMSAA() const;
 
 	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
-
-	virtual int getMSAA() const = 0;
-	virtual ptrdiff_t getRenderTargetHandle() const = 0;
 
 	static bool getConstant(const char *in, MipmapMode &out);
 	static bool getConstant(MipmapMode in, const char *&out);

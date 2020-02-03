@@ -181,6 +181,8 @@ public:
 	void drawLayer(Graphics *gfx, int layer, const Matrix4 &m);
 	void drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m);
 
+	virtual ptrdiff_t getRenderTargetHandle() const = 0;
+
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
 
@@ -202,6 +204,9 @@ public:
 	int getPixelHeight(int mip = 0) const;
 
 	float getDPIScale() const;
+
+	int getRequestedMSAA() const;
+	virtual int getMSAA() const = 0;
 
 	virtual void setSamplerState(const SamplerState &s);
 	const SamplerState &getSamplerState() const;
@@ -241,6 +246,8 @@ protected:
 
 	int pixelWidth;
 	int pixelHeight;
+
+	int requestedMSAA;
 
 	SamplerState samplerState;
 

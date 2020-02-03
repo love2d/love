@@ -172,6 +172,7 @@ Texture::Texture(TextureType texType)
 	, mipmapCount(1)
 	, pixelWidth(0)
 	, pixelHeight(0)
+	, requestedMSAA(1)
 	, samplerState()
 	, graphicsMemorySize(0)
 {
@@ -395,6 +396,11 @@ int Texture::getPixelHeight(int mip) const
 float Texture::getDPIScale() const
 {
 	return (float) pixelHeight / (float) height;
+}
+
+int Texture::getRequestedMSAA() const
+{
+	return requestedMSAA;
 }
 
 void Texture::setSamplerState(const SamplerState &s)

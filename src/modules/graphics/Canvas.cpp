@@ -35,6 +35,7 @@ Canvas::Canvas(const Settings &settings)
 
 	renderTarget = true;
 	sRGB = false;
+	requestedMSAA = settings.msaa;
 
 	width = settings.width;
 	height = settings.height;
@@ -104,11 +105,6 @@ Canvas::~Canvas()
 Canvas::MipmapMode Canvas::getMipmapMode() const
 {
 	return settings.mipmaps;
-}
-
-int Canvas::getRequestedMSAA() const
-{
-	return settings.msaa;
 }
 
 love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)

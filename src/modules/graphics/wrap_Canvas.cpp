@@ -31,13 +31,6 @@ Canvas *luax_checkcanvas(lua_State *L, int idx)
 	return luax_checktype<Canvas>(L, idx);
 }
 
-int w_Canvas_getMSAA(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	lua_pushinteger(L, canvas->getMSAA());
-	return 1;
-}
-
 int w_Canvas_renderTo(lua_State *L)
 {
 	Graphics::RenderTarget rt(luax_checkcanvas(L, 1));
@@ -135,7 +128,6 @@ int w_Canvas_getMipmapMode(lua_State *L)
 
 static const luaL_Reg w_Canvas_functions[] =
 {
-	{ "getMSAA", w_Canvas_getMSAA },
 	{ "renderTo", w_Canvas_renderTo },
 	{ "newImageData", w_Canvas_newImageData },
 	{ "generateMipmaps", w_Canvas_generateMipmaps },

@@ -48,7 +48,9 @@ public:
 	void unloadVolatile() override;
 
 	ptrdiff_t getHandle() const override;
+	ptrdiff_t getRenderTargetHandle() const override { return 0; }
 
+	int getMSAA() const override { return 1; }
 	void setSamplerState(const SamplerState &s) override;
 	void generateMipmaps() override;
 
