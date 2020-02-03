@@ -47,18 +47,20 @@ int Font::fontCount = 0;
 
 const vertex::CommonFormat Font::vertexFormat = vertex::CommonFormat::XYf_STus_RGBAub;
 
-Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
+Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	: rasterizers({r})
 	, height(r->getHeight())
 	, lineHeight(1)
 	, textureWidth(128)
 	, textureHeight(128)
-	, filter(f)
+	, samplerState()
 	, dpiScale(r->getDPIScale())
 	, useSpacesAsTab(false)
 	, textureCacheID(0)
 {
-	filter.mipmap = Texture::FILTER_NONE;
+	samplerState.minFilter = s.minFilter;
+	samplerState.magFilter = s.magFilter;
+	samplerState.maxAnisotropy = s.maxAnisotropy;
 
 	// Try to find the best texture size match for the font size. default to the
 	// largest texture size if no rough match is found.
@@ -150,7 +152,7 @@ void Font::createTexture()
 
 	Image::Settings settings;
 	image = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
-	image->setFilter(filter);
+	image->setSamplerState(samplerState);
 
 	{
 		size_t bpp = getPixelFormatSize(pixelFormat);
@@ -918,17 +920,19 @@ float Font::getLineHeight() const
 	return lineHeight;
 }
 
-void Font::setFilter(const Texture::Filter &f)
+void Font::setSamplerState(const SamplerState &s)
 {
-	for (const auto &image : images)
-		image->setFilter(f);
+	samplerState.minFilter = s.minFilter;
+	samplerState.magFilter = s.magFilter;
+	samplerState.maxAnisotropy = s.maxAnisotropy;
 
-	filter = f;
+	for (const auto &image : images)
+		image->setSamplerState(samplerState);
 }
 
-const Texture::Filter &Font::getFilter() const
+const SamplerState &Font::getSamplerState() const
 {
-	return filter;
+	return samplerState;
 }
 
 int Font::getAscent() const

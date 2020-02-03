@@ -433,8 +433,8 @@ public:
 	virtual Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
-	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter);
-	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter = Texture::defaultFilter);
+	Font *newFont(love::font::Rasterizer *data);
+	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
@@ -620,20 +620,14 @@ public:
 	const BlendState &getBlendState() const;
 
 	/**
-	 * Sets the default filter for images, canvases, and fonts.
+	 * Sets the default sampler state for images, canvases, and fonts.
 	 **/
-	void setDefaultFilter(const Texture::Filter &f);
+	void setDefaultSamplerState(const SamplerState &s);
 
 	/**
-	 * Gets the default filter for images, canvases, and fonts.
+	 * Gets the default sampler state for images, canvases, and fonts.
 	 **/
-	const Texture::Filter &getDefaultFilter() const;
-
-	/**
-	 * Default Image mipmap filter mode and sharpness values.
-	 **/
-	void setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness);
-	void getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const;
+	const SamplerState &getDefaultSamplerState() const;
 
 	/**
 	 * Sets the line width.
@@ -920,10 +914,7 @@ protected:
 
 		bool wireframe = false;
 
-		Texture::Filter defaultFilter = Texture::Filter();
-
-		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_LINEAR;
-		float defaultMipmapSharpness = 0.0f;
+		SamplerState defaultSamplerState = SamplerState();
 	};
 
 	struct StreamBufferState

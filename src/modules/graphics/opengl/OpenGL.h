@@ -329,16 +329,9 @@ public:
 	void deleteTexture(GLuint texture);
 
 	/**
-	 * Sets the texture filter mode for the currently bound texture.
-	 * The anisotropy parameter of the argument is set to the actual amount of
-	 * anisotropy that was used.
+	 * Sets sampler state parameters for the currently bound texture.
 	 **/
-	void setTextureFilter(TextureType target, graphics::Texture::Filter &f);
-
-	/**
-	 * Sets the texture wrap mode for the currently bound texture.
-	 **/
-	void setTextureWrap(TextureType target, const graphics::Texture::Wrap &w);
+	void setSamplerState(TextureType target, SamplerState &s);
 
 	/**
 	 * Equivalent to glTexStorage2D/3D on platforms that support it. Equivalent
@@ -407,7 +400,7 @@ public:
 	static GLenum getGLVertexDataType(vertex::DataType type, GLboolean &normalized, bool &intformat);
 	static GLenum getGLBufferUsage(vertex::Usage usage);
 	static GLenum getGLTextureType(TextureType type);
-	static GLint getGLWrapMode(Texture::WrapMode wmode);
+	static GLint getGLWrapMode(SamplerState::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);

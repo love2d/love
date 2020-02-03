@@ -103,9 +103,6 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 
 	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h, depth);
 
-	if (mipmapCount > 1)
-		filter.mipmap = defaultMipmapFilter;
-
 	initQuad();
 
 	++imageCount;

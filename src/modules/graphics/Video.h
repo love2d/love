@@ -58,8 +58,8 @@ public:
 	int getPixelWidth() const;
 	int getPixelHeight() const;
 
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
+	void setSamplerState(const SamplerState &s);
+	const SamplerState &getSamplerState() const;
 
 private:
 
@@ -70,7 +70,7 @@ private:
 	int width;
 	int height;
 
-	Texture::Filter filter;
+	SamplerState samplerState;
 
 	Vertex vertices[4];
 

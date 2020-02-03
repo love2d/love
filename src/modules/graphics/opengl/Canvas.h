@@ -47,10 +47,7 @@ public:
 	void unloadVolatile() override;
 
 	// Implements Texture.
-	void setFilter(const Texture::Filter &f) override;
-	bool setWrap(const Texture::Wrap &w) override;
-	bool setMipmapSharpness(float sharpness) override;
-	void setDepthSampleMode(Optional<CompareMode> mode) override;
+	void setSamplerState(const SamplerState &s) override;
 	ptrdiff_t getHandle() const override;
 
 	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;

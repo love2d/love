@@ -64,10 +64,7 @@ Canvas::Canvas(const Settings &settings)
 		throw love::Exception("Non-readable and MSAA textures cannot have mipmaps.");
 
 	if (settings.mipmaps != MIPMAPS_NONE)
-	{
 		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
-		filter.mipmap = defaultMipmapFilter;
-	}
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	const Graphics::Capabilities &caps = gfx->getCapabilities();

@@ -1102,7 +1102,7 @@ int w_newFont(lua_State *L)
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	luax_catchexcept(L, [&]() {
-		font = instance()->newFont(rasterizer, instance()->getDefaultFilter()); }
+		font = instance()->newFont(rasterizer); }
 	);
 
 	// Push the type.
@@ -1114,9 +1114,6 @@ int w_newFont(lua_State *L)
 int w_newImageFont(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
-
-	// filter for glyphs
-	Texture::Filter filter = instance()->getDefaultFilter();
 
 	// Convert to Rasterizer if necessary.
 	if (!luax_istype(L, 1, love::font::Rasterizer::type))
@@ -1133,7 +1130,7 @@ int w_newImageFont(lua_State *L)
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	// Create the font.
-	Font *font = instance()->newFont(rasterizer, filter);
+	Font *font = instance()->newFont(rasterizer);
 
 	// Push the type.
 	luax_pushtype(L, font);
@@ -1935,69 +1932,65 @@ int w_getBlendState(lua_State *L)
 
 int w_setDefaultFilter(lua_State *L)
 {
-	Texture::Filter f;
+	SamplerState s = instance()->getDefaultSamplerState();
 
 	const char *minstr = luaL_checkstring(L, 1);
 	const char *magstr = luaL_optstring(L, 2, minstr);
 
-	if (!Texture::getConstant(minstr, f.min))
-		return luax_enumerror(L, "filter mode", Texture::getConstants(f.min), minstr);
-	if (!Texture::getConstant(magstr, f.mag))
-		return luax_enumerror(L, "filter mode", Texture::getConstants(f.mag), magstr);
+	if (!SamplerState::getConstant(minstr, s.minFilter))
+		return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.minFilter), minstr);
+	if (!SamplerState::getConstant(magstr, s.magFilter))
+		return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.magFilter), magstr);
 
-	f.anisotropy = (float) luaL_optnumber(L, 3, 1.0);
+	s.maxAnisotropy = std::min(std::max(1, (int) luaL_optnumber(L, 3, 1.0)), LOVE_UINT8_MAX);
 
-	instance()->setDefaultFilter(f);
-
+	instance()->setDefaultSamplerState(s);
 	return 0;
 }
 
 int w_getDefaultFilter(lua_State *L)
 {
-	const Texture::Filter &f = instance()->getDefaultFilter();
+	const SamplerState &s = instance()->getDefaultSamplerState();
 	const char *minstr;
 	const char *magstr;
-	if (!Texture::getConstant(f.min, minstr))
+	if (!SamplerState::getConstant(s.minFilter, minstr))
 		return luaL_error(L, "Unknown minification filter mode");
-	if (!Texture::getConstant(f.mag, magstr))
+	if (!SamplerState::getConstant(s.magFilter, magstr))
 		return luaL_error(L, "Unknown magnification filter mode");
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	lua_pushnumber(L, f.anisotropy);
+	lua_pushnumber(L, s.maxAnisotropy);
 	return 3;
 }
 
 int w_setDefaultMipmapFilter(lua_State *L)
 {
-	Texture::FilterMode filter = Texture::FILTER_NONE;
+	SamplerState s = instance()->getDefaultSamplerState();
+	s.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 	if (!lua_isnoneornil(L, 1))
 	{
 		const char *str = luaL_checkstring(L, 1);
-		if (!Texture::getConstant(str, filter))
-			return luax_enumerror(L, "filter mode", Texture::getConstants(filter), str);
+		if (!SamplerState::getConstant(str, s.mipmapFilter))
+			return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.mipmapFilter), str);
 	}
 
-	float sharpness = (float) luaL_optnumber(L, 2, 0);
+	s.lodBias = -((float) luaL_optnumber(L, 2, 0.0));
 
-	instance()->setDefaultMipmapFilter(filter, sharpness);
-
+	instance()->setDefaultSamplerState(s);
 	return 0;
 }
 
 int w_getDefaultMipmapFilter(lua_State *L)
 {
-	Texture::FilterMode filter;
-	float sharpness;
-
-	instance()->getDefaultMipmapFilter(&filter, &sharpness);
+	const SamplerState &s = instance()->getDefaultSamplerState();
 
 	const char *str;
-	if (Texture::getConstant(filter, str))
+	if (SamplerState::getConstant(s.mipmapFilter, str))
 		lua_pushstring(L, str);
 	else
 		lua_pushnil(L);
 
-	lua_pushnumber(L, sharpness);
+	lua_pushnumber(L, -s.lodBias);
 
 	return 2;
 }

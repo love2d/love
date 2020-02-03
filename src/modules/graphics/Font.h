@@ -96,7 +96,7 @@ public:
 		int vertexcount;
 	};
 
-	Font(love::font::Rasterizer *r, const Texture::Filter &filter);
+	Font(love::font::Rasterizer *r, const SamplerState &samplerState);
 
 	virtual ~Font();
 
@@ -158,8 +158,8 @@ public:
 	 **/
 	float getLineHeight() const;
 
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
+	void setSamplerState(const SamplerState &s);
+	const SamplerState &getSamplerState() const;
 
 	// Extra font metrics
 	int getAscent() const;
@@ -227,7 +227,7 @@ private:
 
 	PixelFormat pixelFormat;
 
-	Texture::Filter filter;
+	SamplerState samplerState;
 
 	float dpiScale;
 

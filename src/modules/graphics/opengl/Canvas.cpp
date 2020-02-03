@@ -239,10 +239,7 @@ bool Canvas::loadVolatile()
 		if (GLAD_ANGLE_texture_usage)
 			glTexParameteri(gltype, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
 
-		setFilter(filter);
-		setWrap(wrap);
-		setMipmapSharpness(mipmapSharpness);
-		setDepthSampleMode(depthCompareMode);
+		setSamplerState(samplerState);
 
 		while (glGetError() != GL_NO_ERROR)
 			/* Clear the error buffer. */;
@@ -320,113 +317,30 @@ void Canvas::unloadVolatile()
 	setGraphicsMemorySize(0);
 }
 
-void Canvas::setFilter(const Texture::Filter &f)
+void Canvas::setSamplerState(const SamplerState &s)
 {
-	Texture::setFilter(f);
+	Texture::setSamplerState(s);
+
+	if (samplerState.depthSampleMode.hasValue && !gl.isDepthCompareSampleSupported())
+		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
 
 	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
 	{
-		filter.mag = filter.min = FILTER_NEAREST;
+		samplerState.magFilter = samplerState.minFilter = SamplerState::FILTER_NEAREST;
 
-		if (filter.mipmap == FILTER_LINEAR)
-			filter.mipmap = FILTER_NEAREST;
+		if (samplerState.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
+			samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NEAREST;
 	}
-
-	gl.bindTextureToUnit(this, 0, false);
-	gl.setTextureFilter(texType, filter);
-}
-
-bool Canvas::setWrap(const Texture::Wrap &w)
-{
-	Graphics::flushStreamDrawsGlobal();
-
-	bool success = true;
-	bool forceclamp = texType == TEXTURE_CUBE;
-	wrap = w;
 
 	// If we only have limited NPOT support then the wrap mode must be CLAMP.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
 		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight) || depth != nextP2(depth)))
 	{
-		forceclamp = true;
-	}
-
-	if (forceclamp)
-	{
-		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP || wrap.r != WRAP_CLAMP)
-			success = false;
-
-		wrap.s = wrap.t = wrap.r = WRAP_CLAMP;
-	}
-
-	if (!gl.isClampZeroOneTextureWrapSupported())
-	{
-		if (isClampZeroOrOne(wrap.s)) wrap.s = WRAP_CLAMP;
-		if (isClampZeroOrOne(wrap.t)) wrap.t = WRAP_CLAMP;
-		if (isClampZeroOrOne(wrap.r)) wrap.r = WRAP_CLAMP;
+		samplerState.wrapU = samplerState.wrapV = samplerState.wrapW = SamplerState::WRAP_CLAMP;
 	}
 
 	gl.bindTextureToUnit(this, 0, false);
-	gl.setTextureWrap(texType, wrap);
-
-	return success;
-}
-
-bool Canvas::setMipmapSharpness(float sharpness)
-{
-	if (!gl.isSamplerLODBiasSupported())
-		return false;
-
-	Graphics::flushStreamDrawsGlobal();
-
-	float maxbias = gl.getMaxLODBias();
-	if (maxbias > 0.01f)
-		maxbias -= 0.0f;
-
-	mipmapSharpness = std::min(std::max(sharpness, -maxbias), maxbias);
-
-	gl.bindTextureToUnit(this, 0, false);
-
-	// negative bias is sharper
-	glTexParameterf(gl.getGLTextureType(texType), GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
-
-	return true;
-}
-
-void Canvas::setDepthSampleMode(Optional<CompareMode> mode)
-{
-	Texture::setDepthSampleMode(mode);
-
-	bool supported = gl.isDepthCompareSampleSupported();
-
-	if (mode.hasValue)
-	{
-		if (!supported)
-			throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
-
-		Graphics::flushStreamDrawsGlobal();
-
-		gl.bindTextureToUnit(texType, texture, 0, false);
-		GLenum gltextype = OpenGL::getGLTextureType(texType);
-
-		// See the comment in renderstate.h
-		GLenum glmode = OpenGL::getGLCompareMode(getReversedCompareMode(mode.value));
-
-		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_FUNC, glmode);
-		
-	}
-	else if (isPixelFormatDepth(format) && supported)
-	{
-		Graphics::flushStreamDrawsGlobal();
-
-		gl.bindTextureToUnit(texType, texture, 0, false);
-		GLenum gltextype = OpenGL::getGLTextureType(texType);
-
-		glTexParameteri(gltextype, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-	}
-
-	depthCompareMode = mode;
+	gl.setSamplerState(texType, samplerState);
 }
 
 ptrdiff_t Canvas::getHandle() const

@@ -125,7 +125,7 @@ void Shader::checkMainTexture(Texture *tex) const
 	if (!tex->isReadable())
 		throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
 
-	checkMainTextureType(tex->getTextureType(), tex->getDepthSampleMode().hasValue);
+	checkMainTextureType(tex->getTextureType(), tex->getSamplerState().depthSampleMode.hasValue);
 }
 
 bool Shader::validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err)

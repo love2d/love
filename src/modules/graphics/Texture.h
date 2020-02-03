@@ -55,16 +55,8 @@ enum TextureType
 	TEXTURE_MAX_ENUM
 };
 
-/**
- * Base class for 2D textures. All textures can be drawn with Quads, have a
- * width and height, and have filter and wrap modes.
- **/
-class Texture : public Drawable, public Resource
+struct SamplerState
 {
-public:
-
-	static love::Type type;
-
 	enum WrapMode
 	{
 		WRAP_CLAMP,
@@ -77,26 +69,63 @@ public:
 
 	enum FilterMode
 	{
-		FILTER_NONE,
 		FILTER_LINEAR,
 		FILTER_NEAREST,
 		FILTER_MAX_ENUM
 	};
 
-	struct Filter
+	enum MipmapFilterMode
 	{
-		FilterMode min    = FILTER_LINEAR;
-		FilterMode mag    = FILTER_LINEAR;
-		FilterMode mipmap = FILTER_NONE;
-		float anisotropy  = 1.0f;
+		MIPMAP_FILTER_NONE,
+		MIPMAP_FILTER_LINEAR,
+		MIPMAP_FILTER_NEAREST,
+		MIPMAP_FILTER_MAX_ENUM
 	};
 
-	struct Wrap
-	{
-		WrapMode s = WRAP_CLAMP;
-		WrapMode t = WRAP_CLAMP;
-		WrapMode r = WRAP_CLAMP;
-	};
+	FilterMode minFilter = FILTER_LINEAR;
+	FilterMode magFilter = FILTER_LINEAR;
+	MipmapFilterMode mipmapFilter = MIPMAP_FILTER_NONE;
+
+	WrapMode wrapU = WRAP_CLAMP;
+	WrapMode wrapV = WRAP_CLAMP;
+	WrapMode wrapW = WRAP_CLAMP;
+
+	float lodBias = 0.0f;
+
+	uint8 maxAnisotropy = 1;
+
+	uint8 minLod = 0;
+	uint8 maxLod = LOVE_UINT8_MAX;
+
+	Optional<CompareMode> depthSampleMode;
+
+	uint64 toKey() const;
+	static SamplerState fromKey(uint64 key);
+
+	static bool isClampZeroOrOne(WrapMode w);
+
+	static bool getConstant(const char *in, FilterMode &out);
+	static bool getConstant(FilterMode in, const char *&out);
+	static std::vector<std::string> getConstants(FilterMode);
+
+	static bool getConstant(const char *in, MipmapFilterMode &out);
+	static bool getConstant(MipmapFilterMode in, const char *&out);
+	static std::vector<std::string> getConstants(MipmapFilterMode);
+
+	static bool getConstant(const char *in, WrapMode &out);
+	static bool getConstant(WrapMode in, const char *&out);
+	static std::vector<std::string> getConstants(WrapMode);
+};
+
+/**
+ * Base class for 2D textures. All textures can be drawn with Quads, have a
+ * width and height, and have filter and wrap modes.
+ **/
+class Texture : public Drawable, public Resource
+{
+public:
+
+	static love::Type type;
 
 	enum MipmapsType
 	{
@@ -135,10 +164,6 @@ public:
 
 	}; // Slices
 
-	static Filter defaultFilter;
-	static FilterMode defaultMipmapFilter;
-	static float defaultMipmapSharpness;
-
 	static int64 totalGraphicsMemory;
 
 	Texture(TextureType texType);
@@ -173,39 +198,17 @@ public:
 
 	float getDPIScale() const;
 
-	virtual void setFilter(const Filter &f);
-	virtual const Filter &getFilter() const;
-
-	virtual bool setWrap(const Wrap &w) = 0;
-	virtual const Wrap &getWrap() const;
-
-	// Sets the mipmap texture LOD bias (sharpness) value.
-	virtual bool setMipmapSharpness(float sharpness) = 0;
-	float getMipmapSharpness() const;
-
-	virtual void setDepthSampleMode(Optional<CompareMode> mode = Optional<CompareMode>());
-	Optional<CompareMode> getDepthSampleMode() const;
+	virtual void setSamplerState(const SamplerState &s);
+	const SamplerState &getSamplerState() const;
 
 	Quad *getQuad() const;
-
-	static bool validateFilter(const Filter &f, bool mipmapsAllowed);
 
 	static int getTotalMipmapCount(int w, int h);
 	static int getTotalMipmapCount(int w, int h, int d);
 
-	static bool isClampZeroOrOne(WrapMode w) { return w == WRAP_CLAMP_ZERO || w == WRAP_CLAMP_ONE; }
-
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
 	static std::vector<std::string> getConstants(TextureType);
-
-	static bool getConstant(const char *in, FilterMode &out);
-	static bool getConstant(FilterMode in, const char *&out);
-	static std::vector<std::string> getConstants(FilterMode);
-
-	static bool getConstant(const char *in, WrapMode &out);
-	static bool getConstant(WrapMode in, const char *&out);
-	static std::vector<std::string> getConstants(WrapMode);
 
 protected:
 
@@ -229,12 +232,7 @@ protected:
 	int pixelWidth;
 	int pixelHeight;
 
-	Filter filter;
-	Wrap wrap;
-
-	float mipmapSharpness;
-
-	Optional<CompareMode> depthCompareMode;
+	SamplerState samplerState;
 
 	StrongRef<Quad> quad;
 
@@ -244,12 +242,6 @@ private:
 
 	static StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry texTypeEntries[];
 	static StringMap<TextureType, TEXTURE_MAX_ENUM> texTypes;
-
-	static StringMap<FilterMode, FILTER_MAX_ENUM>::Entry filterModeEntries[];
-	static StringMap<FilterMode, FILTER_MAX_ENUM> filterModes;
-
-	static StringMap<WrapMode, WRAP_MAX_ENUM>::Entry wrapModeEntries[];
-	static StringMap<WrapMode, WRAP_MAX_ENUM> wrapModes;
 
 }; // Texture
 

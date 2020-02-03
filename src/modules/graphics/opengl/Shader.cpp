@@ -588,6 +588,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 
 		if (tex != nullptr)
 		{
+			const SamplerState &sampler = tex->getSamplerState();
 			if (!tex->isReadable())
 			{
 				if (internalUpdate)
@@ -595,7 +596,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 				else
 					throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
 			}
-			else if (info->isDepthSampler != tex->getDepthSampleMode().hasValue)
+			else if (info->isDepthSampler != sampler.depthSampleMode.hasValue)
 			{
 				if (internalUpdate)
 					continue;

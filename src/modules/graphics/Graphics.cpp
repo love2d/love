@@ -184,19 +184,19 @@ Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
 	return new Quad(v, sw, sh);
 }
 
-Font *Graphics::newFont(love::font::Rasterizer *data, const Texture::Filter &filter)
+Font *Graphics::newFont(love::font::Rasterizer *data)
 {
-	return new Font(data, filter);
+	return new Font(data, states.back().defaultSamplerState);
 }
 
-Font *Graphics::newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter)
+Font *Graphics::newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting)
 {
 	auto fontmodule = Module::getInstance<font::Font>(M_FONT);
 	if (!fontmodule)
 		throw love::Exception("Font module has not been loaded.");
 
 	StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(size, hinting), Acquire::NORETAIN);
-	return newFont(r.get(), filter);
+	return newFont(r.get());
 }
 
 Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
@@ -402,8 +402,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
 
-	setDefaultFilter(s.defaultFilter);
-	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+	setDefaultSamplerState(s.defaultSamplerState);
 }
 
 void Graphics::restoreStateChecked(const DisplayState &s)
@@ -479,8 +478,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	if (s.wireframe != cur.wireframe)
 		setWireframe(s.wireframe);
 
-	setDefaultFilter(s.defaultFilter);
-	setDefaultMipmapFilter(s.defaultMipmapFilter, s.defaultMipmapSharpness);
+	setDefaultSamplerState(s.defaultSamplerState);
 }
 
 Colorf Graphics::getColor() const
@@ -923,30 +921,14 @@ const BlendState &Graphics::getBlendState() const
 	return states.back().blend;
 }
 
-void Graphics::setDefaultFilter(const Texture::Filter &f)
+void Graphics::setDefaultSamplerState(const SamplerState &s)
 {
-	Texture::defaultFilter = f;
-	states.back().defaultFilter = f;
+	states.back().defaultSamplerState = s;
 }
 
-const Texture::Filter &Graphics::getDefaultFilter() const
+const SamplerState &Graphics::getDefaultSamplerState() const
 {
-	return Texture::defaultFilter;
-}
-
-void Graphics::setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness)
-{
-	Texture::defaultMipmapFilter = filter;
-	Texture::defaultMipmapSharpness = sharpness;
-
-	states.back().defaultMipmapFilter = filter;
-	states.back().defaultMipmapSharpness = sharpness;
-}
-
-void Graphics::getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const
-{
-	*filter = Texture::defaultMipmapFilter;
-	*sharpness = Texture::defaultMipmapSharpness;
+	return states.back().defaultSamplerState;
 }
 
 void Graphics::setLineWidth(float width)

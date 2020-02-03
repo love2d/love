@@ -1470,12 +1470,9 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 		glGenTextures(1, &texture);
 		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
 
-		Texture::Filter f;
-		f.min = f.mag = Texture::FILTER_NEAREST;
-		gl.setTextureFilter(TEXTURE_2D, f);
-
-		Texture::Wrap w;
-		gl.setTextureWrap(TEXTURE_2D, w);
+		SamplerState s;
+		s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+		gl.setSamplerState(TEXTURE_2D, s);
 
 		gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
 	}

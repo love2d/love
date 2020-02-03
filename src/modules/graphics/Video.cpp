@@ -35,9 +35,14 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 	: stream(stream)
 	, width(stream->getWidth() / dpiscale)
 	, height(stream->getHeight() / dpiscale)
-	, filter(Texture::defaultFilter)
+	, samplerState()
 {
-	filter.mipmap = Texture::FILTER_NONE;
+	const SamplerState &defaultSampler = gfx->getDefaultSamplerState();
+	samplerState.minFilter = defaultSampler.minFilter;
+	samplerState.magFilter = defaultSampler.magFilter;
+	samplerState.wrapU = defaultSampler.wrapU;
+	samplerState.wrapV = defaultSampler.wrapV;
+	samplerState.maxAnisotropy = defaultSampler.maxAnisotropy;
 
 	stream->fillBackBuffer();
 
@@ -74,15 +79,13 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 	const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
 
-	Texture::Wrap wrap; // Clamp wrap mode.
 	Image::Settings settings;
 
 	for (int i = 0; i < 3; i++)
 	{
 		Image *img = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8_UNORM, widths[i], heights[i], 1, settings);
 
-		img->setFilter(filter);
-		img->setWrap(wrap);
+		img->setSamplerState(samplerState);
 
 		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8_UNORM);
 		size_t size = bpp * widths[i] * heights[i];
@@ -200,17 +203,21 @@ int Video::getPixelHeight() const
 	return stream->getHeight();
 }
 
-void Video::setFilter(const Texture::Filter &f)
+void Video::setSamplerState(const SamplerState &s)
 {
-	for (const auto &image : images)
-		image->setFilter(f);
+	samplerState.minFilter = s.minFilter;
+	samplerState.magFilter = s.magFilter;
+	samplerState.wrapU = s.wrapU;
+	samplerState.wrapV = s.wrapV;
+	samplerState.maxAnisotropy = s.maxAnisotropy;
 
-	filter = f;
+	for (const auto &image : images)
+		image->setSamplerState(samplerState);
 }
 
-const Texture::Filter &Video::getFilter() const
+const SamplerState &Video::getSamplerState() const
 {
-	return filter;
+	return samplerState;
 }
 
 } // graphics

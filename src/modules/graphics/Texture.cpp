@@ -33,11 +33,129 @@ namespace love
 namespace graphics
 {
 
-love::Type Texture::type("Texture", &Drawable::type);
+uint64 SamplerState::toKey() const
+{
+	union { float f; uint32 i; } conv;
+	conv.f = lodBias;
 
-Texture::Filter Texture::defaultFilter;
-Texture::FilterMode Texture::defaultMipmapFilter = Texture::FILTER_LINEAR;
-float Texture::defaultMipmapSharpness = 0.0f;
+	return (minFilter << 0) | (magFilter << 1) | (mipmapFilter << 2)
+	     | (wrapU << 4) | (wrapV << 7) | (wrapW << 10)
+	     | (maxAnisotropy << 12) | (minLod << 16) | (maxLod << 20)
+	     | (depthSampleMode.hasValue << 24) | (depthSampleMode.value << 25)
+	     | ((uint64)conv.i << 32);
+}
+
+SamplerState SamplerState::fromKey(uint64 key)
+{
+	const uint32 BITS_1 = 0x1;
+	const uint32 BITS_2 = 0x3;
+	const uint32 BITS_3 = 0x7;
+	const uint32 BITS_4 = 0xF;
+
+	SamplerState s;
+
+	s.minFilter = (FilterMode) ((key >> 0) & BITS_1);
+	s.magFilter = (FilterMode) ((key >> 1) & BITS_1);
+	s.mipmapFilter = (MipmapFilterMode) ((key >> 2) & BITS_2);
+
+	s.wrapU = (WrapMode) ((key >> 4 ) & BITS_3);
+	s.wrapV = (WrapMode) ((key >> 7 ) & BITS_3);
+	s.wrapW = (WrapMode) ((key >> 10) & BITS_3);
+
+	s.maxAnisotropy = (key >> 12) & BITS_4;
+
+	s.minLod = (key >> 16) & BITS_4;
+	s.maxLod = (key >> 20) & BITS_4;
+
+	s.depthSampleMode.hasValue = ((key >> 24) & BITS_1) != 0;
+	s.depthSampleMode.value = (CompareMode) ((key >> 25) & BITS_4);
+
+	union { float f; uint32 i; } conv;
+	conv.i = (uint32) (key >> 32);
+	s.lodBias = conv.f;
+
+	return s;
+}
+
+bool SamplerState::isClampZeroOrOne(WrapMode w)
+{
+	return w == WRAP_CLAMP_ONE || w == WRAP_CLAMP_ZERO;
+}
+
+static StringMap<SamplerState::FilterMode, SamplerState::FILTER_MAX_ENUM>::Entry filterModeEntries[] =
+{
+	{ "linear",  SamplerState::FILTER_LINEAR  },
+	{ "nearest", SamplerState::FILTER_NEAREST },
+};
+
+static StringMap<SamplerState::FilterMode, SamplerState::FILTER_MAX_ENUM> filterModes(filterModeEntries, sizeof(filterModeEntries));
+
+static StringMap<SamplerState::MipmapFilterMode, SamplerState::MIPMAP_FILTER_MAX_ENUM>::Entry mipmapFilterModeEntries[] =
+{
+	{ "none",    SamplerState::MIPMAP_FILTER_NONE    },
+	{ "linear",  SamplerState::MIPMAP_FILTER_LINEAR  },
+	{ "nearest", SamplerState::MIPMAP_FILTER_NEAREST },
+};
+
+static StringMap<SamplerState::MipmapFilterMode, SamplerState::MIPMAP_FILTER_MAX_ENUM> mipmapFilterModes(mipmapFilterModeEntries, sizeof(mipmapFilterModeEntries));
+
+static StringMap<SamplerState::WrapMode, SamplerState::WRAP_MAX_ENUM>::Entry wrapModeEntries[] =
+{
+	{ "clamp",          SamplerState::WRAP_CLAMP           },
+	{ "clampzero",      SamplerState::WRAP_CLAMP_ZERO      },
+	{ "clampone",       SamplerState::WRAP_CLAMP_ONE       },
+	{ "repeat",         SamplerState::WRAP_REPEAT          },
+	{ "mirroredrepeat", SamplerState::WRAP_MIRRORED_REPEAT },
+};
+
+static StringMap<SamplerState::WrapMode, SamplerState::WRAP_MAX_ENUM> wrapModes(wrapModeEntries, sizeof(wrapModeEntries));
+
+bool SamplerState::getConstant(const char *in, FilterMode &out)
+{
+	return filterModes.find(in, out);
+}
+
+bool SamplerState::getConstant(FilterMode in, const char *&out)
+{
+	return filterModes.find(in, out);
+}
+
+std::vector<std::string> SamplerState::getConstants(FilterMode)
+{
+	return filterModes.getNames();
+}
+
+bool SamplerState::getConstant(const char *in, MipmapFilterMode &out)
+{
+	return mipmapFilterModes.find(in, out);
+}
+
+bool SamplerState::getConstant(MipmapFilterMode in, const char *&out)
+{
+	return mipmapFilterModes.find(in, out);
+}
+
+std::vector<std::string> SamplerState::getConstants(MipmapFilterMode)
+{
+	return mipmapFilterModes.getNames();
+}
+
+bool SamplerState::getConstant(const char *in, WrapMode &out)
+{
+	return wrapModes.find(in, out);
+}
+
+bool SamplerState::getConstant(WrapMode in, const char *&out)
+{
+	return wrapModes.find(in, out);
+}
+
+std::vector<std::string> SamplerState::getConstants(WrapMode)
+{
+	return wrapModes.getNames();
+}
+
+love::Type Texture::type("Texture", &Drawable::type);
 int64 Texture::totalGraphicsMemory = 0;
 
 Texture::Texture(TextureType texType)
@@ -51,11 +169,12 @@ Texture::Texture(TextureType texType)
 	, mipmapCount(1)
 	, pixelWidth(0)
 	, pixelHeight(0)
-	, filter(defaultFilter)
-	, wrap()
-	, mipmapSharpness(defaultMipmapSharpness)
+	, samplerState()
 	, graphicsMemorySize(0)
 {
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr)
+		samplerState = gfx->getDefaultSamplerState();
 }
 
 Texture::~Texture()
@@ -252,67 +371,30 @@ float Texture::getDPIScale() const
 	return (float) pixelHeight / (float) height;
 }
 
-void Texture::setFilter(const Filter &f)
+void Texture::setSamplerState(const SamplerState &s)
 {
-	if (!validateFilter(f, getMipmapCount() > 1))
-	{
-		if (f.mipmap != FILTER_NONE && getMipmapCount() == 1)
-			throw love::Exception("Non-mipmapped texture cannot have mipmap filtering.");
-		else
-			throw love::Exception("Invalid texture filter.");
-	}
+	if (s.depthSampleMode.hasValue && (!readable || !isPixelFormatDepthStencil(format)))
+		throw love::Exception("Only readable depth textures can have a depth sample compare mode.");
 
 	Graphics::flushStreamDrawsGlobal();
 
-	filter = f;
+	samplerState = s;
+
+	if (samplerState.mipmapFilter != SamplerState::MIPMAP_FILTER_NONE && getMipmapCount() == 1)
+		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
+
+	if (texType == TEXTURE_CUBE)
+		samplerState.wrapU = samplerState.wrapV = samplerState.wrapW = SamplerState::WRAP_CLAMP;
 }
 
-const Texture::Filter &Texture::getFilter() const
+const SamplerState &Texture::getSamplerState() const
 {
-	return filter;
-}
-
-const Texture::Wrap &Texture::getWrap() const
-{
-	return wrap;
-}
-
-float Texture::getMipmapSharpness() const
-{
-	return mipmapSharpness;
-}
-
-void Texture::setDepthSampleMode(Optional<CompareMode> mode)
-{
-	if (mode.hasValue && (!readable || !isPixelFormatDepthStencil(format)))
-		throw love::Exception("Only readable depth textures can have a depth sample compare mode.");
-}
-
-Optional<CompareMode> Texture::getDepthSampleMode() const
-{
-	return depthCompareMode;
+	return samplerState;
 }
 
 Quad *Texture::getQuad() const
 {
 	return quad;
-}
-
-bool Texture::validateFilter(const Filter &f, bool mipmapsAllowed)
-{
-	if (!mipmapsAllowed && f.mipmap != FILTER_NONE)
-		return false;
-
-	if (f.mag != FILTER_LINEAR && f.mag != FILTER_NEAREST)
-		return false;
-
-	if (f.min != FILTER_LINEAR && f.min != FILTER_NEAREST)
-		return false;
-
-	if (f.mipmap != FILTER_LINEAR && f.mipmap != FILTER_NEAREST && f.mipmap != FILTER_NONE)
-		return false;
-
-	return true;
 }
 
 int Texture::getTotalMipmapCount(int w, int h)
@@ -556,36 +638,6 @@ std::vector<std::string> Texture::getConstants(TextureType)
 	return texTypes.getNames();
 }
 
-bool Texture::getConstant(const char *in, FilterMode &out)
-{
-	return filterModes.find(in, out);
-}
-
-bool Texture::getConstant(FilterMode in, const char *&out)
-{
-	return filterModes.find(in, out);
-}
-
-std::vector<std::string> Texture::getConstants(FilterMode)
-{
-	return filterModes.getNames();
-}
-
-bool Texture::getConstant(const char *in, WrapMode &out)
-{
-	return wrapModes.find(in, out);
-}
-
-bool Texture::getConstant(WrapMode in, const char *&out)
-{
-	return wrapModes.find(in, out);
-}
-
-std::vector<std::string> Texture::getConstants(WrapMode)
-{
-	return wrapModes.getNames();
-}
-
 StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry Texture::texTypeEntries[] =
 {
 	{ "2d", TEXTURE_2D },
@@ -595,26 +647,6 @@ StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry Texture::texTypeEntries[] =
 };
 
 StringMap<TextureType, TEXTURE_MAX_ENUM> Texture::texTypes(Texture::texTypeEntries, sizeof(Texture::texTypeEntries));
-
-StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM>::Entry Texture::filterModeEntries[] =
-{
-	{ "linear", FILTER_LINEAR },
-	{ "nearest", FILTER_NEAREST },
-	{ "none", FILTER_NONE },
-};
-
-StringMap<Texture::FilterMode, Texture::FILTER_MAX_ENUM> Texture::filterModes(Texture::filterModeEntries, sizeof(Texture::filterModeEntries));
-
-StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM>::Entry Texture::wrapModeEntries[] =
-{
-	{ "clamp", WRAP_CLAMP },
-	{ "clampzero", WRAP_CLAMP_ZERO },
-	{ "clampone", WRAP_CLAMP_ONE },
-	{ "repeat", WRAP_REPEAT },
-	{ "mirroredrepeat", WRAP_MIRRORED_REPEAT },
-};
-
-StringMap<Texture::WrapMode, Texture::WRAP_MAX_ENUM> Texture::wrapModes(Texture::wrapModeEntries, sizeof(Texture::wrapModeEntries));
 
 } // graphics
 } // love

@@ -49,10 +49,7 @@ public:
 
 	ptrdiff_t getHandle() const override;
 
-	void setFilter(const Texture::Filter &f) override;
-	bool setWrap(const Texture::Wrap &w) override;
-
-	bool setMipmapSharpness(float sharpness) override;
+	void setSamplerState(const SamplerState &s) override;
 
 private:
 

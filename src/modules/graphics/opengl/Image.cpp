@@ -75,7 +75,7 @@ void Image::loadDefaultTexture()
 	usingDefaultTexture = true;
 
 	gl.bindTextureToUnit(this, 0, false);
-	setFilter(filter);
+	setSamplerState(samplerState);
 
 	bool isSRGB = false;
 	gl.rawTexStorage(texType, 1, PIXELFORMAT_RGBA8_UNORM, isSRGB, 2, 2, 1);
@@ -204,7 +204,7 @@ bool Image::loadVolatile()
 			&& mipmapsType != MIPMAPS_DATA)
 		{
 			mipmapsType = MIPMAPS_NONE;
-			filter.mipmap = FILTER_NONE;
+			samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 		}
 	}
 
@@ -213,7 +213,7 @@ bool Image::loadVolatile()
 		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
 	{
 		mipmapsType = MIPMAPS_NONE;
-		filter.mipmap = FILTER_NONE;
+		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 	}
 
 	glGenTextures(1, &texture);
@@ -226,9 +226,7 @@ bool Image::loadVolatile()
 		return true;
 	}
 
-	setFilter(filter);
-	setWrap(wrap);
-	setMipmapSharpness(mipmapSharpness);
+	setSamplerState(samplerState);
 
 	GLenum gltextype = OpenGL::getGLTextureType(texType);
 
@@ -282,85 +280,34 @@ ptrdiff_t Image::getHandle() const
 	return texture;
 }
 
-void Image::setFilter(const Texture::Filter &f)
+void Image::setSamplerState(const SamplerState &s)
 {
-	Texture::setFilter(f);
+	Texture::setSamplerState(s);
 
 	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
 	{
-		filter.mag = filter.min = FILTER_NEAREST;
+		samplerState.magFilter = samplerState.minFilter = SamplerState::FILTER_NEAREST;
 
-		if (filter.mipmap == FILTER_LINEAR)
-			filter.mipmap = FILTER_NEAREST;
+		if (samplerState.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
+			samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NEAREST;
 	}
 
 	// We don't want filtering or (attempted) mipmaps on the default texture.
 	if (usingDefaultTexture)
 	{
-		filter.mipmap = FILTER_NONE;
-		filter.min = filter.mag = FILTER_NEAREST;
+		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
+		samplerState.minFilter = samplerState.magFilter = SamplerState::FILTER_NEAREST;
 	}
-
-	gl.bindTextureToUnit(this, 0, false);
-	gl.setTextureFilter(texType, filter);
-}
-
-bool Image::setWrap(const Texture::Wrap &w)
-{
-	Graphics::flushStreamDrawsGlobal();
-
-	bool success = true;
-	bool forceclamp = texType == TEXTURE_CUBE;
-	wrap = w;
 
 	// If we only have limited NPOT support then the wrap mode must be CLAMP.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
 		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight) || depth != nextP2(depth)))
 	{
-		forceclamp = true;
-	}
-
-	if (forceclamp)
-	{
-		if (wrap.s != WRAP_CLAMP || wrap.t != WRAP_CLAMP || wrap.r != WRAP_CLAMP)
-			success = false;
-
-		wrap.s = wrap.t = wrap.r = WRAP_CLAMP;
-	}
-
-	if (!gl.isClampZeroOneTextureWrapSupported())
-	{
-		if (isClampZeroOrOne(wrap.s)) wrap.s = WRAP_CLAMP;
-		if (isClampZeroOrOne(wrap.t)) wrap.t = WRAP_CLAMP;
-		if (isClampZeroOrOne(wrap.r)) wrap.r = WRAP_CLAMP;
+		samplerState.wrapU = samplerState.wrapV = samplerState.wrapW = SamplerState::WRAP_CLAMP;
 	}
 
 	gl.bindTextureToUnit(this, 0, false);
-	gl.setTextureWrap(texType, wrap);
-
-	return success;
-}
-
-bool Image::setMipmapSharpness(float sharpness)
-{
-	if (!gl.isSamplerLODBiasSupported())
-		return false;
-
-	Graphics::flushStreamDrawsGlobal();
-
-	float maxbias = gl.getMaxLODBias();
-
-	if (maxbias > 0.01f)
-		maxbias -= 0.01f;
-
-	mipmapSharpness = std::min(std::max(sharpness, -maxbias), maxbias);
-
-	gl.bindTextureToUnit(this, 0, false);
-
-	// negative bias is sharper
-	glTexParameterf(gl.getGLTextureType(texType), GL_TEXTURE_LOD_BIAS, -mipmapSharpness);
-
-	return true;
+	gl.setSamplerState(texType, samplerState);
 }
 
 } // opengl
