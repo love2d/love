@@ -57,7 +57,6 @@ public:
 	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps);
 	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
 
-	bool isFormatLinear() const;
 	MipmapsType getMipmapsType() const;
 
 	static bool getConstant(const char *in, SettingType &out);

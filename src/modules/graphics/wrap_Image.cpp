@@ -31,20 +31,6 @@ Image *luax_checkimage(lua_State *L, int idx)
 	return luax_checktype<Image>(L, idx);
 }
 
-int w_Image_isFormatLinear(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	luax_pushboolean(L, i->isFormatLinear());
-	return 1;
-}
-
-int w_Image_isCompressed(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	luax_pushboolean(L, i->isCompressed());
-	return 1;
-}
-
 int w_Image_replacePixels(lua_State *L)
 {
 	Image *i = luax_checkimage(L, 1);
@@ -76,8 +62,6 @@ int w_Image_replacePixels(lua_State *L)
 
 static const luaL_Reg w_Image_functions[] =
 {
-	{ "isFormatLinear", w_Image_isFormatLinear },
-	{ "isCompressed", w_Image_isCompressed },
 	{ "replacePixels", w_Image_replacePixels },
 	{ 0, 0 }
 };

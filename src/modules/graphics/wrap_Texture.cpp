@@ -129,6 +129,20 @@ int w_Texture_getDPIScale(lua_State *L)
 	return 1;
 }
 
+int w_Texture_isFormatLinear(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_pushboolean(L, t->isFormatLinear());
+	return 1;
+}
+
+int w_Texture_isCompressed(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_pushboolean(L, t->isCompressed());
+	return 1;
+}
+
 int w_Texture_setFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
@@ -314,6 +328,8 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getPixelHeight", w_Texture_getPixelHeight },
 	{ "getPixelDimensions", w_Texture_getPixelDimensions },
 	{ "getDPIScale", w_Texture_getDPIScale },
+	{ "isFormatLinear", w_Texture_isFormatLinear },
+	{ "isCompressed", w_Texture_isCompressed },
 	{ "setFilter", w_Texture_setFilter },
 	{ "getFilter", w_Texture_getFilter },
 	{ "setMipmapFilter", w_Texture_setMipmapFilter },
