@@ -105,9 +105,6 @@ void Image::loadData()
 	if (!isCompressed())
 		gl.rawTexStorage(texType, mipcount, format, sRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
-	if (mipmapsType == MIPMAPS_GENERATED)
-		mipcount = 1;
-
 	int w = pixelWidth;
 	int h = pixelHeight;
 	int d = depth;
@@ -123,17 +120,23 @@ void Image::loadData()
 			if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
 			{
 				for (int slice = 0; slice < slices.getSliceCount(mip); slice++)
-					mipsize += slices.get(slice, mip)->getSize();
+				{
+					auto id = slices.get(slice, mip);
+					if (id != nullptr)
+						mipsize += id->getSize();
+				}
 			}
 
-			GLenum gltarget = OpenGL::getGLTextureType(texType);
-			glCompressedTexImage3D(gltarget, mip, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
+			if (mipsize > 0)
+			{
+				GLenum gltarget = OpenGL::getGLTextureType(texType);
+				glCompressedTexImage3D(gltarget, mip, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
+			}
 		}
 
 		for (int slice = 0; slice < slicecount; slice++)
 		{
 			love::image::ImageDataBase *id = slices.get(slice, mip);
-
 			if (id != nullptr)
 				uploadImageData(id, mip, slice, 0, 0);
 		}

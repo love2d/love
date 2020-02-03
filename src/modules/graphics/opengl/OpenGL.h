@@ -347,6 +347,7 @@ public:
 	bool isDepthCompareSampleSupported() const;
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
+	bool isMultiFormatMRTSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.

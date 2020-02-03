@@ -137,6 +137,20 @@ bool isPixelFormatStencil(PixelFormat format)
 	return format == PIXELFORMAT_STENCIL8 || format == PIXELFORMAT_DEPTH24_UNORM_STENCIL8 || format == PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
 }
 
+PixelFormat getSRGBPixelFormat(PixelFormat format)
+{
+	if (format == PIXELFORMAT_RGBA8_UNORM)
+		return PIXELFORMAT_sRGBA8_UNORM;
+	return format;
+}
+
+PixelFormat getLinearPixelFormat(PixelFormat format)
+{
+	if (format == PIXELFORMAT_sRGBA8_UNORM)
+		return PIXELFORMAT_RGBA8_UNORM;
+	return format;
+}
+
 size_t getPixelFormatSize(PixelFormat format)
 {
 	switch (format)

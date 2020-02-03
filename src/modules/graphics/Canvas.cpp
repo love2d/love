@@ -27,12 +27,14 @@ namespace graphics
 {
 
 love::Type Canvas::type("Canvas", &Texture::type);
-int Canvas::canvasCount = 0;
 
 Canvas::Canvas(const Settings &settings)
 	: Texture(settings.type)
 {
 	this->settings = settings;
+
+	renderTarget = true;
+	sRGB = false;
 
 	width = settings.width;
 	height = settings.height;
@@ -69,7 +71,7 @@ Canvas::Canvas(const Settings &settings)
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	const Graphics::Capabilities &caps = gfx->getCapabilities();
 
-	if (!gfx->isPixelFormatSupported(format, true, readable, false))
+	if (!gfx->isPixelFormatSupported(format, renderTarget, readable, sRGB))
 	{
 		const char *fstr = "rgba8";
 		const char *readablestr = "";
@@ -93,13 +95,10 @@ Canvas::Canvas(const Settings &settings)
 	}
 
 	validateDimensions(true);
-
-	canvasCount++;
 }
 
 Canvas::~Canvas()
 {
-	canvasCount--;
 }
 
 Canvas::MipmapMode Canvas::getMipmapMode() const
@@ -131,12 +130,10 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 	}
 
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr && gfx->isCanvasActive(this))
+	if (gfx != nullptr && gfx->isRenderTargetActive(this))
 		throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
 
-	PixelFormat dataformat = getPixelFormat();
-	if (dataformat == PIXELFORMAT_sRGBA8_UNORM)
-		dataformat = PIXELFORMAT_RGBA8_UNORM;
+	PixelFormat dataformat = getLinearPixelFormat(getPixelFormat());
 
 	if (!image::ImageData::validPixelFormat(dataformat))
 	{
@@ -146,22 +143,6 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 	}
 
 	return module->newImageData(r.w, r.h, dataformat);
-}
-
-void Canvas::draw(Graphics *gfx, Quad *q, const Matrix4 &t)
-{
-	if (gfx->isCanvasActive(this))
-		throw love::Exception("Cannot render a Canvas to itself!");
-
-	Texture::draw(gfx, q, t);
-}
-
-void Canvas::drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m)
-{
-	if (gfx->isCanvasActive(this, layer))
-		throw love::Exception("Cannot render a Canvas to itself!");
-
-	Texture::drawLayer(gfx, layer, quad, m);
 }
 
 bool Canvas::getConstant(const char *in, MipmapMode &out)

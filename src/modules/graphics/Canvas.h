@@ -81,15 +81,9 @@ public:
 	int getRequestedMSAA() const;
 
 	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
-	virtual void generateMipmaps() = 0;
 
 	virtual int getMSAA() const = 0;
 	virtual ptrdiff_t getRenderTargetHandle() const = 0;
-
-	void draw(Graphics *gfx, Quad *q, const Matrix4 &t) override;
-	void drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &t) override;
-
-	static int canvasCount;
 
 	static bool getConstant(const char *in, MipmapMode &out);
 	static bool getConstant(MipmapMode in, const char *&out);

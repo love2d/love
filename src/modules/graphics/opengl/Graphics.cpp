@@ -1362,7 +1362,7 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::initCapabilities()
 {
-	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = Canvas::isMultiFormatMultiCanvasSupported();
+	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = gl.isMultiFormatMRTSupported();
 	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroOneTextureWrapSupported();
 	capabilities.features[FEATURE_BLENDMINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
 	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLENDMINMAX];
@@ -1388,14 +1388,14 @@ void Graphics::initCapabilities()
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format) const
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const
 {
 	switch (format)
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
 			return PIXELFORMAT_sRGBA8_UNORM;
-		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, true, true, false))
+		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, rendertarget, readable, sRGB))
 			// 32-bit render targets don't have guaranteed support on GLES2.
 			return PIXELFORMAT_RGBA4_UNORM;
 		else
@@ -1409,13 +1409,13 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format) const
 
 bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
 {
-	format = getSizedFormat(format);
-
 	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
 	{
 		format = PIXELFORMAT_sRGBA8_UNORM;
 		sRGB = false;
 	}
+
+	format = getSizedFormat(format, rendertarget, readable, sRGB);
 
 	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
 

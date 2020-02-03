@@ -761,33 +761,33 @@ bool Graphics::isCanvasActive() const
 	return !rts.colors.empty() || rts.depthStencil.canvas != nullptr;
 }
 
-bool Graphics::isCanvasActive(love::graphics::Canvas *canvas) const
+bool Graphics::isRenderTargetActive(Texture *texture) const
 {
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.canvas.get() == canvas)
+		if (rt.canvas.get() == texture)
 			return true;
 	}
 
-	if (rts.depthStencil.canvas.get() == canvas)
+	if (rts.depthStencil.canvas.get() == texture)
 		return true;
 
 	return false;
 }
 
-bool Graphics::isCanvasActive(Canvas *canvas, int slice) const
+bool Graphics::isRenderTargetActive(Texture *texture, int slice) const
 {
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.canvas.get() == canvas && rt.slice == slice)
+		if (rt.canvas.get() == texture && rt.slice == slice)
 			return true;
 	}
 
-	if (rts.depthStencil.canvas.get() == canvas && rts.depthStencil.slice == slice)
+	if (rts.depthStencil.canvas.get() == texture && rts.depthStencil.slice == slice)
 		return true;
 
 	return false;
@@ -1593,8 +1593,7 @@ Graphics::Stats Graphics::getStats() const
 
 	stats.canvasSwitches = canvasSwitchCount;
 	stats.drawCallsBatched = drawCallsBatched;
-	stats.canvases = Canvas::canvasCount;
-	stats.images = Image::imageCount;
+	stats.textures = Texture::textureCount;
 	stats.fonts = Font::fontCount;
 	stats.textureMemory = Texture::totalGraphicsMemory;
 	

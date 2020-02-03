@@ -68,8 +68,6 @@ public:
 		return fbo;
 	}
 
-	static bool isMultiFormatMultiCanvasSupported();
-
 private:
 
 	GLuint fbo;

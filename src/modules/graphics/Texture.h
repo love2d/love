@@ -126,6 +126,7 @@ class Texture : public Drawable, public Resource
 public:
 
 	static love::Type type;
+	static int textureCount;
 
 	enum MipmapsType
 	{
@@ -175,15 +176,19 @@ public:
 	/**
 	 * Draws the texture using the specified transformation with a Quad applied.
 	 **/
-	virtual void draw(Graphics *gfx, Quad *quad, const Matrix4 &m);
+	void draw(Graphics *gfx, Quad *quad, const Matrix4 &m);
 
 	void drawLayer(Graphics *gfx, int layer, const Matrix4 &m);
-	virtual void drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m);
+	void drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m);
 
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
 
+	bool isRenderTarget() const;
 	bool isReadable() const;
+
+	bool isCompressed() const;
+	bool isFormatLinear() const;
 
 	bool isValidSlice(int slice) const;
 
@@ -200,6 +205,8 @@ public:
 
 	virtual void setSamplerState(const SamplerState &s);
 	const SamplerState &getSamplerState() const;
+
+	virtual void generateMipmaps() = 0;
 
 	Quad *getQuad() const;
 
@@ -220,7 +227,10 @@ protected:
 	TextureType texType;
 
 	PixelFormat format;
+	bool renderTarget;
 	bool readable;
+
+	bool sRGB;
 
 	int width;
 	int height;

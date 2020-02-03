@@ -1328,6 +1328,11 @@ bool OpenGL::isBaseVertexSupported() const
 	return baseVertexSupported;
 }
 
+bool OpenGL::isMultiFormatMRTSupported() const
+{
+	return getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
+}
+
 int OpenGL::getMax2DTextureSize() const
 {
 	return std::max(max2DTextureSize, 1);

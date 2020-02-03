@@ -133,6 +133,16 @@ bool isPixelFormatDepth(PixelFormat format);
 bool isPixelFormatStencil(PixelFormat format);
 
 /**
+ * Gets the sRGB version of a linear pixel format, if applicable.
+ **/
+PixelFormat getSRGBPixelFormat(PixelFormat format);
+
+/**
+ * Gets the linear version of a sRGB pixel format, if applicable.
+ **/
+PixelFormat getLinearPixelFormat(PixelFormat format);
+
+/**
  * Gets the size in bytes of the specified pixel format.
  * NOTE: Currently returns 0 for compressed formats.
  **/

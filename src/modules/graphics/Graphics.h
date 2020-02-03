@@ -202,8 +202,7 @@ public:
 		int drawCallsBatched;
 		int canvasSwitches;
 		int shaderSwitches;
-		int canvases;
-		int images;
+		int textures;
 		int fonts;
 		int64 textureMemory;
 	};
@@ -551,8 +550,8 @@ public:
 
 	RenderTargets getCanvas() const;
 	bool isCanvasActive() const;
-	bool isCanvasActive(Canvas *canvas) const;
-	bool isCanvasActive(Canvas *canvas, int slice) const;
+	bool isRenderTargetActive(Texture *texture) const;
+	bool isRenderTargetActive(Texture *texture, int slice) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded
@@ -781,7 +780,7 @@ public:
 	/**
 	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual PixelFormat getSizedFormat(PixelFormat format) const = 0;
+	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const = 0;
 
 	/**
 	 * Gets whether the specified pixel format is supported.

@@ -2394,11 +2394,8 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.shaderSwitches);
 	lua_setfield(L, -2, "shaderswitches");
 
-	lua_pushinteger(L, stats.canvases);
-	lua_setfield(L, -2, "canvases");
-
-	lua_pushinteger(L, stats.images);
-	lua_setfield(L, -2, "images");
+	lua_pushinteger(L, stats.textures);
+	lua_setfield(L, -2, "textures");
 
 	lua_pushinteger(L, stats.fonts);
 	lua_setfield(L, -2, "fonts");

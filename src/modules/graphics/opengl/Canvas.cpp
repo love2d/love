@@ -31,7 +31,7 @@ namespace graphics
 namespace opengl
 {
 
-static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int layers, int nb_mips)
+static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int layers)
 {
 	// get currently bound fbo to reset to it later
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
@@ -60,42 +60,35 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 		// Make sure all faces and layers of the texture are initialized to
 		// transparent black. This is unfortunately probably pretty slow for
 		// 2D-array and 3D textures with a lot of layers...
-		for (int mip = nb_mips - 1; mip >= 0; mip--)
+		for (int layer = layers - 1; layer >= 0; layer--)
 		{
-			int nlayers = layers;
-			if (texType == TEXTURE_VOLUME)
-				nlayers = std::max(layers >> mip, 1);
-
-			for (int layer = nlayers - 1; layer >= 0; layer--)
+			for (int face = faces - 1; face >= 0; face--)
 			{
-				for (int face = faces - 1; face >= 0; face--)
+				for (GLenum attachment : fmt.framebufferAttachments)
 				{
-					for (GLenum attachment : fmt.framebufferAttachments)
-					{
-						if (attachment == GL_NONE)
-							continue;
+					if (attachment == GL_NONE)
+						continue;
 
-						gl.framebufferTexture(attachment, texType, texture, mip, layer, face);
-					}
+					gl.framebufferTexture(attachment, texType, texture, 0, layer, face);
+				}
 
-					if (isPixelFormatDepthStencil(format))
-					{
-						bool hadDepthWrites = gl.hasDepthWrites();
-						if (!hadDepthWrites) // glDepthMask also affects glClear.
-							gl.setDepthWrites(true);
+				if (isPixelFormatDepthStencil(format))
+				{
+					bool hadDepthWrites = gl.hasDepthWrites();
+					if (!hadDepthWrites) // glDepthMask also affects glClear.
+						gl.setDepthWrites(true);
 
-						gl.clearDepth(1.0);
-						glClearStencil(0);
-						glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+					gl.clearDepth(1.0);
+					glClearStencil(0);
+					glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-						if (!hadDepthWrites)
-							gl.setDepthWrites(hadDepthWrites);
-					}
-					else
-					{
-						glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-						glClear(GL_COLOR_BUFFER_BIT);
-					}
+					if (!hadDepthWrites)
+						gl.setDepthWrites(hadDepthWrites);
+				}
+				else
+				{
+					glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+					glClear(GL_COLOR_BUFFER_BIT);
 				}
 			}
 		}
@@ -198,7 +191,7 @@ Canvas::Canvas(const Settings &settings)
 {
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
-		format = gfx->getSizedFormat(format);
+		format = gfx->getSizedFormat(format, renderTarget, readable, sRGB);
 
 	initQuad();
 	loadVolatile();
@@ -259,8 +252,8 @@ bool Canvas::loadVolatile()
 			return false;
 		}
 
-		// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
-		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers, mipmapCount);
+		// Create a local FBO used for glReadPixels as well as MSAA blitting.
+		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 		{
@@ -286,6 +279,9 @@ bool Canvas::loadVolatile()
 		memsize *= actualSamples;
 
 	setGraphicsMemorySize(memsize);
+
+	if (getMipmapCount() > 1)
+		generateMipmaps();
 
 	return true;
 }
@@ -388,11 +384,6 @@ void Canvas::generateMipmaps()
 		glEnable(gltextype);
 
 	glGenerateMipmap(gltextype);
-}
-
-bool Canvas::isMultiFormatMultiCanvasSupported()
-{
-	return gl.getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
 }
 
 } // opengl

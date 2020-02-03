@@ -156,12 +156,15 @@ std::vector<std::string> SamplerState::getConstants(WrapMode)
 }
 
 love::Type Texture::type("Texture", &Drawable::type);
+int Texture::textureCount = 0;
 int64 Texture::totalGraphicsMemory = 0;
 
 Texture::Texture(TextureType texType)
 	: texType(texType)
 	, format(PIXELFORMAT_UNKNOWN)
+	, renderTarget(false)
 	, readable(true)
+	, sRGB(false)
 	, width(0)
 	, height(0)
 	, depth(1)
@@ -175,10 +178,12 @@ Texture::Texture(TextureType texType)
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
 		samplerState = gfx->getDefaultSamplerState();
+	++textureCount;
 }
 
 Texture::~Texture()
 {
+	--textureCount;
 	setGraphicsMemorySize(0);
 }
 
@@ -207,9 +212,24 @@ PixelFormat Texture::getPixelFormat() const
 	return format;
 }
 
+bool Texture::isRenderTarget() const
+{
+	return renderTarget;
+}
+
 bool Texture::isReadable() const
 {
 	return readable;
+}
+
+bool Texture::isCompressed() const
+{
+	return isPixelFormatCompressed(format);
+}
+
+bool Texture::isFormatLinear() const
+{
+	return isGammaCorrect() && !sRGB && format != PIXELFORMAT_sRGBA8_UNORM;
 }
 
 bool Texture::isValidSlice(int slice) const
@@ -240,6 +260,9 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 
 	if (!readable)
 		throw love::Exception("Textures with non-readable formats cannot be drawn.");
+
+	if (renderTarget && gfx->isRenderTargetActive(this))
+		throw love::Exception("Cannot render a Texture to itself.");
 
 	if (texType == TEXTURE_2D_ARRAY)
 	{
@@ -290,6 +313,9 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 
 	if (!readable)
 		throw love::Exception("Textures with non-readable formats cannot be drawn.");
+
+	if (renderTarget && gfx->isRenderTargetActive(this, layer))
+		throw love::Exception("Cannot render a Texture to itself.");
 
 	if (texType != TEXTURE_2D_ARRAY)
 		throw love::Exception("drawLayer can only be used with Array Textures!");

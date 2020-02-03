@@ -58,10 +58,7 @@ public:
 	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
 
 	bool isFormatLinear() const;
-	bool isCompressed() const;
 	MipmapsType getMipmapsType() const;
-
-	static int imageCount;
 
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
@@ -76,13 +73,10 @@ protected:
 	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
 	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) = 0;
 
-	virtual void generateMipmaps() = 0;
-
 	// The settings used to initialize this Image.
 	Settings settings;
 
 	MipmapsType mipmapsType;
-	bool sRGB;
 
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.

@@ -31,15 +31,14 @@ namespace graphics
 
 love::Type Image::type("Image", &Texture::type);
 
-int Image::imageCount = 0;
-
 Image::Image(const Slices &data, const Settings &settings, bool validatedata)
 	: Texture(data.getTextureType())
 	, settings(settings)
 	, mipmapsType(settings.mipmaps ? MIPMAPS_GENERATED : MIPMAPS_NONE)
-	, sRGB(isGammaCorrect() && !settings.linear)
 	, usingDefaultTexture(false)
 {
+	renderTarget = false;
+	sRGB = isGammaCorrect() && !settings.linear;
 	if (validatedata && data.validate() && data.getMipmapCount() > 1)
 		mipmapsType = MIPMAPS_DATA;
 }
@@ -72,13 +71,12 @@ Image::Image(const Slices &slices, const Settings &settings)
 
 Image::~Image()
 {
-	--imageCount;
 }
 
 void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 {
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr && !gfx->isPixelFormatSupported(fmt, false, true, sRGB))
+	if (gfx != nullptr && !gfx->isPixelFormatSupported(fmt, renderTarget, readable, sRGB))
 	{
 		const char *str;
 		if (love::getConstant(fmt, str))
@@ -104,8 +102,6 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h, depth);
 
 	initQuad();
-
-	++imageCount;
 }
 
 void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y)
@@ -170,16 +166,6 @@ void Image::replacePixels(const void *data, size_t size, int slice, int mipmap, 
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
-}
-
-bool Image::isCompressed() const
-{
-	return isPixelFormatCompressed(format);
-}
-
-bool Image::isFormatLinear() const
-{
-	return isGammaCorrect() && !sRGB && format != PIXELFORMAT_sRGBA8_UNORM;
 }
 
 Image::MipmapsType Image::getMipmapsType() const

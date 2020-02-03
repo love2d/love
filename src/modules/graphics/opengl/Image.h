@@ -50,11 +50,11 @@ public:
 	ptrdiff_t getHandle() const override;
 
 	void setSamplerState(const SamplerState &s) override;
+	void generateMipmaps() override;
 
 private:
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
-	void generateMipmaps() override;
 
 	void loadDefaultTexture();
 	void loadData();
