@@ -70,6 +70,8 @@ public:
 
 private:
 
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
+
 	GLuint fbo;
 
 	GLuint texture;

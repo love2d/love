@@ -54,9 +54,6 @@ public:
 
 	virtual ~Image();
 
-	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps);
-	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
-
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
 	static const char *getConstant(SettingType in);
@@ -67,15 +64,8 @@ protected:
 	Image(const Slices &data, const Settings &settings);
 	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
 
-	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
-	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) = 0;
-
 	// The settings used to initialize this Image.
 	Settings settings;
-
-	// True if the image wasn't able to be properly created and it had to fall
-	// back to a default texture.
-	bool usingDefaultTexture;
 
 private:
 

@@ -389,6 +389,37 @@ void Canvas::generateMipmaps()
 	glGenerateMipmap(gltextype);
 }
 
+void Canvas::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase */*imgd*/)
+{
+	OpenGL::TempDebugGroup debuggroup("Texture data upload");
+
+	gl.bindTextureToUnit(this, 0, false);
+
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false, sRGB);
+	GLenum gltarget = OpenGL::getGLTextureType(texType);
+
+	if (texType == TEXTURE_CUBE)
+		gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+
+	if (isPixelFormatCompressed(pixelformat))
+	{
+		if (r.x != 0 || r.y != 0)
+			throw love::Exception("x and y parameters must be 0 for compressed images.");
+
+		if (texType == TEXTURE_2D || texType == TEXTURE_CUBE)
+			glCompressedTexImage2D(gltarget, level, fmt.internalformat, r.w, r.h, 0, size, data);
+		else if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
+			glCompressedTexSubImage3D(gltarget, level, 0, 0, slice, r.w, r.h, 1, fmt.internalformat, size, data);
+	}
+	else
+	{
+		if (texType == TEXTURE_2D || texType == TEXTURE_CUBE)
+			glTexSubImage2D(gltarget, level, r.x, r.y, r.w, r.h, fmt.externalformat, fmt.type, data);
+		else if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
+			glTexSubImage3D(gltarget, level, r.x, r.y, slice, r.w, r.h, 1, fmt.externalformat, fmt.type, data);
+	}
+}
+
 } // opengl
 } // graphics
 } // love

@@ -31,38 +31,8 @@ Image *luax_checkimage(lua_State *L, int idx)
 	return luax_checktype<Image>(L, idx);
 }
 
-int w_Image_replacePixels(lua_State *L)
-{
-	Image *i = luax_checkimage(L, 1);
-	love::image::ImageData *id = luax_checktype<love::image::ImageData>(L, 2);
-
-	int slice = 0;
-	int mipmap = 0;
-	int x = 0;
-	int y = 0;
-	bool reloadmipmaps = false; // TODO i->getMipmapsSource() == Texture::MIPMAPS_SOURCE_GENERATED;
-
-	if (i->getTextureType() != TEXTURE_2D)
-		slice = (int) luaL_checkinteger(L, 3) - 1;
-
-	mipmap = (int) luaL_optinteger(L, 4, 1) - 1;
-
-	if (!lua_isnoneornil(L, 5))
-	{
-		x = (int) luaL_checkinteger(L, 5);
-		y = (int) luaL_checkinteger(L, 6);
-
-		if (reloadmipmaps)
-			reloadmipmaps = luax_optboolean(L, 7, reloadmipmaps);
-	}
-
-	luax_catchexcept(L, [&](){ i->replacePixels(id, slice, mipmap, x, y, reloadmipmaps); });
-	return 0;
-}
-
 static const luaL_Reg w_Image_functions[] =
 {
-	{ "replacePixels", w_Image_replacePixels },
 	{ 0, 0 }
 };
 

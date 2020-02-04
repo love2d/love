@@ -34,7 +34,6 @@ love::Type Image::type("Image", &Texture::type);
 Image::Image(TextureType textype, const Settings &settings)
 	: Texture(textype)
 	, settings(settings)
-	, usingDefaultTexture(false)
 {
 	renderTarget = false;
 	sRGB = isGammaCorrect() && !settings.linear;
@@ -103,70 +102,6 @@ void Image::init(PixelFormat fmt, int w, int h, int dataMipmaps, const Settings 
 		mipmapCount = getTotalMipmapCount(w, h, depth);
 
 	initQuad();
-}
-
-void Image::uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y)
-{
-	love::image::ImageData *id = dynamic_cast<love::image::ImageData *>(d);
-
-	love::thread::EmptyLock lock;
-	if (id != nullptr)
-		lock.setLock(id->getMutex());
-
-	Rect rect = {x, y, d->getWidth(), d->getHeight()};
-	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect, d);
-}
-
-void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
-{
-	// No effect if the texture hasn't been created yet.
-	if (getHandle() == 0 || usingDefaultTexture)
-		return;
-
-	if (d->getFormat() != getPixelFormat())
-		throw love::Exception("Pixel formats must match.");
-
-	if (mipmap < 0 || mipmap >= getMipmapCount())
-		throw love::Exception("Invalid image mipmap index %d.", mipmap + 1);
-
-	if (slice < 0 || (texType == TEXTURE_CUBE && slice >= 6)
-		|| (texType == TEXTURE_VOLUME && slice >= getDepth(mipmap))
-		|| (texType == TEXTURE_2D_ARRAY && slice >= getLayerCount()))
-	{
-		throw love::Exception("Invalid image slice index %d.", slice + 1);
-	}
-
-	Rect rect = {x, y, d->getWidth(), d->getHeight()};
-
-	int mipw = getPixelWidth(mipmap);
-	int miph = getPixelHeight(mipmap);
-
-	if (rect.x < 0 || rect.y < 0 || rect.w <= 0 || rect.h <= 0
-		|| (rect.x + rect.w) > mipw || (rect.y + rect.h) > miph)
-	{
-		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d Image.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
-	}
-
-	// We don't currently support partial updates of compressed textures.
-	if (isPixelFormatCompressed(d->getFormat()) && (rect.x != 0 || rect.y != 0 || rect.w != mipw || rect.h != miph))
-		throw love::Exception("Compressed textures only support replacing the entire Image.");
-
-	Graphics::flushStreamDrawsGlobal();
-
-	uploadImageData(d, mipmap, slice, x, y);
-
-	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
-		generateMipmaps();
-}
-
-void Image::replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps)
-{
-	Graphics::flushStreamDrawsGlobal();
-
-	uploadByteData(format, data, size, mipmap, slice, rect, nullptr);
-
-	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
-		generateMipmaps();
 }
 
 bool Image::getConstant(const char *in, SettingType &out)

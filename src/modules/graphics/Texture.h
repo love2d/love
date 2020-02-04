@@ -182,6 +182,11 @@ public:
 	void drawLayer(Graphics *gfx, int layer, const Matrix4 &m);
 	void drawLayer(Graphics *gfx, int layer, Quad *quad, const Matrix4 &m);
 
+	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps);
+	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
+
+	virtual void generateMipmaps() = 0;
+
 	virtual ptrdiff_t getRenderTargetHandle() const = 0;
 
 	TextureType getTextureType() const;
@@ -212,8 +217,6 @@ public:
 	virtual void setSamplerState(const SamplerState &s);
 	const SamplerState &getSamplerState() const;
 
-	virtual void generateMipmaps() = 0;
-
 	Quad *getQuad() const;
 
 	static int getTotalMipmapCount(int w, int h);
@@ -231,6 +234,9 @@ protected:
 
 	void initQuad();
 	void setGraphicsMemorySize(int64 size);
+
+	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
+	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) = 0;
 
 	bool validateDimensions(bool throwException) const;
 
@@ -259,6 +265,10 @@ protected:
 	StrongRef<Quad> quad;
 
 	int64 graphicsMemorySize;
+
+	// True if the image wasn't able to be properly created and it had to fall
+	// back to a default texture.
+	bool usingDefaultTexture;
 
 private:
 

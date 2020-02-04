@@ -108,13 +108,6 @@ int w_Canvas_newImageData(lua_State *L)
 	return 1;
 }
 
-int w_Canvas_generateMipmaps(lua_State *L)
-{
-	Canvas *c = luax_checkcanvas(L, 1);
-	luax_catchexcept(L, [&]() { c->generateMipmaps(); });
-	return 0;
-}
-
 int w_Canvas_getMipmapMode(lua_State *L)
 {
 	Canvas *c = luax_checkcanvas(L, 1);
@@ -130,7 +123,6 @@ static const luaL_Reg w_Canvas_functions[] =
 {
 	{ "renderTo", w_Canvas_renderTo },
 	{ "newImageData", w_Canvas_newImageData },
-	{ "generateMipmaps", w_Canvas_generateMipmaps },
 	{ "getMipmapMode", w_Canvas_getMipmapMode },
 	{ 0, 0 }
 };

@@ -322,6 +322,42 @@ int w_Texture_getDepthSampleMode(lua_State *L)
 	return 1;
 }
 
+int w_Texture_generateMipmaps(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_catchexcept(L, [&]() { t->generateMipmaps(); });
+	return 0;
+}
+
+int w_Texture_replacePixels(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	love::image::ImageData *id = luax_checktype<love::image::ImageData>(L, 2);
+
+	int slice = 0;
+	int mipmap = 0;
+	int x = 0;
+	int y = 0;
+	bool reloadmipmaps = false; // TODO i->getMipmapsSource() == Texture::MIPMAPS_SOURCE_GENERATED;
+
+	if (t->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 3) - 1;
+
+	mipmap = (int) luaL_optinteger(L, 4, 1) - 1;
+
+	if (!lua_isnoneornil(L, 5))
+	{
+		x = (int) luaL_checkinteger(L, 5);
+		y = (int) luaL_checkinteger(L, 6);
+
+		if (reloadmipmaps)
+			reloadmipmaps = luax_optboolean(L, 7, reloadmipmaps);
+	}
+
+	luax_catchexcept(L, [&](){ t->replacePixels(id, slice, mipmap, x, y, reloadmipmaps); });
+	return 0;
+}
+
 const luaL_Reg w_Texture_functions[] =
 {
 	{ "getTextureType", w_Texture_getTextureType },
@@ -348,6 +384,8 @@ const luaL_Reg w_Texture_functions[] =
 	{ "isReadable", w_Texture_isReadable },
 	{ "getDepthSampleMode", w_Texture_getDepthSampleMode },
 	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },
+	{ "generateMipmaps", w_Texture_generateMipmaps },
+	{ "replacePixels", w_Texture_replacePixels },
 	{ 0, 0 }
 };
 

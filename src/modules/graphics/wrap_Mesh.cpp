@@ -552,14 +552,7 @@ int w_Mesh_getTexture(lua_State *L)
 	if (tex == nullptr)
 		return 0;
 
-	// FIXME: big hack right here.
-	if (dynamic_cast<Image *>(tex) != nullptr)
-		luax_pushtype(L, Image::type, tex);
-	else if (dynamic_cast<Canvas *>(tex) != nullptr)
-		luax_pushtype(L, Canvas::type, tex);
-	else
-		return luaL_error(L, "Unable to determine texture type.");
-
+	luax_pushtype(L, tex);
 	return 1;
 }
 
