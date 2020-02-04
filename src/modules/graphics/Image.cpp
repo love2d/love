@@ -90,13 +90,14 @@ void Image::init(PixelFormat fmt, int w, int h, int dataMipmaps, const Settings 
 
 	pixelWidth = w;
 	pixelHeight = h;
+	mipmapsMode = settings.mipmaps ? MIPMAPS_MANUAL : MIPMAPS_NONE;
 
 	width  = (int) (pixelWidth / settings.dpiScale + 0.5);
 	height = (int) (pixelHeight / settings.dpiScale + 0.5);
 
 	format = fmt;
 
-	if (!settings.mipmaps || (isCompressed() && dataMipmaps <= 1))
+	if (mipmapsMode == MIPMAPS_NONE || (isCompressed() && dataMipmaps <= 1))
 		mipmapCount = 1;
 	else
 		mipmapCount = getTotalMipmapCount(w, h, depth);

@@ -37,6 +37,7 @@ Canvas::Canvas(const Settings &settings)
 	sRGB = false;
 	requestedMSAA = settings.msaa;
 
+	mipmapsMode = settings.mipmaps;
 	width = settings.width;
 	height = settings.height;
 	pixelWidth = (int) ((width * settings.dpiScale) + 0.5);
@@ -63,10 +64,10 @@ Canvas::Canvas(const Settings &settings)
 	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
 		throw love::Exception("Readable depth/stencil Canvases with MSAA are not currently supported.");
 
-	if ((!readable || settings.msaa > 1) && settings.mipmaps != MIPMAPS_NONE)
+	if ((!readable || settings.msaa > 1) && mipmapsMode != MIPMAPS_NONE)
 		throw love::Exception("Non-readable and MSAA textures cannot have mipmaps.");
 
-	if (settings.mipmaps != MIPMAPS_NONE)
+	if (mipmapsMode != MIPMAPS_NONE)
 		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
@@ -100,11 +101,6 @@ Canvas::Canvas(const Settings &settings)
 
 Canvas::~Canvas()
 {
-}
-
-Texture::MipmapsMode Canvas::getMipmapsMode() const
-{
-	return settings.mipmaps;
 }
 
 bool Canvas::getConstant(const char *in, SettingType &out)

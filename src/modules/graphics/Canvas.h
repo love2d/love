@@ -69,8 +69,6 @@ public:
 	Canvas(const Settings &settings);
 	virtual ~Canvas();
 
-	MipmapsMode getMipmapsMode() const;
-
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
 	static const char *getConstant(SettingType in);
@@ -81,9 +79,6 @@ protected:
 	Settings settings;
 
 private:
-
-	static StringMap<MipmapsMode, MIPMAPS_MAX_ENUM>::Entry mipmapEntries[];
-	static StringMap<MipmapsMode, MIPMAPS_MAX_ENUM> mipmapModes;
 
 	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
 	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;

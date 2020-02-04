@@ -78,21 +78,9 @@ int w_Canvas_renderTo(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_getMipmapMode(lua_State *L)
-{
-	Canvas *c = luax_checkcanvas(L, 1);
-	const char *str;
-	if (!Texture::getConstant(c->getMipmapsMode(), str))
-		return luax_enumerror(L, "mipmap mode", Texture::getConstants(Texture::MIPMAPS_MAX_ENUM), str);
-
-	lua_pushstring(L, str);
-	return 1;
-}
-
 static const luaL_Reg w_Canvas_functions[] =
 {
 	{ "renderTo", w_Canvas_renderTo },
-	{ "getMipmapMode", w_Canvas_getMipmapMode },
 	{ 0, 0 }
 };
 

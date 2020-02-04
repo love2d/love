@@ -164,6 +164,7 @@ Texture::Texture(TextureType texType)
 	, format(PIXELFORMAT_UNKNOWN)
 	, renderTarget(false)
 	, readable(true)
+	, mipmapsMode(MIPMAPS_NONE)
 	, sRGB(false)
 	, width(0)
 	, height(0)
@@ -212,6 +213,11 @@ TextureType Texture::getTextureType() const
 PixelFormat Texture::getPixelFormat() const
 {
 	return format;
+}
+
+Texture::MipmapsMode Texture::getMipmapsMode() const
+{
+	return mipmapsMode;
 }
 
 bool Texture::isRenderTarget() const

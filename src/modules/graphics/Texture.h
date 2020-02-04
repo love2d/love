@@ -194,6 +194,7 @@ public:
 
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
+	MipmapsMode getMipmapsMode() const;
 
 	bool isRenderTarget() const;
 	bool isReadable() const;
@@ -248,6 +249,8 @@ protected:
 	PixelFormat format;
 	bool renderTarget;
 	bool readable;
+
+	MipmapsMode mipmapsMode;
 
 	bool sRGB;
 
