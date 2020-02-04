@@ -71,8 +71,6 @@ public:
 
 	MipmapsMode getMipmapsMode() const;
 
-	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
-
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
 	static const char *getConstant(SettingType in);

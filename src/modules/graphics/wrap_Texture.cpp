@@ -358,6 +358,36 @@ int w_Texture_replacePixels(lua_State *L)
 	return 0;
 }
 
+int w_Texture_newImageData(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
+
+	int slice = 0;
+	int mipmap = 0;
+	Rect rect = {0, 0, t->getPixelWidth(), t->getPixelHeight()};
+
+	if (t->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 2) - 1;
+
+	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+
+	if (!lua_isnoneornil(L, 4))
+	{
+		rect.x = (int) luaL_checkinteger(L, 4);
+		rect.y = (int) luaL_checkinteger(L, 5);
+		rect.w = (int) luaL_checkinteger(L, 6);
+		rect.h = (int) luaL_checkinteger(L, 7);
+	}
+
+	love::image::ImageData *img = nullptr;
+	luax_catchexcept(L, [&](){ img = t->newImageData(image, slice, mipmap, rect); });
+
+	luax_pushtype(L, img);
+	img->release();
+	return 1;
+}
+
 const luaL_Reg w_Texture_functions[] =
 {
 	{ "getTextureType", w_Texture_getTextureType },
@@ -386,6 +416,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },
 	{ "generateMipmaps", w_Texture_generateMipmaps },
 	{ "replacePixels", w_Texture_replacePixels },
+	{ "newImageData", w_Texture_newImageData },
 	{ 0, 0 }
 };
 

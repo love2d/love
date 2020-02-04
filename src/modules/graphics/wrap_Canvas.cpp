@@ -78,36 +78,6 @@ int w_Canvas_renderTo(lua_State *L)
 	return 0;
 }
 
-int w_Canvas_newImageData(lua_State *L)
-{
-	Canvas *canvas = luax_checkcanvas(L, 1);
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
-
-	int slice = 0;
-	int mipmap = 0;
-	Rect rect = {0, 0, canvas->getPixelWidth(), canvas->getPixelHeight()};
-
-	if (canvas->getTextureType() != TEXTURE_2D)
-		slice = (int) luaL_checkinteger(L, 2) - 1;
-
-	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
-
-	if (!lua_isnoneornil(L, 4))
-	{
-		rect.x = (int) luaL_checkinteger(L, 4);
-		rect.y = (int) luaL_checkinteger(L, 5);
-		rect.w = (int) luaL_checkinteger(L, 6);
-		rect.h = (int) luaL_checkinteger(L, 7);
-	}
-
-	love::image::ImageData *img = nullptr;
-	luax_catchexcept(L, [&](){ img = canvas->newImageData(image, slice, mipmap, rect); });
-
-	luax_pushtype(L, img);
-	img->release();
-	return 1;
-}
-
 int w_Canvas_getMipmapMode(lua_State *L)
 {
 	Canvas *c = luax_checkcanvas(L, 1);
@@ -122,7 +92,6 @@ int w_Canvas_getMipmapMode(lua_State *L)
 static const luaL_Reg w_Canvas_functions[] =
 {
 	{ "renderTo", w_Canvas_renderTo },
-	{ "newImageData", w_Canvas_newImageData },
 	{ "getMipmapMode", w_Canvas_getMipmapMode },
 	{ 0, 0 }
 };

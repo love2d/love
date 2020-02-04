@@ -107,40 +107,6 @@ Texture::MipmapsMode Canvas::getMipmapsMode() const
 	return settings.mipmaps;
 }
 
-love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
-{
-	if (!isReadable())
-		throw love::Exception("Canvas:newImageData cannot be called on non-readable Canvases.");
-
-	if (isPixelFormatDepthStencil(getPixelFormat()))
-		throw love::Exception("Canvas:newImageData cannot be called on Canvases with depth/stencil pixel formats.");
-
-	if (r.x < 0 || r.y < 0 || r.w <= 0 || r.h <= 0 || (r.x + r.w) > getPixelWidth(mipmap) || (r.y + r.h) > getPixelHeight(mipmap))
-		throw love::Exception("Invalid rectangle dimensions.");
-
-	if (slice < 0 || (texType == TEXTURE_VOLUME && slice >= getDepth(mipmap))
-		|| (texType == TEXTURE_2D_ARRAY && slice >= layers)
-		|| (texType == TEXTURE_CUBE && slice >= 6))
-	{
-		throw love::Exception("Invalid slice index.");
-	}
-
-	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr && gfx->isRenderTargetActive(this))
-		throw love::Exception("Canvas:newImageData cannot be called while that Canvas is currently active.");
-
-	PixelFormat dataformat = getLinearPixelFormat(getPixelFormat());
-
-	if (!image::ImageData::validPixelFormat(dataformat))
-	{
-		const char *formatname = "unknown";
-		love::getConstant(dataformat, formatname);
-		throw love::Exception("ImageData with the '%s' pixel format is not supported.", formatname);
-	}
-
-	return module->newImageData(r.w, r.h, dataformat);
-}
-
 bool Canvas::getConstant(const char *in, SettingType &out)
 {
 	return settingTypes.find(in, out);

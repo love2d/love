@@ -34,6 +34,7 @@
 #include "renderstate.h"
 #include "Resource.h"
 #include "image/ImageData.h"
+#include "image/Image.h"
 #include "image/CompressedImageData.h"
 
 // C
@@ -186,6 +187,8 @@ public:
 	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
 
 	virtual void generateMipmaps() = 0;
+
+	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
 
 	virtual ptrdiff_t getRenderTargetHandle() const = 0;
 
