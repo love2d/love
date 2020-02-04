@@ -31,20 +31,17 @@ namespace graphics
 
 love::Type Image::type("Image", &Texture::type);
 
-Image::Image(const Slices &data, const Settings &settings, bool validatedata)
-	: Texture(data.getTextureType())
+Image::Image(TextureType textype, const Settings &settings)
+	: Texture(textype)
 	, settings(settings)
-	, mipmapsType(settings.mipmaps ? MIPMAPS_GENERATED : MIPMAPS_NONE)
 	, usingDefaultTexture(false)
 {
 	renderTarget = false;
 	sRGB = isGammaCorrect() && !settings.linear;
-	if (validatedata && data.validate() && data.getMipmapCount() > 1)
-		mipmapsType = MIPMAPS_DATA;
 }
 
 Image::Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
-	: Image(Slices(textype), settings, false)
+	: Image(textype, settings)
 {
 	if (isPixelFormatCompressed(format))
 		throw love::Exception("This constructor is only supported for non-compressed pixel formats.");
@@ -54,26 +51,30 @@ Image::Image(TextureType textype, PixelFormat format, int width, int height, int
 	else if (textype == TEXTURE_VOLUME)
 		depth = slices;
 
-	init(format, width, height, settings);
+	init(format, width, height, 1, settings);
 }
 
 Image::Image(const Slices &slices, const Settings &settings)
-	: Image(slices, settings, true)
+	: Image(slices.getTextureType(), settings)
 {
+	int dataMipmaps = 1;
+	if (slices.validate() && slices.getMipmapCount() > 1)
+		dataMipmaps = slices.getMipmapCount();
+
 	if (texType == TEXTURE_2D_ARRAY)
 		this->layers = slices.getSliceCount();
 	else if (texType == TEXTURE_VOLUME)
 		this->depth = slices.getSliceCount();
 
 	love::image::ImageDataBase *slice = slices.get(0, 0);
-	init(slice->getFormat(), slice->getWidth(), slice->getHeight(), settings);
+	init(slice->getFormat(), slice->getWidth(), slice->getHeight(), dataMipmaps, settings);
 }
 
 Image::~Image()
 {
 }
 
-void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
+void Image::init(PixelFormat fmt, int w, int h, int dataMipmaps, const Settings &settings)
 {
 	Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr && !gfx->isPixelFormatSupported(fmt, renderTarget, readable, sRGB))
@@ -96,10 +97,10 @@ void Image::init(PixelFormat fmt, int w, int h, const Settings &settings)
 
 	format = fmt;
 
-	if (isCompressed() && mipmapsType == MIPMAPS_GENERATED)
-		mipmapsType = MIPMAPS_NONE;
-
-	mipmapCount = mipmapsType == MIPMAPS_NONE ? 1 : getTotalMipmapCount(w, h, depth);
+	if (!settings.mipmaps || (isCompressed() && dataMipmaps <= 1))
+		mipmapCount = 1;
+	else
+		mipmapCount = getTotalMipmapCount(w, h, depth);
 
 	initQuad();
 }
@@ -125,7 +126,7 @@ void Image::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, 
 	if (d->getFormat() != getPixelFormat())
 		throw love::Exception("Pixel formats must match.");
 
-	if (mipmap < 0 || (mipmapsType != MIPMAPS_DATA && mipmap > 0) || mipmap >= getMipmapCount())
+	if (mipmap < 0 || mipmap >= getMipmapCount())
 		throw love::Exception("Invalid image mipmap index %d.", mipmap + 1);
 
 	if (slice < 0 || (texType == TEXTURE_CUBE && slice >= 6)
@@ -166,11 +167,6 @@ void Image::replacePixels(const void *data, size_t size, int slice, int mipmap, 
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
-}
-
-Image::MipmapsType Image::getMipmapsType() const
-{
-	return mipmapsType;
 }
 
 bool Image::getConstant(const char *in, SettingType &out)

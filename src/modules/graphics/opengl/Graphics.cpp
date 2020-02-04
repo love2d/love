@@ -234,7 +234,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
 	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
-		|| GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB)
+		|| GLAD_ES_VERSION_3_0)
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
@@ -312,11 +312,11 @@ void Graphics::unSetMode()
 	for (const auto &pair : framebufferObjects)
 		gl.deleteFramebuffer(pair.second);
 
-	for (auto temp : temporaryCanvases)
-		temp.canvas->release();
+	for (auto temp : temporaryTextures)
+		temp.texture->release();
 
 	framebufferObjects.clear();
-	temporaryCanvases.clear();
+	temporaryTextures.clear();
 
 	if (mainVAO != 0)
 	{
@@ -518,7 +518,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 	flushStreamDraws();
 	endPass();
 
-	bool iswindow = rts.getFirstTarget().canvas == nullptr;
+	bool iswindow = rts.getFirstTarget().texture == nullptr;
 	vertex::Winding vertexwinding = state.winding;
 
 	if (iswindow)
@@ -560,7 +560,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 void Graphics::endPass()
 {
 	auto &rts = states.back().renderTargets;
-	love::graphics::Canvas *depthstencil = rts.depthStencil.canvas.get();
+	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
 	// Discard the depth/stencil buffer if we're using an internal cached one.
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
@@ -568,15 +568,16 @@ void Graphics::endPass()
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
-	if (rts.colors.size() > 0 && rts.colors[0].canvas->getMSAA() > 1)
+	if (rts.colors.size() > 0 && rts.colors[0].texture->getMSAA() > 1)
 	{
 		int mip = rts.colors[0].mipmap;
-		int w = rts.colors[0].canvas->getPixelWidth(mip);
-		int h = rts.colors[0].canvas->getPixelHeight(mip);
+		int w = rts.colors[0].texture->getPixelWidth(mip);
+		int h = rts.colors[0].texture->getPixelHeight(mip);
 
 		for (int i = 0; i < (int) rts.colors.size(); i++)
 		{
-			Canvas *c = (Canvas *) rts.colors[i].canvas.get();
+			// FIXME
+			Canvas *c = (Canvas *) rts.colors[i].texture.get();
 
 			if (!c->isReadable())
 				continue;
@@ -619,13 +620,14 @@ void Graphics::endPass()
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.canvas->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
-			rt.canvas->generateMipmaps();
+		// TODO
+//		if (rt.texture->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
+//			rt.texture->generateMipmaps();
 	}
 
-	int dsmipmap = rts.depthStencil.mipmap;
-	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
-		depthstencil->generateMipmaps();
+//	int dsmipmap = rts.depthStencil.mipmap;
+//	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
+//		depthstencil->generateMipmaps();
 }
 
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
@@ -818,25 +820,28 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::cleanupCanvas(Canvas *canvas)
+void Graphics::cleanupCanvas(Canvas *texture)
 {
+	if (!texture->isRenderTarget())
+		return;
+
 	for (auto it = framebufferObjects.begin(); it != framebufferObjects.end(); /**/)
 	{
-		bool hascanvas = false;
+		bool hastexture = false;
 		const auto &rts = it->first;
 
 		for (const RenderTarget &rt : rts.colors)
 		{
-			if (rt.canvas == canvas)
+			if (rt.texture == texture)
 			{
-				hascanvas = true;
+				hastexture = true;
 				break;
 			}
 		}
 
-		hascanvas = hascanvas || rts.depthStencil.canvas == canvas;
+		hastexture = hastexture || rts.depthStencil.texture == texture;
 
-		if (hascanvas)
+		if (hastexture)
 		{
 			if (isCreated())
 				gl.deleteFramebuffer(it->second);
@@ -857,8 +862,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	}
 	else
 	{
-		int msaa = targets.getFirstTarget().canvas->getMSAA();
-		bool hasDS = targets.depthStencil.canvas != nullptr;
+		int msaa = targets.getFirstTarget().texture->getMSAA();
+		bool hasDS = targets.depthStencil.texture != nullptr;
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
@@ -868,9 +873,9 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 
 		auto attachCanvas = [&](const RenderTarget &rt)
 		{
-			bool renderbuffer = msaa > 1 || !rt.canvas->isReadable();
+			bool renderbuffer = msaa > 1 || !rt.texture->isReadable();
 			bool srgb = false;
-			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.canvas->getPixelFormat(), renderbuffer, srgb);
+			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer, srgb);
 
 			if (fmt.framebufferAttachments[0] == GL_COLOR_ATTACHMENT0)
 			{
@@ -879,7 +884,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 				ncolortargets++;
 			}
 
-			GLuint handle = (GLuint) rt.canvas->getRenderTargetHandle();
+			GLuint handle = (GLuint) rt.texture->getRenderTargetHandle();
 
 			for (GLenum attachment : fmt.framebufferAttachments)
 			{
@@ -889,7 +894,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, handle);
 				else
 				{
-					TextureType textype = rt.canvas->getTextureType();
+					TextureType textype = rt.texture->getTextureType();
 
 					int layer = textype == TEXTURE_CUBE ? 0 : rt.slice;
 					int face = textype == TEXTURE_CUBE ? rt.slice : 0;
@@ -1056,20 +1061,20 @@ void Graphics::present(void *screenshotCallbackData)
 	// Reset the per-frame stat counts.
 	drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
-	canvasSwitchCount = 0;
+	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
-	// This assumes temporary canvases will only be used within a render pass.
-	for (int i = (int) temporaryCanvases.size() - 1; i >= 0; i--)
+	// This assumes temporary textures will only be used within a render pass.
+	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
 	{
-		if (temporaryCanvases[i].framesSinceUse >= MAX_TEMPORARY_CANVAS_UNUSED_FRAMES)
+		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
 		{
-			temporaryCanvases[i].canvas->release();
-			temporaryCanvases[i] = temporaryCanvases.back();
-			temporaryCanvases.pop_back();
+			temporaryTextures[i].texture->release();
+			temporaryTextures[i] = temporaryTextures.back();
+			temporaryTextures.pop_back();
 		}
 		else
-			temporaryCanvases[i].framesSinceUse++;
+			temporaryTextures[i].framesSinceUse++;
 	}
 }
 
@@ -1111,11 +1116,11 @@ void Graphics::setScissor()
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
 	const auto &rts = states.back().renderTargets;
-	love::graphics::Canvas *dscanvas = rts.depthStencil.canvas.get();
+	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
 	if (!isCanvasActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-	else if (isCanvasActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dscanvas == nullptr || !isPixelFormatStencil(dscanvas->getPixelFormat())))
+	else if (isCanvasActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
 		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
 
 	flushStreamDraws();

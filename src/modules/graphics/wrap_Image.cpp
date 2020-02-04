@@ -40,7 +40,7 @@ int w_Image_replacePixels(lua_State *L)
 	int mipmap = 0;
 	int x = 0;
 	int y = 0;
-	bool reloadmipmaps = i->getMipmapsType() == Image::MIPMAPS_GENERATED;
+	bool reloadmipmaps = false; // TODO i->getMipmapsSource() == Texture::MIPMAPS_SOURCE_GENERATED;
 
 	if (i->getTextureType() != TEXTURE_2D)
 		slice = (int) luaL_checkinteger(L, 3) - 1;

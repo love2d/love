@@ -373,8 +373,11 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 
 void Canvas::generateMipmaps()
 {
-	if (getMipmapCount() == 1 || getMipmapMode() == MIPMAPS_NONE)
-		throw love::Exception("generateMipmaps can only be called on a Canvas which was created with mipmaps enabled.");
+	if (getMipmapCount() == 1 || getMipmapsMode() == MIPMAPS_NONE)
+		throw love::Exception("generateMipmaps can only be called on a Texture which was created with mipmaps enabled.");
+
+	if (isPixelFormatCompressed(format))
+		throw love::Exception("generateMipmaps cannot be called on a compressed Texture.");
 
 	gl.bindTextureToUnit(this, 0, false);
 

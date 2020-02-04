@@ -148,7 +148,7 @@ void Image::loadData()
 			d = std::max(d / 2, 1);
 	}
 
-	if (mipmapsType == MIPMAPS_GENERATED)
+	if (getMipmapCount() > 1 && slices.getMipmapCount() <= 1)
 		generateMipmaps();
 }
 
@@ -200,22 +200,11 @@ bool Image::loadVolatile()
 
 	OpenGL::TempDebugGroup debuggroup("Image load");
 
-	if (!isCompressed())
-	{
-		// GL_EXT_sRGB doesn't support glGenerateMipmap for sRGB textures.
-		if (sRGB && (GLAD_ES_VERSION_2_0 && GLAD_EXT_sRGB && !GLAD_ES_VERSION_3_0)
-			&& mipmapsType != MIPMAPS_DATA)
-		{
-			mipmapsType = MIPMAPS_NONE;
-			samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
-		}
-	}
-
 	// NPOT textures don't support mipmapping without full NPOT support.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
 		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
 	{
-		mipmapsType = MIPMAPS_NONE;
+		mipmapCount = 1;
 		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 	}
 
@@ -230,11 +219,6 @@ bool Image::loadVolatile()
 	}
 
 	setSamplerState(samplerState);
-
-	GLenum gltextype = OpenGL::getGLTextureType(texType);
-
-	if (mipmapsType == MIPMAPS_NONE && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0))
-		glTexParameteri(gltextype, GL_TEXTURE_MAX_LEVEL, 0);
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 

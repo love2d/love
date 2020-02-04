@@ -39,14 +39,6 @@ public:
 
 	static love::Type type;
 
-	enum MipmapMode
-	{
-		MIPMAPS_NONE,
-		MIPMAPS_MANUAL,
-		MIPMAPS_AUTO,
-		MIPMAPS_MAX_ENUM
-	};
-
 	enum SettingType
 	{
 		SETTING_WIDTH,
@@ -66,7 +58,7 @@ public:
 		int width  = 1;
 		int height = 1;
 		int layers = 1; // depth for 3D textures
-		MipmapMode mipmaps = MIPMAPS_NONE;
+		MipmapsMode mipmaps = MIPMAPS_NONE;
 		PixelFormat format = PIXELFORMAT_NORMAL;
 		TextureType type = TEXTURE_2D;
 		float dpiScale = 1.0f;
@@ -77,13 +69,9 @@ public:
 	Canvas(const Settings &settings);
 	virtual ~Canvas();
 
-	MipmapMode getMipmapMode() const;
+	MipmapsMode getMipmapsMode() const;
 
 	virtual love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
-
-	static bool getConstant(const char *in, MipmapMode &out);
-	static bool getConstant(MipmapMode in, const char *&out);
-	static std::vector<std::string> getConstants(MipmapMode);
 
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
@@ -96,8 +84,8 @@ protected:
 
 private:
 
-	static StringMap<MipmapMode, MIPMAPS_MAX_ENUM>::Entry mipmapEntries[];
-	static StringMap<MipmapMode, MIPMAPS_MAX_ENUM> mipmapModes;
+	static StringMap<MipmapsMode, MIPMAPS_MAX_ENUM>::Entry mipmapEntries[];
+	static StringMap<MipmapsMode, MIPMAPS_MAX_ENUM> mipmapModes;
 
 	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
 	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;

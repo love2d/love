@@ -200,7 +200,7 @@ public:
 	{
 		int drawCalls;
 		int drawCallsBatched;
-		int canvasSwitches;
+		int renderTargetSwitches;
 		int shaderSwitches;
 		int textures;
 		int fonts;
@@ -315,53 +315,53 @@ public:
 
 	struct RenderTarget
 	{
-		Canvas *canvas;
+		Texture *texture;
 		int slice;
 		int mipmap;
 
-		RenderTarget(Canvas *canvas, int slice = 0, int mipmap = 0)
-			: canvas(canvas)
+		RenderTarget(Texture *texture, int slice = 0, int mipmap = 0)
+			: texture(texture)
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
 
 		RenderTarget()
-			: canvas(nullptr)
+			: texture(nullptr)
 			, slice(0)
 			, mipmap(0)
 		{}
 
 		bool operator != (const RenderTarget &other) const
 		{
-			return canvas != other.canvas || slice != other.slice || mipmap != other.mipmap;
+			return texture != other.texture || slice != other.slice || mipmap != other.mipmap;
 		}
 
 		bool operator != (const RenderTargetStrongRef &other) const
 		{
-			return canvas != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+			return texture != other.texture.get() || slice != other.slice || mipmap != other.mipmap;
 		}
 	};
 
 	struct RenderTargetStrongRef
 	{
-		StrongRef<Canvas> canvas;
+		StrongRef<Texture> texture;
 		int slice = 0;
 		int mipmap = 0;
 
-		RenderTargetStrongRef(Canvas *canvas, int slice = 0, int mipmap = 0)
-			: canvas(canvas)
+		RenderTargetStrongRef(Texture *texture, int slice = 0, int mipmap = 0)
+			: texture(texture)
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
 
 		bool operator != (const RenderTargetStrongRef &other) const
 		{
-			return canvas.get() != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+			return texture.get() != other.texture.get() || slice != other.slice || mipmap != other.mipmap;
 		}
 
 		bool operator != (const RenderTarget &other) const
 		{
-			return canvas.get() != other.canvas || slice != other.slice || mipmap != other.mipmap;
+			return texture.get() != other.texture || slice != other.slice || mipmap != other.mipmap;
 		}
 	};
 
@@ -619,12 +619,12 @@ public:
 	const BlendState &getBlendState() const;
 
 	/**
-	 * Sets the default sampler state for images, canvases, and fonts.
+	 * Sets the default sampler state for textures, videos, and fonts.
 	 **/
 	void setDefaultSamplerState(const SamplerState &s);
 
 	/**
-	 * Gets the default sampler state for images, canvases, and fonts.
+	 * Gets the default sampler state for textures, videos, and fonts.
 	 **/
 	const SamplerState &getDefaultSamplerState() const;
 
@@ -939,13 +939,13 @@ protected:
 		}
 	};
 
-	struct TemporaryCanvas
+	struct TemporaryTexture
 	{
-		Canvas *canvas;
+		Texture *texture;
 		int framesSinceUse;
 
-		TemporaryCanvas(Canvas *c)
-			: canvas(c)
+		TemporaryTexture(Texture *tex)
+			: texture(tex)
 			, framesSinceUse(0)
 		{}
 	};
@@ -961,7 +961,7 @@ protected:
 
 	void createQuadIndexBuffer();
 
-	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
+	Texture *getTemporaryTexture(PixelFormat format, int w, int h, int samples);
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
@@ -994,9 +994,9 @@ protected:
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypeStack;
 
-	std::vector<TemporaryCanvas> temporaryCanvases;
+	std::vector<TemporaryTexture> temporaryTextures;
 
-	int canvasSwitchCount;
+	int renderTargetSwitchCount;
 	int drawCalls;
 	int drawCallsBatched;
 
@@ -1007,7 +1007,7 @@ protected:
 	Deprecations deprecations;
 
 	static const size_t MAX_USER_STACK_DEPTH = 128;
-	static const int MAX_TEMPORARY_CANVAS_UNUSED_FRAMES = 16;
+	static const int MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES = 16;
 
 private:
 

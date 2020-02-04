@@ -128,11 +128,12 @@ public:
 	static love::Type type;
 	static int textureCount;
 
-	enum MipmapsType
+	enum MipmapsMode
 	{
 		MIPMAPS_NONE,
-		MIPMAPS_DATA,
-		MIPMAPS_GENERATED,
+		MIPMAPS_MANUAL,
+		MIPMAPS_AUTO,
+		MIPMAPS_MAX_ENUM
 	};
 
 	struct Slices
@@ -221,6 +222,10 @@ public:
 	static bool getConstant(const char *in, TextureType &out);
 	static bool getConstant(TextureType in, const char *&out);
 	static std::vector<std::string> getConstants(TextureType);
+
+	static bool getConstant(const char *in, MipmapsMode &out);
+	static bool getConstant(MipmapsMode in, const char *&out);
+	static std::vector<std::string> getConstants(MipmapsMode);
 
 protected:
 

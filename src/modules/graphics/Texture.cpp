@@ -680,5 +680,29 @@ StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry Texture::texTypeEntries[] =
 
 StringMap<TextureType, TEXTURE_MAX_ENUM> Texture::texTypes(Texture::texTypeEntries, sizeof(Texture::texTypeEntries));
 
+static StringMap<Texture::MipmapsMode, Texture::MIPMAPS_MAX_ENUM>::Entry mipmapEntries[] =
+{
+	{ "none",   Texture::MIPMAPS_NONE   },
+	{ "manual", Texture::MIPMAPS_MANUAL },
+	{ "auto",   Texture::MIPMAPS_AUTO   },
+};
+
+static StringMap<Texture::MipmapsMode, Texture::MIPMAPS_MAX_ENUM> mipmapModes(mipmapEntries, sizeof(mipmapEntries));
+
+bool Texture::getConstant(const char *in, MipmapsMode &out)
+{
+	return mipmapModes.find(in, out);
+}
+
+bool Texture::getConstant(MipmapsMode in, const char *&out)
+{
+	return mipmapModes.find(in, out);
+}
+
+std::vector<std::string> Texture::getConstants(MipmapsMode)
+{
+	return mipmapModes.getNames();
+}
+
 } // graphics
 } // love

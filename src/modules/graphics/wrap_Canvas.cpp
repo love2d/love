@@ -37,7 +37,7 @@ int w_Canvas_renderTo(lua_State *L)
 
 	int startidx = 2;
 
-	if (rt.canvas->getTextureType() != TEXTURE_2D)
+	if (rt.texture->getTextureType() != TEXTURE_2D)
 	{
 		rt.slice = (int) luaL_checkinteger(L, 2) - 1;
 		startidx++;
@@ -53,10 +53,10 @@ int w_Canvas_renderTo(lua_State *L)
 		Graphics::RenderTargets oldtargets = graphics->getCanvas();
 
 		for (auto c : oldtargets.colors)
-			c.canvas->retain();
+			c.texture->retain();
 
-		if (oldtargets.depthStencil.canvas != nullptr)
-			oldtargets.depthStencil.canvas->retain();
+		if (oldtargets.depthStencil.texture != nullptr)
+			oldtargets.depthStencil.texture->retain();
 
 		luax_catchexcept(L, [&](){ graphics->setCanvas(rt, false); });
 
@@ -66,10 +66,10 @@ int w_Canvas_renderTo(lua_State *L)
 		graphics->setCanvas(oldtargets);
 
 		for (auto c : oldtargets.colors)
-			c.canvas->release();
+			c.texture->release();
 
-		if (oldtargets.depthStencil.canvas != nullptr)
-			oldtargets.depthStencil.canvas->release();
+		if (oldtargets.depthStencil.texture != nullptr)
+			oldtargets.depthStencil.texture->release();
 
 		if (status != 0)
 			return lua_error(L);
@@ -119,8 +119,8 @@ int w_Canvas_getMipmapMode(lua_State *L)
 {
 	Canvas *c = luax_checkcanvas(L, 1);
 	const char *str;
-	if (!Canvas::getConstant(c->getMipmapMode(), str))
-		return luax_enumerror(L, "mipmap mode", Canvas::getConstants(Canvas::MIPMAPS_MAX_ENUM), str);
+	if (!Texture::getConstant(c->getMipmapsMode(), str))
+		return luax_enumerror(L, "mipmap mode", Texture::getConstants(Texture::MIPMAPS_MAX_ENUM), str);
 
 	lua_pushstring(L, str);
 	return 1;

@@ -57,8 +57,6 @@ public:
 	void replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps);
 	void replacePixels(const void *data, size_t size, int slice, int mipmap, const Rect &rect, bool reloadmipmaps);
 
-	MipmapsType getMipmapsType() const;
-
 	static bool getConstant(const char *in, SettingType &out);
 	static bool getConstant(SettingType in, const char *&out);
 	static const char *getConstant(SettingType in);
@@ -75,17 +73,15 @@ protected:
 	// The settings used to initialize this Image.
 	Settings settings;
 
-	MipmapsType mipmapsType;
-
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
 	bool usingDefaultTexture;
 
 private:
 
-	Image(const Slices &data, const Settings &settings, bool validatedata);
+	Image(TextureType textype, const Settings &settings);
 
-	void init(PixelFormat fmt, int w, int h, const Settings &settings);
+	void init(PixelFormat fmt, int w, int h, int dataMipmaps, const Settings &settings);
 
 	static StringMap<SettingType, SETTING_MAX_ENUM>::Entry settingTypeEntries[];
 	static StringMap<SettingType, SETTING_MAX_ENUM> settingTypes;

@@ -102,7 +102,7 @@ Canvas::~Canvas()
 {
 }
 
-Canvas::MipmapMode Canvas::getMipmapMode() const
+Texture::MipmapsMode Canvas::getMipmapsMode() const
 {
 	return settings.mipmaps;
 }
@@ -141,21 +141,6 @@ love::image::ImageData *Canvas::newImageData(love::image::Image *module, int sli
 	return module->newImageData(r.w, r.h, dataformat);
 }
 
-bool Canvas::getConstant(const char *in, MipmapMode &out)
-{
-	return mipmapModes.find(in, out);
-}
-
-bool Canvas::getConstant(MipmapMode in, const char *&out)
-{
-	return mipmapModes.find(in, out);
-}
-
-std::vector<std::string> Canvas::getConstants(MipmapMode)
-{
-	return mipmapModes.getNames();
-}
-
 bool Canvas::getConstant(const char *in, SettingType &out)
 {
 	return settingTypes.find(in, out);
@@ -177,15 +162,6 @@ std::vector<std::string> Canvas::getConstants(SettingType)
 {
 	return settingTypes.getNames();
 }
-
-StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM>::Entry Canvas::mipmapEntries[] =
-{
-	{ "none",   MIPMAPS_NONE   },
-	{ "manual", MIPMAPS_MANUAL },
-	{ "auto",   MIPMAPS_AUTO   },
-};
-
-StringMap<Canvas::MipmapMode, Canvas::MIPMAPS_MAX_ENUM> Canvas::mipmapModes(Canvas::mipmapEntries, sizeof(Canvas::mipmapEntries));
 
 StringMap<Canvas::SettingType, Canvas::SETTING_MAX_ENUM>::Entry Canvas::settingTypeEntries[] =
 {

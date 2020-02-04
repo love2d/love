@@ -126,7 +126,7 @@ private:
 			for (size_t i = 0; i < rts.colors.size(); i++)
 				hashtargets[hashcount++] = rts.colors[i];
 
-			if (rts.depthStencil.canvas != nullptr)
+			if (rts.depthStencil.texture != nullptr)
 				hashtargets[hashcount++] = rts.depthStencil;
 			else if (rts.temporaryRTFlags != 0)
 				hashtargets[hashcount++] = RenderTarget(nullptr, -1, rts.temporaryRTFlags);

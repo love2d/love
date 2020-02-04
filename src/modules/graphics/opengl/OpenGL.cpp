@@ -1794,10 +1794,10 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 					   && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB));
 			}
 			else
-				return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB;
+				return GLAD_ES_VERSION_3_0;
 		}
 		else
-			return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
+			return GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
 	case PIXELFORMAT_R16_UNORM:
 	case PIXELFORMAT_RG16_UNORM:
 		return GLAD_VERSION_3_0
