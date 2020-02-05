@@ -406,7 +406,12 @@ public:
 		if (!alignedMalloc((void **) &data, alignedSize, alignment))
 			throw love::Exception("Out of memory.");
 
-		loadVolatile();
+		if (!loadVolatile())
+		{
+			ptrdiff_t pointer = (ptrdiff_t) data;
+			alignedFree(data);
+			throw love::Exception("AMD Pinned Memory StreamBuffer implementation failed to create buffer (address: %p, alignment: %ld, aiigned size: %ld)", pointer, alignment, alignedSize);
+		}
 	}
 
 	~StreamBufferPinnedMemory()
@@ -441,8 +446,18 @@ public:
 
 		glGenBuffers(1, &vbo);
 
+		while (glGetError() != GL_NO_ERROR)
+			/* Clear errors. */;
+
 		glBindBuffer(GL_EXTERNAL_VIRTUAL_MEMORY_BUFFER_AMD, vbo);
 		glBufferData(GL_EXTERNAL_VIRTUAL_MEMORY_BUFFER_AMD, alignedSize, data, GL_STREAM_DRAW);
+
+		if (glGetError() != GL_NO_ERROR)
+		{
+			gl.deleteBuffer(vbo);
+			vbo = 0;
+			return false;
+		}
 
 		frameGPUReadOffset = 0;
 		frameIndex = 0;
@@ -485,8 +500,18 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 			// AMD's pinned memory seems to be faster than persistent mapping,
 			// on AMD GPUs.
 			if (GLAD_AMD_pinned_memory)
-				return new StreamBufferPinnedMemory(mode, size);
-			else if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
+			{
+				try
+				{
+					return new StreamBufferPinnedMemory(mode, size);
+				}
+				catch (love::Exception &e)
+				{
+					printf("Failed creating Pinned Memory StreamBuffer: %s\n", e.what());
+				}
+			}
+
+			if (GLAD_VERSION_4_4 || GLAD_ARB_buffer_storage)
 				return new StreamBufferPersistentMapSync(mode, size);
 
 			// Most modern drivers have a separate internal thread which queues
