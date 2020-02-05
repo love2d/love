@@ -273,7 +273,6 @@ public:
 
 protected:
 
-	void initQuad();
 	void setGraphicsMemorySize(int64 size);
 
 	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);

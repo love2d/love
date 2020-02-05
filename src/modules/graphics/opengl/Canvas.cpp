@@ -193,7 +193,6 @@ Canvas::Canvas(const Settings &settings)
 	if (gfx != nullptr)
 		format = gfx->getSizedFormat(format, renderTarget, readable, sRGB);
 
-	initQuad();
 	loadVolatile();
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)

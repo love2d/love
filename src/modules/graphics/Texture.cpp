@@ -273,7 +273,8 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 
 	samplerState = gfx->getDefaultSamplerState();
 
-	initQuad();
+	Quad::Viewport v = {0, 0, (double) width, (double) height};
+	quad.set(new Quad(v, width, height), Acquire::NORETAIN);
 
 	++textureCount;
 }
@@ -284,12 +285,6 @@ Texture::~Texture()
 	setGraphicsMemorySize(0);
 }
 
-void Texture::initQuad()
-{
-	Quad::Viewport v = {0, 0, (double) width, (double) height};
-	quad.set(new Quad(v, width, height), Acquire::NORETAIN);
-}
-
 void Texture::setGraphicsMemorySize(int64 bytes)
 {
 	totalGraphicsMemory = std::max(totalGraphicsMemory - graphicsMemorySize, (int64) 0);
@@ -297,58 +292,6 @@ void Texture::setGraphicsMemorySize(int64 bytes)
 	bytes = std::max(bytes, (int64) 0);
 	graphicsMemorySize = bytes;
 	totalGraphicsMemory += bytes;
-}
-
-TextureType Texture::getTextureType() const
-{
-	return texType;
-}
-
-PixelFormat Texture::getPixelFormat() const
-{
-	return format;
-}
-
-Texture::MipmapsMode Texture::getMipmapsMode() const
-{
-	return mipmapsMode;
-}
-
-bool Texture::isRenderTarget() const
-{
-	return renderTarget;
-}
-
-bool Texture::isReadable() const
-{
-	return readable;
-}
-
-bool Texture::isCompressed() const
-{
-	return isPixelFormatCompressed(format);
-}
-
-bool Texture::isFormatLinear() const
-{
-	return isGammaCorrect() && !sRGB && format != PIXELFORMAT_sRGBA8_UNORM;
-}
-
-bool Texture::isValidSlice(int slice) const
-{
-	if (slice < 0)
-		return false;
-
-	if (texType == TEXTURE_CUBE)
-		return slice < 6;
-	else if (texType == TEXTURE_VOLUME)
-		return slice < depth;
-	else if (texType == TEXTURE_2D_ARRAY)
-		return slice < layers;
-	else if (slice > 0)
-		return false;
-
-	return true;
 }
 
 void Texture::draw(Graphics *gfx, const Matrix4 &m)
@@ -575,6 +518,58 @@ love::image::ImageData *Texture::newImageData(love::image::Image *module, int sl
 	}
 
 	return module->newImageData(r.w, r.h, dataformat);
+}
+
+TextureType Texture::getTextureType() const
+{
+	return texType;
+}
+
+PixelFormat Texture::getPixelFormat() const
+{
+	return format;
+}
+
+Texture::MipmapsMode Texture::getMipmapsMode() const
+{
+	return mipmapsMode;
+}
+
+bool Texture::isRenderTarget() const
+{
+	return renderTarget;
+}
+
+bool Texture::isReadable() const
+{
+	return readable;
+}
+
+bool Texture::isCompressed() const
+{
+	return isPixelFormatCompressed(format);
+}
+
+bool Texture::isFormatLinear() const
+{
+	return isGammaCorrect() && !sRGB && format != PIXELFORMAT_sRGBA8_UNORM;
+}
+
+bool Texture::isValidSlice(int slice) const
+{
+	if (slice < 0)
+		return false;
+
+	if (texType == TEXTURE_CUBE)
+		return slice < 6;
+	else if (texType == TEXTURE_VOLUME)
+		return slice < depth;
+	else if (texType == TEXTURE_2D_ARRAY)
+		return slice < layers;
+	else if (slice > 0)
+		return false;
+
+	return true;
 }
 
 int Texture::getWidth(int mip) const
