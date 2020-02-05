@@ -559,14 +559,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Video.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
-	src/modules/graphics/wrap_Canvas.cpp
-	src/modules/graphics/wrap_Canvas.h
 	src/modules/graphics/wrap_Font.cpp
 	src/modules/graphics/wrap_Font.h
 	src/modules/graphics/wrap_Graphics.cpp
 	src/modules/graphics/wrap_Graphics.h
-	src/modules/graphics/wrap_Image.cpp
-	src/modules/graphics/wrap_Image.h
 	src/modules/graphics/wrap_Mesh.cpp
 	src/modules/graphics/wrap_Mesh.h
 	src/modules/graphics/wrap_ParticleSystem.cpp

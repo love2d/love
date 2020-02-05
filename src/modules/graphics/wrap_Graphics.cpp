@@ -249,7 +249,7 @@ int w_getDPIScale(lua_State *L)
 static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
 {
 	lua_rawgeti(L, idx, 1);
-	Graphics::RenderTarget target(luax_checkcanvas(L, -1), 0);
+	Graphics::RenderTarget target(luax_checktexture(L, -1), 0);
 	lua_pop(L, 1);
 
 	TextureType type = target.texture->getTextureType();
@@ -292,7 +292,7 @@ int w_setCanvas(lua_State *L)
 				targets.colors.push_back(checkRenderTarget(L, -1));
 			else
 			{
-				targets.colors.emplace_back(luax_checkcanvas(L, -1), 0);
+				targets.colors.emplace_back(luax_checktexture(L, -1), 0);
 
 				if (targets.colors.back().texture->getTextureType() != TEXTURE_2D)
 					return luaL_error(L, "Non-2D canvases must use the table-of-tables variant of setCanvas.");
@@ -311,7 +311,7 @@ int w_setCanvas(lua_State *L)
 		else if (dstype == LUA_TBOOLEAN)
 			targets.temporaryRTFlags |= luax_toboolean(L, -1) ? (tempdepthflag | tempstencilflag) : 0;
 		else if (dstype != LUA_TNONE && dstype != LUA_TNIL)
-			targets.depthStencil.texture = luax_checkcanvas(L, -1);
+			targets.depthStencil.texture = luax_checktexture(L, -1);
 		lua_pop(L, 1);
 
 		if (targets.depthStencil.texture == nullptr && (targets.temporaryRTFlags & tempdepthflag) == 0)
@@ -324,7 +324,7 @@ int w_setCanvas(lua_State *L)
 	{
 		for (int i = 1; i <= lua_gettop(L); i++)
 		{
-			Graphics::RenderTarget target(luax_checkcanvas(L, i), 0);
+			Graphics::RenderTarget target(luax_checktexture(L, i), 0);
 			TextureType type = target.texture->getTextureType();
 
 			if (i == 1 && type != TEXTURE_2D)
@@ -3123,11 +3123,9 @@ static const lua_CFunction types[] =
 	luaopen_drawable,
 	luaopen_texture,
 	luaopen_font,
-	luaopen_image,
 	luaopen_quad,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
-	luaopen_canvas,
 	luaopen_shader,
 	luaopen_mesh,
 	luaopen_text,

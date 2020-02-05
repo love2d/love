@@ -23,11 +23,10 @@
 // LOVE
 #include "common/config.h"
 #include "wrap_Font.h"
-#include "wrap_Image.h"
+#include "wrap_Texture.h"
 #include "wrap_Quad.h"
 #include "wrap_SpriteBatch.h"
 #include "wrap_ParticleSystem.h"
-#include "wrap_Canvas.h"
 #include "wrap_Shader.h"
 #include "wrap_Mesh.h"
 #include "wrap_Text.h"
