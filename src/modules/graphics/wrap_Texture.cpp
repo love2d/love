@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Texture.h"
+#include "Graphics.h"
 
 namespace love
 {
@@ -398,6 +399,63 @@ int w_Texture_newImageData(lua_State *L)
 	return 1;
 }
 
+int w_Texture_renderTo(lua_State *L)
+{
+	Graphics::RenderTarget rt(luax_checktexture(L, 1));
+
+	int startidx = 2;
+
+	if (rt.texture->getTextureType() != TEXTURE_2D)
+	{
+		rt.slice = (int) luaL_checkinteger(L, 2) - 1;
+		startidx++;
+	}
+
+	luaL_checktype(L, startidx, LUA_TFUNCTION);
+
+	auto graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+	if (graphics)
+	{
+		// Save the current render targets so we can restore them when we're done.
+		Graphics::RenderTargets oldtargets = graphics->getCanvas();
+
+		for (auto c : oldtargets.colors)
+			c.texture->retain();
+
+		if (oldtargets.depthStencil.texture != nullptr)
+			oldtargets.depthStencil.texture->retain();
+
+		luax_catchexcept(L,
+			[&]() { graphics->setCanvas(rt, 0); },
+			[&](bool err)
+			{
+				if (err)
+				{
+					for (auto c : oldtargets.colors)
+						c.texture->release();
+				}
+			}
+		);
+
+		lua_settop(L, 2); // make sure the function is on top of the stack
+		int status = lua_pcall(L, 0, 0, 0);
+
+		graphics->setCanvas(oldtargets);
+
+		for (auto c : oldtargets.colors)
+			c.texture->release();
+
+		if (oldtargets.depthStencil.texture != nullptr)
+			oldtargets.depthStencil.texture->release();
+
+		if (status != 0)
+			return lua_error(L);
+	}
+
+	return 0;
+}
+
 const luaL_Reg w_Texture_functions[] =
 {
 	{ "getTextureType", w_Texture_getTextureType },
@@ -428,6 +486,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "generateMipmaps", w_Texture_generateMipmaps },
 	{ "replacePixels", w_Texture_replacePixels },
 	{ "newImageData", w_Texture_newImageData },
+	{ "renderTo", w_Texture_renderTo },
 	{ 0, 0 }
 };
 
