@@ -159,28 +159,122 @@ love::Type Texture::type("Texture", &Drawable::type);
 int Texture::textureCount = 0;
 int64 Texture::totalGraphicsMemory = 0;
 
-Texture::Texture(TextureType texType)
-	: texType(texType)
-	, format(PIXELFORMAT_UNKNOWN)
-	, renderTarget(false)
+Texture::Texture(const Settings &settings, const Slices *slices)
+	: texType(settings.type)
+	, format(settings.format)
+	, renderTarget(settings.renderTarget)
 	, readable(true)
-	, mipmapsMode(MIPMAPS_NONE)
-	, sRGB(false)
-	, width(0)
-	, height(0)
-	, depth(1)
-	, layers(1)
+	, mipmapsMode(settings.mipmaps)
+	, sRGB(isGammaCorrect() && !settings.linear)
+	, width(settings.width)
+	, height(settings.height)
+	, depth(settings.type == TEXTURE_VOLUME ? settings.layers : 1)
+	, layers(settings.type == TEXTURE_2D_ARRAY ? settings.layers : 1)
 	, mipmapCount(1)
 	, pixelWidth(0)
 	, pixelHeight(0)
-	, requestedMSAA(1)
+	, requestedMSAA(settings.msaa)
 	, samplerState()
 	, graphicsMemorySize(0)
 	, usingDefaultTexture(false)
 {
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (gfx != nullptr)
-		samplerState = gfx->getDefaultSamplerState();
+
+	if (slices != nullptr && slices->getMipmapCount() > 0 && slices->getSliceCount() > 0)
+	{
+		texType = slices->getTextureType();
+
+		int dataMipmaps = 1;
+		if (slices->validate() && slices->getMipmapCount() > 1)
+			dataMipmaps = slices->getMipmapCount();
+
+		love::image::ImageDataBase *slice = slices->get(0, 0);
+
+		format = slice->getFormat();
+
+		pixelWidth = slice->getWidth();
+		pixelHeight = slice->getHeight();
+
+		if (texType == TEXTURE_2D_ARRAY)
+			layers = slices->getSliceCount();
+		else if (texType == TEXTURE_VOLUME)
+			depth = slices->getSliceCount();
+
+		width  = (int) (pixelWidth / settings.dpiScale + 0.5);
+		height = (int) (pixelHeight / settings.dpiScale + 0.5);
+
+		if (isCompressed() && dataMipmaps <= 1)
+			mipmapsMode = MIPMAPS_NONE;
+	}
+	else
+	{
+		if (isCompressed())
+			throw love::Exception("Compressed textures must be created with initial data.");
+
+		pixelWidth = (int) ((width * settings.dpiScale) + 0.5);
+		pixelHeight = (int) ((height * settings.dpiScale) + 0.5);
+	}
+
+	if (settings.readable.hasValue)
+		readable = settings.readable.value;
+	else
+		readable = !isPixelFormatDepthStencil(format);
+
+	format = gfx->getSizedFormat(format, renderTarget, readable, sRGB);
+
+	if (mipmapsMode == MIPMAPS_AUTO && isCompressed())
+		mipmapsMode = MIPMAPS_MANUAL;
+
+	if (mipmapsMode != MIPMAPS_NONE)
+		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
+
+	if (pixelWidth <= 0 || pixelHeight <= 0 || layers <= 0 || depth <= 0)
+		throw love::Exception("Texture dimensions must be greater than 0.");
+
+	if (texType != TEXTURE_2D && requestedMSAA > 1)
+		throw love::Exception("MSAA is only supported for textures with the 2D texture type.");
+
+	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
+		throw love::Exception("Readable depth/stencil textures with MSAA are not currently supported.");
+
+	if ((!readable || settings.msaa > 1) && mipmapsMode != MIPMAPS_NONE)
+		throw love::Exception("Non-readable and MSAA textures cannot have mipmaps.");
+
+	if (!readable && texType != TEXTURE_2D)
+		throw love::Exception("Non-readable pixel formats are only supported for 2D texture types.");
+
+	if (isCompressed() && renderTarget)
+		throw love::Exception("Compressed textures cannot be render targets.");
+
+	if (!gfx->isPixelFormatSupported(format, renderTarget, readable, sRGB))
+	{
+		const char *fstr = "unknown";
+		love::getConstant(format, fstr);
+
+		const char *readablestr = "";
+		if (readable != !isPixelFormatDepthStencil(format))
+			readablestr = readable ? " readable" : " non-readable";
+
+		const char *rtstr = "";
+		if (renderTarget)
+			rtstr = " as a render target";
+
+		throw love::Exception("The %s%s pixel format is not supported%s on this system.", fstr, readablestr, rtstr);
+	}
+
+	if (!gfx->getCapabilities().textureTypes[texType])
+	{
+		const char *textypestr = "unknown";
+		Texture::getConstant(texType, textypestr);
+		throw love::Exception("%s textures are not supported on this system.", textypestr);
+	}
+
+	validateDimensions(!renderTarget);
+
+	samplerState = gfx->getDefaultSamplerState();
+
+	initQuad();
+
 	++textureCount;
 }
 
@@ -780,6 +874,42 @@ bool Texture::Slices::validate() const
 	return true;
 }
 
+static StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry texTypeEntries[] =
+{
+	{ "2d",     TEXTURE_2D       },
+	{ "volume", TEXTURE_VOLUME   },
+	{ "array",  TEXTURE_2D_ARRAY },
+	{ "cube",   TEXTURE_CUBE     },
+};
+
+static StringMap<TextureType, TEXTURE_MAX_ENUM> texTypes(texTypeEntries, sizeof(texTypeEntries));
+
+static StringMap<Texture::MipmapsMode, Texture::MIPMAPS_MAX_ENUM>::Entry mipmapEntries[] =
+{
+	{ "none",   Texture::MIPMAPS_NONE   },
+	{ "manual", Texture::MIPMAPS_MANUAL },
+	{ "auto",   Texture::MIPMAPS_AUTO   },
+};
+
+static StringMap<Texture::MipmapsMode, Texture::MIPMAPS_MAX_ENUM> mipmapModes(mipmapEntries, sizeof(mipmapEntries));
+
+static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM>::Entry settingTypeEntries[] =
+{
+	{ "width",        Texture::SETTING_WIDTH         },
+	{ "height",       Texture::SETTING_HEIGHT        },
+	{ "layers",       Texture::SETTING_LAYERS        },
+	{ "mipmaps",      Texture::SETTING_MIPMAPS       },
+	{ "format",       Texture::SETTING_FORMAT        },
+	{ "linear",       Texture::SETTING_LINEAR        },
+	{ "type",         Texture::SETTING_TYPE          },
+	{ "dpiscale",     Texture::SETTING_DPI_SCALE     },
+	{ "msaa",         Texture::SETTING_MSAA          },
+	{ "rendertarget", Texture::SETTING_RENDER_TARGET },
+	{ "readable",     Texture::SETTING_READABLE      },
+};
+
+static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM> settingTypes(settingTypeEntries, sizeof(settingTypeEntries));
+
 bool Texture::getConstant(const char *in, TextureType &out)
 {
 	return texTypes.find(in, out);
@@ -795,25 +925,6 @@ std::vector<std::string> Texture::getConstants(TextureType)
 	return texTypes.getNames();
 }
 
-StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry Texture::texTypeEntries[] =
-{
-	{ "2d", TEXTURE_2D },
-	{ "volume", TEXTURE_VOLUME },
-	{ "array", TEXTURE_2D_ARRAY },
-	{ "cube", TEXTURE_CUBE },
-};
-
-StringMap<TextureType, TEXTURE_MAX_ENUM> Texture::texTypes(Texture::texTypeEntries, sizeof(Texture::texTypeEntries));
-
-static StringMap<Texture::MipmapsMode, Texture::MIPMAPS_MAX_ENUM>::Entry mipmapEntries[] =
-{
-	{ "none",   Texture::MIPMAPS_NONE   },
-	{ "manual", Texture::MIPMAPS_MANUAL },
-	{ "auto",   Texture::MIPMAPS_AUTO   },
-};
-
-static StringMap<Texture::MipmapsMode, Texture::MIPMAPS_MAX_ENUM> mipmapModes(mipmapEntries, sizeof(mipmapEntries));
-
 bool Texture::getConstant(const char *in, MipmapsMode &out)
 {
 	return mipmapModes.find(in, out);
@@ -827,6 +938,28 @@ bool Texture::getConstant(MipmapsMode in, const char *&out)
 std::vector<std::string> Texture::getConstants(MipmapsMode)
 {
 	return mipmapModes.getNames();
+}
+
+bool Texture::getConstant(const char *in, SettingType &out)
+{
+	return settingTypes.find(in, out);
+}
+
+bool Texture::getConstant(SettingType in, const char *&out)
+{
+	return settingTypes.find(in, out);
+}
+
+const char *Texture::getConstant(SettingType in)
+{
+	const char *name = nullptr;
+	getConstant(in, name);
+	return name;
+}
+
+std::vector<std::string> Texture::getConstants(SettingType)
+{
+	return settingTypes.getNames();
 }
 
 } // graphics

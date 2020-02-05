@@ -79,11 +79,14 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 	const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
 
-	Image::Settings settings;
+	Texture::Settings settings;
 
 	for (int i = 0; i < 3; i++)
 	{
-		Texture *tex = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8_UNORM, widths[i], heights[i], 1, settings);
+		settings.width = widths[i];
+		settings.height = heights[i];
+		settings.format = PIXELFORMAT_R8_UNORM;
+		Texture *tex = gfx->newImage(settings, nullptr);
 
 		tex->setSamplerState(samplerState);
 

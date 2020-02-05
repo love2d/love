@@ -24,7 +24,7 @@
 #include "common/config.h"
 #include "common/Color.h"
 #include "common/int.h"
-#include "graphics/Canvas.h"
+#include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 #include "OpenGL.h"
 
@@ -35,7 +35,7 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas final : public love::graphics::Canvas, public Volatile
+class Canvas final : public love::graphics::Texture, public Volatile
 {
 public:
 

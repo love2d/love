@@ -130,17 +130,12 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-love::graphics::Texture *Graphics::newImage(const Texture::Slices &data, const Image::Settings &settings)
+love::graphics::Texture *Graphics::newImage(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Image(data, settings);
+	return new Image(settings, data);
 }
 
-love::graphics::Texture *Graphics::newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings)
-{
-	return new Image(textype, format, width, height, slices, settings);
-}
-
-love::graphics::Texture *Graphics::newCanvas(const Canvas::Settings &settings)
+love::graphics::Texture *Graphics::newCanvas(const Texture::Settings &settings)
 {
 	return new Canvas(settings);
 }

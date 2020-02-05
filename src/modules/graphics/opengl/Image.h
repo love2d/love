@@ -21,7 +21,7 @@
 #pragma once
 
 // LOVE
-#include "graphics/Image.h"
+#include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 
 // OpenGL
@@ -34,12 +34,11 @@ namespace graphics
 namespace opengl
 {
 
-class Image final : public love::graphics::Image, public Volatile
+class Image final : public love::graphics::Texture, public Volatile
 {
 public:
 
-	Image(const Slices &data, const Settings &settings);
-	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
+	Image(const Settings &settings, const Slices *data);
 
 	virtual ~Image();
 

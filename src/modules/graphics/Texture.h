@@ -137,6 +137,38 @@ public:
 		MIPMAPS_MAX_ENUM
 	};
 
+	enum SettingType
+	{
+		SETTING_WIDTH,
+		SETTING_HEIGHT,
+		SETTING_LAYERS,
+		SETTING_MIPMAPS,
+		SETTING_FORMAT,
+		SETTING_LINEAR,
+		SETTING_TYPE,
+		SETTING_DPI_SCALE,
+		SETTING_MSAA,
+		SETTING_RENDER_TARGET,
+		SETTING_READABLE,
+		SETTING_MAX_ENUM
+	};
+
+	// Size and format will be overridden by ImageData when supplied.
+	struct Settings
+	{
+		int width  = 1;
+		int height = 1;
+		int layers = 1; // depth for 3D textures
+		TextureType type = TEXTURE_2D;
+		MipmapsMode mipmaps = MIPMAPS_NONE;
+		PixelFormat format = PIXELFORMAT_NORMAL;
+		bool linear = false;
+		float dpiScale = 1.0f;
+		int msaa = 0;
+		bool renderTarget = false;
+		OptionalBool readable;
+	};
+
 	struct Slices
 	{
 	public:
@@ -169,7 +201,7 @@ public:
 
 	static int64 totalGraphicsMemory;
 
-	Texture(TextureType texType);
+	Texture(const Settings &settings, const Slices *slices);
 	virtual ~Texture();
 
 	// Drawable.
@@ -234,6 +266,11 @@ public:
 	static bool getConstant(MipmapsMode in, const char *&out);
 	static std::vector<std::string> getConstants(MipmapsMode);
 
+	static bool getConstant(const char *in, SettingType &out);
+	static bool getConstant(SettingType in, const char *&out);
+	static const char *getConstant(SettingType in);
+	static std::vector<std::string> getConstants(SettingType);
+
 protected:
 
 	void initQuad();
@@ -275,11 +312,6 @@ protected:
 	// True if the image wasn't able to be properly created and it had to fall
 	// back to a default texture.
 	bool usingDefaultTexture;
-
-private:
-
-	static StringMap<TextureType, TEXTURE_MAX_ENUM>::Entry texTypeEntries[];
-	static StringMap<TextureType, TEXTURE_MAX_ENUM> texTypes;
 
 }; // Texture
 

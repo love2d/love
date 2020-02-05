@@ -150,8 +150,11 @@ void Font::createTexture()
 		textures.pop_back();
 	}
 
-	Image::Settings settings;
-	texture = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
+	Texture::Settings settings;
+	settings.format = pixelFormat;
+	settings.width = size.width;
+	settings.height = size.height;
+	texture = gfx->newImage(settings, nullptr);
 	texture->setSamplerState(samplerState);
 
 	{

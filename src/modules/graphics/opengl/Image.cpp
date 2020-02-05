@@ -33,19 +33,13 @@ namespace graphics
 namespace opengl
 {
 
-Image::Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
-	: love::graphics::Image(textype, format, width, height, slices, settings)
-	, slices(textype)
+Image::Image(const Settings &settings, const Slices *data)
+	: love::graphics::Texture(settings, data)
+	, slices(settings.type)
 	, texture(0)
 {
-	loadVolatile();
-}
-
-Image::Image(const Slices &slices, const Settings &settings)
-	: love::graphics::Image(slices, settings)
-	, slices(slices)
-	, texture(0)
-{
+	if (data != nullptr)
+		slices = *data;
 	loadVolatile();
 }
 

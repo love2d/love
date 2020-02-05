@@ -183,7 +183,7 @@ static bool createRenderbuffer(int width, int height, int &samples, PixelFormat 
 }
 
 Canvas::Canvas(const Settings &settings)
-	: love::graphics::Canvas(settings)
+	: love::graphics::Texture(settings, nullptr)
 	, fbo(0)
 	, texture(0)
     , renderbuffer(0)
@@ -346,7 +346,7 @@ ptrdiff_t Canvas::getHandle() const
 
 love::image::ImageData *Canvas::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
 {
-	love::image::ImageData *data = love::graphics::Canvas::newImageData(module, slice, mipmap, r);
+	love::image::ImageData *data = love::graphics::Texture::newImageData(module, slice, mipmap, r);
 
 	bool isSRGB = false;
 	OpenGL::TextureFormat fmt = gl.convertPixelFormat(data->getFormat(), false, isSRGB);

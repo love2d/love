@@ -820,7 +820,7 @@ Texture *Graphics::getTemporaryTexture(PixelFormat format, int w, int h, int sam
 
 	if (texture == nullptr)
 	{
-		Canvas::Settings settings;
+		Texture::Settings settings;
 		settings.format = format;
 		settings.width = w;
 		settings.height = h;

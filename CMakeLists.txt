@@ -518,8 +518,6 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Buffer.cpp
 	src/modules/graphics/Buffer.h
-	src/modules/graphics/Canvas.cpp
-	src/modules/graphics/Canvas.h
 	src/modules/graphics/Deprecations.cpp
 	src/modules/graphics/Deprecations.h
 	src/modules/graphics/Drawable.cpp
@@ -528,8 +526,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Font.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
-	src/modules/graphics/Image.cpp
-	src/modules/graphics/Image.h
 	src/modules/graphics/Mesh.cpp
 	src/modules/graphics/Mesh.h
 	src/modules/graphics/ParticleSystem.cpp

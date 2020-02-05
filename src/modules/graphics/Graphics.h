@@ -32,13 +32,11 @@
 #include "StreamBuffer.h"
 #include "vertex.h"
 #include "Texture.h"
-#include "Canvas.h"
 #include "Font.h"
 #include "ShaderStage.h"
 #include "Shader.h"
 #include "Quad.h"
 #include "Mesh.h"
-#include "Image.h"
 #include "Deprecations.h"
 #include "renderstate.h"
 #include "math/Transform.h"
@@ -428,8 +426,7 @@ public:
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
-	virtual Texture *newImage(const Texture::Slices &data, const Image::Settings &settings) = 0;
-	virtual Texture *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
+	virtual Texture *newImage(const Texture::Settings &settings, const Texture::Slices *data) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 	Font *newFont(love::font::Rasterizer *data);
@@ -439,7 +436,7 @@ public:
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	virtual Texture *newCanvas(const Canvas::Settings &settings) = 0;
+	virtual Texture *newCanvas(const Texture::Settings &settings) = 0;
 
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
 	Shader *newShader(const std::string &vertex, const std::string &pixel);
