@@ -288,13 +288,13 @@ bool Canvas::loadVolatile()
 
 void Canvas::unloadVolatile()
 {
-	if (fbo != 0 || renderbuffer != 0 || texture != 0)
+	if (isRenderTarget() && (fbo != 0 || renderbuffer != 0 || texture != 0))
 	{
 		// This is a bit ugly, but we need some way to destroy the cached FBO
 		// when this Canvas' texture is destroyed.
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 		if (gfx != nullptr)
-			gfx->cleanupCanvas(this);
+			gfx->cleanupRenderTexture(this);
 	}
 
 	if (fbo != 0)

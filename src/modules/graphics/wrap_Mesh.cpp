@@ -20,8 +20,7 @@
 
 // LOVE
 #include "wrap_Mesh.h"
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "wrap_Texture.h"
 
 // C++

@@ -759,7 +759,7 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *dpiscale)
 
 static int w__pushNewImage(lua_State *L, Texture::Slices &slices, const Image::Settings &settings)
 {
-	StrongRef<Image> i;
+	StrongRef<Texture> i;
 	luax_catchexcept(L,
 		[&]() { i.set(instance()->newImage(slices, settings), Acquire::NORETAIN); },
 		[&](bool) { slices.clear(); }
@@ -1246,11 +1246,11 @@ int w_newCanvas(lua_State *L)
 		lua_pop(L, 1);
 	}
 
-	Canvas *canvas = nullptr;
-	luax_catchexcept(L, [&](){ canvas = instance()->newCanvas(settings); });
+	Texture *texture = nullptr;
+	luax_catchexcept(L, [&](){ texture = instance()->newCanvas(settings); });
 
-	luax_pushtype(L, canvas);
-	canvas->release();
+	luax_pushtype(L, texture);
+	texture->release();
 	return 1;
 }
 

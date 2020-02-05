@@ -20,8 +20,7 @@
 
 // LOVE
 #include "wrap_SpriteBatch.h"
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "wrap_Texture.h"
 
 namespace love

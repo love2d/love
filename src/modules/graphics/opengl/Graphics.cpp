@@ -130,17 +130,17 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-love::graphics::Image *Graphics::newImage(const Texture::Slices &data, const Image::Settings &settings)
+love::graphics::Texture *Graphics::newImage(const Texture::Slices &data, const Image::Settings &settings)
 {
 	return new Image(data, settings);
 }
 
-love::graphics::Image *Graphics::newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings)
+love::graphics::Texture *Graphics::newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings)
 {
 	return new Image(textype, format, width, height, slices, settings);
 }
 
-love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
+love::graphics::Texture *Graphics::newCanvas(const Canvas::Settings &settings)
 {
 	return new Canvas(settings);
 }
@@ -820,7 +820,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::cleanupCanvas(Canvas *texture)
+void Graphics::cleanupRenderTexture(Texture *texture)
 {
 	if (!texture->isRenderTarget())
 		return;

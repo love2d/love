@@ -428,8 +428,8 @@ public:
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
-	virtual Image *newImage(const Texture::Slices &data, const Image::Settings &settings) = 0;
-	virtual Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
+	virtual Texture *newImage(const Texture::Slices &data, const Image::Settings &settings) = 0;
+	virtual Texture *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 	Font *newFont(love::font::Rasterizer *data);
@@ -439,7 +439,7 @@ public:
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	virtual Canvas *newCanvas(const Canvas::Settings &settings) = 0;
+	virtual Texture *newCanvas(const Canvas::Settings &settings) = 0;
 
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
 	Shader *newShader(const std::string &vertex, const std::string &pixel);

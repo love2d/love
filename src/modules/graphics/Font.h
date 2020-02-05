@@ -33,7 +33,7 @@
 #include "common/Vector.h"
 
 #include "font/Rasterizer.h"
-#include "Image.h"
+#include "Texture.h"
 #include "vertex.h"
 #include "Volatile.h"
 
@@ -217,7 +217,7 @@ private:
 	int textureWidth;
 	int textureHeight;
 
-	std::vector<StrongRef<love::graphics::Image>> images;
+	std::vector<StrongRef<love::graphics::Texture>> textures;
 
 	// maps glyphs to glyph texture information
 	std::unordered_map<uint32, Glyph> glyphs;

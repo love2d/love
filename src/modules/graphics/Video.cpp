@@ -83,17 +83,17 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 	for (int i = 0; i < 3; i++)
 	{
-		Image *img = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8_UNORM, widths[i], heights[i], 1, settings);
+		Texture *tex = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8_UNORM, widths[i], heights[i], 1, settings);
 
-		img->setSamplerState(samplerState);
+		tex->setSamplerState(samplerState);
 
 		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8_UNORM);
 		size_t size = bpp * widths[i] * heights[i];
 
 		Rect rect = {0, 0, widths[i], heights[i]};
-		img->replacePixels(data[i], size, 0, 0, rect, false);
+		tex->replacePixels(data[i], size, 0, 0, rect, false);
 
-		images[i].set(img, Acquire::NORETAIN);
+		textures[i].set(tex, Acquire::NORETAIN);
 	}
 }
 
@@ -143,7 +143,7 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	}
 
 	if (Shader::current != nullptr)
-		Shader::current->setVideoTextures(images[0], images[1], images[2]);
+		Shader::current->setVideoTextures(textures[0], textures[1], textures[2]);
 
 	gfx->flushStreamDraws();
 }
@@ -168,7 +168,7 @@ void Video::update()
 			size_t size = bpp * widths[i] * heights[i];
 
 			Rect rect = {0, 0, widths[i], heights[i]};
-			images[i]->replacePixels(data[i], size, 0, 0, rect, false);
+			textures[i]->replacePixels(data[i], size, 0, 0, rect, false);
 		}
 	}
 }
@@ -211,8 +211,8 @@ void Video::setSamplerState(const SamplerState &s)
 	samplerState.wrapV = s.wrapV;
 	samplerState.maxAnisotropy = s.maxAnisotropy;
 
-	for (const auto &image : images)
-		image->setSamplerState(samplerState);
+	for (const auto &texture : textures)
+		texture->setSamplerState(samplerState);
 }
 
 const SamplerState &Video::getSamplerState() const

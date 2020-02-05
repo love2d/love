@@ -22,8 +22,7 @@
 #include "wrap_ParticleSystem.h"
 #include "common/Vector.h"
 
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "wrap_Texture.h"
 
 // C

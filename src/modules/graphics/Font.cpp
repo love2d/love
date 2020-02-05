@@ -125,7 +125,7 @@ bool Font::loadVolatile()
 {
 	textureCacheID++;
 	glyphs.clear();
-	images.clear();
+	textures.clear();
 	createTexture();
 	return true;
 }
@@ -135,7 +135,7 @@ void Font::createTexture()
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	gfx->flushStreamDraws();
 
-	Image *image = nullptr;
+	Texture *texture = nullptr;
 	TextureSize size = {textureWidth, textureHeight};
 	TextureSize nextsize = getNextTextureSize();
 	bool recreatetexture = false;
@@ -143,16 +143,16 @@ void Font::createTexture()
 	// If we have an existing texture already, we'll try replacing it with a
 	// larger-sized one rather than creating a second one. Having a single
 	// texture reduces texture switches and draw calls when rendering.
-	if ((nextsize.width > size.width || nextsize.height > size.height) && !images.empty())
+	if ((nextsize.width > size.width || nextsize.height > size.height) && !textures.empty())
 	{
 		recreatetexture = true;
 		size = nextsize;
-		images.pop_back();
+		textures.pop_back();
 	}
 
 	Image::Settings settings;
-	image = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
-	image->setSamplerState(samplerState);
+	texture = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
+	texture->setSamplerState(samplerState);
 
 	{
 		size_t bpp = getPixelFormatSize(pixelFormat);
@@ -170,10 +170,10 @@ void Font::createTexture()
 		}
 
 		Rect rect = {0, 0, size.width, size.height};
-		image->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
+		texture->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
 	}
 
-	images.emplace_back(image, Acquire::NORETAIN);
+	textures.emplace_back(texture, Acquire::NORETAIN);
 
 	textureWidth  = size.width;
 	textureHeight = size.height;
@@ -200,7 +200,7 @@ void Font::createTexture()
 void Font::unloadVolatile()
 {
 	glyphs.clear();
-	images.clear();
+	textures.clear();
 }
 
 love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
@@ -268,11 +268,11 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	// Don't waste space for empty glyphs.
 	if (w > 0 && h > 0)
 	{
-		Image *image = images.back();
-		g.texture = image;
+		Texture *texture = textures.back();
+		g.texture = texture;
 
 		Rect rect = {textureX, textureY, gd->getWidth(), gd->getHeight()};
-		image->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
+		texture->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
@@ -926,8 +926,8 @@ void Font::setSamplerState(const SamplerState &s)
 	samplerState.magFilter = s.magFilter;
 	samplerState.maxAnisotropy = s.maxAnisotropy;
 
-	for (const auto &image : images)
-		image->setSamplerState(samplerState);
+	for (const auto &texture : textures)
+		texture->setSamplerState(samplerState);
 }
 
 const SamplerState &Font::getSamplerState() const
