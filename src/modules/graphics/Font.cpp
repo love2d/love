@@ -154,7 +154,7 @@ void Font::createTexture()
 	settings.format = pixelFormat;
 	settings.width = size.width;
 	settings.height = size.height;
-	texture = gfx->newImage(settings, nullptr);
+	texture = gfx->newTexture(settings, nullptr);
 	texture->setSamplerState(samplerState);
 
 	{

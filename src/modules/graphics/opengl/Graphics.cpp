@@ -130,14 +130,12 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-love::graphics::Texture *Graphics::newImage(const Texture::Settings &settings, const Texture::Slices *data)
+love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Image(settings, data);
-}
-
-love::graphics::Texture *Graphics::newCanvas(const Texture::Settings &settings)
-{
-	return new Canvas(settings);
+	if (settings.renderTarget)
+		return new Canvas(settings);
+	else
+		return new Image(settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)

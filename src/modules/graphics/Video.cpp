@@ -86,7 +86,7 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 		settings.width = widths[i];
 		settings.height = heights[i];
 		settings.format = PIXELFORMAT_R8_UNORM;
-		Texture *tex = gfx->newImage(settings, nullptr);
+		Texture *tex = gfx->newTexture(settings, nullptr);
 
 		tex->setSamplerState(samplerState);
 

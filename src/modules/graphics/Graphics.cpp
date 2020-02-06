@@ -821,12 +821,13 @@ Texture *Graphics::getTemporaryTexture(PixelFormat format, int w, int h, int sam
 	if (texture == nullptr)
 	{
 		Texture::Settings settings;
+		settings.renderTarget = true;
 		settings.format = format;
 		settings.width = w;
 		settings.height = h;
 		settings.msaa = samples;
 
-		texture = newCanvas(settings);
+		texture = newTexture(settings);
 
 		temporaryTextures.emplace_back(texture);
 	}

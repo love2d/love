@@ -761,7 +761,7 @@ static int w__pushNewImage(lua_State *L, Texture::Slices &slices, const Texture:
 {
 	StrongRef<Texture> i;
 	luax_catchexcept(L,
-		[&]() { i.set(instance()->newImage(settings, &slices), Acquire::NORETAIN); },
+		[&]() { i.set(instance()->newTexture(settings, &slices), Acquire::NORETAIN); },
 		[&](bool) { slices.clear(); }
 	);
 
@@ -1248,7 +1248,7 @@ int w_newCanvas(lua_State *L)
 	}
 
 	Texture *texture = nullptr;
-	luax_catchexcept(L, [&](){ texture = instance()->newCanvas(settings); });
+	luax_catchexcept(L, [&](){ texture = instance()->newTexture(settings); });
 
 	luax_pushtype(L, texture);
 	texture->release();

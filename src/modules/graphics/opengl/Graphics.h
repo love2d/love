@@ -60,8 +60,7 @@ public:
 	// Implements Module.
 	const char *getName() const override;
 
-	love::graphics::Texture *newImage(const Texture::Settings &settings, const Texture::Slices *data) override;
-	love::graphics::Texture *newCanvas(const Texture::Settings &settings) override;
+	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
