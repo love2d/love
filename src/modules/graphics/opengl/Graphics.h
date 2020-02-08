@@ -36,8 +36,7 @@
 #include "image/Image.h"
 #include "image/ImageData.h"
 
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "Shader.h"
 
 #include "libraries/xxHash/xxhash.h"
@@ -71,7 +70,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) override;
+	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -110,7 +109,7 @@ public:
 	Shader::Language getShaderLanguageTarget() const override;
 
 	// Internal use.
-	void cleanupRenderTexture(Texture *texture);
+	void cleanupRenderTexture(love::graphics::Texture *texture);
 
 private:
 

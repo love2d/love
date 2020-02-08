@@ -109,8 +109,22 @@ enum PixelFormat
 	PIXELFORMAT_MAX_ENUM
 };
 
+struct PixelFormatInfo
+{
+	int components;
+	size_t blockWidth;
+	size_t blockHeight;
+	size_t blockSize;
+	bool color;
+	bool depth;
+	bool stencil;
+	bool compressed;
+};
+
 bool getConstant(PixelFormat in, const char *&out);
 bool getConstant(const char *in, PixelFormat &out);
+
+const PixelFormatInfo &getPixelFormatInfo(PixelFormat format);
 
 /**
  * Gets whether the specified pixel format is a compressed type.
@@ -143,10 +157,36 @@ PixelFormat getSRGBPixelFormat(PixelFormat format);
 PixelFormat getLinearPixelFormat(PixelFormat format);
 
 /**
- * Gets the size in bytes of the specified pixel format.
- * NOTE: Currently returns 0 for compressed formats.
+ * Gets the block size in bytes of the specified pixel format.
+ * This is the size in bytes of a pixel for uncompressed formats, but *not*
+ * for compressed formats!
  **/
-size_t getPixelFormatSize(PixelFormat format);
+size_t getPixelFormatBlockSize(PixelFormat format);
+
+/**
+ * Gets the size in bytes of a row of an uncompressed pixel format.
+ **/
+size_t getPixelFormatUncompressedRowSize(PixelFormat format, int width);
+
+/**
+ * Gets the size in bytes of a row of a compressed pixel format. This is the
+ * number of blocks used by the given width, multiplied by the block size. The
+ * number of rows of blocks for a given height can be computed by
+ * getPixelFormatCompressedBlockRowCount.
+ **/
+size_t getPixelFormatCompressedBlockRowSize(PixelFormat format, int width);
+
+/**
+ * Gets the number of rows of blocks the given compressed pixel format will use,
+ * for the given height in pixels.
+ **/
+size_t getPixelFormatCompressedBlockRowCount(PixelFormat format, int height);
+
+/**
+ * Gets the size in bytes of a slice (width x height 2D plane) which uses the
+ * given pixel format.
+ **/
+size_t getPixelFormatSliceSize(PixelFormat format, int width, int height);
 
 /**
  * Gets the number of color components in the given pixel format.

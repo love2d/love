@@ -158,7 +158,7 @@ void Font::createTexture()
 	texture->setSamplerState(samplerState);
 
 	{
-		size_t bpp = getPixelFormatSize(pixelFormat);
+		size_t bpp = getPixelFormatBlockSize(pixelFormat);
 		size_t pixelcount = size.width * size.height;
 
 		// Initialize the texture with transparent white for Luminance-Alpha

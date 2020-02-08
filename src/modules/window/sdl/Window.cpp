@@ -933,7 +933,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 
 	int w = imgd->getWidth();
 	int h = imgd->getHeight();
-	int bytesperpixel = (int) getPixelFormatSize(imgd->getFormat());
+	int bytesperpixel = (int) getPixelFormatBlockSize(imgd->getFormat());
 	int pitch = w * bytesperpixel;
 
 	SDL_Surface *sdlicon = nullptr;

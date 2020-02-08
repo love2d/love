@@ -184,6 +184,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	{
 		texType = slices->getTextureType();
 
+		if (requestedMSAA > 1)
+			throw love::Exception("MSAA textures cannot be created from image data.");
+
 		int dataMipmaps = 1;
 		if (slices->validate() && slices->getMipmapCount() > 1)
 			dataMipmaps = slices->getMipmapCount();
@@ -218,7 +221,7 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	if (settings.readable.hasValue)
 		readable = settings.readable.value;
 	else
-		readable = !isPixelFormatDepthStencil(format);
+		readable = !renderTarget || !isPixelFormatDepthStencil(format);
 
 	format = gfx->getSizedFormat(format, renderTarget, readable, sRGB);
 
@@ -233,6 +236,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 
 	if (texType != TEXTURE_2D && requestedMSAA > 1)
 		throw love::Exception("MSAA is only supported for textures with the 2D texture type.");
+
+	if (!renderTarget && requestedMSAA > 1)
+		throw love::Exception("MSAA is only supported with render target textures.");
 
 	if (readable && isPixelFormatDepthStencil(format) && settings.msaa > 1)
 		throw love::Exception("Readable depth/stencil textures with MSAA are not currently supported.");
@@ -269,7 +275,7 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 		throw love::Exception("%s textures are not supported on this system.", textypestr);
 	}
 
-	validateDimensions(!renderTarget);
+	validateDimensions(renderTarget || !readable);
 
 	samplerState = gfx->getDefaultSamplerState();
 
@@ -619,8 +625,11 @@ int Texture::getRequestedMSAA() const
 
 void Texture::setSamplerState(const SamplerState &s)
 {
-	if (s.depthSampleMode.hasValue && (!readable || !isPixelFormatDepthStencil(format)))
-		throw love::Exception("Only readable depth textures can have a depth sample compare mode.");
+	if (!readable)
+		return;
+
+	if (s.depthSampleMode.hasValue && !isPixelFormatDepth(format))
+		throw love::Exception("Only depth textures can have a depth sample compare mode.");
 
 	Graphics::flushStreamDrawsGlobal();
 

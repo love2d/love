@@ -195,7 +195,7 @@ void Shader::mapActiveUniforms()
 
 					glUniform1iv(u.location, u.count, u.ints);
 
-					u.textures = new Texture*[u.count];
+					u.textures = new love::graphics::Texture*[u.count];
 					memset(u.textures, 0, sizeof(Texture *) * u.count);
 				}
 			}
@@ -564,12 +564,12 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalupda
 	}
 }
 
-void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count)
+void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
 {
 	Shader::sendTextures(info, textures, count, false);
 }
 
-void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate)
+void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalUpdate)
 {
 	if (info->baseType != UNIFORM_SAMPLER)
 		return;
@@ -584,7 +584,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 	// Bind the textures to the texture units.
 	for (int i = 0; i < count; i++)
 	{
-		Texture *tex = textures[i];
+		love::graphics::Texture *tex = textures[i];
 
 		if (tex != nullptr)
 		{
@@ -671,7 +671,7 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 	return location;
 }
 
-void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture)
+void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
 {
 	const BuiltinUniform builtins[3] = {
 		BUILTIN_TEXTURE_VIDEO_Y,
@@ -679,7 +679,7 @@ void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *cr
 		BUILTIN_TEXTURE_VIDEO_CR,
 	};
 
-	Texture *textures[3] = {ytexture, cbtexture, crtexture};
+	love::graphics::Texture *textures[3] = {ytexture, cbtexture, crtexture};
 
 	for (int i = 0; i < 3; i++)
 	{

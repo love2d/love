@@ -164,7 +164,7 @@ public:
 		PixelFormat format = PIXELFORMAT_NORMAL;
 		bool linear = false;
 		float dpiScale = 1.0f;
-		int msaa = 0;
+		int msaa = 1;
 		bool renderTarget = false;
 		OptionalBool readable;
 	};

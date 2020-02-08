@@ -132,10 +132,7 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 
 love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	if (settings.renderTarget)
-		return new Canvas(settings);
-	else
-		return new Image(settings, data);
+	return new Texture(settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
@@ -569,8 +566,7 @@ void Graphics::endPass()
 
 		for (int i = 0; i < (int) rts.colors.size(); i++)
 		{
-			// FIXME
-			Canvas *c = (Canvas *) rts.colors[i].texture.get();
+			Texture *c = (Texture *) rts.colors[i].texture.get();
 
 			if (!c->isReadable())
 				continue;
@@ -588,7 +584,7 @@ void Graphics::endPass()
 
 	if (depthstencil != nullptr && depthstencil->getMSAA() > 1 && depthstencil->isReadable())
 	{
-		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, ((Canvas *) depthstencil)->getFBO());
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, ((Texture *) depthstencil)->getFBO());
 
 		if (GLAD_APPLE_framebuffer_multisample)
 			glResolveMultisampleFramebufferAPPLE();
@@ -613,14 +609,13 @@ void Graphics::endPass()
 
 	for (const auto &rt : rts.colors)
 	{
-		// TODO
-//		if (rt.texture->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
-//			rt.texture->generateMipmaps();
+		if (rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
 	}
 
-//	int dsmipmap = rts.depthStencil.mipmap;
-//	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
-//		depthstencil->generateMipmaps();
+	int dsmipmap = rts.depthStencil.mipmap;
+	if (depthstencil != nullptr && depthstencil->getMipmapsMode() == Texture::MIPMAPS_AUTO && dsmipmap == 0)
+		depthstencil->generateMipmaps();
 }
 
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
@@ -813,7 +808,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::cleanupRenderTexture(Texture *texture)
+void Graphics::cleanupRenderTexture(love::graphics::Texture *texture)
 {
 	if (!texture->isRenderTarget())
 		return;

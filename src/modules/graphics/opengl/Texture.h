@@ -18,14 +18,13 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_GRAPHICS_OPENGL_CANVAS_H
-#define LOVE_GRAPHICS_OPENGL_CANVAS_H
+#pragma once
 
-#include "common/config.h"
-#include "common/Color.h"
-#include "common/int.h"
+// LOVE
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
+
+// OpenGL
 #include "OpenGL.h"
 
 namespace love
@@ -35,56 +34,48 @@ namespace graphics
 namespace opengl
 {
 
-class Canvas final : public love::graphics::Texture, public Volatile
+class Texture final : public love::graphics::Texture, public Volatile
 {
 public:
 
-	Canvas(const Settings &settings);
-	virtual ~Canvas();
+	Texture(const Settings &settings, const Slices *data);
+
+	virtual ~Texture();
 
 	// Implements Volatile.
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
-	// Implements Texture.
-	void setSamplerState(const SamplerState &s) override;
-	ptrdiff_t getHandle() const override;
-
-	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
 	void generateMipmaps() override;
+	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
+	void setSamplerState(const SamplerState &s) override;
 
-	int getMSAA() const override
-	{
-		return actualSamples;
-	}
+	ptrdiff_t getHandle() const override;
+	ptrdiff_t getRenderTargetHandle() const override;
+	int getMSAA() const override { return actualSamples; }
 
-	ptrdiff_t getRenderTargetHandle() const override
-	{
-		return renderbuffer != 0 ? renderbuffer : texture;
-	}
-
-	inline GLuint getFBO() const
-	{
-		return fbo;
-	}
+	inline GLuint getFBO() const { return fbo; }
 
 private:
 
+	bool createTexture();
+	bool createRenderbuffer();
+
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
+
+	Slices slices;
 
 	GLuint fbo;
 
 	GLuint texture;
 	GLuint renderbuffer;
 
-	GLenum status;
+	GLenum framebufferStatus;
 
 	int actualSamples;
 
-}; // Canvas
+}; // Texture
 
 } // opengl
 } // graphics
 } // love
-
-#endif // LOVE_GRAPHICS_OPENGL_CANVAS_H

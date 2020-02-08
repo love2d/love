@@ -23,7 +23,6 @@
 #include "OpenGL.h"
 
 #include "Shader.h"
-#include "Canvas.h"
 #include "common/Exception.h"
 
 #include "graphics/Graphics.h"

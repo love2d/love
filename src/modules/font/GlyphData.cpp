@@ -78,7 +78,7 @@ void *GlyphData::getData() const
 
 size_t GlyphData::getPixelSize() const
 {
-	return getPixelFormatSize(format);
+	return getPixelFormatBlockSize(format);
 }
 
 void *GlyphData::getData(int x, int y) const

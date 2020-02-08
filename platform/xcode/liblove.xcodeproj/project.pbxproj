@@ -403,15 +403,12 @@
 		FA0B7D301A95902C000E1D17 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */; };
 		FA0B7D311A95902C000E1D17 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */; };
 		FA0B7D321A95902C000E1D17 /* Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B8B1A95902C000E1D17 /* Graphics.h */; };
-		FA0B7D331A95902C000E1D17 /* Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B8D1A95902C000E1D17 /* Canvas.cpp */; };
-		FA0B7D341A95902C000E1D17 /* Canvas.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B8D1A95902C000E1D17 /* Canvas.cpp */; };
-		FA0B7D351A95902C000E1D17 /* Canvas.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B8E1A95902C000E1D17 /* Canvas.h */; };
 		FA0B7D391A95902C000E1D17 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B911A95902C000E1D17 /* Graphics.cpp */; };
 		FA0B7D3A1A95902C000E1D17 /* Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B911A95902C000E1D17 /* Graphics.cpp */; };
 		FA0B7D3B1A95902C000E1D17 /* Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B921A95902C000E1D17 /* Graphics.h */; };
-		FA0B7D3C1A95902C000E1D17 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B931A95902C000E1D17 /* Image.cpp */; };
-		FA0B7D3D1A95902C000E1D17 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B931A95902C000E1D17 /* Image.cpp */; };
-		FA0B7D3E1A95902C000E1D17 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B941A95902C000E1D17 /* Image.h */; };
+		FA0B7D3C1A95902C000E1D17 /* Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B931A95902C000E1D17 /* Texture.cpp */; };
+		FA0B7D3D1A95902C000E1D17 /* Texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B931A95902C000E1D17 /* Texture.cpp */; };
+		FA0B7D3E1A95902C000E1D17 /* Texture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B941A95902C000E1D17 /* Texture.h */; };
 		FA0B7D421A95902C000E1D17 /* OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B971A95902C000E1D17 /* OpenGL.cpp */; };
 		FA0B7D431A95902C000E1D17 /* OpenGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B971A95902C000E1D17 /* OpenGL.cpp */; };
 		FA0B7D441A95902C000E1D17 /* OpenGL.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B981A95902C000E1D17 /* OpenGL.h */; };
@@ -1536,12 +1533,10 @@
 		FA0B7B891A95902C000E1D17 /* Drawable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Drawable.h; sourceTree = "<group>"; };
 		FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = Graphics.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		FA0B7B8B1A95902C000E1D17 /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
-		FA0B7B8D1A95902C000E1D17 /* Canvas.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = Canvas.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		FA0B7B8E1A95902C000E1D17 /* Canvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Canvas.h; sourceTree = "<group>"; };
 		FA0B7B911A95902C000E1D17 /* Graphics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = Graphics.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		FA0B7B921A95902C000E1D17 /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
-		FA0B7B931A95902C000E1D17 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
-		FA0B7B941A95902C000E1D17 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
+		FA0B7B931A95902C000E1D17 /* Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Texture.cpp; sourceTree = "<group>"; };
+		FA0B7B941A95902C000E1D17 /* Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
 		FA0B7B971A95902C000E1D17 /* OpenGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGL.cpp; sourceTree = "<group>"; };
 		FA0B7B981A95902C000E1D17 /* OpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGL.h; sourceTree = "<group>"; };
 		FA0B7B9B1A95902C000E1D17 /* Polyline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polyline.cpp; sourceTree = "<group>"; };
@@ -2887,14 +2882,10 @@
 			children = (
 				FA0B7BA41A95902C000E1D17 /* Buffer.cpp */,
 				FA0B7BA51A95902C000E1D17 /* Buffer.h */,
-				FA0B7B8D1A95902C000E1D17 /* Canvas.cpp */,
-				FA0B7B8E1A95902C000E1D17 /* Canvas.h */,
 				FA28EBD31E352DB5003446F4 /* FenceSync.cpp */,
 				FA28EBD41E352DB5003446F4 /* FenceSync.h */,
 				FA0B7B911A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B921A95902C000E1D17 /* Graphics.h */,
-				FA0B7B931A95902C000E1D17 /* Image.cpp */,
-				FA0B7B941A95902C000E1D17 /* Image.h */,
 				FA0B7B971A95902C000E1D17 /* OpenGL.cpp */,
 				FA0B7B981A95902C000E1D17 /* OpenGL.h */,
 				FA0B7B9D1A95902C000E1D17 /* Shader.cpp */,
@@ -2903,6 +2894,8 @@
 				FA3C5E461F8D80CA0003C579 /* ShaderStage.h */,
 				FA7634481E28722A0066EF9E /* StreamBuffer.cpp */,
 				FA7634491E28722A0066EF9E /* StreamBuffer.h */,
+				FA0B7B931A95902C000E1D17 /* Texture.cpp */,
+				FA0B7B941A95902C000E1D17 /* Texture.h */,
 			);
 			path = opengl;
 			sourceTree = "<group>";
@@ -3820,9 +3813,8 @@
 				FA0B7CFC1A95902C000E1D17 /* Filesystem.h in Headers */,
 				FA0B7AD81A958EA3000E1D17 /* lua-enet.h in Headers */,
 				FA0B7A3A1A958EA3000E1D17 /* b2DynamicTree.h in Headers */,
-				FA0B7D351A95902C000E1D17 /* Canvas.h in Headers */,
 				FA0B7EBA1A95902C000E1D17 /* Channel.h in Headers */,
-				FA0B7D3E1A95902C000E1D17 /* Image.h in Headers */,
+				FA0B7D3E1A95902C000E1D17 /* Texture.h in Headers */,
 				FA0B7ECA1A95902C000E1D17 /* threads.h in Headers */,
 				FADF54361E3DAE6E00012CC0 /* wrap_SpriteBatch.h in Headers */,
 				FA0B7DB01A95902C000E1D17 /* wrap_CompressedImageData.h in Headers */,
@@ -4381,7 +4373,7 @@
 				FA0B7D191A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
 				FAC271E723B5B5B400C200D3 /* renderstate.cpp in Sources */,
 				FA0B7CFB1A95902C000E1D17 /* Filesystem.cpp in Sources */,
-				FA0B7D3D1A95902C000E1D17 /* Image.cpp in Sources */,
+				FA0B7D3D1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FA0B7B351A958EA3000E1D17 /* wuff_convert.c in Sources */,
 				FAF140941E20934C00F898D2 /* PpScanner.cpp in Sources */,
 				FA9D53AD1F5307E900125C6B /* Deprecations.cpp in Sources */,
@@ -4545,7 +4537,6 @@
 				FA0B79411A958E3B000E1D17 /* utf8.cpp in Sources */,
 				FAE64A862071363100BC7981 /* physfs_archiver_qpak.c in Sources */,
 				FA0B7ADF1A958EA3000E1D17 /* lodepng.cpp in Sources */,
-				FA0B7D341A95902C000E1D17 /* Canvas.cpp in Sources */,
 				FAF140761E20934C00F898D2 /* IntermTraverse.cpp in Sources */,
 				FA0B7E8C1A95902C000E1D17 /* FLACDecoder.cpp in Sources */,
 				FA0B7A421A958EA3000E1D17 /* b2CircleShape.cpp in Sources */,
@@ -4778,7 +4769,7 @@
 				FA0B7CFA1A95902C000E1D17 /* Filesystem.cpp in Sources */,
 				FA1BA0A21E16D97500AA2803 /* wrap_Font.cpp in Sources */,
 				FAC7CD781FE35E95006A60C7 /* physfs_platform_qnx.c in Sources */,
-				FA0B7D3C1A95902C000E1D17 /* Image.cpp in Sources */,
+				FA0B7D3C1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FA0B7A8C1A958EA3000E1D17 /* b2DistanceJoint.cpp in Sources */,
 				FADF53FD1E3D74F200012CC0 /* Text.cpp in Sources */,
 				FA6A2B741F60B6710074C308 /* ByteData.cpp in Sources */,
@@ -4939,7 +4930,6 @@
 				FA0B7AD41A958EA3000E1D17 /* unix.c in Sources */,
 				FA0B7A771A958EA3000E1D17 /* b2CircleContact.cpp in Sources */,
 				FADF543B1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */,
-				FA0B7D331A95902C000E1D17 /* Canvas.cpp in Sources */,
 				FA0B7E941A95902C000E1D17 /* Mpg123Decoder.cpp in Sources */,
 				FA0B7E8B1A95902C000E1D17 /* FLACDecoder.cpp in Sources */,
 				FA0B7B3A1A958EA3000E1D17 /* wuff_memory.c in Sources */,

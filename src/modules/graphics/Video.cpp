@@ -90,7 +90,7 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 		tex->setSamplerState(samplerState);
 
-		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8_UNORM);
+		size_t bpp = getPixelFormatBlockSize(PIXELFORMAT_R8_UNORM);
 		size_t size = bpp * widths[i] * heights[i];
 
 		Rect rect = {0, 0, widths[i], heights[i]};
@@ -167,7 +167,7 @@ void Video::update()
 
 		for (int i = 0; i < 3; i++)
 		{
-			size_t bpp = getPixelFormatSize(PIXELFORMAT_R8_UNORM);
+			size_t bpp = getPixelFormatBlockSize(PIXELFORMAT_R8_UNORM);
 			size_t size = bpp * widths[i] * heights[i];
 
 			Rect rect = {0, 0, widths[i], heights[i]};

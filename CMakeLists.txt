@@ -580,14 +580,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Buffer.cpp
 	src/modules/graphics/opengl/Buffer.h
-	src/modules/graphics/opengl/Canvas.cpp
-	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/FenceSync.cpp
 	src/modules/graphics/opengl/FenceSync.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
-	src/modules/graphics/opengl/Image.cpp
-	src/modules/graphics/opengl/Image.h
 	src/modules/graphics/opengl/OpenGL.cpp
 	src/modules/graphics/opengl/OpenGL.h
 	src/modules/graphics/opengl/Shader.cpp
@@ -596,6 +592,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/ShaderStage.h
 	src/modules/graphics/opengl/StreamBuffer.cpp
 	src/modules/graphics/opengl/StreamBuffer.h
+	src/modules/graphics/opengl/Texture.cpp
+	src/modules/graphics/opengl/Texture.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
