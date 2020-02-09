@@ -397,7 +397,7 @@ void Graphics::restoreState(const DisplayState &s)
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
-	setCanvas(s.renderTargets);
+	setRenderTargets(s.renderTargets);
 
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
@@ -450,27 +450,27 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	const auto &sRTs = s.renderTargets;
 	const auto &curRTs = cur.renderTargets;
 
-	bool canvaseschanged = sRTs.colors.size() != curRTs.colors.size();
-	if (!canvaseschanged)
+	bool rtschanged = sRTs.colors.size() != curRTs.colors.size();
+	if (!rtschanged)
 	{
 		for (size_t i = 0; i < sRTs.colors.size() && i < curRTs.colors.size(); i++)
 		{
 			if (sRTs.colors[i] != curRTs.colors[i])
 			{
-				canvaseschanged = true;
+				rtschanged = true;
 				break;
 			}
 		}
 
-		if (!canvaseschanged && sRTs.depthStencil != curRTs.depthStencil)
-			canvaseschanged = true;
+		if (!rtschanged && sRTs.depthStencil != curRTs.depthStencil)
+			rtschanged = true;
 
 		if (sRTs.temporaryRTFlags != curRTs.temporaryRTFlags)
-			canvaseschanged = true;
+			rtschanged = true;
 	}
 
-	if (canvaseschanged)
-		setCanvas(s.renderTargets);
+	if (rtschanged)
+		setRenderTargets(s.renderTargets);
 
 	if (s.colorMask != cur.colorMask)
 		setColorMask(s.colorMask);
@@ -543,19 +543,19 @@ love::graphics::Shader *Graphics::getShader() const
 	return states.back().shader.get();
 }
 
-void Graphics::setCanvas(RenderTarget rt, uint32 temporaryRTFlags)
+void Graphics::setRenderTarget(RenderTarget rt, uint32 temporaryRTFlags)
 {
 	if (rt.texture == nullptr)
-		return setCanvas();
+		return setRenderTarget();
 
 	RenderTargets rts;
 	rts.colors.push_back(rt);
 	rts.temporaryRTFlags = temporaryRTFlags;
 
-	setCanvas(rts);
+	setRenderTargets(rts);
 }
 
-void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
+void Graphics::setRenderTargets(const RenderTargetsStrongRef &rts)
 {
 	RenderTargets targets;
 	targets.colors.reserve(rts.colors.size());
@@ -566,27 +566,27 @@ void Graphics::setCanvas(const RenderTargetsStrongRef &rts)
 	targets.depthStencil = RenderTarget(rts.depthStencil.texture, rts.depthStencil.slice, rts.depthStencil.mipmap);
 	targets.temporaryRTFlags = rts.temporaryRTFlags;
 
-	return setCanvas(targets);
+	return setRenderTargets(targets);
 }
 
-void Graphics::setCanvas(const RenderTargets &rts)
+void Graphics::setRenderTargets(const RenderTargets &rts)
 {
 	DisplayState &state = states.back();
-	int ncanvases = (int) rts.colors.size();
+	int rtcount = (int) rts.colors.size();
 
 	RenderTarget firsttarget = rts.getFirstTarget();
 	Texture *firsttex = firsttarget.texture;
 
 	if (firsttex == nullptr)
-		return setCanvas();
+		return setRenderTarget();
 
 	const auto &prevRTs = state.renderTargets;
 
-	if (ncanvases == (int) prevRTs.colors.size())
+	if (rtcount == (int) prevRTs.colors.size())
 	{
 		bool modified = false;
 
-		for (int i = 0; i < ncanvases; i++)
+		for (int i = 0; i < rtcount; i++)
 		{
 			if (rts.colors[i] != prevRTs.colors[i])
 			{
@@ -605,8 +605,8 @@ void Graphics::setCanvas(const RenderTargets &rts)
 			return;
 	}
 
-	if (ncanvases > capabilities.limits[LIMIT_MULTI_CANVAS])
-		throw love::Exception("This system can't simultaneously render to %d canvases.", ncanvases);
+	if (rtcount > capabilities.limits[LIMIT_MULTI_CANVAS])
+		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
 
 	bool multiformatsupported = capabilities.features[FEATURE_MULTI_CANVAS_FORMATS];
 
@@ -615,10 +615,10 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		firstcolorformat = rts.colors[0].texture->getPixelFormat();
 
 	if (!firsttex->isRenderTarget())
-		throw love::Exception("Texture must be created as a render target to be used in setCanvas.");
+		throw love::Exception("Texture must be created as a render target to be used in setRenderTargets.");
 
 	if (isPixelFormatDepthStencil(firstcolorformat))
-		throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
+		throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setRenderTargets.");
 
 	if (firsttarget.mipmap < 0 || firsttarget.mipmap >= firsttex->getMipmapCount())
 		throw love::Exception("Invalid mipmap level %d.", firsttarget.mipmap + 1);
@@ -626,12 +626,12 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	if (!firsttex->isValidSlice(firsttarget.slice))
 		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
 
-	bool hasSRGBcanvas = firstcolorformat == PIXELFORMAT_sRGBA8_UNORM;
+	bool hasSRGBtexture = firstcolorformat == PIXELFORMAT_sRGBA8_UNORM;
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firsttex->getRequestedMSAA();
 
-	for (int i = 1; i < ncanvases; i++)
+	for (int i = 1; i < rtcount; i++)
 	{
 		Texture *c = rts.colors[i].texture;
 		PixelFormat format = c->getPixelFormat();
@@ -639,7 +639,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		int slice = rts.colors[i].slice;
 
 		if (!c->isRenderTarget())
-			throw love::Exception("Texture must be created as a render target to be used in setCanvas.");
+			throw love::Exception("Texture must be created as a render target to be used in setRenderTargets.");
 
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
@@ -648,19 +648,19 @@ void Graphics::setCanvas(const RenderTargets &rts)
 			throw love::Exception("Invalid slice index: %d.", slice + 1);
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
-			throw love::Exception("All canvases must have the same pixel dimensions.");
+			throw love::Exception("All textures must have the same pixel dimensions.");
 
 		if (!multiformatsupported && format != firstcolorformat)
-			throw love::Exception("This system doesn't support multi-canvas rendering with different canvas formats.");
+			throw love::Exception("This system doesn't support multi-render-target rendering with different texture formats.");
 
 		if (c->getRequestedMSAA() != reqmsaa)
-			throw love::Exception("All Canvases must have the same MSAA value.");
+			throw love::Exception("All textures must have the same MSAA value.");
 
 		if (isPixelFormatDepthStencil(format))
-			throw love::Exception("Depth/stencil format Canvases must be used with the 'depthstencil' field of the table passed into setCanvas.");
+			throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setRenderTargets.");
 
 		if (format == PIXELFORMAT_sRGBA8_UNORM)
-			hasSRGBcanvas = true;
+			hasSRGBtexture = true;
 	}
 
 	if (rts.depthStencil.texture != nullptr)
@@ -670,10 +670,10 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		int slice = rts.depthStencil.slice;
 
 		if (!c->isRenderTarget())
-			throw love::Exception("Texture must be created as a render target to be used in setCanvas.");
+			throw love::Exception("Texture must be created as a render target to be used in setRenderTargets.");
 
 		if (!isPixelFormatDepthStencil(c->getPixelFormat()))
-			throw love::Exception("Only depth/stencil format Texture can be used with the 'depthstencil' field of the table passed into setCanvas.");
+			throw love::Exception("Only depth/stencil format textures can be used with the 'depthstencil' field of the table passed into setRenderTargets.");
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
 			throw love::Exception("All Textures must have the same pixel dimensions.");
@@ -708,17 +708,17 @@ void Graphics::setCanvas(const RenderTargets &rts)
 		else if (wantsstencil)
 			dsformat = PIXELFORMAT_STENCIL8;
 
-		// We want setCanvasInternal to have a pointer to the temporary RT, but
-		// we don't want to directly store it in the main graphics state.
+		// We want setRenderTargetsInternal to have a pointer to the temporary RT,
+		// but we don't want to directly store it in the main graphics state.
 		RenderTargets realRTs = rts;
 
 		realRTs.depthStencil.texture = getTemporaryTexture(dsformat, pixelw, pixelh, reqmsaa);
 		realRTs.depthStencil.slice = 0;
 
-		setCanvasInternal(realRTs, w, h, pixelw, pixelh, hasSRGBcanvas);
+		setRenderTargetsInternal(realRTs, w, h, pixelw, pixelh, hasSRGBtexture);
 	}
 	else
-		setCanvasInternal(rts, w, h, pixelw, pixelh, hasSRGBcanvas);
+		setRenderTargetsInternal(rts, w, h, pixelw, pixelh, hasSRGBtexture);
 
 	RenderTargetsStrongRef refs;
 	refs.colors.reserve(rts.colors.size());
@@ -734,7 +734,7 @@ void Graphics::setCanvas(const RenderTargets &rts)
 	renderTargetSwitchCount++;
 }
 
-void Graphics::setCanvas()
+void Graphics::setRenderTarget()
 {
 	DisplayState &state = states.back();
 
@@ -742,13 +742,13 @@ void Graphics::setCanvas()
 		return;
 
 	flushStreamDraws();
-	setCanvasInternal(RenderTargets(), width, height, pixelWidth, pixelHeight, isGammaCorrect());
+	setRenderTargetsInternal(RenderTargets(), width, height, pixelWidth, pixelHeight, isGammaCorrect());
 
 	state.renderTargets = RenderTargetsStrongRef();
 	renderTargetSwitchCount++;
 }
 
-Graphics::RenderTargets Graphics::getCanvas() const
+Graphics::RenderTargets Graphics::getRenderTargets() const
 {
 	const auto &curRTs = states.back().renderTargets;
 
@@ -764,7 +764,7 @@ Graphics::RenderTargets Graphics::getCanvas() const
 	return rts;
 }
 
-bool Graphics::isCanvasActive() const
+bool Graphics::isRenderTargetActive() const
 {
 	const auto &rts = states.back().renderTargets;
 	return !rts.colors.empty() || rts.depthStencil.texture != nullptr;

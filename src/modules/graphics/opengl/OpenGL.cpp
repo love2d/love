@@ -804,13 +804,13 @@ Rect OpenGL::getViewport() const
 	return state.viewport;
 }
 
-void OpenGL::setScissor(const Rect &v, bool canvasActive)
+void OpenGL::setScissor(const Rect &v, bool rtActive)
 {
-	if (canvasActive)
+	if (rtActive)
 		glScissor(v.x, v.y, v.w, v.h);
 	else
 	{
-		// With no Canvas active, we need to compensate for glScissor starting
+		// With no RT active, we need to compensate for glScissor starting
 		// from the lower left of the viewport instead of the top left.
 		glScissor(v.x, state.viewport.h - (v.y + v.h), v.w, v.h);
 	}
@@ -1996,7 +1996,7 @@ const char *OpenGL::framebufferStatusString(GLenum status)
 	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 		return "Error in graphics driver (incomplete read buffer)";
 	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-		return "Canvas with the specified MSAA count cannot be rendered to on this system.";
+		return "Texture with the specified MSAA count cannot be rendered to on this system.";
 	case GL_FRAMEBUFFER_UNSUPPORTED:
 		return "Renderable textures are unsupported";
 	default:

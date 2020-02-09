@@ -157,7 +157,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
-	if (!isCanvasActive())
+	if (!isRenderTargetActive())
 	{
 		// Set the viewport to top-left corner.
 		gl.setViewport({0, 0, pixelwidth, pixelheight});
@@ -499,11 +499,11 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	const DisplayState &state = states.back();
 
-	OpenGL::TempDebugGroup debuggroup("setCanvas");
+	OpenGL::TempDebugGroup debuggroup("setRenderTargets");
 
 	flushStreamDraws();
 	endPass();
@@ -515,8 +515,8 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 	{
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
 
-		// The projection matrix is flipped compared to rendering to a canvas, due
-		// to OpenGL considering (0,0) bottom-left instead of top-left.
+		// The projection matrix is flipped compared to rendering to a texture,
+		// due to OpenGL considering (0,0) bottom-left instead of top-left.
 		projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
 	}
 	else
@@ -525,7 +525,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 
 		projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
 
-		// Flip front face winding when rendering to a canvas, since our
+		// Flip front face winding when rendering to a texture, since our
 		// projection matrix is flipped.
 		vertexwinding = vertexwinding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
 	}
@@ -539,11 +539,11 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 	if (state.scissor)
 		setScissor(state.scissorRect);
 
-	// Make sure the correct sRGB setting is used when drawing to the canvases.
+	// Make sure the correct sRGB setting is used when drawing to the textures.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
-		if (hasSRGBcanvas != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
-			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBcanvas);
+		if (hasSRGBtexture != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
+			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBtexture);
 	}
 }
 
@@ -669,10 +669,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	int ncolorcanvases = (int) states.back().renderTargets.colors.size();
+	int ncolorRTs = (int) states.back().renderTargets.colors.size();
 	int ncolors = (int) colors.size();
 
-	if (ncolors <= 1 && ncolorcanvases <= 1)
+	if (ncolors <= 1 && ncolorRTs <= 1)
 	{
 		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
 		return;
@@ -681,7 +681,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	flushStreamDraws();
 
 	bool drawbuffersmodified = false;
-	ncolors = std::min(ncolors, ncolorcanvases);
+	ncolors = std::min(ncolors, ncolorRTs);
 
 	for (int i = 0; i < ncolors; i++)
 	{
@@ -712,10 +712,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	{
 		GLenum bufs[MAX_COLOR_RENDER_TARGETS];
 
-		for (int i = 0; i < ncolorcanvases; i++)
+		for (int i = 0; i < ncolorRTs; i++)
 			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
 
-		glDrawBuffers(ncolorcanvases, bufs);
+		glDrawBuffers(ncolorRTs, bufs);
 	}
 
 	GLbitfield flags = 0;
@@ -773,7 +773,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (!isCanvasActive() && gl.getDefaultFBO() == 0)
+	if (!isRenderTargetActive() && gl.getDefaultFBO() == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
@@ -859,7 +859,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		int ncolortargets = 0;
 		GLenum drawbuffers[MAX_COLOR_RENDER_TARGETS];
 
-		auto attachCanvas = [&](const RenderTarget &rt)
+		auto attachRT = [&](const RenderTarget &rt)
 		{
 			bool renderbuffer = msaa > 1 || !rt.texture->isReadable();
 			bool srgb = false;
@@ -894,10 +894,10 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		};
 
 		for (const auto &rt : targets.colors)
-			attachCanvas(rt);
+			attachRT(rt);
 
 		if (hasDS)
-			attachCanvas(targets.depthStencil);
+			attachRT(targets.depthStencil);
 
 		if (ncolortargets > 1)
 			glDrawBuffers(ncolortargets, drawbuffers);
@@ -930,8 +930,8 @@ void Graphics::present(void *screenshotCallbackData)
 	if (!isActive())
 		return;
 
-	if (isCanvasActive())
-		throw love::Exception("present cannot be called while a Canvas is active.");
+	if (isRenderTargetActive())
+		throw love::Exception("present cannot be called while a render target is active.");
 
 	deprecations.draw(this);
 
@@ -1084,7 +1084,7 @@ void Graphics::setScissor(const Rect &rect)
 	glrect.h = (int) (rect.h * dpiscale);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(glrect, isCanvasActive());
+	gl.setScissor(glrect, isRenderTargetActive());
 
 	state.scissor = true;
 	state.scissorRect = rect;
@@ -1106,10 +1106,10 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 	const auto &rts = states.back().renderTargets;
 	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-	if (!isCanvasActive() && !windowHasStencil)
+	if (!isRenderTargetActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-	else if (isCanvasActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+		throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
 
 	flushStreamDraws();
 
@@ -1237,7 +1237,7 @@ void Graphics::setFrontFaceWinding(vertex::Winding winding)
 
 	state.winding = winding;
 
-	if (isCanvasActive())
+	if (isRenderTargetActive())
 		winding = winding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
 
 	glFrontFace(winding == vertex::WINDING_CW ? GL_CW : GL_CCW);

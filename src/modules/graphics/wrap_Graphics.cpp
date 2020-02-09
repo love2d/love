@@ -169,7 +169,7 @@ int w_discard(lua_State *L)
 	else
 	{
 		bool discardcolor = luax_optboolean(L, 1, true);
-		size_t numbuffers = std::max((size_t) 1, instance()->getCanvas().colors.size());
+		size_t numbuffers = std::max((size_t) 1, instance()->getRenderTargets().colors.size());
 		colorbuffers = std::vector<bool>(numbuffers, discardcolor);
 	}
 
@@ -271,7 +271,7 @@ int w_setCanvas(lua_State *L)
 	// called with none -> reset to default buffer
 	if (lua_isnoneornil(L, 1))
 	{
-		instance()->setCanvas();
+		instance()->setRenderTarget();
 		return 0;
 	}
 
@@ -295,7 +295,7 @@ int w_setCanvas(lua_State *L)
 				targets.colors.emplace_back(luax_checktexture(L, -1), 0);
 
 				if (targets.colors.back().texture->getTextureType() != TEXTURE_2D)
-					return luaL_error(L, "Non-2D canvases must use the table-of-tables variant of setCanvas.");
+					return luaL_error(L, "Non-2D textures must use the table-of-tables variant of setRenderTargets.");
 			}
 
 			lua_pop(L, 1);
@@ -341,7 +341,7 @@ int w_setCanvas(lua_State *L)
 			}
 
 			if (i > 1 && type != TEXTURE_2D)
-				return luaL_error(L, "This variant of setCanvas only supports 2D texture types.");
+				return luaL_error(L, "This variant of setRenderTargets only supports 2D texture types.");
 
 			targets.colors.push_back(target);
 		}
@@ -349,9 +349,9 @@ int w_setCanvas(lua_State *L)
 
 	luax_catchexcept(L, [&]() {
 		if (targets.getFirstTarget().texture != nullptr)
-			instance()->setCanvas(targets);
+			instance()->setRenderTargets(targets);
 		else
-			instance()->setCanvas();
+			instance()->setRenderTarget();
 	});
 	
 	return 0;
@@ -383,7 +383,7 @@ static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
 
 int w_getCanvas(lua_State *L)
 {
-	Graphics::RenderTargets targets = instance()->getCanvas();
+	Graphics::RenderTargets targets = instance()->getRenderTargets();
 	int ntargets = (int) targets.colors.size();
 
 	if (ntargets == 0)

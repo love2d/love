@@ -734,8 +734,8 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 
 	// The shader does pixcoord.y = gl_FragCoord.y * params.z + params.w.
 	// This lets us flip pixcoord.y when needed, to be consistent (drawing
-	// with no Canvas active makes the pixel coordinates y-flipped.)
-	if (gfx->isCanvasActive())
+	// with no RT active makes the pixel coordinates y-flipped.)
+	if (gfx->isRenderTargetActive())
 	{
 		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
 		data.screenSizeParams.z = 1.0f;

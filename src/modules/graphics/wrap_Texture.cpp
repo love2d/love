@@ -418,7 +418,7 @@ int w_Texture_renderTo(lua_State *L)
 	if (graphics)
 	{
 		// Save the current render targets so we can restore them when we're done.
-		Graphics::RenderTargets oldtargets = graphics->getCanvas();
+		Graphics::RenderTargets oldtargets = graphics->getRenderTargets();
 
 		for (auto c : oldtargets.colors)
 			c.texture->retain();
@@ -427,7 +427,7 @@ int w_Texture_renderTo(lua_State *L)
 			oldtargets.depthStencil.texture->retain();
 
 		luax_catchexcept(L,
-			[&]() { graphics->setCanvas(rt, 0); },
+			[&]() { graphics->setRenderTarget(rt, 0); },
 			[&](bool err)
 			{
 				if (err)
@@ -441,7 +441,7 @@ int w_Texture_renderTo(lua_State *L)
 		lua_settop(L, 2); // make sure the function is on top of the stack
 		int status = lua_pcall(L, 0, 0, 0);
 
-		graphics->setCanvas(oldtargets);
+		graphics->setRenderTargets(oldtargets);
 
 		for (auto c : oldtargets.colors)
 			c.texture->release();

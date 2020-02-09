@@ -261,7 +261,7 @@ public:
 	 * Sets the scissor box to the specified rectangle.
 	 * The y-coordinate starts at the top and is flipped internally.
 	 **/
-	void setScissor(const Rect &v, bool canvasActive);
+	void setScissor(const Rect &v, bool rtActive);
 
 	/**
 	 * Sets the global point size.
