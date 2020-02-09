@@ -826,10 +826,10 @@ bool Texture::Slices::validate() const
 	int expectedmips = Texture::getTotalMipmapCount(w, h, depth);
 
 	if (mipcount != expectedmips && mipcount != 1)
-		throw love::Exception("Image does not have all required mipmap levels (expected %d, got %d)", expectedmips, mipcount);
+		throw love::Exception("Texture does not have all required mipmap levels (expected %d, got %d)", expectedmips, mipcount);
 
 	if (textureType == TEXTURE_CUBE && w != h)
-		throw love::Exception("Cube images must have equal widths and heights for each cube face.");
+		throw love::Exception("Cube textures must have equal widths and heights for each cube face.");
 
 	int mipw = w;
 	int miph = h;
@@ -856,7 +856,7 @@ bool Texture::Slices::validate() const
 			int realh = slicedata->getHeight();
 
 			if (getMipmapCount(slice) != mipcount)
-				throw love::Exception("All Image layers must have the same mipmap count.");
+				throw love::Exception("All texture layers must have the same mipmap count.");
 
 			if (mipw != realw)
 				throw love::Exception("Width of image data (slice %d, mipmap level %d) is incorrect (expected %d, got %d)", slice+1, mip+1, mipw, realw);
@@ -865,7 +865,7 @@ bool Texture::Slices::validate() const
 				throw love::Exception("Height of image data (slice %d, mipmap level %d) is incorrect (expected %d, got %d)", slice+1, mip+1, miph, realh);
 
 			if (format != slicedata->getFormat())
-				throw love::Exception("All Image slices and mipmaps must have the same pixel format.");
+				throw love::Exception("All texture slices and mipmaps must have the same pixel format.");
 		}
 
 		mipw = std::max(mipw / 2, 1);

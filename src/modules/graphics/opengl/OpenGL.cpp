@@ -259,8 +259,9 @@ void OpenGL::setupContext()
 
 #ifdef LOVE_ANDROID
 	// This can't be done in initContext with the rest of the bug checks because
-	// Canvas::isFormatSupported relies on state initialized here / after init.
-	if (GLAD_ES_VERSION_3_0 && !Canvas::isFormatSupported(PIXELFORMAT_R8))
+	// isPixelFormatSupported relies on state initialized here / after init.
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, true, true))
 		bugs.brokenR8PixelFormat = true;
 #endif
 }

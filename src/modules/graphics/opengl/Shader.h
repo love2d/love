@@ -110,7 +110,7 @@ private:
 	// Uniform location buffer map
 	std::map<std::string, UniformInfo> uniforms;
 
-	// Texture unit pool for setting images
+	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;

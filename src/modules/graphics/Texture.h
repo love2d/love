@@ -308,7 +308,7 @@ protected:
 
 	int64 graphicsMemorySize;
 
-	// True if the image wasn't able to be properly created and it had to fall
+	// True if the texture wasn't able to be properly created and it had to fall
 	// back to a default texture.
 	bool usingDefaultTexture;
 

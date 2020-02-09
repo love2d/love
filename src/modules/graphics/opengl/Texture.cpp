@@ -75,23 +75,26 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 					gl.framebufferTexture(attachment, texType, texture, 0, layer, face);
 				}
 
-				if (isPixelFormatDepthStencil(format))
+				if (clear)
 				{
-					bool hadDepthWrites = gl.hasDepthWrites();
-					if (!hadDepthWrites) // glDepthMask also affects glClear.
-						gl.setDepthWrites(true);
+					if (isPixelFormatDepthStencil(format))
+					{
+						bool hadDepthWrites = gl.hasDepthWrites();
+						if (!hadDepthWrites) // glDepthMask also affects glClear.
+							gl.setDepthWrites(true);
 
-					gl.clearDepth(1.0);
-					glClearStencil(0);
-					glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+						gl.clearDepth(1.0);
+						glClearStencil(0);
+						glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-					if (!hadDepthWrites)
-						gl.setDepthWrites(hadDepthWrites);
-				}
-				else
-				{
-					glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-					glClear(GL_COLOR_BUFFER_BIT);
+						if (!hadDepthWrites)
+							gl.setDepthWrites(hadDepthWrites);
+					}
+					else
+					{
+						glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+						glClear(GL_COLOR_BUFFER_BIT);
+					}
 				}
 			}
 		}

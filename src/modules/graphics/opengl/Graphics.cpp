@@ -1269,7 +1269,7 @@ void Graphics::setBlendState(const BlendState &blend)
 	if (blend.operationRGB == BLENDOP_MAX || blend.operationA == BLENDOP_MAX
 		|| blend.operationRGB == BLENDOP_MIN || blend.operationA == BLENDOP_MIN)
 	{
-		if (!capabilities.features[FEATURE_BLENDMINMAX])
+		if (!capabilities.features[FEATURE_BLEND_MINMAX])
 			throw love::Exception("The 'min' and 'max' blend operations are not supported on this system.");
 	}
 
@@ -1355,10 +1355,10 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::initCapabilities()
 {
-	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = gl.isMultiFormatMRTSupported();
+	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = gl.isMultiFormatMRTSupported();
 	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroOneTextureWrapSupported();
-	capabilities.features[FEATURE_BLENDMINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
-	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLENDMINMAX];
+	capabilities.features[FEATURE_BLEND_MINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
+	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLEND_MINMAX];
 	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = gl.isPixelShaderHighpSupported();
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_standard_derivatives;
@@ -1372,8 +1372,8 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = gl.getMaxTextureLayers();
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = gl.getMax3DTextureSize();
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = gl.getMaxCubeTextureSize();
-	capabilities.limits[LIMIT_MULTI_CANVAS] = gl.getMaxRenderTargets();
-	capabilities.limits[LIMIT_CANVAS_MSAA] = gl.getMaxRenderbufferSamples();
+	capabilities.limits[LIMIT_RENDER_TARGETS] = gl.getMaxRenderTargets();
+	capabilities.limits[LIMIT_TEXTURE_MSAA] = gl.getMaxRenderbufferSamples();
 	capabilities.limits[LIMIT_ANISOTROPY] = gl.getMaxAnisotropy();
 	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
 

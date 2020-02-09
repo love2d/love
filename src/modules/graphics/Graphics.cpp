@@ -605,10 +605,10 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 			return;
 	}
 
-	if (rtcount > capabilities.limits[LIMIT_MULTI_CANVAS])
+	if (rtcount > capabilities.limits[LIMIT_RENDER_TARGETS])
 		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
 
-	bool multiformatsupported = capabilities.features[FEATURE_MULTI_CANVAS_FORMATS];
+	bool multiformatsupported = capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS];
 
 	PixelFormat firstcolorformat = PIXELFORMAT_UNKNOWN;
 	if (!rts.colors.empty())
@@ -1886,16 +1886,16 @@ StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featureEntries[] =
 {
-	{ "multicanvasformats", FEATURE_MULTI_CANVAS_FORMATS },
-	{ "clampzero",          FEATURE_CLAMP_ZERO           },
-	{ "blendminmax",        FEATURE_BLENDMINMAX          },
-	{ "lighten",            FEATURE_LIGHTEN              },
-	{ "fullnpot",           FEATURE_FULL_NPOT            },
-	{ "pixelshaderhighp",   FEATURE_PIXEL_SHADER_HIGHP   },
-	{ "shaderderivatives",  FEATURE_SHADER_DERIVATIVES   },
-	{ "glsl3",              FEATURE_GLSL3                },
-	{ "glsl4",              FEATURE_GLSL4                },
-	{ "instancing",         FEATURE_INSTANCING           },
+	{ "multirendertargetformats", FEATURE_MULTI_RENDER_TARGET_FORMATS },
+	{ "clampzero",                FEATURE_CLAMP_ZERO           },
+	{ "blendminmax",              FEATURE_BLEND_MINMAX         },
+	{ "lighten",                  FEATURE_LIGHTEN              },
+	{ "fullnpot",                 FEATURE_FULL_NPOT            },
+	{ "pixelshaderhighp",         FEATURE_PIXEL_SHADER_HIGHP   },
+	{ "shaderderivatives",        FEATURE_SHADER_DERIVATIVES   },
+	{ "glsl3",                    FEATURE_GLSL3                },
+	{ "glsl4",                    FEATURE_GLSL4                },
+	{ "instancing",               FEATURE_INSTANCING           },
 };
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));
@@ -1907,8 +1907,8 @@ StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::syst
 	{ "texturelayers",     LIMIT_TEXTURE_LAYERS      },
 	{ "volumetexturesize", LIMIT_VOLUME_TEXTURE_SIZE },
 	{ "cubetexturesize",   LIMIT_CUBE_TEXTURE_SIZE   },
-	{ "multicanvas",       LIMIT_MULTI_CANVAS        },
-	{ "canvasmsaa",        LIMIT_CANVAS_MSAA         },
+	{ "rendertargets",     LIMIT_RENDER_TARGETS      },
+	{ "texturemsaa",       LIMIT_TEXTURE_MSAA        },
 	{ "anisotropy",        LIMIT_ANISOTROPY          },
 };
 
