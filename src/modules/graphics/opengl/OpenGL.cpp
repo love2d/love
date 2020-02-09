@@ -102,7 +102,7 @@ OpenGL::OpenGL()
 	, maxCubeTextureSize(0)
 	, maxTextureArrayLayers(0)
 	, maxRenderTargets(1)
-	, maxRenderbufferSamples(0)
+	, maxSamples(1)
 	, maxTextureUnits(1)
 	, maxPointSize(1)
 	, coreProfile(false)
@@ -474,10 +474,10 @@ void OpenGL::initMaxValues()
 		|| GLAD_EXT_framebuffer_multisample || GLAD_APPLE_framebuffer_multisample
 		|| GLAD_ANGLE_framebuffer_multisample)
 	{
-		glGetIntegerv(GL_MAX_SAMPLES, &maxRenderbufferSamples);
+		glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 	}
 	else
-		maxRenderbufferSamples = 0;
+		maxSamples = 1;
 
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 
@@ -1358,9 +1358,9 @@ int OpenGL::getMaxRenderTargets() const
 	return std::min(maxRenderTargets, MAX_COLOR_RENDER_TARGETS);
 }
 
-int OpenGL::getMaxRenderbufferSamples() const
+int OpenGL::getMaxSamples() const
 {
-	return maxRenderbufferSamples;
+	return maxSamples;
 }
 
 int OpenGL::getMaxTextureUnits() const

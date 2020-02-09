@@ -363,9 +363,9 @@ public:
 	int getMaxRenderTargets() const;
 
 	/**
-	 * Returns the maximum supported number of MSAA samples for renderbuffers.
+	 * Returns the maximum supported number of MSAA sampless.
 	 **/
-	int getMaxRenderbufferSamples() const;
+	int getMaxSamples() const;
 
 	/**
 	 * Returns the maximum number of accessible texture units.
@@ -436,7 +436,7 @@ private:
 	int maxCubeTextureSize;
 	int maxTextureArrayLayers;
 	int maxRenderTargets;
-	int maxRenderbufferSamples;
+	int maxSamples;
 	int maxTextureUnits;
 	float maxPointSize;
 

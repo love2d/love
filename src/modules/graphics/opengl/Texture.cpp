@@ -280,10 +280,7 @@ bool Texture::createTexture()
 			}
 
 			if (mipsize > 0)
-			{
-				GLenum gltarget = OpenGL::getGLTextureType(texType);
-				glCompressedTexImage3D(gltarget, mip, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
-			}
+				glCompressedTexImage3D(gltype, mip, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
 		}
 
 		for (int slice = 0; slice < slicecount; slice++)
@@ -352,10 +349,7 @@ bool Texture::loadVolatile()
 		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 	}
 
-	// getMaxRenderbufferSamples will be 0 on systems that don't support
-	// multisampled renderbuffers / don't export FBO multisample extensions.
-	actualSamples = std::min(getRequestedMSAA(), gl.getMaxRenderbufferSamples());
-	actualSamples = std::max(actualSamples, 1);
+	actualSamples = std::max(1, std::min(getRequestedMSAA(), gl.getMaxSamples()));
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
@@ -363,7 +357,7 @@ bool Texture::loadVolatile()
 	{
 		if (isReadable())
 			createTexture();
-		if (!isReadable() && actualSamples > 1)
+		if (!isReadable() || actualSamples > 1)
 			createRenderbuffer();
 
 		GLenum glerr = glGetError();
