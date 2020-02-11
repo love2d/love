@@ -707,7 +707,7 @@ static Texture::Settings w__optImageSettings(lua_State *L, int idx, bool &setdpi
 	setdpiscale = false;
 	if (!lua_isnoneornil(L, idx))
 	{
-		luax_checktablefields<Texture::SettingType>(L, idx, "image setting name", Texture::getConstant);
+		luax_checktablefields<Texture::SettingType>(L, idx, "texture setting name", Texture::getConstant);
 
 		s.mipmaps = luax_boolflag(L, idx, "mipmaps", false) ? Texture::MIPMAPS_MANUAL : Texture::MIPMAPS_NONE;
 		s.linear = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_LINEAR), s.linear);
@@ -767,6 +767,129 @@ static int w__pushNewImage(lua_State *L, Texture::Slices &slices, const Texture:
 
 	luax_pushtype(L, i);
 	return 1;
+}
+
+static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool checkType, bool checkDimensions, OptionalBool forceRenderTarget, Texture::Settings &s, bool &setdpiscale)
+{
+	setdpiscale = false;
+
+	if (opt && lua_isnoneornil(L, idx))
+		return;
+
+	luax_checktablefields<Texture::SettingType>(L, idx, "texture setting name", Texture::getConstant);
+
+	if (forceRenderTarget.hasValue)
+		s.renderTarget = forceRenderTarget.value;
+	else
+		s.renderTarget = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_RENDER_TARGET), s.renderTarget);
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_FORMAT));
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!getConstant(str, s.format))
+			luax_enumerror(L, "pixel format", str);
+	}
+	lua_pop(L, 1);
+
+	if (checkType)
+	{
+		lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_TYPE));
+		if (!lua_isnoneornil(L, -1))
+		{
+			const char *str = luaL_checkstring(L, -1);
+			if (!Texture::getConstant(str, s.type))
+				luax_enumerror(L, "texture type", Texture::getConstants(s.type), str);
+		}
+		lua_pop(L, 1);
+	}
+
+	if (checkDimensions)
+	{
+		s.width = luax_checkintflag(L, idx, Texture::getConstant(Texture::SETTING_WIDTH));
+		s.height = luax_checkintflag(L, idx, Texture::getConstant(Texture::SETTING_HEIGHT));
+		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
+			s.layers = luax_checkintflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS));
+	}
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_MIPMAPS));
+	if (!lua_isnoneornil(L, -1))
+	{
+		if (lua_type(L, -1) == LUA_TBOOLEAN)
+			s.mipmaps = luax_toboolean(L, -1) ? Texture::MIPMAPS_MANUAL : Texture::MIPMAPS_NONE;
+		else
+		{
+			const char *str = luaL_checkstring(L, -1);
+			if (!Texture::getConstant(str, s.mipmaps))
+				luax_enumerror(L, "Texture mipmap mode", Texture::getConstants(s.mipmaps), str);
+		}
+	}
+	lua_pop(L, 1);
+
+	s.linear = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_LINEAR), s.linear);
+	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
+	if (!lua_isnoneornil(L, -1))
+		s.readable.set(luax_checkboolean(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_DPI_SCALE));
+	if (lua_isnumber(L, -1))
+	{
+		s.dpiScale = (float) lua_tonumber(L, -1);
+		setdpiscale = true;
+	}
+	lua_pop(L, 1);
+}
+
+int w_newRenderTarget(lua_State *L)
+{
+	luax_checkgraphicscreated(L);
+
+	Texture::Settings s;
+	s.renderTarget = true;
+
+	bool setDPIScale = false;
+
+	if (lua_istable(L, 1))
+	{
+		luax_checktexturesettings(L, 1, false, true, true, OptionalBool(true), s, setDPIScale);
+	}
+	else
+	{
+		// check if width and height are given. else default to screen dimensions.
+		s.width  = (int) luaL_optinteger(L, 1, instance()->getWidth());
+		s.height = (int) luaL_optinteger(L, 2, instance()->getHeight());
+
+		int startidx = 3;
+
+		if (lua_isnumber(L, 3))
+		{
+			s.layers = (int) luaL_checkinteger(L, 3);
+			s.type = TEXTURE_2D_ARRAY;
+			startidx = 4;
+		}
+
+		luax_checktexturesettings(L, startidx, true, true, false, OptionalBool(true), s, setDPIScale);
+	}
+
+	// Default to the screen's current pixel density scale.
+	if (!setDPIScale)
+		s.dpiScale = instance()->getScreenDPIScale();
+
+	Texture *texture = nullptr;
+	luax_catchexcept(L, [&](){ texture = instance()->newTexture(s); });
+
+	luax_pushtype(L, texture);
+	texture->release();
+	return 1;
+}
+
+int w_newCanvas(lua_State *L)
+{
+	luax_markdeprecated(L, "newCanvas", API_FUNCTION, DEPRECATED_RENAMED, "newRenderTarget");
+	return w_newRenderTarget(L);
 }
 
 int w_newCubeImage(lua_State *L)
@@ -1178,80 +1301,6 @@ int w_newParticleSystem(lua_State *L)
 
 	luax_pushtype(L, t);
 	t->release();
-	return 1;
-}
-
-int w_newCanvas(lua_State *L)
-{
-	luax_checkgraphicscreated(L);
-
-	Texture::Settings settings;
-	settings.renderTarget = true;
-
-	// check if width and height are given. else default to screen dimensions.
-	settings.width  = (int) luaL_optinteger(L, 1, instance()->getWidth());
-	settings.height = (int) luaL_optinteger(L, 2, instance()->getHeight());
-
-	// Default to the screen's current pixel density scale.
-	settings.dpiScale = instance()->getScreenDPIScale();
-
-	int startidx = 3;
-
-	if (lua_isnumber(L, 3))
-	{
-		settings.layers = (int) luaL_checkinteger(L, 3);
-		settings.type = TEXTURE_2D_ARRAY;
-		startidx = 4;
-	}
-
-	if (!lua_isnoneornil(L, startidx))
-	{
-		luax_checktablefields<Texture::SettingType>(L, startidx, "texture setting name", Texture::getConstant);
-
-		settings.dpiScale = (float) luax_numberflag(L, startidx, Texture::getConstant(Texture::SETTING_DPI_SCALE), settings.dpiScale);
-		settings.msaa = luax_intflag(L, startidx, Texture::getConstant(Texture::SETTING_MSAA), settings.msaa);
-
-		lua_getfield(L, startidx, Texture::getConstant(Texture::SETTING_FORMAT));
-		if (!lua_isnoneornil(L, -1))
-		{
-			const char *str = luaL_checkstring(L, -1);
-			if (!getConstant(str, settings.format))
-				return luax_enumerror(L, "pixel format", str);
-		}
-		lua_pop(L, 1);
-
-		lua_getfield(L, startidx, Texture::getConstant(Texture::SETTING_TYPE));
-		if (!lua_isnoneornil(L, -1))
-		{
-			const char *str = luaL_checkstring(L, -1);
-			if (!Texture::getConstant(str, settings.type))
-				return luax_enumerror(L, "texture type", Texture::getConstants(settings.type), str);
-		}
-		lua_pop(L, 1);
-
-		lua_getfield(L, startidx, Texture::getConstant(Texture::SETTING_READABLE));
-		if (!lua_isnoneornil(L, -1))
-		{
-			settings.readable.hasValue = true;
-			settings.readable.value = luax_checkboolean(L, -1);
-		}
-		lua_pop(L, 1);
-
-		lua_getfield(L, startidx, Texture::getConstant(Texture::SETTING_MIPMAPS));
-		if (!lua_isnoneornil(L, -1))
-		{
-			const char *str = luaL_checkstring(L, -1);
-			if (!Texture::getConstant(str, settings.mipmaps))
-				return luax_enumerror(L, "Texture mipmap mode", Texture::getConstants(settings.mipmaps), str);
-		}
-		lua_pop(L, 1);
-	}
-
-	Texture *texture = nullptr;
-	luax_catchexcept(L, [&](){ texture = instance()->newTexture(settings); });
-
-	luax_pushtype(L, texture);
-	texture->release();
 	return 1;
 }
 
@@ -3000,7 +3049,7 @@ static const luaL_Reg functions[] =
 	{ "newImageFont", w_newImageFont },
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
-	{ "newCanvas", w_newCanvas },
+	{ "newRenderTarget", w_newRenderTarget },
 	{ "newShader", w_newShader },
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },
@@ -3109,6 +3158,9 @@ static const luaL_Reg functions[] =
 	{ "replaceTransform", w_replaceTransform },
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
+
+	// Deprecated
+	{ "newCanvas", w_newCanvas },
 
 	{ 0, 0 }
 };

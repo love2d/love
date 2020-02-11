@@ -176,7 +176,7 @@ void SpriteBatch::flush()
 void SpriteBatch::setTexture(Texture *newtexture)
 {
 	if (texture->getTextureType() != newtexture->getTextureType())
-		throw love::Exception("Texture must have the same texture type as the SpriteBatch's previous texture.");
+		throw love::Exception("Texture must have the same type as the SpriteBatch's previous texture.");
 
 	texture.set(newtexture);
 }
