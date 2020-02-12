@@ -757,12 +757,12 @@ getImageData(lua_State *L, int idx, bool allowcompressed, float *dpiscale)
 	return std::make_pair(idata, cdata);
 }
 
-static int w__pushNewImage(lua_State *L, Texture::Slices &slices, const Texture::Settings &settings)
+static int w__pushNewTexture(lua_State *L, Texture::Slices *slices, const Texture::Settings &settings)
 {
 	StrongRef<Texture> i;
 	luax_catchexcept(L,
-		[&]() { i.set(instance()->newTexture(settings, &slices), Acquire::NORETAIN); },
-		[&](bool) { slices.clear(); }
+		[&]() { i.set(instance()->newTexture(settings, slices), Acquire::NORETAIN); },
+		[&](bool) { if (slices) slices->clear(); }
 	);
 
 	luax_pushtype(L, i);
@@ -848,13 +848,13 @@ int w_newRenderTarget(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Texture::Settings s;
-	s.renderTarget = true;
 
+	OptionalBool forceRenderTarget(true);
 	bool setDPIScale = false;
 
 	if (lua_istable(L, 1))
 	{
-		luax_checktexturesettings(L, 1, false, true, true, OptionalBool(true), s, setDPIScale);
+		luax_checktexturesettings(L, 1, false, true, true, forceRenderTarget, s, setDPIScale);
 	}
 	else
 	{
@@ -871,7 +871,7 @@ int w_newRenderTarget(lua_State *L)
 			startidx = 4;
 		}
 
-		luax_checktexturesettings(L, startidx, true, true, false, OptionalBool(true), s, setDPIScale);
+		luax_checktexturesettings(L, startidx, true, true, false, forceRenderTarget, s, setDPIScale);
 	}
 
 	// Default to the screen's current pixel density scale.
@@ -886,13 +886,43 @@ int w_newRenderTarget(lua_State *L)
 	return 1;
 }
 
-int w_newCanvas(lua_State *L)
+int w_newTexture(lua_State *L)
 {
-	luax_markdeprecated(L, "newCanvas", API_FUNCTION, DEPRECATED_RENAMED, "newRenderTarget");
-	return w_newRenderTarget(L);
+	luax_checkgraphicscreated(L);
+
+	Texture::Slices slices(TEXTURE_2D);
+
+	bool dpiscaleset = false;
+	Texture::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
+	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
+
+	if (lua_istable(L, 1))
+	{
+		int n = std::max(1, (int) luax_objlen(L, 1));
+		for (int i = 0; i < n; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
+			if (data.first.get())
+				slices.set(0, i, data.first);
+			else
+				slices.set(0, i, data.second->getSlice(0, 0));
+		}
+		lua_pop(L, n);
+	}
+	else
+	{
+		auto data = getImageData(L, 1, true, autodpiscale);
+		if (data.first.get())
+			slices.set(0, 0, data.first);
+		else
+			slices.add(data.second, 0, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
+	}
+
+	return w__pushNewTexture(L, &slices, settings);
 }
 
-int w_newCubeImage(lua_State *L)
+int w_newCubeTexture(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
@@ -918,7 +948,7 @@ int w_newCubeImage(lua_State *L)
 				slices.set(i, 0, faces[i]);
 		}
 		else
-			slices.add(data.second, 0, 0, true, settings.mipmaps);
+			slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
 	}
 	else
 	{
@@ -976,17 +1006,17 @@ int w_newCubeImage(lua_State *L)
 						slices.set(i, 0, data.first);
 				}
 				else
-					slices.add(data.second, i, 0, false, settings.mipmaps);
+					slices.add(data.second, i, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
 			}
 		}
 
 		lua_pop(L, tlen);
 	}
 
-	return w__pushNewImage(L, slices, settings);
+	return w__pushNewTexture(L, &slices, settings);
 }
 
-int w_newArrayImage(lua_State *L)
+int w_newArrayTexture(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
@@ -1032,7 +1062,7 @@ int w_newArrayImage(lua_State *L)
 				if (data.first.get())
 					slices.set(slice, 0, data.first);
 				else
-					slices.add(data.second, slice, 0, false, settings.mipmaps);
+					slices.add(data.second, slice, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
 			}
 		}
 
@@ -1044,13 +1074,13 @@ int w_newArrayImage(lua_State *L)
 		if (data.first.get())
 			slices.set(0, 0, data.first);
 		else
-			slices.add(data.second, 0, 0, true, settings.mipmaps);
+			slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
 	}
 
-	return w__pushNewImage(L, slices, settings);
+	return w__pushNewTexture(L, &slices, settings);
 }
 
-int w_newVolumeImage(lua_State *L)
+int w_newVolumeTexture(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
@@ -1098,7 +1128,7 @@ int w_newVolumeImage(lua_State *L)
 				if (data.first.get())
 					slices.set(layer, 0, data.first);
 				else
-					slices.add(data.second, layer, 0, false, settings.mipmaps);
+					slices.add(data.second, layer, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
 			}
 		}
 
@@ -1117,46 +1147,40 @@ int w_newVolumeImage(lua_State *L)
 				slices.set(i, 0, layers[i]);
 		}
 		else
-			slices.add(data.second, 0, 0, true, settings.mipmaps);
+			slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
 	}
 
-	return w__pushNewImage(L, slices, settings);
+	return w__pushNewTexture(L, &slices, settings);
+}
+
+int w_newCanvas(lua_State *L)
+{
+	luax_markdeprecated(L, "love.graphics.newCanvas", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newRenderTarget");
+	return w_newRenderTarget(L);
 }
 
 int w_newImage(lua_State *L)
 {
-	luax_checkgraphicscreated(L);
+	luax_markdeprecated(L, "love.graphics.newImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTexture");
+	return w_newTexture(L);
+}
 
-	Texture::Slices slices(TEXTURE_2D);
+int w_newCubeImage(lua_State *L)
+{
+	luax_markdeprecated(L, "love.graphics.newCubeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newCubeTexture");
+	return w_newCubeTexture(L);
+}
 
-	bool dpiscaleset = false;
-	Texture::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
-	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
+int w_newArrayImage(lua_State *L)
+{
+	luax_markdeprecated(L, "love.graphics.newArrayImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newArrayTexture");
+	return w_newArrayTexture(L);
+}
 
-	if (lua_istable(L, 1))
-	{
-		int n = std::max(1, (int) luax_objlen(L, 1));
-		for (int i = 0; i < n; i++)
-		{
-			lua_rawgeti(L, 1, i + 1);
-			auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
-			if (data.first.get())
-				slices.set(0, i, data.first);
-			else
-				slices.set(0, i, data.second->getSlice(0, 0));
-		}
-		lua_pop(L, n);
-	}
-	else
-	{
-		auto data = getImageData(L, 1, true, autodpiscale);
-		if (data.first.get())
-			slices.set(0, 0, data.first);
-		else
-			slices.add(data.second, 0, 0, false, settings.mipmaps);
-	}
-
-	return w__pushNewImage(L, slices, settings);
+int w_newVolumeImage(lua_State *L)
+{
+	luax_markdeprecated(L, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
+	return w_newVolumeTexture(L);
 }
 
 int w_newQuad(lua_State *L)
@@ -3040,16 +3064,16 @@ static const luaL_Reg functions[] =
 	{ "discard", w_discard },
 	{ "present", w_present },
 
-	{ "newImage", w_newImage },
-	{ "newArrayImage", w_newArrayImage },
-	{ "newVolumeImage", w_newVolumeImage },
-	{ "newCubeImage", w_newCubeImage },
+	{ "newRenderTarget", w_newRenderTarget },
+	{ "newTexture", w_newTexture },
+	{ "newCubeTexture", w_newCubeTexture },
+	{ "newArrayTexture", w_newArrayTexture },
+	{ "newVolumeTexture", w_newVolumeTexture },
 	{ "newQuad", w_newQuad },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
-	{ "newRenderTarget", w_newRenderTarget },
 	{ "newShader", w_newShader },
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },
@@ -3161,6 +3185,10 @@ static const luaL_Reg functions[] =
 
 	// Deprecated
 	{ "newCanvas", w_newCanvas },
+	{ "newImage", w_newImage },
+	{ "newArrayImage", w_newArrayImage },
+	{ "newVolumeImage", w_newVolumeImage },
+	{ "newCubeImage", w_newCubeImage },
 
 	{ 0, 0 }
 };
