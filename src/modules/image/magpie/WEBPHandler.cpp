@@ -75,7 +75,7 @@ FormatHandler::EncodedImage WEBPHandler::encode(const DecodedImage &img, Encoded
 	if (!canEncode(img.format, encodedFormat))
 		throw love::Exception("WebP encoder cannot encode to non-WebP format.");
 
-	uint8_t *data = 0;
+	uint8_t *data = nullptr;
   // export using lossless encoding
 	size_t size = WebPEncodeLosslessRGBA((uint8_t*)img.data, img.width, img.height, img.width*4, &data);
 	if(size > 0){
