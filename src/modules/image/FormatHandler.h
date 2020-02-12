@@ -43,6 +43,7 @@ public:
 	{
 		ENCODED_TGA,
 		ENCODED_PNG,
+		ENCODED_WEBP,
 		ENCODED_MAX_ENUM
 	};
 

@@ -77,6 +77,7 @@ AS_VAR_IF([enable_gme], [yes], [ACLOVE_DEP_GME], [])
 AS_VAR_IF([enable_mpg123], [no],
 	  AC_DEFINE([LOVE_NOMPG123], [], [Build without mpg123]),
 	  [ACLOVE_DEP_MPG123])
+AS_VAR_IF([enable_module_image], [yes], [ACLOVE_DEP_WEBP], [])
 
 # Add flags for optional libraries
 AC_ARG_ENABLE([library-enet], [  --disable-library-enet    Turn off library enet], [], [enable_library_enet=yes])

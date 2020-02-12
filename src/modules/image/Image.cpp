@@ -23,6 +23,7 @@
 #include "common/config.h"
 
 #include "magpie/PNGHandler.h"
+#include "magpie/WEBPHandler.h"
 #include "magpie/STBHandler.h"
 #include "magpie/EXRHandler.h"
 
@@ -47,6 +48,7 @@ Image::Image()
 
 	formatHandlers = {
 		new PNGHandler,
+		new WEBPHandler,
 		new STBHandler,
 		new EXRHandler,
 		new DDSHandler,

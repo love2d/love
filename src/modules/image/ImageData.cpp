@@ -897,6 +897,7 @@ StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM>::Entry 
 {
 	{"tga", FormatHandler::ENCODED_TGA},
 	{"png", FormatHandler::ENCODED_PNG},
+	{"webp", FormatHandler::ENCODED_WEBP}
 };
 
 StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM> ImageData::encodedFormats(ImageData::encodedFormatEntries, sizeof(ImageData::encodedFormatEntries));

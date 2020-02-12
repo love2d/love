@@ -27,6 +27,9 @@ AC_DEFUN([ACLOVE_DEP_SDL2], [
 AC_DEFUN([ACLOVE_DEP_PTHREAD], [
 	AC_SEARCH_LIBS([pthread_create], [pthread], [], [LOVE_MSG_ERROR([the POSIX threads library])])])
 
+AC_DEFUN([ACLOVE_DEP_WEBP], [
+	AC_SEARCH_LIBS([WebPDecodeRGBA], [webp], [], [LOVE_MSG_ERROR([WebP])])])
+
 # does not use pkg-config because of the FILE_OFFSET_BITS.. bit
 AC_DEFUN([ACLOVE_DEP_MPG123], [
 	AC_SEARCH_LIBS([mpg123_open_feed], [mpg123], [],

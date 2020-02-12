@@ -652,6 +652,8 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/PKMHandler.h
 	src/modules/image/magpie/PNGHandler.cpp
 	src/modules/image/magpie/PNGHandler.h
+	src/modules/image/magpie/WEBPHandler.cpp
+	src/modules/image/magpie/WEBPHandler.h
 	src/modules/image/magpie/PVRHandler.cpp
 	src/modules/image/magpie/PVRHandler.h
 	src/modules/image/magpie/STBHandler.cpp
