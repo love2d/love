@@ -700,30 +700,6 @@ static void parseDPIScale(Data *d, float *dpiscale)
 	}
 }
 
-static Texture::Settings w__optImageSettings(lua_State *L, int idx, bool &setdpiscale)
-{
-	Texture::Settings s;
-
-	setdpiscale = false;
-	if (!lua_isnoneornil(L, idx))
-	{
-		luax_checktablefields<Texture::SettingType>(L, idx, "texture setting name", Texture::getConstant);
-
-		s.mipmaps = luax_boolflag(L, idx, "mipmaps", false) ? Texture::MIPMAPS_MANUAL : Texture::MIPMAPS_NONE;
-		s.linear = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_LINEAR), s.linear);
-
-		lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_DPI_SCALE));
-		if (lua_isnumber(L, -1))
-		{
-			s.dpiScale = (float) lua_tonumber(L, -1);
-			setdpiscale = true;
-		}
-		lua_pop(L, 1);
-	}
-
-	return s;
-}
-
 static std::pair<StrongRef<image::ImageData>, StrongRef<image::CompressedImageData>>
 getImageData(lua_State *L, int idx, bool allowcompressed, float *dpiscale)
 {
@@ -891,35 +867,60 @@ int w_newTexture(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Texture::Slices slices(TEXTURE_2D);
+	Texture::Slices *slicesref = &slices;
 
+	Texture::Settings settings;
+	settings.type = TEXTURE_2D;
 	bool dpiscaleset = false;
-	Texture::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
-	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
-	if (lua_istable(L, 1))
+	if (lua_type(L, 1) == LUA_TNUMBER)
 	{
-		int n = std::max(1, (int) luax_objlen(L, 1));
-		for (int i = 0; i < n; i++)
+		slicesref = nullptr;
+
+		settings.width = (int) luaL_checkinteger(L, 1);
+		settings.height = (int) luaL_checkinteger(L, 2);
+
+		int startidx = 3;
+
+		if (lua_type(L, 3) == LUA_TNUMBER)
 		{
-			lua_rawgeti(L, 1, i + 1);
-			auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
-			if (data.first.get())
-				slices.set(0, i, data.first);
-			else
-				slices.set(0, i, data.second->getSlice(0, 0));
+			settings.layers = (int) luaL_checkinteger(L, 3);
+			settings.type = TEXTURE_2D_ARRAY;
+			startidx = 4;
 		}
-		lua_pop(L, n);
+
+		luax_checktexturesettings(L, startidx, true, true, false, OptionalBool(), settings, dpiscaleset);
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, autodpiscale);
-		if (data.first.get())
-			slices.set(0, 0, data.first);
+		luax_checktexturesettings(L, 2, true, false, false, OptionalBool(), settings, dpiscaleset);
+		float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
+
+		if (lua_istable(L, 1))
+		{
+			int n = std::max(1, (int) luax_objlen(L, 1));
+			for (int i = 0; i < n; i++)
+			{
+				lua_rawgeti(L, 1, i + 1);
+				auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
+				if (data.first.get())
+					slices.set(0, i, data.first);
+				else
+					slices.set(0, i, data.second->getSlice(0, 0));
+			}
+			lua_pop(L, n);
+		}
 		else
-			slices.add(data.second, 0, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
+		{
+			auto data = getImageData(L, 1, true, autodpiscale);
+			if (data.first.get())
+				slices.set(0, 0, data.first);
+			else
+				slices.add(data.second, 0, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
+		}
 	}
 
-	return w__pushNewTexture(L, &slices, settings);
+	return w__pushNewTexture(L, slicesref, settings);
 }
 
 int w_newCubeTexture(lua_State *L)
@@ -927,93 +928,106 @@ int w_newCubeTexture(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Texture::Slices slices(TEXTURE_CUBE);
+	Texture::Slices *slicesref = &slices;
 
+	Texture::Settings settings;
+	settings.type = TEXTURE_CUBE;
 	bool dpiscaleset = false;
-	Texture::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
-	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
-	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
-
-	if (!lua_istable(L, 1))
+	if (lua_type(L, 1) == LUA_TNUMBER)
 	{
-		auto data = getImageData(L, 1, true, autodpiscale);
-
-		std::vector<StrongRef<love::image::ImageData>> faces;
-
-		if (data.first.get())
-		{
-			luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(data.first); });
-
-			for (int i = 0; i < (int) faces.size(); i++)
-				slices.set(i, 0, faces[i]);
-		}
-		else
-			slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
+		slicesref = nullptr;
+		settings.width = settings.height = (int) luaL_checkinteger(L, 1);
+		luax_checktexturesettings(L, 2, true, false, false, OptionalBool(), settings, dpiscaleset);
 	}
 	else
 	{
-		int tlen = (int) luax_objlen(L, 1);
+		luax_checktexturesettings(L, 2, true, false, false, OptionalBool(), settings, dpiscaleset);
+		float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
-		if (luax_isarrayoftables(L, 1))
+		auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
+
+		if (!lua_istable(L, 1))
 		{
-			if (tlen != 6)
-				return luaL_error(L, "Cubemap images must have 6 faces.");
+			auto data = getImageData(L, 1, true, autodpiscale);
 
-			for (int face = 0; face < tlen; face++)
+			std::vector<StrongRef<love::image::ImageData>> faces;
+
+			if (data.first.get())
 			{
-				lua_rawgeti(L, 1, face + 1);
-				luaL_checktype(L, -1, LUA_TTABLE);
+				luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(data.first); });
 
-				int miplen = std::max(1, (int) luax_objlen(L, -1));
-
-				for (int mip = 0; mip < miplen; mip++)
-				{
-					lua_rawgeti(L, -1, mip + 1);
-
-					auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? autodpiscale : nullptr);
-					if (data.first.get())
-						slices.set(face, mip, data.first);
-					else
-						slices.set(face, mip, data.second->getSlice(0, 0));
-
-					lua_pop(L, 1);
-				}
+				for (int i = 0; i < (int) faces.size(); i++)
+					slices.set(i, 0, faces[i]);
 			}
+			else
+				slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
 		}
 		else
 		{
-			bool usemipmaps = false;
+			int tlen = (int) luax_objlen(L, 1);
 
-			for (int i = 0; i < tlen; i++)
+			if (luax_isarrayoftables(L, 1))
 			{
-				lua_rawgeti(L, 1, i + 1);
+				if (tlen != 6)
+					return luaL_error(L, "Cubemap images must have 6 faces.");
 
-				auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
-
-				if (data.first.get())
+				for (int face = 0; face < tlen; face++)
 				{
-					if (usemipmaps || data.first->getWidth() != data.first->getHeight())
+					lua_rawgeti(L, 1, face + 1);
+					luaL_checktype(L, -1, LUA_TTABLE);
+
+					int miplen = std::max(1, (int) luax_objlen(L, -1));
+
+					for (int mip = 0; mip < miplen; mip++)
 					{
-						usemipmaps = true;
+						lua_rawgeti(L, -1, mip + 1);
 
-						std::vector<StrongRef<love::image::ImageData>> faces;
-						luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(data.first); });
+						auto data = getImageData(L, -1, true, face == 0 && mip == 0 ? autodpiscale : nullptr);
+						if (data.first.get())
+							slices.set(face, mip, data.first);
+						else
+							slices.set(face, mip, data.second->getSlice(0, 0));
 
-						for (int face = 0; face < (int) faces.size(); face++)
-							slices.set(face, i, faces[i]);
+						lua_pop(L, 1);
+					}
+				}
+			}
+			else
+			{
+				bool usemipmaps = false;
+
+				for (int i = 0; i < tlen; i++)
+				{
+					lua_rawgeti(L, 1, i + 1);
+
+					auto data = getImageData(L, -1, true, i == 0 ? autodpiscale : nullptr);
+
+					if (data.first.get())
+					{
+						if (usemipmaps || data.first->getWidth() != data.first->getHeight())
+						{
+							usemipmaps = true;
+
+							std::vector<StrongRef<love::image::ImageData>> faces;
+							luax_catchexcept(L, [&](){ faces = imagemodule->newCubeFaces(data.first); });
+
+							for (int face = 0; face < (int) faces.size(); face++)
+								slices.set(face, i, faces[i]);
+						}
+						else
+							slices.set(i, 0, data.first);
 					}
 					else
-						slices.set(i, 0, data.first);
+						slices.add(data.second, i, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
 				}
-				else
-					slices.add(data.second, i, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
 			}
-		}
 
-		lua_pop(L, tlen);
+			lua_pop(L, tlen);
+		}
 	}
 
-	return w__pushNewTexture(L, &slices, settings);
+	return w__pushNewTexture(L, slicesref, settings);
 }
 
 int w_newArrayTexture(lua_State *L)
@@ -1021,63 +1035,78 @@ int w_newArrayTexture(lua_State *L)
 	luax_checkgraphicscreated(L);
 
 	Texture::Slices slices(TEXTURE_2D_ARRAY);
+	Texture::Slices *slicesref = &slices;
 
+	Texture::Settings settings;
+	settings.type = TEXTURE_2D_ARRAY;
 	bool dpiscaleset = false;
-	Texture::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
-	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
-	if (lua_istable(L, 1))
+	if (lua_type(L, 1) == LUA_TNUMBER)
 	{
-		int tlen = std::max(1, (int) luax_objlen(L, 1));
-
-		if (luax_isarrayoftables(L, 1))
-		{
-			for (int slice = 0; slice < tlen; slice++)
-			{
-				lua_rawgeti(L, 1, slice + 1);
-				luaL_checktype(L, -1, LUA_TTABLE);
-
-				int miplen = std::max(1, (int) luax_objlen(L, -1));
-
-				for (int mip = 0; mip < miplen; mip++)
-				{
-					lua_rawgeti(L, -1, mip + 1);
-
-					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
-					if (data.first.get())
-						slices.set(slice, mip, data.first);
-					else
-						slices.set(slice, mip, data.second->getSlice(0, 0));
-
-					lua_pop(L, 1);
-				}
-			}
-		}
-		else
-		{
-			for (int slice = 0; slice < tlen; slice++)
-			{
-				lua_rawgeti(L, 1, slice + 1);
-				auto data = getImageData(L, -1, true, slice == 0 ? autodpiscale : nullptr);
-				if (data.first.get())
-					slices.set(slice, 0, data.first);
-				else
-					slices.add(data.second, slice, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
-			}
-		}
-
-		lua_pop(L, tlen);
+		slicesref = nullptr;
+		settings.width = (int) luaL_checkinteger(L, 1);
+		settings.height = (int) luaL_checkinteger(L, 2);
+		settings.layers = (int) luaL_checkinteger(L, 3);
+		luax_checktexturesettings(L, 4, true, false, false, OptionalBool(), settings, dpiscaleset);
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, autodpiscale);
-		if (data.first.get())
-			slices.set(0, 0, data.first);
+		luax_checktexturesettings(L, 2, true, false, false, OptionalBool(), settings, dpiscaleset);
+		float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
+
+		if (lua_istable(L, 1))
+		{
+			int tlen = std::max(1, (int) luax_objlen(L, 1));
+
+			if (luax_isarrayoftables(L, 1))
+			{
+				for (int slice = 0; slice < tlen; slice++)
+				{
+					lua_rawgeti(L, 1, slice + 1);
+					luaL_checktype(L, -1, LUA_TTABLE);
+
+					int miplen = std::max(1, (int) luax_objlen(L, -1));
+
+					for (int mip = 0; mip < miplen; mip++)
+					{
+						lua_rawgeti(L, -1, mip + 1);
+
+						auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
+						if (data.first.get())
+							slices.set(slice, mip, data.first);
+						else
+							slices.set(slice, mip, data.second->getSlice(0, 0));
+
+						lua_pop(L, 1);
+					}
+				}
+			}
+			else
+			{
+				for (int slice = 0; slice < tlen; slice++)
+				{
+					lua_rawgeti(L, 1, slice + 1);
+					auto data = getImageData(L, -1, true, slice == 0 ? autodpiscale : nullptr);
+					if (data.first.get())
+						slices.set(slice, 0, data.first);
+					else
+						slices.add(data.second, slice, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
+				}
+			}
+
+			lua_pop(L, tlen);
+		}
 		else
-			slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
+		{
+			auto data = getImageData(L, 1, true, autodpiscale);
+			if (data.first.get())
+				slices.set(0, 0, data.first);
+			else
+				slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
+		}
 	}
 
-	return w__pushNewTexture(L, &slices, settings);
+	return w__pushNewTexture(L, slicesref, settings);
 }
 
 int w_newVolumeTexture(lua_State *L)
@@ -1087,70 +1116,85 @@ int w_newVolumeTexture(lua_State *L)
 	auto imagemodule = Module::getInstance<love::image::Image>(Module::M_IMAGE);
 
 	Texture::Slices slices(TEXTURE_VOLUME);
+	Texture::Slices *slicesref = &slices;
 
+	Texture::Settings settings;
+	settings.type = TEXTURE_VOLUME;
 	bool dpiscaleset = false;
-	Texture::Settings settings = w__optImageSettings(L, 2, dpiscaleset);
-	float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
-	if (lua_istable(L, 1))
+	if (lua_type(L, 1) == LUA_TNUMBER)
 	{
-		int tlen = std::max(1, (int) luax_objlen(L, 1));
-
-		if (luax_isarrayoftables(L, 1))
-		{
-			for (int mip = 0; mip < tlen; mip++)
-			{
-				lua_rawgeti(L, 1, mip + 1);
-				luaL_checktype(L, -1, LUA_TTABLE);
-
-				int slicelen = std::max(1, (int) luax_objlen(L, -1));
-
-				for (int slice = 0; slice < slicelen; slice++)
-				{
-					lua_rawgeti(L, -1, mip + 1);
-
-					auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
-					if (data.first.get())
-						slices.set(slice, mip, data.first);
-					else
-						slices.set(slice, mip, data.second->getSlice(0, 0));
-
-					lua_pop(L, 1);
-				}
-			}
-		}
-		else
-		{
-			for (int layer = 0; layer < tlen; layer++)
-			{
-				lua_rawgeti(L, 1, layer + 1);
-				auto data = getImageData(L, -1, true, layer == 0 ? autodpiscale : nullptr);
-				if (data.first.get())
-					slices.set(layer, 0, data.first);
-				else
-					slices.add(data.second, layer, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
-			}
-		}
-
-		lua_pop(L, tlen);
+		slicesref = nullptr;
+		settings.width = (int) luaL_checkinteger(L, 1);
+		settings.height = (int) luaL_checkinteger(L, 2);
+		settings.layers = (int) luaL_checkinteger(L, 3);
+		luax_checktexturesettings(L, 4, true, false, false, OptionalBool(), settings, dpiscaleset);
 	}
 	else
 	{
-		auto data = getImageData(L, 1, true, autodpiscale);
+		luax_checktexturesettings(L, 2, true, false, false, OptionalBool(), settings, dpiscaleset);
+		float *autodpiscale = dpiscaleset ? nullptr : &settings.dpiScale;
 
-		if (data.first.get())
+		if (lua_istable(L, 1))
 		{
-			std::vector<StrongRef<love::image::ImageData>> layers;
-			luax_catchexcept(L, [&](){ layers = imagemodule->newVolumeLayers(data.first); });
+			int tlen = std::max(1, (int) luax_objlen(L, 1));
 
-			for (int i = 0; i < (int) layers.size(); i++)
-				slices.set(i, 0, layers[i]);
+			if (luax_isarrayoftables(L, 1))
+			{
+				for (int mip = 0; mip < tlen; mip++)
+				{
+					lua_rawgeti(L, 1, mip + 1);
+					luaL_checktype(L, -1, LUA_TTABLE);
+
+					int slicelen = std::max(1, (int) luax_objlen(L, -1));
+
+					for (int slice = 0; slice < slicelen; slice++)
+					{
+						lua_rawgeti(L, -1, mip + 1);
+
+						auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
+						if (data.first.get())
+							slices.set(slice, mip, data.first);
+						else
+							slices.set(slice, mip, data.second->getSlice(0, 0));
+
+						lua_pop(L, 1);
+					}
+				}
+			}
+			else
+			{
+				for (int layer = 0; layer < tlen; layer++)
+				{
+					lua_rawgeti(L, 1, layer + 1);
+					auto data = getImageData(L, -1, true, layer == 0 ? autodpiscale : nullptr);
+					if (data.first.get())
+						slices.set(layer, 0, data.first);
+					else
+						slices.add(data.second, layer, 0, false, settings.mipmaps != Texture::MIPMAPS_NONE);
+				}
+			}
+
+			lua_pop(L, tlen);
 		}
 		else
-			slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
+		{
+			auto data = getImageData(L, 1, true, autodpiscale);
+
+			if (data.first.get())
+			{
+				std::vector<StrongRef<love::image::ImageData>> layers;
+				luax_catchexcept(L, [&](){ layers = imagemodule->newVolumeLayers(data.first); });
+
+				for (int i = 0; i < (int) layers.size(); i++)
+					slices.set(i, 0, layers[i]);
+			}
+			else
+				slices.add(data.second, 0, 0, true, settings.mipmaps != Texture::MIPMAPS_NONE);
+		}
 	}
 
-	return w__pushNewTexture(L, &slices, settings);
+	return w__pushNewTexture(L, slicesref, settings);
 }
 
 int w_newCanvas(lua_State *L)
