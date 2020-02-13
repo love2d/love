@@ -263,7 +263,7 @@ static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
 	return target;
 }
 
-int w_setCanvas(lua_State *L)
+int w_setRenderTarget(lua_State *L)
 {
 	// Disable stencil writes.
 	luax_catchexcept(L, [](){ instance()->stopDrawToStencilBuffer(); });
@@ -341,7 +341,7 @@ int w_setCanvas(lua_State *L)
 			}
 
 			if (i > 1 && type != TEXTURE_2D)
-				return luaL_error(L, "This variant of setRenderTargets only supports 2D texture types.");
+				return luaL_error(L, "This variant of setRenderTarget only supports 2D texture types.");
 
 			targets.colors.push_back(target);
 		}
@@ -355,6 +355,12 @@ int w_setCanvas(lua_State *L)
 	});
 	
 	return 0;
+}
+
+int w_setCanvas(lua_State *L)
+{
+	luax_markdeprecated(L, "love.graphics.setCanvas", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.setRenderTarget");
+	return w_setRenderTarget(L);
 }
 
 static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
@@ -381,7 +387,7 @@ static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
 	lua_setfield(L, -2, "mipmap");
 }
 
-int w_getCanvas(lua_State *L)
+int w_getRenderTarget(lua_State *L)
 {
 	Graphics::RenderTargets targets = instance()->getRenderTargets();
 	int ntargets = (int) targets.colors.size();
@@ -431,6 +437,12 @@ int w_getCanvas(lua_State *L)
 
 		return ntargets;
 	}
+}
+
+int w_getCanvas(lua_State *L)
+{
+	luax_markdeprecated(L, "love.graphics.getCanvas", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.getRenderTarget");
+	return w_getRenderTarget(L);
 }
 
 static void screenshotFunctionCallback(const Graphics::ScreenshotInfo *info, love::image::ImageData *i, void *gd)
@@ -2507,7 +2519,7 @@ int w_getStats(lua_State *L)
 	lua_setfield(L, -2, "drawcallsbatched");
 
 	lua_pushinteger(L, stats.renderTargetSwitches);
-	lua_setfield(L, -2, "canvasswitches");
+	lua_setfield(L, -2, "rendertargetswitches");
 
 	lua_pushinteger(L, stats.shaderSwitches);
 	lua_setfield(L, -2, "shaderswitches");
@@ -3125,8 +3137,8 @@ static const luaL_Reg functions[] =
 
 	{ "validateShader", w_validateShader },
 
-	{ "setCanvas", w_setCanvas },
-	{ "getCanvas", w_getCanvas },
+	{ "setRenderTarget", w_setRenderTarget },
+	{ "getRenderTarget", w_getRenderTarget },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -3233,6 +3245,8 @@ static const luaL_Reg functions[] =
 	{ "newArrayImage", w_newArrayImage },
 	{ "newVolumeImage", w_newVolumeImage },
 	{ "newCubeImage", w_newCubeImage },
+	{ "setCanvas", w_setCanvas },
+	{ "getCanvas", w_getCanvas },
 
 	{ 0, 0 }
 };
