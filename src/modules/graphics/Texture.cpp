@@ -369,7 +369,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 		throw love::Exception("Cannot render a Texture to itself.");
 
 	if (texType != TEXTURE_2D_ARRAY)
-		throw love::Exception("drawLayer can only be used with Array Textures!");
+		throw love::Exception("drawLayer can only be used with Array Textures.");
 
 	if (layer < 0 || layer >= layers)
 		throw love::Exception("Invalid layer: %d (Texture has %d layers)", layer + 1, layers);
@@ -811,7 +811,7 @@ bool Texture::Slices::validate() const
 	int mipcount = getMipmapCount(0);
 
 	if (slicecount == 0 || mipcount == 0)
-		throw love::Exception("At least one ImageData or CompressedImageData is required!");
+		throw love::Exception("At least one ImageData or CompressedImageData is required.");
 
 	if (textureType == TEXTURE_CUBE && slicecount != 6)
 		throw love::Exception("Cube textures must have exactly 6 sides.");

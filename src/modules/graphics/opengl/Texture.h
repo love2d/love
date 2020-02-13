@@ -58,8 +58,7 @@ public:
 
 private:
 
-	bool createTexture();
-	bool createRenderbuffer();
+	void createTexture();
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
 
@@ -71,6 +70,7 @@ private:
 	GLuint renderbuffer;
 
 	GLenum framebufferStatus;
+	GLenum textureGLError;
 
 	int actualSamples;
 

@@ -106,9 +106,8 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 	return status;
 }
 
-static bool newRenderbuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
+static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
 {
-	int reqsamples = samples;
 	bool unusedSRGB = false;
 	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true, unusedSRGB);
 
@@ -145,13 +144,16 @@ static bool newRenderbuffer(int width, int height, int &samples, PixelFormat pix
 	}
 
 	if (samples > 1)
+	{
 		glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_SAMPLES, &samples);
+		samples = std::max(1, samples);
+	}
 
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-	if (status == GL_FRAMEBUFFER_COMPLETE && (reqsamples <= 1 || samples > 1))
+	if (status == GL_FRAMEBUFFER_COMPLETE)
 	{
 		if (isPixelFormatDepthStencil(pixelformat))
 		{
@@ -183,7 +185,7 @@ static bool newRenderbuffer(int width, int height, int &samples, PixelFormat pix
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 	gl.deleteFramebuffer(fbo);
 
-	return status == GL_FRAMEBUFFER_COMPLETE;
+	return status;
 }
 
 Texture::Texture(const Settings &settings, const Slices *data)
@@ -193,11 +195,19 @@ Texture::Texture(const Settings &settings, const Slices *data)
 	, texture(0)
 	, renderbuffer(0)
 	, framebufferStatus(GL_FRAMEBUFFER_COMPLETE)
+	, textureGLError(GL_NO_ERROR)
 	, actualSamples(1)
 {
 	if (data != nullptr)
 		slices = *data;
-	loadVolatile();
+
+	if (!loadVolatile())
+	{
+		if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+			throw love::Exception("Cannot create Texture (OpenGL framebuffer error: %s)", OpenGL::framebufferStatusString(framebufferStatus));
+		if (textureGLError != GL_NO_ERROR)
+			throw love::Exception("Cannot create Texture (OpenGL error: %s)", OpenGL::errorString(textureGLError));
+	}
 }
 
 Texture::~Texture()
@@ -205,7 +215,7 @@ Texture::~Texture()
 	unloadVolatile();
 }
 
-bool Texture::createTexture()
+void Texture::createTexture()
 {
 	// The base class handles some validation. For example, if ImageData is
 	// given then it must exist for all mip levels, a render target can't use
@@ -235,7 +245,7 @@ bool Texture::createTexture()
 		for (int slice = 0; slice < slices; slice++)
 			uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect, nullptr);
 
-		return true;
+		return;
 	}
 
 	GLenum gltype = OpenGL::getGLTextureType(texType);
@@ -254,6 +264,11 @@ bool Texture::createTexture()
 	else if (texType == TEXTURE_CUBE)
 		slicecount = 6;
 
+	// For a couple flimsy reasons, we don't initialize the texture here if it's
+	// compressed. I need to verify that getPixelFormatSliceSize will return the
+	// correct value for all compressed texture formats, and I also vaguely
+	// remember some driver issues on some old Android systems, maybe...
+	// For now, the base class enforces data on init for compressed textures.
 	if (!isCompressed())
 		gl.rawTexStorage(texType, mipcount, format, sRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
@@ -322,16 +337,6 @@ bool Texture::createTexture()
 	// so generateMipmaps here is fine - when they aren't already initialized.
 	if (getMipmapCount() > 1 && slices.getMipmapCount() <= 1)
 		generateMipmaps();
-
-	return true;
-}
-
-bool Texture::createRenderbuffer()
-{
-	if (isReadable() && actualSamples <= 1)
-		return true;
-
-	return newRenderbuffer(pixelWidth, pixelHeight, actualSamples, format, renderbuffer);
 }
 
 bool Texture::loadVolatile()
@@ -353,21 +358,24 @@ bool Texture::loadVolatile()
 
 	while (glGetError() != GL_NO_ERROR); // Clear errors.
 
-	try
-	{
-		if (isReadable())
-			createTexture();
-		if (!isReadable() || actualSamples > 1)
-			createRenderbuffer();
+	framebufferStatus = GL_FRAMEBUFFER_COMPLETE;
+	textureGLError = GL_NO_ERROR;
 
-		GLenum glerr = glGetError();
-		if (glerr != GL_NO_ERROR)
-			throw love::Exception("Cannot create texture (OpenGL error: %s)", OpenGL::errorString(glerr));
+	if (isReadable())
+		createTexture();
+
+	if (!usingDefaultTexture && framebufferStatus == GL_FRAMEBUFFER_COMPLETE
+		&& (!isReadable() || actualSamples > 1))
+	{
+		framebufferStatus = newRenderbuffer(pixelWidth, pixelHeight, actualSamples, format, renderbuffer);
 	}
-	catch (love::Exception &)
+
+	textureGLError = glGetError();
+
+	if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE || textureGLError != GL_NO_ERROR)
 	{
 		unloadVolatile();
-		throw;
+		return false;
 	}
 
 	int64 memsize = 0;
