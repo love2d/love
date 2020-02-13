@@ -190,6 +190,7 @@ bool luax_boolflag(lua_State *L, int table_index, const char *key, bool defaultV
 int luax_intflag(lua_State *L, int table_index, const char *key, int defaultValue);
 double luax_numberflag(lua_State *L, int table_index, const char *key, double defaultValue);
 
+bool luax_checkboolflag(lua_State *L, int table_index, const char *key);
 int luax_checkintflag(lua_State *L, int table_index, const char *key);
 
 /**

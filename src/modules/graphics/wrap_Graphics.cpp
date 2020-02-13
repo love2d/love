@@ -2371,6 +2371,45 @@ int w_getSupported(lua_State *L)
 	return 1;
 }
 
+int w_getTextureFormats(lua_State *L)
+{
+	luaL_checktype(L, 1, LUA_TTABLE);
+
+	bool rt = luax_checkboolflag(L, 1, Texture::getConstant(Texture::SETTING_RENDER_TARGET));
+	bool linear = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_LINEAR), false);
+
+	OptionalBool readable;
+	lua_getfield(L, 1, Texture::getConstant(Texture::SETTING_READABLE));
+	if (!lua_isnoneornil(L, -1))
+		readable.set(luax_checkboolean(L, -1));
+	lua_pop(L, 1);
+
+	if (lua_istable(L, 2))
+		lua_pushvalue(L, 2);
+	else
+		lua_createtable(L, 0, (int) PIXELFORMAT_MAX_ENUM);
+
+	for (int i = 0; i < (int) PIXELFORMAT_MAX_ENUM; i++)
+	{
+		PixelFormat format = (PixelFormat) i;
+		const char *name = nullptr;
+
+		if (format == PIXELFORMAT_UNKNOWN || !love::getConstant(format, name))
+			continue;
+
+		if (rt && isPixelFormatDepth(format))
+			continue;
+
+		bool formatReadable = readable.get(!isPixelFormatDepthStencil(format));
+		bool sRGB = isGammaCorrect() && !linear;
+
+		luax_pushboolean(L, instance()->isPixelFormatSupported(format, rt, formatReadable, sRGB));
+		lua_setfield(L, -2, name);
+	}
+
+	return 1;
+}
+
 static int w__getFormats(lua_State *L, int idx, bool (*isFormatSupported)(PixelFormat), bool (*ignore)(PixelFormat))
 {
 	if (lua_istable(L, idx))
@@ -2395,6 +2434,8 @@ static int w__getFormats(lua_State *L, int idx, bool (*isFormatSupported)(PixelF
 
 int w_getCanvasFormats(lua_State *L)
 {
+	luax_markdeprecated(L, "love.graphics.getCanvasFormats", API_FUNCTION, DEPRECATED_REPLACED, "love.graphics.getTextureFormats");
+
 	bool (*supported)(PixelFormat);
 
 	int idx = 1;
@@ -2430,6 +2471,8 @@ int w_getCanvasFormats(lua_State *L)
 
 int w_getImageFormats(lua_State *L)
 {
+	luax_markdeprecated(L, "love.graphics.getImageFormats", API_FUNCTION, DEPRECATED_REPLACED, "love.graphics.getTextureFormats");
+
 	const auto supported = [](PixelFormat format) -> bool
 	{
 		return instance()->isPixelFormatSupported(format, false, true, false);
@@ -3181,8 +3224,7 @@ static const luaL_Reg functions[] =
 	{ "_setDefaultShaderCode", w_setDefaultShaderCode },
 
 	{ "getSupported", w_getSupported },
-	{ "getCanvasFormats", w_getCanvasFormats },
-	{ "getImageFormats", w_getImageFormats },
+	{ "getTextureFormats", w_getTextureFormats },
 	{ "getRendererInfo", w_getRendererInfo },
 	{ "getSystemLimits", w_getSystemLimits },
 	{ "getTextureTypes", w_getTextureTypes },
@@ -3247,6 +3289,8 @@ static const luaL_Reg functions[] =
 	{ "newCubeImage", w_newCubeImage },
 	{ "setCanvas", w_setCanvas },
 	{ "getCanvas", w_getCanvas },
+	{ "getCanvasFormats", w_getCanvasFormats },
+	{ "getImageFormats", w_getImageFormats },
 
 	{ 0, 0 }
 };

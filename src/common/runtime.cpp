@@ -300,6 +300,23 @@ double luax_numberflag(lua_State *L, int table_index, const char *key, double de
 	return retval;
 }
 
+bool luax_checkboolflag(lua_State *L, int table_index, const char *key)
+{
+	lua_getfield(L, table_index, key);
+
+	bool retval = false;
+	if (lua_type(L, -1) != LUA_TBOOLEAN)
+	{
+		std::string err = "expected boolean field '" + std::string(key) + "' in table";
+		return luaL_argerror(L, table_index, err.c_str());
+	}
+	else
+		retval = luax_toboolean(L, -1);
+	lua_pop(L, 1);
+
+	return retval;
+}
+
 int luax_checkintflag(lua_State *L, int table_index, const char *key)
 {
 	lua_getfield(L, table_index, key);
@@ -307,7 +324,7 @@ int luax_checkintflag(lua_State *L, int table_index, const char *key)
 	int retval;
 	if (!lua_isnumber(L, -1))
 	{
-		std::string err = "expected integer field " + std::string(key) + " in table";
+		std::string err = "expected integer field '" + std::string(key) + "' in table";
 		return luaL_argerror(L, table_index, err.c_str());
 	}
 	else
