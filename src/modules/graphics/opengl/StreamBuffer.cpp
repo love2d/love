@@ -505,9 +505,9 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 				{
 					return new StreamBufferPinnedMemory(mode, size);
 				}
-				catch (love::Exception &e)
+				catch (love::Exception &)
 				{
-					// According to the spec, oinned memory can fail if the RAM
+					// According to the spec, pinned memory can fail if the RAM
 					// allocation can't be mapped to the GPU's address space.
 					// This seems to happen in practice on Mesa + amdgpu:
 					// https://bitbucket.org/rude/love/issues/1540
