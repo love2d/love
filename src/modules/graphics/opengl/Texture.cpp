@@ -521,7 +521,7 @@ love::image::ImageData *Texture::newImageData(love::image::Image *module, int sl
 
 void Texture::setSamplerState(const SamplerState &s)
 {
-	if (samplerState.depthSampleMode.hasValue && !gl.isDepthCompareSampleSupported())
+	if (s.depthSampleMode.hasValue && !gl.isDepthCompareSampleSupported())
 		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
 
 	// Base class does common validation and assigns samplerState.
