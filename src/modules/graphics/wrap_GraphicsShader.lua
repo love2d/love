@@ -271,7 +271,7 @@ GLSL.PIXEL = {
 	precision mediump float;
 #endif
 
-#define love_MaxCanvases gl_MaxDrawBuffers
+#define love_MaxRenderTargets gl_MaxDrawBuffers
 
 #if __VERSION__ >= 130
 	#define varying in
@@ -279,17 +279,24 @@ GLSL.PIXEL = {
 	// pixel shader outputs are defined, even when only one is actually used.
 	// TODO: We should use reflection or something instead of this, to determine
 	// how many outputs are actually used in the shader code.
-	#ifdef LOVE_MULTI_CANVAS
-		layout(location = 0) out vec4 love_Canvases[love_MaxCanvases];
-		#define love_PixelColor love_Canvases[0]
+	#ifdef LOVE_MULTI_RENDER_TARGETS
+		layout(location = 0) out vec4 love_RenderTargets[love_MaxRenderTargets];
+		#define love_PixelColor love_RenderTargets[0]
 	#else
 		layout(location = 0) out vec4 love_PixelColor;
 	#endif
 #else
-	#ifdef LOVE_MULTI_CANVAS
-		#define love_Canvases gl_FragData
+	#ifdef LOVE_MULTI_RENDER_TARGETS
+		#define love_RenderTargets gl_FragData
 	#endif
 	#define love_PixelColor gl_FragColor
+#endif
+
+// Legacy
+#define love_MaxCanvases love_MaxRenderTargets
+#define love_Canvases love_RenderTargets
+#ifdef LOVE_MULTI_RENDER_TARGETS
+#define LOVE_MULTI_CANVASES 1
 #endif
 
 // See Shader::updateScreenParams in Shader.cpp.
@@ -345,14 +352,14 @@ local function getLanguageTarget(code)
 	return (code:match("^%s*#pragma language (%w+)")) or "glsl1"
 end
 
-local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multicanvas)
+local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multirendertarget)
 	stage = stage:upper()
 	local lines = {
 		GLSL.VERSION[lang][gles],
 		"#define " ..stage .. " " .. stage,
 		glsl1on3 and "#define LOVE_GLSL1_ON_GLSL3 1" or "",
 		gammacorrect and "#define LOVE_GAMMA_CORRECT 1" or "",
-		multicanvas and "#define LOVE_MULTI_CANVAS 1" or "",
+		multirendertarget and "#define LOVE_MULTI_RENDER_TARGETS 1" or "",
 		GLSL.SYNTAX,
 		GLSL[stage].HEADER,
 		GLSL.UNIFORMS,
@@ -373,8 +380,8 @@ local function isPixelCode(code)
 	if code:match("vec4%s+effect%s*%(") then
 		return true
 	elseif code:match("void%s+effect%s*%(") then -- custom effect function
-		local multicanvas = code:match("love_Canvases") ~= nil
-		return true, true, multicanvas
+		local multirendertargets = (code:match("love_RenderTargets") ~= nil) or (code:match("love_Canvases") ~= nil)
+		return true, true, multirendertargets
 	else
 		return false
 	end

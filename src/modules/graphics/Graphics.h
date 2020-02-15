@@ -32,13 +32,11 @@
 #include "StreamBuffer.h"
 #include "vertex.h"
 #include "Texture.h"
-#include "Canvas.h"
 #include "Font.h"
 #include "ShaderStage.h"
 #include "Shader.h"
 #include "Quad.h"
 #include "Mesh.h"
-#include "Image.h"
 #include "Deprecations.h"
 #include "renderstate.h"
 #include "math/Transform.h"
@@ -135,9 +133,9 @@ public:
 
 	enum Feature
 	{
-		FEATURE_MULTI_CANVAS_FORMATS,
+		FEATURE_MULTI_RENDER_TARGET_FORMATS,
 		FEATURE_CLAMP_ZERO,
-		FEATURE_BLENDMINMAX,
+		FEATURE_BLEND_MINMAX,
 		FEATURE_LIGHTEN, // Deprecated
 		FEATURE_FULL_NPOT,
 		FEATURE_PIXEL_SHADER_HIGHP,
@@ -162,8 +160,8 @@ public:
 		LIMIT_VOLUME_TEXTURE_SIZE,
 		LIMIT_CUBE_TEXTURE_SIZE,
 		LIMIT_TEXTURE_LAYERS,
-		LIMIT_MULTI_CANVAS,
-		LIMIT_CANVAS_MSAA,
+		LIMIT_RENDER_TARGETS,
+		LIMIT_TEXTURE_MSAA,
 		LIMIT_ANISOTROPY,
 		LIMIT_MAX_ENUM
 	};
@@ -200,10 +198,9 @@ public:
 	{
 		int drawCalls;
 		int drawCallsBatched;
-		int canvasSwitches;
+		int renderTargetSwitches;
 		int shaderSwitches;
-		int canvases;
-		int images;
+		int textures;
 		int fonts;
 		int64 textureMemory;
 	};
@@ -316,53 +313,53 @@ public:
 
 	struct RenderTarget
 	{
-		Canvas *canvas;
+		Texture *texture;
 		int slice;
 		int mipmap;
 
-		RenderTarget(Canvas *canvas, int slice = 0, int mipmap = 0)
-			: canvas(canvas)
+		RenderTarget(Texture *texture, int slice = 0, int mipmap = 0)
+			: texture(texture)
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
 
 		RenderTarget()
-			: canvas(nullptr)
+			: texture(nullptr)
 			, slice(0)
 			, mipmap(0)
 		{}
 
 		bool operator != (const RenderTarget &other) const
 		{
-			return canvas != other.canvas || slice != other.slice || mipmap != other.mipmap;
+			return texture != other.texture || slice != other.slice || mipmap != other.mipmap;
 		}
 
 		bool operator != (const RenderTargetStrongRef &other) const
 		{
-			return canvas != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+			return texture != other.texture.get() || slice != other.slice || mipmap != other.mipmap;
 		}
 	};
 
 	struct RenderTargetStrongRef
 	{
-		StrongRef<Canvas> canvas;
+		StrongRef<Texture> texture;
 		int slice = 0;
 		int mipmap = 0;
 
-		RenderTargetStrongRef(Canvas *canvas, int slice = 0, int mipmap = 0)
-			: canvas(canvas)
+		RenderTargetStrongRef(Texture *texture, int slice = 0, int mipmap = 0)
+			: texture(texture)
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
 
 		bool operator != (const RenderTargetStrongRef &other) const
 		{
-			return canvas.get() != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+			return texture.get() != other.texture.get() || slice != other.slice || mipmap != other.mipmap;
 		}
 
 		bool operator != (const RenderTarget &other) const
 		{
-			return canvas.get() != other.canvas || slice != other.slice || mipmap != other.mipmap;
+			return texture.get() != other.texture || slice != other.slice || mipmap != other.mipmap;
 		}
 	};
 
@@ -429,18 +426,15 @@ public:
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
-	virtual Image *newImage(const Image::Slices &data, const Image::Settings &settings) = 0;
-	virtual Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
+	virtual Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
-	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter);
-	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter = Texture::defaultFilter);
+	Font *newFont(love::font::Rasterizer *data);
+	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
-
-	virtual Canvas *newCanvas(const Canvas::Settings &settings) = 0;
 
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
 	Shader *newShader(const std::string &vertex, const std::string &pixel);
@@ -544,15 +538,15 @@ public:
 
 	Shader *getShader() const;
 
-	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
-	void setCanvas(const RenderTargets &rts);
-	void setCanvas(const RenderTargetsStrongRef &rts);
-	void setCanvas();
+	void setRenderTarget(RenderTarget rt, uint32 temporaryRTFlags);
+	void setRenderTargets(const RenderTargets &rts);
+	void setRenderTargets(const RenderTargetsStrongRef &rts);
+	void setRenderTarget();
 
-	RenderTargets getCanvas() const;
-	bool isCanvasActive() const;
-	bool isCanvasActive(Canvas *canvas) const;
-	bool isCanvasActive(Canvas *canvas, int slice) const;
+	RenderTargets getRenderTargets() const;
+	bool isRenderTargetActive() const;
+	bool isRenderTargetActive(Texture *texture) const;
+	bool isRenderTargetActive(Texture *texture, int slice) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded
@@ -620,20 +614,14 @@ public:
 	const BlendState &getBlendState() const;
 
 	/**
-	 * Sets the default filter for images, canvases, and fonts.
+	 * Sets the default sampler state for textures, videos, and fonts.
 	 **/
-	void setDefaultFilter(const Texture::Filter &f);
+	void setDefaultSamplerState(const SamplerState &s);
 
 	/**
-	 * Gets the default filter for images, canvases, and fonts.
+	 * Gets the default sampler state for textures, videos, and fonts.
 	 **/
-	const Texture::Filter &getDefaultFilter() const;
-
-	/**
-	 * Default Image mipmap filter mode and sharpness values.
-	 **/
-	void setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness);
-	void getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const;
+	const SamplerState &getDefaultSamplerState() const;
 
 	/**
 	 * Sets the line width.
@@ -785,12 +773,14 @@ public:
 	const Capabilities &getCapabilities() const;
 
 	/**
-	 * Gets whether the specified pixel format is supported by Canvases or
-	 * Images.
+	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
-	virtual bool isCanvasFormatSupported(PixelFormat format, bool readable) const = 0;
-	virtual bool isImageFormatSupported(PixelFormat format, bool sRGB = false) const = 0;
+	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const = 0;
+
+	/**
+	 * Gets whether the specified pixel format is supported.
+	 **/
+	virtual bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.
@@ -925,10 +915,7 @@ protected:
 
 		bool wireframe = false;
 
-		Texture::Filter defaultFilter = Texture::Filter();
-
-		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_LINEAR;
-		float defaultMipmapSharpness = 0.0f;
+		SamplerState defaultSamplerState = SamplerState();
 	};
 
 	struct StreamBufferState
@@ -954,13 +941,13 @@ protected:
 		}
 	};
 
-	struct TemporaryCanvas
+	struct TemporaryTexture
 	{
-		Canvas *canvas;
+		Texture *texture;
 		int framesSinceUse;
 
-		TemporaryCanvas(Canvas *c)
-			: canvas(c)
+		TemporaryTexture(Texture *tex)
+			: texture(tex)
 			, framesSinceUse(0)
 		{}
 	};
@@ -969,14 +956,14 @@ protected:
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
 
-	virtual void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) = 0;
+	virtual void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 
 	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &shaderswitches) const = 0;
 
 	void createQuadIndexBuffer();
 
-	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
+	Texture *getTemporaryTexture(PixelFormat format, int w, int h, int samples);
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
@@ -1009,9 +996,9 @@ protected:
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypeStack;
 
-	std::vector<TemporaryCanvas> temporaryCanvases;
+	std::vector<TemporaryTexture> temporaryTextures;
 
-	int canvasSwitchCount;
+	int renderTargetSwitchCount;
 	int drawCalls;
 	int drawCallsBatched;
 
@@ -1022,7 +1009,7 @@ protected:
 	Deprecations deprecations;
 
 	static const size_t MAX_USER_STACK_DEPTH = 128;
-	static const int MAX_TEMPORARY_CANVAS_UNUSED_FRAMES = 16;
+	static const int MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES = 16;
 
 private:
 

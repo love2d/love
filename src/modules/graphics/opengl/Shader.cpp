@@ -196,7 +196,7 @@ void Shader::mapActiveUniforms()
 
 					glUniform1iv(u.location, u.count, u.ints);
 
-					u.textures = new Texture*[u.count];
+					u.textures = new love::graphics::Texture*[u.count];
 					memset(u.textures, 0, sizeof(Texture *) * u.count);
 				}
 			}
@@ -565,12 +565,12 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalupda
 	}
 }
 
-void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count)
+void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
 {
 	Shader::sendTextures(info, textures, count, false);
 }
 
-void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate)
+void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalUpdate)
 {
 	if (info->baseType != UNIFORM_SAMPLER)
 		return;
@@ -585,10 +585,11 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 	// Bind the textures to the texture units.
 	for (int i = 0; i < count; i++)
 	{
-		Texture *tex = textures[i];
+		love::graphics::Texture *tex = textures[i];
 
 		if (tex != nullptr)
 		{
+			const SamplerState &sampler = tex->getSamplerState();
 			if (!tex->isReadable())
 			{
 				if (internalUpdate)
@@ -596,7 +597,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 				else
 					throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
 			}
-			else if (info->isDepthSampler != tex->getDepthSampleMode().hasValue)
+			else if (info->isDepthSampler != sampler.depthSampleMode.hasValue)
 			{
 				if (internalUpdate)
 					continue;
@@ -671,7 +672,7 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 	return location;
 }
 
-void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture)
+void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
 {
 	const BuiltinUniform builtins[3] = {
 		BUILTIN_TEXTURE_VIDEO_Y,
@@ -679,7 +680,7 @@ void Shader::setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *cr
 		BUILTIN_TEXTURE_VIDEO_CR,
 	};
 
-	Texture *textures[3] = {ytexture, cbtexture, crtexture};
+	love::graphics::Texture *textures[3] = {ytexture, cbtexture, crtexture};
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -734,8 +735,8 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 
 	// The shader does pixcoord.y = gl_FragCoord.y * params.z + params.w.
 	// This lets us flip pixcoord.y when needed, to be consistent (drawing
-	// with no Canvas active makes the pixel coordinates y-flipped.)
-	if (gfx->isCanvasActive())
+	// with no RT active makes the pixel coordinates y-flipped.)
+	if (gfx->isRenderTargetActive())
 	{
 		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
 		data.screenSizeParams.z = 1.0f;

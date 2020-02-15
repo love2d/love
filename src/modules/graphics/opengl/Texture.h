@@ -21,7 +21,7 @@
 #pragma once
 
 // LOVE
-#include "graphics/Image.h"
+#include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 
 // OpenGL
@@ -34,40 +34,47 @@ namespace graphics
 namespace opengl
 {
 
-class Image final : public love::graphics::Image, public Volatile
+class Texture final : public love::graphics::Texture, public Volatile
 {
 public:
 
-	Image(const Slices &data, const Settings &settings);
-	Image(TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
+	Texture(const Settings &settings, const Slices *data);
 
-	virtual ~Image();
+	virtual ~Texture();
 
 	// Implements Volatile.
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
+	void generateMipmaps() override;
+	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
+	void setSamplerState(const SamplerState &s) override;
+
 	ptrdiff_t getHandle() const override;
+	ptrdiff_t getRenderTargetHandle() const override;
+	int getMSAA() const override { return actualSamples; }
 
-	void setFilter(const Texture::Filter &f) override;
-	bool setWrap(const Texture::Wrap &w) override;
-
-	bool setMipmapSharpness(float sharpness) override;
-
-	static bool isFormatSupported(PixelFormat pixelformat, bool sRGB);
+	inline GLuint getFBO() const { return fbo; }
 
 private:
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
-	void generateMipmaps() override;
+	void createTexture();
 
-	void loadDefaultTexture();
-	void loadData();
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
 
-	// OpenGL texture identifier.
+	Slices slices;
+
+	GLuint fbo;
+
 	GLuint texture;
+	GLuint renderbuffer;
 
-}; // Image
+	GLenum framebufferStatus;
+	GLenum textureGLError;
+
+	int actualSamples;
+
+}; // Texture
 
 } // opengl
 } // graphics

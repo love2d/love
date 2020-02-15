@@ -518,8 +518,6 @@ source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
 set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Buffer.cpp
 	src/modules/graphics/Buffer.h
-	src/modules/graphics/Canvas.cpp
-	src/modules/graphics/Canvas.h
 	src/modules/graphics/Deprecations.cpp
 	src/modules/graphics/Deprecations.h
 	src/modules/graphics/Drawable.cpp
@@ -528,8 +526,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Font.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
-	src/modules/graphics/Image.cpp
-	src/modules/graphics/Image.h
 	src/modules/graphics/Mesh.cpp
 	src/modules/graphics/Mesh.h
 	src/modules/graphics/ParticleSystem.cpp
@@ -559,14 +555,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Video.h
 	src/modules/graphics/Volatile.cpp
 	src/modules/graphics/Volatile.h
-	src/modules/graphics/wrap_Canvas.cpp
-	src/modules/graphics/wrap_Canvas.h
 	src/modules/graphics/wrap_Font.cpp
 	src/modules/graphics/wrap_Font.h
 	src/modules/graphics/wrap_Graphics.cpp
 	src/modules/graphics/wrap_Graphics.h
-	src/modules/graphics/wrap_Image.cpp
-	src/modules/graphics/wrap_Image.h
 	src/modules/graphics/wrap_Mesh.cpp
 	src/modules/graphics/wrap_Mesh.h
 	src/modules/graphics/wrap_ParticleSystem.cpp
@@ -588,14 +580,10 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Buffer.cpp
 	src/modules/graphics/opengl/Buffer.h
-	src/modules/graphics/opengl/Canvas.cpp
-	src/modules/graphics/opengl/Canvas.h
 	src/modules/graphics/opengl/FenceSync.cpp
 	src/modules/graphics/opengl/FenceSync.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
-	src/modules/graphics/opengl/Image.cpp
-	src/modules/graphics/opengl/Image.h
 	src/modules/graphics/opengl/OpenGL.cpp
 	src/modules/graphics/opengl/OpenGL.h
 	src/modules/graphics/opengl/Shader.cpp
@@ -604,6 +592,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/ShaderStage.h
 	src/modules/graphics/opengl/StreamBuffer.cpp
 	src/modules/graphics/opengl/StreamBuffer.h
+	src/modules/graphics/opengl/Texture.cpp
+	src/modules/graphics/opengl/Texture.h
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS

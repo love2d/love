@@ -107,9 +107,9 @@ love::graphics::Graphics *createInstance()
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
+	, supportedFormats()
 {
 	gl = OpenGL();
-	Canvas::resetFormatSupport();
 
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 
@@ -146,19 +146,9 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(type, size);
 }
 
-love::graphics::Image *Graphics::newImage(const Image::Slices &data, const Image::Settings &settings)
+love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Image(data, settings);
-}
-
-love::graphics::Image *Graphics::newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings)
-{
-	return new Image(textype, format, width, height, slices, settings);
-}
-
-love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
-{
-	return new Canvas(settings);
+	return new Texture(settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
@@ -183,7 +173,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
-	if (!isCanvasActive())
+	if (!isRenderTargetActive())
 	{
 		// Set the viewport to top-left corner.
 		gl.setViewport({0, 0, pixelwidth, pixelheight});
@@ -250,7 +240,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
 	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
-		|| GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB)
+		|| GLAD_ES_VERSION_3_0)
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
@@ -328,11 +318,11 @@ void Graphics::unSetMode()
 	for (const auto &pair : framebufferObjects)
 		gl.deleteFramebuffer(pair.second);
 
-	for (auto temp : temporaryCanvases)
-		temp.canvas->release();
+	for (auto temp : temporaryTextures)
+		temp.texture->release();
 
 	framebufferObjects.clear();
-	temporaryCanvases.clear();
+	temporaryTextures.clear();
 
 	if (mainVAO != 0)
 	{
@@ -525,24 +515,24 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	const DisplayState &state = states.back();
 
-	OpenGL::TempDebugGroup debuggroup("setCanvas");
+	OpenGL::TempDebugGroup debuggroup("setRenderTargets");
 
 	flushStreamDraws();
 	endPass();
 
-	bool iswindow = rts.getFirstTarget().canvas == nullptr;
+	bool iswindow = rts.getFirstTarget().texture == nullptr;
 	vertex::Winding vertexwinding = state.winding;
 
 	if (iswindow)
 	{
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
 
-		// The projection matrix is flipped compared to rendering to a canvas, due
-		// to OpenGL considering (0,0) bottom-left instead of top-left.
+		// The projection matrix is flipped compared to rendering to a texture,
+		// due to OpenGL considering (0,0) bottom-left instead of top-left.
 		projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
 	}
 	else
@@ -551,7 +541,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 
 		projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
 
-		// Flip front face winding when rendering to a canvas, since our
+		// Flip front face winding when rendering to a texture, since our
 		// projection matrix is flipped.
 		vertexwinding = vertexwinding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
 	}
@@ -565,18 +555,18 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 	if (state.scissor)
 		setScissor(state.scissorRect);
 
-	// Make sure the correct sRGB setting is used when drawing to the canvases.
+	// Make sure the correct sRGB setting is used when drawing to the textures.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 	{
-		if (hasSRGBcanvas != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
-			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBcanvas);
+		if (hasSRGBtexture != gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB))
+			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, hasSRGBtexture);
 	}
 }
 
 void Graphics::endPass()
 {
 	auto &rts = states.back().renderTargets;
-	love::graphics::Canvas *depthstencil = rts.depthStencil.canvas.get();
+	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
 	// Discard the depth/stencil buffer if we're using an internal cached one.
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
@@ -584,15 +574,15 @@ void Graphics::endPass()
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
-	if (rts.colors.size() > 0 && rts.colors[0].canvas->getMSAA() > 1)
+	if (rts.colors.size() > 0 && rts.colors[0].texture->getMSAA() > 1)
 	{
 		int mip = rts.colors[0].mipmap;
-		int w = rts.colors[0].canvas->getPixelWidth(mip);
-		int h = rts.colors[0].canvas->getPixelHeight(mip);
+		int w = rts.colors[0].texture->getPixelWidth(mip);
+		int h = rts.colors[0].texture->getPixelHeight(mip);
 
 		for (int i = 0; i < (int) rts.colors.size(); i++)
 		{
-			Canvas *c = (Canvas *) rts.colors[i].canvas.get();
+			Texture *c = (Texture *) rts.colors[i].texture.get();
 
 			if (!c->isReadable())
 				continue;
@@ -610,7 +600,7 @@ void Graphics::endPass()
 
 	if (depthstencil != nullptr && depthstencil->getMSAA() > 1 && depthstencil->isReadable())
 	{
-		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, ((Canvas *) depthstencil)->getFBO());
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, ((Texture *) depthstencil)->getFBO());
 
 		if (GLAD_APPLE_framebuffer_multisample)
 			glResolveMultisampleFramebufferAPPLE();
@@ -635,12 +625,12 @@ void Graphics::endPass()
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.canvas->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
-			rt.canvas->generateMipmaps();
+		if (rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
 	}
 
 	int dsmipmap = rts.depthStencil.mipmap;
-	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
+	if (depthstencil != nullptr && depthstencil->getMipmapsMode() == Texture::MIPMAPS_AUTO && dsmipmap == 0)
 		depthstencil->generateMipmaps();
 }
 
@@ -695,10 +685,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	int ncolorcanvases = (int) states.back().renderTargets.colors.size();
+	int ncolorRTs = (int) states.back().renderTargets.colors.size();
 	int ncolors = (int) colors.size();
 
-	if (ncolors <= 1 && ncolorcanvases <= 1)
+	if (ncolors <= 1 && ncolorRTs <= 1)
 	{
 		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
 		return;
@@ -707,7 +697,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	flushStreamDraws();
 
 	bool drawbuffersmodified = false;
-	ncolors = std::min(ncolors, ncolorcanvases);
+	ncolors = std::min(ncolors, ncolorRTs);
 
 	for (int i = 0; i < ncolors; i++)
 	{
@@ -738,10 +728,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	{
 		GLenum bufs[MAX_COLOR_RENDER_TARGETS];
 
-		for (int i = 0; i < ncolorcanvases; i++)
+		for (int i = 0; i < ncolorRTs; i++)
 			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
 
-		glDrawBuffers(ncolorcanvases, bufs);
+		glDrawBuffers(ncolorRTs, bufs);
 	}
 
 	GLbitfield flags = 0;
@@ -799,7 +789,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (!isCanvasActive() && gl.getDefaultFBO() == 0)
+	if (!isRenderTargetActive() && gl.getDefaultFBO() == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
@@ -834,25 +824,28 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 		glDiscardFramebufferEXT(gltarget, (GLint) attachments.size(), &attachments[0]);
 }
 
-void Graphics::cleanupCanvas(Canvas *canvas)
+void Graphics::cleanupRenderTexture(love::graphics::Texture *texture)
 {
+	if (!texture->isRenderTarget())
+		return;
+
 	for (auto it = framebufferObjects.begin(); it != framebufferObjects.end(); /**/)
 	{
-		bool hascanvas = false;
+		bool hastexture = false;
 		const auto &rts = it->first;
 
 		for (const RenderTarget &rt : rts.colors)
 		{
-			if (rt.canvas == canvas)
+			if (rt.texture == texture)
 			{
-				hascanvas = true;
+				hastexture = true;
 				break;
 			}
 		}
 
-		hascanvas = hascanvas || rts.depthStencil.canvas == canvas;
+		hastexture = hastexture || rts.depthStencil.texture == texture;
 
-		if (hascanvas)
+		if (hastexture)
 		{
 			if (isCreated())
 				gl.deleteFramebuffer(it->second);
@@ -873,8 +866,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 	}
 	else
 	{
-		int msaa = targets.getFirstTarget().canvas->getMSAA();
-		bool hasDS = targets.depthStencil.canvas != nullptr;
+		int msaa = targets.getFirstTarget().texture->getMSAA();
+		bool hasDS = targets.depthStencil.texture != nullptr;
 
 		glGenFramebuffers(1, &fbo);
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
@@ -882,11 +875,11 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		int ncolortargets = 0;
 		GLenum drawbuffers[MAX_COLOR_RENDER_TARGETS];
 
-		auto attachCanvas = [&](const RenderTarget &rt)
+		auto attachRT = [&](const RenderTarget &rt)
 		{
-			bool renderbuffer = msaa > 1 || !rt.canvas->isReadable();
+			bool renderbuffer = msaa > 1 || !rt.texture->isReadable();
 			bool srgb = false;
-			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.canvas->getPixelFormat(), renderbuffer, srgb);
+			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer, srgb);
 
 			if (fmt.framebufferAttachments[0] == GL_COLOR_ATTACHMENT0)
 			{
@@ -895,7 +888,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 				ncolortargets++;
 			}
 
-			GLuint handle = (GLuint) rt.canvas->getRenderTargetHandle();
+			GLuint handle = (GLuint) rt.texture->getRenderTargetHandle();
 
 			for (GLenum attachment : fmt.framebufferAttachments)
 			{
@@ -905,7 +898,7 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, handle);
 				else
 				{
-					TextureType textype = rt.canvas->getTextureType();
+					TextureType textype = rt.texture->getTextureType();
 
 					int layer = textype == TEXTURE_CUBE ? 0 : rt.slice;
 					int face = textype == TEXTURE_CUBE ? rt.slice : 0;
@@ -917,10 +910,10 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 		};
 
 		for (const auto &rt : targets.colors)
-			attachCanvas(rt);
+			attachRT(rt);
 
 		if (hasDS)
-			attachCanvas(targets.depthStencil);
+			attachRT(targets.depthStencil);
 
 		if (ncolortargets > 1)
 			glDrawBuffers(ncolortargets, drawbuffers);
@@ -953,8 +946,8 @@ void Graphics::present(void *screenshotCallbackData)
 	if (!isActive())
 		return;
 
-	if (isCanvasActive())
-		throw love::Exception("present cannot be called while a Canvas is active.");
+	if (isRenderTargetActive())
+		throw love::Exception("present cannot be called while a render target is active.");
 
 	deprecations.draw(this);
 
@@ -1072,20 +1065,20 @@ void Graphics::present(void *screenshotCallbackData)
 	// Reset the per-frame stat counts.
 	drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
-	canvasSwitchCount = 0;
+	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
-	// This assumes temporary canvases will only be used within a render pass.
-	for (int i = (int) temporaryCanvases.size() - 1; i >= 0; i--)
+	// This assumes temporary textures will only be used within a render pass.
+	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
 	{
-		if (temporaryCanvases[i].framesSinceUse >= MAX_TEMPORARY_CANVAS_UNUSED_FRAMES)
+		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
 		{
-			temporaryCanvases[i].canvas->release();
-			temporaryCanvases[i] = temporaryCanvases.back();
-			temporaryCanvases.pop_back();
+			temporaryTextures[i].texture->release();
+			temporaryTextures[i] = temporaryTextures.back();
+			temporaryTextures.pop_back();
 		}
 		else
-			temporaryCanvases[i].framesSinceUse++;
+			temporaryTextures[i].framesSinceUse++;
 	}
 }
 
@@ -1107,7 +1100,7 @@ void Graphics::setScissor(const Rect &rect)
 	glrect.h = (int) (rect.h * dpiscale);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(glrect, isCanvasActive());
+	gl.setScissor(glrect, isRenderTargetActive());
 
 	state.scissor = true;
 	state.scissorRect = rect;
@@ -1127,12 +1120,12 @@ void Graphics::setScissor()
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
 	const auto &rts = states.back().renderTargets;
-	love::graphics::Canvas *dscanvas = rts.depthStencil.canvas.get();
+	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-	if (!isCanvasActive() && !windowHasStencil)
+	if (!isRenderTargetActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-	else if (isCanvasActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dscanvas == nullptr || !isPixelFormatStencil(dscanvas->getPixelFormat())))
-		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+		throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
 
 	flushStreamDraws();
 
@@ -1260,7 +1253,7 @@ void Graphics::setFrontFaceWinding(vertex::Winding winding)
 
 	state.winding = winding;
 
-	if (isCanvasActive())
+	if (isRenderTargetActive())
 		winding = winding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
 
 	glFrontFace(winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
@@ -1292,7 +1285,7 @@ void Graphics::setBlendState(const BlendState &blend)
 	if (blend.operationRGB == BLENDOP_MAX || blend.operationA == BLENDOP_MAX
 		|| blend.operationRGB == BLENDOP_MIN || blend.operationA == BLENDOP_MIN)
 	{
-		if (!capabilities.features[FEATURE_BLENDMINMAX])
+		if (!capabilities.features[FEATURE_BLEND_MINMAX])
 			throw love::Exception("The 'min' and 'max' blend operations are not supported on this system.");
 	}
 
@@ -1383,10 +1376,10 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::initCapabilities()
 {
-	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = Canvas::isMultiFormatMultiCanvasSupported();
+	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = gl.isMultiFormatMRTSupported();
 	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroOneTextureWrapSupported();
-	capabilities.features[FEATURE_BLENDMINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
-	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLENDMINMAX];
+	capabilities.features[FEATURE_BLEND_MINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
+	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLEND_MINMAX];
 	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = gl.isPixelShaderHighpSupported();
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_standard_derivatives;
@@ -1400,8 +1393,8 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = gl.getMaxTextureLayers();
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = gl.getMax3DTextureSize();
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = gl.getMaxCubeTextureSize();
-	capabilities.limits[LIMIT_MULTI_CANVAS] = gl.getMaxRenderTargets();
-	capabilities.limits[LIMIT_CANVAS_MSAA] = gl.getMaxRenderbufferSamples();
+	capabilities.limits[LIMIT_RENDER_TARGETS] = gl.getMaxRenderTargets();
+	capabilities.limits[LIMIT_TEXTURE_MSAA] = gl.getMaxSamples();
 	capabilities.limits[LIMIT_ANISOTROPY] = gl.getMaxAnisotropy();
 	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
@@ -1409,19 +1402,124 @@ void Graphics::initCapabilities()
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
 }
 
-bool Graphics::isCanvasFormatSupported(PixelFormat format) const
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const
 {
-	return Canvas::isFormatSupported(format);
+	switch (format)
+	{
+	case PIXELFORMAT_NORMAL:
+		if (isGammaCorrect())
+			return PIXELFORMAT_sRGBA8_UNORM;
+		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, rendertarget, readable, sRGB))
+			// 32-bit render targets don't have guaranteed support on GLES2.
+			return PIXELFORMAT_RGBA4_UNORM;
+		else
+			return PIXELFORMAT_RGBA8_UNORM;
+	case PIXELFORMAT_HDR:
+		return PIXELFORMAT_RGBA16_FLOAT;
+	default:
+		return format;
+	}
 }
 
-bool Graphics::isCanvasFormatSupported(PixelFormat format, bool readable) const
+bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
 {
-	return Canvas::isFormatSupported(format, readable);
-}
+	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
+	{
+		format = PIXELFORMAT_sRGBA8_UNORM;
+		sRGB = false;
+	}
 
-bool Graphics::isImageFormatSupported(PixelFormat format, bool sRGB) const
-{
-	return Image::isFormatSupported(format, sRGB);
+	format = getSizedFormat(format, rendertarget, readable, sRGB);
+
+	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
+
+	if (supported.hasValue)
+		return supported.value;
+
+	if (!OpenGL::isPixelFormatSupported(format, rendertarget, readable, sRGB))
+	{
+		supported.set(false);
+		return supported.value;
+	}
+
+	if (!rendertarget)
+	{
+		supported.set(true);
+		return supported.value;
+	}
+
+	// Even though we might have the necessary OpenGL version or extension,
+	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
+	// a texture to a FBO whose format the driver doesn't like. So we should
+	// test with an actual FBO.
+	GLuint texture = 0;
+	GLuint renderbuffer = 0;
+
+	// Avoid the test for depth/stencil formats - not every GL version
+	// guarantees support for depth/stencil-only render targets (which we would
+	// need for the test below to work), and we already do some finagling in
+	// convertPixelFormat to try to use the best-supported internal
+	// depth/stencil format for a particular driver.
+	if (isPixelFormatDepthStencil(format))
+	{
+		supported.set(true);
+		return true;
+	}
+
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, sRGB);
+
+	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+
+	GLuint fbo = 0;
+	glGenFramebuffers(1, &fbo);
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
+
+	// Make sure at least something is bound to a color attachment. I believe
+	// this is required on ES2 but I'm not positive.
+	if (isPixelFormatDepthStencil(format))
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
+
+	if (readable)
+	{
+		glGenTextures(1, &texture);
+		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
+
+		SamplerState s;
+		s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+		gl.setSamplerState(TEXTURE_2D, s);
+
+		gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
+	}
+	else
+	{
+		glGenRenderbuffers(1, &renderbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, 1, 1);
+	}
+
+	for (GLenum attachment : fmt.framebufferAttachments)
+	{
+		if (attachment == GL_NONE)
+			continue;
+
+		if (readable)
+			gl.framebufferTexture(attachment, TEXTURE_2D, texture, 0, 0, 0);
+		else
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer);
+	}
+
+	supported.set(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+	gl.deleteFramebuffer(fbo);
+
+	if (texture != 0)
+		gl.deleteTexture(texture);
+
+	if (renderbuffer != 0)
+		glDeleteRenderbuffers(1, &renderbuffer);
+
+	return supported.value;
 }
 
 Shader::Language Graphics::getShaderLanguageTarget() const

@@ -61,10 +61,10 @@ public:
 	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
-	void sendTextures(const UniformInfo *info, Texture **textures, int count) override;
+	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
 	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override;
-	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) override;
+	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 	void updatePointSize(float size);
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
@@ -82,7 +82,7 @@ private:
 	void mapActiveUniforms();
 
 	void updateUniform(const UniformInfo *info, int count, bool internalupdate);
-	void sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalupdate);
+	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalupdate);
 
 	int getUniformTypeComponents(GLenum type) const;
 	MatrixSize getMatrixSize(GLenum type) const;
@@ -110,7 +110,7 @@ private:
 	// Uniform location buffer map
 	std::map<std::string, UniformInfo> uniforms;
 
-	// Texture unit pool for setting images
+	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;

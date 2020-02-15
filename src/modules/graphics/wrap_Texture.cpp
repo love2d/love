@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Texture.h"
+#include "Graphics.h"
 
 namespace love
 {
@@ -129,114 +130,135 @@ int w_Texture_getDPIScale(lua_State *L)
 	return 1;
 }
 
+int w_Texture_isFormatLinear(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_pushboolean(L, t->isFormatLinear());
+	return 1;
+}
+
+int w_Texture_isCompressed(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_pushboolean(L, t->isCompressed());
+	return 1;
+}
+
+int w_Texture_getMSAA(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	lua_pushinteger(L, t->getMSAA());
+	return 1;
+}
+
 int w_Texture_setFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	Texture::Filter f = t->getFilter();
+	SamplerState s = t->getSamplerState();
 
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
-	if (!Texture::getConstant(minstr, f.min))
-		return luax_enumerror(L, "filter mode", Texture::getConstants(f.min), minstr);
-	if (!Texture::getConstant(magstr, f.mag))
-		return luax_enumerror(L, "filter mode", Texture::getConstants(f.mag), magstr);
+	if (!SamplerState::getConstant(minstr, s.minFilter))
+		return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.minFilter), minstr);
+	if (!SamplerState::getConstant(magstr, s.magFilter))
+		return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.magFilter), magstr);
 
-	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
+	s.maxAnisotropy = std::min(std::max(1, (int) luaL_optnumber(L, 4, 1.0)), LOVE_UINT8_MAX);
 
-	luax_catchexcept(L, [&](){ t->setFilter(f); });
+	luax_catchexcept(L, [&](){ t->setSamplerState(s); });
 	return 0;
 }
 
 int w_Texture_getFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	const Texture::Filter f = t->getFilter();
+	const SamplerState &s = t->getSamplerState();
 
 	const char *minstr = nullptr;
 	const char *magstr = nullptr;
 
-	if (!Texture::getConstant(f.min, minstr))
+	if (!SamplerState::getConstant(s.minFilter, minstr))
 		return luaL_error(L, "Unknown filter mode.");
-	if (!Texture::getConstant(f.mag, magstr))
+	if (!SamplerState::getConstant(s.magFilter, magstr))
 		return luaL_error(L, "Unknown filter mode.");
 
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	lua_pushnumber(L, f.anisotropy);
+	lua_pushnumber(L, s.maxAnisotropy);
 	return 3;
 }
 
 int w_Texture_setMipmapFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	Texture::Filter f = t->getFilter();
+	SamplerState s = t->getSamplerState();
 
+	// Mipmapping is disabled if no argument is given.
 	if (lua_isnoneornil(L, 2))
-		f.mipmap = Texture::FILTER_NONE; // mipmapping is disabled if no argument is given
+		s.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 	else
 	{
 		const char *mipmapstr = luaL_checkstring(L, 2);
-		if (!Texture::getConstant(mipmapstr, f.mipmap))
-			return luax_enumerror(L, "filter mode", Texture::getConstants(f.mipmap), mipmapstr);
+		if (!SamplerState::getConstant(mipmapstr, s.mipmapFilter))
+			return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.mipmapFilter), mipmapstr);
 	}
 
-	luax_catchexcept(L, [&](){ t->setFilter(f); });
-	t->setMipmapSharpness((float) luaL_optnumber(L, 3, 0.0));
+	s.lodBias = -((float) luaL_optnumber(L, 3, 0.0));
 
+	luax_catchexcept(L, [&](){ t->setSamplerState(s); });
 	return 0;
 }
 
 int w_Texture_getMipmapFilter(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-
-	const Texture::Filter &f = t->getFilter();
+	const SamplerState &s = t->getSamplerState();
 
 	const char *mipmapstr;
-	if (Texture::getConstant(f.mipmap, mipmapstr))
+	if (SamplerState::getConstant(s.mipmapFilter, mipmapstr))
 		lua_pushstring(L, mipmapstr);
 	else
 		lua_pushnil(L); // only return a mipmap filter if mipmapping is enabled
 
-	lua_pushnumber(L, t->getMipmapSharpness());
+	lua_pushnumber(L, -s.lodBias);
 	return 2;
 }
 
 int w_Texture_setWrap(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	Texture::Wrap w;
+	SamplerState s = t->getSamplerState();
 
 	const char *sstr = luaL_checkstring(L, 2);
 	const char *tstr = luaL_optstring(L, 3, sstr);
 	const char *rstr = luaL_optstring(L, 4, sstr);
 
-	if (!Texture::getConstant(sstr, w.s))
-		return luax_enumerror(L, "wrap mode", Texture::getConstants(w.s), sstr);
-	if (!Texture::getConstant(tstr, w.t))
-		return luax_enumerror(L, "wrap mode", Texture::getConstants(w.t), tstr);
-	if (!Texture::getConstant(rstr, w.r))
-		return luax_enumerror(L, "wrap mode", Texture::getConstants(w.r), rstr);
+	if (!SamplerState::getConstant(sstr, s.wrapU))
+		return luax_enumerror(L, "wrap mode", SamplerState::getConstants(s.wrapU), sstr);
+	if (!SamplerState::getConstant(tstr, s.wrapV))
+		return luax_enumerror(L, "wrap mode", SamplerState::getConstants(s.wrapV), tstr);
+	if (!SamplerState::getConstant(rstr, s.wrapW))
+		return luax_enumerror(L, "wrap mode", SamplerState::getConstants(s.wrapW), rstr);
 
-	luax_pushboolean(L, t->setWrap(w));
+	luax_catchexcept(L, [&](){ t->setSamplerState(s); });
 	return 1;
 }
 
 int w_Texture_getWrap(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	const Texture::Wrap w = t->getWrap();
+	const SamplerState &s = t->getSamplerState();
 
 	const char *sstr = nullptr;
 	const char *tstr = nullptr;
 	const char *rstr = nullptr;
 
-	if (!Texture::getConstant(w.s, sstr))
+	if (!SamplerState::getConstant(s.wrapU, sstr))
 		return luaL_error(L, "Unknown wrap mode.");
-	if (!Texture::getConstant(w.t, tstr))
+	if (!SamplerState::getConstant(s.wrapV, tstr))
 		return luaL_error(L, "Unknown wrap mode.");
-	if (!Texture::getConstant(w.r, rstr))
+	if (!SamplerState::getConstant(s.wrapW, rstr))
 		return luaL_error(L, "Unknown wrap mode.");
 
 	lua_pushstring(L, sstr);
@@ -267,30 +289,31 @@ int w_Texture_isReadable(lua_State *L)
 int w_Texture_setDepthSampleMode(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
+	SamplerState s = t->getSamplerState();
 
-	Optional<CompareMode> mode;
+	s.depthSampleMode.hasValue = false;
 	if (!lua_isnoneornil(L, 2))
 	{
 		const char *str = luaL_checkstring(L, 2);
 
-		mode.hasValue = true;
-		if (!getConstant(str, mode.value))
-			return luax_enumerror(L, "compare mode", getConstants(mode.value), str);
+		s.depthSampleMode.hasValue = true;
+		if (!getConstant(str, s.depthSampleMode.value))
+			return luax_enumerror(L, "compare mode", getConstants(s.depthSampleMode.value), str);
 	}
 
-	luax_catchexcept(L, [&]() { t->setDepthSampleMode(mode); });
+	luax_catchexcept(L, [&](){ t->setSamplerState(s); });
 	return 0;
 }
 
 int w_Texture_getDepthSampleMode(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	Optional<CompareMode> mode = t->getDepthSampleMode();
+	const SamplerState &s = t->getSamplerState();
 
-	if (mode.hasValue)
+	if (s.depthSampleMode.hasValue)
 	{
 		const char *str = nullptr;
-		if (!getConstant(mode.value, str))
+		if (!getConstant(s.depthSampleMode.value, str))
 			return luaL_error(L, "Unknown compare mode.");
 		lua_pushstring(L, str);
 	}
@@ -298,6 +321,139 @@ int w_Texture_getDepthSampleMode(lua_State *L)
 		lua_pushnil(L);
 
 	return 1;
+}
+
+int w_Texture_getMipmapMode(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	const char *str;
+	if (!Texture::getConstant(t->getMipmapsMode(), str))
+		return luax_enumerror(L, "mipmap mode", Texture::getConstants(Texture::MIPMAPS_MAX_ENUM), str);
+	lua_pushstring(L, str);
+	return 1;
+}
+
+int w_Texture_generateMipmaps(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_catchexcept(L, [&]() { t->generateMipmaps(); });
+	return 0;
+}
+
+int w_Texture_replacePixels(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	love::image::ImageData *id = luax_checktype<love::image::ImageData>(L, 2);
+
+	int slice = 0;
+	int mipmap = 0;
+	int x = 0;
+	int y = 0;
+	bool reloadmipmaps = t->getMipmapsMode() == Texture::MIPMAPS_AUTO;
+
+	if (t->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 3) - 1;
+
+	mipmap = (int) luaL_optinteger(L, 4, 1) - 1;
+
+	if (!lua_isnoneornil(L, 5))
+	{
+		x = (int) luaL_checkinteger(L, 5);
+		y = (int) luaL_checkinteger(L, 6);
+
+		if (reloadmipmaps)
+			reloadmipmaps = luax_optboolean(L, 7, reloadmipmaps);
+	}
+
+	luax_catchexcept(L, [&](){ t->replacePixels(id, slice, mipmap, x, y, reloadmipmaps); });
+	return 0;
+}
+
+int w_Texture_newImageData(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
+
+	int slice = 0;
+	int mipmap = 0;
+	Rect rect = {0, 0, t->getPixelWidth(), t->getPixelHeight()};
+
+	if (t->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 2) - 1;
+
+	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+
+	if (!lua_isnoneornil(L, 4))
+	{
+		rect.x = (int) luaL_checkinteger(L, 4);
+		rect.y = (int) luaL_checkinteger(L, 5);
+		rect.w = (int) luaL_checkinteger(L, 6);
+		rect.h = (int) luaL_checkinteger(L, 7);
+	}
+
+	love::image::ImageData *img = nullptr;
+	luax_catchexcept(L, [&](){ img = t->newImageData(image, slice, mipmap, rect); });
+
+	luax_pushtype(L, img);
+	img->release();
+	return 1;
+}
+
+int w_Texture_renderTo(lua_State *L)
+{
+	Graphics::RenderTarget rt(luax_checktexture(L, 1));
+
+	int startidx = 2;
+
+	if (rt.texture->getTextureType() != TEXTURE_2D)
+	{
+		rt.slice = (int) luaL_checkinteger(L, 2) - 1;
+		startidx++;
+	}
+
+	luaL_checktype(L, startidx, LUA_TFUNCTION);
+
+	auto graphics = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+	if (graphics)
+	{
+		// Save the current render targets so we can restore them when we're done.
+		Graphics::RenderTargets oldtargets = graphics->getRenderTargets();
+
+		for (auto c : oldtargets.colors)
+			c.texture->retain();
+
+		if (oldtargets.depthStencil.texture != nullptr)
+			oldtargets.depthStencil.texture->retain();
+
+		luax_catchexcept(L,
+			[&]() { graphics->setRenderTarget(rt, 0); },
+			[&](bool err)
+			{
+				if (err)
+				{
+					for (auto c : oldtargets.colors)
+						c.texture->release();
+				}
+			}
+		);
+
+		lua_settop(L, 2); // make sure the function is on top of the stack
+		int status = lua_pcall(L, 0, 0, 0);
+
+		graphics->setRenderTargets(oldtargets);
+
+		for (auto c : oldtargets.colors)
+			c.texture->release();
+
+		if (oldtargets.depthStencil.texture != nullptr)
+			oldtargets.depthStencil.texture->release();
+
+		if (status != 0)
+			return lua_error(L);
+	}
+
+	return 0;
 }
 
 const luaL_Reg w_Texture_functions[] =
@@ -313,6 +469,9 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getPixelHeight", w_Texture_getPixelHeight },
 	{ "getPixelDimensions", w_Texture_getPixelDimensions },
 	{ "getDPIScale", w_Texture_getDPIScale },
+	{ "isFormatLinear", w_Texture_isFormatLinear },
+	{ "isCompressed", w_Texture_isCompressed },
+	{ "getMSAA", w_Texture_getMSAA },
 	{ "setFilter", w_Texture_setFilter },
 	{ "getFilter", w_Texture_getFilter },
 	{ "setMipmapFilter", w_Texture_setMipmapFilter },
@@ -321,8 +480,13 @@ const luaL_Reg w_Texture_functions[] =
 	{ "getWrap", w_Texture_getWrap },
 	{ "getFormat", w_Texture_getFormat },
 	{ "isReadable", w_Texture_isReadable },
+	{ "getMipmapMode", w_Texture_getMipmapMode },
 	{ "getDepthSampleMode", w_Texture_getDepthSampleMode },
 	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },
+	{ "generateMipmaps", w_Texture_generateMipmaps },
+	{ "replacePixels", w_Texture_replacePixels },
+	{ "newImageData", w_Texture_newImageData },
+	{ "renderTo", w_Texture_renderTo },
 	{ 0, 0 }
 };
 
