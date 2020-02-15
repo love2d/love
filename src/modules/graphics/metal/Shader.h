@@ -45,10 +45,10 @@ public:
 	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
-	void sendTextures(const UniformInfo *info, Texture **textures, int count) override;
+	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
 	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override;
-	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) override;
+	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 private:
 

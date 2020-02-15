@@ -781,8 +781,6 @@
 		FA18CED723DBC6E000263725 /* Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CECD23DBC6E000263725 /* Shader.h */; };
 		FA18CED823DBC6E000263725 /* StreamBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CECE23DBC6E000263725 /* StreamBuffer.mm */; };
 		FA18CED923DBC6E000263725 /* StreamBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CECE23DBC6E000263725 /* StreamBuffer.mm */; };
-		FA18CEDA23DBC6E000263725 /* Canvas.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CECF23DBC6E000263725 /* Canvas.mm */; };
-		FA18CEDB23DBC6E000263725 /* Canvas.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CECF23DBC6E000263725 /* Canvas.mm */; };
 		FA18CEDC23DBC6E000263725 /* Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CED023DBC6E000263725 /* Metal.mm */; };
 		FA18CEDD23DBC6E000263725 /* Metal.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CED023DBC6E000263725 /* Metal.mm */; };
 		FA18CEDE23DBC6E000263725 /* Shader.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CED123DBC6E000263725 /* Shader.mm */; };
@@ -792,13 +790,11 @@
 		FA18CEE223DBC6E000263725 /* Graphics.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CED323DBC6E000263725 /* Graphics.mm */; };
 		FA18CEE323DBC6E000263725 /* Metal.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CED423DBC6E000263725 /* Metal.h */; };
 		FA18CEE423DBC6E000263725 /* Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CED523DBC6E000263725 /* Graphics.h */; };
-		FA18CEE523DBC6E000263725 /* Canvas.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CED623DBC6E000263725 /* Canvas.h */; };
 		FA18CEE723DBC6F700263725 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA18CEE623DBC6F700263725 /* Metal.framework */; };
 		FA18CEE923DBC8D400263725 /* Buffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEE823DBC8D400263725 /* Buffer.mm */; };
 		FA18CEEA23DBC8D400263725 /* Buffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEE823DBC8D400263725 /* Buffer.mm */; };
-		FA18CEEE23DC9B3E00263725 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CEEC23DC9B3E00263725 /* Image.h */; };
-		FA18CEEF23DC9B3E00263725 /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEED23DC9B3E00263725 /* Image.mm */; };
-		FA18CEF023DC9B3E00263725 /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEED23DC9B3E00263725 /* Image.mm */; };
+		FA18CEEF23DC9B3E00263725 /* Texture.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEED23DC9B3E00263725 /* Texture.mm */; };
+		FA18CEF023DC9B3E00263725 /* Texture.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEED23DC9B3E00263725 /* Texture.mm */; };
 		FA18CF1623DCF67900263725 /* spirv_parser.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CEF223DCF67800263725 /* spirv_parser.hpp */; };
 		FA18CF1723DCF67900263725 /* spirv_glsl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEF323DCF67800263725 /* spirv_glsl.cpp */; };
 		FA18CF1823DCF67900263725 /* spirv_glsl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CEF323DCF67800263725 /* spirv_glsl.cpp */; };
@@ -1855,19 +1851,17 @@
 		FA15DFAB1F9B8C850042AB22 /* StringMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringMap.cpp; sourceTree = "<group>"; };
 		FA18CECD23DBC6E000263725 /* Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shader.h; sourceTree = "<group>"; };
 		FA18CECE23DBC6E000263725 /* StreamBuffer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = StreamBuffer.mm; sourceTree = "<group>"; };
-		FA18CECF23DBC6E000263725 /* Canvas.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Canvas.mm; sourceTree = "<group>"; };
 		FA18CED023DBC6E000263725 /* Metal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Metal.mm; sourceTree = "<group>"; };
 		FA18CED123DBC6E000263725 /* Shader.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Shader.mm; sourceTree = "<group>"; };
 		FA18CED223DBC6E000263725 /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA18CED323DBC6E000263725 /* Graphics.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Graphics.mm; sourceTree = "<group>"; };
 		FA18CED423DBC6E000263725 /* Metal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Metal.h; sourceTree = "<group>"; };
 		FA18CED523DBC6E000263725 /* Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Graphics.h; sourceTree = "<group>"; };
-		FA18CED623DBC6E000263725 /* Canvas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Canvas.h; sourceTree = "<group>"; };
 		FA18CEE623DBC6F700263725 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		FA18CEE823DBC8D400263725 /* Buffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Buffer.mm; sourceTree = "<group>"; };
 		FA18CEEB23DBC8EB00263725 /* Buffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
-		FA18CEEC23DC9B3E00263725 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
-		FA18CEED23DC9B3E00263725 /* Image.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Image.mm; sourceTree = "<group>"; };
+		FA18CEEC23DC9B3E00263725 /* Texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
+		FA18CEED23DC9B3E00263725 /* Texture.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Texture.mm; sourceTree = "<group>"; };
 		FA18CEF223DCF67800263725 /* spirv_parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_parser.hpp; sourceTree = "<group>"; };
 		FA18CEF323DCF67800263725 /* spirv_glsl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_glsl.cpp; sourceTree = "<group>"; };
 		FA18CEF423DCF67800263725 /* spirv_cross_error_handling.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_cross_error_handling.hpp; sourceTree = "<group>"; };
@@ -3473,12 +3467,8 @@
 			children = (
 				FA18CEEB23DBC8EB00263725 /* Buffer.h */,
 				FA18CEE823DBC8D400263725 /* Buffer.mm */,
-				FA18CED623DBC6E000263725 /* Canvas.h */,
-				FA18CECF23DBC6E000263725 /* Canvas.mm */,
 				FA18CED523DBC6E000263725 /* Graphics.h */,
 				FA18CED323DBC6E000263725 /* Graphics.mm */,
-				FA18CEEC23DC9B3E00263725 /* Image.h */,
-				FA18CEED23DC9B3E00263725 /* Image.mm */,
 				FA18CED423DBC6E000263725 /* Metal.h */,
 				FA18CED023DBC6E000263725 /* Metal.mm */,
 				FA18CECD23DBC6E000263725 /* Shader.h */,
@@ -3487,6 +3477,8 @@
 				FA18CF4423DD1A8000263725 /* ShaderStage.mm */,
 				FA18CED223DBC6E000263725 /* StreamBuffer.h */,
 				FA18CECE23DBC6E000263725 /* StreamBuffer.mm */,
+				FA18CEEC23DC9B3E00263725 /* Texture.h */,
+				FA18CEED23DC9B3E00263725 /* Texture.mm */,
 			);
 			path = metal;
 			sourceTree = "<group>";
@@ -4141,7 +4133,6 @@
 				FA0B7E2F1A95902C000E1D17 /* RopeJoint.h in Headers */,
 				FA0B7D141A95902C000E1D17 /* Font.h in Headers */,
 				FA0B7E591A95902C000E1D17 /* wrap_Joint.h in Headers */,
-				FA18CEE523DBC6E000263725 /* Canvas.h in Headers */,
 				FA0B7A631A958EA3000E1D17 /* b2ContactManager.h in Headers */,
 				FA0B7E771A95902C000E1D17 /* wrap_WeldJoint.h in Headers */,
 				FA0B7A911A958EA3000E1D17 /* b2FrictionJoint.h in Headers */,
@@ -4600,7 +4591,6 @@
 				FA0B7A3F1A958EA3000E1D17 /* b2ChainShape.cpp in Sources */,
 				FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */,
 				FA0B7E521A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */,
-				FA18CEDB23DBC6E000263725 /* Canvas.mm in Sources */,
 				FADF54351E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */,
 				FA4F2BB51DE1E4C300CA37D7 /* wrap_RecordingDevice.cpp in Sources */,
 				FA0B7A311A958EA3000E1D17 /* b2CollidePolygon.cpp in Sources */,
@@ -4700,7 +4690,7 @@
 				FA0B7CD41A95902C000E1D17 /* Source.cpp in Sources */,
 				FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */,
 				FAE64A812071363100BC7981 /* physfs_archiver_dir.c in Sources */,
-				FA18CEF023DC9B3E00263725 /* Image.mm in Sources */,
+				FA18CEF023DC9B3E00263725 /* Texture.mm in Sources */,
 				FA0B7CD11A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA4F2B7B1DE0181B00CA37D7 /* xxhash.c in Sources */,
 				FA0B7D131A95902C000E1D17 /* Font.cpp in Sources */,
@@ -4984,7 +4974,6 @@
 				FA0B7E0F1A95902C000E1D17 /* FrictionJoint.cpp in Sources */,
 				FA620A351AA2F8DB005DB4C2 /* wrap_Texture.cpp in Sources */,
 				FAF140771E20934C00F898D2 /* iomapper.cpp in Sources */,
-				FA18CEDA23DBC6E000263725 /* Canvas.mm in Sources */,
 				FA0B7D091A95902C000E1D17 /* wrap_FileData.cpp in Sources */,
 				FA18CEDC23DBC6E000263725 /* Metal.mm in Sources */,
 				FA0B7B341A958EA3000E1D17 /* wuff_convert.c in Sources */,
@@ -5310,7 +5299,7 @@
 				FA0B7D281A95902C000E1D17 /* wrap_GlyphData.cpp in Sources */,
 				FA0B7DE21A95902C000E1D17 /* wrap_RandomGenerator.cpp in Sources */,
 				FAF6C9F223C2DE2900D7B5BC /* SPVRemapper.cpp in Sources */,
-				FA18CEEF23DC9B3E00263725 /* Image.mm in Sources */,
+				FA18CEEF23DC9B3E00263725 /* Texture.mm in Sources */,
 				FACA02F61F5E396B0084B28F /* wrap_DataModule.cpp in Sources */,
 				FA0B79401A958E3B000E1D17 /* utf8.cpp in Sources */,
 				FA0B79241A958E3B000E1D17 /* Exception.cpp in Sources */,

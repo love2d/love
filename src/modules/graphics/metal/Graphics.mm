@@ -21,8 +21,7 @@
 #include "Graphics.h"
 #include "StreamBuffer.h"
 #include "Buffer.h"
-#include "Canvas.h"
-#include "Image.h"
+#include "Texture.h"
 #include "Shader.h"
 #include "window/Window.h"
 #include "image/Image.h"
@@ -34,44 +33,43 @@ namespace graphics
 namespace metal
 {
 
-static MTLSamplerMinMagFilter getMTLSamplerFilter(Texture::FilterMode mode)
+static MTLSamplerMinMagFilter getMTLSamplerFilter(SamplerState::FilterMode mode)
 {
 	switch (mode)
 	{
-		case Texture::FILTER_NONE: return MTLSamplerMinMagFilterLinear;
-		case Texture::FILTER_LINEAR: return MTLSamplerMinMagFilterLinear;
-		case Texture::FILTER_NEAREST: return MTLSamplerMinMagFilterNearest;
-		case Texture::FILTER_MAX_ENUM: return MTLSamplerMinMagFilterLinear;
+		case SamplerState::FILTER_LINEAR: return MTLSamplerMinMagFilterLinear;
+		case SamplerState::FILTER_NEAREST: return MTLSamplerMinMagFilterNearest;
+		case SamplerState::FILTER_MAX_ENUM: return MTLSamplerMinMagFilterLinear;
 	}
 	return MTLSamplerMinMagFilterLinear;
 }
 
-static MTLSamplerMipFilter getMTLSamplerMipFilter(Texture::FilterMode mode)
+static MTLSamplerMipFilter getMTLSamplerMipFilter(SamplerState::MipmapFilterMode mode)
 {
 	switch (mode)
 	{
-		case Texture::FILTER_NONE: return MTLSamplerMipFilterNotMipmapped;
-		case Texture::FILTER_LINEAR: return MTLSamplerMipFilterLinear;
-		case Texture::FILTER_NEAREST: return MTLSamplerMipFilterNearest;
-		case Texture::FILTER_MAX_ENUM: return MTLSamplerMipFilterNotMipmapped;
+		case SamplerState::MIPMAP_FILTER_NONE: return MTLSamplerMipFilterNotMipmapped;
+		case SamplerState::MIPMAP_FILTER_LINEAR: return MTLSamplerMipFilterLinear;
+		case SamplerState::MIPMAP_FILTER_NEAREST: return MTLSamplerMipFilterNearest;
+		case SamplerState::MIPMAP_FILTER_MAX_ENUM: return MTLSamplerMipFilterNotMipmapped;
 	}
 	return MTLSamplerMipFilterNotMipmapped;
 }
 
-static MTLSamplerAddressMode getMTLSamplerAddressMode(Texture::WrapMode mode)
+static MTLSamplerAddressMode getMTLSamplerAddressMode(SamplerState::WrapMode mode)
 {
 	switch (mode)
 	{
-		case Texture::WRAP_CLAMP: return MTLSamplerAddressModeClampToEdge;
-		case Texture::WRAP_CLAMP_ZERO: return MTLSamplerAddressModeClampToZero;
+		case SamplerState::WRAP_CLAMP: return MTLSamplerAddressModeClampToEdge;
+		case SamplerState::WRAP_CLAMP_ZERO: return MTLSamplerAddressModeClampToZero;
 #ifdef LOVE_MACOS
-		case Texture::WRAP_CLAMP_ONE: return MTLSamplerAddressModeClampToBorderColor;
+		case SamplerState::WRAP_CLAMP_ONE: return MTLSamplerAddressModeClampToBorderColor;
 #else
-		case Texture::WRAP_CLAMP_ONE: return MTLSamplerAddressModeClampToZero;
+		case SamplerState::WRAP_CLAMP_ONE: return MTLSamplerAddressModeClampToZero;
 #endif
-		case Texture::WRAP_REPEAT: return MTLSamplerAddressModeRepeat;
-		case Texture::WRAP_MIRRORED_REPEAT: return MTLSamplerAddressModeMirrorRepeat;
-		case Texture::WRAP_MAX_ENUM: return MTLSamplerAddressModeClampToEdge;
+		case SamplerState::WRAP_REPEAT: return MTLSamplerAddressModeRepeat;
+		case SamplerState::WRAP_MIRRORED_REPEAT: return MTLSamplerAddressModeMirrorRepeat;
+		case SamplerState::WRAP_MAX_ENUM: return MTLSamplerAddressModeClampToEdge;
 	}
 	return MTLSamplerAddressModeClampToEdge;
 }
@@ -202,19 +200,9 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 	return CreateStreamBuffer(device, type, size);
 }
 
-love::graphics::Image *Graphics::newImage(const Image::Slices &data, const Image::Settings &settings)
+love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Image(device, data, settings);
-}
-
-love::graphics::Image *Graphics::newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings)
-{
-	return new Image(device, textype, format, width, height, slices, settings);
-}
-
-love::graphics::Canvas *Graphics::newCanvas(const Canvas::Settings &settings)
-{
-	return new Canvas(device, settings);
+	return new Texture(device, settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
@@ -245,9 +233,9 @@ void Graphics::initCapabilities()
 		}
 	}
 
-	capabilities.features[FEATURE_MULTI_CANVAS_FORMATS] = true;
+	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
-	capabilities.features[FEATURE_BLENDMINMAX] = true;
+	capabilities.features[FEATURE_BLEND_MINMAX] = true;
 	capabilities.features[FEATURE_LIGHTEN] = true;
 	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
@@ -263,8 +251,8 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = 2048;
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = 2048;
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384; // TODO
-	capabilities.limits[LIMIT_MULTI_CANVAS] = 8; // TODO
-	capabilities.limits[LIMIT_CANVAS_MSAA] = msaa;
+	capabilities.limits[LIMIT_RENDER_TARGETS] = 8; // TODO
+	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
 	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
 	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
@@ -279,7 +267,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
-	if (!isCanvasActive())
+	if (!isRenderTargetActive())
 	{
 		dirtyRenderState |= STATEBIT_VIEWPORT | STATEBIT_SCISSOR;
 
@@ -343,10 +331,10 @@ void Graphics::unSetMode()
 
 	submitCommandBuffer();
 
-	for (auto temp : temporaryCanvases)
-		temp.canvas->release();
+	for (auto temp : temporaryTextures)
+		temp.texture->release();
 
-	temporaryCanvases.clear();
+	temporaryTextures.clear();
 
 	created = false;
 }
@@ -418,28 +406,31 @@ void Graphics::submitBlitEncoder()
 	}
 }
 
-id<MTLSamplerState> Graphics::getCachedSampler(const Texture::Filter &f, const Texture::Wrap &w, float maxAnisotropy, Optional<CompareMode> depthSampleMode)
+id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 { @autoreleasepool {
 	id<MTLSamplerState> sampler = nil;
 
 	{
 		MTLSamplerDescriptor *desc = [MTLSamplerDescriptor new];
 
-		desc.minFilter = getMTLSamplerFilter(f.min);
-		desc.magFilter = getMTLSamplerFilter(f.mag);
-		desc.mipFilter = getMTLSamplerMipFilter(f.mipmap);
-		desc.maxAnisotropy = std::max(1.0f, std::min(maxAnisotropy, 16.0f));
+		desc.minFilter = getMTLSamplerFilter(s.minFilter);
+		desc.magFilter = getMTLSamplerFilter(s.magFilter);
+		desc.mipFilter = getMTLSamplerMipFilter(s.mipmapFilter);
+		desc.maxAnisotropy = std::max(1.0f, std::min((float)s.maxAnisotropy, 16.0f));
 
-		desc.sAddressMode = getMTLSamplerAddressMode(w.s);
-		desc.tAddressMode = getMTLSamplerAddressMode(w.t);
-		desc.rAddressMode = getMTLSamplerAddressMode(w.r);
+		desc.sAddressMode = getMTLSamplerAddressMode(s.wrapU);
+		desc.tAddressMode = getMTLSamplerAddressMode(s.wrapV);
+		desc.rAddressMode = getMTLSamplerAddressMode(s.wrapW);
 
 #ifdef LOVE_MACOS
 		desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
 #endif
 
-		if (depthSampleMode.hasValue)
-			desc.compareFunction = getMTLCompareFunction(depthSampleMode.value);
+		desc.lodMinClamp = s.minLod;
+		desc.lodMaxClamp = s.maxLod;
+
+		if (s.depthSampleMode.hasValue)
+			desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
 
 		sampler = [device newSamplerStateWithDescriptor:desc];
 	}
@@ -531,10 +522,10 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder)
 		int rth = 0;
 
 		const auto &rt = state.renderTargets.getFirstTarget();
-		if (rt.canvas.get())
+		if (rt.texture.get())
 		{
-			rtw = rt.canvas->getPixelWidth();
-			rth = rt.canvas->getPixelHeight();
+			rtw = rt.texture->getPixelWidth();
+			rth = rt.texture->getPixelHeight();
 		}
 		else
 		{
@@ -653,7 +644,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 					 instanceCount:cmd.instanceCount];
 }}
 
-void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture)
+void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture)
 { @autoreleasepool {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
@@ -693,7 +684,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	}
 }}
 
-void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
 {
 	const DisplayState &state = states.back();
 	// TODO
@@ -707,7 +698,7 @@ void Graphics::setCanvasInternal(const RenderTargets &rts, int w, int h, int pix
 void Graphics::endPass()
 {
 	auto &rts = states.back().renderTargets;
-	love::graphics::Canvas *depthstencil = rts.depthStencil.canvas.get();
+	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
 	// Discard the depth/stencil buffer if we're using an internal cached one.
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
@@ -715,15 +706,15 @@ void Graphics::endPass()
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
-	if (rts.colors.size() > 0 && rts.colors[0].canvas->getMSAA() > 1)
+	if (rts.colors.size() > 0 && rts.colors[0].texture->getMSAA() > 1)
 	{
 		int mip = rts.colors[0].mipmap;
-		int w = rts.colors[0].canvas->getPixelWidth(mip);
-		int h = rts.colors[0].canvas->getPixelHeight(mip);
+		int w = rts.colors[0].texture->getPixelWidth(mip);
+		int h = rts.colors[0].texture->getPixelHeight(mip);
 
 		for (int i = 0; i < (int) rts.colors.size(); i++)
 		{
-			Canvas *c = (Canvas *) rts.colors[i].canvas.get();
+			Texture *c = (Texture *) rts.colors[i].texture.get();
 
 			if (!c->isReadable())
 				continue;
@@ -739,12 +730,12 @@ void Graphics::endPass()
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.canvas->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
-			rt.canvas->generateMipmaps();
+		if (rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
 	}
 
 	int dsmipmap = rts.depthStencil.mipmap;
-	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
+	if (depthstencil != nullptr && depthstencil->getMipmapsMode() == Texture::MIPMAPS_AUTO && dsmipmap == 0)
 		depthstencil->generateMipmaps();
 }
 
@@ -786,8 +777,8 @@ void Graphics::present(void *screenshotCallbackData)
 	if (!isActive())
 		return;
 
-	if (isCanvasActive())
-		throw love::Exception("present cannot be called while a Canvas is active.");
+	if (isRenderTargetActive())
+		throw love::Exception("present cannot be called while a render target is active.");
 
 	deprecations.draw(this);
 
@@ -865,20 +856,20 @@ void Graphics::present(void *screenshotCallbackData)
 	// Reset the per-frame stat counts.
 	drawCalls = 0;
 	//gl.stats.shaderSwitches = 0;
-	canvasSwitchCount = 0;
+	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
 	// This assumes temporary canvases will only be used within a render pass.
-	for (int i = (int) temporaryCanvases.size() - 1; i >= 0; i--)
+	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
 	{
-		if (temporaryCanvases[i].framesSinceUse >= MAX_TEMPORARY_CANVAS_UNUSED_FRAMES)
+		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
 		{
-			temporaryCanvases[i].canvas->release();
-			temporaryCanvases[i] = temporaryCanvases.back();
-			temporaryCanvases.pop_back();
+			temporaryTextures[i].texture->release();
+			temporaryTextures[i] = temporaryTextures.back();
+			temporaryTextures.pop_back();
 		}
 		else
-			temporaryCanvases[i].framesSinceUse++;
+			temporaryTextures[i].framesSinceUse++;
 	}
 }
 
@@ -906,11 +897,11 @@ void Graphics::setScissor()
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
 	const auto &rts = states.back().renderTargets;
-	love::graphics::Canvas *dscanvas = rts.depthStencil.canvas.get();
+	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-	if (!isCanvasActive() && !windowHasStencil)
+	if (!isRenderTargetActive() && !windowHasStencil)
 		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-	else if (isCanvasActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dscanvas == nullptr || !isPixelFormatStencil(dscanvas->getPixelFormat())))
+	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
 		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
 
 	flushStreamDraws();

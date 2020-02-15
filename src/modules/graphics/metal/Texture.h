@@ -23,7 +23,7 @@
 #include "common/config.h"
 #include "common/Color.h"
 #include "common/int.h"
-#include "graphics/Image.h"
+#include "graphics/Texture.h"
 #include "Metal.h"
 
 namespace love
@@ -33,32 +33,29 @@ namespace graphics
 namespace metal
 {
 
-class Image final : public love::graphics::Image
+class Texture final : public love::graphics::Texture
 {
 public:
 
-	Image(id<MTLDevice> device, const Slices &data, const Settings &settings);
-	Image(id<MTLDevice> device, TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings);
-	virtual ~Image();
+	Texture(id<MTLDevice> device, const Settings &settings, const Slices *data);
+	virtual ~Texture();
+
+	void generateMipmaps() override;
+	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
+	void setSamplerState(const SamplerState &s) override;
 
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) texture; }
-
-	void setFilter(const Texture::Filter &f) override;
-	bool setWrap(const Texture::Wrap &w) override;
-
-	bool setMipmapSharpness(float sharpness) override;
+	ptrdiff_t getRenderTargetHandle() const override { return (ptrdiff_t) texture; /* TODO */ }
+	int getMSAA() const override { return 1 /* TODO*/; }
 
 private:
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
-	void generateMipmaps() override;
-
-	void create(id<MTLDevice> device);
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
 
 	id<MTLTexture> texture;
 	id<MTLSamplerState> sampler;
 
-}; // Image
+}; // Texture
 
 } // metal
 } // graphics

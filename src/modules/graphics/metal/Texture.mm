@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Image.h"
+#include "Texture.h"
 #include "Graphics.h"
 
 namespace love
@@ -28,48 +28,39 @@ namespace graphics
 namespace metal
 {
 
-Image::Image(id<MTLDevice> device, TextureType textype, PixelFormat format, int width, int height, int slices, const Settings &settings)
-	: love::graphics::Image(textype, format, width, height, slices, settings)
+Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *data)
+	: love::graphics::Texture(settings, data)
 	, texture(nil)
 	, sampler(nil)
 { @autoreleasepool {
-	create(device);
-}}
-
-Image::Image(id<MTLDevice> device, const Slices &slices, const Settings &settings)
-	: love::graphics::Image(slices, settings)
-	, texture(nil)
-	, sampler(nil)
-{ @autoreleasepool {
-	create(device);
-}}
-
-Image::~Image()
-{ @autoreleasepool {
-	texture = nil;
-	sampler = nil;
-}}
-
-void Image::create(id<MTLDevice> device)
-{
 	MTLTextureDescriptor *desc = [MTLTextureDescriptor new];
 
-	desc.width = pixelWidth;
-	desc.height = pixelHeight;
+	int w = pixelWidth;
+	int h = pixelHeight;
+
+	// TODO: sampleCount validation
+	desc.sampleCount = getRequestedMSAA();
+
+	desc.width = w;
+	desc.height = h;
 	desc.depth = depth;
 	desc.arrayLength = layers;
 	desc.mipmapLevelCount = mipmapCount;
-	desc.textureType = Metal::getTextureType(texType, 1);
+	desc.textureType = Metal::getTextureType(texType, (int)desc.sampleCount);
 	desc.pixelFormat = Metal::convertPixelFormat(format, sRGB);
-	desc.usage = MTLTextureUsageShaderRead;
 	desc.storageMode = MTLStorageModePrivate;
+
+	if (readable)
+		desc.usage |= MTLTextureUsageShaderRead;
+	if (renderTarget)
+		desc.usage |= MTLTextureUsageRenderTarget;
 
 	texture = [device newTextureWithDescriptor:desc];
 
 	if (texture == nil)
 		throw love::Exception("Out of graphics memory.");
 
-	int mipcount = mipmapsType == MIPMAPS_GENERATED ? 1 : getMipmapCount();
+	int mipcount = getMipmapCount();
 
 	int slicecount = 1;
 	if (texType == TEXTURE_VOLUME)
@@ -83,17 +74,41 @@ void Image::create(id<MTLDevice> device)
 	{
 		for (int slice = 0; slice < slicecount; slice++)
 		{
-			love::image::ImageDataBase *imgd = data.get(slice, mip);
+			auto imgd = data != nullptr ? data->get(slice, mip) : nullptr;
 			if (imgd != nullptr)
 				uploadImageData(imgd, mip, slice, 0, 0);
 		}
 	}
 
-	if (mipmapsType == MIPMAPS_GENERATED)
-		generateMipmaps();
-}
+	if (data == nullptr || data->get(0, 0) == nullptr)
+	{
+		// Initialize all slices to transparent black.
+		if (!isPixelFormatDepthStencil(format))
+		{
+			std::vector<uint8> emptydata(getPixelFormatSliceSize(format, w, h));
+			Rect r = {0, 0, w, h};
+			for (int i = 0; i < slicecount; i++)
+				uploadByteData(format, emptydata.data(), emptydata.size(), 0, i, r);
+		}
+		else
+		{
+			// TODO
+		}
+	}
 
-void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+	// Non-readable textures can't have mipmaps (enforced in the base class),
+	// so generateMipmaps here is fine - when they aren't already initialized.
+	if (getMipmapCount() > 1 && (data == nullptr || data->getMipmapCount() <= 1))
+		generateMipmaps();
+}}
+
+Texture::~Texture()
+{ @autoreleasepool {
+	texture = nil;
+	sampler = nil;
+}}
+
+void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *)
 { @autoreleasepool {
 	auto gfx = Graphics::getInstance();
 	id<MTLBuffer> buffer = [gfx->device newBufferWithBytes:data
@@ -127,10 +142,19 @@ void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t siz
 		break;
 	}
 
+	size_t rowSize = 0;
+	if (isCompressed())
+		rowSize = getPixelFormatCompressedBlockRowSize(format, r.w);
+	else
+		rowSize = getPixelFormatUncompressedRowSize(format, r.w);
+
+	// TODO: Verify this is correct for compressed formats at small sizes.
+	size_t sliceSize = getPixelFormatSliceSize(format, r.w, r.h);
+
 	[encoder copyFromBuffer:buffer
 			   sourceOffset:0
-		  sourceBytesPerRow:getPixelFormatRowStride(pixelformat, r.w)
-		sourceBytesPerImage:0 // TODO?
+		  sourceBytesPerRow:rowSize
+		sourceBytesPerImage:sliceSize
 				 sourceSize:MTLSizeMake(r.w, r.h, 1)
 				  toTexture:texture
 		   destinationSlice:slice
@@ -139,8 +163,10 @@ void Image::uploadByteData(PixelFormat pixelformat, const void *data, size_t siz
 					options:options];
 }}
 
-void Image::generateMipmaps()
+void Texture::generateMipmaps()
 { @autoreleasepool {
+	// TODO: alternate method for non-color-renderable and non-filterable
+	// pixel formats.
 	id<MTLBlitCommandEncoder> encoder = Graphics::getInstance()->useBlitEncoder();
 	[encoder generateMipmapsForTexture:texture];
 }}

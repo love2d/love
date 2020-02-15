@@ -40,9 +40,7 @@ public:
 	// Implements Module.
 	const char *getName() const override { return "love.graphics.metal"; }
 
-	love::graphics::Image *newImage(const Image::Slices &data, const Image::Settings &settings) override;
-	love::graphics::Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) override;
-	love::graphics::Canvas *newCanvas(const Canvas::Settings &settings) override;
+	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
@@ -53,7 +51,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) override;
+	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -83,10 +81,9 @@ public:
 	void setPointSize(float size) override;
 
 	void setWireframe(bool enable) override;
-
-	bool isCanvasFormatSupported(PixelFormat format) const override;
-	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
-	bool isImageFormatSupported(PixelFormat format, bool sRGB) const override;
+	
+	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const override;
+	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
@@ -105,7 +102,7 @@ public:
 	id<MTLBlitCommandEncoder> getBlitEncoder() const { return blitEncoder; }
 	void submitBlitEncoder();
 
-	id<MTLSamplerState> getCachedSampler(const Texture::Filter &f, const Texture::Wrap &w, float maxAnisotropy, Optional<CompareMode> depthSampleMode);
+	id<MTLSamplerState> getCachedSampler(const SamplerState &s);
 
 	static Graphics *getInstance() { return Module::getInstance<Graphics>(M_GRAPHICS); }
 
@@ -164,7 +161,7 @@ private:
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
-	void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
+	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 
