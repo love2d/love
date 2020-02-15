@@ -45,7 +45,7 @@ public:
 	void setSamplerState(const SamplerState &s) override;
 
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) texture; }
-	ptrdiff_t getRenderTargetHandle() const override { return (ptrdiff_t) texture; /* TODO */ }
+	ptrdiff_t getRenderTargetHandle() const override { return msaaTexture != nil ? (ptrdiff_t) msaaTexture : (ptrdiff_t) texture; }
 	int getMSAA() const override { return 1 /* TODO*/; }
 
 private:
@@ -53,6 +53,7 @@ private:
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
 
 	id<MTLTexture> texture;
+	id<MTLTexture> msaaTexture;
 	id<MTLSamplerState> sampler;
 
 }; // Texture

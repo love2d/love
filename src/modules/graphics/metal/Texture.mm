@@ -31,6 +31,7 @@ namespace metal
 Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *data)
 	: love::graphics::Texture(settings, data)
 	, texture(nil)
+	, msaaTexture(nil)
 	, sampler(nil)
 { @autoreleasepool {
 	MTLTextureDescriptor *desc = [MTLTextureDescriptor new];
@@ -38,15 +39,12 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 	int w = pixelWidth;
 	int h = pixelHeight;
 
-	// TODO: sampleCount validation
-	desc.sampleCount = getRequestedMSAA();
-
 	desc.width = w;
 	desc.height = h;
 	desc.depth = depth;
 	desc.arrayLength = layers;
 	desc.mipmapLevelCount = mipmapCount;
-	desc.textureType = Metal::getTextureType(texType, (int)desc.sampleCount);
+	desc.textureType = Metal::getTextureType(texType, 1);
 	desc.pixelFormat = Metal::convertPixelFormat(format, sRGB);
 	desc.storageMode = MTLStorageModePrivate;
 
@@ -59,6 +57,22 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 
 	if (texture == nil)
 		throw love::Exception("Out of graphics memory.");
+
+	if (getRequestedMSAA() > 1)
+	{
+		// TODO: sampleCount validation
+		desc.sampleCount = getRequestedMSAA();
+		desc.textureType = Metal::getTextureType(texType, (int)desc.sampleCount);
+		desc.usage &= ~MTLTextureUsageShaderRead;
+
+		// TODO: This needs to be cleared, etc.
+		msaaTexture = [device newTextureWithDescriptor:desc];
+		if (msaaTexture == nil)
+		{
+			texture = nil;
+			throw love::Exception("Out of graphics memory.");
+		}
+	}
 
 	int mipcount = getMipmapCount();
 
@@ -105,6 +119,7 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 Texture::~Texture()
 { @autoreleasepool {
 	texture = nil;
+	msaaTexture = nil;
 	sampler = nil;
 }}
 
