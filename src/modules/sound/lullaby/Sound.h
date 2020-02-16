@@ -37,7 +37,7 @@ namespace lullaby
 /**
  * The love.sound.lullaby module is the custom sound decoder module for LOVE. Instead
  * of using an intermediate library like SDL_sound, it interfaces with relevant libraries
- * directly (libmpg123, libmodplug, libFLAC, etc).
+ * directly (libvorbis, dr_mp3, dr_flac, etc).
  *
  * It was Mike that came up with the name Lullaby, which we both instantly recognized as awesome.
  **/

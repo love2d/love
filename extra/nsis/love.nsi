@@ -16,8 +16,8 @@ InstallDirRegKey HKCU "Software\LOVE" ""
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${LOVEICODIR}\left.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${LOVEICODIR}\left.bmp"
 
-!define MUI_WELCOMEPAGE_TITLE "LÖVE Setup"
-!define MUI_WELCOMEPAGE_TEXT "This will install LÖVE, the unquestionably awesome Lua game framework."
+!define MUI_WELCOMEPAGE_TITLE "Lï¿½VE Setup"
+!define MUI_WELCOMEPAGE_TEXT "This will install Lï¿½VE, the unquestionably awesome Lua game framework."
 
 # Pages
 !insertmacro MUI_PAGE_WELCOME
@@ -42,7 +42,6 @@ Section "LOVE" MainProg
 	File "${LOVEBINDIR}\DevIL.dll"
 	File "${LOVEBINDIR}\SDL.dll"
 	File "${LOVEBINDIR}\OpenAL32.dll"
-	File "${LOVEBINDIR}\libmpg123.dll"
 	File "${LOVEBINDIR}\gme.dll"
 	# File "${LOVEBINDIR}\lua51.dll"
 	File "${LOVEICODIR}\love.ico"
@@ -91,7 +90,6 @@ Section "Uninstall"
 	Delete $INSTDIR\"SDL.dll"
 	Delete $INSTDIR\"love.exe"
 	Delete $INSTDIR\"OpenAL32.dll"
-	Delete $INSTDIR\"libmpg123.dll"
 	Delete $INSTDIR\"gme.dll"
 	# Delete $INSTDIR\"lua51.dll"
 	Delete $INSTDIR\"game.ico"
