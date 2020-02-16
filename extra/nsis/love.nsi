@@ -16,8 +16,8 @@ InstallDirRegKey HKCU "Software\LOVE" ""
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${LOVEICODIR}\left.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${LOVEICODIR}\left.bmp"
 
-!define MUI_WELCOMEPAGE_TITLE "Lï¿½VE Setup"
-!define MUI_WELCOMEPAGE_TEXT "This will install Lï¿½VE, the unquestionably awesome Lua game framework."
+!define MUI_WELCOMEPAGE_TITLE "LÖVE Setup"
+!define MUI_WELCOMEPAGE_TEXT "This will install LÖVE, the unquestionably awesome Lua game framework."
 
 # Pages
 !insertmacro MUI_PAGE_WELCOME
