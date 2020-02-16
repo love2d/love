@@ -30,10 +30,7 @@
 #include "GmeDecoder.h"
 #include "WaveDecoder.h"
 #include "FLACDecoder.h"
-
-#ifndef LOVE_NOMPG123
-#	include "Mpg123Decoder.h"
-#endif // LOVE_NOMPG123
+#include "MP3Decoder.h"
 
 #ifdef LOVE_SUPPORT_COREAUDIO
 #	include "CoreAudioDecoder.h"
@@ -71,13 +68,6 @@ Sound::Sound()
 {
 }
 
-Sound::~Sound()
-{
-#ifndef LOVE_NOMPG123
-	Mpg123Decoder::quit();
-#endif // LOVE_NOMPG123
-}
-
 const char *Sound::getName() const
 {
 	return "love.sound.lullaby";
@@ -92,9 +82,7 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 #ifndef LOVE_NO_MODPLUG
 		DecoderImplFor<ModPlugDecoder>(),
 #endif // LOVE_NO_MODPLUG
-#ifndef LOVE_NOMPG123
-		DecoderImplFor<Mpg123Decoder>(),
-#endif // LOVE_NOMPG123
+		DecoderImplFor<MP3Decoder>(),
 		DecoderImplFor<VorbisDecoder>(),
 #ifdef LOVE_SUPPORT_GME
 		DecoderImplFor<GmeDecoder>(),
