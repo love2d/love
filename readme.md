@@ -78,7 +78,6 @@ Dependencies
 - Lua / LuaJIT / LLVM-lua
 - FreeType
 - ModPlug
-- mpg123
 - Vorbisfile
 - Theora
 
