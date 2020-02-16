@@ -682,8 +682,6 @@
 		FA0B7E911A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */; };
 		FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */; };
 		FA0B7E931A95902C000E1D17 /* ModPlugDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */; };
-		FA0B7E941A95902C000E1D17 /* Mpg123Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C881A95902C000E1D17 /* Mpg123Decoder.cpp */; };
-		FA0B7E961A95902C000E1D17 /* Mpg123Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C891A95902C000E1D17 /* Mpg123Decoder.h */; };
 		FA0B7E971A95902C000E1D17 /* Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C8A1A95902C000E1D17 /* Sound.cpp */; };
 		FA0B7E981A95902C000E1D17 /* Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C8A1A95902C000E1D17 /* Sound.cpp */; };
 		FA0B7E991A95902C000E1D17 /* Sound.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C8B1A95902C000E1D17 /* Sound.h */; };
@@ -834,7 +832,6 @@
 		FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA41A3C71C0A1F950084430C /* ASTCHandler.h */; };
 		FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
 		FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA4B66C81ABBCF1900558F15 /* Timer.cpp */; };
-		FA4C22D122C2E11000BFBB7C /* dr_flac.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4C22D022C2E11000BFBB7C /* dr_flac.h */; };
 		FA4F2B791DE0125B00CA37D7 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2B771DE0125B00CA37D7 /* xxhash.c */; };
 		FA4F2B7A1DE0125B00CA37D7 /* xxhash.h in Headers */ = {isa = PBXBuildFile; fileRef = FA4F2B781DE0125B00CA37D7 /* xxhash.h */; };
 		FA4F2B7B1DE0181B00CA37D7 /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = FA4F2B771DE0125B00CA37D7 /* xxhash.c */; };
@@ -874,13 +871,17 @@
 		FA4F2C121DE936FE00CA37D7 /* unixtcp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCF1D9F6D490055D849 /* unixtcp.c */; };
 		FA4F2C131DE936FE00CA37D7 /* unixudp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD11D9F6D490055D849 /* unixudp.c */; };
 		FA4F2C141DE936FE00CA37D7 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
+		FA522D4D23F9FE380059EE3C /* MP3Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */; };
+		FA522D4E23F9FE380059EE3C /* MP3Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */; };
+		FA522D4F23F9FE380059EE3C /* MP3Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D4C23F9FE380059EE3C /* MP3Decoder.h */; };
+		FA522D5323F9FF2A0059EE3C /* dr_mp3.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D5123F9FF2A0059EE3C /* dr_mp3.h */; };
+		FA522D5423F9FF2A0059EE3C /* dr_flac.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D5223F9FF2A0059EE3C /* dr_flac.h */; };
 		FA56AA381FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
 		FA56AA391FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
 		FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = FA56AA371FAFF02000A43D5F /* memory.h */; };
 		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
-		FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A6F16C719F000860150 /* mpg123.framework */; };
 		FA577AC816C7513C00860150 /* ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* ogg.framework */; };
 		FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7C16C71A2600860150 /* OpenGL.framework */; };
 		FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7716C71A0800860150 /* vorbis.framework */; };
@@ -1720,8 +1721,6 @@
 		FA0B7C851A95902C000E1D17 /* GmeDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GmeDecoder.h; sourceTree = "<group>"; };
 		FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModPlugDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModPlugDecoder.h; sourceTree = "<group>"; };
-		FA0B7C881A95902C000E1D17 /* Mpg123Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mpg123Decoder.cpp; sourceTree = "<group>"; };
-		FA0B7C891A95902C000E1D17 /* Mpg123Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mpg123Decoder.h; sourceTree = "<group>"; };
 		FA0B7C8A1A95902C000E1D17 /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sound.cpp; sourceTree = "<group>"; };
 		FA0B7C8B1A95902C000E1D17 /* Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sound.h; sourceTree = "<group>"; };
 		FA0B7C8C1A95902C000E1D17 /* VorbisDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VorbisDecoder.cpp; sourceTree = "<group>"; };
@@ -1828,7 +1827,6 @@
 		FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = ASTCHandler.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		FA41A3C71C0A1F950084430C /* ASTCHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = ASTCHandler.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		FA4B66C81ABBCF1900558F15 /* Timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cpp; sourceTree = "<group>"; };
-		FA4C22D022C2E11000BFBB7C /* dr_flac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dr_flac.h; sourceTree = "<group>"; };
 		FA4F2B771DE0125B00CA37D7 /* xxhash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
 		FA4F2B781DE0125B00CA37D7 /* xxhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
 		FA4F2BA21DE1E36400CA37D7 /* RecordingDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordingDevice.cpp; sourceTree = "<group>"; };
@@ -1843,11 +1841,14 @@
 		FA4F2BE01DE6650600CA37D7 /* Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Transform.h; sourceTree = "<group>"; };
 		FA4F2BE11DE6650600CA37D7 /* wrap_Transform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Transform.cpp; sourceTree = "<group>"; };
 		FA4F2BE21DE6650600CA37D7 /* wrap_Transform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Transform.h; sourceTree = "<group>"; };
+		FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MP3Decoder.cpp; sourceTree = "<group>"; };
+		FA522D4C23F9FE380059EE3C /* MP3Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MP3Decoder.h; sourceTree = "<group>"; };
+		FA522D5123F9FF2A0059EE3C /* dr_mp3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dr_mp3.h; sourceTree = "<group>"; };
+		FA522D5223F9FF2A0059EE3C /* dr_flac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dr_flac.h; sourceTree = "<group>"; };
 		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
 		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
-		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
 		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Library/Frameworks/ogg.framework; sourceTree = "<absolute>"; };
 		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Library/Frameworks/vorbis.framework; sourceTree = "<absolute>"; };
 		FA577A7916C71A1700860150 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -2124,7 +2125,6 @@
 				FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
-				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
 				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
 				FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */,
@@ -2244,7 +2244,7 @@
 			children = (
 				FA0B794E1A958EA3000E1D17 /* Box2D */,
 				FA0B79B41A958EA3000E1D17 /* ddsparse */,
-				FA4C22CF22C2E11000BFBB7C /* dr_flac */,
+				FA522D5023F9FF2A0059EE3C /* dr */,
 				FA0B79B81A958EA3000E1D17 /* enet */,
 				FA0B79D31A958EA3000E1D17 /* glad */,
 				FAF13FBF1E20934C00F898D2 /* glslang */,
@@ -3198,8 +3198,8 @@
 				FA0B7C851A95902C000E1D17 /* GmeDecoder.h */,
 				FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */,
 				FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */,
-				FA0B7C881A95902C000E1D17 /* Mpg123Decoder.cpp */,
-				FA0B7C891A95902C000E1D17 /* Mpg123Decoder.h */,
+				FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */,
+				FA522D4C23F9FE380059EE3C /* MP3Decoder.h */,
 				FA0B7C8A1A95902C000E1D17 /* Sound.cpp */,
 				FA0B7C8B1A95902C000E1D17 /* Sound.h */,
 				FA0B7C8C1A95902C000E1D17 /* VorbisDecoder.cpp */,
@@ -3326,7 +3326,6 @@
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
-				FA577A6F16C719F000860150 /* mpg123.framework */,
 				FA577A7116C719F400860150 /* ogg.framework */,
 				FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */,
 				FA577A7C16C71A2600860150 /* OpenGL.framework */,
@@ -3373,14 +3372,6 @@
 			path = theora;
 			sourceTree = "<group>";
 		};
-		FA4C22CF22C2E11000BFBB7C /* dr_flac */ = {
-			isa = PBXGroup;
-			children = (
-				FA4C22D022C2E11000BFBB7C /* dr_flac.h */,
-			);
-			path = dr_flac;
-			sourceTree = "<group>";
-		};
 		FA4F2B761DE0125B00CA37D7 /* xxHash */ = {
 			isa = PBXGroup;
 			children = (
@@ -3388,6 +3379,15 @@
 				FA4F2B781DE0125B00CA37D7 /* xxhash.h */,
 			);
 			path = xxHash;
+			sourceTree = "<group>";
+		};
+		FA522D5023F9FF2A0059EE3C /* dr */ = {
+			isa = PBXGroup;
+			children = (
+				FA522D5123F9FF2A0059EE3C /* dr_mp3.h */,
+				FA522D5223F9FF2A0059EE3C /* dr_flac.h */,
+			);
+			path = dr;
 			sourceTree = "<group>";
 		};
 		FA56D9B91C2089CE00D8D3C7 /* modplug */ = {
@@ -3854,6 +3854,7 @@
 				FAC7CD861FE35E95006A60C7 /* physfs.h in Headers */,
 				FAF6C9E523C2DE2900D7B5BC /* spirv.hpp in Headers */,
 				FA0B7A541A958EA3000E1D17 /* b2Math.h in Headers */,
+				FA522D4F23F9FE380059EE3C /* MP3Decoder.h in Headers */,
 				217DFBEE1D9F6D490055D849 /* luasocket.h in Headers */,
 				FACA02F31F5E396B0084B28F /* HashFunction.h in Headers */,
 				FA0B7ED01A95902C000E1D17 /* wrap_LuaThread.h in Headers */,
@@ -3969,10 +3970,10 @@
 				FA4F2BAD1DE1E37000CA37D7 /* RecordingDevice.h in Headers */,
 				FA0B792B1A958E3B000E1D17 /* Matrix.h in Headers */,
 				FA0B7DA41A95902C000E1D17 /* PKMHandler.h in Headers */,
-				FA4C22D122C2E11000BFBB7C /* dr_flac.h in Headers */,
 				FAF6C9E423C2DE2900D7B5BC /* doc.h in Headers */,
 				FA0B7AC81A958EA3000E1D17 /* utility.h in Headers */,
 				217DFC0E1D9F6D490055D849 /* unixudp.h in Headers */,
+				FA522D5323F9FF2A0059EE3C /* dr_mp3.h in Headers */,
 				FA0B791F1A958E3B000E1D17 /* Data.h in Headers */,
 				217DFBE41D9F6D490055D849 /* headers.lua.h in Headers */,
 				FA0B7D021A95902C000E1D17 /* Filesystem.h in Headers */,
@@ -3987,7 +3988,6 @@
 				FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */,
 				FA0B7CD81A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B7CF61A95902C000E1D17 /* File.h in Headers */,
-				FA0B7E961A95902C000E1D17 /* Mpg123Decoder.h in Headers */,
 				FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */,
 				FADF54091E3D78F700012CC0 /* Video.h in Headers */,
 				FAA54ACB1F91660400A8FA7B /* TheoraVideoStream.h in Headers */,
@@ -4008,6 +4008,7 @@
 				FA0B7EC41A95902C000E1D17 /* Thread.h in Headers */,
 				FA0B7DFF1A95902C000E1D17 /* ChainShape.h in Headers */,
 				FA0B7E4D1A95902C000E1D17 /* wrap_EdgeShape.h in Headers */,
+				FA522D5423F9FF2A0059EE3C /* dr_flac.h in Headers */,
 				FAF1405F1E20934C00F898D2 /* ResourceLimits.h in Headers */,
 				FA0B7DDB1A95902C000E1D17 /* RandomGenerator.h in Headers */,
 				FA0B7E841A95902C000E1D17 /* Decoder.h in Headers */,
@@ -4571,6 +4572,7 @@
 				FA0B7D311A95902C000E1D17 /* Graphics.cpp in Sources */,
 				FA0B7E9E1A95902C000E1D17 /* WaveDecoder.cpp in Sources */,
 				FA0B7EB31A95902C000E1D17 /* System.cpp in Sources */,
+				FA522D4E23F9FE380059EE3C /* MP3Decoder.cpp in Sources */,
 				FA0B7D1C1A95902C000E1D17 /* GlyphData.cpp in Sources */,
 				FA4F2C061DE936CD00CA37D7 /* except.c in Sources */,
 				FA0B7AAE1A958EA3000E1D17 /* b2WheelJoint.cpp in Sources */,
@@ -4930,7 +4932,6 @@
 				FA0B7AD41A958EA3000E1D17 /* unix.c in Sources */,
 				FA0B7A771A958EA3000E1D17 /* b2CircleContact.cpp in Sources */,
 				FADF543B1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */,
-				FA0B7E941A95902C000E1D17 /* Mpg123Decoder.cpp in Sources */,
 				FA0B7E8B1A95902C000E1D17 /* FLACDecoder.cpp in Sources */,
 				FA0B7B3A1A958EA3000E1D17 /* wuff_memory.c in Sources */,
 				FA0B7A381A958EA3000E1D17 /* b2DynamicTree.cpp in Sources */,
@@ -4966,6 +4967,7 @@
 				FA0B7EB21A95902C000E1D17 /* System.cpp in Sources */,
 				FA0B7D1B1A95902C000E1D17 /* GlyphData.cpp in Sources */,
 				FA0B7AD11A958EA3000E1D17 /* protocol.c in Sources */,
+				FA522D4D23F9FE380059EE3C /* MP3Decoder.cpp in Sources */,
 				FA9D8DD11DEB56C3002CD881 /* pixelformat.cpp in Sources */,
 				FA0B7E661A95902C000E1D17 /* wrap_PrismaticJoint.cpp in Sources */,
 				FA0B7DCD1A95902C000E1D17 /* wrap_Keyboard.cpp in Sources */,
