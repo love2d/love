@@ -45,14 +45,6 @@ genmodules()
 			printf "${FILES:0:${#FILES}-2}\n\n"
 			modulelist+=("$module")
 		fi
-
-		if [[ "$module" = "sound" ]]; then
-			printf "if !LOVE_NOMPG123\n"
-			printf "liblove_module_$module += \\\\\n"
-			printf "\t./modules/sound/lullaby/Mpg123Decoder.cpp \\\\\n"
-			printf "\t./modules/sound/lullaby/Mpg123Decoder.h\n"
-			printf "endif\n\n"
-		fi
 	done
 
 	cd ../libraries
