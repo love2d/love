@@ -68,6 +68,10 @@ Sound::Sound()
 {
 }
 
+Sound::~Sound()
+{
+}
+
 const char *Sound::getName() const
 {
 	return "love.sound.lullaby";
