@@ -49,7 +49,6 @@ else()
 endif()
 
 option(LOVE_JIT "Use LuaJIT" TRUE)
-option(LOVE_MPG123 "Use mpg123" TRUE)
 
 if(LOVE_JIT)
 	if(APPLE)
@@ -58,10 +57,6 @@ if(LOVE_JIT)
 	message(STATUS "LuaJIT: Enabled")
 else()
 	message(STATUS "LuaJIT: Disabled")
-endif()
-
-if(NOT LOVE_MPG123)
-	add_definitions(-DLOVE_NOMPG123)
 endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
@@ -117,17 +112,6 @@ if(MEGA)
 		${MEGA_SDL2}
 		${MEGA_OPENAL}
 	)
-
-	if(LOVE_MPG123)
-		set(LOVE_LINK_LIBRARIES
-			${LOVE_LINK_LIBRARIES}
-			${MEGA_MPEG123}
-		)
-		set(LOVE_MOVE_DLLS
-			${LOVE_MOVE_DLLS}
-			${MEGA_MPEG123}
-		)
-	endif()
 
 	if(LOVE_JIT)
 		set(LOVE_LUA_LIBRARY ${MEGA_LUAJIT_LIB})
@@ -208,18 +192,6 @@ Please see http://bitbucket.org/rude/megasource
 		${OGG_LIBRARY}
 		${ZLIB_LIBRARY}
 	)
-
-	if(LOVE_MPG123)
-		find_package(MPG123 REQUIRED)
-		set(LOVE_LINK_LIBRARIES
-			${LOVE_LINK_LIBRARIES}
-			${MPG123_LIBRARY}
-		)
-		set(LOVE_INCLUDE_DIRS
-			${LOVE_INCLUDE_DIRS}
-			${MPG123_INCLUDE_DIR}
-		)
-	endif()
 
 	if(LOVE_JIT)
 		find_package(LuaJIT REQUIRED)
@@ -911,6 +883,8 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/GmeDecoder.h
 	src/modules/sound/lullaby/ModPlugDecoder.cpp
 	src/modules/sound/lullaby/ModPlugDecoder.h
+	src/modules/sound/lullaby/MP3Decoder.h
+	src/modules/sound/lullaby/MP3Decoder.cpp
 	src/modules/sound/lullaby/Sound.cpp
 	src/modules/sound/lullaby/Sound.h
 	src/modules/sound/lullaby/VorbisDecoder.cpp
@@ -918,14 +892,6 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/WaveDecoder.cpp
 	src/modules/sound/lullaby/WaveDecoder.h
 )
-
-if(LOVE_MPG123)
-	set(LOVE_SRC_MODULE_SOUND_LULLABY
-		${LOVE_SRC_MODULE_SOUND_LULLABY}
-		src/modules/sound/lullaby/Mpg123Decoder.cpp
-		src/modules/sound/lullaby/Mpg123Decoder.h
-	)
-endif()
 
 set(LOVE_SRC_MODULE_SOUND
 	${LOVE_SRC_MODULE_SOUND_ROOT}
@@ -1242,10 +1208,20 @@ add_library(love_3p_ddsparse ${LOVE_SRC_3P_DDSPARSE})
 #
 
 set(LOVE_SRC_3P_DRFLAC
-	src/libraries/dr_flac/dr_flac.h
+	src/libraries/dr/dr_flac.h
 )
 
 # dr_flac has no implementation files of its own.
+
+#
+# dr_mp3
+#
+
+set(LOVE_SRC_3P_DRMP3
+	src/libraries/dr/dr_mp3.h
+)
+
+# dr_mp3 has no implementation files of its own.
 
 #
 # enet
