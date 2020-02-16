@@ -25,7 +25,7 @@
 #include "common/Data.h"
 #include "sound/Decoder.h"
 
-#include "dr_flac/dr_flac.h"
+#include "dr/dr_flac.h"
 #include <string.h>
 
 namespace love
