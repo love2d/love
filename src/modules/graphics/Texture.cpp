@@ -908,7 +908,7 @@ static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM>::Entry setting
 	{ "type",         Texture::SETTING_TYPE          },
 	{ "dpiscale",     Texture::SETTING_DPI_SCALE     },
 	{ "msaa",         Texture::SETTING_MSAA          },
-	{ "rendertarget", Texture::SETTING_RENDER_TARGET },
+	{ "canvas",       Texture::SETTING_RENDER_TARGET },
 	{ "readable",     Texture::SETTING_READABLE      },
 };
 

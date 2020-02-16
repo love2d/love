@@ -263,7 +263,7 @@ static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
 	return target;
 }
 
-int w_setRenderTarget(lua_State *L)
+int w_setCanvas(lua_State *L)
 {
 	// Disable stencil writes.
 	luax_catchexcept(L, [](){ instance()->stopDrawToStencilBuffer(); });
@@ -295,7 +295,7 @@ int w_setRenderTarget(lua_State *L)
 				targets.colors.emplace_back(luax_checktexture(L, -1), 0);
 
 				if (targets.colors.back().texture->getTextureType() != TEXTURE_2D)
-					return luaL_error(L, "Non-2D textures must use the table-of-tables variant of setRenderTargets.");
+					return luaL_error(L, "Non-2D textures must use the table-of-tables variant of setCanvas.");
 			}
 
 			lua_pop(L, 1);
@@ -341,7 +341,7 @@ int w_setRenderTarget(lua_State *L)
 			}
 
 			if (i > 1 && type != TEXTURE_2D)
-				return luaL_error(L, "This variant of setRenderTarget only supports 2D texture types.");
+				return luaL_error(L, "This variant of setCanvas only supports 2D texture types.");
 
 			targets.colors.push_back(target);
 		}
@@ -355,12 +355,6 @@ int w_setRenderTarget(lua_State *L)
 	});
 	
 	return 0;
-}
-
-int w_setCanvas(lua_State *L)
-{
-	luax_markdeprecated(L, "love.graphics.setCanvas", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.setRenderTarget");
-	return w_setRenderTarget(L);
 }
 
 static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
@@ -387,7 +381,7 @@ static void pushRenderTarget(lua_State *L, const Graphics::RenderTarget &rt)
 	lua_setfield(L, -2, "mipmap");
 }
 
-int w_getRenderTarget(lua_State *L)
+int w_getCanvas(lua_State *L)
 {
 	Graphics::RenderTargets targets = instance()->getRenderTargets();
 	int ntargets = (int) targets.colors.size();
@@ -437,12 +431,6 @@ int w_getRenderTarget(lua_State *L)
 
 		return ntargets;
 	}
-}
-
-int w_getCanvas(lua_State *L)
-{
-	luax_markdeprecated(L, "love.graphics.getCanvas", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.getRenderTarget");
-	return w_getRenderTarget(L);
 }
 
 static void screenshotFunctionCallback(const Graphics::ScreenshotInfo *info, love::image::ImageData *i, void *gd)
@@ -831,7 +819,7 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	lua_pop(L, 1);
 }
 
-int w_newRenderTarget(lua_State *L)
+int w_newCanvas(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
@@ -1207,12 +1195,6 @@ int w_newVolumeTexture(lua_State *L)
 	}
 
 	return w__pushNewTexture(L, slicesref, settings);
-}
-
-int w_newCanvas(lua_State *L)
-{
-	luax_markdeprecated(L, "love.graphics.newCanvas", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newRenderTarget");
-	return w_newRenderTarget(L);
 }
 
 int w_newImage(lua_State *L)
@@ -2562,7 +2544,7 @@ int w_getStats(lua_State *L)
 	lua_setfield(L, -2, "drawcallsbatched");
 
 	lua_pushinteger(L, stats.renderTargetSwitches);
-	lua_setfield(L, -2, "rendertargetswitches");
+	lua_setfield(L, -2, "canvasswitches");
 
 	lua_pushinteger(L, stats.shaderSwitches);
 	lua_setfield(L, -2, "shaderswitches");
@@ -3163,7 +3145,7 @@ static const luaL_Reg functions[] =
 	{ "discard", w_discard },
 	{ "present", w_present },
 
-	{ "newRenderTarget", w_newRenderTarget },
+	{ "newCanvas", w_newCanvas },
 	{ "newTexture", w_newTexture },
 	{ "newCubeTexture", w_newCubeTexture },
 	{ "newArrayTexture", w_newArrayTexture },
@@ -3180,8 +3162,8 @@ static const luaL_Reg functions[] =
 
 	{ "validateShader", w_validateShader },
 
-	{ "setRenderTarget", w_setRenderTarget },
-	{ "getRenderTarget", w_getRenderTarget },
+	{ "setCanvas", w_setCanvas },
+	{ "getCanvas", w_getCanvas },
 
 	{ "setColor", w_setColor },
 	{ "getColor", w_getColor },
@@ -3282,13 +3264,10 @@ static const luaL_Reg functions[] =
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 
 	// Deprecated
-	{ "newCanvas", w_newCanvas },
 	{ "newImage", w_newImage },
 	{ "newArrayImage", w_newArrayImage },
 	{ "newVolumeImage", w_newVolumeImage },
 	{ "newCubeImage", w_newCubeImage },
-	{ "setCanvas", w_setCanvas },
-	{ "getCanvas", w_getCanvas },
 	{ "getCanvasFormats", w_getCanvasFormats },
 	{ "getImageFormats", w_getImageFormats },
 
