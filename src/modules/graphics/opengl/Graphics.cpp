@@ -127,7 +127,8 @@ Graphics::Graphics()
 			double dpiH = h;
 			window->windowToDPICoords(&dpiW, &dpiH);
 
-			setMode((int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
+			void *context = nullptr; // TODO
+			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
 		}
 	}
 }
@@ -188,7 +189,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	}
 }
 
-bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
 {
 	this->width = width;
 	this->height = height;
@@ -521,7 +522,6 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 
 	OpenGL::TempDebugGroup debuggroup("setRenderTargets");
 
-	flushStreamDraws();
 	endPass();
 
 	bool iswindow = rts.getFirstTarget().texture == nullptr;

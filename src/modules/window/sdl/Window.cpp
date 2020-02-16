@@ -578,7 +578,14 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
-		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
+
+		void *context = (void *) glcontext;
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+		if (renderer == graphics::Graphics::RENDERER_METAL)
+			context = (void *) metalView;
+#endif
+
+		graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
 	}
 
 #ifdef LOVE_ANDROID

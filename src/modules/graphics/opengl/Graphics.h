@@ -63,7 +63,7 @@ public:
 	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;

@@ -26,6 +26,8 @@
 #include "window/Window.h"
 #include "image/Image.h"
 
+#import <QuartzCore/CAMetalLayer.h>
+
 namespace love
 {
 namespace graphics
@@ -182,7 +184,8 @@ Graphics::Graphics()
 			double dpiH = h;
 			window->windowToDPICoords(&dpiW, &dpiH);
 
-			setMode((int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
+			void *context = nullptr; // TODO
+			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
 		}
 	}
 }}
@@ -276,8 +279,8 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	}
 }
 
-bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
-{
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
+{ @autoreleasepool {
 	this->width = width;
 	this->height = height;
 
@@ -320,7 +323,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
 
 	return true;
-}
+}}
 
 void Graphics::unSetMode()
 {
@@ -685,15 +688,57 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 }}
 
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
-{
+{ @autoreleasepool {
 	const DisplayState &state = states.back();
-	// TODO
 
-	flushStreamDraws();
 	endPass();
 
-	
-}
+	for (size_t i = 0; i < rts.colors.size(); i++)
+	{
+		auto rt = rts.colors[i];
+		auto tex = rt.texture;
+		auto desc = passDesc.colorAttachments[i];
+
+		desc.texture = (__bridge id<MTLTexture>)(void*)tex->getRenderTargetHandle();
+		desc.level = rt.mipmap;
+
+		if (tex->getTextureType() == TEXTURE_VOLUME)
+		{
+			desc.slice = 0;
+			desc.depthPlane = rt.slice;
+		}
+		else
+		{
+			desc.slice = rt.slice;
+			desc.depthPlane = 0;
+		}
+
+		// Default to load until clear or discard is called.
+		desc.loadAction = MTLLoadActionLoad;
+		desc.storeAction = MTLStoreActionStore;
+
+		desc.resolveTexture = nil;
+
+		if (tex->getMSAA() > 1)
+		{
+			// TODO
+			desc.resolveTexture = (__bridge id<MTLTexture>)(void*)tex->getHandle();
+
+			// TODO: This StoreAction is only supported sometimes.
+			desc.storeAction = MTLStoreActionStoreAndMultisampleResolve;
+		}
+
+		passDesc.colorAttachments[i] = desc;
+	}
+
+	for (size_t i = rts.colors.size(); i < MAX_COLOR_RENDER_TARGETS; i++)
+		passDesc.colorAttachments[i] = nil;
+
+	// TODO: depth/stencil attachments
+	// TODO: projection matrix
+	// TODO: backbuffer
+	dirtyRenderState = STATEBIT_ALL;
+}}
 
 void Graphics::endPass()
 {
