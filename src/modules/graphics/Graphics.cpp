@@ -504,7 +504,7 @@ void Graphics::checkSetDefaultFont()
 
 	// Create a new default font if we don't have one yet.
 	if (!defaultFont.get())
-		defaultFont.set(newDefaultFont(12, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
+		defaultFont.set(newDefaultFont(13, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
 
 	states.back().font.set(defaultFont.get());
 }

@@ -43,6 +43,7 @@ class Font : public Module
 
 public:
 
+	Font();
 	virtual ~Font() {}
 
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
@@ -63,6 +64,10 @@ public:
 	// Implement Module.
 	virtual ModuleType getModuleType() const { return M_FONT; }
 	virtual const char *getName() const = 0;
+
+private:
+
+	StrongRef<Data> defaultFontData;
 
 }; // Font
 

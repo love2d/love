@@ -389,7 +389,6 @@
 		FA0B7D211A95902C000E1D17 /* Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B7E1A95902C000E1D17 /* Rasterizer.cpp */; };
 		FA0B7D221A95902C000E1D17 /* Rasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B7E1A95902C000E1D17 /* Rasterizer.cpp */; };
 		FA0B7D231A95902C000E1D17 /* Rasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B7F1A95902C000E1D17 /* Rasterizer.h */; };
-		FA0B7D241A95902C000E1D17 /* Vera.ttf.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B801A95902C000E1D17 /* Vera.ttf.h */; };
 		FA0B7D251A95902C000E1D17 /* wrap_Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B811A95902C000E1D17 /* wrap_Font.cpp */; };
 		FA0B7D261A95902C000E1D17 /* wrap_Font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7B811A95902C000E1D17 /* wrap_Font.cpp */; };
 		FA0B7D271A95902C000E1D17 /* wrap_Font.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7B821A95902C000E1D17 /* wrap_Font.h */; };
@@ -876,6 +875,7 @@
 		FA522D4F23F9FE380059EE3C /* MP3Decoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D4C23F9FE380059EE3C /* MP3Decoder.h */; };
 		FA522D5323F9FF2A0059EE3C /* dr_mp3.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D5123F9FF2A0059EE3C /* dr_mp3.h */; };
 		FA522D5423F9FF2A0059EE3C /* dr_flac.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D5223F9FF2A0059EE3C /* dr_flac.h */; };
+		FA522D5A23FA5ED50059EE3C /* NotoSans-Regular.ttf.gzip.h in Headers */ = {isa = PBXBuildFile; fileRef = FA522D5923FA5ED40059EE3C /* NotoSans-Regular.ttf.gzip.h */; };
 		FA56AA381FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
 		FA56AA391FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
 		FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = FA56AA371FAFF02000A43D5F /* memory.h */; };
@@ -1524,7 +1524,6 @@
 		FA0B7B7D1A95902C000E1D17 /* ImageRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageRasterizer.h; sourceTree = "<group>"; };
 		FA0B7B7E1A95902C000E1D17 /* Rasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer.cpp; sourceTree = "<group>"; };
 		FA0B7B7F1A95902C000E1D17 /* Rasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rasterizer.h; sourceTree = "<group>"; };
-		FA0B7B801A95902C000E1D17 /* Vera.ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vera.ttf.h; sourceTree = "<group>"; };
 		FA0B7B811A95902C000E1D17 /* wrap_Font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Font.cpp; sourceTree = "<group>"; };
 		FA0B7B821A95902C000E1D17 /* wrap_Font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Font.h; sourceTree = "<group>"; };
 		FA0B7B831A95902C000E1D17 /* wrap_GlyphData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_GlyphData.cpp; sourceTree = "<group>"; };
@@ -1845,6 +1844,7 @@
 		FA522D4C23F9FE380059EE3C /* MP3Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MP3Decoder.h; sourceTree = "<group>"; };
 		FA522D5123F9FF2A0059EE3C /* dr_mp3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dr_mp3.h; sourceTree = "<group>"; };
 		FA522D5223F9FF2A0059EE3C /* dr_flac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dr_flac.h; sourceTree = "<group>"; };
+		FA522D5923FA5ED40059EE3C /* NotoSans-Regular.ttf.gzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NotoSans-Regular.ttf.gzip.h"; sourceTree = "<group>"; };
 		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
 		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
@@ -2781,11 +2781,11 @@
 				FA0B7B7B1A95902C000E1D17 /* GlyphData.h */,
 				FA0B7B7C1A95902C000E1D17 /* ImageRasterizer.cpp */,
 				FA0B7B7D1A95902C000E1D17 /* ImageRasterizer.h */,
+				FA522D5923FA5ED40059EE3C /* NotoSans-Regular.ttf.gzip.h */,
 				FA0B7B7E1A95902C000E1D17 /* Rasterizer.cpp */,
 				FA0B7B7F1A95902C000E1D17 /* Rasterizer.h */,
 				FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */,
 				FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */,
-				FA0B7B801A95902C000E1D17 /* Vera.ttf.h */,
 				FA0B7B811A95902C000E1D17 /* wrap_Font.cpp */,
 				FA0B7B821A95902C000E1D17 /* wrap_Font.h */,
 				FA0B7B831A95902C000E1D17 /* wrap_GlyphData.cpp */,
@@ -3792,7 +3792,6 @@
 				FA0B7DC61A95902C000E1D17 /* wrap_JoystickModule.h in Headers */,
 				FA0B7D201A95902C000E1D17 /* ImageRasterizer.h in Headers */,
 				FAF6C9EA23C2DE2900D7B5BC /* GLSL.ext.NV.h in Headers */,
-				FA0B7D241A95902C000E1D17 /* Vera.ttf.h in Headers */,
 				FADF54311E3DABF600012CC0 /* SpriteBatch.h in Headers */,
 				FA0B7E5F1A95902C000E1D17 /* wrap_MouseJoint.h in Headers */,
 				217DFC0C1D9F6D490055D849 /* unixtcp.h in Headers */,
@@ -3882,6 +3881,7 @@
 				FA0B7CE71A95902C000E1D17 /* wrap_Source.h in Headers */,
 				FA0B7B231A958EA3000E1D17 /* luasocket.h in Headers */,
 				FA0B7D1D1A95902C000E1D17 /* GlyphData.h in Headers */,
+				FA522D5A23FA5ED50059EE3C /* NotoSans-Regular.ttf.gzip.h in Headers */,
 				FAC7CD8E1FE35E95006A60C7 /* physfs_lzmasdk.h in Headers */,
 				FA0B7B391A958EA3000E1D17 /* wuff_internal.h in Headers */,
 				FAC7CD771FE35E95006A60C7 /* physfs_internal.h in Headers */,
