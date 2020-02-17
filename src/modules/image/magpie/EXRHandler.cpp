@@ -193,7 +193,7 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 		throw love::Exception("Could not decode EXR image: unknown pixel format.");
 	}
 
-	img.size = img.width * img.height * getPixelFormatSize(img.format);
+	img.size = getPixelFormatSliceSize(img.format, img.width, img.height);
 
 	FreeEXRImage(&exrImage);
 

@@ -24,6 +24,87 @@
 namespace love
 {
 
+static PixelFormatInfo formatInfo[] =
+{
+	// components, blockW, blockH, blockSize, color, depth, stencil, compressed
+    { 0, 1, 1, 0, false, false, false, false }, // PIXELFORMAT_UNKNOWN
+
+	{ 0, 1, 1, 0, true, false, false, false }, // PIXELFORMAT_NORMAL
+	{ 0, 1, 1, 0, true, false, false, false }, // PIXELFORMAT_HDR
+
+	{ 1, 1, 1, 1, true, false, false, false }, // PIXELFORMAT_R8_UNORM
+	{ 1, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_R16_UNORM
+	{ 1, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_R16_FLOAT
+	{ 1, 1, 1, 4, true, false, false, false }, // PIXELFORMAT_R32_FLOAT
+
+	{ 2, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_RG8_UNORM
+	{ 2, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_LA8_UNORM
+	{ 2, 1, 1, 4, true, false, false, false }, // PIXELFORMAT_RG16_UNORM
+	{ 2, 1, 1, 4, true, false, false, false }, // PIXELFORMAT_RG16_FLOAT
+	{ 2, 1, 1, 8, true, false, false, false }, // PIXELFORMAT_RG32_FLOAT
+
+	{ 4, 1, 1, 4,  true, false, false, false }, // PIXELFORMAT_RGBA8_UNORM
+	{ 4, 1, 1, 4,  true, false, false, false }, // PIXELFORMAT_sRGBA8_UNORM
+	{ 4, 1, 1, 8,  true, false, false, false }, // PIXELFORMAT_RGBA16_UNORM
+	{ 4, 1, 1, 8,  true, false, false, false }, // PIXELFORMAT_RGBA16_FLOAT
+	{ 4, 1, 1, 16, true, false, false, false }, // PIXELFORMAT_RGBA32_FLOAT
+
+	{ 4, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_RGBA4_UNORM
+	{ 4, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_RGB5A1_UNORM
+	{ 3, 1, 1, 2, true, false, false, false }, // PIXELFORMAT_RGB565_UNORM
+	{ 4, 1, 1, 4, true, false, false, false }, // PIXELFORMAT_RGB10A2_UNORM
+	{ 3, 1, 1, 4, true, false, false, false }, // PIXELFORMAT_RG11B10_FLOAT
+
+	{ 1, 1, 1, 1, false, false, true , false }, // PIXELFORMAT_STENCIL8
+	{ 1, 1, 1, 2, false, true,  false, false }, // PIXELFORMAT_DEPTH16_UNORM
+	{ 1, 1, 1, 3, false, true,  false, false }, // PIXELFORMAT_DEPTH24_UNORM
+	{ 1, 1, 1, 4, false, true,  false, false }, // PIXELFORMAT_DEPTH32_FLOAT
+	{ 2, 1, 1, 4, false, true,  true , false }, // PIXELFORMAT_DEPTH24_UNORM_STENCIL8
+	{ 2, 1, 1, 5, false, true,  true , false }, // PIXELFORMAT_DEPTH32_FLOAT_STENCIL8
+
+	{ 3, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_DXT1_UNORM
+	{ 4, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_DXT3_UNORM
+	{ 4, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_DXT5_UNORM
+	{ 1, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_BC4_UNORM
+	{ 1, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_BC4_SNORM
+	{ 2, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_BC5_UNORM
+	{ 2, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_BC5_SNORM
+	{ 3, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_BC6H_UFLOAT
+	{ 3, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_BC6H_FLOAT
+	{ 4, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_BC7_UNORM
+
+	{ 3, 16, 8, 32, true, false, false, true }, // PIXELFORMAT_PVR1_RGB2_UNORM
+	{ 3, 8,  8, 32, true, false, false, true }, // PIXELFORMAT_PVR1_RGB4_UNORM
+	{ 4, 16, 8, 32, true, false, false, true }, // PIXELFORMAT_PVR1_RGBA2_UNORM
+	{ 4, 8,  8, 32, true, false, false, true }, // PIXELFORMAT_PVR1_RGBA4_UNORM
+
+	{ 3, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_ETC1_UNORM
+	{ 3, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_ETC2_RGB_UNORM
+	{ 4, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_ETC2_RGBA_UNORM
+	{ 4, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_ETC2_RGBA1_UNORM
+	{ 1, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_EAC_R_UNORM
+	{ 1, 4, 4, 8,  true, false, false, true }, // PIXELFORMAT_EAC_R_SNORM
+	{ 2, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_EAC_RG_UNORM
+	{ 2, 4, 4, 16, true, false, false, true }, // PIXELFORMAT_EAC_RG_SNORM
+
+	{ 4, 4,  4,  1, true, false, false, true }, // PIXELFORMAT_ASTC_4x4
+	{ 4, 5,  4,  1, true, false, false, true }, // PIXELFORMAT_ASTC_5x4
+	{ 4, 5,  5,  1, true, false, false, true }, // PIXELFORMAT_ASTC_5x5
+	{ 4, 6,  5,  1, true, false, false, true }, // PIXELFORMAT_ASTC_6x5
+	{ 4, 6,  6,  1, true, false, false, true }, // PIXELFORMAT_ASTC_6x6
+	{ 4, 8,  5,  1, true, false, false, true }, // PIXELFORMAT_ASTC_8x5
+	{ 4, 8,  6,  1, true, false, false, true }, // PIXELFORMAT_ASTC_8x6
+	{ 4, 8,  8,  1, true, false, false, true }, // PIXELFORMAT_ASTC_8x8
+	{ 4, 8,  5,  1, true, false, false, true }, // PIXELFORMAT_ASTC_10x5
+	{ 4, 10, 6,  1, true, false, false, true }, // PIXELFORMAT_ASTC_10x6
+	{ 4, 10, 8,  1, true, false, false, true }, // PIXELFORMAT_ASTC_10x8
+	{ 4, 10, 10, 1, true, false, false, true }, // PIXELFORMAT_ASTC_10x10
+	{ 4, 12, 10, 1, true, false, false, true }, // PIXELFORMAT_ASTC_12x10
+	{ 4, 12, 12, 1, true, false, false, true }, // PIXELFORMAT_ASTC_12x12
+};
+
+static_assert(sizeof(formatInfo) / sizeof(PixelFormatInfo) == PIXELFORMAT_MAX_ENUM, "Update the formatInfo array when adding or removing a PixelFormat");
+
 static StringMap<PixelFormat, PIXELFORMAT_MAX_ENUM>::Entry formatEntries[] =
 {
     { "unknown", PIXELFORMAT_UNKNOWN },
@@ -113,100 +194,83 @@ bool getConstant(PixelFormat in, const char *&out)
 	return formats.find(in, out);
 }
 
+const PixelFormatInfo &getPixelFormatInfo(PixelFormat format)
+{
+	return formatInfo[format];
+}
+
 bool isPixelFormatCompressed(PixelFormat format)
 {
-	// I'm lazy
-	int iformat = (int) format;
-	return iformat >= (int) PIXELFORMAT_DXT1_UNORM && iformat < (int) PIXELFORMAT_MAX_ENUM;
+	return formatInfo[format].compressed;
 }
 
 bool isPixelFormatDepthStencil(PixelFormat format)
 {
-	int iformat = (int) format;
-	return iformat >= (int) PIXELFORMAT_STENCIL8 && iformat <= (int) PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+	const PixelFormatInfo &info = formatInfo[format];
+	return info.depth || info.stencil;
 }
 
 bool isPixelFormatDepth(PixelFormat format)
 {
-	int iformat = (int) format;
-	return iformat >= (int) PIXELFORMAT_DEPTH16_UNORM && iformat <= (int) PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+	return formatInfo[format].depth;
 }
 
 bool isPixelFormatStencil(PixelFormat format)
 {
-	return format == PIXELFORMAT_STENCIL8 || format == PIXELFORMAT_DEPTH24_UNORM_STENCIL8 || format == PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+	return formatInfo[format].stencil;
 }
 
-size_t getPixelFormatSize(PixelFormat format)
+PixelFormat getSRGBPixelFormat(PixelFormat format)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_R8_UNORM:
-	case PIXELFORMAT_STENCIL8:
-		return 1;
-	case PIXELFORMAT_RG8_UNORM:
-	case PIXELFORMAT_R16_UNORM:
-	case PIXELFORMAT_R16_FLOAT:
-	case PIXELFORMAT_LA8_UNORM:
-	case PIXELFORMAT_RGBA4_UNORM:
-	case PIXELFORMAT_RGB5A1_UNORM:
-	case PIXELFORMAT_RGB565_UNORM:
-	case PIXELFORMAT_DEPTH16_UNORM:
-		return 2;
-	case PIXELFORMAT_RGBA8_UNORM:
-	case PIXELFORMAT_sRGBA8_UNORM:
-	case PIXELFORMAT_RG16_UNORM:
-	case PIXELFORMAT_RG16_FLOAT:
-	case PIXELFORMAT_R32_FLOAT:
-	case PIXELFORMAT_RGB10A2_UNORM:
-	case PIXELFORMAT_RG11B10_FLOAT:
-	case PIXELFORMAT_DEPTH24_UNORM:
-	case PIXELFORMAT_DEPTH32_FLOAT:
-	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
-		return 4;
-	case PIXELFORMAT_RGBA16_UNORM:
-	case PIXELFORMAT_RGBA16_FLOAT:
-	case PIXELFORMAT_RG32_FLOAT:
-	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
-		return 8;
-	case PIXELFORMAT_RGBA32_FLOAT:
-		return 16;
-	default:
-		// TODO: compressed formats
-		return 0;
-	}
+	if (format == PIXELFORMAT_RGBA8_UNORM)
+		return PIXELFORMAT_sRGBA8_UNORM;
+	return format;
+}
+
+PixelFormat getLinearPixelFormat(PixelFormat format)
+{
+	if (format == PIXELFORMAT_sRGBA8_UNORM)
+		return PIXELFORMAT_RGBA8_UNORM;
+	return format;
+}
+
+size_t getPixelFormatBlockSize(PixelFormat format)
+{
+	return formatInfo[format].blockSize;
+}
+
+size_t getPixelFormatUncompressedRowSize(PixelFormat format, int width)
+{
+	const PixelFormatInfo &info = formatInfo[format];
+	if (info.compressed) return 0;
+	return info.blockSize * width / info.blockWidth;
+}
+
+size_t getPixelFormatCompressedBlockRowSize(PixelFormat format, int width)
+{
+	const PixelFormatInfo &info = formatInfo[format];
+	if (!info.compressed) return 0;
+	return info.blockSize * ((width + info.blockWidth - 1) / info.blockWidth);
+}
+
+size_t getPixelFormatCompressedBlockRowCount(PixelFormat format, int height)
+{
+	const PixelFormatInfo &info = formatInfo[format];
+	if (!info.compressed) return 0;
+	return (height + info.blockHeight - 1) / info.blockHeight;
+}
+
+size_t getPixelFormatSliceSize(PixelFormat format, int width, int height)
+{
+	const PixelFormatInfo &info = formatInfo[format];
+	size_t blockW = (width + info.blockWidth - 1) / info.blockWidth;
+	size_t blockH = (height + info.blockHeight - 1) / info.blockHeight;
+	return info.blockSize * blockW * blockH;
 }
 
 int getPixelFormatColorComponents(PixelFormat format)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_R8_UNORM:
-	case PIXELFORMAT_R16_UNORM:
-	case PIXELFORMAT_R16_FLOAT:
-	case PIXELFORMAT_R32_FLOAT:
-		return 1;
-	case PIXELFORMAT_RG8_UNORM:
-	case PIXELFORMAT_RG16_UNORM:
-	case PIXELFORMAT_RG16_FLOAT:
-	case PIXELFORMAT_RG32_FLOAT:
-	case PIXELFORMAT_LA8_UNORM:
-		return 2;
-	case PIXELFORMAT_RGB565_UNORM:
-	case PIXELFORMAT_RG11B10_FLOAT:
-		return 3;
-	case PIXELFORMAT_RGBA8_UNORM:
-	case PIXELFORMAT_sRGBA8_UNORM:
-	case PIXELFORMAT_RGBA16_UNORM:
-	case PIXELFORMAT_RGBA16_FLOAT:
-	case PIXELFORMAT_RGBA32_FLOAT:
-	case PIXELFORMAT_RGBA4_UNORM:
-	case PIXELFORMAT_RGB5A1_UNORM:
-	case PIXELFORMAT_RGB10A2_UNORM:
-		return 4;
-	default:
-		return 0;
-	}
+	return formatInfo[format].components;
 }
 
 } // love

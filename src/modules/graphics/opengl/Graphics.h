@@ -36,8 +36,7 @@
 #include "image/Image.h"
 #include "image/ImageData.h"
 
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "Shader.h"
 
 #include "libraries/xxHash/xxhash.h"
@@ -60,9 +59,7 @@ public:
 	// Implements Module.
 	const char *getName() const override;
 
-	love::graphics::Image *newImage(const Image::Slices &data, const Image::Settings &settings) override;
-	love::graphics::Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) override;
-	love::graphics::Canvas *newCanvas(const Canvas::Settings &settings) override;
+	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const void *data, size_t size) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
@@ -74,7 +71,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) override;
+	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -105,16 +102,15 @@ public:
 
 	void setWireframe(bool enable) override;
 
-	bool isCanvasFormatSupported(PixelFormat format) const override;
-	bool isCanvasFormatSupported(PixelFormat format, bool readable) const override;
-	bool isImageFormatSupported(PixelFormat format, bool sRGB) const override;
+	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const override;
+	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 
 	Shader::Language getShaderLanguageTarget() const override;
 
 	// Internal use.
-	void cleanupCanvas(Canvas *canvas);
+	void cleanupRenderTexture(love::graphics::Texture *texture);
 
 private:
 
@@ -128,7 +124,7 @@ private:
 			for (size_t i = 0; i < rts.colors.size(); i++)
 				hashtargets[hashcount++] = rts.colors[i];
 
-			if (rts.depthStencil.canvas != nullptr)
+			if (rts.depthStencil.texture != nullptr)
 				hashtargets[hashcount++] = rts.depthStencil;
 			else if (rts.temporaryRTFlags != 0)
 				hashtargets[hashcount++] = RenderTarget(nullptr, -1, rts.temporaryRTFlags);
@@ -140,7 +136,7 @@ private:
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
-	void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
+	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 
@@ -153,6 +149,9 @@ private:
 	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
+
+	// [rendertarget][readable][srgb]
+	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];
 
 }; // Graphics
 

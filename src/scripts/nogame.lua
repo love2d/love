@@ -3186,21 +3186,21 @@ function love.nogame()
 		R.bg.cloud_3 = R.bg[dpiscale].cloud_3_png
 		R.bg.cloud_4 = R.bg[dpiscale].cloud_4_png
 
-		img_duckloon_normal = love.graphics.newImage(R.duckloon.normal, settings)
-		img_duckloon_blink = love.graphics.newImage(R.duckloon.blink, settings)
+		img_duckloon_normal = love.graphics.newTexture(R.duckloon.normal, settings)
+		img_duckloon_blink = love.graphics.newTexture(R.duckloon.blink, settings)
 
-		img_n = love.graphics.newImage(R.chain.n, settings)
-		img_o = love.graphics.newImage(R.chain.o, settings)
-		img_g = love.graphics.newImage(R.chain.g, settings)
-		img_a = love.graphics.newImage(R.chain.a, settings)
-		img_m = love.graphics.newImage(R.chain.m, settings)
-		img_e = love.graphics.newImage(R.chain.e, settings)
-		img_square = love.graphics.newImage(R.chain.square, settings)
+		img_n = love.graphics.newTexture(R.chain.n, settings)
+		img_o = love.graphics.newTexture(R.chain.o, settings)
+		img_g = love.graphics.newTexture(R.chain.g, settings)
+		img_a = love.graphics.newTexture(R.chain.a, settings)
+		img_m = love.graphics.newTexture(R.chain.m, settings)
+		img_e = love.graphics.newTexture(R.chain.e, settings)
+		img_square = love.graphics.newTexture(R.chain.square, settings)
 
-		img_cloud_1 = love.graphics.newImage(R.bg.cloud_1, settings)
-		img_cloud_2 = love.graphics.newImage(R.bg.cloud_2, settings)
-		img_cloud_3 = love.graphics.newImage(R.bg.cloud_3, settings)
-		img_cloud_4 = love.graphics.newImage(R.bg.cloud_4, settings)
+		img_cloud_1 = love.graphics.newTexture(R.bg.cloud_1, settings)
+		img_cloud_2 = love.graphics.newTexture(R.bg.cloud_2, settings)
+		img_cloud_3 = love.graphics.newTexture(R.bg.cloud_3, settings)
+		img_cloud_4 = love.graphics.newTexture(R.bg.cloud_4, settings)
 
 		cloud_images = {
 			img_cloud_1,

@@ -47,18 +47,20 @@ int Font::fontCount = 0;
 
 const CommonFormat Font::vertexFormat = CommonFormat::XYf_STus_RGBAub;
 
-Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
+Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	: rasterizers({r})
 	, height(r->getHeight())
 	, lineHeight(1)
 	, textureWidth(128)
 	, textureHeight(128)
-	, filter(f)
+	, samplerState()
 	, dpiScale(r->getDPIScale())
 	, useSpacesAsTab(false)
 	, textureCacheID(0)
 {
-	filter.mipmap = Texture::FILTER_NONE;
+	samplerState.minFilter = s.minFilter;
+	samplerState.magFilter = s.magFilter;
+	samplerState.maxAnisotropy = s.maxAnisotropy;
 
 	// Try to find the best texture size match for the font size. default to the
 	// largest texture size if no rough match is found.
@@ -123,7 +125,7 @@ bool Font::loadVolatile()
 {
 	textureCacheID++;
 	glyphs.clear();
-	images.clear();
+	textures.clear();
 	createTexture();
 	return true;
 }
@@ -133,7 +135,7 @@ void Font::createTexture()
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 	gfx->flushStreamDraws();
 
-	Image *image = nullptr;
+	Texture *texture = nullptr;
 	TextureSize size = {textureWidth, textureHeight};
 	TextureSize nextsize = getNextTextureSize();
 	bool recreatetexture = false;
@@ -141,19 +143,22 @@ void Font::createTexture()
 	// If we have an existing texture already, we'll try replacing it with a
 	// larger-sized one rather than creating a second one. Having a single
 	// texture reduces texture switches and draw calls when rendering.
-	if ((nextsize.width > size.width || nextsize.height > size.height) && !images.empty())
+	if ((nextsize.width > size.width || nextsize.height > size.height) && !textures.empty())
 	{
 		recreatetexture = true;
 		size = nextsize;
-		images.pop_back();
+		textures.pop_back();
 	}
 
-	Image::Settings settings;
-	image = gfx->newImage(TEXTURE_2D, pixelFormat, size.width, size.height, 1, settings);
-	image->setFilter(filter);
+	Texture::Settings settings;
+	settings.format = pixelFormat;
+	settings.width = size.width;
+	settings.height = size.height;
+	texture = gfx->newTexture(settings, nullptr);
+	texture->setSamplerState(samplerState);
 
 	{
-		size_t bpp = getPixelFormatSize(pixelFormat);
+		size_t bpp = getPixelFormatBlockSize(pixelFormat);
 		size_t pixelcount = size.width * size.height;
 
 		// Initialize the texture with transparent white for Luminance-Alpha
@@ -168,10 +173,10 @@ void Font::createTexture()
 		}
 
 		Rect rect = {0, 0, size.width, size.height};
-		image->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
+		texture->replacePixels(emptydata.data(), emptydata.size(), 0, 0, rect, false);
 	}
 
-	images.emplace_back(image, Acquire::NORETAIN);
+	textures.emplace_back(texture, Acquire::NORETAIN);
 
 	textureWidth  = size.width;
 	textureHeight = size.height;
@@ -198,7 +203,7 @@ void Font::createTexture()
 void Font::unloadVolatile()
 {
 	glyphs.clear();
-	images.clear();
+	textures.clear();
 }
 
 love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
@@ -266,11 +271,11 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	// Don't waste space for empty glyphs.
 	if (w > 0 && h > 0)
 	{
-		Image *image = images.back();
-		g.texture = image;
+		Texture *texture = textures.back();
+		g.texture = texture;
 
 		Rect rect = {textureX, textureY, gd->getWidth(), gd->getHeight()};
-		image->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
+		texture->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
@@ -918,17 +923,19 @@ float Font::getLineHeight() const
 	return lineHeight;
 }
 
-void Font::setFilter(const Texture::Filter &f)
+void Font::setSamplerState(const SamplerState &s)
 {
-	for (const auto &image : images)
-		image->setFilter(f);
+	samplerState.minFilter = s.minFilter;
+	samplerState.magFilter = s.magFilter;
+	samplerState.maxAnisotropy = s.maxAnisotropy;
 
-	filter = f;
+	for (const auto &texture : textures)
+		texture->setSamplerState(samplerState);
 }
 
-const Texture::Filter &Font::getFilter() const
+const SamplerState &Font::getSamplerState() const
 {
-	return filter;
+	return samplerState;
 }
 
 int Font::getAscent() const

@@ -33,7 +33,7 @@
 #include "common/Vector.h"
 
 #include "font/Rasterizer.h"
-#include "Image.h"
+#include "Texture.h"
 #include "vertex.h"
 #include "Volatile.h"
 
@@ -96,7 +96,7 @@ public:
 		int vertexcount;
 	};
 
-	Font(love::font::Rasterizer *r, const Texture::Filter &filter);
+	Font(love::font::Rasterizer *r, const SamplerState &samplerState);
 
 	virtual ~Font();
 
@@ -158,8 +158,8 @@ public:
 	 **/
 	float getLineHeight() const;
 
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
+	void setSamplerState(const SamplerState &s);
+	const SamplerState &getSamplerState() const;
 
 	// Extra font metrics
 	int getAscent() const;
@@ -217,7 +217,7 @@ private:
 	int textureWidth;
 	int textureHeight;
 
-	std::vector<StrongRef<love::graphics::Image>> images;
+	std::vector<StrongRef<love::graphics::Texture>> textures;
 
 	// maps glyphs to glyph texture information
 	std::unordered_map<uint32, Glyph> glyphs;
@@ -227,7 +227,7 @@ private:
 
 	PixelFormat pixelFormat;
 
-	Texture::Filter filter;
+	SamplerState samplerState;
 
 	float dpiScale;
 

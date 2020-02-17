@@ -432,8 +432,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (!graphics.get())
 		graphics.set(Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS));
 
-	if (graphics.get() && graphics->isCanvasActive())
-		throw love::Exception("love.window.setMode cannot be called while a Canvas is active in love.graphics.");
+	if (graphics.get() && graphics->isRenderTargetActive())
+		throw love::Exception("love.window.setMode cannot be called while a render target is active in love.graphics.");
 
 	WindowSettings f;
 
@@ -664,8 +664,8 @@ void Window::close(bool allowExceptions)
 {
 	if (graphics.get())
 	{
-		if (allowExceptions && graphics->isCanvasActive())
-			throw love::Exception("love.window.close cannot be called while a Canvas is active in love.graphics.");
+		if (allowExceptions && graphics->isRenderTargetActive())
+			throw love::Exception("love.window.close cannot be called while a render target is active in love.graphics.");
 
 		graphics->unSetMode();
 	}
@@ -694,8 +694,8 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (!window)
 		return false;
 
-	if (graphics.get() && graphics->isCanvasActive())
-		throw love::Exception("love.window.setFullscreen cannot be called while a Canvas is active in love.graphics.");
+	if (graphics.get() && graphics->isRenderTargetActive())
+		throw love::Exception("love.window.setFullscreen cannot be called while a render target is active in love.graphics.");
 
 	WindowSettings newsettings = settings;
 	newsettings.fullscreen = fullscreen;
@@ -933,7 +933,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 
 	int w = imgd->getWidth();
 	int h = imgd->getHeight();
-	int bytesperpixel = (int) getPixelFormatSize(imgd->getFormat());
+	int bytesperpixel = (int) getPixelFormatBlockSize(imgd->getFormat());
 	int pitch = w * bytesperpixel;
 
 	SDL_Surface *sdlicon = nullptr;

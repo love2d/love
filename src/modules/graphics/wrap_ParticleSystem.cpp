@@ -22,8 +22,7 @@
 #include "wrap_ParticleSystem.h"
 #include "common/Vector.h"
 
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "wrap_Texture.h"
 
 // C
@@ -62,16 +61,7 @@ int w_ParticleSystem_setTexture(lua_State *L)
 int w_ParticleSystem_getTexture(lua_State *L)
 {
 	ParticleSystem *t = luax_checkparticlesystem(L, 1);
-	Texture *tex = t->getTexture();
-
-	// FIXME: big hack right here.
-	if (dynamic_cast<Image *>(tex) != nullptr)
-		luax_pushtype(L, Image::type, tex);
-	else if (dynamic_cast<Canvas *>(tex) != nullptr)
-		luax_pushtype(L, Canvas::type, tex);
-	else
-		return luaL_error(L, "Unable to determine texture type.");
-
+	luax_pushtype(L, t->getTexture());
 	return 1;
 }
 

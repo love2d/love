@@ -45,6 +45,16 @@ struct Optional
 		value = val;
 		hasValue = true;
 	}
+
+	T get(T defaultVal)
+	{
+		return hasValue ? value : defaultVal;
+	}
+
+	void clear()
+	{
+		hasValue = false;
+	}
 };
 
 typedef Optional<bool> OptionalBool;

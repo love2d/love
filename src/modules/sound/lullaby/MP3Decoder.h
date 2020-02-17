@@ -18,21 +18,17 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
-#define LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
+#ifndef LOVE_SOUND_LULLABY_MP3_DECODER_H
+#define LOVE_SOUND_LULLABY_MP3_DECODER_H
 
 // LOVE
 #include "common/Data.h"
 #include "sound/Decoder.h"
 
-#ifndef LOVE_NOMPG123
+// dr_mp3
+#include "dr/dr_mp3.h"
 
-// libmpg123
-#ifdef LOVE_APPLE_USE_FRAMEWORKS
-#include <mpg123/mpg123.h>
-#else
-#include <mpg123.h>
-#endif
+#include <vector>
 
 namespace love
 {
@@ -41,29 +37,14 @@ namespace sound
 namespace lullaby
 {
 
-struct DecoderFile
-{
-	unsigned char *data;
-	size_t size;
-	size_t offset;
-
-	DecoderFile(Data *d)
-		: data((unsigned char *) d->getData())
-		, size(d->getSize())
-		, offset(0)
-	{}
-};
-
-class Mpg123Decoder : public Decoder
+class MP3Decoder: public love::sound::Decoder
 {
 public:
 
-	Mpg123Decoder(Data *data, int bufferSize);
-	virtual ~Mpg123Decoder();
+	MP3Decoder(Data *data, int bufsize);
+	virtual ~MP3Decoder();
 
 	static bool accepts(const std::string &ext);
-	static void quit();
-
 	love::sound::Decoder *clone();
 	int decode();
 	bool seek(double s);
@@ -75,21 +56,16 @@ public:
 
 private:
 
-	DecoderFile decoder_file;
-
-	mpg123_handle *handle;
-	static bool inited;
-
-	int channels;
+	// MP3 handle
+	drmp3 mp3;
+	// Used for fast seeking
+	std::vector<drmp3_seek_point> seekTable;
 
 	double duration;
-
-}; // Decoder
+}; // MP3Decoder
 
 } // lullaby
 } // sound
 } // love
 
-#endif // LOVE_NOMPG123
-
-#endif // LOVE_SOUND_LULLABY_LIBMPG123_DECODER_H
+#endif

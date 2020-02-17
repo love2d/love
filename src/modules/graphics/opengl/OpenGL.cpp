@@ -23,7 +23,6 @@
 #include "OpenGL.h"
 
 #include "Shader.h"
-#include "Canvas.h"
 #include "common/Exception.h"
 
 #include "graphics/Graphics.h"
@@ -103,7 +102,7 @@ OpenGL::OpenGL()
 	, maxCubeTextureSize(0)
 	, maxTextureArrayLayers(0)
 	, maxRenderTargets(1)
-	, maxRenderbufferSamples(0)
+	, maxSamples(1)
 	, maxTextureUnits(1)
 	, maxPointSize(1)
 	, coreProfile(false)
@@ -260,8 +259,9 @@ void OpenGL::setupContext()
 
 #ifdef LOVE_ANDROID
 	// This can't be done in initContext with the rest of the bug checks because
-	// Canvas::isFormatSupported relies on state initialized here / after init.
-	if (GLAD_ES_VERSION_3_0 && !Canvas::isFormatSupported(PIXELFORMAT_R8))
+	// isPixelFormatSupported relies on state initialized here / after init.
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, true, true))
 		bugs.brokenR8PixelFormat = true;
 #endif
 }
@@ -474,10 +474,10 @@ void OpenGL::initMaxValues()
 		|| GLAD_EXT_framebuffer_multisample || GLAD_APPLE_framebuffer_multisample
 		|| GLAD_ANGLE_framebuffer_multisample)
 	{
-		glGetIntegerv(GL_MAX_SAMPLES, &maxRenderbufferSamples);
+		glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 	}
 	else
-		maxRenderbufferSamples = 0;
+		maxSamples = 1;
 
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextureUnits);
 
@@ -502,11 +502,9 @@ void OpenGL::createDefaultTexture()
 	// untextured primitives vs images.
 	const GLubyte pix[] = {255, 255, 255, 255};
 
-	Texture::Filter filter;
-	filter.min = filter.mag = Texture::FILTER_NEAREST;
-
-	Texture::Wrap wrap;
-	wrap.s = wrap.t = wrap.r = Texture::WRAP_CLAMP;
+	SamplerState s;
+	s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+	s.wrapU = s.wrapV = s.wrapW = SamplerState::WRAP_CLAMP;
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 	{
@@ -522,8 +520,7 @@ void OpenGL::createDefaultTexture()
 		glGenTextures(1, &state.defaultTexture[type]);
 		bindTextureToUnit(type, state.defaultTexture[type], 0, false);
 
-		setTextureWrap(type, wrap);
-		setTextureFilter(type, filter);
+		setSamplerState(type, s);
 
 		bool isSRGB = false;
 		rawTexStorage(type, 1, PIXELFORMAT_RGBA8_UNORM, isSRGB, 1, 1);
@@ -905,13 +902,13 @@ Rect OpenGL::getViewport() const
 	return state.viewport;
 }
 
-void OpenGL::setScissor(const Rect &v, bool canvasActive)
+void OpenGL::setScissor(const Rect &v, bool rtActive)
 {
-	if (canvasActive)
+	if (rtActive)
 		glScissor(v.x, v.y, v.w, v.h);
 	else
 	{
-		// With no Canvas active, we need to compensate for glScissor starting
+		// With no RT active, we need to compensate for glScissor starting
 		// from the lower left of the viewport instead of the top left.
 		glScissor(v.x, state.viewport.h - (v.y + v.h), v.w, v.h);
 	}
@@ -1147,52 +1144,19 @@ void OpenGL::deleteTexture(GLuint texture)
 	glDeleteTextures(1, &texture);
 }
 
-void OpenGL::setTextureFilter(TextureType target, graphics::Texture::Filter &f)
-{
-	GLint gmin = f.min == Texture::FILTER_NEAREST ? GL_NEAREST : GL_LINEAR;
-	GLint gmag = f.mag == Texture::FILTER_NEAREST ? GL_NEAREST : GL_LINEAR;
-
-	if (f.mipmap != Texture::FILTER_NONE)
-	{
-		if (f.min == Texture::FILTER_NEAREST && f.mipmap == Texture::FILTER_NEAREST)
-			gmin = GL_NEAREST_MIPMAP_NEAREST;
-		else if (f.min == Texture::FILTER_NEAREST && f.mipmap == Texture::FILTER_LINEAR)
-			gmin = GL_NEAREST_MIPMAP_LINEAR;
-		else if (f.min == Texture::FILTER_LINEAR && f.mipmap == Texture::FILTER_NEAREST)
-			gmin = GL_LINEAR_MIPMAP_NEAREST;
-		else if (f.min == Texture::FILTER_LINEAR && f.mipmap == Texture::FILTER_LINEAR)
-			gmin = GL_LINEAR_MIPMAP_LINEAR;
-		else
-			gmin = GL_LINEAR;
-	}
-
-	GLenum gltarget = getGLTextureType(target);
-
-	glTexParameteri(gltarget, GL_TEXTURE_MIN_FILTER, gmin);
-	glTexParameteri(gltarget, GL_TEXTURE_MAG_FILTER, gmag);
-
-	if (GLAD_EXT_texture_filter_anisotropic)
-	{
-		f.anisotropy = std::min(std::max(f.anisotropy, 1.0f), maxAnisotropy);
-		glTexParameterf(gltarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, f.anisotropy);
-	}
-	else
-		f.anisotropy = 1.0f;
-}
-
-GLint OpenGL::getGLWrapMode(Texture::WrapMode wmode)
+GLint OpenGL::getGLWrapMode(SamplerState::WrapMode wmode)
 {
 	switch (wmode)
 	{
-	case Texture::WRAP_CLAMP:
+	case SamplerState::WRAP_CLAMP:
 	default:
 		return GL_CLAMP_TO_EDGE;
-	case Texture::WRAP_CLAMP_ZERO:
-	case Texture::WRAP_CLAMP_ONE:
+	case SamplerState::WRAP_CLAMP_ZERO:
+	case SamplerState::WRAP_CLAMP_ONE:
 		return GL_CLAMP_TO_BORDER;
-	case Texture::WRAP_REPEAT:
+	case SamplerState::WRAP_REPEAT:
 		return GL_REPEAT;
-	case Texture::WRAP_MIRRORED_REPEAT:
+	case SamplerState::WRAP_MIRRORED_REPEAT:
 		return GL_MIRRORED_REPEAT;
 	}
 }
@@ -1222,29 +1186,111 @@ GLint OpenGL::getGLCompareMode(CompareMode mode)
 	}
 }
 
-static bool isClampOne(Texture::WrapMode mode)
+static bool isClampOne(SamplerState::WrapMode mode)
 {
-	return mode == Texture::WRAP_CLAMP_ONE;
+	return mode == SamplerState::WRAP_CLAMP_ONE;
 }
 
-void OpenGL::setTextureWrap(TextureType target, const graphics::Texture::Wrap &w)
+void OpenGL::setSamplerState(TextureType target, SamplerState &s)
 {
-	GLenum textype = getGLTextureType(target);
+	GLenum gltarget = getGLTextureType(target);
 
-	if (Texture::isClampZeroOrOne(w.s) || Texture::isClampZeroOrOne(w.t) || Texture::isClampZeroOrOne(w.r))
+	GLint gmin = s.minFilter == SamplerState::FILTER_NEAREST ? GL_NEAREST : GL_LINEAR;
+	GLint gmag = s.magFilter == SamplerState::FILTER_NEAREST ? GL_NEAREST : GL_LINEAR;
+
+	if (s.mipmapFilter != SamplerState::MIPMAP_FILTER_NONE)
 	{
-		GLfloat c[] = {0.0f, 0.0f, 0.0f, 0.0f};
-		if (isClampOne(w.s) || isClampOne(w.t) || isClampOne(w.r))
-			c[0] = c[1] = c[2] = c[3] = 1.0f;
-
-		glTexParameterfv(textype, GL_TEXTURE_BORDER_COLOR, c);
+		if (s.minFilter == SamplerState::FILTER_NEAREST && s.mipmapFilter == SamplerState::MIPMAP_FILTER_NEAREST)
+			gmin = GL_NEAREST_MIPMAP_NEAREST;
+		else if (s.minFilter == SamplerState::FILTER_NEAREST && s.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
+			gmin = GL_NEAREST_MIPMAP_LINEAR;
+		else if (s.minFilter == SamplerState::FILTER_LINEAR && s.mipmapFilter == SamplerState::MIPMAP_FILTER_NEAREST)
+			gmin = GL_LINEAR_MIPMAP_NEAREST;
+		else if (s.minFilter == SamplerState::FILTER_LINEAR && s.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
+			gmin = GL_LINEAR_MIPMAP_LINEAR;
 	}
 
-	glTexParameteri(textype, GL_TEXTURE_WRAP_S, getGLWrapMode(w.s));
-	glTexParameteri(textype, GL_TEXTURE_WRAP_T, getGLWrapMode(w.t));
+	glTexParameteri(gltarget, GL_TEXTURE_MIN_FILTER, gmin);
+	glTexParameteri(gltarget, GL_TEXTURE_MAG_FILTER, gmag);
+
+	if (!isClampZeroOneTextureWrapSupported())
+	{
+		if (SamplerState::isClampZeroOrOne(s.wrapU)) s.wrapU = SamplerState::WRAP_CLAMP;
+		if (SamplerState::isClampZeroOrOne(s.wrapV)) s.wrapV = SamplerState::WRAP_CLAMP;
+		if (SamplerState::isClampZeroOrOne(s.wrapW)) s.wrapW = SamplerState::WRAP_CLAMP;
+	}
+
+	if (SamplerState::isClampZeroOrOne(s.wrapU) || SamplerState::isClampZeroOrOne(s.wrapV) || SamplerState::isClampZeroOrOne(s.wrapW))
+	{
+		GLfloat c[] = {0.0f, 0.0f, 0.0f, 0.0f};
+		if (isClampOne(s.wrapU) || isClampOne(s.wrapU) || isClampOne(s.wrapV))
+			c[0] = c[1] = c[2] = c[3] = 1.0f;
+
+		glTexParameterfv(gltarget, GL_TEXTURE_BORDER_COLOR, c);
+	}
+
+	glTexParameteri(gltarget, GL_TEXTURE_WRAP_S, getGLWrapMode(s.wrapU));
+	glTexParameteri(gltarget, GL_TEXTURE_WRAP_T, getGLWrapMode(s.wrapV));
 
 	if (target == TEXTURE_VOLUME)
-		glTexParameteri(textype, GL_TEXTURE_WRAP_R, getGLWrapMode(w.r));
+		glTexParameteri(gltarget, GL_TEXTURE_WRAP_R, getGLWrapMode(s.wrapW));
+
+	if (isSamplerLODBiasSupported())
+	{
+		float maxbias = getMaxLODBias();
+		if (maxbias > 0.01f)
+			maxbias -= 0.01f;
+
+		s.lodBias = std::min(std::max(s.lodBias, -maxbias), maxbias);
+
+		glTexParameterf(gltarget, GL_TEXTURE_LOD_BIAS, s.lodBias);
+	}
+	else
+	{
+		s.lodBias = 0.0f;
+	}
+
+	if (GLAD_EXT_texture_filter_anisotropic)
+	{
+		uint8 maxAniso = (uint8) std::min(maxAnisotropy, (float)LOVE_UINT8_MAX);
+		s.maxAnisotropy = std::min(std::max(s.maxAnisotropy, (uint8)1), maxAniso);
+		glTexParameteri(gltarget, GL_TEXTURE_MAX_ANISOTROPY_EXT, s.maxAnisotropy);
+	}
+	else
+	{
+		s.maxAnisotropy = 1;
+	}
+
+	if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
+	{
+		glTexParameterf(gltarget, GL_TEXTURE_MIN_LOD, (float)s.minLod);
+		glTexParameterf(gltarget, GL_TEXTURE_MAX_LOD, (float)s.maxLod);
+	}
+	else
+	{
+		s.minLod = 0;
+		s.maxLod = LOVE_UINT8_MAX;
+	}
+
+	if (isDepthCompareSampleSupported())
+	{
+		if (s.depthSampleMode.hasValue)
+		{
+			// See the comment in renderstate.h
+			GLenum glmode = getGLCompareMode(getReversedCompareMode(s.depthSampleMode.value));
+
+			glTexParameteri(gltarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+			glTexParameteri(gltarget, GL_TEXTURE_COMPARE_FUNC, glmode);
+		}
+		else
+		{
+			glTexParameteri(gltarget, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		}
+	}
+	else
+	{
+		s.depthSampleMode.hasValue = false;
+	}
 }
 
 bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth)
@@ -1379,6 +1425,11 @@ bool OpenGL::isBaseVertexSupported() const
 	return baseVertexSupported;
 }
 
+bool OpenGL::isMultiFormatMRTSupported() const
+{
+	return getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
+}
+
 int OpenGL::getMax2DTextureSize() const
 {
 	return std::max(max2DTextureSize, 1);
@@ -1404,9 +1455,9 @@ int OpenGL::getMaxRenderTargets() const
 	return std::min(maxRenderTargets, MAX_COLOR_RENDER_TARGETS);
 }
 
-int OpenGL::getMaxRenderbufferSamples() const
+int OpenGL::getMaxSamples() const
 {
-	return maxRenderbufferSamples;
+	return maxSamples;
 }
 
 int OpenGL::getMaxTextureUnits() const
@@ -1840,10 +1891,10 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 					   && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB));
 			}
 			else
-				return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB;
+				return GLAD_ES_VERSION_3_0;
 		}
 		else
-			return GLAD_ES_VERSION_3_0 || GLAD_EXT_sRGB || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
+			return GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
 	case PIXELFORMAT_R16_UNORM:
 	case PIXELFORMAT_RG16_UNORM:
 		return GLAD_VERSION_3_0
@@ -2043,7 +2094,7 @@ const char *OpenGL::framebufferStatusString(GLenum status)
 	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
 		return "Error in graphics driver (incomplete read buffer)";
 	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-		return "Canvas with the specified MSAA count cannot be rendered to on this system.";
+		return "Texture with the specified MSAA count cannot be rendered to on this system.";
 	case GL_FRAMEBUFFER_UNSUPPORTED:
 		return "Renderable textures are unsupported";
 	default:
