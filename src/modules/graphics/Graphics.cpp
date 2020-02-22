@@ -173,7 +173,9 @@ void Graphics::createQuadIndexBuffer()
 		return;
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
-	quadIndexBuffer = newIndexBuffer(INDEX_UINT16, nullptr, size, BUFFERUSAGE_STATIC, 0);
+
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, 0, BUFFERUSAGE_STATIC);
+	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
 	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
@@ -260,15 +262,10 @@ Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
 	return newShaderInternal(vertexstage.get(), pixelstage.get());
 }
 
-Buffer *Graphics::newIndexBuffer(IndexDataType dataType, const void *indices, size_t size, BufferUsage usage, uint32 mapflags)
+Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
 {
-	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, mapflags, usage);
-
-	std::vector<Buffer::DataDeclaration> format = {
-		{ "index", getIndexDataFormat(dataType), 0 }
-	};
-
-	return newBuffer(settings, format, indices, size, 0);
+	std::vector<Buffer::DataDeclaration> dataformat = {{"", format, 0}};
+	return newBuffer(settings, format, data, size, arraylength);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage)

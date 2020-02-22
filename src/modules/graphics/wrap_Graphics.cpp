@@ -1704,19 +1704,18 @@ static Mesh *newCustomMesh(lua_State *L)
 			for (size_t i = 0; i < vertexformat.size(); i++)
 			{
 				const auto &info = getDataFormatInfo(vertexformat[i].format);
-				int components = info.components;
 
 				// get vertices[vertindex][n]
-				for (int c = 0; c < components; c++)
+				for (int c = 0; c < info.components; c++)
 				{
 					n++;
 					lua_rawgeti(L, -(c + 1), n);
 				}
 
 				// Fetch the values from Lua and store them in data buffer.
-				luax_writeAttributeData(L, -components, vertexformat[i].format, components, data);
+				luax_writebufferdata(L, -info.components, vertexformat[i].format, data);
 
-				lua_pop(L, components);
+				lua_pop(L, info.components);
 
 				luax_catchexcept(L,
 					[&](){ t->setVertexAttribute(vertindex, i, data, sizeof(float) * 4); },

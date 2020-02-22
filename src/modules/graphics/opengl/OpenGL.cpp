@@ -562,16 +562,11 @@ GLenum OpenGL::getGLPrimitiveType(PrimitiveType type)
 {
 	switch (type)
 	{
-	case PRIMITIVE_TRIANGLES:
-		return GL_TRIANGLES;
-	case PRIMITIVE_TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-	case PRIMITIVE_TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-	case PRIMITIVE_POINTS:
-		return GL_POINTS;
-	case PRIMITIVE_MAX_ENUM:
-		return GL_ZERO;
+		case PRIMITIVE_TRIANGLES: return GL_TRIANGLES;
+		case PRIMITIVE_TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
+		case PRIMITIVE_TRIANGLE_FAN: return GL_TRIANGLE_FAN;
+		case PRIMITIVE_POINTS: return GL_POINTS;
+		case PRIMITIVE_MAX_ENUM: return GL_ZERO;
 	}
 
 	return GL_ZERO;
@@ -581,16 +576,9 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 {
 	switch (type)
 	{
-	case BUFFERTYPE_VERTEX:
-		return GL_ARRAY_BUFFER;
-	case BUFFERTYPE_INDEX:
-		return GL_ELEMENT_ARRAY_BUFFER;
-	case BUFFERTYPE_UNIFORM:
-		return GL_UNIFORM_BUFFER;
-	case BUFFERTYPE_SHADER_STORAGE:
-		return GL_SHADER_STORAGE_BUFFER;
-	case BUFFERTYPE_MAX_ENUM:
-		return GL_ZERO;
+		case BUFFERTYPE_VERTEX: return GL_ARRAY_BUFFER;
+		case BUFFERTYPE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
+		case BUFFERTYPE_MAX_ENUM: return GL_ZERO;
 	}
 
 	return GL_ZERO;
@@ -600,16 +588,11 @@ GLenum OpenGL::getGLTextureType(TextureType type)
 {
 	switch (type)
 	{
-	case TEXTURE_2D:
-		return GL_TEXTURE_2D;
-	case TEXTURE_VOLUME:
-		return GL_TEXTURE_3D;
-	case TEXTURE_2D_ARRAY:
-		return GL_TEXTURE_2D_ARRAY;
-	case TEXTURE_CUBE:
-		return GL_TEXTURE_CUBE_MAP;
-	case TEXTURE_MAX_ENUM:
-		return GL_ZERO;
+		case TEXTURE_2D: return GL_TEXTURE_2D;
+		case TEXTURE_VOLUME: return GL_TEXTURE_3D;
+		case TEXTURE_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
+		case TEXTURE_CUBE: return GL_TEXTURE_CUBE_MAP;
+		case TEXTURE_MAX_ENUM: return GL_ZERO;
 	}
 
 	return GL_ZERO;
@@ -619,12 +602,9 @@ GLenum OpenGL::getGLIndexDataType(IndexDataType type)
 {
 	switch (type)
 	{
-	case INDEX_UINT16:
-		return GL_UNSIGNED_SHORT;
-	case INDEX_UINT32:
-		return GL_UNSIGNED_INT;
-	default:
-		return GL_ZERO;
+		case INDEX_UINT16: return GL_UNSIGNED_SHORT;
+		case INDEX_UINT32: return GL_UNSIGNED_INT;
+		default: return GL_ZERO;
 	}
 }
 
@@ -771,14 +751,10 @@ GLenum OpenGL::getGLBufferUsage(BufferUsage usage)
 {
 	switch (usage)
 	{
-	case BUFFERUSAGE_STREAM:
-		return GL_STREAM_DRAW;
-	case BUFFERUSAGE_DYNAMIC:
-		return GL_DYNAMIC_DRAW;
-	case BUFFERUSAGE_STATIC:
-		return GL_STATIC_DRAW;
-	default:
-		return 0;
+		case BUFFERUSAGE_STREAM: return GL_STREAM_DRAW;
+		case BUFFERUSAGE_DYNAMIC: return GL_DYNAMIC_DRAW;
+		case BUFFERUSAGE_STATIC: return GL_STATIC_DRAW;
+		default: return 0;
 	}
 }
 
@@ -1165,24 +1141,15 @@ GLint OpenGL::getGLCompareMode(CompareMode mode)
 {
 	switch (mode)
 	{
-	case COMPARE_LESS:
-		return GL_LESS;
-	case COMPARE_LEQUAL:
-		return GL_LEQUAL;
-	case COMPARE_EQUAL:
-		return GL_EQUAL;
-	case COMPARE_GEQUAL:
-		return GL_GEQUAL;
-	case COMPARE_GREATER:
-		return GL_GREATER;
-	case COMPARE_NOTEQUAL:
-		return GL_NOTEQUAL;
-	case COMPARE_ALWAYS:
-		return GL_ALWAYS;
-	case COMPARE_NEVER:
-		return GL_NEVER;
-	default:
-		return GL_NEVER;
+		case COMPARE_LESS: return GL_LESS;
+		case COMPARE_LEQUAL: return GL_LEQUAL;
+		case COMPARE_EQUAL: return GL_EQUAL;
+		case COMPARE_GEQUAL: return GL_GEQUAL;
+		case COMPARE_GREATER: return GL_GREATER;
+		case COMPARE_NOTEQUAL: return GL_NOTEQUAL;
+		case COMPARE_ALWAYS: return GL_ALWAYS;
+		case COMPARE_NEVER: return GL_NEVER;
+		default: return GL_NEVER;
 	}
 }
 

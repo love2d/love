@@ -441,8 +441,7 @@ public:
 
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const void *data, size_t size) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
-
-	Buffer *newIndexBuffer(IndexDataType dataType, const void *indices, size_t size, BufferUsage usage, uint32 mapflags);
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 
 	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage);
 	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, BufferUsage usage);

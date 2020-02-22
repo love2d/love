@@ -22,13 +22,15 @@
 
 // LOVE
 #include "common/runtime.h"
+#include "Buffer.h"
 
 namespace love
 {
 namespace graphics
 {
 
-class Buffer;
+void luax_writebufferdata(lua_State *L, int startidx, DataFormat format, char *data);
+void luax_readbufferdata(lua_State *L, DataFormat format, const char *data);
 
 Buffer *luax_checkbuffer(lua_State *L, int idx);
 extern "C" int luaopen_graphicsbuffer(lua_State *L);

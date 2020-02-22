@@ -60,8 +60,6 @@ public:
 		TYPEFLAG_NONE = 0,
 		TYPEFLAG_VERTEX = 1 << BUFFERTYPE_VERTEX,
 		TYPEFLAG_INDEX = 1 << BUFFERTYPE_INDEX,
-		TYPEFLAG_UNIFORM = 1 << BUFFERTYPE_UNIFORM,
-		TYPEFLAG_SHADER_STORAGE = 1 << BUFFERTYPE_SHADER_STORAGE,
 	};
 
 	struct DataDeclaration
@@ -82,11 +80,13 @@ public:
 		DataDeclaration decl;
 		DataFormatInfo info;
 		size_t offset;
+		size_t size;
 
 		DataMember(const DataDeclaration &decl)
 			: decl(decl)
 			, info(getDataFormatInfo(decl.format))
 			, offset(0)
+			, size(0)
 		{}
 	};
 

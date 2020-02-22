@@ -58,8 +58,6 @@ enum BufferType
 {
 	BUFFERTYPE_VERTEX = 0,
 	BUFFERTYPE_INDEX,
-	BUFFERTYPE_UNIFORM,
-	BUFFERTYPE_SHADER_STORAGE,
 	BUFFERTYPE_MAX_ENUM
 };
 
@@ -218,7 +216,6 @@ struct DataFormatInfo
 	int matrixRows;
 	int matrixColumns;
 	size_t componentSize;
-	size_t alignment;
 	size_t size;
 };
 

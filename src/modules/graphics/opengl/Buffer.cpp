@@ -59,10 +59,6 @@ void Buffer::initialize(const void *data)
 		mapType = BUFFERTYPE_VERTEX;
 	else if (typeFlags & TYPEFLAG_INDEX)
 		mapType = BUFFERTYPE_INDEX;
-	else if (typeFlags & TYPEFLAG_UNIFORM)
-		mapType = BUFFERTYPE_UNIFORM;
-	else if (typeFlags & TYPEFLAG_SHADER_STORAGE)
-		mapType = BUFFERTYPE_SHADER_STORAGE;
 
 	target = OpenGL::getGLBufferType(mapType);
 

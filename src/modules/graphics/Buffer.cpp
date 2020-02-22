@@ -50,10 +50,8 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
 
-	bool uniformbuffer = settings.typeFlags & TYPEFLAG_UNIFORM;
 	bool indexbuffer = settings.typeFlags & TYPEFLAG_INDEX;
 	bool vertexbuffer = settings.typeFlags & TYPEFLAG_VERTEX;
-	bool ssbuffer = settings.typeFlags & TYPEFLAG_SHADER_STORAGE;
 
 	size_t offset = 0;
 	size_t stride = 0;
@@ -89,16 +87,11 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 				throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
 		}
 
-		if (uniformbuffer)
-		{
-			if (info.componentSize != 4)
-				throw love::Exception("");
-		}
-
-
 		// TODO: alignment
 		member.offset = offset;
-		offset += member.info.size;
+		member.size = member.info.size;
+
+		offset += member.size;
 
 		dataMembers.push_back(member);
 	}
