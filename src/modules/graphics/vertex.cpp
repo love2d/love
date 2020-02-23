@@ -320,6 +320,13 @@ DEFINE_STRINGMAP_BEGIN(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 }
 DEFINE_STRINGMAP_END(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 
+const char *getConstant(BuiltinVertexAttribute attrib)
+{
+	const char *name = nullptr;
+	getConstant(attrib, name);
+	return name;
+}
+
 DEFINE_STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 {
 	{ "uint16", INDEX_UINT16 },

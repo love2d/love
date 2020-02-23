@@ -131,53 +131,53 @@ std::vector<Buffer::DataDeclaration> Buffer::getCommonFormatDeclaration(CommonFo
 		return {};
 	case CommonFormat::XYf:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC2}
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 }
 		};
 	case CommonFormat::XYZf:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC3}
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC3 }
 		};
 	case CommonFormat::RGBAub:
 		return {
-			{"VertexColor", DATAFORMAT_UNORM8_VEC4}
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 }
 		};
 	case CommonFormat::STf_RGBAub:
 		return {
-			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
-			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
 		};
 	case CommonFormat::STPf_RGBAub:
 		return {
-			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC3},
-			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3 },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
 		};
 	case CommonFormat::XYf_STf:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
-			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
 		};
 	case CommonFormat::XYf_STPf:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
-			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC3},
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3 },
 		};
 	case CommonFormat::XYf_STf_RGBAub:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
-			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
-			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
 		};
 	case CommonFormat::XYf_STus_RGBAub:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
-			{"VertexTexCoord", DATAFORMAT_UNORM16_VEC2},
-			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_UNORM16_VEC2 },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
 		};
 	case CommonFormat::XYf_STPf_RGBAub:
 		return {
-			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
-			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
-			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
 		};
 	}
 

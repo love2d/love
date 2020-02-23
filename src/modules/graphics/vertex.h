@@ -393,5 +393,7 @@ DECLARE_STRINGMAP(DataBaseType);
 DECLARE_STRINGMAP(CullMode);
 DECLARE_STRINGMAP(Winding);
 
+const char *getConstant(BuiltinVertexAttribute attrib);
+
 } // graphics
 } // love
