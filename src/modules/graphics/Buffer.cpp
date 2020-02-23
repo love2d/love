@@ -28,7 +28,7 @@ namespace graphics
 
 love::Type Buffer::type("GraphicsBuffer", &Object::type);
 
-Buffer::Buffer(const Settings &settings, const void */*data*/, size_t size)
+Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &bufferformat, size_t size, size_t arraylength)
 	: arrayLength(0)
 	, arrayStride(0)
 	, size(size)
@@ -36,11 +36,6 @@ Buffer::Buffer(const Settings &settings, const void */*data*/, size_t size)
 	, usage(settings.usage)
 	, mapFlags(settings.mapFlags)
 	, mapped(false)
-{
-}
-
-Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &bufferformat, const void *data, size_t size, size_t arraylength)
-	: Buffer(settings, data, size)
 {
 	if (size == 0 && arraylength == 0)
 		throw love::Exception("Size or array length must be specified.");
@@ -126,6 +121,67 @@ int Buffer::getDataMemberIndex(const std::string &name) const
 	}
 
 	return -1;
+}
+
+std::vector<Buffer::DataDeclaration> Buffer::getCommonFormatDeclaration(CommonFormat format)
+{
+	switch (format)
+	{
+	case CommonFormat::NONE:
+		return {};
+	case CommonFormat::XYf:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC2}
+		};
+	case CommonFormat::XYZf:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC3}
+		};
+	case CommonFormat::RGBAub:
+		return {
+			{"VertexColor", DATAFORMAT_UNORM8_VEC4}
+		};
+	case CommonFormat::STf_RGBAub:
+		return {
+			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
+			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+		};
+	case CommonFormat::STPf_RGBAub:
+		return {
+			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC3},
+			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+		};
+	case CommonFormat::XYf_STf:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
+			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
+		};
+	case CommonFormat::XYf_STPf:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
+			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC3},
+		};
+	case CommonFormat::XYf_STf_RGBAub:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
+			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
+			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+		};
+	case CommonFormat::XYf_STus_RGBAub:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
+			{"VertexTexCoord", DATAFORMAT_UNORM16_VEC2},
+			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+		};
+	case CommonFormat::XYf_STPf_RGBAub:
+		return {
+			{"VertexPosition", DATAFORMAT_FLOAT_VEC2},
+			{"VertexTexCoord", DATAFORMAT_FLOAT_VEC2},
+			{"VertexColor", DATAFORMAT_UNORM8_VEC4},
+		};
+	}
+
+	return {};
 }
 
 } // graphics

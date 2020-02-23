@@ -35,25 +35,8 @@ namespace graphics
 namespace opengl
 {
 
-Buffer::Buffer(const Settings &settings, const void *data, size_t size)
-	: love::graphics::Buffer(settings, data, size)
-{
-	initialize(data);
-}
-
 Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
-	: love::graphics::Buffer(gfx, settings, format, data, size, arraylength)
-{
-	initialize(data);
-}
-
-Buffer::~Buffer()
-{
-	unloadVolatile();
-	delete[] memoryMap;
-}
-
-void Buffer::initialize(const void *data)
+	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
 {
 	if (typeFlags & TYPEFLAG_VERTEX)
 		mapType = BUFFERTYPE_VERTEX;
@@ -79,6 +62,12 @@ void Buffer::initialize(const void *data)
 		delete[] memoryMap;
 		throw love::Exception("Could not load vertex buffer (out of VRAM?)");
 	}
+}
+
+Buffer::~Buffer()
+{
+	unloadVolatile();
+	delete[] memoryMap;
 }
 
 bool Buffer::loadVolatile()

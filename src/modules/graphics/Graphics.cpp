@@ -265,7 +265,7 @@ Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
 {
 	std::vector<Buffer::DataDeclaration> dataformat = {{"", format, 0}};
-	return newBuffer(settings, format, data, size, arraylength);
+	return newBuffer(settings, dataformat, data, size, arraylength);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage)

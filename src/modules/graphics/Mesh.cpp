@@ -344,15 +344,16 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	size_t maxval = getVertexCount();
 
 	IndexDataType datatype = getIndexDataTypeFromMax(maxval);
+	DataFormat dataformat = getIndexDataFormat(datatype);
 
 	// Calculate the size in bytes of the index buffer data.
 	size_t size = map.size() * getIndexDataSize(datatype);
 
-	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize())
+	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, vertexBuffer->getUsage());
-		indexBuffer.set(gfx->newBuffer(settings, nullptr, size), Acquire::NORETAIN);
+		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
 	}
 
 	useIndexBuffer = true;
@@ -380,11 +381,13 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 
 void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasize)
 {
-	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize())
+	DataFormat dataformat = getIndexDataFormat(datatype);
+
+	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, vertexBuffer->getUsage());
-		indexBuffer.set(gfx->newBuffer(settings, nullptr, datasize), Acquire::NORETAIN);
+		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
 	}
 
 	indexCount = datasize / getIndexDataSize(datatype);

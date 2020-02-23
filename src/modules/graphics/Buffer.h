@@ -103,8 +103,7 @@ public:
 		{}
 	};
 
-	Buffer(const Settings &settings, const void *data, size_t size);
-	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
+	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
@@ -153,6 +152,8 @@ public:
 	 * Copy the contents of this Buffer to another Buffer object.
 	 **/
 	virtual void copyTo(size_t offset, size_t size, Buffer *other, size_t otheroffset) = 0;
+
+	static std::vector<DataDeclaration> getCommonFormatDeclaration(CommonFormat format);
 
 	class Mapper
 	{

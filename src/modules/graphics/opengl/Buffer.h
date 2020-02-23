@@ -42,7 +42,6 @@ class Buffer final : public love::graphics::Buffer, public Volatile
 {
 public:
 
-	Buffer(const Settings &settings, const void *data, size_t size);
 	Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
@@ -59,8 +58,6 @@ public:
 	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
 private:
-
-	void initialize(const void *data);
 
 	bool load(bool restore);
 

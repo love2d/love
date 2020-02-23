@@ -145,11 +145,6 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 	return new Shader(vertex, pixel);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const void *data, size_t size)
-{
-	return new Buffer(settings, data, size);
-}
-
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
 	return new Buffer(this, settings, format, data, size, arraylength);

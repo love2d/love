@@ -439,7 +439,6 @@ public:
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
 	Shader *newShader(const std::string &vertex, const std::string &pixel);
 
-	virtual Buffer *newBuffer(const Buffer::Settings &settings, const void *data, size_t size) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 

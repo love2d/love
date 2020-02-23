@@ -192,7 +192,8 @@ void ParticleSystem::createBuffers(size_t size)
 
 		size_t bytes = sizeof(Vertex) * size * 4;
 		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_STREAM);
-		buffer = gfx->newBuffer(settings, nullptr, bytes);
+		auto decl = Buffer::getCommonFormatDeclaration(CommonFormat::XYf_STf_RGBAub);
+		buffer = gfx->newBuffer(settings, decl, nullptr, bytes, 0);
 	}
 	catch (std::bad_alloc &)
 	{
