@@ -3,14 +3,26 @@ LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, 
 [![Build Status: Windows](https://ci.appveyor.com/api/projects/status/chc0hdr08wv1d5c7?svg=true)](https://ci.appveyor.com/project/AlexSzpakowski/love)
 [![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)](https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration)
 
-Documentation
--------------
+Please see our [living wiki documentationwiki][wiki] for deeper explanations and documentation of this framework.
 
-We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our IRC channel [#love on OFTC][irc].
+Come join us on our [forums][forums], our [Discord chat][discord], or our IRC channel [#love on OFTC][irc] and feel free to ask us anything.
 
-Compilation
------------
+Contributing
+------------
+
+Please contribute by looking through the [open issues][issues] and the forums and chat.
+Ready to make a code contribution? Very welcome! Please also read the [source code style guide][codestyle].
+
+## Git branches
+
+The 'master' branch is used for patch development of the current major release and should NOT be considered stable.
+There may also be a branch for the next major version in development, which is named after that version.
+
+We tag our releases (since we started using mercurial and git) and have binary downloads available for them.
+
+Experimental changes are developed in the separate [love-experiments][love-experiments] repository.
+
+## Compiling
 
 ### Windows
 Follow the instructions at the [megasource][megasource] repository page.
@@ -40,27 +52,10 @@ See `readme-iOS.rtf` for more information.
 ### Android
 Visit the [Android build repository][android-repository] for build instructions.
 
-Repository information
-----------------------
+# Released builds
 
-We use the 'master' branch for patch development of the current major release, and therefore it should not be considered stable.
-There may also be a branch for the next major version in development, which is named after that version.
-
-We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
-
-Experimental changes are developed in the separate [love-experiments][love-experiments] repository.
-
-Contributing
-------------
-
-The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
-For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
-
-Builds
-------
-
-Releases are found in the [releases][releases] section on github, and are linked on [the site][site],
-and there's a ppa for ubuntu, [ppa:bartbes/love-stable][stableppa].
+Releases are found in the [releases][releases] section on github, and are linked on [the site][site].
+For Ubuntu users there's a ppa [ppa:bartbes/love-stable][stableppa].
 
 There are also unstable/nightly builds:
 
