@@ -358,14 +358,6 @@ DEFINE_STRINGMAP_BEGIN(AttributeStep, STEP_MAX_ENUM, attributeStep)
 }
 DEFINE_STRINGMAP_END(AttributeStep, STEP_MAX_ENUM, attributeStep)
 
-DEFINE_STRINGMAP_BEGIN(DataTypeDeprecated, DATADEPRECATED_MAX_ENUM, dataType)
-{
-	{ "unorm8",  DATADEPRECATED_UNORM8  },
-	{ "unorm16", DATADEPRECATED_UNORM16 },
-	{ "float",   DATADEPRECATED_FLOAT   },
-}
-DEFINE_STRINGMAP_END(DataTypeDeprecated, DATADEPRECATED_MAX_ENUM, dataType)
-
 DEFINE_STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 {
 	{ "float",     DATAFORMAT_FLOAT      },

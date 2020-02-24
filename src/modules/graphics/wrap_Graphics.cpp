@@ -1557,6 +1557,8 @@ static Mesh *newStandardMesh(lua_State *L)
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
 	BufferUsage usage = luax_optmeshusage(L, 3, BUFFERUSAGE_DYNAMIC);
 
+	auto format = Mesh::getDefaultVertexFormat();
+
 	// First argument is a table of standard vertices, or the number of
 	// standard vertices.
 	if (lua_istable(L, 1))
@@ -1595,12 +1597,12 @@ static Mesh *newStandardMesh(lua_State *L)
 			vertices.push_back(v);
 		}
 
-		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertices, drawmode, usage); });
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(format, vertices.data(), vertices.size() * sizeof(Vertex), drawmode, usage); });
 	}
 	else
 	{
 		int count = (int) luaL_checkinteger(L, 1);
-		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, drawmode, usage); });
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(format, count, drawmode, usage); });
 	}
 
 	return t;
@@ -1641,24 +1643,41 @@ static Mesh *newCustomMesh(lua_State *L)
 
 		if (!getConstant(tname, format))
 		{
-			DataTypeDeprecated legacyType = DATADEPRECATED_FLOAT;
-
-			if (strcmp(tname, "byte") == 0) // Legacy name.
-				legacyType = DATADEPRECATED_UNORM8;
-			else if (!getConstant(tname, legacyType))
-			{
-				luax_enumerror(L, "Mesh vertex data format name", getConstants(format), tname);
-				return nullptr;
-			}
-
 			int components = (int) luaL_checkinteger(L, -1);
-			if (components <= 0 || components > 4)
-			{
-				luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", components);
-				return nullptr;
-			}
 
-			// TODO: convert legacy type+components to new format enum.
+			// Check deprecated format names.
+			if (strcmp(tname, "byte") == 0 || strcmp(tname, "unorm8") == 0)
+			{
+				if (components == 4)
+					format = DATAFORMAT_UNORM8_VEC4;
+				else
+					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
+			}
+			else if (strcmp(tname, "unorm16") == 0)
+			{
+				if (components == 2)
+					format = DATAFORMAT_UNORM16_VEC2;
+				else if (components == 4)
+					format = DATAFORMAT_UNORM16_VEC4;
+				else
+					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
+
+			}
+			else if (strcmp(tname, "float") == 0)
+			{
+				if (components == 1)
+					format = DATAFORMAT_FLOAT;
+				else if (components == 2)
+					format = DATAFORMAT_FLOAT_VEC2;
+				else if (components == 3)
+					format = DATAFORMAT_FLOAT_VEC3;
+				else if (components == 4)
+					format = DATAFORMAT_FLOAT_VEC4;
+				else
+					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
+			}
+			else
+				luax_enumerror(L, "vertex data format", getConstants(format), tname);
 		}
 
 		lua_pop(L, 4);

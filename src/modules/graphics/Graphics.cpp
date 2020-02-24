@@ -268,24 +268,19 @@ Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format,
 	return newBuffer(settings, dataformat, data, size, arraylength);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage)
-{
-	return newMesh(Mesh::getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage);
-}
-
-Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, BufferUsage usage)
-{
-	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
-}
-
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode)
+{
+	return new Mesh(attributes, drawmode);
 }
 
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)

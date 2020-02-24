@@ -34,27 +34,13 @@ namespace love
 namespace graphics
 {
 
-static const char *getBuiltinAttribName(BuiltinVertexAttribute attribid)
-{
-	const char *name = "";
-	getConstant(attribid, name);
-	return name;
-}
-
 static_assert(offsetof(Vertex, x) == sizeof(float) * 0, "Incorrect position offset in Vertex struct");
 static_assert(offsetof(Vertex, s) == sizeof(float) * 2, "Incorrect texture coordinate offset in Vertex struct");
 static_assert(offsetof(Vertex, color.r) == sizeof(float) * 4, "Incorrect color offset in Vertex struct");
 
 std::vector<Buffer::DataDeclaration> Mesh::getDefaultVertexFormat()
 {
-	// Corresponds to the love::Vertex struct.
-	std::vector<Buffer::DataDeclaration> vertexformat = {
-		{ getBuiltinAttribName(ATTRIB_POS),      DATAFORMAT_FLOAT_VEC2,  0 },
-		{ getBuiltinAttribName(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2,  0 },
-		{ getBuiltinAttribName(ATTRIB_COLOR),    DATAFORMAT_UNORM8_VEC4, 0 },
-	};
-
-	return vertexformat;
+	return Buffer::getCommonFormatDeclaration(CommonFormat::XYf_STf_RGBAub);
 }
 
 love::Type Mesh::type("Mesh", &Drawable::type);
@@ -63,6 +49,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 	: vertexBuffer(nullptr)
 	, vertexCount(0)
 	, vertexStride(0)
+	, vertexScratchBuffer(nullptr)
 	, indexBuffer(nullptr)
 	, useIndexBuffer(false)
 	, indexCount(0)
@@ -89,6 +76,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 	: vertexBuffer(nullptr)
 	, vertexCount((size_t) vertexcount)
 	, vertexStride(0)
+	, vertexScratchBuffer(nullptr)
 	, indexBuffer(nullptr)
 	, useIndexBuffer(false)
 	, indexCount(0)
@@ -115,6 +103,37 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 	vertexScratchBuffer = new char[vertexStride];
 }
 
+Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode)
+	: vertexBuffer(nullptr)
+	, vertexCount(0)
+	, vertexStride(0)
+	, vertexScratchBuffer(nullptr)
+	, indexBuffer(nullptr)
+	, useIndexBuffer(false)
+	, indexCount(0)
+	, indexDataType(INDEX_UINT16)
+	, primitiveType(drawmode)
+	, rangeStart(-1)
+	, rangeCount(-1)
+{
+	if (attributes.size() == 0)
+		throw love::Exception("At least one buffer attribute must be specified in this constructor.");
+
+	attachedAttributes = attributes;
+
+	vertexCount = LOVE_UINT32_MAX;
+
+	for (const auto &attrib : attachedAttributes)
+	{
+		if (getAttachedAttributeIndex(attrib.name) != -1)
+			throw love::Exception("Duplicate vertex attribute name: %s", attrib.name.c_str());
+
+		vertexCount = std::min(vertexCount, attrib.buffer->getArrayLength());
+	}
+
+	indexDataType = getIndexDataTypeFromMax(vertexCount);
+}
+
 Mesh::~Mesh()
 {
 	delete vertexScratchBuffer;
@@ -126,17 +145,31 @@ void Mesh::setupAttachedAttributes()
 	{
 		const std::string &name = vertexFormat[i].decl.name;
 
-		if (attachedAttributes.find(name) != attachedAttributes.end())
+		if (getAttachedAttributeIndex(name) != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes[name] = {vertexBuffer, (int) i, STEP_PER_VERTEX, true};
+		attachedAttributes.push_back({name, vertexBuffer, (int) i, STEP_PER_VERTEX, true});
 	}
+}
+
+int Mesh::getAttachedAttributeIndex(const std::string &name) const
+{
+	for (int i = 0; i < (int) attachedAttributes.size(); i++)
+	{
+		if (attachedAttributes[i].name == name)
+			return i;
+	}
+
+	return -1;
 }
 
 void Mesh::setVertex(size_t vertindex, const void *data, size_t datasize)
 {
 	if (vertindex >= vertexCount)
 		throw love::Exception("Invalid vertex index: %ld", vertindex + 1);
+
+	if (vertexBuffer.get() == nullptr)
+		throw love::Exception("setVertex can only be called on a Mesh which owns its own vertex buffer.");
 
 	size_t offset = vertindex * vertexStride;
 	size_t size = std::min(datasize, vertexStride);
@@ -151,6 +184,9 @@ size_t Mesh::getVertex(size_t vertindex, void *data, size_t datasize)
 {
 	if (vertindex >= vertexCount)
 		throw love::Exception("Invalid vertex index: %ld", vertindex + 1);
+
+	if (vertexBuffer.get() == nullptr)
+		throw love::Exception("getVertex can only be called on a Mesh which owns its own vertex buffer.");
 
 	size_t offset = vertindex * vertexStride;
 	size_t size = std::min(datasize, vertexStride);
@@ -175,6 +211,9 @@ void Mesh::setVertexAttribute(size_t vertindex, int attribindex, const void *dat
 	if (attribindex >= (int) vertexFormat.size())
 		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
 
+	if (vertexBuffer.get() == nullptr)
+		throw love::Exception("setVertexAttribute can only be called on a Mesh which owns its own vertex buffer.");
+
 	const auto &member = vertexFormat[attribindex];
 
 	size_t offset = vertindex * vertexStride + member.offset;
@@ -193,6 +232,9 @@ size_t Mesh::getVertexAttribute(size_t vertindex, int attribindex, void *data, s
 
 	if (attribindex >= (int) vertexFormat.size())
 		throw love::Exception("Invalid vertex attribute index: %d", attribindex + 1);
+
+	if (vertexBuffer.get() == nullptr)
+		throw love::Exception("getVertexAttribute can only be called on a Mesh which owns its own vertex buffer.");
 
 	const auto &member = vertexFormat[attribindex];
 
@@ -239,39 +281,37 @@ int Mesh::getAttributeIndex(const std::string &name) const
 
 void Mesh::setAttributeEnabled(const std::string &name, bool enable)
 {
-	auto it = attachedAttributes.find(name);
-
-	if (it == attachedAttributes.end())
+	int index = getAttachedAttributeIndex(name);
+	if (index == -1)
 		throw love::Exception("Mesh does not have an attached vertex attribute named '%s'", name.c_str());
 
-	it->second.enabled = enable;
+	attachedAttributes[index].enabled = enable;
 }
 
 bool Mesh::isAttributeEnabled(const std::string &name) const
 {
-	const auto it = attachedAttributes.find(name);
-
-	if (it == attachedAttributes.end())
+	int index = getAttachedAttributeIndex(name);
+	if (index == -1)
 		throw love::Exception("Mesh does not have an attached vertex attribute named '%s'", name.c_str());
 
-	return it->second.enabled;
+	return attachedAttributes[index].enabled;
 }
 
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step)
 {
 	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
-		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Vertex attribute instancing is not supported on this system.");
 
-	AttachedAttribute oldattrib = {};
-	AttachedAttribute newattrib = {};
+	BufferAttribute oldattrib = {};
+	BufferAttribute newattrib = {};
 
-	auto it = attachedAttributes.find(name);
-	if (it != attachedAttributes.end())
-		oldattrib = it->second;
+	int oldindex = getAttachedAttributeIndex(name);
+	if (oldindex != -1)
+		oldattrib = attachedAttributes[oldindex];
 	else if (attachedAttributes.size() + 1 > VertexAttributes::MAX)
 		throw love::Exception("A maximum of %d attributes can be attached at once.", VertexAttributes::MAX);
 
@@ -283,42 +323,46 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::s
 	if (newattrib.index < 0)
 		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
 
-	attachedAttributes[name] = newattrib;
+	if (oldindex != -1)
+		attachedAttributes[oldindex] = newattrib;
+	else
+		attachedAttributes.push_back(newattrib);
 }
 
 bool Mesh::detachAttribute(const std::string &name)
 {
-	auto it = attachedAttributes.find(name);
+	int index = getAttachedAttributeIndex(name);
+	if (index == -1)
+		return false;
 
-	if (it != attachedAttributes.end())
-	{
-		attachedAttributes.erase(it);
+	attachedAttributes.erase(attachedAttributes.begin() + index);
 
-		if (getAttributeIndex(name) != -1)
-			attachAttribute(name, vertexBuffer, name);
+	if (getAttributeIndex(name) != -1)
+		attachAttribute(name, vertexBuffer, name);
 
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void *Mesh::mapVertexData()
 {
-	return vertexBuffer->map();
+	return vertexBuffer.get() != nullptr ? vertexBuffer->map() : nullptr;
 }
 
 void Mesh::unmapVertexData(size_t modifiedoffset, size_t modifiedsize)
 {
+	if (!vertexBuffer.get())
+		return;
+
 	vertexBuffer->setMappedRangeModified(modifiedoffset, modifiedsize);
 	vertexBuffer->unmap();
 }
 
 void Mesh::flush()
 {
-	vertexBuffer->unmap();
+	if (vertexBuffer.get())
+		vertexBuffer->unmap();
 
-	if (indexBuffer != nullptr)
+	if (indexBuffer.get())
 		indexBuffer->unmap();
 }
 
@@ -352,7 +396,8 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, vertexBuffer->getUsage());
+		auto usage = vertexBuffer.get() ? vertexBuffer->getUsage() : BUFFERUSAGE_DYNAMIC;
+		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, usage);
 		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
 	}
 
@@ -386,7 +431,8 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, vertexBuffer->getUsage());
+		auto usage = vertexBuffer.get() ? vertexBuffer->getUsage() : BUFFERUSAGE_DYNAMIC;
+		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_READ, usage);
 		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
 	}
 
@@ -529,32 +575,32 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 	for (const auto &attrib : attachedAttributes)
 	{
-		if (!attrib.second.enabled)
+		if (!attrib.enabled)
 			continue;
 
-		Buffer *buffer = attrib.second.buffer.get();
+		Buffer *buffer = attrib.buffer.get();
 		int attributeindex = -1;
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
 		BuiltinVertexAttribute builtinattrib;
-		if (getConstant(attrib.first.c_str(), builtinattrib))
+		if (getConstant(attrib.name.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)
-			attributeindex = Shader::current->getVertexAttributeIndex(attrib.first);
+			attributeindex = Shader::current->getVertexAttributeIndex(attrib.name);
 
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
 			buffer->unmap();
 
-			const auto &member = buffer->getDataMember(attrib.second.index);
+			const auto &member = buffer->getDataMember(attrib.index);
 
-			uint16 offset = (uint16) buffer->getMemberOffset(attrib.second.index);
+			uint16 offset = (uint16) buffer->getMemberOffset(attrib.index);
 			uint16 stride = (uint16) buffer->getArrayStride();
 
 			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
-			attributes.setBufferLayout(activebuffers, stride, attrib.second.step);
+			attributes.setBufferLayout(activebuffers, stride, attrib.step);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.
 			buffers.set(activebuffers, buffer, 0);

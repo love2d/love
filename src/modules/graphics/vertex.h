@@ -102,14 +102,6 @@ enum BufferUsage
 	BUFFERUSAGE_MAX_ENUM
 };
 
-enum DataTypeDeprecated
-{
-	DATADEPRECATED_UNORM8,
-	DATADEPRECATED_UNORM16,
-	DATADEPRECATED_FLOAT,
-	DATADEPRECATED_MAX_ENUM
-};
-
 // Value types used when interfacing with the GPU (vertex and shader data).
 // The order of this enum affects the dataFormatInfo array.
 enum DataFormat
@@ -387,7 +379,6 @@ DECLARE_STRINGMAP(IndexDataType);
 DECLARE_STRINGMAP(BufferUsage);
 DECLARE_STRINGMAP(PrimitiveType);
 DECLARE_STRINGMAP(AttributeStep);
-DECLARE_STRINGMAP(DataTypeDeprecated);
 DECLARE_STRINGMAP(DataFormat);
 DECLARE_STRINGMAP(DataBaseType);
 DECLARE_STRINGMAP(CullMode);

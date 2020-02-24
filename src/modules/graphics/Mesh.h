@@ -50,10 +50,20 @@ class Mesh : public Drawable
 {
 public:
 
+	struct BufferAttribute
+	{
+		std::string name;
+		StrongRef<Buffer> buffer;
+		int index;
+		AttributeStep step;
+		bool enabled;
+	};
+
 	static love::Type type;
 
 	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
 	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(const std::vector<BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	virtual ~Mesh();
 
@@ -105,6 +115,7 @@ public:
 	 **/
 	void attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
+	const std::vector<BufferAttribute> &getAttachedAttributes();
 
 	void *mapVertexData();
 	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);
@@ -172,19 +183,12 @@ private:
 
 	friend class SpriteBatch;
 
-	struct AttachedAttribute
-	{
-		StrongRef<Buffer> buffer;
-		int index;
-		AttributeStep step;
-		bool enabled;
-	};
-
 	void setupAttachedAttributes();
+	int getAttachedAttributeIndex(const std::string &name) const;
 
 	std::vector<Buffer::DataMember> vertexFormat;
 
-	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
+	std::vector<BufferAttribute> attachedAttributes;
 
 	// Vertex buffer, for the vertex data.
 	StrongRef<Buffer> vertexBuffer;

@@ -442,10 +442,9 @@ public:
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 
-	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, BufferUsage usage);
-	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, BufferUsage usage);
 	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
 	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
