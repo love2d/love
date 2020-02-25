@@ -3,17 +3,20 @@ LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, 
 [![Build Status: Windows](https://ci.appveyor.com/api/projects/status/chc0hdr08wv1d5c7?svg=true)](https://ci.appveyor.com/project/AlexSzpakowski/love)
 [![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)](https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration)
 
-Please see our [living wiki documentationwiki][wiki] for deeper explanations and documentation of this framework.
+Documentation
+-------------
 
-Come join us on our [forums][forums], our [Discord chat][discord], or our IRC channel [#love on OFTC][irc] and feel free to ask us anything.
+We use our [wiki][wiki] for documentation.
+If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our IRC channel [#love on OFTC][irc].
 
 Contributing
 ------------
 
-Please contribute by looking through the [open issues][issues] and the forums and chat.
-Ready to make a code contribution? Very welcome! Please also read the [source code style guide][codestyle].
+The best places to contribute are through the [issue tracker][issues] and the official Discord server or IRC channel.
 
-## Git branches
+Ready to make a code contribution? Excellent! Please come discuss any bigger changes in the chat, and do also check our [source code style guide][codestyle].
+
+## Repository information
 
 The 'master' branch is used for patch development of the current major release and should NOT be considered stable.
 There may also be a branch for the next major version in development, which is named after that version.
@@ -93,3 +96,4 @@ Dependencies
 [codestyle]: https://love2d.org/wiki/Code_Style
 [android-repository]: https://github.com/love2d/love-android
 [releases]: https://github.com/love2d/love/releases
+[issues]: https://github.com/love2d/love/issues
