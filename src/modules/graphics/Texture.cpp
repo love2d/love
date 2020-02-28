@@ -324,14 +324,14 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
 
-	Graphics::StreamDrawCommand cmd;
+	Graphics::BatchedDrawCommand cmd;
 	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STf_RGBAub;
 	cmd.indexMode = TriangleIndexMode::QUADS;
 	cmd.vertexCount = 4;
 	cmd.texture = this;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
+	Graphics::BatchedVertexData data = gfx->requestBatchedDraw(cmd);
 
 	Matrix4 t(tm, localTransform);
 
@@ -381,7 +381,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 
 	Matrix4 t(tm, m);
 
-	Graphics::StreamDrawCommand cmd;
+	Graphics::BatchedDrawCommand cmd;
 	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STPf_RGBAub;
 	cmd.indexMode = TriangleIndexMode::QUADS;
@@ -389,7 +389,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	cmd.texture = this;
 	cmd.standardShaderType = Shader::STANDARD_ARRAY;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
+	Graphics::BatchedVertexData data = gfx->requestBatchedDraw(cmd);
 
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], q->getVertexPositions(), 4);
@@ -464,7 +464,7 @@ void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap
 	if (isPixelFormatCompressed(d->getFormat()) && (rect.x != 0 || rect.y != 0 || rect.w != mipw || rect.h != miph))
 		throw love::Exception("Compressed textures only support replacing the entire Texture.");
 
-	Graphics::flushStreamDrawsGlobal();
+	Graphics::flushBatchedDrawsGlobal();
 
 	uploadImageData(d, mipmap, slice, x, y);
 
@@ -481,7 +481,7 @@ void Texture::replacePixels(const void *data, size_t size, int slice, int mipmap
 	if (gfx != nullptr && gfx->isRenderTargetActive(this))
 		return;
 
-	Graphics::flushStreamDrawsGlobal();
+	Graphics::flushBatchedDrawsGlobal();
 
 	uploadByteData(format, data, size, mipmap, slice, rect, nullptr);
 
@@ -631,7 +631,7 @@ void Texture::setSamplerState(const SamplerState &s)
 	if (s.depthSampleMode.hasValue && !isPixelFormatDepth(format))
 		throw love::Exception("Only depth textures can have a depth sample compare mode.");
 
-	Graphics::flushStreamDrawsGlobal();
+	Graphics::flushBatchedDrawsGlobal();
 
 	samplerState = s;
 

@@ -1029,7 +1029,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	if (pCount == 0 || texture.get() == nullptr || pMem == nullptr || buffer == nullptr)
 		return;
 
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);

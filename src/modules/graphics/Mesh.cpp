@@ -584,7 +584,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Instancing is not supported on this system.");
 
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);

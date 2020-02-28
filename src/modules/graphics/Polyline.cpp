@@ -390,13 +390,13 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 	{
 		const Vector2 *verts = vertices + vertex_start;
 
-		Graphics::StreamDrawCommand cmd;
+		Graphics::BatchedDrawCommand cmd;
 		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 		cmd.formats[1] = vertex::CommonFormat::RGBAub;
 		cmd.indexMode = triangle_mode;
 		cmd.vertexCount = std::min(maxvertices, total_vertex_count - vertex_start);
 
-		Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
+		Graphics::BatchedVertexData data = gfx->requestBatchedDraw(cmd);
 
 		if (is2D)
 			t.transformXY((Vector2 *) data.stream[0], verts, cmd.vertexCount);

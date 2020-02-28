@@ -82,7 +82,7 @@ void Deprecations::draw(Graphics *gfx)
 		font.set(gfx->newDefaultFont(9, hinting), Acquire::NORETAIN);
 	}
 
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 
 	gfx->push(Graphics::STACK_ALL);
 	gfx->reset();

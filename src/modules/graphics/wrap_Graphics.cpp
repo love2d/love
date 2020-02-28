@@ -3029,7 +3029,7 @@ int w_polygon(lua_State *L)
 
 int w_flushBatch(lua_State *)
 {
-	instance()->flushStreamDraws();
+	instance()->flushBatchedDraws();
 	return 0;
 }
 
