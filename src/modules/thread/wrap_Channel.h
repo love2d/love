@@ -23,6 +23,7 @@
 
 // LOVE
 #include "Channel.h"
+#include "common/runtime.h"
 
 namespace love
 {

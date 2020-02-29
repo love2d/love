@@ -249,7 +249,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 	if (vertex_buffer == nullptr || draw_commands.empty())
 		return;
 
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);

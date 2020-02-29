@@ -429,7 +429,7 @@ void Shader::attach()
 {
 	if (current != this)
 	{
-		Graphics::flushStreamDrawsGlobal();
+		Graphics::flushBatchedDrawsGlobal();
 
 		gl.useProgram(program);
 		current = this;
@@ -480,7 +480,7 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalupda
 	}
 
 	if (!internalupdate)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	int location = info->location;
 	UniformType type = info->baseType;
@@ -578,7 +578,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	bool shaderactive = current == this;
 
 	if (!internalUpdate && shaderactive)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	count = std::min(count, info->count);
 
@@ -644,10 +644,10 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	}
 }
 
-void Shader::flushStreamDraws() const
+void Shader::flushBatchedDraws() const
 {
 	if (current == this)
-		Graphics::flushStreamDrawsGlobal();
+		Graphics::flushBatchedDrawsGlobal();
 }
 
 bool Shader::hasUniform(const std::string &name) const

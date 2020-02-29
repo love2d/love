@@ -24,6 +24,8 @@
 // LOVE
 #include "config.h"
 #include "types.h"
+#include "Object.h"
+#include "Variant.h"
 #include "deprecation.h"
 
 // Lua
@@ -37,12 +39,12 @@ extern "C" {
 // C++
 #include <exception>
 #include <algorithm>
+#include <set>
 
 namespace love
 {
 
 // Forward declarations.
-class Object;
 class Module;
 class Reference;
 
@@ -57,21 +59,6 @@ enum Registry
 {
 	REGISTRY_MODULES,
 	REGISTRY_OBJECTS
-};
-
-/**
- * This structure wraps all Lua-exposed objects. It exists in the
- * Lua state as a full userdata (so we can catch __gc "events"),
- * though the Object it refers to is light userdata in the sense
- * that it is not allocated by the Lua VM.
- **/
-struct Proxy
-{
-	// Holds type information (see types.h).
-	love::Type *type;
-
-	// Pointer to the actual object.
-	Object *object;
 };
 
 /**
@@ -364,6 +351,16 @@ void luax_pushtype(lua_State *L, StrongRef<T> &object)
  * @param object The pointer to the actual object.
  **/
 void luax_rawnewtype(lua_State *L, love::Type &type, love::Object *object);
+
+/**
+ * Stores the value at the given index on the stack into a Variant object.
+ */
+LOVE_EXPORT Variant luax_checkvariant(lua_State *L, int idx, bool allowuserdata = true, std::set<const void*> *tableSet = nullptr);
+
+/**
+ * Pushes the contents of the given Variant index onto the stack.
+ */
+LOVE_EXPORT void luax_pushvariant(lua_State *L, const Variant &v);
 
 /**
  * Checks whether the value at idx is a certain type.

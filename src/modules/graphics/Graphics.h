@@ -253,7 +253,7 @@ public:
 		{}
 	};
 
-	struct StreamDrawCommand
+	struct BatchedDrawCommand
 	{
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
 		CommonFormat formats[2];
@@ -262,14 +262,14 @@ public:
 		Texture *texture = nullptr;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 
-		StreamDrawCommand()
+		BatchedDrawCommand()
 		{
 			// VS2013 can't initialize arrays in the above manner...
 			formats[1] = formats[0] = CommonFormat::NONE;
 		}
 	};
 
-	struct StreamVertexData
+	struct BatchedVertexData
 	{
 		void *stream[2];
 	};
@@ -822,10 +822,10 @@ public:
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
 	virtual void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
 
-	void flushStreamDraws();
-	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
+	void flushBatchedDraws();
+	BatchedVertexData requestBatchedDraw(const BatchedDrawCommand &command);
 
-	static void flushStreamDrawsGlobal();
+	static void flushBatchedDrawsGlobal();
 
 	virtual Shader::Language getShaderLanguageTarget() const = 0;
 	const DefaultShaderCode &getCurrentDefaultShaderCode() const;
@@ -911,7 +911,7 @@ protected:
 		SamplerState defaultSamplerState = SamplerState();
 	};
 
-	struct StreamBufferState
+	struct BatchedDrawState
 	{
 		StreamBuffer *vb[2];
 		StreamBuffer *indexBuffer = nullptr;
@@ -926,7 +926,7 @@ protected:
 		StreamBuffer::MapInfo vbMap[2];
 		StreamBuffer::MapInfo indexBufferMap = StreamBuffer::MapInfo();
 
-		StreamBufferState()
+		BatchedDrawState()
 		{
 			vb[0] = vb[1] = nullptr;
 			formats[0] = formats[1] = CommonFormat::NONE;
@@ -979,7 +979,7 @@ protected:
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
 
-	StreamBufferState streamBufferState;
+	BatchedDrawState batchedDrawState;
 
 	std::vector<Matrix4> transformStack;
 	Matrix4 projectionMatrix;

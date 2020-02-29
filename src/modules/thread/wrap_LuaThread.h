@@ -23,6 +23,7 @@
 
 // LOVE
 #include "ThreadModule.h"
+#include "common/runtime.h"
 
 namespace love
 {
