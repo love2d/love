@@ -298,6 +298,8 @@ int w_Mesh_attachAttribute(lua_State *L)
 	{
 		Mesh *mesh = luax_checkmesh(L, 3);
 		buffer = mesh->getVertexBuffer();
+		if (buffer == nullptr)
+			return luaL_error(L, "Mesh does not have its own vertex buffer.");
 	}
 
 	AttributeStep step = STEP_PER_VERTEX;
@@ -318,6 +320,41 @@ int w_Mesh_detachAttribute(lua_State *L)
 	bool success = false;
 	luax_catchexcept(L, [&](){ success = t->detachAttribute(name); });
 	luax_pushboolean(L, success);
+	return 1;
+}
+
+int w_Mesh_getAttachedAttributes(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	const auto &attributes = t->getAttachedAttributes();
+
+	lua_createtable(L, (int) attributes.size(), 0);
+
+	for (int i = 0; i < (int) attributes.size(); i++)
+	{
+		const auto &attrib = attributes[i];
+
+		lua_createtable(L, 4, 0);
+
+		luax_pushstring(L, attrib.name);
+		lua_rawseti(L, -1, 1);
+
+		luax_pushtype(L, attrib.buffer.get());
+		lua_rawseti(L, -1, 2);
+
+		const char *stepstr = nullptr;
+		if (!getConstant(attrib.step, stepstr))
+			return luaL_error(L, "Invalid vertex attribute step.");
+		lua_pushstring(L, stepstr);
+		lua_rawseti(L, -1, 3);
+
+		const Buffer::DataMember &member = attrib.buffer->getDataMember(attrib.indexInBuffer);
+		luax_pushstring(L, member.decl.name);
+		lua_rawseti(L, -1, 4);
+
+		lua_rawseti(L, -1, i + 1);
+	}
+
 	return 1;
 }
 
@@ -507,6 +544,7 @@ static const luaL_Reg w_Mesh_functions[] =
 	{ "isAttributeEnabled", w_Mesh_isAttributeEnabled },
 	{ "attachAttribute", w_Mesh_attachAttribute },
 	{ "detachAttribute", w_Mesh_detachAttribute },
+	{ "getAttachedAttributes", w_Mesh_getAttachedAttributes },
 	{ "flush", w_Mesh_flush },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },

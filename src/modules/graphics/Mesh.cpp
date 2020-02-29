@@ -121,10 +121,13 @@ Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType d
 
 	attachedAttributes = attributes;
 
-	vertexCount = LOVE_UINT32_MAX;
+	vertexCount = attachedAttributes.size() > 0 ? LOVE_UINT32_MAX : 0;
 
 	for (const auto &attrib : attachedAttributes)
 	{
+		if ((attrib.buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
+			throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+
 		if (getAttachedAttributeIndex(attrib.name) != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", attrib.name.c_str());
 
@@ -268,17 +271,6 @@ const std::vector<Buffer::DataMember> &Mesh::getVertexFormat() const
 	return vertexFormat;
 }
 
-int Mesh::getAttributeIndex(const std::string &name) const
-{
-	for (int i = 0; i < (int) vertexFormat.size(); i++)
-	{
-		if (vertexFormat[i].decl.name == name)
-			return i;
-	}
-
-	return -1;
-}
-
 void Mesh::setAttributeEnabled(const std::string &name, bool enable)
 {
 	int index = getAttachedAttributeIndex(name);
@@ -317,10 +309,10 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::s
 
 	newattrib.buffer = buffer;
 	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
-	newattrib.index = buffer->getDataMemberIndex(attachname);
+	newattrib.indexInBuffer = buffer->getDataMemberIndex(attachname);
 	newattrib.step = step;
 
-	if (newattrib.index < 0)
+	if (newattrib.indexInBuffer < 0)
 		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
 
 	if (oldindex != -1)
@@ -337,7 +329,7 @@ bool Mesh::detachAttribute(const std::string &name)
 
 	attachedAttributes.erase(attachedAttributes.begin() + index);
 
-	if (getAttributeIndex(name) != -1)
+	if (vertexBuffer.get() && vertexBuffer->getDataMemberIndex(name) != -1)
 		attachAttribute(name, vertexBuffer, name);
 
 	return true;
@@ -594,9 +586,9 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
 			buffer->unmap();
 
-			const auto &member = buffer->getDataMember(attrib.index);
+			const auto &member = buffer->getDataMember(attrib.indexInBuffer);
 
-			uint16 offset = (uint16) buffer->getMemberOffset(attrib.index);
+			uint16 offset = (uint16) member.offset;
 			uint16 stride = (uint16) buffer->getArrayStride();
 
 			attributes.set(attributeindex, member.decl.format, offset, activebuffers);

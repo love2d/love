@@ -54,7 +54,7 @@ public:
 	{
 		std::string name;
 		StrongRef<Buffer> buffer;
-		int index;
+		int indexInBuffer;
 		AttributeStep step;
 		bool enabled;
 	};
@@ -101,7 +101,6 @@ public:
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
 	const std::vector<Buffer::DataMember> &getVertexFormat() const;
-	int getAttributeIndex(const std::string &name) const;
 
 	/**
 	 * Sets whether a specific vertex attribute is used when drawing the Mesh.

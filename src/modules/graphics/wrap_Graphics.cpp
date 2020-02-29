@@ -1557,7 +1557,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
 	BufferUsage usage = luax_optmeshusage(L, 3, BUFFERUSAGE_DYNAMIC);
 
-	auto format = Mesh::getDefaultVertexFormat();
+	std::vector<Buffer::DataDeclaration> format = Mesh::getDefaultVertexFormat();
 
 	// First argument is a table of standard vertices, or the number of
 	// standard vertices.
