@@ -114,7 +114,7 @@ public:
 	 **/
 	void attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
-	const std::vector<BufferAttribute> &getAttachedAttributes();
+	const std::vector<BufferAttribute> &getAttachedAttributes() const;
 
 	void *mapVertexData();
 	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);

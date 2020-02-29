@@ -335,6 +335,11 @@ bool Mesh::detachAttribute(const std::string &name)
 	return true;
 }
 
+const std::vector<Mesh::BufferAttribute> &Mesh::getAttachedAttributes() const
+{
+	return attachedAttributes;
+}
+
 void *Mesh::mapVertexData()
 {
 	return vertexBuffer.get() != nullptr ? vertexBuffer->map() : nullptr;
