@@ -355,12 +355,12 @@ void luax_rawnewtype(lua_State *L, love::Type &type, love::Object *object);
 /**
  * Stores the value at the given index on the stack into a Variant object.
  */
-Variant luax_checkvariant(lua_State *L, int idx, bool allowuserdata = true, std::set<const void*> *tableSet = nullptr);
+LOVE_EXPORT Variant luax_checkvariant(lua_State *L, int idx, bool allowuserdata = true, std::set<const void*> *tableSet = nullptr);
 
 /**
  * Pushes the contents of the given Variant index onto the stack.
  */
-void luax_pushvariant(lua_State *L, const Variant &v);
+LOVE_EXPORT void luax_pushvariant(lua_State *L, const Variant &v);
 
 /**
  * Checks whether the value at idx is a certain type.
