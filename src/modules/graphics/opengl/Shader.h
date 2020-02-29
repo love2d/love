@@ -90,7 +90,7 @@ private:
 	TextureType getUniformTextureType(GLenum type) const;
 	bool isDepthTextureType(GLenum type) const;
 
-	void flushStreamDraws() const;
+	void flushBatchedDraws() const;
 
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;

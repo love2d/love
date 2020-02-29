@@ -301,7 +301,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	if (next == 0)
 		return;
 
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 
 	if (texture.get())
 	{

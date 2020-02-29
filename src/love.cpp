@@ -205,7 +205,7 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 	}
 
 	// Set love.restart = restartvalue, and clear restartvalue.
-	restartvalue.toLua(L);
+	love::luax_pushvariant(L, restartvalue);
 	lua_setfield(L, -2, "restart");
 	restartvalue = love::Variant();
 
@@ -240,7 +240,7 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 		// Disallow userdata (love objects) from being referenced by the restart
 		// value.
 		if (retidx < lua_gettop(L))
-			restartvalue = love::Variant::fromLua(L, retidx + 1, false);
+			restartvalue = love::luax_checkvariant(L, retidx + 1, false);
 	}
 
 	lua_close(L);

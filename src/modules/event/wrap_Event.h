@@ -24,6 +24,7 @@
 // LOVE
 #include "common/config.h"
 #include "Event.h"
+#include "common/runtime.h"
 
 namespace love
 {

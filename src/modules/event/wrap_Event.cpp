@@ -38,13 +38,23 @@ namespace event
 
 #define instance() (Module::getInstance<Event>(Module::M_EVENT))
 
+static int luax_pushmessage(lua_State *L, const Message &m)
+{
+	luax_pushstring(L, m.name);
+
+	for (const Variant &v : m.args)
+		luax_pushvariant(L, v);
+
+	return (int) m.args.size() + 1;
+}
+
 static int w_poll_i(lua_State *L)
 {
 	Message *m = nullptr;
 
-	if (instance()->poll(m))
+	if (instance()->poll(m) && m != nullptr)
 	{
-		int args = m->toLua(L);
+		int args = luax_pushmessage(L, *m);
 		m->release();
 		return args;
 	}
@@ -63,9 +73,9 @@ int w_wait(lua_State *L)
 {
 	Message *m = nullptr;
 	luax_catchexcept(L, [&]() { m = instance()->wait(); });
-	if (m)
+	if (m != nullptr)
 	{
-		int args = m->toLua(L);
+		int args = luax_pushmessage(L, *m);
 		m->release();
 		return args;
 	}
@@ -75,15 +85,28 @@ int w_wait(lua_State *L)
 
 int w_push(lua_State *L)
 {
-	StrongRef<Message> m;
-	luax_catchexcept(L, [&]() { m.set(Message::fromLua(L, 1), Acquire::NORETAIN); });
+	std::string name = luax_checkstring(L, 1);
+	std::vector<Variant> vargs;
 
-	luax_pushboolean(L, m.get() != nullptr);
+	int nargs = lua_gettop(L);
+	for (int i = 2; i <= nargs; i++)
+	{
+		if (lua_isnoneornil(L, i))
+			break;
 
-	if (m.get() == nullptr)
-		return 1;
+		luax_catchexcept(L, [&]() { vargs.push_back(luax_checkvariant(L, i)); });
+
+		if (vargs.back().getType() == Variant::UNKNOWN)
+		{
+			vargs.clear();
+			return luaL_error(L, "Argument %d can't be stored safely\nExpected boolean, number, string or userdata.", i);
+		}
+	}
+
+	StrongRef<Message> m(new Message(name, vargs), Acquire::NORETAIN);
 
 	instance()->push(m);
+	luax_pushboolean(L, true);
 	return 1;
 }
 
@@ -98,7 +121,7 @@ int w_quit(lua_State *L)
 	luax_catchexcept(L, [&]() {
 		std::vector<Variant> args;
 		for (int i = 1; i <= std::max(1, lua_gettop(L)); i++)
-			args.push_back(Variant::fromLua(L, i));
+			args.push_back(luax_checkvariant(L, i));
 
 		StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
 		instance()->push(m);
@@ -115,7 +138,7 @@ int w_restart(lua_State *L)
 		args.emplace_back("restart", strlen("restart"));
 
 		for (int i = 1; i <= lua_gettop(L); i++)
-			args.push_back(Variant::fromLua(L, i));
+			args.push_back(luax_checkvariant(L, i));
 
 		StrongRef<Message> m(new Message("quit", args), Acquire::NORETAIN);
 		instance()->push(m);

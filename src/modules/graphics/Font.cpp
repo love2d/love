@@ -133,7 +133,7 @@ bool Font::loadVolatile()
 void Font::createTexture()
 {
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 
 	Texture *texture = nullptr;
 	TextureSize size = {textureWidth, textureHeight};
@@ -645,13 +645,13 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 
 	for (const DrawCommand &cmd : drawcommands)
 	{
-		Graphics::StreamDrawCommand streamcmd;
+		Graphics::BatchedDrawCommand streamcmd;
 		streamcmd.formats[0] = vertexFormat;
 		streamcmd.indexMode = vertex::TriangleIndexMode::QUADS;
 		streamcmd.vertexCount = cmd.vertexcount;
 		streamcmd.texture = cmd.texture;
 
-		Graphics::StreamVertexData data = gfx->requestStreamDraw(streamcmd);
+		Graphics::BatchedVertexData data = gfx->requestBatchedDraw(streamcmd);
 		GlyphVertex *vertexdata = (GlyphVertex *) data.stream[0];
 
 		memcpy(vertexdata, &vertices[cmd.startvertex], sizeof(GlyphVertex) * cmd.vertexcount);

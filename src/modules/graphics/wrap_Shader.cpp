@@ -411,14 +411,18 @@ int w_Shader_send(lua_State *L)
 
 	const Shader::UniformInfo *info = shader->getUniformInfo(name);
 	if (info == nullptr)
-		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
+	{
+		luax_pushboolean(L, false);
+		return 1;
+	}
 
-	int startidx = 3;
-
-	if (luax_istype(L, startidx, Data::type))
-		return w_Shader_sendData(L, startidx, shader, info, false);
+	if (luax_istype(L, 3, Data::type))
+		w_Shader_sendData(L, 3, shader, info, false);
 	else
-		return w_Shader_sendLuaValues(L, startidx, shader, info, name);
+		w_Shader_sendLuaValues(L, 3, shader, info, name);
+
+	luax_pushboolean(L, true);
+	return 1;
 }
 
 int w_Shader_sendColors(lua_State *L)
@@ -428,15 +432,21 @@ int w_Shader_sendColors(lua_State *L)
 
 	const Shader::UniformInfo *info = shader->getUniformInfo(name);
 	if (info == nullptr)
-		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
+	{
+		luax_pushboolean(L, false);
+		return 1;
+	}
 
 	if (info->baseType != Shader::UNIFORM_FLOAT || info->components < 3)
 		return luaL_error(L, "sendColor can only be used on vec3 or vec4 uniforms.");
 
 	if (luax_istype(L, 3, Data::type))
-		return w_Shader_sendData(L, 3, shader, info, true);
+		w_Shader_sendData(L, 3, shader, info, true);
 	else
-		return w_Shader_sendFloats(L, 3, shader, info, true);
+		w_Shader_sendFloats(L, 3, shader, info, true);
+
+	luax_pushboolean(L, true);
+	return 1;
 }
 
 int w_Shader_hasUniform(lua_State *L)

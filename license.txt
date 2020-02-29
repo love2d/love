@@ -75,24 +75,16 @@ This distribution contains code from the following projects (full license text b
 		- xxHash source repository : https://github.com/Cyan4973/xxHash
 
  - dr_flac
-	Website: https://github.com/mackron/dr_libs
-	Source download: https://github.com/mackron/dr_libs/blob/41bc0e8/dr_flac.h
+	Website: https://mackron.github.io/dr_libs/
+	Source download: https://github.com/mackron/dr_libs/blob/d705d31/dr_flac.h
 	License: MIT/Expat
 	Copyright 2018 David Reid
 
- - libmpg123
-     Website: http://www.mpg123.de/
-     Source download: http://sourceforge.net/projects/mpg123/files/latest/download
-     License: LGPL 2.1
-     Copyright (c) 1995-2013 by Michael Hipp and others, free software under the terms of the LGPL v2.1
-     Detailed information from the debian project:
-		 Copyright 1995-2016 by the mpg123 project
-		 Copyright 2009-2011 by Malcolm Boczek
-		 Copyright 2008 Christian Weisgerber <naddy@openbsd.org>
-		 Copyright 2006-2007 by Zuxy Meng
-		 Copyright 2000-2002 David Olofson
-		 Copyright 1998 Fabrice Bellard
-		 Copyright 1997 Mikko Tommila
+ - dr_mp3
+	Website: https://mackron.github.io/dr_libs/
+	Source download: https://github.com/mackron/dr_libs/blob/47fdc9d/dr_mp3.h
+	License: MIT/Expat
+	Copyright 2018 David Reid
 
  - OpenAL Soft
      Website: http://kcat.strangesoft.net/openal.html

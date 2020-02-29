@@ -145,7 +145,7 @@ Graphics::Graphics()
 	, created(false)
 	, active(true)
 	, writingToStencil(false)
-	, streamBufferState()
+	, batchedDrawState()
 	, projectionMatrix()
 	, renderTargetSwitchCount(0)
 	, drawCalls(0)
@@ -188,9 +188,9 @@ Graphics::~Graphics()
 
 	defaultFont.set(nullptr);
 
-	delete streamBufferState.vb[0];
-	delete streamBufferState.vb[1];
-	delete streamBufferState.indexBuffer;
+	delete batchedDrawState.vb[0];
+	delete batchedDrawState.vb[1];
+	delete batchedDrawState.indexBuffer;
 
 	for (int i = 0; i < (int) ShaderStage::STAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
@@ -535,7 +535,7 @@ void Graphics::checkSetDefaultFont()
 
 	// Create a new default font if we don't have one yet.
 	if (!defaultFont.get())
-		defaultFont.set(newDefaultFont(12, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
+		defaultFont.set(newDefaultFont(13, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
 
 	states.back().font.set(defaultFont.get());
 }
@@ -722,7 +722,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	int w = firsttex->getWidth(firsttarget.mipmap);
 	int h = firsttex->getHeight(firsttarget.mipmap);
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	if (rts.depthStencil.texture == nullptr && rts.temporaryRTFlags != 0)
 	{
@@ -772,7 +772,7 @@ void Graphics::setRenderTarget()
 	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.texture == nullptr)
 		return;
 
-	flushStreamDraws();
+	flushBatchedDraws();
 	setRenderTargetsInternal(RenderTargets(), width, height, pixelWidth, pixelHeight, isGammaCorrect());
 
 	state.renderTargets = RenderTargetsStrongRef();
@@ -1017,11 +1017,11 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 	pendingScreenshotCallbacks.push_back(info);
 }
 
-Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &cmd)
+Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)
 {
 	using namespace vertex;
 
-	StreamBufferState &state = streamBufferState;
+	BatchedDrawState &state = batchedDrawState;
 
 	bool shouldflush = false;
 	bool shouldresize = false;
@@ -1083,7 +1083,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 
 	if (shouldflush || shouldresize)
 	{
-		flushStreamDraws();
+		flushBatchedDraws();
 
 		state.primitiveMode = cmd.primitiveMode;
 		state.formats[0] = cmd.formats[0];
@@ -1127,7 +1127,7 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 		state.indexBufferMap.data += reqIndexSize;
 	}
 
-	StreamVertexData d;
+	BatchedVertexData d;
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -1151,11 +1151,11 @@ Graphics::StreamVertexData Graphics::requestStreamDraw(const StreamDrawCommand &
 	return d;
 }
 
-void Graphics::flushStreamDraws()
+void Graphics::flushBatchedDraws()
 {
 	using namespace vertex;
 
-	auto &sbstate = streamBufferState;
+	auto &sbstate = batchedDrawState;
 
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
@@ -1226,15 +1226,15 @@ void Graphics::flushStreamDraws()
 	if (attributes.isEnabled(ATTRIB_COLOR))
 		setColor(nc);
 
-	streamBufferState.vertexCount = 0;
-	streamBufferState.indexCount = 0;
+	batchedDrawState.vertexCount = 0;
+	batchedDrawState.indexCount = 0;
 }
 
-void Graphics::flushStreamDrawsGlobal()
+void Graphics::flushBatchedDrawsGlobal()
 {
 	Graphics *instance = getInstance<Graphics>(M_GRAPHICS);
 	if (instance != nullptr)
-		instance->flushStreamDraws();
+		instance->flushBatchedDraws();
 }
 
 /**
@@ -1301,13 +1301,13 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	const Matrix4 &t = getTransform();
 	bool is2D = t.isAffine2DTransform();
 
-	StreamDrawCommand cmd;
+	BatchedDrawCommand cmd;
 	cmd.primitiveMode = PRIMITIVE_POINTS;
 	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 	cmd.formats[1] = vertex::CommonFormat::RGBAub;
 	cmd.vertexCount = (int) numpoints;
 
-	StreamVertexData data = requestStreamDraw(cmd);
+	BatchedVertexData data = requestBatchedDraw(cmd);
 
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], positions, cmd.vertexCount);
@@ -1597,13 +1597,13 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		const Matrix4 &t = getTransform();
 		bool is2D = t.isAffine2DTransform();
 
-		StreamDrawCommand cmd;
+		BatchedDrawCommand cmd;
 		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
 		cmd.formats[1] = vertex::CommonFormat::RGBAub;
 		cmd.indexMode = vertex::TriangleIndexMode::FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
-		StreamVertexData data = requestStreamDraw(cmd);
+		BatchedVertexData data = requestBatchedDraw(cmd);
 
 		if (is2D)
 			t.transformXY((Vector2 *) data.stream[0], coords, cmd.vertexCount);
@@ -1629,7 +1629,7 @@ Graphics::Stats Graphics::getStats() const
 	getAPIStats(stats.shaderSwitches);
 
 	stats.drawCalls = drawCalls;
-	if (streamBufferState.vertexCount > 0)
+	if (batchedDrawState.vertexCount > 0)
 		stats.drawCalls++;
 
 	stats.renderTargetSwitches = renderTargetSwitchCount;

@@ -251,13 +251,13 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	setDebug(isDebugEnabled());
 
-	if (streamBufferState.vb[0] == nullptr)
+	if (batchedDrawState.vb[0] == nullptr)
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		streamBufferState.vb[0] = CreateStreamBuffer(BUFFER_VERTEX, 1024 * 1024 * 1);
-		streamBufferState.vb[1] = CreateStreamBuffer(BUFFER_VERTEX, 256  * 1024 * 1);
-		streamBufferState.indexBuffer = CreateStreamBuffer(BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFER_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFER_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	// Reload all volatile objects.
@@ -310,7 +310,7 @@ void Graphics::unSetMode()
 	if (!isCreated())
 		return;
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	// Unload all volatile objects. These must be reloaded after the display
 	// mode change.
@@ -338,7 +338,7 @@ void Graphics::unSetMode()
 
 void Graphics::setActive(bool enable)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	// Make sure all pending OpenGL commands have fully executed before
 	// returning, when going from active to inactive. This is required on iOS.
@@ -637,7 +637,7 @@ void Graphics::endPass()
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
 {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	GLbitfield flags = 0;
 
@@ -694,7 +694,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		return;
 	}
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	bool drawbuffersmodified = false;
 	ncolors = std::min(ncolors, ncolorRTs);
@@ -770,7 +770,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 	discard(OpenGL::FRAMEBUFFER_ALL, colorbuffers, depthstencil);
 }
 
@@ -951,7 +951,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 	deprecations.draw(this);
 
-	flushStreamDraws();
+	flushBatchedDraws();
 	endPass();
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
@@ -1054,9 +1054,9 @@ void Graphics::present(void *screenshotCallbackData)
 	glBindRenderbuffer(GL_RENDERBUFFER, info.info.uikit.colorbuffer);
 #endif
 
-	for (StreamBuffer *buffer : streamBufferState.vb)
+	for (StreamBuffer *buffer : batchedDrawState.vb)
 		buffer->nextFrame();
-	streamBufferState.indexBuffer->nextFrame();
+	batchedDrawState.indexBuffer->nextFrame();
 
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 	if (window != nullptr)
@@ -1084,7 +1084,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 void Graphics::setScissor(const Rect &rect)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	DisplayState &state = states.back();
 
@@ -1109,7 +1109,7 @@ void Graphics::setScissor(const Rect &rect)
 void Graphics::setScissor()
 {
 	if (states.back().scissor)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	states.back().scissor = false;
 
@@ -1127,7 +1127,7 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
 		throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	writingToStencil = true;
 
@@ -1172,7 +1172,7 @@ void Graphics::stopDrawToStencilBuffer()
 	if (!writingToStencil)
 		return;
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	writingToStencil = false;
 
@@ -1190,7 +1190,7 @@ void Graphics::setStencilTest(CompareMode compare, int value)
 	DisplayState &state = states.back();
 
 	if (state.stencilCompare != compare || state.stencilTestValue != value)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	state.stencilCompare = compare;
 	state.stencilTestValue = value;
@@ -1227,7 +1227,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	DisplayState &state = states.back();
 
 	if (state.depthTest != compare || state.depthWrite != write)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	state.depthTest = compare;
 	state.depthWrite = write;
@@ -1249,7 +1249,7 @@ void Graphics::setFrontFaceWinding(vertex::Winding winding)
 	DisplayState &state = states.back();
 
 	if (state.winding != winding)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	state.winding = winding;
 
@@ -1271,7 +1271,7 @@ void Graphics::setColor(Colorf c)
 
 void Graphics::setColorMask(ColorChannelMask mask)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	glColorMask(mask.r, mask.g, mask.b, mask.a);
 	states.back().colorMask = mask;
@@ -1280,7 +1280,7 @@ void Graphics::setColorMask(ColorChannelMask mask)
 void Graphics::setBlendState(const BlendState &blend)
 {
 	if (!(blend == states.back().blend))
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	if (blend.operationRGB == BLENDOP_MAX || blend.operationA == BLENDOP_MAX
 		|| blend.operationRGB == BLENDOP_MIN || blend.operationA == BLENDOP_MIN)
@@ -1310,8 +1310,8 @@ void Graphics::setBlendState(const BlendState &blend)
 
 void Graphics::setPointSize(float size)
 {
-	if (streamBufferState.primitiveMode == PRIMITIVE_POINTS)
-		flushStreamDraws();
+	if (batchedDrawState.primitiveMode == PRIMITIVE_POINTS)
+		flushBatchedDraws();
 
 	gl.setPointSize(size * getCurrentDPIScale());
 	states.back().pointSize = size;
@@ -1323,7 +1323,7 @@ void Graphics::setWireframe(bool enable)
 	if (GLAD_ES_VERSION_2_0)
 		return;
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
 	states.back().wireframe = enable;
