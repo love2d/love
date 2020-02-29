@@ -28,6 +28,19 @@ namespace graphics
 namespace metal
 {
 
+static MTLTextureType getMTLTextureType(TextureType type, int msaa)
+{
+	switch (type)
+	{
+		case TEXTURE_2D: return msaa > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
+		case TEXTURE_VOLUME: return MTLTextureType3D;
+		case TEXTURE_2D_ARRAY: return MTLTextureType2DArray;
+		case TEXTURE_CUBE: return MTLTextureTypeCube;
+		case TEXTURE_MAX_ENUM: return MTLTextureType2D;
+	}
+	return MTLTextureType2D;
+}
+
 Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *data)
 	: love::graphics::Texture(settings, data)
 	, texture(nil)
@@ -44,7 +57,7 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 	desc.depth = depth;
 	desc.arrayLength = layers;
 	desc.mipmapLevelCount = mipmapCount;
-	desc.textureType = Metal::getTextureType(texType, 1);
+	desc.textureType = getMTLTextureType(texType, 1);
 	desc.pixelFormat = Metal::convertPixelFormat(format, sRGB);
 	desc.storageMode = MTLStorageModePrivate;
 
@@ -62,7 +75,7 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 	{
 		// TODO: sampleCount validation
 		desc.sampleCount = getRequestedMSAA();
-		desc.textureType = Metal::getTextureType(texType, (int)desc.sampleCount);
+		desc.textureType = getMTLTextureType(texType, (int)desc.sampleCount);
 		desc.usage &= ~MTLTextureUsageShaderRead;
 
 		// TODO: This needs to be cleared, etc.

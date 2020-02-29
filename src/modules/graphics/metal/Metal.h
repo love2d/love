@@ -36,7 +36,6 @@ class Metal
 {
 public:
 
-	static MTLTextureType getTextureType(TextureType type, int msaa);
 	static MTLPixelFormat convertPixelFormat(PixelFormat format, bool &isSRGB);
 
 }; // Metal

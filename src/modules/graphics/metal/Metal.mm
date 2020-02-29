@@ -28,19 +28,6 @@ namespace graphics
 namespace metal
 {
 
-MTLTextureType Metal::getTextureType(TextureType type, int msaa)
-{
-	switch (type)
-	{
-		case TEXTURE_2D: return msaa > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
-		case TEXTURE_VOLUME: return MTLTextureType3D;
-		case TEXTURE_2D_ARRAY: return MTLTextureType2DArray;
-		case TEXTURE_CUBE: return MTLTextureTypeCube;
-		case TEXTURE_MAX_ENUM: return MTLTextureType2D;
-	}
-	return MTLTextureType2D;
-}
-
 MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 {
 	MTLPixelFormat mtlformat = MTLPixelFormatRGBA8Unorm;
