@@ -290,13 +290,13 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	created = true;
 
-	if (streamBufferState.vb[0] == nullptr)
+	if (batchedDrawState.vb[0] == nullptr)
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		streamBufferState.vb[0] = CreateStreamBuffer(device, BUFFER_VERTEX, 1024 * 1024 * 1);
-		streamBufferState.vb[1] = CreateStreamBuffer(device, BUFFER_VERTEX, 256  * 1024 * 1);
-		streamBufferState.indexBuffer = CreateStreamBuffer(device, BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFER_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFER_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	createQuadIndexBuffer();
@@ -330,7 +330,7 @@ void Graphics::unSetMode()
 	if (!isCreated())
 		return;
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	submitCommandBuffer();
 
@@ -344,7 +344,7 @@ void Graphics::unSetMode()
 
 void Graphics::setActive(bool enable)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 	active = enable;
 }
 
@@ -787,7 +787,7 @@ void Graphics::endPass()
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
 {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
-		flushStreamDraws();
+		flushBatchedDraws();
 
 	// TODO
 }
@@ -806,14 +806,14 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		return;
 	}
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	// TODO
 }
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 	// TODO
 }
 
@@ -827,7 +827,6 @@ void Graphics::present(void *screenshotCallbackData)
 
 	deprecations.draw(this);
 
-	flushStreamDraws();
 	endPass();
 
 	if (!pendingScreenshotCallbacks.empty())
@@ -888,9 +887,9 @@ void Graphics::present(void *screenshotCallbackData)
 		pendingScreenshotCallbacks.clear();
 	}
 
-	for (StreamBuffer *buffer : streamBufferState.vb)
+	for (StreamBuffer *buffer : batchedDrawState.vb)
 		buffer->nextFrame();
-	streamBufferState.indexBuffer->nextFrame();
+	batchedDrawState.indexBuffer->nextFrame();
 
 	submitCommandBuffer();
 
@@ -920,7 +919,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 void Graphics::setScissor(const Rect &rect)
 {
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	DisplayState &state = states.back();
 	state.scissor = true;
@@ -933,7 +932,7 @@ void Graphics::setScissor()
 	DisplayState &state = states.back();
 	if (state.scissor)
 	{
-		flushStreamDraws();
+		flushBatchedDraws();
 		state.scissor = false;
 		dirtyRenderState |= STATEBIT_SCISSOR;
 	}
@@ -949,7 +948,7 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
 		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	writingToStencil = true;
 
@@ -962,7 +961,7 @@ void Graphics::stopDrawToStencilBuffer()
 	if (!writingToStencil)
 		return;
 
-	flushStreamDraws();
+	flushBatchedDraws();
 
 	writingToStencil = false;
 
@@ -981,7 +980,7 @@ void Graphics::setBlendState(const BlendState &blend)
 {
 	if (!(blend == states.back().blend))
 	{
-		flushStreamDraws();
+		flushBatchedDraws();
 		states.back().blend = blend;
 		dirtyRenderState |= STATEBIT_BLEND;
 	}
