@@ -22,14 +22,12 @@
 #define LOVE_VARIANT_H
 
 #include "common/config.h"
-#include "common/runtime.h"
 #include "common/Object.h"
 #include "common/int.h"
 
 #include <cstring>
 #include <string>
 #include <vector>
-#include <set>
 
 namespace love
 {
@@ -112,10 +110,11 @@ public:
 	Type getType() const { return type; }
 	const Data &getData() const { return data; }
 
-	static Variant fromLua(lua_State *L, int n, bool allowuserdata = true, std::set<const void*> *tableSet = nullptr);
-	void toLua(lua_State *L) const;
+	static Variant unknown() { return Variant(UNKNOWN); }
 
 private:
+
+	Variant(Type vtype);
 
 	Type type;
 	Data data;

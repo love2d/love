@@ -661,6 +661,160 @@ bool luax_istype(lua_State *L, int idx, love::Type &type)
 		return false;
 }
 
+static Proxy *tryextractproxy(lua_State *L, int idx)
+{
+	Proxy *u = (Proxy *)lua_touserdata(L, idx);
+
+	if (u == nullptr || u->type == nullptr)
+		return nullptr;
+
+	// We could get rid of the dynamic_cast for more performance, but it would
+	// be less safe...
+	if (dynamic_cast<Object *>(u->object) != nullptr)
+		return u;
+
+	return nullptr;
+}
+
+Variant luax_checkvariant(lua_State *L, int n, bool allowuserdata, std::set<const void*> *tableSet)
+{
+	size_t len;
+	const char *str;
+	Proxy *p = nullptr;
+
+	if (n < 0) // Fix the stack position, we might modify it later
+		n += lua_gettop(L) + 1;
+
+	switch (lua_type(L, n))
+	{
+	case LUA_TBOOLEAN:
+		return Variant(luax_toboolean(L, n));
+	case LUA_TNUMBER:
+		return Variant(lua_tonumber(L, n));
+	case LUA_TSTRING:
+		str = lua_tolstring(L, n, &len);
+		return Variant(str, len);
+	case LUA_TLIGHTUSERDATA:
+		return Variant(lua_touserdata(L, n));
+	case LUA_TUSERDATA:
+		if (!allowuserdata)
+		{
+			luax_typerror(L, n, "copyable Lua value");
+			return Variant();
+		}
+		p = tryextractproxy(L, n);
+		if (p != nullptr)
+			return Variant(p->type, p->object);
+		else
+		{
+			luax_typerror(L, n, "love type");
+			return Variant();
+		}
+	case LUA_TNIL:
+		return Variant();
+	case LUA_TTABLE:
+		{
+			bool success = true;
+			std::set<const void *> topTableSet;
+
+			// We can use a pointer to a stack-allocated variable because it's
+			// never used after the stack-allocated variable is destroyed.
+			if (tableSet == nullptr)
+				tableSet = &topTableSet;
+
+			// Now make sure this table wasn't already serialised
+			const void *tablePointer = lua_topointer(L, n);
+			{
+				auto result = tableSet->insert(tablePointer);
+				if (!result.second) // insertion failed
+					throw love::Exception("Cycle detected in table");
+			}
+
+			Variant::SharedTable *table = new Variant::SharedTable();
+
+			size_t len = luax_objlen(L, -1);
+			if (len > 0)
+				table->pairs.reserve(len);
+
+			lua_pushnil(L);
+
+			while (lua_next(L, n))
+			{
+				table->pairs.emplace_back(
+					luax_checkvariant(L, -2, allowuserdata, tableSet),
+					luax_checkvariant(L, -1, allowuserdata, tableSet)
+				);
+				lua_pop(L, 1);
+
+				const auto &p = table->pairs.back();
+				if (p.first.getType() == Variant::UNKNOWN || p.second.getType() == Variant::UNKNOWN)
+				{
+					success = false;
+					break;
+				}
+			}
+
+			// And remove the table from the set again
+			tableSet->erase(tablePointer);
+
+			if (success)
+				return Variant(table);
+			else
+				table->release();
+		}
+		break;
+	}
+
+	return Variant::unknown();
+}
+
+void luax_pushvariant(lua_State *L, const Variant &v)
+{
+	const Variant::Data &data = v.getData();
+	switch (v.getType())
+	{
+	case Variant::BOOLEAN:
+		lua_pushboolean(L, data.boolean);
+		break;
+	case Variant::NUMBER:
+		lua_pushnumber(L, data.number);
+		break;
+	case Variant::STRING:
+		lua_pushlstring(L, data.string->str, data.string->len);
+		break;
+	case Variant::SMALLSTRING:
+		lua_pushlstring(L, data.smallstring.str, data.smallstring.len);
+		break;
+	case Variant::LUSERDATA:
+		lua_pushlightuserdata(L, data.userdata);
+		break;
+	case Variant::LOVEOBJECT:
+		luax_pushtype(L, *data.objectproxy.type, data.objectproxy.object);
+		break;
+	case Variant::TABLE:
+	{
+		std::vector<std::pair<Variant, Variant>> &table = data.table->pairs;
+		int tsize = (int) table.size();
+
+		lua_createtable(L, 0, tsize);
+
+		for (int i = 0; i < tsize; ++i)
+		{
+			std::pair<Variant, Variant> &kv = table[i];
+			luax_pushvariant(L, kv.first);
+			luax_pushvariant(L, kv.second);
+			lua_settable(L, -3);
+		}
+
+		break;
+	}
+	case Variant::NIL:
+	default:
+		lua_pushnil(L);
+		break;
+	}
+}
+
 int luax_getfunction(lua_State *L, const char *mod, const char *fn)
 {
 	lua_getglobal(L, "love");

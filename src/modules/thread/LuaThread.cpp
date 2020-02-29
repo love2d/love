@@ -21,6 +21,7 @@
 #include "LuaThread.h"
 #include "event/Event.h"
 #include "common/config.h"
+#include "common/runtime.h"
 
 #ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
@@ -76,7 +77,7 @@ void LuaThread::threadFunction()
 		int pushedargs = (int) args.size();
 
 		for (int i = 0; i < pushedargs; i++)
-			args[i].toLua(L);
+			luax_pushvariant(L, args[i]);
 
 		args.clear();
 
