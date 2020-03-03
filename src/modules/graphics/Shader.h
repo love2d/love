@@ -55,9 +55,8 @@ public:
 	enum Language
 	{
 		LANGUAGE_GLSL1,
-		LANGUAGE_ESSL1,
 		LANGUAGE_GLSL3,
-		LANGUAGE_ESSL3,
+		LANGUAGE_GLSL4,
 		LANGUAGE_MAX_ENUM
 	};
 
@@ -92,6 +91,14 @@ public:
 		STANDARD_VIDEO,
 		STANDARD_ARRAY,
 		STANDARD_MAX_ENUM
+	};
+
+	struct SourceInfo
+	{
+		Language language;
+		bool isStage[ShaderStage::STAGE_MAX_ENUM];
+		bool customPixelFunction;
+		bool usesMRT;
 	};
 
 	struct MatrixSize
@@ -192,10 +199,15 @@ public:
 	void checkMainTextureType(TextureType textype, bool isDepthSampler) const;
 	void checkMainTexture(Texture *texture) const;
 
+	static SourceInfo getSourceInfo(const std::string &src);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const SourceInfo &info);
+
 	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
+
+	static const std::string &getDefaultCode(StandardShader shader, ShaderStage::StageType stage);
 
 	static bool getConstant(const char *in, Language &out);
 	static bool getConstant(Language in, const char *&out);
@@ -206,15 +218,6 @@ public:
 protected:
 
 	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
-
-private:
-
-	static StringMap<Language, LANGUAGE_MAX_ENUM>::Entry languageEntries[];
-	static StringMap<Language, LANGUAGE_MAX_ENUM> languages;
-	
-	// Names for the built-in uniform variables.
-	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];
-	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM> builtinNames;
 
 }; // Shader
 

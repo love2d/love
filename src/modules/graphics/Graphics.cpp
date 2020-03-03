@@ -104,8 +104,6 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
-Graphics::DefaultShaderCode Graphics::defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
-
 Graphics::Graphics()
 	: width(0)
 	, height(0)
@@ -214,13 +212,8 @@ love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, in
 	return new ParticleSystem(texture, size);
 }
 
-ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &optsource)
+ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info)
 {
-	if (stage == ShaderStage::STAGE_MAX_ENUM)
-		throw love::Exception("Invalid shader stage.");
-
-	const std::string &source = optsource.empty() ? getCurrentDefaultShaderCode().source[stage] : optsource;
-
 	ShaderStage *s = nullptr;
 	std::string cachekey;
 
@@ -241,7 +234,8 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 
 	if (s == nullptr)
 	{
-		s = newShaderStageInternal(stage, cachekey, source, getRenderer() == RENDERER_OPENGLES);
+		std::string glsl = Shader::createShaderStageCode(this, stage, source, info);
+		s = newShaderStageInternal(stage, cachekey, glsl, getRenderer() == RENDERER_OPENGLES);
 		if (!cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
 	}
@@ -249,15 +243,48 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 	return s;
 }
 
-Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
+Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 {
-	if (vertex.empty() && pixel.empty())
-		throw love::Exception("Error creating shader: no source code!");
+	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
 
-	StrongRef<ShaderStage> vertexstage(newShaderStage(ShaderStage::STAGE_VERTEX, vertex), Acquire::NORETAIN);
-	StrongRef<ShaderStage> pixelstage(newShaderStage(ShaderStage::STAGE_PIXEL, pixel), Acquire::NORETAIN);
+	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
+	validstages[ShaderStage::STAGE_VERTEX] = true;
+	validstages[ShaderStage::STAGE_PIXEL] = true;
 
-	return newShaderInternal(vertexstage.get(), pixelstage.get());
+	for (const std::string &source : stagessource)
+	{
+		Shader::SourceInfo info = Shader::getSourceInfo(source);
+		bool isanystage = false;
+
+		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		{
+			if (!validstages[i])
+				continue;
+
+			if (info.isStage[i])
+			{
+				isanystage = true;
+				stages[i].set(newShaderStage((ShaderStage::StageType) i, source, info), Acquire::NORETAIN);
+			}
+		}
+
+		if (!isanystage)
+			throw love::Exception("Could not parse shader code (missing 'position' or 'effect' function?)");
+	}
+
+	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	{
+		auto stype = (ShaderStage::StageType) i;
+		if (validstages[i] && stages[i].get() == nullptr)
+		{
+			const std::string &source = Shader::getDefaultCode(Shader::STANDARD_DEFAULT, stype);
+			Shader::SourceInfo info = Shader::getSourceInfo(source);
+			stages[i].set(newShaderStage(stype, source, info), Acquire::NORETAIN);
+		}
+
+	}
+
+	return newShaderInternal(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL]);
 }
 
 Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage)
@@ -290,26 +317,44 @@ void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::
 	cachedShaderStages[type].erase(hashkey);
 }
 
-bool Graphics::validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err)
+bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagessource, std::string &err)
 {
-	if (vertex.empty() && pixel.empty())
-	{
-		err = "Error validating shader: no source code!";
-		return false;
-	}
+	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
 
-	StrongRef<ShaderStage> vertexstage;
-	StrongRef<ShaderStage> pixelstage;
+	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
+	validstages[ShaderStage::STAGE_VERTEX] = true;
+	validstages[ShaderStage::STAGE_PIXEL] = true;
 
 	// Don't use cached shader stages, since the gles flag may not match the
 	// current renderer.
-	if (!vertex.empty())
-		vertexstage.set(new ShaderStageForValidation(this, ShaderStage::STAGE_VERTEX, vertex, gles), Acquire::NORETAIN);
+	for (const std::string &source : stagessource)
+	{
+		Shader::SourceInfo info = Shader::getSourceInfo(source);
+		bool isanystage = false;
 
-	if (!pixel.empty())
-		pixelstage.set(new ShaderStageForValidation(this, ShaderStage::STAGE_PIXEL, pixel, gles), Acquire::NORETAIN);
+		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		{
+			auto stype = (ShaderStage::StageType) i;
 
-	return Shader::validate(vertexstage.get(), pixelstage.get(), err);
+			if (!validstages[i])
+				continue;
+
+			if (info.isStage[i])
+			{
+				isanystage = true;
+				std::string glsl = Shader::createShaderStageCode(this, stype, source, info);
+				stages[i].set(new ShaderStageForValidation(this, stype, glsl, gles), Acquire::NORETAIN);
+			}
+		}
+
+		if (!isanystage)
+		{
+			err = "Could not parse shader code (missing 'position' or 'effect' function?)";
+			return false;
+		}
+	}
+
+	return Shader::validate(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL], err);
 }
 
 int Graphics::getWidth() const
@@ -1741,14 +1786,6 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	// re-calculate it every time this is called.
 	transformStack.back().inverse().transformXY(&p, &point, 1);
 	return p;
-}
-
-const Graphics::DefaultShaderCode &Graphics::getCurrentDefaultShaderCode() const
-{
-	int languageindex = (int) getShaderLanguageTarget();
-	int gammaindex = isGammaCorrect() ? 1 : 0;
-
-	return defaultShaderCode[Shader::STANDARD_DEFAULT][languageindex][gammaindex];
 }
 
 /**

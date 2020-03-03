@@ -415,11 +415,6 @@ public:
 		}
 	};
 
-	struct DefaultShaderCode
-	{
-		std::string source[ShaderStage::STAGE_MAX_ENUM];
-	};
-
 	Graphics();
 	virtual ~Graphics();
 
@@ -436,8 +431,7 @@ public:
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
-	Shader *newShader(const std::string &vertex, const std::string &pixel);
+	Shader *newShader(const std::vector<std::string> &stagessource);
 
 	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
 
@@ -448,7 +442,7 @@ public:
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
-	bool validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err);
+	bool validateShader(bool gles, const std::vector<std::string> &stages, std::string &err);
 
 	/**
 	 * Resets the current color, background color, line style, and so forth.
@@ -827,9 +821,6 @@ public:
 
 	static void flushBatchedDrawsGlobal();
 
-	virtual Shader::Language getShaderLanguageTarget() const = 0;
-	const DefaultShaderCode &getCurrentDefaultShaderCode() const;
-
 	void cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &cachekey);
 
 	template <typename T>
@@ -868,9 +859,6 @@ public:
 	static bool getConstant(const char *in, StackType &out);
 	static bool getConstant(StackType in, const char *&out);
 	static std::vector<std::string> getConstants(StackType);
-
-	// Default shader code (a shader is always required internally.)
-	static DefaultShaderCode defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
 
 protected:
 
@@ -945,6 +933,7 @@ protected:
 		{}
 	};
 
+	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info);
 	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
