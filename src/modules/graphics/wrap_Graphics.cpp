@@ -743,15 +743,15 @@ static int w__pushNewTexture(lua_State *L, Texture::Slices *slices, const Textur
 static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool checkType, bool checkDimensions, OptionalBool forceRenderTarget, Texture::Settings &s, bool &setdpiscale)
 {
 	setdpiscale = false;
+	if (forceRenderTarget.hasValue)
+		s.renderTarget = forceRenderTarget.value;
 
 	if (opt && lua_isnoneornil(L, idx))
 		return;
 
 	luax_checktablefields<Texture::SettingType>(L, idx, "texture setting name", Texture::getConstant);
 
-	if (forceRenderTarget.hasValue)
-		s.renderTarget = forceRenderTarget.value;
-	else
+	if (!forceRenderTarget.hasValue)
 		s.renderTarget = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_RENDER_TARGET), s.renderTarget);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_FORMAT));
