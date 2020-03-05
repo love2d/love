@@ -194,6 +194,8 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 		love::image::ImageDataBase *slice = slices->get(0, 0);
 
 		format = slice->getFormat();
+		if (sRGB)
+			format = getSRGBPixelFormat(format);
 
 		pixelWidth = slice->getWidth();
 		pixelHeight = slice->getHeight();
