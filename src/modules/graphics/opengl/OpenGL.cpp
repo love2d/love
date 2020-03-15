@@ -993,6 +993,11 @@ void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureun
 		else
 			state.curTextureUnit = textureunit;
 	}
+	else if (!restoreprev && textureunit != state.curTextureUnit)
+	{
+		glActiveTexture(GL_TEXTURE0 + textureunit);
+		state.curTextureUnit = textureunit;
+	}
 }
 
 void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev)
