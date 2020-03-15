@@ -451,7 +451,7 @@ void Shader::attach()
 		{
 			const TextureUnit &unit = textureUnits[i];
 			if (unit.active)
-				gl.bindTextureToUnit(unit.type, unit.texture, i, false);
+				gl.bindTextureToUnit(unit.type, unit.texture, i, false, false);
 		}
 
 		// send any pending uniforms to the shader program.
@@ -647,7 +647,7 @@ void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count
 		int texunit = info->ints[i];
 
 		if (shaderactive)
-			gl.bindTextureToUnit(info->textureType, gltex, texunit, false);
+			gl.bindTextureToUnit(info->textureType, gltex, texunit, false, false);
 
 		// Store texture id so it can be re-bound to the texture unit later.
 		textureUnits[texunit].texture = gltex;
