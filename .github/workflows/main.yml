@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   linux-os:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     steps:
     - name: Update APT
       run: sudo apt-get update
@@ -20,6 +20,26 @@ jobs:
       run: mkdir build && cd build && ../configure
     - name: Build
       run: cd build && make -j2
+    - name: Prepare appimagetool
+      run: |
+        cd build &&
+        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool &&
+        chmod +x appimagetool &&
+        sudo apt install -y appstream
+    - name: Clone love-appimages
+      uses: actions/checkout@v2
+      with:
+        path: build/love-appimages
+        repository: pfirsich/love-appimages
+    - name: Build AppImage
+      run: |
+        cd build &&
+        python3 love-appimages/build.py .. AppDir --builddir build --appimage love.AppImage
+    - name: Artifact
+      uses: actions/upload-artifact@v2-preview
+      with:
+        name: love.AppImage
+        path: build/love.AppImage
   windows-os:
     runs-on: windows-latest
     strategy:
