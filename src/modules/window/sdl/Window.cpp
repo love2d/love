@@ -64,7 +64,7 @@ Window::Window()
 	, mouseGrabbed(false)
 	, window(nullptr)
 	, glcontext(nullptr)
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	, metalView(nullptr)
 #endif
 	, displayedWindowError(false)
@@ -292,7 +292,7 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Graphics::Renderer renderer, int msaa, bool stencil, int depth)
 {
 	bool needsglcontext = (windowflags & SDL_WINDOW_OPENGL) != 0;
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	bool needsmetalview = (windowflags & SDL_WINDOW_METAL) != 0;
 #endif
 
@@ -313,6 +313,14 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			SDL_GL_DeleteContext(glcontext);
 			glcontext = nullptr;
 		}
+
+#ifdef LOVE_GRAPHICS_METAL
+		if (metalView)
+		{
+			SDL_Metal_DestroyView(metalView);
+			metalView = nullptr;
+		}
+#endif
 
 		if (window)
 		{
@@ -409,7 +417,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			}
 		}
 	}
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	else if (renderer == graphics::Graphics::RENDERER_METAL)
 	{
 		if (create(nullptr) && window != nullptr)
@@ -430,7 +438,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	bool failed = window == nullptr;
 	failed |= (needsglcontext && !glcontext);
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	failed |= (needsmetalview && !metalView);
 #endif
 
@@ -497,7 +505,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (renderer == graphics::Graphics::RENDERER_OPENGL)
 		sdlflags |= SDL_WINDOW_OPENGL;
 
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	if (renderer == graphics::Graphics::RENDERER_METAL)
 		sdlflags |= SDL_WINDOW_METAL;
 #endif
@@ -587,10 +595,12 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
 
-		void *context = (void *) glcontext;
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
-		if (renderer == graphics::Graphics::RENDERER_METAL)
-			context = (void *) metalView;
+		void *context = nullptr;
+		if (renderer == graphics::Graphics::RENDERER_OPENGL)
+			context = (void *) glcontext;
+#ifdef LOVE_GRAPHICS_METAL
+		if (renderer == graphics::Graphics::RENDERER_METAL && metalView)
+			context = (void *) SDL_Metal_GetLayer(metalView);
 #endif
 
 		graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
@@ -629,7 +639,16 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 
 	// Set the new display mode as the current display mode.
 	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-	SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+
+	pixelWidth = windowWidth;
+	pixelHeight = windowHeight;
+
+	if ((wflags & SDL_WINDOW_OPENGL) != 0)
+		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#ifdef LOVE_GRAPHICS_METAL
+	else if ((wflags & SDL_WINDOW_METAL) != 0)
+		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
 
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
 	{
@@ -673,8 +692,12 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	// Verify MSAA setting.
 	int buffers = 0;
 	int samples = 0;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
+
+	if ((wflags & SDL_WINDOW_OPENGL) != 0)
+	{
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
+	}
 
 	settings.msaa = (buffers > 0 ? samples : 0);
 	settings.vsync = getVSync();
@@ -729,7 +752,7 @@ void Window::close(bool allowExceptions)
 		glcontext = nullptr;
 	}
 
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	if (metalView)
 	{
 		SDL_Metal_DestroyView(metalView);
@@ -787,10 +810,11 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
-		SDL_GL_MakeCurrent(window, glcontext);
+		if (glcontext)
+			SDL_GL_MakeCurrent(window, glcontext);
 		updateSettings(newsettings, true);
 
-		// Apparently this gets un-set when we exit fullscreen (at least in OS X).
+		// Apparently this gets un-set when we exit fullscreen (at least in macOS).
 		if (!fullscreen)
 			SDL_SetWindowMinimumSize(window, settings.minwidth, settings.minheight);
 
@@ -1086,7 +1110,8 @@ bool Window::isMinimized() const
 
 void Window::swapBuffers()
 {
-	SDL_GL_SwapWindow(window);
+	if (glcontext)
+		SDL_GL_SwapWindow(window);
 }
 
 bool Window::hasFocus() const

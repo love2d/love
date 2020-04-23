@@ -168,7 +168,7 @@ private:
 	SDL_Window *window;
 
 	SDL_GLContext glcontext;
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 	SDL_MetalView metalView;
 #endif
 

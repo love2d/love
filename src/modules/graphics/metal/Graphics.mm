@@ -155,6 +155,8 @@ Graphics::Graphics()
 	, commandBuffer(nil)
 	, renderEncoder(nil)
 	, blitEncoder(nil)
+	, metalLayer(nil)
+	, activeDrawable(nil)
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
 	, windowHasStencil(false)
@@ -243,8 +245,11 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 { @autoreleasepool {
 	this->width = width;
 	this->height = height;
+	this->metalLayer = (__bridge CAMetalLayer *) context;
 
 	this->windowHasStencil = windowhasstencil;
+
+	metalLayer.device = device;
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
 
@@ -286,7 +291,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 }}
 
 void Graphics::unSetMode()
-{
+{ @autoreleasepool {
 	if (!isCreated())
 		return;
 
@@ -300,7 +305,9 @@ void Graphics::unSetMode()
 	temporaryTextures.clear();
 
 	created = false;
-}
+	metalLayer = nil;
+	activeDrawable = nil;
+}}
 
 void Graphics::setActive(bool enable)
 {
@@ -333,6 +340,19 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 	if (renderEncoder == nil)
 	{
 		submitBlitEncoder();
+
+		const auto &rts = states.back().renderTargets;
+		if (rts.getFirstTarget().texture.get() != nullptr)
+		{
+
+		}
+		else
+		{
+			if (activeDrawable == nil)
+				activeDrawable = [metalLayer nextDrawable];
+			passDesc.colorAttachments[0].texture = activeDrawable.texture;
+		}
+
 		renderEncoder = [useCommandBuffer() renderCommandEncoderWithDescriptor:passDesc];
 		dirtyRenderState = STATEBIT_ALL;
 	}
@@ -346,6 +366,8 @@ void Graphics::submitRenderEncoder()
 	{
 		[renderEncoder endEncoding];
 		renderEncoder = nil;
+
+		passDesc.colorAttachments[0].texture = nil;
 	}
 }
 
@@ -778,7 +800,7 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 }
 
 void Graphics::present(void *screenshotCallbackData)
-{
+{ @autoreleasepool {
 	if (!isActive())
 		return;
 
@@ -851,11 +873,18 @@ void Graphics::present(void *screenshotCallbackData)
 		buffer->nextFrame();
 	batchedDrawState.indexBuffer->nextFrame();
 
+	id<MTLCommandBuffer> cmd = getCommandBuffer();
+
+	if (cmd != nil && activeDrawable != nil)
+		[cmd presentDrawable:activeDrawable];
+
 	submitCommandBuffer();
 
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	if (window != nullptr)
 		window->swapBuffers();
+
+	activeDrawable = nil;
 
 	// Reset the per-frame stat counts.
 	drawCalls = 0;
@@ -875,7 +904,7 @@ void Graphics::present(void *screenshotCallbackData)
 		else
 			temporaryTextures[i].framesSinceUse++;
 	}
-}
+}}
 
 void Graphics::setColor(Colorf c)
 {

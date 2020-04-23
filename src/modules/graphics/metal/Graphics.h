@@ -23,6 +23,9 @@
 #include "graphics/Graphics.h"
 #include "Metal.h"
 
+@class CAMetalLayer;
+@protocol CAMetalDrawable;
+
 namespace love
 {
 namespace graphics
@@ -177,6 +180,8 @@ private:
 	id<MTLRenderCommandEncoder> renderEncoder;
 	id<MTLBlitCommandEncoder> blitEncoder;
 
+	CAMetalLayer *metalLayer;
+	id<CAMetalDrawable> activeDrawable;
 	MTLRenderPassDescriptor *passDesc;
 
 	uint32 dirtyRenderState;

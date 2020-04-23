@@ -81,7 +81,10 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 		break;
 
 	case PIXELFORMAT_LA8_UNORM:
-		mtlformat = MTLPixelFormatRGBA8Unorm;
+		// TODO: Swizzle
+		// TODO: fall back to RGBA8 when swizzle isn't available. Pixel format
+		// size calculation will need to be adjusted as well
+		mtlformat = MTLPixelFormatRG8Unorm;
 		break;
 
 	case PIXELFORMAT_RGBA4_UNORM:

@@ -51,7 +51,7 @@ public:
 		data = (uint8 *) buffer.contents;
 
 		for (int i = 0; i < BUFFER_FRAMES; i++)
-			frameSemaphores[i] = dispatch_semaphore_create(0);
+			frameSemaphores[i] = dispatch_semaphore_create(1);
 	}}
 
 	virtual ~StreamBuffer()
