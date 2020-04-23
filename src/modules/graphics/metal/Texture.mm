@@ -199,6 +199,17 @@ void Texture::generateMipmaps()
 	[encoder generateMipmapsForTexture:texture];
 }}
 
+love::image::ImageData *Texture::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect)
+{
+	// TODO
+	return nullptr;
+}
+
+void Texture::setSamplerState(const SamplerState &s)
+{
+	// TODO
+}
+
 } // metal
 } // graphics
 } // love

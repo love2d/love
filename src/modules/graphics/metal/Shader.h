@@ -39,24 +39,22 @@ public:
 	virtual ~Shader();
 
 	// Implements Shader.
-	void attach() override;
-	std::string getWarnings() const override;
-	int getVertexAttributeIndex(const std::string &name) override;
-	const UniformInfo *getUniformInfo(const std::string &name) const override;
-	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
-	void updateUniform(const UniformInfo *info, int count) override;
-	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
-	bool hasUniform(const std::string &name) const override;
-	ptrdiff_t getHandle() const override;
-	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
+	void attach() override {}
+	std::string getWarnings() const override { return ""; }
+	int getVertexAttributeIndex(const std::string &name) override { return -1; }
+	const UniformInfo *getUniformInfo(const std::string &name) const override { return nullptr; }
+	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override { return nullptr; }
+	void updateUniform(const UniformInfo *info, int count) override {}
+	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override {}
+	bool hasUniform(const std::string &name) const override { return false; }
+	ptrdiff_t getHandle() const override { return 0; }
+	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override {}
 
 private:
 
 	id<MTLLibrary> library;
 
 }; // Metal
-
-extern Metal metal;
 
 } // metal
 } // graphics

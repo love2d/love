@@ -292,6 +292,9 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Graphics::Renderer renderer, int msaa, bool stencil, int depth)
 {
 	bool needsglcontext = (windowflags & SDL_WINDOW_OPENGL) != 0;
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	bool needsmetalview = (windowflags & SDL_WINDOW_METAL) != 0;
+#endif
 
 	std::string windowerror;
 	std::string contexterror;
@@ -428,7 +431,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	bool failed = window == nullptr;
 	failed |= (needsglcontext && !glcontext);
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
-
+	failed |= (needsmetalview && !metalView);
 #endif
 
 	if (failed)
@@ -468,7 +471,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (graphics.get() && graphics->isRenderTargetActive())
 		throw love::Exception("love.window.setMode cannot be called while a render target is active in love.graphics.");
 
-	auto renderer = graphics->getRenderer();
+	auto renderer = graphics != nullptr ? graphics->getRenderer() : graphics::Graphics::RENDERER_NONE;
 
 	WindowSettings f;
 
@@ -493,6 +496,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	if (renderer == graphics::Graphics::RENDERER_OPENGL)
 		sdlflags |= SDL_WINDOW_OPENGL;
+
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	if (renderer == graphics::Graphics::RENDERER_METAL)
+		sdlflags |= SDL_WINDOW_METAL;
+#endif
 
 	// On Android we always must have fullscreen type FULLSCREEN_TYPE_DESKTOP
 #ifdef LOVE_ANDROID

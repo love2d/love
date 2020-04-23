@@ -223,46 +223,6 @@ love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, Buffe
 	return new Buffer(device, size, data, type, usage, mapflags);
 }
 
-void Graphics::initCapabilities()
-{
-	int msaa = 1;
-	const int checkmsaa[] = {32, 16, 8, 4, 2};
-	for (int samples : checkmsaa)
-	{
-		if ([device supportsTextureSampleCount:samples])
-		{
-			msaa = samples;
-			break;
-		}
-	}
-
-	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
-	capabilities.features[FEATURE_CLAMP_ZERO] = true;
-	capabilities.features[FEATURE_BLEND_MINMAX] = true;
-	capabilities.features[FEATURE_LIGHTEN] = true;
-	capabilities.features[FEATURE_FULL_NPOT] = true;
-	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
-	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
-	capabilities.features[FEATURE_GLSL3] = true;
-	capabilities.features[FEATURE_GLSL4] = true;
-	capabilities.features[FEATURE_INSTANCING] = true;
-	static_assert(FEATURE_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
-
-	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
-	capabilities.limits[LIMIT_POINT_SIZE] = 511;
-	capabilities.limits[LIMIT_TEXTURE_SIZE] = 16384; // TODO
-	capabilities.limits[LIMIT_TEXTURE_LAYERS] = 2048;
-	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = 2048;
-	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384; // TODO
-	capabilities.limits[LIMIT_RENDER_TARGETS] = 8; // TODO
-	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
-	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
-	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
-
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
-		capabilities.textureTypes[i] = true;
-}
-
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
 	this->width = width;
@@ -313,14 +273,14 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 		if (!Shader::standardShaders[i])
 		{
 			const auto &code = defaultShaderCode[i][target][gammacorrect];
-			Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
+//			Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
 		}
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
 	// returned by getShader(), so we don't do setShader(defaultShader).
-	if (!Shader::current)
-		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
+//	if (!Shader::current)
+//		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
 
 	return true;
 }}
@@ -917,6 +877,11 @@ void Graphics::present(void *screenshotCallbackData)
 	}
 }
 
+void Graphics::setColor(Colorf c)
+{
+	// TODO
+}
+
 void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
@@ -976,6 +941,26 @@ void Graphics::stopDrawToStencilBuffer()
 	dirtyRenderState |= STATEBIT_STENCIL;
 }
 
+void Graphics::setStencilTest(CompareMode compare, int value)
+{
+	// TODO
+}
+
+void Graphics::setDepthMode(CompareMode compare, bool write)
+{
+	// TODO
+}
+
+void Graphics::setFrontFaceWinding(vertex::Winding winding)
+{
+	// TODO
+}
+
+void Graphics::setColorMask(ColorChannelMask mask)
+{
+	// TODO
+}
+
 void Graphics::setBlendState(const BlendState &blend)
 {
 	if (!(blend == states.back().blend))
@@ -984,6 +969,37 @@ void Graphics::setBlendState(const BlendState &blend)
 		states.back().blend = blend;
 		dirtyRenderState |= STATEBIT_BLEND;
 	}
+}
+
+void Graphics::setPointSize(float size)
+{
+	// TODO
+}
+
+void Graphics::setWireframe(bool enable)
+{
+	// TODO
+}
+
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/, bool /*sRGB*/) const
+{
+	switch (format)
+	{
+	case PIXELFORMAT_NORMAL:
+		if (isGammaCorrect())
+			return PIXELFORMAT_sRGBA8_UNORM;
+		else
+			return PIXELFORMAT_RGBA8_UNORM;
+	case PIXELFORMAT_HDR:
+		return PIXELFORMAT_RGBA16_FLOAT;
+	default:
+		return format;
+	}
+}
+
+bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
+{
+	return true; // TODO
 }
 
 Graphics::Renderer Graphics::getRenderer() const
@@ -1008,6 +1024,56 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	info.vendor = ""; // TODO
 	info.device = device.name.UTF8String;
 	return info;
+}
+
+Shader::Language Graphics::getShaderLanguageTarget() const
+{
+	return usesGLSLES() ? Shader::LANGUAGE_ESSL3 : Shader::LANGUAGE_GLSL3;
+}
+
+void Graphics::initCapabilities()
+{
+	int msaa = 1;
+	const int checkmsaa[] = {32, 16, 8, 4, 2};
+	for (int samples : checkmsaa)
+	{
+		if ([device supportsTextureSampleCount:samples])
+		{
+			msaa = samples;
+			break;
+		}
+	}
+
+	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
+	capabilities.features[FEATURE_CLAMP_ZERO] = true;
+	capabilities.features[FEATURE_BLEND_MINMAX] = true;
+	capabilities.features[FEATURE_LIGHTEN] = true;
+	capabilities.features[FEATURE_FULL_NPOT] = true;
+	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
+	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
+	capabilities.features[FEATURE_GLSL3] = true;
+	capabilities.features[FEATURE_GLSL4] = true;
+	capabilities.features[FEATURE_INSTANCING] = true;
+	static_assert(FEATURE_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+
+	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
+	capabilities.limits[LIMIT_POINT_SIZE] = 511;
+	capabilities.limits[LIMIT_TEXTURE_SIZE] = 16384; // TODO
+	capabilities.limits[LIMIT_TEXTURE_LAYERS] = 2048;
+	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = 2048;
+	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384; // TODO
+	capabilities.limits[LIMIT_RENDER_TARGETS] = 8; // TODO
+	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
+	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
+	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
+
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+		capabilities.textureTypes[i] = true;
+}
+
+void Graphics::getAPIStats(int &shaderswitches) const
+{
+	shaderswitches = 0;
 }
 
 } // metal

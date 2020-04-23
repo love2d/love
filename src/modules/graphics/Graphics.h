@@ -148,7 +148,8 @@ public:
 
 	enum Renderer
 	{
-		RENDERER_OPENGL = 0,
+		RENDERER_NONE,
+		RENDERER_OPENGL,
 		RENDERER_METAL,
 		RENDERER_MAX_ENUM
 	};
