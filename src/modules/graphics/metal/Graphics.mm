@@ -724,6 +724,8 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 
 void Graphics::endPass()
 {
+	flushBatchedDraws();
+
 	auto &rts = states.back().renderTargets;
 	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
@@ -767,15 +769,36 @@ void Graphics::endPass()
 }
 
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
-{
+{ @autoreleasepool {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 		flushBatchedDraws();
 
-	// TODO
-}
+	// TODO: handle clearing mid-pass
+	if (c.hasValue)
+	{
+		MTLClearColor color = MTLClearColorMake(c.value.r, c.value.g, c.value.b, c.value.a);
+		for (int i = 0; i < 8; i++)
+		{
+			passDesc.colorAttachments[0].clearColor = color;
+			passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
+		}
+	}
+
+	if (stencil.hasValue)
+	{
+		passDesc.stencilAttachment.clearStencil = stencil.value;
+		passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
+	}
+
+	if (depth.hasValue)
+	{
+		passDesc.depthAttachment.clearDepth = depth.value;
+		passDesc.depthAttachment.loadAction = MTLLoadActionClear;
+	}
+}}
 
 void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth)
-{
+{ @autoreleasepool {
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
@@ -790,8 +813,28 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 
 	flushBatchedDraws();
 
-	// TODO
-}
+	// TODO: handle clearing mid-pass
+	for (int i = 0; i < ncolors; i++)
+	{
+		if (!colors[i].hasValue)
+			continue;
+		const Colorf &c = colors[i].value;
+		passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.r, c.g, c.b, c.a);
+		passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
+	}
+
+	if (stencil.hasValue)
+	{
+		passDesc.stencilAttachment.clearStencil = stencil.value;
+		passDesc.stencilAttachment.loadAction = MTLLoadActionClear;
+	}
+
+	if (depth.hasValue)
+	{
+		passDesc.depthAttachment.clearDepth = depth.value;
+		passDesc.depthAttachment.loadAction = MTLLoadActionClear;
+	}
+}}
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 {
