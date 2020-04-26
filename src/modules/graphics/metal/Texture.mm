@@ -127,6 +127,8 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 	// so generateMipmaps here is fine - when they aren't already initialized.
 	if (getMipmapCount() > 1 && (data == nullptr || data->getMipmapCount() <= 1))
 		generateMipmaps();
+
+	setSamplerState(samplerState);
 }}
 
 Texture::~Texture()
@@ -206,9 +208,9 @@ love::image::ImageData *Texture::newImageData(love::image::Image *module, int sl
 }
 
 void Texture::setSamplerState(const SamplerState &s)
-{
-	// TODO
-}
+{ @autoreleasepool {
+	sampler = Graphics::getInstance()->getCachedSampler(s);
+}}
 
 } // metal
 } // graphics

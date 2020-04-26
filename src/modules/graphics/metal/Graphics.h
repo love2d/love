@@ -23,6 +23,8 @@
 #include "graphics/Graphics.h"
 #include "Metal.h"
 
+#include <map>
+
 @class CAMetalLayer;
 @protocol CAMetalDrawable;
 
@@ -186,6 +188,8 @@ private:
 
 	uint32 dirtyRenderState;
 	bool windowHasStencil;
+
+	std::map<uint64, void *> cachedSamplers;
 
 }; // Graphics
 

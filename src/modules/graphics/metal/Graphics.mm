@@ -198,6 +198,9 @@ Graphics::~Graphics()
 	passDesc = nil;
 	commandQueue = nil;
 	device = nil;
+
+	for (auto &kvp : cachedSamplers)
+		CFBridgingRelease(kvp.second);
 }}
 
 love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t size)
@@ -393,32 +396,37 @@ void Graphics::submitBlitEncoder()
 
 id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 { @autoreleasepool {
-	id<MTLSamplerState> sampler = nil;
+	uint64 key = s.toKey();
 
-	{
-		MTLSamplerDescriptor *desc = [MTLSamplerDescriptor new];
+	auto it = cachedSamplers.find(key);
+	if (it != cachedSamplers.end())
+		return (__bridge id<MTLSamplerState>) it->second;
 
-		desc.minFilter = getMTLSamplerFilter(s.minFilter);
-		desc.magFilter = getMTLSamplerFilter(s.magFilter);
-		desc.mipFilter = getMTLSamplerMipFilter(s.mipmapFilter);
-		desc.maxAnisotropy = std::max(1.0f, std::min((float)s.maxAnisotropy, 16.0f));
+	MTLSamplerDescriptor *desc = [MTLSamplerDescriptor new];
 
-		desc.sAddressMode = getMTLSamplerAddressMode(s.wrapU);
-		desc.tAddressMode = getMTLSamplerAddressMode(s.wrapV);
-		desc.rAddressMode = getMTLSamplerAddressMode(s.wrapW);
+	desc.minFilter = getMTLSamplerFilter(s.minFilter);
+	desc.magFilter = getMTLSamplerFilter(s.magFilter);
+	desc.mipFilter = getMTLSamplerMipFilter(s.mipmapFilter);
+	desc.maxAnisotropy = std::max(1.0f, std::min((float)s.maxAnisotropy, 16.0f));
+
+	desc.sAddressMode = getMTLSamplerAddressMode(s.wrapU);
+	desc.tAddressMode = getMTLSamplerAddressMode(s.wrapV);
+	desc.rAddressMode = getMTLSamplerAddressMode(s.wrapW);
 
 #ifdef LOVE_MACOS
-		desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
+	desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
 #endif
 
-		desc.lodMinClamp = s.minLod;
-		desc.lodMaxClamp = s.maxLod;
+	desc.lodMinClamp = s.minLod;
+	desc.lodMaxClamp = s.maxLod;
 
-		if (s.depthSampleMode.hasValue)
-			desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
+	if (s.depthSampleMode.hasValue)
+		desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
 
-		sampler = [device newSamplerStateWithDescriptor:desc];
-	}
+	id<MTLSamplerState> sampler = [device newSamplerStateWithDescriptor:desc];
+
+	if (sampler != nil)
+		cachedSamplers[key] = (void *) CFBridgingRetain(sampler);
 
 	return sampler;
 }}
@@ -776,8 +784,8 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 	// TODO: handle clearing mid-pass
 	if (c.hasValue)
 	{
-		MTLClearColor color = MTLClearColorMake(c.value.r, c.value.g, c.value.b, c.value.a);
-		for (int i = 0; i < 8; i++)
+		auto color = MTLClearColorMake(c.value.r, c.value.g, c.value.b, c.value.a);
+		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
 			passDesc.colorAttachments[0].clearColor = color;
 			passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
@@ -1050,7 +1058,12 @@ void Graphics::setPointSize(float size)
 
 void Graphics::setWireframe(bool enable)
 {
-	// TODO
+	if (enable != states.back().wireframe)
+	{
+		flushBatchedDraws();
+		states.back().wireframe = enable;
+		dirtyRenderState |= STATEBIT_WIREFRAME;
+	}
 }
 
 PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/, bool /*sRGB*/) const
