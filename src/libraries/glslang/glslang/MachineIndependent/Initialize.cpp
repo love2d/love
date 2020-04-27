@@ -57,9 +57,9 @@
 namespace glslang {
 
 // TODO: ARB_Compatability: do full extension support
-const bool ARBCompatibility = true;
+const bool ARBCompatibility = false;
 
-const bool ForwardCompatibility = false;
+const bool ForwardCompatibility = true;
 
 // change this back to false if depending on textual spellings of texturing calls when consuming the AST
 // Using PureOperatorBuiltins=false is deprecated.
