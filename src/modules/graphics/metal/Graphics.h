@@ -165,7 +165,7 @@ private:
 	void endPass();
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
-	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder);
+	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const vertex::Attributes &attributes);
 
 	id<MTLCommandQueue> commandQueue;
 

@@ -40,6 +40,37 @@ static_assert(MAX_COLOR_RENDER_TARGETS <= 8, "Metal pipeline cache key only stor
 
 static MTLVertexFormat getMTLVertexFormat(vertex::DataType type, int components)
 {
+	switch (type)
+	{
+	case vertex::DATA_UNORM8:
+		if (components == 1)
+			return MTLVertexFormatUCharNormalized;
+		else if (components == 2)
+			return MTLVertexFormatUChar2Normalized;
+		else if (components == 3)
+			return MTLVertexFormatUChar3Normalized;
+		else
+			return MTLVertexFormatUChar4Normalized;
+	case vertex::DATA_UNORM16:
+		if (components == 1)
+			return MTLVertexFormatUShortNormalized;
+		else if (components == 2)
+			return MTLVertexFormatUShort2Normalized;
+		else if (components == 3)
+			return MTLVertexFormatUShort3Normalized;
+		else
+			return MTLVertexFormatUShort4Normalized;
+	case vertex::DATA_FLOAT:
+		if (components == 1)
+			return MTLVertexFormatFloat;
+		else if (components == 2)
+			return MTLVertexFormatFloat2;
+		else if (components == 3)
+			return MTLVertexFormatFloat3;
+		else
+			return MTLVertexFormatFloat4;
+	}
+
 	// TODO
 	return MTLVertexFormatFloat4;
 }

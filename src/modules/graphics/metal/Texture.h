@@ -46,7 +46,10 @@ public:
 
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) texture; }
 	ptrdiff_t getRenderTargetHandle() const override { return msaaTexture != nil ? (ptrdiff_t) msaaTexture : (ptrdiff_t) texture; }
+
 	int getMSAA() const override { return 1 /* TODO*/; }
+
+	id<MTLSamplerState> getMTLSampler() const { return sampler; }
 
 private:
 

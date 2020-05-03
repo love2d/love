@@ -423,7 +423,7 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 	return state;
 }
 
-void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder)
+void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const vertex::Attributes &attributes)
 {
 	const uint32 pipelineStateBits = STATEBIT_SHADER | STATEBIT_BLEND | STATEBIT_COLORMASK;
 
@@ -492,7 +492,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder)
 	}
 
 	// TODO: attributes
-	if (dirtyState & pipelineStateBits)
+	if ((dirtyState & pipelineStateBits) != 0 || true)
 	{
 //		Shader *shader = (Shader *) state.shader.get();
 		Shader *shader = (Shader *) Shader::current;
@@ -502,6 +502,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder)
 		{
 			Shader::RenderPipelineKey key;
 
+			key.vertexAttributes = attributes;
 			key.blend = state.blend;
 			key.colorChannelMask = state.colorMask;
 
@@ -533,14 +534,31 @@ void Graphics::draw(const DrawCommand &cmd)
 { @autoreleasepool {
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
-	applyRenderState(encoder);
+	applyRenderState(encoder, *cmd.attributes);
 
-	// TODO: vertex attributes
+	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) cmd.texture->getHandle();
 
-	id<MTLTexture> texture = (__bridge id<MTLTexture>)(void *) cmd.texture->getHandle();
-	[encoder setFragmentTexture:texture atIndex:0];
+	[encoder setFragmentTexture:mtltexture atIndex:0];
+	[encoder setFragmentSamplerState:((Texture *)cmd.texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
+
+	uint32 allbits = cmd.buffers->useBits;
+	uint32 i = 0;
+	while (allbits)
+	{
+		uint32 bit = 1u << i;
+
+		if (cmd.buffers->useBits & bit)
+		{
+			auto b = cmd.buffers->info[i];
+			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i];
+		}
+
+		i++;
+		allbits >>= 1;
+	}
 
 	[encoder drawPrimitives:MTLPrimitiveTypeTriangle
 				vertexStart:cmd.vertexStart
@@ -552,12 +570,31 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 { @autoreleasepool {
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
-	applyRenderState(encoder);
+	applyRenderState(encoder, *cmd.attributes);
 
-	id<MTLTexture> texture = (__bridge id<MTLTexture>)(void *) cmd.texture->getHandle();
-	[encoder setFragmentTexture:texture atIndex:0];
+	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) cmd.texture->getHandle();
+
+	[encoder setFragmentTexture:mtltexture atIndex:0];
+	[encoder setFragmentSamplerState:((Texture *)cmd.texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
+
+	uint32 allbits = cmd.buffers->useBits;
+	uint32 i = 0;
+	while (allbits)
+	{
+		uint32 bit = 1u << i;
+
+		if (cmd.buffers->useBits & bit)
+		{
+			auto b = cmd.buffers->info[i];
+			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i];
+		}
+
+		i++;
+		allbits >>= 1;
+	}
 
 	auto indexType = cmd.indexType == INDEX_UINT32 ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
@@ -576,16 +613,34 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
-	applyRenderState(encoder);
+	applyRenderState(encoder, attributes);
 
-	id<MTLTexture> tex = (__bridge id<MTLTexture>)(void *) texture->getHandle();
-	[encoder setFragmentTexture:tex atIndex:0];
+	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
+
+	[encoder setFragmentTexture:mtltexture atIndex:0];
+	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
 
+	uint32 allbits = buffers.useBits;
+	uint32 i = 0;
+	while (allbits)
+	{
+		uint32 bit = 1u << i;
+
+		if (buffers.useBits & bit)
+		{
+			auto b = buffers.info[i];
+			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i];
+		}
+
+		i++;
+		allbits >>= 1;
+	}
+
 	id<MTLBuffer> ib = (__bridge id<MTLBuffer>)(void *) quadIndexBuffer->getHandle();
 
-	// TODO: Set vertex buffers/attributes
 	// TODO: support for iOS devices that don't support base vertex.
 
 	int basevertex = start * 4;
@@ -716,6 +771,7 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 	// TODO: handle clearing mid-pass
 	if (c.hasValue)
 	{
+		gammaCorrectColor(c.value);
 		auto color = MTLClearColorMake(c.value.r, c.value.g, c.value.b, c.value.a);
 		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
@@ -758,7 +814,10 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 	{
 		if (!colors[i].hasValue)
 			continue;
-		const Colorf &c = colors[i].value;
+
+		Colorf c = colors[i].value;
+		gammaCorrectColor(c);
+
 		passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.r, c.g, c.b, c.a);
 		passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
 	}
