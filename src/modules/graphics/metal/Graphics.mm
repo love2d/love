@@ -23,6 +23,7 @@
 #include "Buffer.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "ShaderStage.h"
 #include "window/Window.h"
 #include "image/Image.h"
 
@@ -91,46 +92,6 @@ static MTLCompareFunction getMTLCompareFunction(CompareMode mode)
 		case COMPARE_MAX_ENUM: return MTLCompareFunctionNever;
 	}
 	return MTLCompareFunctionNever;
-}
-
-static MTLVertexFormat getMTLVertexFormat(vertex::DataType type, int components)
-{
-	// TODO
-	return MTLVertexFormatFloat4;
-}
-
-static MTLBlendOperation getMTLBlendOperation(BlendOperation op)
-{
-	switch (op)
-	{
-		case BLENDOP_ADD: return MTLBlendOperationAdd;
-		case BLENDOP_SUBTRACT: return MTLBlendOperationSubtract;
-		case BLENDOP_REVERSE_SUBTRACT: return MTLBlendOperationReverseSubtract;
-		case BLENDOP_MIN: return MTLBlendOperationMin;
-		case BLENDOP_MAX: return MTLBlendOperationMax;
-		case BLENDOP_MAX_ENUM: return MTLBlendOperationAdd;
-	}
-	return MTLBlendOperationAdd;
-}
-
-static MTLBlendFactor getMTLBlendFactor(BlendFactor factor)
-{
-	switch (factor)
-	{
-		case BLENDFACTOR_ZERO: return MTLBlendFactorZero;
-		case BLENDFACTOR_ONE: return MTLBlendFactorOne;
-		case BLENDFACTOR_SRC_COLOR: return MTLBlendFactorSourceColor;
-		case BLENDFACTOR_ONE_MINUS_SRC_COLOR: return MTLBlendFactorOneMinusSourceColor;
-		case BLENDFACTOR_SRC_ALPHA: return MTLBlendFactorSourceAlpha;
-		case BLENDFACTOR_ONE_MINUS_SRC_ALPHA: return MTLBlendFactorOneMinusSourceAlpha;
-		case BLENDFACTOR_DST_COLOR: return MTLBlendFactorDestinationColor;
-		case BLENDFACTOR_ONE_MINUS_DST_COLOR: return MTLBlendFactorOneMinusDestinationColor;
-		case BLENDFACTOR_DST_ALPHA: return MTLBlendFactorDestinationAlpha;
-		case BLENDFACTOR_ONE_MINUS_DST_ALPHA: return MTLBlendFactorOneMinusDestinationAlpha;
-		case BLENDFACTOR_SRC_ALPHA_SATURATED: return MTLBlendFactorSourceAlphaSaturated;
-		case BLENDFACTOR_MAX_ENUM: return MTLBlendFactorZero;
-	}
-	return MTLBlendFactorZero;
 }
 
 love::graphics::Graphics *createInstance()
@@ -215,7 +176,7 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
-	return nullptr; // TODO: new ShaderStage(this, stage, source, gles, cachekey);
+	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
 love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
@@ -253,6 +214,10 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	this->windowHasStencil = windowhasstencil;
 
 	metalLayer.device = device;
+	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
+
+	// TODO: set to NO when we have pending screen captures
+	metalLayer.framebufferOnly = YES;
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
 
@@ -281,14 +246,14 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 		if (!Shader::standardShaders[i])
 		{
 			const auto &code = defaultShaderCode[i][target][gammacorrect];
-//			Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
+			Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
 		}
 	}
 
 	// A shader should always be active, but the default shader shouldn't be
 	// returned by getShader(), so we don't do setShader(defaultShader).
-//	if (!Shader::current)
-//		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
+	if (!Shader::current)
+		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
 
 	return true;
 }}
@@ -347,7 +312,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 		const auto &rts = states.back().renderTargets;
 		if (rts.getFirstTarget().texture.get() != nullptr)
 		{
-
+			// TODO
 		}
 		else
 		{
@@ -430,50 +395,6 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 	return sampler;
 }}
-
-id<MTLRenderPipelineState> Graphics::getCachedRenderPipelineState(const PipelineState &state)
-{
-	MTLRenderPipelineDescriptor *pipedesc = [MTLRenderPipelineDescriptor new];
-
-	MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
-
-	const auto &attributes = state.vertexAttributes;
-	uint32 allbits = attributes.enableBits;
-	uint32 i = 0;
-	while (allbits)
-	{
-		uint32 bit = 1u << i;
-
-		if (attributes.enableBits & bit)
-		{
-			const auto &attrib = attributes.attribs[i];
-
-			vertdesc.attributes[i].format = getMTLVertexFormat(attrib.type, attrib.components);
-			vertdesc.attributes[i].offset = attrib.offsetFromVertex;
-			vertdesc.attributes[i].bufferIndex = attrib.bufferIndex;
-
-			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
-
-			bool instanced = attributes.instanceBits & (1u << attrib.bufferIndex);
-			auto step = instanced ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
-
-			vertdesc.layouts[attrib.bufferIndex].stride = layout.stride;
-			vertdesc.layouts[attrib.bufferIndex].stepFunction = step;
-		}
-
-		i++;
-		allbits >>= 1;
-	}
-
-	pipedesc.vertexDescriptor = vertdesc;
-
-//	pipedesc.
-
-	NSError *err = nil;
-	id<MTLRenderPipelineState> pipestate = [device newRenderPipelineStateWithDescriptor:pipedesc error:&err];
-
-	return pipestate;
-}
 
 id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil)
 {
@@ -573,20 +494,31 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder)
 	// TODO: attributes
 	if (dirtyState & pipelineStateBits)
 	{
-		if (dirtyState & STATEBIT_BLEND)
-		{
+//		Shader *shader = (Shader *) state.shader.get();
+		Shader *shader = (Shader *) Shader::current;
+		id<MTLRenderPipelineState> pipeline = nil;
 
+		if (shader)
+		{
+			Shader::RenderPipelineKey key;
+
+			key.blend = state.blend;
+			key.colorChannelMask = state.colorMask;
+
+			const auto &rts = state.renderTargets.colors;
+
+			for (size_t i = 0; i < rts.size(); i++)
+				key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
+
+			if (state.renderTargets.getFirstTarget().texture.get() == nullptr)
+				key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
+
+			// TODO: depth/stencil
+
+			pipeline = shader->getCachedRenderPipeline(key);
 		}
 
-		if (dirtyState & STATEBIT_SHADER)
-		{
-
-		}
-
-		if (dirtyState & STATEBIT_COLORMASK)
-		{
-
-		}
+		[encoder setRenderPipelineState:pipeline];
 	}
 
 	if (dirtyState & (STATEBIT_DEPTH | STATEBIT_STENCIL))
@@ -1072,7 +1004,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, 
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
-			return PIXELFORMAT_sRGBA8_UNORM;
+			return PIXELFORMAT_RGBA8_UNORM_sRGB;
 		else
 			return PIXELFORMAT_RGBA8_UNORM;
 	case PIXELFORMAT_HDR:

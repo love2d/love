@@ -1400,8 +1400,8 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	f.framebufferAttachments[0] = GL_COLOR_ATTACHMENT0;
 	f.framebufferAttachments[1] = GL_NONE;
 
-	if (pixelformat == PIXELFORMAT_RGBA8_UNORM && isSRGB)
-		pixelformat = PIXELFORMAT_sRGBA8_UNORM;
+	if (isSRGB)
+		pixelformat = getSRGBPixelFormat(pixelformat);
 	else if (pixelformat == PIXELFORMAT_ETC1_UNORM)
 	{
 		// The ETC2 format can load ETC1 textures.
@@ -1435,7 +1435,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_BYTE;
 		break;
-	case PIXELFORMAT_sRGBA8_UNORM:
+	case PIXELFORMAT_RGBA8_UNORM_sRGB:
 		f.internalformat = GL_SRGB8_ALPHA8;
 		f.type = GL_UNSIGNED_BYTE;
 		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
@@ -1755,7 +1755,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 			f.internalformat = f.externalformat;
 		}
 
-		if (pixelformat != PIXELFORMAT_sRGBA8_UNORM)
+		if (!isPixelFormatSRGB(pixelformat))
 			isSRGB = false;
 	}
 
@@ -1767,8 +1767,8 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 	if (rendertarget && isPixelFormatCompressed(pixelformat))
 		return false;
 
-	if (pixelformat == PIXELFORMAT_RGBA8_UNORM && isSRGB)
-		pixelformat = PIXELFORMAT_sRGBA8_UNORM;
+	if (isSRGB)
+		pixelformat = getSRGBPixelFormat(pixelformat);
 
 	switch (pixelformat)
 	{
@@ -1785,7 +1785,7 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 			return GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
 		else
 			return true;
-	case PIXELFORMAT_sRGBA8_UNORM:
+	case PIXELFORMAT_RGBA8_UNORM_sRGB:
 		if (rendertarget)
 		{
 			if (GLAD_VERSION_1_0)

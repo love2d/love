@@ -657,7 +657,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (!firsttex->isValidSlice(firsttarget.slice))
 		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
 
-	bool hasSRGBtexture = firstcolorformat == PIXELFORMAT_sRGBA8_UNORM;
+	bool hasSRGBtexture = isPixelFormatSRGB(firstcolorformat);
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firsttex->getRequestedMSAA();
@@ -690,7 +690,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (isPixelFormatDepthStencil(format))
 			throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setRenderTargets.");
 
-		if (format == PIXELFORMAT_sRGBA8_UNORM)
+		if (isPixelFormatSRGB(format))
 			hasSRGBtexture = true;
 	}
 

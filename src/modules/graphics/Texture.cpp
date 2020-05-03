@@ -558,7 +558,7 @@ bool Texture::isCompressed() const
 
 bool Texture::isFormatLinear() const
 {
-	return isGammaCorrect() && !sRGB && format != PIXELFORMAT_sRGBA8_UNORM;
+	return isGammaCorrect() && !sRGB && !isPixelFormatSRGB(format);
 }
 
 bool Texture::isValidSlice(int slice) const

@@ -155,14 +155,6 @@ private:
 		Shader *shader;
 	};
 
-	struct PipelineState
-	{
-		vertex::Attributes vertexAttributes;
-		BlendState blend;
-		ColorChannelMask colorChannelMask;
-		Shader *shader;
-	};
-
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
@@ -172,7 +164,6 @@ private:
 
 	void endPass();
 
-	id<MTLRenderPipelineState> getCachedRenderPipelineState(const PipelineState &state);
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder);
 

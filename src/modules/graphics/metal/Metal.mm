@@ -32,10 +32,10 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 {
 	MTLPixelFormat mtlformat = MTLPixelFormatRGBA8Unorm;
 
-	if (format == PIXELFORMAT_RGBA8_UNORM && isSRGB)
-		format = PIXELFORMAT_sRGBA8_UNORM;
+	if (isSRGB)
+		format = getSRGBPixelFormat(format);
 
-	if (!isPixelFormatCompressed(format) && format != PIXELFORMAT_sRGBA8_UNORM)
+	if (!isPixelFormatCompressed(format) && !isPixelFormatSRGB(format))
 		isSRGB = false;
 
 	switch (format)
@@ -49,8 +49,14 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 	case PIXELFORMAT_RGBA8_UNORM:
 		mtlformat = MTLPixelFormatRGBA8Unorm;
 		break;
-	case PIXELFORMAT_sRGBA8_UNORM:
+	case PIXELFORMAT_RGBA8_UNORM_sRGB:
 		mtlformat = MTLPixelFormatRGBA8Unorm_sRGB;
+		break;
+	case PIXELFORMAT_BGRA8_UNORM:
+		mtlformat = MTLPixelFormatBGRA8Unorm;
+		break;
+	case PIXELFORMAT_BGRA8_UNORM_sRGB:
+		mtlformat = MTLPixelFormatBGRA8Unorm_sRGB;
 		break;
 	case PIXELFORMAT_R16_UNORM:
 		mtlformat = MTLPixelFormatR16Unorm;

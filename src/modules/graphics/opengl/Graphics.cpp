@@ -1408,7 +1408,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
-			return PIXELFORMAT_sRGBA8_UNORM;
+			return PIXELFORMAT_RGBA8_UNORM_sRGB;
 		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, rendertarget, readable, sRGB))
 			// 32-bit render targets don't have guaranteed support on GLES2.
 			return PIXELFORMAT_RGBA4_UNORM;
@@ -1425,7 +1425,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 {
 	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
 	{
-		format = PIXELFORMAT_sRGBA8_UNORM;
+		format = PIXELFORMAT_RGBA8_UNORM_sRGB;
 		sRGB = false;
 	}
 

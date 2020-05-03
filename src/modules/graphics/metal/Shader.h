@@ -20,9 +20,17 @@
 
 #pragma once
 
+#include "libraries/xxHash/xxhash.h"
 #include "graphics/Shader.h"
 #include "graphics/Graphics.h"
+#include "graphics/renderstate.h"
+#include "graphics/vertex.h"
 #include "Metal.h"
+
+#import <Metal/MTLRenderPipeline.h>
+
+#include <unordered_map>
+#include <string>
 
 namespace love
 {
@@ -35,11 +43,31 @@ class Shader final : public love::graphics::Shader
 {
 public:
 
+	struct RenderPipelineKey
+	{
+		vertex::Attributes vertexAttributes;
+		BlendState blend;
+		uint64 colorRenderTargetFormats;
+		uint32 depthStencilFormat;
+		ColorChannelMask colorChannelMask;
+		uint8 msaa;
+
+		RenderPipelineKey()
+		{
+			memset(this, 0, sizeof(RenderPipelineKey));
+		}
+
+		bool operator == (const RenderPipelineKey &other) const
+		{
+			return memcmp(this, &other, sizeof(RenderPipelineKey)) == 0;
+		}
+	};
+
 	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
 	virtual ~Shader();
 
 	// Implements Shader.
-	void attach() override {}
+	void attach() override;
 	std::string getWarnings() const override { return ""; }
 	int getVertexAttributeIndex(const std::string &name) override { return -1; }
 	const UniformInfo *getUniformInfo(const std::string &name) const override { return nullptr; }
@@ -50,9 +78,21 @@ public:
 	ptrdiff_t getHandle() const override { return 0; }
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override {}
 
+	id<MTLRenderPipelineState> getCachedRenderPipeline(const RenderPipelineKey &key);
+
 private:
 
-	id<MTLLibrary> library;
+	struct RenderPipelineHasher
+	{
+		size_t operator() (const RenderPipelineKey &key) const
+		{
+			return XXH32(&key, sizeof(RenderPipelineKey), 0);
+		}
+	};
+
+	id<MTLFunction> functions[ShaderStage::STAGE_MAX_ENUM];
+
+	std::unordered_map<RenderPipelineKey, const void *, RenderPipelineHasher> cachedRenderPipelines;
 
 }; // Metal
 

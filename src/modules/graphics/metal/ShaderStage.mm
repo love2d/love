@@ -164,7 +164,7 @@ ShaderStage::ShaderStage(love::graphics::Graphics *gfx, StageType stage, const s
 	glslangShader->setStringsWithLengths(&csrc, &srclen, 1);
 
 	int defaultversion = gles ? 300 : 330;
-	EProfile defaultprofile = ENoProfile;
+	EProfile defaultprofile = gles ? EEsProfile : ECoreProfile;
 	bool forcedefault = false;
 	bool forwardcompat = true;
 
