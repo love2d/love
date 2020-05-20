@@ -123,7 +123,7 @@ double Timer::getTimerPeriod()
 	return 0;
 }
 
-double Timer::getTime()
+double Timer::getTimeAbsolute()
 {
 	// The timer period (reciprocal of the frequency.)
 	static const double timerPeriod = getTimerPeriod();
@@ -154,6 +154,12 @@ double Timer::getTime()
 	QueryPerformanceCounter(&microTime);
 	return (double) microTime.QuadPart * timerPeriod;
 #endif
+}
+
+double Timer::getTime()
+{
+	static const double start = getTimeAbsolute();
+	return getTimeAbsolute() - start;
 }
 
 } // timer

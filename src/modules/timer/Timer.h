@@ -72,9 +72,10 @@ public:
 	double getAverageDelta() const;
 
 	/**
-	 * Gets the amount of time passed since an unspecified time. Useful for
-	 * profiling code or measuring intervals. The time is microsecond-precise,
-	 * and increases monotonically.
+	 * Gets the amount of time in seconds passed since its first invocation
+	 * (which happens as part of Timer::step at the start of love.run).
+	 * Useful for profiling code or measuring intervals.
+	 * The time is microsecond-precise, and increases monotonically.
 	 * @return The time (in seconds)
 	 **/
 	static double getTime();
@@ -101,6 +102,9 @@ private:
 
 	// Returns the timer period on some platforms.
 	static double getTimerPeriod();
+
+	// Like getTime, but relative to an unspecified time.
+	static double getTimeAbsolute();
 
 }; // Timer
 
