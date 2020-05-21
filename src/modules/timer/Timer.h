@@ -101,12 +101,6 @@ private:
 	// The current timestep.
 	double dt;
 
-	// Returns the timer period on some platforms.
-	static double getTimerPeriod();
-
-	// Like getTime, but relative to an unspecified time.
-	static double getTimeAbsolute();
-
 }; // Timer
 
 } // timer
