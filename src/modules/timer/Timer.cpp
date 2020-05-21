@@ -24,6 +24,7 @@
 #include "common/delay.h"
 #include "Timer.h"
 
+#include <iostream>
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
 #elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
@@ -33,15 +34,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-#endif
-
-#if defined(LOVE_LINUX)
-static inline double getTimeOfDay()
-{
-	timeval t;
-	gettimeofday(&t, NULL);
-	return (double) t.tv_sec + (double) t.tv_usec / 1000000.0;
-}
 #endif
 
 namespace love
@@ -109,52 +101,91 @@ double Timer::getAverageDelta() const
 	return averageDelta;
 }
 
-double Timer::getTimerPeriod()
+#if defined(LOVE_LINUX)
+
+static inline timespec getTimeOfDay()
 {
-#if defined(LOVE_MACOSX) || defined(LOVE_IOS)
-	mach_timebase_info_data_t info;
-	mach_timebase_info(&info);
-	return (double) info.numer / (double) info.denom / 1000000000.0;
-#elif defined(LOVE_WINDOWS)
-	LARGE_INTEGER temp;
-	if (QueryPerformanceFrequency(&temp) != 0 && temp.QuadPart != 0)
-		return 1.0 / (double) temp.QuadPart;
-#endif
-	return 0;
+	timeval t;
+	gettimeofday(&t, NULL);
+	return timespec { t.tv_sec, t.tv_usec * 1000 };
 }
 
-double Timer::getTime()
+static timespec getTimeAbsolute()
 {
-	// The timer period (reciprocal of the frequency.)
-	static const double timerPeriod = getTimerPeriod();
-
-#if defined(LOVE_LINUX)
-	(void) timerPeriod; // Unused on linux
-
-	double mt;
 	// Check for POSIX timers and monotonic clocks. If not supported, use the gettimeofday fallback.
 #if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK) \
 && (defined(CLOCK_MONOTONIC_RAW) || defined(CLOCK_MONOTONIC))
-	timespec t;
+
 #ifdef CLOCK_MONOTONIC_RAW
 	clockid_t clk_id = CLOCK_MONOTONIC_RAW;
 #else
 	clockid_t clk_id = CLOCK_MONOTONIC;
 #endif
+
+	timespec t;
 	if (clock_gettime(clk_id, &t) == 0)
-		mt = (double) t.tv_sec + (double) t.tv_nsec / 1000000000.0;
+		return t;
 	else
+		return getTimeOfDay();
 #endif
-		mt = getTimeOfDay();
-	return mt;
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
-	return (double) mach_absolute_time() * timerPeriod;
-#elif defined(LOVE_WINDOWS)
-	LARGE_INTEGER microTime;
-	QueryPerformanceCounter(&microTime);
-	return (double) microTime.QuadPart * timerPeriod;
-#endif
+	return getTimeOfDay();
 }
+
+double Timer::getTime()
+{
+	static const timespec start = getTimeAbsolute();
+	const timespec now = getTimeAbsolute();
+	// tv_sec and tv_nsec should be signed on POSIX, so we are fine in just subtracting here.
+	const long sec = now.tv_sec - start.tv_sec;
+	const long nsec = now.tv_nsec - start.tv_nsec;
+	return (double) sec + (double) nsec / 1.0e9;
+}
+
+#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+
+static mach_timebase_info_data_t getTimebaseInfo()
+{
+	mach_timebase_info_data_t info;
+	mach_timebase_info(&info);
+	return info;
+}
+
+double Timer::getTime()
+{
+	static const mach_timebase_info_data_t info = getTimebaseInfo();
+	static const uint64_t start = mach_absolute_time();
+	const uint64_t rel = mach_absolute_time() - start;
+	return ((double) rel * 1.0e-9) * (double) info.number / (double) info.denom;
+}
+
+#elif defined(LOVE_WINDOWS)
+
+static LARGE_INTEGER getTimeAbsolute()
+{
+	LARGE_INTEGER t;
+	QueryPerformanceCounter(&t);
+	return t;
+}
+
+static LARGE_INTEGER getFrequency()
+{
+	LARGE_INTEGER freq;
+	// "On systems that run Windows XP or later, the function will always succeed and will thus never return zero."
+	QueryPerformanceFrequency(&freq);
+	return freq;
+}
+
+double Timer::getTime()
+{
+	static const LARGE_INTEGER freq = getFrequency();
+	static const LARGE_INTEGER start = getTimeAbsolute();
+	const LARGE_INTEGER now = getTimeAbsolute();
+	LARGE_INTEGER rel;
+	rel.QuadPart = now.QuadPart - start.QuadPart;
+	return (double) rel.QuadPart / (double) freq.QuadPart;
+}
+
+#endif
 
 } // timer
 } // love
