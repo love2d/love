@@ -182,7 +182,7 @@ double Timer::getTime()
 	const LARGE_INTEGER now = getTimeAbsolute();
 	LARGE_INTEGER rel;
 	rel.QuadPart = now.QuadPart - start.QuadPart;
-	return rel.QuadPart / freq.QuadPart;
+	return (double) rel.QuadPart / (double) freq.QuadPart;
 }
 
 #endif
