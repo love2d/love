@@ -73,7 +73,8 @@ public:
 
 	/**
 	 * Gets the amount of time in seconds passed since its first invocation
-	 * (which happens as part of Timer::step at the start of love.run).
+	 * (which happens as part of the Timer constructor,
+	 * which is called when the module is first opened).
 	 * Useful for profiling code or measuring intervals.
 	 * The time is microsecond-precise, and increases monotonically.
 	 * @return The time (in seconds)
