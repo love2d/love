@@ -24,6 +24,7 @@
 #include "common/delay.h"
 #include "Timer.h"
 
+#include <iostream>
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
 #elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
@@ -134,11 +135,10 @@ double Timer::getTime()
 {
 	static const timespec start = getTimeAbsolute();
 	const timespec now = getTimeAbsolute();
-	const timespec rel = timespec {
-		now.tv_sec - start.tv_sec,
-		now.tv_nsec - start.tv_nsec
-	};
-	return (double) rel.tv_sec + (double) rel.tv_nsec / 1.0e9;
+	// tv_sec and tv_nsec should be signed on POSIX, so we are fine in just subtracting here.
+	const long sec = now.tv_sec - start.tv_sec;
+	const long nsec = now.tv_nsec - start.tv_nsec;
+	return (double) sec + (double) nsec / 1.0e9;
 }
 
 #elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
