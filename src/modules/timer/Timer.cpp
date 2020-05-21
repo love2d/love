@@ -155,7 +155,7 @@ double Timer::getTime()
 	static const mach_timebase_info_data_t info = getTimebaseInfo();
 	static const uint64_t start = mach_absolute_time();
 	const uint64_t rel = mach_absolute_time() - start;
-	return ((double) rel * 1.0e-9) * (double) info.number / (double) info.denom;
+	return ((double) rel * 1.0e-9) * (double) info.numer / (double) info.denom;
 }
 
 #elif defined(LOVE_WINDOWS)
