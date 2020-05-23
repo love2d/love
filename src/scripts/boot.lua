@@ -532,6 +532,7 @@ function love.init()
 
 	-- Setup window here.
 	if c.window and c.modules.window then
+		love.window.setTitle(c.window.title or c.title)
 		assert(love.window.setMode(c.window.width, c.window.height,
 		{
 			fullscreen = c.window.fullscreen,
@@ -551,7 +552,6 @@ function love.init()
 			x = c.window.x,
 			y = c.window.y,
 		}), "Could not set window mode")
-		love.window.setTitle(c.window.title or c.title)
 		if c.window.icon then
 			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
 			love.window.setIcon(love.image.newImageData(c.window.icon))

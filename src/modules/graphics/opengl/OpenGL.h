@@ -318,9 +318,10 @@ public:
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
 	 * @param restoreprev Restore previously bound texture unit when done.
+	 * @param bindforedit If false, the active texture unit may be left alone.
 	 **/
-	void bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev);
-	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev);
+	void bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev, bool bindforedit = true);
+	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit = true);
 
 	/**
 	 * Helper for deleting an OpenGL texture.

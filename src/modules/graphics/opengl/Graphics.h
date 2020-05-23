@@ -106,8 +106,6 @@ public:
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 
-	Shader::Language getShaderLanguageTarget() const override;
-
 	// Internal use.
 	void cleanupRenderTexture(love::graphics::Texture *texture);
 

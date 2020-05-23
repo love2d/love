@@ -45,11 +45,6 @@ static const char graphics_lua[] =
 #include "wrap_Graphics.lua"
 ;
 
-// This is in a separate file because VS2013 has a 16KB limit for raw strings..
-static const char graphics_shader_lua[] =
-#include "wrap_GraphicsShader.lua"
-;
-
 namespace love
 {
 namespace graphics
@@ -748,15 +743,15 @@ static int w__pushNewTexture(lua_State *L, Texture::Slices *slices, const Textur
 static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool checkType, bool checkDimensions, OptionalBool forceRenderTarget, Texture::Settings &s, bool &setdpiscale)
 {
 	setdpiscale = false;
+	if (forceRenderTarget.hasValue)
+		s.renderTarget = forceRenderTarget.value;
 
 	if (opt && lua_isnoneornil(L, idx))
 		return;
 
 	luax_checktablefields<Texture::SettingType>(L, idx, "texture setting name", Texture::getConstant);
 
-	if (forceRenderTarget.hasValue)
-		s.renderTarget = forceRenderTarget.value;
-	else
+	if (!forceRenderTarget.hasValue)
 		s.renderTarget = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_RENDER_TARGET), s.renderTarget);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_FORMAT));
@@ -1366,7 +1361,7 @@ int w_newParticleSystem(lua_State *L)
 	return 1;
 }
 
-static int w_getShaderSource(lua_State *L, int startidx, bool gles, std::string &vertexsource, std::string &pixelsource)
+static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string> &stages)
 {
 	using namespace love::filesystem;
 
@@ -1426,61 +1421,23 @@ static int w_getShaderSource(lua_State *L, int startidx, bool gles, std::string 
 	if (!(has_arg1 || has_arg2))
 		luaL_checkstring(L, startidx);
 
-	luax_getfunction(L, "graphics", "_shaderCodeToGLSL");
-
-	// push vertexcode and pixelcode strings to the top of the stack
-	lua_pushboolean(L, gles);
-
 	if (has_arg1)
-		lua_pushvalue(L, startidx + 0);
-	else
-		lua_pushnil(L);
-
+		stages.push_back(luax_checkstring(L, startidx + 0));
 	if (has_arg2)
-		lua_pushvalue(L, startidx + 1);
-	else
-		lua_pushnil(L);
-
-	// call effectCodeToGLSL, returned values will be at the top of the stack
-	if (lua_pcall(L, 3, 2, 0) != 0)
-		return luaL_error(L, "%s", lua_tostring(L, -1));
-
-	// vertex shader code
-	if (lua_isstring(L, -2))
-		vertexsource = luax_checkstring(L, -2);
-	else if (has_arg1 && has_arg2)
-		return luaL_error(L, "Could not parse vertex shader code (missing 'position' function?)");
-
-	// pixel shader code
-	if (lua_isstring(L, -1))
-		pixelsource = luax_checkstring(L, -1);
-	else if (has_arg1 && has_arg2)
-		return luaL_error(L, "Could not parse pixel shader code (missing 'effect' function?)");
-
-	if (vertexsource.empty() && pixelsource.empty())
-	{
-		// Original args had source code, but effectCodeToGLSL couldn't translate it
-		for (int i = startidx; i < startidx + 2; i++)
-		{
-			if (lua_isstring(L, i))
-				return luaL_argerror(L, i, "missing 'position' or 'effect' function?");
-		}
-	}
+		stages.push_back(luax_checkstring(L, startidx + 1));
 
 	return 0;
 }
 
 int w_newShader(lua_State *L)
 {
-	bool gles = instance()->getRenderer() == Graphics::RENDERER_OPENGLES;
-
-	std::string vertexsource, pixelsource;
-	w_getShaderSource(L, 1, gles, vertexsource, pixelsource);
+	std::vector<std::string> stages;
+	w_getShaderSource(L, 1, stages);
 
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance()->newShader(vertexsource, pixelsource);
+		Shader *shader = instance()->newShader(stages);
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1504,14 +1461,14 @@ int w_validateShader(lua_State *L)
 {
 	bool gles = luax_checkboolean(L, 1);
 
-	std::string vertexsource, pixelsource;
-	w_getShaderSource(L, 2, gles, vertexsource, pixelsource);
+	std::vector<std::string> stages;
+	w_getShaderSource(L, 2, stages);
 
 	bool success = true;
 	std::string err;
 	try
 	{
-		success = instance()->validateShader(gles, vertexsource, pixelsource, err);
+		success = instance()->validateShader(gles, stages, err);
 	}
 	catch (love::Exception &e)
 	{
@@ -2310,46 +2267,6 @@ int w_getShader(lua_State *L)
 		lua_pushnil(L);
 
 	return 1;
-}
-
-int w_setDefaultShaderCode(lua_State *L)
-{
-	for (int i = 0; i < 2; i++)
-	{
-		luaL_checktype(L, i + 1, LUA_TTABLE);
-
-		for (int lang = 0; lang < Shader::LANGUAGE_MAX_ENUM; lang++)
-		{
-			const char *langname;
-			if (!Shader::getConstant((Shader::Language) lang, langname))
-				continue;
-
-			lua_getfield(L, i + 1, langname);
-
-			lua_getfield(L, -1, "vertex");
-			lua_getfield(L, -2, "pixel");
-			lua_getfield(L, -3, "videopixel");
-			lua_getfield(L, -4, "arraypixel");
-
-			std::string vertex = luax_checkstring(L, -4);
-			std::string pixel = luax_checkstring(L, -3);
-			std::string videopixel = luax_checkstring(L, -2);
-			std::string arraypixel = luax_checkstring(L, -1);
-
-			lua_pop(L, 5);
-
-			Graphics::defaultShaderCode[Shader::STANDARD_DEFAULT][lang][i].source[ShaderStage::STAGE_VERTEX] = vertex;
-			Graphics::defaultShaderCode[Shader::STANDARD_DEFAULT][lang][i].source[ShaderStage::STAGE_PIXEL] = pixel;
-
-			Graphics::defaultShaderCode[Shader::STANDARD_VIDEO][lang][i].source[ShaderStage::STAGE_VERTEX] = vertex;
-			Graphics::defaultShaderCode[Shader::STANDARD_VIDEO][lang][i].source[ShaderStage::STAGE_PIXEL] = videopixel;
-
-			Graphics::defaultShaderCode[Shader::STANDARD_ARRAY][lang][i].source[ShaderStage::STAGE_VERTEX] = vertex;
-			Graphics::defaultShaderCode[Shader::STANDARD_ARRAY][lang][i].source[ShaderStage::STAGE_PIXEL] = arraypixel;
-		}
-	}
-
-	return 0;
 }
 
 int w_getSupported(lua_State *L)
@@ -3226,7 +3143,6 @@ static const luaL_Reg functions[] =
 
 	{ "setShader", w_setShader },
 	{ "getShader", w_getShader },
-	{ "_setDefaultShaderCode", w_setDefaultShaderCode },
 
 	{ "getSupported", w_getSupported },
 	{ "getTextureFormats", w_getTextureFormats },
@@ -3339,11 +3255,6 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 	int n = luax_register_module(L, w);
 
 	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "wrap_Graphics.lua") == 0)
-		lua_call(L, 0, 0);
-	else
-		lua_error(L);
-
-	if (luaL_loadbuffer(L, (const char *)graphics_shader_lua, sizeof(graphics_shader_lua), "wrap_GraphicsShader.lua") == 0)
 		lua_call(L, 0, 0);
 	else
 		lua_error(L);

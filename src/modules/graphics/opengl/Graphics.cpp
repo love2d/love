@@ -252,12 +252,11 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	// Restore the graphics state.
 	restoreState(states.back());
 
-	int gammacorrect = isGammaCorrect() ? 1 : 0;
-	Shader::Language target = getShaderLanguageTarget();
-
 	// We always need a default shader.
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
+		auto stype = (Shader::StandardShader) i;
+
 		if (i == Shader::STANDARD_ARRAY && !capabilities.textureTypes[TEXTURE_2D_ARRAY])
 			continue;
 
@@ -267,8 +266,10 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		{
 			if (!Shader::standardShaders[i])
 			{
-				const auto &code = defaultShaderCode[i][target][gammacorrect];
-				Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
+				std::vector<std::string> stages;
+				stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
+				stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
+				Shader::standardShaders[i] = newShader(stages);
 			}
 		}
 		catch (love::Exception &)
@@ -1499,18 +1500,6 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 		glDeleteRenderbuffers(1, &renderbuffer);
 
 	return supported.value;
-}
-
-Shader::Language Graphics::getShaderLanguageTarget() const
-{
-	if (gl.isCoreProfile())
-		return Shader::LANGUAGE_GLSL3;
-	else if (GLAD_ES_VERSION_3_0)
-		return Shader::LANGUAGE_ESSL3;
-	else if (GLAD_ES_VERSION_2_0)
-		return Shader::LANGUAGE_ESSL1;
-	else
-		return Shader::LANGUAGE_GLSL1;
 }
 
 } // opengl

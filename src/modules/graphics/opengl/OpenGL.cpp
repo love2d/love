@@ -1061,7 +1061,7 @@ void OpenGL::setTextureUnit(int textureunit)
 	state.curTextureUnit = textureunit;
 }
 
-void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev)
+void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev, bool bindforedit)
 {
 	if (texture != state.boundTextures[target][textureunit])
 	{
@@ -1077,9 +1077,14 @@ void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureun
 		else
 			state.curTextureUnit = textureunit;
 	}
+	else if (bindforedit && !restoreprev && textureunit != state.curTextureUnit)
+	{
+		glActiveTexture(GL_TEXTURE0 + textureunit);
+		state.curTextureUnit = textureunit;
+	}
 }
 
-void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev)
+void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit)
 {
 	TextureType textype = TEXTURE_2D;
 	GLuint handle = 0;
@@ -1101,7 +1106,7 @@ void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restorepr
 		handle = getDefaultTexture(textype);
 	}
 
-	bindTextureToUnit(textype, handle, textureunit, restoreprev);
+	bindTextureToUnit(textype, handle, textureunit, restoreprev, bindforedit);
 }
 
 void OpenGL::deleteTexture(GLuint texture)
