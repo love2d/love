@@ -223,9 +223,9 @@ struct BufferBindings
 
 struct AttributeInfo
 {
+	DataType type;
+	uint8 components;
 	uint8 bufferIndex;
-	DataType type : 4;
-	uint8 components : 4;
 	uint16 offsetFromVertex;
 };
 
