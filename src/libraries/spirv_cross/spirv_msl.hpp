@@ -43,10 +43,6 @@ enum MSLVertexFormat
 struct MSLVertexAttr
 {
 	uint32_t location = 0;
-	uint32_t msl_buffer = 0;
-	uint32_t msl_offset = 0;
-	uint32_t msl_stride = 0;
-	bool per_instance = false;
 	MSLVertexFormat format = MSL_VERTEX_FORMAT_OTHER;
 	spv::BuiltIn builtin = spv::BuiltInMax;
 };
@@ -324,12 +320,12 @@ public:
 		// can be read in subsequent stages.
 		bool enable_clip_distance_user_varying = true;
 
-		bool is_ios()
+		bool is_ios() const
 		{
 			return platform == iOS;
 		}
 
-		bool is_macos()
+		bool is_macos() const
 		{
 			return platform == macOS;
 		}
@@ -897,6 +893,8 @@ protected:
 	void add_spv_func_and_recompile(SPVFuncImpl spv_func);
 
 	void activate_argument_buffer_resources();
+
+	bool type_is_msl_framebuffer_fetch(const SPIRType &type) const;
 
 	// OpcodeHandler that handles several MSL preprocessing operations.
 	struct OpCodePreprocessor : OpcodeHandler
