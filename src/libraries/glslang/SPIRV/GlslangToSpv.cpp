@@ -1292,7 +1292,8 @@ bool IsDescriptorResource(const glslang::TType& type)
     // basically samplerXXX/subpass/sampler/texture are all included
     // if they are the global-scope-class, not the function parameter
     // (or local, if they ever exist) class.
-    if (type.getBasicType() == glslang::EbtSampler)
+    if (type.getBasicType() == glslang::EbtSampler ||
+        type.getBasicType() == glslang::EbtAccStruct)
         return type.getQualifier().isUniformOrBuffer();
 
     // None of the above.
@@ -1439,7 +1440,7 @@ TGlslangToSpvTraverser::TGlslangToSpvTraverser(unsigned int spvVersion,
     // Add the source extensions
     const auto& sourceExtensions = glslangIntermediate->getRequestedExtensions();
     for (auto it = sourceExtensions.begin(); it != sourceExtensions.end(); ++it)
-        builder.addSourceExtension(it->c_str());
+        builder.addSourceExtension(it->first.c_str());
 
     // Add the top-level modes for this shader.
 
@@ -1448,7 +1449,7 @@ TGlslangToSpvTraverser::TGlslangToSpvTraverser(unsigned int spvVersion,
         builder.addExecutionMode(shaderEntry, spv::ExecutionModeXfb);
     }
 
-    if (sourceExtensions.find("GL_EXT_ray_flags_primitive_culling") != sourceExtensions.end()) {
+    if (glslangIntermediate->getLayoutPrimitiveCulling()) {
         builder.addCapability(spv::CapabilityRayTraversalPrimitiveCullingProvisionalKHR);
     }
 
@@ -3524,7 +3525,18 @@ spv::Id TGlslangToSpvTraverser::createSpvVariable(const glslang::TIntermSymbol* 
     if (glslang::IsAnonymous(name))
         name = "";
 
-    return builder.createVariable(storageClass, spvType, name);
+    spv::Id initializer = spv::NoResult;
+
+    if (node->getType().getQualifier().storage == glslang::EvqUniform &&
+        !node->getConstArray().empty()) {
+            int nextConst = 0;
+            initializer = createSpvConstantFromConstUnionArray(node->getType(),
+                                                               node->getConstArray(),
+                                                               nextConst,
+                                                               false /* specConst */);
+    }
+
+    return builder.createVariable(storageClass, spvType, name, initializer);
 }
 
 // Return type Id of the sampled type.
@@ -4388,8 +4400,10 @@ bool TGlslangToSpvTraverser::writableParam(glslang::TStorageQualifier qualifier)
     assert(qualifier == glslang::EvqIn ||
            qualifier == glslang::EvqOut ||
            qualifier == glslang::EvqInOut ||
+           qualifier == glslang::EvqUniform ||
            qualifier == glslang::EvqConstReadOnly);
-    return qualifier != glslang::EvqConstReadOnly;
+    return qualifier != glslang::EvqConstReadOnly &&
+           qualifier != glslang::EvqUniform;
 }
 
 // Is parameter pass-by-original?
@@ -8269,6 +8283,18 @@ spv::Id TGlslangToSpvTraverser::createSpvConstant(const glslang::TIntermTyped& n
     }
 
     // We now know we have a specialization constant to build
+
+    // Extra capabilities may be needed.
+    if (node.getType().contains8BitInt())
+        builder.addCapability(spv::CapabilityInt8);
+    if (node.getType().contains16BitFloat())
+        builder.addCapability(spv::CapabilityFloat16);
+    if (node.getType().contains16BitInt())
+        builder.addCapability(spv::CapabilityInt16);
+    if (node.getType().contains64BitInt())
+        builder.addCapability(spv::CapabilityInt64);
+    if (node.getType().containsDouble())
+        builder.addCapability(spv::CapabilityFloat64);
 
     // gl_WorkGroupSize is a special case until the front-end handles hierarchical specialization constants,
     // even then, it's specialization ids are handled by special case syntax in GLSL: layout(local_size_x = ...
