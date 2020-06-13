@@ -36,7 +36,14 @@ class Metal
 {
 public:
 
-	static MTLPixelFormat convertPixelFormat(PixelFormat format, bool &isSRGB);
+	struct PixelFormatDesc
+	{
+		MTLPixelFormat format;
+		bool swizzled = false;
+		MTLTextureSwizzleChannels swizzle;
+	};
+
+	static PixelFormatDesc convertPixelFormat(PixelFormat format, bool &isSRGB);
 
 }; // Metal
 

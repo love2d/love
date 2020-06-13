@@ -109,11 +109,16 @@ public:
 
 	id<MTLSamplerState> getCachedSampler(const SamplerState &s);
 
-	static Graphics *getInstance() { return Module::getInstance<Graphics>(M_GRAPHICS); }
+	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
+	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
+
+	static Graphics *getInstance() { return graphicsInstance; }
 
 	id<MTLDevice> device;
 
 private:
+
+	static Graphics *graphicsInstance;
 
 	enum StateType
 	{
@@ -166,6 +171,7 @@ private:
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const vertex::Attributes &attributes);
+	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, Shader *shader);
 
 	id<MTLCommandQueue> commandQueue;
 
@@ -179,6 +185,14 @@ private:
 
 	uint32 dirtyRenderState;
 	bool windowHasStencil;
+
+	StreamBuffer *uniformBuffer;
+	StreamBuffer::MapInfo uniformBufferData;
+	size_t uniformBufferOffset;
+
+	Buffer *defaultAttributesBuffer;
+
+	Texture *defaultTextures[TEXTURE_MAX_ENUM];
 
 	std::map<uint64, void *> cachedSamplers;
 

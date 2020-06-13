@@ -57,6 +57,7 @@ enum BufferType
 {
 	BUFFER_VERTEX = 0,
 	BUFFER_INDEX,
+	BUFFER_UNIFORM,
 	BUFFER_MAX_ENUM
 };
 
@@ -223,9 +224,9 @@ struct BufferBindings
 
 struct AttributeInfo
 {
+	DataType type;
+	uint8 components;
 	uint8 bufferIndex;
-	DataType type : 4;
-	uint8 components : 4;
 	uint16 offsetFromVertex;
 };
 

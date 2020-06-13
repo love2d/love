@@ -149,7 +149,7 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 
 love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Texture(settings, data);
+	return new Texture(this, settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)

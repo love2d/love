@@ -26,6 +26,7 @@
 #include "ShaderStage.h"
 #include "window/Window.h"
 #include "image/Image.h"
+#include "common/memory.h"
 
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -110,6 +111,8 @@ love::graphics::Graphics *createInstance()
 	return instance;
 }
 
+Graphics *Graphics::graphicsInstance = nullptr;
+
 Graphics::Graphics()
 	: device(nil)
 	, commandQueue(nil)
@@ -121,7 +124,11 @@ Graphics::Graphics()
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
 	, windowHasStencil(false)
+	, uniformBufferOffset(0)
+	, defaultAttributesBuffer(nullptr)
+	, defaultTextures()
 { @autoreleasepool {
+	graphicsInstance = this;
 	device = MTLCreateSystemDefaultDevice();
 	if (device == nil)
 		throw love::Exception("Metal is not supported on this system.");
@@ -130,6 +137,23 @@ Graphics::Graphics()
 	passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
 
 	initCapabilities();
+
+	uniformBuffer = CreateStreamBuffer(device, BUFFER_UNIFORM, 1024 * 1024 * 1);
+	uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+
+	float defaultAttributes[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	defaultAttributesBuffer = newBuffer(sizeof(float) * 4, defaultAttributes, BUFFER_VERTEX, vertex::USAGE_STATIC, 0);
+
+	uint8 defaultpixel[] = {255, 255, 255, 255};
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+	{
+		Texture::Settings settings;
+		settings.type = (TextureType) i;
+		settings.format = PIXELFORMAT_RGBA8_UNORM;
+		defaultTextures[i] = newTexture(settings);
+		Rect r = {0, 0, 1, 1};
+		defaultTextures[i]->replacePixels(defaultpixel, sizeof(defaultpixel), 0, 0, r, false);
+	}
 
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 
@@ -156,12 +180,19 @@ Graphics::Graphics()
 Graphics::~Graphics()
 { @autoreleasepool {
 	submitCommandBuffer();
+	delete uniformBuffer;
+	delete defaultAttributesBuffer;
 	passDesc = nil;
 	commandQueue = nil;
 	device = nil;
 
+	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+		defaultTextures[i]->release();
+
 	for (auto &kvp : cachedSamplers)
 		CFBridgingRelease(kvp.second);
+
+	graphicsInstance = nullptr;
 }}
 
 love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t size)
@@ -171,7 +202,7 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t 
 
 love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Texture(device, settings, data);
+	return new Texture(this, device, settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
@@ -322,6 +353,10 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 		}
 
 		renderEncoder = [useCommandBuffer() renderCommandEncoderWithDescriptor:passDesc];
+
+		id<MTLBuffer> defaultbuffer = (__bridge id<MTLBuffer>)(void *)defaultAttributesBuffer->getHandle();
+		[renderEncoder setVertexBuffer:defaultbuffer offset:0 atIndex:DEFAULT_VERTEX_BUFFER_BINDING];
+
 		dirtyRenderState = STATEBIT_ALL;
 	}
 
@@ -530,16 +565,85 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const verte
 	dirtyRenderState = 0;
 }
 
+void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader)
+{
+	Shader *s = (Shader *)shader;
+
+#ifdef LOVE_MACOS
+	size_t alignment = 256;
+#else
+	size_t alignment = 16;
+#endif
+
+	// TODO: use the size of all uniforms
+	size_t size = sizeof(Shader::BuiltinUniformData);
+
+	Shader::BuiltinUniformData data;
+
+	data.transformMatrix = getTransform();
+	data.projectionMatrix = getProjection();
+
+	// The normal matrix is the transpose of the inverse of the rotation portion
+	// (top-left 3x3) of the transform matrix.
+	{
+		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
+		const float *e = normalmatrix.getElements();
+		for (int i = 0; i < 3; i++)
+		{
+			data.normalMatrix[i].x = e[i * 3 + 0];
+			data.normalMatrix[i].y = e[i * 3 + 1];
+			data.normalMatrix[i].z = e[i * 3 + 2];
+			data.normalMatrix[i].w = 0.0f;
+		}
+	}
+
+	// FIXME: should be active RT dimensions
+	data.screenSizeParams.x = getPixelWidth();
+	data.screenSizeParams.y = getPixelHeight();
+
+	data.screenSizeParams.z = 1.0f;
+	data.screenSizeParams.w = 0.0f;
+
+	data.constantColor = getColor();
+	gammaCorrectColor(data.constantColor);
+
+	if (uniformBufferData.size < uniformBufferOffset + size)
+	{
+		size_t newsize = uniformBuffer->getSize() * 2;
+		delete uniformBuffer;
+		uniformBuffer = CreateStreamBuffer(device, BUFFER_UNIFORM, newsize);
+		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferOffset = 0;
+	}
+
+	memcpy(uniformBufferData.data + uniformBufferOffset, &data, sizeof(Shader::BuiltinUniformData));
+
+	id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)uniformBuffer->getHandle();
+	int index = Shader::getUniformBufferBinding();
+
+	// TODO: bind shader textures/samplers
+
+	[renderEncoder setVertexBuffer:buffer offset:uniformBufferOffset atIndex:index];
+	[renderEncoder setFragmentBuffer:buffer offset:uniformBufferOffset atIndex:index];
+
+	uniformBufferOffset += alignUp(size, alignment);
+}
+
 void Graphics::draw(const DrawCommand &cmd)
 { @autoreleasepool {
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
 	applyRenderState(encoder, *cmd.attributes);
+	applyShaderUniforms(encoder, Shader::current);
 
-	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) cmd.texture->getHandle();
+	love::graphics::Texture *texture = cmd.texture;
+	if (texture == nullptr)
+		texture = defaultTextures[TEXTURE_2D];
+
+	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
 
 	[encoder setFragmentTexture:mtltexture atIndex:0];
-	[encoder setFragmentSamplerState:((Texture *)cmd.texture)->getMTLSampler() atIndex:0];
+	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
 
@@ -553,7 +657,7 @@ void Graphics::draw(const DrawCommand &cmd)
 		{
 			auto b = cmd.buffers->info[i];
 			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i];
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
 		}
 
 		i++;
@@ -571,11 +675,16 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
 	applyRenderState(encoder, *cmd.attributes);
+	applyShaderUniforms(encoder, Shader::current);
 
-	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) cmd.texture->getHandle();
+	love::graphics::Texture *texture = cmd.texture;
+	if (texture == nullptr)
+		texture = defaultTextures[TEXTURE_2D];
+
+	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
 
 	[encoder setFragmentTexture:mtltexture atIndex:0];
-	[encoder setFragmentSamplerState:((Texture *)cmd.texture)->getMTLSampler() atIndex:0];
+	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
 
@@ -589,7 +698,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 		{
 			auto b = cmd.buffers->info[i];
 			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i];
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
 		}
 
 		i++;
@@ -614,6 +723,10 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
 	applyRenderState(encoder, attributes);
+	applyShaderUniforms(encoder, Shader::current);
+
+	if (texture == nullptr)
+		texture = defaultTextures[TEXTURE_2D];
 
 	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
 
@@ -632,7 +745,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 		{
 			auto b = buffers.info[i];
 			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i];
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
 		}
 
 		i++;
@@ -915,6 +1028,10 @@ void Graphics::present(void *screenshotCallbackData)
 		buffer->nextFrame();
 	batchedDrawState.indexBuffer->nextFrame();
 
+	uniformBuffer->nextFrame();
+	uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+	uniformBufferOffset = 0;
+
 	id<MTLCommandBuffer> cmd = getCommandBuffer();
 
 	if (cmd != nil && activeDrawable != nil)
@@ -950,7 +1067,12 @@ void Graphics::present(void *screenshotCallbackData)
 
 void Graphics::setColor(Colorf c)
 {
-	// TODO
+	c.r = std::min(std::max(c.r, 0.0f), 1.0f);
+	c.g = std::min(std::max(c.g, 0.0f), 1.0f);
+	c.b = std::min(std::max(c.b, 0.0f), 1.0f);
+	c.a = std::min(std::max(c.a, 0.0f), 1.0f);
+
+	states.back().color = c;
 }
 
 void Graphics::setScissor(const Rect &rect)

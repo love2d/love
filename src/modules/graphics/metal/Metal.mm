@@ -28,9 +28,10 @@ namespace graphics
 namespace metal
 {
 
-MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
+Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 {
 	MTLPixelFormat mtlformat = MTLPixelFormatRGBA8Unorm;
+	PixelFormatDesc desc = {};
 
 	if (isSRGB)
 		format = getSRGBPixelFormat(format);
@@ -87,10 +88,11 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 		break;
 
 	case PIXELFORMAT_LA8_UNORM:
-		// TODO: Swizzle
 		// TODO: fall back to RGBA8 when swizzle isn't available. Pixel format
 		// size calculation will need to be adjusted as well
 		mtlformat = MTLPixelFormatRG8Unorm;
+		desc.swizzled = true;
+		desc.swizzle = MTLTextureSwizzleChannelsMake(MTLTextureSwizzleRed, MTLTextureSwizzleRed, MTLTextureSwizzleRed, MTLTextureSwizzleGreen);
 		break;
 
 	case PIXELFORMAT_RGBA4_UNORM:
@@ -346,7 +348,8 @@ MTLPixelFormat Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 		break;
 	}
 
-	return mtlformat;
+	desc.format = mtlformat;
+	return desc;
 }
 
 Metal metal;

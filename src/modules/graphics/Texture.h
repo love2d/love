@@ -201,7 +201,7 @@ public:
 
 	static int64 totalGraphicsMemory;
 
-	Texture(const Settings &settings, const Slices *slices);
+	Texture(Graphics *gfx, const Settings &settings, const Slices *slices);
 	virtual ~Texture();
 
 	// Drawable.

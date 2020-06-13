@@ -20,6 +20,7 @@
 
 #include "Shader.h"
 #include "Graphics.h"
+#include "common/int.h"
 
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
@@ -123,6 +124,7 @@ static EShLanguage getGLSLangStage(ShaderStage::StageType stage)
 Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
 	: love::graphics::Shader(vertex, pixel)
 	, functions()
+	, builtinUniformInfo()
 { @autoreleasepool {
 	auto gfx = Graphics::getInstance();
 
@@ -144,6 +146,9 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 		//err = "Cannot compile shader:\n\n" + std::string(program.getInfoLog()) + "\n" + std::string(program.getInfoDebugLog());
 		throw love::Exception("link failed!\n");
 	}
+
+	std::map<std::string, int> varyings;
+	int nextVaryingLocation = 0;
 
 	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
 	{
@@ -169,10 +174,53 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 		// Compile to GLSL, ready to give to GL driver.
 		try
 		{
-
 //			printf("GLSL INPUT SOURCE:\n\n%s\n\n", pixel->getSource().c_str());
 
 			CompilerMSL msl(std::move(spirv));
+
+			auto interfacevars = msl.get_active_interface_variables();
+
+			msl.set_enabled_interface_variables(interfacevars);
+
+			ShaderResources resources = msl.get_shader_resources();
+
+			for (const auto &resource : resources.sampled_images)
+			{
+				BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+				if (getConstant(resource.name.c_str(), builtin))
+				{
+					// TODO
+				}
+			}
+
+			for (const auto &resource : resources.uniform_buffers)
+			{
+				if (resource.name == "love_UniformsPerDrawBuffer")
+				{
+					msl.set_decoration(resource.id, spv::DecorationBinding, 0);
+				}
+			}
+
+			if (i == ShaderStage::STAGE_VERTEX)
+			{
+				for (const auto &varying : resources.stage_outputs)
+				{
+//					printf("vertex shader output %s: %d\n", inp.name.c_str(), msl.get_decoration(inp.id, spv::DecorationLocation));
+					varyings[varying.name] = nextVaryingLocation;
+					msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
+				}
+			}
+			else if (i == ShaderStage::STAGE_PIXEL)
+			{
+				for (const auto &varying : resources.stage_inputs)
+				{
+					const auto it = varyings.find(varying.name);
+					if (it != varyings.end())
+						msl.set_decoration(varying.id, spv::DecorationLocation, it->second);
+				}
+			}
+
+			printf("ubos: %d, storage: %d, inputs: %d, outputs: %d, images: %d, samplers: %d, push: %d\n", resources.uniform_buffers.size(), resources.storage_buffers.size(), resources.stage_inputs.size(), resources.stage_outputs.size(), resources.storage_images.size(), resources.sampled_images.size(), resources.push_constant_buffers.size());
 
 			CompilerMSL::Options options;
 
@@ -185,7 +233,7 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 			msl.set_msl_options(options);
 
 			std::string source = msl.compile();
-//			printf("MSL SOURCE:\n\n%s\n\n", source.c_str());
+//			printf("MSL SOURCE for stage %d:\n\n%s\n\n", i, source.c_str());
 
 			NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
 														  length:source.length()
@@ -200,6 +248,15 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 			}
 
 			functions[i] = [library newFunctionWithName:library.functionNames[0]];
+
+			for (const auto &var : interfacevars)
+			{
+				spv::StorageClass storage = msl.get_storage_class(var);
+				const std::string &name = msl.get_name(var);
+
+				if (i == ShaderStage::STAGE_VERTEX && storage == spv::StorageClassInput)
+					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
+			}
 		}
 		catch (std::exception &e)
 		{
@@ -228,6 +285,23 @@ void Shader::attach()
 	}
 }
 
+int Shader::getVertexAttributeIndex(const std::string &name)
+{
+	const auto it = attributes.find(name);
+	return it != attributes.end() ? it->second : -1;
+}
+
+const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
+{
+	const auto it = uniforms.find(name);
+	return it != uniforms.end() ? &(it->second) : nullptr;
+}
+
+const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
+{
+	return builtinUniformInfo[(int)builtin];
+}
+
 id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineKey &key)
 {
 	auto it = cachedRenderPipelines.find(key);
@@ -253,9 +327,8 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		MTLRenderPipelineColorAttachmentDescriptor *attachment = desc.colorAttachments[i];
 
 		bool isSRGB = false;
-		MTLPixelFormat metalformat = Metal::convertPixelFormat(format, isSRGB);
-
-		attachment.pixelFormat = metalformat;
+		auto formatdesc = Metal::convertPixelFormat(format, isSRGB);
+		attachment.pixelFormat = formatdesc.format;
 
 		if (key.blend.enable)
 		{
@@ -283,35 +356,47 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		desc.colorAttachments[i] = attachment;
 	}
 
+	// TODO: depth/stencil attachment formats
+	
+
 	{
 		MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
 
 		const auto &attributes = key.vertexAttributes;
 		uint32 allbits = attributes.enableBits;
-		uint32 i = 0;
-		while (allbits)
+
+		for (const auto &pair : this->attributes)
 		{
+			int i = pair.second;
 			uint32 bit = 1u << i;
 
 			if (attributes.enableBits & bit)
 			{
 				const auto &attrib = attributes.attribs[i];
+				int metalBufferIndex = attrib.bufferIndex + VERTEX_BUFFER_BINDING_START;
 
 				vertdesc.attributes[i].format = getMTLVertexFormat(attrib.type, attrib.components);
 				vertdesc.attributes[i].offset = attrib.offsetFromVertex;
-				vertdesc.attributes[i].bufferIndex = attrib.bufferIndex;
+				vertdesc.attributes[i].bufferIndex = metalBufferIndex;
 
 				const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
 
 				bool instanced = attributes.instanceBits & (1u << attrib.bufferIndex);
 				auto step = instanced ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
 
-				vertdesc.layouts[attrib.bufferIndex].stride = layout.stride;
-				vertdesc.layouts[attrib.bufferIndex].stepFunction = step;
+				vertdesc.layouts[metalBufferIndex].stride = layout.stride;
+				vertdesc.layouts[metalBufferIndex].stepFunction = step;
 			}
+			else
+			{
+				vertdesc.attributes[i].format = MTLVertexFormatFloat4;
+				vertdesc.attributes[i].offset = 0;
+				vertdesc.attributes[i].bufferIndex = DEFAULT_VERTEX_BUFFER_BINDING;
 
-			i++;
-			allbits >>= 1;
+				vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stride = sizeof(float) * 4;
+				vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stepFunction = MTLVertexStepFunctionConstant;
+				vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stepRate = 0;
+			}
 		}
 
 		desc.vertexDescriptor = vertdesc;
@@ -329,6 +414,11 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 	cachedRenderPipelines[key] = CFBridgingRetain(pipeline);
 
 	return pipeline;
+}
+
+int Shader::getUniformBufferBinding()
+{
+	return spirv_cross::ResourceBindingPushConstantBinding;
 }
 
 } // metal

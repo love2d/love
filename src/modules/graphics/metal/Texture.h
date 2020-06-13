@@ -37,7 +37,7 @@ class Texture final : public love::graphics::Texture
 {
 public:
 
-	Texture(id<MTLDevice> device, const Settings &settings, const Slices *data);
+	Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const Slices *data);
 	virtual ~Texture();
 
 	void generateMipmaps() override;

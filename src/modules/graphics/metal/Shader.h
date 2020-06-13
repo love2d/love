@@ -30,6 +30,7 @@
 #import <Metal/MTLRenderPipeline.h>
 
 #include <unordered_map>
+#include <map>
 #include <string>
 
 namespace love
@@ -38,6 +39,9 @@ namespace graphics
 {
 namespace metal
 {
+
+static const int DEFAULT_VERTEX_BUFFER_BINDING = 1;
+static const int VERTEX_BUFFER_BINDING_START = 2;
 
 class Shader final : public love::graphics::Shader
 {
@@ -69,9 +73,9 @@ public:
 	// Implements Shader.
 	void attach() override;
 	std::string getWarnings() const override { return ""; }
-	int getVertexAttributeIndex(const std::string &name) override { return -1; }
-	const UniformInfo *getUniformInfo(const std::string &name) const override { return nullptr; }
-	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override { return nullptr; }
+	int getVertexAttributeIndex(const std::string &name) override;
+	const UniformInfo *getUniformInfo(const std::string &name) const override;
+	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override {}
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override {}
 	bool hasUniform(const std::string &name) const override { return false; }
@@ -79,6 +83,8 @@ public:
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override {}
 
 	id<MTLRenderPipelineState> getCachedRenderPipeline(const RenderPipelineKey &key);
+
+	static int getUniformBufferBinding();
 
 private:
 
@@ -91,6 +97,11 @@ private:
 	};
 
 	id<MTLFunction> functions[ShaderStage::STAGE_MAX_ENUM];
+
+	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
+	std::map<std::string, UniformInfo> uniforms;
+
+	std::map<std::string, int> attributes;
 
 	std::unordered_map<RenderPipelineKey, const void *, RenderPipelineHasher> cachedRenderPipelines;
 

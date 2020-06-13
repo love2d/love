@@ -41,8 +41,8 @@ static MTLTextureType getMTLTextureType(TextureType type, int msaa)
 	return MTLTextureType2D;
 }
 
-Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *data)
-	: love::graphics::Texture(settings, data)
+Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const Slices *data)
+	: love::graphics::Texture(gfx, settings, data)
 	, texture(nil)
 	, msaaTexture(nil)
 	, sampler(nil)
@@ -52,13 +52,17 @@ Texture::Texture(id<MTLDevice> device, const Settings &settings, const Slices *d
 	int w = pixelWidth;
 	int h = pixelHeight;
 
+	auto formatdesc = Metal::convertPixelFormat(format, sRGB);
+
 	desc.width = w;
 	desc.height = h;
 	desc.depth = depth;
 	desc.arrayLength = layers;
 	desc.mipmapLevelCount = mipmapCount;
 	desc.textureType = getMTLTextureType(texType, 1);
-	desc.pixelFormat = Metal::convertPixelFormat(format, sRGB);
+	desc.pixelFormat = formatdesc.format;
+	if (formatdesc.swizzled)
+		desc.swizzle = formatdesc.swizzle;
 	desc.storageMode = MTLStorageModePrivate;
 
 	if (readable)

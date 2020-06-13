@@ -44,6 +44,11 @@ GLSL.SYNTAX = [[
 #else
 	#define LOVE_HIGHP_OR_MEDIUMP mediump
 #endif
+#if __VERSION__ >= 300
+#define LOVE_IO_LOCATION(x) layout (location = x)
+#else
+#define LOVE_IO_LOCATION(x)
+#endif
 #define number float
 #define Image sampler2D
 #define ArrayImage sampler2DArray
@@ -71,7 +76,13 @@ GLSL.UNIFORMS = [[
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
+#ifdef LOVE_USE_UNIFORM_BUFFERS
+layout (std140) uniform love_UniformsPerDrawBuffer {
+	LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+};
+#else
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+#endif
 
 // These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
 // do it as an initializer.
@@ -91,6 +102,7 @@ LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor;
 #define ViewNormalFromLocal NormalMatrix
 
 void love_initializeBuiltinUniforms() {
+#if 1
 	TransformMatrix = mat4(
 	   love_UniformsPerDraw[0],
 	   love_UniformsPerDraw[1],
@@ -113,6 +125,7 @@ void love_initializeBuiltinUniforms() {
 
 	love_ScreenSize = love_UniformsPerDraw[11];
 	ConstantColor = love_UniformsPerDraw[12];
+#endif
 }
 ]]
 
@@ -247,9 +260,9 @@ void setPointSize() {
 }]],
 
 	MAIN = [[
-attribute vec4 VertexPosition;
-attribute vec4 VertexTexCoord;
-attribute vec4 VertexColor;
+LOVE_IO_LOCATION(0) attribute vec4 VertexPosition;
+LOVE_IO_LOCATION(1) attribute vec4 VertexTexCoord;
+LOVE_IO_LOCATION(2) attribute vec4 VertexColor;
 
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;
@@ -280,10 +293,10 @@ GLSL.PIXEL = {
 	// TODO: We should use reflection or something instead of this, to determine
 	// how many outputs are actually used in the shader code.
 	#ifdef LOVE_MULTI_RENDER_TARGETS
-		layout(location = 0) out vec4 love_RenderTargets[love_MaxRenderTargets];
+		LOVE_IO_LOCATION(0) out vec4 love_RenderTargets[love_MaxRenderTargets];
 		#define love_PixelColor love_RenderTargets[0]
 	#else
-		layout(location = 0) out vec4 love_PixelColor;
+		LOVE_IO_LOCATION(0) out vec4 love_PixelColor;
 	#endif
 #else
 	#ifdef LOVE_MULTI_RENDER_TARGETS
@@ -352,7 +365,7 @@ local function getLanguageTarget(code)
 	return (code:match("^%s*#pragma language (%w+)")) or "glsl1"
 end
 
-local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multirendertarget)
+local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multirendertarget, useubo)
 	stage = stage:upper()
 	local lines = {
 		GLSL.VERSION[lang][gles],
@@ -360,6 +373,7 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		glsl1on3 and "#define LOVE_GLSL1_ON_GLSL3 1" or "",
 		gammacorrect and "#define LOVE_GAMMA_CORRECT 1" or "",
 		multirendertarget and "#define LOVE_MULTI_RENDER_TARGETS 1" or "",
+		useubo and "#define LOVE_USE_UNIFORM_BUFFERS 1" or "",
 		GLSL.SYNTAX,
 		GLSL[stage].HEADER,
 		GLSL.UNIFORMS,
@@ -420,6 +434,8 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	local supportsGLSL3 = graphicsfeatures.glsl3
 	local supportsGLSL4 = graphicsfeatures.glsl4
 	local gammacorrect = love.graphics.isGammaCorrect()
+	local renderer = love.graphics.getRenderer()
+	local useubo = renderer == "Metal"
 
 	local targetlang = getLanguageTarget(pixelcode or vertexcode)
 	if getLanguageTarget(vertexcode or pixelcode) ~= targetlang then
@@ -446,10 +462,10 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	end
 
 	if vertexcode then
-		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect)
+		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect, false, false, useubo)
 	end
 	if pixelcode then
-		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel, is_multicanvas)
+		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel, is_multicanvas, useubo)
 	end
 
 	return vertexcode, pixelcode
@@ -485,14 +501,17 @@ local langs = {
 	essl3 = {target="glsl3", gles=true},
 }
 
+-- FIXME: this is temporary until a glslang pull request is merged in.
+local useubo = true
+
 for lang, info in pairs(langs) do
 	for _, gammacorrect in ipairs{false, true} do
 		local t = gammacorrect and defaults_gammacorrect or defaults
 		t[lang] = {
-			vertex = createShaderStageCode("VERTEX", defaultcode.vertex, info.target, info.gles, false, gammacorrect),
-			pixel = createShaderStageCode("PIXEL", defaultcode.pixel, info.target, info.gles, false, gammacorrect, false),
-			videopixel = createShaderStageCode("PIXEL", defaultcode.videopixel, info.target, info.gles, false, gammacorrect, true),
-			arraypixel = createShaderStageCode("PIXEL", defaultcode.arraypixel, info.target, info.gles, false, gammacorrect, true),
+			vertex = createShaderStageCode("VERTEX", defaultcode.vertex, info.target, info.gles, false, gammacorrect, false, false, useubo),
+			pixel = createShaderStageCode("PIXEL", defaultcode.pixel, info.target, info.gles, false, gammacorrect, false, false, useubo),
+			videopixel = createShaderStageCode("PIXEL", defaultcode.videopixel, info.target, info.gles, false, gammacorrect, true, false, useubo),
+			arraypixel = createShaderStageCode("PIXEL", defaultcode.arraypixel, info.target, info.gles, false, gammacorrect, true, false, useubo),
 		}
 	end
 end
