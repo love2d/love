@@ -144,7 +144,6 @@ Graphics::Graphics()
 	, pixelHeight(0)
 	, created(false)
 	, active(true)
-	, writingToStencil(false)
 	, batchedDrawState()
 	, projectionMatrix()
 	, renderTargetSwitchCount(0)
@@ -420,7 +419,12 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 
-	setStencilTest(s.stencilCompare, s.stencilTestValue);
+	if (s.stencil.action != STENCIL_KEEP)
+		drawToStencilBuffer(s.stencil.action, s.stencil.value);
+	else
+		stopDrawToStencilBuffer();
+
+	setStencilTest(s.stencil.compare, s.stencil.value);
 	setDepthMode(s.depthTest, s.depthWrite);
 
 	setMeshCullMode(s.meshCullMode);
@@ -464,8 +468,16 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 			setScissor();
 	}
 
-	if (s.stencilCompare != cur.stencilCompare || s.stencilTestValue != cur.stencilTestValue)
-		setStencilTest(s.stencilCompare, s.stencilTestValue);
+	if (s.stencil.action != cur.stencil.action)
+	{
+		if (s.stencil.action != STENCIL_KEEP)
+			drawToStencilBuffer(s.stencil.action, s.stencil.value);
+		else
+			stopDrawToStencilBuffer();
+	}
+
+	if (s.stencil.compare != cur.stencil.compare || s.stencil.value != cur.stencil.value)
+		setStencilTest(s.stencil.compare, s.stencil.value);
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
@@ -903,8 +915,8 @@ void Graphics::setStencilTest()
 void Graphics::getStencilTest(CompareMode &compare, int &value) const
 {
 	const DisplayState &state = states.back();
-	compare = state.stencilCompare;
-	value = state.stencilTestValue;
+	compare = state.stencil.compare;
+	value = state.stencil.value;
 }
 
 void Graphics::setDepthMode()

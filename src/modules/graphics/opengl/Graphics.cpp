@@ -1119,7 +1119,8 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	const auto &rts = states.back().renderTargets;
+	DisplayState &state = states.back();
+	const auto &rts = state.renderTargets;
 	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
 	if (!isRenderTargetActive() && !windowHasStencil)
@@ -1129,7 +1130,8 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 
 	flushBatchedDraws();
 
-	writingToStencil = true;
+	state.stencil.action = action;
+	state.stencil.value = value;
 
 	// Disable color writes but don't save the state for it.
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1169,33 +1171,33 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 
 void Graphics::stopDrawToStencilBuffer()
 {
-	if (!writingToStencil)
+	DisplayState &state = states.back();
+
+	if (state.stencil.action == STENCIL_KEEP)
 		return;
 
 	flushBatchedDraws();
 
-	writingToStencil = false;
-
-	const DisplayState &state = states.back();
+	state.stencil.action = STENCIL_KEEP;
 
 	// Revert the color write mask.
 	setColorMask(state.colorMask);
 
 	// Use the user-set stencil test state when writes are disabled.
-	setStencilTest(state.stencilCompare, state.stencilTestValue);
+	setStencilTest(state.stencil.compare, state.stencil.value);
 }
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
 	DisplayState &state = states.back();
 
-	if (state.stencilCompare != compare || state.stencilTestValue != value)
+	if (state.stencil.compare != compare || state.stencil.value != value)
 		flushBatchedDraws();
 
-	state.stencilCompare = compare;
-	state.stencilTestValue = value;
+	state.stencil.compare = compare;
+	state.stencil.value = value;
 
-	if (writingToStencil)
+	if (state.stencil.action != STENCIL_KEEP)
 		return;
 
 	if (compare == COMPARE_ALWAYS)

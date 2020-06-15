@@ -195,6 +195,7 @@ private:
 	Texture *defaultTextures[TEXTURE_MAX_ENUM];
 
 	std::map<uint64, void *> cachedSamplers;
+	std::unordered_map<uint64, void *> cachedDepthStencilStates;
 
 }; // Graphics
 

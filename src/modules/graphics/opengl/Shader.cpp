@@ -42,7 +42,6 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 	, program(0)
 	, builtinUniforms()
 	, builtinUniformInfo()
-	, builtinAttributes()
 	, lastPointSize(0.0f)
 {
 	// load shader source and create program object
@@ -342,15 +341,6 @@ bool Shader::loadVolatile()
 
 	// Get all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
-
-	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
-	{
-		const char *name = nullptr;
-		if (vertex::getConstant(BuiltinVertexAttribute(i), name))
-			builtinAttributes[i] = glGetAttribLocation(program, name);
-		else
-			builtinAttributes[i] = -1;
-	}
 
 	if (current == this)
 	{

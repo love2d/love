@@ -95,6 +95,23 @@ static MTLCompareFunction getMTLCompareFunction(CompareMode mode)
 	return MTLCompareFunctionNever;
 }
 
+static MTLStencilOperation getMTLStencilOperation(StencilAction action)
+{
+	switch (action)
+	{
+		case STENCIL_KEEP: return MTLStencilOperationKeep;
+		case STENCIL_ZERO: return MTLStencilOperationZero;
+		case STENCIL_REPLACE: return MTLStencilOperationReplace;
+		case STENCIL_INCREMENT: return MTLStencilOperationIncrementClamp;
+		case STENCIL_DECREMENT: return MTLStencilOperationDecrementClamp;
+		case STENCIL_INCREMENT_WRAP: return MTLStencilOperationIncrementWrap;
+		case STENCIL_DECREMENT_WRAP: return MTLStencilOperationDecrementWrap;
+		case STENCIL_INVERT: return MTLStencilOperationInvert;
+		case STENCIL_MAX_ENUM: return MTLStencilOperationKeep;
+	}
+	return MTLStencilOperationKeep;
+}
+
 love::graphics::Graphics *createInstance()
 {
 	love::graphics::Graphics *instance = nullptr;
@@ -190,6 +207,9 @@ Graphics::~Graphics()
 		defaultTextures[i]->release();
 
 	for (auto &kvp : cachedSamplers)
+		CFBridgingRelease(kvp.second);
+
+	for (auto &kvp : cachedDepthStencilStates)
 		CFBridgingRelease(kvp.second);
 
 	graphicsInstance = nullptr;
@@ -433,29 +453,38 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil)
 {
-	id<MTLDepthStencilState> state = nil;
+	uint64 key = (depth.compare << 0) | ((uint32)depth.write << 8)
+		| (stencil.action << 16) | (stencil.compare << 24)
+		| ((uint64)std::max(0, std::min(255, stencil.value)) << 32)
+		| ((uint64)std::min(255u, stencil.readMask) << 40)
+		| ((uint64)std::min(255u, stencil.writeMask) << 48);
 
-	{
-		MTLStencilDescriptor *stencildesc = [MTLStencilDescriptor new];
+	auto it = cachedDepthStencilStates.find(key);
+	if (it != cachedDepthStencilStates.end())
+		return (__bridge id<MTLDepthStencilState>) it->second;
 
-		stencildesc.stencilCompareFunction = getMTLCompareFunction(stencil.compare);
-		stencildesc.stencilFailureOperation = MTLStencilOperationKeep;
-		stencildesc.depthFailureOperation = MTLStencilOperationKeep;
-		stencildesc.depthStencilPassOperation = MTLStencilOperationKeep; // TODO
-		stencildesc.readMask = stencil.readMask;
-		stencildesc.writeMask = stencil.writeMask;
+	MTLStencilDescriptor *stencildesc = [MTLStencilDescriptor new];
 
-		MTLDepthStencilDescriptor *desc = [MTLDepthStencilDescriptor new];
+	stencildesc.stencilCompareFunction = getMTLCompareFunction(stencil.compare);
+	stencildesc.stencilFailureOperation = MTLStencilOperationKeep;
+	stencildesc.depthFailureOperation = MTLStencilOperationKeep;
+	stencildesc.depthStencilPassOperation = getMTLStencilOperation(stencil.action);
+	stencildesc.readMask = stencil.readMask;
+	stencildesc.writeMask = stencil.writeMask;
 
-		desc.depthCompareFunction = getMTLCompareFunction(depth.compare);
-		desc.depthWriteEnabled = depth.write;
-		desc.frontFaceStencil = stencildesc;
-		desc.backFaceStencil = stencildesc;
+	MTLDepthStencilDescriptor *desc = [MTLDepthStencilDescriptor new];
 
-		state = [device newDepthStencilStateWithDescriptor:desc];
-	}
+	desc.depthCompareFunction = getMTLCompareFunction(depth.compare);
+	desc.depthWriteEnabled = depth.write;
+	desc.frontFaceStencil = stencildesc;
+	desc.backFaceStencil = stencildesc;
 
-	return state;
+	id<MTLDepthStencilState> mtlstate = [device newDepthStencilStateWithDescriptor:desc];
+
+	if (mtlstate != nil)
+		cachedDepthStencilStates[key] = (void *) CFBridgingRetain(mtlstate);
+
+	return mtlstate;
 }
 
 void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const vertex::Attributes &attributes)
@@ -559,7 +588,22 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const verte
 
 	if (dirtyState & (STATEBIT_DEPTH | STATEBIT_STENCIL))
 	{
-//		id<MTLDepthStencilState> dsstate = getCachedDepthStencilState(<#const DepthState &depth#>, <#const StencilState &stencil#>)
+		DepthState depth;
+		depth.compare = state.depthTest;
+		depth.write = state.depthWrite;
+
+		StencilState stencil = state.stencil;
+
+		if (stencil.action != STENCIL_KEEP)
+		{
+			// FIXME
+			stencil.compare = COMPARE_ALWAYS;
+		}
+
+		id<MTLDepthStencilState> mtlstate = getCachedDepthStencilState(depth, stencil);
+
+		[encoder setDepthStencilState:mtlstate];
+		[encoder setStencilReferenceValue:state.stencil.value];
 	}
 
 	dirtyRenderState = 0;
@@ -888,8 +932,8 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 		auto color = MTLClearColorMake(c.value.r, c.value.g, c.value.b, c.value.a);
 		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
-			passDesc.colorAttachments[0].clearColor = color;
-			passDesc.colorAttachments[0].loadAction = MTLLoadActionClear;
+			passDesc.colorAttachments[i].clearColor = color;
+			passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
 		}
 	}
 
@@ -1098,7 +1142,8 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	const auto &rts = states.back().renderTargets;
+	DisplayState &state = states.back();
+	const auto &rts = state.renderTargets;
 	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
 	if (!isRenderTargetActive() && !windowHasStencil)
@@ -1108,7 +1153,8 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 
 	flushBatchedDraws();
 
-	writingToStencil = true;
+	state.stencil.action = action;
+	state.stencil.value = value;
 
 	dirtyRenderState |= STATEBIT_STENCIL;
 	// TODO
@@ -1116,20 +1162,20 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 
 void Graphics::stopDrawToStencilBuffer()
 {
-	if (!writingToStencil)
+	DisplayState &state = states.back();
+
+	if (state.stencil.action == STENCIL_KEEP)
 		return;
 
 	flushBatchedDraws();
 
-	writingToStencil = false;
-
-	const DisplayState &state = states.back();
+	state.stencil.action = STENCIL_KEEP;
 
 	// Revert the color write mask.
 	setColorMask(state.colorMask);
 
 	// Use the user-set stencil test state when writes are disabled.
-	setStencilTest(state.stencilCompare, state.stencilTestValue);
+	setStencilTest(state.stencil.compare, state.stencil.value);
 
 	dirtyRenderState |= STATEBIT_STENCIL;
 }
@@ -1146,12 +1192,22 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 
 void Graphics::setFrontFaceWinding(vertex::Winding winding)
 {
-	// TODO
+	if (states.back().winding != winding)
+	{
+		flushBatchedDraws();
+		states.back().winding = winding;
+		dirtyRenderState |= STATEBIT_FACEWINDING;
+	}
 }
 
 void Graphics::setColorMask(ColorChannelMask mask)
 {
-	// TODO
+	if (states.back().colorMask != mask)
+	{
+		flushBatchedDraws();
+		states.back().colorMask = mask;
+		dirtyRenderState |= STATEBIT_COLORMASK;
+	}
 }
 
 void Graphics::setBlendState(const BlendState &blend)

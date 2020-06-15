@@ -361,9 +361,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 	{
 		MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
-
 		const auto &attributes = key.vertexAttributes;
-		uint32 allbits = attributes.enableBits;
 
 		for (const auto &pair : this->attributes)
 		{

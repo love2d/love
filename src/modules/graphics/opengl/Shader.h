@@ -102,9 +102,6 @@ private:
 	GLint builtinUniforms[BUILTIN_MAX_ENUM];
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
-	// Location values for any generic vertex attribute variables.
-	GLint builtinAttributes[ATTRIB_MAX_ENUM];
-
 	std::map<std::string, GLint> attributes;
 
 	// Uniform location buffer map

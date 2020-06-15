@@ -898,8 +898,7 @@ protected:
 		bool scissor = false;
 		Rect scissorRect = Rect();
 
-		CompareMode stencilCompare = COMPARE_ALWAYS;
-		int stencilTestValue = 0;
+		StencilState stencil;
 
 		CompareMode depthTest = COMPARE_ALWAYS;
 		bool depthWrite = false;
@@ -980,8 +979,6 @@ protected:
 
 	bool created;
 	bool active;
-
-	bool writingToStencil;
 
 	StrongRef<love::graphics::Font> defaultFont;
 

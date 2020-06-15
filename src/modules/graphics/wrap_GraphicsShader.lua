@@ -78,7 +78,7 @@ GLSL.UNIFORMS = [[
 // We *really* don't want to use mediump for these in vertex shaders though.
 #ifdef LOVE_USE_UNIFORM_BUFFERS
 layout (std140) uniform love_UniformsPerDrawBuffer {
-	LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+	highp vec4 love_UniformsPerDraw[13];
 };
 #else
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
@@ -102,7 +102,6 @@ LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor;
 #define ViewNormalFromLocal NormalMatrix
 
 void love_initializeBuiltinUniforms() {
-#if 1
 	TransformMatrix = mat4(
 	   love_UniformsPerDraw[0],
 	   love_UniformsPerDraw[1],
@@ -125,7 +124,6 @@ void love_initializeBuiltinUniforms() {
 
 	love_ScreenSize = love_UniformsPerDraw[11];
 	ConstantColor = love_UniformsPerDraw[12];
-#endif
 }
 ]]
 
@@ -394,8 +392,8 @@ local function isPixelCode(code)
 	if code:match("vec4%s+effect%s*%(") then
 		return true
 	elseif code:match("void%s+effect%s*%(") then -- custom effect function
-		local multirendertargets = (code:match("love_RenderTargets") ~= nil) or (code:match("love_Canvases") ~= nil)
-		return true, true, multirendertargets
+		local mrt = (code:match("love_RenderTargets") ~= nil) or (code:match("love_Canvases") ~= nil)
+		return true, true, mrt
 	else
 		return false
 	end
