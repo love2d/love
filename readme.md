@@ -59,7 +59,7 @@ For code contributions, pull requests and patches are welcome. Be sure to read t
 Builds
 ------
 
-Releases are found in the [releases][releases] section on github, and are linked on [the site][site],
+Releases are found in the [releases][releases] section on GitHub, and are linked on [the site][site],
 and there's a ppa for ubuntu, [ppa:bartbes/love-stable][stableppa].
 
 There are also unstable/nightly builds:
