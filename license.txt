@@ -57,6 +57,12 @@ This distribution contains code from the following projects (full license text b
 		- LZ4 source repository : https://github.com/Cyan4973/lz4
 		- LZ4 public forum : https://groups.google.com/forum/#!forum/lz4c
 
+ - LodePNG
+	Website: https://lodev.org/lodepng/
+	Source download: https://github.com/lvandeve/lodepng
+	License: zlib
+	Copyright (c) 2005-2020 Lode Vandevenne
+
  - TinyEXR
 	Website: https://github.com/syoyo/tinyexr
 	License: 3-Clause BSD
@@ -80,12 +86,18 @@ This distribution contains code from the following projects (full license text b
 	License: MIT/Expat
 	Copyright 2018 David Reid
 
+ - stb_image
+	Website: https://github.com/nothings/stb
+	Source download: https://github.com/nothings/stb/blob/f54acd4e13430c5122cab4ca657705c84aa61b08/stb_image.h
+	License: MIT/Expat
+	Copyright (c) 2017 Sean Barrett
+
  - libmpg123
-     Website: http://www.mpg123.de/
-     Source download: http://sourceforge.net/projects/mpg123/files/latest/download
-     License: LGPL 2.1
-     Copyright (c) 1995-2013 by Michael Hipp and others, free software under the terms of the LGPL v2.1
-     Detailed information from the debian project:
+	Website: http://www.mpg123.de/
+	Source download: http://sourceforge.net/projects/mpg123/files/latest/download
+	License: LGPL 2.1
+	Copyright (c) 1995-2013 by Michael Hipp and others, free software under the terms of the LGPL v2.1
+	Detailed information from the debian project:
 		 Copyright 1995-2016 by the mpg123 project
 		 Copyright 2009-2011 by Malcolm Boczek
 		 Copyright 2008 Christian Weisgerber <naddy@openbsd.org>
@@ -95,9 +107,9 @@ This distribution contains code from the following projects (full license text b
 		 Copyright 1997 Mikko Tommila
 
  - OpenAL Soft
-     Website: http://kcat.strangesoft.net/openal.html
-     Source download: http://kcat.strangesoft.net/openal.html#download
-     License: Mixed, licensing information obtained from the debian project
+	Website: http://kcat.strangesoft.net/openal.html
+	Source download: http://kcat.strangesoft.net/openal.html#download
+	License: Mixed, licensing information obtained from the debian project
 		- Alc/backends/opensl.c
 			License: Apache 2.0
 			Copyright 2011 The Android Open Source Project
