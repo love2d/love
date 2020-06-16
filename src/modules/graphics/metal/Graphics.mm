@@ -156,7 +156,6 @@ Graphics::Graphics()
 	initCapabilities();
 
 	uniformBuffer = CreateStreamBuffer(device, BUFFER_UNIFORM, 1024 * 1024 * 1);
-	uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
 
 	float defaultAttributes[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	defaultAttributesBuffer = newBuffer(sizeof(float) * 4, defaultAttributes, BUFFER_VERTEX, vertex::USAGE_STATIC, 0);
@@ -603,8 +602,10 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const verte
 		id<MTLDepthStencilState> mtlstate = getCachedDepthStencilState(depth, stencil);
 
 		[encoder setDepthStencilState:mtlstate];
-		[encoder setStencilReferenceValue:state.stencil.value];
 	}
+
+	if (dirtyState & STATEBIT_STENCIL)
+		[encoder setStencilReferenceValue:state.stencil.value];
 
 	dirtyRenderState = 0;
 }
@@ -651,14 +652,17 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	data.constantColor = getColor();
 	gammaCorrectColor(data.constantColor);
 
-	if (uniformBufferData.size < uniformBufferOffset + size)
+	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
 		delete uniformBuffer;
 		uniformBuffer = CreateStreamBuffer(device, BUFFER_UNIFORM, newsize);
-		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
+
+	if (uniformBufferData.data == nullptr)
+		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, &data, sizeof(Shader::BuiltinUniformData));
 
@@ -1073,7 +1077,7 @@ void Graphics::present(void *screenshotCallbackData)
 	batchedDrawState.indexBuffer->nextFrame();
 
 	uniformBuffer->nextFrame();
-	uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+	uniformBufferData = {};
 	uniformBufferOffset = 0;
 
 	id<MTLCommandBuffer> cmd = getCommandBuffer();
@@ -1183,11 +1187,26 @@ void Graphics::stopDrawToStencilBuffer()
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
 	// TODO
+	DisplayState &state = states.back();
+	if (state.stencil.compare != compare || state.stencil.value != value)
+	{
+		state.stencil.compare = compare;
+		state.stencil.value = value;
+		dirtyRenderState |= STATEBIT_STENCIL;
+	}
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)
 {
-	// TODO
+	DisplayState &state = states.back();
+
+	if (state.depthTest != compare || state.depthWrite != write)
+	{
+		flushBatchedDraws();
+		state.depthTest = compare;
+		state.depthWrite = write;
+		dirtyRenderState |= STATEBIT_DEPTH;
+	}
 }
 
 void Graphics::setFrontFaceWinding(vertex::Winding winding)
