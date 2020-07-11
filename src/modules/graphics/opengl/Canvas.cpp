@@ -39,6 +39,11 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 	glGenFramebuffers(1, &framebuffer);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, framebuffer);
 
+	// Might work around an Intel driver bug: https://github.com/love2d/love/issues/1592
+	bool current_srgb = gl.isStateEnabled(OpenGL::ENABLE_FRAMEBUFFER_SRGB);
+	if (current_srgb && isPixelFormatDepthStencil(format))
+		gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, false);
+
 	if (texture != 0)
 	{
 		if (isPixelFormatDepthStencil(format) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
@@ -104,6 +109,11 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+
+	// Restore sRGB state if we turned it off above.
+	if (current_srgb && isPixelFormatDepthStencil(format))
+		gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, current_srgb);
+
 	return status;
 }
 
