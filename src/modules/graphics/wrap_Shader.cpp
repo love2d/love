@@ -313,20 +313,36 @@ static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const S
 	if (info->baseType == Shader::UNIFORM_SAMPLER)
 		return luaL_error(L, "Uniform sampler values (textures) cannot be sent to Shaders via Data objects.");
 
-	bool columnmajor = false;
-	if (info->baseType == Shader::UNIFORM_MATRIX && lua_type(L, startidx + 1) == LUA_TSTRING)
+	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;
+	int dataidx = startidx;
+	if (info->baseType == Shader::UNIFORM_MATRIX)
 	{
-		const char *layoutstr = lua_tostring(L, startidx + 1);
-		math::Transform::MatrixLayout layout;
-		if (!math::Transform::getConstant(layoutstr, layout))
-			return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
+		if (lua_type(L, startidx) == LUA_TSTRING)
+		{
+			// (matrixlayout, data, ...)
+			const char *layoutstr = lua_tostring(L, startidx);
+			if (!math::Transform::getConstant(layoutstr, layout))
+				return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
 
-		columnmajor = (layout == math::Transform::MATRIX_COLUMN_MAJOR);
-		startidx++;
+			startidx++;
+			dataidx = startidx;
+		}
+		else if (lua_type(L, startidx + 1) == LUA_TSTRING)
+		{
+			// (data, matrixlayout, ...)
+			// Should be deprecated in the future (doesn't match the argument
+			// order of Shader:send(name, matrixlayout, table))
+			const char *layoutstr = lua_tostring(L, startidx + 1);
+			if (!math::Transform::getConstant(layoutstr, layout))
+				return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
+
+			startidx++;
+		}
 	}
 
-	Data *data = luax_checktype<Data>(L, startidx);
+	bool columnmajor = (layout == math::Transform::MATRIX_COLUMN_MAJOR);
 
+	Data *data = luax_checktype<Data>(L, dataidx);
 	size_t size = data->getSize();
 
 	ptrdiff_t offset = (ptrdiff_t) luaL_optinteger(L, startidx + 1, 0);
@@ -339,17 +355,17 @@ static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const S
 
 	if (!lua_isnoneornil(L, startidx + 2))
 	{
-		lua_Integer datasize = luaL_checkinteger(L, startidx + 2);
-		if (datasize <= 0)
+		lua_Integer sizearg = luaL_checkinteger(L, startidx + 2);
+		if (sizearg <= 0)
 			return luaL_error(L, "Size must be greater than 0.");
-		else if ((size_t) datasize > size - offset)
+		else if ((size_t) sizearg > size - offset)
 			return luaL_error(L, "Size and offset must fit within the Data's bounds.");
-		else if (size % uniformstride != 0)
-			return luaL_error(L, "Size must be a multiple of the uniform's size in bytes.");
-		else if (size > info->dataSize)
+		else if (sizearg % uniformstride != 0)
+			return luaL_error(L, "Size (%d) must be a multiple of the uniform's size in bytes (%d).", sizearg, uniformstride);
+		else if ((size_t) sizearg > info->dataSize)
 			return luaL_error(L, "Size must not be greater than the uniform's total size in bytes.");
 
-		size = (size_t) datasize;
+		size = (size_t) sizearg;
 	}
 	else
 	{
@@ -415,7 +431,7 @@ int w_Shader_send(lua_State *L)
 
 	int startidx = 3;
 
-	if (luax_istype(L, startidx, Data::type))
+	if (luax_istype(L, startidx, Data::type) || (info->baseType == Shader::UNIFORM_MATRIX && luax_istype(L, startidx + 1, Data::type)))
 		return w_Shader_sendData(L, startidx, shader, info, false);
 	else
 		return w_Shader_sendLuaValues(L, startidx, shader, info, name);
