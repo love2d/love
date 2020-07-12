@@ -160,11 +160,11 @@ bool OpenGL::initContext()
 #ifdef LOVE_WINDOWS
 	if (getVendor() == VENDOR_AMD)
 	{
-		// Radeon HD drivers switched from "ATI Radeon" to "AMD Radeon" around
+		// Radeon drivers switched from "ATI Radeon" to "AMD Radeon" around
 		// the 7000 series. We'll assume this bug doesn't affect those newer
 		// GPUs / drivers.
 		const char *device = (const char *) glGetString(GL_RENDERER);
-		if (strstr(device, "ATI Radeon HD ") || strstr(device, "ATI Mobility Radeon HD"))
+		if (strstr(device, "ATI Radeon") || strstr(device, "ATI Mobility Radeon"))
 			bugs.texStorageBreaksSubImage = true;
 	}
 #endif

@@ -165,7 +165,7 @@ public:
 		 * initial full-size one (determined after some investigation with an
 		 * affected user on Discord.)
 		 * https://bitbucket.org/rude/love/issues/1436/bug-with-lovegraphicsprint-on-older-ati
-		 *
+		 * https://github.com/love2d/love/issues/1563
 		 **/
 		bool texStorageBreaksSubImage;
 
