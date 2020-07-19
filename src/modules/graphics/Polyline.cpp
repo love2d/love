@@ -405,18 +405,28 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 
 		Color32 *colordata = (Color32 *) data.stream[1];
 
+		int draw_rough_count = std::min(cmd.vertexCount, (int) vertex_count - vertex_start);
+
 		// Constant vertex color up to the overdraw vertices.
-		for (int i = 0; i < std::min(cmd.vertexCount, (int) vertex_count - vertex_start); i++)
+		for (int i = 0; i < draw_rough_count; i++)
 			colordata[i] = curcolor;
 
-		int colorcount = 0;
 		if (overdraw)
-			colorcount = std::min(cmd.vertexCount, overdraw_count - (vertex_start - overdraw_start));
-
-		if (colorcount > 0)
 		{
-			Color32 *colors = colordata + std::max(0, (overdraw_start - vertex_start));
-			fill_color_array(curcolor, colors, colorcount);
+			int draw_remaining_count = cmd.vertexCount - draw_rough_count;
+
+			int draw_overdraw_begin = overdraw_start - vertex_start;
+			int draw_overdraw_end = draw_overdraw_begin + overdraw_count;
+
+			draw_overdraw_begin = std::max(0, draw_overdraw_begin);
+
+			int draw_overdraw_count = std::min(draw_remaining_count, draw_overdraw_end - draw_overdraw_begin);
+
+			if (draw_overdraw_count > 0)
+			{
+				Color32 *colors = colordata + draw_overdraw_begin;
+				fill_color_array(curcolor, colors, draw_overdraw_count);
+			}
 		}
 	}
 }
