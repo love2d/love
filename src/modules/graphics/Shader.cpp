@@ -390,7 +390,7 @@ static Shader::Language getTargetLanguage(const std::string &src)
 {
 	std::regex r("^\\s*#pragma language (\\w+)");
 	std::smatch m;
-	std::string langstr = std::regex_search(src, m, r) ? m[0] : std::string("glsl1");
+	std::string langstr = std::regex_search(src, m, r) && m.size() > 1 ? m[1] : std::string("glsl1");
 	Shader::Language lang = Shader::LANGUAGE_MAX_ENUM;
 	Shader::getConstant(langstr.c_str(), lang);
 	return lang;
