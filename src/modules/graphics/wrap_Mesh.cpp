@@ -358,6 +358,13 @@ int w_Mesh_getAttachedAttributes(lua_State *L)
 	return 1;
 }
 
+int w_Mesh_getVertexBuffer(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	luax_pushtype(L, t->getVertexBuffer());
+	return 1;
+}
+
 int w_Mesh_flush(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
@@ -562,6 +569,7 @@ static const luaL_Reg w_Mesh_functions[] =
 	{ "attachAttribute", w_Mesh_attachAttribute },
 	{ "detachAttribute", w_Mesh_detachAttribute },
 	{ "getAttachedAttributes", w_Mesh_getAttachedAttributes },
+	{ "getVertexBuffer", w_Mesh_getVertexBuffer },
 	{ "flush", w_Mesh_flush },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
