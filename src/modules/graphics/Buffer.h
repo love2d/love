@@ -159,8 +159,18 @@ public:
 	{
 	public:
 
-		Mapper(Buffer &buffer) : buffer(buffer) { data = buffer.map(); }
-		~Mapper() { buffer.unmap(); }
+		Mapper(Buffer &buffer)
+			: buffer(buffer)
+		{
+			data = buffer.map();
+		}
+
+		~Mapper()
+		{
+			if (buffer.getMapFlags() & MAP_EXPLICIT_RANGE_MODIFY)
+				buffer.setMappedRangeModified(0, buffer.getSize());
+			buffer.unmap();
+		}
 
 		Buffer &buffer;
 		void *data;

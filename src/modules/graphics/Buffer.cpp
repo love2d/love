@@ -51,7 +51,7 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	size_t offset = 0;
 	size_t stride = 0;
 
-	for (const auto &decl : bufferformat)
+	for (const DataDeclaration &decl : bufferformat)
 	{
 		DataMember member(decl);
 

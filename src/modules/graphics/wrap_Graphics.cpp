@@ -1487,7 +1487,7 @@ int w_validateShader(lua_State *L)
 	return 1;
 }
 
-static BufferUsage luax_optmeshusage(lua_State *L, int idx, BufferUsage def)
+static BufferUsage luax_optbufferusage(lua_State *L, int idx, BufferUsage def)
 {
 	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
@@ -1495,6 +1495,86 @@ static BufferUsage luax_optmeshusage(lua_State *L, int idx, BufferUsage def)
 		luax_enumerror(L, "usage hint", getConstants(def), usagestr);
 
 	return def;
+}
+
+static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &settings)
+{
+	if (lua_isnoneornil(L, idx))
+		return;
+
+	luaL_checktype(L, idx, LUA_TTABLE);
+
+	lua_getfield(L, idx, "usage");
+	settings.usage = luax_optbufferusage(L, -1, settings.usage);
+	lua_pop(L, 1);
+
+	if (luax_boolflag(L, idx, "cpureadable", settings.mapFlags & Buffer::MAP_READ))
+		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags | Buffer::MAP_READ);
+	else
+		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags & (~Buffer::MAP_READ));
+}
+
+int w_newIndexBuffer(lua_State *L)
+{
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	luax_optbuffersettings(L, 3, settings);
+
+	int arraylength = 0;
+	DataFormat format = DATAFORMAT_UINT16;
+
+	if (lua_istable(L, 1))
+	{
+		arraylength = (int) luax_objlen(L, 1);
+
+		// Scan array for invalid types and the max value.
+		lua_Integer maxvalue = 0;
+		for (int i = 0; i < arraylength; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			lua_Integer v = luaL_checkinteger(L, -1);
+			lua_pop(L, 1);
+			if (v < 0)
+				return luaL_argerror(L, 1, "expected non-negative integer values in array");
+			else
+				maxvalue = std::max(maxvalue, v);
+		}
+
+		format = getIndexDataFormat(getIndexDataTypeFromMax(maxvalue));
+	}
+	else
+		arraylength = (int) luaL_checkinteger(L, 1);
+
+	if (!lua_isnoneornil(L, 2))
+	{
+		const char *formatstr = luaL_checkstring(L, 2);
+		if (!getConstant(formatstr, format))
+			return luax_enumerror(L, "index data format", getConstants(format), formatstr);
+	}
+
+	Buffer *b = nullptr;
+	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, nullptr, 0, arraylength); });
+
+	if (lua_istable(L, 1))
+	{
+		Buffer::Mapper mapper(*b);
+		uint16 *u16data = (uint16 *) mapper.data;
+		uint32 *u32data = (uint32 *) mapper.data;
+
+		for (int i = 0; i < arraylength; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			lua_Integer v = luaL_checkinteger(L, -1);
+			lua_pop(L, 1);
+			if (format == DATAFORMAT_UINT16)
+				u16data[i] = (uint16) v;
+			else
+				u32data[i] = (uint32) v;
+		}
+	}
+
+	luax_pushtype(L, b);
+	b->release();
+	return 1;
 }
 
 static PrimitiveType luax_optmeshdrawmode(lua_State *L, int idx, PrimitiveType def)
@@ -1512,7 +1592,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
-	BufferUsage usage = luax_optmeshusage(L, 3, BUFFERUSAGE_DYNAMIC);
+	BufferUsage usage = luax_optbufferusage(L, 3, BUFFERUSAGE_DYNAMIC);
 
 	std::vector<Buffer::DataDeclaration> format = Mesh::getDefaultVertexFormat();
 
@@ -1574,7 +1654,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	std::vector<Buffer::DataDeclaration> vertexformat;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
-	BufferUsage usage = luax_optmeshusage(L, 4, BUFFERUSAGE_DYNAMIC);
+	BufferUsage usage = luax_optbufferusage(L, 4, BUFFERUSAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
 	if (!lua_istable(L, -1))
@@ -1598,7 +1678,7 @@ static Mesh *newCustomMesh(lua_State *L)
 		DataFormat format = DATAFORMAT_FLOAT;
 		const char *tname = luaL_checkstring(L, -2);
 
-		if (!getConstant(tname, format))
+		if (!lua_isnoneornil(L, -1))
 		{
 			int components = (int) luaL_checkinteger(L, -1);
 
@@ -1633,7 +1713,7 @@ static Mesh *newCustomMesh(lua_State *L)
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 			}
-			else
+			else if (!getConstant(tname, format))
 				luax_enumerror(L, "vertex data format", getConstants(format), tname);
 		}
 
@@ -3096,6 +3176,7 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newShader", w_newShader },
+	{ "newIndexBuffer", w_newIndexBuffer },
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },
 	{ "_newVideo", w_newVideo },
