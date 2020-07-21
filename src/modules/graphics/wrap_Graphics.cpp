@@ -1519,32 +1519,45 @@ int w_newIndexBuffer(lua_State *L)
 	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
 	luax_optbuffersettings(L, 3, settings);
 
-	int arraylength = 0;
+	size_t arraylength = 0;
+	size_t bytesize = 0;
 	DataFormat format = DATAFORMAT_UINT16;
+	Data *data = nullptr;
+
+	if (luax_istype(L, 1, Data::type))
+	{
+		data = luax_checktype<Data>(L, 1);
+		bytesize = data->getSize();
+	}
 
 	if (lua_istable(L, 1))
 	{
-		arraylength = (int) luax_objlen(L, 1);
+		arraylength = (size_t) luax_objlen(L, 1);
 
 		// Scan array for invalid types and the max value.
 		lua_Integer maxvalue = 0;
-		for (int i = 0; i < arraylength; i++)
+		for (size_t i = 0; i < arraylength; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			lua_Integer v = luaL_checkinteger(L, -1);
+			lua_Integer v = luaL_checkinteger(L, -1) - 1;
 			lua_pop(L, 1);
 			if (v < 0)
-				return luaL_argerror(L, 1, "expected non-negative integer values in array");
+				return luaL_argerror(L, 1, "expected positive integer values in array");
 			else
 				maxvalue = std::max(maxvalue, v);
 		}
 
 		format = getIndexDataFormat(getIndexDataTypeFromMax(maxvalue));
 	}
-	else
-		arraylength = (int) luaL_checkinteger(L, 1);
+	else if (data == nullptr)
+	{
+		lua_Integer len = luaL_checkinteger(L, 1);
+		if (len <= 0)
+			return luaL_argerror(L, 1, "number of elements must be greater than 0");
+		arraylength = (size_t) len;
+	}
 
-	if (!lua_isnoneornil(L, 2))
+	if (data != nullptr || !lua_isnoneornil(L, 2))
 	{
 		const char *formatstr = luaL_checkstring(L, 2);
 		if (!getConstant(formatstr, format))
@@ -1552,7 +1565,7 @@ int w_newIndexBuffer(lua_State *L)
 	}
 
 	Buffer *b = nullptr;
-	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, nullptr, 0, arraylength); });
+	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, nullptr, bytesize, arraylength); });
 
 	if (lua_istable(L, 1))
 	{
@@ -1560,16 +1573,21 @@ int w_newIndexBuffer(lua_State *L)
 		uint16 *u16data = (uint16 *) mapper.data;
 		uint32 *u32data = (uint32 *) mapper.data;
 
-		for (int i = 0; i < arraylength; i++)
+		for (size_t i = 0; i < arraylength; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			lua_Integer v = luaL_checkinteger(L, -1);
+			lua_Integer v = luaL_checkinteger(L, -1) - 1;
 			lua_pop(L, 1);
 			if (format == DATAFORMAT_UINT16)
 				u16data[i] = (uint16) v;
 			else
 				u32data[i] = (uint32) v;
 		}
+	}
+	else if (data != nullptr)
+	{
+		Buffer::Mapper mapper(*b);
+		memcpy(mapper.data, data->getData(), std::min(data->getSize(), b->getSize()));
 	}
 
 	luax_pushtype(L, b);
