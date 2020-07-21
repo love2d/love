@@ -183,6 +183,16 @@ DataFormat getIndexDataFormat(IndexDataType type)
 	return type == INDEX_UINT32 ? DATAFORMAT_UINT32 : DATAFORMAT_UINT16;
 }
 
+IndexDataType getIndexDataType(DataFormat format)
+{
+	switch (format)
+	{
+		case DATAFORMAT_UINT16: return INDEX_UINT16;
+		case DATAFORMAT_UINT32: return INDEX_UINT32;
+		default: return INDEX_MAX_ENUM;
+	}
+}
+
 int getIndexCount(TriangleIndexMode mode, int vertexCount)
 {
 	switch (mode)
@@ -312,13 +322,13 @@ void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 	}
 }
 
-DEFINE_STRINGMAP_BEGIN(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
+STRINGMAP_BEGIN(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 {
 	{ "VertexPosition", ATTRIB_POS           },
 	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
 	{ "VertexColor",    ATTRIB_COLOR         },
 }
-DEFINE_STRINGMAP_END(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
+STRINGMAP_END(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 
 const char *getConstant(BuiltinVertexAttribute attrib)
 {
@@ -327,38 +337,38 @@ const char *getConstant(BuiltinVertexAttribute attrib)
 	return name;
 }
 
-DEFINE_STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
+STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 {
 	{ "uint16", INDEX_UINT16 },
 	{ "uint32", INDEX_UINT32 },
 }
-DEFINE_STRINGMAP_END(IndexDataType, INDEX_MAX_ENUM, indexType)
+STRINGMAP_END(IndexDataType, INDEX_MAX_ENUM, indexType)
 
-DEFINE_STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
+STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
 {
 	{ "stream",  BUFFERUSAGE_STREAM  },
 	{ "dynamic", BUFFERUSAGE_DYNAMIC },
 	{ "static",  BUFFERUSAGE_STATIC  },
 }
-DEFINE_STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
+STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
 
-DEFINE_STRINGMAP_BEGIN(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
+STRINGMAP_BEGIN(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 {
 	{ "fan",       PRIMITIVE_TRIANGLE_FAN   },
 	{ "strip",     PRIMITIVE_TRIANGLE_STRIP },
 	{ "triangles", PRIMITIVE_TRIANGLES      },
 	{ "points",    PRIMITIVE_POINTS         },
 }
-DEFINE_STRINGMAP_END(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
+STRINGMAP_END(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 
-DEFINE_STRINGMAP_BEGIN(AttributeStep, STEP_MAX_ENUM, attributeStep)
+STRINGMAP_BEGIN(AttributeStep, STEP_MAX_ENUM, attributeStep)
 {
 	{ "pervertex",   STEP_PER_VERTEX   },
 	{ "perinstance", STEP_PER_INSTANCE },
 }
-DEFINE_STRINGMAP_END(AttributeStep, STEP_MAX_ENUM, attributeStep)
+STRINGMAP_END(AttributeStep, STEP_MAX_ENUM, attributeStep)
 
-DEFINE_STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
+STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 {
 	{ "float",     DATAFORMAT_FLOAT      },
 	{ "floatvec2", DATAFORMAT_FLOAT_VEC2 },
@@ -410,9 +420,9 @@ DEFINE_STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 	{ "boolvec3", DATAFORMAT_BOOL_VEC3 },
 	{ "boolvec4", DATAFORMAT_BOOL_VEC4 },
 }
-DEFINE_STRINGMAP_END(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
+STRINGMAP_END(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 
-DEFINE_STRINGMAP_BEGIN(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
+STRINGMAP_BEGIN(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
 {
 	{ "float", DATA_BASETYPE_FLOAT },
 	{ "int",   DATA_BASETYPE_INT   },
@@ -421,22 +431,22 @@ DEFINE_STRINGMAP_BEGIN(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
 	{ "unorm", DATA_BASETYPE_UNORM },
 	{ "bool",  DATA_BASETYPE_BOOL  },
 }
-DEFINE_STRINGMAP_END(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
+STRINGMAP_END(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
 
-DEFINE_STRINGMAP_BEGIN(CullMode, CULL_MAX_ENUM, cullMode)
+STRINGMAP_BEGIN(CullMode, CULL_MAX_ENUM, cullMode)
 {
 	{ "none",  CULL_NONE  },
 	{ "back",  CULL_BACK  },
 	{ "front", CULL_FRONT },
 }
-DEFINE_STRINGMAP_END(CullMode, CULL_MAX_ENUM, cullMode)
+STRINGMAP_END(CullMode, CULL_MAX_ENUM, cullMode)
 
-DEFINE_STRINGMAP_BEGIN(Winding, WINDING_MAX_ENUM, winding)
+STRINGMAP_BEGIN(Winding, WINDING_MAX_ENUM, winding)
 {
 	{ "cw",  WINDING_CW  },
 	{ "ccw", WINDING_CCW },
 }
-DEFINE_STRINGMAP_END(Winding, WINDING_MAX_ENUM, winding)
+STRINGMAP_END(Winding, WINDING_MAX_ENUM, winding)
 
 } // graphics
 } // love

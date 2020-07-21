@@ -95,6 +95,9 @@ public:
 	 **/
 	size_t getVertexStride() const;
 
+	/**
+	 * Gets the Buffer that holds the Mesh's vertices.
+	 **/
 	Buffer *getVertexBuffer() const;
 
 	/**
@@ -140,10 +143,13 @@ public:
 	 **/
 	bool getVertexMap(std::vector<uint32> &map) const;
 
+	void setIndexBuffer(Buffer *buffer);
+	Buffer *getIndexBuffer() const;
+
 	/**
 	 * Gets the total number of elements in the vertex map array.
 	 **/
-	size_t getVertexMapCount() const;
+	size_t getIndexCount() const;
 
 	/**
 	 * Sets the texture used when drawing the Mesh.

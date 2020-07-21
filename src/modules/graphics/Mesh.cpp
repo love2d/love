@@ -472,6 +472,9 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 	if (!indexBuffer || indexCount == 0)
 		return true;
 
+	if ((indexBuffer->getMapFlags() & Buffer::MAP_READ) == 0)
+		return false;
+
 	// We unmap the buffer in Mesh::draw, Mesh::setVertexMap, and Mesh::flush.
 	void *buffer = indexBuffer->map();
 
@@ -490,7 +493,27 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 	return true;
 }
 
-size_t Mesh::getVertexMapCount() const
+void Mesh::setIndexBuffer(Buffer *buffer)
+{
+	// Buffer constructor does the rest of the validation for index buffers
+	// (data member formats, etc.)
+	if (buffer != nullptr && (buffer->getTypeFlags() & Buffer::TYPEFLAG_INDEX) == 0)
+		throw love::Exception("setIndexBuffer requires a Buffer created as an index buffer.");
+
+	indexBuffer.set(buffer);
+	useIndexBuffer = buffer != nullptr;
+	indexCount = buffer != nullptr ? buffer->getArrayLength() : 0;
+
+	if (buffer != nullptr)
+		indexDataType = getIndexDataType(buffer->getDataMember(0).decl.format);
+}
+
+Buffer *Mesh::getIndexBuffer() const
+{
+	return indexBuffer;
+}
+
+size_t Mesh::getIndexCount() const
 {
 	return indexCount;
 }

@@ -448,6 +448,23 @@ int w_Mesh_getVertexMap(lua_State *L)
 	return 1;
 }
 
+int w_Mesh_setIndexBuffer(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	Buffer *b = nullptr;
+	if (!lua_isnoneornil(L, 2))
+		b = luax_checkbuffer(L, 2);
+	luax_catchexcept(L, [&]() { t->setIndexBuffer(b); });
+	return 0;
+}
+
+int w_Mesh_getIndexBuffer(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	luax_pushtype(L, t->getIndexBuffer());
+	return 1;
+}
+
 int w_Mesh_setTexture(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
@@ -548,6 +565,8 @@ static const luaL_Reg w_Mesh_functions[] =
 	{ "flush", w_Mesh_flush },
 	{ "setVertexMap", w_Mesh_setVertexMap },
 	{ "getVertexMap", w_Mesh_getVertexMap },
+	{ "setIndexBuffer", w_Mesh_setIndexBuffer },
+	{ "getIndexBuffer", w_Mesh_getIndexBuffer },
 	{ "setTexture", w_Mesh_setTexture },
 	{ "getTexture", w_Mesh_getTexture },
 	{ "setDrawMode", w_Mesh_setDrawMode },

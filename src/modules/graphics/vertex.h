@@ -289,6 +289,7 @@ struct VertexAttributeInfo
 
 struct VertexBufferLayout
 {
+	// Attribute step rate is stored outside this struct as a bitmask.
 	uint16 stride;
 };
 
@@ -368,21 +369,22 @@ const DataFormatInfo &getDataFormatInfo(DataFormat format);
 size_t getIndexDataSize(IndexDataType type);
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
 DataFormat getIndexDataFormat(IndexDataType type);
+IndexDataType getIndexDataType(DataFormat format);
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount);
 
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
-DECLARE_STRINGMAP(BuiltinVertexAttribute);
-DECLARE_STRINGMAP(IndexDataType);
-DECLARE_STRINGMAP(BufferUsage);
-DECLARE_STRINGMAP(PrimitiveType);
-DECLARE_STRINGMAP(AttributeStep);
-DECLARE_STRINGMAP(DataFormat);
-DECLARE_STRINGMAP(DataBaseType);
-DECLARE_STRINGMAP(CullMode);
-DECLARE_STRINGMAP(Winding);
+STRINGMAP_DECLARE(BuiltinVertexAttribute);
+STRINGMAP_DECLARE(IndexDataType);
+STRINGMAP_DECLARE(BufferUsage);
+STRINGMAP_DECLARE(PrimitiveType);
+STRINGMAP_DECLARE(AttributeStep);
+STRINGMAP_DECLARE(DataFormat);
+STRINGMAP_DECLARE(DataBaseType);
+STRINGMAP_DECLARE(CullMode);
+STRINGMAP_DECLARE(Winding);
 
 const char *getConstant(BuiltinVertexAttribute attrib);
 
