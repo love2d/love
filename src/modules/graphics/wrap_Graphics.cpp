@@ -1523,10 +1523,12 @@ int w_newIndexBuffer(lua_State *L)
 	size_t bytesize = 0;
 	DataFormat format = DATAFORMAT_UINT16;
 	Data *data = nullptr;
+	const void *initialdata = nullptr;
 
 	if (luax_istype(L, 1, Data::type))
 	{
 		data = luax_checktype<Data>(L, 1);
+		initialdata = data->getData();
 		bytesize = data->getSize();
 	}
 
@@ -1565,7 +1567,7 @@ int w_newIndexBuffer(lua_State *L)
 	}
 
 	Buffer *b = nullptr;
-	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, nullptr, bytesize, arraylength); });
+	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, initialdata, bytesize, arraylength); });
 
 	if (lua_istable(L, 1))
 	{
@@ -1583,11 +1585,6 @@ int w_newIndexBuffer(lua_State *L)
 			else
 				u32data[i] = (uint32) v;
 		}
-	}
-	else if (data != nullptr)
-	{
-		Buffer::Mapper mapper(*b);
-		memcpy(mapper.data, data->getData(), std::min(data->getSize(), b->getSize()));
 	}
 
 	luax_pushtype(L, b);

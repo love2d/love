@@ -91,6 +91,8 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 		dataMembers.push_back(member);
 	}
 
+	stride = offset;
+
 	if (size != 0)
 	{
 		size_t remainder = size % stride;
