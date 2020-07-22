@@ -75,6 +75,7 @@ private:
 
 	size_t modifiedOffset = 0;
 	size_t modifiedSize = 0;
+	bool isMappedDataModified = false;
 
 }; // Buffer
 

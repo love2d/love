@@ -112,6 +112,7 @@ void *Buffer::map()
 
 	modifiedOffset = 0;
 	modifiedSize = 0;
+	isMappedDataModified = false;
 
 	return memoryMap;
 }
@@ -149,8 +150,13 @@ void Buffer::unmap()
 	if (!mapped)
 		return;
 
+	mapped = false;
+
 	if ((mapFlags & MAP_EXPLICIT_RANGE_MODIFY) != 0)
 	{
+		if (!isMappedDataModified)
+			return;
+
 		modifiedOffset = std::min(modifiedOffset, getSize() - 1);
 		modifiedSize = std::min(modifiedSize, getSize() - modifiedOffset);
 	}
@@ -184,14 +190,20 @@ void Buffer::unmap()
 
 	modifiedOffset = 0;
 	modifiedSize = 0;
-
-	mapped = false;
 }
 
 void Buffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
 {
 	if (!mapped || !(mapFlags & MAP_EXPLICIT_RANGE_MODIFY))
 		return;
+
+	if (!isMappedDataModified)
+	{
+		modifiedOffset = offset;
+		modifiedSize = size;
+		isMappedDataModified = true;
+		return;
+	}
 
 	// We're being conservative right now by internally marking the whole range
 	// from the start of section a to the end of section b as modified if both
