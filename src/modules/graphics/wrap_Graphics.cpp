@@ -1690,7 +1690,7 @@ static Mesh *newCustomMesh(lua_State *L)
 
 		const char *name = luaL_checkstring(L, -3);
 
-		DataFormat format = DATAFORMAT_FLOAT;
+		DataFormat format = DATAFORMAT_MAX_ENUM;
 		const char *tname = luaL_checkstring(L, -2);
 
 		if (!lua_isnoneornil(L, -1))
@@ -1728,9 +1728,10 @@ static Mesh *newCustomMesh(lua_State *L)
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 			}
-			else if (!getConstant(tname, format))
-				luax_enumerror(L, "vertex data format", getConstants(format), tname);
 		}
+
+		if (format == DATAFORMAT_MAX_ENUM && !getConstant(tname, format))
+			luax_enumerror(L, "vertex data format", getConstants(format), tname);
 
 		lua_pop(L, 4);
 		vertexformat.emplace_back(name, format);

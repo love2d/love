@@ -300,6 +300,7 @@ int w_Mesh_attachAttribute(lua_State *L)
 		buffer = mesh->getVertexBuffer();
 		if (buffer == nullptr)
 			return luaL_error(L, "Mesh does not have its own vertex buffer.");
+		luax_markdeprecated(L, "Mesh:attachAttribute(name, mesh, ...)", API_METHOD, DEPRECATED_REPLACED, "Mesh:attachAttribute(name, buffer, ...)");
 	}
 
 	AttributeStep step = STEP_PER_VERTEX;

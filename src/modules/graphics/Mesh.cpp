@@ -307,6 +307,7 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, const std::s
 	else if (attachedAttributes.size() + 1 > VertexAttributes::MAX)
 		throw love::Exception("A maximum of %d attributes can be attached at once.", VertexAttributes::MAX);
 
+	newattrib.name = name;
 	newattrib.buffer = buffer;
 	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
 	newattrib.indexInBuffer = buffer->getDataMemberIndex(attachname);
