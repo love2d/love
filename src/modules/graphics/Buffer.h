@@ -66,12 +66,12 @@ public:
 	{
 		std::string name;
 		DataFormat format;
-		int arraySize;
+		int arrayLength;
 
-		DataDeclaration(const std::string &name, DataFormat format, int arraySize = 0)
+		DataDeclaration(const std::string &name, DataFormat format, int arrayLength = 0)
 			: name(name)
 			, format(format)
-			, arraySize(arraySize)
+			, arrayLength(arrayLength)
 		{}
 	};
 

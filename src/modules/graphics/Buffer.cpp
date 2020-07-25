@@ -69,7 +69,7 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 		if (vertexbuffer)
 		{
-			if (decl.arraySize > 0)
+			if (decl.arrayLength > 0)
 				throw love::Exception("Arrays are not supported in vertex buffers.");
 
 			if (info.isMatrix)

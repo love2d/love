@@ -200,7 +200,7 @@ void Buffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
 	if (!isMappedDataModified)
 	{
 		modifiedOffset = offset;
-		modifiedSize = size;
+		modifiedSize = modifiedsize;
 		isMappedDataModified = true;
 		return;
 	}

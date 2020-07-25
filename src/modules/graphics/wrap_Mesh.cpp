@@ -55,7 +55,7 @@ int w_Mesh_setVertices(lua_State *L)
 	size_t byteoffset = vertstart * stride;
 	int totalverts = (int) t->getVertexCount();
 
-	if (vertstart >= totalverts)
+	if (vertstart >= totalverts || vertstart < 0)
 		return luaL_error(L, "Invalid vertex start index (must be between 1 and %d)", totalverts);
 
 	if (luax_istype(L, 2, Data::type))
