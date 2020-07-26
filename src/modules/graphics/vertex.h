@@ -23,6 +23,7 @@
 // LOVE
 #include "common/int.h"
 #include "common/Color.h"
+#include "common/StringMap.h"
 
 // C
 #include <stddef.h>
@@ -46,7 +47,7 @@ enum BuiltinVertexAttribute
 	ATTRIB_MAX_ENUM
 };
 
-enum BuiltinVertexAttributeFlag
+enum BuiltinVertexAttributeFlags
 {
 	ATTRIBFLAG_POS = 1 << ATTRIB_POS,
 	ATTRIBFLAG_TEXCOORD = 1 << ATTRIB_TEXCOORD,
@@ -55,9 +56,9 @@ enum BuiltinVertexAttributeFlag
 
 enum BufferType
 {
-	BUFFER_VERTEX = 0,
-	BUFFER_INDEX,
-	BUFFER_MAX_ENUM
+	BUFFERTYPE_VERTEX = 0,
+	BUFFERTYPE_INDEX,
+	BUFFERTYPE_MAX_ENUM
 };
 
 enum IndexDataType
@@ -92,36 +93,81 @@ enum CullMode
 	CULL_MAX_ENUM
 };
 
-namespace vertex
+// The expected usage pattern of buffer data.
+enum BufferUsage
 {
-
-// The expected usage pattern of vertex data.
-enum Usage
-{
-	USAGE_STREAM,
-	USAGE_DYNAMIC,
-	USAGE_STATIC,
-	USAGE_MAX_ENUM
+	BUFFERUSAGE_STREAM,
+	BUFFERUSAGE_DYNAMIC,
+	BUFFERUSAGE_STATIC,
+	BUFFERUSAGE_MAX_ENUM
 };
 
-enum DataType
+// Value types used when interfacing with the GPU (vertex and shader data).
+// The order of this enum affects the dataFormatInfo array.
+enum DataFormat
 {
-	DATA_SNORM8,
-	DATA_UNORM8,
-	DATA_INT8,
-	DATA_UINT8,
+	DATAFORMAT_FLOAT,
+	DATAFORMAT_FLOAT_VEC2,
+	DATAFORMAT_FLOAT_VEC3,
+	DATAFORMAT_FLOAT_VEC4,
 
-	DATA_SNORM16,
-	DATA_UNORM16,
-	DATA_INT16,
-	DATA_UINT16,
+	DATAFORMAT_FLOAT_MAT2X2,
+	DATAFORMAT_FLOAT_MAT2X3,
+	DATAFORMAT_FLOAT_MAT2X4,
 
-	DATA_INT32,
-	DATA_UINT32,
+	DATAFORMAT_FLOAT_MAT3X2,
+	DATAFORMAT_FLOAT_MAT3X3,
+	DATAFORMAT_FLOAT_MAT3X4,
 
-	DATA_FLOAT,
+	DATAFORMAT_FLOAT_MAT4X2,
+	DATAFORMAT_FLOAT_MAT4X3,
+	DATAFORMAT_FLOAT_MAT4X4,
 
-	DATA_MAX_ENUM
+	DATAFORMAT_INT32,
+	DATAFORMAT_INT32_VEC2,
+	DATAFORMAT_INT32_VEC3,
+	DATAFORMAT_INT32_VEC4,
+
+	DATAFORMAT_UINT32,
+	DATAFORMAT_UINT32_VEC2,
+	DATAFORMAT_UINT32_VEC3,
+	DATAFORMAT_UINT32_VEC4,
+
+	DATAFORMAT_SNORM8_VEC4,
+	DATAFORMAT_UNORM8_VEC4,
+	DATAFORMAT_INT8_VEC4,
+	DATAFORMAT_UINT8_VEC4,
+
+	DATAFORMAT_SNORM16_VEC2,
+	DATAFORMAT_SNORM16_VEC4,
+
+	DATAFORMAT_UNORM16_VEC2,
+	DATAFORMAT_UNORM16_VEC4,
+
+	DATAFORMAT_INT16_VEC2,
+	DATAFORMAT_INT16_VEC4,
+
+	DATAFORMAT_UINT16,
+	DATAFORMAT_UINT16_VEC2,
+	DATAFORMAT_UINT16_VEC4,
+
+	DATAFORMAT_BOOL,
+	DATAFORMAT_BOOL_VEC2,
+	DATAFORMAT_BOOL_VEC3,
+	DATAFORMAT_BOOL_VEC4,
+
+	DATAFORMAT_MAX_ENUM
+};
+
+enum DataBaseType
+{
+	DATA_BASETYPE_FLOAT,
+	DATA_BASETYPE_INT,
+	DATA_BASETYPE_UINT,
+	DATA_BASETYPE_SNORM,
+	DATA_BASETYPE_UNORM,
+	DATA_BASETYPE_BOOL,
+	DATA_BASETYPE_MAX_ENUM
 };
 
 enum Winding
@@ -131,12 +177,12 @@ enum Winding
 	WINDING_MAX_ENUM
 };
 
-enum class TriangleIndexMode
+enum TriangleIndexMode
 {
-	NONE,
-	STRIP,
-	FAN,
-	QUADS,
+	TRIANGLEINDEX_NONE,
+	TRIANGLEINDEX_STRIP,
+	TRIANGLEINDEX_FAN,
+	TRIANGLEINDEX_QUADS,
 };
 
 enum class CommonFormat
@@ -152,6 +198,17 @@ enum class CommonFormat
 	XYf_STf_RGBAub,
 	XYf_STus_RGBAub,
 	XYf_STPf_RGBAub,
+};
+
+struct DataFormatInfo
+{
+	DataBaseType baseType;
+	bool isMatrix;
+	int components;
+	int matrixRows;
+	int matrixColumns;
+	size_t componentSize;
+	size_t size;
 };
 
 struct STf_RGBAub
@@ -184,6 +241,8 @@ struct XYf_STf_RGBAub
 	float s, t;
 	Color32 color;
 };
+
+typedef XYf_STf_RGBAub Vertex;
 
 struct XYf_STus_RGBAub
 {
@@ -221,42 +280,41 @@ struct BufferBindings
 	void clear() { useBits = 0; }
 };
 
-struct AttributeInfo
+struct VertexAttributeInfo
 {
-	DataType type;
-	uint8 components;
 	uint8 bufferIndex;
+	DataFormat format : 8;
 	uint16 offsetFromVertex;
 };
 
-struct BufferLayout
+struct VertexBufferLayout
 {
+	// Attribute step rate is stored outside this struct as a bitmask.
 	uint16 stride;
 };
 
-struct Attributes
+struct VertexAttributes
 {
 	static const uint32 MAX = 32;
 
 	uint32 enableBits = 0; // indexed by attribute
 	uint32 instanceBits = 0; // indexed by buffer
 
-	AttributeInfo attribs[MAX];
-	BufferLayout bufferLayouts[BufferBindings::MAX];
+	VertexAttributeInfo attribs[MAX];
+	VertexBufferLayout bufferLayouts[BufferBindings::MAX];
 
-	Attributes() {}
-	Attributes(CommonFormat format, uint8 bufferindex)
+	VertexAttributes() {}
+	VertexAttributes(CommonFormat format, uint8 bufferindex)
 	{
 		setCommonFormat(format, bufferindex);
 	}
 
-	void set(uint32 index, DataType type, uint8 components, uint16 offsetfromvertex, uint8 bufferindex)
+	void set(uint32 index, DataFormat format, uint16 offsetfromvertex, uint8 bufferindex)
 	{
 		enableBits |= (1u << index);
 
 		attribs[index].bufferIndex = bufferindex;
-		attribs[index].type = type;
-		attribs[index].components = components;
+		attribs[index].format = format;
 		attribs[index].offsetFromVertex = offsetfromvertex;
 	}
 
@@ -306,51 +364,30 @@ inline CommonFormat getSinglePositionFormat(bool is2D)
 	return is2D ? CommonFormat::XYf : CommonFormat::XYZf;
 }
 
-size_t getIndexDataSize(IndexDataType type);
-size_t getDataTypeSize(DataType datatype);
-bool isDataTypeInteger(DataType datatype);
+const DataFormatInfo &getDataFormatInfo(DataFormat format);
 
+size_t getIndexDataSize(IndexDataType type);
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue);
+DataFormat getIndexDataFormat(IndexDataType type);
+IndexDataType getIndexDataType(DataFormat format);
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount);
 
 void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount, uint16 *indices);
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
-bool getConstant(const char *in, BuiltinVertexAttribute &out);
-bool getConstant(BuiltinVertexAttribute in, const char *&out);
+STRINGMAP_DECLARE(BuiltinVertexAttribute);
+STRINGMAP_DECLARE(BufferType);
+STRINGMAP_DECLARE(IndexDataType);
+STRINGMAP_DECLARE(BufferUsage);
+STRINGMAP_DECLARE(PrimitiveType);
+STRINGMAP_DECLARE(AttributeStep);
+STRINGMAP_DECLARE(DataFormat);
+STRINGMAP_DECLARE(DataBaseType);
+STRINGMAP_DECLARE(CullMode);
+STRINGMAP_DECLARE(Winding);
 
-bool getConstant(const char *in, IndexDataType &out);
-bool getConstant(IndexDataType in, const char *&out);
-std::vector<std::string> getConstants(IndexDataType);
-
-bool getConstant(const char *in, Usage &out);
-bool getConstant(Usage in, const char *&out);
-std::vector<std::string> getConstants(Usage);
-
-bool getConstant(const char *in, PrimitiveType &out);
-bool getConstant(PrimitiveType in, const char *&out);
-std::vector<std::string> getConstants(PrimitiveType);
-
-bool getConstant(const char *in, AttributeStep &out);
-bool getConstant(AttributeStep in, const char *&out);
-std::vector<std::string> getConstants(AttributeStep);
-
-bool getConstant(const char *in, DataType &out);
-bool getConstant(DataType in, const char *&out);
-std::vector<std::string> getConstants(DataType);
-
-bool getConstant(const char *in, CullMode &out);
-bool getConstant(CullMode in, const char *&out);
-std::vector<std::string> getConstants(CullMode);
-
-bool getConstant(const char *in, Winding &out);
-bool getConstant(Winding in, const char *&out);
-std::vector<std::string> getConstants(Winding);
-
-} // vertex
-
-typedef vertex::XYf_STf_RGBAub Vertex;
+const char *getConstant(BuiltinVertexAttribute attrib);
 
 } // graphics
 } // love

@@ -33,11 +33,6 @@
 #include <vector>
 #include <stddef.h>
 
-namespace glslang
-{
-class TShader;
-}
-
 namespace love
 {
 namespace graphics

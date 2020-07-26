@@ -309,8 +309,6 @@ void Texture::draw(Graphics *gfx, const Matrix4 &m)
 
 void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 {
-	using namespace vertex;
-
 	if (!readable)
 		throw love::Exception("Textures with non-readable formats cannot be drawn.");
 
@@ -327,9 +325,9 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 	bool is2D = tm.isAffine2DTransform();
 
 	Graphics::BatchedDrawCommand cmd;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[0] = getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STf_RGBAub;
-	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.indexMode = TRIANGLEINDEX_QUADS;
 	cmd.vertexCount = 4;
 	cmd.texture = this;
 
@@ -343,7 +341,7 @@ void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 		t.transformXY0((Vector3 *) data.stream[0], q->getVertexPositions(), 4);
 
 	const Vector2 *texcoords = q->getVertexTexCoords();
-	vertex::STf_RGBAub *vertexdata = (vertex::STf_RGBAub *) data.stream[1];
+	STf_RGBAub *vertexdata = (STf_RGBAub *) data.stream[1];
 
 	Color32 c = toColor32(gfx->getColor());
 
@@ -362,8 +360,6 @@ void Texture::drawLayer(Graphics *gfx, int layer, const Matrix4 &m)
 
 void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 {
-	using namespace vertex;
-
 	if (!readable)
 		throw love::Exception("Textures with non-readable formats cannot be drawn.");
 
@@ -384,9 +380,9 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 	Matrix4 t(tm, m);
 
 	Graphics::BatchedDrawCommand cmd;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
+	cmd.formats[0] = getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::STPf_RGBAub;
-	cmd.indexMode = TriangleIndexMode::QUADS;
+	cmd.indexMode = TRIANGLEINDEX_QUADS;
 	cmd.vertexCount = 4;
 	cmd.texture = this;
 	cmd.standardShaderType = Shader::STANDARD_ARRAY;
@@ -399,7 +395,7 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 		t.transformXY0((Vector3 *) data.stream[0], q->getVertexPositions(), 4);
 
 	const Vector2 *texcoords = q->getVertexTexCoords();
-	vertex::STPf_RGBAub *vertexdata = (vertex::STPf_RGBAub *) data.stream[1];
+	STPf_RGBAub *vertexdata = (STPf_RGBAub *) data.stream[1];
 
 	for (int i = 0; i < 4; i++)
 	{

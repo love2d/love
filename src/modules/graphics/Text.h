@@ -85,8 +85,8 @@ private:
 
 	StrongRef<Font> font;
 
-	vertex::Attributes vertexAttributes;
-	vertex::BufferBindings vertexBuffers;
+	VertexAttributes vertexAttributes;
+	BufferBindings vertexBuffers;
 
 	Buffer *vertex_buffer;
 

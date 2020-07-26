@@ -37,6 +37,7 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <sstream>
 
 #include <algorithm>
 
@@ -1324,12 +1325,12 @@ int w_newSpriteBatch(lua_State *L)
 
 	Texture *texture = luax_checktexture(L, 1);
 	int size = (int) luaL_optinteger(L, 2, 1000);
-	vertex::Usage usage = vertex::USAGE_DYNAMIC;
+	BufferUsage usage = BUFFERUSAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
 		const char *usagestr = luaL_checkstring(L, 3);
-		if (!vertex::getConstant(usagestr, usage))
-			return luax_enumerror(L, "usage hint", vertex::getConstants(usage), usagestr);
+		if (!getConstant(usagestr, usage))
+			return luax_enumerror(L, "usage hint", getConstants(usage), usagestr);
 	}
 
 	SpriteBatch *t = nullptr;
@@ -1487,22 +1488,309 @@ int w_validateShader(lua_State *L)
 	return 1;
 }
 
-static vertex::Usage luax_optmeshusage(lua_State *L, int idx, vertex::Usage def)
+static BufferUsage luax_optbufferusage(lua_State *L, int idx, BufferUsage def)
 {
 	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	if (usagestr && !vertex::getConstant(usagestr, def))
-		luax_enumerror(L, "usage hint", vertex::getConstants(def), usagestr);
+	if (usagestr && !getConstant(usagestr, def))
+		luax_enumerror(L, "usage hint", getConstants(def), usagestr);
 
 	return def;
+}
+
+static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &settings)
+{
+	if (lua_isnoneornil(L, idx))
+		return;
+
+	luaL_checktype(L, idx, LUA_TTABLE);
+
+	lua_getfield(L, idx, "usage");
+	settings.usage = luax_optbufferusage(L, -1, settings.usage);
+	lua_pop(L, 1);
+
+	if (luax_boolflag(L, idx, "cpureadable", settings.mapFlags & Buffer::MAP_READ))
+		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags | Buffer::MAP_READ);
+	else
+		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags & (~Buffer::MAP_READ));
+}
+
+static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)
+{
+	luaL_checktype(L, idx, LUA_TTABLE);
+	int tablelen = luax_objlen(L, idx);
+
+	for (int i = 1; i <= tablelen; i++)
+	{
+		lua_rawgeti(L, idx, i);
+		luaL_checktype(L, -1, LUA_TTABLE);
+
+		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
+
+		lua_getfield(L, -1, "name");
+		if (lua_type(L, -1) != LUA_TSTRING)
+		{
+			std::ostringstream ss;
+			ss << "'name' field expected in array element #";
+			ss << i;
+			ss << " of format table";
+			std::string str = ss.str();
+			luaL_argerror(L, idx, str.c_str());
+		}
+		decl.name = luax_checkstring(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "format");
+		if (lua_type(L, -1) != LUA_TSTRING)
+		{
+			std::ostringstream ss;
+			ss << "'format' field expected in array element #";
+			ss << i;
+			ss << " of format table";
+			std::string str = ss.str();
+			luaL_argerror(L, idx, str.c_str());
+		}
+		const char *formatstr = luaL_checkstring(L, -1);
+		if (!getConstant(formatstr, decl.format))
+			luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
+		lua_pop(L, 1);
+
+		decl.arrayLength = luax_intflag(L, -1, "arraylength", 0);
+
+		format.push_back(decl);
+		lua_pop(L, 1);
+	}
+}
+
+static Buffer *luax_newbuffer(lua_State *L, int idx, const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format)
+{
+	size_t arraylength = 0;
+	size_t bytesize = 0;
+	Data *data = nullptr;
+	const void *initialdata = nullptr;
+
+	int ncomponents = 0;
+	for (const Buffer::DataDeclaration &decl : format)
+		ncomponents += getDataFormatInfo(decl.format).components;
+
+	if (luax_istype(L, idx, Data::type))
+	{
+		data = luax_checktype<Data>(L, idx);
+		initialdata = data->getData();
+		bytesize = data->getSize();
+	}
+
+	bool tableoftables = false;
+
+	if (lua_istable(L, idx))
+	{
+		arraylength = luax_objlen(L, idx);
+
+		lua_rawgeti(L, idx, 1);
+		tableoftables = lua_istable(L, -1);
+		lua_pop(L, 1);
+
+		if (!tableoftables)
+		{
+			if (arraylength % ncomponents != 0)
+				luaL_error(L, "Array length in flat array variant of newBuffer must be a multiple of the total number of components (%d)", ncomponents);
+			arraylength /= ncomponents;
+		}
+	}
+	else if (data == nullptr)
+	{
+		lua_Integer len = luaL_checkinteger(L, idx);
+		if (len <= 0)
+			luaL_argerror(L, idx, "number of elements must be greater than 0");
+		arraylength = (size_t) len;
+	}
+
+	Buffer *b = nullptr;
+	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, initialdata, bytesize, arraylength); });
+
+	if (lua_istable(L, idx))
+	{
+		Buffer::Mapper mapper(*b);
+		char *data = (char *) mapper.data;
+		const auto &members = b->getDataMembers();
+		size_t stride = b->getArrayStride();
+
+		if (tableoftables)
+		{
+			for (size_t i = 0; i < arraylength; i++)
+			{
+				// get arraydata[index]
+				lua_rawgeti(L, 2, i + 1);
+				luaL_checktype(L, -1, LUA_TTABLE);
+
+				// get arraydata[index][j]
+				for (int j = 1; j <= ncomponents; j++)
+					lua_rawgeti(L, -j, j);
+
+				int idx = -ncomponents;
+
+				for (const Buffer::DataMember &member : members)
+				{
+					luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
+					idx += member.info.components;
+				}
+
+				lua_pop(L, ncomponents + 1);
+				data += stride;
+			}
+		}
+		else // Flat array
+		{
+			for (size_t i = 0; i < arraylength; i++)
+			{
+				// get arraydata[arrayindex * ncomponents + componentindex]
+				for (int componentindex = 1; componentindex <= ncomponents; componentindex++)
+					lua_rawgeti(L, 2, i * ncomponents + componentindex);
+
+				int idx = -ncomponents;
+
+				for (const Buffer::DataMember &member : members)
+				{
+					luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
+					idx += member.info.components;
+				}
+
+				lua_pop(L, ncomponents);
+				data += stride;
+			}
+		}
+	}
+
+	return b;
+}
+
+int w_newBuffer(lua_State *L)
+{
+	Buffer::Settings settings(0, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+
+	luaL_checktype(L, 3, LUA_TTABLE);
+
+	for (int i = 0; i < BUFFERTYPE_MAX_ENUM; i++)
+	{
+		BufferType buffertype = (BufferType) i;
+		const char *tname = nullptr;
+		if (!getConstant(buffertype, tname))
+			continue;
+		if (luax_boolflag(L, 3, tname, false))
+			settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | (1u << i));
+	}
+
+	luax_optbuffersettings(L, 3, settings);
+
+	std::vector<Buffer::DataDeclaration> format;
+	luax_checkbufferformat(L, 1, format);
+
+	Buffer *b = luax_newbuffer(L, 2, settings, format);
+
+	luax_pushtype(L, b);
+	b->release();
+	return 1;
+}
+
+int w_newVertexBuffer(lua_State *L)
+{
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	luax_optbuffersettings(L, 3, settings);
+
+	std::vector<Buffer::DataDeclaration> format;
+	luax_checkbufferformat(L, 1, format);
+
+	Buffer *b = luax_newbuffer(L, 2, settings, format);
+
+	luax_pushtype(L, b);
+	b->release();
+	return 1;
+}
+
+int w_newIndexBuffer(lua_State *L)
+{
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	luax_optbuffersettings(L, 3, settings);
+
+	size_t arraylength = 0;
+	size_t bytesize = 0;
+	DataFormat format = DATAFORMAT_UINT16;
+	Data *data = nullptr;
+	const void *initialdata = nullptr;
+
+	if (luax_istype(L, 1, Data::type))
+	{
+		data = luax_checktype<Data>(L, 1);
+		initialdata = data->getData();
+		bytesize = data->getSize();
+	}
+
+	if (lua_istable(L, 1))
+	{
+		arraylength = luax_objlen(L, 1);
+
+		// Scan array for invalid types and the max value.
+		lua_Integer maxvalue = 0;
+		for (size_t i = 0; i < arraylength; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			lua_Integer v = luaL_checkinteger(L, -1) - 1;
+			lua_pop(L, 1);
+			if (v < 0)
+				return luaL_argerror(L, 1, "expected positive integer values in array");
+			else
+				maxvalue = std::max(maxvalue, v);
+		}
+
+		format = getIndexDataFormat(getIndexDataTypeFromMax(maxvalue));
+	}
+	else if (data == nullptr)
+	{
+		lua_Integer len = luaL_checkinteger(L, 1);
+		if (len <= 0)
+			return luaL_argerror(L, 1, "number of elements must be greater than 0");
+		arraylength = (size_t) len;
+	}
+
+	if (data != nullptr || !lua_isnoneornil(L, 2))
+	{
+		const char *formatstr = luaL_checkstring(L, 2);
+		if (!getConstant(formatstr, format))
+			return luax_enumerror(L, "index data format", getConstants(format), formatstr);
+	}
+
+	Buffer *b = nullptr;
+	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, initialdata, bytesize, arraylength); });
+
+	if (lua_istable(L, 1))
+	{
+		Buffer::Mapper mapper(*b);
+		uint16 *u16data = (uint16 *) mapper.data;
+		uint32 *u32data = (uint32 *) mapper.data;
+
+		for (size_t i = 0; i < arraylength; i++)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			lua_Integer v = luaL_checkinteger(L, -1) - 1;
+			lua_pop(L, 1);
+			if (format == DATAFORMAT_UINT16)
+				u16data[i] = (uint16) v;
+			else
+				u32data[i] = (uint32) v;
+		}
+	}
+
+	luax_pushtype(L, b);
+	b->release();
+	return 1;
 }
 
 static PrimitiveType luax_optmeshdrawmode(lua_State *L, int idx, PrimitiveType def)
 {
 	const char *modestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
-	if (modestr && !vertex::getConstant(modestr, def))
-		luax_enumerror(L, "mesh draw mode", vertex::getConstants(def), modestr);
+	if (modestr && !getConstant(modestr, def))
+		luax_enumerror(L, "mesh draw mode", getConstants(def), modestr);
 
 	return def;
 }
@@ -1512,7 +1800,9 @@ static Mesh *newStandardMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
-	vertex::Usage usage = luax_optmeshusage(L, 3, vertex::USAGE_DYNAMIC);
+	BufferUsage usage = luax_optbufferusage(L, 3, BUFFERUSAGE_DYNAMIC);
+
+	std::vector<Buffer::DataDeclaration> format = Mesh::getDefaultVertexFormat();
 
 	// First argument is a table of standard vertices, or the number of
 	// standard vertices.
@@ -1552,12 +1842,12 @@ static Mesh *newStandardMesh(lua_State *L)
 			vertices.push_back(v);
 		}
 
-		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertices, drawmode, usage); });
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(format, vertices.data(), vertices.size() * sizeof(Vertex), drawmode, usage); });
 	}
 	else
 	{
 		int count = (int) luaL_checkinteger(L, 1);
-		luax_catchexcept(L, [&](){ t = instance()->newMesh(count, drawmode, usage); });
+		luax_catchexcept(L, [&](){ t = instance()->newMesh(format, count, drawmode, usage); });
 	}
 
 	return t;
@@ -1569,10 +1859,10 @@ static Mesh *newCustomMesh(lua_State *L)
 
 	// First argument is the vertex format, second is a table of vertices or
 	// the number of vertices.
-	std::vector<Mesh::AttribFormat> vertexformat;
+	std::vector<Buffer::DataDeclaration> vertexformat;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
-	vertex::Usage usage = luax_optmeshusage(L, 4, vertex::USAGE_DYNAMIC);
+	BufferUsage usage = luax_optbufferusage(L, 4, BUFFERUSAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
 	if (!lua_istable(L, -1))
@@ -1591,27 +1881,53 @@ static Mesh *newCustomMesh(lua_State *L)
 		for (int j = 1; j <= 3; j++)
 			lua_rawgeti(L, -j, j);
 
-		Mesh::AttribFormat format;
-		format.name = luaL_checkstring(L, -3);
+		const char *name = luaL_checkstring(L, -3);
 
+		DataFormat format = DATAFORMAT_MAX_ENUM;
 		const char *tname = luaL_checkstring(L, -2);
-		if (strcmp(tname, "byte") == 0) // Legacy name.
-			format.type = vertex::DATA_UNORM8;
-		else if (!vertex::getConstant(tname, format.type))
+
+		if (!lua_isnoneornil(L, -1))
 		{
-			luax_enumerror(L, "Mesh vertex data type name", vertex::getConstants(format.type), tname);
-			return nullptr;
+			int components = (int) luaL_checkinteger(L, -1);
+
+			// Check deprecated format names.
+			if (strcmp(tname, "byte") == 0 || strcmp(tname, "unorm8") == 0)
+			{
+				if (components == 4)
+					format = DATAFORMAT_UNORM8_VEC4;
+				else
+					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
+			}
+			else if (strcmp(tname, "unorm16") == 0)
+			{
+				if (components == 2)
+					format = DATAFORMAT_UNORM16_VEC2;
+				else if (components == 4)
+					format = DATAFORMAT_UNORM16_VEC4;
+				else
+					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
+
+			}
+			else if (strcmp(tname, "float") == 0)
+			{
+				if (components == 1)
+					format = DATAFORMAT_FLOAT;
+				else if (components == 2)
+					format = DATAFORMAT_FLOAT_VEC2;
+				else if (components == 3)
+					format = DATAFORMAT_FLOAT_VEC3;
+				else if (components == 4)
+					format = DATAFORMAT_FLOAT_VEC4;
+				else
+					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
+			}
 		}
 
-		format.components = (int) luaL_checkinteger(L, -1);
-		if (format.components <= 0 || format.components > 4)
-		{
-			luaL_error(L, "Number of vertex attribute components must be between 1 and 4 (got %d)", format.components);
-			return nullptr;
-		}
+		if (format == DATAFORMAT_MAX_ENUM && !getConstant(tname, format))
+			luax_enumerror(L, "vertex data format", getConstants(format), tname);
 
 		lua_pop(L, 4);
-		vertexformat.push_back(format);
+		vertexformat.emplace_back(name, format);
 	}
 
 	if (lua_isnumber(L, 2))
@@ -1636,10 +1952,6 @@ static Mesh *newCustomMesh(lua_State *L)
 		}
 		lua_pop(L, 1);
 
-		int vertexcomponents = 0;
-		for (const Mesh::AttribFormat &format : vertexformat)
-			vertexcomponents += format.components;
-
 		size_t numvertices = luax_objlen(L, 2);
 
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, numvertices, drawmode, usage); });
@@ -1656,19 +1968,19 @@ static Mesh *newCustomMesh(lua_State *L)
 			int n = 0;
 			for (size_t i = 0; i < vertexformat.size(); i++)
 			{
-				int components = vertexformat[i].components;
+				const auto &info = getDataFormatInfo(vertexformat[i].format);
 
 				// get vertices[vertindex][n]
-				for (int c = 0; c < components; c++)
+				for (int c = 0; c < info.components; c++)
 				{
 					n++;
 					lua_rawgeti(L, -(c + 1), n);
 				}
 
 				// Fetch the values from Lua and store them in data buffer.
-				luax_writeAttributeData(L, -components, vertexformat[i].type, components, data);
+				luax_writebufferdata(L, -info.components, vertexformat[i].format, data);
 
-				lua_pop(L, components);
+				lua_pop(L, info.components);
 
 				luax_catchexcept(L,
 					[&](){ t->setVertexAttribute(vertindex, i, data, sizeof(float) * 4); },
@@ -2171,8 +2483,8 @@ int w_setMeshCullMode(lua_State *L)
 	const char *str = luaL_checkstring(L, 1);
 	CullMode mode;
 
-	if (!vertex::getConstant(str, mode))
-		return luax_enumerror(L, "cull mode", vertex::getConstants(mode), str);
+	if (!getConstant(str, mode))
+		return luax_enumerror(L, "cull mode", getConstants(mode), str);
 
 	luax_catchexcept(L, [&]() { instance()->setMeshCullMode(mode); });
 	return 0;
@@ -2182,7 +2494,7 @@ int w_getMeshCullMode(lua_State *L)
 {
 	CullMode mode = instance()->getMeshCullMode();
 	const char *str;
-	if (!vertex::getConstant(mode, str))
+	if (!getConstant(mode, str))
 		return luaL_error(L, "Unknown cull mode");
 	lua_pushstring(L, str);
 	return 1;
@@ -2191,10 +2503,10 @@ int w_getMeshCullMode(lua_State *L)
 int w_setFrontFaceWinding(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
-	vertex::Winding winding;
+	Winding winding;
 
-	if (!vertex::getConstant(str, winding))
-		return luax_enumerror(L, "vertex winding", vertex::getConstants(winding), str);
+	if (!getConstant(str, winding))
+		return luax_enumerror(L, "vertex winding", getConstants(winding), str);
 
 	luax_catchexcept(L, [&]() { instance()->setFrontFaceWinding(winding); });
 	return 0;
@@ -2202,9 +2514,9 @@ int w_setFrontFaceWinding(lua_State *L)
 
 int w_getFrontFaceWinding(lua_State *L)
 {
-	vertex::Winding winding = instance()->getFrontFaceWinding();
+	Winding winding = instance()->getFrontFaceWinding();
 	const char *str;
-	if (!vertex::getConstant(winding, str))
+	if (!getConstant(winding, str))
 		return luaL_error(L, "Unknown vertex winding");
 	lua_pushstring(L, str);
 	return 1;
@@ -3073,6 +3385,9 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newShader", w_newShader },
+	{ "newBuffer", w_newBuffer },
+	{ "newVertexBuffer", w_newVertexBuffer },
+	{ "newIndexBuffer", w_newIndexBuffer },
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },
 	{ "_newVideo", w_newVideo },
@@ -3202,6 +3517,7 @@ static const lua_CFunction types[] =
 	luaopen_texture,
 	luaopen_font,
 	luaopen_quad,
+	luaopen_graphicsbuffer,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_shader,

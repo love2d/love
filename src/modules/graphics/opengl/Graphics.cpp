@@ -145,9 +145,9 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 	return new Shader(vertex, pixel);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
+love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
-	return new Buffer(size, data, type, usage, mapflags);
+	return new Buffer(this, settings, format, data, size, arraylength);
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
@@ -238,9 +238,9 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFER_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFER_VERTEX, 256  * 1024 * 1);
-		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	// Reload all volatile objects.
@@ -360,7 +360,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
 	GLenum gldatatype = OpenGL::getGLIndexDataType(cmd.indexType);
 
-	gl.bindBuffer(BUFFER_INDEX, cmd.indexBuffer->getHandle());
+	gl.bindBuffer(BUFFERTYPE_INDEX, cmd.indexBuffer->getHandle());
 
 	if (cmd.instanceCount > 1)
 		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
@@ -370,13 +370,13 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	++drawCalls;
 }
 
-static inline void advanceVertexOffsets(const vertex::Attributes &attributes, vertex::BufferBindings &buffers, int vertexcount)
+static inline void advanceVertexOffsets(const VertexAttributes &attributes, BufferBindings &buffers, int vertexcount)
 {
 	// TODO: Figure out a better way to avoid touching the same buffer multiple
 	// times, if multiple attributes share the buffer.
 	uint32 touchedbuffers = 0;
 
-	for (unsigned int i = 0; i < vertex::Attributes::MAX; i++)
+	for (unsigned int i = 0; i < VertexAttributes::MAX; i++)
 	{
 		if (!attributes.isEnabled(i))
 			continue;
@@ -393,7 +393,7 @@ static inline void advanceVertexOffsets(const vertex::Attributes &attributes, ve
 	}
 }
 
-void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
 {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
@@ -402,7 +402,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.setCullMode(CULL_NONE);
 
-	gl.bindBuffer(BUFFER_INDEX, quadIndexBuffer->getHandle());
+	gl.bindBuffer(BUFFERTYPE_INDEX, quadIndexBuffer->getHandle());
 
 	if (gl.isBaseVertexSupported())
 	{
@@ -422,7 +422,7 @@ void Graphics::drawQuads(int start, int count, const vertex::Attributes &attribu
 	}
 	else
 	{
-		vertex::BufferBindings bufferscopy = buffers;
+		BufferBindings bufferscopy = buffers;
 		if (start > 0)
 			advanceVertexOffsets(attributes, bufferscopy, start * 4);
 
@@ -510,7 +510,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 	endPass();
 
 	bool iswindow = rts.getFirstTarget().texture == nullptr;
-	vertex::Winding vertexwinding = state.winding;
+	Winding vertexwinding = state.winding;
 
 	if (iswindow)
 	{
@@ -528,10 +528,10 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 
 		// Flip front face winding when rendering to a texture, since our
 		// projection matrix is flipped.
-		vertexwinding = vertexwinding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+		vertexwinding = vertexwinding == WINDING_CW ? WINDING_CCW : WINDING_CW;
 	}
 
-	glFrontFace(vertexwinding == vertex::WINDING_CW ? GL_CW : GL_CCW);
+	glFrontFace(vertexwinding == WINDING_CW ? GL_CW : GL_CCW);
 
 	gl.setViewport({0, 0, pixelw, pixelh});
 
@@ -1229,7 +1229,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	}
 }
 
-void Graphics::setFrontFaceWinding(vertex::Winding winding)
+void Graphics::setFrontFaceWinding(Winding winding)
 {
 	DisplayState &state = states.back();
 
@@ -1239,9 +1239,9 @@ void Graphics::setFrontFaceWinding(vertex::Winding winding)
 	state.winding = winding;
 
 	if (isRenderTargetActive())
-		winding = winding == vertex::WINDING_CW ? vertex::WINDING_CCW : vertex::WINDING_CW;
+		winding = winding == WINDING_CW ? WINDING_CCW : WINDING_CW;
 
-	glFrontFace(winding == vertex::WINDING_CW ? GL_CW : GL_CCW);
+	glFrontFace(winding == WINDING_CW ? GL_CW : GL_CCW);
 }
 
 void Graphics::setColor(Colorf c)

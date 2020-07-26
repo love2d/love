@@ -171,10 +171,12 @@ void Graphics::createQuadIndexBuffer()
 		return;
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
-	quadIndexBuffer = newBuffer(size, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
+
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, 0, BUFFERUSAGE_STATIC);
+	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
-	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
+	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -202,7 +204,7 @@ Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 	return new Video(this, stream, dpiscale);
 }
 
-love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
+love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, BufferUsage usage)
 {
 	return new SpriteBatch(this, texture, size, usage);
 }
@@ -287,24 +289,25 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 	return newShaderInternal(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL]);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage)
+Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
 {
-	return newMesh(Mesh::getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage);
+	std::vector<Buffer::DataDeclaration> dataformat = {{"", format, 0}};
+	return newBuffer(settings, dataformat, data, size, arraylength);
 }
 
-Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
-{
-	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
-}
-
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode)
+{
+	return new Mesh(attributes, drawmode);
 }
 
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
@@ -944,7 +947,7 @@ CullMode Graphics::getMeshCullMode() const
 	return states.back().meshCullMode;
 }
 
-vertex::Winding Graphics::getFrontFaceWinding() const
+Winding Graphics::getFrontFaceWinding() const
 {
 	return states.back().winding;
 }
@@ -1033,8 +1036,6 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 
 Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)
 {
-	using namespace vertex;
-
 	BatchedDrawState &state = batchedDrawState;
 
 	bool shouldflush = false;
@@ -1042,7 +1043,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 
 	if (cmd.primitiveMode != state.primitiveMode
 		|| cmd.formats[0] != state.formats[0] || cmd.formats[1] != state.formats[1]
-		|| ((cmd.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
+		|| ((cmd.indexMode != TRIANGLEINDEX_NONE) != (state.indexCount > 0))
 		|| cmd.texture != state.texture
 		|| cmd.standardShaderType != state.standardShaderType)
 	{
@@ -1052,7 +1053,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 	int totalvertices = state.vertexCount + cmd.vertexCount;
 
 	// We only support uint16 index buffers for now.
-	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TriangleIndexMode::NONE)
+	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TRIANGLEINDEX_NONE)
 		shouldflush = true;
 
 	int reqIndexCount = getIndexCount(cmd.indexMode, cmd.vertexCount);
@@ -1081,7 +1082,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		newdatasizes[i] = stride * cmd.vertexCount;
 	}
 
-	if (cmd.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TRIANGLEINDEX_NONE)
 	{
 		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
 
@@ -1119,18 +1120,18 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 			if (state.vb[i]->getSize() < buffersizes[i])
 			{
 				delete state.vb[i];
-				state.vb[i] = newStreamBuffer(BUFFER_VERTEX, buffersizes[i]);
+				state.vb[i] = newStreamBuffer(BUFFERTYPE_VERTEX, buffersizes[i]);
 			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
 		{
 			delete state.indexBuffer;
-			state.indexBuffer = newStreamBuffer(BUFFER_INDEX, buffersizes[2]);
+			state.indexBuffer = newStreamBuffer(BUFFERTYPE_INDEX, buffersizes[2]);
 		}
 	}
 
-	if (cmd.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TRIANGLEINDEX_NONE)
 	{
 		if (state.indexBufferMap.data == nullptr)
 			state.indexBufferMap = state.indexBuffer->map(reqIndexSize);
@@ -1167,14 +1168,12 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 
 void Graphics::flushBatchedDraws()
 {
-	using namespace vertex;
-
 	auto &sbstate = batchedDrawState;
 
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
 
-	Attributes attributes;
+	VertexAttributes attributes;
 	BufferBindings buffers;
 
 	size_t usedsizes[3] = {0, 0, 0};
@@ -1317,8 +1316,8 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 
 	BatchedDrawCommand cmd;
 	cmd.primitiveMode = PRIMITIVE_POINTS;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-	cmd.formats[1] = vertex::CommonFormat::RGBAub;
+	cmd.formats[0] = getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::RGBAub;
 	cmd.vertexCount = (int) numpoints;
 
 	BatchedVertexData data = requestBatchedDraw(cmd);
@@ -1612,9 +1611,9 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		bool is2D = t.isAffine2DTransform();
 
 		BatchedDrawCommand cmd;
-		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-		cmd.formats[1] = vertex::CommonFormat::RGBAub;
-		cmd.indexMode = vertex::TriangleIndexMode::FAN;
+		cmd.formats[0] = getSinglePositionFormat(is2D);
+		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.indexMode = TRIANGLEINDEX_FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		BatchedVertexData data = requestBatchedDraw(cmd);
