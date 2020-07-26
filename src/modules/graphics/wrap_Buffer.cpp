@@ -432,6 +432,24 @@ static int w_Buffer_getFormat(lua_State *L)
 	return 1;
 }
 
+static int w_Buffer_isBufferType(lua_State *L)
+{
+	Buffer *t = luax_checkbuffer(L, 1);
+	BufferType buffertype = BUFFERTYPE_MAX_ENUM;
+	const char *typestr = luaL_checkstring(L, 2);
+	if (!getConstant(typestr, buffertype))
+		return luax_enumerror(L, "buffer type", getConstants(buffertype), typestr);
+	luax_pushboolean(L, (t->getTypeFlags() & (1 << buffertype)) != 0);
+	return 1;
+}
+
+static int w_Buffer_isCPUReadable(lua_State *L)
+{
+	Buffer *t = luax_checkbuffer(L, 1);
+	luax_pushboolean(L, (t->getMapFlags() & Buffer::MAP_READ) != 0);
+	return 1;
+}
+
 static const luaL_Reg w_Buffer_functions[] =
 {
 	{ "flush", w_Buffer_flush },
@@ -442,6 +460,8 @@ static const luaL_Reg w_Buffer_functions[] =
 	{ "getElementStride", w_Buffer_getElementStride },
 	{ "getSize", w_Buffer_getSize },
 	{ "getFormat", w_Buffer_getFormat },
+	{ "isBufferType", w_Buffer_isBufferType },
+	{ "isCPUReadable", w_Buffer_isCPUReadable },
 	{ 0, 0 }
 };
 

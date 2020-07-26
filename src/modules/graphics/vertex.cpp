@@ -337,6 +337,13 @@ const char *getConstant(BuiltinVertexAttribute attrib)
 	return name;
 }
 
+STRINGMAP_BEGIN(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
+{
+	{ "vertex", BUFFERTYPE_VERTEX },
+	{ "index",  BUFFERTYPE_INDEX  },
+}
+STRINGMAP_END(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
+
 STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 {
 	{ "uint16", INDEX_UINT16 },

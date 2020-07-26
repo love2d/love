@@ -377,6 +377,7 @@ void fillIndices(TriangleIndexMode mode, uint16 vertexStart, uint16 vertexCount,
 void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount, uint32 *indices);
 
 STRINGMAP_DECLARE(BuiltinVertexAttribute);
+STRINGMAP_DECLARE(BufferType);
 STRINGMAP_DECLARE(IndexDataType);
 STRINGMAP_DECLARE(BufferUsage);
 STRINGMAP_DECLARE(PrimitiveType);

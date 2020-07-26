@@ -1669,10 +1669,16 @@ int w_newBuffer(lua_State *L)
 	Buffer::Settings settings(0, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
 
 	luaL_checktype(L, 3, LUA_TTABLE);
-	if (luax_boolflag(L, 3, "vertex", false))
-		settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | Buffer::TYPEFLAG_VERTEX);
-	if (luax_boolflag(L, 3, "index", false))
-		settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | Buffer::TYPEFLAG_INDEX);
+
+	for (int i = 0; i < BUFFERTYPE_MAX_ENUM; i++)
+	{
+		BufferType buffertype = (BufferType) i;
+		const char *tname = nullptr;
+		if (!getConstant(buffertype, tname))
+			continue;
+		if (luax_boolflag(L, 3, tname, false))
+			settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | (1u << i));
+	}
 
 	luax_optbuffersettings(L, 3, settings);
 
