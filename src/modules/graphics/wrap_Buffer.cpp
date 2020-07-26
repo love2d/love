@@ -248,7 +248,7 @@ static int w_Buffer_setArrayData(lua_State *L)
 	if (!tableoftables)
 	{
 		if (tablelen % ncomponents != 0)
-			return luaL_error(L, "Array length in flat array variant of Buffer:setArrayData must be a multiple of the number of the total number of components (%d)", ncomponents);
+			return luaL_error(L, "Array length in flat array variant of Buffer:setArrayData must be a multiple of the total number of components (%d)", ncomponents);
 		tablelen /= ncomponents;
 	}
 
@@ -279,7 +279,6 @@ static int w_Buffer_setArrayData(lua_State *L)
 			}
 
 			lua_pop(L, ncomponents + 1);
-
 			data += stride;
 		}
 	}
@@ -300,7 +299,6 @@ static int w_Buffer_setArrayData(lua_State *L)
 			}
 
 			lua_pop(L, ncomponents);
-
 			data += stride;
 		}
 	}
@@ -319,7 +317,8 @@ static int w_Buffer_setElement(lua_State *L)
 	if (index >= t->getArrayLength())
 		return luaL_error(L, "Invalid Buffer element index: %ld", index);
 
-	size_t offset = index * t->getArrayStride();
+	size_t stride = t->getArrayStride();
+	size_t offset = index * stride;
 	char *data = (char *) t->map() + offset;
 	const auto &members = t->getDataMembers();
 
@@ -350,6 +349,7 @@ static int w_Buffer_setElement(lua_State *L)
 		}
 	}
 
+	t->setMappedRangeModified(offset, stride);
 	return 0;
 }
 

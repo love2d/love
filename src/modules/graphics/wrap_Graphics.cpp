@@ -37,6 +37,7 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <sstream>
 
 #include <algorithm>
 
@@ -1514,6 +1515,192 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags & (~Buffer::MAP_READ));
 }
 
+static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)
+{
+	luaL_checktype(L, idx, LUA_TTABLE);
+	int tablelen = luax_objlen(L, idx);
+
+	for (int i = 1; i <= tablelen; i++)
+	{
+		lua_rawgeti(L, idx, i);
+		luaL_checktype(L, -1, LUA_TTABLE);
+
+		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
+
+		lua_getfield(L, -1, "name");
+		if (lua_type(L, -1) != LUA_TSTRING)
+		{
+			std::ostringstream ss;
+			ss << "'name' field expected in array element #";
+			ss << i;
+			ss << " of format table";
+			std::string str = ss.str();
+			luaL_argerror(L, idx, str.c_str());
+		}
+		decl.name = luax_checkstring(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, -1, "format");
+		if (lua_type(L, -1) != LUA_TSTRING)
+		{
+			std::ostringstream ss;
+			ss << "'format' field expected in array element #";
+			ss << i;
+			ss << " of format table";
+			std::string str = ss.str();
+			luaL_argerror(L, idx, str.c_str());
+		}
+		const char *formatstr = luaL_checkstring(L, -1);
+		if (!getConstant(formatstr, decl.format))
+			luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
+		lua_pop(L, 1);
+
+		decl.arrayLength = luax_intflag(L, -1, "arraylength", 0);
+
+		format.push_back(decl);
+		lua_pop(L, 1);
+	}
+}
+
+static Buffer *luax_newbuffer(lua_State *L, int idx, const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format)
+{
+	size_t arraylength = 0;
+	size_t bytesize = 0;
+	Data *data = nullptr;
+	const void *initialdata = nullptr;
+
+	int ncomponents = 0;
+	for (const Buffer::DataDeclaration &decl : format)
+		ncomponents += getDataFormatInfo(decl.format).components;
+
+	if (luax_istype(L, idx, Data::type))
+	{
+		data = luax_checktype<Data>(L, idx);
+		initialdata = data->getData();
+		bytesize = data->getSize();
+	}
+
+	bool tableoftables = false;
+
+	if (lua_istable(L, idx))
+	{
+		arraylength = luax_objlen(L, idx);
+
+		lua_rawgeti(L, idx, 1);
+		tableoftables = lua_istable(L, -1);
+		lua_pop(L, 1);
+
+		if (!tableoftables)
+		{
+			if (arraylength % ncomponents != 0)
+				luaL_error(L, "Array length in flat array variant of newBuffer must be a multiple of the total number of components (%d)", ncomponents);
+			arraylength /= ncomponents;
+		}
+	}
+	else if (data == nullptr)
+	{
+		lua_Integer len = luaL_checkinteger(L, idx);
+		if (len <= 0)
+			luaL_argerror(L, idx, "number of elements must be greater than 0");
+		arraylength = (size_t) len;
+	}
+
+	Buffer *b = nullptr;
+	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, initialdata, bytesize, arraylength); });
+
+	if (lua_istable(L, idx))
+	{
+		Buffer::Mapper mapper(*b);
+		char *data = (char *) mapper.data;
+		const auto &members = b->getDataMembers();
+		size_t stride = b->getArrayStride();
+
+		if (tableoftables)
+		{
+			for (size_t i = 0; i < arraylength; i++)
+			{
+				// get arraydata[index]
+				lua_rawgeti(L, 2, i + 1);
+				luaL_checktype(L, -1, LUA_TTABLE);
+
+				// get arraydata[index][j]
+				for (int j = 1; j <= ncomponents; j++)
+					lua_rawgeti(L, -j, j);
+
+				int idx = -ncomponents;
+
+				for (const Buffer::DataMember &member : members)
+				{
+					luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
+					idx += member.info.components;
+				}
+
+				lua_pop(L, ncomponents + 1);
+				data += stride;
+			}
+		}
+		else // Flat array
+		{
+			for (size_t i = 0; i < arraylength; i++)
+			{
+				// get arraydata[arrayindex * ncomponents + componentindex]
+				for (int componentindex = 1; componentindex <= ncomponents; componentindex++)
+					lua_rawgeti(L, 2, i * ncomponents + componentindex);
+
+				int idx = -ncomponents;
+
+				for (const Buffer::DataMember &member : members)
+				{
+					luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
+					idx += member.info.components;
+				}
+
+				lua_pop(L, ncomponents);
+				data += stride;
+			}
+		}
+	}
+
+	return b;
+}
+
+int w_newBuffer(lua_State *L)
+{
+	Buffer::Settings settings(0, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+
+	luaL_checktype(L, 3, LUA_TTABLE);
+	if (luax_boolflag(L, 3, "vertex", false))
+		settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | Buffer::TYPEFLAG_VERTEX);
+	if (luax_boolflag(L, 3, "index", false))
+		settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | Buffer::TYPEFLAG_INDEX);
+
+	luax_optbuffersettings(L, 3, settings);
+
+	std::vector<Buffer::DataDeclaration> format;
+	luax_checkbufferformat(L, 1, format);
+
+	Buffer *b = luax_newbuffer(L, 2, settings, format);
+
+	luax_pushtype(L, b);
+	b->release();
+	return 1;
+}
+
+int w_newVertexBuffer(lua_State *L)
+{
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	luax_optbuffersettings(L, 3, settings);
+
+	std::vector<Buffer::DataDeclaration> format;
+	luax_checkbufferformat(L, 1, format);
+
+	Buffer *b = luax_newbuffer(L, 2, settings, format);
+
+	luax_pushtype(L, b);
+	b->release();
+	return 1;
+}
+
 int w_newIndexBuffer(lua_State *L)
 {
 	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
@@ -1534,7 +1721,7 @@ int w_newIndexBuffer(lua_State *L)
 
 	if (lua_istable(L, 1))
 	{
-		arraylength = (size_t) luax_objlen(L, 1);
+		arraylength = luax_objlen(L, 1);
 
 		// Scan array for invalid types and the max value.
 		lua_Integer maxvalue = 0;
@@ -3192,6 +3379,8 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newShader", w_newShader },
+	{ "newBuffer", w_newBuffer },
+	{ "newVertexBuffer", w_newVertexBuffer },
 	{ "newIndexBuffer", w_newIndexBuffer },
 	{ "newMesh", w_newMesh },
 	{ "newText", w_newText },

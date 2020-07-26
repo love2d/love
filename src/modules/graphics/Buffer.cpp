@@ -48,6 +48,9 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	bool indexbuffer = settings.typeFlags & TYPEFLAG_INDEX;
 	bool vertexbuffer = settings.typeFlags & TYPEFLAG_VERTEX;
 
+	if (!indexbuffer && !vertexbuffer)
+		throw love::Exception("Buffer must be created with at least one buffer type (index or vertex).");
+
 	size_t offset = 0;
 	size_t stride = 0;
 
