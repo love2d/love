@@ -1195,25 +1195,25 @@ int w_newVolumeTexture(lua_State *L)
 
 int w_newImage(lua_State *L)
 {
-	luax_markdeprecated(L, "love.graphics.newImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTexture");
+	//luax_markdeprecated(L, "love.graphics.newImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTexture");
 	return w_newTexture(L);
 }
 
 int w_newCubeImage(lua_State *L)
 {
-	luax_markdeprecated(L, "love.graphics.newCubeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newCubeTexture");
+	//luax_markdeprecated(L, "love.graphics.newCubeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newCubeTexture");
 	return w_newCubeTexture(L);
 }
 
 int w_newArrayImage(lua_State *L)
 {
-	luax_markdeprecated(L, "love.graphics.newArrayImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newArrayTexture");
+	//luax_markdeprecated(L, "love.graphics.newArrayImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newArrayTexture");
 	return w_newArrayTexture(L);
 }
 
 int w_newVolumeImage(lua_State *L)
 {
-	luax_markdeprecated(L, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
+	//luax_markdeprecated(L, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
 	return w_newVolumeTexture(L);
 }
 
