@@ -1734,7 +1734,7 @@ int w_newIndexBuffer(lua_State *L)
 		for (size_t i = 0; i < arraylength; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			lua_Integer v = luaL_checkinteger(L, -1) - 1;
+			lua_Integer v = luaL_checkinteger(L, -1);
 			lua_pop(L, 1);
 			if (v < 0)
 				return luaL_argerror(L, 1, "expected positive integer values in array");
@@ -1771,7 +1771,7 @@ int w_newIndexBuffer(lua_State *L)
 		for (size_t i = 0; i < arraylength; i++)
 		{
 			lua_rawgeti(L, 1, i + 1);
-			lua_Integer v = luaL_checkinteger(L, -1) - 1;
+			lua_Integer v = luaL_checkinteger(L, -1);
 			lua_pop(L, 1);
 			if (format == DATAFORMAT_UINT16)
 				u16data[i] = (uint16) v;
