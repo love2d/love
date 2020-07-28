@@ -341,6 +341,7 @@ STRINGMAP_BEGIN(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
 {
 	{ "vertex", BUFFERTYPE_VERTEX },
 	{ "index",  BUFFERTYPE_INDEX  },
+	{ "texel",  BUFFERTYPE_TEXEL  },
 }
 STRINGMAP_END(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
 

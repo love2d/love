@@ -315,7 +315,7 @@ static int w_Buffer_setElement(lua_State *L)
 
 	size_t index = (size_t) (luaL_checkinteger(L, 2) - 1);
 	if (index >= t->getArrayLength())
-		return luaL_error(L, "Invalid Buffer element index: %ld", index);
+		return luaL_error(L, "Invalid Buffer element index: %d", (int) index + 1);
 
 	size_t stride = t->getArrayStride();
 	size_t offset = index * stride;
@@ -361,7 +361,7 @@ static int w_Buffer_getElement(lua_State *L)
 
 	size_t index = (size_t) (luaL_checkinteger(L, 2) - 1);
 	if (index >= t->getArrayLength())
-		return luaL_error(L, "Invalid Buffer element index: %ld", index);
+		return luaL_error(L, "Invalid Buffer element index: %d", (int) index + 1);
 
 	size_t offset = index * t->getArrayStride();
 	const char *data = (const char *) t->map() + offset;

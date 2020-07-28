@@ -91,6 +91,7 @@ static GLenum getGLBlendFactor(BlendFactor factor)
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
+	, defaultBuffers()
 	, supportedFormats()
 {
 	gl = OpenGL();
@@ -242,6 +243,27 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 256  * 1024 * 1);
 		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
+
+	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERTYPE_TEXEL].get() == nullptr)
+	{
+		Buffer::Settings settings(Buffer::TYPEFLAG_TEXEL, 0, BUFFERUSAGE_STATIC);
+		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT_VEC4, 0}};
+
+		const float texel[] = {0.0f, 0.0f, 0.0f, 1.0f};
+
+		love::graphics::Buffer *buffer = newBuffer(settings, format, texel, sizeof(texel), 1);
+		defaultBuffers[BUFFERTYPE_TEXEL].set(buffer, Acquire::NORETAIN);
+	}
+
+	// Load default resources before other Volatile.
+	for (int i = 0; i < BUFFERTYPE_MAX_ENUM; i++)
+	{
+		if (defaultBuffers[i].get())
+			((Buffer *) defaultBuffers[i].get())->loadVolatile();
+	}
+
+	if (defaultBuffers[BUFFERTYPE_TEXEL].get())
+		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERTYPE_TEXEL]->getTexelBufferHandle());
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
@@ -1366,17 +1388,19 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL3] = GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
-	static_assert(FEATURE_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.areTexelBuffersSupported();
+	static_assert(FEATURE_MAX_ENUM == 11, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = gl.getMaxTextureLayers();
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = gl.getMax3DTextureSize();
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = gl.getMaxCubeTextureSize();
+	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = gl.getMaxTexelBufferSize();
 	capabilities.limits[LIMIT_RENDER_TARGETS] = gl.getMaxRenderTargets();
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = gl.getMaxSamples();
 	capabilities.limits[LIMIT_ANISOTROPY] = gl.getMaxAnisotropy();
-	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
+	static_assert(LIMIT_MAX_ENUM == 9, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);

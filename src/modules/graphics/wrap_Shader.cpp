@@ -287,6 +287,23 @@ int w_Shader_sendTextures(lua_State *L, int startidx, Shader *shader, const Shad
 	return 0;
 }
 
+int w_Shader_sendBuffers(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info)
+{
+	int count = _getCount(L, startidx, info);
+
+	std::vector<Buffer *> buffers;
+	buffers.reserve(count);
+
+	for (int i = 0; i < count; i++)
+	{
+		Buffer *buffer = luax_checktype<Buffer>(L, startidx + i);
+		buffers.push_back(buffer);
+	}
+
+	luax_catchexcept(L, [&]() { shader->sendBuffers(info, buffers.data(), count); });
+	return 0;
+}
+
 static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, const char *name)
 {
 	switch (info->baseType)
@@ -303,6 +320,8 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 		return w_Shader_sendBooleans(L, startidx, shader, info);
 	case Shader::UNIFORM_SAMPLER:
 		return w_Shader_sendTextures(L, startidx, shader, info);
+	case Shader::UNIFORM_TEXELBUFFER:
+		return w_Shader_sendBuffers(L, startidx, shader, info);
 	default:
 		return luaL_error(L, "Unknown variable type for shader uniform '%s", name);
 	}

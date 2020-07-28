@@ -229,7 +229,7 @@ void OpenGL::setupContext()
 	}
 
 	// Initialize multiple texture unit support for shaders.
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+	for (int i = 0; i < TEXTURE_MAX_ENUM + 1; i++)
 	{
 		state.boundTextures[i].clear();
 		state.boundTextures[i].resize(maxTextureUnits, 0);
@@ -279,6 +279,10 @@ void OpenGL::deInitContext()
 			state.defaultTexture[i] = 0;
 		}
 	}
+
+	if (state.defaultTexelBuffer != 0)
+		gl.deleteTexture(state.defaultTexelBuffer);
+	state.defaultTexelBuffer = 0;
 
 	contextInitialized = false;
 }
@@ -459,6 +463,11 @@ void OpenGL::initMaxValues()
 	else
 		maxTextureArrayLayers = 0;
 
+	if (areTexelBuffersSupported())
+		glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &maxTexelBufferSize);
+	else
+		maxTexelBufferSize = 0;
+
 	int maxattachments = 1;
 	int maxdrawbuffers = 1;
 
@@ -578,6 +587,7 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 	{
 		case BUFFERTYPE_VERTEX: return GL_ARRAY_BUFFER;
 		case BUFFERTYPE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
+		case BUFFERTYPE_TEXEL: return GL_TEXTURE_BUFFER;
 		case BUFFERTYPE_MAX_ENUM: return GL_ZERO;
 	}
 
@@ -592,7 +602,7 @@ GLenum OpenGL::getGLTextureType(TextureType type)
 		case TEXTURE_VOLUME: return GL_TEXTURE_3D;
 		case TEXTURE_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
 		case TEXTURE_CUBE: return GL_TEXTURE_CUBE_MAP;
-		case TEXTURE_MAX_ENUM: return GL_ZERO;
+		case TEXTURE_MAX_ENUM: return GL_TEXTURE_BUFFER; // Hack
 	}
 
 	return GL_ZERO;
@@ -1084,6 +1094,11 @@ void OpenGL::bindTextureToUnit(TextureType target, GLuint texture, int textureun
 	}
 }
 
+void OpenGL::bindBufferTextureToUnit(GLuint texture, int textureunit, bool restoreprev, bool bindforedit)
+{
+	bindTextureToUnit(TEXTURE_MAX_ENUM, texture, textureunit, restoreprev, bindforedit);
+}
+
 void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit)
 {
 	TextureType textype = TEXTURE_2D;
@@ -1113,7 +1128,7 @@ void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
 	// was bound to before deletion.
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
+	for (int i = 0; i < TEXTURE_MAX_ENUM + 1; i++)
 	{
 		for (GLuint &texid : state.boundTextures[i])
 		{
@@ -1402,6 +1417,12 @@ bool OpenGL::isMultiFormatMRTSupported() const
 	return getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
 }
 
+bool OpenGL::areTexelBuffersSupported() const
+{
+	// Not supported in ES until 3.2, which we don't support shaders for...
+	return GLAD_VERSION_3_1;
+}
+
 int OpenGL::getMax2DTextureSize() const
 {
 	return std::max(max2DTextureSize, 1);
@@ -1420,6 +1441,11 @@ int OpenGL::getMaxCubeTextureSize() const
 int OpenGL::getMaxTextureLayers() const
 {
 	return std::max(maxTextureArrayLayers, 1);
+}
+
+int OpenGL::getMaxTexelBufferSize() const
+{
+	return maxTexelBufferSize;
 }
 
 int OpenGL::getMaxRenderTargets() const

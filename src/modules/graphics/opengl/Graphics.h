@@ -147,6 +147,9 @@ private:
 	bool windowHasStencil;
 	GLuint mainVAO;
 
+	// Only needed for buffer types that can be bound to shaders.
+	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERTYPE_MAX_ENUM];
+
 	// [rendertarget][readable][srgb]
 	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];
 

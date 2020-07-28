@@ -62,6 +62,7 @@ public:
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
+	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
 	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override;
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
@@ -75,6 +76,7 @@ private:
 	{
 		GLuint texture = 0;
 		TextureType type = TEXTURE_2D;
+		bool isTexelBuffer = false;
 		bool active = false;
 	};
 
@@ -83,11 +85,13 @@ private:
 
 	void updateUniform(const UniformInfo *info, int count, bool internalupdate);
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalupdate);
+	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalupdate);
 
 	int getUniformTypeComponents(GLenum type) const;
 	MatrixSize getMatrixSize(GLenum type) const;
 	UniformType getUniformBaseType(GLenum type) const;
 	TextureType getUniformTextureType(GLenum type) const;
+	DataBaseType getUniformTexelBufferType(GLenum type) const;
 	bool isDepthTextureType(GLenum type) const;
 
 	void flushBatchedDraws() const;
@@ -114,6 +118,8 @@ private:
 	std::vector<TextureUnit> textureUnits;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
+
+	std::vector<Buffer *> buffersToUnmap;
 
 	float lastPointSize;
 

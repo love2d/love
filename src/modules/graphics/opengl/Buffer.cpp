@@ -35,13 +35,45 @@ namespace graphics
 namespace opengl
 {
 
+static GLenum getGLFormat(DataFormat format)
+{
+	switch (format)
+	{
+		case DATAFORMAT_FLOAT: return GL_R32F;
+		case DATAFORMAT_FLOAT_VEC2: return GL_RG32F;
+		case DATAFORMAT_FLOAT_VEC3: return GL_RGB32F;
+		case DATAFORMAT_FLOAT_VEC4: return GL_RGBA32F;
+		case DATAFORMAT_INT32: return GL_R32I;
+		case DATAFORMAT_INT32_VEC2: return GL_RG32I;
+		case DATAFORMAT_INT32_VEC3: return GL_RGB32I;
+		case DATAFORMAT_INT32_VEC4: return GL_RGBA32I;
+		case DATAFORMAT_UINT32: return GL_R32UI;
+		case DATAFORMAT_UINT32_VEC2: return GL_RG32UI;
+		case DATAFORMAT_UINT32_VEC3: return GL_RGB32UI;
+		case DATAFORMAT_UINT32_VEC4: return GL_RGBA32UI;
+		case DATAFORMAT_UNORM8_VEC4: return GL_RGBA8;
+		case DATAFORMAT_INT8_VEC4: return GL_RGBA8I;
+		case DATAFORMAT_UINT8_VEC4: return GL_RGBA8UI;
+		case DATAFORMAT_UNORM16_VEC2: return GL_RG16;
+		case DATAFORMAT_UNORM16_VEC4: return GL_RGBA16;
+		case DATAFORMAT_INT16_VEC2: return GL_RG16I;
+		case DATAFORMAT_INT16_VEC4: return GL_RGBA16I;
+		case DATAFORMAT_UINT16: return GL_R16UI;
+		case DATAFORMAT_UINT16_VEC2: return GL_RG16UI;
+		case DATAFORMAT_UINT16_VEC4: return GL_RGBA16UI;
+		default: return GL_ZERO;
+	}
+}
+
 Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
 {
 	size = getSize();
 	arraylength = getArrayLength();
 
-	if (typeFlags & TYPEFLAG_VERTEX)
+	if (typeFlags & TYPEFLAG_TEXEL)
+		mapType = BUFFERTYPE_TEXEL;
+	else if (typeFlags & TYPEFLAG_VERTEX)
 		mapType = BUFFERTYPE_VERTEX;
 	else if (typeFlags & TYPEFLAG_INDEX)
 		mapType = BUFFERTYPE_INDEX;
@@ -62,8 +94,9 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 
 	if (!load(data != nullptr))
 	{
+		unloadVolatile();
 		delete[] memoryMap;
-		throw love::Exception("Could not load vertex buffer (out of VRAM?)");
+		throw love::Exception("Could not create buffer (out of VRAM?)");
 	}
 }
 
@@ -75,30 +108,44 @@ Buffer::~Buffer()
 
 bool Buffer::loadVolatile()
 {
+	if (buffer != 0)
+		return true;
+
 	return load(true);
 }
 
 void Buffer::unloadVolatile()
 {
 	mapped = false;
-	if (vbo != 0)
-		gl.deleteBuffer(vbo);
-	vbo = 0;
+	if (buffer != 0)
+		gl.deleteBuffer(buffer);
+	buffer = 0;
+	if (texture != 0)
+		gl.deleteTexture(texture);
+	texture = 0;
 }
 
 bool Buffer::load(bool restore)
 {
-	glGenBuffers(1, &vbo);
-	gl.bindBuffer(mapType, vbo);
-
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
+
+	glGenBuffers(1, &buffer);
+	gl.bindBuffer(mapType, buffer);
 
 	// Copy the old buffer only if 'restore' was requested.
 	const GLvoid *src = restore ? memoryMap : nullptr;
 
 	// Note that if 'src' is '0', no data will be copied.
 	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
+
+	if (getTypeFlags() & TYPEFLAG_TEXEL)
+	{
+		glGenTextures(1, &texture);
+		gl.bindBufferTextureToUnit(texture, 0, false, true);
+
+		glTexBuffer(target, getGLFormat(getDataMember(0).decl.format), buffer);
+	}
 
 	return (glGetError() == GL_NO_ERROR);
 }
@@ -123,7 +170,7 @@ void Buffer::unmapStatic(size_t offset, size_t size)
 		return;
 
 	// Upload the mapped data to the buffer.
-	gl.bindBuffer(mapType, vbo);
+	gl.bindBuffer(mapType, buffer);
 	glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, memoryMap + offset);
 }
 
@@ -133,7 +180,7 @@ void Buffer::unmapStream()
 
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-	gl.bindBuffer(mapType, vbo);
+	gl.bindBuffer(mapType, buffer);
 	glBufferData(target, (GLsizeiptr) getSize(), nullptr, glusage);
 
 #if LOVE_WINDOWS
@@ -224,14 +271,9 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 		setMappedRangeModified(offset, size);
 	else
 	{
-		gl.bindBuffer(mapType, vbo);
+		gl.bindBuffer(mapType, buffer);
 		glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, data);
 	}
-}
-
-ptrdiff_t Buffer::getHandle() const
-{
-	return vbo;
 }
 
 void Buffer::copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset)

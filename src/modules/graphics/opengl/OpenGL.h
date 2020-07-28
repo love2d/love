@@ -307,6 +307,12 @@ public:
 	GLuint getDefaultTexture(TextureType type) const;
 
 	/**
+	 * Gets the texture ID for love's default texel buffer.
+	 **/
+	GLuint getDefaultTexelBuffer() const { return state.defaultTexelBuffer; }
+	void setDefaultTexelBuffer(GLuint tex) { state.defaultTexelBuffer = tex; }
+
+	/**
 	 * Helper for setting the active texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
@@ -322,6 +328,8 @@ public:
 	 **/
 	void bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev, bool bindforedit = true);
 	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit = true);
+
+	void bindBufferTextureToUnit(GLuint texture, int textureunit, bool restoreprev, bool bindforedit);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -349,6 +357,7 @@ public:
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
 	bool isMultiFormatMRTSupported() const;
+	bool areTexelBuffersSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -357,6 +366,11 @@ public:
 	int getMax3DTextureSize() const;
 	int getMaxCubeTextureSize() const;
 	int getMaxTextureLayers() const;
+
+	/**
+	 * Returns the maximum number of values in a texel buffer.
+	 **/
+	int getMaxTexelBufferSize() const;
 
 	/**
 	 * Returns the maximum supported number of simultaneous render targets.
@@ -436,6 +450,7 @@ private:
 	int max3DTextureSize;
 	int maxCubeTextureSize;
 	int maxTextureArrayLayers;
+	int maxTexelBufferSize;
 	int maxRenderTargets;
 	int maxSamples;
 	int maxTextureUnits;
@@ -451,7 +466,7 @@ private:
 		GLuint boundBuffers[BUFFERTYPE_MAX_ENUM];
 
 		// Texture unit state (currently bound texture for each texture unit.)
-		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM];
+		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM + 1];
 
 		bool enableState[ENABLE_MAX_ENUM];
 
@@ -472,6 +487,7 @@ private:
 		GLuint boundFramebuffers[2];
 
 		GLuint defaultTexture[TEXTURE_MAX_ENUM];
+		GLuint defaultTexelBuffer;
 
 	} state;
 

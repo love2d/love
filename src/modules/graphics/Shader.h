@@ -39,6 +39,7 @@ namespace graphics
 {
 
 class Graphics;
+class Buffer;
 
 // A GLSL shader
 class Shader : public Object, public Resource
@@ -76,6 +77,7 @@ public:
 		UNIFORM_UINT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
+		UNIFORM_TEXELBUFFER,
 		UNIFORM_UNKNOWN,
 		UNIFORM_MAX_ENUM
 	};
@@ -115,6 +117,7 @@ public:
 
 		UniformType baseType;
 		TextureType textureType;
+		DataBaseType texelBufferType;
 		bool isDepthSampler;
 		std::string name;
 
@@ -128,7 +131,11 @@ public:
 
 		size_t dataSize;
 
-		Texture **textures;
+		union
+		{
+			Texture **textures;
+			Buffer **buffers;
+		};
 	};
 
 	// The members in here must respect uniform buffer alignment/padding rules.
@@ -178,6 +185,7 @@ public:
 	virtual void updateUniform(const UniformInfo *info, int count) = 0;
 
 	virtual void sendTextures(const UniformInfo *info, Texture **textures, int count) = 0;
+	virtual void sendBuffers(const UniformInfo *info, Buffer **buffers, int count) = 0;
 
 	/**
 	 * Gets whether a uniform with the specified name exists and is actively

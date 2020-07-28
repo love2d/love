@@ -1517,6 +1517,16 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 
 static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)
 {
+	if (lua_type(L, idx) == LUA_TSTRING)
+	{
+		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
+		const char *formatstr = luaL_checkstring(L, idx);
+		if (!getConstant(formatstr, decl.format))
+			luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
+		format.push_back(decl);
+		return;
+	}
+
 	luaL_checktype(L, idx, LUA_TTABLE);
 	int tablelen = luax_objlen(L, idx);
 
@@ -1528,16 +1538,8 @@ static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::Da
 		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
 
 		lua_getfield(L, -1, "name");
-		if (lua_type(L, -1) != LUA_TSTRING)
-		{
-			std::ostringstream ss;
-			ss << "'name' field expected in array element #";
-			ss << i;
-			ss << " of format table";
-			std::string str = ss.str();
-			luaL_argerror(L, idx, str.c_str());
-		}
-		decl.name = luax_checkstring(L, -1);
+		if (!lua_isnoneornil(L, -1))
+			decl.name = luax_checkstring(L, -1);
 		lua_pop(L, 1);
 
 		lua_getfield(L, -1, "format");

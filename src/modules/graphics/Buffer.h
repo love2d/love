@@ -60,6 +60,7 @@ public:
 		TYPEFLAG_NONE = 0,
 		TYPEFLAG_VERTEX = 1 << BUFFERTYPE_VERTEX,
 		TYPEFLAG_INDEX = 1 << BUFFERTYPE_INDEX,
+		TYPEFLAG_TEXEL = 1 << BUFFERTYPE_TEXEL,
 	};
 
 	struct DataDeclaration
@@ -141,10 +142,6 @@ public:
 
 	/**
 	 * Fill a portion of the buffer with data and marks the range as modified.
-	 *
-	 * @param offset The offset in the GLBuffer to store the data.
-	 * @param size The size of the incoming data.
-	 * @param data Pointer to memory to copy data from.
 	 */
 	virtual void fill(size_t offset, size_t size, const void *data) = 0;
 
@@ -152,6 +149,12 @@ public:
 	 * Copy the contents of this Buffer to another Buffer object.
 	 **/
 	virtual void copyTo(size_t offset, size_t size, Buffer *other, size_t otheroffset) = 0;
+
+	/**
+	 * Texel buffers may use an additional texture handle as well as a buffer
+	 * handle.
+	 **/
+	virtual ptrdiff_t getTexelBufferHandle() const = 0;
 
 	static std::vector<DataDeclaration> getCommonFormatDeclaration(CommonFormat format);
 

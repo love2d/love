@@ -1932,6 +1932,7 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "glsl3",                    FEATURE_GLSL3                },
 	{ "glsl4",                    FEATURE_GLSL4                },
 	{ "instancing",               FEATURE_INSTANCING           },
+	{ "texelbuffer",              FEATURE_TEXEL_BUFFER         },
 };
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));
@@ -1943,6 +1944,7 @@ StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::syst
 	{ "texturelayers",     LIMIT_TEXTURE_LAYERS      },
 	{ "volumetexturesize", LIMIT_VOLUME_TEXTURE_SIZE },
 	{ "cubetexturesize",   LIMIT_CUBE_TEXTURE_SIZE   },
+	{ "texelbuffersize",   LIMIT_TEXEL_BUFFER_SIZE   },
 	{ "rendertargets",     LIMIT_RENDER_TARGETS      },
 	{ "texturemsaa",       LIMIT_TEXTURE_MSAA        },
 	{ "anisotropy",        LIMIT_ANISOTROPY          },

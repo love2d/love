@@ -43,13 +43,18 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	if (bufferformat.size() == 0)
 		throw love::Exception("Data format must contain values.");
 
-	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
+	const auto &caps = gfx->getCapabilities();
+	bool supportsGLSL3 = caps.features[Graphics::FEATURE_GLSL3];
 
 	bool indexbuffer = settings.typeFlags & TYPEFLAG_INDEX;
 	bool vertexbuffer = settings.typeFlags & TYPEFLAG_VERTEX;
+	bool texelbuffer = settings.typeFlags & TYPEFLAG_TEXEL;
 
-	if (!indexbuffer && !vertexbuffer)
-		throw love::Exception("Buffer must be created with at least one buffer type (index or vertex).");
+	if (!indexbuffer && !vertexbuffer && !texelbuffer)
+		throw love::Exception("Buffer must be created with at least one buffer type (index, vertex, or texel).");
+
+	if (texelbuffer && !caps.features[Graphics::FEATURE_TEXEL_BUFFER])
+		throw love::Exception("Texel buffers are not supported on this system.");
 
 	size_t offset = 0;
 	size_t stride = 0;
@@ -68,6 +73,9 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 			if (bufferformat.size() > 1)
 				throw love::Exception("Index buffers only support a single value per element.");
+
+			if (decl.arrayLength > 0)
+				throw love::Exception("Arrays are not supported in index buffers.");
 		}
 
 		if (vertexbuffer)
@@ -83,6 +91,30 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 			if ((info.baseType == DATA_BASETYPE_INT || info.baseType == DATA_BASETYPE_UINT) && !supportsGLSL3)
 				throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
+
+			if (decl.name.empty())
+				throw love::Exception("Vertex buffer attributes must have a name.");
+		}
+
+		if (texelbuffer)
+		{
+			if (format != bufferformat[0].format)
+				throw love::Exception("All values in a texel buffer must have the same format.");
+
+			if (decl.arrayLength > 0)
+				throw love::Exception("Arrays are not supported in texel buffers.");
+
+			if (info.isMatrix)
+				throw love::Exception("Matrix types are not supported in texel buffers.");
+
+			if (info.baseType == DATA_BASETYPE_BOOL)
+				throw love::Exception("Bool types are not supported in texel buffers.");
+
+			if (info.components == 3)
+				throw love::Exception("3-component formats are not supported in texel buffers.");
+
+			if (info.baseType == DATA_BASETYPE_SNORM)
+				throw love::Exception("Signed normalized formats are not supported in texel buffers.");
 		}
 
 		// TODO: alignment
@@ -111,6 +143,9 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	this->arrayStride = stride;
 	this->arrayLength = arraylength;
 	this->size = size;
+
+	if (texelbuffer && arraylength * dataMembers.size() > caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE])
+		throw love::Exception("Cannot create texel buffer: total number of values in the buffer (%d * %d) is too large for this system (maximum %d).", (int) dataMembers.size(), (int) arraylength, caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE]);
 }
 
 Buffer::~Buffer()
