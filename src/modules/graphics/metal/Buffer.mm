@@ -27,12 +27,60 @@ namespace graphics
 namespace metal
 {
 
+static MTLPixelFormat getMTLPixelFormat(DataFormat format)
+{
+	switch (format)
+	{
+		case DATAFORMAT_FLOAT: return MTLPixelFormatR32Float;
+		case DATAFORMAT_FLOAT_VEC2: return MTLPixelFormatRG32Float;
+		case DATAFORMAT_FLOAT_VEC4: return MTLPixelFormatRGBA32Float;
+		case DATAFORMAT_INT32: return MTLPixelFormatR32Sint;
+		case DATAFORMAT_INT32_VEC2: return MTLPixelFormatRG32Sint;
+		case DATAFORMAT_INT32_VEC4: return MTLPixelFormatRGBA32Sint;
+		case DATAFORMAT_UINT32: return MTLPixelFormatR32Uint;
+		case DATAFORMAT_UINT32_VEC2: return MTLPixelFormatRG32Uint;
+		case DATAFORMAT_UINT32_VEC4: return MTLPixelFormatRGBA32Uint;
+		case DATAFORMAT_UNORM8_VEC4: return MTLPixelFormatRGBA8Unorm;
+		case DATAFORMAT_SNORM8_VEC4: return MTLPixelFormatRGBA8Snorm;
+		case DATAFORMAT_INT8_VEC4: return MTLPixelFormatRGBA8Sint;
+		case DATAFORMAT_UINT8_VEC4: return MTLPixelFormatRGBA8Uint;
+		case DATAFORMAT_UNORM16_VEC2: return MTLPixelFormatRG16Unorm;
+		case DATAFORMAT_UNORM16_VEC4: return MTLPixelFormatRGBA16Unorm;
+		case DATAFORMAT_INT16_VEC2: return MTLPixelFormatRG16Sint;
+		case DATAFORMAT_INT16_VEC4: return MTLPixelFormatRGBA16Sint;
+		case DATAFORMAT_UINT16: return MTLPixelFormatR16Uint;
+		case DATAFORMAT_UINT16_VEC2: return MTLPixelFormatRG16Uint;
+		case DATAFORMAT_UINT16_VEC4: return MTLPixelFormatRGBA16Uint;
+		default: return MTLPixelFormatInvalid;
+	}
+}
+
 Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
+	, texture(nil)
 	, mappedRange()
 { @autoreleasepool {
+	size = getSize();
+	arraylength = getArrayLength();
+
 	MTLResourceOptions opts = MTLResourceStorageModeManaged;
 	buffer = [device newBufferWithLength:size options:opts];
+
+	if (buffer == nil)
+		throw love::Exception("Could not create buffer (out of VRAM?)");
+
+	if (typeFlags & TYPEFLAG_TEXEL)
+	{
+		MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
+		auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
+																		   width:size
+																 resourceOptions:opts
+																		   usage:MTLTextureUsageShaderRead];
+		texture = [buffer newTextureWithDescriptor:desc offset:0 bytesPerRow:size];
+
+		if (texture == nil)
+			throw love::Exception("Could not create Metal texel buffer.");
+	}
 
 	// TODO: synchronization etc
 	memoryMap = (char *) buffer.contents;

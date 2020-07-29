@@ -42,13 +42,15 @@ public:
 	void setMappedRangeModified(size_t offset, size_t size) override;
 	void fill(size_t offset, size_t size, const void *data) override;
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) buffer; }
-	ptrdiff_t getTexelBufferHandle() const override { return 0; }
+	ptrdiff_t getTexelBufferHandle() const override { return (ptrdiff_t) texture; }
 
 	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
 private:
 
 	id<MTLBuffer> buffer;
+	id<MTLTexture> texture;
+
 	char *memoryMap;
 
 	NSRange mappedRange;
