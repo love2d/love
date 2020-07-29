@@ -453,7 +453,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 	if (info.language == LANGUAGE_GLSL4 && !features[Graphics::FEATURE_GLSL4])
 		throw love::Exception("GLSL 4 shaders are not supported on this system.");
 
-	bool gles = gfx->getRenderer() == Graphics::RENDERER_OPENGLES;
+	bool gles = gfx->usesGLSLES();
 	bool glsl1on3 = info.language == LANGUAGE_GLSL1 && features[Graphics::FEATURE_GLSL3];
 
 	Language lang = info.language;

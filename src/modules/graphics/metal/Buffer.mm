@@ -27,8 +27,8 @@ namespace graphics
 namespace metal
 {
 
-Buffer::Buffer(id<MTLDevice> device, size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
-	: love::graphics::Buffer(size, type, usage, mapflags)
+Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
+	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
 	, mappedRange()
 { @autoreleasepool {
 	MTLResourceOptions opts = MTLResourceStorageModeManaged;

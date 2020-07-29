@@ -155,10 +155,12 @@ Graphics::Graphics()
 
 	initCapabilities();
 
-	uniformBuffer = CreateStreamBuffer(device, BUFFER_UNIFORM, 1024 * 1024 * 1);
+	uniformBuffer = CreateStreamBuffer(device, BUFFERTYPE_UNIFORM, 1024 * 1024 * 1);
 
 	float defaultAttributes[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-	defaultAttributesBuffer = newBuffer(sizeof(float) * 4, defaultAttributes, BUFFER_VERTEX, vertex::USAGE_STATIC, 0);
+	Buffer::Settings attribsettings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_STATIC);
+	std::vector<Buffer::DataDeclaration> dataformat = {{"Default", DATAFORMAT_FLOAT_VEC4, 0}};
+	defaultAttributesBuffer = newBuffer(attribsettings, dataformat, defaultAttributes, sizeof(float) * 4, 0);
 
 	uint8 defaultpixel[] = {255, 255, 255, 255};
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
@@ -234,9 +236,9 @@ love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage 
 	return new Shader(device, vertex, pixel);
 }
 
-love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
+love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
-	return new Buffer(device, size, data, type, usage, mapflags);
+	return new Buffer(this, device, settings, format, data, size, arraylength);
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
@@ -277,9 +279,9 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFER_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFER_VERTEX, 256  * 1024 * 1);
-		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFER_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFERTYPE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFERTYPE_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	createQuadIndexBuffer();
@@ -287,16 +289,16 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	// Restore the graphics state.
 	restoreState(states.back());
 
-	int gammacorrect = isGammaCorrect() ? 1 : 0;
-	Shader::Language target = getShaderLanguageTarget();
-
 	// We always need a default shader.
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
 	{
+		auto stype = (Shader::StandardShader) i;
 		if (!Shader::standardShaders[i])
 		{
-			const auto &code = defaultShaderCode[i][target][gammacorrect];
-			Shader::standardShaders[i] = love::graphics::Graphics::newShader(code.source[ShaderStage::STAGE_VERTEX], code.source[ShaderStage::STAGE_PIXEL]);
+			std::vector<std::string> stages;
+			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
+			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
+			Shader::standardShaders[i] = newShader(stages);
 		}
 	}
 
@@ -486,7 +488,7 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 	return mtlstate;
 }
 
-void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const vertex::Attributes &attributes)
+void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const VertexAttributes &attributes)
 {
 	const uint32 pipelineStateBits = STATEBIT_SHADER | STATEBIT_BLEND | STATEBIT_COLORMASK;
 
@@ -539,7 +541,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const verte
 
 	if (dirtyState & STATEBIT_FACEWINDING)
 	{
-		auto winding = state.winding == vertex::WINDING_CCW ? MTLWindingCounterClockwise : MTLWindingClockwise;
+		auto winding = state.winding == WINDING_CCW ? MTLWindingCounterClockwise : MTLWindingClockwise;
 		[encoder setFrontFacingWinding:winding];
 	}
 
@@ -656,7 +658,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
 		delete uniformBuffer;
-		uniformBuffer = CreateStreamBuffer(device, BUFFER_UNIFORM, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERTYPE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
@@ -763,7 +765,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 					 instanceCount:cmd.instanceCount];
 }}
 
-void Graphics::drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
 { @autoreleasepool {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
@@ -1209,7 +1211,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	}
 }
 
-void Graphics::setFrontFaceWinding(vertex::Winding winding)
+void Graphics::setFrontFaceWinding(Winding winding)
 {
 	if (states.back().winding != winding)
 	{
@@ -1299,11 +1301,6 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	return info;
 }
 
-Shader::Language Graphics::getShaderLanguageTarget() const
-{
-	return usesGLSLES() ? Shader::LANGUAGE_ESSL3 : Shader::LANGUAGE_GLSL3;
-}
-
 void Graphics::initCapabilities()
 {
 	int msaa = 1;
@@ -1327,7 +1324,8 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL3] = true;
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
-	static_assert(FEATURE_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
+	static_assert(FEATURE_MAX_ENUM == 11, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;
@@ -1335,10 +1333,11 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = 2048;
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = 2048;
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384; // TODO
+	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO
 	capabilities.limits[LIMIT_RENDER_TARGETS] = 8; // TODO
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
 	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
-	static_assert(LIMIT_MAX_ENUM == 8, "Graphics::initCapabilities must be updated when adding a new system limit!");
+	static_assert(LIMIT_MAX_ENUM == 9, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = true;

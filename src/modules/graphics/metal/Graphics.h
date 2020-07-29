@@ -46,7 +46,7 @@ public:
 	const char *getName() const override { return "love.graphics.metal"; }
 
 	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
-	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
+	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
@@ -56,7 +56,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture) override;
+	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -77,7 +77,7 @@ public:
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
-	void setFrontFaceWinding(vertex::Winding winding) override;
+	void setFrontFaceWinding(Winding winding) override;
 
 	void setColorMask(ColorChannelMask mask) override;
 
@@ -92,8 +92,6 @@ public:
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
-
-	Shader::Language getShaderLanguageTarget() const override;
 
 	id<MTLCommandBuffer> useCommandBuffer();
 	id<MTLCommandBuffer> getCommandBuffer() const { return commandBuffer; }
@@ -170,7 +168,7 @@ private:
 	void endPass();
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
-	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const vertex::Attributes &attributes);
+	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const VertexAttributes &attributes);
 	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, Shader *shader);
 
 	id<MTLCommandQueue> commandQueue;

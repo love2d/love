@@ -34,7 +34,7 @@ class Buffer final : public love::graphics::Buffer
 {
 public:
 
-	Buffer(id<MTLDevice> device, size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags);
+	Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
 	void *map() override;
@@ -42,6 +42,7 @@ public:
 	void setMappedRangeModified(size_t offset, size_t size) override;
 	void fill(size_t offset, size_t size, const void *data) override;
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) buffer; }
+	ptrdiff_t getTexelBufferHandle() const override { return 0; }
 
 	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 

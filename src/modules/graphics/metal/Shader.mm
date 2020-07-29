@@ -39,41 +39,45 @@ namespace metal
 
 static_assert(MAX_COLOR_RENDER_TARGETS <= 8, "Metal pipeline cache key only stores 8 render target pixel formats.");
 
-static MTLVertexFormat getMTLVertexFormat(vertex::DataType type, int components)
+static MTLVertexFormat getMTLVertexFormat(DataFormat format)
 {
-	switch (type)
+	switch (format)
 	{
-	case vertex::DATA_UNORM8:
-		if (components == 1)
-			return MTLVertexFormatUCharNormalized;
-		else if (components == 2)
-			return MTLVertexFormatUChar2Normalized;
-		else if (components == 3)
-			return MTLVertexFormatUChar3Normalized;
-		else
-			return MTLVertexFormatUChar4Normalized;
-	case vertex::DATA_UNORM16:
-		if (components == 1)
-			return MTLVertexFormatUShortNormalized;
-		else if (components == 2)
-			return MTLVertexFormatUShort2Normalized;
-		else if (components == 3)
-			return MTLVertexFormatUShort3Normalized;
-		else
-			return MTLVertexFormatUShort4Normalized;
-	case vertex::DATA_FLOAT:
-		if (components == 1)
-			return MTLVertexFormatFloat;
-		else if (components == 2)
-			return MTLVertexFormatFloat2;
-		else if (components == 3)
-			return MTLVertexFormatFloat3;
-		else
-			return MTLVertexFormatFloat4;
-	}
+		case DATAFORMAT_FLOAT: return MTLVertexFormatFloat;
+		case DATAFORMAT_FLOAT_VEC2: return MTLVertexFormatFloat2;
+		case DATAFORMAT_FLOAT_VEC3: return MTLVertexFormatFloat3;
+		case DATAFORMAT_FLOAT_VEC4: return MTLVertexFormatFloat4;
 
-	// TODO
-	return MTLVertexFormatFloat4;
+		case DATAFORMAT_INT32: return MTLVertexFormatInt;
+		case DATAFORMAT_INT32_VEC2: return MTLVertexFormatInt2;
+		case DATAFORMAT_INT32_VEC3: return MTLVertexFormatInt3;
+		case DATAFORMAT_INT32_VEC4: return MTLVertexFormatInt4;
+
+		case DATAFORMAT_UINT32: return MTLVertexFormatUInt;
+		case DATAFORMAT_UINT32_VEC2: return MTLVertexFormatUInt2;
+		case DATAFORMAT_UINT32_VEC3: return MTLVertexFormatUInt3;
+		case DATAFORMAT_UINT32_VEC4: return MTLVertexFormatUInt4;
+
+		case DATAFORMAT_SNORM8_VEC4: return MTLVertexFormatChar4Normalized;
+		case DATAFORMAT_UNORM8_VEC4: return MTLVertexFormatUChar4Normalized;
+		case DATAFORMAT_INT8_VEC4: return MTLVertexFormatChar4;
+		case DATAFORMAT_UINT8_VEC4: return MTLVertexFormatUChar4;
+
+		case DATAFORMAT_SNORM16_VEC2: return MTLVertexFormatShort2Normalized;
+		case DATAFORMAT_SNORM16_VEC4: return MTLVertexFormatShort4Normalized;
+
+		case DATAFORMAT_UNORM16_VEC2: return MTLVertexFormatUShort2Normalized;
+		case DATAFORMAT_UNORM16_VEC4: return MTLVertexFormatUShort4Normalized;
+
+		case DATAFORMAT_INT16_VEC2: return MTLVertexFormatShort2;
+		case DATAFORMAT_INT16_VEC4: return MTLVertexFormatShort4;
+
+		case DATAFORMAT_UINT16: return MTLVertexFormatUShort;
+		case DATAFORMAT_UINT16_VEC2: return MTLVertexFormatUShort2;
+		case DATAFORMAT_UINT16_VEC4: return MTLVertexFormatUShort4;
+
+		default: return MTLVertexFormatInvalid;
+	}
 }
 
 static MTLBlendOperation getMTLBlendOperation(BlendOperation op)
@@ -405,7 +409,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 				const auto &attrib = attributes.attribs[i];
 				int metalBufferIndex = attrib.bufferIndex + VERTEX_BUFFER_BINDING_START;
 
-				vertdesc.attributes[i].format = getMTLVertexFormat(attrib.type, attrib.components);
+				vertdesc.attributes[i].format = getMTLVertexFormat(attrib.format);
 				vertdesc.attributes[i].offset = attrib.offsetFromVertex;
 				vertdesc.attributes[i].bufferIndex = metalBufferIndex;
 

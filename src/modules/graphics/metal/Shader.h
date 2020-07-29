@@ -49,7 +49,7 @@ public:
 
 	struct RenderPipelineKey
 	{
-		vertex::Attributes vertexAttributes;
+		VertexAttributes vertexAttributes;
 		BlendState blend;
 		uint64 colorRenderTargetFormats;
 		uint32 depthStencilFormat;
@@ -78,6 +78,7 @@ public:
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override {}
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override {}
+	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override {}
 	bool hasUniform(const std::string &name) const override { return false; }
 	ptrdiff_t getHandle() const override { return 0; }
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override {}
