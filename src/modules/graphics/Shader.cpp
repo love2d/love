@@ -49,6 +49,11 @@ static const char global_syntax[] = R"(
 #else
 	#define LOVE_HIGHP_OR_MEDIUMP mediump
 #endif
+#if __VERSION__ >= 300
+#define LOVE_IO_LOCATION(x) layout (location = x)
+#else
+#define LOVE_IO_LOCATION(x)
+#endif
 #define number float
 #define Image sampler2D
 #define ArrayImage sampler2DArray
@@ -75,7 +80,13 @@ static const char global_uniforms[] = R"(
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
+#if __VERSION__ >= 300 && defined(LOVE_USE_UNIFORM_BUFFERS)
+layout (std140) uniform love_UniformsPerDrawBuffer {
+	highp vec4 love_UniformsPerDraw[13];
+};
+#else
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+#endif
 
 // These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
 // do it as an initializer.
@@ -253,9 +264,9 @@ void setPointSize() {
 )";
 
 static const char vertex_main[] = R"(
-attribute vec4 VertexPosition;
-attribute vec4 VertexTexCoord;
-attribute vec4 VertexColor;
+LOVE_IO_LOCATION(0) attribute vec4 VertexPosition;
+LOVE_IO_LOCATION(1) attribute vec4 VertexTexCoord;
+LOVE_IO_LOCATION(2) attribute vec4 VertexColor;
 
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;
@@ -285,10 +296,10 @@ static const char pixel_header[] = R"(
 	// TODO: We should use reflection or something instead of this, to determine
 	// how many outputs are actually used in the shader code.
 	#ifdef LOVE_MULTI_RENDER_TARGETS
-		layout(location = 0) out vec4 love_RenderTargets[love_MaxRenderTargets];
+		LOVE_IO_LOCATION(0) out vec4 love_RenderTargets[love_MaxRenderTargets];
 		#define love_PixelColor love_RenderTargets[0]
 	#else
-		layout(location = 0) out vec4 love_PixelColor;
+		LOVE_IO_LOCATION(0) out vec4 love_PixelColor;
 	#endif
 #else
 	#ifdef LOVE_MULTI_RENDER_TARGETS
@@ -471,7 +482,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 	if (isGammaCorrect())
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
-		ss << "#define LOVE_MULTI_RENDER_TARGETS 1";
+		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
+	if (gfx->getRenderer() == Graphics::RENDERER_METAL)
+		ss << "#define LOVE_USE_UNIFORM_BUFFERS 1\n"; // FIXME: this is temporary
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
 	ss << glsl::global_uniforms;
