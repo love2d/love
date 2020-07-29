@@ -3166,6 +3166,9 @@ function love.nogame()
 	end
 
 	function love.load()
+		local renderername = love.graphics.getRendererInfo()
+		love.window.setTitle(love.window.getTitle() .. " - " .. renderername)
+
 		love.graphics.setBackgroundColor(43/255, 165/255, 223/255)
 		love.physics.setMeter(64)
 
