@@ -205,6 +205,13 @@ bool ShaderStage::getConstant(StageType in, const char *&out)
 	return stageNames.find(in, out);
 }
 
+const char *ShaderStage::getConstant(StageType in)
+{
+	const char *name = nullptr;
+	getConstant(in, name);
+	return name;
+}
+
 StringMap<ShaderStage::StageType, ShaderStage::STAGE_MAX_ENUM>::Entry ShaderStage::stageNameEntries[] =
 {
 	{ "vertex", STAGE_VERTEX },

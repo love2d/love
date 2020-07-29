@@ -51,9 +51,9 @@ public:
 	static love::Type type;
 
 	typedef std::vector<uint32> Codepoints;
-	typedef vertex::XYf_STus_RGBAub GlyphVertex;
+	typedef XYf_STus_RGBAub GlyphVertex;
 
-	static const vertex::CommonFormat vertexFormat;
+	static const CommonFormat vertexFormat;
 
 	enum AlignMode
 	{

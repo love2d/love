@@ -105,8 +105,6 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
-Graphics::DefaultShaderCode Graphics::defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
-
 namespace opengl { extern love::graphics::Graphics *createInstance(); }
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
 namespace metal { extern love::graphics::Graphics *createInstance(); }
@@ -203,10 +201,12 @@ void Graphics::createQuadIndexBuffer()
 		return;
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
-	quadIndexBuffer = newBuffer(size, nullptr, BUFFER_INDEX, vertex::USAGE_STATIC, 0);
+
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, 0, BUFFERUSAGE_STATIC);
+	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
-	vertex::fillIndices(vertex::TriangleIndexMode::QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.get());
+	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -234,7 +234,7 @@ Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 	return new Video(this, stream, dpiscale);
 }
 
-love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, vertex::Usage usage)
+love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, BufferUsage usage)
 {
 	return new SpriteBatch(this, texture, size, usage);
 }
@@ -244,13 +244,8 @@ love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, in
 	return new ParticleSystem(texture, size);
 }
 
-ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &optsource)
+ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info)
 {
-	if (stage == ShaderStage::STAGE_MAX_ENUM)
-		throw love::Exception("Invalid shader stage.");
-
-	const std::string &source = optsource.empty() ? getCurrentDefaultShaderCode().source[stage] : optsource;
-
 	ShaderStage *s = nullptr;
 	std::string cachekey;
 
@@ -271,7 +266,8 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 
 	if (s == nullptr)
 	{
-		s = newShaderStageInternal(stage, cachekey, source, usesGLSLES());
+		std::string glsl = Shader::createShaderStageCode(this, stage, source, info);
+		s = newShaderStageInternal(stage, cachekey, glsl, usesGLSLES());
 		if (!cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
 	}
@@ -279,35 +275,69 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 	return s;
 }
 
-Shader *Graphics::newShader(const std::string &vertex, const std::string &pixel)
+Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 {
-	if (vertex.empty() && pixel.empty())
-		throw love::Exception("Error creating shader: no source code!");
+	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
 
-	StrongRef<ShaderStage> vertexstage(newShaderStage(ShaderStage::STAGE_VERTEX, vertex), Acquire::NORETAIN);
-	StrongRef<ShaderStage> pixelstage(newShaderStage(ShaderStage::STAGE_PIXEL, pixel), Acquire::NORETAIN);
+	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
+	validstages[ShaderStage::STAGE_VERTEX] = true;
+	validstages[ShaderStage::STAGE_PIXEL] = true;
 
-	return newShaderInternal(vertexstage.get(), pixelstage.get());
+	for (const std::string &source : stagessource)
+	{
+		Shader::SourceInfo info = Shader::getSourceInfo(source);
+		bool isanystage = false;
+
+		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		{
+			if (!validstages[i])
+				continue;
+
+			if (info.isStage[i])
+			{
+				isanystage = true;
+				stages[i].set(newShaderStage((ShaderStage::StageType) i, source, info), Acquire::NORETAIN);
+			}
+		}
+
+		if (!isanystage)
+			throw love::Exception("Could not parse shader code (missing 'position' or 'effect' function?)");
+	}
+
+	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	{
+		auto stype = (ShaderStage::StageType) i;
+		if (validstages[i] && stages[i].get() == nullptr)
+		{
+			const std::string &source = Shader::getDefaultCode(Shader::STANDARD_DEFAULT, stype);
+			Shader::SourceInfo info = Shader::getSourceInfo(source);
+			stages[i].set(newShaderStage(stype, source, info), Acquire::NORETAIN);
+		}
+
+	}
+
+	return newShaderInternal(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL]);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage)
+Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
 {
-	return newMesh(Mesh::getDefaultVertexFormat(), &vertices[0], vertices.size() * sizeof(Vertex), drawmode, usage);
+	std::vector<Buffer::DataDeclaration> dataformat = {{"", format, 0}};
+	return newBuffer(settings, dataformat, data, size, arraylength);
 }
 
-Mesh *Graphics::newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
-{
-	return newMesh(Mesh::getDefaultVertexFormat(), vertexcount, drawmode, usage);
-}
-
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-love::graphics::Mesh *Graphics::newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
+}
+
+Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode)
+{
+	return new Mesh(attributes, drawmode);
 }
 
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
@@ -320,26 +350,44 @@ void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::
 	cachedShaderStages[type].erase(hashkey);
 }
 
-bool Graphics::validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err)
+bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagessource, std::string &err)
 {
-	if (vertex.empty() && pixel.empty())
-	{
-		err = "Error validating shader: no source code!";
-		return false;
-	}
+	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
 
-	StrongRef<ShaderStage> vertexstage;
-	StrongRef<ShaderStage> pixelstage;
+	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
+	validstages[ShaderStage::STAGE_VERTEX] = true;
+	validstages[ShaderStage::STAGE_PIXEL] = true;
 
 	// Don't use cached shader stages, since the gles flag may not match the
 	// current renderer.
-	if (!vertex.empty())
-		vertexstage.set(new ShaderStageForValidation(this, ShaderStage::STAGE_VERTEX, vertex, gles), Acquire::NORETAIN);
+	for (const std::string &source : stagessource)
+	{
+		Shader::SourceInfo info = Shader::getSourceInfo(source);
+		bool isanystage = false;
 
-	if (!pixel.empty())
-		pixelstage.set(new ShaderStageForValidation(this, ShaderStage::STAGE_PIXEL, pixel, gles), Acquire::NORETAIN);
+		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		{
+			auto stype = (ShaderStage::StageType) i;
 
-	return Shader::validate(vertexstage.get(), pixelstage.get(), err);
+			if (!validstages[i])
+				continue;
+
+			if (info.isStage[i])
+			{
+				isanystage = true;
+				std::string glsl = Shader::createShaderStageCode(this, stype, source, info);
+				stages[i].set(new ShaderStageForValidation(this, stype, glsl, gles), Acquire::NORETAIN);
+			}
+		}
+
+		if (!isanystage)
+		{
+			err = "Could not parse shader code (missing 'position' or 'effect' function?)";
+			return false;
+		}
+	}
+
+	return Shader::validate(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL], err);
 }
 
 int Graphics::getWidth() const
@@ -942,7 +990,7 @@ CullMode Graphics::getMeshCullMode() const
 	return states.back().meshCullMode;
 }
 
-vertex::Winding Graphics::getFrontFaceWinding() const
+Winding Graphics::getFrontFaceWinding() const
 {
 	return states.back().winding;
 }
@@ -1031,8 +1079,6 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 
 Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)
 {
-	using namespace vertex;
-
 	BatchedDrawState &state = batchedDrawState;
 
 	bool shouldflush = false;
@@ -1040,7 +1086,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 
 	if (cmd.primitiveMode != state.primitiveMode
 		|| cmd.formats[0] != state.formats[0] || cmd.formats[1] != state.formats[1]
-		|| ((cmd.indexMode != TriangleIndexMode::NONE) != (state.indexCount > 0))
+		|| ((cmd.indexMode != TRIANGLEINDEX_NONE) != (state.indexCount > 0))
 		|| cmd.texture != state.texture
 		|| cmd.standardShaderType != state.standardShaderType)
 	{
@@ -1050,7 +1096,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 	int totalvertices = state.vertexCount + cmd.vertexCount;
 
 	// We only support uint16 index buffers for now.
-	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TriangleIndexMode::NONE)
+	if (totalvertices > LOVE_UINT16_MAX && cmd.indexMode != TRIANGLEINDEX_NONE)
 		shouldflush = true;
 
 	int reqIndexCount = getIndexCount(cmd.indexMode, cmd.vertexCount);
@@ -1079,7 +1125,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		newdatasizes[i] = stride * cmd.vertexCount;
 	}
 
-	if (cmd.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TRIANGLEINDEX_NONE)
 	{
 		size_t datasize = (state.indexCount + reqIndexCount) * sizeof(uint16);
 
@@ -1117,18 +1163,18 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 			if (state.vb[i]->getSize() < buffersizes[i])
 			{
 				delete state.vb[i];
-				state.vb[i] = newStreamBuffer(BUFFER_VERTEX, buffersizes[i]);
+				state.vb[i] = newStreamBuffer(BUFFERTYPE_VERTEX, buffersizes[i]);
 			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
 		{
 			delete state.indexBuffer;
-			state.indexBuffer = newStreamBuffer(BUFFER_INDEX, buffersizes[2]);
+			state.indexBuffer = newStreamBuffer(BUFFERTYPE_INDEX, buffersizes[2]);
 		}
 	}
 
-	if (cmd.indexMode != TriangleIndexMode::NONE)
+	if (cmd.indexMode != TRIANGLEINDEX_NONE)
 	{
 		if (state.indexBufferMap.data == nullptr)
 			state.indexBufferMap = state.indexBuffer->map(reqIndexSize);
@@ -1165,14 +1211,12 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 
 void Graphics::flushBatchedDraws()
 {
-	using namespace vertex;
-
 	auto &sbstate = batchedDrawState;
 
 	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
 		return;
 
-	Attributes attributes;
+	VertexAttributes attributes;
 	BufferBindings buffers;
 
 	size_t usedsizes[3] = {0, 0, 0};
@@ -1315,8 +1359,8 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 
 	BatchedDrawCommand cmd;
 	cmd.primitiveMode = PRIMITIVE_POINTS;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-	cmd.formats[1] = vertex::CommonFormat::RGBAub;
+	cmd.formats[0] = getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::RGBAub;
 	cmd.vertexCount = (int) numpoints;
 
 	BatchedVertexData data = requestBatchedDraw(cmd);
@@ -1610,9 +1654,9 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 		bool is2D = t.isAffine2DTransform();
 
 		BatchedDrawCommand cmd;
-		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-		cmd.formats[1] = vertex::CommonFormat::RGBAub;
-		cmd.indexMode = vertex::TriangleIndexMode::FAN;
+		cmd.formats[0] = getSinglePositionFormat(is2D);
+		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.indexMode = TRIANGLEINDEX_FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		BatchedVertexData data = requestBatchedDraw(cmd);
@@ -1786,14 +1830,6 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-const Graphics::DefaultShaderCode &Graphics::getCurrentDefaultShaderCode() const
-{
-	int languageindex = (int) getShaderLanguageTarget();
-	int gammaindex = isGammaCorrect() ? 1 : 0;
-
-	return defaultShaderCode[Shader::STANDARD_DEFAULT][languageindex][gammaindex];
-}
-
 /**
  * Constants.
  **/
@@ -1939,6 +1975,7 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featur
 	{ "glsl3",                    FEATURE_GLSL3                },
 	{ "glsl4",                    FEATURE_GLSL4                },
 	{ "instancing",               FEATURE_INSTANCING           },
+	{ "texelbuffer",              FEATURE_TEXEL_BUFFER         },
 };
 
 StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));
@@ -1950,6 +1987,7 @@ StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::syst
 	{ "texturelayers",     LIMIT_TEXTURE_LAYERS      },
 	{ "volumetexturesize", LIMIT_VOLUME_TEXTURE_SIZE },
 	{ "cubetexturesize",   LIMIT_CUBE_TEXTURE_SIZE   },
+	{ "texelbuffersize",   LIMIT_TEXEL_BUFFER_SIZE   },
 	{ "rendertargets",     LIMIT_RENDER_TARGETS      },
 	{ "texturemsaa",       LIMIT_TEXTURE_MSAA        },
 	{ "anisotropy",        LIMIT_ANISOTROPY          },

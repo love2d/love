@@ -82,7 +82,7 @@ void Polyline::render(const Vector2 *coords, size_t count, size_t size_hint, flo
 		// extra degenerate triangle in between the core line and the overdraw
 		// line in order to break up the strip into two. This will let us draw
 		// everything in one draw call.
-		if (triangle_mode == vertex::TriangleIndexMode::STRIP)
+		if (triangle_mode == TRIANGLEINDEX_STRIP)
 			extra_vertices = 2;
 	}
 
@@ -383,7 +383,7 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 	int maxvertices = LOVE_UINT16_MAX - 3;
 
 	int advance = maxvertices;
-	if (triangle_mode == vertex::TriangleIndexMode::STRIP)
+	if (triangle_mode == TRIANGLEINDEX_STRIP)
 		advance -= 2;
 
 	for (int vertex_start = 0; vertex_start < total_vertex_count; vertex_start += advance)
@@ -391,8 +391,8 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 		const Vector2 *verts = vertices + vertex_start;
 
 		Graphics::BatchedDrawCommand cmd;
-		cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-		cmd.formats[1] = vertex::CommonFormat::RGBAub;
+		cmd.formats[0] = getSinglePositionFormat(is2D);
+		cmd.formats[1] = CommonFormat::RGBAub;
 		cmd.indexMode = triangle_mode;
 		cmd.vertexCount = std::min(maxvertices, total_vertex_count - vertex_start);
 
@@ -405,18 +405,28 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 
 		Color32 *colordata = (Color32 *) data.stream[1];
 
+		int draw_rough_count = std::min(cmd.vertexCount, (int) vertex_count - vertex_start);
+
 		// Constant vertex color up to the overdraw vertices.
-		for (int i = 0; i < std::min(cmd.vertexCount, (int) vertex_count - vertex_start); i++)
+		for (int i = 0; i < draw_rough_count; i++)
 			colordata[i] = curcolor;
 
-		int colorcount = 0;
 		if (overdraw)
-			colorcount = std::min(cmd.vertexCount, overdraw_count - (vertex_start - overdraw_start));
-
-		if (colorcount > 0)
 		{
-			Color32 *colors = colordata + std::max(0, (overdraw_start - vertex_start));
-			fill_color_array(curcolor, colors, colorcount);
+			int draw_remaining_count = cmd.vertexCount - draw_rough_count;
+
+			int draw_overdraw_begin = overdraw_start - vertex_start;
+			int draw_overdraw_end = draw_overdraw_begin + overdraw_count;
+
+			draw_overdraw_begin = std::max(0, draw_overdraw_begin);
+
+			int draw_overdraw_count = std::min(draw_remaining_count, draw_overdraw_end - draw_overdraw_begin);
+
+			if (draw_overdraw_count > 0)
+			{
+				Color32 *colors = colordata + draw_overdraw_begin;
+				fill_color_array(curcolor, colors, draw_overdraw_count);
+			}
 		}
 	}
 }

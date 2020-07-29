@@ -35,18 +35,54 @@ namespace graphics
 namespace opengl
 {
 
-Buffer::Buffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)
-	: love::graphics::Buffer(size, type, usage, mapflags)
-	, vbo(0)
-	, memory_map(nullptr)
-	, modified_offset(0)
-	, modified_size(0)
+static GLenum getGLFormat(DataFormat format)
 {
-	target = OpenGL::getGLBufferType(type);
+	switch (format)
+	{
+		case DATAFORMAT_FLOAT: return GL_R32F;
+		case DATAFORMAT_FLOAT_VEC2: return GL_RG32F;
+		case DATAFORMAT_FLOAT_VEC3: return GL_RGB32F;
+		case DATAFORMAT_FLOAT_VEC4: return GL_RGBA32F;
+		case DATAFORMAT_INT32: return GL_R32I;
+		case DATAFORMAT_INT32_VEC2: return GL_RG32I;
+		case DATAFORMAT_INT32_VEC3: return GL_RGB32I;
+		case DATAFORMAT_INT32_VEC4: return GL_RGBA32I;
+		case DATAFORMAT_UINT32: return GL_R32UI;
+		case DATAFORMAT_UINT32_VEC2: return GL_RG32UI;
+		case DATAFORMAT_UINT32_VEC3: return GL_RGB32UI;
+		case DATAFORMAT_UINT32_VEC4: return GL_RGBA32UI;
+		case DATAFORMAT_UNORM8_VEC4: return GL_RGBA8;
+		case DATAFORMAT_INT8_VEC4: return GL_RGBA8I;
+		case DATAFORMAT_UINT8_VEC4: return GL_RGBA8UI;
+		case DATAFORMAT_UNORM16_VEC2: return GL_RG16;
+		case DATAFORMAT_UNORM16_VEC4: return GL_RGBA16;
+		case DATAFORMAT_INT16_VEC2: return GL_RG16I;
+		case DATAFORMAT_INT16_VEC4: return GL_RGBA16I;
+		case DATAFORMAT_UINT16: return GL_R16UI;
+		case DATAFORMAT_UINT16_VEC2: return GL_RG16UI;
+		case DATAFORMAT_UINT16_VEC4: return GL_RGBA16UI;
+		default: return GL_ZERO;
+	}
+}
+
+Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
+	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
+{
+	size = getSize();
+	arraylength = getArrayLength();
+
+	if (typeFlags & TYPEFLAG_TEXEL)
+		mapType = BUFFERTYPE_TEXEL;
+	else if (typeFlags & TYPEFLAG_VERTEX)
+		mapType = BUFFERTYPE_VERTEX;
+	else if (typeFlags & TYPEFLAG_INDEX)
+		mapType = BUFFERTYPE_INDEX;
+
+	target = OpenGL::getGLBufferType(mapType);
 
 	try
 	{
-		memory_map = new char[size];
+		memoryMap = new char[size];
 	}
 	catch (std::bad_alloc &)
 	{
@@ -54,34 +90,78 @@ Buffer::Buffer(size_t size, const void *data, BufferType type, vertex::Usage usa
 	}
 
 	if (data != nullptr)
-		memcpy(memory_map, data, size);
+		memcpy(memoryMap, data, size);
 
 	if (!load(data != nullptr))
 	{
-		delete[] memory_map;
-		throw love::Exception("Could not load vertex buffer (out of VRAM?)");
+		unloadVolatile();
+		delete[] memoryMap;
+		throw love::Exception("Could not create buffer (out of VRAM?)");
 	}
 }
 
 Buffer::~Buffer()
 {
-	if (vbo != 0)
-		unload();
+	unloadVolatile();
+	delete[] memoryMap;
+}
 
-	delete[] memory_map;
+bool Buffer::loadVolatile()
+{
+	if (buffer != 0)
+		return true;
+
+	return load(true);
+}
+
+void Buffer::unloadVolatile()
+{
+	mapped = false;
+	if (buffer != 0)
+		gl.deleteBuffer(buffer);
+	buffer = 0;
+	if (texture != 0)
+		gl.deleteTexture(texture);
+	texture = 0;
+}
+
+bool Buffer::load(bool restore)
+{
+	while (glGetError() != GL_NO_ERROR)
+		/* Clear the error buffer. */;
+
+	glGenBuffers(1, &buffer);
+	gl.bindBuffer(mapType, buffer);
+
+	// Copy the old buffer only if 'restore' was requested.
+	const GLvoid *src = restore ? memoryMap : nullptr;
+
+	// Note that if 'src' is '0', no data will be copied.
+	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
+
+	if (getTypeFlags() & TYPEFLAG_TEXEL)
+	{
+		glGenTextures(1, &texture);
+		gl.bindBufferTextureToUnit(texture, 0, false, true);
+
+		glTexBuffer(target, getGLFormat(getDataMember(0).decl.format), buffer);
+	}
+
+	return (glGetError() == GL_NO_ERROR);
 }
 
 void *Buffer::map()
 {
-	if (is_mapped)
-		return memory_map;
+	if (mapped)
+		return memoryMap;
 
-	is_mapped = true;
+	mapped = true;
 
-	modified_offset = 0;
-	modified_size = 0;
+	modifiedOffset = 0;
+	modifiedSize = 0;
+	isMappedDataModified = false;
 
-	return memory_map;
+	return memoryMap;
 }
 
 void Buffer::unmapStatic(size_t offset, size_t size)
@@ -90,8 +170,8 @@ void Buffer::unmapStatic(size_t offset, size_t size)
 		return;
 
 	// Upload the mapped data to the buffer.
-	gl.bindBuffer(type, vbo);
-	glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, memory_map + offset);
+	gl.bindBuffer(mapType, buffer);
+	glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, memoryMap + offset);
 }
 
 void Buffer::unmapStream()
@@ -100,133 +180,105 @@ void Buffer::unmapStream()
 
 	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-	gl.bindBuffer(type, vbo);
+	gl.bindBuffer(mapType, buffer);
 	glBufferData(target, (GLsizeiptr) getSize(), nullptr, glusage);
 
 #if LOVE_WINDOWS
 	// TODO: Verify that this codepath is a useful optimization.
 	if (gl.getVendor() == OpenGL::VENDOR_INTEL)
-		glBufferData(target, (GLsizeiptr) getSize(), memory_map, glusage);
+		glBufferData(target, (GLsizeiptr) getSize(), memoryMap, glusage);
 	else
 #endif
-		glBufferSubData(target, 0, (GLsizeiptr) getSize(), memory_map);
+		glBufferSubData(target, 0, (GLsizeiptr) getSize(), memoryMap);
 }
 
 void Buffer::unmap()
 {
-	if (!is_mapped)
+	if (!mapped)
 		return;
 
-	if ((map_flags & MAP_EXPLICIT_RANGE_MODIFY) != 0)
+	mapped = false;
+
+	if ((mapFlags & MAP_EXPLICIT_RANGE_MODIFY) != 0)
 	{
-		modified_offset = std::min(modified_offset, getSize() - 1);
-		modified_size = std::min(modified_size, getSize() - modified_offset);
+		if (!isMappedDataModified)
+			return;
+
+		modifiedOffset = std::min(modifiedOffset, getSize() - 1);
+		modifiedSize = std::min(modifiedSize, getSize() - modifiedOffset);
 	}
 	else
 	{
-		modified_offset = 0;
-		modified_size = getSize();
+		modifiedOffset = 0;
+		modifiedSize = getSize();
 	}
 
-	if (modified_size > 0)
+	if (modifiedSize > 0)
 	{
 		switch (getUsage())
 		{
-		case vertex::USAGE_STATIC:
-			unmapStatic(modified_offset, modified_size);
+		case BUFFERUSAGE_STATIC:
+			unmapStatic(modifiedOffset, modifiedSize);
 			break;
-		case vertex::USAGE_STREAM:
+		case BUFFERUSAGE_STREAM:
 			unmapStream();
 			break;
-		case vertex::USAGE_DYNAMIC:
+		case BUFFERUSAGE_DYNAMIC:
 		default:
 			// It's probably more efficient to treat it like a streaming buffer if
 			// at least a third of its contents have been modified during the map().
-			if (modified_size >= getSize() / 3)
+			if (modifiedSize >= getSize() / 3)
 				unmapStream();
 			else
-				unmapStatic(modified_offset, modified_size);
+				unmapStatic(modifiedOffset, modifiedSize);
 			break;
 		}
 	}
 
-	modified_offset = 0;
-	modified_size = 0;
-
-	is_mapped = false;
+	modifiedOffset = 0;
+	modifiedSize = 0;
 }
 
 void Buffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
 {
-	if (!is_mapped || !(map_flags & MAP_EXPLICIT_RANGE_MODIFY))
+	if (!mapped || !(mapFlags & MAP_EXPLICIT_RANGE_MODIFY))
 		return;
+
+	if (!isMappedDataModified)
+	{
+		modifiedOffset = offset;
+		modifiedSize = modifiedsize;
+		isMappedDataModified = true;
+		return;
+	}
 
 	// We're being conservative right now by internally marking the whole range
 	// from the start of section a to the end of section b as modified if both
 	// a and b are marked as modified.
 
-	size_t old_range_end = modified_offset + modified_size;
-	modified_offset = std::min(modified_offset, offset);
+	size_t oldrangeend = modifiedOffset + modifiedSize;
+	modifiedOffset = std::min(modifiedOffset, offset);
 
-	size_t new_range_end = std::max(offset + modifiedsize, old_range_end);
-	modified_size = new_range_end - modified_offset;
+	size_t newrangeend = std::max(offset + modifiedsize, oldrangeend);
+	modifiedSize = newrangeend - modifiedOffset;
 }
 
 void Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	memcpy(memory_map + offset, data, size);
+	memcpy(memoryMap + offset, data, size);
 
-	if (is_mapped)
+	if (mapped)
 		setMappedRangeModified(offset, size);
 	else
 	{
-		gl.bindBuffer(type, vbo);
+		gl.bindBuffer(mapType, buffer);
 		glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, data);
 	}
 }
 
-ptrdiff_t Buffer::getHandle() const
-{
-	return vbo;
-}
-
 void Buffer::copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset)
 {
-	other->fill(otheroffset, size, memory_map + offset);
-}
-
-bool Buffer::loadVolatile()
-{
-	return load(true);
-}
-
-void Buffer::unloadVolatile()
-{
-	unload();
-}
-
-bool Buffer::load(bool restore)
-{
-	glGenBuffers(1, &vbo);
-	gl.bindBuffer(type, vbo);
-
-	while (glGetError() != GL_NO_ERROR)
-		/* Clear the error buffer. */;
-
-	// Copy the old buffer only if 'restore' was requested.
-	const GLvoid *src = restore ? memory_map : nullptr;
-
-	// Note that if 'src' is '0', no data will be copied.
-	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
-
-	return (glGetError() == GL_NO_ERROR);
-}
-
-void Buffer::unload()
-{
-	is_mapped = false;
-	gl.deleteBuffer(vbo);
-	vbo = 0;
+	other->fill(otheroffset, size, memoryMap + offset);
 }
 
 } // opengl

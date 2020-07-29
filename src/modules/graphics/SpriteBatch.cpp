@@ -40,7 +40,7 @@ namespace graphics
 
 love::Type SpriteBatch::type("SpriteBatch", &Drawable::type);
 
-SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage)
+SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage usage)
 	: texture(texture)
 	, size(size)
 	, next(0)
@@ -57,14 +57,16 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usag
 		throw love::Exception("A texture must be used when creating a SpriteBatch.");
 
 	if (texture->getTextureType() == TEXTURE_2D_ARRAY)
-		vertex_format = vertex::CommonFormat::XYf_STPf_RGBAub;
+		vertex_format = CommonFormat::XYf_STPf_RGBAub;
 	else
-		vertex_format = vertex::CommonFormat::XYf_STf_RGBAub;
+		vertex_format = CommonFormat::XYf_STf_RGBAub;
 
-	vertex_stride = vertex::getFormatStride(vertex_format);
+	vertex_stride = getFormatStride(vertex_format);
 
 	size_t vertex_size = vertex_stride * 4 * size;
-	array_buf = gfx->newBuffer(vertex_size, nullptr, BUFFER_VERTEX, usage, Buffer::MAP_EXPLICIT_RANGE_MODIFY);
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, usage);
+	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
+	array_buf = gfx->newBuffer(settings, decl, nullptr, vertex_size, 0);
 }
 
 SpriteBatch::~SpriteBatch()
@@ -79,8 +81,6 @@ int SpriteBatch::add(const Matrix4 &m, int index /*= -1*/)
 
 int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 {
-	using namespace vertex;
-
 	if (vertex_format == CommonFormat::XYf_STPf_RGBAub)
 		return addLayer(quad->getLayer(), quad, m, index);
 
@@ -122,8 +122,6 @@ int SpriteBatch::addLayer(int layer, const Matrix4 &m, int index)
 
 int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 {
-	using namespace vertex;
-
 	if (vertex_format != CommonFormat::XYf_STPf_RGBAub)
 		throw love::Exception("addLayer can only be called on a SpriteBatch that uses an Array Texture!");
 
@@ -222,7 +220,9 @@ void SpriteBatch::setBufferSize(int newsize)
 	try
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		new_array_buf = gfx->newBuffer(vertex_size, nullptr, array_buf->getType(), array_buf->getUsage(), array_buf->getMapFlags());
+		Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getMapFlags(), array_buf->getUsage());
+		auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
+		new_array_buf = gfx->newBuffer(settings, decl, nullptr, vertex_size, 0);
 
 		// Copy as much of the old data into the new GLBuffer as can fit.
 		size_t copy_size = vertex_stride * 4 * new_next;
@@ -248,24 +248,27 @@ int SpriteBatch::getBufferSize() const
 	return size;
 }
 
-void SpriteBatch::attachAttribute(const std::string &name, Mesh *mesh)
+void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer)
 {
+	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
+		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a SpriteBatch vertex attribute.");
+
 	AttachedAttribute oldattrib = {};
 	AttachedAttribute newattrib = {};
 
-	if (mesh->getVertexCount() < (size_t) next * 4)
-		throw love::Exception("Mesh has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", next*4);
+	if (buffer->getArrayLength() < (size_t) next * 4)
+		throw love::Exception("Buffer has too few vertices to be attached to this SpriteBatch (at least %d vertices are required)", next*4);
 
 	auto it = attached_attributes.find(name);
 	if (it != attached_attributes.end())
 		oldattrib = it->second;
 
-	newattrib.index = mesh->getAttributeIndex(name);
+	newattrib.index = buffer->getDataMemberIndex(name);
 
 	if (newattrib.index < 0)
-		throw love::Exception("The specified mesh does not have a vertex attribute named '%s'", name.c_str());
+		throw love::Exception("The specified Buffer does not have a vertex attribute named '%s'", name.c_str());
 
-	newattrib.mesh = mesh;
+	newattrib.buffer = buffer;
 
 	attached_attributes[name] = newattrib;
 }
@@ -296,8 +299,6 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 
 void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
-	using namespace vertex;
-
 	if (next == 0)
 		return;
 
@@ -321,7 +322,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	// Make sure the buffer isn't mapped when we draw (sends data to GPU if needed.)
 	array_buf->unmap();
 
-	Attributes attributes;
+	VertexAttributes attributes;
 	BufferBindings buffers;
 
 	{
@@ -333,19 +334,19 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	for (const auto &it : attached_attributes)
 	{
-		Mesh *mesh = it.second.mesh.get();
+		Buffer *buffer = it.second.buffer.get();
 
 		// We have to do this check here as wll because setBufferSize can be
 		// called after attachAttribute.
-		if (mesh->getVertexCount() < (size_t) next * 4)
-			throw love::Exception("Mesh with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
+		if (buffer->getArrayLength() < (size_t) next * 4)
+			throw love::Exception("Buffer with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
 
 		int attributeindex = -1;
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
 		BuiltinVertexAttribute builtinattrib;
-		if (vertex::getConstant(it.first.c_str(), builtinattrib))
+		if (getConstant(it.first.c_str(), builtinattrib))
 			attributeindex = (int) builtinattrib;
 		else if (Shader::current)
 			attributeindex = Shader::current->getVertexAttributeIndex(it.first);
@@ -353,19 +354,18 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		if (attributeindex >= 0)
 		{
 			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			mesh->vertexBuffer->unmap();
+			buffer->unmap();
 
-			const auto &formats = mesh->getVertexFormat();
-			const auto &format = formats[it.second.index];
+			const auto &member = buffer->getDataMember(it.second.index);
 
-			uint16 offset = (uint16) mesh->getAttributeOffset(it.second.index);
-			uint16 stride = (uint16) mesh->getVertexStride();
+			uint16 offset = (uint16) buffer->getMemberOffset(it.second.index);
+			uint16 stride = (uint16) buffer->getArrayStride();
 
-			attributes.set(attributeindex, format.type, (uint8) format.components, offset, activebuffers);
+			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride);
 
 			// TODO: We should reuse buffer bindings with the same buffer+stride+step.
-			buffers.set(activebuffers, mesh->vertexBuffer, 0);
+			buffers.set(activebuffers, buffer, 0);
 			activebuffers++;
 		}
 	}

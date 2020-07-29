@@ -43,6 +43,7 @@ class ShaderStage : public love::Object
 {
 public:
 
+	// Order is used for stages array in ShaderStage.cpp
 	enum StageType
 	{
 		STAGE_VERTEX,
@@ -62,6 +63,7 @@ public:
 
 	static bool getConstant(const char *in, StageType &out);
 	static bool getConstant(StageType in, const char *&out);
+	static const char *getConstant(StageType in);
 
 protected:
 

@@ -60,7 +60,7 @@ public:
 	const char *getName() const override;
 
 	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
-	love::graphics::Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) override;
+	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
@@ -70,7 +70,7 @@ public:
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
-	void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, love::graphics::Texture *texture) override;
+	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
 
 	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -91,7 +91,7 @@ public:
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
-	void setFrontFaceWinding(vertex::Winding winding) override;
+	void setFrontFaceWinding(Winding winding) override;
 
 	void setColorMask(ColorChannelMask mask) override;
 
@@ -106,8 +106,6 @@ public:
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
-
-	Shader::Language getShaderLanguageTarget() const override;
 
 	// Internal use.
 	void cleanupRenderTexture(love::graphics::Texture *texture);
@@ -149,6 +147,9 @@ private:
 	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
+
+	// Only needed for buffer types that can be bound to shaders.
+	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERTYPE_MAX_ENUM];
 
 	// [rendertarget][readable][srgb]
 	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];

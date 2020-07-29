@@ -166,7 +166,7 @@ public:
 		 * initial full-size one (determined after some investigation with an
 		 * affected user on Discord.)
 		 * https://bitbucket.org/rude/love/issues/1436/bug-with-lovegraphicsprint-on-older-ati
-		 *
+		 * https://github.com/love2d/love/issues/1563
 		 **/
 		bool texStorageBreaksSubImage;
 
@@ -238,7 +238,7 @@ public:
 	/**
 	 * Set all vertex attribute state.
 	 **/
-	void setVertexAttributes(const vertex::Attributes &attributes, const vertex::BufferBindings &buffers);
+	void setVertexAttributes(const VertexAttributes &attributes, const BufferBindings &buffers);
 
 	/**
 	 * Wrapper for glCullFace which eliminates redundant state setting.
@@ -307,6 +307,12 @@ public:
 	GLuint getDefaultTexture(TextureType type) const;
 
 	/**
+	 * Gets the texture ID for love's default texel buffer.
+	 **/
+	GLuint getDefaultTexelBuffer() const { return state.defaultTexelBuffer; }
+	void setDefaultTexelBuffer(GLuint tex) { state.defaultTexelBuffer = tex; }
+
+	/**
 	 * Helper for setting the active texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
@@ -318,9 +324,12 @@ public:
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
 	 * @param restoreprev Restore previously bound texture unit when done.
+	 * @param bindforedit If false, the active texture unit may be left alone.
 	 **/
-	void bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev);
-	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev);
+	void bindTextureToUnit(TextureType target, GLuint texture, int textureunit, bool restoreprev, bool bindforedit = true);
+	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit = true);
+
+	void bindBufferTextureToUnit(GLuint texture, int textureunit, bool restoreprev, bool bindforedit);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -348,6 +357,7 @@ public:
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
 	bool isMultiFormatMRTSupported() const;
+	bool areTexelBuffersSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -356,6 +366,11 @@ public:
 	int getMax3DTextureSize() const;
 	int getMaxCubeTextureSize() const;
 	int getMaxTextureLayers() const;
+
+	/**
+	 * Returns the maximum number of values in a texel buffer.
+	 **/
+	int getMaxTexelBufferSize() const;
 
 	/**
 	 * Returns the maximum supported number of simultaneous render targets.
@@ -398,8 +413,8 @@ public:
 	static GLenum getGLPrimitiveType(PrimitiveType type);
 	static GLenum getGLBufferType(BufferType type);
 	static GLenum getGLIndexDataType(IndexDataType type);
-	static GLenum getGLVertexDataType(vertex::DataType type, GLboolean &normalized, bool &intformat);
-	static GLenum getGLBufferUsage(vertex::Usage usage);
+	static GLenum getGLVertexDataType(DataFormat format, int &components, GLboolean &normalized, bool &intformat);
+	static GLenum getGLBufferUsage(BufferUsage usage);
 	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(SamplerState::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);
@@ -435,6 +450,7 @@ private:
 	int max3DTextureSize;
 	int maxCubeTextureSize;
 	int maxTextureArrayLayers;
+	int maxTexelBufferSize;
 	int maxRenderTargets;
 	int maxSamples;
 	int maxTextureUnits;
@@ -447,10 +463,10 @@ private:
 	// Tracked OpenGL state.
 	struct
 	{
-		GLuint boundBuffers[BUFFER_MAX_ENUM];
+		GLuint boundBuffers[BUFFERTYPE_MAX_ENUM];
 
 		// Texture unit state (currently bound texture for each texture unit.)
-		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM];
+		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM + 1];
 
 		bool enableState[ENABLE_MAX_ENUM];
 
@@ -471,6 +487,7 @@ private:
 		GLuint boundFramebuffers[2];
 
 		GLuint defaultTexture[TEXTURE_MAX_ENUM];
+		GLuint defaultTexelBuffer;
 
 	} state;
 

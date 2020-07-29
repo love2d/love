@@ -33,17 +33,13 @@
 #include <vector>
 #include <stddef.h>
 
-namespace glslang
-{
-class TShader;
-}
-
 namespace love
 {
 namespace graphics
 {
 
 class Graphics;
+class Buffer;
 
 // A GLSL shader
 class Shader : public Object, public Resource
@@ -55,9 +51,8 @@ public:
 	enum Language
 	{
 		LANGUAGE_GLSL1,
-		LANGUAGE_ESSL1,
 		LANGUAGE_GLSL3,
-		LANGUAGE_ESSL3,
+		LANGUAGE_GLSL4,
 		LANGUAGE_MAX_ENUM
 	};
 
@@ -82,6 +77,7 @@ public:
 		UNIFORM_UINT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
+		UNIFORM_TEXELBUFFER,
 		UNIFORM_UNKNOWN,
 		UNIFORM_MAX_ENUM
 	};
@@ -92,6 +88,14 @@ public:
 		STANDARD_VIDEO,
 		STANDARD_ARRAY,
 		STANDARD_MAX_ENUM
+	};
+
+	struct SourceInfo
+	{
+		Language language;
+		bool isStage[ShaderStage::STAGE_MAX_ENUM];
+		bool customPixelFunction;
+		bool usesMRT;
 	};
 
 	struct MatrixSize
@@ -113,6 +117,7 @@ public:
 
 		UniformType baseType;
 		TextureType textureType;
+		DataBaseType texelBufferType;
 		bool isDepthSampler;
 		std::string name;
 
@@ -126,7 +131,11 @@ public:
 
 		size_t dataSize;
 
-		Texture **textures;
+		union
+		{
+			Texture **textures;
+			Buffer **buffers;
+		};
 	};
 
 	// The members in here must respect uniform buffer alignment/padding rules.
@@ -176,6 +185,7 @@ public:
 	virtual void updateUniform(const UniformInfo *info, int count) = 0;
 
 	virtual void sendTextures(const UniformInfo *info, Texture **textures, int count) = 0;
+	virtual void sendBuffers(const UniformInfo *info, Buffer **buffers, int count) = 0;
 
 	/**
 	 * Gets whether a uniform with the specified name exists and is actively
@@ -192,10 +202,15 @@ public:
 	void checkMainTextureType(TextureType textype, bool isDepthSampler) const;
 	void checkMainTexture(Texture *texture) const;
 
+	static SourceInfo getSourceInfo(const std::string &src);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const SourceInfo &info);
+
 	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
+
+	static const std::string &getDefaultCode(StandardShader shader, ShaderStage::StageType stage);
 
 	static bool getConstant(const char *in, Language &out);
 	static bool getConstant(Language in, const char *&out);
@@ -206,15 +221,6 @@ public:
 protected:
 
 	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
-
-private:
-
-	static StringMap<Language, LANGUAGE_MAX_ENUM>::Entry languageEntries[];
-	static StringMap<Language, LANGUAGE_MAX_ENUM> languages;
-	
-	// Names for the built-in uniform variables.
-	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];
-	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM> builtinNames;
 
 }; // Shader
 

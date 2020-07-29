@@ -143,6 +143,7 @@ public:
 		FEATURE_GLSL3,
 		FEATURE_GLSL4,
 		FEATURE_INSTANCING,
+		FEATURE_TEXEL_BUFFER,
 		FEATURE_MAX_ENUM
 	};
 
@@ -161,6 +162,7 @@ public:
 		LIMIT_VOLUME_TEXTURE_SIZE,
 		LIMIT_CUBE_TEXTURE_SIZE,
 		LIMIT_TEXTURE_LAYERS,
+		LIMIT_TEXEL_BUFFER_SIZE,
 		LIMIT_RENDER_TARGETS,
 		LIMIT_TEXTURE_MSAA,
 		LIMIT_ANISOTROPY,
@@ -210,8 +212,8 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const vertex::Attributes *attributes;
-		const vertex::BufferBindings *buffers;
+		const VertexAttributes *attributes;
+		const BufferBindings *buffers;
 
 		int vertexStart = 0;
 		int vertexCount = 0;
@@ -222,7 +224,7 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawCommand(const vertex::Attributes *attribs, const vertex::BufferBindings *buffers)
+		DrawCommand(const VertexAttributes *attribs, const BufferBindings *buffers)
 			: attributes(attribs)
 			, buffers(buffers)
 		{}
@@ -232,8 +234,8 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const vertex::Attributes *attributes;
-		const vertex::BufferBindings *buffers;
+		const VertexAttributes *attributes;
+		const BufferBindings *buffers;
 
 		int indexCount = 0;
 		int instanceCount = 1;
@@ -247,7 +249,7 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawIndexedCommand(const vertex::Attributes *attribs, const vertex::BufferBindings *buffers, Resource *indexbuffer)
+		DrawIndexedCommand(const VertexAttributes *attribs, const BufferBindings *buffers, Resource *indexbuffer)
 			: attributes(attribs)
 			, buffers(buffers)
 			, indexBuffer(indexbuffer)
@@ -257,8 +259,8 @@ public:
 	struct BatchedDrawCommand
 	{
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
-		vertex::CommonFormat formats[2];
-		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
+		CommonFormat formats[2];
+		TriangleIndexMode indexMode = TRIANGLEINDEX_NONE;
 		int vertexCount = 0;
 		Texture *texture = nullptr;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
@@ -266,7 +268,7 @@ public:
 		BatchedDrawCommand()
 		{
 			// VS2013 can't initialize arrays in the above manner...
-			formats[1] = formats[0] = vertex::CommonFormat::NONE;
+			formats[1] = formats[0] = CommonFormat::NONE;
 		}
 	};
 
@@ -416,11 +418,6 @@ public:
 		}
 	};
 
-	struct DefaultShaderCode
-	{
-		std::string source[ShaderStage::STAGE_MAX_ENUM];
-	};
-
 	Graphics();
 	virtual ~Graphics();
 
@@ -434,22 +431,21 @@ public:
 	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferUsage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
-	Shader *newShader(const std::string &vertex, const std::string &pixel);
+	Shader *newShader(const std::vector<std::string> &stagessource);
 
-	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 
-	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
-	bool validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err);
+	bool validateShader(bool gles, const std::vector<std::string> &stages, std::string &err);
 
 	/**
 	 * Resets the current color, background color, line style, and so forth.
@@ -589,8 +585,8 @@ public:
 	void setMeshCullMode(CullMode cull);
 	CullMode getMeshCullMode() const;
 
-	virtual void setFrontFaceWinding(vertex::Winding winding) = 0;
-	vertex::Winding getFrontFaceWinding() const;
+	virtual void setFrontFaceWinding(Winding winding) = 0;
+	Winding getFrontFaceWinding() const;
 
 	/**
 	 * Sets the enabled color components when rendering.
@@ -826,15 +822,12 @@ public:
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
-	virtual void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) = 0;
+	virtual void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
 
 	void flushBatchedDraws();
 	BatchedVertexData requestBatchedDraw(const BatchedDrawCommand &command);
 
 	static void flushBatchedDrawsGlobal();
-
-	virtual Shader::Language getShaderLanguageTarget() const = 0;
-	const DefaultShaderCode &getCurrentDefaultShaderCode() const;
 
 	void cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &cachekey);
 
@@ -877,9 +870,6 @@ public:
 	static bool getConstant(StackType in, const char *&out);
 	static std::vector<std::string> getConstants(StackType);
 
-	// Default shader code (a shader is always required internally.)
-	static DefaultShaderCode defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
-
 protected:
 
 	struct DisplayState
@@ -904,7 +894,7 @@ protected:
 		bool depthWrite = false;
 
 		CullMode meshCullMode = CULL_NONE;
-		vertex::Winding winding = vertex::WINDING_CCW;
+		Winding winding = WINDING_CCW;
 
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
@@ -924,7 +914,7 @@ protected:
 		StreamBuffer *indexBuffer = nullptr;
 
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
-		vertex::CommonFormat formats[2];
+		CommonFormat formats[2];
 		StrongRef<Texture> texture;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 		int vertexCount = 0;
@@ -936,7 +926,7 @@ protected:
 		BatchedDrawState()
 		{
 			vb[0] = vb[1] = nullptr;
-			formats[0] = formats[1] = vertex::CommonFormat::NONE;
+			formats[0] = formats[1] = CommonFormat::NONE;
 			vbMap[0] = vbMap[1] = StreamBuffer::MapInfo();
 		}
 	};
@@ -952,6 +942,7 @@ protected:
 		{}
 	};
 
+	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info);
 	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;

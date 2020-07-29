@@ -72,9 +72,11 @@ public:
 	double getAverageDelta() const;
 
 	/**
-	 * Gets the amount of time passed since an unspecified time. Useful for
-	 * profiling code or measuring intervals. The time is microsecond-precise,
-	 * and increases monotonically.
+	 * Gets the amount of time in seconds passed since its first invocation
+	 * (which happens as part of the Timer constructor,
+	 * which is called when the module is first opened).
+	 * Useful for profiling code or measuring intervals.
+	 * The time is microsecond-precise, and increases monotonically.
 	 * @return The time (in seconds)
 	 **/
 	static double getTime();
@@ -98,9 +100,6 @@ private:
 
 	// The current timestep.
 	double dt;
-
-	// Returns the timer period on some platforms.
-	static double getTimerPeriod();
 
 }; // Timer
 

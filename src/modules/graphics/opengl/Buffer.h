@@ -32,6 +32,9 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
 namespace opengl
 {
 
@@ -39,39 +42,45 @@ class Buffer final : public love::graphics::Buffer, public Volatile
 {
 public:
 
-	Buffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags);
+	Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
-
-	void *map() override;
-	void unmap() override;
-	void setMappedRangeModified(size_t offset, size_t size) override;
-	void fill(size_t offset, size_t size, const void *data) override;
-	ptrdiff_t getHandle() const override;
-
-	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
 	// Implements Volatile.
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
+	void *map() override;
+	void unmap() override;
+	void setMappedRangeModified(size_t offset, size_t size) override;
+	void fill(size_t offset, size_t size, const void *data) override;
+
+	ptrdiff_t getHandle() const override { return buffer; };
+	ptrdiff_t getTexelBufferHandle() const override { return texture; };
+
+	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
+
 private:
 
 	bool load(bool restore);
-	void unload();
 
 	void unmapStatic(size_t offset, size_t size);
 	void unmapStream();
 
-	GLenum target;
+	BufferType mapType = BUFFERTYPE_VERTEX;
+	GLenum target = 0;
 
-	// The VBO identifier. Assigned by OpenGL.
-	GLuint vbo;
+	// The buffer object identifier. Assigned by OpenGL.
+	GLuint buffer = 0;
+
+	// Used for Texel Buffer types.
+	GLuint texture = 0;
 
 	// A pointer to mapped memory.
-	char *memory_map;
+	char *memoryMap = nullptr;
 
-	size_t modified_offset;
-	size_t modified_size;
+	size_t modifiedOffset = 0;
+	size_t modifiedSize = 0;
+	bool isMappedDataModified = false;
 
 }; // Buffer
 

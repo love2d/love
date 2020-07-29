@@ -50,17 +50,20 @@ class Mesh : public Drawable
 {
 public:
 
-	static love::Type type;
-
-	struct AttribFormat
+	struct BufferAttribute
 	{
 		std::string name;
-		vertex::DataType type;
-		int components; // max 4
+		StrongRef<Buffer> buffer;
+		int indexInBuffer;
+		AttributeStep step;
+		bool enabled;
 	};
 
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
+	static love::Type type;
+
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(const std::vector<BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	virtual ~Mesh();
 
@@ -93,11 +96,14 @@ public:
 	size_t getVertexStride() const;
 
 	/**
+	 * Gets the Buffer that holds the Mesh's vertices.
+	 **/
+	Buffer *getVertexBuffer() const;
+
+	/**
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
-	const std::vector<AttribFormat> &getVertexFormat() const;
-	vertex::DataType getAttributeInfo(int attribindex, int &components) const;
-	int getAttributeIndex(const std::string &name) const;
+	const std::vector<Buffer::DataMember> &getVertexFormat() const;
 
 	/**
 	 * Sets whether a specific vertex attribute is used when drawing the Mesh.
@@ -106,11 +112,12 @@ public:
 	bool isAttributeEnabled(const std::string &name) const;
 
 	/**
-	 * Attaches a vertex attribute from another Mesh to this one. The attribute
-	 * will be used when drawing this Mesh.
+	 * Attaches a vertex attribute from another vertex buffer to this Mesh. The
+	 * attribute will be used when drawing this Mesh.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
+	void attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
+	const std::vector<BufferAttribute> &getAttachedAttributes() const;
 
 	void *mapVertexData();
 	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);
@@ -136,10 +143,13 @@ public:
 	 **/
 	bool getVertexMap(std::vector<uint32> &map) const;
 
+	void setIndexBuffer(Buffer *buffer);
+	Buffer *getIndexBuffer() const;
+
 	/**
 	 * Gets the total number of elements in the vertex map array.
 	 **/
-	size_t getVertexMapCount() const;
+	size_t getIndexCount() const;
 
 	/**
 	 * Sets the texture used when drawing the Mesh.
@@ -172,31 +182,21 @@ public:
 
 	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
 
-	static std::vector<AttribFormat> getDefaultVertexFormat();
+	static std::vector<Buffer::DataDeclaration> getDefaultVertexFormat();
 
 private:
 
 	friend class SpriteBatch;
 
-	struct AttachedAttribute
-	{
-		Mesh *mesh;
-		int index;
-		AttributeStep step;
-		bool enabled;
-	};
-
 	void setupAttachedAttributes();
-	void calculateAttributeSizes(Graphics *gfx);
-	size_t getAttributeOffset(size_t attribindex) const;
+	int getAttachedAttributeIndex(const std::string &name) const;
 
-	std::vector<AttribFormat> vertexFormat;
-	std::vector<size_t> attributeSizes;
+	std::vector<Buffer::DataMember> vertexFormat;
 
-	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
+	std::vector<BufferAttribute> attachedAttributes;
 
 	// Vertex buffer, for the vertex data.
-	Buffer *vertexBuffer;
+	StrongRef<Buffer> vertexBuffer;
 	size_t vertexCount;
 	size_t vertexStride;
 
@@ -205,7 +205,7 @@ private:
 	char *vertexScratchBuffer;
 
 	// Index buffer, for the vertex map.
-	Buffer *indexBuffer;
+	StrongRef<Buffer> indexBuffer;
 	bool useIndexBuffer;
 	size_t indexCount;
 	IndexDataType indexDataType;
