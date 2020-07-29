@@ -231,7 +231,7 @@ love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::Stage
 
 love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
 {
-	return new Shader(vertex, pixel);
+	return new Shader(device, vertex, pixel);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags)

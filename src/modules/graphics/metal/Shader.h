@@ -67,7 +67,7 @@ public:
 		}
 	};
 
-	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
+	Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
 	virtual ~Shader();
 
 	// Implements Shader.
@@ -86,6 +86,9 @@ public:
 
 	static int getUniformBufferBinding();
 
+	uint8 *getLocalUniformBufferData() { return localUniformBufferData; }
+	size_t getLocalUniformBufferSize() const { return localUniformBufferSize; }
+
 private:
 
 	struct RenderPipelineHasher
@@ -100,6 +103,9 @@ private:
 
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 	std::map<std::string, UniformInfo> uniforms;
+
+	uint8 *localUniformBufferData;
+	size_t localUniformBufferSize;
 
 	std::map<std::string, int> attributes;
 

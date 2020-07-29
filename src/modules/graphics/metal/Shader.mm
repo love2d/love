@@ -121,13 +121,13 @@ static EShLanguage getGLSLangStage(ShaderStage::StageType stage)
 	return EShLangCount;
 }
 
-Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
+Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
 	: love::graphics::Shader(vertex, pixel)
 	, functions()
 	, builtinUniformInfo()
+	, localUniformBufferData(nullptr)
+	, localUniformBufferSize(0)
 { @autoreleasepool {
-	auto gfx = Graphics::getInstance();
-
 	using namespace glslang;
 	using namespace spirv_cross;
 
@@ -186,10 +186,33 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 
 			for (const auto &resource : resources.sampled_images)
 			{
+				int binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+
 				BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 				if (getConstant(resource.name.c_str(), builtin))
 				{
 					// TODO
+				}
+
+				auto it = uniforms.find(resource.name);
+				if (it != uniforms.end())
+				{
+					if (it->second.ints[0] != binding)
+						throw love::Exception("texture binding mismatch for %s: %d vs %d", resource.name.c_str(), it->second.ints[0], binding);
+				}
+				else
+				{
+					UniformInfo u = {};
+					u.baseType = UNIFORM_SAMPLER;
+					u.name = resource.name;
+					u.location = 0;
+					u.textures = new love::graphics::Texture*[1];
+					u.textures[0] = nullptr;
+					u.data = malloc(sizeof(int) * 1);
+					u.ints[0] = binding;
+//					printf("binding for %s: %d\n", u.name.c_str(), binding);
+
+					uniforms[u.name] = u;
 				}
 			}
 
@@ -240,7 +263,7 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 														encoding:NSUTF8StringEncoding];
 
 			NSError *err = nil;
-			id<MTLLibrary> library = [gfx->device newLibraryWithSource:nssource options:nil error:&err];
+			id<MTLLibrary> library = [device newLibraryWithSource:nssource options:nil error:&err];
 			if (library == nil && err != nil)
 			{
 				NSLog(@"errors: %@", err);
@@ -274,6 +297,15 @@ Shader::~Shader()
 		CFBridgingRelease(kvp.second);
 
 	cachedRenderPipelines.clear();
+
+	for (const auto &it : uniforms)
+	{
+		free(it.second.data);
+		if (it.second.textures != nullptr)
+			delete[] it.second.textures;
+	}
+
+	delete[] localUniformBufferData;
 }}
 
 void Shader::attach()
