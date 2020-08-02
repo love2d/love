@@ -123,7 +123,7 @@ CompareMode getReversedCompareMode(CompareMode mode)
 	}
 }
 
-static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[] =
+STRINGMAP_BEGIN(BlendMode, BLEND_MAX_ENUM, blendMode)
 {
 	{ "alpha",    BLEND_ALPHA    },
 	{ "add",      BLEND_ADD      },
@@ -135,19 +135,17 @@ static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[] =
 	{ "replace",  BLEND_REPLACE  },
 	{ "none",     BLEND_NONE     },
 	{ "custom",   BLEND_CUSTOM   },
-};
+}
+STRINGMAP_END(BlendMode, BLEND_MAX_ENUM, blendMode)
 
-static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes(blendModeEntries, sizeof(blendModeEntries));
-
-static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM>::Entry blendAlphaEntries[] =
+STRINGMAP_BEGIN(BlendAlpha, BLENDALPHA_MAX_ENUM, blendAlpha)
 {
 	{ "alphamultiply", BLENDALPHA_MULTIPLY      },
 	{ "premultiplied", BLENDALPHA_PREMULTIPLIED },
-};
+}
+STRINGMAP_END(BlendAlpha, BLENDALPHA_MAX_ENUM, blendAlpha)
 
-static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM> blendAlphaModes(blendAlphaEntries, sizeof(blendAlphaEntries));
-
-static StringMap<BlendFactor, BLENDFACTOR_MAX_ENUM>::Entry blendFactorEntries[] =
+STRINGMAP_BEGIN(BlendFactor, BLENDFACTOR_MAX_ENUM, blendFactor)
 {
 	{ "zero",              BLENDFACTOR_ZERO                 },
 	{ "one",               BLENDFACTOR_ONE                  },
@@ -160,22 +158,20 @@ static StringMap<BlendFactor, BLENDFACTOR_MAX_ENUM>::Entry blendFactorEntries[] 
 	{ "dstalpha",          BLENDFACTOR_DST_ALPHA            },
 	{ "oneminusdstalpha",  BLENDFACTOR_ONE_MINUS_DST_ALPHA  },
 	{ "srcalphasaturated", BLENDFACTOR_SRC_ALPHA_SATURATED  },
-};
+}
+STRINGMAP_END(BlendFactor, BLENDFACTOR_MAX_ENUM, blendFactor)
 
-static StringMap<BlendFactor, BLENDFACTOR_MAX_ENUM> blendFactors(blendFactorEntries, sizeof(blendFactorEntries));
-
-static StringMap<BlendOperation, BLENDOP_MAX_ENUM>::Entry blendOperationEntries[] =
+STRINGMAP_BEGIN(BlendOperation, BLENDOP_MAX_ENUM, blendOperation)
 {
 	{ "add",             BLENDOP_ADD              },
 	{ "subtract",        BLENDOP_SUBTRACT         },
 	{ "reversesubtract", BLENDOP_REVERSE_SUBTRACT },
 	{ "min",             BLENDOP_MIN              },
 	{ "max",             BLENDOP_MAX              },
-};
+}
+STRINGMAP_END(BlendOperation, BLENDOP_MAX_ENUM, blendOperation)
 
-static StringMap<BlendOperation, BLENDOP_MAX_ENUM> blendOperations(blendOperationEntries, sizeof(blendOperationEntries));
-
-static StringMap<StencilAction, STENCIL_MAX_ENUM>::Entry stencilActionEntries[] =
+STRINGMAP_BEGIN(StencilAction, STENCIL_MAX_ENUM, stencilAction)
 {
 	{ "keep",          STENCIL_KEEP           },
 	{ "zero",          STENCIL_ZERO           },
@@ -185,11 +181,10 @@ static StringMap<StencilAction, STENCIL_MAX_ENUM>::Entry stencilActionEntries[] 
 	{ "incrementwrap", STENCIL_INCREMENT_WRAP },
 	{ "decrementwrap", STENCIL_DECREMENT_WRAP },
 	{ "invert",        STENCIL_INVERT         },
-};
+}
+STRINGMAP_END(StencilAction, STENCIL_MAX_ENUM, stencilAction)
 
-static StringMap<StencilAction, STENCIL_MAX_ENUM> stencilActions(stencilActionEntries, sizeof(stencilActionEntries));
-
-static StringMap<CompareMode, COMPARE_MAX_ENUM>::Entry compareModeEntries[] =
+STRINGMAP_BEGIN(CompareMode, COMPARE_MAX_ENUM, compareMode)
 {
 	{ "less",     COMPARE_LESS     },
 	{ "lequal",   COMPARE_LEQUAL   },
@@ -199,99 +194,8 @@ static StringMap<CompareMode, COMPARE_MAX_ENUM>::Entry compareModeEntries[] =
 	{ "notequal", COMPARE_NOTEQUAL },
 	{ "always",   COMPARE_ALWAYS   },
 	{ "never",    COMPARE_NEVER    },
-};
-
-static StringMap<CompareMode, COMPARE_MAX_ENUM> compareModes(compareModeEntries, sizeof(compareModeEntries));
-
-bool getConstant(const char *in, BlendMode &out)
-{
-	return blendModes.find(in, out);
 }
-
-bool getConstant(BlendMode in, const char *&out)
-{
-	return blendModes.find(in, out);
-}
-
-std::vector<std::string> getConstants(BlendMode)
-{
-	return blendModes.getNames();
-}
-
-bool getConstant(const char *in, BlendAlpha &out)
-{
-	return blendAlphaModes.find(in, out);
-}
-
-bool getConstant(BlendAlpha in, const char *&out)
-{
-	return blendAlphaModes.find(in, out);
-}
-
-std::vector<std::string> getConstants(BlendAlpha)
-{
-	return blendAlphaModes.getNames();
-}
-
-bool getConstant(const char *in, BlendFactor &out)
-{
-	return blendFactors.find(in, out);
-}
-
-bool getConstant(BlendFactor in, const char *&out)
-{
-	return blendFactors.find(in, out);
-}
-
-std::vector<std::string> getConstants(BlendFactor)
-{
-	return blendFactors.getNames();
-}
-
-bool getConstant(const char *in, BlendOperation &out)
-{
-	return blendOperations.find(in, out);
-}
-
-bool getConstant(BlendOperation in, const char *&out)
-{
-	return blendOperations.find(in, out);
-}
-
-std::vector<std::string> getConstants(BlendOperation)
-{
-	return blendOperations.getNames();
-}
-
-bool getConstant(const char *in, StencilAction &out)
-{
-	return stencilActions.find(in, out);
-}
-
-bool getConstant(StencilAction in, const char *&out)
-{
-	return stencilActions.find(in, out);
-}
-
-std::vector<std::string> getConstants(StencilAction)
-{
-	return stencilActions.getNames();
-}
-
-bool getConstant(const char *in, CompareMode &out)
-{
-	return compareModes.find(in, out);
-}
-
-bool getConstant(CompareMode in, const char *&out)
-{
-	return compareModes.find(in, out);
-}
-
-std::vector<std::string> getConstants(CompareMode)
-{
-	return compareModes.getNames();
-}
+STRINGMAP_END(CompareMode, COMPARE_MAX_ENUM, compareMode)
 
 } // graphics
 } // love

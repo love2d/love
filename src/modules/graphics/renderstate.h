@@ -22,6 +22,7 @@
 
 #include "common/int.h"
 #include "common/math.h"
+#include "common/StringMap.h"
 #include "vertex.h"
 
 #include <vector>
@@ -203,29 +204,12 @@ bool isAlphaMultiplyBlendSupported(BlendMode mode);
  **/
 CompareMode getReversedCompareMode(CompareMode mode);
 
-bool getConstant(const char *in, BlendMode &out);
-bool getConstant(BlendMode in, const char *&out);
-std::vector<std::string> getConstants(BlendMode);
-
-bool getConstant(const char *in, BlendAlpha &out);
-bool getConstant(BlendAlpha in, const char *&out);
-std::vector<std::string> getConstants(BlendAlpha);
-
-bool getConstant(const char *in, BlendFactor &out);
-bool getConstant(BlendFactor in, const char *&out);
-std::vector<std::string> getConstants(BlendFactor);
-
-bool getConstant(const char *in, BlendOperation &out);
-bool getConstant(BlendOperation in, const char *&out);
-std::vector<std::string> getConstants(BlendOperation);
-
-bool getConstant(const char *in, StencilAction &out);
-bool getConstant(StencilAction in, const char *&out);
-std::vector<std::string> getConstants(StencilAction);
-
-bool getConstant(const char *in, CompareMode &out);
-bool getConstant(CompareMode in, const char *&out);
-std::vector<std::string> getConstants(CompareMode);
+STRINGMAP_DECLARE(BlendMode);
+STRINGMAP_DECLARE(BlendAlpha);
+STRINGMAP_DECLARE(BlendFactor);
+STRINGMAP_DECLARE(BlendOperation);
+STRINGMAP_DECLARE(StencilAction);
+STRINGMAP_DECLARE(CompareMode);
 
 } // graphics
 } // love
