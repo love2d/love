@@ -1146,7 +1146,7 @@ int w_newVolumeTexture(lua_State *L)
 
 					for (int slice = 0; slice < slicelen; slice++)
 					{
-						lua_rawgeti(L, -1, mip + 1);
+						lua_rawgeti(L, -1, slice + 1);
 
 						auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
 						if (data.first.get())
