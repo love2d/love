@@ -673,7 +673,7 @@ function love.errhand(msg)
 	love.graphics.reset()
 	local font = love.graphics.setNewFont(14)
 
-	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.setColor(1, 1, 1)
 
 	local trace = debug.traceback()
 
