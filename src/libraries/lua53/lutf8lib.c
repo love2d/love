@@ -309,12 +309,7 @@ int luaopen_luautf8 (lua_State *L) {
       lua_setfield(L, -2, l->name);
     }
   }
-#if LUA_VERSION_NUM >= 504
   lua_pushlstring(L, UTF8PATT, sizeof(UTF8PATT) / sizeof(char) - 1);
   lua_setfield(L, -2, "charpattern");
-#else
-  lua_pushliteral(L, UTF8PATT);
-  lua_setfield(L, -2, "charpattern");
-#endif
   return 1;
 }
