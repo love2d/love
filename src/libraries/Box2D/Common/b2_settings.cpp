@@ -27,6 +27,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include "common/Exception.h"
+
 b2Version b2_version = {2, 4, 0};
 
 // Memory allocators. Modify these to use your own allocator.
@@ -74,4 +76,10 @@ void b2CloseDump()
 {
 	fclose(b2_dumpFile);
 	b2_dumpFile = nullptr;
+}
+
+void loveAssert(bool test, const char* teststr)
+{
+	if (!test)
+		throw love::Exception("Box2D assertion failed: %s", teststr);
 }

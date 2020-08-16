@@ -68,12 +68,12 @@ public:
 	/**
 	 * Gets the vertex that follows the last vertex.
 	 **/
-	void getNextVertex(float &x, float &y) const;
+	b2Vec2 getNextVertex() const;
 
 	/**
 	 * Gets the vertex that precedes the first vertex.
 	 **/
-	void getPreviousVertex(float &x, float &y) const;
+	b2Vec2 getPreviousVertex() const;
 
 	/**
 	 * Returns a child EdgeShape.

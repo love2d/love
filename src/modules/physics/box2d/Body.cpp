@@ -390,7 +390,7 @@ bool Body::isSleepingAllowed() const
 	return body->IsSleepingAllowed();
 }
 
-void Body::SetEnabled(bool enabled)
+void Body::setEnabled(bool enabled)
 {
 	body->SetEnabled(enabled);
 }

@@ -35,18 +35,18 @@ WeldJoint *luax_checkweldjoint(lua_State *L, int idx)
 	return j;
 }
 
-int w_WeldJoint_setFrequency(lua_State *L)
+int w_WeldJoint_setStiffness(lua_State *L)
 {
 	WeldJoint *t = luax_checkweldjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setFrequency(arg1);
+	t->setStiffness(arg1);
 	return 0;
 }
 
-int w_WeldJoint_getFrequency(lua_State *L)
+int w_WeldJoint_getStiffness(lua_State *L)
 {
 	WeldJoint *t = luax_checkweldjoint(L, 1);
-	lua_pushnumber(L, t->getFrequency());
+	lua_pushnumber(L, t->getStiffness());
 	return 1;
 }
 
@@ -54,14 +54,14 @@ int w_WeldJoint_setDampingRatio(lua_State *L)
 {
 	WeldJoint *t = luax_checkweldjoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setDampingRatio(arg1);
+	t->setDamping(arg1);
 	return 0;
 }
 
 int w_WeldJoint_getDampingRatio(lua_State *L)
 {
 	WeldJoint *t = luax_checkweldjoint(L, 1);
-	lua_pushnumber(L, t->getDampingRatio());
+	lua_pushnumber(L, t->getDamping());
 	return 1;
 }
 
@@ -74,8 +74,8 @@ int w_WeldJoint_getReferenceAngle(lua_State *L)
 
 static const luaL_Reg w_WeldJoint_functions[] =
 {
-	{ "setFrequency", w_WeldJoint_setFrequency },
-	{ "getFrequency", w_WeldJoint_getFrequency },
+	{ "setStiffness", w_WeldJoint_setStiffness },
+	{ "getStiffness", w_WeldJoint_getStiffness },
 	{ "setDampingRatio", w_WeldJoint_setDampingRatio },
 	{ "getDampingRatio", w_WeldJoint_getDampingRatio },
 	{ "getReferenceAngle", w_WeldJoint_getReferenceAngle },

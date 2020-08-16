@@ -367,7 +367,7 @@ public:
 	/**
 	 * Changes the body's active state.
 	 **/
-	void SetEnabled(bool enabled);
+	void setEnabled(bool enabled);
 
 	/**
 	 * Changes the body's sleep state.

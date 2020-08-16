@@ -43,6 +43,7 @@
 #include "b2_time_step.h"
 #include "b2_world.h"
 #include "b2_world_callbacks.h"
+#include "b2_distance.h"
 
 #include "b2_distance_joint.h"
 #include "b2_friction_joint.h"

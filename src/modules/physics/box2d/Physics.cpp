@@ -160,7 +160,7 @@ int Physics::newChainShape(lua_State *L)
 	if (istable)
 		argc = (int) luax_objlen(L, 2);
 
-	if (argc % 2 != 0)
+	if (argc == 0 || argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
 	int vcount = argc/2;
@@ -296,9 +296,31 @@ Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 
 int Physics::getDistance(lua_State *L)
 {
-	Fixture *fixtureA = luax_checktype<Fixture>(L, 1);
-	Fixture *fixtureB = luax_checktype<Fixture>(L, 2);
-	return 0;
+	Fixture* fixtureA = luax_checktype<Fixture>(L, 1);
+	Fixture* fixtureB = luax_checktype<Fixture>(L, 2);
+	b2DistanceProxy pA, pB;
+	b2DistanceInput i;
+	b2DistanceOutput o;
+	b2SimplexCache c;
+	c.count = 0;
+
+	luax_catchexcept(L, [&]() {
+		pA.Set(fixtureA->fixture->GetShape(), 0);
+		pB.Set(fixtureB->fixture->GetShape(), 0);
+		i.proxyA = pA;
+		i.proxyB = pB;
+		i.transformA = fixtureA->fixture->GetBody()->GetTransform();
+		i.transformB = fixtureB->fixture->GetBody()->GetTransform();
+		i.useRadii = true;
+		b2Distance(&o, &c, &i);
+		});
+
+	lua_pushnumber(L, Physics::scaleUp(o.distance));
+	lua_pushnumber(L, Physics::scaleUp(o.pointA.x));
+	lua_pushnumber(L, Physics::scaleUp(o.pointA.y));
+	lua_pushnumber(L, Physics::scaleUp(o.pointB.x));
+	lua_pushnumber(L, Physics::scaleUp(o.pointB.y));
+	return 5;
 }
 
 void Physics::setMeter(float scale)
