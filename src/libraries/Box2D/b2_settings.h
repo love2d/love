@@ -27,12 +27,15 @@
 #include <assert.h>
 #include <float.h>
 
+void loveAssert(bool test, const char* teststr);
+
 #if !defined(NDEBUG)
 	#define b2DEBUG
 #endif
 
 #define B2_NOT_USED(x) ((void)(x))
-#define b2Assert(A) assert(A)
+//#define b2Assert(A) assert(A)
+#define b2Assert(A) loveAssert((A), #A)
 
 typedef signed char	int8;
 typedef signed short int16;
