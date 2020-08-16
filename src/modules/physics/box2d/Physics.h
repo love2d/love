@@ -140,7 +140,7 @@ public:
 	 * @param x2 The x coordinate of the second point.
 	 * @param y2 The y coordinate of the second point.
 	 **/
-	EdgeShape *newEdgeShape(float x1, float y1, float x2, float y2);
+	EdgeShape *newEdgeShape(float x1, float y1, float x2, float y2, bool oneSided);
 
 	/**
 	 * Creates a new PolygonShape from a variable number of vertices.

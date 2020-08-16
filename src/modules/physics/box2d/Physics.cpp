@@ -83,10 +83,19 @@ PolygonShape *Physics::newRectangleShape(float x, float y, float w, float h, flo
 	return new PolygonShape(s);
 }
 
-EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2)
+EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2, bool oneSided)
 {
 	b2EdgeShape *s = new b2EdgeShape();
-	s->SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
+	if (oneSided)
+	{
+		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+		s->SetOneSided(v1, v1, v2, v2);
+	}
+	else
+	{
+		s->SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
+	}
 	return new EdgeShape(s);
 }
 
