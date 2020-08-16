@@ -1064,74 +1064,74 @@ source_group("modules\\window\\sdl" FILES ${LOVE_SRC_MODULE_WINDOW_SDL})
 #
 
 set(LOVE_SRC_3P_BOX2D_ROOT
-	src/libraries/Box2D/Box2D.h
+	src/libraries/box2d/Box2D.h
 )
 
 set(LOVE_SRC_3P_BOX2D_COLLISION
-    src/libraries/Box2D/collision/b2_broad_phase.cpp
-    src/libraries/Box2D/collision/b2_chain_shape.cpp
-    src/libraries/Box2D/collision/b2_circle_shape.cpp
-    src/libraries/Box2D/collision/b2_collide_circle.cpp
-    src/libraries/Box2D/collision/b2_collide_edge.cpp
-    src/libraries/Box2D/collision/b2_collide_polygon.cpp
-    src/libraries/Box2D/collision/b2_collision.cpp
-    src/libraries/Box2D/collision/b2_distance.cpp
-    src/libraries/Box2D/collision/b2_dynamic_tree.cpp
-    src/libraries/Box2D/collision/b2_edge_shape.cpp
-    src/libraries/Box2D/collision/b2_polygon_shape.cpp
-    src/libraries/Box2D/collision/b2_time_of_impact.cpp
+    src/libraries/box2d/collision/b2_broad_phase.cpp
+    src/libraries/box2d/collision/b2_chain_shape.cpp
+    src/libraries/box2d/collision/b2_circle_shape.cpp
+    src/libraries/box2d/collision/b2_collide_circle.cpp
+    src/libraries/box2d/collision/b2_collide_edge.cpp
+    src/libraries/box2d/collision/b2_collide_polygon.cpp
+    src/libraries/box2d/collision/b2_collision.cpp
+    src/libraries/box2d/collision/b2_distance.cpp
+    src/libraries/box2d/collision/b2_dynamic_tree.cpp
+    src/libraries/box2d/collision/b2_edge_shape.cpp
+    src/libraries/box2d/collision/b2_polygon_shape.cpp
+    src/libraries/box2d/collision/b2_time_of_impact.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D_COMMON
-    src/libraries/Box2D/common/b2_block_allocator.cpp
-    src/libraries/Box2D/common/b2_draw.cpp
-    src/libraries/Box2D/common/b2_math.cpp
-    src/libraries/Box2D/common/b2_settings.cpp
-    src/libraries/Box2D/common/b2_stack_allocator.cpp
-    src/libraries/Box2D/common/b2_timer.cpp
+    src/libraries/box2d/common/b2_block_allocator.cpp
+    src/libraries/box2d/common/b2_draw.cpp
+    src/libraries/box2d/common/b2_math.cpp
+    src/libraries/box2d/common/b2_settings.cpp
+    src/libraries/box2d/common/b2_stack_allocator.cpp
+    src/libraries/box2d/common/b2_timer.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D_DYNAMICS
-    src/libraries/Box2D/dynamics/b2_body.cpp
-    src/libraries/Box2D/dynamics/b2_chain_circle_contact.cpp
-    src/libraries/Box2D/dynamics/b2_chain_circle_contact.h
-    src/libraries/Box2D/dynamics/b2_chain_polygon_contact.cpp
-    src/libraries/Box2D/dynamics/b2_chain_polygon_contact.h
-    src/libraries/Box2D/dynamics/b2_circle_contact.cpp
-    src/libraries/Box2D/dynamics/b2_circle_contact.h
-    src/libraries/Box2D/dynamics/b2_contact.cpp
-    src/libraries/Box2D/dynamics/b2_contact_manager.cpp
-    src/libraries/Box2D/dynamics/b2_contact_solver.cpp
-    src/libraries/Box2D/dynamics/b2_contact_solver.h
-    src/libraries/Box2D/dynamics/b2_distance_joint.cpp
-    src/libraries/Box2D/dynamics/b2_edge_circle_contact.cpp
-    src/libraries/Box2D/dynamics/b2_edge_circle_contact.h
-    src/libraries/Box2D/dynamics/b2_edge_polygon_contact.cpp
-    src/libraries/Box2D/dynamics/b2_edge_polygon_contact.h
-    src/libraries/Box2D/dynamics/b2_fixture.cpp
-    src/libraries/Box2D/dynamics/b2_friction_joint.cpp
-    src/libraries/Box2D/dynamics/b2_gear_joint.cpp
-    src/libraries/Box2D/dynamics/b2_island.cpp
-    src/libraries/Box2D/dynamics/b2_island.h
-    src/libraries/Box2D/dynamics/b2_joint.cpp
-    src/libraries/Box2D/dynamics/b2_motor_joint.cpp
-    src/libraries/Box2D/dynamics/b2_mouse_joint.cpp
-    src/libraries/Box2D/dynamics/b2_polygon_circle_contact.cpp
-    src/libraries/Box2D/dynamics/b2_polygon_circle_contact.h
-    src/libraries/Box2D/dynamics/b2_polygon_contact.cpp
-    src/libraries/Box2D/dynamics/b2_polygon_contact.h
-    src/libraries/Box2D/dynamics/b2_prismatic_joint.cpp
-    src/libraries/Box2D/dynamics/b2_pulley_joint.cpp
-    src/libraries/Box2D/dynamics/b2_revolute_joint.cpp
-    src/libraries/Box2D/dynamics/b2_rope_joint.cpp
-    src/libraries/Box2D/dynamics/b2_weld_joint.cpp
-    src/libraries/Box2D/dynamics/b2_wheel_joint.cpp
-    src/libraries/Box2D/dynamics/b2_world.cpp
-    src/libraries/Box2D/dynamics/b2_world_callbacks.cpp
+    src/libraries/box2d/dynamics/b2_body.cpp
+    src/libraries/box2d/dynamics/b2_chain_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_chain_circle_contact.h
+    src/libraries/box2d/dynamics/b2_chain_polygon_contact.cpp
+    src/libraries/box2d/dynamics/b2_chain_polygon_contact.h
+    src/libraries/box2d/dynamics/b2_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_circle_contact.h
+    src/libraries/box2d/dynamics/b2_contact.cpp
+    src/libraries/box2d/dynamics/b2_contact_manager.cpp
+    src/libraries/box2d/dynamics/b2_contact_solver.cpp
+    src/libraries/box2d/dynamics/b2_contact_solver.h
+    src/libraries/box2d/dynamics/b2_distance_joint.cpp
+    src/libraries/box2d/dynamics/b2_edge_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_edge_circle_contact.h
+    src/libraries/box2d/dynamics/b2_edge_polygon_contact.cpp
+    src/libraries/box2d/dynamics/b2_edge_polygon_contact.h
+    src/libraries/box2d/dynamics/b2_fixture.cpp
+    src/libraries/box2d/dynamics/b2_friction_joint.cpp
+    src/libraries/box2d/dynamics/b2_gear_joint.cpp
+    src/libraries/box2d/dynamics/b2_island.cpp
+    src/libraries/box2d/dynamics/b2_island.h
+    src/libraries/box2d/dynamics/b2_joint.cpp
+    src/libraries/box2d/dynamics/b2_motor_joint.cpp
+    src/libraries/box2d/dynamics/b2_mouse_joint.cpp
+    src/libraries/box2d/dynamics/b2_polygon_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_polygon_circle_contact.h
+    src/libraries/box2d/dynamics/b2_polygon_contact.cpp
+    src/libraries/box2d/dynamics/b2_polygon_contact.h
+    src/libraries/box2d/dynamics/b2_prismatic_joint.cpp
+    src/libraries/box2d/dynamics/b2_pulley_joint.cpp
+    src/libraries/box2d/dynamics/b2_revolute_joint.cpp
+    src/libraries/box2d/dynamics/b2_rope_joint.cpp
+    src/libraries/box2d/dynamics/b2_weld_joint.cpp
+    src/libraries/box2d/dynamics/b2_wheel_joint.cpp
+    src/libraries/box2d/dynamics/b2_world.cpp
+    src/libraries/box2d/dynamics/b2_world_callbacks.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D_ROPE
-	src/libraries/Box2D/rope/b2_rope.cpp
+	src/libraries/box2d/rope/b2_rope.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D
@@ -1677,7 +1677,7 @@ set(LOVE_LIB_SRC
 include_directories(
 	src
 	src/libraries
-	src/libraries/Box2D
+	src/libraries/box2D
 	src/modules
 	${LOVE_INCLUDE_DIRS}
 )
