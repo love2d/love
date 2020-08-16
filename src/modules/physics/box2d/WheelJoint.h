@@ -99,22 +99,22 @@ public:
 	 * Set the spring frequency, in hertz. Setting the frequency to 0
 	 * disables the spring.
 	 **/
-	void setSpringFrequency(float hz);
+	void setStiffness(float hz);
 
 	/**
 	 * Get the spring frequency, in hertz.
 	 **/
-	float getSpringFrequency() const;
+	float getStiffness() const;
 
 	/**
 	 * Set the spring damping ratio.
 	 **/
-	void setSpringDampingRatio(float ratio);
+	void setDamping(float ratio);
 
 	/**
 	 * Get the spring damping ratio.
 	 **/
-	float getSpringDampingRatio() const;
+	float getDamping() const;
 
 	/**
 	 * Gets the axis unit vector, relative to body1.

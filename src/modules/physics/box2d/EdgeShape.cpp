@@ -50,19 +50,13 @@ void EdgeShape::setNextVertex(float x, float y)
 	e->m_vertex3 = Physics::scaleDown(v);
 }
 
-void EdgeShape::setNextVertex()
-{
-	b2EdgeShape *e = (b2EdgeShape *)shape;
-}
-
-bool EdgeShape::getNextVertex(float &x, float &y) const
+void EdgeShape::getNextVertex(float &x, float &y) const
 {
 	b2EdgeShape *e = (b2EdgeShape *)shape;
 
 	b2Vec2 v = Physics::scaleUp(e->m_vertex3);
 	x = v.x;
 	y = v.y;
-	return true;
 }
 
 void EdgeShape::setPreviousVertex(float x, float y)
@@ -72,19 +66,13 @@ void EdgeShape::setPreviousVertex(float x, float y)
 	e->m_vertex0 = Physics::scaleDown(v);
 }
 
-void EdgeShape::setPreviousVertex()
-{
-	b2EdgeShape *e = (b2EdgeShape *)shape;
-}
-
-bool EdgeShape::getPreviousVertex(float &x, float &y) const
+void EdgeShape::getPreviousVertex(float &x, float &y) const
 {
 	b2EdgeShape *e = (b2EdgeShape *)shape;
 
 	b2Vec2 v = Physics::scaleUp(e->m_vertex0);
 	x = v.x;
 	y = v.y;
-	return true;
 }
 
 int EdgeShape::getPoints(lua_State *L)

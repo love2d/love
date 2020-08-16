@@ -52,24 +52,24 @@ public:
 	/**
 	 * Sets the response speed.
 	 **/
-	void setFrequency(float hz);
+	void setStiffness(float hz);
 
 	/**
 	 * Gets the response speed.
 	 **/
-	float getFrequency() const;
+	float getStiffness() const;
 
 	/**
 	 * Sets the damping ratio.
 	 * 0 = no damping, 1 = critical damping.
 	 **/
-	void setDampingRatio(float d);
+	void setDamping(float d);
 
 	/**
 	 * Gets the damping ratio.
 	 * 0 = no damping, 1 = critical damping.
 	 **/
-	float getDampingRatio() const;
+	float getDamping() const;
 
 	/**
 	 * Gets the reference angle.

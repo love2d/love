@@ -370,7 +370,7 @@ void Body::setBullet(bool bullet)
 	return body->SetBullet(bullet);
 }
 
-bool Body::isActive() const
+bool Body::isEnabled() const
 {
 	return body->IsEnabled();
 }
@@ -390,9 +390,9 @@ bool Body::isSleepingAllowed() const
 	return body->IsSleepingAllowed();
 }
 
-void Body::setActive(bool active)
+void Body::SetEnabled(bool enabled)
 {
-	body->SetEnabled(active);
+	body->SetEnabled(enabled);
 }
 
 void Body::setAwake(bool awake)

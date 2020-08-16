@@ -56,22 +56,22 @@ float DistanceJoint::getLength() const
 	return Physics::scaleUp(joint->GetLength());
 }
 
-void DistanceJoint::setFrequency(float hz)
+void DistanceJoint::setStiffness(float hz)
 {
 	joint->SetStiffness(hz);
 }
 
-float DistanceJoint::getFrequency() const
+float DistanceJoint::getStiffness() const
 {
 	return joint->GetStiffness();
 }
 
-void DistanceJoint::setDampingRatio(float d)
+void DistanceJoint::setDamping(float d)
 {
 	joint->SetDamping(d);
 }
 
-float DistanceJoint::getDampingRatio() const
+float DistanceJoint::getDamping() const
 {
 	return joint->GetDamping();
 }

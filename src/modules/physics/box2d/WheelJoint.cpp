@@ -95,22 +95,22 @@ float WheelJoint::getMotorTorque(float inv_dt) const
 	return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 }
 
-void WheelJoint::setSpringFrequency(float hz)
+void WheelJoint::setStiffness(float hz)
 {
 	joint->SetStiffness(hz);
 }
 
-float WheelJoint::getSpringFrequency() const
+float WheelJoint::getStiffness() const
 {
 	return joint->GetStiffness();
 }
 
-void WheelJoint::setSpringDampingRatio(float ratio)
+void WheelJoint::setDamping(float ratio)
 {
 	joint->SetDamping(ratio);
 }
 
-float WheelJoint::getSpringDampingRatio() const
+float WheelJoint::getDamping() const
 {
 	return joint->GetDamping();
 }

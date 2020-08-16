@@ -78,28 +78,28 @@ float MouseJoint::getMaxForce() const
 	return Physics::scaleUp(joint->GetMaxForce());
 }
 
-void MouseJoint::setFrequency(float hz)
+void MouseJoint::setStiffness(float hz)
 {
-	// This is kind of a crappy check. The frequency is used in an internal
+	// This is kind of a crappy check. The Stiffness is used in an internal
 	// box2d calculation whose result must be > FLT_EPSILON, but other variables
 	// go into that calculation...
 	if (hz <= FLT_EPSILON * 2)
-		throw love::Exception("MouseJoint frequency must be a positive number.");
+		throw love::Exception("MouseJoint Stiffness must be a positive number.");
 
 	joint->SetStiffness(hz);
 }
 
-float MouseJoint::getFrequency() const
+float MouseJoint::getStiffness() const
 {
 	return joint->GetStiffness();
 }
 
-void MouseJoint::setDampingRatio(float d)
+void MouseJoint::setDamping(float d)
 {
 	joint->SetDamping(d);
 }
 
-float MouseJoint::getDampingRatio() const
+float MouseJoint::getDamping() const
 {
 	return joint->GetDamping();
 }

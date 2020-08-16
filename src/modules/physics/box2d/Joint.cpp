@@ -185,7 +185,7 @@ void Joint::destroyJoint(bool implicit)
 	this->release();
 }
 
-bool Joint::isActive() const
+bool Joint::isEnabled() const
 {
 	return joint->IsEnabled();
 }

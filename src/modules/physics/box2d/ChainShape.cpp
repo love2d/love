@@ -50,11 +50,6 @@ void ChainShape::setNextVertex(float x, float y)
 	c->m_nextVertex = Physics::scaleDown(v);
 }
 
-void ChainShape::setNextVertex()
-{
-	b2ChainShape *c = (b2ChainShape *)shape;
-}
-
 void ChainShape::setPreviousVertex(float x, float y)
 {
 	b2Vec2 v(x, y);
@@ -62,29 +57,22 @@ void ChainShape::setPreviousVertex(float x, float y)
 	c->m_prevVertex = Physics::scaleDown(v);
 }
 
-void ChainShape::setPreviousVertex()
-{
-	b2ChainShape *c = (b2ChainShape *)shape;
-}
-
-bool ChainShape::getNextVertex(float &x, float &y) const
+void ChainShape::getNextVertex(float &x, float &y) const
 {
 	b2ChainShape *c = (b2ChainShape *)shape;
 
 	b2Vec2 v = Physics::scaleUp(c->m_nextVertex);
 	x = v.x;
 	y = v.y;
-	return true;
 }
 
-bool ChainShape::getPreviousVertex(float &x, float &y) const
+void ChainShape::getPreviousVertex(float &x, float &y) const
 {
 	b2ChainShape *c = (b2ChainShape *)shape;
 
 	b2Vec2 v = Physics::scaleUp(c->m_prevVertex);
 	x = v.x;
 	y = v.y;
-	return true;
 }
 
 EdgeShape *ChainShape::getChildEdge(int index) const

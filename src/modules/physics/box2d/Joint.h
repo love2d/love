@@ -103,7 +103,7 @@ public:
 	 **/
 	float getReactionTorque(float dt);
 
-	bool isActive() const;
+	bool isEnabled() const;
 
 	bool getCollideConnected() const;
 

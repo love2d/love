@@ -350,7 +350,7 @@ public:
 	 * Checks whether a Body is active or not. An inactive body
 	 * cannot be interacted with.
 	 **/
-	bool isActive() const;
+	bool isEnabled() const;
 
 	/**
 	 * Checks whether a Body is awake or not. A Body
@@ -367,7 +367,7 @@ public:
 	/**
 	 * Changes the body's active state.
 	 **/
-	void setActive(bool active);
+	void SetEnabled(bool enabled);
 
 	/**
 	 * Changes the body's sleep state.
