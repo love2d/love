@@ -86,22 +86,22 @@ void MouseJoint::setFrequency(float hz)
 	if (hz <= FLT_EPSILON * 2)
 		throw love::Exception("MouseJoint frequency must be a positive number.");
 
-	joint->SetFrequency(hz);
+	joint->SetStiffness(hz);
 }
 
 float MouseJoint::getFrequency() const
 {
-	return joint->GetFrequency();
+	return joint->GetStiffness();
 }
 
 void MouseJoint::setDampingRatio(float d)
 {
-	joint->SetDampingRatio(d);
+	joint->SetDamping(d);
 }
 
 float MouseJoint::getDampingRatio() const
 {
-	return joint->GetDampingRatio();
+	return joint->GetDamping();
 }
 
 Body *MouseJoint::getBodyA() const

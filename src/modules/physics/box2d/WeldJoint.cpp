@@ -68,22 +68,22 @@ void WeldJoint::init(b2WeldJointDef &def, Body *body1, Body *body2, float xA, fl
 
 void WeldJoint::setFrequency(float hz)
 {
-	joint->SetFrequency(hz);
+	joint->SetStiffness(hz);
 }
 
 float WeldJoint::getFrequency() const
 {
-	return joint->GetFrequency();
+	return joint->GetStiffness();
 }
 
 void WeldJoint::setDampingRatio(float d)
 {
-	joint->SetDampingRatio(d);
+	joint->SetDamping(d);
 }
 
 float WeldJoint::getDampingRatio() const
 {
-	return joint->GetDampingRatio();
+	return joint->GetDamping();
 }
 
 float WeldJoint::getReferenceAngle() const

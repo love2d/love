@@ -187,7 +187,7 @@ void Joint::destroyJoint(bool implicit)
 
 bool Joint::isActive() const
 {
-	return joint->IsActive();
+	return joint->IsEnabled();
 }
 
 bool Joint::getCollideConnected() const

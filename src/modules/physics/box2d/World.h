@@ -107,7 +107,7 @@ public:
 	public:
 		RayCastCallback(World *world, lua_State *L, int idx);
 		~RayCastCallback();
-		virtual float32 ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float32 fraction);
+		virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction);
 	private:
 		World *world;
 		lua_State *L;
