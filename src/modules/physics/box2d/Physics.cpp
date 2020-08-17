@@ -305,8 +305,8 @@ Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
 
 int Physics::getDistance(lua_State *L)
 {
-	Fixture* fixtureA = luax_checktype<Fixture>(L, 1);
-	Fixture* fixtureB = luax_checktype<Fixture>(L, 2);
+	Fixture *fixtureA = luax_checktype<Fixture>(L, 1);
+	Fixture *fixtureB = luax_checktype<Fixture>(L, 2);
 	b2DistanceProxy pA, pB;
 	b2DistanceInput i;
 	b2DistanceOutput o;
@@ -322,7 +322,7 @@ int Physics::getDistance(lua_State *L)
 		i.transformB = fixtureB->fixture->GetBody()->GetTransform();
 		i.useRadii = true;
 		b2Distance(&o, &c, &i);
-		});
+	});
 
 	lua_pushnumber(L, Physics::scaleUp(o.distance));
 	lua_pushnumber(L, Physics::scaleUp(o.pointA.x));
