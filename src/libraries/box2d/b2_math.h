@@ -24,12 +24,12 @@
 #define B2_MATH_H
 
 #include "b2_settings.h"
-#include <math.h>
+#include <cmath>
 
 /// This function is used to ensure that a floating point number is not a NaN or infinity.
 inline bool b2IsValid(float x)
 {
-	return isfinite(x);
+	return std::isfinite(x);
 }
 
 #define	b2Sqrt(x)	sqrtf(x)
