@@ -102,7 +102,7 @@ int w_WheelJoint_getMotorTorque(lua_State *L)
 	return 1;
 }
 
-int w_WheelJoint_setSpringStiffness(lua_State *L)
+int w_WheelJoint_setSpringFrequency(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
@@ -110,7 +110,7 @@ int w_WheelJoint_setSpringStiffness(lua_State *L)
 	return 0;
 }
 
-int w_WheelJoint_getSpringStiffness(lua_State *L)
+int w_WheelJoint_getSpringFrequency(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
 	lua_pushnumber(L, t->getStiffness());
@@ -150,8 +150,8 @@ static const luaL_Reg w_WheelJoint_functions[] =
 	{ "setMaxMotorTorque", w_WheelJoint_setMaxMotorTorque },
 	{ "getMaxMotorTorque", w_WheelJoint_getMaxMotorTorque },
 	{ "getMotorTorque", w_WheelJoint_getMotorTorque },
-	{ "setSpringStiffness", w_WheelJoint_setSpringStiffness },
-	{ "getSpringStiffness", w_WheelJoint_getSpringStiffness },
+	{ "setSpringFrequency", w_WheelJoint_setSpringFrequency },
+	{ "getSpringFrequency", w_WheelJoint_getSpringFrequency },
 	{ "setSpringDampingRatio", w_WheelJoint_setSpringDampingRatio },
 	{ "getSpringDampingRatio", w_WheelJoint_getSpringDampingRatio },
 	{ "getAxis", w_WheelJoint_getAxis },
