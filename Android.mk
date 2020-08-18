@@ -67,14 +67,11 @@ LOCAL_SRC_FILES := \
   $(wildcard ${LOCAL_PATH}/src/modules/window/*.cpp) \
   $(wildcard ${LOCAL_PATH}/src/modules/window/sdl/*.cpp) \
   $(wildcard ${LOCAL_PATH}/src/libraries/ddsparse/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Collision/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Collision/Shapes/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Common/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Dynamics/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Dynamics/Contacts/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Dynamics/Joints/*.cpp) \
-  $(wildcard ${LOCAL_PATH}/src/libraries/Box2D/Rope/*.cpp) \
+  $(wildcard ${LOCAL_PATH}/src/libraries/box2d/*.cpp) \
+  $(wildcard ${LOCAL_PATH}/src/libraries/box2d/Collision/*.cpp) \
+  $(wildcard ${LOCAL_PATH}/src/libraries/box2d/Common/*.cpp) \
+  $(wildcard ${LOCAL_PATH}/src/libraries/box2d/Dynamics/*.cpp) \
+  $(wildcard ${LOCAL_PATH}/src/libraries/box2d/Rope/*.cpp) \
   $(wildcard ${LOCAL_PATH}/src/libraries/glad/*.cpp) \
   $(wildcard ${LOCAL_PATH}/src/libraries/glslang/glslang/GenericCodeGen/*.cpp) \
   $(wildcard ${LOCAL_PATH}/src/libraries/glslang/glslang/MachineIndependent/*.cpp) \
