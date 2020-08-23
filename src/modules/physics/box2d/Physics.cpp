@@ -395,6 +395,66 @@ b2AABB Physics::scaleUp(const b2AABB &aabb)
 	return t;
 }
 
+void Physics::b2LinearFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB)
+{
+	float massA = bodyA->GetMass();
+	float massB = bodyB->GetMass();
+	float mass;
+	if (massA > 0.0f && massB > 0.0f)
+	{
+		mass = massA * massB / (massA + massB);
+	}
+	else if (massA > 0.0f)
+	{
+		mass = massA;
+	}
+	else
+	{
+		mass = massB;
+	}
+
+	if (mass == 0.0f || stiffness <= 0.0f)
+	{
+		frequency = 0.0f;
+		ratio = 0.0f;
+		return;
+	};
+
+	float omega = b2Sqrt(stiffness / mass);
+	frequency = omega / (2.0f * b2_pi);
+	ratio = damping / (mass * 2.0f * omega);
+}
+
+void Physics::b2AngularFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB)
+{
+	float IA = bodyA->GetInertia();
+	float IB = bodyB->GetInertia();
+	float I;
+	if (IA > 0.0f && IB > 0.0f)
+	{
+		I = IA * IB / (IA + IB);
+	}
+	else if (IA > 0.0f)
+	{
+		I = IA;
+	}
+	else
+	{
+		I = IB;
+	}
+
+	if (I == 0.0f || stiffness <= 0.0f)
+	{
+		frequency = 0.0f;
+		ratio = 0.0f;
+		return;
+	};
+
+	float omega = b2Sqrt(stiffness / I);
+	frequency = omega / (2.0f * b2_pi);
+	ratio = damping / (I * 2.0f * omega);
+}
+
 } // box2d
 } // physics
 } // love

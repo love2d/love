@@ -354,7 +354,29 @@ public:
 	 * @param aabb The unscaled input AABB.
 	 * @return The scaled AABB.
 	 **/
-	static b2AABB scaleUp(const b2AABB &aabb);
+	static b2AABB scaleUp(const b2AABB& aabb);
+
+	/**
+	 * Calculates linear frequency and damping radio from stiffness and damping
+	 * @param frequency The output frequency
+	 * @param ratio The output damping ratio
+	 * @param stiffness The joint stiffness
+	 * @param damping The joint damping
+	 * @param bodyA The bodyA of the joint
+	 * @param bodyB The bodyB of the joint
+	 **/
+	static void b2LinearFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB);
+
+	/**
+	 * Calculates angular frequency and damping radio from stiffness and damping
+	 * @param frequency The output frequency
+	 * @param ratio The output damping ratio
+	 * @param stiffness The joint stiffness
+	 * @param damping The joint damping
+	 * @param bodyA The bodyA of the joint
+	 * @param bodyB The bodyB of the joint
+	 **/
+	static void b2AngularFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB);
 
 private:
 

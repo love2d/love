@@ -54,14 +54,14 @@ int w_DistanceJoint_setFrequency(lua_State *L)
 {
 	DistanceJoint *t = luax_checkdistancejoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setStiffness(arg1);
+	t->setFrequency(arg1);
 	return 0;
 }
 
 int w_DistanceJoint_getFrequency(lua_State *L)
 {
 	DistanceJoint *t = luax_checkdistancejoint(L, 1);
-	lua_pushnumber(L, t->getStiffness());
+	lua_pushnumber(L, t->getFrequency());
 	return 1;
 }
 
@@ -69,11 +69,41 @@ int w_DistanceJoint_setDampingRatio(lua_State *L)
 {
 	DistanceJoint *t = luax_checkdistancejoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setDamping(arg1);
+	t->setDampingRatio(arg1);
 	return 0;
 }
 
 int w_DistanceJoint_getDampingRatio(lua_State *L)
+{
+	DistanceJoint *t = luax_checkdistancejoint(L, 1);
+	lua_pushnumber(L, t->getDampingRatio());
+	return 1;
+}
+
+int w_DistanceJoint_setStiffness(lua_State *L)
+{
+	DistanceJoint *t = luax_checkdistancejoint(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	t->setStiffness(arg1);
+	return 0;
+}
+
+int w_DistanceJoint_getStiffness(lua_State *L)
+{
+	DistanceJoint *t = luax_checkdistancejoint(L, 1);
+	lua_pushnumber(L, t->getStiffness());
+	return 1;
+}
+
+int w_DistanceJoint_setDamping(lua_State *L)
+{
+	DistanceJoint *t = luax_checkdistancejoint(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	t->setDamping(arg1);
+	return 0;
+}
+
+int w_DistanceJoint_getDamping(lua_State *L)
 {
 	DistanceJoint *t = luax_checkdistancejoint(L, 1);
 	lua_pushnumber(L, t->getDamping());
@@ -88,6 +118,10 @@ static const luaL_Reg w_DistanceJoint_functions[] =
 	{ "getFrequency", w_DistanceJoint_getFrequency },
 	{ "setDampingRatio", w_DistanceJoint_setDampingRatio },
 	{ "getDampingRatio", w_DistanceJoint_getDampingRatio },
+	{ "setStiffness", w_DistanceJoint_setStiffness },
+	{ "getStiffness", w_DistanceJoint_getStiffness },
+	{ "setDamping", w_DistanceJoint_setDamping },
+	{ "getDamping", w_DistanceJoint_getDamping },
 	{ 0, 0 }
 };
 

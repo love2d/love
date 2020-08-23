@@ -95,9 +95,37 @@ float WheelJoint::getMotorTorque(float inv_dt) const
 	return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 }
 
-void WheelJoint::setStiffness(float hz)
+void WheelJoint::setFrequency(float hz)
 {
-	joint->SetStiffness(hz);
+	float stiffness, damping;
+	b2AngularStiffness(stiffness, damping, hz, getDampingRatio(), joint->GetBodyA(), joint->GetBodyB());
+	joint->SetStiffness(stiffness);
+}
+
+float WheelJoint::getFrequency() const
+{
+	float frequency, ratio;
+	Physics::b2AngularFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return frequency;
+}
+
+void WheelJoint::setDampingRatio(float ratio)
+{
+	float stiffness, damping;
+	b2AngularStiffness(stiffness, damping, getFrequency(), ratio, joint->GetBodyA(), joint->GetBodyB());
+	joint->SetDamping(damping);
+}
+
+float WheelJoint::getDampingRatio() const
+{
+	float frequency, ratio;
+	Physics::b2AngularFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return ratio;
+}
+
+void WheelJoint::setStiffness(float k)
+{
+	joint->SetStiffness(k);
 }
 
 float WheelJoint::getStiffness() const

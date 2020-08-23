@@ -96,23 +96,42 @@ public:
 	float getMotorTorque(float inv_dt) const;
 
 	/**
-	 * Set the spring frequency, in hertz. Setting the frequency to 0
-	 * disables the spring.
+	 * Sets the response speed. Independent of mass
 	 **/
-	void setStiffness(float hz);
+	void setFrequency(float hz);
 
 	/**
-	 * Get the spring frequency, in hertz.
+	 * Gets the response speed. Independent of mass
+	 **/
+	float getFrequency() const;
+
+	/**
+	 * Set the spring damping ratio. Independent of mass
+	 **/
+	void setDampingRatio(float ratio);
+
+	/**
+	 * Get the spring damping ratio. Independent of mass
+	 **/
+	float getDampingRatio() const;
+
+	/**
+	 * Sets the response speed. Dependent of mass
+	 **/
+	void setStiffness(float k);
+
+	/**
+	 * Gets the response speed. Dependent of mass
 	 **/
 	float getStiffness() const;
 
 	/**
-	 * Set the spring damping ratio.
+	 * Set the spring damping. Dependent of mass
 	 **/
 	void setDamping(float ratio);
 
 	/**
-	 * Get the spring damping ratio.
+	 * Get the spring damping. Dependent of mass
 	 **/
 	float getDamping() const;
 

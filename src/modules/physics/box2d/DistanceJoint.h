@@ -57,24 +57,42 @@ public:
 	float getLength() const;
 
 	/**
-	 * Sets the response speed.
+	 * Sets the response speed. Independent of mass
 	 **/
-	void setStiffness(float hz);
+	void setFrequency(float hz);
 
 	/**
-	 * Gets the response speed.
+	 * Gets the response speed. Independent of mass
+	 **/
+	float getFrequency() const;
+
+	/**
+	 * Set the spring damping ratio. Independent of mass
+	 **/
+	void setDampingRatio(float ratio);
+
+	/**
+	 * Get the spring damping ratio. Independent of mass
+	 **/
+	float getDampingRatio() const;
+
+	/**
+	 * Sets the response speed. Dependent of mass
+	 **/
+	void setStiffness(float k);
+
+	/**
+	 * Gets the response speed. Dependent of mass
 	 **/
 	float getStiffness() const;
 
 	/**
-	 * Sets the damping ratio.
-	 * 0 = no damping, 1 = critical damping.
+	 * Set the spring damping. Dependent of mass
 	 **/
-	void setDamping(float d);
+	void setDamping(float ratio);
 
 	/**
-	 * Gets the damping ratio.
-	 * 0 = no damping, 1 = critical damping.
+	 * Get the spring damping. Dependent of mass
 	 **/
 	float getDamping() const;
 
