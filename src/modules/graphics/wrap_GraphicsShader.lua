@@ -310,7 +310,7 @@ local function getLanguageTarget(code)
 	return (code:match("^%s*#pragma language (%w+)")) or "glsl1"
 end
 
-local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multicanvas)
+local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacorrect, custom, multicanvas, defines)
 	stage = stage:upper()
 	local lines = {
 		GLSL.VERSION[lang][gles],
@@ -324,9 +324,16 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		GLSL.FUNCTIONS,
 		GLSL[stage].FUNCTIONS,
 		custom and GLSL[stage].MAIN_CUSTOM or GLSL[stage].MAIN,
-		((lang == "glsl1" or glsl1on3) and not gles) and "#line 0" or "#line 1",
-		code,
 	}
+    if defines then
+        for k, v in pairs(defines) do
+            if type(k) == "string" and (type(v) == "string" or type(v) == "number" or type(v) == "boolean") then
+                table.insert(lines, string.format("#define %s %s", k, tostring(v)))
+            end
+        end
+    end
+	table.insert(lines, ((lang == "glsl1" or glsl1on3) and not gles) and "#line 0" or "#line 1")
+    table.insert(lines, code)
 	return table_concat(lines, "\n")
 end
 
@@ -345,7 +352,7 @@ local function isPixelCode(code)
 	end
 end
 
-function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
+function love.graphics._shaderCodeToGLSL(gles, arg1, arg2, defines)
 	local vertexcode, pixelcode
 	local is_custompixel = false -- whether pixel code has "effects" function instead of "effect"
 	local is_multicanvas = false
@@ -398,10 +405,10 @@ function love.graphics._shaderCodeToGLSL(gles, arg1, arg2)
 	end
 
 	if vertexcode then
-		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect)
+		vertexcode = createShaderStageCode("VERTEX", vertexcode, lang, gles, glsl1on3, gammacorrect, defines)
 	end
 	if pixelcode then
-		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel, is_multicanvas)
+		pixelcode = createShaderStageCode("PIXEL", pixelcode, lang, gles, glsl1on3, gammacorrect, is_custompixel, is_multicanvas, defines)
 	end
 
 	return vertexcode, pixelcode

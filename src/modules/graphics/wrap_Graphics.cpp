@@ -1313,6 +1313,10 @@ static int w_getShaderSource(lua_State *L, int startidx, bool gles, std::string 
 	bool has_arg1 = lua_isstring(L, startidx + 0) != 0;
 	bool has_arg2 = lua_isstring(L, startidx + 1) != 0;
 
+    bool has_defines = false;
+    if (has_arg1 && !has_arg2) has_defines = lua_istable(L, startidx + 1) != 0;
+    if (has_arg1 && has_arg2) has_defines = lua_istable(L, startidx + 2) != 0;
+
 	// require at least one string argument
 	if (!(has_arg1 || has_arg2))
 		luaL_checkstring(L, startidx);
@@ -1332,8 +1336,16 @@ static int w_getShaderSource(lua_State *L, int startidx, bool gles, std::string 
 	else
 		lua_pushnil(L);
 
-	// call effectCodeToGLSL, returned values will be at the top of the stack
-	if (lua_pcall(L, 3, 2, 0) != 0)
+    if (has_defines && has_arg1 && !has_arg2)
+        lua_pushvalue(L, startidx + 1);
+    else if (has_defines && has_arg1 && has_arg2)
+        lua_pushvalue(L, startidx + 2);
+    else {
+        lua_pushnil(L);
+    }
+
+	// call _shaderCodeToGLSL, returned values will be at the top of the stack
+	if (lua_pcall(L, 4, 2, 0) != 0)
 		return luaL_error(L, "%s", lua_tostring(L, -1));
 
 	// vertex shader code
