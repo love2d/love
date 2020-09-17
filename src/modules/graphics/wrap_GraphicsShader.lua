@@ -325,15 +325,15 @@ local function createShaderStageCode(stage, code, lang, gles, glsl1on3, gammacor
 		GLSL[stage].FUNCTIONS,
 		custom and GLSL[stage].MAIN_CUSTOM or GLSL[stage].MAIN,
 	}
-    if defines then
-        for k, v in pairs(defines) do
-            if type(k) == "string" and (type(v) == "string" or type(v) == "number" or type(v) == "boolean") then
-                table.insert(lines, string.format("#define %s %s", k, tostring(v)))
-            end
-        end
-    end
+	if defines then
+		for k, v in pairs(defines) do
+			if type(k) == "string" and (type(v) == "string" or type(v) == "number" or type(v) == "boolean") then
+				table.insert(lines, string.format("#define %s %s", k, tostring(v)))
+			end
+		end
+	end
 	table.insert(lines, ((lang == "glsl1" or glsl1on3) and not gles) and "#line 0" or "#line 1")
-    table.insert(lines, code)
+	table.insert(lines, code)
 	return table_concat(lines, "\n")
 end
 
