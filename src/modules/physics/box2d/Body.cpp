@@ -112,7 +112,7 @@ float Body::getAngularVelocity() const
 	return body->GetAngularVelocity();
 }
 
-void Body::getState(b2Vec2 &pos_o, float &a_o, b2Vec2 &vel_o, float &da_o) const
+void Body::getKinematicState(b2Vec2 &pos_o, float &a_o, b2Vec2 &vel_o, float &da_o) const
 {
 	pos_o = Physics::scaleUp(body->GetPosition());
 	a_o = body->GetAngle();
@@ -233,7 +233,7 @@ void Body::setAngularVelocity(float r)
 	body->SetAngularVelocity(r);
 }
 
-void Body::setState(b2Vec2 pos, float a, b2Vec2 vel, float da)
+void Body::setKinematicState(b2Vec2 pos, float a, b2Vec2 vel, float da)
 {
 	body->SetTransform(Physics::scaleDown(pos), a);
 	body->SetLinearVelocity(Physics::scaleDown(vel));

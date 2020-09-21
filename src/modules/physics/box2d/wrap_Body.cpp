@@ -125,12 +125,12 @@ int w_Body_getAngularVelocity(lua_State *L)
 	return 1;
 }
 
-int w_Body_getState(lua_State *L)
+int w_Body_getKinematicState(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	b2Vec2 pos_o, vel_o;
 	float a_o, da_o;
-	t->getState(pos_o, a_o, vel_o, da_o);
+	t->getKinematicState(pos_o, a_o, vel_o, da_o);
 	lua_pushnumber(L, pos_o.x);
 	lua_pushnumber(L, pos_o.y);
 	lua_pushnumber(L, a_o);
@@ -328,7 +328,7 @@ int w_Body_setPosition(lua_State *L)
 	return 0;
 }
 
-int w_Body_setState(lua_State *L)
+int w_Body_setKinematicState(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
@@ -337,7 +337,7 @@ int w_Body_setState(lua_State *L)
 	float dx = (float)luaL_checknumber(L, 5);
 	float dy = (float)luaL_checknumber(L, 6);
 	float da = (float)luaL_checknumber(L, 7);
-	luax_catchexcept(L, [&](){ t->setState(b2Vec2(x, y), a, b2Vec2(dx, dy), da); });
+	luax_catchexcept(L, [&](){ t->setKinematicState(b2Vec2(x, y), a, b2Vec2(dx, dy), da); });
 	return 0;
 }
 
@@ -659,7 +659,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getWorldCenter", w_Body_getWorldCenter },
 	{ "getLocalCenter", w_Body_getLocalCenter },
 	{ "getAngularVelocity", w_Body_getAngularVelocity },
-	{ "getState", w_Body_getState },
+	{ "getKinematicState", w_Body_getKinematicState },
 	{ "getMass", w_Body_getMass },
 	{ "getInertia", w_Body_getInertia },
 	{ "getMassData", w_Body_getMassData },
@@ -677,7 +677,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "setAngle", w_Body_setAngle },
 	{ "setAngularVelocity", w_Body_setAngularVelocity },
 	{ "setPosition", w_Body_setPosition },
-	{ "setState", w_Body_setState },
+	{ "setKinematicState", w_Body_setKinematicState },
 	{ "resetMassData", w_Body_resetMassData },
 	{ "setMassData", w_Body_setMassData },
 	{ "setMass", w_Body_setMass },

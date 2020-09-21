@@ -132,7 +132,7 @@ public:
 	/**
 	 * Get the current Body kinematic state. (Position, angle, velocity, angle velocity).
 	 **/
-	void getState(b2Vec2 &pos_o, float &a_o, b2Vec2& vel_o, float &da_o) const;
+	void getKinematicState(b2Vec2 &pos_o, float &a_o, b2Vec2& vel_o, float &da_o) const;
 
 	/**
 	 * Gets the Body's mass.
@@ -227,7 +227,7 @@ public:
 	/**
 	 * Set the current Body kinematic state. (Position, angle, velocity, angle velocity).
 	 **/
-	void setState(b2Vec2 pos, float a, b2Vec2 vel, float da);
+	void setKinematicState(b2Vec2 pos, float a, b2Vec2 vel, float da);
 
 	/**
 	 * Sets the current position of the Body.
