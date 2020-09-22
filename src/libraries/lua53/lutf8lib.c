@@ -309,8 +309,7 @@ int luaopen_luautf8 (lua_State *L) {
       lua_setfield(L, -2, l->name);
     }
   }
-  lua_pushliteral(L, UTF8PATT);
+  lua_pushlstring(L, UTF8PATT, sizeof(UTF8PATT) / sizeof(char) - 1);
   lua_setfield(L, -2, "charpattern");
   return 1;
 }
-

@@ -221,8 +221,13 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 	lua_newthread(L);
 	lua_pushvalue(L, -2);
 	int stackpos = lua_gettop(L);
-	while (love::luax_resume(L, 0) == LUA_YIELD)
+	int nres;
+	while (love::luax_resume(L, 0, &nres) == LUA_YIELD)
+#if LUA_VERSION_NUM >= 504
+		lua_pop(L, nres);
+#else
 		lua_pop(L, lua_gettop(L) - stackpos);
+#endif
 
 	retval = 0;
 	DoneAction done = DONE_QUIT;
