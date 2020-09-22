@@ -98,7 +98,7 @@ SoundData::SoundData(int samples, int sampleRate, int bitDepth, int channels)
 	load(samples, sampleRate, bitDepth, channels);
 }
 
-SoundData::SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels)
+SoundData::SoundData(const void *d, int samples, int sampleRate, int bitDepth, int channels)
 	: data(0)
 	, size(0)
 	, sampleRate(0)
@@ -129,7 +129,7 @@ SoundData *SoundData::clone() const
 	return new SoundData(*this);
 }
 
-void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, void *newData)
+void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, const void *newData)
 {
 	if (samples <= 0)
 		throw love::Exception("Invalid sample count: %d", samples);
@@ -283,6 +283,21 @@ void SoundData::copyFrom(const SoundData *src, int srcStart, int count, int dstS
 		memmove(data + dstStart * bytesPerSample, src->data + srcStart * bytesPerSample, count * bytesPerSample);
 	else
 		memcpy(data + dstStart * bytesPerSample, src->data + srcStart * bytesPerSample, count * bytesPerSample);
+}
+
+SoundData *SoundData::slice(int start, int length) const
+{
+	int totalSamples = getSampleCount();
+
+	if (length == 0)
+		throw love::Exception("Invalid slice length: 0");
+	else if (length < 0)
+		length = totalSamples - start;
+
+	if (start < 0 || start + length > totalSamples)
+		throw love::Exception("Attempt to slice at out-of-range position!");
+
+	return new SoundData(data + start * channels * bitDepth/8, length, sampleRate, bitDepth, channels);
 }
 
 } // sound
