@@ -98,7 +98,7 @@ SoundData::SoundData(int samples, int sampleRate, int bitDepth, int channels)
 	load(samples, sampleRate, bitDepth, channels);
 }
 
-SoundData::SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels)
+SoundData::SoundData(const void *d, int samples, int sampleRate, int bitDepth, int channels)
 	: data(0)
 	, size(0)
 	, sampleRate(0)
@@ -129,7 +129,7 @@ SoundData *SoundData::clone() const
 	return new SoundData(*this);
 }
 
-void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, void *newData)
+void SoundData::load(int samples, int sampleRate, int bitDepth, int channels, const void *newData)
 {
 	if (samples <= 0)
 		throw love::Exception("Invalid sample count: %d", samples);
@@ -256,6 +256,48 @@ float SoundData::getSample(int i, int channel) const
 		throw love::Exception("Attempt to get sample from out-of-range channel!");
 
 	return getSample(i * channels + (channel - 1));
+}
+
+void SoundData::copyFrom(const SoundData *src, int srcStart, int count, int dstStart)
+{
+	if (channels != src->channels)
+		throw love::Exception("Channel count mismatch!");
+
+	size_t bytesPerSample = (size_t) channels * bitDepth/8;
+	size_t srcBytesPerSample = (size_t) src->channels * src->bitDepth/8;
+	
+	// Check range
+	if (dstStart < 0 || (dstStart+count) * bytesPerSample > size)
+		throw love::Exception("Destination out-of-range!");
+	if (srcStart < 0 || (srcStart+count) * srcBytesPerSample > src->size)
+		throw love::Exception("Source out-of-range!");
+
+	if (bitDepth != src->bitDepth)
+	{
+		// Bit depth mismatch, use get/setSample at loop
+		for (int i = 0; i < count * channels; i++)
+			setSample(dstStart * channels + i, src->getSample(srcStart * channels + i));
+	}
+	else if (this->data == src->data)
+		// May overlap, use memmove
+		memmove(data + dstStart * bytesPerSample, src->data + srcStart * bytesPerSample, count * bytesPerSample);
+	else
+		memcpy(data + dstStart * bytesPerSample, src->data + srcStart * bytesPerSample, count * bytesPerSample);
+}
+
+SoundData *SoundData::slice(int start, int length) const
+{
+	int totalSamples = getSampleCount();
+
+	if (length == 0)
+		throw love::Exception("Invalid slice length: 0");
+	else if (length < 0)
+		length = totalSamples - start;
+
+	if (start < 0 || start + length > totalSamples)
+		throw love::Exception("Attempt to slice at out-of-range position!");
+
+	return new SoundData(data + start * channels * bitDepth/8, length, sampleRate, bitDepth, channels);
 }
 
 } // sound
