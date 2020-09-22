@@ -1,8 +1,4 @@
 #include <string.h>
-#include "glad.hpp"
-
-namespace glad {
-
 
 #ifdef GLAD_USE_SDL
 #include <SDL.h>
@@ -12,6 +8,10 @@ namespace glad {
 #else
 #include <assert.h>
 #endif
+
+#include "glad.hpp"
+
+namespace glad {
 
 bool gladLoadGL(void) {
 #ifdef GLAD_USE_SDL
