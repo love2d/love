@@ -267,9 +267,9 @@ void SoundData::copyFrom(const SoundData *src, int srcStart, int count, int dstS
 	size_t srcBytesPerSample = (size_t) src->channels * src->bitDepth/8;
 	
 	// Check range
-	if (dstStart < 0 || (dstStart+count) * bytesPerSample >= size)
+	if (dstStart < 0 || (dstStart+count) * bytesPerSample > size)
 		throw love::Exception("Destination out-of-range!");
-	if (srcStart < 0 || (srcStart+count) * srcBytesPerSample >= src->size)
+	if (srcStart < 0 || (srcStart+count) * srcBytesPerSample > src->size)
 		throw love::Exception("Source out-of-range!");
 
 	if (bitDepth != src->bitDepth)
