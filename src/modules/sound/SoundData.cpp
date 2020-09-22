@@ -276,7 +276,7 @@ void SoundData::copyFrom(const SoundData *src, int srcStart, int count, int dstS
 	{
 		// Bit depth mismatch, use get/setSample at loop
 		for (int i = 0; i < count * channels; i++)
-			setSample(dstStart + i, src->getSample(srcStart + i));
+			setSample(dstStart * channels + i, src->getSample(srcStart * channels + i));
 	}
 	else if (this->data == src->data)
 		// May overlap, use memmove
