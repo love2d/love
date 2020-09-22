@@ -121,6 +121,19 @@ int w_SoundData_getSample(lua_State *L)
 	return 1;
 }
 
+int w_SoundData_copyFrom(lua_State *L)
+{
+	SoundData *dst = luax_checksounddata(L, 1);
+	const SoundData *src = luax_checksounddata(L, 2);
+
+	int srcStart = (int) luaL_checkinteger(L, 3);
+	int count = (int) luaL_checkinteger(L, 4);
+	int dstStart = (int) luaL_optinteger(L, 5, 0);
+
+	luax_catchexcept(L, [&](){ dst->copyFrom(src, srcStart, count, dstStart); });
+	return 0;
+}
+
 static const luaL_Reg w_SoundData_functions[] =
 {
 	{ "clone", w_SoundData_clone },
@@ -131,6 +144,7 @@ static const luaL_Reg w_SoundData_functions[] =
 	{ "getDuration", w_SoundData_getDuration },
 	{ "setSample", w_SoundData_setSample },
 	{ "getSample", w_SoundData_getSample },
+	{ "copyFrom", w_SoundData_copyFrom },
 
 	{ 0, 0 }
 };

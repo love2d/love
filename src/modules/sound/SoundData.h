@@ -61,6 +61,8 @@ public:
 	float getSample(int i) const;
 	float getSample(int i, int channel) const;
 
+	void copyFrom(const SoundData *src, int srcStart, int count, int dstStart);
+
 private:
 
 	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);

@@ -258,5 +258,32 @@ float SoundData::getSample(int i, int channel) const
 	return getSample(i * channels + (channel - 1));
 }
 
+void SoundData::copyFrom(const SoundData *src, int srcStart, int count, int dstStart)
+{
+	if (channels != src->channels)
+		throw love::Exception("Channel count mismatch!");
+
+	size_t bytesPerSample = (size_t) channels * bitDepth/8;
+	size_t srcBytesPerSample = (size_t) src->channels * src->bitDepth/8;
+	
+	// Check range
+	if (dstStart < 0 || (dstStart+count) * bytesPerSample >= size)
+		throw love::Exception("Destination out-of-range!");
+	if (srcStart < 0 || (srcStart+count) * srcBytesPerSample >= src->size)
+		throw love::Exception("Source out-of-range!");
+
+	if (bitDepth != src->bitDepth)
+	{
+		// Bit depth mismatch, use get/setSample at loop
+		for (int i = 0; i < count * channels; i++)
+			setSample(dstStart + i, src->getSample(srcStart + i));
+	}
+	else if (this->data == src->data)
+		// May overlap, use memmove
+		memmove(data + dstStart * bytesPerSample, src->data + srcStart * bytesPerSample, count * bytesPerSample);
+	else
+		memcpy(data + dstStart * bytesPerSample, src->data + srcStart * bytesPerSample, count * bytesPerSample);
+}
+
 } // sound
 } // love
