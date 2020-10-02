@@ -44,8 +44,6 @@
 
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
-#include <dwmapi.h>
-#include <VersionHelpers.h>
 #elif defined(LOVE_MACOSX)
 #include "common/macosx.h"
 #endif
@@ -1012,22 +1010,6 @@ bool Window::isMinimized() const
 void Window::swapBuffers()
 {
 	SDL_GL_SwapWindow(window);
-
-#ifdef LOVE_WINDOWS
-	// https://github.com/love2d/love/issues/1628
-	// DwmFlush helps avoid apparent stuttering in windowed mode on Windows. Be careful to only call it when
-	// the compositor may be active and non-adaptive vsync is enabled (it syncs to nearest refresh which stops the
-	// "adaptive" part of adaptive vsync).
-	// Calling it directly after vsync seems to have less chance of dropping a frame than directly before.
-	if (context != nullptr && (!settings.fullscreen || settings.fstype == FULLSCREEN_DESKTOP) && getVSync() > 0)
-	{
-		// Desktop composition is always enabled in Windows 8+. But DwmIsCompositionEnabled won't always return true...
-		// (see DwmIsCompositionEnabled docs).
-		BOOL compositionEnabled = IsWindows8OrGreater();
-		if (compositionEnabled || (SUCCEEDED(DwmIsCompositionEnabled(&compositionEnabled)) && compositionEnabled))
-			DwmFlush();
-	}
-#endif
 }
 
 bool Window::hasFocus() const

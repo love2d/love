@@ -1741,7 +1741,6 @@ if(MSVC)
 	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES}
 		ws2_32.lib
 		winmm.lib
-		dwmapi.lib
 	)
 
 	set(LOVE_RC
