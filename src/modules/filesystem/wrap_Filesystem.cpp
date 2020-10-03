@@ -148,6 +148,48 @@ int w_mount(lua_State *L)
 	return 1;
 }
 
+int w_mountFullPath(lua_State *L)
+{
+	const char *fullpath = luaL_checkstring(L, 1);
+	const char *mountpoint = luaL_checkstring(L, 2);
+
+	auto permissions = Filesystem::MOUNT_PERMISSIONS_READ;
+	if (!lua_isnoneornil(L, 3))
+	{
+		const char *permissionstr = luaL_checkstring(L, 3);
+		if (!Filesystem::getConstant(permissionstr, permissions))
+			return luax_enumerror(L, "mount permissions", Filesystem::getConstants(permissions), permissionstr);
+	}
+
+	bool append = luax_optboolean(L, 4, false);
+
+	luax_pushboolean(L, instance()->mountFullPath(fullpath, mountpoint, permissions, append));
+	return 1;
+}
+
+int w_mountCommonPath(lua_State *L)
+{
+	const char *commonpathstr = luaL_checkstring(L, 1);
+	Filesystem::CommonPath commonpath;
+	if (!Filesystem::getConstant(commonpathstr, commonpath))
+		return luax_enumerror(L, "common path", Filesystem::getConstants(commonpath), commonpathstr);
+
+	const char *mountpoint = luaL_checkstring(L, 2);
+
+	auto permissions = Filesystem::MOUNT_PERMISSIONS_READ;
+	if (!lua_isnoneornil(L, 3))
+	{
+		const char *permissionstr = luaL_checkstring(L, 3);
+		if (!Filesystem::getConstant(permissionstr, permissions))
+			return luax_enumerror(L, "mount permissions", Filesystem::getConstants(permissions), permissionstr);
+	}
+
+	bool append = luax_optboolean(L, 4, false);
+
+	luax_pushboolean(L, instance()->mountCommonPath(commonpath, mountpoint, permissions, append));
+	return 1;
+}
+
 int w_unmount(lua_State *L)
 {
 	if (luax_istype(L, 1, Data::type))
@@ -160,6 +202,17 @@ int w_unmount(lua_State *L)
 		const char *archive = luaL_checkstring(L, 1);
 		luax_pushboolean(L, instance()->unmount(archive));
 	}
+	return 1;
+}
+
+int w_unmountCommonPath(lua_State *L)
+{
+	const char *commonpathstr = luaL_checkstring(L, 1);
+	Filesystem::CommonPath commonpath;
+	if (!Filesystem::getConstant(commonpathstr, commonpath))
+		return luax_enumerror(L, "common path", Filesystem::getConstants(commonpath), commonpathstr);
+
+	luax_pushboolean(L, instance()->unmount(commonpath));
 	return 1;
 }
 
@@ -328,6 +381,17 @@ int w_newFileData(lua_State *L)
 
 	luax_pushtype(L, t);
 	t->release();
+	return 1;
+}
+
+int w_getFullCommonPath(lua_State *L)
+{
+	const char *commonpathstr = luaL_checkstring(L, 1);
+	Filesystem::CommonPath commonpath;
+	if (!Filesystem::getConstant(commonpathstr, commonpath))
+		return luax_enumerror(L, "common path", Filesystem::getConstants(commonpath), commonpathstr);
+
+	luax_pushstring(L, instance()->getFullCommonPath(commonpath));
 	return 1;
 }
 
@@ -839,8 +903,12 @@ static const luaL_Reg functions[] =
 	{ "setSource", w_setSource },
 	{ "getSource", w_getSource },
 	{ "mount", w_mount },
+	{ "mountFullPath", w_mountFullPath },
+//	{ "mountCommonPath", w_mountCommonPath },
 	{ "unmount", w_unmount },
+//	{ "unmountCommonPath", w_unmountCommonPath },
 	{ "newFile", w_newFile },
+//	{ "getFullCommonPath", w_getFullCommonPath },
 	{ "getWorkingDirectory", w_getWorkingDirectory },
 	{ "getUserDirectory", w_getUserDirectory },
 	{ "getAppdataDirectory", w_getAppdataDirectory },

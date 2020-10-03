@@ -63,11 +63,16 @@ public:
 	bool mount(const char *archive, const char *mountpoint, bool appendToPath = false) override;
 	bool mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath = false) override;
 
+	bool mountFullPath(const char *archive, const char *mountpoint, MountPermissions permissions, bool appendToPath = false) override;
+	bool mountCommonPath(CommonPath path, const char *mountpoint, MountPermissions permissions, bool appendToPath = false) override;
+
 	bool unmount(const char *archive) override;
 	bool unmount(Data *data) override;
+	bool unmount(CommonPath path) override;
 
 	love::filesystem::File *newFile(const char *filename) const override;
 
+	std::string getFullCommonPath(CommonPath path) override;
 	const char *getWorkingDirectory() override;
 	std::string getUserDirectory() override;
 	std::string getAppdataDirectory() override;
@@ -128,6 +133,8 @@ private:
 	std::vector<std::string> allowedMountPaths;
 
 	std::map<std::string, StrongRef<Data>> mountedData;
+
+	std::string fullCommonPaths[COMMONPATH_MAX_ENUM];
 
 }; // Filesystem
 

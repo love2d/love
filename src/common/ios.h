@@ -43,25 +43,10 @@ namespace ios
 std::string getLoveInResources(bool &fused);
 
 /**
- * Gets the directory path where files should be stored.
- **/
-std::string getAppdataDirectory();
-
-/**
- * Get the home directory (on iOS, this really means the app's sandbox dir.)
- **/
-std::string getHomeDirectory();
-
-/**
  * Opens the specified URL with the default program associated with the URL's
  * scheme.
  **/
 bool openURL(const std::string &url);
-
-/**
- * Returns the full path to the executable.
- **/
-std::string getExecutablePath();
 
 /**
  * Causes devices with vibration support to vibrate for about 0.5 seconds.

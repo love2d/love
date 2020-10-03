@@ -26,10 +26,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(LOVE_MACOS)
-#include "common/macos.h"
-#elif defined(LOVE_IOS)
-#include "common/ios.h"
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#include "common/apple.h"
 #elif defined(LOVE_WINDOWS)
 #include <windows.h>
 #include "common/utf8.h"
@@ -92,10 +90,8 @@ bool Filesystem::isRealDirectory(const std::string &path) const
 
 std::string Filesystem::getExecutablePath() const
 {
-#if defined(LOVE_MACOS)
-	return love::macos::getExecutablePath();
-#elif defined(LOVE_IOS)
-	return love::ios::getExecutablePath();
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	return love::apple::getExecutablePath();
 #elif defined(LOVE_WINDOWS)
 
 	wchar_t buffer[MAX_PATH + 1] = {0};
@@ -120,30 +116,33 @@ std::string Filesystem::getExecutablePath() const
 #endif
 }
 
-bool Filesystem::getConstant(const char *in, FileType &out)
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM, fileType)
 {
-	return fileTypes.find(in, out);
+	{ "file",      Filesystem::FILETYPE_FILE      },
+	{ "directory", Filesystem::FILETYPE_DIRECTORY },
+	{ "symlink",   Filesystem::FILETYPE_SYMLINK   },
+	{ "other",     Filesystem::FILETYPE_OTHER     },
 }
+STRINGMAP_CLASS_END(Filesystem, Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM, fileType)
 
-bool Filesystem::getConstant(FileType in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::CommonPath, Filesystem::COMMONPATH_MAX_ENUM, commonPath)
 {
-	return fileTypes.find(in, out);
+	{ "appidentity",   Filesystem::COMMONPATH_APP_IDENTITY   },
+	{ "appdocuments",  Filesystem::COMMONPATH_APP_DOCUMENTS  },
+	{ "apptemp",       Filesystem::COMMONPATH_APP_TEMP       },
+	{ "userhome",      Filesystem::COMMONPATH_USER_HOME      },
+	{ "userappdata",   Filesystem::COMMONPATH_USER_APPDATA   },
+	{ "userdesktop",   Filesystem::COMMONPATH_USER_DESKTOP   },
+	{ "userdocuments", Filesystem::COMMONPATH_USER_DOCUMENTS },
 }
+STRINGMAP_CLASS_END(Filesystem, Filesystem::CommonPath, Filesystem::COMMONPATH_MAX_ENUM, commonPath)
 
-std::vector<std::string> Filesystem::getConstants(FileType)
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::MountPermissions, Filesystem::MOUNT_PERMISSIONS_MAX_ENUM, mountPermissions)
 {
-	return fileTypes.getNames();
+	{ "read",      Filesystem::MOUNT_PERMISSIONS_READ      },
+	{ "readwrite", Filesystem::MOUNT_PERMISSIONS_READWRITE },
 }
-
-StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM>::Entry Filesystem::fileTypeEntries[] =
-{
-	{ "file",      FILETYPE_FILE      },
-	{ "directory", FILETYPE_DIRECTORY },
-	{ "symlink",   FILETYPE_SYMLINK   },
-	{ "other",     FILETYPE_OTHER     },
-};
-
-StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM> Filesystem::fileTypes(Filesystem::fileTypeEntries, sizeof(Filesystem::fileTypeEntries));
+STRINGMAP_CLASS_END(Filesystem, Filesystem::MountPermissions, Filesystem::MOUNT_PERMISSIONS_MAX_ENUM, mountPermissions)
 
 } // filesystem
 } // love

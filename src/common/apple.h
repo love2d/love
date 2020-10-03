@@ -22,34 +22,29 @@
 
 #include "config.h"
 
-#ifdef LOVE_MACOS
+#if defined(LOVE_IOS) || defined(LOVE_MACOS)
 
 #include <string>
 
 namespace love
 {
-namespace macos
+namespace apple
 {
 
-/**
- * Returns the filepath of the first detected love file in the Resources folder
- * in the main bundle (love.app.)
- * Returns an empty string if no love file is found.
- **/
-std::string getLoveInResources();
+enum UserDirectory
+{
+	USER_DIRECTORY_HOME,
+	USER_DIRECTORY_APPSUPPORT,
+	USER_DIRECTORY_DOCUMENTS,
+	USER_DIRECTORY_DESKTOP,
+	USER_DIRECTORY_CACHES,
+};
 
-/**
- * Checks for drop-file events. Returns the filepath if an event occurred, or
- * an empty string otherwise.
- **/
-std::string checkDropEvents();
+std::string getUserDirectory(UserDirectory dir);
 
-/**
- * Bounce the dock icon, if the app isn't in the foreground.
- **/
-void requestAttention(bool continuous);
+std::string getExecutablePath();
 
-} // macos
+} // apple
 } // love
 
-#endif // LOVE_MACOS
+#endif // defined(LOVE_IOS) || defined(LOVE_MACOS)

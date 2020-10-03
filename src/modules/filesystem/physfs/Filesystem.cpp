@@ -45,6 +45,10 @@
 #	include <unistd.h>
 #endif
 
+#if defined(LOVE_IOS) || defined(LOVE_MACOS)
+#	include "common/apple.h"
+#endif
+
 #ifdef LOVE_IOS
 #	include "common/ios.h"
 #endif
@@ -60,50 +64,59 @@
 #include "common/android.h"
 #endif
 
-namespace
-{
-	size_t getDriveDelim(const std::string &input)
-	{
-		for (size_t i = 0; i < input.size(); ++i)
-			if (input[i] == '/' || input[i] == '\\')
-				return i;
-		// Something's horribly wrong
-		return 0;
-	}
-
-	std::string getDriveRoot(const std::string &input)
-	{
-		return input.substr(0, getDriveDelim(input)+1);
-	}
-
-	std::string skipDriveRoot(const std::string &input)
-	{
-		return input.substr(getDriveDelim(input)+1);
-	}
-
-	std::string normalize(const std::string &input)
-	{
-		std::stringstream out;
-		bool seenSep = false, isSep = false;
-		for (size_t i = 0; i < input.size(); ++i)
-		{
-			isSep = (input[i] == LOVE_PATH_SEPARATOR[0]);
-			if (!isSep || !seenSep)
-				out << input[i];
-			seenSep = isSep;
-		}
-
-		return out.str();
-	}
-
-}
-
 namespace love
 {
 namespace filesystem
 {
 namespace physfs
 {
+
+static size_t getDriveDelim(const std::string &input)
+{
+	for (size_t i = 0; i < input.size(); ++i)
+		if (input[i] == '/' || input[i] == '\\')
+			return i;
+	// Something's horribly wrong
+	return 0;
+}
+
+static std::string getDriveRoot(const std::string &input)
+{
+	return input.substr(0, getDriveDelim(input)+1);
+}
+
+static std::string skipDriveRoot(const std::string &input)
+{
+	return input.substr(getDriveDelim(input)+1);
+}
+
+static std::string normalize(const std::string &input)
+{
+	std::stringstream out;
+	bool seenSep = false, isSep = false;
+	for (size_t i = 0; i < input.size(); ++i)
+	{
+		isSep = (input[i] == LOVE_PATH_SEPARATOR[0]);
+		if (!isSep || !seenSep)
+			out << input[i];
+		seenSep = isSep;
+	}
+
+	return out.str();
+}
+
+static bool isAppCommonPath(Filesystem::CommonPath path)
+{
+	switch (path)
+	{
+	case Filesystem::COMMONPATH_APP_IDENTITY:
+	case Filesystem::COMMONPATH_APP_DOCUMENTS:
+	case Filesystem::COMMONPATH_APP_TEMP:
+		return true;
+	default:
+		return false;
+	}
+}
 
 Filesystem::Filesystem()
 	: fused(false)
@@ -159,15 +172,13 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	save_identity = std::string(ident);
 
 	// Generate the relative path to the game save folder.
-	save_path_relative = std::string(LOVE_APPDATA_PREFIX LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
+	if (fused)
+		save_path_relative = std::string(LOVE_APPDATA_PREFIX) + save_identity;
+	else
+		save_path_relative = std::string(LOVE_APPDATA_PREFIX LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + save_identity;
 
 	// Generate the full path to the game save folder.
-	save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR);
-	if (fused)
-		save_path_full += std::string(LOVE_APPDATA_PREFIX) + save_identity;
-	else
-		save_path_full += save_path_relative;
-
+	save_path_full = std::string(getAppdataDirectory()) + std::string(LOVE_PATH_SEPARATOR) + save_path_relative;
 	save_path_full = normalize(save_path_full);	
 	
 #ifdef LOVE_ANDROID
@@ -370,10 +381,35 @@ bool Filesystem::mount(const char *archive, const char *mountpoint, bool appendT
 		realPath += archive;
 	}
 
-	if (realPath.length() == 0)
+	return mountFullPath(realPath.c_str(), mountpoint, MOUNT_PERMISSIONS_READ, appendToPath);
+}
+
+bool Filesystem::mountFullPath(const char *archive, const char *mountpoint, MountPermissions permissions, bool appendToPath)
+{
+	if (!PHYSFS_isInit() || !archive || !mountpoint)
 		return false;
 
-	return PHYSFS_mount(realPath.c_str(), mountpoint, appendToPath) != 0;
+	if (permissions == MOUNT_PERMISSIONS_READWRITE && strlen(mountpoint) == 0)
+		return false;
+
+	// TODO: readwrite mount
+	return PHYSFS_mount(archive, mountpoint, appendToPath) != 0;
+}
+
+bool Filesystem::mountCommonPath(CommonPath path, const char *mountpoint, MountPermissions permissions, bool appendToPath)
+{
+	std::string fullpath = getFullCommonPath(path);
+	if (fullpath.empty())
+		return false;
+
+	bool success = mountFullPath(fullpath.c_str(), mountpoint, permissions, appendToPath);
+
+	if (!success && isAppCommonPath(path))
+	{
+		
+	}
+
+	return success;
 }
 
 bool Filesystem::mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath)
@@ -403,40 +439,33 @@ bool Filesystem::unmount(const char *archive)
 		return true;
 	}
 
-	std::string realPath;
-	std::string sourceBase = getSourceBaseDirectory();
+	if (PHYSFS_getRealDir(archive) != nullptr)
+		return PHYSFS_unmount(archive) != 0;
 
-	// Check whether the given archive path is in the list of allowed full paths.
-	auto it = std::find(allowedMountPaths.begin(), allowedMountPaths.end(), archive);
+	if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
+		return false;
 
-	if (it != allowedMountPaths.end())
-		realPath = *it;
-	else if (isFused() && sourceBase.compare(archive) == 0)
-	{
-		// Special case: if the game is fused and the archive is the source's
-		// base directory, unmount it even though it's outside of the save dir.
-		realPath = sourceBase;
-	}
-	else
-	{
-		// Not allowed for safety reasons.
-		if (strlen(archive) == 0 || strstr(archive, "..") || strcmp(archive, "/") == 0)
-			return false;
+	const char *realDir = PHYSFS_getRealDir(archive);
+	if (!realDir)
+		return false;
 
-		const char *realDir = PHYSFS_getRealDir(archive);
-		if (!realDir)
-			return false;
+	std::string realPath = realDir;
+	realPath += LOVE_PATH_SEPARATOR;
+	realPath += archive;
 
-		realPath = realDir;
-		realPath += LOVE_PATH_SEPARATOR;
-		realPath += archive;
-	}
-
-	const char *mountPoint = PHYSFS_getMountPoint(realPath.c_str());
-	if (!mountPoint)
+	if (PHYSFS_getMountPoint(realPath.c_str()) == nullptr)
 		return false;
 
 	return PHYSFS_unmount(realPath.c_str()) != 0;
+}
+
+bool Filesystem::unmount(CommonPath path)
+{
+	std::string fullpath = getFullCommonPath(path);
+	if (fullpath.empty())
+		return false;
+
+	return unmount(fullpath.c_str());
 }
 
 bool Filesystem::unmount(Data *data)
@@ -458,6 +487,115 @@ love::filesystem::File *Filesystem::newFile(const char *filename) const
 	return new File(filename);
 }
 
+std::string Filesystem::getFullCommonPath(CommonPath path)
+{
+	if (!fullCommonPaths[path].empty())
+		return fullCommonPaths[path];
+
+	if (path == COMMONPATH_APP_IDENTITY || path == COMMONPATH_APP_DOCUMENTS || path == COMMONPATH_APP_TEMP)
+	{
+		
+	}
+
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+
+	switch (path)
+	{
+	case COMMONPATH_APP_IDENTITY:
+	case COMMONPATH_APP_DOCUMENTS:
+	case COMMONPATH_APP_TEMP:
+		// Handled above.
+		break;
+	case COMMONPATH_USER_HOME:
+		fullCommonPaths[path] = apple::getUserDirectory(apple::USER_DIRECTORY_HOME);
+		break;
+	case COMMONPATH_USER_APPDATA:
+		fullCommonPaths[path] = apple::getUserDirectory(apple::USER_DIRECTORY_APPSUPPORT);
+		break;
+	case COMMONPATH_USER_DESKTOP:
+		fullCommonPaths[path] = apple::getUserDirectory(apple::USER_DIRECTORY_DESKTOP);
+		break;
+	case COMMONPATH_USER_DOCUMENTS:
+		fullCommonPaths[path] = apple::getUserDirectory(apple::USER_DIRECTORY_DOCUMENTS);
+		break;
+	case COMMONPATH_MAX_ENUM:
+		break;
+	}
+
+#elif defined(LOVE_WINDOWS)
+
+	PWSTR winpath = nullptr;
+	HRESULT hr = E_FAIL;
+
+	switch (path)
+	{
+	case COMMONPATH_APP_IDENTITY:
+	case COMMONPATH_APP_DOCUMENTS:
+	case COMMONPATH_APP_TEMP:
+		// Handled above.
+		break;
+	case COMMONPATH_USER_HOME:
+		hr = SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &winpath);
+		break;
+	case COMMONPATH_USER_APPDATA:
+		hr = SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &winpath);
+		break;
+	case COMMONPATH_USER_DESKTOP:
+		hr = SHGetKnownFolderPath(FOLDERID_Desktop, 0, nullptr, &winpath);
+		break;
+	case COMMONPATH_USER_DOCUMENTS:
+		hr = SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &winpath);
+		break;
+	case COMMONPATH_MAX_ENUM:
+		break;
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		fullCommonPaths[path] = to_utf8(winpath);
+		CoTaskMemFree(winpath);
+	}
+	else
+	{
+
+	}
+
+#elif defined(LOVE_ANDROID)
+
+#elif defined(LOVE_LINUX)
+
+	const char *xdgdir = nullptr;
+
+	switch (path)
+	{
+	case COMMONPATH_APP_IDENTITY:
+	case COMMONPATH_APP_DOCUMENTS:
+	case COMMONPATH_APP_TEMP:
+		// Handled above.
+		break;
+	case COMMONPATH_USER_HOME:
+		fullCommonPaths[path] = normalize(PHYSFS_getUserDir());
+		break;
+	case COMMONPATH_USER_APPDATA:
+		xdgdir = getenv("XDG_DATA_HOME");
+		if (!xdgdir)
+			fullCommonPaths[path] = normalize(std::string(getUserDirectory()) + "/.local/share/");
+		else
+			fullCommonPaths[path] = xdgdir;
+		break;
+	case COMMONPATH_USER_DESKTOP:
+		break;
+	case COMMONPATH_USER_DOCUMENTS:
+		break;
+	case COMMONPATH_MAX_ENUM:
+		break;
+	}
+
+#endif
+
+	return fullCommonPaths[path];
+}
+
 const char *Filesystem::getWorkingDirectory()
 {
 	if (cwd.empty())
@@ -474,7 +612,7 @@ const char *Filesystem::getWorkingDirectory()
 		if (getcwd(cwd_char, LOVE_MAX_PATH))
 			cwd = cwd_char; // if getcwd fails, cwd_char (and thus cwd) will still be empty
 
-		delete [] cwd_char;
+		delete[] cwd_char;
 #endif
 	}
 
@@ -483,9 +621,9 @@ const char *Filesystem::getWorkingDirectory()
 
 std::string Filesystem::getUserDirectory()
 {
-#ifdef LOVE_IOS
+#if defined(LOVE_IOS) || defined(LOVE_MACOS)
 	// PHYSFS_getUserDir doesn't give exactly the path we want on iOS.
-	static std::string userDir = normalize(love::ios::getHomeDirectory());
+	static std::string userDir = normalize(apple::getUserDirectory(apple::USER_DIRECTORY_HOME));
 #else
 	static std::string userDir = normalize(PHYSFS_getUserDir());
 #endif
@@ -512,10 +650,8 @@ std::string Filesystem::getAppdataDirectory()
 			appdata = to_utf8(w_appdata);
 		}
 		replace_char(appdata, '\\', '/');
-#elif defined(LOVE_MACOS)
-		appdata = normalize(love::macos::getAppdataDirectory());
-#elif defined(LOVE_IOS)
-		appdata = normalize(love::ios::getAppdataDirectory());
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
+		appdata = normalize(apple::getUserDirectory(apple::USER_DIRECTORY_APPSUPPORT));
 #elif defined(LOVE_LINUX)
 		char *xdgdatahome = getenv("XDG_DATA_HOME");
 		if (!xdgdatahome)
@@ -528,7 +664,6 @@ std::string Filesystem::getAppdataDirectory()
 	}
 	return appdata;
 }
-
 
 const char *Filesystem::getSaveDirectory()
 {
