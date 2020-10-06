@@ -67,7 +67,7 @@ There are also unstable/nightly builds:
 - Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
 - Otherwise, some less frequently updated builds can can be found [here][builds].
 - For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
-- For arch linux there's [love-hg][aur] in the AUR.
+- For arch linux there's [love-git][aur] in the AUR.
 
 Dependencies
 ------------
@@ -93,7 +93,7 @@ Dependencies
 [builds]: http://love2d.org/builds
 [stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
-[aur]: http://aur.archlinux.org/packages/love-hg
+[aur]: http://aur.archlinux.org/packages/love-git
 [love-experiments]: https://github.com/slime73/love-experiments
 [codestyle]: https://love2d.org/wiki/Code_Style
 [android-repository]: https://github.com/love2d/love-android
