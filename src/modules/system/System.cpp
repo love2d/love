@@ -39,7 +39,18 @@
 #if defined(LOVE_ANDROID)
 #include "common/android.h"
 #elif defined(LOVE_LINUX)
+
+#ifdef __has_include
+#if __has_include(<spawn.h>)
+#define LOVE_HAS_POSIX_SPAWN
+#endif
+#endif
+
+#ifdef LOVE_HAS_POSIX_SPAWN
 #include <spawn.h>
+#else
+#include <unistd.h>
+#endif
 #endif
 
 namespace love
@@ -70,10 +81,12 @@ std::string System::getOS() const
 #endif
 }
 
+#ifdef LOVE_HAS_POSIX_SPAWN
 extern "C"
 {
 	extern char **environ; // The environment, always available
 }
+#endif
 
 bool System::openURL(const std::string &url) const
 {
@@ -104,10 +117,19 @@ bool System::openURL(const std::string &url) const
 	pid_t pid;
 	const char *argv[] = {"xdg-open", url.c_str(), nullptr};
 
+#ifdef LOVE_HAS_POSIX_SPAWN
 	// Note: at the moment this process inherits our file descriptors.
 	// Note: the below const_cast is really ugly as well.
 	if (posix_spawnp(&pid, "xdg-open", nullptr, nullptr, const_cast<char **>(argv), environ) != 0)
 		return false;
+#else
+	pid = fork();
+	if (pid == 0)
+	{
+		execvp("xdg-open", const_cast<char **>(argv));
+		return false;
+	}
+#endif
 
 	// Check if xdg-open already completed (or failed.)
 	int status = 0;
