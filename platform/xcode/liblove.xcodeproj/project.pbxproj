@@ -795,8 +795,6 @@
 		FA1E88831DF363DB00E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E88811DF363DB00E808AA /* Filter.cpp */; };
 		FA1E88841DF363DB00E808AA /* Filter.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1E88821DF363DB00E808AA /* Filter.h */; };
 		FA1E88851DF363E100E808AA /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA1E88811DF363DB00E808AA /* Filter.cpp */; };
-		FA24348421D401CB00B8918A /* pch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348021D401CB00B8918A /* pch.cpp */; };
-		FA24348521D401CB00B8918A /* pch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348021D401CB00B8918A /* pch.cpp */; };
 		FA24348621D401CB00B8918A /* attribute.h in Headers */ = {isa = PBXBuildFile; fileRef = FA24348121D401CB00B8918A /* attribute.h */; };
 		FA24348721D401CB00B8918A /* attribute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348221D401CB00B8918A /* attribute.cpp */; };
 		FA24348821D401CB00B8918A /* attribute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA24348221D401CB00B8918A /* attribute.cpp */; };
@@ -1799,7 +1797,6 @@
 		FA1E887D1DF363CD00E808AA /* Filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filter.h; sourceTree = "<group>"; };
 		FA1E88811DF363DB00E808AA /* Filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Filter.cpp; sourceTree = "<group>"; };
 		FA1E88821DF363DB00E808AA /* Filter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Filter.h; sourceTree = "<group>"; };
-		FA24348021D401CB00B8918A /* pch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pch.cpp; sourceTree = "<group>"; };
 		FA24348121D401CB00B8918A /* attribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = attribute.h; sourceTree = "<group>"; };
 		FA24348221D401CB00B8918A /* attribute.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attribute.cpp; sourceTree = "<group>"; };
 		FA24348321D401CB00B8918A /* pch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pch.h; sourceTree = "<group>"; };
@@ -2009,6 +2006,8 @@
 		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		FAE64A7D2071359C00BC7981 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfreetype.a; sourceTree = "<group>"; };
+		FAEC22942534EE6700EBD925 /* NonSemanticDebugPrintf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NonSemanticDebugPrintf.h; sourceTree = "<group>"; };
+		FAEC229F2534F25100EBD925 /* build_info.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = build_info.h; sourceTree = "<group>"; };
 		FAECA1B01F3164700095D008 /* CompressedSlice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedSlice.cpp; sourceTree = "<group>"; };
 		FAECA1B11F3164700095D008 /* CompressedSlice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CompressedSlice.h; sourceTree = "<group>"; };
 		FAF13FC21E20934C00F898D2 /* CodeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGen.cpp; sourceTree = "<group>"; };
@@ -3591,6 +3590,7 @@
 		FAF13FC01E20934C00F898D2 /* glslang */ = {
 			isa = PBXGroup;
 			children = (
+				FAEC229F2534F25100EBD925 /* build_info.h */,
 				FAF13FC11E20934C00F898D2 /* GenericCodeGen */,
 				FAF13FC41E20934C00F898D2 /* Include */,
 				FAF13FD21E20934C00F898D2 /* MachineIndependent */,
@@ -3654,7 +3654,6 @@
 				FAF13FE61E20934C00F898D2 /* ParseHelper.cpp */,
 				FAF13FE71E20934C00F898D2 /* ParseHelper.h */,
 				FAF13FE81E20934C00F898D2 /* parseVersions.h */,
-				FA24348021D401CB00B8918A /* pch.cpp */,
 				FA24348321D401CB00B8918A /* pch.h */,
 				FAF13FE91E20934C00F898D2 /* PoolAlloc.cpp */,
 				FAF13FEA1E20934C00F898D2 /* preprocessor */,
@@ -3743,6 +3742,7 @@
 				FAF6C9C623C2DE2900D7B5BC /* InReadableOrder.cpp */,
 				FAF6C9D523C2DE2900D7B5BC /* Logger.cpp */,
 				FAF6C9D723C2DE2900D7B5BC /* Logger.h */,
+				FAEC22942534EE6700EBD925 /* NonSemanticDebugPrintf.h */,
 				FAF6C9C923C2DE2900D7B5BC /* spirv.hpp */,
 				FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */,
 				FAF6C9C223C2DE2900D7B5BC /* SpvBuilder.h */,
@@ -4329,7 +4329,6 @@
 				FA91DA8C1F377C3900C80E33 /* deprecation.cpp in Sources */,
 				FA6A2B6B1F5F7F560074C308 /* DataView.cpp in Sources */,
 				FA0B7E401A95902C000E1D17 /* wrap_ChainShape.cpp in Sources */,
-				FA24348521D401CB00B8918A /* pch.cpp in Sources */,
 				FA0B7DEC1A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7D871A95902C000E1D17 /* ImageData.cpp in Sources */,
 				FA0B7E101A95902C000E1D17 /* FrictionJoint.cpp in Sources */,
@@ -4728,7 +4727,6 @@
 				FA0B7DB71A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7A321A958EA3000E1D17 /* b2Collision.cpp in Sources */,
 				FA91DA8B1F377C3900C80E33 /* deprecation.cpp in Sources */,
-				FA24348421D401CB00B8918A /* pch.cpp in Sources */,
 				FA0B7E3F1A95902C000E1D17 /* wrap_ChainShape.cpp in Sources */,
 				FA0B7DEB1A95902C000E1D17 /* Cursor.cpp in Sources */,
 				FA0B7D861A95902C000E1D17 /* ImageData.cpp in Sources */,

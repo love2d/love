@@ -1338,7 +1338,6 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.cpp
 	src/libraries/glslang/glslang/MachineIndependent/ParseHelper.h
 	src/libraries/glslang/glslang/MachineIndependent/parseVersions.h
-	src/libraries/glslang/glslang/MachineIndependent/pch.cpp
 	src/libraries/glslang/glslang/MachineIndependent/pch.h
 	src/libraries/glslang/glslang/MachineIndependent/PoolAlloc.cpp
 	src/libraries/glslang/glslang/MachineIndependent/propagateNoContraction.cpp
@@ -1379,6 +1378,7 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC
 )
 
 set(LOVE_SRC_3P_GLSLANG_GLSLANG
+	src/libraries/glslang/glslang/build_info.h
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN}
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE}
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT}
@@ -1408,6 +1408,7 @@ set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/InReadableOrder.cpp
 	src/libraries/glslang/SPIRV/Logger.cpp
 	src/libraries/glslang/SPIRV/Logger.h
+	src/libraries/glslang/SPIRV/NonSemanticDebugPrintf.h
 	src/libraries/glslang/SPIRV/spirv.hpp
 	src/libraries/glslang/SPIRV/SpvBuilder.cpp
 	src/libraries/glslang/SPIRV/SpvBuilder.h
