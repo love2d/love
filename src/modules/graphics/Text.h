@@ -88,7 +88,7 @@ private:
 	VertexAttributes vertexAttributes;
 	BufferBindings vertexBuffers;
 
-	Buffer *vertex_buffer;
+	StrongRef<Buffer> vertex_buffer;
 
 	std::vector<Font::DrawCommand> draw_commands;
 

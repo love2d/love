@@ -33,7 +33,6 @@ love::Type Text::type("Text", &Drawable::type);
 Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
-	, vertex_buffer(nullptr)
 	, vert_offset(0)
 	, texture_cache_id((uint32) -1)
 {
@@ -42,8 +41,6 @@ Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 
 Text::~Text()
 {
-	if (vertex_buffer)
-		vertex_buffer->release();
 }
 
 void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset)
@@ -68,7 +65,6 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 		if (vertex_buffer != nullptr)
 			vertex_buffer->copyTo(0, vertex_buffer->getSize(), new_buffer, 0);
 
-		vertex_buffer->release();
 		vertex_buffer = new_buffer;
 
 		vertexBuffers.set(0, vertex_buffer, 0);
