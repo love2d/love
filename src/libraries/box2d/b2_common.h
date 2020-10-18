@@ -34,7 +34,8 @@
 #endif
 
 #define B2_NOT_USED(x) ((void)(x))
-#define b2Assert(A) assert(A)
+void loveAssert(bool test, const char* teststr);
+#define b2Assert(A) loveAssert((A), #A)
 
 #define	b2_maxFloat		FLT_MAX
 #define	b2_epsilon		FLT_EPSILON

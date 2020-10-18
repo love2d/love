@@ -24,6 +24,7 @@
 #define B2_MATH_H
 
 #include <math.h>
+#include <cmath>
 
 #include "b2_api.h"
 #include "b2_settings.h"
