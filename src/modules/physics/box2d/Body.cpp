@@ -45,7 +45,7 @@ Body::Body(World *world, b2Vec2 p, Body::Type type)
 	udata->ref = nullptr;
 	b2BodyDef def;
 	def.position = Physics::scaleDown(p);
-	def.userData = udata;
+	def.userData.pointer = (uintptr_t)udata;
 	body = world->world->CreateBody(&def);
 	// Box2D body holds a reference to the love Body.
 	this->retain();
@@ -529,7 +529,7 @@ int Body::setUserData(lua_State *L)
 	if (udata == nullptr)
 	{
 		udata = new bodyudata();
-		body->SetUserData(udata);
+		body->GetUserData().pointer = (uintptr_t)udata;
 	}
 
 	if(!udata->ref)

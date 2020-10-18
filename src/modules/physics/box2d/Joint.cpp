@@ -154,7 +154,7 @@ float Joint::getReactionTorque(float dt)
 
 b2Joint *Joint::createJoint(b2JointDef *def)
 {
-	def->userData = udata;
+	def->userData.pointer = (uintptr_t)udata;
 	joint = world->world->CreateJoint(def);
 	world->registerObject(joint, this);
 	// Box2D joint has a reference to this love Joint.
@@ -202,7 +202,7 @@ int Joint::setUserData(lua_State *L)
 	if (udata == nullptr)
 	{
 		udata = new jointudata();
-		joint->SetUserData(udata);
+		joint->GetUserData().pointer = (uintptr_t)udata;
 	}
 
 	if(!udata->ref)

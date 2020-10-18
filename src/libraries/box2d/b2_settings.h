@@ -123,22 +123,7 @@ inline void b2Log(const char* string, ...)
 #endif // B2_USER_SETTINGS
 
 void loveAssert(bool test, const char* teststr);
-
 #define b2Assert(A) loveAssert((A), #A)
-
-namespace love {
-	namespace physics {
-		namespace box2d {
-			struct bodyudata;
-			struct fixtureudata;
-			struct jointudata;
-		}
-	}
-}
-
-#define b2BodyUserData love::physics::box2d::bodyudata*
-#define b2FixtureUserData love::physics::box2d::fixtureudata*
-#define b2JointUserData love::physics::box2d::jointudata*
 
 #include "b2_common.h"
 
