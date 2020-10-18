@@ -23,6 +23,7 @@
 #ifndef B2_ROPE_H
 #define B2_ROPE_H
 
+#include "b2_api.h"
 #include "b2_math.h"
 
 class b2Draw;
@@ -41,11 +42,12 @@ enum b2BendingModel
 	b2_pbdAngleBendingModel,
 	b2_xpbdAngleBendingModel,
 	b2_pbdDistanceBendingModel,
-	b2_pbdHeightBendingModel
+	b2_pbdHeightBendingModel,
+	b2_pbdTriangleBendingModel
 };
 
 ///
-struct b2RopeTuning
+struct B2_API b2RopeTuning
 {
 	b2RopeTuning()
 	{
@@ -75,8 +77,8 @@ struct b2RopeTuning
 	bool warmStart;
 };
 
-/// 
-struct b2RopeDef
+///
+struct B2_API b2RopeDef
 {
 	b2RopeDef()
 	{
@@ -95,8 +97,8 @@ struct b2RopeDef
 	b2RopeTuning tuning;
 };
 
-/// 
-class b2Rope
+///
+class B2_API b2Rope
 {
 public:
 	b2Rope();
@@ -125,6 +127,7 @@ private:
 	void SolveBend_XPBD_Angle(float dt);
 	void SolveBend_PBD_Distance();
 	void SolveBend_PBD_Height();
+	void SolveBend_PBD_Triangle();
 	void ApplyBendForces(float dt);
 
 	b2Vec2 m_position;

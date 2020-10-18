@@ -202,7 +202,7 @@ int Joint::setUserData(lua_State *L)
 	if (udata == nullptr)
 	{
 		udata = new jointudata();
-		joint->SetUserData((void *) udata);
+		joint->SetUserData(udata);
 	}
 
 	if(!udata->ref)

@@ -23,6 +23,7 @@
 #ifndef B2_CONTACT_H
 #define B2_CONTACT_H
 
+#include "b2_api.h"
 #include "b2_collision.h"
 #include "b2_fixture.h"
 #include "b2_math.h"
@@ -50,12 +51,18 @@ inline float b2MixRestitution(float restitution1, float restitution2)
 	return restitution1 > restitution2 ? restitution1 : restitution2;
 }
 
+/// Restitution mixing law. This picks the lowest value.
+inline float b2MixRestitutionThreshold(float threshold1, float threshold2)
+{
+	return threshold1 < threshold2 ? threshold1 : threshold2;
+}
+
 typedef b2Contact* b2ContactCreateFcn(	b2Fixture* fixtureA, int32 indexA,
 										b2Fixture* fixtureB, int32 indexB,
 										b2BlockAllocator* allocator);
 typedef void b2ContactDestroyFcn(b2Contact* contact, b2BlockAllocator* allocator);
 
-struct b2ContactRegister
+struct B2_API b2ContactRegister
 {
 	b2ContactCreateFcn* createFcn;
 	b2ContactDestroyFcn* destroyFcn;
@@ -67,7 +74,7 @@ struct b2ContactRegister
 /// is an edge. A contact edge belongs to a doubly linked list
 /// maintained in each attached body. Each contact has two contact
 /// nodes, one for each attached body.
-struct b2ContactEdge
+struct B2_API b2ContactEdge
 {
 	b2Body* other;			///< provides quick access to the other body attached.
 	b2Contact* contact;		///< the contact
@@ -78,7 +85,7 @@ struct b2ContactEdge
 /// The class manages contact between two shapes. A contact exists for each overlapping
 /// AABB in the broad-phase (except if filtered). Therefore a contact object may exist
 /// that has no contact points.
-class b2Contact
+class B2_API b2Contact
 {
 public:
 
@@ -138,6 +145,16 @@ public:
 
 	/// Reset the restitution to the default value.
 	void ResetRestitution();
+
+	/// Override the default restitution velocity threshold mixture. You can call this in b2ContactListener::PreSolve.
+	/// The value persists until you set or reset.
+	void SetRestitutionThreshold(float threshold);
+
+	/// Get the restitution threshold.
+	float GetRestitutionThreshold() const;
+
+	/// Reset the restitution threshold to the default value.
+	void ResetRestitutionThreshold();
 
 	/// Set the desired tangent speed for a conveyor belt behavior. In meters per second.
 	void SetTangentSpeed(float speed);
@@ -219,6 +236,7 @@ protected:
 
 	float m_friction;
 	float m_restitution;
+	float m_restitutionThreshold;
 
 	float m_tangentSpeed;
 };
@@ -338,6 +356,21 @@ inline float b2Contact::GetRestitution() const
 inline void b2Contact::ResetRestitution()
 {
 	m_restitution = b2MixRestitution(m_fixtureA->m_restitution, m_fixtureB->m_restitution);
+}
+
+inline void b2Contact::SetRestitutionThreshold(float threshold)
+{
+	m_restitutionThreshold = threshold;
+}
+
+inline float b2Contact::GetRestitutionThreshold() const
+{
+	return m_restitutionThreshold;
+}
+
+inline void b2Contact::ResetRestitutionThreshold()
+{
+	m_restitutionThreshold = b2MixRestitutionThreshold(m_fixtureA->m_restitutionThreshold, m_fixtureB->m_restitutionThreshold);
 }
 
 inline void b2Contact::SetTangentSpeed(float speed)
