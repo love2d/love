@@ -130,6 +130,11 @@ public:
 	float getAngularVelocity() const;
 
 	/**
+	 * Get the current Body kinematic state. (Position, angle, velocity, angle velocity).
+	 **/
+	void getKinematicState(b2Vec2 &pos_o, float &a_o, b2Vec2& vel_o, float &da_o) const;
+
+	/**
 	 * Gets the Body's mass.
 	 **/
 	float getMass() const;
@@ -218,6 +223,11 @@ public:
 	 * Sets the current spin of the Body.
 	 **/
 	void setAngularVelocity(float r);
+
+	/**
+	 * Set the current Body kinematic state. (Position, angle, velocity, angle velocity).
+	 **/
+	void setKinematicState(b2Vec2 pos, float a, b2Vec2 vel, float da);
 
 	/**
 	 * Sets the current position of the Body.

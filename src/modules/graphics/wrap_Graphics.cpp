@@ -1146,7 +1146,7 @@ int w_newVolumeTexture(lua_State *L)
 
 					for (int slice = 0; slice < slicelen; slice++)
 					{
-						lua_rawgeti(L, -1, mip + 1);
+						lua_rawgeti(L, -1, slice + 1);
 
 						auto data = getImageData(L, -1, true, slice == 0 && mip == 0 ? autodpiscale : nullptr);
 						if (data.first.get())
@@ -1508,11 +1508,6 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 	lua_getfield(L, idx, "usage");
 	settings.usage = luax_optbufferusage(L, -1, settings.usage);
 	lua_pop(L, 1);
-
-	if (luax_boolflag(L, idx, "cpureadable", settings.mapFlags & Buffer::MAP_READ))
-		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags | Buffer::MAP_READ);
-	else
-		settings.mapFlags = (Buffer::MapFlags)(settings.mapFlags & (~Buffer::MAP_READ));
 }
 
 static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)

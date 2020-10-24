@@ -39,7 +39,7 @@ public:
 
 	SoundData(Decoder *decoder);
 	SoundData(int samples, int sampleRate, int bitDepth, int channels);
-	SoundData(void *d, int samples, int sampleRate, int bitDepth, int channels);
+	SoundData(const void *d, int samples, int sampleRate, int bitDepth, int channels);
 	SoundData(const SoundData &c);
 
 	virtual ~SoundData();
@@ -61,9 +61,12 @@ public:
 	float getSample(int i) const;
 	float getSample(int i, int channel) const;
 
+	void copyFrom(const SoundData *src, int srcStart, int count, int dstStart);
+	SoundData *slice(int start, int length = -1) const;
+
 private:
 
-	void load(int samples, int sampleRate, int bitDepth, int channels, void *newData = 0);
+	void load(int samples, int sampleRate, int bitDepth, int channels, const void *newData = 0);
 
 	uint8 *data;
 	size_t size;

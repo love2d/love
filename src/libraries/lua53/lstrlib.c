@@ -73,7 +73,9 @@
 typedef size_t lua_Unsigned;
 #endif
 
-#if LUA_VERSION_NUM == 501
+#if LUA_VERSION_NUM >= 504
+#   define LUAL_BUFFER53_BUFFER(B) (B)->b.b
+#elif LUA_VERSION_NUM == 501
 #	define LUAL_BUFFER53_BUFFER(B) (B)->b.buffer
 #else
 #	define LUAL_BUFFER53_BUFFER(B) (B)->b.initb

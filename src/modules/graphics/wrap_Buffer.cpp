@@ -309,75 +309,6 @@ static int w_Buffer_setArrayData(lua_State *L)
 	return 0;
 }
 
-static int w_Buffer_setElement(lua_State *L)
-{
-	Buffer *t = luax_checkbuffer(L, 1);
-
-	size_t index = (size_t) (luaL_checkinteger(L, 2) - 1);
-	if (index >= t->getArrayLength())
-		return luaL_error(L, "Invalid Buffer element index: %d", (int) index + 1);
-
-	size_t stride = t->getArrayStride();
-	size_t offset = index * stride;
-	char *data = (char *) t->map() + offset;
-	const auto &members = t->getDataMembers();
-
-	bool istable = lua_istable(L, 3);
-	int idx = istable ? 1 : 3;
-
-	if (istable)
-	{
-		for (const Buffer::DataMember &member : members)
-		{
-			int components = member.info.components;
-
-			for (int i = idx; i < idx + components; i++)
-				lua_rawgeti(L, 3, i);
-
-			luax_writebufferdata(L, -components, member.decl.format, data + member.offset);
-
-			idx += components;
-			lua_pop(L, components);
-		}
-	}
-	else
-	{
-		for (const Buffer::DataMember &member : members)
-		{
-			luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
-			idx += member.info.components;
-		}
-	}
-
-	t->setMappedRangeModified(offset, stride);
-	return 0;
-}
-
-static int w_Buffer_getElement(lua_State *L)
-{
-	Buffer *t = luax_checkbuffer(L, 1);
-	if ((t->getMapFlags() & Buffer::MAP_READ) == 0)
-		return luaL_error(L, "Buffer:getElement requires the buffer to be created with the 'cpureadable' setting set to true.");
-
-	size_t index = (size_t) (luaL_checkinteger(L, 2) - 1);
-	if (index >= t->getArrayLength())
-		return luaL_error(L, "Invalid Buffer element index: %d", (int) index + 1);
-
-	size_t offset = index * t->getArrayStride();
-	const char *data = (const char *) t->map() + offset;
-	const auto &members = t->getDataMembers();
-
-	int n = 0;
-
-	for (const Buffer::DataMember &member : members)
-	{
-		luax_readbufferdata(L, member.decl.format, data + member.offset);
-		n += member.info.components;
-	}
-
-	return n;
-}
-
 static int w_Buffer_getElementCount(lua_State *L)
 {
 	Buffer *t = luax_checkbuffer(L, 1);
@@ -443,25 +374,15 @@ static int w_Buffer_isBufferType(lua_State *L)
 	return 1;
 }
 
-static int w_Buffer_isCPUReadable(lua_State *L)
-{
-	Buffer *t = luax_checkbuffer(L, 1);
-	luax_pushboolean(L, (t->getMapFlags() & Buffer::MAP_READ) != 0);
-	return 1;
-}
-
 static const luaL_Reg w_Buffer_functions[] =
 {
 	{ "flush", w_Buffer_flush },
 	{ "setArrayData", w_Buffer_setArrayData },
-	{ "setElement", w_Buffer_setElement },
-	{ "getElement", w_Buffer_getElement },
 	{ "getElementCount", w_Buffer_getElementCount },
 	{ "getElementStride", w_Buffer_getElementStride },
 	{ "getSize", w_Buffer_getSize },
 	{ "getFormat", w_Buffer_getFormat },
 	{ "isBufferType", w_Buffer_isBufferType },
-	{ "isCPUReadable", w_Buffer_isCPUReadable },
 	{ 0, 0 }
 };
 
