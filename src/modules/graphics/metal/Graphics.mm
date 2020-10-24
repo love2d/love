@@ -143,6 +143,12 @@ love::graphics::Graphics *createInstance()
 	return instance;
 }
 
+struct DefaultVertexAttributes
+{
+	float floats[4];
+	int ints[4];
+};
+
 Graphics *Graphics::graphicsInstance = nullptr;
 
 Graphics::Graphics()
@@ -172,10 +178,20 @@ Graphics::Graphics()
 
 	uniformBuffer = CreateStreamBuffer(device, BUFFERTYPE_UNIFORM, 1024 * 1024 * 1);
 
-	float defaultAttributes[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-	Buffer::Settings attribsettings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_STATIC);
-	std::vector<Buffer::DataDeclaration> dataformat = {{"Default", DATAFORMAT_FLOAT_VEC4, 0}};
-	defaultAttributesBuffer = newBuffer(attribsettings, dataformat, defaultAttributes, sizeof(float) * 4, 0);
+	{
+		std::vector<Buffer::DataDeclaration> dataformat = {
+			{"floats", DATAFORMAT_FLOAT_VEC4, 0},
+			{"ints", DATAFORMAT_INT32_VEC4, 0},
+		};
+
+		DefaultVertexAttributes defaults = {
+			{0.0f, 0.0f, 0.0f, 1.0f},
+			{0, 0, 0, 1},
+		};
+		Buffer::Settings attribsettings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_STATIC);
+
+		defaultAttributesBuffer = newBuffer(attribsettings, dataformat, &defaults, sizeof(DefaultVertexAttributes), 0);
+	}
 
 	uint8 defaultpixel[] = {255, 255, 255, 255};
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)

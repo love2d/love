@@ -187,7 +187,9 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 
 			for (const auto &resource : resources.sampled_images)
 			{
+				// TODO: set MainTex to binding 0
 				int binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+				const SPIRType &type = msl.get_type(resource.base_type_id);
 
 				BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 				if (getConstant(resource.name.c_str(), builtin))
@@ -207,11 +209,35 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				u.baseType = UNIFORM_SAMPLER;
 				u.name = resource.name;
 				u.location = 0;
-				u.textures = new love::graphics::Texture*[1];
-				u.textures[0] = nullptr;
 				u.data = malloc(sizeof(int) * 1);
 				u.ints[0] = binding;
 //				printf("binding for %s: %d\n", u.name.c_str(), binding);
+
+				switch (type.image.dim)
+				{
+				case spv::Dim2D:
+					u.textureType = type.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+					u.textures = new love::graphics::Texture*[1];
+					u.textures[0] = nullptr;
+					break;
+				case spv::Dim3D:
+					u.textureType = TEXTURE_VOLUME;
+					u.textures = new love::graphics::Texture*[1];
+					u.textures[0] = nullptr;
+					break;
+				case spv::DimCube:
+					if (type.image.arrayed)
+						throw love::Exception("Cubemap Arrays are not currently supported.");
+					u.textureType = TEXTURE_CUBE;
+					u.textures = new love::graphics::Texture*[1];
+					u.textures[0] = nullptr;
+					break;
+				case spv::DimBuffer:
+					// TODO: are texel buffers sampled images in glslang?
+					break;
+				default:
+					break;
+				}
 
 				uniforms[u.name] = u;
 			}
@@ -352,7 +378,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 			{
 				spv::StorageClass storage = msl.get_storage_class(var);
 				const std::string &name = msl.get_name(var);
-				printf("var: %s\n", name.c_str());
+//				printf("var: %s\n", name.c_str());
 
 				if (i == ShaderStage::STAGE_VERTEX && storage == spv::StorageClassInput)
 					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
