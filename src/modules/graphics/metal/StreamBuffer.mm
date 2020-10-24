@@ -56,10 +56,9 @@ public:
 
 	virtual ~StreamBuffer()
 	{ @autoreleasepool {
-		// TODO
 		buffer = nil;
-		for (int i = 0; i < 3; i++)
-			dispatch_release(frameSemaphores[i]);
+		for (int i = 0; i < BUFFER_FRAMES; i++)
+			frameSemaphores[i] = nil;
 	}}
 
 	MapInfo map(size_t /*minsize*/) override
