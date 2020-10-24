@@ -49,7 +49,7 @@ public:
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, int backbufferdepth) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -194,6 +194,8 @@ private:
 
 	std::map<uint64, void *> cachedSamplers;
 	std::unordered_map<uint64, void *> cachedDepthStencilStates;
+
+	std::atomic<int64> completeCommandBufferIndex;
 
 }; // Graphics
 

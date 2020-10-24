@@ -129,7 +129,7 @@ Graphics::Graphics()
 			window->windowToDPICoords(&dpiW, &dpiH);
 
 			void *context = nullptr; // TODO
-			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
+			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil, settings.depth);
 		}
 	}
 }
@@ -190,12 +190,12 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, int /*backbufferdepth*/)
 {
 	this->width = width;
 	this->height = height;
 
-	this->windowHasStencil = windowhasstencil;
+	this->windowHasStencil = backbufferstencil;
 
 	// Okay, setup OpenGL.
 	gl.initContext();

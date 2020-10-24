@@ -131,6 +131,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 	, builtinUniformInfo()
 	, localUniformBufferData(nullptr)
 	, localUniformBufferSize(0)
+	, builtinUniformDataOffset(0)
 { @autoreleasepool {
 	using namespace glslang;
 	using namespace spirv_cross;
@@ -166,11 +167,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 		opt.validate = true;
 
 		std::vector<unsigned int> spirv;
-
-		{
-//			timer::ScopedTimer("shader stage");
-			GlslangToSpv(*intermediate, spirv, &logger, &opt);
-		}
+		GlslangToSpv(*intermediate, spirv, &logger, &opt);
 
 		std::string msgs = logger.getAllMessages();
 //		printf("spirv length: %ld, messages:\n%s\n", spirv.size(), msgs.c_str());
@@ -203,28 +200,99 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				{
 					if (it->second.ints[0] != binding)
 						throw love::Exception("texture binding mismatch for %s: %d vs %d", resource.name.c_str(), it->second.ints[0], binding);
+					continue;
 				}
-				else
-				{
-					UniformInfo u = {};
-					u.baseType = UNIFORM_SAMPLER;
-					u.name = resource.name;
-					u.location = 0;
-					u.textures = new love::graphics::Texture*[1];
-					u.textures[0] = nullptr;
-					u.data = malloc(sizeof(int) * 1);
-					u.ints[0] = binding;
-//					printf("binding for %s: %d\n", u.name.c_str(), binding);
 
-					uniforms[u.name] = u;
-				}
+				UniformInfo u = {};
+				u.baseType = UNIFORM_SAMPLER;
+				u.name = resource.name;
+				u.location = 0;
+				u.textures = new love::graphics::Texture*[1];
+				u.textures[0] = nullptr;
+				u.data = malloc(sizeof(int) * 1);
+				u.ints[0] = binding;
+//				printf("binding for %s: %d\n", u.name.c_str(), binding);
+
+				uniforms[u.name] = u;
 			}
 
 			for (const auto &resource : resources.uniform_buffers)
 			{
+				auto it = uniforms.find(resource.name);
+				if (it != uniforms.end())
+				{
+					continue;
+				}
+
 				if (resource.name == "love_UniformsPerDrawBuffer")
 				{
 					msl.set_decoration(resource.id, spv::DecorationBinding, 0);
+					const SPIRType &type = msl.get_type(resource.base_type_id);
+					const auto &membertypes = type.member_types;
+
+					size_t size = msl.get_declared_struct_size(type);
+
+					if (localUniformBufferSize != 0)
+					{
+						if (localUniformBufferSize != size)
+							throw love::Exception("Local uniform buffer size mismatch");
+						continue;
+					}
+
+					localUniformBufferData = new uint8[size];
+					localUniformBufferSize = size;
+
+					memset(localUniformBufferData, 0, size);
+
+					for (size_t uindex = 0; uindex < membertypes.size(); uindex++)
+					{
+						const auto &membertype = msl.get_type(membertypes[uindex]);
+						size_t membersize = msl.get_declared_struct_member_size(type, uindex);
+						size_t offset = msl.type_struct_member_offset(type, uindex);
+
+						UniformInfo u = {};
+						u.name = msl.get_name(membertypes[uindex]);
+						u.dataSize = membersize;
+						u.count = std::max<size_t>(1, membertype.array.size());
+
+						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+						if (getConstant(u.name.c_str(), builtin))
+						{
+							if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
+								builtinUniformDataOffset = offset;
+						}
+
+						switch (membertype.basetype)
+						{
+						case SPIRType::Int:
+						case SPIRType::UInt:
+						case SPIRType::Float:
+							u.data = localUniformBufferData + offset;
+							if (membertype.columns == 1)
+							{
+								if (membertype.basetype == SPIRType::Int)
+									u.baseType = UNIFORM_INT;
+								else if (membertype.basetype == SPIRType::UInt)
+									u.baseType = UNIFORM_UINT;
+								else
+									u.baseType = UNIFORM_FLOAT;
+								u.components = membertype.vecsize;
+							}
+							else
+							{
+								u.baseType = UNIFORM_MATRIX;
+								u.matrix.rows = membertype.vecsize;
+								u.matrix.columns = membertype.columns;
+							}
+							break;
+						case SPIRType::Struct:
+							// TODO
+							break;
+						default:
+							break;
+						}
+					}
+
 				}
 			}
 
@@ -247,9 +315,13 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				}
 			}
 
-			printf("ubos: %d, storage: %d, inputs: %d, outputs: %d, images: %d, samplers: %d, push: %d\n", resources.uniform_buffers.size(), resources.storage_buffers.size(), resources.stage_inputs.size(), resources.stage_outputs.size(), resources.storage_images.size(), resources.sampled_images.size(), resources.push_constant_buffers.size());
+			printf("// ubos: %ld, storage: %ld, inputs: %ld, outputs: %ld, images: %ld, samplers: %ld, push: %ld\n", resources.uniform_buffers.size(), resources.storage_buffers.size(), resources.stage_inputs.size(), resources.stage_outputs.size(), resources.storage_images.size(), resources.sampled_images.size(), resources.push_constant_buffers.size());
 
 			CompilerMSL::Options options;
+
+			options.set_msl_version(2, 1);
+
+			options.texture_buffer_native = true;
 
 #ifdef LOVE_IOS
 			options.platform = CompilerMSL::Options::iOS;
@@ -260,7 +332,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 			msl.set_msl_options(options);
 
 			std::string source = msl.compile();
-//			printf("MSL SOURCE for stage %d:\n\n%s\n\n", i, source.c_str());
+//			printf("// MSL SOURCE for stage %d:\n\n%s\n\n", i, source.c_str());
 
 			NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
 														  length:source.length()
@@ -280,6 +352,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 			{
 				spv::StorageClass storage = msl.get_storage_class(var);
 				const std::string &name = msl.get_name(var);
+				printf("var: %s\n", name.c_str());
 
 				if (i == ShaderStage::STAGE_VERTEX && storage == spv::StorageClassInput)
 					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
@@ -336,6 +409,27 @@ const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 {
 	return builtinUniformInfo[(int)builtin];
+}
+
+void Shader::updateUniform(const UniformInfo * /*info*/, int /*count*/)
+{
+	// Nothing needed here, All uniform data will be memcpy'd to the main
+	// uniform buffer before drawing.
+}
+
+void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
+{
+	// TODO
+}
+
+void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
+{
+	// TODO
+}
+
+bool Shader::hasUniform(const std::string &name) const
+{
+	return uniforms.find(name) != uniforms.end();
 }
 
 id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineKey &key)

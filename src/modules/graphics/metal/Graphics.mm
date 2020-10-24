@@ -112,6 +112,21 @@ static MTLStencilOperation getMTLStencilOperation(StencilAction action)
 	return MTLStencilOperationKeep;
 }
 
+static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
+{
+	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
+}
+
+static inline id<MTLTexture> getMTLRenderTarget(love::graphics::Texture *tex)
+{
+	return tex ? (__bridge id<MTLTexture>)(void *) tex->getRenderTargetHandle() : nil;
+}
+
+static inline id<MTLBuffer> getMTLBuffer(love::graphics::Resource *res)
+{
+	return res ? (__bridge id<MTLBuffer>)(void *) res->getHandle() : nil;
+}
+
 love::graphics::Graphics *createInstance()
 {
 	love::graphics::Graphics *instance = nullptr;
@@ -190,7 +205,7 @@ Graphics::Graphics()
 			window->windowToDPICoords(&dpiW, &dpiH);
 
 			void *context = nullptr; // TODO
-			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
+			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil, settings.depth);
 		}
 	}
 }}
@@ -257,18 +272,18 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, int backbufferdepth)
 { @autoreleasepool {
 	this->width = width;
 	this->height = height;
 	this->metalLayer = (__bridge CAMetalLayer *) context;
 
-	this->windowHasStencil = windowhasstencil;
+	this->windowHasStencil = backbufferstencil;
 
 	metalLayer.device = device;
 	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
 
-	// TODO: set to NO when we have pending screen captures
+	// This is set to NO when there are pending screen captures.
 	metalLayer.framebufferOnly = YES;
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
@@ -338,7 +353,16 @@ void Graphics::setActive(bool enable)
 id<MTLCommandBuffer> Graphics::useCommandBuffer()
 {
 	if (commandBuffer == nil)
+	{
 		commandBuffer = [commandQueue commandBuffer];
+
+		Graphics *pthis = this;
+		pthis->retain();
+		[commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
+			pthis->completeCommandBufferIndex.fetch_add(1, std::memory_order_relaxed);
+			pthis->release();
+		}];
+	}
 
 	return commandBuffer;
 }
@@ -361,21 +385,30 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 	{
 		submitBlitEncoder();
 
+		// Pass desc info for non-backbuffer render targets are set up in
+		// setRenderTagetsInternal.
 		const auto &rts = states.back().renderTargets;
-		if (rts.getFirstTarget().texture.get() != nullptr)
-		{
-			// TODO
-		}
-		else
+		if (rts.getFirstTarget().texture.get() == nullptr)
 		{
 			if (activeDrawable == nil)
+			{
+				// This is reset to YES after each frame.
+				// TODO: Does setting this reallocate memory?
+				if (!pendingScreenshotCallbacks.empty())
+					metalLayer.framebufferOnly = NO;
+
 				activeDrawable = [metalLayer nextDrawable];
+			}
+
 			passDesc.colorAttachments[0].texture = activeDrawable.texture;
+			passDesc.colorAttachments[0].level = 0;
+			passDesc.colorAttachments[0].slice = 0;
+			passDesc.colorAttachments[0].depthPlane = 0;
 		}
 
 		renderEncoder = [useCommandBuffer() renderCommandEncoderWithDescriptor:passDesc];
 
-		id<MTLBuffer> defaultbuffer = (__bridge id<MTLBuffer>)(void *)defaultAttributesBuffer->getHandle();
+		id<MTLBuffer> defaultbuffer = getMTLBuffer(defaultAttributesBuffer);
 		[renderEncoder setVertexBuffer:defaultbuffer offset:0 atIndex:DEFAULT_VERTEX_BUFFER_BINDING];
 
 		dirtyRenderState = STATEBIT_ALL;
@@ -622,37 +655,33 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	size_t alignment = 16;
 #endif
 
-	// TODO: use the size of all uniforms
-	size_t size = sizeof(Shader::BuiltinUniformData);
+	size_t size = s->getLocalUniformBufferSize();
+	uint8 *bufferdata = s->getLocalUniformBufferData();
 
-	Shader::BuiltinUniformData data;
+	auto builtins = (Shader::BuiltinUniformData *) (bufferdata + s->getBuiltinUniformDataOffset());
 
-	data.transformMatrix = getTransform();
-	data.projectionMatrix = getProjection();
+	builtins->transformMatrix = getTransform();
+	builtins->projectionMatrix = getProjection();
 
 	// The normal matrix is the transpose of the inverse of the rotation portion
 	// (top-left 3x3) of the transform matrix.
 	{
-		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
+		Matrix3 normalmatrix = Matrix3(builtins->transformMatrix).transposedInverse();
 		const float *e = normalmatrix.getElements();
 		for (int i = 0; i < 3; i++)
 		{
-			data.normalMatrix[i].x = e[i * 3 + 0];
-			data.normalMatrix[i].y = e[i * 3 + 1];
-			data.normalMatrix[i].z = e[i * 3 + 2];
-			data.normalMatrix[i].w = 0.0f;
+			builtins->normalMatrix[i].x = e[i * 3 + 0];
+			builtins->normalMatrix[i].y = e[i * 3 + 1];
+			builtins->normalMatrix[i].z = e[i * 3 + 2];
+			builtins->normalMatrix[i].w = 0.0f;
 		}
 	}
 
 	// FIXME: should be active RT dimensions
-	data.screenSizeParams.x = getPixelWidth();
-	data.screenSizeParams.y = getPixelHeight();
+	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
 
-	data.screenSizeParams.z = 1.0f;
-	data.screenSizeParams.w = 0.0f;
-
-	data.constantColor = getColor();
-	gammaCorrectColor(data.constantColor);
+	builtins->constantColor = getColor();
+	gammaCorrectColor(builtins->constantColor);
 
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
@@ -666,9 +695,9 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	if (uniformBufferData.data == nullptr)
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
 
-	memcpy(uniformBufferData.data + uniformBufferOffset, &data, sizeof(Shader::BuiltinUniformData));
+	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
-	id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)uniformBuffer->getHandle();
+	id<MTLBuffer> buffer = getMTLBuffer(uniformBuffer);
 	int index = Shader::getUniformBufferBinding();
 
 	// TODO: bind shader textures/samplers
@@ -677,6 +706,26 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	[renderEncoder setFragmentBuffer:buffer offset:uniformBufferOffset atIndex:index];
 
 	uniformBufferOffset += alignUp(size, alignment);
+}
+
+static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBindings *buffers)
+{
+	uint32 allbits = buffers->useBits;
+	uint32 i = 0;
+	while (allbits)
+	{
+		uint32 bit = 1u << i;
+
+		if (buffers->useBits & bit)
+		{
+			auto b = buffers->info[i];
+			id<MTLBuffer> buffer = getMTLBuffer(b.buffer);
+			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
+		}
+
+		i++;
+		allbits >>= 1;
+	}
 }
 
 void Graphics::draw(const DrawCommand &cmd)
@@ -690,29 +739,14 @@ void Graphics::draw(const DrawCommand &cmd)
 	if (texture == nullptr)
 		texture = defaultTextures[TEXTURE_2D];
 
-	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
+	id<MTLTexture> mtltexture = getMTLTexture(texture);
 
 	[encoder setFragmentTexture:mtltexture atIndex:0];
 	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
 
-	uint32 allbits = cmd.buffers->useBits;
-	uint32 i = 0;
-	while (allbits)
-	{
-		uint32 bit = 1u << i;
-
-		if (cmd.buffers->useBits & bit)
-		{
-			auto b = cmd.buffers->info[i];
-			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
-		}
-
-		i++;
-		allbits >>= 1;
-	}
+	setVertexBuffers(encoder, cmd.buffers);
 
 	[encoder drawPrimitives:MTLPrimitiveTypeTriangle
 				vertexStart:cmd.vertexStart
@@ -731,36 +765,21 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	if (texture == nullptr)
 		texture = defaultTextures[TEXTURE_2D];
 
-	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
+	id<MTLTexture> mtltexture = getMTLTexture(texture);
 
 	[encoder setFragmentTexture:mtltexture atIndex:0];
 	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
 
-	uint32 allbits = cmd.buffers->useBits;
-	uint32 i = 0;
-	while (allbits)
-	{
-		uint32 bit = 1u << i;
-
-		if (cmd.buffers->useBits & bit)
-		{
-			auto b = cmd.buffers->info[i];
-			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
-		}
-
-		i++;
-		allbits >>= 1;
-	}
+	setVertexBuffers(encoder, cmd.buffers);
 
 	auto indexType = cmd.indexType == INDEX_UINT32 ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
 	[encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
 						indexCount:cmd.indexCount
 						 indexType:indexType
-					   indexBuffer:(__bridge id<MTLBuffer>)(void*)cmd.indexBuffer->getHandle()
+					   indexBuffer:getMTLBuffer(cmd.indexBuffer)
 				 indexBufferOffset:cmd.indexBufferOffset
 					 instanceCount:cmd.instanceCount];
 }}
@@ -778,31 +797,16 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	if (texture == nullptr)
 		texture = defaultTextures[TEXTURE_2D];
 
-	id<MTLTexture> mtltexture = (__bridge id<MTLTexture>)(void *) texture->getHandle();
+	id<MTLTexture> mtltexture = getMTLTexture(texture);
 
 	[encoder setFragmentTexture:mtltexture atIndex:0];
 	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
 
 	[encoder setCullMode:MTLCullModeNone];
 
-	uint32 allbits = buffers.useBits;
-	uint32 i = 0;
-	while (allbits)
-	{
-		uint32 bit = 1u << i;
+	setVertexBuffers(encoder, &buffers);
 
-		if (buffers.useBits & bit)
-		{
-			auto b = buffers.info[i];
-			id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *)b.buffer->getHandle();
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
-		}
-
-		i++;
-		allbits >>= 1;
-	}
-
-	id<MTLBuffer> ib = (__bridge id<MTLBuffer>)(void *) quadIndexBuffer->getHandle();
+	id<MTLBuffer> ib = getMTLBuffer(quadIndexBuffer);
 
 	// TODO: support for iOS devices that don't support base vertex.
 
@@ -827,56 +831,60 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	}
 }}
 
-void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas)
-{ @autoreleasepool {
-	const DisplayState &state = states.back();
+static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPassAttachmentDescriptor *desc)
+{
+	bool isvolume = rt.texture->getTextureType() == TEXTURE_VOLUME;
 
+	desc.texture = getMTLRenderTarget(rt.texture);
+	desc.level = rt.mipmap;
+	desc.slice = isvolume ? 0 : rt.slice;
+	desc.depthPlane = isvolume ? rt.slice : 0;
+
+	// Default to load until clear or discard is called.
+	desc.loadAction = MTLLoadActionLoad;
+	desc.storeAction = MTLStoreActionStore;
+
+	desc.resolveTexture = nil;
+
+	if (rt.texture->getMSAA() > 1)
+	{
+		// TODO
+		desc.resolveTexture = getMTLTexture(rt.texture);
+
+		// TODO: This StoreAction is only supported sometimes.
+		desc.storeAction = MTLStoreActionStoreAndMultisampleResolve;
+	}
+}
+
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
+{ @autoreleasepool {
 	endPass();
 
+	// Set up render pass descriptor for the next useRenderEncoder call.
+	// The backbuffer will be set up in useRenderEncoder rather than here.
 	for (size_t i = 0; i < rts.colors.size(); i++)
 	{
-		auto rt = rts.colors[i];
-		auto tex = rt.texture;
 		auto desc = passDesc.colorAttachments[i];
-
-		desc.texture = (__bridge id<MTLTexture>)(void*)tex->getRenderTargetHandle();
-		desc.level = rt.mipmap;
-
-		if (tex->getTextureType() == TEXTURE_VOLUME)
-		{
-			desc.slice = 0;
-			desc.depthPlane = rt.slice;
-		}
-		else
-		{
-			desc.slice = rt.slice;
-			desc.depthPlane = 0;
-		}
-
-		// Default to load until clear or discard is called.
-		desc.loadAction = MTLLoadActionLoad;
-		desc.storeAction = MTLStoreActionStore;
-
-		desc.resolveTexture = nil;
-
-		if (tex->getMSAA() > 1)
-		{
-			// TODO
-			desc.resolveTexture = (__bridge id<MTLTexture>)(void*)tex->getHandle();
-
-			// TODO: This StoreAction is only supported sometimes.
-			desc.storeAction = MTLStoreActionStoreAndMultisampleResolve;
-		}
-
+		setAttachment(rts.colors[i], desc);
 		passDesc.colorAttachments[i] = desc;
 	}
 
 	for (size_t i = rts.colors.size(); i < MAX_COLOR_RENDER_TARGETS; i++)
 		passDesc.colorAttachments[i] = nil;
 
-	// TODO: depth/stencil attachments
-	// TODO: projection matrix
-	// TODO: backbuffer
+	passDesc.depthAttachment = nil;
+	passDesc.stencilAttachment = nil;
+
+	if (rts.depthStencil.texture)
+	{
+		if (isPixelFormatDepth(rts.depthStencil.texture->getPixelFormat()))
+			setAttachment(rts.depthStencil, passDesc.depthAttachment);
+
+		if (isPixelFormatStencil(rts.depthStencil.texture->getPixelFormat()))
+			setAttachment(rts.depthStencil, passDesc.stencilAttachment);
+	}
+
+	projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
 	dirtyRenderState = STATEBIT_ALL;
 }}
 
@@ -1092,6 +1100,9 @@ void Graphics::present(void *screenshotCallbackData)
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	if (window != nullptr)
 		window->swapBuffers();
+
+	// This is set to NO when there are pending screen captures.
+	metalLayer.framebufferOnly = YES;
 
 	activeDrawable = nil;
 

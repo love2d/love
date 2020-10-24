@@ -76,10 +76,10 @@ public:
 	int getVertexAttributeIndex(const std::string &name) override;
 	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
-	void updateUniform(const UniformInfo *info, int count) override {}
-	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override {}
-	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override {}
-	bool hasUniform(const std::string &name) const override { return false; }
+	void updateUniform(const UniformInfo *info, int count) override;
+	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
+	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
+	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override { return 0; }
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override {}
 
@@ -89,6 +89,7 @@ public:
 
 	uint8 *getLocalUniformBufferData() { return localUniformBufferData; }
 	size_t getLocalUniformBufferSize() const { return localUniformBufferSize; }
+	size_t getBuiltinUniformDataOffset() const { return builtinUniformDataOffset; }
 
 private:
 
@@ -107,6 +108,7 @@ private:
 
 	uint8 *localUniformBufferData;
 	size_t localUniformBufferSize;
+	size_t builtinUniformDataOffset;
 
 	std::map<std::string, int> attributes;
 

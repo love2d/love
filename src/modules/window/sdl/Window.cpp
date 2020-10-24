@@ -603,7 +603,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 			context = (void *) SDL_Metal_GetLayer(metalView);
 #endif
 
-		graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
+		graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth);
 	}
 
 #ifdef LOVE_ANDROID

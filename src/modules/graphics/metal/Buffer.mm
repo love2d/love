@@ -95,6 +95,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 Buffer::~Buffer()
 { @autoreleasepool {
 	buffer = nil;
+	texture = nil;
 }}
 
 void *Buffer::map()
