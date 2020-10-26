@@ -1096,7 +1096,7 @@ void Graphics::present(void *screenshotCallbackData)
 			throw love::Exception("Out of memory.");
 		}
 
-		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_READ, getSystemBackbufferFBO());
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getSystemBackbufferFBO());
 		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		// Replace alpha values with full opacity.
