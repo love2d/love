@@ -471,7 +471,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) = 0;
+	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -505,6 +505,9 @@ public:
 
 	double getCurrentDPIScale() const;
 	double getScreenDPIScale() const;
+
+	virtual int getRequestedBackbufferMSAA() const = 0;
+	virtual int getBackbufferMSAA() const = 0;
 
 	/**
 	 * Sets the current constant color.

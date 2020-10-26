@@ -93,7 +93,7 @@ void Window::setGraphics(graphics::Graphics *graphics)
 	this->graphics.set(graphics);
 }
 
-void Window::setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth)
+void Window::setGLFramebufferAttributes(bool sRGB)
 {
 	// Set GL window / framebuffer attributes.
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -101,12 +101,18 @@ void Window::setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int d
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, stencil ? 8 : 0);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
 	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, (msaa > 0) ? 1 : 0);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, (msaa > 0) ? msaa : 0);
+	// Always use 24/8 depth/stencil (make sure any Graphics implementations
+	// that have their own backbuffer match this, too).
+	// Changing this after initial window creation would need the context to be
+	// destroyed and recreated, which we really don't want.
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+	// Backbuffer MSAA is handled by the love.graphics implementation.
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
 
@@ -288,7 +294,7 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	return attribslist;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth)
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags)
 {
 	std::vector<ContextAttribs> attribslist = getContextAttribsList();
 
@@ -350,10 +356,9 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	// Try each context profile in order.
 	for (ContextAttribs attribs : attribslist)
 	{
-		int curMSAA  = msaa;
 		bool curSRGB = love::graphics::isGammaCorrect();
 
-		setGLFramebufferAttributes(curMSAA, curSRGB, stencil, depth);
+		setGLFramebufferAttributes(curSRGB);
 		setGLContextAttributes(attribs);
 
 		windowerror.clear();
@@ -361,31 +366,12 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 		create(attribs);
 
-		if (!window && curMSAA > 0)
-		{
-			// The MSAA setting could have caused the failure.
-			setGLFramebufferAttributes(0, curSRGB, stencil, depth);
-			if (create(attribs))
-				curMSAA = 0;
-		}
-
 		if (!window && curSRGB)
 		{
-			// same with sRGB.
-			setGLFramebufferAttributes(curMSAA, false, stencil, depth);
+			// The sRGB setting could have caused the failure.
+			setGLFramebufferAttributes(false);
 			if (create(attribs))
 				curSRGB = false;
-		}
-
-		if (!window && curMSAA > 0 && curSRGB)
-		{
-			// Or both!
-			setGLFramebufferAttributes(0, false, stencil, depth);
-			if (create(attribs))
-			{
-				curMSAA = 0;
-				curSRGB = false;
-			}
 		}
 
 		if (window && context)
@@ -515,7 +501,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	close();
 
-	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.stencil, f.depth))
+	if (!createWindowAndContext(x, y, width, height, sdlflags))
 		return false;
 
 	// Make sure the window keeps any previously set icon.
@@ -540,7 +526,9 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
-		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil);
+		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.msaa);
+
+		this->settings.msaa = graphics->getBackbufferMSAA();
 	}
 
 #ifdef LOVE_ANDROID
@@ -617,13 +605,6 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	else
 		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
-	// Verify MSAA setting.
-	int buffers = 0;
-	int samples = 0;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &buffers);
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &samples);
-
-	settings.msaa = (buffers > 0 ? samples : 0);
 	settings.vsync = getVSync();
 
 	settings.stencil = newsettings.stencil;

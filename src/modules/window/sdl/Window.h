@@ -139,11 +139,11 @@ private:
 		bool debug;
 	};
 
-	void setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth);
+	void setGLFramebufferAttributes(bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
 	std::vector<ContextAttribs> getContextAttribsList() const;
-	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth);
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport);

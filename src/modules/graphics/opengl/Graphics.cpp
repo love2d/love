@@ -91,6 +91,8 @@ static GLenum getGLBlendFactor(BlendFactor factor)
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
+	, internalBackbufferFBO(0)
+	, requestedBackbufferMSAA(0)
 	, defaultBuffers()
 	, supportedFormats()
 {
@@ -105,14 +107,14 @@ Graphics::Graphics()
 		if (window->isOpen())
 		{
 			int w, h;
-			love::window::WindowSettings settings;
-			window->getWindow(w, h, settings);
+			love::window::WindowSettings s;
+			window->getWindow(w, h, s);
 
 			double dpiW = w;
 			double dpiH = h;
 			window->windowToDPICoords(&dpiW, &dpiH);
 
-			setMode((int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil);
+			setMode((int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), s.stencil, s.msaa);
 		}
 	}
 }
@@ -171,14 +173,94 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 		// Set up the projection matrix
 		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
 	}
+
+	updateBackbuffer(width, height, pixelwidth, pixelheight, requestedBackbufferMSAA);
 }
 
-bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil)
+void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int pixelheight, int msaa)
+{
+	bool useinternalbackbuffer = false;
+	if (msaa > 1)
+		useinternalbackbuffer = true;
+
+	// Our internal backbuffer code needs glBlitFramebuffer.
+	if (!(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_ES_VERSION_3_0
+		  || GLAD_EXT_framebuffer_blit || GLAD_ANGLE_framebuffer_blit || GLAD_NV_framebuffer_blit))
+	{
+		if (!(msaa > 1 && GLAD_APPLE_framebuffer_multisample))
+			useinternalbackbuffer = false;
+	}
+
+	GLuint prevFBO = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+	bool restoreFBO = prevFBO != getInternalBackbufferFBO();
+
+	if (useinternalbackbuffer)
+	{
+		Texture::Settings settings;
+		settings.width = width;
+		settings.height = height;
+		settings.dpiScale = (float)pixelheight / (float)height;
+		settings.msaa = msaa;
+		settings.renderTarget = true;
+		settings.readable.set(false);
+
+		settings.format = isGammaCorrect() ? PIXELFORMAT_sRGBA8_UNORM : PIXELFORMAT_RGBA8_UNORM;
+		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
+
+		settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+		internalBackbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+
+		RenderTargets rts;
+		rts.colors.push_back(internalBackbuffer.get());
+		rts.depthStencil.texture = internalBackbufferDepthStencil;
+
+		internalBackbufferFBO = bindCachedFBO(rts);
+	}
+	else
+	{
+		internalBackbuffer.set(nullptr);
+		internalBackbufferDepthStencil.set(nullptr);
+		internalBackbufferFBO = 0;
+	}
+
+	requestedBackbufferMSAA = msaa;
+
+	if (restoreFBO)
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, prevFBO);
+}
+
+GLuint Graphics::getInternalBackbufferFBO() const
+{
+	if (internalBackbufferFBO != 0)
+		return internalBackbufferFBO;
+	else
+		return getSystemBackbufferFBO();
+}
+
+GLuint Graphics::getSystemBackbufferFBO() const
+{
+#ifdef LOVE_IOS
+	// Hack: iOS uses a custom FBO.
+	SDL_SysWMinfo info = {};
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
+
+	if (info.info.uikit.resolveFramebuffer != 0)
+		return info.info.uikit.resolveFramebuffer;
+	else
+		return info.info.uikit.framebuffer;
+#else
+	return 0;
+#endif
+}
+
+bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
 {
 	this->width = width;
 	this->height = height;
 
 	this->windowHasStencil = windowhasstencil;
+	this->requestedBackbufferMSAA = msaa;
 
 	// Okay, setup OpenGL.
 	gl.initContext();
@@ -193,8 +275,6 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	created = true;
 	initCapabilities();
-
-	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	// Enable blending
 	gl.setEnableState(OpenGL::ENABLE_BLEND, true);
@@ -234,6 +314,8 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		setGammaCorrect(false);
 
 	setDebug(isDebugEnabled());
+
+	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	if (batchedDrawState.vb[0] == nullptr)
 	{
@@ -317,6 +399,9 @@ void Graphics::unSetMode()
 		return;
 
 	flushBatchedDraws();
+
+	internalBackbuffer.set(nullptr);
+	internalBackbufferDepthStencil.set(nullptr);
 
 	// Unload all volatile objects. These must be reloaded after the display
 	// mode change.
@@ -536,7 +621,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 
 	if (iswindow)
 	{
-		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getInternalBackbufferFBO());
 
 		// The projection matrix is flipped compared to rendering to a texture,
 		// due to OpenGL considering (0,0) bottom-left instead of top-left.
@@ -578,6 +663,8 @@ void Graphics::endPass()
 	// Discard the depth/stencil buffer if we're using an internal cached one.
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
 		discard({}, true);
+	else if (!rts.getFirstTarget().texture.get())
+		discard({}, true); // Backbuffer
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
@@ -796,7 +883,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (!isRenderTargetActive() && gl.getDefaultFBO() == 0)
+	if (!isRenderTargetActive() && getInternalBackbufferFBO() == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
@@ -863,7 +950,7 @@ void Graphics::cleanupRenderTexture(love::graphics::Texture *texture)
 	}
 }
 
-void Graphics::bindCachedFBO(const RenderTargets &targets)
+GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 {
 	GLuint fbo = framebufferObjects[targets];
 
@@ -946,6 +1033,8 @@ void Graphics::bindCachedFBO(const RenderTargets &targets)
 
 		framebufferObjects[targets] = fbo;
 	}
+
+	return fbo;
 }
 
 void Graphics::present(void *screenshotCallbackData)
@@ -961,13 +1050,34 @@ void Graphics::present(void *screenshotCallbackData)
 	flushBatchedDraws();
 	endPass();
 
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, gl.getDefaultFBO());
+	int w = getPixelWidth();
+	int h = getPixelHeight();
+
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getInternalBackbufferFBO());
+
+	// Copy internal backbuffer to system backbuffer. When MSAA is used this
+	// is a direct MSAA resolve.
+	if (internalBackbuffer.get())
+	{
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, getSystemBackbufferFBO());
+
+		// Discard system backbuffer to prevent it from copying its contents
+		// from VRAM to chip memory.
+		discard(OpenGL::FRAMEBUFFER_DRAW, {true}, true);
+
+		// updateBackbuffer checks for glBlitFramebuffer support.
+		if (GLAD_APPLE_framebuffer_multisample && internalBackbuffer->getMSAA() > 1)
+			glResolveMultisampleFramebufferAPPLE();
+		else
+			glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		// Discarding the internal backbuffer directly after resolving it should
+		// eliminate any copy back to vram it might need to do.
+		discard(OpenGL::FRAMEBUFFER_READ, {true}, false);
+	}
 
 	if (!pendingScreenshotCallbacks.empty())
 	{
-		int w = getPixelWidth();
-		int h = getPixelHeight();
-
 		size_t row = 4 * w;
 		size_t size = row * h;
 
@@ -986,26 +1096,7 @@ void Graphics::present(void *screenshotCallbackData)
 			throw love::Exception("Out of memory.");
 		}
 
-#ifdef LOVE_IOS
-		SDL_SysWMinfo info = {};
-		SDL_VERSION(&info.version);
-		SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
-
-		if (info.info.uikit.resolveFramebuffer != 0)
-		{
-			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_DRAW, info.info.uikit.resolveFramebuffer);
-
-			// We need to do an explicit MSAA resolve on iOS, because it uses
-			// GLES FBOs rather than a system framebuffer.
-			if (GLAD_ES_VERSION_3_0)
-				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			else if (GLAD_APPLE_framebuffer_multisample)
-				glResolveMultisampleFramebufferAPPLE();
-
-			gl.bindFramebuffer(OpenGL::FRAMEBUFFER_READ, info.info.uikit.resolveFramebuffer);
-		}
-#endif
-
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_READ, getSystemBackbufferFBO());
 		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		// Replace alpha values with full opacity.
@@ -1069,6 +1160,8 @@ void Graphics::present(void *screenshotCallbackData)
 	if (window != nullptr)
 		window->swapBuffers();
 
+	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getInternalBackbufferFBO());
+
 	// Reset the per-frame stat counts.
 	drawCalls = 0;
 	gl.stats.shaderSwitches = 0;
@@ -1087,6 +1180,16 @@ void Graphics::present(void *screenshotCallbackData)
 		else
 			temporaryTextures[i].framesSinceUse++;
 	}
+}
+
+int Graphics::getRequestedBackbufferMSAA() const
+{
+	return requestedBackbufferMSAA;
+}
+
+int Graphics::getBackbufferMSAA() const
+{
+	return internalBackbuffer.get() ? internalBackbuffer->getMSAA() : 0;
 }
 
 void Graphics::setScissor(const Rect &rect)
