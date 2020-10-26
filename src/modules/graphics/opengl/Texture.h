@@ -46,8 +46,6 @@ public:
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
-	void generateMipmaps() override;
-	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
 	void setSamplerState(const SamplerState &s) override;
 
 	ptrdiff_t getHandle() const override;
@@ -61,6 +59,10 @@ private:
 	void createTexture();
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
+
+	void generateMipmapsInternal() override;
+
+	void readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect) override;
 
 	Slices slices;
 
