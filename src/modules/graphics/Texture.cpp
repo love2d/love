@@ -281,6 +281,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 
 	samplerState = gfx->getDefaultSamplerState();
 
+	if (getMipmapCount() == 1)
+		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
+
 	Quad::Viewport v = {0, 0, (double) width, (double) height};
 	quad.set(new Quad(v, width, height), Acquire::NORETAIN);
 

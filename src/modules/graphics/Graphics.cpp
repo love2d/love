@@ -104,6 +104,11 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
+Graphics::DisplayState::DisplayState()
+{
+	defaultSamplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_LINEAR;
+}
+
 Graphics::Graphics()
 	: width(0)
 	, height(0)
