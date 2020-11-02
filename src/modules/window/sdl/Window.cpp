@@ -421,6 +421,9 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (graphics.get() && graphics->isRenderTargetActive())
 		throw love::Exception("love.window.setMode cannot be called while a render target is active in love.graphics.");
 
+	if (isOpen())
+		updateSettings(this->settings, false);
+
 	WindowSettings f;
 
 	if (settings)
@@ -440,45 +443,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		height = mode.h;
 	}
 
-	Uint32 sdlflags = SDL_WINDOW_OPENGL;
-
 	// On Android we always must have fullscreen type FULLSCREEN_TYPE_DESKTOP
 #ifdef LOVE_ANDROID
 	f.fstype = FULLSCREEN_DESKTOP;
 #endif
-
-	if (f.fullscreen)
-	{
-		if (f.fstype == FULLSCREEN_DESKTOP)
-			sdlflags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		else
-		{
-			sdlflags |= SDL_WINDOW_FULLSCREEN;
-			SDL_DisplayMode mode = {0, width, height, 0, nullptr};
-
-			// Fullscreen window creation will bug out if no mode can be used.
-			if (SDL_GetClosestDisplayMode(f.display, &mode, &mode) == nullptr)
-			{
-				// GetClosestDisplayMode will fail if we request a size larger
-				// than the largest available display mode, so we'll try to use
-				// the largest (first) mode in that case.
-				if (SDL_GetDisplayMode(f.display, 0, &mode) < 0)
-					return false;
-			}
-
-			width = mode.w;
-			height = mode.h;
-		}
-	}
-
-	if (f.resizable)
-		sdlflags |= SDL_WINDOW_RESIZABLE;
-
-	if (f.borderless)
-		sdlflags |= SDL_WINDOW_BORDERLESS;
-
-	if (isHighDPIAllowed())
-		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
 	int x = f.x;
 	int y = f.y;
@@ -499,10 +467,68 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.display);
 	}
 
-	close();
+	SDL_DisplayMode fsmode = {0, width, height, 0, nullptr};
 
-	if (!createWindowAndContext(x, y, width, height, sdlflags))
-		return false;
+	if (f.fullscreen && f.fstype == FULLSCREEN_EXCLUSIVE)
+	{
+		// Fullscreen window creation will bug out if no mode can be used.
+		if (SDL_GetClosestDisplayMode(f.display, &fsmode, &fsmode) == nullptr)
+		{
+			// GetClosestDisplayMode will fail if we request a size larger
+			// than the largest available display mode, so we'll try to use
+			// the largest (first) mode in that case.
+			if (SDL_GetDisplayMode(f.display, 0, &fsmode) < 0)
+				return false;
+		}
+	}
+
+	bool needsetmode = false;
+
+	Uint32 sdlflags = 0;
+
+	 if (f.fullscreen)
+	 {
+		 if (f.fstype == FULLSCREEN_DESKTOP)
+			 sdlflags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		 else
+		 {
+			 sdlflags |= SDL_WINDOW_FULLSCREEN;
+			 width = fsmode.w;
+			 height = fsmode.h;
+		 }
+	 }
+
+	if (isOpen())
+	{
+		if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
+			SDL_GL_MakeCurrent(window, context);
+
+		if (!f.fullscreen)
+			SDL_SetWindowSize(window, width, height);
+
+		if (this->settings.resizable != f.resizable)
+			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
+		if (this->settings.borderless != f.borderless)
+			SDL_SetWindowBordered(window, f.borderless ? SDL_FALSE : SDL_TRUE);
+	}
+	else
+	{
+		sdlflags |= SDL_WINDOW_OPENGL;
+
+		 if (f.resizable)
+			 sdlflags |= SDL_WINDOW_RESIZABLE;
+
+		 if (f.borderless)
+			 sdlflags |= SDL_WINDOW_BORDERLESS;
+
+		 if (isHighDPIAllowed())
+			 sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
+
+		if (!createWindowAndContext(x, y, width, height, sdlflags))
+			return false;
+
+		needsetmode = true;
+	}
 
 	// Make sure the window keeps any previously set icon.
 	setIcon(icon.get());
@@ -513,7 +539,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	// Enforce minimum window dimensions.
 	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
-	if ((f.useposition || f.centered) && !f.fullscreen)
+	if (this->settings.display != f.display || ((f.useposition || f.centered) && !f.fullscreen))
 		SDL_SetWindowPosition(window, x, y);
 
 	SDL_RaiseWindow(window);
@@ -526,9 +552,16 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
-		graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.msaa);
 
-		this->settings.msaa = graphics->getBackbufferMSAA();
+		if (needsetmode)
+		{
+			graphics->setMode((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.msaa);
+			this->settings.msaa = graphics->getBackbufferMSAA();
+		}
+		else
+		{
+			graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+		}
 	}
 
 #ifdef LOVE_ANDROID
@@ -671,7 +704,7 @@ void Window::close(bool allowExceptions)
 	open = false;
 }
 
-bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
+bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 {
 	if (!window)
 		return false;
@@ -709,9 +742,10 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
 	{
 		SDL_GL_MakeCurrent(window, context);
+
 		updateSettings(newsettings, true);
 
-		// Apparently this gets un-set when we exit fullscreen (at least in OS X).
+		// This gets un-set when we exit fullscreen (at least in macOS).
 		if (!fullscreen)
 			SDL_SetWindowMinimumSize(window, settings.minwidth, settings.minheight);
 

@@ -129,8 +129,6 @@ public:
 
 private:
 
-	void close(bool allowExceptions);
-
 	struct ContextAttribs
 	{
 		int versionMajor;
@@ -138,6 +136,8 @@ private:
 		bool gles;
 		bool debug;
 	};
+
+	void close(bool allowExceptions);
 
 	void setGLFramebufferAttributes(bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
