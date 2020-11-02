@@ -506,8 +506,13 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		if (!f.fullscreen)
 			SDL_SetWindowSize(window, width, height);
 
+		// On linux systems 2.0.5+ might not be available...
+		// TODO: require at least 2.0.5?
+#if SDL_VERSION_ATLEAST(2, 0, 5)
 		if (this->settings.resizable != f.resizable)
 			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
+#endif
+
 		if (this->settings.borderless != f.borderless)
 			SDL_SetWindowBordered(window, f.borderless ? SDL_FALSE : SDL_TRUE);
 	}
