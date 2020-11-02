@@ -218,6 +218,10 @@ Texture::Texture(const Settings &settings, const Slices *data)
 		if (textureGLError != GL_NO_ERROR)
 			throw love::Exception("Cannot create Texture (OpenGL error: %s)", OpenGL::errorString(textureGLError));
 	}
+
+	// ImageData is referenced by the first loadVolatile call, but we don't
+	// hang on to it after that so we can save memory.
+	slices.clear();
 }
 
 Texture::~Texture()
