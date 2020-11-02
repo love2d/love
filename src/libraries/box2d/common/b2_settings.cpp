@@ -27,6 +27,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include "common/Exception.h"
+
 b2Version b2_version = {2, 4, 0};
 
 // Memory allocators. Modify these to use your own allocator.
@@ -44,6 +46,12 @@ void b2Free_Default(void* mem)
 void b2Log_Default(const char* string, va_list args)
 {
 	vprintf(string, args);
+}
+
+void loveAssert(bool test, const char* teststr)
+{
+	if (!test)
+		throw love::Exception("Box2D assertion failed: %s", teststr);
 }
 
 FILE* b2_dumpFile = nullptr;
