@@ -65,6 +65,11 @@
 #	include "graphics/Graphics.h"
 #endif
 
+// For love::window::setHighDPIAllowed
+#ifdef LOVE_ENABLE_WINDOW
+#	include "window/Window.h"
+#endif
+
 // For love::audio::Audio::setMixWithSystem.
 #ifdef LOVE_ENABLE_AUDIO
 #	include "audio/Audio.h"
@@ -318,6 +323,14 @@ static int w__setGammaCorrect(lua_State *L)
 	return 0;
 }
 
+static int w__setHighDPIAllowed(lua_State *L)
+{
+#ifdef LOVE_ENABLE_WINDOW
+	love::window::setHighDPIAllowed((bool) lua_toboolean(L, 1));
+#endif
+	return 0;
+}
+
 static int w__setAudioMixWithSystem(lua_State *L)
 {
 	bool success = false;
@@ -394,6 +407,9 @@ int luaopen_love(lua_State *L)
 
 	lua_pushcfunction(L, w__setGammaCorrect);
 	lua_setfield(L, -2, "_setGammaCorrect");
+
+	lua_pushcfunction(L, w__setHighDPIAllowed);
+	lua_setfield(L, -2, "_setHighDPIAllowed");
 
 	// Exposed here because we need to be able to call it before the audio
 	// module is initialized.

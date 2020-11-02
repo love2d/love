@@ -400,7 +400,6 @@ function love.init()
 			borderless = false,
 			resizable = false,
 			centered = true,
-			highdpi = false,
 			usedpiscale = true,
 		},
 		modules = {
@@ -433,6 +432,7 @@ function love.init()
 		externalstorage = false, -- Only relevant for Android.
 		accelerometerjoystick = true, -- Only relevant for Android / iOS.
 		gammacorrect = false,
+		highdpi = false,
 	}
 
 	-- Console hack, part 1.
@@ -468,6 +468,10 @@ function love.init()
 
 	if love._setGammaCorrect then
 		love._setGammaCorrect(c.gammacorrect)
+	end
+
+	if love._setHighDPIAllowed then
+		love._setHighDPIAllowed(c.highdpi)
 	end
 
 	if love._setAudioMixWithSystem then
@@ -547,7 +551,7 @@ function love.init()
 			borderless = c.window.borderless,
 			centered = c.window.centered,
 			display = c.window.display,
-			highdpi = c.window.highdpi,
+			highdpi = c.window.highdpi, -- deprecated
 			usedpiscale = c.window.usedpiscale,
 			x = c.window.x,
 			y = c.window.y,

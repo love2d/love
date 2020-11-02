@@ -477,7 +477,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (f.borderless)
 		sdlflags |= SDL_WINDOW_BORDERLESS;
 
-	if (f.highdpi)
+	if (isHighDPIAllowed())
 		sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
 	int x = f.x;
@@ -596,7 +596,8 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 
 	getPosition(settings.x, settings.y, settings.display);
 
-	settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+	setHighDPIAllowed((wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0);
+
 	settings.usedpiscale = newsettings.usedpiscale;
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen mode
