@@ -57,7 +57,7 @@ float WheelJoint::getJointTranslation() const
 
 float WheelJoint::getJointSpeed() const
 {
-	return Physics::scaleUp(joint->GetJointSpeed());
+	return Physics::scaleUp(joint->GetJointLinearSpeed());
 }
 
 void WheelJoint::setMotorEnabled(bool enable)
@@ -95,24 +95,52 @@ float WheelJoint::getMotorTorque(float inv_dt) const
 	return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 }
 
-void WheelJoint::setSpringFrequency(float hz)
+void WheelJoint::setFrequency(float hz)
 {
-	joint->SetSpringFrequencyHz(hz);
+	float stiffness, damping;
+	b2AngularStiffness(stiffness, damping, hz, getDampingRatio(), joint->GetBodyA(), joint->GetBodyB());
+	joint->SetStiffness(stiffness);
 }
 
-float WheelJoint::getSpringFrequency() const
+float WheelJoint::getFrequency() const
 {
-	return joint->GetSpringFrequencyHz();
+	float frequency, ratio;
+	Physics::b2AngularFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return frequency;
 }
 
-void WheelJoint::setSpringDampingRatio(float ratio)
+void WheelJoint::setDampingRatio(float ratio)
 {
-	joint->SetSpringDampingRatio(ratio);
+	float stiffness, damping;
+	b2AngularStiffness(stiffness, damping, getFrequency(), ratio, joint->GetBodyA(), joint->GetBodyB());
+	joint->SetDamping(damping);
 }
 
-float WheelJoint::getSpringDampingRatio() const
+float WheelJoint::getDampingRatio() const
 {
-	return joint->GetSpringDampingRatio();
+	float frequency, ratio;
+	Physics::b2AngularFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return ratio;
+}
+
+void WheelJoint::setStiffness(float k)
+{
+	joint->SetStiffness(k);
+}
+
+float WheelJoint::getStiffness() const
+{
+	return joint->GetStiffness();
+}
+
+void WheelJoint::setDamping(float ratio)
+{
+	joint->SetDamping(ratio);
+}
+
+float WheelJoint::getDamping() const
+{
+	return joint->GetDamping();
 }
 
 int WheelJoint::getAxis(lua_State *L)

@@ -58,22 +58,50 @@ float DistanceJoint::getLength() const
 
 void DistanceJoint::setFrequency(float hz)
 {
-	joint->SetFrequency(hz);
+	float stiffness, damping;
+	b2LinearStiffness(stiffness, damping, hz, getDampingRatio(), joint->GetBodyA(), joint->GetBodyB());
+	joint->SetStiffness(stiffness);
 }
 
 float DistanceJoint::getFrequency() const
 {
-	return joint->GetFrequency();
+	float frequency, ratio;
+	Physics::b2LinearFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return frequency;
 }
 
-void DistanceJoint::setDampingRatio(float d)
+void DistanceJoint::setDampingRatio(float ratio)
 {
-	joint->SetDampingRatio(d);
+	float stiffness, damping;
+	b2LinearStiffness(stiffness, damping, getFrequency(), ratio, joint->GetBodyA(), joint->GetBodyB());
+	joint->SetDamping(damping);
 }
 
 float DistanceJoint::getDampingRatio() const
 {
-	return joint->GetDampingRatio();
+	float frequency, ratio;
+	Physics::b2LinearFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return ratio;
+}
+
+void DistanceJoint::setStiffness(float k)
+{
+	joint->SetStiffness(k);
+}
+
+float DistanceJoint::getStiffness() const
+{
+	return joint->GetStiffness();
+}
+
+void DistanceJoint::setDamping(float d)
+{
+	joint->SetDamping(d);
+}
+
+float DistanceJoint::getDamping() const
+{
+	return joint->GetDamping();
 }
 
 

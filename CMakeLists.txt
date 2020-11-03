@@ -1064,130 +1064,81 @@ source_group("modules\\window\\sdl" FILES ${LOVE_SRC_MODULE_WINDOW_SDL})
 #
 
 set(LOVE_SRC_3P_BOX2D_ROOT
-	src/libraries/Box2D/Box2D.h
+	src/libraries/box2d/Box2D.h
 )
 
 set(LOVE_SRC_3P_BOX2D_COLLISION
-	src/libraries/Box2D/Collision/b2BroadPhase.cpp
-	src/libraries/Box2D/Collision/b2BroadPhase.h
-	src/libraries/Box2D/Collision/b2CollideCircle.cpp
-	src/libraries/Box2D/Collision/b2CollideEdge.cpp
-	src/libraries/Box2D/Collision/b2CollidePolygon.cpp
-	src/libraries/Box2D/Collision/b2Collision.cpp
-	src/libraries/Box2D/Collision/b2Collision.h
-	src/libraries/Box2D/Collision/b2Distance.cpp
-	src/libraries/Box2D/Collision/b2Distance.h
-	src/libraries/Box2D/Collision/b2DynamicTree.cpp
-	src/libraries/Box2D/Collision/b2DynamicTree.h
-	src/libraries/Box2D/Collision/b2TimeOfImpact.cpp
-	src/libraries/Box2D/Collision/b2TimeOfImpact.h
-)
-
-set(LOVE_SRC_3P_BOX2D_COLLISION_SHAPES
-	src/libraries/Box2D/Collision/Shapes/b2ChainShape.cpp
-	src/libraries/Box2D/Collision/Shapes/b2ChainShape.h
-	src/libraries/Box2D/Collision/Shapes/b2CircleShape.cpp
-	src/libraries/Box2D/Collision/Shapes/b2CircleShape.h
-	src/libraries/Box2D/Collision/Shapes/b2EdgeShape.cpp
-	src/libraries/Box2D/Collision/Shapes/b2EdgeShape.h
-	src/libraries/Box2D/Collision/Shapes/b2PolygonShape.cpp
-	src/libraries/Box2D/Collision/Shapes/b2PolygonShape.h
-	src/libraries/Box2D/Collision/Shapes/b2Shape.h
+    src/libraries/box2d/collision/b2_broad_phase.cpp
+    src/libraries/box2d/collision/b2_chain_shape.cpp
+    src/libraries/box2d/collision/b2_circle_shape.cpp
+    src/libraries/box2d/collision/b2_collide_circle.cpp
+    src/libraries/box2d/collision/b2_collide_edge.cpp
+    src/libraries/box2d/collision/b2_collide_polygon.cpp
+    src/libraries/box2d/collision/b2_collision.cpp
+    src/libraries/box2d/collision/b2_distance.cpp
+    src/libraries/box2d/collision/b2_dynamic_tree.cpp
+    src/libraries/box2d/collision/b2_edge_shape.cpp
+    src/libraries/box2d/collision/b2_polygon_shape.cpp
+    src/libraries/box2d/collision/b2_time_of_impact.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D_COMMON
-	src/libraries/Box2D/Common/b2BlockAllocator.cpp
-	src/libraries/Box2D/Common/b2BlockAllocator.h
-	src/libraries/Box2D/Common/b2Draw.cpp
-	src/libraries/Box2D/Common/b2Draw.h
-	src/libraries/Box2D/Common/b2GrowableStack.h
-	src/libraries/Box2D/Common/b2Math.cpp
-	src/libraries/Box2D/Common/b2Math.h
-	src/libraries/Box2D/Common/b2Settings.cpp
-	src/libraries/Box2D/Common/b2Settings.h
-	src/libraries/Box2D/Common/b2StackAllocator.cpp
-	src/libraries/Box2D/Common/b2StackAllocator.h
-	src/libraries/Box2D/Common/b2Timer.cpp
-	src/libraries/Box2D/Common/b2Timer.h
+    src/libraries/box2d/common/b2_block_allocator.cpp
+    src/libraries/box2d/common/b2_draw.cpp
+    src/libraries/box2d/common/b2_math.cpp
+    src/libraries/box2d/common/b2_settings.cpp
+    src/libraries/box2d/common/b2_stack_allocator.cpp
+    src/libraries/box2d/common/b2_timer.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D_DYNAMICS
-	src/libraries/Box2D/Dynamics/b2Body.cpp
-	src/libraries/Box2D/Dynamics/b2Body.h
-	src/libraries/Box2D/Dynamics/b2ContactManager.cpp
-	src/libraries/Box2D/Dynamics/b2ContactManager.h
-	src/libraries/Box2D/Dynamics/b2Fixture.cpp
-	src/libraries/Box2D/Dynamics/b2Fixture.h
-	src/libraries/Box2D/Dynamics/b2Island.cpp
-	src/libraries/Box2D/Dynamics/b2Island.h
-	src/libraries/Box2D/Dynamics/b2TimeStep.h
-	src/libraries/Box2D/Dynamics/b2World.cpp
-	src/libraries/Box2D/Dynamics/b2World.h
-	src/libraries/Box2D/Dynamics/b2WorldCallbacks.cpp
-	src/libraries/Box2D/Dynamics/b2WorldCallbacks.h
-)
-
-set(LOVE_SRC_3P_BOX2D_DYNAMICS_CONTACTS
-	src/libraries/Box2D/Dynamics/Contacts/b2ChainAndCircleContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2ChainAndCircleContact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2ChainAndPolygonContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2ChainAndPolygonContact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2CircleContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2CircleContact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2Contact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2Contact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2ContactSolver.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2ContactSolver.h
-	src/libraries/Box2D/Dynamics/Contacts/b2EdgeAndCircleContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2EdgeAndCircleContact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2EdgeAndPolygonContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2EdgeAndPolygonContact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2PolygonAndCircleContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2PolygonAndCircleContact.h
-	src/libraries/Box2D/Dynamics/Contacts/b2PolygonContact.cpp
-	src/libraries/Box2D/Dynamics/Contacts/b2PolygonContact.h
-)
-
-set(LOVE_SRC_3P_BOX2D_DYNAMICS_JOINTS
-	src/libraries/Box2D/Dynamics/Joints/b2DistanceJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2DistanceJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2FrictionJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2FrictionJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2GearJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2GearJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2Joint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2Joint.h
-	src/libraries/Box2D/Dynamics/Joints/b2MotorJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2MotorJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2MouseJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2MouseJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2PrismaticJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2PrismaticJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2PulleyJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2PulleyJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2RevoluteJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2RevoluteJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2RopeJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2RopeJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2WeldJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2WeldJoint.h
-	src/libraries/Box2D/Dynamics/Joints/b2WheelJoint.cpp
-	src/libraries/Box2D/Dynamics/Joints/b2WheelJoint.h
+    src/libraries/box2d/dynamics/b2_body.cpp
+    src/libraries/box2d/dynamics/b2_chain_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_chain_circle_contact.h
+    src/libraries/box2d/dynamics/b2_chain_polygon_contact.cpp
+    src/libraries/box2d/dynamics/b2_chain_polygon_contact.h
+    src/libraries/box2d/dynamics/b2_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_circle_contact.h
+    src/libraries/box2d/dynamics/b2_contact.cpp
+    src/libraries/box2d/dynamics/b2_contact_manager.cpp
+    src/libraries/box2d/dynamics/b2_contact_solver.cpp
+    src/libraries/box2d/dynamics/b2_contact_solver.h
+    src/libraries/box2d/dynamics/b2_distance_joint.cpp
+    src/libraries/box2d/dynamics/b2_edge_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_edge_circle_contact.h
+    src/libraries/box2d/dynamics/b2_edge_polygon_contact.cpp
+    src/libraries/box2d/dynamics/b2_edge_polygon_contact.h
+    src/libraries/box2d/dynamics/b2_fixture.cpp
+    src/libraries/box2d/dynamics/b2_friction_joint.cpp
+    src/libraries/box2d/dynamics/b2_gear_joint.cpp
+    src/libraries/box2d/dynamics/b2_island.cpp
+    src/libraries/box2d/dynamics/b2_island.h
+    src/libraries/box2d/dynamics/b2_joint.cpp
+    src/libraries/box2d/dynamics/b2_motor_joint.cpp
+    src/libraries/box2d/dynamics/b2_mouse_joint.cpp
+    src/libraries/box2d/dynamics/b2_polygon_circle_contact.cpp
+    src/libraries/box2d/dynamics/b2_polygon_circle_contact.h
+    src/libraries/box2d/dynamics/b2_polygon_contact.cpp
+    src/libraries/box2d/dynamics/b2_polygon_contact.h
+    src/libraries/box2d/dynamics/b2_prismatic_joint.cpp
+    src/libraries/box2d/dynamics/b2_pulley_joint.cpp
+    src/libraries/box2d/dynamics/b2_revolute_joint.cpp
+    src/libraries/box2d/dynamics/b2_rope_joint.cpp
+    src/libraries/box2d/dynamics/b2_weld_joint.cpp
+    src/libraries/box2d/dynamics/b2_wheel_joint.cpp
+    src/libraries/box2d/dynamics/b2_world.cpp
+    src/libraries/box2d/dynamics/b2_world_callbacks.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D_ROPE
-	src/libraries/Box2D/Rope/b2Rope.cpp
-	src/libraries/Box2D/Rope/b2Rope.h
+	src/libraries/box2d/rope/b2_rope.cpp
 )
 
 set(LOVE_SRC_3P_BOX2D
 	${LOVE_SRC_3P_BOX2D_ROOT}
 	${LOVE_SRC_3P_BOX2D_COLLISION}
-	${LOVE_SRC_3P_BOX2D_COLLISION_SHAPES}
 	${LOVE_SRC_3P_BOX2D_COMMON}
 	${LOVE_SRC_3P_BOX2D_DYNAMICS}
-	${LOVE_SRC_3P_BOX2D_DYNAMICS_CONTACTS}
-	${LOVE_SRC_3P_BOX2D_DYNAMICS_JOINTS}
 	${LOVE_SRC_3P_BOX2D_ROPE}
 )
 
@@ -1727,6 +1678,7 @@ set(LOVE_LIB_SRC
 include_directories(
 	src
 	src/libraries
+	src/libraries/box2D
 	src/modules
 	${LOVE_INCLUDE_DIRS}
 )

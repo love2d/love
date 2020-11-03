@@ -160,8 +160,9 @@ int w_newEdgeShape(lua_State *L)
 	float y1 = (float)luaL_checknumber(L, 2);
 	float x2 = (float)luaL_checknumber(L, 3);
 	float y2 = (float)luaL_checknumber(L, 4);
+	bool oneSided = luax_optboolean(L, 5, false);
 	EdgeShape *shape;
-	luax_catchexcept(L, [&](){ shape = instance()->newEdgeShape(x1, y1, x2, y2); });
+	luax_catchexcept(L, [&](){ shape = instance()->newEdgeShape(x1, y1, x2, y2, oneSided); });
 	luax_pushtype(L, shape);
 	shape->release();
 	return 1;

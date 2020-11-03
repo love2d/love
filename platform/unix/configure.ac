@@ -81,7 +81,7 @@ AC_ARG_ENABLE([library-lua53], [  --disable-library-lua53    Turn off library lu
 
 # Select the libraries we need to build, based on the selected modules
 AS_VAR_IF([enable_module_filesystem], [yes], [enable_library_physfs=yes], [enable_library_physfs=no])
-AS_VAR_IF([enable_module_physics], [yes], [enable_library_Box2D=yes], [enable_library_Box2D=no])
+AS_VAR_IF([enable_module_physics], [yes], [enable_library_box2d=yes], [enable_library_box2d=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_library_ddsparse=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glslang=yes], [enable_library_glslang=no])

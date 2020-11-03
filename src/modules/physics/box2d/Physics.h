@@ -140,7 +140,7 @@ public:
 	 * @param x2 The x coordinate of the second point.
 	 * @param y2 The y coordinate of the second point.
 	 **/
-	EdgeShape *newEdgeShape(float x1, float y1, float x2, float y2);
+	EdgeShape *newEdgeShape(float x1, float y1, float x2, float y2, bool oneSided);
 
 	/**
 	 * Creates a new PolygonShape from a variable number of vertices.
@@ -354,7 +354,29 @@ public:
 	 * @param aabb The unscaled input AABB.
 	 * @return The scaled AABB.
 	 **/
-	static b2AABB scaleUp(const b2AABB &aabb);
+	static b2AABB scaleUp(const b2AABB& aabb);
+
+	/**
+	 * Calculates linear frequency and damping radio from stiffness and damping
+	 * @param frequency The output frequency
+	 * @param ratio The output damping ratio
+	 * @param stiffness The joint stiffness
+	 * @param damping The joint damping
+	 * @param bodyA The bodyA of the joint
+	 * @param bodyB The bodyB of the joint
+	 **/
+	static void b2LinearFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB);
+
+	/**
+	 * Calculates angular frequency and damping radio from stiffness and damping
+	 * @param frequency The output frequency
+	 * @param ratio The output damping ratio
+	 * @param stiffness The joint stiffness
+	 * @param damping The joint damping
+	 * @param bodyA The bodyA of the joint
+	 * @param bodyB The bodyB of the joint
+	 **/
+	static void b2AngularFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB);
 
 private:
 

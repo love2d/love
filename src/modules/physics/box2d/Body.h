@@ -28,7 +28,7 @@
 #include "physics/Body.h"
 
 // Box2D
-#include <Box2D/Box2D.h>
+#include <box2d/Box2D.h>
 
 namespace love
 {
@@ -360,7 +360,7 @@ public:
 	 * Checks whether a Body is active or not. An inactive body
 	 * cannot be interacted with.
 	 **/
-	bool isActive() const;
+	bool isEnabled() const;
 
 	/**
 	 * Checks whether a Body is awake or not. A Body
@@ -377,7 +377,7 @@ public:
 	/**
 	 * Changes the body's active state.
 	 **/
-	void setActive(bool active);
+	void setEnabled(bool enabled);
 
 	/**
 	 * Changes the body's sleep state.

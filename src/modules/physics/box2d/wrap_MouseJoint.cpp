@@ -96,6 +96,36 @@ int w_MouseJoint_getDampingRatio(lua_State *L)
 	return 1;
 }
 
+int w_MouseJoint_setStiffness(lua_State *L)
+{
+	MouseJoint *t = luax_checkmousejoint(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	luax_catchexcept(L, [&]() { t->setStiffness(arg1); });
+	return 0;
+}
+
+int w_MouseJoint_getStiffness(lua_State *L)
+{
+	MouseJoint *t = luax_checkmousejoint(L, 1);
+	lua_pushnumber(L, t->getStiffness());
+	return 1;
+}
+
+int w_MouseJoint_setDamping(lua_State *L)
+{
+	MouseJoint *t = luax_checkmousejoint(L, 1);
+	float arg1 = (float)luaL_checknumber(L, 2);
+	t->setDamping(arg1);
+	return 0;
+}
+
+int w_MouseJoint_getDamping(lua_State *L)
+{
+	MouseJoint *t = luax_checkmousejoint(L, 1);
+	lua_pushnumber(L, t->getDamping());
+	return 1;
+}
+
 static const luaL_Reg w_MouseJoint_functions[] =
 {
 	{ "setTarget", w_MouseJoint_setTarget },
@@ -106,6 +136,10 @@ static const luaL_Reg w_MouseJoint_functions[] =
 	{ "getFrequency", w_MouseJoint_getFrequency },
 	{ "setDampingRatio", w_MouseJoint_setDampingRatio },
 	{ "getDampingRatio", w_MouseJoint_getDampingRatio },
+	{ "setStiffness", w_MouseJoint_setStiffness },
+	{ "getStiffness", w_MouseJoint_getStiffness },
+	{ "setDamping", w_MouseJoint_setDamping },
+	{ "getDamping", w_MouseJoint_getDamping },
 	{ 0, 0 }
 };
 
