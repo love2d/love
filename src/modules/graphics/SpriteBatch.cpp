@@ -47,6 +47,9 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage 
 	, color(255, 255, 255, 255)
 	, colorf(1.0f, 1.0f, 1.0f, 1.0f)
 	, array_buf(nullptr)
+	, vertex_data(nullptr)
+	, modified_sprite_first(LOVE_INT32_MAX)
+	, modified_sprite_last(0)
 	, range_start(-1)
 	, range_count(-1)
 {
@@ -64,14 +67,22 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage 
 	vertex_stride = getFormatStride(vertex_format);
 
 	size_t vertex_size = vertex_stride * 4 * size;
+
+	vertex_data = (uint8 *) malloc(vertex_size);
+	if (vertex_data == nullptr)
+		throw love::Exception("Out of memory.");
+
+	memset(vertex_data, 0, vertex_size);
+
 	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, usage);
 	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
-	array_buf = gfx->newBuffer(settings, decl, nullptr, vertex_size, 0);
+
+	array_buf.set(gfx->newBuffer(settings, decl, nullptr, vertex_size, 0), Acquire::NORETAIN);
 }
 
 SpriteBatch::~SpriteBatch()
 {
-	delete array_buf;
+	free(vertex_data);
 }
 
 int SpriteBatch::add(const Matrix4 &m, int index /*= -1*/)
@@ -93,9 +104,10 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 	const Vector2 *quadpositions = quad->getVertexPositions();
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
-	// Always keep the buffer mapped when adding data (it'll be unmapped on draw.)
-	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
-	auto verts = (XYf_STf_RGBAub *) ((uint8 *) array_buf->map() + offset);
+	int spriteindex = (index == -1 ? next : index);
+
+	size_t offset = spriteindex * vertex_stride * 4;
+	auto verts = (XYf_STf_RGBAub *) (vertex_data + offset);
 
 	m.transformXY(verts, quadpositions, 4);
 
@@ -106,7 +118,8 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 		verts[i].color = color;
 	}
 
-	array_buf->setMappedRangeModified(offset, vertex_stride * 4);
+	modified_sprite_first = std::min(modified_sprite_first, spriteindex);
+	modified_sprite_last = std::max(modified_sprite_last, spriteindex);
 
 	// Increment counter.
 	if (index == -1)
@@ -137,9 +150,10 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 	const Vector2 *quadpositions = quad->getVertexPositions();
 	const Vector2 *quadtexcoords = quad->getVertexTexCoords();
 
-	// Always keep the buffer mapped when adding data (it'll be unmapped on draw.)
-	size_t offset = (index == -1 ? next : index) * vertex_stride * 4;
-	auto verts = (XYf_STPf_RGBAub *) ((uint8 *) array_buf->map() + offset);
+	int spriteindex = (index == -1 ? next : index);
+
+	size_t offset = spriteindex * vertex_stride * 4;
+	auto verts = (XYf_STPf_RGBAub *) (vertex_data + offset);
 
 	m.transformXY(verts, quadpositions, 4);
 
@@ -151,7 +165,8 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 		verts[i].color = color;
 	}
 
-	array_buf->setMappedRangeModified(offset, vertex_stride * 4);
+	modified_sprite_first = std::min(modified_sprite_first, spriteindex);
+	modified_sprite_last = std::max(modified_sprite_last, spriteindex);
 
 	// Increment counter.
 	if (index == -1)
@@ -168,7 +183,20 @@ void SpriteBatch::clear()
 
 void SpriteBatch::flush()
 {
-	array_buf->unmap();
+	if (modified_sprite_first <= modified_sprite_last)
+	{
+		size_t offset = modified_sprite_first * vertex_stride * 4;
+		size_t size = (modified_sprite_last - modified_sprite_first) * vertex_stride * 4;
+
+		// TODO: switch this to fill() once it gets cleaned up.
+		memcpy(((uint8 *)array_buf->map() + offset), vertex_data + offset, size);
+
+		array_buf->setMappedRangeModified(offset, size);
+		array_buf->unmap();
+
+		modified_sprite_first = LOVE_INT32_MAX;
+		modified_sprite_last = 0;
+	}
 }
 
 void SpriteBatch::setTexture(Texture *newtexture)
@@ -213,33 +241,24 @@ void SpriteBatch::setBufferSize(int newsize)
 		return;
 
 	size_t vertex_size = vertex_stride * 4 * newsize;
-	love::graphics::Buffer *new_array_buf = nullptr;
 
 	int new_next = std::min(next, newsize);
 
-	try
-	{
-		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getMapFlags(), array_buf->getUsage());
-		auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
-		new_array_buf = gfx->newBuffer(settings, decl, nullptr, vertex_size, 0);
+	void *new_vertex_data = realloc(vertex_data, vertex_size);
+	if (new_vertex_data == nullptr)
+		throw love::Exception("Out of memory.");
 
-		// Copy as much of the old data into the new GLBuffer as can fit.
-		size_t copy_size = vertex_stride * 4 * new_next;
-		array_buf->copyTo(0, copy_size, new_array_buf, 0);
-	}
-	catch (love::Exception &)
-	{
-		delete new_array_buf;
-		throw;
-	}
+	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getMapFlags(), array_buf->getUsage());
+	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
 
-	// We don't need to unmap the old GLBuffer since we're deleting it.
-	delete array_buf;
+	array_buf.set(gfx->newBuffer(settings, decl, nullptr, vertex_size, 0), Acquire::NORETAIN);
 
-	array_buf = new_array_buf;
+	array_buf->fill(0, vertex_stride * 4 * new_next, new_vertex_data);
+
+	vertex_data = (uint8 *) new_vertex_data;
+
 	size = newsize;
-
 	next = new_next;
 }
 
@@ -319,8 +338,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			Shader::current->checkMainTexture(texture);
 	}
 
-	// Make sure the buffer isn't mapped when we draw (sends data to GPU if needed.)
-	array_buf->unmap();
+	flush(); // Upload any modified sprite data to the GPU.
 
 	VertexAttributes attributes;
 	BufferBindings buffers;

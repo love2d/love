@@ -130,8 +130,12 @@ private:
 
 	CommonFormat vertex_format;
 	size_t vertex_stride;
-	
-	love::graphics::Buffer *array_buf;
+
+	StrongRef<love::graphics::Buffer> array_buf;
+	uint8 *vertex_data;
+
+	int modified_sprite_first;
+	int modified_sprite_last;
 
 	std::unordered_map<std::string, AttachedAttribute> attached_attributes;
 	
