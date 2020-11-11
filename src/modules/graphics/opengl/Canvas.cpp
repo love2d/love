@@ -287,12 +287,18 @@ bool Canvas::loadVolatile()
 	if (!isReadable() || actualSamples > 0)
 		createRenderbuffer(pixelWidth, pixelHeight, actualSamples, format, renderbuffer);
 
-	int64 memsize = getPixelFormatSize(format) * pixelWidth * pixelHeight;
-	if (getMipmapCount() > 1)
-		memsize *= 1.33334;
+	int64 memsize = 0;
+
+	for (int mip = 0; mip < getMipmapCount(); mip++)
+	{
+		int w = getPixelWidth(mip);
+		int h = getPixelHeight(mip);
+		int slices = getDepth(mip) * layers * (texType == TEXTURE_CUBE ? 6 : 1);
+		memsize += getPixelFormatSize(format) * w * h * slices;
+	}
 
 	if (actualSamples > 1 && isReadable())
-		memsize += getPixelFormatSize(format) * pixelWidth * pixelHeight * actualSamples;
+		memsize += memsize * actualSamples;
 	else if (actualSamples > 1)
 		memsize *= actualSamples;
 
