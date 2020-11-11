@@ -1,3 +1,37 @@
+LOVE 12.0 [N/A]
+
+Released: N/A
+
+* Added love.event.restart(optionalvalue). A new love.restart field will contain the value after restarting.
+* Added SoundData:copyFrom.
+* Added SoundData:slice.
+* Added t.highdpi startup flag in love.conf, replacing t.window.highdpi and the highdpi flag of love.window.setMode.
+* Added per-shader opt in support for the GLSL 4.30 (desktop) and GLSL ES 3.10 (mobile) shading languages, via #pragma language glsl4.
+* Added love.graphics.newTexture. newImage and newCanvas still exist as convenience constructor functions.
+* Added love.graphics.getTextureFormats, which replaces getImageFormats and getCanvasFormats.
+* Added Graphics Buffer objects, including vertex, index, and texel buffers.
+* Added APIs for interacting with the objects owned by Meshes.
+* Added Mesh:getAttachedAttributes.
+* Added integer buffer data formats.
+* Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
+* Added new 'clampone' wrap mode.
+
+* Changed the default font from Vera size 12 to Noto Sans size 13.
+* Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
+* Changed Images to no longer hold onto a CPU copy of their pixel data after creation.
+* Changed love.window.setMode to no longer clear the contents of Canvases or otherwise recreate OpenGL resources.
+
+* Updated Box2D from 2.3 to 2.4.1.
+
+* Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
+* Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
+* Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
+
+* Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
+
+* Fixed BezierCurve:render adding collinear points in some situations.
+
+
 LOVE 11.4 [Mysterious Mysteries]
 --------------------------------
 
