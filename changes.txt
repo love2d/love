@@ -1,3 +1,28 @@
+LOVE 11.4 [Mysterious Mysteries]
+--------------------------------
+
+Released: N/A
+
+* Added support for r16, rg16, and rgba16 pixel formats in Canvases.
+* Added Shader:send(name, matrixlayout, data, ...) variant, whose argument order is more consistent than Shader:send(name, data, matrixlayout, ...).
+
+* Changed love.timer.getTime to start at 0 when the module is first loaded.
+
+* Fixed build-time compatibility with Lua 5.4.
+* Fixed initial window creation to set the window's title during creation instead of after.
+* Fixed drag-and-drop to open a love game on macOS causing love.event.quit("restart") to fail.
+* Fixed fused macOS apps opening other love games when drag-and-drop is used (if the fused app hasn't already removed .love files from recognized document types).
+* Fixed memory corruption and a crash when drawing smooth lines.
+* Fixed a crash in Canvas:newImageData when the pixel format's pixel byte size multiplied by its width isn't a multiple of 4.
+* Fixed love.graphics.newVolumeImage when explicit mipmaps are provided.
+* Fixed freezes and crashes in automatic batching when an AMD GPU is used.
+* Fixed love.graphics.print and Image:replacePixels on more AMD/ATI GPUs.
+* Fixed texture memory reported by love.graphics.getStats when a volume or array Canvas is created.
+* Fixed rare issues where textures were not sent to shaders correctly.
+* Fixed Shader:send(name, data, matrixlayout, ...).
+* Fixed source code compilation on Xcode 12+.
+* Fixed source code compilation on Linux systems that don't provide posix_spawn APIs.
+
 LOVE 11.3 [Mysterious Mysteries]
 --------------------------------
 
