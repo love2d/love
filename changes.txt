@@ -1,4 +1,5 @@
 LOVE 12.0 [N/A]
+---------------
 
 Released: N/A
 
@@ -10,7 +11,7 @@ Released: N/A
 * Added love.graphics.newTexture. newImage and newCanvas still exist as convenience constructor functions.
 * Added love.graphics.getTextureFormats, which replaces getImageFormats and getCanvasFormats.
 * Added Graphics Buffer objects, including vertex, index, and texel buffers.
-* Added APIs for interacting with the objects owned by Meshes.
+* Added APIs for interacting with the Buffer objects owned by Meshes.
 * Added Mesh:getAttachedAttributes.
 * Added integer buffer data formats.
 * Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
@@ -30,7 +31,6 @@ Released: N/A
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
 
 * Fixed BezierCurve:render adding collinear points in some situations.
-
 
 LOVE 11.4 [Mysterious Mysteries]
 --------------------------------
