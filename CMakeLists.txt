@@ -1123,7 +1123,6 @@ set(LOVE_SRC_3P_BOX2D_DYNAMICS
     src/libraries/box2d/dynamics/b2_prismatic_joint.cpp
     src/libraries/box2d/dynamics/b2_pulley_joint.cpp
     src/libraries/box2d/dynamics/b2_revolute_joint.cpp
-    src/libraries/box2d/dynamics/b2_rope_joint.cpp
     src/libraries/box2d/dynamics/b2_weld_joint.cpp
     src/libraries/box2d/dynamics/b2_wheel_joint.cpp
     src/libraries/box2d/dynamics/b2_world.cpp
