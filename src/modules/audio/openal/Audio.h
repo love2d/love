@@ -95,6 +95,8 @@ public:
 	void pause(love::audio::Source *source);
 	void pause(const std::vector<love::audio::Source*> &sources);
 	std::vector<love::audio::Source*> pause();
+	void pauseContext();
+	void resumeContext();
 	void setVolume(float volume);
 	float getVolume() const;
 
