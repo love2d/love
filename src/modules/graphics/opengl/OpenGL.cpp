@@ -391,15 +391,23 @@ void OpenGL::initOpenGLFunctions()
 		}
 	}
 
-	if (GLAD_ES_VERSION_2_0 && GLAD_OES_texture_3D && !GLAD_ES_VERSION_3_0)
+	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
 	{
-		// Function signatures don't match, we'll have to conditionally call it
-		//fp_glTexImage3D = fp_glTexImage3DOES;
-		fp_glTexSubImage3D = fp_glTexSubImage3DOES;
-		fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
-		fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
-		fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
-		fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+		// The Nvidia Tegra 3 driver (used by Ouya) claims to support GL_EXT_texture_array but
+		// segfaults if you actually try to use it. OpenGL ES 2.0 devices should use OES_texture_3D.
+		// GL_EXT_texture_array is for desktops.
+		GLAD_EXT_texture_array = false;
+
+		if (GLAD_OES_texture_3D)
+		{
+			// Function signatures don't match, we'll have to conditionally call it
+			//fp_glTexImage3D = fp_glTexImage3DOES;
+			fp_glTexSubImage3D = fp_glTexSubImage3DOES;
+			fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
+			fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
+			fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
+			fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+		}
 	}
 
 	if (!GLAD_VERSION_3_2 && !GLAD_ES_VERSION_3_2 && !GLAD_ARB_draw_elements_base_vertex)
