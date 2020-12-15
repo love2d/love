@@ -499,7 +499,7 @@ love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size)
 		{
 			// AMD's pinned memory seems to be faster than persistent mapping,
 			// on AMD GPUs.
-			if (GLAD_AMD_pinned_memory)
+			if (GLAD_AMD_pinned_memory && gl.getVendor() == OpenGL::VENDOR_AMD)
 			{
 				try
 				{
