@@ -86,6 +86,9 @@ public:
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;
 
+	void pauseContext();
+	void resumeContext();
+
 private:
 	float volume;
 	DistanceModel distanceModel;

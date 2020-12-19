@@ -26,6 +26,10 @@
 #include <cstdlib>
 #include <iostream>
 
+#ifdef LOVE_IOS
+#include "common/ios.h"
+#endif
+
 namespace love
 {
 namespace audio
@@ -189,10 +193,18 @@ Audio::Audio()
 
 	poolThread = new PoolThread(pool);
 	poolThread->start();
+	
+#ifdef LOVE_IOS
+	love::ios::initAudioSessionInterruptionHandler();
+#endif
+        
 }
 
 Audio::~Audio()
 {
+#ifdef LOVE_IOS
+	love::ios::destroyAudioSessionInterruptionHandler();
+#endif
 	poolThread->setFinish();
 	poolThread->wait();
 
@@ -291,6 +303,17 @@ void Audio::pause(const std::vector<love::audio::Source*> &sources)
 std::vector<love::audio::Source*> Audio::pause()
 {
 	return Source::pause(pool);
+}
+
+void Audio::pauseContext()
+{
+	alcMakeContextCurrent(nullptr);
+}
+
+void Audio::resumeContext()
+{
+	if (context && alcGetCurrentContext() != context)
+		alcMakeContextCurrent(context);
 }
 
 void Audio::setVolume(float volume)

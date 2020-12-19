@@ -28,6 +28,8 @@
 #import <AudioToolbox/AudioServices.h>
 #import <AVFoundation/AVFoundation.h>
 
+#include "modules/audio/Audio.h"
+
 #include <vector>
 
 #include <SDL_events.h>
@@ -199,6 +201,53 @@ static int dropFileEventFilter(void *userdata, SDL_Event *event)
 		return 1;
 	}
 }
+
+@interface LoveAudioInterruptionListener : NSObject
+@end
+
+@implementation LoveAudioInterruptionListener
+
++ (id) shared
+{
+	// thread-safe singleton
+	static dispatch_once_t pred = 0;
+	__strong static id _shared = nil;
+	dispatch_once(&pred, ^{
+			_shared = [[self alloc] init];
+		});
+	return _shared;
+}
+
+- (void)audioSessionInterruption:(NSNotification *)note
+{
+	@synchronized (self) {
+		auto audio = love::Module::getInstance<love::audio::Audio>(love::Module::M_AUDIO);
+		if (!audio) {
+			NSLog(@"LoveAudioInterruptionListener could not get love audio module");
+			return;
+		}
+		NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
+		if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan) {
+			audio->pauseContext();
+		} else {
+			audio->resumeContext();
+		}
+	}
+}
+
+- (void)applicationBecameActive:(NSNotification *)note
+{
+	@synchronized (self) {
+		auto audio = love::Module::getInstance<love::audio::Audio>(love::Module::M_AUDIO);
+		if (!audio) {
+			NSLog(@"ERROR:could not get love audio module");
+			return;
+		}
+		audio->resumeContext();
+	}
+}
+
+@end
 
 namespace love
 {
@@ -374,6 +423,38 @@ bool hasBackgroundMusic()
 			return session.secondaryAudioShouldBeSilencedHint;
 		return false;
 	}
+}
+
+void initAudioSessionInterruptionHandler()
+{
+	@autoreleasepool
+	{
+		AVAudioSession *session = [AVAudioSession sharedInstance];
+		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+		[center addObserver:[LoveAudioInterruptionListener shared]
+			   selector:@selector(audioSessionInterruption:)
+			       name:AVAudioSessionInterruptionNotification
+			     object:session];
+
+		// An interruption end notification is not guaranteed to be sent if
+		// we were previously interrupted... resuming if needed when the app
+		// becomes active seems to be the way to go.
+		[center addObserver:[LoveAudioInterruptionListener shared]
+			   selector:@selector(applicationBecameActive:)
+			       name:UIApplicationDidBecomeActiveNotification
+			     object:nil];
+
+		[center addObserver:[LoveAudioInterruptionListener shared]
+			   selector:@selector(applicationBecameActive:)
+			       name:UIApplicationWillEnterForegroundNotification
+			     object:nil];
+	}
+}
+
+void destroyAudioSessionInterruptionHandler()
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:[LoveAudioInterruptionListener shared]];
 }
 
 Rect getSafeArea(SDL_Window *window)

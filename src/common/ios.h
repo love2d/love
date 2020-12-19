@@ -79,6 +79,12 @@ bool setAudioMixWithOthers(bool mixEnabled);
 bool hasBackgroundMusic();
 
 /**
+ * Registers notifications to handle and restore audio interruptions
+ **/
+void initAudioSessionInterruptionHandler();
+void destroyAudioSessionInterruptionHandler();
+    
+/**
  * Gets the area in the window that is safe for UI to render to (not covered by
  * the status bar, notch, etc.)
  **/
