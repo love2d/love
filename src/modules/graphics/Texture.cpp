@@ -233,6 +233,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	if (mipmapsMode != MIPMAPS_NONE)
 		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
 
+	if (mipmapsMode == MIPMAPS_AUTO && isPixelFormatDepthStencil(format))
+		throw love::Exception("Automatic mipmap generation cannot be used for depth/stencil textures.");
+
 	if (pixelWidth <= 0 || pixelHeight <= 0 || layers <= 0 || depth <= 0)
 		throw love::Exception("Texture dimensions must be greater than 0.");
 
@@ -497,6 +500,9 @@ void Texture::generateMipmaps()
 
 	if (isPixelFormatCompressed(format))
 		throw love::Exception("generateMipmaps cannot be called on a compressed Texture.");
+
+	if (isPixelFormatDepthStencil(format))
+		throw love::Exception("generateMipmaps cannot be called on a depth/stencil Texture.");
 
 	generateMipmapsInternal();
 }
