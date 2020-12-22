@@ -220,26 +220,29 @@ static int dropFileEventFilter(void *userdata, SDL_Event *event)
 
 - (void)audioSessionInterruption:(NSNotification *)note
 {
-	@synchronized (self) {
+	@synchronized (self)
+	{
 		auto audio = love::Module::getInstance<love::audio::Audio>(love::Module::M_AUDIO);
-		if (!audio) {
+		if (!audio)
+		{
 			NSLog(@"LoveAudioInterruptionListener could not get love audio module");
 			return;
 		}
 		NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
-		if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan) {
+		if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan)
 			audio->pauseContext();
-		} else {
+		else
 			audio->resumeContext();
-		}
 	}
 }
 
 - (void)applicationBecameActive:(NSNotification *)note
 {
-	@synchronized (self) {
+	@synchronized (self)
+	{
 		auto audio = love::Module::getInstance<love::audio::Audio>(love::Module::M_AUDIO);
-		if (!audio) {
+		if (!audio)
+		{
 			NSLog(@"ERROR:could not get love audio module");
 			return;
 		}
@@ -247,7 +250,7 @@ static int dropFileEventFilter(void *userdata, SDL_Event *event)
 	}
 }
 
-@end
+@end // LoveAudioInterruptionListener
 
 namespace love
 {
