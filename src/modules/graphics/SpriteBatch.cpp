@@ -48,8 +48,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage 
 	, colorf(1.0f, 1.0f, 1.0f, 1.0f)
 	, array_buf(nullptr)
 	, vertex_data(nullptr)
-	, modified_sprite_first(LOVE_INT32_MAX)
-	, modified_sprite_last(0)
+	, modified_sprites()
 	, range_start(-1)
 	, range_count(-1)
 {
@@ -74,7 +73,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage 
 
 	memset(vertex_data, 0, vertex_size);
 
-	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, usage);
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, usage);
 	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
 
 	array_buf.set(gfx->newBuffer(settings, decl, nullptr, vertex_size, 0), Acquire::NORETAIN);
@@ -118,8 +117,7 @@ int SpriteBatch::add(Quad *quad, const Matrix4 &m, int index /*= -1*/)
 		verts[i].color = color;
 	}
 
-	modified_sprite_first = std::min(modified_sprite_first, spriteindex);
-	modified_sprite_last = std::max(modified_sprite_last, spriteindex);
+	modified_sprites.encapsulate(spriteindex);
 
 	// Increment counter.
 	if (index == -1)
@@ -165,8 +163,7 @@ int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 		verts[i].color = color;
 	}
 
-	modified_sprite_first = std::min(modified_sprite_first, spriteindex);
-	modified_sprite_last = std::max(modified_sprite_last, spriteindex);
+	modified_sprites.encapsulate(spriteindex);
 
 	// Increment counter.
 	if (index == -1)
@@ -183,19 +180,17 @@ void SpriteBatch::clear()
 
 void SpriteBatch::flush()
 {
-	if (modified_sprite_first <= modified_sprite_last)
+	if (modified_sprites.isValid())
 	{
-		size_t offset = modified_sprite_first * vertex_stride * 4;
-		size_t size = (modified_sprite_last - modified_sprite_first) * vertex_stride * 4;
+		size_t offset = modified_sprites.getOffset() * vertex_stride * 4;
+		size_t size = modified_sprites.getSize() * vertex_stride * 4;
 
-		// TODO: switch this to fill() once it gets cleaned up.
-		memcpy(((uint8 *)array_buf->map() + offset), vertex_data + offset, size);
+		if (array_buf->getUsage() == BUFFERUSAGE_STREAM)
+			array_buf->fill(0, array_buf->getSize(), vertex_data);
+		else
+			array_buf->fill(offset, size, vertex_data + offset);
 
-		array_buf->setMappedRangeModified(offset, size);
-		array_buf->unmap();
-
-		modified_sprite_first = LOVE_INT32_MAX;
-		modified_sprite_last = 0;
+		modified_sprites.invalidate();
 	}
 }
 
@@ -249,7 +244,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		throw love::Exception("Out of memory.");
 
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getMapFlags(), array_buf->getUsage());
+	Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getUsage());
 	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
 
 	array_buf.set(gfx->newBuffer(settings, decl, nullptr, vertex_size, 0), Acquire::NORETAIN);
@@ -267,7 +262,7 @@ int SpriteBatch::getBufferSize() const
 	return size;
 }
 
-void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer)
+void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh)
 {
 	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
 		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a SpriteBatch vertex attribute.");
@@ -288,6 +283,7 @@ void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer)
 		throw love::Exception("The specified Buffer does not have a vertex attribute named '%s'", name.c_str());
 
 	newattrib.buffer = buffer;
+	newattrib.mesh = mesh;
 
 	attached_attributes[name] = newattrib;
 }
@@ -371,8 +367,8 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 		if (attributeindex >= 0)
 		{
-			// Make sure the buffer isn't mapped (sends data to GPU if needed.)
-			buffer->unmap();
+			if (it.second.mesh.get())
+				it.second.mesh->flush();
 
 			const auto &member = buffer->getDataMember(it.second.index);
 

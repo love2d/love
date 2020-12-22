@@ -266,6 +266,7 @@ set(LOVE_SRC_COMMON
 	src/common/Optional.h
 	src/common/pixelformat.cpp
 	src/common/pixelformat.h
+	src/common/Range.h
 	src/common/Reference.cpp
 	src/common/Reference.h
 	src/common/runtime.cpp

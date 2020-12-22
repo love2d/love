@@ -761,30 +761,8 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 			buffer->retain();
 		}
 
-		bool addbuffertoarray = true;
-
 		if (info->buffers[i] != nullptr)
-		{
-			Buffer *oldbuffer = info->buffers[i];
-			auto it = std::find(buffersToUnmap.begin(), buffersToUnmap.end(), oldbuffer);
-			if (it != buffersToUnmap.end())
-			{
-				addbuffertoarray = false;
-				if (buffer != nullptr)
-					*it = buffer;
-				else
-				{
-					auto last = buffersToUnmap.end() - 1;
-					*it = *last;
-					buffersToUnmap.erase(last);
-				}
-			}
-
-			oldbuffer->release();
-		}
-
-		if (addbuffertoarray && buffer != nullptr)
-			buffersToUnmap.push_back(buffer);
+			info->buffers[i]->release();
 
 		info->buffers[i] = buffer;
 
@@ -916,13 +894,6 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
 	if (location >= 0)
 		glUniform4fv(location, 13, (const GLfloat *) &data);
-
-	// TODO: Find a better place to put this.
-	// Buffers used in this shader can be mapped by external code without
-	// unmapping. We need to make sure the data on the GPU is up to date,
-	// otherwise the shader can read from old data.
-	for (Buffer *buffer : buffersToUnmap)
-		buffer->unmap();
 }
 
 int Shader::getUniformTypeComponents(GLenum type) const

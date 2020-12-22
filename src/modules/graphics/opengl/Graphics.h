@@ -112,6 +112,9 @@ public:
 	// Internal use.
 	void cleanupRenderTexture(love::graphics::Texture *texture);
 
+	void *getBufferMapMemory(size_t size);
+	void releaseBufferMapMemory(void *mem);
+
 private:
 
 	struct CachedFBOHasher
@@ -158,6 +161,9 @@ private:
 	StrongRef<love::graphics::Texture> internalBackbufferDepthStencil;
 	GLuint internalBackbufferFBO;
 	int requestedBackbufferMSAA;
+
+	char *bufferMapMemory;
+	size_t bufferMapMemorySize;
 
 	// Only needed for buffer types that can be bound to shaders.
 	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERTYPE_MAX_ENUM];

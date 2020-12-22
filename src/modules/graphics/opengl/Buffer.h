@@ -22,6 +22,7 @@
 
 // LOVE
 #include "common/config.h"
+#include "common/Range.h"
 #include "graphics/Buffer.h"
 #include "graphics/Volatile.h"
 
@@ -49,19 +50,16 @@ public:
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
-	void *map() override;
-	void unmap() override;
-	void setMappedRangeModified(size_t offset, size_t size) override;
+	void *map(MapType map, size_t offset, size_t size) override;
+	void unmap(size_t usedoffset, size_t usedsize) override;
 	void fill(size_t offset, size_t size, const void *data) override;
 
 	ptrdiff_t getHandle() const override { return buffer; };
 	ptrdiff_t getTexelBufferHandle() const override { return texture; };
 
-	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
-
 private:
 
-	bool load(bool restore);
+	bool load(const void *initialdata);
 
 	void unmapStatic(size_t offset, size_t size);
 	void unmapStream();
@@ -77,10 +75,9 @@ private:
 
 	// A pointer to mapped memory.
 	char *memoryMap = nullptr;
+	bool ownsMemoryMap = false;
 
-	size_t modifiedOffset = 0;
-	size_t modifiedSize = 0;
-	bool isMappedDataModified = false;
+	Range mappedRange;
 
 }; // Buffer
 

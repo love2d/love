@@ -34,7 +34,6 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	, size(size)
 	, typeFlags(settings.typeFlags)
 	, usage(settings.usage)
-	, mapFlags(settings.mapFlags)
 	, mapped(false)
 {
 	if (size == 0 && arraylength == 0)

@@ -93,10 +93,21 @@ Graphics::Graphics()
 	, mainVAO(0)
 	, internalBackbufferFBO(0)
 	, requestedBackbufferMSAA(0)
+	, bufferMapMemory(nullptr)
+	, bufferMapMemorySize(2 * 1024 * 1024)
 	, defaultBuffers()
 	, supportedFormats()
 {
 	gl = OpenGL();
+
+	try
+	{
+		bufferMapMemory = new char[bufferMapMemorySize];
+	}
+	catch (std::exception &)
+	{
+		// Handled in getBufferMapMemory.
+	}
 
 	auto window = getInstance<love::window::Window>(M_WINDOW);
 
@@ -121,6 +132,7 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	delete[] bufferMapMemory;
 }
 
 const char *Graphics::getName() const
@@ -328,7 +340,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 
 	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERTYPE_TEXEL].get() == nullptr)
 	{
-		Buffer::Settings settings(Buffer::TYPEFLAG_TEXEL, 0, BUFFERUSAGE_STATIC);
+		Buffer::Settings settings(Buffer::TYPEFLAG_TEXEL, BUFFERUSAGE_STATIC);
 		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT_VEC4, 0}};
 
 		const float texel[] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -1434,6 +1446,21 @@ void Graphics::setWireframe(bool enable)
 
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
 	states.back().wireframe = enable;
+}
+
+void *Graphics::getBufferMapMemory(size_t size)
+{
+	// We don't need anything more complicated because get/release calls are
+	// never interleaved (as of when this comment was written.)
+	if (bufferMapMemory == nullptr || size > bufferMapMemorySize)
+		return malloc(size);
+	return bufferMapMemory;
+}
+
+void Graphics::releaseBufferMapMemory(void *mem)
+{
+	if (mem != bufferMapMemory)
+		free(mem);
 }
 
 Graphics::Renderer Graphics::getRenderer() const

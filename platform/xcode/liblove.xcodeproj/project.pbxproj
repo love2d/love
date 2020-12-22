@@ -829,6 +829,7 @@
 		FAB2D5AA1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AB1AABDD8A008224A4 /* TrueTypeRasterizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */; };
 		FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */; };
+		FAB922C6257D99EF0035DAD6 /* Range.h in Headers */ = {isa = PBXBuildFile; fileRef = FAB922C3257D99EF0035DAD6 /* Range.h */; };
 		FABDA9762552448200B5C523 /* b2_joint.h in Headers */ = {isa = PBXBuildFile; fileRef = FABDA9112552448200B5C523 /* b2_joint.h */; };
 		FABDA9772552448200B5C523 /* b2_shape.h in Headers */ = {isa = PBXBuildFile; fileRef = FABDA9122552448200B5C523 /* b2_shape.h */; };
 		FABDA9782552448200B5C523 /* b2_block_allocator.h in Headers */ = {isa = PBXBuildFile; fileRef = FABDA9132552448200B5C523 /* b2_block_allocator.h */; };
@@ -1828,6 +1829,7 @@
 		FAB17BF41ABFC4B100F9BA27 /* lz4hc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4hc.h; sourceTree = "<group>"; };
 		FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrueTypeRasterizer.cpp; sourceTree = "<group>"; };
 		FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrueTypeRasterizer.h; sourceTree = "<group>"; };
+		FAB922C3257D99EF0035DAD6 /* Range.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Range.h; sourceTree = "<group>"; };
 		FABDA9112552448200B5C523 /* b2_joint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2_joint.h; sourceTree = "<group>"; };
 		FABDA9122552448200B5C523 /* b2_shape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2_shape.h; sourceTree = "<group>"; };
 		FABDA9132552448200B5C523 /* b2_block_allocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = b2_block_allocator.h; sourceTree = "<group>"; };
@@ -2223,6 +2225,7 @@
 				FAF1889C1E9DA834008C1479 /* Optional.h */,
 				FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */,
 				FA9D8DD01DEB56C3002CD881 /* pixelformat.h */,
+				FAB922C3257D99EF0035DAD6 /* Range.h */,
 				FA0B790C1A958E3B000E1D17 /* Reference.cpp */,
 				FA0B790D1A958E3B000E1D17 /* Reference.h */,
 				FA0B790E1A958E3B000E1D17 /* runtime.cpp */,
@@ -4158,6 +4161,7 @@
 				FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */,
 				FADF54041E3D77B500012CC0 /* wrap_Text.h in Headers */,
 				FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */,
+				FAB922C6257D99EF0035DAD6 /* Range.h in Headers */,
 				FAC756F61E4F99B400B91289 /* Effect.h in Headers */,
 				FA0B7ADD1A958EA3000E1D17 /* gladfuncs.hpp in Headers */,
 				FAF1405D1E20934C00F898D2 /* intermediate.h in Headers */,

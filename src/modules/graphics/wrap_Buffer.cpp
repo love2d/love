@@ -186,13 +186,6 @@ Buffer *luax_checkbuffer(lua_State *L, int idx)
 	return luax_checktype<Buffer>(L, idx);
 }
 
-static int w_Buffer_flush(lua_State *L)
-{
-	Buffer *t = luax_checkbuffer(L, 1);
-	t->unmap();
-	return 0;
-}
-
 static int w_Buffer_setArrayData(lua_State *L)
 {
 	Buffer *t = luax_checkbuffer(L, 1);
@@ -223,12 +216,8 @@ static int w_Buffer_setArrayData(lua_State *L)
 			return luaL_error(L, "Too many array elements (expected at most %d, got %d)", arraylength - startindex, count);
 
 		size_t datasize = std::min(d->getSize(), count * stride);
-		char *bytedata = (char *) t->map() + offset;
 
-		memcpy(bytedata, d->getData(), datasize);
-
-		t->setMappedRangeModified(offset, datasize);
-		t->unmap();
+		t->fill(offset, datasize, d->getData());
 		return 0;
 	}
 
@@ -256,7 +245,7 @@ static int w_Buffer_setArrayData(lua_State *L)
 	if (startindex + count > arraylength)
 		return luaL_error(L, "Too many array elements (expected at most %d, got %d)", arraylength - startindex, count);
 
-	char *data = (char *) t->map() + offset;
+	char *data = (char *) t->map(Buffer::MAP_WRITE_INVALIDATE, offset, count * stride);
 
 	if (tableoftables)
 	{
@@ -303,8 +292,7 @@ static int w_Buffer_setArrayData(lua_State *L)
 		}
 	}
 
-	t->setMappedRangeModified(offset, count * stride);
-	t->unmap();
+	t->unmap(offset, count * stride);
 
 	return 0;
 }
@@ -376,7 +364,6 @@ static int w_Buffer_isBufferType(lua_State *L)
 
 static const luaL_Reg w_Buffer_functions[] =
 {
-	{ "flush", w_Buffer_flush },
 	{ "setArrayData", w_Buffer_setArrayData },
 	{ "getElementCount", w_Buffer_getElementCount },
 	{ "getElementStride", w_Buffer_getElementStride },
