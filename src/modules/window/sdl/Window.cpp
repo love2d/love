@@ -544,14 +544,6 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		}
 	}
 
-	if (renderer == graphics::Graphics::RENDERER_OPENGL)
-		sdlflags |= SDL_WINDOW_OPENGL;
-
-#ifdef LOVE_GRAPHICS_METAL
-	if (renderer == graphics::Graphics::RENDERER_METAL)
-		sdlflags |= SDL_WINDOW_METAL;
-#endif
-
 	if (isOpen())
 	{
 		if (SDL_SetWindowFullscreen(window, sdlflags) == 0 && renderer == graphics::Graphics::RENDERER_OPENGL)
@@ -572,7 +564,13 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	}
 	else
 	{
-		sdlflags |= SDL_WINDOW_OPENGL;
+		if (renderer == graphics::Graphics::RENDERER_OPENGL)
+			sdlflags |= SDL_WINDOW_OPENGL;
+
+	#ifdef LOVE_GRAPHICS_METAL
+		if (renderer == graphics::Graphics::RENDERER_METAL)
+			sdlflags |= SDL_WINDOW_METAL;
+	#endif
 
 		 if (f.resizable)
 			 sdlflags |= SDL_WINDOW_RESIZABLE;
