@@ -65,8 +65,6 @@ if(POLICY CMP0072)
 	cmake_policy(SET CMP0072 NEW)
 endif()
 
-find_package(OpenGL)
-
 if(MEGA)
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
@@ -88,7 +86,6 @@ if(MEGA)
 	set(LOVE_LINK_DIRS ${SDL_LINK_DIR})
 
 	set(LOVE_LINK_LIBRARIES
-		${OPENGL_gl_LIBRARY}
 		${MEGA_FREETYPE}
 		${MEGA_LIBOGG}
 		${MEGA_LIBVORBISFILE}
