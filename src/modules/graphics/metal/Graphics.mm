@@ -112,6 +112,19 @@ static MTLStencilOperation getMTLStencilOperation(StencilAction action)
 	return MTLStencilOperationKeep;
 }
 
+static MTLPrimitiveType getMTLPrimitiveType(PrimitiveType prim)
+{
+	switch (prim)
+	{
+		case PRIMITIVE_TRIANGLES: return MTLPrimitiveTypeTriangle;
+		case PRIMITIVE_TRIANGLE_STRIP: return MTLPrimitiveTypeTriangleStrip;
+		case PRIMITIVE_TRIANGLE_FAN: return MTLPrimitiveTypeTriangle; // This needs to be emulated.
+		case PRIMITIVE_POINTS: return MTLPrimitiveTypePoint;
+		case PRIMITIVE_MAX_ENUM: return MTLPrimitiveTypeTriangle;
+	}
+	return MTLPrimitiveTypeTriangle;
+}
+
 static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
 {
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
@@ -765,7 +778,7 @@ void Graphics::draw(const DrawCommand &cmd)
 
 	setVertexBuffers(encoder, cmd.buffers);
 
-	[encoder drawPrimitives:MTLPrimitiveTypeTriangle
+	[encoder drawPrimitives:getMTLPrimitiveType(cmd.primitiveType)
 				vertexStart:cmd.vertexStart
 				vertexCount:cmd.vertexCount
 			  instanceCount:cmd.instanceCount];
@@ -793,7 +806,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 
 	auto indexType = cmd.indexType == INDEX_UINT32 ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
-	[encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+	[encoder drawIndexedPrimitives:getMTLPrimitiveType(cmd.primitiveType)
 						indexCount:cmd.indexCount
 						 indexType:indexType
 					   indexBuffer:getMTLBuffer(cmd.indexBuffer)
