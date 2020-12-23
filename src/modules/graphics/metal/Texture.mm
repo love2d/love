@@ -197,7 +197,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 					options:options];
 }}
 
-void Texture::generateMipmaps()
+void Texture::generateMipmapsInternal()
 { @autoreleasepool {
 	// TODO: alternate method for non-color-renderable and non-filterable
 	// pixel formats.
@@ -205,10 +205,9 @@ void Texture::generateMipmaps()
 	[encoder generateMipmapsForTexture:texture];
 }}
 
-love::image::ImageData *Texture::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect)
+void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect)
 {
 	// TODO
-	return nullptr;
 }
 
 void Texture::setSamplerState(const SamplerState &s)

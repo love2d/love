@@ -26,6 +26,18 @@ namespace love
 namespace window
 {
 
+static bool highDPIAllowed = false;
+
+void setHighDPIAllowed(bool enable)
+{
+	highDPIAllowed = enable;
+}
+
+bool isHighDPIAllowed()
+{
+	return highDPIAllowed;
+}
+
 Window::~Window()
 {
 }

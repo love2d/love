@@ -22,6 +22,7 @@
 
 #include "graphics/Buffer.h"
 #include "Metal.h"
+#include "common/Range.h"
 
 namespace love
 {
@@ -37,23 +38,21 @@ public:
 	Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
-	void *map() override;
-	void unmap() override;
-	void setMappedRangeModified(size_t offset, size_t size) override;
+	void *map(MapType map, size_t offset, size_t size) override;
+	void unmap(size_t usedoffset, size_t usedsize) override;
 	void fill(size_t offset, size_t size, const void *data) override;
+
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) buffer; }
 	ptrdiff_t getTexelBufferHandle() const override { return (ptrdiff_t) texture; }
-
-	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
 private:
 
 	id<MTLBuffer> buffer;
 	id<MTLTexture> texture;
 
-	char *memoryMap;
+	id<MTLBuffer> mapBuffer;
 
-	NSRange mappedRange;
+	Range mappedRange;
 
 }; // Buffer
 

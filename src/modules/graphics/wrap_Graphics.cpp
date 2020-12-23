@@ -1559,7 +1559,7 @@ static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::Da
 	}
 }
 
-static Buffer *luax_newbuffer(lua_State *L, int idx, const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format)
+static Buffer *luax_newbuffer(lua_State *L, int idx, Buffer::Settings settings, const std::vector<Buffer::DataDeclaration> &format)
 {
 	size_t arraylength = 0;
 	size_t bytesize = 0;
@@ -1600,6 +1600,7 @@ static Buffer *luax_newbuffer(lua_State *L, int idx, const Buffer::Settings &set
 		if (len <= 0)
 			luaL_argerror(L, idx, "number of elements must be greater than 0");
 		arraylength = (size_t) len;
+		settings.zeroInitialize = true;
 	}
 
 	Buffer *b = nullptr;
@@ -1663,7 +1664,7 @@ static Buffer *luax_newbuffer(lua_State *L, int idx, const Buffer::Settings &set
 
 int w_newBuffer(lua_State *L)
 {
-	Buffer::Settings settings(0, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	Buffer::Settings settings(0, BUFFERUSAGE_DYNAMIC);
 
 	luaL_checktype(L, 3, LUA_TTABLE);
 
@@ -1691,7 +1692,7 @@ int w_newBuffer(lua_State *L)
 
 int w_newVertexBuffer(lua_State *L)
 {
-	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_DYNAMIC);
 	luax_optbuffersettings(L, 3, settings);
 
 	std::vector<Buffer::DataDeclaration> format;
@@ -1706,7 +1707,7 @@ int w_newVertexBuffer(lua_State *L)
 
 int w_newIndexBuffer(lua_State *L)
 {
-	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, Buffer::MAP_EXPLICIT_RANGE_MODIFY, BUFFERUSAGE_DYNAMIC);
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, BUFFERUSAGE_DYNAMIC);
 	luax_optbuffersettings(L, 3, settings);
 
 	size_t arraylength = 0;
@@ -1747,6 +1748,7 @@ int w_newIndexBuffer(lua_State *L)
 		if (len <= 0)
 			return luaL_argerror(L, 1, "number of elements must be greater than 0");
 		arraylength = (size_t) len;
+		settings.zeroInitialize = true;
 	}
 
 	if (data != nullptr || !lua_isnoneornil(L, 2))
@@ -1953,8 +1955,9 @@ static Mesh *newCustomMesh(lua_State *L)
 
 		luax_catchexcept(L, [&](){ t = instance()->newMesh(vertexformat, numvertices, drawmode, usage); });
 
-		// Maximum possible data size for a single vertex attribute.
-		char data[sizeof(float) * 4];
+		char *data = (char *) t->getVertexData();
+		size_t stride = t->getVertexStride();
+		const auto &members = t->getVertexFormat();
 
 		for (size_t vertindex = 0; vertindex < numvertices; vertindex++)
 		{
@@ -1965,7 +1968,8 @@ static Mesh *newCustomMesh(lua_State *L)
 			int n = 0;
 			for (size_t i = 0; i < vertexformat.size(); i++)
 			{
-				const auto &info = getDataFormatInfo(vertexformat[i].format);
+				const auto &member = members[i];
+				const auto &info = getDataFormatInfo(member.decl.format);
 
 				// get vertices[vertindex][n]
 				for (int c = 0; c < info.components; c++)
@@ -1974,20 +1978,18 @@ static Mesh *newCustomMesh(lua_State *L)
 					lua_rawgeti(L, -(c + 1), n);
 				}
 
+				size_t offset = vertindex * stride + member.offset;
+
 				// Fetch the values from Lua and store them in data buffer.
-				luax_writebufferdata(L, -info.components, vertexformat[i].format, data);
+				luax_writebufferdata(L, -info.components, member.decl.format, data + offset);
 
 				lua_pop(L, info.components);
-
-				luax_catchexcept(L,
-					[&](){ t->setVertexAttribute(vertindex, i, data, sizeof(float) * 4); },
-					[&](bool diderror){ if (diderror) t->release(); }
-				);
 			}
 
 			lua_pop(L, 1); // pop vertices[vertindex]
 		}
 
+		t->setVertexDataModified(0, stride * numvertices);
 		t->flush();
 	}
 

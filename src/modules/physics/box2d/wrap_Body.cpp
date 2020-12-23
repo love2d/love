@@ -518,7 +518,7 @@ int w_Body_setBullet(lua_State *L)
 int w_Body_isActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	luax_pushboolean(L, t->isActive());
+	luax_pushboolean(L, t->isEnabled());
 	return 1;
 }
 
@@ -548,7 +548,7 @@ int w_Body_setActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	bool b = luax_checkboolean(L, 2);
-	luax_catchexcept(L, [&](){ t->setActive(b); });
+	luax_catchexcept(L, [&](){ t->setEnabled(b); });
 	return 0;
 }
 

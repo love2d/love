@@ -188,7 +188,8 @@ Graphics::Graphics()
 			{0.0f, 0.0f, 0.0f, 1.0f},
 			{0, 0, 0, 1},
 		};
-		Buffer::Settings attribsettings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_STATIC);
+
+		Buffer::Settings attribsettings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_STATIC);
 
 		defaultAttributesBuffer = newBuffer(attribsettings, dataformat, &defaults, sizeof(DefaultVertexAttributes), 0);
 	}
@@ -288,13 +289,13 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, int backbufferdepth)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
 { @autoreleasepool {
 	this->width = width;
 	this->height = height;
 	this->metalLayer = (__bridge CAMetalLayer *) context;
 
-	this->windowHasStencil = backbufferstencil;
+	this->windowHasStencil = windowhasstencil;
 
 	metalLayer.device = device;
 	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;

@@ -131,8 +131,6 @@ public:
 
 private:
 
-	void close(bool allowExceptions);
-
 	struct ContextAttribs
 	{
 		int versionMajor;
@@ -141,11 +139,13 @@ private:
 		bool debug;
 	};
 
-	void setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth);
+	void close(bool allowExceptions);
+
+	void setGLFramebufferAttributes(bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
 	std::vector<ContextAttribs> getContextAttribsList() const;
-	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Graphics::Renderer renderer, int msaa, bool stencil, int depth);
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Graphics::Renderer renderer);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport);

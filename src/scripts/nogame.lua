@@ -3277,7 +3277,7 @@ function love.nogame()
 		t.modules.sound = false
 		t.modules.joystick = false
 		t.window.resizable = true
-		t.window.highdpi = true
+		t.highdpi = true
 
 		if love._os == "iOS" then
 			t.window.borderless = true

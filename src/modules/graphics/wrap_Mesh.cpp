@@ -67,11 +67,13 @@ int w_Mesh_setVertices(lua_State *L)
 			return luaL_error(L, "Too many vertices (expected at most %d, got %d)", totalverts - vertstart, vertcount);
 
 		size_t datasize = std::min(d->getSize(), vertcount * stride);
-		char *bytedata = (char *) t->mapVertexData() + byteoffset;
+		char *bytedata = (char *) t->getVertexData() + byteoffset;
 
 		memcpy(bytedata, d->getData(), datasize);
 
-		t->unmapVertexData(byteoffset, datasize);
+		t->setVertexDataModified(byteoffset, datasize);
+		t->flush();
+
 		return 0;
 	}
 
@@ -88,7 +90,7 @@ int w_Mesh_setVertices(lua_State *L)
 	for (const Buffer::DataMember &member : vertexformat)
 		ncomponents += member.info.components;
 
-	char *data = (char *) t->mapVertexData() + byteoffset;
+	char *data = (char *) t->getVertexData() + byteoffset;
 
 	for (int i = 0; i < vertcount; i++)
 	{
@@ -114,7 +116,9 @@ int w_Mesh_setVertices(lua_State *L)
 		data += stride;
 	}
 
-	t->unmapVertexData(byteoffset, vertcount * stride);
+	t->setVertexDataModified(byteoffset, vertcount * stride);
+	t->flush();
+
 	return 0;
 }
 
@@ -126,7 +130,10 @@ int w_Mesh_setVertex(lua_State *L)
 	bool istable = lua_istable(L, 3);
 
 	const std::vector<Buffer::DataMember> &vertexformat = t->getVertexFormat();
-	char *data = (char *) t->getVertexScratchBuffer();
+
+	char *data = nullptr;
+	size_t offset = 0;
+	luax_catchexcept(L, [&](){ data = (char *) t->checkVertexDataOffset(index, &offset); });
 
 	int idx = istable ? 1 : 3;
 
@@ -156,7 +163,7 @@ int w_Mesh_setVertex(lua_State *L)
 		}
 	}
 
-	luax_catchexcept(L, [&](){ t->setVertex(index, data, t->getVertexStride()); });
+	t->setVertexDataModified(offset, t->getVertexStride());
 	return 0;
 }
 
@@ -167,9 +174,8 @@ int w_Mesh_getVertex(lua_State *L)
 
 	const std::vector<Buffer::DataMember> &vertexformat = t->getVertexFormat();
 
-	char *data = (char *) t->getVertexScratchBuffer();
-
-	luax_catchexcept(L, [&](){ t->getVertex(index, data, t->getVertexStride()); });
+	const char *data = nullptr;
+	luax_catchexcept(L, [&](){ data = (const char *) t->checkVertexDataOffset(index, nullptr); });
 
 	int n = 0;
 
@@ -195,13 +201,14 @@ int w_Mesh_setVertexAttribute(lua_State *L)
 
 	const Buffer::DataMember &member = vertexformat[attribindex];
 
-	// Maximum possible size for a single vertex attribute.
-	char data[sizeof(float) * 4];
+	char *data = nullptr;
+	size_t offset = 0;
+	luax_catchexcept(L, [&](){ data = (char *) t->checkVertexDataOffset(vertindex, &offset); });
 
 	// Fetch the values from Lua and store them in the data buffer.
-	luax_writebufferdata(L, 4, member.decl.format, data);
+	luax_writebufferdata(L, 4, member.decl.format, data + member.offset);
 
-	luax_catchexcept(L, [&](){ t->setVertexAttribute(vertindex, attribindex, data, sizeof(float) * 4); });
+	t->setVertexDataModified(offset + member.offset, member.size);
 	return 0;
 }
 
@@ -218,12 +225,10 @@ int w_Mesh_getVertexAttribute(lua_State *L)
 
 	const Buffer::DataMember &member = vertexformat[attribindex];
 
-	// Maximum possible size for a single vertex attribute.
-	char data[sizeof(float) * 4];
+	const char *data = nullptr;
+	luax_catchexcept(L, [&](){ data = (const char *) t->checkVertexDataOffset(vertindex, nullptr); });
 
-	luax_catchexcept(L, [&](){ t->getVertexAttribute(vertindex, attribindex, data, sizeof(float) * 4); });
-
-	luax_readbufferdata(L, member.decl.format, data);
+	luax_readbufferdata(L, member.decl.format, data + member.offset);
 	return member.info.components;
 }
 
@@ -290,17 +295,17 @@ int w_Mesh_attachAttribute(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 
 	Buffer *buffer = nullptr;
+	Mesh *mesh = nullptr;
 	if (luax_istype(L, 3, Buffer::type))
 	{
 		buffer = luax_checktype<Buffer>(L, 3);
 	}
 	else
 	{
-		Mesh *mesh = luax_checkmesh(L, 3);
+		mesh = luax_checkmesh(L, 3);
 		buffer = mesh->getVertexBuffer();
 		if (buffer == nullptr)
 			return luaL_error(L, "Mesh does not have its own vertex buffer.");
-		luax_markdeprecated(L, "Mesh:attachAttribute(name, mesh, ...)", API_METHOD, DEPRECATED_REPLACED, "Mesh:attachAttribute(name, buffer, ...)");
 	}
 
 	AttributeStep step = STEP_PER_VERTEX;
@@ -310,7 +315,7 @@ int w_Mesh_attachAttribute(lua_State *L)
 
 	const char *attachname = luaL_optstring(L, 5, name);
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, attachname, step); });
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh, attachname, step); });
 	return 0;
 }
 

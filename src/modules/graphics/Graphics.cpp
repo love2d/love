@@ -135,6 +135,11 @@ Graphics *Graphics::createInstance(const std::vector<Renderer> &renderers)
 	return instance;
 }
 
+Graphics::DisplayState::DisplayState()
+{
+	defaultSamplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_LINEAR;
+}
+
 Graphics::Graphics()
 	: width(0)
 	, height(0)
@@ -202,7 +207,7 @@ void Graphics::createQuadIndexBuffer()
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
 
-	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, 0, BUFFERUSAGE_STATIC);
+	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, BUFFERUSAGE_STATIC);
 	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);

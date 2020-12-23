@@ -19,6 +19,7 @@
 **/
 
 #import "Buffer.h"
+#include "Graphics.h"
 
 namespace love
 {
@@ -58,12 +59,13 @@ static MTLPixelFormat getMTLPixelFormat(DataFormat format)
 Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
 	, texture(nil)
+	, mapBuffer(nil)
 	, mappedRange()
 { @autoreleasepool {
 	size = getSize();
 	arraylength = getArrayLength();
 
-	MTLResourceOptions opts = MTLResourceStorageModeManaged;
+	MTLResourceOptions opts = MTLResourceStorageModePrivate;
 	buffer = [device newBufferWithLength:size options:opts];
 
 	if (buffer == nil)
@@ -71,25 +73,22 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 
 	if (typeFlags & TYPEFLAG_TEXEL)
 	{
-		MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
-		auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
-																		   width:size
-																 resourceOptions:opts
-																		   usage:MTLTextureUsageShaderRead];
-		texture = [buffer newTextureWithDescriptor:desc offset:0 bytesPerRow:size];
+		if (@available(iOS 12, macOS 10.14, *))
+		{
+			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
+			auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
+																			   width:size
+																	 resourceOptions:opts
+																			   usage:MTLTextureUsageShaderRead];
+			texture = [buffer newTextureWithDescriptor:desc offset:0 bytesPerRow:size];
+		}
 
 		if (texture == nil)
 			throw love::Exception("Could not create Metal texel buffer.");
 	}
 
-	// TODO: synchronization etc
-	memoryMap = (char *) buffer.contents;
-
 	if (data != nullptr)
-	{
-		memcpy(map(), data, size);
-		unmap();
-	}
+		fill(0, size, data);
 }}
 
 Buffer::~Buffer()
@@ -98,30 +97,77 @@ Buffer::~Buffer()
 	texture = nil;
 }}
 
-void *Buffer::map()
-{
-	return memoryMap;
-}
-
-void Buffer::unmap()
+void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 { @autoreleasepool {
-	[buffer didModifyRange:{0, size}];
+	if (size == 0)
+		return nullptr;
+
+	Range r(offset, size);
+
+	if (!Range(0, getSize()).contains(r))
+		return nullptr;
+
+	auto gfx = Graphics::getInstance();
+
+	// TODO: Don't create a new buffer every time, also do something for stream
+	// buffers.
+	mapBuffer = [gfx->device newBufferWithLength:size options:MTLResourceStorageModeShared];
+
+	if (mapBuffer != nil)
+	{
+		mappedRange = r;
+		return mapBuffer.contents;
+	}
+
+	return nullptr;
 }}
 
-void Buffer::setMappedRangeModified(size_t offset, size_t size)
-{
-	mappedRange = NSIntersectionRange(mappedRange, {offset, size});
-}
+void Buffer::unmap(size_t usedoffset, size_t usedsize)
+{ @autoreleasepool {
+	if (mapBuffer == nil)
+		return;
+
+	Range r(usedoffset, usedsize);
+
+	if (!mapped || !mappedRange.contains(r))
+		return;
+
+	auto gfx = Graphics::getInstance();
+	auto encoder = gfx->useBlitEncoder();
+
+	[encoder copyFromBuffer:mapBuffer
+			   sourceOffset:(usedoffset - mappedRange.getOffset())
+				   toBuffer:buffer
+		  destinationOffset:usedoffset
+					   size:usedsize];
+
+	mapBuffer = nil;
+}}
 
 void Buffer::fill(size_t offset, size_t size, const void *data)
-{
-	// TODO
-}
+{ @autoreleasepool {
+	if (size == 0)
+		return;
 
-void Buffer::copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset)
-{
-	// TODO
-}
+	size_t buffersize = getSize();
+
+	if (!Range(0, buffersize).contains(Range(offset, size)))
+		return;
+
+	// TODO: Don't create a new buffer every time, also do something for stream
+	// buffers.
+	auto gfx = Graphics::getInstance();
+	auto encoder = gfx->useBlitEncoder();
+
+	auto tempbuffer = [gfx->device newBufferWithLength:size options:MTLResourceStorageModeShared];
+	memcpy(tempbuffer.contents, data, size);
+
+	[encoder copyFromBuffer:tempbuffer
+			   sourceOffset:0
+				   toBuffer:buffer
+		  destinationOffset:offset
+					   size:size];
+}}
 
 } // metal
 } // graphics

@@ -203,6 +203,15 @@ bool Audio::isEFXsupported() const
 	return false;
 }
 
+void Audio::pauseContext()
+{
+}
+
+void Audio::resumeContext()
+{
+}
+
+
 } // null
 } // audio
 } // love

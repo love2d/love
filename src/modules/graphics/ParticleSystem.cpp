@@ -191,7 +191,7 @@ void ParticleSystem::createBuffers(size_t size)
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 		size_t bytes = sizeof(Vertex) * size * 4;
-		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, 0, BUFFERUSAGE_STREAM);
+		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_STREAM);
 		auto decl = Buffer::getCommonFormatDeclaration(CommonFormat::XYf_STf_RGBAub);
 		buffer = gfx->newBuffer(settings, decl, nullptr, bytes, 0);
 	}
@@ -1043,7 +1043,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	const Vector2 *positions = texture->getQuad()->getVertexPositions();
 	const Vector2 *texcoords = texture->getQuad()->getVertexTexCoords();
 
-	Vertex *pVerts = (Vertex *) buffer->map();
+	Vertex *pVerts = (Vertex *) buffer->map(Buffer::MAP_WRITE_INVALIDATE, 0, buffer->getSize());
 	Particle *p = pHead;
 
 	bool useQuads = !quads.empty();
@@ -1079,7 +1079,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 		p = p->next;
 	}
 
-	buffer->unmap();
+	buffer->unmap(0, pCount * sizeof(Vertex) * 4);
 
 	Graphics::TempTransform transform(gfx, m);
 

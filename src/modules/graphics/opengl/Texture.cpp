@@ -218,6 +218,10 @@ Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const 
 		if (textureGLError != GL_NO_ERROR)
 			throw love::Exception("Cannot create Texture (OpenGL error: %s)", OpenGL::errorString(textureGLError));
 	}
+
+	// ImageData is referenced by the first loadVolatile call, but we don't
+	// hang on to it after that so we can save memory.
+	slices.clear();
 }
 
 Texture::~Texture()
@@ -480,14 +484,8 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 	}
 }
 
-void Texture::generateMipmaps()
+void Texture::generateMipmapsInternal()
 {
-	if (getMipmapCount() == 1 || getMipmapsMode() == MIPMAPS_NONE)
-		throw love::Exception("generateMipmaps can only be called on a Texture which was created with mipmaps enabled.");
-
-	if (isPixelFormatCompressed(format))
-		throw love::Exception("generateMipmaps cannot be called on a compressed Texture.");
-
 	gl.bindTextureToUnit(this, 0, false);
 
 	GLenum gltextype = OpenGL::getGLTextureType(texType);
@@ -498,13 +496,10 @@ void Texture::generateMipmaps()
 	glGenerateMipmap(gltextype);
 }
 
-love::image::ImageData *Texture::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
+void Texture::readbackImageData(love::image::ImageData *data, int slice, int mipmap, const Rect &r)
 {
-	// Base class does validation (only RTs allowed, etc) and creates ImageData.
-	love::image::ImageData *data = love::graphics::Texture::newImageData(module, slice, mipmap, r);
-
 	if (fbo == 0) // Should never be reached.
-		return data;
+		return;
 
 	bool isSRGB = false;
 	OpenGL::TextureFormat fmt = gl.convertPixelFormat(data->getFormat(), false, isSRGB);
@@ -525,8 +520,6 @@ love::image::ImageData *Texture::newImageData(love::image::Image *module, int sl
 		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
-
-	return data;
 }
 
 void Texture::setSamplerState(const SamplerState &s)

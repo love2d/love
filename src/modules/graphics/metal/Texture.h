@@ -40,8 +40,6 @@ public:
 	Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const Slices *data);
 	virtual ~Texture();
 
-	void generateMipmaps() override;
-	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect) override;
 	void setSamplerState(const SamplerState &s) override;
 
 	ptrdiff_t getHandle() const override { return (ptrdiff_t) texture; }
@@ -54,6 +52,8 @@ public:
 private:
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
+	void generateMipmapsInternal() override;
+	void readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect) override;
 
 	id<MTLTexture> texture;
 	id<MTLTexture> msaaTexture;

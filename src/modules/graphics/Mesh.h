@@ -25,6 +25,7 @@
 #include "common/int.h"
 #include "common/math.h"
 #include "common/StringMap.h"
+#include "common/Range.h"
 #include "Drawable.h"
 #include "Texture.h"
 #include "vertex.h"
@@ -54,6 +55,7 @@ public:
 	{
 		std::string name;
 		StrongRef<Buffer> buffer;
+		StrongRef<Mesh> mesh;
 		int indexInBuffer;
 		AttributeStep step;
 		bool enabled;
@@ -68,21 +70,10 @@ public:
 	virtual ~Mesh();
 
 	/**
-	 * Sets the values of all attributes at a specific vertex index in the Mesh.
-	 * The size of the data must be less than or equal to the total size of all
-	 * vertex attributes.
+	 * Validates a vertex index and whether the Mesh has its own vertex buffer,
+	 * and returns a pointer to the vertex data at the given vertex index.
 	 **/
-	void setVertex(size_t vertindex, const void *data, size_t datasize);
-	size_t getVertex(size_t vertindex, void *data, size_t datasize);
-	void *getVertexScratchBuffer();
-
-	/**
-	 * Sets the values for a single attribute at a specific vertex index in the
-	 * Mesh. The size of the data must be less than or equal to the size of the
-	 * attribute.
-	 **/
-	void setVertexAttribute(size_t vertindex, int attribindex, const void *data, size_t datasize);
-	size_t getVertexAttribute(size_t vertindex, int attribindex, void *data, size_t datasize);
+	void *checkVertexDataOffset(size_t vertindex, size_t *byteoffset);
 
 	/**
 	 * Gets the total number of vertices that can be used when drawing the Mesh.
@@ -114,13 +105,16 @@ public:
 	/**
 	 * Attaches a vertex attribute from another vertex buffer to this Mesh. The
 	 * attribute will be used when drawing this Mesh.
+	 * Attributes from other Meshes should also pass in the Mesh as an argument,
+	 * to make sure this Mesh knows to flush the passed in Mesh's data to its
+	 * buffer when drawing.
 	 **/
-	void attachAttribute(const std::string &name, Buffer *buffer, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
+	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
 	const std::vector<BufferAttribute> &getAttachedAttributes() const;
 
-	void *mapVertexData();
-	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);
+	void *getVertexData() const;
+	void setVertexDataModified(size_t offset, size_t size);
 
 	/**
 	 * Flushes all modified data to the GPU.
@@ -197,23 +191,24 @@ private:
 
 	// Vertex buffer, for the vertex data.
 	StrongRef<Buffer> vertexBuffer;
-	size_t vertexCount;
-	size_t vertexStride;
+	uint8 *vertexData = nullptr;
+	Range modifiedVertexData = Range();
 
-	// Block of memory whose size is at least as large as a single vertex. Helps
-	// avoid memory allocations when using Mesh::setVertex etc.
-	char *vertexScratchBuffer;
+	size_t vertexCount = 0;
+	size_t vertexStride = 0;
 
 	// Index buffer, for the vertex map.
 	StrongRef<Buffer> indexBuffer;
-	bool useIndexBuffer;
-	size_t indexCount;
-	IndexDataType indexDataType;
+	uint8 *indexData = nullptr;
+	bool indexDataModified = false;
+	bool useIndexBuffer = false;
+	size_t indexCount = 0;
+	IndexDataType indexDataType = INDEX_UINT16;
 
-	PrimitiveType primitiveType;
+	PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-	int rangeStart;
-	int rangeCount;
+	int rangeStart = -1;
+	int rangeCount = -1;
 
 	StrongRef<Texture> texture;
 

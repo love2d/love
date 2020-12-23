@@ -30,6 +30,7 @@
 #include "common/math.h"
 #include "common/Matrix.h"
 #include "common/Color.h"
+#include "common/Range.h"
 #include "Drawable.h"
 #include "Mesh.h"
 #include "vertex.h"
@@ -90,10 +91,13 @@ public:
 	int getBufferSize() const;
 
 	/**
-	 * Attaches a specific vertex attribute from a Mesh to this SpriteBatch.
+	 * Attaches a specific vertex attribute from a Buffer to this SpriteBatch.
 	 * The vertex attribute will be used when drawing the SpriteBatch.
+	 * If the attribute comes from a Mesh, it should be given as an argument as
+	 * well, to make sure the SpriteBatch flushes its data to its Buffer when
+	 * the SpriteBatch is drawn.
 	 **/
-	void attachAttribute(const std::string &name, Buffer *buffer);
+	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh);
 
 	void setDrawRange(int start, int count);
 	void setDrawRange();
@@ -107,6 +111,7 @@ private:
 	struct AttachedAttribute
 	{
 		StrongRef<Buffer> buffer;
+		StrongRef<Mesh> mesh;
 		int index;
 	};
 
@@ -130,8 +135,11 @@ private:
 
 	CommonFormat vertex_format;
 	size_t vertex_stride;
-	
-	love::graphics::Buffer *array_buf;
+
+	StrongRef<love::graphics::Buffer> array_buf;
+	uint8 *vertex_data;
+
+	Range modified_sprites;
 
 	std::unordered_map<std::string, AttachedAttribute> attached_attributes;
 	

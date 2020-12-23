@@ -291,6 +291,12 @@ public:
 	 **/
 	static bool setMixWithSystem(bool mix);
 
+	/**
+	 * Pause/resume audio context
+	 */
+	virtual void pauseContext() = 0;
+	virtual void resumeContext() = 0;
+
 private:
 
 	static StringMap<DistanceModel, DISTANCE_MAX_ENUM>::Entry distanceModelEntries[];
