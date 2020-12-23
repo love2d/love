@@ -436,6 +436,7 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				CODE_SIGN_ENTITLEMENTS = love.entitlements;
 				CODE_SIGN_IDENTITY = "";
@@ -469,6 +470,7 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				CODE_SIGN_ENTITLEMENTS = love.entitlements;
 				CODE_SIGN_IDENTITY = "";
@@ -891,6 +893,7 @@
 		FA5326C718971A0900F7BBF4 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = x86_64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				CODE_SIGN_ENTITLEMENTS = love.entitlements;
 				CODE_SIGN_IDENTITY = "";
