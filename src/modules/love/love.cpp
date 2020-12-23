@@ -362,6 +362,23 @@ static int w_deprecation__gc(lua_State *)
 	return 0;
 }
 
+static void luax_addcompatibilityalias(lua_State *L, const char *module, const char *name, const char *alias)
+{
+	lua_getglobal(L, module);
+	if (lua_istable(L, -1))
+	{
+		lua_getfield(L, -1, alias);
+		bool hasalias = !lua_isnoneornil(L, -1);
+		lua_pop(L, 1);
+		if (!hasalias)
+		{
+			lua_getfield(L, -1, name);
+			lua_setfield(L, -2, alias);
+		}
+	}
+	lua_pop(L, 1);
+}
+
 int luaopen_love(lua_State *L)
 {
 	love::luax_insistpinnedthread(L);
@@ -468,6 +485,13 @@ int luaopen_love(lua_State *L)
 	// Necessary for Data-creating methods to work properly in Data subclasses.
 	love::luax_require(L, "love.data");
 	lua_pop(L, 1);
+
+#if LUA_VERSION_NUM <= 501
+	// These are deprecated in Lua 5.1. LuaJIT 2.1 removes them, but code
+	// written assuming LuaJIT 2.0 or Lua 5.1 is used might still rely on them.
+	luax_addcompatibilityalias(L, "math", "fmod", "mod");
+	luax_addcompatibilityalias(L, "string", "gmatch", "gfind");
+#endif
 
 #ifdef LOVE_ENABLE_LUASOCKET
 	love::luasocket::__open(L);
