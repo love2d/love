@@ -5330,6 +5330,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
 				);
+				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5373,6 +5374,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
 				);
+				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5417,6 +5419,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
 				);
+				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
