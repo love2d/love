@@ -54,7 +54,8 @@ GLSL.SYNTAX = [[
 	#define DepthCubeImage samplerCubeShadow
 #endif
 #define extern uniform
-#ifdef GL_EXT_texture_array
+#if defined(GL_EXT_texture_array) && (!defined(GL_ES) || __VERSION__ > 100)
+#define texture_arrays_enabled
 #extension GL_EXT_texture_array : enable
 #endif
 #ifdef GL_OES_texture_3D
@@ -85,7 +86,7 @@ uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
 
 GLSL.FUNCTIONS = [[
 #ifdef GL_ES
-	#if __VERSION__ >= 300 || defined(GL_EXT_texture_array)
+	#if __VERSION__ >= 300 || defined(texture_arrays_enabled)
 		precision lowp sampler2DArray;
 	#endif
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
@@ -121,7 +122,7 @@ GLSL.FUNCTIONS = [[
 	#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
 		vec4 Texel(sampler3D s, vec3 c) { return love_texture3D(s, c); }
 	#endif
-	#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+	#if __VERSION__ >= 130 || defined(texture_arrays_enabled)
 		vec4 Texel(sampler2DArray s, vec3 c) { return love_texture2DArray(s, c); }
 	#endif
 	#ifdef PIXEL
@@ -130,7 +131,7 @@ GLSL.FUNCTIONS = [[
 		#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
 			vec4 Texel(sampler3D s, vec3 c, float b) { return love_texture3D(s, c, b); }
 		#endif
-		#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+		#if __VERSION__ >= 130 || defined(texture_arrays_enabled)
 			vec4 Texel(sampler2DArray s, vec3 c, float b) { return love_texture2DArray(s, c, b); }
 		#endif
 	#endif
