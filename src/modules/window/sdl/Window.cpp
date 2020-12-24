@@ -481,7 +481,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	int x = f.x;
 	int y = f.y;
 
-	if (f.useposition && !f.fullscreen)
+	if (f.useposition)
 	{
 		// The position needs to be in the global coordinate space.
 		SDL_Rect displaybounds = {};
@@ -511,7 +511,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	// Enforce minimum window dimensions.
 	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
-	if ((f.useposition || f.centered) && !f.fullscreen)
+	if (f.useposition || f.centered)
 		SDL_SetWindowPosition(window, x, y);
 
 	SDL_RaiseWindow(window);
