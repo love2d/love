@@ -155,6 +155,16 @@ bool OpenGL::initContext()
 		if (strstr(device, "HD Graphics 4000") || strstr(device, "HD Graphics 2500"))
 			bugs.clientWaitSyncStalls = true;
 	}
+
+	if (getVendor() == VENDOR_INTEL)
+	{
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "HD Graphics 3000") || strstr(device, "HD Graphics 2000")
+			|| !strcmp(device, "Intel(R) HD Graphics") || !strcmp(device, "Intel(R) HD Graphics Family"))
+		{
+			bugs.brokenSRGB = true;
+		}
+	}
 #endif
 
 #ifdef LOVE_WINDOWS
@@ -215,8 +225,8 @@ void OpenGL::setupContext()
 	setEnableState(ENABLE_SCISSOR_TEST, state.enableState[ENABLE_SCISSOR_TEST]);
 	setEnableState(ENABLE_FACE_CULL, state.enableState[ENABLE_FACE_CULL]);
 
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
-		|| GLAD_EXT_sRGB_write_control)
+	if (!bugs.brokenSRGB && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB
+		|| GLAD_EXT_framebuffer_sRGB || GLAD_EXT_sRGB_write_control))
 	{
 		setEnableState(ENABLE_FRAMEBUFFER_SRGB, state.enableState[ENABLE_FRAMEBUFFER_SRGB]);
 	}
@@ -1717,6 +1727,8 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return true;
 	case PIXELFORMAT_sRGBA8:
+		if (gl.bugs.brokenSRGB)
+			return false;
 		if (rendertarget)
 		{
 			if (GLAD_VERSION_1_0)

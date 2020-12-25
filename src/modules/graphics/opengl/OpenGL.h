@@ -178,6 +178,13 @@ public:
 		bool brokenR8PixelFormat;
 
 		/**
+		 * Intel HD Graphics drivers on Windows prior to the HD 2500/4000 have
+		 * completely broken sRGB support.
+		 * https://github.com/love2d/love/issues/1592
+		 **/
+		bool brokenSRGB;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *
