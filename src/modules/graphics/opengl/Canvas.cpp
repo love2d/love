@@ -60,11 +60,25 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 		// Make sure all faces and layers of the texture are initialized to
 		// transparent black. This is unfortunately probably pretty slow for
 		// 2D-array and 3D textures with a lot of layers...
+		// Iterate backwards to make sure mip/layer/face 0 is bound at the end.
 		for (int mip = nb_mips - 1; mip >= 0; mip--)
 		{
 			int nlayers = layers;
 			if (texType == TEXTURE_VOLUME)
 				nlayers = std::max(layers >> mip, 1);
+
+			GLuint tempframebuffer = 0;
+			if (mip > 0)
+			{
+				// Some Intel drivers on Windows don't like reusing the same
+				// FBO for different sized attachments, so use a temporary one
+				// to clear smaller mips.
+				// https://github.com/love2d/love/issues/1585
+				glGenFramebuffers(1, &tempframebuffer);
+				gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, tempframebuffer);
+			}
+			else
+				gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, framebuffer);
 
 			for (int layer = nlayers - 1; layer >= 0; layer--)
 			{
@@ -98,6 +112,9 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 					}
 				}
 			}
+
+			if (tempframebuffer != 0)
+				gl.deleteFramebuffer(tempframebuffer);
 		}
 	}
 
