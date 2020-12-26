@@ -862,6 +862,7 @@ public:
 	void shear(float kx, float ky);
 	void origin();
 
+	love::math::Transform *buildTransform();
 	void applyTransform(love::math::Transform *transform);
 	void replaceTransform(love::math::Transform *transform);
 

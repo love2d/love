@@ -2868,6 +2868,14 @@ int w_origin(lua_State * /*L*/)
 	return 0;
 }
 
+int w_buildTransform(lua_State *L)
+{
+	math::Transform *t = instance()->buildTransform();
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
+}
+
 int w_applyTransform(lua_State *L)
 {
 	math::Transform *t = math::luax_checktransform(L, 1);
@@ -3025,6 +3033,7 @@ static const luaL_Reg functions[] =
 	{ "translate", w_translate },
 	{ "shear", w_shear },
 	{ "origin", w_origin },
+	{ "buildTransform", w_buildTransform },
 	{ "applyTransform", w_applyTransform },
 	{ "replaceTransform", w_replaceTransform },
 	{ "transformPoint", w_transformPoint },

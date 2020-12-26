@@ -1700,6 +1700,15 @@ void Graphics::origin()
 	pixelScaleStack.back() = 1;
 }
 
+love::math::Transform *Graphics::buildTransform()
+{
+	Matrix4 &m = transformStack.back();
+
+	love::math::Transform *t = new love::math::Transform();
+	t->setMatrix(m);
+	return t;
+}
+
 void Graphics::applyTransform(love::math::Transform *transform)
 {
 	Matrix4 &m = transformStack.back();
