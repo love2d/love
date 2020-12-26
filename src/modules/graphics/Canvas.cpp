@@ -69,6 +69,9 @@ Canvas::Canvas(const Settings &settings)
 		filter.mipmap = defaultMipmapFilter;
 	}
 
+	if (settings.mipmaps == MIPMAPS_AUTO && isPixelFormatDepthStencil(format))
+		throw love::Exception("Automatic mipmap generation cannot be used for depth/stencil Canvases.");
+
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	const Graphics::Capabilities &caps = gfx->getCapabilities();
 

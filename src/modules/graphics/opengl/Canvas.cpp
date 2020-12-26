@@ -67,19 +67,6 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 			if (texType == TEXTURE_VOLUME)
 				nlayers = std::max(layers >> mip, 1);
 
-			GLuint tempframebuffer = 0;
-			if (mip > 0)
-			{
-				// Some Intel drivers on Windows don't like reusing the same
-				// FBO for different sized attachments, so use a temporary one
-				// to clear smaller mips.
-				// https://github.com/love2d/love/issues/1585
-				glGenFramebuffers(1, &tempframebuffer);
-				gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, tempframebuffer);
-			}
-			else
-				gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, framebuffer);
-
 			for (int layer = nlayers - 1; layer >= 0; layer--)
 			{
 				for (int face = faces - 1; face >= 0; face--)
@@ -112,9 +99,6 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 					}
 				}
 			}
-
-			if (tempframebuffer != 0)
-				gl.deleteFramebuffer(tempframebuffer);
 		}
 	}
 
@@ -278,8 +262,18 @@ bool Canvas::loadVolatile()
 			return false;
 		}
 
+		// All mipmap levels need to be initialized - for color formats we can
+		// clear the base mip and use glGenerateMipmap after that's done. Depth
+		// and stencil formats don't always support glGenerateMipmap so we need
+		// to individually clear each mip level in that case. We avoid doing that
+		// for color formats because of an Intel driver bug:
+		// https://github.com/love2d/love/issues/1585
+		int clearmips = 1;
+		if (isPixelFormatDepthStencil(format))
+			clearmips = mipmapCount;
+
 		// Create a canvas-local FBO used for glReadPixels as well as MSAA blitting.
-		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers, mipmapCount);
+		status = createFBO(fbo, texType, format, texture, texType == TEXTURE_VOLUME ? depth : layers, clearmips);
 
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 		{
@@ -290,6 +284,9 @@ bool Canvas::loadVolatile()
 			}
 			return false;
 		}
+
+		if (clearmips < mipmapCount && getMipmapMode() != MIPMAPS_NONE)
+			generateMipmaps();
 	}
 
 	if (!isReadable() || actualSamples > 0)
@@ -487,6 +484,9 @@ void Canvas::generateMipmaps()
 {
 	if (getMipmapCount() == 1 || getMipmapMode() == MIPMAPS_NONE)
 		throw love::Exception("generateMipmaps can only be called on a Canvas which was created with mipmaps enabled.");
+
+	if (isPixelFormatDepthStencil(format))
+		throw love::Exception("generateMipmaps cannot be called on a depth/stencil Canvas.");
 
 	gl.bindTextureToUnit(this, 0, false);
 

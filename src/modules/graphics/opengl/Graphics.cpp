@@ -587,10 +587,6 @@ void Graphics::endPass()
 		if (rt.canvas->getMipmapMode() == Canvas::MIPMAPS_AUTO && rt.mipmap == 0)
 			rt.canvas->generateMipmaps();
 	}
-
-	int dsmipmap = rts.depthStencil.mipmap;
-	if (depthstencil != nullptr && depthstencil->getMipmapMode() == Canvas::MIPMAPS_AUTO && dsmipmap == 0)
-		depthstencil->generateMipmaps();
 }
 
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
