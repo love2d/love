@@ -4212,7 +4212,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1000;
+				LastUpgradeCheck = 1230;
 				TargetAttributes = {
 					FA0B78DC1A958B90000E1D17 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -5397,6 +5397,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
 				);
+				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5440,6 +5441,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
 				);
+				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5484,6 +5486,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
 				);
+				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,

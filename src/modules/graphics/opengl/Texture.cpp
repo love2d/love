@@ -34,7 +34,7 @@ namespace graphics
 namespace opengl
 {
 
-static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int layers, bool clear)
+static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat format, GLuint texture, int mips, int layers, bool clear)
 {
 	// get currently bound fbo to reset to it later
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
@@ -68,37 +68,40 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 		// Make sure all faces and layers of the texture are initialized to
 		// transparent black. This is unfortunately probably pretty slow for
 		// 2D-array and 3D textures with a lot of layers...
-		for (int layer = layers - 1; layer >= 0; layer--)
+		for (int mip = mips - 1; mip >= 0; mip--)
 		{
-			for (int face = faces - 1; face >= 0; face--)
+			for (int layer = layers - 1; layer >= 0; layer--)
 			{
-				for (GLenum attachment : fmt.framebufferAttachments)
+				for (int face = faces - 1; face >= 0; face--)
 				{
-					if (attachment == GL_NONE)
-						continue;
-
-					gl.framebufferTexture(attachment, texType, texture, 0, layer, face);
-				}
-
-				if (clear)
-				{
-					if (isPixelFormatDepthStencil(format))
+					for (GLenum attachment : fmt.framebufferAttachments)
 					{
-						bool hadDepthWrites = gl.hasDepthWrites();
-						if (!hadDepthWrites) // glDepthMask also affects glClear.
-							gl.setDepthWrites(true);
+						if (attachment == GL_NONE)
+							continue;
 
-						gl.clearDepth(1.0);
-						glClearStencil(0);
-						glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-						if (!hadDepthWrites)
-							gl.setDepthWrites(hadDepthWrites);
+						gl.framebufferTexture(attachment, texType, texture, mip, layer, face);
 					}
-					else
+
+					if (clear)
 					{
-						glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-						glClear(GL_COLOR_BUFFER_BIT);
+						if (isPixelFormatDepthStencil(format))
+						{
+							bool hadDepthWrites = gl.hasDepthWrites();
+							if (!hadDepthWrites) // glDepthMask also affects glClear.
+								gl.setDepthWrites(true);
+
+							gl.clearDepth(1.0);
+							glClearStencil(0);
+							glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+							if (!hadDepthWrites)
+								gl.setDepthWrites(hadDepthWrites);
+						}
+						else
+						{
+							glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+							glClear(GL_COLOR_BUFFER_BIT);
+						}
 					}
 				}
 			}
@@ -328,28 +331,43 @@ void Texture::createTexture()
 
 	bool hasdata = slices.get(0, 0) != nullptr;
 
+	// All mipmap levels need to be initialized - for color formats we can clear
+	// the base mip and use glGenerateMipmap after that's done. Depth and
+	// stencil formats don't always support glGenerateMipmap so we need to
+	// individually clear each mip level in that case. We avoid doing that for
+	// color formats because of an Intel driver bug:
+	// https://github.com/love2d/love/issues/1585
+	int clearmips = 1;
+	if (isPixelFormatDepthStencil(format))
+		clearmips = mipmapCount;
+
 	// Create a local FBO used for glReadPixels as well as MSAA blitting.
 	if (isRenderTarget())
 	{
 		bool clear = !hasdata;
 		int slices = texType == TEXTURE_VOLUME ? depth : layers;
-		framebufferStatus = createFBO(fbo, texType, format, texture, slices, clear);
+		framebufferStatus = createFBO(fbo, texType, format, texture, clearmips, slices, clear);
 	}
 	else if (!hasdata)
 	{
 		// Initialize all slices to transparent black.
-		std::vector<uint8> emptydata(getPixelFormatSliceSize(format, w, h));
+		for (int mip = 0; mip < clearmips; mip++)
+		{
+			int mipw = getPixelWidth(mip);
+			int miph = getPixelHeight(mip);
+			std::vector<uint8> emptydata(getPixelFormatSliceSize(format, mipw, miph));
 
-		Rect r = {0, 0, w, h};
-		int slices = texType == TEXTURE_VOLUME ? depth : layers;
-		slices = texType == TEXTURE_CUBE ? 6 : slices;
-		for (int i = 0; i < slices; i++)
-			uploadByteData(format, emptydata.data(), emptydata.size(), 0, i, r);
+			Rect r = {0, 0, mipw, miph};
+			int slices = texType == TEXTURE_VOLUME ? getDepth(mip) : layers;
+			slices = texType == TEXTURE_CUBE ? 6 : slices;
+			for (int i = 0; i < slices; i++)
+				uploadByteData(format, emptydata.data(), emptydata.size(), mip, i, r);
+		}
 	}
 
 	// Non-readable textures can't have mipmaps (enforced in the base class),
 	// so generateMipmaps here is fine - when they aren't already initialized.
-	if (getMipmapCount() > 1 && slices.getMipmapCount() <= 1)
+	if (clearmips < mipmapCount && slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 }
 

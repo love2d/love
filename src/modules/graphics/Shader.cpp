@@ -60,7 +60,11 @@ static const char global_syntax[] = R"(
 	#define DepthCubeImage samplerCubeShadow
 #endif
 #define extern uniform
-#ifdef GL_EXT_texture_array
+#if defined(GL_EXT_texture_array) && (!defined(GL_ES) || __VERSION__ > 100 || defined(GL_OES_gpu_shader5))
+// Only used when !GLSLES1 to work around Ouya driver bug. But we still want it
+// enabled for glslang validation when glsl 1-on-3 is used, so also enable it if
+// OES_gpu_shader5 exists.
+#define LOVE_EXT_TEXTURE_ARRAY_ENABLED
 #extension GL_EXT_texture_array : enable
 #endif
 #ifdef GL_OES_texture_3D
@@ -122,7 +126,7 @@ void love_initializeBuiltinUniforms() {
 
 static const char global_functions[] = R"(
 #ifdef GL_ES
-	#if __VERSION__ >= 300 || defined(GL_EXT_texture_array)
+	#if __VERSION__ >= 300 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
 		precision lowp sampler2DArray;
 	#endif
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
@@ -158,7 +162,7 @@ static const char global_functions[] = R"(
 	#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
 		vec4 Texel(sampler3D s, vec3 c) { return love_texture3D(s, c); }
 	#endif
-	#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+	#if __VERSION__ >= 130 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
 		vec4 Texel(sampler2DArray s, vec3 c) { return love_texture2DArray(s, c); }
 	#endif
 	#ifdef PIXEL
@@ -167,7 +171,7 @@ static const char global_functions[] = R"(
 		#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
 			vec4 Texel(sampler3D s, vec3 c, float b) { return love_texture3D(s, c, b); }
 		#endif
-		#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+		#if __VERSION__ >= 130 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
 			vec4 Texel(sampler2DArray s, vec3 c, float b) { return love_texture2DArray(s, c, b); }
 		#endif
 	#endif
