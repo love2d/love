@@ -71,7 +71,7 @@
 #endif
 
 // NEON instructions.
-#if defined(__ARM_NEON)
+#if defined(__ARM_NEON) || defined(_M_ARM64)
 #	define LOVE_SIMD_NEON
 #endif
 

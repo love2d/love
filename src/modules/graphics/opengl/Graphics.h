@@ -63,7 +63,7 @@ public:
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) override;
+	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -78,6 +78,9 @@ public:
 	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override;
 
 	void present(void *screenshotCallbackData) override;
+
+	int getRequestedBackbufferMSAA() const override;
+	int getBackbufferMSAA() const override;
 
 	void setColor(Colorf c) override;
 
@@ -109,6 +112,9 @@ public:
 	// Internal use.
 	void cleanupRenderTexture(love::graphics::Texture *texture);
 
+	void *getBufferMapMemory(size_t size);
+	void releaseBufferMapMemory(void *mem);
+
 private:
 
 	struct CachedFBOHasher
@@ -138,14 +144,26 @@ private:
 	void getAPIStats(int &shaderswitches) const override;
 
 	void endPass();
-	void bindCachedFBO(const RenderTargets &targets);
+	GLuint bindCachedFBO(const RenderTargets &targets);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
+
+	void updateBackbuffer(int width, int height, int pixelwidth, int pixelheight, int msaa);
+	GLuint getInternalBackbufferFBO() const;
+	GLuint getSystemBackbufferFBO() const;
 
 	void setDebug(bool enable);
 
 	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
+
+	StrongRef<love::graphics::Texture> internalBackbuffer;
+	StrongRef<love::graphics::Texture> internalBackbufferDepthStencil;
+	GLuint internalBackbufferFBO;
+	int requestedBackbufferMSAA;
+
+	char *bufferMapMemory;
+	size_t bufferMapMemorySize;
 
 	// Only needed for buffer types that can be bound to shaders.
 	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERTYPE_MAX_ENUM];

@@ -38,7 +38,7 @@ RopeJoint::RopeJoint(Body *body1, Body *body2, float x1, float y1, float x2, flo
 	: Joint(body1, body2)
 	, joint(NULL)
 {
-	b2RopeJointDef def;
+	b2DistanceJointDef def;
 	def.bodyA = body1->body;
 	def.bodyB = body2->body;
 	body1->getLocalPoint(x1, y1, x1, y1);
@@ -49,7 +49,7 @@ RopeJoint::RopeJoint(Body *body1, Body *body2, float x1, float y1, float x2, flo
 	def.localAnchorB.y = Physics::scaleDown(y2);
 	def.maxLength = Physics::scaleDown(maxLength);
 	def.collideConnected = collideConnected;
-	joint = (b2RopeJoint *)createJoint(&def);
+	joint = (b2DistanceJoint *)createJoint(&def);
 }
 
 RopeJoint::~RopeJoint()

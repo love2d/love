@@ -218,20 +218,20 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 
 	Buffer *buffer = nullptr;
+	Mesh *mesh = nullptr;
 	if (luax_istype(L, 3, Buffer::type))
 	{
 		buffer = luax_checktype<Buffer>(L, 3);
 	}
 	else
 	{
-		Mesh *mesh = luax_checktype<Mesh>(L, 3);
+		mesh = luax_checktype<Mesh>(L, 3);
 		buffer = mesh->getVertexBuffer();
 		if (buffer == nullptr)
 			return luaL_error(L, "Mesh does not have its own vertex buffer.");
-		luax_markdeprecated(L, "SpriteBatch:attachAttribute(name, mesh)", API_METHOD, DEPRECATED_REPLACED, "SpriteBatch:attachAttribute(name, buffer)");
 	}
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer); });
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh); });
 	return 0;
 }
 

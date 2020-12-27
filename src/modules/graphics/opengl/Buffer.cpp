@@ -22,6 +22,7 @@
 
 #include "common/Exception.h"
 #include "graphics/vertex.h"
+#include "Graphics.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -80,22 +81,26 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 
 	target = OpenGL::getGLBufferType(mapType);
 
-	try
+	if (usage == BUFFERUSAGE_STREAM)
+		ownsMemoryMap = true;
+
+	std::vector<uint8> emptydata;
+	if (settings.zeroInitialize && data == nullptr)
 	{
-		memoryMap = new char[size];
-	}
-	catch (std::bad_alloc &)
-	{
-		throw love::Exception("Out of memory.");
+		try
+		{
+			emptydata.resize(getSize());
+			data = emptydata.data();
+		}
+		catch (std::exception &)
+		{
+			data = nullptr;
+		}
 	}
 
-	if (data != nullptr)
-		memcpy(memoryMap, data, size);
-
-	if (!load(data != nullptr))
+	if (!load(data))
 	{
 		unloadVolatile();
-		delete[] memoryMap;
 		throw love::Exception("Could not create buffer (out of VRAM?)");
 	}
 }
@@ -103,7 +108,8 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 Buffer::~Buffer()
 {
 	unloadVolatile();
-	delete[] memoryMap;
+	if (memoryMap != nullptr && ownsMemoryMap)
+		free(memoryMap);
 }
 
 bool Buffer::loadVolatile()
@@ -111,7 +117,7 @@ bool Buffer::loadVolatile()
 	if (buffer != 0)
 		return true;
 
-	return load(true);
+	return load(nullptr);
 }
 
 void Buffer::unloadVolatile()
@@ -125,7 +131,7 @@ void Buffer::unloadVolatile()
 	texture = 0;
 }
 
-bool Buffer::load(bool restore)
+bool Buffer::load(const void *initialdata)
 {
 	while (glGetError() != GL_NO_ERROR)
 		/* Clear the error buffer. */;
@@ -133,11 +139,8 @@ bool Buffer::load(bool restore)
 	glGenBuffers(1, &buffer);
 	gl.bindBuffer(mapType, buffer);
 
-	// Copy the old buffer only if 'restore' was requested.
-	const GLvoid *src = restore ? memoryMap : nullptr;
-
-	// Note that if 'src' is '0', no data will be copied.
-	glBufferData(target, (GLsizeiptr) getSize(), src, OpenGL::getGLBufferUsage(getUsage()));
+	// initialdata can be null.
+	glBufferData(target, (GLsizeiptr) getSize(), initialdata, OpenGL::getGLBufferUsage(getUsage()));
 
 	if (getTypeFlags() & TYPEFLAG_TEXEL)
 	{
@@ -150,135 +153,102 @@ bool Buffer::load(bool restore)
 	return (glGetError() == GL_NO_ERROR);
 }
 
-void *Buffer::map()
-{
-	if (mapped)
-		return memoryMap;
-
-	mapped = true;
-
-	modifiedOffset = 0;
-	modifiedSize = 0;
-	isMappedDataModified = false;
-
-	return memoryMap;
-}
-
-void Buffer::unmapStatic(size_t offset, size_t size)
+void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 {
 	if (size == 0)
-		return;
+		return nullptr;
 
-	// Upload the mapped data to the buffer.
-	gl.bindBuffer(mapType, buffer);
-	glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, memoryMap + offset);
-}
+	Range r(offset, size);
 
-void Buffer::unmapStream()
-{
-	GLenum glusage = OpenGL::getGLBufferUsage(getUsage());
+	if (!Range(0, getSize()).contains(r))
+		return nullptr;
 
-	// "orphan" current buffer to avoid implicit synchronisation on the GPU:
-	// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-	gl.bindBuffer(mapType, buffer);
-	glBufferData(target, (GLsizeiptr) getSize(), nullptr, glusage);
+	char *data = nullptr;
 
-#if LOVE_WINDOWS
-	// TODO: Verify that this codepath is a useful optimization.
-	if (gl.getVendor() == OpenGL::VENDOR_INTEL)
-		glBufferData(target, (GLsizeiptr) getSize(), memoryMap, glusage);
+	if (ownsMemoryMap)
+	{
+		if (memoryMap == nullptr)
+			memoryMap = (char *) malloc(getSize());
+		data = memoryMap;
+	}
 	else
-#endif
-		glBufferSubData(target, 0, (GLsizeiptr) getSize(), memoryMap);
+	{
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+		data = (char *) gfx->getBufferMapMemory(size);
+	}
+
+	if (data != nullptr)
+	{
+		mapped = true;
+		mappedRange = r;
+		if (!ownsMemoryMap)
+			memoryMap = data;
+	}
+
+	return data;
 }
 
-void Buffer::unmap()
+void Buffer::unmap(size_t usedoffset, size_t usedsize)
 {
-	if (!mapped)
+	Range r(usedoffset, usedsize);
+
+	if (!mapped || !mappedRange.contains(r))
 		return;
 
 	mapped = false;
 
-	if ((mapFlags & MAP_EXPLICIT_RANGE_MODIFY) != 0)
+	// Orphan optimization - see fill().
+	if (usage != BUFFERUSAGE_STATIC && mappedRange.first == 0 && mappedRange.getSize() == getSize())
 	{
-		if (!isMappedDataModified)
-			return;
-
-		modifiedOffset = std::min(modifiedOffset, getSize() - 1);
-		modifiedSize = std::min(modifiedSize, getSize() - modifiedOffset);
-	}
-	else
-	{
-		modifiedOffset = 0;
-		modifiedSize = getSize();
+		usedoffset = 0;
+		usedsize = getSize();
 	}
 
-	if (modifiedSize > 0)
+	char *data = memoryMap + (usedoffset - mappedRange.getOffset());
+
+	fill(usedoffset, usedsize, data);
+
+	if (!ownsMemoryMap)
 	{
-		switch (getUsage())
-		{
-		case BUFFERUSAGE_STATIC:
-			unmapStatic(modifiedOffset, modifiedSize);
-			break;
-		case BUFFERUSAGE_STREAM:
-			unmapStream();
-			break;
-		case BUFFERUSAGE_DYNAMIC:
-		default:
-			// It's probably more efficient to treat it like a streaming buffer if
-			// at least a third of its contents have been modified during the map().
-			if (modifiedSize >= getSize() / 3)
-				unmapStream();
-			else
-				unmapStatic(modifiedOffset, modifiedSize);
-			break;
-		}
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+		gfx->releaseBufferMapMemory(memoryMap);
+		memoryMap = nullptr;
 	}
-
-	modifiedOffset = 0;
-	modifiedSize = 0;
-}
-
-void Buffer::setMappedRangeModified(size_t offset, size_t modifiedsize)
-{
-	if (!mapped || !(mapFlags & MAP_EXPLICIT_RANGE_MODIFY))
-		return;
-
-	if (!isMappedDataModified)
-	{
-		modifiedOffset = offset;
-		modifiedSize = modifiedsize;
-		isMappedDataModified = true;
-		return;
-	}
-
-	// We're being conservative right now by internally marking the whole range
-	// from the start of section a to the end of section b as modified if both
-	// a and b are marked as modified.
-
-	size_t oldrangeend = modifiedOffset + modifiedSize;
-	modifiedOffset = std::min(modifiedOffset, offset);
-
-	size_t newrangeend = std::max(offset + modifiedsize, oldrangeend);
-	modifiedSize = newrangeend - modifiedOffset;
 }
 
 void Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	memcpy(memoryMap + offset, data, size);
+	if (size == 0)
+		return;
 
-	if (mapped)
-		setMappedRangeModified(offset, size);
+	size_t buffersize = getSize();
+
+	if (!Range(0, buffersize).contains(Range(offset, size)))
+		return;
+
+	GLenum glusage = OpenGL::getGLBufferUsage(usage);
+
+	gl.bindBuffer(mapType, buffer);
+
+	if (usage != BUFFERUSAGE_STATIC && size == buffersize)
+	{
+		// "orphan" current buffer to avoid implicit synchronisation on the GPU:
+		// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
+		gl.bindBuffer(mapType, buffer);
+		glBufferData(target, (GLsizeiptr) buffersize, nullptr, glusage);
+
+#if LOVE_WINDOWS
+		// TODO: Verify that this codepath is a useful optimization.
+		if (gl.getVendor() == OpenGL::VENDOR_INTEL)
+			glBufferData(target, (GLsizeiptr) buffersize, data, glusage);
+		else
+#endif
+			glBufferSubData(target, 0, (GLsizeiptr) buffersize, data);
+	}
 	else
 	{
-		gl.bindBuffer(mapType, buffer);
 		glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, data);
 	}
-}
-
-void Buffer::copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset)
-{
-	other->fill(otheroffset, size, memoryMap + offset);
 }
 
 } // opengl

@@ -1,3 +1,62 @@
+LOVE 12.0 [N/A]
+---------------
+
+Released: N/A
+
+* Added love.event.restart(optionalvalue). A new love.restart field will contain the value after restarting.
+* Added SoundData:copyFrom.
+* Added SoundData:slice.
+* Added t.highdpi startup flag in love.conf, replacing t.window.highdpi and the highdpi flag of love.window.setMode.
+* Added per-shader opt in support for the GLSL 4.30 (desktop) and GLSL ES 3.10 (mobile) shading languages, via #pragma language glsl4.
+* Added love.graphics.newTexture. newImage and newCanvas still exist as convenience constructor functions.
+* Added love.graphics.getTextureFormats, which replaces getImageFormats and getCanvasFormats.
+* Added Graphics Buffer objects, including vertex, index, and texel buffers.
+* Added APIs for interacting with the Buffer objects owned by Meshes.
+* Added Mesh:getAttachedAttributes.
+* Added integer buffer data formats.
+* Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
+* Added new 'clampone' wrap mode.
+
+* Changed the default font from Vera size 12 to Noto Sans size 13.
+* Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
+* Changed Images to no longer hold onto a CPU copy of their pixel data after creation.
+* Changed love.window.setMode to no longer clear the contents of Canvases or otherwise recreate OpenGL resources.
+
+* Updated Box2D from 2.3 to 2.4.1.
+
+* Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
+* Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
+* Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
+
+* Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
+
+* Fixed BezierCurve:render adding collinear points in some situations.
+
+LOVE 11.4 [Mysterious Mysteries]
+--------------------------------
+
+Released: N/A
+
+* Added support for r16, rg16, and rgba16 pixel formats in Canvases.
+* Added Shader:send(name, matrixlayout, data, ...) variant, whose argument order is more consistent than Shader:send(name, data, matrixlayout, ...).
+
+* Changed love.timer.getTime to start at 0 when the module is first loaded.
+
+* Fixed build-time compatibility with Lua 5.4.
+* Fixed initial window creation to set the window's title during creation instead of after.
+* Fixed drag-and-drop to open a love game on macOS causing love.event.quit("restart") to fail.
+* Fixed fused macOS apps opening other love games when drag-and-drop is used (if the fused app hasn't already removed .love files from recognized document types).
+* Fixed memory corruption and a crash when drawing smooth lines.
+* Fixed a crash in Canvas:newImageData when the pixel format's pixel byte size multiplied by its width isn't a multiple of 4.
+* Fixed love.graphics.newVolumeImage when explicit mipmaps are provided.
+* Fixed freezes and crashes in automatic batching when an AMD GPU is used.
+* Fixed love.graphics.print and Image:replacePixels on more AMD/ATI GPUs.
+* Fixed texture memory reported by love.graphics.getStats when a volume or array Canvas is created.
+* Fixed rare issues where textures were not sent to shaders correctly.
+* Fixed Shader:send(name, data, matrixlayout, ...).
+* Fixed source code compilation on Xcode 12+.
+* Fixed source code compilation on Linux systems that don't provide posix_spawn APIs.
+
 LOVE 11.3 [Mysterious Mysteries]
 --------------------------------
 

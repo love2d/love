@@ -51,7 +51,7 @@ jobs:
       with:
         path: megasource
         repository: love2d/megasource
-        ref: master
+        ref: 12.x
     - name: Checkout
       uses: actions/checkout@v2
       with:

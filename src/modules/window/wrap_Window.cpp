@@ -75,8 +75,18 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.borderless = luax_boolflag(L, idx, settingName(Window::SETTING_BORDERLESS), settings.borderless);
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
 	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
-	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
 	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
+
+	lua_getfield(L, idx, settingName(Window::SETTING_HIGHDPI));
+	if (!lua_isnoneornil(L, -1))
+	{
+		luax_markdeprecated(L, "window.highdpi", API_FIELD, DEPRECATED_REPLACED, "t.highdpi in love.conf");
+		bool highdpi = luax_checkboolean(L, -1);
+		if (!instance()->isOpen())
+			setHighDPIAllowed(highdpi);
+
+	}
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
 	if (lua_isnumber(L, -1))
@@ -201,9 +211,6 @@ int w_getMode(lua_State *L)
 	lua_pushinteger(L, settings.display + 1);
 	lua_setfield(L, -2, settingName(Window::SETTING_DISPLAY));
 
-	luax_pushboolean(L, settings.highdpi);
-	lua_setfield(L, -2, settingName(Window::SETTING_HIGHDPI));
-
 	luax_pushboolean(L, settings.usedpiscale);
 	lua_setfield(L, -2, settingName(Window::SETTING_USE_DPISCALE));
 
@@ -217,6 +224,12 @@ int w_getMode(lua_State *L)
 	lua_setfield(L, -2, settingName(Window::SETTING_Y));
 
 	return 3;
+}
+
+int w_isHighDPIAllowed(lua_State *L)
+{
+	luax_pushboolean(L, isHighDPIAllowed());
+	return 1;
 }
 
 int w_getDisplayOrientation(lua_State *L)
@@ -618,6 +631,7 @@ static const luaL_Reg functions[] =
 	{ "setMode", w_setMode },
 	{ "updateMode", w_updateMode },
 	{ "getMode", w_getMode },
+	{ "isHighDPIAllowed", w_isHighDPIAllowed },
 	{ "getDisplayOrientation", w_getDisplayOrientation },
 	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },

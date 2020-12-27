@@ -119,8 +119,6 @@ private:
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
 
-	std::vector<Buffer *> buffersToUnmap;
-
 	float lastPointSize;
 
 }; // Shader

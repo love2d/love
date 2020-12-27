@@ -173,7 +173,7 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	, mipmapCount(1)
 	, pixelWidth(0)
 	, pixelHeight(0)
-	, requestedMSAA(settings.msaa)
+	, requestedMSAA(settings.msaa > 1 ? settings.msaa : 0)
 	, samplerState()
 	, graphicsMemorySize(0)
 	, usingDefaultTexture(false)
@@ -233,6 +233,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	if (mipmapsMode != MIPMAPS_NONE)
 		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
 
+	if (mipmapsMode == MIPMAPS_AUTO && isPixelFormatDepthStencil(format))
+		throw love::Exception("Automatic mipmap generation cannot be used for depth/stencil textures.");
+
 	if (pixelWidth <= 0 || pixelHeight <= 0 || layers <= 0 || depth <= 0)
 		throw love::Exception("Texture dimensions must be greater than 0.");
 
@@ -280,6 +283,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	validateDimensions(renderTarget || !readable);
 
 	samplerState = gfx->getDefaultSamplerState();
+
+	if (getMipmapCount() == 1)
+		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 
 	Quad::Viewport v = {0, 0, (double) width, (double) height};
 	quad.set(new Quad(v, width, height), Acquire::NORETAIN);
@@ -487,6 +493,20 @@ void Texture::replacePixels(const void *data, size_t size, int slice, int mipmap
 		generateMipmaps();
 }
 
+void Texture::generateMipmaps()
+{
+	if (getMipmapCount() == 1 || getMipmapsMode() == MIPMAPS_NONE)
+		throw love::Exception("generateMipmaps can only be called on a Texture which was created with mipmaps enabled.");
+
+	if (isPixelFormatCompressed(format))
+		throw love::Exception("generateMipmaps cannot be called on a compressed Texture.");
+
+	if (isPixelFormatDepthStencil(format))
+		throw love::Exception("generateMipmaps cannot be called on a depth/stencil Texture.");
+
+	generateMipmapsInternal();
+}
+
 love::image::ImageData *Texture::newImageData(love::image::Image *module, int slice, int mipmap, const Rect &r)
 {
 	if (!isReadable())
@@ -521,7 +541,11 @@ love::image::ImageData *Texture::newImageData(love::image::Image *module, int sl
 		throw love::Exception("ImageData with the '%s' pixel format is not supported.", formatname);
 	}
 
-	return module->newImageData(r.w, r.h, dataformat);
+	auto imagedata = module->newImageData(r.w, r.h, dataformat);
+
+	readbackImageData(imagedata, slice, mipmap, r);
+
+	return imagedata;
 }
 
 TextureType Texture::getTextureType() const

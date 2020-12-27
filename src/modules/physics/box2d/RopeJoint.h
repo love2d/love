@@ -56,7 +56,7 @@ public:
 
 private:
 	// The Box2D RopeJoint object.
-	b2RopeJoint *joint;
+	b2DistanceJoint *joint;
 };
 
 } // box2d

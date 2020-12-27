@@ -48,11 +48,9 @@ public:
 
 	static love::Type type;
 
-	enum MapFlags
+	enum MapType
 	{
-		MAP_NONE = 0,
-		MAP_EXPLICIT_RANGE_MODIFY = (1 << 0), // see setMappedRangeModified.
-		MAP_READ = (1 << 1),
+		MAP_WRITE_INVALIDATE,
 	};
 
 	enum TypeFlags
@@ -94,13 +92,13 @@ public:
 	struct Settings
 	{
 		TypeFlags typeFlags;
-		MapFlags mapFlags;
 		BufferUsage usage;
+		bool zeroInitialize;
 
-		Settings(uint32 typeflags, uint32 mapflags, BufferUsage usage)
+		Settings(uint32 typeflags, BufferUsage usage)
 			: typeFlags((TypeFlags)typeflags)
-			, mapFlags((MapFlags)mapflags)
 			, usage(usage)
+			, zeroInitialize(false)
 		{}
 	};
 
@@ -111,7 +109,6 @@ public:
 	TypeFlags getTypeFlags() const { return typeFlags; }
 	BufferUsage getUsage() const { return usage; }
 	bool isMapped() const { return mapped; }
-	uint32 getMapFlags() const { return mapFlags; }
 
 	size_t getArrayLength() const { return arrayLength; }
 	size_t getArrayStride() const { return arrayStride; }
@@ -121,34 +118,20 @@ public:
 	int getDataMemberIndex(const std::string &name) const;
 
 	/**
-	 * Map the Buffer to client memory.
-	 *
-	 * This can be faster for large changes to the buffer. For smaller
-	 * changes, see fill().
+	 * Map a portion of the Buffer to client memory.
 	 */
-	virtual void *map() = 0;
+	virtual void *map(MapType map, size_t offset, size_t size) = 0;
 
 	/**
 	 * Unmap a previously mapped Buffer. The buffer must be unmapped when used
 	 * to draw.
 	 */
-	virtual void unmap() = 0;
+	virtual void unmap(size_t usedoffset, size_t usedsize) = 0;
 
 	/**
-	 * Marks a range of mapped data as modified.
-	 * NOTE: Buffer::fill calls this internally for you.
-	 **/
-	virtual void setMappedRangeModified(size_t offset, size_t size) = 0;
-
-	/**
-	 * Fill a portion of the buffer with data and marks the range as modified.
+	 * Fill a portion of the buffer with data.
 	 */
 	virtual void fill(size_t offset, size_t size, const void *data) = 0;
-
-	/**
-	 * Copy the contents of this Buffer to another Buffer object.
-	 **/
-	virtual void copyTo(size_t offset, size_t size, Buffer *other, size_t otheroffset) = 0;
 
 	/**
 	 * Texel buffers may use an additional texture handle as well as a buffer
@@ -165,14 +148,12 @@ public:
 		Mapper(Buffer &buffer)
 			: buffer(buffer)
 		{
-			data = buffer.map();
+			data = buffer.map(MAP_WRITE_INVALIDATE, 0, buffer.getSize());
 		}
 
 		~Mapper()
 		{
-			if (buffer.getMapFlags() & MAP_EXPLICIT_RANGE_MODIFY)
-				buffer.setMappedRangeModified(0, buffer.getSize());
-			buffer.unmap();
+			buffer.unmap(0, buffer.getSize());
 		}
 
 		Buffer &buffer;
@@ -194,8 +175,6 @@ protected:
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	BufferUsage usage;
-	
-	uint32 mapFlags;
 
 	bool mapped;
 	

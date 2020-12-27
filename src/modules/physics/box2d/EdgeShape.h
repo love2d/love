@@ -50,12 +50,10 @@ public:
 	virtual ~EdgeShape();
 
 	void setNextVertex(float x, float y);
-	void setNextVertex();
-	bool getNextVertex(float &x, float &y) const;
+	b2Vec2 getNextVertex() const;
 
 	void setPreviousVertex(float x, float y);
-	void setPreviousVertex();
-	bool getPreviousVertex(float &x, float &y) const;
+	b2Vec2 getPreviousVertex() const;
 
 	/**
 	 * Returns the transformed points of the edge shape.

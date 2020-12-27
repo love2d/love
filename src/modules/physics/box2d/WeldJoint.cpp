@@ -68,22 +68,50 @@ void WeldJoint::init(b2WeldJointDef &def, Body *body1, Body *body2, float xA, fl
 
 void WeldJoint::setFrequency(float hz)
 {
-	joint->SetFrequency(hz);
+	float stiffness, damping;
+	b2LinearStiffness(stiffness, damping, hz, getDampingRatio(), joint->GetBodyA(), joint->GetBodyB());
+	joint->SetStiffness(stiffness);
 }
 
 float WeldJoint::getFrequency() const
 {
-	return joint->GetFrequency();
+	float frequency, ratio;
+	Physics::b2LinearFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return frequency;
 }
 
-void WeldJoint::setDampingRatio(float d)
+void WeldJoint::setDampingRatio(float ratio)
 {
-	joint->SetDampingRatio(d);
+	float stiffness, damping;
+	b2LinearStiffness(stiffness, damping, getFrequency(), ratio, joint->GetBodyA(), joint->GetBodyB());
+	joint->SetDamping(damping);
 }
 
 float WeldJoint::getDampingRatio() const
 {
-	return joint->GetDampingRatio();
+	float frequency, ratio;
+	Physics::b2LinearFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
+	return ratio;
+}
+
+void WeldJoint::setStiffness(float k)
+{
+	joint->SetStiffness(k);
+}
+
+float WeldJoint::getStiffness() const
+{
+	return joint->GetStiffness();
+}
+
+void WeldJoint::setDamping(float d)
+{
+	joint->SetDamping(d);
+}
+
+float WeldJoint::getDamping() const
+{
+	return joint->GetDamping();
 }
 
 float WeldJoint::getReferenceAngle() const
