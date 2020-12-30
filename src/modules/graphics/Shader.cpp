@@ -493,7 +493,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 		throw love::Exception("Cannot find entry point for shader stage.");
 
 	if (info.stages[stage] == ENTRYPOINT_RAW && info.language == LANGUAGE_GLSL1)
-		throw love::Exception("Shaders using a raw entry point must use GLSL 3 or greater.");
+		throw love::Exception("Shaders using a raw entry point (vertexmain or pixelmain) must use GLSL 3 or greater.");
 
 	const auto &features = gfx->getCapabilities().features;
 
