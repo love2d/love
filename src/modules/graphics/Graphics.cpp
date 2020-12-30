@@ -1702,11 +1702,8 @@ void Graphics::origin()
 
 love::math::Transform *Graphics::buildTransform()
 {
-	Matrix4 &m = transformStack.back();
-
-	love::math::Transform *t = new love::math::Transform();
-	t->setMatrix(m);
-	return t;
+	const Matrix4 &m = transformStack.back();
+	return new love::math::Transform(m);
 }
 
 void Graphics::applyTransform(love::math::Transform *transform)
