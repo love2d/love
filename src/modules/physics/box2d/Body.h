@@ -318,6 +318,12 @@ public:
 	void getLocalVector(float x, float y, float &x_o, float &y_o);
 
 	/**
+	 * Transforms a series of points (x, y) from world coordinates
+	 * to local coordinates.
+	 **/
+	int getLocalPoints(lua_State *L);
+
+	/**
 	 * Gets the velocity on the Body for the given world point.
 	 * @param x The x-coordinate of the world point.
 	 * @param y The y-coordinate of the world point.

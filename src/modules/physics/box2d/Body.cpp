@@ -346,6 +346,30 @@ void Body::getLocalVector(float x, float y, float &x_o, float &y_o)
 	y_o = v.y;
 }
 
+int Body::getLocalPoints(lua_State *L)
+{
+	int argc = lua_gettop(L);
+	int vcount = (int)argc/2;
+	// at least one point
+	love::luax_assert_argc(L, 2);
+
+	for (int i = 0; i<vcount; i++)
+	{
+		float x = (float)lua_tonumber(L, 1);
+		float y = (float)lua_tonumber(L, 2);
+		// Remove them, so we don't run out of stack space
+		lua_remove(L, 1);
+		lua_remove(L, 1);
+		// Time for scaling
+		b2Vec2 point = Physics::scaleUp(body->GetLocalPoint(Physics::scaleDown(b2Vec2(x, y))));
+		// And then we push the result
+		lua_pushnumber(L, point.x);
+		lua_pushnumber(L, point.y);
+	}
+
+	return argc;
+}
+
 void Body::getLinearVelocityFromWorldPoint(float x, float y, float &x_o, float &y_o)
 {
 	b2Vec2 v = Physics::scaleUp(body->GetLinearVelocityFromWorldPoint(Physics::scaleDown(b2Vec2(x, y))));

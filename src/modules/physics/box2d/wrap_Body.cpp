@@ -444,6 +444,13 @@ int w_Body_getLocalVector(lua_State *L)
 	return 2;
 }
 
+int w_Body_getLocalPoints(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	lua_remove(L, 1);
+	return t->getLocalPoints(L);
+}
+
 int w_Body_getLinearVelocityFromWorldPoint(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -679,6 +686,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getWorldPoints", w_Body_getWorldPoints },
 	{ "getLocalPoint", w_Body_getLocalPoint },
 	{ "getLocalVector", w_Body_getLocalVector },
+	{ "getLocalPoints", w_Body_getLocalPoints },
 	{ "getLinearVelocityFromWorldPoint", w_Body_getLinearVelocityFromWorldPoint },
 	{ "getLinearVelocityFromLocalPoint", w_Body_getLinearVelocityFromLocalPoint },
 	{ "isBullet", w_Body_isBullet },
