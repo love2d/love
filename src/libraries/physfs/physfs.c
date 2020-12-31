@@ -49,7 +49,7 @@ typedef struct __PHYSFS_DIRHANDLE__
     char *root;  /* subdirectory of archiver to use as root of archive (NULL for actual root) */
     size_t rootlen;  /* subdirectory of archiver to use as root of archive (NULL for actual root) */
     const PHYSFS_Archiver *funcs;  /* Ptr to archiver info for this handle. */
-	int forWriting; /* Whether this was opened for writing or not. */
+    int forWriting; /* Whether this was opened for writing or not. */
     struct __PHYSFS_DIRHANDLE__ *next;  /* linked list stuff. */
 } DirHandle;
 
@@ -863,7 +863,7 @@ static DirHandle *tryOpenDir(PHYSFS_Io *io, const PHYSFS_Archiver *funcs,
             retval->mountPoint = NULL;
             retval->funcs = funcs;
             retval->opaque = opaque;
-			retval->forWriting = forWriting;
+            retval->forWriting = forWriting;
         } /* else */
     } /* if */
 
@@ -1860,8 +1860,8 @@ int PHYSFS_mount(const char *newDir, const char *mountPoint, int appendToPath)
 
 int PHYSFS_mountRW(const char *newDir, const char *mountPoint, int appendToPath)
 {
-	BAIL_IF(!newDir, PHYSFS_ERR_INVALID_ARGUMENT, 0);
-	return doMount(NULL, newDir, mountPoint, appendToPath, 1);
+    BAIL_IF(!newDir, PHYSFS_ERR_INVALID_ARGUMENT, 0);
+    return doMount(NULL, newDir, mountPoint, appendToPath, 1);
 } /* PHYSFS_mount */
 
 
@@ -2170,31 +2170,31 @@ static int verifyPath(DirHandle *h, char **_fname, int allowMissing)
 
 static DirHandle *findWriteHandle(const char *_fname)
 {
-	DirHandle *i = NULL;
-	char *allocated_fname;
-	char *fname;
-	size_t len;
+    DirHandle *i = NULL;
+    char *allocated_fname;
+    char *fname;
+    size_t len;
 
-	len = strlen(_fname) + longest_root + 1;
-	allocated_fname = (char *) __PHYSFS_smallAlloc(len);
-	BAIL_IF(!allocated_fname, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
-	fname = allocated_fname + longest_root;
+    len = strlen(_fname) + longest_root + 1;
+    allocated_fname = (char *) __PHYSFS_smallAlloc(len);
+    BAIL_IF(!allocated_fname, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
+    fname = allocated_fname + longest_root;
 
-	if (sanitizePlatformIndependentPath(_fname, fname))
-	{
-		for (i = searchPath; i != NULL; i = i->next)
-		{
-			char *arcfname = fname;
-			if (i->forWriting && verifyPath(i, &arcfname, 0))
-			{
-				break;
-			} /* if */
-		} /* for */
-	}
+    if (sanitizePlatformIndependentPath(_fname, fname))
+    {
+        for (i = searchPath; i != NULL; i = i->next)
+        {
+            char *arcfname = fname;
+            if (i->forWriting && verifyPath(i, &arcfname, 0))
+            {
+                break;
+            } /* if */
+        } /* for */
+    }
 
-	__PHYSFS_smallFree(allocated_fname);
-	
-	return i != NULL ? i : writeDir;
+    __PHYSFS_smallFree(allocated_fname);
+    
+    return i != NULL ? i : writeDir;
 } /* findWriteHandle */
 
 
@@ -2250,12 +2250,12 @@ int PHYSFS_mkdir(const char *_dname)
     int retval = 0;
     char *dname;
     size_t len;
-	DirHandle *h = NULL;
+    DirHandle *h = NULL;
 
     BAIL_IF(!_dname, PHYSFS_ERR_INVALID_ARGUMENT, 0);
 
     __PHYSFS_platformGrabMutex(stateLock);
-	h = findWriteHandle(_dname);
+    h = findWriteHandle(_dname);
     BAIL_IF_MUTEX(!h, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
     len = strlen(_dname) + dirHandleRootLen(h) + 1;
     dname = (char *) __PHYSFS_smallAlloc(len);
@@ -2281,10 +2281,10 @@ int PHYSFS_delete(const char *_fname)
     int retval;
     char *fname;
     size_t len;
-	DirHandle *h = NULL;
+    DirHandle *h = NULL;
 
     __PHYSFS_platformGrabMutex(stateLock);
-	h = findWriteHandle(_fname);
+    h = findWriteHandle(_fname);
     BAIL_IF_MUTEX(!h, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
     len = strlen(_fname) + dirHandleRootLen(h) + 1;
     fname = (char *) __PHYSFS_smallAlloc(len);
