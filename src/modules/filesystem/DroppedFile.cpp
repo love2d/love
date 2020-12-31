@@ -165,7 +165,7 @@ bool DroppedFile::flush()
 
 bool DroppedFile::isEOF()
 {
-	return file == nullptr || feof(file) != 0;
+	return file == nullptr || tell() >= getSize();
 }
 
 int64 DroppedFile::tell()
