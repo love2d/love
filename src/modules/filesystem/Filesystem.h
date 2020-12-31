@@ -96,6 +96,7 @@ public:
 		int64 size;
 		int64 modtime;
 		FileType type;
+		bool readonly;
 	};
 
 	static love::Type type;

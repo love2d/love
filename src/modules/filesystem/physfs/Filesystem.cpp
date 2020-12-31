@@ -720,6 +720,7 @@ bool Filesystem::getInfo(const char *filepath, Info &info) const
 
 	info.size = (int64) stat.filesize;
 	info.modtime = (int64) stat.modtime;
+	info.readonly = stat.readonly != 0;
 
 	if (stat.filetype == PHYSFS_FILETYPE_REGULAR)
 		info.type = FILETYPE_FILE;

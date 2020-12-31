@@ -485,6 +485,9 @@ int w_getInfo(lua_State *L)
 		lua_pushstring(L, typestr);
 		lua_setfield(L, -2, "type");
 
+		luax_pushboolean(L, info.readonly);
+		lua_setfield(L, -2, "readonly");
+
 		// Lua numbers (doubles) can't fit the full range of 64 bit ints.
 		info.size = std::min<int64>(info.size, 0x20000000000000LL);
 		if (info.size >= 0)
