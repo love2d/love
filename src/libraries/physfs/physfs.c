@@ -49,6 +49,7 @@ typedef struct __PHYSFS_DIRHANDLE__
     char *root;  /* subdirectory of archiver to use as root of archive (NULL for actual root) */
     size_t rootlen;  /* subdirectory of archiver to use as root of archive (NULL for actual root) */
     const PHYSFS_Archiver *funcs;  /* Ptr to archiver info for this handle. */
+	int forWriting; /* Whether this was opened for writing or not. */
     struct __PHYSFS_DIRHANDLE__ *next;  /* linked list stuff. */
 } DirHandle;
 
@@ -862,6 +863,7 @@ static DirHandle *tryOpenDir(PHYSFS_Io *io, const PHYSFS_Archiver *funcs,
             retval->mountPoint = NULL;
             retval->funcs = funcs;
             retval->opaque = opaque;
+			retval->forWriting = forWriting;
         } /* else */
     } /* if */
 
@@ -1749,7 +1751,7 @@ int PHYSFS_setRoot(const char *archive, const char *subdir)
 
 
 static int doMount(PHYSFS_Io *io, const char *fname,
-                   const char *mountPoint, int appendToPath)
+                   const char *mountPoint, int appendToPath, int forWriting)
 {
     DirHandle *dh;
     DirHandle *prev = NULL;
@@ -1770,7 +1772,7 @@ static int doMount(PHYSFS_Io *io, const char *fname,
         prev = i;
     } /* for */
 
-    dh = createDirHandle(io, fname, mountPoint, 0);
+    dh = createDirHandle(io, fname, mountPoint, forWriting);
     BAIL_IF_MUTEX_ERRPASS(!dh, stateLock, 0);
 
     if (appendToPath)
@@ -1797,7 +1799,7 @@ int PHYSFS_mountIo(PHYSFS_Io *io, const char *fname,
     BAIL_IF(!io, PHYSFS_ERR_INVALID_ARGUMENT, 0);
     BAIL_IF(!fname, PHYSFS_ERR_INVALID_ARGUMENT, 0);
     BAIL_IF(io->version != 0, PHYSFS_ERR_UNSUPPORTED, 0);
-    return doMount(io, fname, mountPoint, appendToPath);
+    return doMount(io, fname, mountPoint, appendToPath, 0);
 } /* PHYSFS_mountIo */
 
 
@@ -1813,7 +1815,7 @@ int PHYSFS_mountMemory(const void *buf, PHYSFS_uint64 len, void (*del)(void *),
 
     io = __PHYSFS_createMemoryIo(buf, len, del);
     BAIL_IF_ERRPASS(!io, 0);
-    retval = doMount(io, fname, mountPoint, appendToPath);
+    retval = doMount(io, fname, mountPoint, appendToPath, 0);
     if (!retval)
     {
         /* docs say not to call (del) in case of failure, so cheat. */
@@ -1837,7 +1839,7 @@ int PHYSFS_mountHandle(PHYSFS_File *file, const char *fname,
 
     io = __PHYSFS_createHandleIo(file);
     BAIL_IF_ERRPASS(!io, 0);
-    retval = doMount(io, fname, mountPoint, appendToPath);
+    retval = doMount(io, fname, mountPoint, appendToPath, 0);
     if (!retval)
     {
         /* docs say not to destruct in case of failure, so cheat. */
@@ -1852,7 +1854,14 @@ int PHYSFS_mountHandle(PHYSFS_File *file, const char *fname,
 int PHYSFS_mount(const char *newDir, const char *mountPoint, int appendToPath)
 {
     BAIL_IF(!newDir, PHYSFS_ERR_INVALID_ARGUMENT, 0);
-    return doMount(NULL, newDir, mountPoint, appendToPath);
+    return doMount(NULL, newDir, mountPoint, appendToPath, 0);
+} /* PHYSFS_mount */
+
+
+int PHYSFS_mountRW(const char *newDir, const char *mountPoint, int appendToPath)
+{
+	BAIL_IF(!newDir, PHYSFS_ERR_INVALID_ARGUMENT, 0);
+	return doMount(NULL, newDir, mountPoint, appendToPath, 1);
 } /* PHYSFS_mount */
 
 
@@ -2159,10 +2168,39 @@ static int verifyPath(DirHandle *h, char **_fname, int allowMissing)
 } /* verifyPath */
 
 
-/* This must hold the stateLock before calling. */
-static int doMkdir(const char *_dname, char *dname)
+static DirHandle *findWriteHandle(const char *_fname)
 {
-    DirHandle *h = writeDir;
+	DirHandle *i = NULL;
+	char *allocated_fname;
+	char *fname;
+	size_t len;
+
+	len = strlen(_fname) + longest_root + 1;
+	allocated_fname = (char *) __PHYSFS_smallAlloc(len);
+	BAIL_IF(!allocated_fname, PHYSFS_ERR_OUT_OF_MEMORY, NULL);
+	fname = allocated_fname + longest_root;
+
+	if (sanitizePlatformIndependentPath(_fname, fname))
+	{
+		for (i = searchPath; i != NULL; i = i->next)
+		{
+			char *arcfname = fname;
+			if (i->forWriting && verifyPath(i, &arcfname, 0))
+			{
+				break;
+			} /* if */
+		} /* for */
+	}
+
+	__PHYSFS_smallFree(allocated_fname);
+	
+	return i != NULL ? i : writeDir;
+} /* findWriteHandle */
+
+
+/* This must hold the stateLock before calling. */
+static int doMkdir(const char *_dname, char *dname, DirHandle *h)
+{
     char *start;
     char *end;
     int retval = 0;
@@ -2212,15 +2250,17 @@ int PHYSFS_mkdir(const char *_dname)
     int retval = 0;
     char *dname;
     size_t len;
+	DirHandle *h = NULL;
 
     BAIL_IF(!_dname, PHYSFS_ERR_INVALID_ARGUMENT, 0);
 
     __PHYSFS_platformGrabMutex(stateLock);
-    BAIL_IF_MUTEX(!writeDir, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
-    len = strlen(_dname) + dirHandleRootLen(writeDir) + 1;
+	h = findWriteHandle(_dname);
+    BAIL_IF_MUTEX(!h, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
+    len = strlen(_dname) + dirHandleRootLen(h) + 1;
     dname = (char *) __PHYSFS_smallAlloc(len);
     BAIL_IF_MUTEX(!dname, PHYSFS_ERR_OUT_OF_MEMORY, stateLock, 0);
-    retval = doMkdir(_dname, dname);
+    retval = doMkdir(_dname, dname, h);
     __PHYSFS_platformReleaseMutex(stateLock);
     __PHYSFS_smallFree(dname);
     return retval;
@@ -2228,9 +2268,8 @@ int PHYSFS_mkdir(const char *_dname)
 
 
 /* This must hold the stateLock before calling. */
-static int doDelete(const char *_fname, char *fname)
+static int doDelete(const char *_fname, char *fname, DirHandle *h)
 {
-    DirHandle *h = writeDir;
     BAIL_IF_ERRPASS(!sanitizePlatformIndependentPathWithRoot(h, _fname, fname), 0);
     BAIL_IF_ERRPASS(!verifyPath(h, &fname, 0), 0);
     return h->funcs->remove(h->opaque, fname);
@@ -2242,13 +2281,15 @@ int PHYSFS_delete(const char *_fname)
     int retval;
     char *fname;
     size_t len;
+	DirHandle *h = NULL;
 
     __PHYSFS_platformGrabMutex(stateLock);
-    BAIL_IF_MUTEX(!writeDir, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
-    len = strlen(_fname) + dirHandleRootLen(writeDir) + 1;
+	h = findWriteHandle(_fname);
+    BAIL_IF_MUTEX(!h, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
+    len = strlen(_fname) + dirHandleRootLen(h) + 1;
     fname = (char *) __PHYSFS_smallAlloc(len);
     BAIL_IF_MUTEX(!fname, PHYSFS_ERR_OUT_OF_MEMORY, stateLock, 0);
-    retval = doDelete(_fname, fname);
+    retval = doDelete(_fname, fname, h);
     __PHYSFS_platformReleaseMutex(stateLock);
     __PHYSFS_smallFree(fname);
     return retval;
@@ -2631,7 +2672,7 @@ static PHYSFS_File *doOpenWrite(const char *_fname, const int appending)
 
     __PHYSFS_platformGrabMutex(stateLock);
 
-    h = writeDir;
+    h = findWriteHandle(_fname);
     BAIL_IF_MUTEX(!h, PHYSFS_ERR_NO_WRITE_DIR, stateLock, 0);
 
     len = strlen(_fname) + dirHandleRootLen(h) + 1;
@@ -3115,7 +3156,7 @@ int PHYSFS_stat(const char *_fname, PHYSFS_Stat *stat)
                 if (exists)
                 {
                     stat->filetype = PHYSFS_FILETYPE_DIRECTORY;
-                    stat->readonly = 1;
+                    stat->readonly = !i->forWriting;
                     retval = 1;
                 } /* if */
                 else if (verifyPath(i, &arcfname, 0))
