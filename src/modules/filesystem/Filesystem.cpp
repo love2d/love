@@ -91,8 +91,6 @@ bool Filesystem::getRealPathType(const std::string &path, FileType &ftype) const
 		ftype = FILETYPE_FILE;
 	else if ((buf.st_mode & _S_IFDIR) == _S_IFDIR)
 		ftype = FILETYPE_DIRECTORY;
-	else if ((buf.st_mode & _S_IFLNK) == _S_IFLNK)
-		ftype = FILETYPE_SYMLINK;
 	else
 		ftype = FILETYPE_OTHER;
 #else
