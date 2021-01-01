@@ -1104,6 +1104,23 @@ static int freeDirHandle(DirHandle *dh, FileHandle *openList)
 } /* freeDirHandle */
 
 
+static int dirHandleFilesOpen(DirHandle *dh, FileHandle *openList)
+{
+    FileHandle *i;
+
+    if (dh == NULL)
+        return 0;
+
+    for (i = openList; i != NULL; i = i->next)
+    {
+        if (i->dirHandle == dh)
+            return 1;
+    }
+
+    return 0;
+} /* dirHandleFilesOpen */
+
+
 static char *calculateBaseDir(const char *argv0)
 {
     const char dirsep = __PHYSFS_platformDirSeparator;
@@ -1891,6 +1908,8 @@ int PHYSFS_unmount(const char *oldDir)
         if (strcmp(i->dirName, oldDir) == 0)
         {
             next = i->next;
+            if (i->forWriting && dirHandleFilesOpen(i, openWriteList))
+                BAIL_MUTEX(PHYSFS_ERR_FILES_STILL_OPEN, stateLock, 0);
             BAIL_IF_MUTEX_ERRPASS(!freeDirHandle(i, openReadList),
                                 stateLock, 0);
 
@@ -1907,6 +1926,28 @@ int PHYSFS_unmount(const char *oldDir)
     BAIL_MUTEX(PHYSFS_ERR_NOT_MOUNTED, stateLock, 0);
 } /* PHYSFS_unmount */
 
+
+int PHYSFS_canUnmount(const char *oldDir)
+{
+    DirHandle *i;
+
+    BAIL_IF(oldDir == NULL, PHYSFS_ERR_INVALID_ARGUMENT, 0);
+
+    __PHYSFS_platformGrabMutex(stateLock);
+    for (i = searchPath; i != NULL; i = i->next)
+    {
+        if (strcmp(i->dirName, oldDir) == 0)
+        {
+            if (i->forWriting && dirHandleFilesOpen(i, openWriteList))
+                BAIL_MUTEX(PHYSFS_ERR_OK, stateLock, 0);
+            if (dirHandleFilesOpen(i, openReadList))
+                BAIL_MUTEX(PHYSFS_ERR_OK, stateLock, 0);
+            BAIL_MUTEX(PHYSFS_ERR_OK, stateLock, 1);
+        }
+    }
+
+    BAIL_MUTEX(PHYSFS_ERR_NOT_MOUNTED, stateLock, 0);
+} /* PHYSFS_canUnmount */
 
 char **PHYSFS_getSearchPath(void)
 {

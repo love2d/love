@@ -2787,6 +2787,12 @@ PHYSFS_DECL int PHYSFS_enumerate(const char *dir, PHYSFS_EnumerateCallback c,
  */
 PHYSFS_DECL int PHYSFS_unmount(const char *oldDir);
 
+/**
+ * \fn int PHYSFS_canUnmount(const char *oldDir)
+ * \brief Check whether a directory or archive can be unmounted.
+ */
+PHYSFS_DECL int PHYSFS_canUnmount(const char *oldDir);
+
 
 /**
  * \fn const PHYSFS_Allocator *PHYSFS_getAllocator(void)
