@@ -199,12 +199,13 @@ int64 DroppedFile::tell()
 
 bool DroppedFile::seek(uint64 pos)
 {
-	return file != nullptr &&
+	if (file == nullptr)
+		return false;
 
 #ifdef LOVE_WINDOWS
-	_fseeki64(file, (int64) pos, SEEK_SET) == 0;
+	return _fseeki64(file, (int64) pos, SEEK_SET) == 0;
 #else
-	fseeko(file, (off_t) pos, SEEK_SET) == 0;
+	return fseeko(file, (off_t) pos, SEEK_SET) == 0;
 #endif
 }
 
