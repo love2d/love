@@ -131,7 +131,7 @@ static bool createDirectoryRaw(const std::string &path)
 {
 #ifdef LOVE_WINDOWS
 	std::wstring wpath = to_widestr(path);
-	return CreateDirectoryW(wpath, nullptr) != 0;
+	return CreateDirectoryW(wpath.c_str(), nullptr) != 0;
 #else
 	return mkdir(path.c_str(), S_IRWXU) == 0;
 #endif
