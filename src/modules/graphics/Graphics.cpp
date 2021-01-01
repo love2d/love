@@ -268,7 +268,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 			if (!validstages[i])
 				continue;
 
-			if (info.isStage[i])
+			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
 				stages[i].set(newShaderStage((ShaderStage::StageType) i, source, info), Acquire::NORETAIN);
@@ -347,7 +347,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 			if (!validstages[i])
 				continue;
 
-			if (info.isStage[i])
+			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
 				std::string glsl = Shader::createShaderStageCode(this, stype, source, info);

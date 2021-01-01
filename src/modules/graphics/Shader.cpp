@@ -38,6 +38,7 @@ namespace graphics
 
 namespace glsl
 {
+
 static const char global_syntax[] = R"(
 #if !defined(GL_ES) && __VERSION__ < 140
 	#define lowp
@@ -60,7 +61,11 @@ static const char global_syntax[] = R"(
 	#define DepthCubeImage samplerCubeShadow
 #endif
 #define extern uniform
-#ifdef GL_EXT_texture_array
+#if defined(GL_EXT_texture_array) && (!defined(GL_ES) || __VERSION__ > 100 || defined(GL_OES_gpu_shader5))
+// Only used when !GLSLES1 to work around Ouya driver bug. But we still want it
+// enabled for glslang validation when glsl 1-on-3 is used, so also enable it if
+// OES_gpu_shader5 exists.
+#define LOVE_EXT_TEXTURE_ARRAY_ENABLED
 #extension GL_EXT_texture_array : enable
 #endif
 #ifdef GL_OES_texture_3D
@@ -122,7 +127,7 @@ void love_initializeBuiltinUniforms() {
 
 static const char global_functions[] = R"(
 #ifdef GL_ES
-	#if __VERSION__ >= 300 || defined(GL_EXT_texture_array)
+	#if __VERSION__ >= 300 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
 		precision lowp sampler2DArray;
 	#endif
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
@@ -158,7 +163,7 @@ static const char global_functions[] = R"(
 	#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
 		vec4 Texel(sampler3D s, vec3 c) { return love_texture3D(s, c); }
 	#endif
-	#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+	#if __VERSION__ >= 130 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
 		vec4 Texel(sampler2DArray s, vec3 c) { return love_texture2DArray(s, c); }
 	#endif
 	#ifdef PIXEL
@@ -167,7 +172,7 @@ static const char global_functions[] = R"(
 		#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
 			vec4 Texel(sampler3D s, vec3 c, float b) { return love_texture3D(s, c, b); }
 		#endif
-		#if __VERSION__ >= 130 || defined(GL_EXT_texture_array)
+		#if __VERSION__ >= 130 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
 			vec4 Texel(sampler2DArray s, vec3 c, float b) { return love_texture2DArray(s, c, b); }
 		#endif
 	#endif
@@ -271,6 +276,16 @@ void main() {
 }
 )";
 
+static const char vertex_main_raw[] = R"(
+void vertexmain();
+
+void main() {
+	love_initializeBuiltinUniforms();
+	setPointSize();
+	vertexmain();
+}
+)";
+
 static const char pixel_header[] = R"(
 #ifdef GL_ES
 	precision mediump float;
@@ -280,29 +295,10 @@ static const char pixel_header[] = R"(
 
 #if __VERSION__ >= 130
 	#define varying in
-	// Some drivers seem to make the pixel shader do more work when multiple
-	// pixel shader outputs are defined, even when only one is actually used.
-	// TODO: We should use reflection or something instead of this, to determine
-	// how many outputs are actually used in the shader code.
-	#ifdef LOVE_MULTI_RENDER_TARGETS
-		layout(location = 0) out vec4 love_RenderTargets[love_MaxRenderTargets];
-		#define love_PixelColor love_RenderTargets[0]
-	#else
-		layout(location = 0) out vec4 love_PixelColor;
-	#endif
-#else
-	#ifdef LOVE_MULTI_RENDER_TARGETS
-		#define love_RenderTargets gl_FragData
-	#endif
-	#define love_PixelColor gl_FragColor
 #endif
 
 // Legacy
 #define love_MaxCanvases love_MaxRenderTargets
-#define love_Canvases love_RenderTargets
-#ifdef LOVE_MULTI_RENDER_TARGETS
-#define LOVE_MULTI_CANVASES 1
-#endif
 
 // See Shader::updateScreenParams in Shader.cpp.
 #define love_PixelCoord (vec2(gl_FragCoord.x, (gl_FragCoord.y * love_ScreenSize.z) + love_ScreenSize.w))
@@ -331,6 +327,12 @@ vec4 VideoTexel(vec2 texcoords) {
 )";
 
 static const char pixel_main[] = R"(
+#if __VERSION__ >= 130
+	layout(location = 0) out vec4 love_PixelColor;
+#else
+	#define love_PixelColor gl_FragColor
+#endif
+
 uniform sampler2D MainTex;
 varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
 varying mediump vec4 VaryingColor;
@@ -344,6 +346,30 @@ void main() {
 )";
 
 static const char pixel_main_custom[] = R"(
+#if __VERSION__ >= 130
+	// Some drivers seem to make the pixel shader do more work when multiple
+	// pixel shader outputs are defined, even when only one is actually used.
+	// TODO: We should use reflection or something instead of this, to determine
+	// how many outputs are actually used in the shader code.
+	#ifdef LOVE_MULTI_RENDER_TARGETS
+		layout(location = 0) out vec4 love_RenderTargets[love_MaxRenderTargets];
+		#define love_PixelColor love_RenderTargets[0]
+	#else
+		layout(location = 0) out vec4 love_PixelColor;
+	#endif
+#else
+	#ifdef LOVE_MULTI_RENDER_TARGETS
+		#define love_RenderTargets gl_FragData
+	#endif
+	#define love_PixelColor gl_FragColor
+#endif
+
+// Legacy
+#define love_Canvases love_RenderTargets
+#ifdef LOVE_MULTI_RENDER_TARGETS
+#define LOVE_MULTI_CANVASES 1
+#endif
+
 varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
 varying mediump vec4 VaryingColor;
 
@@ -355,6 +381,15 @@ void main() {
 }
 )";
 
+static const char pixel_main_raw[] = R"(
+void pixelmain();
+
+void main() {
+	love_initializeBuiltinUniforms();
+	pixelmain();
+}
+)";
+
 struct StageInfo
 {
 	const char *name;
@@ -362,12 +397,13 @@ struct StageInfo
 	const char *functions;
 	const char *main;
 	const char *main_custom;
+	const char *main_raw;
 };
 
 static const StageInfo stageInfo[] =
 {
-	{ "VERTEX", vertex_header, vertex_functions, vertex_main, vertex_main },
-	{ "PIXEL", pixel_header, pixel_functions, pixel_main, pixel_main_custom },
+	{ "VERTEX", vertex_header, vertex_functions, vertex_main, vertex_main, vertex_main_raw },
+	{ "PIXEL", pixel_header, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
 };
 
 static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == ShaderStage::STAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
@@ -396,30 +432,38 @@ static Shader::Language getTargetLanguage(const std::string &src)
 	return lang;
 }
 
-static bool isVertexCode(const std::string &src)
+static Shader::EntryPoint getVertexEntryPoint(const std::string &src)
 {
-	std::regex r("vec4\\s+position\\s*\\(");
 	std::smatch m;
-	return std::regex_search(src, m, r);
+
+	if (std::regex_search(src, m, std::regex("void\\s+vertexmain\\s*\\(")))
+		return Shader::ENTRYPOINT_RAW;
+
+	if (std::regex_search(src, m, std::regex("vec4\\s+position\\s*\\(")))
+		return Shader::ENTRYPOINT_HIGHLEVEL;
+
+	return Shader::ENTRYPOINT_NONE;
 }
 
-static bool isPixelCode(const std::string &src, bool &custompixel, bool &mrt)
+static Shader::EntryPoint getPixelEntryPoint(const std::string &src, bool &mrt)
 {
-	custompixel = false;
 	mrt = false;
 	std::smatch m;
+
+	if (std::regex_search(src, m, std::regex("void\\s+pixelmain\\s*\\(")))
+		return Shader::ENTRYPOINT_RAW;
+
 	if (std::regex_search(src, m, std::regex("vec4\\s+effect\\s*\\(")))
-		return true;
+		return Shader::ENTRYPOINT_HIGHLEVEL;
 
 	if (std::regex_search(src, m, std::regex("void\\s+effect\\s*\\(")))
 	{
-		custompixel = true;
 		if (src.find("love_RenderTargets") != std::string::npos || src.find("love_Canvases") != std::string::npos)
 			mrt = true;
-		return true;
+		return Shader::ENTRYPOINT_CUSTOM;
 	}
 
-	return false;
+	return Shader::ENTRYPOINT_NONE;
 }
 
 } // glsl
@@ -435,8 +479,8 @@ Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 {
 	SourceInfo info = {};
 	info.language = glsl::getTargetLanguage(src);
-	info.isStage[ShaderStage::STAGE_VERTEX] = glsl::isVertexCode(src);
-	info.isStage[ShaderStage::STAGE_PIXEL] = glsl::isPixelCode(src, info.customPixelFunction, info.usesMRT);
+	info.stages[ShaderStage::STAGE_VERTEX] = glsl::getVertexEntryPoint(src);
+	info.stages[ShaderStage::STAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
 	return info;
 }
 
@@ -444,6 +488,12 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 {
 	if (info.language == Shader::LANGUAGE_MAX_ENUM)
 		throw love::Exception("Invalid shader language");
+
+	if (info.stages[stage] == ENTRYPOINT_NONE)
+		throw love::Exception("Cannot find entry point for shader stage.");
+
+	if (info.stages[stage] == ENTRYPOINT_RAW && info.language == LANGUAGE_GLSL1)
+		throw love::Exception("Shaders using a raw entry point (vertexmain or pixelmain) must use GLSL 3 or greater.");
 
 	const auto &features = gfx->getCapabilities().features;
 
@@ -477,7 +527,15 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 	ss << glsl::global_uniforms;
 	ss << glsl::global_functions;
 	ss << stageinfo.functions;
-	ss << (info.customPixelFunction ? stageinfo.main_custom : stageinfo.main);
+
+	if (info.stages[stage] == ENTRYPOINT_HIGHLEVEL)
+		ss << stageinfo.main;
+	else if (info.stages[stage] == ENTRYPOINT_CUSTOM)
+		ss << stageinfo.main_custom;
+	else if (info.stages[stage] == ENTRYPOINT_RAW)
+		ss << stageinfo.main_raw;
+	else
+		throw love::Exception("Unknown shader entry point %d", info.stages[stage]);
 	ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
 	ss << code;
 

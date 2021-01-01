@@ -150,6 +150,16 @@ bool OpenGL::initContext()
 		if (strstr(device, "HD Graphics 4000") || strstr(device, "HD Graphics 2500"))
 			bugs.clientWaitSyncStalls = true;
 	}
+
+	if (getVendor() == VENDOR_INTEL)
+	{
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "HD Graphics 3000") || strstr(device, "HD Graphics 2000")
+			|| !strcmp(device, "Intel(R) HD Graphics") || !strcmp(device, "Intel(R) HD Graphics Family"))
+		{
+			bugs.brokenSRGB = true;
+		}
+	}
 #endif
 
 #ifdef LOVE_WINDOWS
@@ -210,8 +220,8 @@ void OpenGL::setupContext()
 	setEnableState(ENABLE_SCISSOR_TEST, state.enableState[ENABLE_SCISSOR_TEST]);
 	setEnableState(ENABLE_FACE_CULL, state.enableState[ENABLE_FACE_CULL]);
 
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
-		|| GLAD_EXT_sRGB_write_control)
+	if (!bugs.brokenSRGB && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB
+		|| GLAD_EXT_framebuffer_sRGB || GLAD_EXT_sRGB_write_control))
 	{
 		setEnableState(ENABLE_FRAMEBUFFER_SRGB, state.enableState[ENABLE_FRAMEBUFFER_SRGB]);
 	}
@@ -391,15 +401,23 @@ void OpenGL::initOpenGLFunctions()
 		}
 	}
 
-	if (GLAD_ES_VERSION_2_0 && GLAD_OES_texture_3D && !GLAD_ES_VERSION_3_0)
+	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
 	{
-		// Function signatures don't match, we'll have to conditionally call it
-		//fp_glTexImage3D = fp_glTexImage3DOES;
-		fp_glTexSubImage3D = fp_glTexSubImage3DOES;
-		fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
-		fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
-		fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
-		fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+		// The Nvidia Tegra 3 driver (used by Ouya) claims to support GL_EXT_texture_array but
+		// segfaults if you actually try to use it. OpenGL ES 2.0 devices should use OES_texture_3D.
+		// GL_EXT_texture_array is for desktops.
+		GLAD_EXT_texture_array = false;
+
+		if (GLAD_OES_texture_3D)
+		{
+			// Function signatures don't match, we'll have to conditionally call it
+			//fp_glTexImage3D = fp_glTexImage3DOES;
+			fp_glTexSubImage3D = fp_glTexSubImage3DOES;
+			fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
+			fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
+			fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
+			fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+		}
 	}
 
 	if (!GLAD_VERSION_3_2 && !GLAD_ES_VERSION_3_2 && !GLAD_ARB_draw_elements_base_vertex)
@@ -1881,6 +1899,8 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return true;
 	case PIXELFORMAT_sRGBA8_UNORM:
+		if (gl.bugs.brokenSRGB)
+			return false;
 		if (rendertarget)
 		{
 			if (GLAD_VERSION_1_0)

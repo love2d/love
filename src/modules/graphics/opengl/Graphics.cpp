@@ -316,8 +316,8 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
-		|| GLAD_ES_VERSION_3_0)
+	if (!gl.bugs.brokenSRGB && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB
+		|| GLAD_EXT_framebuffer_sRGB || GLAD_ES_VERSION_3_0))
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());

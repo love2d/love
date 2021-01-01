@@ -90,11 +90,18 @@ public:
 		STANDARD_MAX_ENUM
 	};
 
+	enum EntryPoint
+	{
+		ENTRYPOINT_NONE,
+		ENTRYPOINT_HIGHLEVEL,
+		ENTRYPOINT_CUSTOM,
+		ENTRYPOINT_RAW,
+	};
+
 	struct SourceInfo
 	{
 		Language language;
-		bool isStage[ShaderStage::STAGE_MAX_ENUM];
-		bool customPixelFunction;
+		EntryPoint stages[ShaderStage::STAGE_MAX_ENUM];
 		bool usesMRT;
 	};
 
