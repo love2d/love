@@ -2209,9 +2209,39 @@ static int verifyPath(DirHandle *h, char **_fname, int allowMissing)
 } /* verifyPath */
 
 
+static int countPathComponents(const char *path)
+{
+    int components = 0;
+    const char *start;
+    const char *end;
+
+    if (path == NULL)
+        return 0;
+
+    if (*path != '/')
+        components = 1;
+
+    start = path;
+    while (1)
+    {
+        end = strchr(start, '/');
+
+        if (end == NULL)
+            break;
+
+        components++;
+        start = end + 1;
+    }
+
+    return components;
+} /* countPathComponents */
+
+
 static DirHandle *findWriteHandle(const char *_fname)
 {
     DirHandle *i = NULL;
+    int deepest_path_components = -1;
+    DirHandle *deepest_dirhandle = NULL;
     char *allocated_fname;
     char *fname;
     size_t len;
@@ -2228,14 +2258,21 @@ static DirHandle *findWriteHandle(const char *_fname)
             char *arcfname = fname;
             if (i->forWriting && verifyPath(i, &arcfname, 0))
             {
-                break;
+                int path_components = 0;
+                if (i->mountPoint != NULL)
+                    path_components = countPathComponents(i->mountPoint);
+                if (path_components > deepest_path_components)
+                {
+                    deepest_path_components = path_components;
+                    deepest_dirhandle = i;
+                } /* if */
             } /* if */
         } /* for */
-    }
+    } /* if */
 
     __PHYSFS_smallFree(allocated_fname);
-    
-    return i != NULL ? i : writeDir;
+
+    return deepest_dirhandle != NULL ? deepest_dirhandle : writeDir;
 } /* findWriteHandle */
 
 
