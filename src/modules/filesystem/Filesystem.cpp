@@ -28,8 +28,10 @@
 
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
 #include "common/apple.h"
+#include <unistd.h>
 #elif defined(LOVE_WINDOWS)
 #include <windows.h>
+#include <fileapi.h>
 #include "common/utf8.h"
 #elif defined(LOVE_LINUX)
 #include <unistd.h>
@@ -69,6 +71,14 @@ FileData *Filesystem::newFileData(const void *data, size_t size, const char *fil
 
 bool Filesystem::isRealDirectory(const std::string &path) const
 {
+	FileType ftype = FILETYPE_MAX_ENUM;
+	if (!getRealPathType(path, ftype))
+		return false;
+	return ftype == FILETYPE_DIRECTORY;
+}
+
+bool Filesystem::getRealPathType(const std::string &path, FileType &ftype) const
+{
 #ifdef LOVE_WINDOWS
 	// make sure non-ASCII paths work.
 	std::wstring wpath = to_widestr(path);
@@ -77,15 +87,85 @@ bool Filesystem::isRealDirectory(const std::string &path) const
 	if (_wstat(wpath.c_str(), &buf) != 0)
 		return false;
 
-	return (buf.st_mode & _S_IFDIR) == _S_IFDIR;
+	if ((buf.st_mode & _S_IFREG) == _S_IFREG)
+		ftype = FILETYPE_FILE;
+	else if ((buf.st_mode & _S_IFDIR) == _S_IFDIR)
+		ftype = FILETYPE_DIRECTORY;
+	else if ((buf.st_mode & _S_IFLNK) == _S_IFLNK)
+		ftype = FILETYPE_SYMLINK;
+	else
+		ftype = FILETYPE_OTHER;
 #else
 	// Assume POSIX support...
 	struct stat buf;
 	if (stat(path.c_str(), &buf) != 0)
 		return false;
 
-	return S_ISDIR(buf.st_mode) != 0;
+	if (S_ISREG(buf.st_mode))
+		ftype = FILETYPE_FILE;
+	else if (S_ISDIR(buf.st_mode))
+		ftype = FILETYPE_DIRECTORY;
+	else if (S_ISLNK(buf.st_mode))
+		ftype = FILETYPE_SYMLINK;
+	else
+		ftype = FILETYPE_OTHER;
 #endif
+
+	return true;
+}
+
+static bool getContainingDirectory(const std::string &path, std::string &newpath)
+{
+	size_t index = path.find_last_of("/\\");
+
+	if (index == std::string::npos)
+		return false;
+
+	newpath = path.substr(0, index);
+
+	// Bail if the root has been stripped out.
+	return newpath.find("/\\") != std::string::npos;
+}
+
+static bool createDirectoryRaw(const std::string &path)
+{
+#ifdef LOVE_WINDOWS
+	std::wstring wpath = to_widestr(path);
+	return CreateDirectoryW(wpath, nullptr) != 0;
+#else
+	return mkdir(path.c_str(), S_IRWXU) == 0;
+#endif
+}
+
+bool Filesystem::createRealDirectory(const std::string &path)
+{
+	FileType ftype = FILETYPE_MAX_ENUM;
+	if (getRealPathType(path, ftype))
+		return ftype == FILETYPE_DIRECTORY;
+
+	std::vector<std::string> createpaths = {path};
+
+	// Find the deepest subdirectory in the given path that actually exists.
+	while (true)
+	{
+		std::string subpath;
+		if (!getContainingDirectory(createpaths[0], subpath))
+			break;
+
+		if (isRealDirectory(subpath))
+			break;
+
+		createpaths.insert(createpaths.begin(), subpath);
+	}
+
+	// Try to create missing subdirectories starting from that existing one.
+	for (const std::string &p : createpaths)
+	{
+		if (!createDirectoryRaw(p))
+			return false;
+	}
+
+	return true;
 }
 
 std::string Filesystem::getExecutablePath() const
@@ -127,9 +207,8 @@ STRINGMAP_CLASS_END(Filesystem, Filesystem::FileType, Filesystem::FILETYPE_MAX_E
 
 STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::CommonPath, Filesystem::COMMONPATH_MAX_ENUM, commonPath)
 {
-	{ "appidentity",   Filesystem::COMMONPATH_APP_IDENTITY   },
+	{ "appsavedir",    Filesystem::COMMONPATH_APP_SAVEDIR    },
 	{ "appdocuments",  Filesystem::COMMONPATH_APP_DOCUMENTS  },
-	{ "apptemp",       Filesystem::COMMONPATH_APP_TEMP       },
 	{ "userhome",      Filesystem::COMMONPATH_USER_HOME      },
 	{ "userappdata",   Filesystem::COMMONPATH_USER_APPDATA   },
 	{ "userdesktop",   Filesystem::COMMONPATH_USER_DESKTOP   },

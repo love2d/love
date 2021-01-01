@@ -73,9 +73,8 @@ public:
 
 	enum CommonPath
 	{
-		COMMONPATH_APP_IDENTITY,
+		COMMONPATH_APP_SAVEDIR,
 		COMMONPATH_APP_DOCUMENTS,
-		COMMONPATH_APP_TEMP,
 		COMMONPATH_USER_HOME,
 		COMMONPATH_USER_APPDATA,
 		COMMONPATH_USER_DESKTOP,
@@ -163,6 +162,7 @@ public:
 	virtual bool unmount(const char *archive) = 0;
 	virtual bool unmount(Data *data) = 0;
 	virtual bool unmount(CommonPath path) = 0;
+	virtual bool unmountFullPath(const char *fullpath) = 0;
 
 	/**
 	 * Creates a new file.
@@ -177,6 +177,9 @@ public:
 	 **/
 	virtual FileData *newFileData(const void *data, size_t size, const char *filename) const;
 
+	/**
+	 * Gets the full path for the given common path.
+	 */
 	virtual std::string getFullCommonPath(CommonPath path) = 0;
 
 	/**
@@ -199,7 +202,7 @@ public:
 	/**
 	 * Gets the full path of the save folder.
 	 **/
-	virtual const char *getSaveDirectory() = 0;
+	virtual std::string getSaveDirectory() = 0;
 
 	/**
 	 * Gets the full path to the directory containing the game source.
@@ -286,6 +289,11 @@ public:
 	virtual bool isRealDirectory(const std::string &path) const;
 
 	/**
+	 * Recursively creates a directory at the given full OS-dependent path.
+	 **/
+	virtual bool createRealDirectory(const std::string &path);
+
+	/**
 	 * Gets the full platform-dependent path to the executable.
 	 **/
 	virtual std::string getExecutablePath() const;
@@ -295,6 +303,8 @@ public:
 	STRINGMAP_CLASS_DECLARE(MountPermissions);
 
 private:
+
+	bool getRealPathType(const std::string &path, FileType &ftype) const;
 
 	// Should we save external or internal for Android
 	bool useExternal;

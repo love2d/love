@@ -38,10 +38,10 @@ enum UserDirectory
 	USER_DIRECTORY_DOCUMENTS,
 	USER_DIRECTORY_DESKTOP,
 	USER_DIRECTORY_CACHES,
+	USER_DIRECTORY_TEMP,
 };
 
 std::string getUserDirectory(UserDirectory dir);
-
 std::string getExecutablePath();
 
 } // apple

@@ -205,6 +205,13 @@ int w_unmount(lua_State *L)
 	return 1;
 }
 
+int w_unmountFullPath(lua_State *L)
+{
+	const char *fullpath = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->unmountFullPath(fullpath));
+	return 1;
+}
+
 int w_unmountCommonPath(lua_State *L)
 {
 	const char *commonpathstr = luaL_checkstring(L, 1);
@@ -415,7 +422,7 @@ int w_getAppdataDirectory(lua_State *L)
 
 int w_getSaveDirectory(lua_State *L)
 {
-	lua_pushstring(L, instance()->getSaveDirectory());
+	luax_pushstring(L, instance()->getSaveDirectory());
 	return 1;
 }
 
@@ -907,11 +914,12 @@ static const luaL_Reg functions[] =
 	{ "getSource", w_getSource },
 	{ "mount", w_mount },
 	{ "mountFullPath", w_mountFullPath },
-//	{ "mountCommonPath", w_mountCommonPath },
+	{ "mountCommonPath", w_mountCommonPath },
 	{ "unmount", w_unmount },
-//	{ "unmountCommonPath", w_unmountCommonPath },
+	{ "unmountFullPath", w_unmountFullPath },
+	{ "unmountCommonPath", w_unmountCommonPath },
 	{ "newFile", w_newFile },
-//	{ "getFullCommonPath", w_getFullCommonPath },
+	{ "getFullCommonPath", w_getFullCommonPath },
 	{ "getWorkingDirectory", w_getWorkingDirectory },
 	{ "getUserDirectory", w_getUserDirectory },
 	{ "getAppdataDirectory", w_getAppdataDirectory },

@@ -52,6 +52,9 @@ std::string getUserDirectory(UserDirectory dir)
 		case USER_DIRECTORY_CACHES:
 			nsdir = NSCachesDirectory;
 			break;
+		case USER_DIRECTORY_TEMP:
+			nsdir = NSItemReplacementDirectory;
+			break;
 		}
 
 		NSArray<NSURL *> *dirs = [[NSFileManager defaultManager] URLsForDirectory:nsdir inDomains:NSUserDomainMask];

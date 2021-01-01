@@ -69,6 +69,7 @@ public:
 	bool unmount(const char *archive) override;
 	bool unmount(Data *data) override;
 	bool unmount(CommonPath path) override;
+	bool unmountFullPath(const char *fullpath) override;
 
 	love::filesystem::File *newFile(const char *filename) const override;
 
@@ -76,7 +77,7 @@ public:
 	const char *getWorkingDirectory() override;
 	std::string getUserDirectory() override;
 	std::string getAppdataDirectory() override;
-	const char *getSaveDirectory() override;
+	std::string getSaveDirectory() override;
 	std::string getSourceBaseDirectory() const override;
 
 	std::string getRealDirectory(const char *filename) const override;
@@ -103,26 +104,26 @@ public:
 
 private:
 
+	struct CommonPathMountInfo
+	{
+		bool mounted;
+		std::string mountPoint;
+		MountPermissions permissions;
+	};
+
+	bool mountCommonPathInternal(CommonPath path, const char *mountpoint, MountPermissions permissions, bool appendToPath, bool createDir);
+
 	// Contains the current working directory (UTF8).
 	std::string cwd;
 
-	// %APPDATA% on Windows.
-	std::string appdata;
-
-	// This name will be used to create the folder
-	// in the appdata/userdata folder.
-	std::string save_identity;
-
-	// Full and relative paths of the game save folder.
-	// (Relative to the %APPDATA% folder, meaning that the
-	// relative string will look something like: ./LOVE/game)
-	std::string save_path_relative, save_path_full;
+	// This name will be used to create the folder in the appdata folder.
+	std::string saveIdentity;
+	bool appendIdentityToPath;
 
 	// The full path to the source of the game.
-	std::string game_source;
+	std::string gameSource;
 
-	// Allow saving outside of the LOVE_APPDATA_FOLDER
-	// for release 'builds'
+	// Allow saving outside of the LOVE_APPDATA_FOLDER for release 'builds'
 	bool fused;
 	bool fusedSet;
 
@@ -134,7 +135,11 @@ private:
 
 	std::map<std::string, StrongRef<Data>> mountedData;
 
-	std::string fullCommonPaths[COMMONPATH_MAX_ENUM];
+	std::string fullPaths[COMMONPATH_MAX_ENUM];
+
+	CommonPathMountInfo commonPathMountInfo[COMMONPATH_MAX_ENUM];
+
+	bool saveDirectoryNeedsMounting;
 
 }; // Filesystem
 
