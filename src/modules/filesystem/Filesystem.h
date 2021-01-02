@@ -71,12 +71,31 @@ public:
 		FILETYPE_MAX_ENUM
 	};
 
+	enum CommonPath
+	{
+		COMMONPATH_APP_SAVEDIR,
+		COMMONPATH_APP_DOCUMENTS,
+		COMMONPATH_USER_HOME,
+		COMMONPATH_USER_APPDATA,
+		COMMONPATH_USER_DESKTOP,
+		COMMONPATH_USER_DOCUMENTS,
+		COMMONPATH_MAX_ENUM
+	};
+
+	enum MountPermissions
+	{
+		MOUNT_PERMISSIONS_READ,
+		MOUNT_PERMISSIONS_READWRITE,
+		MOUNT_PERMISSIONS_MAX_ENUM
+	};
+
 	struct Info
 	{
 		// Numbers will be -1 if they cannot be determined.
 		int64 size;
 		int64 modtime;
 		FileType type;
+		bool readonly;
 	};
 
 	static love::Type type;
@@ -136,8 +155,14 @@ public:
 
 	virtual bool mount(const char *archive, const char *mountpoint, bool appendToPath = false) = 0;
 	virtual bool mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath = false) = 0;
+
+	virtual bool mountFullPath(const char *archive, const char *mountpoint, MountPermissions permissions, bool appendToPath = false) = 0;
+	virtual bool mountCommonPath(CommonPath path, const char *mountpoint, MountPermissions permissions, bool appendToPath = false) = 0;
+
 	virtual bool unmount(const char *archive) = 0;
 	virtual bool unmount(Data *data) = 0;
+	virtual bool unmount(CommonPath path) = 0;
+	virtual bool unmountFullPath(const char *fullpath) = 0;
 
 	/**
 	 * Creates a new file.
@@ -151,6 +176,11 @@ public:
 	 * @param filename The full filename used to file type identification.
 	 **/
 	virtual FileData *newFileData(const void *data, size_t size, const char *filename) const;
+
+	/**
+	 * Gets the full path for the given common path.
+	 */
+	virtual std::string getFullCommonPath(CommonPath path) = 0;
 
 	/**
 	 * Gets the current working directory.
@@ -172,7 +202,7 @@ public:
 	/**
 	 * Gets the full path of the save folder.
 	 **/
-	virtual const char *getSaveDirectory() = 0;
+	virtual std::string getSaveDirectory() = 0;
 
 	/**
 	 * Gets the full path to the directory containing the game source.
@@ -259,21 +289,25 @@ public:
 	virtual bool isRealDirectory(const std::string &path) const;
 
 	/**
+	 * Recursively creates a directory at the given full OS-dependent path.
+	 **/
+	virtual bool createRealDirectory(const std::string &path);
+
+	/**
 	 * Gets the full platform-dependent path to the executable.
 	 **/
 	virtual std::string getExecutablePath() const;
 
-	static bool getConstant(const char *in, FileType &out);
-	static bool getConstant(FileType in, const char *&out);
-	static std::vector<std::string> getConstants(FileType);
+	STRINGMAP_CLASS_DECLARE(FileType);
+	STRINGMAP_CLASS_DECLARE(CommonPath);
+	STRINGMAP_CLASS_DECLARE(MountPermissions);
 
 private:
 
+	bool getRealPathType(const std::string &path, FileType &ftype) const;
+
 	// Should we save external or internal for Android
 	bool useExternal;
-
-	static StringMap<FileType, FILETYPE_MAX_ENUM>::Entry fileTypeEntries[];
-	static StringMap<FileType, FILETYPE_MAX_ENUM> fileTypes;
 
 }; // Filesystem
 

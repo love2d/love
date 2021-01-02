@@ -819,6 +819,8 @@
 		FAAA3FDA1F64B3AD00F89E99 /* lstrlib.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAA3FD51F64B3AD00F89E99 /* lstrlib.h */; };
 		FAAA3FDB1F64B3AD00F89E99 /* lutf8lib.c in Sources */ = {isa = PBXBuildFile; fileRef = FAAA3FD61F64B3AD00F89E99 /* lutf8lib.c */; };
 		FAAA3FDC1F64B3AD00F89E99 /* lutf8lib.h in Headers */ = {isa = PBXBuildFile; fileRef = FAAA3FD71F64B3AD00F89E99 /* lutf8lib.h */; };
+		FAAC2F79251A9D2200BCB81B /* apple.mm in Sources */ = {isa = PBXBuildFile; fileRef = FAAC2F78251A9D2200BCB81B /* apple.mm */; };
+		FAAC2F7A251A9D2200BCB81B /* apple.mm in Sources */ = {isa = PBXBuildFile; fileRef = FAAC2F78251A9D2200BCB81B /* apple.mm */; };
 		FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */; };
 		FAB17BE61ABFAA9000F9BA27 /* lz4.c in Sources */ = {isa = PBXBuildFile; fileRef = FAB17BE41ABFAA9000F9BA27 /* lz4.c */; };
 		FAB17BE71ABFAA9000F9BA27 /* lz4.c in Sources */ = {isa = PBXBuildFile; fileRef = FAB17BE41ABFAA9000F9BA27 /* lz4.c */; };
@@ -1822,6 +1824,8 @@
 		FAAA3FD51F64B3AD00F89E99 /* lstrlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstrlib.h; sourceTree = "<group>"; };
 		FAAA3FD61F64B3AD00F89E99 /* lutf8lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lutf8lib.c; sourceTree = "<group>"; };
 		FAAA3FD71F64B3AD00F89E99 /* lutf8lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lutf8lib.h; sourceTree = "<group>"; };
+		FAAC2F78251A9D2200BCB81B /* apple.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = apple.mm; sourceTree = "<group>"; };
+		FAAC2F7F251A9D3E00BCB81B /* apple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = apple.h; sourceTree = "<group>"; };
 		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
 		FAB17BE41ABFAA9000F9BA27 /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4.c; sourceTree = "<group>"; };
 		FAB17BE51ABFAA9000F9BA27 /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4.h; sourceTree = "<group>"; };
@@ -2193,6 +2197,8 @@
 			children = (
 				FAA3A9AC1B7D465A00CED060 /* android.cpp */,
 				FAA3A9AD1B7D465A00CED060 /* android.h */,
+				FAAC2F7F251A9D3E00BCB81B /* apple.h */,
+				FAAC2F78251A9D2200BCB81B /* apple.mm */,
 				FA0B78F71A958E3B000E1D17 /* b64.cpp */,
 				FA0B78F81A958E3B000E1D17 /* b64.h */,
 				FA6BDE5B1F31725300786805 /* Color.h */,
@@ -4632,6 +4638,7 @@
 				FA0B7E1F1A95902C000E1D17 /* Physics.cpp in Sources */,
 				FA6A2B7B1F60B8250074C308 /* wrap_ByteData.cpp in Sources */,
 				FA0B7E821A95902C000E1D17 /* Shape.cpp in Sources */,
+				FAAC2F7A251A9D2200BCB81B /* apple.mm in Sources */,
 				FA0B7ACE1A958EA3000E1D17 /* packet.c in Sources */,
 				FABDA9872552448200B5C523 /* b2_body.cpp in Sources */,
 				FAF140891E20934C00F898D2 /* PoolAlloc.cpp in Sources */,
@@ -5025,6 +5032,7 @@
 				217DFC0B1D9F6D490055D849 /* unixtcp.c in Sources */,
 				FAF140881E20934C00F898D2 /* PoolAlloc.cpp in Sources */,
 				FA0B7DEE1A95902C000E1D17 /* Mouse.cpp in Sources */,
+				FAAC2F79251A9D2200BCB81B /* apple.mm in Sources */,
 				FAA54ACC1F91660400A8FA7B /* TheoraVideoStream.cpp in Sources */,
 				FA1E887E1DF363CD00E808AA /* Filter.cpp in Sources */,
 				FABDA9862552448200B5C523 /* b2_body.cpp in Sources */,
