@@ -5395,9 +5395,11 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/mpg123.framework/Headers",
 					/Library/Frameworks/freetype.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/mpg123.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5439,9 +5441,11 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/mpg123.framework/Headers",
 					/Library/Frameworks/freetype.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/mpg123.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5484,9 +5488,11 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/mpg123.framework/Headers",
 					/Library/Frameworks/freetype.framework/Headers,
 					/Library/Frameworks/Lua.framework/Headers,
 					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/mpg123.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
