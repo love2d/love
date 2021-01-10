@@ -1944,15 +1944,16 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Grap
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::systemLimitEntries[] =
 {
-	{ "pointsize",         LIMIT_POINT_SIZE          },
-	{ "texturesize",       LIMIT_TEXTURE_SIZE        },
-	{ "texturelayers",     LIMIT_TEXTURE_LAYERS      },
-	{ "volumetexturesize", LIMIT_VOLUME_TEXTURE_SIZE },
-	{ "cubetexturesize",   LIMIT_CUBE_TEXTURE_SIZE   },
-	{ "texelbuffersize",   LIMIT_TEXEL_BUFFER_SIZE   },
-	{ "rendertargets",     LIMIT_RENDER_TARGETS      },
-	{ "texturemsaa",       LIMIT_TEXTURE_MSAA        },
-	{ "anisotropy",        LIMIT_ANISOTROPY          },
+	{ "pointsize",               LIMIT_POINT_SIZE                 },
+	{ "texturesize",             LIMIT_TEXTURE_SIZE               },
+	{ "texturelayers",           LIMIT_TEXTURE_LAYERS             },
+	{ "volumetexturesize",       LIMIT_VOLUME_TEXTURE_SIZE        },
+	{ "cubetexturesize",         LIMIT_CUBE_TEXTURE_SIZE          },
+	{ "texelbuffersize",         LIMIT_TEXEL_BUFFER_SIZE          },
+	{ "shaderstoragebuffersize", LIMIT_SHADER_STORAGE_BUFFER_SIZE },
+	{ "rendertargets",           LIMIT_RENDER_TARGETS             },
+	{ "texturemsaa",             LIMIT_TEXTURE_MSAA               },
+	{ "anisotropy",              LIMIT_ANISOTROPY                 },
 };
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));

@@ -80,6 +80,12 @@ private:
 		bool active = false;
 	};
 
+	struct BufferBinding
+	{
+		int bindingindex = 0;
+		GLuint buffer = 0;
+	};
+
 	// Map active uniform names to their locations.
 	void mapActiveUniforms();
 
@@ -116,6 +122,9 @@ private:
 
 	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;
+
+	std::vector<int> storageBufferBindingIndexToActiveBinding;
+	std::vector<BufferBinding> activeStorageBufferBindings;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
 

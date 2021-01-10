@@ -48,6 +48,8 @@ public:
 
 	static love::Type type;
 
+	static const size_t SHADER_STORAGE_BUFFER_MAX_STRIDE = 2048;
+
 	enum MapType
 	{
 		MAP_WRITE_INVALIDATE,
@@ -59,6 +61,7 @@ public:
 		TYPEFLAG_VERTEX = 1 << BUFFERTYPE_VERTEX,
 		TYPEFLAG_INDEX = 1 << BUFFERTYPE_INDEX,
 		TYPEFLAG_TEXEL = 1 << BUFFERTYPE_TEXEL,
+		TYPEFLAG_SHADER_STORAGE = 1 << BUFFERTYPE_SHADER_STORAGE,
 	};
 
 	struct DataDeclaration

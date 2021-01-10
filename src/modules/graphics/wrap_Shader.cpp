@@ -278,8 +278,6 @@ int w_Shader_sendTextures(lua_State *L, int startidx, Shader *shader, const Shad
 	for (int i = 0; i < count; i++)
 	{
 		Texture *tex = luax_checktexture(L, startidx + i);
-		if (tex->getTextureType() != info->textureType)
-			return luaL_argerror(L, startidx + i, "invalid texture type for uniform");
 		textures.push_back(tex);
 	}
 
@@ -321,6 +319,7 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 	case Shader::UNIFORM_SAMPLER:
 		return w_Shader_sendTextures(L, startidx, shader, info);
 	case Shader::UNIFORM_TEXELBUFFER:
+	case Shader::UNIFORM_STORAGEBUFFER:
 		return w_Shader_sendBuffers(L, startidx, shader, info);
 	default:
 		return luaL_error(L, "Unknown variable type for shader uniform '%s", name);
@@ -329,8 +328,8 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 
 static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, bool colors)
 {
-	if (info->baseType == Shader::UNIFORM_SAMPLER)
-		return luaL_error(L, "Uniform sampler values (textures) cannot be sent to Shaders via Data objects.");
+	if (info->baseType == Shader::UNIFORM_SAMPLER || info->baseType == Shader::UNIFORM_TEXELBUFFER || info->baseType == Shader::UNIFORM_STORAGEBUFFER)
+		return luaL_error(L, "Only value types (floats, ints, vectors, matrices, etc) be sent to Shaders via Data objects.");
 
 	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;
 	int dataidx = startidx;

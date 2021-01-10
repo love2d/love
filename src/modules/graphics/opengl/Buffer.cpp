@@ -78,6 +78,8 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 		mapType = BUFFERTYPE_VERTEX;
 	else if (typeFlags & TYPEFLAG_INDEX)
 		mapType = BUFFERTYPE_INDEX;
+	else  if (typeFlags & TYPEFLAG_SHADER_STORAGE)
+		mapType = BUFFERTYPE_SHADER_STORAGE;
 
 	target = OpenGL::getGLBufferType(mapType);
 

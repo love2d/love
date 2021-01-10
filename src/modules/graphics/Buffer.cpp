@@ -20,6 +20,7 @@
 
 #include "Buffer.h"
 #include "Graphics.h"
+#include "common/memory.h"
 
 namespace love
 {
@@ -48,15 +49,20 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	bool indexbuffer = settings.typeFlags & TYPEFLAG_INDEX;
 	bool vertexbuffer = settings.typeFlags & TYPEFLAG_VERTEX;
 	bool texelbuffer = settings.typeFlags & TYPEFLAG_TEXEL;
+	bool storagebuffer = settings.typeFlags & TYPEFLAG_SHADER_STORAGE;
 
-	if (!indexbuffer && !vertexbuffer && !texelbuffer)
-		throw love::Exception("Buffer must be created with at least one buffer type (index, vertex, or texel).");
+	if (!indexbuffer && !vertexbuffer && !texelbuffer && !storagebuffer)
+		throw love::Exception("Buffer must be created with at least one buffer type (index, vertex, texel, or shaderstorage).");
 
 	if (texelbuffer && !caps.features[Graphics::FEATURE_TEXEL_BUFFER])
 		throw love::Exception("Texel buffers are not supported on this system.");
 
+	if (storagebuffer && !caps.features[Graphics::FEATURE_GLSL4])
+		throw love::Exception("Shader Storage buffers are not supported on this system (GLSL 4 support is necessary.)");
+
 	size_t offset = 0;
 	size_t stride = 0;
+	size_t structurealignment = 1;
 
 	for (const DataDeclaration &decl : bufferformat)
 	{
@@ -116,16 +122,60 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 				throw love::Exception("Signed normalized formats are not supported in texel buffers.");
 		}
 
-		// TODO: alignment
-		member.offset = offset;
-		member.size = member.info.size;
+		size_t memberoffset = offset;
+		size_t membersize = member.info.size;
 
-		offset += member.size;
+		// Storage buffers are always treated as being an array of a structure.
+		// The structure's contents are the buffer format declaration.
+		if (storagebuffer)
+		{
+			// TODO: We can support these.
+			if (decl.arrayLength > 0)
+				throw love::Exception("Arrays are not currently supported in shader storage buffers.");
+
+			if (info.baseType == DATA_BASETYPE_BOOL)
+				throw love::Exception("Bool types are not supported in shader storage buffers.");
+
+			if (info.baseType == DATA_BASETYPE_UNORM || info.baseType == DATA_BASETYPE_SNORM)
+				throw love::Exception("Normalized formats are not supported in shader storage buffers.");
+
+			size_t alignment = 1;
+
+			// GLSL's std430 packing rules. We also assume all matrices are
+			// column-major.
+			if (info.isMatrix)
+				alignment = info.matrixRows * info.componentSize;
+			else
+				alignment = info.components * info.componentSize;
+
+			structurealignment = std::max(structurealignment, alignment);
+
+			memberoffset = alignUp(memberoffset, alignment);
+
+			if (memberoffset != offset && (indexbuffer || vertexbuffer || texelbuffer))
+				throw love::Exception("Cannot create Buffer:\nInternal alignment of member '%s' is preventing Buffer from being created as both a shader storage buffer and other buffer types\nMember byte offset needed for shader storage buffer: %d\nMember byte offset needed for other buffer types: %d",
+					member.decl.name.c_str(), memberoffset, offset);
+		}
+
+		member.offset = memberoffset;
+		member.size = membersize;
+
+		offset = member.offset + member.size;
 
 		dataMembers.push_back(member);
 	}
 
-	stride = offset;
+	stride = alignUp(offset, structurealignment);
+
+	if (storagebuffer && (indexbuffer || vertexbuffer || texelbuffer))
+	{
+		if (stride != offset)
+			throw love::Exception("Cannot create Buffer:\nBuffer used as a shader storage buffer would have a different number of bytes per array element (%d) than when used as other buffer types (%d)",
+				stride, offset);
+	}
+
+	if (storagebuffer && stride > SHADER_STORAGE_BUFFER_MAX_STRIDE)
+		throw love::Exception("Shader storage buffers cannot have more than %d bytes within each array element.", SHADER_STORAGE_BUFFER_MAX_STRIDE);
 
 	if (size != 0)
 	{
@@ -144,7 +194,8 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	this->size = size;
 
 	if (texelbuffer && arraylength * dataMembers.size() > caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE])
-		throw love::Exception("Cannot create texel buffer: total number of values in the buffer (%d * %d) is too large for this system (maximum %d).", (int) dataMembers.size(), (int) arraylength, caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE]);
+		throw love::Exception("Cannot create texel buffer: total number of values in the buffer (%d * %d) is too large for this system (maximum %d).",
+			(int) dataMembers.size(), (int) arraylength, caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE]);
 }
 
 Buffer::~Buffer()

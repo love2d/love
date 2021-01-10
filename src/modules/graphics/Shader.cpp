@@ -26,6 +26,9 @@
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
 
+// Needed for reflection information.
+#include "libraries/glslang/glslang/Include/Types.h"
+
 // C++
 #include <string>
 #include <regex>
@@ -546,7 +549,7 @@ Shader::Shader(ShaderStage *vertex, ShaderStage *pixel)
 	: stages()
 {
 	std::string err;
-	if (!validate(vertex, pixel, err))
+	if (!validateInternal(vertex, pixel, err, validationReflection))
 		throw love::Exception("%s", err.c_str());
 
 	stages[ShaderStage::STAGE_VERTEX] = vertex;
@@ -629,7 +632,13 @@ void Shader::checkMainTexture(Texture *tex) const
 	checkMainTextureType(tex->getTextureType(), tex->getSamplerState().depthSampleMode.hasValue);
 }
 
-bool Shader::validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err)
+bool Shader::validate(ShaderStage* vertex, ShaderStage* pixel, std::string& err)
+{
+	ValidationReflection reflection;
+	return validateInternal(vertex, pixel, err, reflection);
+}
+
+bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::string &err, ValidationReflection &reflection)
 {
 	glslang::TProgram program;
 
@@ -643,6 +652,59 @@ bool Shader::validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err)
 	{
 		err = "Cannot compile shader:\n\n" + std::string(program.getInfoLog()) + "\n" + std::string(program.getInfoDebugLog());
 		return false;
+	}
+
+	if (!program.buildReflection(EShReflectionSeparateBuffers))
+	{
+		err = "Cannot get reflection information for shader.";
+		return false;
+	}
+
+	for (int i = 0; i < program.getNumBufferBlocks(); i++)
+	{
+		const glslang::TObjectReflection &info = program.getBufferBlock(i);
+		const glslang::TType *type = info.getType();
+		if (type != nullptr)
+		{
+			const glslang::TQualifier &qualifiers = type->getQualifier();
+
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && (info.stages & (EShLangVertexMask | EShLangFragmentMask)))
+			{
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders.";
+				return false;
+			}
+
+			if (qualifiers.layoutPacking != glslang::ElpStd430)
+			{
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must use the std430 packing layout.";
+				return false;
+			}
+
+			const glslang::TTypeList *structure = type->getStruct();
+			if (structure == nullptr || structure->size() != 1)
+			{
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must contain a single unsized array of structs.";
+				return false;
+			}
+
+			const glslang::TType* structtype = (*structure)[0].type;
+			if (structtype == nullptr || structtype->getBasicType() != glslang::EbtStruct || !structtype->isUnsizedArray())
+			{
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must contain a single unsized array of structs.";
+				return false;
+			}
+
+			BufferReflection bufferReflection = {};
+			bufferReflection.stride = (size_t) info.size;
+			bufferReflection.memberCount = (size_t) info.numMembers;
+
+			reflection.storageBuffers[info.name] = bufferReflection;
+		}
+		else
+		{
+			err = "Shader validation error:\nCannot retrieve type information for Storage Buffer Block '" + info.name + "'.";
+			return false;
+		}
 	}
 
 	return true;
