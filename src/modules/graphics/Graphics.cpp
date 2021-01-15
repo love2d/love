@@ -298,7 +298,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 			if (!validstages[i])
 				continue;
 
-			if (info.isStage[i])
+			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
 				stages[i].set(newShaderStage((ShaderStage::StageType) i, source, info), Acquire::NORETAIN);
@@ -377,7 +377,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 			if (!validstages[i])
 				continue;
 
-			if (info.isStage[i])
+			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
 				std::string glsl = Shader::createShaderStageCode(this, stype, source, info);
@@ -1987,15 +1987,16 @@ StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Grap
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::systemLimitEntries[] =
 {
-	{ "pointsize",         LIMIT_POINT_SIZE          },
-	{ "texturesize",       LIMIT_TEXTURE_SIZE        },
-	{ "texturelayers",     LIMIT_TEXTURE_LAYERS      },
-	{ "volumetexturesize", LIMIT_VOLUME_TEXTURE_SIZE },
-	{ "cubetexturesize",   LIMIT_CUBE_TEXTURE_SIZE   },
-	{ "texelbuffersize",   LIMIT_TEXEL_BUFFER_SIZE   },
-	{ "rendertargets",     LIMIT_RENDER_TARGETS      },
-	{ "texturemsaa",       LIMIT_TEXTURE_MSAA        },
-	{ "anisotropy",        LIMIT_ANISOTROPY          },
+	{ "pointsize",               LIMIT_POINT_SIZE                 },
+	{ "texturesize",             LIMIT_TEXTURE_SIZE               },
+	{ "texturelayers",           LIMIT_TEXTURE_LAYERS             },
+	{ "volumetexturesize",       LIMIT_VOLUME_TEXTURE_SIZE        },
+	{ "cubetexturesize",         LIMIT_CUBE_TEXTURE_SIZE          },
+	{ "texelbuffersize",         LIMIT_TEXEL_BUFFER_SIZE          },
+	{ "shaderstoragebuffersize", LIMIT_SHADER_STORAGE_BUFFER_SIZE },
+	{ "rendertargets",           LIMIT_RENDER_TARGETS             },
+	{ "texturemsaa",             LIMIT_TEXTURE_MSAA               },
+	{ "anisotropy",              LIMIT_ANISOTROPY                 },
 };
 
 StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));

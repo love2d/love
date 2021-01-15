@@ -78,6 +78,7 @@ public:
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
 		UNIFORM_TEXELBUFFER,
+		UNIFORM_STORAGEBUFFER,
 		UNIFORM_UNKNOWN,
 		UNIFORM_MAX_ENUM
 	};
@@ -90,11 +91,18 @@ public:
 		STANDARD_MAX_ENUM
 	};
 
+	enum EntryPoint
+	{
+		ENTRYPOINT_NONE,
+		ENTRYPOINT_HIGHLEVEL,
+		ENTRYPOINT_CUSTOM,
+		ENTRYPOINT_RAW,
+	};
+
 	struct SourceInfo
 	{
 		Language language;
-		bool isStage[ShaderStage::STAGE_MAX_ENUM];
-		bool customPixelFunction;
+		EntryPoint stages[ShaderStage::STAGE_MAX_ENUM];
 		bool usesMRT;
 	};
 
@@ -119,6 +127,8 @@ public:
 		TextureType textureType;
 		DataBaseType texelBufferType;
 		bool isDepthSampler;
+		size_t bufferStride;
+		size_t bufferMemberCount;
 		std::string name;
 
 		union
@@ -220,7 +230,22 @@ public:
 
 protected:
 
+	struct BufferReflection
+	{
+		size_t stride;
+		size_t memberCount;
+	};
+
+	struct ValidationReflection
+	{
+		std::map<std::string, BufferReflection> storageBuffers;
+	};
+
+	static bool validateInternal(ShaderStage* vertex, ShaderStage* pixel, std::string& err, ValidationReflection &reflection);
+
 	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
+
+	ValidationReflection validationReflection;
 
 }; // Shader
 

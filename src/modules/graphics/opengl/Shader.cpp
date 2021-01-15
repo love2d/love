@@ -38,6 +38,11 @@ namespace graphics
 namespace opengl
 {
 
+static bool isBuffer(Shader::UniformType utype)
+{
+	return utype == Shader::UNIFORM_TEXELBUFFER || utype == Shader::UNIFORM_STORAGEBUFFER;
+}
+
 Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
 	: love::graphics::Shader(vertex, pixel)
 	, program(0)
@@ -69,7 +74,7 @@ Shader::~Shader()
 
 			delete[] p.second.textures;
 		}
-		else if (p.second.baseType == UNIFORM_TEXELBUFFER)
+		else if (isBuffer(p.second.baseType))
 		{
 			for (int i = 0; i < p.second.count; i++)
 			{
@@ -195,7 +200,7 @@ void Shader::mapActiveUniforms()
 				u.data = malloc(u.dataSize);
 				break;
 			case UNIFORM_MATRIX:
-				u.dataSize = sizeof(float) * (u.matrix.rows * u.matrix.columns) * u.count;
+				u.dataSize = sizeof(float) * ((size_t)u.matrix.rows * u.matrix.columns) * u.count;
 				u.data = malloc(u.dataSize);
 				break;
 			default:
@@ -267,7 +272,7 @@ void Shader::mapActiveUniforms()
 					break;
 				case UNIFORM_MATRIX:
 					glGetUniformfv(program, location, &u.floats[offset]);
-					offset += u.matrix.rows * u.matrix.columns;
+					offset += (size_t)u.matrix.rows * u.matrix.columns;
 					break;
 				default:
 					break;
@@ -310,13 +315,90 @@ void Shader::mapActiveUniforms()
 		}
 	}
 
+	if (gl.isBufferTypeSupported(BUFFERTYPE_SHADER_STORAGE))
+	{
+		GLint numstoragebuffers = 0;
+		glGetProgramInterfaceiv(program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &numstoragebuffers);
+
+		char namebuffer[2048] = { '\0' };
+
+		for (int sindex = 0; sindex < numstoragebuffers; sindex++)
+		{
+			UniformInfo u = {};
+			u.baseType = UNIFORM_STORAGEBUFFER;
+
+			GLsizei namelength = 0;
+			glGetProgramResourceName(program, GL_SHADER_STORAGE_BLOCK, sindex, 2048, &namelength, namebuffer);
+
+			u.name = std::string(namebuffer, namelength);
+			u.count = 1;
+
+			const auto reflectionit = validationReflection.storageBuffers.find(u.name);
+			if (reflectionit != validationReflection.storageBuffers.end())
+			{
+				u.bufferStride = reflectionit->second.stride;
+				u.bufferMemberCount = reflectionit->second.memberCount;
+			}
+
+			// Make sure previously set uniform data is preserved, and shader-
+			// initialized values are retrieved.
+			auto oldu = olduniforms.find(u.name);
+			if (oldu != olduniforms.end())
+			{
+				u.data = oldu->second.data;
+				u.dataSize = oldu->second.dataSize;
+				u.buffers = oldu->second.buffers;
+			}
+			else
+			{
+				u.dataSize = sizeof(int) * 1;
+				u.data = malloc(u.dataSize);
+
+				u.ints[0] = -1;
+
+				u.buffers = new love::graphics::Buffer * [u.count];
+				memset(u.buffers, 0, sizeof(Buffer*)* u.count);
+			}
+
+			GLenum props[] = { GL_BUFFER_BINDING };
+			glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, sindex, 1, props, 1, nullptr, u.ints);
+
+			BufferBinding binding;
+			binding.bindingindex = u.ints[0];
+			binding.buffer = gl.getDefaultStorageBuffer();
+
+			if (binding.bindingindex >= 0)
+			{
+				int activeindex = (int)activeStorageBufferBindings.size();
+
+				storageBufferBindingIndexToActiveBinding[binding.bindingindex] = activeindex;
+
+				activeStorageBufferBindings.push_back(binding);
+			}
+
+			uniforms[u.name] = u;
+
+			for (int i = 0; i < u.count; i++)
+			{
+				if (u.buffers[i] == nullptr)
+					continue;
+				Volatile* v = dynamic_cast<Volatile*>(u.buffers[i]);
+				if (v != nullptr)
+					v->loadVolatile();
+			}
+
+			sendBuffers(&u, u.buffers, u.count, true);
+		}
+	}
+
 	// Make sure uniforms that existed before but don't exist anymore are
 	// cleaned up. This theoretically shouldn't happen, but...
 	for (const auto &p : olduniforms)
 	{
 		if (uniforms.find(p.first) == uniforms.end())
 		{
-			free(p.second.data);
+			if (p.second.data != nullptr)
+				free(p.second.data);
 
 			if (p.second.baseType == UNIFORM_SAMPLER)
 			{
@@ -328,7 +410,7 @@ void Shader::mapActiveUniforms()
 
 				delete[] p.second.textures;
 			}
-			else if (p.second.baseType == UNIFORM_TEXELBUFFER)
+			else if (isBuffer(p.second.baseType))
 			{
 				for (int i = 0; i < p.second.count; i++)
 				{
@@ -353,6 +435,9 @@ bool Shader::loadVolatile()
 	// zero out active texture list
 	textureUnits.clear();
 	textureUnits.push_back(TextureUnit());
+
+	storageBufferBindingIndexToActiveBinding.resize(gl.getMaxShaderStorageBufferBindings(), -1);
+	activeStorageBufferBindings.clear();
 
 	for (const auto &stage : stages)
 	{
@@ -490,6 +575,9 @@ void Shader::attach()
 					gl.bindTextureToUnit(unit.type, unit.texture, i, false, false);
 			}
 		}
+
+		for (auto bufferbinding : activeStorageBufferBindings)
+			gl.bindIndexedBuffer(bufferbinding.buffer, BUFFERTYPE_SHADER_STORAGE, bufferbinding.bindingindex);
 
 		// send any pending uniforms to the shader program.
 		for (const auto &p : pendingUniformUpdates)
@@ -713,10 +801,18 @@ static bool isTexelBufferTypeCompatible(DataBaseType a, DataBaseType b)
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalUpdate)
 {
-	if (info->baseType != UNIFORM_TEXELBUFFER)
-		return;
+	uint32 requiredtypeflags = 0;
 
-	uint32 requiredtypeflags = Buffer::TYPEFLAG_TEXEL;
+	bool texelbinding = info->baseType == UNIFORM_TEXELBUFFER;
+	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
+
+	if (texelbinding)
+		requiredtypeflags = Buffer::TYPEFLAG_TEXEL;
+	else if (storagebinding)
+		requiredtypeflags = Buffer::TYPEFLAG_SHADER_STORAGE;
+
+	if (requiredtypeflags == 0)
+		return;
 
 	bool shaderactive = current == this;
 
@@ -736,17 +832,43 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 			{
 				if (internalUpdate)
 					continue;
-				else
+				else if (texelbinding)
 					throw love::Exception("Shader uniform '%s' is a texel buffer, but the given Buffer was not created with texel buffer capabilities.", info->name.c_str());
+				else if (storagebinding)
+					throw love::Exception("Shader uniform '%s' is a shader storage buffer block, but the given Buffer was not created with shader storage buffer capabilities.", info->name.c_str());
+				else
+					throw love::Exception("Shader uniform '%s' does not match the types supported by the given Buffer.", info->name.c_str());
 			}
 
-			DataBaseType basetype = buffer->getDataMember(0).info.baseType;
-			if (!isTexelBufferTypeCompatible(basetype, info->texelBufferType))
+			if (texelbinding)
 			{
-				if (internalUpdate)
-					continue;
-				else
-					throw love::Exception("Texel buffer's data format base type must match the variable declared in the shader.");
+				DataBaseType basetype = buffer->getDataMember(0).info.baseType;
+				if (!isTexelBufferTypeCompatible(basetype, info->texelBufferType))
+				{
+					if (internalUpdate)
+						continue;
+					else
+						throw love::Exception("Texel buffer's data format base type must match the variable declared in the shader.");
+				}
+			}
+			else if (storagebinding)
+			{
+				if (info->bufferStride != buffer->getArrayStride())
+				{
+					if (internalUpdate)
+						continue;
+					else
+						throw love::Exception("Shader storage block '%s' has an array stride of %d bytes, but the given Buffer has an array stride of %d bytes.",
+							info->name.c_str(), info->bufferStride, buffer->getArrayStride());
+				}
+				else if (info->bufferMemberCount != buffer->getDataMembers().size())
+				{
+					if (internalUpdate)
+						continue;
+					else
+						throw love::Exception("Shader storage block '%s' has a struct with %d fields, but the given Buffer has a format with %d members.",
+							info->name.c_str(), info->bufferMemberCount, buffer->getDataMembers().size());
+				}
 			}
 
 			buffer->retain();
@@ -757,19 +879,39 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 		info->buffers[i] = buffer;
 
-		GLuint gltex = 0;
-		if (buffers[i] != nullptr)
-			gltex = (GLuint) buffer->getTexelBufferHandle();
-		else
-			gltex = gl.getDefaultTexelBuffer();
+		if (texelbinding)
+		{
+			GLuint gltex = 0;
+			if (buffers[i] != nullptr)
+				gltex = (GLuint) buffer->getTexelBufferHandle();
+			else
+				gltex = gl.getDefaultTexelBuffer();
 
-		int texunit = info->ints[i];
+			int texunit = info->ints[i];
 
-		if (shaderactive)
-			gl.bindBufferTextureToUnit(gltex, texunit, false, false);
+			if (shaderactive)
+				gl.bindBufferTextureToUnit(gltex, texunit, false, false);
 
-		// Store texture id so it can be re-bound to the texture unit later.
-		textureUnits[texunit].texture = gltex;
+			// Store texture id so it can be re-bound to the texture unit later.
+			textureUnits[texunit].texture = gltex;
+		}
+		else if (storagebinding)
+		{
+			int bindingindex = info->ints[i];
+
+			GLuint glbuffer = 0;
+			if (buffers[i] != nullptr)
+				glbuffer = (GLuint) buffer->getHandle();
+			else
+				glbuffer = gl.getDefaultStorageBuffer();
+
+			if (shaderactive)
+				gl.bindIndexedBuffer(glbuffer, BUFFERTYPE_SHADER_STORAGE, bindingindex);
+
+			int activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
+			if (activeindex >= 0)
+				activeStorageBufferBindings[activeindex].buffer = glbuffer;
+		}
 	}
 }
 

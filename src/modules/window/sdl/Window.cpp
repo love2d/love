@@ -489,15 +489,23 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		height = mode.h;
 	}
 
-	// On Android we always must have fullscreen type FULLSCREEN_TYPE_DESKTOP
+	// On Android, disable fullscreen first on window creation so it's
+	// possible to change the orientation by specifying portait width and
+	// height, otherwise SDL will pick the current orientation dimensions when
+	// fullscreen flag is set. Don't worry, we'll set it back later when user
+	// also requested fullscreen after the window is created.
+	// See https://github.com/love2d/love-android/issues/196
 #ifdef LOVE_ANDROID
+	bool fullscreen = f.fullscreen;
+
+	f.fullscreen = false;
 	f.fstype = FULLSCREEN_DESKTOP;
 #endif
 
 	int x = f.x;
 	int y = f.y;
 
-	if (f.useposition && !f.fullscreen)
+	if (f.useposition)
 	{
 		// The position needs to be in the global coordinate space.
 		SDL_Rect displaybounds = {};
@@ -596,7 +604,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	// Enforce minimum window dimensions.
 	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
-	if (this->settings.display != f.display || ((f.useposition || f.centered) && !f.fullscreen))
+	if (this->settings.display != f.display || f.useposition || f.centered)
 		SDL_SetWindowPosition(window, x, y);
 
 	SDL_RaiseWindow(window);
@@ -629,8 +637,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		}
 	}
 
+	// Set fullscreen when user requested it before.
+	// See above for explanation.
 #ifdef LOVE_ANDROID
-	love::android::setImmersive(f.fullscreen);
+	setFullscreen(fullscreen);
+	love::android::setImmersive(fullscreen);
 #endif
 
 	return true;

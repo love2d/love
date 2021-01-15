@@ -19,6 +19,7 @@
  **/
 
 #include "ios.h"
+#include "apple.h"
 
 #ifdef LOVE_IOS
 
@@ -126,12 +127,6 @@ static bool deleteFileInDocuments(NSString *filename);
 }
 
 @end
-
-static NSString *getDocumentsDirectory()
-{
-	NSArray *docdirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	return docdirs[0];
-}
 
 static NSArray *getLovesInDocuments()
 {
@@ -339,38 +334,6 @@ std::string getLoveInResources(bool &fused)
 	return path;
 }
 
-static std::string getUserDirectory(NSSearchPathDirectory dir)
-{
-	std::string path;
-
-	@autoreleasepool
-	{
-		NSArray<NSURL *> *dirs = [[NSFileManager defaultManager] URLsForDirectory:dir inDomains:NSUserDomainMask];
-
-		if (dirs.count > 0)
-			path = [dirs[0].path UTF8String];
-	}
-
-	return path;
-}
-
-std::string getAppdataDirectory()
-{
-	return getUserDirectory(NSApplicationSupportDirectory);
-}
-
-std::string getHomeDirectory()
-{
-	std::string path;
-
-	@autoreleasepool
-	{
-		path = [NSHomeDirectory() UTF8String];
-	}
-
-	return path;
-}
-
 bool openURL(const std::string &url)
 {
 	bool success = false;
@@ -385,14 +348,6 @@ bool openURL(const std::string &url)
 	}
 
 	return success;
-}
-
-std::string getExecutablePath()
-{
-	@autoreleasepool
-	{
-		return std::string([NSBundle mainBundle].executablePath.UTF8String);
-	}
 }
 
 void vibrate()

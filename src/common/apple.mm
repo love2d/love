@@ -18,74 +18,62 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "macos.h"
+#include "apple.h"
 
-#ifdef LOVE_MACOS
+#if defined(LOVE_IOS) || defined(LOVE_MACOS)
 
 #import <Foundation/Foundation.h>
-#import <Cocoa/Cocoa.h>
-
-#ifdef LOVE_MACOSX_SDL_DIRECT_INCLUDE
-# include <SDL.h>
-#else
-# include <SDL2/SDL.h>
-#endif
 
 namespace love
 {
-namespace macos
+namespace apple
 {
 
-std::string getLoveInResources()
+std::string getUserDirectory(UserDirectory dir)
 {
 	std::string path;
+	NSSearchPathDirectory nsdir = NSTrashDirectory;
 
 	@autoreleasepool
 	{
-		// Check to see if there are any .love files in Resources.
-		NSString *lovepath = [[NSBundle mainBundle] pathForResource:nil ofType:@"love"];
+		switch (dir)
+		{
+		case USER_DIRECTORY_HOME:
+			return NSHomeDirectory().UTF8String;
+		case USER_DIRECTORY_APPSUPPORT:
+			nsdir = NSApplicationSupportDirectory;
+			break;
+		case USER_DIRECTORY_DOCUMENTS:
+			nsdir = NSDocumentDirectory;
+			break;
+		case USER_DIRECTORY_DESKTOP:
+			nsdir = NSDesktopDirectory;
+			break;
+		case USER_DIRECTORY_CACHES:
+			nsdir = NSCachesDirectory;
+			break;
+		case USER_DIRECTORY_TEMP:
+			nsdir = NSItemReplacementDirectory;
+			break;
+		}
 
-		if (lovepath != nil)
-			path = lovepath.UTF8String;
+		NSArray<NSURL *> *dirs = [[NSFileManager defaultManager] URLsForDirectory:nsdir inDomains:NSUserDomainMask];
+		if (dirs.count > 0)
+			path = [dirs[0].path UTF8String];
 	}
 
 	return path;
 }
 
-std::string checkDropEvents()
-{
-	std::string dropstr;
-	SDL_Event event;
-
-	SDL_InitSubSystem(SDL_INIT_VIDEO);
-
-	SDL_PumpEvents();
-	if (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_DROPFILE, SDL_DROPFILE) > 0)
-	{
-		if (event.type == SDL_DROPFILE)
-		{
-			dropstr = std::string(event.drop.file);
-			SDL_free(event.drop.file);
-		}
-	}
-
-	SDL_QuitSubSystem(SDL_INIT_VIDEO);
-
-	return dropstr;
-}
-
-void requestAttention(bool continuous)
+std::string getExecutablePath()
 {
 	@autoreleasepool
 	{
-		if (continuous)
-			[NSApp requestUserAttention:NSCriticalRequest];
-		else
-			[NSApp requestUserAttention:NSInformationalRequest];
+		return std::string([NSBundle mainBundle].executablePath.UTF8String);
 	}
 }
 
-} // osx
+} // apple
 } // love
 
-#endif // LOVE_MACOS
+#endif // defined(LOVE_IOS) || defined(LOVE_MACOS)

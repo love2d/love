@@ -179,6 +179,13 @@ public:
 		bool brokenR8PixelFormat;
 
 		/**
+		 * Intel HD Graphics drivers on Windows prior to the HD 2500/4000 have
+		 * completely broken sRGB support.
+		 * https://github.com/love2d/love/issues/1592
+		 **/
+		bool brokenSRGB;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *
@@ -312,6 +319,9 @@ public:
 	GLuint getDefaultTexelBuffer() const { return state.defaultTexelBuffer; }
 	void setDefaultTexelBuffer(GLuint tex) { state.defaultTexelBuffer = tex; }
 
+	GLuint getDefaultStorageBuffer() const { return state.defaultStorageBuffer; }
+	void setDefaultStorageBuffer(GLuint buf) { state.defaultStorageBuffer = buf; }
+
 	/**
 	 * Helper for setting the active texture unit.
 	 *
@@ -330,6 +340,8 @@ public:
 	void bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit = true);
 
 	void bindBufferTextureToUnit(GLuint texture, int textureunit, bool restoreprev, bool bindforedit);
+
+	void bindIndexedBuffer(GLuint buffer, BufferType type, int index);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -350,6 +362,7 @@ public:
 	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth = 1);
 
 	bool isTextureTypeSupported(TextureType type) const;
+	bool isBufferTypeSupported(BufferType type) const;
 	bool isClampZeroOneTextureWrapSupported() const;
 	bool isPixelShaderHighpSupported() const;
 	bool isInstancingSupported() const;
@@ -357,7 +370,6 @@ public:
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
 	bool isMultiFormatMRTSupported() const;
-	bool areTexelBuffersSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -373,6 +385,11 @@ public:
 	int getMaxTexelBufferSize() const;
 
 	/**
+	 * Returns the maximum number of bytes in a shader storage buffer.
+	 **/
+	int getMaxShaderStorageBufferSize() const;
+
+	/**
 	 * Returns the maximum supported number of simultaneous render targets.
 	 **/
 	int getMaxRenderTargets() const;
@@ -386,6 +403,11 @@ public:
 	 * Returns the maximum number of accessible texture units.
 	 **/
 	int getMaxTextureUnits() const;
+
+	/**
+	 * Returns the maximum number of shader storage buffer bindings.
+	 **/
+	int getMaxShaderStorageBufferBindings() const;
 
 	/**
 	 * Returns the maximum point size.
@@ -451,9 +473,11 @@ private:
 	int maxCubeTextureSize;
 	int maxTextureArrayLayers;
 	int maxTexelBufferSize;
+	int maxShaderStorageBufferSize;
 	int maxRenderTargets;
 	int maxSamples;
 	int maxTextureUnits;
+	int maxShaderStorageBufferBindings;
 	float maxPointSize;
 
 	bool coreProfile;
@@ -467,6 +491,8 @@ private:
 
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM + 1];
+
+		std::vector<GLuint> boundIndexedBuffers[BUFFERTYPE_MAX_ENUM];
 
 		bool enableState[ENABLE_MAX_ENUM];
 
@@ -488,6 +514,7 @@ private:
 
 		GLuint defaultTexture[TEXTURE_MAX_ENUM];
 		GLuint defaultTexelBuffer;
+		GLuint defaultStorageBuffer;
 
 	} state;
 

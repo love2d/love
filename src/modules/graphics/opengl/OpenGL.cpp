@@ -101,9 +101,12 @@ OpenGL::OpenGL()
 	, max3DTextureSize(0)
 	, maxCubeTextureSize(0)
 	, maxTextureArrayLayers(0)
+	, maxTexelBufferSize(0)
+	, maxShaderStorageBufferSize(0)
 	, maxRenderTargets(1)
 	, maxSamples(1)
 	, maxTextureUnits(1)
+	, maxShaderStorageBufferBindings(0)
 	, maxPointSize(1)
 	, coreProfile(false)
 	, vendor(VENDOR_UNKNOWN)
@@ -149,6 +152,16 @@ bool OpenGL::initContext()
 		const char *device = (const char *) glGetString(GL_RENDERER);
 		if (strstr(device, "HD Graphics 4000") || strstr(device, "HD Graphics 2500"))
 			bugs.clientWaitSyncStalls = true;
+	}
+
+	if (getVendor() == VENDOR_INTEL)
+	{
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (strstr(device, "HD Graphics 3000") || strstr(device, "HD Graphics 2000")
+			|| !strcmp(device, "Intel(R) HD Graphics") || !strcmp(device, "Intel(R) HD Graphics Family"))
+		{
+			bugs.brokenSRGB = true;
+		}
 	}
 #endif
 
@@ -210,8 +223,8 @@ void OpenGL::setupContext()
 	setEnableState(ENABLE_SCISSOR_TEST, state.enableState[ENABLE_SCISSOR_TEST]);
 	setEnableState(ENABLE_FACE_CULL, state.enableState[ENABLE_FACE_CULL]);
 
-	if (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB
-		|| GLAD_EXT_sRGB_write_control)
+	if (!bugs.brokenSRGB && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB
+		|| GLAD_EXT_framebuffer_sRGB || GLAD_EXT_sRGB_write_control))
 	{
 		setEnableState(ENABLE_FRAMEBUFFER_SRGB, state.enableState[ENABLE_FRAMEBUFFER_SRGB]);
 	}
@@ -225,8 +238,12 @@ void OpenGL::setupContext()
 	for (int i = 0; i < (int) BUFFERTYPE_MAX_ENUM; i++)
 	{
 		state.boundBuffers[i] = 0;
-		glBindBuffer(getGLBufferType((BufferType) i), 0);
+		if (isBufferTypeSupported((BufferType) i))
+			glBindBuffer(getGLBufferType((BufferType) i), 0);
 	}
+
+	if (isBufferTypeSupported(BUFFERTYPE_SHADER_STORAGE))
+		state.boundIndexedBuffers[BUFFERTYPE_SHADER_STORAGE].resize(maxShaderStorageBufferBindings, 0);
 
 	// Initialize multiple texture unit support for shaders.
 	for (int i = 0; i < TEXTURE_MAX_ENUM + 1; i++)
@@ -279,10 +296,6 @@ void OpenGL::deInitContext()
 			state.defaultTexture[i] = 0;
 		}
 	}
-
-	if (state.defaultTexelBuffer != 0)
-		gl.deleteTexture(state.defaultTexelBuffer);
-	state.defaultTexelBuffer = 0;
 
 	contextInitialized = false;
 }
@@ -391,15 +404,23 @@ void OpenGL::initOpenGLFunctions()
 		}
 	}
 
-	if (GLAD_ES_VERSION_2_0 && GLAD_OES_texture_3D && !GLAD_ES_VERSION_3_0)
+	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
 	{
-		// Function signatures don't match, we'll have to conditionally call it
-		//fp_glTexImage3D = fp_glTexImage3DOES;
-		fp_glTexSubImage3D = fp_glTexSubImage3DOES;
-		fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
-		fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
-		fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
-		fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+		// The Nvidia Tegra 3 driver (used by Ouya) claims to support GL_EXT_texture_array but
+		// segfaults if you actually try to use it. OpenGL ES 2.0 devices should use OES_texture_3D.
+		// GL_EXT_texture_array is for desktops.
+		GLAD_EXT_texture_array = false;
+
+		if (GLAD_OES_texture_3D)
+		{
+			// Function signatures don't match, we'll have to conditionally call it
+			//fp_glTexImage3D = fp_glTexImage3DOES;
+			fp_glTexSubImage3D = fp_glTexSubImage3DOES;
+			fp_glCopyTexSubImage3D = fp_glCopyTexSubImage3DOES;
+			fp_glCompressedTexImage3D = fp_glCompressedTexImage3DOES;
+			fp_glCompressedTexSubImage3D = fp_glCompressedTexSubImage3DOES;
+			fp_glFramebufferTexture3D = fp_glFramebufferTexture3DOES;
+		}
 	}
 
 	if (!GLAD_VERSION_3_2 && !GLAD_ES_VERSION_3_2 && !GLAD_ARB_draw_elements_base_vertex)
@@ -463,10 +484,21 @@ void OpenGL::initMaxValues()
 	else
 		maxTextureArrayLayers = 0;
 
-	if (areTexelBuffersSupported())
+	if (isBufferTypeSupported(BUFFERTYPE_TEXEL))
 		glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &maxTexelBufferSize);
 	else
 		maxTexelBufferSize = 0;
+
+	if (isBufferTypeSupported(BUFFERTYPE_SHADER_STORAGE))
+	{
+		glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBufferSize);
+		glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &maxShaderStorageBufferBindings);
+	}
+	else
+	{
+		maxShaderStorageBufferSize = 0;
+		maxShaderStorageBufferBindings = 0;
+	}
 
 	int maxattachments = 1;
 	int maxdrawbuffers = 1;
@@ -589,6 +621,7 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 		case BUFFERTYPE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
 		case BUFFERTYPE_TEXEL: return GL_TEXTURE_BUFFER;
 		case BUFFERTYPE_UNIFORM: return GL_UNIFORM_BUFFER;
+		case BUFFERTYPE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
 		case BUFFERTYPE_MAX_ENUM: return GL_ZERO;
 	}
 
@@ -786,6 +819,12 @@ void OpenGL::deleteBuffer(GLuint buffer)
 	{
 		if (state.boundBuffers[i] == buffer)
 			state.boundBuffers[i] = 0;
+
+		for (GLuint &bufferid : state.boundIndexedBuffers[i])
+		{
+			if (bufferid == buffer)
+				bufferid = 0;
+		}
 	}
 }
 
@@ -1125,6 +1164,19 @@ void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restorepr
 	bindTextureToUnit(textype, handle, textureunit, restoreprev, bindforedit);
 }
 
+void OpenGL::bindIndexedBuffer(GLuint buffer, BufferType type, int index)
+{
+	auto &bindings = state.boundIndexedBuffers[type];
+	if (bindings.size() > (size_t) index && buffer != bindings[index])
+	{
+		bindings[index] = buffer;
+		glBindBufferBase(getGLBufferType(type), index, buffer);
+
+		// glBindBufferBase affects glBindBuffer as well... for some reason.
+		state.boundBuffers[type] = buffer;
+	}
+}
+
 void OpenGL::deleteTexture(GLuint texture)
 {
 	// glDeleteTextures binds texture 0 to all texture units the deleted texture
@@ -1375,9 +1427,28 @@ bool OpenGL::isTextureTypeSupported(TextureType type) const
 		return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_array;
 	case TEXTURE_CUBE:
 		return GLAD_VERSION_1_3 || GLAD_ES_VERSION_2_0;
-	default:
+	case TEXTURE_MAX_ENUM:
 		return false;
 	}
+	return false;
+}
+
+bool OpenGL::isBufferTypeSupported(BufferType type) const
+{
+	switch (type)
+	{
+	case BUFFERTYPE_VERTEX:
+	case BUFFERTYPE_INDEX:
+		return true;
+	case BUFFERTYPE_TEXEL:
+		// Not supported in ES until 3.2, which we don't support shaders for...
+		return GLAD_VERSION_3_1;
+	case BUFFERTYPE_SHADER_STORAGE:
+		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
+	case BUFFERTYPE_MAX_ENUM:
+		return false;
+	}
+	return false;
 }
 
 bool OpenGL::isClampZeroOneTextureWrapSupported() const
@@ -1418,12 +1489,6 @@ bool OpenGL::isMultiFormatMRTSupported() const
 	return getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
 }
 
-bool OpenGL::areTexelBuffersSupported() const
-{
-	// Not supported in ES until 3.2, which we don't support shaders for...
-	return GLAD_VERSION_3_1;
-}
-
 int OpenGL::getMax2DTextureSize() const
 {
 	return std::max(max2DTextureSize, 1);
@@ -1449,6 +1514,11 @@ int OpenGL::getMaxTexelBufferSize() const
 	return maxTexelBufferSize;
 }
 
+int OpenGL::getMaxShaderStorageBufferSize() const
+{
+	return maxShaderStorageBufferSize;
+}
+
 int OpenGL::getMaxRenderTargets() const
 {
 	return std::min(maxRenderTargets, MAX_COLOR_RENDER_TARGETS);
@@ -1462,6 +1532,11 @@ int OpenGL::getMaxSamples() const
 int OpenGL::getMaxTextureUnits() const
 {
 	return maxTextureUnits;
+}
+
+int OpenGL::getMaxShaderStorageBufferBindings() const
+{
+	return maxShaderStorageBufferBindings;
 }
 
 float OpenGL::getMaxPointSize() const
@@ -1882,6 +1957,8 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 		else
 			return true;
 	case PIXELFORMAT_RGBA8_UNORM_sRGB:
+		if (gl.bugs.brokenSRGB)
+			return false;
 		if (rendertarget)
 		{
 			if (GLAD_VERSION_1_0)
