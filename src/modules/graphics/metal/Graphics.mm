@@ -1371,10 +1371,11 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = 2048;
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384; // TODO
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO
+	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO;
 	capabilities.limits[LIMIT_RENDER_TARGETS] = 8; // TODO
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
 	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
-	static_assert(LIMIT_MAX_ENUM == 9, "Graphics::initCapabilities must be updated when adding a new system limit!");
+	static_assert(LIMIT_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = true;
