@@ -322,8 +322,42 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				}
 			}
 
+			for (const auto &resource : resources.storage_buffers)
+			{
+				auto it = uniforms.find(resource.name);
+				if (it != uniforms.end())
+				{
+					continue;
+				}
+
+				// TODO
+			}
+
 			if (i == ShaderStage::STAGE_VERTEX)
 			{
+				int nextattributeindex = ATTRIB_MAX_ENUM;
+
+				for (const auto &var : interfacevars)
+				{
+					spv::StorageClass storage = msl.get_storage_class(var);
+					const std::string &name = msl.get_name(var);
+
+					if (storage == spv::StorageClassInput)
+					{
+						int index = 0;
+
+						BuiltinVertexAttribute builtinattribute;
+						if (graphics::getConstant(name.c_str(), builtinattribute))
+							index = (int) builtinattribute;
+						else
+							index = nextattributeindex++;
+
+						msl.set_decoration(var, spv::DecorationLocation, index);
+
+						attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
+					}
+				}
+
 				for (const auto &varying : resources.stage_outputs)
 				{
 //					printf("vertex shader output %s: %d\n", inp.name.c_str(), msl.get_decoration(inp.id, spv::DecorationLocation));
@@ -373,16 +407,6 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 			}
 
 			functions[i] = [library newFunctionWithName:library.functionNames[0]];
-
-			for (const auto &var : interfacevars)
-			{
-				spv::StorageClass storage = msl.get_storage_class(var);
-				const std::string &name = msl.get_name(var);
-//				printf("var: %s\n", name.c_str());
-
-				if (i == ShaderStage::STAGE_VERTEX && storage == spv::StorageClassInput)
-					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
-			}
 		}
 		catch (std::exception &e)
 		{

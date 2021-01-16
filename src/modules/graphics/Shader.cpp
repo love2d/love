@@ -272,9 +272,9 @@ void setPointSize() {
 )";
 
 static const char vertex_main[] = R"(
-LOVE_IO_LOCATION(0) attribute vec4 VertexPosition;
-LOVE_IO_LOCATION(1) attribute vec4 VertexTexCoord;
-LOVE_IO_LOCATION(2) attribute vec4 VertexColor;
+attribute vec4 VertexPosition;
+attribute vec4 VertexTexCoord;
+attribute vec4 VertexColor;
 
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;
