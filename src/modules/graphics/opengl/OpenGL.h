@@ -443,7 +443,7 @@ public:
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
 	static bool isTexStorageSupported();
-	static bool isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool readable, bool isSRGB);
+	static uint32 getPixelFormatUsageFlags(PixelFormat pixelformat);
 	static bool hasTextureFilteringSupport(PixelFormat pixelformat);
 
 	static const char *errorString(GLenum errorcode);

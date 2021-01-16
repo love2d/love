@@ -1549,14 +1549,20 @@ void Graphics::initCapabilities()
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
 {
+	uint32 requiredflags = 0;
+	if (rendertarget)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+
 	switch (format)
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
 			return PIXELFORMAT_sRGBA8_UNORM;
-		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, rendertarget, readable, sRGB))
+		else if ((OpenGL::getPixelFormatUsageFlags(PIXELFORMAT_RGBA8_UNORM) & requiredflags) != requiredflags)
 			// 32-bit render targets don't have guaranteed support on GLES2.
 			return PIXELFORMAT_RGBA4_UNORM;
 		else
@@ -1572,18 +1578,26 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 {
 	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
 	{
-		format = PIXELFORMAT_sRGBA8_UNORM;
+		format = getSRGBPixelFormat(format);
 		sRGB = false;
 	}
 
-	format = getSizedFormat(format, rendertarget, readable, sRGB);
+	uint32 requiredflags = 0;
+	if (rendertarget)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+
+	format = getSizedFormat(format, rendertarget, readable);
 
 	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
 
 	if (supported.hasValue)
 		return supported.value;
 
-	if (!OpenGL::isPixelFormatSupported(format, rendertarget, readable, sRGB))
+	auto supportedflags = OpenGL::getPixelFormatUsageFlags(format);
+
+	if ((requiredflags & supportedflags) != requiredflags)
 	{
 		supported.set(false);
 		return supported.value;
@@ -1613,7 +1627,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 		return true;
 	}
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, sRGB);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable, sRGB);
 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 

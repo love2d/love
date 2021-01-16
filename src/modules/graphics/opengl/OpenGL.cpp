@@ -1932,152 +1932,170 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 	return f;
 }
 
-bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool readable, bool isSRGB)
+uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 {
-	if (rendertarget && isPixelFormatCompressed(pixelformat))
-		return false;
+	const uint32 commonsample = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_LINEAR;
+	const uint32 commonrender = PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_BLEND | PIXELFORMATUSAGEFLAGS_MSAA;
 
-	if (pixelformat == PIXELFORMAT_RGBA8_UNORM && isSRGB)
-		pixelformat = PIXELFORMAT_sRGBA8_UNORM;
+	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
 	switch (pixelformat)
 	{
 	case PIXELFORMAT_R8_UNORM:
 	case PIXELFORMAT_RG8_UNORM:
 		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_texture_rg || GLAD_EXT_texture_rg)
-			return true;
-		else if (pixelformat == PIXELFORMAT_R8_UNORM && !rendertarget && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
-			return true; // We'll use OpenGL's luminance format internally.
-		else
-			return false;
+			flags |= commonsample | commonrender;
+		else if (pixelformat == PIXELFORMAT_R8_UNORM && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
+			flags |= commonsample; // We'll use OpenGL's luminance format internally.
+		break;
 	case PIXELFORMAT_RGBA8_UNORM:
-		if (rendertarget)
-			return GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8;
-		else
-			return true;
+		flags |= commonsample;
+		if (GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8)
+			flags |= commonrender;
+		break;
 	case PIXELFORMAT_sRGBA8_UNORM:
 		if (gl.bugs.brokenSRGB)
-			return false;
-		if (rendertarget)
-		{
-			if (GLAD_VERSION_1_0)
-			{
-				return GLAD_VERSION_3_0 || ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB)
-					   && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB));
-			}
-			else
-				return GLAD_ES_VERSION_3_0;
-		}
-		else
-			return GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB;
+			break;
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)
+			flags |= commonsample;
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0
+			|| ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB) && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)))
+			flags |= commonrender;
+		break;
 	case PIXELFORMAT_R16_UNORM:
 	case PIXELFORMAT_RG16_UNORM:
-		return GLAD_VERSION_3_0
+		if (GLAD_VERSION_3_0
 			|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
-			|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg));
+			|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg)))
+			flags |= commonsample | commonrender;
+		break;
 	case PIXELFORMAT_RGBA16_UNORM:
-		return GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16;
+		if (GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16)
+			flags |= commonsample | commonrender;
+		break;
 	case PIXELFORMAT_R16_FLOAT:
 	case PIXELFORMAT_RG16_FLOAT:
-		if (GLAD_VERSION_1_0)
-			return GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel && GLAD_ARB_texture_rg);
-		else if (rendertarget && !GLAD_EXT_color_buffer_half_float)
-			return false;
-		else
-			return GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg);
+		if (GLAD_VERSION_1_0 && (GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel && GLAD_ARB_texture_rg)))
+			flags |= commonsample | commonrender;
+		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg))
+			flags |= commonsample;
+		if (GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg))
+			flags |= commonrender;
+		break;
 	case PIXELFORMAT_RGBA16_FLOAT:
-		if (GLAD_VERSION_1_0)
-			return GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel);
-		else if (rendertarget && !GLAD_EXT_color_buffer_half_float)
-			return false;
-		else
-			return GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float;
+		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel))
+			flags |= commonsample | commonrender;
+		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float)
+			flags |= commonsample;
+		if (GLAD_EXT_color_buffer_half_float)
+			flags |= commonrender;
+		break;
 	case PIXELFORMAT_R32_FLOAT:
 	case PIXELFORMAT_RG32_FLOAT:
-		if (GLAD_VERSION_1_0)
-			return GLAD_VERSION_3_0 || (GLAD_ARB_texture_float && GLAD_ARB_texture_rg);
-		else if (!rendertarget)
-			return GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_float && GLAD_EXT_texture_rg);
-		else
-			return false;
+		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_texture_rg))
+			flags |= commonsample | commonrender;
+		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_float && GLAD_EXT_texture_rg))
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_RGBA32_FLOAT:
-		if (GLAD_VERSION_1_0)
-			return GLAD_VERSION_3_0 || GLAD_ARB_texture_float;
-		else if (!rendertarget)
-			return GLAD_ES_VERSION_3_0 || GLAD_OES_texture_float;
-		else
-			return false;
+		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float))
+			flags |= commonsample | commonrender;
+		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_float)
+			flags |= commonsample;
+		break;
 
 	case PIXELFORMAT_LA8_UNORM:
-		return !rendertarget;
+		flags |= commonsample;
+		break;
 
 	case PIXELFORMAT_RGBA4_UNORM:
 	case PIXELFORMAT_RGB5A1_UNORM:
-		return true;
+		flags |= commonsample | commonrender;
+		break;
 	case PIXELFORMAT_RGB565_UNORM:
-		return GLAD_ES_VERSION_2_0 || GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility;
+		if (GLAD_ES_VERSION_2_0 || GLAD_VERSION_4_2 || GLAD_ARB_ES2_compatibility)
+			flags |= commonsample | commonrender;
+		break;
 	case PIXELFORMAT_RGB10A2_UNORM:
-		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0;
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
+			flags |= commonsample | commonrender;
+		break;
 	case PIXELFORMAT_RG11B10_FLOAT:
-		if (rendertarget)
-			return GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float;
-		else
-			return GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float;
+		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
+			flags |= commonsample;
+		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float)
+			flags |= commonrender;
+		break;
 
 	case PIXELFORMAT_STENCIL8:
-		return rendertarget && !readable;
+		flags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_MSAA;
+		break;
 
 	case PIXELFORMAT_DEPTH16_UNORM:
-		if (!rendertarget)
-			return false;
-		else if (readable)
-			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth_texture;
-		else
-			return true;
+		flags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_MSAA;
+		if (GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth_texture)
+			flags |= commonsample;
+		break;
 
 	case PIXELFORMAT_DEPTH24_UNORM:
-		if (!rendertarget)
-			return false;
-		else if (readable)
-			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || (GLAD_OES_depth_texture && (GLAD_OES_depth24 || GLAD_OES_depth_texture));
-		else
-			return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth24 || GLAD_OES_depth_texture;
+		if (GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_depth24 || GLAD_OES_depth_texture)
+			flags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_MSAA;
+
+		if (GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || (GLAD_OES_depth_texture && (GLAD_OES_depth24 || GLAD_OES_depth_texture)))
+			flags |= commonsample;
+		break;
 
 	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
-		if (!rendertarget)
-			return false;
-		else if (readable)
-			return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || (GLAD_OES_depth_texture && GLAD_OES_packed_depth_stencil);
-		else
-			return GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil;
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || GLAD_OES_packed_depth_stencil)
+			flags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_MSAA;
+
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_EXT_packed_depth_stencil || (GLAD_OES_depth_texture && GLAD_OES_packed_depth_stencil))
+			flags |= commonsample;
+		break;
 
 	case PIXELFORMAT_DEPTH32_FLOAT:
 	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
-		return rendertarget && (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_depth_buffer_float);
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0 || GLAD_ARB_depth_buffer_float)
+			flags |= commonsample | PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_MSAA;
+		break;
 
 	case PIXELFORMAT_DXT1_UNORM:
-		return GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1;
+		if (GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_DXT3_UNORM:
-		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3;
+		if (GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_DXT5_UNORM:
-		return GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5;
+		if (GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_BC4_UNORM:
 	case PIXELFORMAT_BC4_SNORM:
 	case PIXELFORMAT_BC5_UNORM:
 	case PIXELFORMAT_BC5_SNORM:
-		return (GLAD_VERSION_3_0 || GLAD_ARB_texture_compression_rgtc || GLAD_EXT_texture_compression_rgtc);
+		if (GLAD_VERSION_3_0 || GLAD_ARB_texture_compression_rgtc || GLAD_EXT_texture_compression_rgtc)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_BC6H_UFLOAT:
 	case PIXELFORMAT_BC6H_FLOAT:
 	case PIXELFORMAT_BC7_UNORM:
-		return GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc;
+		if (GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_PVR1_RGB2_UNORM:
 	case PIXELFORMAT_PVR1_RGB4_UNORM:
 	case PIXELFORMAT_PVR1_RGBA2_UNORM:
 	case PIXELFORMAT_PVR1_RGBA4_UNORM:
-		return isSRGB ? GLAD_EXT_pvrtc_sRGB : GLAD_IMG_texture_compression_pvrtc;
+		if (GLAD_IMG_texture_compression_pvrtc)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_ETC1_UNORM:
 		// ETC2 support guarantees ETC1 support as well.
-		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture;
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_ETC2_RGB_UNORM:
 	case PIXELFORMAT_ETC2_RGBA_UNORM:
 	case PIXELFORMAT_ETC2_RGBA1_UNORM:
@@ -2085,7 +2103,9 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 	case PIXELFORMAT_EAC_R_SNORM:
 	case PIXELFORMAT_EAC_RG_UNORM:
 	case PIXELFORMAT_EAC_RG_SNORM:
-		return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility;
+		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_ASTC_4x4:
 	case PIXELFORMAT_ASTC_5x4:
 	case PIXELFORMAT_ASTC_5x5:
@@ -2100,11 +2120,18 @@ bool OpenGL::isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, 
 	case PIXELFORMAT_ASTC_10x10:
 	case PIXELFORMAT_ASTC_12x10:
 	case PIXELFORMAT_ASTC_12x12:
-		return GLAD_ES_VERSION_3_2 || GLAD_KHR_texture_compression_astc_ldr;
+		if (GLAD_ES_VERSION_3_2 || GLAD_KHR_texture_compression_astc_ldr)
+			flags |= commonsample;
+		break;
 
-	default:
-		return false;
+	case PIXELFORMAT_UNKNOWN:
+	case PIXELFORMAT_NORMAL:
+	case PIXELFORMAT_HDR:
+	case PIXELFORMAT_MAX_ENUM:
+		break;
 	}
+
+	return flags;
 }
 
 bool OpenGL::hasTextureFilteringSupport(PixelFormat pixelformat)

@@ -104,7 +104,7 @@ public:
 
 	void setWireframe(bool enable) override;
 
-	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const override;
+	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
 	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;

@@ -225,7 +225,7 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	else
 		readable = !renderTarget || !isPixelFormatDepthStencil(format);
 
-	format = gfx->getSizedFormat(format, renderTarget, readable, sRGB);
+	format = gfx->getSizedFormat(format, renderTarget, readable);
 
 	if (mipmapsMode == MIPMAPS_AUTO && isCompressed())
 		mipmapsMode = MIPMAPS_MANUAL;
