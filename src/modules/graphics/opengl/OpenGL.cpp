@@ -621,6 +621,8 @@ GLenum OpenGL::getGLBufferType(BufferType type)
 		case BUFFERTYPE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
 		case BUFFERTYPE_TEXEL: return GL_TEXTURE_BUFFER;
 		case BUFFERTYPE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
+		case BUFFERTYPE_COPY_SOURCE: return GL_COPY_READ_BUFFER;
+		case BUFFERTYPE_COPY_DEST: return GL_COPY_WRITE_BUFFER;
 		case BUFFERTYPE_MAX_ENUM: return GL_ZERO;
 	}
 
@@ -1444,6 +1446,9 @@ bool OpenGL::isBufferTypeSupported(BufferType type) const
 		return GLAD_VERSION_3_1;
 	case BUFFERTYPE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
+	case BUFFERTYPE_COPY_SOURCE:
+	case BUFFERTYPE_COPY_DEST:
+		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_0;
 	case BUFFERTYPE_MAX_ENUM:
 		return false;
 	}

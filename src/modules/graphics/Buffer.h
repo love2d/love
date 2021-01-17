@@ -62,6 +62,8 @@ public:
 		TYPEFLAG_INDEX = 1 << BUFFERTYPE_INDEX,
 		TYPEFLAG_TEXEL = 1 << BUFFERTYPE_TEXEL,
 		TYPEFLAG_SHADER_STORAGE = 1 << BUFFERTYPE_SHADER_STORAGE,
+		TYPEFLAG_COPY_SOURCE = 1 << BUFFERTYPE_COPY_SOURCE,
+		TYPEFLAG_COPY_DEST = 1 << BUFFERTYPE_COPY_DEST,
 	};
 
 	struct DataDeclaration
@@ -135,6 +137,11 @@ public:
 	 * Fill a portion of the buffer with data.
 	 */
 	virtual void fill(size_t offset, size_t size, const void *data) = 0;
+
+	/**
+	 * Copy a portion of this Buffer's data to another buffer, using the GPU.
+	 **/
+	virtual void copyTo(Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size) = 0;
 
 	/**
 	 * Texel buffers may use an additional texture handle as well as a buffer

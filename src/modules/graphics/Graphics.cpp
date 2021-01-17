@@ -1039,6 +1039,32 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 	pendingScreenshotCallbacks.push_back(info);
 }
 
+void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
+{
+	if (!capabilities.features[FEATURE_COPY_BUFFER])
+		throw love::Exception("Buffer copying is not supported on this system.");
+
+	if (!(source->getTypeFlags() & Buffer::TYPEFLAG_COPY_SOURCE))
+		throw love::Exception("Copy source buffer must be created with the copysource flag.");
+
+	if (!(dest->getTypeFlags() & Buffer::TYPEFLAG_COPY_DEST))
+		throw love::Exception("Copy destination buffer must be created with the copydest flag.");
+
+	Range sourcerange(sourceoffset, size);
+	Range destrange(destoffset, size);
+
+	if (sourcerange.getMax() >= source->getSize())
+		throw love::Exception("Buffer copy source offset and size doesn't fit within the source Buffer's size.");
+
+	if (destrange.getMax() >= dest->getSize())
+		throw love::Exception("Buffer copy destination offset and size doesn't fit within the destination buffer's size.");
+
+	if (source == dest && sourcerange.intersects(destrange))
+		throw love::Exception("Copying a portion of a buffer to the same buffer requires non-overlapping source and destination offsets.");
+
+	source->copyTo(dest, sourceoffset, destoffset, size);
+}
+
 Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)
 {
 	BatchedDrawState &state = batchedDrawState;
@@ -1835,6 +1861,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "glsl4",                    Graphics::FEATURE_GLSL4                },
 	{ "instancing",               Graphics::FEATURE_INSTANCING           },
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
+	{ "copybuffer",               Graphics::FEATURE_COPY_BUFFER          },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 

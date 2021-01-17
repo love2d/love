@@ -144,6 +144,7 @@ public:
 		FEATURE_GLSL4,
 		FEATURE_INSTANCING,
 		FEATURE_TEXEL_BUFFER,
+		FEATURE_COPY_BUFFER,
 		FEATURE_MAX_ENUM
 	};
 
@@ -667,6 +668,8 @@ public:
 	bool isWireframe() const;
 
 	void captureScreenshot(const ScreenshotInfo &info);
+
+	void copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size);
 
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);

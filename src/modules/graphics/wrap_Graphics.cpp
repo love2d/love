@@ -3255,6 +3255,27 @@ int w_polygon(lua_State *L)
 	return 0;
 }
 
+int w_copyBuffer(lua_State *L)
+{
+	Buffer *source = luax_checkbuffer(L, 1);
+	Buffer *dest = luax_checkbuffer(L, 2);
+
+	ssize_t sourceoffset = luaL_optinteger(L, 3, 0);
+	ssize_t destoffset = luaL_optinteger(L, 4, 0);
+
+	ssize_t size = std::min(source->getSize() - sourceoffset, dest->getSize() - destoffset);
+	if (!lua_isnoneornil(L, 5))
+		size = luaL_checkinteger(L, 5);
+
+	if (sourceoffset < 0 || destoffset < 0)
+		return luaL_error(L, "copyBuffer offsets cannot be negative.");
+	if (size <= 0)
+		return luaL_error(L, "copyBuffer size must be greater than 0.");
+
+	luax_catchexcept(L, [&](){ instance()->copyBuffer(source, dest, sourceoffset, destoffset, size); });
+	return 0;
+}
+
 int w_flushBatch(lua_State *)
 {
 	instance()->flushBatchedDraws();
@@ -3450,6 +3471,8 @@ static const luaL_Reg functions[] =
 
 	{ "print", w_print },
 	{ "printf", w_printf },
+
+	{ "copyBuffer", w_copyBuffer },
 
 	{ "isCreated", w_isCreated },
 	{ "isActive", w_isActive },

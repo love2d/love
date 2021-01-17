@@ -343,6 +343,8 @@ STRINGMAP_BEGIN(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
 	{ "index",         BUFFERTYPE_INDEX          },
 	{ "texel",         BUFFERTYPE_TEXEL          },
 	{ "shaderstorage", BUFFERTYPE_SHADER_STORAGE },
+	{ "copysource",    BUFFERTYPE_COPY_SOURCE    },
+	{ "copydest",      BUFFERTYPE_COPY_DEST      },
 }
 STRINGMAP_END(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
 

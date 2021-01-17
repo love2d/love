@@ -253,6 +253,14 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 	}
 }
 
+void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
+{
+	gl.bindBuffer(BUFFERTYPE_COPY_SOURCE, buffer);
+	gl.bindBuffer(BUFFERTYPE_COPY_DEST, ((Buffer *) dest)->buffer);
+
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, sourceoffset, destoffset, size);
+}
+
 } // opengl
 } // graphics
 } // love
