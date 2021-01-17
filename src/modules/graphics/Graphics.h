@@ -840,31 +840,13 @@ public:
 		return (T *) scratchBuffer.data();
 	}
 
-	static bool getConstant(const char *in, DrawMode &out);
-	static bool getConstant(DrawMode in, const char *&out);
-	static std::vector<std::string> getConstants(DrawMode);
-
-	static bool getConstant(const char *in, ArcMode &out);
-	static bool getConstant(ArcMode in, const char *&out);
-	static std::vector<std::string> getConstants(ArcMode);
-
-	static bool getConstant(const char *in, LineStyle &out);
-	static bool getConstant(LineStyle in, const char *&out);
-	static std::vector<std::string> getConstants(LineStyle);
-
-	static bool getConstant(const char *in, LineJoin &out);
-	static bool getConstant(LineJoin in, const char *&out);
-	static std::vector<std::string> getConstants(LineJoin);
-
-	static bool getConstant(const char *in, Feature &out);
-	static bool getConstant(Feature in, const char *&out);
-
-	static bool getConstant(const char *in, SystemLimit &out);
-	static bool getConstant(SystemLimit in, const char *&out);
-
-	static bool getConstant(const char *in, StackType &out);
-	static bool getConstant(StackType in, const char *&out);
-	static std::vector<std::string> getConstants(StackType);
+	STRINGMAP_CLASS_DECLARE(DrawMode);
+	STRINGMAP_CLASS_DECLARE(ArcMode);
+	STRINGMAP_CLASS_DECLARE(LineStyle);
+	STRINGMAP_CLASS_DECLARE(LineJoin);
+	STRINGMAP_CLASS_DECLARE(Feature);
+	STRINGMAP_CLASS_DECLARE(SystemLimit);
+	STRINGMAP_CLASS_DECLARE(StackType);
 
 protected:
 
@@ -1010,27 +992,6 @@ private:
 	std::vector<uint8> scratchBuffer;
 
 	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[ShaderStage::STAGE_MAX_ENUM];
-
-	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
-	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
-
-	static StringMap<ArcMode, ARC_MAX_ENUM>::Entry arcModeEntries[];
-	static StringMap<ArcMode, ARC_MAX_ENUM> arcModes;
-
-	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
-	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;
-
-	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
-	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
-
-	static StringMap<Feature, FEATURE_MAX_ENUM>::Entry featureEntries[];
-	static StringMap<Feature, FEATURE_MAX_ENUM> features;
-
-	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
-	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;
-
-	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
-	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
 
 }; // Graphics
 

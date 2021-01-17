@@ -1792,179 +1792,73 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-/**
- * Constants.
- **/
-
-bool Graphics::getConstant(const char *in, DrawMode &out)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::DrawMode, Graphics::DRAW_MAX_ENUM, drawMode)
 {
-	return drawModes.find(in, out);
+	{ "line", Graphics::DRAW_LINE },
+	{ "fill", Graphics::DRAW_FILL },
 }
+STRINGMAP_CLASS_END(Graphics, Graphics::DrawMode, Graphics::DRAW_MAX_ENUM, drawMode)
 
-bool Graphics::getConstant(DrawMode in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::ArcMode, Graphics::ARC_MAX_ENUM, arcMode)
 {
-	return drawModes.find(in, out);
+	{ "open",   Graphics::ARC_OPEN   },
+	{ "closed", Graphics::ARC_CLOSED },
+	{ "pie",    Graphics::ARC_PIE    },
 }
+STRINGMAP_CLASS_END(Graphics, Graphics::ArcMode, Graphics::ARC_MAX_ENUM, arcMode)
 
-std::vector<std::string> Graphics::getConstants(DrawMode)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::LineStyle, Graphics::LINE_MAX_ENUM, lineStyle)
 {
-	return drawModes.getNames();
+	{ "smooth", Graphics::LINE_SMOOTH },
+	{ "rough",  Graphics::LINE_ROUGH  }
 }
+STRINGMAP_CLASS_END(Graphics, Graphics::LineStyle, Graphics::LINE_MAX_ENUM, lineStyle)
 
-bool Graphics::getConstant(const char *in, ArcMode &out)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM, lineJoin)
 {
-	return arcModes.find(in, out);
+	{ "none",  Graphics::LINE_JOIN_NONE  },
+	{ "miter", Graphics::LINE_JOIN_MITER },
+	{ "bevel", Graphics::LINE_JOIN_BEVEL }
 }
+STRINGMAP_CLASS_END(Graphics, Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM, lineJoin)
 
-bool Graphics::getConstant(ArcMode in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 {
-	return arcModes.find(in, out);
+	{ "multirendertargetformats", Graphics::FEATURE_MULTI_RENDER_TARGET_FORMATS },
+	{ "clampzero",                Graphics::FEATURE_CLAMP_ZERO           },
+	{ "blendminmax",              Graphics::FEATURE_BLEND_MINMAX         },
+	{ "lighten",                  Graphics::FEATURE_LIGHTEN              },
+	{ "fullnpot",                 Graphics::FEATURE_FULL_NPOT            },
+	{ "pixelshaderhighp",         Graphics::FEATURE_PIXEL_SHADER_HIGHP   },
+	{ "shaderderivatives",        Graphics::FEATURE_SHADER_DERIVATIVES   },
+	{ "glsl3",                    Graphics::FEATURE_GLSL3                },
+	{ "glsl4",                    Graphics::FEATURE_GLSL4                },
+	{ "instancing",               Graphics::FEATURE_INSTANCING           },
+	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
 }
+STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 
-std::vector<std::string> Graphics::getConstants(ArcMode)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM, systemLimit)
 {
-	return arcModes.getNames();
+	{ "pointsize",               Graphics::LIMIT_POINT_SIZE                 },
+	{ "texturesize",             Graphics::LIMIT_TEXTURE_SIZE               },
+	{ "texturelayers",           Graphics::LIMIT_TEXTURE_LAYERS             },
+	{ "volumetexturesize",       Graphics::LIMIT_VOLUME_TEXTURE_SIZE        },
+	{ "cubetexturesize",         Graphics::LIMIT_CUBE_TEXTURE_SIZE          },
+	{ "texelbuffersize",         Graphics::LIMIT_TEXEL_BUFFER_SIZE          },
+	{ "shaderstoragebuffersize", Graphics::LIMIT_SHADER_STORAGE_BUFFER_SIZE },
+	{ "rendertargets",           Graphics::LIMIT_RENDER_TARGETS             },
+	{ "texturemsaa",             Graphics::LIMIT_TEXTURE_MSAA               },
+	{ "anisotropy",              Graphics::LIMIT_ANISOTROPY                 },
 }
+STRINGMAP_CLASS_END(Graphics, Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM, systemLimit)
 
-bool Graphics::getConstant(const char *in, LineStyle &out)
+STRINGMAP_CLASS_BEGIN(Graphics, Graphics::StackType, Graphics::STACK_MAX_ENUM, stackType)
 {
-	return lineStyles.find(in, out);
+	{ "all",       Graphics::STACK_ALL       },
+	{ "transform", Graphics::STACK_TRANSFORM },
 }
-
-bool Graphics::getConstant(LineStyle in, const char *&out)
-{
-	return lineStyles.find(in, out);
-}
-
-std::vector<std::string> Graphics::getConstants(LineStyle)
-{
-	return lineStyles.getNames();
-}
-
-bool Graphics::getConstant(const char *in, LineJoin &out)
-{
-	return lineJoins.find(in, out);
-}
-
-bool Graphics::getConstant(LineJoin in, const char *&out)
-{
-	return lineJoins.find(in, out);
-}
-
-std::vector<std::string> Graphics::getConstants(LineJoin)
-{
-	return lineJoins.getNames();
-}
-
-bool Graphics::getConstant(const char *in, Feature &out)
-{
-	return features.find(in, out);
-}
-
-bool Graphics::getConstant(Feature in, const char *&out)
-{
-	return features.find(in, out);
-}
-
-bool Graphics::getConstant(const char *in, SystemLimit &out)
-{
-	return systemLimits.find(in, out);
-}
-
-bool Graphics::getConstant(SystemLimit in, const char *&out)
-{
-	return systemLimits.find(in, out);
-}
-
-bool Graphics::getConstant(const char *in, StackType &out)
-{
-	return stackTypes.find(in, out);
-}
-
-bool Graphics::getConstant(StackType in, const char *&out)
-{
-	return stackTypes.find(in, out);
-}
-
-std::vector<std::string> Graphics::getConstants(StackType)
-{
-	return stackTypes.getNames();
-}
-
-StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM>::Entry Graphics::drawModeEntries[] =
-{
-	{ "line", DRAW_LINE },
-	{ "fill", DRAW_FILL },
-};
-
-StringMap<Graphics::DrawMode, Graphics::DRAW_MAX_ENUM> Graphics::drawModes(Graphics::drawModeEntries, sizeof(Graphics::drawModeEntries));
-
-StringMap<Graphics::ArcMode, Graphics::ARC_MAX_ENUM>::Entry Graphics::arcModeEntries[] =
-{
-	{ "open",   ARC_OPEN   },
-	{ "closed", ARC_CLOSED },
-	{ "pie",    ARC_PIE    },
-};
-
-StringMap<Graphics::ArcMode, Graphics::ARC_MAX_ENUM> Graphics::arcModes(Graphics::arcModeEntries, sizeof(Graphics::arcModeEntries));
-
-StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM>::Entry Graphics::lineStyleEntries[] =
-{
-	{ "smooth", LINE_SMOOTH },
-	{ "rough",  LINE_ROUGH  }
-};
-
-StringMap<Graphics::LineStyle, Graphics::LINE_MAX_ENUM> Graphics::lineStyles(Graphics::lineStyleEntries, sizeof(Graphics::lineStyleEntries));
-
-StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM>::Entry Graphics::lineJoinEntries[] =
-{
-	{ "none",  LINE_JOIN_NONE  },
-	{ "miter", LINE_JOIN_MITER },
-	{ "bevel", LINE_JOIN_BEVEL }
-};
-
-StringMap<Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM> Graphics::lineJoins(Graphics::lineJoinEntries, sizeof(Graphics::lineJoinEntries));
-
-StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM>::Entry Graphics::featureEntries[] =
-{
-	{ "multirendertargetformats", FEATURE_MULTI_RENDER_TARGET_FORMATS },
-	{ "clampzero",                FEATURE_CLAMP_ZERO           },
-	{ "blendminmax",              FEATURE_BLEND_MINMAX         },
-	{ "lighten",                  FEATURE_LIGHTEN              },
-	{ "fullnpot",                 FEATURE_FULL_NPOT            },
-	{ "pixelshaderhighp",         FEATURE_PIXEL_SHADER_HIGHP   },
-	{ "shaderderivatives",        FEATURE_SHADER_DERIVATIVES   },
-	{ "glsl3",                    FEATURE_GLSL3                },
-	{ "glsl4",                    FEATURE_GLSL4                },
-	{ "instancing",               FEATURE_INSTANCING           },
-	{ "texelbuffer",              FEATURE_TEXEL_BUFFER         },
-};
-
-StringMap<Graphics::Feature, Graphics::FEATURE_MAX_ENUM> Graphics::features(Graphics::featureEntries, sizeof(Graphics::featureEntries));
-
-StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM>::Entry Graphics::systemLimitEntries[] =
-{
-	{ "pointsize",               LIMIT_POINT_SIZE                 },
-	{ "texturesize",             LIMIT_TEXTURE_SIZE               },
-	{ "texturelayers",           LIMIT_TEXTURE_LAYERS             },
-	{ "volumetexturesize",       LIMIT_VOLUME_TEXTURE_SIZE        },
-	{ "cubetexturesize",         LIMIT_CUBE_TEXTURE_SIZE          },
-	{ "texelbuffersize",         LIMIT_TEXEL_BUFFER_SIZE          },
-	{ "shaderstoragebuffersize", LIMIT_SHADER_STORAGE_BUFFER_SIZE },
-	{ "rendertargets",           LIMIT_RENDER_TARGETS             },
-	{ "texturemsaa",             LIMIT_TEXTURE_MSAA               },
-	{ "anisotropy",              LIMIT_ANISOTROPY                 },
-};
-
-StringMap<Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM> Graphics::systemLimits(Graphics::systemLimitEntries, sizeof(Graphics::systemLimitEntries));
-
-StringMap<Graphics::StackType, Graphics::STACK_MAX_ENUM>::Entry Graphics::stackTypeEntries[] =
-{
-	{ "all",       STACK_ALL       },
-	{ "transform", STACK_TRANSFORM },
-};
-
-StringMap<Graphics::StackType, Graphics::STACK_MAX_ENUM> Graphics::stackTypes(Graphics::stackTypeEntries, sizeof(Graphics::stackTypeEntries));
+STRINGMAP_CLASS_END(Graphics, Graphics::StackType, Graphics::STACK_MAX_ENUM, stackType)
 
 } // graphics
 } // love
