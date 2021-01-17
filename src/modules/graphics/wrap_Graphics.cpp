@@ -3260,10 +3260,10 @@ int w_copyBuffer(lua_State *L)
 	Buffer *source = luax_checkbuffer(L, 1);
 	Buffer *dest = luax_checkbuffer(L, 2);
 
-	ssize_t sourceoffset = luaL_optinteger(L, 3, 0);
-	ssize_t destoffset = luaL_optinteger(L, 4, 0);
+	ptrdiff_t sourceoffset = luaL_optinteger(L, 3, 0);
+	ptrdiff_t destoffset = luaL_optinteger(L, 4, 0);
 
-	ssize_t size = std::min(source->getSize() - sourceoffset, dest->getSize() - destoffset);
+	ptrdiff_t size = std::min(source->getSize() - sourceoffset, dest->getSize() - destoffset);
 	if (!lua_isnoneornil(L, 5))
 		size = luaL_checkinteger(L, 5);
 
