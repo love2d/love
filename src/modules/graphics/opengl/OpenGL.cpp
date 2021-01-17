@@ -1986,6 +1986,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample;
 		if (GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg))
 			flags |= commonrender;
+		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
+			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		break;
 	case PIXELFORMAT_RGBA16_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel))
@@ -1994,6 +1996,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample;
 		if (GLAD_EXT_color_buffer_half_float)
 			flags |= commonrender;
+		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
+			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		break;
 	case PIXELFORMAT_R32_FLOAT:
 	case PIXELFORMAT_RG32_FLOAT:
@@ -2001,12 +2005,16 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_float && GLAD_EXT_texture_rg))
 			flags |= commonsample;
+		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
+			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		break;
 	case PIXELFORMAT_RGBA32_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float))
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_float)
 			flags |= commonsample;
+		if (!(GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear))
+			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		break;
 
 	case PIXELFORMAT_LA8_UNORM:
@@ -2137,23 +2145,6 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 	}
 
 	return flags;
-}
-
-bool OpenGL::hasTextureFilteringSupport(PixelFormat pixelformat)
-{
-	switch (pixelformat)
-	{
-	case PIXELFORMAT_R16_FLOAT:
-	case PIXELFORMAT_RG16_FLOAT:
-	case PIXELFORMAT_RGBA16_FLOAT:
-		return GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear;
-	case PIXELFORMAT_R32_FLOAT:
-	case PIXELFORMAT_RG32_FLOAT:
-	case PIXELFORMAT_RGBA32_FLOAT:
-		return GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear;
-	default:
-		return true;
-	}
 }
 
 const char *OpenGL::errorString(GLenum errorcode)

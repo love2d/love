@@ -539,7 +539,9 @@ void Texture::setSamplerState(const SamplerState &s)
 	// Base class does common validation and assigns samplerState.
 	love::graphics::Texture::setSamplerState(s);
 
-	if (!OpenGL::hasTextureFilteringSupport(getPixelFormat()))
+	auto supportedflags = OpenGL::getPixelFormatUsageFlags(getPixelFormat());
+
+	if ((supportedflags & PIXELFORMATUSAGEFLAGS_LINEAR) == 0)
 	{
 		samplerState.magFilter = samplerState.minFilter = SamplerState::FILTER_NEAREST;
 

@@ -444,7 +444,6 @@ public:
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
 	static bool isTexStorageSupported();
 	static uint32 getPixelFormatUsageFlags(PixelFormat pixelformat);
-	static bool hasTextureFilteringSupport(PixelFormat pixelformat);
 
 	static const char *errorString(GLenum errorcode);
 	static const char *framebufferStatusString(GLenum status);
