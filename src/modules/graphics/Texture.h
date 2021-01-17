@@ -296,7 +296,7 @@ protected:
 	void setGraphicsMemorySize(int64 size);
 
 	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
-	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) = 0;
+	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) = 0;
 
 	virtual void generateMipmapsInternal() = 0;
 	virtual void readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect) = 0;

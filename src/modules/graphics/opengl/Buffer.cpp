@@ -80,6 +80,10 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 		mapType = BUFFERTYPE_INDEX;
 	else  if (typeFlags & TYPEFLAG_SHADER_STORAGE)
 		mapType = BUFFERTYPE_SHADER_STORAGE;
+	else if (typeFlags & TYPEFLAG_COPY_SOURCE)
+		mapType = BUFFERTYPE_COPY_SOURCE;
+	else if (typeFlags & TYPEFLAG_COPY_DEST)
+		mapType = BUFFERTYPE_COPY_DEST;
 
 	target = OpenGL::getGLBufferType(mapType);
 

@@ -421,7 +421,7 @@ void Texture::uploadImageData(love::image::ImageDataBase *d, int level, int slic
 		lock.setLock(id->getMutex());
 
 	Rect rect = {x, y, d->getWidth(), d->getHeight()};
-	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect, d);
+	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect);
 }
 
 void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
@@ -487,7 +487,7 @@ void Texture::replacePixels(const void *data, size_t size, int slice, int mipmap
 
 	Graphics::flushBatchedDrawsGlobal();
 
-	uploadByteData(format, data, size, mipmap, slice, rect, nullptr);
+	uploadByteData(format, data, size, mipmap, slice, rect);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();

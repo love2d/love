@@ -251,7 +251,7 @@ void Texture::createTexture()
 		int slices = texType == TEXTURE_CUBE ? 6 : 1;
 		Rect rect = {0, 0, 2, 2};
 		for (int slice = 0; slice < slices; slice++)
-			uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect, nullptr);
+			uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect);
 
 		return;
 	}
@@ -452,18 +452,8 @@ void Texture::unloadVolatile()
 	setGraphicsMemorySize(0);
 }
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd)
+void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
 {
-	love::image::ImageDataBase *oldd = slices.get(slice, level);
-
-	// We can only replace the internal Data (used when reloading due to setMode)
-	// if the dimensions match.
-	if (imgd != nullptr && oldd != nullptr && oldd->getWidth() == imgd->getWidth()
-		&& oldd->getHeight() == imgd->getHeight())
-	{
-		slices.set(slice, level, imgd);
-	}
-
 	OpenGL::TempDebugGroup debuggroup("Texture data upload");
 
 	gl.bindTextureToUnit(this, 0, false);
