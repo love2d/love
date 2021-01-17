@@ -190,34 +190,49 @@ static int w_Buffer_setArrayData(lua_State *L)
 {
 	Buffer *t = luax_checkbuffer(L, 1);
 
-	int startindex = (int) luaL_optnumber(L, 3, 1) - 1;
+	int sourceindex = (int) luaL_optnumber(L, 3, 1) - 1;
+	int destindex = (int) luaL_optnumber(L, 4, 1) - 1;
+
+	if (sourceindex < 0)
+		return luaL_error(L, "Source start index must be at least 1.");
 
 	int count = -1;
-	if (!lua_isnoneornil(L, 4))
+	if (!lua_isnoneornil(L, 5))
 	{
-		count = (int) luaL_checknumber(L, 4);
+		count = (int) luaL_checknumber(L, 5);
 		if (count <= 0)
 			return luaL_error(L, "Element count must be greater than 0.");
 	}
 
 	size_t stride = t->getArrayStride();
-	size_t offset = startindex * stride;
+	size_t bufferoffset = destindex * stride;
 	int arraylength = (int) t->getArrayLength();
 
-	if (startindex >= arraylength || startindex < 0)
-		return luaL_error(L, "Invalid vertex start index (must be between 1 and %d)", arraylength);
+	if (destindex >= arraylength || destindex < 0)
+		return luaL_error(L, "Invalid buffer start index (must be between 1 and %d)", arraylength);
 
 	if (luax_istype(L, 2, Data::type))
 	{
 		Data *d = luax_checktype<Data>(L, 2);
 
-		count = count >= 0 ? count : (arraylength - startindex);
-		if (startindex + count > arraylength)
-			return luaL_error(L, "Too many array elements (expected at most %d, got %d)", arraylength - startindex, count);
+		int dataarraylength = d->getSize() / stride;
 
-		size_t datasize = std::min(d->getSize(), count * stride);
+		if (sourceindex >= dataarraylength)
+			return luaL_error(L, "Invalid data start index (must be between 1 and %d)", dataarraylength);
 
-		t->fill(offset, datasize, d->getData());
+		int maxcount = std::min(dataarraylength - sourceindex, arraylength - destindex);
+
+		if (count < 0)
+			count = maxcount;
+
+		if (count > maxcount)
+			return luaL_error(L, "Too many array elements (expected at most %d, got %d)", maxcount, count);
+
+		size_t dataoffset = sourceindex * stride;
+		size_t datasize = std::min(d->getSize() - dataoffset, count * stride);
+		const void *sourcedata = (const uint8 *) d->getData() + dataoffset;
+
+		t->fill(bufferoffset, datasize, sourcedata);
 		return 0;
 	}
 
@@ -241,15 +256,19 @@ static int w_Buffer_setArrayData(lua_State *L)
 		tablelen /= ncomponents;
 	}
 
-	count = count >= 0 ? std::min(count, tablelen) : tablelen;
-	if (startindex + count > arraylength)
-		return luaL_error(L, "Too many array elements (expected at most %d, got %d)", arraylength - startindex, count);
+	if (sourceindex >= tablelen)
+		return luaL_error(L, "Invalid data start index (must be between 1 and %d)", tablelen);
 
-	char *data = (char *) t->map(Buffer::MAP_WRITE_INVALIDATE, offset, count * stride);
+	count = count >= 0 ? std::min(count, tablelen - sourceindex) : tablelen - sourceindex;
+
+	if (destindex + count > arraylength)
+		return luaL_error(L, "Too many array elements (expected at most %d, got %d)", arraylength - destindex, count);
+
+	char *data = (char *) t->map(Buffer::MAP_WRITE_INVALIDATE, bufferoffset, count * stride);
 
 	if (tableoftables)
 	{
-		for (int i = 0; i < count; i++)
+		for (int i = sourceindex; i < count; i++)
 		{
 			// get arraydata[index]
 			lua_rawgeti(L, 2, i + 1);
@@ -273,7 +292,7 @@ static int w_Buffer_setArrayData(lua_State *L)
 	}
 	else // Flat array
 	{
-		for (int i = 0; i < count; i++)
+		for (int i = sourceindex; i < count; i++)
 		{
 			// get arraydata[arrayindex * ncomponents + componentindex]
 			for (int componentindex = 1; componentindex <= ncomponents; componentindex++)
@@ -292,7 +311,7 @@ static int w_Buffer_setArrayData(lua_State *L)
 		}
 	}
 
-	t->unmap(offset, count * stride);
+	t->unmap(bufferoffset, count * stride);
 
 	return 0;
 }
