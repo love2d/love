@@ -191,7 +191,7 @@ void ParticleSystem::createBuffers(size_t size)
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 		size_t bytes = sizeof(Vertex) * size * 4;
-		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_STREAM);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STREAM);
 		auto decl = Buffer::getCommonFormatDeclaration(CommonFormat::XYf_STf_RGBAub);
 		buffer = gfx->newBuffer(settings, decl, nullptr, bytes, 0);
 	}

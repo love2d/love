@@ -432,7 +432,7 @@ public:
 	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferUsage usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Shader *newShader(const std::vector<std::string> &stagessource);
@@ -440,8 +440,8 @@ public:
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 
-	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
-	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
 	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
@@ -930,7 +930,7 @@ protected:
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info);
 	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
-	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
+	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
 
 	virtual void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 

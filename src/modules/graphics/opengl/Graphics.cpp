@@ -140,7 +140,7 @@ const char *Graphics::getName() const
 	return "love.graphics.opengl";
 }
 
-love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t size)
+love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 {
 	return CreateStreamBuffer(type, size);
 }
@@ -333,46 +333,46 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 256  * 1024 * 1);
-		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
-	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERTYPE_TEXEL].get() == nullptr)
+	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERUSAGE_TEXEL].get() == nullptr)
 	{
-		Buffer::Settings settings(Buffer::TYPEFLAG_TEXEL, BUFFERUSAGE_STATIC);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
 		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT_VEC4, 0}};
 
 		const float texel[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 		auto buffer = newBuffer(settings, format, texel, sizeof(texel), 1);
-		defaultBuffers[BUFFERTYPE_TEXEL].set(buffer, Acquire::NORETAIN);
+		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
 	}
 
-	if (capabilities.features[FEATURE_GLSL4] && defaultBuffers[BUFFERTYPE_SHADER_STORAGE].get() == nullptr)
+	if (capabilities.features[FEATURE_GLSL4] && defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get() == nullptr)
 	{
-		Buffer::Settings settings(Buffer::TYPEFLAG_SHADER_STORAGE, BUFFERUSAGE_STATIC);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
 		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT, 0}};
 
 		std::vector<float> data;
 		data.resize(Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE / 4);
 
 		auto buffer = newBuffer(settings, format, data.data(), data.size() * sizeof(float), data.size());
-		defaultBuffers[BUFFERTYPE_TEXEL].set(buffer, Acquire::NORETAIN);
+		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
 	}
 
 	// Load default resources before other Volatile.
-	for (int i = 0; i < BUFFERTYPE_MAX_ENUM; i++)
+	for (int i = 0; i < BUFFERUSAGE_MAX_ENUM; i++)
 	{
 		if (defaultBuffers[i].get())
 			((Buffer *) defaultBuffers[i].get())->loadVolatile();
 	}
 
-	if (defaultBuffers[BUFFERTYPE_TEXEL].get())
-		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERTYPE_TEXEL]->getTexelBufferHandle());
+	if (defaultBuffers[BUFFERUSAGE_TEXEL].get())
+		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERUSAGE_TEXEL]->getTexelBufferHandle());
 
-	if (defaultBuffers[BUFFERTYPE_SHADER_STORAGE].get())
-		gl.setDefaultStorageBuffer((GLuint) defaultBuffers[BUFFERTYPE_SHADER_STORAGE]->getHandle());
+	if (defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get())
+		gl.setDefaultStorageBuffer((GLuint) defaultBuffers[BUFFERUSAGE_SHADER_STORAGE]->getHandle());
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
@@ -494,7 +494,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
 	GLenum gldatatype = OpenGL::getGLIndexDataType(cmd.indexType);
 
-	gl.bindBuffer(BUFFERTYPE_INDEX, cmd.indexBuffer->getHandle());
+	gl.bindBuffer(BUFFERUSAGE_INDEX, cmd.indexBuffer->getHandle());
 
 	if (cmd.instanceCount > 1)
 		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
@@ -536,7 +536,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.setCullMode(CULL_NONE);
 
-	gl.bindBuffer(BUFFERTYPE_INDEX, quadIndexBuffer->getHandle());
+	gl.bindBuffer(BUFFERUSAGE_INDEX, quadIndexBuffer->getHandle());
 
 	if (gl.isBaseVertexSupported())
 	{
@@ -1530,8 +1530,8 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL3] = GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
-	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferTypeSupported(BUFFERTYPE_TEXEL);
-	capabilities.features[FEATURE_COPY_BUFFER] = gl.isBufferTypeSupported(BUFFERTYPE_COPY_SOURCE);
+	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
+	capabilities.features[FEATURE_COPY_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_COPY_SOURCE);
 	static_assert(FEATURE_MAX_ENUM == 12, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();

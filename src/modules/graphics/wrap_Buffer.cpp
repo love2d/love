@@ -373,11 +373,11 @@ static int w_Buffer_getFormat(lua_State *L)
 static int w_Buffer_isBufferType(lua_State *L)
 {
 	Buffer *t = luax_checkbuffer(L, 1);
-	BufferType buffertype = BUFFERTYPE_MAX_ENUM;
+	BufferUsage bufferusage = BUFFERUSAGE_MAX_ENUM;
 	const char *typestr = luaL_checkstring(L, 2);
-	if (!getConstant(typestr, buffertype))
-		return luax_enumerror(L, "buffer type", getConstants(buffertype), typestr);
-	luax_pushboolean(L, (t->getTypeFlags() & (1 << buffertype)) != 0);
+	if (!getConstant(typestr, bufferusage))
+		return luax_enumerror(L, "buffer type", getConstants(bufferusage), typestr);
+	luax_pushboolean(L, (t->getUsageFlags() & (1 << bufferusage)) != 0);
 	return 1;
 }
 

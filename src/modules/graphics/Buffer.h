@@ -55,17 +55,6 @@ public:
 		MAP_WRITE_INVALIDATE,
 	};
 
-	enum TypeFlags
-	{
-		TYPEFLAG_NONE = 0,
-		TYPEFLAG_VERTEX = 1 << BUFFERTYPE_VERTEX,
-		TYPEFLAG_INDEX = 1 << BUFFERTYPE_INDEX,
-		TYPEFLAG_TEXEL = 1 << BUFFERTYPE_TEXEL,
-		TYPEFLAG_SHADER_STORAGE = 1 << BUFFERTYPE_SHADER_STORAGE,
-		TYPEFLAG_COPY_SOURCE = 1 << BUFFERTYPE_COPY_SOURCE,
-		TYPEFLAG_COPY_DEST = 1 << BUFFERTYPE_COPY_DEST,
-	};
-
 	struct DataDeclaration
 	{
 		std::string name;
@@ -96,13 +85,13 @@ public:
 
 	struct Settings
 	{
-		TypeFlags typeFlags;
-		BufferUsage usage;
+		BufferUsageFlags usageFlags;
+		BufferDataUsage dataUsage;
 		bool zeroInitialize;
 
-		Settings(uint32 typeflags, BufferUsage usage)
-			: typeFlags((TypeFlags)typeflags)
-			, usage(usage)
+		Settings(uint32 usageflags, BufferDataUsage dataUsage)
+			: usageFlags((BufferUsageFlags)usageflags)
+			, dataUsage(dataUsage)
 			, zeroInitialize(false)
 		{}
 	};
@@ -111,8 +100,8 @@ public:
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
-	TypeFlags getTypeFlags() const { return typeFlags; }
-	BufferUsage getUsage() const { return usage; }
+	BufferUsageFlags getUsageFlags() const { return usageFlags; }
+	BufferDataUsage getDataUsage() const { return dataUsage; }
 	bool isMapped() const { return mapped; }
 
 	size_t getArrayLength() const { return arrayLength; }
@@ -180,11 +169,11 @@ protected:
 	// The size of the buffer, in bytes.
 	size_t size;
 
-	// The type of the buffer object.
-	TypeFlags typeFlags;
+	// Bit flags describing how the buffer can be used.
+	BufferUsageFlags usageFlags;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
-	BufferUsage usage;
+	BufferDataUsage dataUsage;
 
 	bool mapped;
 	

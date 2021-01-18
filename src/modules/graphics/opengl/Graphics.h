@@ -138,7 +138,7 @@ private:
 
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
-	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
+	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) override;
 	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
@@ -166,7 +166,7 @@ private:
 	size_t bufferMapMemorySize;
 
 	// Only needed for buffer types that can be bound to shaders.
-	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERTYPE_MAX_ENUM];
+	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERUSAGE_MAX_ENUM];
 
 	// [rendertarget][readable][srgb]
 	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];

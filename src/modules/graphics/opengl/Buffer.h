@@ -65,7 +65,7 @@ private:
 	void unmapStatic(size_t offset, size_t size);
 	void unmapStream();
 
-	BufferType mapType = BUFFERTYPE_VERTEX;
+	BufferUsage mapUsage = BUFFERUSAGE_VERTEX;
 	GLenum target = 0;
 
 	// The buffer object identifier. Assigned by OpenGL.

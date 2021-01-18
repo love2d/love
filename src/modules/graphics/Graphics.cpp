@@ -177,7 +177,7 @@ void Graphics::createQuadIndexBuffer()
 
 	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
 
-	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, BUFFERUSAGE_STATIC);
+	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_STATIC);
 	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
 	Buffer::Mapper map(*quadIndexBuffer);
@@ -209,7 +209,7 @@ Video *Graphics::newVideo(love::video::VideoStream *stream, float dpiscale)
 	return new Video(this, stream, dpiscale);
 }
 
-love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, BufferUsage usage)
+love::graphics::SpriteBatch *Graphics::newSpriteBatch(Texture *texture, int size, BufferDataUsage usage)
 {
 	return new SpriteBatch(this, texture, size, usage);
 }
@@ -300,12 +300,12 @@ Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format,
 	return newBuffer(settings, dataformat, data, size, arraylength);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage)
 {
 	return new Mesh(this, vertexformat, vertexcount, drawmode, usage);
 }
 
-Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
+Mesh *Graphics::newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage)
 {
 	return new Mesh(this, vertexformat, data, datasize, drawmode, usage);
 }
@@ -1044,10 +1044,10 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (!capabilities.features[FEATURE_COPY_BUFFER])
 		throw love::Exception("Buffer copying is not supported on this system.");
 
-	if (!(source->getTypeFlags() & Buffer::TYPEFLAG_COPY_SOURCE))
+	if (!(source->getUsageFlags() & BUFFERUSAGEFLAG_COPY_SOURCE))
 		throw love::Exception("Copy source buffer must be created with the copysource flag.");
 
-	if (!(dest->getTypeFlags() & Buffer::TYPEFLAG_COPY_DEST))
+	if (!(dest->getUsageFlags() & BUFFERUSAGEFLAG_COPY_DEST))
 		throw love::Exception("Copy destination buffer must be created with the copydest flag.");
 
 	Range sourcerange(sourceoffset, size);
@@ -1151,14 +1151,14 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 			if (state.vb[i]->getSize() < buffersizes[i])
 			{
 				delete state.vb[i];
-				state.vb[i] = newStreamBuffer(BUFFERTYPE_VERTEX, buffersizes[i]);
+				state.vb[i] = newStreamBuffer(BUFFERUSAGE_VERTEX, buffersizes[i]);
 			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
 		{
 			delete state.indexBuffer;
-			state.indexBuffer = newStreamBuffer(BUFFERTYPE_INDEX, buffersizes[2]);
+			state.indexBuffer = newStreamBuffer(BUFFERUSAGE_INDEX, buffersizes[2]);
 		}
 	}
 

@@ -235,15 +235,15 @@ void OpenGL::setupContext()
 	glGetIntegerv(GL_CULL_FACE_MODE, &faceCull);
 	state.faceCullMode = faceCull;
 
-	for (int i = 0; i < (int) BUFFERTYPE_MAX_ENUM; i++)
+	for (int i = 0; i < (int) BUFFERUSAGE_MAX_ENUM; i++)
 	{
 		state.boundBuffers[i] = 0;
-		if (isBufferTypeSupported((BufferType) i))
-			glBindBuffer(getGLBufferType((BufferType) i), 0);
+		if (isBufferUsageSupported((BufferUsage) i))
+			glBindBuffer(getGLBufferType((BufferUsage) i), 0);
 	}
 
-	if (isBufferTypeSupported(BUFFERTYPE_SHADER_STORAGE))
-		state.boundIndexedBuffers[BUFFERTYPE_SHADER_STORAGE].resize(maxShaderStorageBufferBindings, 0);
+	if (isBufferUsageSupported(BUFFERUSAGE_SHADER_STORAGE))
+		state.boundIndexedBuffers[BUFFERUSAGE_SHADER_STORAGE].resize(maxShaderStorageBufferBindings, 0);
 
 	// Initialize multiple texture unit support for shaders.
 	for (int i = 0; i < TEXTURE_MAX_ENUM + 1; i++)
@@ -484,12 +484,12 @@ void OpenGL::initMaxValues()
 	else
 		maxTextureArrayLayers = 0;
 
-	if (isBufferTypeSupported(BUFFERTYPE_TEXEL))
+	if (isBufferUsageSupported(BUFFERUSAGE_TEXEL))
 		glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &maxTexelBufferSize);
 	else
 		maxTexelBufferSize = 0;
 
-	if (isBufferTypeSupported(BUFFERTYPE_SHADER_STORAGE))
+	if (isBufferUsageSupported(BUFFERUSAGE_SHADER_STORAGE))
 	{
 		glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBufferSize);
 		glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &maxShaderStorageBufferBindings);
@@ -613,17 +613,17 @@ GLenum OpenGL::getGLPrimitiveType(PrimitiveType type)
 	return GL_ZERO;
 }
 
-GLenum OpenGL::getGLBufferType(BufferType type)
+GLenum OpenGL::getGLBufferType(BufferUsage usage)
 {
-	switch (type)
+	switch (usage)
 	{
-		case BUFFERTYPE_VERTEX: return GL_ARRAY_BUFFER;
-		case BUFFERTYPE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
-		case BUFFERTYPE_TEXEL: return GL_TEXTURE_BUFFER;
-		case BUFFERTYPE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
-		case BUFFERTYPE_COPY_SOURCE: return GL_COPY_READ_BUFFER;
-		case BUFFERTYPE_COPY_DEST: return GL_COPY_WRITE_BUFFER;
-		case BUFFERTYPE_MAX_ENUM: return GL_ZERO;
+		case BUFFERUSAGE_VERTEX: return GL_ARRAY_BUFFER;
+		case BUFFERUSAGE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
+		case BUFFERUSAGE_TEXEL: return GL_TEXTURE_BUFFER;
+		case BUFFERUSAGE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
+		case BUFFERUSAGE_COPY_SOURCE: return GL_COPY_READ_BUFFER;
+		case BUFFERUSAGE_COPY_DEST: return GL_COPY_WRITE_BUFFER;
+		case BUFFERUSAGE_MAX_ENUM: return GL_ZERO;
 	}
 
 	return GL_ZERO;
@@ -792,18 +792,18 @@ GLenum OpenGL::getGLVertexDataType(DataFormat format, int &components, GLboolean
 	return GL_ZERO;
 }
 
-GLenum OpenGL::getGLBufferUsage(BufferUsage usage)
+GLenum OpenGL::getGLBufferDataUsage(BufferDataUsage usage)
 {
 	switch (usage)
 	{
-		case BUFFERUSAGE_STREAM: return GL_STREAM_DRAW;
-		case BUFFERUSAGE_DYNAMIC: return GL_DYNAMIC_DRAW;
-		case BUFFERUSAGE_STATIC: return GL_STATIC_DRAW;
+		case BUFFERDATAUSAGE_STREAM: return GL_STREAM_DRAW;
+		case BUFFERDATAUSAGE_DYNAMIC: return GL_DYNAMIC_DRAW;
+		case BUFFERDATAUSAGE_STATIC: return GL_STATIC_DRAW;
 		default: return 0;
 	}
 }
 
-void OpenGL::bindBuffer(BufferType type, GLuint buffer)
+void OpenGL::bindBuffer(BufferUsage type, GLuint buffer)
 {
 	if (state.boundBuffers[type] != buffer)
 	{
@@ -816,7 +816,7 @@ void OpenGL::deleteBuffer(GLuint buffer)
 {
 	glDeleteBuffers(1, &buffer);
 
-	for (int i = 0; i < (int) BUFFERTYPE_MAX_ENUM; i++)
+	for (int i = 0; i < (int) BUFFERUSAGE_MAX_ENUM; i++)
 	{
 		if (state.boundBuffers[i] == buffer)
 			state.boundBuffers[i] = 0;
@@ -869,7 +869,7 @@ void OpenGL::setVertexAttributes(const VertexAttributes &attributes, const Buffe
 
 			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
-			bindBuffer(BUFFERTYPE_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
+			bindBuffer(BUFFERUSAGE_VERTEX, (GLuint) bufferinfo.buffer->getHandle());
 
 			if (intformat)
 				glVertexAttribIPointer(i, components, gltype, layout.stride, offsetpointer);
@@ -1165,7 +1165,7 @@ void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restorepr
 	bindTextureToUnit(textype, handle, textureunit, restoreprev, bindforedit);
 }
 
-void OpenGL::bindIndexedBuffer(GLuint buffer, BufferType type, int index)
+void OpenGL::bindIndexedBuffer(GLuint buffer, BufferUsage type, int index)
 {
 	auto &bindings = state.boundIndexedBuffers[type];
 	if (bindings.size() > (size_t) index && buffer != bindings[index])
@@ -1434,22 +1434,22 @@ bool OpenGL::isTextureTypeSupported(TextureType type) const
 	return false;
 }
 
-bool OpenGL::isBufferTypeSupported(BufferType type) const
+bool OpenGL::isBufferUsageSupported(BufferUsage usage) const
 {
-	switch (type)
+	switch (usage)
 	{
-	case BUFFERTYPE_VERTEX:
-	case BUFFERTYPE_INDEX:
+	case BUFFERUSAGE_VERTEX:
+	case BUFFERUSAGE_INDEX:
 		return true;
-	case BUFFERTYPE_TEXEL:
+	case BUFFERUSAGE_TEXEL:
 		// Not supported in ES until 3.2, which we don't support shaders for...
 		return GLAD_VERSION_3_1;
-	case BUFFERTYPE_SHADER_STORAGE:
+	case BUFFERUSAGE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
-	case BUFFERTYPE_COPY_SOURCE:
-	case BUFFERTYPE_COPY_DEST:
+	case BUFFERUSAGE_COPY_SOURCE:
+	case BUFFERUSAGE_COPY_DEST:
 		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_0;
-	case BUFFERTYPE_MAX_ENUM:
+	case BUFFERUSAGE_MAX_ENUM:
 		return false;
 	}
 	return false;

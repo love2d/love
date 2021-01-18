@@ -52,7 +52,7 @@ public:
 
 	static love::Type type;
 
-	SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage usage);
+	SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferDataUsage usage);
 	virtual ~SpriteBatch();
 
 	int add(const Matrix4 &m, int index = -1);

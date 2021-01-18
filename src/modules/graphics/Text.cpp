@@ -63,7 +63,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
-		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_DYNAMIC);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_DYNAMIC);
 		auto decl = Buffer::getCommonFormatDeclaration(Font::vertexFormat);
 		Buffer *newbuffer = gfx->newBuffer(settings, decl, nullptr, newsize, 0);
 
@@ -279,7 +279,7 @@ void Text::draw(Graphics *gfx, const Matrix4 &m)
 		size_t offset = modifiedVertices.getOffset();
 		size_t size = modifiedVertices.getSize();
 
-		if (vertexBuffer->getUsage() == BUFFERUSAGE_STREAM)
+		if (vertexBuffer->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 			vertexBuffer->fill(0, vertexBuffer->getSize(), vertexData);
 		else
 			vertexBuffer->fill(offset, size, vertexData + offset);
