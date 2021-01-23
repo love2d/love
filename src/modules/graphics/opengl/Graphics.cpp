@@ -304,6 +304,9 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		glEnable(GL_TEXTURE_2D);
 	}
 
+	if (!GLAD_ES_VERSION_2_0)
+		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
 	gl.setTextureUnit(0);
 
 	// Set pixel row alignment - code that calls glTexSubImage and glReadPixels
@@ -1444,10 +1447,9 @@ void Graphics::setBlendState(const BlendState &blend)
 
 void Graphics::setPointSize(float size)
 {
-	if (batchedDrawState.primitiveMode == PRIMITIVE_POINTS)
+	if (size != states.back().pointSize)
 		flushBatchedDraws();
 
-	gl.setPointSize(size * getCurrentDPIScale());
 	states.back().pointSize = size;
 }
 

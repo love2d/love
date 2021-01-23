@@ -519,8 +519,8 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);
 
-	if (Shader::current && texture.get())
-		Shader::current->checkMainTexture(texture);
+	if (Shader::current)
+		Shader::current->validateDrawState(primitiveType, texture);
 
 	VertexAttributes attributes;
 	BufferBindings buffers;

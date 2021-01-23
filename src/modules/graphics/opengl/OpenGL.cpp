@@ -943,19 +943,6 @@ void OpenGL::setScissor(const Rect &v, bool rtActive)
 	state.scissor = v;
 }
 
-void OpenGL::setPointSize(float size)
-{
-	if (GLAD_VERSION_1_0)
-		glPointSize(size);
-
-	state.pointSize = size;
-}
-
-float OpenGL::getPointSize() const
-{
-	return state.pointSize;
-}
-
 void OpenGL::setEnableState(EnableState enablestate, bool enable)
 {
 	GLenum glstate = GL_NONE;

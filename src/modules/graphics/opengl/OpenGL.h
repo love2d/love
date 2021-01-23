@@ -271,12 +271,6 @@ public:
 	void setScissor(const Rect &v, bool rtActive);
 
 	/**
-	 * Sets the global point size.
-	 **/
-	void setPointSize(float size);
-	float getPointSize() const;
-
-	/**
 	 * State-tracked version of glEnable.
 	 **/
 	void setEnableState(EnableState state, bool enable);

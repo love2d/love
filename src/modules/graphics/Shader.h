@@ -64,7 +64,6 @@ public:
 		BUILTIN_TEXTURE_VIDEO_CB,
 		BUILTIN_TEXTURE_VIDEO_CR,
 		BUILTIN_UNIFORMS_PER_DRAW,
-		BUILTIN_POINT_SIZE,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -88,6 +87,7 @@ public:
 		STANDARD_DEFAULT,
 		STANDARD_VIDEO,
 		STANDARD_ARRAY,
+		STANDARD_POINTS,
 		STANDARD_MAX_ENUM
 	};
 
@@ -209,8 +209,7 @@ public:
 	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
 
 	TextureType getMainTextureType() const;
-	void checkMainTextureType(TextureType textype, bool isDepthSampler) const;
-	void checkMainTexture(Texture *texture) const;
+	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const SourceInfo &info);
@@ -239,6 +238,7 @@ protected:
 	struct ValidationReflection
 	{
 		std::map<std::string, BufferReflection> storageBuffers;
+		bool usesPointSize;
 	};
 
 	static bool validateInternal(ShaderStage* vertex, ShaderStage* pixel, std::string& err, ValidationReflection &reflection);

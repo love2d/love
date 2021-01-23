@@ -1138,11 +1138,14 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		state.standardShaderType = cmd.standardShaderType;
 	}
 
-	if (state.vertexCount == 0 && Shader::isDefaultActive())
-		Shader::attachDefault(state.standardShaderType);
+	if (state.vertexCount == 0)
+	{
+		if (Shader::isDefaultActive())
+			Shader::attachDefault(state.standardShaderType);
 
-	if (state.vertexCount == 0 && Shader::current != nullptr && cmd.texture != nullptr)
-		Shader::current->checkMainTexture(cmd.texture);
+		if (Shader::current != nullptr)
+			Shader::current->validateDrawState(cmd.primitiveMode, cmd.texture);
+	}
 
 	if (shouldresize)
 	{
@@ -1350,6 +1353,7 @@ void Graphics::points(const Vector2 *positions, const Colorf *colors, size_t num
 	cmd.formats[0] = getSinglePositionFormat(is2D);
 	cmd.formats[1] = CommonFormat::RGBAub;
 	cmd.vertexCount = (int) numpoints;
+	cmd.standardShaderType = Shader::STANDARD_POINTS;
 
 	BatchedVertexData data = requestBatchedDraw(cmd);
 

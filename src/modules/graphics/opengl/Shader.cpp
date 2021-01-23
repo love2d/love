@@ -48,7 +48,6 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 	, builtinUniforms()
 	, builtinUniformInfo()
 	, builtinAttributes()
-	, lastPointSize(0.0f)
 {
 	// load shader source and create program object
 	loadVolatile();
@@ -429,8 +428,6 @@ void Shader::mapActiveUniforms()
 bool Shader::loadVolatile()
 {
 	OpenGL::TempDebugGroup debuggroup("Shader load");
-
-	lastPointSize = -1.0f;
 
 	// zero out active texture list
 	textureUnits.clear();
@@ -971,25 +968,10 @@ void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics:
 	}
 }
 
-void Shader::updatePointSize(float size)
-{
-	if (size == lastPointSize || current != this)
-		return;
-
-	GLint location = builtinUniforms[BUILTIN_POINT_SIZE];
-	if (location >= 0)
-		glUniform1f(location, size);
-
-	lastPointSize = size;
-}
-
 void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH)
 {
 	if (current != this)
 		return;
-
-	if (GLAD_ES_VERSION_2_0)
-		updatePointSize(gl.getPointSize());
 
 	BuiltinUniformData data;
 
@@ -1009,6 +991,12 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 			data.normalMatrix[i].w = 0.0f;
 		}
 	}
+
+	// Store DPI scale in an unused component of another vector.
+	data.normalMatrix[0].w = (float) gfx->getCurrentDPIScale();
+
+	// Same with point size.
+	data.normalMatrix[1].w = gfx->getPointSize();
 
 	data.screenSizeParams.x = viewportW;
 	data.screenSizeParams.y = viewportH;

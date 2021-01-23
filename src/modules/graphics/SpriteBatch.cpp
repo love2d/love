@@ -329,10 +329,10 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 			Shader::attachDefault(defaultshader);
 		}
-
-		if (Shader::current)
-			Shader::current->checkMainTexture(texture);
 	}
+
+	if (Shader::current)
+		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, texture);
 
 	flush(); // Upload any modified sprite data to the GPU.
 

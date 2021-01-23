@@ -3103,7 +3103,7 @@ int w_rectangle(lua_State *L)
 
 	if (lua_isnoneornil(L, 6))
 	{
-		instance()->rectangle(mode, x, y, w, h);
+		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h); });
 		return 0;
 	}
 
