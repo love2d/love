@@ -108,6 +108,10 @@ Filesystem::Filesystem()
 
 Filesystem::~Filesystem()
 {
+#ifdef LOVE_ANDROID
+	love::android::deinitializeVirtualArchive();
+#endif
+
 	if (PHYSFS_isInit())
 		PHYSFS_deinit();
 }
@@ -224,30 +228,56 @@ bool Filesystem::setSource(const char *source)
 	if (!love::android::createStorageDirectories())
 		SDL_Log("Error creating storage directories!");
 
-	new_search_path = love::android::getSelectedGameFile();
+	new_search_path = "";
 
-	// try mounting first, if that fails, load to memory and mount
-	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
+	PHYSFS_Io *gameLoveIO;
+	bool hasFusedGame = love::android::checkFusedGame((void **) &gameLoveIO);
+
+	if (hasFusedGame)
 	{
-		// PHYSFS cannot yet mount a zip file inside an .apk
-		SDL_Log("Mounting %s did not work. Loading to memory.",
-				new_search_path.c_str());
-		char* game_archive_ptr = NULL;
-		size_t game_archive_size = 0;
-		if (!love::android::loadGameArchiveToMemory(
-					new_search_path.c_str(), &game_archive_ptr,
-					&game_archive_size))
+		if (gameLoveIO)
 		{
-			SDL_Log("Failure memory loading archive %s", new_search_path.c_str());
-			return false;
+			// Actually we should just be able to mount gameLoveIO, but that's experimental.
+			gameLoveIO->destroy(gameLoveIO);
+			goto oldschool;
 		}
-		if (!PHYSFS_mountMemory(
-			    game_archive_ptr, game_archive_size,
-			    love::android::freeGameArchiveMemory, "archive.zip", "/", 0))
+		else
 		{
-			SDL_Log("Failure mounting in-memory archive.");
-			love::android::freeGameArchiveMemory(game_archive_ptr);
-			return false;
+			if (!love::android::initializeVirtualArchive())
+			{
+				SDL_Log("Unable to mount AAsset: %s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+				return false;
+			}
+		}
+	}
+	else
+	{
+	oldschool:
+		new_search_path = love::android::getSelectedGameFile();
+
+		// try mounting first, if that fails, load to memory and mount
+		if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
+		{
+			// PHYSFS cannot yet mount a zip file inside an .apk
+			SDL_Log("Mounting %s did not work. Loading to memory.",
+					new_search_path.c_str());
+			char* game_archive_ptr = NULL;
+			size_t game_archive_size = 0;
+			if (!love::android::loadGameArchiveToMemory(
+						new_search_path.c_str(), &game_archive_ptr,
+						&game_archive_size))
+			{
+				SDL_Log("Failure memory loading archive %s", new_search_path.c_str());
+				return false;
+			}
+			if (!PHYSFS_mountMemory(
+					game_archive_ptr, game_archive_size,
+					love::android::freeGameArchiveMemory, "archive.zip", "/", 0))
+			{
+				SDL_Log("Failure mounting in-memory archive.");
+				love::android::freeGameArchiveMemory(game_archive_ptr);
+				return false;
+			}
 		}
 	}
 #else
