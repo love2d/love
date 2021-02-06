@@ -80,6 +80,27 @@ void requestRecordingPermission();
 
 void showRecordingPermissionMissingDialog();
 
+/**
+ * Initialize Android AAsset virtual archive.
+ * @return true if successful.
+ */
+bool initializeVirtualArchive();
+
+/**
+ * Deinitialize Android AAsset virtual archive.
+ * @return true if successful.
+ */
+void deinitializeVirtualArchive();
+
+/**
+ * Retrieve the fused game inside the APK
+ * @param physfsIO_Out Pointer to PHYSFS_Io* struct
+ * @return true if there's game inside the APK. If physfsIO_Out is not null, then it contains
+ * the game.love which needs to be mounted to root. false if it's not fused, in which case
+ * physfsIO_Out is undefined.
+ */
+bool checkFusedGame(void **physfsIO_Out);
+
 } // android
 } // love
 

@@ -22,13 +22,20 @@
 
 #ifdef LOVE_ANDROID
 
-#include "SDL.h"
-#include "jni.h"
+#include <cerrno>
+#include <unordered_map>
+
+#include <SDL.h>
+
+#include <jni.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <errno.h>
+
+#include "physfs.h"
 
 namespace love
 {
@@ -324,6 +331,396 @@ void showRecordingPermissionMissingDialog()
 
 	env->DeleteLocalRef(clazz);
 	env->DeleteLocalRef(activity);
+}
+
+/*
+ * Helper functions to aid new fusing method
+ */
+static AAssetManager *getAssetManager()
+{
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jobject self = (jobject) SDL_AndroidGetActivity();
+	jclass activity = env->GetObjectClass(self);
+	jmethodID method = env->GetMethodID(activity, "getAssetManager", "()Landroid/content/res/AssetManager;");
+
+	jobject assetManager = env->CallObjectMethod(self, method);
+	AAssetManager *assetManagerObject = AAssetManager_fromJava(env, assetManager);
+
+	env->DeleteLocalRef(assetManager);
+	env->DeleteLocalRef(activity);
+
+	return assetManagerObject;
+}
+
+namespace aasset
+{
+namespace io
+{
+
+struct AssetInfo
+{
+	AAssetManager *assetManager;
+	AAsset *asset;
+	char *filename;
+	size_t size;
+};
+
+static std::unordered_map<std::string, PHYSFS_FileType> fileTree;
+
+// Workaround AAsset can't detect whetever something is a directory or doesn't exist
+static void buildFileLookup(
+	AAssetManager *assetManager,
+	std::unordered_map<std::string, PHYSFS_FileType> &out,
+	const std::string &path = ""
+)
+{
+	if (!path.empty())
+	{
+		AAsset *test = AAssetManager_open(assetManager, path.c_str(), AASSET_MODE_STREAMING);
+		if (test)
+		{
+			AAsset_close(test);
+			out[path] = PHYSFS_FILETYPE_REGULAR;
+			return;
+		}
+
+		out[path] = PHYSFS_FILETYPE_DIRECTORY;
+	}
+
+	AAssetDir *dir = AAssetManager_openDir(assetManager, path.c_str());
+	const char *file;
+
+	while ((file = AAssetDir_getNextFileName(dir)) != nullptr)
+		buildFileLookup(assetManager, out, file);
+
+	AAssetDir_close(dir);
+}
+
+PHYSFS_sint64 read(PHYSFS_Io *io, void *buf, PHYSFS_uint64 len)
+{
+	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
+	int readed = AAsset_read(asset, buf, (size_t) len);
+
+	PHYSFS_setErrorCode(readed < 0 ? PHYSFS_ERR_OS_ERROR : PHYSFS_ERR_OK);
+	return (PHYSFS_sint64) readed;
+}
+
+PHYSFS_sint64 write(PHYSFS_Io *io, const void *buf, PHYSFS_uint64 len)
+{
+	LOVE_UNUSED(io);
+	LOVE_UNUSED(buf);
+	LOVE_UNUSED(len);
+
+	PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
+	return -1;
+}
+
+int seek(PHYSFS_Io *io, PHYSFS_uint64 offset)
+{
+	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
+	int success = AAsset_seek64(asset, (off64_t) offset, SEEK_SET) != -1;
+
+	PHYSFS_setErrorCode(success ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
+	return success;
+}
+
+PHYSFS_sint64 tell(PHYSFS_Io *io)
+{
+	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
+	off64_t len = AAsset_getLength64(asset);
+	off64_t remain = AAsset_getRemainingLength64(asset);
+
+	return len - remain;
+}
+
+PHYSFS_sint64 length(PHYSFS_Io *io)
+{
+	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
+	return AAsset_getLength64(asset);
+}
+
+// Forward declaration
+PHYSFS_Io *fromAAsset(AAssetManager *assetManager, const char *filename, AAsset *asset);
+
+PHYSFS_Io *duplicate(PHYSFS_Io *io)
+{
+	AssetInfo *assetInfo = (AssetInfo *) io->opaque;
+	AAsset *asset = AAssetManager_open(assetInfo->assetManager, assetInfo->filename, AASSET_MODE_RANDOM);
+
+	if (asset == nullptr)
+	{
+		PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
+		return nullptr;
+	}
+
+	AAsset_seek64(asset, tell(io), SEEK_SET);
+	return fromAAsset(assetInfo->assetManager, assetInfo->filename, asset);
+}
+
+void destroy(PHYSFS_Io *io)
+{
+	AssetInfo *assetInfo = (AssetInfo *) io->opaque;
+	AAsset_close(assetInfo->asset);
+	delete[] assetInfo->filename;
+	delete assetInfo;
+	delete io;
+}
+
+PHYSFS_Io *fromAAsset(AAssetManager *assetManager, const char *filename, AAsset *asset)
+{
+	// Create AssetInfo
+	AssetInfo *assetInfo = new (std::nothrow) AssetInfo();
+	assetInfo->assetManager = assetManager;
+	assetInfo->asset = asset;
+	assetInfo->size = strlen(filename) + 1;
+	assetInfo->filename = new (std::nothrow) char[assetInfo->size];
+	memcpy(assetInfo->filename, filename, assetInfo->size);
+
+	// Create PHYSFS_Io
+	PHYSFS_Io *io = new (std::nothrow) PHYSFS_Io();
+	io->version = 0;
+	io->opaque = assetInfo;
+	io->read = read;
+	io->write = write;
+	io->seek = seek;
+	io->tell = tell;
+	io->length = length;
+	io->duplicate = duplicate;
+	io->flush = nullptr;
+	io->destroy = destroy;
+
+	return io;
+}
+
+}
+
+void *openArchive(PHYSFS_Io *io, const char *name, int forWrite, int *claimed)
+{
+	if (io->opaque == nullptr || memcmp(io->opaque, "ASET", 4) != 0)
+		return nullptr;
+
+	// It's our archive
+	*claimed = 1;
+	AAssetManager *assetManager = getAssetManager();
+
+	if (io::fileTree.empty())
+		io::buildFileLookup(assetManager, io::fileTree);
+
+	return assetManager;
+}
+
+PHYSFS_EnumerateCallbackResult enumerate(
+	void *opaque,
+	const char *dirname,
+	PHYSFS_EnumerateCallback cb,
+	const char *origdir,
+	void *callbackdata
+)
+{
+	const char *path = dirname;
+	if (path == nullptr || (path[0] == '/' && path[1] == 0))
+		path = "";
+
+	AAssetManager *assetManager = (AAssetManager *) opaque;
+	AAssetDir *dir = AAssetManager_openDir(assetManager, path);
+
+	if (dir == nullptr)
+	{
+		PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
+		return PHYSFS_ENUM_ERROR;
+	}
+
+	PHYSFS_EnumerateCallbackResult ret = PHYSFS_ENUM_OK;
+
+	while (ret == PHYSFS_ENUM_OK)
+	{
+		const char *name = AAssetDir_getNextFileName(dir);
+
+		// No more files?
+		if (name == nullptr)
+			break;
+
+		ret = cb(callbackdata, origdir, name);
+	}
+
+	AAssetDir_close(dir);
+	return ret;
+}
+
+PHYSFS_Io *openRead(void *opaque, const char *name)
+{
+	AAssetManager *assetManager = (AAssetManager *) opaque;
+	AAsset *file = AAssetManager_open(assetManager, name, AASSET_MODE_UNKNOWN);
+
+	if (file == nullptr)
+	{
+		PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
+		return nullptr;
+	}
+
+	PHYSFS_setErrorCode(PHYSFS_ERR_OK);
+	return io::fromAAsset(assetManager, name, file);
+}
+
+PHYSFS_Io *openWriteAppend(void *opaque, const char *name)
+{
+	LOVE_UNUSED(opaque);
+	LOVE_UNUSED(name);
+
+	// AAsset doesn't support modification
+	PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
+	return nullptr;
+}
+
+int removeMkdir(void *opaque, const char *name)
+{
+	LOVE_UNUSED(opaque);
+	LOVE_UNUSED(name);
+
+	// AAsset doesn't support modification
+	PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
+	return 0;
+}
+
+int stat(void *opaque, const char *name, PHYSFS_Stat *out)
+{
+	LOVE_UNUSED(opaque);
+
+	auto result = io::fileTree.find(name);
+
+	if (result != io::fileTree.end())
+	{
+		out->filetype = result->second;
+		out->modtime = -1;
+		out->createtime = -1;
+		out->accesstime = -1;
+		out->readonly = 1;
+
+		PHYSFS_setErrorCode(PHYSFS_ERR_OK);
+		return 1;
+	}
+	else
+	{
+		PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
+		return 0;
+	}
+}
+
+void closeArchive(void *opaque)
+{
+	// Do nothing
+	LOVE_UNUSED(opaque);
+	PHYSFS_setErrorCode(PHYSFS_ERR_OK);
+}
+
+static PHYSFS_Archiver g_AAssetArchiver = {
+	0,
+	{
+		"AASSET",
+		"Android AAsset Wrapper",
+		"LOVE Development Team",
+		"https://developer.android.com/ndk/reference/group/asset",
+		0
+	},
+	openArchive,
+	enumerate,
+	openRead,
+	openWriteAppend,
+	openWriteAppend,
+	removeMkdir,
+	removeMkdir,
+	stat,
+	closeArchive
+};
+
+static PHYSFS_sint64 dummyReturn0(PHYSFS_Io *io)
+{
+	LOVE_UNUSED(io);
+	PHYSFS_setErrorCode(PHYSFS_ERR_OK);
+	return 0;
+}
+
+static PHYSFS_Io *getDummyIO(PHYSFS_Io *io);
+
+static char dummyOpaque[] = "ASET";
+static PHYSFS_Io dummyIo = {
+	0,
+	dummyOpaque,
+	nullptr,
+	nullptr,
+	[](PHYSFS_Io *io, PHYSFS_uint64 offset) -> int
+	{
+		PHYSFS_setErrorCode(offset == 0 ? PHYSFS_ERR_OK : PHYSFS_ERR_PAST_EOF);
+		return offset == 0;
+	},
+	dummyReturn0,
+	dummyReturn0,
+	getDummyIO,
+	nullptr,
+	[](PHYSFS_Io *io) { LOVE_UNUSED(io); }
+};
+
+static PHYSFS_Io *getDummyIO(PHYSFS_Io *io)
+{
+	return &dummyIo;
+}
+
+}
+
+static bool isVirtualArchiveInitialized = false;
+
+bool initializeVirtualArchive()
+{
+	if (isVirtualArchiveInitialized)
+		return true;
+
+	if (!PHYSFS_registerArchiver(&aasset::g_AAssetArchiver))
+		return false;
+	if (!PHYSFS_mountIo(&aasset::dummyIo, "ASET.AASSET", nullptr, 0))
+	{
+		PHYSFS_deregisterArchiver(aasset::g_AAssetArchiver.info.extension);
+		return false;
+	}
+
+	isVirtualArchiveInitialized = true;
+	return true;
+}
+
+void deinitializeVirtualArchive()
+{
+	if (isVirtualArchiveInitialized)
+	{
+		PHYSFS_deregisterArchiver(aasset::g_AAssetArchiver.info.extension);
+		isVirtualArchiveInitialized = false;
+	}
+}
+
+bool checkFusedGame(void **physfsIO_Out)
+{
+	// TODO: Reorder the loading in 12.0
+	PHYSFS_Io *&io = *(PHYSFS_Io **) physfsIO_Out;
+	AAssetManager *assetManager = getAssetManager();
+
+	// Prefer game.love inside assets/ folder
+	AAsset *asset = AAssetManager_open(assetManager, "game.love", AASSET_MODE_RANDOM);
+	if (asset)
+	{
+		io = aasset::io::fromAAsset(assetManager, "game.love", asset);
+		return true;
+	}
+
+	// If there's no game.love inside assets/ try main.lua
+	asset = AAssetManager_open(assetManager, "main.lua", AASSET_MODE_STREAMING);
+
+	if (asset)
+	{
+		AAsset_close(asset);
+		io = nullptr;
+		return true;
+	}
+
+	// Not found
+	return false;
 }
 
 } // android
