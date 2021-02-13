@@ -348,6 +348,7 @@ static AAssetManager *getAssetManager()
 
 	env->DeleteLocalRef(assetManager);
 	env->DeleteLocalRef(activity);
+	env->DeleteLocalRef(self);
 
 	return assetManagerObject;
 }
