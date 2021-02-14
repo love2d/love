@@ -56,6 +56,19 @@ public:
 		HAT_MAX_ENUM = 16
 	};
 
+	enum GamepadType
+	{
+		GAMEPAD_TYPE_UNKNOWN,
+		GAMEPAD_TYPE_XBOX360,
+		GAMEPAD_TYPE_XBOXONE,
+		GAMEPAD_TYPE_PS3,
+		GAMEPAD_TYPE_PS4,
+		GAMEPAD_TYPE_PS5,
+		GAMEPAD_TYPE_NINTENDO_SWITCH_PRO,
+		GAMEPAD_TYPE_VIRTUAL,
+		GAMEPAD_TYPE_MAX_ENUM
+	};
+
 	// Valid Gamepad axes.
 	enum GamepadAxis
 	{
@@ -149,6 +162,8 @@ public:
 	virtual bool openGamepad(int deviceindex) = 0;
 	virtual bool isGamepad() const = 0;
 
+	virtual GamepadType getGamepadType() const = 0;
+
 	virtual float getGamepadAxis(GamepadAxis axis) const = 0;
 	virtual bool isGamepadDown(const std::vector<GamepadButton> &blist) const = 0;
 
@@ -168,33 +183,13 @@ public:
 	virtual bool setVibration() = 0;
 	virtual void getVibration(float &left, float &right) = 0;
 
-	static bool getConstant(const char *in, Hat &out);
-	static bool getConstant(Hat in, const char *&out);
-
-	static bool getConstant(const char *in, GamepadAxis &out);
-	static bool getConstant(GamepadAxis in, const char *&out);
-
-	static bool getConstant(const char *in, GamepadButton &out);
-	static bool getConstant(GamepadButton in, const char *&out);
-
-	static bool getConstant(const char *in, InputType &out);
-	static bool getConstant(InputType in, const char *&out);
+	STRINGMAP_CLASS_DECLARE(Hat);
+	STRINGMAP_CLASS_DECLARE(GamepadType);
+	STRINGMAP_CLASS_DECLARE(GamepadAxis);
+	STRINGMAP_CLASS_DECLARE(GamepadButton);
+	STRINGMAP_CLASS_DECLARE(InputType);
 
 	static float clampval(float x);
-
-private:
-
-	static StringMap<Hat, HAT_MAX_ENUM>::Entry hatEntries[];
-	static StringMap<Hat, HAT_MAX_ENUM> hats;
-
-	static StringMap<GamepadAxis, GAMEPAD_AXIS_MAX_ENUM>::Entry gpAxisEntries[];
-	static StringMap<GamepadAxis, GAMEPAD_AXIS_MAX_ENUM> gpAxes;
-
-	static StringMap<GamepadButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
-	static StringMap<GamepadButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
-
-	static StringMap<InputType, INPUT_TYPE_MAX_ENUM>::Entry inputTypeEntries[];
-	static StringMap<InputType, INPUT_TYPE_MAX_ENUM> inputTypes;
 
 }; // Joystick
 

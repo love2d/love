@@ -178,6 +178,15 @@ int w_Joystick_isGamepad(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_getGamepadType(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *str = "unknown";
+	Joystick::getConstant(j->getGamepadType(), str);
+	lua_pushstring(L, str);
+	return 1;
+}
+
 int w_Joystick_getGamepadAxis(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
@@ -359,6 +368,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "isDown", w_Joystick_isDown },
 
 	{ "isGamepad", w_Joystick_isGamepad },
+	{ "getGamepadType", w_Joystick_getGamepadType },
 	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
 	{ "getGamepadMapping", w_Joystick_getGamepadMapping },

@@ -42,102 +42,71 @@ float Joystick::clampval(float x)
 	return x;
 }
 
-bool Joystick::getConstant(const char *in, Joystick::Hat &out)
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::Hat, Joystick::HAT_MAX_ENUM, hat)
 {
-	return hats.find(in, out);
+	{ "c",  Joystick::HAT_CENTERED  },
+	{ "u",  Joystick::HAT_UP        },
+	{ "r",  Joystick::HAT_RIGHT     },
+	{ "d",  Joystick::HAT_DOWN      },
+	{ "l",  Joystick::HAT_LEFT      },
+	{ "ru", Joystick::HAT_RIGHTUP   },
+	{ "rd", Joystick::HAT_RIGHTDOWN },
+	{ "lu", Joystick::HAT_LEFTUP    },
+	{ "ld", Joystick::HAT_LEFTDOWN  },
 }
+STRINGMAP_CLASS_END(Joystick, Joystick::Hat, Joystick::HAT_MAX_ENUM, hat)
 
-bool Joystick::getConstant(Joystick::Hat in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 {
-	return hats.find(in, out);
+	{ "unknown",   Joystick::GAMEPAD_TYPE_UNKNOWN             },
+	{ "xbox360",   Joystick::GAMEPAD_TYPE_XBOX360             },
+	{ "xboxone",   Joystick::GAMEPAD_TYPE_XBOXONE             },
+	{ "ps3",       Joystick::GAMEPAD_TYPE_PS3                 },
+	{ "ps4",       Joystick::GAMEPAD_TYPE_PS4                 },
+	{ "ps5",       Joystick::GAMEPAD_TYPE_PS5                 },
+	{ "switchpro", Joystick::GAMEPAD_TYPE_NINTENDO_SWITCH_PRO },
+	{ "virtual",   Joystick::GAMEPAD_TYPE_VIRTUAL             },
 }
+STRINGMAP_CLASS_END(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 
-bool Joystick::getConstant(const char *in, Joystick::GamepadAxis &out)
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadAxis, Joystick::GAMEPAD_AXIS_MAX_ENUM, gpAxis)
 {
-	return gpAxes.find(in, out);
+	{ "leftx",        Joystick::GAMEPAD_AXIS_LEFTX        },
+	{ "lefty",        Joystick::GAMEPAD_AXIS_LEFTY        },
+	{ "rightx",       Joystick::GAMEPAD_AXIS_RIGHTX       },
+	{ "righty",       Joystick::GAMEPAD_AXIS_RIGHTY       },
+	{ "triggerleft",  Joystick::GAMEPAD_AXIS_TRIGGERLEFT  },
+	{ "triggerright", Joystick::GAMEPAD_AXIS_TRIGGERRIGHT },
 }
+STRINGMAP_CLASS_END(Joystick, Joystick::GamepadAxis, Joystick::GAMEPAD_AXIS_MAX_ENUM, gpAxis)
 
-bool Joystick::getConstant(Joystick::GamepadAxis in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM, gpButton)
 {
-	return gpAxes.find(in, out);
+	{ "a",             Joystick::GAMEPAD_BUTTON_A             },
+	{ "b",             Joystick::GAMEPAD_BUTTON_B             },
+	{ "x",             Joystick::GAMEPAD_BUTTON_X             },
+	{ "y",             Joystick::GAMEPAD_BUTTON_Y             },
+	{ "back",          Joystick::GAMEPAD_BUTTON_BACK          },
+	{ "guide",         Joystick::GAMEPAD_BUTTON_GUIDE         },
+	{ "start",         Joystick::GAMEPAD_BUTTON_START         },
+	{ "leftstick",     Joystick::GAMEPAD_BUTTON_LEFTSTICK     },
+	{ "rightstick",    Joystick::GAMEPAD_BUTTON_RIGHTSTICK    },
+	{ "leftshoulder",  Joystick::GAMEPAD_BUTTON_LEFTSHOULDER  },
+	{ "rightshoulder", Joystick::GAMEPAD_BUTTON_RIGHTSHOULDER },
+	{ "dpup",          Joystick::GAMEPAD_BUTTON_DPAD_UP       },
+	{ "dpdown",        Joystick::GAMEPAD_BUTTON_DPAD_DOWN     },
+	{ "dpleft",        Joystick::GAMEPAD_BUTTON_DPAD_LEFT     },
+	{ "dpright",       Joystick::GAMEPAD_BUTTON_DPAD_RIGHT    },
 }
+STRINGMAP_CLASS_END(Joystick, Joystick::GamepadButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM, gpButton)
 
-bool Joystick::getConstant(const char *in, Joystick::GamepadButton &out)
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::InputType, Joystick::INPUT_TYPE_MAX_ENUM, inputType)
 {
-	return gpButtons.find(in, out);
+	{ "axis",   Joystick::INPUT_TYPE_AXIS   },
+	{ "button", Joystick::INPUT_TYPE_BUTTON },
+	{ "hat",    Joystick::INPUT_TYPE_HAT    },
 }
-
-bool Joystick::getConstant(Joystick::GamepadButton in, const char *&out)
-{
-	return gpButtons.find(in, out);
-}
-
-bool Joystick::getConstant(const char *in, Joystick::InputType &out)
-{
-	return inputTypes.find(in, out);
-}
-
-bool Joystick::getConstant(Joystick::InputType in, const char *&out)
-{
-	return inputTypes.find(in, out);
-}
-
-StringMap<Joystick::Hat, Joystick::HAT_MAX_ENUM>::Entry Joystick::hatEntries[] =
-{
-	{"c", Joystick::HAT_CENTERED},
-	{"u", Joystick::HAT_UP},
-	{"r", Joystick::HAT_RIGHT},
-	{"d", Joystick::HAT_DOWN},
-	{"l", Joystick::HAT_LEFT},
-	{"ru", Joystick::HAT_RIGHTUP},
-	{"rd", Joystick::HAT_RIGHTDOWN},
-	{"lu", Joystick::HAT_LEFTUP},
-	{"ld", Joystick::HAT_LEFTDOWN},
-};
-
-StringMap<Joystick::Hat, Joystick::HAT_MAX_ENUM> Joystick::hats(Joystick::hatEntries, sizeof(Joystick::hatEntries));
-
-StringMap<Joystick::GamepadAxis, Joystick::GAMEPAD_AXIS_MAX_ENUM>::Entry Joystick::gpAxisEntries[] =
-{
-	{"leftx", GAMEPAD_AXIS_LEFTX},
-	{"lefty", GAMEPAD_AXIS_LEFTY},
-	{"rightx", GAMEPAD_AXIS_RIGHTX},
-	{"righty", GAMEPAD_AXIS_RIGHTY},
-	{"triggerleft", GAMEPAD_AXIS_TRIGGERLEFT},
-	{"triggerright", GAMEPAD_AXIS_TRIGGERRIGHT},
-};
-
-StringMap<Joystick::GamepadAxis, Joystick::GAMEPAD_AXIS_MAX_ENUM> Joystick::gpAxes(Joystick::gpAxisEntries, sizeof(Joystick::gpAxisEntries));
-
-StringMap<Joystick::GamepadButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM>::Entry Joystick::gpButtonEntries[] =
-{
-	{"a", GAMEPAD_BUTTON_A},
-	{"b", GAMEPAD_BUTTON_B},
-	{"x", GAMEPAD_BUTTON_X},
-	{"y", GAMEPAD_BUTTON_Y},
-	{"back", GAMEPAD_BUTTON_BACK},
-	{"guide", GAMEPAD_BUTTON_GUIDE},
-	{"start", GAMEPAD_BUTTON_START},
-	{"leftstick", GAMEPAD_BUTTON_LEFTSTICK},
-	{"rightstick", GAMEPAD_BUTTON_RIGHTSTICK},
-	{"leftshoulder", GAMEPAD_BUTTON_LEFTSHOULDER},
-	{"rightshoulder", GAMEPAD_BUTTON_RIGHTSHOULDER},
-	{"dpup", GAMEPAD_BUTTON_DPAD_UP},
-	{"dpdown", GAMEPAD_BUTTON_DPAD_DOWN},
-	{"dpleft", GAMEPAD_BUTTON_DPAD_LEFT},
-	{"dpright", GAMEPAD_BUTTON_DPAD_RIGHT},
-};
-
-StringMap<Joystick::GamepadButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM> Joystick::gpButtons(Joystick::gpButtonEntries, sizeof(Joystick::gpButtonEntries));
-
-StringMap<Joystick::InputType, Joystick::INPUT_TYPE_MAX_ENUM>::Entry Joystick::inputTypeEntries[] =
-{
-	{"axis", Joystick::INPUT_TYPE_AXIS},
-	{"button", Joystick::INPUT_TYPE_BUTTON},
-	{"hat", Joystick::INPUT_TYPE_HAT},
-};
-
-StringMap<Joystick::InputType, Joystick::INPUT_TYPE_MAX_ENUM> Joystick::inputTypes(Joystick::inputTypeEntries, sizeof(Joystick::inputTypeEntries));
+STRINGMAP_CLASS_END(Joystick, Joystick::InputType, Joystick::INPUT_TYPE_MAX_ENUM, inputType)
 
 } // joystick
 } // love

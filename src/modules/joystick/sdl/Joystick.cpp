@@ -215,6 +215,30 @@ bool Joystick::isGamepad() const
 	return controller != nullptr;
 }
 
+Joystick::GamepadType Joystick::getGamepadType() const
+{
+	if (controller == nullptr)
+		return GAMEPAD_TYPE_UNKNOWN;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	switch (SDL_GameControllerGetType(controller))
+	{
+		case SDL_CONTROLLER_TYPE_UNKNOWN: return GAMEPAD_TYPE_UNKNOWN;
+		case SDL_CONTROLLER_TYPE_XBOX360: return GAMEPAD_TYPE_XBOX360;
+		case SDL_CONTROLLER_TYPE_XBOXONE: return GAMEPAD_TYPE_XBOXONE;
+		case SDL_CONTROLLER_TYPE_PS3: return GAMEPAD_TYPE_PS3;
+		case SDL_CONTROLLER_TYPE_PS4: return GAMEPAD_TYPE_PS4;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO: return GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+		case SDL_CONTROLLER_TYPE_VIRTUAL: return GAMEPAD_TYPE_VIRTUAL;
+		case SDL_CONTROLLER_TYPE_PS5: return GAMEPAD_TYPE_PS5;
+#endif
+	}
+#endif
+
+	return GAMEPAD_TYPE_UNKNOWN;
+}
+
 float Joystick::getGamepadAxis(love::joystick::Joystick::GamepadAxis axis) const
 {
 	if (!isConnected() || !isGamepad())
