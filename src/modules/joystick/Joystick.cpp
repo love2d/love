@@ -97,6 +97,12 @@ STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadButton, Joystick::GAMEPAD_BUTTO
 	{ "dpdown",        Joystick::GAMEPAD_BUTTON_DPAD_DOWN     },
 	{ "dpleft",        Joystick::GAMEPAD_BUTTON_DPAD_LEFT     },
 	{ "dpright",       Joystick::GAMEPAD_BUTTON_DPAD_RIGHT    },
+	{ "misc1",         Joystick::GAMEPAD_BUTTON_MISC1         },
+	{ "paddle1",       Joystick::GAMEPAD_BUTTON_PADDLE1       },
+	{ "paddle2",       Joystick::GAMEPAD_BUTTON_PADDLE2       },
+	{ "paddle3",       Joystick::GAMEPAD_BUTTON_PADDLE3       },
+	{ "paddle4",       Joystick::GAMEPAD_BUTTON_PADDLE4       },
+	{ "touchpad",      Joystick::GAMEPAD_BUTTON_TOUCHPAD      },
 }
 STRINGMAP_CLASS_END(Joystick, Joystick::GamepadButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM, gpButton)
 
