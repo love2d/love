@@ -165,6 +165,9 @@ public:
 
 	virtual bool isDown(const std::vector<int> &buttonlist) const = 0;
 
+	virtual void setPlayerIndex(int index) = 0;
+	virtual int getPlayerIndex() const = 0;
+
 	virtual bool openGamepad(int deviceindex) = 0;
 	virtual bool isGamepad() const = 0;
 

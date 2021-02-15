@@ -195,6 +195,30 @@ bool Joystick::isDown(const std::vector<int> &buttonlist) const
 	return false;
 }
 
+void Joystick::setPlayerIndex(int index)
+{
+	if (!isConnected())
+		return;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	SDL_JoystickSetPlayerIndex(joyhandle, index);
+#else
+	LOVE_UNUSED(index);
+#endif
+}
+
+int Joystick::getPlayerIndex() const
+{
+	if (!isConnected())
+		return -1;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	return SDL_JoystickGetPlayerIndex(joyhandle);
+#else
+	return -1;
+#endif
+}
+
 bool Joystick::openGamepad(int deviceindex)
 {
 	if (!SDL_IsGameController(deviceindex))

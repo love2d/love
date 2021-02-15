@@ -171,6 +171,22 @@ int w_Joystick_isDown(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_setPlayerIndex(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	int index = (int) luaL_checkinteger(L, 2) - 1;
+	j->setPlayerIndex(index);
+	return 0;
+}
+
+int w_Joystick_getPlayerIndex(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	int index = j->getPlayerIndex();
+	lua_pushinteger(L, index >= 0 ? index + 1 : index);
+	return 1;
+}
+
 int w_Joystick_isGamepad(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
@@ -366,6 +382,8 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getAxes", w_Joystick_getAxes },
 	{ "getHat", w_Joystick_getHat },
 	{ "isDown", w_Joystick_isDown },
+	{ "setPlayerIndex", w_Joystick_setPlayerIndex },
+	{ "getPlayerIndex", w_Joystick_getPlayerIndex },
 
 	{ "isGamepad", w_Joystick_isGamepad },
 	{ "getGamepadType", w_Joystick_getGamepadType },
