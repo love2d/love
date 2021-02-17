@@ -57,6 +57,8 @@
 #include <AudioToolbox/AudioToolbox.h>
 #endif
 
+namespace Timidity { struct Renderer; }
+
 // LOVE
 #include "common/Data.h"
 #include "common/int.h"
@@ -89,7 +91,7 @@ struct MIDIHDR
 {
 	uint8 *lpData;
 	uint32 dwBufferLength;
-	uint32 dwuint8sRecorded;
+	uint32 dwBytesRecorded;
 	MIDIHDR *lpNext;
 };
 
@@ -146,8 +148,10 @@ public:
 	virtual bool Pause(bool paused) = 0;
 	virtual bool NeedThreadedCallback();
 	virtual void PrecacheInstruments(const uint16 *instruments, int count);
+	virtual void TimidityVolumeChanged();
 	virtual bool Preprocess(MIDIStreamer *song, bool looping);
-	virtual std::string GetStats();
+    virtual bool NeedInnerDecode();
+    virtual int InnerDecode();
 };
 
 // WinMM implementation of a MIDI output device -----------------------------
@@ -158,7 +162,7 @@ class WinMIDIDevice : public MIDIDevice
 public:
 	WinMIDIDevice(int dev_id);
 	~WinMIDIDevice();
-	int Open(void(*callback)(unsigned int, void *, DWORD, DWORD), void *userdata);
+	int Open(void(*callback)(unsigned int, void *, uint32, uint32), void *userdata);
 	void Close();
 	bool IsOpen() const;
 	int GetTechnology() const;
@@ -176,17 +180,82 @@ public:
 	void PrecacheInstruments(const uint16 *instruments, int count);
 
 protected:
-	static void CALLBACK CallbackFunc(HMIDIOUT, UINT, DWORD_PTR, DWORD, DWORD);
+	static void CALLBACK CallbackFunc(HMIDIOUT, UINT, uint32_PTR, uint32, uint32);
 
 	HMIDISTRM MidiOut;
 	UINT DeviceID;
 	uint32 SavedVolume;
 	bool VolumeWorks;
 
-	void(*Callback)(unsigned int, void *, DWORD, DWORD);
+	void(*Callback)(unsigned int, void *, uint32, uint32);
 	void *CallbackData;
 };
 #endif
+
+// Base class for software synthesizer MIDI output devices ------------------
+
+class SoftSynthMIDIDevice : public MIDIDevice
+{
+public:
+	SoftSynthMIDIDevice();
+	~SoftSynthMIDIDevice();
+
+	void Close();
+	bool IsOpen() const;
+	int GetTechnology() const;
+	int SetTempo(int tempo);
+	int SetTimeDiv(int timediv);
+	int StreamOut(MIDIHDR *data);
+	int StreamOutSync(MIDIHDR *data);
+	int Resume();
+	void Stop();
+	bool Pause(bool paused);
+
+protected:
+	double Tempo;
+	double Division;
+	double SamplesPerTick;
+	double NextTickIn;
+	MIDIHDR *Events;
+	bool Started;
+	uint32 Position;
+	int SampleRate;
+    love::thread::MutexRef mutex;
+
+	void (*Callback)(unsigned int, void *, uint32, uint32);
+	void *CallbackData;
+
+	virtual void CalcTickRate();
+	int PlayTick();
+	int OpenStream(int chunks, int flags, void (*callback)(unsigned int, void *, uint32, uint32), void *userdata);
+    static bool FillStream(Data *data, void *buff, int len, void *userdata);
+	virtual bool ServiceStream (void *buff, int numbytes);
+
+	virtual void HandleEvent(int status, int parm1, int parm2) = 0;
+	virtual void HandleLongEvent(const uint8 *data, int len) = 0;
+	virtual void ComputeOutput(float *buffer, int len) = 0;
+};
+
+// Internal TiMidity MIDI device --------------------------------------------
+
+class TimidityMIDIDevice : public SoftSynthMIDIDevice
+{
+public:
+	TimidityMIDIDevice(const char *args);
+	~TimidityMIDIDevice();
+
+	int Open(void (*callback)(unsigned int, void *, uint32, uint32), void *userdata);
+	void PrecacheInstruments(const uint16 *instruments, int count);
+    bool NeedInnerDecode();
+    int InnerDecode(Data* data);
+
+protected:
+	Timidity::Renderer *Renderer;
+
+	void HandleEvent(int status, int parm1, int parm2);
+	void HandleLongEvent(const uint8 *data, int len);
+	void ComputeOutput(float *buffer, int len);
+};
 
 enum EMidiDevice
 {
@@ -227,7 +296,6 @@ public:
 	bool IsValid() const;
 	bool SetSubsong(int subsong);
 	void Update();
-	std::string GetStats();
 
 protected:
 
@@ -331,7 +399,7 @@ public:
     void stop();
 
     love::sound::Decoder *clone();
-	
+
 	// other functions
 	void setVolume(int volume);
 

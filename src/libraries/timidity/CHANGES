@@ -1,0 +1,58 @@
+This version of TiMidity should contain all the fixes from the
+September 25 2003 SDL_mixer CVS snapshot, plus extended GUS patch
+support from later SDL_mixer. In addition, it contains these changes
+from SDL_sound:
+
+* Removal of much unused or unnecessary code, such as
+
+  + The "hooks" for putting a user interface onto TiMidity.
+  + The antialias filter. It wasn't active, and even at 4 kHz I
+    couldn't hear any difference when activating it.
+  + Removed all traces of LOOKUP_HACK and LOOKUP_INTERPOLATION.
+    According to the code comments they weren't very good anyway.
+    ("degrades sound quality noticeably"). I also removed the
+    disclaimer about the "8-bit uLaw to 16-bit PCM and the 13-bit-PCM
+    to 8-bit uLaw tables" disclaimer, since I believe those were the
+    tables I removed.
+  + Removed LOOKUP_SINE since it was already commented out. I think we
+    can count on our target audience having math co-processors
+    nowadays.
+  + Removed USE_LDEXP since it wasn't being used and "it doesn't make
+    much of a difference either way".
+  + Removed decompress hack from open_file() since it didn't look very
+    portable.
+  + Removed heaps of unnecessary constants.
+  + Removed unused functions.
+  + Assume that LINEAR_INTERPOLATION is always used, so remove all
+    code dealing with it not being so. It's not that I think the
+    difference in audio quality is that great, but since it wouldn't
+    compile without code changes I assume no one's used it for quite
+    some time...
+  + Assume PRECALC_LOOPS is always defined. Judging by the comments it
+    may not make much of a difference either way, so why maintain two
+    versions of the same code?
+
+* Made TiMidity look for its configuration file in both /etc and
+  /usr/local/lib/timidity. (Windows version remains unchanged.)
+
+* The following files have been removed: controls.c, controls.h,
+  filter.c, filter.h, sdl_a.c, sdl_c.c
+
+* Added support for loading DLS format instruments:
+	Timidity_LoadDLS(), Timidity_FreeDLS(), Timidity_LoadDLSSong()
+
+This version of TiMidity also contains my own changes for ZDoom:
+
+* Removed readmidi.c: TiMidity is now fed MIDI events directly to
+	produce output. The TimidityMIDIDevice class is responsible for
+	feeding TiMidity data and collecting output from it. Since
+	ZDoom's MIDI parser ignores SysEx messages, so does this TiMidity,
+	though this can be changed if necessary.
+
+* Removed all the precalculated math from tables.c in favor of using
+	real math functions.
+	
+* All sample values are now floats, and only a stereo 32-bit float
+	output buffer is supported.
+
+* Moved everything into the Timidity namespace.

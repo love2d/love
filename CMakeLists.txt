@@ -35,6 +35,7 @@ set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 if(MSVC)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
@@ -930,6 +931,7 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/midi.cpp
 	src/modules/sound/lullaby/midi.h
 	src/modules/sound/lullaby/midi_song.cpp
+	src/modules/sound/lullaby/midi_timidity.cpp
 	src/modules/sound/lullaby/midi_win.cpp
 )
 
@@ -1617,6 +1619,29 @@ endif()
 add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
 
 #
+# timidity
+#
+
+set(LOVE_SRC_3P_TIMIDITY
+	src/libraries/timidity/common.cpp
+	src/libraries/timidity/dls1.h
+	src/libraries/timidity/dls2.h
+	src/libraries/timidity/gf1patch.h
+	src/libraries/timidity/instrum.cpp
+	src/libraries/timidity/instrum_dls.cpp
+	src/libraries/timidity/instrum_font.cpp
+	src/libraries/timidity/instrum_sf2.cpp
+	src/libraries/timidity/mix.cpp
+	src/libraries/timidity/playmidi.cpp
+	src/libraries/timidity/resample.cpp
+	src/libraries/timidity/sf2.h
+	src/libraries/timidity/timidity.cpp
+	src/libraries/timidity/timidity.h
+)
+
+add_library(love_3p_timidity ${LOVE_SRC_3P_TIMIDITY})
+
+#
 # stb_image
 #
 
@@ -1696,6 +1721,7 @@ set(LOVE_3P
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_physfs
+        love_3p_timidity
 	love_3p_wuff
 	love_3p_xxhash
 )

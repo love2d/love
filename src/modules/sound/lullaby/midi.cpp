@@ -31,9 +31,7 @@
 
 #include "midi.h"
 
-#ifdef __APPLE__
 #include <assert.h>
-#endif
 
 namespace love
 {
@@ -219,6 +217,8 @@ MIDIDevice *MIDIStreamer::CreateMIDIDevice(EMidiDevice devtype) const
 		assert(0);
 		// Intentional fall-through for non-Windows systems.
 
+        case MDEV_GUS:
+            return new TimidityMIDIDevice(Args.c_str());
 	default:
 		return NULL;
 	}
@@ -845,7 +845,7 @@ int MIDIStreamer::FillBuffer(int buffer_num, int max_events, uint32 max_time)
 	memset(&Buffer[buffer_num], 0, sizeof(MIDIHDR));
 	Buffer[buffer_num].lpData = (LPSTR)Events[buffer_num];
 	Buffer[buffer_num].dwBufferLength = uint32((LPSTR)events - Buffer[buffer_num].lpData);
-	Buffer[buffer_num].dwuint8sRecorded = Buffer[buffer_num].dwBufferLength;
+	Buffer[buffer_num].dwBytesRecorded = Buffer[buffer_num].dwBufferLength;
 	if (0 != (i = MIDI->PrepareHeader(&Buffer[buffer_num])))
 	{
 		return SONG_ERROR | (i << 2);
@@ -877,7 +877,7 @@ int MIDIStreamer::FillStopBuffer(int buffer_num)
 	memset(&Buffer[buffer_num], 0, sizeof(MIDIHDR));
 	Buffer[buffer_num].lpData = (LPSTR)Events[buffer_num];
 	Buffer[buffer_num].dwBufferLength = uint32((LPSTR)events - Buffer[buffer_num].lpData);
-	Buffer[buffer_num].dwuint8sRecorded = Buffer[buffer_num].dwBufferLength;
+	Buffer[buffer_num].dwBytesRecorded = Buffer[buffer_num].dwBufferLength;
 	if (0 != (i = MIDI->PrepareHeader(&Buffer[buffer_num])))
 	{
 		return SONG_ERROR | (i << 2);
@@ -1066,21 +1066,6 @@ int MIDIStreamer::ClampLoopCount(int loopcount)
 
 //==========================================================================
 //
-// MIDIStreamer :: GetStats
-//
-//==========================================================================
-
-std::string MIDIStreamer::GetStats()
-{
-	if (MIDI == NULL)
-	{
-		return "No MIDI device in use.";
-	}
-	return MIDI->GetStats();
-}
-
-//==========================================================================
-//
 // MIDIStreamer :: SetSubsong
 //
 // Selects which subsong to play in an already-playing file. This is public.
@@ -1147,6 +1132,16 @@ void MIDIDevice::PrecacheInstruments(const uint16 *instruments, int count)
 
 //==========================================================================
 //
+// MIDIDevice :: TimidityVolumeChanged
+//
+//==========================================================================
+
+void MIDIDevice::TimidityVolumeChanged()
+{
+}
+
+//==========================================================================
+//
 // MIDIDevice :: Preprocess
 //
 // Gives the MIDI device a chance to do some processing with the song before
@@ -1158,6 +1153,28 @@ void MIDIDevice::PrecacheInstruments(const uint16 *instruments, int count)
 bool MIDIDevice::Preprocess(MIDIStreamer *song, bool looping)
 {
 	return true;
+}
+
+//==========================================================================
+//
+// MIDIDevice :: NeedInnerDecode
+//
+//==========================================================================
+
+bool MIDIDevice::NeedInnerDecode()
+{
+    return false;
+}
+
+//==========================================================================
+//
+// MIDIDevice :: InnerDecode
+//
+//==========================================================================
+
+int MIDIDevice::InnerDecode()
+{
+    return 0;
 }
 
 //==========================================================================
@@ -1213,18 +1230,6 @@ bool MIDIDevice::NeedThreadedCallback()
 {
 	return false;
 }
-
-//==========================================================================
-//
-// MIDIDevice :: GetStats
-//
-//==========================================================================
-
-std::string MIDIDevice::GetStats()
-{
-	return "This MIDI device does not have any stats.";
-}
-
 
 bool MIDIStreamer::seek(double s)
 {

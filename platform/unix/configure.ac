@@ -71,6 +71,7 @@ AS_VAR_IF([enable_module_font], [yes], [ACLOVE_DEP_FREETYPE2], [])
 AS_VAR_IF([enable_module_sound], [yes], [
 	ACLOVE_DEP_LIBMODPLUG
 	ACLOVE_DEP_VORBISFILE
+        ACLOVE_DEP_TIMIDITY
 ], [enable_mpg123=no])
 AS_VAR_IF([enable_module_video], [yes], [ACLOVE_DEP_THEORA], [])
 AS_VAR_IF([enable_gme], [yes], [ACLOVE_DEP_GME], [])
