@@ -30,6 +30,7 @@
 #include "GmeDecoder.h"
 #include "WaveDecoder.h"
 #include "FLACDecoder.h"
+#include "midi.h"
 
 #ifndef LOVE_NOMPG123
 #	include "Mpg123Decoder.h"
@@ -88,7 +89,8 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	std::string ext = data->getExtension();
 	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
-	std::vector<DecoderImpl> possibleDecoders = {
+    std::vector<DecoderImpl> possibleDecoders = {
+        DecoderImplFor<MIDISong2>(),
 #ifndef LOVE_NO_MODPLUG
 		DecoderImplFor<ModPlugDecoder>(),
 #endif // LOVE_NO_MODPLUG

@@ -927,6 +927,10 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/VorbisDecoder.h
 	src/modules/sound/lullaby/WaveDecoder.cpp
 	src/modules/sound/lullaby/WaveDecoder.h
+	src/modules/sound/lullaby/midi.cpp
+	src/modules/sound/lullaby/midi.h
+	src/modules/sound/lullaby/midi_song.cpp
+	src/modules/sound/lullaby/midi_win.cpp
 )
 
 if(LOVE_MPG123)

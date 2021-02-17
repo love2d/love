@@ -326,7 +326,10 @@ love::audio::Source *Source::clone()
 bool Source::play()
 {
 	Lock l = pool->lock();
-	ALuint out;
+    ALuint out;
+
+    if (sourceType == TYPE_STREAM)
+        decoder.get()->start();
 
 	char wasPlaying;
 	if (!pool->assignSource(this, out, wasPlaying))
@@ -345,12 +348,16 @@ void Source::stop()
 		return;
 
 	Lock l = pool->lock();
+    if (sourceType == TYPE_STREAM)
+        decoder.get()->stop();
 	pool->releaseSource(this);
 }
 
 void Source::pause()
 {
-	Lock l = pool->lock();
+    Lock l = pool->lock();
+    if (sourceType == TYPE_STREAM)
+        decoder.get()->pause();
 	if (pool->isPlaying(this))
 		pauseAtomic();
 }
@@ -962,8 +969,9 @@ void Source::stopAtomic()
 
 void Source::pauseAtomic()
 {
-	if (valid)
-		alSourcePause(source);
+	if (!valid)
+        return;
+	alSourcePause(source);
 }
 
 void Source::resumeAtomic()
@@ -971,6 +979,8 @@ void Source::resumeAtomic()
 	if (valid && !isPlaying())
 	{
 		alSourcePlay(source);
+        if (sourceType == TYPE_STREAM)
+            decoder.get()->resume();
 
 		//failed to play or nothing to play
 		if (alGetError() == AL_INVALID_VALUE || (sourceType == TYPE_STREAM && (int) unusedBuffers.size() == buffers))
@@ -1157,7 +1167,8 @@ int Source::streamAtomic(ALuint buffer, love::sound::Decoder *d)
 		if (fmt != AL_NONE)
 			alBufferData(buffer, fmt, d->getBuffer(), decoded, d->getSampleRate());
 		else
-			decoded = 0;
+            decoded = 0;
+        int error = alGetError();
 	}
 
 	if (decoder->isFinished() && isLooping())

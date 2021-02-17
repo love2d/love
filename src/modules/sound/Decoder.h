@@ -143,6 +143,11 @@ public:
 	 **/
 	virtual double getDuration() = 0;
 
+    virtual void start() {}
+    virtual void pause() {}
+    virtual void resume() {}
+    virtual void stop() {}
+
 protected:
 
 	// The encoded data. This should be replaced with buffered file
