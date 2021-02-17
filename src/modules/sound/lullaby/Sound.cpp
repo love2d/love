@@ -36,6 +36,10 @@
 #	include "Mpg123Decoder.h"
 #endif // LOVE_NOMPG123
 
+#ifdef __APPLE__
+#define LOVE_SUPPORT_COREAUDIO
+#endif
+
 #ifdef LOVE_SUPPORT_COREAUDIO
 #	include "CoreAudioDecoder.h"
 #endif
@@ -90,7 +94,12 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
     std::vector<DecoderImpl> possibleDecoders = {
+#ifdef _WIN32
         DecoderImplFor<MIDISong2>(),
+#endif
+#ifdef LOVE_SUPPORT_COREAUDIO
+        DecoderImplFor<AppleMIDIStreamer>(),
+#endif
 #ifndef LOVE_NO_MODPLUG
 		DecoderImplFor<ModPlugDecoder>(),
 #endif // LOVE_NO_MODPLUG

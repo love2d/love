@@ -31,21 +31,30 @@
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
-#define USE_WINDOWS_DWORD
+#define USE_WINDOWS_uint32
 #if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0400
 #undef _WIN32_WINNT
 #endif
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0400
 #endif
-#ifndef USE_WINDOWS_DWORD
-#define USE_WINDOWS_DWORD
+#ifndef USE_WINDOWS_uint32
+#define USE_WINDOWS_uint32
 #endif
 #include <windows.h>
 #include <mmsystem.h>
 #else
 #define FALSE 0
 #define TRUE 1
+#endif
+
+#ifdef __APPLE__
+#define LOVE_SUPPORT_COREAUDIO
+#endif
+
+#ifdef LOVE_SUPPORT_COREAUDIO
+#include <AudioUnit/AudioUnit.h>
+#include <AudioToolbox/AudioToolbox.h>
 #endif
 
 // LOVE
@@ -78,9 +87,9 @@ void I_ShutdownMusicWin32();
 #ifndef _WIN32
 struct MIDIHDR
 {
-	BYTE *lpData;
-	DWORD dwBufferLength;
-	DWORD dwBytesRecorded;
+	uint8 *lpData;
+	uint32 dwBufferLength;
+	uint32 dwuint8sRecorded;
 	MIDIHDR *lpNext;
 };
 
@@ -95,13 +104,13 @@ enum
 	MOD_SWSYNTH
 };
 
-typedef BYTE *LPSTR;
+typedef uint8 *LPSTR;
 
-#define MEVT_TEMPO			((BYTE)1)
-#define MEVT_NOP			((BYTE)2)
-#define MEVT_LONGMSG		((BYTE)128)
+#define MEVT_TEMPO			((uint8)1)
+#define MEVT_NOP			((uint8)2)
+#define MEVT_LONGMSG		((uint8)128)
 
-#define MEVT_EVENTTYPE(x)	((BYTE)((x) >> 24))
+#define MEVT_EVENTTYPE(x)	((uint8)((x) >> 24))
 #define MEVT_EVENTPARM(x)   ((x) & 0xffffff)
 
 #define MOM_DONE			969
@@ -121,7 +130,7 @@ public:
 	MIDIDevice();
 	virtual ~MIDIDevice();
 
-	virtual int Open(void(*callback)(unsigned int, void *, DWORD, DWORD), void *userdata) = 0;
+	virtual int Open(void(*callback)(unsigned int, void *, uint32, uint32), void *userdata) = 0;
 	virtual void Close() = 0;
 	virtual bool IsOpen() const = 0;
 	virtual int GetTechnology() const = 0;
@@ -136,7 +145,7 @@ public:
 	virtual bool FakeVolume();
 	virtual bool Pause(bool paused) = 0;
 	virtual bool NeedThreadedCallback();
-	virtual void PrecacheInstruments(const WORD *instruments, int count);
+	virtual void PrecacheInstruments(const uint16 *instruments, int count);
 	virtual bool Preprocess(MIDIStreamer *song, bool looping);
 	virtual std::string GetStats();
 };
@@ -164,14 +173,14 @@ public:
 	bool FakeVolume();
 	bool NeedThreadedCallback();
 	bool Pause(bool paused);
-	void PrecacheInstruments(const WORD *instruments, int count);
+	void PrecacheInstruments(const uint16 *instruments, int count);
 
 protected:
 	static void CALLBACK CallbackFunc(HMIDIOUT, UINT, DWORD_PTR, DWORD, DWORD);
 
 	HMIDISTRM MidiOut;
 	UINT DeviceID;
-	DWORD SavedVolume;
+	uint32 SavedVolume;
 	bool VolumeWorks;
 
 	void(*Callback)(unsigned int, void *, DWORD, DWORD);
@@ -222,10 +231,10 @@ public:
 
 protected:
 
-	void OutputVolume(DWORD volume);
-	int FillBuffer(int buffer_num, int max_events, DWORD max_time);
+	void OutputVolume(uint32 volume);
+	int FillBuffer(int buffer_num, int max_events, uint32 max_time);
 	int FillStopBuffer(int buffer_num);
-	DWORD *WriteStopNotes(DWORD *events);
+	uint32 *WriteStopNotes(uint32 *events);
 	int ServiceEvent();
 	int VolumeControllerChange(int channel, int volume);
 	int ClampLoopCount(int loopcount);
@@ -233,7 +242,7 @@ protected:
 	static EMidiDevice SelectMIDIDevice(EMidiDevice devtype);
 	MIDIDevice *CreateMIDIDevice(EMidiDevice devtype) const;
 
-	static void Callback(unsigned int uMsg, void *userdata, DWORD dwParam1, DWORD dwParam2);
+	static void Callback(unsigned int uMsg, void *userdata, uint32 dwParam1, uint32 dwParam2);
 
 	// Virtuals for subclasses to override
 	virtual void StartPlayback();
@@ -243,7 +252,7 @@ protected:
 	virtual bool CheckDone() = 0;
 	virtual void Precache();
 	virtual bool SetMIDISubsong(int subsong);
-	virtual DWORD *MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time) = 0;
+	virtual uint32 *MakeEvents(uint32 *events, uint32 *max_event_p, uint32 max_time) = 0;
 
 	enum
 	{
@@ -258,8 +267,8 @@ protected:
 	};
 
 #ifdef _WIN32
-	static DWORD WINAPI PlayerProc(LPVOID lpParameter);
-	DWORD PlayerLoop();
+	static uint32 WINAPI PlayerProc(LPVOID lpParameter);
+	uint32 PlayerLoop();
 
 	HANDLE PlayerThread;
 	HANDLE ExitEvent;
@@ -267,19 +276,19 @@ protected:
 #endif
 
 	MIDIDevice *MIDI;
-	DWORD Events[2][MAX_EVENTS * 3];
+	uint32 Events[2][MAX_EVENTS * 3];
 	MIDIHDR Buffer[2];
 	int BufferNum;
 	int EndQueued;
 	bool VolumeChanged;
 	bool Restarting;
 	bool InitialPlayback;
-	DWORD NewVolume;
+	uint32 NewVolume;
 	int Division;
 	int Tempo;
 	int InitialTempo;
-	BYTE ChannelVolumes[16];
-	DWORD Volume;
+	uint8 ChannelVolumes[16];
+	uint32 Volume;
 	EMidiDevice DeviceType;
 	bool CallbackIsThreaded;
 	int LoopLimit;
@@ -296,6 +305,47 @@ protected:
 
     love::thread::MutexRef mutex;
 };
+
+#ifdef LOVE_SUPPORT_COREAUDIO
+class AppleMIDIStreamer : public Decoder
+{
+public:
+	AppleMIDIStreamer(Data *data, int bufferSize);
+	virtual ~AppleMIDIStreamer();
+
+    // Decoder impl
+    static bool accepts(const std::string &ext);
+
+	int decode();
+	bool seek(double s);
+	bool rewind();
+	bool isSeekable();
+	int getChannelCount() const;
+	int getBitDepth() const;
+	int getSampleRate() const;
+	double getDuration();
+    bool isFinished();
+    void start();
+    void pause();
+    void resume();
+    void stop();
+
+    love::sound::Decoder *clone();
+	
+	// other functions
+	void setVolume(int volume);
+
+protected:
+    MusicPlayer Player;
+    MusicSequence Sequence;
+    MusicTimeStamp EndTime;
+    AudioUnit AudioUnit;
+	CFDataRef DataRef;
+    int Loops;
+	int LatchedVolume;
+	bool IsLooping;
+};
+#endif
 
 // MIDI file played with a MIDI stream --------------------------------------
 
@@ -318,37 +368,37 @@ protected:
 	void DoInitialSetup();
 	void DoRestart();
 	bool CheckDone();
-	DWORD *MakeEvents(DWORD *events, DWORD *max_events_p, DWORD max_time);
-	void AdvanceTracks(DWORD time);
+	uint32 *MakeEvents(uint32 *events, uint32 *max_events_p, uint32 max_time);
+	void AdvanceTracks(uint32 time);
 
 	struct TrackInfo;
 
 	void ProcessInitialMetaEvents();
-	DWORD *SendCommand(DWORD *event, TrackInfo *track, DWORD delay, ptrdiff_t room, bool &sysex_noroom);
+	uint32 *SendCommand(uint32 *event, TrackInfo *track, uint32 delay, ptrdiff_t room, bool &sysex_noroom);
 	TrackInfo *FindNextDue();
 
-	BYTE *MusHeader;
+	uint8 *MusHeader;
 	int SongLen;
 	TrackInfo *Tracks;
 	TrackInfo *TrackDue;
 	int NumTracks;
 	int Format;
-	WORD DesignationMask;
+	uint16 DesignationMask;
 };
 
 // HMI file played with a MIDI stream ---------------------------------------
 
 struct AutoNoteOff
 {
-	DWORD Delay;
-	BYTE Channel, Key;
+	uint32 Delay;
+	uint8_t Channel, Key;
 };
 // Sorry, std::priority_queue, but I want to be able to modify the contents of the heap.
 class NoteOffQueue : public std::vector<AutoNoteOff>
 {
 public:
-	void AddNoteOff(DWORD delay, BYTE channel, BYTE key);
-	void AdvanceTime(DWORD time);
+	void AddNoteOff(uint32 delay, uint8 channel, uint8 key);
+	void AdvanceTime(uint32 time);
 	bool Pop(AutoNoteOff &item);
 
 protected:
@@ -415,25 +465,25 @@ char(&_ArraySizeHelper(T(&array)[N]))[N];
 #define countof( array ) (sizeof( _ArraySizeHelper( array ) ))
 
 #ifndef LOVE_BIG_ENDIAN
-#define MAKE_ID(a,b,c,d)	((DWORD)((a)|((b)<<8)|((c)<<16)|((d)<<24)))
+#define MAKE_ID(a,b,c,d)	((uint32)((a)|((b)<<8)|((c)<<16)|((d)<<24)))
 #else
-#define MAKE_ID(a,b,c,d)	((DWORD)((d)|((c)<<8)|((b)<<16)|((a)<<24)))
+#define MAKE_ID(a,b,c,d)	((uint32)((d)|((c)<<8)|((b)<<16)|((a)<<24)))
 #endif
 
-#define MIDI_SYSEX		((BYTE)0xF0)		 // SysEx begin
-#define MIDI_SYSEXEND	((BYTE)0xF7)		 // SysEx end
-#define MIDI_META		((BYTE)0xFF)		 // Meta event begin
-#define MIDI_META_TEMPO ((BYTE)0x51)
-#define MIDI_META_EOT	((BYTE)0x2F)		 // End-of-track
-#define MIDI_META_SSPEC	((BYTE)0x7F)		 // System-specific event
+#define MIDI_SYSEX		((uint8)0xF0)		 // SysEx begin
+#define MIDI_SYSEXEND	((uint8)0xF7)		 // SysEx end
+#define MIDI_META		((uint8)0xFF)		 // Meta event begin
+#define MIDI_META_TEMPO ((uint8)0x51)
+#define MIDI_META_EOT	((uint8)0x2F)		 // End-of-track
+#define MIDI_META_SSPEC	((uint8)0x7F)		 // System-specific event
 
-#define MIDI_NOTEOFF	((BYTE)0x80)		 // + note + velocity
-#define MIDI_NOTEON 	((BYTE)0x90)		 // + note + velocity
-#define MIDI_POLYPRESS	((BYTE)0xA0)		 // + pressure (2 bytes)
-#define MIDI_CTRLCHANGE ((BYTE)0xB0)		 // + ctrlr + value
-#define MIDI_PRGMCHANGE ((BYTE)0xC0)		 // + new patch
-#define MIDI_CHANPRESS	((BYTE)0xD0)		 // + pressure (1 byte)
-#define MIDI_PITCHBEND	((BYTE)0xE0)		 // + pitch bend (2 bytes)
+#define MIDI_NOTEOFF	((uint8)0x80)		 // + note + velocity
+#define MIDI_NOTEON 	((uint8)0x90)		 // + note + velocity
+#define MIDI_POLYPRESS	((uint8)0xA0)		 // + pressure (2 uint8s)
+#define MIDI_CTRLCHANGE ((uint8)0xB0)		 // + ctrlr + value
+#define MIDI_PRGMCHANGE ((uint8)0xC0)		 // + new patch
+#define MIDI_CHANPRESS	((uint8)0xD0)		 // + pressure (1 uint8)
+#define MIDI_PITCHBEND	((uint8)0xE0)		 // + pitch bend (2 uint8s)
 
 //extern float snd_musicvolume;
 }

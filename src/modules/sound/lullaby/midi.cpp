@@ -31,6 +31,10 @@
 
 #include "midi.h"
 
+#ifdef __APPLE__
+#include <assert.h>
+#endif
+
 namespace love
 {
 namespace sound
@@ -59,7 +63,7 @@ extern char MIDI_EventLengths[7];
 
 // PRIVATE DATA DEFINITIONS ------------------------------------------------
 
-static const BYTE StaticMIDIhead[] =
+static const uint8 StaticMIDIhead[] =
 {
 	'M', 'T', 'h', 'd', 0, 0, 0, 6,
 	0, 0, // format 0: only one track
@@ -222,7 +226,7 @@ MIDIDevice *MIDIStreamer::CreateMIDIDevice(EMidiDevice devtype) const
 
 void MIDIStreamer::start()
 {
-	DWORD tid;
+	uint32 tid;
     EMidiDevice devtype;
 
     love::thread::Lock l(mutex);
@@ -475,7 +479,7 @@ void MIDIStreamer::MusicVolumeChanged()
         float snd_musicvolume = 1;
         float relative_volume = 1;
 		float realvolume = clamp<float>(snd_musicvolume * relative_volume, 0.f, 1.f);
-		Volume = clamp<DWORD>((DWORD)(realvolume * 65535.f), 0, 65535);
+		Volume = clamp<uint32>((uint32)(realvolume * 65535.f), 0, 65535);
 	}
 	else
 	{
@@ -496,7 +500,7 @@ void MIDIStreamer::MusicVolumeChanged()
 //
 //==========================================================================
 
-void MIDIStreamer::OutputVolume(DWORD volume)
+void MIDIStreamer::OutputVolume(uint32 volume)
 {
 	if (MIDI != NULL && MIDI->FakeVolume())
 	{
@@ -533,7 +537,7 @@ int MIDIStreamer::VolumeControllerChange(int channel, int volume)
 //
 //==========================================================================
 
-void MIDIStreamer::Callback(unsigned int uMsg, void *userdata, DWORD dwParam1, DWORD dwParam2)
+void MIDIStreamer::Callback(unsigned int uMsg, void *userdata, uint32 dwParam1, uint32 dwParam2)
 {
 	MIDIStreamer *self = (MIDIStreamer *)userdata;
 
@@ -608,7 +612,7 @@ void MIDIStreamer::Update()
 			"MIDI operation unsupported with open mode",
 			"MIDI through device 'eating' a message",
 		};
-		DWORD code = 0xABADCAFE;
+		uint32 code = 0xABADCAFE;
 		GetExitCodeThread(PlayerThread, &code);
 		CloseHandle(PlayerThread);
 		PlayerThread = NULL;
@@ -639,7 +643,7 @@ void MIDIStreamer::Update()
 //==========================================================================
 
 #ifdef _WIN32
-DWORD WINAPI MIDIStreamer::PlayerProc(LPVOID lpParameter)
+uint32 WINAPI MIDIStreamer::PlayerProc(LPVOID lpParameter)
 {
 	return ((MIDIStreamer *)lpParameter)->PlayerLoop();
 }
@@ -654,7 +658,7 @@ DWORD WINAPI MIDIStreamer::PlayerProc(LPVOID lpParameter)
 //==========================================================================
 
 #ifdef _WIN32
-DWORD MIDIStreamer::PlayerLoop()
+uint32 MIDIStreamer::PlayerLoop()
 {
 	HANDLE events[2] = { BufferDoneEvent, ExitEvent };
 	int res;
@@ -770,7 +774,7 @@ fill:
 //
 //==========================================================================
 
-int MIDIStreamer::FillBuffer(int buffer_num, int max_events, DWORD max_time)
+int MIDIStreamer::FillBuffer(int buffer_num, int max_events, uint32 max_time)
 {
 	if (!Restarting && CheckDone())
 	{
@@ -778,9 +782,9 @@ int MIDIStreamer::FillBuffer(int buffer_num, int max_events, DWORD max_time)
 	}
 
 	int i;
-	DWORD *events = Events[buffer_num], *max_event_p;
-	DWORD tot_time = 0;
-	DWORD time = 0;
+	uint32 *events = Events[buffer_num], *max_event_p;
+	uint32 tot_time = 0;
+	uint32 time = 0;
 
 	// The final event is for a NOP to hold the delay from the last event.
 	max_event_p = events + (max_events - 1) * 3;
@@ -804,7 +808,7 @@ int MIDIStreamer::FillBuffer(int buffer_num, int max_events, DWORD max_time)
 		VolumeChanged = false;
 		for (i = 0; i < 16; ++i)
 		{
-			BYTE courseVol = (BYTE)(((ChannelVolumes[i] + 1) * NewVolume) >> 16);
+			uint8 courseVol = (uint8)(((ChannelVolumes[i] + 1) * NewVolume) >> 16);
 			events[0] = 0;				// dwDeltaTime
 			events[1] = 0;				// dwStreamID
 			events[2] = MIDI_CTRLCHANGE | i | (7 << 8) | (courseVol << 16);
@@ -817,7 +821,7 @@ int MIDIStreamer::FillBuffer(int buffer_num, int max_events, DWORD max_time)
 	{
 		// Be more responsive when unpausing by only playing each buffer
 		// for a third of the maximum time.
-		events[0] = MAX<DWORD>(1, (max_time / 3) * Division / Tempo);
+		events[0] = MAX<uint32>(1, (max_time / 3) * Division / Tempo);
 		events[1] = 0;
 		events[2] = MEVT_NOP << 24;
 		events += 3;
@@ -840,8 +844,8 @@ int MIDIStreamer::FillBuffer(int buffer_num, int max_events, DWORD max_time)
 	}
 	memset(&Buffer[buffer_num], 0, sizeof(MIDIHDR));
 	Buffer[buffer_num].lpData = (LPSTR)Events[buffer_num];
-	Buffer[buffer_num].dwBufferLength = DWORD((LPSTR)events - Buffer[buffer_num].lpData);
-	Buffer[buffer_num].dwBytesRecorded = Buffer[buffer_num].dwBufferLength;
+	Buffer[buffer_num].dwBufferLength = uint32((LPSTR)events - Buffer[buffer_num].lpData);
+	Buffer[buffer_num].dwuint8sRecorded = Buffer[buffer_num].dwBufferLength;
 	if (0 != (i = MIDI->PrepareHeader(&Buffer[buffer_num])))
 	{
 		return SONG_ERROR | (i << 2);
@@ -859,7 +863,7 @@ int MIDIStreamer::FillBuffer(int buffer_num, int max_events, DWORD max_time)
 
 int MIDIStreamer::FillStopBuffer(int buffer_num)
 {
-	DWORD *events = Events[buffer_num];
+	uint32 *events = Events[buffer_num];
 	int i;
 
 	events = WriteStopNotes(events);
@@ -872,8 +876,8 @@ int MIDIStreamer::FillStopBuffer(int buffer_num)
 
 	memset(&Buffer[buffer_num], 0, sizeof(MIDIHDR));
 	Buffer[buffer_num].lpData = (LPSTR)Events[buffer_num];
-	Buffer[buffer_num].dwBufferLength = DWORD((LPSTR)events - Buffer[buffer_num].lpData);
-	Buffer[buffer_num].dwBytesRecorded = Buffer[buffer_num].dwBufferLength;
+	Buffer[buffer_num].dwBufferLength = uint32((LPSTR)events - Buffer[buffer_num].lpData);
+	Buffer[buffer_num].dwuint8sRecorded = Buffer[buffer_num].dwBufferLength;
 	if (0 != (i = MIDI->PrepareHeader(&Buffer[buffer_num])))
 	{
 		return SONG_ERROR | (i << 2);
@@ -890,7 +894,7 @@ int MIDIStreamer::FillStopBuffer(int buffer_num)
 //
 //==========================================================================
 
-DWORD *MIDIStreamer::WriteStopNotes(DWORD *events)
+uint32 *MIDIStreamer::WriteStopNotes(uint32 *events)
 {
 	for (int i = 0; i < 16; ++i)
 	{
@@ -918,8 +922,8 @@ DWORD *MIDIStreamer::WriteStopNotes(DWORD *events)
 
 void MIDIStreamer::Precache()
 {
-	BYTE found_instruments[256] = { 0, };
-	BYTE found_banks[256] = { 0, };
+	uint8 found_instruments[256] = { 0, };
+	uint8 found_banks[256] = { 0, };
 	bool multiple_banks = false;
 
 	LoopLimit = 1;
@@ -930,8 +934,8 @@ void MIDIStreamer::Precache()
 	// Simulate playback to pick out used instruments.
 	while (!CheckDone())
 	{
-		DWORD *event_end = MakeEvents(Events[0], &Events[0][MAX_EVENTS * 3], 1000000 * 600);
-		for (DWORD *event = Events[0]; event < event_end;)
+		uint32 *event_end = MakeEvents(Events[0], &Events[0][MAX_EVENTS * 3], 1000000 * 600);
+		for (uint32 *event = Events[0]; event < event_end;)
 		{
 			if (MEVT_EVENTTYPE(event[2]) == 0)
 			{
@@ -980,13 +984,13 @@ void MIDIStreamer::Precache()
 	DoRestart();
 
 	// Now pack everything into a contiguous region for the PrecacheInstruments call().
-	std::vector<WORD> packed;
+	std::vector<uint16> packed;
 
 	for (int i = 0; i < 256; ++i)
 	{
 		if (found_instruments[i])
 		{
-			WORD packnum = (i & 127) | ((i & 128) << 7);
+			uint16 packnum = (i & 127) | ((i & 128) << 7);
 			if (!multiple_banks)
 			{
 				packed.emplace_back(packnum);
@@ -1032,7 +1036,7 @@ void MIDIStreamer::SetTempo(int new_tempo)
 // MIDIStreamer :: ClampLoopCount
 //
 // We use the XMIDI interpretation of loop count here, where 1 means it
-// plays that section once (in other words, no loop) rather than the EMIDI
+// plays that section once (in other uint16s, no loop) rather than the EMIDI
 // interpretation where 1 means to loop it once.
 //
 // If LoopLimit is 1, we limit all loops, since this pass over the song is
@@ -1137,7 +1141,7 @@ MIDIDevice::~MIDIDevice()
 //
 //==========================================================================
 
-void MIDIDevice::PrecacheInstruments(const WORD *instruments, int count)
+void MIDIDevice::PrecacheInstruments(const uint16 *instruments, int count)
 {
 }
 

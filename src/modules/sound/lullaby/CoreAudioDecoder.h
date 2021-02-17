@@ -23,6 +23,10 @@
 
 #include "common/config.h"
 
+#ifdef __APPLE__
+#define LOVE_SUPPORT_COREAUDIO
+#endif
+
 #ifdef LOVE_SUPPORT_COREAUDIO
 
 // LOVE

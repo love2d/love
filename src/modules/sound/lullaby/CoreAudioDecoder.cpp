@@ -18,6 +18,10 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#ifdef __APPLE__
+#define LOVE_SUPPORT_COREAUDIO
+#endif
+
 #ifdef LOVE_SUPPORT_COREAUDIO
 
 // LOVE

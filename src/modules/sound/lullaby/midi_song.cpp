@@ -36,6 +36,10 @@
 
 #include "midi.h"
 
+#ifdef __APPLE__
+#include <stdlib.h>
+#endif
+
 namespace love
 {
 namespace sound
@@ -58,24 +62,24 @@ namespace lullaby
 
 struct MIDISong2::TrackInfo
 {
-	const BYTE *TrackBegin;
+	const uint8 *TrackBegin;
 	size_t TrackP;
 	size_t MaxTrackP;
-	DWORD Delay;
-	DWORD PlayedTime;
+	uint32 Delay;
+	uint32 PlayedTime;
 	bool Finished;
-	BYTE RunningStatus;
+	uint8 RunningStatus;
 	bool Designated;
 	bool EProgramChange;
 	bool EVolume;
-	WORD Designation;
+	uint16 Designation;
 
 	size_t LoopBegin;
-	DWORD LoopDelay;
+	uint32 LoopDelay;
 	int LoopCount;
 	bool LoopFinished;
     
-	DWORD ReadVarLen ();
+	uint32 ReadVarLen ();
 };
 
 // EXTERNAL FUNCTION PROTOTYPES --------------------------------------------
@@ -120,8 +124,8 @@ MIDISong2::MIDISong2(Data *data, int bufferSize)
 	}
 #endif
 	SongLen = data->getSize();
-	MusHeader = new BYTE[SongLen];
-    const BYTE *ptr = (const BYTE *)data->getData();
+	MusHeader = new uint8[SongLen];
+    const uint8 *ptr = (const uint8 *)data->getData();
     memcpy(MusHeader, ptr, SongLen);
 
 	// Do some validation of the MIDI file
@@ -154,13 +158,13 @@ MIDISong2::MIDISong2(Data *data, int bufferSize)
 	// Gather information about each track
 	for (i = 0, p = 14; i < NumTracks && p < SongLen + 8; ++i)
 	{
-		DWORD chunkLen =
+		uint32 chunkLen =
 			(MusHeader[p+4]<<24) |
 			(MusHeader[p+5]<<16) |
 			(MusHeader[p+6]<<8)  |
 			(MusHeader[p+7]);
 
-		if (chunkLen + p + 8 > (DWORD)SongLen)
+		if (chunkLen + p + 8 > (uint32)SongLen)
 		{ // Track too long, so truncate it
 			chunkLen = SongLen - p - 8;
 		}
@@ -308,12 +312,12 @@ bool MIDISong2::CheckDone()
 //
 //==========================================================================
 
-DWORD *MIDISong2::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
+uint32 *MIDISong2::MakeEvents(uint32 *events, uint32 *max_event_p, uint32 max_time)
 {
-	DWORD *start_events;
-	DWORD tot_time = 0;
-	DWORD time = 0;
-	DWORD delay;
+	uint32 *start_events;
+	uint32 tot_time = 0;
+	uint32 time = 0;
+	uint32 delay;
 
 	start_events = events;
 	while (TrackDue && events < max_event_p && tot_time <= max_time)
@@ -333,7 +337,7 @@ DWORD *MIDISong2::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 			do
 			{
 				bool sysex_noroom = false;
-				DWORD *new_events = SendCommand(events, TrackDue, time, max_event_p - events, sysex_noroom);
+				uint32 *new_events = SendCommand(events, TrackDue, time, max_event_p - events, sysex_noroom);
 				if (sysex_noroom)
 				{
 					return events;
@@ -361,7 +365,7 @@ DWORD *MIDISong2::MakeEvents(DWORD *events, DWORD *max_event_p, DWORD max_time)
 //
 //==========================================================================
 
-void MIDISong2::AdvanceTracks(DWORD time)
+void MIDISong2::AdvanceTracks(uint32 time)
 {
 	for (int i = 0; i < NumTracks; ++i)
 	{
@@ -381,10 +385,10 @@ void MIDISong2::AdvanceTracks(DWORD time)
 //
 //==========================================================================
 
-DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay, ptrdiff_t room, bool &sysex_noroom)
+uint32 *MIDISong2::SendCommand (uint32 *events, TrackInfo *track, uint32 delay, ptrdiff_t room, bool &sysex_noroom)
 {
-	DWORD len;
-	BYTE event, data1 = 0, data2 = 0;
+	uint32 len;
+	uint8 event, data1 = 0, data2 = 0;
 	int i;
 
 	sysex_noroom = false;
@@ -466,7 +470,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay, ptr
 			case 110:	// EMIDI Track Designation - InitBeat only
 				// Instruments 4, 5, 6, and 7 are all FM synth.
 				// The rest are all wavetable.
-				if (track->PlayedTime < (DWORD)Division)
+				if (track->PlayedTime < (uint32)Division)
 				{
 					if (data2 == 127)
 					{
@@ -483,7 +487,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay, ptr
 				break;
 
 			case 111:	// EMIDI Track Exclusion - InitBeat only
-				if (track->PlayedTime < (DWORD)Division)
+				if (track->PlayedTime < (uint32)Division)
 				{
 					if (track->Designated && data2 <= 9)
 					{
@@ -495,7 +499,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay, ptr
 
 			case 112:	// EMIDI Program Change
 				// Ignored unless it also appears in the InitBeat
-				if (track->PlayedTime < (DWORD)Division || track->EProgramChange)
+				if (track->PlayedTime < (uint32)Division || track->EProgramChange)
 				{
 					track->EProgramChange = true;
 					event = 0xC0 | (event & 0x0F);
@@ -506,7 +510,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay, ptr
 
 			case 113:	// EMIDI Volume
 				// Ignored unless it also appears in the InitBeat
-				if (track->PlayedTime < (DWORD)Division || track->EVolume)
+				if (track->PlayedTime < (uint32)Division || track->EVolume)
 				{
 					track->EVolume = true;
 					data1 = 7;
@@ -620,7 +624,7 @@ DWORD *MIDISong2::SendCommand (DWORD *events, TrackInfo *track, DWORD delay, ptr
 			}
 			else
 			{
-				BYTE *msg = (BYTE *)&events[3];
+				uint8 *msg = (uint8 *)&events[3];
 				if (event == MIDI_SYSEX)
 				{ // Need to add the SysEx marker to the message.
 					events[2] = (MEVT_LONGMSG << 24) | (len + 1);
@@ -709,8 +713,8 @@ void MIDISong2::ProcessInitialMetaEvents ()
 {
 	TrackInfo *track;
 	int i;
-	BYTE event;
-	DWORD len;
+	uint8 event;
+	uint32 len;
 
 	for (i = 0; i < NumTracks; ++i)
 	{
@@ -757,9 +761,9 @@ void MIDISong2::ProcessInitialMetaEvents ()
 //
 //==========================================================================
 
-DWORD MIDISong2::TrackInfo::ReadVarLen ()
+uint32 MIDISong2::TrackInfo::ReadVarLen ()
 {
-	DWORD time = 0, t = 0x80;
+	uint32 time = 0, t = 0x80;
 
 	while ((t & 0x80) && TrackP < MaxTrackP)
 	{
@@ -781,7 +785,7 @@ DWORD MIDISong2::TrackInfo::ReadVarLen ()
 MIDISong2::TrackInfo *MIDISong2::FindNextDue ()
 {
 	TrackInfo *track;
-	DWORD best;
+	uint32 best;
 	int i;
 
 	// Give precedence to whichever track last had events taken from it.
@@ -825,17 +829,6 @@ MIDISong2::TrackInfo *MIDISong2::FindNextDue ()
 
 bool MIDISong2::accepts(const std::string &ext)
 {
-    static const std::string supported[] =
-    {
-        "mid"
-    };
-
-    for (int i = 0; !(supported[i].empty()); i++)
-    {
-        if (supported[i].compare(ext) == 0)
-            return true;
-    }
-
     return false;
 }
 

@@ -171,4 +171,8 @@
 #	error Could not detect endianness
 #endif
 
+#ifdef __APPLE__
+#   define LOVE_SUPPORT_COREAUDIO
+#endif
+
 #endif // LOVE_CONFIG_H
