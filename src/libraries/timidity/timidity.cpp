@@ -56,7 +56,7 @@ static int read_config_file(const char *name, bool ismain)
 	int i, j, k, line = 0, words;
 	static int rcf_count = 0;
 	int lumpnum;
-        size_t line_size;
+    size_t line_size = 256;
 
 	if (rcf_count > 50)
 	{

@@ -79,6 +79,7 @@ SoftSynthMIDIDevice::SoftSynthMIDIDevice()
     Callback = NULL;
 	Started = false;
 	SampleRate = 44100;
+    ResampleBuffer = NULL;
 	CalcTickRate();
 }
 
@@ -91,6 +92,8 @@ SoftSynthMIDIDevice::SoftSynthMIDIDevice()
 SoftSynthMIDIDevice::~SoftSynthMIDIDevice()
 {
 	Close();
+    if (ResampleBuffer != NULL)
+      free(ResampleBuffer);
 }
 
 //==========================================================================
@@ -430,10 +433,23 @@ bool SoftSynthMIDIDevice::NeedInnerDecode()
 
 int SoftSynthMIDIDevice::InnerDecode(void* buffer, int bufferSize)
 {
-    bool res = ServiceStream(buffer, bufferSize);
+  // bufferSize is for 16-bit integers. TiMidity outputs 32-bit floating point
+  // stereo, so we have to ask for twice as many samples, then downsample to
+  // 16-bit.
+  size_t bufferSize32 = (size_t)bufferSize * 2;
+  ResampleBuffer = (float*)realloc((void*)ResampleBuffer, bufferSize32);
+  uint16_t* buffer16 = (uint16_t*)buffer;
 
-    if (res)
-        return bufferSize;
+  memset(ResampleBuffer, 0, bufferSize32);
+
+    bool res = ServiceStream((void*)ResampleBuffer, bufferSize32);
+
+    if (res) {
+      for (int i = 0; i < bufferSize / sizeof(uint16_t); i++) {
+        buffer16[i] = (uint16_t)(ResampleBuffer[i] * 32767);
+      }
+      return bufferSize;
+    }
 
     return 0;
 }

@@ -250,7 +250,6 @@ TimidityWaveWriterMIDIDevice::~TimidityWaveWriterMIDIDevice()
 	{
 		long pos = ftell(File);
 		uint32 size;
-                printf("pos %lu\n", pos);
 
 		// data chunk size
 		size = uint32(pos - 8);
@@ -261,13 +260,10 @@ TimidityWaveWriterMIDIDevice::~TimidityWaveWriterMIDIDevice()
 				size = uint32(pos - 12 - sizeof(FmtChunk) - 8);
 				if (0 == fseek(File, 4 + sizeof(FmtChunk) + 4, SEEK_CUR))
 				{
-                                    printf("seek %lu\n", pos);
 					if (1 == fwrite(&size, 4, 1, File))
 					{
-                                    fflush(File);
-                                    printf("write\n");
-						fclose(File);
-                                    printf("close\n");
+                        fflush(File);
+                        fclose(File);
 						return;
 					}
 				}

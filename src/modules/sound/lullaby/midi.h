@@ -222,6 +222,7 @@ protected:
 	bool Started;
 	uint32 Position;
 	int SampleRate;
+    float *ResampleBuffer;
     love::thread::MutexRef mutex;
 
 	void (*Callback)(unsigned int, void *, uint32, uint32);
