@@ -1530,5 +1530,5 @@ void SFFile::LoadSample(SFSample *sample)
 	}
 	// Final 0 byte is for interpolation.
 	sample->InMemoryData[i] = 0;
-	delete fp;
+	fclose(fp);
 }
