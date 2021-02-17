@@ -71,7 +71,6 @@ AS_VAR_IF([enable_module_font], [yes], [ACLOVE_DEP_FREETYPE2], [])
 AS_VAR_IF([enable_module_sound], [yes], [
 	ACLOVE_DEP_LIBMODPLUG
 	ACLOVE_DEP_VORBISFILE
-        ACLOVE_DEP_TIMIDITY
 ], [enable_mpg123=no])
 AS_VAR_IF([enable_module_video], [yes], [ACLOVE_DEP_THEORA], [])
 AS_VAR_IF([enable_gme], [yes], [ACLOVE_DEP_GME], [])
@@ -98,6 +97,7 @@ AS_VAR_IF([enable_module_image], [yes], [enable_library_stb=yes], [enable_librar
 AS_VAR_IF([enable_module_image], [yes], [enable_library_tinyexr=yes], [enable_library_tinyexr=no])
 AS_VAR_IF([enable_module_sound], [yes], [enable_library_Wuff=yes], [enable_library_Wuff=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_xxHash=yes], [enable_library_xxHash=no])
+AS_VAR_IF([enable_module_sound], [yes], [enable_library_timidity=yes], [enable_library_timidity=no])
 
 # Utf8 is required by both graphics and font, so enable if either is enabled
 enable_library_utf8=no

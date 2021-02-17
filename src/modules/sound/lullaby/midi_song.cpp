@@ -829,7 +829,18 @@ MIDISong2::TrackInfo *MIDISong2::FindNextDue ()
 
 bool MIDISong2::accepts(const std::string &ext)
 {
-    return false;
+	static const std::string supported[] =
+	{
+		"mid"
+	};
+
+	for (int i = 0; !(supported[i].empty()); i++)
+	{
+		if (supported[i].compare(ext) == 0)
+			return true;
+	}
+
+	return false;
 }
 
 love::sound::Decoder *MIDISong2::clone()

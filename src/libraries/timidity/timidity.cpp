@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _WIN32
    #include <io.h>
@@ -31,6 +32,7 @@
 #endif
 
 #include "timidity.h"
+#include "common.h"
 
 #define MAXWORDS 10
 
@@ -54,6 +56,7 @@ static int read_config_file(const char *name, bool ismain)
 	int i, j, k, line = 0, words;
 	static int rcf_count = 0;
 	int lumpnum;
+        size_t line_size;
 
 	if (rcf_count > 50)
 	{
@@ -64,9 +67,9 @@ static int read_config_file(const char *name, bool ismain)
         if (!(fp = open_file(name)))
             return -1;
 
-        tmp = malloc(1024);
+        tmp = (char*)malloc(line_size);
 
-	while (getline(tmp, 1024, fp))
+	while (getline(&tmp, &line_size, fp))
 	{
 		line++;
 
@@ -460,12 +463,11 @@ static int read_config_file(const char *name, bool ismain)
 	*/
 
         free(tmp);
-
 	return 0;
 
 fail:
         free(tmp);
-        return -2
+        return -2;
 }
 
 void FreeAll()
@@ -513,12 +515,12 @@ int LoadConfig(const char *filename)
 		drumset[0] = new ToneBank;
 	}
 
-	return read_config_file(full_path.c_str(), true);
+	return read_config_file(filename, true);
 }
 
 int LoadConfig()
 {
-    return LoadConfig(midi_config);
+    return LoadConfig(midi_config.c_str());
 }
 
 DLS_Data *LoadDLS(FILE *src);
@@ -541,10 +543,10 @@ Renderer::Renderer(float sample_rate, const char *args)
 
 	default_instrument = NULL;
 	default_program = DEFAULT_PROGRAM;
-	if (def_instr_name.IsNotEmpty())
-		set_default_instrument(def_instr_name);
+	if (!def_instr_name.empty())
+            set_default_instrument(def_instr_name.c_str());
 
-	voices = MAX(*midi_voices, 16);
+	voices = MAX(midi_voices, 16);
 	voice = new Voice[voices];
 	drumchannels = DEFAULT_DRUMCHANNELS;
 #if 0
@@ -558,7 +560,7 @@ Renderer::~Renderer()
 {
 	if (resample_buffer != NULL)
 	{
-		M_Free(resample_buffer);
+		free(resample_buffer);
 	}
 	if (voice != NULL)
 	{
@@ -583,7 +585,7 @@ void Renderer::ComputeOutput(float *buffer, int count)
 	if (resample_buffer_size < count)
 	{
 		resample_buffer_size = count;
-		resample_buffer = (sample_t *)M_Realloc(resample_buffer, count * sizeof(float) * 2);
+		resample_buffer = (sample_t *)realloc(resample_buffer, count * sizeof(float) * 2);
 	}
 	for (int i = 0; i < voices; i++, v++)
 	{

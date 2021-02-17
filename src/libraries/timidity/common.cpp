@@ -27,6 +27,13 @@
 #include <errno.h>
 #include "timidity.h"
 
+/* The path separator (D.M.) */
+#if defined(__WIN32__) || defined(__OS2__)
+#  define PATH_SEP '\\'
+#else
+#  define PATH_SEP '/'
+#endif
+
 namespace Timidity
 {
 
@@ -78,7 +85,7 @@ FILE *open_file(const char *name)
 	printf("Trying to open %s\n", current_filename);
 	if ((fp = fopen(current_filename, "rb")))
 	  return fp;
-	plp = plp->next;
+	plp = (PathList*)plp->next;
       }
   }
 
@@ -94,7 +101,7 @@ void *safe_malloc(size_t count)
 	void *p;
 	if (count > (1 << 21))
 	{
-		I_Error("Timidity: Tried allocating %zu bytes. This must be a bug.", count);
+		printf("Timidity: Tried allocating %zu bytes. This must be a bug.", count);
 	}
 	else if ((p = malloc(count)))
 	{
@@ -102,21 +109,21 @@ void *safe_malloc(size_t count)
 	}
 	else
 	{
-		I_Error("Timidity: Couldn't malloc %zu bytes.", count);
+		printf("Timidity: Couldn't malloc %zu bytes.", count);
 	}
-	return 0;	// Unreachable.
+	return 0;
 }
 
 
 /* This adds a directory to the path list */
 void add_to_pathlist(const char *s)
 {
-  PathList *plp = safe_malloc(sizeof(PathList));
+    PathList *plp = (PathList*)safe_malloc(sizeof(PathList));
 
   if (plp == NULL)
       return;
 
-  plp->path = safe_malloc(strlen(s) + 1);
+  plp->path = (char*)safe_malloc(strlen(s) + 1);
   if (plp->path == NULL)
   {
       free(plp);
@@ -135,7 +142,7 @@ void free_pathlist(void)
 
     while (plp)
     {
-	next = plp->next;
+	next = (PathList*)plp->next;
 	free(plp->path);
 	free(plp);
 	plp = next;

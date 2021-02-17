@@ -195,7 +195,11 @@ EMidiDevice MIDIStreamer::SelectMIDIDevice(EMidiDevice device)
 		return device;
 	}
 
-	return MDEV_MMAPI;
+#ifdef LOVE_PLATFORM_WINDOWS
+        return MDEV_MMAPI;
+#else
+        return MDEV_GUS;
+#endif
 }
 
 //==========================================================================
@@ -239,7 +243,7 @@ void MIDIStreamer::start()
 	    Restarting = true;
 	    InitialPlayback = true;
 
-        DeviceType = MDEV_MMAPI;
+        DeviceType = MDEV_DEFAULT;
 
         devtype = SelectMIDIDevice(DeviceType);
 

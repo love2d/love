@@ -2,7 +2,9 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <cassert>
 
+#include "common.h"
 #include "timidity.h"
 #include "sf2.h"
 
@@ -217,7 +219,7 @@ static int32_t calc_rate(Renderer *song, int diff, double sec)
 static inline uint32_t read_id(FILE *f)
 {
 	uint32_t id;
-	if (fread(f, &id, 4) != 4)
+	if (fread(&id, 4, 1, f) != 4)
 	{
 		throw CIOErr();
 	}
@@ -227,7 +229,7 @@ static inline uint32_t read_id(FILE *f)
 static inline int read_byte(FILE *f)
 {
 	uint8_t x;
-	if (fread(f, &x, 1) != 1)
+	if (fread(&x, 1, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -237,7 +239,7 @@ static inline int read_byte(FILE *f)
 static inline int read_char(FILE *f)
 {
 	int8_t x;
-	if (fread(f, &x, 1) != 1)
+	if (fread(&x, 1, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -247,36 +249,36 @@ static inline int read_char(FILE *f)
 static inline int read_uword(FILE *f)
 {
 	uint16_t x;
-	if (fread(f, &x, 2) != 2)
+	if (fread(&x, 2, 1, f) != 2)
 	{
 		throw CIOErr();
 	}
-	return LittleShort(x);
+	return x;
 }
 
 static inline int read_sword(FILE *f)
 {
 	int16_t x;
-	if (fread(f, &x, 2) != 2)
+	if (fread(&x, 2, 1, f) != 2)
 	{
 		throw CIOErr();
 	}
-	return LittleShort(x);
+	return x;
 }
 
 static inline uint32_t read_dword(FILE *f)
 {
 	uint32_t x;
-	if (fread(f, &x, 4) != 4)
+	if (fread(&x, 4, 1, f) != 4)
 	{
 		throw CIOErr();
 	}
-	return LittleLong(x);
+	return x;
 }
 
 static inline void read_name(FILE *f, char name[21])
 {
-	if (fread(f, name, 20) != 20)
+    if (fread(name, 20, 1, f) != 20)
 	{
 		throw CIOErr();
 	}
@@ -736,15 +738,15 @@ SFFile *ReadSF2(const char *filename, FILE *f)
 	}
 	catch (CIOErr)
 	{
-		Printf("Error reading %s: %s\n", filename, strerror(errno));
+		printf("Error reading %s: %s\n", filename, strerror(errno));
 	}
 	catch (CBadForm)
 	{
-		Printf("%s is corrupted.\n", filename);
+		printf("%s is corrupted.\n", filename);
 	}
 	catch (CBadVer)
 	{
-		Printf("%s is not a SoundFont version 2 file.\n", filename);
+		printf("%s is not a SoundFont version 2 file.\n", filename);
 	}
 	if (sf2 != NULL)
 	{
@@ -863,7 +865,7 @@ void SFFile::SetAllOrders(int order)
 	{
 		Presets[i].LoadOrder = order;
 	}
-	for (unsigned int i = 0; i < Percussion.Size(); ++i)
+	for (unsigned int i = 0; i < Percussion.size(); ++i)
 	{
 		Percussion[i].LoadOrder = order;
 	}
@@ -878,7 +880,7 @@ Instrument *SFFile::LoadInstrumentOrder(Renderer *song, int order, int drum, int
 {
 	if (drum)
 	{
-		for (unsigned int i = 0; i < Percussion.Size(); ++i)
+		for (unsigned int i = 0; i < Percussion.size(); ++i)
 		{
 			if ((order < 0 || Percussion[i].LoadOrder == order) &&
 				Percussion[i].Generators.drumset == bank &&
@@ -1141,7 +1143,7 @@ void SFFile::TranslatePercussionPresetZone(SFPreset *preset, SFBag *pzone)
 			perc.Generators.velRange.Lo = MAX(pzone->VelRange.Lo, InstrBags[i].VelRange.Lo);
 			perc.Generators.velRange.Hi = MIN(pzone->VelRange.Hi, InstrBags[i].VelRange.Hi);
 			perc.Generators.sampleID = InstrBags[i].Target;
-			Percussion.Push(perc);
+			Percussion.push_back(perc);
 		}
 	}
 }
@@ -1237,7 +1239,7 @@ Instrument *SFFile::LoadPercussion(Renderer *song, SFPerc *perc)
 	drumset = perc->Generators.drumset;
 
 	// Count all percussion composites that match this one's key and set.
-	for (i = 0; i < Percussion.Size(); ++i)
+	for (i = 0; i < Percussion.size(); ++i)
 	{
 		if (Percussion[i].Generators.key == drumkey &&
 			Percussion[i].Generators.drumset == drumset &&
@@ -1263,7 +1265,7 @@ Instrument *SFFile::LoadPercussion(Renderer *song, SFPerc *perc)
 	memset(ip->sample, 0, sizeof(Sample) * ip->samples);
 
 	// Fill in Sample structure for each composite.
-	for (j = 0, i = 0; i < Percussion.Size(); ++i)
+	for (j = 0, i = 0; i < Percussion.size(); ++i)
 	{
 		SFPerc *zone = &Percussion[i];
 		SFGenComposite *gen = &zone->Generators;
@@ -1505,21 +1507,21 @@ void SFFile::LoadSample(SFSample *sample)
 		return;
 	}
 	sample->InMemoryData = new float[sample->End - sample->Start + 1];
-	fp->Seek(SampleDataOffset + sample->Start * 2, SEEK_SET);
+	fseek(fp, SampleDataOffset + sample->Start * 2, SEEK_SET);
 	// Load 16-bit sample data.
 	for (i = 0; i < sample->End - sample->Start; ++i)
 	{
 		int16_t samp;
-		*fp >> samp;
+                fread(&samp, 2, 1, fp);
 		sample->InMemoryData[i] = samp / 32768.f;
 	}
 	if (SampleDataLSBOffset != 0)
 	{ // Load lower 8 bits of 24-bit sample data.
-		fp->Seek(SampleDataLSBOffset + sample->Start, SEEK_SET);
+		fseek(fp, SampleDataLSBOffset + sample->Start, SEEK_SET);
 		for (i = 0; i < sample->End - sample->Start; ++i)
 		{
 			uint8_t samp;
-			*fp >> samp;
+                        fread(&samp, 1, 1, fp);
 			sample->InMemoryData[i] = ((((int32_t(sample->InMemoryData[i] * 32768) << 8) | samp) << 8) >> 8) / 8388608.f;
 		}
 	}

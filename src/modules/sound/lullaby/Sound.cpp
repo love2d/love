@@ -94,12 +94,10 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 	std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
 
     std::vector<DecoderImpl> possibleDecoders = {
-#ifdef _WIN32
-        DecoderImplFor<MIDISong2>(),
-#endif
 #ifdef LOVE_SUPPORT_COREAUDIO
         DecoderImplFor<AppleMIDIStreamer>(),
 #endif
+        DecoderImplFor<MIDISong2>(),
 #ifndef LOVE_NO_MODPLUG
 		DecoderImplFor<ModPlugDecoder>(),
 #endif // LOVE_NO_MODPLUG

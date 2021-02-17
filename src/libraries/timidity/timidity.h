@@ -20,7 +20,9 @@
 #ifndef TIMIDITY_H
 #define TIMIDITY_H
 
- #include <string>
+#include <string>
+
+#define MAKE_ID(a,b,c,d)	((uint32_t)((d)|((c)<<8)|((b)<<16)|((a)<<24)))
 
 namespace Timidity
 {
@@ -161,12 +163,6 @@ extern __inline__ double pow_x87_inline(double x,double y)
 }
 #define pow pow_x87_inline
 #endif
-
-/*
-common.h
-*/
-
-extern void *safe_malloc(size_t count);
 
 /*
 controls.h

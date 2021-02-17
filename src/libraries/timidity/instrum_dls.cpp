@@ -24,8 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <climits>
 
 #include "timidity.h"
+#include "common.h"
 
 #define __Sound_SetError(x)
 
@@ -103,7 +105,7 @@ static void LoadSubChunks(RIFF_Chunk *chunk, uint8_t *data, uint32_t left)
 		child->magic = *(uint32_t *)data;
 		data += 4;
 		left -= 4;
-		child->length = LittleLong(*(uint32_t *)data);
+		child->length = *(uint32_t *)data; // LittleLong(*(uint32_t *)data);
 		data += 4;
 		left -= 4;
 		child->data = data;
@@ -140,7 +142,7 @@ RIFF_Chunk *LoadRIFF(FILE *src)
 	/* Make sure the file is in RIFF format */
 	fread(&chunk->magic, 4, 1, src);
 	fread(&chunk->length, 4, 1, src);
-	chunk->length = LittleLong(chunk->length);
+	chunk->length = chunk->length; // LittleLong(chunk->length);
 	if ( chunk->magic != RIFF ) {
 		__Sound_SetError("Not a RIFF file");
 		delete chunk;
@@ -254,6 +256,7 @@ typedef uint16_t	USHORT;
 typedef int32_t	LONG;
 typedef uint32_t	ULONG;
 typedef uint8_t	BYTE;
+typedef uint32_t	DWORD;
 #define mmioFOURCC	MAKE_ID
 #define DEFINE_GUID(A, B, C, E, F, G, H, I, J, K, L, M)
 
@@ -403,16 +406,16 @@ static void AllocWaveList(DLS_Data *data)
 
 static void Parse_colh(DLS_Data *data, RIFF_Chunk *chunk)
 {
-	data->cInstruments = LittleLong(*(uint32_t *)chunk->data);
+	data->cInstruments = *(uint32_t *)chunk->data; // LittleLong(*(uint32_t *)chunk->data);
 	AllocInstruments(data);
 }
 
 static void Parse_insh(DLS_Data *data, RIFF_Chunk *chunk, DLS_Instrument *instrument)
 {
 	INSTHEADER *header = (INSTHEADER *)chunk->data;
-	header->cRegions = LittleLong(header->cRegions);
-	header->Locale.ulBank = LittleLong(header->Locale.ulBank);
-	header->Locale.ulInstrument = LittleLong(header->Locale.ulInstrument);
+	header->cRegions = header->cRegions; // LittleLong(header->cRegions);
+	header->Locale.ulBank = header->Locale.ulBank; // LittleLong(header->Locale.ulBank);
+	header->Locale.ulInstrument = header->Locale.ulInstrument; // LittleLong(header->Locale.ulInstrument);
 	instrument->header = header;
 	AllocRegions(instrument);
 }
@@ -420,22 +423,22 @@ static void Parse_insh(DLS_Data *data, RIFF_Chunk *chunk, DLS_Instrument *instru
 static void Parse_rgnh(DLS_Data *data, RIFF_Chunk *chunk, DLS_Region *region)
 {
 	RGNHEADER *header = (RGNHEADER *)chunk->data;
-	header->RangeKey.usLow = LittleShort(header->RangeKey.usLow);
-	header->RangeKey.usHigh = LittleShort(header->RangeKey.usHigh);
-	header->RangeVelocity.usLow = LittleShort(header->RangeVelocity.usLow);
-	header->RangeVelocity.usHigh = LittleShort(header->RangeVelocity.usHigh);
-	header->fusOptions = LittleShort(header->fusOptions);
-	header->usKeyGroup = LittleShort(header->usKeyGroup);
+	header->RangeKey.usLow = header->RangeKey.usLow; // LittleShort(header->RangeKey.usLow);
+	header->RangeKey.usHigh = header->RangeKey.usHigh; // LittleShort(header->RangeKey.usHigh);
+	header->RangeVelocity.usLow = header->RangeVelocity.usLow; // LittleShort(header->RangeVelocity.usLow);
+	header->RangeVelocity.usHigh = header->RangeVelocity.usHigh; // LittleShort(header->RangeVelocity.usHigh);
+	header->fusOptions = header->fusOptions; // LittleShort(header->fusOptions);
+	header->usKeyGroup = header->usKeyGroup; // LittleShort(header->usKeyGroup);
 	region->header = header;
 }
 
 static void Parse_wlnk(DLS_Data *data, RIFF_Chunk *chunk, DLS_Region *region)
 {
 	WAVELINK *wlnk = (WAVELINK *)chunk->data;
-	wlnk->fusOptions = LittleShort(wlnk->fusOptions);
-	wlnk->usPhaseGroup = LittleShort(wlnk->usPhaseGroup);
-	wlnk->ulChannel = LittleLong((unsigned int)wlnk->ulChannel);
-	wlnk->ulTableIndex = LittleLong((unsigned int)wlnk->ulTableIndex);
+	wlnk->fusOptions = wlnk->fusOptions; // LittleShort(wlnk->fusOptions);
+	wlnk->usPhaseGroup = wlnk->usPhaseGroup; // LittleShort(wlnk->usPhaseGroup);
+	wlnk->ulChannel = (unsigned int)wlnk->ulChannel; // LittleLong((unsigned int)wlnk->ulChannel);
+	wlnk->ulTableIndex = (unsigned int)wlnk->ulTableIndex; // LittleLong((unsigned int)wlnk->ulTableIndex);
 	region->wlnk = wlnk;
 }
 
@@ -444,20 +447,20 @@ static void Parse_wsmp(DLS_Data *data, RIFF_Chunk *chunk, WSMPL **wsmp_ptr, WLOO
 	uint32_t i;
 	WSMPL *wsmp = (WSMPL *)chunk->data;
 	WLOOP *loop;
-	wsmp->cbSize = LittleLong(wsmp->cbSize);
-	wsmp->usUnityNote = LittleShort(wsmp->usUnityNote);
-	wsmp->sFineTune = LittleShort(wsmp->sFineTune);
-	wsmp->lAttenuation = LittleLong(wsmp->lAttenuation);
-	wsmp->fulOptions = LittleLong(wsmp->fulOptions);
-	wsmp->cSampleLoops = LittleLong(wsmp->cSampleLoops);
+	wsmp->cbSize = wsmp->cbSize; // LittleLong(wsmp->cbSize);
+	wsmp->usUnityNote = wsmp->usUnityNote; // LittleShort(wsmp->usUnityNote);
+	wsmp->sFineTune = wsmp->sFineTune; // LittleShort(wsmp->sFineTune);
+	wsmp->lAttenuation = wsmp->lAttenuation; // LittleLong(wsmp->lAttenuation);
+	wsmp->fulOptions = wsmp->fulOptions; // LittleLong(wsmp->fulOptions);
+	wsmp->cSampleLoops = wsmp->cSampleLoops; // LittleLong(wsmp->cSampleLoops);
 	loop = (WLOOP *)((uint8_t *)chunk->data + wsmp->cbSize);
 	*wsmp_ptr = wsmp;
 	*wsmp_loop_ptr = loop;
 	for ( i = 0; i < wsmp->cSampleLoops; ++i ) {
-		loop->cbSize = LittleLong(loop->cbSize);
-		loop->ulType = LittleLong(loop->ulType);
-		loop->ulStart = LittleLong(loop->ulStart);
-		loop->ulLength = LittleLong(loop->ulLength);
+		loop->cbSize = loop->cbSize; // LittleLong(loop->cbSize);
+		loop->ulType = loop->ulType; // LittleLong(loop->ulType);
+		loop->ulStart = loop->ulStart; // LittleLong(loop->ulStart);
+		loop->ulLength = loop->ulLength; // LittleLong(loop->ulLength);
 		++loop;
 	}
 }
@@ -467,17 +470,17 @@ static void Parse_art(DLS_Data *data, RIFF_Chunk *chunk, CONNECTIONLIST **art_pt
 	uint32_t i;
 	CONNECTIONLIST *art = (CONNECTIONLIST *)chunk->data;
 	CONNECTION *artList;
-	art->cbSize = LittleLong(art->cbSize);
-	art->cConnections = LittleLong(art->cConnections);
+	art->cbSize = art->cbSize; // LittleLong(art->cbSize);
+	art->cConnections = art->cConnections; // LittleLong(art->cConnections);
 	artList = (CONNECTION *)((uint8_t *)chunk->data + art->cbSize);
 	*art_ptr = art;
 	*artList_ptr = artList;
 	for ( i = 0; i < art->cConnections; ++i ) {
-		artList->usSource = LittleShort(artList->usSource);
-		artList->usControl = LittleShort(artList->usControl);
-		artList->usDestination = LittleShort(artList->usDestination);
-		artList->usTransform = LittleShort(artList->usTransform);
-		artList->lScale = LittleLong(artList->lScale);
+		artList->usSource = artList->usSource; // LittleShort(artList->usSource);
+		artList->usControl = artList->usControl; // LittleShort(artList->usControl);
+		artList->usDestination = artList->usDestination; // LittleShort(artList->usDestination);
+		artList->usTransform = artList->usTransform; // LittleShort(artList->usTransform);
+		artList->lScale = artList->lScale; // LittleLong(artList->lScale);
 		++artList;
 	}
 }
@@ -587,12 +590,12 @@ static void Parse_ptbl(DLS_Data *data, RIFF_Chunk *chunk)
 {
 	uint32_t i;
 	POOLTABLE *ptbl = (POOLTABLE *)chunk->data;
-	ptbl->cbSize = LittleLong(ptbl->cbSize);
-	ptbl->cCues = LittleLong(ptbl->cCues);
+	ptbl->cbSize = ptbl->cbSize; // LittleLong(ptbl->cbSize);
+	ptbl->cCues = ptbl->cCues; // LittleLong(ptbl->cCues);
 	data->ptbl = ptbl;
 	data->ptblList = (POOLCUE *)((uint8_t *)chunk->data + ptbl->cbSize);
 	for ( i = 0; i < ptbl->cCues; ++i ) {
-		data->ptblList[i].ulOffset = LittleLong(data->ptblList[i].ulOffset);
+		data->ptblList[i].ulOffset = data->ptblList[i].ulOffset; // LittleLong(data->ptblList[i].ulOffset);
 	}
 	AllocWaveList(data);
 }
@@ -600,12 +603,12 @@ static void Parse_ptbl(DLS_Data *data, RIFF_Chunk *chunk)
 static void Parse_fmt(DLS_Data *data, RIFF_Chunk *chunk, DLS_Wave *wave)
 {
 	WaveFMT *fmt = (WaveFMT *)chunk->data;
-	fmt->wFormatTag = LittleShort(fmt->wFormatTag);
-	fmt->wChannels = LittleShort(fmt->wChannels);
-	fmt->dwSamplesPerSec = LittleLong(fmt->dwSamplesPerSec);
-	fmt->dwAvgBytesPerSec = LittleLong(fmt->dwAvgBytesPerSec);
-	fmt->wBlockAlign = LittleShort(fmt->wBlockAlign);
-	fmt->wBitsPerSample = LittleShort(fmt->wBitsPerSample);
+	fmt->wFormatTag = fmt->wFormatTag; // LittleShort(fmt->wFormatTag);
+	fmt->wChannels = fmt->wChannels; // LittleShort(fmt->wChannels);
+	fmt->dwSamplesPerSec = fmt->dwSamplesPerSec; // LittleLong(fmt->dwSamplesPerSec);
+	fmt->dwAvgBytesPerSec = fmt->dwAvgBytesPerSec; // LittleLong(fmt->dwAvgBytesPerSec);
+	fmt->wBlockAlign = fmt->wBlockAlign; // LittleShort(fmt->wBlockAlign);
+	fmt->wBitsPerSample = fmt->wBitsPerSample; // LittleShort(fmt->wBitsPerSample);
 	wave->format = fmt;
 }
 
@@ -783,7 +786,6 @@ static const char *SourceToString(USHORT usSource)
 		case CONN_SRC_CC93:
 			return "CC93";
 		default:
-			mysnprintf(unknown, countof(unknown), "UNKNOWN (0x%04x)", usSource);
 			return unknown;
 	}
 }
@@ -801,7 +803,6 @@ static const char *TransformToString(USHORT usTransform)
 		case CONN_TRN_SWITCH:
 			return "SWITCH";
 		default:
-			mysnprintf(unknown, countof(unknown), "UNKNOWN (0x%04x)", usTransform);
 			return unknown;
 	}
 }
@@ -875,7 +876,6 @@ static const char *DestinationToString(USHORT usDestination)
 		case CONN_DST_FILTER_Q:
 			return "FILTER_Q";
 		default:
-			mysnprintf(unknown, countof(unknown), "UNKNOWN (0x%04x)", usDestination);
 			return unknown;
 	}
 }
@@ -1122,7 +1122,7 @@ static void load_region_dls(Renderer *song, Sample *sample, DLS_Instrument *ins,
 
 	sample->type = INST_DLS;
 	sample->self_nonexclusive = !!(rgn->header->fusOptions & F_RGN_OPTION_SELFNONEXCLUSIVE);
-	sample->key_group = (Suint8_t)rgn->header->usKeyGroup;
+	sample->key_group = (int8_t)rgn->header->usKeyGroup;
 	sample->low_freq = note_to_freq(rgn->header->RangeKey.usLow);
 	sample->high_freq = note_to_freq(rgn->header->RangeKey.usHigh);
 	sample->root_freq = note_to_freq(rgn->wsmp->usUnityNote + rgn->wsmp->sFineTune * .01f);

@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "common.h"
 #include "timidity.h"
 
 namespace Timidity
@@ -484,7 +485,7 @@ static sample_t *rs_vib_bidir(sample_t *resample_buffer, float rate, Voice *vp, 
 sample_t *resample_voice(Renderer *song, Voice *vp, int *countptr)
 {
 	int ofs;
-	WORD modes;
+	uint16_t modes;
 
 	if (vp->sample->sample_rate == 0)
 	{

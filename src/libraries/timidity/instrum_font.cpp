@@ -2,12 +2,8 @@
 #include <string.h>
 #include <errno.h>
 
-#include "doomdef.h"
-#include "m_swap.h"
-#include "templates.h"
 #include "timidity.h"
 #include "sf2.h"
-#include "files.h"
 
 namespace Timidity
 {
@@ -35,7 +31,7 @@ FontFile *font_find(const char *filename)
 {
 	for (FontFile *font = Fonts; font != NULL; font = font->Next)
 	{
-		if (stricmp(filename, font->Filename) == 0)
+            if (strcasecmp(filename, font->Filename.c_str()) == 0)
 		{
 			return font;
 		}
@@ -46,6 +42,7 @@ FontFile *font_find(const char *filename)
 void font_add(const char *filename, int load_order)
 {
 	FontFile *font;
+        FILE *fp;
 
 	font = font_find(filename);
 	if (font != NULL)

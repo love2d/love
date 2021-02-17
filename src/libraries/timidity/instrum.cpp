@@ -29,9 +29,7 @@
 #include <math.h>
 
 #include "timidity.h"
-#include "m_swap.h"
-#include "files.h"
-#include "templates.h"
+#include "common.h"
 #include "gf1patch.h"
 
 namespace Timidity
@@ -61,7 +59,7 @@ Instrument::~Instrument()
 
 ToneBank::ToneBank()
 {
-	tone = new ToneBankElement[128];;
+	tone = new ToneBankElement[128];
 	for (int i = 0; i < MAXPROG; ++i)
 	{
 		instrument[i] = 0;
@@ -166,13 +164,7 @@ static Instrument *load_instrument(Renderer *song, const char *name, int percuss
 		tmp += ".pat";
 		if ((fp = open_file(tmp.c_str())) == NULL)
 		{
-#ifdef __unix__			// Windows isn't case-sensitive.
-			tmp.ToUpper();
-			if ((fp = open_file(tmp.c_str())) == NULL)
-#endif
-			{
-				noluck = true;
-			}
+                    noluck = true;
 		}
 	}
 
@@ -186,7 +178,7 @@ static Instrument *load_instrument(Renderer *song, const char *name, int percuss
 
 	/* Read some headers and do cursory sanity checks. */
 
-	if (sizeof(header) != fread(fp, &header, sizeof(header)))
+	if (sizeof(header) != fread(&header, sizeof(header), 1, fp))
 	{
 failread:
 		cmsg(CMSG_ERROR, VERB_NORMAL, "%s: Error reading instrument.\n", name);
@@ -205,15 +197,15 @@ failread:
 		delete fp;
 		return 0;
 	}
-	if (sizeof(idata) != fread(fp, &idata, sizeof(idata)))
+	if (sizeof(idata) != fread(&idata, sizeof(idata), 1, fp))
 	{
 		goto failread;
 	}
 
-	header.WaveForms = LittleShort(header.WaveForms);
-	header.MasterVolume = LittleShort(header.MasterVolume);
-	header.DataSize = LittleLong(header.DataSize);
-	idata.Instrument = LittleShort(idata.Instrument);
+	// header.WaveForms = LittleShort(header.WaveForms);
+	// header.MasterVolume LittleShort(header.MasterVolume);
+	// header.DataSize = LittleLong(header.DataSize);
+	// idata.Instrument = LittleShort(idata.Instrument);
 
 	if (header.Instruments != 1 && header.Instruments != 0) /* instruments. To some patch makers, 0 means 1 */
 	{
@@ -229,7 +221,7 @@ failread:
 		return 0;
 	}
 
-	if (sizeof(layer_data) != fread(fp, &layer_data, sizeof(layer_data)))
+	if (sizeof(layer_data) != fread(&layer_data, sizeof(layer_data), 1, fp))
 	{
 		goto failread;
 	}
@@ -247,7 +239,7 @@ failread:
 	memset(ip->sample, 0, sizeof(Sample) * layer_data.Samples);
 	for (i = 0; i < layer_data.Samples; ++i)
 	{
-		if (sizeof(patch_data) != fread(fp, &patch_data, sizeof(patch_data)))
+            if (sizeof(patch_data) != fread(&patch_data, sizeof(patch_data), 1, fp))
 		{
 fail:
 			cmsg(CMSG_ERROR, VERB_NORMAL, "Error reading sample %d.\n", i);
@@ -258,13 +250,13 @@ fail:
 
 		sp = &(ip->sample[i]);
 
-		sp->data_length = LittleLong(patch_data.WaveSize);
-		sp->loop_start = LittleLong(patch_data.StartLoop);
-		sp->loop_end = LittleLong(patch_data.EndLoop);
-		sp->sample_rate = LittleShort(patch_data.SampleRate);
-		sp->low_freq = float(LittleLong(patch_data.LowFrequency));
-		sp->high_freq = float(LittleLong(patch_data.HighFrequency)) + 0.9999f;
-		sp->root_freq = float(LittleLong(patch_data.RootFrequency));
+		sp->data_length = patch_data.WaveSize; // LittleLong(patch_data.WaveSize);
+		sp->loop_start = patch_data.StartLoop; // LittleLong(patch_data.StartLoop);
+		sp->loop_end = patch_data.EndLoop; // LittleLong(patch_data.EndLoop);
+		sp->sample_rate = patch_data.SampleRate; // LittleShort(patch_data.SampleRate);
+		sp->low_freq = float(patch_data.LowFrequency); // LittleLong(patch_data.LowFrequency);
+                    sp->high_freq = patch_data.HighFrequency; // float(LittleLong(patch_data.HighFrequency)) + 0.9999f;
+		sp->root_freq = float(patch_data.RootFrequency); // LittleLong(patch_data.RootFrequency));
 		sp->high_vel = 127;
 		sp->velocity = -1;
 		sp->type = INST_GUS;
@@ -324,8 +316,8 @@ fail:
 		}
 		else
 		{
-			sp->scale_note = LittleShort(patch_data.ScaleFrequency);
-			sp->scale_factor = LittleShort(patch_data.ScaleFactor);
+			sp->scale_note = patch_data.ScaleFrequency; // LittleShort(patch_data.ScaleFrequency);
+			sp->scale_factor = patch_data.ScaleFactor; // LittleShort(patch_data.ScaleFactor);
 			if (sp->scale_factor <= 2)
 			{
 				sp->scale_factor *= 1024;
@@ -414,7 +406,7 @@ fail:
 		}
 		sp->data = (sample_t *)safe_malloc(sp->data_length);
 
-		if (sp->data_length != fread(fp, sp->data, sp->data_length))
+		if (sp->data_length != fread(sp->data, sp->data_length, 1, fp))
 			goto fail;
 
 		convert_sample_data(sp, sp->data);
@@ -519,8 +511,8 @@ void convert_sample_data(Sample *sp, const void *data)
 		newdata = (sample_t *)safe_malloc((sp->data_length + 1) * sizeof(sample_t));
 		for (int i = 0; i < sp->data_length; ++i)
 		{
-			int c = LittleShort(cp[i]);
-			if (c < 0)
+                    int c = cp[i]; // LittleShort(cp[i]);
+                        if (c < 0)
 			{
 				newdata[i] = float(c) / 32768.f;
 			}
@@ -542,7 +534,7 @@ void convert_sample_data(Sample *sp, const void *data)
 		newdata = (sample_t *)safe_malloc((sp->data_length + 1) * sizeof(sample_t));
 		for (int i = 0; i < sp->data_length; ++i)
 		{
-			int c = LittleShort(cp[i]) - 32768;
+                    int c = cp[i] - 32768; // LittleShort(cp[i]) - 32768;
 			if (c < 0)
 			{
 				newdata[i] = float(c) / 32768.f;
@@ -591,11 +583,11 @@ static int fill_bank(Renderer *song, int dr, int b)
 			{
 				if (bank->tone[i].fontbank >= 0)
 				{
-					ip = load_instrument_font(song, bank->tone[i].name, dr, b, i);
+                                    ip = load_instrument_font(song, bank->tone[i].name.c_str(), dr, b, i);
 				}
 				else
 				{
-					ip = load_instrument(song, bank->tone[i].name,
+                                    ip = load_instrument(song, bank->tone[i].name.c_str(),
 						(dr) ? 1 : 0,
 						bank->tone[i].pan,
 						(bank->tone[i].note != -1) ? bank->tone[i].note : ((dr) ? i : -1),
@@ -611,7 +603,7 @@ static int fill_bank(Renderer *song, int dr, int b)
 			bank->instrument[i] = ip;
 			if (ip == NULL)
 			{
-				if (bank->tone[i].name.IsEmpty())
+				if (bank->tone[i].name.empty())
 				{
 					cmsg(CMSG_WARNING, (b != 0) ? VERB_VERBOSE : VERB_NORMAL,
 						"No instrument mapped to %s %d, program %d%s\n",
@@ -622,7 +614,7 @@ static int fill_bank(Renderer *song, int dr, int b)
 				{
 					cmsg(CMSG_ERROR, VERB_NORMAL,
 						"Couldn't load instrument %s (%s %d, program %d)\n",
-						bank->tone[i].name.GetChars(),
+                                             bank->tone[i].name.c_str(),
 						(dr) ? "drum set" : "tone bank", b, i);
 				}
 				if (b != 0)
