@@ -219,7 +219,8 @@ static int32_t calc_rate(Renderer *song, int diff, double sec)
 static inline uint32_t read_id(FILE *f)
 {
 	uint32_t id;
-	if (fread(&id, 4, 1, f) != 4)
+        int res;
+	if (fread(&id, 4, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -249,7 +250,7 @@ static inline int read_char(FILE *f)
 static inline int read_uword(FILE *f)
 {
 	uint16_t x;
-	if (fread(&x, 2, 1, f) != 2)
+	if (fread(&x, 2, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -259,7 +260,7 @@ static inline int read_uword(FILE *f)
 static inline int read_sword(FILE *f)
 {
 	int16_t x;
-	if (fread(&x, 2, 1, f) != 2)
+	if (fread(&x, 2, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -269,7 +270,7 @@ static inline int read_sword(FILE *f)
 static inline uint32_t read_dword(FILE *f)
 {
 	uint32_t x;
-	if (fread(&x, 4, 1, f) != 4)
+	if (fread(&x, 4, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -278,7 +279,7 @@ static inline uint32_t read_dword(FILE *f)
 
 static inline void read_name(FILE *f, char name[21])
 {
-    if (fread(name, 20, 1, f) != 20)
+    if (fread(name, 20, 1, f) != 1)
 	{
 		throw CIOErr();
 	}
@@ -694,6 +695,8 @@ SFFile *ReadSF2(const char *filename, FILE *f)
 	SFFile *sf2 = NULL;
 	uint32_t filelen;
 	uint32_t chunklen;
+
+        printf("Reading SF2 %s\n", filename);
 
 	try
 	{

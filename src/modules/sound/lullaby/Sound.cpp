@@ -36,6 +36,8 @@
 #	include "Mpg123Decoder.h"
 #endif // LOVE_NOMPG123
 
+#include "libraries/timidity/timidity.h"
+
 #ifdef __APPLE__
 #define LOVE_SUPPORT_COREAUDIO
 #endif
@@ -74,6 +76,7 @@ namespace lullaby
 
 Sound::Sound()
 {
+        Timidity::LoadConfig();
 }
 
 Sound::~Sound()
@@ -81,6 +84,7 @@ Sound::~Sound()
 #ifndef LOVE_NOMPG123
 	Mpg123Decoder::quit();
 #endif // LOVE_NOMPG123
+        Timidity::FreeAll();
 }
 
 const char *Sound::getName() const

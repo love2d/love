@@ -151,7 +151,7 @@ public:
 	virtual void TimidityVolumeChanged();
 	virtual bool Preprocess(MIDIStreamer *song, bool looping);
     virtual bool NeedInnerDecode();
-    virtual int InnerDecode();
+    virtual int InnerDecode(void* buffer, int bufferSize);
 };
 
 // WinMM implementation of a MIDI output device -----------------------------
@@ -210,6 +210,8 @@ public:
 	int Resume();
 	void Stop();
 	bool Pause(bool paused);
+    bool NeedInnerDecode();
+    int InnerDecode(void* buffer, int bufferSize);
 
 protected:
 	double Tempo;
@@ -246,8 +248,6 @@ public:
 
 	int Open(void (*callback)(unsigned int, void *, uint32, uint32), void *userdata);
 	void PrecacheInstruments(const uint16 *instruments, int count);
-    bool NeedInnerDecode();
-    int InnerDecode(Data* data);
 
 protected:
 	Timidity::Renderer *Renderer;
@@ -255,6 +255,20 @@ protected:
 	void HandleEvent(int status, int parm1, int parm2);
 	void HandleLongEvent(const uint8 *data, int len);
 	void ComputeOutput(float *buffer, int len);
+};
+
+// Internal TiMidity disk writing version of a MIDI device ------------------
+
+class TimidityWaveWriterMIDIDevice : public TimidityMIDIDevice
+{
+public:
+	TimidityWaveWriterMIDIDevice(const char *filename, int rate);
+	~TimidityWaveWriterMIDIDevice();
+	int Resume();
+	void Stop();
+
+protected:
+	FILE *File;
 };
 
 enum EMidiDevice
@@ -309,6 +323,7 @@ protected:
 	void SetTempo(int new_tempo);
 	static EMidiDevice SelectMIDIDevice(EMidiDevice devtype);
 	MIDIDevice *CreateMIDIDevice(EMidiDevice devtype) const;
+	void OpenMIDIDevice();
 
 	static void Callback(unsigned int uMsg, void *userdata, uint32 dwParam1, uint32 dwParam2);
 

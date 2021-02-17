@@ -36,7 +36,7 @@ T clamp(const T in, const T min, const T max)
 	return in <= min ? min : in >= max ? max : in;
 }
 
-#define MAKE_ID(a,b,c,d)	((uint32_t)((d)|((c)<<8)|((b)<<16)|((a)<<24)))
+#define MAKE_ID(a,b,c,d)	((uint32_t)((a)|((b)<<8)|((c)<<16)|((d)<<24)))
 
 template <typename T, size_t N>
 char ( &_ArraySizeHelper( T (&array)[N] ))[N];

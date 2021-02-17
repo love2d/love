@@ -69,15 +69,14 @@ static int read_config_file(const char *name, bool ismain)
 
         tmp = (char*)malloc(line_size);
 
-	while (getline(&tmp, &line_size, fp))
+	while (getline(&tmp, &line_size, fp) > 0)
 	{
 		line++;
+                tmp[strlen(tmp)-1] = '\0';
 
                 words = 0;
                 w[0] = strtok(tmp, " \t\240");
                 if (!w[0]) continue;
-
-		if (words == 0) continue;
 
 		/* Originally the TiMidity++ extensions were prefixed like this */
 		if (strcmp(w[0], "#extension") == 0)
@@ -93,6 +92,8 @@ static int read_config_file(const char *name, bool ismain)
 
                 while (w[words] && *w[words] != '#' && (words < (MAXWORDS-1)))
                     w[++words]=strtok(0," \t\240");
+
+		if (words == 0) continue;
 
 		/*
 		 * TiMidity++ adds a number of extensions to the config file format.
@@ -505,6 +506,7 @@ int LoadConfig(const char *filename)
 #else
     add_to_pathlist("/usr/local/lib/timidity");
     add_to_pathlist("/etc/timidity");
+    add_to_pathlist("/etc/timidity++");
     add_to_pathlist("/etc");
 #endif
 

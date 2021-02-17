@@ -182,14 +182,131 @@ void TimidityMIDIDevice::ComputeOutput(float *buffer, int len)
 	Renderer->ComputeOutput(buffer, len);
 }
 
-bool TimidityMIDIDevice::NeedInnerDecode()
+//==========================================================================
+//
+// TimidityWaveWriterMIDIDevice Constructor
+//
+//==========================================================================
+
+TimidityWaveWriterMIDIDevice::TimidityWaveWriterMIDIDevice(const char *filename, int rate)
+	:TimidityMIDIDevice(NULL)
 {
-    return true;
+	File = fopen(filename, "wb");
+	if (File != NULL)
+	{ // Write wave header
+		uint32 work[3];
+		FmtChunk fmt;
+
+		work[0] = MAKE_ID('R','I','F','F');
+		work[1] = 0;								// filled in later
+		work[2] = MAKE_ID('W','A','V','E');
+		if (3 != fwrite(work, 4, 3, File)) goto fail;
+
+		fmt.ChunkID = MAKE_ID('f','m','t',' ');
+		fmt.ChunkLen = uint32(sizeof(fmt) - 8);
+		fmt.FormatTag = 0xFFFE;		// WAVE_FORMAT_EXTENSIBLE
+		fmt.Channels = 2;
+		fmt.SamplesPerSec = (int)Renderer->rate;
+		fmt.AvgBytesPerSec = (int)Renderer->rate * 8;
+		fmt.BlockAlign = 8;
+		fmt.BitsPerSample = 32;
+		fmt.ExtensionSize = 2 + 4 + 16;
+		fmt.ValidBitsPerSample = 32;
+		fmt.ChannelMask = 3;
+		fmt.SubFormatA = 0x00000003;	// Set subformat to KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+		fmt.SubFormatB = 0x0000;
+		fmt.SubFormatC = 0x0010;
+		fmt.SubFormatD[0] = 0x80;
+		fmt.SubFormatD[1] = 0x00;
+		fmt.SubFormatD[2] = 0x00;
+		fmt.SubFormatD[3] = 0xaa;
+		fmt.SubFormatD[4] = 0x00;
+		fmt.SubFormatD[5] = 0x38;
+		fmt.SubFormatD[6] = 0x9b;
+		fmt.SubFormatD[7] = 0x71;
+		if (1 != fwrite(&fmt, sizeof(fmt), 1, File)) goto fail;
+
+		work[0] = MAKE_ID('d','a','t','a');
+		work[1] = 0;								// filled in later
+		if (2 != fwrite(work, 4, 2, File)) goto fail;
+
+		return;
+fail:
+		printf("Failed to write %s: %s\n", filename, strerror(errno));
+		fclose(File);
+		File = NULL;
+	}
 }
 
-int TimidityMIDIDevice::InnerDecode(Data* data)
+//==========================================================================
+//
+// TimidityWaveWriterMIDIDevice Destructor
+//
+//==========================================================================
+
+TimidityWaveWriterMIDIDevice::~TimidityWaveWriterMIDIDevice()
 {
-    return 0;
+	if (File != NULL)
+	{
+		long pos = ftell(File);
+		uint32 size;
+                printf("pos %lu\n", pos);
+
+		// data chunk size
+		size = uint32(pos - 8);
+		if (0 == fseek(File, 4, SEEK_SET))
+		{
+			if (1 == fwrite(&size, 4, 1, File))
+			{
+				size = uint32(pos - 12 - sizeof(FmtChunk) - 8);
+				if (0 == fseek(File, 4 + sizeof(FmtChunk) + 4, SEEK_CUR))
+				{
+                                    printf("seek %lu\n", pos);
+					if (1 == fwrite(&size, 4, 1, File))
+					{
+                                    fflush(File);
+                                    printf("write\n");
+						fclose(File);
+                                    printf("close\n");
+						return;
+					}
+				}
+			}
+		}
+		printf("Could not finish writing wave file: %s\n", strerror(errno));
+		fclose(File);
+	}
+}
+
+//==========================================================================
+//
+// TimidityWaveWriterMIDIDevice :: Resume
+//
+//==========================================================================
+
+int TimidityWaveWriterMIDIDevice::Resume()
+{
+	float writebuffer[4096];
+
+	while (ServiceStream(writebuffer, sizeof(writebuffer)))
+	{
+		if (fwrite(writebuffer, sizeof(writebuffer), 1, File) != 1)
+		{
+			printf("Could not write entire wave file: %s\n", strerror(errno));
+			return 1;
+		}
+	}
+	return 0;
+}
+
+//==========================================================================
+//
+// TimidityWaveWriterMIDIDevice Stop
+//
+//==========================================================================
+
+void TimidityWaveWriterMIDIDevice::Stop()
+{
 }
 
 }

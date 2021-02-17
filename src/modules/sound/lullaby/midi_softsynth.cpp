@@ -73,11 +73,13 @@ bool synth_watch = false;
 
 SoftSynthMIDIDevice::SoftSynthMIDIDevice()
 {
-	Tempo = 0;
-	Division = 0;
+	Tempo = 500000;
+	Division = 100;
 	Events = NULL;
+    Callback = NULL;
 	Started = false;
 	SampleRate = 44100;
+	CalcTickRate();
 }
 
 //==========================================================================
@@ -138,8 +140,7 @@ void SoftSynthMIDIDevice::Close()
 
 bool SoftSynthMIDIDevice::IsOpen() const
 {
-	// return Stream != NULL;
-    return true;
+    return Started;
 }
 
 //==========================================================================
@@ -201,16 +202,8 @@ void SoftSynthMIDIDevice::CalcTickRate()
 
 int SoftSynthMIDIDevice::Resume()
 {
-	if (!Started)
-	{
-                if (false)//(Stream->Play(true, 1))
-		{
-			Started = true;
-			return 0;
-		}
-		return 1;
-	}
-	return 0;
+    Started = true;
+    return 0;
 }
 
 //==========================================================================
@@ -221,11 +214,7 @@ int SoftSynthMIDIDevice::Resume()
 
 void SoftSynthMIDIDevice::Stop()
 {
-	if (Started)
-	{
-            // Stream->Stop();
-		Started = false;
-	}
+    Started = false;
 }
 
 //==========================================================================
@@ -306,6 +295,7 @@ int SoftSynthMIDIDevice::PlayTick()
 
 	while (delay == 0 && Events != NULL)
 	{
+            assert(Events->lpData != NULL);
 		uint32 *event = (uint32 *)(Events->lpData + Position);
 		if (MEVT_EVENTTYPE(event[2]) == MEVT_TEMPO)
 		{
@@ -370,7 +360,7 @@ bool SoftSynthMIDIDevice::ServiceStream (void *buff, int numbytes)
 	bool prev_ended = false;
 	bool res = true;
 
-	samples1 = samples;
+        samples1 = samples;
 	memset(buff, 0, numbytes);
 
         {
@@ -431,6 +421,21 @@ bool SoftSynthMIDIDevice::FillStream(Data *data, void *buff, int len, void *user
 {
 	SoftSynthMIDIDevice *device = (SoftSynthMIDIDevice *)userdata;
 	return device->ServiceStream(buff, len);
+}
+
+bool SoftSynthMIDIDevice::NeedInnerDecode()
+{
+    return true;
+}
+
+int SoftSynthMIDIDevice::InnerDecode(void* buffer, int bufferSize)
+{
+    bool res = ServiceStream(buffer, bufferSize);
+
+    if (res)
+        return bufferSize;
+
+    return 0;
 }
 
 }

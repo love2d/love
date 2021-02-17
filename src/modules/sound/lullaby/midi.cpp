@@ -221,33 +221,27 @@ MIDIDevice *MIDIStreamer::CreateMIDIDevice(EMidiDevice devtype) const
 		assert(0);
 		// Intentional fall-through for non-Windows systems.
 
-        case MDEV_GUS:
-            return new TimidityMIDIDevice(Args.c_str());
+    case MDEV_GUS:
+        return new TimidityMIDIDevice(Args.c_str());
 	default:
 		return NULL;
 	}
 }
 
-void MIDIStreamer::start()
-{
-	uint32 tid;
+void MIDIStreamer::OpenMIDIDevice() {
     EMidiDevice devtype;
 
-    love::thread::Lock l(mutex);
+  m_Status = STATE_Stopped;
+  EndQueued = 0;
+  VolumeChanged = false;
+  Restarting = true;
+  InitialPlayback = true;
 
-    if (MIDI == NULL)
-    {
-	    m_Status = STATE_Stopped;
-	    EndQueued = 0;
-	    VolumeChanged = false;
-	    Restarting = true;
-	    InitialPlayback = true;
+  DeviceType = MDEV_DEFAULT;
 
-        DeviceType = MDEV_DEFAULT;
+  devtype = SelectMIDIDevice(DeviceType);
 
-        devtype = SelectMIDIDevice(DeviceType);
-
-        MIDI = CreateMIDIDevice(devtype);
+  MIDI = CreateMIDIDevice(devtype);
 
 #ifndef _WIN32
         assert(MIDI == NULL || MIDI->NeedThreadedCallback() == false);
@@ -275,6 +269,17 @@ void MIDIStreamer::start()
                 return;
             }
         }
+}
+
+void MIDIStreamer::start()
+{
+	uint32 tid;
+
+    love::thread::Lock l(mutex);
+
+    if (MIDI == NULL)
+    {
+        OpenMIDIDevice();
     }
 
 	if (0 != MIDI->Resume())
@@ -1176,7 +1181,7 @@ bool MIDIDevice::NeedInnerDecode()
 //
 //==========================================================================
 
-int MIDIDevice::InnerDecode()
+int MIDIDevice::InnerDecode(void* buffer, int bufferSize)
 {
     return 0;
 }

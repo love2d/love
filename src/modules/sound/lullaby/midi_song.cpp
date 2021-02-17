@@ -190,6 +190,10 @@ MIDISong2::MIDISong2(Data *data, int bufferSize)
 	{ // No tracks, so nothing to play
 		return;
 	}
+
+    // MIDI device has to be opened by contructor's end since SoundSource
+    // assumes everything is ready when rendering a static source file
+    OpenMIDIDevice();
 }
 
 //==========================================================================
@@ -850,6 +854,17 @@ love::sound::Decoder *MIDISong2::clone()
 
 int MIDISong2::decode()
 {
+    if (MIDI == NULL)
+    {
+        return 0;
+    }
+
+    if (MIDI->NeedInnerDecode())
+    {
+        int res = MIDI->InnerDecode(buffer, bufferSize);
+        return res;
+    }
+
     int read = bufferSize;
 
     if ((int)read < bufferSize)
