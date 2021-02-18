@@ -183,7 +183,18 @@ enum
 	VERB_DEBUG
 };
 
-void cmsg(int type, int verbosity_level, const char *fmt, ...) __attribute__((format(printf,3,4)));
+
+#if defined(__GNUC__)
+void cmsg(int type, int verbosity_level, const char *fmt, ...) __attribute__((format(printf,3,4))); 
+#elif _MSC_VER == 1400
+#include <sal.h>
+void cmsg(int type, int verbosity_level, __format_string const char* format, ...);
+#elif _MSC_VER > 1400
+#include <sal.h>
+void cmsg(int type, int verbosity_level, _Printf_format_string_ const char* format, ...);
+#else
+void cmsg(int type, int verbosity_level, const char* format, ...);
+#endif
 
 
 /*

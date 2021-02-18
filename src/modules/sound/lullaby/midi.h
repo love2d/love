@@ -180,7 +180,7 @@ public:
 	void PrecacheInstruments(const uint16 *instruments, int count);
 
 protected:
-	static void CALLBACK CallbackFunc(HMIDIOUT, UINT, uint32_PTR, uint32, uint32);
+	static void CALLBACK CallbackFunc(HMIDIOUT, UINT, uint32*, uint32, uint32);
 
 	HMIDISTRM MidiOut;
 	UINT DeviceID;

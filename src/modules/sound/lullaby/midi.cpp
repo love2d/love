@@ -195,7 +195,7 @@ EMidiDevice MIDIStreamer::SelectMIDIDevice(EMidiDevice device)
 		return device;
 	}
 
-#ifdef LOVE_PLATFORM_WINDOWS
+#ifdef _WIN32
         return MDEV_MMAPI;
 #else
         return MDEV_GUS;
@@ -210,7 +210,7 @@ EMidiDevice MIDIStreamer::SelectMIDIDevice(EMidiDevice device)
 
 MIDIDevice *MIDIStreamer::CreateMIDIDevice(EMidiDevice devtype) const
 {
-    int mididevice = 1;
+    int mididevice = 0; // TODO make this configurable somehow? It's used by MIDI synthesizers like VirtualMIDISynth.
 
 	switch (devtype)
 	{
@@ -292,7 +292,7 @@ void MIDIStreamer::start()
 #ifdef _WIN32
 		if (PlayerThread == NULL && MIDI->NeedThreadedCallback())
 		{
-			PlayerThread = CreateThread(NULL, 0, PlayerProc, this, 0, &tid);
+			PlayerThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PlayerProc, this, 0, (LPDWORD)&tid);
 			if (PlayerThread == NULL)
 			{
 				printf("Creating MIDI thread failed\n");
@@ -622,7 +622,7 @@ void MIDIStreamer::Update()
 			"MIDI through device 'eating' a message",
 		};
 		uint32 code = 0xABADCAFE;
-		GetExitCodeThread(PlayerThread, &code);
+		GetExitCodeThread(PlayerThread, (LPDWORD)&code);
 		CloseHandle(PlayerThread);
 		PlayerThread = NULL;
 		printf("MIDI playback failure: ");

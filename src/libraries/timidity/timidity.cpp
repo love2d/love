@@ -41,6 +41,60 @@ int midi_voices = 32;
 std::string gus_patchdir = "";
 int gus_memsize = 0;
 
+#ifdef _WIN32
+size_t getline(char** lineptr, size_t* n, FILE* stream) {
+	char* bufptr = NULL;
+	char* p = bufptr;
+	size_t size;
+	int c;
+
+	if (lineptr == NULL) {
+		return -1;
+	}
+	if (stream == NULL) {
+		return -1;
+	}
+	if (n == NULL) {
+		return -1;
+	}
+	bufptr = *lineptr;
+	size = *n;
+
+	c = fgetc(stream);
+	if (c == EOF) {
+		return -1;
+	}
+	if (bufptr == NULL) {
+		bufptr = (char*)malloc(128);
+		if (bufptr == NULL) {
+			return -1;
+		}
+		size = 128;
+	}
+	p = bufptr;
+	while (c != EOF) {
+		if ((p - bufptr) > (size - 1)) {
+			size = size + 128;
+			bufptr = (char*)realloc(bufptr, size);
+			if (bufptr == NULL) {
+				return -1;
+			}
+		}
+		*p++ = c;
+		if (c == '\n') {
+			break;
+		}
+		c = fgetc(stream);
+	}
+
+	*p++ = '\0';
+	*lineptr = bufptr;
+	*n = size;
+
+	return p - bufptr - 1;
+}
+#endif
+
 namespace Timidity
 {
 
@@ -502,7 +556,6 @@ int LoadConfig(const char *filename)
 #ifdef _WIN32
     add_to_pathlist("C:\\TIMIDITY");
     add_to_pathlist("\\TIMIDITY");
-    add_to_pathlist(progdir);
 #else
     add_to_pathlist("/usr/local/lib/timidity");
     add_to_pathlist("/etc/timidity");
@@ -631,19 +684,22 @@ void Renderer::MarkInstrument(int banknum, int percussion, int instr)
 
 void cmsg(int type, int verbosity_level, const char *fmt, ...)
 {
-	/*
-	va_list args;
-	va_start(args, fmt);
-	Vprintf(PRINT_HIGH, fmt, args);
-	msg.VFormat(fmt, args);
-	*/
 #ifdef _WIN32
+	/*
 	char buf[1024];
 	va_list args;
 	va_start(args, fmt);
 	vsprintf(buf, fmt, args);
 	va_end(args);
 	I_DebugPrint(buf);
+	*/
+#else
+	/*
+	va_list args;
+	va_start(args, fmt);
+	Vprintf(PRINT_HIGH, fmt, args);
+	msg.VFormat(fmt, args);
+	*/
 #endif
 }
 

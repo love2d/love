@@ -31,7 +31,11 @@ FontFile *font_find(const char *filename)
 {
 	for (FontFile *font = Fonts; font != NULL; font = font->Next)
 	{
-            if (strcasecmp(filename, font->Filename.c_str()) == 0)
+#ifdef _WIN32
+		if (_stricmp(filename, font->Filename.c_str()) == 0)
+#else
+		if (strcasecmp(filename, font->Filename.c_str()) == 0)
+#endif
 		{
 			return font;
 		}

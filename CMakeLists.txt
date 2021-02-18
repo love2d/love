@@ -931,9 +931,18 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/midi.cpp
 	src/modules/sound/lullaby/midi.h
 	src/modules/sound/lullaby/midi_song.cpp
+	src/modules/sound/lullaby/midi_softsynth.cpp
 	src/modules/sound/lullaby/midi_timidity.cpp
 	src/modules/sound/lullaby/midi_win.cpp
 )
+
+if(LOVE_MPG123)
+	set(LOVE_SRC_MODULE_SOUND_LULLABY
+		${LOVE_SRC_MODULE_SOUND_LULLABY}
+		src/modules/sound/lullaby/Mpg123Decoder.cpp
+		src/modules/sound/lullaby/Mpg123Decoder.h
+	)
+endif()
 
 if(LOVE_MPG123)
 	set(LOVE_SRC_MODULE_SOUND_LULLABY
@@ -1721,7 +1730,7 @@ set(LOVE_3P
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_physfs
-        love_3p_timidity
+    love_3p_timidity
 	love_3p_wuff
 	love_3p_xxhash
 )

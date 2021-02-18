@@ -96,7 +96,7 @@ WinMIDIDevice::~WinMIDIDevice()
 //
 //==========================================================================
 
-int WinMIDIDevice::Open(void(*callback)(UINT, void *, DWORD, DWORD), void *userdata)
+int WinMIDIDevice::Open(void(*callback)(unsigned int, void *, uint32, uint32), void *userdata)
 {
 	MMRESULT err;
 
@@ -115,7 +115,7 @@ int WinMIDIDevice::Open(void(*callback)(UINT, void *, DWORD, DWORD), void *userd
 			else
 			{
 				// Set master volume to full, if the device allows it on this interface.
-				VolumeWorks = (MMSYSERR_NOERROR == midiOutGetVolume((HMIDIOUT)MidiOut, &SavedVolume));
+				VolumeWorks = (MMSYSERR_NOERROR == midiOutGetVolume((HMIDIOUT)MidiOut, (LPDWORD)&SavedVolume));
 				if (VolumeWorks)
 				{
 					VolumeWorks &= (MMSYSERR_NOERROR == midiOutSetVolume((HMIDIOUT)MidiOut, 0xffffffff));
@@ -405,7 +405,7 @@ bool WinMIDIDevice::NeedThreadedCallback()
 //
 //==========================================================================
 
-void CALLBACK WinMIDIDevice::CallbackFunc(HMIDIOUT hOut, UINT uMsg, DWORD_PTR dwInstance, DWORD dwParam1, DWORD dwParam2)
+void CALLBACK WinMIDIDevice::CallbackFunc(HMIDIOUT hOut, UINT uMsg, uint32* dwInstance, uint32 dwParam1, uint32 dwParam2)
 {
 	WinMIDIDevice *self = (WinMIDIDevice *)dwInstance;
 	if (self->Callback != NULL)
