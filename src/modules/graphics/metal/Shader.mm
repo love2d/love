@@ -250,7 +250,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 					continue;
 				}
 
-				if (resource.name == "love_UniformsPerDrawBuffer")
+				if (resource.name == "gl_DefaultUniformBlock")
 				{
 					msl.set_decoration(resource.id, spv::DecorationBinding, 0);
 					const SPIRType &type = msl.get_type(resource.base_type_id);

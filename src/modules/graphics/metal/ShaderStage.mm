@@ -154,11 +154,12 @@ ShaderStage::ShaderStage(love::graphics::Graphics *gfx, StageType stage, const s
 
 	// We can't reuse the validation glslang shader object in the base class,
 	// because we need these options set (and the language set to >= 300).
-	glslangShader->setEnvInput(EShSourceGlsl, glslangStage, EShClientNone, 0);
-	glslangShader->setEnvClient(EShClientOpenGL, EShTargetOpenGL_450);
-	glslangShader->setEnvTarget(EShTargetSpv, EShTargetSpv_1_0);
+	glslangShader->setEnvInput(EShSourceGlsl, glslangStage, EShClientVulkan, 450);
+	glslangShader->setEnvClient(EShClientVulkan, EShTargetVulkan_1_2);
+	glslangShader->setEnvTarget(EShTargetSpv, EShTargetSpv_1_5);
 	glslangShader->setAutoMapLocations(true);
 	glslangShader->setAutoMapBindings(true);
+	glslangShader->setEnvInputVulkanRulesRelaxed();
 
 	const char *csrc = source.c_str();
 	int srclen = (int) source.length();

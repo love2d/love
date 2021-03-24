@@ -88,13 +88,7 @@ static const char global_uniforms[] = R"(
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
-#if __VERSION__ >= 300 && defined(LOVE_USE_UNIFORM_BUFFERS)
-layout (std140) uniform love_UniformsPerDrawBuffer {
-	highp vec4 love_UniformsPerDraw[13];
-};
-#else
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
-#endif
 
 // These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
 // do it as an initializer.
@@ -536,8 +530,6 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
-	if (gfx->getRenderer() == Graphics::RENDERER_METAL)
-		ss << "#define LOVE_USE_UNIFORM_BUFFERS 1\n"; // FIXME: this is temporary
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
 	ss << glsl::global_uniforms;
