@@ -227,10 +227,10 @@ enum ComputeDerivativeMode {
 
 class TIdMaps {
 public:
-    TMap<TString, int>& operator[](int i) { return maps[i]; }
-    const TMap<TString, int>& operator[](int i) const { return maps[i]; }
+    TMap<TString, long long>& operator[](long long i) { return maps[i]; }
+    const TMap<TString, long long>& operator[](long long i) const { return maps[i]; }
 private:
-    TMap<TString, int> maps[EsiCount];
+    TMap<TString, long long> maps[EsiCount];
 };
 
 class TNumericFeatures {
@@ -259,6 +259,23 @@ private:
     unsigned int features;
 };
 
+// MustBeAssigned wraps a T, asserting that it has been assigned with 
+// operator =() before attempting to read with operator T() or operator ->().
+// Used to catch cases where fields are read before they have been assigned.
+template<typename T>
+class MustBeAssigned
+{
+public:
+    MustBeAssigned() = default;
+    MustBeAssigned(const T& v) : value(v) {}
+    operator const T&() const { assert(isSet); return value; }
+    const T* operator ->() const { assert(isSet); return &value; }
+    MustBeAssigned& operator = (const T& v) { value = v; isSet = true; return *this; } 
+private:
+    T value;
+    bool isSet = false;
+};
+
 //
 // Set of helper functions to help parse and build the tree.
 //
@@ -270,11 +287,18 @@ public:
         profile(p), version(v),
 #endif
         treeRoot(0),
+        resources(TBuiltInResource{}),
         numEntryPoints(0), numErrors(0), numPushConstants(0), recursive(false),
         invertY(false),
         useStorageBuffer(false),
         nanMinMaxClamp(false),
-        depthReplacing(false)
+        depthReplacing(false),
+        uniqueId(0),
+        globalUniformBlockName(""),
+        atomicCounterBlockName(""),
+        globalUniformBlockSet(TQualifier::layoutSetEnd),
+        globalUniformBlockBinding(TQualifier::layoutBindingEnd),
+        atomicCounterBlockSet(TQualifier::layoutSetEnd)
 #ifndef GLSLANG_WEB
         ,
         implicitThisName("@this"), implicitCounterName("@count"),
@@ -398,6 +422,9 @@ public:
     EShLanguage getStage() const { return language; }
     void addRequestedExtension(const char* extension) { requestedExtensions.insert(extension); }
     const std::set<std::string>& getRequestedExtensions() const { return requestedExtensions; }
+    bool isRayTracingStage() const {
+        return language >= EShLangRayGen && language <= EShLangCallableNV;
+    }
 
     void setTreeRoot(TIntermNode* r) { treeRoot = r; }
     TIntermNode* getTreeRoot() const { return treeRoot; }
@@ -406,6 +433,7 @@ public:
     int getNumErrors() const { return numErrors; }
     void addPushConstantCount() { ++numPushConstants; }
     void setLimits(const TBuiltInResource& r) { resources = r; }
+    const TBuiltInResource& getLimits() const { return resources; }
 
     bool postProcess(TIntermNode*, EShLanguage);
     void removeTree();
@@ -512,6 +540,20 @@ public:
     // Linkage related
     void addSymbolLinkageNodes(TIntermAggregate*& linkage, EShLanguage, TSymbolTable&);
     void addSymbolLinkageNode(TIntermAggregate*& linkage, const TSymbol&);
+    TIntermAggregate* findLinkerObjects() const;
+
+    void setGlobalUniformBlockName(const char* name) { globalUniformBlockName = std::string(name); }
+    const char* getGlobalUniformBlockName() const { return globalUniformBlockName.c_str(); }
+    void setGlobalUniformSet(unsigned int set) { globalUniformBlockSet = set; }
+    unsigned int getGlobalUniformSet() const { return globalUniformBlockSet; }
+    void setGlobalUniformBinding(unsigned int binding) { globalUniformBlockBinding = binding; }
+    unsigned int getGlobalUniformBinding() const { return globalUniformBlockBinding; }
+
+    void setAtomicCounterBlockName(const char* name) { atomicCounterBlockName = std::string(name); }
+    const char* getAtomicCounterBlockName() const { return atomicCounterBlockName.c_str(); }
+    void setAtomicCounterBlockSet(unsigned int set) { atomicCounterBlockSet = set; }
+    unsigned int getAtomicCounterBlockSet() const { return atomicCounterBlockSet; }
+
 
     void setUseStorageBuffer() { useStorageBuffer = true; }
     bool usingStorageBuffer() const { return useStorageBuffer; }
@@ -526,6 +568,11 @@ public:
         return true;
     }
     unsigned int getLocalSize(int dim) const { return localSize[dim]; }
+    bool isLocalSizeSet() const
+    {
+        // Return true if any component has been set (i.e. any component is not default).
+        return localSizeNotDefault[0] || localSizeNotDefault[1] || localSizeNotDefault[2];
+    }
     bool setLocalSizeSpecId(int dim, int id)
     {
         if (localSizeSpecId[dim] != TQualifier::layoutNotSet)
@@ -534,6 +581,13 @@ public:
         return true;
     }
     int getLocalSizeSpecId(int dim) const { return localSizeSpecId[dim]; }
+    bool isLocalSizeSpecialized() const
+    {
+        // Return true if any component has been specialized.
+        return localSizeSpecId[0] != TQualifier::layoutNotSet ||
+               localSizeSpecId[1] != TQualifier::layoutNotSet ||
+               localSizeSpecId[2] != TQualifier::layoutNotSet;
+    }
 #ifdef GLSLANG_WEB
     void output(TInfoSink&, bool tree) { }
 
@@ -812,6 +866,20 @@ public:
     bool getBinaryDoubleOutput() { return binaryDoubleOutput; }
 #endif // GLSLANG_WEB
 
+    void addBlockStorageOverride(const char* nameStr, TBlockStorageClass backing)
+    {
+        std::string name(nameStr);
+        blockBackingOverrides[name] = backing;
+    }
+    TBlockStorageClass getBlockStorageOverride(const char* nameStr) const
+    {
+        std::string name = nameStr;
+        auto pos = blockBackingOverrides.find(name);
+        if (pos == blockBackingOverrides.end())
+            return EbsNone;
+        else
+            return pos->second;
+    }
 #ifdef ENABLE_HLSL
     void setHlslFunctionality1() { hlslFunctionality1 = true; }
     bool getHlslFunctionality1() const { return hlslFunctionality1; }
@@ -835,9 +903,21 @@ public:
     bool usingHlslIoMapping() { return false; }
 #endif
 
+    bool usingScalarBlockLayout() const {
+        for (auto extIt = requestedExtensions.begin(); extIt != requestedExtensions.end(); ++extIt) {
+            if (*extIt == E_GL_EXT_scalar_block_layout)
+                return true;
+        }
+        return false;
+    }
+
     void addToCallGraph(TInfoSink&, const TString& caller, const TString& callee);
     void merge(TInfoSink&, TIntermediate&);
     void finalCheck(TInfoSink&, bool keepUncalled);
+
+    void mergeGlobalUniformBlocks(TInfoSink& infoSink, TIntermediate& unit, bool mergeExistingOnly);
+    void mergeUniformObjects(TInfoSink& infoSink, TIntermediate& unit);
+    void checkStageIO(TInfoSink&, TIntermediate&);
 
     bool buildConvertOp(TBasicType dst, TBasicType src, TOperator& convertOp) const;
     TIntermTyped* createConversion(TBasicType convertTo, TIntermTyped* node) const;
@@ -847,6 +927,7 @@ public:
 
     int addUsedLocation(const TQualifier&, const TType&, bool& typeCollision);
     int checkLocationRange(int set, const TIoRange& range, const TType&, bool& typeCollision);
+    int checkLocationRT(int set, int location);
     int addUsedOffsets(int binding, int offset, int numOffsets);
     bool addUsedConstantId(int id);
     static int computeTypeLocationSize(const TType&, EShLanguage);
@@ -861,6 +942,8 @@ public:
     static int getOffset(const TType& type, int index);
     static int getBlockSize(const TType& blockType);
     static int computeBufferReferenceTypeSize(const TType&);
+    static bool isIoResizeArray(const TType& type, EShLanguage language);
+
     bool promote(TIntermOperator*);
     void setNanMinMaxClamp(bool setting) { nanMinMaxClamp = setting; }
     bool getNanMinMaxClamp() const { return nanMinMaxClamp; }
@@ -879,6 +962,8 @@ public:
     void addProcess(const std::string& process) { processes.addProcess(process); }
     void addProcessArgument(const std::string& arg) { processes.addArgument(arg); }
     const std::vector<std::string>& getProcesses() const { return processes.getProcesses(); }
+    unsigned long long getUniqueId() const { return uniqueId; }
+    void setUniqueId(unsigned long long id) { uniqueId = id; }
 
     // Certain explicit conversions are allowed conditionally
 #ifdef GLSLANG_WEB
@@ -907,22 +992,23 @@ public:
 #endif
 
 protected:
-    TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
+    TIntermSymbol* addSymbol(long long Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
     void error(TInfoSink& infoSink, const char*);
     void warn(TInfoSink& infoSink, const char*);
     void mergeCallGraphs(TInfoSink&, TIntermediate&);
     void mergeModes(TInfoSink&, TIntermediate&);
     void mergeTrees(TInfoSink&, TIntermediate&);
-    void seedIdMap(TIdMaps& idMaps, int& maxId);
-    void remapIds(const TIdMaps& idMaps, int idShift, TIntermediate&);
+    void seedIdMap(TIdMaps& idMaps, long long& IdShift);
+    void remapIds(const TIdMaps& idMaps, long long idShift, TIntermediate&);
     void mergeBodies(TInfoSink&, TIntermSequence& globals, const TIntermSequence& unitGlobals);
-    void mergeLinkerObjects(TInfoSink&, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects);
+    void mergeLinkerObjects(TInfoSink&, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects, EShLanguage);
+    void mergeBlockDefinitions(TInfoSink&, TIntermSymbol* block, TIntermSymbol* unitBlock, TIntermediate* unitRoot);
     void mergeImplicitArraySizes(TType&, const TType&);
-    void mergeErrorCheck(TInfoSink&, const TIntermSymbol&, const TIntermSymbol&, bool crossStage);
+    void mergeErrorCheck(TInfoSink&, const TIntermSymbol&, const TIntermSymbol&, EShLanguage);
     void checkCallGraphCycles(TInfoSink&);
     void checkCallGraphBodies(TInfoSink&, bool keepUncalled);
     void inOutLocationCheck(TInfoSink&);
-    TIntermAggregate* findLinkerObjects() const;
+    void sharedBlockCheck(TInfoSink&);
     bool userOutputUsed() const;
     bool isSpecializationOperation(const TIntermOperator&) const;
     bool isNonuniformPropagating(TOperator) const;
@@ -955,7 +1041,7 @@ protected:
     SpvVersion spvVersion;
     TIntermNode* treeRoot;
     std::set<std::string> requestedExtensions;  // cumulation of all enabled or required extensions; not connected to what subset of the shader used them
-    TBuiltInResource resources;
+    MustBeAssigned<TBuiltInResource> resources;
     int numEntryPoints;
     int numErrors;
     int numPushConstants;
@@ -967,6 +1053,14 @@ protected:
     int localSize[3];
     bool localSizeNotDefault[3];
     int localSizeSpecId[3];
+    unsigned long long uniqueId;
+
+    std::string globalUniformBlockName;
+    std::string atomicCounterBlockName;
+    unsigned int globalUniformBlockSet;
+    unsigned int globalUniformBlockBinding;
+    unsigned int atomicCounterBlockSet;
+
 #ifndef GLSLANG_WEB
 public:
     const char* const implicitThisName;
@@ -1027,10 +1121,13 @@ protected:
     int uniformLocationBase;
     TNumericFeatures numericFeatures;
 #endif
+    std::unordered_map<std::string, TBlockStorageClass> blockBackingOverrides;
 
     std::unordered_set<int> usedConstantId; // specialization constant ids used
     std::vector<TOffsetRange> usedAtomics;  // sets of bindings used by atomic counters
     std::vector<TIoRange> usedIo[4];        // sets of used locations, one for each of in, out, uniform, and buffers
+    std::vector<TRange> usedIoRT[2];        // sets of used location, one for rayPayload/rayPayloadIN and other
+                                            // for callableData/callableDataIn
     // set of names of statically read/written I/O that might need extra checking
     std::set<TString> ioAccessed;
     // source code of shader, useful as part of debug information

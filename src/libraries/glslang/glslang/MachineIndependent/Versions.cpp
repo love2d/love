@@ -306,6 +306,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_EXT_tessellation_point_size]              = EBhDisable;
     extensionBehavior[E_GL_EXT_texture_buffer]                       = EBhDisable;
     extensionBehavior[E_GL_EXT_texture_cube_map_array]               = EBhDisable;
+    extensionBehavior[E_GL_EXT_null_initializer]                     = EBhDisable;
 
     // OES matching AEP
     extensionBehavior[E_GL_OES_geometry_shader]          = EBhDisable;
@@ -328,6 +329,10 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_EXT_ray_flags_primitive_culling] = EBhDisable;
     extensionBehavior[E_GL_EXT_blend_func_extended]         = EBhDisable;
     extensionBehavior[E_GL_EXT_shader_implicit_conversions] = EBhDisable;
+    extensionBehavior[E_GL_EXT_fragment_shading_rate]       = EBhDisable;
+    extensionBehavior[E_GL_EXT_shader_image_int64]   = EBhDisable;
+    extensionBehavior[E_GL_EXT_terminate_invocation]        = EBhDisable;
+    extensionBehavior[E_GL_EXT_shared_memory_block]         = EBhDisable;
 
     // OVR extensions
     extensionBehavior[E_GL_OVR_multiview]                = EBhDisable;
@@ -373,6 +378,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_YUV_target 1\n"
             "#define GL_EXT_shader_texture_lod 1\n"
             "#define GL_EXT_shadow_samplers 1\n"
+            "#define GL_EXT_fragment_shading_rate 1\n"
 
             // AEP
             "#define GL_ANDROID_extension_pack_es31a 1\n"
@@ -406,11 +412,14 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_shader_non_constant_global_initializers 1\n"
             ;
 
-            if (isEsProfile() && version >= 300) {
+            if (version >= 300) {
                 preamble += "#define GL_NV_shader_noperspective_interpolation 1\n";
             }
+            if (version >= 310) {
+                preamble += "#define GL_EXT_null_initializer 1\n";
+            }
 
-    } else {
+    } else { // !isEsProfile()
         preamble =
             "#define GL_FRAGMENT_PRECISION_HIGH 1\n"
             "#define GL_EXT_texture_array 1\n"
@@ -466,6 +475,8 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_buffer_reference_uvec2 1\n"
             "#define GL_EXT_demote_to_helper_invocation 1\n"
             "#define GL_EXT_debug_printf 1\n"
+            "#define GL_EXT_fragment_shading_rate 1\n"
+            "#define GL_EXT_shared_memory_block 1\n"
 
             // GL_KHR_shader_subgroup
             "#define GL_KHR_shader_subgroup_basic 1\n"
@@ -477,6 +488,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_KHR_shader_subgroup_clustered 1\n"
             "#define GL_KHR_shader_subgroup_quad 1\n"
 
+            "#define GL_EXT_shader_image_int64 1\n"
             "#define GL_EXT_shader_atomic_int64 1\n"
             "#define GL_EXT_shader_realtime_clock 1\n"
             "#define GL_EXT_ray_tracing 1\n"
@@ -535,6 +547,9 @@ void TParseVersions::getPreamble(std::string& preamble)
             if (profile == ECompatibilityProfile)
                 preamble += "#define GL_compatibility_profile 1\n";
         }
+        if (version >= 140) {
+            preamble += "#define GL_EXT_null_initializer 1\n";
+        }
 #endif // GLSLANG_WEB
     }
 
@@ -560,6 +575,11 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_GOOGLE_cpp_style_line_directive 1\n"
             "#define GL_GOOGLE_include_directive 1\n"
             "#define GL_KHR_blend_equation_advanced 1\n"
+            ;
+
+    // other general extensions
+    preamble +=
+            "#define GL_EXT_terminate_invocation 1\n"
             ;
 #endif
 
@@ -1256,7 +1276,7 @@ void TParseVersions::spvRemoved(const TSourceLoc& loc, const char* op)
 // Call for any operation removed because Vulkan SPIR-V is being generated.
 void TParseVersions::vulkanRemoved(const TSourceLoc& loc, const char* op)
 {
-    if (spvVersion.vulkan > 0)
+    if (spvVersion.vulkan > 0 && !spvVersion.vulkanRelaxed)
         error(loc, "not allowed when using GLSL for Vulkan", op, "");
 }
 
