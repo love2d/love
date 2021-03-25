@@ -254,6 +254,9 @@ void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, in
 
 void Texture::setSamplerState(const SamplerState &s)
 { @autoreleasepool {
+	// Base class does common validation and assigns samplerState.
+	love::graphics::Texture::setSamplerState(s);
+
 	sampler = Graphics::getInstance()->getCachedSampler(s);
 }}
 
