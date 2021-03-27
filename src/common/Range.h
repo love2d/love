@@ -61,6 +61,11 @@ struct Range
 		return first <= other.first && last >= other.last;
 	}
 
+	bool intersects(const Range &other)
+	{
+		return !(first > other.last || last < other.first);
+	}
+
 	void encapsulate(size_t index)
 	{
 		first = std::min(first, index);

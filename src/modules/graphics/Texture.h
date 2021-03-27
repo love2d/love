@@ -56,6 +56,26 @@ enum TextureType
 	TEXTURE_MAX_ENUM
 };
 
+enum PixelFormatUsage
+{
+	PIXELFORMATUSAGE_SAMPLE,
+	PIXELFORMATUSAGE_LINEAR,
+	PIXELFORMATUSAGE_RENDERTARGET,
+	PIXELFORMATUSAGE_BLEND,
+	PIXELFORMATUSAGE_MSAA,
+	PIXELFORMATUSAGE_MAX_ENUM
+};
+
+enum PixelFormatUsageFlags
+{
+	PIXELFORMATUSAGEFLAGS_NONE = 0,
+	PIXELFORMATUSAGEFLAGS_SAMPLE = (1 << PIXELFORMATUSAGE_SAMPLE),
+	PIXELFORMATUSAGEFLAGS_LINEAR = (1 << PIXELFORMATUSAGE_LINEAR),
+	PIXELFORMATUSAGEFLAGS_RENDERTARGET = (1 << PIXELFORMATUSAGE_RENDERTARGET),
+	PIXELFORMATUSAGEFLAGS_BLEND = (1 << PIXELFORMATUSAGE_BLEND),
+	PIXELFORMATUSAGEFLAGS_MSAA = (1 << PIXELFORMATUSAGE_MSAA),
+};
+
 struct SamplerState
 {
 	enum WrapMode
@@ -276,7 +296,7 @@ protected:
 	void setGraphicsMemorySize(int64 size);
 
 	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
-	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) = 0;
+	virtual void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) = 0;
 
 	virtual void generateMipmapsInternal() = 0;
 	virtual void readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect) = 0;

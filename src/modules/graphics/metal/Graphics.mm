@@ -189,7 +189,7 @@ Graphics::Graphics()
 
 	initCapabilities();
 
-	uniformBuffer = CreateStreamBuffer(device, BUFFERTYPE_UNIFORM, 1024 * 1024 * 1);
+	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, 1024 * 1024 * 1);
 
 	{
 		std::vector<Buffer::DataDeclaration> dataformat = {
@@ -202,7 +202,7 @@ Graphics::Graphics()
 			{0, 0, 0, 1},
 		};
 
-		Buffer::Settings attribsettings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_STATIC);
+		Buffer::Settings attribsettings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
 
 		defaultAttributesBuffer = newBuffer(attribsettings, dataformat, &defaults, sizeof(DefaultVertexAttributes), 0);
 	}
@@ -261,9 +261,9 @@ Graphics::~Graphics()
 	graphicsInstance = nullptr;
 }}
 
-love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t size)
+love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage usage, size_t size)
 {
-	return CreateStreamBuffer(device, type, size);
+	return CreateStreamBuffer(device, usage, size);
 }
 
 love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
@@ -324,9 +324,9 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFERTYPE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFERTYPE_VERTEX, 256  * 1024 * 1);
-		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
 	createQuadIndexBuffer();
@@ -717,7 +717,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
 		delete uniformBuffer;
-		uniformBuffer = CreateStreamBuffer(device, BUFFERTYPE_UNIFORM, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
@@ -1293,7 +1293,7 @@ void Graphics::setWireframe(bool enable)
 	}
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/, bool /*sRGB*/) const
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/) const
 {
 	switch (format)
 	{
@@ -1362,7 +1362,8 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
-	static_assert(FEATURE_MAX_ENUM == 11, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_COPY_BUFFER] = true;
+	static_assert(FEATURE_MAX_ENUM == 12, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;

@@ -90,7 +90,7 @@ public:
 
 	void setWireframe(bool enable) override;
 	
-	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const override;
+	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
 	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
@@ -163,7 +163,7 @@ private:
 
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
-	love::graphics::StreamBuffer *newStreamBuffer(BufferType type, size_t size) override;
+	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage usage, size_t size) override;
 	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;

@@ -145,10 +145,10 @@ if(MEGA)
 		# automatically.
 	endif()
 else()
-	if(MSVC)
+	if(MSVC or ANDROID)
 		message(FATAL_ERROR "
-It is currently only possible to build with megasource on Windows.
-Please see http://bitbucket.org/rude/megasource
+It is currently only possible to build with megasource on Windows and Android.
+Please see https://github.com/love2d/megasource
 ")
 	endif()
 
@@ -1696,6 +1696,13 @@ if(MSVC)
 	)
 endif()
 
+if(ANDROID)
+	# In Android, the LOVE main entrypoint needs to be compiled
+	# as shared library, so change the library name and add love.cpp
+	set(LOVE_LIB_NAME ${LOVE_EXE_NAME})
+	set(LOVE_LIB_SRC ${LOVE_LIB_SRC} src/love.cpp)
+endif()
+
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
 target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
@@ -1711,35 +1718,37 @@ endif()
 #
 # love (executable)
 #
-add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
-target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
+if(NOT ANDROID)
+	add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
+	target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
 
-if(MSVC)
-	add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
-	target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
-endif()
-
-function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
-	if(TARGET ${ARG_TARGET_OR_FILE})
-		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy
-			$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
-			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
-	else()
-		get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
-		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy
-			${ARG_TARGET_OR_FILE}
-			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
+	if(MSVC)
+		add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
+		target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
 	endif()
-endfunction()
 
-# Add post build steps to move the DLLs next to the binary. Otherwise
-# running/debugging the binary will not work from inside VS.
-if(LOVE_MOVE_DLLS)
-	foreach(DLL ${LOVE_MOVE_DLLS})
-		post_step_move_dll(love ${DLL})
-	endforeach()
+	function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
+		if(TARGET ${ARG_TARGET_OR_FILE})
+			add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy
+				$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
+				${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
+		else()
+			get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
+			add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy
+				${ARG_TARGET_OR_FILE}
+				${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
+		endif()
+	endfunction()
+
+	# Add post build steps to move the DLLs next to the binary. Otherwise
+	# running/debugging the binary will not work from inside VS.
+	if(LOVE_MOVE_DLLS)
+		foreach(DLL ${LOVE_MOVE_DLLS})
+			post_step_move_dll(love ${DLL})
+		endforeach()
+	endif()
 endif()
 
 if (NOT MSVC)

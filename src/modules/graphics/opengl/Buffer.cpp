@@ -72,18 +72,22 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 	size = getSize();
 	arraylength = getArrayLength();
 
-	if (typeFlags & TYPEFLAG_TEXEL)
-		mapType = BUFFERTYPE_TEXEL;
-	else if (typeFlags & TYPEFLAG_VERTEX)
-		mapType = BUFFERTYPE_VERTEX;
-	else if (typeFlags & TYPEFLAG_INDEX)
-		mapType = BUFFERTYPE_INDEX;
-	else  if (typeFlags & TYPEFLAG_SHADER_STORAGE)
-		mapType = BUFFERTYPE_SHADER_STORAGE;
+	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
+		mapUsage = BUFFERUSAGE_TEXEL;
+	else if (usageFlags & BUFFERUSAGEFLAG_VERTEX)
+		mapUsage = BUFFERUSAGE_VERTEX;
+	else if (usageFlags & BUFFERUSAGEFLAG_INDEX)
+		mapUsage = BUFFERUSAGE_INDEX;
+	else  if (usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE)
+		mapUsage = BUFFERUSAGE_SHADER_STORAGE;
+	else if (usageFlags & BUFFERUSAGEFLAG_COPY_SOURCE)
+		mapUsage = BUFFERUSAGE_COPY_SOURCE;
+	else if (usageFlags & BUFFERUSAGEFLAG_COPY_DEST)
+		mapUsage = BUFFERUSAGE_COPY_DEST;
 
-	target = OpenGL::getGLBufferType(mapType);
+	target = OpenGL::getGLBufferType(mapUsage);
 
-	if (usage == BUFFERUSAGE_STREAM)
+	if (dataUsage == BUFFERDATAUSAGE_STREAM)
 		ownsMemoryMap = true;
 
 	std::vector<uint8> emptydata;
@@ -139,12 +143,14 @@ bool Buffer::load(const void *initialdata)
 		/* Clear the error buffer. */;
 
 	glGenBuffers(1, &buffer);
-	gl.bindBuffer(mapType, buffer);
+	gl.bindBuffer(mapUsage, buffer);
+
+	GLenum gldatausage = OpenGL::getGLBufferDataUsage(getDataUsage());
 
 	// initialdata can be null.
-	glBufferData(target, (GLsizeiptr) getSize(), initialdata, OpenGL::getGLBufferUsage(getUsage()));
+	glBufferData(target, (GLsizeiptr) getSize(), initialdata, gldatausage);
 
-	if (getTypeFlags() & TYPEFLAG_TEXEL)
+	if (getUsageFlags() & BUFFERUSAGEFLAG_TEXEL)
 	{
 		glGenTextures(1, &texture);
 		gl.bindBufferTextureToUnit(texture, 0, false, true);
@@ -200,7 +206,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 	mapped = false;
 
 	// Orphan optimization - see fill().
-	if (usage != BUFFERUSAGE_STATIC && mappedRange.first == 0 && mappedRange.getSize() == getSize())
+	if (dataUsage != BUFFERDATAUSAGE_STATIC && mappedRange.first == 0 && mappedRange.getSize() == getSize())
 	{
 		usedoffset = 0;
 		usedsize = getSize();
@@ -228,21 +234,21 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 	if (!Range(0, buffersize).contains(Range(offset, size)))
 		return;
 
-	GLenum glusage = OpenGL::getGLBufferUsage(usage);
+	GLenum gldatausage = OpenGL::getGLBufferDataUsage(dataUsage);
 
-	gl.bindBuffer(mapType, buffer);
+	gl.bindBuffer(mapUsage, buffer);
 
-	if (usage != BUFFERUSAGE_STATIC && size == buffersize)
+	if (dataUsage != BUFFERDATAUSAGE_STATIC && size == buffersize)
 	{
 		// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 		// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-		gl.bindBuffer(mapType, buffer);
-		glBufferData(target, (GLsizeiptr) buffersize, nullptr, glusage);
+		gl.bindBuffer(mapUsage, buffer);
+		glBufferData(target, (GLsizeiptr) buffersize, nullptr, gldatausage);
 
 #if LOVE_WINDOWS
 		// TODO: Verify that this codepath is a useful optimization.
 		if (gl.getVendor() == OpenGL::VENDOR_INTEL)
-			glBufferData(target, (GLsizeiptr) buffersize, data, glusage);
+			glBufferData(target, (GLsizeiptr) buffersize, data, gldatausage);
 		else
 #endif
 			glBufferSubData(target, 0, (GLsizeiptr) buffersize, data);
@@ -251,6 +257,14 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 	{
 		glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, data);
 	}
+}
+
+void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
+{
+	gl.bindBuffer(BUFFERUSAGE_COPY_SOURCE, buffer);
+	gl.bindBuffer(BUFFERUSAGE_COPY_DEST, ((Buffer *) dest)->buffer);
+
+	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, sourceoffset, destoffset, size);
 }
 
 } // opengl

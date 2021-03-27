@@ -30,7 +30,7 @@ namespace graphics
 namespace metal
 {
 
-love::graphics::StreamBuffer *CreateStreamBuffer(id<MTLDevice> device, BufferType mode, size_t size);
+love::graphics::StreamBuffer *CreateStreamBuffer(id<MTLDevice> device, BufferUsage usage, size_t size);
 
 } // metal
 } // graphics

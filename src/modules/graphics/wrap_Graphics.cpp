@@ -1325,7 +1325,7 @@ int w_newSpriteBatch(lua_State *L)
 
 	Texture *texture = luax_checktexture(L, 1);
 	int size = (int) luaL_optinteger(L, 2, 1000);
-	BufferUsage usage = BUFFERUSAGE_DYNAMIC;
+	BufferDataUsage usage = BUFFERDATAUSAGE_DYNAMIC;
 	if (lua_gettop(L) > 2)
 	{
 		const char *usagestr = luaL_checkstring(L, 3);
@@ -1488,7 +1488,7 @@ int w_validateShader(lua_State *L)
 	return 1;
 }
 
-static BufferUsage luax_optbufferusage(lua_State *L, int idx, BufferUsage def)
+static BufferDataUsage luax_optdatausage(lua_State *L, int idx, BufferDataUsage def)
 {
 	const char *usagestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
 
@@ -1506,7 +1506,7 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 	luaL_checktype(L, idx, LUA_TTABLE);
 
 	lua_getfield(L, idx, "usage");
-	settings.usage = luax_optbufferusage(L, -1, settings.usage);
+	settings.dataUsage = luax_optdatausage(L, -1, settings.dataUsage);
 	lua_pop(L, 1);
 }
 
@@ -1664,18 +1664,18 @@ static Buffer *luax_newbuffer(lua_State *L, int idx, Buffer::Settings settings, 
 
 int w_newBuffer(lua_State *L)
 {
-	Buffer::Settings settings(0, BUFFERUSAGE_DYNAMIC);
+	Buffer::Settings settings(0, BUFFERDATAUSAGE_DYNAMIC);
 
 	luaL_checktype(L, 3, LUA_TTABLE);
 
-	for (int i = 0; i < BUFFERTYPE_MAX_ENUM; i++)
+	for (int i = 0; i < BUFFERUSAGE_MAX_ENUM; i++)
 	{
-		BufferType buffertype = (BufferType) i;
+		BufferUsage bufferusage = (BufferUsage) i;
 		const char *tname = nullptr;
-		if (!getConstant(buffertype, tname))
+		if (!getConstant(bufferusage, tname))
 			continue;
 		if (luax_boolflag(L, 3, tname, false))
-			settings.typeFlags = (Buffer::TypeFlags)(settings.typeFlags | (1u << i));
+			settings.usageFlags = (BufferUsageFlags)(settings.usageFlags | (1u << i));
 	}
 
 	luax_optbuffersettings(L, 3, settings);
@@ -1692,7 +1692,7 @@ int w_newBuffer(lua_State *L)
 
 int w_newVertexBuffer(lua_State *L)
 {
-	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_DYNAMIC);
+	Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_DYNAMIC);
 	luax_optbuffersettings(L, 3, settings);
 
 	std::vector<Buffer::DataDeclaration> format;
@@ -1707,7 +1707,7 @@ int w_newVertexBuffer(lua_State *L)
 
 int w_newIndexBuffer(lua_State *L)
 {
-	Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, BUFFERUSAGE_DYNAMIC);
+	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_DYNAMIC);
 	luax_optbuffersettings(L, 3, settings);
 
 	size_t arraylength = 0;
@@ -1799,7 +1799,7 @@ static Mesh *newStandardMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
-	BufferUsage usage = luax_optbufferusage(L, 3, BUFFERUSAGE_DYNAMIC);
+	BufferDataUsage usage = luax_optdatausage(L, 3, BUFFERDATAUSAGE_DYNAMIC);
 
 	std::vector<Buffer::DataDeclaration> format = Mesh::getDefaultVertexFormat();
 
@@ -1861,7 +1861,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	std::vector<Buffer::DataDeclaration> vertexformat;
 
 	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
-	BufferUsage usage = luax_optbufferusage(L, 4, BUFFERUSAGE_DYNAMIC);
+	BufferDataUsage usage = luax_optdatausage(L, 4, BUFFERDATAUSAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
 	if (!lua_istable(L, -1))
@@ -3103,7 +3103,7 @@ int w_rectangle(lua_State *L)
 
 	if (lua_isnoneornil(L, 6))
 	{
-		instance()->rectangle(mode, x, y, w, h);
+		luax_catchexcept(L, [&](){ instance()->rectangle(mode, x, y, w, h); });
 		return 0;
 	}
 
@@ -3252,6 +3252,27 @@ int w_polygon(lua_State *L)
 	coords[numvertices] = coords[0];
 
 	luax_catchexcept(L, [&](){ instance()->polygon(mode, coords, numvertices+1); });
+	return 0;
+}
+
+int w_copyBuffer(lua_State *L)
+{
+	Buffer *source = luax_checkbuffer(L, 1);
+	Buffer *dest = luax_checkbuffer(L, 2);
+
+	ptrdiff_t sourceoffset = luaL_optinteger(L, 3, 0);
+	ptrdiff_t destoffset = luaL_optinteger(L, 4, 0);
+
+	ptrdiff_t size = std::min(source->getSize() - sourceoffset, dest->getSize() - destoffset);
+	if (!lua_isnoneornil(L, 5))
+		size = luaL_checkinteger(L, 5);
+
+	if (sourceoffset < 0 || destoffset < 0)
+		return luaL_error(L, "copyBuffer offsets cannot be negative.");
+	if (size <= 0)
+		return luaL_error(L, "copyBuffer size must be greater than 0.");
+
+	luax_catchexcept(L, [&](){ instance()->copyBuffer(source, dest, sourceoffset, destoffset, size); });
 	return 0;
 }
 
@@ -3450,6 +3471,8 @@ static const luaL_Reg functions[] =
 
 	{ "print", w_print },
 	{ "printf", w_printf },
+
+	{ "copyBuffer", w_copyBuffer },
 
 	{ "isCreated", w_isCreated },
 	{ "isActive", w_isActive },

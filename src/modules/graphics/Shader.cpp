@@ -28,6 +28,7 @@
 
 // Needed for reflection information.
 #include "libraries/glslang/glslang/Include/Types.h"
+#include "libraries/glslang/glslang/MachineIndependent/localintermediate.h"
 
 // C++
 #include <string>
@@ -99,6 +100,10 @@ LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
 LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
 LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor;
 
+LOVE_HIGHP_OR_MEDIUMP float CurrentDPIScale;
+
+LOVE_HIGHP_OR_MEDIUMP float ConstantPointSize;
+
 #define TransformProjectionMatrix (ProjectionMatrix * TransformMatrix)
 
 // Alternate names
@@ -128,6 +133,8 @@ void love_initializeBuiltinUniforms() {
 	   love_UniformsPerDraw[10].xyz
 	);
 
+	CurrentDPIScale = love_UniformsPerDraw[8].w;
+	ConstantPointSize = love_UniformsPerDraw[9].w;
 	love_ScreenSize = love_UniformsPerDraw[11];
 	ConstantColor = love_UniformsPerDraw[12];
 }
@@ -242,6 +249,7 @@ mediump vec4 linearToGammaFast(mediump vec4 c) { return vec4(linearToGammaFast(c
 
 static const char vertex_header[] = R"(
 #define love_Position gl_Position
+#define love_PointSize gl_PointSize
 
 #if __VERSION__ >= 130
 	#define attribute in
@@ -251,19 +259,9 @@ static const char vertex_header[] = R"(
 		#define love_InstanceID gl_InstanceID
 	#endif
 #endif
-
-#ifdef GL_ES
-	uniform mediump float love_PointSize;
-#endif
 )";
 
-static const char vertex_functions[] = R"(
-void setPointSize() {
-#ifdef GL_ES
-	gl_PointSize = love_PointSize;
-#endif
-}
-)";
+static const char vertex_functions[] = R"()";
 
 static const char vertex_main[] = R"(
 attribute vec4 VertexPosition;
@@ -279,7 +277,6 @@ void main() {
 	love_initializeBuiltinUniforms();
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
-	setPointSize();
 	love_Position = position(ClipSpaceFromLocal, VertexPosition);
 }
 )";
@@ -289,7 +286,6 @@ void vertexmain();
 
 void main() {
 	love_initializeBuiltinUniforms();
-	setPointSize();
 	vertexmain();
 }
 )";
@@ -604,12 +600,28 @@ TextureType Shader::getMainTextureType() const
 	return info != nullptr ? info->textureType : TEXTURE_MAX_ENUM;
 }
 
-void Shader::checkMainTextureType(TextureType textype, bool isDepthSampler) const
+void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 {
+	if ((primtype == PRIMITIVE_POINTS) != validationReflection.usesPointSize)
+	{
+		if (validationReflection.usesPointSize)
+			throw love::Exception("The active shader can only be used to draw points.");
+		else
+			throw love::Exception("The gl_PointSize variable must be set in a vertex shader when drawing points.");
+	}
+
+	if (maintex == nullptr)
+		return;
+
 	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
 
 	if (info == nullptr)
 		return;
+
+	if (!maintex->isReadable())
+		throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
+
+	auto textype = maintex->getTextureType();
 
 	if (info->textureType != TEXTURE_MAX_ENUM && info->textureType != textype)
 	{
@@ -620,21 +632,13 @@ void Shader::checkMainTextureType(TextureType textype, bool isDepthSampler) cons
 		throw love::Exception("Texture's type (%s) must match the type of the shader's main texture type (%s).", textypestr, shadertextypestr);
 	}
 
-	if (info->isDepthSampler != isDepthSampler)
+	if (info->isDepthSampler != maintex->getSamplerState().depthSampleMode.hasValue)
 	{
 		if (info->isDepthSampler)
 			throw love::Exception("Depth comparison samplers in shaders can only be used with depth textures which have depth comparison set.");
 		else
 			throw love::Exception("Depth textures which have depth comparison set can only be used with depth/shadow samplers in shaders.");
 	}
-}
-
-void Shader::checkMainTexture(Texture *tex) const
-{
-	if (!tex->isReadable())
-		throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
-
-	checkMainTextureType(tex->getTextureType(), tex->getSamplerState().depthSampleMode.hasValue);
 }
 
 bool Shader::validate(ShaderStage* vertex, ShaderStage* pixel, std::string& err)
@@ -663,6 +667,13 @@ bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::stri
 	{
 		err = "Cannot get reflection information for shader.";
 		return false;
+	}
+
+	const auto *vertintermediate = program.getIntermediate(EShLangVertex);
+	if (vertintermediate != nullptr)
+	{
+		// NOTE: this doesn't check whether the use affects final output...
+		reflection.usesPointSize = vertintermediate->inIoAccessed("gl_PointSize");
 	}
 
 	for (int i = 0; i < program.getNumBufferBlocks(); i++)
@@ -732,6 +743,14 @@ vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition)
 }
 )";
 
+static const std::string defaultPointsVertex = R"(
+vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition)
+{
+	love_PointSize = ConstantPointSize * CurrentDPIScale;
+	return clipSpaceFromLocal * localPosition;
+}
+)";
+
 static const std::string defaultStandardPixel = R"(
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord)
 {
@@ -757,7 +776,12 @@ void effect()
 const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStage::StageType stage)
 {
 	if (stage == ShaderStage::STAGE_VERTEX)
-		return defaultVertex;
+	{
+		if (shader == STANDARD_POINTS)
+			return defaultPointsVertex;
+		else
+			return defaultVertex;
+	}
 
 	static std::string nocode = "";
 
@@ -766,6 +790,7 @@ const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStage::St
 		case STANDARD_DEFAULT: return defaultStandardPixel;
 		case STANDARD_VIDEO: return defaultVideoPixel;
 		case STANDARD_ARRAY: return defaultArrayPixel;
+		case STANDARD_POINTS: return defaultStandardPixel;
 		case STANDARD_MAX_ENUM: return nocode;
 	}
 
@@ -788,7 +813,6 @@ static StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry builti
 	{ "love_VideoCbChannel",  Shader::BUILTIN_TEXTURE_VIDEO_CB  },
 	{ "love_VideoCrChannel",  Shader::BUILTIN_TEXTURE_VIDEO_CR  },
 	{ "love_UniformsPerDraw", Shader::BUILTIN_UNIFORMS_PER_DRAW },
-	{ "love_PointSize",       Shader::BUILTIN_POINT_SIZE        },
 };
 
 static StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> builtinNames(builtinNameEntries, sizeof(builtinNameEntries));

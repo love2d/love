@@ -337,14 +337,16 @@ const char *getConstant(BuiltinVertexAttribute attrib)
 	return name;
 }
 
-STRINGMAP_BEGIN(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
+STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
 {
-	{ "vertex",        BUFFERTYPE_VERTEX         },
-	{ "index",         BUFFERTYPE_INDEX          },
-	{ "texel",         BUFFERTYPE_TEXEL          },
-	{ "shaderstorage", BUFFERTYPE_SHADER_STORAGE },
+	{ "vertex",        BUFFERUSAGE_VERTEX         },
+	{ "index",         BUFFERUSAGE_INDEX          },
+	{ "texel",         BUFFERUSAGE_TEXEL          },
+	{ "shaderstorage", BUFFERUSAGE_SHADER_STORAGE },
+	{ "copysource",    BUFFERUSAGE_COPY_SOURCE    },
+	{ "copydest",      BUFFERUSAGE_COPY_DEST      },
 }
-STRINGMAP_END(BufferType, BUFFERTYPE_MAX_ENUM, bufferTypeName)
+STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
 
 STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 {
@@ -353,13 +355,13 @@ STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 }
 STRINGMAP_END(IndexDataType, INDEX_MAX_ENUM, indexType)
 
-STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
+STRINGMAP_BEGIN(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 {
-	{ "stream",  BUFFERUSAGE_STREAM  },
-	{ "dynamic", BUFFERUSAGE_DYNAMIC },
-	{ "static",  BUFFERUSAGE_STATIC  },
+	{ "stream",  BUFFERDATAUSAGE_STREAM  },
+	{ "dynamic", BUFFERDATAUSAGE_DYNAMIC },
+	{ "static",  BUFFERDATAUSAGE_STATIC  },
 }
-STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsage)
+STRINGMAP_END(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 
 STRINGMAP_BEGIN(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 {

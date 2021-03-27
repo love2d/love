@@ -38,8 +38,8 @@ class StreamBuffer final : public love::graphics::StreamBuffer
 {
 public:
 
-	StreamBuffer(id<MTLDevice> device, BufferType mode, size_t size)
-		: love::graphics::StreamBuffer(mode, size)
+	StreamBuffer(id<MTLDevice> device, BufferUsage usage, size_t size)
+		: love::graphics::StreamBuffer(usage, size)
 		, frameIndex(0)
 		, mappedFrames()
 	{ @autoreleasepool {
@@ -122,9 +122,9 @@ private:
 
 }; // StreamBuffer
 
-love::graphics::StreamBuffer *CreateStreamBuffer(id<MTLDevice> device, BufferType mode, size_t size)
+love::graphics::StreamBuffer *CreateStreamBuffer(id<MTLDevice> device, BufferUsage usage, size_t size)
 {
-	return new StreamBuffer(device, mode, size);
+	return new StreamBuffer(device, usage, size);
 }
 
 } // metal

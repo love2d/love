@@ -61,8 +61,13 @@ public:
 
 	bool isDown(const std::vector<int> &buttonlist) const override;
 
+	void setPlayerIndex(int index) override;
+	int getPlayerIndex() const override;
+
 	bool openGamepad(int deviceindex) override;
 	bool isGamepad() const override;
+
+	GamepadType getGamepadType() const override;
 
 	float getGamepadAxis(GamepadAxis axis) const override;
 	bool isGamepadDown(const std::vector<GamepadButton> &blist) const override;

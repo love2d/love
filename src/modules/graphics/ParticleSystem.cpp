@@ -191,7 +191,7 @@ void ParticleSystem::createBuffers(size_t size)
 		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
 		size_t bytes = sizeof(Vertex) * size * 4;
-		Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, BUFFERUSAGE_STREAM);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STREAM);
 		auto decl = Buffer::getCommonFormatDeclaration(CommonFormat::XYf_STf_RGBAub);
 		buffer = gfx->newBuffer(settings, decl, nullptr, bytes, 0);
 	}
@@ -1037,8 +1037,8 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);
 
-	if (Shader::current && texture.get())
-		Shader::current->checkMainTexture(texture);
+	if (Shader::current)
+		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, texture);
 
 	const Vector2 *positions = texture->getQuad()->getVertexPositions();
 	const Vector2 *texcoords = texture->getQuad()->getVertexTexCoords();

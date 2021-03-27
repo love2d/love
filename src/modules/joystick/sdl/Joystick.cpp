@@ -195,6 +195,30 @@ bool Joystick::isDown(const std::vector<int> &buttonlist) const
 	return false;
 }
 
+void Joystick::setPlayerIndex(int index)
+{
+	if (!isConnected())
+		return;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	SDL_JoystickSetPlayerIndex(joyhandle, index);
+#else
+	LOVE_UNUSED(index);
+#endif
+}
+
+int Joystick::getPlayerIndex() const
+{
+	if (!isConnected())
+		return -1;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	return SDL_JoystickGetPlayerIndex(joyhandle);
+#else
+	return -1;
+#endif
+}
+
 bool Joystick::openGamepad(int deviceindex)
 {
 	if (!SDL_IsGameController(deviceindex))
@@ -213,6 +237,30 @@ bool Joystick::openGamepad(int deviceindex)
 bool Joystick::isGamepad() const
 {
 	return controller != nullptr;
+}
+
+Joystick::GamepadType Joystick::getGamepadType() const
+{
+	if (controller == nullptr)
+		return GAMEPAD_TYPE_UNKNOWN;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	switch (SDL_GameControllerGetType(controller))
+	{
+		case SDL_CONTROLLER_TYPE_UNKNOWN: return GAMEPAD_TYPE_UNKNOWN;
+		case SDL_CONTROLLER_TYPE_XBOX360: return GAMEPAD_TYPE_XBOX360;
+		case SDL_CONTROLLER_TYPE_XBOXONE: return GAMEPAD_TYPE_XBOXONE;
+		case SDL_CONTROLLER_TYPE_PS3: return GAMEPAD_TYPE_PS3;
+		case SDL_CONTROLLER_TYPE_PS4: return GAMEPAD_TYPE_PS4;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO: return GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+		case SDL_CONTROLLER_TYPE_VIRTUAL: return GAMEPAD_TYPE_VIRTUAL;
+		case SDL_CONTROLLER_TYPE_PS5: return GAMEPAD_TYPE_PS5;
+#endif
+	}
+#endif
+
+	return GAMEPAD_TYPE_UNKNOWN;
 }
 
 float Joystick::getGamepadAxis(love::joystick::Joystick::GamepadAxis axis) const
@@ -636,6 +684,14 @@ EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUT
 	{Joystick::GAMEPAD_BUTTON_DPAD_DOWN, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
 	{Joystick::GAMEPAD_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
 	{Joystick::GAMEPAD_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_RIGHT},
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	{Joystick::GAMEPAD_BUTTON_MISC1, SDL_CONTROLLER_BUTTON_MISC1},
+	{Joystick::GAMEPAD_BUTTON_PADDLE1, SDL_CONTROLLER_BUTTON_PADDLE1},
+	{Joystick::GAMEPAD_BUTTON_PADDLE2, SDL_CONTROLLER_BUTTON_PADDLE2},
+	{Joystick::GAMEPAD_BUTTON_PADDLE3, SDL_CONTROLLER_BUTTON_PADDLE3},
+	{Joystick::GAMEPAD_BUTTON_PADDLE4, SDL_CONTROLLER_BUTTON_PADDLE4},
+	{Joystick::GAMEPAD_BUTTON_TOUCHPAD, SDL_CONTROLLER_BUTTON_TOUCHPAD},
+#endif
 };
 
 EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM> Joystick::gpButtons(Joystick::gpButtonEntries, sizeof(Joystick::gpButtonEntries));

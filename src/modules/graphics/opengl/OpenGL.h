@@ -235,7 +235,7 @@ public:
 	 * NOTE: This does not account for multiple VAOs being used! Index buffer
 	 * bindings are per-VAO in OpenGL, but this doesn't know about that.
 	 **/
-	void bindBuffer(BufferType type, GLuint buffer);
+	void bindBuffer(BufferUsage type, GLuint buffer);
 
 	/**
 	 * glDeleteBuffers which updates our shadowed state.
@@ -269,12 +269,6 @@ public:
 	 * The y-coordinate starts at the top and is flipped internally.
 	 **/
 	void setScissor(const Rect &v, bool rtActive);
-
-	/**
-	 * Sets the global point size.
-	 **/
-	void setPointSize(float size);
-	float getPointSize() const;
 
 	/**
 	 * State-tracked version of glEnable.
@@ -341,7 +335,7 @@ public:
 
 	void bindBufferTextureToUnit(GLuint texture, int textureunit, bool restoreprev, bool bindforedit);
 
-	void bindIndexedBuffer(GLuint buffer, BufferType type, int index);
+	void bindIndexedBuffer(GLuint buffer, BufferUsage type, int index);
 
 	/**
 	 * Helper for deleting an OpenGL texture.
@@ -362,7 +356,7 @@ public:
 	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth = 1);
 
 	bool isTextureTypeSupported(TextureType type) const;
-	bool isBufferTypeSupported(BufferType type) const;
+	bool isBufferUsageSupported(BufferUsage usage) const;
 	bool isClampZeroOneTextureWrapSupported() const;
 	bool isPixelShaderHighpSupported() const;
 	bool isInstancingSupported() const;
@@ -433,18 +427,17 @@ public:
 	Vendor getVendor() const;
 
 	static GLenum getGLPrimitiveType(PrimitiveType type);
-	static GLenum getGLBufferType(BufferType type);
+	static GLenum getGLBufferType(BufferUsage usage);
 	static GLenum getGLIndexDataType(IndexDataType type);
 	static GLenum getGLVertexDataType(DataFormat format, int &components, GLboolean &normalized, bool &intformat);
-	static GLenum getGLBufferUsage(BufferUsage usage);
+	static GLenum getGLBufferDataUsage(BufferDataUsage usage);
 	static GLenum getGLTextureType(TextureType type);
 	static GLint getGLWrapMode(SamplerState::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);
 
 	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
 	static bool isTexStorageSupported();
-	static bool isPixelFormatSupported(PixelFormat pixelformat, bool rendertarget, bool readable, bool isSRGB);
-	static bool hasTextureFilteringSupport(PixelFormat pixelformat);
+	static uint32 getPixelFormatUsageFlags(PixelFormat pixelformat);
 
 	static const char *errorString(GLenum errorcode);
 	static const char *framebufferStatusString(GLenum status);
@@ -487,12 +480,12 @@ private:
 	// Tracked OpenGL state.
 	struct
 	{
-		GLuint boundBuffers[BUFFERTYPE_MAX_ENUM];
+		GLuint boundBuffers[BUFFERUSAGE_MAX_ENUM];
 
 		// Texture unit state (currently bound texture for each texture unit.)
 		std::vector<GLuint> boundTextures[TEXTURE_MAX_ENUM + 1];
 
-		std::vector<GLuint> boundIndexedBuffers[BUFFERTYPE_MAX_ENUM];
+		std::vector<GLuint> boundIndexedBuffers[BUFFERUSAGE_MAX_ENUM];
 
 		bool enableState[ENABLE_MAX_ENUM];
 

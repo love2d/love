@@ -33,8 +33,8 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	: arrayLength(0)
 	, arrayStride(0)
 	, size(size)
-	, typeFlags(settings.typeFlags)
-	, usage(settings.usage)
+	, usageFlags(settings.usageFlags)
+	, dataUsage(settings.dataUsage)
 	, mapped(false)
 {
 	if (size == 0 && arraylength == 0)
@@ -46,10 +46,11 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	const auto &caps = gfx->getCapabilities();
 	bool supportsGLSL3 = caps.features[Graphics::FEATURE_GLSL3];
 
-	bool indexbuffer = settings.typeFlags & TYPEFLAG_INDEX;
-	bool vertexbuffer = settings.typeFlags & TYPEFLAG_VERTEX;
-	bool texelbuffer = settings.typeFlags & TYPEFLAG_TEXEL;
-	bool storagebuffer = settings.typeFlags & TYPEFLAG_SHADER_STORAGE;
+	bool indexbuffer = settings.usageFlags & BUFFERUSAGEFLAG_INDEX;
+	bool vertexbuffer = settings.usageFlags & BUFFERUSAGEFLAG_VERTEX;
+	bool texelbuffer = settings.usageFlags & BUFFERUSAGEFLAG_TEXEL;
+	bool storagebuffer = settings.usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE;
+	bool copydest = settings.usageFlags & BUFFERUSAGEFLAG_COPY_DEST;
 
 	if (!indexbuffer && !vertexbuffer && !texelbuffer && !storagebuffer)
 		throw love::Exception("Buffer must be created with at least one buffer type (index, vertex, texel, or shaderstorage).");
@@ -59,6 +60,9 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 	if (storagebuffer && !caps.features[Graphics::FEATURE_GLSL4])
 		throw love::Exception("Shader Storage buffers are not supported on this system (GLSL 4 support is necessary.)");
+
+	if (copydest && dataUsage == BUFFERDATAUSAGE_STREAM)
+		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
 
 	size_t offset = 0;
 	size_t stride = 0;

@@ -43,10 +43,6 @@ class Shader final : public love::graphics::Shader, public Volatile
 {
 public:
 
-	/**
-	 * Creates a new Shader using a list of source codes.
-	 * Source must contain either vertex or pixel shader code, or both.
-	 **/
 	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
 	virtual ~Shader();
 
@@ -67,7 +63,6 @@ public:
 	ptrdiff_t getHandle() const override;
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
-	void updatePointSize(float size);
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
 
 private:
@@ -124,8 +119,6 @@ private:
 	std::vector<BufferBinding> activeStorageBufferBindings;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
-
-	float lastPointSize;
 
 }; // Shader
 

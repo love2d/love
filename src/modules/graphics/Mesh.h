@@ -63,8 +63,8 @@ public:
 
 	static love::Type type;
 
-	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
-	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage);
 	Mesh(const std::vector<BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	virtual ~Mesh();

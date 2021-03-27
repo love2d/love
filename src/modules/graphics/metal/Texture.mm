@@ -142,7 +142,7 @@ Texture::~Texture()
 	sampler = nil;
 }}
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *)
+void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
 { @autoreleasepool {
 	auto gfx = Graphics::getInstance();
 	id<MTLBuffer> buffer = [gfx->device newBufferWithBytes:data

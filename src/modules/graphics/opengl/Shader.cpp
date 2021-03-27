@@ -48,7 +48,6 @@ Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage 
 	, program(0)
 	, builtinUniforms()
 	, builtinUniformInfo()
-	, lastPointSize(0.0f)
 {
 	// load shader source and create program object
 	loadVolatile();
@@ -315,7 +314,7 @@ void Shader::mapActiveUniforms()
 		}
 	}
 
-	if (gl.isBufferTypeSupported(BUFFERTYPE_SHADER_STORAGE))
+	if (gl.isBufferUsageSupported(BUFFERUSAGE_SHADER_STORAGE))
 	{
 		GLint numstoragebuffers = 0;
 		glGetProgramInterfaceiv(program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &numstoragebuffers);
@@ -429,8 +428,6 @@ void Shader::mapActiveUniforms()
 bool Shader::loadVolatile()
 {
 	OpenGL::TempDebugGroup debuggroup("Shader load");
-
-	lastPointSize = -1.0f;
 
 	// zero out active texture list
 	textureUnits.clear();
@@ -577,7 +574,7 @@ void Shader::attach()
 		}
 
 		for (auto bufferbinding : activeStorageBufferBindings)
-			gl.bindIndexedBuffer(bufferbinding.buffer, BUFFERTYPE_SHADER_STORAGE, bufferbinding.bindingindex);
+			gl.bindIndexedBuffer(bufferbinding.buffer, BUFFERUSAGE_SHADER_STORAGE, bufferbinding.bindingindex);
 
 		// send any pending uniforms to the shader program.
 		for (const auto &p : pendingUniformUpdates)
@@ -807,9 +804,9 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
 
 	if (texelbinding)
-		requiredtypeflags = Buffer::TYPEFLAG_TEXEL;
+		requiredtypeflags = BUFFERUSAGEFLAG_TEXEL;
 	else if (storagebinding)
-		requiredtypeflags = Buffer::TYPEFLAG_SHADER_STORAGE;
+		requiredtypeflags = BUFFERUSAGEFLAG_SHADER_STORAGE;
 
 	if (requiredtypeflags == 0)
 		return;
@@ -828,7 +825,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 		if (buffer != nullptr)
 		{
-			if ((buffer->getTypeFlags() & requiredtypeflags) == 0)
+			if ((buffer->getUsageFlags() & requiredtypeflags) == 0)
 			{
 				if (internalUpdate)
 					continue;
@@ -906,7 +903,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 				glbuffer = gl.getDefaultStorageBuffer();
 
 			if (shaderactive)
-				gl.bindIndexedBuffer(glbuffer, BUFFERTYPE_SHADER_STORAGE, bindingindex);
+				gl.bindIndexedBuffer(glbuffer, BUFFERUSAGE_SHADER_STORAGE, bindingindex);
 
 			int activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
 			if (activeindex >= 0)
@@ -962,25 +959,10 @@ void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics:
 	}
 }
 
-void Shader::updatePointSize(float size)
-{
-	if (size == lastPointSize || current != this)
-		return;
-
-	GLint location = builtinUniforms[BUILTIN_POINT_SIZE];
-	if (location >= 0)
-		glUniform1f(location, size);
-
-	lastPointSize = size;
-}
-
 void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH)
 {
 	if (current != this)
 		return;
-
-	if (GLAD_ES_VERSION_2_0)
-		updatePointSize(gl.getPointSize());
 
 	BuiltinUniformData data;
 
@@ -1000,6 +982,12 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 			data.normalMatrix[i].w = 0.0f;
 		}
 	}
+
+	// Store DPI scale in an unused component of another vector.
+	data.normalMatrix[0].w = (float) gfx->getCurrentDPIScale();
+
+	// Same with point size.
+	data.normalMatrix[1].w = gfx->getPointSize();
 
 	data.screenSizeParams.x = viewportW;
 	data.screenSizeParams.y = viewportH;

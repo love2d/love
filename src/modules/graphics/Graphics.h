@@ -144,6 +144,7 @@ public:
 		FEATURE_GLSL4,
 		FEATURE_INSTANCING,
 		FEATURE_TEXEL_BUFFER,
+		FEATURE_COPY_BUFFER,
 		FEATURE_MAX_ENUM
 	};
 
@@ -432,7 +433,7 @@ public:
 	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferUsage usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Shader *newShader(const std::vector<std::string> &stagessource);
@@ -440,8 +441,8 @@ public:
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 
-	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage);
-	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
 	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
@@ -669,6 +670,8 @@ public:
 
 	void captureScreenshot(const ScreenshotInfo &info);
 
+	void copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size);
+
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
 	void drawLayer(Texture *texture, int layer, const Matrix4 &m);
@@ -776,7 +779,7 @@ public:
 	/**
 	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const = 0;
+	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
 
 	/**
 	 * Gets whether the specified pixel format is supported.
@@ -848,31 +851,13 @@ public:
 
 	static Graphics *createInstance(const std::vector<Renderer> &renderers);
 
-	static bool getConstant(const char *in, DrawMode &out);
-	static bool getConstant(DrawMode in, const char *&out);
-	static std::vector<std::string> getConstants(DrawMode);
-
-	static bool getConstant(const char *in, ArcMode &out);
-	static bool getConstant(ArcMode in, const char *&out);
-	static std::vector<std::string> getConstants(ArcMode);
-
-	static bool getConstant(const char *in, LineStyle &out);
-	static bool getConstant(LineStyle in, const char *&out);
-	static std::vector<std::string> getConstants(LineStyle);
-
-	static bool getConstant(const char *in, LineJoin &out);
-	static bool getConstant(LineJoin in, const char *&out);
-	static std::vector<std::string> getConstants(LineJoin);
-
-	static bool getConstant(const char *in, Feature &out);
-	static bool getConstant(Feature in, const char *&out);
-
-	static bool getConstant(const char *in, SystemLimit &out);
-	static bool getConstant(SystemLimit in, const char *&out);
-
-	static bool getConstant(const char *in, StackType &out);
-	static bool getConstant(StackType in, const char *&out);
-	static std::vector<std::string> getConstants(StackType);
+	STRINGMAP_CLASS_DECLARE(DrawMode);
+	STRINGMAP_CLASS_DECLARE(ArcMode);
+	STRINGMAP_CLASS_DECLARE(LineStyle);
+	STRINGMAP_CLASS_DECLARE(LineJoin);
+	STRINGMAP_CLASS_DECLARE(Feature);
+	STRINGMAP_CLASS_DECLARE(SystemLimit);
+	STRINGMAP_CLASS_DECLARE(StackType);
 
 protected:
 
@@ -952,7 +937,7 @@ protected:
 	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info);
 	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
-	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
+	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
 
 	virtual void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 
@@ -1015,27 +1000,6 @@ private:
 	std::vector<uint8> scratchBuffer;
 
 	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[ShaderStage::STAGE_MAX_ENUM];
-
-	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
-	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
-
-	static StringMap<ArcMode, ARC_MAX_ENUM>::Entry arcModeEntries[];
-	static StringMap<ArcMode, ARC_MAX_ENUM> arcModes;
-
-	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
-	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;
-
-	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
-	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
-
-	static StringMap<Feature, FEATURE_MAX_ENUM>::Entry featureEntries[];
-	static StringMap<Feature, FEATURE_MAX_ENUM> features;
-
-	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
-	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;
-
-	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
-	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
 
 }; // Graphics
 

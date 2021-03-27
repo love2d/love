@@ -58,7 +58,7 @@ private:
 
 	void createTexture();
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r, love::image::ImageDataBase *imgd = nullptr) override;
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
 
 	void generateMipmapsInternal() override;
 

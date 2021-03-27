@@ -40,7 +40,7 @@ namespace graphics
 
 love::Type SpriteBatch::type("SpriteBatch", &Drawable::type);
 
-SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage usage)
+SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferDataUsage usage)
 	: texture(texture)
 	, size(size)
 	, next(0)
@@ -73,7 +73,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferUsage 
 
 	memset(vertex_data, 0, vertex_size);
 
-	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, usage);
+	Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, usage);
 	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
 
 	array_buf.set(gfx->newBuffer(settings, decl, nullptr, vertex_size, 0), Acquire::NORETAIN);
@@ -185,7 +185,7 @@ void SpriteBatch::flush()
 		size_t offset = modified_sprites.getOffset() * vertex_stride * 4;
 		size_t size = modified_sprites.getSize() * vertex_stride * 4;
 
-		if (array_buf->getUsage() == BUFFERUSAGE_STREAM)
+		if (array_buf->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 			array_buf->fill(0, array_buf->getSize(), vertex_data);
 		else
 			array_buf->fill(offset, size, vertex_data + offset);
@@ -244,7 +244,7 @@ void SpriteBatch::setBufferSize(int newsize)
 		throw love::Exception("Out of memory.");
 
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-	Buffer::Settings settings(array_buf->getTypeFlags(), array_buf->getUsage());
+	Buffer::Settings settings(array_buf->getUsageFlags(), array_buf->getDataUsage());
 	auto decl = Buffer::getCommonFormatDeclaration(vertex_format);
 
 	array_buf.set(gfx->newBuffer(settings, decl, nullptr, vertex_size, 0), Acquire::NORETAIN);
@@ -264,7 +264,7 @@ int SpriteBatch::getBufferSize() const
 
 void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh)
 {
-	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
+	if ((buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
 		throw love::Exception("GraphicsBuffer must be created with vertex buffer support to be used as a SpriteBatch vertex attribute.");
 
 	AttachedAttribute oldattrib = {};
@@ -329,10 +329,10 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 			Shader::attachDefault(defaultshader);
 		}
-
-		if (Shader::current)
-			Shader::current->checkMainTexture(texture);
 	}
+
+	if (Shader::current)
+		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, texture);
 
 	flush(); // Upload any modified sprite data to the GPU.
 

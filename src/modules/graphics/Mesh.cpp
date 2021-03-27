@@ -45,7 +45,7 @@ std::vector<Buffer::DataDeclaration> Mesh::getDefaultVertexFormat()
 
 love::Type Mesh::type("Mesh", &Drawable::type);
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferUsage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage)
 	: primitiveType(drawmode)
 {
 	try
@@ -59,7 +59,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 
 	memcpy(vertexData, data, datasize);
 
-	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, usage);
+	Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, usage);
 	vertexBuffer.set(gfx->newBuffer(settings, vertexformat, vertexData, datasize, 0), Acquire::NORETAIN);
 
 	vertexCount = vertexBuffer->getArrayLength();
@@ -71,7 +71,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 	indexDataType = getIndexDataTypeFromMax(vertexCount);
 }
 
-Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferUsage usage)
+Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage)
 	: vertexCount((size_t) vertexcount)
 	, indexDataType(getIndexDataTypeFromMax(vertexcount))
 	, primitiveType(drawmode)
@@ -79,7 +79,7 @@ Mesh::Mesh(graphics::Graphics *gfx, const std::vector<Buffer::DataDeclaration> &
 	if (vertexcount <= 0)
 		throw love::Exception("Invalid number of vertices (%d).", vertexcount);
 
-	Buffer::Settings settings(Buffer::TYPEFLAG_VERTEX, usage);
+	Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, usage);
 	vertexBuffer.set(gfx->newBuffer(settings, vertexformat, nullptr, 0, vertexcount), Acquire::NORETAIN);
 
 	vertexStride = vertexBuffer->getArrayStride();
@@ -112,7 +112,7 @@ Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType d
 
 	for (const auto &attrib : attachedAttributes)
 	{
-		if ((attrib.buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
+		if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
 			throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
 
 		if (getAttachedAttributeIndex(attrib.name) != -1)
@@ -210,7 +210,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, AttributeStep step)
 {
-	if ((buffer->getTypeFlags() & Buffer::TYPEFLAG_VERTEX) == 0)
+	if ((buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
 		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
@@ -276,7 +276,7 @@ void Mesh::flush()
 {
 	if (vertexBuffer.get() && vertexData != nullptr && modifiedVertexData.isValid())
 	{
-		if (vertexBuffer->getUsage() == BUFFERUSAGE_STREAM)
+		if (vertexBuffer->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 		{
 			vertexBuffer->fill(0, vertexBuffer->getSize(), vertexData);
 		}
@@ -327,8 +327,8 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		auto usage = vertexBuffer.get() ? vertexBuffer->getUsage() : BUFFERUSAGE_DYNAMIC;
-		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, usage);
+		auto usage = vertexBuffer.get() ? vertexBuffer->getDataUsage() : BUFFERDATAUSAGE_DYNAMIC;
+		Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, usage);
 		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
 	}
 
@@ -360,8 +360,8 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-		auto usage = vertexBuffer.get() ? vertexBuffer->getUsage() : BUFFERUSAGE_DYNAMIC;
-		Buffer::Settings settings(Buffer::TYPEFLAG_INDEX, usage);
+		auto usage = vertexBuffer.get() ? vertexBuffer->getDataUsage() : BUFFERDATAUSAGE_DYNAMIC;
+		Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, usage);
 		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
 	}
 
@@ -423,7 +423,7 @@ void Mesh::setIndexBuffer(Buffer *buffer)
 {
 	// Buffer constructor does the rest of the validation for index buffers
 	// (data member formats, etc.)
-	if (buffer != nullptr && (buffer->getTypeFlags() & Buffer::TYPEFLAG_INDEX) == 0)
+	if (buffer != nullptr && (buffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX) == 0)
 		throw love::Exception("setIndexBuffer requires a Buffer created as an index buffer.");
 
 	indexBuffer.set(buffer);
@@ -519,8 +519,8 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);
 
-	if (Shader::current && texture.get())
-		Shader::current->checkMainTexture(texture);
+	if (Shader::current)
+		Shader::current->validateDrawState(primitiveType, texture);
 
 	VertexAttributes attributes;
 	BufferBindings buffers;

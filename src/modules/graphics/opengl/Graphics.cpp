@@ -157,7 +157,7 @@ const char *Graphics::getName() const
 	return "love.graphics.opengl";
 }
 
-love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferType type, size_t size)
+love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 {
 	return CreateStreamBuffer(type, size);
 }
@@ -321,6 +321,9 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 		glEnable(GL_TEXTURE_2D);
 	}
 
+	if (!GLAD_ES_VERSION_2_0)
+		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
 	gl.setTextureUnit(0);
 
 	// Set pixel row alignment - code that calls glTexSubImage and glReadPixels
@@ -350,46 +353,46 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 	{
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERTYPE_VERTEX, 256  * 1024 * 1);
-		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERTYPE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		batchedDrawState.vb[0] = CreateStreamBuffer(BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
-	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERTYPE_TEXEL].get() == nullptr)
+	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERUSAGE_TEXEL].get() == nullptr)
 	{
-		Buffer::Settings settings(Buffer::TYPEFLAG_TEXEL, BUFFERUSAGE_STATIC);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
 		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT_VEC4, 0}};
 
 		const float texel[] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 		auto buffer = newBuffer(settings, format, texel, sizeof(texel), 1);
-		defaultBuffers[BUFFERTYPE_TEXEL].set(buffer, Acquire::NORETAIN);
+		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
 	}
 
-	if (capabilities.features[FEATURE_GLSL4] && defaultBuffers[BUFFERTYPE_SHADER_STORAGE].get() == nullptr)
+	if (capabilities.features[FEATURE_GLSL4] && defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get() == nullptr)
 	{
-		Buffer::Settings settings(Buffer::TYPEFLAG_SHADER_STORAGE, BUFFERUSAGE_STATIC);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
 		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT, 0}};
 
 		std::vector<float> data;
 		data.resize(Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE / 4);
 
 		auto buffer = newBuffer(settings, format, data.data(), data.size() * sizeof(float), data.size());
-		defaultBuffers[BUFFERTYPE_TEXEL].set(buffer, Acquire::NORETAIN);
+		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
 	}
 
 	// Load default resources before other Volatile.
-	for (int i = 0; i < BUFFERTYPE_MAX_ENUM; i++)
+	for (int i = 0; i < BUFFERUSAGE_MAX_ENUM; i++)
 	{
 		if (defaultBuffers[i].get())
 			((Buffer *) defaultBuffers[i].get())->loadVolatile();
 	}
 
-	if (defaultBuffers[BUFFERTYPE_TEXEL].get())
-		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERTYPE_TEXEL]->getTexelBufferHandle());
+	if (defaultBuffers[BUFFERUSAGE_TEXEL].get())
+		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERUSAGE_TEXEL]->getTexelBufferHandle());
 
-	if (defaultBuffers[BUFFERTYPE_SHADER_STORAGE].get())
-		gl.setDefaultStorageBuffer((GLuint) defaultBuffers[BUFFERTYPE_SHADER_STORAGE]->getHandle());
+	if (defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get())
+		gl.setDefaultStorageBuffer((GLuint) defaultBuffers[BUFFERUSAGE_SHADER_STORAGE]->getHandle());
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
@@ -511,7 +514,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
 	GLenum gldatatype = OpenGL::getGLIndexDataType(cmd.indexType);
 
-	gl.bindBuffer(BUFFERTYPE_INDEX, cmd.indexBuffer->getHandle());
+	gl.bindBuffer(BUFFERUSAGE_INDEX, cmd.indexBuffer->getHandle());
 
 	if (cmd.instanceCount > 1)
 		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
@@ -553,7 +556,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	gl.bindTextureToUnit(texture, 0, false);
 	gl.setCullMode(CULL_NONE);
 
-	gl.bindBuffer(BUFFERTYPE_INDEX, quadIndexBuffer->getHandle());
+	gl.bindBuffer(BUFFERUSAGE_INDEX, quadIndexBuffer->getHandle());
 
 	if (gl.isBaseVertexSupported())
 	{
@@ -1462,10 +1465,9 @@ void Graphics::setBlendState(const BlendState &blend)
 
 void Graphics::setPointSize(float size)
 {
-	if (batchedDrawState.primitiveMode == PRIMITIVE_POINTS)
+	if (size != states.back().pointSize)
 		flushBatchedDraws();
 
-	gl.setPointSize(size * getCurrentDPIScale());
 	states.back().pointSize = size;
 }
 
@@ -1553,8 +1555,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL3] = GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
-	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferTypeSupported(BUFFERTYPE_TEXEL);
-	static_assert(FEATURE_MAX_ENUM == 11, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
+	capabilities.features[FEATURE_COPY_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_COPY_SOURCE);
+	static_assert(FEATURE_MAX_ENUM == 12, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();
@@ -1572,14 +1575,20 @@ void Graphics::initCapabilities()
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable, bool sRGB) const
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
 {
+	uint32 requiredflags = 0;
+	if (rendertarget)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+
 	switch (format)
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
 			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else if (!OpenGL::isPixelFormatSupported(PIXELFORMAT_RGBA8_UNORM, rendertarget, readable, sRGB))
+		else if ((OpenGL::getPixelFormatUsageFlags(PIXELFORMAT_RGBA8_UNORM) & requiredflags) != requiredflags)
 			// 32-bit render targets don't have guaranteed support on GLES2.
 			return PIXELFORMAT_RGBA4_UNORM;
 		else
@@ -1595,18 +1604,26 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 {
 	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
 	{
-		format = PIXELFORMAT_RGBA8_UNORM_sRGB;
+		format = getSRGBPixelFormat(format);
 		sRGB = false;
 	}
 
-	format = getSizedFormat(format, rendertarget, readable, sRGB);
+	uint32 requiredflags = 0;
+	if (rendertarget)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+
+	format = getSizedFormat(format, rendertarget, readable);
 
 	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
 
 	if (supported.hasValue)
 		return supported.value;
 
-	if (!OpenGL::isPixelFormatSupported(format, rendertarget, readable, sRGB))
+	auto supportedflags = OpenGL::getPixelFormatUsageFlags(format);
+
+	if ((requiredflags & supportedflags) != requiredflags)
 	{
 		supported.set(false);
 		return supported.value;
@@ -1636,7 +1653,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 		return true;
 	}
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, readable, sRGB);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable, sRGB);
 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 

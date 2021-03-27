@@ -71,7 +71,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	if (buffer == nil)
 		throw love::Exception("Could not create buffer (out of VRAM?)");
 
-	if (typeFlags & TYPEFLAG_TEXEL)
+	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
 	{
 		if (@available(iOS 12, macOS 10.14, *))
 		{
@@ -166,6 +166,18 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 			   sourceOffset:0
 				   toBuffer:buffer
 		  destinationOffset:offset
+					   size:size];
+}}
+
+void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
+{ @autoreleasepool {
+	auto gfx = Graphics::getInstance();
+	auto encoder = gfx->useBlitEncoder();
+
+	[encoder copyFromBuffer:buffer
+			   sourceOffset:sourceoffset
+				   toBuffer:((Buffer *) dest)->buffer
+		  destinationOffset:destoffset
 					   size:size];
 }}
 
