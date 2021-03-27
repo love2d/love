@@ -178,6 +178,7 @@ Graphics::Graphics()
 	, uniformBufferOffset(0)
 	, defaultAttributesBuffer(nullptr)
 	, defaultTextures()
+	, families()
 { @autoreleasepool {
 	graphicsInstance = this;
 	device = MTLCreateSystemDefaultDevice();
@@ -185,7 +186,7 @@ Graphics::Graphics()
 		throw love::Exception("Metal is not supported on this system.");
 
 	commandQueue = [device newCommandQueue];
-	passDesc = [MTLRenderPassDescriptor renderPassDescriptor];
+	passDesc = [MTLRenderPassDescriptor new];
 
 	initCapabilities();
 
@@ -1320,7 +1321,215 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, 
 
 bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
 {
-	return true; // TODO
+	format = getSizedFormat(format, rendertarget, readable);
+
+	if (sRGB)
+		format = getSRGBPixelFormat(format);
+
+	uint32 requiredflags = 0;
+	if (rendertarget)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+
+	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
+	const uint32 rt = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	const uint32 blend = PIXELFORMATUSAGEFLAGS_BLEND;
+	const uint32 msaa = PIXELFORMATUSAGEFLAGS_MSAA;
+	const uint32 commonsample = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_LINEAR;
+	const uint32 commonrender = PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_BLEND | PIXELFORMATUSAGEFLAGS_MSAA;
+	const uint32 all = commonsample | commonrender;
+
+	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
+
+	if (isPixelFormatCompressed(format) && rendertarget)
+		return false;
+
+	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
+	switch (format)
+	{
+		case PIXELFORMAT_UNKNOWN:
+		case PIXELFORMAT_NORMAL:
+		case PIXELFORMAT_HDR:
+			break;
+
+		case PIXELFORMAT_R8_UNORM:
+			flags |= all;
+			break;
+		case PIXELFORMAT_R16_UNORM:
+			if (families.apple[1])
+				flags |= commonsample | commonrender;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= all;
+			break;
+		case PIXELFORMAT_R16_FLOAT:
+			flags |= all;
+			break;
+		case PIXELFORMAT_R32_FLOAT:
+			if (families.apple[1])
+				flags |= sample | rt | blend | msaa;
+			if (families.mac[1])
+				flags |= all;
+			break;
+
+		case PIXELFORMAT_RG8_UNORM:
+			flags |= all;
+			break;
+		case PIXELFORMAT_LA8_UNORM:
+			// TODO
+			flags |= commonsample;
+			break;
+		case PIXELFORMAT_RG16_UNORM:
+			if (families.apple[1])
+				flags |= commonsample | rt | blend | msaa;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= all;
+			break;
+		case PIXELFORMAT_RG16_FLOAT:
+			flags |= all;
+			break;
+		case PIXELFORMAT_RG32_FLOAT:
+			if (families.apple[1])
+				flags |= sample | rt | blend;
+			if (families.apple[7])
+				flags |= sample | rt | msaa | blend;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= all;
+			break;
+
+		case PIXELFORMAT_RGBA8_UNORM:
+		case PIXELFORMAT_BGRA8_UNORM:
+			flags |= all;
+			break;
+		case PIXELFORMAT_RGBA8_UNORM_sRGB:
+		case PIXELFORMAT_BGRA8_UNORM_sRGB:
+			if (families.apple[1] || families.mac[1] || families.macCatalyst[1])
+				flags |= commonsample | commonrender;
+			if (families.apple[2])
+				flags |= all;
+			break;
+
+		case PIXELFORMAT_RGBA16_UNORM:
+			if (families.apple[1])
+				flags |= commonsample | rt | msaa | blend;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= all;
+			break;
+		case PIXELFORMAT_RGBA16_FLOAT:
+			flags |= all;
+			break;
+		case PIXELFORMAT_RGBA32_FLOAT:
+			if (families.apple[1])
+				flags |= sample | rt;
+			if (families.apple[7])
+				flags |= sample | rt | msaa;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= all;
+			break;
+
+		case PIXELFORMAT_RGBA4_UNORM:
+		case PIXELFORMAT_RGB5A1_UNORM:
+		case PIXELFORMAT_RGB565_UNORM:
+			if (families.apple[1])
+				flags |= commonsample | rt | blend | msaa; // | resolve
+			break;
+		case PIXELFORMAT_RGB10A2_UNORM:
+		case PIXELFORMAT_RG11B10_FLOAT:
+			if (families.apple[1])
+				flags |= commonsample | rt | blend | msaa; // | resolve
+			if (families.apple[3])
+				flags |= all;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= all;
+			break;
+
+		case PIXELFORMAT_STENCIL8:
+			flags |= rt | sample | msaa;
+			break;
+		case PIXELFORMAT_DEPTH16_UNORM:
+			flags |= rt | commonsample | msaa;
+			//if (families.apple[3] || families.mac[1] || families.macCatalyst[1])
+			//	flags |= resolve;
+			break;
+		case PIXELFORMAT_DEPTH24_UNORM:
+			// TODO
+		case PIXELFORMAT_DEPTH32_FLOAT:
+			if (families.apple[1])
+				flags |= rt | sample | msaa;
+			if (families.apple[3])
+				flags |= rt | sample | msaa; // | resolve;
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= rt | commonsample | msaa; // | resolve;
+			break;
+		case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
+			// TODO
+			break;
+		case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
+			if (families.apple[1])
+				flags |= rt | sample | msaa;
+			if (families.apple[3])
+				flags |= rt | sample | msaa; // | resolve
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= rt | commonsample | msaa; // | resolve
+			break;
+
+		case PIXELFORMAT_DXT1_UNORM:
+		case PIXELFORMAT_DXT3_UNORM:
+		case PIXELFORMAT_DXT5_UNORM:
+		case PIXELFORMAT_BC4_UNORM:
+		case PIXELFORMAT_BC4_SNORM:
+		case PIXELFORMAT_BC5_UNORM:
+		case PIXELFORMAT_BC5_SNORM:
+		case PIXELFORMAT_BC6H_UFLOAT:
+		case PIXELFORMAT_BC6H_FLOAT:
+		case PIXELFORMAT_BC7_UNORM:
+			if (families.mac[1] || families.macCatalyst[1])
+				flags |= commonsample;
+			break;
+
+		case PIXELFORMAT_PVR1_RGB2_UNORM:
+		case PIXELFORMAT_PVR1_RGB4_UNORM:
+		case PIXELFORMAT_PVR1_RGBA2_UNORM:
+		case PIXELFORMAT_PVR1_RGBA4_UNORM:
+			if (families.apple[1])
+				flags |= commonsample;
+			break;
+
+		case PIXELFORMAT_ETC1_UNORM:
+		case PIXELFORMAT_ETC2_RGB_UNORM:
+		case PIXELFORMAT_ETC2_RGBA_UNORM:
+		case PIXELFORMAT_ETC2_RGBA1_UNORM:
+		case PIXELFORMAT_EAC_R_UNORM:
+		case PIXELFORMAT_EAC_R_SNORM:
+		case PIXELFORMAT_EAC_RG_UNORM:
+		case PIXELFORMAT_EAC_RG_SNORM:
+			if (families.apple[1])
+				flags |= commonsample;
+			break;
+
+		case PIXELFORMAT_ASTC_4x4:
+		case PIXELFORMAT_ASTC_5x4:
+		case PIXELFORMAT_ASTC_5x5:
+		case PIXELFORMAT_ASTC_6x5:
+		case PIXELFORMAT_ASTC_6x6:
+		case PIXELFORMAT_ASTC_8x5:
+		case PIXELFORMAT_ASTC_8x6:
+		case PIXELFORMAT_ASTC_8x8:
+		case PIXELFORMAT_ASTC_10x5:
+		case PIXELFORMAT_ASTC_10x6:
+		case PIXELFORMAT_ASTC_10x8:
+		case PIXELFORMAT_ASTC_10x10:
+		case PIXELFORMAT_ASTC_12x10:
+		case PIXELFORMAT_ASTC_12x12:
+			if (families.apple[2])
+				flags |= commonsample;
+			break;
+
+		case PIXELFORMAT_MAX_ENUM:
+			break;
+	}
+
+	return (requiredflags & flags) == requiredflags;
 }
 
 Graphics::Renderer Graphics::getRenderer() const
@@ -1358,6 +1567,41 @@ void Graphics::initCapabilities()
 			msaa = samples;
 			break;
 		}
+	}
+
+	if (@available(macOS 10.15, iOS 13, *))
+	{
+		for (NSInteger i = 0; i < 7; i++)
+		{
+			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyApple1 + i);
+			if ([device supportsFamily:family])
+				families.apple[1 + i] = true;
+		}
+
+		for (NSInteger i = 0; i < 2; i++)
+		{
+			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyMac1 + i);
+			if ([device supportsFamily:family])
+				families.mac[1 + i] = true;
+		}
+
+		for (NSInteger i = 0; i < 3; i++)
+		{
+			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyCommon1 + i);
+			if ([device supportsFamily:family])
+				families.common[1 + i] = true;
+		}
+
+		for (NSInteger i = 0; i < 2; i++)
+		{
+			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyMacCatalyst1 + i);
+			if ([device supportsFamily:family])
+				families.macCatalyst[1 + i] = true;
+		}
+	}
+	else
+	{
+		// TODO: feature set API
 	}
 
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;

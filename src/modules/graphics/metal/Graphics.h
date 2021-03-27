@@ -161,6 +161,15 @@ private:
 		Shader *shader;
 	};
 
+	struct DeviceFamilies
+	{
+		// All arrays are 1-indexed for convenience
+		bool apple[7+1];
+		bool mac[2+1];
+		bool common[3+1];
+		bool macCatalyst[2+1];
+	};
+
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage usage, size_t size) override;
@@ -199,6 +208,8 @@ private:
 	std::unordered_map<uint64, void *> cachedDepthStencilStates;
 
 	std::atomic<int64> completeCommandBufferIndex;
+
+	DeviceFamilies families;
 
 }; // Graphics
 

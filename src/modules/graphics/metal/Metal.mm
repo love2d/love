@@ -30,7 +30,7 @@ namespace metal
 
 Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
 {
-	MTLPixelFormat mtlformat = MTLPixelFormatRGBA8Unorm;
+	MTLPixelFormat mtlformat = MTLPixelFormatInvalid;
 	PixelFormatDesc desc = {};
 
 	if (isSRGB)
@@ -98,22 +98,16 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRG
 	case PIXELFORMAT_RGBA4_UNORM:
 #ifdef LOVE_IOS
 		mtlformat = MTLPixelFormatABGR4Unorm;
-#else
-		mtlformat = MTLPixelFormatRGBA8Unorm;
 #endif
 		break;
 	case PIXELFORMAT_RGB5A1_UNORM:
 #ifdef LOVE_IOS
 		mtlformat = MTLPixelFormatA1BGR5Unorm;
-#else
-		mtlformat = MTLPixelFormatRGBA8Unorm;
 #endif
 		break;
 	case PIXELFORMAT_RGB565_UNORM:
 #ifdef LOVE_IOS
 		mtlformat = MTLPixelFormatB5G6R5Unorm;
-#else
-		mtlformat = MTLPixelFormatRGBA8Unorm;
 #endif
 		break;
 	case PIXELFORMAT_RGB10A2_UNORM:
