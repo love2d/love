@@ -189,7 +189,7 @@ Graphics::Graphics()
 
 	initCapabilities();
 
-	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, 1024 * 1024 * 1);
+	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
 
 	{
 		std::vector<Buffer::DataDeclaration> dataformat = {
@@ -717,7 +717,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
 		delete uniformBuffer;
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
