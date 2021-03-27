@@ -172,7 +172,6 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 		std::string msgs = logger.getAllMessages();
 //		printf("spirv length: %ld, messages:\n%s\n", spirv.size(), msgs.c_str());
 
-		// Compile to GLSL, ready to give to GL driver.
 		try
 		{
 //			printf("GLSL INPUT SOURCE:\n\n%s\n\n", pixel->getSource().c_str());
@@ -190,12 +189,6 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				// TODO: set MainTex to binding 0
 				int binding = msl.get_decoration(resource.id, spv::DecorationBinding);
 				const SPIRType &type = msl.get_type(resource.base_type_id);
-
-				BuiltinUniform builtin = BUILTIN_MAX_ENUM;
-				if (getConstant(resource.name.c_str(), builtin))
-				{
-					// TODO
-				}
 
 				auto it = uniforms.find(resource.name);
 				if (it != uniforms.end())
@@ -240,6 +233,10 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				}
 
 				uniforms[u.name] = u;
+
+				BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+				if (getConstant(resource.name.c_str(), builtin))
+					builtinUniformInfo[builtin] = &uniforms[u.name];
 			}
 
 			for (const auto &resource : resources.uniform_buffers)
@@ -281,13 +278,6 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 						u.dataSize = membersize;
 						u.count = std::max<size_t>(1, membertype.array.size());
 
-						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
-						if (getConstant(u.name.c_str(), builtin))
-						{
-							if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
-								builtinUniformDataOffset = offset;
-						}
-
 						switch (membertype.basetype)
 						{
 						case SPIRType::Int:
@@ -316,6 +306,16 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 							break;
 						default:
 							break;
+						}
+
+						uniforms[u.name] = u;
+
+						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+						if (getConstant(u.name.c_str(), builtin))
+						{
+							if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
+								builtinUniformDataOffset = offset;
+							builtinUniformInfo[builtin] = &uniforms[u.name];
 						}
 					}
 
@@ -473,6 +473,11 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 }
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
+{
+	// TODO
+}
+
+void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
 {
 	// TODO
 }

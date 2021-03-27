@@ -81,7 +81,7 @@ public:
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
 	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override { return 0; }
-	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override {}
+	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 	id<MTLRenderPipelineState> getCachedRenderPipeline(const RenderPipelineKey &key);
 

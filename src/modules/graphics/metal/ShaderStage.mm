@@ -159,6 +159,10 @@ ShaderStage::ShaderStage(love::graphics::Graphics *gfx, StageType stage, const s
 	glslangShader->setEnvTarget(EShTargetSpv, EShTargetSpv_1_5);
 	glslangShader->setAutoMapLocations(true);
 	glslangShader->setAutoMapBindings(true);
+
+	// Needed for local uniforms to work (they will be converted into a uniform
+	// block).
+	// https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GL_EXT_vulkan_glsl_relaxed.txt
 	glslangShader->setEnvInputVulkanRulesRelaxed();
 
 	const char *csrc = source.c_str();
