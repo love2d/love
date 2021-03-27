@@ -707,6 +707,12 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		}
 	}
 
+	// Store DPI scale in an unused component of another vector.
+	builtins->normalMatrix[0].w = (float) getCurrentDPIScale();
+
+	// Same with point size.
+	builtins->normalMatrix[1].w = getPointSize();
+
 	// FIXME: should be active RT dimensions
 	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
 
@@ -1280,7 +1286,10 @@ void Graphics::setBlendState(const BlendState &blend)
 
 void Graphics::setPointSize(float size)
 {
-	// TODO
+	if (size != states.back().pointSize)
+		flushBatchedDraws();
+
+	states.back().pointSize = size;
 }
 
 void Graphics::setWireframe(bool enable)
