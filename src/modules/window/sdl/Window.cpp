@@ -1070,20 +1070,43 @@ love::image::ImageData *Window::getIcon()
 
 void Window::setVSync(int vsync)
 {
-	if (glcontext == nullptr)
-		return;
+	if (glcontext != nullptr)
+	{
+		SDL_GL_SetSwapInterval(vsync);
 
-	SDL_GL_SetSwapInterval(vsync);
+		// Check if adaptive vsync was requested but not supported, and fall
+		// back to regular vsync if so.
+		if (vsync == -1 && SDL_GL_GetSwapInterval() != -1)
+			SDL_GL_SetSwapInterval(1);
+	}
 
-	// Check if adaptive vsync was requested but not supported, and fall back
-	// to regular vsync if so.
-	if (vsync == -1 && SDL_GL_GetSwapInterval() != -1)
-		SDL_GL_SetSwapInterval(1);
+#if defined(LOVE_GRAPHICS_METAL) && defined(LOVE_MACOS)
+	if (metalView != nullptr)
+	{
+		void *metallayer = SDL_Metal_GetLayer(metalView);
+		love::macos::setMetalLayerVSync(metallayer, vsync != 0);
+	}
+#endif
 }
 
 int Window::getVSync() const
 {
-	return glcontext != nullptr ? SDL_GL_GetSwapInterval() : 0;
+	if (glcontext != nullptr)
+		return SDL_GL_GetSwapInterval();
+
+#if defined(LOVE_GRAPHICS_METAL)
+	if (metalView != nullptr)
+	{
+#ifdef LOVE_MACOS
+		void *metallayer = SDL_Metal_GetLayer(metalView);
+		return love::macos::getMetalLayerVSync(metallayer) ? 1 : 0;
+#else
+		return 1;
+#endif
+	}
+#endif
+
+	return 0;
 }
 
 void Window::setDisplaySleepEnabled(bool enable)

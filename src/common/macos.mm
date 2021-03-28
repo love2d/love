@@ -24,6 +24,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/CAMetalLayer.h>
 
 #ifdef LOVE_MACOSX_SDL_DIRECT_INCLUDE
 # include <SDL.h>
@@ -83,6 +84,32 @@ void requestAttention(bool continuous)
 		else
 			[NSApp requestUserAttention:NSInformationalRequest];
 	}
+}
+
+void setMetalLayerVSync(void *metallayer, bool vsync)
+{
+	@autoreleasepool
+	{
+		if (@available(macOS 10.13, *))
+		{
+			CAMetalLayer *layer = (__bridge CAMetalLayer *) metallayer;
+			layer.displaySyncEnabled = vsync;
+		}
+	}
+}
+
+bool getMetalLayerVSync(void *metallayer)
+{
+	@autoreleasepool
+	{
+		if (@available(macOS 10.13, *))
+		{
+			CAMetalLayer *layer = (__bridge CAMetalLayer *) metallayer;
+			return layer.displaySyncEnabled;
+		}
+	}
+
+	return true;
 }
 
 } // osx
