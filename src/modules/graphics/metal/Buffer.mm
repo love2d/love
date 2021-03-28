@@ -116,6 +116,7 @@ void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 	if (mapBuffer != nil)
 	{
 		mappedRange = r;
+		mapped = true;
 		return mapBuffer.contents;
 	}
 
@@ -142,6 +143,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 					   size:usedsize];
 
 	mapBuffer = nil;
+	mapped = false;
 }}
 
 void Buffer::fill(size_t offset, size_t size, const void *data)

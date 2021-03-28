@@ -1637,6 +1637,7 @@ void Graphics::initCapabilities()
 
 void Graphics::getAPIStats(int &shaderswitches) const
 {
+	// TODO
 	shaderswitches = 0;
 }
 

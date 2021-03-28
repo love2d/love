@@ -427,9 +427,11 @@ Shader::~Shader()
 
 	for (const auto &it : uniforms)
 	{
-		free(it.second.data);
 		if (it.second.textures != nullptr)
+		{
+			free(it.second.data);
 			delete[] it.second.textures;
+		}
 	}
 
 	delete[] localUniformBufferData;
