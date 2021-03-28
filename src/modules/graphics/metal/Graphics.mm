@@ -1620,13 +1620,24 @@ void Graphics::initCapabilities()
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;
-	capabilities.limits[LIMIT_TEXTURE_SIZE] = 16384; // TODO
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = 2048;
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = 2048;
-	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384; // TODO
-	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO
+	if (families.mac[1] || families.macCatalyst[1] || families.apple[3])
+	{
+		capabilities.limits[LIMIT_TEXTURE_SIZE] = 16384;
+		capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 16384;
+	}
+	else
+	{
+		capabilities.limits[LIMIT_TEXTURE_SIZE] = 8192;
+		capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 8192;
+	}
+	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = 128 * 1024 * 1024;
 	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO;
-	capabilities.limits[LIMIT_RENDER_TARGETS] = 8; // TODO
+	if (families.mac[1] || families.macCatalyst[1] || families.apple[2])
+		capabilities.limits[LIMIT_RENDER_TARGETS] = 8;
+	else
+		capabilities.limits[LIMIT_RENDER_TARGETS] = 4;
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
 	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
 	static_assert(LIMIT_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new system limit!");
