@@ -96,6 +96,8 @@ public:
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
 
+	void attachShader(love::graphics::Shader *shader);
+
 	id<MTLCommandBuffer> useCommandBuffer();
 	id<MTLCommandBuffer> getCommandBuffer() const { return commandBuffer; }
 	void submitCommandBuffer();
@@ -194,6 +196,7 @@ private:
 	MTLRenderPassDescriptor *passDesc;
 
 	uint32 dirtyRenderState;
+	VertexAttributes lastVertexAttributes;
 	bool windowHasStencil;
 
 	StreamBuffer *uniformBuffer;

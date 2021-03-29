@@ -322,6 +322,34 @@ void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 	}
 }
 
+bool VertexAttributes::operator == (const VertexAttributes &other) const
+{
+	if (enableBits != other.enableBits || instanceBits != other.instanceBits)
+		return false;
+
+	uint32 allbits = enableBits;
+	uint32 i = 0;
+
+	while (allbits)
+	{
+		if (isEnabled(i))
+		{
+			const auto &a = attribs[i];
+			const auto &b = other.attribs[i];
+			if (a.bufferIndex != b.bufferIndex || a.format != b.format || a.offsetFromVertex != b.offsetFromVertex)
+				return false;
+
+			if (bufferLayouts[a.bufferIndex].stride != other.bufferLayouts[a.bufferIndex].stride)
+				return false;
+		}
+
+		i++;
+		allbits >>= 1;
+	}
+
+	return true;
+}
+
 STRINGMAP_BEGIN(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 {
 	{ "VertexPosition", ATTRIB_POS           },

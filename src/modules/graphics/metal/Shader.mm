@@ -441,7 +441,9 @@ void Shader::attach()
 {
 	if (current != this)
 	{
-		Graphics::flushBatchedDrawsGlobal();
+		Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+		gfx->flushBatchedDrawsGlobal();
+		gfx->attachShader(this);
 		current = this;
 	}
 }

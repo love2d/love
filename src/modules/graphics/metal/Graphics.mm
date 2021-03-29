@@ -381,6 +381,11 @@ void Graphics::setActive(bool enable)
 	active = enable;
 }
 
+void Graphics::attachShader(love::graphics::Shader *shader)
+{
+	dirtyRenderState |= STATE_SHADER;
+}
+
 id<MTLCommandBuffer> Graphics::useCommandBuffer()
 {
 	if (commandBuffer == nil)
@@ -620,9 +625,10 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		// TODO
 	}
 
-	// TODO: attributes
-	if ((dirtyState & pipelineStateBits) != 0 || true)
+	if ((dirtyState & pipelineStateBits) != 0 || !(attributes == lastVertexAttributes))
 	{
+		lastVertexAttributes = attributes;
+
 //		Shader *shader = (Shader *) state.shader.get();
 		Shader *shader = (Shader *) Shader::current;
 		id<MTLRenderPipelineState> pipeline = nil;
@@ -923,6 +929,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 
 	projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
 	dirtyRenderState = STATEBIT_ALL;
+	lastVertexAttributes = VertexAttributes();
 }}
 
 void Graphics::endPass()
