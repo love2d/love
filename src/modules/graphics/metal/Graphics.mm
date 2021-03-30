@@ -66,11 +66,11 @@ static MTLSamplerAddressMode getMTLSamplerAddressMode(SamplerState::WrapMode mod
 	{
 		case SamplerState::WRAP_CLAMP: return MTLSamplerAddressModeClampToEdge;
 		case SamplerState::WRAP_CLAMP_ZERO: return MTLSamplerAddressModeClampToZero;
-#ifdef LOVE_MACOS
-		case SamplerState::WRAP_CLAMP_ONE: return MTLSamplerAddressModeClampToBorderColor;
-#else
-		case SamplerState::WRAP_CLAMP_ONE: return MTLSamplerAddressModeClampToZero;
-#endif
+		case SamplerState::WRAP_CLAMP_ONE:
+			if (@available(macOS 10.12, iOS 10.14, *))
+				return MTLSamplerAddressModeClampToBorderColor;
+			else
+				return MTLSamplerAddressModeClampToZero;
 		case SamplerState::WRAP_REPEAT: return MTLSamplerAddressModeRepeat;
 		case SamplerState::WRAP_MIRRORED_REPEAT: return MTLSamplerAddressModeMirrorRepeat;
 		case SamplerState::WRAP_MAX_ENUM: return MTLSamplerAddressModeClampToEdge;
@@ -503,9 +503,8 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 	desc.tAddressMode = getMTLSamplerAddressMode(s.wrapV);
 	desc.rAddressMode = getMTLSamplerAddressMode(s.wrapW);
 
-#ifdef LOVE_MACOS
-	desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
-#endif
+	if (@available(macOS 10.12, iOS 10.14, *))
+		desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
 
 	desc.lodMinClamp = s.minLod;
 	desc.lodMaxClamp = s.maxLod;
