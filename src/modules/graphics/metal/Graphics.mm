@@ -597,12 +597,19 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 
 		if (state.scissor)
 		{
-			// TODO: clamping
 			double dpiscale = getCurrentDPIScale();
 			rect.x = (NSUInteger)(state.scissorRect.x*dpiscale);
 			rect.y = (NSUInteger)(state.scissorRect.y*dpiscale);
 			rect.width = (NSUInteger)(state.scissorRect.w*dpiscale);
 			rect.height = (NSUInteger)(state.scissorRect.h*dpiscale);
+
+			if (rtw > 0 && (int)rect.x >= rtw)
+				rect.x = rtw - 1;
+			if (rth > 0 && (int)rect.y >= rth)
+				rect.y = rth - 1;
+
+			rect.width = std::min(rect.width, rtw - rect.x);
+			rect.height = std::min(rect.height, rth - rect.y);
 		}
 
 		[encoder setScissorRect:rect];
