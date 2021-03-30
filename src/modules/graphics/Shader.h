@@ -243,6 +243,9 @@ protected:
 
 	static bool validateInternal(ShaderStage* vertex, ShaderStage* pixel, std::string& err, ValidationReflection &reflection);
 
+	static bool validateTexture(const UniformInfo *info, Texture *tex, bool internalUpdate);
+	static bool validateBuffer(const UniformInfo *info, Buffer *buffer, bool internalUpdate);
+
 	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
 
 	ValidationReflection validationReflection;
