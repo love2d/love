@@ -114,6 +114,7 @@ public:
 
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
 	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
+	Texture *getDefaultTexture(TextureType textype) const { return defaultTextures[textype]; }
 
 	static Graphics *getInstance() { return graphicsInstance; }
 

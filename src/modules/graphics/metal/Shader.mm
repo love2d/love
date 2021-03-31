@@ -347,6 +347,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 	using namespace glslang;
 	using namespace spirv_cross;
 
+	auto gfx = Graphics::getInstance();
+
 	std::map<std::string, int> varyings;
 	int nextVaryingLocation = 0;
 
@@ -389,39 +391,43 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				u.name = resource.name;
 				u.count = type.array.empty() ? 1 : type.array[0];
 				u.location = 0;
-				u.data = malloc(sizeof(int) * u.count);
-				for (int i = 0; i < u.count; i++)
-					u.ints[i] = -1; // Will initialize below.
-
-//				printf("%s binding: %d, set: %d\n", u.name.c_str(), msl.get_decoration(resource.id, spv::DecorationBinding), msl.get_decoration(resource.id, spv::DecorationDescriptorSet));
 
 				switch (basetype.image.dim)
 				{
 				case spv::Dim2D:
 					u.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
 					u.textures = new love::graphics::Texture*[u.count];
-					for (int i = 0; i < u.count; i++)
-						u.textures[i] = nullptr;
 					break;
 				case spv::Dim3D:
 					u.textureType = TEXTURE_VOLUME;
 					u.textures = new love::graphics::Texture*[u.count];
-					for (int i = 0; i < u.count; i++)
-						u.textures[i] = nullptr;
 					break;
 				case spv::DimCube:
 					if (basetype.image.arrayed)
 						throw love::Exception("Cubemap Arrays are not currently supported.");
 					u.textureType = TEXTURE_CUBE;
 					u.textures = new love::graphics::Texture*[u.count];
-					for (int i = 0; i < u.count; i++)
-						u.textures[i] = nullptr;
 					break;
 				case spv::DimBuffer:
 					// TODO: are texel buffers sampled images in glslang?
 					break;
 				default:
+					// TODO: error? continue?
 					break;
+				}
+
+				u.data = malloc(sizeof(int) * u.count);
+				for (int i = 0; i < u.count; i++)
+					u.ints[i] = -1; // Initialized below, after compiling.
+
+				if (u.textures != nullptr)
+				{
+					auto tex = gfx->getDefaultTexture(u.textureType);
+					for (int i = 0; i < u.count; i++)
+					{
+						tex->retain();
+						u.textures[i] = tex;
+					}
 				}
 
 				uniforms[u.name] = u;
@@ -619,8 +625,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						u.ints[i] = (int)textureBindings.size();
 						TextureBinding b = {};
 
-						b.texture = nil; // TODO: matching default texture
-						b.sampler = nil;
+						b.texture = getMTLTexture(u.textures[i]);
+						b.sampler = getMTLSampler(u.textures[i]);
 
 						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 						if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
@@ -662,6 +668,11 @@ Shader::~Shader()
 		if (it.second.textures != nullptr)
 		{
 			free(it.second.data);
+			for (int i = 0; i < it.second.count; i++)
+			{
+				if (it.second.textures[i] != nullptr)
+					it.second.textures[i]->release();
+			}
 			delete[] it.second.textures;
 		}
 	}
@@ -673,8 +684,8 @@ void Shader::attach()
 {
 	if (current != this)
 	{
-		Graphics *gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-		gfx->flushBatchedDrawsGlobal();
+		Graphics *gfx = Graphics::getInstance();
+		gfx->flushBatchedDraws();
 		gfx->attachShader(this);
 		current = this;
 	}
@@ -725,12 +736,14 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 		{
 			if (!validateTexture(info, tex, false))
 				continue;
-			tex->retain();
 		}
 		else
 		{
-			// TODO: matching default texture
+			auto gfx = Graphics::getInstance();
+			tex = gfx->getDefaultTexture(info->textureType);
 		}
+
+		tex->retain();
 
 		if (info->textures[i] != nullptr)
 			info->textures[i]->release();
