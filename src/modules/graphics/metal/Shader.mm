@@ -39,6 +39,114 @@ namespace metal
 
 static_assert(MAX_COLOR_RENDER_TARGETS <= 8, "Metal pipeline cache key only stores 8 render target pixel formats.");
 
+// TODO: Use love.graphics to determine actual limits?
+static const TBuiltInResource defaultTBuiltInResource = {
+	/* .MaxLights = */ 32,
+	/* .MaxClipPlanes = */ 6,
+	/* .MaxTextureUnits = */ 32,
+	/* .MaxTextureCoords = */ 32,
+	/* .MaxVertexAttribs = */ 64,
+	/* .MaxVertexUniformComponents = */ 16384,
+	/* .MaxVaryingFloats = */ 128,
+	/* .MaxVertexTextureImageUnits = */ 32,
+	/* .MaxCombinedTextureImageUnits = */ 80,
+	/* .MaxTextureImageUnits = */ 32,
+	/* .MaxFragmentUniformComponents = */ 16384,
+	/* .MaxDrawBuffers = */ 8,
+	/* .MaxVertexUniformVectors = */ 4096,
+	/* .MaxVaryingVectors = */ 32,
+	/* .MaxFragmentUniformVectors = */ 4096,
+	/* .MaxVertexOutputVectors = */ 32,
+	/* .MaxFragmentInputVectors = */ 31,
+	/* .MinProgramTexelOffset = */ -8,
+	/* .MaxProgramTexelOffset = */ 7,
+	/* .MaxClipDistances = */ 8,
+	/* .MaxComputeWorkGroupCountX = */ 65535,
+	/* .MaxComputeWorkGroupCountY = */ 65535,
+	/* .MaxComputeWorkGroupCountZ = */ 65535,
+	/* .MaxComputeWorkGroupSizeX = */ 1024,
+	/* .MaxComputeWorkGroupSizeY = */ 1024,
+	/* .MaxComputeWorkGroupSizeZ = */ 64,
+	/* .MaxComputeUniformComponents = */ 1024,
+	/* .MaxComputeTextureImageUnits = */ 32,
+	/* .MaxComputeImageUniforms = */ 16,
+	/* .MaxComputeAtomicCounters = */ 4096,
+	/* .MaxComputeAtomicCounterBuffers = */ 8,
+	/* .MaxVaryingComponents = */ 128,
+	/* .MaxVertexOutputComponents = */ 128,
+	/* .MaxGeometryInputComponents = */ 128,
+	/* .MaxGeometryOutputComponents = */ 128,
+	/* .MaxFragmentInputComponents = */ 128,
+	/* .MaxImageUnits = */ 192,
+	/* .MaxCombinedImageUnitsAndFragmentOutputs = */ 144,
+	/* .MaxCombinedShaderOutputResources = */ 144,
+	/* .MaxImageSamples = */ 32,
+	/* .MaxVertexImageUniforms = */ 16,
+	/* .MaxTessControlImageUniforms = */ 16,
+	/* .MaxTessEvaluationImageUniforms = */ 16,
+	/* .MaxGeometryImageUniforms = */ 16,
+	/* .MaxFragmentImageUniforms = */ 16,
+	/* .MaxCombinedImageUniforms = */ 80,
+	/* .MaxGeometryTextureImageUnits = */ 16,
+	/* .MaxGeometryOutputVertices = */ 256,
+	/* .MaxGeometryTotalOutputComponents = */ 1024,
+	/* .MaxGeometryUniformComponents = */ 1024,
+	/* .MaxGeometryVaryingComponents = */ 64,
+	/* .MaxTessControlInputComponents = */ 128,
+	/* .MaxTessControlOutputComponents = */ 128,
+	/* .MaxTessControlTextureImageUnits = */ 16,
+	/* .MaxTessControlUniformComponents = */ 1024,
+	/* .MaxTessControlTotalOutputComponents = */ 4096,
+	/* .MaxTessEvaluationInputComponents = */ 128,
+	/* .MaxTessEvaluationOutputComponents = */ 128,
+	/* .MaxTessEvaluationTextureImageUnits = */ 16,
+	/* .MaxTessEvaluationUniformComponents = */ 1024,
+	/* .MaxTessPatchComponents = */ 120,
+	/* .MaxPatchVertices = */ 32,
+	/* .MaxTessGenLevel = */ 64,
+	/* .MaxViewports = */ 16,
+	/* .MaxVertexAtomicCounters = */ 4096,
+	/* .MaxTessControlAtomicCounters = */ 4096,
+	/* .MaxTessEvaluationAtomicCounters = */ 4096,
+	/* .MaxGeometryAtomicCounters = */ 4096,
+	/* .MaxFragmentAtomicCounters = */ 4096,
+	/* .MaxCombinedAtomicCounters = */ 4096,
+	/* .MaxAtomicCounterBindings = */ 8,
+	/* .MaxVertexAtomicCounterBuffers = */ 8,
+	/* .MaxTessControlAtomicCounterBuffers = */ 8,
+	/* .MaxTessEvaluationAtomicCounterBuffers = */ 8,
+	/* .MaxGeometryAtomicCounterBuffers = */ 8,
+	/* .MaxFragmentAtomicCounterBuffers = */ 8,
+	/* .MaxCombinedAtomicCounterBuffers = */ 8,
+	/* .MaxAtomicCounterBufferSize = */ 16384,
+	/* .MaxTransformFeedbackBuffers = */ 4,
+	/* .MaxTransformFeedbackInterleavedComponents = */ 64,
+	/* .MaxCullDistances = */ 8,
+	/* .MaxCombinedClipAndCullDistances = */ 8,
+	/* .MaxSamples = */ 32,
+	/* .maxMeshOutputVerticesNV = */ 256,
+	/* .maxMeshOutputPrimitivesNV = */ 512,
+	/* .maxMeshWorkGroupSizeX_NV = */ 32,
+	/* .maxMeshWorkGroupSizeY_NV = */ 1,
+	/* .maxMeshWorkGroupSizeZ_NV = */ 1,
+	/* .maxTaskWorkGroupSizeX_NV = */ 32,
+	/* .maxTaskWorkGroupSizeY_NV = */ 1,
+	/* .maxTaskWorkGroupSizeZ_NV = */ 1,
+	/* .maxMeshViewCountNV = */ 4,
+	/* .maxDualSourceDrawBuffersEXT = */ 1,
+	/* .limits = */ {
+		/* .nonInductiveForLoops = */ 1,
+		/* .whileLoops = */ 1,
+		/* .doWhileLoops = */ 1,
+		/* .generalUniformIndexing = */ 1,
+		/* .generalAttributeMatrixVectorIndexing = */ 1,
+		/* .generalVaryingIndexing = */ 1,
+		/* .generalSamplerIndexing = */ 1,
+		/* .generalVariableIndexing = */ 1,
+		/* .generalConstantMatrixVectorIndexing = */ 1,
+	}
+};
+
 static MTLVertexFormat getMTLVertexFormat(DataFormat format)
 {
 	switch (format)
@@ -114,6 +222,16 @@ static MTLBlendFactor getMTLBlendFactor(BlendFactor factor)
 	return MTLBlendFactorZero;
 }
 
+static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
+{
+	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
+}
+
+static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
+{
+	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
+}
+
 static EShLanguage getGLSLangStage(ShaderStage::StageType stage)
 {
 	switch (stage)
@@ -134,30 +252,107 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 	, builtinUniformDataOffset(0)
 { @autoreleasepool {
 	using namespace glslang;
-	using namespace spirv_cross;
 
-	// TODO: can this be done in ShaderStage (no linking)?
+	TShader *glslangShaders[ShaderStage::STAGE_MAX_ENUM] = {};
 
-	glslang::TProgram program;
+	TProgram *program = new TProgram();
 
-	if (vertex != nullptr)
-		program.addShader((TShader *) vertex->getHandle());
-
-	if (pixel != nullptr)
-		program.addShader((TShader *) pixel->getHandle());
-
-	if (!program.link(EShMsgDefault))
+	auto cleanup = [&]()
 	{
-		//err = "Cannot compile shader:\n\n" + std::string(program.getInfoLog()) + "\n" + std::string(program.getInfoDebugLog());
-		throw love::Exception("link failed!\n");
+		delete program;
+		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+			delete glslangShaders[i];
+	};
+
+	// We can't do this in ShaderStage because the mapIO call modifies the
+	// TShader internals in a manner that prevents it from being shared.
+	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	{
+		if (!stages[i])
+			continue;
+
+		auto stage = (ShaderStage::StageType) i;
+		auto glslangstage = getGLSLangStage(stage);
+		auto tshader = new TShader(glslangstage);
+
+		glslangShaders[i] = tshader;
+
+		tshader->setEnvInput(EShSourceGlsl, glslangstage, EShClientVulkan, 450);
+		tshader->setEnvClient(EShClientVulkan, EShTargetVulkan_1_2);
+		tshader->setEnvTarget(EShTargetSpv, EShTargetSpv_1_5);
+		tshader->setAutoMapLocations(true);
+		tshader->setAutoMapBindings(true);
+
+		// Needed for local uniforms to work (they will be converted into a
+		// uniform block).
+		// https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GL_EXT_vulkan_glsl_relaxed.txt
+		tshader->setEnvInputVulkanRulesRelaxed();
+		tshader->setGlobalUniformBinding(0);
+		tshader->setGlobalUniformSet(0);
+
+		const std::string &source = stages[i]->getSource();
+		const char *csrc = source.c_str();
+		int srclen = (int) source.length();
+		tshader->setStringsWithLengths(&csrc, &srclen, 1);
+
+		int defaultversion = 450;
+		EProfile defaultprofile = ECoreProfile;
+		bool forcedefault = false;
+		bool forwardcompat = true;
+
+		if (!tshader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
+		{
+			const char *stagename = "unknown";
+			ShaderStage::getConstant(stage, stagename);
+
+			std::string err = "Error parsing " + std::string(stagename) + " shader:\n\n"
+				+ std::string(tshader->getInfoLog()) + "\n"
+				+ std::string(tshader->getInfoDebugLog());
+
+			cleanup();
+			throw love::Exception("%s", err.c_str());
+		}
+
+		program->addShader(tshader);
 	}
+
+	if (!program->link(EShMsgDefault))
+	{
+		//err = "Cannot compile shader:\n\n" + std::string(program->getInfoLog()) + "\n" + std::string(program->getInfoDebugLog());
+		cleanup();
+		throw love::Exception("link failed! %s\n", program->getInfoLog());
+	}
+
+	if (!program->mapIO())
+	{
+		cleanup();
+		throw love::Exception("mapIO failed");
+	}
+
+	try
+	{
+		compileFromGLSLang(device, *program);
+	}
+	catch (love::Exception &)
+	{
+		cleanup();
+		throw;
+	}
+
+	cleanup();
+}}
+
+void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program)
+{
+	using namespace glslang;
+	using namespace spirv_cross;
 
 	std::map<std::string, int> varyings;
 	int nextVaryingLocation = 0;
 
-	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int stageindex = 0; stageindex < ShaderStage::STAGE_MAX_ENUM; stageindex++)
 	{
-		auto glslangstage = getGLSLangStage((ShaderStage::StageType) i);
+		auto glslangstage = getGLSLangStage((ShaderStage::StageType) stageindex);
 		auto intermediate = program.getIntermediate(glslangstage);
 		if (intermediate == nullptr)
 			continue;
@@ -186,44 +381,41 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 
 			for (const auto &resource : resources.sampled_images)
 			{
-				// TODO: set MainTex to binding 0
-				int binding = msl.get_decoration(resource.id, spv::DecorationBinding);
-				const SPIRType &type = msl.get_type(resource.base_type_id);
-
-				auto it = uniforms.find(resource.name);
-				if (it != uniforms.end())
-				{
-					if (it->second.ints[0] != binding)
-						throw love::Exception("texture binding mismatch for %s: %d vs %d", resource.name.c_str(), it->second.ints[0], binding);
-					continue;
-				}
+				const SPIRType &basetype = msl.get_type(resource.base_type_id);
+				const SPIRType &type = msl.get_type(resource.type_id);
 
 				UniformInfo u = {};
 				u.baseType = UNIFORM_SAMPLER;
 				u.name = resource.name;
+				u.count = type.array.empty() ? 1 : type.array[0];
 				u.location = 0;
-				u.data = malloc(sizeof(int) * 1);
-				u.ints[0] = binding;
-//				printf("binding for %s: %d\n", u.name.c_str(), binding);
+				u.data = malloc(sizeof(int) * u.count);
+				for (int i = 0; i < u.count; i++)
+					u.ints[i] = -1; // Will initialize below.
 
-				switch (type.image.dim)
+//				printf("%s binding: %d, set: %d\n", u.name.c_str(), msl.get_decoration(resource.id, spv::DecorationBinding), msl.get_decoration(resource.id, spv::DecorationDescriptorSet));
+
+				switch (basetype.image.dim)
 				{
 				case spv::Dim2D:
-					u.textureType = type.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
-					u.textures = new love::graphics::Texture*[1];
-					u.textures[0] = nullptr;
+					u.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+					u.textures = new love::graphics::Texture*[u.count];
+					for (int i = 0; i < u.count; i++)
+						u.textures[i] = nullptr;
 					break;
 				case spv::Dim3D:
 					u.textureType = TEXTURE_VOLUME;
-					u.textures = new love::graphics::Texture*[1];
-					u.textures[0] = nullptr;
+					u.textures = new love::graphics::Texture*[u.count];
+					for (int i = 0; i < u.count; i++)
+						u.textures[i] = nullptr;
 					break;
 				case spv::DimCube:
-					if (type.image.arrayed)
+					if (basetype.image.arrayed)
 						throw love::Exception("Cubemap Arrays are not currently supported.");
 					u.textureType = TEXTURE_CUBE;
-					u.textures = new love::graphics::Texture*[1];
-					u.textures[0] = nullptr;
+					u.textures = new love::graphics::Texture*[u.count];
+					for (int i = 0; i < u.count; i++)
+						u.textures[i] = nullptr;
 					break;
 				case spv::DimBuffer:
 					// TODO: are texel buffers sampled images in glslang?
@@ -234,22 +426,22 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 
 				uniforms[u.name] = u;
 
-				BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+				BuiltinUniform builtin;
 				if (getConstant(resource.name.c_str(), builtin))
 					builtinUniformInfo[builtin] = &uniforms[u.name];
 			}
 
 			for (const auto &resource : resources.uniform_buffers)
 			{
-				auto it = uniforms.find(resource.name);
-				if (it != uniforms.end())
-				{
-					continue;
-				}
-
 				if (resource.name == "gl_DefaultUniformBlock")
 				{
-					msl.set_decoration(resource.id, spv::DecorationBinding, 0);
+					MSLResourceBinding binding;
+					binding.stage = msl.get_execution_model();
+					binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+					binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+					binding.msl_buffer = getUniformBufferBinding();
+					msl.add_msl_resource_binding(binding);
+
 					const SPIRType &type = msl.get_type(resource.base_type_id);
 					const auto &membertypes = type.member_types;
 
@@ -276,7 +468,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 						UniformInfo u = {};
 						u.name = msl.get_name(membertypes[uindex]);
 						u.dataSize = membersize;
-						u.count = std::max<size_t>(1, membertype.array.size());
+						u.count = membertype.array.empty() ? 1 : membertype.array[0];
 
 						switch (membertype.basetype)
 						{
@@ -333,7 +525,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				// TODO
 			}
 
-			if (i == ShaderStage::STAGE_VERTEX)
+			if (stageindex == ShaderStage::STAGE_VERTEX)
 			{
 				int nextattributeindex = ATTRIB_MAX_ENUM;
 
@@ -353,7 +545,6 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 							index = nextattributeindex++;
 
 						msl.set_decoration(var, spv::DecorationLocation, index);
-
 						attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
 					}
 				}
@@ -365,7 +556,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 					msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
 				}
 			}
-			else if (i == ShaderStage::STAGE_PIXEL)
+			else if (stageindex == ShaderStage::STAGE_PIXEL)
 			{
 				for (const auto &varying : resources.stage_inputs)
 				{
@@ -375,12 +566,11 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				}
 			}
 
-			printf("// ubos: %ld, storage: %ld, inputs: %ld, outputs: %ld, images: %ld, samplers: %ld, push: %ld\n", resources.uniform_buffers.size(), resources.storage_buffers.size(), resources.stage_inputs.size(), resources.stage_outputs.size(), resources.storage_images.size(), resources.sampled_images.size(), resources.push_constant_buffers.size());
+//			printf("// ubos: %ld, storage: %ld, inputs: %ld, outputs: %ld, images: %ld, samplers: %ld, push: %ld\n", resources.uniform_buffers.size(), resources.storage_buffers.size(), resources.stage_inputs.size(), resources.stage_outputs.size(), resources.storage_images.size(), resources.sampled_images.size(), resources.push_constant_buffers.size());
 
 			CompilerMSL::Options options;
 
 			options.set_msl_version(2, 1);
-
 			options.texture_buffer_native = true;
 
 #ifdef LOVE_IOS
@@ -406,14 +596,56 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 				throw love::Exception("Error compiling converted Metal shader code");
 			}
 
-			functions[i] = [library newFunctionWithName:library.functionNames[0]];
+			functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
+
+			for (const auto &resource : resources.sampled_images)
+			{
+				auto it = uniforms.find(resource.name);
+				if (it == uniforms.end())
+					continue;
+
+				UniformInfo &u = it->second;
+
+				uint32 texturebinding = msl.get_automatic_msl_resource_binding(resource.id);
+				uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
+
+				if (texturebinding == (uint32)-1)
+					continue;
+
+				for (int i = 0; i < u.count; i++)
+				{
+					if (u.ints[i] == -1)
+					{
+						u.ints[i] = (int)textureBindings.size();
+						TextureBinding b = {};
+
+						b.texture = nil; // TODO: matching default texture
+						b.sampler = nil;
+
+						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+						if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
+							b.isMainTexture = true;
+
+						for (uint8 &stagebinding : b.texturestages)
+							stagebinding = LOVE_UINT8_MAX;
+						for (uint8 &stagebinding : b.samplerstages)
+							stagebinding = LOVE_UINT8_MAX;
+
+						textureBindings.push_back(b);
+					}
+
+					auto &b = textureBindings[u.ints[i]];
+					b.texturestages[stageindex] = (uint8) texturebinding;
+					b.samplerstages[stageindex] = (uint8) samplerbinding;
+				}
+			}
 		}
 		catch (std::exception &e)
 		{
 			printf("Error parsing SPIR-V shader source: %s\n", e.what());
 		}
 	}
-}}
+}
 
 Shader::~Shader()
 { @autoreleasepool {
@@ -469,12 +701,46 @@ void Shader::updateUniform(const UniformInfo * /*info*/, int /*count*/)
 {
 	// Nothing needed here, All uniform data will be memcpy'd to the main
 	// uniform buffer before drawing.
+	// FIXME: do we need to copy to a second buffer here, in order for batch
+	// flushing to work (and possibly padding)?
 }
 
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
-{
-	// TODO
-}
+{ @autoreleasepool {
+	if (info->baseType != UNIFORM_SAMPLER)
+		return;
+
+	bool shaderactive = current == this;
+
+	if (shaderactive)
+		Graphics::flushBatchedDrawsGlobal();
+
+	count = std::min(count, info->count);
+
+	for (int i = 0; i < count; i++)
+	{
+		love::graphics::Texture *tex = textures[i];
+
+		if (tex != nullptr)
+		{
+			if (!validateTexture(info, tex, false))
+				continue;
+			tex->retain();
+		}
+		else
+		{
+			// TODO: matching default texture
+		}
+
+		if (info->textures[i] != nullptr)
+			info->textures[i]->release();
+
+		info->textures[i] = tex;
+
+		textureBindings[info->ints[i]].texture = getMTLTexture(tex);
+		textureBindings[info->ints[i]].sampler = getMTLSampler(tex);
+	}
+}}
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
 {

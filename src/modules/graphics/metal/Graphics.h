@@ -183,7 +183,7 @@ private:
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const VertexAttributes &attributes);
-	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, Shader *shader);
+	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, Shader *shader, Texture *maintex);
 
 	id<MTLCommandQueue> commandQueue;
 

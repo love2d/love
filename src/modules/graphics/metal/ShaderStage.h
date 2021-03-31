@@ -35,12 +35,7 @@ public:
 
 	ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey);
 	virtual ~ShaderStage();
-
-	ptrdiff_t getHandle() const override { return (ptrdiff_t) glslangShader; }
-
-private:
-
-	glslang::TShader *glslangShader;
+	ptrdiff_t getHandle() const override { return 0; }
 
 }; // ShaderStage
 

@@ -243,6 +243,7 @@ public:
 	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
 
 	virtual ptrdiff_t getRenderTargetHandle() const = 0;
+	virtual ptrdiff_t getSamplerHandle() const = 0;
 
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;

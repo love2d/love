@@ -130,6 +130,11 @@ static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
 }
 
+static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
+{
+	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
+}
+
 static inline id<MTLTexture> getMTLRenderTarget(love::graphics::Texture *tex)
 {
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getRenderTargetHandle() : nil;
@@ -688,7 +693,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 	dirtyRenderState = 0;
 }
 
-void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader)
+void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, love::graphics::Texture *maintex)
 {
 	Shader *s = (Shader *)shader;
 
@@ -747,14 +752,47 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
 	id<MTLBuffer> buffer = getMTLBuffer(uniformBuffer);
-	int index = Shader::getUniformBufferBinding();
+	int uniformindex = Shader::getUniformBufferBinding();
 
-	// TODO: bind shader textures/samplers
-
-	[renderEncoder setVertexBuffer:buffer offset:uniformBufferOffset atIndex:index];
-	[renderEncoder setFragmentBuffer:buffer offset:uniformBufferOffset atIndex:index];
+	[renderEncoder setVertexBuffer:buffer offset:uniformBufferOffset atIndex:uniformindex];
+	[renderEncoder setFragmentBuffer:buffer offset:uniformBufferOffset atIndex:uniformindex];
 
 	uniformBufferOffset += alignUp(size, alignment);
+
+	for (const Shader::TextureBinding &b : s->getTextureBindings())
+	{
+		id<MTLTexture> texture = b.texture;
+		id<MTLSamplerState> sampler = b.sampler;
+
+		if (b.isMainTexture)
+		{
+			if (maintex == nullptr)
+			{
+				auto textype = shader->getMainTextureType();
+				if (textype != TEXTURE_MAX_ENUM)
+					maintex = defaultTextures[textype];
+			}
+
+			texture = getMTLTexture(maintex);
+			sampler = getMTLSampler(maintex);
+		}
+
+		uint8 texindex = b.texturestages[ShaderStage::STAGE_VERTEX];
+		uint8 sampindex = b.samplerstages[ShaderStage::STAGE_VERTEX];
+
+		if (texindex != LOVE_UINT8_MAX)
+			[renderEncoder setVertexTexture:texture atIndex:texindex];
+		if (sampindex != LOVE_UINT8_MAX)
+			[renderEncoder setVertexSamplerState:sampler atIndex:sampindex];
+
+		texindex = b.texturestages[ShaderStage::STAGE_PIXEL];
+		sampindex = b.samplerstages[ShaderStage::STAGE_PIXEL];
+
+		if (texindex != LOVE_UINT8_MAX)
+			[renderEncoder setFragmentTexture:texture atIndex:texindex];
+		if (sampindex != LOVE_UINT8_MAX)
+			[renderEncoder setFragmentSamplerState:sampler atIndex:sampindex];
+	}
 }
 
 static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBindings *buffers)
@@ -782,16 +820,7 @@ void Graphics::draw(const DrawCommand &cmd)
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
 	applyRenderState(encoder, *cmd.attributes);
-	applyShaderUniforms(encoder, Shader::current);
-
-	love::graphics::Texture *texture = cmd.texture;
-	if (texture == nullptr)
-		texture = defaultTextures[TEXTURE_2D];
-
-	id<MTLTexture> mtltexture = getMTLTexture(texture);
-
-	[encoder setFragmentTexture:mtltexture atIndex:0];
-	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
+	applyShaderUniforms(encoder, Shader::current, cmd.texture);
 
 	[encoder setCullMode:MTLCullModeNone];
 
@@ -808,16 +837,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
 	applyRenderState(encoder, *cmd.attributes);
-	applyShaderUniforms(encoder, Shader::current);
-
-	love::graphics::Texture *texture = cmd.texture;
-	if (texture == nullptr)
-		texture = defaultTextures[TEXTURE_2D];
-
-	id<MTLTexture> mtltexture = getMTLTexture(texture);
-
-	[encoder setFragmentTexture:mtltexture atIndex:0];
-	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
+	applyShaderUniforms(encoder, Shader::current, cmd.texture);
 
 	[encoder setCullMode:MTLCullModeNone];
 
@@ -841,15 +861,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
 	applyRenderState(encoder, attributes);
-	applyShaderUniforms(encoder, Shader::current);
-
-	if (texture == nullptr)
-		texture = defaultTextures[TEXTURE_2D];
-
-	id<MTLTexture> mtltexture = getMTLTexture(texture);
-
-	[encoder setFragmentTexture:mtltexture atIndex:0];
-	[encoder setFragmentSamplerState:((Texture *)texture)->getMTLSampler() atIndex:0];
+	applyShaderUniforms(encoder, Shader::current, texture);
 
 	[encoder setCullMode:MTLCullModeNone];
 

@@ -21,6 +21,7 @@
 #pragma once
 
 #include "libraries/xxHash/xxhash.h"
+#include "common/int.h"
 #include "graphics/Shader.h"
 #include "graphics/Graphics.h"
 #include "graphics/renderstate.h"
@@ -32,6 +33,11 @@
 #include <unordered_map>
 #include <map>
 #include <string>
+
+namespace glslang
+{
+class TProgram;
+}
 
 namespace love
 {
@@ -67,6 +73,17 @@ public:
 		}
 	};
 
+	struct TextureBinding
+	{
+		id<MTLTexture> texture;
+		id<MTLSamplerState> sampler;
+
+		bool isMainTexture;
+
+		uint8 texturestages[ShaderStage::STAGE_MAX_ENUM];
+		uint8 samplerstages[ShaderStage::STAGE_MAX_ENUM];
+	};
+
 	Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
 	virtual ~Shader();
 
@@ -86,6 +103,7 @@ public:
 	id<MTLRenderPipelineState> getCachedRenderPipeline(const RenderPipelineKey &key);
 
 	static int getUniformBufferBinding();
+	const std::vector<TextureBinding> &getTextureBindings() const { return textureBindings; }
 
 	uint8 *getLocalUniformBufferData() { return localUniformBufferData; }
 	size_t getLocalUniformBufferSize() const { return localUniformBufferSize; }
@@ -101,6 +119,8 @@ private:
 		}
 	};
 
+	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
+
 	id<MTLFunction> functions[ShaderStage::STAGE_MAX_ENUM];
 
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
@@ -111,6 +131,8 @@ private:
 	size_t builtinUniformDataOffset;
 
 	std::map<std::string, int> attributes;
+
+	std::vector<TextureBinding> textureBindings;
 
 	std::unordered_map<RenderPipelineKey, const void *, RenderPipelineHasher> cachedRenderPipelines;
 
