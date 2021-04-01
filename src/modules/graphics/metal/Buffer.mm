@@ -76,8 +76,9 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 		if (@available(iOS 12, macOS 10.14, *))
 		{
 			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
+			size_t width = arraylength * getDataMembers().size();
 			auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
-																			   width:arraylength
+																			   width:width
 																	 resourceOptions:opts
 																			   usage:MTLTextureUsageShaderRead];
 			texture = [buffer newTextureWithDescriptor:desc offset:0 bytesPerRow:size];
