@@ -121,7 +121,7 @@ void Shader::mapActiveUniforms()
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(gltype);
 		u.textureType = getUniformTextureType(gltype);
-		u.texelBufferType = getUniformTexelBufferType(gltype);
+		u.dataBaseType = getUniformTexelBaseType(gltype);
 		u.isDepthSampler = isDepthTextureType(gltype);
 
 		if (u.baseType == UNIFORM_MATRIX)
@@ -1106,7 +1106,7 @@ TextureType Shader::getUniformTextureType(GLenum type) const
 	}
 }
 
-DataBaseType Shader::getUniformTexelBufferType(GLenum type) const
+DataBaseType Shader::getUniformTexelBaseType(GLenum type) const
 {
 	switch (type)
 	{

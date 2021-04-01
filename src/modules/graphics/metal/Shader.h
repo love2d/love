@@ -84,6 +84,12 @@ public:
 		uint8 samplerstages[ShaderStage::STAGE_MAX_ENUM];
 	};
 
+	struct BufferBinding
+	{
+		id<MTLBuffer> buffer;
+		uint8 stages[ShaderStage::STAGE_MAX_ENUM];
+	};
+
 	Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
 	virtual ~Shader();
 
@@ -104,6 +110,7 @@ public:
 
 	static int getUniformBufferBinding();
 	const std::vector<TextureBinding> &getTextureBindings() const { return textureBindings; }
+	const std::vector<BufferBinding> &getBufferBindings() const { return bufferBindings; }
 
 	uint8 *getLocalUniformBufferData() { return localUniformBufferData; }
 	size_t getLocalUniformBufferSize() const { return localUniformBufferSize; }
@@ -133,6 +140,7 @@ private:
 	std::map<std::string, int> attributes;
 
 	std::vector<TextureBinding> textureBindings;
+	std::vector<BufferBinding> bufferBindings;
 
 	std::unordered_map<RenderPipelineKey, const void *, RenderPipelineHasher> cachedRenderPipelines;
 

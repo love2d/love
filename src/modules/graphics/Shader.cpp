@@ -762,7 +762,7 @@ bool Shader::validateTexture(const UniformInfo *info, Texture *tex, bool interna
 	return true;
 }
 
-static bool isTexelBufferTypeCompatible(DataBaseType a, DataBaseType b)
+static bool isTexelBaseTypeCompatible(DataBaseType a, DataBaseType b)
 {
 	if (a == DATA_BASETYPE_FLOAT || a == DATA_BASETYPE_UNORM || a == DATA_BASETYPE_SNORM)
 		return b == DATA_BASETYPE_FLOAT || b == DATA_BASETYPE_UNORM || b == DATA_BASETYPE_SNORM;
@@ -803,7 +803,7 @@ bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool intern
 	if (texelbinding)
 	{
 		DataBaseType basetype = buffer->getDataMember(0).info.baseType;
-		if (!isTexelBufferTypeCompatible(basetype, info->texelBufferType))
+		if (!isTexelBaseTypeCompatible(basetype, info->dataBaseType))
 		{
 			if (internalUpdate)
 				return false;

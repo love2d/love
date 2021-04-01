@@ -92,7 +92,7 @@ private:
 	MatrixSize getMatrixSize(GLenum type) const;
 	UniformType getUniformBaseType(GLenum type) const;
 	TextureType getUniformTextureType(GLenum type) const;
-	DataBaseType getUniformTexelBufferType(GLenum type) const;
+	DataBaseType getUniformTexelBaseType(GLenum type) const;
 	bool isDepthTextureType(GLenum type) const;
 
 	void flushBatchedDraws() const;

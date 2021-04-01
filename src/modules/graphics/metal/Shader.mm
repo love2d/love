@@ -227,6 +227,11 @@ static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
 }
 
+static inline id<MTLTexture> getMTLTexture(love::graphics::Buffer *buffer)
+{
+	return buffer ? (__bridge id<MTLTexture>)(void *) buffer->getTexelBufferHandle() : nil;
+}
+
 static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
 {
 	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
@@ -385,12 +390,28 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 			{
 				const SPIRType &basetype = msl.get_type(resource.base_type_id);
 				const SPIRType &type = msl.get_type(resource.type_id);
+				const SPIRType &imagetype = msl.get_type(basetype.image.type);
 
 				UniformInfo u = {};
 				u.baseType = UNIFORM_SAMPLER;
 				u.name = resource.name;
 				u.count = type.array.empty() ? 1 : type.array[0];
-				u.location = 0;
+				u.isDepthSampler = type.image.depth;
+
+				switch (imagetype.basetype)
+				{
+				case SPIRType::Float:
+					u.dataBaseType = DATA_BASETYPE_FLOAT;
+					break;
+				case SPIRType::Int:
+					u.dataBaseType = DATA_BASETYPE_INT;
+					break;
+				case SPIRType::UInt:
+					u.dataBaseType = DATA_BASETYPE_UINT;
+					break;
+				default:
+					break;
+				}
 
 				switch (basetype.image.dim)
 				{
@@ -409,7 +430,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					u.textures = new love::graphics::Texture*[u.count];
 					break;
 				case spv::DimBuffer:
-					// TODO: are texel buffers sampled images in glslang?
+					u.baseType = UNIFORM_TEXELBUFFER;
+					u.buffers = new love::graphics::Buffer*[u.count];
 					break;
 				default:
 					// TODO: error? continue?
@@ -420,7 +442,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				for (int i = 0; i < u.count; i++)
 					u.ints[i] = -1; // Initialized below, after compiling.
 
-				if (u.textures != nullptr)
+				if (u.baseType == UNIFORM_SAMPLER)
 				{
 					auto tex = gfx->getDefaultTexture(u.textureType);
 					for (int i = 0; i < u.count; i++)
@@ -428,6 +450,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						tex->retain();
 						u.textures[i] = tex;
 					}
+				}
+				else if (u.baseType == UNIFORM_TEXELBUFFER)
+				{
+					for (int i = 0; i < u.count; i++)
+						u.buffers[i] = nullptr; // TODO
 				}
 
 				uniforms[u.name] = u;
@@ -588,7 +615,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 			msl.set_msl_options(options);
 
 			std::string source = msl.compile();
-//			printf("// MSL SOURCE for stage %d:\n\n%s\n\n", i, source.c_str());
+//			printf("// MSL SOURCE for stage %d:\n\n%s\n\n", stageindex, source.c_str());
 
 			NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
 														  length:source.length()
@@ -625,12 +652,19 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						u.ints[i] = (int)textureBindings.size();
 						TextureBinding b = {};
 
-						b.texture = getMTLTexture(u.textures[i]);
-						b.sampler = getMTLSampler(u.textures[i]);
+						if (u.baseType == UNIFORM_TEXELBUFFER)
+						{
+							// TODO
+						}
+						else
+						{
+							b.texture = getMTLTexture(u.textures[i]);
+							b.sampler = getMTLSampler(u.textures[i]);
 
-						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
-						if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
-							b.isMainTexture = true;
+							BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+							if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
+								b.isMainTexture = true;
+						}
 
 						for (uint8 &stagebinding : b.texturestages)
 							stagebinding = LOVE_UINT8_MAX;
@@ -665,15 +699,26 @@ Shader::~Shader()
 
 	for (const auto &it : uniforms)
 	{
-		if (it.second.textures != nullptr)
+		const auto &u = it.second;
+		if (u.baseType == UNIFORM_SAMPLER)
 		{
-			free(it.second.data);
-			for (int i = 0; i < it.second.count; i++)
+			free(u.data);
+			for (int i = 0; i < u.count; i++)
 			{
-				if (it.second.textures[i] != nullptr)
-					it.second.textures[i]->release();
+				if (u.textures[i] != nullptr)
+					u.textures[i]->release();
 			}
-			delete[] it.second.textures;
+			delete[] u.textures;
+		}
+		else if (u.baseType == UNIFORM_TEXELBUFFER || u.baseType == UNIFORM_STORAGEBUFFER)
+		{
+			free(u.data);
+			for (int i = 0; i < u.count; i++)
+			{
+				if (u.buffers[i] != nullptr)
+					u.buffers[i]->release();
+			}
+			delete[] u.buffers;
 		}
 	}
 
@@ -721,9 +766,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	if (info->baseType != UNIFORM_SAMPLER)
 		return;
 
-	bool shaderactive = current == this;
-
-	if (shaderactive)
+	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
 	count = std::min(count, info->count);
@@ -750,6 +793,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 		info->textures[i] = tex;
 
+		// TODO: handle changing a sampler after Shader:send(texture)...
 		textureBindings[info->ints[i]].texture = getMTLTexture(tex);
 		textureBindings[info->ints[i]].sampler = getMTLSampler(tex);
 	}
@@ -757,7 +801,43 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
 {
-	// TODO
+	bool texelbinding = info->baseType == UNIFORM_TEXELBUFFER;
+	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
+
+	if (!texelbinding && !storagebinding)
+		return;
+
+	if (current == this)
+		Graphics::flushBatchedDrawsGlobal();
+
+	count = std::min(count, info->count);
+
+	// Bind the textures to the texture units.
+	for (int i = 0; i < count; i++)
+	{
+		love::graphics::Buffer *buffer = buffers[i];
+
+		if (buffer != nullptr)
+		{
+			if (!validateBuffer(info, buffer, false))
+				continue;
+			buffer->retain();
+		}
+
+		if (info->buffers[i] != nullptr)
+			info->buffers[i]->release();
+
+		info->buffers[i] = buffer;
+
+		if (texelbinding)
+		{
+			textureBindings[info->ints[i]].texture = getMTLTexture(buffer);
+		}
+		else if (storagebinding)
+		{
+			// TODO
+		}
+	}
 }
 
 void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)

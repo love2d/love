@@ -77,7 +77,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 		{
 			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
 			auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
-																			   width:size
+																			   width:arraylength
 																	 resourceOptions:opts
 																			   usage:MTLTextureUsageShaderRead];
 			texture = [buffer newTextureWithDescriptor:desc offset:0 bytesPerRow:size];

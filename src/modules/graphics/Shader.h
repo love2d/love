@@ -124,8 +124,8 @@ public:
 		};
 
 		UniformType baseType;
+		DataBaseType dataBaseType;
 		TextureType textureType;
-		DataBaseType texelBufferType;
 		bool isDepthSampler;
 		size_t bufferStride;
 		size_t bufferMemberCount;
