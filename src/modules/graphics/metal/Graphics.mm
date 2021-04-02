@@ -745,7 +745,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
-		delete uniformBuffer;
+		uniformBuffer->release();
 		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;

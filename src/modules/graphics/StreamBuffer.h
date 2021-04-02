@@ -22,6 +22,7 @@
 
 // LOVE
 #include "common/int.h"
+#include "common/Object.h"
 #include "vertex.h"
 #include "Resource.h"
 
@@ -33,7 +34,7 @@ namespace love
 namespace graphics
 {
 
-class StreamBuffer : public Resource
+class StreamBuffer : public love::Object, public Resource
 {
 public:
 

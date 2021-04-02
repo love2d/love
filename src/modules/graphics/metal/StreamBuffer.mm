@@ -58,7 +58,11 @@ public:
 	{ @autoreleasepool {
 		buffer = nil;
 		for (int i = 0; i < BUFFER_FRAMES; i++)
+		{
+			if (mappedFrames[i])
+				dispatch_semaphore_signal(frameSemaphores[i]);
 			frameSemaphores[i] = nil;
+		}
 	}}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -91,9 +95,12 @@ public:
 		if (mappedFrames[frameIndex])
 		{
 			/*__weak*/ dispatch_semaphore_t semaphore = frameSemaphores[frameIndex];
+			StreamBuffer *pthis = this;
+			pthis->retain();
 			[cmd addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull)
 			{
 				dispatch_semaphore_signal(semaphore);
+				pthis->release();
 			}];
 		}
 

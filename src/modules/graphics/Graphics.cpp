@@ -190,9 +190,12 @@ Graphics::~Graphics()
 
 	defaultFont.set(nullptr);
 
-	delete batchedDrawState.vb[0];
-	delete batchedDrawState.vb[1];
-	delete batchedDrawState.indexBuffer;
+	if (batchedDrawState.vb[0])
+		batchedDrawState.vb[0]->release();
+	if (batchedDrawState.vb[1])
+		batchedDrawState.vb[1]->release();
+	if (batchedDrawState.indexBuffer)
+		batchedDrawState.indexBuffer->release();
 
 	for (int i = 0; i < (int) ShaderStage::STAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
@@ -1196,14 +1199,14 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		{
 			if (state.vb[i]->getSize() < buffersizes[i])
 			{
-				delete state.vb[i];
+				state.vb[i]->release();
 				state.vb[i] = newStreamBuffer(BUFFERUSAGE_VERTEX, buffersizes[i]);
 			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
 		{
-			delete state.indexBuffer;
+			state.indexBuffer->release();
 			state.indexBuffer = newStreamBuffer(BUFFERUSAGE_INDEX, buffersizes[2]);
 		}
 	}
