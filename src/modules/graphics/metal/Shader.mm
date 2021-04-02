@@ -621,8 +621,14 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 														  length:source.length()
 														encoding:NSUTF8StringEncoding];
 
+			MTLCompileOptions *opts = [MTLCompileOptions new];
+
+			// Silences warning. We already only use metal on these OS versions.
+			if (@available(macOS 10.14, iOS 12.0, *))
+				opts.languageVersion = MTLLanguageVersion2_1;
+
 			NSError *err = nil;
-			id<MTLLibrary> library = [device newLibraryWithSource:nssource options:nil error:&err];
+			id<MTLLibrary> library = [device newLibraryWithSource:nssource options:opts error:&err];
 			if (library == nil && err != nil)
 			{
 				NSLog(@"errors: %@", err);
