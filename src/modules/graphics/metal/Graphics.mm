@@ -731,8 +731,13 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	// Same with point size.
 	builtins->normalMatrix[1].w = getPointSize();
 
-	// FIXME: should be active RT dimensions
 	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
+	auto rt = states.back().renderTargets.getFirstTarget().texture.get();
+	if (rt != nullptr)
+	{
+		builtins->screenSizeParams.x = rt->getPixelWidth();
+		builtins->screenSizeParams.y = rt->getPixelHeight();
+	}
 
 	builtins->constantColor = getColor();
 	gammaCorrectColor(builtins->constantColor);
