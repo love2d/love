@@ -499,7 +499,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						size_t offset = msl.type_struct_member_offset(type, uindex);
 
 						UniformInfo u = {};
-						u.name = msl.get_name(membertypes[uindex]);
+						u.name = msl.get_member_name(type.self, uindex);
 						u.dataSize = membersize;
 						u.count = membertype.array.empty() ? 1 : membertype.array[0];
 
