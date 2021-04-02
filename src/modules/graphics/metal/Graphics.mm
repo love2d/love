@@ -961,6 +961,8 @@ void Graphics::endPass()
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
 		discard({}, true);
 
+	submitRenderEncoder();
+
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
 	if (rts.colors.size() > 0 && rts.colors[0].texture->getMSAA() > 1)
