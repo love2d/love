@@ -910,8 +910,16 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		desc.colorAttachments[i] = attachment;
 	}
 
-	// TODO: depth/stencil attachment formats
-	
+	auto dsformat = (PixelFormat) key.depthStencilFormat;
+	if (isPixelFormatDepthStencil(dsformat))
+	{
+		bool isSRGB = false;
+		auto formatdesc = Metal::convertPixelFormat(dsformat, isSRGB);
+		if (isPixelFormatDepth(dsformat))
+			desc.depthAttachmentPixelFormat = formatdesc.format;
+		if (isPixelFormatStencil(dsformat))
+			desc.stencilAttachmentPixelFormat = formatdesc.format;
+	}
 
 	{
 		MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];

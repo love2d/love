@@ -180,6 +180,8 @@ Graphics::Graphics()
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
 	, windowHasStencil(false)
+	, requestedBackbufferMSAA(0)
+	, attachmentStoreActions()
 	, uniformBufferOffset(0)
 	, defaultAttributesBuffer(nullptr)
 	, defaultTextures()
@@ -306,6 +308,24 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 		// Set up the projection matrix
 		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
 	}
+
+	Texture::Settings settings;
+	settings.width = width;
+	settings.height = height;
+	settings.dpiScale = (float)pixelheight / (float)height;
+	settings.msaa = getRequestedBackbufferMSAA();
+	settings.renderTarget = true;
+	settings.readable.set(false);
+
+	backbufferMSAA.set(nullptr);
+	if (settings.msaa > 1)
+	{
+		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_UNORM_sRGB : PIXELFORMAT_RGBA8_UNORM;
+		backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
+	}
+
+	settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+	backbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
 }
 
 bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
@@ -315,6 +335,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	this->metalLayer = (__bridge CAMetalLayer *) context;
 
 	this->windowHasStencil = windowhasstencil;
+	this->requestedBackbufferMSAA = msaa;
 
 	metalLayer.device = device;
 	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
@@ -420,6 +441,29 @@ void Graphics::submitCommandBuffer()
 	}
 }
 
+static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPassAttachmentDescriptor *desc, MTLStoreAction &storeaction)
+{
+	bool isvolume = rt.texture->getTextureType() == TEXTURE_VOLUME;
+
+	desc.texture = getMTLRenderTarget(rt.texture);
+	desc.level = rt.mipmap;
+	desc.slice = isvolume ? 0 : rt.slice;
+	desc.depthPlane = isvolume ? rt.slice : 0;
+
+	// Default to load until clear or discard is called.
+	desc.loadAction = MTLLoadActionLoad;
+	desc.storeAction = MTLStoreActionUnknown;
+	storeaction = MTLStoreActionStore;
+
+	desc.resolveTexture = nil;
+
+	if (rt.texture->getMSAA() > 1 && rt.texture->isReadable())
+	{
+		storeaction = MTLStoreActionStoreAndMultisampleResolve;
+		desc.resolveTexture = getMTLTexture(rt.texture);
+	}
+}
+
 id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 {
 	if (renderEncoder == nil)
@@ -427,7 +471,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 		submitBlitEncoder();
 
 		// Pass desc info for non-backbuffer render targets are set up in
-		// setRenderTagetsInternal.
+		// setRenderTargetsInternal.
 		const auto &rts = states.back().renderTargets;
 		if (rts.getFirstTarget().texture.get() == nullptr)
 		{
@@ -441,13 +485,43 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 				activeDrawable = [metalLayer nextDrawable];
 			}
 
-			passDesc.colorAttachments[0].texture = activeDrawable.texture;
+			if (backbufferMSAA.get())
+			{
+				attachmentStoreActions.color[0] = MTLStoreActionMultisampleResolve;
+				passDesc.colorAttachments[0].texture = getMTLRenderTarget(backbufferMSAA);
+				passDesc.colorAttachments[0].resolveTexture = activeDrawable.texture;
+			}
+			else
+			{
+				attachmentStoreActions.color[0] = MTLStoreActionStore;
+				passDesc.colorAttachments[0].texture = activeDrawable.texture;
+				passDesc.colorAttachments[0].resolveTexture = nil;
+			}
+
+			passDesc.colorAttachments[0].storeAction = MTLStoreActionUnknown;
 			passDesc.colorAttachments[0].level = 0;
 			passDesc.colorAttachments[0].slice = 0;
 			passDesc.colorAttachments[0].depthPlane = 0;
+
+			RenderTarget rt(backbufferDepthStencil);
+			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth);
+			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil);
+			attachmentStoreActions.depth = MTLStoreActionDontCare;
+			attachmentStoreActions.stencil = MTLStoreActionDontCare;
 		}
 
 		renderEncoder = [useCommandBuffer() renderCommandEncoderWithDescriptor:passDesc];
+
+		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
+		{
+			passDesc.colorAttachments[0].texture = nil;
+			passDesc.colorAttachments[0].resolveTexture = nil;
+		}
+
+		passDesc.depthAttachment.texture = nil;
+		passDesc.depthAttachment.resolveTexture = nil;
+		passDesc.stencilAttachment.texture = nil;
+		passDesc.stencilAttachment.resolveTexture = nil;
 
 		id<MTLBuffer> defaultbuffer = getMTLBuffer(defaultAttributesBuffer);
 		[renderEncoder setVertexBuffer:defaultbuffer offset:0 atIndex:DEFAULT_VERTEX_BUFFER_BINDING];
@@ -462,10 +536,24 @@ void Graphics::submitRenderEncoder()
 {
 	if (renderEncoder != nil)
 	{
+		const auto &actions = attachmentStoreActions;
+		const auto &rts = states.back().renderTargets;
+		bool isbackbuffer = rts.getFirstTarget().texture.get() == nullptr;
+
+		if (isbackbuffer)
+			[renderEncoder setColorStoreAction:actions.color[0] atIndex:0];
+
+		for (size_t i = 0; i < rts.colors.size(); i++)
+			[renderEncoder setColorStoreAction:actions.color[i] atIndex:i];
+
+		if (rts.depthStencil.texture.get() || rts.temporaryRTFlags != 0 || isbackbuffer)
+		{
+			[renderEncoder setDepthStoreAction:actions.depth];
+			[renderEncoder setStencilStoreAction:actions.stencil];
+		}
+
 		[renderEncoder endEncoding];
 		renderEncoder = nil;
-
-		passDesc.colorAttachments[0].texture = nil;
 	}
 }
 
@@ -658,7 +746,10 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 				key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
 
 			if (state.renderTargets.getFirstTarget().texture.get() == nullptr)
+			{
 				key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
+				key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
+			}
 
 			// TODO: depth/stencil
 
@@ -897,41 +988,18 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	}
 }}
 
-static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPassAttachmentDescriptor *desc)
-{
-	bool isvolume = rt.texture->getTextureType() == TEXTURE_VOLUME;
-
-	desc.texture = getMTLRenderTarget(rt.texture);
-	desc.level = rt.mipmap;
-	desc.slice = isvolume ? 0 : rt.slice;
-	desc.depthPlane = isvolume ? rt.slice : 0;
-
-	// Default to load until clear or discard is called.
-	desc.loadAction = MTLLoadActionLoad;
-	desc.storeAction = MTLStoreActionStore;
-
-	desc.resolveTexture = nil;
-
-	if (rt.texture->getMSAA() > 1)
-	{
-		// TODO
-		desc.resolveTexture = getMTLTexture(rt.texture);
-
-		// TODO: This StoreAction is only supported sometimes.
-		desc.storeAction = MTLStoreActionStoreAndMultisampleResolve;
-	}
-}
-
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
 	endPass();
+
+	bool isbackbuffer = rts.getFirstTarget().texture == nullptr;
 
 	// Set up render pass descriptor for the next useRenderEncoder call.
 	// The backbuffer will be set up in useRenderEncoder rather than here.
 	for (size_t i = 0; i < rts.colors.size(); i++)
 	{
 		auto desc = passDesc.colorAttachments[i];
-		setAttachment(rts.colors[i], desc);
+		setAttachment(rts.colors[i], desc, attachmentStoreActions.color[i]);
 		passDesc.colorAttachments[i] = desc;
 	}
 
@@ -941,13 +1009,20 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 	passDesc.depthAttachment = nil;
 	passDesc.stencilAttachment = nil;
 
-	if (rts.depthStencil.texture)
-	{
-		if (isPixelFormatDepth(rts.depthStencil.texture->getPixelFormat()))
-			setAttachment(rts.depthStencil, passDesc.depthAttachment);
+	auto ds = rts.depthStencil.texture;
+	if (isbackbuffer && ds == nullptr)
+		ds = backbufferDepthStencil;
 
-		if (isPixelFormatStencil(rts.depthStencil.texture->getPixelFormat()))
-			setAttachment(rts.depthStencil, passDesc.stencilAttachment);
+	if (ds != nullptr)
+	{
+		RenderTarget rt = rts.depthStencil;
+		rt.texture = ds;
+
+		if (isPixelFormatDepth(ds->getPixelFormat()))
+			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth);
+
+		if (isPixelFormatStencil(ds->getPixelFormat()))
+			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil);
 	}
 
 	projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
@@ -957,6 +1032,9 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 
 void Graphics::endPass()
 {
+	// Make sure the encoder gets set up, if nothing else has done it yet.
+	useRenderEncoder();
+
 	flushBatchedDraws();
 
 	auto &rts = states.back().renderTargets;
@@ -965,32 +1043,10 @@ void Graphics::endPass()
 	// Discard the depth/stencil buffer if we're using an internal cached one.
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
 		discard({}, true);
+	else if (!rts.getFirstTarget().texture.get())
+		discard({}, true); // Backbuffer
 
 	submitRenderEncoder();
-
-	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
-	// don't have to worry about resolving to slices.
-	if (rts.colors.size() > 0 && rts.colors[0].texture->getMSAA() > 1)
-	{
-		int mip = rts.colors[0].mipmap;
-		int w = rts.colors[0].texture->getPixelWidth(mip);
-		int h = rts.colors[0].texture->getPixelHeight(mip);
-
-		for (int i = 0; i < (int) rts.colors.size(); i++)
-		{
-			Texture *c = (Texture *) rts.colors[i].texture.get();
-
-			if (!c->isReadable())
-				continue;
-
-			// TODO
-		}
-	}
-
-	if (depthstencil != nullptr && depthstencil->getMSAA() > 1 && depthstencil->isReadable())
-	{
-		// TODO
-	}
 
 	for (const auto &rt : rts.colors)
 	{
@@ -1190,6 +1246,16 @@ void Graphics::present(void *screenshotCallbackData)
 			temporaryTextures[i].framesSinceUse++;
 	}
 }}
+
+int Graphics::getRequestedBackbufferMSAA() const
+{
+	return requestedBackbufferMSAA;
+}
+
+int Graphics::getBackbufferMSAA() const
+{
+	return backbufferMSAA.get() ? backbufferMSAA->getMSAA() : 0;
+}
 
 void Graphics::setColor(Colorf c)
 {
@@ -1495,6 +1561,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 			break;
 		case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
 			// TODO
+			flags |= rt | sample | msaa;
 			break;
 		case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
 			if (families.apple[1])
@@ -1582,7 +1649,7 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 {
 	RendererInfo info;
 	info.name = "Metal";
-	info.version = "1"; // TODO
+	info.version = "2.1"; // TODO
 	info.vendor = ""; // TODO
 	info.device = device.name.UTF8String;
 	return info;

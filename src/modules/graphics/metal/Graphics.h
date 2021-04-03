@@ -65,8 +65,8 @@ public:
 
 	void present(void *screenshotCallbackData) override;
 
-	int getRequestedBackbufferMSAA() const override { return 0; } // TODO
-	int getBackbufferMSAA() const override { return 0; } // TODO
+	int getRequestedBackbufferMSAA() const override;
+	int getBackbufferMSAA() const override;
 
 	void setColor(Colorf c) override;
 
@@ -173,6 +173,13 @@ private:
 		bool macCatalyst[2+1];
 	};
 
+	struct AttachmentStoreActions
+	{
+		MTLStoreAction color[MAX_COLOR_RENDER_TARGETS];
+		MTLStoreAction depth;
+		MTLStoreAction stencil;
+	};
+
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage usage, size_t size) override;
@@ -199,6 +206,12 @@ private:
 	uint32 dirtyRenderState;
 	VertexAttributes lastVertexAttributes;
 	bool windowHasStencil;
+
+	StrongRef<love::graphics::Texture> backbufferMSAA;
+	StrongRef<love::graphics::Texture> backbufferDepthStencil;
+	int requestedBackbufferMSAA;
+
+	AttachmentStoreActions attachmentStoreActions;
 
 	StreamBuffer *uniformBuffer;
 	StreamBuffer::MapInfo uniformBufferData;
