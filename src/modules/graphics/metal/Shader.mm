@@ -672,17 +672,17 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 								b.isMainTexture = true;
 						}
 
-						for (uint8 &stagebinding : b.texturestages)
+						for (uint8 &stagebinding : b.textureStages)
 							stagebinding = LOVE_UINT8_MAX;
-						for (uint8 &stagebinding : b.samplerstages)
+						for (uint8 &stagebinding : b.samplerStages)
 							stagebinding = LOVE_UINT8_MAX;
 
 						textureBindings.push_back(b);
 					}
 
 					auto &b = textureBindings[u.ints[i]];
-					b.texturestages[stageindex] = (uint8) texturebinding;
-					b.samplerstages[stageindex] = (uint8) samplerbinding;
+					b.textureStages[stageindex] = (uint8) texturebinding;
+					b.samplerStages[stageindex] = (uint8) samplerbinding;
 				}
 			}
 		}

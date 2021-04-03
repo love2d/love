@@ -80,8 +80,8 @@ public:
 
 		bool isMainTexture;
 
-		uint8 texturestages[ShaderStage::STAGE_MAX_ENUM];
-		uint8 samplerstages[ShaderStage::STAGE_MAX_ENUM];
+		uint8 textureStages[ShaderStage::STAGE_MAX_ENUM];
+		uint8 samplerStages[ShaderStage::STAGE_MAX_ENUM];
 	};
 
 	struct BufferBinding

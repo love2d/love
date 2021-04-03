@@ -39,6 +39,17 @@ class Graphics final : public love::graphics::Graphics
 {
 public:
 
+	struct RenderEncoderBindings
+	{
+		void *textures[32][ShaderStage::STAGE_MAX_ENUM];
+		void *samplers[32][ShaderStage::STAGE_MAX_ENUM];
+		struct
+		{
+			void *buffer;
+			size_t offset;
+		} buffers[32][ShaderStage::STAGE_MAX_ENUM];
+	};
+
 	Graphics();
 	virtual ~Graphics();
 
@@ -153,17 +164,6 @@ private:
 		STATEBIT_ALL = 0xFFFFFFFF
 	};
 
-	struct RenderState
-	{
-		Rect viewport = {0, 0, 0, 0};
-		ScissorState scissor;
-		BlendState blend;
-		DepthState depth;
-		StencilState stencil;
-		ColorChannelMask colorChannelMask;
-		Shader *shader;
-	};
-
 	struct DeviceFamilies
 	{
 		// All arrays are 1-indexed for convenience
@@ -212,6 +212,8 @@ private:
 	int requestedBackbufferMSAA;
 
 	AttachmentStoreActions attachmentStoreActions;
+
+	RenderEncoderBindings renderBindings;
 
 	StreamBuffer *uniformBuffer;
 	StreamBuffer::MapInfo uniformBufferData;

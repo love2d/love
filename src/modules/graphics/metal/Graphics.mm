@@ -145,6 +145,57 @@ static inline id<MTLBuffer> getMTLBuffer(love::graphics::Resource *res)
 	return res ? (__bridge id<MTLBuffer>)(void *) res->getHandle() : nil;
 }
 
+static inline void setBuffer(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStage::StageType stage, int index, id<MTLBuffer> buffer, size_t offset)
+{
+	void *b = (__bridge void *)buffer;
+	auto &binding = bindings.buffers[index][stage];
+	if (binding.buffer != b)
+	{
+		binding.buffer = b;
+		binding.offset = offset;
+		if (stage == ShaderStage::STAGE_VERTEX)
+			[encoder setVertexBuffer:buffer offset:offset atIndex:index];
+		else if (stage == ShaderStage::STAGE_PIXEL)
+			[encoder setFragmentBuffer:buffer offset:offset atIndex:index];
+	}
+	else if (binding.offset != offset)
+	{
+		binding.offset = offset;
+		if (stage == ShaderStage::STAGE_VERTEX)
+			[encoder setVertexBufferOffset:offset atIndex:index];
+		else if (stage == ShaderStage::STAGE_PIXEL)
+			[encoder setFragmentBufferOffset:offset atIndex:index];
+	}
+}
+
+static inline void setTexture(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStage::StageType stage, int index, id<MTLTexture> texture)
+{
+	void *t = (__bridge void *)texture;
+	auto &binding = bindings.textures[index][stage];
+	if (binding != t)
+	{
+		binding = t;
+		if (stage == ShaderStage::STAGE_VERTEX)
+			[encoder setVertexTexture:texture atIndex:index];
+		else if (stage == ShaderStage::STAGE_PIXEL)
+			[encoder setFragmentTexture:texture atIndex:index];
+	}
+}
+
+static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStage::StageType stage, int index, id<MTLSamplerState> sampler)
+{
+	void *s = (__bridge void *)sampler;
+	auto &binding = bindings.samplers[index][stage];
+	if (binding != s)
+	{
+		binding = s;
+		if (stage == ShaderStage::STAGE_VERTEX)
+			[encoder setVertexSamplerState:sampler atIndex:index];
+		else if (stage == ShaderStage::STAGE_PIXEL)
+			[encoder setFragmentSamplerState:sampler atIndex:index];
+	}
+}
+
 love::graphics::Graphics *createInstance()
 {
 	love::graphics::Graphics *instance = nullptr;
@@ -182,6 +233,7 @@ Graphics::Graphics()
 	, windowHasStencil(false)
 	, requestedBackbufferMSAA(0)
 	, attachmentStoreActions()
+	, renderBindings()
 	, uniformBufferOffset(0)
 	, defaultAttributesBuffer(nullptr)
 	, defaultTextures()
@@ -225,6 +277,35 @@ Graphics::Graphics()
 		Rect r = {0, 0, 1, 1};
 		defaultTextures[i]->replacePixels(defaultpixel, sizeof(defaultpixel), 0, 0, r, false);
 	}
+
+	if (batchedDrawState.vb[0] == nullptr)
+	{
+		// Initial sizes that should be good enough for most cases. It will
+		// resize to fit if needed, later.
+		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
+		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+	}
+
+	createQuadIndexBuffer();
+
+	// We always need a default shader.
+	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
+	{
+		auto stype = (Shader::StandardShader) i;
+		if (!Shader::standardShaders[i])
+		{
+			std::vector<std::string> stages;
+			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
+			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
+			Shader::standardShaders[i] = newShader(stages);
+		}
+	}
+
+	// A shader should always be active, but the default shader shouldn't be
+	// returned by getShader(), so we don't do setShader(defaultShader).
+	if (!Shader::current)
+		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
 
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 
@@ -347,37 +428,8 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	created = true;
 
-	if (batchedDrawState.vb[0] == nullptr)
-	{
-		// Initial sizes that should be good enough for most cases. It will
-		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
-		batchedDrawState.indexBuffer = CreateStreamBuffer(device, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
-	}
-
-	createQuadIndexBuffer();
-
 	// Restore the graphics state.
 	restoreState(states.back());
-
-	// We always need a default shader.
-	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
-	{
-		auto stype = (Shader::StandardShader) i;
-		if (!Shader::standardShaders[i])
-		{
-			std::vector<std::string> stages;
-			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
-			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
-			Shader::standardShaders[i] = newShader(stages);
-		}
-	}
-
-	// A shader should always be active, but the default shader shouldn't be
-	// returned by getShader(), so we don't do setShader(defaultShader).
-	if (!Shader::current)
-		Shader::standardShaders[Shader::STANDARD_DEFAULT]->attach();
 
 	return true;
 }}
@@ -441,7 +493,7 @@ void Graphics::submitCommandBuffer()
 	}
 }
 
-static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPassAttachmentDescriptor *desc, MTLStoreAction &storeaction)
+static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPassAttachmentDescriptor *desc, MTLStoreAction &storeaction, bool setload = true)
 {
 	bool isvolume = rt.texture->getTextureType() == TEXTURE_VOLUME;
 
@@ -450,8 +502,12 @@ static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPass
 	desc.slice = isvolume ? 0 : rt.slice;
 	desc.depthPlane = isvolume ? rt.slice : 0;
 
-	// Default to load until clear or discard is called.
-	desc.loadAction = MTLLoadActionLoad;
+	if (setload)
+	{
+		// Default to load until clear or discard is called.
+		desc.loadAction = MTLLoadActionLoad;
+	}
+
 	desc.storeAction = MTLStoreActionUnknown;
 	storeaction = MTLStoreActionStore;
 
@@ -504,13 +560,15 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 			passDesc.colorAttachments[0].depthPlane = 0;
 
 			RenderTarget rt(backbufferDepthStencil);
-			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth);
-			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil);
+			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth, false);
+			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil, false);
 			attachmentStoreActions.depth = MTLStoreActionDontCare;
 			attachmentStoreActions.stencil = MTLStoreActionDontCare;
 		}
 
 		renderEncoder = [useCommandBuffer() renderCommandEncoderWithDescriptor:passDesc];
+
+		renderBindings = {};
 
 		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
@@ -524,7 +582,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 		passDesc.stencilAttachment.resolveTexture = nil;
 
 		id<MTLBuffer> defaultbuffer = getMTLBuffer(defaultAttributesBuffer);
-		[renderEncoder setVertexBuffer:defaultbuffer offset:0 atIndex:DEFAULT_VERTEX_BUFFER_BINDING];
+		setBuffer(renderEncoder, renderBindings, ShaderStage::STAGE_VERTEX, DEFAULT_VERTEX_BUFFER_BINDING, defaultbuffer, 0);
 
 		dirtyRenderState = STATEBIT_ALL;
 	}
@@ -850,8 +908,9 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	id<MTLBuffer> buffer = getMTLBuffer(uniformBuffer);
 	int uniformindex = Shader::getUniformBufferBinding();
 
-	[renderEncoder setVertexBuffer:buffer offset:uniformBufferOffset atIndex:uniformindex];
-	[renderEncoder setFragmentBuffer:buffer offset:uniformBufferOffset atIndex:uniformindex];
+	auto &bindings = renderBindings;
+	setBuffer(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, uniformindex, buffer, uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 
@@ -873,25 +932,25 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 			sampler = getMTLSampler(maintex);
 		}
 
-		uint8 texindex = b.texturestages[ShaderStage::STAGE_VERTEX];
-		uint8 sampindex = b.samplerstages[ShaderStage::STAGE_VERTEX];
+		uint8 texindex = b.textureStages[ShaderStage::STAGE_VERTEX];
+		uint8 sampindex = b.samplerStages[ShaderStage::STAGE_VERTEX];
 
 		if (texindex != LOVE_UINT8_MAX)
-			[renderEncoder setVertexTexture:texture atIndex:texindex];
+			setTexture(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			[renderEncoder setVertexSamplerState:sampler atIndex:sampindex];
+			setSampler(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, sampindex, sampler);
 
-		texindex = b.texturestages[ShaderStage::STAGE_PIXEL];
-		sampindex = b.samplerstages[ShaderStage::STAGE_PIXEL];
+		texindex = b.textureStages[ShaderStage::STAGE_PIXEL];
+		sampindex = b.samplerStages[ShaderStage::STAGE_PIXEL];
 
 		if (texindex != LOVE_UINT8_MAX)
-			[renderEncoder setFragmentTexture:texture atIndex:texindex];
+			setTexture(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			[renderEncoder setFragmentSamplerState:sampler atIndex:sampindex];
+			setSampler(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, sampindex, sampler);
 	}
 }
 
-static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBindings *buffers)
+static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBindings *buffers, Graphics::RenderEncoderBindings &bindings)
 {
 	uint32 allbits = buffers->useBits;
 	uint32 i = 0;
@@ -903,7 +962,7 @@ static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBi
 		{
 			auto b = buffers->info[i];
 			id<MTLBuffer> buffer = getMTLBuffer(b.buffer);
-			[encoder setVertexBuffer:buffer offset:b.offset atIndex:i + VERTEX_BUFFER_BINDING_START];
+			setBuffer(encoder, bindings, ShaderStage::STAGE_VERTEX, i + VERTEX_BUFFER_BINDING_START, buffer, b.offset);
 		}
 
 		i++;
@@ -920,7 +979,7 @@ void Graphics::draw(const DrawCommand &cmd)
 
 	[encoder setCullMode:MTLCullModeNone];
 
-	setVertexBuffers(encoder, cmd.buffers);
+	setVertexBuffers(encoder, cmd.buffers, renderBindings);
 
 	[encoder drawPrimitives:getMTLPrimitiveType(cmd.primitiveType)
 				vertexStart:cmd.vertexStart
@@ -937,7 +996,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 
 	[encoder setCullMode:MTLCullModeNone];
 
-	setVertexBuffers(encoder, cmd.buffers);
+	setVertexBuffers(encoder, cmd.buffers, renderBindings);
 
 	auto indexType = cmd.indexType == INDEX_UINT32 ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
@@ -961,7 +1020,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 	[encoder setCullMode:MTLCullModeNone];
 
-	setVertexBuffers(encoder, &buffers);
+	setVertexBuffers(encoder, &buffers, renderBindings);
 
 	id<MTLBuffer> ib = getMTLBuffer(quadIndexBuffer);
 

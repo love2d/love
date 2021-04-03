@@ -47,8 +47,6 @@ public:
 
 }; // Metal
 
-extern Metal metal;
-
 } // metal
 } // graphics
 } // love

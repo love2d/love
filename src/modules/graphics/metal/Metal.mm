@@ -346,8 +346,6 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRG
 	return desc;
 }
 
-Metal metal;
-
 } // metal
 } // graphics
 } // love
