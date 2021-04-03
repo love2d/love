@@ -75,6 +75,8 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	{
 		if (@available(iOS 12, macOS 10.14, *))
 		{
+			// TODO: minimumTextureBufferAlignmentForPixelFormat
+
 			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
 			size_t width = arraylength * getDataMembers().size();
 			auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
@@ -90,6 +92,12 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 
 	if (data != nullptr)
 		fill(0, size, data);
+	else if (settings.zeroInitialize)
+	{
+		auto *mgfx = (Graphics *) gfx;
+		auto encoder = mgfx->useBlitEncoder();
+		[encoder fillBuffer:buffer range:NSMakeRange(0, size) value:0];
+	}
 }}
 
 Buffer::~Buffer()
