@@ -203,7 +203,7 @@ private:
 	void createTexture();
 
 	TextureSize getNextTextureSize() const;
-	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
+	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph, float &dpiscale);
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
