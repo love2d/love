@@ -121,7 +121,7 @@ Mesh::~Mesh()
 {
 	delete vertexBuffer;
 	delete indexBuffer;
-	delete vertexScratchBuffer;
+	delete[] vertexScratchBuffer;
 
 	for (const auto &attrib : attachedAttributes)
 	{
