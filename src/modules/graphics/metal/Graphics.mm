@@ -643,6 +643,11 @@ void Graphics::submitBlitEncoder()
 	}
 }
 
+static bool isClampOne(SamplerState::WrapMode w)
+{
+	return w == SamplerState::WRAP_CLAMP_ONE;
+}
+
 id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 { @autoreleasepool {
 	uint64 key = s.toKey();
@@ -662,8 +667,11 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 	desc.tAddressMode = getMTLSamplerAddressMode(s.wrapV);
 	desc.rAddressMode = getMTLSamplerAddressMode(s.wrapW);
 
-	if (@available(macOS 10.12, iOS 10.14, *))
-		desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
+	if (isClampOne(s.wrapU) || isClampOne(s.wrapV) || isClampOne(s.wrapW))
+	{
+		if (@available(macOS 10.12, iOS 10.14, *))
+			desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
+	}
 
 	desc.lodMinClamp = s.minLod;
 	desc.lodMaxClamp = s.maxLod;
