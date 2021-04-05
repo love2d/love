@@ -348,6 +348,24 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	return k;
 }
 
+float Font::getKerning(const std::string &leftchar, const std::string &rightchar)
+{
+	uint32 left = 0;
+	uint32 right = 0;
+
+	try
+	{
+		left = utf8::peek_next(leftchar.begin(), leftchar.end());
+		right = utf8::peek_next(rightchar.begin(), rightchar.end());
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
+	}
+
+	return getKerning(left, right);
+}
+
 void Font::getCodepointsFromString(const std::string &text, Codepoints &codepoints)
 {
 	codepoints.reserve(text.size());
@@ -724,9 +742,9 @@ int Font::getWidth(const std::string &str)
 	return max_width;
 }
 
-int Font::getWidth(char character)
+int Font::getWidth(uint32 glyph)
 {
-	const Glyph &g = findGlyph(character);
+	const Glyph &g = findGlyph(glyph);
 	return g.spacing;
 }
 
