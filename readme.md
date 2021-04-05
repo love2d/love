@@ -9,6 +9,35 @@ Documentation
 We use our [wiki][wiki] for documentation.
 If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our IRC channel [#love on OFTC][irc].
 
+Repository
+----------
+
+We use the 'master' branch for patch development of the current major release, and therefore it should not be considered stable.
+There may also be a branch for the next major version in development, which is named after that version.
+
+We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
+
+Experimental changes are developed in a separate [love-experiments][love-experiments] repository.
+
+Builds
+------
+
+Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
+
+There are also unstable/nightly builds:
+
+- Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
+- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
+- For arch linux there's [love-git][aur] in the AUR.
+
+Contributing
+------------
+
+The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
+
+For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
+Changes and new features typically get discussed in the issue tracker or on Discord or the forums before a pull request is made.
+
 Compilation
 -----------
 
@@ -41,33 +70,6 @@ See `readme-iOS.rtf` for more information.
 
 ### Android
 Visit the [Android build repository][android-repository] for build instructions.
-
-Repository information
-----------------------
-
-We use the 'master' branch for patch development of the current major release, and therefore it should not be considered stable.
-There may also be a branch for the next major version in development, which is named after that version.
-
-We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
-
-Experimental changes are developed in the separate [love-experiments][love-experiments] repository.
-
-Contributing
-------------
-
-The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
-For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
-
-Builds
-------
-
-Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
-
-There are also unstable/nightly builds:
-
-- Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
-- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
-- For arch linux there's [love-git][aur] in the AUR.
 
 Dependencies
 ------------
