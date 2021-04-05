@@ -122,9 +122,6 @@ void Text::addTextData(const TextData &t)
 		text_data.clear();
 	}
 
-	if (vertices.empty())
-		return;
-
 	if (t.use_matrix)
 		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
 
