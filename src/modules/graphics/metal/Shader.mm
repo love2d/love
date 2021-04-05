@@ -737,7 +737,7 @@ void Shader::attach()
 	{
 		Graphics *gfx = Graphics::getInstance();
 		gfx->flushBatchedDraws();
-		gfx->attachShader(this);
+		gfx->setShaderChanged();
 		current = this;
 	}
 }

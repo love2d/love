@@ -231,6 +231,7 @@ Graphics::Graphics()
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
 	, windowHasStencil(false)
+	, shaderSwitches(0)
 	, requestedBackbufferMSAA(0)
 	, attachmentStoreActions()
 	, renderBindings()
@@ -331,7 +332,7 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 { @autoreleasepool {
-	submitCommandBuffer();
+	submitCommandBuffer(SUBMIT_DONE);
 	delete uniformBuffer;
 	delete defaultAttributesBuffer;
 	passDesc = nil;
@@ -441,7 +442,7 @@ void Graphics::unSetMode()
 
 	flushBatchedDraws();
 
-	submitCommandBuffer();
+	submitCommandBuffer(SUBMIT_DONE);
 
 	for (auto temp : temporaryTextures)
 		temp.texture->release();
@@ -459,9 +460,10 @@ void Graphics::setActive(bool enable)
 	active = enable;
 }
 
-void Graphics::attachShader(love::graphics::Shader *shader)
+void Graphics::setShaderChanged()
 {
 	dirtyRenderState |= STATE_SHADER;
+	++shaderSwitches;
 }
 
 id<MTLCommandBuffer> Graphics::useCommandBuffer()
@@ -481,9 +483,9 @@ id<MTLCommandBuffer> Graphics::useCommandBuffer()
 	return commandBuffer;
 }
 
-void Graphics::submitCommandBuffer()
+void Graphics::submitCommandBuffer(SubmitType type)
 {
-	submitRenderEncoder();
+	submitRenderEncoder(type);
 	submitBlitEncoder();
 
 	if (commandBuffer != nil)
@@ -570,17 +572,6 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 
 		renderBindings = {};
 
-		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
-		{
-			passDesc.colorAttachments[0].texture = nil;
-			passDesc.colorAttachments[0].resolveTexture = nil;
-		}
-
-		passDesc.depthAttachment.texture = nil;
-		passDesc.depthAttachment.resolveTexture = nil;
-		passDesc.stencilAttachment.texture = nil;
-		passDesc.stencilAttachment.resolveTexture = nil;
-
 		id<MTLBuffer> defaultbuffer = getMTLBuffer(defaultAttributesBuffer);
 		setBuffer(renderEncoder, renderBindings, ShaderStage::STAGE_VERTEX, DEFAULT_VERTEX_BUFFER_BINDING, defaultbuffer, 0);
 
@@ -590,28 +581,45 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 	return renderEncoder;
 }
 
-void Graphics::submitRenderEncoder()
+void Graphics::submitRenderEncoder(SubmitType type)
 {
 	if (renderEncoder != nil)
 	{
+		bool store = type == SUBMIT_STORE;
 		const auto &actions = attachmentStoreActions;
 		const auto &rts = states.back().renderTargets;
 		bool isbackbuffer = rts.getFirstTarget().texture.get() == nullptr;
 
 		if (isbackbuffer)
-			[renderEncoder setColorStoreAction:actions.color[0] atIndex:0];
+			[renderEncoder setColorStoreAction:(store ? MTLStoreActionStore : actions.color[0]) atIndex:0];
 
 		for (size_t i = 0; i < rts.colors.size(); i++)
-			[renderEncoder setColorStoreAction:actions.color[i] atIndex:i];
+			[renderEncoder setColorStoreAction:(store ? MTLStoreActionStore : actions.color[i]) atIndex:i];
 
 		if (rts.depthStencil.texture.get() || rts.temporaryRTFlags != 0 || isbackbuffer)
 		{
-			[renderEncoder setDepthStoreAction:actions.depth];
-			[renderEncoder setStencilStoreAction:actions.stencil];
+			[renderEncoder setDepthStoreAction:store ? MTLStoreActionStore : actions.depth];
+			[renderEncoder setStencilStoreAction:store ? MTLStoreActionStore : actions.stencil];
 		}
 
 		[renderEncoder endEncoding];
 		renderEncoder = nil;
+
+		// Reset actions to load. The next clear/discard/etc will set more
+		// appropriate actions if necessary.
+		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
+		{
+			passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+			passDesc.colorAttachments[i].texture = nil;
+			passDesc.colorAttachments[i].resolveTexture = nil;
+		}
+
+		passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
+		passDesc.depthAttachment.texture = nil;
+		passDesc.depthAttachment.resolveTexture = nil;
+		passDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
+		passDesc.stencilAttachment.texture = nil;
+		passDesc.stencilAttachment.resolveTexture = nil;
 	}
 }
 
@@ -619,7 +627,7 @@ id<MTLBlitCommandEncoder> Graphics::useBlitEncoder()
 {
 	if (blitEncoder == nil)
 	{
-		submitRenderEncoder();
+		submitRenderEncoder(SUBMIT_STORE);
 		blitEncoder = [useCommandBuffer() blitCommandEncoder];
 	}
 
@@ -985,6 +993,8 @@ void Graphics::draw(const DrawCommand &cmd)
 				vertexStart:cmd.vertexStart
 				vertexCount:cmd.vertexCount
 			  instanceCount:cmd.instanceCount];
+
+	++drawCalls;
 }}
 
 void Graphics::draw(const DrawIndexedCommand &cmd)
@@ -1006,6 +1016,8 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 					   indexBuffer:getMTLBuffer(cmd.indexBuffer)
 				 indexBufferOffset:cmd.indexBufferOffset
 					 instanceCount:cmd.instanceCount];
+
+	++drawCalls;
 }}
 
 void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
@@ -1099,13 +1111,14 @@ void Graphics::endPass()
 	auto &rts = states.back().renderTargets;
 	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
-	// Discard the depth/stencil buffer if we're using an internal cached one.
+	// Discard the depth/stencil buffer if we're using an internal cached one,
+	// or if this is the backbuffer.
 	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
 		discard({}, true);
 	else if (!rts.getFirstTarget().texture.get())
 		discard({}, true); // Backbuffer
 
-	submitRenderEncoder();
+	submitRenderEncoder(SUBMIT_DONE);
 
 	for (const auto &rt : rts.colors)
 	{
@@ -1117,9 +1130,17 @@ void Graphics::endPass()
 void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
 { @autoreleasepool {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
+	{
 		flushBatchedDraws();
 
-	// TODO: handle clearing mid-pass
+		// Handle clearing mid-pass by starting a new pass.
+		if (renderEncoder != nil)
+		{
+			submitRenderEncoder(SUBMIT_STORE);
+			useRenderEncoder();
+		}
+	}
+
 	if (c.hasValue)
 	{
 		gammaCorrectColor(c.value);
@@ -1160,7 +1181,13 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 
 	flushBatchedDraws();
 
-	// TODO: handle clearing mid-pass
+	// Handle clearing mid-pass by starting a new pass.
+	if (renderEncoder != nil)
+	{
+		submitRenderEncoder(SUBMIT_STORE);
+		useRenderEncoder();
+	}
+
 	for (int i = 0; i < ncolors; i++)
 	{
 		if (!colors[i].hasValue)
@@ -1204,62 +1231,31 @@ void Graphics::present(void *screenshotCallbackData)
 
 	endPass();
 
+	id<MTLBuffer> screenshotbuffer = nil;
+
 	if (!pendingScreenshotCallbacks.empty())
 	{
-		int w = getPixelWidth();
-		int h = getPixelHeight();
+		int w = activeDrawable.texture.width;
+		int h = activeDrawable.texture.height;
+		size_t size = w * h * 4;
 
-		size_t row = 4 * w;
-		size_t size = row * h;
+		screenshotbuffer = [device newBufferWithLength:size options:MTLResourceStorageModeShared];
+		if (screenshotbuffer == nil)
+			throw love::Exception("Out of graphics memory.");
 
-		uint8 *screenshot = nullptr;
+		auto blitencoder = useBlitEncoder();
 
-		try
-		{
-			screenshot = new uint8[size];
-		}
-		catch (std::exception &)
-		{
-			delete[] screenshot;
-			throw love::Exception("Out of memory.");
-		}
+		[blitencoder copyFromTexture:activeDrawable.texture
+						 sourceSlice:0
+						 sourceLevel:0
+						sourceOrigin:MTLOriginMake(0, 0, 0)
+						  sourceSize:MTLSizeMake(w, h, 0)
+							toBuffer:screenshotbuffer
+				   destinationOffset:0
+			  destinationBytesPerRow:w * 4
+			destinationBytesPerImage:size];
 
-		// TODO
-
-		// Replace alpha values with full opacity.
-		for (size_t i = 3; i < size; i += 4)
-			screenshot[i] = 255;
-
-		auto imagemodule = Module::getInstance<love::image::Image>(M_IMAGE);
-
-		for (int i = 0; i < (int) pendingScreenshotCallbacks.size(); i++)
-		{
-			const auto &info = pendingScreenshotCallbacks[i];
-			image::ImageData *img = nullptr;
-
-			try
-			{
-				img = imagemodule->newImageData(w, h, PIXELFORMAT_RGBA8_UNORM, screenshot);
-			}
-			catch (love::Exception &)
-			{
-				delete[] screenshot;
-				info.callback(&info, nullptr, nullptr);
-				for (int j = i + 1; j < (int) pendingScreenshotCallbacks.size(); j++)
-				{
-					const auto &ninfo = pendingScreenshotCallbacks[j];
-					ninfo.callback(&ninfo, nullptr, nullptr);
-				}
-				pendingScreenshotCallbacks.clear();
-				throw;
-			}
-
-			info.callback(&info, img, screenshotCallbackData);
-			img->release();
-		}
-
-		delete[] screenshot;
-		pendingScreenshotCallbacks.clear();
+		submitBlitEncoder();
 	}
 
 	for (StreamBuffer *buffer : batchedDrawState.vb)
@@ -1275,7 +1271,56 @@ void Graphics::present(void *screenshotCallbackData)
 	if (cmd != nil && activeDrawable != nil)
 		[cmd presentDrawable:activeDrawable];
 
-	submitCommandBuffer();
+	submitCommandBuffer(SUBMIT_DONE);
+
+	if (!pendingScreenshotCallbacks.empty())
+	{
+		[cmd waitUntilCompleted];
+
+		int w = activeDrawable.texture.width;
+		int h = activeDrawable.texture.height;
+		size_t size = w * h * 4;
+
+		auto imagemodule = Module::getInstance<love::image::Image>(M_IMAGE);
+
+		for (int i = 0; i < (int) pendingScreenshotCallbacks.size(); i++)
+		{
+			const auto &info = pendingScreenshotCallbacks[i];
+			image::ImageData *img = nullptr;
+
+			try
+			{
+				img = imagemodule->newImageData(w, h, PIXELFORMAT_RGBA8_UNORM, screenshotbuffer.contents);
+			}
+			catch (love::Exception &)
+			{
+				info.callback(&info, nullptr, nullptr);
+				for (int j = i + 1; j < (int) pendingScreenshotCallbacks.size(); j++)
+				{
+					const auto &ninfo = pendingScreenshotCallbacks[j];
+					ninfo.callback(&ninfo, nullptr, nullptr);
+				}
+				pendingScreenshotCallbacks.clear();
+				throw;
+			}
+
+			uint8 *screenshot = (uint8 *) img->getData();
+
+			// Convert from BGRA to RGBA and replace alpha with full opacity.
+			for (size_t i = 0; i < size; i += 4)
+			{
+				uint8 r = screenshot[i + 2];
+				screenshot[i + 2] = screenshot[i + 0];
+				screenshot[i + 0] = r;
+				screenshot[i + 3] = 255;
+			}
+
+			info.callback(&info, img, screenshotCallbackData);
+			img->release();
+		}
+
+		pendingScreenshotCallbacks.clear();
+	}
 
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	if (window != nullptr)
@@ -1288,7 +1333,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 	// Reset the per-frame stat counts.
 	drawCalls = 0;
-	//gl.stats.shaderSwitches = 0;
+	shaderSwitches = 0;
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
@@ -1806,8 +1851,7 @@ void Graphics::initCapabilities()
 
 void Graphics::getAPIStats(int &shaderswitches) const
 {
-	// TODO
-	shaderswitches = 0;
+	shaderswitches = shaderSwitches;
 }
 
 } // metal

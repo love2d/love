@@ -245,7 +245,7 @@ void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, in
 	id<MTLCommandBuffer> cmd = gfx->getCommandBuffer();
 
 	gfx->submitBlitEncoder();
-	gfx->submitCommandBuffer();
+	gfx->submitCommandBuffer(Graphics::SUBMIT_STORE);
 
 	[cmd waitUntilCompleted];
 

@@ -39,6 +39,12 @@ class Graphics final : public love::graphics::Graphics
 {
 public:
 
+	enum SubmitType
+	{
+		SUBMIT_DONE,
+		SUBMIT_STORE,
+	};
+
 	struct RenderEncoderBindings
 	{
 		void *textures[32][ShaderStage::STAGE_MAX_ENUM];
@@ -107,15 +113,15 @@ public:
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
 
-	void attachShader(love::graphics::Shader *shader);
+	void setShaderChanged();
 
 	id<MTLCommandBuffer> useCommandBuffer();
 	id<MTLCommandBuffer> getCommandBuffer() const { return commandBuffer; }
-	void submitCommandBuffer();
+	void submitCommandBuffer(SubmitType type);
 
 	id<MTLRenderCommandEncoder> useRenderEncoder();
 	id<MTLRenderCommandEncoder> getRenderEncoder() const { return renderEncoder; }
-	void submitRenderEncoder();
+	void submitRenderEncoder(SubmitType type);
 
 	id<MTLBlitCommandEncoder> useBlitEncoder();
 	id<MTLBlitCommandEncoder> getBlitEncoder() const { return blitEncoder; }
@@ -206,6 +212,7 @@ private:
 	uint32 dirtyRenderState;
 	VertexAttributes lastVertexAttributes;
 	bool windowHasStencil;
+	int shaderSwitches;
 
 	StrongRef<love::graphics::Texture> backbufferMSAA;
 	StrongRef<love::graphics::Texture> backbufferDepthStencil;
