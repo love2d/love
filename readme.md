@@ -1,4 +1,4 @@
-LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, Mac OS X, Linux, Android, and iOS.
+LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, macOS, Linux, Android, and iOS.
 
 [![Build Status: Windows](https://ci.appveyor.com/api/projects/status/chc0hdr08wv1d5c7?svg=true)](https://ci.appveyor.com/project/AlexSzpakowski/love)
 [![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)](https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration)
@@ -25,11 +25,13 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 When using a source release, automagic has already been run, and the first step can be skipped.
 
 ### macOS
-Download the required frameworks from [here][dependencies] and place them in `/Library/Frameworks/`.
+Download the required frameworks from [here][dependencies] and place them in either `/Library/Frameworks/` or `platform/xcode/macosx/Frameworks/`.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
 ### iOS
+Building for iOS requires macOS and Xcode.
+
 Download the `ios-libraries` zip file corresponding to the LÖVE version being used from [here][dependencies-ios],
 unzip it, and place the `include` and `libraries` subfolders into LÖVE's `platform/xcode/ios` folder.
 
@@ -59,13 +61,11 @@ For code contributions, pull requests and patches are welcome. Be sure to read t
 Builds
 ------
 
-Releases are found in the [releases][releases] section on GitHub, and are linked on [the site][site],
-and there's a ppa for ubuntu, [ppa:bartbes/love-stable][stableppa].
+Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
 
 There are also unstable/nightly builds:
 
 - Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
-- Otherwise, some less frequently updated builds can can be found [here][builds].
 - For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
 - For arch linux there's [love-git][aur] in the AUR.
 
@@ -90,8 +90,6 @@ Dependencies
 [dependencies]: http://love2d.org/sdk
 [dependencies-ios]: https://github.com/love2d/love/releases
 [megasource]: https://github.com/love2d/megasource
-[builds]: http://love2d.org/builds
-[stableppa]: https://launchpad.net/~bartbes/+archive/love-stable
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
 [aur]: http://aur.archlinux.org/packages/love-git
 [love-experiments]: https://github.com/slime73/love-experiments
