@@ -252,6 +252,7 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 	: love::graphics::Shader(vertex, pixel)
 	, functions()
 	, builtinUniformInfo()
+	, localUniformStagingData(nullptr)
 	, localUniformBufferData(nullptr)
 	, localUniformBufferSize(0)
 	, builtinUniformDataOffset(0)
@@ -487,9 +488,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						continue;
 					}
 
+					localUniformStagingData = new uint8[size];
 					localUniformBufferData = new uint8[size];
 					localUniformBufferSize = size;
 
+					memset(localUniformStagingData, 0, size);
 					memset(localUniformBufferData, 0, size);
 
 					for (size_t uindex = 0; uindex < membertypes.size(); uindex++)
@@ -508,7 +511,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						case SPIRType::Int:
 						case SPIRType::UInt:
 						case SPIRType::Float:
-							u.data = localUniformBufferData + offset;
+							u.data = localUniformStagingData + offset;
 							if (membertype.columns == 1)
 							{
 								if (membertype.basetype == SPIRType::Int)
@@ -599,13 +602,9 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				}
 			}
 
-//			printf("// ubos: %ld, storage: %ld, inputs: %ld, outputs: %ld, images: %ld, samplers: %ld, push: %ld\n", resources.uniform_buffers.size(), resources.storage_buffers.size(), resources.stage_inputs.size(), resources.stage_outputs.size(), resources.storage_images.size(), resources.sampled_images.size(), resources.push_constant_buffers.size());
-
 			CompilerMSL::Options options;
-
 			options.set_msl_version(2, 1);
 			options.texture_buffer_native = true;
-
 #ifdef LOVE_IOS
 			options.platform = CompilerMSL::Options::iOS;
 #else
@@ -728,6 +727,7 @@ Shader::~Shader()
 		}
 	}
 
+	delete[] localUniformStagingData;
 	delete[] localUniformBufferData;
 }}
 
@@ -759,12 +759,15 @@ const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 	return builtinUniformInfo[(int)builtin];
 }
 
-void Shader::updateUniform(const UniformInfo * /*info*/, int /*count*/)
+void Shader::updateUniform(const UniformInfo *info, int /*count*/)
 {
-	// Nothing needed here, All uniform data will be memcpy'd to the main
-	// uniform buffer before drawing.
-	// FIXME: do we need to copy to a second buffer here, in order for batch
-	// flushing to work (and possibly padding)?
+	if (current == this)
+		Graphics::flushBatchedDrawsGlobal();
+
+	// Staging -> uniform buffer data copy needed for batch flushing to work.
+	// TODO: account for padding with 3x3 matrices etc.
+	size_t offset = (const uint8 *)info->data - localUniformStagingData;
+	memcpy(localUniformBufferData + offset, info->data, info->dataSize);
 }
 
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)

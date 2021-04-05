@@ -133,6 +133,7 @@ private:
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 	std::map<std::string, UniformInfo> uniforms;
 
+	uint8 *localUniformStagingData;
 	uint8 *localUniformBufferData;
 	size_t localUniformBufferSize;
 	size_t builtinUniformDataOffset;
