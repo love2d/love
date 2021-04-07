@@ -851,7 +851,20 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
 {
-	// TODO
+	const BuiltinUniform builtins[3] = {
+		BUILTIN_TEXTURE_VIDEO_Y,
+		BUILTIN_TEXTURE_VIDEO_CB,
+		BUILTIN_TEXTURE_VIDEO_CR,
+	};
+
+	love::graphics::Texture *textures[3] = {ytexture, cbtexture, crtexture};
+
+	for (int i = 0; i < 3; i++)
+	{
+		const UniformInfo *info = builtinUniformInfo[builtins[i]];
+		if (info != nullptr)
+			sendTextures(info, &textures[i], 1);
+	}
 }
 
 bool Shader::hasUniform(const std::string &name) const
