@@ -137,16 +137,16 @@ namespace love
 namespace graphics
 {
 
-ShaderStage::ShaderStage(Graphics *gfx, StageType stage, const std::string &glsl, bool gles, const std::string &cachekey)
+ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string &glsl, bool gles, const std::string &cachekey)
 	: stageType(stage)
 	, source(glsl)
 	, cacheKey(cachekey)
 	, glslangShader(nullptr)
 {
 	EShLanguage glslangStage = EShLangCount;
-	if (stage == STAGE_VERTEX)
+	if (stage == SHADERSTAGE_VERTEX)
 		glslangStage = EShLangVertex;
-	else if (stage == STAGE_PIXEL)
+	else if (stage == SHADERSTAGE_PIXEL)
 		glslangStage = EShLangFragment;
 	else
 		throw love::Exception("Cannot compile shader stage: unknown stage type.");
@@ -193,30 +193,30 @@ ShaderStage::~ShaderStage()
 	delete glslangShader;
 }
 
-bool ShaderStage::getConstant(const char *in, StageType &out)
+bool ShaderStage::getConstant(const char *in, ShaderStageType &out)
 {
 	return stageNames.find(in, out);
 }
 
-bool ShaderStage::getConstant(StageType in, const char *&out)
+bool ShaderStage::getConstant(ShaderStageType in, const char *&out)
 {
 	return stageNames.find(in, out);
 }
 
-const char *ShaderStage::getConstant(StageType in)
+const char *ShaderStage::getConstant(ShaderStageType in)
 {
 	const char *name = nullptr;
 	getConstant(in, name);
 	return name;
 }
 
-StringMap<ShaderStage::StageType, ShaderStage::STAGE_MAX_ENUM>::Entry ShaderStage::stageNameEntries[] =
+StringMap<ShaderStageType, SHADERSTAGE_MAX_ENUM>::Entry ShaderStage::stageNameEntries[] =
 {
-	{ "vertex", STAGE_VERTEX },
-	{ "pixel",  STAGE_PIXEL  },
+	{ "vertex", SHADERSTAGE_VERTEX },
+	{ "pixel",  SHADERSTAGE_PIXEL  },
 };
 
-StringMap<ShaderStage::StageType, ShaderStage::STAGE_MAX_ENUM> ShaderStage::stageNames(ShaderStage::stageNameEntries, sizeof(ShaderStage::stageNameEntries));
+StringMap<ShaderStageType, SHADERSTAGE_MAX_ENUM> ShaderStage::stageNames(ShaderStage::stageNameEntries, sizeof(ShaderStage::stageNameEntries));
 
 } // graphics
 } // love

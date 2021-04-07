@@ -164,7 +164,7 @@ Graphics::~Graphics()
 	delete batchedDrawState.vb[1];
 	delete batchedDrawState.indexBuffer;
 
-	for (int i = 0; i < (int) ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int i = 0; i < (int) SHADERSTAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
 
 	Shader::deinitialize();
@@ -219,7 +219,7 @@ love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, in
 	return new ParticleSystem(texture, size);
 }
 
-ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info)
+ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info)
 {
 	ShaderStage *s = nullptr;
 	std::string cachekey;
@@ -252,18 +252,18 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 
 Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 {
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
-	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
-	validstages[ShaderStage::STAGE_VERTEX] = true;
-	validstages[ShaderStage::STAGE_PIXEL] = true;
+	bool validstages[SHADERSTAGE_MAX_ENUM] = {};
+	validstages[SHADERSTAGE_VERTEX] = true;
+	validstages[SHADERSTAGE_PIXEL] = true;
 
 	for (const std::string &source : stagessource)
 	{
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
 		bool isanystage = false;
 
-		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		{
 			if (!validstages[i])
 				continue;
@@ -271,7 +271,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
-				stages[i].set(newShaderStage((ShaderStage::StageType) i, source, info), Acquire::NORETAIN);
+				stages[i].set(newShaderStage((ShaderStageType) i, source, info), Acquire::NORETAIN);
 			}
 		}
 
@@ -279,9 +279,9 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 			throw love::Exception("Could not parse shader code (missing 'position' or 'effect' function?)");
 	}
 
-	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
-		auto stype = (ShaderStage::StageType) i;
+		auto stype = (ShaderStageType) i;
 		if (validstages[i] && stages[i].get() == nullptr)
 		{
 			const std::string &source = Shader::getDefaultCode(Shader::STANDARD_DEFAULT, stype);
@@ -291,7 +291,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 
 	}
 
-	return newShaderInternal(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL]);
+	return newShaderInternal(stages[SHADERSTAGE_VERTEX], stages[SHADERSTAGE_PIXEL]);
 }
 
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
@@ -320,18 +320,18 @@ love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<
 	return new Text(font, text);
 }
 
-void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)
+void Graphics::cleanupCachedShaderStage(ShaderStageType type, const std::string &hashkey)
 {
 	cachedShaderStages[type].erase(hashkey);
 }
 
 bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagessource, std::string &err)
 {
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
-	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
-	validstages[ShaderStage::STAGE_VERTEX] = true;
-	validstages[ShaderStage::STAGE_PIXEL] = true;
+	bool validstages[SHADERSTAGE_MAX_ENUM] = {};
+	validstages[SHADERSTAGE_VERTEX] = true;
+	validstages[SHADERSTAGE_PIXEL] = true;
 
 	// Don't use cached shader stages, since the gles flag may not match the
 	// current renderer.
@@ -340,9 +340,9 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
 		bool isanystage = false;
 
-		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		{
-			auto stype = (ShaderStage::StageType) i;
+			auto stype = (ShaderStageType) i;
 
 			if (!validstages[i])
 				continue;
@@ -362,7 +362,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		}
 	}
 
-	return Shader::validate(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL], err);
+	return Shader::validate(stages[SHADERSTAGE_VERTEX], stages[SHADERSTAGE_PIXEL], err);
 }
 
 int Graphics::getWidth() const

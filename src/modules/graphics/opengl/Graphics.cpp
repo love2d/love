@@ -150,7 +150,7 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 	return new Texture(settings, data);
 }
 
-love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
+love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
@@ -401,8 +401,8 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 			if (!Shader::standardShaders[i])
 			{
 				std::vector<std::string> stages;
-				stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
-				stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
+				stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
+				stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
 				Shader::standardShaders[i] = newShader(stages);
 			}
 		}

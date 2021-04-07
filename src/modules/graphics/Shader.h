@@ -102,7 +102,7 @@ public:
 	struct SourceInfo
 	{
 		Language language;
-		EntryPoint stages[ShaderStage::STAGE_MAX_ENUM];
+		EntryPoint stages[SHADERSTAGE_MAX_ENUM];
 		bool usesMRT;
 	};
 
@@ -212,14 +212,14 @@ public:
 	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
 	static SourceInfo getSourceInfo(const std::string &src);
-	static std::string createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const SourceInfo &info);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info);
 
 	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
 
-	static const std::string &getDefaultCode(StandardShader shader, ShaderStage::StageType stage);
+	static const std::string &getDefaultCode(StandardShader shader, ShaderStageType stage);
 
 	static bool getConstant(const char *in, Language &out);
 	static bool getConstant(Language in, const char *&out);
@@ -243,7 +243,7 @@ protected:
 
 	static bool validateInternal(ShaderStage* vertex, ShaderStage* pixel, std::string& err, ValidationReflection &reflection);
 
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 
 	ValidationReflection validationReflection;
 

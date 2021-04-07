@@ -830,7 +830,7 @@ public:
 
 	static void flushBatchedDrawsGlobal();
 
-	void cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &cachekey);
+	void cleanupCachedShaderStage(ShaderStageType type, const std::string &cachekey);
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)
@@ -927,8 +927,8 @@ protected:
 		{}
 	};
 
-	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info);
-	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
+	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info);
+	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
 
@@ -994,7 +994,7 @@ private:
 
 	std::vector<uint8> scratchBuffer;
 
-	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[ShaderStage::STAGE_MAX_ENUM];
+	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[SHADERSTAGE_MAX_ENUM];
 
 }; // Graphics
 

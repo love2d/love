@@ -405,7 +405,7 @@ static const StageInfo stageInfo[] =
 	{ "PIXEL", pixel_header, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
 };
 
-static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == ShaderStage::STAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
+static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == SHADERSTAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
 
 struct Version
 {
@@ -478,12 +478,12 @@ Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 {
 	SourceInfo info = {};
 	info.language = glsl::getTargetLanguage(src);
-	info.stages[ShaderStage::STAGE_VERTEX] = glsl::getVertexEntryPoint(src);
-	info.stages[ShaderStage::STAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
+	info.stages[SHADERSTAGE_VERTEX] = glsl::getVertexEntryPoint(src);
+	info.stages[SHADERSTAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
 	return info;
 }
 
-std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const Shader::SourceInfo &info)
+std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const Shader::SourceInfo &info)
 {
 	if (info.language == Shader::LANGUAGE_MAX_ENUM)
 		throw love::Exception("Invalid shader language");
@@ -548,8 +548,8 @@ Shader::Shader(ShaderStage *vertex, ShaderStage *pixel)
 	if (!validateInternal(vertex, pixel, err, validationReflection))
 		throw love::Exception("%s", err.c_str());
 
-	stages[ShaderStage::STAGE_VERTEX] = vertex;
-	stages[ShaderStage::STAGE_PIXEL] = pixel;
+	stages[SHADERSTAGE_VERTEX] = vertex;
+	stages[SHADERSTAGE_PIXEL] = pixel;
 }
 
 Shader::~Shader()
@@ -768,9 +768,9 @@ void effect()
 }
 )";
 
-const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStage::StageType stage)
+const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStageType stage)
 {
-	if (stage == ShaderStage::STAGE_VERTEX)
+	if (stage == SHADERSTAGE_VERTEX)
 	{
 		if (shader == STANDARD_POINTS)
 			return defaultPointsVertex;
