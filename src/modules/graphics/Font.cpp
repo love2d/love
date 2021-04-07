@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2006-2020 LOVE Development Team
+* Copyright (c) 2006-2021 LOVE Development Team
 *
 * This software is provided 'as-is', without any express or implied
 * warranty.  In no event will the authors be held liable for any damages
@@ -206,7 +206,7 @@ void Font::unloadVolatile()
 	textures.clear();
 }
 
-love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
+love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph, float &dpiscale)
 {
 	// Use spaces for the tab 'glyph'.
 	if (glyph == 9 && useSpacesAsTab)
@@ -221,21 +221,27 @@ love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph)
 
 		spacegd->release();
 
+		dpiscale = rasterizers[0]->getDPIScale();
 		return new love::font::GlyphData(glyph, gm, fmt);
 	}
 
 	for (const StrongRef<love::font::Rasterizer> &r : rasterizers)
 	{
 		if (r->hasGlyph(glyph))
+		{
+			dpiscale = r->getDPIScale();
 			return r->getGlyphData(glyph);
+		}
 	}
 
+	dpiscale = rasterizers[0]->getDPIScale();
 	return rasterizers[0]->getGlyphData(glyph);
 }
 
 const Font::Glyph &Font::addGlyph(uint32 glyph)
 {
-	StrongRef<love::font::GlyphData> gd(getRasterizerGlyphData(glyph), Acquire::NORETAIN);
+	float glyphdpiscale = getDPIScale();
+	StrongRef<love::font::GlyphData> gd(getRasterizerGlyphData(glyph, glyphdpiscale), Acquire::NORETAIN);
 
 	int w = gd->getWidth();
 	int h = gd->getHeight();
@@ -264,7 +270,7 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 	Glyph g;
 
 	g.texture = 0;
-	g.spacing = floorf(gd->getAdvance() / dpiScale + 0.5f);
+	g.spacing = floorf(gd->getAdvance() / glyphdpiscale + 0.5f);
 
 	memset(g.vertices, 0, sizeof(GlyphVertex) * 4);
 
@@ -292,18 +298,18 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		// 1---3
 		const GlyphVertex verts[4] =
 		{
-			{float(-o),      float(-o),      normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
-			{float(-o),      (h+o)/dpiScale, normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
-			{(w+o)/dpiScale, float(-o),      normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
-			{(w+o)/dpiScale, (h+o)/dpiScale, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
+			{float(-o),      float(-o),                normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
+			{float(-o),      (h+o)/glyphdpiscale,      normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
+			{(w+o)/glyphdpiscale, float(-o),           normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
+			{(w+o)/glyphdpiscale, (h+o)/glyphdpiscale, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
 		};
 
 		// Copy vertex data to the glyph and set proper bearing.
 		for (int i = 0; i < 4; i++)
 		{
 			g.vertices[i] = verts[i];
-			g.vertices[i].x += gd->getBearingX() / dpiScale;
-			g.vertices[i].y -= gd->getBearingY() / dpiScale;
+			g.vertices[i].x += gd->getBearingX() / glyphdpiscale;
+			g.vertices[i].y -= gd->getBearingY() / glyphdpiscale;
 		}
 
 		textureX += w + TEXTURE_PADDING;
@@ -332,19 +338,37 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	if (it != kerning.end())
 		return it->second;
 
-	float k = rasterizers[0]->getKerning(leftglyph, rightglyph);
+	float k = rasterizers[0]->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f;
 
 	for (const auto &r : rasterizers)
 	{
 		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
 		{
-			k = floorf(r->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f);
+			k = floorf(r->getKerning(leftglyph, rightglyph) / r->getDPIScale() + 0.5f);
 			break;
 		}
 	}
 
 	kerning[packedglyphs] = k;
 	return k;
+}
+
+float Font::getKerning(const std::string &leftchar, const std::string &rightchar)
+{
+	uint32 left = 0;
+	uint32 right = 0;
+
+	try
+	{
+		left = utf8::peek_next(leftchar.begin(), leftchar.end());
+		right = utf8::peek_next(rightchar.begin(), rightchar.end());
+	}
+	catch (utf8::exception &e)
+	{
+		throw love::Exception("UTF-8 decoding error: %s", e.what());
+	}
+
+	return getKerning(left, right);
 }
 
 void Font::getCodepointsFromString(const std::string &text, Codepoints &codepoints)
@@ -723,9 +747,9 @@ int Font::getWidth(const std::string &str)
 	return max_width;
 }
 
-int Font::getWidth(char character)
+int Font::getWidth(uint32 glyph)
 {
-	const Glyph &g = findGlyph(character);
+	const Glyph &g = findGlyph(glyph);
 	return g.spacing;
 }
 

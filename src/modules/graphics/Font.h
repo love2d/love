@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -128,11 +128,9 @@ public:
 	int getWidth(const std::string &str);
 
 	/**
-	 * Returns the width of the passed character.
-	 *
-	 * @param character A character.
+	 * Returns the width of the passed glyph.
 	 **/
-	int getWidth(char character);
+	int getWidth(uint32 glyph);
 
 	/**
 	 * Returns the maximal width of a wrapped string
@@ -169,6 +167,9 @@ public:
 	bool hasGlyph(uint32 glyph) const;
 	bool hasGlyphs(const std::string &text) const;
 
+	float getKerning(uint32 leftglyph, uint32 rightglyph);
+	float getKerning(const std::string &leftchar, const std::string &rightchar);
+
 	void setFallbacks(const std::vector<Font *> &fallbacks);
 
 	float getDPIScale() const;
@@ -203,10 +204,9 @@ private:
 	void createTexture();
 
 	TextureSize getNextTextureSize() const;
-	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph);
+	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph, float &dpiscale);
 	const Glyph &addGlyph(uint32 glyph);
 	const Glyph &findGlyph(uint32 glyph);
-	float getKerning(uint32 leftglyph, uint32 rightglyph);
 	void printv(Graphics *gfx, const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
