@@ -18,6 +18,7 @@ Released: N/A
 * Fixed fused macOS apps opening other love games when drag-and-drop is used (if the fused app hasn't already removed .love files from recognized document types).
 * Fixed File:isEOF when called on a dropped file.
 * Fixed support for > 2GB dropped files on desktops.
+* Fixed love.physics meter scale value persisting after love.event.quit("restart").
 * Fixed audio to resume properly after interruption on iOS.
 * Fixed initial window creation to set the window's title during creation instead of after.
 * Fixed the window's screen position when exiting fullscreen via love.window.setFullscreen.
