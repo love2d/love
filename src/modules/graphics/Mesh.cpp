@@ -324,18 +324,29 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 	// Calculate the size in bytes of the index buffer data.
 	size_t size = map.size() * getIndexDataSize(datatype);
 
-	if (indexBuffer.get() == nullptr || size > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
+	bool recreate = indexData == nullptr || indexBuffer.get() == nullptr
+		|| size > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat;
+
+	if (recreate)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		auto usage = vertexBuffer.get() ? vertexBuffer->getDataUsage() : BUFFERDATAUSAGE_DYNAMIC;
 		Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, usage);
-		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
+		auto buffer = StrongRef(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
+
+		auto data = (uint8 *) realloc(indexData, size);
+		if (data == nullptr)
+			throw love::Exception("Out of memory.");
+
+		indexData = data;
+		indexBuffer = buffer;
 	}
 
-	useIndexBuffer = true;
 	indexCount = map.size();
+	useIndexBuffer = true;
+	indexDataType = datatype;
 
-	if (!indexBuffer || indexCount == 0)
+	if (indexCount == 0)
 		return;
 
 	// Fill the buffer with the index values from the vector.
@@ -350,31 +361,40 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 		break;
 	}
 
-	indexDataType = datatype;
+	indexDataModified = true;
 }
 
 void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasize)
 {
 	DataFormat dataformat = getIndexDataFormat(datatype);
 
-	if (indexBuffer.get() == nullptr || datasize > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat)
+	bool recreate = indexData == nullptr || indexBuffer.get() == nullptr
+		|| datasize > indexBuffer->getSize() || indexBuffer->getDataMember(0).decl.format != dataformat;
+
+	if (recreate)
 	{
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		auto usage = vertexBuffer.get() ? vertexBuffer->getDataUsage() : BUFFERDATAUSAGE_DYNAMIC;
 		Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, usage);
-		indexBuffer.set(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
+		auto buffer = StrongRef(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
+
+		auto data = (uint8 *) realloc(indexData, datasize);
+		if (data == nullptr)
+			throw love::Exception("Out of memory.");
+
+		indexData = data;
+		indexBuffer = buffer;
 	}
 
 	indexCount = datasize / getIndexDataSize(datatype);
-
-	if (!indexBuffer || indexCount == 0)
-		return;
-
-	Buffer::Mapper ibomap(*indexBuffer);
-	memcpy(ibomap.data, data, datasize);
-
 	useIndexBuffer = true;
 	indexDataType = datatype;
+
+	if (indexCount == 0)
+		return;
+
+	memcpy(indexData, data, datasize);
+	indexDataModified = true;
 }
 
 void Mesh::setVertexMap()
@@ -386,9 +406,9 @@ void Mesh::setVertexMap()
  * Copies index data from a mapped buffer to a vector.
  **/
 template <typename T>
-static void copyFromIndexBuffer(void *buffer, size_t count, std::vector<uint32> &indices)
+static void copyFromIndexBuffer(const void *buffer, size_t count, std::vector<uint32> &indices)
 {
-	T *elems = (T *) buffer;
+	const T *elems = (const T *) buffer;
 	for (size_t i = 0; i < count; i++)
 		indices.push_back((uint32) elems[i]);
 }
@@ -399,10 +419,11 @@ bool Mesh::getVertexMap(std::vector<uint32> &map) const
 		return false;
 
 	map.clear();
-	map.reserve(indexCount);
 
 	if (indexData == nullptr || indexCount == 0)
 		return true;
+
+	map.reserve(indexCount);
 
 	// Fill the vector from the buffer.
 	switch (indexDataType)
