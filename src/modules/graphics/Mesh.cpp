@@ -332,7 +332,7 @@ void Mesh::setVertexMap(const std::vector<uint32> &map)
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		auto usage = vertexBuffer.get() ? vertexBuffer->getDataUsage() : BUFFERDATAUSAGE_DYNAMIC;
 		Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, usage);
-		auto buffer = StrongRef(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
+		auto buffer = StrongRef<Buffer>(gfx->newBuffer(settings, dataformat, nullptr, size, 0), Acquire::NORETAIN);
 
 		auto data = (uint8 *) realloc(indexData, size);
 		if (data == nullptr)
@@ -376,7 +376,7 @@ void Mesh::setVertexMap(IndexDataType datatype, const void *data, size_t datasiz
 		auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 		auto usage = vertexBuffer.get() ? vertexBuffer->getDataUsage() : BUFFERDATAUSAGE_DYNAMIC;
 		Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, usage);
-		auto buffer = StrongRef(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
+		auto buffer = StrongRef<Buffer>(gfx->newBuffer(settings, dataformat, nullptr, datasize, 0), Acquire::NORETAIN);
 
 		auto data = (uint8 *) realloc(indexData, datasize);
 		if (data == nullptr)
