@@ -564,6 +564,11 @@ Shader::~Shader()
 		attachDefault(STANDARD_DEFAULT);
 }
 
+bool Shader::hasStage(ShaderStageType stage)
+{
+	return stages[stage] != nullptr;
+}
+
 void Shader::attachDefault(StandardShader defaultType)
 {
 	Shader *defaultshader = standardShaders[defaultType];

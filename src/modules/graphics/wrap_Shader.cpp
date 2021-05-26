@@ -491,12 +491,25 @@ int w_Shader_hasUniform(lua_State *L)
 	return 1;
 }
 
+int w_Shader_hasStage(lua_State* L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	ShaderStageType stage;
+	const char *str = luaL_checkstring(L, 2);
+	if (!ShaderStage::getConstant(str, stage))
+		return luax_enumerror(L, "shader stage", str);
+
+	luax_pushboolean(L, shader->hasStage(stage));
+	return 1;
+}
+
 static const luaL_Reg w_Shader_functions[] =
 {
 	{ "getWarnings", w_Shader_getWarnings },
 	{ "send",        w_Shader_send },
 	{ "sendColor",   w_Shader_sendColors },
 	{ "hasUniform",  w_Shader_hasUniform },
+	{ "hasStage",    w_Shader_hasStage },
 	{ 0, 0 }
 };
 

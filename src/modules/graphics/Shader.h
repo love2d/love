@@ -168,6 +168,11 @@ public:
 	virtual ~Shader();
 
 	/**
+	 * Check whether a Shader has a stage.
+	 **/
+	bool hasStage(ShaderStageType stage);
+
+	/**
 	 * Binds this Shader's program to be used when rendering.
 	 **/
 	virtual void attach() = 0;
