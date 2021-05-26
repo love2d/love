@@ -1543,10 +1543,13 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = gl.getMaxCubeTextureSize();
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = gl.getMaxTexelBufferSize();
 	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = gl.getMaxShaderStorageBufferSize();
+	capabilities.limits[LIMIT_THREADGROUPS_X] = gl.getMaxComputeWorkGroupsX();
+	capabilities.limits[LIMIT_THREADGROUPS_Y] = gl.getMaxComputeWorkGroupsY();
+	capabilities.limits[LIMIT_THREADGROUPS_Z] = gl.getMaxComputeWorkGroupsZ();
 	capabilities.limits[LIMIT_RENDER_TARGETS] = gl.getMaxRenderTargets();
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = gl.getMaxSamples();
 	capabilities.limits[LIMIT_ANISOTROPY] = gl.getMaxAnisotropy();
-	static_assert(LIMIT_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new system limit!");
+	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);

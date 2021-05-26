@@ -384,6 +384,14 @@ public:
 	int getMaxShaderStorageBufferSize() const;
 
 	/**
+	 * Returns the maximum number of compute work groups that can be
+	 * dispatched in a given dimension.
+	 */
+	int getMaxComputeWorkGroupsX() const;
+	int getMaxComputeWorkGroupsY() const;
+	int getMaxComputeWorkGroupsZ() const;
+
+	/**
 	 * Returns the maximum supported number of simultaneous render targets.
 	 **/
 	int getMaxRenderTargets() const;
@@ -467,6 +475,9 @@ private:
 	int maxTextureArrayLayers;
 	int maxTexelBufferSize;
 	int maxShaderStorageBufferSize;
+	int maxComputeWorkGroupsX;
+	int maxComputeWorkGroupsY;
+	int maxComputeWorkGroupsZ;
 	int maxRenderTargets;
 	int maxSamples;
 	int maxTextureUnits;
