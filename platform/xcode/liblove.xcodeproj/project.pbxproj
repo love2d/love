@@ -15,25 +15,19 @@
 		217DFBDE1D9F6D490055D849 /* compat.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA21D9F6D490055D849 /* compat.h */; };
 		217DFBDF1D9F6D490055D849 /* except.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBA31D9F6D490055D849 /* except.c */; };
 		217DFBE01D9F6D490055D849 /* except.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA41D9F6D490055D849 /* except.h */; };
-		217DFBE11D9F6D490055D849 /* ftp.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBA51D9F6D490055D849 /* ftp.lua */; };
 		217DFBE21D9F6D490055D849 /* ftp.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA61D9F6D490055D849 /* ftp.lua.h */; };
-		217DFBE31D9F6D490055D849 /* headers.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBA71D9F6D490055D849 /* headers.lua */; };
 		217DFBE41D9F6D490055D849 /* headers.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA81D9F6D490055D849 /* headers.lua.h */; };
-		217DFBE51D9F6D490055D849 /* http.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBA91D9F6D490055D849 /* http.lua */; };
 		217DFBE61D9F6D490055D849 /* http.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBAA1D9F6D490055D849 /* http.lua.h */; };
 		217DFBE71D9F6D490055D849 /* inet.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBAB1D9F6D490055D849 /* inet.c */; };
 		217DFBE81D9F6D490055D849 /* inet.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBAC1D9F6D490055D849 /* inet.h */; };
 		217DFBE91D9F6D490055D849 /* io.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBAD1D9F6D490055D849 /* io.c */; };
 		217DFBEA1D9F6D490055D849 /* io.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBAE1D9F6D490055D849 /* io.h */; };
-		217DFBEB1D9F6D490055D849 /* ltn12.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBAF1D9F6D490055D849 /* ltn12.lua */; };
 		217DFBEC1D9F6D490055D849 /* ltn12.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB01D9F6D490055D849 /* ltn12.lua.h */; };
 		217DFBED1D9F6D490055D849 /* luasocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBB11D9F6D490055D849 /* luasocket.c */; };
 		217DFBEE1D9F6D490055D849 /* luasocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB21D9F6D490055D849 /* luasocket.h */; };
-		217DFBF01D9F6D490055D849 /* mbox.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBB41D9F6D490055D849 /* mbox.lua */; };
 		217DFBF11D9F6D490055D849 /* mbox.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB51D9F6D490055D849 /* mbox.lua.h */; };
 		217DFBF21D9F6D490055D849 /* mime.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBB61D9F6D490055D849 /* mime.c */; };
 		217DFBF31D9F6D490055D849 /* mime.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB71D9F6D490055D849 /* mime.h */; };
-		217DFBF41D9F6D490055D849 /* mime.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBB81D9F6D490055D849 /* mime.lua */; };
 		217DFBF51D9F6D490055D849 /* mime.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB91D9F6D490055D849 /* mime.lua.h */; };
 		217DFBF61D9F6D490055D849 /* options.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBBA1D9F6D490055D849 /* options.c */; };
 		217DFBF71D9F6D490055D849 /* options.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBBB1D9F6D490055D849 /* options.h */; };
@@ -41,16 +35,13 @@
 		217DFBF91D9F6D490055D849 /* select.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBBD1D9F6D490055D849 /* select.c */; };
 		217DFBFA1D9F6D490055D849 /* select.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBBE1D9F6D490055D849 /* select.h */; };
 		217DFBFB1D9F6D490055D849 /* serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBBF1D9F6D490055D849 /* serial.c */; };
-		217DFBFC1D9F6D490055D849 /* smtp.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBC01D9F6D490055D849 /* smtp.lua */; };
 		217DFBFD1D9F6D490055D849 /* smtp.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC11D9F6D490055D849 /* smtp.lua.h */; };
 		217DFBFE1D9F6D490055D849 /* socket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC21D9F6D490055D849 /* socket.h */; };
-		217DFBFF1D9F6D490055D849 /* socket.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBC31D9F6D490055D849 /* socket.lua */; };
 		217DFC001D9F6D490055D849 /* socket.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC41D9F6D490055D849 /* socket.lua.h */; };
 		217DFC011D9F6D490055D849 /* tcp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBC51D9F6D490055D849 /* tcp.c */; };
 		217DFC021D9F6D490055D849 /* tcp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC61D9F6D490055D849 /* tcp.h */; };
 		217DFC031D9F6D490055D849 /* timeout.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBC71D9F6D490055D849 /* timeout.c */; };
 		217DFC041D9F6D490055D849 /* timeout.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC81D9F6D490055D849 /* timeout.h */; };
-		217DFC051D9F6D490055D849 /* tp.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBC91D9F6D490055D849 /* tp.lua */; };
 		217DFC061D9F6D490055D849 /* tp.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBCA1D9F6D490055D849 /* tp.lua.h */; };
 		217DFC071D9F6D490055D849 /* udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCB1D9F6D490055D849 /* udp.c */; };
 		217DFC081D9F6D490055D849 /* udp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBCC1D9F6D490055D849 /* udp.h */; };
@@ -60,7 +51,6 @@
 		217DFC0C1D9F6D490055D849 /* unixtcp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD01D9F6D490055D849 /* unixtcp.h */; };
 		217DFC0D1D9F6D490055D849 /* unixudp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD11D9F6D490055D849 /* unixudp.c */; };
 		217DFC0E1D9F6D490055D849 /* unixudp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD21D9F6D490055D849 /* unixudp.h */; };
-		217DFC0F1D9F6D490055D849 /* url.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBD31D9F6D490055D849 /* url.lua */; };
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
@@ -1057,7 +1047,6 @@
 		FADF540D1E3D7CDD00012CC0 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */; };
 		FADF540E1E3D7CDD00012CC0 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */; };
 		FADF540F1E3D7CDD00012CC0 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF540B1E3D7CDD00012CC0 /* wrap_Video.h */; };
-		FADF54101E3D7CDD00012CC0 /* wrap_Video.lua in Resources */ = {isa = PBXBuildFile; fileRef = FADF540C1E3D7CDD00012CC0 /* wrap_Video.lua */; };
 		FADF54161E3DA08E00012CC0 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54141E3DA08E00012CC0 /* Image.cpp */; };
 		FADF54171E3DA08E00012CC0 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54141E3DA08E00012CC0 /* Image.cpp */; };
 		FADF54181E3DA08E00012CC0 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54151E3DA08E00012CC0 /* Image.h */; };
@@ -1079,7 +1068,6 @@
 		FADF54341E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54321E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp */; };
 		FADF54351E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54321E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp */; };
 		FADF54361E3DAE6E00012CC0 /* wrap_SpriteBatch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54331E3DAE6E00012CC0 /* wrap_SpriteBatch.h */; };
-		FADF54381E3DAFBA00012CC0 /* wrap_Graphics.lua in Resources */ = {isa = PBXBuildFile; fileRef = FADF54371E3DAFBA00012CC0 /* wrap_Graphics.lua */; };
 		FADF543B1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54391E3DAFF700012CC0 /* wrap_Graphics.cpp */; };
 		FADF543C1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54391E3DAFF700012CC0 /* wrap_Graphics.cpp */; };
 		FADF543D1E3DAFF700012CC0 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */; };
@@ -4179,18 +4167,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				217DFC0F1D9F6D490055D849 /* url.lua in Resources */,
-				FADF54101E3D7CDD00012CC0 /* wrap_Video.lua in Resources */,
-				217DFBFC1D9F6D490055D849 /* smtp.lua in Resources */,
-				FADF54381E3DAFBA00012CC0 /* wrap_Graphics.lua in Resources */,
-				217DFBF01D9F6D490055D849 /* mbox.lua in Resources */,
-				217DFBE11D9F6D490055D849 /* ftp.lua in Resources */,
-				217DFBFF1D9F6D490055D849 /* socket.lua in Resources */,
-				217DFC051D9F6D490055D849 /* tp.lua in Resources */,
-				217DFBE51D9F6D490055D849 /* http.lua in Resources */,
-				217DFBEB1D9F6D490055D849 /* ltn12.lua in Resources */,
-				217DFBF41D9F6D490055D849 /* mime.lua in Resources */,
-				217DFBE31D9F6D490055D849 /* headers.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
