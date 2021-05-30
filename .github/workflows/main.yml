@@ -84,5 +84,17 @@ jobs:
       run:
         mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
     - name: Build
-      run: |
-        xcodebuild -project platform/xcode/love.xcodeproj -target love-macosx -configuration Release
+      run:
+        xcodebuild clean archive -project platform/xcode/love.xcodeproj -scheme love-macosx -configuration Release -archivePath love-macos.xcarchive
+    - name: Export Archive
+      run:
+        xcodebuild -exportArchive -archivePath love-macos.xcarchive -exportPath love-macos -exportOptionsPlist platform/xcode/macosx/macos-copy-app.plist
+    - name: Zip Archive
+      run:
+        ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip 
+    - name: Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: love-macos
+        path: love-macos.zip
+
