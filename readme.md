@@ -54,7 +54,7 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 When using a source release, automagic has already been run, and the first step can be skipped.
 
 ### macOS
-Download the required frameworks from [here][dependencies] and place them in either `/Library/Frameworks/` or `platform/xcode/macosx/Frameworks/`.
+Download or clone [this repository][dependencies-macos] and place the Frameworks subfolder in love's `platform/xcode/macosx/` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
@@ -89,7 +89,7 @@ Dependencies
 [forums]: http://love2d.org/forums
 [discord]: https://discord.gg/rhUets9
 [irc]: irc://irc.oftc.net/love
-[dependencies]: http://love2d.org/sdk
+[dependencies-macos]: https://github.com/slime73/love-apple-dependencies
 [dependencies-ios]: https://github.com/love2d/love/releases
 [megasource]: https://github.com/love2d/megasource
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
