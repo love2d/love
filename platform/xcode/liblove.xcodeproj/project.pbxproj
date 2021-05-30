@@ -830,7 +830,6 @@
 		FA29C0061E12355B00268CD8 /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA29C0041E12355B00268CD8 /* StreamBuffer.cpp */; };
 		FA2AF6741DAD64970032B62C /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA2AF6731DAD64970032B62C /* vertex.cpp */; };
 		FA2AF6751DAD64970032B62C /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA2AF6731DAD64970032B62C /* vertex.cpp */; };
-		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA3C5E421F8C368C0003C579 /* ShaderStage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */; };
 		FA3C5E431F8C368C0003C579 /* ShaderStage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */; };
 		FA3C5E441F8C368C0003C579 /* ShaderStage.h in Headers */ = {isa = PBXBuildFile; fileRef = FA3C5E411F8C368C0003C579 /* ShaderStage.h */; };
@@ -1032,6 +1031,7 @@
 		FAD19A181DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
 		FAD19A191DFF8CA200D5398A /* ImageDataBase.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD19A161DFF8CA200D5398A /* ImageDataBase.h */; };
 		FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAD43ECB1FF312D800831BB8 /* freetype.framework */; };
+		FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FADF4CC52663D0EC004F95C1 /* libz.tbd */; };
 		FADF53F81E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53F91E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53FA1E3C7ACD00012CC0 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53F71E3C7ACD00012CC0 /* Buffer.h */; };
@@ -1790,7 +1790,7 @@
 		FA27B39C1B498151008A9DCE /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_VideoStream.cpp; sourceTree = "<group>"; };
 		FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_VideoStream.h; sourceTree = "<group>"; };
-		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = /Library/Frameworks/theora.framework; sourceTree = "<absolute>"; };
+		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/theora.framework; sourceTree = "<absolute>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA28EBD31E352DB5003446F4 /* FenceSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FenceSync.cpp; sourceTree = "<group>"; };
@@ -1800,7 +1800,6 @@
 		FA2AF6721DAD62710032B62C /* StreamBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA2AF6731DAD64970032B62C /* vertex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vertex.cpp; sourceTree = "<group>"; };
 		FA2E9BFE1C19E00C0004A1EE /* wrap_RandomGenerator.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_RandomGenerator.lua; sourceTree = "<group>"; };
-		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		FA34AF6A22E2977700F77015 /* wrap_Data.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Data.lua; sourceTree = "<group>"; };
 		FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderStage.cpp; sourceTree = "<group>"; };
 		FA3C5E411F8C368C0003C579 /* ShaderStage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderStage.h; sourceTree = "<group>"; };
@@ -1827,13 +1826,13 @@
 		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
 		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
-		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
-		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = /Library/Frameworks/mpg123.framework; sourceTree = "<absolute>"; };
-		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Library/Frameworks/ogg.framework; sourceTree = "<absolute>"; };
-		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Library/Frameworks/vorbis.framework; sourceTree = "<absolute>"; };
+		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = macosx/Frameworks/Lua.framework; sourceTree = "<group>"; };
+		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = macosx/Frameworks/mpg123.framework; sourceTree = "<group>"; };
+		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/ogg.framework; sourceTree = "<absolute>"; };
+		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/vorbis.framework; sourceTree = "<absolute>"; };
 		FA577A7916C71A1700860150 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		FA577A7C16C71A2600860150 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
-		FA577A8216C71A5300860150 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
+		FA577A8216C71A5300860150 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = macosx/Frameworks/libmodplug.framework; sourceTree = "<group>"; };
 		FA577A8C16C71D3600860150 /* auto.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; lineEnding = 0; path = auto.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = "<none>"; };
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1870,7 +1869,7 @@
 		FA91DA8A1F377C3900C80E33 /* deprecation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = deprecation.h; sourceTree = "<group>"; };
 		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
-		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
+		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
 		FA9D53AA1F5307E900125C6B /* Deprecations.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Deprecations.cpp; sourceTree = "<group>"; };
 		FA9D53AB1F5307E900125C6B /* Deprecations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Deprecations.h; sourceTree = "<group>"; };
 		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
@@ -1892,7 +1891,7 @@
 		FAAA3FD51F64B3AD00F89E99 /* lstrlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstrlib.h; sourceTree = "<group>"; };
 		FAAA3FD61F64B3AD00F89E99 /* lutf8lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lutf8lib.c; sourceTree = "<group>"; };
 		FAAA3FD71F64B3AD00F89E99 /* lutf8lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lutf8lib.h; sourceTree = "<group>"; };
-		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
 		FAB17BE41ABFAA9000F9BA27 /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4.c; sourceTree = "<group>"; };
 		FAB17BE51ABFAA9000F9BA27 /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4.h; sourceTree = "<group>"; };
 		FAB17BF31ABFC4B100F9BA27 /* lz4hc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4hc.c; sourceTree = "<group>"; };
@@ -1949,7 +1948,8 @@
 		FACA02EB1F5E396B0084B28F /* wrap_DataModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DataModule.h; sourceTree = "<group>"; };
 		FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDataBase.cpp; sourceTree = "<group>"; };
 		FAD19A161DFF8CA200D5398A /* ImageDataBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageDataBase.h; sourceTree = "<group>"; };
-		FAD43ECB1FF312D800831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = /Library/Frameworks/freetype.framework; sourceTree = "<absolute>"; };
+		FAD43ECB1FF312D800831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = macosx/Frameworks/freetype.framework; sourceTree = "<group>"; };
+		FADF4CC52663D0EC004F95C1 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		FADF53F71E3C7ACD00012CC0 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		FADF53FB1E3D74F200012CC0 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
@@ -2071,13 +2071,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA27B3C91B498623008A9DCE /* theora.framework in Frameworks */,
-				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
+				FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */,
 				FA577AC716C7513A00860150 /* mpg123.framework in Frameworks */,
 				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
@@ -3288,7 +3288,7 @@
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
-				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
+				FADF4CC52663D0EC004F95C1 /* libz.tbd */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
 				FA577A6F16C719F000860150 /* mpg123.framework */,
 				FA577A7116C719F400860150 /* ogg.framework */,
@@ -5285,8 +5285,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
@@ -5297,10 +5295,6 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/mpg123.framework/Headers",
-					/Library/Frameworks/freetype.framework/Headers,
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
-					/Library/Frameworks/mpg123.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5331,8 +5325,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
@@ -5343,10 +5335,6 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/mpg123.framework/Headers",
-					/Library/Frameworks/freetype.framework/Headers,
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
-					/Library/Frameworks/mpg123.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5378,8 +5366,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
@@ -5390,10 +5376,6 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/mpg123.framework/Headers",
-					/Library/Frameworks/freetype.framework/Headers,
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
-					/Library/Frameworks/mpg123.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
