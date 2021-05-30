@@ -5,7 +5,6 @@ Released: N/A
 
 * Added Body:getLocalPoints.
 * Added Font:getKerning.
-* Added a variant of Font:getWidth which takes a codepoint number argument.
 * Added support for r16, rg16, and rgba16 pixel formats in Canvases.
 * Added Shader:send(name, matrixlayout, data, ...) variant, whose argument order is more consistent than Shader:send(name, data, matrixlayout, ...).
 

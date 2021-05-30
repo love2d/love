@@ -86,16 +86,8 @@ int w_Font_getHeight(lua_State *L)
 int w_Font_getWidth(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
-	if (lua_type(L, 2) == LUA_TSTRING)
-	{
-		const char *str = luaL_checkstring(L, 2);
-		luax_catchexcept(L, [&](){ lua_pushinteger(L, t->getWidth(str)); });
-	}
-	else
-	{
-		uint32 glyph = (uint32) luaL_checknumber(L, 2);
-		luax_catchexcept(L, [&](){ lua_pushinteger(L, t->getWidth(glyph)); });
-	}
+	const char *str = luaL_checkstring(L, 2);
+	luax_catchexcept(L, [&](){ lua_pushinteger(L, t->getWidth(str)); });
 	return 1;
 }
 
