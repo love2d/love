@@ -97,4 +97,21 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
-
+  iOS-Simulator:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Clone Dependencies
+      uses: actions/checkout@v2
+      with:
+        path: apple-dependencies
+        repository: slime73/love-apple-dependencies
+        ref: main
+    - name: Move Dependencies
+      run: |
+        mv apple-dependencies/iOS/include platform/xcode/ios
+        mv apple-dependencies/iOS/libraries platform/xcode/ios
+    - name: Build
+      run:
+        xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 11'
