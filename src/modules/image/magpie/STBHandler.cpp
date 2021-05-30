@@ -31,7 +31,7 @@ static void loveSTBIAssert(bool test, const char *teststr)
 
 // Workaround when building for iOS Simulator with deployment target=8.0
 #include "common/config.h"
-#if defined(LOVE_IOS) && defined(TARGET_OS_SIMULATOR)
+#if defined(LOVE_IOS) && TARGET_OS_SIMULATOR == 1
 #define STBI_NO_THREAD_LOCALS
 #endif
 
