@@ -69,3 +69,20 @@ jobs:
       with:
         name: love-windows-${{ matrix.platform }}
         path: install
+  macOS:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Clone Dependencies
+      uses: actions/checkout@v2
+      with:
+        path: apple-dependencies
+        repository: slime73/love-apple-dependencies
+        ref: main
+    - name: Move Dependencies
+      run:
+        mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
+    - name: Build
+      run: |
+        xcodebuild -project platform/xcode/love.xcodeproj -target love-macosx -configuration Release
