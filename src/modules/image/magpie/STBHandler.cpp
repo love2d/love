@@ -29,9 +29,9 @@ static void loveSTBIAssert(bool test, const char *teststr)
 		throw love::Exception("Could not decode image (stb_image assertion '%s' failed)", teststr);
 }
 
-// Workaround when building for iOS Simulator with deployment target=8.0
+// Workaround when building for iOS with deployment target=8.0
 #include "common/config.h"
-#if defined(LOVE_IOS) && TARGET_OS_SIMULATOR == 1
+#if defined(LOVE_IOS)
 #define STBI_NO_THREAD_LOCALS
 #endif
 
