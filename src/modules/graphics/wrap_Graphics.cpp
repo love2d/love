@@ -3255,6 +3255,16 @@ int w_polygon(lua_State *L)
 	return 0;
 }
 
+int w_dispatchThreadgroups(lua_State* L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	int x = (int) luaL_checkinteger(L, 2);
+	int y = (int) luaL_optinteger(L, 3, 1);
+	int z = (int) luaL_optinteger(L, 4, 1);
+	luax_catchexcept(L, [&](){ instance()->dispatchThreadgroups(shader, x, y, z); });
+	return 0;
+}
+
 int w_copyBuffer(lua_State *L)
 {
 	Buffer *source = luax_checkbuffer(L, 1);
@@ -3471,6 +3481,8 @@ static const luaL_Reg functions[] =
 
 	{ "print", w_print },
 	{ "printf", w_printf },
+
+	{ "dispatchThreadgroups", w_dispatchThreadgroups },
 
 	{ "copyBuffer", w_copyBuffer },
 

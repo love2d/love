@@ -68,6 +68,8 @@ public:
 
 	void setActive(bool active) override;
 
+	void dispatch(int x, int y, int z) override;
+
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;

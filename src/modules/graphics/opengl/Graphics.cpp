@@ -469,6 +469,11 @@ void Graphics::setActive(bool enable)
 	active = enable;
 }
 
+void Graphics::dispatch(int x, int y, int z)
+{
+	glDispatchCompute(x, y, z);
+}
+
 void Graphics::draw(const DrawCommand &cmd)
 {
 	gl.prepareDraw(this);
