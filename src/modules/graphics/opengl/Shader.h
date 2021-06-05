@@ -43,7 +43,7 @@ class Shader final : public love::graphics::Shader, public Volatile
 {
 public:
 
-	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
+	Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
 	virtual ~Shader();
 
 	// Implements Volatile

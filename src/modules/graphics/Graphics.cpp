@@ -291,7 +291,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 
 	}
 
-	return newShaderInternal(stages[SHADERSTAGE_VERTEX], stages[SHADERSTAGE_PIXEL]);
+	return newShaderInternal(stages);
 }
 
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
@@ -332,6 +332,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 	bool validstages[SHADERSTAGE_MAX_ENUM] = {};
 	validstages[SHADERSTAGE_VERTEX] = true;
 	validstages[SHADERSTAGE_PIXEL] = true;
+	validstages[SHADERSTAGE_COMPUTE] = true;
 
 	// Don't use cached shader stages, since the gles flag may not match the
 	// current renderer.
@@ -362,7 +363,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		}
 	}
 
-	return Shader::validate(stages[SHADERSTAGE_VERTEX], stages[SHADERSTAGE_PIXEL], err);
+	return Shader::validate(stages, err);
 }
 
 int Graphics::getWidth() const

@@ -389,6 +389,24 @@ void main() {
 }
 )";
 
+static const char compute_header[] = R"(
+#define love_NumWorkGroups gl_NumWorkGroups
+#define love_WorkGroupID gl_WorkGroupID
+#define love_LocalInvocationID gl_LocalInvocationID
+#define love_GlobalInvocationID gl_GlobalInvocationID
+#define love_LocalInvocationIndex gl_LocalInvocationIndex
+)";
+
+static const char compute_functions[] = R"()";
+
+static const char compute_main[] = R"(
+void computemain();
+
+void main() {
+	computemain();
+}
+)";
+
 struct StageInfo
 {
 	const char *name;
@@ -403,6 +421,7 @@ static const StageInfo stageInfo[] =
 {
 	{ "VERTEX", vertex_header, vertex_functions, vertex_main, vertex_main, vertex_main_raw },
 	{ "PIXEL", pixel_header, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
+	{ "COMPUTE", compute_header, compute_functions, compute_main, compute_main, compute_main },
 };
 
 static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == SHADERSTAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
@@ -465,6 +484,15 @@ static Shader::EntryPoint getPixelEntryPoint(const std::string &src, bool &mrt)
 	return Shader::ENTRYPOINT_NONE;
 }
 
+static Shader::EntryPoint getComputeEntryPoint(const std::string &src) {
+	std::smatch m;
+
+	if (std::regex_search(src, m, std::regex("void\\s+computemain\\s*\\(")))
+		return Shader::ENTRYPOINT_RAW;
+
+	return Shader::ENTRYPOINT_NONE;
+}
+
 } // glsl
 
 static_assert(sizeof(Shader::BuiltinUniformData) == sizeof(float) * 4 * 13, "Update the array in wrap_GraphicsShader.lua if this changes.");
@@ -480,6 +508,9 @@ Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 	info.language = glsl::getTargetLanguage(src);
 	info.stages[SHADERSTAGE_VERTEX] = glsl::getVertexEntryPoint(src);
 	info.stages[SHADERSTAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
+	info.stages[SHADERSTAGE_COMPUTE] = glsl::getComputeEntryPoint(src);
+	if (info.stages[SHADERSTAGE_COMPUTE])
+		info.language = LANGUAGE_GLSL4;
 	return info;
 }
 
@@ -493,6 +524,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 
 	if (info.stages[stage] == ENTRYPOINT_RAW && info.language == LANGUAGE_GLSL1)
 		throw love::Exception("Shaders using a raw entry point (vertexmain or pixelmain) must use GLSL 3 or greater.");
+
+	if (stage == SHADERSTAGE_COMPUTE && info.language != LANGUAGE_GLSL4)
+		throw love::Exception("Compute shaders must use GLSL 4.");
 
 	const auto &features = gfx->getCapabilities().features;
 
@@ -541,15 +575,15 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	return ss.str();
 }
 
-Shader::Shader(ShaderStage *vertex, ShaderStage *pixel)
+Shader::Shader(StrongRef<ShaderStage> _stages[])
 	: stages()
 {
 	std::string err;
-	if (!validateInternal(vertex, pixel, err, validationReflection))
+	if (!validateInternal(_stages, err, validationReflection))
 		throw love::Exception("%s", err.c_str());
 
-	stages[SHADERSTAGE_VERTEX] = vertex;
-	stages[SHADERSTAGE_PIXEL] = pixel;
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
+		stages[i] = _stages[i];
 }
 
 Shader::~Shader()
@@ -641,21 +675,21 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 	}
 }
 
-bool Shader::validate(ShaderStage* vertex, ShaderStage* pixel, std::string& err)
+bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
 {
 	ValidationReflection reflection;
-	return validateInternal(vertex, pixel, err, reflection);
+	return validateInternal(stages, err, reflection);
 }
 
-bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::string &err, ValidationReflection &reflection)
+bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, ValidationReflection &reflection)
 {
 	glslang::TProgram program;
 
-	if (vertex != nullptr)
-		program.addShader(vertex->getGLSLangShader());
-
-	if (pixel != nullptr)
-		program.addShader(pixel->getGLSLangShader());
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
+	{
+		if (stages[i] != nullptr)
+			program.addShader(stages[i]->getGLSLangShader());
+	}
 
 	if (!program.link(EShMsgDefault))
 	{

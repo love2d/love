@@ -148,6 +148,8 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 		glslangStage = EShLangVertex;
 	else if (stage == SHADERSTAGE_PIXEL)
 		glslangStage = EShLangFragment;
+	else if (stage == SHADERSTAGE_COMPUTE)
+		glslangStage = EShLangCompute;
 	else
 		throw love::Exception("Cannot compile shader stage: unknown stage type.");
 
@@ -212,8 +214,9 @@ const char *ShaderStage::getConstant(ShaderStageType in)
 
 StringMap<ShaderStageType, SHADERSTAGE_MAX_ENUM>::Entry ShaderStage::stageNameEntries[] =
 {
-	{ "vertex", SHADERSTAGE_VERTEX },
-	{ "pixel",  SHADERSTAGE_PIXEL  },
+	{ "vertex",  SHADERSTAGE_VERTEX  },
+	{ "pixel",   SHADERSTAGE_PIXEL   },
+	{ "compute", SHADERSTAGE_COMPUTE },
 };
 
 StringMap<ShaderStageType, SHADERSTAGE_MAX_ENUM> ShaderStage::stageNames(ShaderStage::stageNameEntries, sizeof(ShaderStage::stageNameEntries));
