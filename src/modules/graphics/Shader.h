@@ -216,6 +216,8 @@ public:
 	TextureType getMainTextureType() const;
 	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
+	void getLocalThreadgroupSize(int *x, int *y, int *z);
+
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info);
 
@@ -243,6 +245,7 @@ protected:
 	struct ValidationReflection
 	{
 		std::map<std::string, BufferReflection> storageBuffers;
+		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};
 
