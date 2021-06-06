@@ -131,7 +131,7 @@ function love.arg.parseOption(m, i)
 	return m.a
 end
 
-function love.arg.parseOptions()
+function love.arg.parseOptions(arg)
 
 	local game
 	local argc = #arg
@@ -298,7 +298,9 @@ function love.boot()
 	-- This is absolutely needed.
 	require("love.filesystem")
 
-	local arg0 = love.arg.getLow(arg)
+	love.rawGameArguments = arg
+
+	local arg0 = love.arg.getLow(love.rawGameArguments)
 	love.filesystem.init(arg0)
 
 	local exepath = love.filesystem.getExecutablePath()
@@ -319,7 +321,10 @@ function love.boot()
 	end
 
 	-- Parse options now that we know which options we're looking for.
-	love.arg.parseOptions()
+	love.arg.parseOptions(love.rawGameArguments)
+
+	-- parseGameArguments can only be called after parseOptions.
+	love.parsedGameArguments = love.arg.parseGameArguments(love.rawGameArguments)
 
 	local o = love.arg.options
 
@@ -587,12 +592,10 @@ end
 -----------------------------------------------------------
 
 function love.run()
-	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
+	if love.load then love.load(love.parsedGameArguments, love.rawGameArguments) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then love.timer.step() end
-
-	local dt = 0
 
 	-- Main loop time.
 	return function()
@@ -610,7 +613,7 @@ function love.run()
 		end
 
 		-- Update dt, as we'll be passing it to update
-		if love.timer then dt = love.timer.step() end
+		local dt = love.timer and love.timer.step() or 0
 
 		-- Call update and draw
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
@@ -626,7 +629,6 @@ function love.run()
 
 		if love.timer then love.timer.sleep(0.001) end
 	end
-
 end
 
 local debug, print, error = debug, print, error
