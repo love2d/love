@@ -186,6 +186,13 @@ public:
 		bool brokenSRGB;
 
 		/**
+		 * Some Android graphics drivers claim to support GLES3.0 but have bugs
+		 * with certain aspects that users expect to work. For example:
+		 * https://github.com/love2d/love-android/issues/204
+		 **/
+		bool brokenGLES3;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *

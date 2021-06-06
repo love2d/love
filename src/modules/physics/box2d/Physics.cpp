@@ -31,7 +31,17 @@ namespace physics
 namespace box2d
 {
 
+// TODO: Make this not static.
 float Physics::meter = Physics::DEFAULT_METER;
+
+Physics::Physics()
+{
+	meter = DEFAULT_METER;
+}
+
+Physics::~Physics()
+{
+}
 
 const char *Physics::getName() const
 {

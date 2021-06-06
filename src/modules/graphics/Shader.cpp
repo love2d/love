@@ -143,7 +143,7 @@ static const char global_functions[] = R"(
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
 		precision lowp sampler3D;
 	#endif
-	#if __VERSION__ >= 300
+	#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
 		precision lowp sampler2DShadow;
 		precision lowp samplerCubeShadow;
 		precision lowp sampler2DArrayShadow;

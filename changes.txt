@@ -16,6 +16,7 @@ Released: N/A
 * Added integer buffer data formats.
 * Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
 * Added new 'clampone' wrap mode.
+* Added a variant of Font:getWidth which takes a codepoint number argument.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
@@ -39,7 +40,6 @@ Released: N/A
 
 * Added Body:getLocalPoints.
 * Added Font:getKerning.
-* Added a variant of Font:getWidth which takes a codepoint number argument.
 * Added support for r16, rg16, and rgba16 pixel formats in Canvases.
 * Added Shader:send(name, matrixlayout, data, ...) variant, whose argument order is more consistent than Shader:send(name, data, matrixlayout, ...).
 
@@ -52,6 +52,7 @@ Released: N/A
 * Fixed fused macOS apps opening other love games when drag-and-drop is used (if the fused app hasn't already removed .love files from recognized document types).
 * Fixed File:isEOF when called on a dropped file.
 * Fixed support for > 2GB dropped files on desktops.
+* Fixed love.physics meter scale value persisting after love.event.quit("restart").
 * Fixed audio to resume properly after interruption on iOS.
 * Fixed initial window creation to set the window's title during creation instead of after.
 * Fixed the window's screen position when exiting fullscreen via love.window.setFullscreen.
