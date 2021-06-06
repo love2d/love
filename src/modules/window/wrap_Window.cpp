@@ -80,7 +80,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	lua_getfield(L, idx, settingName(Window::SETTING_HIGHDPI));
 	if (!lua_isnoneornil(L, -1))
 	{
-		luax_markdeprecated(L, "window.highdpi", API_FIELD, DEPRECATED_REPLACED, "t.highdpi in love.conf");
+		luax_markdeprecated(L, 1, "window.highdpi", API_FIELD, DEPRECATED_REPLACED, "t.highdpi in love.conf");
 		bool highdpi = luax_checkboolean(L, -1);
 		if (!instance()->isOpen())
 			setHighDPIAllowed(highdpi);

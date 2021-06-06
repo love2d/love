@@ -21,6 +21,7 @@
 #pragma once
 
 #include "int.h"
+#include "StringMap.h"
 
 #include <string>
 #include <vector>
@@ -32,8 +33,10 @@ enum APIType
 {
 	API_FUNCTION,
 	API_METHOD,
+	API_CALLBACK,
 	API_FIELD,
 	API_CONSTANT,
+	API_MAX_ENUM
 };
 
 enum DeprecationType
@@ -41,6 +44,7 @@ enum DeprecationType
 	DEPRECATED_NO_REPLACEMENT,
 	DEPRECATED_REPLACED,
 	DEPRECATED_RENAMED,
+	DEPRECATED_MAX_ENUM
 };
 
 struct DeprecationInfo
@@ -77,5 +81,8 @@ struct MarkDeprecated
 
 	DeprecationInfo *info;
 };
+
+STRINGMAP_DECLARE(APIType);
+STRINGMAP_DECLARE(DeprecationType);
 
 } // love

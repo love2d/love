@@ -352,6 +352,29 @@ static int w__requestRecordingPermission(lua_State *L)
 	return 0;
 }
 
+static int w_love_markDeprecated(lua_State *L)
+{
+	int level = (int)luaL_checkinteger(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	const char *apiname = luaL_checkstring(L, 3);
+	const char *deprecationtname = luaL_checkstring(L, 4);
+
+	love::APIType api;
+	if (!love::getConstant(apiname, api))
+		return love::luax_enumerror(L, "API type", love::getConstants(api), apiname);
+
+	love::DeprecationType dtype;
+	if (!love::getConstant(deprecationtname, dtype))
+		return love::luax_enumerror(L, "deprecation type", love::getConstants(dtype), deprecationtname);
+
+	const char *replacement = nullptr;
+	if (dtype != love::DEPRECATED_NO_REPLACEMENT)
+		replacement = luaL_checkstring(L, 5);
+
+	love::luax_markdeprecated(L, level, name, api, dtype, replacement);
+	return 0;
+}
+
 static int w_love_setDeprecationOutput(lua_State *L)
 {
 	bool enable = love::luax_checkboolean(L, 1);
@@ -481,6 +504,9 @@ int luaopen_love(lua_State *L)
 		lua_setmetatable(L, -2);
 
 		lua_setfield(L, -2, "_deprecation");
+
+		lua_pushcfunction(L, w_love_markDeprecated);
+		lua_setfield(L, -2, "markDeprecated");
 
 		lua_pushcfunction(L, w_love_setDeprecationOutput);
 		lua_setfield(L, -2, "setDeprecationOutput");
