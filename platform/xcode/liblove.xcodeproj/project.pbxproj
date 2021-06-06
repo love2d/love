@@ -1790,7 +1790,7 @@
 		FA27B39C1B498151008A9DCE /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_VideoStream.cpp; sourceTree = "<group>"; };
 		FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_VideoStream.h; sourceTree = "<group>"; };
-		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/theora.framework; sourceTree = "<absolute>"; };
+		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = macosx/Frameworks/theora.framework; sourceTree = "<group>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA28EBD31E352DB5003446F4 /* FenceSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FenceSync.cpp; sourceTree = "<group>"; };
@@ -1828,8 +1828,8 @@
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = macosx/Frameworks/Lua.framework; sourceTree = "<group>"; };
 		FA577A6F16C719F000860150 /* mpg123.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mpg123.framework; path = macosx/Frameworks/mpg123.framework; sourceTree = "<group>"; };
-		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/ogg.framework; sourceTree = "<absolute>"; };
-		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/vorbis.framework; sourceTree = "<absolute>"; };
+		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = macosx/Frameworks/ogg.framework; sourceTree = "<group>"; };
+		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = macosx/Frameworks/vorbis.framework; sourceTree = "<group>"; };
 		FA577A7916C71A1700860150 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		FA577A7C16C71A2600860150 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FA577A8216C71A5300860150 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = macosx/Frameworks/libmodplug.framework; sourceTree = "<group>"; };
@@ -1869,7 +1869,7 @@
 		FA91DA8A1F377C3900C80E33 /* deprecation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = deprecation.h; sourceTree = "<group>"; };
 		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
-		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
+		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = macosx/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		FA9D53AA1F5307E900125C6B /* Deprecations.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Deprecations.cpp; sourceTree = "<group>"; };
 		FA9D53AB1F5307E900125C6B /* Deprecations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Deprecations.h; sourceTree = "<group>"; };
 		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
@@ -1891,7 +1891,7 @@
 		FAAA3FD51F64B3AD00F89E99 /* lstrlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lstrlib.h; sourceTree = "<group>"; };
 		FAAA3FD61F64B3AD00F89E99 /* lutf8lib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lutf8lib.c; sourceTree = "<group>"; };
 		FAAA3FD71F64B3AD00F89E99 /* lutf8lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lutf8lib.h; sourceTree = "<group>"; };
-		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Users/alex/Documents/git/love/platform/xcode/macosx/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "macosx/Frameworks/OpenAL-Soft.framework"; sourceTree = "<group>"; };
 		FAB17BE41ABFAA9000F9BA27 /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4.c; sourceTree = "<group>"; };
 		FAB17BE51ABFAA9000F9BA27 /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4.h; sourceTree = "<group>"; };
 		FAB17BF31ABFC4B100F9BA27 /* lz4hc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4hc.c; sourceTree = "<group>"; };
