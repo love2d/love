@@ -361,7 +361,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		data.resize(Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE / 4);
 
 		auto buffer = newBuffer(settings, format, data.data(), data.size() * sizeof(float), data.size());
-		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
+		defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].set(buffer, Acquire::NORETAIN);
 	}
 
 	// Load default resources before other Volatile.
