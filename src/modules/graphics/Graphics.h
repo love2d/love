@@ -439,6 +439,7 @@ public:
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Shader *newShader(const std::vector<std::string> &stagessource);
+	Shader *newComputeShader(const std::string &source);
 
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);

@@ -294,6 +294,18 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 	return newShaderInternal(stages);
 }
 
+Shader *Graphics::newComputeShader(const std::string &source)
+{
+	Shader::SourceInfo info = Shader::getSourceInfo(source);
+
+	if (info.stages[SHADERSTAGE_COMPUTE] == Shader::ENTRYPOINT_NONE)
+		throw love::Exception("Could not parse compute shader code (missing 'computemain' function?)");
+
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
+	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, info));
+	return newShaderInternal(stages);
+}
+
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
 {
 	std::vector<Buffer::DataDeclaration> dataformat = {{"", format, 0}};

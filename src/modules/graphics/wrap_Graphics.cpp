@@ -1458,6 +1458,34 @@ int w_newShader(lua_State *L)
 	return 1;
 }
 
+int w_newComputeShader(lua_State* L)
+{
+	std::vector<std::string> stages;
+	w_getShaderSource(L, 1, stages);
+
+	bool should_error = false;
+	try
+	{
+		Shader *shader = instance()->newComputeShader(stages[0]);
+		luax_pushtype(L, shader);
+		shader->release();
+	}
+	catch (love::Exception &e)
+	{
+		luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
+		lua_pushstring(L, e.what());
+
+		// Function pushes the new error string onto the stack.
+		lua_pcall(L, 1, 1, 0);
+		should_error = true;
+	}
+
+	if (should_error)
+		return lua_error(L);
+
+	return 1;
+}
+
 int w_validateShader(lua_State *L)
 {
 	bool gles = luax_checkboolean(L, 1);
@@ -3415,6 +3443,7 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newShader", w_newShader },
+	{ "newComputeShader", w_newComputeShader },
 	{ "newBuffer", w_newBuffer },
 	{ "newVertexBuffer", w_newVertexBuffer },
 	{ "newIndexBuffer", w_newIndexBuffer },
