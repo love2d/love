@@ -1093,6 +1093,7 @@ void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
 		throw love::Exception("Too many threadgroups dispatched.");
 	}
 
+	flushBatchedDraws();
 	shader->attach();
 	dispatch(x, y, z);
 }
