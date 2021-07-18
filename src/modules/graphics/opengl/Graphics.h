@@ -68,6 +68,8 @@ public:
 
 	void setActive(bool active) override;
 
+	void dispatch(int x, int y, int z) override;
+
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
@@ -137,7 +139,7 @@ private:
 	};
 
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
-	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
+	love::graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) override;
 	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) override;
 	void initCapabilities() override;

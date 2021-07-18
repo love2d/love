@@ -103,6 +103,9 @@ OpenGL::OpenGL()
 	, maxTextureArrayLayers(0)
 	, maxTexelBufferSize(0)
 	, maxShaderStorageBufferSize(0)
+	, maxComputeWorkGroupsX(0)
+	, maxComputeWorkGroupsY(0)
+	, maxComputeWorkGroupsZ(0)
 	, maxRenderTargets(1)
 	, maxSamples(1)
 	, maxTextureUnits(1)
@@ -509,6 +512,19 @@ void OpenGL::initMaxValues()
 	{
 		maxShaderStorageBufferSize = 0;
 		maxShaderStorageBufferBindings = 0;
+	}
+
+	if (GLAD_ES_VERSION_3_1 || GLAD_VERSION_4_3)
+	{
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &maxComputeWorkGroupsX);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &maxComputeWorkGroupsY);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &maxComputeWorkGroupsZ);
+	}
+	else
+	{
+		maxComputeWorkGroupsX = 0;
+		maxComputeWorkGroupsY = 0;
+		maxComputeWorkGroupsZ = 0;
 	}
 
 	int maxattachments = 1;
@@ -1519,6 +1535,21 @@ int OpenGL::getMaxTexelBufferSize() const
 int OpenGL::getMaxShaderStorageBufferSize() const
 {
 	return maxShaderStorageBufferSize;
+}
+
+int OpenGL::getMaxComputeWorkGroupsX() const
+{
+	return maxComputeWorkGroupsX;
+}
+
+int OpenGL::getMaxComputeWorkGroupsY() const
+{
+	return maxComputeWorkGroupsY;
+}
+
+int OpenGL::getMaxComputeWorkGroupsZ() const
+{
+	return maxComputeWorkGroupsZ;
 }
 
 int OpenGL::getMaxRenderTargets() const

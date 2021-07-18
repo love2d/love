@@ -164,6 +164,9 @@ public:
 		LIMIT_TEXTURE_LAYERS,
 		LIMIT_TEXEL_BUFFER_SIZE,
 		LIMIT_SHADER_STORAGE_BUFFER_SIZE,
+		LIMIT_THREADGROUPS_X,
+		LIMIT_THREADGROUPS_Y,
+		LIMIT_THREADGROUPS_Z,
 		LIMIT_RENDER_TARGETS,
 		LIMIT_TEXTURE_MSAA,
 		LIMIT_ANISOTROPY,
@@ -436,6 +439,7 @@ public:
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Shader *newShader(const std::vector<std::string> &stagessource);
+	Shader *newComputeShader(const std::string &source);
 
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
@@ -670,6 +674,8 @@ public:
 	void captureScreenshot(const ScreenshotInfo &info);
 
 	void copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size);
+
+	void dispatchThreadgroups(Shader* shader, int x, int y, int z);
 
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
@@ -929,8 +935,10 @@ protected:
 
 	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info);
 	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
-	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
+	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
+
+	virtual void dispatch(int x, int y, int z) = 0;
 
 	virtual void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 

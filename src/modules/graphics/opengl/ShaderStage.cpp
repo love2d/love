@@ -53,6 +53,8 @@ bool ShaderStage::loadVolatile()
 		glstage = GL_VERTEX_SHADER;
 	else if (stage == SHADERSTAGE_PIXEL)
 		glstage = GL_FRAGMENT_SHADER;
+	else if (stage == SHADERSTAGE_COMPUTE)
+		glstage = GL_COMPUTE_SHADER;
 	else
 		throw love::Exception("%s shader stage is not handled in OpenGL backend code.", typestr);
 

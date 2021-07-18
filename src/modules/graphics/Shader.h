@@ -164,8 +164,13 @@ public:
 	// Pointer to the default Shader.
 	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
-	Shader(ShaderStage *vertex, ShaderStage *pixel);
+	Shader(StrongRef<ShaderStage> stages[]);
 	virtual ~Shader();
+
+	/**
+	 * Check whether a Shader has a stage.
+	 **/
+	bool hasStage(ShaderStageType stage);
 
 	/**
 	 * Binds this Shader's program to be used when rendering.
@@ -211,10 +216,12 @@ public:
 	TextureType getMainTextureType() const;
 	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
+	void getLocalThreadgroupSize(int *x, int *y, int *z);
+
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info);
 
-	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
+	static bool validate(StrongRef<ShaderStage> stages[], std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
@@ -238,10 +245,11 @@ protected:
 	struct ValidationReflection
 	{
 		std::map<std::string, BufferReflection> storageBuffers;
+		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};
 
-	static bool validateInternal(ShaderStage* vertex, ShaderStage* pixel, std::string& err, ValidationReflection &reflection);
+	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
 
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 

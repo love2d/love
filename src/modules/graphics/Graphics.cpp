@@ -291,7 +291,19 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 
 	}
 
-	return newShaderInternal(stages[SHADERSTAGE_VERTEX], stages[SHADERSTAGE_PIXEL]);
+	return newShaderInternal(stages);
+}
+
+Shader *Graphics::newComputeShader(const std::string &source)
+{
+	Shader::SourceInfo info = Shader::getSourceInfo(source);
+
+	if (info.stages[SHADERSTAGE_COMPUTE] == Shader::ENTRYPOINT_NONE)
+		throw love::Exception("Could not parse compute shader code (missing 'computemain' function?)");
+
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
+	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, info));
+	return newShaderInternal(stages);
 }
 
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
@@ -332,6 +344,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 	bool validstages[SHADERSTAGE_MAX_ENUM] = {};
 	validstages[SHADERSTAGE_VERTEX] = true;
 	validstages[SHADERSTAGE_PIXEL] = true;
+	validstages[SHADERSTAGE_COMPUTE] = true;
 
 	// Don't use cached shader stages, since the gles flag may not match the
 	// current renderer.
@@ -362,7 +375,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		}
 	}
 
-	return Shader::validate(stages[SHADERSTAGE_VERTEX], stages[SHADERSTAGE_PIXEL], err);
+	return Shader::validate(stages, err);
 }
 
 int Graphics::getWidth() const
@@ -1063,6 +1076,26 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 		throw love::Exception("Copying a portion of a buffer to the same buffer requires non-overlapping source and destination offsets.");
 
 	source->copyTo(dest, sourceoffset, destoffset, size);
+}
+
+void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
+{
+	if (!shader->hasStage(SHADERSTAGE_COMPUTE))
+		throw love::Exception("Only compute shaders can have threads dispatched.");
+
+	if (x <= 0 || y <= 0 || z <= 0)
+		throw love::Exception("Threadgroup dispatch size must be positive.");
+
+	if (x > capabilities.limits[LIMIT_THREADGROUPS_X]
+		|| y > capabilities.limits[LIMIT_THREADGROUPS_Y]
+		|| z > capabilities.limits[LIMIT_THREADGROUPS_Z])
+	{
+		throw love::Exception("Too many threadgroups dispatched.");
+	}
+
+	flushBatchedDraws();
+	shader->attach();
+	dispatch(x, y, z);
 }
 
 Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)
@@ -1878,6 +1911,9 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM,
 	{ "cubetexturesize",         Graphics::LIMIT_CUBE_TEXTURE_SIZE          },
 	{ "texelbuffersize",         Graphics::LIMIT_TEXEL_BUFFER_SIZE          },
 	{ "shaderstoragebuffersize", Graphics::LIMIT_SHADER_STORAGE_BUFFER_SIZE },
+	{ "threadgroupsx",           Graphics::LIMIT_THREADGROUPS_X             },
+	{ "threadgroupsy",           Graphics::LIMIT_THREADGROUPS_Y             },
+	{ "threadgroupsz",           Graphics::LIMIT_THREADGROUPS_Z             },
 	{ "rendertargets",           Graphics::LIMIT_RENDER_TARGETS             },
 	{ "texturemsaa",             Graphics::LIMIT_TEXTURE_MSAA               },
 	{ "anisotropy",              Graphics::LIMIT_ANISOTROPY                 },
