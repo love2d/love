@@ -514,7 +514,7 @@ Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 	return info;
 }
 
-std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const Shader::SourceInfo &info)
+std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const Shader::SourceInfo &info, bool gles, bool checksystemfeatures)
 {
 	if (info.language == Shader::LANGUAGE_MAX_ENUM)
 		throw love::Exception("Invalid shader language");
@@ -528,19 +528,23 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (stage == SHADERSTAGE_COMPUTE && info.language != LANGUAGE_GLSL4)
 		throw love::Exception("Compute shaders must use GLSL 4.");
 
-	const auto &features = gfx->getCapabilities().features;
+	bool glsl1on3 = info.language == LANGUAGE_GLSL1;
 
-	if (stage == SHADERSTAGE_COMPUTE && !features[Graphics::FEATURE_GLSL4])
-		throw love::Exception("Compute shaders require GLSL 4 which is not supported on this system.");
+	if (checksystemfeatures)
+	{
+		const auto &features = gfx->getCapabilities().features;
 
-	if (info.language == LANGUAGE_GLSL3 && !features[Graphics::FEATURE_GLSL3])
-		throw love::Exception("GLSL 3 shaders are not supported on this system.");
+		if (stage == SHADERSTAGE_COMPUTE && !features[Graphics::FEATURE_GLSL4])
+			throw love::Exception("Compute shaders require GLSL 4 which is not supported on this system.");
 
-	if (info.language == LANGUAGE_GLSL4 && !features[Graphics::FEATURE_GLSL4])
-		throw love::Exception("GLSL 4 shaders are not supported on this system.");
+		if (info.language == LANGUAGE_GLSL3 && !features[Graphics::FEATURE_GLSL3])
+			throw love::Exception("GLSL 3 shaders are not supported on this system.");
 
-	bool gles = gfx->getRenderer() == Graphics::RENDERER_OPENGLES;
-	bool glsl1on3 = info.language == LANGUAGE_GLSL1 && features[Graphics::FEATURE_GLSL3];
+		if (info.language == LANGUAGE_GLSL4 && !features[Graphics::FEATURE_GLSL4])
+			throw love::Exception("GLSL 4 shaders are not supported on this system.");
+
+		glsl1on3 = info.language == LANGUAGE_GLSL1 && features[Graphics::FEATURE_GLSL3];
+	}
 
 	Language lang = info.language;
 	if (glsl1on3)

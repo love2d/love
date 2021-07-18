@@ -241,7 +241,8 @@ ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &
 
 	if (s == nullptr)
 	{
-		std::string glsl = Shader::createShaderStageCode(this, stage, source, info);
+		bool gles = getRenderer() == Graphics::RENDERER_OPENGLES;
+		std::string glsl = Shader::createShaderStageCode(this, stage, source, info, gles, true);
 		s = newShaderStageInternal(stage, cachekey, glsl, getRenderer() == RENDERER_OPENGLES);
 		if (!cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
@@ -363,7 +364,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
-				std::string glsl = Shader::createShaderStageCode(this, stype, source, info);
+				std::string glsl = Shader::createShaderStageCode(this, stype, source, info, gles, false);
 				stages[i].set(new ShaderStageForValidation(this, stype, glsl, gles), Acquire::NORETAIN);
 			}
 		}

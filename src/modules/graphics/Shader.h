@@ -219,7 +219,7 @@ public:
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
 
 	static SourceInfo getSourceInfo(const std::string &src);
-	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info, bool gles, bool checksystemfeatures);
 
 	static bool validate(StrongRef<ShaderStage> stages[], std::string &err);
 
