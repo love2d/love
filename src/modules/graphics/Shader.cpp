@@ -734,6 +734,22 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		}
 	}
 
+	for (int i = 0; i < program.getNumUniformVariables(); i++)
+	{
+		const glslang::TObjectReflection &info = program.getUniform(i);
+		const glslang::TType *type = info.getType();
+		if (type == nullptr)
+			continue;
+
+		if (type->isImage())
+		{
+			// TODO: Change this check to only error if a writable image is
+			// declared in non-compute, once support is added for them.
+			err = "Shader validation error:\nImage load/store (image2D uniforms, etc.) is not supported yet.";
+			return false;
+		}
+	}
+
 	for (int i = 0; i < program.getNumBufferBlocks(); i++)
 	{
 		const glslang::TObjectReflection &info = program.getBufferBlock(i);
