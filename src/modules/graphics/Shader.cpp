@@ -530,6 +530,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 
 	const auto &features = gfx->getCapabilities().features;
 
+	if (stage == SHADERSTAGE_COMPUTE && !features[Graphics::FEATURE_GLSL4])
+		throw love::Exception("Compute shaders require GLSL 4 which is not supported on this system.");
+
 	if (info.language == LANGUAGE_GLSL3 && !features[Graphics::FEATURE_GLSL3])
 		throw love::Exception("GLSL 3 shaders are not supported on this system.");
 
