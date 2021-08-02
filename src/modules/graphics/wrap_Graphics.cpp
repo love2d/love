@@ -1538,6 +1538,44 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 	lua_pop(L, 1);
 }
 
+static Buffer::DataDeclaration luax_checkdatadeclaration(lua_State* L, int formattableidx, int arrayindex, int declindex, bool requirename)
+{
+	Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
+
+	lua_getfield(L, declindex, "name");
+	if (requirename && lua_type(L, -1) != LUA_TSTRING)
+	{
+		std::ostringstream ss;
+		ss << "'name' field expected in array element #";
+		ss << arrayindex;
+		ss << " of format table";
+		std::string str = ss.str();
+		luaL_argerror(L, formattableidx, str.c_str());
+	}
+	else if (!lua_isnoneornil(L, -1))
+		decl.name = luax_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, declindex, "format");
+	if (lua_type(L, -1) != LUA_TSTRING)
+	{
+		std::ostringstream ss;
+		ss << "'format' field expected in array element #";
+		ss << arrayindex;
+		ss << " of format table";
+		std::string str = ss.str();
+		luaL_argerror(L, formattableidx, str.c_str());
+	}
+	const char* formatstr = luaL_checkstring(L, -1);
+	if (!getConstant(formatstr, decl.format))
+		luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
+	lua_pop(L, 1);
+
+	decl.arrayLength = luax_intflag(L, declindex, "arraylength", 0);
+
+	return decl;
+}
+
 static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)
 {
 	if (lua_type(L, idx) == LUA_TSTRING)
@@ -1558,29 +1596,7 @@ static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::Da
 		lua_rawgeti(L, idx, i);
 		luaL_checktype(L, -1, LUA_TTABLE);
 
-		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
-
-		lua_getfield(L, -1, "name");
-		if (!lua_isnoneornil(L, -1))
-			decl.name = luax_checkstring(L, -1);
-		lua_pop(L, 1);
-
-		lua_getfield(L, -1, "format");
-		if (lua_type(L, -1) != LUA_TSTRING)
-		{
-			std::ostringstream ss;
-			ss << "'format' field expected in array element #";
-			ss << i;
-			ss << " of format table";
-			std::string str = ss.str();
-			luaL_argerror(L, idx, str.c_str());
-		}
-		const char *formatstr = luaL_checkstring(L, -1);
-		if (!getConstant(formatstr, decl.format))
-			luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
-		lua_pop(L, 1);
-
-		decl.arrayLength = luax_intflag(L, -1, "arraylength", 0);
+		Buffer::DataDeclaration decl = luax_checkdatadeclaration(L, idx, i, -1, false);
 
 		format.push_back(decl);
 		lua_pop(L, 1);
@@ -1899,38 +1915,43 @@ static Mesh *newCustomMesh(lua_State *L)
 	}
 	lua_pop(L, 1);
 
-	// Per-vertex attribute formats.
+	// Per-vertex attribute data formats.
 	for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 	{
 		lua_rawgeti(L, 1, i);
 
-		// {name, datatype, components}
-		for (int j = 1; j <= 3; j++)
-			lua_rawgeti(L, -j, j);
+		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
 
-		const char *name = luaL_checkstring(L, -3);
+		lua_getfield(L, -1, "format");
+		bool hasformatfield = !lua_isnoneornil(L, -1);
+		lua_pop(L, 1);
 
-		DataFormat format = DATAFORMAT_MAX_ENUM;
-		const char *tname = luaL_checkstring(L, -2);
-
-		if (!lua_isnoneornil(L, -1))
+		if (hasformatfield || luax_objlen(L, -1) == 0)
+			decl = luax_checkdatadeclaration(L, 1, i, -1, true);
+		else
 		{
-			int components = (int) luaL_checkinteger(L, -1);
+			// Legacy format arguments: {name, datatype, components}
+			for (int j = 1; j <= 3; j++)
+				lua_rawgeti(L, -j, j);
+
+			decl.name = luaL_checkstring(L, -3);
+			const char* tname = luaL_checkstring(L, -2);
+			int components = (int)luaL_checkinteger(L, -1);
 
 			// Check deprecated format names.
 			if (strcmp(tname, "byte") == 0 || strcmp(tname, "unorm8") == 0)
 			{
 				if (components == 4)
-					format = DATAFORMAT_UNORM8_VEC4;
+					decl.format = DATAFORMAT_UNORM8_VEC4;
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 			}
 			else if (strcmp(tname, "unorm16") == 0)
 			{
 				if (components == 2)
-					format = DATAFORMAT_UNORM16_VEC2;
+					decl.format = DATAFORMAT_UNORM16_VEC2;
 				else if (components == 4)
-					format = DATAFORMAT_UNORM16_VEC4;
+					decl.format = DATAFORMAT_UNORM16_VEC4;
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 
@@ -1938,23 +1959,27 @@ static Mesh *newCustomMesh(lua_State *L)
 			else if (strcmp(tname, "float") == 0)
 			{
 				if (components == 1)
-					format = DATAFORMAT_FLOAT;
+					decl.format = DATAFORMAT_FLOAT;
 				else if (components == 2)
-					format = DATAFORMAT_FLOAT_VEC2;
+					decl.format = DATAFORMAT_FLOAT_VEC2;
 				else if (components == 3)
-					format = DATAFORMAT_FLOAT_VEC3;
+					decl.format = DATAFORMAT_FLOAT_VEC3;
 				else if (components == 4)
-					format = DATAFORMAT_FLOAT_VEC4;
+					decl.format = DATAFORMAT_FLOAT_VEC4;
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 			}
+
+			if (decl.format == DATAFORMAT_MAX_ENUM)
+				luax_enumerror(L, "vertex data format", getConstants(decl.format), tname);
+
+			lua_pop(L, 3);
+
+			luax_markdeprecated(L, 1, "vertex format array values in love.graphics.newMesh", API_CUSTOM, DEPRECATED_REPLACED, "named table fields 'format' and 'name'");
 		}
 
-		if (format == DATAFORMAT_MAX_ENUM && !getConstant(tname, format))
-			luax_enumerror(L, "vertex data format", getConstants(format), tname);
-
-		lua_pop(L, 4);
-		vertexformat.emplace_back(name, format);
+		lua_pop(L, 1);
+		vertexformat.push_back(decl);
 	}
 
 	if (lua_isnumber(L, 2))

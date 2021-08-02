@@ -114,8 +114,6 @@ std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 		notice += "field ";
 	else if (info.apiType == API_CONSTANT)
 		notice += "constant ";
-	else
-		notice += "API ";
 
 	notice += info.name;
 
@@ -193,6 +191,7 @@ STRINGMAP_BEGIN(APIType, API_MAX_ENUM, apiType)
 	{ "callback", API_CALLBACK },
 	{ "field",    API_FIELD    },
 	{ "constant", API_CONSTANT },
+	{ "custom",   API_CUSTOM   },
 }
 STRINGMAP_END(APIType, API_MAX_ENUM, apiType)
 
