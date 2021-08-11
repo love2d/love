@@ -1095,8 +1095,17 @@ void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
 	}
 
 	flushBatchedDraws();
+
+	auto prevshader = Shader::current;
 	shader->attach();
-	dispatch(x, y, z);
+
+	bool success = dispatch(x, y, z);
+
+	if (prevshader != nullptr)
+		prevshader->attach();
+
+	if (!success)
+		throw love::Exception("Compute shader must have resources bound to all writable texture and buffer variables.");
 }
 
 Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)

@@ -120,6 +120,7 @@ void Shader::mapActiveUniforms()
 		u.name = std::string(cname, (size_t) namelen);
 		u.location = glGetUniformLocation(program, u.name.c_str());
 		u.baseType = getUniformBaseType(gltype);
+		u.access = ACCESS_READ;
 		u.textureType = getUniformTextureType(gltype);
 		u.texelBufferType = getUniformTexelBufferType(gltype);
 		u.isDepthSampler = isDepthTextureType(gltype);
@@ -325,6 +326,7 @@ void Shader::mapActiveUniforms()
 		{
 			UniformInfo u = {};
 			u.baseType = UNIFORM_STORAGEBUFFER;
+			u.access = ACCESS_READ;
 
 			GLsizei namelength = 0;
 			glGetProgramResourceName(program, GL_SHADER_STORAGE_BLOCK, sindex, 2048, &namelength, namebuffer);
@@ -337,6 +339,7 @@ void Shader::mapActiveUniforms()
 			{
 				u.bufferStride = reflectionit->second.stride;
 				u.bufferMemberCount = reflectionit->second.memberCount;
+				u.access = reflectionit->second.access;
 			}
 
 			// Make sure previously set uniform data is preserved, and shader-
@@ -369,10 +372,17 @@ void Shader::mapActiveUniforms()
 			if (binding.bindingindex >= 0)
 			{
 				int activeindex = (int)activeStorageBufferBindings.size();
-
-				storageBufferBindingIndexToActiveBinding[binding.bindingindex] = activeindex;
-
 				activeStorageBufferBindings.push_back(binding);
+
+				auto p = std::make_pair(activeindex, -1);
+
+				if (u.access & ACCESS_WRITE)
+				{
+					p.second = (int)activeWritableStorageBuffers.size();
+					activeWritableStorageBuffers.push_back(u.buffers[0]);
+				}
+
+				storageBufferBindingIndexToActiveBinding[binding.bindingindex] = p;
 			}
 
 			uniforms[u.name] = u;
@@ -433,8 +443,9 @@ bool Shader::loadVolatile()
 	textureUnits.clear();
 	textureUnits.push_back(TextureUnit());
 
-	storageBufferBindingIndexToActiveBinding.resize(gl.getMaxShaderStorageBufferBindings(), -1);
+	storageBufferBindingIndexToActiveBinding.resize(gl.getMaxShaderStorageBufferBindings(), std::make_pair(-1, -1));
 	activeStorageBufferBindings.clear();
+	activeWritableStorageBuffers.clear();
 
 	for (const auto &stage : stages)
 	{
@@ -888,7 +899,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		if (texelbinding)
 		{
 			GLuint gltex = 0;
-			if (buffers[i] != nullptr)
+			if (buffer != nullptr)
 				gltex = (GLuint) buffer->getTexelBufferHandle();
 			else
 				gltex = gl.getDefaultTexelBuffer();
@@ -906,7 +917,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 			int bindingindex = info->ints[i];
 
 			GLuint glbuffer = 0;
-			if (buffers[i] != nullptr)
+			if (buffer != nullptr)
 				glbuffer = (GLuint) buffer->getHandle();
 			else
 				glbuffer = gl.getDefaultStorageBuffer();
@@ -914,9 +925,13 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 			if (shaderactive)
 				gl.bindIndexedBuffer(glbuffer, BUFFERUSAGE_SHADER_STORAGE, bindingindex);
 
-			int activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
-			if (activeindex >= 0)
-				activeStorageBufferBindings[activeindex].buffer = glbuffer;
+			auto activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
+
+			if (activeindex.first >= 0)
+				activeStorageBufferBindings[activeindex.first].buffer = glbuffer;
+
+			if (activeindex.second >= 0)
+				activeWritableStorageBuffers[activeindex.second] = buffer;
 		}
 	}
 }

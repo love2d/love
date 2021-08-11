@@ -65,6 +65,9 @@ public:
 
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
 
+	const std::vector<Buffer *> &getActiveWritableStorageBuffers() const { return activeWritableStorageBuffers; }
+	const std::vector<Texture *> &getActiveWritableTextures() const { return activeWritableTextures; }
+
 private:
 
 	struct TextureUnit
@@ -118,8 +121,11 @@ private:
 	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;
 
-	std::vector<int> storageBufferBindingIndexToActiveBinding;
+	std::vector<std::pair<int, int>> storageBufferBindingIndexToActiveBinding;
 	std::vector<BufferBinding> activeStorageBufferBindings;
+
+	std::vector<Buffer *> activeWritableStorageBuffers;
+	std::vector<Texture *> activeWritableTextures;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
 

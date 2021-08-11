@@ -469,10 +469,83 @@ void Graphics::setActive(bool enable)
 	active = enable;
 }
 
-void Graphics::dispatch(int x, int y, int z)
+static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarriers, GLbitfield &postDispatchBarriers)
 {
+	// TODO: handle indirect argument buffer types, when those are added.
+	for (auto buffer : shader->getActiveWritableStorageBuffers())
+	{
+		if (buffer == nullptr)
+			return false;
+
+		auto usage = buffer->getUsageFlags();
+
+		postDispatchBarriers |= GL_BUFFER_UPDATE_BARRIER_BIT;
+
+		if (usage & BUFFERUSAGEFLAG_SHADER_STORAGE)
+		{
+			preDispatchBarriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+			postDispatchBarriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+		}
+
+		if (usage & BUFFERUSAGEFLAG_TEXEL)
+			postDispatchBarriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
+
+		if (usage & BUFFERUSAGEFLAG_INDEX)
+			postDispatchBarriers |= GL_ELEMENT_ARRAY_BARRIER_BIT;
+
+		if (usage & BUFFERUSAGEFLAG_VERTEX)
+			postDispatchBarriers |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+
+		if (usage & (BUFFERUSAGEFLAG_COPY_SOURCE | BUFFERUSAGEFLAG_COPY_DEST))
+			postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
+	}
+
+	for (auto texture : shader->getActiveWritableTextures())
+	{
+		if (texture == nullptr)
+			return false;
+
+		preDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+
+		postDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+			| GL_TEXTURE_UPDATE_BARRIER_BIT
+			| GL_TEXTURE_FETCH_BARRIER_BIT;
+
+		if (texture->isRenderTarget())
+			postDispatchBarriers |= GL_FRAMEBUFFER_BARRIER_BIT;
+	}
+
+	return true;
+}
+
+bool Graphics::dispatch(int x, int y, int z)
+{
+	// Set by higher level code before calling dispatch(x, y, z).
+	auto shader = (Shader *) Shader::current;
+
+	GLbitfield preDispatchBarriers = 0;
+	GLbitfield postDispatchBarriers = 0;
+
+	if (!computeDispatchBarriers(shader, preDispatchBarriers, postDispatchBarriers))
+		return false;
+
+	// glMemoryBarrier before dispatch to make sure non-compute-read ->
+	// compute-write is synced.
+	// TODO: is this needed? spec language around GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+	// makes me think so.
+	// This is overly conservative (dispatch -> dispatch will have redundant
+	// barriers).
+	if (preDispatchBarriers != 0)
+		glMemoryBarrier(preDispatchBarriers);
+
 	glDispatchCompute(x, y, z);
-	glMemoryBarrier(GL_ALL_BARRIER_BITS); // TODO: Improve synchronization
+
+	// Not as (theoretically) efficient as issuing the barrier right before
+	// they're used later, but much less complicated.
+	if (postDispatchBarriers != 0)
+		glMemoryBarrier(postDispatchBarriers);
+
+	return true;
 }
 
 void Graphics::draw(const DrawCommand &cmd)

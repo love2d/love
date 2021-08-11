@@ -99,6 +99,13 @@ public:
 		ENTRYPOINT_RAW,
 	};
 
+	enum Access
+	{
+		ACCESS_NONE = 0,
+		ACCESS_READ = (1 << 0),
+		ACCESS_WRITE = (1 << 1),
+	};
+
 	struct SourceInfo
 	{
 		Language language;
@@ -124,6 +131,7 @@ public:
 		};
 
 		UniformType baseType;
+		Access access;
 		TextureType textureType;
 		DataBaseType texelBufferType;
 		bool isDepthSampler;
@@ -240,6 +248,7 @@ protected:
 	{
 		size_t stride;
 		size_t memberCount;
+		Access access;
 	};
 
 	struct ValidationReflection

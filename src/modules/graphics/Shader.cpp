@@ -792,6 +792,13 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			bufferReflection.stride = (size_t) info.size;
 			bufferReflection.memberCount = (size_t) info.numMembers;
 
+			if (qualifiers.isReadOnly())
+				bufferReflection.access = ACCESS_READ;
+			else if (qualifiers.isWriteOnly())
+				bufferReflection.access = ACCESS_WRITE;
+			else
+				bufferReflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+
 			reflection.storageBuffers[info.name] = bufferReflection;
 		}
 		else

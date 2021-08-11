@@ -68,7 +68,7 @@ public:
 
 	void setActive(bool active) override;
 
-	void dispatch(int x, int y, int z) override;
+	bool dispatch(int x, int y, int z) override;
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
