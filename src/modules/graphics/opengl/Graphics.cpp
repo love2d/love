@@ -835,7 +835,7 @@ void Graphics::endPass()
 	}
 }
 
-void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
+void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
 {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 		flushBatchedDraws();
@@ -844,8 +844,9 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 
 	if (c.hasValue)
 	{
-		gammaCorrectColor(c.value);
-		glClearColor(c.value.r, c.value.g, c.value.b, c.value.a);
+		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.b);
+		gammaCorrectColor(cf);
+		glClearColor(cf.r, cf.g, cf.b, cf.a);
 		flags |= GL_COLOR_BUFFER_BIT;
 	}
 
@@ -881,17 +882,19 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 	}
 }
 
-void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth)
+void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
 {
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	int ncolorRTs = (int) states.back().renderTargets.colors.size();
+	const auto &rts = states.back().renderTargets.colors;
+
+	int ncolorRTs = (int) rts.size();
 	int ncolors = (int) colors.size();
 
-	if (ncolors <= 1 && ncolorRTs <= 1)
+	if (ncolors <= 1 && (ncolorRTs == 0 || (ncolorRTs == 1 && rts[0].texture != nullptr && !isPixelFormatInteger(rts[0].texture->getPixelFormat()))))
 	{
-		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
+		clear(ncolors > 0 ? colors[0] : OptionalColorD(), stencil, depth);
 		return;
 	}
 
@@ -905,18 +908,39 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		if (!colors[i].hasValue)
 			continue;
 
-		Colorf c = colors[i].value;
-		gammaCorrectColor(c);
+		PixelFormatType datatype = PIXELFORMATTYPE_UNORM;
+		if (rts[i].texture != nullptr)
+			datatype = getPixelFormatInfo(rts[i].texture->getPixelFormat()).dataType;
+
+		ColorD c = colors[i].value;
 
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
 		{
-			const GLfloat carray[] = {c.r, c.g, c.b, c.a};
-			glClearBufferfv(GL_COLOR, i, carray);
+			if (datatype == PIXELFORMATTYPE_SINT)
+			{
+				const GLint carray[] = {(GLint)c.r, (GLint)c.g, (GLint)c.b, (GLint)c.a};
+				glClearBufferiv(GL_COLOR, i, carray);
+			}
+			else if (datatype == PIXELFORMATTYPE_UINT)
+			{
+				const GLuint carray[] = {(GLuint)c.r, (GLuint)c.g, (GLuint)c.b, (GLuint)c.a};
+				glClearBufferuiv(GL_COLOR, i, carray);
+			}
+			else
+			{
+				Colorf cf((float)c.r, (float)c.g, (float)c.b, (float)c.a);
+				gammaCorrectColor(cf);
+				const GLfloat carray[] = {cf.r, cf.g, cf.b, cf.a};
+				glClearBufferfv(GL_COLOR, i, carray);
+			}
 		}
 		else
 		{
+			Colorf cf((float)c.r, (float)c.g, (float)c.b, (float)c.a);
+			gammaCorrectColor(cf);
+
 			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-			glClearColor(c.r, c.g, c.b, c.a);
+			glClearColor(cf.r, cf.g, cf.b, cf.a);
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			drawbuffersmodified = true;

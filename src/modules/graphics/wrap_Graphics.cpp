@@ -68,8 +68,8 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	OptionalColorf color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
-	std::vector<OptionalColorf> colors;
+	OptionalColorD color(ColorD(0.0, 0.0, 0.0, 0.0));
+	std::vector<OptionalColorD> colors;
 
 	OptionalInt stencil(0);
 	OptionalDouble depth(1.0);
@@ -93,19 +93,19 @@ int w_clear(lua_State *L)
 			}
 			else if (argtype == LUA_TNIL || argtype == LUA_TNONE || luax_objlen(L, i + 1) == 0)
 			{
-				colors.push_back(OptionalColorf());
+				colors.push_back(OptionalColorD());
 				continue;
 			}
 
 			for (int j = 1; j <= 4; j++)
 				lua_rawgeti(L, i + 1, j);
 
-			OptionalColorf c;
+			OptionalColorD c;
 			c.hasValue = true;
-			c.value.r = (float) luaL_checknumber(L, -4);
-			c.value.g = (float) luaL_checknumber(L, -3);
-			c.value.b = (float) luaL_checknumber(L, -2);
-			c.value.a = (float) luaL_optnumber(L, -1, 1.0);
+			c.value.r = luaL_checknumber(L, -4);
+			c.value.g = luaL_checknumber(L, -3);
+			c.value.b = luaL_checknumber(L, -2);
+			c.value.a = luaL_optnumber(L, -1, 1.0);
 			colors.push_back(c);
 
 			lua_pop(L, 4);
@@ -627,7 +627,7 @@ int w_stencil(lua_State *L)
 		luaL_checktype(L, 4, LUA_TBOOLEAN);
 
 	if (stencilclear.hasValue)
-		instance()->clear(OptionalColorf(), stencilclear, OptionalDouble());
+		instance()->clear(OptionalColorD(), stencilclear, OptionalDouble());
 
 	luax_catchexcept(L, [&](){ instance()->drawToStencilBuffer(action, stencilvalue); });
 

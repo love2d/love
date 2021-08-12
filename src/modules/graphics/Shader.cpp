@@ -640,6 +640,40 @@ const Shader::UniformInfo *Shader::getMainTextureInfo() const
 	return getUniformInfo(BUILTIN_TEXTURE_MAIN);
 }
 
+DataBaseType Shader::getDataBaseType(PixelFormat format)
+{
+	switch (getPixelFormatInfo(format).dataType)
+	{
+		case PIXELFORMATTYPE_UNORM:
+			return DATA_BASETYPE_UNORM;
+		case PIXELFORMATTYPE_SNORM:
+			return DATA_BASETYPE_SNORM;
+		case PIXELFORMATTYPE_UFLOAT:
+		case PIXELFORMATTYPE_SFLOAT:
+			return DATA_BASETYPE_FLOAT;
+		case PIXELFORMATTYPE_SINT:
+			return DATA_BASETYPE_INT;
+		case PIXELFORMATTYPE_UINT:
+			return DATA_BASETYPE_UINT;
+		default:
+			return DATA_BASETYPE_FLOAT;
+	}
+}
+
+bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
+{
+	if (a == DATA_BASETYPE_FLOAT || a == DATA_BASETYPE_UNORM || a == DATA_BASETYPE_SNORM)
+		return b == DATA_BASETYPE_FLOAT || b == DATA_BASETYPE_UNORM || b == DATA_BASETYPE_SNORM;
+
+	if (a == DATA_BASETYPE_INT && b == DATA_BASETYPE_INT)
+		return true;
+
+	if (a == DATA_BASETYPE_UINT && b == DATA_BASETYPE_UINT)
+		return true;
+
+	return false;
+}
+
 void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 {
 	if ((primtype == PRIMITIVE_POINTS) != validationReflection.usesPointSize)
@@ -671,6 +705,9 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 		Texture::getConstant(info->textureType, shadertextypestr);
 		throw love::Exception("Texture's type (%s) must match the type of the shader's main texture type (%s).", textypestr, shadertextypestr);
 	}
+
+	if (!isResourceBaseTypeCompatible(info->dataBaseType, getDataBaseType(maintex->getPixelFormat())))
+		throw love::Exception("Texture's data format base type must match the uniform variable declared in the shader (float, int, or uint).");
 
 	if (info->isDepthSampler != maintex->getSamplerState().depthSampleMode.hasValue)
 	{

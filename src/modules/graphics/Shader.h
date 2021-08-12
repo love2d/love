@@ -259,6 +259,8 @@ protected:
 	};
 
 	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
+	static DataBaseType getDataBaseType(PixelFormat format);
+	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
 
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 

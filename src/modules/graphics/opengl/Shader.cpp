@@ -710,40 +710,6 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalupda
 	}
 }
 
-static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
-{
-	if (a == DATA_BASETYPE_FLOAT || a == DATA_BASETYPE_UNORM || a == DATA_BASETYPE_SNORM)
-		return b == DATA_BASETYPE_FLOAT || b == DATA_BASETYPE_UNORM || b == DATA_BASETYPE_SNORM;
-
-	if (a == DATA_BASETYPE_INT && b == DATA_BASETYPE_INT)
-		return true;
-
-	if (a == DATA_BASETYPE_UINT && b == DATA_BASETYPE_UINT)
-		return true;
-
-	return false;
-}
-
-static DataBaseType getDataBaseType(PixelFormat format)
-{
-	switch (getPixelFormatInfo(format).dataType)
-	{
-		case PIXELFORMATTYPE_UNORM:
-			return DATA_BASETYPE_UNORM;
-		case PIXELFORMATTYPE_SNORM:
-			return DATA_BASETYPE_SNORM;
-		case PIXELFORMATTYPE_UFLOAT:
-		case PIXELFORMATTYPE_SFLOAT:
-			return DATA_BASETYPE_FLOAT;
-		case PIXELFORMATTYPE_SINT:
-			return DATA_BASETYPE_INT;
-		case PIXELFORMATTYPE_UINT:
-			return DATA_BASETYPE_UINT;
-		default:
-			return DATA_BASETYPE_FLOAT;
-	}
-}
-
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
 {
 	Shader::sendTextures(info, textures, count, false);

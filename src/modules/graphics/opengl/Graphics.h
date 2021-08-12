@@ -74,8 +74,8 @@ public:
 	void draw(const DrawIndexedCommand &cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
 
-	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
-	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
 
 	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override;
 

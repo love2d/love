@@ -61,7 +61,7 @@ class Text;
 class Video;
 class Buffer;
 
-typedef Optional<Colorf> OptionalColorf;
+typedef Optional<ColorD> OptionalColorD;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
 
@@ -457,8 +457,8 @@ public:
 	 **/
 	void reset();
 
-	virtual void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) = 0;
-	virtual void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
 
 	virtual void discard(const std::vector<bool> &colorbuffers, bool depthstencil) = 0;
 
