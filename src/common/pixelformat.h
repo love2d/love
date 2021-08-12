@@ -35,23 +35,41 @@ enum PixelFormat
 
 	// 1-channel normal formats
 	PIXELFORMAT_R8_UNORM,
+	PIXELFORMAT_R8_INT,
+	PIXELFORMAT_R8_UINT,
 	PIXELFORMAT_R16_UNORM,
 	PIXELFORMAT_R16_FLOAT,
+	PIXELFORMAT_R16_INT,
+	PIXELFORMAT_R16_UINT,
 	PIXELFORMAT_R32_FLOAT,
+	PIXELFORMAT_R32_INT,
+	PIXELFORMAT_R32_UINT,
 
 	// 2-channel normal formats
 	PIXELFORMAT_RG8_UNORM,
+	PIXELFORMAT_RG8_INT,
+	PIXELFORMAT_RG8_UINT,
 	PIXELFORMAT_LA8_UNORM, // Same as RG8, but accessed as (L, L, L, A)
 	PIXELFORMAT_RG16_UNORM,
 	PIXELFORMAT_RG16_FLOAT,
+	PIXELFORMAT_RG16_INT,
+	PIXELFORMAT_RG16_UINT,
 	PIXELFORMAT_RG32_FLOAT,
+	PIXELFORMAT_RG32_INT,
+	PIXELFORMAT_RG32_UINT,
 
 	// 4-channel normal formats
 	PIXELFORMAT_RGBA8_UNORM,
 	PIXELFORMAT_sRGBA8_UNORM,
+	PIXELFORMAT_RGBA8_INT,
+	PIXELFORMAT_RGBA8_UINT,
 	PIXELFORMAT_RGBA16_UNORM,
 	PIXELFORMAT_RGBA16_FLOAT,
+	PIXELFORMAT_RGBA16_INT,
+	PIXELFORMAT_RGBA16_UINT,
 	PIXELFORMAT_RGBA32_FLOAT,
+	PIXELFORMAT_RGBA32_INT,
+	PIXELFORMAT_RGBA32_UINT,
 
 	// packed formats
 	PIXELFORMAT_RGBA4_UNORM,    // LSB->MSB: [a, b, g, r]
@@ -109,6 +127,16 @@ enum PixelFormat
 	PIXELFORMAT_MAX_ENUM
 };
 
+enum PixelFormatType
+{
+	PIXELFORMATTYPE_UNORM,
+	PIXELFORMATTYPE_SNORM,
+	PIXELFORMATTYPE_UFLOAT,
+	PIXELFORMATTYPE_SFLOAT,
+	PIXELFORMATTYPE_UINT,
+	PIXELFORMATTYPE_SINT,
+};
+
 struct PixelFormatInfo
 {
 	int components;
@@ -119,6 +147,7 @@ struct PixelFormatInfo
 	bool depth;
 	bool stencil;
 	bool compressed;
+	PixelFormatType dataType;
 };
 
 bool getConstant(PixelFormat in, const char *&out);
@@ -145,6 +174,11 @@ bool isPixelFormatDepth(PixelFormat format);
  * Gets whether the specified pixel format is a stencil type.
  **/
 bool isPixelFormatStencil(PixelFormat format);
+
+/**
+ * Gets whether the specified pixel format is a signed or unsigned integer type.
+ **/
+bool isPixelFormatInteger(PixelFormat format);
 
 /**
  * Gets the sRGB version of a linear pixel format, if applicable.

@@ -92,11 +92,8 @@ private:
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalupdate);
 
 	int getUniformTypeComponents(GLenum type) const;
+	void computeUniformTypeInfo(GLenum type, UniformInfo &u);
 	MatrixSize getMatrixSize(GLenum type) const;
-	UniformType getUniformBaseType(GLenum type) const;
-	TextureType getUniformTextureType(GLenum type) const;
-	DataBaseType getUniformTexelBufferType(GLenum type) const;
-	bool isDepthTextureType(GLenum type) const;
 
 	void flushBatchedDraws() const;
 

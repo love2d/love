@@ -504,6 +504,9 @@ void Texture::generateMipmaps()
 	if (isPixelFormatDepthStencil(format))
 		throw love::Exception("generateMipmaps cannot be called on a depth/stencil Texture.");
 
+	if (isPixelFormatInteger(format))
+		throw love::Exception("generateMipmaps cannot be called on an integer Texture.");
+
 	generateMipmapsInternal();
 }
 

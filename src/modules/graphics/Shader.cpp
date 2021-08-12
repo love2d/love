@@ -635,10 +635,9 @@ bool Shader::isDefaultActive()
 	return false;
 }
 
-TextureType Shader::getMainTextureType() const
+const Shader::UniformInfo *Shader::getMainTextureInfo() const
 {
-	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
-	return info != nullptr ? info->textureType : TEXTURE_MAX_ENUM;
+	return getUniformInfo(BUILTIN_TEXTURE_MAIN);
 }
 
 void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const

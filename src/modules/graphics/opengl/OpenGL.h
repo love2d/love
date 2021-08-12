@@ -312,7 +312,7 @@ public:
 	/**
 	 * Gets the ID for love's default texture (used for "untextured" primitives.)
 	 **/
-	GLuint getDefaultTexture(TextureType type) const;
+	GLuint getDefaultTexture(TextureType type, DataBaseType datatype) const;
 
 	/**
 	 * Gets the texture ID for love's default texel buffer.
@@ -523,7 +523,7 @@ private:
 
 		GLuint boundFramebuffers[2];
 
-		GLuint defaultTexture[TEXTURE_MAX_ENUM];
+		GLuint defaultTexture[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM];
 		GLuint defaultTexelBuffer;
 		GLuint defaultStorageBuffer;
 

@@ -131,9 +131,9 @@ public:
 		};
 
 		UniformType baseType;
-		Access access;
+		DataBaseType dataBaseType;
 		TextureType textureType;
-		DataBaseType texelBufferType;
+		Access access;
 		bool isDepthSampler;
 		size_t bufferStride;
 		size_t bufferMemberCount;
@@ -221,7 +221,7 @@ public:
 	 **/
 	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
 
-	TextureType getMainTextureType() const;
+	const UniformInfo *getMainTextureInfo() const;
 	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
 	void getLocalThreadgroupSize(int *x, int *y, int *z);

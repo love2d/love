@@ -693,6 +693,9 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (!firsttex->isValidSlice(firsttarget.slice))
 		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
 
+	if (isPixelFormatInteger(firstcolorformat))
+		throw love::Exception("Textures with integer pixel formats cannot be rendered to, currently.");
+
 	bool hasSRGBtexture = firstcolorformat == PIXELFORMAT_sRGBA8_UNORM;
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
@@ -725,6 +728,9 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 		if (isPixelFormatDepthStencil(format))
 			throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setRenderTargets.");
+
+		if (isPixelFormatInteger(format))
+			throw love::Exception("Textures with integer pixel formats cannot be rendered to, currently.");
 
 		if (format == PIXELFORMAT_sRGBA8_UNORM)
 			hasSRGBtexture = true;

@@ -341,6 +341,7 @@ bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, b
 		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
+	// TODO: one buffer each for float, int, uint
 	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERUSAGE_TEXEL].get() == nullptr)
 	{
 		Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
@@ -1723,7 +1724,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 	// Make sure at least something is bound to a color attachment. I believe
 	// this is required on ES2 but I'm not positive.
 	if (isPixelFormatDepthStencil(format))
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT), 0, 0, 0);
 
 	if (readable)
 	{
