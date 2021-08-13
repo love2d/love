@@ -787,9 +787,9 @@ public:
 	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
 
 	/**
-	 * Gets whether the specified pixel format is supported.
+	 * Gets whether the specified pixel format usage is supported.
 	 **/
-	virtual bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) = 0;
+	virtual bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.

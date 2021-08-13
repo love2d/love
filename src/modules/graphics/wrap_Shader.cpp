@@ -317,6 +317,7 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 	case Shader::UNIFORM_BOOL:
 		return w_Shader_sendBooleans(L, startidx, shader, info);
 	case Shader::UNIFORM_SAMPLER:
+	case Shader::UNIFORM_STORAGETEXTURE:
 		return w_Shader_sendTextures(L, startidx, shader, info);
 	case Shader::UNIFORM_TEXELBUFFER:
 	case Shader::UNIFORM_STORAGEBUFFER:
@@ -328,7 +329,8 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 
 static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, bool colors)
 {
-	if (info->baseType == Shader::UNIFORM_SAMPLER || info->baseType == Shader::UNIFORM_TEXELBUFFER || info->baseType == Shader::UNIFORM_STORAGEBUFFER)
+	if (info->baseType == Shader::UNIFORM_SAMPLER || info->baseType == Shader::UNIFORM_STORAGETEXTURE
+		|| info->baseType == Shader::UNIFORM_TEXELBUFFER || info->baseType == Shader::UNIFORM_STORAGEBUFFER)
 		return luaL_error(L, "Only value types (floats, ints, vectors, matrices, etc) be sent to Shaders via Data objects.");
 
 	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;

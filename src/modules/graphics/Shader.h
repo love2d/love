@@ -76,6 +76,7 @@ public:
 		UNIFORM_UINT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
+		UNIFORM_STORAGETEXTURE,
 		UNIFORM_TEXELBUFFER,
 		UNIFORM_STORAGEBUFFER,
 		UNIFORM_UNKNOWN,
@@ -135,6 +136,7 @@ public:
 		TextureType textureType;
 		Access access;
 		bool isDepthSampler;
+		PixelFormat storageTextureFormat;
 		size_t bufferStride;
 		size_t bufferMemberCount;
 		std::string name;
@@ -251,9 +253,16 @@ protected:
 		Access access;
 	};
 
+	struct StorageTextureReflection
+	{
+		PixelFormat format;
+		Access access;
+	};
+
 	struct ValidationReflection
 	{
 		std::map<std::string, BufferReflection> storageBuffers;
+		std::map<std::string, StorageTextureReflection> storageTextures;
 		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};

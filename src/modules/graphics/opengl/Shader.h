@@ -43,6 +43,15 @@ class Shader final : public love::graphics::Shader, public Volatile
 {
 public:
 
+	struct StorageTextureBinding
+	{
+		Texture *texture = nullptr;
+		GLuint gltexture = 0;
+		TextureType type = TEXTURE_2D;
+		GLenum access = GL_READ_ONLY;
+		GLenum internalFormat;
+	};
+
 	Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
 	virtual ~Shader();
 
@@ -66,7 +75,7 @@ public:
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
 
 	const std::vector<Buffer *> &getActiveWritableStorageBuffers() const { return activeWritableStorageBuffers; }
-	const std::vector<Texture *> &getActiveWritableTextures() const { return activeWritableTextures; }
+	const std::vector<StorageTextureBinding> &getStorageTextureBindings() const { return storageTextureBindings; }
 
 private:
 
@@ -118,11 +127,12 @@ private:
 	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;
 
+	std::vector<StorageTextureBinding> storageTextureBindings;
+
 	std::vector<std::pair<int, int>> storageBufferBindingIndexToActiveBinding;
 	std::vector<BufferBinding> activeStorageBufferBindings;
 
 	std::vector<Buffer *> activeWritableStorageBuffers;
-	std::vector<Texture *> activeWritableTextures;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
 

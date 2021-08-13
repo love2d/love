@@ -501,9 +501,9 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 			postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
 	}
 
-	for (auto texture : shader->getActiveWritableTextures())
+	for (const auto &binding : shader->getStorageTextureBindings())
 	{
-		if (texture == nullptr)
+		if (binding.texture == nullptr)
 			return false;
 
 		preDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
@@ -512,7 +512,7 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 			| GL_TEXTURE_UPDATE_BARRIER_BIT
 			| GL_TEXTURE_FETCH_BARRIER_BIT;
 
-		if (texture->isRenderTarget())
+		if (binding.texture->isRenderTarget())
 			postDispatchBarriers |= GL_FRAMEBUFFER_BARRIER_BIT;
 	}
 
@@ -1684,7 +1684,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
 {
 	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
 	{
@@ -1692,22 +1692,20 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 		sRGB = false;
 	}
 
-	uint32 requiredflags = 0;
-	if (rendertarget)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-	if (readable)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
+	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
+	bool computewrite = (usage & PIXELFORMATUSAGEFLAGS_COMPUTEWRITE) != 0;
 
 	format = getSizedFormat(format, rendertarget, readable);
 
-	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
+	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][computewrite ? 1 : 0][sRGB ? 1 : 0];
 
 	if (supported.hasValue)
 		return supported.value;
 
-	auto supportedflags = OpenGL::getPixelFormatUsageFlags(format);
+	uint32 supportedflags = OpenGL::getPixelFormatUsageFlags(format);
 
-	if ((requiredflags & supportedflags) != requiredflags)
+	if ((usage & supportedflags) != usage)
 	{
 		supported.set(false);
 		return supported.value;

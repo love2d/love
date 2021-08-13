@@ -107,7 +107,7 @@ public:
 	void setWireframe(bool enable) override;
 
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	RendererInfo getRendererInfo() const override;
 
@@ -170,8 +170,8 @@ private:
 	// Only needed for buffer types that can be bound to shaders.
 	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERUSAGE_MAX_ENUM];
 
-	// [rendertarget][readable][srgb]
-	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];
+	// [rendertarget][readable][computewrite][srgb]
+	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2][2];
 
 }; // Graphics
 

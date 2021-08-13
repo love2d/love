@@ -801,6 +801,8 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	s.linear = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_LINEAR), s.linear);
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
 
+	s.computeWrite = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), s.computeWrite);
+
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
 	if (!lua_isnoneornil(L, -1))
 		s.readable.set(luax_checkboolean(L, -1));
@@ -2640,6 +2642,7 @@ int w_getTextureFormats(lua_State *L)
 
 	bool rt = luax_checkboolflag(L, 1, Texture::getConstant(Texture::SETTING_RENDER_TARGET));
 	bool linear = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_LINEAR), false);
+	bool computewrite = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), false);
 
 	OptionalBool readable;
 	lua_getfield(L, 1, Texture::getConstant(Texture::SETTING_READABLE));
@@ -2663,10 +2666,17 @@ int w_getTextureFormats(lua_State *L)
 		if (rt && isPixelFormatDepth(format))
 			continue;
 
-		bool formatReadable = readable.get(!isPixelFormatDepthStencil(format));
 		bool sRGB = isGammaCorrect() && !linear;
 
-		luax_pushboolean(L, instance()->isPixelFormatSupported(format, rt, formatReadable, sRGB));
+		uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
+		if (rt)
+			usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+		if (readable.get(!isPixelFormatDepthStencil(format)))
+			usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+		if (computewrite)
+			usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
+
+		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB));
 		lua_setfield(L, -2, name);
 	}
 
@@ -2709,14 +2719,15 @@ int w_getCanvasFormats(lua_State *L)
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isPixelFormatSupported(format, true, true, false);
+				const uint32 usage = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+				return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
 			};
 		}
 		else
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isPixelFormatSupported(format, true, false, false);
+				return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false);
 			};
 		}
 	}
@@ -2725,7 +2736,10 @@ int w_getCanvasFormats(lua_State *L)
 		supported = [](PixelFormat format) -> bool
 		{
 			bool readable = !isPixelFormatDepthStencil(format);
-			return instance()->isPixelFormatSupported(format, true, readable, false);
+			uint32 usage = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+			if (readable)
+				usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+			return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
 		};
 	}
 
@@ -2738,7 +2752,7 @@ int w_getImageFormats(lua_State *L)
 
 	const auto supported = [](PixelFormat format) -> bool
 	{
-		return instance()->isPixelFormatSupported(format, false, true, false);
+		return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SAMPLE, false);
 	};
 
 	const auto ignore = [](PixelFormat format) -> bool

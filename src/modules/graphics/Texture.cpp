@@ -163,6 +163,7 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	: texType(settings.type)
 	, format(settings.format)
 	, renderTarget(settings.renderTarget)
+	, computeWrite(settings.computeWrite)
 	, readable(true)
 	, mipmapsMode(settings.mipmaps)
 	, sRGB(isGammaCorrect() && !settings.linear)
@@ -257,7 +258,15 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	if (isCompressed() && renderTarget)
 		throw love::Exception("Compressed textures cannot be render targets.");
 
-	if (!gfx->isPixelFormatSupported(format, renderTarget, readable, sRGB))
+	uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
+	if (renderTarget)
+		usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+	if (computeWrite)
+		usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
+
+	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB))
 	{
 		const char *fstr = "unknown";
 		love::getConstant(format, fstr);
@@ -267,7 +276,9 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 			readablestr = readable ? " readable" : " non-readable";
 
 		const char *rtstr = "";
-		if (renderTarget)
+		if (computeWrite)
+			rtstr = " as a compute shader-writable texture";
+		else if (renderTarget)
 			rtstr = " as a render target";
 
 		throw love::Exception("The %s%s pixel format is not supported%s on this system.", fstr, readablestr, rtstr);
@@ -569,6 +580,11 @@ Texture::MipmapsMode Texture::getMipmapsMode() const
 bool Texture::isRenderTarget() const
 {
 	return renderTarget;
+}
+
+bool Texture::isComputeWritable() const
+{
+	return computeWrite;
 }
 
 bool Texture::isReadable() const
@@ -934,6 +950,7 @@ static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM>::Entry setting
 	{ "dpiscale",     Texture::SETTING_DPI_SCALE     },
 	{ "msaa",         Texture::SETTING_MSAA          },
 	{ "canvas",       Texture::SETTING_RENDER_TARGET },
+	{ "computewrite", Texture::SETTING_COMPUTE_WRITE },
 	{ "readable",     Texture::SETTING_READABLE      },
 };
 

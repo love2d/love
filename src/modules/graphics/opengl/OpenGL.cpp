@@ -292,7 +292,7 @@ void OpenGL::setupContext()
 	// This can't be done in initContext with the rest of the bug checks because
 	// isPixelFormatSupported relies on state initialized here / after init.
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, true, true))
+	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET))
 		bugs.brokenR8PixelFormat = true;
 #endif
 }
@@ -2085,6 +2085,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 {
 	const uint32 commonsample = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_LINEAR;
 	const uint32 commonrender = PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_BLEND | PIXELFORMATUSAGEFLAGS_MSAA;
+	const uint32 computewrite = PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
 
 	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
@@ -2096,11 +2097,15 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		else if (pixelformat == PIXELFORMAT_R8_UNORM && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
 			flags |= commonsample; // We'll use OpenGL's luminance format internally.
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA8_UNORM:
 		flags |= commonsample;
 		if (GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8)
 			flags |= commonrender;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_sRGBA8_UNORM:
 		if (gl.bugs.brokenSRGB)
@@ -2110,6 +2115,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0
 			|| ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB) && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)))
 			flags |= commonrender;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_R16_UNORM:
 	case PIXELFORMAT_RG16_UNORM:
@@ -2117,10 +2124,14 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
 			|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg)))
 			flags |= commonsample | commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA16_UNORM:
 		if (GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16)
 			flags |= commonsample | commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_R16_FLOAT:
 	case PIXELFORMAT_RG16_FLOAT:
@@ -2132,6 +2143,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA16_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel))
@@ -2142,8 +2155,13 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_R32_FLOAT:
+		if (GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
+		// Fallthrough.
 	case PIXELFORMAT_RG32_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_texture_rg))
 			flags |= commonsample | commonrender;
@@ -2151,6 +2169,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA32_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float))
@@ -2159,6 +2179,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample;
 		if (!(GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 
 		case PIXELFORMAT_R8_INT:
@@ -2181,6 +2203,26 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		case PIXELFORMAT_RGBA32_UINT:
 			if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
 				flags |= PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+			if (GLAD_VERSION_4_3)
+				flags |= computewrite;
+			if (GLAD_ES_VERSION_3_1)
+			{
+				switch (pixelformat)
+				{
+				case PIXELFORMAT_RGBA8_INT:
+				case PIXELFORMAT_RGBA8_UINT:
+				case PIXELFORMAT_RGBA16_INT:
+				case PIXELFORMAT_RGBA16_UINT:
+				case PIXELFORMAT_R32_INT:
+				case PIXELFORMAT_R32_UINT:
+				case PIXELFORMAT_RGBA32_INT:
+				case PIXELFORMAT_RGBA32_UINT:
+					flags |= computewrite;
+					break;
+				default:
+					break;
+				}
+			}
 			break;
 
 	case PIXELFORMAT_LA8_UNORM:
@@ -2198,12 +2240,16 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 	case PIXELFORMAT_RGB10A2_UNORM:
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
 			flags |= commonsample | commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RG11B10_FLOAT:
 		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
 			flags |= commonsample;
 		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float)
 			flags |= commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 
 	case PIXELFORMAT_STENCIL8:

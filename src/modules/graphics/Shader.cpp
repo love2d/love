@@ -731,6 +731,55 @@ bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
 	return validateInternal(stages, err, reflection);
 }
 
+static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
+{
+	using namespace glslang;
+
+	switch (format)
+	{
+		case ElfNone: return PIXELFORMAT_UNKNOWN;
+		case ElfRgba32f: return PIXELFORMAT_RGBA32_FLOAT;
+		case ElfRgba16f: return PIXELFORMAT_RGBA16_FLOAT;
+		case ElfR32f: return PIXELFORMAT_R32_FLOAT;
+		case ElfRgba8: return PIXELFORMAT_RGBA8_UNORM;
+		case ElfRgba8Snorm: return PIXELFORMAT_UNKNOWN; // no snorm yet
+		case ElfRg32f: return PIXELFORMAT_RG32_FLOAT;
+		case ElfRg16f: return PIXELFORMAT_RG16_FLOAT;
+		case ElfR11fG11fB10f: return PIXELFORMAT_RG11B10_FLOAT;
+		case ElfR16f: return PIXELFORMAT_R16_FLOAT;
+		case ElfRgba16: return PIXELFORMAT_RGBA16_UNORM;
+		case ElfRgb10A2: return PIXELFORMAT_RGB10A2_UNORM;
+		case ElfRg16: return PIXELFORMAT_RG16_UNORM;
+		case ElfRg8: return PIXELFORMAT_RG8_UNORM;
+		case ElfR8: return PIXELFORMAT_R8_UNORM;
+		case ElfRgba16Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfRg16Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfRg8Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfR16Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfR8Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfRgba32i: return PIXELFORMAT_RGBA32_INT;
+		case ElfRgba16i: return PIXELFORMAT_RGBA16_INT;
+		case ElfRgba8i: return PIXELFORMAT_RGBA8_INT;
+		case ElfR32i: return PIXELFORMAT_R32_INT;
+		case ElfRg32i: return PIXELFORMAT_RG32_INT;
+		case ElfRg16i: return PIXELFORMAT_RG16_INT;
+		case ElfRg8i: return PIXELFORMAT_RG8_INT;
+		case ElfR16i: return PIXELFORMAT_R16_INT;
+		case ElfR8i: return PIXELFORMAT_R8_INT;
+		case ElfRgba32ui: return PIXELFORMAT_RGBA32_UINT;
+		case ElfRgba16ui: return PIXELFORMAT_RGBA16_UINT;
+		case ElfRgba8ui: return PIXELFORMAT_RGBA8_UINT;
+		case ElfR32ui: return PIXELFORMAT_R32_UINT;
+		case ElfRg32ui: return PIXELFORMAT_RG32_UINT;
+		case ElfRg16ui: return PIXELFORMAT_RG16_UINT;
+		case ElfRgb10a2ui: return PIXELFORMAT_UNKNOWN;
+		case ElfRg8ui: return PIXELFORMAT_RG8_UINT;
+		case ElfR16ui: return PIXELFORMAT_R16_UINT;
+		case ElfR8ui: return PIXELFORMAT_R8_UINT;
+		default: return PIXELFORMAT_UNKNOWN;
+	}
+}
+
 bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, ValidationReflection &reflection)
 {
 	glslang::TProgram program;
@@ -781,12 +830,34 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		if (type == nullptr)
 			continue;
 
+		const glslang::TQualifier &qualifiers = type->getQualifier();
+
 		if (type->isImage())
 		{
-			// TODO: Change this check to only error if a writable image is
-			// declared in non-compute, once support is added for them.
-			err = "Shader validation error:\nImage load/store (image2D uniforms, etc.) is not supported yet.";
-			return false;
+			if ((info.stages & EShLangComputeMask) == 0)
+			{
+				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders.";
+				return false;
+			}
+
+			if (!qualifiers.hasFormat())
+			{
+				err = "Shader validation error:\nStorage Texture '" + info.name + "' must have an explicit format set in its layout declaration.";
+				return false;
+			}
+
+			StorageTextureReflection texreflection = {};
+
+			texreflection.format = getPixelFormat(qualifiers.getFormat());
+
+			if (qualifiers.isReadOnly())
+				texreflection.access = ACCESS_READ;
+			else if (qualifiers.isWriteOnly())
+				texreflection.access = ACCESS_WRITE;
+			else
+				texreflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+
+			reflection.storageTextures[info.name] = texreflection;
 		}
 	}
 
@@ -798,7 +869,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		{
 			const glslang::TQualifier &qualifiers = type->getQualifier();
 
-			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && (info.stages & (EShLangVertexMask | EShLangFragmentMask)))
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && (info.stages & EShLangComputeMask) == 0)
 			{
 				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders.";
 				return false;
