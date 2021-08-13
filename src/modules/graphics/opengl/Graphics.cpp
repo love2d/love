@@ -506,6 +506,9 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 		if (binding.texture == nullptr)
 			return false;
 
+		if (binding.access == GL_READ_ONLY)
+			continue;
+
 		preDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 
 		postDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
