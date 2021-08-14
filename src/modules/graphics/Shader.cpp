@@ -80,7 +80,7 @@ static const char global_syntax[] = R"(
 #endif
 )";
 
-static const char global_uniforms[] = R"(
+static const char render_uniforms[] = R"(
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
@@ -390,11 +390,16 @@ void main() {
 )";
 
 static const char compute_header[] = R"(
-#define love_NumWorkGroups gl_NumWorkGroups
-#define love_WorkGroupID gl_WorkGroupID
-#define love_LocalInvocationID gl_LocalInvocationID
-#define love_GlobalInvocationID gl_GlobalInvocationID
-#define love_LocalInvocationIndex gl_LocalInvocationIndex
+#define love_ThreadGroupCount gl_NumWorkGroups
+#define love_ThreadGroupID gl_WorkGroupID
+#define love_LocalThreadID gl_LocalInvocationID
+#define love_GlobalThreadID gl_GlobalInvocationID
+#define love_LocalThreadIndex gl_LocalInvocationIndex
+#define love_ThreadGroupSize gl_WorkGroupSize
+)";
+
+static const char compute_uniforms[] = R"(
+void love_initializeBuiltinUniforms() {}
 )";
 
 static const char compute_functions[] = R"()";
@@ -403,6 +408,7 @@ static const char compute_main[] = R"(
 void computemain();
 
 void main() {
+	love_initializeBuiltinUniforms();
 	computemain();
 }
 )";
@@ -411,6 +417,7 @@ struct StageInfo
 {
 	const char *name;
 	const char *header;
+	const char *uniforms;
 	const char *functions;
 	const char *main;
 	const char *main_custom;
@@ -419,9 +426,9 @@ struct StageInfo
 
 static const StageInfo stageInfo[] =
 {
-	{ "VERTEX", vertex_header, vertex_functions, vertex_main, vertex_main, vertex_main_raw },
-	{ "PIXEL", pixel_header, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
-	{ "COMPUTE", compute_header, compute_functions, compute_main, compute_main, compute_main },
+	{ "VERTEX", vertex_header, render_uniforms, vertex_functions, vertex_main, vertex_main, vertex_main_raw },
+	{ "PIXEL", pixel_header, render_uniforms, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
+	{ "COMPUTE", compute_header, compute_uniforms, compute_functions, compute_main, compute_main, compute_main },
 };
 
 static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == SHADERSTAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
@@ -564,7 +571,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1";
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
-	ss << glsl::global_uniforms;
+	ss << stageinfo.uniforms;
 	ss << glsl::global_functions;
 	ss << stageinfo.functions;
 
