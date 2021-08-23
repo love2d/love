@@ -160,6 +160,13 @@ void Shader::mapActiveUniforms()
 		}
 		else if (u.baseType == UNIFORM_STORAGETEXTURE)
 		{
+			const auto reflectionit = validationReflection.storageTextures.find(u.name);
+			if (reflectionit != validationReflection.storageTextures.end())
+			{
+				u.storageTextureFormat = reflectionit->second.format;
+				u.access = reflectionit->second.access;
+			}
+
 			StorageTextureBinding binding = {};
 			binding.gltexture = gl.getDefaultTexture(u.textureType, u.dataBaseType);
 			binding.type = u.textureType;
