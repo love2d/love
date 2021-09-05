@@ -398,7 +398,7 @@ Message *Event::convert(const SDL_Event &e)
 				txt = "unknown";
 
 			vargs.emplace_back((double)(e.display.display + 1));
-			vargs.emplace_back(txt);
+			vargs.emplace_back(txt, strlen(txt));
 
 			msg = new Message("displayrotated", vargs);
 		}
