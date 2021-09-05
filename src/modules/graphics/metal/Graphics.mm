@@ -964,6 +964,16 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, sampindex, sampler);
 	}
+
+	for (const Shader::BufferBinding &b : s->getBufferBindings())
+	{
+		uint8 index = b.stages[ShaderStage::STAGE_VERTEX];
+		if (index != LOVE_UINT8_MAX)
+			setBuffer(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, index, b.buffer, 0);
+		index = b.stages[ShaderStage::STAGE_PIXEL];
+		if (index != LOVE_UINT8_MAX)
+			setBuffer(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, index, b.buffer, 0);
+	}
 }
 
 static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBindings *buffers, Graphics::RenderEncoderBindings &bindings)

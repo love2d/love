@@ -684,6 +684,35 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					b.samplerStages[stageindex] = (uint8) samplerbinding;
 				}
 			}
+
+			for (const auto &resource : resources.storage_buffers)
+			{
+				auto it = uniforms.find(resource.name);
+				if (it == uniforms.end())
+					continue;
+
+				UniformInfo &u = it->second;
+
+				uint32 bufferbinding = msl.get_automatic_msl_resource_binding(resource.id);
+				if (bufferbinding == (uint32)-1)
+					continue;
+
+				for (int i = 0; i < u.count; i++)
+				{
+					if (u.ints[i] == -1)
+					{
+						u.ints[i] = (int)bufferBindings.size();
+						BufferBinding b = {};
+
+						for (uint8 &stagebinding : b.stages)
+							stagebinding = LOVE_UINT8_MAX;
+
+						bufferBindings.push_back(b);
+					}
+
+					bufferBindings[u.ints[i]].stages[stageindex] = (uint8) bufferbinding;
+				}
+			}
 		}
 		catch (std::exception &e)
 		{
