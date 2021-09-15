@@ -23,6 +23,7 @@
 #include "common/version.h"
 #include "common/deprecation.h"
 #include "common/runtime.h"
+#include "modules/window/Window.h"
 
 #include "love.h"
 
@@ -501,6 +502,33 @@ int luaopen_love(lua_State *L)
 #endif
 #ifdef LOVE_ENABLE_LUA53
 	love::luax_preload(L, luaopen_luautf8, "utf8");
+#endif
+
+#ifdef LOVE_ENABLE_WINDOW
+	// In some environments, LuaJIT is limited to 2GB and LuaJIT sometimes panic when it
+	// reaches OOM and closes the whole program, leaving the user confused about what's
+	// going on.
+	// We can't recover the state at this point, but it's better to inform user that
+	// something very bad happening instead of silently exiting.
+	// Note that this is not foolproof. In some cases, the whole process crashes by
+	// uncaught exception that LuaJIT throws or simply exit as if calling
+	// love.event.quit("not enough memory")
+	lua_atpanic(L, [](lua_State *L)
+	{
+		using namespace love;
+		using namespace love::window;
+
+		char message[128];
+		Window* windowModule = Module::getInstance<Window>(Module::M_WINDOW);
+
+		snprintf(message, sizeof(message), "PANIC: unprotected error in call to Lua API (%s)", lua_tostring(L, -1));
+
+		if (windowModule)
+			windowModule->showMessageBox("Lua Fatal Error", message, Window::MESSAGEBOX_ERROR, windowModule->isOpen());
+
+		fprintf(stderr, "%s\n", message);
+		return 0;
+	});
 #endif
 
 	return 1;
