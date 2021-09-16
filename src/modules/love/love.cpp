@@ -36,6 +36,10 @@
 
 #ifdef LOVE_ANDROID
 #include <SDL.h>
+extern "C"
+{
+#include "luajit.h"
+}
 #endif // LOVE_ANDROID
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
@@ -432,6 +436,7 @@ int luaopen_love(lua_State *L)
 	lua_setfield(L, -2, "_version_codename");
 
 #ifdef LOVE_ANDROID
+	luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
 	lua_register(L, "print", w_print_sdl_log);
 #endif
 
