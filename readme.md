@@ -12,7 +12,7 @@ If you need further help, feel free to ask on our [forums][forums], our [Discord
 Repository
 ----------
 
-We use the 'master' branch for patch development of the current major release, and therefore it should not be considered stable.
+We use the 'main' branch for patch development of the current major release, and therefore it should not be considered stable.
 There may also be a branch for the next major version in development, which is named after that version.
 
 We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
