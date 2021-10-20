@@ -81,9 +81,21 @@ extern "C"
 #	include "audio/Audio.h"
 #endif
 
-// Scripts
+// Scripts.
 #include "scripts/nogame.lua.h"
-#include "scripts/boot.lua.h"
+
+// Put the Lua code directly into a raw string literal.
+static const char arg_lua[] =
+#include "arg.lua"
+;
+
+static const char callbacks_lua[] =
+#include "callbacks.lua"
+;
+
+static const char boot_lua[] =
+#include "boot.lua"
+;
 
 // All modules define a c-accessible luaopen
 // so let's make use of those, instead
@@ -148,6 +160,8 @@ extern "C"
 	extern int luaopen_love_window(lua_State*);
 #endif
 	extern int luaopen_love_nogame(lua_State*);
+	extern int luaopen_love_arg(lua_State*);
+	extern int luaopen_love_callbacks(lua_State*);
 	extern int luaopen_love_boot(lua_State*);
 }
 
@@ -210,6 +224,8 @@ static const luaL_Reg modules[] = {
 	{ "love.window", luaopen_love_window },
 #endif
 	{ "love.nogame", luaopen_love_nogame },
+	{ "love.arg", luaopen_love_arg },
+	{ "love.callbacks", luaopen_love_callbacks },
 	{ "love.boot", luaopen_love_boot },
 	{ 0, 0 }
 };
@@ -641,13 +657,26 @@ int luaopen_love_nogame(lua_State *L)
 	return 1;
 }
 
-int luaopen_love_boot(lua_State *L)
+int luaopen_love_arg(lua_State *L)
 {
-	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+	if (luaL_loadbuffer(L, arg_lua, sizeof(arg_lua), "arg.lua") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
 }
 
+int luaopen_love_callbacks(lua_State *L)
+{
+	if (luaL_loadbuffer(L, callbacks_lua, sizeof(callbacks_lua), "callbacks.lua") == 0)
+		lua_call(L, 0, 1);
 
+	return 1;
+}
 
+int luaopen_love_boot(lua_State *L)
+{
+	if (luaL_loadbuffer(L, boot_lua, sizeof(boot_lua), "boot.lua") == 0)
+		lua_call(L, 0, 1);
+
+	return 1;
+}
