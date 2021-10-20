@@ -338,7 +338,7 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	if (it != kerning.end())
 		return it->second;
 
-	float k = rasterizers[0]->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f;
+	float k = floorf(rasterizers[0]->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f);
 
 	for (const auto &r : rasterizers)
 	{

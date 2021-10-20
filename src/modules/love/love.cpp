@@ -23,6 +23,7 @@
 #include "common/version.h"
 #include "common/deprecation.h"
 #include "common/runtime.h"
+#include "modules/window/Window.h"
 
 #include "love.h"
 
@@ -32,6 +33,12 @@
 
 #ifdef LOVE_WINDOWS
 #include <windows.h>
+
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+// VS 2013 and earlier doesn't have snprintf
+#define snprintf sprintf_s
+#endif // defined(_MSC_VER) && (_MSC_VER < 1900)
+
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_ANDROID
@@ -79,9 +86,21 @@ extern "C"
 #	include "audio/Audio.h"
 #endif
 
-// Scripts
+// Scripts.
 #include "scripts/nogame.lua.h"
-#include "scripts/boot.lua.h"
+
+// Put the Lua code directly into a raw string literal.
+static const char arg_lua[] =
+#include "arg.lua"
+;
+
+static const char callbacks_lua[] =
+#include "callbacks.lua"
+;
+
+static const char boot_lua[] =
+#include "boot.lua"
+;
 
 // All modules define a c-accessible luaopen
 // so let's make use of those, instead
@@ -146,6 +165,8 @@ extern "C"
 	extern int luaopen_love_window(lua_State*);
 #endif
 	extern int luaopen_love_nogame(lua_State*);
+	extern int luaopen_love_arg(lua_State*);
+	extern int luaopen_love_callbacks(lua_State*);
 	extern int luaopen_love_boot(lua_State*);
 }
 
@@ -208,6 +229,8 @@ static const luaL_Reg modules[] = {
 	{ "love.window", luaopen_love_window },
 #endif
 	{ "love.nogame", luaopen_love_nogame },
+	{ "love.arg", luaopen_love_arg },
+	{ "love.callbacks", luaopen_love_callbacks },
 	{ "love.boot", luaopen_love_boot },
 	{ 0, 0 }
 };
@@ -545,6 +568,33 @@ int luaopen_love(lua_State *L)
 	love::luax_preload(L, luaopen_luautf8, "utf8");
 #endif
 
+#ifdef LOVE_ENABLE_WINDOW
+	// In some environments, LuaJIT is limited to 2GB and LuaJIT sometimes panic when it
+	// reaches OOM and closes the whole program, leaving the user confused about what's
+	// going on.
+	// We can't recover the state at this point, but it's better to inform user that
+	// something very bad happening instead of silently exiting.
+	// Note that this is not foolproof. In some cases, the whole process crashes by
+	// uncaught exception that LuaJIT throws or simply exit as if calling
+	// love.event.quit("not enough memory")
+	lua_atpanic(L, [](lua_State *L)
+	{
+		using namespace love;
+		using namespace love::window;
+
+		char message[128];
+		Window* windowModule = Module::getInstance<Window>(Module::M_WINDOW);
+
+		snprintf(message, sizeof(message), "PANIC: unprotected error in call to Lua API (%s)", lua_tostring(L, -1));
+
+		if (windowModule)
+			windowModule->showMessageBox("Lua Fatal Error", message, Window::MESSAGEBOX_ERROR, windowModule->isOpen());
+
+		fprintf(stderr, "%s\n", message);
+		return 0;
+	});
+#endif
+
 	return 1;
 }
 
@@ -649,13 +699,26 @@ int luaopen_love_nogame(lua_State *L)
 	return 1;
 }
 
-int luaopen_love_boot(lua_State *L)
+int luaopen_love_arg(lua_State *L)
 {
-	if (luaL_loadbuffer(L, (const char *)love::boot_lua, sizeof(love::boot_lua), "boot.lua") == 0)
+	if (luaL_loadbuffer(L, arg_lua, sizeof(arg_lua), "arg.lua") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
 }
 
+int luaopen_love_callbacks(lua_State *L)
+{
+	if (luaL_loadbuffer(L, callbacks_lua, sizeof(callbacks_lua), "callbacks.lua") == 0)
+		lua_call(L, 0, 1);
 
+	return 1;
+}
 
+int luaopen_love_boot(lua_State *L)
+{
+	if (luaL_loadbuffer(L, boot_lua, sizeof(boot_lua), "boot.lua") == 0)
+		lua_call(L, 0, 1);
+
+	return 1;
+}
