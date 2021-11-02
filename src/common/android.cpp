@@ -724,6 +724,48 @@ bool checkFusedGame(void **physfsIO_Out)
 	return false;
 }
 
+const char *getCRequirePath()
+{
+	static bool initialized = false;
+	static const char *path = nullptr;
+
+	if (!initialized)
+	{
+		JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+		jobject activity = (jobject) SDL_AndroidGetActivity();
+
+		jclass clazz(env->GetObjectClass(activity));
+		jmethodID method_id = env->GetMethodID(clazz, "getCRequirePath", "()Ljava/lang/String;");
+
+		path = "";
+		initialized = true;
+
+		if (method_id)
+		{
+			jstring cpath = (jstring) env->CallObjectMethod(activity, method_id);
+			const char *utf = env->GetStringUTFChars(cpath, nullptr);
+			if (utf)
+			{
+				path = SDL_strdup(utf);
+				env->ReleaseStringUTFChars(cpath, utf);
+			}
+
+			env->DeleteLocalRef(cpath);
+		}
+		else
+		{
+			// NoSuchMethodException is thrown in case methodID is null
+			env->ExceptionClear();
+			return "";
+		}
+
+		env->DeleteLocalRef(activity);
+		env->DeleteLocalRef(clazz);
+	}
+
+	return path;
+}
+
 } // android
 } // love
 

@@ -29,6 +29,10 @@
 
 #include "physfs/Filesystem.h"
 
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+#endif
+
 // SDL
 #include <SDL_loadso.h>
 
@@ -782,6 +786,23 @@ int extloader(lua_State *L)
 	void *handle = nullptr;
 	auto *inst = instance();
 
+#ifdef LOVE_ANDROID
+	// Specifically Android, look the library path based on getCRequirePath first
+	std::string androidPath(love::android::getCRequirePath());
+
+	if (!androidPath.empty())
+	{
+		// Replace ? with just the dotted filename (not tokenized_name)
+		replaceAll(androidPath, "?", filename);
+
+		// Load directly, don't check for existence.
+		handle = SDL_LoadObject(androidPath.c_str());
+	}
+
+	if (!handle)
+	{
+#endif // LOVE_ANDROID
+
 	for (const std::string &el : inst->getCRequirePath())
 	{
 		for (const char *ext : library_extensions)
@@ -810,6 +831,10 @@ int extloader(lua_State *L)
 		if (handle)
 			break;
 	}
+
+#ifdef LOVE_ANDROID
+	} // if (!handle)
+#endif
 
 	if (!handle)
 	{
