@@ -166,6 +166,12 @@ void Shader::mapActiveUniforms()
 				u.storageTextureFormat = reflectionit->second.format;
 				u.access = reflectionit->second.access;
 			}
+			else
+			{
+				// No reflection info - maybe glslang was better at detecting
+				// dead code than the driver's compiler?
+				continue;
+			}
 
 			StorageTextureBinding binding = {};
 			binding.gltexture = gl.getDefaultTexture(u.textureType, u.dataBaseType);
@@ -371,6 +377,12 @@ void Shader::mapActiveUniforms()
 				u.bufferStride = reflectionit->second.stride;
 				u.bufferMemberCount = reflectionit->second.memberCount;
 				u.access = reflectionit->second.access;
+			}
+			else
+			{
+				// No reflection info - maybe glslang was better at detecting
+				// dead code than the driver's compiler?
+				continue;
 			}
 
 			// Make sure previously set uniform data is preserved, and shader-
