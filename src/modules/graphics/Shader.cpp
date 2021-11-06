@@ -891,14 +891,14 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			const glslang::TTypeList *structure = type->getStruct();
 			if (structure == nullptr || structure->size() != 1)
 			{
-				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must contain a single unsized array of structs.";
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must contain a single unsized array of base types or structs.";
 				return false;
 			}
 
-			const glslang::TType* structtype = (*structure)[0].type;
-			if (structtype == nullptr || structtype->getBasicType() != glslang::EbtStruct || !structtype->isUnsizedArray())
+			const glslang::TType* elementtype = (*structure)[0].type;
+			if (elementtype == nullptr || !elementtype->isUnsizedArray())
 			{
-				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must contain a single unsized array of structs.";
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must contain a single unsized array of base types or structs.";
 				return false;
 			}
 

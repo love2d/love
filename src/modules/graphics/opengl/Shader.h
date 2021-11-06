@@ -45,7 +45,7 @@ public:
 
 	struct StorageTextureBinding
 	{
-		Texture *texture = nullptr;
+		love::graphics::Texture *texture = nullptr;
 		GLuint gltexture = 0;
 		TextureType type = TEXTURE_2D;
 		GLenum access = GL_READ_ONLY;
