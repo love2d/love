@@ -147,11 +147,22 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 			// GLSL's std430 packing rules. We also assume all matrices are
 			// column-major.
-			if (info.isMatrix)
-				alignment = info.matrixRows * info.componentSize;
-			else
-				alignment = info.components * info.componentSize;
+			// https://www.khronos.org/registry/OpenGL/specs/gl/glspec46.core.pdf
 
+			// "If the member is a column-major matrix with C columns and R rows,
+			// the matrix is stored identically to an array of C column vectors
+			// with R components each".
+			// "If the member is a three-component vector with components
+			// consuming N basic machine units, the base alignment is 4N."
+			int components = info.isMatrix ? info.matrixRows : info.components;
+			if (components == 3)
+				alignment = 4 * info.componentSize;
+			else
+				alignment = components * info.componentSize;
+
+			// "If the member is a structure, the base alignment of the structure
+			// is N, where N is the largest base alignment value of any of its
+			// members"
 			structurealignment = std::max(structurealignment, alignment);
 
 			memberoffset = alignUp(memberoffset, alignment);
