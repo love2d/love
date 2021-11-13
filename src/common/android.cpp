@@ -569,7 +569,7 @@ PHYSFS_EnumerateCallbackResult enumerate(
 	JNIEnv *env = (JNIEnv *) SDL_AndroidGetJNIEnv();
 	jobject assetManager = getJavaAssetManager();
 	jclass clazz = env->GetObjectClass(assetManager);
-	jmethodID method = env->GetMethodID(clazz, "list", "(Ljava/lang/String;)[Ljava/lang/String");
+	jmethodID method = env->GetMethodID(clazz, "list", "(Ljava/lang/String;)[Ljava/lang/String;");
 
 	jstring jstringDir = env->NewStringUTF(path);
 	jobjectArray dir = (jobjectArray) env->CallObjectMethod(assetManager, method, jstringDir);
