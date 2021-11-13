@@ -142,14 +142,6 @@ enum DoneAction
 
 static DoneAction runlove(int argc, char **argv, int &retval)
 {
-#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
-	int hack_argc = 0;
-	char **hack_argv = 0;
-	get_app_arguments(argc, argv, hack_argc, hack_argv);
-	argc = hack_argc;
-	argv = hack_argv;
-#endif // LOVE_LEGENDARY_APP_ARGV_HACK
-
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
@@ -165,6 +157,22 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
+
+	// LuaJIT-specific setup needs to be done as early as possible - before
+	// get_app_arguments because that loads external library code. This is also
+	// loaded inside require("love"). Note that it doesn't use the love table.
+	love_preload(L, luaopen_love_jitsetup, "love.jitsetup");
+	lua_getglobal(L, "require");
+	lua_pushstring(L, "love.jitsetup");
+	lua_call(L, 1, 0);
+
+#ifdef LOVE_LEGENDARY_APP_ARGV_HACK
+	int hack_argc = 0;
+	char **hack_argv = nullptr;
+	get_app_arguments(argc, argv, hack_argc, hack_argv);
+	argc = hack_argc;
+	argv = hack_argv;
+#endif // LOVE_LEGENDARY_APP_ARGV_HACK
 
 	// Add love to package.preload for easy requiring.
 	love_preload(L, luaopen_love, "love");
