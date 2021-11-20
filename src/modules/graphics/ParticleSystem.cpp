@@ -177,7 +177,7 @@ void ParticleSystem::resetOffset()
 	else
 	{
 		Quad::Viewport v = quads[0]->getViewport();
-		offset = love::Vector2(v.x*0.5f, v.y*0.5f);
+		offset = love::Vector2(v.w*0.5f, v.h*0.5f);
 	}
 }
 
