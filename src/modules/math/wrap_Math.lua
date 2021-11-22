@@ -93,10 +93,10 @@ if not status then return end
 pcall(ffi.cdef, [[
 typedef struct FFI_Math
 {
-	float (*noise1)(float x);
-	float (*noise2)(float x, float y);
-	float (*noise3)(float x, float y, float z);
-	float (*noise4)(float x, float y, float z, float w);
+	float (*noise1)(double x);
+	float (*noise2)(double x, double y);
+	float (*noise3)(double x, double y, double z);
+	float (*noise4)(double x, double y, double z, double w);
 
 	float (*gammaToLinear)(float c);
 	float (*linearToGamma)(float c);
