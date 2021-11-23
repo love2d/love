@@ -101,7 +101,7 @@ static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_
 		// launching love is in its own full-screen Space.
 		if (!isatty(STDIN_FILENO))
 		{
-			// Static to keep the same value after love.event.equit("restart").
+			// Static to keep the same value after love.event.quit("restart").
 			static std::string dropfilestr = love::macosx::checkDropEvents();
 			if (!dropfilestr.empty())
 				temp_argv.insert(temp_argv.begin() + 1, dropfilestr);
@@ -140,7 +140,7 @@ enum DoneAction
 	DONE_RESTART,
 };
 
-static DoneAction runlove(int argc, char **argv, int &retval)
+static DoneAction runlove(int argc, char **argv, int &retval, std::string& restart_arg)
 {
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
@@ -237,10 +237,26 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 
 	// if love.boot() returns "restart", we'll start up again after closing this
 	// Lua state.
-	if (lua_type(L, -1) == LUA_TSTRING && strcmp(lua_tostring(L, -1), "restart") == 0)
-		done = DONE_RESTART;
-	if (lua_isnumber(L, -1))
-		retval = (int) lua_tonumber(L, -1);
+	switch (lua_type(L, -1))
+	{
+		case LUA_TSTRING:
+			{
+				const char* quit_code = lua_tostring(L, -1);
+
+				if (strcmp(quit_code, "restart") == 0) done = DONE_RESTART;
+				else if (strlen(quit_code) > 8 && strncmp(quit_code, "restart:", 8) == 0)
+				{
+					// rest of quit_code will serve as first command-line argument
+					done = DONE_RESTART;
+					restart_arg = std::string(quit_code + 8);
+					printf("restart, %d %s\n", strncmp(quit_code, "restart:", 8), quit_code);
+				}
+			}
+			break;
+		case LUA_TNUMBER:
+			retval = (int) lua_tonumber(L, -1);
+			break;
+	}
 
 	lua_close(L);
 
@@ -267,10 +283,16 @@ int main(int argc, char **argv)
 
 	int retval = 0;
 	DoneAction done = DONE_QUIT;
+	std::string narg;
+	char* nargv[] = { argv[0], nullptr };
+	int rargc = argc;
+	char** rargv = argv;
 
 	do
 	{
-		done = runlove(argc, argv, retval);
+		std::string restart_arg;
+
+		done = runlove(rargc, rargv, retval, restart_arg);
 
 #ifdef LOVE_IOS
 		// on iOS we should never programmatically exit the app, so we'll just
@@ -278,6 +300,15 @@ int main(int argc, char **argv)
 		// some issues if the threads aren't cleaned up properly...
 		done = DONE_RESTART;
 #endif
+
+		if (done == DONE_RESTART && !restart_arg.empty())
+		{
+			rargc = 2;
+			narg = restart_arg;
+			nargv[1] = const_cast<char*>(narg.c_str());
+			rargv = nargv;
+		}
+
 	} while (done != DONE_QUIT);
 
 #ifdef LOVE_ANDROID

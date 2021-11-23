@@ -3267,6 +3267,14 @@ function love.nogame()
 		create_world()
 	end
 
+	function love.directorydropped(path)
+		love.event.quit("restart:" .. path)
+	end
+
+	function love.filedropped(file)
+		love.event.quit("restart:" .. file:getFilename())
+	end
+
 	function love.conf(t)
 		t.title = "L\195\150VE " .. love._version .. " (" .. love._version_codename .. ")"
 		t.gammacorrect = true
