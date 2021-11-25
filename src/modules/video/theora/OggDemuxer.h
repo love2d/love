@@ -67,7 +67,7 @@ private:
 	int videoSerial;
 	bool eos;
 
-	void readPage(bool throweof = false);
+	bool readPage(bool erroreof = false);
 	StreamType determineType();
 }; // OggDemuxer
 

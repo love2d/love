@@ -43,7 +43,7 @@ OggDemuxer::~OggDemuxer()
 	ogg_sync_clear(&sync);
 }
 
-void OggDemuxer::readPage(bool throweof)
+bool OggDemuxer::readPage(bool erroreof)
 {
 	char *syncBuffer = nullptr;
 	while (ogg_sync_pageout(&sync, &page) != 1)
@@ -53,11 +53,13 @@ void OggDemuxer::readPage(bool throweof)
 
 		syncBuffer = ogg_sync_buffer(&sync, 8192);
 		size_t read = file->read(syncBuffer, 8192);
-		if (read == 0 && throweof)
-			throw love::Exception("Invalid stream");
+		if (read == 0 && erroreof)
+			return false;
 
 		ogg_sync_wrote(&sync, read);
 	}
+
+	return true;
 }
 
 bool OggDemuxer::readPacket(ogg_packet &packet, bool mustSucceed)
@@ -129,8 +131,10 @@ OggDemuxer::StreamType OggDemuxer::findStream()
 
 	while (true)
 	{
+		if (!readPage(true))
+			return TYPE_UNKNOWN;
+
 		// If this page isn't at the start of a stream, we've seen all streams
-		readPage(true);
 		if (!ogg_page_bos(&page))
 			break;
 
