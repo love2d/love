@@ -120,6 +120,21 @@ int w_Font_getWrap(lua_State *L)
 	return 2;
 }
 
+int w_Font_setCharSpacing(lua_State* L)
+{
+	Font* t = luax_checkfont(L, 1);
+	float s = (float)luaL_checknumber(L, 2);
+	t->setCharSpacing(s);
+	return 0;
+}
+
+int w_Font_getCharSpacing(lua_State* L)
+{
+	Font* t = luax_checkfont(L, 1);
+	lua_pushnumber(L, t->getCharSpacing());
+	return 1;
+}
+
 int w_Font_setLineHeight(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
@@ -261,6 +276,8 @@ static const luaL_Reg w_Font_functions[] =
 	{ "getHeight", w_Font_getHeight },
 	{ "getWidth", w_Font_getWidth },
 	{ "getWrap", w_Font_getWrap },
+	{ "setCharSpacing", w_Font_setCharSpacing },
+	{ "getCharSpacing", w_Font_getCharSpacing },
 	{ "setLineHeight", w_Font_setLineHeight },
 	{ "getLineHeight", w_Font_getLineHeight },
 	{ "setFilter", w_Font_setFilter },

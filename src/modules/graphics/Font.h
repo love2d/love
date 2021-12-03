@@ -145,6 +145,17 @@ public:
 	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<ColoredCodepoints> &lines, std::vector<int> *line_widths = nullptr);
 
 	/**
+	 * Sets the character spacing in pixel
+	 * @param spacing The new character spacing.
+	 **/
+	void setCharSpacing(float spacing);
+
+	/**
+	 * Returns the character spacing.
+	 **/
+	float getCharSpacing() const;
+
+	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
 	 * example: line height = 1.2 and size = 12 means that rendered line height = 12*1.2)
 	 * @param height The new line height.
@@ -212,6 +223,7 @@ private:
 	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
 
 	int height;
+	float charSpacing;
 	float lineHeight;
 
 	int textureWidth;

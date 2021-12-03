@@ -50,6 +50,7 @@ const vertex::CommonFormat Font::vertexFormat = vertex::CommonFormat::XYf_STus_R
 Font::Font(love::font::Rasterizer *r, const Texture::Filter &f)
 	: rasterizers({r})
 	, height(r->getHeight())
+	, charSpacing(0)
 	, lineHeight(1)
 	, textureWidth(128)
 	, textureHeight(128)
@@ -448,6 +449,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 	Color32 curcolor = toColor32(constantcolor);
 	int curcolori = -1;
 	int ncolors = (int) codepoints.colors.size();
+	float currCharSpacing = 0;
 
 	for (int i = 0; i < (int) codepoints.cps.size(); i++)
 	{
@@ -478,6 +480,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			dy += floorf(getHeight() * getLineHeight() + 0.5f);
 			dx = offset.x;
 			prevglyph = 0;
+			currCharSpacing = 0;
 			continue;
 		}
 
@@ -505,7 +508,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 		}
 
 		// Add kerning to the current horizontal offset.
-		dx += getKerning(prevglyph, g);
+		dx += currCharSpacing + getKerning(prevglyph, g);
 
 		if (glyph.texture != nullptr)
 		{
@@ -540,6 +543,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			dx = floorf(dx + extra_spacing);
 
 		prevglyph = g;
+		currCharSpacing = getCharSpacing();
 	}
 
 	const auto drawsort = [](const DrawCommand &a, const DrawCommand &b) -> bool
@@ -716,6 +720,8 @@ int Font::getWidth(const std::string &str)
 		{
 			utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
 			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
+			float currCharSpacing = 0;
+			float totalCharSpacing = 0;
 
 			while (i != end)
 			{
@@ -729,7 +735,11 @@ int Font::getWidth(const std::string &str)
 				width += g.spacing + getKerning(prevglyph, c);
 
 				prevglyph = c;
+				totalCharSpacing += currCharSpacing;
+				currCharSpacing = getCharSpacing();
 			}
+
+			width = (int)(width + totalCharSpacing + 0.5f);
 		}
 		catch (utf8::exception &e)
 		{
@@ -769,6 +779,7 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 	// A wrapped line of text.
 	ColoredCodepoints wline;
 
+	float currCharSpacing = 0;
 	int i = 0;
 	while (i < (int) codepoints.cps.size())
 	{
@@ -800,6 +811,7 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 			lastspaceindex = -1;
 			wline.cps.clear();
 			wline.colors.clear();
+			currCharSpacing = 0;
 			i++;
 
 			continue;
@@ -814,7 +826,9 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 
 		const Glyph &g = findGlyph(c);
 		float charwidth = g.spacing + getKerning(prevglyph, c);
-		float newwidth = width + charwidth;
+		float newwidth = width + currCharSpacing + charwidth;
+
+		currCharSpacing = getCharSpacing();
 
 		// Wrap the line if it exceeds the wrap limit. Don't wrap yet if we're
 		// processing a newline character, though.
@@ -927,6 +941,16 @@ void Font::getWrap(const std::vector<ColoredString> &text, float wraplimit, std:
 
 		lines.push_back(line);
 	}
+}
+
+void Font::setCharSpacing(float spacing)
+{
+	charSpacing = spacing;
+}
+
+float Font::getCharSpacing() const
+{
+	return charSpacing;
 }
 
 void Font::setLineHeight(float height)
