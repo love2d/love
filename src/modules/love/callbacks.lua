@@ -259,6 +259,7 @@ function love.errhand(msg)
 	p = p:gsub("%[string \"(.-)\"%]", "%1")
 
 	local function draw()
+		if not love.graphics.isActive() then return end
 		local pos = 70
 		love.graphics.clear(89/255, 157/255, 220/255)
 		love.graphics.printf(p, pos, pos, love.graphics.getWidth() - pos)
@@ -270,7 +271,6 @@ function love.errhand(msg)
 		if not love.system then return end
 		love.system.setClipboardText(fullErrorText)
 		p = p .. "\nCopied to clipboard!"
-		draw()
 	end
 
 	if love.system then
