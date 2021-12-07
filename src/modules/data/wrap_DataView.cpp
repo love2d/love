@@ -26,13 +26,24 @@ namespace love
 namespace data
 {
 
-DataView *luax_checkdataView(lua_State *L, int idx)
+DataView *luax_checkdataview(lua_State *L, int idx)
 {
 	return luax_checktype<DataView>(L, idx);
 }
 
+int w_DataView_clone(lua_State *L)
+{
+	DataView *t = luax_checkdataview(L, 1);
+	DataView *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 static const luaL_Reg w_DataView_functions[] =
 {
+	{ "clone", w_DataView_clone },
 	{ 0, 0 }
 };
 

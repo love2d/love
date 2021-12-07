@@ -31,8 +31,19 @@ ByteData *luax_checkbytedata(lua_State *L, int idx)
 	return luax_checktype<ByteData>(L, idx);
 }
 
+int w_ByteData_clone(lua_State *L)
+{
+	ByteData *t = luax_checkbytedata(L, 1);
+	ByteData *c = nullptr;
+	luax_catchexcept(L, [&](){ c = t->clone(); });
+	luax_pushtype(L, c);
+	c->release();
+	return 1;
+}
+
 static const luaL_Reg w_ByteData_functions[] =
 {
+	{ "clone", w_ByteData_clone },
 	{ 0, 0 }
 };
 
