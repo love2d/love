@@ -168,7 +168,7 @@ int luaopen_video(lua_State *L)
 {
 	int ret = luax_register_type(L, &Video::type, functions, nullptr);
 
-	luaL_loadbuffer(L, video_lua, sizeof(video_lua), "Video.lua");
+	luaL_loadbuffer(L, video_lua, sizeof(video_lua), "=[love \"Video.lua\"]");
 	luax_gettypemetatable(L, Video::type);
 	lua_call(L, 1, 0);
 

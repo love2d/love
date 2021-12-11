@@ -136,7 +136,7 @@ extern "C" int luaopen_love_event(lua_State *L)
 
 	int ret = luax_register_module(L, w);
 
-	if (luaL_loadbuffer(L, (const char *)event_lua, sizeof(event_lua), "wrap_Event.lua") == 0)
+	if (luaL_loadbuffer(L, (const char *)event_lua, sizeof(event_lua), "=[love \"wrap_Event.lua\"]") == 0)
 		lua_call(L, 0, 0);
 	else
 		lua_error(L);
