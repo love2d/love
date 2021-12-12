@@ -132,5 +132,5 @@ static const unsigned char B1[]={
 116,117,114,110, 32, 95, 77,
 };
 
- if (luaL_loadbuffer(L,(const char*)B1,sizeof(B1),"mime.lua")==0) lua_call(L, 0, LUA_MULTRET);
+ if (luaL_loadbuffer(L,(const char*)B1,sizeof(B1),"=[socket \"mime.lua\"]")==0) lua_call(L, 0, LUA_MULTRET);
 }

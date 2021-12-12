@@ -540,5 +540,5 @@ static const unsigned char B1[]={
 
 };
 
- if (luaL_loadbuffer(L,(const char*)B1,sizeof(B1),"ftp.lua")==0) lua_call(L, 0, LUA_MULTRET);
+ if (luaL_loadbuffer(L,(const char*)B1,sizeof(B1),"=[socket \"ftp.lua\"]")==0) lua_call(L, 0, LUA_MULTRET);
 }

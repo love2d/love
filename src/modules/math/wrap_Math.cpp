@@ -498,7 +498,7 @@ extern "C" int luaopen_love_math(lua_State *L)
 	int n = luax_register_module(L, w);
 
 	// Execute wrap_Math.lua, sending the math table and ffifuncs pointer as args.
-	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "wrap_Math.lua");
+	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "=[love \"wrap_Math.lua\"]");
 	lua_pushvalue(L, -2);
 	luax_pushpointerasstring(L, &ffifuncs);
 	lua_call(L, 2, 0);
