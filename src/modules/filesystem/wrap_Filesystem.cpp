@@ -331,11 +331,22 @@ int w_newFileData(lua_State *L)
 	}
 
 	size_t length = 0;
-	const char *str = luaL_checklstring(L, 1, &length);
+	const void *ptr = nullptr;
+	if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = data::luax_checkdata(L, 1);
+		ptr = data->getData();
+		length = data->getSize();
+	}
+	else if (lua_isstring(L, 1))
+		ptr = luaL_checklstring(L, 1, &length);
+	else
+		return luaL_argerror(L, 1, "string or Data expected");
+
 	const char *filename = luaL_checkstring(L, 2);
 
 	FileData *t = nullptr;
-	luax_catchexcept(L, [&](){ t = instance()->newFileData(str, length, filename); });
+	luax_catchexcept(L, [&](){ t = instance()->newFileData(ptr, length, filename); });
 
 	luax_pushtype(L, t);
 	t->release();
