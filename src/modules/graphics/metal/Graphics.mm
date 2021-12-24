@@ -1076,6 +1076,29 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	++drawCalls;
 }}
 
+static inline void advanceVertexOffsets(const VertexAttributes &attributes, BufferBindings &buffers, int vertexcount)
+{
+	// TODO: Figure out a better way to avoid touching the same buffer multiple
+	// times, if multiple attributes share the buffer.
+	uint32 touchedbuffers = 0;
+
+	for (unsigned int i = 0; i < VertexAttributes::MAX; i++)
+	{
+		if (!attributes.isEnabled(i))
+			continue;
+
+		auto &attrib = attributes.attribs[i];
+
+		uint32 bufferbit = 1u << attrib.bufferIndex;
+		if ((touchedbuffers & bufferbit) == 0)
+		{
+			touchedbuffers |= bufferbit;
+			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
+			buffers.info[attrib.bufferIndex].offset += layout.stride * vertexcount;
+		}
+	}
+}
+
 void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
 { @autoreleasepool {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
@@ -1092,30 +1115,55 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	applyRenderState(encoder, attributes);
 	applyShaderUniforms(encoder, Shader::current, texture);
 
-	setVertexBuffers(encoder, &buffers, renderBindings);
-
 	id<MTLBuffer> ib = getMTLBuffer(quadIndexBuffer);
 
-	// TODO: support for iOS devices that don't support base vertex.
-
-	int basevertex = start * 4;
-
-	for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+	// Some older iOS devices don't support base vertex rendering.
+	if (families.apple[3] || families.mac[1] || families.macCatalyst[1])
 	{
-		int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+		setVertexBuffers(encoder, &buffers, renderBindings);
 
-		[encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-							indexCount:quadcount * 6
-							 indexType:MTLIndexTypeUInt16
-						   indexBuffer:ib
-					 indexBufferOffset:0
-						 instanceCount:1
-							baseVertex:basevertex
-						  baseInstance:0];
+		int basevertex = start * 4;
 
-		++drawCalls;
+		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+		{
+			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
-		basevertex += quadcount * 4;
+			[encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+								indexCount:quadcount * 6
+								 indexType:MTLIndexTypeUInt16
+							   indexBuffer:ib
+						 indexBufferOffset:0
+							 instanceCount:1
+								baseVertex:basevertex
+							  baseInstance:0];
+
+			++drawCalls;
+			basevertex += quadcount * 4;
+		}
+	}
+	else
+	{
+		BufferBindings bufferscopy = buffers;
+		if (start > 0)
+			advanceVertexOffsets(attributes, bufferscopy, start * 4);
+
+		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+		{
+			setVertexBuffers(encoder, &bufferscopy, renderBindings);
+
+			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+			[encoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+								indexCount:quadcount * 6
+								 indexType:MTLIndexTypeUInt16
+							   indexBuffer:ib
+						 indexBufferOffset:0];
+
+			++drawCalls;
+
+			if (count > MAX_QUADS_PER_DRAW)
+				advanceVertexOffsets(attributes, bufferscopy, quadcount * 4);
+		}
 	}
 }}
 
