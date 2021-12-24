@@ -83,10 +83,10 @@ float linearToGamma(float c);
  *
  * @return Noise value in the range of [0, 1].
  **/
-static float noise1(float x);
-static float noise2(float x, float y);
-static float noise3(float x, float y, float z);
-static float noise4(float x, float y, float z, float w);
+static float noise1(double x);
+static float noise2(double x, double y);
+static float noise3(double x, double y, double z);
+static float noise4(double x, double y, double z, double w);
 
 
 class Math : public Module
