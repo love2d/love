@@ -926,9 +926,14 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 		MTLRenderPipelineColorAttachmentDescriptor *attachment = desc.colorAttachments[i];
 
-		bool isSRGB = false;
-		auto formatdesc = Metal::convertPixelFormat(format, isSRGB);
-		attachment.pixelFormat = formatdesc.format;
+		if (@available(macOS 10.15, iOS 13, *))
+		{
+			// We already don't really support metal on older systems, this just
+			// silences a compiler warning about it.
+			bool isSRGB = false;
+			auto formatdesc = Metal::convertPixelFormat(format, isSRGB);
+			attachment.pixelFormat = formatdesc.format;
+		}
 
 		if (key.blend.enable)
 		{
@@ -959,12 +964,17 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 	auto dsformat = (PixelFormat) key.depthStencilFormat;
 	if (isPixelFormatDepthStencil(dsformat))
 	{
-		bool isSRGB = false;
-		auto formatdesc = Metal::convertPixelFormat(dsformat, isSRGB);
-		if (isPixelFormatDepth(dsformat))
-			desc.depthAttachmentPixelFormat = formatdesc.format;
-		if (isPixelFormatStencil(dsformat))
-			desc.stencilAttachmentPixelFormat = formatdesc.format;
+		if (@available(macOS 10.15, iOS 13, *))
+		{
+			// We already don't really support metal on older systems, this just
+			// silences a compiler warning about it.
+			bool isSRGB = false;
+			auto formatdesc = Metal::convertPixelFormat(dsformat, isSRGB);
+			if (isPixelFormatDepth(dsformat))
+				desc.depthAttachmentPixelFormat = formatdesc.format;
+			if (isPixelFormatStencil(dsformat))
+				desc.stencilAttachmentPixelFormat = formatdesc.format;
+		}
 	}
 
 	{

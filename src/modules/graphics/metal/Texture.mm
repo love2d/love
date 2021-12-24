@@ -52,17 +52,23 @@ Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Sett
 	int w = pixelWidth;
 	int h = pixelHeight;
 
-	auto formatdesc = Metal::convertPixelFormat(format, sRGB);
-
 	desc.width = w;
 	desc.height = h;
 	desc.depth = depth;
 	desc.arrayLength = layers;
 	desc.mipmapLevelCount = mipmapCount;
 	desc.textureType = getMTLTextureType(texType, 1);
-	desc.pixelFormat = formatdesc.format;
-	if (formatdesc.swizzled)
-		desc.swizzle = formatdesc.swizzle;
+	if (@available(macOS 10.15, iOS 13, *))
+	{
+		// We already don't really support metal on older systems, this just
+		// silences a compiler warning about it.
+		auto formatdesc = Metal::convertPixelFormat(format, sRGB);
+		desc.pixelFormat = formatdesc.format;
+		if (formatdesc.swizzled)
+			desc.swizzle = formatdesc.swizzle;
+	}
+	else
+		throw love::Exception("Metal backend is only supported on macOS 10.15+ and iOS 13+.");
 	desc.storageMode = MTLStorageModePrivate;
 
 	if (readable)

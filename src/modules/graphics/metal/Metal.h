@@ -36,13 +36,14 @@ class Metal
 {
 public:
 
-	struct PixelFormatDesc
+	struct API_AVAILABLE(macos(10.15), ios(13.0)) PixelFormatDesc
 	{
 		MTLPixelFormat format;
 		bool swizzled = false;
 		MTLTextureSwizzleChannels swizzle;
 	};
 
+	API_AVAILABLE(macos(10.15), ios(13.0))
 	static PixelFormatDesc convertPixelFormat(PixelFormat format, bool &isSRGB);
 
 }; // Metal
