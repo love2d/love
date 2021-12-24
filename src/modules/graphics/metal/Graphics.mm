@@ -230,6 +230,7 @@ Graphics::Graphics()
 	, activeDrawable(nil)
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
+	, lastCullMode(CULL_MAX_ENUM)
 	, windowHasStencil(false)
 	, shaderSwitches(0)
 	, requestedBackbufferMSAA(0)
@@ -576,6 +577,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 		setBuffer(renderEncoder, renderBindings, SHADERSTAGE_VERTEX, DEFAULT_VERTEX_BUFFER_BINDING, defaultbuffer, 0);
 
 		dirtyRenderState = STATEBIT_ALL;
+		lastCullMode = CULL_MAX_ENUM;
 	}
 
 	return renderEncoder;
@@ -795,7 +797,9 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 
 	if (dirtyState & STATEBIT_CULLMODE)
 	{
-		// TODO
+		auto mode = lastCullMode == CULL_BACK ? MTLCullModeBack :
+			lastCullMode == CULL_FRONT ? MTLCullModeFront : MTLCullModeNone;
+		[encoder setCullMode:mode];
 	}
 
 	if ((dirtyState & pipelineStateBits) != 0 || !(attributes == lastVertexAttributes))
@@ -1000,10 +1004,14 @@ void Graphics::draw(const DrawCommand &cmd)
 { @autoreleasepool {
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
+	if (cmd.cullMode != lastCullMode)
+	{
+		lastCullMode = cmd.cullMode;
+		dirtyRenderState |= STATEBIT_CULLMODE;
+	}
+
 	applyRenderState(encoder, *cmd.attributes);
 	applyShaderUniforms(encoder, Shader::current, cmd.texture);
-
-	[encoder setCullMode:MTLCullModeNone];
 
 	setVertexBuffers(encoder, cmd.buffers, renderBindings);
 
@@ -1018,6 +1026,12 @@ void Graphics::draw(const DrawCommand &cmd)
 void Graphics::draw(const DrawIndexedCommand &cmd)
 { @autoreleasepool {
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
+
+	if (cmd.cullMode != lastCullMode)
+	{
+		lastCullMode = cmd.cullMode;
+		dirtyRenderState |= STATEBIT_CULLMODE;
+	}
 
 	applyRenderState(encoder, *cmd.attributes);
 	applyShaderUniforms(encoder, Shader::current, cmd.texture);
@@ -1045,10 +1059,14 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 	id<MTLRenderCommandEncoder> encoder = useRenderEncoder();
 
+	if (lastCullMode != CULL_NONE)
+	{
+		lastCullMode = CULL_NONE;
+		dirtyRenderState |= STATEBIT_CULLMODE;
+	}
+
 	applyRenderState(encoder, attributes);
 	applyShaderUniforms(encoder, Shader::current, texture);
-
-	[encoder setCullMode:MTLCullModeNone];
 
 	setVertexBuffers(encoder, &buffers, renderBindings);
 

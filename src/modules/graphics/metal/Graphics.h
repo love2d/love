@@ -212,6 +212,7 @@ private:
 	MTLRenderPassDescriptor *passDesc;
 
 	uint32 dirtyRenderState;
+	CullMode lastCullMode;
 	VertexAttributes lastVertexAttributes;
 	bool windowHasStencil;
 	int shaderSwitches;
