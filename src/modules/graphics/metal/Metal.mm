@@ -87,6 +87,61 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRG
 		mtlformat = MTLPixelFormatRGBA32Float;
 		break;
 
+	case PIXELFORMAT_R8_INT:
+		mtlformat = MTLPixelFormatR8Sint;
+		break;
+	case PIXELFORMAT_R8_UINT:
+		mtlformat = MTLPixelFormatR8Uint;
+		break;
+	case PIXELFORMAT_RG8_INT:
+		mtlformat = MTLPixelFormatRG8Sint;
+		break;
+	case PIXELFORMAT_RG8_UINT:
+		mtlformat = MTLPixelFormatRG8Uint;
+		break;
+	case PIXELFORMAT_RGBA8_INT:
+		mtlformat = MTLPixelFormatRGBA8Sint;
+		break;
+	case PIXELFORMAT_RGBA8_UINT:
+		mtlformat = MTLPixelFormatRGBA8Uint;
+		break;
+	case PIXELFORMAT_R16_INT:
+		mtlformat = MTLPixelFormatR16Sint;
+		break;
+	case PIXELFORMAT_R16_UINT:
+		mtlformat = MTLPixelFormatR16Uint;
+		break;
+	case PIXELFORMAT_RG16_INT:
+		mtlformat = MTLPixelFormatRG16Sint;
+		break;
+	case PIXELFORMAT_RG16_UINT:
+		mtlformat = MTLPixelFormatRG16Uint;
+		break;
+	case PIXELFORMAT_RGBA16_INT:
+		mtlformat = MTLPixelFormatRGBA16Sint;
+		break;
+	case PIXELFORMAT_RGBA16_UINT:
+		mtlformat = MTLPixelFormatRGBA16Uint;
+		break;
+	case PIXELFORMAT_R32_INT:
+		mtlformat = MTLPixelFormatR32Sint;
+		break;
+	case PIXELFORMAT_R32_UINT:
+		mtlformat = MTLPixelFormatR32Uint;
+		break;
+	case PIXELFORMAT_RG32_INT:
+		mtlformat = MTLPixelFormatRG32Sint;
+		break;
+	case PIXELFORMAT_RG32_UINT:
+		mtlformat = MTLPixelFormatRG32Uint;
+		break;
+	case PIXELFORMAT_RGBA32_INT:
+		mtlformat = MTLPixelFormatRGBA32Sint;
+		break;
+	case PIXELFORMAT_RGBA32_UINT:
+		mtlformat = MTLPixelFormatRGBA32Uint;
+		break;
+
 	case PIXELFORMAT_LA8_UNORM:
 		// TODO: fall back to RGBA8 when swizzle isn't available. Pixel format
 		// size calculation will need to be adjusted as well

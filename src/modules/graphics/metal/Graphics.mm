@@ -1653,6 +1653,28 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 				flags |= all;
 			break;
 
+		case PIXELFORMAT_R8_INT:
+		case PIXELFORMAT_R8_UINT:
+		case PIXELFORMAT_RG8_INT:
+		case PIXELFORMAT_RG8_UINT:
+		case PIXELFORMAT_RGBA8_INT:
+		case PIXELFORMAT_RGBA8_UINT:
+		case PIXELFORMAT_R16_INT:
+		case PIXELFORMAT_R16_UINT:
+		case PIXELFORMAT_RG16_INT:
+		case PIXELFORMAT_RG16_UINT:
+		case PIXELFORMAT_RGBA16_INT:
+		case PIXELFORMAT_RGBA16_UINT:
+		case PIXELFORMAT_R32_INT:
+		case PIXELFORMAT_R32_UINT:
+		case PIXELFORMAT_RG32_INT:
+		case PIXELFORMAT_RG32_UINT:
+		case PIXELFORMAT_RGBA32_INT:
+		case PIXELFORMAT_RGBA32_UINT:
+			// If MSAA support for int formats is added this should be split up.
+			flags |= rt | computewrite;
+			break;
+
 		case PIXELFORMAT_RGBA4_UNORM:
 		case PIXELFORMAT_RGB5A1_UNORM:
 		case PIXELFORMAT_RGB565_UNORM:
