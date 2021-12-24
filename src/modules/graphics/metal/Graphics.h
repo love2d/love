@@ -129,6 +129,10 @@ public:
 	id<MTLBlitCommandEncoder> getBlitEncoder() const { return blitEncoder; }
 	void submitBlitEncoder();
 
+	id<MTLComputeCommandEncoder> useComputeEncoder();
+	id<MTLComputeCommandEncoder> getComputeEncoder() const { return computeEncoder; }
+	void submitComputeEncoder();
+
 	id<MTLSamplerState> getCachedSampler(const SamplerState &s);
 
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
@@ -206,6 +210,7 @@ private:
 	id<MTLCommandBuffer> commandBuffer;
 	id<MTLRenderCommandEncoder> renderEncoder;
 	id<MTLBlitCommandEncoder> blitEncoder;
+	id<MTLComputeCommandEncoder> computeEncoder;
 
 	CAMetalLayer *metalLayer;
 	id<CAMetalDrawable> activeDrawable;

@@ -488,6 +488,7 @@ void Graphics::submitCommandBuffer(SubmitType type)
 {
 	submitRenderEncoder(type);
 	submitBlitEncoder();
+	submitComputeEncoder();
 
 	if (commandBuffer != nil)
 	{
@@ -528,6 +529,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 	if (renderEncoder == nil)
 	{
 		submitBlitEncoder();
+		submitComputeEncoder();
 
 		// Pass desc info for non-backbuffer render targets are set up in
 		// setRenderTargetsInternal.
@@ -630,6 +632,7 @@ id<MTLBlitCommandEncoder> Graphics::useBlitEncoder()
 	if (blitEncoder == nil)
 	{
 		submitRenderEncoder(SUBMIT_STORE);
+		submitComputeEncoder();
 		blitEncoder = [useCommandBuffer() blitCommandEncoder];
 	}
 
@@ -642,6 +645,27 @@ void Graphics::submitBlitEncoder()
 	{
 		[blitEncoder endEncoding];
 		blitEncoder = nil;
+	}
+}
+
+id<MTLComputeCommandEncoder> Graphics::useComputeEncoder()
+{
+	if (computeEncoder == nil)
+	{
+		submitRenderEncoder(SUBMIT_STORE);
+		submitBlitEncoder();
+		computeEncoder = [useCommandBuffer() computeCommandEncoder];
+	}
+
+	return computeEncoder;
+}
+
+void Graphics::submitComputeEncoder()
+{
+	if (computeEncoder != nil)
+	{
+		[computeEncoder endEncoding];
+		computeEncoder = nil;
 	}
 }
 
@@ -1096,10 +1120,10 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 }}
 
 bool Graphics::dispatch(int x, int y, int z)
-{
+{ @autoreleasepool {
 	// TODO
 	return false;
-}
+}}
 
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
