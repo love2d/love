@@ -118,11 +118,30 @@ static size_t find_peer_index(lua_State *l, ENetHost *enet_host, ENetPeer *peer)
 #define ENET_ALIGNOF(x) alignof(x)
 #endif
 
-// For use with the enet_peers registry.
-// Using the pointer directly via lightuserdata would be ideal, but LuaJIT
-// cannot use lightuserdata with more than 47 bits whereas some newer arm64
-// architectures allow pointers which use more than that.
-static lua_Number compute_peer_key(lua_State *L, ENetPeer *peer)
+static bool supports_full_lightuserdata(lua_State *L)
+{
+	static bool checked = false;
+	static bool supported = false;
+
+	if (!checked)
+	{
+		lua_pushcclosure(L, [](lua_State* L) -> int
+		{
+			// Try to push pointer with all bits set.
+			lua_pushlightuserdata(L, (void*)(~((size_t)0)));
+			return 1;
+		}, 0);
+
+		supported = lua_pcall(L, 0, 1, 0) == 0;
+		checked = true;
+
+		lua_pop(L, 1);
+	}
+
+	return supported;
+}
+
+static uintptr_t compute_peer_key(lua_State *L, ENetPeer *peer)
 {
 	// ENet peers are be allocated on the heap in an array. Lua numbers
 	// (doubles) can store all possible integers up to 2^53. We can store
@@ -140,21 +159,28 @@ static lua_Number compute_peer_key(lua_State *L, ENetPeer *peer)
 
 	static const size_t shift = (size_t) log2((double) minalign);
 
-	key >>= shift;
+	return key >> shift;
+}
 
-	// Make sure our key isn't larger than 2^53.
-	if (key > 0x20000000000000ULL)
-		luaL_error(L, "Cannot push enet peer to Lua: pointer value %p is too large", peer);
-
-	return (lua_Number) key;
+static void push_peer_key(lua_State *L, uintptr_t key)
+{
+	// If full 64-bit lightuserdata is supported, always use that. Otherwise,
+	// if the key is smaller than 2^53 (which is integer precision for double
+	// datatype), then push number. Otherwise, throw error.
+	if (supports_full_lightuserdata(L))
+		lua_pushlightuserdata(L, (void*) key);
+	else if (key > 0x20000000000000ULL) // 2^53
+		luaL_error(L, "Cannot push enet peer to Lua: pointer value %p is too large", key);
+	else
+		lua_pushnumber(L, (lua_Number) key);
 }
 
 static void push_peer(lua_State *l, ENetPeer *peer) {
-	lua_Number key = compute_peer_key(l, peer);
+	uintptr_t key = compute_peer_key(l, peer);
 
 	// try to find in peer table
 	lua_getfield(l, LUA_REGISTRYINDEX, "enet_peers");
-	lua_pushnumber(l, key);
+	push_peer_key(l, key);
 	lua_gettable(l, -2);
 
 	if (lua_isnil(l, -1)) {
@@ -165,7 +191,7 @@ static void push_peer(lua_State *l, ENetPeer *peer) {
 		luaL_getmetatable(l, "enet_peer");
 		lua_setmetatable(l, -2);
 
-		lua_pushnumber(l, key);
+		push_peer_key(l, key);
 		lua_pushvalue(l, -2);
 
 		lua_settable(l, -4);

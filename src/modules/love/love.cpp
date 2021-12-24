@@ -102,6 +102,10 @@ static const char boot_lua[] =
 #include "boot.lua"
 ;
 
+static const char jit_setup_lua[] =
+#include "jitsetup.lua"
+;
+
 // All modules define a c-accessible luaopen
 // so let's make use of those, instead
 // of addressing implementations directly.
@@ -165,6 +169,7 @@ extern "C"
 	extern int luaopen_love_window(lua_State*);
 #endif
 	extern int luaopen_love_nogame(lua_State*);
+	extern int luaopen_love_jitsetup(lua_State*);
 	extern int luaopen_love_arg(lua_State*);
 	extern int luaopen_love_callbacks(lua_State*);
 	extern int luaopen_love_boot(lua_State*);
@@ -229,6 +234,7 @@ static const luaL_Reg modules[] = {
 	{ "love.window", luaopen_love_window },
 #endif
 	{ "love.nogame", luaopen_love_nogame },
+	{ "love.jitsetup", luaopen_love_jitsetup },
 	{ "love.arg", luaopen_love_arg },
 	{ "love.callbacks", luaopen_love_callbacks },
 	{ "love.boot", luaopen_love_boot },
@@ -440,6 +446,15 @@ static void luax_addcompatibilityalias(lua_State *L, const char *module, const c
 
 int luaopen_love(lua_State *L)
 {
+	// Preload module loaders.
+	for (int i = 0; modules[i].name != nullptr; i++)
+		love::luax_preload(L, modules[i].func, modules[i].name);
+
+	// jitsetup is also loaded in the love executable runlove function. It's
+	// needed here too for threads. Note that it doesn't use the love table.
+	love::luax_require(L, "love.jitsetup");
+	lua_pop(L, 1);
+
 	love::luax_insistpinnedthread(L);
 
 	love::luax_insistglobal(L, "love");
@@ -542,10 +557,6 @@ int luaopen_love(lua_State *L)
 		lua_pushcfunction(L, w_love_hasDeprecationOutput);
 		lua_setfield(L, -2, "hasDeprecationOutput");
 	}
-
-	// Preload module loaders.
-	for (int i = 0; modules[i].name != nullptr; i++)
-		love::luax_preload(L, modules[i].func, modules[i].name);
 
 	// Necessary for Data-creating methods to work properly in Data subclasses.
 	love::luax_require(L, "love.data");
@@ -693,7 +704,15 @@ int w__setAccelerometerAsJoystick(lua_State *L)
 
 int luaopen_love_nogame(lua_State *L)
 {
-	if (luaL_loadbuffer(L, (const char *)love::nogame_lua, sizeof(love::nogame_lua), "nogame.lua") == 0)
+	if (luaL_loadbuffer(L, (const char *)love::nogame_lua, sizeof(love::nogame_lua), "=[love \"nogame.lua\"]") == 0)
+		lua_call(L, 0, 1);
+
+	return 1;
+}
+
+int luaopen_love_jitsetup(lua_State *L)
+{
+	if (luaL_loadbuffer(L, jit_setup_lua, sizeof(jit_setup_lua), "=[love \"jitsetup.lua\"]") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
@@ -701,7 +720,7 @@ int luaopen_love_nogame(lua_State *L)
 
 int luaopen_love_arg(lua_State *L)
 {
-	if (luaL_loadbuffer(L, arg_lua, sizeof(arg_lua), "arg.lua") == 0)
+	if (luaL_loadbuffer(L, arg_lua, sizeof(arg_lua), "=[love \"arg.lua\"]") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
@@ -709,7 +728,7 @@ int luaopen_love_arg(lua_State *L)
 
 int luaopen_love_callbacks(lua_State *L)
 {
-	if (luaL_loadbuffer(L, callbacks_lua, sizeof(callbacks_lua), "callbacks.lua") == 0)
+	if (luaL_loadbuffer(L, callbacks_lua, sizeof(callbacks_lua), "=[love \"callbacks.lua\"]") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
@@ -717,7 +736,7 @@ int luaopen_love_callbacks(lua_State *L)
 
 int luaopen_love_boot(lua_State *L)
 {
-	if (luaL_loadbuffer(L, boot_lua, sizeof(boot_lua), "boot.lua") == 0)
+	if (luaL_loadbuffer(L, boot_lua, sizeof(boot_lua), "=[love \"boot.lua\"]") == 0)
 		lua_call(L, 0, 1);
 
 	return 1;
