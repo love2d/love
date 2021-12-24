@@ -12,7 +12,7 @@ If you need further help, feel free to ask on our [forums][forums], our [Discord
 Repository
 ----------
 
-We use the 'master' branch for patch development of the current major release, and therefore it should not be considered stable.
+We use the 'main' branch for patch development of the current major release, and therefore it should not be considered stable.
 There may also be a branch for the next major version in development, which is named after that version.
 
 We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
@@ -83,16 +83,16 @@ Dependencies
 - Vorbisfile
 - Theora
 
-[site]: http://love2d.org
-[wiki]: http://love2d.org/wiki
-[forums]: http://love2d.org/forums
+[site]: https://love2d.org
+[wiki]: https://love2d.org/wiki
+[forums]: https://love2d.org/forums
 [discord]: https://discord.gg/rhUets9
 [irc]: irc://irc.oftc.net/love
 [dependencies-macos]: https://github.com/slime73/love-apple-dependencies
 [dependencies-ios]: https://github.com/love2d/love/releases
 [megasource]: https://github.com/love2d/megasource
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
-[aur]: http://aur.archlinux.org/packages/love-git
+[aur]: https://aur.archlinux.org/packages/love-git
 [love-experiments]: https://github.com/slime73/love-experiments
 [codestyle]: https://love2d.org/wiki/Code_Style
 [android-repository]: https://github.com/love2d/love-android

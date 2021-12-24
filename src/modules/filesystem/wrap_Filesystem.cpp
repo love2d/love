@@ -29,6 +29,10 @@
 
 #include "physfs/Filesystem.h"
 
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+#endif
+
 // SDL
 #include <SDL_loadso.h>
 
@@ -380,11 +384,22 @@ int w_newFileData(lua_State *L)
 	}
 
 	size_t length = 0;
-	const char *str = luaL_checklstring(L, 1, &length);
+	const void *ptr = nullptr;
+	if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = data::luax_checkdata(L, 1);
+		ptr = data->getData();
+		length = data->getSize();
+	}
+	else if (lua_isstring(L, 1))
+		ptr = luaL_checklstring(L, 1, &length);
+	else
+		return luaL_argerror(L, 1, "string or Data expected");
+
 	const char *filename = luaL_checkstring(L, 2);
 
 	FileData *t = nullptr;
-	luax_catchexcept(L, [&](){ t = instance()->newFileData(str, length, filename); });
+	luax_catchexcept(L, [&](){ t = instance()->newFileData(ptr, length, filename); });
 
 	luax_pushtype(L, t);
 	t->release();
@@ -849,6 +864,23 @@ int extloader(lua_State *L)
 	void *handle = nullptr;
 	auto *inst = instance();
 
+#ifdef LOVE_ANDROID
+	// Specifically Android, look the library path based on getCRequirePath first
+	std::string androidPath(love::android::getCRequirePath());
+
+	if (!androidPath.empty())
+	{
+		// Replace ? with just the dotted filename (not tokenized_name)
+		replaceAll(androidPath, "?", filename);
+
+		// Load directly, don't check for existence.
+		handle = SDL_LoadObject(androidPath.c_str());
+	}
+
+	if (!handle)
+	{
+#endif // LOVE_ANDROID
+
 	for (const std::string &el : inst->getCRequirePath())
 	{
 		for (const char *ext : library_extensions)
@@ -877,6 +909,10 @@ int extloader(lua_State *L)
 		if (handle)
 			break;
 	}
+
+#ifdef LOVE_ANDROID
+	} // if (!handle)
+#endif
 
 	if (!handle)
 	{

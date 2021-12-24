@@ -319,10 +319,10 @@ int w_linearToGamma(lua_State *L)
 int w_noise(lua_State *L)
 {
 	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
-	float args[4];
+	double args[4];
 
 	for (int i = 0; i < nargs; i++)
-		args[i] = (float) luaL_checknumber(L, i + 1);
+		args[i] = luaL_checknumber(L, i + 1);
 
 	float val = 0.0f;
 
@@ -349,10 +349,10 @@ int w_noise(lua_State *L)
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
-	float (*noise1)(float x);
-	float (*noise2)(float x, float y);
-	float (*noise3)(float x, float y, float z);
-	float (*noise4)(float x, float y, float z, float w);
+	float (*noise1)(double x);
+	float (*noise2)(double x, double y);
+	float (*noise3)(double x, double y, double z);
+	float (*noise4)(double x, double y, double z, double w);
 
 	float (*gammaToLinear)(float c);
 	float (*linearToGamma)(float c);
@@ -415,7 +415,7 @@ extern "C" int luaopen_love_math(lua_State *L)
 	int n = luax_register_module(L, w);
 
 	// Execute wrap_Math.lua, sending the math table and ffifuncs pointer as args.
-	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "wrap_Math.lua");
+	luaL_loadbuffer(L, math_lua, sizeof(math_lua), "=[love \"wrap_Math.lua\"]");
 	lua_pushvalue(L, -2);
 	luax_pushpointerasstring(L, &ffifuncs);
 	lua_call(L, 2, 0);

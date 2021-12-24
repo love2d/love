@@ -338,7 +338,7 @@ float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 	if (it != kerning.end())
 		return it->second;
 
-	float k = rasterizers[0]->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f;
+	float k = floorf(rasterizers[0]->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f);
 
 	for (const auto &r : rasterizers)
 	{
@@ -901,14 +901,11 @@ void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::ve
 	}
 
 	// Push the last line.
-	if (!wline.cps.empty())
-	{
-		lines.push_back(wline);
+	lines.push_back(wline);
 
-		// Ignore the width of any trailing spaces, for individual lines.
-		if (linewidths)
-			linewidths->push_back(width - widthoftrailingspace);
-	}
+	// Ignore the width of any trailing spaces, for individual lines.
+	if (linewidths)
+		linewidths->push_back(width - widthoftrailingspace);
 }
 
 void Font::getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)

@@ -122,7 +122,7 @@ static bool getContainingDirectory(const std::string &path, std::string &newpath
 	newpath = path.substr(0, index);
 
 	// Bail if the root has been stripped out.
-	return newpath.find("/\\") != std::string::npos;
+	return newpath.find_first_of("/\\") != std::string::npos;
 }
 
 static bool createDirectoryRaw(const std::string &path)

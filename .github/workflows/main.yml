@@ -9,37 +9,30 @@ jobs:
       run: sudo apt-get update
     - name: Install Dependencies
       run: |
-        sudo apt-get install --assume-yes build-essential autotools-dev automake libtool pkg-config \
-                                          libfreetype6-dev libluajit-5.1-dev libsdl2-dev libopenal-dev \
-                                          libogg-dev libvorbis-dev libmodplug-dev libmpg123-dev libtheora-dev
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Pre-Configure
-      run: $PWD/platform/unix/automagic
-    - name: Configure
-      run: mkdir build && cd build && ../configure
-    - name: Build
-      run: cd build && make -j2
-    - name: Prepare appimagetool
-      run: |
-        cd build &&
-        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool &&
-        chmod +x appimagetool &&
-        sudo apt install -y appstream
-    - name: Clone love-appimages
+        sudo apt-get install --assume-yes build-essential git make cmake autoconf automake \
+                                          libtool pkg-config libasound2-dev libpulse-dev libaudio-dev \
+                                          libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+                                          libxfixes-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev \
+                                          libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
+                                          libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
+                                          libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev
+    - name: Checkout love-appimage-source
       uses: actions/checkout@v2
       with:
-        path: build/love-appimages
-        repository: pfirsich/love-appimages
+        repository: MikuAuahDark/love-appimage-source
+    - name: Checkout LÖVE
+      uses: actions/checkout@v2
+      with:
+        path: love2d-${{ github.sha }}
     - name: Build AppImage
-      run: |
-        cd build &&
-        python3 love-appimages/build.py .. AppDir --builddir build --appimage love.AppImage
+      run: make LOVE_BRANCH=${{ github.sha }}
+    - name: Print LuaJIT branch
+      run: git -C LuaJIT-v2.1 branch -v
     - name: Artifact
-      uses: actions/upload-artifact@v2-preview
+      uses: actions/upload-artifact@v2
       with:
-        name: love.AppImage
-        path: build/love.AppImage
+        name: love-x86_64.AppImage
+        path: love-${{ github.sha }}.AppImage
   windows-os:
     runs-on: windows-latest
     strategy:

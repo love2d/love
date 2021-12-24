@@ -91,8 +91,8 @@ int w_RevoluteJoint_getMotorSpeed(lua_State *L)
 int w_RevoluteJoint_getMotorTorque(lua_State *L)
 {
 	RevoluteJoint *t = luax_checkrevolutejoint(L, 1);
-	float inv_dt = (float)luaL_checknumber(L, 2);
-	lua_pushnumber(L, t->getMotorTorque(inv_dt));
+	float dt = (float)luaL_checknumber(L, 2);
+	lua_pushnumber(L, t->getMotorTorque(dt));
 	return 1;
 }
 

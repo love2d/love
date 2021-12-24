@@ -1156,7 +1156,9 @@ void luax_runwrapper(lua_State *L, const char *filedata, size_t datalen, const c
 	// functions struct pointer as arguments.
 	if (lua_istable(L, -1))
 	{
-		luaL_loadbuffer(L, filedata, datalen, filename);
+		std::string chunkname = std::string("=[love \"") + std::string(filename) + std::string("\"]");
+
+		luaL_loadbuffer(L, filedata, datalen, chunkname.c_str());
 		lua_pushvalue(L, -2);
 		if (ffifuncs != nullptr)
 			luax_pushpointerasstring(L, ffifuncs);
@@ -1179,8 +1181,10 @@ int luax_resume(lua_State *L, int nargs, int* nres)
 #if LUA_VERSION_NUM >= 504
 	return lua_resume(L, nullptr, nargs, nres);
 #elif LUA_VERSION_NUM >= 502
+	LOVE_UNUSED(nres);
 	return lua_resume(L, nullptr, nargs);
 #else
+	LOVE_UNUSED(nres);
 	return lua_resume(L, nargs);
 #endif
 }

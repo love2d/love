@@ -20,10 +20,6 @@
  * This is a clean, fast, modern and free Perlin noise class in C++.
  * Being a stand-alone class with no external dependencies, it is
  * highly reusable without source code modifications.
- *
- * Note:
- * Replacing the "float" type with "double" can actually make this run faster
- * on some platforms. A templatized version of Noise1234 could be useful.
  */
 
 class Noise1234 {
@@ -34,24 +30,24 @@ class Noise1234 {
 
 /** 1D, 2D, 3D and 4D float Perlin noise, SL "noise()"
  */
-    static float noise( float x );
-    static float noise( float x, float y );
-    static float noise( float x, float y, float z );
-    static float noise( float x, float y, float z, float w );
+    static float noise( double x );
+    static float noise( double x, double y );
+    static float noise( double x, double y, double z );
+    static float noise( double x, double y, double z, double w );
 
 /** 1D, 2D, 3D and 4D float Perlin periodic noise, SL "pnoise()"
  */
-    static float pnoise( float x, int px );
-    static float pnoise( float x, float y, int px, int py );
-    static float pnoise( float x, float y, float z, int px, int py, int pz );
-    static float pnoise( float x, float y, float z, float w,
+    static float pnoise( double x, int px );
+    static float pnoise( double x, double y, int px, int py );
+    static float pnoise( double x, double y, double z, int px, int py, int pz );
+    static float pnoise( double x, double y, double z, double w,
                               int px, int py, int pz, int pw );
 
   private:
     static unsigned char perm[];
-    static float  grad( int hash, float x );
-    static float  grad( int hash, float x, float y );
-    static float  grad( int hash, float x, float y , float z );
-    static float  grad( int hash, float x, float y, float z, float t );
+    static double  grad( int hash, double x );
+    static double  grad( int hash, double x, double y );
+    static double  grad( int hash, double x, double y , double z );
+    static double  grad( int hash, double x, double y, double z, double t );
 
 };

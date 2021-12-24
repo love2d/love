@@ -3657,7 +3657,7 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 
 	int n = luax_register_module(L, w);
 
-	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "wrap_Graphics.lua") == 0)
+	if (luaL_loadbuffer(L, (const char *)graphics_lua, sizeof(graphics_lua), "=[love \"wrap_Graphics.lua\"]") == 0)
 		lua_call(L, 0, 0);
 	else
 		lua_error(L);

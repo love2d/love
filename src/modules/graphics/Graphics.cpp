@@ -1526,7 +1526,7 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h)
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry, int points)
 {
-	if (rx == 0 || ry == 0)
+	if (rx <= 0 || ry <= 0)
 	{
 		rectangle(mode, x, y, w, h);
 		return;
@@ -1585,7 +1585,8 @@ void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, floa
 
 void Graphics::rectangle(DrawMode mode, float x, float y, float w, float h, float rx, float ry)
 {
-	rectangle(mode, x, y, w, h, rx, ry, calculateEllipsePoints(rx, ry));
+	int points = calculateEllipsePoints(std::min(rx, std::abs(w/2)), std::min(ry, std::abs(h/2)));
+	rectangle(mode, x, y, w, h, rx, ry, points);
 }
 
 void Graphics::circle(DrawMode mode, float x, float y, float radius, int points)

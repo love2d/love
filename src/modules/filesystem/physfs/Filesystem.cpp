@@ -240,15 +240,13 @@ bool Filesystem::setSource(const char *source)
 
 	PHYSFS_Io *gameLoveIO;
 	bool hasFusedGame = love::android::checkFusedGame((void **) &gameLoveIO);
+	bool isAAssetMounted = false;
 
 	if (hasFusedGame)
 	{
 		if (gameLoveIO)
-		{
 			// Actually we should just be able to mount gameLoveIO, but that's experimental.
 			gameLoveIO->destroy(gameLoveIO);
-			goto oldschool;
-		}
 		else
 		{
 			if (!love::android::initializeVirtualArchive())
@@ -256,11 +254,15 @@ bool Filesystem::setSource(const char *source)
 				SDL_Log("Unable to mount AAsset: %s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
 				return false;
 			}
+
+			// See love::android::initializeVirtualArchive()
+			new_search_path = "ASET.AASSET";
+			isAAssetMounted = true;
 		}
 	}
-	else
+
+	if (!isAAssetMounted)
 	{
-	oldschool:
 		new_search_path = love::android::getSelectedGameFile();
 
 		// try mounting first, if that fails, load to memory and mount

@@ -447,18 +447,12 @@ int w_Shader_send(lua_State *L)
 
 	const Shader::UniformInfo *info = shader->getUniformInfo(name);
 	if (info == nullptr)
-	{
-		luax_pushboolean(L, false);
-		return 1;
-	}
+		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
 
 	if (luax_istype(L, 3, Data::type) || (info->baseType == Shader::UNIFORM_MATRIX && luax_istype(L, 4, Data::type)))
-		w_Shader_sendData(L, 3, shader, info, false);
+		return w_Shader_sendData(L, 3, shader, info, false);
 	else
-		w_Shader_sendLuaValues(L, 3, shader, info, name);
-
-	luax_pushboolean(L, true);
-	return 1;
+		return w_Shader_sendLuaValues(L, 3, shader, info, name);
 }
 
 int w_Shader_sendColors(lua_State *L)

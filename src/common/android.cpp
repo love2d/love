@@ -333,24 +333,59 @@ void showRecordingPermissionMissingDialog()
 	env->DeleteLocalRef(activity);
 }
 
+/* A container for AssetManager Java object */
+class AssetManagerObject
+{
+public:
+	AssetManagerObject()
+	{
+		JNIEnv *env = (JNIEnv *) SDL_AndroidGetJNIEnv();
+		jobject am = getLocalAssetManager(env);
+
+		assetManager = env->NewGlobalRef(am);
+		env->DeleteLocalRef(am);
+	}
+
+	~AssetManagerObject()
+	{
+		JNIEnv *env = (JNIEnv *) SDL_AndroidGetJNIEnv();
+		env->DeleteGlobalRef(assetManager);
+	}
+
+	static jobject getLocalAssetManager(JNIEnv *env) {
+		jobject self = (jobject) SDL_AndroidGetActivity();
+		jclass activity = env->GetObjectClass(self);
+		jmethodID method = env->GetMethodID(activity, "getAssets", "()Landroid/content/res/AssetManager;");
+		jobject am = env->CallObjectMethod(self, method);
+
+		env->DeleteLocalRef(self);
+		env->DeleteLocalRef(activity);
+		return am;
+	}
+
+	explicit operator jobject()
+	{
+		return assetManager;
+	};
+private:
+	jobject assetManager;
+};
+
 /*
  * Helper functions to aid new fusing method
  */
+
+// This returns *global* reference, no need to free it.
+static jobject getJavaAssetManager()
+{
+	static AssetManagerObject assetManager;
+	return (jobject) assetManager;
+}
+
 static AAssetManager *getAssetManager()
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-	jobject self = (jobject) SDL_AndroidGetActivity();
-	jclass activity = env->GetObjectClass(self);
-	jmethodID method = env->GetMethodID(activity, "getAssetManager", "()Landroid/content/res/AssetManager;");
-
-	jobject assetManager = env->CallObjectMethod(self, method);
-	AAssetManager *assetManagerObject = AAssetManager_fromJava(env, assetManager);
-
-	env->DeleteLocalRef(assetManager);
-	env->DeleteLocalRef(activity);
-	env->DeleteLocalRef(self);
-
-	return assetManagerObject;
+	return AAssetManager_fromJava(env, (jobject) getJavaAssetManager());
 }
 
 namespace aasset
@@ -367,35 +402,6 @@ struct AssetInfo
 };
 
 static std::unordered_map<std::string, PHYSFS_FileType> fileTree;
-
-// Workaround AAsset can't detect whetever something is a directory or doesn't exist
-static void buildFileLookup(
-	AAssetManager *assetManager,
-	std::unordered_map<std::string, PHYSFS_FileType> &out,
-	const std::string &path = ""
-)
-{
-	if (!path.empty())
-	{
-		AAsset *test = AAssetManager_open(assetManager, path.c_str(), AASSET_MODE_STREAMING);
-		if (test)
-		{
-			AAsset_close(test);
-			out[path] = PHYSFS_FILETYPE_REGULAR;
-			return;
-		}
-
-		out[path] = PHYSFS_FILETYPE_DIRECTORY;
-	}
-
-	AAssetDir *dir = AAssetManager_openDir(assetManager, path.c_str());
-	const char *file;
-
-	while ((file = AAssetDir_getNextFileName(dir)) != nullptr)
-		buildFileLookup(assetManager, out, file);
-
-	AAssetDir_close(dir);
-}
 
 PHYSFS_sint64 read(PHYSFS_Io *io, void *buf, PHYSFS_uint64 len)
 {
@@ -505,7 +511,31 @@ void *openArchive(PHYSFS_Io *io, const char *name, int forWrite, int *claimed)
 	AAssetManager *assetManager = getAssetManager();
 
 	if (io::fileTree.empty())
-		io::buildFileLookup(assetManager, io::fileTree);
+	{
+		// AAssetDir_getNextFileName intentionally excludes directories, so
+		// we have to use JNI that calls AssetManager.list() recursively.
+		JNIEnv *env = (JNIEnv *) SDL_AndroidGetJNIEnv();
+		jobject activity = (jobject) SDL_AndroidGetActivity();
+		jclass clazz = env->GetObjectClass(activity);
+
+		jmethodID method = env->GetMethodID(clazz, "buildFileTree", "()[Ljava/lang/String;");
+		jobjectArray list = (jobjectArray) env->CallObjectMethod(activity, method);
+
+		for (jsize i = 0; i < env->GetArrayLength(list); i++)
+		{
+			jstring jstr = (jstring) env->GetObjectArrayElement(list, i);
+			const char *str = env->GetStringUTFChars(jstr, nullptr);
+
+			io::fileTree[str + 1] = str[0] == 'd' ? PHYSFS_FILETYPE_DIRECTORY : PHYSFS_FILETYPE_REGULAR;
+
+			env->ReleaseStringUTFChars(jstr, str);
+			env->DeleteLocalRef(jstr);
+		}
+
+		env->DeleteLocalRef(list);
+		env->DeleteLocalRef(clazz);
+		env->DeleteLocalRef(activity);
+	}
 
 	return assetManager;
 }
@@ -518,33 +548,60 @@ PHYSFS_EnumerateCallbackResult enumerate(
 	void *callbackdata
 )
 {
+	using FileTreeIterator = std::unordered_map<std::string, PHYSFS_FileType>::iterator;
+	LOVE_UNUSED(opaque);
+
 	const char *path = dirname;
 	if (path == nullptr || (path[0] == '/' && path[1] == 0))
 		path = "";
 
-	AAssetManager *assetManager = (AAssetManager *) opaque;
-	AAssetDir *dir = AAssetManager_openDir(assetManager, path);
-
-	if (dir == nullptr)
+	if (path[0] != 0)
 	{
-		PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
-		return PHYSFS_ENUM_ERROR;
+		FileTreeIterator result = io::fileTree.find(path);
+
+		if (result == io::fileTree.end() || result->second != PHYSFS_FILETYPE_DIRECTORY)
+		{
+			PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
+			return PHYSFS_ENUM_ERROR;
+		}
 	}
+
+	JNIEnv *env = (JNIEnv *) SDL_AndroidGetJNIEnv();
+	jobject assetManager = getJavaAssetManager();
+	jclass clazz = env->GetObjectClass(assetManager);
+	jmethodID method = env->GetMethodID(clazz, "list", "(Ljava/lang/String;)[Ljava/lang/String;");
+
+	jstring jstringDir = env->NewStringUTF(path);
+	jobjectArray dir = (jobjectArray) env->CallObjectMethod(assetManager, method, jstringDir);
 
 	PHYSFS_EnumerateCallbackResult ret = PHYSFS_ENUM_OK;
 
-	while (ret == PHYSFS_ENUM_OK)
+	if (env->ExceptionCheck())
 	{
-		const char *name = AAssetDir_getNextFileName(dir);
+		// IOException occured
+		ret = PHYSFS_ENUM_ERROR;
+		env->ExceptionClear();
+	}
+	else
+	{
+		jsize i = 0;
+		jsize len = env->GetArrayLength(dir);
 
-		// No more files?
-		if (name == nullptr)
-			break;
+		while (ret == PHYSFS_ENUM_OK && i < len) {
+			jstring jstr = (jstring) env->GetObjectArrayElement(dir, i++);
+			const char *name = env->GetStringUTFChars(jstr, nullptr);
 
-		ret = cb(callbackdata, origdir, name);
+			ret = cb(callbackdata, origdir, name);
+
+			env->ReleaseStringUTFChars(jstr, name);
+			env->DeleteLocalRef(jstr);
+		}
+
+		env->DeleteLocalRef(dir);
 	}
 
-	AAssetDir_close(dir);
+	env->DeleteLocalRef(jstringDir);
+	env->DeleteLocalRef(clazz);
 	return ret;
 }
 
@@ -722,6 +779,48 @@ bool checkFusedGame(void **physfsIO_Out)
 
 	// Not found
 	return false;
+}
+
+const char *getCRequirePath()
+{
+	static bool initialized = false;
+	static const char *path = nullptr;
+
+	if (!initialized)
+	{
+		JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+		jobject activity = (jobject) SDL_AndroidGetActivity();
+
+		jclass clazz(env->GetObjectClass(activity));
+		jmethodID method_id = env->GetMethodID(clazz, "getCRequirePath", "()Ljava/lang/String;");
+
+		path = "";
+		initialized = true;
+
+		if (method_id)
+		{
+			jstring cpath = (jstring) env->CallObjectMethod(activity, method_id);
+			const char *utf = env->GetStringUTFChars(cpath, nullptr);
+			if (utf)
+			{
+				path = SDL_strdup(utf);
+				env->ReleaseStringUTFChars(cpath, utf);
+			}
+
+			env->DeleteLocalRef(cpath);
+		}
+		else
+		{
+			// NoSuchMethodException is thrown in case methodID is null
+			env->ExceptionClear();
+			return "";
+		}
+
+		env->DeleteLocalRef(activity);
+		env->DeleteLocalRef(clazz);
+	}
+
+	return path;
 }
 
 } // android

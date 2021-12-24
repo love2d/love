@@ -22,6 +22,8 @@
 #include "Buffer.h"
 #include "common/Data.h"
 
+#include <limits>
+
 namespace love
 {
 namespace graphics

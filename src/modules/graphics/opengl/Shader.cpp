@@ -166,6 +166,12 @@ void Shader::mapActiveUniforms()
 				u.storageTextureFormat = reflectionit->second.format;
 				u.access = reflectionit->second.access;
 			}
+			else
+			{
+				// No reflection info - maybe glslang was better at detecting
+				// dead code than the driver's compiler?
+				continue;
+			}
 
 			StorageTextureBinding binding = {};
 			binding.gltexture = gl.getDefaultTexture(u.textureType, u.dataBaseType);
@@ -352,6 +358,7 @@ void Shader::mapActiveUniforms()
 		glGetProgramInterfaceiv(program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &numstoragebuffers);
 
 		char namebuffer[2048] = { '\0' };
+		int nextstoragebufferbinding = 0;
 
 		for (int sindex = 0; sindex < numstoragebuffers; sindex++)
 		{
@@ -371,6 +378,12 @@ void Shader::mapActiveUniforms()
 				u.bufferStride = reflectionit->second.stride;
 				u.bufferMemberCount = reflectionit->second.memberCount;
 				u.access = reflectionit->second.access;
+			}
+			else
+			{
+				// No reflection info - maybe glslang was better at detecting
+				// dead code than the driver's compiler?
+				continue;
 			}
 
 			// Make sure previously set uniform data is preserved, and shader-
@@ -393,8 +406,11 @@ void Shader::mapActiveUniforms()
 				memset(u.buffers, 0, sizeof(Buffer*)* u.count);
 			}
 
-			GLenum props[] = { GL_BUFFER_BINDING };
-			glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, sindex, 1, props, 1, nullptr, u.ints);
+			// Unlike local uniforms and attributes, OpenGL doesn't auto-assign storage
+			// block bindings if they're unspecified in the shader. So we overwrite them
+			// regardless, here.
+			u.ints[0] = nextstoragebufferbinding++;
+			glShaderStorageBlockBinding(program, sindex, u.ints[0]);
 
 			BufferBinding binding;
 			binding.bindingindex = u.ints[0];
@@ -1073,6 +1089,9 @@ Shader::MatrixSize Shader::getMatrixSize(GLenum type) const
 	case GL_FLOAT_MAT4x3:
 		m.columns = 4;
 		m.rows = 3;
+		break;
+	default:
+		m.columns = m.rows = 0;
 		break;
 	}
 

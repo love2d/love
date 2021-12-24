@@ -25,11 +25,6 @@
  * This is a clean, fast, modern and free Perlin Simplex noise class in C++.
  * Being a stand-alone class with no external dependencies, it is
  * highly reusable without source code modifications.
- *
- *
- * Note:
- * Replacing the "float" type with "double" can actually make this run faster
- * on some platforms. A templatized version of SimplexNoise1234 could be useful.
  */
 
 class SimplexNoise1234 {
@@ -40,12 +35,12 @@ class SimplexNoise1234 {
 
 /** 1D and 2D float Perlin noise
  */
-    static float noise( float x );
-    static float noise( float x, float y );
+    static float noise( double x );
+    static float noise( double x, double y );
 
   private:
     static unsigned char perm[];
-    static float  grad( int hash, float x );
-    static float  grad( int hash, float x, float y );
+    static double  grad( int hash, double x );
+    static double  grad( int hash, double x, double y );
 
 };

@@ -83,10 +83,10 @@ float linearToGamma(float c);
  *
  * @return Noise value in the range of [0, 1].
  **/
-static float noise1(float x);
-static float noise2(float x, float y);
-static float noise3(float x, float y, float z);
-static float noise4(float x, float y, float z, float w);
+static float noise1(double x);
+static float noise2(double x, double y);
+static float noise3(double x, double y, double z);
+static float noise4(double x, double y, double z, double w);
 
 
 class Math : public Module
@@ -132,12 +132,12 @@ private:
 }; // Math
 
 
-static inline float noise1(float x)
+static inline float noise1(double x)
 {
 	return SimplexNoise1234::noise(x) * 0.5f + 0.5f;
 }
 
-static inline float noise2(float x, float y)
+static inline float noise2(double x, double y)
 {
 	return SimplexNoise1234::noise(x, y) * 0.5f + 0.5f;
 }
@@ -145,12 +145,12 @@ static inline float noise2(float x, float y)
 // Perlin noise is used instead of Simplex noise in the 3D and 4D cases to avoid
 // patent issues.
 
-static inline float noise3(float x, float y, float z)
+static inline float noise3(double x, double y, double z)
 {
 	return Noise1234::noise(x, y, z) * 0.5f + 0.5f;
 }
 
-static inline float noise4(float x, float y, float z, float w)
+static inline float noise4(double x, double y, double z, double w)
 {
 	return Noise1234::noise(x, y, z, w) * 0.5f + 0.5f;
 }

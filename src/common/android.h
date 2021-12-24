@@ -101,6 +101,8 @@ void deinitializeVirtualArchive();
  */
 bool checkFusedGame(void **physfsIO_Out);
 
+const char *getCRequirePath();
+
 } // android
 } // love
 
