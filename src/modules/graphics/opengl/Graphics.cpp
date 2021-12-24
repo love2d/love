@@ -847,7 +847,7 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 
 	if (c.hasValue)
 	{
-		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.b);
+		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.a);
 		gammaCorrectColor(cf);
 		glClearColor(cf.r, cf.g, cf.b, cf.a);
 		flags |= GL_COLOR_BUFFER_BIT;
