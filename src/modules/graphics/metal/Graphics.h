@@ -47,13 +47,13 @@ public:
 
 	struct RenderEncoderBindings
 	{
-		void *textures[32][ShaderStage::STAGE_MAX_ENUM];
-		void *samplers[32][ShaderStage::STAGE_MAX_ENUM];
+		void *textures[32][SHADERSTAGE_MAX_ENUM];
+		void *samplers[32][SHADERSTAGE_MAX_ENUM];
 		struct
 		{
 			void *buffer;
 			size_t offset;
-		} buffers[32][ShaderStage::STAGE_MAX_ENUM];
+		} buffers[32][SHADERSTAGE_MAX_ENUM];
 	};
 
 	Graphics();
@@ -71,12 +71,14 @@ public:
 
 	void setActive(bool active) override;
 
+	bool dispatch(int x, int y, int z) override;
+
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
 
-	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
-	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
 
 	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override;
 
@@ -108,7 +110,7 @@ public:
 	void setWireframe(bool enable) override;
 	
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
@@ -186,8 +188,8 @@ private:
 		MTLStoreAction stencil;
 	};
 
-	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
-	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
+	love::graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
+	love::graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage usage, size_t size) override;
 	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;

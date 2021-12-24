@@ -145,7 +145,7 @@ static inline id<MTLBuffer> getMTLBuffer(love::graphics::Resource *res)
 	return res ? (__bridge id<MTLBuffer>)(void *) res->getHandle() : nil;
 }
 
-static inline void setBuffer(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStage::StageType stage, int index, id<MTLBuffer> buffer, size_t offset)
+static inline void setBuffer(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, id<MTLBuffer> buffer, size_t offset)
 {
 	void *b = (__bridge void *)buffer;
 	auto &binding = bindings.buffers[index][stage];
@@ -153,45 +153,45 @@ static inline void setBuffer(id<MTLRenderCommandEncoder> encoder, Graphics::Rend
 	{
 		binding.buffer = b;
 		binding.offset = offset;
-		if (stage == ShaderStage::STAGE_VERTEX)
+		if (stage == SHADERSTAGE_VERTEX)
 			[encoder setVertexBuffer:buffer offset:offset atIndex:index];
-		else if (stage == ShaderStage::STAGE_PIXEL)
+		else if (stage == SHADERSTAGE_PIXEL)
 			[encoder setFragmentBuffer:buffer offset:offset atIndex:index];
 	}
 	else if (binding.offset != offset)
 	{
 		binding.offset = offset;
-		if (stage == ShaderStage::STAGE_VERTEX)
+		if (stage == SHADERSTAGE_VERTEX)
 			[encoder setVertexBufferOffset:offset atIndex:index];
-		else if (stage == ShaderStage::STAGE_PIXEL)
+		else if (stage == SHADERSTAGE_PIXEL)
 			[encoder setFragmentBufferOffset:offset atIndex:index];
 	}
 }
 
-static inline void setTexture(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStage::StageType stage, int index, id<MTLTexture> texture)
+static inline void setTexture(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, id<MTLTexture> texture)
 {
 	void *t = (__bridge void *)texture;
 	auto &binding = bindings.textures[index][stage];
 	if (binding != t)
 	{
 		binding = t;
-		if (stage == ShaderStage::STAGE_VERTEX)
+		if (stage == SHADERSTAGE_VERTEX)
 			[encoder setVertexTexture:texture atIndex:index];
-		else if (stage == ShaderStage::STAGE_PIXEL)
+		else if (stage == SHADERSTAGE_PIXEL)
 			[encoder setFragmentTexture:texture atIndex:index];
 	}
 }
 
-static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStage::StageType stage, int index, id<MTLSamplerState> sampler)
+static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, id<MTLSamplerState> sampler)
 {
 	void *s = (__bridge void *)sampler;
 	auto &binding = bindings.samplers[index][stage];
 	if (binding != s)
 	{
 		binding = s;
-		if (stage == ShaderStage::STAGE_VERTEX)
+		if (stage == SHADERSTAGE_VERTEX)
 			[encoder setVertexSamplerState:sampler atIndex:index];
-		else if (stage == ShaderStage::STAGE_PIXEL)
+		else if (stage == SHADERSTAGE_PIXEL)
 			[encoder setFragmentSamplerState:sampler atIndex:index];
 	}
 }
@@ -297,8 +297,8 @@ Graphics::Graphics()
 		if (!Shader::standardShaders[i])
 		{
 			std::vector<std::string> stages;
-			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
-			stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
+			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
+			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
 			Shader::standardShaders[i] = newShader(stages);
 		}
 	}
@@ -361,14 +361,14 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 	return new Texture(this, device, settings, data);
 }
 
-love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
+love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
+love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
 {
-	return new Shader(device, vertex, pixel);
+	return new Shader(device, stages);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
@@ -573,7 +573,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 		renderBindings = {};
 
 		id<MTLBuffer> defaultbuffer = getMTLBuffer(defaultAttributesBuffer);
-		setBuffer(renderEncoder, renderBindings, ShaderStage::STAGE_VERTEX, DEFAULT_VERTEX_BUFFER_BINDING, defaultbuffer, 0);
+		setBuffer(renderEncoder, renderBindings, SHADERSTAGE_VERTEX, DEFAULT_VERTEX_BUFFER_BINDING, defaultbuffer, 0);
 
 		dirtyRenderState = STATEBIT_ALL;
 	}
@@ -925,8 +925,8 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, uniformindex, buffer, uniformBufferOffset);
-	setBuffer(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 
@@ -939,40 +939,40 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		{
 			if (maintex == nullptr)
 			{
-				auto textype = shader->getMainTextureType();
-				if (textype != TEXTURE_MAX_ENUM)
-					maintex = defaultTextures[textype];
+				auto texinfo = shader->getMainTextureInfo();
+				if (texinfo != nullptr && texinfo->textureType != TEXTURE_MAX_ENUM)
+					maintex = defaultTextures[texinfo->textureType];
 			}
 
 			texture = getMTLTexture(maintex);
 			sampler = getMTLSampler(maintex);
 		}
 
-		uint8 texindex = b.textureStages[ShaderStage::STAGE_VERTEX];
-		uint8 sampindex = b.samplerStages[ShaderStage::STAGE_VERTEX];
+		uint8 texindex = b.textureStages[SHADERSTAGE_VERTEX];
+		uint8 sampindex = b.samplerStages[SHADERSTAGE_VERTEX];
 
 		if (texindex != LOVE_UINT8_MAX)
-			setTexture(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, texindex, texture);
+			setTexture(renderEncoder, bindings, SHADERSTAGE_VERTEX, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			setSampler(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, sampindex, sampler);
+			setSampler(renderEncoder, bindings, SHADERSTAGE_VERTEX, sampindex, sampler);
 
-		texindex = b.textureStages[ShaderStage::STAGE_PIXEL];
-		sampindex = b.samplerStages[ShaderStage::STAGE_PIXEL];
+		texindex = b.textureStages[SHADERSTAGE_PIXEL];
+		sampindex = b.samplerStages[SHADERSTAGE_PIXEL];
 
 		if (texindex != LOVE_UINT8_MAX)
-			setTexture(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, texindex, texture);
+			setTexture(renderEncoder, bindings, SHADERSTAGE_PIXEL, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			setSampler(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, sampindex, sampler);
+			setSampler(renderEncoder, bindings, SHADERSTAGE_PIXEL, sampindex, sampler);
 	}
 
 	for (const Shader::BufferBinding &b : s->getBufferBindings())
 	{
-		uint8 index = b.stages[ShaderStage::STAGE_VERTEX];
+		uint8 index = b.stages[SHADERSTAGE_VERTEX];
 		if (index != LOVE_UINT8_MAX)
-			setBuffer(renderEncoder, bindings, ShaderStage::STAGE_VERTEX, index, b.buffer, 0);
-		index = b.stages[ShaderStage::STAGE_PIXEL];
+			setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, index, b.buffer, 0);
+		index = b.stages[SHADERSTAGE_PIXEL];
 		if (index != LOVE_UINT8_MAX)
-			setBuffer(renderEncoder, bindings, ShaderStage::STAGE_PIXEL, index, b.buffer, 0);
+			setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, index, b.buffer, 0);
 	}
 }
 
@@ -988,7 +988,7 @@ static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBi
 		{
 			auto b = buffers->info[i];
 			id<MTLBuffer> buffer = getMTLBuffer(b.buffer);
-			setBuffer(encoder, bindings, ShaderStage::STAGE_VERTEX, i + VERTEX_BUFFER_BINDING_START, buffer, b.offset);
+			setBuffer(encoder, bindings, SHADERSTAGE_VERTEX, i + VERTEX_BUFFER_BINDING_START, buffer, b.offset);
 		}
 
 		i++;
@@ -1077,6 +1077,12 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	}
 }}
 
+bool Graphics::dispatch(int x, int y, int z)
+{
+	// TODO
+	return false;
+}
+
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
 	endPass();
@@ -1145,7 +1151,7 @@ void Graphics::endPass()
 	}
 }
 
-void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
+void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
 { @autoreleasepool {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 	{
@@ -1161,8 +1167,9 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 
 	if (c.hasValue)
 	{
-		gammaCorrectColor(c.value);
-		auto color = MTLClearColorMake(c.value.r, c.value.g, c.value.b, c.value.a);
+		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.a);
+		gammaCorrectColor(cf);
+		auto color = MTLClearColorMake(cf.r, cf.g, cf.b, cf.a);
 		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
 			passDesc.colorAttachments[i].clearColor = color;
@@ -1183,7 +1190,7 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 	}
 }}
 
-void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth)
+void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
 { @autoreleasepool {
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
@@ -1193,7 +1200,7 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 
 	if (ncolors <= 1 && ncolorcanvases <= 1)
 	{
-		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
+		clear(ncolors > 0 ? colors[0] : OptionalColorD(), stencil, depth);
 		return;
 	}
 
@@ -1211,10 +1218,11 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		if (!colors[i].hasValue)
 			continue;
 
-		Colorf c = colors[i].value;
-		gammaCorrectColor(c);
+		const ColorD &cd = colors[i].value;
+		Colorf cf((float)cd.r, (float)cd.g, (float)cd.b, (float)cd.a);
+		gammaCorrectColor(cf);
 
-		passDesc.colorAttachments[i].clearColor = MTLClearColorMake(c.r, c.g, c.b, c.a);
+		passDesc.colorAttachments[i].clearColor = MTLClearColorMake(cf.r, cf.g, cf.b, cf.a);
 		passDesc.colorAttachments[i].loadAction = MTLLoadActionClear;
 	}
 
@@ -1539,18 +1547,15 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, 
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
 {
+	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
+	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
+
 	format = getSizedFormat(format, rendertarget, readable);
 
 	if (sRGB)
 		format = getSRGBPixelFormat(format);
-
-	uint32 requiredflags = 0;
-	if (rendertarget)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-	if (readable)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
 
 	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
 	const uint32 rt = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
@@ -1750,7 +1755,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 			break;
 	}
 
-	return (requiredflags & flags) == requiredflags;
+	return (usage & flags) == usage;
 }
 
 Graphics::Renderer Graphics::getRenderer() const
@@ -1855,13 +1860,16 @@ void Graphics::initCapabilities()
 	}
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = 128 * 1024 * 1024;
 	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO;
+	capabilities.limits[LIMIT_THREADGROUPS_X] = LOVE_INT32_MAX; // TODO: is there a real limit?
+	capabilities.limits[LIMIT_THREADGROUPS_Y] = LOVE_INT32_MAX;
+	capabilities.limits[LIMIT_THREADGROUPS_Z] = LOVE_INT32_MAX;
 	if (families.mac[1] || families.macCatalyst[1] || families.apple[2])
 		capabilities.limits[LIMIT_RENDER_TARGETS] = 8;
 	else
 		capabilities.limits[LIMIT_RENDER_TARGETS] = 4;
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
 	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
-	static_assert(LIMIT_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new system limit!");
+	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = true;

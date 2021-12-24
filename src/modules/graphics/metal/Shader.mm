@@ -237,19 +237,20 @@ static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
 	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
 }
 
-static EShLanguage getGLSLangStage(ShaderStage::StageType stage)
+static EShLanguage getGLSLangStage(ShaderStageType stage)
 {
 	switch (stage)
 	{
-		case ShaderStage::STAGE_VERTEX: return EShLangVertex;
-		case ShaderStage::STAGE_PIXEL: return EShLangFragment;
-		case ShaderStage::STAGE_MAX_ENUM: return EShLangCount;
+		case SHADERSTAGE_VERTEX: return EShLangVertex;
+		case SHADERSTAGE_PIXEL: return EShLangFragment;
+		case SHADERSTAGE_COMPUTE: return EShLangCompute;
+		case SHADERSTAGE_MAX_ENUM: return EShLangCount;
 	}
 	return EShLangCount;
 }
 
-Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
-	: love::graphics::Shader(vertex, pixel)
+Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+	: love::graphics::Shader(stages)
 	, functions()
 	, builtinUniformInfo()
 	, localUniformStagingData(nullptr)
@@ -259,25 +260,25 @@ Shader::Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::
 { @autoreleasepool {
 	using namespace glslang;
 
-	TShader *glslangShaders[ShaderStage::STAGE_MAX_ENUM] = {};
+	TShader *glslangShaders[SHADERSTAGE_MAX_ENUM] = {};
 
 	TProgram *program = new TProgram();
 
 	auto cleanup = [&]()
 	{
 		delete program;
-		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 			delete glslangShaders[i];
 	};
 
 	// We can't do this in ShaderStage because the mapIO call modifies the
 	// TShader internals in a manner that prevents it from being shared.
-	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		if (!stages[i])
 			continue;
 
-		auto stage = (ShaderStage::StageType) i;
+		auto stage = (ShaderStageType) i;
 		auto glslangstage = getGLSLangStage(stage);
 		auto tshader = new TShader(glslangstage);
 
@@ -358,9 +359,9 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 	std::map<std::string, int> varyings;
 	int nextVaryingLocation = 0;
 
-	for (int stageindex = 0; stageindex < ShaderStage::STAGE_MAX_ENUM; stageindex++)
+	for (int stageindex = 0; stageindex < SHADERSTAGE_MAX_ENUM; stageindex++)
 	{
-		auto glslangstage = getGLSLangStage((ShaderStage::StageType) stageindex);
+		auto glslangstage = getGLSLangStage((ShaderStageType) stageindex);
 		auto intermediate = program.getIntermediate(glslangstage);
 		if (intermediate == nullptr)
 			continue;
@@ -561,7 +562,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				// TODO
 			}
 
-			if (stageindex == ShaderStage::STAGE_VERTEX)
+			if (stageindex == SHADERSTAGE_VERTEX)
 			{
 				int nextattributeindex = ATTRIB_MAX_ENUM;
 
@@ -592,7 +593,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
 				}
 			}
-			else if (stageindex == ShaderStage::STAGE_PIXEL)
+			else if (stageindex == SHADERSTAGE_PIXEL)
 			{
 				for (const auto &varying : resources.stage_inputs)
 				{
@@ -723,7 +724,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 Shader::~Shader()
 { @autoreleasepool {
-	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		functions[i] = nil;
 
 	for (const auto &kvp : cachedRenderPipelines)
@@ -912,8 +913,8 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 	MTLRenderPipelineDescriptor *desc = [MTLRenderPipelineDescriptor new];
 
-	desc.vertexFunction = functions[ShaderStage::STAGE_VERTEX];
-	desc.fragmentFunction = functions[ShaderStage::STAGE_PIXEL];
+	desc.vertexFunction = functions[SHADERSTAGE_VERTEX];
+	desc.fragmentFunction = functions[SHADERSTAGE_PIXEL];
 
 	desc.rasterSampleCount = std::max((int) key.msaa, 1);
 

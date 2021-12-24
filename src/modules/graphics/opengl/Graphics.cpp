@@ -1712,7 +1712,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 
 bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
 {
-	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
+	if (sRGB)
 	{
 		format = getSRGBPixelFormat(format);
 		sRGB = false;

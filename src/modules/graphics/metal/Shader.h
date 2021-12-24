@@ -80,17 +80,17 @@ public:
 
 		bool isMainTexture;
 
-		uint8 textureStages[ShaderStage::STAGE_MAX_ENUM];
-		uint8 samplerStages[ShaderStage::STAGE_MAX_ENUM];
+		uint8 textureStages[SHADERSTAGE_MAX_ENUM];
+		uint8 samplerStages[SHADERSTAGE_MAX_ENUM];
 	};
 
 	struct BufferBinding
 	{
 		id<MTLBuffer> buffer;
-		uint8 stages[ShaderStage::STAGE_MAX_ENUM];
+		uint8 stages[SHADERSTAGE_MAX_ENUM];
 	};
 
-	Shader(id<MTLDevice> device, love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
+	Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
 	virtual ~Shader();
 
 	// Implements Shader.
@@ -128,7 +128,7 @@ private:
 
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
 
-	id<MTLFunction> functions[ShaderStage::STAGE_MAX_ENUM];
+	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
 
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 	std::map<std::string, UniformInfo> uniforms;

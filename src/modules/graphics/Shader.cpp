@@ -933,6 +933,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 bool Shader::validateTexture(const UniformInfo *info, Texture *tex, bool internalUpdate)
 {
 	const SamplerState &sampler = tex->getSamplerState();
+	bool isstoragetex = info->baseType == UNIFORM_STORAGETEXTURE;
+
 	if (!tex->isReadable())
 	{
 		if (internalUpdate)
@@ -991,20 +993,6 @@ bool Shader::validateTexture(const UniformInfo *info, Texture *tex, bool interna
 	}
 
 	return true;
-}
-
-static bool isTexelBaseTypeCompatible(DataBaseType a, DataBaseType b)
-{
-	if (a == DATA_BASETYPE_FLOAT || a == DATA_BASETYPE_UNORM || a == DATA_BASETYPE_SNORM)
-		return b == DATA_BASETYPE_FLOAT || b == DATA_BASETYPE_UNORM || b == DATA_BASETYPE_SNORM;
-
-	if (a == DATA_BASETYPE_INT && b == DATA_BASETYPE_INT)
-		return true;
-
-	if (a == DATA_BASETYPE_UINT && b == DATA_BASETYPE_UINT)
-		return true;
-
-	return false;
 }
 
 bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool internalUpdate)

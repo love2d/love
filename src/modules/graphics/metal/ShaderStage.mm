@@ -29,7 +29,7 @@ namespace graphics
 namespace metal
 {
 
-ShaderStage::ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey)
+ShaderStage::ShaderStage(love::graphics::Graphics *gfx, ShaderStageType stage, const std::string &source, bool gles, const std::string &cachekey)
 	: love::graphics::ShaderStage(gfx, stage, source, gles, cachekey)
 {
 	// Can't store anything in here since the next part of the compilation
