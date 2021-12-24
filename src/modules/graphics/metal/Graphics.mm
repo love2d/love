@@ -1563,7 +1563,8 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 	const uint32 msaa = PIXELFORMATUSAGEFLAGS_MSAA;
 	const uint32 commonsample = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_LINEAR;
 	const uint32 commonrender = PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_BLEND | PIXELFORMATUSAGEFLAGS_MSAA;
-	const uint32 all = commonsample | commonrender;
+	const uint32 computewrite = PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
+	const uint32 all = commonsample | commonrender | computewrite;
 
 	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
@@ -1583,7 +1584,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			break;
 		case PIXELFORMAT_R16_UNORM:
 			if (families.apple[1])
-				flags |= commonsample | commonrender;
+				flags |= commonsample | commonrender | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= all;
 			break;
@@ -1592,7 +1593,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			break;
 		case PIXELFORMAT_R32_FLOAT:
 			if (families.apple[1])
-				flags |= sample | rt | blend | msaa;
+				flags |= sample | rt | blend | msaa | computewrite;
 			if (families.mac[1])
 				flags |= all;
 			break;
@@ -1606,7 +1607,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			break;
 		case PIXELFORMAT_RG16_UNORM:
 			if (families.apple[1])
-				flags |= commonsample | rt | blend | msaa;
+				flags |= commonsample | rt | blend | msaa | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= all;
 			break;
@@ -1615,9 +1616,9 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			break;
 		case PIXELFORMAT_RG32_FLOAT:
 			if (families.apple[1])
-				flags |= sample | rt | blend;
+				flags |= sample | rt | blend | computewrite;
 			if (families.apple[7])
-				flags |= sample | rt | msaa | blend;
+				flags |= sample | rt | msaa | blend | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= all;
 			break;
@@ -1636,7 +1637,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 
 		case PIXELFORMAT_RGBA16_UNORM:
 			if (families.apple[1])
-				flags |= commonsample | rt | msaa | blend;
+				flags |= commonsample | rt | msaa | blend | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= all;
 			break;
@@ -1645,9 +1646,9 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			break;
 		case PIXELFORMAT_RGBA32_FLOAT:
 			if (families.apple[1])
-				flags |= sample | rt;
+				flags |= sample | rt | computewrite;
 			if (families.apple[7])
-				flags |= sample | rt | msaa;
+				flags |= sample | rt | msaa | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= all;
 			break;
