@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -167,14 +167,14 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 	return new Texture(this, settings, data);
 }
 
-love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles)
+love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-love::graphics::Shader *Graphics::newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
+love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
 {
-	return new Shader(vertex, pixel);
+	return new Shader(stages);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
@@ -358,6 +358,7 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
+	// TODO: one buffer each for float, int, uint
 	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERUSAGE_TEXEL].get() == nullptr)
 	{
 		Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
@@ -378,7 +379,7 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 		data.resize(Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE / 4);
 
 		auto buffer = newBuffer(settings, format, data.data(), data.size() * sizeof(float), data.size());
-		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
+		defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].set(buffer, Acquire::NORETAIN);
 	}
 
 	// Load default resources before other Volatile.
@@ -418,8 +419,8 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 			if (!Shader::standardShaders[i])
 			{
 				std::vector<std::string> stages;
-				stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_VERTEX));
-				stages.push_back(Shader::getDefaultCode(stype, ShaderStage::STAGE_PIXEL));
+				stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
+				stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
 				Shader::standardShaders[i] = newShader(stages);
 			}
 		}
@@ -484,6 +485,88 @@ void Graphics::setActive(bool enable)
 		glFinish();
 
 	active = enable;
+}
+
+static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarriers, GLbitfield &postDispatchBarriers)
+{
+	// TODO: handle indirect argument buffer types, when those are added.
+	for (auto buffer : shader->getActiveWritableStorageBuffers())
+	{
+		if (buffer == nullptr)
+			return false;
+
+		auto usage = buffer->getUsageFlags();
+
+		postDispatchBarriers |= GL_BUFFER_UPDATE_BARRIER_BIT;
+
+		if (usage & BUFFERUSAGEFLAG_SHADER_STORAGE)
+		{
+			preDispatchBarriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+			postDispatchBarriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+		}
+
+		if (usage & BUFFERUSAGEFLAG_TEXEL)
+			postDispatchBarriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
+
+		if (usage & BUFFERUSAGEFLAG_INDEX)
+			postDispatchBarriers |= GL_ELEMENT_ARRAY_BARRIER_BIT;
+
+		if (usage & BUFFERUSAGEFLAG_VERTEX)
+			postDispatchBarriers |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
+
+		if (usage & (BUFFERUSAGEFLAG_COPY_SOURCE | BUFFERUSAGEFLAG_COPY_DEST))
+			postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
+	}
+
+	for (const auto &binding : shader->getStorageTextureBindings())
+	{
+		if (binding.texture == nullptr)
+			return false;
+
+		if (binding.access == GL_READ_ONLY)
+			continue;
+
+		preDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+
+		postDispatchBarriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+			| GL_TEXTURE_UPDATE_BARRIER_BIT
+			| GL_TEXTURE_FETCH_BARRIER_BIT;
+
+		if (binding.texture->isRenderTarget())
+			postDispatchBarriers |= GL_FRAMEBUFFER_BARRIER_BIT;
+	}
+
+	return true;
+}
+
+bool Graphics::dispatch(int x, int y, int z)
+{
+	// Set by higher level code before calling dispatch(x, y, z).
+	auto shader = (Shader *) Shader::current;
+
+	GLbitfield preDispatchBarriers = 0;
+	GLbitfield postDispatchBarriers = 0;
+
+	if (!computeDispatchBarriers(shader, preDispatchBarriers, postDispatchBarriers))
+		return false;
+
+	// glMemoryBarrier before dispatch to make sure non-compute-read ->
+	// compute-write is synced.
+	// TODO: is this needed? spec language around GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+	// makes me think so.
+	// This is overly conservative (dispatch -> dispatch will have redundant
+	// barriers).
+	if (preDispatchBarriers != 0)
+		glMemoryBarrier(preDispatchBarriers);
+
+	glDispatchCompute(x, y, z);
+
+	// Not as (theoretically) efficient as issuing the barrier right before
+	// they're used later, but much less complicated.
+	if (postDispatchBarriers != 0)
+		glMemoryBarrier(postDispatchBarriers);
+
+	return true;
 }
 
 void Graphics::draw(const DrawCommand &cmd)
@@ -771,7 +854,7 @@ void Graphics::endPass()
 	}
 }
 
-void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth)
+void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
 {
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 		flushBatchedDraws();
@@ -780,8 +863,9 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 
 	if (c.hasValue)
 	{
-		gammaCorrectColor(c.value);
-		glClearColor(c.value.r, c.value.g, c.value.b, c.value.a);
+		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.b);
+		gammaCorrectColor(cf);
+		glClearColor(cf.r, cf.g, cf.b, cf.a);
 		flags |= GL_COLOR_BUFFER_BIT;
 	}
 
@@ -817,17 +901,19 @@ void Graphics::clear(OptionalColorf c, OptionalInt stencil, OptionalDouble depth
 	}
 }
 
-void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth)
+void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
 {
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	int ncolorRTs = (int) states.back().renderTargets.colors.size();
+	const auto &rts = states.back().renderTargets.colors;
+
+	int ncolorRTs = (int) rts.size();
 	int ncolors = (int) colors.size();
 
-	if (ncolors <= 1 && ncolorRTs <= 1)
+	if (ncolors <= 1 && (ncolorRTs == 0 || (ncolorRTs == 1 && rts[0].texture != nullptr && !isPixelFormatInteger(rts[0].texture->getPixelFormat()))))
 	{
-		clear(ncolors > 0 ? colors[0] : OptionalColorf(), stencil, depth);
+		clear(ncolors > 0 ? colors[0] : OptionalColorD(), stencil, depth);
 		return;
 	}
 
@@ -841,18 +927,39 @@ void Graphics::clear(const std::vector<OptionalColorf> &colors, OptionalInt sten
 		if (!colors[i].hasValue)
 			continue;
 
-		Colorf c = colors[i].value;
-		gammaCorrectColor(c);
+		PixelFormatType datatype = PIXELFORMATTYPE_UNORM;
+		if (rts[i].texture != nullptr)
+			datatype = getPixelFormatInfo(rts[i].texture->getPixelFormat()).dataType;
+
+		ColorD c = colors[i].value;
 
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
 		{
-			const GLfloat carray[] = {c.r, c.g, c.b, c.a};
-			glClearBufferfv(GL_COLOR, i, carray);
+			if (datatype == PIXELFORMATTYPE_SINT)
+			{
+				const GLint carray[] = {(GLint)c.r, (GLint)c.g, (GLint)c.b, (GLint)c.a};
+				glClearBufferiv(GL_COLOR, i, carray);
+			}
+			else if (datatype == PIXELFORMATTYPE_UINT)
+			{
+				const GLuint carray[] = {(GLuint)c.r, (GLuint)c.g, (GLuint)c.b, (GLuint)c.a};
+				glClearBufferuiv(GL_COLOR, i, carray);
+			}
+			else
+			{
+				Colorf cf((float)c.r, (float)c.g, (float)c.b, (float)c.a);
+				gammaCorrectColor(cf);
+				const GLfloat carray[] = {cf.r, cf.g, cf.b, cf.a};
+				glClearBufferfv(GL_COLOR, i, carray);
+			}
 		}
 		else
 		{
+			Colorf cf((float)c.r, (float)c.g, (float)c.b, (float)c.a);
+			gammaCorrectColor(cf);
+
 			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-			glClearColor(c.r, c.g, c.b, c.a);
+			glClearColor(cf.r, cf.g, cf.b, cf.a);
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			drawbuffersmodified = true;
@@ -1566,10 +1673,13 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = gl.getMaxCubeTextureSize();
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = gl.getMaxTexelBufferSize();
 	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = gl.getMaxShaderStorageBufferSize();
+	capabilities.limits[LIMIT_THREADGROUPS_X] = gl.getMaxComputeWorkGroupsX();
+	capabilities.limits[LIMIT_THREADGROUPS_Y] = gl.getMaxComputeWorkGroupsY();
+	capabilities.limits[LIMIT_THREADGROUPS_Z] = gl.getMaxComputeWorkGroupsZ();
 	capabilities.limits[LIMIT_RENDER_TARGETS] = gl.getMaxRenderTargets();
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = gl.getMaxSamples();
 	capabilities.limits[LIMIT_ANISOTROPY] = gl.getMaxAnisotropy();
-	static_assert(LIMIT_MAX_ENUM == 10, "Graphics::initCapabilities must be updated when adding a new system limit!");
+	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
@@ -1600,7 +1710,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
 {
 	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
 	{
@@ -1608,22 +1718,20 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 		sRGB = false;
 	}
 
-	uint32 requiredflags = 0;
-	if (rendertarget)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-	if (readable)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
+	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
+	bool computewrite = (usage & PIXELFORMATUSAGEFLAGS_COMPUTEWRITE) != 0;
 
 	format = getSizedFormat(format, rendertarget, readable);
 
-	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][sRGB ? 1 : 0];
+	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][computewrite ? 1 : 0][sRGB ? 1 : 0];
 
 	if (supported.hasValue)
 		return supported.value;
 
-	auto supportedflags = OpenGL::getPixelFormatUsageFlags(format);
+	uint32 supportedflags = OpenGL::getPixelFormatUsageFlags(format);
 
-	if ((requiredflags & supportedflags) != requiredflags)
+	if ((usage & supportedflags) != usage)
 	{
 		supported.set(false);
 		return supported.value;
@@ -1664,7 +1772,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, bool rendertarget, boo
 	// Make sure at least something is bound to a color attachment. I believe
 	// this is required on ES2 but I'm not positive.
 	if (isPixelFormatDepthStencil(format))
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D), 0, 0, 0);
+		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT), 0, 0, 0);
 
 	if (readable)
 	{

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,6 +63,7 @@ enum PixelFormatUsage
 	PIXELFORMATUSAGE_RENDERTARGET,
 	PIXELFORMATUSAGE_BLEND,
 	PIXELFORMATUSAGE_MSAA,
+	PIXELFORMATUSAGE_COMPUTEWRITE,
 	PIXELFORMATUSAGE_MAX_ENUM
 };
 
@@ -74,6 +75,7 @@ enum PixelFormatUsageFlags
 	PIXELFORMATUSAGEFLAGS_RENDERTARGET = (1 << PIXELFORMATUSAGE_RENDERTARGET),
 	PIXELFORMATUSAGEFLAGS_BLEND = (1 << PIXELFORMATUSAGE_BLEND),
 	PIXELFORMATUSAGEFLAGS_MSAA = (1 << PIXELFORMATUSAGE_MSAA),
+	PIXELFORMATUSAGEFLAGS_COMPUTEWRITE = (1 << PIXELFORMATUSAGE_COMPUTEWRITE),
 };
 
 struct SamplerState
@@ -169,6 +171,7 @@ public:
 		SETTING_DPI_SCALE,
 		SETTING_MSAA,
 		SETTING_RENDER_TARGET,
+		SETTING_COMPUTE_WRITE,
 		SETTING_READABLE,
 		SETTING_MAX_ENUM
 	};
@@ -186,6 +189,7 @@ public:
 		float dpiScale = 1.0f;
 		int msaa = 1;
 		bool renderTarget = false;
+		bool computeWrite = false;
 		OptionalBool readable;
 	};
 
@@ -250,6 +254,7 @@ public:
 	MipmapsMode getMipmapsMode() const;
 
 	bool isRenderTarget() const;
+	bool isComputeWritable() const;
 	bool isReadable() const;
 
 	bool isCompressed() const;
@@ -308,6 +313,7 @@ protected:
 
 	PixelFormat format;
 	bool renderTarget;
+	bool computeWrite;
 	bool readable;
 
 	MipmapsMode mipmapsMode;

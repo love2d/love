@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 #pragma once
 
 #include "int.h"
+#include "StringMap.h"
 
 #include <string>
 #include <vector>
@@ -32,8 +33,11 @@ enum APIType
 {
 	API_FUNCTION,
 	API_METHOD,
+	API_CALLBACK,
 	API_FIELD,
 	API_CONSTANT,
+	API_CUSTOM,
+	API_MAX_ENUM
 };
 
 enum DeprecationType
@@ -41,6 +45,7 @@ enum DeprecationType
 	DEPRECATED_NO_REPLACEMENT,
 	DEPRECATED_REPLACED,
 	DEPRECATED_RENAMED,
+	DEPRECATED_MAX_ENUM
 };
 
 struct DeprecationInfo
@@ -77,5 +82,8 @@ struct MarkDeprecated
 
 	DeprecationInfo *info;
 };
+
+STRINGMAP_DECLARE(APIType);
+STRINGMAP_DECLARE(DeprecationType);
 
 } // love

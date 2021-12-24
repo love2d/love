@@ -6,7 +6,7 @@ This distribution contains code from the following projects (full license text b
  - LOVE
 	Website: https://love2d.org/
 	License: zlib
-	Copyright (c) 2006-2020 LOVE Development Team
+	Copyright (c) 2006-2021 LOVE Development Team
 
  - ENet
 	Website: http://enet.bespin.org/index.html
@@ -81,8 +81,8 @@ This distribution contains code from the following projects (full license text b
 		- xxHash source repository : https://github.com/Cyan4973/xxHash
 
  - dr_flac
-	Website: https://mackron.github.io/dr_libs/
-	Source download: https://github.com/mackron/dr_libs/blob/d705d31/dr_flac.h
+	Website: https://github.com/mackron/dr_libs
+	Source download: https://github.com/mackron/dr_libs/blob/343aa92/dr_flac.h
 	License: MIT/Expat
 	Copyright 2018 David Reid
 
@@ -94,13 +94,13 @@ This distribution contains code from the following projects (full license text b
 
  - stb_image
 	Website: https://github.com/nothings/stb
-	Source download: https://github.com/nothings/stb/blob/f54acd4e13430c5122cab4ca657705c84aa61b08/stb_image.h
+	Source download: https://github.com/nothings/stb/blob/e140649ccf40818781b7e408f6228a486f6d254b/stb_image.h
 	License: MIT/Expat
 	Copyright (c) 2017 Sean Barrett
 
  - OpenAL Soft
-	Website: http://kcat.strangesoft.net/openal.html
-	Source download: http://kcat.strangesoft.net/openal.html#download
+	Website: https://openal-soft.org/
+	Source download: https://openal-soft.org/#download
 	License: Mixed, licensing information obtained from the debian project
 		- Alc/backends/opensl.c
 			License: Apache 2.0

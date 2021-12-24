@@ -23,6 +23,7 @@
 /platform/xcode/ios/include
 /platform/xcode/ios/libraries
 /platform/xcode/ios/luajit-git
+/platform/xcode/macosx/Frameworks
 *xcuserdata*
 *.DS_Store
 *.dylib

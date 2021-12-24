@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -398,7 +398,7 @@ Message *Event::convert(const SDL_Event &e)
 				txt = "unknown";
 
 			vargs.emplace_back((double)(e.display.display + 1));
-			vargs.emplace_back(txt);
+			vargs.emplace_back(txt, strlen(txt));
 
 			msg = new Message("displayrotated", vargs);
 		}

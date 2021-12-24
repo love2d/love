@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -186,6 +186,13 @@ public:
 		bool brokenSRGB;
 
 		/**
+		 * Some Android graphics drivers claim to support GLES3.0 but have bugs
+		 * with certain aspects that users expect to work. For example:
+		 * https://github.com/love2d/love-android/issues/204
+		 **/
+		bool brokenGLES3;
+
+		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *
@@ -305,7 +312,7 @@ public:
 	/**
 	 * Gets the ID for love's default texture (used for "untextured" primitives.)
 	 **/
-	GLuint getDefaultTexture(TextureType type) const;
+	GLuint getDefaultTexture(TextureType type, DataBaseType datatype) const;
 
 	/**
 	 * Gets the texture ID for love's default texel buffer.
@@ -382,6 +389,14 @@ public:
 	 * Returns the maximum number of bytes in a shader storage buffer.
 	 **/
 	int getMaxShaderStorageBufferSize() const;
+
+	/**
+	 * Returns the maximum number of compute work groups that can be
+	 * dispatched in a given dimension.
+	 */
+	int getMaxComputeWorkGroupsX() const;
+	int getMaxComputeWorkGroupsY() const;
+	int getMaxComputeWorkGroupsZ() const;
 
 	/**
 	 * Returns the maximum supported number of simultaneous render targets.
@@ -467,6 +482,9 @@ private:
 	int maxTextureArrayLayers;
 	int maxTexelBufferSize;
 	int maxShaderStorageBufferSize;
+	int maxComputeWorkGroupsX;
+	int maxComputeWorkGroupsY;
+	int maxComputeWorkGroupsZ;
 	int maxRenderTargets;
 	int maxSamples;
 	int maxTextureUnits;
@@ -505,7 +523,7 @@ private:
 
 		GLuint boundFramebuffers[2];
 
-		GLuint defaultTexture[TEXTURE_MAX_ENUM];
+		GLuint defaultTexture[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM];
 		GLuint defaultTexelBuffer;
 		GLuint defaultStorageBuffer;
 

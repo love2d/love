@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,17 @@ namespace physics
 namespace box2d
 {
 
+// TODO: Make this not static.
 float Physics::meter = Physics::DEFAULT_METER;
+
+Physics::Physics()
+{
+	meter = DEFAULT_METER;
+}
+
+Physics::~Physics()
+{
+}
 
 const char *Physics::getName() const
 {

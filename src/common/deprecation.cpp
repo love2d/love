@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -108,12 +108,12 @@ std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 		notice += "function ";
 	else if (info.apiType == API_METHOD)
 		notice += "method ";
+	else if (info.apiType == API_CALLBACK)
+		notice += "callback ";
 	else if (info.apiType == API_FIELD)
 		notice += "field ";
 	else if (info.apiType == API_CONSTANT)
 		notice += "constant ";
-	else
-		notice += "API ";
 
 	notice += info.name;
 
@@ -183,5 +183,24 @@ MarkDeprecated::~MarkDeprecated()
 	if (mutex != nullptr)
 		mutex->unlock();
 }
+
+STRINGMAP_BEGIN(APIType, API_MAX_ENUM, apiType)
+{
+	{ "function", API_FUNCTION },
+	{ "method",   API_METHOD   },
+	{ "callback", API_CALLBACK },
+	{ "field",    API_FIELD    },
+	{ "constant", API_CONSTANT },
+	{ "custom",   API_CUSTOM   },
+}
+STRINGMAP_END(APIType, API_MAX_ENUM, apiType)
+
+STRINGMAP_BEGIN(DeprecationType, DEPRECATED_MAX_ENUM, deprecationType)
+{
+	{ "noreplacement", DEPRECATED_NO_REPLACEMENT },
+	{ "replaced",      DEPRECATED_REPLACED       },
+	{ "renamed",       DEPRECATED_RENAMED        },
+}
+STRINGMAP_END(DeprecationType, DEPRECATED_MAX_ENUM, deprecationType)
 
 } // love

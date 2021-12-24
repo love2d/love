@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ class Text;
 class Video;
 class Buffer;
 
-typedef Optional<Colorf> OptionalColorf;
+typedef Optional<ColorD> OptionalColorD;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
 
@@ -165,6 +165,9 @@ public:
 		LIMIT_TEXTURE_LAYERS,
 		LIMIT_TEXEL_BUFFER_SIZE,
 		LIMIT_SHADER_STORAGE_BUFFER_SIZE,
+		LIMIT_THREADGROUPS_X,
+		LIMIT_THREADGROUPS_Y,
+		LIMIT_THREADGROUPS_Z,
 		LIMIT_RENDER_TARGETS,
 		LIMIT_TEXTURE_MSAA,
 		LIMIT_ANISOTROPY,
@@ -437,6 +440,7 @@ public:
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
 	Shader *newShader(const std::vector<std::string> &stagessource);
+	Shader *newComputeShader(const std::string &source);
 
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
@@ -454,8 +458,8 @@ public:
 	 **/
 	void reset();
 
-	virtual void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) = 0;
-	virtual void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
 
 	virtual void discard(const std::vector<bool> &colorbuffers, bool depthstencil) = 0;
 
@@ -672,6 +676,8 @@ public:
 
 	void copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size);
 
+	void dispatchThreadgroups(Shader* shader, int x, int y, int z);
+
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
 	void drawLayer(Texture *texture, int layer, const Matrix4 &m);
@@ -782,9 +788,9 @@ public:
 	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
 
 	/**
-	 * Gets whether the specified pixel format is supported.
+	 * Gets whether the specified pixel format usage is supported.
 	 **/
-	virtual bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) = 0;
+	virtual bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.
@@ -836,7 +842,7 @@ public:
 
 	static void flushBatchedDrawsGlobal();
 
-	void cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &cachekey);
+	void cleanupCachedShaderStage(ShaderStageType type, const std::string &cachekey);
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)
@@ -934,10 +940,12 @@ protected:
 		{}
 	};
 
-	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info);
-	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
-	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
+	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info);
+	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
+	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
+
+	virtual bool dispatch(int x, int y, int z) = 0;
 
 	virtual void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 
@@ -999,7 +1007,7 @@ private:
 
 	std::vector<uint8> scratchBuffer;
 
-	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[ShaderStage::STAGE_MAX_ENUM];
+	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[SHADERSTAGE_MAX_ENUM];
 
 }; // Graphics
 

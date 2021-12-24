@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,8 @@
 
 #include "ios.h"
 #include "apple.h"
+
+using namespace love::apple;
 
 #ifdef LOVE_IOS
 
@@ -130,10 +132,12 @@ static bool deleteFileInDocuments(NSString *filename);
 
 static NSArray *getLovesInDocuments()
 {
+	std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
+
 	NSMutableArray *paths = [NSMutableArray new];
 
 	NSFileManager *manager = [NSFileManager defaultManager];
-	NSDirectoryEnumerator *enumerator = [manager enumeratorAtPath:getDocumentsDirectory()];
+	NSDirectoryEnumerator *enumerator = [manager enumeratorAtPath:@(docdir.c_str())];
 
 	NSString *path = nil;
 	while ((path = [enumerator nextObject]))
@@ -150,9 +154,9 @@ static NSArray *getLovesInDocuments()
 
 static bool deleteFileInDocuments(NSString *filename)
 {
-	NSString *documents = getDocumentsDirectory();
+	std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
 
-	NSString *file = [documents stringByAppendingPathComponent:filename];
+	NSString *file = [@(docdir.c_str()) stringByAppendingPathComponent:filename];
 	bool success = [[NSFileManager defaultManager] removeItemAtPath:file error:nil];
 
 	if (success)
@@ -173,7 +177,8 @@ static int dropFileEventFilter(void *userdata, SDL_Event *event)
 
 		if ([fmanager fileExistsAtPath:fname] && [fname.pathExtension isEqual:@"love"])
 		{
-			NSString *documents = getDocumentsDirectory();
+			std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
+			NSString *documents = @(docdir.c_str());
 
 			documents = documents.stringByStandardizingPath.stringByResolvingSymlinksInPath;
 			fname = fname.stringByStandardizingPath.stringByResolvingSymlinksInPath;
@@ -326,7 +331,8 @@ std::string getLoveInResources(bool &fused)
 		// The string length might be 0 if the no-game screen was selected.
 		if (selectedfile != nil && selectedfile.length > 0)
 		{
-			NSString *documents = getDocumentsDirectory();
+			std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
+			NSString *documents = @(docdir.c_str());
 			path = [documents stringByAppendingPathComponent:selectedfile].UTF8String;
 		}
 	}

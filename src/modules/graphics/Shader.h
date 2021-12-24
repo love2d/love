@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -76,6 +76,7 @@ public:
 		UNIFORM_UINT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
+		UNIFORM_STORAGETEXTURE,
 		UNIFORM_TEXELBUFFER,
 		UNIFORM_STORAGEBUFFER,
 		UNIFORM_UNKNOWN,
@@ -99,10 +100,17 @@ public:
 		ENTRYPOINT_RAW,
 	};
 
+	enum Access
+	{
+		ACCESS_NONE = 0,
+		ACCESS_READ = (1 << 0),
+		ACCESS_WRITE = (1 << 1),
+	};
+
 	struct SourceInfo
 	{
 		Language language;
-		EntryPoint stages[ShaderStage::STAGE_MAX_ENUM];
+		EntryPoint stages[SHADERSTAGE_MAX_ENUM];
 		bool usesMRT;
 	};
 
@@ -126,7 +134,9 @@ public:
 		UniformType baseType;
 		DataBaseType dataBaseType;
 		TextureType textureType;
+		Access access;
 		bool isDepthSampler;
+		PixelFormat storageTextureFormat;
 		size_t bufferStride;
 		size_t bufferMemberCount;
 		std::string name;
@@ -164,8 +174,13 @@ public:
 	// Pointer to the default Shader.
 	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
-	Shader(ShaderStage *vertex, ShaderStage *pixel);
+	Shader(StrongRef<ShaderStage> stages[]);
 	virtual ~Shader();
+
+	/**
+	 * Check whether a Shader has a stage.
+	 **/
+	bool hasStage(ShaderStageType stage);
 
 	/**
 	 * Binds this Shader's program to be used when rendering.
@@ -208,18 +223,20 @@ public:
 	 **/
 	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
 
-	TextureType getMainTextureType() const;
+	const UniformInfo *getMainTextureInfo() const;
 	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
-	static SourceInfo getSourceInfo(const std::string &src);
-	static std::string createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const SourceInfo &info);
+	void getLocalThreadgroupSize(int *x, int *y, int *z);
 
-	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
+	static SourceInfo getSourceInfo(const std::string &src);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info, bool gles, bool checksystemfeatures);
+
+	static bool validate(StrongRef<ShaderStage> stages[], std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
 
-	static const std::string &getDefaultCode(StandardShader shader, ShaderStage::StageType stage);
+	static const std::string &getDefaultCode(StandardShader shader, ShaderStageType stage);
 
 	static bool getConstant(const char *in, Language &out);
 	static bool getConstant(Language in, const char *&out);
@@ -233,20 +250,31 @@ protected:
 	{
 		size_t stride;
 		size_t memberCount;
+		Access access;
+	};
+
+	struct StorageTextureReflection
+	{
+		PixelFormat format;
+		Access access;
 	};
 
 	struct ValidationReflection
 	{
 		std::map<std::string, BufferReflection> storageBuffers;
+		std::map<std::string, StorageTextureReflection> storageTextures;
+		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};
 
-	static bool validateInternal(ShaderStage* vertex, ShaderStage* pixel, std::string& err, ValidationReflection &reflection);
+	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
+	static DataBaseType getDataBaseType(PixelFormat format);
+	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
 
 	static bool validateTexture(const UniformInfo *info, Texture *tex, bool internalUpdate);
 	static bool validateBuffer(const UniformInfo *info, Buffer *buffer, bool internalUpdate);
 
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 
 	ValidationReflection validationReflection;
 

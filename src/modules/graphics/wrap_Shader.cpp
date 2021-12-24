@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -317,6 +317,7 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 	case Shader::UNIFORM_BOOL:
 		return w_Shader_sendBooleans(L, startidx, shader, info);
 	case Shader::UNIFORM_SAMPLER:
+	case Shader::UNIFORM_STORAGETEXTURE:
 		return w_Shader_sendTextures(L, startidx, shader, info);
 	case Shader::UNIFORM_TEXELBUFFER:
 	case Shader::UNIFORM_STORAGEBUFFER:
@@ -328,7 +329,8 @@ static int w_Shader_sendLuaValues(lua_State *L, int startidx, Shader *shader, co
 
 static int w_Shader_sendData(lua_State *L, int startidx, Shader *shader, const Shader::UniformInfo *info, bool colors)
 {
-	if (info->baseType == Shader::UNIFORM_SAMPLER || info->baseType == Shader::UNIFORM_TEXELBUFFER || info->baseType == Shader::UNIFORM_STORAGEBUFFER)
+	if (info->baseType == Shader::UNIFORM_SAMPLER || info->baseType == Shader::UNIFORM_STORAGETEXTURE
+		|| info->baseType == Shader::UNIFORM_TEXELBUFFER || info->baseType == Shader::UNIFORM_STORAGEBUFFER)
 		return luaL_error(L, "Only value types (floats, ints, vectors, matrices, etc) be sent to Shaders via Data objects.");
 
 	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;
@@ -491,12 +493,44 @@ int w_Shader_hasUniform(lua_State *L)
 	return 1;
 }
 
+int w_Shader_hasStage(lua_State* L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	ShaderStageType stage;
+	const char *str = luaL_checkstring(L, 2);
+	if (!ShaderStage::getConstant(str, stage))
+		return luax_enumerror(L, "shader stage", str);
+
+	luax_pushboolean(L, shader->hasStage(stage));
+	return 1;
+}
+
+int w_Shader_getLocalThreadgroupSize(lua_State* L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+
+	if (!shader->hasStage(SHADERSTAGE_COMPUTE))
+	{
+		lua_pushnil(L);
+		return 1;
+	}
+
+	int x, y, z;
+	shader->getLocalThreadgroupSize(&x, &y, &z);
+	lua_pushinteger(L, x);
+	lua_pushinteger(L, y);
+	lua_pushinteger(L, z);
+	return 3;
+}
+
 static const luaL_Reg w_Shader_functions[] =
 {
-	{ "getWarnings", w_Shader_getWarnings },
-	{ "send",        w_Shader_send },
-	{ "sendColor",   w_Shader_sendColors },
-	{ "hasUniform",  w_Shader_hasUniform },
+	{ "getWarnings",             w_Shader_getWarnings },
+	{ "send",                    w_Shader_send },
+	{ "sendColor",               w_Shader_sendColors },
+	{ "hasUniform",              w_Shader_hasUniform },
+	{ "hasStage",                w_Shader_hasStage },
+	{ "getLocalThreadgroupSize", w_Shader_getLocalThreadgroupSize },
 	{ 0, 0 }
 };
 

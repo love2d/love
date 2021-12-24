@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,12 @@ static void loveSTBIAssert(bool test, const char *teststr)
 	if (!test)
 		throw love::Exception("Could not decode image (stb_image assertion '%s' failed)", teststr);
 }
+
+// Workaround when building for iOS with deployment target=8.0
+#include "common/config.h"
+#if defined(LOVE_IOS)
+#define STBI_NO_THREAD_LOCALS
+#endif
 
 // stb_image
 #define STBI_ONLY_JPEG

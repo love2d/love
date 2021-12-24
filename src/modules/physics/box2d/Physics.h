@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -60,6 +60,9 @@ public:
 	 * 30 pixels in one meter by default.
 	 **/
 	static const int DEFAULT_METER = 30;
+
+	Physics();
+	virtual ~Physics();
 
 	// Implements Module.
 	const char *getName() const;

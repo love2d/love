@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,8 +43,8 @@ static bool isBuffer(Shader::UniformType utype)
 	return utype == Shader::UNIFORM_TEXELBUFFER || utype == Shader::UNIFORM_STORAGEBUFFER;
 }
 
-Shader::Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel)
-	: love::graphics::Shader(vertex, pixel)
+Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+	: love::graphics::Shader(stages)
 	, program(0)
 	, builtinUniforms()
 	, builtinUniformInfo()
@@ -63,7 +63,7 @@ Shader::~Shader()
 		if (p.second.data != nullptr)
 			free(p.second.data);
 
-		if (p.second.baseType == UNIFORM_SAMPLER)
+		if (p.second.baseType == UNIFORM_SAMPLER || p.second.baseType == UNIFORM_STORAGETEXTURE)
 		{
 			for (int i = 0; i < p.second.count; i++)
 			{
@@ -119,15 +119,8 @@ void Shader::mapActiveUniforms()
 
 		u.name = std::string(cname, (size_t) namelen);
 		u.location = glGetUniformLocation(program, u.name.c_str());
-		u.baseType = getUniformBaseType(gltype);
-		u.textureType = getUniformTextureType(gltype);
-		u.dataBaseType = getUniformTexelBaseType(gltype);
-		u.isDepthSampler = isDepthTextureType(gltype);
-
-		if (u.baseType == UNIFORM_MATRIX)
-			u.matrix = getMatrixSize(gltype);
-		else
-			u.components = getUniformTypeComponents(gltype);
+		u.access = ACCESS_READ;
+		computeUniformTypeInfo(gltype, u);
 
 		// glGetActiveUniform appends "[0]" to the end of array uniform names...
 		if (u.name.length() > 3)
@@ -159,11 +152,38 @@ void Shader::mapActiveUniforms()
 			else
 			{
 				unit.isTexelBuffer = false;
-				unit.texture = gl.getDefaultTexture(u.textureType);
+				unit.texture = gl.getDefaultTexture(u.textureType, u.dataBaseType);
 			}
 
 			for (int i = 0; i < u.count; i++)
 				textureUnits.push_back(unit);
+		}
+		else if (u.baseType == UNIFORM_STORAGETEXTURE)
+		{
+			const auto reflectionit = validationReflection.storageTextures.find(u.name);
+			if (reflectionit != validationReflection.storageTextures.end())
+			{
+				u.storageTextureFormat = reflectionit->second.format;
+				u.access = reflectionit->second.access;
+			}
+
+			StorageTextureBinding binding = {};
+			binding.gltexture = gl.getDefaultTexture(u.textureType, u.dataBaseType);
+			binding.type = u.textureType;
+
+			if ((u.access & (ACCESS_READ | ACCESS_WRITE)) != 0)
+				binding.access = GL_READ_WRITE;
+			else if ((u.access & ACCESS_WRITE) != 0)
+				binding.access = GL_WRITE_ONLY;
+			else if ((u.access & ACCESS_READ) != 0)
+				binding.access = GL_READ_ONLY;
+
+			bool sRGB = false;
+			auto fmt = OpenGL::convertPixelFormat(u.storageTextureFormat, false, sRGB);
+			binding.internalFormat = fmt.internalformat;
+
+			for (int i = 0; i < u.count; i++)
+				storageTextureBindings.push_back(binding);
 		}
 
 		// Make sure previously set uniform data is preserved, and shader-
@@ -190,6 +210,7 @@ void Shader::mapActiveUniforms()
 			case UNIFORM_INT:
 			case UNIFORM_BOOL:
 			case UNIFORM_SAMPLER:
+			case UNIFORM_STORAGETEXTURE:
 			case UNIFORM_TEXELBUFFER:
 				u.dataSize = sizeof(int) * u.components * u.count;
 				u.data = malloc(u.dataSize);
@@ -232,6 +253,17 @@ void Shader::mapActiveUniforms()
 						u.textures = new love::graphics::Texture*[u.count];
 						memset(u.textures, 0, sizeof(Texture *) * u.count);
 					}
+				}
+				else if (u.baseType == UNIFORM_STORAGETEXTURE)
+				{
+					int startbinding = (int) storageTextureBindings.size() - u.count;
+					for (int i = 0; i < u.count; i++)
+						u.ints[i] = startbinding + i;
+
+					glUniform1iv(u.location, u.count, u.ints);
+
+					u.textures = new love::graphics::Texture*[u.count];
+					memset(u.textures, 0, sizeof(Texture *) * u.count);
 				}
 			}
 
@@ -284,7 +316,7 @@ void Shader::mapActiveUniforms()
 		if (builtin != BUILTIN_MAX_ENUM)
 			builtinUniformInfo[(int)builtin] = &uniforms[u.name];
 
-		if (u.baseType == UNIFORM_SAMPLER)
+		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
 		{
 			// Make sure all stored textures have their Volatiles loaded before
 			// the sendTextures call, since it calls getHandle().
@@ -325,6 +357,7 @@ void Shader::mapActiveUniforms()
 		{
 			UniformInfo u = {};
 			u.baseType = UNIFORM_STORAGEBUFFER;
+			u.access = ACCESS_READ;
 
 			GLsizei namelength = 0;
 			glGetProgramResourceName(program, GL_SHADER_STORAGE_BLOCK, sindex, 2048, &namelength, namebuffer);
@@ -337,6 +370,7 @@ void Shader::mapActiveUniforms()
 			{
 				u.bufferStride = reflectionit->second.stride;
 				u.bufferMemberCount = reflectionit->second.memberCount;
+				u.access = reflectionit->second.access;
 			}
 
 			// Make sure previously set uniform data is preserved, and shader-
@@ -369,10 +403,17 @@ void Shader::mapActiveUniforms()
 			if (binding.bindingindex >= 0)
 			{
 				int activeindex = (int)activeStorageBufferBindings.size();
-
-				storageBufferBindingIndexToActiveBinding[binding.bindingindex] = activeindex;
-
 				activeStorageBufferBindings.push_back(binding);
+
+				auto p = std::make_pair(activeindex, -1);
+
+				if (u.access & ACCESS_WRITE)
+				{
+					p.second = (int)activeWritableStorageBuffers.size();
+					activeWritableStorageBuffers.push_back(u.buffers[0]);
+				}
+
+				storageBufferBindingIndexToActiveBinding[binding.bindingindex] = p;
 			}
 
 			uniforms[u.name] = u;
@@ -399,7 +440,7 @@ void Shader::mapActiveUniforms()
 			if (p.second.data != nullptr)
 				free(p.second.data);
 
-			if (p.second.baseType == UNIFORM_SAMPLER)
+			if (p.second.baseType == UNIFORM_SAMPLER || p.second.baseType == UNIFORM_STORAGETEXTURE)
 			{
 				for (int i = 0; i < p.second.count; i++)
 				{
@@ -433,8 +474,11 @@ bool Shader::loadVolatile()
 	textureUnits.clear();
 	textureUnits.push_back(TextureUnit());
 
-	storageBufferBindingIndexToActiveBinding.resize(gl.getMaxShaderStorageBufferBindings(), -1);
 	activeStorageBufferBindings.clear();
+
+	storageBufferBindingIndexToActiveBinding.resize(gl.getMaxShaderStorageBufferBindings(), std::make_pair(-1, -1));
+	activeStorageBufferBindings.clear();
+	activeWritableStorageBuffers.clear();
 
 	for (const auto &stage : stages)
 	{
@@ -561,7 +605,7 @@ void Shader::attach()
 		// retain/release happens in Graphics::setShader.
 
 		// Make sure all textures are bound to their respective texture units.
-		for (int i = 0; i < (int) textureUnits.size(); ++i)
+		for (int i = 0; i < (int) textureUnits.size(); i++)
 		{
 			const TextureUnit &unit = textureUnits[i];
 			if (unit.active)
@@ -571,6 +615,12 @@ void Shader::attach()
 				else
 					gl.bindTextureToUnit(unit.type, unit.texture, i, false, false);
 			}
+		}
+
+		for (size_t i = 0; i < storageTextureBindings.size(); i++)
+		{
+			const auto &binding = storageTextureBindings[i];
+			glBindImageTexture((GLuint) i, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
 		}
 
 		for (auto bufferbinding : activeStorageBufferBindings)
@@ -636,7 +686,7 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalupda
 			break;
 		}
 	}
-	else if (type == UNIFORM_INT || type == UNIFORM_BOOL || type == UNIFORM_SAMPLER || type == UNIFORM_TEXELBUFFER)
+	else if (type == UNIFORM_INT || type == UNIFORM_BOOL || type == UNIFORM_SAMPLER || type == UNIFORM_STORAGETEXTURE || type == UNIFORM_TEXELBUFFER)
 	{
 		switch (info->components)
 		{
@@ -705,7 +755,10 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalUpdate)
 {
-	if (info->baseType != UNIFORM_SAMPLER)
+	bool issampler = info->baseType == UNIFORM_SAMPLER;
+	bool isstoragetex = info->baseType == UNIFORM_STORAGETEXTURE;
+
+	if (!issampler && !isstoragetex)
 		return;
 
 	bool shaderactive = current == this;
@@ -732,19 +785,39 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 		info->textures[i] = tex;
 
-		GLuint gltex = 0;
-		if (textures[i] != nullptr)
-			gltex = (GLuint) tex->getHandle();
+		if (isstoragetex)
+		{
+			GLuint gltex = 0;
+			if (tex != nullptr)
+				gltex = (GLuint) tex->getHandle();
+			else
+				gltex = gl.getDefaultTexture(info->textureType, info->dataBaseType);
+
+			int bindingindex = info->ints[i];
+			auto &binding = storageTextureBindings[bindingindex];
+
+			binding.texture = tex;
+			binding.gltexture = gltex;
+
+			if (shaderactive)
+				glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
+		}
 		else
-			gltex = gl.getDefaultTexture(info->textureType);
+		{
+			GLuint gltex = 0;
+			if (textures[i] != nullptr)
+				gltex = (GLuint) tex->getHandle();
+			else
+				gltex = gl.getDefaultTexture(info->textureType, info->dataBaseType);
 
-		int texunit = info->ints[i];
+			int texunit = info->ints[i];
 
-		if (shaderactive)
-			gl.bindTextureToUnit(info->textureType, gltex, texunit, false, false);
+			if (shaderactive)
+				gl.bindTextureToUnit(info->textureType, gltex, texunit, false, false);
 
-		// Store texture id so it can be re-bound to the texture unit later.
-		textureUnits[texunit].texture = gltex;
+			// Store texture id so it can be re-bound to the texture unit later.
+			textureUnits[texunit].texture = gltex;
+		}
 	}
 }
 
@@ -788,7 +861,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		if (texelbinding)
 		{
 			GLuint gltex = 0;
-			if (buffers[i] != nullptr)
+			if (buffer != nullptr)
 				gltex = (GLuint) buffer->getTexelBufferHandle();
 			else
 				gltex = gl.getDefaultTexelBuffer();
@@ -806,7 +879,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 			int bindingindex = info->ints[i];
 
 			GLuint glbuffer = 0;
-			if (buffers[i] != nullptr)
+			if (buffer != nullptr)
 				glbuffer = (GLuint) buffer->getHandle();
 			else
 				glbuffer = gl.getDefaultStorageBuffer();
@@ -814,9 +887,13 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 			if (shaderactive)
 				gl.bindIndexedBuffer(glbuffer, BUFFERUSAGE_SHADER_STORAGE, bindingindex);
 
-			int activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
-			if (activeindex >= 0)
-				activeStorageBufferBindings[activeindex].buffer = glbuffer;
+			auto activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
+
+			if (activeindex.first >= 0)
+				activeStorageBufferBindings[activeindex.first].buffer = glbuffer;
+
+			if (activeindex.second >= 0)
+				activeWritableStorageBuffers[activeindex.second] = buffer;
 		}
 	}
 }
@@ -928,11 +1005,6 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 
 int Shader::getUniformTypeComponents(GLenum type) const
 {
-	UniformType basetype = getUniformBaseType(type);
-
-	if (basetype == UNIFORM_SAMPLER || basetype == UNIFORM_TEXELBUFFER)
-		return 1;
-
 	switch (type)
 	{
 	case GL_INT:
@@ -1007,25 +1079,35 @@ Shader::MatrixSize Shader::getMatrixSize(GLenum type) const
 	return m;
 }
 
-Shader::UniformType Shader::getUniformBaseType(GLenum type) const
+void Shader::computeUniformTypeInfo(GLenum type, UniformInfo &u)
 {
+	u.isDepthSampler = false;
+	u.components = getUniformTypeComponents(type);
+	u.baseType = UNIFORM_UNKNOWN;
+
 	switch (type)
 	{
 	case GL_INT:
 	case GL_INT_VEC2:
 	case GL_INT_VEC3:
 	case GL_INT_VEC4:
-		return UNIFORM_INT;
+		u.baseType = UNIFORM_INT;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		break;
 	case GL_UNSIGNED_INT:
 	case GL_UNSIGNED_INT_VEC2:
 	case GL_UNSIGNED_INT_VEC3:
 	case GL_UNSIGNED_INT_VEC4:
-		return UNIFORM_UINT;
+		u.baseType = UNIFORM_UINT;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		break;
 	case GL_FLOAT:
 	case GL_FLOAT_VEC2:
 	case GL_FLOAT_VEC3:
 	case GL_FLOAT_VEC4:
-		return UNIFORM_FLOAT;
+		u.baseType = UNIFORM_FLOAT;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		break;
 	case GL_FLOAT_MAT2:
 	case GL_FLOAT_MAT3:
 	case GL_FLOAT_MAT4:
@@ -1035,105 +1117,173 @@ Shader::UniformType Shader::getUniformBaseType(GLenum type) const
 	case GL_FLOAT_MAT3x4:
 	case GL_FLOAT_MAT4x2:
 	case GL_FLOAT_MAT4x3:
-		return UNIFORM_MATRIX;
+		u.baseType = UNIFORM_MATRIX;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.matrix = getMatrixSize(type);
+		break;
 	case GL_BOOL:
 	case GL_BOOL_VEC2:
 	case GL_BOOL_VEC3:
 	case GL_BOOL_VEC4:
-		return UNIFORM_BOOL;
-	case GL_SAMPLER_1D:
-	case GL_SAMPLER_1D_SHADOW:
-	case GL_SAMPLER_1D_ARRAY:
-	case GL_SAMPLER_1D_ARRAY_SHADOW:
+		u.baseType = UNIFORM_BOOL;
+		u.dataBaseType = DATA_BASETYPE_BOOL;
+		break;
+
 	case GL_SAMPLER_2D:
-	case GL_SAMPLER_2D_MULTISAMPLE:
-	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
-	case GL_SAMPLER_2D_RECT:
-	case GL_SAMPLER_2D_RECT_SHADOW:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_2D;
+		break;
 	case GL_SAMPLER_2D_SHADOW:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_2D;
+		u.isDepthSampler = true;
+		break;
+	case GL_INT_SAMPLER_2D:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_2D;
+		break;
+	case GL_UNSIGNED_INT_SAMPLER_2D:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_2D;
+		break;
 	case GL_SAMPLER_2D_ARRAY:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		break;
 	case GL_SAMPLER_2D_ARRAY_SHADOW:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		u.isDepthSampler = true;
+		break;
+	case GL_INT_SAMPLER_2D_ARRAY:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		break;
+	case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		break;
 	case GL_SAMPLER_3D:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_VOLUME;
+		break;
+	case GL_INT_SAMPLER_3D:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_VOLUME;
+		break;
+	case GL_UNSIGNED_INT_SAMPLER_3D:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_VOLUME;
+		break;
 	case GL_SAMPLER_CUBE:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_CUBE;
+		break;
 	case GL_SAMPLER_CUBE_SHADOW:
-	case GL_SAMPLER_CUBE_MAP_ARRAY:
-	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
-		return UNIFORM_SAMPLER;
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_CUBE;
+		u.isDepthSampler = true;
+		break;
+	case GL_INT_SAMPLER_CUBE:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_CUBE;
+		break;
+	case GL_UNSIGNED_INT_SAMPLER_CUBE:
+		u.baseType = UNIFORM_SAMPLER;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_CUBE;
+		break;
+
 	case GL_SAMPLER_BUFFER:
+		u.baseType = UNIFORM_TEXELBUFFER;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		break;
 	case GL_INT_SAMPLER_BUFFER:
+		u.baseType = UNIFORM_TEXELBUFFER;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		break;
 	case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-		return UNIFORM_TEXELBUFFER;
-	default:
-		return UNIFORM_UNKNOWN;
-	}
-}
+		u.baseType = UNIFORM_TEXELBUFFER;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		break;
 
-TextureType Shader::getUniformTextureType(GLenum type) const
-{
-	switch (type)
-	{
-	case GL_SAMPLER_1D:
-	case GL_SAMPLER_1D_SHADOW:
-	case GL_SAMPLER_1D_ARRAY:
-	case GL_SAMPLER_1D_ARRAY_SHADOW:
-		// 1D-typed textures are not supported.
-		return TEXTURE_MAX_ENUM;
-	case GL_SAMPLER_2D:
-	case GL_SAMPLER_2D_SHADOW:
-		return TEXTURE_2D;
-	case GL_SAMPLER_2D_MULTISAMPLE:
-	case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
-		// Multisample textures are not supported.
-		return TEXTURE_MAX_ENUM;
-	case GL_SAMPLER_2D_RECT:
-	case GL_SAMPLER_2D_RECT_SHADOW:
-		// Rectangle textures are not supported.
-		return TEXTURE_MAX_ENUM;
-	case GL_SAMPLER_2D_ARRAY:
-	case GL_SAMPLER_2D_ARRAY_SHADOW:
-		return TEXTURE_2D_ARRAY;
-	case GL_SAMPLER_3D:
-		return TEXTURE_VOLUME;
-	case GL_SAMPLER_CUBE:
-	case GL_SAMPLER_CUBE_SHADOW:
-		return TEXTURE_CUBE;
-	case GL_SAMPLER_CUBE_MAP_ARRAY:
-	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
-		// Cubemap array textures are not supported.
-		return TEXTURE_MAX_ENUM;
-	default:
-		return TEXTURE_MAX_ENUM;
-	}
-}
+	case GL_IMAGE_2D:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_2D;
+		break;
+	case GL_INT_IMAGE_2D:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_2D;
+		break;
+	case GL_UNSIGNED_INT_IMAGE_2D:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_2D;
+		break;
+	case GL_IMAGE_2D_ARRAY:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		break;
+	case GL_INT_IMAGE_2D_ARRAY:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		break;
+	case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_2D_ARRAY;
+		break;
+	case GL_IMAGE_3D:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_VOLUME;
+		break;
+	case GL_INT_IMAGE_3D:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_VOLUME;
+		break;
+	case GL_UNSIGNED_INT_IMAGE_3D:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_VOLUME;
+		break;
+	case GL_IMAGE_CUBE:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		u.textureType = TEXTURE_CUBE;
+		break;
+	case GL_INT_IMAGE_CUBE:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_INT;
+		u.textureType = TEXTURE_CUBE;
+		break;
+	case GL_UNSIGNED_INT_IMAGE_CUBE:
+		u.baseType = UNIFORM_STORAGETEXTURE;
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		u.textureType = TEXTURE_CUBE;
+		break;
 
-DataBaseType Shader::getUniformTexelBaseType(GLenum type) const
-{
-	switch (type)
-	{
-	case GL_SAMPLER_BUFFER:
-		return DATA_BASETYPE_FLOAT;
-	case GL_INT_SAMPLER_BUFFER:
-		return DATA_BASETYPE_INT;
-	case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-		return DATA_BASETYPE_UINT;
 	default:
-		return DATA_BASETYPE_MAX_ENUM;
-	}
-}
-
-bool Shader::isDepthTextureType(GLenum type) const
-{
-	switch (type)
-	{
-	case GL_SAMPLER_1D_SHADOW:
-	case GL_SAMPLER_1D_ARRAY_SHADOW:
-	case GL_SAMPLER_2D_SHADOW:
-	case GL_SAMPLER_2D_ARRAY_SHADOW:
-	case GL_SAMPLER_CUBE_SHADOW:
-	case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
-		return true;
-	default:
-		return false;
+		break;
 	}
 }
 

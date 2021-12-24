@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -103,6 +103,9 @@ OpenGL::OpenGL()
 	, maxTextureArrayLayers(0)
 	, maxTexelBufferSize(0)
 	, maxShaderStorageBufferSize(0)
+	, maxComputeWorkGroupsX(0)
+	, maxComputeWorkGroupsY(0)
+	, maxComputeWorkGroupsZ(0)
 	, maxRenderTargets(1)
 	, maxSamples(1)
 	, maxTextureUnits(1)
@@ -122,6 +125,20 @@ bool OpenGL::initContext()
 	if (!gladLoadGLLoader(LOVEGetProcAddress))
 		return false;
 
+	initVendor();
+
+	bugs = {};
+
+	if (GLAD_ES_VERSION_3_0 && !GLAD_ES_VERSION_3_1)
+	{
+		const char *device = (const char *) glGetString(GL_RENDERER);
+		if (getVendor() == VENDOR_VIVANTE && strstr(device, "Vivante GC7000UL"))
+			bugs.brokenGLES3 = true;
+	}
+
+	if (bugs.brokenGLES3)
+		GLAD_ES_VERSION_3_0 = false;
+
 	if (GLAD_VERSION_3_2)
 	{
 		GLint profileMask = 0;
@@ -132,9 +149,6 @@ bool OpenGL::initContext()
 		coreProfile = false;
 
 	initOpenGLFunctions();
-	initVendor();
-
-	bugs = {};
 
 #if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
 	// See the comments in OpenGL.h.
@@ -278,7 +292,7 @@ void OpenGL::setupContext()
 	// This can't be done in initContext with the rest of the bug checks because
 	// isPixelFormatSupported relies on state initialized here / after init.
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, true, true))
+	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET))
 		bugs.brokenR8PixelFormat = true;
 #endif
 }
@@ -290,10 +304,13 @@ void OpenGL::deInitContext()
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 	{
-		if (state.defaultTexture[i] != 0)
+		for (int datatype = DATA_BASETYPE_FLOAT; datatype <= DATA_BASETYPE_UINT; datatype++)
 		{
-			gl.deleteTexture(state.defaultTexture[i]);
-			state.defaultTexture[i] = 0;
+			if (state.defaultTexture[i][datatype] != 0)
+			{
+				gl.deleteTexture(state.defaultTexture[i][datatype]);
+				state.defaultTexture[i][datatype] = 0;
+			}
 		}
 	}
 
@@ -500,6 +517,19 @@ void OpenGL::initMaxValues()
 		maxShaderStorageBufferBindings = 0;
 	}
 
+	if (GLAD_ES_VERSION_3_1 || GLAD_VERSION_4_3)
+	{
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &maxComputeWorkGroupsX);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &maxComputeWorkGroupsY);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &maxComputeWorkGroupsZ);
+	}
+	else
+	{
+		maxComputeWorkGroupsX = 0;
+		maxComputeWorkGroupsY = 0;
+		maxComputeWorkGroupsZ = 0;
+	}
+
 	int maxattachments = 1;
 	int maxdrawbuffers = 1;
 
@@ -542,6 +572,7 @@ void OpenGL::createDefaultTexture()
 	// which would create the need to use different "passthrough" shaders for
 	// untextured primitives vs images.
 	const GLubyte pix[] = {255, 255, 255, 255};
+	const GLubyte intpix[] = {1, 1, 1, 1};
 
 	SamplerState s;
 	s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
@@ -549,41 +580,55 @@ void OpenGL::createDefaultTexture()
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 	{
-		state.defaultTexture[i] = 0;
-
-		TextureType type = (TextureType) i;
-
-		if (!isTextureTypeSupported(type))
-			continue;
-
-		GLuint curtexture = state.boundTextures[type][0];
-
-		glGenTextures(1, &state.defaultTexture[type]);
-		bindTextureToUnit(type, state.defaultTexture[type], 0, false);
-
-		setSamplerState(type, s);
-
-		bool isSRGB = false;
-		rawTexStorage(type, 1, PIXELFORMAT_RGBA8_UNORM, isSRGB, 1, 1);
-
-		TextureFormat fmt = convertPixelFormat(PIXELFORMAT_RGBA8_UNORM, false, isSRGB);
-
-		int slices = type == TEXTURE_CUBE ? 6 : 1;
-
-		for (int slice = 0; slice < slices; slice++)
+		for (int datatype = (int)DATA_BASETYPE_FLOAT; datatype <= (int)DATA_BASETYPE_UINT; datatype++)
 		{
-			GLenum gltarget = getGLTextureType(type);
+			state.defaultTexture[i][datatype] = 0;
 
-			if (type == TEXTURE_CUBE)
-				gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+			TextureType type = (TextureType) i;
 
-			if (type == TEXTURE_2D || type == TEXTURE_CUBE)
-				glTexSubImage2D(gltarget, 0, 0, 0, 1, 1, fmt.externalformat, fmt.type, pix);
-			else if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
-				glTexSubImage3D(gltarget, 0, 0, 0, slice, 1, 1, 1, fmt.externalformat, fmt.type, pix);
+			if (!isTextureTypeSupported(type))
+				continue;
+
+			if (datatype != DATA_BASETYPE_FLOAT && !(GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0))
+				continue;
+
+			GLuint curtexture = state.boundTextures[type][0];
+
+			glGenTextures(1, &state.defaultTexture[type][datatype]);
+			bindTextureToUnit(type, state.defaultTexture[type][datatype], 0, false);
+
+			setSamplerState(type, s);
+
+			PixelFormat format = PIXELFORMAT_RGBA8_UNORM;
+			if (datatype == DATA_BASETYPE_INT)
+				format = PIXELFORMAT_RGBA8_INT;
+			else if (datatype == DATA_BASETYPE_UINT)
+				format = PIXELFORMAT_RGBA8_UINT;
+
+			const GLubyte *p = datatype == DATA_BASETYPE_FLOAT ? pix : intpix;
+
+			bool isSRGB = false;
+			rawTexStorage(type, 1, format, isSRGB, 1, 1);
+
+			TextureFormat fmt = convertPixelFormat(format, false, isSRGB);
+
+			int slices = type == TEXTURE_CUBE ? 6 : 1;
+
+			for (int slice = 0; slice < slices; slice++)
+			{
+				GLenum gltarget = getGLTextureType(type);
+
+				if (type == TEXTURE_CUBE)
+					gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
+
+				if (type == TEXTURE_2D || type == TEXTURE_CUBE)
+					glTexSubImage2D(gltarget, 0, 0, 0, 1, 1, fmt.externalformat, fmt.type, p);
+				else if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
+					glTexSubImage3D(gltarget, 0, 0, 0, slice, 1, 1, 1, fmt.externalformat, fmt.type, p);
+			}
+
+			bindTextureToUnit(type, curtexture, 0, false);
 		}
-
-		bindTextureToUnit(type, curtexture, 0, false);
 	}
 }
 
@@ -1086,9 +1131,9 @@ GLuint OpenGL::getDefaultFBO() const
 #endif
 }
 
-GLuint OpenGL::getDefaultTexture(TextureType type) const
+GLuint OpenGL::getDefaultTexture(TextureType type, DataBaseType datatype) const
 {
-	return state.defaultTexture[type];
+	return state.defaultTexture[type][datatype];
 }
 
 void OpenGL::setTextureUnit(int textureunit)
@@ -1139,14 +1184,19 @@ void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restorepr
 	}
 	else
 	{
+		DataBaseType datatype = DATA_BASETYPE_FLOAT;
+
 		if (textureunit == 0 && Shader::current != nullptr)
 		{
-			TextureType shadertex = Shader::current->getMainTextureType();
-			if (shadertex != TEXTURE_MAX_ENUM)
-				textype = shadertex;
+			const Shader::UniformInfo *info = Shader::current->getMainTextureInfo();
+			if (info != nullptr)
+			{
+				textype = info->textureType;
+				datatype = info->dataBaseType;
+			}
 		}
 
-		handle = getDefaultTexture(textype);
+		handle = getDefaultTexture(textype, datatype);
 	}
 
 	bindTextureToUnit(textype, handle, textureunit, restoreprev, bindforedit);
@@ -1510,6 +1560,21 @@ int OpenGL::getMaxShaderStorageBufferSize() const
 	return maxShaderStorageBufferSize;
 }
 
+int OpenGL::getMaxComputeWorkGroupsX() const
+{
+	return maxComputeWorkGroupsX;
+}
+
+int OpenGL::getMaxComputeWorkGroupsY() const
+{
+	return maxComputeWorkGroupsY;
+}
+
+int OpenGL::getMaxComputeWorkGroupsZ() const
+{
+	return maxComputeWorkGroupsZ;
+}
+
 int OpenGL::getMaxRenderTargets() const
 {
 	return std::min(maxRenderTargets, MAX_COLOR_RENDER_TARGETS);
@@ -1620,6 +1685,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_SHORT;
 		break;
+
 	case PIXELFORMAT_R16_FLOAT:
 		f.internalformat = GL_R16F;
 		f.externalformat = GL_RED;
@@ -1658,6 +1724,97 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		f.internalformat = GL_RGBA32F;
 		f.externalformat = GL_RGBA;
 		f.type = GL_FLOAT;
+		break;
+
+	case PIXELFORMAT_R8_INT:
+		f.internalformat = GL_R8I;
+		f.externalformat = GL_RED_INTEGER;
+		f.type = GL_BYTE;
+		break;
+	case PIXELFORMAT_R8_UINT:
+		f.internalformat = GL_R8UI;
+		f.externalformat = GL_RED_INTEGER;
+		f.type = GL_UNSIGNED_BYTE;
+		break;
+	case PIXELFORMAT_RG8_INT:
+		f.internalformat = GL_RG8I;
+		f.externalformat = GL_RG_INTEGER;
+		f.type = GL_BYTE;
+		break;
+	case PIXELFORMAT_RG8_UINT:
+		f.internalformat = GL_RG8UI;
+		f.externalformat = GL_RG_INTEGER;
+		f.type = GL_UNSIGNED_BYTE;
+		break;
+	case PIXELFORMAT_RGBA8_INT:
+		f.internalformat = GL_RGBA8I;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_BYTE;
+		break;
+	case PIXELFORMAT_RGBA8_UINT:
+		f.internalformat = GL_RGBA8UI;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_UNSIGNED_BYTE;
+		break;
+	case PIXELFORMAT_R16_INT:
+		f.internalformat = GL_R16I;
+		f.externalformat = GL_RED_INTEGER;
+		f.type = GL_SHORT;
+		break;
+	case PIXELFORMAT_R16_UINT:
+		f.internalformat = GL_R16UI;
+		f.externalformat = GL_RED_INTEGER;
+		f.type = GL_UNSIGNED_SHORT;
+		break;
+	case PIXELFORMAT_RG16_INT:
+		f.internalformat = GL_RG16I;
+		f.externalformat = GL_RG_INTEGER;
+		f.type = GL_SHORT;
+		break;
+	case PIXELFORMAT_RG16_UINT:
+		f.internalformat = GL_RG16UI;
+		f.externalformat = GL_RG_INTEGER;
+		f.type = GL_UNSIGNED_SHORT;
+		break;
+	case PIXELFORMAT_RGBA16_INT:
+		f.internalformat = GL_RGBA16I;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_SHORT;
+		break;
+	case PIXELFORMAT_RGBA16_UINT:
+		f.internalformat = GL_RGBA16UI;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_UNSIGNED_SHORT;
+		break;
+	case PIXELFORMAT_R32_INT:
+		f.internalformat = GL_R32I;
+		f.externalformat = GL_RED_INTEGER;
+		f.type = GL_INT;
+		break;
+	case PIXELFORMAT_R32_UINT:
+		f.internalformat = GL_R32UI;
+		f.externalformat = GL_RED_INTEGER;
+		f.type = GL_UNSIGNED_INT;
+		break;
+	case PIXELFORMAT_RG32_INT:
+		f.internalformat = GL_RG32I;
+		f.externalformat = GL_RG_INTEGER;
+		f.type = GL_INT;
+		break;
+	case PIXELFORMAT_RG32_UINT:
+		f.internalformat = GL_RG32UI;
+		f.externalformat = GL_RG_INTEGER;
+		f.type = GL_UNSIGNED_INT;
+		break;
+	case PIXELFORMAT_RGBA32_INT:
+		f.internalformat = GL_RGBA32I;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_INT;
+		break;
+	case PIXELFORMAT_RGBA32_UINT:
+		f.internalformat = GL_RGBA32UI;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_UNSIGNED_INT;
 		break;
 
 	case PIXELFORMAT_LA8_UNORM:
@@ -1785,7 +1942,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		break;
 
 	case PIXELFORMAT_DXT1_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT : GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 		break;
 	case PIXELFORMAT_DXT3_UNORM:
 		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
@@ -1928,6 +2085,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 {
 	const uint32 commonsample = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_LINEAR;
 	const uint32 commonrender = PIXELFORMATUSAGEFLAGS_RENDERTARGET | PIXELFORMATUSAGEFLAGS_BLEND | PIXELFORMATUSAGEFLAGS_MSAA;
+	const uint32 computewrite = PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
 
 	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
@@ -1939,11 +2097,15 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		else if (pixelformat == PIXELFORMAT_R8_UNORM && (GLAD_ES_VERSION_2_0 || GLAD_VERSION_1_1))
 			flags |= commonsample; // We'll use OpenGL's luminance format internally.
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA8_UNORM:
 		flags |= commonsample;
 		if (GLAD_VERSION_1_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_rgb8_rgba8 || GLAD_ARM_rgba8)
 			flags |= commonrender;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA8_UNORM_sRGB:
 		if (gl.bugs.brokenSRGB)
@@ -1953,6 +2115,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0
 			|| ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB) && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)))
 			flags |= commonrender;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_R16_UNORM:
 	case PIXELFORMAT_RG16_UNORM:
@@ -1960,10 +2124,14 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			|| (GLAD_VERSION_1_1 && GLAD_ARB_texture_rg)
 			|| (GLAD_EXT_texture_norm16 && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg)))
 			flags |= commonsample | commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA16_UNORM:
 		if (GLAD_VERSION_1_1 || GLAD_EXT_texture_norm16)
 			flags |= commonsample | commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_R16_FLOAT:
 	case PIXELFORMAT_RG16_FLOAT:
@@ -1975,6 +2143,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA16_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_half_float_pixel))
@@ -1985,8 +2155,13 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_R32_FLOAT:
+		if (GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
+		// Fallthrough.
 	case PIXELFORMAT_RG32_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float && GLAD_ARB_texture_rg))
 			flags |= commonsample | commonrender;
@@ -1994,6 +2169,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RGBA32_FLOAT:
 		if (GLAD_VERSION_3_0 || (GLAD_VERSION_1_0 && GLAD_ARB_texture_float))
@@ -2002,7 +2179,51 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample;
 		if (!(GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
+			flags |= computewrite;
 		break;
+
+		case PIXELFORMAT_R8_INT:
+		case PIXELFORMAT_R8_UINT:
+		case PIXELFORMAT_RG8_INT:
+		case PIXELFORMAT_RG8_UINT:
+		case PIXELFORMAT_RGBA8_INT:
+		case PIXELFORMAT_RGBA8_UINT:
+		case PIXELFORMAT_R16_INT:
+		case PIXELFORMAT_R16_UINT:
+		case PIXELFORMAT_RG16_INT:
+		case PIXELFORMAT_RG16_UINT:
+		case PIXELFORMAT_RGBA16_INT:
+		case PIXELFORMAT_RGBA16_UINT:
+		case PIXELFORMAT_R32_INT:
+		case PIXELFORMAT_R32_UINT:
+		case PIXELFORMAT_RG32_INT:
+		case PIXELFORMAT_RG32_UINT:
+		case PIXELFORMAT_RGBA32_INT:
+		case PIXELFORMAT_RGBA32_UINT:
+			if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
+				flags |= PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+			if (GLAD_VERSION_4_3)
+				flags |= computewrite;
+			if (GLAD_ES_VERSION_3_1)
+			{
+				switch (pixelformat)
+				{
+				case PIXELFORMAT_RGBA8_INT:
+				case PIXELFORMAT_RGBA8_UINT:
+				case PIXELFORMAT_RGBA16_INT:
+				case PIXELFORMAT_RGBA16_UINT:
+				case PIXELFORMAT_R32_INT:
+				case PIXELFORMAT_R32_UINT:
+				case PIXELFORMAT_RGBA32_INT:
+				case PIXELFORMAT_RGBA32_UINT:
+					flags |= computewrite;
+					break;
+				default:
+					break;
+				}
+			}
+			break;
 
 	case PIXELFORMAT_LA8_UNORM:
 		flags |= commonsample;
@@ -2019,12 +2240,16 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 	case PIXELFORMAT_RGB10A2_UNORM:
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_1_0)
 			flags |= commonsample | commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RG11B10_FLOAT:
 		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
 			flags |= commonsample;
 		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float)
 			flags |= commonrender;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
 		break;
 
 	case PIXELFORMAT_STENCIL8:

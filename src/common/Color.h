@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -137,6 +137,7 @@ ColorT<T> operator/(const ColorT<T> &a, T s)
 
 typedef ColorT<unsigned char> Color32;
 typedef ColorT<float> Colorf;
+typedef ColorT<double> ColorD;
 
 inline Color32 toColor32(Colorf cf)
 {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -85,7 +85,7 @@ static const char global_syntax[] = R"(
 #endif
 )";
 
-static const char global_uniforms[] = R"(
+static const char render_uniforms[] = R"(
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
@@ -148,7 +148,7 @@ static const char global_functions[] = R"(
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
 		precision lowp sampler3D;
 	#endif
-	#if __VERSION__ >= 300
+	#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
 		precision lowp sampler2DShadow;
 		precision lowp samplerCubeShadow;
 		precision lowp sampler2DArrayShadow;
@@ -394,10 +394,35 @@ void main() {
 }
 )";
 
+static const char compute_header[] = R"(
+#define love_ThreadGroupCount gl_NumWorkGroups
+#define love_ThreadGroupID gl_WorkGroupID
+#define love_LocalThreadID gl_LocalInvocationID
+#define love_GlobalThreadID gl_GlobalInvocationID
+#define love_LocalThreadIndex gl_LocalInvocationIndex
+#define love_ThreadGroupSize gl_WorkGroupSize
+)";
+
+static const char compute_uniforms[] = R"(
+void love_initializeBuiltinUniforms() {}
+)";
+
+static const char compute_functions[] = R"()";
+
+static const char compute_main[] = R"(
+void computemain();
+
+void main() {
+	love_initializeBuiltinUniforms();
+	computemain();
+}
+)";
+
 struct StageInfo
 {
 	const char *name;
 	const char *header;
+	const char *uniforms;
 	const char *functions;
 	const char *main;
 	const char *main_custom;
@@ -406,11 +431,12 @@ struct StageInfo
 
 static const StageInfo stageInfo[] =
 {
-	{ "VERTEX", vertex_header, vertex_functions, vertex_main, vertex_main, vertex_main_raw },
-	{ "PIXEL", pixel_header, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
+	{ "VERTEX", vertex_header, render_uniforms, vertex_functions, vertex_main, vertex_main, vertex_main_raw },
+	{ "PIXEL", pixel_header, render_uniforms, pixel_functions, pixel_main, pixel_main_custom, pixel_main_raw },
+	{ "COMPUTE", compute_header, compute_uniforms, compute_functions, compute_main, compute_main, compute_main },
 };
 
-static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == ShaderStage::STAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
+static_assert((sizeof(stageInfo) / sizeof(StageInfo)) == SHADERSTAGE_MAX_ENUM, "Stages array size must match ShaderStage enum.");
 
 struct Version
 {
@@ -470,6 +496,15 @@ static Shader::EntryPoint getPixelEntryPoint(const std::string &src, bool &mrt)
 	return Shader::ENTRYPOINT_NONE;
 }
 
+static Shader::EntryPoint getComputeEntryPoint(const std::string &src) {
+	std::smatch m;
+
+	if (std::regex_search(src, m, std::regex("void\\s+computemain\\s*\\(")))
+		return Shader::ENTRYPOINT_RAW;
+
+	return Shader::ENTRYPOINT_NONE;
+}
+
 } // glsl
 
 static_assert(sizeof(Shader::BuiltinUniformData) == sizeof(float) * 4 * 13, "Update the array in wrap_GraphicsShader.lua if this changes.");
@@ -483,12 +518,15 @@ Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 {
 	SourceInfo info = {};
 	info.language = glsl::getTargetLanguage(src);
-	info.stages[ShaderStage::STAGE_VERTEX] = glsl::getVertexEntryPoint(src);
-	info.stages[ShaderStage::STAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
+	info.stages[SHADERSTAGE_VERTEX] = glsl::getVertexEntryPoint(src);
+	info.stages[SHADERSTAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
+	info.stages[SHADERSTAGE_COMPUTE] = glsl::getComputeEntryPoint(src);
+	if (info.stages[SHADERSTAGE_COMPUTE])
+		info.language = LANGUAGE_GLSL4;
 	return info;
 }
 
-std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType stage, const std::string &code, const Shader::SourceInfo &info)
+std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const Shader::SourceInfo &info, bool gles, bool checksystemfeatures)
 {
 	if (info.language == Shader::LANGUAGE_MAX_ENUM)
 		throw love::Exception("Invalid shader language");
@@ -499,16 +537,26 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 	if (info.stages[stage] == ENTRYPOINT_RAW && info.language == LANGUAGE_GLSL1)
 		throw love::Exception("Shaders using a raw entry point (vertexmain or pixelmain) must use GLSL 3 or greater.");
 
-	const auto &features = gfx->getCapabilities().features;
+	if (stage == SHADERSTAGE_COMPUTE && info.language != LANGUAGE_GLSL4)
+		throw love::Exception("Compute shaders must use GLSL 4.");
 
-	if (info.language == LANGUAGE_GLSL3 && !features[Graphics::FEATURE_GLSL3])
-		throw love::Exception("GLSL 3 shaders are not supported on this system.");
+	bool glsl1on3 = info.language == LANGUAGE_GLSL1;
 
-	if (info.language == LANGUAGE_GLSL4 && !features[Graphics::FEATURE_GLSL4])
-		throw love::Exception("GLSL 4 shaders are not supported on this system.");
+	if (checksystemfeatures)
+	{
+		const auto &features = gfx->getCapabilities().features;
 
-	bool gles = gfx->usesGLSLES();
-	bool glsl1on3 = info.language == LANGUAGE_GLSL1 && features[Graphics::FEATURE_GLSL3];
+		if (stage == SHADERSTAGE_COMPUTE && !features[Graphics::FEATURE_GLSL4])
+			throw love::Exception("Compute shaders require GLSL 4 which is not supported on this system.");
+
+		if (info.language == LANGUAGE_GLSL3 && !features[Graphics::FEATURE_GLSL3])
+			throw love::Exception("GLSL 3 shaders are not supported on this system.");
+
+		if (info.language == LANGUAGE_GLSL4 && !features[Graphics::FEATURE_GLSL4])
+			throw love::Exception("GLSL 4 shaders are not supported on this system.");
+
+		glsl1on3 = info.language == LANGUAGE_GLSL1 && features[Graphics::FEATURE_GLSL3];
+	}
 
 	Language lang = info.language;
 	if (glsl1on3)
@@ -528,7 +576,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
-	ss << glsl::global_uniforms;
+	ss << stageinfo.uniforms;
 	ss << glsl::global_functions;
 	ss << stageinfo.functions;
 
@@ -546,15 +594,15 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStage::StageType 
 	return ss.str();
 }
 
-Shader::Shader(ShaderStage *vertex, ShaderStage *pixel)
+Shader::Shader(StrongRef<ShaderStage> _stages[])
 	: stages()
 {
 	std::string err;
-	if (!validateInternal(vertex, pixel, err, validationReflection))
+	if (!validateInternal(_stages, err, validationReflection))
 		throw love::Exception("%s", err.c_str());
 
-	stages[ShaderStage::STAGE_VERTEX] = vertex;
-	stages[ShaderStage::STAGE_PIXEL] = pixel;
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
+		stages[i] = _stages[i];
 }
 
 Shader::~Shader()
@@ -567,6 +615,11 @@ Shader::~Shader()
 
 	if (current == this)
 		attachDefault(STANDARD_DEFAULT);
+}
+
+bool Shader::hasStage(ShaderStageType stage)
+{
+	return stages[stage] != nullptr;
 }
 
 void Shader::attachDefault(StandardShader defaultType)
@@ -594,10 +647,43 @@ bool Shader::isDefaultActive()
 	return false;
 }
 
-TextureType Shader::getMainTextureType() const
+const Shader::UniformInfo *Shader::getMainTextureInfo() const
 {
-	const UniformInfo *info = getUniformInfo(BUILTIN_TEXTURE_MAIN);
-	return info != nullptr ? info->textureType : TEXTURE_MAX_ENUM;
+	return getUniformInfo(BUILTIN_TEXTURE_MAIN);
+}
+
+DataBaseType Shader::getDataBaseType(PixelFormat format)
+{
+	switch (getPixelFormatInfo(format).dataType)
+	{
+		case PIXELFORMATTYPE_UNORM:
+			return DATA_BASETYPE_UNORM;
+		case PIXELFORMATTYPE_SNORM:
+			return DATA_BASETYPE_SNORM;
+		case PIXELFORMATTYPE_UFLOAT:
+		case PIXELFORMATTYPE_SFLOAT:
+			return DATA_BASETYPE_FLOAT;
+		case PIXELFORMATTYPE_SINT:
+			return DATA_BASETYPE_INT;
+		case PIXELFORMATTYPE_UINT:
+			return DATA_BASETYPE_UINT;
+		default:
+			return DATA_BASETYPE_FLOAT;
+	}
+}
+
+bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
+{
+	if (a == DATA_BASETYPE_FLOAT || a == DATA_BASETYPE_UNORM || a == DATA_BASETYPE_SNORM)
+		return b == DATA_BASETYPE_FLOAT || b == DATA_BASETYPE_UNORM || b == DATA_BASETYPE_SNORM;
+
+	if (a == DATA_BASETYPE_INT && b == DATA_BASETYPE_INT)
+		return true;
+
+	if (a == DATA_BASETYPE_UINT && b == DATA_BASETYPE_UINT)
+		return true;
+
+	return false;
 }
 
 void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
@@ -632,6 +718,9 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 		throw love::Exception("Texture's type (%s) must match the type of the shader's main texture type (%s).", textypestr, shadertextypestr);
 	}
 
+	if (!isResourceBaseTypeCompatible(info->dataBaseType, getDataBaseType(maintex->getPixelFormat())))
+		throw love::Exception("Texture's data format base type must match the uniform variable declared in the shader (float, int, or uint).");
+
 	if (info->isDepthSampler != maintex->getSamplerState().depthSampleMode.hasValue)
 	{
 		if (info->isDepthSampler)
@@ -641,21 +730,77 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 	}
 }
 
-bool Shader::validate(ShaderStage* vertex, ShaderStage* pixel, std::string& err)
+void Shader::getLocalThreadgroupSize(int *x, int *y, int *z)
 {
-	ValidationReflection reflection;
-	return validateInternal(vertex, pixel, err, reflection);
+	*x = validationReflection.localThreadgroupSize[0];
+	*y = validationReflection.localThreadgroupSize[1];
+	*z = validationReflection.localThreadgroupSize[2];
 }
 
-bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::string &err, ValidationReflection &reflection)
+bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
+{
+	ValidationReflection reflection;
+	return validateInternal(stages, err, reflection);
+}
+
+static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
+{
+	using namespace glslang;
+
+	switch (format)
+	{
+		case ElfNone: return PIXELFORMAT_UNKNOWN;
+		case ElfRgba32f: return PIXELFORMAT_RGBA32_FLOAT;
+		case ElfRgba16f: return PIXELFORMAT_RGBA16_FLOAT;
+		case ElfR32f: return PIXELFORMAT_R32_FLOAT;
+		case ElfRgba8: return PIXELFORMAT_RGBA8_UNORM;
+		case ElfRgba8Snorm: return PIXELFORMAT_UNKNOWN; // no snorm yet
+		case ElfRg32f: return PIXELFORMAT_RG32_FLOAT;
+		case ElfRg16f: return PIXELFORMAT_RG16_FLOAT;
+		case ElfR11fG11fB10f: return PIXELFORMAT_RG11B10_FLOAT;
+		case ElfR16f: return PIXELFORMAT_R16_FLOAT;
+		case ElfRgba16: return PIXELFORMAT_RGBA16_UNORM;
+		case ElfRgb10A2: return PIXELFORMAT_RGB10A2_UNORM;
+		case ElfRg16: return PIXELFORMAT_RG16_UNORM;
+		case ElfRg8: return PIXELFORMAT_RG8_UNORM;
+		case ElfR8: return PIXELFORMAT_R8_UNORM;
+		case ElfRgba16Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfRg16Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfRg8Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfR16Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfR8Snorm: return PIXELFORMAT_UNKNOWN;
+		case ElfRgba32i: return PIXELFORMAT_RGBA32_INT;
+		case ElfRgba16i: return PIXELFORMAT_RGBA16_INT;
+		case ElfRgba8i: return PIXELFORMAT_RGBA8_INT;
+		case ElfR32i: return PIXELFORMAT_R32_INT;
+		case ElfRg32i: return PIXELFORMAT_RG32_INT;
+		case ElfRg16i: return PIXELFORMAT_RG16_INT;
+		case ElfRg8i: return PIXELFORMAT_RG8_INT;
+		case ElfR16i: return PIXELFORMAT_R16_INT;
+		case ElfR8i: return PIXELFORMAT_R8_INT;
+		case ElfRgba32ui: return PIXELFORMAT_RGBA32_UINT;
+		case ElfRgba16ui: return PIXELFORMAT_RGBA16_UINT;
+		case ElfRgba8ui: return PIXELFORMAT_RGBA8_UINT;
+		case ElfR32ui: return PIXELFORMAT_R32_UINT;
+		case ElfRg32ui: return PIXELFORMAT_RG32_UINT;
+		case ElfRg16ui: return PIXELFORMAT_RG16_UINT;
+		case ElfRgb10a2ui: return PIXELFORMAT_UNKNOWN;
+		case ElfRg8ui: return PIXELFORMAT_RG8_UINT;
+		case ElfR16ui: return PIXELFORMAT_R16_UINT;
+		case ElfR8ui: return PIXELFORMAT_R8_UINT;
+		default: return PIXELFORMAT_UNKNOWN;
+	}
+}
+
+bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, ValidationReflection &reflection)
 {
 	glslang::TProgram program;
 
-	if (vertex != nullptr)
-		program.addShader(vertex->getGLSLangValidationShader());
-
-	if (pixel != nullptr)
-		program.addShader(pixel->getGLSLangValidationShader());
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
+	{
+		if (stages[i] != nullptr)
+			program.addShader(stages[i]->getGLSLangValidationShader());
+	}
 
 	if (!program.link(EShMsgDefault))
 	{
@@ -676,6 +821,58 @@ bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::stri
 		reflection.usesPointSize = vertintermediate->inIoAccessed("gl_PointSize");
 	}
 
+	if (stages[SHADERSTAGE_COMPUTE] != nullptr)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			reflection.localThreadgroupSize[i] = program.getLocalSize(i);
+
+			if (reflection.localThreadgroupSize[i] <= 0)
+			{
+				err = "Shader validation error:\nNegative local threadgroup size.";
+				return false;
+			}
+		}
+	}
+
+	for (int i = 0; i < program.getNumUniformVariables(); i++)
+	{
+		const glslang::TObjectReflection &info = program.getUniform(i);
+		const glslang::TType *type = info.getType();
+		if (type == nullptr)
+			continue;
+
+		const glslang::TQualifier &qualifiers = type->getQualifier();
+
+		if (type->isImage())
+		{
+			if ((info.stages & EShLangComputeMask) == 0)
+			{
+				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders.";
+				return false;
+			}
+
+			if (!qualifiers.hasFormat())
+			{
+				err = "Shader validation error:\nStorage Texture '" + info.name + "' must have an explicit format set in its layout declaration.";
+				return false;
+			}
+
+			StorageTextureReflection texreflection = {};
+
+			texreflection.format = getPixelFormat(qualifiers.getFormat());
+
+			if (qualifiers.isReadOnly())
+				texreflection.access = ACCESS_READ;
+			else if (qualifiers.isWriteOnly())
+				texreflection.access = ACCESS_WRITE;
+			else
+				texreflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+
+			reflection.storageTextures[info.name] = texreflection;
+		}
+	}
+
 	for (int i = 0; i < program.getNumBufferBlocks(); i++)
 	{
 		const glslang::TObjectReflection &info = program.getBufferBlock(i);
@@ -684,7 +881,7 @@ bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::stri
 		{
 			const glslang::TQualifier &qualifiers = type->getQualifier();
 
-			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && (info.stages & (EShLangVertexMask | EShLangFragmentMask)))
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && (info.stages & EShLangComputeMask) == 0)
 			{
 				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders.";
 				return false;
@@ -713,6 +910,13 @@ bool Shader::validateInternal(ShaderStage *vertex, ShaderStage *pixel, std::stri
 			BufferReflection bufferReflection = {};
 			bufferReflection.stride = (size_t) info.size;
 			bufferReflection.memberCount = (size_t) info.numMembers;
+
+			if (qualifiers.isReadOnly())
+				bufferReflection.access = ACCESS_READ;
+			else if (qualifiers.isWriteOnly())
+				bufferReflection.access = ACCESS_WRITE;
+			else
+				bufferReflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
 			reflection.storageBuffers[info.name] = bufferReflection;
 		}
@@ -756,6 +960,33 @@ bool Shader::validateTexture(const UniformInfo *info, Texture *tex, bool interna
 			Texture::getConstant(tex->getTextureType(), textypestr);
 			Texture::getConstant(info->textureType, shadertextypestr);
 			throw love::Exception("Texture's type (%s) must match the type of %s (%s).", textypestr, info->name.c_str(), shadertextypestr);
+		}
+	}
+	else if (!isResourceBaseTypeCompatible(info->dataBaseType, getDataBaseType(tex->getPixelFormat())))
+	{
+		if (internalUpdate)
+			return false;
+		else
+			throw love::Exception("Texture's data format base type must match the uniform variable declared in the shader (float, int, or uint).");
+	}
+	else if (isstoragetex && !tex->isComputeWritable())
+	{
+		if (internalUpdate)
+			return false;
+		else
+			throw love::Exception("Texture must be created with the computewrite flag set to true in order to be used with a storage texture (image2D etc) shader uniform variable.");
+	}
+	else if (isstoragetex && info->storageTextureFormat != getLinearPixelFormat(tex->getPixelFormat()))
+	{
+		if (internalUpdate)
+			return false;
+		else
+		{
+			const char *texpfstr = "unknown";
+			const char *shaderpfstr = "unknown";
+			love::getConstant(getLinearPixelFormat(tex->getPixelFormat()), texpfstr);
+			love::getConstant(info->storageTextureFormat, shaderpfstr);
+			throw love::Exception("Texture's pixel format (%s) must match the shader uniform variable %s's pixel format (%s)", texpfstr, info->name.c_str(), shaderpfstr);
 		}
 	}
 
@@ -803,7 +1034,7 @@ bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool intern
 	if (texelbinding)
 	{
 		DataBaseType basetype = buffer->getDataMember(0).info.baseType;
-		if (!isTexelBaseTypeCompatible(basetype, info->dataBaseType))
+		if (!isResourceBaseTypeCompatible(basetype, info->dataBaseType))
 		{
 			if (internalUpdate)
 				return false;
@@ -881,9 +1112,9 @@ void effect()
 }
 )";
 
-const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStage::StageType stage)
+const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStageType stage)
 {
-	if (stage == ShaderStage::STAGE_VERTEX)
+	if (stage == SHADERSTAGE_VERTEX)
 	{
 		if (shader == STANDARD_POINTS)
 			return defaultPointsVertex;

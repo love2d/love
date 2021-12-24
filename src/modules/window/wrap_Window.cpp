@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -80,7 +80,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	lua_getfield(L, idx, settingName(Window::SETTING_HIGHDPI));
 	if (!lua_isnoneornil(L, -1))
 	{
-		luax_markdeprecated(L, "window.highdpi", API_FIELD, DEPRECATED_REPLACED, "t.highdpi in love.conf");
+		luax_markdeprecated(L, 1, "window.highdpi", API_FIELD, DEPRECATED_REPLACED, "t.highdpi in love.conf");
 		bool highdpi = luax_checkboolean(L, -1);
 		if (!instance()->isOpen())
 			setHighDPIAllowed(highdpi);

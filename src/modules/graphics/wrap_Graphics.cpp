@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -68,8 +68,8 @@ int w_reset(lua_State *)
 
 int w_clear(lua_State *L)
 {
-	OptionalColorf color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
-	std::vector<OptionalColorf> colors;
+	OptionalColorD color(ColorD(0.0, 0.0, 0.0, 0.0));
+	std::vector<OptionalColorD> colors;
 
 	OptionalInt stencil(0);
 	OptionalDouble depth(1.0);
@@ -93,19 +93,19 @@ int w_clear(lua_State *L)
 			}
 			else if (argtype == LUA_TNIL || argtype == LUA_TNONE || luax_objlen(L, i + 1) == 0)
 			{
-				colors.push_back(OptionalColorf());
+				colors.push_back(OptionalColorD());
 				continue;
 			}
 
 			for (int j = 1; j <= 4; j++)
 				lua_rawgeti(L, i + 1, j);
 
-			OptionalColorf c;
+			OptionalColorD c;
 			c.hasValue = true;
-			c.value.r = (float) luaL_checknumber(L, -4);
-			c.value.g = (float) luaL_checknumber(L, -3);
-			c.value.b = (float) luaL_checknumber(L, -2);
-			c.value.a = (float) luaL_optnumber(L, -1, 1.0);
+			c.value.r = luaL_checknumber(L, -4);
+			c.value.g = luaL_checknumber(L, -3);
+			c.value.b = luaL_checknumber(L, -2);
+			c.value.a = luaL_optnumber(L, -1, 1.0);
 			colors.push_back(c);
 
 			lua_pop(L, 4);
@@ -627,7 +627,7 @@ int w_stencil(lua_State *L)
 		luaL_checktype(L, 4, LUA_TBOOLEAN);
 
 	if (stencilclear.hasValue)
-		instance()->clear(OptionalColorf(), stencilclear, OptionalDouble());
+		instance()->clear(OptionalColorD(), stencilclear, OptionalDouble());
 
 	luax_catchexcept(L, [&](){ instance()->drawToStencilBuffer(action, stencilvalue); });
 
@@ -800,6 +800,8 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 
 	s.linear = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_LINEAR), s.linear);
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
+
+	s.computeWrite = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), s.computeWrite);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
 	if (!lua_isnoneornil(L, -1))
@@ -1195,25 +1197,25 @@ int w_newVolumeTexture(lua_State *L)
 
 int w_newImage(lua_State *L)
 {
-	//luax_markdeprecated(L, "love.graphics.newImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTexture");
+	//luax_markdeprecated(L, 1, "love.graphics.newImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTexture");
 	return w_newTexture(L);
 }
 
 int w_newCubeImage(lua_State *L)
 {
-	//luax_markdeprecated(L, "love.graphics.newCubeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newCubeTexture");
+	//luax_markdeprecated(L, 1, "love.graphics.newCubeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newCubeTexture");
 	return w_newCubeTexture(L);
 }
 
 int w_newArrayImage(lua_State *L)
 {
-	//luax_markdeprecated(L, "love.graphics.newArrayImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newArrayTexture");
+	//luax_markdeprecated(L, 1, "love.graphics.newArrayImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newArrayTexture");
 	return w_newArrayTexture(L);
 }
 
 int w_newVolumeImage(lua_State *L)
 {
-	//luax_markdeprecated(L, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
+	//luax_markdeprecated(L, 1, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
 	return w_newVolumeTexture(L);
 }
 
@@ -1458,6 +1460,34 @@ int w_newShader(lua_State *L)
 	return 1;
 }
 
+int w_newComputeShader(lua_State* L)
+{
+	std::vector<std::string> stages;
+	w_getShaderSource(L, 1, stages);
+
+	bool should_error = false;
+	try
+	{
+		Shader *shader = instance()->newComputeShader(stages[0]);
+		luax_pushtype(L, shader);
+		shader->release();
+	}
+	catch (love::Exception &e)
+	{
+		luax_getfunction(L, "graphics", "_transformGLSLErrorMessages");
+		lua_pushstring(L, e.what());
+
+		// Function pushes the new error string onto the stack.
+		lua_pcall(L, 1, 1, 0);
+		should_error = true;
+	}
+
+	if (should_error)
+		return lua_error(L);
+
+	return 1;
+}
+
 int w_validateShader(lua_State *L)
 {
 	bool gles = luax_checkboolean(L, 1);
@@ -1510,6 +1540,44 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 	lua_pop(L, 1);
 }
 
+static Buffer::DataDeclaration luax_checkdatadeclaration(lua_State* L, int formattableidx, int arrayindex, int declindex, bool requirename)
+{
+	Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
+
+	lua_getfield(L, declindex, "name");
+	if (requirename && lua_type(L, -1) != LUA_TSTRING)
+	{
+		std::ostringstream ss;
+		ss << "'name' field expected in array element #";
+		ss << arrayindex;
+		ss << " of format table";
+		std::string str = ss.str();
+		luaL_argerror(L, formattableidx, str.c_str());
+	}
+	else if (!lua_isnoneornil(L, -1))
+		decl.name = luax_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, declindex, "format");
+	if (lua_type(L, -1) != LUA_TSTRING)
+	{
+		std::ostringstream ss;
+		ss << "'format' field expected in array element #";
+		ss << arrayindex;
+		ss << " of format table";
+		std::string str = ss.str();
+		luaL_argerror(L, formattableidx, str.c_str());
+	}
+	const char* formatstr = luaL_checkstring(L, -1);
+	if (!getConstant(formatstr, decl.format))
+		luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
+	lua_pop(L, 1);
+
+	decl.arrayLength = luax_intflag(L, declindex, "arraylength", 0);
+
+	return decl;
+}
+
 static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)
 {
 	if (lua_type(L, idx) == LUA_TSTRING)
@@ -1530,29 +1598,7 @@ static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::Da
 		lua_rawgeti(L, idx, i);
 		luaL_checktype(L, -1, LUA_TTABLE);
 
-		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
-
-		lua_getfield(L, -1, "name");
-		if (!lua_isnoneornil(L, -1))
-			decl.name = luax_checkstring(L, -1);
-		lua_pop(L, 1);
-
-		lua_getfield(L, -1, "format");
-		if (lua_type(L, -1) != LUA_TSTRING)
-		{
-			std::ostringstream ss;
-			ss << "'format' field expected in array element #";
-			ss << i;
-			ss << " of format table";
-			std::string str = ss.str();
-			luaL_argerror(L, idx, str.c_str());
-		}
-		const char *formatstr = luaL_checkstring(L, -1);
-		if (!getConstant(formatstr, decl.format))
-			luax_enumerror(L, "data format", getConstants(decl.format), formatstr);
-		lua_pop(L, 1);
-
-		decl.arrayLength = luax_intflag(L, -1, "arraylength", 0);
+		Buffer::DataDeclaration decl = luax_checkdatadeclaration(L, idx, i, -1, false);
 
 		format.push_back(decl);
 		lua_pop(L, 1);
@@ -1871,38 +1917,43 @@ static Mesh *newCustomMesh(lua_State *L)
 	}
 	lua_pop(L, 1);
 
-	// Per-vertex attribute formats.
+	// Per-vertex attribute data formats.
 	for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 	{
 		lua_rawgeti(L, 1, i);
 
-		// {name, datatype, components}
-		for (int j = 1; j <= 3; j++)
-			lua_rawgeti(L, -j, j);
+		Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
 
-		const char *name = luaL_checkstring(L, -3);
+		lua_getfield(L, -1, "format");
+		bool hasformatfield = !lua_isnoneornil(L, -1);
+		lua_pop(L, 1);
 
-		DataFormat format = DATAFORMAT_MAX_ENUM;
-		const char *tname = luaL_checkstring(L, -2);
-
-		if (!lua_isnoneornil(L, -1))
+		if (hasformatfield || luax_objlen(L, -1) == 0)
+			decl = luax_checkdatadeclaration(L, 1, i, -1, true);
+		else
 		{
-			int components = (int) luaL_checkinteger(L, -1);
+			// Legacy format arguments: {name, datatype, components}
+			for (int j = 1; j <= 3; j++)
+				lua_rawgeti(L, -j, j);
+
+			decl.name = luaL_checkstring(L, -3);
+			const char* tname = luaL_checkstring(L, -2);
+			int components = (int)luaL_checkinteger(L, -1);
 
 			// Check deprecated format names.
 			if (strcmp(tname, "byte") == 0 || strcmp(tname, "unorm8") == 0)
 			{
 				if (components == 4)
-					format = DATAFORMAT_UNORM8_VEC4;
+					decl.format = DATAFORMAT_UNORM8_VEC4;
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 			}
 			else if (strcmp(tname, "unorm16") == 0)
 			{
 				if (components == 2)
-					format = DATAFORMAT_UNORM16_VEC2;
+					decl.format = DATAFORMAT_UNORM16_VEC2;
 				else if (components == 4)
-					format = DATAFORMAT_UNORM16_VEC4;
+					decl.format = DATAFORMAT_UNORM16_VEC4;
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 
@@ -1910,23 +1961,27 @@ static Mesh *newCustomMesh(lua_State *L)
 			else if (strcmp(tname, "float") == 0)
 			{
 				if (components == 1)
-					format = DATAFORMAT_FLOAT;
+					decl.format = DATAFORMAT_FLOAT;
 				else if (components == 2)
-					format = DATAFORMAT_FLOAT_VEC2;
+					decl.format = DATAFORMAT_FLOAT_VEC2;
 				else if (components == 3)
-					format = DATAFORMAT_FLOAT_VEC3;
+					decl.format = DATAFORMAT_FLOAT_VEC3;
 				else if (components == 4)
-					format = DATAFORMAT_FLOAT_VEC4;
+					decl.format = DATAFORMAT_FLOAT_VEC4;
 				else
 					luaL_error(L, "Invalid component count (%d) for vertex data type %s", components, tname);
 			}
+
+			if (decl.format == DATAFORMAT_MAX_ENUM)
+				luax_enumerror(L, "vertex data format", getConstants(decl.format), tname);
+
+			lua_pop(L, 3);
+
+			luax_markdeprecated(L, 1, "vertex format array values in love.graphics.newMesh", API_CUSTOM, DEPRECATED_REPLACED, "named table fields 'format' and 'name'");
 		}
 
-		if (format == DATAFORMAT_MAX_ENUM && !getConstant(tname, format))
-			luax_enumerror(L, "vertex data format", getConstants(format), tname);
-
-		lua_pop(L, 4);
-		vertexformat.emplace_back(name, format);
+		lua_pop(L, 1);
+		vertexformat.push_back(decl);
 	}
 
 	if (lua_isnumber(L, 2))
@@ -2587,6 +2642,7 @@ int w_getTextureFormats(lua_State *L)
 
 	bool rt = luax_checkboolflag(L, 1, Texture::getConstant(Texture::SETTING_RENDER_TARGET));
 	bool linear = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_LINEAR), false);
+	bool computewrite = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), false);
 
 	OptionalBool readable;
 	lua_getfield(L, 1, Texture::getConstant(Texture::SETTING_READABLE));
@@ -2610,10 +2666,17 @@ int w_getTextureFormats(lua_State *L)
 		if (rt && isPixelFormatDepth(format))
 			continue;
 
-		bool formatReadable = readable.get(!isPixelFormatDepthStencil(format));
 		bool sRGB = isGammaCorrect() && !linear;
 
-		luax_pushboolean(L, instance()->isPixelFormatSupported(format, rt, formatReadable, sRGB));
+		uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
+		if (rt)
+			usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+		if (readable.get(!isPixelFormatDepthStencil(format)))
+			usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+		if (computewrite)
+			usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
+
+		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB));
 		lua_setfield(L, -2, name);
 	}
 
@@ -2644,7 +2707,7 @@ static int w__getFormats(lua_State *L, int idx, bool (*isFormatSupported)(PixelF
 
 int w_getCanvasFormats(lua_State *L)
 {
-	luax_markdeprecated(L, "love.graphics.getCanvasFormats", API_FUNCTION, DEPRECATED_REPLACED, "love.graphics.getTextureFormats");
+	luax_markdeprecated(L, 1, "love.graphics.getCanvasFormats", API_FUNCTION, DEPRECATED_REPLACED, "love.graphics.getTextureFormats");
 
 	bool (*supported)(PixelFormat);
 
@@ -2656,14 +2719,15 @@ int w_getCanvasFormats(lua_State *L)
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isPixelFormatSupported(format, true, true, false);
+				const uint32 usage = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+				return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
 			};
 		}
 		else
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isPixelFormatSupported(format, true, false, false);
+				return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false);
 			};
 		}
 	}
@@ -2672,7 +2736,10 @@ int w_getCanvasFormats(lua_State *L)
 		supported = [](PixelFormat format) -> bool
 		{
 			bool readable = !isPixelFormatDepthStencil(format);
-			return instance()->isPixelFormatSupported(format, true, readable, false);
+			uint32 usage = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+			if (readable)
+				usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+			return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
 		};
 	}
 
@@ -2681,11 +2748,11 @@ int w_getCanvasFormats(lua_State *L)
 
 int w_getImageFormats(lua_State *L)
 {
-	luax_markdeprecated(L, "love.graphics.getImageFormats", API_FUNCTION, DEPRECATED_REPLACED, "love.graphics.getTextureFormats");
+	luax_markdeprecated(L, 1, "love.graphics.getImageFormats", API_FUNCTION, DEPRECATED_REPLACED, "love.graphics.getTextureFormats");
 
 	const auto supported = [](PixelFormat format) -> bool
 	{
-		return instance()->isPixelFormatSupported(format, false, true, false);
+		return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SAMPLE, false);
 	};
 
 	const auto ignore = [](PixelFormat format) -> bool
@@ -3255,6 +3322,16 @@ int w_polygon(lua_State *L)
 	return 0;
 }
 
+int w_dispatchThreadgroups(lua_State* L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	int x = (int) luaL_checkinteger(L, 2);
+	int y = (int) luaL_optinteger(L, 3, 1);
+	int z = (int) luaL_optinteger(L, 4, 1);
+	luax_catchexcept(L, [&](){ instance()->dispatchThreadgroups(shader, x, y, z); });
+	return 0;
+}
+
 int w_copyBuffer(lua_State *L)
 {
 	Buffer *source = luax_checkbuffer(L, 1);
@@ -3405,6 +3482,7 @@ static const luaL_Reg functions[] =
 	{ "newSpriteBatch", w_newSpriteBatch },
 	{ "newParticleSystem", w_newParticleSystem },
 	{ "newShader", w_newShader },
+	{ "newComputeShader", w_newComputeShader },
 	{ "newBuffer", w_newBuffer },
 	{ "newVertexBuffer", w_newVertexBuffer },
 	{ "newIndexBuffer", w_newIndexBuffer },
@@ -3471,6 +3549,8 @@ static const luaL_Reg functions[] =
 
 	{ "print", w_print },
 	{ "printf", w_printf },
+
+	{ "dispatchThreadgroups", w_dispatchThreadgroups },
 
 	{ "copyBuffer", w_copyBuffer },
 

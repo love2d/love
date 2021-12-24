@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,25 +15,19 @@
 		217DFBDE1D9F6D490055D849 /* compat.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA21D9F6D490055D849 /* compat.h */; };
 		217DFBDF1D9F6D490055D849 /* except.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBA31D9F6D490055D849 /* except.c */; };
 		217DFBE01D9F6D490055D849 /* except.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA41D9F6D490055D849 /* except.h */; };
-		217DFBE11D9F6D490055D849 /* ftp.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBA51D9F6D490055D849 /* ftp.lua */; };
 		217DFBE21D9F6D490055D849 /* ftp.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA61D9F6D490055D849 /* ftp.lua.h */; };
-		217DFBE31D9F6D490055D849 /* headers.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBA71D9F6D490055D849 /* headers.lua */; };
 		217DFBE41D9F6D490055D849 /* headers.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBA81D9F6D490055D849 /* headers.lua.h */; };
-		217DFBE51D9F6D490055D849 /* http.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBA91D9F6D490055D849 /* http.lua */; };
 		217DFBE61D9F6D490055D849 /* http.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBAA1D9F6D490055D849 /* http.lua.h */; };
 		217DFBE71D9F6D490055D849 /* inet.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBAB1D9F6D490055D849 /* inet.c */; };
 		217DFBE81D9F6D490055D849 /* inet.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBAC1D9F6D490055D849 /* inet.h */; };
 		217DFBE91D9F6D490055D849 /* io.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBAD1D9F6D490055D849 /* io.c */; };
 		217DFBEA1D9F6D490055D849 /* io.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBAE1D9F6D490055D849 /* io.h */; };
-		217DFBEB1D9F6D490055D849 /* ltn12.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBAF1D9F6D490055D849 /* ltn12.lua */; };
 		217DFBEC1D9F6D490055D849 /* ltn12.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB01D9F6D490055D849 /* ltn12.lua.h */; };
 		217DFBED1D9F6D490055D849 /* luasocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBB11D9F6D490055D849 /* luasocket.c */; };
 		217DFBEE1D9F6D490055D849 /* luasocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB21D9F6D490055D849 /* luasocket.h */; };
-		217DFBF01D9F6D490055D849 /* mbox.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBB41D9F6D490055D849 /* mbox.lua */; };
 		217DFBF11D9F6D490055D849 /* mbox.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB51D9F6D490055D849 /* mbox.lua.h */; };
 		217DFBF21D9F6D490055D849 /* mime.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBB61D9F6D490055D849 /* mime.c */; };
 		217DFBF31D9F6D490055D849 /* mime.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB71D9F6D490055D849 /* mime.h */; };
-		217DFBF41D9F6D490055D849 /* mime.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBB81D9F6D490055D849 /* mime.lua */; };
 		217DFBF51D9F6D490055D849 /* mime.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBB91D9F6D490055D849 /* mime.lua.h */; };
 		217DFBF61D9F6D490055D849 /* options.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBBA1D9F6D490055D849 /* options.c */; };
 		217DFBF71D9F6D490055D849 /* options.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBBB1D9F6D490055D849 /* options.h */; };
@@ -41,16 +35,13 @@
 		217DFBF91D9F6D490055D849 /* select.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBBD1D9F6D490055D849 /* select.c */; };
 		217DFBFA1D9F6D490055D849 /* select.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBBE1D9F6D490055D849 /* select.h */; };
 		217DFBFB1D9F6D490055D849 /* serial.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBBF1D9F6D490055D849 /* serial.c */; };
-		217DFBFC1D9F6D490055D849 /* smtp.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBC01D9F6D490055D849 /* smtp.lua */; };
 		217DFBFD1D9F6D490055D849 /* smtp.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC11D9F6D490055D849 /* smtp.lua.h */; };
 		217DFBFE1D9F6D490055D849 /* socket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC21D9F6D490055D849 /* socket.h */; };
-		217DFBFF1D9F6D490055D849 /* socket.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBC31D9F6D490055D849 /* socket.lua */; };
 		217DFC001D9F6D490055D849 /* socket.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC41D9F6D490055D849 /* socket.lua.h */; };
 		217DFC011D9F6D490055D849 /* tcp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBC51D9F6D490055D849 /* tcp.c */; };
 		217DFC021D9F6D490055D849 /* tcp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC61D9F6D490055D849 /* tcp.h */; };
 		217DFC031D9F6D490055D849 /* timeout.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBC71D9F6D490055D849 /* timeout.c */; };
 		217DFC041D9F6D490055D849 /* timeout.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBC81D9F6D490055D849 /* timeout.h */; };
-		217DFC051D9F6D490055D849 /* tp.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBC91D9F6D490055D849 /* tp.lua */; };
 		217DFC061D9F6D490055D849 /* tp.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBCA1D9F6D490055D849 /* tp.lua.h */; };
 		217DFC071D9F6D490055D849 /* udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCB1D9F6D490055D849 /* udp.c */; };
 		217DFC081D9F6D490055D849 /* udp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBCC1D9F6D490055D849 /* udp.h */; };
@@ -60,7 +51,6 @@
 		217DFC0C1D9F6D490055D849 /* unixtcp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD01D9F6D490055D849 /* unixtcp.h */; };
 		217DFC0D1D9F6D490055D849 /* unixudp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD11D9F6D490055D849 /* unixudp.c */; };
 		217DFC0E1D9F6D490055D849 /* unixudp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD21D9F6D490055D849 /* unixudp.h */; };
-		217DFC0F1D9F6D490055D849 /* url.lua in Resources */ = {isa = PBXBuildFile; fileRef = 217DFBD31D9F6D490055D849 /* url.lua */; };
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
@@ -746,7 +736,6 @@
 		FA29C0061E12355B00268CD8 /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA29C0041E12355B00268CD8 /* StreamBuffer.cpp */; };
 		FA2AF6741DAD64970032B62C /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA2AF6731DAD64970032B62C /* vertex.cpp */; };
 		FA2AF6751DAD64970032B62C /* vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA2AF6731DAD64970032B62C /* vertex.cpp */; };
-		FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA317EB918F28B6D00B0BCD7 /* libz.dylib */; };
 		FA3C5E421F8C368C0003C579 /* ShaderStage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */; };
 		FA3C5E431F8C368C0003C579 /* ShaderStage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */; };
 		FA3C5E441F8C368C0003C579 /* ShaderStage.h in Headers */ = {isa = PBXBuildFile; fileRef = FA3C5E411F8C368C0003C579 /* ShaderStage.h */; };
@@ -1106,6 +1095,7 @@
 		FAD19A181DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
 		FAD19A191DFF8CA200D5398A /* ImageDataBase.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD19A161DFF8CA200D5398A /* ImageDataBase.h */; };
 		FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAD43ECB1FF312D800831BB8 /* freetype.framework */; };
+		FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = FADF4CC52663D0EC004F95C1 /* libz.tbd */; };
 		FADF53F81E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53F91E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53FA1E3C7ACD00012CC0 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53F71E3C7ACD00012CC0 /* Buffer.h */; };
@@ -1121,7 +1111,6 @@
 		FADF540D1E3D7CDD00012CC0 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */; };
 		FADF540E1E3D7CDD00012CC0 /* wrap_Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */; };
 		FADF540F1E3D7CDD00012CC0 /* wrap_Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF540B1E3D7CDD00012CC0 /* wrap_Video.h */; };
-		FADF54101E3D7CDD00012CC0 /* wrap_Video.lua in Resources */ = {isa = PBXBuildFile; fileRef = FADF540C1E3D7CDD00012CC0 /* wrap_Video.lua */; };
 		FADF54201E3DA52C00012CC0 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF541E1E3DA52C00012CC0 /* wrap_ParticleSystem.cpp */; };
 		FADF54211E3DA52C00012CC0 /* wrap_ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF541E1E3DA52C00012CC0 /* wrap_ParticleSystem.cpp */; };
 		FADF54221E3DA52C00012CC0 /* wrap_ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF541F1E3DA52C00012CC0 /* wrap_ParticleSystem.h */; };
@@ -1137,7 +1126,6 @@
 		FADF54341E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54321E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp */; };
 		FADF54351E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54321E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp */; };
 		FADF54361E3DAE6E00012CC0 /* wrap_SpriteBatch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54331E3DAE6E00012CC0 /* wrap_SpriteBatch.h */; };
-		FADF54381E3DAFBA00012CC0 /* wrap_Graphics.lua in Resources */ = {isa = PBXBuildFile; fileRef = FADF54371E3DAFBA00012CC0 /* wrap_Graphics.lua */; };
 		FADF543B1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54391E3DAFF700012CC0 /* wrap_Graphics.cpp */; };
 		FADF543C1E3DAFF700012CC0 /* wrap_Graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54391E3DAFF700012CC0 /* wrap_Graphics.cpp */; };
 		FADF543D1E3DAFF700012CC0 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */; };
@@ -1834,7 +1822,7 @@
 		FA27B39C1B498151008A9DCE /* wrap_Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Video.h; sourceTree = "<group>"; };
 		FA27B3B91B4985BF008A9DCE /* wrap_VideoStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_VideoStream.cpp; sourceTree = "<group>"; };
 		FA27B3BA1B4985BF008A9DCE /* wrap_VideoStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_VideoStream.h; sourceTree = "<group>"; };
-		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = /Library/Frameworks/theora.framework; sourceTree = "<absolute>"; };
+		FA27B3C81B498623008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = macosx/Frameworks/theora.framework; sourceTree = "<group>"; };
 		FA283EDC1B27CFAA00C70067 /* nogame.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = nogame.lua; sourceTree = "<group>"; };
 		FA283EDD1B27CFAA00C70067 /* nogame.lua.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nogame.lua.h; sourceTree = "<group>"; };
 		FA28EBD31E352DB5003446F4 /* FenceSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FenceSync.cpp; sourceTree = "<group>"; };
@@ -1844,7 +1832,6 @@
 		FA2AF6721DAD62710032B62C /* StreamBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA2AF6731DAD64970032B62C /* vertex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vertex.cpp; sourceTree = "<group>"; };
 		FA2E9BFE1C19E00C0004A1EE /* wrap_RandomGenerator.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_RandomGenerator.lua; sourceTree = "<group>"; };
-		FA317EB918F28B6D00B0BCD7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		FA34AF6A22E2977700F77015 /* wrap_Data.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Data.lua; sourceTree = "<group>"; };
 		FA3C5E401F8C368C0003C579 /* ShaderStage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderStage.cpp; sourceTree = "<group>"; };
 		FA3C5E411F8C368C0003C579 /* ShaderStage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderStage.h; sourceTree = "<group>"; };
@@ -1875,12 +1862,12 @@
 		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
 		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
-		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = /Library/Frameworks/Lua.framework; sourceTree = "<absolute>"; };
-		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = /Library/Frameworks/ogg.framework; sourceTree = "<absolute>"; };
-		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = /Library/Frameworks/vorbis.framework; sourceTree = "<absolute>"; };
+		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = macosx/Frameworks/Lua.framework; sourceTree = "<group>"; };
+		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = macosx/Frameworks/ogg.framework; sourceTree = "<group>"; };
+		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = macosx/Frameworks/vorbis.framework; sourceTree = "<group>"; };
 		FA577A7916C71A1700860150 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		FA577A7C16C71A2600860150 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
-		FA577A8216C71A5300860150 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = /Library/Frameworks/libmodplug.framework; sourceTree = "<absolute>"; };
+		FA577A8216C71A5300860150 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = macosx/Frameworks/libmodplug.framework; sourceTree = "<group>"; };
 		FA577A8C16C71D3600860150 /* auto.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; lineEnding = 0; path = auto.lua; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = "<none>"; };
 		FA577A8D16C71D3600860150 /* boot.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = boot.lua; sourceTree = "<group>"; };
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1916,7 +1903,7 @@
 		FA91DA8A1F377C3900C80E33 /* deprecation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = deprecation.h; sourceTree = "<group>"; };
 		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
-		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = /Library/Frameworks/SDL2.framework; sourceTree = "<absolute>"; };
+		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = macosx/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		FA9D53AA1F5307E900125C6B /* Deprecations.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Deprecations.cpp; sourceTree = "<group>"; };
 		FA9D53AB1F5307E900125C6B /* Deprecations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Deprecations.h; sourceTree = "<group>"; };
 		FA9D8DCF1DEB56C3002CD881 /* pixelformat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pixelformat.cpp; sourceTree = "<group>"; };
@@ -1940,7 +1927,7 @@
 		FAAA3FD71F64B3AD00F89E99 /* lutf8lib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lutf8lib.h; sourceTree = "<group>"; };
 		FAAC2F78251A9D2200BCB81B /* apple.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = apple.mm; sourceTree = "<group>"; };
 		FAAC2F7F251A9D3E00BCB81B /* apple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = apple.h; sourceTree = "<group>"; };
-		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "/Library/Frameworks/OpenAL-Soft.framework"; sourceTree = "<absolute>"; };
+		FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenAL-Soft.framework"; path = "macosx/Frameworks/OpenAL-Soft.framework"; sourceTree = "<group>"; };
 		FAB17BE41ABFAA9000F9BA27 /* lz4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4.c; sourceTree = "<group>"; };
 		FAB17BE51ABFAA9000F9BA27 /* lz4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lz4.h; sourceTree = "<group>"; };
 		FAB17BF31ABFC4B100F9BA27 /* lz4hc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lz4hc.c; sourceTree = "<group>"; };
@@ -2101,7 +2088,8 @@
 		FACA02EB1F5E396B0084B28F /* wrap_DataModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DataModule.h; sourceTree = "<group>"; };
 		FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDataBase.cpp; sourceTree = "<group>"; };
 		FAD19A161DFF8CA200D5398A /* ImageDataBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageDataBase.h; sourceTree = "<group>"; };
-		FAD43ECB1FF312D800831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = /Library/Frameworks/freetype.framework; sourceTree = "<absolute>"; };
+		FAD43ECB1FF312D800831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = macosx/Frameworks/freetype.framework; sourceTree = "<group>"; };
+		FADF4CC52663D0EC004F95C1 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		FADF53F71E3C7ACD00012CC0 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
 		FADF53FB1E3D74F200012CC0 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
@@ -2245,13 +2233,13 @@
 			files = (
 				FA18CEE723DBC6F700263725 /* Metal.framework in Frameworks */,
 				FA27B3C91B498623008A9DCE /* theora.framework in Frameworks */,
-				FA317EBA18F28B6D00B0BCD7 /* libz.dylib in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
 				FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */,
 				FAAFF04416CB11C700CCDE45 /* OpenAL-Soft.framework in Frameworks */,
 				FAD43ECC1FF312D800831BB8 /* freetype.framework in Frameworks */,
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
+				FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */,
 				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
 				FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */,
@@ -3301,7 +3289,7 @@
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
-				FA317EB918F28B6D00B0BCD7 /* libz.dylib */,
+				FADF4CC52663D0EC004F95C1 /* libz.tbd */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
 				FA577A7116C719F400860150 /* ogg.framework */,
 				FAAFF04316CB11C700CCDE45 /* OpenAL-Soft.framework */,
@@ -4441,7 +4429,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					FA0B78DC1A958B90000E1D17 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -4449,7 +4437,7 @@
 				};
 			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "liblove" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 11.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -4471,19 +4459,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				217DFC0F1D9F6D490055D849 /* url.lua in Resources */,
-				FADF54101E3D7CDD00012CC0 /* wrap_Video.lua in Resources */,
-				217DFBFC1D9F6D490055D849 /* smtp.lua in Resources */,
-				FADF54381E3DAFBA00012CC0 /* wrap_Graphics.lua in Resources */,
-				217DFBF01D9F6D490055D849 /* mbox.lua in Resources */,
-				217DFBE11D9F6D490055D849 /* ftp.lua in Resources */,
-				217DFBFF1D9F6D490055D849 /* socket.lua in Resources */,
-				217DFC051D9F6D490055D849 /* tp.lua in Resources */,
-				217DFBE51D9F6D490055D849 /* http.lua in Resources */,
-				217DFBEB1D9F6D490055D849 /* ltn12.lua in Resources */,
-				217DFBF41D9F6D490055D849 /* mime.lua in Resources */,
-				217DFBE31D9F6D490055D849 /* headers.lua in Resources */,
-				FABDA9C52552448300B5C523 /* README.MODIFIED in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5635,7 +5610,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = x86_64;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 9.0;
@@ -5643,8 +5617,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
@@ -5654,9 +5626,6 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
-					/Library/Frameworks/freetype.framework/Headers,
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5680,15 +5649,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = x86_64;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 9.0;
 				DYLIB_CURRENT_VERSION = 9.0;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
@@ -5698,9 +5664,6 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
-					/Library/Frameworks/freetype.framework/Headers,
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5724,7 +5687,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = x86_64;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 9.0;
@@ -5732,8 +5694,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/macosx/Frameworks",
-					/Library/Frameworks,
-					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 					"$(PROJECT_DIR)",
 				);
 				FRAMEWORK_VERSION = A;
@@ -5743,9 +5703,6 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
-					/Library/Frameworks/freetype.framework/Headers,
-					/Library/Frameworks/Lua.framework/Headers,
-					/Library/Frameworks/SDL2.framework/Headers,
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";

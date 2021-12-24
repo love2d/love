@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -68,12 +68,14 @@ public:
 
 	void setActive(bool active) override;
 
+	bool dispatch(int x, int y, int z) override;
+
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture) override;
 
-	void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) override;
-	void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
+	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
 
 	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override;
 
@@ -105,7 +107,7 @@ public:
 	void setWireframe(bool enable) override;
 
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, bool rendertarget, bool readable, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
@@ -137,8 +139,8 @@ private:
 		}
 	};
 
-	love::graphics::ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
-	love::graphics::Shader *newShaderInternal(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel) override;
+	love::graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
+	love::graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) override;
 	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture) override;
 	void initCapabilities() override;
@@ -169,8 +171,8 @@ private:
 	// Only needed for buffer types that can be bound to shaders.
 	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERUSAGE_MAX_ENUM];
 
-	// [rendertarget][readable][srgb]
-	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2];
+	// [rendertarget][readable][computewrite][srgb]
+	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2][2];
 
 }; // Graphics
 

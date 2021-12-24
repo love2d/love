@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -482,8 +482,8 @@ lua_State *luax_getpinnedthread(lua_State *L);
  * Mark a function as deprecated. Should only be called inside wrapper function
  * code.
  **/
-void luax_markdeprecated(lua_State *L, const char *name, APIType api);
-void luax_markdeprecated(lua_State *L, const char *name, APIType api, DeprecationType type, const char *replacement);
+void luax_markdeprecated(lua_State *L, int level, const char *name, APIType api);
+void luax_markdeprecated(lua_State *L, int level, const char *name, APIType api, DeprecationType type, const char *replacement);
 
 extern "C" { // Also called from luasocket
 	int luax_typerror(lua_State *L, int narg, const char *tname);

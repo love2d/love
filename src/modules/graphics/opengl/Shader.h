@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,16 @@ class Shader final : public love::graphics::Shader, public Volatile
 {
 public:
 
-	Shader(love::graphics::ShaderStage *vertex, love::graphics::ShaderStage *pixel);
+	struct StorageTextureBinding
+	{
+		Texture *texture = nullptr;
+		GLuint gltexture = 0;
+		TextureType type = TEXTURE_2D;
+		GLenum access = GL_READ_ONLY;
+		GLenum internalFormat;
+	};
+
+	Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
 	virtual ~Shader();
 
 	// Implements Volatile
@@ -64,6 +73,9 @@ public:
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
+
+	const std::vector<Buffer *> &getActiveWritableStorageBuffers() const { return activeWritableStorageBuffers; }
+	const std::vector<StorageTextureBinding> &getStorageTextureBindings() const { return storageTextureBindings; }
 
 private:
 
@@ -89,11 +101,8 @@ private:
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalupdate);
 
 	int getUniformTypeComponents(GLenum type) const;
+	void computeUniformTypeInfo(GLenum type, UniformInfo &u);
 	MatrixSize getMatrixSize(GLenum type) const;
-	UniformType getUniformBaseType(GLenum type) const;
-	TextureType getUniformTextureType(GLenum type) const;
-	DataBaseType getUniformTexelBaseType(GLenum type) const;
-	bool isDepthTextureType(GLenum type) const;
 
 	void flushBatchedDraws() const;
 
@@ -115,8 +124,12 @@ private:
 	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;
 
-	std::vector<int> storageBufferBindingIndexToActiveBinding;
+	std::vector<StorageTextureBinding> storageTextureBindings;
+
+	std::vector<std::pair<int, int>> storageBufferBindingIndexToActiveBinding;
 	std::vector<BufferBinding> activeStorageBufferBindings;
+
+	std::vector<Buffer *> activeWritableStorageBuffers;
 
 	std::vector<std::pair<const UniformInfo *, int>> pendingUniformUpdates;
 

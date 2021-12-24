@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2020 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -197,7 +197,7 @@ Graphics::~Graphics()
 	if (batchedDrawState.indexBuffer)
 		batchedDrawState.indexBuffer->release();
 
-	for (int i = 0; i < (int) ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int i = 0; i < (int) SHADERSTAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
 
 	Shader::deinitialize();
@@ -252,7 +252,7 @@ love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, in
 	return new ParticleSystem(texture, size);
 }
 
-ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::string &source, const Shader::SourceInfo &info)
+ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info)
 {
 	ShaderStage *s = nullptr;
 	std::string cachekey;
@@ -274,8 +274,9 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 
 	if (s == nullptr)
 	{
-		std::string glsl = Shader::createShaderStageCode(this, stage, source, info);
-		s = newShaderStageInternal(stage, cachekey, glsl, usesGLSLES());
+		bool glsles = usesGLSLES();
+		std::string glsl = Shader::createShaderStageCode(this, stage, source, info, glsles, true);
+		s = newShaderStageInternal(stage, cachekey, glsl, glsles);
 		if (!cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
 	}
@@ -285,18 +286,18 @@ ShaderStage *Graphics::newShaderStage(ShaderStage::StageType stage, const std::s
 
 Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 {
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
-	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
-	validstages[ShaderStage::STAGE_VERTEX] = true;
-	validstages[ShaderStage::STAGE_PIXEL] = true;
+	bool validstages[SHADERSTAGE_MAX_ENUM] = {};
+	validstages[SHADERSTAGE_VERTEX] = true;
+	validstages[SHADERSTAGE_PIXEL] = true;
 
 	for (const std::string &source : stagessource)
 	{
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
 		bool isanystage = false;
 
-		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		{
 			if (!validstages[i])
 				continue;
@@ -304,7 +305,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
-				stages[i].set(newShaderStage((ShaderStage::StageType) i, source, info), Acquire::NORETAIN);
+				stages[i].set(newShaderStage((ShaderStageType) i, source, info), Acquire::NORETAIN);
 			}
 		}
 
@@ -312,9 +313,9 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 			throw love::Exception("Could not parse shader code (missing 'position' or 'effect' function?)");
 	}
 
-	for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
-		auto stype = (ShaderStage::StageType) i;
+		auto stype = (ShaderStageType) i;
 		if (validstages[i] && stages[i].get() == nullptr)
 		{
 			const std::string &source = Shader::getDefaultCode(Shader::STANDARD_DEFAULT, stype);
@@ -324,7 +325,19 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 
 	}
 
-	return newShaderInternal(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL]);
+	return newShaderInternal(stages);
+}
+
+Shader *Graphics::newComputeShader(const std::string &source)
+{
+	Shader::SourceInfo info = Shader::getSourceInfo(source);
+
+	if (info.stages[SHADERSTAGE_COMPUTE] == Shader::ENTRYPOINT_NONE)
+		throw love::Exception("Could not parse compute shader code (missing 'computemain' function?)");
+
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
+	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, info));
+	return newShaderInternal(stages);
 }
 
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
@@ -353,18 +366,19 @@ love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<
 	return new Text(font, text);
 }
 
-void Graphics::cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &hashkey)
+void Graphics::cleanupCachedShaderStage(ShaderStageType type, const std::string &hashkey)
 {
 	cachedShaderStages[type].erase(hashkey);
 }
 
 bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagessource, std::string &err)
 {
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM] = {};
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
-	bool validstages[ShaderStage::STAGE_MAX_ENUM] = {};
-	validstages[ShaderStage::STAGE_VERTEX] = true;
-	validstages[ShaderStage::STAGE_PIXEL] = true;
+	bool validstages[SHADERSTAGE_MAX_ENUM] = {};
+	validstages[SHADERSTAGE_VERTEX] = true;
+	validstages[SHADERSTAGE_PIXEL] = true;
+	validstages[SHADERSTAGE_COMPUTE] = true;
 
 	// Don't use cached shader stages, since the gles flag may not match the
 	// current renderer.
@@ -373,9 +387,9 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
 		bool isanystage = false;
 
-		for (int i = 0; i < ShaderStage::STAGE_MAX_ENUM; i++)
+		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		{
-			auto stype = (ShaderStage::StageType) i;
+			auto stype = (ShaderStageType) i;
 
 			if (!validstages[i])
 				continue;
@@ -383,7 +397,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
-				std::string glsl = Shader::createShaderStageCode(this, stype, source, info);
+				std::string glsl = Shader::createShaderStageCode(this, stype, source, info, gles, false);
 				stages[i].set(new ShaderStageForValidation(this, stype, glsl, gles), Acquire::NORETAIN);
 			}
 		}
@@ -395,7 +409,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		}
 	}
 
-	return Shader::validate(stages[ShaderStage::STAGE_VERTEX], stages[ShaderStage::STAGE_PIXEL], err);
+	return Shader::validate(stages, err);
 }
 
 int Graphics::getWidth() const
@@ -800,7 +814,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
 		if (wantsdepth && wantsstencil)
 			dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, true, false, false))
+		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false))
 			dsformat = PIXELFORMAT_DEPTH24_UNORM;
 		else if (wantsdepth)
 			dsformat = PIXELFORMAT_DEPTH16_UNORM;
@@ -1109,6 +1123,35 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 		throw love::Exception("Copying a portion of a buffer to the same buffer requires non-overlapping source and destination offsets.");
 
 	source->copyTo(dest, sourceoffset, destoffset, size);
+}
+
+void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
+{
+	if (!shader->hasStage(SHADERSTAGE_COMPUTE))
+		throw love::Exception("Only compute shaders can have threads dispatched.");
+
+	if (x <= 0 || y <= 0 || z <= 0)
+		throw love::Exception("Threadgroup dispatch size must be positive.");
+
+	if (x > capabilities.limits[LIMIT_THREADGROUPS_X]
+		|| y > capabilities.limits[LIMIT_THREADGROUPS_Y]
+		|| z > capabilities.limits[LIMIT_THREADGROUPS_Z])
+	{
+		throw love::Exception("Too many threadgroups dispatched.");
+	}
+
+	flushBatchedDraws();
+
+	auto prevshader = Shader::current;
+	shader->attach();
+
+	bool success = dispatch(x, y, z);
+
+	if (prevshader != nullptr)
+		prevshader->attach();
+
+	if (!success)
+		throw love::Exception("Compute shader must have resources bound to all writable texture and buffer variables.");
 }
 
 Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawCommand &cmd)
@@ -1924,6 +1967,9 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM,
 	{ "cubetexturesize",         Graphics::LIMIT_CUBE_TEXTURE_SIZE          },
 	{ "texelbuffersize",         Graphics::LIMIT_TEXEL_BUFFER_SIZE          },
 	{ "shaderstoragebuffersize", Graphics::LIMIT_SHADER_STORAGE_BUFFER_SIZE },
+	{ "threadgroupsx",           Graphics::LIMIT_THREADGROUPS_X             },
+	{ "threadgroupsy",           Graphics::LIMIT_THREADGROUPS_Y             },
+	{ "threadgroupsz",           Graphics::LIMIT_THREADGROUPS_Z             },
 	{ "rendertargets",           Graphics::LIMIT_RENDER_TARGETS             },
 	{ "texturemsaa",             Graphics::LIMIT_TEXTURE_MSAA               },
 	{ "anisotropy",              Graphics::LIMIT_ANISOTROPY                 },
