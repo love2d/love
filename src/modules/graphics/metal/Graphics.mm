@@ -241,10 +241,17 @@ Graphics::Graphics()
 	, defaultTextures()
 	, families()
 { @autoreleasepool {
-	graphicsInstance = this;
-	device = MTLCreateSystemDefaultDevice();
-	if (device == nil)
-		throw love::Exception("Metal is not supported on this system.");
+	if (@available(macOS 10.15, iOS 13.0, *))
+	{
+		graphicsInstance = this;
+		device = MTLCreateSystemDefaultDevice();
+		if (device == nil)
+			throw love::Exception("Metal is not supported on this system.");
+	}
+	else
+	{
+		throw love::Exception("LOVE's Metal graphics backend requires macOS 10.15+ or iOS 13+.");
+	}
 
 	commandQueue = [device newCommandQueue];
 	passDesc = [MTLRenderPassDescriptor new];
@@ -1908,7 +1915,7 @@ void Graphics::initCapabilities()
 		}
 	}
 
-	if (@available(macOS 10.15, iOS 13, *))
+	if (@available(macOS 10.15, iOS 13.0, *))
 	{
 		for (NSInteger i = 0; i < 7; i++)
 		{
