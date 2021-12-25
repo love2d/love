@@ -1341,7 +1341,25 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 {
 	flushBatchedDraws();
+
 	// TODO
+	if (renderEncoder != nil)
+		return;
+
+	size_t maxcolor = isRenderTargetActive() ? states.back().renderTargets.colors.size() : 1;
+	size_t ncolor = std::min(maxcolor, colorbuffers.size());
+
+	for (size_t i = 0; i < ncolor; i++)
+	{
+		if (colorbuffers[i])
+			passDesc.colorAttachments[i].loadAction = MTLLoadActionDontCare;
+	}
+
+	if (depthstencil)
+	{
+		passDesc.stencilAttachment.loadAction = MTLLoadActionDontCare;
+		passDesc.depthAttachment.loadAction = MTLLoadActionDontCare;
+	}
 }
 
 void Graphics::present(void *screenshotCallbackData)
