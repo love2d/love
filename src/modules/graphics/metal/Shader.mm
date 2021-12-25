@@ -237,6 +237,11 @@ static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
 	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
 }
 
+static inline id<MTLBuffer> getMTLBuffer(love::graphics::Buffer *buffer)
+{
+	return buffer ? (__bridge id<MTLBuffer>)(void *) buffer->getHandle() : nil;
+}
+
 static EShLanguage getGLSLangStage(ShaderStageType stage)
 {
 	switch (stage)
@@ -257,6 +262,7 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 	, localUniformBufferData(nullptr)
 	, localUniformBufferSize(0)
 	, builtinUniformDataOffset(0)
+	, firstVertexBufferBinding(DEFAULT_VERTEX_BUFFER_BINDING + 1)
 { @autoreleasepool {
 	using namespace glslang;
 
@@ -380,6 +386,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 	std::map<std::string, int> varyings;
 	int nextVaryingLocation = 0;
 
+	int metalBufferIndices[SHADERSTAGE_MAX_ENUM];
+	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
+		metalBufferIndices[i] = getUniformBufferBinding() + 1;
+	metalBufferIndices[SHADERSTAGE_VERTEX] = DEFAULT_VERTEX_BUFFER_BINDING + 1;
+
 	for (int stageindex = 0; stageindex < SHADERSTAGE_MAX_ENUM; stageindex++)
 	{
 		auto glslangstage = getGLSLangStage((ShaderStageType) stageindex);
@@ -420,6 +431,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				u.name = resource.name;
 				u.count = type.array.empty() ? 1 : type.array[0];
 				u.isDepthSampler = type.image.depth;
+				u.components = 1;
 
 				switch (imagetype.basetype)
 				{
@@ -461,7 +473,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					break;
 				}
 
-				u.data = malloc(sizeof(int) * u.count);
+				u.dataSize = sizeof(int) * u.count;
+				u.data = malloc(u.dataSize);
 				for (int i = 0; i < u.count; i++)
 					u.ints[i] = -1; // Initialized below, after compiling.
 
@@ -489,12 +502,13 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 			for (const auto &resource : resources.uniform_buffers)
 			{
+				MSLResourceBinding binding;
+				binding.stage = msl.get_execution_model();
+				binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+				binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
 				if (resource.name == "gl_DefaultUniformBlock")
 				{
-					MSLResourceBinding binding;
-					binding.stage = msl.get_execution_model();
-					binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
-					binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
 					binding.msl_buffer = getUniformBufferBinding();
 					msl.add_msl_resource_binding(binding);
 
@@ -527,6 +541,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						u.name = msl.get_member_name(type.self, uindex);
 						u.dataSize = membersize;
 						u.count = membertype.array.empty() ? 1 : membertype.array[0];
+						u.components = 1;
 
 						switch (membertype.basetype)
 						{
@@ -568,19 +583,60 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 							builtinUniformInfo[builtin] = &uniforms[u.name];
 						}
 					}
-
+				}
+				else
+				{
+					binding.msl_buffer = metalBufferIndices[stageindex]++;
+					msl.add_msl_resource_binding(binding);
 				}
 			}
 
 			for (const auto &resource : resources.storage_buffers)
 			{
+				MSLResourceBinding binding;
+				binding.stage = msl.get_execution_model();
+				binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+				binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+				binding.msl_buffer = metalBufferIndices[stageindex]++;
+				msl.add_msl_resource_binding(binding);
+
 				auto it = uniforms.find(resource.name);
 				if (it != uniforms.end())
+					continue;
+
+				const SPIRType &type = msl.get_type(resource.type_id);
+
+				UniformInfo u = {};
+				u.baseType = UNIFORM_STORAGEBUFFER;
+				u.components = 1;
+				u.name = resource.name;
+				u.count = type.array.empty() ? 1 : type.array[0];
+
+				const auto reflectionit = validationReflection.storageBuffers.find(u.name);
+				if (reflectionit != validationReflection.storageBuffers.end())
 				{
+					u.bufferStride = reflectionit->second.stride;
+					u.bufferMemberCount = reflectionit->second.memberCount;
+					u.access = reflectionit->second.access;
+				}
+				else
+				{
+					// No reflection info - maybe glslang was better at detecting
+					// dead code than the driver's compiler?
 					continue;
 				}
 
-				// TODO
+				u.buffers = new love::graphics::Buffer*[u.count];
+				u.dataSize = sizeof(int) * u.count;
+				u.data = malloc(u.dataSize);
+
+				for (int i = 0; i < u.count; i++)
+				{
+					u.ints[i] = -1; // Initialized below, after compiling.
+					u.buffers[i] = nullptr; // TODO
+				}
+
+				uniforms[u.name] = u;
 			}
 
 			if (stageindex == SHADERSTAGE_VERTEX)
@@ -741,6 +797,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 			printf("Error parsing SPIR-V shader source: %s\n", e.what());
 		}
 	}
+
+	firstVertexBufferBinding = metalBufferIndices[SHADERSTAGE_VERTEX];
 }
 
 Shader::~Shader()
@@ -896,6 +954,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		else if (storagebinding)
 		{
 			// TODO
+			bufferBindings[info->ints[i]].buffer = getMTLBuffer(buffer);
 		}
 	}
 }
@@ -947,7 +1006,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 		MTLRenderPipelineColorAttachmentDescriptor *attachment = desc.colorAttachments[i];
 
-		if (@available(macOS 10.15, iOS 13, *))
+		if (@available(macOS 10.15, iOS 13.0, *))
 		{
 			// We already don't really support metal on older systems, this just
 			// silences a compiler warning about it.
@@ -998,46 +1057,44 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		}
 	}
 
+	MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
+	const auto &attributes = key.vertexAttributes;
+
+	for (const auto &pair : this->attributes)
 	{
-		MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
-		const auto &attributes = key.vertexAttributes;
+		int i = pair.second;
+		uint32 bit = 1u << i;
 
-		for (const auto &pair : this->attributes)
+		if (attributes.enableBits & bit)
 		{
-			int i = pair.second;
-			uint32 bit = 1u << i;
+			const auto &attrib = attributes.attribs[i];
+			int metalBufferIndex = firstVertexBufferBinding + attrib.bufferIndex;
 
-			if (attributes.enableBits & bit)
-			{
-				const auto &attrib = attributes.attribs[i];
-				int metalBufferIndex = attrib.bufferIndex + VERTEX_BUFFER_BINDING_START;
+			vertdesc.attributes[i].format = getMTLVertexFormat(attrib.format);
+			vertdesc.attributes[i].offset = attrib.offsetFromVertex;
+			vertdesc.attributes[i].bufferIndex = metalBufferIndex;
 
-				vertdesc.attributes[i].format = getMTLVertexFormat(attrib.format);
-				vertdesc.attributes[i].offset = attrib.offsetFromVertex;
-				vertdesc.attributes[i].bufferIndex = metalBufferIndex;
+			const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
 
-				const auto &layout = attributes.bufferLayouts[attrib.bufferIndex];
+			bool instanced = attributes.instanceBits & (1u << attrib.bufferIndex);
+			auto step = instanced ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
 
-				bool instanced = attributes.instanceBits & (1u << attrib.bufferIndex);
-				auto step = instanced ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
-
-				vertdesc.layouts[metalBufferIndex].stride = layout.stride;
-				vertdesc.layouts[metalBufferIndex].stepFunction = step;
-			}
-			else
-			{
-				vertdesc.attributes[i].format = MTLVertexFormatFloat4;
-				vertdesc.attributes[i].offset = 0;
-				vertdesc.attributes[i].bufferIndex = DEFAULT_VERTEX_BUFFER_BINDING;
-
-				vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stride = sizeof(float) * 4;
-				vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stepFunction = MTLVertexStepFunctionConstant;
-				vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stepRate = 0;
-			}
+			vertdesc.layouts[metalBufferIndex].stride = layout.stride;
+			vertdesc.layouts[metalBufferIndex].stepFunction = step;
 		}
+		else
+		{
+			vertdesc.attributes[i].format = MTLVertexFormatFloat4;
+			vertdesc.attributes[i].offset = 0;
+			vertdesc.attributes[i].bufferIndex = DEFAULT_VERTEX_BUFFER_BINDING;
 
-		desc.vertexDescriptor = vertdesc;
+			vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stride = sizeof(float) * 4;
+			vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stepFunction = MTLVertexStepFunctionConstant;
+			vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stepRate = 0;
+		}
 	}
+
+	desc.vertexDescriptor = vertdesc;
 
 	NSError *err = nil;
 	id<MTLRenderPipelineState> pipeline = [device newRenderPipelineStateWithDescriptor:desc error:&err];

@@ -47,7 +47,6 @@ namespace metal
 {
 
 static const int DEFAULT_VERTEX_BUFFER_BINDING = 1;
-static const int VERTEX_BUFFER_BINDING_START = 2;
 
 class Shader final : public love::graphics::Shader
 {
@@ -110,6 +109,8 @@ public:
 	id<MTLComputePipelineState> getComputePipeline() const { return computePipeline; }
 
 	static int getUniformBufferBinding();
+	int getFirstVertexBufferBinding() const { return firstVertexBufferBinding; }
+
 	const std::vector<TextureBinding> &getTextureBindings() const { return textureBindings; }
 	const std::vector<BufferBinding> &getBufferBindings() const { return bufferBindings; }
 
@@ -138,6 +139,8 @@ private:
 	uint8 *localUniformBufferData;
 	size_t localUniformBufferSize;
 	size_t builtinUniformDataOffset;
+
+	int firstVertexBufferBinding;
 
 	std::map<std::string, int> attributes;
 

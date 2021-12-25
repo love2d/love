@@ -742,7 +742,7 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 	if (isClampOne(s.wrapU) || isClampOne(s.wrapV) || isClampOne(s.wrapW))
 	{
-		if (@available(macOS 10.12, iOS 10.14, *))
+		if (@available(macOS 10.12, iOS 14.0, *))
 			desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
 	}
 
@@ -1110,8 +1110,10 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	}
 }
 
-static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBindings *buffers, Graphics::RenderEncoderBindings &bindings)
+static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, love::graphics::Shader *shader, const BufferBindings *buffers, Graphics::RenderEncoderBindings &bindings)
 {
+	Shader *s = (Shader *)shader;
+	int firstBinding = s->getFirstVertexBufferBinding();
 	uint32 allbits = buffers->useBits;
 	uint32 i = 0;
 	while (allbits)
@@ -1122,7 +1124,7 @@ static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, const BufferBi
 		{
 			auto b = buffers->info[i];
 			id<MTLBuffer> buffer = getMTLBuffer(b.buffer);
-			setBuffer(encoder, bindings, SHADERSTAGE_VERTEX, i + VERTEX_BUFFER_BINDING_START, buffer, b.offset);
+			setBuffer(encoder, bindings, SHADERSTAGE_VERTEX, firstBinding + i, buffer, b.offset);
 		}
 
 		i++;
@@ -1143,7 +1145,7 @@ void Graphics::draw(const DrawCommand &cmd)
 	applyRenderState(encoder, *cmd.attributes);
 	applyShaderUniforms(encoder, Shader::current, cmd.texture);
 
-	setVertexBuffers(encoder, cmd.buffers, renderBindings);
+	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
 
 	[encoder drawPrimitives:getMTLPrimitiveType(cmd.primitiveType)
 				vertexStart:cmd.vertexStart
@@ -1166,9 +1168,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	applyRenderState(encoder, *cmd.attributes);
 	applyShaderUniforms(encoder, Shader::current, cmd.texture);
 
-	[encoder setCullMode:MTLCullModeNone];
-
-	setVertexBuffers(encoder, cmd.buffers, renderBindings);
+	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
 
 	auto indexType = cmd.indexType == INDEX_UINT32 ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
@@ -1226,7 +1226,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	// Some older iOS devices don't support base vertex rendering.
 	if (families.apple[3] || families.mac[1] || families.macCatalyst[1])
 	{
-		setVertexBuffers(encoder, &buffers, renderBindings);
+		setVertexBuffers(encoder, Shader::current, &buffers, renderBindings);
 
 		int basevertex = start * 4;
 
@@ -1255,7 +1255,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
 		{
-			setVertexBuffers(encoder, &bufferscopy, renderBindings);
+			setVertexBuffers(encoder, Shader::current, &bufferscopy, renderBindings);
 
 			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
@@ -1791,6 +1791,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 		format = getSRGBPixelFormat(format);
 
 	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
+	const uint32 linear = PIXELFORMATUSAGEFLAGS_LINEAR;
 	const uint32 rt = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
 	const uint32 blend = PIXELFORMATUSAGEFLAGS_BLEND;
 	const uint32 msaa = PIXELFORMATUSAGEFLAGS_MSAA;
@@ -1827,7 +1828,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 		case PIXELFORMAT_R32_FLOAT:
 			if (families.apple[1])
 				flags |= sample | rt | blend | msaa | computewrite;
-			if (families.mac[1])
+			if (families.mac[1] || families.macCatalyst[1])
 				flags |= all;
 			break;
 
@@ -2114,11 +2115,24 @@ void Graphics::initCapabilities()
 		capabilities.limits[LIMIT_TEXTURE_SIZE] = 8192;
 		capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = 8192;
 	}
+
+	// TODO: metal doesn't have a good API to query this?
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = 128 * 1024 * 1024;
-	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = 128 * 1024 * 1024; // TODO;
+
+	if (@available(macOS 10.14, iOS 12.0, *))
+	{
+		NSUInteger buffersize = [device maxBufferLength];
+		capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = buffersize;
+	}
+	else
+	{
+		capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = 128 * 1024 * 1024;
+	}
+
 	capabilities.limits[LIMIT_THREADGROUPS_X] = LOVE_INT32_MAX; // TODO: is there a real limit?
 	capabilities.limits[LIMIT_THREADGROUPS_Y] = LOVE_INT32_MAX;
 	capabilities.limits[LIMIT_THREADGROUPS_Z] = LOVE_INT32_MAX;
+
 	if (families.mac[1] || families.macCatalyst[1] || families.apple[2])
 		capabilities.limits[LIMIT_RENDER_TARGETS] = 8;
 	else
