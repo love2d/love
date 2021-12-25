@@ -176,11 +176,10 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(id<MTLDevice> device, PixelForm
 		mtlformat = MTLPixelFormatStencil8;
 		break;
 	case PIXELFORMAT_DEPTH16_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = MTLPixelFormatDepth32Float;
-#else
-		mtlformat = MTLPixelFormatDepth16Unorm;
-#endif
+		if (@available(macOS 10.12, iOS 13.0, *))
+			mtlformat = MTLPixelFormatDepth16Unorm;
+		else
+			mtlformat = MTLPixelFormatDepth32Float;
 		break;
 	case PIXELFORMAT_DEPTH24_UNORM:
 		mtlformat = MTLPixelFormatDepth32Float;
