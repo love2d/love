@@ -28,7 +28,7 @@ namespace graphics
 namespace metal
 {
 
-Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRGB)
+Metal::PixelFormatDesc Metal::convertPixelFormat(id<MTLDevice> device, PixelFormat format, bool &isSRGB)
 {
 	MTLPixelFormat mtlformat = MTLPixelFormatInvalid;
 	PixelFormatDesc desc = {};
@@ -192,7 +192,10 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(PixelFormat format, bool &isSRG
 #ifdef LOVE_IOS
 		mtlformat = MTLPixelFormatDepth32Float_Stencil8;
 #else
-		mtlformat = MTLPixelFormatDepth24Unorm_Stencil8;
+		if ([device isDepth24Stencil8PixelFormatSupported])
+			mtlformat = MTLPixelFormatDepth24Unorm_Stencil8;
+		else
+			mtlformat = MTLPixelFormatDepth32Float_Stencil8;
 #endif
 		break;
 	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:

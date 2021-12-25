@@ -62,7 +62,7 @@ Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Sett
 	{
 		// We already don't really support metal on older systems, this just
 		// silences a compiler warning about it.
-		auto formatdesc = Metal::convertPixelFormat(format, sRGB);
+		auto formatdesc = Metal::convertPixelFormat(device, format, sRGB);
 		desc.pixelFormat = formatdesc.format;
 		if (formatdesc.swizzled)
 			desc.swizzle = formatdesc.swizzle;

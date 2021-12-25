@@ -837,7 +837,6 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 	{
 		lastVertexAttributes = attributes;
 
-//		Shader *shader = (Shader *) state.shader.get();
 		Shader *shader = (Shader *) Shader::current;
 		id<MTLRenderPipelineState> pipeline = nil;
 
@@ -849,18 +848,21 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 			key.blend = state.blend;
 			key.colorChannelMask = state.colorMask;
 
-			const auto &rts = state.renderTargets.colors;
-
-			for (size_t i = 0; i < rts.size(); i++)
-				key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
-
 			if (state.renderTargets.getFirstTarget().texture.get() == nullptr)
 			{
 				key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
 				key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
 			}
+			else
+			{
+				const auto &rts = state.renderTargets.colors;
+				for (size_t i = 0; i < rts.size(); i++)
+					key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
 
-			// TODO: depth/stencil
+				// TODO: automatic depth/stencil (state doesn't store it).
+				if (state.renderTargets.depthStencil.texture.get())
+					key.depthStencilFormat = state.renderTargets.depthStencil.texture->getPixelFormat();
+			}
 
 			pipeline = shader->getCachedRenderPipeline(key);
 		}
