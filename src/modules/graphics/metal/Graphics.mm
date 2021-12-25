@@ -168,6 +168,23 @@ static inline void setBuffer(id<MTLRenderCommandEncoder> encoder, Graphics::Rend
 	}
 }
 
+static inline void setBuffer(id<MTLComputeCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, int index, id<MTLBuffer> buffer, size_t offset)
+{
+	void *b = (__bridge void *)buffer;
+	auto &binding = bindings.buffers[index][SHADERSTAGE_COMPUTE];
+	if (binding.buffer != b)
+	{
+		binding.buffer = b;
+		binding.offset = offset;
+		[encoder setBuffer:buffer offset:offset atIndex:index];
+	}
+	else if (binding.offset != offset)
+	{
+		binding.offset = offset;
+		[encoder setBufferOffset:offset atIndex:index];
+	}
+}
+
 static inline void setTexture(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, id<MTLTexture> texture)
 {
 	void *t = (__bridge void *)texture;
@@ -182,6 +199,17 @@ static inline void setTexture(id<MTLRenderCommandEncoder> encoder, Graphics::Ren
 	}
 }
 
+static inline void setTexture(id<MTLComputeCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, int index, id<MTLTexture> texture)
+{
+	void *t = (__bridge void *)texture;
+	auto &binding = bindings.textures[index][SHADERSTAGE_COMPUTE];
+	if (binding != t)
+	{
+		binding = t;
+		[encoder setTexture:texture atIndex:index];
+	}
+}
+
 static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, id<MTLSamplerState> sampler)
 {
 	void *s = (__bridge void *)sampler;
@@ -193,6 +221,17 @@ static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::Ren
 			[encoder setVertexSamplerState:sampler atIndex:index];
 		else if (stage == SHADERSTAGE_PIXEL)
 			[encoder setFragmentSamplerState:sampler atIndex:index];
+	}
+}
+
+static inline void setSampler(id<MTLComputeCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, int index, id<MTLSamplerState> sampler)
+{
+	void *s = (__bridge void *)sampler;
+	auto &binding = bindings.samplers[index][SHADERSTAGE_COMPUTE];
+	if (binding != s)
+	{
+		binding = s;
+		[encoder setSamplerState:sampler atIndex:index];
 	}
 }
 
@@ -662,6 +701,7 @@ id<MTLComputeCommandEncoder> Graphics::useComputeEncoder()
 		submitRenderEncoder(SUBMIT_STORE);
 		submitBlitEncoder();
 		computeEncoder = [useCommandBuffer() computeCommandEncoder];
+		renderBindings = {};
 	}
 
 	return computeEncoder;
@@ -893,6 +933,63 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		[encoder setStencilReferenceValue:state.stencil.value];
 
 	dirtyRenderState = 0;
+}
+
+void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader)
+{
+	Shader *s = (Shader *)shader;
+
+#ifdef LOVE_MACOS
+	size_t alignment = 256;
+#else
+	size_t alignment = 16;
+#endif
+
+	size_t size = s->getLocalUniformBufferSize();
+	uint8 *bufferdata = s->getLocalUniformBufferData();
+
+	if (uniformBuffer->getSize() < uniformBufferOffset + size)
+	{
+		size_t newsize = uniformBuffer->getSize() * 2;
+		uniformBuffer->release();
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBufferData = {};
+		uniformBufferOffset = 0;
+	}
+
+	if (uniformBufferData.data == nullptr)
+		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+
+	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
+
+	id<MTLBuffer> buffer = getMTLBuffer(uniformBuffer);
+	int uniformindex = Shader::getUniformBufferBinding();
+
+	auto &bindings = renderBindings;
+	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferOffset);
+
+	uniformBufferOffset += alignUp(size, alignment);
+
+	for (const Shader::TextureBinding &b : s->getTextureBindings())
+	{
+		id<MTLTexture> texture = b.texture;
+		id<MTLSamplerState> sampler = b.sampler;
+
+		uint8 texindex = b.textureStages[SHADERSTAGE_COMPUTE];
+		uint8 sampindex = b.samplerStages[SHADERSTAGE_COMPUTE];
+
+		if (texindex != LOVE_UINT8_MAX)
+			setTexture(encoder, bindings, texindex, texture);
+		if (sampindex != LOVE_UINT8_MAX)
+			setSampler(encoder, bindings, sampindex, sampler);
+	}
+
+	for (const Shader::BufferBinding &b : s->getBufferBindings())
+	{
+		uint8 index = b.stages[SHADERSTAGE_COMPUTE];
+		if (index != LOVE_UINT8_MAX)
+			setBuffer(encoder, bindings, index, b.buffer, 0);
+	}
 }
 
 void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, love::graphics::Texture *maintex)
@@ -1178,8 +1275,27 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 bool Graphics::dispatch(int x, int y, int z)
 { @autoreleasepool {
-	// TODO
-	return false;
+	// Set by higher level code before calling dispatch(x, y, z).
+	auto shader = (Shader *) Shader::current;
+
+	int tX, tY, tZ;
+	shader->getLocalThreadgroupSize(&tX, &tY, &tZ);
+
+	id<MTLComputePipelineState> pipeline = shader->getComputePipeline();
+	if (pipeline == nil)
+		return false;
+
+	id<MTLComputeCommandEncoder> computeEncoder = useComputeEncoder();
+
+	applyShaderUniforms(computeEncoder, shader);
+
+	// TODO: track this state?
+	[computeEncoder setComputePipelineState:pipeline];
+
+	[computeEncoder dispatchThreadgroups:MTLSizeMake(x, y, z)
+				   threadsPerThreadgroup:MTLSizeMake(tX, tY, tZ)];
+
+	return true;
 }}
 
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)

@@ -107,6 +107,7 @@ public:
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 	id<MTLRenderPipelineState> getCachedRenderPipeline(const RenderPipelineKey &key);
+	id<MTLComputePipelineState> getComputePipeline() const { return computePipeline; }
 
 	static int getUniformBufferBinding();
 	const std::vector<TextureBinding> &getTextureBindings() const { return textureBindings; }
@@ -144,6 +145,7 @@ private:
 	std::vector<BufferBinding> bufferBindings;
 
 	std::unordered_map<RenderPipelineKey, const void *, RenderPipelineHasher> cachedRenderPipelines;
+	id<MTLComputePipelineState> computePipeline;
 
 }; // Metal
 

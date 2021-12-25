@@ -347,6 +347,27 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 	}
 
 	cleanup();
+
+	if (functions[SHADERSTAGE_COMPUTE] != nil)
+	{
+		MTLComputePipelineDescriptor *desc = [MTLComputePipelineDescriptor new];
+		desc.computeFunction = functions[SHADERSTAGE_COMPUTE];
+
+		// TODO: threadGroupSizeIsMultipleOfThreadExecutionWidth
+
+		NSError *err = nil;
+		computePipeline = [device newComputePipelineStateWithDescriptor:desc
+																options:MTLPipelineOptionNone
+															 reflection:nil
+																  error:&err];
+		if (computePipeline == nil)
+		{
+			if (err != nil)
+				throw love::Exception("Error creating compute shader pipeline: %s", err.localizedDescription.UTF8String);
+			else
+				throw love::Exception("Error creating compute shader pipeline.");
+		}
+	}
 }}
 
 void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program)
