@@ -1,5 +1,6 @@
 /*
  * Copyright 2018-2021 Arm Limited
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +19,6 @@
  * At your option, you may choose to accept this material under either:
  *  1. The Apache License, Version 2.0, found at <http://www.apache.org/licenses/LICENSE-2.0>, or
  *  2. The MIT License, found at <http://opensource.org/licenses/MIT>.
- * SPDX-License-Identifier: Apache-2.0 OR MIT.
  */
 
 #include "spirv_cross_parsed_ir.hpp"
@@ -83,6 +83,7 @@ ParsedIR &ParsedIR::operator=(ParsedIR &&other) SPIRV_CROSS_NOEXCEPT
 		loop_iteration_depth_soft = other.loop_iteration_depth_soft;
 
 		meta_needing_name_fixup = std::move(other.meta_needing_name_fixup);
+		load_type_width = std::move(other.load_type_width);
 	}
 	return *this;
 }
@@ -115,7 +116,9 @@ ParsedIR &ParsedIR::operator=(const ParsedIR &other)
 		addressing_model = other.addressing_model;
 		memory_model = other.memory_model;
 
+
 		meta_needing_name_fixup = other.meta_needing_name_fixup;
+		load_type_width = other.load_type_width;
 
 		// Very deliberate copying of IDs. There is no default copy constructor, nor a simple default constructor.
 		// Construct object first so we have the correct allocator set-up, then we can copy object into our new pool group.
