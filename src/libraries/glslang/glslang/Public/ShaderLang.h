@@ -163,6 +163,7 @@ typedef enum {
 } EShTargetLanguage;
 
 typedef enum {
+    EShTargetUniversal = 0,                           // Universal
     EShTargetVulkan_1_0 = (1 << 22),                  // Vulkan 1.0
     EShTargetVulkan_1_1 = (1 << 22) | (1 << 12),      // Vulkan 1.1
     EShTargetVulkan_1_2 = (1 << 22) | (2 << 12),      // Vulkan 1.2
@@ -179,7 +180,8 @@ typedef enum {
     EShTargetSpv_1_3 = (1 << 16) | (3 << 8),          // SPIR-V 1.3
     EShTargetSpv_1_4 = (1 << 16) | (4 << 8),          // SPIR-V 1.4
     EShTargetSpv_1_5 = (1 << 16) | (5 << 8),          // SPIR-V 1.5
-    LAST_ELEMENT_MARKER(EShTargetLanguageVersionCount = 6),
+    EShTargetSpv_1_6 = (1 << 16) | (6 << 8),          // SPIR-V 1.6
+    LAST_ELEMENT_MARKER(EShTargetLanguageVersionCount = 7),
 } EShTargetLanguageVersion;
 
 struct TInputLanguage {
@@ -485,6 +487,7 @@ public:
     GLSLANG_EXPORT void addUniformLocationOverride(const char* name, int loc);
     GLSLANG_EXPORT void setUniformLocationBase(int base);
     GLSLANG_EXPORT void setInvertY(bool invert);
+    GLSLANG_EXPORT void setDxPositionW(bool dxPosW);
 #ifdef ENABLE_HLSL
     GLSLANG_EXPORT void setHlslIoMapping(bool hlslIoMap);
     GLSLANG_EXPORT void setFlattenUniformArrays(bool flatten);
@@ -508,7 +511,7 @@ public:
     //
     // setEnvInput:    The input source language and stage. If generating code for a
     //                 specific client, the input client semantics to use and the
-    //                 version of the that client's input semantics to use, otherwise
+    //                 version of that client's input semantics to use, otherwise
     //                 use EShClientNone and version of 0, e.g. for validation mode.
     //                 Note 'version' does not describe the target environment,
     //                 just the version of the source dialect to compile under.
@@ -722,7 +725,7 @@ class TObjectReflection {
 public:
     GLSLANG_EXPORT TObjectReflection(const std::string& pName, const TType& pType, int pOffset, int pGLDefineType, int pSize, int pIndex);
 
-    GLSLANG_EXPORT const TType* getType() const { return type; }
+    const TType* getType() const { return type; }
     GLSLANG_EXPORT int getBinding() const;
     GLSLANG_EXPORT void dump() const;
     static TObjectReflection badReflection() { return TObjectReflection(); }

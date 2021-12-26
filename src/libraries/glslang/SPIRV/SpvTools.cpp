@@ -68,6 +68,26 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
         }
     case glslang::EShTargetVulkan_1_2:
         return spv_target_env::SPV_ENV_VULKAN_1_2;
+    case glslang::EShTargetUniversal:
+        switch (spvVersion.spv) {
+        case EShTargetSpv_1_0:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_0;
+        case EShTargetSpv_1_1:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_1;
+        case EShTargetSpv_1_2:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_2;
+        case EShTargetSpv_1_3:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_3;
+        case EShTargetSpv_1_4:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_4;
+        case EShTargetSpv_1_5:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_5;
+        case EShTargetSpv_1_6:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_6;
+        default:
+            logger->missingFunctionality("Target version for SPIRV-Tools validator");
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_6;
+        }
     default:
         break;
     }
@@ -207,6 +227,7 @@ void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector
     optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
     optimizer.RegisterPass(spvtools::CreateVectorDCEPass());
     optimizer.RegisterPass(spvtools::CreateDeadInsertElimPass());
+    optimizer.RegisterPass(spvtools::CreateInterpolateFixupPass());
     if (options->optimizeSize) {
         optimizer.RegisterPass(spvtools::CreateRedundancyEliminationPass());
     }

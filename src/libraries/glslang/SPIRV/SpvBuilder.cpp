@@ -427,6 +427,37 @@ Id Builder::makeCooperativeMatrixType(Id component, Id scope, Id rows, Id cols)
     return type->getResultId();
 }
 
+Id Builder::makeGenericType(spv::Op opcode, std::vector<spv::IdImmediate>& operands)
+{
+    // try to find it
+    Instruction* type;
+    for (int t = 0; t < (int)groupedTypes[opcode].size(); ++t) {
+        type = groupedTypes[opcode][t];
+        if (type->getNumOperands() != operands.size())
+            continue; // Number mismatch, find next
+
+        bool match = true;
+        for (int op = 0; match && op < operands.size(); ++op) {
+            match = (operands[op].isId ? type->getIdOperand(op) : type->getImmediateOperand(op)) == operands[op].word;
+        }
+        if (match)
+            return type->getResultId();
+    }
+
+    // not found, make it
+    type = new Instruction(getUniqueId(), NoType, opcode);
+    for (int op = 0; op < operands.size(); ++op) {
+        if (operands[op].isId)
+            type->addIdOperand(operands[op].word);
+        else
+            type->addImmediateOperand(operands[op].word);
+    }
+    groupedTypes[opcode].push_back(type);
+    constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
+    module.mapInstruction(type);
+
+    return type->getResultId();
+}
 
 // TODO: performance: track arrays per stride
 // If a stride is supplied (non-zero) make an array.
@@ -741,6 +772,26 @@ Id Builder::getContainedTypeId(Id typeId, int member) const
         assert(0);
         return NoResult;
     }
+}
+
+// Figure out the final resulting type of the access chain.
+Id Builder::getResultingAccessChainType() const
+{
+    assert(accessChain.base != NoResult);
+    Id typeId = getTypeId(accessChain.base);
+
+    assert(isPointerType(typeId));
+    typeId = getContainedTypeId(typeId);
+
+    for (int i = 0; i < (int)accessChain.indexChain.size(); ++i) {
+        if (isStructType(typeId)) {
+            assert(isConstantScalar(accessChain.indexChain[i]));
+            typeId = getContainedTypeId(typeId, getConstantScalar(accessChain.indexChain[i]));
+        } else
+            typeId = getContainedTypeId(typeId, accessChain.indexChain[i]);
+    }
+
+    return typeId;
 }
 
 // Return the immediately contained type of a given composite type.
@@ -1585,16 +1636,7 @@ Id Builder::createLoad(Id lValue, spv::Decoration precision, spv::MemoryAccessMa
 Id Builder::createAccessChain(StorageClass storageClass, Id base, const std::vector<Id>& offsets)
 {
     // Figure out the final resulting type.
-    spv::Id typeId = getTypeId(base);
-    assert(isPointerType(typeId) && offsets.size() > 0);
-    typeId = getContainedTypeId(typeId);
-    for (int i = 0; i < (int)offsets.size(); ++i) {
-        if (isStructType(typeId)) {
-            assert(isConstantScalar(offsets[i]));
-            typeId = getContainedTypeId(typeId, getConstantScalar(offsets[i]));
-        } else
-            typeId = getContainedTypeId(typeId, offsets[i]);
-    }
+    Id typeId = getResultingAccessChainType();
     typeId = makePointer(storageClass, typeId);
 
     // Make the instruction
@@ -2543,7 +2585,7 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
         int row = 0;
         int col = 0;
 
-        for (int arg = 0; arg < (int)sources.size(); ++arg) {
+        for (int arg = 0; arg < (int)sources.size() && col < numCols; ++arg) {
             Id argComp = sources[arg];
             for (int comp = 0; comp < getNumComponents(sources[arg]); ++comp) {
                 if (getNumComponents(sources[arg]) > 1) {
@@ -2554,6 +2596,10 @@ Id Builder::createMatrixConstructor(Decoration precision, const std::vector<Id>&
                 if (row == numRows) {
                     row = 0;
                     col++;
+                }
+                if (col == numCols) {
+                    // If more components are provided than fit the matrix, discard the rest.
+                    break;
                 }
             }
         }
@@ -2790,28 +2836,59 @@ void Builder::accessChainStore(Id rvalue, Decoration nonUniform, spv::MemoryAcce
     assert(accessChain.isRValue == false);
 
     transferAccessChainSwizzle(true);
-    Id base = collapseAccessChain();
-    addDecoration(base, nonUniform);
 
-    Id source = rvalue;
+    // If a swizzle exists and is not full and is not dynamic, then the swizzle will be broken into individual stores.
+    if (accessChain.swizzle.size() > 0 &&
+        getNumTypeComponents(getResultingAccessChainType()) != (int)accessChain.swizzle.size() &&
+        accessChain.component == NoResult) {
+        for (unsigned int i = 0; i < accessChain.swizzle.size(); ++i) {
+            accessChain.indexChain.push_back(makeUintConstant(accessChain.swizzle[i]));
+            accessChain.instr = NoResult;
 
-    // dynamic component should be gone
-    assert(accessChain.component == NoResult);
+            Id base = collapseAccessChain();
+            addDecoration(base, nonUniform);
 
-    // If swizzle still exists, it is out-of-order or not full, we must load the target vector,
-    // extract and insert elements to perform writeMask and/or swizzle.
-    if (accessChain.swizzle.size() > 0) {
-        Id tempBaseId = createLoad(base, spv::NoPrecision);
-        source = createLvalueSwizzle(getTypeId(tempBaseId), tempBaseId, source, accessChain.swizzle);
+            accessChain.indexChain.pop_back();
+            accessChain.instr = NoResult;
+
+            // dynamic component should be gone
+            assert(accessChain.component == NoResult);
+
+            Id source = createCompositeExtract(rvalue, getContainedTypeId(getTypeId(rvalue)), i);
+
+            // take LSB of alignment
+            alignment = alignment & ~(alignment & (alignment-1));
+            if (getStorageClass(base) == StorageClassPhysicalStorageBufferEXT) {
+                memoryAccess = (spv::MemoryAccessMask)(memoryAccess | spv::MemoryAccessAlignedMask);
+            }
+
+            createStore(source, base, memoryAccess, scope, alignment);
+        }
     }
+    else {
+        Id base = collapseAccessChain();
+        addDecoration(base, nonUniform);
 
-    // take LSB of alignment
-    alignment = alignment & ~(alignment & (alignment-1));
-    if (getStorageClass(base) == StorageClassPhysicalStorageBufferEXT) {
-        memoryAccess = (spv::MemoryAccessMask)(memoryAccess | spv::MemoryAccessAlignedMask);
+        Id source = rvalue;
+
+        // dynamic component should be gone
+        assert(accessChain.component == NoResult);
+
+        // If swizzle still exists, it may be out-of-order, we must load the target vector,
+        // extract and insert elements to perform writeMask and/or swizzle.
+        if (accessChain.swizzle.size() > 0) {
+            Id tempBaseId = createLoad(base, spv::NoPrecision);
+            source = createLvalueSwizzle(getTypeId(tempBaseId), tempBaseId, source, accessChain.swizzle);
+        }
+
+        // take LSB of alignment
+        alignment = alignment & ~(alignment & (alignment-1));
+        if (getStorageClass(base) == StorageClassPhysicalStorageBufferEXT) {
+            memoryAccess = (spv::MemoryAccessMask)(memoryAccess | spv::MemoryAccessAlignedMask);
+        }
+
+        createStore(source, base, memoryAccess, scope, alignment);
     }
-
-    createStore(source, base, memoryAccess, scope, alignment);
 }
 
 // Comments in header

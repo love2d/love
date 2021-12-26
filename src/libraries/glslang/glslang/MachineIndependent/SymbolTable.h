@@ -84,7 +84,7 @@ typedef TVector<const char*> TExtensionList;
 class TSymbol {
 public:
     POOL_ALLOCATOR_NEW_DELETE(GetThreadPoolAllocator())
-    explicit TSymbol(const TString *n) :  name(n), extensions(0), writable(true) { }
+    explicit TSymbol(const TString *n) :  name(n), uniqueId(0), extensions(0), writable(true) { }
     virtual TSymbol* clone() const = 0;
     virtual ~TSymbol() { }  // rely on all symbol owned memory coming from the pool
 
@@ -319,6 +319,15 @@ public:
     virtual TParameter& operator[](int i) { assert(writable); return parameters[i]; }
     virtual const TParameter& operator[](int i) const { return parameters[i]; }
 
+#ifndef GLSLANG_WEB
+    virtual void setSpirvInstruction(const TSpirvInstruction& inst)
+    {
+        relateToOperator(EOpSpirvInst);
+        spirvInst = inst;
+    }
+    virtual const TSpirvInstruction& getSpirvInstruction() const { return spirvInst; }
+#endif
+
 #if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
     virtual void dump(TInfoSink& infoSink, bool complete = false) const override;
 #endif
@@ -342,6 +351,10 @@ protected:
                                // This is important for a static member function that has member variables in scope,
                                // but is not allowed to use them, or see hidden symbols instead.
     int  defaultParamCount;
+
+#ifndef GLSLANG_WEB
+    TSpirvInstruction spirvInst; // SPIR-V instruction qualifiers
+#endif
 };
 
 //
@@ -400,13 +413,20 @@ public:
     TSymbolTableLevel() : defaultPrecision(0), anonId(0), thisLevel(false) { }
     ~TSymbolTableLevel();
 
-    bool insert(TSymbol& symbol, bool separateNameSpaces)
+    bool insert(const TString& name, TSymbol* symbol) {
+        return level.insert(tLevelPair(name, symbol)).second;
+    }
+
+    bool insert(TSymbol& symbol, bool separateNameSpaces, const TString& forcedKeyName = TString())
     {
         //
         // returning true means symbol was added to the table with no semantic errors
         //
         const TString& name = symbol.getName();
-        if (name == "") {
+        if (forcedKeyName.length()) {
+            return level.insert(tLevelPair(forcedKeyName, &symbol)).second;
+        }
+        else if (name == "") {
             symbol.getAsVariable()->setAnonId(anonId++);
             // An empty name means an anonymous container, exposing its members to the external scope.
             // Give it a name and insert its members in the symbol table, pointing to the container.
@@ -456,6 +476,16 @@ public:
         }
 
         return true;
+    }
+
+    void retargetSymbol(const TString& from, const TString& to) {
+        tLevel::const_iterator fromIt = level.find(from);
+        tLevel::const_iterator toIt = level.find(to);
+        if (fromIt == level.end() || toIt == level.end())
+            return;
+        delete fromIt->second;
+        level[from] = toIt->second;
+        retargetedSymbols.push_back({from, to});
     }
 
     TSymbol* find(const TString& name) const
@@ -570,6 +600,8 @@ protected:
 
     tLevel level;  // named mappings
     TPrecisionQualifier *defaultPrecision;
+    // pair<FromName, ToName>
+    TVector<std::pair<TString, TString>> retargetedSymbols;
     int anonId;
     bool thisLevel;  // True if this level of the symbol table is a structure scope containing member function
                      // that are supposed to see anonymous access to member variables.
@@ -774,6 +806,12 @@ public:
 
         return symbol;
     }
+
+    void retargetSymbol(const TString& from, const TString& to) {
+        int level = currentLevel();
+        table[level]->retargetSymbol(from, to);
+    }
+
 
     // Find of a symbol that returns how many layers deep of nested
     // structures-with-member-functions ('this' scopes) deep the symbol was
