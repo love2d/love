@@ -469,6 +469,12 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	metalLayer.device = device;
 	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
 
+	// Explicitly turn off color matching, for now (eg don't make sRGB content
+	// appear correct on P3 displays). It looks better with color matching, but
+	// having it off matches the OpenGL backend and there's some cost to it.
+	// TODO: revisit this?
+	metalLayer.colorspace = nil;
+
 	// This is set to NO when there are pending screen captures.
 	metalLayer.framebufferOnly = YES;
 
