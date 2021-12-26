@@ -361,18 +361,13 @@ Graphics::Graphics()
 	{
 		window->setGraphics(this);
 
+		// Recreate the window using the current renderer, if needed.
 		if (window->isOpen())
 		{
 			int w, h;
 			love::window::WindowSettings settings;
 			window->getWindow(w, h, settings);
-
-			double dpiW = w;
-			double dpiH = h;
-			window->windowToDPICoords(&dpiW, &dpiH);
-
-			void *context = nullptr; // TODO
-			setMode(context, (int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), settings.stencil, settings.depth);
+			window->setWindow(w, h, &settings);
 		}
 	}
 }}

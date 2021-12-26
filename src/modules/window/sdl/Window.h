@@ -172,6 +172,8 @@ private:
 	SDL_MetalView metalView;
 #endif
 
+	graphics::Graphics::Renderer windowRenderer = graphics::Graphics::RENDERER_NONE;
+
 	bool displayedWindowError;
 	bool hasSDL203orEarlier;
 	ContextAttribs contextAttribs;

@@ -552,6 +552,9 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		}
 	}
 
+	if (renderer != windowRenderer && isOpen())
+		close();
+
 	if (isOpen())
 	{
 		if (SDL_SetWindowFullscreen(window, sdlflags) == 0 && renderer == graphics::Graphics::RENDERER_OPENGL)
@@ -612,6 +615,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	setVSync(f.vsync);
 
 	updateSettings(f, false);
+
+	windowRenderer = renderer;
 
 	if (graphics.get())
 	{
