@@ -54,15 +54,17 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 When using a source release, automagic has already been run, and the first step can be skipped.
 
 ### macOS
-Download or clone [this repository][dependencies-macos] and place the Frameworks subfolder in love's `platform/xcode/macosx/` folder.
+Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
 ### iOS
 Building for iOS requires macOS and Xcode.
 
-Download the `ios-libraries` zip file corresponding to the LÖVE version being used from [here][dependencies-ios],
-unzip it, and place the `include` and `libraries` subfolders into LÖVE's `platform/xcode/ios` folder.
+Download the `ios-libraries` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
+unzip it, and place the `include` and `libraries` subfolders into love's `platform/xcode/ios` folder.
+
+Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/include` and `iOS/libraries` subfolders into love's `platform/xcode/ios` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
@@ -89,7 +91,7 @@ Dependencies
 [forums]: https://love2d.org/forums
 [discord]: https://discord.gg/rhUets9
 [irc]: irc://irc.oftc.net/love
-[dependencies-macos]: https://github.com/slime73/love-apple-dependencies
+[dependencies-apple]: https://github.com/love2d/love-apple-dependencies
 [dependencies-ios]: https://github.com/love2d/love/releases
 [megasource]: https://github.com/love2d/megasource
 [unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
