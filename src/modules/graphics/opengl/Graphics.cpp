@@ -1639,7 +1639,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
-	capabilities.features[FEATURE_COPY_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_COPY_SOURCE);
+	capabilities.features[FEATURE_COPY_BUFFER] = gl.isCopyBufferSupported();
 	static_assert(FEATURE_MAX_ENUM == 12, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
