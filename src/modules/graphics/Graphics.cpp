@@ -1058,14 +1058,11 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (!capabilities.features[FEATURE_COPY_BUFFER])
 		throw love::Exception("Buffer copying is not supported on this system.");
 
-	if (!(source->getUsageFlags() & BUFFERUSAGEFLAG_COPY_SOURCE))
-		throw love::Exception("Copy source buffer must be created with the copysource flag.");
-
-	if (!(dest->getUsageFlags() & BUFFERUSAGEFLAG_COPY_DEST))
-		throw love::Exception("Copy destination buffer must be created with the copydest flag.");
-
 	Range sourcerange(sourceoffset, size);
 	Range destrange(destoffset, size);
+
+	if (dest->getDataUsage() == BUFFERDATAUSAGE_STREAM)
+		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
 
 	if (sourcerange.getMax() >= source->getSize())
 		throw love::Exception("Buffer copy source offset and size doesn't fit within the source Buffer's size.");

@@ -497,8 +497,7 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 		if (usage & BUFFERUSAGEFLAG_VERTEX)
 			postDispatchBarriers |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
 
-		if (usage & (BUFFERUSAGEFLAG_COPY_SOURCE | BUFFERUSAGEFLAG_COPY_DEST))
-			postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
+		postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
 	}
 
 	for (const auto &binding : shader->getStorageTextureBindings())

@@ -371,6 +371,7 @@ public:
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
 	bool isMultiFormatMRTSupported() const;
+	bool isCopyBufferSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.

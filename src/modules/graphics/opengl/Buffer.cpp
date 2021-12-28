@@ -80,10 +80,6 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 		mapUsage = BUFFERUSAGE_INDEX;
 	else  if (usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE)
 		mapUsage = BUFFERUSAGE_SHADER_STORAGE;
-	else if (usageFlags & BUFFERUSAGEFLAG_COPY_SOURCE)
-		mapUsage = BUFFERUSAGE_COPY_SOURCE;
-	else if (usageFlags & BUFFERUSAGEFLAG_COPY_DEST)
-		mapUsage = BUFFERUSAGE_COPY_DEST;
 
 	target = OpenGL::getGLBufferType(mapUsage);
 
@@ -261,8 +257,9 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
 {
-	gl.bindBuffer(BUFFERUSAGE_COPY_SOURCE, buffer);
-	gl.bindBuffer(BUFFERUSAGE_COPY_DEST, ((Buffer *) dest)->buffer);
+	// TODO: tracked state for these bind types?
+	glBindBuffer(GL_COPY_READ_BUFFER, buffer);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, ((Buffer *) dest)->buffer);
 
 	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, sourceoffset, destoffset, size);
 }
