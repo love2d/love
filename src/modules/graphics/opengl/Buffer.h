@@ -70,8 +70,8 @@ private:
 	// A pointer to mapped memory.
 	char *memory_map;
 
-	size_t modified_offset;
-	size_t modified_size;
+	size_t modified_start;
+	size_t modified_end;
 
 }; // Buffer
 
