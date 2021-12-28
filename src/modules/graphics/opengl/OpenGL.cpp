@@ -842,6 +842,8 @@ GLenum OpenGL::getGLBufferDataUsage(BufferDataUsage usage)
 		case BUFFERDATAUSAGE_STREAM: return GL_STREAM_DRAW;
 		case BUFFERDATAUSAGE_DYNAMIC: return GL_DYNAMIC_DRAW;
 		case BUFFERDATAUSAGE_STATIC: return GL_STATIC_DRAW;
+		case BUFFERDATAUSAGE_STAGING:
+			return (GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0) ? GL_STREAM_READ : GL_STREAM_DRAW;
 		default: return 0;
 	}
 }
