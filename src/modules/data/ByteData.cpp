@@ -42,7 +42,8 @@ ByteData::ByteData(const void *d, size_t size)
 	: size(size)
 {
 	create();
-	memcpy(data, d, size);
+	if (d != nullptr)
+		memcpy(data, d, size);
 }
 
 ByteData::ByteData(void *d, size_t size, bool own)
@@ -53,7 +54,8 @@ ByteData::ByteData(void *d, size_t size, bool own)
 	else
 	{
 		create();
-		memcpy(data, d, size);
+		if (d != nullptr)
+			memcpy(data, d, size);
 	}
 }
 

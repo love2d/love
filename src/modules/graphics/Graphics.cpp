@@ -1076,6 +1076,169 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	source->copyTo(dest, sourceoffset, destoffset, size);
 }
 
+void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth)
+{
+	if (!capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER])
+	{
+		if (!source->isRenderTarget())
+			throw love::Exception("Copying a non-render target Texture to a Buffer is not supported on this system.");
+
+		if (!capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER])
+			throw love::Exception("Copying a render target Texture to a Buffer is not supported on this system.");
+	}
+
+	PixelFormat format = source->getPixelFormat();
+
+	if (isPixelFormatDepthStencil(format))
+		throw love::Exception("Copying a depth/stencil Texture to a Buffer is not supported.");
+
+	if (!source->isReadable())
+		throw love::Exception("copyTextureToBuffer can only be called on readable Textures.");
+
+	if (dest->getDataUsage() == BUFFERDATAUSAGE_STREAM)
+		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
+
+	if (isRenderTargetActive(source))
+		throw love::Exception("copyTextureToBuffer cannot be called while the Texture is an active render target.");
+
+	if (mipmap < 0 || mipmap >= source->getMipmapCount())
+		throw love::Exception("Invalid texture mipmap index %d.", mipmap + 1);
+
+	TextureType textype = source->getTextureType();
+	if (slice < 0 || (textype == TEXTURE_CUBE && slice >= 6)
+		|| (textype == TEXTURE_VOLUME && slice >= source->getDepth(mipmap))
+		|| (textype == TEXTURE_2D_ARRAY && slice >= source->getLayerCount()))
+	{
+		throw love::Exception("Invalid texture slice index %d.", slice + 1);
+	}
+
+	int mipw = source->getPixelWidth(mipmap);
+	int miph = source->getPixelHeight(mipmap);
+
+	if (rect.x < 0 || rect.y < 0 || rect.w <= 0 || rect.h <= 0
+		|| (rect.x + rect.w) > mipw || (rect.y + rect.h) > miph)
+	{
+		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d texture.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
+	}
+
+	if (destwidth <= 0)
+		destwidth = rect.w;
+
+	size_t size = 0;
+
+	if (isPixelFormatCompressed(format))
+	{
+		if (destwidth != rect.w) // OpenGL limitation...
+			throw love::Exception("Copying a compressed texture to a buffer cannot use a custom destination width.");
+
+		const PixelFormatInfo &info = getPixelFormatInfo(format);
+		int bw = (int) info.blockWidth;
+		int bh = (int) info.blockHeight;
+		if (rect.x % bw != 0 || rect.y % bh != 0 ||
+			((rect.w % bw != 0 || rect.h % bh != 0) && rect.x + rect.w != source->getPixelWidth(mipmap)))
+		{
+			const char *name = nullptr;
+			love::getConstant(format, name);
+			throw love::Exception("Compressed texture format %s only supports copying a sub-rectangle with offset and dimensions that are a multiple of %d x %d.", name, bw, bh);
+		}
+
+		// Note: this will need to change if destwidth == rect.w restriction
+		// is removed.
+		size = getPixelFormatSliceSize(format, destwidth, rect.h);
+	}
+	else
+	{
+		// Not the cleanest, but should work since uncompressed formats always
+		// have 1x1 blocks.
+		int pixels = (rect.h - 1) * destwidth + rect.w;
+		size = getPixelFormatUncompressedRowSize(format, pixels);
+	}
+
+	Range destrange(destoffset, size);
+
+	if (destrange.getMax() >= dest->getSize())
+		throw love::Exception("Buffer copy destination offset and width/height doesn't fit within the destination Buffer.");
+
+	source->copyToBuffer(dest, slice, mipmap, rect, destoffset, destwidth, size);
+}
+
+void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceoffset, int sourcewidth, int slice, int mipmap, const Rect &rect)
+{
+	if (!capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE])
+		throw love::Exception("Copying a Buffer to a Texture is not supported on this system.");
+
+	PixelFormat format = dest->getPixelFormat();
+
+	if (isPixelFormatDepthStencil(format))
+		throw love::Exception("Copying a Buffer to a depth/stencil Texture is not supported.");
+
+	if (!dest->isReadable())
+		throw love::Exception("copyBufferToTexture can only be called on readable Textures.");
+
+	if (isRenderTargetActive(dest))
+		throw love::Exception("copyBufferToTexture cannot be called while the Texture is an active render target.");
+
+	if (mipmap < 0 || mipmap >= dest->getMipmapCount())
+		throw love::Exception("Invalid texture mipmap index %d.", mipmap + 1);
+
+	TextureType textype = dest->getTextureType();
+	if (slice < 0 || (textype == TEXTURE_CUBE && slice >= 6)
+		|| (textype == TEXTURE_VOLUME && slice >= dest->getDepth(mipmap))
+		|| (textype == TEXTURE_2D_ARRAY && slice >= dest->getLayerCount()))
+	{
+		throw love::Exception("Invalid texture slice index %d.", slice + 1);
+	}
+
+	int mipw = dest->getPixelWidth(mipmap);
+	int miph = dest->getPixelHeight(mipmap);
+
+	if (rect.x < 0 || rect.y < 0 || rect.w <= 0 || rect.h <= 0
+		|| (rect.x + rect.w) > mipw || (rect.y + rect.h) > miph)
+	{
+		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d texture.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
+	}
+
+	if (sourcewidth <= 0)
+		sourcewidth = rect.w;
+
+	size_t size = 0;
+
+	if (isPixelFormatCompressed(format))
+	{
+		if (sourcewidth != rect.w) // OpenGL limitation...
+			throw love::Exception("Copying a buffer to a compressed texture cannot use a custom source width.");
+
+		const PixelFormatInfo &info = getPixelFormatInfo(format);
+		int bw = (int) info.blockWidth;
+		int bh = (int) info.blockHeight;
+		if (rect.x % bw != 0 || rect.y % bh != 0 ||
+			((rect.w % bw != 0 || rect.h % bh != 0) && rect.x + rect.w != dest->getPixelWidth(mipmap)))
+		{
+			const char *name = nullptr;
+			love::getConstant(format, name);
+			throw love::Exception("Compressed texture format %s only supports copying a sub-rectangle with offset and dimensions that are a multiple of %d x %d.", name, bw, bh);
+		}
+
+		// Note: this will need to change if sourcewidth == rect.w restriction
+		// is removed.
+		size = getPixelFormatSliceSize(format, sourcewidth, rect.h);
+	}
+	else
+	{
+		// Not the cleanest, but should work since uncompressed formats always
+		// have 1x1 blocks.
+		int pixels = (rect.h - 1) * sourcewidth + rect.w;
+		size = getPixelFormatUncompressedRowSize(format, pixels);
+	}
+
+	Range sourcerange(sourceoffset, size);
+
+	if (sourcerange.getMax() >= source->getSize())
+		throw love::Exception("Buffer copy source offset and width/height doesn't fit within the source Buffer.");
+
+	dest->copyFromBuffer(source, sourceoffset, sourcewidth, size, slice, mipmap, rect);
+}
+
 void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
 {
 	if (!shader->hasStage(SHADERSTAGE_COMPUTE))
@@ -1907,6 +2070,9 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "instancing",               Graphics::FEATURE_INSTANCING           },
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
 	{ "copybuffer",               Graphics::FEATURE_COPY_BUFFER          },
+	{ "copybuffertotexture",      Graphics::FEATURE_COPY_BUFFER_TO_TEXTURE },
+	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
+	{ "copyrendertargettobuffer", Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 

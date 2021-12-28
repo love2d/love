@@ -3353,6 +3353,70 @@ int w_copyBuffer(lua_State *L)
 	return 0;
 }
 
+int w_copyBufferToTexture(lua_State *L)
+{
+	Buffer *source = luax_checkbuffer(L, 1);
+	Texture *dest = luax_checktexture(L, 2);
+
+	ptrdiff_t sourceoffset = luaL_optinteger(L, 3, 0);
+	if (sourceoffset < 0)
+		return luaL_error(L, "copyBufferToTexture source offset cannot be negative.");
+
+	int sourcewidth = (int) luaL_optinteger(L, 4, 0);
+
+	int slice = 0;
+	int mipmap = 0;
+
+	if (dest->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 5) - 1;
+
+	mipmap = (int) luaL_optinteger(L, 6, 1) - 1;
+
+	Rect rect = {0, 0, dest->getPixelWidth(mipmap), dest->getPixelHeight(mipmap)};
+	if (!lua_isnoneornil(L, 7))
+	{
+		rect.x = (int) luaL_checkinteger(L, 7);
+		rect.y = (int) luaL_checkinteger(L, 8);
+		rect.w = (int) luaL_checkinteger(L, 9);
+		rect.h = (int) luaL_checkinteger(L, 10);
+	}
+
+	luax_catchexcept(L, [&](){ instance()->copyBufferToTexture(source, dest, sourceoffset, sourcewidth, slice, mipmap, rect); });
+	return 0;
+}
+
+int w_copyTextureToBuffer(lua_State *L)
+{
+	Texture *source = luax_checktexture(L, 1);
+	Buffer *dest = luax_checkbuffer(L, 2);
+
+	int slice = 0;
+	int mipmap = 0;
+
+	if (source->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 3) - 1;
+
+	mipmap = (int) luaL_optinteger(L, 4, 1) - 1;
+
+	Rect rect = {0, 0, source->getPixelWidth(mipmap), source->getPixelHeight(mipmap)};
+	if (!lua_isnoneornil(L, 5))
+	{
+		rect.x = (int) luaL_checkinteger(L, 5);
+		rect.y = (int) luaL_checkinteger(L, 6);
+		rect.w = (int) luaL_checkinteger(L, 7);
+		rect.h = (int) luaL_checkinteger(L, 8);
+	}
+
+	ptrdiff_t destoffset = luaL_optinteger(L, 9, 0);
+	if (destoffset < 0)
+		return luaL_error(L, "copyTextureToBuffer dest offset cannot be negative.");
+
+	int destwidth = (int) luaL_optinteger(L, 10, 0);
+
+	luax_catchexcept(L, [&](){ instance()->copyTextureToBuffer(source, dest, slice, mipmap, rect, destoffset, destwidth); });
+	return 0;
+}
+
 int w_flushBatch(lua_State *)
 {
 	instance()->flushBatchedDraws();
@@ -3553,6 +3617,8 @@ static const luaL_Reg functions[] =
 	{ "dispatchThreadgroups", w_dispatchThreadgroups },
 
 	{ "copyBuffer", w_copyBuffer },
+	{ "copyBufferToTexture", w_copyBufferToTexture },
+	{ "copyTextureToBuffer", w_copyTextureToBuffer },
 
 	{ "isCreated", w_isCreated },
 	{ "isActive", w_isActive },

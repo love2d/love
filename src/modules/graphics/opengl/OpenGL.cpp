@@ -1530,6 +1530,24 @@ bool OpenGL::isCopyBufferSupported() const
 	return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_0;
 }
 
+bool OpenGL::isCopyBufferToTextureSupported() const
+{
+	// Requires pixel unpack buffer binding support.
+	return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0;
+}
+
+bool OpenGL::isCopyTextureToBufferSupported() const
+{
+	// Requires glGetTextureSubImage support.
+	return GLAD_VERSION_4_5;
+}
+
+bool OpenGL::isCopyRenderTargetToBufferSupported() const
+{
+	// Requires pixel pack buffer binding support.
+	return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0;
+}
+
 int OpenGL::getMax2DTextureSize() const
 {
 	return std::max(max2DTextureSize, 1);

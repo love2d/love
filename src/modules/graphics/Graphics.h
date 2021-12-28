@@ -145,6 +145,9 @@ public:
 		FEATURE_INSTANCING,
 		FEATURE_TEXEL_BUFFER,
 		FEATURE_COPY_BUFFER,
+		FEATURE_COPY_BUFFER_TO_TEXTURE,
+		FEATURE_COPY_TEXTURE_TO_BUFFER,
+		FEATURE_COPY_RENDER_TARGET_TO_BUFFER,
 		FEATURE_MAX_ENUM
 	};
 
@@ -674,6 +677,8 @@ public:
 	void captureScreenshot(const ScreenshotInfo &info);
 
 	void copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size);
+	void copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth);
+	void copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceoffset, int sourcewidth, int slice, int mipmap, const Rect &rect);
 
 	void dispatchThreadgroups(Shader* shader, int x, int y, int z);
 

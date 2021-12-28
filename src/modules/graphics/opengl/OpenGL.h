@@ -372,6 +372,9 @@ public:
 	bool isBaseVertexSupported() const;
 	bool isMultiFormatMRTSupported() const;
 	bool isCopyBufferSupported() const;
+	bool isCopyBufferToTextureSupported() const;
+	bool isCopyTextureToBufferSupported() const;
+	bool isCopyRenderTargetToBufferSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.

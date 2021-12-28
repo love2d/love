@@ -22,6 +22,7 @@
 
 #include "graphics/Graphics.h"
 #include "Graphics.h"
+#include "Buffer.h"
 #include "common/int.h"
 
 // STD
@@ -522,6 +523,75 @@ void Texture::readbackImageData(love::image::ImageData *data, int slice, int mip
 		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
 
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+}
+
+void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
+{
+	// Higher level code does validation.
+
+	GLuint glbuffer = (GLuint) source->getHandle();
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glbuffer);
+
+	if (!isCompressed()) // Not supported in GL with compressed textures...
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, sourcewidth);
+
+	// glTexSubImage and friends copy from the active pixel_unpack_buffer by
+	// treating the pointer as a byte offset.
+	const uint8 *byteoffset = (const uint8 *)(ptrdiff_t)sourceoffset;
+	uploadByteData(format, byteoffset, size, mipmap, slice, rect);
+
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
+{
+	// Higher level code does validation.
+
+	GLuint glbuffer = (GLuint) dest->getHandle();
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, glbuffer);
+
+	if (!isCompressed()) // Not supported in GL with compressed textures...
+		glPixelStorei(GL_PACK_ROW_LENGTH, destwidth);
+
+	gl.bindTextureToUnit(this, 0, false);
+
+	bool isSRGB = false;
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, isSRGB);
+
+	// glTexSubImage and friends copy from the active pixel_unpack_buffer by
+	// treating the pointer as a byte offset.
+	uint8 *byteoffset = (uint8 *)(ptrdiff_t)destoffset;
+
+	if (GLAD_VERSION_4_5)
+	{
+		if (isCompressed())
+			glGetCompressedTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, size, byteoffset);
+		else
+			glGetTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, fmt.externalformat, fmt.type, size, byteoffset);
+	}
+	else if (fbo)
+	{
+		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
+
+		if (slice > 0 || mipmap > 0)
+		{
+			int layer = texType == TEXTURE_CUBE ? 0 : slice;
+			int face = texType == TEXTURE_CUBE ? slice : 0;
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, mipmap, layer, face);
+		}
+
+		glReadPixels(rect.x, rect.y, rect.w, rect.h, fmt.externalformat, fmt.type, byteoffset);
+
+		if (slice > 0 || mipmap > 0)
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
+
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+	}
+
+	glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
 void Texture::setSamplerState(const SamplerState &s)
