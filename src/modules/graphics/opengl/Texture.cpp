@@ -563,7 +563,7 @@ void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, 
 	// treating the pointer as a byte offset.
 	uint8 *byteoffset = (uint8 *)(ptrdiff_t)destoffset;
 
-	if (GLAD_VERSION_4_5)
+	if (gl.isCopyTextureToBufferSupported())
 	{
 		if (isCompressed())
 			glGetCompressedTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, size, byteoffset);

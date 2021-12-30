@@ -1541,7 +1541,7 @@ bool OpenGL::isCopyBufferToTextureSupported() const
 bool OpenGL::isCopyTextureToBufferSupported() const
 {
 	// Requires glGetTextureSubImage support.
-	return GLAD_VERSION_4_5;
+	return GLAD_VERSION_4_5 || GLAD_ARB_get_texture_sub_image;
 }
 
 bool OpenGL::isCopyRenderTargetToBufferSupported() const
