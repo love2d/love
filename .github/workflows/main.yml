@@ -58,10 +58,15 @@ jobs:
       shell: cmd
       run: cmake --build build --config Release --target install -j2
     - name: Artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: love-windows-${{ matrix.platform }}
         path: install
+    - name: Artifact JIT Modules
+      uses: actions/upload-artifact@v2
+      with:
+        name: love-windows-jitmodules-${{ matrix.platform }}
+        path: build/libs/LuaJIT/src/jit/*.lua
   macOS:
     runs-on: macos-latest
     steps:
