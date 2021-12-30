@@ -108,7 +108,6 @@ jobs:
         ref: main
     - name: Move Dependencies
       run: |
-        mv apple-dependencies/iOS/include platform/xcode/ios
         mv apple-dependencies/iOS/libraries platform/xcode/ios
     - name: Build
       run:
