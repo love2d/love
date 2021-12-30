@@ -10,6 +10,7 @@ Released: N/A
 * Added support for r16, rg16, and rgba16 pixel formats in Canvases.
 * Added Shader:send(name, matrixlayout, data, ...) variant, whose argument order is more consistent than Shader:send(name, data, matrixlayout, ...).
 
+* Changed all builds and platforms where LOVE provides LuaJIT to use LuaJIT 2.1 instead of 2.0.
 * Changed love.timer.getTime to start at 0 when the module is first loaded.
 * Changed certain out-of-Lua-memory situations to show a message box instead of instantly crashing.
 * Changed the naming scheme of LOVE's embedded Lua files for improved integration with Lua chunkname APIs.
