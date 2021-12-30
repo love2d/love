@@ -730,7 +730,6 @@
 		FA56AA381FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
 		FA56AA391FAFF02000A43D5F /* memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA56AA361FAFF02000A43D5F /* memory.cpp */; };
 		FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */ = {isa = PBXBuildFile; fileRef = FA56AA371FAFF02000A43D5F /* memory.h */; };
-		FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */; };
 		FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7916C71A1700860150 /* Cocoa.framework */; };
 		FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A8216C71A5300860150 /* libmodplug.framework */; };
 		FA577AC816C7513C00860150 /* ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA577A7116C719F400860150 /* ogg.framework */; };
@@ -740,10 +739,6 @@
 		FA57FB991AE1993600F2AD6D /* noise1234.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA57FB961AE1993600F2AD6D /* noise1234.cpp */; };
 		FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */ = {isa = PBXBuildFile; fileRef = FA57FB971AE1993600F2AD6D /* noise1234.h */; };
 		FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
-		FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA59A2D61C0649BB00328DBA /* libtheora.a */; };
-		FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AB1A96D2EC00C6FC8F /* libogg.a */; };
-		FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */; };
-		FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */; };
 		FA620A321AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */; };
 		FA620A331AA2F8DB005DB4C2 /* wrap_Quad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */; };
 		FA620A341AA2F8DB005DB4C2 /* wrap_Quad.h in Headers */ = {isa = PBXBuildFile; fileRef = FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */; };
@@ -767,10 +762,14 @@
 		FA6A2B7A1F60B8250074C308 /* wrap_ByteData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6A2B781F60B8250074C308 /* wrap_ByteData.cpp */; };
 		FA6A2B7B1F60B8250074C308 /* wrap_ByteData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6A2B781F60B8250074C308 /* wrap_ByteData.cpp */; };
 		FA6BDE5C1F31725300786805 /* Color.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6BDE5B1F31725300786805 /* Color.h */; };
-		FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7550A71AEBE276003E311E /* libluajit.a */; };
 		FA76344A1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344B1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344C1E28722A0066EF9E /* StreamBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7634491E28722A0066EF9E /* StreamBuffer.h */; };
+		FA7E9207277E120900C24CB2 /* theora.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7E9206277E120900C24CB2 /* theora.xcframework */; };
+		FA84DE76277CB3D5002674C6 /* SDL2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE75277CB3D4002674C6 /* SDL2.xcframework */; };
+		FA84DE7A277D4C88002674C6 /* modplug.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE79277D4C88002674C6 /* modplug.xcframework */; };
+		FA84DE7C277E045E002674C6 /* ogg.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE7B277E045E002674C6 /* ogg.xcframework */; };
+		FA84DE7E277E0A43002674C6 /* vorbis.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE7D277E0A43002674C6 /* vorbis.xcframework */; };
 		FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */; };
 		FA8951A41AA2EDF300EC385A /* wrap_Event.h in Headers */ = {isa = PBXBuildFile; fileRef = FA8951A11AA2EDF300EC385A /* wrap_Event.h */; };
@@ -1026,6 +1025,8 @@
 		FACA02FB1F5E397E0084B28F /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02E61F5E396B0084B28F /* HashFunction.cpp */; };
 		FACA02FC1F5E39810084B28F /* wrap_CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02E81F5E396B0084B28F /* wrap_CompressedData.cpp */; };
 		FACA02FD1F5E39840084B28F /* wrap_DataModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02EA1F5E396B0084B28F /* wrap_DataModule.cpp */; };
+		FACFB751276D7E3B0089F78D /* freetype.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FACFB750276D7E2B0089F78D /* freetype.xcframework */; };
+		FACFB753276D7F860089F78D /* Lua.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FACFB752276D7F6F0089F78D /* Lua.xcframework */; };
 		FAD19A171DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
 		FAD19A181DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
 		FAD19A191DFF8CA200D5398A /* ImageDataBase.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD19A161DFF8CA200D5398A /* ImageDataBase.h */; };
@@ -1066,7 +1067,6 @@
 		FADF543D1E3DAFF700012CC0 /* wrap_Graphics.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */; };
 		FAE272521C05A15B00A67640 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAE272501C05A15B00A67640 /* ParticleSystem.cpp */; };
 		FAE272531C05A15B00A67640 /* ParticleSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FAE272511C05A15B00A67640 /* ParticleSystem.h */; };
-		FAE64A7F207135AD00BC7981 /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE64A7D2071359C00BC7981 /* libfreetype.a */; };
 		FAE64A802071362A00BC7981 /* physfs_archiver_7z.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD5D1FE35E95006A60C7 /* physfs_archiver_7z.c */; };
 		FAE64A812071363100BC7981 /* physfs_archiver_dir.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD6C1FE35E95006A60C7 /* physfs_archiver_dir.c */; };
 		FAE64A822071363100BC7981 /* physfs_archiver_grp.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7CD741FE35E95006A60C7 /* physfs_archiver_grp.c */; };
@@ -1748,7 +1748,6 @@
 		FA522D5923FA5ED40059EE3C /* NotoSans-Regular.ttf.gzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NotoSans-Regular.ttf.gzip.h"; sourceTree = "<group>"; };
 		FA56AA361FAFF02000A43D5F /* memory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory.cpp; sourceTree = "<group>"; };
 		FA56AA371FAFF02000A43D5F /* memory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
-		FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmodplug.a; sourceTree = "<group>"; };
 		FA577A6D16C719EA00860150 /* Lua.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Lua.framework; path = macosx/Frameworks/Lua.framework; sourceTree = "<group>"; };
 		FA577A7116C719F400860150 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = macosx/Frameworks/ogg.framework; sourceTree = "<group>"; };
 		FA577A7716C71A0800860150 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = macosx/Frameworks/vorbis.framework; sourceTree = "<group>"; };
@@ -1760,10 +1759,6 @@
 		FA577AAF16C7507900860150 /* love.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA57FB961AE1993600F2AD6D /* noise1234.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = noise1234.cpp; sourceTree = "<group>"; };
 		FA57FB971AE1993600F2AD6D /* noise1234.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = noise1234.h; sourceTree = "<group>"; };
-		FA59A2D61C0649BB00328DBA /* libtheora.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtheora.a; sourceTree = "<group>"; };
-		FA5D24AB1A96D2EC00C6FC8F /* libogg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libogg.a; sourceTree = "<group>"; };
-		FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvorbis.a; sourceTree = "<group>"; };
-		FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libSDL2.a; sourceTree = "<group>"; };
 		FA620A2E1AA2F8DB005DB4C2 /* wrap_Quad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Quad.cpp; sourceTree = "<group>"; };
 		FA620A2F1AA2F8DB005DB4C2 /* wrap_Quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Quad.h; sourceTree = "<group>"; };
 		FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Texture.cpp; sourceTree = "<group>"; };
@@ -1781,10 +1776,14 @@
 		FA6A2B771F60B8250074C308 /* wrap_ByteData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ByteData.h; sourceTree = "<group>"; };
 		FA6A2B781F60B8250074C308 /* wrap_ByteData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ByteData.cpp; sourceTree = "<group>"; };
 		FA6BDE5B1F31725300786805 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
-		FA7550A71AEBE276003E311E /* libluajit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libluajit.a; sourceTree = "<group>"; };
 		FA7634481E28722A0066EF9E /* StreamBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamBuffer.cpp; sourceTree = "<group>"; };
 		FA7634491E28722A0066EF9E /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA7DA04C1C16874A0056B200 /* wrap_Math.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Math.lua; sourceTree = "<group>"; };
+		FA7E9206277E120900C24CB2 /* theora.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = theora.xcframework; path = ios/libraries/theora.xcframework; sourceTree = "<group>"; };
+		FA84DE75277CB3D4002674C6 /* SDL2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL2.xcframework; path = ios/libraries/SDL2.xcframework; sourceTree = "<group>"; };
+		FA84DE79277D4C88002674C6 /* modplug.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = modplug.xcframework; path = ios/libraries/modplug.xcframework; sourceTree = "<group>"; };
+		FA84DE7B277E045E002674C6 /* ogg.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ogg.xcframework; path = ios/libraries/ogg.xcframework; sourceTree = "<group>"; };
+		FA84DE7D277E0A43002674C6 /* vorbis.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = vorbis.xcframework; path = ios/libraries/vorbis.xcframework; sourceTree = "<group>"; };
 		FA8951A01AA2EDF300EC385A /* wrap_Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Event.cpp; sourceTree = "<group>"; };
 		FA8951A11AA2EDF300EC385A /* wrap_Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Event.h; sourceTree = "<group>"; };
 		FA91DA891F377C3900C80E33 /* deprecation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = deprecation.cpp; sourceTree = "<group>"; };
@@ -1974,6 +1973,8 @@
 		FACA02E91F5E396B0084B28F /* wrap_CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_CompressedData.h; sourceTree = "<group>"; };
 		FACA02EA1F5E396B0084B28F /* wrap_DataModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_DataModule.cpp; sourceTree = "<group>"; };
 		FACA02EB1F5E396B0084B28F /* wrap_DataModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DataModule.h; sourceTree = "<group>"; };
+		FACFB750276D7E2B0089F78D /* freetype.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = freetype.xcframework; path = ios/libraries/freetype.xcframework; sourceTree = "<group>"; };
+		FACFB752276D7F6F0089F78D /* Lua.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Lua.xcframework; path = ios/libraries/Lua.xcframework; sourceTree = "<group>"; };
 		FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDataBase.cpp; sourceTree = "<group>"; };
 		FAD19A161DFF8CA200D5398A /* ImageDataBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageDataBase.h; sourceTree = "<group>"; };
 		FAD43ECB1FF312D800831BB8 /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = freetype.framework; path = macosx/Frameworks/freetype.framework; sourceTree = "<group>"; };
@@ -2004,8 +2005,6 @@
 		FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Graphics.h; sourceTree = "<group>"; };
 		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
-		FAE64A7D2071359C00BC7981 /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfreetype.a; sourceTree = "<group>"; };
-		FAEC22942534EE6700EBD925 /* NonSemanticDebugPrintf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NonSemanticDebugPrintf.h; sourceTree = "<group>"; };
 		FAEC229F2534F25100EBD925 /* build_info.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = build_info.h; sourceTree = "<group>"; };
 		FAECA1B01F3164700095D008 /* CompressedSlice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedSlice.cpp; sourceTree = "<group>"; };
 		FAECA1B11F3164700095D008 /* CompressedSlice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CompressedSlice.h; sourceTree = "<group>"; };
@@ -2105,13 +2104,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA5D24B51A96D2EC00C6FC8F /* libvorbis.a in Frameworks */,
-				FAE64A7F207135AD00BC7981 /* libfreetype.a in Frameworks */,
-				FA5D24B31A96D2EC00C6FC8F /* libogg.a in Frameworks */,
-				FA59A2D81C0649C200328DBA /* libtheora.a in Frameworks */,
-				FA56D9BC1C208A0200D8D3C7 /* libmodplug.a in Frameworks */,
-				FA7550A81AEBE276003E311E /* libluajit.a in Frameworks */,
-				FA5D24CF1A96E68300C6FC8F /* libSDL2.a in Frameworks */,
+				FACFB751276D7E3B0089F78D /* freetype.xcframework in Frameworks */,
+				FA84DE7A277D4C88002674C6 /* modplug.xcframework in Frameworks */,
+				FA84DE7C277E045E002674C6 /* ogg.xcframework in Frameworks */,
+				FACFB753276D7F860089F78D /* Lua.xcframework in Frameworks */,
+				FA7E9207277E120900C24CB2 /* theora.xcframework in Frameworks */,
+				FA84DE76277CB3D5002674C6 /* SDL2.xcframework in Frameworks */,
+				FA84DE7E277E0A43002674C6 /* vorbis.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3242,30 +3241,12 @@
 			path = dr;
 			sourceTree = "<group>";
 		};
-		FA56D9B91C2089CE00D8D3C7 /* modplug */ = {
-			isa = PBXGroup;
-			children = (
-				FA56D9BA1C2089EE00D8D3C7 /* libmodplug.a */,
-			);
-			name = modplug;
-			path = ios/libraries/modplug;
-			sourceTree = "<group>";
-		};
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				FA0B7EEB1A959125000E1D17 /* macosx */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		FA59A2D51C0649BB00328DBA /* theora */ = {
-			isa = PBXGroup;
-			children = (
-				FA59A2D61C0649BB00328DBA /* libtheora.a */,
-			);
-			name = theora;
-			path = ios/libraries/theora;
 			sourceTree = "<group>";
 		};
 		FA5D24A11A96D24500C6FC8F /* Libraries */ = {
@@ -3279,60 +3260,15 @@
 		FA5D24A31A96D2C300C6FC8F /* ios */ = {
 			isa = PBXGroup;
 			children = (
-				FA5D24A41A96D2EC00C6FC8F /* freetype */,
-				FA7550A61AEBE250003E311E /* luajit */,
-				FA56D9B91C2089CE00D8D3C7 /* modplug */,
-				FA5D24AA1A96D2EC00C6FC8F /* ogg */,
-				FA5D24CC1A96E63D00C6FC8F /* SDL2 */,
-				FA59A2D51C0649BB00328DBA /* theora */,
-				FA5D24AE1A96D2EC00C6FC8F /* vorbis */,
+				FACFB750276D7E2B0089F78D /* freetype.xcframework */,
+				FACFB752276D7F6F0089F78D /* Lua.xcframework */,
+				FA84DE79277D4C88002674C6 /* modplug.xcframework */,
+				FA84DE7B277E045E002674C6 /* ogg.xcframework */,
+				FA84DE75277CB3D4002674C6 /* SDL2.xcframework */,
+				FA7E9206277E120900C24CB2 /* theora.xcframework */,
+				FA84DE7D277E0A43002674C6 /* vorbis.xcframework */,
 			);
 			name = ios;
-			sourceTree = "<group>";
-		};
-		FA5D24A41A96D2EC00C6FC8F /* freetype */ = {
-			isa = PBXGroup;
-			children = (
-				FAE64A7D2071359C00BC7981 /* libfreetype.a */,
-			);
-			name = freetype;
-			path = ios/libraries/freetype;
-			sourceTree = "<group>";
-		};
-		FA5D24AA1A96D2EC00C6FC8F /* ogg */ = {
-			isa = PBXGroup;
-			children = (
-				FA5D24AB1A96D2EC00C6FC8F /* libogg.a */,
-			);
-			name = ogg;
-			path = ios/libraries/ogg;
-			sourceTree = "<group>";
-		};
-		FA5D24AE1A96D2EC00C6FC8F /* vorbis */ = {
-			isa = PBXGroup;
-			children = (
-				FA5D24AF1A96D2EC00C6FC8F /* libvorbis.a */,
-			);
-			name = vorbis;
-			path = ios/libraries/vorbis;
-			sourceTree = "<group>";
-		};
-		FA5D24CC1A96E63D00C6FC8F /* SDL2 */ = {
-			isa = PBXGroup;
-			children = (
-				FA5D24CD1A96E63D00C6FC8F /* libSDL2.a */,
-			);
-			name = SDL2;
-			path = ios/libraries/SDL2;
-			sourceTree = "<group>";
-		};
-		FA7550A61AEBE250003E311E /* luajit */ = {
-			isa = PBXGroup;
-			children = (
-				FA7550A71AEBE276003E311E /* libluajit.a */,
-			);
-			name = luajit;
-			path = ios/libraries/luajit;
 			sourceTree = "<group>";
 		};
 		FAAA3FD21F64B3AD00F89E99 /* lua53 */ = {
@@ -5171,32 +5107,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				"ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/ios/libraries";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					LOVE_SUPPORT_COREAUDIO,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					ios/include,
-					ios/include/luajit,
-					ios/include/freetype,
-					ios/include/SDL2,
-					ios/include/modplug,
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/freetype",
-					"$(PROJECT_DIR)/ios/libraries/lua",
-					"$(PROJECT_DIR)/ios/libraries/ogg",
-					"$(PROJECT_DIR)/ios/libraries/physfs",
-					"$(PROJECT_DIR)/ios/libraries/vorbis",
-					"$(PROJECT_DIR)/ios/libraries/SDL2",
-					"$(PROJECT_DIR)/ios/libraries/luajit",
-					"$(PROJECT_DIR)/ios/libraries/theora",
-					"$(PROJECT_DIR)/ios/libraries/modplug",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = love;
@@ -5210,33 +5131,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				"ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/ios/libraries";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					LOVE_SUPPORT_COREAUDIO,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					ios/include,
-					ios/include/luajit,
-					ios/include/freetype,
-					ios/include/SDL2,
-					ios/include/modplug,
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/freetype",
-					"$(PROJECT_DIR)/ios/libraries/lua",
-					"$(PROJECT_DIR)/ios/libraries/ogg",
-					"$(PROJECT_DIR)/ios/libraries/physfs",
-					"$(PROJECT_DIR)/ios/libraries/vorbis",
-					"$(PROJECT_DIR)/ios/libraries/SDL2",
-					"$(PROJECT_DIR)/ios/libraries/luajit",
-					"$(PROJECT_DIR)/ios/libraries/theora",
-					"$(PROJECT_DIR)/ios/libraries/modplug",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = love;
@@ -5251,33 +5157,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				"ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/ios/libraries";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					LOVE_SUPPORT_COREAUDIO,
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					ios/include,
-					ios/include/luajit,
-					ios/include/freetype,
-					ios/include/SDL2,
-					ios/include/modplug,
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/freetype",
-					"$(PROJECT_DIR)/ios/libraries/lua",
-					"$(PROJECT_DIR)/ios/libraries/ogg",
-					"$(PROJECT_DIR)/ios/libraries/physfs",
-					"$(PROJECT_DIR)/ios/libraries/vorbis",
-					"$(PROJECT_DIR)/ios/libraries/SDL2",
-					"$(PROJECT_DIR)/ios/libraries/luajit",
-					"$(PROJECT_DIR)/ios/libraries/theora",
-					"$(PROJECT_DIR)/ios/libraries/modplug",
-				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = love;

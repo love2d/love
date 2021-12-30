@@ -39,21 +39,26 @@ LOVE 11.4 [Mysterious Mysteries]
 Released: N/A
 
 * Added native arm64 support on macOS.
+* Added a variant of love.filesystem.newFileData which accepts a Data object.
 * Added Body:getLocalPoints.
 * Added Font:getKerning.
 * Added support for r16, rg16, and rgba16 pixel formats in Canvases.
 * Added Shader:send(name, matrixlayout, data, ...) variant, whose argument order is more consistent than Shader:send(name, data, matrixlayout, ...).
 
+* Changed all builds and platforms where LOVE provides LuaJIT to use LuaJIT 2.1 instead of 2.0.
 * Changed love.timer.getTime to start at 0 when the module is first loaded.
 * Changed certain out-of-Lua-memory situations to show a message box instead of instantly crashing.
+* Changed the naming scheme of LOVE's embedded Lua files for improved integration with Lua chunkname APIs.
 
 * Fixed build-time compatibility with Lua 5.4.
 * Fixed code compatibility with math.mod and string.gfind when LuaJIT 2.1 is used.
 * Fixed errors on some systems related to > 53 bit pointer addresses, when recent versions of LuaJIT 2.1 are used.
+* Fixed the default error handler showing a blank screen on some mobile devices.
 * Fixed drag-and-drop to open a love game on macOS causing love.event.quit("restart") to fail.
 * Fixed fused macOS apps opening other love games when drag-and-drop is used (if the fused app hasn't already removed .love files from recognized document types).
 * Fixed File:isEOF when called on a dropped file.
 * Fixed support for > 2GB dropped files on desktops.
+* Fixed ByteData and DataView missing Data:clone implementations.
 * Fixed love.physics meter scale value persisting after love.event.quit("restart").
 * Fixed audio to resume properly after interruption on iOS.
 * Fixed love.graphics.newVideo to error instead of crash when an invalid video file is given.
@@ -76,6 +81,7 @@ Released: N/A
 * Fixed rare issues where textures were not sent to shaders correctly.
 * Fixed Shader:send(name, data, matrixlayout, ...).
 * Fixed quad offsets in ParticleSystems when ParticleSystem:setOffset is not used.
+* Fixed a performance issue with setting a small subrange of data in non-stream Meshes and SpriteBatches.
 * Fixed rounded rectangles breaking if the rx or ry parameters are negative.
 * Fixed rounded rectangle automatic points calculation when rx or ry are more than half the rectangle's size.
 * Fixed source code compilation on Xcode 12+.

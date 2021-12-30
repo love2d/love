@@ -58,10 +58,15 @@ jobs:
       shell: cmd
       run: cmake --build build --config Release --target install -j2
     - name: Artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: love-windows-${{ matrix.platform }}
         path: install
+    - name: Artifact JIT Modules
+      uses: actions/upload-artifact@v2
+      with:
+        name: love-windows-jitmodules-${{ matrix.platform }}
+        path: build/libs/LuaJIT/src/jit/*.lua
   macOS:
     runs-on: macos-latest
     steps:
@@ -71,7 +76,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: apple-dependencies
-        repository: slime73/love-apple-dependencies
+        repository: love2d/love-apple-dependencies
         ref: main
     - name: Move Dependencies
       run:
@@ -99,11 +104,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: apple-dependencies
-        repository: slime73/love-apple-dependencies
+        repository: love2d/love-apple-dependencies
         ref: main
     - name: Move Dependencies
       run: |
-        mv apple-dependencies/iOS/include platform/xcode/ios
         mv apple-dependencies/iOS/libraries platform/xcode/ios
     - name: Build
       run:
