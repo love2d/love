@@ -61,10 +61,19 @@ Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the
 ### iOS
 Building for iOS requires macOS and Xcode.
 
+#### LÖVE 11.4 and newer
+Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
+unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+
+Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+
+Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
+
+See `readme-iOS.rtf` for more information.
+
+#### LÖVE 11.3 and older
 Download the `ios-libraries` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
 unzip it, and place the `include` and `libraries` subfolders into love's `platform/xcode/ios` folder.
-
-Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/include` and `iOS/libraries` subfolders into love's `platform/xcode/ios` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
