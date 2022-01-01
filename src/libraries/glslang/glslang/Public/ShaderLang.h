@@ -140,6 +140,7 @@ typedef enum : unsigned {
 namespace glslang {
 
 class TType;
+class TConstUnionArray;
 
 typedef enum {
     EShSourceNone,
@@ -723,9 +724,10 @@ private:
 // Data needed for just a single object at the granularity exchanged by the reflection API
 class TObjectReflection {
 public:
-    GLSLANG_EXPORT TObjectReflection(const std::string& pName, const TType& pType, int pOffset, int pGLDefineType, int pSize, int pIndex);
+    GLSLANG_EXPORT TObjectReflection(const std::string& pName, const TType& pType, int pOffset, int pGLDefineType, int pSize, int pIndex, const TConstUnionArray* pConstArray = nullptr);
 
     const TType* getType() const { return type; }
+	const TConstUnionArray* getConstArray() const { return constArray; }
     GLSLANG_EXPORT int getBinding() const;
     GLSLANG_EXPORT void dump() const;
     static TObjectReflection badReflection() { return TObjectReflection(); }
@@ -745,11 +747,12 @@ public:
 protected:
     TObjectReflection()
         : offset(-1), glDefineType(-1), size(-1), index(-1), counterIndex(-1), numMembers(-1), arrayStride(0),
-          topLevelArrayStride(0), stages(EShLanguageMask(0)), type(nullptr)
+          topLevelArrayStride(0), stages(EShLanguageMask(0)), type(nullptr), constArray(nullptr)
     {
     }
 
     const TType* type;
+	const TConstUnionArray* constArray;
 };
 
 class  TReflection;

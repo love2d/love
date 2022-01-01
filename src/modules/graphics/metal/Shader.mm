@@ -565,6 +565,16 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 								u.matrix.rows = membertype.vecsize;
 								u.matrix.columns = membertype.columns;
 							}
+							if (validationReflection.localUniforms.find(u.name) != validationReflection.localUniforms.end())
+							{
+								const auto &ru = validationReflection.localUniforms.find(u.name);
+								const auto &values = ru->second.initializerValues;
+								if (!values.empty())
+								{
+									memcpy(u.data, values.data(), std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
+								}
+							}
+							updateUniform(&u, u.count);
 							break;
 						case SPIRType::Struct:
 							// TODO
@@ -582,6 +592,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 								builtinUniformDataOffset = offset;
 							builtinUniformInfo[builtin] = &uniforms[u.name];
 						}
+
+
 					}
 				}
 				else

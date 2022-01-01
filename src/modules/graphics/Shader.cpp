@@ -792,6 +792,24 @@ static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
 	}
 }
 
+template <typename T>
+static T convertData(const glslang::TConstUnion &data)
+{
+	switch (data.getType())
+	{
+		case glslang::EbtInt: return (T) data.getIConst();
+		case glslang::EbtUint: return (T) data.getUConst();
+		case glslang::EbtDouble: return (T) data.getDConst();
+		case glslang::EbtInt8: return (T) data.getI8Const();
+		case glslang::EbtInt16: return (T) data.getI16Const();
+		case glslang::EbtInt64: return (T) data.getI64Const();
+		case glslang::EbtUint8: return (T) data.getU8Const();
+		case glslang::EbtUint16: return (T) data.getU16Const();
+		case glslang::EbtUint64: return (T) data.getU64Const();
+		default: return 0;
+	}
+}
+
 bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, ValidationReflection &reflection)
 {
 	glslang::TProgram program;
@@ -870,6 +888,50 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				texreflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
 			reflection.storageTextures[info.name] = texreflection;
+		}
+		else if (!type->isOpaque())
+		{
+			LocalUniform u = {};
+			auto &values = u.initializerValues;
+			const glslang::TConstUnionArray *constarray = info.getConstArray();
+
+			// Store initializer values for local uniforms. Some love graphics
+			// backends strip these out of the shader so we need to be able to
+			// access them (to re-send them) by getting them here.
+			switch (type->getBasicType())
+			{
+			case glslang::EbtFloat:
+				u.dataType = DATA_BASETYPE_FLOAT;
+				if (constarray != nullptr)
+				{
+					values.resize(constarray->size());
+					for (int i = 0; i < constarray->size(); i++)
+						values[i].f = convertData<float>((*constarray)[i]);
+				}
+				break;
+			case glslang::EbtUint:
+				u.dataType = DATA_BASETYPE_UINT;
+				if (constarray != nullptr)
+				{
+					values.resize(constarray->size());
+					for (int i = 0; i < constarray->size(); i++)
+						values[i].u = convertData<uint32>((*constarray)[i]);
+				}
+				break;
+			case glslang::EbtInt:
+			case glslang::EbtBool:
+			default:
+				u.dataType = DATA_BASETYPE_INT;
+				if (constarray != nullptr)
+				{
+					values.resize(constarray->size());
+					for (int i = 0; i < constarray->size(); i++)
+						values[i].i = convertData<int32>((*constarray)[i]);
+				}
+				break;
+			}
+
+			reflection.localUniforms[info.name] = u;
 		}
 	}
 
