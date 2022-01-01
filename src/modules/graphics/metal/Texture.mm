@@ -259,14 +259,64 @@ void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, in
 }}
 
 void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
-{
-	// TODO
-}
+{ @autoreleasepool {
+	id<MTLBlitCommandEncoder> encoder = Graphics::getInstance()->useBlitEncoder();
+	id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *) source->getHandle();
+
+	size_t rowSize = 0;
+	if (isCompressed())
+		rowSize = getPixelFormatCompressedBlockRowSize(format, sourcewidth);
+	else
+		rowSize = getPixelFormatUncompressedRowSize(format, sourcewidth);
+
+	int z = texType == TEXTURE_VOLUME ? slice : 0;
+
+	MTLBlitOption options = MTLBlitOptionNone;
+
+	if (isPixelFormatDepthStencil(format))
+		options = MTLBlitOptionDepthFromDepthStencil;
+
+	[encoder copyFromBuffer:buffer
+			   sourceOffset:sourceoffset
+		  sourceBytesPerRow:rowSize
+		sourceBytesPerImage:size
+				 sourceSize:MTLSizeMake(rect.w, rect.h, 1)
+				  toTexture:texture
+		   destinationSlice:texType == TEXTURE_VOLUME ? 0 : slice
+		   destinationLevel:mipmap
+		  destinationOrigin:MTLOriginMake(rect.x, rect.y, z)
+					options:options];
+}}
 
 void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
-{
-	// TODO
-}
+{ @autoreleasepool {
+	id<MTLBlitCommandEncoder> encoder = Graphics::getInstance()->useBlitEncoder();
+	id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *) dest->getHandle();
+
+	size_t rowSize = 0;
+	if (isCompressed())
+		rowSize = getPixelFormatCompressedBlockRowSize(format, destwidth);
+	else
+		rowSize = getPixelFormatUncompressedRowSize(format, destwidth);
+
+	int z = texType == TEXTURE_VOLUME ? slice : 0;
+
+	MTLBlitOption options = MTLBlitOptionNone;
+
+	if (isPixelFormatDepthStencil(format))
+		options = MTLBlitOptionDepthFromDepthStencil;
+
+	[encoder copyFromTexture:texture
+				 sourceSlice:texType == TEXTURE_VOLUME ? 0 : slice
+				 sourceLevel:mipmap
+				sourceOrigin:MTLOriginMake(rect.x, rect.y, z)
+				  sourceSize:MTLSizeMake(rect.w, rect.h, 1)
+					toBuffer:buffer
+		   destinationOffset:destoffset
+	  destinationBytesPerRow:rowSize
+	destinationBytesPerImage:size
+					 options:options];
+}}
 
 void Texture::setSamplerState(const SamplerState &s)
 { @autoreleasepool {
