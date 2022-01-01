@@ -509,8 +509,7 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 		if (usage & BUFFERUSAGEFLAG_VERTEX)
 			postDispatchBarriers |= GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT;
 
-		if (usage & (BUFFERUSAGEFLAG_COPY_SOURCE | BUFFERUSAGEFLAG_COPY_DEST))
-			postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
+		postDispatchBarriers |= GL_PIXEL_BUFFER_BARRIER_BIT;
 	}
 
 	for (const auto &binding : shader->getStorageTextureBindings())
@@ -858,7 +857,7 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 
 	if (c.hasValue)
 	{
-		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.b);
+		Colorf cf((float)c.value.r, (float)c.value.g, (float)c.value.b, (float)c.value.a);
 		gammaCorrectColor(cf);
 		glClearColor(cf.r, cf.g, cf.b, cf.a);
 		flags |= GL_COLOR_BUFFER_BIT;
@@ -1658,8 +1657,11 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
-	capabilities.features[FEATURE_COPY_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_COPY_SOURCE);
-	static_assert(FEATURE_MAX_ENUM == 12, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_COPY_BUFFER] = gl.isCopyBufferSupported();
+	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = gl.isCopyBufferToTextureSupported();
+	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
+	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = gl.isCopyRenderTargetToBufferSupported();
+	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

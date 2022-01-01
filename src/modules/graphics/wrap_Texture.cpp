@@ -390,13 +390,13 @@ int w_Texture_newImageData(lua_State *L)
 
 	int slice = 0;
 	int mipmap = 0;
-	Rect rect = {0, 0, t->getPixelWidth(), t->getPixelHeight()};
 
 	if (t->getTextureType() != TEXTURE_2D)
 		slice = (int) luaL_checkinteger(L, 2) - 1;
 
 	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
 
+	Rect rect = {0, 0, t->getPixelWidth(mipmap), t->getPixelHeight(mipmap)};
 	if (!lua_isnoneornil(L, 4))
 	{
 		rect.x = (int) luaL_checkinteger(L, 4);

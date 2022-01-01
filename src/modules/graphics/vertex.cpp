@@ -371,8 +371,6 @@ STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
 	{ "index",         BUFFERUSAGE_INDEX          },
 	{ "texel",         BUFFERUSAGE_TEXEL          },
 	{ "shaderstorage", BUFFERUSAGE_SHADER_STORAGE },
-	{ "copysource",    BUFFERUSAGE_COPY_SOURCE    },
-	{ "copydest",      BUFFERUSAGE_COPY_DEST      },
 }
 STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
 
@@ -388,6 +386,7 @@ STRINGMAP_BEGIN(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 	{ "stream",  BUFFERDATAUSAGE_STREAM  },
 	{ "dynamic", BUFFERDATAUSAGE_DYNAMIC },
 	{ "static",  BUFFERDATAUSAGE_STATIC  },
+	{ "staging", BUFFERDATAUSAGE_STAGING },
 }
 STRINGMAP_END(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 

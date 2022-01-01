@@ -61,9 +61,7 @@ public:
 private:
 
 	bool load(const void *initialdata);
-
-	void unmapStatic(size_t offset, size_t size);
-	void unmapStream();
+	bool supportsOrphan() const;
 
 	BufferUsage mapUsage = BUFFERUSAGE_VERTEX;
 	GLenum target = 0;

@@ -80,10 +80,6 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 		mapUsage = BUFFERUSAGE_INDEX;
 	else  if (usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE)
 		mapUsage = BUFFERUSAGE_SHADER_STORAGE;
-	else if (usageFlags & BUFFERUSAGEFLAG_COPY_SOURCE)
-		mapUsage = BUFFERUSAGE_COPY_SOURCE;
-	else if (usageFlags & BUFFERUSAGEFLAG_COPY_DEST)
-		mapUsage = BUFFERUSAGE_COPY_DEST;
 
 	target = OpenGL::getGLBufferType(mapUsage);
 
@@ -161,6 +157,11 @@ bool Buffer::load(const void *initialdata)
 	return (glGetError() == GL_NO_ERROR);
 }
 
+bool Buffer::supportsOrphan() const
+{
+	return dataUsage == BUFFERDATAUSAGE_STREAM || dataUsage == BUFFERDATAUSAGE_DYNAMIC;
+}
+
 void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 {
 	if (size == 0)
@@ -206,7 +207,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 	mapped = false;
 
 	// Orphan optimization - see fill().
-	if (dataUsage != BUFFERDATAUSAGE_STATIC && mappedRange.first == 0 && mappedRange.getSize() == getSize())
+	if (supportsOrphan() && mappedRange.first == 0 && mappedRange.getSize() == getSize())
 	{
 		usedoffset = 0;
 		usedsize = getSize();
@@ -238,15 +239,14 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 
 	gl.bindBuffer(mapUsage, buffer);
 
-	if (dataUsage != BUFFERDATAUSAGE_STATIC && size == buffersize)
+	if (supportsOrphan() && size == buffersize)
 	{
 		// "orphan" current buffer to avoid implicit synchronisation on the GPU:
 		// http://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
-		gl.bindBuffer(mapUsage, buffer);
 		glBufferData(target, (GLsizeiptr) buffersize, nullptr, gldatausage);
 
 #if LOVE_WINDOWS
-		// TODO: Verify that this codepath is a useful optimization.
+		// TODO: Verify that this intel codepath is a useful optimization.
 		if (gl.getVendor() == OpenGL::VENDOR_INTEL)
 			glBufferData(target, (GLsizeiptr) buffersize, data, gldatausage);
 		else
@@ -261,8 +261,9 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
 {
-	gl.bindBuffer(BUFFERUSAGE_COPY_SOURCE, buffer);
-	gl.bindBuffer(BUFFERUSAGE_COPY_DEST, ((Buffer *) dest)->buffer);
+	// TODO: tracked state for these bind types?
+	glBindBuffer(GL_COPY_READ_BUFFER, buffer);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, ((Buffer *) dest)->buffer);
 
 	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, sourceoffset, destoffset, size);
 }

@@ -473,9 +473,18 @@ void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap
 		throw love::Exception("Invalid rectangle dimensions (x=%d, y=%d, w=%d, h=%d) for %dx%d Texture.", rect.x, rect.y, rect.w, rect.h, mipw, miph);
 	}
 
-	// We don't currently support partial updates of compressed textures.
 	if (isPixelFormatCompressed(d->getFormat()) && (rect.x != 0 || rect.y != 0 || rect.w != mipw || rect.h != miph))
-		throw love::Exception("Compressed textures only support replacing the entire Texture.");
+	{
+		const PixelFormatInfo &info = getPixelFormatInfo(d->getFormat());
+		int bw = (int) info.blockWidth;
+		int bh = (int) info.blockHeight;
+		if (rect.x % bw != 0 || rect.y % bh != 0 || rect.w % bw != 0 || rect.h % bh != 0)
+		{
+			const char *name = nullptr;
+			love::getConstant(d->getFormat(), name);
+			throw love::Exception("Compressed texture format %s only supports replacing a sub-rectangle with offset and dimensions that are a multiple of %d x %d.", name, bw, bh);
+		}
+	}
 
 	Graphics::flushBatchedDrawsGlobal();
 

@@ -258,6 +258,16 @@ void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, in
 	memcpy(imagedata->getData(), buffer.contents, imagedata->getSize());
 }}
 
+void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
+{
+	// TODO
+}
+
+void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
+{
+	// TODO
+}
+
 void Texture::setSamplerState(const SamplerState &s)
 { @autoreleasepool {
 	// Base class does common validation and assigns samplerState.

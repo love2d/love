@@ -666,8 +666,6 @@ GLenum OpenGL::getGLBufferType(BufferUsage usage)
 		case BUFFERUSAGE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
 		case BUFFERUSAGE_TEXEL: return GL_TEXTURE_BUFFER;
 		case BUFFERUSAGE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
-		case BUFFERUSAGE_COPY_SOURCE: return GL_COPY_READ_BUFFER;
-		case BUFFERUSAGE_COPY_DEST: return GL_COPY_WRITE_BUFFER;
 		case BUFFERUSAGE_MAX_ENUM: return GL_ZERO;
 	}
 
@@ -844,6 +842,8 @@ GLenum OpenGL::getGLBufferDataUsage(BufferDataUsage usage)
 		case BUFFERDATAUSAGE_STREAM: return GL_STREAM_DRAW;
 		case BUFFERDATAUSAGE_DYNAMIC: return GL_DYNAMIC_DRAW;
 		case BUFFERDATAUSAGE_STATIC: return GL_STATIC_DRAW;
+		case BUFFERDATAUSAGE_STAGING:
+			return (GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0) ? GL_STREAM_READ : GL_STREAM_DRAW;
 		default: return 0;
 	}
 }
@@ -1483,9 +1483,6 @@ bool OpenGL::isBufferUsageSupported(BufferUsage usage) const
 		return GLAD_VERSION_3_1;
 	case BUFFERUSAGE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
-	case BUFFERUSAGE_COPY_SOURCE:
-	case BUFFERUSAGE_COPY_DEST:
-		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_0;
 	case BUFFERUSAGE_MAX_ENUM:
 		return false;
 	}
@@ -1528,6 +1525,29 @@ bool OpenGL::isBaseVertexSupported() const
 bool OpenGL::isMultiFormatMRTSupported() const
 {
 	return getMaxRenderTargets() > 1 && (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object);
+}
+
+bool OpenGL::isCopyBufferSupported() const
+{
+	return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_0;
+}
+
+bool OpenGL::isCopyBufferToTextureSupported() const
+{
+	// Requires pixel unpack buffer binding support.
+	return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0;
+}
+
+bool OpenGL::isCopyTextureToBufferSupported() const
+{
+	// Requires glGetTextureSubImage support.
+	return GLAD_VERSION_4_5 || GLAD_ARB_get_texture_sub_image;
+}
+
+bool OpenGL::isCopyRenderTargetToBufferSupported() const
+{
+	// Requires pixel pack buffer binding support.
+	return GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0;
 }
 
 int OpenGL::getMax2DTextureSize() const
