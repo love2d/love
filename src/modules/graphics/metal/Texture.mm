@@ -233,7 +233,6 @@ void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, in
 													options:MTLResourceStorageModeShared];
 
 	MTLBlitOption options = MTLBlitOptionNone;
-
 	if (isPixelFormatDepthStencil(format))
 		options = MTLBlitOptionDepthFromDepthStencil;
 
@@ -272,7 +271,6 @@ void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset
 	int z = texType == TEXTURE_VOLUME ? slice : 0;
 
 	MTLBlitOption options = MTLBlitOptionNone;
-
 	if (isPixelFormatDepthStencil(format))
 		options = MTLBlitOptionDepthFromDepthStencil;
 
@@ -302,7 +300,6 @@ void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, 
 	int z = texType == TEXTURE_VOLUME ? slice : 0;
 
 	MTLBlitOption options = MTLBlitOptionNone;
-
 	if (isPixelFormatDepthStencil(format))
 		options = MTLBlitOptionDepthFromDepthStencil;
 

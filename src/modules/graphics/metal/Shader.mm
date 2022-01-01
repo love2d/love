@@ -376,6 +376,84 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 	}
 }}
 
+void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename)
+{
+	using namespace spirv_cross;
+
+	const auto &membertypes = type.member_types;
+
+	for (size_t uindex = 0; uindex < membertypes.size(); uindex++)
+	{
+		const auto &membertype = msl.get_type(membertypes[uindex]);
+		size_t membersize = msl.get_declared_struct_member_size(type, uindex);
+		size_t offset = baseoffset + msl.type_struct_member_offset(type, uindex);
+
+		std::string name = basename + msl.get_member_name(type.self, uindex);
+
+		switch (membertype.basetype)
+		{
+			case SPIRType::Struct:
+				name += ".";
+				buildLocalUniforms(msl, membertype, offset, name);
+				continue;
+			case SPIRType::Int:
+			case SPIRType::UInt:
+			case SPIRType::Float:
+				break;
+			default:
+				continue;
+		}
+
+		if (offset + membersize > localUniformBufferSize)
+			throw love::Exception("Invalid uniform offset + size for '%s' (offset=%d, size=%d, buffer size=%d)", name.c_str(), (int)offset, (int)membersize, (int)localUniformBufferSize);
+
+		UniformInfo u = {};
+		u.name = name;
+		u.dataSize = membersize;
+		u.count = membertype.array.empty() ? 1 : membertype.array[0];
+		u.components = 1;
+
+		u.data = localUniformStagingData + offset;
+		if (membertype.columns == 1)
+		{
+			if (membertype.basetype == SPIRType::Int)
+				u.baseType = UNIFORM_INT;
+			else if (membertype.basetype == SPIRType::UInt)
+				u.baseType = UNIFORM_UINT;
+			else
+				u.baseType = UNIFORM_FLOAT;
+			u.components = membertype.vecsize;
+		}
+		else
+		{
+			u.baseType = UNIFORM_MATRIX;
+			u.matrix.rows = membertype.vecsize;
+			u.matrix.columns = membertype.columns;
+		}
+		if (validationReflection.localUniforms.find(u.name) != validationReflection.localUniforms.end())
+		{
+			const auto &ru = validationReflection.localUniforms.find(u.name);
+			const auto &values = ru->second.initializerValues;
+			if (!values.empty())
+			{
+				memcpy(u.data, values.data(), std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
+			}
+		}
+
+		uniforms[u.name] = u;
+
+		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+		if (getConstant(u.name.c_str(), builtin))
+		{
+			if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
+				builtinUniformDataOffset = offset;
+			builtinUniformInfo[builtin] = &uniforms[u.name];
+		}
+
+		updateUniform(&u, u.count);
+	}
+}
+
 void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program)
 {
 	using namespace glslang;
@@ -513,8 +591,6 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					msl.add_msl_resource_binding(binding);
 
 					const SPIRType &type = msl.get_type(resource.base_type_id);
-					const auto &membertypes = type.member_types;
-
 					size_t size = msl.get_declared_struct_size(type);
 
 					if (localUniformBufferSize != 0)
@@ -531,70 +607,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					memset(localUniformStagingData, 0, size);
 					memset(localUniformBufferData, 0, size);
 
-					for (size_t uindex = 0; uindex < membertypes.size(); uindex++)
-					{
-						const auto &membertype = msl.get_type(membertypes[uindex]);
-						size_t membersize = msl.get_declared_struct_member_size(type, uindex);
-						size_t offset = msl.type_struct_member_offset(type, uindex);
-
-						UniformInfo u = {};
-						u.name = msl.get_member_name(type.self, uindex);
-						u.dataSize = membersize;
-						u.count = membertype.array.empty() ? 1 : membertype.array[0];
-						u.components = 1;
-
-						switch (membertype.basetype)
-						{
-						case SPIRType::Int:
-						case SPIRType::UInt:
-						case SPIRType::Float:
-							u.data = localUniformStagingData + offset;
-							if (membertype.columns == 1)
-							{
-								if (membertype.basetype == SPIRType::Int)
-									u.baseType = UNIFORM_INT;
-								else if (membertype.basetype == SPIRType::UInt)
-									u.baseType = UNIFORM_UINT;
-								else
-									u.baseType = UNIFORM_FLOAT;
-								u.components = membertype.vecsize;
-							}
-							else
-							{
-								u.baseType = UNIFORM_MATRIX;
-								u.matrix.rows = membertype.vecsize;
-								u.matrix.columns = membertype.columns;
-							}
-							if (validationReflection.localUniforms.find(u.name) != validationReflection.localUniforms.end())
-							{
-								const auto &ru = validationReflection.localUniforms.find(u.name);
-								const auto &values = ru->second.initializerValues;
-								if (!values.empty())
-								{
-									memcpy(u.data, values.data(), std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
-								}
-							}
-							updateUniform(&u, u.count);
-							break;
-						case SPIRType::Struct:
-							// TODO
-							break;
-						default:
-							break;
-						}
-
-						uniforms[u.name] = u;
-
-						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
-						if (getConstant(u.name.c_str(), builtin))
-						{
-							if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
-								builtinUniformDataOffset = offset;
-							builtinUniformInfo[builtin] = &uniforms[u.name];
-						}
-
-
-					}
+					std::string basename("");
+					buildLocalUniforms(msl, type, 0, basename);
 				}
 				else
 				{

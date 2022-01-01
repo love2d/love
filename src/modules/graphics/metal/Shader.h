@@ -39,6 +39,12 @@ namespace glslang
 class TProgram;
 }
 
+namespace spirv_cross
+{
+class CompilerMSL;
+struct SPIRType;
+}
+
 namespace love
 {
 namespace graphics
@@ -128,6 +134,7 @@ private:
 		}
 	};
 
+	void buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename);
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
 
 	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
