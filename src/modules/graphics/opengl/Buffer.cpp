@@ -151,7 +151,14 @@ bool Buffer::load(const void *initialdata)
 		glGenTextures(1, &texture);
 		gl.bindBufferTextureToUnit(texture, 0, false, true);
 
-		glTexBuffer(target, getGLFormat(getDataMember(0).decl.format), buffer);
+		GLenum glformat = getGLFormat(getDataMember(0).decl.format);
+
+		if (GLAD_VERSION_3_1)
+			glTexBuffer(target, glformat, buffer);
+		else if (GLAD_OES_texture_buffer)
+			glTexBufferOES(target, glformat, buffer);
+		else if (GLAD_EXT_texture_buffer)
+			glTexBufferEXT(target, glformat, buffer);
 	}
 
 	return (glGetError() == GL_NO_ERROR);
