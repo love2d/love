@@ -1,7 +1,7 @@
 LOVE 11.4 [Mysterious Mysteries]
 --------------------------------
 
-Released: N/A
+Released: 2022-01-02
 
 * Added native arm64 support on macOS.
 * Added a variant of love.filesystem.newFileData which accepts a Data object.
