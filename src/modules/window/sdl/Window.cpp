@@ -262,7 +262,7 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 
 	std::vector<ContextAttribs> glescontexts =
 	{
-		{3, 1, true, debug},
+		{3, 2, true, debug},
 		{3, 0, true, debug},
 		{2, 0, true, debug}
 	};

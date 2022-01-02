@@ -78,11 +78,6 @@ static const char global_syntax[] = R"(
 #ifdef GL_OES_standard_derivatives
 #extension GL_OES_standard_derivatives : enable
 #endif
-#if __VERSION__ >= 300 && defined(GL_OES_texture_buffer)
-#extension GL_OES_texture_buffer : enable
-#elif __VERSION__ >= 300 && defined(GL_EXT_texture_buffer)
-#extension GL_EXT_texture_buffer : enable
-#endif
 )";
 
 static const char render_uniforms[] = R"(
@@ -449,7 +444,7 @@ static const Version versions[] =
 {
 	{ "#version 120", "#version 100" },
 	{ "#version 330 core", "#version 300 es" },
-	{ "#version 430 core", "#version 310 es" },
+	{ "#version 430 core", "#version 320 es" },
 };
 
 static Shader::Language getTargetLanguage(const std::string &src)

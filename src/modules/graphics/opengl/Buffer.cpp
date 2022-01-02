@@ -153,12 +153,7 @@ bool Buffer::load(const void *initialdata)
 
 		GLenum glformat = getGLFormat(getDataMember(0).decl.format);
 
-		if (GLAD_VERSION_3_1)
-			glTexBuffer(target, glformat, buffer);
-		else if (GLAD_OES_texture_buffer)
-			glTexBufferOES(target, glformat, buffer);
-		else if (GLAD_EXT_texture_buffer)
-			glTexBufferEXT(target, glformat, buffer);
+		glTexBuffer(target, glformat, buffer);
 	}
 
 	return (glGetError() == GL_NO_ERROR);

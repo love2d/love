@@ -1479,8 +1479,7 @@ bool OpenGL::isBufferUsageSupported(BufferUsage usage) const
 	case BUFFERUSAGE_INDEX:
 		return true;
 	case BUFFERUSAGE_TEXEL:
-		// Not supported in ES until 3.2, so we rely on extensions there...
-		return GLAD_VERSION_3_1 || GLAD_OES_texture_buffer || GLAD_EXT_texture_buffer;
+		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_2;
 	case BUFFERUSAGE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
 	case BUFFERUSAGE_MAX_ENUM:
