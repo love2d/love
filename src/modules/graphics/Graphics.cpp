@@ -1529,7 +1529,7 @@ void Graphics::drawShaderVertices(PrimitiveType primtype, int vertexcount, int i
 	if (vertexcount < 0 || instancecount < 0)
 		throw love::Exception("drawShaderVertices vertex and instance count parameters must not be negative.");
 
-	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+	Shader::current->validateDrawState(primtype, maintexture);
 
 	VertexAttributes attributes;
 	BufferBindings buffers;
