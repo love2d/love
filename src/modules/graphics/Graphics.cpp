@@ -1560,7 +1560,7 @@ void Graphics::drawShaderVertices(Buffer *indexbuffer, int indexcount, int insta
 	if (indexcount < 0 || instancecount < 0)
 		throw love::Exception("drawShaderVertices index and instance count parameters must not be negative.");
 
-	if ((size_t)(startindex + indexcount) > indexbuffer->getArrayLength())
+	if ((size_t)(startindex + indexcount) > indexbuffer->getArrayLength() * indexbuffer->getDataMembers().size())
 		throw love::Exception("drawShaderVertices startindex and index count parameters do not fit in the given index buffer.");
 
 	if (Shader::isDefaultActive() || !Shader::current)
@@ -2137,6 +2137,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "glsl4",                    Graphics::FEATURE_GLSL4                },
 	{ "instancing",               Graphics::FEATURE_INSTANCING           },
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
+	{ "indexbuffer32bit",         Graphics::FEATURE_INDEX_BUFFER_32BIT   },
 	{ "copybuffer",               Graphics::FEATURE_COPY_BUFFER          },
 	{ "copybuffertotexture",      Graphics::FEATURE_COPY_BUFFER_TO_TEXTURE },
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
