@@ -1516,6 +1516,75 @@ void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
 	mesh->drawInstanced(this, m, instancecount);
 }
 
+void Graphics::drawShaderVertices(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture)
+{
+	flushBatchedDraws();
+
+	if (!capabilities.features[FEATURE_GLSL3])
+		throw love::Exception("drawShaderVertices is not supported on this system (GLSL3 support is required.)");
+
+	if (Shader::isDefaultActive() || !Shader::current)
+		throw love::Exception("drawShaderVertices can only be used with a custom shader.");
+
+	if (vertexcount < 0 || instancecount < 0)
+		throw love::Exception("drawShaderVertices vertex and instance count parameters must not be negative.");
+
+	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+
+	VertexAttributes attributes;
+	BufferBindings buffers;
+
+	DrawCommand cmd(&attributes, &buffers);
+
+	cmd.primitiveType = primtype;
+	cmd.vertexCount = vertexcount;
+	cmd.instanceCount = std::max(1, instancecount);
+	cmd.texture = maintexture;
+
+	draw(cmd);
+}
+
+void Graphics::drawShaderVertices(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture)
+{
+	flushBatchedDraws();
+
+	if (!capabilities.features[FEATURE_GLSL3])
+		throw love::Exception("drawShaderVertices is not supported on this system (GLSL3 support is required.)");
+
+	if (!(indexbuffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX))
+		throw love::Exception("The buffer passed to drawShaderVertices must be an index buffer.");
+
+	if (startindex < 0)
+		throw love::Exception("drawShaderVertices startindex parameter must not be negative.");
+
+	if (indexcount < 0 || instancecount < 0)
+		throw love::Exception("drawShaderVertices index and instance count parameters must not be negative.");
+
+	if ((size_t)(startindex + indexcount) > indexbuffer->getArrayLength())
+		throw love::Exception("drawShaderVertices startindex and index count parameters do not fit in the given index buffer.");
+
+	if (Shader::isDefaultActive() || !Shader::current)
+		throw love::Exception("drawShaderVertices can only be used with a custom shader.");
+
+	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+
+	VertexAttributes attributes;
+	BufferBindings buffers;
+
+	DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
+
+	cmd.primitiveType = PRIMITIVE_TRIANGLES;
+	cmd.indexCount = indexcount;
+	cmd.instanceCount = std::max(1, instancecount);
+
+	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
+	cmd.indexBufferOffset = startindex * getIndexDataSize(cmd.indexType);
+
+	cmd.texture = maintexture;
+
+	draw(cmd);
+}
+
 void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
 {
 	checkSetDefaultFont();

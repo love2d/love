@@ -688,6 +688,9 @@ public:
 	void drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 &m);
 	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
 
+	void drawShaderVertices(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture);
+	void drawShaderVertices(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture);
+
 	/**
 	 * Draws text at the specified coordinates
 	 **/
