@@ -182,6 +182,8 @@ void Graphics::createQuadIndexBuffer()
 
 	Buffer::Mapper map(*quadIndexBuffer);
 	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+
+	quadIndexBuffer->setImmutable(true);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -1073,6 +1075,9 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (source == dest && sourcerange.intersects(destrange))
 		throw love::Exception("Copying a portion of a buffer to the same buffer requires non-overlapping source and destination offsets.");
 
+	if (dest->isImmutable())
+		throw love::Exception("Cannot copy to an immutable buffer.");
+
 	source->copyTo(dest, sourceoffset, destoffset, size);
 }
 
@@ -1097,6 +1102,9 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 
 	if (dest->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
+
+	if (dest->isImmutable())
+		throw love::Exception("Cannot copy to an immutable buffer.");
 
 	if (isRenderTargetActive(source))
 		throw love::Exception("copyTextureToBuffer cannot be called while the Texture is an active render target.");

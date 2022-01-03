@@ -519,6 +519,8 @@ public:
 	virtual int getRequestedBackbufferMSAA() const = 0;
 	virtual int getBackbufferMSAA() const = 0;
 
+	Buffer *getQuadIndexBuffer() const { return quadIndexBuffer; }
+
 	/**
 	 * Sets the current constant color.
 	 **/

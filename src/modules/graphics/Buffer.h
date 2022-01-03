@@ -111,6 +111,9 @@ public:
 	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
 
+	void setImmutable(bool immutable) { this->immutable = immutable; };
+	bool isImmutable() const { return immutable; }
+
 	/**
 	 * Map a portion of the Buffer to client memory.
 	 */
@@ -176,6 +179,8 @@ protected:
 	BufferDataUsage dataUsage;
 
 	bool mapped;
+
+	bool immutable;
 	
 }; // Buffer
 

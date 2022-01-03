@@ -242,6 +242,12 @@ int w_getDPIScale(lua_State *L)
 	return 1;
 }
 
+int w_getQuadIndexBuffer(lua_State *L)
+{
+	luax_pushtype(L, instance()->getQuadIndexBuffer());
+	return 1;
+}
+
 static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
 {
 	lua_rawgeti(L, idx, 1);
@@ -3671,6 +3677,7 @@ static const luaL_Reg functions[] =
 	{ "getPixelHeight", w_getPixelHeight },
 	{ "getPixelDimensions", w_getPixelDimensions },
 	{ "getDPIScale", w_getDPIScale },
+	{ "getQuadIndexBuffer", w_getQuadIndexBuffer },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },
