@@ -3441,7 +3441,7 @@ int w_push(lua_State *L)
 	if (luax_istype(L, 2, math::Transform::type))
 	{
 		math::Transform *t = luax_totype<math::Transform>(L, 2);
-		luax_catchexcept(L, [&]() { instance()->applyTransform(t); });
+		luax_catchexcept(L, [&]() { instance()->applyTransform(t->getMatrix()); });
 	}
 
 	return 0;
@@ -3492,15 +3492,19 @@ int w_origin(lua_State * /*L*/)
 
 int w_applyTransform(lua_State *L)
 {
-	math::Transform *t = math::luax_checktransform(L, 1);
-	luax_catchexcept(L, [&]() { instance()->applyTransform(t); });
+	luax_checkstandardtransform(L, 1, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]() { instance()->applyTransform(m); });
+	});
 	return 0;
 }
 
 int w_replaceTransform(lua_State *L)
 {
-	math::Transform *t = math::luax_checktransform(L, 1);
-	luax_catchexcept(L, [&]() { instance()->replaceTransform(t); });
+	luax_checkstandardtransform(L, 1, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]() { instance()->replaceTransform(m); });
+	});
 	return 0;
 }
 

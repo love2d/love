@@ -826,8 +826,8 @@ public:
 	void shear(float kx, float ky);
 	void origin();
 
-	void applyTransform(love::math::Transform *transform);
-	void replaceTransform(love::math::Transform *transform);
+	void applyTransform(const Matrix4 &m);
+	void replaceTransform(const Matrix4 &m);
 
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);

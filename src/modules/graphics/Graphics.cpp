@@ -1990,19 +1990,18 @@ void Graphics::origin()
 	pixelScaleStack.back() = 1;
 }
 
-void Graphics::applyTransform(love::math::Transform *transform)
+void Graphics::applyTransform(const Matrix4 &m)
 {
-	Matrix4 &m = transformStack.back();
-	m *= transform->getMatrix();
+	Matrix4 &current = transformStack.back();
+	current *= m;
 
 	float sx, sy;
-	m.getApproximateScale(sx, sy);
+	current.getApproximateScale(sx, sy);
 	pixelScaleStack.back() = (sx + sy) / 2.0;
 }
 
-void Graphics::replaceTransform(love::math::Transform *transform)
+void Graphics::replaceTransform(const Matrix4 &m)
 {
-	const Matrix4 &m = transform->getMatrix();
 	transformStack.back() = m;
 
 	float sx, sy;
