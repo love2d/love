@@ -65,6 +65,14 @@ typedef Optional<ColorD> OptionalColorD;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
 
+enum Renderer
+{
+	RENDERER_NONE,
+	RENDERER_OPENGL,
+	RENDERER_METAL,
+	RENDERER_MAX_ENUM
+};
+
 /**
  * Globally sets whether gamma correction is enabled. Ideally this should be set
  * prior to using any Graphics module function.
@@ -94,6 +102,10 @@ Colorf gammaCorrectColor(const Colorf &c);
 Colorf unGammaCorrectColor(const Colorf &c);
 
 bool isDebugEnabled();
+
+const std::vector<Renderer> &getDefaultRenderers();
+const std::vector<Renderer> &getRenderers();
+void setRenderers(const std::vector<Renderer> &renderers);
 
 class Graphics : public Module
 {
@@ -149,14 +161,6 @@ public:
 		FEATURE_COPY_TEXTURE_TO_BUFFER,
 		FEATURE_COPY_RENDER_TARGET_TO_BUFFER,
 		FEATURE_MAX_ENUM
-	};
-
-	enum Renderer
-	{
-		RENDERER_NONE,
-		RENDERER_OPENGL,
-		RENDERER_METAL,
-		RENDERER_MAX_ENUM
 	};
 
 	enum SystemLimit
@@ -860,7 +864,7 @@ public:
 		return (T *) scratchBuffer.data();
 	}
 
-	static Graphics *createInstance(const std::vector<Renderer> &renderers);
+	static Graphics *createInstance();
 
 	STRINGMAP_CLASS_DECLARE(DrawMode);
 	STRINGMAP_CLASS_DECLARE(ArcMode);
@@ -1015,6 +1019,8 @@ private:
 	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[SHADERSTAGE_MAX_ENUM];
 
 }; // Graphics
+
+STRINGMAP_DECLARE(Renderer);
 
 } // graphics
 } // love

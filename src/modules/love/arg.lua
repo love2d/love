@@ -114,8 +114,10 @@ end
 
 love.arg.options = {
 	console = { a = 0 },
-	fused = {a = 0 },
-	game = { a = 1 }
+	fused = { a = 0 },
+	game = { a = 1 },
+	renderers = { a = 1 },
+	excluderenderers = { a = 1 },
 }
 
 love.arg.optionIndices = {}

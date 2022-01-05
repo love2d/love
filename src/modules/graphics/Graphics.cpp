@@ -110,7 +110,30 @@ namespace opengl { extern love::graphics::Graphics *createInstance(); }
 namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
 
-Graphics *Graphics::createInstance(const std::vector<Renderer> &renderers)
+static std::vector<Renderer> defaultRenderers =
+{
+	RENDERER_METAL,
+	RENDERER_OPENGL,
+};
+
+static std::vector<Renderer> _renderers = defaultRenderers;
+
+const std::vector<Renderer> &getDefaultRenderers()
+{
+	return defaultRenderers;
+}
+
+const std::vector<Renderer> &getRenderers()
+{
+	return _renderers;
+}
+
+void setRenderers(const std::vector<Renderer> &renderers)
+{
+	_renderers = renderers;
+}
+
+Graphics *Graphics::createInstance()
 {
 	Graphics *instance = Module::getInstance<Graphics>(M_GRAPHICS);
 
@@ -118,7 +141,7 @@ Graphics *Graphics::createInstance(const std::vector<Renderer> &renderers)
 		instance->retain();
 	else
 	{
-		for (auto renderer : renderers)
+		for (auto renderer : _renderers)
 		{
 			if (renderer == RENDERER_OPENGL)
 				instance = opengl::createInstance();
@@ -2146,6 +2169,13 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::StackType, Graphics::STACK_MAX_ENUM, s
 	{ "transform", Graphics::STACK_TRANSFORM },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::StackType, Graphics::STACK_MAX_ENUM, stackType)
+
+STRINGMAP_BEGIN(Renderer, RENDERER_MAX_ENUM, renderer)
+{
+	{ "opengl", RENDERER_OPENGL },
+	{ "metal",  RENDERER_METAL  },
+}
+STRINGMAP_END(Renderer, RENDERER_MAX_ENUM, renderer)
 
 } // graphics
 } // love

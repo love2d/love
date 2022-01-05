@@ -295,7 +295,7 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	return attribslist;
 }
 
-bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Graphics::Renderer renderer)
+bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Renderer renderer)
 {
 	bool needsglcontext = (windowflags & SDL_WINDOW_OPENGL) != 0;
 #ifdef LOVE_GRAPHICS_METAL
@@ -368,7 +368,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		return true;
 	};
 
-	if (renderer == graphics::Graphics::RENDERER_OPENGL)
+	if (renderer == graphics::RENDERER_OPENGL)
 	{
 		std::vector<ContextAttribs> attribslist = getContextAttribsList();
 
@@ -404,7 +404,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		}
 	}
 #ifdef LOVE_GRAPHICS_METAL
-	else if (renderer == graphics::Graphics::RENDERER_METAL)
+	else if (renderer == graphics::RENDERER_METAL)
 	{
 		if (create(nullptr) && window != nullptr)
 			metalView = SDL_Metal_CreateView(window);
@@ -465,7 +465,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (graphics.get() && graphics->isRenderTargetActive())
 		throw love::Exception("love.window.setMode cannot be called while a render target is active in love.graphics.");
 
-	auto renderer = graphics != nullptr ? graphics->getRenderer() : graphics::Graphics::RENDERER_NONE;
+	auto renderer = graphics != nullptr ? graphics->getRenderer() : graphics::RENDERER_NONE;
 
 	if (isOpen())
 		updateSettings(this->settings, false);
@@ -557,7 +557,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	if (isOpen())
 	{
-		if (SDL_SetWindowFullscreen(window, sdlflags) == 0 && renderer == graphics::Graphics::RENDERER_OPENGL)
+		if (SDL_SetWindowFullscreen(window, sdlflags) == 0 && renderer == graphics::RENDERER_OPENGL)
 			SDL_GL_MakeCurrent(window, glcontext);
 
 		if (!f.fullscreen)
@@ -575,11 +575,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	}
 	else
 	{
-		if (renderer == graphics::Graphics::RENDERER_OPENGL)
+		if (renderer == graphics::RENDERER_OPENGL)
 			sdlflags |= SDL_WINDOW_OPENGL;
 
 	#ifdef LOVE_GRAPHICS_METAL
-		if (renderer == graphics::Graphics::RENDERER_METAL)
+		if (renderer == graphics::RENDERER_METAL)
 			sdlflags |= SDL_WINDOW_METAL;
 	#endif
 
@@ -626,10 +626,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		if (needsetmode)
 		{
 			void *context = nullptr;
-			if (renderer == graphics::Graphics::RENDERER_OPENGL)
+			if (renderer == graphics::RENDERER_OPENGL)
 				context = (void *) glcontext;
 #ifdef LOVE_GRAPHICS_METAL
-			if (renderer == graphics::Graphics::RENDERER_METAL && metalView)
+			if (renderer == graphics::RENDERER_METAL && metalView)
 				context = (void *) SDL_Metal_GetLayer(metalView);
 #endif
 

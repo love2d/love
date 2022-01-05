@@ -2016,7 +2016,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 	return (usage & flags) == usage;
 }
 
-Graphics::Renderer Graphics::getRenderer() const
+Renderer Graphics::getRenderer() const
 {
 	return RENDERER_METAL;
 }

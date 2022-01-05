@@ -3697,16 +3697,7 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_graphics(lua_State *L)
 {
-	Graphics *instance = nullptr;
-
-	{
-		std::vector<Graphics::Renderer> renderers;
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
-		renderers.push_back(Graphics::RENDERER_METAL);
-#endif
-		renderers.push_back(Graphics::RENDERER_OPENGL);
-		instance = Graphics::createInstance(renderers);
-	}
+	Graphics *instance = Graphics::createInstance();
 
 	if (instance == nullptr)
 	{

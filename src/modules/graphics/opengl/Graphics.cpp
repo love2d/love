@@ -1599,7 +1599,7 @@ void Graphics::releaseBufferMapMemory(void *mem)
 		free(mem);
 }
 
-Graphics::Renderer Graphics::getRenderer() const
+Renderer Graphics::getRenderer() const
 {
 	return RENDERER_OPENGL;
 }
