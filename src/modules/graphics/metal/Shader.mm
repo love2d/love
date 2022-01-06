@@ -430,14 +430,14 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 			u.matrix.rows = membertype.vecsize;
 			u.matrix.columns = membertype.columns;
 		}
-		if (validationReflection.localUniforms.find(u.name) != validationReflection.localUniforms.end())
+
+		const auto &reflectionit = validationReflection.localUniforms.find(u.name);
+		if (reflectionit != validationReflection.localUniforms.end())
 		{
-			const auto &ru = validationReflection.localUniforms.find(u.name);
-			const auto &values = ru->second.initializerValues;
+			const auto &localuniform = reflectionit->second;
+			const auto &values = localuniform.initializerValues;
 			if (!values.empty())
-			{
 				memcpy(u.data, values.data(), std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
-			}
 		}
 
 		uniforms[u.name] = u;
@@ -894,15 +894,47 @@ const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 	return builtinUniformInfo[(int)builtin];
 }
 
-void Shader::updateUniform(const UniformInfo *info, int /*count*/)
+void Shader::updateUniform(const UniformInfo *info, int count)
 {
 	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
-	// Staging -> uniform buffer data copy needed for batch flushing to work.
-	// TODO: account for padding with 3x3 matrices etc.
+	count = std::min(count, info->count);
+
+	// TODO: store some of this in UniformInfo.
+	size_t elementsize = info->components * 4;
+	if (info->baseType == UNIFORM_MATRIX)
+		elementsize = info->matrix.columns * info->matrix.rows * 4;
+
 	size_t offset = (const uint8 *)info->data - localUniformStagingData;
-	memcpy(localUniformBufferData + offset, info->data, info->dataSize);
+
+	// Assuming std140 packing rules, the source data can only be direct-copied
+	// to the uniform buffer in certain cases because it's tightly packed whereas
+	// the buffer's data isn't.
+	if (elementsize * info->count == info->dataSize || (count == 1 && info->baseType != UNIFORM_MATRIX))
+	{
+		memcpy(localUniformBufferData + offset, info->data, elementsize * count);
+	}
+	else
+	{
+		int veccount = count;
+		int comp = info->components;
+
+		if (info->baseType == UNIFORM_MATRIX)
+		{
+			veccount *= info->matrix.rows;
+			comp = info->matrix.columns;
+		}
+
+		const int *src = info->ints;
+		int *dst = (int *) (localUniformBufferData + offset);
+
+		for (int i = 0; i < veccount; i++)
+		{
+			for (int c = 0; c < comp; c++)
+				dst[i * 4 + c] = src[i * comp + c];
+		}
+	}
 }
 
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
