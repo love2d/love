@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "Buffer.h"
 #include "SDL_vulkan.h"
 #include "window/Window.h"
 #include "common/Exception.h"
@@ -88,6 +89,10 @@ namespace love {
 
 			Graphics::~Graphics() {
 				cleanup();
+			}
+
+			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
+				return new Buffer(this, settings, format, data, size, arraylength);
 			}
 
 			void Graphics::present(void* screenshotCallbackdata) {

@@ -578,6 +578,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Shader.cpp
 	src/modules/graphics/vulkan/ShaderStage.h
 	src/modules/graphics/vulkan/ShaderStage.cpp
+	src/modules/graphics/vulkan/Buffer.h
+	src/modules/graphics/vulkan/Buffer.cpp
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
