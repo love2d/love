@@ -87,37 +87,22 @@ namespace love {
 			}
 
 			Graphics::~Graphics() {
-				if (init) {
-					for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-						vkDestroySemaphore(device, renderFinishedSemaphores.at(i), nullptr);
-						vkDestroySemaphore(device, imageAvailableSemaphores.at(i), nullptr);
-						vkDestroyFence(device, inFlightFences.at(i), nullptr);
-					}
-					if (vkDeviceWaitIdle(device) != VK_SUCCESS) {
-						throw love::Exception("vkDeviceWaitIdle failed");
-					}
-					vkDestroyCommandPool(device, commandPool, nullptr);
-					for (auto framebuffer : swapChainFramBuffers) {
-						vkDestroyFramebuffer(device, framebuffer, nullptr);
-					}
-					vkDestroyPipeline(device, graphicsPipeline, nullptr);
-					vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-					vkDestroyRenderPass(device, renderPass, nullptr);
-					for (auto imageView : swapChainImageViews) {
-						vkDestroyImageView(device, imageView, nullptr);
-					}
-					vkDestroySwapchainKHR(device, swapChain, nullptr);
-					vkDestroyDevice(device, nullptr);
-					vkDestroySurfaceKHR(instance, surface, nullptr);
-					vkDestroyInstance(instance, nullptr);
-				}
+				cleanup();
 			}
 
 			void Graphics::present(void* screenshotCallbackdata) {
 				vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 				uint32_t imageIndex;
-				vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+				VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+				if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+					recreateSwapChain();
+					return;
+				}
+				else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+					throw love::Exception("failed to acquire swap chain image");
+				}
 
 				if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 					vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
@@ -158,9 +143,21 @@ namespace love {
 
 				presentInfo.pImageIndices = &imageIndex;
 
-				vkQueuePresentKHR(presentQueue, &presentInfo);
+				result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+				if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+					framebufferResized = false;
+					recreateSwapChain();
+				}
+				else if (result != VK_SUCCESS) {
+					throw love::Exception("failed to present swap chain image");
+				}
 
 				currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+			}
+
+			void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
+				recreateSwapChain();
 			}
 
 			void Graphics::createVulkanInstance() {
@@ -842,6 +839,45 @@ namespace love {
 						throw love::Exception("failed to create synchronization objects for a frame!");
 					}
 				}
+			}
+
+			void Graphics::cleanup() {
+				cleanupSwapChain();
+
+				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+					vkDestroyFence(device, inFlightFences[i], nullptr);
+				}
+				vkDestroyCommandPool(device, commandPool, nullptr);
+				vkDestroyDevice(device, nullptr);
+				vkDestroySurfaceKHR(instance, surface, nullptr);
+				vkDestroyInstance(instance, nullptr);
+			}
+
+			void Graphics::cleanupSwapChain() {
+				for (size_t i = 0; i < swapChainFramBuffers.size(); i++) {
+					vkDestroyFramebuffer(device, swapChainFramBuffers[i], nullptr);
+				}
+				vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+				vkDestroyPipeline(device, graphicsPipeline, nullptr);
+				vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				vkDestroyRenderPass(device, renderPass, nullptr);
+				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+				}
+				vkDestroySwapchainKHR(device, swapChain, nullptr);
+			}
+
+			void Graphics::recreateSwapChain() {
+				vkDeviceWaitIdle(device);
+
+				createSwapChain();
+				createImageViews();
+				createRenderPass();
+				createGraphicsPipeline();
+				createFramebuffers();
+				createCommandBuffers();
 			}
 
 			love::graphics::Graphics* createInstance() {
