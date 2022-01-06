@@ -106,7 +106,7 @@ bool isDebugEnabled()
 love::Type Graphics::type("graphics", &Module::type);
 
 namespace opengl { extern love::graphics::Graphics *createInstance(); }
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
 
@@ -153,7 +153,7 @@ Graphics *Graphics::createInstance()
 
 			if (r == RENDERER_OPENGL)
 				instance = opengl::createInstance();
-#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#ifdef LOVE_GRAPHICS_METAL
 			if (r == RENDERER_METAL)
 				instance = metal::createInstance();
 #endif
