@@ -21,6 +21,7 @@
 // LOVE
 #include "common/config.h"
 #include "graphics/Graphics.h"
+#include "graphics/vulkan/Graphics.h"
 #include "Window.h"
 
 #ifdef LOVE_ANDROID
@@ -137,6 +138,7 @@ void Window::setGLFramebufferAttributes(bool sRGB)
 
 void Window::setGLContextAttributes(const ContextAttribs &attribs)
 {
+#ifndef LOVE_GRAPHICS_VULKAN
 	int profilemask = 0;
 	int contextflags = 0;
 
@@ -154,10 +156,12 @@ void Window::setGLContextAttributes(const ContextAttribs &attribs)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, attribs.versionMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profilemask);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextflags);
+#endif
 }
 
 bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversion)
 {
+#ifndef LOVE_GRAPHICS_VULKAN
 	typedef unsigned char GLubyte;
 	typedef unsigned int GLenum;
 	typedef const GLubyte *(APIENTRY *glGetStringPtr)(GLenum name);
@@ -202,6 +206,9 @@ bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversi
 		return false;
 
 	return true;
+#else
+	return true;
+#endif
 }
 
 std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
@@ -314,11 +321,13 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	const auto create = [&](const ContextAttribs *attribs) -> bool
 	{
+#ifndef LOVE_GRAPHICS_VULKAN
 		if (glcontext)
 		{
 			SDL_GL_DeleteContext(glcontext);
 			glcontext = nullptr;
 		}
+#endif
 
 #ifdef LOVE_GRAPHICS_METAL
 		if (metalView)
@@ -335,6 +344,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			window = nullptr;
 		}
 
+#ifndef LOVE_GRAPHICS_VULKAN
 		window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
 
 		if (!window)
@@ -366,6 +376,16 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		}
 
 		return true;
+
+#else
+		window = SDL_CreateWindow(title.c_str(), x, y, w, h, SDL_WINDOW_VULKAN);
+
+		love::graphics::Graphics* gfx = graphics.get();
+		love::graphics::vulkan::Graphics* vgfx = (love::graphics::vulkan::Graphics*)gfx;
+		vgfx->initVulkan();
+
+		return true;
+#endif
 	};
 
 	if (renderer == graphics::RENDERER_OPENGL)
@@ -577,19 +597,21 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		if (renderer == graphics::RENDERER_OPENGL)
 			sdlflags |= SDL_WINDOW_OPENGL;
-
 	#ifdef LOVE_GRAPHICS_METAL
 		if (renderer == graphics::RENDERER_METAL)
 			sdlflags |= SDL_WINDOW_METAL;
 	#endif
 
-		 if (f.resizable)
+		if (renderer == graphics::RENDERER_VULKAN)
+			sdlflags |= SDL_WINDOW_VULKAN;
+
+		if (f.resizable)
 			 sdlflags |= SDL_WINDOW_RESIZABLE;
 
-		 if (f.borderless)
+		if (f.borderless)
 			 sdlflags |= SDL_WINDOW_BORDERLESS;
 
-		 if (isHighDPIAllowed())
+		if (isHighDPIAllowed())
 			 sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
 		if (!createWindowAndContext(x, y, width, height, sdlflags, renderer))

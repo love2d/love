@@ -109,6 +109,7 @@ namespace opengl { extern love::graphics::Graphics *createInstance(); }
 #ifdef LOVE_GRAPHICS_METAL
 namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
+namespace vulkan { extern love::graphics::Graphics* createInstance(); }
 
 static const Renderer rendererOrder[] = {
 	RENDERER_METAL,
@@ -148,6 +149,9 @@ Graphics *Graphics::createInstance()
 	{
 		for (auto r : rendererOrder)
 		{
+			// FIX ME: proper selection of vulkan backend
+			instance = vulkan::createInstance();
+
 			if (std::find(_renderers.begin(), _renderers.end(), r) == _renderers.end())
 				continue;
 
@@ -157,7 +161,6 @@ Graphics *Graphics::createInstance()
 			if (r == RENDERER_METAL)
 				instance = metal::createInstance();
 #endif
-
 			if (instance != nullptr)
 				break;
 		}
