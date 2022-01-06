@@ -411,9 +411,9 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 		if (metalView == nullptr && window != nullptr)
 		{
+			contexterror = SDL_GetError();
 			SDL_DestroyWindow(window);
 			window = nullptr;
-			// TODO: error message
 		}
 	}
 #endif
@@ -430,13 +430,13 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	if (failed)
 	{
-		std::string title = "Unable to create OpenGL window";
+		std::string title = "Unable to create renderer";
 		std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
 
 		if (!glversion.empty())
 			message += "\n\nDetected OpenGL version:\n" + glversion;
 		else if (!contexterror.empty())
-			message += "\n\nOpenGL context creation error: " + contexterror;
+			message += "\n\nRenderer context creation error: " + contexterror;
 		else if (!windowerror.empty())
 			message += "\n\nSDL window creation error: " + windowerror;
 
