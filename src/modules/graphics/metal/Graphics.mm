@@ -2099,11 +2099,12 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
+	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
 	capabilities.features[FEATURE_COPY_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;
