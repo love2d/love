@@ -1689,6 +1689,10 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		else
 			f.externalformat = GL_RGBA;
 		break;
+	case PIXELFORMAT_BGRA8_UNORM:
+	case PIXELFORMAT_BGRA8_UNORM_sRGB:
+		// Not supported right now.
+		break;
 	case PIXELFORMAT_R16_UNORM:
 		f.internalformat = GL_R16;
 		f.externalformat = GL_RED;
@@ -2136,6 +2140,10 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonrender;
 		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
 			flags |= computewrite;
+		break;
+	case PIXELFORMAT_BGRA8_UNORM:
+	case PIXELFORMAT_BGRA8_UNORM_sRGB:
+		// Not supported right now.
 		break;
 	case PIXELFORMAT_R16_UNORM:
 	case PIXELFORMAT_RG16_UNORM:
