@@ -378,7 +378,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		return true;
 
 #else
-		window = SDL_CreateWindow(title.c_str(), x, y, w, h, SDL_WINDOW_VULKAN);
+		window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags | SDL_WINDOW_VULKAN);
 
 		love::graphics::Graphics* gfx = graphics.get();
 		love::graphics::vulkan::Graphics* vgfx = (love::graphics::vulkan::Graphics*)gfx;

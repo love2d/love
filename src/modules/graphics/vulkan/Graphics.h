@@ -34,7 +34,7 @@ namespace love {
 				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override {}
 				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override {}
 				void present(void* screenshotCallbackdata) override;
-				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override {}
+				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 				bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override { return false;  }
 				void unSetMode() override {}
 				void setActive(bool active) override {}
@@ -109,6 +109,9 @@ namespace love {
 				void createCommandPool();
 				void createCommandBuffers();
 				void createSyncObjects();
+				void cleanup();
+				void cleanupSwapChain();
+				void recreateSwapChain();
 
 				VkInstance instance;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -133,6 +136,7 @@ namespace love {
 				std::vector<VkFence> inFlightFences;
 				std::vector<VkFence> imagesInFlight;
 				size_t currentFrame = 0;
+				bool framebufferResized = false;
 			};
 		}
 	}
