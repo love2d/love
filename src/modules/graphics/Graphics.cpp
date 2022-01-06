@@ -110,6 +110,11 @@ namespace opengl { extern love::graphics::Graphics *createInstance(); }
 namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
 
+static const Renderer rendererOrder[] = {
+	RENDERER_METAL,
+	RENDERER_OPENGL,
+};
+
 static std::vector<Renderer> defaultRenderers =
 {
 	RENDERER_METAL,
@@ -141,12 +146,15 @@ Graphics *Graphics::createInstance()
 		instance->retain();
 	else
 	{
-		for (auto renderer : _renderers)
+		for (auto r : rendererOrder)
 		{
-			if (renderer == RENDERER_OPENGL)
+			if (std::find(_renderers.begin(), _renderers.end(), r) == _renderers.end())
+				continue;
+
+			if (r == RENDERER_OPENGL)
 				instance = opengl::createInstance();
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
-			if (renderer == RENDERER_METAL)
+			if (r == RENDERER_METAL)
 				instance = metal::createInstance();
 #endif
 
