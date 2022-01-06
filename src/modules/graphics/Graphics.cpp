@@ -109,6 +109,7 @@ namespace opengl { extern love::graphics::Graphics *createInstance(); }
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
 namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
+namespace vulkan { extern love::graphics::Graphics* createInstance(); }
 
 Graphics *Graphics::createInstance(const std::vector<Renderer> &renderers)
 {
@@ -126,6 +127,9 @@ Graphics *Graphics::createInstance(const std::vector<Renderer> &renderers)
 			if (renderer == RENDERER_METAL)
 				instance = metal::createInstance();
 #endif
+			if (renderer == RENDERER_VULKAN) {
+				instance = vulkan::createInstance();
+			}
 
 			if (instance != nullptr)
 				break;

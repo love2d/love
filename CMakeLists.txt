@@ -34,7 +34,7 @@ set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
 # Needed for shared libs on Linux. (-fPIC).
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 
 if(MSVC)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
@@ -66,6 +66,8 @@ if(POLICY CMP0072)
 endif()
 
 if(MEGA)
+	find_package(Vulkan REQUIRED)
+
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
 	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
@@ -73,7 +75,7 @@ if(MEGA)
 	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
 	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
 	# are CMake targets, causing include paths to be added automatically.
-	set(LOVE_INCLUDE_DIRS)
+	set(LOVE_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS})
 
 	if(APPLE)
 		# Some files do #include <SDL2/SDL.h>, but building with megasource
@@ -96,6 +98,7 @@ if(MEGA)
 		${MEGA_SDL2MAIN}
 		${MEGA_SDL2}
 		${MEGA_ZLIB}
+		${Vulkan_LIBRARIES}
 	)
 
 	# These DLLs are moved next to the love binary in a post-build step to
@@ -568,13 +571,24 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Texture.h
 )
 
+set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
+	src/modules/graphics/vulkan/Graphics.h
+	src/modules/graphics/vulkan/Graphics.cpp
+	src/modules/graphics/vulkan/Shader.h
+	src/modules/graphics/vulkan/Shader.cpp
+	src/modules/graphics/vulkan/ShaderStage.h
+	src/modules/graphics/vulkan/ShaderStage.cpp
+)
+
 set(LOVE_SRC_MODULE_GRAPHICS
 	${LOVE_SRC_MODULE_GRAPHICS_ROOT}
 	${LOVE_SRC_MODULE_GRAPHICS_OPENGL}
+	${LOVE_SRC_MODULE_GRAPHICS_VULKAN}
 )
 
 source_group("modules\\graphics" FILES ${LOVE_SRC_MODULE_GRAPHICS_ROOT})
 source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL})
+source_group("modules\\graphics\\vulkan" FILES ${LOVE_SRC_MODULE_GRAPHICS_VULKAN})
 
 #
 # love.image

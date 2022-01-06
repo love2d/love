@@ -18,6 +18,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include <iostream>
+
 #include "ShaderStage.h"
 #include "common/Exception.h"
 #include "Graphics.h"

@@ -3704,7 +3704,11 @@ extern "C" int luaopen_love_graphics(lua_State *L)
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
 		renderers.push_back(Graphics::RENDERER_METAL);
 #endif
+#ifdef LOVE_GRAPHICS_VULKAN
+		renderers.push_back(Graphics::RENDERER_VULKAN);
+#else
 		renderers.push_back(Graphics::RENDERER_OPENGL);
+#endif
 		instance = Graphics::createInstance(renderers);
 	}
 
