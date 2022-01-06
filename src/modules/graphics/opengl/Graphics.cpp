@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -1657,11 +1657,12 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
+	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_element_index_uint;
 	capabilities.features[FEATURE_COPY_BUFFER] = gl.isCopyBufferSupported();
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = gl.isCopyBufferToTextureSupported();
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = gl.isCopyRenderTargetToBufferSupported();
-	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

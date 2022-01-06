@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -58,14 +58,16 @@ STRINGMAP_CLASS_END(Joystick, Joystick::Hat, Joystick::HAT_MAX_ENUM, hat)
 
 STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 {
-	{ "unknown",   Joystick::GAMEPAD_TYPE_UNKNOWN             },
-	{ "xbox360",   Joystick::GAMEPAD_TYPE_XBOX360             },
-	{ "xboxone",   Joystick::GAMEPAD_TYPE_XBOXONE             },
-	{ "ps3",       Joystick::GAMEPAD_TYPE_PS3                 },
-	{ "ps4",       Joystick::GAMEPAD_TYPE_PS4                 },
-	{ "ps5",       Joystick::GAMEPAD_TYPE_PS5                 },
-	{ "switchpro", Joystick::GAMEPAD_TYPE_NINTENDO_SWITCH_PRO },
-	{ "virtual",   Joystick::GAMEPAD_TYPE_VIRTUAL             },
+	{ "unknown",    Joystick::GAMEPAD_TYPE_UNKNOWN             },
+	{ "xbox360",    Joystick::GAMEPAD_TYPE_XBOX360             },
+	{ "xboxone",    Joystick::GAMEPAD_TYPE_XBOXONE             },
+	{ "ps3",        Joystick::GAMEPAD_TYPE_PS3                 },
+	{ "ps4",        Joystick::GAMEPAD_TYPE_PS4                 },
+	{ "ps5",        Joystick::GAMEPAD_TYPE_PS5                 },
+	{ "switchpro",  Joystick::GAMEPAD_TYPE_NINTENDO_SWITCH_PRO },
+	{ "amazonluna", Joystick::GAMEPAD_TYPE_AMAZON_LUNA         },
+	{ "stadia",     Joystick::GAMEPAD_TYPE_STADIA              },
+	{ "virtual",    Joystick::GAMEPAD_TYPE_VIRTUAL             },
 }
 STRINGMAP_CLASS_END(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 

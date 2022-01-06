@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -449,7 +449,7 @@ static const Version versions[] =
 {
 	{ "#version 120", "#version 100" },
 	{ "#version 330 core", "#version 300 es" },
-	{ "#version 430 core", "#version 310 es" },
+	{ "#version 430 core", "#version 320 es" },
 };
 
 static Shader::Language getTargetLanguage(const std::string &src)

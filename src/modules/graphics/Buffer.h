@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -111,6 +111,9 @@ public:
 	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
 
+	void setImmutable(bool immutable) { this->immutable = immutable; };
+	bool isImmutable() const { return immutable; }
+
 	/**
 	 * Map a portion of the Buffer to client memory.
 	 */
@@ -176,6 +179,8 @@ protected:
 	BufferDataUsage dataUsage;
 
 	bool mapped;
+
+	bool immutable;
 	
 }; // Buffer
 

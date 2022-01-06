@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -156,6 +156,7 @@ public:
 		FEATURE_GLSL4,
 		FEATURE_INSTANCING,
 		FEATURE_TEXEL_BUFFER,
+		FEATURE_INDEX_BUFFER_32BIT,
 		FEATURE_COPY_BUFFER,
 		FEATURE_COPY_BUFFER_TO_TEXTURE,
 		FEATURE_COPY_TEXTURE_TO_BUFFER,
@@ -523,6 +524,8 @@ public:
 	virtual int getRequestedBackbufferMSAA() const = 0;
 	virtual int getBackbufferMSAA() const = 0;
 
+	Buffer *getQuadIndexBuffer() const { return quadIndexBuffer; }
+
 	/**
 	 * Sets the current constant color.
 	 **/
@@ -693,6 +696,9 @@ public:
 	void drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 &m);
 	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
 
+	void drawShaderVertices(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture);
+	void drawShaderVertices(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture);
+
 	/**
 	 * Draws text at the specified coordinates
 	 **/
@@ -836,8 +842,8 @@ public:
 	void shear(float kx, float ky);
 	void origin();
 
-	void applyTransform(love::math::Transform *transform);
-	void replaceTransform(love::math::Transform *transform);
+	void applyTransform(const Matrix4 &m);
+	void replaceTransform(const Matrix4 &m);
 
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);

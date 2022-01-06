@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -256,6 +256,10 @@ Joystick::GamepadType Joystick::getGamepadType() const
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 		case SDL_CONTROLLER_TYPE_VIRTUAL: return GAMEPAD_TYPE_VIRTUAL;
 		case SDL_CONTROLLER_TYPE_PS5: return GAMEPAD_TYPE_PS5;
+#endif
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+		case SDL_CONTROLLER_TYPE_AMAZON_LUNA: return GAMEPAD_TYPE_AMAZON_LUNA;
+		case SDL_CONTROLLER_TYPE_GOOGLE_STADIA: return GAMEPAD_TYPE_STADIA;
 #endif
 	}
 #endif

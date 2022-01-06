@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -239,6 +239,12 @@ int w_getPixelDimensions(lua_State *L)
 int w_getDPIScale(lua_State *L)
 {
 	lua_pushnumber(L, instance()->getScreenDPIScale());
+	return 1;
+}
+
+int w_getQuadIndexBuffer(lua_State *L)
+{
+	luax_pushtype(L, instance()->getQuadIndexBuffer());
 	return 1;
 }
 
@@ -2938,6 +2944,42 @@ int w_drawInstanced(lua_State *L)
 	return 0;
 }
 
+int w_drawShaderVertices(lua_State *L)
+{
+	if (luax_istype(L, 1, Buffer::type))
+	{
+		// Indexed drawing.
+		Buffer *t = luax_checkbuffer(L, 1);
+
+		int indexcount = (int) luaL_checkinteger(L, 2);
+		int instancecount = (int) luaL_optinteger(L, 3, 1);
+		int indexstart = (int) luaL_optinteger(L, 4, 1) - 1;
+
+		Texture *tex = nullptr;
+		if (!lua_isnoneornil(L, 5))
+			tex = luax_checktexture(L, 5);
+
+		luax_catchexcept(L, [&]() { instance()->drawShaderVertices(t, indexcount, instancecount, indexstart, tex); });
+	}
+	else
+	{
+		const char *primstr = luaL_checkstring(L, 1);
+		PrimitiveType primtype = PRIMITIVE_TRIANGLES;
+		if (!getConstant(primstr, primtype))
+			return luax_enumerror(L, "primitive type", getConstants(primtype), primstr);
+
+		int vertexcount = (int) luaL_checkinteger(L, 2);
+		int instancecount = (int) luaL_optinteger(L, 3, 1);
+
+		Texture *tex = nullptr;
+		if (!lua_isnoneornil(L, 4))
+			tex = luax_checktexture(L, 4);
+
+		luax_catchexcept(L, [&]() { instance()->drawShaderVertices(primtype, vertexcount, instancecount, tex); });
+	}
+	return 0;
+}
+
 int w_print(lua_State *L)
 {
 	std::vector<Font::ColoredString> str;
@@ -3441,7 +3483,7 @@ int w_push(lua_State *L)
 	if (luax_istype(L, 2, math::Transform::type))
 	{
 		math::Transform *t = luax_totype<math::Transform>(L, 2);
-		luax_catchexcept(L, [&]() { instance()->applyTransform(t); });
+		luax_catchexcept(L, [&]() { instance()->applyTransform(t->getMatrix()); });
 	}
 
 	return 0;
@@ -3492,15 +3534,19 @@ int w_origin(lua_State * /*L*/)
 
 int w_applyTransform(lua_State *L)
 {
-	math::Transform *t = math::luax_checktransform(L, 1);
-	luax_catchexcept(L, [&]() { instance()->applyTransform(t); });
+	luax_checkstandardtransform(L, 1, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]() { instance()->applyTransform(m); });
+	});
 	return 0;
 }
 
 int w_replaceTransform(lua_State *L)
 {
-	math::Transform *t = math::luax_checktransform(L, 1);
-	luax_catchexcept(L, [&]() { instance()->replaceTransform(t); });
+	luax_checkstandardtransform(L, 1, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]() { instance()->replaceTransform(m); });
+	});
 	return 0;
 }
 
@@ -3610,6 +3656,7 @@ static const luaL_Reg functions[] =
 	{ "draw", w_draw },
 	{ "drawLayer", w_drawLayer },
 	{ "drawInstanced", w_drawInstanced },
+	{ "drawShaderVertices", w_drawShaderVertices },
 
 	{ "print", w_print },
 	{ "printf", w_printf },
@@ -3630,6 +3677,7 @@ static const luaL_Reg functions[] =
 	{ "getPixelHeight", w_getPixelHeight },
 	{ "getPixelDimensions", w_getPixelDimensions },
 	{ "getDPIScale", w_getDPIScale },
+	{ "getQuadIndexBuffer", w_getQuadIndexBuffer },
 
 	{ "setScissor", w_setScissor },
 	{ "intersectScissor", w_intersectScissor },

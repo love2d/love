@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -246,6 +246,8 @@ void Graphics::createQuadIndexBuffer()
 
 	Buffer::Mapper map(*quadIndexBuffer);
 	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+
+	quadIndexBuffer->setImmutable(true);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -1150,6 +1152,9 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (source == dest && sourcerange.intersects(destrange))
 		throw love::Exception("Copying a portion of a buffer to the same buffer requires non-overlapping source and destination offsets.");
 
+	if (dest->isImmutable())
+		throw love::Exception("Cannot copy to an immutable buffer.");
+
 	source->copyTo(dest, sourceoffset, destoffset, size);
 }
 
@@ -1174,6 +1179,9 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 
 	if (dest->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
+
+	if (dest->isImmutable())
+		throw love::Exception("Cannot copy to an immutable buffer.");
 
 	if (isRenderTargetActive(source))
 		throw love::Exception("copyTextureToBuffer cannot be called while the Texture is an active render target.");
@@ -1591,6 +1599,75 @@ void Graphics::drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 
 void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
 {
 	mesh->drawInstanced(this, m, instancecount);
+}
+
+void Graphics::drawShaderVertices(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture)
+{
+	flushBatchedDraws();
+
+	if (!capabilities.features[FEATURE_GLSL3])
+		throw love::Exception("drawShaderVertices is not supported on this system (GLSL3 support is required.)");
+
+	if (Shader::isDefaultActive() || !Shader::current)
+		throw love::Exception("drawShaderVertices can only be used with a custom shader.");
+
+	if (vertexcount < 0 || instancecount < 0)
+		throw love::Exception("drawShaderVertices vertex and instance count parameters must not be negative.");
+
+	Shader::current->validateDrawState(primtype, maintexture);
+
+	VertexAttributes attributes;
+	BufferBindings buffers;
+
+	DrawCommand cmd(&attributes, &buffers);
+
+	cmd.primitiveType = primtype;
+	cmd.vertexCount = vertexcount;
+	cmd.instanceCount = std::max(1, instancecount);
+	cmd.texture = maintexture;
+
+	draw(cmd);
+}
+
+void Graphics::drawShaderVertices(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture)
+{
+	flushBatchedDraws();
+
+	if (!capabilities.features[FEATURE_GLSL3])
+		throw love::Exception("drawShaderVertices is not supported on this system (GLSL3 support is required.)");
+
+	if (!(indexbuffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX))
+		throw love::Exception("The buffer passed to drawShaderVertices must be an index buffer.");
+
+	if (startindex < 0)
+		throw love::Exception("drawShaderVertices startindex parameter must not be negative.");
+
+	if (indexcount < 0 || instancecount < 0)
+		throw love::Exception("drawShaderVertices index and instance count parameters must not be negative.");
+
+	if ((size_t)(startindex + indexcount) > indexbuffer->getArrayLength() * indexbuffer->getDataMembers().size())
+		throw love::Exception("drawShaderVertices startindex and index count parameters do not fit in the given index buffer.");
+
+	if (Shader::isDefaultActive() || !Shader::current)
+		throw love::Exception("drawShaderVertices can only be used with a custom shader.");
+
+	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+
+	VertexAttributes attributes;
+	BufferBindings buffers;
+
+	DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
+
+	cmd.primitiveType = PRIMITIVE_TRIANGLES;
+	cmd.indexCount = indexcount;
+	cmd.instanceCount = std::max(1, instancecount);
+
+	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
+	cmd.indexBufferOffset = startindex * getIndexDataSize(cmd.indexType);
+
+	cmd.texture = maintexture;
+
+	draw(cmd);
 }
 
 void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
@@ -2067,19 +2144,18 @@ void Graphics::origin()
 	pixelScaleStack.back() = 1;
 }
 
-void Graphics::applyTransform(love::math::Transform *transform)
+void Graphics::applyTransform(const Matrix4 &m)
 {
-	Matrix4 &m = transformStack.back();
-	m *= transform->getMatrix();
+	Matrix4 &current = transformStack.back();
+	current *= m;
 
 	float sx, sy;
-	m.getApproximateScale(sx, sy);
+	current.getApproximateScale(sx, sy);
 	pixelScaleStack.back() = (sx + sy) / 2.0;
 }
 
-void Graphics::replaceTransform(love::math::Transform *transform)
+void Graphics::replaceTransform(const Matrix4 &m)
 {
-	const Matrix4 &m = transform->getMatrix();
 	transformStack.back() = m;
 
 	float sx, sy;
@@ -2146,6 +2222,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "glsl4",                    Graphics::FEATURE_GLSL4                },
 	{ "instancing",               Graphics::FEATURE_INSTANCING           },
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
+	{ "indexbuffer32bit",         Graphics::FEATURE_INDEX_BUFFER_32BIT   },
 	{ "copybuffer",               Graphics::FEATURE_COPY_BUFFER          },
 	{ "copybuffertotexture",      Graphics::FEATURE_COPY_BUFFER_TO_TEXTURE },
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },

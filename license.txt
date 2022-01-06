@@ -6,7 +6,7 @@ This distribution contains code from the following projects (full license text b
  - LOVE
 	Website: https://love2d.org/
 	License: zlib
-	Copyright (c) 2006-2021 LOVE Development Team
+	Copyright (c) 2006-2022 LOVE Development Team
 
  - ENet
 	Website: http://enet.bespin.org/index.html
@@ -82,7 +82,7 @@ This distribution contains code from the following projects (full license text b
 
  - dr_flac
 	Website: https://github.com/mackron/dr_libs
-	Source download: https://github.com/mackron/dr_libs/blob/343aa92/dr_flac.h
+	Source download: https://github.com/mackron/dr_libs/blob/c5e5355/dr_flac.h
 	License: MIT/Expat
 	Copyright 2018 David Reid
 

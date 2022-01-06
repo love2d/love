@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -65,6 +65,8 @@ public:
 		GAMEPAD_TYPE_PS4,
 		GAMEPAD_TYPE_PS5,
 		GAMEPAD_TYPE_NINTENDO_SWITCH_PRO,
+		GAMEPAD_TYPE_AMAZON_LUNA,
+		GAMEPAD_TYPE_STADIA,
 		GAMEPAD_TYPE_VIRTUAL,
 		GAMEPAD_TYPE_MAX_ENUM
 	};

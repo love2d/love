@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,7 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	, usageFlags(settings.usageFlags)
 	, dataUsage(settings.dataUsage)
 	, mapped(false)
+	, immutable(false)
 {
 	if (size == 0 && arraylength == 0)
 		throw love::Exception("Size or array length must be specified.");
@@ -76,6 +77,9 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 		if (indexbuffer)
 		{
+			if (!caps.features[Graphics::FEATURE_INDEX_BUFFER_32BIT] && format == DATAFORMAT_UINT32)
+				throw love::Exception("32 bit index buffer formats are not supported on this system.");
+
 			if (format != DATAFORMAT_UINT16 && format != DATAFORMAT_UINT32)
 				throw love::Exception("Index buffers only support uint16 and uint32 data types.");
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2021 LOVE Development Team
+ * Copyright (c) 2006-2022 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -151,7 +151,9 @@ bool Buffer::load(const void *initialdata)
 		glGenTextures(1, &texture);
 		gl.bindBufferTextureToUnit(texture, 0, false, true);
 
-		glTexBuffer(target, getGLFormat(getDataMember(0).decl.format), buffer);
+		GLenum glformat = getGLFormat(getDataMember(0).decl.format);
+
+		glTexBuffer(target, glformat, buffer);
 	}
 
 	return (glGetError() == GL_NO_ERROR);
@@ -164,7 +166,7 @@ bool Buffer::supportsOrphan() const
 
 void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 {
-	if (size == 0)
+	if (size == 0 || isImmutable())
 		return nullptr;
 
 	Range r(offset, size);
@@ -227,7 +229,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 
 void Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	if (size == 0)
+	if (size == 0 || isImmutable())
 		return;
 
 	size_t buffersize = getSize();
