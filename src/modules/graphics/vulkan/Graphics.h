@@ -27,9 +27,13 @@ namespace love {
 					return device;
 				}
 
+				const VkPhysicalDevice getPhysicalDevice() const {
+					return physicalDevice;
+				}
+
 				// implementation for virtual functions
 				Texture* newTexture(const Texture::Settings& settings, const Texture::Slices* data = nullptr) override { return nullptr;  }
-				Buffer* newBuffer(const Buffer::Settings& settings, const std::vector<Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override { return nullptr;  }
+				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
 				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override {}
 				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override {}
 				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override {}
