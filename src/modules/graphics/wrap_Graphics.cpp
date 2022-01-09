@@ -1836,21 +1836,22 @@ int w_newIndexBuffer(lua_State *L)
 	return 1;
 }
 
-static PrimitiveType luax_optmeshdrawmode(lua_State *L, int idx, PrimitiveType def)
+static PrimitiveType luax_checkmeshdrawmode(lua_State *L, int idx)
 {
-	const char *modestr = lua_isnoneornil(L, idx) ? nullptr : luaL_checkstring(L, idx);
+	const char *modestr = luaL_checkstring(L, idx);
 
-	if (modestr && !getConstant(modestr, def))
-		luax_enumerror(L, "mesh draw mode", getConstants(def), modestr);
+	PrimitiveType mode = PRIMITIVE_TRIANGLES;
+	if (!getConstant(modestr, mode))
+		luax_enumerror(L, "mesh draw mode", getConstants(mode), modestr);
 
-	return def;
+	return mode;
 }
 
 static Mesh *newStandardMesh(lua_State *L)
 {
 	Mesh *t = nullptr;
 
-	PrimitiveType drawmode = luax_optmeshdrawmode(L, 2, PRIMITIVE_TRIANGLE_FAN);
+	PrimitiveType drawmode = luax_checkmeshdrawmode(L, 2);
 	BufferDataUsage usage = luax_optdatausage(L, 3, BUFFERDATAUSAGE_DYNAMIC);
 
 	std::vector<Buffer::DataDeclaration> format = Mesh::getDefaultVertexFormat();
@@ -1912,7 +1913,7 @@ static Mesh *newCustomMesh(lua_State *L)
 	// the number of vertices.
 	std::vector<Buffer::DataDeclaration> vertexformat;
 
-	PrimitiveType drawmode = luax_optmeshdrawmode(L, 3, PRIMITIVE_TRIANGLE_FAN);
+	PrimitiveType drawmode = luax_checkmeshdrawmode(L, 3);
 	BufferDataUsage usage = luax_optdatausage(L, 4, BUFFERDATAUSAGE_DYNAMIC);
 
 	lua_rawgeti(L, 1, 1);
