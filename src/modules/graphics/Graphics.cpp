@@ -118,7 +118,7 @@ Graphics::Graphics()
 	, active(true)
 	, writingToStencil(false)
 	, batchedDrawState()
-	, projectionMatrix()
+	, deviceProjectionMatrix()
 	, renderTargetSwitchCount(0)
 	, drawCalls(0)
 	, drawCallsBatched(0)
@@ -472,6 +472,11 @@ void Graphics::restoreState(const DisplayState &s)
 	setWireframe(s.wireframe);
 
 	setDefaultSamplerState(s.defaultSamplerState);
+
+	if (s.useCustomProjection)
+		updateDeviceProjection(s.customProjection);
+	else
+		resetProjection();
 }
 
 void Graphics::restoreStateChecked(const DisplayState &s)
@@ -548,6 +553,11 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		setWireframe(s.wireframe);
 
 	setDefaultSamplerState(s.defaultSamplerState);
+
+	if (s.useCustomProjection)
+		setCustomProjection(s.customProjection);
+	else if (cur.useCustomProjection)
+		resetProjection();
 }
 
 Colorf Graphics::getColor() const
@@ -801,6 +811,8 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	std::swap(state.renderTargets, refs);
 
 	renderTargetSwitchCount++;
+
+	resetProjection();
 }
 
 void Graphics::setRenderTarget()
@@ -815,6 +827,8 @@ void Graphics::setRenderTarget()
 
 	state.renderTargets = RenderTargetsStrongRef();
 	renderTargetSwitchCount++;
+
+	resetProjection();
 }
 
 Graphics::RenderTargets Graphics::getRenderTargets() const
@@ -2020,9 +2034,9 @@ const Matrix4 &Graphics::getTransform() const
 	return transformStack.back();
 }
 
-const Matrix4 &Graphics::getProjection() const
+const Matrix4 &Graphics::getDeviceProjection() const
 {
-	return projectionMatrix;
+	return deviceProjectionMatrix;
 }
 
 void Graphics::pushTransform()
@@ -2100,6 +2114,81 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	// re-calculate it every time this is called.
 	transformStack.back().inverse().transformXY(&p, &point, 1);
 	return p;
+}
+
+void Graphics::setOrthoProjection(float w, float h, float near, float far)
+{
+	if (near >= far)
+		throw love::Exception("Orthographic projection Z far value must be greater than the Z near value.");
+
+	Matrix4 m = Matrix4::ortho(0.0f, w, 0.0f, h, near, far);
+	setCustomProjection(m);
+}
+
+void Graphics::setPerspectiveProjection(float verticalfov, float aspect, float near, float far)
+{
+	if (near <= 0.0f)
+		throw love::Exception("Perspective projection Z near value must be greater than 0.");
+
+	if (near >= far)
+		throw love::Exception("Perspective projection Z far value must be greater than the Z near value.");
+
+	Matrix4 m = Matrix4::perspective(verticalfov, aspect, near, far);
+	setCustomProjection(m);
+}
+
+void Graphics::setCustomProjection(const Matrix4 &m)
+{
+	flushBatchedDraws();
+
+	auto &state = states.back();
+
+	state.useCustomProjection = true;
+	state.customProjection = m;
+
+	updateDeviceProjection(m);
+}
+
+void Graphics::resetProjection()
+{
+	flushBatchedDraws();
+
+	auto &state = states.back();
+	int w = getWidth();
+	int h = getHeight();
+
+	const auto &rt = state.renderTargets.getFirstTarget();
+	if (rt.texture.get())
+	{
+		w = rt.texture->getWidth(rt.mipmap);
+		h = rt.texture->getHeight(rt.mipmap);
+	}
+
+	state.useCustomProjection = false;
+
+	updateDeviceProjection(Matrix4::ortho(0.0f, w, 0.0f, h, -10.0f, 10.0f));
+}
+
+void Graphics::updateDeviceProjection(const Matrix4 &projection)
+{
+	// Note: graphics implementations define computeDeviceProjection.
+	deviceProjectionMatrix = computeDeviceProjection(projection, isRenderTargetActive());
+}
+
+Matrix4 Graphics::calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const
+{
+	Matrix4 m = projection;
+	bool reverseZ = (flags & DEVICE_PROJECTION_REVERSE_Z) != 0;
+
+	if (flags & DEVICE_PROJECTION_FLIP_Y)
+		m.setRow(1, -m.getRow(1));
+
+	if (flags & DEVICE_PROJECTION_Z_01) // Go from Z [-1, 1] to Z [0, 1].
+		m.setRow(2, m.getRow(2) * (reverseZ ? -0.5f : 0.5f) + m.getRow(3));
+	else if (reverseZ)
+		m.setRow(2, -m.getRow(2));
+
+	return m;
 }
 
 STRINGMAP_CLASS_BEGIN(Graphics, Graphics::DrawMode, Graphics::DRAW_MAX_ENUM, drawMode)

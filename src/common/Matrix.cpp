@@ -181,6 +181,32 @@ const float *Matrix4::getElements() const
 	return e;
 }
 
+void Matrix4::setRow(int r, const Vector4 &v)
+{
+	e[0 * 4 + r] = v.x;
+	e[1 * 4 + r] = v.y;
+	e[2 * 4 + r] = v.z;
+	e[3 * 4 + r] = v.w;
+}
+
+Vector4 Matrix4::getRow(int r) const
+{
+	return Vector4(e[0 * 4 + r], e[1 * 4 + r], e[2 * 4 + r], e[3 * 4 + r]);
+}
+
+void Matrix4::setColumn(int c, const Vector4 &v)
+{
+	e[c * 4 + 0] = v.x;
+	e[c * 4 + 1] = v.y;
+	e[c * 4 + 2] = v.z;
+	e[c * 4 + 3] = v.w;
+}
+
+Vector4 Matrix4::getColumn(int c) const
+{
+	return Vector4(e[c * 4 + 0], e[c * 4 + 1], e[c * 4 + 2], e[c * 4 + 3]);
+}
+
 void Matrix4::setIdentity()
 {
 	memset(e, 0, sizeof(float)*16);
@@ -426,6 +452,23 @@ Matrix4 Matrix4::ortho(float left, float right, float bottom, float top, float n
 	m.e[12] = -(right + left) / (right - left);
 	m.e[13] = -(top + bottom) / (top - bottom);
 	m.e[14] = -(far + near) / (far - near);
+
+	return m;
+}
+
+Matrix4 Matrix4::perspective(float verticalfov, float aspect, float near, float far)
+{
+	Matrix4 m;
+
+	float cotangent = 1.0f / tanf(verticalfov * 0.5f);
+
+	m.e[0] = cotangent / aspect;
+	m.e[5] = cotangent;
+	m.e[10] = (far + near) / (near - far);
+	m.e[11] = -1.0f;
+
+	m.e[14] = 2.0f * near * far / (near - far);
+	m.e[15] = 0.0f;
 
 	return m;
 }
