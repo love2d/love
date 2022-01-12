@@ -418,6 +418,12 @@ love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, co
 	return new Buffer(this, device, settings, format, data, size, arraylength);
 }
 
+Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rendertotexture*/) const
+{
+	uint32 flags = DEVICE_PROJECTION_FLIP_Y;
+	return calculateDeviceProjection(projection, flags);
+}
+
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
 	this->width = width;
@@ -428,9 +434,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	if (!isRenderTargetActive())
 	{
 		dirtyRenderState |= STATEBIT_VIEWPORT | STATEBIT_SCISSOR;
-
-		// Set up the projection matrix
-		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
+		resetProjection();
 	}
 
 	Texture::Settings settings;
@@ -1009,7 +1013,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	auto builtins = (Shader::BuiltinUniformData *) (bufferdata + s->getBuiltinUniformDataOffset());
 
 	builtins->transformMatrix = getTransform();
-	builtins->projectionMatrix = getProjection();
+	builtins->projectionMatrix = getDeviceProjection();
 
 	// The normal matrix is the transpose of the inverse of the rotation portion
 	// (top-left 3x3) of the transform matrix.
@@ -1299,7 +1303,7 @@ bool Graphics::dispatch(int x, int y, int z)
 	return true;
 }}
 
-void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*w*/, int /*h*/, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
 	endPass();
 
@@ -1336,7 +1340,6 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil);
 	}
 
-	projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
 	dirtyRenderState = STATEBIT_ALL;
 	lastVertexAttributes = VertexAttributes();
 }}
