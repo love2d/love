@@ -177,6 +177,18 @@ love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, co
 	return new Buffer(this, settings, format, data, size, arraylength);
 }
 
+Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
+{
+	uint32 flags = DEVICE_PROJECTION_DEFAULT;
+
+	// The projection matrix is flipped compared to rendering to a texture, due
+	// to OpenGL considering (0,0) bottom-left instead of top-left.
+	if (!rendertotexture)
+		flags |= DEVICE_PROJECTION_FLIP_Y;
+
+	return calculateDeviceProjection(projection, flags);
+}
+
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
 	this->width = width;
@@ -194,8 +206,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 		if (states.back().scissor)
 			setScissor(states.back().scissorRect);
 
-		// Set up the projection matrix
-		projectionMatrix = Matrix4::ortho(0.0, (float) width, (float) height, 0.0, -10.0f, 10.0f);
+		resetProjection();
 	}
 
 	updateBackbuffer(width, height, pixelwidth, pixelheight, requestedBackbufferMSAA);
@@ -731,7 +742,7 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBtexture)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*w*/, int /*h*/, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	const DisplayState &state = states.back();
 
@@ -745,19 +756,14 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int w, int h, 
 	if (iswindow)
 	{
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getInternalBackbufferFBO());
-
-		// The projection matrix is flipped compared to rendering to a texture,
-		// due to OpenGL considering (0,0) bottom-left instead of top-left.
-		projectionMatrix = Matrix4::ortho(0.0, (float) w, (float) h, 0.0, -10.0f, 10.0f);
 	}
 	else
 	{
 		bindCachedFBO(rts);
 
-		projectionMatrix = Matrix4::ortho(0.0, (float) w, 0.0, (float) h, -10.0f, 10.0f);
-
 		// Flip front face winding when rendering to a texture, since our
 		// projection matrix is flipped.
+		// Note: projection matrix is set at a higher level.
 		vertexwinding = vertexwinding == WINDING_CW ? WINDING_CCW : WINDING_CW;
 	}
 

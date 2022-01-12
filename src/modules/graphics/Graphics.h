@@ -834,7 +834,7 @@ public:
 	void pop();
 
 	const Matrix4 &getTransform() const;
-	const Matrix4 &getProjection() const;
+	const Matrix4 &getDeviceProjection() const;
 
 	void rotate(float r);
 	void scale(float x, float y = 1.0f);
@@ -847,6 +847,13 @@ public:
 
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
+
+	void setOrthoProjection(float w, float h, float near, float far);
+	void setPerspectiveProjection(float verticalfov, float aspect, float near, float far);
+	void setCustomProjection(const Matrix4 &m);
+	void resetProjection();
+
+	virtual Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const = 0;
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
@@ -882,6 +889,14 @@ public:
 
 protected:
 
+	enum DeviceProjectionFlags
+	{
+		DEVICE_PROJECTION_DEFAULT = 0,
+		DEVICE_PROJECTION_FLIP_Y = (1 << 0),
+		DEVICE_PROJECTION_Z_01 = (1 << 1),
+		DEVICE_PROJECTION_REVERSE_Z = (1 << 2),
+	};
+
 	struct DisplayState
 	{
 		DisplayState();
@@ -916,6 +931,9 @@ protected:
 		ColorChannelMask colorMask;
 
 		bool wireframe = false;
+
+		bool useCustomProjection = false;
+		Matrix4 customProjection;
 
 		// Default mipmap filter is set in the DisplayState constructor.
 		SamplerState defaultSamplerState = SamplerState();
@@ -978,6 +996,9 @@ protected:
 	void pushIdentityTransform();
 	void popTransform();
 
+	void updateDeviceProjection(const Matrix4 &projection);
+	Matrix4 calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const;
+
 	int width;
 	int height;
 	int pixelWidth;
@@ -993,7 +1014,7 @@ protected:
 	BatchedDrawState batchedDrawState;
 
 	std::vector<Matrix4> transformStack;
-	Matrix4 projectionMatrix;
+	Matrix4 deviceProjectionMatrix;
 
 	std::vector<double> pixelScaleStack;
 

@@ -969,7 +969,7 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	BuiltinUniformData data;
 
 	data.transformMatrix = gfx->getTransform();
-	data.projectionMatrix = gfx->getProjection();
+	data.projectionMatrix = gfx->getDeviceProjection();
 
 	// The normal matrix is the transpose of the inverse of the rotation portion
 	// (top-left 3x3) of the transform matrix.
