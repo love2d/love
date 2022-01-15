@@ -158,6 +158,13 @@ public:
 		};
 	};
 
+	union LocalUniformValue
+	{
+		float f;
+		int32 i;
+		uint32 u;
+	};
+
 	// The members in here must respect uniform buffer alignment/padding rules.
  	struct BuiltinUniformData
  	{
@@ -259,10 +266,17 @@ protected:
 		Access access;
 	};
 
+	struct LocalUniform
+	{
+		DataBaseType dataType;
+		std::vector<LocalUniformValue> initializerValues;
+	};
+
 	struct ValidationReflection
 	{
 		std::map<std::string, BufferReflection> storageBuffers;
 		std::map<std::string, StorageTextureReflection> storageTextures;
+		std::map<std::string, LocalUniform> localUniforms;
 		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};
@@ -270,6 +284,9 @@ protected:
 	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
 	static DataBaseType getDataBaseType(PixelFormat format);
 	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
+
+	static bool validateTexture(const UniformInfo *info, Texture *tex, bool internalUpdate);
+	static bool validateBuffer(const UniformInfo *info, Buffer *buffer, bool internalUpdate);
 
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 

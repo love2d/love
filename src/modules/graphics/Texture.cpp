@@ -159,7 +159,7 @@ love::Type Texture::type("Texture", &Drawable::type);
 int Texture::textureCount = 0;
 int64 Texture::totalGraphicsMemory = 0;
 
-Texture::Texture(const Settings &settings, const Slices *slices)
+Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	: texType(settings.type)
 	, format(settings.format)
 	, renderTarget(settings.renderTarget)
@@ -179,8 +179,6 @@ Texture::Texture(const Settings &settings, const Slices *slices)
 	, graphicsMemorySize(0)
 	, usingDefaultTexture(false)
 {
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-
 	if (slices != nullptr && slices->getMipmapCount() > 0 && slices->getSliceCount() > 0)
 	{
 		texType = slices->getTextureType();
@@ -608,7 +606,7 @@ bool Texture::isCompressed() const
 
 bool Texture::isFormatLinear() const
 {
-	return isGammaCorrect() && !sRGB && format != PIXELFORMAT_sRGBA8_UNORM;
+	return isGammaCorrect() && !sRGB && !isPixelFormatSRGB(format);
 }
 
 bool Texture::isValidSlice(int slice) const

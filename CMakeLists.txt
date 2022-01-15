@@ -1246,8 +1246,8 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
 	src/libraries/glslang/glslang/Include/intermediate.h
 	src/libraries/glslang/glslang/Include/PoolAlloc.h
 	src/libraries/glslang/glslang/Include/ResourceLimits.h
-	src/libraries/glslang/glslang/Include/revision.h
 	src/libraries/glslang/glslang/Include/ShHandle.h
+	src/libraries/glslang/glslang/Include/SpirvIntrinsics.h
 	src/libraries/glslang/glslang/Include/Types.h
 )
 
@@ -1298,6 +1298,7 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	src/libraries/glslang/glslang/MachineIndependent/Scan.h
 	src/libraries/glslang/glslang/MachineIndependent/ScanContext.h
 	src/libraries/glslang/glslang/MachineIndependent/ShaderLang.cpp
+	src/libraries/glslang/glslang/MachineIndependent/SpirvIntrinsics.cpp
 	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.cpp
 	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.h
 	src/libraries/glslang/glslang/MachineIndependent/Versions.cpp

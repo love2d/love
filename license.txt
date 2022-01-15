@@ -23,6 +23,12 @@ This distribution contains code from the following projects (full license text b
 	License: 3-Clause BSD
 	Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 	Copyright (C) 2013-2016 LunarG, Inc.
+	
+- SPIRV-Cross
+	Website: https://github.com/KhronosGroup/SPIRV-Cross
+	License: Apache 2.0 or MIT/Expat
+	Copyright 2015-2021 Arm Limited
+	Copyright 2016-2021 The Brenwill Workshop Ltd.
 
  - Kepler Project's lua-compat-5.3
 	Website: https://github.com/keplerproject/lua-compat-5.3

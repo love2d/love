@@ -315,9 +315,14 @@ struct VertexAttributes
 	VertexAttributeInfo attribs[MAX];
 	VertexBufferLayout bufferLayouts[BufferBindings::MAX];
 
-	VertexAttributes() {}
+	VertexAttributes()
+	{
+		memset(this, 0, sizeof(VertexAttributes));
+	}
+
 	VertexAttributes(CommonFormat format, uint8 bufferindex)
 	{
+		memset(this, 0, sizeof(VertexAttributes));
 		setCommonFormat(format, bufferindex);
 	}
 
@@ -363,6 +368,8 @@ struct VertexAttributes
 	}
 
 	void setCommonFormat(CommonFormat format, uint8 bufferindex);
+
+	bool operator == (const VertexAttributes &other) const;
 };
 
 size_t getFormatStride(CommonFormat format);

@@ -49,6 +49,12 @@ std::string checkDropEvents();
  **/
 void requestAttention(bool continuous);
 
+/**
+ * Sets whether vsync is enabled for the given CAMetalLayer
+ **/
+void setMetalLayerVSync(void *metallayer, bool vsync);
+bool getMetalLayerVSync(void *metallayer);
+
 } // macos
 } // love
 

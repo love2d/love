@@ -184,6 +184,8 @@ function love.init()
 		accelerometerjoystick = true, -- Only relevant for Android / iOS.
 		gammacorrect = false,
 		highdpi = false,
+		renderers = nil,
+		excluderenderers = nil,
 	}
 
 	-- Console hack, part 1.
@@ -219,6 +221,45 @@ function love.init()
 
 	if love._setGammaCorrect then
 		love._setGammaCorrect(c.gammacorrect)
+	end
+
+	if love._setRenderers then
+		local renderers = love._getDefaultRenderers()
+		if type(c.renderers) == "table" then
+			renderers = {}
+			for i,v in ipairs(c.renderers) do
+				renderers[i] = v
+			end
+		end
+
+		if love.arg.options.renderers.set then
+			local renderersstr = love.arg.options.renderers.arg[1]
+			renderers = {}
+			for r in renderersstr:gmatch("[^,]+") do
+				table.insert(renderers, r)
+			end
+		end
+		local excluderenderers = c.excluderenderers
+		if love.arg.options.excluderenderers.set then
+			local excludestr = love.arg.options.excluderenderers.arg[1]
+			excluderenderers = {}
+			for r in excludestr:gmatch("[^,]+") do
+				table.insert(excluderenderers, r)
+			end
+		end
+
+		if type(excluderenderers) == "table" then
+			for i,v in ipairs(excluderenderers) do
+				for j=#renderers, 1, -1 do
+					if renderers[j] == v then
+						table.remove(renderers, j)
+						break
+					end
+				end
+			end
+		end
+
+		love._setRenderers(renderers)
 	end
 
 	if love._setHighDPIAllowed then

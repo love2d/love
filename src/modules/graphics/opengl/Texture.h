@@ -38,7 +38,7 @@ class Texture final : public love::graphics::Texture, public Volatile
 {
 public:
 
-	Texture(const Settings &settings, const Slices *data);
+	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
 
 	virtual ~Texture();
 
@@ -53,6 +53,7 @@ public:
 
 	ptrdiff_t getHandle() const override;
 	ptrdiff_t getRenderTargetHandle() const override;
+	ptrdiff_t getSamplerHandle() const override { return 0; }
 	int getMSAA() const override { return actualSamples; }
 
 	inline GLuint getFBO() const { return fbo; }

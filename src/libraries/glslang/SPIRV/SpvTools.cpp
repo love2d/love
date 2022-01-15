@@ -44,7 +44,6 @@
 
 #include "SpvTools.h"
 #include "spirv-tools/optimizer.hpp"
-#include "spirv-tools/libspirv.h"
 
 namespace glslang {
 
@@ -69,6 +68,26 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
         }
     case glslang::EShTargetVulkan_1_2:
         return spv_target_env::SPV_ENV_VULKAN_1_2;
+    case glslang::EShTargetUniversal:
+        switch (spvVersion.spv) {
+        case EShTargetSpv_1_0:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_0;
+        case EShTargetSpv_1_1:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_1;
+        case EShTargetSpv_1_2:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_2;
+        case EShTargetSpv_1_3:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_3;
+        case EShTargetSpv_1_4:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_4;
+        case EShTargetSpv_1_5:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_5;
+        case EShTargetSpv_1_6:
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_6;
+        default:
+            logger->missingFunctionality("Target version for SPIRV-Tools validator");
+            return spv_target_env::SPV_ENV_UNIVERSAL_1_6;
+        }
     default:
         break;
     }
@@ -114,11 +133,18 @@ void OptimizerMesssageConsumer(spv_message_level_t level, const char *source,
     out << std::endl;
 }
 
-// Use the SPIRV-Tools disassembler to print SPIR-V.
+// Use the SPIRV-Tools disassembler to print SPIR-V using a SPV_ENV_UNIVERSAL_1_3 environment.
 void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv)
 {
+    SpirvToolsDisassemble(out, spirv, spv_target_env::SPV_ENV_UNIVERSAL_1_3);
+}
+
+// Use the SPIRV-Tools disassembler to print SPIR-V with a provided SPIR-V environment.
+void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv,
+                           spv_target_env requested_context)
+{
     // disassemble
-    spv_context context = spvContextCreate(SPV_ENV_UNIVERSAL_1_3);
+    spv_context context = spvContextCreate(requested_context);
     spv_text text;
     spv_diagnostic diagnostic = nullptr;
     spvBinaryToText(context, spirv.data(), spirv.size(),
@@ -147,6 +173,8 @@ void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<
     spv_validator_options options = spvValidatorOptionsCreate();
     spvValidatorOptionsSetRelaxBlockLayout(options, intermediate.usingHlslOffsets());
     spvValidatorOptionsSetBeforeHlslLegalization(options, prelegalization);
+    spvValidatorOptionsSetScalarBlockLayout(options, intermediate.usingScalarBlockLayout());
+    spvValidatorOptionsSetWorkgroupScalarBlockLayout(options, intermediate.usingScalarBlockLayout());
     spvValidateWithOptions(context, options, &binary, &diagnostic);
 
     // report
@@ -174,10 +202,7 @@ void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector
     // line information into all SPIR-V instructions. This avoids loss of
     // information when instructions are deleted or moved. Later, remove
     // redundant information to minimize final SPRIR-V size.
-    if (options->generateDebugInfo) {
-        optimizer.RegisterPass(spvtools::CreatePropagateLineInfoPass());
-    }
-    else if (options->stripDebugInfo) {
+    if (options->stripDebugInfo) {
         optimizer.RegisterPass(spvtools::CreateStripDebugInfoPass());
     }
     optimizer.RegisterPass(spvtools::CreateWrapOpKillPass());
@@ -202,14 +227,12 @@ void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector
     optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
     optimizer.RegisterPass(spvtools::CreateVectorDCEPass());
     optimizer.RegisterPass(spvtools::CreateDeadInsertElimPass());
+    optimizer.RegisterPass(spvtools::CreateInterpolateFixupPass());
     if (options->optimizeSize) {
         optimizer.RegisterPass(spvtools::CreateRedundancyEliminationPass());
     }
     optimizer.RegisterPass(spvtools::CreateAggressiveDCEPass());
     optimizer.RegisterPass(spvtools::CreateCFGCleanupPass());
-    if (options->generateDebugInfo) {
-        optimizer.RegisterPass(spvtools::CreateRedundantLineInfoElimPass());
-    }
 
     spvtools::OptimizerOptions spvOptOptions;
     optimizer.SetTargetEnv(MapToSpirvToolsEnv(intermediate.getSpv(), logger));

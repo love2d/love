@@ -111,24 +111,24 @@ enum CompareMode
 
 struct BlendState
 {
-	bool enable = false;
 	BlendOperation operationRGB = BLENDOP_ADD;
 	BlendOperation operationA = BLENDOP_ADD;
 	BlendFactor srcFactorRGB = BLENDFACTOR_ONE;
 	BlendFactor srcFactorA = BLENDFACTOR_ONE;
 	BlendFactor dstFactorRGB = BLENDFACTOR_ZERO;
 	BlendFactor dstFactorA = BLENDFACTOR_ZERO;
+	bool enable = false;
 
 	BlendState() {}
 
 	BlendState(BlendOperation opRGB, BlendOperation opA, BlendFactor srcRGB, BlendFactor srcA, BlendFactor dstRGB, BlendFactor dstA)
-		: enable(true)
-		, operationRGB(opRGB)
+		: operationRGB(opRGB)
 		, operationA(opA)
 		, srcFactorRGB(srcRGB)
 		, srcFactorA(srcA)
 		, dstFactorRGB(dstRGB)
 		, dstFactorA(dstA)
+		, enable(true)
 	{}
 
 	bool operator == (const BlendState &b) const

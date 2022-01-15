@@ -65,7 +65,7 @@ public:
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -111,6 +111,7 @@ public:
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
 	bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override;
 	Renderer getRenderer() const override;
+	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
 
 	// Internal use.

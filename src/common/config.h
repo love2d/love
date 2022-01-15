@@ -124,6 +124,10 @@
 #	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 #endif
 
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#	define LOVE_GRAPHICS_METAL
+#endif
+
 // Autotools config.h
 #ifdef HAVE_CONFIG_H
 #	include <../config.h>

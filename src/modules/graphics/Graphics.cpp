@@ -32,6 +32,7 @@
 #include "Video.h"
 #include "Text.h"
 #include "common/deprecation.h"
+#include "common/config.h"
 
 // C++
 #include <algorithm>
@@ -104,6 +105,67 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
+namespace opengl { extern love::graphics::Graphics *createInstance(); }
+#ifdef LOVE_GRAPHICS_METAL
+namespace metal { extern love::graphics::Graphics *createInstance(); }
+#endif
+
+static const Renderer rendererOrder[] = {
+	RENDERER_OPENGL,
+	RENDERER_METAL,
+};
+
+static std::vector<Renderer> defaultRenderers =
+{
+	RENDERER_METAL,
+	RENDERER_OPENGL,
+};
+
+static std::vector<Renderer> _renderers = defaultRenderers;
+
+const std::vector<Renderer> &getDefaultRenderers()
+{
+	return defaultRenderers;
+}
+
+const std::vector<Renderer> &getRenderers()
+{
+	return _renderers;
+}
+
+void setRenderers(const std::vector<Renderer> &renderers)
+{
+	_renderers = renderers;
+}
+
+Graphics *Graphics::createInstance()
+{
+	Graphics *instance = Module::getInstance<Graphics>(M_GRAPHICS);
+
+	if (instance != nullptr)
+		instance->retain();
+	else
+	{
+		for (auto r : rendererOrder)
+		{
+			if (std::find(_renderers.begin(), _renderers.end(), r) == _renderers.end())
+				continue;
+
+			if (r == RENDERER_OPENGL)
+				instance = opengl::createInstance();
+#ifdef LOVE_GRAPHICS_METAL
+			if (r == RENDERER_METAL)
+				instance = metal::createInstance();
+#endif
+
+			if (instance != nullptr)
+				break;
+		}
+	}
+
+	return instance;
+}
+
 Graphics::DisplayState::DisplayState()
 {
 	defaultSamplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_LINEAR;
@@ -116,7 +178,6 @@ Graphics::Graphics()
 	, pixelHeight(0)
 	, created(false)
 	, active(true)
-	, writingToStencil(false)
 	, batchedDrawState()
 	, deviceProjectionMatrix()
 	, renderTargetSwitchCount(0)
@@ -160,9 +221,12 @@ Graphics::~Graphics()
 
 	defaultFont.set(nullptr);
 
-	delete batchedDrawState.vb[0];
-	delete batchedDrawState.vb[1];
-	delete batchedDrawState.indexBuffer;
+	if (batchedDrawState.vb[0])
+		batchedDrawState.vb[0]->release();
+	if (batchedDrawState.vb[1])
+		batchedDrawState.vb[1]->release();
+	if (batchedDrawState.indexBuffer)
+		batchedDrawState.indexBuffer->release();
 
 	for (int i = 0; i < (int) SHADERSTAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
@@ -243,9 +307,9 @@ ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &
 
 	if (s == nullptr)
 	{
-		bool gles = getRenderer() == Graphics::RENDERER_OPENGLES;
-		std::string glsl = Shader::createShaderStageCode(this, stage, source, info, gles, true);
-		s = newShaderStageInternal(stage, cachekey, glsl, getRenderer() == RENDERER_OPENGLES);
+		bool glsles = usesGLSLES();
+		std::string glsl = Shader::createShaderStageCode(this, stage, source, info, glsles, true);
+		s = newShaderStageInternal(stage, cachekey, glsl, glsles);
 		if (!cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
 	}
@@ -458,7 +522,12 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 
-	setStencilTest(s.stencilCompare, s.stencilTestValue);
+	if (s.stencil.action != STENCIL_KEEP)
+		drawToStencilBuffer(s.stencil.action, s.stencil.value);
+	else
+		stopDrawToStencilBuffer();
+
+	setStencilTest(s.stencil.compare, s.stencil.value);
 	setDepthMode(s.depthTest, s.depthWrite);
 
 	setMeshCullMode(s.meshCullMode);
@@ -507,8 +576,16 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 			setScissor();
 	}
 
-	if (s.stencilCompare != cur.stencilCompare || s.stencilTestValue != cur.stencilTestValue)
-		setStencilTest(s.stencilCompare, s.stencilTestValue);
+	if (s.stencil.action != cur.stencil.action)
+	{
+		if (s.stencil.action != STENCIL_KEEP)
+			drawToStencilBuffer(s.stencil.action, s.stencil.value);
+		else
+			stopDrawToStencilBuffer();
+	}
+
+	if (s.stencil.compare != cur.stencil.compare || s.stencil.value != cur.stencil.value)
+		setStencilTest(s.stencil.compare, s.stencil.value);
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
@@ -705,7 +782,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (!firsttex->isValidSlice(firsttarget.slice))
 		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
 
-	bool hasSRGBtexture = firstcolorformat == PIXELFORMAT_sRGBA8_UNORM;
+	bool hasSRGBtexture = isPixelFormatSRGB(firstcolorformat);
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firsttex->getRequestedMSAA();
@@ -738,7 +815,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (isPixelFormatDepthStencil(format))
 			throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setRenderTargets.");
 
-		if (format == PIXELFORMAT_sRGBA8_UNORM)
+		if (isPixelFormatSRGB(format))
 			hasSRGBtexture = true;
 	}
 
@@ -955,8 +1032,8 @@ void Graphics::setStencilTest()
 void Graphics::getStencilTest(CompareMode &compare, int &value) const
 {
 	const DisplayState &state = states.back();
-	compare = state.stencilCompare;
-	value = state.stencilTestValue;
+	compare = state.stencil.compare;
+	value = state.stencil.value;
 }
 
 void Graphics::setDepthMode()
@@ -1378,14 +1455,14 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 		{
 			if (state.vb[i]->getSize() < buffersizes[i])
 			{
-				delete state.vb[i];
+				state.vb[i]->release();
 				state.vb[i] = newStreamBuffer(BUFFERUSAGE_VERTEX, buffersizes[i]);
 			}
 		}
 
 		if (state.indexBuffer->getSize() < buffersizes[2])
 		{
-			delete state.indexBuffer;
+			state.indexBuffer->release();
 			state.indexBuffer = newStreamBuffer(BUFFERUSAGE_INDEX, buffersizes[2]);
 		}
 	}
@@ -2266,6 +2343,13 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::StackType, Graphics::STACK_MAX_ENUM, s
 	{ "transform", Graphics::STACK_TRANSFORM },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::StackType, Graphics::STACK_MAX_ENUM, stackType)
+
+STRINGMAP_BEGIN(Renderer, RENDERER_MAX_ENUM, renderer)
+{
+	{ "opengl", RENDERER_OPENGL },
+	{ "metal",  RENDERER_METAL  },
+}
+STRINGMAP_END(Renderer, RENDERER_MAX_ENUM, renderer)
 
 } // graphics
 } // love

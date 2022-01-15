@@ -22,7 +22,6 @@
 
 #include "common/Object.h"
 #include "common/StringMap.h"
-#include "Volatile.h"
 #include "Resource.h"
 
 #include <stddef.h>
@@ -49,17 +48,19 @@ enum ShaderStageType
 	SHADERSTAGE_MAX_ENUM
 };
 
-class ShaderStage : public love::Object, public Volatile, public Resource
+class ShaderStage : public love::Object
 {
 public:
 
 	ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string &glsl, bool gles, const std::string &cachekey);
 	virtual ~ShaderStage();
 
+	virtual ptrdiff_t getHandle() const = 0;
+
 	ShaderStageType getStageType() const { return stageType; }
 	const std::string &getSource() const { return source; }
 	const std::string &getWarnings() const { return warnings; }
-	glslang::TShader *getGLSLangShader() const { return glslangShader; }
+	glslang::TShader *getGLSLangValidationShader() const { return glslangValidationShader; }
 
 	static bool getConstant(const char *in, ShaderStageType &out);
 	static bool getConstant(ShaderStageType in, const char *&out);
@@ -74,7 +75,7 @@ private:
 	ShaderStageType stageType;
 	std::string source;
 	std::string cacheKey;
-	glslang::TShader *glslangShader;
+	glslang::TShader *glslangValidationShader;
 
 	static StringMap<ShaderStageType, SHADERSTAGE_MAX_ENUM>::Entry stageNameEntries[];
 	static StringMap<ShaderStageType, SHADERSTAGE_MAX_ENUM> stageNames;
@@ -88,12 +89,8 @@ public:
 	ShaderStageForValidation(Graphics *gfx, ShaderStageType stage, const std::string &glsl, bool gles)
 		: ShaderStage(gfx, stage, glsl, gles, "")
 	{}
-
 	virtual ~ShaderStageForValidation() {}
-
 	ptrdiff_t getHandle() const override { return 0; }
-	bool loadVolatile() override { return true; }
-	void unloadVolatile() override { }
 
 }; // ShaderStageForValidation
 

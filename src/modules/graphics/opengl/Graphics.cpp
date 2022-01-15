@@ -88,6 +88,22 @@ static GLenum getGLBlendFactor(BlendFactor factor)
 	return 0;
 }
 
+love::graphics::Graphics *createInstance()
+{
+	love::graphics::Graphics *instance = nullptr;
+
+	try
+	{
+		instance = new Graphics();
+	}
+	catch (love::Exception &e)
+	{
+		printf("Cannot create OpenGL renderer: %s\n", e.what());
+	}
+
+	return instance;
+}
+
 Graphics::Graphics()
 	: windowHasStencil(false)
 	, mainVAO(0)
@@ -115,17 +131,13 @@ Graphics::Graphics()
 	{
 		window->setGraphics(this);
 
+		// Recreate the window using the current renderer, if needed.
 		if (window->isOpen())
 		{
 			int w, h;
-			love::window::WindowSettings s;
-			window->getWindow(w, h, s);
-
-			double dpiW = w;
-			double dpiH = h;
-			window->windowToDPICoords(&dpiW, &dpiH);
-
-			setMode((int) dpiW, (int) dpiH, window->getPixelWidth(), window->getPixelHeight(), s.stencil, s.msaa);
+			love::window::WindowSettings settings;
+			window->getWindow(w, h, settings);
+			window->setWindow(w, h, &settings);
 		}
 	}
 }
@@ -147,7 +159,7 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t
 
 love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
-	return new Texture(settings, data);
+	return new Texture(this, settings, data);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
@@ -227,7 +239,7 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		settings.renderTarget = true;
 		settings.readable.set(false);
 
-		settings.format = isGammaCorrect() ? PIXELFORMAT_sRGBA8_UNORM : PIXELFORMAT_RGBA8_UNORM;
+		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_UNORM_sRGB : PIXELFORMAT_RGBA8_UNORM;
 		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
 
 		settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
@@ -277,7 +289,7 @@ GLuint Graphics::getSystemBackbufferFBO() const
 #endif
 }
 
-bool Graphics::setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
 {
 	this->width = width;
 	this->height = height;
@@ -736,7 +748,6 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*w*/, int
 
 	OpenGL::TempDebugGroup debuggroup("setRenderTargets");
 
-	flushBatchedDraws();
 	endPass();
 
 	bool iswindow = rts.getFirstTarget().texture == nullptr;
@@ -1368,7 +1379,8 @@ void Graphics::setScissor()
 
 void Graphics::drawToStencilBuffer(StencilAction action, int value)
 {
-	const auto &rts = states.back().renderTargets;
+	DisplayState &state = states.back();
+	const auto &rts = state.renderTargets;
 	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
 	if (!isRenderTargetActive() && !windowHasStencil)
@@ -1378,7 +1390,8 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 
 	flushBatchedDraws();
 
-	writingToStencil = true;
+	state.stencil.action = action;
+	state.stencil.value = value;
 
 	// Disable color writes but don't save the state for it.
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1418,33 +1431,33 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 
 void Graphics::stopDrawToStencilBuffer()
 {
-	if (!writingToStencil)
+	DisplayState &state = states.back();
+
+	if (state.stencil.action == STENCIL_KEEP)
 		return;
 
 	flushBatchedDraws();
 
-	writingToStencil = false;
-
-	const DisplayState &state = states.back();
+	state.stencil.action = STENCIL_KEEP;
 
 	// Revert the color write mask.
 	setColorMask(state.colorMask);
 
 	// Use the user-set stencil test state when writes are disabled.
-	setStencilTest(state.stencilCompare, state.stencilTestValue);
+	setStencilTest(state.stencil.compare, state.stencil.value);
 }
 
 void Graphics::setStencilTest(CompareMode compare, int value)
 {
 	DisplayState &state = states.back();
 
-	if (state.stencilCompare != compare || state.stencilTestValue != value)
+	if (state.stencil.compare != compare || state.stencil.value != value)
 		flushBatchedDraws();
 
-	state.stencilCompare = compare;
-	state.stencilTestValue = value;
+	state.stencil.compare = compare;
+	state.stencil.value = value;
 
-	if (writingToStencil)
+	if (state.stencil.action != STENCIL_KEEP)
 		return;
 
 	if (compare == COMPARE_ALWAYS)
@@ -1592,9 +1605,14 @@ void Graphics::releaseBufferMapMemory(void *mem)
 		free(mem);
 }
 
-Graphics::Renderer Graphics::getRenderer() const
+Renderer Graphics::getRenderer() const
 {
-	return GLAD_ES_VERSION_2_0 ? RENDERER_OPENGLES : RENDERER_OPENGL;
+	return RENDERER_OPENGL;
+}
+
+bool Graphics::usesGLSLES() const
+{
+	return GLAD_ES_VERSION_2_0;
 }
 
 Graphics::RendererInfo Graphics::getRendererInfo() const
@@ -1683,7 +1701,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
-			return PIXELFORMAT_sRGBA8_UNORM;
+			return PIXELFORMAT_RGBA8_UNORM_sRGB;
 		else if ((OpenGL::getPixelFormatUsageFlags(PIXELFORMAT_RGBA8_UNORM) & requiredflags) != requiredflags)
 			// 32-bit render targets don't have guaranteed support on GLES2.
 			return PIXELFORMAT_RGBA4_UNORM;
@@ -1698,7 +1716,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 
 bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
 {
-	if (sRGB && format == PIXELFORMAT_RGBA8_UNORM)
+	if (sRGB)
 	{
 		format = getSRGBPixelFormat(format);
 		sRGB = false;

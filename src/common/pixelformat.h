@@ -60,7 +60,9 @@ enum PixelFormat
 
 	// 4-channel normal formats
 	PIXELFORMAT_RGBA8_UNORM,
-	PIXELFORMAT_sRGBA8_UNORM,
+	PIXELFORMAT_RGBA8_UNORM_sRGB,
+	PIXELFORMAT_BGRA8_UNORM,
+	PIXELFORMAT_BGRA8_UNORM_sRGB,
 	PIXELFORMAT_RGBA8_INT,
 	PIXELFORMAT_RGBA8_UINT,
 	PIXELFORMAT_RGBA16_UNORM,
@@ -174,6 +176,11 @@ bool isPixelFormatDepth(PixelFormat format);
  * Gets whether the specified pixel format is a stencil type.
  **/
 bool isPixelFormatStencil(PixelFormat format);
+
+/**
+ * Gets whether the specified color pixel format is sRGB-encoded.
+ **/
+bool isPixelFormatSRGB(PixelFormat format);
 
 /**
  * Gets whether the specified pixel format is a signed or unsigned integer type.

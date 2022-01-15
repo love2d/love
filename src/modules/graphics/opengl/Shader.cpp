@@ -22,6 +22,7 @@
 #include "common/config.h"
 
 #include "Shader.h"
+#include "ShaderStage.h"
 #include "Graphics.h"
 #include "graphics/vertex.h"
 
@@ -47,7 +48,6 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENU
 	, program(0)
 	, builtinUniforms()
 	, builtinUniformInfo()
-	, builtinAttributes()
 {
 	// load shader source and create program object
 	loadVolatile();
@@ -499,7 +499,7 @@ bool Shader::loadVolatile()
 	for (const auto &stage : stages)
 	{
 		if (stage.get() != nullptr)
-			stage->loadVolatile();
+			((ShaderStage*)stage.get())->loadVolatile();
 	}
 
 	program = glCreateProgram();
@@ -536,15 +536,6 @@ bool Shader::loadVolatile()
 
 	// Get all active uniform variables in this shader from OpenGL.
 	mapActiveUniforms();
-
-	for (int i = 0; i < int(ATTRIB_MAX_ENUM); i++)
-	{
-		const char *name = nullptr;
-		if (graphics::getConstant(BuiltinVertexAttribute(i), name))
-			builtinAttributes[i] = glGetAttribLocation(program, name);
-		else
-			builtinAttributes[i] = -1;
-	}
 
 	if (current == this)
 	{
@@ -800,63 +791,8 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 		if (tex != nullptr)
 		{
-			if (!tex->isReadable())
-			{
-				if (internalUpdate)
-					continue;
-				else
-					throw love::Exception("Textures with non-readable formats cannot be sampled from in a shader.");
-			}
-			else if (info->isDepthSampler != tex->getSamplerState().depthSampleMode.hasValue)
-			{
-				if (internalUpdate)
-					continue;
-				else if (info->isDepthSampler)
-					throw love::Exception("Depth comparison samplers in shaders can only be used with depth textures which have depth comparison set.");
-				else
-					throw love::Exception("Depth textures which have depth comparison set can only be used with depth/shadow samplers in shaders.");
-			}
-			else if (tex->getTextureType() != info->textureType)
-			{
-				if (internalUpdate)
-					continue;
-				else
-				{
-					const char *textypestr = "unknown";
-					const char *shadertextypestr = "unknown";
-					Texture::getConstant(tex->getTextureType(), textypestr);
-					Texture::getConstant(info->textureType, shadertextypestr);
-					throw love::Exception("Texture's type (%s) must match the type of %s (%s).", textypestr, info->name.c_str(), shadertextypestr);
-				}
-			}
-			else if (!isResourceBaseTypeCompatible(info->dataBaseType, getDataBaseType(tex->getPixelFormat())))
-			{
-				if (internalUpdate)
-					continue;
-				else
-					throw love::Exception("Texture's data format base type must match the uniform variable declared in the shader (float, int, or uint).");
-			}
-			else if (isstoragetex && !tex->isComputeWritable())
-			{
-				if (internalUpdate)
-					continue;
-				else
-					throw love::Exception("Texture must be created with the computewrite flag set to true in order to be used with a storage texture (image2D etc) shader uniform variable.");
-			}
-			else if (isstoragetex && info->storageTextureFormat != getLinearPixelFormat(tex->getPixelFormat()))
-			{
-				if (internalUpdate)
-					continue;
-				else
-				{
-					const char *texpfstr = "unknown";
-					const char *shaderpfstr = "unknown";
-					love::getConstant(getLinearPixelFormat(tex->getPixelFormat()), texpfstr);
-					love::getConstant(info->storageTextureFormat, shaderpfstr);
-					throw love::Exception("Texture's pixel format (%s) must match the shader uniform variable %s's pixel format (%s)", texpfstr, info->name.c_str(), shaderpfstr);
-				}
-			}
-
+			if (!validateTexture(info, tex, internalUpdate))
+				continue;
 			tex->retain();
 		}
 
@@ -908,17 +844,10 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalUpdate)
 {
-	uint32 requiredtypeflags = 0;
-
 	bool texelbinding = info->baseType == UNIFORM_TEXELBUFFER;
 	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
 
-	if (texelbinding)
-		requiredtypeflags = BUFFERUSAGEFLAG_TEXEL;
-	else if (storagebinding)
-		requiredtypeflags = BUFFERUSAGEFLAG_SHADER_STORAGE;
-
-	if (requiredtypeflags == 0)
+	if (!texelbinding && !storagebinding)
 		return;
 
 	bool shaderactive = current == this;
@@ -935,49 +864,8 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 		if (buffer != nullptr)
 		{
-			if ((buffer->getUsageFlags() & requiredtypeflags) == 0)
-			{
-				if (internalUpdate)
-					continue;
-				else if (texelbinding)
-					throw love::Exception("Shader uniform '%s' is a texel buffer, but the given Buffer was not created with texel buffer capabilities.", info->name.c_str());
-				else if (storagebinding)
-					throw love::Exception("Shader uniform '%s' is a shader storage buffer block, but the given Buffer was not created with shader storage buffer capabilities.", info->name.c_str());
-				else
-					throw love::Exception("Shader uniform '%s' does not match the types supported by the given Buffer.", info->name.c_str());
-			}
-
-			if (texelbinding)
-			{
-				DataBaseType basetype = buffer->getDataMember(0).info.baseType;
-				if (!isResourceBaseTypeCompatible(basetype, info->dataBaseType))
-				{
-					if (internalUpdate)
-						continue;
-					else
-						throw love::Exception("Texel buffer's data format base type must match the variable declared in the shader.");
-				}
-			}
-			else if (storagebinding)
-			{
-				if (info->bufferStride != buffer->getArrayStride())
-				{
-					if (internalUpdate)
-						continue;
-					else
-						throw love::Exception("Shader storage block '%s' has an array stride of %d bytes, but the given Buffer has an array stride of %d bytes.",
-							info->name.c_str(), info->bufferStride, buffer->getArrayStride());
-				}
-				else if (info->bufferMemberCount != buffer->getDataMembers().size())
-				{
-					if (internalUpdate)
-						continue;
-					else
-						throw love::Exception("Shader storage block '%s' has a struct with %d fields, but the given Buffer has a format with %d members.",
-							info->name.c_str(), info->bufferMemberCount, buffer->getDataMembers().size());
-				}
-			}
-
+			if (!validateBuffer(info, buffer, internalUpdate))
+				continue;
 			buffer->retain();
 		}
 

@@ -141,7 +141,7 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 	: stageType(stage)
 	, source(glsl)
 	, cacheKey(cachekey)
-	, glslangShader(nullptr)
+	, glslangValidationShader(nullptr)
 {
 	EShLanguage glslangStage = EShLangCount;
 	if (stage == SHADERSTAGE_VERTEX)
@@ -153,7 +153,7 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 	else
 		throw love::Exception("Cannot compile shader stage: unknown stage type.");
 
-	glslangShader = new glslang::TShader(glslangStage);
+	auto glslangShader = new glslang::TShader(glslangStage);
 
 	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
 	int defaultversion = gles ? 100 : 120;
@@ -181,6 +181,8 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 		delete glslangShader;
 		throw love::Exception("%s", err.c_str());
 	}
+
+	glslangValidationShader = glslangShader;
 }
 
 ShaderStage::~ShaderStage()
@@ -192,7 +194,7 @@ ShaderStage::~ShaderStage()
 			gfx->cleanupCachedShaderStage(stageType, cacheKey);
 	}
 
-	delete glslangShader;
+	delete glslangValidationShader;
 }
 
 bool ShaderStage::getConstant(const char *in, ShaderStageType &out)

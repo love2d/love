@@ -56,7 +56,9 @@ static PixelFormatInfo formatInfo[] =
 	{ 2, 1, 1, 8, true, false, false, false, PIXELFORMATTYPE_UINT   }, // PIXELFORMAT_RG32_UINT
 
 	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_UNORM  }, // PIXELFORMAT_RGBA8_UNORM
-	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_UNORM  }, // PIXELFORMAT_sRGBA8_UNORM
+	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_UNORM  }, // PIXELFORMAT_RGBA8_UNORM_sRGB
+	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_UNORM  }, // PIXELFORMAT_BGRA8_UNORM
+	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_UNORM  }, // PIXELFORMAT_BGRA8_UNORM_sRGB
 	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_SINT   }, // PIXELFORMAT_RGBA8_INT
 	{ 4, 1, 1, 4,  true, false, false, false, PIXELFORMATTYPE_UINT   }, // PIXELFORMAT_RGBA8_UINT
 	{ 4, 1, 1, 8,  true, false, false, false, PIXELFORMATTYPE_UNORM  }, // PIXELFORMAT_RGBA16_UNORM
@@ -153,17 +155,19 @@ static StringMap<PixelFormat, PIXELFORMAT_MAX_ENUM>::Entry formatEntries[] =
 	{ "rg32i",  PIXELFORMAT_RG32_INT   },
 	{ "rg32ui", PIXELFORMAT_RG32_UINT  },
 
-	{ "rgba8",    PIXELFORMAT_RGBA8_UNORM  },
-	{ "srgba8",   PIXELFORMAT_sRGBA8_UNORM },
-	{ "rgba8i",   PIXELFORMAT_RGBA8_INT    },
-	{ "rgba8ui",  PIXELFORMAT_RGBA8_UINT   },
-	{ "rgba16",   PIXELFORMAT_RGBA16_UNORM },
-	{ "rgba16f",  PIXELFORMAT_RGBA16_FLOAT },
-	{ "rgba16i",  PIXELFORMAT_RGBA16_INT   },
-	{ "rgba16ui", PIXELFORMAT_RGBA16_UINT  },
-	{ "rgba32f",  PIXELFORMAT_RGBA32_FLOAT },
-	{ "rgba32i",  PIXELFORMAT_RGBA32_INT   },
-	{ "rgba32ui", PIXELFORMAT_RGBA32_UINT  },
+	{ "rgba8",     PIXELFORMAT_RGBA8_UNORM      },
+	{ "srgba8",    PIXELFORMAT_RGBA8_UNORM_sRGB },
+	{ "bgra8",     PIXELFORMAT_BGRA8_UNORM      },
+	{ "bgra8srgb", PIXELFORMAT_BGRA8_UNORM_sRGB },
+	{ "rgba8i",    PIXELFORMAT_RGBA8_INT        },
+	{ "rgba8ui",   PIXELFORMAT_RGBA8_UINT       },
+	{ "rgba16",    PIXELFORMAT_RGBA16_UNORM     },
+	{ "rgba16f",   PIXELFORMAT_RGBA16_FLOAT     },
+	{ "rgba16i",   PIXELFORMAT_RGBA16_INT       },
+	{ "rgba16ui",  PIXELFORMAT_RGBA16_UINT      },
+	{ "rgba32f",   PIXELFORMAT_RGBA32_FLOAT     },
+	{ "rgba32i",   PIXELFORMAT_RGBA32_INT       },
+	{ "rgba32ui",  PIXELFORMAT_RGBA32_UINT      },
 
 	{ "rgba4",    PIXELFORMAT_RGBA4_UNORM    },
 	{ "rgb5a1",   PIXELFORMAT_RGB5A1_UNORM   },
@@ -257,6 +261,11 @@ bool isPixelFormatStencil(PixelFormat format)
 	return formatInfo[format].stencil;
 }
 
+bool isPixelFormatSRGB(PixelFormat format)
+{
+	return format == PIXELFORMAT_RGBA8_UNORM_sRGB || format == PIXELFORMAT_BGRA8_UNORM_sRGB;
+}
+
 bool isPixelFormatInteger(PixelFormat format)
 {
 	auto type = formatInfo[format].dataType;
@@ -266,14 +275,18 @@ bool isPixelFormatInteger(PixelFormat format)
 PixelFormat getSRGBPixelFormat(PixelFormat format)
 {
 	if (format == PIXELFORMAT_RGBA8_UNORM)
-		return PIXELFORMAT_sRGBA8_UNORM;
+		return PIXELFORMAT_RGBA8_UNORM_sRGB;
+	else if (format == PIXELFORMAT_BGRA8_UNORM)
+		return PIXELFORMAT_BGRA8_UNORM_sRGB;
 	return format;
 }
 
 PixelFormat getLinearPixelFormat(PixelFormat format)
 {
-	if (format == PIXELFORMAT_sRGBA8_UNORM)
+	if (format == PIXELFORMAT_RGBA8_UNORM_sRGB)
 		return PIXELFORMAT_RGBA8_UNORM;
+	else if (format == PIXELFORMAT_BGRA8_UNORM_sRGB)
+		return PIXELFORMAT_BGRA8_UNORM;
 	return format;
 }
 

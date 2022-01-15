@@ -113,7 +113,7 @@ public:
             // Use a degenerate (empty) set of dereferences to immediately put as at the end of
             // the dereference change expected by blowUpActiveAggregate.
             blowUpActiveAggregate(base.getType(), baseName, derefs, derefs.end(), offset, blockIndex, 0, -1, 0,
-                                    base.getQualifier().storage, updateStageMasks);
+                                    base.getQualifier().storage, updateStageMasks, &base.getConstArray());
         }
     }
 
@@ -250,7 +250,8 @@ public:
     // A value of 0 for arraySize will mean to use the full array's size.
     void blowUpActiveAggregate(const TType& baseType, const TString& baseName, const TList<TIntermBinary*>& derefs,
                                TList<TIntermBinary*>::const_iterator deref, int offset, int blockIndex, int arraySize,
-                               int topLevelArraySize, int topLevelArrayStride, TStorageQualifier baseStorage, bool active)
+                               int topLevelArraySize, int topLevelArrayStride, TStorageQualifier baseStorage, bool active,
+							   const TConstUnionArray* constArray = nullptr)
     {
         // when strictArraySuffix is enabled, we closely follow the rules from ARB_program_interface_query.
         // Broadly:
@@ -265,9 +266,18 @@ public:
         // process the part of the dereference chain that was explicit in the shader
         TString name = baseName;
         const TType* terminalType = &baseType;
+		const TConstUnionArray* terminalConstArray = constArray;
         for (; deref != derefs.end(); ++deref) {
             TIntermBinary* visitNode = *deref;
             terminalType = &visitNode->getType();
+			if (visitNode->getAsSymbolNode())
+				terminalConstArray = &visitNode->getAsSymbolNode()->getConstArray();
+			else if (visitNode->getAsConstantUnion())
+				terminalConstArray = &visitNode->getAsConstantUnion()->getConstArray();
+			else if (visitNode->getLeft() != nullptr && visitNode->getLeft()->getAsSymbolNode())
+				terminalConstArray = &visitNode->getLeft()->getAsSymbolNode()->getConstArray();
+			else
+				terminalConstArray = nullptr;
             int index;
             switch (visitNode->getOp()) {
             case EOpIndexIndirect: {
@@ -450,7 +460,7 @@ public:
             int uniformIndex = (int)variables.size();
             reflection.nameToIndex[name.c_str()] = uniformIndex;
             variables.push_back(TObjectReflection(name.c_str(), *terminalType, offset, mapToGlType(*terminalType),
-                                                  arraySize, blockIndex));
+                                                  arraySize, blockIndex, terminalConstArray));
             if (terminalType->isArray()) {
                 variables.back().arrayStride = getArrayStride(baseType, *terminalType);
                 if (topLevelArrayStride == 0)
@@ -602,7 +612,7 @@ public:
                 // otherwise - if we're not using strict array suffix rules, or this isn't a block so we are
                 // expanding root arrays anyway, just start the iteration from the base block type.
                 blowUpActiveAggregate(base->getType(), baseName, derefs, derefs.end(), 0, blockIndex, 0, -1, 0,
-                                          base->getQualifier().storage, false);
+                                          base->getQualifier().storage, false, &base->getConstArray());
             }
         }
 
@@ -634,7 +644,7 @@ public:
                 baseName = base->getName();
         }
         blowUpActiveAggregate(base->getType(), baseName, derefs, derefs.begin(), offset, blockIndex, arraySize, -1, 0,
-                              base->getQualifier().storage, true);
+                              base->getQualifier().storage, true, &base->getConstArray());
     }
 
     int addBlockName(const TString& name, const TType& type, int size)
@@ -658,14 +668,17 @@ public:
 
                 blocks.back().numMembers = countAggregateMembers(type);
 
-                EShLanguageMask& stages = blocks.back().stages;
-                stages = static_cast<EShLanguageMask>(stages | 1 << intermediate.getStage());
+                if (updateStageMasks) {
+                    EShLanguageMask& stages = blocks.back().stages;
+                    stages = static_cast<EShLanguageMask>(stages | 1 << intermediate.getStage());
+                }
             }
             else {
                 blockIndex = it->second;
-
-                EShLanguageMask& stages = blocks[blockIndex].stages;
-                stages = static_cast<EShLanguageMask>(stages | 1 << intermediate.getStage());
+                if (updateStageMasks) {
+                    EShLanguageMask& stages = blocks[blockIndex].stages;
+                    stages = static_cast<EShLanguageMask>(stages | 1 << intermediate.getStage());
+                }
             }
         }
 
@@ -904,8 +917,8 @@ public:
             case EbtFloat16:    return GL_FLOAT16_VEC2_NV             + offset;
             case EbtInt:        return GL_INT_VEC2                    + offset;
             case EbtUint:       return GL_UNSIGNED_INT_VEC2           + offset;
-            case EbtInt64:      return GL_INT64_ARB                   + offset;
-            case EbtUint64:     return GL_UNSIGNED_INT64_ARB          + offset;
+            case EbtInt64:      return GL_INT64_VEC2_ARB              + offset;
+            case EbtUint64:     return GL_UNSIGNED_INT64_VEC2_ARB     + offset;
             case EbtBool:       return GL_BOOL_VEC2                   + offset;
             case EbtAtomicUint: return GL_UNSIGNED_INT_ATOMIC_COUNTER + offset;
             default:            return 0;
@@ -1075,9 +1088,9 @@ void TReflectionTraverser::visitSymbol(TIntermSymbol* base)
 //
 
 TObjectReflection::TObjectReflection(const std::string &pName, const TType &pType, int pOffset, int pGLDefineType,
-                                     int pSize, int pIndex)
+                                     int pSize, int pIndex, const TConstUnionArray* pConstArray)
     : name(pName), offset(pOffset), glDefineType(pGLDefineType), size(pSize), index(pIndex), counterIndex(-1),
-      numMembers(-1), arrayStride(0), topLevelArrayStride(0), stages(EShLanguageMask(0)), type(pType.clone())
+      numMembers(-1), arrayStride(0), topLevelArrayStride(0), stages(EShLanguageMask(0)), type(pType.clone()), constArray(pConstArray)
 {
 }
 
@@ -1135,6 +1148,8 @@ void TReflection::buildCounterIndices(const TIntermediate& intermediate)
         if (index >= 0)
             indexToUniformBlock[i].counterIndex = index;
     }
+#else
+    (void)intermediate;
 #endif
 }
 

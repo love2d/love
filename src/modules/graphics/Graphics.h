@@ -65,6 +65,14 @@ typedef Optional<ColorD> OptionalColorD;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
 
+enum Renderer
+{
+	RENDERER_NONE,
+	RENDERER_OPENGL,
+	RENDERER_METAL,
+	RENDERER_MAX_ENUM
+};
+
 /**
  * Globally sets whether gamma correction is enabled. Ideally this should be set
  * prior to using any Graphics module function.
@@ -94,6 +102,10 @@ Colorf gammaCorrectColor(const Colorf &c);
 Colorf unGammaCorrectColor(const Colorf &c);
 
 bool isDebugEnabled();
+
+const std::vector<Renderer> &getDefaultRenderers();
+const std::vector<Renderer> &getRenderers();
+void setRenderers(const std::vector<Renderer> &renderers);
 
 class Graphics : public Module
 {
@@ -150,13 +162,6 @@ public:
 		FEATURE_COPY_TEXTURE_TO_BUFFER,
 		FEATURE_COPY_RENDER_TARGET_TO_BUFFER,
 		FEATURE_MAX_ENUM
-	};
-
-	enum Renderer
-	{
-		RENDERER_OPENGL = 0,
-		RENDERER_OPENGLES,
-		RENDERER_MAX_ENUM
 	};
 
 	enum SystemLimit
@@ -481,7 +486,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) = 0;
+	virtual bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -808,6 +813,11 @@ public:
 	virtual Renderer getRenderer() const = 0;
 
 	/**
+	 * Whether shaders will use GLSL ES or not (mobile shaders).
+	 **/
+	virtual bool usesGLSLES() const = 0;
+
+	/**
 	 * Returns system-dependent renderer information.
 	 * Returned strings can vary greatly between systems! Do not rely on it for
 	 * anything!
@@ -867,6 +877,8 @@ public:
 		return (T *) scratchBuffer.data();
 	}
 
+	static Graphics *createInstance();
+
 	STRINGMAP_CLASS_DECLARE(DrawMode);
 	STRINGMAP_CLASS_DECLARE(ArcMode);
 	STRINGMAP_CLASS_DECLARE(LineStyle);
@@ -903,8 +915,7 @@ protected:
 		bool scissor = false;
 		Rect scissorRect = Rect();
 
-		CompareMode stencilCompare = COMPARE_ALWAYS;
-		int stencilTestValue = 0;
+		StencilState stencil;
 
 		CompareMode depthTest = COMPARE_ALWAYS;
 		bool depthWrite = false;
@@ -996,8 +1007,6 @@ protected:
 	bool created;
 	bool active;
 
-	bool writingToStencil;
-
 	StrongRef<love::graphics::Font> defaultFont;
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
@@ -1037,6 +1046,8 @@ private:
 	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[SHADERSTAGE_MAX_ENUM];
 
 }; // Graphics
+
+STRINGMAP_DECLARE(Renderer);
 
 } // graphics
 } // love

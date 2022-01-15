@@ -31,7 +31,7 @@ namespace graphics
 namespace opengl
 {
 
-class ShaderStage final : public love::graphics::ShaderStage
+class ShaderStage final : public love::graphics::ShaderStage, public Volatile
 {
 public:
 

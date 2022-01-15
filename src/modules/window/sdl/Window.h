@@ -23,6 +23,8 @@
 
 // LOVE
 #include "window/Window.h"
+#include "common/config.h"
+#include "graphics/Graphics.h"
 
 // SDL
 #include <SDL.h>
@@ -143,7 +145,7 @@ private:
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
 	std::vector<ContextAttribs> getContextAttribsList() const;
-	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags);
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Renderer renderer);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport);
@@ -164,7 +166,13 @@ private:
 	bool mouseGrabbed;
 
 	SDL_Window *window;
-	SDL_GLContext context;
+
+	SDL_GLContext glcontext;
+#ifdef LOVE_GRAPHICS_METAL
+	SDL_MetalView metalView;
+#endif
+
+	graphics::Renderer windowRenderer = graphics::RENDERER_NONE;
 
 	bool displayedWindowError;
 	bool hasSDL203orEarlier;

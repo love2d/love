@@ -193,8 +193,8 @@ static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat p
 	return status;
 }
 
-Texture::Texture(const Settings &settings, const Slices *data)
-	: love::graphics::Texture(settings, data)
+Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data)
+	: love::graphics::Texture(gfx, settings, data)
 	, slices(settings.type)
 	, fbo(0)
 	, texture(0)

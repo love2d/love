@@ -140,6 +140,7 @@ typedef enum : unsigned {
 namespace glslang {
 
 class TType;
+class TConstUnionArray;
 
 typedef enum {
     EShSourceNone,
@@ -163,11 +164,12 @@ typedef enum {
 } EShTargetLanguage;
 
 typedef enum {
+    EShTargetUniversal = 0,                           // Universal
     EShTargetVulkan_1_0 = (1 << 22),                  // Vulkan 1.0
     EShTargetVulkan_1_1 = (1 << 22) | (1 << 12),      // Vulkan 1.1
     EShTargetVulkan_1_2 = (1 << 22) | (2 << 12),      // Vulkan 1.2
     EShTargetOpenGL_450 = 450,                        // OpenGL
-    LAST_ELEMENT_MARKER(EShTargetClientVersionCount),
+    LAST_ELEMENT_MARKER(EShTargetClientVersionCount = 4),
 } EShTargetClientVersion;
 
 typedef EShTargetClientVersion EshTargetClientVersion;
@@ -179,7 +181,8 @@ typedef enum {
     EShTargetSpv_1_3 = (1 << 16) | (3 << 8),          // SPIR-V 1.3
     EShTargetSpv_1_4 = (1 << 16) | (4 << 8),          // SPIR-V 1.4
     EShTargetSpv_1_5 = (1 << 16) | (5 << 8),          // SPIR-V 1.5
-    LAST_ELEMENT_MARKER(EShTargetLanguageVersionCount),
+    EShTargetSpv_1_6 = (1 << 16) | (6 << 8),          // SPIR-V 1.6
+    LAST_ELEMENT_MARKER(EShTargetLanguageVersionCount = 7),
 } EShTargetLanguageVersion;
 
 struct TInputLanguage {
@@ -187,6 +190,7 @@ struct TInputLanguage {
     EShLanguage stage;        // redundant information with other input, this one overrides when not EShSourceNone
     EShClient dialect;
     int dialectVersion;       // version of client's language definition, not the client (when not EShClientNone)
+    bool vulkanRulesRelaxed;
 };
 
 struct TClient {
@@ -427,6 +431,14 @@ enum TResourceType {
     EResCount
 };
 
+enum TBlockStorageClass
+{
+    EbsUniform = 0,
+    EbsStorageBuffer,
+    EbsPushConstant,
+    EbsNone,    // not a uniform or buffer variable
+    EbsCount,
+};
 
 // Make one TShader per shader that you will link into a program. Then
 //  - provide the shader through setStrings() or setStringsWithLengths()
@@ -458,6 +470,7 @@ public:
     GLSLANG_EXPORT void setEntryPoint(const char* entryPoint);
     GLSLANG_EXPORT void setSourceEntryPoint(const char* sourceEntryPointName);
     GLSLANG_EXPORT void addProcesses(const std::vector<std::string>&);
+    GLSLANG_EXPORT void setUniqueId(unsigned long long id);
 
     // IO resolver binding data: see comments in ShaderLang.cpp
     GLSLANG_EXPORT void setShiftBinding(TResourceType res, unsigned int base);
@@ -475,6 +488,7 @@ public:
     GLSLANG_EXPORT void addUniformLocationOverride(const char* name, int loc);
     GLSLANG_EXPORT void setUniformLocationBase(int base);
     GLSLANG_EXPORT void setInvertY(bool invert);
+    GLSLANG_EXPORT void setDxPositionW(bool dxPosW);
 #ifdef ENABLE_HLSL
     GLSLANG_EXPORT void setHlslIoMapping(bool hlslIoMap);
     GLSLANG_EXPORT void setFlattenUniformArrays(bool flatten);
@@ -482,6 +496,14 @@ public:
     GLSLANG_EXPORT void setNoStorageFormat(bool useUnknownFormat);
     GLSLANG_EXPORT void setNanMinMaxClamp(bool nanMinMaxClamp);
     GLSLANG_EXPORT void setTextureSamplerTransformMode(EShTextureSamplerTransformMode mode);
+    GLSLANG_EXPORT void addBlockStorageOverride(const char* nameStr, glslang::TBlockStorageClass backing);
+
+    GLSLANG_EXPORT void setGlobalUniformBlockName(const char* name);
+    GLSLANG_EXPORT void setAtomicCounterBlockName(const char* name);
+    GLSLANG_EXPORT void setGlobalUniformSet(unsigned int set);
+    GLSLANG_EXPORT void setGlobalUniformBinding(unsigned int binding);
+    GLSLANG_EXPORT void setAtomicCounterBlockSet(unsigned int set);
+    GLSLANG_EXPORT void setAtomicCounterBlockBinding(unsigned int binding);
 
     // For setting up the environment (cleared to nothingness in the constructor).
     // These must be called so that parsing is done for the right source language and
@@ -490,7 +512,7 @@ public:
     //
     // setEnvInput:    The input source language and stage. If generating code for a
     //                 specific client, the input client semantics to use and the
-    //                 version of the that client's input semantics to use, otherwise
+    //                 version of that client's input semantics to use, otherwise
     //                 use EShClientNone and version of 0, e.g. for validation mode.
     //                 Note 'version' does not describe the target environment,
     //                 just the version of the source dialect to compile under.
@@ -537,6 +559,9 @@ public:
 #else
     bool getEnvTargetHlslFunctionality1() const { return false; }
 #endif
+
+    void setEnvInputVulkanRulesRelaxed() { environment.input.vulkanRulesRelaxed = true; }
+    bool getEnvInputVulkanRulesRelaxed() const { return environment.input.vulkanRulesRelaxed; }
 
     // Interface to #include handlers.
     //
@@ -699,9 +724,10 @@ private:
 // Data needed for just a single object at the granularity exchanged by the reflection API
 class TObjectReflection {
 public:
-    GLSLANG_EXPORT TObjectReflection(const std::string& pName, const TType& pType, int pOffset, int pGLDefineType, int pSize, int pIndex);
+    GLSLANG_EXPORT TObjectReflection(const std::string& pName, const TType& pType, int pOffset, int pGLDefineType, int pSize, int pIndex, const TConstUnionArray* pConstArray = nullptr);
 
-    GLSLANG_EXPORT const TType* getType() const { return type; }
+    const TType* getType() const { return type; }
+	const TConstUnionArray* getConstArray() const { return constArray; }
     GLSLANG_EXPORT int getBinding() const;
     GLSLANG_EXPORT void dump() const;
     static TObjectReflection badReflection() { return TObjectReflection(); }
@@ -721,11 +747,12 @@ public:
 protected:
     TObjectReflection()
         : offset(-1), glDefineType(-1), size(-1), index(-1), counterIndex(-1), numMembers(-1), arrayStride(0),
-          topLevelArrayStride(0), stages(EShLanguageMask(0)), type(nullptr)
+          topLevelArrayStride(0), stages(EShLanguageMask(0)), type(nullptr), constArray(nullptr)
     {
     }
 
     const TType* type;
+	const TConstUnionArray* constArray;
 };
 
 class  TReflection;
@@ -805,7 +832,7 @@ public:
     // Called by TSlotCollector to resolve resource locations or bindings
     virtual void reserverResourceSlot(TVarEntryInfo& ent, TInfoSink& infoSink) = 0;
     // Called by mapIO.addStage to set shader stage mask to mark a stage be added to this pipeline
-    virtual void addStage(EShLanguage stage) = 0;
+    virtual void addStage(EShLanguage stage, TIntermediate& stageIntermediate) = 0;
 };
 
 #endif // !GLSLANG_WEB && !GLSLANG_ANGLE
@@ -927,6 +954,7 @@ public:
 
 protected:
     GLSLANG_EXPORT bool linkStage(EShLanguage, EShMessages);
+    GLSLANG_EXPORT bool crossStageCheck(EShMessages);
 
     TPoolAllocator* pool;
     std::list<TShader*> stages[EShLangCount];

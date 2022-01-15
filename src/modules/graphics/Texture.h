@@ -226,7 +226,7 @@ public:
 
 	static int64 totalGraphicsMemory;
 
-	Texture(const Settings &settings, const Slices *slices);
+	Texture(Graphics *gfx, const Settings &settings, const Slices *slices);
 	virtual ~Texture();
 
 	// Drawable.
@@ -251,6 +251,7 @@ public:
 	virtual void copyToBuffer(Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size) = 0;
 
 	virtual ptrdiff_t getRenderTargetHandle() const = 0;
+	virtual ptrdiff_t getSamplerHandle() const = 0;
 
 	TextureType getTextureType() const;
 	PixelFormat getPixelFormat() const;
