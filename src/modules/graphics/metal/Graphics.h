@@ -123,6 +123,8 @@ public:
 	id<MTLCommandBuffer> getCommandBuffer() const { return commandBuffer; }
 	void submitCommandBuffer(SubmitType type);
 
+	void submitAllEncoders(SubmitType type);
+
 	id<MTLRenderCommandEncoder> useRenderEncoder();
 	id<MTLRenderCommandEncoder> getRenderEncoder() const { return renderEncoder; }
 	void submitRenderEncoder(SubmitType type);
@@ -140,6 +142,8 @@ public:
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
 	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
 	Texture *getDefaultTexture(TextureType textype) const { return defaultTextures[textype]; }
+
+	int getClosestMSAASamples(int requestedsamples);
 
 	static Graphics *getInstance() { return graphicsInstance; }
 

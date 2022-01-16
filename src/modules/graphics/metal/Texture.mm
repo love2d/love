@@ -41,12 +41,15 @@ static MTLTextureType getMTLTextureType(TextureType type, int msaa)
 	return MTLTextureType2D;
 }
 
-Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const Slices *data)
-	: love::graphics::Texture(gfx, settings, data)
+Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const Settings &settings, const Slices *data)
+	: love::graphics::Texture(gfxbase, settings, data)
 	, texture(nil)
 	, msaaTexture(nil)
 	, sampler(nil)
+	, actualMSAASamples(1)
 { @autoreleasepool {
+	auto gfx = (Graphics *) gfxbase;
+
 	MTLTextureDescriptor *desc = [MTLTextureDescriptor new];
 
 	int w = pixelWidth;
@@ -81,11 +84,12 @@ Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Sett
 	if (texture == nil)
 		throw love::Exception("Out of graphics memory.");
 
-	if (getRequestedMSAA() > 1)
+	actualMSAASamples = gfx->getClosestMSAASamples(getRequestedMSAA());
+
+	if (actualMSAASamples > 1)
 	{
-		// TODO: sampleCount validation
-		desc.sampleCount = getRequestedMSAA();
-		desc.textureType = getMTLTextureType(texType, (int)desc.sampleCount);
+		desc.sampleCount = actualMSAASamples;
+		desc.textureType = getMTLTextureType(texType, actualMSAASamples);
 		desc.usage &= ~MTLTextureUsageShaderRead;
 
 		// TODO: This needs to be cleared, etc.

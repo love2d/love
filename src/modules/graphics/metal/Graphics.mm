@@ -118,7 +118,7 @@ static MTLPrimitiveType getMTLPrimitiveType(PrimitiveType prim)
 	{
 		case PRIMITIVE_TRIANGLES: return MTLPrimitiveTypeTriangle;
 		case PRIMITIVE_TRIANGLE_STRIP: return MTLPrimitiveTypeTriangleStrip;
-		case PRIMITIVE_TRIANGLE_FAN: return MTLPrimitiveTypeTriangle; // This needs to be emulated.
+		case PRIMITIVE_TRIANGLE_FAN: return MTLPrimitiveTypeTriangle; // TODO: This needs to be emulated.
 		case PRIMITIVE_POINTS: return MTLPrimitiveTypePoint;
 		case PRIMITIVE_MAX_ENUM: return MTLPrimitiveTypeTriangle;
 	}
@@ -448,7 +448,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	backbufferMSAA.set(nullptr);
 	if (settings.msaa > 1)
 	{
-		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_UNORM_sRGB : PIXELFORMAT_RGBA8_UNORM;
+		settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
 		backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
 	}
 
@@ -537,15 +537,20 @@ id<MTLCommandBuffer> Graphics::useCommandBuffer()
 
 void Graphics::submitCommandBuffer(SubmitType type)
 {
-	submitRenderEncoder(type);
-	submitBlitEncoder();
-	submitComputeEncoder();
+	submitAllEncoders(type);
 
 	if (commandBuffer != nil)
 	{
 		[commandBuffer commit];
 		commandBuffer = nil;
 	}
+}
+
+void Graphics::submitAllEncoders(SubmitType type)
+{
+	submitRenderEncoder(type);
+	submitBlitEncoder();
+	submitComputeEncoder();
 }
 
 static inline void setAttachment(const Graphics::RenderTarget &rt, MTLRenderPassAttachmentDescriptor *desc, MTLStoreAction &storeaction, bool setload = true)
@@ -579,8 +584,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 {
 	if (renderEncoder == nil)
 	{
-		submitBlitEncoder();
-		submitComputeEncoder();
+		submitAllEncoders(SUBMIT_STORE);
 
 		// Pass desc info for non-backbuffer render targets are set up in
 		// setRenderTargetsInternal.
@@ -682,8 +686,7 @@ id<MTLBlitCommandEncoder> Graphics::useBlitEncoder()
 {
 	if (blitEncoder == nil)
 	{
-		submitRenderEncoder(SUBMIT_STORE);
-		submitComputeEncoder();
+		submitAllEncoders(SUBMIT_STORE);
 		blitEncoder = [useCommandBuffer() blitCommandEncoder];
 	}
 
@@ -703,8 +706,7 @@ id<MTLComputeCommandEncoder> Graphics::useComputeEncoder()
 {
 	if (computeEncoder == nil)
 	{
-		submitRenderEncoder(SUBMIT_STORE);
-		submitBlitEncoder();
+		submitAllEncoders(SUBMIT_STORE);
 		computeEncoder = [useCommandBuffer() computeCommandEncoder];
 		renderBindings = {};
 	}
@@ -902,20 +904,26 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 			key.blend = state.blend;
 			key.colorChannelMask = state.colorMask;
 
-			if (state.renderTargets.getFirstTarget().texture.get() == nullptr)
+			const auto &firsttarget = state.renderTargets.getFirstTarget();
+
+			if (firsttarget.texture.get() == nullptr)
 			{
 				key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
 				key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
+				key.msaa = backbufferMSAA ? (uint8) backbufferMSAA->getMSAA() : 1;
 			}
 			else
 			{
 				const auto &rts = state.renderTargets.colors;
+
 				for (size_t i = 0; i < rts.size(); i++)
 					key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
 
 				// TODO: automatic depth/stencil (state doesn't store it).
 				if (state.renderTargets.depthStencil.texture.get())
 					key.depthStencilFormat = state.renderTargets.depthStencil.texture->getPixelFormat();
+
+				key.msaa = (uint8) firsttarget.texture->getMSAA();
 			}
 
 			pipeline = shader->getCachedRenderPipeline(key);
@@ -2052,19 +2060,19 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	return info;
 }
 
-void Graphics::initCapabilities()
+int Graphics::getClosestMSAASamples(int requestedsamples)
 {
-	int msaa = 1;
 	const int checkmsaa[] = {32, 16, 8, 4, 2};
 	for (int samples : checkmsaa)
 	{
-		if ([device supportsTextureSampleCount:samples])
-		{
-			msaa = samples;
-			break;
-		}
+		if (samples <= requestedsamples && [device supportsTextureSampleCount:samples])
+			return samples;
 	}
+	return 1;
+}
 
+void Graphics::initCapabilities()
+{
 	if (@available(macOS 10.15, iOS 13.0, *))
 	{
 		for (NSInteger i = 0; i < 7; i++)
@@ -2161,7 +2169,7 @@ void Graphics::initCapabilities()
 		capabilities.limits[LIMIT_RENDER_TARGETS] = 8;
 	else
 		capabilities.limits[LIMIT_RENDER_TARGETS] = 4;
-	capabilities.limits[LIMIT_TEXTURE_MSAA] = msaa;
+	capabilities.limits[LIMIT_TEXTURE_MSAA] = getClosestMSAASamples(32);
 	capabilities.limits[LIMIT_ANISOTROPY] = 16.0f;
 	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
