@@ -78,6 +78,8 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 		desc.usage |= MTLTextureUsageShaderRead;
 	if (renderTarget)
 		desc.usage |= MTLTextureUsageRenderTarget;
+	if (computeWrite)
+		desc.usage |= MTLTextureUsageShaderWrite;
 
 	texture = [device newTextureWithDescriptor:desc];
 
