@@ -723,11 +723,6 @@ bool Window::setFullscreen(bool fullscreen, Window::FullscreenType fstype)
 	{
 		SDL_GL_MakeCurrent(window, context);
 		updateSettings(newsettings, true);
-
-		// Apparently this gets un-set when we exit fullscreen (at least in OS X).
-		if (!fullscreen)
-			SDL_SetWindowMinimumSize(window, settings.minwidth, settings.minheight);
-
 		return true;
 	}
 
