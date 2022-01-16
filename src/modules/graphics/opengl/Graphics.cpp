@@ -1654,6 +1654,7 @@ void Graphics::initCapabilities()
 {
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = gl.isMultiFormatMRTSupported();
 	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroOneTextureWrapSupported();
+	capabilities.features[FEATURE_CLAMP_ONE] = gl.isClampZeroOneTextureWrapSupported();
 	capabilities.features[FEATURE_BLEND_MINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
 	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLEND_MINMAX];
 	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
@@ -1668,7 +1669,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = gl.isCopyBufferToTextureSupported();
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = gl.isCopyRenderTargetToBufferSupported();
-	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

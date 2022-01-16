@@ -67,7 +67,7 @@ static MTLSamplerAddressMode getMTLSamplerAddressMode(SamplerState::WrapMode mod
 		case SamplerState::WRAP_CLAMP: return MTLSamplerAddressModeClampToEdge;
 		case SamplerState::WRAP_CLAMP_ZERO: return MTLSamplerAddressModeClampToZero;
 		case SamplerState::WRAP_CLAMP_ONE:
-			if (@available(macOS 10.12, iOS 10.14, *))
+			if (@available(macOS 10.12, iOS 14.0, *))
 				return MTLSamplerAddressModeClampToBorderColor;
 			else
 				return MTLSamplerAddressModeClampToZero;
@@ -747,8 +747,17 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 	if (isClampOne(s.wrapU) || isClampOne(s.wrapV) || isClampOne(s.wrapW))
 	{
-		if (@available(macOS 10.12, iOS 14.0, *))
+		if (capabilities.features[FEATURE_CLAMP_ONE])
 			desc.borderColor = MTLSamplerBorderColorOpaqueWhite;
+		else
+		{
+			if (isClampOne(s.wrapU))
+				desc.sAddressMode = MTLSamplerAddressModeClampToZero;
+			if (isClampOne(s.wrapV))
+				desc.tAddressMode = MTLSamplerAddressModeClampToZero;
+			if (isClampOne(s.wrapW))
+				desc.rAddressMode = MTLSamplerAddressModeClampToZero;
+		}
 	}
 
 	desc.lodMinClamp = s.minLod;
@@ -2093,6 +2102,13 @@ void Graphics::initCapabilities()
 
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
+	capabilities.features[FEATURE_CLAMP_ONE] = false;
+	if (@available(macOS 10.12, iOS 14.0, *))
+	{
+		// Requires "border color" feature.
+		if (families.mac[1] || families.macCatalyst[1] || families.apple[7])
+			capabilities.features[FEATURE_CLAMP_ONE] = true;
+	}
 	capabilities.features[FEATURE_BLEND_MINMAX] = true;
 	capabilities.features[FEATURE_LIGHTEN] = true;
 	capabilities.features[FEATURE_FULL_NPOT] = true;
@@ -2107,7 +2123,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;

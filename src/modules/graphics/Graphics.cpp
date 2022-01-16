@@ -2302,6 +2302,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 {
 	{ "multirendertargetformats", Graphics::FEATURE_MULTI_RENDER_TARGET_FORMATS },
 	{ "clampzero",                Graphics::FEATURE_CLAMP_ZERO           },
+	{ "clampone",                 Graphics::FEATURE_CLAMP_ONE            },
 	{ "blendminmax",              Graphics::FEATURE_BLEND_MINMAX         },
 	{ "lighten",                  Graphics::FEATURE_LIGHTEN              },
 	{ "fullnpot",                 Graphics::FEATURE_FULL_NPOT            },
