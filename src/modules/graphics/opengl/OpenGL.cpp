@@ -1438,19 +1438,10 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 
 bool OpenGL::isTexStorageSupported()
 {
-	bool supportsTexStorage = GLAD_VERSION_4_2 || GLAD_ARB_texture_storage;
-
-	// Apparently there are bugs with glTexStorage on some Android drivers. I'd
-	// rather not find out the hard way, so we'll avoid it for now...
-#ifndef LOVE_ANDROID
-	if (GLAD_ES_VERSION_3_0)
-		supportsTexStorage = true;
-#endif
-
 	if (gl.bugs.texStorageBreaksSubImage)
-		supportsTexStorage = false;
+		return false;
 
-	return supportsTexStorage;
+	return GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_2 || GLAD_ARB_texture_storage;
 }
 
 bool OpenGL::isTextureTypeSupported(TextureType type) const
