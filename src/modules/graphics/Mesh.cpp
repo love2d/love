@@ -533,6 +533,12 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Instancing is not supported on this system.");
 
+	// Some graphics backends don't natively support triangle fans. So we'd
+	// have to emulate them with triangles plus an index buffer... which doesn't
+	// work so well when there's already a custom index buffer.
+	if (primitiveType == PRIMITIVE_TRIANGLE_FAN && useIndexBuffer && indexBuffer != nullptr)
+		throw love::Exception("The 'fan' Mesh draw mode cannot be used with an index buffer / vertex map.");
+
 	gfx->flushBatchedDraws();
 
 	flush();
