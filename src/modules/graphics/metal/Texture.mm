@@ -105,43 +105,103 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 
 	int mipcount = getMipmapCount();
 
-	int slicecount = 1;
-	if (texType == TEXTURE_VOLUME)
-		slicecount = getDepth();
-	else if (texType == TEXTURE_2D_ARRAY)
-		slicecount = getLayerCount();
-	else if (texType == TEXTURE_CUBE)
-		slicecount = 6;
+	bool cangeneratemips = true;
 
+	if (isPixelFormatDepthStencil(format) || isPixelFormatCompressed(format))
+		cangeneratemips = false;
+
+	// generateMipmapsForTexture is only supported for color renderable +
+	// filterable formats.
+	uint32 genmipsflags = PIXELFORMATUSAGEFLAGS_LINEAR | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) genmipsflags))
+		cangeneratemips = false;
+
+	bool shouldgeneratemips = false;
+
+	std::vector<uint8> emptydata;
+	MTLRenderPassDescriptor *passdesc = nil;
+
+	// Initialize texture.
 	for (int mip = 0; mip < mipcount; mip++)
 	{
-		for (int slice = 0; slice < slicecount; slice++)
+		for (int slice = 0; slice < getSliceCount(mip); slice++)
 		{
 			auto imgd = data != nullptr ? data->get(slice, mip) : nullptr;
 			if (imgd != nullptr)
+			{
 				uploadImageData(imgd, mip, slice, 0, 0);
-		}
-	}
+			}
+			else if (mip > 0 && cangeneratemips)
+			{
+				// Handled in the generateMipmaps call below.
+				shouldgeneratemips = true;
+				continue;
+			}
+			else if (getMSAA() <= 1 && !isPixelFormatDepthStencil(format) && !isPixelFormatCompressed(format))
+			{
+				// Initialize to transparent black.
+				if (emptydata.empty())
+					emptydata.resize(getPixelFormatSliceSize(format, w, h));
 
-	if (data == nullptr || data->get(0, 0) == nullptr)
-	{
-		// Initialize all slices to transparent black.
-		if (!isPixelFormatDepthStencil(format))
-		{
-			std::vector<uint8> emptydata(getPixelFormatSliceSize(format, w, h));
-			Rect r = {0, 0, w, h};
-			for (int i = 0; i < slicecount; i++)
-				uploadByteData(format, emptydata.data(), emptydata.size(), 0, i, r);
-		}
-		else
-		{
-			// TODO
+				Rect r = {0, 0, getPixelWidth(mip), getPixelHeight(mip)};
+				uploadByteData(format, emptydata.data(), emptydata.size(), mip, slice, r);
+			}
+			else if (isRenderTarget())
+			{
+				// Clear to transparent black.
+				gfx->submitAllEncoders(Graphics::SUBMIT_STORE);
+				id<MTLCommandBuffer> cmd = gfx->useCommandBuffer();
+
+				if (passdesc == nil)
+					passdesc = [MTLRenderPassDescriptor renderPassDescriptor];
+
+				auto configattachment = [&](MTLRenderPassAttachmentDescriptor *attachment)
+				{
+					attachment.texture = texture;
+					attachment.level = mip;
+					attachment.slice = texType == TEXTURE_VOLUME ? 0 : slice;
+					attachment.depthPlane = texType == TEXTURE_VOLUME ? slice : 0;
+					attachment.loadAction = MTLLoadActionClear;
+					attachment.storeAction = MTLStoreActionStore;
+
+					if (actualMSAASamples > 1)
+					{
+						attachment.texture = msaaTexture;
+						attachment.resolveTexture = texture;
+						attachment.storeAction = MTLStoreActionStoreAndMultisampleResolve;
+					}
+				};
+
+				if (isPixelFormatDepth(format))
+				{
+					configattachment(passdesc.depthAttachment);
+					passdesc.depthAttachment.clearDepth = 1.0;
+				}
+				if (isPixelFormatStencil(format))
+				{
+					configattachment(passdesc.stencilAttachment);
+					passdesc.stencilAttachment.clearStencil = 0;
+				}
+				if (!isPixelFormatDepthStencil(format))
+				{
+					configattachment(passdesc.colorAttachments[0]);
+					passdesc.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 0);
+				}
+
+				id<MTLRenderCommandEncoder> encoder = [cmd renderCommandEncoderWithDescriptor:passdesc];
+				[encoder endEncoding];
+			}
+			else
+			{
+				// Shouldn't be possible to get here.
+				throw love::Exception("Could not initialize texture to transparent black.");
+			}
 		}
 	}
 
 	// Non-readable textures can't have mipmaps (enforced in the base class),
 	// so generateMipmaps here is fine - when they aren't already initialized.
-	if (getMipmapCount() > 1 && (data == nullptr || data->getMipmapCount() <= 1))
+	if (shouldgeneratemips)
 		generateMipmaps();
 
 	setSamplerState(samplerState);

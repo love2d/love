@@ -2062,6 +2062,11 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 
 int Graphics::getClosestMSAASamples(int requestedsamples)
 {
+	// We currently rely on StoreAndMultisampleResolve (unfortunately), which
+	// isn't supported by old phone GPUs.
+	if (!families.apple[3] && !families.mac[1] && !families.macCatalyst[1])
+		return 1;
+
 	const int checkmsaa[] = {32, 16, 8, 4, 2};
 	for (int samples : checkmsaa)
 	{

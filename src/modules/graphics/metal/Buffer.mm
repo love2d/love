@@ -78,6 +78,9 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 			// TODO: minimumTextureBufferAlignmentForPixelFormat
 
 			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
+			if (pixformat == MTLPixelFormatInvalid)
+				throw love::Exception("Could not create Metal texel buffer: invalid format.");
+
 			size_t width = arraylength * getDataMembers().size();
 			auto desc = [MTLTextureDescriptor textureBufferDescriptorWithPixelFormat:pixformat
 																			   width:width
