@@ -609,21 +609,22 @@ bool Texture::isFormatLinear() const
 	return isGammaCorrect() && !sRGB && !isPixelFormatSRGB(format);
 }
 
-bool Texture::isValidSlice(int slice) const
+bool Texture::isValidSlice(int slice, int mip) const
 {
-	if (slice < 0)
-		return false;
+	return slice >= 0 && slice < getSliceCount(mip);
+}
 
-	if (texType == TEXTURE_CUBE)
-		return slice < 6;
-	else if (texType == TEXTURE_VOLUME)
-		return slice < depth;
+int Texture::getSliceCount(int mip) const
+{
+	if (texType == TEXTURE_2D)
+		return 1;
+	else if (texType == TEXTURE_CUBE)
+		return 6;
 	else if (texType == TEXTURE_2D_ARRAY)
-		return slice < layers;
-	else if (slice > 0)
-		return false;
-
-	return true;
+		return layers;
+	else if (texType == TEXTURE_VOLUME)
+		return getDepth(mip);
+	return 1;
 }
 
 int Texture::getWidth(int mip) const

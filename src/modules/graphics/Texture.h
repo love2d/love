@@ -264,7 +264,10 @@ public:
 	bool isCompressed() const;
 	bool isFormatLinear() const;
 
-	bool isValidSlice(int slice) const;
+	bool isValidSlice(int slice, int mip) const;
+
+	// Number of array layers, cube faces, or volume layers for the given mip.
+	int getSliceCount(int mip) const;
 
 	int getWidth(int mip = 0) const;
 	int getHeight(int mip = 0) const;

@@ -779,7 +779,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (firsttarget.mipmap < 0 || firsttarget.mipmap >= firsttex->getMipmapCount())
 		throw love::Exception("Invalid mipmap level %d.", firsttarget.mipmap + 1);
 
-	if (!firsttex->isValidSlice(firsttarget.slice))
+	if (!firsttex->isValidSlice(firsttarget.slice, firsttarget.mipmap))
 		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
 
 	bool hasSRGBtexture = isPixelFormatSRGB(firstcolorformat);
@@ -800,7 +800,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
 
-		if (!c->isValidSlice(slice))
+		if (!c->isValidSlice(slice, mip))
 			throw love::Exception("Invalid slice index: %d.", slice + 1);
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
@@ -840,7 +840,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
 
-		if (!c->isValidSlice(slice))
+		if (!c->isValidSlice(slice, mip))
 			throw love::Exception("Invalid slice index: %d.", slice + 1);
 	}
 
