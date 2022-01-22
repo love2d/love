@@ -1064,14 +1064,9 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 		MTLRenderPipelineColorAttachmentDescriptor *attachment = desc.colorAttachments[i];
 
-		if (@available(macOS 10.15, iOS 13.0, *))
-		{
-			// We already don't really support metal on older systems, this just
-			// silences a compiler warning about it.
-			bool isSRGB = false;
-			auto formatdesc = Metal::convertPixelFormat(device, format, isSRGB);
-			attachment.pixelFormat = formatdesc.format;
-		}
+		bool isSRGB = false;
+		auto formatdesc = Metal::convertPixelFormat(device, format, isSRGB);
+		attachment.pixelFormat = formatdesc.format;
 
 		if (key.blend.enable)
 		{

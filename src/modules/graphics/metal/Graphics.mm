@@ -1813,7 +1813,6 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 		format = getSRGBPixelFormat(format);
 
 	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
-	const uint32 linear = PIXELFORMATUSAGEFLAGS_LINEAR;
 	const uint32 rt = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
 	const uint32 blend = PIXELFORMATUSAGEFLAGS_BLEND;
 	const uint32 msaa = PIXELFORMATUSAGEFLAGS_MSAA;
@@ -1858,8 +1857,12 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			flags |= all;
 			break;
 		case PIXELFORMAT_LA8_UNORM:
-			// TODO
-			flags |= commonsample;
+			// Requires texture swizzle support.
+			if (@available(macOS 10.15, iOS 13, *))
+			{
+				if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
+					flags |= commonsample;
+			}
 			break;
 		case PIXELFORMAT_RG16_UNORM:
 			if (families.apple[1])

@@ -82,6 +82,10 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	pixelFormat = gd->getFormat();
 	gd->release();
 
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (pixelFormat == PIXELFORMAT_LA8_UNORM && !gfx->isPixelFormatSupported(pixelFormat, PIXELFORMATUSAGEFLAGS_SAMPLE))
+		pixelFormat = PIXELFORMAT_RGBA8_UNORM;
+
 	if (!r->hasGlyph(9)) // No tab character in the Rasterizer.
 		useSpacesAsTab = true;
 
@@ -158,18 +162,30 @@ void Font::createTexture()
 	texture->setSamplerState(samplerState);
 
 	{
-		size_t bpp = getPixelFormatBlockSize(pixelFormat);
+		size_t datasize = getPixelFormatSliceSize(pixelFormat, size.width, size.height);
 		size_t pixelcount = size.width * size.height;
 
-		// Initialize the texture with transparent white for Luminance-Alpha
-		// formats (since we keep luminance constant and vary alpha in those
-		// glyphs), and transparent black otherwise.
-		std::vector<uint8> emptydata(pixelcount * bpp, 0);
+		// Initialize the texture with transparent white for truetype fonts
+		// (since we keep luminance constant and vary alpha in those glyphs),
+		// and transparent black otherwise.
+		std::vector<uint8> emptydata(datasize, 0);
 
-		if (pixelFormat == PIXELFORMAT_LA8_UNORM)
+		if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
 		{
-			for (size_t i = 0; i < pixelcount; i++)
-				emptydata[i * 2 + 0] = 255;
+			if (pixelFormat == PIXELFORMAT_LA8_UNORM)
+			{
+				for (size_t i = 0; i < pixelcount; i++)
+					emptydata[i * 2 + 0] = 255;
+			}
+			else if (pixelFormat == PIXELFORMAT_RGBA8_UNORM)
+			{
+				for (size_t i = 0; i < pixelcount; i++)
+				{
+					emptydata[i * 4 + 0] = 255;
+					emptydata[i * 4 + 1] = 255;
+					emptydata[i * 4 + 2] = 255;
+				}
+			}
 		}
 
 		Rect rect = {0, 0, size.width, size.height};
@@ -281,7 +297,32 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		g.texture = texture;
 
 		Rect rect = {textureX, textureY, gd->getWidth(), gd->getHeight()};
-		texture->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
+
+		if (pixelFormat != gd->getFormat())
+		{
+			if (!(pixelFormat == PIXELFORMAT_RGBA8_UNORM && gd->getFormat() == PIXELFORMAT_LA8_UNORM))
+				throw love::Exception("Cannot upload font glyphs to texture atlas: unexpected format conversion.");
+
+			const uint8 *src = (const uint8 *) gd->getData();
+
+			size_t dstsize = getPixelFormatSliceSize(pixelFormat, w, h);
+			std::vector<uint8> dst(dstsize, 0);
+			uint8 *dstdata = dst.data();
+
+			for (int pixel = 0; pixel < w * h; pixel++)
+			{
+				dstdata[pixel * 4 + 0] = src[pixel * 2 + 0];
+				dstdata[pixel * 4 + 1] = src[pixel * 2 + 0];
+				dstdata[pixel * 4 + 2] = src[pixel * 2 + 0];
+				dstdata[pixel * 4 + 3] = src[pixel * 2 + 1];
+			}
+
+			texture->replacePixels(dstdata, dstsize, 0, 0, rect, false);
+		}
+		else
+		{
+			texture->replacePixels(gd->getData(), gd->getSize(), 0, 0, rect, false);
+		}
 
 		double tX     = (double) textureX,     tY      = (double) textureY;
 		double tWidth = (double) textureWidth, tHeight = (double) textureHeight;
