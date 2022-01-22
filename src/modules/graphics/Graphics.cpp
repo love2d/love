@@ -184,6 +184,7 @@ Graphics::Graphics()
 	, drawCalls(0)
 	, drawCallsBatched(0)
 	, quadIndexBuffer(nullptr)
+	, fanIndexBuffer(nullptr)
 	, capabilities()
 	, cachedShaderStages()
 {
@@ -202,7 +203,10 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	delete quadIndexBuffer;
+	if (quadIndexBuffer != nullptr)
+		quadIndexBuffer->release();
+	if (fanIndexBuffer != nullptr)
+		fanIndexBuffer->release();
 
 	// Clean up standard shaders before the active shader. If we do it after,
 	// the active shader may try to activate a standard shader when deactivating
@@ -239,7 +243,7 @@ void Graphics::createQuadIndexBuffer()
 	if (quadIndexBuffer != nullptr)
 		return;
 
-	size_t size = sizeof(uint16) * (LOVE_UINT16_MAX / 4) * 6;
+	size_t size = sizeof(uint16) * getIndexCount(TRIANGLEINDEX_QUADS, LOVE_UINT16_MAX);
 
 	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_STATIC);
 	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
@@ -248,6 +252,22 @@ void Graphics::createQuadIndexBuffer()
 	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
 
 	quadIndexBuffer->setImmutable(true);
+}
+
+void Graphics::createFanIndexBuffer()
+{
+	if (fanIndexBuffer != nullptr)
+		return;
+
+	size_t size = sizeof(uint16) * getIndexCount(TRIANGLEINDEX_FAN, LOVE_UINT16_MAX);
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_STATIC);
+	fanIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
+
+	Buffer::Mapper map(*fanIndexBuffer);
+	fillIndices(TRIANGLEINDEX_FAN, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+
+	fanIndexBuffer->setImmutable(true);
 }
 
 Quad *Graphics::newQuad(Quad::Viewport v, double sw, double sh)
@@ -1617,6 +1637,17 @@ void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
 
 void Graphics::drawShaderVertices(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture)
 {
+	if (primtype == PRIMITIVE_TRIANGLE_FAN && vertexcount > LOVE_UINT16_MAX)
+		throw love::Exception("drawShaderVertices cannot draw more than %d vertices when the 'fan' draw mode is used.", LOVE_UINT16_MAX);
+
+	// Emulated triangle fan via an index buffer.
+	if (primtype == PRIMITIVE_TRIANGLE_FAN && getFanIndexBuffer())
+	{
+		int indexcount = getIndexCount(TRIANGLEINDEX_FAN, vertexcount);
+		drawShaderVertices(getFanIndexBuffer(), indexcount, instancecount, 0, maintexture);
+		return;
+	}
+
 	flushBatchedDraws();
 
 	if (!capabilities.features[FEATURE_GLSL3])

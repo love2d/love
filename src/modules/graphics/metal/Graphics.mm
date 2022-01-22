@@ -118,7 +118,7 @@ static MTLPrimitiveType getMTLPrimitiveType(PrimitiveType prim)
 	{
 		case PRIMITIVE_TRIANGLES: return MTLPrimitiveTypeTriangle;
 		case PRIMITIVE_TRIANGLE_STRIP: return MTLPrimitiveTypeTriangleStrip;
-		case PRIMITIVE_TRIANGLE_FAN: return MTLPrimitiveTypeTriangle; // TODO: This needs to be emulated.
+		case PRIMITIVE_TRIANGLE_FAN: return MTLPrimitiveTypeTriangle; // This is emulated with an index buffer.
 		case PRIMITIVE_POINTS: return MTLPrimitiveTypePoint;
 		case PRIMITIVE_MAX_ENUM: return MTLPrimitiveTypeTriangle;
 	}
@@ -336,6 +336,7 @@ Graphics::Graphics()
 	}
 
 	createQuadIndexBuffer();
+	createFanIndexBuffer();
 
 	// We always need a default shader.
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
@@ -1476,7 +1477,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 }}
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
-{
+{ @autoreleasepool {
 	flushBatchedDraws();
 
 	// TODO
@@ -1497,7 +1498,7 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 		passDesc.stencilAttachment.loadAction = MTLLoadActionDontCare;
 		passDesc.depthAttachment.loadAction = MTLLoadActionDontCare;
 	}
-}
+}}
 
 void Graphics::present(void *screenshotCallbackData)
 { @autoreleasepool {

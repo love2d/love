@@ -207,8 +207,7 @@ private:
 
 	PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-	int rangeStart = -1;
-	int rangeCount = -1;
+	Range drawRange = Range();
 
 	StrongRef<Texture> texture;
 

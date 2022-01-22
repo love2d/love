@@ -501,22 +501,21 @@ void Mesh::setDrawRange(int start, int count)
 	if (start < 0 || count <= 0)
 		throw love::Exception("Invalid draw range.");
 
-	rangeStart = start;
-	rangeCount = count;
+	drawRange = Range(start, count);
 }
 
 void Mesh::setDrawRange()
 {
-	rangeStart = rangeCount = -1;
+	drawRange.invalidate();
 }
 
 bool Mesh::getDrawRange(int &start, int &count) const
 {
-	if (rangeStart < 0 || rangeCount <= 0)
+	if (!drawRange.isValid())
 		return false;
 
-	start = rangeStart;
-	count = rangeCount;
+	start = (int) drawRange.getOffset();
+	count = (int) drawRange.getSize();
 	return true;
 }
 
@@ -595,9 +594,30 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 	Graphics::TempTransform transform(gfx, m);
 
-	if (useIndexBuffer && indexBuffer != nullptr && indexCount > 0)
+	Buffer *indexbuffer = useIndexBuffer ? indexBuffer : nullptr;
+	int indexcount = (int) indexCount;
+	Range range = drawRange;
+
+	// Emulated triangle fan via an index buffer.
+	if (primitiveType == PRIMITIVE_TRIANGLE_FAN && indexbuffer == nullptr && gfx->getFanIndexBuffer())
 	{
-		Graphics::DrawIndexedCommand cmd(&attributes, &buffers, indexBuffer);
+		indexbuffer = gfx->getFanIndexBuffer();
+		indexcount = graphics::getIndexCount(TRIANGLEINDEX_FAN, vertexCount);
+		if (range.isValid())
+		{
+			int start = graphics::getIndexCount(TRIANGLEINDEX_FAN, (int) range.getOffset());
+			int count = graphics::getIndexCount(TRIANGLEINDEX_FAN, (int) range.getSize());
+			range = Range(start, count);
+		}
+	}
+
+	if (indexbuffer != nullptr && indexcount > 0)
+	{
+		Range r(0, indexcount);
+		if (range.isValid())
+			r.intersect(range);
+
+		Graphics::DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
 
 		cmd.primitiveType = primitiveType;
 		cmd.indexType = indexDataType;
@@ -605,30 +625,23 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		cmd.texture = texture;
 		cmd.cullMode = gfx->getMeshCullMode();
 
-		int start = std::min(std::max(0, rangeStart), (int) indexCount - 1);
-		cmd.indexBufferOffset = start * getIndexDataSize(indexDataType);
-
-		cmd.indexCount = (int) indexCount;
-		if (rangeCount > 0)
-			cmd.indexCount = std::min(cmd.indexCount, rangeCount);
-
-		cmd.indexCount = std::min(cmd.indexCount, (int) indexCount - start);
+		cmd.indexBufferOffset = r.getOffset() * indexbuffer->getArrayStride();
+		cmd.indexCount = (int) r.getSize();
 
 		if (cmd.indexCount > 0)
 			gfx->draw(cmd);
 	}
 	else if (vertexCount > 0)
 	{
+		Range r(0, vertexCount);
+		if (range.isValid())
+			r.intersect(range);
+
 		Graphics::DrawCommand cmd(&attributes, &buffers);
 
 		cmd.primitiveType = primitiveType;
-		cmd.vertexStart = std::min(std::max(0, rangeStart), (int) vertexCount - 1);
-
-		cmd.vertexCount = (int) vertexCount;
-		if (rangeCount > 0)
-			cmd.vertexCount = std::min(cmd.vertexCount, rangeCount);
-
-		cmd.vertexCount = std::min(cmd.vertexCount, (int) vertexCount - cmd.vertexStart);
+		cmd.vertexStart = (int) r.getOffset();
+		cmd.vertexCount = (int) r.getSize();
 		cmd.instanceCount = instancecount;
 		cmd.texture = texture;
 		cmd.cullMode = gfx->getMeshCullMode();

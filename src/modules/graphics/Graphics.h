@@ -526,6 +526,7 @@ public:
 	virtual int getBackbufferMSAA() const = 0;
 
 	Buffer *getQuadIndexBuffer() const { return quadIndexBuffer; }
+	Buffer *getFanIndexBuffer() const { return fanIndexBuffer; }
 
 	/**
 	 * Sets the current constant color.
@@ -987,6 +988,7 @@ protected:
 	virtual void getAPIStats(int &shaderswitches) const = 0;
 
 	void createQuadIndexBuffer();
+	void createFanIndexBuffer();
 
 	Texture *getTemporaryTexture(PixelFormat format, int w, int h, int samples);
 
@@ -1029,6 +1031,7 @@ protected:
 	int drawCallsBatched;
 
 	Buffer *quadIndexBuffer;
+	Buffer *fanIndexBuffer;
 
 	Capabilities capabilities;
 
