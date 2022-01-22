@@ -1958,8 +1958,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			//if (families.apple[3] || families.mac[1] || families.macCatalyst[1])
 			//	flags |= resolve;
 			break;
-		case PIXELFORMAT_DEPTH24_UNORM:
-			// TODO
+		case PIXELFORMAT_DEPTH24_UNORM: // This is emulated via 32f.
 		case PIXELFORMAT_DEPTH32_FLOAT:
 			if (families.apple[1])
 				flags |= rt | sample | msaa;
@@ -1969,7 +1968,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 				flags |= rt | commonsample | msaa; // | resolve;
 			break;
 		case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
-			// TODO
+			// Note: this falls back to 32f_s8 on some systems.
 			flags |= rt | sample | msaa;
 			break;
 		case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
