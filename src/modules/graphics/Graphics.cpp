@@ -907,6 +907,11 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	renderTargetSwitchCount++;
 
 	resetProjection();
+
+	// Invalidate temporary depth/stencil. This could be a clear, but if the
+	// user also clears a double-clear may be slow...
+	if (rts.depthStencil.texture == nullptr && rts.temporaryRTFlags != 0)
+		discard({}, true);
 }
 
 void Graphics::setRenderTarget()

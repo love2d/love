@@ -1370,10 +1370,12 @@ void Graphics::endPass()
 
 	// Discard the depth/stencil buffer if we're using an internal cached one,
 	// or if this is the backbuffer.
-	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
-		discard({}, true);
-	else if (!rts.getFirstTarget().texture.get())
-		discard({}, true); // Backbuffer
+	if ((depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
+		|| !rts.getFirstTarget().texture.get())
+	{
+		attachmentStoreActions.depth = MTLStoreActionDontCare;
+		attachmentStoreActions.stencil = MTLStoreActionDontCare;
+	}
 
 	submitRenderEncoder(SUBMIT_DONE);
 
