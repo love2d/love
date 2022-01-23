@@ -22,6 +22,7 @@
 
 #include "graphics/Graphics.h"
 #include "Metal.h"
+#include "Shader.h"
 
 #include <map>
 
@@ -209,8 +210,8 @@ private:
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const VertexAttributes &attributes);
-	void applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, Shader *shader);
-	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, Shader *shader, Texture *maintex);
+	void applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader);
+	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, Texture *maintex);
 
 	id<MTLCommandQueue> commandQueue;
 
@@ -225,8 +226,7 @@ private:
 
 	uint32 dirtyRenderState;
 	CullMode lastCullMode;
-	VertexAttributes lastVertexAttributes;
-	PixelFormat activeDepthStencilFormat;
+	Shader::RenderPipelineKey lastRenderPipelineKey;
 	bool windowHasStencil;
 	int shaderSwitches;
 

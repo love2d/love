@@ -864,9 +864,6 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 			throw love::Exception("Invalid slice index: %d.", slice + 1);
 	}
 
-	int w = firsttex->getWidth(firsttarget.mipmap);
-	int h = firsttex->getHeight(firsttarget.mipmap);
-
 	flushBatchedDraws();
 
 	if (rts.depthStencil.texture == nullptr && rts.temporaryRTFlags != 0)

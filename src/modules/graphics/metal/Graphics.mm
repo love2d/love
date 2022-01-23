@@ -270,7 +270,7 @@ Graphics::Graphics()
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
 	, lastCullMode(CULL_MAX_ENUM)
-	, activeDepthStencilFormat(PIXELFORMAT_UNKNOWN)
+	, lastRenderPipelineKey()
 	, windowHasStencil(false)
 	, shaderSwitches(0)
 	, requestedBackbufferMSAA(0)
@@ -626,6 +626,11 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil, false);
 			attachmentStoreActions.depth = MTLStoreActionDontCare;
 			attachmentStoreActions.stencil = MTLStoreActionDontCare;
+
+			auto &key = lastRenderPipelineKey;
+			key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
+			key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
+			key.msaa = backbufferMSAA ? (uint8) backbufferMSAA->getMSAA() : 1;
 		}
 
 		renderEncoder = [useCommandBuffer() renderCommandEncoderWithDescriptor:passDesc];
@@ -891,42 +896,19 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		[encoder setCullMode:mode];
 	}
 
-	if ((dirtyState & pipelineStateBits) != 0 || !(attributes == lastVertexAttributes))
+	if ((dirtyState & pipelineStateBits) != 0 || !(attributes == lastRenderPipelineKey.vertexAttributes))
 	{
-		lastVertexAttributes = attributes;
+		auto &key = lastRenderPipelineKey;
+
+		key.vertexAttributes = attributes;
 
 		Shader *shader = (Shader *) Shader::current;
 		id<MTLRenderPipelineState> pipeline = nil;
 
 		if (shader)
 		{
-			Shader::RenderPipelineKey key;
-
-			key.vertexAttributes = attributes;
 			key.blend = state.blend;
 			key.colorChannelMask = state.colorMask;
-
-			const auto &firsttarget = state.renderTargets.getFirstTarget();
-
-			if (firsttarget.texture.get() == nullptr)
-			{
-				key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
-				key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
-				key.msaa = backbufferMSAA ? (uint8) backbufferMSAA->getMSAA() : 1;
-			}
-			else
-			{
-				const auto &rts = state.renderTargets.colors;
-
-				for (size_t i = 0; i < rts.size(); i++)
-					key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
-
-				// Don't query the current RTs because they don't include
-				// automatic depth/stencil.
-				key.depthStencilFormat = activeDepthStencilFormat;
-
-				key.msaa = (uint8) firsttarget.texture->getMSAA();
-			}
 
 			pipeline = shader->getCachedRenderPipeline(key);
 		}
@@ -1361,9 +1343,19 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/
 			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil);
 	}
 
-	activeDepthStencilFormat = dsformat;
+	if (!isbackbuffer)
+	{
+		lastRenderPipelineKey.colorRenderTargetFormats = 0;
+		for (size_t i = 0; i < rts.colors.size(); i++)
+			lastRenderPipelineKey.colorRenderTargetFormats |= (rts.colors[i].texture->getPixelFormat()) << (8 * i);
+
+		lastRenderPipelineKey.msaa = (uint8) rts.getFirstTarget().texture->getMSAA();
+	}
+
+	lastRenderPipelineKey.depthStencilFormat = dsformat;
+	lastRenderPipelineKey.vertexAttributes = VertexAttributes();
+
 	dirtyRenderState = STATEBIT_ALL;
-	lastVertexAttributes = VertexAttributes();
 }}
 
 void Graphics::endPass()
