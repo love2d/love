@@ -14,8 +14,11 @@ Released: N/A
 * Added Joystick:setPlayerIndex and Joystick:getPlayerIndex.
 * Added Joystick:getGamepadType.
 * Added new Gamepad API buttons: "misc1", "paddle1", "paddle2", "paddle3", "paddle4". and "touchpad".
+* Added a Metal backend to love.graphics, available on macOS 10.15+ and iOS 13+.
+* Added '--renderers a,b,c' and '--excluderenderers a,b,c' command line arguments.
+* Added t.renderers and t.excluderenderers love.conf options.
 * Added t.highdpi startup flag in love.conf, replacing t.window.highdpi and the highdpi flag of love.window.setMode.
-* Added per-shader opt in support for the GLSL 4.30 (desktop) and GLSL ES 3.10 (mobile) shading languages, via #pragma language glsl4.
+* Added per-shader opt in support for the GLSL 4.30 (desktop) and GLSL ES 3.20 (mobile) shading languages, via #pragma language glsl4.
 * Added love.graphics.newTexture. newImage and newCanvas still exist as convenience constructor functions.
 * Added love.graphics.getTextureFormats, which replaces getImageFormats and getCanvasFormats.
 * Added integer texture formats.
@@ -29,14 +32,22 @@ Released: N/A
 * Added Compute Shader support via new 'computemain' shader entry point.
 * Added love.graphics.dispatchThreadgroups for running compute shaders.
 * Added Shader:hasStage.
+* Added love.graphics.drawShaderVertices.
+* Added love.graphics.getQuadIndexBuffer.
+* Added variants of love.graphics.applyTransform and replaceTransform which accept x,y,angle,sx,sy,ox,oy parameters.
+* Added APIs to override the default orthographic projection: love.graphics.setOrthoProjection, setPerspectiveProjection, and resetProjection.
 * Added ability to set point size within a vertex shader by setting the 'love_PointSize' variable.
 * Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
+* Added love.graphics.setStencilMode and getStencilMode. Replaces love.graphics.stencil as well as setStencilTest.
+* Added a variant of love.graphics.setColorMask which accepts a single boolean.
 * Added new 'clampone' wrap mode.
 * Added a variant of Font:getWidth which takes a codepoint number argument.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
 * Changed Images to no longer hold onto a CPU copy of their pixel data after creation.
+* Changed love.graphics.newMesh to no longer default to the "fan" Mesh draw mode.
+* Changed the behaviour of Meshes to no longer allow a vertex map or index buffer when the "fan" mesh draw mode is used.
 * Changed love.window.setMode to no longer clear the contents of Canvases or otherwise recreate OpenGL resources.
 * Changed love.graphics.points to require 'love_PointSize' to be set in the vertex shader, if a custom shader is used.
 * Changed RevoluteJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
@@ -49,6 +60,9 @@ Released: N/A
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
 
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
+* Removed the no-argument variant of love.graphics.setColorMask.
+* Removed love.graphics.stencil (replaced by love.graphics.setStencilMode).
+* Removed love.graphics.setStencilTest and getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
 
 * Fixed BezierCurve:render adding collinear points in some situations.
 
