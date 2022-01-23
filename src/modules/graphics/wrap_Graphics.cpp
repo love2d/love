@@ -2220,10 +2220,10 @@ int w_setColorMask(lua_State *L)
 {
 	ColorChannelMask mask;
 
-	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
+	if (lua_gettop(L) <= 1)
 	{
-		// Enable all color components if no argument is given.
-		mask.r = mask.g = mask.b = mask.a = true;
+		// Set all color components if a single argument is given.
+		mask.r = mask.g = mask.b = mask.a = luax_checkboolean(L, 1);
 	}
 	else
 	{
