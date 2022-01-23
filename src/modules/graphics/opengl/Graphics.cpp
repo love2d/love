@@ -742,7 +742,7 @@ void Graphics::setDebug(bool enable)
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
 }
 
-void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*w*/, int /*h*/, int pixelw, int pixelh, bool hasSRGBtexture)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	const DisplayState &state = states.back();
 

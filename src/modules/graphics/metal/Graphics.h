@@ -201,7 +201,7 @@ private:
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	love::graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage usage, size_t size) override;
-	void setRenderTargetsInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) override;
+	void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBcanvas) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 
@@ -226,6 +226,7 @@ private:
 	uint32 dirtyRenderState;
 	CullMode lastCullMode;
 	VertexAttributes lastVertexAttributes;
+	PixelFormat activeDepthStencilFormat;
 	bool windowHasStencil;
 	int shaderSwitches;
 

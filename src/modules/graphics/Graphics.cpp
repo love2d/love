@@ -891,10 +891,10 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		realRTs.depthStencil.texture = getTemporaryTexture(dsformat, pixelw, pixelh, reqmsaa);
 		realRTs.depthStencil.slice = 0;
 
-		setRenderTargetsInternal(realRTs, w, h, pixelw, pixelh, hasSRGBtexture);
+		setRenderTargetsInternal(realRTs, pixelw, pixelh, hasSRGBtexture);
 	}
 	else
-		setRenderTargetsInternal(rts, w, h, pixelw, pixelh, hasSRGBtexture);
+		setRenderTargetsInternal(rts, pixelw, pixelh, hasSRGBtexture);
 
 	RenderTargetsStrongRef refs;
 	refs.colors.reserve(rts.colors.size());
@@ -920,7 +920,7 @@ void Graphics::setRenderTarget()
 		return;
 
 	flushBatchedDraws();
-	setRenderTargetsInternal(RenderTargets(), width, height, pixelWidth, pixelHeight, isGammaCorrect());
+	setRenderTargetsInternal(RenderTargets(), pixelWidth, pixelHeight, isGammaCorrect());
 
 	state.renderTargets = RenderTargetsStrongRef();
 	renderTargetSwitchCount++;

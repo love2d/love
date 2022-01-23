@@ -270,6 +270,7 @@ Graphics::Graphics()
 	, passDesc(nil)
 	, dirtyRenderState(STATEBIT_ALL)
 	, lastCullMode(CULL_MAX_ENUM)
+	, activeDepthStencilFormat(PIXELFORMAT_UNKNOWN)
 	, windowHasStencil(false)
 	, shaderSwitches(0)
 	, requestedBackbufferMSAA(0)
@@ -920,9 +921,9 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 				for (size_t i = 0; i < rts.size(); i++)
 					key.colorRenderTargetFormats |= (rts[i].texture->getPixelFormat()) << (8 * i);
 
-				// TODO: automatic depth/stencil (state doesn't store it).
-				if (state.renderTargets.depthStencil.texture.get())
-					key.depthStencilFormat = state.renderTargets.depthStencil.texture->getPixelFormat();
+				// Don't query the current RTs because they don't include
+				// automatic depth/stencil.
+				key.depthStencilFormat = activeDepthStencilFormat;
 
 				key.msaa = (uint8) firsttarget.texture->getMSAA();
 			}
@@ -1321,7 +1322,7 @@ bool Graphics::dispatch(int x, int y, int z)
 	return true;
 }}
 
-void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*w*/, int /*h*/, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
 	endPass();
 
@@ -1346,18 +1347,21 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*w*/, int
 	if (isbackbuffer && ds == nullptr)
 		ds = backbufferDepthStencil;
 
+	PixelFormat dsformat = PIXELFORMAT_UNKNOWN;
 	if (ds != nullptr)
 	{
 		RenderTarget rt = rts.depthStencil;
 		rt.texture = ds;
+		dsformat = ds->getPixelFormat();
 
-		if (isPixelFormatDepth(ds->getPixelFormat()))
+		if (isPixelFormatDepth(dsformat))
 			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth);
 
-		if (isPixelFormatStencil(ds->getPixelFormat()))
+		if (isPixelFormatStencil(dsformat))
 			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil);
 	}
 
+	activeDepthStencilFormat = dsformat;
 	dirtyRenderState = STATEBIT_ALL;
 	lastVertexAttributes = VertexAttributes();
 }}
