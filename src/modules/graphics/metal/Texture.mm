@@ -94,7 +94,6 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 		desc.textureType = getMTLTextureType(texType, actualMSAASamples);
 		desc.usage &= ~MTLTextureUsageShaderRead;
 
-		// TODO: This needs to be cleared, etc.
 		msaaTexture = [device newTextureWithDescriptor:desc];
 		if (msaaTexture == nil)
 		{

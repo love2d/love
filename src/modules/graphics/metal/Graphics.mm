@@ -1785,6 +1785,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 		format = getSRGBPixelFormat(format);
 
 	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
+	const uint32 filter = PIXELFORMATUSAGEFLAGS_LINEAR;
 	const uint32 rt = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
 	const uint32 blend = PIXELFORMATUSAGEFLAGS_BLEND;
 	const uint32 msaa = PIXELFORMATUSAGEFLAGS_MSAA;
@@ -1820,9 +1821,16 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 			break;
 		case PIXELFORMAT_R32_FLOAT:
 			if (families.apple[1])
-				flags |= sample | rt | blend | msaa | computewrite;
+				flags |= sample | rt | blend | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
-				flags |= all;
+				flags |= (all & ~(msaa | filter));
+			if (@available(macOS 11.0, iOS 14.0, *))
+			{
+				if (device.supports32BitFloatFiltering)
+					flags |= filter;
+				if (device.supports32BitMSAA)
+					flags |= msaa;
+			}
 			break;
 
 		case PIXELFORMAT_RG8_UNORM:
@@ -1848,10 +1856,15 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 		case PIXELFORMAT_RG32_FLOAT:
 			if (families.apple[1])
 				flags |= sample | rt | blend | computewrite;
-			if (families.apple[7])
-				flags |= sample | rt | msaa | blend | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
-				flags |= all;
+				flags |= (all & ~(msaa | filter));
+			if (@available(macOS 11.0, iOS 14.0, *))
+			{
+				if (device.supports32BitFloatFiltering)
+					flags |= filter;
+				if (device.supports32BitMSAA)
+					flags |= msaa;
+			}
 			break;
 
 		case PIXELFORMAT_RGBA8_UNORM:
@@ -1878,10 +1891,15 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags 
 		case PIXELFORMAT_RGBA32_FLOAT:
 			if (families.apple[1])
 				flags |= sample | rt | computewrite;
-			if (families.apple[7])
-				flags |= sample | rt | msaa | computewrite;
 			if (families.mac[1] || families.macCatalyst[1])
-				flags |= all;
+				flags |= (all & ~(msaa | filter));
+			if (@available(macOS 11.0, iOS 14.0, *))
+			{
+				if (device.supports32BitFloatFiltering)
+					flags |= filter;
+				if (device.supports32BitMSAA)
+					flags |= msaa;
+			}
 			break;
 
 		case PIXELFORMAT_R8_INT:
