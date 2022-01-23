@@ -298,6 +298,9 @@ public:
 	void setDepthWrites(bool enable);
 	bool hasDepthWrites() const;
 
+	void setStencilWriteMask(uint32 mask);
+	uint32 getStencilWriteMask() const;
+
 	/**
 	 * Calls glUseProgram.
 	 **/
@@ -524,6 +527,7 @@ private:
 		float pointSize;
 
 		bool depthWritesEnabled = true;
+		uint32 stencilWriteMask = LOVE_UINT32_MAX;
 
 		GLuint boundFramebuffers[2];
 

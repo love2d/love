@@ -515,7 +515,6 @@ bool Graphics::isActive() const
 void Graphics::reset()
 {
 	DisplayState s;
-	stopDrawToStencilBuffer();
 	restoreState(s);
 	origin();
 }
@@ -542,20 +541,15 @@ void Graphics::restoreState(const DisplayState &s)
 	else
 		setScissor();
 
-	if (s.stencil.action != STENCIL_KEEP)
-		drawToStencilBuffer(s.stencil.action, s.stencil.value);
-	else
-		stopDrawToStencilBuffer();
-
-	setStencilTest(s.stencil.compare, s.stencil.value);
-	setDepthMode(s.depthTest, s.depthWrite);
-
 	setMeshCullMode(s.meshCullMode);
 	setFrontFaceWinding(s.winding);
 
 	setFont(s.font.get());
 	setShader(s.shader.get());
 	setRenderTargets(s.renderTargets);
+
+	setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+	setDepthMode(s.depthTest, s.depthWrite);
 
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
@@ -596,20 +590,6 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 			setScissor();
 	}
 
-	if (s.stencil.action != cur.stencil.action)
-	{
-		if (s.stencil.action != STENCIL_KEEP)
-			drawToStencilBuffer(s.stencil.action, s.stencil.value);
-		else
-			stopDrawToStencilBuffer();
-	}
-
-	if (s.stencil.compare != cur.stencil.compare || s.stencil.value != cur.stencil.value)
-		setStencilTest(s.stencil.compare, s.stencil.value);
-
-	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
-		setDepthMode(s.depthTest, s.depthWrite);
-
 	setMeshCullMode(s.meshCullMode);
 
 	if (s.winding != cur.winding)
@@ -642,6 +622,12 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	if (rtschanged)
 		setRenderTargets(s.renderTargets);
+
+	if (!(s.stencil == cur.stencil))
+		setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+
+	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
+		setDepthMode(s.depthTest, s.depthWrite);
 
 	if (s.colorMask != cur.colorMask)
 		setColorMask(s.colorMask);
@@ -1046,16 +1032,19 @@ bool Graphics::getScissor(Rect &rect) const
 	return state.scissor;
 }
 
-void Graphics::setStencilTest()
+void Graphics::setStencilMode()
 {
-	setStencilTest(COMPARE_ALWAYS, 0);
+	setStencilMode(STENCIL_KEEP, COMPARE_ALWAYS, 0, LOVE_UINT32_MAX, LOVE_UINT32_MAX);
 }
 
-void Graphics::getStencilTest(CompareMode &compare, int &value) const
+void Graphics::getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const
 {
 	const DisplayState &state = states.back();
+	action = state.stencil.action;
 	compare = state.stencil.compare;
 	value = state.stencil.value;
+	readmask = state.stencil.readMask;
+	writemask = state.stencil.writeMask;
 }
 
 void Graphics::setDepthMode()

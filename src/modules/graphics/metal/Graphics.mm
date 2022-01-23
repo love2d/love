@@ -797,7 +797,15 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 
 	MTLStencilDescriptor *stencildesc = [MTLStencilDescriptor new];
 
-	stencildesc.stencilCompareFunction = getMTLCompareFunction(stencil.compare);
+	/**
+	 * GPUs do the comparison opposite to what makes sense for love's API. For
+	 * example, if the compare function is GREATER then the stencil test will
+	 * pass if the reference value is greater than the value in the stencil
+	 * buffer. With our API it's more intuitive to assume that
+	 * setStencilMode(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
+	 * stencil buffer has a value greater than 4.
+	 **/
+	stencildesc.stencilCompareFunction = getMTLCompareFunction(getReversedCompareMode(stencil.compare));
 	stencildesc.stencilFailureOperation = MTLStencilOperationKeep;
 	stencildesc.depthFailureOperation = MTLStencilOperationKeep;
 	stencildesc.depthStencilPassOperation = getMTLStencilOperation(stencil.action);
@@ -922,15 +930,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		depth.compare = state.depthTest;
 		depth.write = state.depthWrite;
 
-		StencilState stencil = state.stencil;
-
-		if (stencil.action != STENCIL_KEEP)
-		{
-			// FIXME
-			stencil.compare = COMPARE_ALWAYS;
-		}
-
-		id<MTLDepthStencilState> mtlstate = getCachedDepthStencilState(depth, stencil);
+		id<MTLDepthStencilState> mtlstate = getCachedDepthStencilState(depth, state.stencil);
 
 		[encoder setDepthStencilState:mtlstate];
 	}
@@ -1671,56 +1671,30 @@ void Graphics::setScissor()
 	}
 }
 
-void Graphics::drawToStencilBuffer(StencilAction action, int value)
+void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
 {
 	DisplayState &state = states.back();
-	const auto &rts = state.renderTargets;
-	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-	if (!isRenderTargetActive() && !windowHasStencil)
-		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-		throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	if (action != STENCIL_KEEP)
+	{
+		const auto &rts = state.renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !windowHasStencil)
+			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	}
 
 	flushBatchedDraws();
 
 	state.stencil.action = action;
+	state.stencil.compare = compare;
 	state.stencil.value = value;
+	state.stencil.readMask = readmask;
+	state.stencil.writeMask = writemask;
 
 	dirtyRenderState |= STATEBIT_STENCIL;
-	// TODO
-}
-
-void Graphics::stopDrawToStencilBuffer()
-{
-	DisplayState &state = states.back();
-
-	if (state.stencil.action == STENCIL_KEEP)
-		return;
-
-	flushBatchedDraws();
-
-	state.stencil.action = STENCIL_KEEP;
-
-	// Revert the color write mask.
-	setColorMask(state.colorMask);
-
-	// Use the user-set stencil test state when writes are disabled.
-	setStencilTest(state.stencil.compare, state.stencil.value);
-
-	dirtyRenderState |= STATEBIT_STENCIL;
-}
-
-void Graphics::setStencilTest(CompareMode compare, int value)
-{
-	// TODO
-	DisplayState &state = states.back();
-	if (state.stencil.compare != compare || state.stencil.value != value)
-	{
-		state.stencil.compare = compare;
-		state.stencil.value = value;
-		dirtyRenderState |= STATEBIT_STENCIL;
-	}
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)

@@ -95,10 +95,7 @@ public:
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 
-	void drawToStencilBuffer(StencilAction action, int value) override;
-	void stopDrawToStencilBuffer() override;
-
-	void setStencilTest(CompareMode compare, int value) override;
+	void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) override;
 
 	void setDepthMode(CompareMode compare, bool write) override;
 

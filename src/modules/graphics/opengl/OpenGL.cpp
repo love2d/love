@@ -283,6 +283,7 @@ void OpenGL::setupContext()
 	state.curTextureUnit = 0;
 
 	setDepthWrites(state.depthWritesEnabled);
+	setStencilWriteMask(state.stencilWriteMask);
 
 	createDefaultTexture();
 
@@ -1110,6 +1111,17 @@ void OpenGL::setDepthWrites(bool enable)
 bool OpenGL::hasDepthWrites() const
 {
 	return state.depthWritesEnabled;
+}
+
+void OpenGL::setStencilWriteMask(uint32 mask)
+{
+	glStencilMask(mask);
+	state.stencilWriteMask = mask;
+}
+
+uint32 OpenGL::getStencilWriteMask() const
+{
+	return state.stencilWriteMask;
 }
 
 void OpenGL::useProgram(GLuint program)

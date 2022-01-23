@@ -869,8 +869,13 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 		flags |= GL_COLOR_BUFFER_BIT;
 	}
 
+	uint32 stencilwrites = gl.getStencilWriteMask();
+
 	if (stencil.hasValue)
 	{
+		if (stencilwrites != LOVE_UINT32_MAX)
+			gl.setStencilWriteMask(LOVE_UINT32_MAX);
+
 		glClearStencil(stencil.value);
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
@@ -888,6 +893,9 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 
 	if (flags != 0)
 		glClear(flags);
+
+	if (stencil.hasValue && stencilwrites != LOVE_UINT32_MAX)
+		gl.setStencilWriteMask(stencilwrites);
 
 	if (depth.hasValue && !hadDepthWrites)
 		gl.setDepthWrites(hadDepthWrites);
@@ -980,8 +988,13 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	GLbitfield flags = 0;
 
+	uint32 stencilwrites = gl.getStencilWriteMask();
+
 	if (stencil.hasValue)
 	{
+		if (stencilwrites != LOVE_UINT32_MAX)
+			gl.setStencilWriteMask(LOVE_UINT32_MAX);
+
 		glClearStencil(stencil.value);
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
@@ -999,6 +1012,9 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	if (flags != 0)
 		glClear(flags);
+
+	if (stencil.hasValue && stencilwrites != LOVE_UINT32_MAX)
+		gl.setStencilWriteMask(stencilwrites);
 
 	if (depth.hasValue && !hadDepthWrites)
 		gl.setDepthWrites(hadDepthWrites);
@@ -1377,24 +1393,26 @@ void Graphics::setScissor()
 		gl.setEnableState(OpenGL::ENABLE_SCISSOR_TEST, false);
 }
 
-void Graphics::drawToStencilBuffer(StencilAction action, int value)
+void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
 {
 	DisplayState &state = states.back();
-	const auto &rts = state.renderTargets;
-	love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-	if (!isRenderTargetActive() && !windowHasStencil)
-		throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-	else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-		throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
+	if (action != STENCIL_KEEP)
+	{
+		const auto &rts = state.renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !windowHasStencil)
+			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
+	}
 
 	flushBatchedDraws();
 
-	state.stencil.action = action;
-	state.stencil.value = value;
-
-	// Disable color writes but don't save the state for it.
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	bool enablestencil = action != STENCIL_KEEP || compare != COMPARE_ALWAYS;
+	if (enablestencil != gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
+		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, enablestencil);
 
 	GLenum glaction = GL_REPLACE;
 
@@ -1421,67 +1439,30 @@ void Graphics::drawToStencilBuffer(StencilAction action, int value)
 		break;
 	}
 
-	// The stencil test must be enabled in order to write to the stencil buffer.
-	if (!gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
-		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, true);
-
-	glStencilFunc(GL_ALWAYS, value, 0xFFFFFFFF);
-	glStencilOp(GL_KEEP, GL_KEEP, glaction);
-}
-
-void Graphics::stopDrawToStencilBuffer()
-{
-	DisplayState &state = states.back();
-
-	if (state.stencil.action == STENCIL_KEEP)
-		return;
-
-	flushBatchedDraws();
-
-	state.stencil.action = STENCIL_KEEP;
-
-	// Revert the color write mask.
-	setColorMask(state.colorMask);
-
-	// Use the user-set stencil test state when writes are disabled.
-	setStencilTest(state.stencil.compare, state.stencil.value);
-}
-
-void Graphics::setStencilTest(CompareMode compare, int value)
-{
-	DisplayState &state = states.back();
-
-	if (state.stencil.compare != compare || state.stencil.value != value)
-		flushBatchedDraws();
-
-	state.stencil.compare = compare;
-	state.stencil.value = value;
-
-	if (state.stencil.action != STENCIL_KEEP)
-		return;
-
-	if (compare == COMPARE_ALWAYS)
-	{
-		if (gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
-			gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, false);
-		return;
-	}
-
 	/**
-	 * OpenGL / GPUs do the comparison in the opposite way that makes sense
-	 * for this API. For example, if the compare function is GL_GREATER then the
-	 * stencil test will pass if the reference value is greater than the value
-	 * in the stencil buffer. With our API it's more intuitive to assume that
-	 * setStencilTest(COMPARE_GREATER, 4) will make it pass if the stencil
-	 * buffer has a value greater than 4.
+	 * GPUs do the comparison opposite to what makes sense for love's API. For
+	 * example, if the compare function is GREATER then the stencil test will
+	 * pass if the reference value is greater than the value in the stencil
+	 * buffer. With our API it's more intuitive to assume that
+	 * setStencilMode(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
+	 * stencil buffer has a value greater than 4.
 	 **/
 	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(compare));
 
-	if (!gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
-		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, true);
+	if (enablestencil)
+	{
+		glStencilFunc(glcompare, value, readmask);
+		glStencilOp(GL_KEEP, GL_KEEP, glaction);
+	}
 
-	glStencilFunc(glcompare, value, 0xFFFFFFFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	if (writemask != gl.getStencilWriteMask())
+		gl.setStencilWriteMask(writemask);
+
+	state.stencil.action = action;
+	state.stencil.compare = compare;
+	state.stencil.value = value;
+	state.stencil.readMask = readmask;
+	state.stencil.writeMask = writemask;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)

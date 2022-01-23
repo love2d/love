@@ -585,19 +585,9 @@ public:
 	 */
 	bool getScissor(Rect &rect) const;
 
-	/**
-	 * Enables or disables drawing to the stencil buffer. When enabled, the
-	 * color buffer is disabled.
-	 **/
-	virtual void drawToStencilBuffer(StencilAction action, int value) = 0;
-	virtual void stopDrawToStencilBuffer() = 0;
-
-	/**
-	 * Sets whether stencil testing is enabled.
-	 **/
-	virtual void setStencilTest(CompareMode compare, int value) = 0;
-	void setStencilTest();
-	void getStencilTest(CompareMode &compare, int &value) const;
+	virtual void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) = 0;
+	void setStencilMode();
+	void getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const;
 
 	virtual void setDepthMode(CompareMode compare, bool write) = 0;
 	void setDepthMode();

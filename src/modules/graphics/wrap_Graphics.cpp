@@ -267,9 +267,6 @@ static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx)
 
 int w_setCanvas(lua_State *L)
 {
-	// Disable stencil writes.
-	luax_catchexcept(L, [](){ instance()->stopDrawToStencilBuffer(); });
-
 	// called with none -> reset to default buffer
 	if (lua_isnoneornil(L, 1))
 	{
@@ -607,77 +604,57 @@ int w_getScissor(lua_State *L)
 	return 4;
 }
 
-int w_stencil(lua_State *L)
+int w_setStencilMode(lua_State *L)
 {
-	luaL_checktype(L, 1, LUA_TFUNCTION);
-
-	StencilAction action = STENCIL_REPLACE;
-
-	if (!lua_isnoneornil(L, 2))
+	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
-		const char *actionstr = luaL_checkstring(L, 2);
-		if (!getConstant(actionstr, action))
-			return luax_enumerror(L, "stencil draw action", getConstants(action), actionstr);
+		luax_catchexcept(L, [&](){ instance()->setStencilMode(); });
+		return 0;
 	}
 
-	int stencilvalue = (int) luaL_optinteger(L, 3, 1);
+	StencilAction action = STENCIL_KEEP;
+	const char *actionstr = luaL_checkstring(L, 1);
+	if (!getConstant(actionstr, action))
+		return luax_enumerror(L, "stencil draw action", getConstants(action), actionstr);
 
-	// Fourth argument: whether to keep the contents of the stencil buffer.
-	OptionalInt stencilclear;
-	int argtype = lua_type(L, 4);
-	if (argtype == LUA_TNONE || argtype == LUA_TNIL || (argtype == LUA_TBOOLEAN && luax_toboolean(L, 4) == false))
-		stencilclear.set(0);
-	else if (argtype == LUA_TNUMBER)
-		stencilclear.set((int) luaL_checkinteger(L, 4));
-	else if (argtype != LUA_TBOOLEAN)
-		luaL_checktype(L, 4, LUA_TBOOLEAN);
+	CompareMode compare = COMPARE_ALWAYS;
+	const char *comparestr = luaL_checkstring(L, 2);
+	if (!getConstant(comparestr, compare))
+		return luax_enumerror(L, "compare mode", getConstants(compare), comparestr);
 
-	if (stencilclear.hasValue)
-		instance()->clear(OptionalColorD(), stencilclear, OptionalDouble());
+	int value = (int) luaL_optinteger(L, 3, 0);
 
-	luax_catchexcept(L, [&](){ instance()->drawToStencilBuffer(action, stencilvalue); });
+	uint32 readmask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
+	uint32 writemask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
 
-	// Call stencilfunc()
-	lua_pushvalue(L, 1);
-	lua_call(L, 0, 0);
-
-	luax_catchexcept(L, [&](){ instance()->stopDrawToStencilBuffer(); });
+	luax_catchexcept(L, [&](){ instance()->setStencilMode(action, compare, value, readmask, writemask); });
 	return 0;
 }
 
-int w_setStencilTest(lua_State *L)
+int w_getStencilMode(lua_State *L)
 {
-	// COMPARE_ALWAYS effectively disables stencil testing.
+	StencilAction action = STENCIL_KEEP;
 	CompareMode compare = COMPARE_ALWAYS;
-	int comparevalue = 0;
+	int value = 1;
+	uint32 readmask = LOVE_UINT32_MAX;
+	uint32 writemask = LOVE_UINT32_MAX;
 
-	if (!lua_isnoneornil(L, 1))
-	{
-		const char *comparestr = luaL_checkstring(L, 1);
-		if (!getConstant(comparestr, compare))
-			return luax_enumerror(L, "compare mode", getConstants(compare), comparestr);
+	instance()->getStencilMode(action, compare, value, readmask, writemask);
 
-		comparevalue = (int) luaL_checkinteger(L, 2);
-	}
-
-	luax_catchexcept(L, [&](){ instance()->setStencilTest(compare, comparevalue); });
-	return 0;
-}
-
-int w_getStencilTest(lua_State *L)
-{
-	CompareMode compare = COMPARE_ALWAYS;
-	int comparevalue = 1;
-
-	instance()->getStencilTest(compare, comparevalue);
+	const char *actionstr;
+	if (!getConstant(action, actionstr))
+		return luaL_error(L, "Unknown stencil draw action.");
 
 	const char *comparestr;
 	if (!getConstant(compare, comparestr))
 		return luaL_error(L, "Unknown compare mode.");
 
+	lua_pushstring(L, actionstr);
 	lua_pushstring(L, comparestr);
-	lua_pushnumber(L, comparevalue);
-	return 2;
+	lua_pushnumber(L, value);
+	lua_pushnumber(L, readmask);
+	lua_pushnumber(L, writemask);
+	return 5;
 }
 
 static void parseDPIScale(Data *d, float *dpiscale)
@@ -3712,9 +3689,8 @@ static const luaL_Reg functions[] =
 	{ "intersectScissor", w_intersectScissor },
 	{ "getScissor", w_getScissor },
 
-	{ "stencil", w_stencil },
-	{ "setStencilTest", w_setStencilTest },
-	{ "getStencilTest", w_getStencilTest },
+	{ "setStencilMode", w_setStencilMode },
+	{ "getStencilMode", w_getStencilMode },
 
 	{ "points", w_points },
 	{ "line", w_line },

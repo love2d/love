@@ -86,12 +86,19 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 							if (!hadDepthWrites) // glDepthMask also affects glClear.
 								gl.setDepthWrites(true);
 
+							uint32 stencilwrite = gl.getStencilWriteMask();
+							if (stencilwrite != LOVE_UINT32_MAX)
+								gl.setStencilWriteMask(LOVE_UINT32_MAX);
+
 							gl.clearDepth(1.0);
 							glClearStencil(0);
 							glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 							if (!hadDepthWrites)
 								gl.setDepthWrites(hadDepthWrites);
+
+							if (stencilwrite != LOVE_UINT32_MAX)
+								gl.setStencilWriteMask(stencilwrite);
 						}
 						else
 						{
