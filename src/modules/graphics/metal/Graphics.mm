@@ -479,6 +479,11 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	// This is set to NO when there are pending screen captures.
 	metalLayer.framebufferOnly = YES;
 
+#ifdef LOVE_MACOS
+	// Matches behaviour of SDL's OpenGL context when using the GL renderer.
+	metalLayer.magnificationFilter = kCAFilterNearest;
+#endif
+
 	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	created = true;
