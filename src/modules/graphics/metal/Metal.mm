@@ -264,137 +264,121 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(id<MTLDevice> device, PixelForm
 		break;
 
 	case PIXELFORMAT_PVR1_RGB2_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_2BPP_sRGB : MTLPixelFormatPVRTC_RGB_2BPP;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_2BPP_sRGB : MTLPixelFormatPVRTC_RGB_2BPP;
 		break;
 	case PIXELFORMAT_PVR1_RGB4_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_4BPP_sRGB : MTLPixelFormatPVRTC_RGB_4BPP;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_4BPP_sRGB : MTLPixelFormatPVRTC_RGB_4BPP;
 		break;
 	case PIXELFORMAT_PVR1_RGBA2_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_2BPP_sRGB : MTLPixelFormatPVRTC_RGBA_2BPP;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_2BPP_sRGB : MTLPixelFormatPVRTC_RGBA_2BPP;
 		break;
 	case PIXELFORMAT_PVR1_RGBA4_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_4BPP_sRGB : MTLPixelFormatPVRTC_RGBA_4BPP;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatPVRTC_RGB_4BPP_sRGB : MTLPixelFormatPVRTC_RGBA_4BPP;
 		break;
 	case PIXELFORMAT_ETC1_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
 		break;
 	case PIXELFORMAT_ETC2_RGB_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
 		break;
 	case PIXELFORMAT_ETC2_RGBA_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatEAC_RGBA8_sRGB : MTLPixelFormatEAC_RGBA8;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatEAC_RGBA8_sRGB : MTLPixelFormatEAC_RGBA8;
 		break;
 	case PIXELFORMAT_ETC2_RGBA1_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8A1_sRGB : MTLPixelFormatETC2_RGB8A1;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatETC2_RGB8A1_sRGB : MTLPixelFormatETC2_RGB8A1;
 		break;
 	case PIXELFORMAT_EAC_R_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = MTLPixelFormatEAC_R11Unorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+		{
+			isSRGB = false;
+			mtlformat = MTLPixelFormatEAC_R11Unorm;
+		}
 		break;
 	case PIXELFORMAT_EAC_R_SNORM:
-#ifdef LOVE_IOS
-		isSRGB = false;
-		mtlformat = MTLPixelFormatEAC_R11Snorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+		{
+			isSRGB = false;
+			mtlformat = MTLPixelFormatEAC_R11Snorm;
+		}
 		break;
 	case PIXELFORMAT_EAC_RG_UNORM:
-#ifdef LOVE_IOS
-		isSRGB = false;
-		mtlformat = MTLPixelFormatEAC_RG11Unorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+		{
+			isSRGB = false;
+			mtlformat = MTLPixelFormatEAC_RG11Unorm;
+		}
 		break;
 	case PIXELFORMAT_EAC_RG_SNORM:
-#ifdef LOVE_IOS
-		isSRGB = false;
-		mtlformat = MTLPixelFormatEAC_RG11Snorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+		{
+			isSRGB = false;
+			mtlformat = MTLPixelFormatEAC_RG11Snorm;
+		}
 		break;
+
 	case PIXELFORMAT_ASTC_4x4:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_4x4_sRGB : MTLPixelFormatASTC_4x4_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_4x4_sRGB : MTLPixelFormatASTC_4x4_LDR;
 		break;
 	case PIXELFORMAT_ASTC_5x4:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_5x4_sRGB : MTLPixelFormatASTC_5x4_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_5x4_sRGB : MTLPixelFormatASTC_5x4_LDR;
 		break;
 	case PIXELFORMAT_ASTC_5x5:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_5x5_sRGB : MTLPixelFormatASTC_5x5_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_5x5_sRGB : MTLPixelFormatASTC_5x5_LDR;
 		break;
 	case PIXELFORMAT_ASTC_6x5:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_6x5_sRGB : MTLPixelFormatASTC_6x5_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_6x5_sRGB : MTLPixelFormatASTC_6x5_LDR;
 		break;
 	case PIXELFORMAT_ASTC_6x6:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_6x6_sRGB : MTLPixelFormatASTC_6x6_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_6x6_sRGB : MTLPixelFormatASTC_6x6_LDR;
 		break;
 	case PIXELFORMAT_ASTC_8x5:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_8x5_sRGB : MTLPixelFormatASTC_8x5_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_8x5_sRGB : MTLPixelFormatASTC_8x5_LDR;
 		break;
 	case PIXELFORMAT_ASTC_8x6:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_8x6_sRGB : MTLPixelFormatASTC_8x6_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_8x6_sRGB : MTLPixelFormatASTC_8x6_LDR;
 		break;
 	case PIXELFORMAT_ASTC_8x8:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_8x8_sRGB : MTLPixelFormatASTC_8x8_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_8x8_sRGB : MTLPixelFormatASTC_8x8_LDR;
 		break;
 	case PIXELFORMAT_ASTC_10x5:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_10x5_sRGB : MTLPixelFormatASTC_10x5_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_10x5_sRGB : MTLPixelFormatASTC_10x5_LDR;
 		break;
 	case PIXELFORMAT_ASTC_10x6:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_10x6_sRGB : MTLPixelFormatASTC_10x6_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_10x6_sRGB : MTLPixelFormatASTC_10x6_LDR;
 		break;
 	case PIXELFORMAT_ASTC_10x8:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_10x8_sRGB : MTLPixelFormatASTC_10x8_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_10x8_sRGB : MTLPixelFormatASTC_10x8_LDR;
 		break;
 	case PIXELFORMAT_ASTC_10x10:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_10x10_sRGB : MTLPixelFormatASTC_10x10_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_10x10_sRGB : MTLPixelFormatASTC_10x10_LDR;
 		break;
 	case PIXELFORMAT_ASTC_12x10:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_12x10_sRGB : MTLPixelFormatASTC_12x10_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_12x10_sRGB : MTLPixelFormatASTC_12x10_LDR;
 		break;
 	case PIXELFORMAT_ASTC_12x12:
-#ifdef LOVE_IOS
-		mtlformat = isSRGB ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = isSRGB ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
 		break;
 
 	case PIXELFORMAT_UNKNOWN:
