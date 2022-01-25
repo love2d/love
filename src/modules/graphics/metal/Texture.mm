@@ -235,14 +235,13 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	switch (pixelformat)
 	{
-#ifdef LOVE_IOS
 	case PIXELFORMAT_PVR1_RGB2_UNORM:
 	case PIXELFORMAT_PVR1_RGB4_UNORM:
 	case PIXELFORMAT_PVR1_RGBA2_UNORM:
 	case PIXELFORMAT_PVR1_RGBA4_UNORM:
-		options |= MTLBlitOptionRowLinearPVRTC;
+		if (@available(macOS 11.0, iOS 9.0, *))
+			options |= MTLBlitOptionRowLinearPVRTC;
 		break;
-#endif
 	default:
 		break;
 	}

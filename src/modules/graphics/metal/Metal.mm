@@ -156,19 +156,16 @@ Metal::PixelFormatDesc Metal::convertPixelFormat(id<MTLDevice> device, PixelForm
 		break;
 
 	case PIXELFORMAT_RGBA4_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = MTLPixelFormatABGR4Unorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = MTLPixelFormatABGR4Unorm;
 		break;
 	case PIXELFORMAT_RGB5A1_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = MTLPixelFormatA1BGR5Unorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = MTLPixelFormatA1BGR5Unorm;
 		break;
 	case PIXELFORMAT_RGB565_UNORM:
-#ifdef LOVE_IOS
-		mtlformat = MTLPixelFormatB5G6R5Unorm;
-#endif
+		if (@available(macOS 11.0, iOS 8.0, *))
+			mtlformat = MTLPixelFormatB5G6R5Unorm;
 		break;
 	case PIXELFORMAT_RGB10A2_UNORM:
 		mtlformat = MTLPixelFormatRGB10A2Unorm;
