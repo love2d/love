@@ -1553,7 +1553,7 @@ if(MSVC)
 	)
 endif()
 
-add_library(love_3p_luahttps $${LOVE_SRC_3P_LUAHTTPS})
+add_library(love_3p_luahttps ${LOVE_SRC_3P_LUAHTTPS})
 target_link_libraries(love_3p_luahttps ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUAHTTPS})
 
 #
