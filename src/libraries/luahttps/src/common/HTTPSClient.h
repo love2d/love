@@ -35,6 +35,7 @@ public:
 		int responseCode;
 	};
 
+	virtual ~HTTPSClient() {}
 	virtual bool valid() const = 0;
 	virtual Reply request(const Request &req) = 0;
 };
