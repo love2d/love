@@ -829,9 +829,9 @@
 		FA76344A1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344B1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344C1E28722A0066EF9E /* StreamBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7634491E28722A0066EF9E /* StreamBuffer.h */; };
+		FA7E9207277E120900C24CB2 /* theora.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7E9206277E120900C24CB2 /* theora.xcframework */; };
 		FA84DE612778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */; };
 		FA84DE622778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */; };
-		FA7E9207277E120900C24CB2 /* theora.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7E9206277E120900C24CB2 /* theora.xcframework */; };
 		FA84DE76277CB3D5002674C6 /* SDL2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE75277CB3D4002674C6 /* SDL2.xcframework */; };
 		FA84DE7A277D4C88002674C6 /* modplug.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE79277D4C88002674C6 /* modplug.xcframework */; };
 		FA84DE7C277E045E002674C6 /* ogg.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE7B277E045E002674C6 /* ogg.xcframework */; };
@@ -844,6 +844,26 @@
 		FA91DA8D1F377C3900C80E33 /* deprecation.h in Headers */ = {isa = PBXBuildFile; fileRef = FA91DA8A1F377C3900C80E33 /* deprecation.h */; };
 		FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = FA93C4501F315B960087CCD4 /* FormatHandler.h */; };
 		FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA93C4511F315B960087CCD4 /* FormatHandler.cpp */; };
+		FA94727827A6EE1B00817677 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725227A6EE1B00817677 /* main.cpp */; };
+		FA94727927A6EE1B00817677 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725227A6EE1B00817677 /* main.cpp */; };
+		FA94727A27A6EE1B00817677 /* Connection.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725427A6EE1B00817677 /* Connection.h */; };
+		FA94727B27A6EE1B00817677 /* HTTPSClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725527A6EE1B00817677 /* HTTPSClient.cpp */; };
+		FA94727C27A6EE1B00817677 /* HTTPSClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725527A6EE1B00817677 /* HTTPSClient.cpp */; };
+		FA94727D27A6EE1B00817677 /* HTTPSClient.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725627A6EE1B00817677 /* HTTPSClient.h */; };
+		FA94727E27A6EE1B00817677 /* PlaintextConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725727A6EE1B00817677 /* PlaintextConnection.h */; };
+		FA94727F27A6EE1B00817677 /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725827A6EE1B00817677 /* config.h */; };
+		FA94728127A6EE1B00817677 /* HTTPS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725A27A6EE1B00817677 /* HTTPS.cpp */; };
+		FA94728227A6EE1B00817677 /* HTTPS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725A27A6EE1B00817677 /* HTTPS.cpp */; };
+		FA94728327A6EE1B00817677 /* HTTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725B27A6EE1B00817677 /* HTTPRequest.h */; };
+		FA94728427A6EE1B00817677 /* ConnectionClient.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725C27A6EE1B00817677 /* ConnectionClient.h */; };
+		FA94728527A6EE1B00817677 /* PlaintextConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725D27A6EE1B00817677 /* PlaintextConnection.cpp */; };
+		FA94728627A6EE1B00817677 /* PlaintextConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725D27A6EE1B00817677 /* PlaintextConnection.cpp */; };
+		FA94728727A6EE1B00817677 /* HTTPS.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94725E27A6EE1B00817677 /* HTTPS.h */; };
+		FA94728827A6EE1B00817677 /* HTTPRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725F27A6EE1B00817677 /* HTTPRequest.cpp */; };
+		FA94728927A6EE1B00817677 /* HTTPRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA94725F27A6EE1B00817677 /* HTTPRequest.cpp */; };
+		FA94729B27A6F9AD00817677 /* NSURLClient.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA94729927A6F9AC00817677 /* NSURLClient.mm */; };
+		FA94729C27A6F9AD00817677 /* NSURLClient.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA94729927A6F9AC00817677 /* NSURLClient.mm */; };
+		FA94729D27A6F9AD00817677 /* NSURLClient.h in Headers */ = {isa = PBXBuildFile; fileRef = FA94729A27A6F9AC00817677 /* NSURLClient.h */; };
 		FA9B4A0816E1578300074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0716E1578300074F42 /* SDL2.framework */; };
 		FA9D53AC1F5307E900125C6B /* Deprecations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D53AA1F5307E900125C6B /* Deprecations.cpp */; };
 		FA9D53AD1F5307E900125C6B /* Deprecations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9D53AA1F5307E900125C6B /* Deprecations.cpp */; };
@@ -1892,11 +1912,11 @@
 		FA7634481E28722A0066EF9E /* StreamBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamBuffer.cpp; sourceTree = "<group>"; };
 		FA7634491E28722A0066EF9E /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA7DA04C1C16874A0056B200 /* wrap_Math.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Math.lua; sourceTree = "<group>"; };
+		FA7E9206277E120900C24CB2 /* theora.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = theora.xcframework; path = ios/libraries/theora.xcframework; sourceTree = "<group>"; };
 		FA84DE5D2778D7DB002674C6 /* SpirvIntrinsics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpirvIntrinsics.h; sourceTree = "<group>"; };
 		FA84DE5E2778D7DC002674C6 /* glslang_c_interface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glslang_c_interface.h; sourceTree = "<group>"; };
 		FA84DE5F2778D7DC002674C6 /* glslang_c_shader_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glslang_c_shader_types.h; sourceTree = "<group>"; };
 		FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpirvIntrinsics.cpp; sourceTree = "<group>"; };
-		FA7E9206277E120900C24CB2 /* theora.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = theora.xcframework; path = ios/libraries/theora.xcframework; sourceTree = "<group>"; };
 		FA84DE75277CB3D4002674C6 /* SDL2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL2.xcframework; path = ios/libraries/SDL2.xcframework; sourceTree = "<group>"; };
 		FA84DE79277D4C88002674C6 /* modplug.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = modplug.xcframework; path = ios/libraries/modplug.xcframework; sourceTree = "<group>"; };
 		FA84DE7B277E045E002674C6 /* ogg.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ogg.xcframework; path = ios/libraries/ogg.xcframework; sourceTree = "<group>"; };
@@ -1907,6 +1927,20 @@
 		FA91DA8A1F377C3900C80E33 /* deprecation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = deprecation.h; sourceTree = "<group>"; };
 		FA93C4501F315B960087CCD4 /* FormatHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatHandler.h; sourceTree = "<group>"; };
 		FA93C4511F315B960087CCD4 /* FormatHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatHandler.cpp; sourceTree = "<group>"; };
+		FA94725227A6EE1B00817677 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		FA94725427A6EE1B00817677 /* Connection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Connection.h; sourceTree = "<group>"; };
+		FA94725527A6EE1B00817677 /* HTTPSClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HTTPSClient.cpp; sourceTree = "<group>"; };
+		FA94725627A6EE1B00817677 /* HTTPSClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPSClient.h; sourceTree = "<group>"; };
+		FA94725727A6EE1B00817677 /* PlaintextConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlaintextConnection.h; sourceTree = "<group>"; };
+		FA94725827A6EE1B00817677 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		FA94725A27A6EE1B00817677 /* HTTPS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HTTPS.cpp; sourceTree = "<group>"; };
+		FA94725B27A6EE1B00817677 /* HTTPRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPRequest.h; sourceTree = "<group>"; };
+		FA94725C27A6EE1B00817677 /* ConnectionClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConnectionClient.h; sourceTree = "<group>"; };
+		FA94725D27A6EE1B00817677 /* PlaintextConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlaintextConnection.cpp; sourceTree = "<group>"; };
+		FA94725E27A6EE1B00817677 /* HTTPS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPS.h; sourceTree = "<group>"; };
+		FA94725F27A6EE1B00817677 /* HTTPRequest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HTTPRequest.cpp; sourceTree = "<group>"; };
+		FA94729927A6F9AC00817677 /* NSURLClient.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NSURLClient.mm; sourceTree = "<group>"; };
+		FA94729A27A6F9AC00817677 /* NSURLClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSURLClient.h; sourceTree = "<group>"; };
 		FA9B4A0716E1578300074F42 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = macosx/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		FA9D53AA1F5307E900125C6B /* Deprecations.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Deprecations.cpp; sourceTree = "<group>"; };
 		FA9D53AB1F5307E900125C6B /* Deprecations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Deprecations.h; sourceTree = "<group>"; };
@@ -2368,6 +2402,7 @@
 				FA0B79D31A958EA3000E1D17 /* glad */,
 				FAF13FBF1E20934C00F898D2 /* glslang */,
 				FA0B79D81A958EA3000E1D17 /* lodepng */,
+				FA94724527A6EE1B00817677 /* luahttps */,
 				FAAA3FD21F64B3AD00F89E99 /* lua53 */,
 				FA0B79DB1A958EA3000E1D17 /* luasocket */,
 				FAB17BE31ABFAA9000F9BA27 /* lz4 */,
@@ -3469,6 +3504,59 @@
 			name = ios;
 			sourceTree = "<group>";
 		};
+		FA94724527A6EE1B00817677 /* luahttps */ = {
+			isa = PBXGroup;
+			children = (
+				FA94724D27A6EE1B00817677 /* src */,
+			);
+			path = luahttps;
+			sourceTree = "<group>";
+		};
+		FA94724D27A6EE1B00817677 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				FA94729827A6F9AC00817677 /* apple */,
+				FA94725327A6EE1B00817677 /* common */,
+				FA94725127A6EE1B00817677 /* lua */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		FA94725127A6EE1B00817677 /* lua */ = {
+			isa = PBXGroup;
+			children = (
+				FA94725227A6EE1B00817677 /* main.cpp */,
+			);
+			path = lua;
+			sourceTree = "<group>";
+		};
+		FA94725327A6EE1B00817677 /* common */ = {
+			isa = PBXGroup;
+			children = (
+				FA94725827A6EE1B00817677 /* config.h */,
+				FA94725427A6EE1B00817677 /* Connection.h */,
+				FA94725C27A6EE1B00817677 /* ConnectionClient.h */,
+				FA94725F27A6EE1B00817677 /* HTTPRequest.cpp */,
+				FA94725B27A6EE1B00817677 /* HTTPRequest.h */,
+				FA94725A27A6EE1B00817677 /* HTTPS.cpp */,
+				FA94725E27A6EE1B00817677 /* HTTPS.h */,
+				FA94725527A6EE1B00817677 /* HTTPSClient.cpp */,
+				FA94725627A6EE1B00817677 /* HTTPSClient.h */,
+				FA94725D27A6EE1B00817677 /* PlaintextConnection.cpp */,
+				FA94725727A6EE1B00817677 /* PlaintextConnection.h */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
+		FA94729827A6F9AC00817677 /* apple */ = {
+			isa = PBXGroup;
+			children = (
+				FA94729A27A6F9AC00817677 /* NSURLClient.h */,
+				FA94729927A6F9AC00817677 /* NSURLClient.mm */,
+			);
+			path = apple;
+			sourceTree = "<group>";
+		};
 		FAAA3FD21F64B3AD00F89E99 /* lua53 */ = {
 			isa = PBXGroup;
 			children = (
@@ -3861,7 +3949,6 @@
 				FAF6C9C623C2DE2900D7B5BC /* InReadableOrder.cpp */,
 				FAF6C9D523C2DE2900D7B5BC /* Logger.cpp */,
 				FAF6C9D723C2DE2900D7B5BC /* Logger.h */,
-				FAEC22942534EE6700EBD925 /* NonSemanticDebugPrintf.h */,
 				FAF6C9C923C2DE2900D7B5BC /* spirv.hpp */,
 				FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */,
 				FAF6C9C223C2DE2900D7B5BC /* SpvBuilder.h */,
@@ -3907,6 +3994,7 @@
 				217DFBEA1D9F6D490055D849 /* io.h in Headers */,
 				FA0B79221A958E3B000E1D17 /* delay.h in Headers */,
 				FA0B79481A958E3B000E1D17 /* Vector.h in Headers */,
+				FA94728427A6EE1B00817677 /* ConnectionClient.h in Headers */,
 				FA0B7CCF1A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B7EC01A95902C000E1D17 /* Thread.h in Headers */,
 				FABDA9E12552448300B5C523 /* b2_wheel_joint.h in Headers */,
@@ -3971,6 +4059,7 @@
 				FA0B7AC31A958EA3000E1D17 /* list.h in Headers */,
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
 				FA1E88841DF363DB00E808AA /* Filter.h in Headers */,
+				FA94727D27A6EE1B00817677 /* HTTPSClient.h in Headers */,
 				217DFC061D9F6D490055D849 /* tp.lua.h in Headers */,
 				FABDA9E02552448300B5C523 /* b2_polygon_shape.h in Headers */,
 				FAB17BF71ABFC4B100F9BA27 /* lz4hc.h in Headers */,
@@ -4103,7 +4192,9 @@
 				217DFBFD1D9F6D490055D849 /* smtp.lua.h in Headers */,
 				FABDA9772552448200B5C523 /* b2_shape.h in Headers */,
 				FA27B39F1B498151008A9DCE /* Video.h in Headers */,
+				FA94727A27A6EE1B00817677 /* Connection.h in Headers */,
 				FA18CF3223DCF67900263725 /* spirv_cfg.hpp in Headers */,
+				FA94727F27A6EE1B00817677 /* config.h in Headers */,
 				217DFC041D9F6D490055D849 /* timeout.h in Headers */,
 				FA0B7E7A1A95902C000E1D17 /* wrap_WheelJoint.h in Headers */,
 				FA0B7DD81A95902C000E1D17 /* MathModule.h in Headers */,
@@ -4165,6 +4256,7 @@
 				FA0B7EAB1A95902C000E1D17 /* wrap_Sound.h in Headers */,
 				FA0B7B2C1A958EA3000E1D17 /* checked.h in Headers */,
 				FABDA9A62552448300B5C523 /* b2_polygon_contact.h in Headers */,
+				FA94728727A6EE1B00817677 /* HTTPS.h in Headers */,
 				FA0B7D2A1A95902C000E1D17 /* wrap_GlyphData.h in Headers */,
 				FACA02F11F5E396B0084B28F /* DataModule.h in Headers */,
 				FABDA9C82552448300B5C523 /* b2_body.h in Headers */,
@@ -4176,6 +4268,7 @@
 				FAF1407F1E20934C00F898D2 /* localintermediate.h in Headers */,
 				FAF1406B1E20934C00F898D2 /* glslang_tab.cpp.h in Headers */,
 				217DFBF71D9F6D490055D849 /* options.h in Headers */,
+				FA94728327A6EE1B00817677 /* HTTPRequest.h in Headers */,
 				FAF6C9ED23C2DE2900D7B5BC /* spvIR.h in Headers */,
 				FA0B7E3B1A95902C000E1D17 /* World.h in Headers */,
 				FA0B7DC31A95902C000E1D17 /* wrap_Joystick.h in Headers */,
@@ -4186,6 +4279,7 @@
 				FA0B7E651A95902C000E1D17 /* wrap_PolygonShape.h in Headers */,
 				FA18CEE323DBC6E000263725 /* Metal.h in Headers */,
 				FABDA9952552448300B5C523 /* b2_edge_polygon_contact.h in Headers */,
+				FA94729D27A6F9AD00817677 /* NSURLClient.h in Headers */,
 				FA0B7AC91A958EA3000E1D17 /* win32.h in Headers */,
 				FABDA9B92552448300B5C523 /* b2_common.h in Headers */,
 				FA0B7DFC1A95902C000E1D17 /* Body.h in Headers */,
@@ -4315,6 +4409,7 @@
 				FA0B7E411A95902C000E1D17 /* wrap_ChainShape.h in Headers */,
 				FA18CF1A23DCF67900263725 /* barrier.hpp in Headers */,
 				FA0B7E171A95902C000E1D17 /* Joint.h in Headers */,
+				FA94727E27A6EE1B00817677 /* PlaintextConnection.h in Headers */,
 				FA0B793F1A958E3B000E1D17 /* types.h in Headers */,
 				FABDA9BD2552448300B5C523 /* b2_stack_allocator.h in Headers */,
 				FABDA9CF2552448300B5C523 /* b2_mouse_joint.h in Headers */,
@@ -4513,6 +4608,7 @@
 				FA18CF2323DCF67900263725 /* spirv_cfg.cpp in Sources */,
 				FAE64A962071365100BC7981 /* physfs_platform_windows.c in Sources */,
 				FA4B66CA1ABBCF1900558F15 /* Timer.cpp in Sources */,
+				FA94727927A6EE1B00817677 /* main.cpp in Sources */,
 				FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */,
 				FA0B7E521A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */,
 				FADF54351E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */,
@@ -4584,6 +4680,7 @@
 				FA0B7E011A95902C000E1D17 /* CircleShape.cpp in Sources */,
 				FAE64A8C2071363100BC7981 /* physfs_byteorder.c in Sources */,
 				FA0B7E461A95902C000E1D17 /* wrap_Contact.cpp in Sources */,
+				FA94727C27A6EE1B00817677 /* HTTPSClient.cpp in Sources */,
 				FA0B7D161A95902C000E1D17 /* Font.cpp in Sources */,
 				FA0B7EB61A95902C000E1D17 /* wrap_System.cpp in Sources */,
 				FA0B7DAC1A95902C000E1D17 /* STBHandler.cpp in Sources */,
@@ -4642,6 +4739,7 @@
 				FA0B7DA01A95902C000E1D17 /* KTXHandler.cpp in Sources */,
 				FA0B7CEC1A95902C000E1D17 /* Event.cpp in Sources */,
 				FA27B3AB1B498151008A9DCE /* VideoStream.cpp in Sources */,
+				FA94728227A6EE1B00817677 /* HTTPS.cpp in Sources */,
 				FA0B7E581A95902C000E1D17 /* wrap_Joint.cpp in Sources */,
 				FAECA1B51F31648A0095D008 /* FormatHandler.cpp in Sources */,
 				FA4F2C0A1DE936E600CA37D7 /* mime.c in Sources */,
@@ -4650,6 +4748,8 @@
 				FA4F2C101DE936FE00CA37D7 /* udp.c in Sources */,
 				FAF6C9E023C2DE2900D7B5BC /* SpvTools.cpp in Sources */,
 				FAE64A8F2071364200BC7981 /* physfs_platform_unix.c in Sources */,
+				FA94729C27A6F9AD00817677 /* NSURLClient.mm in Sources */,
+				FA94728927A6EE1B00817677 /* HTTPRequest.cpp in Sources */,
 				FA18CEC623D3AE6800263725 /* wrap_Buffer.cpp in Sources */,
 				FA0B7E2B1A95902C000E1D17 /* RevoluteJoint.cpp in Sources */,
 				FA0B7B291A958EA3000E1D17 /* simplexnoise1234.cpp in Sources */,
@@ -4715,6 +4815,7 @@
 				FA29C0061E12355B00268CD8 /* StreamBuffer.cpp in Sources */,
 				FABDA9B62552448300B5C523 /* b2_fixture.cpp in Sources */,
 				FAE64A882071363100BC7981 /* physfs_archiver_unpacked.c in Sources */,
+				FA94728627A6EE1B00817677 /* PlaintextConnection.cpp in Sources */,
 				FA18CEDF23DBC6E000263725 /* Shader.mm in Sources */,
 				FA0B7CF51A95902C000E1D17 /* File.cpp in Sources */,
 				FA0B7E341A95902C000E1D17 /* WeldJoint.cpp in Sources */,
@@ -4927,6 +5028,7 @@
 				FAF1406E1E20934C00F898D2 /* Initialize.cpp in Sources */,
 				FAF6C9DF23C2DE2900D7B5BC /* SpvTools.cpp in Sources */,
 				FA0B7EB81A95902C000E1D17 /* Channel.cpp in Sources */,
+				FA94727827A6EE1B00817677 /* main.cpp in Sources */,
 				217DFC091D9F6D490055D849 /* unix.c in Sources */,
 				FACA02EE1F5E396B0084B28F /* Compressor.cpp in Sources */,
 				FAF140801E20934C00F898D2 /* parseConst.cpp in Sources */,
@@ -4998,6 +5100,7 @@
 				FA0B7D821A95902C000E1D17 /* CompressedImageData.cpp in Sources */,
 				FA18CF2823DCF67900263725 /* spirv_msl.cpp in Sources */,
 				FAF1409D1E20934C00F898D2 /* reflection.cpp in Sources */,
+				FA94727B27A6EE1B00817677 /* HTTPSClient.cpp in Sources */,
 				FAAA3FDB1F64B3AD00F89E99 /* lutf8lib.c in Sources */,
 				FA18CEDE23DBC6E000263725 /* Shader.mm in Sources */,
 				FAF1408A1E20934C00F898D2 /* Pp.cpp in Sources */,
@@ -5056,6 +5159,7 @@
 				FA41A3C81C0A1F950084430C /* ASTCHandler.cpp in Sources */,
 				FABDA9DA2552448300B5C523 /* b2_math.cpp in Sources */,
 				FA0B7E781A95902C000E1D17 /* wrap_WheelJoint.cpp in Sources */,
+				FA94728127A6EE1B00817677 /* HTTPS.cpp in Sources */,
 				FA0B7DDC1A95902C000E1D17 /* wrap_BezierCurve.cpp in Sources */,
 				FA0B7D061A95902C000E1D17 /* wrap_File.cpp in Sources */,
 				FAC7CD871FE35E95006A60C7 /* physfs_archiver_vdf.c in Sources */,
@@ -5064,6 +5168,8 @@
 				FADF54201E3DA52C00012CC0 /* wrap_ParticleSystem.cpp in Sources */,
 				FA0B7D9F1A95902C000E1D17 /* KTXHandler.cpp in Sources */,
 				FA1E88831DF363DB00E808AA /* Filter.cpp in Sources */,
+				FA94729B27A6F9AD00817677 /* NSURLClient.mm in Sources */,
+				FA94728827A6EE1B00817677 /* HTTPRequest.cpp in Sources */,
 				FA0B7CEB1A95902C000E1D17 /* Event.cpp in Sources */,
 				FA1557C31CE90BD200AFF582 /* EXRHandler.cpp in Sources */,
 				FA27B3AA1B498151008A9DCE /* VideoStream.cpp in Sources */,
@@ -5129,6 +5235,7 @@
 				FA18CF3F23DCF67900263725 /* spirv_parser.cpp in Sources */,
 				217DFBF21D9F6D490055D849 /* mime.c in Sources */,
 				217DFBDF1D9F6D490055D849 /* except.c in Sources */,
+				FA94728527A6EE1B00817677 /* PlaintextConnection.cpp in Sources */,
 				FA28EBD51E352DB5003446F4 /* FenceSync.cpp in Sources */,
 				FA0B7E1B1A95902C000E1D17 /* MouseJoint.cpp in Sources */,
 				FA0B7CF41A95902C000E1D17 /* File.cpp in Sources */,

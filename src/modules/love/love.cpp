@@ -173,6 +173,10 @@ extern "C"
 	extern int luaopen_love_arg(lua_State*);
 	extern int luaopen_love_callbacks(lua_State*);
 	extern int luaopen_love_boot(lua_State*);
+
+#ifdef LOVE_ENABLE_LUAHTTPS
+	extern int luaopen_https(lua_State*);
+#endif
 }
 
 static const luaL_Reg modules[] = {
@@ -655,6 +659,9 @@ int luaopen_love(lua_State *L)
 #endif
 #ifdef LOVE_ENABLE_LUA53
 	love::luax_preload(L, luaopen_luautf8, "utf8");
+#endif
+#ifdef LOVE_ENABLE_LUAHTTPS
+	love::luax_preload(L, luaopen_https, "https");
 #endif
 
 #ifdef LOVE_ENABLE_WINDOW
