@@ -1490,6 +1490,73 @@ add_library(love_3p_lua53 ${LOVE_SRC_3P_LUA53})
 target_link_libraries(love_3p_lua53 ${LOVE_LUA_LIBRARY})
 
 #
+# Lua HTTPS
+#
+
+set(LOVE_SRC_3P_LUAHTTPS_ANDROID
+	src/libraries/luahttps/src/android/AndroidClient.cpp
+	src/libraries/luahttps/src/android/AndroidClient.h
+)
+
+set(LOVE_SRC_3P_LUAHTTPS_APPLE
+	src/libraries/luahttps/src/apple/NSURLClient.mm
+	src/libraries/luahttps/src/apple/NSURLClient.h
+)
+
+set(LOVE_SRC_3P_LUAHTTPS_COMMON
+	src/libraries/luahttps/src/common/config.h
+	src/libraries/luahttps/src/common/Connection.h
+	src/libraries/luahttps/src/common/ConnectionClient.h
+	src/libraries/luahttps/src/common/HTTPRequest.cpp
+	src/libraries/luahttps/src/common/HTTPRequest.h
+	src/libraries/luahttps/src/common/HTTPS.cpp
+	src/libraries/luahttps/src/common/HTTPS.h
+	src/libraries/luahttps/src/common/HTTPSClient.cpp
+	src/libraries/luahttps/src/common/HTTPSClient.h
+	src/libraries/luahttps/src/common/PlaintextConnection.cpp
+	src/libraries/luahttps/src/common/PlaintextConnection.h
+)
+
+set(LOVE_SRC_3P_LUAHTTPS_GENERIC
+	src/libraries/luahttps/src/generic/CurlClient.cpp
+	src/libraries/luahttps/src/generic/CurlClient.h
+	src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
+	src/libraries/luahttps/src/generic/OpenSSLConnection.h
+)
+
+set(LOVE_SRC_3P_LUAHTTPS_LUA
+	src/libraries/luahttps/src/lua/main.cpp
+)
+
+set(LOVE_SRC_3P_LUAHTTPS_WINDOWS
+	src/libraries/luahttps/src/windows/SChannelConnection.cpp
+	src/libraries/luahttps/src/windows/SChannelConnection.h
+)
+
+# These are platform-dependent but have ifdef guards to make sure they only
+# compile on supported platforms.
+set(LOVE_SRC_3P_LUAHTTPS
+	${LOVE_SRC_3P_LUAHTTPS_ANDROID}
+	${LOVE_SRC_3P_LUAHTTPS_APPLE}
+	${LOVE_SRC_3P_LUAHTTPS_COMMON}
+	${LOVE_SRC_3P_LUAHTTPS_GENERIC}
+	${LOVE_SRC_3P_LUAHTTPS_LUA}
+	${LOVE_SRC_3P_LUAHTTPS_WINDOWS}
+)
+
+set(LOVE_LINK_L3P_LUAHTTPS)
+if(MSVC)
+	set(LOVE_LINK_L3P_LUAHTTPS
+		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
+		ws2_32
+		secur32
+	)
+endif()
+
+add_library(love_3p_luahttps ${LOVE_SRC_3P_LUAHTTPS})
+target_link_libraries(love_3p_luahttps ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUAHTTPS})
+
+#
 # lz4
 #
 
@@ -1636,6 +1703,7 @@ set(LOVE_3P
 	love_3p_lodepng
 	love_3p_luasocket
 	love_3p_lua53
+	love_3p_luahttps
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_physfs
