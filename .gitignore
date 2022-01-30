@@ -35,8 +35,8 @@ demos
 /src/.libs/
 *~
 Makefile*
-config*
 libtool
+/src/config.h
 /platform/unix/ar-lib
 /platform/unix/compile
 /platform/unix/config.guess
