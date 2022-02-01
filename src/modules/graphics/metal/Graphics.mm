@@ -210,13 +210,14 @@ static inline void setTexture(id<MTLComputeCommandEncoder> encoder, Graphics::Re
 	}
 }
 
-static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, id<MTLSamplerState> sampler)
+static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, ShaderStageType stage, int index, love::graphics::Texture *samplertex)
 {
-	void *s = (__bridge void *)sampler;
+	void *s = samplertex != nullptr ? (void *)samplertex->getSamplerHandle() : nullptr;
 	auto &binding = bindings.samplers[index][stage];
 	if (binding != s)
 	{
 		binding = s;
+		id<MTLSamplerState> sampler = (__bridge id<MTLSamplerState>) s;
 		if (stage == SHADERSTAGE_VERTEX)
 			[encoder setVertexSamplerState:sampler atIndex:index];
 		else if (stage == SHADERSTAGE_PIXEL)
@@ -224,13 +225,14 @@ static inline void setSampler(id<MTLRenderCommandEncoder> encoder, Graphics::Ren
 	}
 }
 
-static inline void setSampler(id<MTLComputeCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, int index, id<MTLSamplerState> sampler)
+static inline void setSampler(id<MTLComputeCommandEncoder> encoder, Graphics::RenderEncoderBindings &bindings, int index, love::graphics::Texture *samplertex)
 {
-	void *s = (__bridge void *)sampler;
+	void *s = samplertex != nullptr ? (void *)samplertex->getSamplerHandle() : nullptr;
 	auto &binding = bindings.samplers[index][SHADERSTAGE_COMPUTE];
 	if (binding != s)
 	{
 		binding = s;
+		id<MTLSamplerState> sampler = (__bridge id<MTLSamplerState>) s;
 		[encoder setSamplerState:sampler atIndex:index];
 	}
 }
@@ -777,6 +779,7 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 	desc.lodMinClamp = s.minLod;
 	desc.lodMaxClamp = s.maxLod;
 
+	// TODO: This isn't supported on some older iOS devices...
 	if (s.depthSampleMode.hasValue)
 		desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
 
@@ -984,7 +987,7 @@ void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	for (const Shader::TextureBinding &b : s->getTextureBindings())
 	{
 		id<MTLTexture> texture = b.texture;
-		id<MTLSamplerState> sampler = b.sampler;
+		auto samplertex = b.samplerTexture;
 
 		uint8 texindex = b.textureStages[SHADERSTAGE_COMPUTE];
 		uint8 sampindex = b.samplerStages[SHADERSTAGE_COMPUTE];
@@ -992,7 +995,7 @@ void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 		if (texindex != LOVE_UINT8_MAX)
 			setTexture(encoder, bindings, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			setSampler(encoder, bindings, sampindex, sampler);
+			setSampler(encoder, bindings, sampindex, samplertex);
 	}
 
 	for (const Shader::BufferBinding &b : s->getBufferBindings())
@@ -1078,7 +1081,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	for (const Shader::TextureBinding &b : s->getTextureBindings())
 	{
 		id<MTLTexture> texture = b.texture;
-		id<MTLSamplerState> sampler = b.sampler;
+		auto samplertex = b.samplerTexture;
 
 		if (b.isMainTexture)
 		{
@@ -1090,7 +1093,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 			}
 
 			texture = getMTLTexture(maintex);
-			sampler = getMTLSampler(maintex);
+			samplertex = maintex;
 		}
 
 		uint8 texindex = b.textureStages[SHADERSTAGE_VERTEX];
@@ -1099,7 +1102,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		if (texindex != LOVE_UINT8_MAX)
 			setTexture(renderEncoder, bindings, SHADERSTAGE_VERTEX, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			setSampler(renderEncoder, bindings, SHADERSTAGE_VERTEX, sampindex, sampler);
+			setSampler(renderEncoder, bindings, SHADERSTAGE_VERTEX, sampindex, samplertex);
 
 		texindex = b.textureStages[SHADERSTAGE_PIXEL];
 		sampindex = b.samplerStages[SHADERSTAGE_PIXEL];
@@ -1107,7 +1110,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		if (texindex != LOVE_UINT8_MAX)
 			setTexture(renderEncoder, bindings, SHADERSTAGE_PIXEL, texindex, texture);
 		if (sampindex != LOVE_UINT8_MAX)
-			setSampler(renderEncoder, bindings, SHADERSTAGE_PIXEL, sampindex, sampler);
+			setSampler(renderEncoder, bindings, SHADERSTAGE_PIXEL, sampindex, samplertex);
 	}
 
 	for (const Shader::BufferBinding &b : s->getBufferBindings())

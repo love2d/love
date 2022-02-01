@@ -81,7 +81,9 @@ public:
 	struct TextureBinding
 	{
 		id<MTLTexture> texture;
-		id<MTLSamplerState> sampler;
+
+		// Indirect sampler ref in case Texture's sampler state changes.
+		Texture *samplerTexture;
 
 		bool isMainTexture;
 

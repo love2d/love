@@ -768,7 +768,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						else
 						{
 							b.texture = getMTLTexture(u.textures[i]);
-							b.sampler = getMTLSampler(u.textures[i]);
+							b.samplerTexture = u.textures[i];
 
 							BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 							if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
@@ -969,9 +969,8 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 		info->textures[i] = tex;
 
-		// TODO: handle changing a sampler after Shader:send(texture)...
 		textureBindings[info->ints[i]].texture = getMTLTexture(tex);
-		textureBindings[info->ints[i]].sampler = getMTLSampler(tex);
+		textureBindings[info->ints[i]].samplerTexture = tex;
 	}
 }}
 
