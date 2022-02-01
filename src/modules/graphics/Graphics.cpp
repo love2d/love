@@ -111,8 +111,8 @@ namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
 
 static const Renderer rendererOrder[] = {
-	RENDERER_OPENGL,
 	RENDERER_METAL,
+	RENDERER_OPENGL,
 };
 
 static std::vector<Renderer> defaultRenderers =
