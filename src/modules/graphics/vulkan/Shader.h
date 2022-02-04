@@ -20,6 +20,26 @@ namespace love {
 					return shaderStages;
 				}
 
+				void attach() override {}
+
+				ptrdiff_t getHandle() const { return 0; }
+
+				std::string getWarnings() const override { return ""; }
+
+				int getVertexAttributeIndex(const std::string& name) override { return 0;  }
+
+				const UniformInfo* getUniformInfo(const std::string& name) const override { return nullptr; }
+				const UniformInfo* getUniformInfo(BuiltinUniform builtin) const override { return nullptr;  }
+
+				void updateUniform(const UniformInfo* info, int count) override {}
+
+				void sendTextures(const UniformInfo* info, Texture** textures, int count) override {}
+				void sendBuffers(const UniformInfo* info, love::graphics::Buffer** buffers, int count) override {}
+
+				bool hasUniform(const std::string& name) const override { return false; }
+
+				void setVideoTextures(Texture* ytexture, Texture* cbtexture, Texture* crtexture) override {}
+
 			private:
 				std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 			};
