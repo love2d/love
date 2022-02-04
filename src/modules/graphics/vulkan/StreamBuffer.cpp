@@ -62,6 +62,7 @@ namespace love {
 
 			size_t StreamBuffer::unmap(size_t usedSize) {
 				vkUnmapMemory(device, bufferMemory);
+				return usedSize;
 			}
 
 			void StreamBuffer::markUsed(size_t usedSize) {
