@@ -17,6 +17,10 @@ namespace love {
 					return shaderModule;
 				}
 
+				ptrdiff_t getHandle() const {
+					return 0;
+				}
+
 			private:
 				VkShaderModule shaderModule;
 				VkDevice device;
