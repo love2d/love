@@ -58,32 +58,19 @@ namespace love {
 
 			void Graphics::initVulkan() {
 				if (!init) {
-					std::cout << "initVulkan" << std::endl;
 					init = true;
 					createVulkanInstance();
-					std::cout << "create vulkan instance" << std::endl;
 					createSurface();
-					std::cout << "create surface" << std::endl;
 					pickPhysicalDevice();
-					std::cout << "create physical device" << std::endl;
 					createLogicalDevice();
-					std::cout << "create logical device" << std::endl;
 					createSwapChain();
-					std::cout << "create swap chain" << std::endl;
 					createImageViews();
-					std::cout << "create image views" << std::endl;
 					createRenderPass();
-					std::cout << "create render pass" << std::endl;
 					createGraphicsPipeline();
-					std::cout << "create graphics pipeline" << std::endl;
 					createFramebuffers();
-					std::cout << "create frame buffers" << std::endl;
 					createCommandPool();
-					std::cout << "create command pool" << std::endl;
 					createCommandBuffers();
-					std::cout << "create command buffers" << std::endl;
 					createSyncObjects();
-					std::cout << "create sync objects" << std::endl;
 				}
 			}
 
@@ -92,7 +79,7 @@ namespace love {
 			}
 
 			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
-				return new Buffer(this, settings, format, data, size, arraylength);
+				return nullptr;
 			}
 
 			void Graphics::present(void* screenshotCallbackdata) {
