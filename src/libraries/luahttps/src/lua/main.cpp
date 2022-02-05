@@ -1,4 +1,8 @@
-#include <lua.hpp>
+extern "C"
+{
+#include <lua.h>
+#include <lauxlib.h>
+}
 
 #include "../common/HTTPS.h"
 #include "../common/config.h"
