@@ -232,11 +232,6 @@ static inline id<MTLTexture> getMTLTexture(love::graphics::Buffer *buffer)
 	return buffer ? (__bridge id<MTLTexture>)(void *) buffer->getTexelBufferHandle() : nil;
 }
 
-static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
-{
-	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
-}
-
 static inline id<MTLBuffer> getMTLBuffer(love::graphics::Buffer *buffer)
 {
 	return buffer ? (__bridge id<MTLBuffer>)(void *) buffer->getHandle() : nil;

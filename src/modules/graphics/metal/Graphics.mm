@@ -130,11 +130,6 @@ static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
 }
 
-static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
-{
-	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
-}
-
 static inline id<MTLTexture> getMTLRenderTarget(love::graphics::Texture *tex)
 {
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getRenderTargetHandle() : nil;
