@@ -71,6 +71,7 @@ namespace love {
 					createCommandPool();
 					createCommandBuffers();
 					createSyncObjects();
+					startRecordingGraphicsCommands();
 				}
 			}
 
@@ -78,23 +79,68 @@ namespace love {
 				cleanup();
 			}
 
+			// START OVERRIDEN FUNCTIONS
+
 			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
+				std::cout << "newBuffer ";
 				return nullptr;
 			}
 
-			void Graphics::present(void* screenshotCallbackdata) {
+			void Graphics::startRecordingGraphicsCommands() {
 				vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+				
+				while (true) {
+					VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+					if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+						recreateSwapChain();
+						continue;
+					}
+					else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+						throw love::Exception("failed to acquire swap chain image");
+					}
 
-				uint32_t imageIndex;
-				VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+					break;
+				}
 
-				if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-					recreateSwapChain();
-					return;
+				VkCommandBufferBeginInfo beginInfo{};
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				beginInfo.flags = 0;
+				beginInfo.pInheritanceInfo = nullptr;
+
+				std::cout << "beginCommandBuffer(imageIndex=" << imageIndex << ") ";
+				if (vkBeginCommandBuffer(commandBuffers.at(imageIndex), &beginInfo) != VK_SUCCESS) {
+					throw love::Exception("failed to begin recording command buffer");
 				}
-				else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-					throw love::Exception("failed to acquire swap chain image");
+
+				VkRenderPassBeginInfo renderPassInfo{};
+				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+				renderPassInfo.renderPass = renderPass;
+				renderPassInfo.framebuffer = swapChainFramBuffers.at(imageIndex);
+				renderPassInfo.renderArea.offset = { 0, 0 };
+				renderPassInfo.renderArea.extent = swapChainExtent;
+				renderPassInfo.clearValueCount = 1;
+				renderPassInfo.pClearValues = &clearColor;
+
+				const auto& commandBuffer = commandBuffers.at(imageIndex);
+
+				vkCmdBeginRenderPass(commandBuffers.at(imageIndex), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+				vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+			}
+
+			void Graphics::endRecordingGraphicsCommands() {
+				const auto& commandBuffer = commandBuffers.at(imageIndex);
+
+				std::cout << "endCommandBuffer(imageIndex=" << imageIndex << ") ";
+				vkCmdEndRenderPass(commandBuffers.at(imageIndex));
+				if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
+					throw love::Exception("failed to record command buffer");
 				}
+			}
+
+			void Graphics::present(void* screenshotCallbackdata) {
+				flushBatchedDraws();
+
+				endRecordingGraphicsCommands();
 
 				if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 					vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
@@ -135,7 +181,7 @@ namespace love {
 
 				presentInfo.pImageIndices = &imageIndex;
 
-				result = vkQueuePresentKHR(presentQueue, &presentInfo);
+				VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
 				if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
 					framebufferResized = false;
@@ -146,11 +192,51 @@ namespace love {
 				}
 
 				currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+				std::cout << "present" << std::endl;
+
+				startRecordingGraphicsCommands();
 			}
 
 			void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
+				std::cout << "setViewPortSize";
 				recreateSwapChain();
 			}
+
+			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) { 
+				std::cout << "setMode ";
+
+				if (batchedDrawState.vb[0] == nullptr)
+				{
+					// Initial sizes that should be good enough for most cases. It will
+					// resize to fit if needed, later.
+					batchedDrawState.vb[0] = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+					batchedDrawState.vb[1] = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+					batchedDrawState.indexBuffer = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+				}
+
+				return true;
+			}
+
+			void Graphics::draw(const DrawIndexedCommand& cmd) { 
+				std::cout << "drawIndexed ";
+
+				std::vector<VkBuffer> buffers;
+				std::vector<VkDeviceSize> offsets;
+				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
+				offsets.push_back((VkDeviceSize)cmd.buffers->info[0].offset);
+				buffers.push_back((VkBuffer)cmd.buffers->info[1].buffer->getHandle());
+				offsets.push_back((VkDeviceSize)cmd.buffers->info[1].offset);
+
+				vkCmdDraw(commandBuffers.at(imageIndex), 3, 1, 0, 0);	// todo adjust
+			}
+
+			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) { 
+				std::cout << "newStreamBuffer ";
+				return new StreamBuffer(device, physicalDevice, type, size); 
+			}
+
+			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
 
 			void Graphics::createVulkanInstance() {
 				if (enableValidationLayers && !checkValidationSupport()) {
@@ -626,11 +712,22 @@ namespace love {
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 				vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
+				VkVertexInputBindingDescription vertexBindingDescription;
+				vertexBindingDescription.binding = 0;
+				vertexBindingDescription.stride = 2 * sizeof(float);	// just position for now
+				vertexBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
 				// todo later
+				VkVertexInputAttributeDescription positionInputAttributeDescription;
+				positionInputAttributeDescription.binding = 0;
+				positionInputAttributeDescription.location = 0;
+				positionInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+				positionInputAttributeDescription.offset = 0;
+
 				vertexInputInfo.vertexBindingDescriptionCount = 0;
-				vertexInputInfo.pVertexBindingDescriptions = nullptr;
+				vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDescription;
 				vertexInputInfo.vertexAttributeDescriptionCount = 0;
-				vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+				vertexInputInfo.pVertexAttributeDescriptions = &positionInputAttributeDescription;
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 				inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -777,38 +874,6 @@ namespace love {
 				if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 					throw love::Exception("failed to allocate command buffers");
 				}
-
-				for (size_t i = 0; i < commandBuffers.size(); i++) {
-					VkCommandBufferBeginInfo beginInfo{};
-					beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-					beginInfo.flags = 0;
-					beginInfo.pInheritanceInfo = nullptr;
-
-					if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-						throw love::Exception("failed to begin recording command buffer");
-					}
-
-					VkRenderPassBeginInfo renderPassInfo{};
-					renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-					renderPassInfo.renderPass = renderPass;
-					renderPassInfo.framebuffer = swapChainFramBuffers.at(i);
-					renderPassInfo.renderArea.offset = { 0, 0 };
-					renderPassInfo.renderArea.extent = swapChainExtent;
-
-					VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-					renderPassInfo.clearValueCount = 1;
-					renderPassInfo.pClearValues = &clearColor;
-
-					// this definitely doesn't belong in here, but leaving here for future reference
-					vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-					vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-					vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
-
-					vkCmdEndRenderPass(commandBuffers[i]);
-					if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-						throw love::Exception("failed to record command buffer");
-					}
-				}
 			}
 
 			void Graphics::createSyncObjects() {
@@ -834,6 +899,8 @@ namespace love {
 			}
 
 			void Graphics::cleanup() {
+				vkDeviceWaitIdle(device);
+
 				cleanupSwapChain();
 
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -864,12 +931,15 @@ namespace love {
 			void Graphics::recreateSwapChain() {
 				vkDeviceWaitIdle(device);
 
+				cleanupSwapChain();
+
 				createSwapChain();
 				createImageViews();
 				createRenderPass();
 				createGraphicsPipeline();
 				createFramebuffers();
 				createCommandBuffers();
+				startRecordingGraphicsCommands();
 			}
 
 			love::graphics::Graphics* createInstance() {

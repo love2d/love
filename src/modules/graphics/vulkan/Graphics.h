@@ -2,6 +2,7 @@
 #define LOVE_GRAPHICS_VULKAN_GRAPHICS_H
 
 #include "graphics/Graphics.h"
+#include "StreamBuffer.h"
 #include <vulkan/vulkan.h>
 
 #include <common/config.h>
@@ -32,46 +33,46 @@ namespace love {
 				}
 
 				// implementation for virtual functions
-				Texture* newTexture(const Texture::Settings& settings, const Texture::Slices* data = nullptr) override { return nullptr;  }
+				Texture* newTexture(const Texture::Settings& settings, const Texture::Slices* data = nullptr) override { std::cout << "newTexture"; return nullptr; }
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
-				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override {}
-				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override {}
-				Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override { return Matrix4(); }
-				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { }
+				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear1 "; }
+				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear2 "; }
+				Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override { std::cout << "computeDeviceProjection "; return Matrix4(); }
+				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { std::cout << "discard "; }
 				void present(void* screenshotCallbackdata) override;
 				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-				bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override { return false;  }
-				void unSetMode() override {}
-				void setActive(bool active) override {}
-				int getRequestedBackbufferMSAA() const override { return 0;  }
-				int getBackbufferMSAA() const  override { return 0;  }
-				void setColor(Colorf c) override {}
-				void setScissor(const Rect& rect) override {}
-				void setScissor() override {}
-				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override {}
-				void setDepthMode(CompareMode compare, bool write) override {}
-				void setFrontFaceWinding(Winding winding) override {}
-				void setColorMask(ColorChannelMask mask) override {}
-				void setBlendState(const BlendState& blend) override {}
-				void setPointSize(float size) override {}
-				void setWireframe(bool enable) override {}
-				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override { return PIXELFORMAT_UNKNOWN;  }
-				bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override { return false;  }
-				Renderer getRenderer() const override { return RENDERER_VULKAN; }
-				bool usesGLSLES() const override { return false;  }
-				RendererInfo getRendererInfo() const override { return {};  }
-				void draw(const DrawCommand& cmd) override {}
-				void draw(const DrawIndexedCommand& cmd) override {}
-				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, Texture* texture) override {}
+				bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+				void unSetMode() override { std::cout << "unSetMode "; }
+				void setActive(bool active) override { std::cout << "setActive "; }
+				int getRequestedBackbufferMSAA() const override { std::cout << "getRequestedBackbufferMSAA "; return 0; }
+				int getBackbufferMSAA() const  override { std::cout << "getBackbufferMSAA "; return 0; }
+				void setColor(Colorf c) override { std::cout << "setColor "; }
+				void setScissor(const Rect& rect) override { std::cout << "setScissor "; }
+				void setScissor() override { std::cout << "setScissor2 "; }
+				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { std::cout << "setStencilMode "; }
+				void setDepthMode(CompareMode compare, bool write) override { std::cout << "setDepthMode "; }
+				void setFrontFaceWinding(Winding winding) override { std::cout << "setFrontFaceWinding "; }
+				void setColorMask(ColorChannelMask mask) override { std::cout << "setColorMask "; }
+				void setBlendState(const BlendState& blend) override { std::cout << "setBlendState "; }
+				void setPointSize(float size) override { std::cout << "setPointSize "; }
+				void setWireframe(bool enable) override { std::cout << "setWireframe "; }
+				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override { std::cout << "getSizedFormat "; return PIXELFORMAT_UNKNOWN; }
+				bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override { std::cout << "isPixelFormatSupported "; return false; }
+				Renderer getRenderer() const override { std::cout << "getRenderer "; return RENDERER_VULKAN; }
+				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
+				RendererInfo getRendererInfo() const override { std::cout << "getRendererInfo "; return {}; }
+				void draw(const DrawCommand& cmd) override { std::cout << "draw "; }
+				void draw(const DrawIndexedCommand& cmd) override;
+				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, Texture* texture) override { std::cout << "drawQuads "; }
 
 			protected:
-				ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { return nullptr; }
-				Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override { return nullptr;  }
-				StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override { return nullptr;  }
-				bool dispatch(int x, int y, int z) override { return false;  }
-				void initCapabilities() override {}
-				void getAPIStats(int& shaderswitches) const override {}
-				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override {}
+				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { std::cout << "newShaderStageInternal "; return nullptr; }
+				graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override { std::cout << "newShaderInternal "; return nullptr; }
+				graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
+				bool dispatch(int x, int y, int z) override { std::cout << "dispatch "; return false; }
+				void initCapabilities() override { std::cout << "initCapabilities "; }
+				void getAPIStats(int& shaderswitches) const override { std::cout << "getAPIStats "; }
+				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override { std::cout << "setRenderTargetsInternal "; }
 
 			private:
 				bool init = false;
@@ -116,6 +117,9 @@ namespace love {
 				void cleanupSwapChain();
 				void recreateSwapChain();
 
+				void startRecordingGraphicsCommands();
+				void endRecordingGraphicsCommands();
+				
 				VkInstance instance;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 				VkDevice device;
@@ -133,13 +137,17 @@ namespace love {
 				std::vector<VkFramebuffer> swapChainFramBuffers;
 				VkCommandPool commandPool;
 				std::vector<VkCommandBuffer> commandBuffers;
+				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;
 				std::vector<VkFence> inFlightFences;
 				std::vector<VkFence> imagesInFlight;
 				size_t currentFrame = 0;
+				uint32_t imageIndex;
 				bool framebufferResized = false;
+
+				friend class StreamBuffer;
 			};
 		}
 	}
