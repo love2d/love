@@ -149,8 +149,10 @@ Graphics *Graphics::createInstance()
 	{
 		for (auto r : rendererOrder)
 		{
+#ifdef LOVE_GRAPHICS_VULKAN
 			// FIX ME: proper selection of vulkan backend
 			instance = vulkan::createInstance();
+#endif
 
 			if (std::find(_renderers.begin(), _renderers.end(), r) == _renderers.end())
 				continue;
