@@ -17,7 +17,7 @@ namespace love {
 				void markUsed(size_t usedSize) override;
 
 				ptrdiff_t getHandle() const override {
-					return 0;
+					return (ptrdiff_t) buffer;
 				}
 
 			private:

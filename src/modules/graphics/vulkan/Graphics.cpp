@@ -224,11 +224,11 @@ namespace love {
 				std::vector<VkBuffer> buffers;
 				std::vector<VkDeviceSize> offsets;
 				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
-				offsets.push_back((VkDeviceSize)cmd.buffers->info[0].offset);
-				buffers.push_back((VkBuffer)cmd.buffers->info[1].buffer->getHandle());
-				offsets.push_back((VkDeviceSize)cmd.buffers->info[1].offset);
+				offsets.push_back((VkDeviceSize) 0);
 
-				vkCmdDraw(commandBuffers.at(imageIndex), 3, 1, 0, 0);	// todo adjust
+				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, 1, buffers.data(), offsets.data());
+				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer) cmd.indexBuffer->getHandle(), 0, VK_INDEX_TYPE_UINT16);
+				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
 			}
 
 			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) { 
@@ -724,9 +724,9 @@ namespace love {
 				positionInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
 				positionInputAttributeDescription.offset = 0;
 
-				vertexInputInfo.vertexBindingDescriptionCount = 0;
+				vertexInputInfo.vertexBindingDescriptionCount = 1;
 				vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDescription;
-				vertexInputInfo.vertexAttributeDescriptionCount = 0;
+				vertexInputInfo.vertexAttributeDescriptionCount = 1;
 				vertexInputInfo.pVertexAttributeDescriptions = &positionInputAttributeDescription;
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -855,7 +855,7 @@ namespace love {
 				VkCommandPoolCreateInfo poolInfo{};
 				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 				poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-				poolInfo.flags = 0;
+				poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 				if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 					throw love::Exception("failed to create command pool");
@@ -903,11 +903,6 @@ namespace love {
 
 				cleanupSwapChain();
 
-				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-					vkDestroyFence(device, inFlightFences[i], nullptr);
-				}
 				vkDestroyCommandPool(device, commandPool, nullptr);
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -926,6 +921,11 @@ namespace love {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 				}
 				vkDestroySwapchainKHR(device, swapChain, nullptr);
+				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+					vkDestroyFence(device, inFlightFences[i], nullptr);
+				}
 			}
 
 			void Graphics::recreateSwapChain() {
@@ -939,6 +939,7 @@ namespace love {
 				createGraphicsPipeline();
 				createFramebuffers();
 				createCommandBuffers();
+				createSyncObjects();
 				startRecordingGraphicsCommands();
 			}
 
