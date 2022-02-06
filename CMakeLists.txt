@@ -1735,6 +1735,7 @@ set(LOVE_LIB_SRC
 )
 
 include_directories(
+	BEFORE
 	src
 	src/libraries
 	src/modules
