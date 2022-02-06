@@ -3,6 +3,8 @@
 
 #include "graphics/Graphics.h"
 #include "StreamBuffer.h"
+#include "ShaderStage.h"
+#include "Shader.h"
 #include <vulkan/vulkan.h>
 
 #include <common/config.h>
@@ -66,8 +68,14 @@ namespace love {
 				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, Texture* texture) override { std::cout << "drawQuads "; }
 
 			protected:
-				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { std::cout << "newShaderStageInternal "; return nullptr; }
-				graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override { std::cout << "newShaderInternal "; return nullptr; }
+				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
+					std::cout << "newShaderStageInternal "; 
+					return new ShaderStage(this, stage, source, gles, cachekey); 
+				}
+				graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override { 
+					std::cout << "newShaderInternal "; 
+					return new Shader(stages);
+				}
 				graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
 				bool dispatch(int x, int y, int z) override { std::cout << "dispatch "; return false; }
 				void initCapabilities() override { std::cout << "initCapabilities "; }

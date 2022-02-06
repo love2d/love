@@ -449,7 +449,7 @@ public:
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Shader *newShader(const std::vector<std::string> &stagessource);
+	Shader *newShader(const std::vector<std::string> &stagessource, bool vulkan = false);
 	Shader *newComputeShader(const std::string &source);
 
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;

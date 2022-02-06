@@ -112,6 +112,7 @@ public:
 		Language language;
 		EntryPoint stages[SHADERSTAGE_MAX_ENUM];
 		bool usesMRT;
+		bool vulkan;
 	};
 
 	struct MatrixSize

@@ -215,6 +215,17 @@ namespace love {
 					batchedDrawState.indexBuffer = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 				}
 
+				for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++) {
+					auto stype = (Shader::StandardShader)i;
+
+					if (!Shader::standardShaders[i]) {
+						std::vector<std::string> stages;
+						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
+						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
+						Shader::standardShaders[i] = newShader(stages, true);
+					}
+				}
+
 				return true;
 			}
 
@@ -759,7 +770,7 @@ namespace love {
 				rasterizer.rasterizerDiscardEnable = VK_FALSE;
 				rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 				rasterizer.lineWidth = 1.0f;
-				rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+				rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
 				rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 				rasterizer.depthBiasEnable = VK_FALSE;
 				rasterizer.depthBiasConstantFactor = 0.0f;

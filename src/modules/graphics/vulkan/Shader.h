@@ -3,9 +3,9 @@
 
 #include <graphics/Shader.h>
 #include <graphics/vulkan/ShaderStage.h>
-#include "libraries/glslang/glslang/Public/ShaderLang.h"
-#include "libraries/glslang/SPIRV/GlslangToSpv.h"
 #include <vulkan/vulkan.h>
+
+#include <map>
 
 
 namespace love {
@@ -26,7 +26,7 @@ namespace love {
 
 				std::string getWarnings() const override { return ""; }
 
-				int getVertexAttributeIndex(const std::string& name) override { return 0;  }
+				int getVertexAttributeIndex(const std::string& name) override;
 
 				const UniformInfo* getUniformInfo(const std::string& name) const override { return nullptr; }
 				const UniformInfo* getUniformInfo(BuiltinUniform builtin) const override { return nullptr;  }
@@ -41,7 +41,29 @@ namespace love {
 				void setVideoTextures(Texture* ytexture, Texture* cbtexture, Texture* crtexture) override {}
 
 			private:
+				struct Vec4 {
+					float x, y, z, w;
+				};
+				
+				struct LoveUniformsPerDraw {
+					Vec4 uniformsPerDraw[13];
+				};
+
 				std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+				std::map<std::string, int> vertexAttributeIndices = {
+					{ "VertexPosition", 0 },
+					{ "VertexTexCoord", 1 },
+					{ "VertexColor", 2 }
+				};
+
+				std::map<std::string, int> uniformBindings = {
+					{ "love_UniformsPerDraw", 0 },
+					{ "love_VideoYChannel", 1 },
+					{ "love_VideoCbChannel", 2 },
+					{ "love_VideoCrChannel", 3 },
+					{ "MainTex", 4 }
+				};
 			};
 		}
 	}

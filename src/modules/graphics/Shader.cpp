@@ -83,13 +83,27 @@ static const char global_syntax[] = R"(
 #ifdef GL_OES_standard_derivatives
 #extension GL_OES_standard_derivatives : enable
 #endif
+#ifdef USE_VULKAN
+	#define VULKAN_LOCATION(x) layout(location=x)
+	#define VULKAN_BINDING(x) layout(binding=x)
+#else
+	#define VULKAN_LOCATION(x)
+	#define VULKAN_BINDING(x)
+#endif
 )";
 
 static const char render_uniforms[] = R"(
-// According to the GLSL ES 1.0 spec, uniform precision must match between stages,
-// but we can't guarantee that highp is always supported in fragment shaders...
-// We *really* don't want to use mediump for these in vertex shaders though.
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+#ifdef USE_VULKAN
+	VULKAN_BINDING(0) uniform LoveUniformsPerDraw {
+		vec4 uniformsPerDraw[13];
+	} udp;
+	#define love_UniformsPerDraw udp.uniformsPerDraw
+#else
+	// According to the GLSL ES 1.0 spec, uniform precision must match between stages,
+	// but we can't guarantee that highp is always supported in fragment shaders...
+	// We *really* don't want to use mediump for these in vertex shaders though.
+	uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+#endif
 
 // These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
 // do it as an initializer.
@@ -264,12 +278,12 @@ static const char vertex_header[] = R"(
 static const char vertex_functions[] = R"()";
 
 static const char vertex_main[] = R"(
-attribute vec4 VertexPosition;
-attribute vec4 VertexTexCoord;
-attribute vec4 VertexColor;
+VULKAN_LOCATION(0) attribute vec4 VertexPosition;
+VULKAN_LOCATION(1) attribute vec4 VertexTexCoord;
+VULKAN_LOCATION(2) attribute vec4 VertexColor;
 
-varying vec4 VaryingTexCoord;
-varying vec4 VaryingColor;
+VULKAN_LOCATION(0) varying vec4 VaryingTexCoord;
+VULKAN_LOCATION(1) varying vec4 VaryingColor;
 
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
@@ -309,9 +323,9 @@ static const char pixel_header[] = R"(
 )";
 
 static const char pixel_functions[] = R"(
-uniform sampler2D love_VideoYChannel;
-uniform sampler2D love_VideoCbChannel;
-uniform sampler2D love_VideoCrChannel;
+VULKAN_BINDING(1) uniform sampler2D love_VideoYChannel;
+VULKAN_BINDING(2) uniform sampler2D love_VideoCbChannel;
+VULKAN_BINDING(3) uniform sampler2D love_VideoCrChannel;
 
 vec4 VideoTexel(vec2 texcoords) {
 	vec3 yuv;
@@ -337,9 +351,9 @@ static const char pixel_main[] = R"(
 	#define love_PixelColor gl_FragColor
 #endif
 
-uniform sampler2D MainTex;
-varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;
+VULKAN_BINDING(4) uniform sampler2D MainTex;
+VULKAN_LOCATION(0) varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
+VULKAN_LOCATION(1) varying mediump vec4 VaryingColor;
 
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
 
@@ -374,8 +388,8 @@ static const char pixel_main_custom[] = R"(
 #define LOVE_MULTI_CANVASES 1
 #endif
 
-varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;
+VULKAN_LOCATION(0) varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
+VULKAN_LOCATION(1) varying mediump vec4 VaryingColor;
 
 void effect();
 
@@ -562,6 +576,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (glsl1on3)
 		lang = LANGUAGE_GLSL3;
 
+	if (info.vulkan)
+		lang = LANGUAGE_GLSL4;
+
 	glsl::StageInfo stageinfo = glsl::stageInfo[stage];
 
 	std::stringstream ss;
@@ -574,6 +591,8 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
+	if (info.vulkan)
+		ss << "#define USE_VULKAN\n";
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
 	ss << stageinfo.uniforms;
@@ -893,7 +912,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		{
 			LocalUniform u = {};
 			auto &values = u.initializerValues;
-			const glslang::TConstUnionArray *constarray = info.getConstArray();
+			// const glslang::TConstUnionArray *constarray = info.getConstArray(); was this function deprecated in a later version?
+			const glslang::TConstUnionArray* constarray = nullptr;
 
 			// Store initializer values for local uniforms. Some love graphics
 			// backends strip these out of the shader so we need to be able to

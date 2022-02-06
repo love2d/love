@@ -342,7 +342,7 @@ ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &
 	return s;
 }
 
-Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
+Shader *Graphics::newShader(const std::vector<std::string> &stagessource, bool vulkan)
 {
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
@@ -353,6 +353,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource)
 	for (const std::string &source : stagessource)
 	{
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
+		info.vulkan = vulkan;
 		bool isanystage = false;
 
 		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
