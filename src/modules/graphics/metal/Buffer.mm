@@ -111,7 +111,7 @@ Buffer::~Buffer()
 
 void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 { @autoreleasepool {
-	if (size == 0)
+	if (size == 0 || isImmutable())
 		return nullptr;
 
 	Range r(offset, size);
@@ -160,7 +160,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 
 void Buffer::fill(size_t offset, size_t size, const void *data)
 { @autoreleasepool {
-	if (size == 0)
+	if (size == 0 || isImmutable())
 		return;
 
 	size_t buffersize = getSize();

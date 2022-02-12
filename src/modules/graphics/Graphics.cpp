@@ -248,8 +248,10 @@ void Graphics::createQuadIndexBuffer()
 	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_STATIC);
 	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
-	Buffer::Mapper map(*quadIndexBuffer);
-	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+	{
+		Buffer::Mapper map(*quadIndexBuffer);
+		fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+	}
 
 	quadIndexBuffer->setImmutable(true);
 }
