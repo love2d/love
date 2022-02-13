@@ -36,6 +36,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 set (CMAKE_CXX_STANDARD 11)
 
+if(APPLE)
+	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
+	message(WARNING "Use the prebuilt .app or the xcode project in platform/xcode/ instead.")
+endif()
+
 if(MSVC)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
 endif()
