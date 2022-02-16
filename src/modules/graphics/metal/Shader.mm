@@ -308,6 +308,11 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 		bool forcedefault = false;
 		bool forwardcompat = true;
 
+#ifdef LOVE_IOS
+		defaultversion = 320;
+		defaultprofile = EEsProfile;
+#endif
+
 		if (!tshader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 		{
 			const char *stagename = "unknown";
