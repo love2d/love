@@ -311,6 +311,7 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 #ifdef LOVE_IOS
 		defaultversion = 320;
 		defaultprofile = EEsProfile;
+		forcedefault = true;
 #endif
 
 		if (!tshader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
