@@ -232,8 +232,13 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (mipmapsMode != MIPMAPS_NONE)
 		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
 
-	if (mipmapsMode == MIPMAPS_AUTO && isPixelFormatDepthStencil(format))
-		throw love::Exception("Automatic mipmap generation cannot be used for depth/stencil textures.");
+	const char *miperr = nullptr;
+	if (mipmapsMode == MIPMAPS_AUTO && !supportsGenerateMipmaps(miperr))
+	{
+		const char *fstr = "unknown";
+		love::getConstant(format, fstr);
+		throw love::Exception("Automatic mipmap generation is not supported for textures with the %s pixel format.", fstr);
+	}
 
 	if (pixelWidth <= 0 || pixelHeight <= 0 || layers <= 0 || depth <= 0)
 		throw love::Exception("Texture dimensions must be greater than 0.");
@@ -511,19 +516,49 @@ void Texture::replacePixels(const void *data, size_t size, int slice, int mipmap
 		generateMipmaps();
 }
 
-void Texture::generateMipmaps()
+bool Texture::supportsGenerateMipmaps(const char *&outReason) const
 {
-	if (getMipmapCount() == 1 || getMipmapsMode() == MIPMAPS_NONE)
-		throw love::Exception("generateMipmaps can only be called on a Texture which was created with mipmaps enabled.");
+	if (getMipmapsMode() == MIPMAPS_NONE)
+	{
+		outReason = "generateMipmaps can only be called on a Texture which was created with mipmaps enabled.";
+		return false;
+	}
 
 	if (isPixelFormatCompressed(format))
-		throw love::Exception("generateMipmaps cannot be called on a compressed Texture.");
+	{
+		outReason = "generateMipmaps cannot be called on a compressed Texture.";
+		return false;
+	}
 
 	if (isPixelFormatDepthStencil(format))
-		throw love::Exception("generateMipmaps cannot be called on a depth/stencil Texture.");
+	{
+		outReason = "generateMipmaps cannot be called on a depth/stencil Texture.";
+		return false;
+	}
 
 	if (isPixelFormatInteger(format))
-		throw love::Exception("generateMipmaps cannot be called on an integer Texture.");
+	{
+		outReason = "generateMipmaps cannot be called on an integer Texture.";
+		return false;
+	}
+
+	// This should be linear | rt because that's what metal needs, but the above
+	// code handles textures can't be used as RTs in metal.
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr && !gfx->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_LINEAR))
+	{
+		outReason = "generateMipmaps cannot be called on textures with formats that don't support linear filtering on this system.";
+		return false;
+	}
+
+	return true;
+}
+
+void Texture::generateMipmaps()
+{
+	const char *err = nullptr;
+	if (!supportsGenerateMipmaps(err))
+		throw love::Exception("%s", err);
 
 	generateMipmapsInternal();
 }

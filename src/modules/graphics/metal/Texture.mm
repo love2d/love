@@ -269,8 +269,6 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 void Texture::generateMipmapsInternal()
 { @autoreleasepool {
-	// TODO: alternate method for non-color-renderable and non-filterable
-	// pixel formats.
 	id<MTLBlitCommandEncoder> encoder = Graphics::getInstance()->useBlitEncoder();
 	[encoder generateMipmapsForTexture:texture];
 }}
