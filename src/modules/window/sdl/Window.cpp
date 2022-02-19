@@ -660,7 +660,17 @@ bool Window::onSizeChanged(int width, int height)
 	windowWidth = width;
 	windowHeight = height;
 
-	SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+	if (glcontext != nullptr)
+		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#ifdef LOVE_GRAPHICS_METAL
+	else if (metalView != nullptr)
+		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
+	else
+	{
+		pixelWidth = width;
+		pixelHeight = height;
+	}
 
 	if (graphics.get())
 	{
