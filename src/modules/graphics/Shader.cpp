@@ -526,7 +526,7 @@ Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 	return info;
 }
 
-std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const Shader::SourceInfo &info, bool gles, bool checksystemfeatures)
+std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const Shader::SourceInfo &info, bool gles, bool checksystemfeatures)
 {
 	if (info.language == Shader::LANGUAGE_MAX_ENUM)
 		throw love::Exception("Invalid shader language");
@@ -574,6 +574,10 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
+
+	for (const auto &def : options.defines)
+		ss << "#define " + def.first + " " + def.second + "\n";
+
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
 	ss << stageinfo.uniforms;

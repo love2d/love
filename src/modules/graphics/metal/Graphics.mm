@@ -343,9 +343,10 @@ Graphics::Graphics()
 		if (!Shader::standardShaders[i])
 		{
 			std::vector<std::string> stages;
+			Shader::CompileOptions opts;
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
-			Shader::standardShaders[i] = newShader(stages);
+			Shader::standardShaders[i] = newShader(stages, opts);
 		}
 	}
 
