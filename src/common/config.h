@@ -38,6 +38,8 @@
 #endif
 #if defined(__ANDROID__)
 #	define LOVE_ANDROID 1
+// Needed for ENet
+#	define HAS_SOCKLEN_T 1
 #endif
 #if defined(__APPLE__)
 #	include <TargetConditionals.h>
