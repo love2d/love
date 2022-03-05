@@ -235,6 +235,8 @@ endfunction()
 #
 
 set(LOVE_SRC_COMMON
+	src/common/android.cpp
+	src/common/android.h
 	src/common/b64.cpp
 	src/common/b64.h
 	src/common/Color.h
@@ -1770,6 +1772,7 @@ if(ANDROID)
 	# as shared library, so change the library name and add love.cpp
 	set(LOVE_LIB_NAME ${LOVE_EXE_NAME})
 	set(LOVE_LIB_SRC ${LOVE_LIB_SRC} src/love.cpp)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} android)
 endif()
 
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})

@@ -35,7 +35,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "physfs.h"
+#include "libraries/physfs/physfs.h"
 
 namespace love
 {
