@@ -1697,7 +1697,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, int usage, bool sRGB)
 {
 	if (sRGB)
 	{

@@ -110,7 +110,7 @@ public:
 	void setWireframe(bool enable) override;
 	
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, int usage, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
