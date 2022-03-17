@@ -551,6 +551,9 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
+	case SDL_LOCALECHANGED:
+		msg = new Message("localechanged");
+		break;
 	default:
 		break;
 	}

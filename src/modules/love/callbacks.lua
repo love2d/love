@@ -120,6 +120,9 @@ function love.createhandlers()
 		displayrotated = function (display, orient)
 			if love.displayrotated then return love.displayrotated(display, orient) end
 		end,
+		localechanged = function ()
+			if love.localechanged then return love.localechanged() end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)
