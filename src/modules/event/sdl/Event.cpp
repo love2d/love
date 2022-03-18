@@ -35,6 +35,8 @@
 
 #include <cmath>
 
+#include <SDL_version.h>
+
 namespace love
 {
 namespace event
@@ -433,6 +435,11 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_APP_LOWMEMORY:
 		msg = new Message("lowmemory");
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	case SDL_LOCALECHANGED:
+		msg = new Message("localechanged");
+		break;
+#endif
 	default:
 		break;
 	}
@@ -550,9 +557,6 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			vargs.emplace_back(joysticktype, stick);
 			msg = new Message("joystickremoved", vargs);
 		}
-		break;
-	case SDL_LOCALECHANGED:
-		msg = new Message("localechanged");
 		break;
 	default:
 		break;
