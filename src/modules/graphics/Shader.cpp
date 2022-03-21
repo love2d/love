@@ -432,6 +432,37 @@ void main() {
 }
 )";
 
+static const char vulkan_vert[] = R"(
+#version 450
+
+layout(location = 0) in vec2 inPosition;
+
+layout(location = 0) out vec4 fragColor;
+
+float windowWidth = 800;
+float windowHeight = 600;
+
+void main() {
+    gl_Position = vec4(
+        2 * inPosition.x / windowWidth - 1,
+        2 * inPosition.y / windowHeight - 1, 
+        0.0, 1.0);
+    fragColor = vec4(1, 1, 1, 1);
+}
+)";
+
+static const char vulkan_pixel[] = R"(
+#version 450
+
+layout(location = 0) in vec4 fragColor;
+
+layout(location = 0) out vec4 outColor;
+
+void main() {
+    outColor = fragColor;
+}
+)";
+
 struct StageInfo
 {
 	const char *name;
@@ -576,8 +607,14 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (glsl1on3)
 		lang = LANGUAGE_GLSL3;
 
-	if (info.vulkan)
-		lang = LANGUAGE_GLSL4;
+	if (info.vulkan) {
+		if (stage == SHADERSTAGE_VERTEX) {
+			return love::graphics::glsl::vulkan_vert;
+		}
+		if (stage == SHADERSTAGE_PIXEL) {
+			return love::graphics::glsl::vulkan_pixel;
+		}
+	}
 
 	glsl::StageInfo stageinfo = glsl::stageInfo[stage];
 

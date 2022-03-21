@@ -66,6 +66,7 @@ namespace love {
 					createSwapChain();
 					createImageViews();
 					createRenderPass();
+					createDefaultShaders();
 					createGraphicsPipeline();
 					createFramebuffers();
 					createCommandPool();
@@ -213,17 +214,6 @@ namespace love {
 					batchedDrawState.vb[0] = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
 					batchedDrawState.vb[1] = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
 					batchedDrawState.indexBuffer = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
-				}
-
-				for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++) {
-					auto stype = (Shader::StandardShader)i;
-
-					if (!Shader::standardShaders[i]) {
-						std::vector<std::string> stages;
-						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
-						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
-						Shader::standardShaders[i] = newShader(stages, true);
-					}
 				}
 
 				return true;
@@ -696,29 +686,22 @@ namespace love {
 				return shaderModule;
 			}
 
+			void Graphics::createDefaultShaders() {
+				for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++) {
+					auto stype = (Shader::StandardShader)i;
+
+					if (!Shader::standardShaders[i]) {
+						std::vector<std::string> stages;
+						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
+						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
+						Shader::standardShaders[i] = newShader(stages, true);
+					}
+				}
+			}
+
 			void Graphics::createGraphicsPipeline() {
-				// love::graphics::vulkan::Shader* shader = dynamic_cast<love::graphics::vulkan::Shader*>(getShader());
-				// auto shaderStages = shader->getShaderStages();
-
-				auto vertShaderCode = readFile("vert.spv");
-				auto fragShaderCode = readFile("frag.spv");
-
-				VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode);
-				VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode);
-
-				VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-				vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-				vertShaderStageInfo.module = vertShaderModule;
-				vertShaderStageInfo.pName = "main";
-
-				VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-				fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-				fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-				fragShaderStageInfo.module = fragShaderModule;
-				fragShaderStageInfo.pName = "main";
-
-				VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+				auto shader = reinterpret_cast<love::graphics::vulkan::Shader*>(love::graphics::vulkan::Shader::standardShaders[Shader::STANDARD_DEFAULT]);
+				auto shaderStages = shader->getShaderStages();
 
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 				vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -812,10 +795,8 @@ namespace love {
 
 				VkGraphicsPipelineCreateInfo pipelineInfo{};
 				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-				// pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-				// pipelineInfo.pStages = shaderStages.data();
-				pipelineInfo.stageCount = 2;
-				pipelineInfo.pStages = shaderStages;
+				pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+				pipelineInfo.pStages = shaderStages.data();
 				pipelineInfo.pVertexInputState = &vertexInputInfo;
 				pipelineInfo.pInputAssemblyState = &inputAssembly;
 				pipelineInfo.pViewportState = &viewportState;
@@ -833,9 +814,6 @@ namespace love {
 				if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 					throw love::Exception("failed to create graphics pipeline");
 				}
-
-				vkDestroyShaderModule(device, vertShaderModule, nullptr);
-				vkDestroyShaderModule(device, fragShaderModule, nullptr);
 			}
 
 			void Graphics::createFramebuffers() {

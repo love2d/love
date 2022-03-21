@@ -116,6 +116,7 @@ namespace love {
 				void createSwapChain();
 				void createImageViews();
 				void createRenderPass();
+				void createDefaultShaders();
 				void createGraphicsPipeline();
 				void createFramebuffers();
 				void createCommandPool();
