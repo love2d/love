@@ -22,6 +22,7 @@ namespace love {
 				switch (mode) {
 				case BUFFERUSAGE_VERTEX: return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 				case BUFFERUSAGE_INDEX: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+				case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 				default:
 					throw love::Exception("unsupported BufferUsage mode");
 				}
@@ -53,6 +54,11 @@ namespace love {
 				}
 
 				vkBindBufferMemory(device, buffer, bufferMemory, 0);
+			}
+
+			StreamBuffer::~StreamBuffer() {
+				//vkDestroyBuffer(device, buffer, nullptr);
+				//vkFreeMemory(device, bufferMemory, nullptr);
 			}
 
 			love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize) {

@@ -67,10 +67,14 @@ namespace love {
 					createImageViews();
 					createRenderPass();
 					createDefaultShaders();
+					createDescriptorSetLayout();
 					createGraphicsPipeline();
 					createFramebuffers();
 					createCommandPool();
 					createCommandBuffers();
+					createUniformBuffers();
+					createDescriptorPool();
+					createDescriptorSets();
 					createSyncObjects();
 					startRecordingGraphicsCommands();
 				}
@@ -227,6 +231,9 @@ namespace love {
 				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
 				offsets.push_back((VkDeviceSize) 0);
 
+				prepareDraw(currentFrame);
+
+				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets.at(currentFrame), 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, 1, buffers.data(), offsets.data());
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer) cmd.indexBuffer->getHandle(), 0, VK_INDEX_TYPE_UINT16);
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
@@ -238,6 +245,18 @@ namespace love {
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
+
+			void Graphics::prepareDraw(uint32_t currentImage) {
+				auto& buffer = uniformBuffers.at(currentImage);
+
+				Shader::UniformBufferObject ubo{};
+				ubo.windowWidth = static_cast<float>(swapChainExtent.width);
+				ubo.windowHeight = static_cast<float>(swapChainExtent.height);
+
+				auto mappedInfo = buffer->map(0);
+				memcpy(mappedInfo.data, &ubo, sizeof(ubo));
+				buffer->unmap(0);
+			}
 
 			void Graphics::createVulkanInstance() {
 				if (enableValidationLayers && !checkValidationSupport()) {
@@ -699,6 +718,79 @@ namespace love {
 				}
 			}
 
+			void Graphics::createDescriptorSetLayout() {
+				VkDescriptorSetLayoutBinding uboLayoutBinding{};
+				uboLayoutBinding.binding = 0;
+				uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				uboLayoutBinding.descriptorCount = 1;
+				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+				VkDescriptorSetLayoutCreateInfo layoutInfo{};
+				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layoutInfo.bindingCount = 1;
+				layoutInfo.pBindings = &uboLayoutBinding;
+
+				if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+					throw love::Exception("failed to create descriptor set layout");
+				}
+			}
+
+			void Graphics::createUniformBuffers() {
+				VkDeviceSize bufferSize = sizeof(Shader::UniformBufferObject);
+				
+				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					uniformBuffers.push_back(std::make_unique<StreamBuffer>(device, physicalDevice, BUFFERUSAGE_UNIFORM, bufferSize));
+				}
+			}
+
+			void Graphics::createDescriptorPool() {
+				VkDescriptorPoolSize poolSize{};
+				poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+				VkDescriptorPoolCreateInfo poolInfo{};
+				poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+				poolInfo.poolSizeCount = 1;
+				poolInfo.pPoolSizes = &poolSize;
+				poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+				if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+					throw love::Exception("failed to create descriptor pool");
+				}
+			}
+
+			void Graphics::createDescriptorSets() {
+				std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+				VkDescriptorSetAllocateInfo allocInfo{};
+				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+				allocInfo.descriptorPool = descriptorPool;
+				allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+				allocInfo.pSetLayouts = layouts.data();
+
+				descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+				if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+					throw love::Exception("failed to allocate descriptor sets");
+				}
+
+				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					VkDescriptorBufferInfo bufferInfo{};
+					bufferInfo.buffer = (VkBuffer) uniformBuffers.at(i)->getHandle();
+					bufferInfo.offset = 0;
+					bufferInfo.range = sizeof(Shader::UniformBufferObject);
+
+					VkWriteDescriptorSet descriptorWrite{};
+					descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrite.dstSet = descriptorSets[i];
+					descriptorWrite.dstBinding = 0;
+					descriptorWrite.dstArrayElement = 0;
+					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptorWrite.descriptorCount = 1;
+					descriptorWrite.pBufferInfo = &bufferInfo;
+
+					vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+				}
+			}
+
 			void Graphics::createGraphicsPipeline() {
 				auto shader = reinterpret_cast<love::graphics::vulkan::Shader*>(love::graphics::vulkan::Shader::standardShaders[Shader::STANDARD_DEFAULT]);
 				auto shaderStages = shader->getShaderStages();
@@ -786,7 +878,8 @@ namespace love {
 
 				VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 				pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-				pipelineLayoutInfo.setLayoutCount = 0;
+				pipelineLayoutInfo.setLayoutCount = 1;
+				pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 				pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 				if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -892,6 +985,9 @@ namespace love {
 
 				cleanupSwapChain();
 
+				vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+				vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 				vkDestroyCommandPool(device, commandPool, nullptr);
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -915,6 +1011,7 @@ namespace love {
 					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 					vkDestroyFence(device, inFlightFences[i], nullptr);
 				}
+				uniformBuffers.clear();
 			}
 
 			void Graphics::recreateSwapChain() {
@@ -927,6 +1024,9 @@ namespace love {
 				createRenderPass();
 				createGraphicsPipeline();
 				createFramebuffers();
+				createUniformBuffers();
+				createDescriptorPool();
+				createDescriptorSets();
 				createCommandBuffers();
 				createSyncObjects();
 				startRecordingGraphicsCommands();

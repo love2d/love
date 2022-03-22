@@ -439,13 +439,15 @@ layout(location = 0) in vec2 inPosition;
 
 layout(location = 0) out vec4 fragColor;
 
-float windowWidth = 800;
-float windowHeight = 600;
+layout(binding = 0) uniform LoveUniforms {
+	float windowWidth;
+	float windowHeight;
+} loveUniforms;
 
 void main() {
     gl_Position = vec4(
-        2 * inPosition.x / windowWidth - 1,
-        2 * inPosition.y / windowHeight - 1, 
+        2 * inPosition.x / loveUniforms.windowWidth - 1,
+        2 * inPosition.y / loveUniforms.windowHeight - 1, 
         0.0, 1.0);
     fragColor = vec4(1, 1, 1, 1);
 }

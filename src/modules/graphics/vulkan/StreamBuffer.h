@@ -11,6 +11,7 @@ namespace love {
 			class StreamBuffer : public love::graphics::StreamBuffer {
 			public:
 				StreamBuffer(VkDevice device, VkPhysicalDevice physicalDevice, BufferUsage mode, size_t size);
+				virtual ~StreamBuffer();
 
 				MapInfo map(size_t minsize) override;
 				size_t unmap(size_t usedSize) override;

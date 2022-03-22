@@ -40,6 +40,11 @@ namespace love {
 
 				void setVideoTextures(Texture* ytexture, Texture* cbtexture, Texture* crtexture) override {}
 
+				struct UniformBufferObject {
+					float windowWidth;
+					float windowHeight;
+				};
+
 			private:
 				struct Vec4 {
 					float x, y, z, w;
@@ -64,6 +69,8 @@ namespace love {
 					{ "love_VideoCrChannel", 3 },
 					{ "MainTex", 4 }
 				};
+
+
 			};
 		}
 	}

@@ -11,6 +11,7 @@
 
 #include <optional>
 #include <iostream>
+#include <memory>
 
 
 namespace love {
@@ -117,6 +118,10 @@ namespace love {
 				void createImageViews();
 				void createRenderPass();
 				void createDefaultShaders();
+				void createDescriptorSetLayout();
+				void createUniformBuffers();
+				void createDescriptorPool();
+				void createDescriptorSets();
 				void createGraphicsPipeline();
 				void createFramebuffers();
 				void createCommandPool();
@@ -128,6 +133,8 @@ namespace love {
 
 				void startRecordingGraphicsCommands();
 				void endRecordingGraphicsCommands();
+
+				void prepareDraw(uint32_t currentImage);
 				
 				VkInstance instance;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -140,6 +147,7 @@ namespace love {
 				VkFormat swapChainImageFormat;
 				VkExtent2D swapChainExtent;
 				std::vector<VkImageView> swapChainImageViews;
+				VkDescriptorSetLayout descriptorSetLayout;
 				VkPipelineLayout pipelineLayout;
 				VkRenderPass renderPass;
 				VkPipeline graphicsPipeline;
@@ -147,7 +155,9 @@ namespace love {
 				VkCommandPool commandPool;
 				std::vector<VkCommandBuffer> commandBuffers;
 				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-
+				std::vector<std::unique_ptr<StreamBuffer>> uniformBuffers;
+				VkDescriptorPool descriptorPool;
+				std::vector<VkDescriptorSet> descriptorSets;
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;
 				std::vector<VkFence> inFlightFences;
