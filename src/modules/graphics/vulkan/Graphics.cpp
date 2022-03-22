@@ -985,6 +985,12 @@ namespace love {
 
 				cleanupSwapChain();
 
+				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+					vkDestroyFence(device, inFlightFences[i], nullptr);
+				}
+
 				vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
 				vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -1006,11 +1012,6 @@ namespace love {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 				}
 				vkDestroySwapchainKHR(device, swapChain, nullptr);
-				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-					vkDestroyFence(device, inFlightFences[i], nullptr);
-				}
 				uniformBuffers.clear();
 			}
 
@@ -1028,7 +1029,6 @@ namespace love {
 				createDescriptorPool();
 				createDescriptorSets();
 				createCommandBuffers();
-				createSyncObjects();
 				startRecordingGraphicsCommands();
 			}
 
