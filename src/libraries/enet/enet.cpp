@@ -42,6 +42,10 @@ extern "C" {
 #include <enet/enet.h>
 }
 
+// LOVE
+#include "common/Data.h"
+#include "common/runtime.h"
+
 #define check_host(l, idx)\
 	*(ENetHost**)luaL_checkudata(l, idx, "enet_host")
 
@@ -246,7 +250,15 @@ static void push_event(lua_State *l, ENetEvent *event) {
 static ENetPacket *read_packet(lua_State *l, int idx, enet_uint8 *channel_id) {
 	size_t size;
 	int argc = lua_gettop(l);
-	const void *data = luaL_checklstring(l, idx, &size);
+	const void *data;
+	if (luax_istype(l, 2, love::Data::type))
+	{
+		love::Data *lovedata = love::luax_checktype<love::Data>(l, idx);
+		data = lovedata->getData();
+		size = lovedata->getSize();
+	}
+	else
+		data = luaL_checklstring(l, idx, &size);
 	ENetPacket *packet;
 
 	enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE;
