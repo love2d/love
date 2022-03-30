@@ -44,6 +44,7 @@ Released: N/A
 * Added a variant of Font:getWidth which takes a codepoint number argument.
 * Added love.system.getPreferredLocales.
 * Added love.localechanged callback.
+* Added variant for enet peer:send and host:broadcast which accepts data.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
