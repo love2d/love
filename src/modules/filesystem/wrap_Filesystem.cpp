@@ -806,6 +806,9 @@ int loader(lua_State *L)
 {
 	std::string modulename = luax_checkstring(L, 1);
 
+	if (modulename.find('/') != std::string::npos)
+		luax_markdeprecated(L, 2, "character in require string (forward slashes), use dots instead.", API_CUSTOM);
+
 	for (char &c : modulename)
 	{
 		if (c == '.')
