@@ -100,11 +100,6 @@ Audio::Audio()
 	, poolThread(nullptr)
 	, distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
-#if defined(LOVE_LINUX)
-	// Temporarly block signals, as the thread inherits this mask
-	love::thread::disableSignals();
-#endif
-
 	// Before opening new device, check if recording
 	// is requested.
 	if (getRequestRecordingPermission())
@@ -114,29 +109,32 @@ Audio::Audio()
 			requestRecordingPermission();
 	}
 
-	// Passing null for default device.
-	device = alcOpenDevice(nullptr);
+	{
+#if defined(LOVE_LINUX)
+		// Temporarly block signals, as the thread inherits this mask
+		love::thread::ScopedDisableSignals disableSignals;
+#endif
 
-	if (device == nullptr)
-		throw love::Exception("Could not open device.");
+		// Passing null for default device.
+		device = alcOpenDevice(nullptr);
+
+		if (device == nullptr)
+			throw love::Exception("Could not open device.");
 
 #ifdef ALC_EXT_EFX
-	ALint attribs[4] = { ALC_MAX_AUXILIARY_SENDS, MAX_SOURCE_EFFECTS, 0, 0 };
+		ALint attribs[4] = { ALC_MAX_AUXILIARY_SENDS, MAX_SOURCE_EFFECTS, 0, 0 };
 #else
-	ALint *attribs = nullptr;
+		ALint *attribs = nullptr;
 #endif
 
-	context = alcCreateContext(device, attribs);
+		context = alcCreateContext(device, attribs);
 
-	if (context == nullptr)
-		throw love::Exception("Could not create context.");
+		if (context == nullptr)
+			throw love::Exception("Could not create context.");
 
-	if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
-		throw love::Exception("Could not make context current.");
-
-#if defined(LOVE_LINUX)
-	love::thread::reenableSignals();
-#endif
+		if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
+			throw love::Exception("Could not make context current.");
+	}
 
 #ifdef ALC_EXT_EFX
 	initializeEFX();
