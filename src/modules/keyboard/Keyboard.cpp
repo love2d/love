@@ -47,6 +47,16 @@ bool Keyboard::getConstant(Scancode in, const char *&out)
 	return scancodes.find(in, out);
 }
 
+bool Keyboard::getConstant(const char *in, ModifierKey &out)
+{
+	return modifiers.find(in, out);
+}
+
+bool Keyboard::getConstant(ModifierKey in, const char *&out)
+{
+	return modifiers.find(in, out);
+}
+
 StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
 {
 	{"unknown", Keyboard::KEY_UNKNOWN},
@@ -520,6 +530,16 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 };
 
 StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM> Keyboard::scancodes(Keyboard::scancodeEntries, sizeof(Keyboard::scancodeEntries));
+
+StringMap<Keyboard::ModifierKey, Keyboard::MODKEY_MAX_ENUM>::Entry Keyboard::modifierEntries[] =
+{
+	{"numlock", MODKEY_NUMLOCK},
+	{"capslock", MODKEY_CAPSLOCK},
+	{"scrolllock", MODKEY_SCROLLLOCK},
+	{"mode", MODKEY_MODE},
+};
+
+StringMap<Keyboard::ModifierKey, Keyboard::MODKEY_MAX_ENUM> Keyboard::modifiers(Keyboard::modifierEntries, sizeof(Keyboard::modifierEntries));
 
 } // keyboard
 } // love

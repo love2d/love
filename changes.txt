@@ -42,6 +42,7 @@ Released: N/A
 * Added a variant of love.graphics.setColorMask which accepts a single boolean.
 * Added new 'clampone' wrap mode.
 * Added a variant of Font:getWidth which takes a codepoint number argument.
+* Added love.keyboard.isModifierActive.
 * Added love.system.getPreferredLocales.
 * Added love.localechanged callback.
 
