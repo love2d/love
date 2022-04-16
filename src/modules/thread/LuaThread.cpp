@@ -37,6 +37,7 @@ love::Type LuaThread::type("Thread", &Threadable::type);
 LuaThread::LuaThread(const std::string &name, love::Data *code)
 	: code(code)
 	, name(name)
+	, haserror(false)
 {
 	threadName = name;
 }
@@ -48,6 +49,7 @@ LuaThread::~LuaThread()
 void LuaThread::threadFunction()
 {
 	error.clear();
+	haserror = false;
 
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
@@ -71,7 +73,10 @@ void LuaThread::threadFunction()
 	int tracebackidx = lua_gettop(L);
 
 	if (luaL_loadbuffer(L, (const char *) code->getData(), code->getSize(), name.c_str()) != 0)
+	{
 		error = luax_tostring(L, -1);
+		haserror = true;
+	}
 	else
 	{
 		int pushedargs = (int) args.size();
@@ -82,18 +87,27 @@ void LuaThread::threadFunction()
 		args.clear();
 
 		if (lua_pcall(L, pushedargs, 0, tracebackidx) != 0)
+		{
 			error = luax_tostring(L, -1);
+			haserror = true;
+		}
 	}
 
 	lua_close(L);
 
-	if (!error.empty())
+	if (haserror)
 		onError();
 }
 
 bool LuaThread::start(const std::vector<Variant> &args)
 {
+	if (isRunning())
+		return false;
+
 	this->args = args;
+	error.clear();
+	haserror = false;
+	
 	return Threadable::start();
 }
 
@@ -104,9 +118,6 @@ const std::string &LuaThread::getError() const
 
 void LuaThread::onError()
 {
-	if (error.empty())
-		return;
-
 	auto eventmodule = Module::getInstance<event::Event>(Module::M_EVENT);
 	if (!eventmodule)
 		return;

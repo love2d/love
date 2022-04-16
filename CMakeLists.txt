@@ -36,6 +36,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 set (CMAKE_CXX_STANDARD 11)
 
+if(APPLE)
+	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
+	message(WARNING "Use the prebuilt .app or the xcode project in platform/xcode/ instead.")
+endif()
+
 if(MSVC)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
 endif()
@@ -48,11 +53,15 @@ else()
 	set(LOVE_TARGET_PLATFORM x86)
 endif()
 
-option(LOVE_JIT "Use LuaJIT" TRUE)
+if(APPLE)
+	option(LOVE_JIT "Use LuaJIT" FALSE)
+else()
+	option(LOVE_JIT "Use LuaJIT" TRUE)
+endif()
 
 if(LOVE_JIT)
 	if(APPLE)
-		message(FATAL_ERROR "JIT not supported yet on Mac. Please use -DLOVE_JIT=0.")
+		message(WARNING "JIT not supported yet on Mac.")
 	endif()
 	message(STATUS "LuaJIT: Enabled")
 else()
@@ -289,6 +298,9 @@ if (APPLE)
 	set(LOVE_SRC_COMMON ${LOVE_SRC_COMMON}
 		src/common/macosx.mm
 	)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} objc)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework CoreFoundation")
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework AppKit")
 endif()
 
 source_group("common" FILES ${LOVE_SRC_COMMON})
@@ -1624,6 +1636,7 @@ if(APPLE)
 	set(LOVE_SRC_3P_PHYSFS ${LOVE_SRC_3P_PHYSFS}
 		src/libraries/physfs/physfs_platform_apple.m
 	)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework IOKit")
 endif()
 
 add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
@@ -1744,6 +1757,7 @@ set(LOVE_LIB_SRC
 )
 
 include_directories(
+	BEFORE
 	src
 	src/libraries
 	src/libraries/box2D
