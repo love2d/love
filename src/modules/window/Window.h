@@ -69,7 +69,8 @@ public:
 		SETTING_MIN_HEIGHT,
 		SETTING_BORDERLESS,
 		SETTING_CENTERED,
-		SETTING_DISPLAY,
+		SETTING_DISPLAYINDEX,
+		SETTING_DISPLAY, // Deprecated
 		SETTING_HIGHDPI, // Deprecated
 		SETTING_USE_DPISCALE,
 		SETTING_REFRESHRATE,
@@ -264,7 +265,7 @@ struct WindowSettings
 	int minheight = 1;
 	bool borderless = false;
 	bool centered = true;
-	int display = 0;
+	int displayindex = 0;
 	bool usedpiscale = true;
 	double refreshrate = 0.0;
 	bool useposition = false;

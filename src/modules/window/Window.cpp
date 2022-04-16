@@ -114,6 +114,7 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"minheight", SETTING_MIN_HEIGHT},
 	{"borderless", SETTING_BORDERLESS},
 	{"centered", SETTING_CENTERED},
+	{"displayindex", SETTING_DISPLAYINDEX},
 	{"display", SETTING_DISPLAY},
 	{"highdpi", SETTING_HIGHDPI},
 	{"usedpiscale", SETTING_USE_DPISCALE},
