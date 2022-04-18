@@ -27,7 +27,6 @@
 
 #include "ModPlugDecoder.h"
 #include "VorbisDecoder.h"
-#include "GmeDecoder.h"
 #include "WaveDecoder.h"
 #include "FLACDecoder.h"
 #include "MP3Decoder.h"
@@ -88,9 +87,6 @@ sound::Decoder *Sound::newDecoder(love::filesystem::FileData *data, int bufferSi
 #endif // LOVE_NO_MODPLUG
 		DecoderImplFor<MP3Decoder>(),
 		DecoderImplFor<VorbisDecoder>(),
-#ifdef LOVE_SUPPORT_GME
-		DecoderImplFor<GmeDecoder>(),
-#endif // LOVE_SUPPORT_GME
 #ifdef LOVE_SUPPORT_COREAUDIO
 		DecoderImplFor<CoreAudioDecoder>(),
 #endif
