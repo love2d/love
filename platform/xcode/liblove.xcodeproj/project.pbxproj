@@ -526,9 +526,6 @@
 		FA0B7E8B1A95902C000E1D17 /* FLACDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */; };
 		FA0B7E8C1A95902C000E1D17 /* FLACDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */; };
 		FA0B7E8D1A95902C000E1D17 /* FLACDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C831A95902C000E1D17 /* FLACDecoder.h */; };
-		FA0B7E8E1A95902C000E1D17 /* GmeDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */; };
-		FA0B7E8F1A95902C000E1D17 /* GmeDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */; };
-		FA0B7E901A95902C000E1D17 /* GmeDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C851A95902C000E1D17 /* GmeDecoder.h */; };
 		FA0B7E911A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */; };
 		FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */; };
 		FA0B7E931A95902C000E1D17 /* ModPlugDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */; };
@@ -1699,8 +1696,6 @@
 		FA0B7C801A95902C000E1D17 /* Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decoder.cpp; sourceTree = "<group>"; };
 		FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FLACDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C831A95902C000E1D17 /* FLACDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLACDecoder.h; sourceTree = "<group>"; };
-		FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GmeDecoder.cpp; sourceTree = "<group>"; };
-		FA0B7C851A95902C000E1D17 /* GmeDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GmeDecoder.h; sourceTree = "<group>"; };
 		FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModPlugDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModPlugDecoder.h; sourceTree = "<group>"; };
 		FA0B7C8A1A95902C000E1D17 /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sound.cpp; sourceTree = "<group>"; };
@@ -3199,8 +3194,6 @@
 				FA0B7C7F1A95902C000E1D17 /* CoreAudioDecoder.h */,
 				FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */,
 				FA0B7C831A95902C000E1D17 /* FLACDecoder.h */,
-				FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */,
-				FA0B7C851A95902C000E1D17 /* GmeDecoder.h */,
 				FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */,
 				FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */,
 				FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */,
@@ -4023,7 +4016,6 @@
 				FAF140871E20934C00F898D2 /* parseVersions.h in Headers */,
 				FA0B7AC61A958EA3000E1D17 /* types.h in Headers */,
 				FA0B7DBD1A95902C000E1D17 /* Joystick.h in Headers */,
-				FA0B7E901A95902C000E1D17 /* GmeDecoder.h in Headers */,
 				FA0B7D0E1A95902C000E1D17 /* wrap_Filesystem.h in Headers */,
 				FA0B7EE41A95902D000E1D17 /* Window.h in Headers */,
 				FA0B7CFC1A95902C000E1D17 /* Filesystem.h in Headers */,
@@ -4517,7 +4509,6 @@
 				FADF54081E3D78F700012CC0 /* Video.cpp in Sources */,
 				FA9D8DD81DEF8411002CD881 /* Data.cpp in Sources */,
 				FABDA9992552448300B5C523 /* b2_contact_manager.cpp in Sources */,
-				FA0B7E8F1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FADF542B1E3DAADA00012CC0 /* wrap_Mesh.cpp in Sources */,
 				FA0B7CD71A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7AC01A958EA3000E1D17 /* host.c in Sources */,
@@ -4940,7 +4931,6 @@
 				FABDA9982552448300B5C523 /* b2_contact_manager.cpp in Sources */,
 				FADF542A1E3DAADA00012CC0 /* wrap_Mesh.cpp in Sources */,
 				FA0B7D2B1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
-				FA0B7E8E1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FA0B7CD61A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA3C5E421F8C368C0003C579 /* ShaderStage.cpp in Sources */,
 				FA0B7EAF1A95902C000E1D17 /* System.cpp in Sources */,

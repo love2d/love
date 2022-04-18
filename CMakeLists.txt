@@ -893,8 +893,6 @@ set(LOVE_SRC_MODULE_SOUND_ROOT
 set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/FLACDecoder.cpp
 	src/modules/sound/lullaby/FLACDecoder.h
-	src/modules/sound/lullaby/GmeDecoder.cpp
-	src/modules/sound/lullaby/GmeDecoder.h
 	src/modules/sound/lullaby/ModPlugDecoder.cpp
 	src/modules/sound/lullaby/ModPlugDecoder.h
 	src/modules/sound/lullaby/MP3Decoder.h
