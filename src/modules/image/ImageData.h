@@ -124,7 +124,6 @@ public:
 	PixelGetFunction getPixelGetFunction() const { return pixelGetFunction; }
 
 	static bool validPixelFormat(PixelFormat format);
-	static bool canPaste(PixelFormat src, PixelFormat dst);
 
 	static PixelSetFunction getPixelSetFunction(PixelFormat format);
 	static PixelGetFunction getPixelGetFunction(PixelFormat format);
