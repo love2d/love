@@ -84,12 +84,11 @@ bool ModPlugDecoder::accepts(const std::string &ext)
 		"dsm", "far", "it", "j2b", "mdl", "med",
 		"mid", "mod", "mt2", "mtm", "okt", "pat",
 		"psm", "s3m", "stm", "ult", "umx",  "xm",
-		""
 	};
 
-	for (int i = 0; !(supported[i].empty()); i++)
+	for (const auto &s : supported)
 	{
-		if (supported[i].compare(ext) == 0)
+		if (s.compare(ext) == 0)
 			return true;
 	}
 

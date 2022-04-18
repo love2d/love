@@ -52,12 +52,12 @@ bool FLACDecoder::accepts(const std::string &ext)
 	// Please remove once it's no longer the case.
 	static const std::string supported[] =
 	{
-		"flac", "ogg", ""
+		"flac", "ogg"
 	};
 
-	for (int i = 0; !(supported[i].empty()); i++)
+	for (const auto& s : supported)
 	{
-		if (supported[i].compare(ext) == 0)
+		if (s.compare(ext) == 0)
 			return true;
 	}
 

@@ -72,12 +72,12 @@ bool GmeDecoder::accepts(const std::string &ext)
 	static const std::string supported[] =
 	{
 		"ay", "gbs", "gym", "hes", "kss", "nsf",
-		"nsfe", "sap", "spc", "vgm", "vgz", ""
+		"nsfe", "sap", "spc", "vgm", "vgz",
 	};
 
-	for (int i = 0; !(supported[i].empty()); i++)
+	for (const auto& s : supported)
 	{
-		if (supported[i].compare(ext) == 0)
+		if (s.compare(ext) == 0)
 			return true;
 	}
 
