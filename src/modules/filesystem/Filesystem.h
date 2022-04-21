@@ -167,7 +167,7 @@ public:
 	/**
 	 * Creates a new file.
 	 **/
-	virtual File *newFile(const char *filename) const = 0;
+	virtual File *newFile(const char *filename, File::Mode = File::MODE_CLOSED) const = 0;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.
@@ -239,7 +239,8 @@ public:
 	 * @param filename The name of the file to read from.
 	 * @param size The size in bytes of the data to read.
 	 **/
-	virtual FileData *read(const char *filename, int64 size = File::ALL) const = 0;
+	virtual FileData *read(const char *filename, int64 size) const = 0;
+	virtual FileData *read(const char *filename) const = 0;
 
 	/**
 	 * Write data to a file.

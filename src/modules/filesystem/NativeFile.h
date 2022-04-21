@@ -39,8 +39,17 @@ public:
 
 	static love::Type type;
 
-	NativeFile(const std::string &filename);
+	NativeFile(const std::string &filename, Mode mode);
 	virtual ~NativeFile();
+
+	// Implements Stream.
+	NativeFile *clone() override;
+	int64 read(void* dst, int64 size) override;
+	bool write(const void* data, int64 size) override;
+	bool flush() override;
+	int64 getSize() override;
+	int64 tell() override;
+	bool seek(int64 pos, SeekOrigin origin) override;
 
 	// Implements File.
 	using File::read;
@@ -48,19 +57,15 @@ public:
 	bool open(Mode mode) override;
 	bool close() override;
 	bool isOpen() const override;
-	int64 getSize() override;
-	int64 read(void *dst, int64 size) override;
-	bool write(const void *data, int64 size) override;
-	bool flush() override;
 	bool isEOF() override;
-	int64 tell() override;
-	bool seek(uint64 pos) override;
 	bool setBuffer(BufferMode bufmode, int64 size) override;
 	BufferMode getBuffer(int64 &size) const override;
 	Mode getMode() const override;
 	const std::string &getFilename() const override;
 
 private:
+
+	NativeFile(const NativeFile &other);
 
 	static const char *getModeString(Mode mode);
 

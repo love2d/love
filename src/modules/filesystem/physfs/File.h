@@ -46,9 +46,18 @@ public:
 	 * Constructs an File with the given ilename.
 	 * @param filename The relative filepath of the file to load.
 	 **/
-	File(const std::string &filename);
+	File(const std::string &filename, Mode mode);
 
 	virtual ~File();
+
+	// Implements Stream.
+	File *clone() override;
+	int64 read(void* dst, int64 size) override;
+	bool write(const void* data, int64 size) override;
+	bool flush() override;
+	int64 getSize() override;
+	bool seek(int64 pos, SeekOrigin origin) override;
+	int64 tell() override;
 
 	// Implements love::filesystem::File.
 	using love::filesystem::File::read;
@@ -56,19 +65,15 @@ public:
 	bool open(Mode mode) override;
 	bool close() override;
 	bool isOpen() const override;
-	int64 getSize() override;
-	virtual int64 read(void *dst, int64 size) override;
-	bool write(const void *data, int64 size) override;
-	bool flush() override;
 	bool isEOF() override;
-	int64 tell() override;
-	bool seek(uint64 pos) override;
 	bool setBuffer(BufferMode bufmode, int64 size) override;
 	BufferMode getBuffer(int64 &size) const override;
 	Mode getMode() const override;
 	const std::string &getFilename() const override;
 
 private:
+
+	File(const File &other);
 
 	// filename
 	std::string filename;

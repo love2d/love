@@ -496,9 +496,9 @@ bool Filesystem::unmount(Data *data)
 	return false;
 }
 
-love::filesystem::File *Filesystem::newFile(const char *filename) const
+love::filesystem::File *Filesystem::newFile(const char *filename, File::Mode mode) const
 {
-	return new File(filename);
+	return new File(filename, mode);
 }
 
 std::string Filesystem::getFullCommonPath(CommonPath path)
@@ -793,19 +793,23 @@ bool Filesystem::remove(const char *file)
 
 FileData *Filesystem::read(const char *filename, int64 size) const
 {
-	File file(filename);
-
-	file.open(File::MODE_READ);
+	File file(filename, File::MODE_READ);
 
 	// close() is called in the File destructor.
 	return file.read(size);
 }
 
+FileData* Filesystem::read(const char* filename) const
+{
+	File file(filename, File::MODE_READ);
+
+	// close() is called in the File destructor.
+	return file.read();
+}
+
 void Filesystem::write(const char *filename, const void *data, int64 size) const
 {
-	File file(filename);
-
-	file.open(File::MODE_WRITE);
+	File file(filename, File::MODE_WRITE);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))
@@ -814,9 +818,7 @@ void Filesystem::write(const char *filename, const void *data, int64 size) const
 
 void Filesystem::append(const char *filename, const void *data, int64 size) const
 {
-	File file(filename);
-
-	file.open(File::MODE_APPEND);
+	File file(filename, File::MODE_APPEND);
 
 	// close() is called in the File destructor.
 	if (!file.write(data, size))

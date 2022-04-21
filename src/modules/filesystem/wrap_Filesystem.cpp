@@ -343,6 +343,11 @@ Data *luax_getdata(lua_State *L, int idx)
 	return data;
 }
 
+bool luax_cangetfile(lua_State *L, int idx)
+{
+	return lua_isstring(L, idx) || luax_istype(L, idx, File::type);
+}
+
 bool luax_cangetfiledata(lua_State *L, int idx)
 {
 	return lua_isstring(L, idx) || luax_istype(L, idx, File::type) || luax_istype(L, idx, FileData::type);
@@ -557,12 +562,15 @@ int w_read(lua_State *L)
 	}
 
 	const char *filename = luaL_checkstring(L, startidx + 0);
-	int64 len = (int64) luaL_optinteger(L, startidx + 1, File::ALL);
+	int64 len = (int64) luaL_optinteger(L, startidx + 1, -1);
 
 	FileData *data = nullptr;
 	try
 	{
-		data = instance()->read(filename, len);
+		if (len >= 0)
+			data = instance()->read(filename, len);
+		else
+			data = instance()->read(filename);
 	}
 	catch (love::Exception &e)
 	{

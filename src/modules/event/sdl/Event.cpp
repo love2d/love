@@ -420,7 +420,7 @@ Message *Event::convert(const SDL_Event &e)
 			}
 			else
 			{
-				auto *file = new love::filesystem::NativeFile(e.drop.file);
+				auto *file = new love::filesystem::NativeFile(e.drop.file, love::filesystem::File::MODE_CLOSED);
 				vargs.emplace_back(&love::filesystem::NativeFile::type, file);
 				msg = new Message("filedropped", vargs);
 				file->release();

@@ -27,6 +27,7 @@
 // LOVE
 #include "common/Data.h"
 #include "common/Object.h"
+#include "common/Stream.h"
 #include "common/StringMap.h"
 #include "common/int.h"
 #include "FileData.h"
@@ -40,7 +41,7 @@ namespace filesystem
  * A File interface, providing generic means of reading from and
  * writing to files.
  **/
-class File : public Object
+class File : public Stream
 {
 public:
 
@@ -67,14 +68,17 @@ public:
 	};
 
 	/**
-	 * Used to indicate ALL data in a file.
-	 **/
-	static const int64 ALL = -1;
-
-	/**
 	 * Destructor.
 	 **/
 	virtual ~File();
+
+	// Implements Stream.
+	bool isReadable() const override { return getMode() == MODE_READ; }
+	bool isWritable() const override { return getMode() == MODE_WRITE || getMode() == MODE_APPEND; }
+	bool isSeekable() const override { return isOpen(); }
+
+	using Stream::read;
+	using Stream::write;
 
 	/**
 	 * Opens the file in a certain mode.
@@ -97,52 +101,13 @@ public:
 	virtual bool isOpen() const = 0;
 
 	/**
-	 * Gets the size of the file.
-	 *
-	 * @return The size of the file.
-	 **/
-	virtual int64 getSize() = 0;
-
-	/**
 	 * Reads data from the file and allocates a Data object.
 	 *
-	 * @param size The number of bytes to attempt reading, or -1 for EOF.
+	 * @param size The number of bytes to attempt reading.
 	 * @return A newly allocated Data object.
 	 **/
-	virtual FileData *read(int64 size = ALL);
-
-	/**
-	 * Reads data into the destination buffer.
-	 *
-	 * @param dst The destination buffer.
-	 * @param size The number of bytes to attempt reading.
-	 * @return The number of bytes actually read.
-	 **/
-	virtual int64 read(void *dst, int64 size) = 0;
-
-	/**
-	 * Writes data into the File.
-	 *
-	 * @param data The source buffer.
-	 * @param size The size of the buffer.
-	 * @return True of success, false otherwise.
-	 **/
-	virtual bool write(const void *data, int64 size) = 0;
-
-	/**
-	 * Writes a Data object into the File.
-	 *
-	 * @param data The data object to write into the file.
-	 * @param size The number of bytes to attempt writing, or -1 for everything.
-	 * @return True of success, false otherwise.
-	 **/
-	virtual bool write(const Data *data, int64 size = ALL);
-
-	/**
-	 * Flushes the currently buffered file data to disk. Only applicable in
-	 * write mode.
-	 **/
-	virtual bool flush() = 0;
+	FileData *read(int64 size) override;
+	FileData *read();
 
 	/**
 	 * Checks whether we are currently at end-of-file.
@@ -150,21 +115,6 @@ public:
 	 * @return True if EOF, false otherwise.
 	 **/
 	virtual bool isEOF() = 0;
-
-	/**
-	 * Gets the current position in the File.
-	 *
-	 * @return The current byte position in the File.
-	 **/
-	virtual int64 tell() = 0;
-
-	/**
-	 * Seeks to a certain position in the File.
-	 *
-	 * @param pos The byte position in the file.
-	 * @return True on success, false otherwise.
-	 **/
-	virtual bool seek(uint64 pos) = 0;
 
 	/**
 	 * Sets the buffering mode for the file. When buffering is enabled, the file
@@ -202,21 +152,8 @@ public:
 	 **/
 	virtual std::string getExtension() const;
 
-	static bool getConstant(const char *in, Mode &out);
-	static bool getConstant(Mode in, const char *&out);
-	static std::vector<std::string> getConstants(Mode);
-
-	static bool getConstant(const char *in, BufferMode &out);
-	static bool getConstant(BufferMode in, const char *&out);
-	static std::vector<std::string> getConstants(BufferMode);
-
-private:
-
-	static StringMap<Mode, MODE_MAX_ENUM>::Entry modeEntries[];
-	static StringMap<Mode, MODE_MAX_ENUM> modes;
-
-	static StringMap<BufferMode, BUFFER_MAX_ENUM>::Entry bufferModeEntries[];
-	static StringMap<BufferMode, BUFFER_MAX_ENUM> bufferModes;
+	STRINGMAP_CLASS_DECLARE(Mode);
+	STRINGMAP_CLASS_DECLARE(BufferMode);
 
 }; // File
 

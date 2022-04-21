@@ -121,10 +121,12 @@ int w_File_read(lua_State *L)
 		startidx = 3;
 	}
 
-	int64 size = (int64) luaL_optnumber(L, startidx, (lua_Number) File::ALL);
+	int64 size = (int64) luaL_optnumber(L, startidx, -1);
 
 	try
 	{
+		if (size < 0)
+			size = file->getSize();
 		d.set(file->read(size), Acquire::NORETAIN);
 	}
 	catch (love::Exception &e)
