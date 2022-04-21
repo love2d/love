@@ -22,7 +22,7 @@
 #define LOVE_SOUND_LULLABY_FLAC_DECODER_H
 
 // LOVE
-#include "common/Data.h"
+#include "common/Stream.h"
 #include "sound/Decoder.h"
 
 #include "dr/dr_flac.h"
@@ -38,23 +38,22 @@ namespace lullaby
 class FLACDecoder : public Decoder
 {
 public:
-	FLACDecoder(Data *data, int bufferSize);
+	FLACDecoder(Stream *stream, int bufferSize);
 	~FLACDecoder();
 
-	static bool accepts(const std::string &ext);
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(double s);
-	bool rewind();
-	bool isSeekable();
-	int getChannelCount() const;
-	int getBitDepth() const;
-	int getSampleRate() const;
-	double getDuration();
+	love::sound::Decoder *clone() override;
+	int decode() override;
+	bool seek(double s) override;
+	bool rewind() override;
+	bool isSeekable() override;
+	int getChannelCount() const override;
+	int getBitDepth() const override;
+	int getSampleRate() const override;
+	double getDuration() override;
 
 private:
 	drflac *flac;
-}; // Decoder
+}; // FLACDecoder
 
 } // lullaby
 } // sound

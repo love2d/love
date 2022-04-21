@@ -21,6 +21,7 @@
 #define DR_MP3_IMPLEMENTATION
 #define DR_MP3_NO_STDIO
 #include "MP3Decoder.h"
+#include "common/Exception.h"
 
 namespace love
 {
@@ -29,11 +30,25 @@ namespace sound
 namespace lullaby
 {
 
-MP3Decoder::MP3Decoder(Data *data, int bufferSize)
-: Decoder(data, bufferSize)
+static size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead)
+{
+	auto stream = (Stream *) pUserData;
+	int64 read = stream->read(pBufferOut, bytesToRead);
+	return std::max<int64>(0, read);
+}
+
+static drmp3_bool32 onSeek(void *pUserData, int offset, drmp3_seek_origin origin)
+{
+	auto stream = (Stream *) pUserData;
+	auto seekorigin = origin == drmp3_seek_origin_current ? Stream::SEEKORIGIN_CURRENT : Stream::SEEKORIGIN_BEGIN;
+	return stream->seek(offset, seekorigin) ? DRMP3_TRUE : DRMP3_FALSE;
+}
+
+MP3Decoder::MP3Decoder(Stream *stream, int bufferSize)
+	: Decoder(stream, bufferSize)
 {
 	// initialize mp3 handle
-	if(drmp3_init_memory(&mp3, data->getData(), data->getSize(), nullptr, nullptr) == 0)
+	if (!drmp3_init(&mp3, onRead, onSeek, stream, nullptr, nullptr))
 		throw love::Exception("Could not read mp3 data.");
 
 	sampleRate = mp3.sampleRate;
@@ -43,7 +58,7 @@ MP3Decoder::MP3Decoder(Data *data, int bufferSize)
 	if (!drmp3_get_mp3_and_pcm_frame_count(&mp3, &mp3FrameCount, &pcmCount))
 	{
 		drmp3_uninit(&mp3);
-		throw love::Exception("Could not calculate duration.");
+		throw love::Exception("Could not calculate mp3 duration.");
 	}
 	duration = ((double) pcmCount) / ((double) mp3.sampleRate);
 
@@ -53,7 +68,7 @@ MP3Decoder::MP3Decoder(Data *data, int bufferSize)
 	if (!drmp3_calculate_seek_points(&mp3, &mp3FrameInt, seekTable.data()))
 	{
 		drmp3_uninit(&mp3);
-		throw love::Exception("Could not calculate seek table");
+		throw love::Exception("Could not calculate mp3 seek table");
 	}
 	mp3FrameInt = mp3FrameInt > mp3FrameCount ? mp3FrameCount : mp3FrameInt;
 
@@ -61,7 +76,7 @@ MP3Decoder::MP3Decoder(Data *data, int bufferSize)
 	if (!drmp3_bind_seek_table(&mp3, mp3FrameInt, seekTable.data()))
 	{
 		drmp3_uninit(&mp3);
-		throw love::Exception("Could not bind seek table");
+		throw love::Exception("Could not bind mp3 seek table");
 	}
 }
 
@@ -70,25 +85,10 @@ MP3Decoder::~MP3Decoder()
 	drmp3_uninit(&mp3);
 }
 
-bool MP3Decoder::accepts(const std::string &ext)
-{
-	static const std::string supported[] =
-	{
-		"mp3"
-	};
-
-	for (const auto& s : supported)
-	{
-		if (s.compare(ext) == 0)
-			return true;
-	}
-
-	return false;
-}
-
 love::sound::Decoder *MP3Decoder::clone()
 {
-	return new MP3Decoder(data, bufferSize);
+	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
+	return new MP3Decoder(s, bufferSize);
 }
 
 int MP3Decoder::decode()

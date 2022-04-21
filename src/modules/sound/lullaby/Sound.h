@@ -45,21 +45,14 @@ class Sound : public love::sound::Sound
 {
 public:
 
-	/**
-	 * Constructor. Initializes relevant libraries.
-	 **/
 	Sound();
-
-	/**
-	 * Destructor. Deinitializes relevant libraries.
-	 **/
 	virtual ~Sound();
 
 	/// @copydoc love::Module::getName
-	const char *getName() const;
+	const char *getName() const override;
 
 	/// @copydoc love::sound::Sound::newDecoder
-	sound::Decoder *newDecoder(love::filesystem::FileData *file, int bufferSize);
+	sound::Decoder *newDecoder(Stream *stream, int bufferSize) override;
 
 }; // Sound
 

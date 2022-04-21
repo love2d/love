@@ -20,6 +20,7 @@
 
 // LOVE
 #include "wrap_Audio.h"
+#include "filesystem/wrap_Filesystem.h"
 
 #include "openal/Audio.h"
 #include "null/Audio.h"
@@ -57,8 +58,23 @@ int w_newSource(lua_State *L)
 			return luaL_error(L, "Cannot create queueable sources using newSource. Use newQueueableSource instead.");
 	}
 
-	if (lua_isstring(L, 1) || luax_istype(L, 1, love::filesystem::File::type) || luax_istype(L, 1, love::filesystem::FileData::type))
-		luax_convobj(L, 1, "sound", "newDecoder");
+	if (love::filesystem::luax_cangetdata(L, 1))
+	{
+		// stream type
+		if (stype == Source::TYPE_STATIC)
+			lua_pushstring(L, "memory");
+		else if (!lua_isnone(L, 3))
+			lua_pushvalue(L, 3);
+		else
+			lua_pushnil(L);
+
+		// buffer size
+		lua_pushnil(L);
+
+		// (file, buffer size, stream type)
+		int idxs[] = { 1, lua_gettop(L), lua_gettop(L) - 1 };
+		luax_convobj(L, idxs, 3, "sound", "newDecoder");
+	}
 
 	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, love::sound::Decoder::type))
 		luax_convobj(L, 1, "sound", "newSoundData");
@@ -84,20 +100,17 @@ int w_newSource(lua_State *L)
 
 int w_newQueueableSource(lua_State *L)
 {
+	int samplerate = (int) luaL_checkinteger(L, 1);
+	int bitdepth = (int) luaL_checkinteger(L, 2);
+	int channels = (int) luaL_checkinteger(L, 3);
+	int buffers = (int) luaL_optinteger(L, 4, 0);
+
 	Source *t = nullptr;
+	luax_catchexcept(L, [&]() { t = instance()->newSource(samplerate, bitdepth, channels, buffers); });
 
-	luax_catchexcept(L, [&]() {
-		t = instance()->newSource((int)luaL_checkinteger(L, 1), (int)luaL_checkinteger(L, 2), (int)luaL_checkinteger(L, 3), (int)luaL_optinteger(L, 4, 0));
-	});
-
-	if (t != nullptr)
-	{
-		luax_pushtype(L, t);
-		t->release();
-		return 1;
-	}
-	else
-		return 0; //all argument type errors are checked in above constructor
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
 }
 
 static std::vector<Source*> readSourceList(lua_State *L, int n)
