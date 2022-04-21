@@ -375,6 +375,8 @@ set(LOVE_SRC_MODULE_DATA
 	src/modules/data/Compressor.h
 	src/modules/data/DataModule.cpp
 	src/modules/data/DataModule.h
+	src/modules/data/DataStream.cpp
+	src/modules/data/DataStream.h
 	src/modules/data/DataView.cpp
 	src/modules/data/DataView.h
 	src/modules/data/HashFunction.cpp
