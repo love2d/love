@@ -64,13 +64,13 @@ CoreAudioDecoder::CoreAudioDecoder(Stream *stream, int bufferSize)
 		// Open the file represented by the Stream.
 		err = AudioFileOpenWithCallbacks(stream, readFunc, nullptr, getSizeFunc, nullptr, kAudioFileMP3Type, &audioFile);
 		if (err != noErr)
-			throw love::Exception("Could open audio file for decoding with CoreAudio.");
+			throw love::Exception("Could not open audio file for decoding with CoreAudio.");
 
 		// We want to use the Extended AudioFile API.
 		err = ExtAudioFileWrapAudioFileID(audioFile, false, &extAudioFile);
 
 		if (err != noErr)
-			throw love::Exception("Could open audio file for decoding with CoreAudio.");
+			throw love::Exception("Could not open audio file for decoding with CoreAudio.");
 
 		// Get the format of the audio data.
 		UInt32 propertySize = sizeof(inputInfo);
