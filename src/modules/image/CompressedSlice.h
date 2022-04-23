@@ -23,7 +23,7 @@
 // LOVE
 #include "common/int.h"
 #include "common/pixelformat.h"
-#include "common/Object.h"
+#include "data/ByteData.h"
 #include "ImageDataBase.h"
 
 namespace love
@@ -31,17 +31,7 @@ namespace love
 namespace image
 {
 
-class CompressedMemory : public Object
-{
-public:
-
-	CompressedMemory(size_t size);
-	virtual ~CompressedMemory();
-
-	uint8 *data;
-	size_t size;
-
-}; // CompressedMemory
+using ByteData = love::data::ByteData;
 
 // Compressed image data can have multiple mipmap levels, each represented by a
 // sub-image.
@@ -49,19 +39,19 @@ class CompressedSlice : public ImageDataBase
 {
 public:
 
-	CompressedSlice(PixelFormat format, int width, int height, CompressedMemory *memory, size_t offset, size_t size);
+	CompressedSlice(PixelFormat format, int width, int height, ByteData *memory, size_t offset, size_t size);
 	CompressedSlice(const CompressedSlice &slice);
 	virtual ~CompressedSlice();
 
 	CompressedSlice *clone() const override;
-	void *getData() const override { return memory->data + offset; }
+	void *getData() const override { return (uint8 *) memory->getData() + offset; }
 	size_t getSize() const override { return dataSize; }
 	bool isSRGB() const override { return sRGB; }
 	size_t getOffset() const { return offset; }
 
 private:
 
-	StrongRef<CompressedMemory> memory;
+	StrongRef<ByteData> memory;
 	size_t offset;
 	size_t dataSize;
 	bool sRGB;

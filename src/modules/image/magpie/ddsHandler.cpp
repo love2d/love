@@ -229,7 +229,7 @@ bool DDSHandler::canParseCompressed(Data *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> DDSHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!dds::isCompressedDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
@@ -238,7 +238,6 @@ StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vec
 	bool isSRGB = false;
 	bool bgra = false;
 
-	StrongRef<CompressedMemory> memory;
 	size_t dataSize = 0;
 
 	images.clear();
@@ -261,7 +260,7 @@ StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vec
 		dataSize += img->dataSize;
 	}
 
-	memory.set(new CompressedMemory(dataSize), Acquire::NORETAIN);
+	StrongRef<ByteData> memory(new ByteData(dataSize, false), Acquire::NORETAIN);
 
 	size_t dataOffset = 0;
 
@@ -272,7 +271,7 @@ StrongRef<CompressedMemory> DDSHandler::parseCompressed(Data *filedata, std::vec
 		const dds::Image *img = parser.getImageData(i);
 
 		// Copy the mipmap image from the FileData to our block of memory.
-		memcpy(memory->data + dataOffset, img->data, img->dataSize);
+		memcpy((uint8 *) memory->getData() + dataOffset, img->data, img->dataSize);
 
 		auto slice = new CompressedSlice(texformat, img->width, img->height, memory, dataOffset, img->dataSize);
 		images.emplace_back(slice, Acquire::NORETAIN);

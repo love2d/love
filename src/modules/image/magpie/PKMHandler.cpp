@@ -114,7 +114,7 @@ bool PKMHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -135,11 +135,10 @@ StrongRef<CompressedMemory> PKMHandler::parseCompressed(Data *filedata, std::vec
 	// The rest of the file after the header is all texture data.
 	size_t totalsize = filedata->getSize() - sizeof(PKMHeader);
 
-	StrongRef<CompressedMemory> memory;
-	memory.set(new CompressedMemory(totalsize), Acquire::NORETAIN);
+	StrongRef<ByteData> memory(new ByteData(totalsize, false), Acquire::NORETAIN);
 
 	// PKM files only store a single mipmap level.
-	memcpy(memory->data, (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
+	memcpy(memory->getData(), (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
 
 	// TODO: verify whether glCompressedTexImage works properly with the unpadded
 	// width and height values (extended == padded.)

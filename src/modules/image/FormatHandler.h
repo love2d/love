@@ -107,7 +107,7 @@ public:
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
-	virtual StrongRef<CompressedMemory> parseCompressed(Data *filedata,
+	virtual StrongRef<ByteData> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB);
 
