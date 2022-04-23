@@ -496,7 +496,7 @@ bool Filesystem::unmount(Data *data)
 	return false;
 }
 
-love::filesystem::File *Filesystem::newFile(const char *filename, File::Mode mode) const
+love::filesystem::File *Filesystem::openFile(const char *filename, File::Mode mode) const
 {
 	return new File(filename, mode);
 }

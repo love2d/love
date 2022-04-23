@@ -46,13 +46,8 @@ NativeFile::NativeFile(const std::string &filename, Mode mode)
 	, bufferMode(BUFFER_NONE)
 	, bufferSize(0)
 {
-	open(mode);
-}
-
-NativeFile::~NativeFile()
-{
-	if (mode != MODE_CLOSED)
-		close();
+	if (!open(mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
 }
 
 NativeFile::NativeFile(const NativeFile &other)
@@ -62,7 +57,14 @@ NativeFile::NativeFile(const NativeFile &other)
 	, bufferMode(other.bufferMode)
 	, bufferSize(other.bufferSize)
 {
-	open(other.mode);
+	if (!open(other.mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
+}
+
+NativeFile::~NativeFile()
+{
+	if (mode != MODE_CLOSED)
+		close();
 }
 
 NativeFile *NativeFile::clone()

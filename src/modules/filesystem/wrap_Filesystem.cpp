@@ -227,34 +227,53 @@ int w_unmountCommonPath(lua_State *L)
 	return 1;
 }
 
-int w_newFile(lua_State *L)
+int w_openFile(lua_State *L)
 {
 	const char *filename = luaL_checkstring(L, 1);
+	const char *modestr = luaL_checkstring(L, 2);
 
-	const char *str = 0;
 	File::Mode mode = File::MODE_CLOSED;
+	if (!File::getConstant(modestr, mode))
+		return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
 
-	if (lua_isstring(L, 2))
+	File *t = nullptr;
+	try
 	{
-		str = luaL_checkstring(L, 2);
-		if (!File::getConstant(str, mode))
-			return luax_enumerror(L, "file open mode", File::getConstants(mode), str);
+		t = instance()->openFile(filename, mode);
+	}
+	catch (love::Exception &e)
+	{
+		return luax_ioError(L, "%s", e.what());
 	}
 
-	File *t = instance()->newFile(filename);
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
+}
 
-	if (mode != File::MODE_CLOSED)
+int w_newFile(lua_State* L)
+{
+	luax_markdeprecated(L, 1, "love.filesystem.newFile", API_FUNCTION, DEPRECATED_RENAMED, "love.filesystem.openFile");
+
+	const char* filename = luaL_checkstring(L, 1);
+
+	File::Mode mode = File::MODE_CLOSED;
+
+	if (!lua_isnoneornil(L, 2))
 	{
-		try
-		{
-			if (!t->open(mode))
-				throw love::Exception("Could not open file.");
-		}
-		catch (love::Exception &e)
-		{
-			t->release();
-			return luax_ioError(L, "%s", e.what());
-		}
+		const char* modestr = luaL_checkstring(L, 2);
+		if (!File::getConstant(modestr, mode))
+			return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
+	}
+
+	File* t = nullptr;
+	try
+	{
+		t = instance()->openFile(filename, mode);
+	}
+	catch (love::Exception& e)
+	{
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	luax_pushtype(L, t);
@@ -268,7 +287,14 @@ File *luax_getfile(lua_State *L, int idx)
 	if (lua_isstring(L, idx))
 	{
 		const char *filename = luaL_checkstring(L, idx);
-		file = instance()->newFile(filename);
+		try
+		{
+			file = instance()->openFile(filename, File::MODE_CLOSED);
+		}
+		catch (love::Exception &e)
+		{
+			luax_ioError(L, "%s", e.what());
+		}
 	}
 	else
 	{
@@ -663,16 +689,8 @@ int w_lines(lua_State *L)
 {
 	if (lua_isstring(L, 1))
 	{
-		File *file = instance()->newFile(lua_tostring(L, 1));
-		bool success = false;
-
-		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
-
-		if (!success)
-		{
-			file->release();
-			return luaL_error(L, "Could not open file.");
-		}
+		File *file = nullptr;
+		luax_catchexcept(L, [&]() { file = instance()->openFile(lua_tostring(L, 1), File::MODE_READ); });
 
 		luax_pushtype(L, file);
 		file->release();
@@ -965,7 +983,7 @@ static const luaL_Reg functions[] =
 	{ "unmount", w_unmount },
 	{ "unmountFullPath", w_unmountFullPath },
 	{ "unmountCommonPath", w_unmountCommonPath },
-	{ "newFile", w_newFile },
+	{ "openFile", w_openFile },
 	{ "getFullCommonPath", w_getFullCommonPath },
 	{ "getWorkingDirectory", w_getWorkingDirectory },
 	{ "getUserDirectory", w_getUserDirectory },
@@ -990,6 +1008,9 @@ static const luaL_Reg functions[] =
 	{ "setRequirePath", w_setRequirePath },
 	{ "getCRequirePath", w_getCRequirePath },
 	{ "setCRequirePath", w_setCRequirePath },
+
+	// Deprecated
+	{ "newFile", w_newFile },
 
 	{ 0, 0 }
 };

@@ -165,9 +165,9 @@ public:
 	virtual bool unmountFullPath(const char *fullpath) = 0;
 
 	/**
-	 * Creates a new file.
+	 * Opens a new File object from the specified path, using the given mode.
 	 **/
-	virtual File *newFile(const char *filename, File::Mode = File::MODE_CLOSED) const = 0;
+	virtual File *openFile(const char *filename, File::Mode mode) const = 0;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.

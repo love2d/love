@@ -48,7 +48,8 @@ File::File(const std::string &filename, Mode mode)
 	, bufferMode(BUFFER_NONE)
 	, bufferSize(0)
 {
-	open(mode);
+	if (!open(mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
 }
 
 File::File(const File &other)
@@ -58,7 +59,8 @@ File::File(const File &other)
 	, bufferMode(other.bufferMode)
 	, bufferSize(other.bufferSize)
 {
-	open(other.mode);
+	if (!open(other.mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
 }
 
 File::~File()
