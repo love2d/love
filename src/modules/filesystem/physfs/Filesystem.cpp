@@ -738,6 +738,14 @@ std::string Filesystem::getRealDirectory(const char *filename) const
 	return std::string(dir);
 }
 
+bool Filesystem::exists(const char *filepath) const
+{
+	if (!PHYSFS_isInit())
+		return false;
+
+	return PHYSFS_exists(filepath) != 0;
+}
+
 bool Filesystem::getInfo(const char *filepath, Info &info) const
 {
 	if (!PHYSFS_isInit())

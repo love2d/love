@@ -82,6 +82,7 @@ public:
 
 	std::string getRealDirectory(const char *filename) const override;
 
+	bool exists(const char *filepath) const override;
 	bool getInfo(const char *filepath, Info &info) const override;
 
 	bool createDirectory(const char *dir) override;

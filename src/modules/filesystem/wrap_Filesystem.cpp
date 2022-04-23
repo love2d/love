@@ -502,6 +502,13 @@ int w_getExecutablePath(lua_State *L)
 	return 1;
 }
 
+int w_exists(lua_State *L)
+{
+	const char *path = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->exists(path));
+	return 1;
+}
+
 int w_getInfo(lua_State *L)
 {
 	const char *filepath = luaL_checkstring(L, 1);
@@ -1000,6 +1007,7 @@ static const luaL_Reg functions[] =
 	{ "getDirectoryItems", w_getDirectoryItems },
 	{ "lines", w_lines },
 	{ "load", w_load },
+	{ "exists", w_exists },
 	{ "getInfo", w_getInfo },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },

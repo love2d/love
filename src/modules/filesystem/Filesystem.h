@@ -217,6 +217,11 @@ public:
 	virtual std::string getRealDirectory(const char *filename) const = 0;
 
 	/**
+	 * Gets whether anything exists at the specified path.
+	 **/
+	virtual bool exists(const char *filepath) const = 0;
+
+	/**
 	 * Gets information about the item at the specified filepath. Returns false
 	 * if nothing exists at the path.
 	 **/
