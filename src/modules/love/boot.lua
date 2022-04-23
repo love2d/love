@@ -382,8 +382,8 @@ function love.init()
 	if no_game_code then
 		local opts = love.arg.options
 		local gamepath = opts.game.set and opts.game.arg[1] or ""
-		local gamestr = gamepath == "" and "" or "at "..gamepath
-		error("No code to run at "..gamestr.."\nYour game might be packaged incorrectly.\nMake sure "..main_file.." is at the top level of the zip or folder.")
+		local gamestr = gamepath == "" and "" or " at "..gamepath
+		error("No code to run"..gamestr.."\nYour game might be packaged incorrectly.\nMake sure "..main_file.." is at the top level of the zip or folder.")
 	elseif invalid_game_path then
 		error("Cannot load game at path '" .. invalid_game_path .. "'.\nMake sure a folder exists at the specified path.")
 	end
