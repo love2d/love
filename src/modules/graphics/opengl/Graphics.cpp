@@ -112,7 +112,7 @@ Graphics::Graphics()
 	, bufferMapMemory(nullptr)
 	, bufferMapMemorySize(2 * 1024 * 1024)
 	, defaultBuffers()
-	, supportedFormats()
+	, pixelFormatUsage()
 {
 	gl = OpenGL();
 
@@ -1670,6 +1670,13 @@ void Graphics::initCapabilities()
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
 		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
+
+	for (int i = 0; i < PIXELFORMAT_MAX_ENUM; i++)
+	{
+		auto format = (PixelFormat) i;
+		pixelFormatUsage[i][0] = computePixelFormatUsage(format, false);
+		pixelFormatUsage[i][1] = computePixelFormatUsage(format, true);
+	}
 }
 
 PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
@@ -1697,111 +1704,97 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
+uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 {
-	if (sRGB)
-	{
-		format = getSRGBPixelFormat(format);
-		sRGB = false;
-	}
+	uint32 usage = OpenGL::getPixelFormatUsageFlags(format);
 
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-	bool computewrite = (usage & PIXELFORMATUSAGEFLAGS_COMPUTEWRITE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
-	OptionalBool &supported = supportedFormats[format][rendertarget ? 1 : 0][readable ? 1 : 0][computewrite ? 1 : 0][sRGB ? 1 : 0];
-
-	if (supported.hasValue)
-		return supported.value;
-
-	uint32 supportedflags = OpenGL::getPixelFormatUsageFlags(format);
-
-	if ((usage & supportedflags) != usage)
-	{
-		supported.set(false);
-		return supported.value;
-	}
-
-	if (!rendertarget)
-	{
-		supported.set(true);
-		return supported.value;
-	}
+	if (readable && (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) == 0)
+		return 0;
 
 	// Even though we might have the necessary OpenGL version or extension,
 	// drivers are still allowed to throw FRAMEBUFFER_UNSUPPORTED when attaching
 	// a texture to a FBO whose format the driver doesn't like. So we should
 	// test with an actual FBO.
-	GLuint texture = 0;
-	GLuint renderbuffer = 0;
-
 	// Avoid the test for depth/stencil formats - not every GL version
 	// guarantees support for depth/stencil-only render targets (which we would
 	// need for the test below to work), and we already do some finagling in
 	// convertPixelFormat to try to use the best-supported internal
 	// depth/stencil format for a particular driver.
-	if (isPixelFormatDepthStencil(format))
+	if ((usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0 && !isPixelFormatDepthStencil(format))
 	{
-		supported.set(true);
-		return true;
-	}
+		GLuint texture = 0;
+		GLuint renderbuffer = 0;
+		bool sRGB = isPixelFormatSRGB(format);
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable, sRGB);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable, sRGB);
 
-	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
-	GLuint fbo = 0;
-	glGenFramebuffers(1, &fbo);
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
+		GLuint fbo = 0;
+		glGenFramebuffers(1, &fbo);
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
 
-	// Make sure at least something is bound to a color attachment. I believe
-	// this is required on ES2 but I'm not positive.
-	if (isPixelFormatDepthStencil(format))
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT), 0, 0, 0);
-
-	if (readable)
-	{
-		glGenTextures(1, &texture);
-		gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
-
-		SamplerState s;
-		s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
-		gl.setSamplerState(TEXTURE_2D, s);
-
-		gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
-	}
-	else
-	{
-		glGenRenderbuffers(1, &renderbuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, 1, 1);
-	}
-
-	for (GLenum attachment : fmt.framebufferAttachments)
-	{
-		if (attachment == GL_NONE)
-			continue;
+		// Make sure at least something is bound to a color attachment. I believe
+		// this is required on ES2 but I'm not positive.
+		if (isPixelFormatDepthStencil(format))
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT), 0, 0, 0);
 
 		if (readable)
-			gl.framebufferTexture(attachment, TEXTURE_2D, texture, 0, 0, 0);
+		{
+			glGenTextures(1, &texture);
+			gl.bindTextureToUnit(TEXTURE_2D, texture, 0, false);
+
+			SamplerState s;
+			s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+			gl.setSamplerState(TEXTURE_2D, s);
+
+			gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
+		}
 		else
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer);
+		{
+			glGenRenderbuffers(1, &renderbuffer);
+			glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+			glRenderbufferStorage(GL_RENDERBUFFER, fmt.internalformat, 1, 1);
+		}
+
+		for (GLenum attachment : fmt.framebufferAttachments)
+		{
+			if (attachment == GL_NONE)
+				continue;
+
+			if (readable)
+				gl.framebufferTexture(attachment, TEXTURE_2D, texture, 0, 0, 0);
+			else
+				glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer);
+		}
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			usage &= ~PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+		gl.deleteFramebuffer(fbo);
+
+		if (texture != 0)
+			gl.deleteTexture(texture);
+
+		if (renderbuffer != 0)
+			glDeleteRenderbuffers(1, &renderbuffer);
 	}
 
-	supported.set(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+	return usage;
+}
 
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
-	gl.deleteFramebuffer(fbo);
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
+{
+	if (sRGB)
+		format = getSRGBPixelFormat(format);
 
-	if (texture != 0)
-		gl.deleteTexture(texture);
+	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
+	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
 
-	if (renderbuffer != 0)
-		glDeleteRenderbuffers(1, &renderbuffer);
+	format = getSizedFormat(format, rendertarget, readable);
 
-	return supported.value;
+	return (usage & pixelFormatUsage[format][readable ? 1 : 0]) == usage;
 }
 
 } // opengl
