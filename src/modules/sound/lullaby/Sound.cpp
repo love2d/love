@@ -74,13 +74,13 @@ const char *Sound::getName() const
 sound::Decoder *Sound::newDecoder(Stream *stream, int bufferSize)
 {
 	std::vector<DecoderImpl> possibleDecoders = {
-		DecoderImplFor<MP3Decoder>(),
+		DecoderImplFor<WaveDecoder>(),
+		DecoderImplFor<FLACDecoder>(),
 		DecoderImplFor<VorbisDecoder>(),
 #ifdef LOVE_SUPPORT_COREAUDIO
 		DecoderImplFor<CoreAudioDecoder>(),
 #endif
-		DecoderImplFor<WaveDecoder>(),
-		DecoderImplFor<FLACDecoder>(),
+		DecoderImplFor<MP3Decoder>(),
 #ifndef LOVE_NO_MODPLUG
 		DecoderImplFor<ModPlugDecoder>(), // Last because it doesn't work well with Streams.
 #endif
