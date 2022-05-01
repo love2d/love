@@ -51,7 +51,6 @@ public:
 
 	Decoder(Stream *stream, int bufferSize);
 	virtual ~Decoder();
-	static int probe(Stream *stream);
 
 	/**
 	 * Indicates how many bytes of raw data should be generated at each

@@ -118,22 +118,6 @@ CoreAudioDecoder::~CoreAudioDecoder()
 	closeAudioFile();
 }
 
-int CoreAudioDecoder::probe(Stream* stream)
-{
-	AudioFileID audioFile;
-	OSStatus err = noErr;
-
-	// I think this is sufficient
-	err = AudioFileOpenWithCallbacks(stream, readFunc, nullptr, getSizeFunc, nullptr, kAudioFileMP3Type, &audioFile);
-	if (err == noErr)
-	{
-		AudioFileClose(audioFile);
-		return 80;
-	}
-
-	return 0;
-}
-
 void CoreAudioDecoder::closeAudioFile()
 {
 	if (extAudioFile != nullptr)

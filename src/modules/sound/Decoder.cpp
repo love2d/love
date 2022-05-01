@@ -48,11 +48,6 @@ Decoder::~Decoder()
 		delete [](char *) buffer;
 }
 
-int Decoder::probe(Stream */* stream */)
-{
-	return 0;
-}
-
 void *Decoder::getBuffer() const
 {
 	return buffer;

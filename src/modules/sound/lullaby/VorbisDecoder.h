@@ -44,7 +44,6 @@ public:
 
 	VorbisDecoder(Stream *stream, int bufferSize);
 	virtual ~VorbisDecoder();
-	static int probe(Stream *stream);
 
 	love::sound::Decoder *clone() override;
 	int decode() override;

@@ -97,19 +97,6 @@ VorbisDecoder::~VorbisDecoder()
 	ov_clear(&handle);
 }
 
-int VorbisDecoder::probe(Stream *stream)
-{
-	char header[4];
-
-	if (stream->read(header, 4) >= 4)
-	{
-		if (memcmp(header, "OggS", 4) == 0)
-			return 60;
-	}
-
-	return 1;
-}
-
 love::sound::Decoder *VorbisDecoder::clone()
 {
 	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);

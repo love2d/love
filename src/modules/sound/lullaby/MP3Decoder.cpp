@@ -85,66 +85,6 @@ MP3Decoder::~MP3Decoder()
 	drmp3_uninit(&mp3);
 }
 
-int MP3Decoder::probe(Stream* stream)
-{
-	// Header size of ID3v2
-	unsigned char header[10];
-
-	if (stream->read(header, 10) >= 10)
-	{
-		if (memcmp(header, "TAG", 3) == 0)
-		{
-			// ID3v1 size is 128 bytes. https://id3.org/ID3v1
-			stream->seek(128, Stream::SEEKORIGIN_BEGIN);
-			// We just need 4 bytes actually
-			if (stream->read(header, 4) < 4)
-				return 0;
-		}
-		else if (memcmp(header, "ID3", 3) == 0)
-		{
-			// ID3v2 size is variable
-			size_t id3Size =
-				size_t(header[9] & 0x7F) |
-				(size_t(header[8] & 0x7F) << 7) |
-				(size_t(header[7] & 0x7F) << 14) |
-				(size_t(header[6] & 0x7F) << 21);
-			stream->seek(3 /* "ID3" */ + 2 /* version */ + 1 /* flags */ + 4 /* size */ + id3Size, Stream::SEEKORIGIN_BEGIN);
-			// We just need 4 bytes actually
-			if (stream->read(header, 4) < 4)
-				return 0;
-		}
-	}
-	else
-		return 0;
-
-	// According to http://www.mp3-tech.org/programmer/frame_header.html
-	// Check sync bits
-	if ((header[0] == 0xFF) && (((header[1] >> 5) & 0x7) == 0x7))
-	{
-		if (((header[1] >> 3) & 3) == 1)
-			// Reserved version
-			return 0;
-		if (((header[1] >> 1) & 3) == 0)
-			// Reserved layer
-			return 0;
-		if (((header[2] >> 4) & 0xF) == 0xF)
-			// Bad bitrate
-			return 0;
-		if (((header[2] >> 2) & 0x3) == 0x3)
-			// Reserved sample rate
-			return 0;
-		if ((header[3] & 0x3) == 2)
-			// Reserved emphasis
-			return 0;
-
-		// Likely MP3.
-		return 75;
-	}
-
-	// Sync bits probably elsewhere
-	return 1;
-}
-
 love::sound::Decoder *MP3Decoder::clone()
 {
 	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);

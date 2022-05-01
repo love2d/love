@@ -49,7 +49,6 @@ public:
 
 	CoreAudioDecoder(Stream *stream, int bufferSize);
 	virtual ~CoreAudioDecoder();
-	static int probe(Stream *stream);
 
 	love::sound::Decoder *clone() override;
 	int decode() override;

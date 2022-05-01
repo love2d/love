@@ -38,14 +38,7 @@
 struct DecoderImpl
 {
 	love::sound::Decoder *(*create)(love::Stream *stream, int bufferSize);
-	int (*probe)(love::Stream *stream);
-	int probeScore;
 };
-
-static bool compareProbeScore(const DecoderImpl& a, const DecoderImpl& b)
-{
-	return a.probeScore > b.probeScore;
-}
 
 template<typename DecoderType>
 DecoderImpl DecoderImplFor()
@@ -55,20 +48,6 @@ DecoderImpl DecoderImplFor()
 	{
 		return new DecoderType(stream, bufferSize);
 	};
-	decoderImpl.probe = [](love::Stream* stream)
-	{
-		return DecoderType::probe(stream);
-	};
-	// Short description of probe score:
-	// Probe score indicates how likely is a file is in certain format. If the
-	// score is 0 then this particular decoder factory is skipped. Otherwise,
-	// decoder with highest probe score is used first then decoder with lower
-	// score.
-	// There's no standarized value for the probe value (except 0) but if a file
-	// is "very likely" on certain format, it's safe to return 100. If the file
-	// is "unlikely" to be certain format but determining such thing requires
-	// more complicated parsing, it's better to return 1.
-	decoderImpl.probeScore = 0;
 	return decoderImpl;
 }
 
@@ -94,7 +73,7 @@ const char *Sound::getName() const
 
 sound::Decoder *Sound::newDecoder(Stream *stream, int bufferSize)
 {
-	std::vector<DecoderImpl> possibleActiveDecoders, possibleDecoders = {
+	std::vector<DecoderImpl> possibleDecoders = {
 		DecoderImplFor<MP3Decoder>(),
 		DecoderImplFor<VorbisDecoder>(),
 #ifdef LOVE_SUPPORT_COREAUDIO
@@ -107,20 +86,9 @@ sound::Decoder *Sound::newDecoder(Stream *stream, int bufferSize)
 #endif
 	};
 
-	// Probe decoders
-	for (DecoderImpl& possibleDecoder : possibleDecoders)
-	{
-		stream->seek(0);
-		possibleDecoder.probeScore = possibleDecoder.probe(stream);
-
-		if (possibleDecoder.probeScore > 0)
-			possibleActiveDecoders.push_back(possibleDecoder);
-	}
-	std::sort(possibleActiveDecoders.begin(), possibleActiveDecoders.end(), compareProbeScore);
-
-	// Load
 	std::stringstream decodingErrors;
-	for (DecoderImpl &possibleDecoder : possibleActiveDecoders)
+	decodingErrors << "Failed to determine file type:\n";
+	for (DecoderImpl &possibleDecoder : possibleDecoders)
 	{
 		try
 		{
