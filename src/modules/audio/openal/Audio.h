@@ -149,6 +149,8 @@ private:
 	int MAX_SCENE_EFFECTS = 64;
 	int MAX_SOURCE_EFFECTS = 64;
 
+	std::vector<ALint> attribs;
+
 	// The Pool.
 	Pool *pool;
 

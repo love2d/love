@@ -350,6 +350,8 @@ set(LOVE_SRC_MODULE_AUDIO_OPENAL
 	src/modules/audio/openal/Filter.h
 	src/modules/audio/openal/Effect.cpp
 	src/modules/audio/openal/Effect.h
+	src/modules/audio/openal/DeviceWatcher.cpp
+	src/modules/audio/openal/DeviceWatcher.h
 )
 
 set(LOVE_SRC_MODULE_AUDIO

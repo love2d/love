@@ -100,6 +100,9 @@ Audio::Audio()
 	, poolThread(nullptr)
 	, distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
+	attribs.push_back(0);
+	attribs.push_back(0);
+
 	// Before opening new device, check if recording
 	// is requested.
 	if (getRequestRecordingPermission())
@@ -122,12 +125,11 @@ Audio::Audio()
 			throw love::Exception("Could not open device.");
 
 #ifdef ALC_EXT_EFX
-		ALint attribs[4] = { ALC_MAX_AUXILIARY_SENDS, MAX_SOURCE_EFFECTS, 0, 0 };
-#else
-		ALint *attribs = nullptr;
+		attribs.insert(attribs.begin(), ALC_MAX_AUXILIARY_SENDS);
+		attribs.insert(attribs.begin() + 1, MAX_SOURCE_EFFECTS);
 #endif
 
-		context = alcCreateContext(device, attribs);
+		context = alcCreateContext(device, attribs.data());
 
 		if (context == nullptr)
 			throw love::Exception("Could not create context.");
@@ -165,7 +167,7 @@ Audio::Audio()
 
 	try
 	{
-		pool = new Pool();
+		pool = new Pool(device, attribs);
 	}
 	catch (love::Exception &)
 	{
@@ -195,7 +197,7 @@ Audio::Audio()
 #ifdef LOVE_IOS
 	love::ios::initAudioSessionInterruptionHandler();
 #endif
-        
+
 }
 
 Audio::~Audio()

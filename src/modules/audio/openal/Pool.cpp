@@ -29,9 +29,10 @@ namespace audio
 namespace openal
 {
 
-Pool::Pool()
-	: sources()
-	, totalSources(0)
+Pool::Pool(ALCdevice *device, const std::vector<ALint> &attribs)
+: sources()
+, totalSources(0)
+, watcher(nullptr)
 {
 	// Clear errors.
 	alGetError();
@@ -69,10 +70,17 @@ Pool::Pool()
 
 		available.push(sources[i]);
 	}
+
+	watcher = new DeviceWatcher(device, attribs);
+	watcher->start();
 }
 
 Pool::~Pool()
 {
+	watcher->stop();
+	watcher->wait();
+	delete watcher;
+
 	Source::stop(this);
 
 	// Free all sources.
@@ -102,6 +110,13 @@ bool Pool::isPlaying(Source *s)
 void Pool::update()
 {
 	thread::Lock lock(mutex);
+
+	// If the device is disconnected, it should be replayed
+	if (watcher->tryReconnect(nullptr))
+	{
+		for (const auto &i : playing)
+			alSourcePlay(i.second);
+	}
 
 	std::vector<Source *> torelease;
 

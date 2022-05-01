@@ -32,6 +32,7 @@
 #include "common/Exception.h"
 #include "thread/threads.h"
 #include "audio/Source.h"
+#include "DeviceWatcher.h"
 
 // OpenAL
 #ifdef LOVE_APPLE_USE_FRAMEWORKS
@@ -64,7 +65,7 @@ class Pool
 {
 public:
 
-	Pool();
+	Pool(ALCdevice *device, const std::vector<ALint> &attribs);
 	~Pool();
 
 	/**
@@ -116,6 +117,9 @@ private:
 	// Only one thread can access this object at the same time. This mutex will
 	// make sure of that.
 	love::thread::MutexRef mutex;
+
+	// The device watcher.
+	DeviceWatcher *watcher;
 
 }; // Pool
 
