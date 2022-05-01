@@ -121,6 +121,7 @@ CoreAudioDecoder::~CoreAudioDecoder()
 int CoreAudioDecoder::probe(Stream* stream)
 {
 	AudioFileID audioFile;
+	OSStatus err = noErr;
 
 	// I think this is sufficient
 	err = AudioFileOpenWithCallbacks(stream, readFunc, nullptr, getSizeFunc, nullptr, kAudioFileMP3Type, &audioFile);
