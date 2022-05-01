@@ -40,6 +40,7 @@ class FLACDecoder : public Decoder
 public:
 	FLACDecoder(Stream *stream, int bufferSize);
 	~FLACDecoder();
+	static int probe(Stream *stream);
 
 	love::sound::Decoder *clone() override;
 	int decode() override;

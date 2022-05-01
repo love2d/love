@@ -49,6 +49,7 @@ public:
 
 	ModPlugDecoder(Stream *stream, int bufferSize);
 	virtual ~ModPlugDecoder();
+	static int probe(Stream *stream);
 
 	love::sound::Decoder *clone() override;
 	int decode() override;

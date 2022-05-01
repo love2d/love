@@ -95,6 +95,19 @@ ModPlugDecoder::~ModPlugDecoder()
 		ModPlug_Unload(plug);
 }
 
+int ModPlugDecoder::probe(Stream* stream)
+{
+	// Ideally we want to probe every single format that ModPlug supports.
+	Data *data = stream->read(1024 * 1024 * 4);
+	ModPlugFile *plug = ModPlug_Load(data->getData(), (int)data->getSize());
+
+	if (plug)
+		ModPlug_Unload(plug);
+
+	data->release();
+	return plug ? 80 : 0;
+}
+
 love::sound::Decoder *ModPlugDecoder::clone()
 {
 	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);

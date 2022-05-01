@@ -91,6 +91,27 @@ WaveDecoder::~WaveDecoder()
 	wuff_close(handle);
 }
 
+int WaveDecoder::probe(Stream* stream)
+{
+	char header[8];
+
+	if (stream->read(header, 4) < 4)
+		return 0;
+	if (memcmp(header, "RIFF", 4) != 0)
+		return 0;
+
+	// Ignore size
+	stream->seek(4, Stream::SEEKORIGIN_CURRENT);
+
+	if (stream->read(header, 8) < 8)
+		return 0;
+	if (memcmp(header, "WAVEfmt ", 8) != 0)
+		return 0;
+
+	// WAV file
+	return 100;
+}
+
 love::sound::Decoder *WaveDecoder::clone()
 {
 	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);

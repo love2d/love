@@ -43,6 +43,7 @@ public:
 
 	MP3Decoder(Stream *stream, int bufsize);
 	virtual ~MP3Decoder();
+	static int probe(Stream *stream);
 
 	love::sound::Decoder *clone() override;
 	int decode() override;

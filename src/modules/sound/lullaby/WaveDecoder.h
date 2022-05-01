@@ -40,6 +40,7 @@ public:
 
 	WaveDecoder(Stream *stream, int bufferSize);
 	virtual ~WaveDecoder();
+	static int probe(Stream *stream);
 
 	love::sound::Decoder *clone() override;
 	int decode() override;

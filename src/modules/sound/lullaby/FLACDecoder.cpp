@@ -59,6 +59,22 @@ FLACDecoder::~FLACDecoder()
 	drflac_close(flac);
 }
 
+int FLACDecoder::probe(Stream *stream)
+{
+	char header[4];
+
+	if (stream->read(header, 4) >= 4)
+	{
+		if (memcmp(header, "fLaC", 4) == 0)
+			return 100;
+		else if (memcmp(header, "OggS", 4) == 0)
+			// Vorbis has higher priority
+			return 40;
+	}
+
+	return 0;
+}
+
 love::sound::Decoder *FLACDecoder::clone()
 {
 	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
