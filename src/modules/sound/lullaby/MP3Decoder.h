@@ -54,11 +54,15 @@ public:
 	double getDuration() override;
 
 private:
+	friend size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead);
+	friend drmp3_bool32 onSeek(void *pUserData, int offset, drmp3_seek_origin origin);
 
 	// MP3 handle
 	drmp3 mp3;
 	// Used for fast seeking
 	std::vector<drmp3_seek_point> seekTable;
+	// Position of first MP3 frame found
+	int64 offset;
 
 	double duration;
 }; // MP3Decoder
