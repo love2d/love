@@ -54,8 +54,8 @@ public:
 	double getDuration() override;
 
 private:
-	friend size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead);
-	friend drmp3_bool32 onSeek(void *pUserData, int offset, drmp3_seek_origin origin);
+	static size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead);
+	static drmp3_bool32 onSeek(void *pUserData, int offset, drmp3_seek_origin origin);
 
 	// MP3 handle
 	drmp3 mp3;

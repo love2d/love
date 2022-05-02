@@ -30,37 +30,6 @@ namespace sound
 namespace lullaby
 {
 
-static size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead)
-{
-	auto decoder = (MP3Decoder *) pUserData;
-	int64 read = decoder->stream->read(pBufferOut, bytesToRead);
-	return std::max<int64>(0, read);
-}
-
-static drmp3_bool32 onSeek(void *pUserData, int offset, drmp3_seek_origin origin)
-{
-	auto decoder = (MP3Decoder *) pUserData;
-	int64 pos = decoder->offset;
-
-	// Due to possible offsets, we have to calculate the position ourself.
-	switch (origin)
-	{
-	case drmp3_seek_origin_start:
-		pos += offset;
-		break;
-	case drmp3_seek_origin_current:
-		pos = decoder->stream->tell() + offset;
-		break;
-	default:
-		return false;
-	}
-
-	if (pos < decoder->offset)
-		return false;
-
-	return decoder->stream->seek(pos, Stream::SEEKORIGIN_BEGIN) ? DRMP3_TRUE : DRMP3_FALSE;
-}
-
 // Copied from dr_mp3 function drmp3_hdr_valid()
 static bool isMP3HeaderValid(const uint8 *h)
 {
@@ -133,6 +102,37 @@ static int64 findFirstValidHeader(Stream* stream)
 
 	// No valid MP3 frame found in first 16KB data
 	return -1;
+}
+
+size_t MP3Decoder::onRead(void *pUserData, void *pBufferOut, size_t bytesToRead)
+{
+	auto decoder = (MP3Decoder *) pUserData;
+	int64 read = decoder->stream->read(pBufferOut, bytesToRead);
+	return std::max<int64>(0, read);
+}
+
+drmp3_bool32 MP3Decoder::onSeek(void *pUserData, int offset, drmp3_seek_origin origin)
+{
+	auto decoder = (MP3Decoder *) pUserData;
+	int64 pos = decoder->offset;
+
+	// Due to possible offsets, we have to calculate the position ourself.
+	switch (origin)
+	{
+	case drmp3_seek_origin_start:
+		pos += offset;
+		break;
+	case drmp3_seek_origin_current:
+		pos = decoder->stream->tell() + offset;
+		break;
+	default:
+		return false;
+	}
+
+	if (pos < decoder->offset)
+		return false;
+
+	return decoder->stream->seek(pos, Stream::SEEKORIGIN_BEGIN) ? DRMP3_TRUE : DRMP3_FALSE;
 }
 
 MP3Decoder::MP3Decoder(Stream *stream, int bufferSize)
