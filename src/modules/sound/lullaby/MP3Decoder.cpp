@@ -126,11 +126,11 @@ drmp3_bool32 MP3Decoder::onSeek(void *pUserData, int offset, drmp3_seek_origin o
 		pos = decoder->stream->tell() + offset;
 		break;
 	default:
-		return false;
+		return DRMP3_FALSE;
 	}
 
 	if (pos < decoder->offset)
-		return false;
+		return DRMP3_FALSE;
 
 	return decoder->stream->seek(pos, Stream::SEEKORIGIN_BEGIN) ? DRMP3_TRUE : DRMP3_FALSE;
 }
