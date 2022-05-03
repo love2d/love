@@ -582,6 +582,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/StreamBuffer.cpp
 	src/modules/graphics/vulkan/Buffer.h
 	src/modules/graphics/vulkan/Buffer.cpp
+	src/modules/graphics/vulkan/Texture.h
+	src/modules/graphics/vulkan/Texture.cpp
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
