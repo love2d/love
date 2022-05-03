@@ -62,6 +62,7 @@ namespace love {
 			}
 
 			love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize) {
+				(void)minsize;
 				vkMapMemory(device, bufferMemory, 0, getSize(), 0, &mappedMemory);
 				return love::graphics::StreamBuffer::MapInfo((uint8*) mappedMemory, getSize());
 			}
