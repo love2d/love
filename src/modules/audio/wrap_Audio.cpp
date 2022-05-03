@@ -543,6 +543,31 @@ int w_setMixWithSystem(lua_State *L)
 	return 1;
 }
 
+int w_getOutputDevice(lua_State* L)
+{
+	std::string device;
+
+	luax_catchexcept(L, [&]() { device = instance()->getOutputDevice(); });
+	luax_pushstring(L, device);
+	return 1;
+}
+
+int w_getOutputDevices(lua_State* L)
+{
+	std::vector<std::string> list;
+
+	luax_catchexcept(L, [&]() { instance()->getOutputDevices(list); });
+	lua_createtable(L, 0, (int) list.size());
+	for (int i = 0; i < (int) list.size(); i++)
+	{
+		lua_pushnumber(L, i + 1);
+		lua_pushstring(L, list[i].c_str());
+		lua_rawset(L, -3);
+	}
+
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -574,6 +599,8 @@ static const luaL_Reg functions[] =
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
 	{ "setMixWithSystem", w_setMixWithSystem },
+	{ "getOutputDevice", w_getOutputDevice },
+	{ "getOutputDevices", w_getOutputDevices },
 
 	{ 0, 0 }
 };

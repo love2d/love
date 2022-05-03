@@ -127,6 +127,9 @@ public:
 
 	bool getEffectID(const char *name, ALuint &id);
 
+	std::string getOutputDevice();
+	void getOutputDevices(std::vector<std::string> &list);
+
 private:
 	void initializeEFX();
 	// The OpenAL device.

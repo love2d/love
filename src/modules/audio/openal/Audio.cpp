@@ -93,6 +93,18 @@ ALenum Audio::getFormat(int bitDepth, int channels)
 	return AL_NONE;
 }
 
+static const char *getDeviceSpecifier(ALCdevice *device)
+{
+#ifndef ALC_ALL_DEVICES_SPECIFIER
+	constexpr ALCenum ALC_ALL_DEVICES_SPECIFIER = 0x1013;
+#endif
+	static ALCenum deviceEnum = alcIsExtensionPresent(nullptr, "ALC_ENUMERATE_ALL_EXT")
+		? ALC_ALL_DEVICES_SPECIFIER
+		: ALC_DEVICE_SPECIFIER;
+
+	return alcGetString(device, deviceEnum);
+}
+
 Audio::Audio()
 	: device(nullptr)
 	, context(nullptr)
@@ -312,6 +324,30 @@ void Audio::resumeContext()
 {
 	if (context && alcGetCurrentContext() != context)
 		alcMakeContextCurrent(context);
+}
+
+std::string Audio::getOutputDevice()
+{
+	const char *dev = getDeviceSpecifier(device);
+
+	if (dev == nullptr)
+		throw Exception("Failed to get current device: %s", alcGetString(device, alcGetError(device)));
+
+	return dev;
+}
+
+void Audio::getOutputDevices(std::vector<std::string> &list)
+{
+	const char *devices = getDeviceSpecifier(nullptr);
+
+	if (devices == nullptr)
+		throw Exception("Failed to enumerate devices: %s", alcGetString(nullptr, alcGetError(nullptr)));
+
+	for (const char *device = devices; *device; device++)
+	{
+		list.emplace_back(device);
+		device += list.back().length();
+	}
 }
 
 void Audio::setVolume(float volume)

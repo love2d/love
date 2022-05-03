@@ -297,6 +297,16 @@ public:
 	virtual void pauseContext() = 0;
 	virtual void resumeContext() = 0;
 
+	/**
+	 * Get current output device name.
+	 */
+	virtual std::string getOutputDevice() = 0;
+
+	/**
+	 * Retrieve list of available output devices.
+	 */
+	virtual void getOutputDevices(std::vector<std::string> &list) = 0;
+
 private:
 
 	static StringMap<DistanceModel, DISTANCE_MAX_ENUM>::Entry distanceModelEntries[];

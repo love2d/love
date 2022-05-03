@@ -89,6 +89,9 @@ public:
 	void pauseContext();
 	void resumeContext();
 
+	std::string getOutputDevice();
+	void getOutputDevices(std::vector<std::string> &list);
+
 private:
 	float volume;
 	DistanceModel distanceModel;
