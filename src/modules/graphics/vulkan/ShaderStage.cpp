@@ -5,6 +5,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <cstdio>
+
 
 namespace love {
 	namespace graphics {
@@ -55,7 +57,12 @@ namespace love {
 				std::string command = std::string("glslc -fauto-bind-uniforms ") + inputFileName + " -o " + outputFileName;
 				system(command.c_str());
 
-				return readFile(outputFileName);
+				auto result = readFile(outputFileName);
+
+				std::remove(inputFileName.c_str());
+				std::remove(outputFileName.c_str());
+
+				return result;
 			}
 
 			ShaderStage::ShaderStage(love::graphics::Graphics* gfx, ShaderStageType stage, const std::string& glsl, bool gles, const std::string& cachekey)
