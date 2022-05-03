@@ -147,6 +147,8 @@ namespace love {
 
 				endRecordingGraphicsCommands();
 
+				prepareDraw(currentFrame);
+
 				if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 					vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
 				}
@@ -230,8 +232,6 @@ namespace love {
 				std::vector<VkDeviceSize> offsets;
 				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
 				offsets.push_back((VkDeviceSize) 0);
-
-				prepareDraw(currentFrame);
 
 				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets.at(currentFrame), 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, 1, buffers.data(), offsets.data());
