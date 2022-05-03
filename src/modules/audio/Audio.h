@@ -307,6 +307,11 @@ public:
 	 */
 	virtual void getOutputDevices(std::vector<std::string> &list) = 0;
 
+	/**
+	 * Set the output device to specified device name.
+	 */
+	virtual void setOutputDevice(const char *name);
+
 private:
 
 	static StringMap<DistanceModel, DISTANCE_MAX_ENUM>::Entry distanceModelEntries[];

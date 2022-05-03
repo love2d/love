@@ -129,6 +129,7 @@ public:
 
 	std::string getOutputDevice();
 	void getOutputDevices(std::vector<std::string> &list);
+	void setOutputDevice(const char *name);
 
 private:
 	void initializeEFX();
@@ -140,6 +141,7 @@ private:
 
 	// The OpenAL context.
 	ALCcontext *context;
+	std::vector<ALCint> attribs;
 
 	// The OpenAL effects
 	struct EffectMapStorage

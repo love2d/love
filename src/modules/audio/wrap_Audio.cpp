@@ -568,6 +568,27 @@ int w_getOutputDevices(lua_State* L)
 	return 1;
 }
 
+int w_setOutputDevice(lua_State* L)
+{
+	const char *device = luaL_optstring(L, 1, nullptr);
+
+	try
+	{
+		instance()->setOutputDevice(device);
+		luax_pushboolean(L, true);
+		return 1;
+	}
+	catch (love::Exception& e)
+	{
+		luax_pushboolean(L, false);
+		lua_pushstring(L, e.what());
+		return 2;
+	}
+
+	// To avoid compiler warning
+	return 0;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -601,6 +622,7 @@ static const luaL_Reg functions[] =
 	{ "setMixWithSystem", w_setMixWithSystem },
 	{ "getOutputDevice", w_getOutputDevice },
 	{ "getOutputDevices", w_getOutputDevices },
+	{ "setOutputDevice", w_setOutputDevice },
 
 	{ 0, 0 }
 };
