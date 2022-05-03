@@ -179,7 +179,7 @@ Audio::Audio()
 
 	try
 	{
-		pool = new Pool();
+		pool = new Pool(device);
 	}
 	catch (love::Exception &)
 	{
@@ -354,7 +354,6 @@ void Audio::getOutputDevices(std::vector<std::string> &list)
 
 void Audio::setOutputDevice(const char* name)
 {
-#undef ALC_SOFT_reopen_device
 #ifndef ALC_SOFT_reopen_device
 	typedef ALCboolean (ALC_APIENTRY*LPALCREOPENDEVICESOFT)(ALCdevice *device,
 		const ALCchar *deviceName, const ALCint *attribs);
