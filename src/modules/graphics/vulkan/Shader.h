@@ -33,12 +33,12 @@ namespace love {
 
 				void updateUniform(const UniformInfo* info, int count) override {}
 
-				void sendTextures(const UniformInfo* info, Texture** textures, int count) override {}
+				void sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) override {}
 				void sendBuffers(const UniformInfo* info, love::graphics::Buffer** buffers, int count) override {}
 
 				bool hasUniform(const std::string& name) const override { return false; }
 
-				void setVideoTextures(Texture* ytexture, Texture* cbtexture, Texture* crtexture) override {}
+				void setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) override {}
 
 				struct UniformBufferObject {
 					float windowWidth;

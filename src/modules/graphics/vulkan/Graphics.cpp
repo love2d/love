@@ -207,12 +207,16 @@ namespace love {
 			}
 
 			void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
-				std::cout << "setViewPortSize";
+				std::cout << "setViewPortSize ";
 				recreateSwapChain();
 			}
 
 			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) { 
 				std::cout << "setMode ";
+
+				initCapabilities();
+
+				created = true;
 
 				if (batchedDrawState.vb[0] == nullptr)
 				{
@@ -224,6 +228,59 @@ namespace love {
 				}
 
 				return true;
+			}
+
+			void Graphics::initCapabilities() {
+				std::cout << "initCapabilities ";
+				
+				VkPhysicalDeviceProperties properties;
+				vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+				// todo
+				capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = false;
+				capabilities.features[FEATURE_CLAMP_ZERO] = false;
+				capabilities.features[FEATURE_CLAMP_ONE] = false;
+				capabilities.features[FEATURE_BLEND_MINMAX] = false;
+				capabilities.features[FEATURE_LIGHTEN] = false;
+				capabilities.features[FEATURE_FULL_NPOT] = false;
+				capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = false;
+				capabilities.features[FEATURE_SHADER_DERIVATIVES] = false;
+				capabilities.features[FEATURE_GLSL3] = false;
+				capabilities.features[FEATURE_GLSL4] = false;
+				capabilities.features[FEATURE_INSTANCING] = false;
+				capabilities.features[FEATURE_TEXEL_BUFFER] = false;
+				capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
+				capabilities.features[FEATURE_COPY_BUFFER] = false;
+				capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = false;
+				capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = false;
+				capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = false;
+				static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+
+				capabilities.limits[LIMIT_POINT_SIZE] = properties.limits.pointSizeRange[1];
+				capabilities.limits[LIMIT_TEXTURE_SIZE] = properties.limits.maxImageDimension2D;
+				capabilities.limits[LIMIT_TEXTURE_LAYERS] = properties.limits.maxImageArrayLayers;
+				capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = properties.limits.maxImageDimension3D;
+				capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = properties.limits.maxImageDimensionCube;
+				capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = properties.limits.maxTexelBufferElements;	// ?
+				capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = properties.limits.maxStorageBufferRange;	// ?
+				capabilities.limits[LIMIT_THREADGROUPS_X] = 0;  // todo
+				capabilities.limits[LIMIT_THREADGROUPS_Y] = 0;  // todo
+				capabilities.limits[LIMIT_THREADGROUPS_Z] = 0;  // todo
+				capabilities.limits[LIMIT_RENDER_TARGETS] = 1;	// todo
+				capabilities.limits[LIMIT_TEXTURE_MSAA] = 1;	// todo
+				capabilities.limits[LIMIT_ANISOTROPY] = 1.0f;	// todo
+				static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
+
+				capabilities.textureTypes[TEXTURE_2D] = true;
+				capabilities.textureTypes[TEXTURE_VOLUME] = false;
+				capabilities.textureTypes[TEXTURE_2D_ARRAY] = false;
+				capabilities.textureTypes[TEXTURE_CUBE] = false;
+			}
+
+			void Graphics::unSetMode() {
+				created = false;
+
+				std::cout << "unSetMode ";
 			}
 
 			void Graphics::draw(const DrawIndexedCommand& cmd) { 

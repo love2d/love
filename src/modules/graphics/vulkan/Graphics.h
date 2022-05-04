@@ -5,6 +5,7 @@
 #include "StreamBuffer.h"
 #include "ShaderStage.h"
 #include "Shader.h"
+#include "Texture.h"
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
 
@@ -37,7 +38,7 @@ namespace love {
 				}
 
 				// implementation for virtual functions
-				Texture* newTexture(const Texture::Settings& settings, const Texture::Slices* data = nullptr) override { std::cout << "newTexture"; return nullptr; }
+				Texture* newTexture(const Texture::Settings& settings, const Texture::Slices* data = nullptr) override { std::cout << "newTexture "; return new Texture(this, settings, data); }
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
 				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear1 "; }
 				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear2 "; }
@@ -46,7 +47,7 @@ namespace love {
 				void present(void* screenshotCallbackdata) override;
 				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 				bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
-				void unSetMode() override { std::cout << "unSetMode "; }
+				void unSetMode() override;
 				void setActive(bool active) override { std::cout << "setActive "; }
 				int getRequestedBackbufferMSAA() const override { std::cout << "getRequestedBackbufferMSAA "; return 0; }
 				int getBackbufferMSAA() const  override { std::cout << "getBackbufferMSAA "; return 0; }
@@ -60,14 +61,14 @@ namespace love {
 				void setBlendState(const BlendState& blend) override { std::cout << "setBlendState "; }
 				void setPointSize(float size) override { std::cout << "setPointSize "; }
 				void setWireframe(bool enable) override { std::cout << "setWireframe "; }
-				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override { std::cout << "getSizedFormat "; return PIXELFORMAT_UNKNOWN; }
-				bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override { std::cout << "isPixelFormatSupported "; return false; }
+				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override { std::cout << "getSizedFormat "; return format; }
+				bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override { std::cout << "isPixelFormatSupported "; return true; }
 				Renderer getRenderer() const override { std::cout << "getRenderer "; return RENDERER_VULKAN; }
 				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
 				RendererInfo getRendererInfo() const override { std::cout << "getRendererInfo "; return {}; }
 				void draw(const DrawCommand& cmd) override { std::cout << "draw "; }
 				void draw(const DrawIndexedCommand& cmd) override;
-				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, Texture* texture) override { std::cout << "drawQuads "; }
+				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override { std::cout << "drawQuads "; }
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
@@ -80,7 +81,7 @@ namespace love {
 				}
 				graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
 				bool dispatch(int x, int y, int z) override { std::cout << "dispatch "; return false; }
-				void initCapabilities() override { std::cout << "initCapabilities "; }
+				void initCapabilities() override;
 				void getAPIStats(int& shaderswitches) const override { std::cout << "getAPIStats "; }
 				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override { std::cout << "setRenderTargetsInternal "; }
 
@@ -168,8 +169,6 @@ namespace love {
 				uint32_t imageIndex;
 				bool framebufferResized = false;
 				VmaAllocator vmaAllocator;
-
-				friend class StreamBuffer;
 			};
 		}
 	}
