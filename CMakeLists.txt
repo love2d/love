@@ -67,7 +67,6 @@ endif()
 
 if(MEGA)
 	find_package(Vulkan REQUIRED)
-	add_subdirectory(src/libraries/VulkanMemoryAllocator-3.0.0)
 
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
@@ -100,7 +99,6 @@ if(MEGA)
 		${MEGA_SDL2}
 		${MEGA_ZLIB}
 		${Vulkan_LIBRARIES}
-		VulkanMemoryAllocator
 	)
 
 	# These DLLs are moved next to the love binary in a post-build step to
@@ -586,6 +584,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Buffer.cpp
 	src/modules/graphics/vulkan/Texture.h
 	src/modules/graphics/vulkan/Texture.cpp
+	src/modules/graphics/vulkan/vk_mem_alloc.h
+	src/modules/graphics/vulkan/UseVMA.cpp
 )
 
 set(LOVE_SRC_MODULE_GRAPHICS
