@@ -63,6 +63,7 @@ namespace love {
 					createSurface();
 					pickPhysicalDevice();
 					createLogicalDevice();
+					initVMA();
 					createSwapChain();
 					createImageViews();
 					createRenderPass();
@@ -217,9 +218,9 @@ namespace love {
 				{
 					// Initial sizes that should be good enough for most cases. It will
 					// resize to fit if needed, later.
-					batchedDrawState.vb[0] = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-					batchedDrawState.vb[1] = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-					batchedDrawState.indexBuffer = new StreamBuffer(device, physicalDevice, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+					batchedDrawState.vb[0] = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+					batchedDrawState.vb[1] = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+					batchedDrawState.indexBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 				}
 
 				return true;
@@ -241,7 +242,7 @@ namespace love {
 
 			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) { 
 				std::cout << "newStreamBuffer ";
-				return new StreamBuffer(device, physicalDevice, type, size); 
+				return new StreamBuffer(vmaAllocator, type, size);
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
@@ -492,6 +493,21 @@ namespace love {
 				vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 			}
 
+			void Graphics::initVMA() {
+				VmaVulkanFunctions vulkanFunctions = {};
+				vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+				vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+				VmaAllocatorCreateInfo allocatorCreateInfo = {};
+				allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+				allocatorCreateInfo.physicalDevice = physicalDevice;
+				allocatorCreateInfo.device = device;
+				allocatorCreateInfo.instance = instance;
+				allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+				vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
+			}
+
 			void Graphics::createSurface() {
 				auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 				const void* handle = window->getHandle();
@@ -739,7 +755,7 @@ namespace love {
 				VkDeviceSize bufferSize = sizeof(Shader::UniformBufferObject);
 				
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-					uniformBuffers.push_back(std::make_unique<StreamBuffer>(device, physicalDevice, BUFFERUSAGE_UNIFORM, bufferSize));
+					uniformBuffers.push_back(std::make_unique<StreamBuffer>(vmaAllocator, BUFFERUSAGE_UNIFORM, bufferSize));
 				}
 			}
 

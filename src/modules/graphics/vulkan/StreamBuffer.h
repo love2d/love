@@ -4,13 +4,14 @@
 #include "modules/graphics/StreamBuffer.h"
 #include "vulkan/vulkan.h"
 
+#include "vk_mem_alloc.h"
 
 namespace love {
 	namespace graphics {
 		namespace vulkan {
 			class StreamBuffer : public love::graphics::StreamBuffer {
 			public:
-				StreamBuffer(VkDevice device, VkPhysicalDevice physicalDevice, BufferUsage mode, size_t size);
+				StreamBuffer(VmaAllocator allocator, BufferUsage mode, size_t size);
 				virtual ~StreamBuffer();
 
 				MapInfo map(size_t minsize) override;
@@ -22,10 +23,11 @@ namespace love {
 				}
 
 			private:
+				VmaAllocator allocator;
+				VmaAllocation allocation;
+				VmaAllocationInfo allocInfo;
 				VkDevice device;
 				VkBuffer buffer;
-				VkDeviceMemory bufferMemory;
-				void* mappedMemory;
 			};
 		}
 	}

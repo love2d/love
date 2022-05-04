@@ -6,6 +6,7 @@
 #include "ShaderStage.h"
 #include "Shader.h"
 #include <vulkan/vulkan.h>
+#include "vk_mem_alloc.h"
 
 #include <common/config.h>
 
@@ -108,6 +109,7 @@ namespace love {
 				int rateDeviceSuitability(VkPhysicalDevice device);
 				QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 				void createLogicalDevice();
+				void initVMA();
 				void createSurface();
 				bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 				SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
@@ -165,6 +167,7 @@ namespace love {
 				size_t currentFrame = 0;
 				uint32_t imageIndex;
 				bool framebufferResized = false;
+				VmaAllocator vmaAllocator;
 
 				friend class StreamBuffer;
 			};
