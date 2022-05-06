@@ -37,8 +37,14 @@ namespace love {
 					return physicalDevice;
 				}
 
+				const VmaAllocator getVmaAllocator() const {
+					return vmaAllocator;
+				}
+
 				// implementation for virtual functions
-				Texture* newTexture(const Texture::Settings& settings, const Texture::Slices* data = nullptr) override { std::cout << "newTexture "; return new Texture(this, settings, data); }
+				love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override { 
+					return new Texture(this, settings, data); 
+				}
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
 				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear1 "; }
 				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear2 "; }
@@ -69,6 +75,9 @@ namespace love {
 				void draw(const DrawCommand& cmd) override { std::cout << "draw "; }
 				void draw(const DrawIndexedCommand& cmd) override;
 				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override { std::cout << "drawQuads "; }
+
+				VkCommandBuffer beginSingleTimeCommands();
+				void endSingleTimeCommands(VkCommandBuffer);
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 

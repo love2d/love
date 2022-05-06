@@ -94,7 +94,7 @@ namespace love {
 
 			void Graphics::startRecordingGraphicsCommands() {
 				vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-				
+
 				while (true) {
 					VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 					if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -211,7 +211,7 @@ namespace love {
 				recreateSwapChain();
 			}
 
-			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) { 
+			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
 				std::cout << "setMode ";
 
 				initCapabilities();
@@ -232,9 +232,6 @@ namespace love {
 
 			void Graphics::initCapabilities() {
 				std::cout << "initCapabilities ";
-				
-				VkPhysicalDeviceProperties properties;
-				vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
 				// todo
 				capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = false;
@@ -255,6 +252,9 @@ namespace love {
 				capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = false;
 				capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = false;
 				static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+
+				VkPhysicalDeviceProperties properties;
+				vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
 				capabilities.limits[LIMIT_POINT_SIZE] = properties.limits.pointSizeRange[1];
 				capabilities.limits[LIMIT_TEXTURE_SIZE] = properties.limits.maxImageDimension2D;
@@ -283,26 +283,58 @@ namespace love {
 				std::cout << "unSetMode ";
 			}
 
-			void Graphics::draw(const DrawIndexedCommand& cmd) { 
+			void Graphics::draw(const DrawIndexedCommand& cmd) {
 				std::cout << "drawIndexed ";
 
 				std::vector<VkBuffer> buffers;
 				std::vector<VkDeviceSize> offsets;
 				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
-				offsets.push_back((VkDeviceSize) 0);
+				offsets.push_back((VkDeviceSize)0);
 
 				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets.at(currentFrame), 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, 1, buffers.data(), offsets.data());
-				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer) cmd.indexBuffer->getHandle(), 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, VK_INDEX_TYPE_UINT16);
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
 			}
 
-			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) { 
+			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
 				std::cout << "newStreamBuffer ";
 				return new StreamBuffer(vmaAllocator, type, size);
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
+
+			VkCommandBuffer Graphics::beginSingleTimeCommands() {
+				VkCommandBufferAllocateInfo allocInfo{};
+				allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+				allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+				allocInfo.commandPool = commandPool;
+				allocInfo.commandBufferCount = 1;
+
+				VkCommandBuffer commandBuffer;
+				vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+				VkCommandBufferBeginInfo beginInfo{};
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+				vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+				return commandBuffer;
+			}
+
+			void Graphics::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+				vkEndCommandBuffer(commandBuffer);
+
+				VkSubmitInfo submitInfo{};
+				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers = &commandBuffer;
+
+				vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+				vkQueueWaitIdle(graphicsQueue);
+				vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+			}
 
 			void Graphics::prepareDraw(uint32_t currentImage) {
 				auto& buffer = uniformBuffers.at(currentImage);
@@ -471,6 +503,10 @@ namespace love {
 					}
 				}
 
+				if (!deviceFeatures.samplerAnisotropy) {
+					score = 0;
+				}
+
 				return score;
 			}
 
@@ -523,6 +559,7 @@ namespace love {
 				}
 
 				VkPhysicalDeviceFeatures deviceFeatures{};
+				deviceFeatures.samplerAnisotropy = VK_TRUE;
 
 				VkDeviceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
