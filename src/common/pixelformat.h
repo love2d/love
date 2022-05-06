@@ -158,9 +158,19 @@ bool getConstant(const char *in, PixelFormat &out);
 const PixelFormatInfo &getPixelFormatInfo(PixelFormat format);
 
 /**
+ * Gets the name of the specified pixel format.
+ **/
+const char *getPixelFormatName(PixelFormat format);
+
+/**
  * Gets whether the specified pixel format is a compressed type.
  **/
 bool isPixelFormatCompressed(PixelFormat format);
+
+/**
+ * Gets whether the specified pixel format is a color type.
+ **/
+bool isPixelFormatColor(PixelFormat format);
 
 /**
  * Gets whether the specified pixel format is a depth or stencil type.

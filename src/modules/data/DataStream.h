@@ -18,56 +18,52 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_SOUND_LULLABY_GME_DECODER_H
-#define LOVE_SOUND_LULLABY_GME_DECODER_H
+#pragma once
 
-#ifdef LOVE_SUPPORT_GME
-
-// LOVE
-#include "common/Data.h"
-#include "sound/Decoder.h"
-
-#ifdef LOVE_APPLE_USE_FRAMEWORKS
-#include <Game_Music_Emu/gme.h>
-#else
-#include <gme.h>
-#endif
+#include "common/Stream.h"
 
 namespace love
 {
-namespace sound
-{
-namespace lullaby
+namespace data
 {
 
-class GmeDecoder : public Decoder
+class DataStream : public love::Stream
 {
 public:
 
-	GmeDecoder(Data *data, int bufferSize);
-	virtual ~GmeDecoder();
+	static love::Type type;
 
-	static bool accepts(const std::string &ext);
+	DataStream(Data *data);
+	virtual ~DataStream();
 
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(double s);
-	bool rewind();
-	bool isSeekable();
-	int getChannelCount() const;
-	int getBitDepth() const;
-	double getDuration();
+	// Implements Stream.
+	DataStream *clone() override;
+
+	bool isReadable() const override;
+	bool isWritable() const override;
+	bool isSeekable() const override;
+
+	int64 read(void* data, int64 size) override;
+	bool write(const void* data, int64 size) override;
+
+	bool flush() override;
+
+	int64 getSize() override;
+
+	bool seek(int64 pos, SeekOrigin origin = SEEKORIGIN_BEGIN) override;
+	int64 tell() override;
 
 private:
-	Music_Emu *emu;
-	int num_tracks;
-	int cur_track;
-}; // Decoder
 
-} // lullaby
-} // sound
+	DataStream(const DataStream &other);
+
+	StrongRef<Data> data;
+	const uint8 *memory;
+	uint8 *writableMemory;
+	size_t offset;
+	size_t size;
+
+}; // DataStream
+
+} // data
 } // love
-
-#endif // LOVE_SUPPORT_GME
-
-#endif // LOVE_SOUND_LULLABY_GME_DECODER_H

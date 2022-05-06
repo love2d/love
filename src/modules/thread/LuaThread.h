@@ -46,6 +46,7 @@ public:
 	virtual ~LuaThread();
 	void threadFunction();
 	const std::string &getError() const;
+	bool hasError() const { return haserror; }
 
 	bool start(const std::vector<Variant> &args);
 
@@ -56,6 +57,7 @@ private:
 	StrongRef<love::Data> code;
 	std::string name;
 	std::string error;
+	bool haserror;
 
 	std::vector<Variant> args;
 

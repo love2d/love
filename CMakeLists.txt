@@ -36,6 +36,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 set (CMAKE_CXX_STANDARD 17)
 
+if(APPLE)
+	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
+	message(WARNING "Use the prebuilt .app or the xcode project in platform/xcode/ instead.")
+endif()
+
 if(MSVC)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
 endif()
@@ -48,11 +53,15 @@ else()
 	set(LOVE_TARGET_PLATFORM x86)
 endif()
 
-option(LOVE_JIT "Use LuaJIT" TRUE)
+if(APPLE)
+	option(LOVE_JIT "Use LuaJIT" FALSE)
+else()
+	option(LOVE_JIT "Use LuaJIT" TRUE)
+endif()
 
 if(LOVE_JIT)
 	if(APPLE)
-		message(FATAL_ERROR "JIT not supported yet on Mac. Please use -DLOVE_JIT=0.")
+		message(WARNING "JIT not supported yet on Mac.")
 	endif()
 	message(STATUS "LuaJIT: Enabled")
 else()
@@ -238,6 +247,8 @@ endfunction()
 #
 
 set(LOVE_SRC_COMMON
+	src/common/android.cpp
+	src/common/android.h
 	src/common/b64.cpp
 	src/common/b64.h
 	src/common/Color.h
@@ -290,6 +301,9 @@ if (APPLE)
 	set(LOVE_SRC_COMMON ${LOVE_SRC_COMMON}
 		src/common/macosx.mm
 	)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} objc)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework CoreFoundation")
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework AppKit")
 endif()
 
 source_group("common" FILES ${LOVE_SRC_COMMON})
@@ -364,6 +378,8 @@ set(LOVE_SRC_MODULE_DATA
 	src/modules/data/Compressor.h
 	src/modules/data/DataModule.cpp
 	src/modules/data/DataModule.h
+	src/modules/data/DataStream.cpp
+	src/modules/data/DataStream.h
 	src/modules/data/DataView.cpp
 	src/modules/data/DataView.h
 	src/modules/data/HashFunction.cpp
@@ -901,8 +917,6 @@ set(LOVE_SRC_MODULE_SOUND_ROOT
 set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/FLACDecoder.cpp
 	src/modules/sound/lullaby/FLACDecoder.h
-	src/modules/sound/lullaby/GmeDecoder.cpp
-	src/modules/sound/lullaby/GmeDecoder.h
 	src/modules/sound/lullaby/ModPlugDecoder.cpp
 	src/modules/sound/lullaby/ModPlugDecoder.h
 	src/modules/sound/lullaby/MP3Decoder.h
@@ -1644,6 +1658,7 @@ if(APPLE)
 	set(LOVE_SRC_3P_PHYSFS ${LOVE_SRC_3P_PHYSFS}
 		src/libraries/physfs/physfs_platform_apple.m
 	)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework IOKit")
 endif()
 
 add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
@@ -1764,6 +1779,7 @@ set(LOVE_LIB_SRC
 )
 
 include_directories(
+	BEFORE
 	src
 	src/libraries
 	src/libraries/box2D
@@ -1792,6 +1808,7 @@ if(ANDROID)
 	# as shared library, so change the library name and add love.cpp
 	set(LOVE_LIB_NAME ${LOVE_EXE_NAME})
 	set(LOVE_LIB_SRC ${LOVE_LIB_SRC} src/love.cpp)
+	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} android)
 endif()
 
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})

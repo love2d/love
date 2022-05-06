@@ -101,6 +101,22 @@ int w_hasBackgroundMusic(lua_State *L)
 	return 1;
 }
 
+int w_getPreferredLocales(lua_State* L)
+{
+	int i = 1;
+	std::vector<std::string> locales = instance()->getPreferredLocales();
+
+	lua_createtable(L, locales.size(), 0);
+
+	for (const std::string& str: locales)
+	{
+		luax_pushstring(L, str);
+		lua_rawseti(L, -2, i++);
+	}
+
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -111,6 +127,7 @@ static const luaL_Reg functions[] =
 	{ "openURL", w_openURL },
 	{ "vibrate", w_vibrate },
 	{ "hasBackgroundMusic", w_hasBackgroundMusic },
+	{ "getPreferredLocales", w_getPreferredLocales },
 	{ 0, 0 }
 };
 

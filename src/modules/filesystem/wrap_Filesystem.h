@@ -40,7 +40,9 @@ namespace filesystem
  **/
 FileData *luax_getfiledata(lua_State *L, int idx);
 bool luax_cangetfiledata(lua_State *L, int idx);
+
 File *luax_getfile(lua_State *L, int idx);
+bool luax_cangetfile(lua_State *L, int idx);
 
 Data *luax_getdata(lua_State *L, int idx);
 bool luax_cangetdata(lua_State *L, int idx);

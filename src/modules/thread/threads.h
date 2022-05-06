@@ -132,6 +132,12 @@ Thread *newThread(Threadable *t);
 #if defined(LOVE_LINUX)
 void disableSignals();
 void reenableSignals();
+
+struct ScopedDisableSignals
+{
+	ScopedDisableSignals() { disableSignals(); }
+	~ScopedDisableSignals() { reenableSignals(); }
+};
 #endif
 
 } // thread

@@ -164,7 +164,7 @@ bool System::openURL(const std::string &url) const
 
 #endif
 
-	return (int) result > 32;
+	return (ptrdiff_t) result > 32;
 
 #endif
 }

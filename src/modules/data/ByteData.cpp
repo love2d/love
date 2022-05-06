@@ -31,11 +31,12 @@ namespace data
 
 love::Type ByteData::type("ByteData", &Data::type);
 
-ByteData::ByteData(size_t size)
+ByteData::ByteData(size_t size, bool clear)
 	: size(size)
 {
 	create();
-	memset(data, 0, size);
+	if (clear)
+		memset(data, 0, size);
 }
 
 ByteData::ByteData(const void *d, size_t size)

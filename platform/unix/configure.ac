@@ -54,9 +54,6 @@ with_clean_luaversion=`printf ${with_luaversion} | sed 's/\.//g'`
 # Generated sources for enabling/disabling modules
 m4_include([configure-modules-pre.ac])
 
-# Other features that can be enabled/disabled
-AC_ARG_ENABLE([gme], AC_HELP_STRING([--enable-gme], [Enable GME support, for more chiptuney goodness]), [], [enable_gme=no])
-
 # Dependencies we always use
 ACLOVE_DEP_LUA
 ACLOVE_DEP_SDL2
@@ -72,12 +69,12 @@ AS_VAR_IF([enable_module_sound], [yes], [
 	ACLOVE_DEP_VORBISFILE
 ], [])
 AS_VAR_IF([enable_module_video], [yes], [ACLOVE_DEP_THEORA], [])
-AS_VAR_IF([enable_gme], [yes], [ACLOVE_DEP_GME], [])
 
 # Add flags for optional libraries
 AC_ARG_ENABLE([library-enet], [  --disable-library-enet    Turn off library enet], [], [enable_library_enet=yes])
 AC_ARG_ENABLE([library-luasocket], [  --disable-library-luasocket    Turn off library luasocket], [], [enable_library_luasocket=yes])
 AC_ARG_ENABLE([library-lua53], [  --disable-library-lua53    Turn off library lua53 (lua 5.3 backports, required by love.data)], [], [enable_library_lua53=yes])
+AC_ARG_ENABLE([library-luahttps], [  --disable-library-luahttps    Turn off library luahttps], [], [enable_library_luahttps=yes])
 
 # Select the libraries we need to build, based on the selected modules
 AS_VAR_IF([enable_module_filesystem], [yes], [enable_library_physfs=yes], [enable_library_physfs=no])

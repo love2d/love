@@ -232,11 +232,6 @@ static inline id<MTLTexture> getMTLTexture(love::graphics::Buffer *buffer)
 	return buffer ? (__bridge id<MTLTexture>)(void *) buffer->getTexelBufferHandle() : nil;
 }
 
-static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
-{
-	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
-}
-
 static inline id<MTLBuffer> getMTLBuffer(love::graphics::Buffer *buffer)
 {
 	return buffer ? (__bridge id<MTLBuffer>)(void *) buffer->getHandle() : nil;
@@ -312,6 +307,12 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 		EProfile defaultprofile = ECoreProfile;
 		bool forcedefault = false;
 		bool forwardcompat = true;
+
+#ifdef LOVE_IOS
+		defaultversion = 320;
+		defaultprofile = EEsProfile;
+		forcedefault = true;
+#endif
 
 		if (!tshader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 		{

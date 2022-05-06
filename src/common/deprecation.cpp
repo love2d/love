@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <map>
+#include <sstream>
 
 namespace love
 {
@@ -97,32 +98,32 @@ bool isDeprecationOutputEnabled()
 
 std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 {
-	std::string notice;
+	std::stringstream notice;
 
 	if (usewhere)
-		notice += info.where;
+		notice << info.where;
 
-	notice += "Using deprecated ";
+	notice << "Using deprecated ";
 
 	if (info.apiType == API_FUNCTION)
-		notice += "function ";
+		notice << "function ";
 	else if (info.apiType == API_METHOD)
-		notice += "method ";
+		notice << "method ";
 	else if (info.apiType == API_CALLBACK)
-		notice += "callback ";
+		notice << "callback ";
 	else if (info.apiType == API_FIELD)
-		notice += "field ";
+		notice << "field ";
 	else if (info.apiType == API_CONSTANT)
-		notice += "constant ";
+		notice << "constant ";
 
-	notice += info.name;
+	notice << info.name;
 
 	if (info.type == DEPRECATED_REPLACED && !info.replacement.empty())
-		notice += " (replaced by " + info.replacement + ")";
+		notice << " (replaced by " << info.replacement << ")";
 	else if (info.type == DEPRECATED_RENAMED && !info.replacement.empty())
-		notice += " (renamed to " + info.replacement + ")";
+		notice << " (renamed to " << info.replacement << ")";
 
-	return notice;
+	return notice.str();
 }
 
 GetDeprecated::GetDeprecated()

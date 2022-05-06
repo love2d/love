@@ -240,9 +240,21 @@ const PixelFormatInfo &getPixelFormatInfo(PixelFormat format)
 	return formatInfo[format];
 }
 
+const char *getPixelFormatName(PixelFormat format)
+{
+	const char *name = "unknown";
+	getConstant(format, name);
+	return name;
+}
+
 bool isPixelFormatCompressed(PixelFormat format)
 {
 	return formatInfo[format].compressed;
+}
+
+bool isPixelFormatColor(PixelFormat format)
+{
+	return formatInfo[format].color;
 }
 
 bool isPixelFormatDepthStencil(PixelFormat format)

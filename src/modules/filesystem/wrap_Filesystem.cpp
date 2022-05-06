@@ -227,34 +227,53 @@ int w_unmountCommonPath(lua_State *L)
 	return 1;
 }
 
-int w_newFile(lua_State *L)
+int w_openFile(lua_State *L)
 {
 	const char *filename = luaL_checkstring(L, 1);
+	const char *modestr = luaL_checkstring(L, 2);
 
-	const char *str = 0;
 	File::Mode mode = File::MODE_CLOSED;
+	if (!File::getConstant(modestr, mode))
+		return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
 
-	if (lua_isstring(L, 2))
+	File *t = nullptr;
+	try
 	{
-		str = luaL_checkstring(L, 2);
-		if (!File::getConstant(str, mode))
-			return luax_enumerror(L, "file open mode", File::getConstants(mode), str);
+		t = instance()->openFile(filename, mode);
+	}
+	catch (love::Exception &e)
+	{
+		return luax_ioError(L, "%s", e.what());
 	}
 
-	File *t = instance()->newFile(filename);
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
+}
 
-	if (mode != File::MODE_CLOSED)
+int w_newFile(lua_State* L)
+{
+	luax_markdeprecated(L, 1, "love.filesystem.newFile", API_FUNCTION, DEPRECATED_RENAMED, "love.filesystem.openFile");
+
+	const char* filename = luaL_checkstring(L, 1);
+
+	File::Mode mode = File::MODE_CLOSED;
+
+	if (!lua_isnoneornil(L, 2))
 	{
-		try
-		{
-			if (!t->open(mode))
-				throw love::Exception("Could not open file.");
-		}
-		catch (love::Exception &e)
-		{
-			t->release();
-			return luax_ioError(L, "%s", e.what());
-		}
+		const char* modestr = luaL_checkstring(L, 2);
+		if (!File::getConstant(modestr, mode))
+			return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
+	}
+
+	File* t = nullptr;
+	try
+	{
+		t = instance()->openFile(filename, mode);
+	}
+	catch (love::Exception& e)
+	{
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	luax_pushtype(L, t);
@@ -268,7 +287,14 @@ File *luax_getfile(lua_State *L, int idx)
 	if (lua_isstring(L, idx))
 	{
 		const char *filename = luaL_checkstring(L, idx);
-		file = instance()->newFile(filename);
+		try
+		{
+			file = instance()->openFile(filename, File::MODE_CLOSED);
+		}
+		catch (love::Exception &e)
+		{
+			luax_ioError(L, "%s", e.what());
+		}
 	}
 	else
 	{
@@ -341,6 +367,11 @@ Data *luax_getdata(lua_State *L, int idx)
 	}
 
 	return data;
+}
+
+bool luax_cangetfile(lua_State *L, int idx)
+{
+	return lua_isstring(L, idx) || luax_istype(L, idx, File::type);
 }
 
 bool luax_cangetfiledata(lua_State *L, int idx)
@@ -471,6 +502,13 @@ int w_getExecutablePath(lua_State *L)
 	return 1;
 }
 
+int w_exists(lua_State *L)
+{
+	const char *path = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->exists(path));
+	return 1;
+}
+
 int w_getInfo(lua_State *L)
 {
 	const char *filepath = luaL_checkstring(L, 1);
@@ -557,12 +595,15 @@ int w_read(lua_State *L)
 	}
 
 	const char *filename = luaL_checkstring(L, startidx + 0);
-	int64 len = (int64) luaL_optinteger(L, startidx + 1, File::ALL);
+	int64 len = (int64) luaL_optinteger(L, startidx + 1, -1);
 
 	FileData *data = nullptr;
 	try
 	{
-		data = instance()->read(filename, len);
+		if (len >= 0)
+			data = instance()->read(filename, len);
+		else
+			data = instance()->read(filename);
 	}
 	catch (love::Exception &e)
 	{
@@ -655,16 +696,8 @@ int w_lines(lua_State *L)
 {
 	if (lua_isstring(L, 1))
 	{
-		File *file = instance()->newFile(lua_tostring(L, 1));
-		bool success = false;
-
-		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
-
-		if (!success)
-		{
-			file->release();
-			return luaL_error(L, "Could not open file.");
-		}
+		File *file = nullptr;
+		luax_catchexcept(L, [&]() { file = instance()->openFile(lua_tostring(L, 1), File::MODE_READ); });
 
 		luax_pushtype(L, file);
 		file->release();
@@ -805,6 +838,9 @@ static void replaceAll(std::string &str, const std::string &substr, const std::s
 int loader(lua_State *L)
 {
 	std::string modulename = luax_checkstring(L, 1);
+
+	if (modulename.find('/') != std::string::npos)
+		luax_markdeprecated(L, 2, "character in require string (forward slashes), use dots instead.", API_CUSTOM);
 
 	for (char &c : modulename)
 	{
@@ -954,7 +990,7 @@ static const luaL_Reg functions[] =
 	{ "unmount", w_unmount },
 	{ "unmountFullPath", w_unmountFullPath },
 	{ "unmountCommonPath", w_unmountCommonPath },
-	{ "newFile", w_newFile },
+	{ "openFile", w_openFile },
 	{ "getFullCommonPath", w_getFullCommonPath },
 	{ "getWorkingDirectory", w_getWorkingDirectory },
 	{ "getUserDirectory", w_getUserDirectory },
@@ -971,6 +1007,7 @@ static const luaL_Reg functions[] =
 	{ "getDirectoryItems", w_getDirectoryItems },
 	{ "lines", w_lines },
 	{ "load", w_load },
+	{ "exists", w_exists },
 	{ "getInfo", w_getInfo },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },
@@ -979,6 +1016,9 @@ static const luaL_Reg functions[] =
 	{ "setRequirePath", w_setRequirePath },
 	{ "getCRequirePath", w_getCRequirePath },
 	{ "setCRequirePath", w_setCRequirePath },
+
+	// Deprecated
+	{ "newFile", w_newFile },
 
 	{ 0, 0 }
 };

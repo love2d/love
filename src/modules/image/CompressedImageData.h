@@ -103,7 +103,7 @@ protected:
 	bool sRGB;
 
 	// Single block of memory containing all of the sub-images.
-	StrongRef<CompressedMemory> memory;
+	StrongRef<ByteData> memory;
 
 	// Texture info for each mipmap level.
 	std::vector<StrongRef<CompressedSlice>> dataImages;

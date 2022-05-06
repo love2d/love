@@ -26,30 +26,12 @@ namespace love
 namespace image
 {
 
-CompressedMemory::CompressedMemory(size_t size)
-	: data(nullptr)
-	, size(size)
-{
-	try
-	{
-		data = new uint8[size];
-	}
-	catch (std::exception &)
-	{
-		throw love::Exception("Out of memory.");
-	}
-}
-
-CompressedMemory::~CompressedMemory()
-{
-	delete[] data;
-}
-
-CompressedSlice::CompressedSlice(PixelFormat format, int width, int height, CompressedMemory *memory, size_t offset, size_t size)
+CompressedSlice::CompressedSlice(PixelFormat format, int width, int height, ByteData *memory, size_t offset, size_t size)
 	: ImageDataBase(format, width, height)
 	, memory(memory)
 	, offset(offset)
 	, dataSize(size)
+	, sRGB(false)
 {
 }
 
@@ -58,6 +40,7 @@ CompressedSlice::CompressedSlice(const CompressedSlice &s)
 	, memory(s.memory)
 	, offset(s.offset)
 	, dataSize(s.dataSize)
+	, sRGB(s.sRGB)
 {
 }
 

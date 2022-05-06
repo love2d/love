@@ -71,7 +71,7 @@ public:
 	bool unmount(CommonPath path) override;
 	bool unmountFullPath(const char *fullpath) override;
 
-	love::filesystem::File *newFile(const char *filename) const override;
+	love::filesystem::File *openFile(const char *filename, File::Mode mode) const override;
 
 	std::string getFullCommonPath(CommonPath path) override;
 	const char *getWorkingDirectory() override;
@@ -82,13 +82,15 @@ public:
 
 	std::string getRealDirectory(const char *filename) const override;
 
+	bool exists(const char *filepath) const override;
 	bool getInfo(const char *filepath, Info &info) const override;
 
 	bool createDirectory(const char *dir) override;
 
 	bool remove(const char *file) override;
 
-	FileData *read(const char *filename, int64 size = File::ALL) const override;
+	FileData *read(const char *filename, int64 size) const override;
+	FileData *read(const char *filename) const override;
 	void write(const char *filename, const void *data, int64 size) const override;
 	void append(const char *filename, const void *data, int64 size) const override;
 

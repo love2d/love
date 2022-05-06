@@ -498,13 +498,13 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	f.minwidth = std::max(f.minwidth, 1);
 	f.minheight = std::max(f.minheight, 1);
 
-	f.display = std::min(std::max(f.display, 0), getDisplayCount() - 1);
+	f.displayindex = std::min(std::max(f.displayindex, 0), getDisplayCount() - 1);
 
 	// Use the desktop resolution if a width or height of 0 is specified.
 	if (width == 0 || height == 0)
 	{
 		SDL_DisplayMode mode = {};
-		SDL_GetDesktopDisplayMode(f.display, &mode);
+		SDL_GetDesktopDisplayMode(f.displayindex, &mode);
 		width = mode.w;
 		height = mode.h;
 	}
@@ -529,16 +529,16 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		// The position needs to be in the global coordinate space.
 		SDL_Rect displaybounds = {};
-		SDL_GetDisplayBounds(f.display, &displaybounds);
+		SDL_GetDisplayBounds(f.displayindex, &displaybounds);
 		x += displaybounds.x;
 		y += displaybounds.y;
 	}
 	else
 	{
 		if (f.centered)
-			x = y = SDL_WINDOWPOS_CENTERED_DISPLAY(f.display);
+			x = y = SDL_WINDOWPOS_CENTERED_DISPLAY(f.displayindex);
 		else
-			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.display);
+			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.displayindex);
 	}
 
 	SDL_DisplayMode fsmode = {0, width, height, 0, nullptr};
@@ -546,12 +546,12 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (f.fullscreen && f.fstype == FULLSCREEN_EXCLUSIVE)
 	{
 		// Fullscreen window creation will bug out if no mode can be used.
-		if (SDL_GetClosestDisplayMode(f.display, &fsmode, &fsmode) == nullptr)
+		if (SDL_GetClosestDisplayMode(f.displayindex, &fsmode, &fsmode) == nullptr)
 		{
 			// GetClosestDisplayMode will fail if we request a size larger
 			// than the largest available display mode, so we'll try to use
 			// the largest (first) mode in that case.
-			if (SDL_GetDisplayMode(f.display, 0, &fsmode) < 0)
+			if (SDL_GetDisplayMode(f.displayindex, 0, &fsmode) < 0)
 				return false;
 		}
 	}
@@ -629,7 +629,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	// Enforce minimum window dimensions.
 	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
-	if (this->settings.display != f.display || f.useposition || f.centered)
+	if (this->settings.displayindex != f.displayindex || f.useposition || f.centered)
 		SDL_SetWindowPosition(window, x, y);
 
 	SDL_RaiseWindow(window);
@@ -682,7 +682,17 @@ bool Window::onSizeChanged(int width, int height)
 	windowWidth = width;
 	windowHeight = height;
 
-	SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+	if (glcontext != nullptr)
+		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#ifdef LOVE_GRAPHICS_METAL
+	else if (metalView != nullptr)
+		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
+	else
+	{
+		pixelWidth = width;
+		pixelHeight = height;
+	}
 
 	if (graphics.get())
 	{
@@ -739,7 +749,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	settings.borderless = (wflags & SDL_WINDOW_BORDERLESS) != 0;
 	settings.centered = newsettings.centered;
 
-	getPosition(settings.x, settings.y, settings.display);
+	getPosition(settings.x, settings.y, settings.displayindex);
 
 	setHighDPIAllowed((wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0);
 
@@ -757,7 +767,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	settings.depth = newsettings.depth;
 
 	SDL_DisplayMode dmode = {};
-	SDL_GetCurrentDisplayMode(settings.display, &dmode);
+	SDL_GetCurrentDisplayMode(settings.displayindex, &dmode);
 
 	// May be 0 if the refresh rate can't be determined.
 	settings.refreshrate = (double) dmode.refresh_rate;
@@ -865,11 +875,6 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 			SDL_GL_MakeCurrent(window, glcontext);
 
 		updateSettings(newsettings, true);
-
-		// This gets un-set when we exit fullscreen (at least in macOS).
-		if (!fullscreen)
-			SDL_SetWindowMinimumSize(window, settings.minwidth, settings.minheight);
-
 		return true;
 	}
 

@@ -43,7 +43,7 @@ ImageData::ImageData(int width, int height, PixelFormat format)
 	: ImageDataBase(format, width, height)
 {
 	if (!validPixelFormat(format))
-		throw love::Exception("Unsupported pixel format for ImageData");
+		throw love::Exception("ImageData does not support the %s pixel format.", getPixelFormatName(format));
 
 	create(width, height, format);
 
@@ -55,7 +55,7 @@ ImageData::ImageData(int width, int height, PixelFormat format, void *data, bool
 	: ImageDataBase(format, width, height)
 {
 	if (!validPixelFormat(format))
-		throw love::Exception("Unsupported pixel format for ImageData");
+		throw love::Exception("ImageData does not support the %s pixel format.", getPixelFormatName(format));
 
 	if (own)
 		this->data = (unsigned char *) data;
@@ -196,11 +196,7 @@ love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encod
 	}
 
 	if (encoder == nullptr || encodedimage.data == nullptr)
-	{
-		const char *fname = "unknown";
-		love::getConstant(format, fname);
-		throw love::Exception("No suitable image encoder for %s format.", fname);
-	}
+		throw love::Exception("No suitable image encoder for the %s pixel format.", getPixelFormatName(format));
 
 	love::filesystem::FileData *filedata = nullptr;
 
@@ -540,7 +536,7 @@ void ImageData::setPixel(int x, int y, const Colorf &c)
 	Pixel *p = (Pixel *) (data + ((y * width + x) * pixelsize));
 
 	if (pixelSetFunction == nullptr)
-		throw love::Exception("Unhandled pixel format %d in ImageData::setPixel", format);
+		throw love::Exception("ImageData:setPixel does not currently support the %s pixel format.", getPixelFormatName(format));
 
 	Lock lock(mutex);
 
@@ -556,7 +552,7 @@ void ImageData::getPixel(int x, int y, Colorf &c) const
 	const Pixel *p = (const Pixel *) (data + ((y * width + x) * pixelsize));
 
 	if (pixelGetFunction == nullptr)
-		throw love::Exception("Unhandled pixel format %d in ImageData::setPixel", format);
+		throw love::Exception("ImageData:getPixel does not currently support the %s pixel format.", getPixelFormatName(format));
 
 	Lock lock(mutex);
 
@@ -759,7 +755,7 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 			else if (srcformat == PIXELFORMAT_RGBA32_FLOAT && dstformat == PIXELFORMAT_RGBA16_FLOAT)
 				pasteRGBA32FtoRGBA16F(rowsrc, rowdst, sw);
 
-			else
+			else if (getfunction != nullptr && setfunction != nullptr)
 			{
 				// Slow path: convert src -> Colorf -> dst.
 				Colorf c;
@@ -771,6 +767,10 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 					setfunction(c, dstp);
 				}
 			}
+			else if (getfunction == nullptr)
+				throw love::Exception("ImageData:paste does not currently support converting from the %s pixel format.", getPixelFormatName(srcformat));
+			else
+				throw love::Exception("ImageData:paste does not currently support converting to the %s pixel format.", getPixelFormatName(dstformat));
 		}
 	}
 }
@@ -787,45 +787,7 @@ size_t ImageData::getPixelSize() const
 
 bool ImageData::validPixelFormat(PixelFormat format)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_R8_UNORM:
-	case PIXELFORMAT_RG8_UNORM:
-	case PIXELFORMAT_RGBA8_UNORM:
-	case PIXELFORMAT_R16_UNORM:
-	case PIXELFORMAT_RG16_UNORM:
-	case PIXELFORMAT_RGBA16_UNORM:
-	case PIXELFORMAT_R16_FLOAT:
-	case PIXELFORMAT_RG16_FLOAT:
-	case PIXELFORMAT_RGBA16_FLOAT:
-	case PIXELFORMAT_R32_FLOAT:
-	case PIXELFORMAT_RG32_FLOAT:
-	case PIXELFORMAT_RGBA32_FLOAT:
-	case PIXELFORMAT_RGBA4_UNORM:
-	case PIXELFORMAT_RGB5A1_UNORM:
-	case PIXELFORMAT_RGB565_UNORM:
-	case PIXELFORMAT_RGB10A2_UNORM:
-	case PIXELFORMAT_RG11B10_FLOAT:
-		return true;
-	default:
-		return false;
-	}
-}
-
-bool ImageData::canPaste(PixelFormat src, PixelFormat dst)
-{
-	if (src == dst)
-		return true;
-
-	if (!(src == PIXELFORMAT_RGBA8_UNORM || src == PIXELFORMAT_RGBA16_UNORM
-		|| src == PIXELFORMAT_RGBA16_FLOAT || src == PIXELFORMAT_RGBA32_FLOAT))
-		return false;
-
-	if (!(dst == PIXELFORMAT_RGBA8_UNORM || dst == PIXELFORMAT_RGBA16_UNORM
-		|| dst == PIXELFORMAT_RGBA16_FLOAT || dst == PIXELFORMAT_RGBA32_FLOAT))
-		return false;
-
-	return true;
+	return isPixelFormatColor(format) && !isPixelFormatCompressed(format);
 }
 
 ImageData::PixelSetFunction ImageData::getPixelSetFunction(PixelFormat format)

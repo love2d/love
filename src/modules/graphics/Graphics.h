@@ -449,8 +449,8 @@ public:
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	Shader *newShader(const std::vector<std::string> &stagessource, bool vulkan = false);
-	Shader *newComputeShader(const std::string &source);
+	Shader *newShader(const std::vector<std::string> &stagessource, const Shader::CompileOptions &options);
+	Shader *newComputeShader(const std::string &source, const Shader::CompileOptions &options);
 
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
 	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
@@ -461,7 +461,7 @@ public:
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
 
-	bool validateShader(bool gles, const std::vector<std::string> &stages, std::string &err);
+	bool validateShader(bool gles, const std::vector<std::string> &stages, const Shader::CompileOptions &options, std::string &err);
 
 	/**
 	 * Resets the current color, background color, line style, and so forth.
@@ -798,7 +798,7 @@ public:
 	/**
 	 * Gets whether the specified pixel format usage is supported.
 	 **/
-	virtual bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) = 0;
+	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.
@@ -966,7 +966,7 @@ protected:
 		{}
 	};
 
-	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info);
+	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::CompileOptions &options, const Shader::SourceInfo &info, bool cache);
 	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
 	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;

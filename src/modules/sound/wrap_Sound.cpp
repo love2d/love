@@ -21,6 +21,7 @@
 #include "wrap_Sound.h"
 
 #include "filesystem/wrap_Filesystem.h"
+#include "data/DataStream.h"
 
 // Implementations.
 #include "lullaby/Sound.h"
@@ -34,17 +35,49 @@ namespace sound
 
 int w_newDecoder(lua_State *L)
 {
-	love::filesystem::FileData *data = love::filesystem::luax_getfiledata(L, 1);
-	int bufferSize = (int) luaL_optinteger(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
+	int bufferSize = (int)luaL_optinteger(L, 2, Decoder::DEFAULT_BUFFER_SIZE);
+	love::Stream *stream = nullptr;
+
+	if (love::filesystem::luax_cangetfile(L, 1))
+	{
+		Decoder::StreamSource source = Decoder::STREAM_FILE;
+
+		const char* sourcestr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
+		if (sourcestr != nullptr && !Decoder::getConstant(sourcestr, source))
+			return luax_enumerror(L, "stream type", Decoder::getConstants(source), sourcestr);
+
+		if (source == Decoder::STREAM_FILE)
+		{
+			auto file = love::filesystem::luax_getfile(L, 1);
+			luax_catchexcept(L, [&]() { file->open(love::filesystem::File::MODE_READ); });
+			stream = file;
+		}
+		else
+		{
+			luax_catchexcept(L, [&]()
+			{
+				StrongRef<love::filesystem::FileData> data(love::filesystem::luax_getfiledata(L, 1), Acquire::NORETAIN);
+				stream = new data::DataStream(data);
+			});
+		}
+
+	}
+	else if (luax_istype(L, 1, Data::type))
+	{
+		Data *data = luax_checktype<Data>(L, 1);
+		luax_catchexcept(L, [&]() { stream = new data::DataStream(data); });
+	}
+	else
+	{
+		stream = luax_checktype<Stream>(L, 1);
+		stream->retain();
+	}	
 
 	Decoder *t = nullptr;
 	luax_catchexcept(L,
-		[&]() { t = instance()->newDecoder(data, bufferSize); },
-		[&](bool) { data->release(); }
+		[&]() { t = instance()->newDecoder(stream, bufferSize); },
+		[&](bool) { stream->release(); }
 	);
-
-	if (t == nullptr)
-		return luaL_error(L, "Extension \"%s\" not supported.", data->getExtension().c_str());
 
 	luax_pushtype(L, t);
 	t->release();

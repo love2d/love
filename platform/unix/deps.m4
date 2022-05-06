@@ -35,11 +35,6 @@ AC_DEFUN([ACLOVE_DEP_MPG123], [
 		AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]),
 		AC_SUBST([FILE_OFFSET],[]))])
 
-AC_DEFUN([ACLOVE_DEP_GME], [
-	AC_SEARCH_LIBS([gme_open_data], [gme], [], [LOVE_MSG_ERROR([gme])])
-	AC_DEFINE([LOVE_SUPPORT_GME], [], [Enable gme])
-	AC_CHECK_HEADER([gme/gme.h], [includes="$includes -I/usr/include/gme"], [])])
-
 # For enet
 AC_DEFUN([ACLOVE_SOCKLEN_T], [
 	AC_CHECK_TYPE([socklen_t], [AC_DEFINE([HAS_SOCKLEN_T], [1], [Define if socklen_t exists.] )], ,

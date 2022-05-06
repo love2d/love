@@ -107,6 +107,11 @@ public:
 		ACCESS_WRITE = (1 << 1),
 	};
 
+	struct CompileOptions
+	{
+		std::map<std::string, std::string> defines;
+	};
+
 	struct SourceInfo
 	{
 		Language language;
@@ -237,7 +242,7 @@ public:
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
 
 	static SourceInfo getSourceInfo(const std::string &src);
-	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const SourceInfo &info, bool gles, bool checksystemfeatures);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
 
 	static bool validate(StrongRef<ShaderStage> stages[], std::string &err);
 

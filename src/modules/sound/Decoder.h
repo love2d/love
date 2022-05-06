@@ -23,7 +23,8 @@
 
 // LOVE
 #include "common/Object.h"
-#include "filesystem/File.h"
+#include "common/Stream.h"
+#include "common/StringMap.h"
 
 #include <string>
 
@@ -39,9 +40,16 @@ class Decoder : public Object
 {
 public:
 
+	enum StreamSource
+	{
+		STREAM_MEMORY,
+		STREAM_FILE,
+		STREAM_MAX_ENUM
+	};
+
 	static love::Type type;
 
-	Decoder(Data *data, int bufferSize);
+	Decoder(Stream *stream, int bufferSize);
 	virtual ~Decoder();
 
 	/**
@@ -143,11 +151,12 @@ public:
 	 **/
 	virtual double getDuration() = 0;
 
+	STRINGMAP_CLASS_DECLARE(StreamSource);
+
 protected:
 
-	// The encoded data. This should be replaced with buffered file
-	// reads in the future.
-	StrongRef<Data> data;
+	// A readable stream containing the encoded data.
+	StrongRef<Stream> stream;
 
 	// When the decoder decodes data incrementally, it writes
 	// this many bytes at a time (at most).

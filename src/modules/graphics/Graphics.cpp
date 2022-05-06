@@ -253,8 +253,10 @@ void Graphics::createQuadIndexBuffer()
 	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_STATIC);
 	quadIndexBuffer = newBuffer(settings, DATAFORMAT_UINT16, nullptr, size, 0);
 
-	Buffer::Mapper map(*quadIndexBuffer);
-	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+	{
+		Buffer::Mapper map(*quadIndexBuffer);
+		fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16 *) map.data);
+	}
 
 	quadIndexBuffer->setImmutable(true);
 }
@@ -310,12 +312,18 @@ love::graphics::ParticleSystem *Graphics::newParticleSystem(Texture *texture, in
 	return new ParticleSystem(texture, size);
 }
 
-ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &source, const Shader::SourceInfo &info)
+ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &source, const Shader::CompileOptions &options, const Shader::SourceInfo &info, bool cache)
 {
 	ShaderStage *s = nullptr;
 	std::string cachekey;
 
-	if (!source.empty())
+	// Never cache if there are custom defines set... because hashing would get
+	// more complicated/expensive, and there shouldn't be a lot of duplicate
+	// shader stages with custom defines anyway.
+	if (!options.defines.empty())
+		cache = false;
+
+	if (cache && !source.empty())
 	{
 		data::HashFunction::Value hashvalue;
 		data::hash(data::HashFunction::FUNCTION_SHA1, source.c_str(), source.size(), hashvalue);
@@ -333,16 +341,16 @@ ShaderStage *Graphics::newShaderStage(ShaderStageType stage, const std::string &
 	if (s == nullptr)
 	{
 		bool glsles = usesGLSLES();
-		std::string glsl = Shader::createShaderStageCode(this, stage, source, info, glsles, true);
+		std::string glsl = Shader::createShaderStageCode(this, stage, source, options, info, glsles, true);
 		s = newShaderStageInternal(stage, cachekey, glsl, glsles);
-		if (!cachekey.empty())
+		if (cache && !cachekey.empty())
 			cachedShaderStages[stage][cachekey] = s;
 	}
 
 	return s;
 }
 
-Shader *Graphics::newShader(const std::vector<std::string> &stagessource, bool vulkan)
+Shader *Graphics::newShader(const std::vector<std::string> &stagessource, const Shader::CompileOptions &options)
 {
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
@@ -353,7 +361,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, bool v
 	for (const std::string &source : stagessource)
 	{
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
-		info.vulkan = vulkan;
+		info.vulkan = options.defines.find("vulkan") != options.defines.end();
 		bool isanystage = false;
 
 		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
@@ -364,12 +372,12 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, bool v
 			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
-				stages[i].set(newShaderStage((ShaderStageType) i, source, info), Acquire::NORETAIN);
+				stages[i].set(newShaderStage((ShaderStageType) i, source, options, info, true), Acquire::NORETAIN);
 			}
 		}
 
 		if (!isanystage)
-			throw love::Exception("Could not parse shader code (missing 'position' or 'effect' function?)");
+			throw love::Exception("Could not parse shader code (missing shader entry point function such as 'position' or 'effect')");
 	}
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
@@ -379,7 +387,8 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, bool v
 		{
 			const std::string &source = Shader::getDefaultCode(Shader::STANDARD_DEFAULT, stype);
 			Shader::SourceInfo info = Shader::getSourceInfo(source);
-			stages[i].set(newShaderStage(stype, source, info), Acquire::NORETAIN);
+			Shader::CompileOptions opts;
+			stages[i].set(newShaderStage(stype, source, opts, info, true), Acquire::NORETAIN);
 		}
 
 	}
@@ -387,7 +396,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, bool v
 	return newShaderInternal(stages);
 }
 
-Shader *Graphics::newComputeShader(const std::string &source)
+Shader *Graphics::newComputeShader(const std::string &source, const Shader::CompileOptions &options)
 {
 	Shader::SourceInfo info = Shader::getSourceInfo(source);
 
@@ -395,7 +404,11 @@ Shader *Graphics::newComputeShader(const std::string &source)
 		throw love::Exception("Could not parse compute shader code (missing 'computemain' function?)");
 
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
-	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, info));
+
+	// Don't bother caching compute shader intermediate source, since there
+	// shouldn't be much reuse.
+	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, options, info, false));
+
 	return newShaderInternal(stages);
 }
 
@@ -430,7 +443,7 @@ void Graphics::cleanupCachedShaderStage(ShaderStageType type, const std::string 
 	cachedShaderStages[type].erase(hashkey);
 }
 
-bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagessource, std::string &err)
+bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagessource, const Shader::CompileOptions &options, std::string &err)
 {
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM] = {};
 
@@ -456,7 +469,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 			if (info.stages[i] != Shader::ENTRYPOINT_NONE)
 			{
 				isanystage = true;
-				std::string glsl = Shader::createShaderStageCode(this, stype, source, info, gles, false);
+				std::string glsl = Shader::createShaderStageCode(this, stype, source, options, info, gles, false);
 				stages[i].set(new ShaderStageForValidation(this, stype, glsl, gles), Acquire::NORETAIN);
 			}
 		}

@@ -41,13 +41,26 @@ static bool setupWriteDirectory()
 	return fs != nullptr && fs->setupWriteDirectory();
 }
 
-File::File(const std::string &filename)
+File::File(const std::string &filename, Mode mode)
 	: filename(filename)
 	, file(nullptr)
 	, mode(MODE_CLOSED)
 	, bufferMode(BUFFER_NONE)
 	, bufferSize(0)
 {
+	if (!open(mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
+}
+
+File::File(const File &other)
+	: filename(other.filename)
+	, file(nullptr)
+	, mode(MODE_CLOSED)
+	, bufferMode(other.bufferMode)
+	, bufferSize(other.bufferSize)
+{
+	if (!open(other.mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
 }
 
 File::~File()
@@ -56,10 +69,18 @@ File::~File()
 		close();
 }
 
+File *File::clone()
+{
+	return new File(*this);
+}
+
 bool File::open(Mode mode)
 {
 	if (mode == MODE_CLOSED)
+	{
+		close();
 		return true;
+	}
 
 	if (!PHYSFS_isInit())
 		throw love::Exception("PhysFS is not initialized.");
@@ -151,10 +172,6 @@ int64 File::read(void *dst, int64 size)
 	if (!file || mode != MODE_READ)
 		throw love::Exception("File is not opened for reading.");
 
-	int64 max = (int64)PHYSFS_fileLength(file);
-	size = (size == ALL) ? max : size;
-	size = (size > max) ? max : size;
-
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
 
@@ -207,8 +224,19 @@ int64 File::tell()
 	return (int64) PHYSFS_tell(file);
 }
 
-bool File::seek(uint64 pos)
+bool File::seek(int64 pos, SeekOrigin origin)
 {
+	if (file != nullptr)
+	{
+		if (origin == SEEKORIGIN_CURRENT)
+			pos += tell();
+		else if (origin == SEEKORIGIN_END)
+			pos += getSize();
+	}
+
+	if (pos < 0)
+		return false;
+
 	return file != nullptr && PHYSFS_seek(file, (PHYSFS_uint64) pos) != 0;
 }
 

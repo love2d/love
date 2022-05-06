@@ -187,6 +187,17 @@ int w_hasScreenKeyboard(lua_State *L)
 	return 1;
 }
 
+int w_isModifierActive(lua_State* L)
+{
+	const char *keystr = luaL_checkstring(L, 1);
+	Keyboard::ModifierKey key;
+	if (!Keyboard::getConstant(keystr, key))
+		return luax_enumerror(L, "modifier keys", keystr);
+
+	luax_pushboolean(L, instance()->isModifierActive(key));
+	return 1;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -199,6 +210,7 @@ static const luaL_Reg functions[] =
 	{ "isScancodeDown", w_isScancodeDown },
 	{ "getScancodeFromKey", w_getScancodeFromKey },
 	{ "getKeyFromScancode", w_getKeyFromScancode },
+	{ "isModifierActive", w_isModifierActive },
 	{ 0, 0 }
 };
 

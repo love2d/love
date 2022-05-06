@@ -368,9 +368,9 @@ local objectcache = setmetatable({}, {
 			width = width,
 			height = height,
 			format = format,
-			pointer = ffi.cast(conv.pointer, imagedata:getFFIPointer()),
-			tolua = conv.tolua,
-			fromlua = conv.fromlua,
+			pointer = conv == nil and nil or ffi.cast(conv.pointer, imagedata:getFFIPointer()),
+			tolua = conv == nil and nil or conv.tolua,
+			fromlua = conv == nil and nil or conv.fromlua,
 		}
 
 		self[imagedata] = p
@@ -394,6 +394,8 @@ end
 function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
 	local p = objectcache[self]
 	local idw, idh = p.width, p.height
+
+	if p.pointer == nil then error("ImageData:mapPixel does not currently support the "..p.format.." pixel format.", 2) end
 
 	ix = floor(ix)
 	iy = floor(iy)
@@ -423,6 +425,8 @@ function ImageData:getPixel(x, y)
 	local p = objectcache[self]
 	if not inside(x, y, p.width, p.height) then error("Attempt to get out-of-range pixel!", 2) end
 
+	if p.pointer == nil then error("ImageData:getPixel does not currently support the "..p.format.." pixel format.", 2) end
+
 	ffifuncs.lockMutex(self)
 	local pixel = p.pointer[y * p.width + x]
 	local r, g, b, a = p.tolua(pixel)
@@ -450,6 +454,8 @@ function ImageData:setPixel(x, y, r, g, b, a)
 
 	local p = objectcache[self]
 	if not inside(x, y, p.width, p.height) then error("Attempt to set out-of-range pixel!", 2) end
+
+	if p.pointer == nil then error("ImageData:setPixel does not currently support the "..p.format.." pixel format.", 2) end
 
 	ffifuncs.lockMutex(self)
 	p.fromlua(p.pointer[y * p.width + x], r, g, b, a)

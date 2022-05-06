@@ -34,37 +34,23 @@ namespace lullaby
 {
 
 // Callbacks
-namespace
+static OSStatus readFunc(void *inClientData, SInt64 inPosition, UInt32 requestCount, void *buffer, UInt32 *actualCount)
 {
-OSStatus readFunc(void *inClientData, SInt64 inPosition, UInt32 requestCount, void *buffer, UInt32 *actualCount)
-{
-	Data *data = (Data *) inClientData;
-	SInt64 bytesLeft = data->getSize() - inPosition;
+	auto stream = (Stream *) inClientData;
+	int64 readbytes = stream->read(buffer, requestCount);
 
-	if (bytesLeft > 0)
-	{
-		UInt32 actualSize = bytesLeft >= requestCount ? requestCount : (UInt32) bytesLeft;
-		memcpy(buffer, (char *) data->getData() + inPosition, actualSize);
-		*actualCount = actualSize;
-	}
-	else
-	{
-		*actualCount = 0;
-		return kAudioFilePositionError;
-	}
-
-	return noErr;
+	*actualCount = (UInt32) readbytes;
+	return readbytes > 0 ? noErr : kAudioFilePositionError;
 }
 
-SInt64 getSizeFunc(void *inClientData)
+static SInt64 getSizeFunc(void *inClientData)
 {
-	Data *data = (Data *) inClientData;
-	return data->getSize();
+	auto stream = (Stream *) inClientData;
+	return stream->getSize();
 }
-} // anonymous namespace
 
-CoreAudioDecoder::CoreAudioDecoder(Data *data, int bufferSize)
-	: Decoder(data, bufferSize)
+CoreAudioDecoder::CoreAudioDecoder(Stream *stream, int bufferSize)
+	: Decoder(stream, bufferSize)
 	, audioFile(nullptr)
 	, extAudioFile(nullptr)
 	, inputInfo()
@@ -75,23 +61,23 @@ CoreAudioDecoder::CoreAudioDecoder(Data *data, int bufferSize)
 	{
 		OSStatus err = noErr;
 
-		// Open the file represented by the Data.
-		err = AudioFileOpenWithCallbacks(data, readFunc, nullptr, getSizeFunc, nullptr, kAudioFileMP3Type, &audioFile);
+		// Open the file represented by the Stream.
+		err = AudioFileOpenWithCallbacks(stream, readFunc, nullptr, getSizeFunc, nullptr, kAudioFileMP3Type, &audioFile);
 		if (err != noErr)
-			throw love::Exception("Could open audio file for decoding.");
+			throw love::Exception("Could not open audio file for decoding with CoreAudio.");
 
 		// We want to use the Extended AudioFile API.
 		err = ExtAudioFileWrapAudioFileID(audioFile, false, &extAudioFile);
 
 		if (err != noErr)
-			throw love::Exception("Could open audio file for decoding.");
+			throw love::Exception("Could not open audio file for decoding with CoreAudio.");
 
 		// Get the format of the audio data.
 		UInt32 propertySize = sizeof(inputInfo);
 		err = ExtAudioFileGetProperty(extAudioFile, kExtAudioFileProperty_FileDataFormat, &propertySize, &inputInfo);
 
 		if (err != noErr)
-			throw love::Exception("Could not determine file format.");
+			throw love::Exception("Could not determine CoreAudio file format.");
 
 		// Set the output format to 16 bit signed integer (native-endian) data.
 		// Keep the channel count and sample rate of the source format.
@@ -116,7 +102,7 @@ CoreAudioDecoder::CoreAudioDecoder(Data *data, int bufferSize)
 		err = ExtAudioFileSetProperty(extAudioFile, kExtAudioFileProperty_ClientDataFormat, propertySize, &outputInfo);
 
 		if (err != noErr)
-			throw love::Exception("Could not set decoder properties.");
+			throw love::Exception("Could not set CoreAudio decoder properties.");
 	}
 	catch (love::Exception &)
 	{
@@ -143,59 +129,10 @@ void CoreAudioDecoder::closeAudioFile()
 	audioFile = nullptr;
 }
 
-bool CoreAudioDecoder::accepts(const std::string &ext)
-{
-	UInt32 size = 0;
-	std::vector<UInt32> types;
-
-	// Get the size in bytes of the type array we're about to get.
-	OSStatus err = AudioFileGetGlobalInfoSize(kAudioFileGlobalInfo_ReadableTypes, sizeof(UInt32), nullptr, &size);
-	if (err != noErr)
-		return false;
-
-	types.resize(size / sizeof(UInt32));
-
-	// Get an array of supported types.
-	err = AudioFileGetGlobalInfo(kAudioFileGlobalInfo_ReadableTypes, 0, nullptr, &size, &types[0]);
-	if (err != noErr)
-		return false;
-
-	// Turn the extension string into a CFStringRef.
-	CFStringRef extstr = CFStringCreateWithCString(nullptr, ext.c_str(), kCFStringEncodingUTF8);
-
-	CFArrayRef exts = nullptr;
-	size = sizeof(CFArrayRef);
-
-	for (UInt32 type : types)
-	{
-		// Get the extension strings for the type.
-		err = AudioFileGetGlobalInfo(kAudioFileGlobalInfo_ExtensionsForType, sizeof(UInt32), &type, &size, &exts);
-		if (err != noErr)
-			continue;
-
-		// A type can have more than one extension string.
-		for (CFIndex i = 0; i < CFArrayGetCount(exts); i++)
-		{
-			CFStringRef value = (CFStringRef) CFArrayGetValueAtIndex(exts, i);
-
-			if (CFStringCompare(extstr, value, 0) == kCFCompareEqualTo)
-			{
-				CFRelease(extstr);
-				CFRelease(exts);
-				return true;
-			}
-		}
-
-		CFRelease(exts);
-	}
-
-	CFRelease(extstr);
-	return false;
-}
-
 love::sound::Decoder *CoreAudioDecoder::clone()
 {
-	return new CoreAudioDecoder(data.get(), bufferSize);
+	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
+	return new CoreAudioDecoder(s, bufferSize);
 }
 
 int CoreAudioDecoder::decode()

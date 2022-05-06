@@ -23,7 +23,6 @@
 
 // LOVE
 #include "common/Module.h"
-#include "common/Stream.h"
 #include "filesystem/File.h"
 
 #include "VideoStream.h"

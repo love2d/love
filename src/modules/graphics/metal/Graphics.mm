@@ -130,11 +130,6 @@ static inline id<MTLTexture> getMTLTexture(love::graphics::Texture *tex)
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getHandle() : nil;
 }
 
-static inline id<MTLSamplerState> getMTLSampler(love::graphics::Texture *tex)
-{
-	return tex ? (__bridge id<MTLSamplerState>)(void *) tex->getSamplerHandle() : nil;
-}
-
 static inline id<MTLTexture> getMTLRenderTarget(love::graphics::Texture *tex)
 {
 	return tex ? (__bridge id<MTLTexture>)(void *) tex->getRenderTargetHandle() : nil;
@@ -348,9 +343,10 @@ Graphics::Graphics()
 		if (!Shader::standardShaders[i])
 		{
 			std::vector<std::string> stages;
+			Shader::CompileOptions opts;
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
-			Shader::standardShaders[i] = newShader(stages);
+			Shader::standardShaders[i] = newShader(stages, opts);
 		}
 	}
 
@@ -1782,7 +1778,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, 
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
 {
 	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
 	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;

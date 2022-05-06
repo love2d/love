@@ -526,9 +526,6 @@
 		FA0B7E8B1A95902C000E1D17 /* FLACDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */; };
 		FA0B7E8C1A95902C000E1D17 /* FLACDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */; };
 		FA0B7E8D1A95902C000E1D17 /* FLACDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C831A95902C000E1D17 /* FLACDecoder.h */; };
-		FA0B7E8E1A95902C000E1D17 /* GmeDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */; };
-		FA0B7E8F1A95902C000E1D17 /* GmeDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */; };
-		FA0B7E901A95902C000E1D17 /* GmeDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C851A95902C000E1D17 /* GmeDecoder.h */; };
 		FA0B7E911A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */; };
 		FA0B7E921A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */; };
 		FA0B7E931A95902C000E1D17 /* ModPlugDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */; };
@@ -826,6 +823,9 @@
 		FA6A2B7A1F60B8250074C308 /* wrap_ByteData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6A2B781F60B8250074C308 /* wrap_ByteData.cpp */; };
 		FA6A2B7B1F60B8250074C308 /* wrap_ByteData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6A2B781F60B8250074C308 /* wrap_ByteData.cpp */; };
 		FA6BDE5C1F31725300786805 /* Color.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6BDE5B1F31725300786805 /* Color.h */; };
+		FA6BDF8E281219E900240F2A /* DataStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6BDF8C281219E900240F2A /* DataStream.cpp */; };
+		FA6BDF8F281219E900240F2A /* DataStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6BDF8C281219E900240F2A /* DataStream.cpp */; };
+		FA6BDF90281219E900240F2A /* DataStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6BDF8D281219E900240F2A /* DataStream.h */; };
 		FA76344A1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344B1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344C1E28722A0066EF9E /* StreamBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7634491E28722A0066EF9E /* StreamBuffer.h */; };
@@ -1699,8 +1699,6 @@
 		FA0B7C801A95902C000E1D17 /* Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decoder.cpp; sourceTree = "<group>"; };
 		FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FLACDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C831A95902C000E1D17 /* FLACDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLACDecoder.h; sourceTree = "<group>"; };
-		FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GmeDecoder.cpp; sourceTree = "<group>"; };
-		FA0B7C851A95902C000E1D17 /* GmeDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GmeDecoder.h; sourceTree = "<group>"; };
 		FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModPlugDecoder.cpp; sourceTree = "<group>"; };
 		FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModPlugDecoder.h; sourceTree = "<group>"; };
 		FA0B7C8A1A95902C000E1D17 /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sound.cpp; sourceTree = "<group>"; };
@@ -1909,6 +1907,8 @@
 		FA6A2B771F60B8250074C308 /* wrap_ByteData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_ByteData.h; sourceTree = "<group>"; };
 		FA6A2B781F60B8250074C308 /* wrap_ByteData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_ByteData.cpp; sourceTree = "<group>"; };
 		FA6BDE5B1F31725300786805 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
+		FA6BDF8C281219E900240F2A /* DataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStream.cpp; sourceTree = "<group>"; };
+		FA6BDF8D281219E900240F2A /* DataStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStream.h; sourceTree = "<group>"; };
 		FA7634481E28722A0066EF9E /* StreamBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamBuffer.cpp; sourceTree = "<group>"; };
 		FA7634491E28722A0066EF9E /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA7DA04C1C16874A0056B200 /* wrap_Math.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Math.lua; sourceTree = "<group>"; };
@@ -3199,8 +3199,6 @@
 				FA0B7C7F1A95902C000E1D17 /* CoreAudioDecoder.h */,
 				FA0B7C821A95902C000E1D17 /* FLACDecoder.cpp */,
 				FA0B7C831A95902C000E1D17 /* FLACDecoder.h */,
-				FA0B7C841A95902C000E1D17 /* GmeDecoder.cpp */,
-				FA0B7C851A95902C000E1D17 /* GmeDecoder.h */,
 				FA0B7C861A95902C000E1D17 /* ModPlugDecoder.cpp */,
 				FA0B7C871A95902C000E1D17 /* ModPlugDecoder.h */,
 				FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */,
@@ -3762,6 +3760,8 @@
 				FACA02E31F5E396B0084B28F /* Compressor.h */,
 				FACA02E41F5E396B0084B28F /* DataModule.cpp */,
 				FACA02E51F5E396B0084B28F /* DataModule.h */,
+				FA6BDF8C281219E900240F2A /* DataStream.cpp */,
+				FA6BDF8D281219E900240F2A /* DataStream.h */,
 				FA6A2B681F5F7F560074C308 /* DataView.cpp */,
 				FA6A2B691F5F7F560074C308 /* DataView.h */,
 				FACA02E61F5E396B0084B28F /* HashFunction.cpp */,
@@ -4023,7 +4023,6 @@
 				FAF140871E20934C00F898D2 /* parseVersions.h in Headers */,
 				FA0B7AC61A958EA3000E1D17 /* types.h in Headers */,
 				FA0B7DBD1A95902C000E1D17 /* Joystick.h in Headers */,
-				FA0B7E901A95902C000E1D17 /* GmeDecoder.h in Headers */,
 				FA0B7D0E1A95902C000E1D17 /* wrap_Filesystem.h in Headers */,
 				FA0B7EE41A95902D000E1D17 /* Window.h in Headers */,
 				FA0B7CFC1A95902C000E1D17 /* Filesystem.h in Headers */,
@@ -4370,6 +4369,7 @@
 				217DFC121D9F6D490055D849 /* usocket.h in Headers */,
 				217DFC081D9F6D490055D849 /* udp.h in Headers */,
 				FA0B7DCF1A95902C000E1D17 /* wrap_Keyboard.h in Headers */,
+				FA6BDF90281219E900240F2A /* DataStream.h in Headers */,
 				FAF6C9DB23C2DE2900D7B5BC /* SpvBuilder.h in Headers */,
 				FA0B7EA21A95902C000E1D17 /* Sound.h in Headers */,
 				FA0B7B331A958EA3000E1D17 /* wuff_config.h in Headers */,
@@ -4517,7 +4517,6 @@
 				FADF54081E3D78F700012CC0 /* Video.cpp in Sources */,
 				FA9D8DD81DEF8411002CD881 /* Data.cpp in Sources */,
 				FABDA9992552448300B5C523 /* b2_contact_manager.cpp in Sources */,
-				FA0B7E8F1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FADF542B1E3DAADA00012CC0 /* wrap_Mesh.cpp in Sources */,
 				FA0B7CD71A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7AC01A958EA3000E1D17 /* host.c in Sources */,
@@ -4702,6 +4701,7 @@
 				FAE64A922071364B00BC7981 /* physfs_platform_winrt.cpp in Sources */,
 				FABDA97A2552448200B5C523 /* b2_joint.cpp in Sources */,
 				FA4F2C0F1DE936FE00CA37D7 /* timeout.c in Sources */,
+				FA6BDF8F281219E900240F2A /* DataStream.cpp in Sources */,
 				FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */,
 				FA0B7E131A95902C000E1D17 /* GearJoint.cpp in Sources */,
 				FABDA99B2552448300B5C523 /* b2_polygon_contact.cpp in Sources */,
@@ -4940,7 +4940,6 @@
 				FABDA9982552448300B5C523 /* b2_contact_manager.cpp in Sources */,
 				FADF542A1E3DAADA00012CC0 /* wrap_Mesh.cpp in Sources */,
 				FA0B7D2B1A95902C000E1D17 /* wrap_Rasterizer.cpp in Sources */,
-				FA0B7E8E1A95902C000E1D17 /* GmeDecoder.cpp in Sources */,
 				FA0B7CD61A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA3C5E421F8C368C0003C579 /* ShaderStage.cpp in Sources */,
 				FA0B7EAF1A95902C000E1D17 /* System.cpp in Sources */,
@@ -5122,6 +5121,7 @@
 				FABDA9932552448300B5C523 /* b2_polygon_circle_contact.cpp in Sources */,
 				FAC7CD851FE35E95006A60C7 /* physfs_unicode.c in Sources */,
 				FA6A2B7A1F60B8250074C308 /* wrap_ByteData.cpp in Sources */,
+				FA6BDF8E281219E900240F2A /* DataStream.cpp in Sources */,
 				FAF140551E20934C00F898D2 /* Link.cpp in Sources */,
 				FABDA9792552448200B5C523 /* b2_joint.cpp in Sources */,
 				FAF140841E20934C00F898D2 /* ParseHelper.cpp in Sources */,
@@ -5399,7 +5399,6 @@
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = NO;
@@ -5465,7 +5464,6 @@
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
@@ -5603,7 +5601,6 @@
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "@rpath";
 				LIBRARY_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -5637,6 +5634,7 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
@@ -5675,6 +5673,7 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",
@@ -5714,6 +5713,7 @@
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ios/libraries/freetype",

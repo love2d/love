@@ -34,40 +34,32 @@ namespace lullaby
 // Callbacks
 static wuff_sint32 read_callback(void *userdata, wuff_uint8 *buffer, size_t *size)
 {
-	WaveFile *input = (WaveFile *) userdata;
-	size_t bytes_left = input->size - input->offset;
-	size_t target_size = *size < bytes_left ? *size : bytes_left;
-	memcpy(buffer, input->data + input->offset, target_size);
-	input->offset += target_size;
-	*size = target_size;
+	auto stream = (Stream *) userdata;
+	size_t readsize = stream->read(buffer, *size);
+	*size = readsize;
 	return WUFF_SUCCESS;
 }
 
 static wuff_sint32 seek_callback(void *userdata, wuff_uint64 offset)
 {
-	WaveFile *input = (WaveFile *)userdata;
-	input->offset = (size_t) (offset < input->size ? offset : input->size);
+	auto stream = (Stream *) userdata;
+	stream->seek(offset, Stream::SEEKORIGIN_BEGIN);
 	return WUFF_SUCCESS;
 }
 
 static wuff_sint32 tell_callback(void *userdata, wuff_uint64 *offset)
 {
-	WaveFile *input = (WaveFile *)userdata;
-	*offset = input->offset;
+	auto stream = (Stream *) userdata;
+	*offset = stream->tell();
 	return WUFF_SUCCESS;
 }
 
-wuff_callback WaveDecoderCallbacks = {read_callback, seek_callback, tell_callback};
+static wuff_callback WaveDecoderCallbacks = {read_callback, seek_callback, tell_callback};
 
-
-WaveDecoder::WaveDecoder(Data *data, int bufferSize)
-	: Decoder(data, bufferSize)
+WaveDecoder::WaveDecoder(Stream *stream, int bufferSize)
+	: Decoder(stream, bufferSize)
 {
-	dataFile.data = (char *) data->getData();
-	dataFile.size = data->getSize();
-	dataFile.offset = 0;
-
-	int wuff_status = wuff_open(&handle, &WaveDecoderCallbacks, &dataFile);
+	int wuff_status = wuff_open(&handle, &WaveDecoderCallbacks, stream);
 	if (wuff_status < 0)
 		throw love::Exception("Could not open WAVE");
 
@@ -78,13 +70,13 @@ WaveDecoder::WaveDecoder(Data *data, int bufferSize)
 			throw love::Exception("Could not retrieve WAVE stream info");
 
 		if (info.channels > 2)
-			throw love::Exception("Multichannel audio not supported");
+			throw love::Exception("WAVE Multichannel audio not supported");
 
 		if (info.format != WUFF_FORMAT_PCM_U8 && info.format != WUFF_FORMAT_PCM_S16)
 		{
 			wuff_status = wuff_format(handle, WUFF_FORMAT_PCM_S16);
 			if (wuff_status < 0)
-				throw love::Exception("Could not set output format");
+				throw love::Exception("Could not set WAVE output format");
 		}
 	}
 	catch (love::Exception &)
@@ -99,25 +91,10 @@ WaveDecoder::~WaveDecoder()
 	wuff_close(handle);
 }
 
-bool WaveDecoder::accepts(const std::string &ext)
-{
-	static const std::string supported[] =
-	{
-		"wav", ""
-	};
-
-	for (int i = 0; !(supported[i].empty()); i++)
-	{
-		if (supported[i].compare(ext) == 0)
-			return true;
-	}
-
-	return false;
-}
-
 love::sound::Decoder *WaveDecoder::clone()
 {
-	return new WaveDecoder(data.get(), bufferSize);
+	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
+	return new WaveDecoder(s, bufferSize);
 }
 
 int WaveDecoder::decode()

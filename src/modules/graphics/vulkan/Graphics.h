@@ -68,7 +68,7 @@ namespace love {
 				void setPointSize(float size) override { std::cout << "setPointSize "; }
 				void setWireframe(bool enable) override { std::cout << "setWireframe "; }
 				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override { std::cout << "getSizedFormat "; return format; }
-				bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override { std::cout << "isPixelFormatSupported "; return true; }
+				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override { std::cout << "isPixelFormatSupported "; return true; }
 				Renderer getRenderer() const override { std::cout << "getRenderer "; return RENDERER_VULKAN; }
 				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
 				RendererInfo getRendererInfo() const override { std::cout << "getRendererInfo "; return {}; }

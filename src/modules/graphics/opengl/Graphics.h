@@ -106,7 +106,7 @@ public:
 	void setWireframe(bool enable) override;
 
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, PixelFormatUsageFlags usage, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
@@ -155,6 +155,8 @@ private:
 
 	void setDebug(bool enable);
 
+	uint32 computePixelFormatUsage(PixelFormat format, bool readable);
+
 	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;
 	bool windowHasStencil;
 	GLuint mainVAO;
@@ -170,8 +172,8 @@ private:
 	// Only needed for buffer types that can be bound to shaders.
 	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERUSAGE_MAX_ENUM];
 
-	// [rendertarget][readable][computewrite][srgb]
-	OptionalBool supportedFormats[PIXELFORMAT_MAX_ENUM][2][2][2][2];
+	// [non-readable, readable]
+	uint32 pixelFormatUsage[PIXELFORMAT_MAX_ENUM][2];
 
 }; // Graphics
 

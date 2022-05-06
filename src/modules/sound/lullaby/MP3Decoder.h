@@ -22,7 +22,7 @@
 #define LOVE_SOUND_LULLABY_MP3_DECODER_H
 
 // LOVE
-#include "common/Data.h"
+#include "common/Stream.h"
 #include "sound/Decoder.h"
 
 // dr_mp3
@@ -41,25 +41,28 @@ class MP3Decoder: public love::sound::Decoder
 {
 public:
 
-	MP3Decoder(Data *data, int bufsize);
+	MP3Decoder(Stream *stream, int bufsize);
 	virtual ~MP3Decoder();
 
-	static bool accepts(const std::string &ext);
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(double s);
-	bool rewind();
-	bool isSeekable();
-	int getChannelCount() const;
-	int getBitDepth() const;
-	double getDuration();
+	love::sound::Decoder *clone() override;
+	int decode() override;
+	bool seek(double s) override;
+	bool rewind() override;
+	bool isSeekable() override;
+	int getChannelCount() const override;
+	int getBitDepth() const override;
+	double getDuration() override;
 
 private:
+	static size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead);
+	static drmp3_bool32 onSeek(void *pUserData, int offset, drmp3_seek_origin origin);
 
 	// MP3 handle
 	drmp3 mp3;
 	// Used for fast seeking
 	std::vector<drmp3_seek_point> seekTable;
+	// Position of first MP3 frame found
+	int64 offset;
 
 	double duration;
 }; // MP3Decoder

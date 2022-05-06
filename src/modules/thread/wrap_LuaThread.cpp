@@ -63,11 +63,10 @@ int w_Thread_wait(lua_State *L)
 int w_Thread_getError(lua_State *L)
 {
 	LuaThread *t = luax_checkthread(L, 1);
-	std::string err = t->getError();
-	if (err.empty())
-		lua_pushnil(L);
+	if (t->hasError())
+		luax_pushstring(L, t->getError());
 	else
-		luax_pushstring(L, err);
+		lua_pushnil(L);
 	return 1;
 }
 

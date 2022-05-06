@@ -823,7 +823,7 @@ namespace love {
 						std::vector<std::string> stages;
 						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
 						stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
-						Shader::standardShaders[i] = newShader(stages, true);
+						Shader::standardShaders[i] = newShader(stages, { { {"vulkan", "1"} } });
 					}
 				}
 			}

@@ -165,9 +165,9 @@ public:
 	virtual bool unmountFullPath(const char *fullpath) = 0;
 
 	/**
-	 * Creates a new file.
+	 * Opens a new File object from the specified path, using the given mode.
 	 **/
-	virtual File *newFile(const char *filename) const = 0;
+	virtual File *openFile(const char *filename, File::Mode mode) const = 0;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.
@@ -217,6 +217,11 @@ public:
 	virtual std::string getRealDirectory(const char *filename) const = 0;
 
 	/**
+	 * Gets whether anything exists at the specified path.
+	 **/
+	virtual bool exists(const char *filepath) const = 0;
+
+	/**
 	 * Gets information about the item at the specified filepath. Returns false
 	 * if nothing exists at the path.
 	 **/
@@ -239,7 +244,8 @@ public:
 	 * @param filename The name of the file to read from.
 	 * @param size The size in bytes of the data to read.
 	 **/
-	virtual FileData *read(const char *filename, int64 size = File::ALL) const = 0;
+	virtual FileData *read(const char *filename, int64 size) const = 0;
+	virtual FileData *read(const char *filename) const = 0;
 
 	/**
 	 * Write data to a file.

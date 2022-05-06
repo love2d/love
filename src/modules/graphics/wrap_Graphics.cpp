@@ -1347,7 +1347,7 @@ int w_newParticleSystem(lua_State *L)
 	return 1;
 }
 
-static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string> &stages)
+static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string> &stages, Shader::CompileOptions &options)
 {
 	using namespace love::filesystem;
 
@@ -1369,7 +1369,6 @@ static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string
 
 				lua_replace(L, i);
 			}
-
 			continue;
 		}
 
@@ -1412,18 +1411,61 @@ static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string
 	if (has_arg2)
 		stages.push_back(luax_checkstring(L, startidx + 1));
 
+	int optionsidx = has_arg2 ? startidx + 2 : startidx + 1;
+	if (!lua_isnoneornil(L, optionsidx))
+	{
+		luaL_checktype(L, optionsidx, LUA_TTABLE);
+		lua_getfield(L, optionsidx, "defines");
+		if (!lua_isnoneornil(L, -1))
+		{
+			if (!lua_istable(L, -1))
+				luaL_argerror(L, optionsidx, "expected 'defines' field to be a table");
+
+			lua_pushnil(L);
+			while (lua_next(L, -2))
+			{
+				std::string defname;
+				std::string defval;
+
+				if (lua_type(L, -2) == LUA_TNUMBER && lua_type(L, -1) == LUA_TSTRING)
+					defname = luaL_checkstring(L, -1);
+				else if (lua_type(L, -2) != LUA_TSTRING)
+					luaL_argerror(L, optionsidx, "all fields in the 'defines' table must use string keys.");
+				else
+				{
+					defname = luaL_checkstring(L, -2);
+					if (lua_type(L, -1) == LUA_TBOOLEAN)
+						defval = luax_toboolean(L, -1) ? "1" : "0";
+					else
+					{
+						const char *val = lua_tostring(L, -1);
+						if (val == nullptr)
+							luaL_argerror(L, optionsidx, "'defines' table values must be strings, numbers, or booleans.");
+						defval = val;
+					}
+				}
+
+				options.defines[defname] = defval;
+
+				lua_pop(L, 1);
+			}
+		}
+		lua_pop(L, 1);
+	}
+
 	return 0;
 }
 
 int w_newShader(lua_State *L)
 {
 	std::vector<std::string> stages;
-	w_getShaderSource(L, 1, stages);
+	Shader::CompileOptions options;
+	w_getShaderSource(L, 1, stages, options);
 
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance()->newShader(stages);
+		Shader *shader = instance()->newShader(stages, options);
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1446,12 +1488,13 @@ int w_newShader(lua_State *L)
 int w_newComputeShader(lua_State* L)
 {
 	std::vector<std::string> stages;
-	w_getShaderSource(L, 1, stages);
+	Shader::CompileOptions options;
+	w_getShaderSource(L, 1, stages, options);
 
 	bool should_error = false;
 	try
 	{
-		Shader *shader = instance()->newComputeShader(stages[0]);
+		Shader *shader = instance()->newComputeShader(stages[0], options);
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1476,13 +1519,14 @@ int w_validateShader(lua_State *L)
 	bool gles = luax_checkboolean(L, 1);
 
 	std::vector<std::string> stages;
-	w_getShaderSource(L, 2, stages);
+	Shader::CompileOptions options;
+	w_getShaderSource(L, 2, stages, options);
 
 	bool success = true;
 	std::string err;
 	try
 	{
-		success = instance()->validateShader(gles, stages, err);
+		success = instance()->validateShader(gles, stages, options, err);
 	}
 	catch (love::Exception &e)
 	{
