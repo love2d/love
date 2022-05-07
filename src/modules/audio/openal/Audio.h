@@ -127,9 +127,9 @@ public:
 
 	bool getEffectID(const char *name, ALuint &id);
 
-	std::string getOutputDevice();
-	void getOutputDevices(std::vector<std::string> &list);
-	void setOutputDevice(const char *name);
+	std::string getPlaybackDevice();
+	void getPlaybackDevices(std::vector<std::string> &list);
+	void setPlaybackDevice(const char *name);
 
 private:
 	void initializeEFX();

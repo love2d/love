@@ -211,12 +211,12 @@ void Audio::resumeContext()
 {
 }
 
-std::string Audio::getOutputDevice()
+std::string Audio::getPlaybackDevice()
 {
 	return "";
 }
 
-void Audio::getOutputDevices(std::vector<std::string> &/*list*/)
+void Audio::getPlaybackDevices(std::vector<std::string> &/*list*/)
 {
 }
 

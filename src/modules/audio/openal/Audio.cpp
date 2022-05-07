@@ -328,7 +328,7 @@ void Audio::resumeContext()
 		alcMakeContextCurrent(context);
 }
 
-std::string Audio::getOutputDevice()
+std::string Audio::getPlaybackDevice()
 {
 	const char *dev = getDeviceSpecifier(device);
 
@@ -338,7 +338,7 @@ std::string Audio::getOutputDevice()
 	return dev;
 }
 
-void Audio::getOutputDevices(std::vector<std::string> &list)
+void Audio::getPlaybackDevices(std::vector<std::string> &list)
 {
 	const char *devices = getDeviceSpecifier(nullptr);
 
@@ -352,7 +352,7 @@ void Audio::getOutputDevices(std::vector<std::string> &list)
 	}
 }
 
-void Audio::setOutputDevice(const char* name)
+void Audio::setPlaybackDevice(const char* name)
 {
 #ifndef ALC_SOFT_reopen_device
 	typedef ALCboolean (ALC_APIENTRY*LPALCREOPENDEVICESOFT)(ALCdevice *device,
@@ -366,7 +366,7 @@ void Audio::setOutputDevice(const char* name)
 	{
 		// Default implementation throws exception. To make
 		// error message consistent, call the base class.
-		love::audio::Audio::setOutputDevice(name);
+		love::audio::Audio::setPlaybackDevice(name);
 		return;
 	}
 

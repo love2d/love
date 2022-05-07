@@ -298,19 +298,19 @@ public:
 	virtual void resumeContext() = 0;
 
 	/**
-	 * Get current output device name.
+	 * Get current playback device name.
 	 */
-	virtual std::string getOutputDevice() = 0;
+	virtual std::string getPlaybackDevice() = 0;
 
 	/**
-	 * Retrieve list of available output devices.
+	 * Retrieve list of available playback devices.
 	 */
-	virtual void getOutputDevices(std::vector<std::string> &list) = 0;
+	virtual void getPlaybackDevices(std::vector<std::string> &list) = 0;
 
 	/**
-	 * Set the output device to specified device name.
+	 * Set the current playback device to specified device name.
 	 */
-	virtual void setOutputDevice(const char *name);
+	virtual void setPlaybackDevice(const char *name);
 
 private:
 

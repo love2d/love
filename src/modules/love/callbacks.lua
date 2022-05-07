@@ -131,7 +131,7 @@ function love.createhandlers()
 		end,
 		audiodisconnected = function (sources)
 			if not love.audiodisconnected or not love.audiodisconnected(sources) then
-				love.audio.setOutputDevice()
+				love.audio.setPlaybackDevice()
 			end
 		end,
 	}, {

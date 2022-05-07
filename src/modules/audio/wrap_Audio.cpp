@@ -543,20 +543,20 @@ int w_setMixWithSystem(lua_State *L)
 	return 1;
 }
 
-int w_getOutputDevice(lua_State* L)
+int w_getPlaybackDevice(lua_State* L)
 {
 	std::string device;
 
-	luax_catchexcept(L, [&]() { device = instance()->getOutputDevice(); });
+	luax_catchexcept(L, [&]() { device = instance()->getPlaybackDevice(); });
 	luax_pushstring(L, device);
 	return 1;
 }
 
-int w_getOutputDevices(lua_State* L)
+int w_getPlaybackDevices(lua_State* L)
 {
 	std::vector<std::string> list;
 
-	luax_catchexcept(L, [&]() { instance()->getOutputDevices(list); });
+	luax_catchexcept(L, [&]() { instance()->getPlaybackDevices(list); });
 	lua_createtable(L, 0, (int) list.size());
 	for (int i = 0; i < (int) list.size(); i++)
 	{
@@ -568,13 +568,13 @@ int w_getOutputDevices(lua_State* L)
 	return 1;
 }
 
-int w_setOutputDevice(lua_State* L)
+int w_setPlaybackDevice(lua_State* L)
 {
 	const char *device = luaL_optstring(L, 1, nullptr);
 
 	try
 	{
-		instance()->setOutputDevice(device);
+		instance()->setPlaybackDevice(device);
 		luax_pushboolean(L, true);
 		return 1;
 	}
@@ -620,9 +620,9 @@ static const luaL_Reg functions[] =
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
 	{ "setMixWithSystem", w_setMixWithSystem },
-	{ "getOutputDevice", w_getOutputDevice },
-	{ "getOutputDevices", w_getOutputDevices },
-	{ "setOutputDevice", w_setOutputDevice },
+	{ "getPlaybackDevice", w_getPlaybackDevice },
+	{ "getPlaybackDevices", w_getPlaybackDevices },
+	{ "setPlaybackDevice", w_setPlaybackDevice },
 
 	{ 0, 0 }
 };

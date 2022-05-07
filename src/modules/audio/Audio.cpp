@@ -78,7 +78,7 @@ bool Audio::setMixWithSystem(bool mix)
 #endif
 }
 
-void Audio::setOutputDevice(const char */*name*/)
+void Audio::setPlaybackDevice(const char */*name*/)
 {
 	throw love::Exception("Re-setting output device is not supported.");
 }
