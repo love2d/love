@@ -129,8 +129,8 @@ function love.createhandlers()
 		localechanged = function ()
 			if love.localechanged then return love.localechanged() end
 		end,
-		audiodisconnected = function ()
-			if not love.audiodisconnected or not love.audiodisconnected() then
+		audiodisconnected = function (sources)
+			if not love.audiodisconnected or not love.audiodisconnected(sources) then
 				love.audio.setOutputDevice()
 			end
 		end,

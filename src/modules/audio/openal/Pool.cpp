@@ -30,6 +30,16 @@ namespace audio
 namespace openal
 {
 
+static Variant::SharedTable *putSourcesAsSharedTable(std::vector<audio::Source *> &sources)
+{
+	Variant::SharedTable *table = new Variant::SharedTable();
+
+	for (int i = 0; i < sources.size(); i++)
+		table->pairs.emplace_back((double) (i + 1), Variant(&Source::type, sources[i]));
+
+	return table;
+}
+
 Pool::Pool(ALCdevice *device)
 	: device(device)
 	, sources()
@@ -125,8 +135,17 @@ void Pool::update()
 				disconnectNotified = false;
 			else if (!disconnectNotified)
 			{
-				StrongRef<event::Message> msg(new event::Message("audiodisconnected"), Acquire::NORETAIN);
+				// Get all sources in this Pool then stop it
+				// since they're all internally stopped.
+				std::vector<audio::Source *> sources = getPlayingSources();
+				Source::stop(sources);
+
+				std::vector<Variant> vargs;
+				vargs.emplace_back(putSourcesAsSharedTable(sources));
+
+				StrongRef<event::Message> msg(new event::Message("audiodisconnected", vargs), Acquire::NORETAIN);
 				eventModule->push(msg);
+
 				disconnectNotified = true;
 			}
 		}
