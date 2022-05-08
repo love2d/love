@@ -58,13 +58,6 @@ namespace love {
 			Graphics::Graphics() {
 			}
 
-			void Graphics::initVulkan() {
-				if (!init) {
-					init = true;
-
-				}
-			}
-
 			// START OVERRIDEN FUNCTIONS
 
 			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {

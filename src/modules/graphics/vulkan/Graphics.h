@@ -23,8 +23,6 @@ namespace love {
 			public:
 				Graphics();
 
-				void initVulkan();
-
 				virtual ~Graphics() = default;
 
 				const char* getName() const override;
@@ -95,7 +93,6 @@ namespace love {
 				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override { std::cout << "setRenderTargetsInternal "; }
 
 			private:
-				bool init = false;
 				// vulkan specific member functions and variables
 
 				struct QueueFamilyIndices {
