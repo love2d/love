@@ -25,7 +25,7 @@ namespace love {
 
 				void initVulkan();
 
-				virtual ~Graphics();
+				virtual ~Graphics() = default;
 
 				const char* getName() const override;
 
@@ -139,6 +139,7 @@ namespace love {
 				void createCommandPool();
 				void createCommandBuffers();
 				void createSyncObjects();
+				void createDefaultTexture();
 				void cleanup();
 				void cleanupSwapChain();
 				void recreateSwapChain();
@@ -178,6 +179,7 @@ namespace love {
 				uint32_t imageIndex;
 				bool framebufferResized = false;
 				VmaAllocator vmaAllocator;
+				graphics::Texture* standardTexture;
 			};
 		}
 	}

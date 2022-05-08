@@ -4,12 +4,14 @@
 #include "window/Window.h"
 #include "common/Exception.h"
 #include "Shader.h"
+#include "graphics/Texture.h"
 
 #include <vector>
 #include <cstring>
 #include <set>
 #include <fstream>
 #include <iostream>
+#include <array>
 
 
 namespace love {
@@ -59,30 +61,8 @@ namespace love {
 			void Graphics::initVulkan() {
 				if (!init) {
 					init = true;
-					createVulkanInstance();
-					createSurface();
-					pickPhysicalDevice();
-					createLogicalDevice();
-					initVMA();
-					createSwapChain();
-					createImageViews();
-					createRenderPass();
-					createDefaultShaders();
-					createDescriptorSetLayout();
-					createGraphicsPipeline();
-					createFramebuffers();
-					createCommandPool();
-					createCommandBuffers();
-					createUniformBuffers();
-					createDescriptorPool();
-					createDescriptorSets();
-					createSyncObjects();
-					startRecordingGraphicsCommands();
-				}
-			}
 
-			Graphics::~Graphics() {
-				cleanup();
+				}
 			}
 
 			// START OVERRIDEN FUNCTIONS
@@ -214,7 +194,27 @@ namespace love {
 			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
 				std::cout << "setMode ";
 
+				createVulkanInstance();
+				createSurface();
+				pickPhysicalDevice();
+				createLogicalDevice();
+				initVMA();
 				initCapabilities();
+				createSwapChain();
+				createImageViews();
+				createRenderPass();
+				createDefaultShaders();
+				createDescriptorSetLayout();
+				createGraphicsPipeline();
+				createFramebuffers();
+				createCommandPool();
+				createCommandBuffers();
+				createUniformBuffers();
+				createDefaultTexture();
+				createDescriptorPool();
+				createDescriptorSets();
+				createSyncObjects();
+				startRecordingGraphicsCommands();
 
 				created = true;
 
@@ -279,6 +279,7 @@ namespace love {
 
 			void Graphics::unSetMode() {
 				created = false;
+				cleanup();
 
 				std::cout << "unSetMode ";
 			}
@@ -469,6 +470,9 @@ namespace love {
 				return requiredExtensions.empty();
 			}
 
+			// if the score is nonzero then the device is suitable.
+			// A higher rating means generally better performance
+			// if the score is 0 the device is unsuitable
 			int Graphics::rateDeviceSuitability(VkPhysicalDevice device) {
 				VkPhysicalDeviceProperties deviceProperties;
 				VkPhysicalDeviceFeatures deviceFeatures;
@@ -835,10 +839,18 @@ namespace love {
 				uboLayoutBinding.descriptorCount = 1;
 				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+				VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+				samplerLayoutBinding.binding = 1;
+				samplerLayoutBinding.descriptorCount = 1;
+				samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				samplerLayoutBinding.pImmutableSamplers = nullptr;
+				samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+				std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
 				VkDescriptorSetLayoutCreateInfo layoutInfo{};
 				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-				layoutInfo.bindingCount = 1;
-				layoutInfo.pBindings = &uboLayoutBinding;
+				layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+				layoutInfo.pBindings = bindings.data();
 
 				if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 					throw love::Exception("failed to create descriptor set layout");
@@ -854,14 +866,16 @@ namespace love {
 			}
 
 			void Graphics::createDescriptorPool() {
-				VkDescriptorPoolSize poolSize{};
-				poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+				std::array<VkDescriptorPoolSize, 2> poolSizes{};
+				poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+				poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 				VkDescriptorPoolCreateInfo poolInfo{};
 				poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-				poolInfo.poolSizeCount = 1;
-				poolInfo.pPoolSizes = &poolSize;
+				poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+				poolInfo.pPoolSizes = poolSizes.data();
 				poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 				if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
@@ -888,16 +902,30 @@ namespace love {
 					bufferInfo.offset = 0;
 					bufferInfo.range = sizeof(Shader::UniformBufferObject);
 
-					VkWriteDescriptorSet descriptorWrite{};
-					descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrite.dstSet = descriptorSets[i];
-					descriptorWrite.dstBinding = 0;
-					descriptorWrite.dstArrayElement = 0;
-					descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					descriptorWrite.descriptorCount = 1;
-					descriptorWrite.pBufferInfo = &bufferInfo;
+					VkDescriptorImageInfo imageInfo{};
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					Texture* vkTexture = (Texture*)standardTexture;
+					imageInfo.imageView = vkTexture->getImageView();
+					imageInfo.sampler = vkTexture->getSampler();
 
-					vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+					std::array<VkWriteDescriptorSet, 2> descriptorWrite{};
+					descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrite[0].dstSet = descriptorSets[i];
+					descriptorWrite[0].dstBinding = 0;
+					descriptorWrite[0].dstArrayElement = 0;
+					descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptorWrite[0].descriptorCount = 1;
+					descriptorWrite[0].pBufferInfo = &bufferInfo;
+
+					descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrite[1].dstSet = descriptorSets[i];
+					descriptorWrite[1].dstBinding = 1;
+					descriptorWrite[1].dstArrayElement = 0;
+					descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptorWrite[1].descriptorCount = 1;
+					descriptorWrite[1].pImageInfo = &imageInfo;
+
+					vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
 				}
 			}
 
@@ -1088,6 +1116,11 @@ namespace love {
 						throw love::Exception("failed to create synchronization objects for a frame!");
 					}
 				}
+			}
+
+			void Graphics::createDefaultTexture() {
+				Texture::Settings settings;
+				standardTexture = newTexture(settings);
 			}
 
 			void Graphics::cleanup() {

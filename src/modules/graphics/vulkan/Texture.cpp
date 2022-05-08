@@ -8,38 +8,32 @@ namespace love {
 	namespace graphics {
 		namespace vulkan {
 			Texture::Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data)
-				: love::graphics::Texture(gfx, settings, data), slices(settings.type), gfx(gfx) {
+				: love::graphics::Texture(gfx, settings, data), gfx(gfx) {
 				allocator = vgfx->getVmaAllocator();
 				device = vgfx->getDevice();
 
-				if (data != nullptr) {
-					slices = *data;
+				if (data) {
+					auto sliceData = data->get(0, 0);
+					auto size = sliceData->getSize();
+					auto dataPtr = sliceData->getData();
+					Rect rect;
+					rect.x = 0;
+					rect.y = 0;
+					rect.w = sliceData->getWidth();
+					rect.h = sliceData->getHeight();
+
+					uploadByteData(PIXELFORMAT_BGRA8_UNORM, dataPtr, size, 0, 0, rect);
 				}
-				loadVolatile();
+				else {
+					uint8 defaultPixel[] = { 255, 255, 255, 255 };
+					Rect rect = { 0, 0, 1, 1 };
+					uploadByteData(PIXELFORMAT_BGRA8_UNORM, defaultPixel, sizeof(defaultPixel), 0, 0, rect);
+				}
+				createTextureImageView();
+				createTextureSampler();
 			}
 
 			Texture::~Texture() {
-				unloadVolatile();
-			}
-
-			bool Texture::loadVolatile() {
-				auto data = slices.get(0, 0);
-				auto size = data->getSize();
-				auto dataPtr = data->getData();
-				Rect rect;
-				rect.x = 0;
-				rect.y = 0;
-				rect.w = data->getWidth();
-				rect.h = data->getHeight();
-
-				uploadByteData(PIXELFORMAT_BGRA8_UNORM, dataPtr, size, 0, 0, rect);
-				createTextureImageView();
-				createTextureSampler();
-
-				return true;
-			}
-
-			void Texture::unloadVolatile() {
 				// vkDestroySampler(device, textureSampler, nullptr);
 				// vkDestroyImageView(device, textureImageView, nullptr);
 				// vmaDestroyImage(allocator, textureImage, nullptr);

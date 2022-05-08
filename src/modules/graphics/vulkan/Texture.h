@@ -12,14 +12,10 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			class Texture : public graphics::Texture, public graphics::Volatile {
+			class Texture : public graphics::Texture {
 			public:
 				Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data);
 				~Texture();
-
-				bool loadVolatile() override;
-
-				void unloadVolatile() override;
 
 				void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override { std::cout << "Texture::copyFromBuffer "; };
 				void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override { std::cout << "Texture::copyToBuffer "; };
@@ -33,7 +29,9 @@ namespace love {
 				void readbackImageData(love::image::ImageData* imagedata, int slice, int mipmap, const Rect& rect)  override { std::cout << "Texture::readbackImageData "; };
 
 				int getMSAA() const override { std::cout << "Texture::getMSAA "; return 0; };
-				ptrdiff_t getHandle() const override { std::cout << "Texture::getHandle "; return (ptrdiff_t)0; }
+				ptrdiff_t getHandle() const override { std::cout << "Texture::getHandle "; return (ptrdiff_t)textureImage; }
+				VkImageView getImageView() const { return textureImageView; }
+				VkSampler getSampler() const { return textureSampler; }
 
 			private:
 				void transitionImageLayout(VkImage, VkFormat, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -43,7 +41,6 @@ namespace love {
 
 				graphics::Graphics* gfx;
 				VkDevice device;
-				Slices slices;
 				VmaAllocator allocator;
 				VkImage textureImage;
 				VmaAllocation textureImageAllocation;
