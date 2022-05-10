@@ -64,7 +64,7 @@ class Pool
 {
 public:
 
-	Pool();
+	Pool(ALCdevice *device);
 	~Pool();
 
 	/**
@@ -101,8 +101,14 @@ private:
 	// Maximum possible number of OpenAL sources the pool attempts to generate.
 	static const int MAX_SOURCES = 64;
 
+	// Current OpenAL device
+	ALCdevice *device;
+
 	// OpenAL sources
 	ALuint sources[MAX_SOURCES];
+
+	// Is device disconnection has been notified?
+	bool disconnectNotified;
 
 	// Total number of created sources in the pool.
 	int totalSources;
