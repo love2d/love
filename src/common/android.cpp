@@ -83,7 +83,7 @@ double getScreenScale()
 		JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 		jclass activity = env->FindClass("org/love2d/android/GameActivity");
 
-		jmethodID getMetrics = env->GetStaticMethodID(activity, "getMetrics", "()Landroid/util/DisplayMetrics;");
+		jmethodID getMetrics = env->GetStaticMethodID(activity, "getDisplayMetrics", "()Landroid/util/DisplayMetrics;");
 		jobject metrics = env->CallStaticObjectMethod(activity, getMetrics);
 		jclass metricsClass = env->GetObjectClass(metrics);
 
@@ -102,7 +102,7 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jobject activity = (jobject) SDL_AndroidGetActivity();
 	jclass clazz(env->GetObjectClass(activity));
-	jmethodID methodID = env->GetMethodID(clazz, "initializeSafeArea", "()Z");
+	jmethodID methodID = env->GetMethodID(clazz, "getSafeArea", "()Z");
 	bool hasSafeArea = false;
 
 	if (methodID == nullptr)
@@ -755,25 +755,23 @@ void deinitializeVirtualArchive()
 
 bool checkFusedGame(void **physfsIO_Out)
 {
-	// TODO: Reorder the loading in 12.0
 	PHYSFS_Io *&io = *(PHYSFS_Io **) physfsIO_Out;
 	AAssetManager *assetManager = getAssetManager();
 
-	// Prefer game.love inside assets/ folder
-	AAsset *asset = AAssetManager_open(assetManager, "game.love", AASSET_MODE_RANDOM);
-	if (asset)
-	{
-		io = aasset::io::fromAAsset(assetManager, "game.love", asset);
-		return true;
-	}
-
-	// If there's no game.love inside assets/ try main.lua
-	asset = AAssetManager_open(assetManager, "main.lua", AASSET_MODE_STREAMING);
-
+	// Prefer main.lua inside assets/ folder
+	AAsset *asset = AAssetManager_open(assetManager, "main.lua", AASSET_MODE_STREAMING);
 	if (asset)
 	{
 		AAsset_close(asset);
 		io = nullptr;
+		return true;
+	}
+	
+	// If there's no main.lua inside assets/ try game.love
+	asset = AAssetManager_open(assetManager, "game.love", AASSET_MODE_RANDOM);
+	if (asset)
+	{
+		io = aasset::io::fromAAsset(assetManager, "game.love", asset);
 		return true;
 	}
 
