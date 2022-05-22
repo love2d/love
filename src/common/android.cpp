@@ -19,6 +19,7 @@
  **/
 
 #include "android.h"
+#include "Object.h"
 
 #ifdef LOVE_ANDROID
 
@@ -122,34 +123,6 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 	return hasSafeArea;
 }
 
-const char *getSelectedGameFile()
-{
-	static const char *path = NULL;
-
-	if (path)
-	{
-		delete path;
-		path = NULL;
-	}
-
-	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-	jclass activity = env->FindClass("org/love2d/android/GameActivity");
-
-	jmethodID getGamePath = env->GetStaticMethodID(activity, "getGamePath", "()Ljava/lang/String;");
-	jstring gamePath = (jstring) env->CallStaticObjectMethod(activity, getGamePath);
-	const char *utf = env->GetStringUTFChars(gamePath, 0);
-	if (utf)
-	{
-		path = SDL_strdup(utf);
-		env->ReleaseStringUTFChars(gamePath, utf);
-	}
-
-	env->DeleteLocalRef(gamePath);
-	env->DeleteLocalRef(activity);
-
-	return path;
-}
-
 bool openURL(const std::string &url)
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
@@ -190,37 +163,6 @@ void freeGameArchiveMemory(void *ptr)
 {
 	char *game_love_data = static_cast<char*>(ptr);
 	delete[] game_love_data;
-}
-
-bool loadGameArchiveToMemory(const char* filename, char **ptr, size_t *size)
-{
-	SDL_RWops *asset_game_file = SDL_RWFromFile(filename, "rb");
-	if (!asset_game_file) {
-		SDL_Log("Could not find %s", filename);
-		return false;
-	}
-
-	Sint64 file_size = asset_game_file->size(asset_game_file);
-	if (file_size <= 0) {
-		SDL_Log("Could not load game from %s. File has invalid file size: %d.", filename, (int) file_size);
-		return false;
-	}
-
-	*ptr = new char[file_size];
-	if (!*ptr) {
-		SDL_Log("Could not allocate memory for in-memory game archive");
-		return false;
-	}
-
-	size_t bytes_copied = asset_game_file->read(asset_game_file, (void*) *ptr, sizeof(char), (size_t) file_size);
-	if (bytes_copied != file_size) {
-		SDL_Log("Incomplete copy of in-memory game archive!");
-		delete[] *ptr;
-		return false;
-	}
-
-	*size = (size_t) file_size;
-	return true;
 }
 
 bool directoryExists(const char *path)
@@ -766,7 +708,7 @@ bool checkFusedGame(void **physfsIO_Out)
 		io = nullptr;
 		return true;
 	}
-	
+
 	// If there's no main.lua inside assets/ try game.love
 	asset = AAssetManager_open(assetManager, "game.love", AASSET_MODE_RANDOM);
 	if (asset)
@@ -819,6 +761,124 @@ const char *getCRequirePath()
 	}
 
 	return path;
+}
+
+int getFDFromLoveProtocol(const char *path)
+{
+	constexpr const char PROTOCOL[] = "love2d://fd/";
+	constexpr size_t PROTOCOL_LEN = sizeof(PROTOCOL) - 1;
+
+	if (*path == '/')
+		path++;
+
+	if (memcmp(path, PROTOCOL, PROTOCOL_LEN) == 0)
+	{
+		try
+		{
+			return std::stoi(path + PROTOCOL_LEN, nullptr, 10);
+		}
+		catch (std::logic_error &)
+		{ }
+	}
+
+	return -1;
+}
+
+class FileDescriptorTracker: public love::Object
+{
+public:
+	FileDescriptorTracker(int fd): Object(), fd(fd) {}
+	~FileDescriptorTracker() { close(fd); }
+	int getFd() { return fd; }
+private:
+	int fd;
+};
+
+struct FileDescriptorIO
+{
+	FileDescriptorTracker *fd;
+	off64_t size;
+	off64_t offset;
+};
+
+void *getIOFromFD(int fd)
+{
+	if (fd == -1)
+		return nullptr;
+
+	// Create file descriptor IO structure
+	FileDescriptorIO *fdio = new FileDescriptorIO();
+	fdio->size = lseek64(fd, 0, SEEK_END);
+	fdio->offset = 0;
+	lseek64(fd, 0, SEEK_SET);
+
+	if (fdio->size == -1)
+	{
+		// Cannot get size
+		delete fdio;
+		return nullptr;
+	}
+
+	fdio->fd = new FileDescriptorTracker(fd);
+
+	PHYSFS_Io *io = new PHYSFS_Io();
+	io->version = 0;
+	io->opaque = fdio;
+	io->read = [](PHYSFS_Io *io, void *buf, PHYSFS_uint64 size)
+	{
+		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
+		ssize_t ret = pread64(fdio->fd->getFd(), buf, (size_t) size, fdio->offset);
+
+		if (ret == -1)
+			PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
+		else
+			fdio->offset = std::min(fdio->offset + (off64_t) ret, fdio->size);
+
+		return (PHYSFS_sint64) ret;
+	};
+	io->write = nullptr;
+	io->seek = [](PHYSFS_Io *io, PHYSFS_uint64 offset)
+	{
+		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
+		fdio->offset = std::min(std::max<off64_t>((off64_t) offset, 0), fdio->size);
+		// Always success
+		return 1;
+	};
+	io->tell = [](PHYSFS_Io *io)
+	{
+		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
+		return (PHYSFS_sint64) fdio->offset;
+	};
+	io->length = [](PHYSFS_Io *io)
+	{
+		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
+		return (PHYSFS_sint64) fdio->size;
+	};
+	io->duplicate = [](PHYSFS_Io *io)
+	{
+		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
+		FileDescriptorIO *fdio2 = new FileDescriptorIO();
+		PHYSFS_Io *io2 = new PHYSFS_Io();
+
+		fdio->fd->retain();
+
+		// Copy data
+		*fdio2 = *fdio;
+		*io2 = *io;
+		io2->opaque = fdio2;
+
+		return io2;
+	};
+	io->flush = nullptr;
+	io->destroy = [](PHYSFS_Io *io)
+	{
+		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
+		fdio->fd->release();
+		delete fdio;
+		delete io;
+	};
+
+	return io;
 }
 
 } // android
