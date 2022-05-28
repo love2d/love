@@ -46,13 +46,11 @@ namespace android
 void setImmersive(bool immersive_active)
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-
 	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz = env->GetObjectClass(activity);
 
-	jclass clazz(env->GetObjectClass(activity));
-	jmethodID method_id = env->GetMethodID(clazz, "setImmersiveMode", "(Z)V");
-
-	env->CallVoidMethod(activity, method_id, immersive_active);
+	static jmethodID setImmersiveMethod = env->GetMethodID(clazz, "setImmersiveMode", "(Z)V");
+	env->CallVoidMethod(activity, setImmersiveMethod, immersive_active);
 
 	env->DeleteLocalRef(activity);
 	env->DeleteLocalRef(clazz);
@@ -61,18 +59,16 @@ void setImmersive(bool immersive_active)
 bool getImmersive()
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-
 	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz = env->GetObjectClass(activity);
 
-	jclass clazz(env->GetObjectClass(activity));
-	jmethodID method_id = env->GetMethodID(clazz, "getImmersiveMode", "()Z");
-
-	jboolean immersive_active = env->CallBooleanMethod(activity, method_id);
+	static jmethodID getImmersiveMethod = env->GetMethodID(clazz, "getImmersiveMode", "()Z");
+	jboolean immersiveActive = env->CallBooleanMethod(activity, getImmersiveMethod);
 
 	env->DeleteLocalRef(activity);
 	env->DeleteLocalRef(clazz);
 
-	return immersive_active;
+	return immersiveActive;
 }
 
 double getScreenScale()
@@ -82,16 +78,13 @@ double getScreenScale()
 	if (result == -1.)
 	{
 		JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-		jclass activity = env->FindClass("org/love2d/android/GameActivity");
+		jobject activity = (jobject) SDL_AndroidGetActivity();
+		jclass clazz = env->GetObjectClass(activity);
 
-		jmethodID getMetrics = env->GetStaticMethodID(activity, "getDisplayMetrics", "()Landroid/util/DisplayMetrics;");
-		jobject metrics = env->CallStaticObjectMethod(activity, getMetrics);
-		jclass metricsClass = env->GetObjectClass(metrics);
+		jmethodID getDPIMethod = env->GetMethodID(clazz, "getDPIScale", "()F");
+		result = (double) env->CallFloatMethod(activity, getDPIMethod);
 
-		result = env->GetFloatField(metrics, env->GetFieldID(metricsClass, "density", "F"));
-
-		env->DeleteLocalRef(metricsClass);
-		env->DeleteLocalRef(metrics);
+		env->DeleteLocalRef(clazz);
 		env->DeleteLocalRef(activity);
 	}
 
@@ -102,8 +95,10 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jobject activity = (jobject) SDL_AndroidGetActivity();
-	jclass clazz(env->GetObjectClass(activity));
-	jmethodID methodID = env->GetMethodID(clazz, "getSafeArea", "()Z");
+	jclass clazz = env->GetObjectClass(activity);
+
+	static jmethodID methodID = env->GetMethodID(clazz, "getSafeArea", "()Z");
+
 	bool hasSafeArea = false;
 
 	if (methodID == nullptr)
@@ -126,33 +121,33 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 bool openURL(const std::string &url)
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-	jclass activity = env->FindClass("org/love2d/android/GameActivity");
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz = env->GetObjectClass(activity);
 
-	jmethodID openURL = env->GetStaticMethodID(activity, "openURLFromLOVE", "(Ljava/lang/String;)Z");
+	static jmethodID openURL = env->GetMethodID(clazz, "openURLFromLOVE", "(Ljava/lang/String;)Z");
 
 	if (openURL == nullptr)
-	{
-		env->ExceptionClear();
-		openURL = env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)Z");
-	}
+		return false;
 
-	jstring url_jstring = (jstring) env->NewStringUTF(url.c_str());
+	jstring jstringURL = env->NewStringUTF(url.c_str());
+	jboolean result = env->CallBooleanMethod(clazz, openURL, jstringURL);
 
-	jboolean result = env->CallStaticBooleanMethod(activity, openURL, url_jstring);
-
-	env->DeleteLocalRef(url_jstring);
+	env->DeleteLocalRef(jstringURL);
+	env->DeleteLocalRef(clazz);
 	env->DeleteLocalRef(activity);
-	return result;
+	return (bool) result;
 }
 
 void vibrate(double seconds)
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-	jclass activity = env->FindClass("org/love2d/android/GameActivity");
+	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz = env->GetObjectClass(activity);
 
-	jmethodID vibrate_method = env->GetStaticMethodID(activity, "vibrate", "(D)V");
-	env->CallStaticVoidMethod(activity, vibrate_method, seconds);
+	static jmethodID vibrateMethod = env->GetMethodID(clazz, "vibrate", "(D)V");
+	env->CallVoidMethod(activity, vibrateMethod, seconds);
 
+	env->DeleteLocalRef(clazz);
 	env->DeleteLocalRef(activity);
 }
 
@@ -167,7 +162,7 @@ void freeGameArchiveMemory(void *ptr)
 
 bool directoryExists(const char *path)
 {
-	struct stat s;
+	struct stat s {};
 	int err = stat(path, &s);
 	if (err == -1)
 	{
@@ -226,9 +221,9 @@ bool hasRecordingPermission()
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jobject activity = (jobject) SDL_AndroidGetActivity();
+	jclass clazz = env->GetObjectClass(activity);
 
-	jclass clazz(env->GetObjectClass(activity));
-	jmethodID methodID = env->GetMethodID(clazz, "hasRecordAudioPermission", "()Z");
+	static jmethodID methodID = env->GetMethodID(clazz, "hasRecordAudioPermission", "()Z");
 	jboolean result = false;
 
 	if (methodID == nullptr)
@@ -724,7 +719,7 @@ bool checkFusedGame(void **physfsIO_Out)
 const char *getCRequirePath()
 {
 	static bool initialized = false;
-	static const char *path = nullptr;
+	static std::string path;
 
 	if (!initialized)
 	{
@@ -732,35 +727,22 @@ const char *getCRequirePath()
 		jobject activity = (jobject) SDL_AndroidGetActivity();
 
 		jclass clazz(env->GetObjectClass(activity));
-		jmethodID method_id = env->GetMethodID(clazz, "getCRequirePath", "()Ljava/lang/String;");
+		jmethodID getCRequireMethod = env->GetMethodID(clazz, "getCRequirePath", "()Ljava/lang/String;");
 
-		path = "";
-		initialized = true;
-
-		if (method_id)
+		jstring cpath = (jstring) env->CallObjectMethod(activity, getCRequireMethod);
+		const char *utf = env->GetStringUTFChars(cpath, nullptr);
+		if (utf)
 		{
-			jstring cpath = (jstring) env->CallObjectMethod(activity, method_id);
-			const char *utf = env->GetStringUTFChars(cpath, nullptr);
-			if (utf)
-			{
-				path = SDL_strdup(utf);
-				env->ReleaseStringUTFChars(cpath, utf);
-			}
-
-			env->DeleteLocalRef(cpath);
-		}
-		else
-		{
-			// NoSuchMethodException is thrown in case methodID is null
-			env->ExceptionClear();
-			return "";
+			path = utf;
+			env->ReleaseStringUTFChars(cpath, utf);
 		}
 
+		env->DeleteLocalRef(cpath);
 		env->DeleteLocalRef(activity);
 		env->DeleteLocalRef(clazz);
 	}
 
-	return path;
+	return path.c_str();
 }
 
 int getFDFromLoveProtocol(const char *path)
@@ -787,9 +769,9 @@ int getFDFromLoveProtocol(const char *path)
 class FileDescriptorTracker: public love::Object
 {
 public:
-	FileDescriptorTracker(int fd): Object(), fd(fd) {}
-	~FileDescriptorTracker() { close(fd); }
-	int getFd() { return fd; }
+	explicit FileDescriptorTracker(int fd): Object(), fd(fd) {}
+	~FileDescriptorTracker() override { close(fd); }
+	int getFd() const { return fd; }
 private:
 	int fd;
 };
