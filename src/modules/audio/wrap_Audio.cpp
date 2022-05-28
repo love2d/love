@@ -48,32 +48,35 @@ int w_newSource(lua_State *L)
 {
 	Source::Type stype = Source::TYPE_STREAM;
 
-	if (!luax_istype(L, 1, love::sound::SoundData::type) && !luax_istype(L, 1, love::sound::Decoder::type))
+	if (!luax_istype(L, 1, love::sound::SoundData::type))
 	{
-		const char *stypestr = luaL_checkstring(L, 2);
-		if (stypestr && !Source::getConstant(stypestr, stype))
-			return luax_enumerror(L, "source type", Source::getConstants(stype), stypestr);
+		if (!luax_istype(L, 1, love::sound::Decoder::type))
+		{
+			const char *stypestr = luaL_checkstring(L, 2);
+			if (stypestr && !Source::getConstant(stypestr, stype))
+				return luax_enumerror(L, "source type", Source::getConstants(stype), stypestr);
 
-		if (stype == Source::TYPE_QUEUE)
-			return luaL_error(L, "Cannot create queueable sources using newSource. Use newQueueableSource instead.");
-	}
+			if (stype == Source::TYPE_QUEUE)
+				return luaL_error(L, "Cannot create queueable sources using newSource. Use newQueueableSource instead.");
+		}
 
-	if (love::filesystem::luax_cangetdata(L, 1))
-	{
-		// stream type
-		if (stype == Source::TYPE_STATIC)
-			lua_pushstring(L, "memory");
-		else if (!lua_isnone(L, 3))
-			lua_pushvalue(L, 3);
-		else
+		if (love::filesystem::luax_cangetdata(L, 1))
+		{
+			// stream type
+			if (stype == Source::TYPE_STATIC)
+				lua_pushstring(L, "memory");
+			else if (!lua_isnone(L, 3))
+				lua_pushvalue(L, 3);
+			else
+				lua_pushnil(L);
+
+			// buffer size
 			lua_pushnil(L);
 
-		// buffer size
-		lua_pushnil(L);
-
-		// (file, buffer size, stream type)
-		int idxs[] = { 1, lua_gettop(L), lua_gettop(L) - 1 };
-		luax_convobj(L, idxs, 3, "sound", "newDecoder");
+			// (file, buffer size, stream type)
+			int idxs[] = { 1, lua_gettop(L), lua_gettop(L) - 1 };
+			luax_convobj(L, idxs, 3, "sound", "newDecoder");
+		}
 	}
 
 	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, love::sound::Decoder::type))
