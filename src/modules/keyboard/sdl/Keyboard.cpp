@@ -99,6 +99,8 @@ bool Keyboard::isModifierActive(ModifierKey key) const
 		return (modstate & KMOD_SCROLL) != 0;
 	case MODKEY_MODE:
 		return (modstate & KMOD_MODE) != 0;
+	default:
+		break;
 	}
 
 	return false;
