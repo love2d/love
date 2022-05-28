@@ -126,9 +126,6 @@ bool openURL(const std::string &url)
 
 	static jmethodID openURL = env->GetMethodID(clazz, "openURLFromLOVE", "(Ljava/lang/String;)Z");
 
-	if (openURL == nullptr)
-		return false;
-
 	jstring jstringURL = env->NewStringUTF(url.c_str());
 	jboolean result = env->CallBooleanMethod(clazz, openURL, jstringURL);
 
@@ -725,9 +722,9 @@ const char *getCRequirePath()
 	{
 		JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 		jobject activity = (jobject) SDL_AndroidGetActivity();
+		jclass clazz = env->GetObjectClass(activity);
 
-		jclass clazz(env->GetObjectClass(activity));
-		jmethodID getCRequireMethod = env->GetMethodID(clazz, "getCRequirePath", "()Ljava/lang/String;");
+		static jmethodID getCRequireMethod = env->GetMethodID(clazz, "getCRequirePath", "()Ljava/lang/String;");
 
 		jstring cpath = (jstring) env->CallObjectMethod(activity, getCRequireMethod);
 		const char *utf = env->GetStringUTFChars(cpath, nullptr);
@@ -743,6 +740,29 @@ const char *getCRequirePath()
 	}
 
 	return path.c_str();
+}
+
+int getFDFromContentProtocol(const char *path)
+{
+	int fd = -1;
+
+	if (strstr(path, "content://") == path)
+	{
+		JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+		jobject activity = (jobject) SDL_AndroidGetActivity();
+		jclass clazz = env->GetObjectClass(activity);
+
+		static jmethodID converter = env->GetMethodID(clazz, "convertToFileDescriptor", "(Ljava/lang/String;)I");
+
+		jstring uri = env->NewStringUTF(path);
+		fd = (int) env->CallIntMethod(activity, converter, uri);
+
+		env->DeleteLocalRef(uri);
+		env->DeleteLocalRef(clazz);
+		env->DeleteLocalRef(activity);
+	}
+
+	return fd;
 }
 
 int getFDFromLoveProtocol(const char *path)
