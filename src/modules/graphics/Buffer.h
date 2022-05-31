@@ -53,6 +53,7 @@ public:
 	enum MapType
 	{
 		MAP_WRITE_INVALIDATE,
+		MAP_READ_ONLY,
 	};
 
 	struct DataDeclaration
@@ -128,7 +129,7 @@ public:
 	/**
 	 * Fill a portion of the buffer with data.
 	 */
-	virtual void fill(size_t offset, size_t size, const void *data) = 0;
+	virtual bool fill(size_t offset, size_t size, const void *data) = 0;
 
 	/**
 	 * Copy a portion of this Buffer's data to another buffer, using the GPU.
@@ -147,10 +148,10 @@ public:
 	{
 	public:
 
-		Mapper(Buffer &buffer)
+		Mapper(Buffer &buffer, MapType maptype = MAP_WRITE_INVALIDATE)
 			: buffer(buffer)
 		{
-			data = buffer.map(MAP_WRITE_INVALIDATE, 0, buffer.getSize());
+			data = buffer.map(maptype, 0, buffer.getSize());
 		}
 
 		~Mapper()
@@ -179,7 +180,7 @@ protected:
 	BufferDataUsage dataUsage;
 
 	bool mapped;
-
+	MapType mappedType;
 	bool immutable;
 	
 }; // Buffer

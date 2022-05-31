@@ -103,7 +103,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 	if (!load(data))
 	{
 		unloadVolatile();
-		throw love::Exception("Could not create buffer (out of VRAM?)");
+		throw love::Exception("Could not create buffer with %d bytes (out of VRAM?)", size);
 	}
 }
 
@@ -164,10 +164,16 @@ bool Buffer::supportsOrphan() const
 	return dataUsage == BUFFERDATAUSAGE_STREAM || dataUsage == BUFFERDATAUSAGE_DYNAMIC;
 }
 
-void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
+void *Buffer::map(MapType map, size_t offset, size_t size)
 {
-	if (size == 0 || isImmutable())
+	if (size == 0)
 		return nullptr;
+
+	if (map == MAP_WRITE_INVALIDATE && (isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK))
+		return nullptr;
+
+	if (map == MAP_READ_ONLY && dataUsage != BUFFERDATAUSAGE_READBACK)
+		return  nullptr;
 
 	Range r(offset, size);
 
@@ -176,7 +182,16 @@ void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 
 	char *data = nullptr;
 
-	if (ownsMemoryMap)
+	if (map == MAP_READ_ONLY)
+	{
+		gl.bindBuffer(mapUsage, buffer);
+
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
+			data = (char *) glMapBufferRange(target, offset, size, GL_MAP_READ_BIT);
+		else if (GLAD_VERSION_1_1)
+			data = (char *) glMapBuffer(target, GL_READ_ONLY) + offset;
+	}
+	else if (ownsMemoryMap)
 	{
 		if (memoryMap == nullptr)
 			memoryMap = (char *) malloc(getSize());
@@ -191,6 +206,7 @@ void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 	if (data != nullptr)
 	{
 		mapped = true;
+		mappedType = map;
 		mappedRange = r;
 		if (!ownsMemoryMap)
 			memoryMap = data;
@@ -207,6 +223,15 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 		return;
 
 	mapped = false;
+
+	if (mappedType == MAP_READ_ONLY)
+	{
+		gl.bindBuffer(mapUsage, buffer);
+		glUnmapBuffer(target);
+		if (!ownsMemoryMap)
+			memoryMap = nullptr;
+		return;
+	}
 
 	// Orphan optimization - see fill().
 	if (supportsOrphan() && mappedRange.first == 0 && mappedRange.getSize() == getSize())
@@ -227,15 +252,15 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 	}
 }
 
-void Buffer::fill(size_t offset, size_t size, const void *data)
+bool Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	if (size == 0 || isImmutable())
-		return;
+	if (size == 0 || isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK)
+		return false;
 
 	size_t buffersize = getSize();
 
 	if (!Range(0, buffersize).contains(Range(offset, size)))
-		return;
+		return false;
 
 	GLenum gldatausage = OpenGL::getGLBufferDataUsage(dataUsage);
 
@@ -259,6 +284,8 @@ void Buffer::fill(size_t offset, size_t size, const void *data)
 	{
 		glBufferSubData(target, (GLintptr) offset, (GLsizeiptr) size, data);
 	}
+
+	return true;
 }
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)

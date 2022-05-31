@@ -1181,6 +1181,9 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (dest->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
 
+	if (source->getDataUsage() == BUFFERDATAUSAGE_READBACK)
+		throw love::Exception("Buffers created with 'readback' data usage cannot be used as a copy source.");
+
 	if (sourcerange.getMax() >= source->getSize())
 		throw love::Exception("Buffer copy source offset and size doesn't fit within the source Buffer's size.");
 
@@ -1289,6 +1292,9 @@ void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceo
 {
 	if (!capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE])
 		throw love::Exception("Copying a Buffer to a Texture is not supported on this system.");
+
+	if (source->getDataUsage() == BUFFERDATAUSAGE_READBACK)
+		throw love::Exception("Buffers created with 'readback' data usage cannot be used as a copy source.");
 
 	PixelFormat format = dest->getPixelFormat();
 
