@@ -501,10 +501,7 @@ void Graphics::unSetMode()
 
 	submitCommandBuffer(SUBMIT_DONE);
 
-	for (auto temp : temporaryTextures)
-		temp.texture->release();
-
-	temporaryTextures.clear();
+	clearTemporaryResources();
 
 	created = false;
 	metalLayer = nil;
@@ -1620,18 +1617,7 @@ void Graphics::present(void *screenshotCallbackData)
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
-	// This assumes temporary canvases will only be used within a render pass.
-	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
-	{
-		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
-		{
-			temporaryTextures[i].texture->release();
-			temporaryTextures[i] = temporaryTextures.back();
-			temporaryTextures.pop_back();
-		}
-		else
-			temporaryTextures[i].framesSinceUse++;
-	}
+	updateTemporaryResources();
 }}
 
 int Graphics::getRequestedBackbufferMSAA() const

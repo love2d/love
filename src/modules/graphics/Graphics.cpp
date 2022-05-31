@@ -235,6 +235,8 @@ Graphics::~Graphics()
 	for (int i = 0; i < (int) SHADERSTAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
 
+	clearTemporaryResources();
+
 	Shader::deinitialize();
 }
 
@@ -887,6 +889,10 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		realRTs.depthStencil.texture = getTemporaryTexture(dsformat, pixelw, pixelh, reqmsaa);
 		realRTs.depthStencil.slice = 0;
 
+		// TODO: fix this to call release at the right time.
+		// This only works here because nothing else calls getTemporaryTexture.
+		releaseTemporaryTexture(realRTs.depthStencil.texture);
+
 		setRenderTargetsInternal(realRTs, pixelw, pixelh, hasSRGBtexture);
 	}
 	else
@@ -989,12 +995,15 @@ Texture *Graphics::getTemporaryTexture(PixelFormat format, int w, int h, int sam
 
 	for (TemporaryTexture &temp : temporaryTextures)
 	{
+		if (temp.framesSinceUse < 0)
+			continue;
+
 		Texture *c = temp.texture;
 		if (c->getPixelFormat() == format && c->getPixelWidth() == w
 			&& c->getPixelHeight() == h && c->getRequestedMSAA() == samples)
 		{
 			texture = c;
-			temp.framesSinceUse = 0;
+			temp.framesSinceUse = -1;
 			break;
 		}
 	}
@@ -1016,6 +1025,101 @@ Texture *Graphics::getTemporaryTexture(PixelFormat format, int w, int h, int sam
 	return texture;
 }
 
+void Graphics::releaseTemporaryTexture(Texture *texture)
+{
+	for (TemporaryTexture &temp : temporaryTextures)
+	{
+		if (temp.texture == texture)
+		{
+			temp.framesSinceUse = 0;
+			break;
+		}
+	}
+}
+
+Buffer *Graphics::getTemporaryBuffer(size_t size, DataFormat format, uint32 usageflags, BufferDataUsage datausage)
+{
+	Buffer *buffer = nullptr;
+
+	for (TemporaryBuffer &temp : temporaryBuffers)
+	{
+		if (temp.framesSinceUse < 0)
+			continue;
+
+		Buffer *b = temp.buffer;
+
+		if (temp.size == size && b->getDataMember(0).decl.format == format
+			&& b->getUsageFlags() == usageflags && b->getDataUsage() == datausage)
+		{
+			buffer = b;
+			temp.framesSinceUse = -1;
+			break;
+		}
+	}
+
+	if (buffer == nullptr)
+	{
+		Buffer::Settings settings(usageflags, datausage);
+		buffer = newBuffer(settings, format, nullptr, size, 0);
+
+		temporaryBuffers.emplace_back(buffer, size);
+	}
+
+	return buffer;
+}
+
+void Graphics::releaseTemporaryBuffer(Buffer *buffer)
+{
+	for (TemporaryBuffer &temp : temporaryBuffers)
+	{
+		if (temp.buffer == buffer)
+		{
+			temp.framesSinceUse = 0;
+			break;
+		}
+	}
+}
+
+void Graphics::updateTemporaryResources()
+{
+	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
+	{
+		auto &t = temporaryTextures[i];
+		if (t.framesSinceUse >= MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES)
+		{
+			t.texture->release();
+			t = temporaryTextures.back();
+			temporaryTextures.pop_back();
+		}
+		else if (t.framesSinceUse >= 0)
+			t.framesSinceUse++;
+	}
+
+	for (int i = (int) temporaryBuffers.size() - 1; i >= 0; i--)
+	{
+		auto &t = temporaryBuffers[i];
+		if (t.framesSinceUse >= MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES)
+		{
+			t.buffer->release();
+			t = temporaryBuffers.back();
+			temporaryBuffers.pop_back();
+		}
+		else if (t.framesSinceUse >= 0)
+			t.framesSinceUse++;
+	}
+}
+
+void Graphics::clearTemporaryResources()
+{
+	for (auto temp :temporaryBuffers)
+		temp.buffer->release();
+
+	for (auto temp : temporaryTextures)
+		temp.texture->release();
+
+	temporaryBuffers.clear();
+	temporaryTextures.clear();
+}
 void Graphics::intersectScissor(const Rect &rect)
 {
 	Rect currect = states.back().scissorRect;

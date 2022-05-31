@@ -462,14 +462,12 @@ void Graphics::unSetMode()
 	// mode change.
 	Volatile::unloadAll();
 
+	clearTemporaryResources();
+
 	for (const auto &pair : framebufferObjects)
 		gl.deleteFramebuffer(pair.second);
 
-	for (auto temp : temporaryTextures)
-		temp.texture->release();
-
 	framebufferObjects.clear();
-	temporaryTextures.clear();
 
 	if (mainVAO != 0)
 	{
@@ -1335,18 +1333,7 @@ void Graphics::present(void *screenshotCallbackData)
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
-	// This assumes temporary textures will only be used within a render pass.
-	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
-	{
-		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
-		{
-			temporaryTextures[i].texture->release();
-			temporaryTextures[i] = temporaryTextures.back();
-			temporaryTextures.pop_back();
-		}
-		else
-			temporaryTextures[i].framesSinceUse++;
-	}
+	updateTemporaryResources();
 }
 
 int Graphics::getRequestedBackbufferMSAA() const

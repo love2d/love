@@ -856,6 +856,12 @@ public:
 
 	static void flushBatchedDrawsGlobal();
 
+	Texture *getTemporaryTexture(PixelFormat format, int w, int h, int samples);
+	void releaseTemporaryTexture(Texture *texture);
+
+	Buffer *getTemporaryBuffer(size_t size, DataFormat format, uint32 usageflags, BufferDataUsage datausage);
+	void releaseTemporaryBuffer(Buffer *buffer);
+
 	void cleanupCachedShaderStage(ShaderStageType type, const std::string &cachekey);
 
 	template <typename T>
@@ -954,6 +960,19 @@ protected:
 		}
 	};
 
+	struct TemporaryBuffer
+	{
+		Buffer *buffer;
+		size_t size;
+		int framesSinceUse;
+
+		TemporaryBuffer(Buffer *buf, size_t size)
+			: buffer(buf)
+			, size(size)
+			, framesSinceUse(-1)
+		{}
+	};
+
 	struct TemporaryTexture
 	{
 		Texture *texture;
@@ -961,7 +980,7 @@ protected:
 
 		TemporaryTexture(Texture *tex)
 			: texture(tex)
-			, framesSinceUse(0)
+			, framesSinceUse(-1)
 		{}
 	};
 
@@ -980,7 +999,8 @@ protected:
 	void createQuadIndexBuffer();
 	void createFanIndexBuffer();
 
-	Texture *getTemporaryTexture(PixelFormat format, int w, int h, int samples);
+	void updateTemporaryResources();
+	void clearTemporaryResources();
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
@@ -1014,6 +1034,7 @@ protected:
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypeStack;
 
+	std::vector<TemporaryBuffer> temporaryBuffers;
 	std::vector<TemporaryTexture> temporaryTextures;
 
 	int renderTargetSwitchCount;
@@ -1028,7 +1049,7 @@ protected:
 	Deprecations deprecations;
 
 	static const size_t MAX_USER_STACK_DEPTH = 128;
-	static const int MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES = 16;
+	static const int MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES = 16;
 
 private:
 
