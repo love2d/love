@@ -34,7 +34,7 @@ set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
 # Needed for shared libs on Linux. (-fPIC).
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 
 if(APPLE)
 	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
