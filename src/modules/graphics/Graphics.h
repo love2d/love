@@ -37,6 +37,7 @@
 #include "Shader.h"
 #include "Quad.h"
 #include "Mesh.h"
+#include "GraphicsReadback.h"
 #include "Deprecations.h"
 #include "renderstate.h"
 #include "math/Transform.h"
@@ -459,6 +460,12 @@ public:
 	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
+
+	data::ByteData *readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
+	GraphicsReadback *readbackBufferAsync(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
+
+	image::ImageData *readbackTexture(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty);
+	GraphicsReadback *readbackTextureAsync(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty);
 
 	bool validateShader(bool gles, const std::vector<std::string> &stages, const Shader::CompileOptions &options, std::string &err);
 
@@ -989,6 +996,9 @@ protected:
 	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
 
+	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) = 0;
+	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) = 0;
+
 	virtual bool dispatch(int x, int y, int z) = 0;
 
 	virtual void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
@@ -1001,6 +1011,8 @@ protected:
 
 	void updateTemporaryResources();
 	void clearTemporaryResources();
+
+	void updatePendingReadbacks();
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
@@ -1023,6 +1035,7 @@ protected:
 	StrongRef<love::graphics::Font> defaultFont;
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
+	std::vector<StrongRef<GraphicsReadback>> pendingReadbacks;
 
 	BatchedDrawState batchedDrawState;
 

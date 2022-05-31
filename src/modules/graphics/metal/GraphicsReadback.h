@@ -18,40 +18,37 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
-#include "OpenGL.h"
-
-// C
-#include <stddef.h>
-#include <vector>
-
 #pragma once
 
-namespace love
-{
-namespace graphics
-{
-namespace opengl
+// LOVE
+#include "graphics/GraphicsReadback.h"
+#include "common/math.h"
+
+#include <atomic>
+
+#import <Metal/MTLCommandBuffer.h>
+
+namespace love::graphics::metal
 {
 
-class FenceSync
+class GraphicsReadback final : public love::graphics::GraphicsReadback
 {
 public:
 
-	FenceSync() : sync(0) {}
-	~FenceSync();
+	GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
+	GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty);
+	virtual ~GraphicsReadback();
 
-	bool fence();
-	bool isComplete() const;
-	bool cpuWait();
-	void cleanup();
+	void wait() override;
+	void update() override;
 
 private:
 
-	GLsync sync;
+	id<MTLCommandBuffer> cmd;
+	std::atomic_bool done;
 
-}; // FenceSync
+	StrongRef<love::graphics::Buffer> stagingBuffer;
 
-} // opengl
-} // graphics
-} // love
+}; // GraphicsReadback
+
+} // love::graphics::metal

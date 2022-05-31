@@ -235,6 +235,7 @@ Graphics::~Graphics()
 	for (int i = 0; i < (int) SHADERSTAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
 
+	pendingReadbacks.clear();
 	clearTemporaryResources();
 
 	Shader::deinitialize();
@@ -432,6 +433,46 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, Pr
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
 	return new Text(font, text);
+}
+
+love::data::ByteData *Graphics::readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	StrongRef<GraphicsReadback> readback;
+	readback.set(newReadbackInternal(READBACK_IMMEDIATE, buffer, offset, size, dest, destoffset), Acquire::NORETAIN);
+
+	auto data = readback->getBufferData();
+	if (data == nullptr)
+		throw love::Exception("love.graphics.readbackBuffer failed.");
+
+	data->retain();
+	return data;
+}
+
+GraphicsReadback *Graphics::readbackBufferAsync(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	auto readback = newReadbackInternal(READBACK_ASYNC, buffer, offset, size, dest, destoffset);
+	pendingReadbacks.push_back(readback);
+	return readback;
+}
+
+image::ImageData *Graphics::readbackTexture(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	StrongRef<GraphicsReadback> readback;
+	readback.set(newReadbackInternal(READBACK_IMMEDIATE, texture, slice, mipmap, rect, dest, destx, desty), Acquire::NORETAIN);
+
+	auto imagedata = readback->getImageData();
+	if (imagedata == nullptr)
+		throw love::Exception("love.graphics.readbackTexture failed.");
+
+	imagedata->retain();
+	return imagedata;
+}
+
+GraphicsReadback *Graphics::readbackTextureAsync(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	auto readback = newReadbackInternal(READBACK_ASYNC, texture, slice, mipmap, rect, dest, destx, desty);
+	pendingReadbacks.push_back(readback);
+	return readback;
 }
 
 void Graphics::cleanupCachedShaderStage(ShaderStageType type, const std::string &hashkey)
@@ -1120,6 +1161,20 @@ void Graphics::clearTemporaryResources()
 	temporaryBuffers.clear();
 	temporaryTextures.clear();
 }
+
+void Graphics::updatePendingReadbacks()
+{
+	for (int i = (int)pendingReadbacks.size() - 1; i >= 0; i--)
+	{
+		pendingReadbacks[i]->update();
+		if (pendingReadbacks[i]->isComplete())
+		{
+			pendingReadbacks[i] = pendingReadbacks.back();
+			pendingReadbacks.pop_back();
+		}
+	}
+}
+
 void Graphics::intersectScissor(const Rect &rect)
 {
 	Rect currect = states.back().scissorRect;

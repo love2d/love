@@ -32,6 +32,7 @@
 #include "wrap_Text.h"
 #include "wrap_Video.h"
 #include "wrap_Buffer.h"
+#include "wrap_GraphicsReadback.h"
 #include "Graphics.h"
 
 namespace love

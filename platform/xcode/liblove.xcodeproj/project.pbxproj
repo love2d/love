@@ -826,12 +826,22 @@
 		FA6BDF8E281219E900240F2A /* DataStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6BDF8C281219E900240F2A /* DataStream.cpp */; };
 		FA6BDF8F281219E900240F2A /* DataStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA6BDF8C281219E900240F2A /* DataStream.cpp */; };
 		FA6BDF90281219E900240F2A /* DataStream.h in Headers */ = {isa = PBXBuildFile; fileRef = FA6BDF8D281219E900240F2A /* DataStream.h */; };
+		FA6BDF89280B62A000240F2A /* GraphicsReadback.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA6BDF88280B62A000240F2A /* GraphicsReadback.mm */; };
+		FA6BDF8A280B62A000240F2A /* GraphicsReadback.mm in Sources */ = {isa = PBXBuildFile; fileRef = FA6BDF88280B62A000240F2A /* GraphicsReadback.mm */; };
 		FA76344A1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344B1E28722A0066EF9E /* StreamBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA7634481E28722A0066EF9E /* StreamBuffer.cpp */; };
 		FA76344C1E28722A0066EF9E /* StreamBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FA7634491E28722A0066EF9E /* StreamBuffer.h */; };
 		FA7E9207277E120900C24CB2 /* theora.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA7E9206277E120900C24CB2 /* theora.xcframework */; };
 		FA84DE612778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */; };
 		FA84DE622778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */; };
+		FA84DE6627791C36002674C6 /* GraphicsReadback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE6427791C36002674C6 /* GraphicsReadback.cpp */; };
+		FA84DE6727791C36002674C6 /* GraphicsReadback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE6427791C36002674C6 /* GraphicsReadback.cpp */; };
+		FA84DE6827791C36002674C6 /* GraphicsReadback.h in Headers */ = {isa = PBXBuildFile; fileRef = FA84DE6527791C36002674C6 /* GraphicsReadback.h */; };
+		FA84DE6B277943F6002674C6 /* GraphicsReadback.h in Headers */ = {isa = PBXBuildFile; fileRef = FA84DE69277943F6002674C6 /* GraphicsReadback.h */; };
+		FA84DE6C277943F6002674C6 /* GraphicsReadback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE6A277943F6002674C6 /* GraphicsReadback.cpp */; };
+		FA84DE6D277943F6002674C6 /* GraphicsReadback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE6A277943F6002674C6 /* GraphicsReadback.cpp */; };
+		FA84DE7127795E22002674C6 /* wrap_GraphicsReadback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE6F27795E22002674C6 /* wrap_GraphicsReadback.cpp */; };
+		FA84DE7227795E22002674C6 /* wrap_GraphicsReadback.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA84DE6F27795E22002674C6 /* wrap_GraphicsReadback.cpp */; };
 		FA84DE76277CB3D5002674C6 /* SDL2.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE75277CB3D4002674C6 /* SDL2.xcframework */; };
 		FA84DE7A277D4C88002674C6 /* modplug.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE79277D4C88002674C6 /* modplug.xcframework */; };
 		FA84DE7C277E045E002674C6 /* ogg.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE7B277E045E002674C6 /* ogg.xcframework */; };
@@ -1909,6 +1919,8 @@
 		FA6BDE5B1F31725300786805 /* Color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
 		FA6BDF8C281219E900240F2A /* DataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataStream.cpp; sourceTree = "<group>"; };
 		FA6BDF8D281219E900240F2A /* DataStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataStream.h; sourceTree = "<group>"; };
+		FA6BDF88280B62A000240F2A /* GraphicsReadback.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = GraphicsReadback.mm; sourceTree = "<group>"; };
+		FA6BDF8B280B62B600240F2A /* GraphicsReadback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GraphicsReadback.h; sourceTree = "<group>"; };
 		FA7634481E28722A0066EF9E /* StreamBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StreamBuffer.cpp; sourceTree = "<group>"; };
 		FA7634491E28722A0066EF9E /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		FA7DA04C1C16874A0056B200 /* wrap_Math.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Math.lua; sourceTree = "<group>"; };
@@ -1917,6 +1929,12 @@
 		FA84DE5E2778D7DC002674C6 /* glslang_c_interface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glslang_c_interface.h; sourceTree = "<group>"; };
 		FA84DE5F2778D7DC002674C6 /* glslang_c_shader_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glslang_c_shader_types.h; sourceTree = "<group>"; };
 		FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpirvIntrinsics.cpp; sourceTree = "<group>"; };
+		FA84DE6427791C36002674C6 /* GraphicsReadback.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsReadback.cpp; sourceTree = "<group>"; };
+		FA84DE6527791C36002674C6 /* GraphicsReadback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GraphicsReadback.h; sourceTree = "<group>"; };
+		FA84DE69277943F6002674C6 /* GraphicsReadback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsReadback.h; sourceTree = "<group>"; };
+		FA84DE6A277943F6002674C6 /* GraphicsReadback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsReadback.cpp; sourceTree = "<group>"; };
+		FA84DE6E27795E22002674C6 /* wrap_GraphicsReadback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_GraphicsReadback.h; sourceTree = "<group>"; };
+		FA84DE6F27795E22002674C6 /* wrap_GraphicsReadback.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_GraphicsReadback.cpp; sourceTree = "<group>"; };
 		FA84DE75277CB3D4002674C6 /* SDL2.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL2.xcframework; path = ios/libraries/SDL2.xcframework; sourceTree = "<group>"; };
 		FA84DE79277D4C88002674C6 /* modplug.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = modplug.xcframework; path = ios/libraries/modplug.xcframework; sourceTree = "<group>"; };
 		FA84DE7B277E045E002674C6 /* ogg.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ogg.xcframework; path = ios/libraries/ogg.xcframework; sourceTree = "<group>"; };
@@ -2819,6 +2837,8 @@
 				FA1BA09C1E16CFCE00AA2803 /* Font.h */,
 				FA0B7B8A1A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B8B1A95902C000E1D17 /* Graphics.h */,
+				FA84DE6427791C36002674C6 /* GraphicsReadback.cpp */,
+				FA84DE6527791C36002674C6 /* GraphicsReadback.h */,
 				FADF54231E3DA5BA00012CC0 /* Mesh.cpp */,
 				FADF54241E3DA5BA00012CC0 /* Mesh.h */,
 				FA18CECC23DBC6E000263725 /* metal */,
@@ -2857,6 +2877,8 @@
 				FADF54391E3DAFF700012CC0 /* wrap_Graphics.cpp */,
 				FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */,
 				FADF54371E3DAFBA00012CC0 /* wrap_Graphics.lua */,
+				FA84DE6F27795E22002674C6 /* wrap_GraphicsReadback.cpp */,
+				FA84DE6E27795E22002674C6 /* wrap_GraphicsReadback.h */,
 				FADF54281E3DAADA00012CC0 /* wrap_Mesh.cpp */,
 				FADF54291E3DAADA00012CC0 /* wrap_Mesh.h */,
 				FADF541E1E3DA52C00012CC0 /* wrap_ParticleSystem.cpp */,
@@ -2887,6 +2909,8 @@
 				FA28EBD41E352DB5003446F4 /* FenceSync.h */,
 				FA0B7B911A95902C000E1D17 /* Graphics.cpp */,
 				FA0B7B921A95902C000E1D17 /* Graphics.h */,
+				FA84DE6A277943F6002674C6 /* GraphicsReadback.cpp */,
+				FA84DE69277943F6002674C6 /* GraphicsReadback.h */,
 				FA0B7B971A95902C000E1D17 /* OpenGL.cpp */,
 				FA0B7B981A95902C000E1D17 /* OpenGL.h */,
 				FA0B7B9D1A95902C000E1D17 /* Shader.cpp */,
@@ -3354,6 +3378,8 @@
 				FA18CEE823DBC8D400263725 /* Buffer.mm */,
 				FA18CED523DBC6E000263725 /* Graphics.h */,
 				FA18CED323DBC6E000263725 /* Graphics.mm */,
+				FA6BDF8B280B62B600240F2A /* GraphicsReadback.h */,
+				FA6BDF88280B62A000240F2A /* GraphicsReadback.mm */,
 				FA18CED423DBC6E000263725 /* Metal.h */,
 				FA18CED023DBC6E000263725 /* Metal.mm */,
 				FA18CECD23DBC6E000263725 /* Shader.h */,
@@ -4338,6 +4364,7 @@
 				FABDA9C92552448300B5C523 /* b2_distance.h in Headers */,
 				FA24348921D401CB00B8918A /* pch.h in Headers */,
 				FAF140991E20934C00F898D2 /* PpTokens.h in Headers */,
+				FA84DE6827791C36002674C6 /* GraphicsReadback.h in Headers */,
 				FAF1405B1E20934C00F898D2 /* InfoSink.h in Headers */,
 				FA18CF2423DCF67900263725 /* spirv_cpp.hpp in Headers */,
 				FA0B7B321A958EA3000E1D17 /* wuff.h in Headers */,
@@ -4394,6 +4421,7 @@
 				FAC7CD961FE755B4006A60C7 /* lz4opt.h in Headers */,
 				FA9D8DD31DEB56C3002CD881 /* pixelformat.h in Headers */,
 				FABDA9DE2552448300B5C523 /* b2_prismatic_joint.h in Headers */,
+				FA84DE6B277943F6002674C6 /* GraphicsReadback.h in Headers */,
 				FAF140A61E20934C00F898D2 /* ScanContext.h in Headers */,
 				FABDA97B2552448200B5C523 /* b2_chain_polygon_contact.h in Headers */,
 				FA0B7E4A1A95902C000E1D17 /* wrap_DistanceJoint.h in Headers */,
@@ -4548,6 +4576,7 @@
 				FA18CF4723DD1A8100263725 /* ShaderStage.mm in Sources */,
 				FA0B7ECC1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
 				FA0B7E6D1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
+				FA84DE7227795E22002674C6 /* wrap_GraphicsReadback.cpp in Sources */,
 				FACA02FA1F5E397B0084B28F /* DataModule.cpp in Sources */,
 				FA0B7E641A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
 				FA4F2C031DE936C200CA37D7 /* auxiliar.c in Sources */,
@@ -4619,6 +4648,7 @@
 				FADF53FE1E3D74F200012CC0 /* Text.cpp in Sources */,
 				FA0B7D191A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
 				FAC271E723B5B5B400C200D3 /* renderstate.cpp in Sources */,
+				FA84DE6727791C36002674C6 /* GraphicsReadback.cpp in Sources */,
 				FA0B7CFB1A95902C000E1D17 /* Filesystem.cpp in Sources */,
 				FABDA9F82552448300B5C523 /* b2_dynamic_tree.cpp in Sources */,
 				FABDA98B2552448300B5C523 /* b2_revolute_joint.cpp in Sources */,
@@ -4651,6 +4681,7 @@
 				FABDA9A32552448300B5C523 /* b2_friction_joint.cpp in Sources */,
 				FAF140AD1E20934C00F898D2 /* Versions.cpp in Sources */,
 				FA0B793C1A958E3B000E1D17 /* runtime.cpp in Sources */,
+				FA6BDF8A280B62A000240F2A /* GraphicsReadback.mm in Sources */,
 				FAF140DC1E20934C00F898D2 /* InitializeDll.cpp in Sources */,
 				FA0B7DBC1A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7DAF1A95902C000E1D17 /* wrap_CompressedImageData.cpp in Sources */,
@@ -4766,6 +4797,7 @@
 				FA0B7CF81A95902C000E1D17 /* FileData.cpp in Sources */,
 				FA0B7DA61A95902C000E1D17 /* PNGHandler.cpp in Sources */,
 				FAF6C9F523C2DE2900D7B5BC /* Logger.cpp in Sources */,
+				FA84DE6D277943F6002674C6 /* GraphicsReadback.cpp in Sources */,
 				FAE64A932071365100BC7981 /* physfs_platform_haiku.cpp in Sources */,
 				FA0B7E981A95902C000E1D17 /* Sound.cpp in Sources */,
 				FA0B7E371A95902C000E1D17 /* WheelJoint.cpp in Sources */,
@@ -4969,6 +5001,7 @@
 				FAF140A71E20934C00F898D2 /* ShaderLang.cpp in Sources */,
 				FAC271E623B5B5B400C200D3 /* renderstate.cpp in Sources */,
 				FA1BA09D1E16CFCE00AA2803 /* Font.cpp in Sources */,
+				FA84DE7127795E22002674C6 /* wrap_GraphicsReadback.cpp in Sources */,
 				FA0B7E6C1A95902C000E1D17 /* wrap_RevoluteJoint.cpp in Sources */,
 				FA0B7E631A95902C000E1D17 /* wrap_PolygonShape.cpp in Sources */,
 				FAC7CD7B1FE35E95006A60C7 /* physfs_platform_unix.c in Sources */,
@@ -5039,6 +5072,7 @@
 				FADF54341E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */,
 				FA0B7E0C1A95902C000E1D17 /* Fixture.cpp in Sources */,
 				FA0B7D181A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
+				FA84DE6627791C36002674C6 /* GraphicsReadback.cpp in Sources */,
 				FA0B7CFA1A95902C000E1D17 /* Filesystem.cpp in Sources */,
 				FABDA9F72552448300B5C523 /* b2_dynamic_tree.cpp in Sources */,
 				FABDA98A2552448300B5C523 /* b2_revolute_joint.cpp in Sources */,
@@ -5071,6 +5105,7 @@
 				FABDA9A22552448300B5C523 /* b2_friction_joint.cpp in Sources */,
 				217DFC0D1D9F6D490055D849 /* unixudp.c in Sources */,
 				FA0B7CDC1A95902C000E1D17 /* Source.cpp in Sources */,
+				FA6BDF89280B62A000240F2A /* GraphicsReadback.mm in Sources */,
 				FA0B7DC41A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
 				FA0B7E6F1A95902C000E1D17 /* wrap_RopeJoint.cpp in Sources */,
 				FA24348721D401CB00B8918A /* attribute.cpp in Sources */,
@@ -5190,6 +5225,7 @@
 				FA0B7DA51A95902C000E1D17 /* PNGHandler.cpp in Sources */,
 				FA0B7B371A958EA3000E1D17 /* wuff_internal.c in Sources */,
 				FA0B7E971A95902C000E1D17 /* Sound.cpp in Sources */,
+				FA84DE6C277943F6002674C6 /* GraphicsReadback.cpp in Sources */,
 				FA4F2B791DE0125B00CA37D7 /* xxhash.c in Sources */,
 				FA0B7E361A95902C000E1D17 /* WheelJoint.cpp in Sources */,
 				FADF542F1E3DABF600012CC0 /* SpriteBatch.cpp in Sources */,

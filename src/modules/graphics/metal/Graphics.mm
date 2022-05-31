@@ -22,6 +22,7 @@
 #include "StreamBuffer.h"
 #include "Buffer.h"
 #include "Texture.h"
+#include "GraphicsReadback.h"
 #include "Shader.h"
 #include "ShaderStage.h"
 #include "window/Window.h"
@@ -416,6 +417,16 @@ love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::Sh
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
 	return new Buffer(this, device, settings, format, data, size, arraylength);
+}
+
+love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	return new GraphicsReadback(this, method, buffer, offset, size, dest, destoffset);
+}
+
+love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
 Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rendertotexture*/) const
@@ -1617,6 +1628,7 @@ void Graphics::present(void *screenshotCallbackData)
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
+	updatePendingReadbacks();
 	updateTemporaryResources();
 }}
 

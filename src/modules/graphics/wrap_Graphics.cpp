@@ -2141,6 +2141,126 @@ int w_newVideo(lua_State *L)
 	return 1;
 }
 
+int w_readbackBuffer(lua_State *L)
+{
+	Buffer *b = luax_checkbuffer(L, 1);
+	lua_Integer offset = luaL_optinteger(L, 2, 0);
+	lua_Integer size = luaL_optinteger(L, 3, b->getSize() - offset);
+
+	data::ByteData *dest = nullptr;
+	size_t destoffset = 0;
+	if (!lua_isnoneornil(L, 4))
+	{
+		dest = luax_checktype<data::ByteData>(L, 4);
+		destoffset = (size_t) luaL_optinteger(L, 5, 0);
+	}
+
+	love::data::ByteData *data = nullptr;
+	luax_catchexcept(L, [&]() { data = instance()->readbackBuffer(b, offset, size, dest, destoffset); });
+
+	luax_pushtype(L, data);
+	data->release();
+	return 1;
+}
+
+int w_readbackBufferAsync(lua_State *L)
+{
+	Buffer *b = luax_checkbuffer(L, 1);
+	lua_Integer offset = luaL_optinteger(L, 2, 0);
+	lua_Integer size = luaL_optinteger(L, 3, b->getSize() - offset);
+
+	data::ByteData *dest = nullptr;
+	size_t destoffset = 0;
+	if (!lua_isnoneornil(L, 4))
+	{
+		dest = luax_checktype<data::ByteData>(L, 4);
+		destoffset = (size_t) luaL_optinteger(L, 5, 0);
+	}
+
+	GraphicsReadback *r = nullptr;
+	luax_catchexcept(L, [&]() { r = instance()->readbackBufferAsync(b, offset, size, dest, destoffset); });
+
+	luax_pushtype(L, r);
+	r->release();
+	return 1;
+}
+
+int w_readbackTexture(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+
+	int slice = 0;
+	if (t->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 2) - 1;
+
+	int mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+
+	Rect rect = {0, 0, t->getPixelWidth(mipmap), t->getPixelHeight(mipmap)};
+	if (!lua_isnoneornil(L, 4))
+	{
+		rect.x = (int) luaL_checkinteger(L, 4);
+		rect.y = (int) luaL_checkinteger(L, 5);
+		rect.w = (int) luaL_checkinteger(L, 6);
+		rect.h = (int) luaL_checkinteger(L, 7);
+	}
+
+	image::ImageData *dest = nullptr;
+	int destx = 0;
+	int desty = 0;
+
+	if (!lua_isnoneornil(L, 8))
+	{
+		dest = luax_checktype<image::ImageData>(L, 8);
+		destx = (int) luaL_optinteger(L, 9, 0);
+		desty = (int) luaL_optinteger(L, 10, 0);
+	}
+
+	image::ImageData *imagedata = nullptr;
+	luax_catchexcept(L, [&]() { imagedata = instance()->readbackTexture(t, slice, mipmap, rect, dest, destx, desty); });
+
+	luax_pushtype(L, imagedata);
+	imagedata->release();
+	return 1;
+}
+
+int w_readbackTextureAsync(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+
+	int slice = 0;
+	if (t->getTextureType() != TEXTURE_2D)
+		slice = (int) luaL_checkinteger(L, 2) - 1;
+
+	int mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+
+	Rect rect = {0, 0, t->getPixelWidth(mipmap), t->getPixelHeight(mipmap)};
+	if (!lua_isnoneornil(L, 4))
+	{
+		rect.x = (int) luaL_checkinteger(L, 4);
+		rect.y = (int) luaL_checkinteger(L, 5);
+		rect.w = (int) luaL_checkinteger(L, 6);
+		rect.h = (int) luaL_checkinteger(L, 7);
+	}
+
+	image::ImageData *dest = nullptr;
+	int destx = 0;
+	int desty = 0;
+
+	if (!lua_isnoneornil(L, 8))
+	{
+		dest = luax_checktype<image::ImageData>(L, 8);
+		destx = (int) luaL_optinteger(L, 9, 0);
+		desty = (int) luaL_optinteger(L, 10, 0);
+	}
+
+	GraphicsReadback *r = nullptr;
+	luax_catchexcept(L, [&]() { r = instance()->readbackTextureAsync(t, slice, mipmap, rect, dest, destx, desty); });
+
+	luax_pushtype(L, r);
+	r->release();
+	return 1;
+}
+
 int w_setColor(lua_State *L)
 {
 	Colorf c;
@@ -3650,6 +3770,11 @@ static const luaL_Reg functions[] =
 	{ "newText", w_newText },
 	{ "_newVideo", w_newVideo },
 
+	{ "readbackBuffer", w_readbackBuffer },
+	{ "readbackBufferAsync", w_readbackBufferAsync },
+	{ "readbackTexture", w_readbackTexture },
+	{ "readbackTextureAsync", w_readbackTextureAsync },
+
 	{ "validateShader", w_validateShader },
 
 	{ "setCanvas", w_setCanvas },
@@ -3787,6 +3912,7 @@ static const lua_CFunction types[] =
 	luaopen_font,
 	luaopen_quad,
 	luaopen_graphicsbuffer,
+	luaopen_graphicsreadback,
 	luaopen_spritebatch,
 	luaopen_particlesystem,
 	luaopen_shader,

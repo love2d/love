@@ -18,14 +18,12 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
-#include "OpenGL.h"
-
-// C
-#include <stddef.h>
-#include <vector>
-
 #pragma once
+
+// LOVE
+#include "graphics/GraphicsReadback.h"
+#include "FenceSync.h"
+#include "common/math.h"
 
 namespace love
 {
@@ -34,23 +32,24 @@ namespace graphics
 namespace opengl
 {
 
-class FenceSync
+class GraphicsReadback final : public love::graphics::GraphicsReadback
 {
 public:
 
-	FenceSync() : sync(0) {}
-	~FenceSync();
+	GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
+	GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty);
+	virtual ~GraphicsReadback();
 
-	bool fence();
-	bool isComplete() const;
-	bool cpuWait();
-	void cleanup();
+	void wait() override;
+	void update() override;
 
 private:
 
-	GLsync sync;
+	FenceSync sync;
 
-}; // FenceSync
+	StrongRef<love::graphics::Buffer> stagingBuffer;
+
+}; // GraphicsReadback
 
 } // opengl
 } // graphics

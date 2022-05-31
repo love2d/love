@@ -57,7 +57,6 @@ private:
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
 	void generateMipmapsInternal() override;
-	void readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect) override;
 
 	id<MTLTexture> texture;
 	id<MTLTexture> msaaTexture;

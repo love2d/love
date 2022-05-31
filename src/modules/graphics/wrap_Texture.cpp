@@ -385,16 +385,15 @@ int w_Texture_replacePixels(lua_State *L)
 
 int w_Texture_newImageData(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "Texture:newImageData", API_METHOD, DEPRECATED_RENAMED, "love.graphics.readbackTexture");
+
 	Texture *t = luax_checktexture(L, 1);
-	love::image::Image *image = luax_getmodule<love::image::Image>(L, love::image::Image::type);
 
 	int slice = 0;
-	int mipmap = 0;
-
 	if (t->getTextureType() != TEXTURE_2D)
 		slice = (int) luaL_checkinteger(L, 2) - 1;
 
-	mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
+	int mipmap = (int) luaL_optinteger(L, 3, 1) - 1;
 
 	Rect rect = {0, 0, t->getPixelWidth(mipmap), t->getPixelHeight(mipmap)};
 	if (!lua_isnoneornil(L, 4))
@@ -405,8 +404,12 @@ int w_Texture_newImageData(lua_State *L)
 		rect.h = (int) luaL_checkinteger(L, 7);
 	}
 
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx == nullptr)
+		return luaL_error(L, "Cannot find Graphics module.");
+
 	love::image::ImageData *img = nullptr;
-	luax_catchexcept(L, [&](){ img = t->newImageData(image, slice, mipmap, rect); });
+	luax_catchexcept(L, [&](){ img = gfx->readbackTexture(t, slice, mipmap, rect, nullptr, 0, 0); });
 
 	luax_pushtype(L, img);
 	img->release();
@@ -501,8 +504,11 @@ const luaL_Reg w_Texture_functions[] =
 	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },
 	{ "generateMipmaps", w_Texture_generateMipmaps },
 	{ "replacePixels", w_Texture_replacePixels },
-	{ "newImageData", w_Texture_newImageData },
 	{ "renderTo", w_Texture_renderTo },
+
+	// Deprecated
+	{ "newImageData", w_Texture_newImageData },
+
 	{ 0, 0 }
 };
 

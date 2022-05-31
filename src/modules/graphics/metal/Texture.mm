@@ -273,52 +273,6 @@ void Texture::generateMipmapsInternal()
 	[encoder generateMipmapsForTexture:texture];
 }}
 
-void Texture::readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect)
-{ @autoreleasepool {
-	auto gfx = Graphics::getInstance();
-
-	id<MTLBlitCommandEncoder> encoder = gfx->useBlitEncoder();
-
-	size_t rowSize = 0;
-	if (isCompressed())
-		rowSize = getPixelFormatCompressedBlockRowSize(format, rect.w);
-	else
-		rowSize = getPixelFormatUncompressedRowSize(format, rect.w);
-
-	// TODO: Verify this is correct for compressed formats at small sizes.
-	// TODO: make sure this is consistent with the imagedata byte size?
-	size_t sliceSize = getPixelFormatSliceSize(format, rect.w, rect.h);
-
-	int z = texType == TEXTURE_VOLUME ? slice : 0;
-
-	id<MTLBuffer> buffer = [gfx->device newBufferWithLength:sliceSize
-													options:MTLResourceStorageModeShared];
-
-	MTLBlitOption options = MTLBlitOptionNone;
-	if (isPixelFormatDepthStencil(format))
-		options = MTLBlitOptionDepthFromDepthStencil;
-
-	[encoder copyFromTexture:texture
-				 sourceSlice:texType == TEXTURE_VOLUME ? 0 : slice
-				 sourceLevel:mipmap
-				sourceOrigin:MTLOriginMake(rect.x, rect.y, z)
-				  sourceSize:MTLSizeMake(rect.w, rect.h, 1)
-					toBuffer:buffer
-		   destinationOffset:0
-	  destinationBytesPerRow:rowSize
-	destinationBytesPerImage:sliceSize
-					 options:options];
-
-	id<MTLCommandBuffer> cmd = gfx->getCommandBuffer();
-
-	gfx->submitBlitEncoder();
-	gfx->submitCommandBuffer(Graphics::SUBMIT_STORE);
-
-	[cmd waitUntilCompleted];
-
-	memcpy(imagedata->getData(), buffer.contents, imagedata->getSize());
-}}
-
 void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
 { @autoreleasepool {
 	id<MTLBlitCommandEncoder> encoder = Graphics::getInstance()->useBlitEncoder();

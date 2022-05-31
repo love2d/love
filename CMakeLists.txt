@@ -512,6 +512,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/Font.h
 	src/modules/graphics/Graphics.cpp
 	src/modules/graphics/Graphics.h
+	src/modules/graphics/GraphicsReadback.cpp
+	src/modules/graphics/GraphicsReadback.h
 	src/modules/graphics/Mesh.cpp
 	src/modules/graphics/Mesh.h
 	src/modules/graphics/ParticleSystem.cpp
@@ -547,6 +549,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/wrap_Font.h
 	src/modules/graphics/wrap_Graphics.cpp
 	src/modules/graphics/wrap_Graphics.h
+	src/modules/graphics/wrap_GraphicsReadback.cpp
+	src/modules/graphics/wrap_GraphicsReadback.h
 	src/modules/graphics/wrap_Mesh.cpp
 	src/modules/graphics/wrap_Mesh.h
 	src/modules/graphics/wrap_ParticleSystem.cpp
@@ -572,6 +576,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/FenceSync.h
 	src/modules/graphics/opengl/Graphics.cpp
 	src/modules/graphics/opengl/Graphics.h
+	src/modules/graphics/opengl/GraphicsReadback.cpp
+	src/modules/graphics/opengl/GraphicsReadback.h
 	src/modules/graphics/opengl/OpenGL.cpp
 	src/modules/graphics/opengl/OpenGL.h
 	src/modules/graphics/opengl/Shader.cpp
