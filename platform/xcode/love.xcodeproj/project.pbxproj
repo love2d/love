@@ -328,7 +328,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1340;
 				TargetAttributes = {
 					FA0B7F051A95AAF3000E1D17 = {
 						CreatedOnToolsVersion = 6.1.1;
