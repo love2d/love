@@ -305,7 +305,7 @@ File *luax_getfile(lua_State *L, int idx)
 	return file;
 }
 
-FileData *luax_getfiledata(lua_State *L, int idx)
+FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror)
 {
 	FileData *data = nullptr;
 	File *file = nullptr;
@@ -325,16 +325,31 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 		luaL_argerror(L, idx, "filename, File, or FileData expected");
 		return nullptr; // Never reached.
 	}
-
-	if (file)
+	else if (file && !data)
 	{
-		luax_catchexcept(L,
-			[&]() { data = file->read(); },
-			[&](bool) { file->release(); }
-		);
+		try
+		{
+			data = file->read();
+		}
+		catch (love::Exception &e)
+		{
+			file->release();
+			if (ioerror)
+				luax_ioError(L, "%s", e.what());
+			else
+				luaL_error(L, "%s", e.what());
+			return nullptr; // Never reached.
+		}
+
+		file->release();
 	}
 
 	return data;
+}
+
+FileData *luax_getfiledata(lua_State *L, int idx)
+{
+	return luax_getfiledata(L, idx, false);
 }
 
 Data *luax_getdata(lua_State *L, int idx)
@@ -389,29 +404,10 @@ int w_newFileData(lua_State *L)
 	// Single argument: treat as filepath or File.
 	if (lua_gettop(L) == 1)
 	{
-		// We don't use luax_getfiledata because we want to use an ioError.
-		if (lua_isstring(L, 1))
-			luax_convobj(L, 1, "filesystem", "newFile");
-
-		// Get FileData from the File.
-		if (luax_istype(L, 1, File::type))
-		{
-			File *file = luax_checkfile(L, 1);
-
-			StrongRef<FileData> data;
-			try
-			{
-				data.set(file->read(), Acquire::NORETAIN);
-			}
-			catch (love::Exception &e)
-			{
-				return luax_ioError(L, "%s", e.what());
-			}
-			luax_pushtype(L, data);
-			return 1;
-		}
-		else
-			return luaL_argerror(L, 1, "filename or File expected");
+		FileData *data = luax_getfiledata(L, 1, true);
+		luax_pushtype(L, data);
+		data->release();
+		return 1;
 	}
 
 	size_t length = 0;
