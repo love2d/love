@@ -240,6 +240,9 @@ Graphics::~Graphics()
 	for (int i = 0; i < (int) SHADERSTAGE_MAX_ENUM; i++)
 		cachedShaderStages[i].clear();
 
+	pendingReadbacks.clear();
+	clearTemporaryResources();
+
 	Shader::deinitialize();
 }
 
@@ -436,6 +439,46 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, Pr
 love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
 	return new Text(font, text);
+}
+
+love::data::ByteData *Graphics::readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	StrongRef<GraphicsReadback> readback;
+	readback.set(newReadbackInternal(READBACK_IMMEDIATE, buffer, offset, size, dest, destoffset), Acquire::NORETAIN);
+
+	auto data = readback->getBufferData();
+	if (data == nullptr)
+		throw love::Exception("love.graphics.readbackBuffer failed.");
+
+	data->retain();
+	return data;
+}
+
+GraphicsReadback *Graphics::readbackBufferAsync(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	auto readback = newReadbackInternal(READBACK_ASYNC, buffer, offset, size, dest, destoffset);
+	pendingReadbacks.push_back(readback);
+	return readback;
+}
+
+image::ImageData *Graphics::readbackTexture(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	StrongRef<GraphicsReadback> readback;
+	readback.set(newReadbackInternal(READBACK_IMMEDIATE, texture, slice, mipmap, rect, dest, destx, desty), Acquire::NORETAIN);
+
+	auto imagedata = readback->getImageData();
+	if (imagedata == nullptr)
+		throw love::Exception("love.graphics.readbackTexture failed.");
+
+	imagedata->retain();
+	return imagedata;
+}
+
+GraphicsReadback *Graphics::readbackTextureAsync(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	auto readback = newReadbackInternal(READBACK_ASYNC, texture, slice, mipmap, rect, dest, destx, desty);
+	pendingReadbacks.push_back(readback);
+	return readback;
 }
 
 void Graphics::cleanupCachedShaderStage(ShaderStageType type, const std::string &hashkey)
@@ -893,6 +936,10 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		realRTs.depthStencil.texture = getTemporaryTexture(dsformat, pixelw, pixelh, reqmsaa);
 		realRTs.depthStencil.slice = 0;
 
+		// TODO: fix this to call release at the right time.
+		// This only works here because nothing else calls getTemporaryTexture.
+		releaseTemporaryTexture(realRTs.depthStencil.texture);
+
 		setRenderTargetsInternal(realRTs, pixelw, pixelh, hasSRGBtexture);
 	}
 	else
@@ -995,12 +1042,15 @@ Texture *Graphics::getTemporaryTexture(PixelFormat format, int w, int h, int sam
 
 	for (TemporaryTexture &temp : temporaryTextures)
 	{
+		if (temp.framesSinceUse < 0)
+			continue;
+
 		Texture *c = temp.texture;
 		if (c->getPixelFormat() == format && c->getPixelWidth() == w
 			&& c->getPixelHeight() == h && c->getRequestedMSAA() == samples)
 		{
 			texture = c;
-			temp.framesSinceUse = 0;
+			temp.framesSinceUse = -1;
 			break;
 		}
 	}
@@ -1020,6 +1070,115 @@ Texture *Graphics::getTemporaryTexture(PixelFormat format, int w, int h, int sam
 	}
 
 	return texture;
+}
+
+void Graphics::releaseTemporaryTexture(Texture *texture)
+{
+	for (TemporaryTexture &temp : temporaryTextures)
+	{
+		if (temp.texture == texture)
+		{
+			temp.framesSinceUse = 0;
+			break;
+		}
+	}
+}
+
+Buffer *Graphics::getTemporaryBuffer(size_t size, DataFormat format, uint32 usageflags, BufferDataUsage datausage)
+{
+	Buffer *buffer = nullptr;
+
+	for (TemporaryBuffer &temp : temporaryBuffers)
+	{
+		if (temp.framesSinceUse < 0)
+			continue;
+
+		Buffer *b = temp.buffer;
+
+		if (temp.size == size && b->getDataMember(0).decl.format == format
+			&& b->getUsageFlags() == usageflags && b->getDataUsage() == datausage)
+		{
+			buffer = b;
+			temp.framesSinceUse = -1;
+			break;
+		}
+	}
+
+	if (buffer == nullptr)
+	{
+		Buffer::Settings settings(usageflags, datausage);
+		buffer = newBuffer(settings, format, nullptr, size, 0);
+
+		temporaryBuffers.emplace_back(buffer, size);
+	}
+
+	return buffer;
+}
+
+void Graphics::releaseTemporaryBuffer(Buffer *buffer)
+{
+	for (TemporaryBuffer &temp : temporaryBuffers)
+	{
+		if (temp.buffer == buffer)
+		{
+			temp.framesSinceUse = 0;
+			break;
+		}
+	}
+}
+
+void Graphics::updateTemporaryResources()
+{
+	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
+	{
+		auto &t = temporaryTextures[i];
+		if (t.framesSinceUse >= MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES)
+		{
+			t.texture->release();
+			t = temporaryTextures.back();
+			temporaryTextures.pop_back();
+		}
+		else if (t.framesSinceUse >= 0)
+			t.framesSinceUse++;
+	}
+
+	for (int i = (int) temporaryBuffers.size() - 1; i >= 0; i--)
+	{
+		auto &t = temporaryBuffers[i];
+		if (t.framesSinceUse >= MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES)
+		{
+			t.buffer->release();
+			t = temporaryBuffers.back();
+			temporaryBuffers.pop_back();
+		}
+		else if (t.framesSinceUse >= 0)
+			t.framesSinceUse++;
+	}
+}
+
+void Graphics::clearTemporaryResources()
+{
+	for (auto temp :temporaryBuffers)
+		temp.buffer->release();
+
+	for (auto temp : temporaryTextures)
+		temp.texture->release();
+
+	temporaryBuffers.clear();
+	temporaryTextures.clear();
+}
+
+void Graphics::updatePendingReadbacks()
+{
+	for (int i = (int)pendingReadbacks.size() - 1; i >= 0; i--)
+	{
+		pendingReadbacks[i]->update();
+		if (pendingReadbacks[i]->isComplete())
+		{
+			pendingReadbacks[i] = pendingReadbacks.back();
+			pendingReadbacks.pop_back();
+		}
+	}
 }
 
 void Graphics::intersectScissor(const Rect &rect)
@@ -1187,6 +1346,9 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (dest->getDataUsage() == BUFFERDATAUSAGE_STREAM)
 		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a copy destination.");
 
+	if (source->getDataUsage() == BUFFERDATAUSAGE_READBACK)
+		throw love::Exception("Buffers created with 'readback' data usage cannot be used as a copy source.");
+
 	if (sourcerange.getMax() >= source->getSize())
 		throw love::Exception("Buffer copy source offset and size doesn't fit within the source Buffer's size.");
 
@@ -1295,6 +1457,9 @@ void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceo
 {
 	if (!capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE])
 		throw love::Exception("Copying a Buffer to a Texture is not supported on this system.");
+
+	if (source->getDataUsage() == BUFFERDATAUSAGE_READBACK)
+		throw love::Exception("Buffers created with 'readback' data usage cannot be used as a copy source.");
 
 	PixelFormat format = dest->getPixelFormat();
 

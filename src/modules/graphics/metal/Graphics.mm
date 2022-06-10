@@ -22,6 +22,7 @@
 #include "StreamBuffer.h"
 #include "Buffer.h"
 #include "Texture.h"
+#include "GraphicsReadback.h"
 #include "Shader.h"
 #include "ShaderStage.h"
 #include "window/Window.h"
@@ -418,6 +419,16 @@ love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, co
 	return new Buffer(this, device, settings, format, data, size, arraylength);
 }
 
+love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	return new GraphicsReadback(this, method, buffer, offset, size, dest, destoffset);
+}
+
+love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
+}
+
 Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rendertotexture*/) const
 {
 	uint32 flags = DEVICE_PROJECTION_FLIP_Y;
@@ -501,10 +512,7 @@ void Graphics::unSetMode()
 
 	submitCommandBuffer(SUBMIT_DONE);
 
-	for (auto temp : temporaryTextures)
-		temp.texture->release();
-
-	temporaryTextures.clear();
+	clearTemporaryResources();
 
 	created = false;
 	metalLayer = nil;
@@ -1620,18 +1628,8 @@ void Graphics::present(void *screenshotCallbackData)
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
-	// This assumes temporary canvases will only be used within a render pass.
-	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
-	{
-		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
-		{
-			temporaryTextures[i].texture->release();
-			temporaryTextures[i] = temporaryTextures.back();
-			temporaryTextures.pop_back();
-		}
-		else
-			temporaryTextures[i].framesSinceUse++;
-	}
+	updatePendingReadbacks();
+	updateTemporaryResources();
 }}
 
 int Graphics::getRequestedBackbufferMSAA() const

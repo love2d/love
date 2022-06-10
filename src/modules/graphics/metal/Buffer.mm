@@ -18,7 +18,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#import "Buffer.h"
+#include "Buffer.h"
 #include "Graphics.h"
 
 namespace love
@@ -65,11 +65,16 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	size = getSize();
 	arraylength = getArrayLength();
 
-	MTLResourceOptions opts = MTLResourceStorageModePrivate;
+	MTLResourceOptions opts = 0;
+	if (settings.dataUsage == BUFFERDATAUSAGE_READBACK)
+		opts |= MTLResourceStorageModeShared;
+	else
+		opts |= MTLResourceStorageModePrivate;
+
 	buffer = [device newBufferWithLength:size options:opts];
 
 	if (buffer == nil)
-		throw love::Exception("Could not create buffer (out of VRAM?)");
+		throw love::Exception("Could not create buffer with %d bytes (out of VRAM?)", size);
 
 	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
 	{
@@ -109,15 +114,29 @@ Buffer::~Buffer()
 	texture = nil;
 }}
 
-void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
+void *Buffer::map(MapType map, size_t offset, size_t size)
 { @autoreleasepool {
-	if (size == 0 || isImmutable())
+	if (size == 0)
 		return nullptr;
+
+	if (map == MAP_WRITE_INVALIDATE && (isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK))
+		return nullptr;
+
+	if (map == MAP_READ_ONLY && dataUsage != BUFFERDATAUSAGE_READBACK)
+		return  nullptr;
 
 	Range r(offset, size);
 
 	if (!Range(0, getSize()).contains(r))
 		return nullptr;
+
+	if (map == MAP_READ_ONLY)
+	{
+		mappedRange = r;
+		mapped = true;
+		mappedType = map;
+		return (char *) buffer.contents + offset;
+	}
 
 	auto gfx = Graphics::getInstance();
 
@@ -129,6 +148,7 @@ void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 	{
 		mappedRange = r;
 		mapped = true;
+		mappedType = map;
 		return mapBuffer.contents;
 	}
 
@@ -137,6 +157,12 @@ void *Buffer::map(MapType /*map*/, size_t offset, size_t size)
 
 void Buffer::unmap(size_t usedoffset, size_t usedsize)
 { @autoreleasepool {
+	if (mappedType == MAP_READ_ONLY)
+	{
+		mapped = false;
+		return;
+	}
+
 	if (mapBuffer == nil)
 		return;
 
@@ -158,29 +184,17 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 	mapped = false;
 }}
 
-void Buffer::fill(size_t offset, size_t size, const void *data)
+bool Buffer::fill(size_t offset, size_t size, const void *data)
 { @autoreleasepool {
-	if (size == 0 || isImmutable())
-		return;
+	void *dest = map(MAP_WRITE_INVALIDATE, offset, size);
 
-	size_t buffersize = getSize();
+	if (dest == nullptr)
+		return false;
 
-	if (!Range(0, buffersize).contains(Range(offset, size)))
-		return;
+	memcpy(dest, data, size);
 
-	// TODO: Don't create a new buffer every time, also do something for stream
-	// buffers.
-	auto gfx = Graphics::getInstance();
-	auto encoder = gfx->useBlitEncoder();
-
-	auto tempbuffer = [gfx->device newBufferWithLength:size options:MTLResourceStorageModeShared];
-	memcpy(tempbuffer.contents, data, size);
-
-	[encoder copyFromBuffer:tempbuffer
-			   sourceOffset:0
-				   toBuffer:buffer
-		  destinationOffset:offset
-					   size:size];
+	unmap(offset, size);
+	return true;
 }}
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)

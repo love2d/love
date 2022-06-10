@@ -26,6 +26,7 @@
 #include "Graphics.h"
 #include "font/Font.h"
 #include "StreamBuffer.h"
+#include "GraphicsReadback.h"
 #include "math/MathModule.h"
 #include "window/Window.h"
 #include "Buffer.h"
@@ -175,6 +176,16 @@ love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::Sh
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
 	return new Buffer(this, settings, format, data, size, arraylength);
+}
+
+love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
+	return new GraphicsReadback(this, method, buffer, offset, size, dest, destoffset);
+}
+
+love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
+	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
 Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
@@ -462,14 +473,12 @@ void Graphics::unSetMode()
 	// mode change.
 	Volatile::unloadAll();
 
+	clearTemporaryResources();
+
 	for (const auto &pair : framebufferObjects)
 		gl.deleteFramebuffer(pair.second);
 
-	for (auto temp : temporaryTextures)
-		temp.texture->release();
-
 	framebufferObjects.clear();
-	temporaryTextures.clear();
 
 	if (mainVAO != 0)
 	{
@@ -1335,18 +1344,8 @@ void Graphics::present(void *screenshotCallbackData)
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
 
-	// This assumes temporary textures will only be used within a render pass.
-	for (int i = (int) temporaryTextures.size() - 1; i >= 0; i--)
-	{
-		if (temporaryTextures[i].framesSinceUse >= MAX_TEMPORARY_TEXTURE_UNUSED_FRAMES)
-		{
-			temporaryTextures[i].texture->release();
-			temporaryTextures[i] = temporaryTextures.back();
-			temporaryTextures.pop_back();
-		}
-		else
-			temporaryTextures[i].framesSinceUse++;
-	}
+	updatePendingReadbacks();
+	updateTemporaryResources();
 }
 
 int Graphics::getRequestedBackbufferMSAA() const

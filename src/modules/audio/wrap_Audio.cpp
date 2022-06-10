@@ -48,32 +48,35 @@ int w_newSource(lua_State *L)
 {
 	Source::Type stype = Source::TYPE_STREAM;
 
-	if (!luax_istype(L, 1, love::sound::SoundData::type) && !luax_istype(L, 1, love::sound::Decoder::type))
+	if (!luax_istype(L, 1, love::sound::SoundData::type))
 	{
-		const char *stypestr = luaL_checkstring(L, 2);
-		if (stypestr && !Source::getConstant(stypestr, stype))
-			return luax_enumerror(L, "source type", Source::getConstants(stype), stypestr);
+		if (!luax_istype(L, 1, love::sound::Decoder::type))
+		{
+			const char *stypestr = luaL_checkstring(L, 2);
+			if (stypestr && !Source::getConstant(stypestr, stype))
+				return luax_enumerror(L, "source type", Source::getConstants(stype), stypestr);
 
-		if (stype == Source::TYPE_QUEUE)
-			return luaL_error(L, "Cannot create queueable sources using newSource. Use newQueueableSource instead.");
-	}
+			if (stype == Source::TYPE_QUEUE)
+				return luaL_error(L, "Cannot create queueable sources using newSource. Use newQueueableSource instead.");
+		}
 
-	if (love::filesystem::luax_cangetdata(L, 1))
-	{
-		// stream type
-		if (stype == Source::TYPE_STATIC)
-			lua_pushstring(L, "memory");
-		else if (!lua_isnone(L, 3))
-			lua_pushvalue(L, 3);
-		else
+		if (love::filesystem::luax_cangetdata(L, 1))
+		{
+			// stream type
+			if (stype == Source::TYPE_STATIC)
+				lua_pushstring(L, "memory");
+			else if (!lua_isnone(L, 3))
+				lua_pushvalue(L, 3);
+			else
+				lua_pushnil(L);
+
+			// buffer size
 			lua_pushnil(L);
 
-		// buffer size
-		lua_pushnil(L);
-
-		// (file, buffer size, stream type)
-		int idxs[] = { 1, lua_gettop(L), lua_gettop(L) - 1 };
-		luax_convobj(L, idxs, 3, "sound", "newDecoder");
+			// (file, buffer size, stream type)
+			int idxs[] = { 1, lua_gettop(L), lua_gettop(L) - 1 };
+			luax_convobj(L, idxs, 3, "sound", "newDecoder");
+		}
 	}
 
 	if (stype == Source::TYPE_STATIC && luax_istype(L, 1, love::sound::Decoder::type))
@@ -543,6 +546,52 @@ int w_setMixWithSystem(lua_State *L)
 	return 1;
 }
 
+int w_getPlaybackDevice(lua_State* L)
+{
+	std::string device;
+
+	luax_catchexcept(L, [&]() { device = instance()->getPlaybackDevice(); });
+	luax_pushstring(L, device);
+	return 1;
+}
+
+int w_getPlaybackDevices(lua_State* L)
+{
+	std::vector<std::string> list;
+
+	luax_catchexcept(L, [&]() { instance()->getPlaybackDevices(list); });
+	lua_createtable(L, 0, (int) list.size());
+	for (int i = 0; i < (int) list.size(); i++)
+	{
+		lua_pushnumber(L, i + 1);
+		lua_pushstring(L, list[i].c_str());
+		lua_rawset(L, -3);
+	}
+
+	return 1;
+}
+
+int w_setPlaybackDevice(lua_State* L)
+{
+	const char *device = luaL_optstring(L, 1, nullptr);
+
+	try
+	{
+		instance()->setPlaybackDevice(device);
+		luax_pushboolean(L, true);
+		return 1;
+	}
+	catch (love::Exception& e)
+	{
+		luax_pushboolean(L, false);
+		lua_pushstring(L, e.what());
+		return 2;
+	}
+
+	// To avoid compiler warning
+	return 0;
+}
+
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -574,6 +623,9 @@ static const luaL_Reg functions[] =
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
 	{ "setMixWithSystem", w_setMixWithSystem },
+	{ "getPlaybackDevice", w_getPlaybackDevice },
+	{ "getPlaybackDevices", w_getPlaybackDevices },
+	{ "setPlaybackDevice", w_setPlaybackDevice },
 
 	{ 0, 0 }
 };

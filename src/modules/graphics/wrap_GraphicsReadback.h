@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2022 LOVE Development Team
+ * Copyright (c) 2006-2021 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -18,40 +18,19 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-// LOVE
-#include "OpenGL.h"
-
-// C
-#include <stddef.h>
-#include <vector>
-
 #pragma once
+
+// LOVE
+#include "common/runtime.h"
+#include "GraphicsReadback.h"
 
 namespace love
 {
 namespace graphics
 {
-namespace opengl
-{
 
-class FenceSync
-{
-public:
+GraphicsReadback *luax_checkgraphicsreadback(lua_State *L, int idx);
+extern "C" int luaopen_graphicsreadback(lua_State *L);
 
-	FenceSync() : sync(0) {}
-	~FenceSync();
-
-	bool fence();
-	bool isComplete() const;
-	bool cpuWait();
-	void cleanup();
-
-private:
-
-	GLsync sync;
-
-}; // FenceSync
-
-} // opengl
 } // graphics
 } // love

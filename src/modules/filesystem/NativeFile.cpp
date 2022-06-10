@@ -22,6 +22,10 @@
 #include "NativeFile.h"
 #include "common/utf8.h"
 
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+#endif
+
 // Assume POSIX or Visual Studio.
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -84,7 +88,22 @@ bool NativeFile::open(Mode newmode)
 	if (file != nullptr)
 		return false;
 
-#ifdef LOVE_WINDOWS
+#if defined(LOVE_ANDROID)
+	// Try to handle content:// URI
+	int fd = love::android::getFDFromContentProtocol(filename.c_str());
+	if (fd != -1)
+	{
+		if (newmode != MODE_READ)
+		{
+			::close(fd);
+			throw love::Exception("%s is read-only.", filename.c_str());
+		}
+
+		file = fdopen(fd, "rb");
+	}
+	else
+		file = fopen(filename.c_str(), getModeString(newmode));
+#elif defined(LOVE_WINDOWS)
 	// make sure non-ASCII filenames work.
 	std::wstring modestr = to_widestr(getModeString(newmode));
 	std::wstring wfilename = to_widestr(filename);

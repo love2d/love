@@ -383,10 +383,10 @@ STRINGMAP_END(IndexDataType, INDEX_MAX_ENUM, indexType)
 
 STRINGMAP_BEGIN(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 {
-	{ "stream",  BUFFERDATAUSAGE_STREAM  },
-	{ "dynamic", BUFFERDATAUSAGE_DYNAMIC },
-	{ "static",  BUFFERDATAUSAGE_STATIC  },
-	{ "staging", BUFFERDATAUSAGE_STAGING },
+	{ "stream",   BUFFERDATAUSAGE_STREAM   },
+	{ "dynamic",  BUFFERDATAUSAGE_DYNAMIC  },
+	{ "static",   BUFFERDATAUSAGE_STATIC   },
+	{ "readback", BUFFERDATAUSAGE_READBACK },
 }
 STRINGMAP_END(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 

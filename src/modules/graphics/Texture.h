@@ -245,8 +245,6 @@ public:
 
 	void generateMipmaps();
 
-	love::image::ImageData *newImageData(love::image::Image *module, int slice, int mipmap, const Rect &rect);
-
 	virtual void copyFromBuffer(Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect) = 0;
 	virtual void copyToBuffer(Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size) = 0;
 
@@ -313,7 +311,6 @@ protected:
 
 	bool supportsGenerateMipmaps(const char *&outReason) const;
 	virtual void generateMipmapsInternal() = 0;
-	virtual void readbackImageData(love::image::ImageData *imagedata, int slice, int mipmap, const Rect &rect) = 0;
 
 	bool validateDimensions(bool throwException) const;
 

@@ -36,6 +36,7 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	, usageFlags(settings.usageFlags)
 	, dataUsage(settings.dataUsage)
 	, mapped(false)
+	, mappedType(MAP_WRITE_INVALIDATE)
 	, immutable(false)
 {
 	if (size == 0 && arraylength == 0)
@@ -61,8 +62,8 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	if (storagebuffer && dataUsage == BUFFERDATAUSAGE_STREAM)
 		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a shader storage buffer.");
 
-	if (dataUsage == BUFFERDATAUSAGE_STAGING && (indexbuffer || vertexbuffer || texelbuffer || storagebuffer))
-		throw love::Exception("Buffers created with 'staging' data usage cannot be index, vertex, texel, or shaderstorage buffer types.");
+	if (dataUsage == BUFFERDATAUSAGE_READBACK && (indexbuffer || vertexbuffer || texelbuffer || storagebuffer))
+		throw love::Exception("Buffers created with 'readback' data usage cannot be index, vertex, texel, or shaderstorage buffer types.");
 
 	size_t offset = 0;
 	size_t stride = 0;

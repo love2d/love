@@ -506,30 +506,46 @@ void Texture::generateMipmapsInternal()
 	glGenerateMipmap(gltextype);
 }
 
-void Texture::readbackImageData(love::image::ImageData *data, int slice, int mipmap, const Rect &r)
+void Texture::readbackInternal(int slice, int mipmap, const Rect &rect, int destwidth, size_t size, void *dest)
 {
-	if (fbo == 0) // Should never be reached.
-		return;
+	// Not supported in GL with compressed textures...
+	if ((GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0) && !isCompressed())
+		glPixelStorei(GL_PACK_ROW_LENGTH, destwidth);
+
+	gl.bindTextureToUnit(this, 0, false);
 
 	bool isSRGB = false;
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(data->getFormat(), false, isSRGB);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, isSRGB);
 
-	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
-
-	if (slice > 0 || mipmap > 0)
+	if (gl.isCopyTextureToBufferSupported())
 	{
-		int layer = texType == TEXTURE_CUBE ? 0 : slice;
-		int face = texType == TEXTURE_CUBE ? slice : 0;
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, mipmap, layer, face);
+		if (isCompressed())
+			glGetCompressedTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, size, dest);
+		else
+			glGetTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, fmt.externalformat, fmt.type, size, dest);
+	}
+	else if (fbo)
+	{
+		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
+
+		if (slice > 0 || mipmap > 0)
+		{
+			int layer = texType == TEXTURE_CUBE ? 0 : slice;
+			int face = texType == TEXTURE_CUBE ? slice : 0;
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, mipmap, layer, face);
+		}
+
+		glReadPixels(rect.x, rect.y, rect.w, rect.h, fmt.externalformat, fmt.type, dest);
+
+		if (slice > 0 || mipmap > 0)
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
+
+		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 	}
 
-	glReadPixels(r.x, r.y, r.w, r.h, fmt.externalformat, fmt.type, data->getData());
-
-	if (slice > 0 || mipmap > 0)
-		gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
-
-	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
+	if ((GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0) && !isCompressed())
+		glPixelStorei(GL_PACK_ROW_LENGTH, 0);
 }
 
 void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
@@ -558,46 +574,12 @@ void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, 
 	GLuint glbuffer = (GLuint) dest->getHandle();
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, glbuffer);
 
-	if (!isCompressed()) // Not supported in GL with compressed textures...
-		glPixelStorei(GL_PACK_ROW_LENGTH, destwidth);
-
-	gl.bindTextureToUnit(this, 0, false);
-
-	bool isSRGB = false;
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, isSRGB);
-
-	// glTexSubImage and friends copy from the active pixel_unpack_buffer by
+	// glTexSubImage and friends copy to the active PIXEL_PACK_BUFFER by
 	// treating the pointer as a byte offset.
 	uint8 *byteoffset = (uint8 *)(ptrdiff_t)destoffset;
 
-	if (gl.isCopyTextureToBufferSupported())
-	{
-		if (isCompressed())
-			glGetCompressedTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, size, byteoffset);
-		else
-			glGetTextureSubImage(texture, mipmap, rect.x, rect.y, slice, rect.w, rect.h, 1, fmt.externalformat, fmt.type, size, byteoffset);
-	}
-	else if (fbo)
-	{
-		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
-		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, getFBO());
+	readbackInternal(slice, mipmap, rect, destwidth, size, byteoffset);
 
-		if (slice > 0 || mipmap > 0)
-		{
-			int layer = texType == TEXTURE_CUBE ? 0 : slice;
-			int face = texType == TEXTURE_CUBE ? slice : 0;
-			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, mipmap, layer, face);
-		}
-
-		glReadPixels(rect.x, rect.y, rect.w, rect.h, fmt.externalformat, fmt.type, byteoffset);
-
-		if (slice > 0 || mipmap > 0)
-			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, texType, texture, 0, 0, 0);
-
-		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
-	}
-
-	glPixelStorei(GL_PACK_ROW_LENGTH, 0);
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 

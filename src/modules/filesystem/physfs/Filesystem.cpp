@@ -236,8 +236,6 @@ bool Filesystem::setSource(const char *source)
 	if (!love::android::createStorageDirectories())
 		SDL_Log("Error creating storage directories!");
 
-	new_search_path = "";
-
 	PHYSFS_Io *gameLoveIO;
 	bool hasFusedGame = love::android::checkFusedGame((void **) &gameLoveIO);
 	bool isAAssetMounted = false;
@@ -263,38 +261,24 @@ bool Filesystem::setSource(const char *source)
 
 	if (!isAAssetMounted)
 	{
-		new_search_path = love::android::getSelectedGameFile();
-
-		// try mounting first, if that fails, load to memory and mount
-		if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
+		// Is this love2d://fd/ URIs?
+		int fd = love::android::getFDFromLoveProtocol(new_search_path.c_str());
+		if (fd != -1)
 		{
-			// PHYSFS cannot yet mount a zip file inside an .apk
-			SDL_Log("Mounting %s did not work. Loading to memory.",
-					new_search_path.c_str());
-			char* game_archive_ptr = NULL;
-			size_t game_archive_size = 0;
-			if (!love::android::loadGameArchiveToMemory(
-						new_search_path.c_str(), &game_archive_ptr,
-						&game_archive_size))
+			PHYSFS_Io *io = (PHYSFS_Io *) love::android::getIOFromFD(fd);
+
+			if (PHYSFS_mountIo(io, "LOVE.FD", nullptr, 0))
 			{
-				SDL_Log("Failure memory loading archive %s", new_search_path.c_str());
-				return false;
-			}
-			if (!PHYSFS_mountMemory(
-					game_archive_ptr, game_archive_size,
-					love::android::freeGameArchiveMemory, "archive.zip", "/", 0))
-			{
-				SDL_Log("Failure mounting in-memory archive.");
-				love::android::freeGameArchiveMemory(game_archive_ptr);
-				return false;
+				gameSource = new_search_path;
+				return true;
 			}
 		}
 	}
-#else
+#endif
+
 	// Add the directory.
 	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
 		return false;
-#endif
 
 	// Save the game source.
 	gameSource = new_search_path;
