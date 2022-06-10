@@ -62,8 +62,9 @@ namespace love {
 				return mappedMemory;
 			}
 
-			void Buffer::fill(size_t offset, size_t size, const void *data) {
+			bool Buffer::fill(size_t offset, size_t size, const void *data) {
 				memcpy(mappedMemory, data, size);
+				return true;
 			}
 
 			void Buffer::unmap(size_t usedoffset, size_t usedsize) {

@@ -74,6 +74,9 @@ namespace love {
 				void draw(const DrawIndexedCommand& cmd) override;
 				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override { std::cout << "drawQuads "; }
 
+				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
+				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
+
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);
 

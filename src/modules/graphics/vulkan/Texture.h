@@ -26,7 +26,6 @@ namespace love {
 				void uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r)  override;
 
 				void generateMipmapsInternal()  override { std::cout << "Texture::generateMipmapsInternal "; };
-				void readbackImageData(love::image::ImageData* imagedata, int slice, int mipmap, const Rect& rect)  override { std::cout << "Texture::readbackImageData "; };
 
 				int getMSAA() const override { std::cout << "Texture::getMSAA "; return 0; };
 				ptrdiff_t getHandle() const override { std::cout << "Texture::getHandle "; return (ptrdiff_t)textureImage; }
