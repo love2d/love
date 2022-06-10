@@ -1,111 +1,63 @@
-LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, macOS, Linux, Android, and iOS.
+# LitiumVM
 
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/chc0hdr08wv1d5c7?svg=true)](https://ci.appveyor.com/project/AlexSzpakowski/love)
-[![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)](https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration)
+  
 
-Documentation
--------------
+> Codename : lunaris, mini os and game engine made with love2D
 
-We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our IRC channel [#love on OFTC][irc].
+  
 
-Repository
-----------
+# About Project
 
-We use the 'main' branch for patch development of the current major release, and therefore it should not be considered stable.
-There may also be a branch for the next major version in development, which is named after that version.
+LitiumVM (codename lunaris) is a fantasy console and game framework inspired by Atari 2600.
+Is 100% written in lua and has his own API to make your own games. 
+Has a graphic handler, sound writter, and json reader.
 
-We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
+This engine is in development, started at 13/04/2022, you not able to download any binary to run this project.
 
-Experimental changes are developed in a separate [love-experiments][love-experiments] repository.
+You can download this source code and build it on your machine.
 
-Builds
-------
+#### **IF YOU COMPILED THIS SOFTWARE, DON'T REDISTRIBUTE, THIS SOFTWARE IS IN DEVELOPMENT STAGE AND HAVE ISSUES THAT NEED BE FIXED.**
 
-Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
+### STATBILITY WARNING:
 
-There are also unstable/nightly builds:
+> This project is constantly development, so scripts and functions can be added, removed, renamed or moved to other parts, please check for the most recently version of source to not have compatibility issues.
 
-- Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
-- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
-- For arch linux there's [love-git][aur] in the AUR.
+  
 
-Contributing
-------------
+## Building
 
-The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
+  
 
-For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
-Changes and new features typically get discussed in the issue tracker or on Discord or the forums before a pull request is made.
+- [ 1 ] - Make sure you have Love2D 11.4 Mysterious Mysteries installed and setup with %path%, to see if you have set up correclty open your terminal and type "love" if it open a screen with no game means it all working correctly.
 
-Compilation
------------
+- [ 2 ] - on your terminal run boot.cmd or click 2 times on .cmd file to run the current version of the project.
 
-### Windows
-Follow the instructions at the [megasource][megasource] repository page.
+  
 
-### *nix
-Run `platform/unix/automagic` from the repository root, then run ./configure and make.
+# Contributions
 
-	$ platform/unix/automagic
-	$ ./configure
-	$ make
+  
 
-When using a source release, automagic has already been run, and the first step can be skipped.
+You can contribute with the development of engine by clonning this repository with the most recent version of code and make your changes.
 
-### macOS
-Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
 
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
+ 
+Everyone who helps will be credited here (social media or Github page)
 
-### iOS
-Building for iOS requires macOS and Xcode.
+  
 
-#### LÖVE 11.4 and newer
-Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+# Library credits
 
-Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+  
 
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
+This engine use some third party libraries, here the credits for they amazing work :D
 
-See `readme-iOS.rtf` for more information.
+  
 
-#### LÖVE 11.3 and older
-Download the `ios-libraries` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `include` and `libraries` subfolders into love's `platform/xcode/ios` folder.
+>  ### [HUMP - vrld](https://github.com/vrld/hump)
 
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
+>  ### [Json.lua - rxi](https://github.com/rxi/json.lua)
 
-See `readme-iOS.rtf` for more information.
+>  ### [Penlight lib - lunarmodules](https://github.com/lunarmodules/Penlight)
 
-### Android
-Visit the [Android build repository][android-repository] for build instructions.
-
-Dependencies
-------------
-
-- SDL2
-- OpenGL 2.1+ / OpenGL ES 2+
-- OpenAL
-- Lua / LuaJIT / LLVM-lua
-- FreeType
-- ModPlug
-- mpg123
-- Vorbisfile
-- Theora
-
-[site]: https://love2d.org
-[wiki]: https://love2d.org/wiki
-[forums]: https://love2d.org/forums
-[discord]: https://discord.gg/rhUets9
-[irc]: irc://irc.oftc.net/love
-[dependencies-apple]: https://github.com/love2d/love-apple-dependencies
-[dependencies-ios]: https://github.com/love2d/love/releases
-[megasource]: https://github.com/love2d/megasource
-[unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
-[aur]: https://aur.archlinux.org/packages/love-git
-[love-experiments]: https://github.com/slime73/love-experiments
-[codestyle]: https://love2d.org/wiki/Code_Style
-[android-repository]: https://github.com/love2d/love-android
-[releases]: https://github.com/love2d/love/releases
+>  ### [Chrono - a327ex](https://github.com/a327ex/chrono/blob/master/Timer.lua)
