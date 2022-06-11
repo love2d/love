@@ -22,12 +22,12 @@ namespace love {
 					rect.w = sliceData->getWidth();
 					rect.h = sliceData->getHeight();
 
-					uploadByteData(PIXELFORMAT_BGRA8_UNORM, dataPtr, size, 0, 0, rect);
+					uploadByteData(PIXELFORMAT_RGBA8_UNORM, dataPtr, size, 0, 0, rect);
 				}
 				else {
 					uint8 defaultPixel[] = { 255, 255, 255, 255 };
 					Rect rect = { 0, 0, 1, 1 };
-					uploadByteData(PIXELFORMAT_BGRA8_UNORM, defaultPixel, sizeof(defaultPixel), 0, 0, rect);
+					uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixel, sizeof(defaultPixel), 0, 0, rect);
 				}
 				createTextureImageView();
 				createTextureSampler();

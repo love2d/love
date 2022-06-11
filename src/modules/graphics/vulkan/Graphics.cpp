@@ -205,7 +205,6 @@ namespace love {
 				createUniformBuffers();
 				createDefaultTexture();
 				createDescriptorPool();
-				createDescriptorSets();
 				createSyncObjects();
 				startRecordingGraphicsCommands();
 
@@ -282,11 +281,24 @@ namespace love {
 
 				std::vector<VkBuffer> buffers;
 				std::vector<VkDeviceSize> offsets;
+
+				// vertices
 				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
 				offsets.push_back((VkDeviceSize)0);
 
-				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets.at(currentFrame), 0, nullptr);
-				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, 1, buffers.data(), offsets.data());
+				// tex coords
+				buffers.push_back((VkBuffer)cmd.buffers->info[1].buffer->getHandle());
+				offsets.push_back((VkDeviceSize)0);
+
+				if (cmd.texture == nullptr) {
+					setTexture(standardTexture);
+				}
+				else {
+					setTexture(cmd.texture);
+				}
+
+				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
+				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, VK_INDEX_TYPE_UINT16);
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
 			}
@@ -297,6 +309,15 @@ namespace love {
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
+
+			VkDescriptorSet* Graphics::getDescriptorSet(int currentFrame) {
+				auto it = textureToDescriptorSetsMap.find(currentTexture);
+				if (it == textureToDescriptorSetsMap.end()) {
+					textureToDescriptorSetsMap[currentTexture] = createDescriptorSets(currentTexture);
+				}
+
+				return &textureToDescriptorSetsMap.at(currentTexture)[currentFrame];
+			}
 
 			VkCommandBuffer Graphics::beginSingleTimeCommands() {
 				VkCommandBufferAllocateInfo allocInfo{};
@@ -876,7 +897,7 @@ namespace love {
 				}
 			}
 
-			void Graphics::createDescriptorSets() {
+			std::vector<VkDescriptorSet> Graphics::createDescriptorSets(graphics::Texture* texture) {
 				std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 				VkDescriptorSetAllocateInfo allocInfo{};
 				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -884,26 +905,28 @@ namespace love {
 				allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 				allocInfo.pSetLayouts = layouts.data();
 
-				descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-				if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+				std::vector<VkDescriptorSet> newDescriptorSets;
+
+				newDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+				if (vkAllocateDescriptorSets(device, &allocInfo, newDescriptorSets.data()) != VK_SUCCESS) {
 					throw love::Exception("failed to allocate descriptor sets");
 				}
 
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 					VkDescriptorBufferInfo bufferInfo{};
-					bufferInfo.buffer = (VkBuffer) uniformBuffers.at(i)->getHandle();
+					bufferInfo.buffer = (VkBuffer)uniformBuffers.at(i)->getHandle();
 					bufferInfo.offset = 0;
 					bufferInfo.range = sizeof(Shader::UniformBufferObject);
 
 					VkDescriptorImageInfo imageInfo{};
 					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					Texture* vkTexture = (Texture*)standardTexture;
+					Texture* vkTexture = (Texture*)texture;
 					imageInfo.imageView = vkTexture->getImageView();
 					imageInfo.sampler = vkTexture->getSampler();
 
 					std::array<VkWriteDescriptorSet, 2> descriptorWrite{};
 					descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrite[0].dstSet = descriptorSets[i];
+					descriptorWrite[0].dstSet = newDescriptorSets[i];
 					descriptorWrite[0].dstBinding = 0;
 					descriptorWrite[0].dstArrayElement = 0;
 					descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -911,7 +934,7 @@ namespace love {
 					descriptorWrite[0].pBufferInfo = &bufferInfo;
 
 					descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrite[1].dstSet = descriptorSets[i];
+					descriptorWrite[1].dstSet = newDescriptorSets[i];
 					descriptorWrite[1].dstBinding = 1;
 					descriptorWrite[1].dstArrayElement = 0;
 					descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -920,6 +943,8 @@ namespace love {
 
 					vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
 				}
+
+				return newDescriptorSets;
 			}
 
 			void Graphics::createGraphicsPipeline() {
@@ -934,17 +959,30 @@ namespace love {
 				vertexBindingDescription.stride = 2 * sizeof(float);	// just position for now
 				vertexBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-				// todo later
 				VkVertexInputAttributeDescription positionInputAttributeDescription;
 				positionInputAttributeDescription.binding = 0;
 				positionInputAttributeDescription.location = 0;
 				positionInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
 				positionInputAttributeDescription.offset = 0;
 
-				vertexInputInfo.vertexBindingDescriptionCount = 1;
-				vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDescription;
-				vertexInputInfo.vertexAttributeDescriptionCount = 1;
-				vertexInputInfo.pVertexAttributeDescriptions = &positionInputAttributeDescription;
+				VkVertexInputBindingDescription texCoordsBindingDescription;
+				texCoordsBindingDescription.binding = 1;
+				texCoordsBindingDescription.stride = 3 * sizeof(float);	// 2 floats for texture coordinates, 1 float for color
+				texCoordsBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+				VkVertexInputAttributeDescription texCoordsInputAttributeDescription;
+				texCoordsInputAttributeDescription.binding = 1;
+				texCoordsInputAttributeDescription.location = 1;
+				texCoordsInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+				texCoordsInputAttributeDescription.offset = 0;
+
+				std::vector<VkVertexInputBindingDescription> bindingDescriptions = { vertexBindingDescription, texCoordsBindingDescription };
+				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = { positionInputAttributeDescription, texCoordsInputAttributeDescription };
+
+				vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
+				vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+				vertexInputInfo.vertexAttributeDescriptionCount = vertexInputAttributeDescriptions.size();
+				vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions.data();
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 				inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -1119,6 +1157,7 @@ namespace love {
 			void Graphics::cleanup() {
 				vkDeviceWaitIdle(device);
 
+
 				cleanupSwapChain();
 
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -1149,6 +1188,7 @@ namespace love {
 				}
 				vkDestroySwapchainKHR(device, swapChain, nullptr);
 				uniformBuffers.clear();
+				textureToDescriptorSetsMap.clear();
 			}
 
 			void Graphics::recreateSwapChain() {
@@ -1163,7 +1203,6 @@ namespace love {
 				createFramebuffers();
 				createUniformBuffers();
 				createDescriptorPool();
-				createDescriptorSets();
 				createCommandBuffers();
 				startRecordingGraphicsCommands();
 			}

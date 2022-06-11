@@ -96,6 +96,16 @@ namespace love {
 				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override { std::cout << "setRenderTargetsInternal "; }
 
 			private:
+				graphics::Texture* currentTexture;
+
+				void setTexture(graphics::Texture* texture) {
+					currentTexture = texture;
+				}
+
+				VkDescriptorSet* getDescriptorSet(int currentFrame);
+
+				std::unordered_map<graphics::Texture*, std::vector<VkDescriptorSet>> textureToDescriptorSetsMap;
+
 				// vulkan specific member functions and variables
 
 				struct QueueFamilyIndices {
@@ -133,7 +143,7 @@ namespace love {
 				void createDescriptorSetLayout();
 				void createUniformBuffers();
 				void createDescriptorPool();
-				void createDescriptorSets();
+				std::vector<VkDescriptorSet> createDescriptorSets(graphics::Texture* texture);
 				void createGraphicsPipeline();
 				void createFramebuffers();
 				void createCommandPool();
@@ -170,7 +180,6 @@ namespace love {
 				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 				std::vector<std::unique_ptr<StreamBuffer>> uniformBuffers;
 				VkDescriptorPool descriptorPool;
-				std::vector<VkDescriptorSet> descriptorSets;
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;
 				std::vector<VkFence> inFlightFences;

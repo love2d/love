@@ -436,20 +436,25 @@ static const char vulkan_vert[] = R"(
 #version 450
 
 layout(location = 0) in vec2 inPosition;
+layout(location = 1) in vec2 iTexCoords;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec2 texCoords;
 
 layout(binding = 0) uniform LoveUniforms {
 	float windowWidth;
 	float windowHeight;
 } loveUniforms;
 
+
 void main() {
     gl_Position = vec4(
         2 * inPosition.x / loveUniforms.windowWidth - 1,
         2 * inPosition.y / loveUniforms.windowHeight - 1, 
         0.0, 1.0);
+
     fragColor = vec4(1, 1, 1, 1);
+	texCoords = iTexCoords;
 }
 )";
 
@@ -457,13 +462,14 @@ static const char vulkan_pixel[] = R"(
 #version 450
 
 layout(location = 0) in vec4 fragColor;
+layout(location = 1) in vec2 texCoords;
 
 layout(location = 0) out vec4 outColor;
 
 layout(binding = 1) uniform sampler2D texSampler;
 
 void main() {
-    outColor = fragColor * texture(texSampler, vec2(0, 0));
+    outColor = fragColor * texture(texSampler, texCoords);
 }
 )";
 
