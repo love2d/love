@@ -71,6 +71,12 @@ Window::Window()
 	, hasSDL203orEarlier(false)
 	, contextAttribs()
 {
+	// Windows uses a different API than SDL_WINDOW_ALLOW_HIGHDPI.
+#if defined(LOVE_WINDOWS) && defined(SDL_HINT_WINDOWS_DPI_SCALING)
+	// This must be set before the video subsystem is initialized.
+	SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, isHighDPIAllowed() ? "1" : "0");
+#endif
+
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 
@@ -589,6 +595,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		 if (f.borderless)
 			 sdlflags |= SDL_WINDOW_BORDERLESS;
 
+		// Note: this flag is ignored on Windows.
 		 if (isHighDPIAllowed())
 			 sdlflags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
