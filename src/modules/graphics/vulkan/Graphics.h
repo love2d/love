@@ -106,6 +106,23 @@ namespace love {
 
 				std::unordered_map<graphics::Texture*, std::vector<VkDescriptorSet>> textureToDescriptorSetsMap;
 
+				struct BatchedDrawBuffers {
+					StreamBuffer* vertexBuffer1;
+					StreamBuffer* vertexBuffer2;
+					StreamBuffer* indexBuffer;
+
+					~BatchedDrawBuffers() {
+						delete vertexBuffer1;
+						delete vertexBuffer2;
+						delete indexBuffer;
+					}
+				};
+
+				// we need an arrow of draw buffers, since the frames are being rendered asynchronously
+				// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
+				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
+				void updatedBatchedDrawBuffers();
+
 				// vulkan specific member functions and variables
 
 				struct QueueFamilyIndices {

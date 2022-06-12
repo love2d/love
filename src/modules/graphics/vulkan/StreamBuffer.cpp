@@ -17,7 +17,7 @@ namespace love {
 			}
 
 			StreamBuffer::StreamBuffer(VmaAllocator allocator, BufferUsage mode, size_t size)
-				:	love::graphics::StreamBuffer(mode, size) {
+				:	love::graphics::StreamBuffer(mode, size), allocator(allocator) {
 				VkBufferCreateInfo bufferInfo{};
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 				bufferInfo.size = getSize();
@@ -29,24 +29,29 @@ namespace love {
 				allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;	// always mapped
 
 				vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
+
+				usedGPUMemory = 0;
 			}
 
 			StreamBuffer::~StreamBuffer() {
 				// vmaDestroyBuffer(allocator, buffer, allocation);
-				// vmaDestroyAllocator(allocator);
 			}
 
 			love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize) {
 				(void)minsize;
-				return love::graphics::StreamBuffer::MapInfo((uint8*) allocInfo.pMappedData, getSize());
+				return love::graphics::StreamBuffer::MapInfo((uint8*) allocInfo.pMappedData + usedGPUMemory, getSize());
 			}
 
 			size_t StreamBuffer::unmap(size_t usedSize) {
-				return usedSize;
+				return usedGPUMemory;
 			}
 
 			void StreamBuffer::markUsed(size_t usedSize) {
-				(void)usedSize;
+				usedGPUMemory += usedSize;
+			}
+
+			void StreamBuffer::nextFrame() {
+				usedGPUMemory = 0;
 			}
 		}
 	}

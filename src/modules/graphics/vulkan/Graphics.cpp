@@ -17,6 +17,15 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
+			static VkIndexType getVulkanIndexBufferType(IndexDataType type) {
+				switch (type) {
+				case INDEX_UINT16: return VK_INDEX_TYPE_UINT16;
+				case INDEX_UINT32: return VK_INDEX_TYPE_UINT32;
+				default:
+					throw love::Exception("unknown Index Data type");
+				}
+			}
+
 			const std::vector<const char*> validationLayers = {
 				"VK_LAYER_KHRONOS_validation"
 			};
@@ -171,11 +180,12 @@ namespace love {
 				else if (result != VK_SUCCESS) {
 					throw love::Exception("failed to present swap chain image");
 				}
+				
+				std::cout << "present" << std::endl;
 
 				currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-				std::cout << "present" << std::endl;
-
+				updatedBatchedDrawBuffers();
 				startRecordingGraphicsCommands();
 			}
 
@@ -207,17 +217,22 @@ namespace love {
 				createDescriptorPool();
 				createSyncObjects();
 				startRecordingGraphicsCommands();
+				currentFrame = 0;
 
 				created = true;
 
-				if (batchedDrawState.vb[0] == nullptr)
-				{
+				batchedDrawBuffers.clear();
+				batchedDrawBuffers.reserve(MAX_FRAMES_IN_FLIGHT);
+				for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+					batchedDrawBuffers.emplace_back();
 					// Initial sizes that should be good enough for most cases. It will
 					// resize to fit if needed, later.
-					batchedDrawState.vb[0] = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-					batchedDrawState.vb[1] = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-					batchedDrawState.indexBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+					batchedDrawBuffers[i].vertexBuffer1 = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+					batchedDrawBuffers[i].vertexBuffer2 = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+					batchedDrawBuffers[i].indexBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 				}
+
+				updatedBatchedDrawBuffers();
 
 				return true;
 			}
@@ -270,10 +285,10 @@ namespace love {
 			}
 
 			void Graphics::unSetMode() {
+				std::cout << "unSetMode ";
+				
 				created = false;
 				cleanup();
-
-				std::cout << "unSetMode ";
 			}
 
 			void Graphics::draw(const DrawIndexedCommand& cmd) {
@@ -284,11 +299,11 @@ namespace love {
 
 				// vertices
 				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
-				offsets.push_back((VkDeviceSize)0);
+				offsets.push_back((VkDeviceSize)cmd.buffers->info[0].offset);
 
 				// tex coords
 				buffers.push_back((VkBuffer)cmd.buffers->info[1].buffer->getHandle());
-				offsets.push_back((VkDeviceSize)0);
+				offsets.push_back((VkDeviceSize)cmd.buffers->info[1].offset);
 
 				if (cmd.texture == nullptr) {
 					setTexture(standardTexture);
@@ -299,7 +314,7 @@ namespace love {
 
 				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
-				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, getVulkanIndexBufferType(cmd.indexType));
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
 			}
 
@@ -309,6 +324,15 @@ namespace love {
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
+
+			void Graphics::updatedBatchedDrawBuffers() {
+				batchedDrawState.vb[0] = batchedDrawBuffers[currentFrame].vertexBuffer1;
+				batchedDrawState.vb[0]->nextFrame();
+				batchedDrawState.vb[1] = batchedDrawBuffers[currentFrame].vertexBuffer2; 
+				batchedDrawState.vb[1]->nextFrame();
+				batchedDrawState.indexBuffer = batchedDrawBuffers[currentFrame].indexBuffer;
+				batchedDrawState.indexBuffer->nextFrame();
+			}
 
 			VkDescriptorSet* Graphics::getDescriptorSet(int currentFrame) {
 				auto it = textureToDescriptorSetsMap.find(currentTexture);
@@ -890,7 +914,8 @@ namespace love {
 				poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 				poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 				poolInfo.pPoolSizes = poolSizes.data();
-				poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+				// FIXME: When using more than 128 textures at once we will run out of memory.
+				poolInfo.maxSets = 128 * static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 				if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 					throw love::Exception("failed to create descriptor pool");
@@ -908,8 +933,20 @@ namespace love {
 				std::vector<VkDescriptorSet> newDescriptorSets;
 
 				newDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-				if (vkAllocateDescriptorSets(device, &allocInfo, newDescriptorSets.data()) != VK_SUCCESS) {
-					throw love::Exception("failed to allocate descriptor sets");
+				VkResult result = vkAllocateDescriptorSets(device, &allocInfo, newDescriptorSets.data());
+				if (result != VK_SUCCESS) {
+					switch (result) {
+					case VK_ERROR_OUT_OF_HOST_MEMORY:
+						throw love::Exception("failed to allocate descriptor sets: out of host memory");
+					case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+						throw love::Exception("failed to allocate descriptor sets: out of device memory");
+					case VK_ERROR_FRAGMENTED_POOL:
+						throw love::Exception("failed to allocate descriptor sets: fragmented pool");
+					case VK_ERROR_OUT_OF_POOL_MEMORY:
+						throw love::Exception("failed to allocate descriptor sets: out of pool memory");
+					default:
+						throw love::Exception("failed to allocate descriptor sets");
+					}
 				}
 
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -1157,7 +1194,6 @@ namespace love {
 			void Graphics::cleanup() {
 				vkDeviceWaitIdle(device);
 
-
 				cleanupSwapChain();
 
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -1176,6 +1212,8 @@ namespace love {
 			}
 
 			void Graphics::cleanupSwapChain() {
+				std::cout << "cleanupSwapChain ";
+
 				for (size_t i = 0; i < swapChainFramBuffers.size(); i++) {
 					vkDestroyFramebuffer(device, swapChainFramBuffers[i], nullptr);
 				}

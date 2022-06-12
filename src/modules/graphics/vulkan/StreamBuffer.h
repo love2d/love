@@ -18,6 +18,8 @@ namespace love {
 				size_t unmap(size_t usedSize) override;
 				void markUsed(size_t usedSize) override;
 
+				void nextFrame() override;
+
 				ptrdiff_t getHandle() const override {
 					return (ptrdiff_t) buffer;
 				}
@@ -28,6 +30,8 @@ namespace love {
 				VmaAllocationInfo allocInfo;
 				VkDevice device;
 				VkBuffer buffer;
+				size_t usedGPUMemory;
+
 			};
 		}
 	}
