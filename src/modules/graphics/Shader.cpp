@@ -94,7 +94,7 @@ static const char global_syntax[] = R"(
 
 static const char render_uniforms[] = R"(
 #ifdef USE_VULKAN
-	VULKAN_BINDING(0) uniform LoveUniformsPerDraw {
+	layout(binding=0) uniform LoveUniformsPerDraw {
 		vec4 uniformsPerDraw[13];
 	} udp;
 	#define love_UniformsPerDraw udp.uniformsPerDraw
@@ -433,25 +433,20 @@ void main() {
 )";
 
 static const char vulkan_vert[] = R"(
-#version 450
-
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec2 iTexCoords;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 texCoords;
 
-layout(binding = 0) uniform LoveUniforms {
-	float windowWidth;
-	float windowHeight;
-} loveUniforms;
-
+vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition) {
+	return clipSpaceFromLocal * localPosition;
+}
 
 void main() {
-    gl_Position = vec4(
-        2 * inPosition.x / loveUniforms.windowWidth - 1,
-        2 * inPosition.y / loveUniforms.windowHeight - 1, 
-        0.0, 1.0);
+	love_initializeBuiltinUniforms();
+	
+	gl_Position = position(ClipSpaceFromLocal, vec4(inPosition, 0, 1));
 
     fragColor = vec4(1, 1, 1, 1);
 	texCoords = iTexCoords;
@@ -459,8 +454,6 @@ void main() {
 )";
 
 static const char vulkan_pixel[] = R"(
-#version 450
-
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 texCoords;
 
@@ -617,47 +610,53 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (glsl1on3)
 		lang = LANGUAGE_GLSL3;
 
-	if (info.vulkan) {
-		if (stage == SHADERSTAGE_VERTEX) {
-			return love::graphics::glsl::vulkan_vert;
-		}
-		if (stage == SHADERSTAGE_PIXEL) {
-			return love::graphics::glsl::vulkan_pixel;
-		}
-	}
-
 	glsl::StageInfo stageinfo = glsl::stageInfo[stage];
 
 	std::stringstream ss;
 
-	ss << (gles ? glsl::versions[lang].glsles : glsl::versions[lang].glsl) << "\n";
-	ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
-	if (glsl1on3)
-		ss << "#define LOVE_GLSL1_ON_GLSL3 1\n";
-	if (isGammaCorrect())
-		ss << "#define LOVE_GAMMA_CORRECT 1\n";
-	if (info.usesMRT)
-		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
+	if (info.vulkan) {
+		ss << "#version 450\n";
+		ss << "#define LOVE_HIGHP_OR_MEDIUMP highp\n";
+		ss << "#define USE_VULKAN 1\n";
+		ss << stageinfo.uniforms;
 
-	for (const auto &def : options.defines)
-		ss << "#define " + def.first + " " + def.second + "\n";
+		if (stage == SHADERSTAGE_VERTEX) {
+			ss << love::graphics::glsl::vulkan_vert;
+		}
+		if (stage == SHADERSTAGE_PIXEL) {
+			ss << love::graphics::glsl::vulkan_pixel;
+		}
+	}
+	else {
+		ss << (gles ? glsl::versions[lang].glsles : glsl::versions[lang].glsl) << "\n";
+		ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
+		if (glsl1on3)
+			ss << "#define LOVE_GLSL1_ON_GLSL3 1\n";
+		if (isGammaCorrect())
+			ss << "#define LOVE_GAMMA_CORRECT 1\n";
+		if (info.usesMRT)
+			ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
 
-	ss << glsl::global_syntax;
-	ss << stageinfo.header;
-	ss << stageinfo.uniforms;
-	ss << glsl::global_functions;
-	ss << stageinfo.functions;
+		for (const auto &def : options.defines)
+			ss << "#define " + def.first + " " + def.second + "\n";
 
-	if (info.stages[stage] == ENTRYPOINT_HIGHLEVEL)
-		ss << stageinfo.main;
-	else if (info.stages[stage] == ENTRYPOINT_CUSTOM)
-		ss << stageinfo.main_custom;
-	else if (info.stages[stage] == ENTRYPOINT_RAW)
-		ss << stageinfo.main_raw;
-	else
-		throw love::Exception("Unknown shader entry point %d", info.stages[stage]);
-	ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
-	ss << code;
+		ss << glsl::global_syntax;
+		ss << stageinfo.header;
+		ss << stageinfo.uniforms;
+		ss << glsl::global_functions;
+		ss << stageinfo.functions;
+
+		if (info.stages[stage] == ENTRYPOINT_HIGHLEVEL)
+			ss << stageinfo.main;
+		else if (info.stages[stage] == ENTRYPOINT_CUSTOM)
+			ss << stageinfo.main_custom;
+		else if (info.stages[stage] == ENTRYPOINT_RAW)
+			ss << stageinfo.main_raw;
+		else
+			throw love::Exception("Unknown shader entry point %d", info.stages[stage]);
+		ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
+		ss << code;
+	}
 
 	return ss.str();
 }

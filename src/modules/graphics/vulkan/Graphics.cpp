@@ -191,6 +191,13 @@ namespace love {
 
 			void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
 				std::cout << "setViewPortSize ";
+				this->width = width;
+				this->height = height;
+				this->pixelWidth = pixelwidth;
+				this->pixelHeight = pixelheight;
+
+				resetProjection();
+
 				recreateSwapChain();
 			}
 
@@ -323,6 +330,11 @@ namespace love {
 				return new StreamBuffer(vmaAllocator, type, size);
 			}
 
+			Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const { 
+				uint32 flags = DEVICE_PROJECTION_DEFAULT;
+				return calculateDeviceProjection(projection, 0);
+			}
+
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
 
 			void Graphics::updatedBatchedDrawBuffers() {
@@ -378,12 +390,42 @@ namespace love {
 			void Graphics::prepareDraw(uint32_t currentImage) {
 				auto& buffer = uniformBuffers.at(currentImage);
 
-				Shader::UniformBufferObject ubo{};
-				ubo.windowWidth = static_cast<float>(swapChainExtent.width);
-				ubo.windowHeight = static_cast<float>(swapChainExtent.height);
+				love::graphics::Shader::BuiltinUniformData data;
+
+				data.transformMatrix = getTransform();
+				data.projectionMatrix = getDeviceProjection();
+
+				// The normal matrix is the transpose of the inverse of the rotation portion
+				// (top-left 3x3) of the transform matrix.
+				{
+					Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
+					const float* e = normalmatrix.getElements();
+					for (int i = 0; i < 3; i++)
+					{
+						data.normalMatrix[i].x = e[i * 3 + 0];
+						data.normalMatrix[i].y = e[i * 3 + 1];
+						data.normalMatrix[i].z = e[i * 3 + 2];
+						data.normalMatrix[i].w = 0.0f;
+					}
+				}
+
+				// Store DPI scale in an unused component of another vector.
+				data.normalMatrix[0].w = (float)getCurrentDPIScale();
+
+				// Same with point size.
+				data.normalMatrix[1].w = getPointSize();
+
+				data.screenSizeParams.x = swapChainExtent.width;
+				data.screenSizeParams.y = swapChainExtent.height;
+
+				data.screenSizeParams.z = 1.0f;
+				data.screenSizeParams.w = 0.0f;
+
+				data.constantColor = getColor();
+				gammaCorrectColor(data.constantColor);
 
 				auto mappedInfo = buffer->map(0);
-				memcpy(mappedInfo.data, &ubo, sizeof(ubo));
+				memcpy(mappedInfo.data, &data, sizeof(data));
 				buffer->unmap(0);
 			}
 
@@ -896,7 +938,7 @@ namespace love {
 			}
 
 			void Graphics::createUniformBuffers() {
-				VkDeviceSize bufferSize = sizeof(Shader::UniformBufferObject);
+				VkDeviceSize bufferSize = sizeof(graphics::Shader::BuiltinUniformData);
 				
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 					uniformBuffers.push_back(std::make_unique<StreamBuffer>(vmaAllocator, BUFFERUSAGE_UNIFORM, bufferSize));
@@ -953,7 +995,7 @@ namespace love {
 					VkDescriptorBufferInfo bufferInfo{};
 					bufferInfo.buffer = (VkBuffer)uniformBuffers.at(i)->getHandle();
 					bufferInfo.offset = 0;
-					bufferInfo.range = sizeof(Shader::UniformBufferObject);
+					bufferInfo.range = sizeof(graphics::Shader::BuiltinUniformData);
 
 					VkDescriptorImageInfo imageInfo{};
 					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1004,7 +1046,7 @@ namespace love {
 
 				VkVertexInputBindingDescription texCoordsBindingDescription;
 				texCoordsBindingDescription.binding = 1;
-				texCoordsBindingDescription.stride = 3 * sizeof(float);	// 2 floats for texture coordinates, 1 float for color
+				texCoordsBindingDescription.stride = sizeof(STf_RGBAub);
 				texCoordsBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 				VkVertexInputAttributeDescription texCoordsInputAttributeDescription;

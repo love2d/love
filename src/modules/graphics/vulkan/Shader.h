@@ -40,20 +40,7 @@ namespace love {
 
 				void setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) override {}
 
-				struct UniformBufferObject {
-					float windowWidth;
-					float windowHeight;
-				};
-
 			private:
-				struct Vec4 {
-					float x, y, z, w;
-				};
-				
-				struct LoveUniformsPerDraw {
-					Vec4 uniformsPerDraw[13];
-				};
-
 				std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
 				std::map<std::string, int> vertexAttributeIndices = {

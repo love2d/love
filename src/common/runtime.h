@@ -673,7 +673,8 @@ int luax_catchexcept(lua_State *L, const T& func)
 	catch (const std::exception &e)
 	{
 		should_error = true;
-		lua_pushstring(L, e.what());
+		const char* msg = e.what();
+		lua_pushstring(L, msg);
 	}
 
 	if (should_error)

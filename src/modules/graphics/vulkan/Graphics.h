@@ -46,7 +46,7 @@ namespace love {
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
 				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear1 "; }
 				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear2 "; }
-				Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override { std::cout << "computeDeviceProjection "; return Matrix4(); }
+				Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override;
 				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { std::cout << "discard "; }
 				void present(void* screenshotCallbackdata) override;
 				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;

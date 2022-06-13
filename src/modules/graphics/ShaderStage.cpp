@@ -178,7 +178,8 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 
 		std::string err = "Error validating " + std::string(stagename) + " shader:\n\n"
 			+ std::string(glslangShader->getInfoLog()) + "\n"
-			+ std::string(glslangShader->getInfoDebugLog());
+			+ std::string(glslangShader->getInfoDebugLog()) + "\n\nShader Code:\n" 
+			+ glsl;
 
 		delete glslangShader;
 		throw love::Exception("%s", err.c_str());
