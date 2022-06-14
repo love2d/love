@@ -49,7 +49,7 @@ static const char global_syntax[] = R"(
 	#define mediump
 	#define highp
 #endif
-#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
+#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH) || defined(USE_VULKAN)
 	#define LOVE_HIGHP_OR_MEDIUMP highp
 #else
 	#define LOVE_HIGHP_OR_MEDIUMP mediump
@@ -290,7 +290,9 @@ vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 void main() {
 	love_initializeBuiltinUniforms();
 	VaryingTexCoord = VertexTexCoord;
-	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
+	// FIXME
+	// VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
+	VaryingColor = vec4(1, 1, 1, 1);
 	love_Position = position(ClipSpaceFromLocal, VertexPosition);
 }
 )";
@@ -323,9 +325,9 @@ static const char pixel_header[] = R"(
 )";
 
 static const char pixel_functions[] = R"(
-VULKAN_BINDING(1) uniform sampler2D love_VideoYChannel;
-VULKAN_BINDING(2) uniform sampler2D love_VideoCbChannel;
-VULKAN_BINDING(3) uniform sampler2D love_VideoCrChannel;
+VULKAN_BINDING(2) uniform sampler2D love_VideoYChannel;
+VULKAN_BINDING(3) uniform sampler2D love_VideoCbChannel;
+VULKAN_BINDING(4) uniform sampler2D love_VideoCrChannel;
 
 vec4 VideoTexel(vec2 texcoords) {
 	vec3 yuv;
@@ -351,7 +353,7 @@ static const char pixel_main[] = R"(
 	#define love_PixelColor gl_FragColor
 #endif
 
-VULKAN_BINDING(4) uniform sampler2D MainTex;
+VULKAN_BINDING(1) uniform sampler2D MainTex;
 VULKAN_LOCATION(0) varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
 VULKAN_LOCATION(1) varying mediump vec4 VaryingColor;
 
@@ -429,40 +431,6 @@ void computemain();
 void main() {
 	love_initializeBuiltinUniforms();
 	computemain();
-}
-)";
-
-static const char vulkan_vert[] = R"(
-layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec2 iTexCoords;
-
-layout(location = 0) out vec4 fragColor;
-layout(location = 1) out vec2 texCoords;
-
-vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition) {
-	return clipSpaceFromLocal * localPosition;
-}
-
-void main() {
-	love_initializeBuiltinUniforms();
-	
-	gl_Position = position(ClipSpaceFromLocal, vec4(inPosition, 0, 1));
-
-    fragColor = vec4(1, 1, 1, 1);
-	texCoords = iTexCoords;
-}
-)";
-
-static const char vulkan_pixel[] = R"(
-layout(location = 0) in vec4 fragColor;
-layout(location = 1) in vec2 texCoords;
-
-layout(location = 0) out vec4 outColor;
-
-layout(binding = 1) uniform sampler2D texSampler;
-
-void main() {
-    outColor = fragColor * texture(texSampler, texCoords);
 }
 )";
 
@@ -616,49 +584,42 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 
 	if (info.vulkan) {
 		ss << "#version 450\n";
-		ss << "#define LOVE_HIGHP_OR_MEDIUMP highp\n";
 		ss << "#define USE_VULKAN 1\n";
-		ss << stageinfo.uniforms;
-
-		if (stage == SHADERSTAGE_VERTEX) {
-			ss << love::graphics::glsl::vulkan_vert;
-		}
-		if (stage == SHADERSTAGE_PIXEL) {
-			ss << love::graphics::glsl::vulkan_pixel;
-		}
 	}
 	else {
 		ss << (gles ? glsl::versions[lang].glsles : glsl::versions[lang].glsl) << "\n";
-		ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
 		if (glsl1on3)
 			ss << "#define LOVE_GLSL1_ON_GLSL3 1\n";
-		if (isGammaCorrect())
-			ss << "#define LOVE_GAMMA_CORRECT 1\n";
-		if (info.usesMRT)
-			ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
-
-		for (const auto &def : options.defines)
-			ss << "#define " + def.first + " " + def.second + "\n";
-
-		ss << glsl::global_syntax;
-		ss << stageinfo.header;
-		ss << stageinfo.uniforms;
-		ss << glsl::global_functions;
-		ss << stageinfo.functions;
-
-		if (info.stages[stage] == ENTRYPOINT_HIGHLEVEL)
-			ss << stageinfo.main;
-		else if (info.stages[stage] == ENTRYPOINT_CUSTOM)
-			ss << stageinfo.main_custom;
-		else if (info.stages[stage] == ENTRYPOINT_RAW)
-			ss << stageinfo.main_raw;
-		else
-			throw love::Exception("Unknown shader entry point %d", info.stages[stage]);
-		ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
-		ss << code;
 	}
 
-	return ss.str();
+	if (isGammaCorrect())
+		ss << "#define LOVE_GAMMA_CORRECT 1\n";
+	if (info.usesMRT)
+		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
+
+	for (const auto& def : options.defines)
+		ss << "#define " + def.first + " " + def.second + "\n";
+
+	ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
+	ss << glsl::global_syntax;
+	ss << stageinfo.header;
+	ss << stageinfo.uniforms;
+	ss << glsl::global_functions;
+	ss << stageinfo.functions;
+
+	if (info.stages[stage] == ENTRYPOINT_HIGHLEVEL)
+		ss << stageinfo.main;
+	else if (info.stages[stage] == ENTRYPOINT_CUSTOM)
+		ss << stageinfo.main_custom;
+	else if (info.stages[stage] == ENTRYPOINT_RAW)
+		ss << stageinfo.main_raw;
+	else
+		throw love::Exception("Unknown shader entry point %d", info.stages[stage]);
+	ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
+	ss << code;
+
+	auto result = ss.str();
+	return result;
 }
 
 Shader::Shader(StrongRef<ShaderStage> _stages[])
