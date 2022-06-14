@@ -228,6 +228,8 @@ namespace love {
 
 				created = true;
 
+				float whiteColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 				batchedDrawBuffers.clear();
 				batchedDrawBuffers.reserve(MAX_FRAMES_IN_FLIGHT);
 				for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -237,6 +239,13 @@ namespace love {
 					batchedDrawBuffers[i].vertexBuffer1 = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
 					batchedDrawBuffers[i].vertexBuffer2 = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
 					batchedDrawBuffers[i].indexBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+
+					// sometimes the VertexColor is not set, so we manually adjust it to white color
+					batchedDrawBuffers[i].constantColorBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, sizeof(whiteColor));
+					auto mapInfo = batchedDrawBuffers[i].constantColorBuffer->map(sizeof(whiteColor));
+					memcpy(mapInfo.data, whiteColor, sizeof(whiteColor));
+					batchedDrawBuffers[i].constantColorBuffer->unmap(sizeof(whiteColor));
+					batchedDrawBuffers[i].constantColorBuffer->markUsed(sizeof(whiteColor));
 				}
 
 				updatedBatchedDrawBuffers();
@@ -311,6 +320,10 @@ namespace love {
 				// tex coords
 				buffers.push_back((VkBuffer)cmd.buffers->info[1].buffer->getHandle());
 				offsets.push_back((VkDeviceSize)cmd.buffers->info[1].offset);
+
+				//constant color
+				buffers.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
+				offsets.push_back((VkDeviceSize)0);
 
 				if (cmd.texture == nullptr) {
 					setTexture(standardTexture);
@@ -1055,8 +1068,19 @@ namespace love {
 				texCoordsInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
 				texCoordsInputAttributeDescription.offset = 0;
 
-				std::vector<VkVertexInputBindingDescription> bindingDescriptions = { vertexBindingDescription, texCoordsBindingDescription };
-				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = { positionInputAttributeDescription, texCoordsInputAttributeDescription };
+				VkVertexInputBindingDescription constantColorBindingDescription;
+				constantColorBindingDescription.binding = 2;
+				constantColorBindingDescription.stride = 0;
+				constantColorBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+				VkVertexInputAttributeDescription constantColorInputAttributeDescription;
+				constantColorInputAttributeDescription.binding = 2;
+				constantColorInputAttributeDescription.location = 2;
+				constantColorInputAttributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+				constantColorInputAttributeDescription.offset = 0;
+
+				std::vector<VkVertexInputBindingDescription> bindingDescriptions = { vertexBindingDescription, texCoordsBindingDescription, constantColorBindingDescription };
+				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = { positionInputAttributeDescription, texCoordsInputAttributeDescription, constantColorInputAttributeDescription };
 
 				vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
 				vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();

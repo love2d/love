@@ -110,11 +110,13 @@ namespace love {
 					StreamBuffer* vertexBuffer1;
 					StreamBuffer* vertexBuffer2;
 					StreamBuffer* indexBuffer;
+					StreamBuffer* constantColorBuffer;
 
 					~BatchedDrawBuffers() {
 						delete vertexBuffer1;
 						delete vertexBuffer2;
 						delete indexBuffer;
+						delete constantColorBuffer;
 					}
 				};
 

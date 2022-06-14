@@ -290,9 +290,7 @@ vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 void main() {
 	love_initializeBuiltinUniforms();
 	VaryingTexCoord = VertexTexCoord;
-	// FIXME
-	// VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
-	VaryingColor = vec4(1, 1, 1, 1);
+	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
 	love_Position = position(ClipSpaceFromLocal, VertexPosition);
 }
 )";
