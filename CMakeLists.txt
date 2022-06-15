@@ -606,6 +606,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Buffer.cpp
 	src/modules/graphics/vulkan/Texture.h
 	src/modules/graphics/vulkan/Texture.cpp
+	src/modules/graphics/vulkan/Vulkan.h
+	src/modules/graphics/vulkan/Vulkan.cpp
 	src/modules/graphics/vulkan/vk_mem_alloc.h
 	src/modules/graphics/vulkan/UseVMA.cpp
 )

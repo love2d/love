@@ -80,6 +80,13 @@ namespace love {
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);
 
+				struct GraphicsPipelineConfiguration {
+					std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
+					std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+
+					friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
+				};
+
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
 					std::cout << "newShaderStageInternal "; 
@@ -125,6 +132,12 @@ namespace love {
 				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
 				void updatedBatchedDrawBuffers();
 
+
+				void createVulkanVertexFormat(
+					VertexAttributes vertexAttributes,
+					bool& useConstantVertexColor,
+					GraphicsPipelineConfiguration& configuration);
+
 				// vulkan specific member functions and variables
 
 				struct QueueFamilyIndices {
@@ -163,7 +176,7 @@ namespace love {
 				void createUniformBuffers();
 				void createDescriptorPool();
 				std::vector<VkDescriptorSet> createDescriptorSets(graphics::Texture* texture);
-				void createGraphicsPipeline();
+				VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
 				void createFramebuffers();
 				void createCommandPool();
 				void createCommandBuffers();
@@ -175,6 +188,7 @@ namespace love {
 
 				void startRecordingGraphicsCommands();
 				void endRecordingGraphicsCommands();
+				void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
 
 				void prepareDraw(uint32_t currentImage);
 				
@@ -192,7 +206,8 @@ namespace love {
 				VkDescriptorSetLayout descriptorSetLayout;
 				VkPipelineLayout pipelineLayout;
 				VkRenderPass renderPass;
-				VkPipeline graphicsPipeline;
+				VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
+				std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
 				std::vector<VkFramebuffer> swapChainFramBuffers;
 				VkCommandPool commandPool;
 				std::vector<VkCommandBuffer> commandBuffers;

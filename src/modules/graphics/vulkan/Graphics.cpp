@@ -5,6 +5,7 @@
 #include "common/Exception.h"
 #include "Shader.h"
 #include "graphics/Texture.h"
+#include "Vulkan.h"
 
 #include <vector>
 #include <cstring>
@@ -112,7 +113,7 @@ namespace love {
 				const auto& commandBuffer = commandBuffers.at(imageIndex);
 
 				vkCmdBeginRenderPass(commandBuffers.at(imageIndex), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-				vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+				currentGraphicsPipeline = VK_NULL_HANDLE;
 			}
 
 			void Graphics::endRecordingGraphicsCommands() {
@@ -215,7 +216,6 @@ namespace love {
 				createRenderPass();
 				createDefaultShaders();
 				createDescriptorSetLayout();
-				createGraphicsPipeline();
 				createFramebuffers();
 				createCommandPool();
 				createCommandBuffers();
@@ -313,17 +313,19 @@ namespace love {
 				std::vector<VkBuffer> buffers;
 				std::vector<VkDeviceSize> offsets;
 
-				// vertices
-				buffers.push_back((VkBuffer)cmd.buffers->info[0].buffer->getHandle());
-				offsets.push_back((VkDeviceSize)cmd.buffers->info[0].offset);
+				bool useConstantColorBuffer;
+				GraphicsPipelineConfiguration configuration;
+				createVulkanVertexFormat(*cmd.attributes, useConstantColorBuffer, configuration);
 
-				// tex coords
-				buffers.push_back((VkBuffer)cmd.buffers->info[1].buffer->getHandle());
-				offsets.push_back((VkDeviceSize)cmd.buffers->info[1].offset);
+				for (uint32_t i = 0; i < 2; i++) {
+					buffers.push_back((VkBuffer)cmd.buffers->info[i].buffer->getHandle());
+					offsets.push_back((VkDeviceSize)cmd.buffers->info[i].offset);
+				}
 
-				//constant color
-				buffers.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
-				offsets.push_back((VkDeviceSize)0);
+				if (useConstantColorBuffer) {
+					buffers.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
+					offsets.push_back((VkDeviceSize)0);
+				}
 
 				if (cmd.texture == nullptr) {
 					setTexture(standardTexture);
@@ -331,6 +333,8 @@ namespace love {
 				else {
 					setTexture(cmd.texture);
 				}
+
+				ensureGraphicsPipelineConfiguration(configuration);
 
 				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
@@ -930,7 +934,7 @@ namespace love {
 				uboLayoutBinding.binding = 0;
 				uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				uboLayoutBinding.descriptorCount = 1;
-				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
 				VkDescriptorSetLayoutBinding samplerLayoutBinding{};
 				samplerLayoutBinding.binding = 1;
@@ -970,6 +974,8 @@ namespace love {
 				poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 				poolInfo.pPoolSizes = poolSizes.data();
 				// FIXME: When using more than 128 textures at once we will run out of memory.
+				// we probably want to reuse descriptors per flight image
+				// and use multiple pools in case of too many allocations
 				poolInfo.maxSets = 128 * static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 				if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
@@ -1039,53 +1045,85 @@ namespace love {
 				return newDescriptorSets;
 			}
 
-			void Graphics::createGraphicsPipeline() {
+			void Graphics::createVulkanVertexFormat(
+				VertexAttributes vertexAttributes, 
+				bool& useConstantVertexColor,
+				GraphicsPipelineConfiguration& configuration) {
+				std::set<uint32_t> usedBuffers;
+				std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+				std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+
+				auto allBits = vertexAttributes.enableBits;
+
+				bool usesColor = false;
+				
+				for (uint32_t i = 0; i < 32; i++) {	// change to loop like in opengl implementation ?
+					uint32 bit = 1u << i;
+					if (allBits & bit) {
+						if (i == ATTRIB_COLOR) {
+							usesColor = true;
+						}
+
+						auto attrib = vertexAttributes.attribs[i];
+						auto bufferBinding = attrib.bufferIndex;
+						if (usedBuffers.find(bufferBinding) == usedBuffers.end()) {	// use .contains() when c++20 is enabled
+							usedBuffers.insert(bufferBinding);
+
+							VkVertexInputBindingDescription bindingDescription{};
+							bindingDescription.binding = bufferBinding;
+							bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+							bindingDescription.stride = vertexAttributes.bufferLayouts[bufferBinding].stride;
+							bindingDescriptions.push_back(bindingDescription);
+						}
+
+						VkVertexInputAttributeDescription attributeDescription{};
+						attributeDescription.location = i;
+						attributeDescription.binding = bufferBinding;
+						attributeDescription.offset = attrib.offsetFromVertex;
+						attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.format);
+
+						attributeDescriptions.push_back(attributeDescription);
+					}
+				}
+
+				// do we need to use a constant VertexColor?
+				if (!usesColor) {
+					constexpr uint32_t constantColorBufferBinding = 2;
+
+					VkVertexInputBindingDescription bindingDescription{};
+					bindingDescription.binding = constantColorBufferBinding;
+					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+					bindingDescription.stride = 0;	// no stride, will always read the same color multiple times.
+					bindingDescriptions.push_back(bindingDescription);
+
+					VkVertexInputAttributeDescription attributeDescription{};
+					attributeDescription.binding = constantColorBufferBinding;
+					attributeDescription.location = ATTRIB_COLOR;
+					attributeDescription.offset = 0;
+					attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+
+					useConstantVertexColor = true;
+				}
+				else {
+					useConstantVertexColor = false;
+				}
+
+				configuration.vertexInputBindingDescriptions = bindingDescriptions;
+				configuration.vertexInputAttributeDescriptions = attributeDescriptions;
+			}
+
+			VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
+
 				auto shader = reinterpret_cast<love::graphics::vulkan::Shader*>(love::graphics::vulkan::Shader::standardShaders[Shader::STANDARD_DEFAULT]);
 				auto shaderStages = shader->getShaderStages();
 
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 				vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-				VkVertexInputBindingDescription vertexBindingDescription;
-				vertexBindingDescription.binding = 0;
-				vertexBindingDescription.stride = 2 * sizeof(float);	// just position for now
-				vertexBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-				VkVertexInputAttributeDescription positionInputAttributeDescription;
-				positionInputAttributeDescription.binding = 0;
-				positionInputAttributeDescription.location = 0;
-				positionInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
-				positionInputAttributeDescription.offset = 0;
-
-				VkVertexInputBindingDescription texCoordsBindingDescription;
-				texCoordsBindingDescription.binding = 1;
-				texCoordsBindingDescription.stride = sizeof(STf_RGBAub);
-				texCoordsBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-				VkVertexInputAttributeDescription texCoordsInputAttributeDescription;
-				texCoordsInputAttributeDescription.binding = 1;
-				texCoordsInputAttributeDescription.location = 1;
-				texCoordsInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
-				texCoordsInputAttributeDescription.offset = 0;
-
-				VkVertexInputBindingDescription constantColorBindingDescription;
-				constantColorBindingDescription.binding = 2;
-				constantColorBindingDescription.stride = 0;
-				constantColorBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-				VkVertexInputAttributeDescription constantColorInputAttributeDescription;
-				constantColorInputAttributeDescription.binding = 2;
-				constantColorInputAttributeDescription.location = 2;
-				constantColorInputAttributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-				constantColorInputAttributeDescription.offset = 0;
-
-				std::vector<VkVertexInputBindingDescription> bindingDescriptions = { vertexBindingDescription, texCoordsBindingDescription, constantColorBindingDescription };
-				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = { positionInputAttributeDescription, texCoordsInputAttributeDescription, constantColorInputAttributeDescription };
-
-				vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
-				vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
-				vertexInputInfo.vertexAttributeDescriptionCount = vertexInputAttributeDescriptions.size();
-				vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions.data();
+				vertexInputInfo.vertexBindingDescriptionCount = configuration.vertexInputBindingDescriptions.size();
+				vertexInputInfo.pVertexBindingDescriptions = configuration.vertexInputBindingDescriptions.data();
+				vertexInputInfo.vertexAttributeDescriptionCount = configuration.vertexInputAttributeDescriptions.size();
+				vertexInputInfo.pVertexAttributeDescriptions = configuration.vertexInputAttributeDescriptions.data();
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 				inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -1176,8 +1214,31 @@ namespace love {
 				pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 				pipelineInfo.basePipelineIndex = -1;
 
+				VkPipeline graphicsPipeline;
 				if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
 					throw love::Exception("failed to create graphics pipeline");
+				}
+				return graphicsPipeline;
+			}
+
+			void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration configuration) {
+				VkPipeline pipeline = VK_NULL_HANDLE;
+				for (auto const& p : graphicsPipelines) {
+					if (p.first == configuration) {
+						pipeline = p.second;
+						break;
+					}
+				}
+				if (pipeline != VK_NULL_HANDLE) {
+					if (currentGraphicsPipeline != pipeline) {
+						vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+						currentGraphicsPipeline = pipeline;
+					}
+				} else {
+					VkPipeline newPipeLine = createGraphicsPipeline(configuration);
+					graphicsPipelines.push_back(std::make_pair(configuration, newPipeLine));
+					vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, newPipeLine);
+					currentGraphicsPipeline = newPipeLine;
 				}
 			}
 
@@ -1257,6 +1318,45 @@ namespace love {
 				standardTexture = newTexture(settings);
 			}
 
+			bool operator==(const Graphics::GraphicsPipelineConfiguration& first, const Graphics::GraphicsPipelineConfiguration& other) {
+				if (first.vertexInputAttributeDescriptions.size() != other.vertexInputAttributeDescriptions.size()) {
+					return false;
+				}
+				if (first.vertexInputBindingDescriptions.size() != other.vertexInputBindingDescriptions.size()) {
+					return false;
+				}
+				for (uint32_t i = 0; i < first.vertexInputAttributeDescriptions.size(); i++) {
+					const VkVertexInputAttributeDescription& x = first.vertexInputAttributeDescriptions[i];
+					const VkVertexInputAttributeDescription& y = other.vertexInputAttributeDescriptions[i];
+					if (x.binding != y.binding) {
+						return false;
+					}
+					if (x.location != y.location) {
+						return false;
+					}
+					if (x.offset != y.offset) {
+						return false;
+					}
+					if (x.format != y.format) {
+						return false;
+					}
+				}
+				for (uint32_t i = 0; i < first.vertexInputBindingDescriptions.size(); i++) {
+					const VkVertexInputBindingDescription& x = first.vertexInputBindingDescriptions[i];
+					const VkVertexInputBindingDescription& y = other.vertexInputBindingDescriptions[i];
+					if (x.binding != y.binding) {
+						return false;
+					}
+					if (x.inputRate != y.inputRate) {
+						return false;
+					}
+					if (x.stride != y.stride) {
+						return false;
+					}
+				}
+				return true;
+			}
+
 			void Graphics::cleanup() {
 				vkDeviceWaitIdle(device);
 
@@ -1284,8 +1384,12 @@ namespace love {
 					vkDestroyFramebuffer(device, swapChainFramBuffers[i], nullptr);
 				}
 				vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-				vkDestroyPipeline(device, graphicsPipeline, nullptr);
-				vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				for (auto const& p : graphicsPipelines) {
+					vkDestroyPipeline(device, p.second, nullptr);
+				}
+				graphicsPipelines.clear();
+				currentGraphicsPipeline = VK_NULL_HANDLE;
+				// vkDestroyPipelineLayout(device, pipelineLayout, nullptr); FIXME
 				vkDestroyRenderPass(device, renderPass, nullptr);
 				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
@@ -1303,7 +1407,6 @@ namespace love {
 				createSwapChain();
 				createImageViews();
 				createRenderPass();
-				createGraphicsPipeline();
 				createFramebuffers();
 				createUniformBuffers();
 				createDescriptorPool();
