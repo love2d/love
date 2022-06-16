@@ -23,7 +23,7 @@ namespace love {
 			public:
 				Graphics();
 
-				virtual ~Graphics() = default;
+				virtual ~Graphics();
 
 				const char* getName() const override;
 
@@ -132,11 +132,7 @@ namespace love {
 				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
 				void updatedBatchedDrawBuffers();
 
-
-				void createVulkanVertexFormat(
-					VertexAttributes vertexAttributes,
-					bool& useConstantVertexColor,
-					GraphicsPipelineConfiguration& configuration);
+				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
 
 				// vulkan specific member functions and variables
 
@@ -185,11 +181,9 @@ namespace love {
 				void cleanup();
 				void cleanupSwapChain();
 				void recreateSwapChain();
-
 				void startRecordingGraphicsCommands();
 				void endRecordingGraphicsCommands();
 				void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
-
 				void prepareDraw(uint32_t currentImage);
 				
 				VkInstance instance;

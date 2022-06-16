@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "graphics/Texture.h"
 #include "Vulkan.h"
+#include "common/version.h"
 
 #include <vector>
 #include <cstring>
@@ -43,29 +44,18 @@ namespace love {
 
 			const int MAX_FRAMES_IN_FLIGHT = 2;
 
-			static std::vector<char> readFile(const std::string& filename) {
-				std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-				if (!file.is_open()) {
-					throw std::runtime_error("failed to open file!");
-				}
-
-				size_t fileSize = (size_t)file.tellg();
-				std::vector<char> buffer(fileSize);
-
-				file.seekg(0);
-				file.read(buffer.data(), fileSize);
-
-				file.close();
-
-				return buffer;
-			}
-
 			const char* Graphics::getName() const {
 				return "love.graphics.vulkan";
 			}
 
 			Graphics::Graphics() {
+			}
+
+			Graphics::~Graphics() {
+				// FIXME: most resources that are allocated dynamically need proper cleanup.
+				batchedDrawState.vb[0] = nullptr;
+				batchedDrawState.vb[1] = nullptr;
+				batchedDrawState.indexBuffer = nullptr;
 			}
 
 			// START OVERRIDEN FUNCTIONS
@@ -456,7 +446,7 @@ namespace love {
 				appInfo.pApplicationName = "LOVE";
 				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
 				appInfo.pEngineName = "LOVE Engine";
-				appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, same as above
+				appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
 				appInfo.apiVersion = VK_API_VERSION_1_0;
 
 				VkInstanceCreateInfo createInfo{};
@@ -902,20 +892,6 @@ namespace love {
 				}
 			}
 
-			static VkShaderModule createShaderModule(VkDevice device, const std::vector<char>& code) {
-				VkShaderModuleCreateInfo createInfo{};
-				createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-				createInfo.codeSize = code.size();
-				createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-				VkShaderModule shaderModule;
-				if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-					throw love::Exception("failed to create shader module");
-				}
-
-				return shaderModule;
-			}
-
 			void Graphics::createDefaultShaders() {
 				for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++) {
 					auto stype = (Shader::StandardShader)i;
@@ -1113,7 +1089,6 @@ namespace love {
 			}
 
 			VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
-
 				auto shader = reinterpret_cast<love::graphics::vulkan::Shader*>(love::graphics::vulkan::Shader::standardShaders[Shader::STANDARD_DEFAULT]);
 				auto shaderStages = shader->getShaderStages();
 
