@@ -69,7 +69,7 @@ bool Stream::write(Data *src)
 
 bool Stream::write(Data *src, int64 offset, int64 size)
 {
-	if (offset < 0 || size < 0 || offset + size > src->getSize())
+	if (offset < 0 || size < 0 || offset + size > (int64) src->getSize())
 		throw love::Exception("Offset and size parameters do not fit within the given Data's size.");
 
 	return write((const uint8 *) src->getData() + offset, size);

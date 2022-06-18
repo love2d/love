@@ -34,7 +34,7 @@ static Variant::SharedTable *putSourcesAsSharedTable(std::vector<audio::Source *
 {
 	Variant::SharedTable *table = new Variant::SharedTable();
 
-	for (int i = 0; i < sources.size(); i++)
+	for (int i = 0; i < (int) sources.size(); i++)
 		table->pairs.emplace_back((double) (i + 1), Variant(&Source::type, sources[i]));
 
 	return table;

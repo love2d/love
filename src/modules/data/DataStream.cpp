@@ -34,19 +34,19 @@ love::Type DataStream::type("DataStream", &Stream::type);
 
 DataStream::DataStream(Data *data)
 	: data(data)
-	, offset(0)
-	, size(data->getSize())
 	, memory((const uint8 *) data->getData())
 	, writableMemory((uint8 *) data->getData()) // TODO: disallow writing sometimes?
+	, offset(0)
+	, size(data->getSize())
 {
 }
 
 DataStream::DataStream(const DataStream &other)
 	: data(other.data)
-	, offset(0)
-	, size(other.size)
 	, memory(other.memory)
 	, writableMemory(other.writableMemory)
+	, offset(0)
+	, size(other.size)
 {
 }
 
@@ -79,7 +79,7 @@ int64 DataStream::read(void* data, int64 size)
 	if (size <= 0)
 		return 0;
 
-	if (offset >= getSize())
+	if ((int64) offset >= getSize())
 		return 0;
 
 	int64 readsize = std::min<int64>(size, getSize() - offset);
@@ -95,7 +95,7 @@ bool DataStream::write(const void* data, int64 size)
 	if (size <= 0 || writableMemory == nullptr)
 		return false;
 
-	if (offset >= getSize())
+	if ((int64) offset >= getSize())
 		return false;
 
 	int64 writesize = std::min<int64>(size, getSize() - offset);
@@ -123,7 +123,7 @@ bool DataStream::seek(int64 pos, SeekOrigin origin)
 	else if (origin == SEEKORIGIN_END)
 		pos += size;
 
-	if (pos < 0 || pos > size)
+	if (pos < 0 || pos > (int64) size)
 		return false;
 
 	offset = pos;
