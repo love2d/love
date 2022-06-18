@@ -1190,7 +1190,7 @@ void Window::swapBuffers()
 		// - DWM refreshes don't always match the refresh rate of the monitor the window is in (or the requested swap
 		//   interval), so we only use it when they do match.
 		// - The user may force GL vsync, and DwmFlush shouldn't be used together with GL vsync.
-		if (context != nullptr && !settings.fullscreen && swapInterval == 1)
+		if (!settings.fullscreen && swapInterval == 1)
 		{
 			// Desktop composition is always enabled in Windows 8+. But DwmIsCompositionEnabled won't always return true...
 			// (see DwmIsCompositionEnabled docs).
