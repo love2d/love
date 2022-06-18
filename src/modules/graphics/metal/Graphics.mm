@@ -527,7 +527,7 @@ void Graphics::setActive(bool enable)
 
 void Graphics::setShaderChanged()
 {
-	dirtyRenderState |= STATE_SHADER;
+	dirtyRenderState |= STATEBIT_SHADER;
 	++shaderSwitches;
 }
 
