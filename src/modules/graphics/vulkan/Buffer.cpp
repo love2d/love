@@ -4,71 +4,59 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			static uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFtiler, VkMemoryPropertyFlags properties) {
-				VkPhysicalDeviceMemoryProperties memProperties;
-				vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-				for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-					if ((typeFtiler & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-						return i;
-					}
+			static VkBufferUsageFlags getUsageBit(BufferUsage mode) {
+				switch (mode) {
+				case BUFFERUSAGE_VERTEX: return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+				case BUFFERUSAGE_INDEX: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+				case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+				default:
+					throw love::Exception("unsupported BufferUsage mode");
 				}
-
-				throw love::Exception("failed to find suitable memory type");
 			}
 
-			Buffer::Buffer(love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength) 
-				: love::graphics::Buffer(gfx, settings, format, size, arrayLength) {
-				auto vgfx = (Graphics*)gfx;
-				device = vgfx->getDevice();
-				auto physicalDevice = vgfx->getPhysicalDevice();
+			static VkBufferUsageFlags getVulkanUsageFlags(BufferUsageFlags flags) {
+				VkBufferUsageFlags vkFlags = 0;
+				for (int i = 0; i < BUFFERUSAGE_MAX_ENUM; i++) {
+					BufferUsageFlags flag = static_cast<BufferUsageFlags>(1u << i);
+					if (flags & flag) {
+						vkFlags |= getUsageBit((BufferUsage)i);
+					}
+				}
+				return vkFlags;
+			}
+
+			Buffer::Buffer(VmaAllocator allocator, love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength)
+				: love::graphics::Buffer(gfx, settings, format, size, arraylength) {
 
 				VkBufferCreateInfo bufferInfo{};
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInfo.size = getSize();
-				bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;	// todo: only vertex buffers are allowed for now
+				bufferInfo.size = size;
+				bufferInfo.usage = getVulkanUsageFlags(settings.usageFlags);
 				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-				if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-					throw love::Exception("failed to create buffer");
-				}
+				VmaAllocationCreateInfo allocCreateInfo = {};
+				allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+				allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-				VkMemoryRequirements memRequirements;
-				vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-				VkMemoryAllocateInfo allocInfo{};
-				allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-				allocInfo.allocationSize = memRequirements.size;
-				allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-				if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-					throw love::Exception("failed to allocate vertex buffer memory");
-				}
-
-				vkBindBufferMemory(device, buffer, bufferMemory, 0);
-
-				vkMapMemory(device, bufferMemory, 0, getSize(), 0, &mappedMemory);
-				memcpy(mappedMemory, data, size);
-				vkUnmapMemory(device, bufferMemory);
+				vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
 			}
 
 			Buffer::~Buffer() {
-				vkDestroyBuffer(device, buffer, nullptr);
-				vkFreeMemory(device, bufferMemory, nullptr);
+				// fixme
 			}
 
 			void* Buffer::map(MapType map, size_t offset, size_t size) {
-				vkMapMemory(device, bufferMemory, offset, size, 0, &mappedMemory);
-				return mappedMemory;
+				char* data = (char*)allocInfo.pMappedData;
+				return (void*) (data + offset);
 			}
 
 			bool Buffer::fill(size_t offset, size_t size, const void *data) {
-				memcpy(mappedMemory, data, size);
+				void* dst = (void*)((char*)allocInfo.pMappedData + offset);
+				memcpy(dst, data, size);
 				return true;
 			}
 
 			void Buffer::unmap(size_t usedoffset, size_t usedsize) {
-				vkUnmapMemory(device, bufferMemory);
 			}
 
 			void Buffer::copyTo(love::graphics::Buffer* dest, size_t sourceoffset, size_t destoffset, size_t size) {

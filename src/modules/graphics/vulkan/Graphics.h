@@ -72,7 +72,7 @@ namespace love {
 				RendererInfo getRendererInfo() const override { std::cout << "getRendererInfo "; return {}; }
 				void draw(const DrawCommand& cmd) override { std::cout << "draw "; }
 				void draw(const DrawIndexedCommand& cmd) override;
-				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override { std::cout << "drawQuads "; }
+				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override;
 
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
@@ -86,6 +86,8 @@ namespace love {
 
 					friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 				};
+
+				void setShader(Shader*);
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
@@ -134,6 +136,8 @@ namespace love {
 
 				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
 
+				StreamBuffer* quadIndexBuffer = nullptr;
+
 				// vulkan specific member functions and variables
 
 				struct QueueFamilyIndices {
@@ -178,6 +182,7 @@ namespace love {
 				void createCommandBuffers();
 				void createSyncObjects();
 				void createDefaultTexture();
+				void createQuadIndexBuffer();
 				void cleanup();
 				void cleanupSwapChain();
 				void recreateSwapChain();

@@ -62,7 +62,7 @@ namespace love {
 
 			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
 				std::cout << "newBuffer ";
-				return nullptr;
+				return new Buffer(vmaAllocator, this, settings, format, data, size, arraylength);
 			}
 
 			void Graphics::startRecordingGraphicsCommands() {
@@ -211,6 +211,7 @@ namespace love {
 				createCommandBuffers();
 				createUniformBuffers();
 				createDefaultTexture();
+				createQuadIndexBuffer();
 				createDescriptorPool();
 				createSyncObjects();
 				startRecordingGraphicsCommands();
@@ -308,8 +309,14 @@ namespace love {
 				createVulkanVertexFormat(*cmd.attributes, useConstantColorBuffer, configuration);
 
 				for (uint32_t i = 0; i < 2; i++) {
-					buffers.push_back((VkBuffer)cmd.buffers->info[i].buffer->getHandle());
-					offsets.push_back((VkDeviceSize)cmd.buffers->info[i].offset);
+					if (cmd.buffers->useBits & (1u << i)) {
+						buffers.push_back((VkBuffer)cmd.buffers->info[i].buffer->getHandle());
+						offsets.push_back((VkDeviceSize)cmd.buffers->info[i].offset);
+					}
+					else {
+						buffers.push_back(VK_NULL_HANDLE);
+						offsets.push_back(0);
+					}
 				}
 
 				if (useConstantColorBuffer) {
@@ -330,6 +337,61 @@ namespace love {
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, getVulkanIndexBufferType(cmd.indexType));
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
+			}
+
+			void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
+				std::cout << "drawQuads ";
+
+				const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
+				const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
+
+				std::vector<VkBuffer> bufferVector;
+				std::vector<VkDeviceSize> offsets;
+
+				bool useConstantColorBuffer;
+				GraphicsPipelineConfiguration configuration;
+				createVulkanVertexFormat(attributes, useConstantColorBuffer, configuration);
+
+				for (uint32_t i = 0; i < 2; i++) {
+					if (buffers.useBits & (1u << i)) {
+						bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
+						offsets.push_back((VkDeviceSize)buffers.info[i].offset);
+					}
+					else {
+						if (useConstantColorBuffer) {
+							bufferVector.push_back(VK_NULL_HANDLE);
+							offsets.push_back(0);
+						}
+					}
+				}
+
+				if (useConstantColorBuffer) {
+					bufferVector.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
+					offsets.push_back((VkDeviceSize)0);
+				}
+
+				if (texture == nullptr) {
+					setTexture(standardTexture);
+				}
+				else {
+					setTexture(texture);
+				}
+
+				ensureGraphicsPipelineConfiguration(configuration);
+
+				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
+				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
+				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, bufferVector.size(), bufferVector.data(), offsets.data());
+				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(count * 6), 1, 0, 0, 0);
+				
+				int baseVertex = start * 4;
+
+				for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW) {
+					int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+					// vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
+					baseVertex += quadcount * 4;
+				}
 			}
 
 			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
@@ -652,11 +714,16 @@ namespace love {
 				VkPhysicalDeviceFeatures deviceFeatures{};
 				deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+				VkPhysicalDeviceFeatures2 deviceFeatures2{};
+				deviceFeatures2.features.robustBufferAccess = VK_TRUE;
+				deviceFeatures2.pNext = nullptr;
+
 				VkDeviceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 				createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 				createInfo.pQueueCreateInfos = queueCreateInfos.data();
 				createInfo.pEnabledFeatures = &deviceFeatures;
+				createInfo.pNext = &deviceFeatures2;
 
 				createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 				createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -1033,7 +1100,7 @@ namespace love {
 
 				bool usesColor = false;
 				
-				for (uint32_t i = 0; i < 32; i++) {	// change to loop like in opengl implementation ?
+				for (uint32_t i = 0; i < VertexAttributes::MAX; i++) {	// change to loop like in opengl implementation ?
 					uint32 bit = 1u << i;
 					if (allBits & bit) {
 						if (i == ATTRIB_COLOR) {
@@ -1291,6 +1358,17 @@ namespace love {
 			void Graphics::createDefaultTexture() {
 				Texture::Settings settings;
 				standardTexture = newTexture(settings);
+			}
+
+			void Graphics::createQuadIndexBuffer() {
+				if (quadIndexBuffer != nullptr)
+					return;
+
+				size_t size = sizeof(uint16) * getIndexCount(TRIANGLEINDEX_QUADS, LOVE_UINT16_MAX);
+				quadIndexBuffer = static_cast<StreamBuffer*>(newStreamBuffer(BUFFERUSAGE_INDEX, size));
+				auto map = quadIndexBuffer->map(size);
+				fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16*)map.data);
+				quadIndexBuffer->unmap(size);
 			}
 
 			bool operator==(const Graphics::GraphicsPipelineConfiguration& first, const Graphics::GraphicsPipelineConfiguration& other) {

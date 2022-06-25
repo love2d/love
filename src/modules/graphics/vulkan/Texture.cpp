@@ -1,5 +1,6 @@
 #include "Texture.h"
 #include "Graphics.h"
+#include "Vulkan.h"
 
 // make vulkan::Graphics functions available
 #define vgfx ((Graphics*)gfx)
@@ -16,13 +17,13 @@ namespace love {
 					auto sliceData = data->get(0, 0);
 					auto size = sliceData->getSize();
 					auto dataPtr = sliceData->getData();
-					Rect rect;
+					Rect rect{};
 					rect.x = 0;
 					rect.y = 0;
 					rect.w = sliceData->getWidth();
 					rect.h = sliceData->getHeight();
 
-					uploadByteData(PIXELFORMAT_RGBA8_UNORM, dataPtr, size, 0, 0, rect);
+					uploadByteData(format, dataPtr, size, 0, 0, rect);
 				}
 				else {
 					uint8 defaultPixel[] = { 255, 255, 255, 255 };
@@ -40,16 +41,22 @@ namespace love {
 			}
 
 			void Texture::createTextureImageView() {
+				auto vulkanFormat = Vulkan::getTextureFormat(format);
+
 				VkImageViewCreateInfo viewInfo{};
 				viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 				viewInfo.image = textureImage;
 				viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-				viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+				viewInfo.format = vulkanFormat.internalFormat;
 				viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				viewInfo.subresourceRange.baseMipLevel = 0;
 				viewInfo.subresourceRange.levelCount = 1;
 				viewInfo.subresourceRange.baseArrayLayer = 0;
 				viewInfo.subresourceRange.layerCount = 1;
+				viewInfo.components.r = vulkanFormat.swizzleR;
+				viewInfo.components.g = vulkanFormat.swizzleG;
+				viewInfo.components.b = vulkanFormat.swizzleB;
+				viewInfo.components.a = vulkanFormat.swizzleA;
 
 				if (vkCreateImageView(device, &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
 					throw love::Exception("could not create texture image view");
@@ -181,6 +188,8 @@ namespace love {
 
 				memcpy(allocInfo.pMappedData, data, size);
 
+				auto vulkanFormat = Vulkan::getTextureFormat(format);
+
 				VkImageCreateInfo imageInfo{};
 				imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 				imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -189,7 +198,7 @@ namespace love {
 				imageInfo.extent.depth = 1;
 				imageInfo.mipLevels = 1;
 				imageInfo.arrayLayers = 1;
-				imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+				imageInfo.format = vulkanFormat.internalFormat;
 				imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 				imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
