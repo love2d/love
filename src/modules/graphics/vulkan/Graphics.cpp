@@ -330,9 +330,7 @@ namespace love {
 
 				ensureGraphicsPipelineConfiguration(configuration);
 
-				auto descriptorSets = getDescriptorSet(currentFrame);
-				auto descriptorSet = *descriptorSets;
-				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSets, 0, nullptr);
+				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, getVulkanIndexBufferType(cmd.indexType));
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
