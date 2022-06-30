@@ -179,6 +179,14 @@ public:
  		Vector4 normalMatrix[3]; // 3x3 matrix padded to an array of 3 vector4s.
  		Vector4 screenSizeParams;
  		Colorf constantColor;
+
+		bool operator==(const BuiltinUniformData& other) {
+			auto first = *this;
+			return first.transformMatrix == other.transformMatrix && first.projectionMatrix == other.projectionMatrix
+				&& first.normalMatrix[0] == other.normalMatrix[0] && first.normalMatrix[1] == other.normalMatrix[1]
+				&& first.normalMatrix[2] == other.normalMatrix[2] && first.screenSizeParams == other.screenSizeParams
+				&& first.constantColor == other.constantColor;
+		}
  	};
 
 	// Pointer to currently active Shader.

@@ -65,8 +65,8 @@ namespace love {
 				void setBlendState(const BlendState& blend) override { std::cout << "setBlendState "; }
 				void setPointSize(float size) override { std::cout << "setPointSize "; }
 				void setWireframe(bool enable) override { std::cout << "setWireframe "; }
-				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override { std::cout << "getSizedFormat "; return format; }
-				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override { std::cout << "isPixelFormatSupported "; return true; }
+				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
+				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
 				Renderer getRenderer() const override { std::cout << "getRenderer "; return RENDERER_VULKAN; }
 				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
 				RendererInfo getRendererInfo() const override { std::cout << "getRendererInfo "; return {}; }
@@ -85,6 +85,15 @@ namespace love {
 					std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
 
 					friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
+				};
+
+				struct DecriptorSetConfiguration {
+					graphics::Texture* texture;
+					graphics::StreamBuffer* buffer;
+
+					bool operator==(const DecriptorSetConfiguration& conf2) {
+						return this->texture == conf2.texture && this->buffer == conf2.buffer;
+					}
 				};
 
 				void setShader(Shader*);
@@ -112,8 +121,10 @@ namespace love {
 				}
 
 				VkDescriptorSet* getDescriptorSet(int currentFrame);
+				graphics::StreamBuffer* getUniformBuffer();
 
-				std::unordered_map<graphics::Texture*, std::vector<VkDescriptorSet>> textureToDescriptorSetsMap;
+				std::vector<std::pair<graphics::Shader::BuiltinUniformData, graphics::StreamBuffer*>> uniformBufferMap;
+				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
 
 				struct BatchedDrawBuffers {
 					StreamBuffer* vertexBuffer1;
@@ -129,7 +140,7 @@ namespace love {
 					}
 				};
 
-				// we need an arrow of draw buffers, since the frames are being rendered asynchronously
+				// we need an array of draw buffers, since the frames are being rendered asynchronously
 				// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
 				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
 				void updatedBatchedDrawBuffers();
@@ -173,9 +184,8 @@ namespace love {
 				void createRenderPass();
 				void createDefaultShaders();
 				void createDescriptorSetLayout();
-				void createUniformBuffers();
 				void createDescriptorPool();
-				std::vector<VkDescriptorSet> createDescriptorSets(graphics::Texture* texture);
+				std::vector<VkDescriptorSet> createDescriptorSets(DecriptorSetConfiguration);
 				VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
 				void createFramebuffers();
 				void createCommandPool();
@@ -189,7 +199,8 @@ namespace love {
 				void startRecordingGraphicsCommands();
 				void endRecordingGraphicsCommands();
 				void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
-				void prepareDraw(uint32_t currentImage);
+				graphics::StreamBuffer* createUniformBufferFromData(graphics::Shader::BuiltinUniformData);
+				graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 				
 				VkInstance instance;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -211,7 +222,6 @@ namespace love {
 				VkCommandPool commandPool;
 				std::vector<VkCommandBuffer> commandBuffers;
 				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-				std::vector<std::unique_ptr<StreamBuffer>> uniformBuffers;
 				VkDescriptorPool descriptorPool;
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;

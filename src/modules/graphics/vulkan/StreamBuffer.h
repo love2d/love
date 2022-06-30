@@ -28,7 +28,6 @@ namespace love {
 				VmaAllocator allocator;
 				VmaAllocation allocation;
 				VmaAllocationInfo allocInfo;
-				VkDevice device;
 				VkBuffer buffer;
 				size_t usedGPUMemory;
 

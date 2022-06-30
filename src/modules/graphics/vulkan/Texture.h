@@ -23,7 +23,7 @@ namespace love {
 				ptrdiff_t getRenderTargetHandle() const override { std::cout << "Texture::getRenderTargetHandle "; return (ptrdiff_t)0; };
 				ptrdiff_t getSamplerHandle() const override { std::cout << "Texture::getSamplerHandle "; return (ptrdiff_t)0; };
 
-				void uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r)  override;
+				void uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) override;
 
 				void generateMipmapsInternal()  override { std::cout << "Texture::generateMipmapsInternal "; };
 

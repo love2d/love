@@ -32,7 +32,6 @@ namespace love {
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 				bufferInfo.size = size;
 				bufferInfo.usage = getVulkanUsageFlags(settings.usageFlags);
-				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 				VmaAllocationCreateInfo allocCreateInfo = {};
 				allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -57,6 +56,8 @@ namespace love {
 			}
 
 			void Buffer::unmap(size_t usedoffset, size_t usedsize) {
+				(void)usedoffset;
+				(void)usedsize;
 			}
 
 			void Buffer::copyTo(love::graphics::Buffer* dest, size_t sourceoffset, size_t destoffset, size_t size) {

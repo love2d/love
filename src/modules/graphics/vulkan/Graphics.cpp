@@ -121,8 +121,6 @@ namespace love {
 
 				endRecordingGraphicsCommands();
 
-				prepareDraw(currentFrame);
-
 				if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 					vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
 				}
@@ -209,7 +207,6 @@ namespace love {
 				createFramebuffers();
 				createCommandPool();
 				createCommandBuffers();
-				createUniformBuffers();
 				createDefaultTexture();
 				createQuadIndexBuffer();
 				createDescriptorPool();
@@ -333,10 +330,40 @@ namespace love {
 
 				ensureGraphicsPipelineConfiguration(configuration);
 
-				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
+				auto descriptorSets = getDescriptorSet(currentFrame);
+				auto descriptorSet = *descriptorSets;
+				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSets, 0, nullptr);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, getVulkanIndexBufferType(cmd.indexType));
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
+			}
+
+			PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const { 
+				std::cout << "getSizedFormat ";
+				
+				switch (format) {
+				PIXELFORMAT_NORMAL:
+					if (isGammaCorrect()) {
+						return PIXELFORMAT_RGBA8_UNORM_sRGB;
+					}
+					else {
+						return PIXELFORMAT_RGBA8_UNORM;
+					}
+				case PIXELFORMAT_HDR:
+					return PIXELFORMAT_RGBA16_FLOAT;
+				default:
+					return format;
+				}
+			}
+
+			bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) { 
+				std::cout << "isPixelFormatSupported ";
+				switch (format) {
+				case PIXELFORMAT_LA8_UNORM:
+					return false;
+				default:
+					return true;
+				}
 			}
 
 			void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
@@ -416,12 +443,29 @@ namespace love {
 			}
 
 			VkDescriptorSet* Graphics::getDescriptorSet(int currentFrame) {
-				auto it = textureToDescriptorSetsMap.find(currentTexture);
-				if (it == textureToDescriptorSetsMap.end()) {
-					textureToDescriptorSetsMap[currentTexture] = createDescriptorSets(currentTexture);
+				DecriptorSetConfiguration config;
+				config.texture = currentTexture;
+				config.buffer = getUniformBuffer();
+				for (auto i = 0; i < descriptorSetsMap.size(); i++) {
+					if (descriptorSetsMap[i].first == config) {
+						return &descriptorSetsMap[i].second[currentFrame];
+					}
 				}
+				auto descriptorSets = createDescriptorSets(config);
+				descriptorSetsMap.push_back(std::make_pair(config, descriptorSets));
+				return &descriptorSetsMap.back().second[currentFrame];
+			}
 
-				return &textureToDescriptorSetsMap.at(currentTexture)[currentFrame];
+			graphics::StreamBuffer* Graphics::getUniformBuffer() {
+				auto data = getCurrentBuiltinUniformData();
+				for (auto it : uniformBufferMap) {
+					if (it.first == data) {
+						return it.second;
+					}
+				}
+				auto buffer = createUniformBufferFromData(data);
+				uniformBufferMap.push_back(std::make_pair(data, buffer));
+				return buffer;
 			}
 
 			VkCommandBuffer Graphics::beginSingleTimeCommands() {
@@ -456,9 +500,7 @@ namespace love {
 				vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 			}
 
-			void Graphics::prepareDraw(uint32_t currentImage) {
-				auto& buffer = uniformBuffers.at(currentImage);
-
+			graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
 				love::graphics::Shader::BuiltinUniformData data;
 
 				data.transformMatrix = getTransform();
@@ -493,9 +535,16 @@ namespace love {
 				data.constantColor = getColor();
 				gammaCorrectColor(data.constantColor);
 
+				return data;
+			}
+
+			graphics::StreamBuffer* Graphics::createUniformBufferFromData(graphics::Shader::BuiltinUniformData data) {
+				auto buffer = newStreamBuffer(BUFFERUSAGE_UNIFORM, sizeof(data));
 				auto mappedInfo = buffer->map(0);
 				memcpy(mappedInfo.data, &data, sizeof(data));
 				buffer->unmap(0);
+
+				return buffer;
 			}
 
 			void Graphics::createVulkanInstance() {
@@ -997,14 +1046,6 @@ namespace love {
 				}
 			}
 
-			void Graphics::createUniformBuffers() {
-				VkDeviceSize bufferSize = sizeof(graphics::Shader::BuiltinUniformData);
-				
-				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-					uniformBuffers.push_back(std::make_unique<StreamBuffer>(vmaAllocator, BUFFERUSAGE_UNIFORM, bufferSize));
-				}
-			}
-
 			void Graphics::createDescriptorPool() {
 				std::array<VkDescriptorPoolSize, 2> poolSizes{};
 				poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1026,7 +1067,7 @@ namespace love {
 				}
 			}
 
-			std::vector<VkDescriptorSet> Graphics::createDescriptorSets(graphics::Texture* texture) {
+			std::vector<VkDescriptorSet> Graphics::createDescriptorSets(DecriptorSetConfiguration config) {
 				std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 				VkDescriptorSetAllocateInfo allocInfo{};
 				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -1055,13 +1096,13 @@ namespace love {
 
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 					VkDescriptorBufferInfo bufferInfo{};
-					bufferInfo.buffer = (VkBuffer)uniformBuffers.at(i)->getHandle();
+					bufferInfo.buffer = (VkBuffer)config.buffer->getHandle();
 					bufferInfo.offset = 0;
 					bufferInfo.range = sizeof(graphics::Shader::BuiltinUniformData);
 
 					VkDescriptorImageInfo imageInfo{};
 					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					Texture* vkTexture = (Texture*)texture;
+					Texture* vkTexture = (Texture*)config.texture;
 					imageInfo.imageView = vkTexture->getImageView();
 					imageInfo.sampler = vkTexture->getSampler();
 
@@ -1448,8 +1489,8 @@ namespace love {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 				}
 				vkDestroySwapchainKHR(device, swapChain, nullptr);
-				uniformBuffers.clear();
-				textureToDescriptorSetsMap.clear();
+				uniformBufferMap.clear();
+				descriptorSetsMap.clear();
 			}
 
 			void Graphics::recreateSwapChain() {
@@ -1461,7 +1502,6 @@ namespace love {
 				createImageViews();
 				createRenderPass();
 				createFramebuffers();
-				createUniformBuffers();
 				createDescriptorPool();
 				createCommandBuffers();
 				startRecordingGraphicsCommands();

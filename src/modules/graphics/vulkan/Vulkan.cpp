@@ -163,12 +163,20 @@ namespace love {
 						textureFormat.internalFormat = VK_FORMAT_R32G32_UINT;
 						break;
 					case PIXELFORMAT_RGBA8_UNORM:
-					case PIXELFORMAT_RGBA8_UNORM_sRGB:	// fixme ?
-						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UNORM;
+						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;	// fixme?
+						break;
+					case PIXELFORMAT_RGBA8_UNORM_sRGB:
+						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
 						break;
 					case PIXELFORMAT_BGRA8_UNORM:
-					case PIXELFORMAT_BGRA8_UNORM_sRGB:	// fixme ?
-						textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_UNORM;
+						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UNORM;
+						textureFormat.swizzleR = VK_COMPONENT_SWIZZLE_B;
+						textureFormat.swizzleB = VK_COMPONENT_SWIZZLE_R;
+						break;
+					case PIXELFORMAT_BGRA8_UNORM_sRGB:
+						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
+						textureFormat.swizzleR = VK_COMPONENT_SWIZZLE_B;
+						textureFormat.swizzleB = VK_COMPONENT_SWIZZLE_R;
 						break;
 					case PIXELFORMAT_RGBA8_INT:
 						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SINT;

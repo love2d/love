@@ -83,6 +83,16 @@ public:
 	 **/
 	void operator *= (const Matrix4 &m);
 
+	static friend bool operator==(const Matrix4& first, const Matrix4& other)
+	{
+		for (int i = 0; i < 16; i++) {
+			if (first.e[i] != other.e[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * Gets a pointer to the 16 array elements.
 	 * @return The array elements.
