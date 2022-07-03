@@ -54,10 +54,27 @@
 #define APIENTRY
 #endif
 
+#ifndef SDL_HINT_WINDOWS_DPI_SCALING
+#define SDL_HINT_WINDOWS_DPI_SCALING "SDL_WINDOWS_DPI_SCALING"
+#endif
+
 namespace love
 {
 namespace window
 {
+
+// See src/modules/window/Window.cpp.
+void setHighDPIAllowedImplementation(bool enable)
+{
+#if defined(LOVE_WINDOWS)
+	// Windows uses a different API than SDL_WINDOW_ALLOW_HIGHDPI.
+	// This must be set before the video subsystem is initialized.
+	SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, enable ? "1" : "0");
+#else
+	LOVE_UNUSED(enable);
+#endif
+}
+
 namespace sdl
 {
 
@@ -73,12 +90,6 @@ Window::Window()
 	, hasSDL203orEarlier(false)
 	, contextAttribs()
 {
-	// Windows uses a different API than SDL_WINDOW_ALLOW_HIGHDPI.
-#if defined(LOVE_WINDOWS) && defined(SDL_HINT_WINDOWS_DPI_SCALING)
-	// This must be set before the video subsystem is initialized.
-	SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, isHighDPIAllowed() ? "1" : "0");
-#endif
-
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 
