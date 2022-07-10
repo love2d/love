@@ -1099,7 +1099,7 @@ namespace love {
 					bufferInfo.range = sizeof(graphics::Shader::BuiltinUniformData);
 
 					VkDescriptorImageInfo imageInfo{};
-					imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 					Texture* vkTexture = (Texture*)config.texture;
 					imageInfo.imageView = vkTexture->getImageView();
 					imageInfo.sampler = vkTexture->getSampler();

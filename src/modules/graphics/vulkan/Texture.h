@@ -33,8 +33,8 @@ namespace love {
 				VkSampler getSampler() const { return textureSampler; }
 
 			private:
-				void transitionImageLayout(VkImage, VkFormat, VkImageLayout oldLayout, VkImageLayout newLayout);
-				void copyBufferToImage(VkBuffer, VkImage, uint32_t width, uint32_t height);
+				void transitionImageLayout(VkImage, VkImageLayout oldLayout, VkImageLayout newLayout);
+				void copyBufferToImage(VkBuffer, VkImage, const Rect&);
 				void createTextureImageView();
 				void createTextureSampler();
 

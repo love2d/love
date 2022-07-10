@@ -13,6 +13,31 @@ namespace love {
 				allocator = vgfx->getVmaAllocator();
 				device = vgfx->getDevice();
 
+				auto vulkanFormat = Vulkan::getTextureFormat(format);
+
+				VkImageCreateInfo imageInfo{};
+				imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+				imageInfo.imageType = VK_IMAGE_TYPE_2D;
+				imageInfo.extent.width = static_cast<uint32_t>(width);
+				imageInfo.extent.height = static_cast<uint32_t>(height);
+				imageInfo.extent.depth = 1;
+				imageInfo.mipLevels = 1;
+				imageInfo.arrayLayers = 1;
+				imageInfo.format = vulkanFormat.internalFormat;
+				imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+				imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+				imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+
+				VmaAllocationCreateInfo imageAllocationCreateInfo{};
+
+				if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS) {
+					throw love::Exception("failed to create image");
+				}
+				// fixme: is there a way we don't use the general image layout?
+				transitionImageLayout(textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+
 				if (data) {
 					auto sliceData = data->get(0, 0);
 					auto size = sliceData->getSize();
@@ -91,7 +116,7 @@ namespace love {
 				}
 			}
 
-			void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+			void Texture::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
 				auto commandBuffer = vgfx->beginSingleTimeCommands();
 
 				VkPipelineStageFlags sourceStage;
@@ -123,6 +148,20 @@ namespace love {
 					sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 					destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 				}
+				else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+					sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+					destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				}
+				else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+					barrier.srcAccessMask = 0;
+					barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
+
+					sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+					destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				}
 				else {
 					throw love::Exception("unsupported lay transition");
 				}
@@ -139,7 +178,7 @@ namespace love {
 				vgfx->endSingleTimeCommands(commandBuffer);
 			}
 
-			void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
+			void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, const Rect& r) {
 				auto commandBuffer = vgfx->beginSingleTimeCommands();
 
 				VkBufferImageCopy region{};
@@ -152,17 +191,17 @@ namespace love {
 				region.imageSubresource.baseArrayLayer = 0;
 				region.imageSubresource.layerCount = 1;
 
-				region.imageOffset = { 0, 0, 0 };
+				region.imageOffset = { r.x, r.y, 0 };
 				region.imageExtent = {
-					width,
-					height, 1
+					static_cast<uint32_t>(r.w),
+					static_cast<uint32_t>(r.h), 1
 				};
 
 				vkCmdCopyBufferToImage(
 					commandBuffer,
 					buffer,
 					image,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					VK_IMAGE_LAYOUT_GENERAL,
 					1,
 					&region
 				);
@@ -171,8 +210,6 @@ namespace love {
 			}
 
 			void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) {
-				format = pixelformat;
-
 				VkBuffer stagingBuffer;
 				VmaAllocation vmaAllocation;
 
@@ -190,32 +227,7 @@ namespace love {
 
 				memcpy(allocInfo.pMappedData, data, size);
 
-				auto vulkanFormat = Vulkan::getTextureFormat(format);
-
-				VkImageCreateInfo imageInfo{};
-				imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-				imageInfo.imageType = VK_IMAGE_TYPE_2D;
-				imageInfo.extent.width = static_cast<uint32_t>(r.w);
-				imageInfo.extent.height = static_cast<uint32_t>(r.h);
-				imageInfo.extent.depth = 1;
-				imageInfo.mipLevels = 1;
-				imageInfo.arrayLayers = 1;
-				imageInfo.format = vulkanFormat.internalFormat;
-				imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-				imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-				imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-				imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-
-				VmaAllocationCreateInfo imageAllocationCreateInfo{};
-
-				if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS) {
-					throw love::Exception("failed to create image");
-				}
-
-				transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-				copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(r.w), static_cast<uint32_t>(r.h));
-				transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+				copyBufferToImage(stagingBuffer, textureImage, r);
 
 				vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
 			}
