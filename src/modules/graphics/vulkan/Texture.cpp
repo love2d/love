@@ -9,7 +9,11 @@ namespace love {
 	namespace graphics {
 		namespace vulkan {
 			Texture::Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data)
-				: love::graphics::Texture(gfx, settings, data), gfx(gfx) {
+				: love::graphics::Texture(gfx, settings, data), gfx(gfx), data(data) {
+				loadVolatile();
+			}
+
+			bool Texture::loadVolatile() {
 				allocator = vgfx->getVmaAllocator();
 				device = vgfx->getDevice();
 
@@ -59,10 +63,19 @@ namespace love {
 				createTextureSampler();
 			}
 
+			void Texture::unloadVolatile() {
+				if (textureImage == VK_NULL_HANDLE)
+					return;
+
+				vkDestroySampler(device, textureSampler, nullptr);
+				vkDestroyImageView(device, textureImageView, nullptr);
+				vmaDestroyImage(allocator, textureImage, nullptr);
+
+				textureImage = VK_NULL_HANDLE;
+			}
+
 			Texture::~Texture() {
-				// vkDestroySampler(device, textureSampler, nullptr);
-				// vkDestroyImageView(device, textureImageView, nullptr);
-				// vmaDestroyImage(allocator, textureImage, nullptr);
+				unloadVolatile();
 			}
 
 			void Texture::createTextureImageView() {

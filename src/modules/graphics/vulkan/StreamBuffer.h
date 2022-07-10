@@ -1,6 +1,7 @@
 #ifndef LOVE_GRAPHICS_VULKAN_STREAMBUFFER_H
 #define LOVE_GRAPHICS_VULKAN_STREAMBUFFER_H
 
+#include "graphics/Volatile.h"
 #include "modules/graphics/StreamBuffer.h"
 #include "vulkan/vulkan.h"
 
@@ -9,10 +10,14 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			class StreamBuffer : public love::graphics::StreamBuffer {
+			class StreamBuffer : public love::graphics::StreamBuffer, public graphics::Volatile {
 			public:
 				StreamBuffer(VmaAllocator allocator, BufferUsage mode, size_t size);
 				virtual ~StreamBuffer();
+
+				virtual bool loadVolatile() override;
+
+				virtual void unloadVolatile() override;
 
 				MapInfo map(size_t minsize) override;
 				size_t unmap(size_t usedSize) override;
@@ -28,7 +33,7 @@ namespace love {
 				VmaAllocator allocator;
 				VmaAllocation allocation;
 				VmaAllocationInfo allocInfo;
-				VkBuffer buffer;
+				VkBuffer buffer = VK_NULL_HANDLE;
 				size_t usedGPUMemory;
 
 			};

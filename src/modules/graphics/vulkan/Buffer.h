@@ -1,15 +1,19 @@
 #include "graphics/Buffer.h"
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
+#include "graphics/Volatile.h"
 
 
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			class Buffer : public love::graphics::Buffer {
+			class Buffer : public love::graphics::Buffer, public Volatile {
 			public:
 				Buffer(VmaAllocator allocator, love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength);
 				virtual ~Buffer();
+
+				virtual bool loadVolatile() override;
+				virtual void unloadVolatile() override;
 
 				void* map(MapType map, size_t offset, size_t size) override;
 				void unmap(size_t usedoffset, size_t usedsize) override;
@@ -25,9 +29,11 @@ namespace love {
 
 			private:
 				// todo use a staging buffer for improved performance
-				VkBuffer buffer;
+				VkBuffer buffer = VK_NULL_HANDLE;
+				VmaAllocator allocator;
 				VmaAllocation allocation;
 				VmaAllocationInfo allocInfo;
+				BufferUsageFlags usageFlags;
 			};
 		}
 	}

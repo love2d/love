@@ -12,10 +12,13 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			class Texture : public graphics::Texture {
+			class Texture : public graphics::Texture, public Volatile {
 			public:
 				Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data);
 				~Texture();
+
+				virtual bool loadVolatile() override;
+				virtual void unloadVolatile() override;
 
 				void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override { std::cout << "Texture::copyFromBuffer "; };
 				void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override { std::cout << "Texture::copyToBuffer "; };
@@ -41,10 +44,11 @@ namespace love {
 				graphics::Graphics* gfx;
 				VkDevice device;
 				VmaAllocator allocator;
-				VkImage textureImage;
+				VkImage textureImage = VK_NULL_HANDLE;
 				VmaAllocation textureImageAllocation;
 				VkImageView textureImageView;
 				VkSampler textureSampler;
+				const Slices* data;
 			};
 		}
 	}

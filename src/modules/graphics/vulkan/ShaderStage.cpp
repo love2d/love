@@ -185,7 +185,13 @@ namespace love {
 			}
 
 			ShaderStage::ShaderStage(love::graphics::Graphics* gfx, ShaderStageType stage, const std::string& glsl, bool gles, const std::string& cachekey)
-				: love::graphics::ShaderStage(gfx, stage, glsl, gles, cachekey) {
+				: love::graphics::ShaderStage(gfx, stage, glsl, gles, cachekey), gfx(gfx) {
+				loadVolatile();
+			}
+
+			bool ShaderStage::loadVolatile() {
+				auto stage = getStageType();
+				auto glsl = getSource();
 				auto code = compileShaderWithGlslang(glsl, stage);
 
 				VkShaderModuleCreateInfo createInfo{};
@@ -201,8 +207,16 @@ namespace love {
 				}
 			}
 
+			void ShaderStage::unloadVolatile() {
+				if (shaderModule == VK_NULL_HANDLE)
+					return;
+
+				vkDestroyShaderModule(device, shaderModule, nullptr);
+				shaderModule = VK_NULL_HANDLE;
+			}
+
 			ShaderStage::~ShaderStage() {
-				// vkDestroyShaderModule(device, shaderModule, nullptr);
+				unloadVolatile();
 			}
 		}
 	}

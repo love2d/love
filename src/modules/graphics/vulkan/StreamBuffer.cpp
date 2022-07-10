@@ -18,6 +18,10 @@ namespace love {
 
 			StreamBuffer::StreamBuffer(VmaAllocator allocator, BufferUsage mode, size_t size)
 				:	love::graphics::StreamBuffer(mode, size), allocator(allocator) {
+				loadVolatile();
+			}
+
+			bool StreamBuffer::loadVolatile() {
 				VkBufferCreateInfo bufferInfo{};
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 				bufferInfo.size = getSize();
@@ -31,10 +35,20 @@ namespace love {
 				vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
 
 				usedGPUMemory = 0;
+
+				return true;
+			}
+
+			void StreamBuffer::unloadVolatile() {
+				if (buffer == VK_NULL_HANDLE)
+					return;
+
+				vmaDestroyBuffer(allocator, buffer, allocation);
+				buffer = VK_NULL_HANDLE;
 			}
 
 			StreamBuffer::~StreamBuffer() {
-				// vmaDestroyBuffer(allocator, buffer, allocation);
+				unloadVolatile();
 			}
 
 			love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize) {

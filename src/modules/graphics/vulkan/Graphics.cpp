@@ -302,6 +302,7 @@ namespace love {
 				std::cout << "unSetMode ";
 				
 				created = false;
+				Volatile::unloadAll();
 				cleanup();
 			}
 			
@@ -1280,6 +1281,7 @@ namespace love {
 				if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 					throw love::Exception("failed to create pipeline layout");
 				}
+				graphicsPipelineLayouts.push_back(pipelineLayout);
 
 				VkGraphicsPipelineCreateInfo pipelineInfo{};
 				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1485,12 +1487,18 @@ namespace love {
 				}
 				graphicsPipelines.clear();
 				currentGraphicsPipeline = VK_NULL_HANDLE;
-				// vkDestroyPipelineLayout(device, pipelineLayout, nullptr); FIXME
+				for (const auto pipelineLayout : graphicsPipelineLayouts) {
+					vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				}
+				graphicsPipelineLayouts.clear();
 				vkDestroyRenderPass(device, renderPass, nullptr);
 				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 				}
 				vkDestroySwapchainKHR(device, swapChain, nullptr);
+				for (auto p : uniformBufferMap) {
+					delete p.second;
+				}
 				uniformBufferMap.clear();
 				descriptorSetsMap.clear();
 			}

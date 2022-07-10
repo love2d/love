@@ -190,6 +190,7 @@ namespace love {
 				VkRenderPass renderPass = VK_NULL_HANDLE;
 				VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
 				std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
+				std::vector<VkPipelineLayout> graphicsPipelineLayouts;
 				std::vector<VkFramebuffer> swapChainFramBuffers;
 				VkCommandPool commandPool = VK_NULL_HANDLE;
 				std::vector<VkCommandBuffer> commandBuffers;

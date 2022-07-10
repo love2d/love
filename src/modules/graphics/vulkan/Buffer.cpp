@@ -26,22 +26,35 @@ namespace love {
 			}
 
 			Buffer::Buffer(VmaAllocator allocator, love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength)
-				: love::graphics::Buffer(gfx, settings, format, size, arraylength) {
+				: love::graphics::Buffer(gfx, settings, format, size, arraylength), usageFlags(settings.usageFlags), allocator(allocator) {
+				loadVolatile();
+			}
 
+			bool Buffer::loadVolatile() {
 				VkBufferCreateInfo bufferInfo{};
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-				bufferInfo.size = size;
-				bufferInfo.usage = getVulkanUsageFlags(settings.usageFlags);
+				bufferInfo.size = getSize();
+				bufferInfo.usage = getVulkanUsageFlags(usageFlags);
 
 				VmaAllocationCreateInfo allocCreateInfo = {};
 				allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 				allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
 				vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
+
+				return true;
+			}
+
+			void Buffer::unloadVolatile() {
+				if (buffer == VK_NULL_HANDLE)
+					return;
+
+				vmaDestroyBuffer(allocator, buffer, allocation);
+				buffer = VK_NULL_HANDLE;
 			}
 
 			Buffer::~Buffer() {
-				// fixme
+				unloadVolatile();
 			}
 
 			void* Buffer::map(MapType map, size_t offset, size_t size) {
