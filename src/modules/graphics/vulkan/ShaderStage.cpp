@@ -205,6 +205,8 @@ namespace love {
 				if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 					throw love::Exception("failed to create shader module");
 				}
+
+				return true;
 			}
 
 			void ShaderStage::unloadVolatile() {

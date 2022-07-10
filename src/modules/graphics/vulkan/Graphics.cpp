@@ -1181,7 +1181,7 @@ namespace love {
 				}
 
 				if (texture == nullptr) {
-					setTexture(standardTexture);
+					setTexture(standardTexture.get());
 				}
 				else {
 					setTexture(texture);
@@ -1402,7 +1402,7 @@ namespace love {
 
 			void Graphics::createDefaultTexture() {
 				Texture::Settings settings;
-				standardTexture = newTexture(settings);
+				standardTexture.reset((Texture*)newTexture(settings));
 			}
 
 			void Graphics::createQuadIndexBuffer() {
@@ -1410,7 +1410,7 @@ namespace love {
 					return;
 
 				size_t size = sizeof(uint16) * getIndexCount(TRIANGLEINDEX_QUADS, LOVE_UINT16_MAX);
-				quadIndexBuffer = static_cast<StreamBuffer*>(newStreamBuffer(BUFFERUSAGE_INDEX, size));
+				quadIndexBuffer.reset((StreamBuffer*)newStreamBuffer(BUFFERUSAGE_INDEX, size));
 				auto map = quadIndexBuffer->map(size);
 				fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16*)map.data);
 				quadIndexBuffer->unmap(size);
@@ -1460,13 +1460,12 @@ namespace love {
 
 				cleanupSwapChain();
 
+				batchedDrawBuffers.clear();
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 					vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 					vkDestroyFence(device, inFlightFences[i], nullptr);
 				}
-
-				vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
 				vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 				vkDestroyCommandPool(device, commandPool, nullptr);
@@ -1478,6 +1477,7 @@ namespace love {
 			void Graphics::cleanupSwapChain() {
 				std::cout << "cleanupSwapChain ";
 
+				vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 				for (size_t i = 0; i < swapChainFramBuffers.size(); i++) {
 					vkDestroyFramebuffer(device, swapChainFramBuffers[i], nullptr);
 				}

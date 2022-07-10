@@ -61,6 +61,8 @@ namespace love {
 				}
 				createTextureImageView();
 				createTextureSampler();
+
+				return true;
 			}
 
 			void Texture::unloadVolatile() {
