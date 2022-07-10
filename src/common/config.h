@@ -126,7 +126,11 @@
 #	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 #endif
 
-#define LOVE_GRAPHICS_VULKAN
+// fixme: vulkan graphics only tested on windows for now
+// adjust this later on when testing is successful on other platforms
+#ifdef LOVE_WINDOWS
+#	define LOVE_GRAPHICS_VULKAN
+#endif
 
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
 #	define LOVE_GRAPHICS_METAL

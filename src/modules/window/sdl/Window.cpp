@@ -144,7 +144,6 @@ void Window::setGLFramebufferAttributes(bool sRGB)
 
 void Window::setGLContextAttributes(const ContextAttribs &attribs)
 {
-#ifndef LOVE_GRAPHICS_VULKAN
 	int profilemask = 0;
 	int contextflags = 0;
 
@@ -162,12 +161,10 @@ void Window::setGLContextAttributes(const ContextAttribs &attribs)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, attribs.versionMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profilemask);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextflags);
-#endif
 }
 
 bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversion)
 {
-#ifndef LOVE_GRAPHICS_VULKAN
 	typedef unsigned char GLubyte;
 	typedef unsigned int GLenum;
 	typedef const GLubyte *(APIENTRY *glGetStringPtr)(GLenum name);
@@ -212,9 +209,6 @@ bool Window::checkGLVersion(const ContextAttribs &attribs, std::string &outversi
 		return false;
 
 	return true;
-#else
-	return true;
-#endif
 }
 
 std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
@@ -327,13 +321,11 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	const auto create = [&](const ContextAttribs *attribs) -> bool
 	{
-#ifndef LOVE_GRAPHICS_VULKAN
 		if (glcontext)
 		{
 			SDL_GL_DeleteContext(glcontext);
 			glcontext = nullptr;
 		}
-#endif
 
 #ifdef LOVE_GRAPHICS_METAL
 		if (metalView)
@@ -350,7 +342,6 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			window = nullptr;
 		}
 
-#ifndef LOVE_GRAPHICS_VULKAN
 		window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags);
 
 		if (!window)
@@ -359,35 +350,31 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			return false;
 		}
 
-		if (attribs != nullptr)
-		{
-			glcontext = SDL_GL_CreateContext(window);
-
-			if (!glcontext)
-				contexterror = std::string(SDL_GetError());
-
-			// Make sure the context's version is at least what we requested.
-			if (glcontext && !checkGLVersion(*attribs, glversion))
+		if (renderer == love::graphics::Renderer::RENDERER_OPENGL) {
+			if (attribs != nullptr)
 			{
-				SDL_GL_DeleteContext(glcontext);
-				glcontext = nullptr;
-			}
+				glcontext = SDL_GL_CreateContext(window);
 
-			if (!glcontext)
-			{
-				SDL_DestroyWindow(window);
-				window = nullptr;
-				return false;
+				if (!glcontext)
+					contexterror = std::string(SDL_GetError());
+
+				// Make sure the context's version is at least what we requested.
+				if (glcontext && !checkGLVersion(*attribs, glversion))
+				{
+					SDL_GL_DeleteContext(glcontext);
+					glcontext = nullptr;
+				}
+
+				if (!glcontext)
+				{
+					SDL_DestroyWindow(window);
+					window = nullptr;
+					return false;
+				}
 			}
 		}
 
 		return true;
-
-#else
-		window = SDL_CreateWindow(title.c_str(), x, y, w, h, windowflags | SDL_WINDOW_VULKAN);
-
-		return true;
-#endif
 	};
 
 	if (renderer == graphics::RENDERER_OPENGL)
