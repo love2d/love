@@ -1,3 +1,13 @@
+# automake products
+/config.h
+/config.h.in
+/config.log
+/config.status
+/configure
+/configure-modules-post.ac
+/configure-modules-pre.ac
+/configure.ac
+
 /extra/reshax/Release/
 /extra/reshax/Debug/
 /extra/reshax/resources.h

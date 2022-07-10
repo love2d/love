@@ -25,8 +25,11 @@
 // SDL
 #include <SDL_clipboard.h>
 #include <SDL_cpuinfo.h>
-#include <SDL_locale.h>
 #include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+#include <SDL_locale.h>
+#endif
 
 namespace love
 {
