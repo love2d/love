@@ -59,7 +59,7 @@ namespace love {
 			};
 
 			struct SwapChainSupportDetails {
-				VkSurfaceCapabilitiesKHR capabilities;
+				VkSurfaceCapabilitiesKHR capabilities{};
 				std::vector<VkSurfaceFormatKHR> formats;
 				std::vector<VkPresentModeKHR> presentModes;
 			};
@@ -115,8 +115,6 @@ namespace love {
 
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);
-
-				void setShader(Shader*);
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
@@ -174,7 +172,8 @@ namespace love {
 				VkDescriptorSet* getDescriptorSet(int currentFrame);
 				graphics::StreamBuffer* getUniformBuffer();
 				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
-				
+				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture);
+
 				VkInstance instance = VK_NULL_HANDLE;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 				VkDevice device = VK_NULL_HANDLE;

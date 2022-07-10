@@ -8,6 +8,7 @@
 #include "Vulkan.h"
 #include "common/version.h"
 
+#include <algorithm>
 #include <vector>
 #include <cstring>
 #include <set>
@@ -320,40 +321,8 @@ namespace love {
 			void Graphics::draw(const DrawIndexedCommand& cmd) {
 				std::cout << "drawIndexed ";
 
-				std::vector<VkBuffer> buffers;
-				std::vector<VkDeviceSize> offsets;
+				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture);
 
-				bool useConstantColorBuffer;
-				GraphicsPipelineConfiguration configuration;
-				createVulkanVertexFormat(*cmd.attributes, useConstantColorBuffer, configuration);
-
-				for (uint32_t i = 0; i < 2; i++) {
-					if (cmd.buffers->useBits & (1u << i)) {
-						buffers.push_back((VkBuffer)cmd.buffers->info[i].buffer->getHandle());
-						offsets.push_back((VkDeviceSize)cmd.buffers->info[i].offset);
-					}
-					else {
-						buffers.push_back(VK_NULL_HANDLE);
-						offsets.push_back(0);
-					}
-				}
-
-				if (useConstantColorBuffer) {
-					buffers.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
-					offsets.push_back((VkDeviceSize)0);
-				}
-
-				if (cmd.texture == nullptr) {
-					setTexture(standardTexture);
-				}
-				else {
-					setTexture(cmd.texture);
-				}
-
-				ensureGraphicsPipelineConfiguration(configuration);
-
-				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
-				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, buffers.size(), buffers.data(), offsets.data());
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), 0, getVulkanIndexBufferType(cmd.indexType));
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
 			}
@@ -388,51 +357,16 @@ namespace love {
 				const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 				const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
-				std::vector<VkBuffer> bufferVector;
-				std::vector<VkDeviceSize> offsets;
+				prepareDraw(attributes, buffers, texture);
 
-				bool useConstantColorBuffer;
-				GraphicsPipelineConfiguration configuration;
-				createVulkanVertexFormat(attributes, useConstantColorBuffer, configuration);
-
-				for (uint32_t i = 0; i < 2; i++) {
-					if (buffers.useBits & (1u << i)) {
-						bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
-						offsets.push_back((VkDeviceSize)buffers.info[i].offset);
-					}
-					else {
-						if (useConstantColorBuffer) {
-							bufferVector.push_back(VK_NULL_HANDLE);
-							offsets.push_back(0);
-						}
-					}
-				}
-
-				if (useConstantColorBuffer) {
-					bufferVector.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
-					offsets.push_back((VkDeviceSize)0);
-				}
-
-				if (texture == nullptr) {
-					setTexture(standardTexture);
-				}
-				else {
-					setTexture(texture);
-				}
-
-				ensureGraphicsPipelineConfiguration(configuration);
-
-				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
-				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, bufferVector.size(), bufferVector.data(), offsets.data());
-				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(count * 6), 1, 0, 0, 0);
 				
 				int baseVertex = start * 4;
 
 				for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW) {
 					int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
-					// vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
+					vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
 					baseVertex += quadcount * 4;
 				}
 			}
@@ -444,7 +378,7 @@ namespace love {
 
 			Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const { 
 				uint32 flags = DEVICE_PROJECTION_DEFAULT;
-				return calculateDeviceProjection(projection, 0);
+				return calculateDeviceProjection(projection, flags);
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
@@ -463,7 +397,7 @@ namespace love {
 			}
 
 			VkDescriptorSet* Graphics::getDescriptorSet(int currentFrame) {
-				DecriptorSetConfiguration config;
+				DecriptorSetConfiguration config{};
 				config.texture = currentTexture;
 				config.buffer = getUniformBuffer();
 				for (auto i = 0; i < descriptorSetsMap.size(); i++) {
@@ -1164,6 +1098,8 @@ namespace love {
 				auto allBits = vertexAttributes.enableBits;
 
 				bool usesColor = false;
+
+				uint8_t highestBufferBinding = 0;
 				
 				for (uint32_t i = 0; i < VertexAttributes::MAX; i++) {	// change to loop like in opengl implementation ?
 					uint32 bit = 1u << i;
@@ -1182,6 +1118,8 @@ namespace love {
 							bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 							bindingDescription.stride = vertexAttributes.bufferLayouts[bufferBinding].stride;
 							bindingDescriptions.push_back(bindingDescription);
+
+							highestBufferBinding = std::max(highestBufferBinding, bufferBinding);
 						}
 
 						VkVertexInputAttributeDescription attributeDescription{};
@@ -1196,7 +1134,7 @@ namespace love {
 
 				// do we need to use a constant VertexColor?
 				if (!usesColor) {
-					constexpr uint32_t constantColorBufferBinding = 2;
+					const auto constantColorBufferBinding = highestBufferBinding + 1;
 
 					VkVertexInputBindingDescription bindingDescription{};
 					bindingDescription.binding = constantColorBufferBinding;
@@ -1209,6 +1147,7 @@ namespace love {
 					attributeDescription.location = ATTRIB_COLOR;
 					attributeDescription.offset = 0;
 					attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+					attributeDescriptions.push_back(attributeDescription);
 
 					useConstantVertexColor = true;
 				}
@@ -1218,6 +1157,39 @@ namespace love {
 
 				configuration.vertexInputBindingDescriptions = bindingDescriptions;
 				configuration.vertexInputAttributeDescriptions = attributeDescriptions;
+			}
+
+			void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
+				std::vector<VkBuffer> bufferVector;
+				std::vector<VkDeviceSize> offsets;
+
+				bool useConstantColorBuffer;
+				GraphicsPipelineConfiguration configuration;
+				createVulkanVertexFormat(attributes, useConstantColorBuffer, configuration);
+
+				for (uint32_t i = 0; i < 2; i++) {
+					if (buffers.useBits & (1u << i)) {
+						bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
+						offsets.push_back((VkDeviceSize)buffers.info[i].offset);
+					}
+				}
+
+				if (useConstantColorBuffer) {
+					bufferVector.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
+					offsets.push_back((VkDeviceSize)0);
+				}
+
+				if (texture == nullptr) {
+					setTexture(standardTexture);
+				}
+				else {
+					setTexture(texture);
+				}
+
+				ensureGraphicsPipelineConfiguration(configuration);
+
+				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
+				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, bufferVector.size(), bufferVector.data(), offsets.data());
 			}
 
 			VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
