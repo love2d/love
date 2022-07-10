@@ -19,25 +19,61 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
+			struct GraphicsPipelineConfiguration {
+				std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
+				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+
+				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
+			};
+
+			struct DecriptorSetConfiguration {
+				graphics::Texture* texture;
+				graphics::StreamBuffer* buffer;
+
+				bool operator==(const DecriptorSetConfiguration& conf2) {
+					return this->texture == conf2.texture && this->buffer == conf2.buffer;
+				}
+			};
+
+			struct BatchedDrawBuffers {
+				StreamBuffer* vertexBuffer1;
+				StreamBuffer* vertexBuffer2;
+				StreamBuffer* indexBuffer;
+				StreamBuffer* constantColorBuffer;
+
+				~BatchedDrawBuffers() {
+					delete vertexBuffer1;
+					delete vertexBuffer2;
+					delete indexBuffer;
+					delete constantColorBuffer;
+				}
+			};
+
+			struct QueueFamilyIndices {
+				std::optional<uint32_t> graphicsFamily;
+				std::optional<uint32_t> presentFamily;
+
+				bool isComplete() {
+					return graphicsFamily.has_value() && presentFamily.has_value();
+				}
+			};
+
+			struct SwapChainSupportDetails {
+				VkSurfaceCapabilitiesKHR capabilities;
+				std::vector<VkSurfaceFormatKHR> formats;
+				std::vector<VkPresentModeKHR> presentModes;
+			};
+
 			class Graphics final : public love::graphics::Graphics {
 			public:
-				Graphics();
+				Graphics() = default;
 
 				virtual ~Graphics();
 
 				const char* getName() const override;
-
-				const VkDevice getDevice() const {
-					return device;
-				}
-
-				const VkPhysicalDevice getPhysicalDevice() const {
-					return physicalDevice;
-				}
-
-				const VmaAllocator getVmaAllocator() const {
-					return vmaAllocator;
-				}
+				const VkDevice getDevice() const;
+				const VkPhysicalDevice getPhysicalDevice() const;
+				const VmaAllocator getVmaAllocator() const;
 
 				// implementation for virtual functions
 				love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override { 
@@ -69,7 +105,7 @@ namespace love {
 				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
 				Renderer getRenderer() const override { std::cout << "getRenderer "; return RENDERER_VULKAN; }
 				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
-				RendererInfo getRendererInfo() const override { std::cout << "getRendererInfo "; return {}; }
+				RendererInfo getRendererInfo() const override;
 				void draw(const DrawCommand& cmd) override { std::cout << "draw "; }
 				void draw(const DrawIndexedCommand& cmd) override;
 				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override;
@@ -79,22 +115,6 @@ namespace love {
 
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);
-
-				struct GraphicsPipelineConfiguration {
-					std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
-					std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
-
-					friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
-				};
-
-				struct DecriptorSetConfiguration {
-					graphics::Texture* texture;
-					graphics::StreamBuffer* buffer;
-
-					bool operator==(const DecriptorSetConfiguration& conf2) {
-						return this->texture == conf2.texture && this->buffer == conf2.buffer;
-					}
-				};
 
 				void setShader(Shader*);
 
@@ -114,58 +134,6 @@ namespace love {
 				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override { std::cout << "setRenderTargetsInternal "; }
 
 			private:
-				graphics::Texture* currentTexture;
-
-				void setTexture(graphics::Texture* texture) {
-					currentTexture = texture;
-				}
-
-				VkDescriptorSet* getDescriptorSet(int currentFrame);
-				graphics::StreamBuffer* getUniformBuffer();
-
-				std::vector<std::pair<graphics::Shader::BuiltinUniformData, graphics::StreamBuffer*>> uniformBufferMap;
-				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
-
-				struct BatchedDrawBuffers {
-					StreamBuffer* vertexBuffer1;
-					StreamBuffer* vertexBuffer2;
-					StreamBuffer* indexBuffer;
-					StreamBuffer* constantColorBuffer;
-
-					~BatchedDrawBuffers() {
-						delete vertexBuffer1;
-						delete vertexBuffer2;
-						delete indexBuffer;
-						delete constantColorBuffer;
-					}
-				};
-
-				// we need an array of draw buffers, since the frames are being rendered asynchronously
-				// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
-				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
-				void updatedBatchedDrawBuffers();
-
-				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
-
-				StreamBuffer* quadIndexBuffer = nullptr;
-
-				// vulkan specific member functions and variables
-
-				struct QueueFamilyIndices {
-					std::optional<uint32_t> graphicsFamily;
-					std::optional<uint32_t> presentFamily;
-
-					bool isComplete() {
-						return graphicsFamily.has_value() && presentFamily.has_value();
-					}
-				};
-
-				struct SwapChainSupportDetails {
-					VkSurfaceCapabilitiesKHR capabilities;
-					std::vector<VkSurfaceFormatKHR> formats;
-					std::vector<VkPresentModeKHR> presentModes;
-				};
-
 				void createVulkanInstance();
 				bool checkValidationSupport();
 				void pickPhysicalDevice();
@@ -201,37 +169,49 @@ namespace love {
 				void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
 				graphics::StreamBuffer* createUniformBufferFromData(graphics::Shader::BuiltinUniformData);
 				graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
+				void setTexture(graphics::Texture* texture);
+				void updatedBatchedDrawBuffers();
+				VkDescriptorSet* getDescriptorSet(int currentFrame);
+				graphics::StreamBuffer* getUniformBuffer();
+				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
 				
-				VkInstance instance;
+				VkInstance instance = VK_NULL_HANDLE;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-				VkDevice device;
-				VkQueue graphicsQueue;
-				VkQueue presentQueue;
-				VkSurfaceKHR surface;
-				VkSwapchainKHR swapChain;
+				VkDevice device = VK_NULL_HANDLE;
+				VkQueue graphicsQueue = VK_NULL_HANDLE;
+				VkQueue presentQueue = VK_NULL_HANDLE;
+				VkSurfaceKHR surface = VK_NULL_HANDLE;
+				VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 				std::vector<VkImage> swapChainImages;
-				VkFormat swapChainImageFormat;
-				VkExtent2D swapChainExtent;
+				VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
+				VkExtent2D swapChainExtent = VkExtent2D();
 				std::vector<VkImageView> swapChainImageViews;
-				VkDescriptorSetLayout descriptorSetLayout;
-				VkPipelineLayout pipelineLayout;
-				VkRenderPass renderPass;
+				VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+				VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+				VkRenderPass renderPass = VK_NULL_HANDLE;
 				VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
 				std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
 				std::vector<VkFramebuffer> swapChainFramBuffers;
-				VkCommandPool commandPool;
+				VkCommandPool commandPool = VK_NULL_HANDLE;
 				std::vector<VkCommandBuffer> commandBuffers;
 				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-				VkDescriptorPool descriptorPool;
+				VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;
 				std::vector<VkFence> inFlightFences;
 				std::vector<VkFence> imagesInFlight;
 				size_t currentFrame = 0;
-				uint32_t imageIndex;
+				uint32_t imageIndex = 0;
 				bool framebufferResized = false;
-				VmaAllocator vmaAllocator;
-				graphics::Texture* standardTexture;
+				VmaAllocator vmaAllocator = VK_NULL_HANDLE;
+				graphics::Texture* standardTexture = nullptr;
+				// we need an array of draw buffers, since the frames are being rendered asynchronously
+				// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
+				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
+				StreamBuffer* quadIndexBuffer = nullptr;
+				graphics::Texture* currentTexture = nullptr;
+				std::vector<std::pair<graphics::Shader::BuiltinUniformData, graphics::StreamBuffer*>> uniformBufferMap;
+				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
 			};
 		}
 	}

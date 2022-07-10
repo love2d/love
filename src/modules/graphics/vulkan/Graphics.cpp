@@ -48,7 +48,16 @@ namespace love {
 				return "love.graphics.vulkan";
 			}
 
-			Graphics::Graphics() {
+			const VkDevice Graphics::getDevice() const {
+				return device;
+			}
+
+			const VkPhysicalDevice Graphics::getPhysicalDevice() const {
+				return physicalDevice;
+			}
+
+			const VmaAllocator Graphics::getVmaAllocator() const {
+				return vmaAllocator;
 			}
 
 			Graphics::~Graphics() {
@@ -294,6 +303,19 @@ namespace love {
 				created = false;
 				cleanup();
 			}
+			
+			Graphics::RendererInfo Graphics::getRendererInfo() const {
+				VkPhysicalDeviceProperties deviceProperties;
+				vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+
+				Graphics::RendererInfo info;
+				info.device = deviceProperties.deviceName;
+				info.vendor = Vulkan::getVendorName(deviceProperties.vendorID);
+				info.version = Vulkan::getVulkanApiVersion(deviceProperties.apiVersion);
+				info.name = "Vulkan";
+
+				return info;
+			}
 
 			void Graphics::draw(const DrawIndexedCommand& cmd) {
 				std::cout << "drawIndexed ";
@@ -356,12 +378,8 @@ namespace love {
 
 			bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) { 
 				std::cout << "isPixelFormatSupported ";
-				switch (format) {
-				case PIXELFORMAT_LA8_UNORM:
-					return false;
-				default:
-					return true;
-				}
+
+				return true;
 			}
 
 			void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
@@ -431,6 +449,10 @@ namespace love {
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
 
+			void Graphics::setTexture(graphics::Texture* texture) {
+				currentTexture = texture;
+			}
+
 			void Graphics::updatedBatchedDrawBuffers() {
 				batchedDrawState.vb[0] = batchedDrawBuffers[currentFrame].vertexBuffer1;
 				batchedDrawState.vb[0]->nextFrame();
@@ -456,7 +478,7 @@ namespace love {
 
 			graphics::StreamBuffer* Graphics::getUniformBuffer() {
 				auto data = getCurrentBuiltinUniformData();
-				for (auto it : uniformBufferMap) {
+				for (auto &it : uniformBufferMap) {
 					if (it.first == data) {
 						return it.second;
 					}
@@ -556,7 +578,7 @@ namespace love {
 				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
 				appInfo.pEngineName = "LOVE Engine";
 				appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-				appInfo.apiVersion = VK_API_VERSION_1_0;
+				appInfo.apiVersion = VK_API_VERSION_1_3;
 
 				VkInstanceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -682,6 +704,12 @@ namespace love {
 				if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 					score += 1000;
 				}
+				if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+					score += 100;
+				}
+				if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU) {
+					score += 10;
+				}
 
 				// definitely needed
 
@@ -710,7 +738,7 @@ namespace love {
 				return score;
 			}
 
-			Graphics::QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
+			QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
 				QueueFamilyIndices indices;
 
 				uint32_t queueFamilyCount = 0;
@@ -761,16 +789,12 @@ namespace love {
 				VkPhysicalDeviceFeatures deviceFeatures{};
 				deviceFeatures.samplerAnisotropy = VK_TRUE;
 
-				VkPhysicalDeviceFeatures2 deviceFeatures2{};
-				deviceFeatures2.features.robustBufferAccess = VK_TRUE;
-				deviceFeatures2.pNext = nullptr;
-
 				VkDeviceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 				createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 				createInfo.pQueueCreateInfos = queueCreateInfos.data();
 				createInfo.pEnabledFeatures = &deviceFeatures;
-				createInfo.pNext = &deviceFeatures2;
+				createInfo.pNext = nullptr;
 
 				createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 				createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -804,7 +828,9 @@ namespace love {
 				allocatorCreateInfo.instance = instance;
 				allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
-				vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
+				if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS) {
+					throw love::Exception("failed to create vma allocator");
+				}
 			}
 
 			void Graphics::createSurface() {
@@ -815,7 +841,7 @@ namespace love {
 				}
 			}
 
-			Graphics::SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device) {
+			SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device) {
 				SwapChainSupportDetails details;
 
 				vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -1416,7 +1442,7 @@ namespace love {
 				quadIndexBuffer->unmap(size);
 			}
 
-			bool operator==(const Graphics::GraphicsPipelineConfiguration& first, const Graphics::GraphicsPipelineConfiguration& other) {
+			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
 				if (first.vertexInputAttributeDescriptions.size() != other.vertexInputAttributeDescriptions.size()) {
 					return false;
 				}

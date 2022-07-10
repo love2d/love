@@ -1,5 +1,8 @@
 #include "Vulkan.h"
 
+#include <sstream>
+
+
 namespace love {
 	namespace graphics {
 		namespace vulkan {
@@ -256,6 +259,32 @@ namespace love {
 				}
 
 				return textureFormat;
+			}
+
+			// values taken from https://pcisig.com/membership/member-companies
+			// as specified at https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceProperties.html
+			std::string Vulkan::getVendorName(uint32_t vendorId) {
+				switch (vendorId) {
+				case 4318:
+					return "Nvidia";
+				case 8086:
+					return "Intel";
+				case 4130:
+					return "Advanced Micro Devices";
+				default:
+					return "unknown";
+				}
+			}
+
+			std::string Vulkan::getVulkanApiVersion(uint32_t version) {
+				std::stringstream ss;
+
+				ss << VK_API_VERSION_VARIANT(version) 
+				   << "." << VK_API_VERSION_MAJOR(version) 
+				   << "." << VK_API_VERSION_MINOR(version) 
+				   << "." << VK_API_VERSION_PATCH(version);
+
+				return ss.str();
 			}
 		}
 	}

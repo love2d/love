@@ -20,6 +20,8 @@ namespace love {
 			public:
 				static VkFormat getVulkanVertexFormat(DataFormat format);
 				static TextureFormat getTextureFormat(PixelFormat);
+				static std::string getVendorName(uint32_t vendorId);
+				static std::string getVulkanApiVersion(uint32_t apiVersion);
 			};
 		}
 	}
