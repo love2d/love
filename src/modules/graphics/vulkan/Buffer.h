@@ -30,6 +30,7 @@ namespace love {
 			private:
 				// todo use a staging buffer for improved performance
 				VkBuffer buffer = VK_NULL_HANDLE;
+				love::graphics::Graphics* gfx;
 				VmaAllocator allocator;
 				VmaAllocation allocation;
 				VmaAllocationInfo allocInfo;

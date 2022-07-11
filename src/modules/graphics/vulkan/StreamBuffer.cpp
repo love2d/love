@@ -1,6 +1,6 @@
 #include "StreamBuffer.h"
 #include "vulkan/vulkan.h"
-
+#include "Graphics.h"
 
 
 namespace love {
@@ -16,12 +16,15 @@ namespace love {
 				}
 			}
 
-			StreamBuffer::StreamBuffer(VmaAllocator allocator, BufferUsage mode, size_t size)
-				:	love::graphics::StreamBuffer(mode, size), allocator(allocator) {
+			StreamBuffer::StreamBuffer(graphics::Graphics* gfx, BufferUsage mode, size_t size)
+				:	love::graphics::StreamBuffer(mode, size), gfx(gfx) {
 				loadVolatile();
 			}
 
 			bool StreamBuffer::loadVolatile() {
+				Graphics* vgfx = (Graphics*)gfx;
+				allocator = vgfx->getVmaAllocator();
+
 				VkBufferCreateInfo bufferInfo{};
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 				bufferInfo.size = getSize();
@@ -43,6 +46,12 @@ namespace love {
 				if (buffer == VK_NULL_HANDLE)
 					return;
 
+				Graphics* vgfx = (Graphics*)gfx;
+				auto device = vgfx->getDevice();
+
+				// FIXME: objects for deletion should probably be put on a queue
+				// instead of greedy waiting here.
+				vkDeviceWaitIdle(device);
 				vmaDestroyBuffer(allocator, buffer, allocation);
 				buffer = VK_NULL_HANDLE;
 			}

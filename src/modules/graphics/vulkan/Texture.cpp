@@ -69,9 +69,12 @@ namespace love {
 				if (textureImage == VK_NULL_HANDLE)
 					return;
 
+				// FIXME: objects for deletion should probably be put on a queue
+				// instead of greedy waiting here.
+				vkDeviceWaitIdle(device);
 				vkDestroySampler(device, textureSampler, nullptr);
 				vkDestroyImageView(device, textureImageView, nullptr);
-				vmaDestroyImage(allocator, textureImage, nullptr);
+				vmaDestroyImage(allocator, textureImage, textureImageAllocation);
 
 				textureImage = VK_NULL_HANDLE;
 			}

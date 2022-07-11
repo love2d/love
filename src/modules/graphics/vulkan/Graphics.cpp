@@ -234,12 +234,12 @@ namespace love {
 					batchedDrawBuffers.emplace_back();
 					// Initial sizes that should be good enough for most cases. It will
 					// resize to fit if needed, later.
-					batchedDrawBuffers[i].vertexBuffer1 = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-					batchedDrawBuffers[i].vertexBuffer2 = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-					batchedDrawBuffers[i].indexBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+					batchedDrawBuffers[i].vertexBuffer1 = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+					batchedDrawBuffers[i].vertexBuffer2 = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+					batchedDrawBuffers[i].indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 
 					// sometimes the VertexColor is not set, so we manually adjust it to white color
-					batchedDrawBuffers[i].constantColorBuffer = new StreamBuffer(vmaAllocator, BUFFERUSAGE_VERTEX, sizeof(whiteColor));
+					batchedDrawBuffers[i].constantColorBuffer = new StreamBuffer(this, BUFFERUSAGE_VERTEX, sizeof(whiteColor));
 					auto mapInfo = batchedDrawBuffers[i].constantColorBuffer->map(sizeof(whiteColor));
 					memcpy(mapInfo.data, whiteColor, sizeof(whiteColor));
 					batchedDrawBuffers[i].constantColorBuffer->unmap(sizeof(whiteColor));
@@ -302,6 +302,7 @@ namespace love {
 				std::cout << "unSetMode ";
 				
 				created = false;
+				vkDeviceWaitIdle(device);
 				Volatile::unloadAll();
 				cleanup();
 			}
@@ -374,7 +375,7 @@ namespace love {
 
 			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
 				std::cout << "newStreamBuffer ";
-				return new StreamBuffer(vmaAllocator, type, size);
+				return new StreamBuffer(this, type, size);
 			}
 
 			Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const { 
@@ -1135,6 +1136,8 @@ namespace love {
 
 				// do we need to use a constant VertexColor?
 				if (!usesColor) {
+					// FIXME: is there a case where gaps happen between buffer bindings?
+					// then this doesn't work. We might need to enable null buffers again.
 					const auto constantColorBufferBinding = highestBufferBinding + 1;
 
 					VkVertexInputBindingDescription bindingDescription{};
@@ -1456,10 +1459,9 @@ namespace love {
 			}
 
 			void Graphics::cleanup() {
-				vkDeviceWaitIdle(device);
-
 				cleanupSwapChain();
 
+				vmaDestroyAllocator(vmaAllocator);
 				batchedDrawBuffers.clear();
 				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 					vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);

@@ -213,6 +213,9 @@ namespace love {
 				if (shaderModule == VK_NULL_HANDLE)
 					return;
 
+				// FIXME: objects for deletion should probably be put on a queue
+				// instead of greedy waiting here.
+				vkDeviceWaitIdle(device);
 				vkDestroyShaderModule(device, shaderModule, nullptr);
 				shaderModule = VK_NULL_HANDLE;
 			}

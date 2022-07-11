@@ -26,11 +26,14 @@ namespace love {
 			}
 
 			Buffer::Buffer(VmaAllocator allocator, love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength)
-				: love::graphics::Buffer(gfx, settings, format, size, arraylength), usageFlags(settings.usageFlags), allocator(allocator) {
+				: love::graphics::Buffer(gfx, settings, format, size, arraylength), usageFlags(settings.usageFlags), allocator(allocator), gfx(gfx) {
 				loadVolatile();
 			}
 
 			bool Buffer::loadVolatile() {
+				Graphics* vgfx = (Graphics*)gfx;
+				allocator = vgfx->getVmaAllocator();
+
 				VkBufferCreateInfo bufferInfo{};
 				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 				bufferInfo.size = getSize();
@@ -49,6 +52,12 @@ namespace love {
 				if (buffer == VK_NULL_HANDLE)
 					return;
 
+				Graphics* vgfx = (Graphics*)gfx;
+				auto device = vgfx->getDevice();
+
+				// FIXME: objects for deletion should probably be put on a queue
+				// instead of greedy waiting here.
+				vkDeviceWaitIdle(device);
 				vmaDestroyBuffer(allocator, buffer, allocation);
 				buffer = VK_NULL_HANDLE;
 			}
