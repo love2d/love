@@ -91,7 +91,7 @@ namespace love {
 				void setActive(bool active) override { std::cout << "setActive "; }
 				int getRequestedBackbufferMSAA() const override { std::cout << "getRequestedBackbufferMSAA "; return 0; }
 				int getBackbufferMSAA() const  override { std::cout << "getBackbufferMSAA "; return 0; }
-				void setColor(Colorf c) override { std::cout << "setColor "; }
+				void setColor(Colorf c) override;
 				void setScissor(const Rect& rect) override { std::cout << "setScissor "; }
 				void setScissor() override { std::cout << "setScissor2 "; }
 				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { std::cout << "setStencilMode "; }

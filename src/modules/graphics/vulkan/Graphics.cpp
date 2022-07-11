@@ -62,7 +62,9 @@ namespace love {
 			}
 
 			Graphics::~Graphics() {
-				// FIXME: most resources that are allocated dynamically need proper cleanup.
+				// We already cleaned those up by clearing out batchedDrawBuffers. 
+				// We set them to nullptr here so the base class doesn't crash
+				// when it tries to free this.
 				batchedDrawState.vb[0] = nullptr;
 				batchedDrawState.vb[1] = nullptr;
 				batchedDrawState.indexBuffer = nullptr;
@@ -329,6 +331,17 @@ namespace love {
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), 1, 0, 0, 0);
 			}
 
+			void Graphics::setColor(Colorf c) {
+				std::cout << "setColor ";
+
+				c.r = std::min(std::max(c.r, 0.0f), 1.0f);
+				c.g = std::min(std::max(c.g, 0.0f), 1.0f);
+				c.b = std::min(std::max(c.b, 0.0f), 1.0f);
+				c.a = std::min(std::max(c.a, 0.0f), 1.0f);
+
+				states.back().color = c;
+			}
+
 			PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const { 
 				std::cout << "getSizedFormat ";
 				
@@ -514,7 +527,7 @@ namespace love {
 				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
 				appInfo.pEngineName = "LOVE Engine";
 				appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-				appInfo.apiVersion = VK_API_VERSION_1_3;
+				appInfo.apiVersion = VK_API_VERSION_1_0;
 
 				VkInstanceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -758,7 +771,7 @@ namespace love {
 				vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
 
 				VmaAllocatorCreateInfo allocatorCreateInfo = {};
-				allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+				allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_0;
 				allocatorCreateInfo.physicalDevice = physicalDevice;
 				allocatorCreateInfo.device = device;
 				allocatorCreateInfo.instance = instance;
