@@ -22,6 +22,8 @@ namespace love {
 			struct GraphicsPipelineConfiguration {
 				std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
 				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+				Shader* shader = nullptr;
+				PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -103,10 +105,10 @@ namespace love {
 				void setWireframe(bool enable) override { std::cout << "setWireframe "; }
 				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
 				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
-				Renderer getRenderer() const override { std::cout << "getRenderer "; return RENDERER_VULKAN; }
+				Renderer getRenderer() const override;
 				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
 				RendererInfo getRendererInfo() const override;
-				void draw(const DrawCommand& cmd) override { std::cout << "draw "; }
+				void draw(const DrawCommand& cmd) override;
 				void draw(const DrawIndexedCommand& cmd) override;
 				void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override;
 
@@ -172,7 +174,7 @@ namespace love {
 				VkDescriptorSet* getDescriptorSet(int currentFrame);
 				graphics::StreamBuffer* getUniformBuffer();
 				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
-				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture);
+				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType);
 
 				VkInstance instance = VK_NULL_HANDLE;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

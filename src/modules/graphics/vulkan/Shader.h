@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 
 #include <map>
+#include <iostream>
 
 
 namespace love {
@@ -20,7 +21,9 @@ namespace love {
 					return shaderStages;
 				}
 
-				void attach() override {}
+				void attach() override {
+					Shader::current = this;
+				}
 
 				ptrdiff_t getHandle() const { return 0; }
 

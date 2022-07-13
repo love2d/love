@@ -22,6 +22,7 @@ namespace love {
 				static TextureFormat getTextureFormat(PixelFormat);
 				static std::string getVendorName(uint32_t vendorId);
 				static std::string getVulkanApiVersion(uint32_t apiVersion);
+				static VkPrimitiveTopology getPrimitiveTypeTopology(graphics::PrimitiveType);
 			};
 		}
 	}

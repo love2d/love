@@ -286,6 +286,21 @@ namespace love {
 
 				return ss.str();
 			}
+
+			VkPrimitiveTopology Vulkan::getPrimitiveTypeTopology(graphics::PrimitiveType primitiveType) {
+				switch (primitiveType) {
+				case PRIMITIVE_POINTS:
+					return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+				case PRIMITIVE_TRIANGLES:
+					return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+				case PRIMITIVE_TRIANGLE_FAN:
+					return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+				case PRIMITIVE_TRIANGLE_STRIP:
+					return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+				default:
+					throw love::Exception("unknown primitive type");
+				}
+			}
 		}
 	}
 }
