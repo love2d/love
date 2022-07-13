@@ -205,6 +205,7 @@ namespace love {
 
 				Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
 				currentPolygonMode = VK_POLYGON_MODE_FILL;
+				restoreState(states.back());
 
 				return true;
 			}
@@ -265,6 +266,18 @@ namespace love {
 				cleanup();
 			}
 
+			void Graphics::setFrontFaceWinding(Winding winding) {
+				const auto& currentState = states.back();
+
+				if (currentState.winding == winding) {
+					return;
+				}
+
+				flushBatchedDraws();
+
+				states.back().winding = winding;
+			}
+
 			void Graphics::setColorMask(ColorChannelMask mask) {
 				flushBatchedDraws();
 
@@ -308,7 +321,7 @@ namespace love {
 			void Graphics::draw(const DrawCommand& cmd) {
 				std::cout << "draw ";
 
-				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType);
+				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 				vkCmdDraw(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
 			}
@@ -316,7 +329,7 @@ namespace love {
 			void Graphics::draw(const DrawIndexedCommand& cmd) {
 				std::cout << "drawIndexed ";
 
-				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType);
+				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), getVulkanIndexBufferType(cmd.indexType));
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
@@ -384,7 +397,7 @@ namespace love {
 				const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 				const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
-				prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES);
+				prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
 
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
 				
@@ -1237,12 +1250,14 @@ namespace love {
 				configuration.vertexInputAttributeDescriptions = attributeDescriptions;
 			}
 
-			void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType) {
+			void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
 				GraphicsPipelineConfiguration configuration;
 				configuration.shader = (Shader*)Shader::current;
 				configuration.primitiveType = primitiveType;
 				configuration.polygonMode = currentPolygonMode;
 				configuration.blendState = states.back().blend;
+				configuration.winding = states.back().winding;
+				configuration.cullmode = cullmode;
 				std::vector<VkBuffer> bufferVector;
 
 				std::vector<VkDeviceSize> offsets;
@@ -1316,8 +1331,8 @@ namespace love {
 				rasterizer.rasterizerDiscardEnable = VK_FALSE;
 				rasterizer.polygonMode = configuration.polygonMode;
 				rasterizer.lineWidth = 1.0f;
-				rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
-				rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+				rasterizer.cullMode = Vulkan::getCullMode(configuration.cullmode);
+				rasterizer.frontFace = Vulkan::getFrontFace(configuration.winding);
 				rasterizer.depthBiasEnable = VK_FALSE;
 				rasterizer.depthBiasConstantFactor = 0.0f;
 				rasterizer.depthBiasClamp = 0.0f;
@@ -1498,6 +1513,12 @@ namespace love {
 			}
 
 			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
+				if (first.cullmode != other.cullmode) {
+					return false;
+				}
+				if (first.winding != other.winding) {
+					return false;
+				}
 				if (first.colorChannelMask != other.colorChannelMask) {
 					return false;
 				}

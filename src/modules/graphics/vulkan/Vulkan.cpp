@@ -374,6 +374,30 @@ namespace love {
 
 				return flags;
 			}
+
+			VkFrontFace Vulkan::getFrontFace(Winding winding) {
+				switch (winding) {
+				case WINDING_CW:
+					return VK_FRONT_FACE_CLOCKWISE;
+				case WINDING_CCW:
+					return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+				default:
+					throw love::Exception("unknown winding");
+				}
+			}
+
+			VkCullModeFlags Vulkan::getCullMode(CullMode cullmode) {
+				switch (cullmode) {
+				case CULL_BACK:
+					return VK_CULL_MODE_BACK_BIT;
+				case CULL_FRONT:
+					return VK_CULL_MODE_FRONT_BIT;
+				case CULL_NONE:
+					return VK_CULL_MODE_NONE;
+				default:
+					throw love::Exception("unknown cull mode");
+				}
+			}
 		}
 	}
 }

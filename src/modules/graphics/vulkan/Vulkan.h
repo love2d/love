@@ -27,6 +27,8 @@ namespace love {
 				static VkBlendOp getBlendOp(BlendOperation);
 				static VkBool32 getBool(bool);
 				static VkColorComponentFlags getColorMask(ColorChannelMask);
+				static VkFrontFace getFrontFace(Winding);
+				static VkCullModeFlags getCullMode(CullMode);
 			};
 		}
 	}

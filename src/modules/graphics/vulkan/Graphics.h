@@ -27,6 +27,8 @@ namespace love {
 				VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
 				BlendState blendState;
 				ColorChannelMask colorChannelMask;
+				Winding winding;
+				CullMode cullmode;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -99,7 +101,7 @@ namespace love {
 				void setScissor() override { std::cout << "setScissor2 "; }
 				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { std::cout << "setStencilMode "; }
 				void setDepthMode(CompareMode compare, bool write) override { std::cout << "setDepthMode "; }
-				void setFrontFaceWinding(Winding winding) override { std::cout << "setFrontFaceWinding "; }
+				void setFrontFaceWinding(Winding winding) override;
 				void setColorMask(ColorChannelMask mask) override;
 				void setBlendState(const BlendState& blend) override;
 				void setPointSize(float size) override;
@@ -175,7 +177,7 @@ namespace love {
 				VkDescriptorSet* getDescriptorSet(int currentFrame);
 				graphics::StreamBuffer* getUniformBuffer();
 				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
-				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType);
+				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
 
 				VkInstance instance = VK_NULL_HANDLE;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
