@@ -79,9 +79,7 @@ namespace love {
 				const VmaAllocator getVmaAllocator() const;
 
 				// implementation for virtual functions
-				love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override { 
-					return new Texture(this, settings, data); 
-				}
+				love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override;
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
 				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear1 "; }
 				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear2 "; }
@@ -102,12 +100,12 @@ namespace love {
 				void setFrontFaceWinding(Winding winding) override { std::cout << "setFrontFaceWinding "; }
 				void setColorMask(ColorChannelMask mask) override { std::cout << "setColorMask "; }
 				void setBlendState(const BlendState& blend) override { std::cout << "setBlendState "; }
-				void setPointSize(float size) override { std::cout << "setPointSize "; }
+				void setPointSize(float size) override;
 				void setWireframe(bool enable) override;
 				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
 				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
 				Renderer getRenderer() const override;
-				bool usesGLSLES() const override { std::cout << "usesGLSES "; return false; }
+				bool usesGLSLES() const override;
 				RendererInfo getRendererInfo() const override;
 				void draw(const DrawCommand& cmd) override;
 				void draw(const DrawIndexedCommand& cmd) override;

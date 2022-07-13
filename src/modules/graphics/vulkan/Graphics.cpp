@@ -72,58 +72,13 @@ namespace love {
 
 			// START OVERRIDEN FUNCTIONS
 
+			love::graphics::Texture* Graphics::newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data) {
+				return new Texture(this, settings, data);
+			}
+
 			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
 				std::cout << "newBuffer ";
 				return new Buffer(vmaAllocator, this, settings, format, data, size, arraylength);
-			}
-
-			void Graphics::startRecordingGraphicsCommands() {
-				vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
-				while (true) {
-					VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-					if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-						recreateSwapChain();
-						continue;
-					}
-					else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-						throw love::Exception("failed to acquire swap chain image");
-					}
-
-					break;
-				}
-
-				VkCommandBufferBeginInfo beginInfo{};
-				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-				beginInfo.flags = 0;
-				beginInfo.pInheritanceInfo = nullptr;
-
-				std::cout << "beginCommandBuffer(imageIndex=" << imageIndex << ") ";
-				if (vkBeginCommandBuffer(commandBuffers.at(imageIndex), &beginInfo) != VK_SUCCESS) {
-					throw love::Exception("failed to begin recording command buffer");
-				}
-
-				VkRenderPassBeginInfo renderPassInfo{};
-				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-				renderPassInfo.renderPass = renderPass;
-				renderPassInfo.framebuffer = swapChainFramBuffers.at(imageIndex);
-				renderPassInfo.renderArea.offset = { 0, 0 };
-				renderPassInfo.renderArea.extent = swapChainExtent;
-				renderPassInfo.clearValueCount = 1;
-				renderPassInfo.pClearValues = &clearColor;
-
-				vkCmdBeginRenderPass(commandBuffers.at(imageIndex), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-				currentGraphicsPipeline = VK_NULL_HANDLE;
-			}
-
-			void Graphics::endRecordingGraphicsCommands() {
-				const auto& commandBuffer = commandBuffers.at(imageIndex);
-
-				std::cout << "endCommandBuffer(imageIndex=" << imageIndex << ") ";
-				vkCmdEndRenderPass(commandBuffers.at(imageIndex));
-				if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
-					throw love::Exception("failed to record command buffer");
-				}
 			}
 
 			void Graphics::present(void* screenshotCallbackdata) {
@@ -309,6 +264,21 @@ namespace love {
 				Volatile::unloadAll();
 				cleanup();
 			}
+
+			void Graphics::setPointSize(float size) {
+				std::cout << "setPointSize ";
+
+				if (size != states.back().pointSize)
+					flushBatchedDraws();
+
+				states.back().pointSize = size;
+			}
+
+			bool Graphics::usesGLSLES() const {
+				std::cout << "usesGLSLES ";
+
+				return false;
+			}
 			
 			Graphics::RendererInfo Graphics::getRendererInfo() const {
 				VkPhysicalDeviceProperties deviceProperties;
@@ -427,6 +397,55 @@ namespace love {
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
+
+			void Graphics::startRecordingGraphicsCommands() {
+				vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+				while (true) {
+					VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+					if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+						recreateSwapChain();
+						continue;
+					}
+					else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+						throw love::Exception("failed to acquire swap chain image");
+					}
+
+					break;
+				}
+
+				VkCommandBufferBeginInfo beginInfo{};
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				beginInfo.flags = 0;
+				beginInfo.pInheritanceInfo = nullptr;
+
+				std::cout << "beginCommandBuffer(imageIndex=" << imageIndex << ") ";
+				if (vkBeginCommandBuffer(commandBuffers.at(imageIndex), &beginInfo) != VK_SUCCESS) {
+					throw love::Exception("failed to begin recording command buffer");
+				}
+
+				VkRenderPassBeginInfo renderPassInfo{};
+				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+				renderPassInfo.renderPass = renderPass;
+				renderPassInfo.framebuffer = swapChainFramBuffers.at(imageIndex);
+				renderPassInfo.renderArea.offset = { 0, 0 };
+				renderPassInfo.renderArea.extent = swapChainExtent;
+				renderPassInfo.clearValueCount = 1;
+				renderPassInfo.pClearValues = &clearColor;
+
+				vkCmdBeginRenderPass(commandBuffers.at(imageIndex), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+				currentGraphicsPipeline = VK_NULL_HANDLE;
+			}
+
+			void Graphics::endRecordingGraphicsCommands() {
+				const auto& commandBuffer = commandBuffers.at(imageIndex);
+
+				std::cout << "endCommandBuffer(imageIndex=" << imageIndex << ") ";
+				vkCmdEndRenderPass(commandBuffers.at(imageIndex));
+				if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
+					throw love::Exception("failed to record command buffer");
+				}
+			}
 
 			void Graphics::setTexture(graphics::Texture* texture) {
 				currentTexture = texture;
