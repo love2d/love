@@ -265,7 +265,15 @@ namespace love {
 				cleanup();
 			}
 
+			void Graphics::setColorMask(ColorChannelMask mask) {
+				flushBatchedDraws();
+
+				states.back().colorMask = mask;
+			}
+
 			void Graphics::setBlendState(const BlendState& blend) {
+				flushBatchedDraws();
+
 				states.back().blend = blend;
 			}
 
@@ -1325,7 +1333,7 @@ namespace love {
 				multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
 				VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-				colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+				colorBlendAttachment.colorWriteMask = Vulkan::getColorMask(configuration.colorChannelMask);
 				colorBlendAttachment.blendEnable = Vulkan::getBool(configuration.blendState.enable);
 				colorBlendAttachment.srcColorBlendFactor = Vulkan::getBlendFactor(configuration.blendState.srcFactorRGB);
 				colorBlendAttachment.dstColorBlendFactor = Vulkan::getBlendFactor(configuration.blendState.dstFactorRGB);
@@ -1490,6 +1498,9 @@ namespace love {
 			}
 
 			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
+				if (first.colorChannelMask != other.colorChannelMask) {
+					return false;
+				}
 				if (!(first.blendState == other.blendState)) {	// not sure why != doesn't work
 					return false;
 				}

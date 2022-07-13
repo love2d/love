@@ -26,6 +26,7 @@ namespace love {
 				PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
 				VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
 				BlendState blendState;
+				ColorChannelMask colorChannelMask;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -99,7 +100,7 @@ namespace love {
 				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { std::cout << "setStencilMode "; }
 				void setDepthMode(CompareMode compare, bool write) override { std::cout << "setDepthMode "; }
 				void setFrontFaceWinding(Winding winding) override { std::cout << "setFrontFaceWinding "; }
-				void setColorMask(ColorChannelMask mask) override { std::cout << "setColorMask "; }
+				void setColorMask(ColorChannelMask mask) override;
 				void setBlendState(const BlendState& blend) override;
 				void setPointSize(float size) override;
 				void setWireframe(bool enable) override;

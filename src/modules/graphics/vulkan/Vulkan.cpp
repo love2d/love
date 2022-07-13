@@ -326,7 +326,7 @@ namespace love {
 					return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
 				case BLENDFACTOR_SRC_ALPHA_SATURATED:
 					return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
-				case BLENDFACTOR_MAX_ENUM:
+				default:
 					throw love::Exception("unknown blend factor");
 				}
 			}
@@ -343,7 +343,7 @@ namespace love {
 					return VK_BLEND_OP_SUBTRACT;
 				case BLENDOP_REVERSE_SUBTRACT:
 					return VK_BLEND_OP_REVERSE_SUBTRACT;
-				case BLENDOP_MAX_ENUM:
+				default:
 					throw love::Exception("unknown blend operation");
 				}
 			}
@@ -354,6 +354,25 @@ namespace love {
 				} else {
 					return VK_FALSE;
 				}
+			}
+
+			VkColorComponentFlags Vulkan::getColorMask(ColorChannelMask mask) {
+				VkColorComponentFlags flags = 0;
+
+				if (mask.r) {
+					flags |= VK_COLOR_COMPONENT_R_BIT;
+				}
+				if (mask.g) {
+					flags |= VK_COLOR_COMPONENT_G_BIT;
+				}
+				if (mask.b) {
+					flags |= VK_COLOR_COMPONENT_B_BIT;
+				}
+				if (mask.a) {
+					flags |= VK_COLOR_COMPONENT_A_BIT;
+				}
+
+				return flags;
 			}
 		}
 	}
