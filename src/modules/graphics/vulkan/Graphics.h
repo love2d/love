@@ -24,6 +24,7 @@ namespace love {
 				std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
 				Shader* shader = nullptr;
 				PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
+				VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -102,7 +103,7 @@ namespace love {
 				void setColorMask(ColorChannelMask mask) override { std::cout << "setColorMask "; }
 				void setBlendState(const BlendState& blend) override { std::cout << "setBlendState "; }
 				void setPointSize(float size) override { std::cout << "setPointSize "; }
-				void setWireframe(bool enable) override { std::cout << "setWireframe "; }
+				void setWireframe(bool enable) override;
 				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
 				bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
 				Renderer getRenderer() const override;
@@ -214,6 +215,7 @@ namespace love {
 				graphics::Texture* currentTexture = nullptr;
 				std::vector<std::pair<graphics::Shader::BuiltinUniformData, graphics::StreamBuffer*>> uniformBufferMap;
 				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
+				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 			};
 		}
 	}

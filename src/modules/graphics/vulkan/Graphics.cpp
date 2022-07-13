@@ -249,6 +249,7 @@ namespace love {
 				updatedBatchedDrawBuffers();
 
 				Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
+				currentPolygonMode = VK_POLYGON_MODE_FILL;
 
 				return true;
 			}
@@ -348,6 +349,21 @@ namespace love {
 				c.a = std::min(std::max(c.a, 0.0f), 1.0f);
 
 				states.back().color = c;
+			}
+
+			void Graphics::setWireframe(bool enable) {
+				std::cout << "setWireframe ";
+
+				flushBatchedDraws();
+
+				if (enable) {
+					currentPolygonMode = VK_POLYGON_MODE_LINE;
+				}
+				else {
+					currentPolygonMode = VK_POLYGON_MODE_FILL;
+				}
+
+				states.back().wireframe = enable;
 			}
 
 			PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const { 
@@ -1194,6 +1210,7 @@ namespace love {
 				GraphicsPipelineConfiguration configuration;
 				configuration.shader = (Shader*)Shader::current;
 				configuration.primitiveType = primitiveType;
+				configuration.polygonMode = currentPolygonMode;
 				std::vector<VkBuffer> bufferVector;
 
 				std::vector<VkDeviceSize> offsets;
@@ -1265,8 +1282,8 @@ namespace love {
 				rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 				rasterizer.depthClampEnable = VK_FALSE;
 				rasterizer.rasterizerDiscardEnable = VK_FALSE;
-				rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-				rasterizer.lineWidth = 2.0f;
+				rasterizer.polygonMode = configuration.polygonMode;
+				rasterizer.lineWidth = 1.0f;
 				rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
 				rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 				rasterizer.depthBiasEnable = VK_FALSE;
@@ -1449,6 +1466,9 @@ namespace love {
 			}
 
 			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
+				if (first.polygonMode != other.polygonMode) {
+					return false;
+				}
 				if (first.primitiveType != other.primitiveType) {
 					return false;
 				}
