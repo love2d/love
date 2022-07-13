@@ -301,6 +301,60 @@ namespace love {
 					throw love::Exception("unknown primitive type");
 				}
 			}
+
+			VkBlendFactor Vulkan::getBlendFactor(BlendFactor blendFactor) {
+				switch (blendFactor) {
+				case BLENDFACTOR_ZERO:
+					return VK_BLEND_FACTOR_ZERO;
+				case BLENDFACTOR_ONE:
+					return VK_BLEND_FACTOR_ONE;
+				case BLENDFACTOR_SRC_COLOR:
+					return VK_BLEND_FACTOR_SRC_COLOR;
+				case BLENDFACTOR_ONE_MINUS_SRC_COLOR:
+					return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+				case BLENDFACTOR_SRC_ALPHA:
+					return VK_BLEND_FACTOR_SRC_ALPHA;
+				case BLENDFACTOR_ONE_MINUS_SRC_ALPHA:
+					return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				case BLENDFACTOR_DST_COLOR:
+					return VK_BLEND_FACTOR_DST_COLOR;
+				case BLENDFACTOR_ONE_MINUS_DST_COLOR:
+					return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+				case BLENDFACTOR_DST_ALPHA:
+					return VK_BLEND_FACTOR_DST_ALPHA;
+				case BLENDFACTOR_ONE_MINUS_DST_ALPHA:
+					return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+				case BLENDFACTOR_SRC_ALPHA_SATURATED:
+					return VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+				case BLENDFACTOR_MAX_ENUM:
+					throw love::Exception("unknown blend factor");
+				}
+			}
+
+			VkBlendOp Vulkan::getBlendOp(BlendOperation op) {
+				switch (op) {
+				case BLENDOP_ADD:
+					return VK_BLEND_OP_ADD;
+				case BLENDOP_MAX:
+					return VK_BLEND_OP_MAX;
+				case BLENDOP_MIN:
+					return VK_BLEND_OP_MIN;
+				case BLENDOP_SUBTRACT:
+					return VK_BLEND_OP_SUBTRACT;
+				case BLENDOP_REVERSE_SUBTRACT:
+					return VK_BLEND_OP_REVERSE_SUBTRACT;
+				case BLENDOP_MAX_ENUM:
+					throw love::Exception("unknown blend operation");
+				}
+			}
+
+			VkBool32 Vulkan::getBool(bool b) {
+				if (b) {
+					return VK_TRUE;
+				} else {
+					return VK_FALSE;
+				}
+			}
 		}
 	}
 }

@@ -23,6 +23,9 @@ namespace love {
 				static std::string getVendorName(uint32_t vendorId);
 				static std::string getVulkanApiVersion(uint32_t apiVersion);
 				static VkPrimitiveTopology getPrimitiveTypeTopology(graphics::PrimitiveType);
+				static VkBlendFactor getBlendFactor(BlendFactor);
+				static VkBlendOp getBlendOp(BlendOperation);
+				static VkBool32 getBool(bool);
 			};
 		}
 	}

@@ -25,6 +25,7 @@ namespace love {
 				Shader* shader = nullptr;
 				PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
 				VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
+				BlendState blendState;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -99,7 +100,7 @@ namespace love {
 				void setDepthMode(CompareMode compare, bool write) override { std::cout << "setDepthMode "; }
 				void setFrontFaceWinding(Winding winding) override { std::cout << "setFrontFaceWinding "; }
 				void setColorMask(ColorChannelMask mask) override { std::cout << "setColorMask "; }
-				void setBlendState(const BlendState& blend) override { std::cout << "setBlendState "; }
+				void setBlendState(const BlendState& blend) override;
 				void setPointSize(float size) override;
 				void setWireframe(bool enable) override;
 				PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;

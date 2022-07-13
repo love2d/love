@@ -265,6 +265,10 @@ namespace love {
 				cleanup();
 			}
 
+			void Graphics::setBlendState(const BlendState& blend) {
+				states.back().blend = blend;
+			}
+
 			void Graphics::setPointSize(float size) {
 				std::cout << "setPointSize ";
 
@@ -1230,6 +1234,7 @@ namespace love {
 				configuration.shader = (Shader*)Shader::current;
 				configuration.primitiveType = primitiveType;
 				configuration.polygonMode = currentPolygonMode;
+				configuration.blendState = states.back().blend;
 				std::vector<VkBuffer> bufferVector;
 
 				std::vector<VkDeviceSize> offsets;
@@ -1321,13 +1326,13 @@ namespace love {
 
 				VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 				colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-				colorBlendAttachment.blendEnable = VK_TRUE;
-				colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-				colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-				colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-				colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-				colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+				colorBlendAttachment.blendEnable = Vulkan::getBool(configuration.blendState.enable);
+				colorBlendAttachment.srcColorBlendFactor = Vulkan::getBlendFactor(configuration.blendState.srcFactorRGB);
+				colorBlendAttachment.dstColorBlendFactor = Vulkan::getBlendFactor(configuration.blendState.dstFactorRGB);
+				colorBlendAttachment.colorBlendOp = Vulkan::getBlendOp(configuration.blendState.operationRGB);
+				colorBlendAttachment.srcAlphaBlendFactor = Vulkan::getBlendFactor(configuration.blendState.srcFactorA);
+				colorBlendAttachment.dstAlphaBlendFactor = Vulkan::getBlendFactor(configuration.blendState.dstFactorA);
+				colorBlendAttachment.alphaBlendOp = Vulkan::getBlendOp(configuration.blendState.operationA);
 
 				VkPipelineColorBlendStateCreateInfo colorBlending{};
 				colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -1485,6 +1490,9 @@ namespace love {
 			}
 
 			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
+				if (!(first.blendState == other.blendState)) {	// not sure why != doesn't work
+					return false;
+				}
 				if (first.polygonMode != other.polygonMode) {
 					return false;
 				}
