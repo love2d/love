@@ -53,11 +53,25 @@ namespace love {
 					rect.h = sliceData->getHeight();
 
 					uploadByteData(format, dataPtr, size, 0, 0, rect);
-				}
-				else {
-					uint8 defaultPixel[] = { 255, 255, 255, 255 };
-					Rect rect = { 0, 0, 1, 1 };
-					uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixel, sizeof(defaultPixel), 0, 0, rect);
+				} else {
+					if (isRenderTarget()) {
+						std::vector<uint8> defaultPixels;
+						defaultPixels.reserve(width * height * 4);
+						for (size_t i = 0; i < width * height; i++) {
+							// transparent white
+							defaultPixels.push_back(255);
+							defaultPixels.push_back(255);
+							defaultPixels.push_back(255);
+							defaultPixels.push_back(0);
+						}
+						Rect rect = { 0, 0, width, height };
+						uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixels.data(), defaultPixels.size(), 0, 0, rect);
+					}
+					else {
+						std::vector<uint8> defaultPixels(width * height * 4, 255);
+						Rect rect = { 0, 0, width, height };
+						uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixels.data(), defaultPixels.size(), 0, 0, rect);
+					}
 				}
 				createTextureImageView();
 				createTextureSampler();
@@ -137,61 +151,7 @@ namespace love {
 			void Texture::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
 				auto commandBuffer = vgfx->beginSingleTimeCommands();
 
-				VkPipelineStageFlags sourceStage;
-				VkPipelineStageFlags destinationStage;
-
-				VkImageMemoryBarrier barrier{};
-				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				barrier.oldLayout = oldLayout;
-				barrier.newLayout = newLayout;
-				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				barrier.image = image;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				barrier.subresourceRange.baseMipLevel = 0;
-				barrier.subresourceRange.levelCount = 1;
-				barrier.subresourceRange.baseArrayLayer = 0;
-				barrier.subresourceRange.layerCount = 1;
-
-				if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-					barrier.srcAccessMask = 0;
-					barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-					sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-					destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-				} else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-					sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-					destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				}
-				else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
-					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-					sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-					destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				}
-				else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
-					barrier.srcAccessMask = 0;
-					barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
-
-					sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
-					destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				}
-				else {
-					throw love::Exception("unsupported lay transition");
-				}
-
-				vkCmdPipelineBarrier(
-					commandBuffer,
-					sourceStage, destinationStage,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &barrier
-				);
+				Vulkan::cmdTransitionImageLayout(commandBuffer, image, oldLayout, newLayout);
 
 				vgfx->endSingleTimeCommands(commandBuffer);
 			}

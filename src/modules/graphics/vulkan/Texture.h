@@ -20,18 +20,18 @@ namespace love {
 				virtual bool loadVolatile() override;
 				virtual void unloadVolatile() override;
 
-				void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override { std::cout << "Texture::copyFromBuffer "; };
-				void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override { std::cout << "Texture::copyToBuffer "; };
+				void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override { };
+				void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override { };
 
-				ptrdiff_t getRenderTargetHandle() const override { std::cout << "Texture::getRenderTargetHandle "; return (ptrdiff_t)0; };
-				ptrdiff_t getSamplerHandle() const override { std::cout << "Texture::getSamplerHandle "; return (ptrdiff_t)0; };
+				ptrdiff_t getRenderTargetHandle() const override { return (ptrdiff_t)textureImage; };
+				ptrdiff_t getSamplerHandle() const override { return (ptrdiff_t)textureSampler; };
 
 				void uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) override;
 
-				void generateMipmapsInternal()  override { std::cout << "Texture::generateMipmapsInternal "; };
+				void generateMipmapsInternal()  override { };
 
-				int getMSAA() const override { std::cout << "Texture::getMSAA "; return 0; };
-				ptrdiff_t getHandle() const override { std::cout << "Texture::getHandle "; return (ptrdiff_t)textureImage; }
+				int getMSAA() const override { return 0; };
+				ptrdiff_t getHandle() const override { return (ptrdiff_t)textureImage; }
 				VkImageView getImageView() const { return textureImageView; }
 				VkSampler getSampler() const { return textureSampler; }
 

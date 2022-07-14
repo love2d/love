@@ -85,22 +85,22 @@ namespace love {
 				// implementation for virtual functions
 				love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override;
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
-				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear1 "; }
-				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { std::cout << "clear2 "; }
+				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { }
+				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { }
 				Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override;
-				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { std::cout << "discard "; }
+				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { }
 				void present(void* screenshotCallbackdata) override;
 				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 				bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
 				void unSetMode() override;
-				void setActive(bool active) override { std::cout << "setActive "; }
-				int getRequestedBackbufferMSAA() const override { std::cout << "getRequestedBackbufferMSAA "; return 0; }
-				int getBackbufferMSAA() const  override { std::cout << "getBackbufferMSAA "; return 0; }
+				void setActive(bool active) override { }
+				int getRequestedBackbufferMSAA() const override { return 0; }
+				int getBackbufferMSAA() const  override { return 0; }
 				void setColor(Colorf c) override;
-				void setScissor(const Rect& rect) override { std::cout << "setScissor "; }
-				void setScissor() override { std::cout << "setScissor2 "; }
-				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { std::cout << "setStencilMode "; }
-				void setDepthMode(CompareMode compare, bool write) override { std::cout << "setDepthMode "; }
+				void setScissor(const Rect& rect) override { }
+				void setScissor() override { }
+				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { }
+				void setDepthMode(CompareMode compare, bool write) override { }
 				void setFrontFaceWinding(Winding winding) override;
 				void setColorMask(ColorChannelMask mask) override;
 				void setBlendState(const BlendState& blend) override;
@@ -123,18 +123,16 @@ namespace love {
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
-					std::cout << "newShaderStageInternal "; 
 					return new ShaderStage(this, stage, source, gles, cachekey); 
 				}
 				graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override { 
-					std::cout << "newShaderInternal "; 
 					return new Shader(stages);
 				}
 				graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
-				bool dispatch(int x, int y, int z) override { std::cout << "dispatch "; return false; }
+				bool dispatch(int x, int y, int z) override { return false; }
 				void initCapabilities() override;
-				void getAPIStats(int& shaderswitches) const override { std::cout << "getAPIStats "; }
-				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override { std::cout << "setRenderTargetsInternal "; }
+				void getAPIStats(int& shaderswitches) const override { }
+				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
 
 			private:
 				void createVulkanInstance();
@@ -152,13 +150,11 @@ namespace love {
 				VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 				void createSwapChain();
 				void createImageViews();
-				void createRenderPass();
 				void createDefaultShaders();
 				void createDescriptorSetLayout();
 				void createDescriptorPool();
 				std::vector<VkDescriptorSet> createDescriptorSets(DecriptorSetConfiguration);
 				VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
-				void createFramebuffers();
 				void createCommandPool();
 				void createCommandBuffers();
 				void createSyncObjects();
@@ -192,11 +188,9 @@ namespace love {
 				std::vector<VkImageView> swapChainImageViews;
 				VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 				VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-				VkRenderPass renderPass = VK_NULL_HANDLE;
 				VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
 				std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
 				std::vector<VkPipelineLayout> graphicsPipelineLayouts;
-				std::vector<VkFramebuffer> swapChainFramBuffers;
 				VkCommandPool commandPool = VK_NULL_HANDLE;
 				std::vector<VkCommandBuffer> commandBuffers;
 				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
@@ -218,6 +212,8 @@ namespace love {
 				std::vector<std::pair<graphics::Shader::BuiltinUniformData, graphics::StreamBuffer*>> uniformBufferMap;
 				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
 				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
+
+				VkCommandBuffer offscreenRendertargetCommandBuffer;
 			};
 		}
 	}

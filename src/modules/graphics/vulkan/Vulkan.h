@@ -29,6 +29,8 @@ namespace love {
 				static VkColorComponentFlags getColorMask(ColorChannelMask);
 				static VkFrontFace getFrontFace(Winding);
 				static VkCullModeFlags getCullMode(CullMode);
+
+				static void cmdTransitionImageLayout(VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout);
 			};
 		}
 	}

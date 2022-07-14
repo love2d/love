@@ -38,12 +38,14 @@ namespace love {
 			};
 
 #ifdef NDEBUG
-			const bool enableValidationLayers = false;
+			constexpr bool enableValidationLayers = false;
 #else
-			const bool enableValidationLayers = true;
+			constexpr bool enableValidationLayers = true;
 #endif
 
-			const int MAX_FRAMES_IN_FLIGHT = 2;
+			constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
+			constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
 
 			const char* Graphics::getName() const {
 				return "love.graphics.vulkan";
@@ -77,8 +79,7 @@ namespace love {
 			}
 
 			love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
-				std::cout << "newBuffer ";
-				return new Buffer(vmaAllocator, this, settings, format, data, size, arraylength);
+				return new Buffer(this, settings, format, data, size, arraylength);
 			}
 
 			void Graphics::present(void* screenshotCallbackdata) {
@@ -135,8 +136,6 @@ namespace love {
 					throw love::Exception("failed to present swap chain image");
 				}
 				
-				std::cout << "present" << std::endl;
-
 				currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 				updatedBatchedDrawBuffers();
@@ -144,7 +143,6 @@ namespace love {
 			}
 
 			void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
-				std::cout << "setViewPortSize ";
 				this->width = width;
 				this->height = height;
 				this->pixelWidth = pixelwidth;
@@ -156,8 +154,6 @@ namespace love {
 			}
 
 			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
-				std::cout << "setMode ";
-
 				createVulkanInstance();
 				createSurface();
 				pickPhysicalDevice();
@@ -166,10 +162,8 @@ namespace love {
 				initCapabilities();
 				createSwapChain();
 				createImageViews();
-				createRenderPass();
 				createDefaultShaders();
 				createDescriptorSetLayout();
-				createFramebuffers();
 				createCommandPool();
 				createCommandBuffers();
 				createDefaultTexture();
@@ -211,8 +205,6 @@ namespace love {
 			}
 
 			void Graphics::initCapabilities() {
-				std::cout << "initCapabilities ";
-
 				// todo
 				capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = false;
 				capabilities.features[FEATURE_CLAMP_ZERO] = false;
@@ -258,8 +250,6 @@ namespace love {
 			}
 
 			void Graphics::unSetMode() {
-				std::cout << "unSetMode ";
-				
 				created = false;
 				vkDeviceWaitIdle(device);
 				Volatile::unloadAll();
@@ -291,8 +281,6 @@ namespace love {
 			}
 
 			void Graphics::setPointSize(float size) {
-				std::cout << "setPointSize ";
-
 				if (size != states.back().pointSize)
 					flushBatchedDraws();
 
@@ -300,8 +288,6 @@ namespace love {
 			}
 
 			bool Graphics::usesGLSLES() const {
-				std::cout << "usesGLSLES ";
-
 				return false;
 			}
 			
@@ -319,16 +305,12 @@ namespace love {
 			}
 
 			void Graphics::draw(const DrawCommand& cmd) {
-				std::cout << "draw ";
-
 				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 				vkCmdDraw(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
 			}
 
 			void Graphics::draw(const DrawIndexedCommand& cmd) {
-				std::cout << "drawIndexed ";
-
 				prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), getVulkanIndexBufferType(cmd.indexType));
@@ -336,8 +318,6 @@ namespace love {
 			}
 
 			void Graphics::setColor(Colorf c) {
-				std::cout << "setColor ";
-
 				c.r = std::min(std::max(c.r, 0.0f), 1.0f);
 				c.g = std::min(std::max(c.g, 0.0f), 1.0f);
 				c.b = std::min(std::max(c.b, 0.0f), 1.0f);
@@ -347,8 +327,6 @@ namespace love {
 			}
 
 			void Graphics::setWireframe(bool enable) {
-				std::cout << "setWireframe ";
-
 				flushBatchedDraws();
 
 				if (enable) {
@@ -362,8 +340,6 @@ namespace love {
 			}
 
 			PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const { 
-				std::cout << "getSizedFormat ";
-				
 				switch (format) {
 				PIXELFORMAT_NORMAL:
 					if (isGammaCorrect()) {
@@ -380,20 +356,14 @@ namespace love {
 			}
 
 			bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) { 
-				std::cout << "isPixelFormatSupported ";
-
 				return true;
 			}
 
 			Renderer Graphics::getRenderer() const {
-				std::cout << "getRenderer ";
-
 				return RENDERER_VULKAN;
 			}
 
 			void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
-				std::cout << "drawQuads ";
-
 				const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 				const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
@@ -412,13 +382,15 @@ namespace love {
 			}
 
 			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
-				std::cout << "newStreamBuffer ";
 				return new StreamBuffer(this, type, size);
 			}
 
 			Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const { 
 				uint32 flags = DEVICE_PROJECTION_DEFAULT;
 				return calculateDeviceProjection(projection, flags);
+			}
+			
+			void Graphics::setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
@@ -444,29 +416,39 @@ namespace love {
 				beginInfo.flags = 0;
 				beginInfo.pInheritanceInfo = nullptr;
 
-				std::cout << "beginCommandBuffer(imageIndex=" << imageIndex << ") ";
 				if (vkBeginCommandBuffer(commandBuffers.at(imageIndex), &beginInfo) != VK_SUCCESS) {
 					throw love::Exception("failed to begin recording command buffer");
 				}
 
-				VkRenderPassBeginInfo renderPassInfo{};
-				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-				renderPassInfo.renderPass = renderPass;
-				renderPassInfo.framebuffer = swapChainFramBuffers.at(imageIndex);
-				renderPassInfo.renderArea.offset = { 0, 0 };
-				renderPassInfo.renderArea.extent = swapChainExtent;
-				renderPassInfo.clearValueCount = 1;
-				renderPassInfo.pClearValues = &clearColor;
+				VkRenderingAttachmentInfo colorAttachmentInfo{};
+				colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+				colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+				colorAttachmentInfo.imageView = swapChainImageViews[imageIndex];
+				colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				colorAttachmentInfo.clearValue = clearColor;
 
-				vkCmdBeginRenderPass(commandBuffers.at(imageIndex), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+				VkRenderingInfo renderingInfo{};
+				renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+				renderingInfo.renderArea.extent = swapChainExtent;
+				renderingInfo.layerCount = 1;
+				renderingInfo.colorAttachmentCount = 1;
+				renderingInfo.pColorAttachments = &colorAttachmentInfo;
+
+				Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+				vkCmdBeginRendering(commandBuffers.at(imageIndex), &renderingInfo);
+
 				currentGraphicsPipeline = VK_NULL_HANDLE;
 			}
 
 			void Graphics::endRecordingGraphicsCommands() {
 				const auto& commandBuffer = commandBuffers.at(imageIndex);
 
-				std::cout << "endCommandBuffer(imageIndex=" << imageIndex << ") ";
-				vkCmdEndRenderPass(commandBuffers.at(imageIndex));
+				vkCmdEndRendering(commandBuffer);
+
+				Vulkan::cmdTransitionImageLayout(commandBuffer, swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
 				if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
 					throw love::Exception("failed to record command buffer");
 				}
@@ -601,7 +583,7 @@ namespace love {
 				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
 				appInfo.pEngineName = "LOVE Engine";
 				appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-				appInfo.apiVersion = VK_API_VERSION_1_0;
+				appInfo.apiVersion = vulkanApiVersion;
 
 				VkInstanceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -809,6 +791,10 @@ namespace love {
 					queueCreateInfos.push_back(queueCreateInfo);
 				}
 
+				VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{};
+				dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+				dynamicRenderingFeature.dynamicRendering = VK_TRUE;
+
 				VkPhysicalDeviceFeatures deviceFeatures{};
 				deviceFeatures.samplerAnisotropy = VK_TRUE;
 
@@ -817,7 +803,7 @@ namespace love {
 				createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 				createInfo.pQueueCreateInfos = queueCreateInfos.data();
 				createInfo.pEnabledFeatures = &deviceFeatures;
-				createInfo.pNext = nullptr;
+				createInfo.pNext = &dynamicRenderingFeature;
 
 				createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 				createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -845,7 +831,7 @@ namespace love {
 				vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
 
 				VmaAllocatorCreateInfo allocatorCreateInfo = {};
-				allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_0;
+				allocatorCreateInfo.vulkanApiVersion = vulkanApiVersion;
 				allocatorCreateInfo.physicalDevice = physicalDevice;
 				allocatorCreateInfo.device = device;
 				allocatorCreateInfo.instance = instance;
@@ -1010,48 +996,6 @@ namespace love {
 					if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS) {
 						throw love::Exception("failed to create image views");
 					}
-				}
-			}
-
-			void Graphics::createRenderPass() {
-				VkAttachmentDescription colorAttachment{};
-				colorAttachment.format = swapChainImageFormat;
-				colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-				colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-				VkAttachmentReference colorAttachmentRef{};
-				colorAttachmentRef.attachment = 0;
-				colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-				VkSubpassDescription subpass{};
-				subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-				subpass.colorAttachmentCount = 1;
-				subpass.pColorAttachments = &colorAttachmentRef;
-
-				VkSubpassDependency dependency{};
-				dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-				dependency.dstSubpass = 0;
-				dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				dependency.srcAccessMask = 0;
-				dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-				VkRenderPassCreateInfo renderPassInfo{};
-				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-				renderPassInfo.attachmentCount = 1;
-				renderPassInfo.pAttachments = &colorAttachment;
-				renderPassInfo.subpassCount = 1;
-				renderPassInfo.pSubpasses = &subpass;
-				renderPassInfo.dependencyCount = 1;
-				renderPassInfo.pDependencies = &dependency;
-
-				if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-					throw love::Exception("failed to create render pass");
 				}
 			}
 
@@ -1379,6 +1323,11 @@ namespace love {
 				}
 				graphicsPipelineLayouts.push_back(pipelineLayout);
 
+				VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{};
+				pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+				pipelineRenderingCreateInfo.colorAttachmentCount = 1;
+				pipelineRenderingCreateInfo.pColorAttachmentFormats = &swapChainImageFormat;
+
 				VkGraphicsPipelineCreateInfo pipelineInfo{};
 				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 				pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -1392,10 +1341,10 @@ namespace love {
 				pipelineInfo.pColorBlendState = &colorBlending;
 				pipelineInfo.pDynamicState = nullptr;
 				pipelineInfo.layout = pipelineLayout;
-				pipelineInfo.renderPass = renderPass;
 				pipelineInfo.subpass = 0;
 				pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 				pipelineInfo.basePipelineIndex = -1;
+				pipelineInfo.pNext = &pipelineRenderingCreateInfo;
 
 				VkPipeline graphicsPipeline;
 				if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
@@ -1425,35 +1374,13 @@ namespace love {
 				}
 			}
 
-			void Graphics::createFramebuffers() {
-				swapChainFramBuffers.resize(swapChainImageViews.size());
-				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-					VkImageView attachments[] = {
-						swapChainImageViews.at(i)
-					};
-
-					VkFramebufferCreateInfo framebufferInfo{};
-					framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-					framebufferInfo.renderPass = renderPass;
-					framebufferInfo.attachmentCount = 1;
-					framebufferInfo.pAttachments = attachments;
-					framebufferInfo.width = swapChainExtent.width;
-					framebufferInfo.height = swapChainExtent.height;
-					framebufferInfo.layers = 1;
-
-					if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramBuffers.at(i)) != VK_SUCCESS) {
-						throw love::Exception("failed to create framebuffers");
-					}
-				}
-			}
-
 			void Graphics::createCommandPool() {
 				QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
 
 				VkCommandPoolCreateInfo poolInfo{};
 				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 				poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-				poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+				poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
 				if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 					throw love::Exception("failed to create command pool");
@@ -1461,7 +1388,7 @@ namespace love {
 			}
 
 			void Graphics::createCommandBuffers() {
-				commandBuffers.resize(swapChainFramBuffers.size());
+				commandBuffers.resize(swapChainImages.size());
 
 				VkCommandBufferAllocateInfo allocInfo{};
 				allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1591,12 +1518,7 @@ namespace love {
 			}
 
 			void Graphics::cleanupSwapChain() {
-				std::cout << "cleanupSwapChain ";
-
 				vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-				for (size_t i = 0; i < swapChainFramBuffers.size(); i++) {
-					vkDestroyFramebuffer(device, swapChainFramBuffers[i], nullptr);
-				}
 				vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 				for (auto const& p : graphicsPipelines) {
 					vkDestroyPipeline(device, p.second, nullptr);
@@ -1607,7 +1529,6 @@ namespace love {
 					vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 				}
 				graphicsPipelineLayouts.clear();
-				vkDestroyRenderPass(device, renderPass, nullptr);
 				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 				}
@@ -1626,8 +1547,6 @@ namespace love {
 
 				createSwapChain();
 				createImageViews();
-				createRenderPass();
-				createFramebuffers();
 				createDescriptorPool();
 				createCommandBuffers();
 				startRecordingGraphicsCommands();

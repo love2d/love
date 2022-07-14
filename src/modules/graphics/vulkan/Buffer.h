@@ -9,7 +9,7 @@ namespace love {
 		namespace vulkan {
 			class Buffer : public love::graphics::Buffer, public Volatile {
 			public:
-				Buffer(VmaAllocator allocator, love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength);
+				Buffer(love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength);
 				virtual ~Buffer();
 
 				virtual bool loadVolatile() override;
