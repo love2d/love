@@ -29,6 +29,9 @@ namespace love {
 				ColorChannelMask colorChannelMask;
 				Winding winding;
 				CullMode cullmode;
+				VkFormat framebufferFormat;
+				float viewportWidth;
+				float viewportHeight;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -174,6 +177,8 @@ namespace love {
 				graphics::StreamBuffer* getUniformBuffer();
 				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
 				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
+				void startRenderPass(Texture*, uint32_t w, uint32_t h);
+				void endRenderPass();
 
 				VkInstance instance = VK_NULL_HANDLE;
 				VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -213,7 +218,10 @@ namespace love {
 				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
 				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 
-				VkCommandBuffer offscreenRendertargetCommandBuffer;
+				VkFormat currentFramebufferOutputFormat = VK_FORMAT_UNDEFINED;
+				Texture* renderTargetTexture = nullptr;
+				float currentViewportWidth = 0;
+				float currentViewportHeight = 0;
 			};
 		}
 	}

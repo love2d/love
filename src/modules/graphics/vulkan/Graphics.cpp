@@ -200,6 +200,11 @@ namespace love {
 				Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
 				currentPolygonMode = VK_POLYGON_MODE_FILL;
 				restoreState(states.back());
+				
+				setViewportSize(width, height, pixelwidth, pixelheight);
+				renderTargetTexture = nullptr;
+				currentViewportWidth = 0.0f;
+				currentViewportHeight = 0.0f;
 
 				return true;
 			}
@@ -317,6 +322,24 @@ namespace love {
 				vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
 			}
 
+			void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
+				const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
+				const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
+
+				prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
+
+				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
+
+				int baseVertex = start * 4;
+
+				for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW) {
+					int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
+
+					vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
+					baseVertex += quadcount * 4;
+				}
+			}
+
 			void Graphics::setColor(Colorf c) {
 				c.r = std::min(std::max(c.r, 0.0f), 1.0f);
 				c.g = std::min(std::max(c.g, 0.0f), 1.0f);
@@ -363,24 +386,6 @@ namespace love {
 				return RENDERER_VULKAN;
 			}
 
-			void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
-				const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
-				const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
-
-				prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
-
-				vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
-				
-				int baseVertex = start * 4;
-
-				for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW) {
-					int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
-
-					vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
-					baseVertex += quadcount * 4;
-				}
-			}
-
 			graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
 				return new StreamBuffer(this, type, size);
 			}
@@ -391,6 +396,14 @@ namespace love {
 			}
 			
 			void Graphics::setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
+				endRenderPass();
+
+				if (rts.colors.size() == 0) {
+					startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
+				} else {
+					auto firstRenderTarget = rts.getFirstTarget();
+					startRenderPass(static_cast<Texture*>(firstRenderTarget.texture), pixelw, pixelh);
+				}
 			}
 
 			// END IMPLEMENTATION OVERRIDDEN FUNCTIONS
@@ -420,34 +433,17 @@ namespace love {
 					throw love::Exception("failed to begin recording command buffer");
 				}
 
-				VkRenderingAttachmentInfo colorAttachmentInfo{};
-				colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-				colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
-				colorAttachmentInfo.imageView = swapChainImageViews[imageIndex];
-				colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				colorAttachmentInfo.clearValue = clearColor;
-
-				VkRenderingInfo renderingInfo{};
-				renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-				renderingInfo.renderArea.extent = swapChainExtent;
-				renderingInfo.layerCount = 1;
-				renderingInfo.colorAttachmentCount = 1;
-				renderingInfo.pColorAttachments = &colorAttachmentInfo;
-
 				Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-				vkCmdBeginRendering(commandBuffers.at(imageIndex), &renderingInfo);
-
-				currentGraphicsPipeline = VK_NULL_HANDLE;
+				startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
 			}
 
 			void Graphics::endRecordingGraphicsCommands() {
 				const auto& commandBuffer = commandBuffers.at(imageIndex);
 
-				vkCmdEndRendering(commandBuffer);
+				endRenderPass();
 
-				Vulkan::cmdTransitionImageLayout(commandBuffer, swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+				Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 				if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
 					throw love::Exception("failed to record command buffer");
@@ -1202,6 +1198,9 @@ namespace love {
 				configuration.blendState = states.back().blend;
 				configuration.winding = states.back().winding;
 				configuration.cullmode = cullmode;
+				configuration.framebufferFormat = currentFramebufferOutputFormat;
+				configuration.viewportWidth = currentViewportWidth;
+				configuration.viewportHeight = currentViewportHeight;
 				std::vector<VkBuffer> bufferVector;
 
 				std::vector<VkDeviceSize> offsets;
@@ -1234,6 +1233,56 @@ namespace love {
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 			}
 
+			void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
+				VkRenderingAttachmentInfo colorAttachmentInfo{};
+				colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+				colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				if (texture) {
+					colorAttachmentInfo.imageView = texture->getImageView();
+					colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;	// fixme: we want to clear a canvas sometimes.
+					auto vulkanFormat = Vulkan::getTextureFormat(texture->getPixelFormat());
+					currentFramebufferOutputFormat = vulkanFormat.internalFormat;
+
+					renderTargetTexture = texture;
+				} else {
+					colorAttachmentInfo.imageView = swapChainImageViews[imageIndex];
+					colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					currentFramebufferOutputFormat = swapChainImageFormat;
+
+					renderTargetTexture = nullptr;
+				}
+				colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				colorAttachmentInfo.clearValue = clearColor;
+
+				VkRenderingInfo renderingInfo{};
+				renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+				renderingInfo.renderArea.extent.width = w;
+				renderingInfo.renderArea.extent.height = h;
+				renderingInfo.layerCount = 1;
+				renderingInfo.colorAttachmentCount = 1;
+				renderingInfo.pColorAttachments = &colorAttachmentInfo;
+
+				currentViewportWidth = (float)w;
+				currentViewportHeight = (float)h;
+
+				if (renderTargetTexture) {
+					Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)texture->getHandle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+				}
+
+				vkCmdBeginRendering(commandBuffers.at(imageIndex), &renderingInfo);
+
+				currentGraphicsPipeline = VK_NULL_HANDLE;
+			}
+
+			void Graphics::endRenderPass() {
+				vkCmdEndRendering(commandBuffers.at(imageIndex));
+
+				if (renderTargetTexture) {
+					Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+					renderTargetTexture = nullptr;
+				}
+			}
+
 			VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
 				auto shader = configuration.shader;
 				auto shaderStages = shader->getShaderStages();
@@ -1253,8 +1302,8 @@ namespace love {
 				VkViewport viewport{};
 				viewport.x = 0.0f;
 				viewport.y = 0.0f;
-				viewport.width = (float)swapChainExtent.width;
-				viewport.height = (float)swapChainExtent.height;
+				viewport.width = configuration.viewportWidth;
+				viewport.height = configuration.viewportHeight;
 				viewport.minDepth = 0.0f;
 				viewport.maxDepth = 1.0f;
 
@@ -1323,10 +1372,12 @@ namespace love {
 				}
 				graphicsPipelineLayouts.push_back(pipelineLayout);
 
+				VkFormat framebufferOutputFormat = configuration.framebufferFormat;
+
 				VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{};
 				pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 				pipelineRenderingCreateInfo.colorAttachmentCount = 1;
-				pipelineRenderingCreateInfo.pColorAttachmentFormats = &swapChainImageFormat;
+				pipelineRenderingCreateInfo.pColorAttachmentFormats = &framebufferOutputFormat;
 
 				VkGraphicsPipelineCreateInfo pipelineInfo{};
 				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1440,6 +1491,15 @@ namespace love {
 			}
 
 			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
+				if (first.viewportHeight != other.viewportHeight) {
+					return false;
+				}
+				if (first.viewportWidth != other.viewportWidth) {
+					return false;
+				}
+				if (first.framebufferFormat != other.framebufferFormat) {
+					return false;
+				}
 				if (first.cullmode != other.cullmode) {
 					return false;
 				}

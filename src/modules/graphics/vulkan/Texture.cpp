@@ -19,6 +19,12 @@ namespace love {
 
 				auto vulkanFormat = Vulkan::getTextureFormat(format);
 
+				VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+				if (isRenderTarget()) {
+					usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+				}
+
 				VkImageCreateInfo imageInfo{};
 				imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 				imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -30,7 +36,7 @@ namespace love {
 				imageInfo.format = vulkanFormat.internalFormat;
 				imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 				imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				imageInfo.usage = usageFlags;
 				imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 				imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -39,7 +45,6 @@ namespace love {
 				if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS) {
 					throw love::Exception("failed to create image");
 				}
-				// fixme: is there a way we don't use the general image layout?
 				transitionImageLayout(textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
 				if (data) {
@@ -62,7 +67,7 @@ namespace love {
 							defaultPixels.push_back(255);
 							defaultPixels.push_back(255);
 							defaultPixels.push_back(255);
-							defaultPixels.push_back(0);
+							defaultPixels.push_back(255);
 						}
 						Rect rect = { 0, 0, width, height };
 						uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixels.data(), defaultPixels.size(), 0, 0, rect);
@@ -174,7 +179,8 @@ namespace love {
 					static_cast<uint32_t>(r.w),
 					static_cast<uint32_t>(r.h), 1
 				};
-
+				
+				// fixme: we should use VK_IMAGE_LAYOUT_DST_OPTIMAL for transfer
 				vkCmdCopyBufferToImage(
 					commandBuffer,
 					buffer,

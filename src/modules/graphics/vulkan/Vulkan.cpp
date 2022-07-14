@@ -279,8 +279,7 @@ namespace love {
 			std::string Vulkan::getVulkanApiVersion(uint32_t version) {
 				std::stringstream ss;
 
-				ss << VK_API_VERSION_VARIANT(version) 
-				   << "." << VK_API_VERSION_MAJOR(version) 
+				ss << "." << VK_API_VERSION_MAJOR(version) 
 				   << "." << VK_API_VERSION_MINOR(version) 
 				   << "." << VK_API_VERSION_PATCH(version);
 
@@ -452,6 +451,20 @@ namespace love {
 					destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 				}
 				else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+					barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+					barrier.dstAccessMask = 0;
+
+					sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+					destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+				}
+				else if (oldLayout == VK_IMAGE_LAYOUT_GENERAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+					barrier.srcAccessMask = 0;
+					barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+					sourceStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+					destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				}
+				else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
 					barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 					barrier.dstAccessMask = 0;
 
