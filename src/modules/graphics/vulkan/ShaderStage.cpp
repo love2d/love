@@ -162,7 +162,8 @@ namespace love {
 				bool forwardCompat = true;
 
 				if (!tshader->parse(&defaultTBuiltInResource, defaultVersio, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings)) {
-					std::cout << "error while parsing shader" << std::endl;
+					const char* msg1 = tshader->getInfoLog();
+					const char* msg2 = tshader->getInfoDebugLog();
 
 					throw love::Exception("error while parsing shader");
 				}

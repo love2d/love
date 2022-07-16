@@ -82,6 +82,48 @@ namespace love {
 				return new Buffer(this, settings, format, data, size, arraylength);
 			}
 
+			// FIXME: clear stencil and depth missing.
+			void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) {
+				VkClearAttachment attachment{};
+
+				if (color.hasValue) {
+					attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					attachment.clearValue.color.float32[0] = static_cast<float>(color.value.r);
+					attachment.clearValue.color.float32[1] = static_cast<float>(color.value.g);
+					attachment.clearValue.color.float32[2] = static_cast<float>(color.value.b);
+					attachment.clearValue.color.float32[3] = static_cast<float>(color.value.a);
+				}
+
+				VkClearRect rect{};
+				rect.layerCount = 1;
+				rect.rect.extent.width = currentViewportWidth;
+				rect.rect.extent.height = currentViewportHeight;
+
+				vkCmdClearAttachments(commandBuffers[imageIndex], 1, &attachment, 1, &rect);
+			}
+
+			void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) {
+				std::vector<VkClearAttachment> attachments;
+				for (const auto& color : colors) {
+					VkClearAttachment attachment{};
+					if (color.hasValue) {
+						attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+						attachment.clearValue.color.float32[0] = static_cast<float>(color.value.r);
+						attachment.clearValue.color.float32[1] = static_cast<float>(color.value.g);
+						attachment.clearValue.color.float32[2] = static_cast<float>(color.value.b);
+						attachment.clearValue.color.float32[3] = static_cast<float>(color.value.a);
+					}
+					attachments.push_back(attachment);
+				}
+
+				VkClearRect rect{};
+				rect.layerCount = 1;
+				rect.rect.extent.width = currentViewportWidth;
+				rect.rect.extent.height = currentViewportHeight;
+
+				vkCmdClearAttachments(commandBuffers[imageIndex], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
+			}
+
 			void Graphics::present(void* screenshotCallbackdata) {
 				flushBatchedDraws();
 
@@ -1235,22 +1277,20 @@ namespace love {
 				VkRenderingAttachmentInfo colorAttachmentInfo{};
 				colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 				colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 				if (texture) {
 					colorAttachmentInfo.imageView = texture->getImageView();
-					colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;	// fixme: we want to clear a canvas sometimes.
 					auto vulkanFormat = Vulkan::getTextureFormat(texture->getPixelFormat());
 					currentFramebufferOutputFormat = vulkanFormat.internalFormat;
 
 					renderTargetTexture = texture;
 				} else {
 					colorAttachmentInfo.imageView = swapChainImageViews[imageIndex];
-					colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 					currentFramebufferOutputFormat = swapChainImageFormat;
 
 					renderTargetTexture = nullptr;
 				}
 				colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				colorAttachmentInfo.clearValue = clearColor;
 
 				VkRenderingInfo renderingInfo{};
 				renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;

@@ -88,8 +88,8 @@ namespace love {
 				// implementation for virtual functions
 				love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override;
 				love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
-				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override { }
-				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override { }
+				void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
+				void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override;
 				Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override;
 				void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { }
 				void present(void* screenshotCallbackdata) override;
@@ -198,7 +198,6 @@ namespace love {
 				std::vector<VkPipelineLayout> graphicsPipelineLayouts;
 				VkCommandPool commandPool = VK_NULL_HANDLE;
 				std::vector<VkCommandBuffer> commandBuffers;
-				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 				VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;
