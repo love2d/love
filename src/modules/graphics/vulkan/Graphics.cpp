@@ -1218,7 +1218,12 @@ namespace love {
 
 							VkVertexInputBindingDescription bindingDescription{};
 							bindingDescription.binding = bufferBinding;
-							bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+							if (vertexAttributes.instanceBits & (1u << bufferBinding)) {
+								bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+							}
+							else {
+								bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+							}
 							bindingDescription.stride = vertexAttributes.bufferLayouts[bufferBinding].stride;
 							bindingDescriptions.push_back(bindingDescription);
 
