@@ -97,7 +97,7 @@ namespace love {
 				void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 				bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
 				void unSetMode() override;
-				void setActive(bool active) override { }
+				void setActive(bool active) override;
 				int getRequestedBackbufferMSAA() const override { return 0; }
 				int getBackbufferMSAA() const  override { return 0; }
 				void setColor(Colorf c) override;

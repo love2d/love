@@ -125,6 +125,10 @@ namespace love {
 			}
 
 			void Graphics::present(void* screenshotCallbackdata) {
+				if (!isActive()) {
+					return;
+				}
+
 				flushBatchedDraws();
 
 				endRecordingGraphicsCommands();
@@ -299,6 +303,11 @@ namespace love {
 				vkDeviceWaitIdle(device);
 				Volatile::unloadAll();
 				cleanup();
+			}
+
+			void Graphics::setActive(bool enable) {
+				flushBatchedDraws();
+				active = enable;
 			}
 
 			void Graphics::setFrontFaceWinding(Winding winding) {
