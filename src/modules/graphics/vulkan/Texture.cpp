@@ -63,10 +63,10 @@ namespace love {
 						std::vector<uint8> defaultPixels;
 						defaultPixels.reserve(width * height * 4);
 						for (size_t i = 0; i < width * height; i++) {
-							// transparent white
-							defaultPixels.push_back(255);
-							defaultPixels.push_back(255);
-							defaultPixels.push_back(255);
+							// transparent black
+							defaultPixels.push_back(0);
+							defaultPixels.push_back(0);
+							defaultPixels.push_back(0);
 							defaultPixels.push_back(255);
 						}
 						Rect rect = { 0, 0, width, height };

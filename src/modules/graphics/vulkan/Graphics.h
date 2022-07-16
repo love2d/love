@@ -219,7 +219,7 @@ namespace love {
 				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 
 				VkFormat currentFramebufferOutputFormat = VK_FORMAT_UNDEFINED;
-				Texture* renderTargetTexture = nullptr;
+				Texture* renderTargetTexture;
 				float currentViewportWidth = 0;
 				float currentViewportHeight = 0;
 			};

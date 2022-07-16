@@ -149,8 +149,6 @@ namespace love {
 				this->pixelHeight = pixelheight;
 
 				resetProjection();
-
-				recreateSwapChain();
 			}
 
 			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
