@@ -32,6 +32,7 @@ namespace love {
 				VkFormat framebufferFormat;
 				float viewportWidth;
 				float viewportHeight;
+				std::optional<Rect> scissorRect;
 
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
@@ -100,8 +101,8 @@ namespace love {
 				int getRequestedBackbufferMSAA() const override { return 0; }
 				int getBackbufferMSAA() const  override { return 0; }
 				void setColor(Colorf c) override;
-				void setScissor(const Rect& rect) override { }
-				void setScissor() override { }
+				void setScissor(const Rect& rect) override;
+				void setScissor() override;
 				void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { }
 				void setDepthMode(CompareMode compare, bool write) override { }
 				void setFrontFaceWinding(Winding winding) override;
@@ -217,6 +218,7 @@ namespace love {
 				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
 				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 
+				// render pass variables.
 				VkFormat currentFramebufferOutputFormat = VK_FORMAT_UNDEFINED;
 				Texture* renderTargetTexture;
 				float currentViewportWidth = 0;

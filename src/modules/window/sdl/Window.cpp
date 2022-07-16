@@ -1102,6 +1102,8 @@ void Window::setVSync(int vsync)
 			SDL_GL_SetSwapInterval(1);
 	}
 
+	// fixme: doesn't work for vulkan yet.
+
 #if defined(LOVE_GRAPHICS_METAL) && defined(LOVE_MACOS)
 	if (metalView != nullptr)
 	{

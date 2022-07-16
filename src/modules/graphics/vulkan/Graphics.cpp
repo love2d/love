@@ -257,10 +257,10 @@ namespace love {
 				capabilities.features[FEATURE_BLEND_MINMAX] = false;
 				capabilities.features[FEATURE_LIGHTEN] = false;
 				capabilities.features[FEATURE_FULL_NPOT] = false;
-				capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = false;
+				capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
 				capabilities.features[FEATURE_SHADER_DERIVATIVES] = false;
-				capabilities.features[FEATURE_GLSL3] = false;
-				capabilities.features[FEATURE_GLSL4] = false;
+				capabilities.features[FEATURE_GLSL3] = true;
+				capabilities.features[FEATURE_GLSL4] = true;
 				capabilities.features[FEATURE_INSTANCING] = false;
 				capabilities.features[FEATURE_TEXEL_BUFFER] = false;
 				capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
@@ -389,6 +389,19 @@ namespace love {
 				states.back().color = c;
 			}
 
+			void Graphics::setScissor(const Rect& rect) {
+				flushBatchedDraws();
+				
+				states.back().scissor = true;
+				states.back().scissorRect = rect;
+			}
+
+			void Graphics::setScissor() {
+				flushBatchedDraws();
+
+				states.back().scissor = false;
+			}
+
 			void Graphics::setWireframe(bool enable) {
 				flushBatchedDraws();
 
@@ -441,7 +454,7 @@ namespace love {
 				if (rts.colors.size() == 0) {
 					startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
 				} else {
-					auto firstRenderTarget = rts.getFirstTarget();
+					auto& firstRenderTarget = rts.getFirstTarget();
 					startRenderPass(static_cast<Texture*>(firstRenderTarget.texture), pixelw, pixelh);
 				}
 			}
@@ -773,6 +786,10 @@ namespace love {
 				}
 
 				if (!deviceFeatures.samplerAnisotropy) {
+					score = 0;
+				}
+
+				if (!deviceFeatures.fillModeNonSolid) {
 					score = 0;
 				}
 
@@ -1241,6 +1258,12 @@ namespace love {
 				configuration.framebufferFormat = currentFramebufferOutputFormat;
 				configuration.viewportWidth = currentViewportWidth;
 				configuration.viewportHeight = currentViewportHeight;
+				if (states.back().scissor) {
+					configuration.scissorRect = states.back().scissorRect;
+				}
+				else {
+					configuration.scissorRect = std::nullopt;
+				}
 				std::vector<VkBuffer> bufferVector;
 
 				std::vector<VkDeviceSize> offsets;
@@ -1277,7 +1300,7 @@ namespace love {
 				VkRenderingAttachmentInfo colorAttachmentInfo{};
 				colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
 				colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 				if (texture) {
 					colorAttachmentInfo.imageView = texture->getImageView();
 					auto vulkanFormat = Vulkan::getTextureFormat(texture->getPixelFormat());
@@ -1322,8 +1345,7 @@ namespace love {
 			}
 
 			VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
-				auto shader = configuration.shader;
-				auto shaderStages = shader->getShaderStages();
+				auto &shaderStages = configuration.shader->getShaderStages();
 
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 				vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1346,8 +1368,16 @@ namespace love {
 				viewport.maxDepth = 1.0f;
 
 				VkRect2D scissor{};
-				scissor.offset = { 0, 0 };
-				scissor.extent = swapChainExtent;
+				if (configuration.scissorRect.has_value()) {
+					scissor.offset.x = configuration.scissorRect.value().x;
+					scissor.offset.y = configuration.scissorRect.value().y;
+					scissor.extent.width = static_cast<uint32_t>(configuration.scissorRect.value().w);
+					scissor.extent.height = static_cast<uint32_t>(configuration.scissorRect.value().h);
+				}
+				else {
+					scissor.offset = { 0, 0 };
+					scissor.extent = swapChainExtent;
+				}
 
 				VkPipelineViewportStateCreateInfo viewportState{};
 				viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -1529,6 +1559,9 @@ namespace love {
 			}
 
 			bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
+				if (first.scissorRect != other.scissorRect) {
+					return false;
+				}
 				if (first.viewportHeight != other.viewportHeight) {
 					return false;
 				}
