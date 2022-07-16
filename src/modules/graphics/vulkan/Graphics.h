@@ -135,7 +135,7 @@ namespace love {
 				graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
 				bool dispatch(int x, int y, int z) override { return false; }
 				void initCapabilities() override;
-				void getAPIStats(int& shaderswitches) const override { }
+				void getAPIStats(int& shaderswitches) const override;
 				void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
 
 			private:

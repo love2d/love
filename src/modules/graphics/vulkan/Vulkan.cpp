@@ -6,6 +6,20 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
+			static uint32_t numShaderSwitches;
+
+			void Vulkan::shaderSwitch() {
+				numShaderSwitches++;
+			}
+
+			uint32_t Vulkan::getNumShaderSwitches() {
+				return numShaderSwitches;
+			}
+			
+			void Vulkan::resetShaderSwitches() {
+				numShaderSwitches = 0;
+			}
+
 			VkFormat Vulkan::getVulkanVertexFormat(DataFormat format) {
 				switch (format) {
 				case DATAFORMAT_FLOAT:

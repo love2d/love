@@ -35,6 +35,14 @@ namespace love {
 				}
 			}
 
+			void Shader::attach() {
+				if (Shader::current != this) {
+					Graphics::flushBatchedDrawsGlobal();
+					Shader::current = this;
+					Vulkan::shaderSwitch();
+				}
+			}
+
 			int Shader::getVertexAttributeIndex(const std::string& name) {
 				return vertexAttributeIndices.at(name);
 			}

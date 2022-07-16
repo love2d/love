@@ -250,6 +250,8 @@ namespace love {
 				currentViewportWidth = 0.0f;
 				currentViewportHeight = 0.0f;
 
+				Vulkan::resetShaderSwitches();
+
 				return true;
 			}
 
@@ -296,6 +298,10 @@ namespace love {
 				capabilities.textureTypes[TEXTURE_VOLUME] = false;
 				capabilities.textureTypes[TEXTURE_2D_ARRAY] = false;
 				capabilities.textureTypes[TEXTURE_CUBE] = false;
+			}
+
+			void Graphics::getAPIStats(int& shaderswitches) const {
+				shaderswitches = Vulkan::getNumShaderSwitches();
 			}
 
 			void Graphics::unSetMode() {
@@ -498,6 +504,8 @@ namespace love {
 				Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 				startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
+
+				Vulkan::resetShaderSwitches();
 			}
 
 			void Graphics::endRecordingGraphicsCommands() {

@@ -18,6 +18,10 @@ namespace love {
 
 			class Vulkan {
 			public:
+				static void shaderSwitch();
+				static uint32_t getNumShaderSwitches();
+				static void resetShaderSwitches();
+
 				static VkFormat getVulkanVertexFormat(DataFormat format);
 				static TextureFormat getTextureFormat(PixelFormat);
 				static std::string getVendorName(uint32_t vendorId);

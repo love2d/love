@@ -3,6 +3,7 @@
 
 #include <graphics/Shader.h>
 #include <graphics/vulkan/ShaderStage.h>
+#include "Vulkan.h"
 #include <vulkan/vulkan.h>
 
 #include <map>
@@ -21,12 +22,7 @@ namespace love {
 					return shaderStages;
 				}
 
-				void attach() override {
-					if (Shader::current != this) {
-						Graphics::flushBatchedDrawsGlobal();
-						Shader::current = this;
-					}
-				}
+				void attach() override;
 
 				ptrdiff_t getHandle() const { return 0; }
 
