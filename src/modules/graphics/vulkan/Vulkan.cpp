@@ -172,14 +172,10 @@ namespace love {
 						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
 						break;
 					case PIXELFORMAT_BGRA8_UNORM:
-						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UNORM;
-						textureFormat.swizzleR = VK_COMPONENT_SWIZZLE_B;
-						textureFormat.swizzleB = VK_COMPONENT_SWIZZLE_R;
+						textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_UNORM;
 						break;
 					case PIXELFORMAT_BGRA8_UNORM_sRGB:
-						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
-						textureFormat.swizzleR = VK_COMPONENT_SWIZZLE_B;
-						textureFormat.swizzleB = VK_COMPONENT_SWIZZLE_R;
+						textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_SRGB;
 						break;
 					case PIXELFORMAT_RGBA8_INT:
 						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SINT;
@@ -265,12 +261,22 @@ namespace love {
 			// as specified at https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceProperties.html
 			std::string Vulkan::getVendorName(uint32_t vendorId) {
 				switch (vendorId) {
+				case 4130:
+					return "AMD";
 				case 4318:
 					return "Nvidia";
 				case 8086:
 					return "Intel";
-				case 4130:
-					return "Advanced Micro Devices";
+				case 4203:
+					return "Apple";
+				case 5140:
+					return "Microsoft";
+				case 5045:
+					return "ARM";
+				case 20803:
+					return "Qualcomm";
+				case 5348:
+					return "Broadcom";
 				default:
 					return "unknown";
 				}
@@ -279,7 +285,7 @@ namespace love {
 			std::string Vulkan::getVulkanApiVersion(uint32_t version) {
 				std::stringstream ss;
 
-				ss << "." << VK_API_VERSION_MAJOR(version) 
+				ss << VK_API_VERSION_MAJOR(version) 
 				   << "." << VK_API_VERSION_MINOR(version) 
 				   << "." << VK_API_VERSION_PATCH(version);
 

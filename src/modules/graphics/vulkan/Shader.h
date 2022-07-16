@@ -22,7 +22,10 @@ namespace love {
 				}
 
 				void attach() override {
-					Shader::current = this;
+					if (Shader::current != this) {
+						Graphics::flushBatchedDrawsGlobal();
+						Shader::current = this;
+					}
 				}
 
 				ptrdiff_t getHandle() const { return 0; }
