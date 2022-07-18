@@ -8,27 +8,13 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			class ShaderStage final : public graphics::ShaderStage, public Volatile {
+			class ShaderStage final : public graphics::ShaderStage {
 			public:
 				ShaderStage(love::graphics::Graphics* gfx, ShaderStageType stage, const std::string& glsl, bool gles, const std::string& cachekey);
-				virtual ~ShaderStage();
-
-				virtual bool loadVolatile() override;
-
-				virtual void unloadVolatile() override;
-
-				VkShaderModule getShaderModule() const {
-					return shaderModule;
-				}
 
 				ptrdiff_t getHandle() const {
 					return 0;
 				}
-
-			private:
-				VkShaderModule shaderModule = VK_NULL_HANDLE;
-				VkDevice device;
-				love::graphics::Graphics* gfx;
 			};
 		}
 	}

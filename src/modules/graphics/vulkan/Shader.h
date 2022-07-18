@@ -13,10 +13,13 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
-			class Shader final : public graphics::Shader {
+			class Shader final : public graphics::Shader, public Volatile {
 			public:
 				Shader(StrongRef<love::graphics::ShaderStage> stages[]);
-				virtual ~Shader() = default;
+				virtual ~Shader();
+
+				bool loadVolatile() override;
+				void unloadVolatile() override;
 
 				const std::vector<VkPipelineShaderStageCreateInfo>& getShaderStages() const {
 					return shaderStages;
@@ -44,6 +47,7 @@ namespace love {
 
 			private:
 				std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+				std::vector<VkShaderModule> shaderModules;
 
 				std::map<std::string, int> vertexAttributeIndices = {
 					{ "VertexPosition", 0 },
@@ -59,7 +63,7 @@ namespace love {
 					{ "MainTex", 4 }
 				};
 
-
+				std::map<std::string, UniformInfo> uniforms;
 			};
 		}
 	}
