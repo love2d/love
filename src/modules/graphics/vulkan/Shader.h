@@ -21,9 +21,11 @@ namespace love {
 				bool loadVolatile() override;
 				void unloadVolatile() override;
 
-				const std::vector<VkPipelineShaderStageCreateInfo>& getShaderStages() const {
-					return shaderStages;
-				}
+				const std::vector<VkPipelineShaderStageCreateInfo>& getShaderStages() const;
+
+				const VkPipelineLayout getGraphicsPipelineLayout() const;
+
+				void cmdPushDescriptorSets(VkCommandBuffer, uint32_t currentImage);
 
 				void attach() override;
 
@@ -43,11 +45,29 @@ namespace love {
 
 				bool hasUniform(const std::string& name) const override { return false; }
 
-				void setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) override {}
+				void setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) override;
+
+				// fixme: use normal methods for this in the future.
+				void setUniformData(BuiltinUniformData& data);
+				void setMainTex(graphics::Texture* texture);
 
 			private:
+				void compileShaders();
+				void createDescriptorSetLayout();
+				void createPipelineLayout();
+				void createStreamBuffers();
+
+				PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
+
+				VkDescriptorSetLayout descriptorSetLayout;
+				VkPipelineLayout pipelineLayout;
+
+				std::vector<StreamBuffer*> streamBuffers;
+
 				std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 				std::vector<VkShaderModule> shaderModules;
+				Graphics* gfx;
+				VkDevice device;
 
 				std::map<std::string, int> vertexAttributeIndices = {
 					{ "VertexPosition", 0 },
@@ -63,7 +83,14 @@ namespace love {
 					{ "MainTex", 4 }
 				};
 
-				std::map<std::string, UniformInfo> uniforms;
+				BuiltinUniformData uniformData;
+				graphics::Texture* mainTex;
+				graphics::Texture* ytexture;
+				graphics::Texture* cbtexture;
+				graphics::Texture* crtexture;
+
+				uint32_t currentImage;
+				uint32_t count;
 			};
 		}
 	}

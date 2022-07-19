@@ -37,15 +37,6 @@ namespace love {
 				friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
 			};
 
-			struct DecriptorSetConfiguration {
-				graphics::Texture* texture;
-				graphics::StreamBuffer* buffer;
-
-				bool operator==(const DecriptorSetConfiguration& conf2) {
-					return this->texture == conf2.texture && this->buffer == conf2.buffer;
-				}
-			};
-
 			struct BatchedDrawBuffers {
 				StreamBuffer* vertexBuffer1;
 				StreamBuffer* vertexBuffer2;
@@ -125,6 +116,9 @@ namespace love {
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);
 
+				uint32_t getNumImagesInFlight() const;
+				const PFN_vkCmdPushDescriptorSetKHR getVkCmdPushDescriptorSetKHRFunctionPointer() const;
+
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
 					return new ShaderStage(this, stage, source, gles, cachekey); 
@@ -155,9 +149,6 @@ namespace love {
 				void createSwapChain();
 				void createImageViews();
 				void createDefaultShaders();
-				void createDescriptorSetLayout();
-				void createDescriptorPool();
-				std::vector<VkDescriptorSet> createDescriptorSets(DecriptorSetConfiguration);
 				VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
 				void createCommandPool();
 				void createCommandBuffers();
@@ -170,12 +161,8 @@ namespace love {
 				void startRecordingGraphicsCommands();
 				void endRecordingGraphicsCommands();
 				void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
-				graphics::StreamBuffer* createUniformBufferFromData(graphics::Shader::BuiltinUniformData);
 				graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
-				void setTexture(graphics::Texture* texture);
 				void updatedBatchedDrawBuffers();
-				VkDescriptorSet* getDescriptorSet(int currentFrame);
-				graphics::StreamBuffer* getUniformBuffer();
 				void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
 				void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
 				void startRenderPass(Texture*, uint32_t w, uint32_t h);
@@ -192,11 +179,9 @@ namespace love {
 				VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 				VkExtent2D swapChainExtent = VkExtent2D();
 				std::vector<VkImageView> swapChainImageViews;
-				VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 				VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 				VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
 				std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
-				std::vector<VkPipelineLayout> graphicsPipelineLayouts;
 				VkCommandPool commandPool = VK_NULL_HANDLE;
 				std::vector<VkCommandBuffer> commandBuffers;
 				VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
@@ -204,6 +189,7 @@ namespace love {
 				std::vector<VkSemaphore> renderFinishedSemaphores;
 				std::vector<VkFence> inFlightFences;
 				std::vector<VkFence> imagesInFlight;
+				PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
 				size_t currentFrame = 0;
 				uint32_t imageIndex = 0;
 				bool framebufferResized = false;
@@ -214,8 +200,6 @@ namespace love {
 				// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
 				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
 				graphics::Texture* currentTexture = nullptr;
-				std::vector<std::pair<graphics::Shader::BuiltinUniformData, graphics::StreamBuffer*>> uniformBufferMap;
-				std::vector<std::pair<DecriptorSetConfiguration, std::vector<VkDescriptorSet>>> descriptorSetsMap;
 				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 
 				// render pass variables.

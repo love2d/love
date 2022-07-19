@@ -117,6 +117,8 @@ namespace love {
 				}
 			};
 
+			static const uint32_t STREAMBUFFER_SIZE = 1024;
+
 			static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 				switch (type) {
 				case SHADERSTAGE_VERTEX:
@@ -148,12 +150,150 @@ namespace love {
 			}
 
 			bool Shader::loadVolatile() {
+				compileShaders();
+				createDescriptorSetLayout();
+				createPipelineLayout();
+				createStreamBuffers();
+				currentImage = 0;
+				count = 0;
+
+				return true;
+			}
+
+			void Shader::unloadVolatile() {
+				if (shaderModules.size() == 0) {
+					return;
+				}
+
+				auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+				auto device = gfx->getDevice();
+				// fixme: we shouldn't do a greedy wait here.
+				vkDeviceWaitIdle(device);
+				for (const auto shaderModule : shaderModules) {
+					vkDestroyShaderModule(device, shaderModule, nullptr);
+				}
+				shaderModules.clear();
+				shaderStages.clear();
+				vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+				vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				for (const auto streamBuffer : streamBuffers) {
+					delete streamBuffer;
+				}
+				streamBuffers.clear();
+			}
+
+			const std::vector<VkPipelineShaderStageCreateInfo>& Shader::getShaderStages() const {
+				return shaderStages;
+			}
+
+			const VkPipelineLayout Shader::getGraphicsPipelineLayout() const {
+				return pipelineLayout;
+			}
+
+			static VkDescriptorImageInfo createDescriptorImageInfo(graphics::Texture* texture) {
+				VkDescriptorImageInfo imageInfo{};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+				Texture* vkTexture = (Texture*)texture;
+				imageInfo.imageView = vkTexture->getImageView();
+				imageInfo.sampler = vkTexture->getSampler();
+				return imageInfo;
+			}
+
+			void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+				if (currentImage != imageIndex) {
+					currentImage = imageIndex;
+					count = 0;
+				}
+				else {
+					if (count >= STREAMBUFFER_SIZE) {
+						throw love::Exception("uniform stream buffer: out of memory (fixme: resize)");
+					}
+				}
+
+				auto mapInfo = streamBuffers[currentImage]->map(sizeof(BuiltinUniformData));
+				memcpy(mapInfo.data, &uniformData, sizeof(BuiltinUniformData));
+				streamBuffers[currentImage]->unmap(sizeof(BuiltinUniformData));
+				streamBuffers[currentImage]->markUsed(sizeof(BuiltinUniformData));
+
+				VkDescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = (VkBuffer)streamBuffers[currentImage]->getHandle();
+				bufferInfo.offset = count * sizeof(BuiltinUniformData);
+				bufferInfo.range = sizeof(graphics::Shader::BuiltinUniformData);
+				
+				auto mainTexImageInfo = createDescriptorImageInfo(mainTex);
+				auto ytextureImageInfo = createDescriptorImageInfo(ytexture);
+				auto cbtextureImageInfo = createDescriptorImageInfo(cbtexture);
+				auto crtextureImageInfo = createDescriptorImageInfo(crtexture);
+
+				std::array<VkWriteDescriptorSet, 5> descriptorWrite{};
+				descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite[0].dstSet = 0;
+				descriptorWrite[0].dstBinding = 0;
+				descriptorWrite[0].dstArrayElement = 0;
+				descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrite[0].descriptorCount = 1;
+				descriptorWrite[0].pBufferInfo = &bufferInfo;
+
+				descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite[1].dstSet = 0;
+				descriptorWrite[1].dstBinding = 1;
+				descriptorWrite[1].dstArrayElement = 0;
+				descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite[1].descriptorCount = 1;
+				descriptorWrite[1].pImageInfo = &mainTexImageInfo;				
+
+				descriptorWrite[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite[2].dstSet = 0;
+				descriptorWrite[2].dstBinding = 2;
+				descriptorWrite[2].dstArrayElement = 0;
+				descriptorWrite[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite[2].descriptorCount = 1;
+				descriptorWrite[2].pImageInfo = &ytextureImageInfo;
+
+				descriptorWrite[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite[3].dstSet = 0;
+				descriptorWrite[3].dstBinding = 3;
+				descriptorWrite[3].dstArrayElement = 0;
+				descriptorWrite[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite[3].descriptorCount = 1;
+				descriptorWrite[3].pImageInfo = &cbtextureImageInfo;
+
+				descriptorWrite[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite[4].dstSet = 0;
+				descriptorWrite[4].dstBinding = 4;
+				descriptorWrite[4].dstArrayElement = 0;
+				descriptorWrite[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite[4].descriptorCount = 1;
+				descriptorWrite[4].pImageInfo = &crtextureImageInfo;
+
+				vkCmdPushDescriptorSet(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data());
+			}
+
+			Shader::~Shader() {
+				unloadVolatile();
+			}
+
+			void Shader::attach() {
+				if (Shader::current != this) {
+					Graphics::flushBatchedDrawsGlobal();
+					Shader::current = this;
+					Vulkan::shaderSwitch();
+				}
+			}
+
+			int Shader::getVertexAttributeIndex(const std::string& name) {
+				return vertexAttributeIndices.at(name);
+			}
+
+			void Shader::compileShaders() {
 				using namespace glslang;
 				using namespace spirv_cross;
 
 				TProgram* program = new TProgram();
 
-				auto gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
+				gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
+				auto vgfx = (Graphics*)gfx;
+				device = vgfx->getDevice();
 
 				for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++) {
 					if (!stages[i])
@@ -240,40 +380,92 @@ namespace love {
 
 					shaderStages.push_back(shaderStageInfo);
 				}
-
-				return true;
 			}
 
-			void Shader::unloadVolatile() {
-				if (shaderModules.size() == 0) {
-					return;
+			// fixme: should generate this dynamically.
+			void Shader::createDescriptorSetLayout() {
+				auto vgfx = (Graphics*)gfx;
+				vkCmdPushDescriptorSet = vgfx->getVkCmdPushDescriptorSetKHRFunctionPointer();
+
+				VkDescriptorSetLayoutBinding uboLayoutBinding{};
+				uboLayoutBinding.binding = 0;
+				uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				uboLayoutBinding.descriptorCount = 1;
+				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+				VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+				samplerLayoutBinding.binding = 1;
+				samplerLayoutBinding.descriptorCount = 1;
+				samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				samplerLayoutBinding.pImmutableSamplers = nullptr;
+				samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+				VkDescriptorSetLayoutBinding videoYBinding{};
+				videoYBinding.binding = 2;
+				videoYBinding.descriptorCount = 1;
+				videoYBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				videoYBinding.pImmutableSamplers = nullptr;
+				videoYBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+				VkDescriptorSetLayoutBinding videoCBBinding{};
+				videoCBBinding.binding = 3;
+				videoCBBinding.descriptorCount = 1;
+				videoCBBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				videoCBBinding.pImmutableSamplers = nullptr;
+				videoCBBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+				VkDescriptorSetLayoutBinding videoCRinding{};
+				videoCRinding.binding = 4;
+				videoCRinding.descriptorCount = 1;
+				videoCRinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				videoCRinding.pImmutableSamplers = nullptr;
+				videoCRinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+				std::array<VkDescriptorSetLayoutBinding, 5> bindings = { uboLayoutBinding, samplerLayoutBinding, videoYBinding, videoCBBinding, videoCRinding };
+				VkDescriptorSetLayoutCreateInfo layoutInfo{};
+				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+				layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+				layoutInfo.pBindings = bindings.data();
+
+				if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+					throw love::Exception("failed to create descriptor set layout");
 				}
-
-				auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-				auto device = gfx->getDevice();
-				// fixme: we shouldn't do a greedy wait here.
-				vkDeviceWaitIdle(device);
-				for (const auto shaderModule : shaderModules) {
-					vkDestroyShaderModule(device, shaderModule, nullptr);
-				}
-				shaderModules.clear();
-				shaderStages.clear();
 			}
 
-			Shader::~Shader() {
-				unloadVolatile();
-			}
+			void Shader::createPipelineLayout() {
+				VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+				pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+				pipelineLayoutInfo.setLayoutCount = 1;
+				pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+				pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-			void Shader::attach() {
-				if (Shader::current != this) {
-					Graphics::flushBatchedDrawsGlobal();
-					Shader::current = this;
-					Vulkan::shaderSwitch();
+				if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+					throw love::Exception("failed to create pipeline layout");
 				}
 			}
 
-			int Shader::getVertexAttributeIndex(const std::string& name) {
-				return vertexAttributeIndices.at(name);
+			void Shader::createStreamBuffers() {
+				auto vgfx = (Graphics*)gfx;
+				const auto numImagesInFlight = vgfx->getNumImagesInFlight();
+				streamBuffers.resize(numImagesInFlight);
+				for (uint32_t i = 0; i < numImagesInFlight; i++) {
+					streamBuffers[i] = new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_SIZE * sizeof(BuiltinUniformData));
+				}
+			}
+
+			void Shader::setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) {
+				this->ytexture = ytexture;
+				this->cbtexture = cbtexture;
+				this->crtexture = crtexture;
+			}
+
+			void Shader::setUniformData(BuiltinUniformData& data) {
+				uniformData = data;
+			}
+
+			void Shader::setMainTex(graphics::Texture* texture) {
+				mainTex = texture;
 			}
 		}
 	}

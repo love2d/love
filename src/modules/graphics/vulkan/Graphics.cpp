@@ -34,7 +34,10 @@ namespace love {
 			};
 
 			const std::vector<const char*> deviceExtensions = {
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+
+				// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_push_descriptor.html
+				VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
 			};
 
 #ifdef NDEBUG
@@ -207,12 +210,10 @@ namespace love {
 				createSwapChain();
 				createImageViews();
 				createDefaultShaders();
-				createDescriptorSetLayout();
 				createCommandPool();
 				createCommandBuffers();
 				createDefaultTexture();
 				createQuadIndexBuffer();
-				createDescriptorPool();
 				createSyncObjects();
 				startRecordingGraphicsCommands();
 				currentFrame = 0;
@@ -520,10 +521,6 @@ namespace love {
 				}
 			}
 
-			void Graphics::setTexture(graphics::Texture* texture) {
-				currentTexture = texture;
-			}
-
 			void Graphics::updatedBatchedDrawBuffers() {
 				batchedDrawState.vb[0] = batchedDrawBuffers[currentFrame].vertexBuffer1;
 				batchedDrawState.vb[0]->nextFrame();
@@ -533,30 +530,12 @@ namespace love {
 				batchedDrawState.indexBuffer->nextFrame();
 			}
 
-			VkDescriptorSet* Graphics::getDescriptorSet(int currentFrame) {
-				DecriptorSetConfiguration config{};
-				config.texture = currentTexture;
-				config.buffer = getUniformBuffer();
-				for (auto i = 0; i < descriptorSetsMap.size(); i++) {
-					if (descriptorSetsMap[i].first == config) {
-						return &descriptorSetsMap[i].second[currentFrame];
-					}
-				}
-				auto descriptorSets = createDescriptorSets(config);
-				descriptorSetsMap.push_back(std::make_pair(config, descriptorSets));
-				return &descriptorSetsMap.back().second[currentFrame];
+			uint32_t Graphics::getNumImagesInFlight() const {
+				return MAX_FRAMES_IN_FLIGHT;
 			}
 
-			graphics::StreamBuffer* Graphics::getUniformBuffer() {
-				auto data = getCurrentBuiltinUniformData();
-				for (auto &it : uniformBufferMap) {
-					if (it.first == data) {
-						return it.second;
-					}
-				}
-				auto buffer = createUniformBufferFromData(data);
-				uniformBufferMap.push_back(std::make_pair(data, buffer));
-				return buffer;
+			const PFN_vkCmdPushDescriptorSetKHR Graphics::getVkCmdPushDescriptorSetKHRFunctionPointer() const {
+				return vkCmdPushDescriptorSet;
 			}
 
 			VkCommandBuffer Graphics::beginSingleTimeCommands() {
@@ -627,15 +606,6 @@ namespace love {
 				gammaCorrectColor(data.constantColor);
 
 				return data;
-			}
-
-			graphics::StreamBuffer* Graphics::createUniformBufferFromData(graphics::Shader::BuiltinUniformData data) {
-				auto buffer = newStreamBuffer(BUFFERUSAGE_UNIFORM, sizeof(data));
-				auto mappedInfo = buffer->map(0);
-				memcpy(mappedInfo.data, &data, sizeof(data));
-				buffer->unmap(0);
-
-				return buffer;
 			}
 
 			void Graphics::createVulkanInstance() {
@@ -893,6 +863,11 @@ namespace love {
 
 				vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 				vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+
+				vkCmdPushDescriptorSet = (PFN_vkCmdPushDescriptorSetKHR) vkGetDeviceProcAddr(device, "vkCmdPushDescriptorSetKHR");
+				if (!vkCmdPushDescriptorSet) {
+					throw love::Exception("could not get a valid function pointer for vkCmdPushDescriptorSetKHR");
+				}
 			}
 
 			void Graphics::initVMA() {
@@ -1082,114 +1057,6 @@ namespace love {
 				}
 			}
 
-			void Graphics::createDescriptorSetLayout() {
-				VkDescriptorSetLayoutBinding uboLayoutBinding{};
-				uboLayoutBinding.binding = 0;
-				uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				uboLayoutBinding.descriptorCount = 1;
-				uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-				VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-				samplerLayoutBinding.binding = 1;
-				samplerLayoutBinding.descriptorCount = 1;
-				samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				samplerLayoutBinding.pImmutableSamplers = nullptr;
-				samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-				std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-				VkDescriptorSetLayoutCreateInfo layoutInfo{};
-				layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-				layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-				layoutInfo.pBindings = bindings.data();
-
-				if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-					throw love::Exception("failed to create descriptor set layout");
-				}
-			}
-
-			void Graphics::createDescriptorPool() {
-				std::array<VkDescriptorPoolSize, 2> poolSizes{};
-				poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-				poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-				VkDescriptorPoolCreateInfo poolInfo{};
-				poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-				poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-				poolInfo.pPoolSizes = poolSizes.data();
-				// FIXME: When using more than 128 textures at once we will run out of memory.
-				// we probably want to reuse descriptors per flight image
-				// and use multiple pools in case of too many allocations
-				poolInfo.maxSets = 128 * static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-				if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-					throw love::Exception("failed to create descriptor pool");
-				}
-			}
-
-			std::vector<VkDescriptorSet> Graphics::createDescriptorSets(DecriptorSetConfiguration config) {
-				std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
-				VkDescriptorSetAllocateInfo allocInfo{};
-				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-				allocInfo.descriptorPool = descriptorPool;
-				allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-				allocInfo.pSetLayouts = layouts.data();
-
-				std::vector<VkDescriptorSet> newDescriptorSets;
-
-				newDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-				VkResult result = vkAllocateDescriptorSets(device, &allocInfo, newDescriptorSets.data());
-				if (result != VK_SUCCESS) {
-					switch (result) {
-					case VK_ERROR_OUT_OF_HOST_MEMORY:
-						throw love::Exception("failed to allocate descriptor sets: out of host memory");
-					case VK_ERROR_OUT_OF_DEVICE_MEMORY:
-						throw love::Exception("failed to allocate descriptor sets: out of device memory");
-					case VK_ERROR_FRAGMENTED_POOL:
-						throw love::Exception("failed to allocate descriptor sets: fragmented pool");
-					case VK_ERROR_OUT_OF_POOL_MEMORY:
-						throw love::Exception("failed to allocate descriptor sets: out of pool memory");
-					default:
-						throw love::Exception("failed to allocate descriptor sets");
-					}
-				}
-
-				for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-					VkDescriptorBufferInfo bufferInfo{};
-					bufferInfo.buffer = (VkBuffer)config.buffer->getHandle();
-					bufferInfo.offset = 0;
-					bufferInfo.range = sizeof(graphics::Shader::BuiltinUniformData);
-
-					VkDescriptorImageInfo imageInfo{};
-					imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-					Texture* vkTexture = (Texture*)config.texture;
-					imageInfo.imageView = vkTexture->getImageView();
-					imageInfo.sampler = vkTexture->getSampler();
-
-					std::array<VkWriteDescriptorSet, 2> descriptorWrite{};
-					descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrite[0].dstSet = newDescriptorSets[i];
-					descriptorWrite[0].dstBinding = 0;
-					descriptorWrite[0].dstArrayElement = 0;
-					descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					descriptorWrite[0].descriptorCount = 1;
-					descriptorWrite[0].pBufferInfo = &bufferInfo;
-
-					descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrite[1].dstSet = newDescriptorSets[i];
-					descriptorWrite[1].dstBinding = 1;
-					descriptorWrite[1].dstArrayElement = 0;
-					descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					descriptorWrite[1].descriptorCount = 1;
-					descriptorWrite[1].pImageInfo = &imageInfo;
-
-					vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
-				}
-
-				return newDescriptorSets;
-			}
-
 			void Graphics::createVulkanVertexFormat(
 				VertexAttributes vertexAttributes, 
 				bool& useConstantVertexColor,
@@ -1305,16 +1172,19 @@ namespace love {
 					offsets.push_back((VkDeviceSize)0);
 				}
 
+				auto currentUniformData = getCurrentBuiltinUniformData();
+				configuration.shader->setUniformData(currentUniformData);
 				if (texture == nullptr) {
-					setTexture(standardTexture.get());
+					configuration.shader->setMainTex(standardTexture.get());
 				}
 				else {
-					setTexture(texture);
+					configuration.shader->setMainTex(texture);
 				}
+				configuration.shader->setVideoTextures(standardTexture.get(), standardTexture.get(), standardTexture.get());
 
 				ensureGraphicsPipelineConfiguration(configuration);
 
-				vkCmdBindDescriptorSets(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, getDescriptorSet(currentFrame), 0, nullptr);
+				configuration.shader->cmdPushDescriptorSets(commandBuffers.at(imageIndex), currentFrame);
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 			}
 
@@ -1451,17 +1321,6 @@ namespace love {
 				colorBlending.blendConstants[2] = 0.0f;
 				colorBlending.blendConstants[3] = 0.0f;
 
-				VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-				pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-				pipelineLayoutInfo.setLayoutCount = 1;
-				pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
-				pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-				if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-					throw love::Exception("failed to create pipeline layout");
-				}
-				graphicsPipelineLayouts.push_back(pipelineLayout);
-
 				VkFormat framebufferOutputFormat = configuration.framebufferFormat;
 
 				VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{};
@@ -1481,7 +1340,7 @@ namespace love {
 				pipelineInfo.pDepthStencilState = nullptr;
 				pipelineInfo.pColorBlendState = &colorBlending;
 				pipelineInfo.pDynamicState = nullptr;
-				pipelineInfo.layout = pipelineLayout;
+				pipelineInfo.layout = configuration.shader->getGraphicsPipelineLayout();
 				pipelineInfo.subpass = 0;
 				pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 				pipelineInfo.basePipelineIndex = -1;
@@ -1663,7 +1522,6 @@ namespace love {
 					vkDestroyFence(device, inFlightFences[i], nullptr);
 				}
 
-				vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 				vkDestroyCommandPool(device, commandPool, nullptr);
 				vkDestroyDevice(device, nullptr);
 				vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -1678,19 +1536,10 @@ namespace love {
 				}
 				graphicsPipelines.clear();
 				currentGraphicsPipeline = VK_NULL_HANDLE;
-				for (const auto pipelineLayout : graphicsPipelineLayouts) {
-					vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-				}
-				graphicsPipelineLayouts.clear();
 				for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 					vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 				}
 				vkDestroySwapchainKHR(device, swapChain, nullptr);
-				for (auto p : uniformBufferMap) {
-					delete p.second;
-				}
-				uniformBufferMap.clear();
-				descriptorSetsMap.clear();
 			}
 
 			void Graphics::recreateSwapChain() {
@@ -1700,7 +1549,6 @@ namespace love {
 
 				createSwapChain();
 				createImageViews();
-				createDescriptorPool();
 				createCommandBuffers();
 				startRecordingGraphicsCommands();
 			}
