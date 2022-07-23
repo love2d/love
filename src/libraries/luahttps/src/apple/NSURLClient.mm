@@ -29,16 +29,12 @@ HTTPSClient::Reply NSURLClient::request(const HTTPSClient::Request &req)
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
 	NSData *bodydata = nil;
-	switch(req.method)
+	[request setHTTPMethod:@(req.method.c_str())];
+
+	if (req.postdata.size() > 0 && (req.method != "GET" && req.method != "HEAD"))
 	{
-	case Request::GET:
-		[request setHTTPMethod:@"GET"];
-		break;
-	case Request::POST:
 		bodydata = [NSData dataWithBytesNoCopy:(void*) req.postdata.data() length:req.postdata.size() freeWhenDone:NO];
-		[request setHTTPMethod:@"POST"];
 		[request setHTTPBody:bodydata];
-		break;
 	}
 
 	for (auto &header : req.headers)
@@ -63,7 +59,7 @@ HTTPSClient::Reply NSURLClient::request(const HTTPSClient::Request &req)
 	dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 
 	HTTPSClient::Reply reply;
-	reply.responseCode = 400;
+	reply.responseCode = 0;
 
 	if (body)
 	{

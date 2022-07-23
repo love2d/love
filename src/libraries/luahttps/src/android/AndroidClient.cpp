@@ -97,6 +97,7 @@ HTTPSClient::Reply AndroidClient::request(const HTTPSClient::Request &req)
 
 	jmethodID constructor = env->GetMethodID(httpsClass, "<init>", "()V");
 	jmethodID setURL = env->GetMethodID(httpsClass, "setUrl", "(Ljava/lang/String;)V");
+	jmethodID setMethod = env->GetMethodID(httpsClass, "setMethod", "(Ljava/lang/String;)V");
 	jmethodID request = env->GetMethodID(httpsClass, "request", "()Z");
 	jmethodID getInterleavedHeaders = env->GetMethodID(httpsClass, "getInterleavedHeaders", "()[Ljava/lang/String;");
 	jmethodID getResponse = env->GetMethodID(httpsClass, "getResponse", "()[B");
@@ -109,8 +110,13 @@ HTTPSClient::Reply AndroidClient::request(const HTTPSClient::Request &req)
 	env->CallVoidMethod(httpsObject, setURL, url);
 	env->DeleteLocalRef(url);
 
+	// Set method
+	jstring method = env->NewStringUTF(req.method.c_str());
+	env->CallVoidMethod(httpsObject, setMethod, method);
+	env->DeleteLocalRef(method);
+
 	// Set post data
-	if (req.method == Request::POST)
+	if (req.postdata.size() > 0)
 	{
 		jmethodID setPostData = env->GetMethodID(httpsClass, "setPostData", "([B)V");
 		jbyteArray byteArray = env->NewByteArray((jsize) req.postdata.length());
