@@ -2,6 +2,8 @@
 #include "Graphics.h"
 #include "Vulkan.h"
 
+#include <limits>
+
 // make vulkan::Graphics functions available
 #define vgfx ((Graphics*)gfx)
 
@@ -19,11 +21,7 @@ namespace love {
 
 				auto vulkanFormat = Vulkan::getTextureFormat(format);
 
-				VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-
-				if (isRenderTarget()) {
-					usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-				}
+				VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 				VkImageCreateInfo imageInfo{};
 				imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -60,22 +58,10 @@ namespace love {
 					uploadByteData(format, dataPtr, size, 0, 0, rect);
 				} else {
 					if (isRenderTarget()) {
-						std::vector<uint8> defaultPixels;
-						defaultPixels.reserve(width * height * 4);
-						for (size_t i = 0; i < width * height; i++) {
-							// transparent black
-							defaultPixels.push_back(0);
-							defaultPixels.push_back(0);
-							defaultPixels.push_back(0);
-							defaultPixels.push_back(255);
-						}
-						Rect rect = { 0, 0, width, height };
-						uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixels.data(), defaultPixels.size(), 0, 0, rect);
+						clear(false);
 					}
 					else {
-						std::vector<uint8> defaultPixels(width * height * 4, 255);
-						Rect rect = { 0, 0, width, height };
-						uploadByteData(PIXELFORMAT_RGBA8_UNORM, defaultPixels.data(), defaultPixels.size(), 0, 0, rect);
+						clear(true);
 					}
 				}
 				createTextureImageView();
@@ -151,6 +137,72 @@ namespace love {
 				if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
 					throw love::Exception("failed to create texture sampler");
 				}
+			}
+
+			void Texture::clear(bool white) {
+				auto commandBuffer = vgfx->beginSingleTimeCommands();
+
+				auto clearColor = getClearValue(white);
+
+				VkImageSubresourceRange range{};
+				range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				range.layerCount = 1;
+				range.levelCount = 1;
+
+				vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
+
+				vgfx->endSingleTimeCommands(commandBuffer);
+			}
+
+			VkClearColorValue Texture::getClearValue(bool white) {
+				auto vulkanFormat = Vulkan::getTextureFormat(format);
+
+				VkClearColorValue clearColor{};
+				if (white) {
+					switch (vulkanFormat.internalFormatRepresentation) {
+					case FORMATREPRESENTATION_FLOAT:
+						clearColor.float32[0] = 1.0f;
+						clearColor.float32[1] = 1.0f;
+						clearColor.float32[2] = 1.0f;
+						clearColor.float32[3] = 1.0f;
+						break;
+					case FORMATREPRESENTATION_SINT:
+						clearColor.int32[0] = std::numeric_limits<int32_t>::max();
+						clearColor.int32[1] = std::numeric_limits<int32_t>::max();
+						clearColor.int32[2] = std::numeric_limits<int32_t>::max();
+						clearColor.int32[3] = std::numeric_limits<int32_t>::max();
+						break;
+					case FORMATREPRESENTATION_UINT:
+						clearColor.uint32[0] = std::numeric_limits<uint32_t>::max();
+						clearColor.uint32[1] = std::numeric_limits<uint32_t>::max();
+						clearColor.uint32[2] = std::numeric_limits<uint32_t>::max();
+						clearColor.uint32[3] = std::numeric_limits<uint32_t>::max();
+						break;
+					}
+				}
+				else {
+					switch (vulkanFormat.internalFormatRepresentation) {
+					case FORMATREPRESENTATION_FLOAT:
+						clearColor.float32[0] = 0.0f;
+						clearColor.float32[1] = 0.0f;
+						clearColor.float32[2] = 0.0f;
+						clearColor.float32[3] = 0.0f;
+						break;
+					case FORMATREPRESENTATION_SINT:
+						clearColor.int32[0] = 0;
+						clearColor.int32[1] = 0;
+						clearColor.int32[2] = 0;
+						clearColor.int32[3] = 0;
+						break;
+					case FORMATREPRESENTATION_UINT:
+						clearColor.uint32[0] = 0;
+						clearColor.uint32[1] = 0;
+						clearColor.uint32[2] = 0;
+						clearColor.uint32[3] = 0;
+						break;
+					}
+				}
+				return clearColor;
 			}
 
 			void Texture::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {

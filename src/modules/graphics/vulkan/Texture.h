@@ -40,6 +40,9 @@ namespace love {
 				void copyBufferToImage(VkBuffer, VkImage, const Rect&);
 				void createTextureImageView();
 				void createTextureSampler();
+				void clear(bool white);
+
+				VkClearColorValue getClearValue(bool white);
 
 				graphics::Graphics* gfx;
 				VkDevice device;

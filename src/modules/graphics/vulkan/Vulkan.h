@@ -7,7 +7,15 @@
 namespace love {
 	namespace graphics {
 		namespace vulkan {
+			enum InternalFormatRepresentation {
+				FORMATREPRESENTATION_FLOAT,
+				FORMATREPRESENTATION_UINT,
+				FORMATREPRESENTATION_SINT,
+				FORMATREPRESENTATION_MAX_ENUM
+			};
+
 			struct TextureFormat {
+				InternalFormatRepresentation internalFormatRepresentation;
 				VkFormat internalFormat = VK_FORMAT_UNDEFINED;
 
 				VkComponentSwizzle swizzleR = VK_COMPONENT_SWIZZLE_IDENTITY;

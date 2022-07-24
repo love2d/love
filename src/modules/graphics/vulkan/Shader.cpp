@@ -203,6 +203,7 @@ namespace love {
 				if (currentImage != imageIndex) {
 					currentImage = imageIndex;
 					count = 0;
+					streamBuffers[currentImage]->nextFrame();
 				}
 				else {
 					if (count >= STREAMBUFFER_SIZE) {
