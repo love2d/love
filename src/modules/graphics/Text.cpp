@@ -113,7 +113,6 @@ void Text::addTextData(const TextData &t)
 
 	size_t voffset = vert_offset;
 
-	// Must be before the early exit below.
 	if (!t.append_vertices)
 	{
 		voffset = 0;
@@ -122,8 +121,8 @@ void Text::addTextData(const TextData &t)
 		text_data.clear();
 	}
 
-	if (t.use_matrix)
-		t.matrix.transformXY(&vertices[0], &vertices[0], (int) vertices.size());
+	if (t.use_matrix && !vertices.empty())
+		t.matrix.transformXY(vertices.data(), vertices.data(), (int) vertices.size());
 
 	uploadVertices(vertices, voffset);
 
