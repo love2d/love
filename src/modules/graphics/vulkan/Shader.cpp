@@ -150,6 +150,7 @@ namespace love {
 			}
 
 			bool Shader::loadVolatile() {
+				calculateUniformBufferSizeAligned();
 				compileShaders();
 				createDescriptorSetLayout();
 				createPipelineLayout();
@@ -211,15 +212,15 @@ namespace love {
 					}
 				}
 
-				auto mapInfo = streamBuffers[currentImage]->map(sizeof(BuiltinUniformData));
-				memcpy(mapInfo.data, &uniformData, sizeof(BuiltinUniformData));
-				streamBuffers[currentImage]->unmap(sizeof(BuiltinUniformData));
-				streamBuffers[currentImage]->markUsed(sizeof(BuiltinUniformData));
+				auto mapInfo = streamBuffers[currentImage]->map(uniformBufferSizeAligned);
+				memcpy(mapInfo.data, &uniformData, uniformBufferSizeAligned);
+				streamBuffers[currentImage]->unmap(uniformBufferSizeAligned);
+				streamBuffers[currentImage]->markUsed(uniformBufferSizeAligned);
 
 				VkDescriptorBufferInfo bufferInfo{};
 				bufferInfo.buffer = (VkBuffer)streamBuffers[currentImage]->getHandle();
-				bufferInfo.offset = count * sizeof(BuiltinUniformData);
-				bufferInfo.range = sizeof(graphics::Shader::BuiltinUniformData);
+				bufferInfo.offset = count * uniformBufferSizeAligned;
+				bufferInfo.range = sizeof(BuiltinUniformData);
 				
 				auto mainTexImageInfo = createDescriptorImageInfo(mainTex);
 				auto ytextureImageInfo = createDescriptorImageInfo(ytexture);
@@ -268,6 +269,8 @@ namespace love {
 				descriptorWrite[4].pImageInfo = &crtextureImageInfo;
 
 				vkCmdPushDescriptorSet(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data());
+
+				count++;
 			}
 
 			Shader::~Shader() {
@@ -284,6 +287,19 @@ namespace love {
 
 			int Shader::getVertexAttributeIndex(const std::string& name) {
 				return vertexAttributeIndices.at(name);
+			}
+
+			void Shader::calculateUniformBufferSizeAligned() {
+				gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
+				auto vgfx = (Graphics*)gfx;
+				auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
+				uniformBufferSizeAligned = 
+					static_cast<VkDeviceSize>(
+						std::ceil(
+							static_cast<float>(sizeof(BuiltinUniformData)) / static_cast<float>(minAlignment)
+						)
+					)
+					* minAlignment;
 			}
 
 			void Shader::compileShaders() {
@@ -315,7 +331,7 @@ namespace love {
 
 					auto& glsl = stages[i]->getSource();
 					const char* csrc = glsl.c_str();
-					const int sourceLength = glsl.length();
+					const int sourceLength = static_cast<int>(glsl.length());
 					tshader->setStringsWithLengths(&csrc, &sourceLength, 1);
 
 					int defaultVersio = 450;
@@ -451,7 +467,7 @@ namespace love {
 				const auto numImagesInFlight = vgfx->getNumImagesInFlight();
 				streamBuffers.resize(numImagesInFlight);
 				for (uint32_t i = 0; i < numImagesInFlight; i++) {
-					streamBuffers[i] = new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_SIZE * sizeof(BuiltinUniformData));
+					streamBuffers[i] = new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_SIZE * uniformBufferSizeAligned);
 				}
 			}
 

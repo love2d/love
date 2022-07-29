@@ -118,6 +118,7 @@ namespace love {
 
 				uint32_t getNumImagesInFlight() const;
 				const PFN_vkCmdPushDescriptorSetKHR getVkCmdPushDescriptorSetKHRFunctionPointer() const;
+				const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
@@ -189,6 +190,7 @@ namespace love {
 				std::vector<VkSemaphore> renderFinishedSemaphores;
 				std::vector<VkFence> inFlightFences;
 				std::vector<VkFence> imagesInFlight;
+				VkDeviceSize minUniformBufferOffsetAlignment;
 				PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
 				size_t currentFrame = 0;
 				uint32_t imageIndex = 0;

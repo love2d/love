@@ -7,6 +7,7 @@
 #include "graphics/Texture.h"
 #include "Vulkan.h"
 #include "common/version.h"
+#include "common/pixelformat.h"
 
 #include <algorithm>
 #include <vector>
@@ -99,8 +100,8 @@ namespace love {
 
 				VkClearRect rect{};
 				rect.layerCount = 1;
-				rect.rect.extent.width = currentViewportWidth;
-				rect.rect.extent.height = currentViewportHeight;
+				rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
+				rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
 
 				vkCmdClearAttachments(commandBuffers[imageIndex], 1, &attachment, 1, &rect);
 			}
@@ -121,8 +122,8 @@ namespace love {
 
 				VkClearRect rect{};
 				rect.layerCount = 1;
-				rect.rect.extent.width = currentViewportWidth;
-				rect.rect.extent.height = currentViewportHeight;
+				rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
+				rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
 
 				vkCmdClearAttachments(commandBuffers[imageIndex], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
 			}
@@ -433,7 +434,7 @@ namespace love {
 
 			PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const { 
 				switch (format) {
-				PIXELFORMAT_NORMAL:
+				case PIXELFORMAT_NORMAL:
 					if (isGammaCorrect()) {
 						return PIXELFORMAT_RGBA8_UNORM_sRGB;
 					}
@@ -534,6 +535,10 @@ namespace love {
 				return MAX_FRAMES_IN_FLIGHT;
 			}
 
+			const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const {
+				return minUniformBufferOffsetAlignment;
+			}
+
 			const PFN_vkCmdPushDescriptorSetKHR Graphics::getVkCmdPushDescriptorSetKHRFunctionPointer() const {
 				return vkCmdPushDescriptorSet;
 			}
@@ -596,8 +601,8 @@ namespace love {
 				// Same with point size.
 				data.normalMatrix[1].w = getPointSize();
 
-				data.screenSizeParams.x = swapChainExtent.width;
-				data.screenSizeParams.y = swapChainExtent.height;
+				data.screenSizeParams.x = static_cast<float>(swapChainExtent.width);
+				data.screenSizeParams.y = static_cast<float>(swapChainExtent.height);
 
 				data.screenSizeParams.z = 1.0f;
 				data.screenSizeParams.w = 0.0f;
@@ -711,6 +716,10 @@ namespace love {
 				else {
 					throw love::Exception("failed to find a suitable gpu");
 				}
+
+				VkPhysicalDeviceProperties properties;
+				vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+				minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
 			}
 
 			bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -1184,7 +1193,7 @@ namespace love {
 
 				ensureGraphicsPipelineConfiguration(configuration);
 
-				configuration.shader->cmdPushDescriptorSets(commandBuffers.at(imageIndex), currentFrame);
+				configuration.shader->cmdPushDescriptorSets(commandBuffers.at(imageIndex), static_cast<uint32_t>(currentFrame));
 				vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 			}
 
@@ -1241,9 +1250,9 @@ namespace love {
 
 				VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 				vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-				vertexInputInfo.vertexBindingDescriptionCount = configuration.vertexInputBindingDescriptions.size();
+				vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(configuration.vertexInputBindingDescriptions.size());
 				vertexInputInfo.pVertexBindingDescriptions = configuration.vertexInputBindingDescriptions.data();
-				vertexInputInfo.vertexAttributeDescriptionCount = configuration.vertexInputAttributeDescriptions.size();
+				vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(configuration.vertexInputAttributeDescriptions.size());
 				vertexInputInfo.pVertexAttributeDescriptions = configuration.vertexInputAttributeDescriptions.data();
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{};

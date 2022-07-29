@@ -146,7 +146,7 @@ namespace love {
 
 				VkImageSubresourceRange range{};
 				range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				range.layerCount = 1;
+				range.layerCount = getMipmapCount();
 				range.levelCount = 1;
 
 				vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);

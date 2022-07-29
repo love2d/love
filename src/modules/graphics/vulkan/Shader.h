@@ -52,11 +52,13 @@ namespace love {
 				void setMainTex(graphics::Texture* texture);
 
 			private:
+				void calculateUniformBufferSizeAligned();
 				void compileShaders();
 				void createDescriptorSetLayout();
 				void createPipelineLayout();
 				void createStreamBuffers();
 
+				VkDeviceSize uniformBufferSizeAligned;
 				PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
 
 				VkDescriptorSetLayout descriptorSetLayout;

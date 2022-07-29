@@ -26,7 +26,7 @@ namespace love {
 			}
 
 			Buffer::Buffer(love::graphics::Graphics* gfx, const Settings& settings, const std::vector<DataDeclaration>& format, const void* data, size_t size, size_t arraylength)
-				: love::graphics::Buffer(gfx, settings, format, size, arraylength), usageFlags(settings.usageFlags), allocator(allocator), gfx(gfx) {
+				: love::graphics::Buffer(gfx, settings, format, size, arraylength), usageFlags(settings.usageFlags), gfx(gfx) {
 				loadVolatile();
 			}
 
