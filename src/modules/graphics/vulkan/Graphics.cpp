@@ -202,6 +202,9 @@ namespace love {
 			}
 
 			bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
+				cleanUpFunctions.clear();
+				cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
+
 				createVulkanInstance();
 				createSurface();
 				pickPhysicalDevice();
@@ -494,6 +497,11 @@ namespace love {
 					break;
 				}
 
+				for (auto cleanUpFn : cleanUpFunctions.at(currentFrame)) {
+					cleanUpFn();
+				}
+				cleanUpFunctions.at(currentFrame).clear();
+
 				VkCommandBufferBeginInfo beginInfo{};
 				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 				beginInfo.flags = 0;
@@ -541,6 +549,11 @@ namespace love {
 
 			const PFN_vkCmdPushDescriptorSetKHR Graphics::getVkCmdPushDescriptorSetKHRFunctionPointer() const {
 				return vkCmdPushDescriptorSet;
+			}
+
+			void Graphics::executeCommand(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp) {
+				command(commandBuffers.at(imageIndex));
+				cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
 			}
 
 			VkCommandBuffer Graphics::beginSingleTimeCommands() {
@@ -875,6 +888,7 @@ namespace love {
 
 				vkCmdPushDescriptorSet = (PFN_vkCmdPushDescriptorSetKHR) vkGetDeviceProcAddr(device, "vkCmdPushDescriptorSetKHR");
 				if (!vkCmdPushDescriptorSet) {
+					// fixme: how widely adopted is this extension?
 					throw love::Exception("could not get a valid function pointer for vkCmdPushDescriptorSetKHR");
 				}
 			}
@@ -1522,6 +1536,13 @@ namespace love {
 
 			void Graphics::cleanup() {
 				cleanupSwapChain();
+
+				for (auto &cleanUpFns : cleanUpFunctions) {
+					for (auto cleanUpFn : cleanUpFns) {
+						cleanUpFn();
+					}
+				}
+				cleanUpFunctions.clear();
 
 				vmaDestroyAllocator(vmaAllocator);
 				batchedDrawBuffers.clear();

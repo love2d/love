@@ -37,7 +37,6 @@ namespace love {
 
 			private:
 				void transitionImageLayout(VkImage, VkImageLayout oldLayout, VkImageLayout newLayout);
-				void copyBufferToImage(VkBuffer, VkImage, const Rect&);
 				void createTextureImageView();
 				void createTextureSampler();
 				void clear(bool white);

@@ -14,6 +14,7 @@
 #include <optional>
 #include <iostream>
 #include <memory>
+#include <functional>
 
 
 namespace love {
@@ -113,6 +114,8 @@ namespace love {
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
 
+				void executeCommand(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp);
+
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);
 
@@ -201,6 +204,9 @@ namespace love {
 				// we need an array of draw buffers, since the frames are being rendered asynchronously
 				// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
 				std::vector<BatchedDrawBuffers> batchedDrawBuffers;
+				// functions that need to be called to cleanup objects that were needed for rendering a frame.
+				// just like batchedDrawBuffers we need a vector for each frame in flight.
+				std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 				graphics::Texture* currentTexture = nullptr;
 				VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 

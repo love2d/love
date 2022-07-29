@@ -213,38 +213,6 @@ namespace love {
 				vgfx->endSingleTimeCommands(commandBuffer);
 			}
 
-			void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, const Rect& r) {
-				auto commandBuffer = vgfx->beginSingleTimeCommands();
-
-				VkBufferImageCopy region{};
-				region.bufferOffset = 0;
-				region.bufferRowLength = 0;
-				region.bufferImageHeight = 0;
-
-				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				region.imageSubresource.mipLevel = 0;
-				region.imageSubresource.baseArrayLayer = 0;
-				region.imageSubresource.layerCount = 1;
-
-				region.imageOffset = { r.x, r.y, 0 };
-				region.imageExtent = {
-					static_cast<uint32_t>(r.w),
-					static_cast<uint32_t>(r.h), 1
-				};
-				
-				// fixme: we should use VK_IMAGE_LAYOUT_DST_OPTIMAL for transfer
-				vkCmdCopyBufferToImage(
-					commandBuffer,
-					buffer,
-					image,
-					VK_IMAGE_LAYOUT_GENERAL,
-					1,
-					&region
-				);
-
-				vgfx->endSingleTimeCommands(commandBuffer);
-			}
-
 			void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) {
 				VkBuffer stagingBuffer;
 				VmaAllocation vmaAllocation;
@@ -263,9 +231,39 @@ namespace love {
 
 				memcpy(allocInfo.pMappedData, data, size);
 
-				copyBufferToImage(stagingBuffer, textureImage, r);
+				auto command = [buffer = stagingBuffer, image = textureImage, r = r](VkCommandBuffer commandBuffer) {
+					VkBufferImageCopy region{};
+					region.bufferOffset = 0;
+					region.bufferRowLength = 0;
+					region.bufferImageHeight = 0;
 
-				vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
+					region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					region.imageSubresource.mipLevel = 0;
+					region.imageSubresource.baseArrayLayer = 0;
+					region.imageSubresource.layerCount = 1;
+
+					region.imageOffset = { r.x, r.y, 0 };
+					region.imageExtent = {
+						static_cast<uint32_t>(r.w),
+						static_cast<uint32_t>(r.h), 1
+					};
+
+					// fixme: use VK_IMAGE_LAYOUT_DST_OPTIMAL
+					vkCmdCopyBufferToImage(
+						commandBuffer,
+						buffer,
+						image,
+						VK_IMAGE_LAYOUT_GENERAL,
+						1,
+						&region
+					);
+				};
+
+				auto cleanUp = [allocator = allocator, stagingBuffer, vmaAllocation]() {
+					vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
+				};
+
+				vgfx->executeCommand(command, cleanUp);
 			}
 		}
 	}
