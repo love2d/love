@@ -202,7 +202,7 @@ namespace love {
 						textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
 						break;
 					case PIXELFORMAT_RGBA8_UNORM:
-						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;	// fixme?
+						textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UNORM;
 						textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
 						break;
 					case PIXELFORMAT_RGBA8_UNORM_sRGB:
