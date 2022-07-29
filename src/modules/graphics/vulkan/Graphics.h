@@ -114,8 +114,7 @@ namespace love {
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
 
-				// fixme: better naming for these two functions?
-				void executeCommand(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp);
+				void queueDatatransfer(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp);
 				void queueCleanUp(std::function<void()> cleanUp);
 
 				VkCommandBuffer beginSingleTimeCommands();
@@ -124,6 +123,7 @@ namespace love {
 				uint32_t getNumImagesInFlight() const;
 				const PFN_vkCmdPushDescriptorSetKHR getVkCmdPushDescriptorSetKHRFunctionPointer() const;
 				const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
+				graphics::Texture* getDefaultTexture() const;
 
 			protected:
 				graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
@@ -190,6 +190,7 @@ namespace love {
 				std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
 				VkCommandPool commandPool = VK_NULL_HANDLE;
 				std::vector<VkCommandBuffer> commandBuffers;
+				std::vector<VkCommandBuffer> dataTransferCommandBuffers;
 				VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 				std::vector<VkSemaphore> imageAvailableSemaphores;
 				std::vector<VkSemaphore> renderFinishedSemaphores;

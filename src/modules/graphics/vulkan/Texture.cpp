@@ -43,6 +43,7 @@ namespace love {
 				if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS) {
 					throw love::Exception("failed to create image");
 				}
+				// fixme: we should use VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL as the default image layout instead of VK_IMAGE_LAYOUT_GENERAL.
 				transitionImageLayout(textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
 				if (data) {
@@ -253,22 +254,25 @@ namespace love {
 						static_cast<uint32_t>(r.h), 1
 					};
 
-					// fixme: use VK_IMAGE_LAYOUT_DST_OPTIMAL
+					Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
 					vkCmdCopyBufferToImage(
 						commandBuffer,
 						buffer,
 						image,
-						VK_IMAGE_LAYOUT_GENERAL,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 						1,
 						&region
 					);
+
+					Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 				};
 
 				auto cleanUp = [allocator = allocator, stagingBuffer, vmaAllocation]() {
 					vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
 				};
 
-				vgfx->executeCommand(command, cleanUp);
+				vgfx->queueDatatransfer(command, cleanUp);
 			}
 		}
 	}

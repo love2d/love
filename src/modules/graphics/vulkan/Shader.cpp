@@ -311,6 +311,11 @@ namespace love {
 				auto vgfx = (Graphics*)gfx;
 				device = vgfx->getDevice();
 
+				mainTex = vgfx->getDefaultTexture();
+				ytexture = vgfx->getDefaultTexture();
+				crtexture = vgfx->getDefaultTexture();
+				cbtexture = vgfx->getDefaultTexture();
+
 				for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++) {
 					if (!stages[i])
 						continue;

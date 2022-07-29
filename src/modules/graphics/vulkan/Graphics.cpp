@@ -142,6 +142,9 @@ namespace love {
 				}
 				imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
+				// all data transfers should happen before any draw calls.
+				std::vector<VkCommandBuffer> submitCommandbuffers = { dataTransferCommandBuffers.at(currentFrame), commandBuffers.at(imageIndex) };
+
 				VkSubmitInfo submitInfo{};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -151,8 +154,8 @@ namespace love {
 				submitInfo.pWaitSemaphores = waitSemaphores;
 				submitInfo.pWaitDstStageMask = waitStages;
 
-				submitInfo.commandBufferCount = 1;
-				submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+				submitInfo.commandBufferCount = static_cast<uint32_t>(submitCommandbuffers.size());
+				submitInfo.pCommandBuffers = submitCommandbuffers.data();
 
 				VkSemaphore signalSemaphores[] = { renderFinishedSemaphores.at(currentFrame) };
 				submitInfo.signalSemaphoreCount = 1;
@@ -213,10 +216,10 @@ namespace love {
 				initCapabilities();
 				createSwapChain();
 				createImageViews();
-				createDefaultShaders();
 				createCommandPool();
 				createCommandBuffers();
 				createDefaultTexture();
+				createDefaultShaders();
 				createQuadIndexBuffer();
 				createSyncObjects();
 				startRecordingGraphicsCommands();
@@ -510,6 +513,9 @@ namespace love {
 				if (vkBeginCommandBuffer(commandBuffers.at(imageIndex), &beginInfo) != VK_SUCCESS) {
 					throw love::Exception("failed to begin recording command buffer");
 				}
+				if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+					throw love::Exception("failed to begin recording data transfer command buffer");
+				}
 
 				Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -519,14 +525,15 @@ namespace love {
 			}
 
 			void Graphics::endRecordingGraphicsCommands() {
-				const auto& commandBuffer = commandBuffers.at(imageIndex);
-
 				endRenderPass();
 
 				Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 				if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
 					throw love::Exception("failed to record command buffer");
+				}
+				if (vkEndCommandBuffer(dataTransferCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
+					throw love::Exception("failed to record data transfer command buffer");
 				}
 			}
 
@@ -547,12 +554,16 @@ namespace love {
 				return minUniformBufferOffsetAlignment;
 			}
 
+			graphics::Texture* Graphics::getDefaultTexture() const {
+				return dynamic_cast<graphics::Texture*>(standardTexture.get());
+			}
+
 			const PFN_vkCmdPushDescriptorSetKHR Graphics::getVkCmdPushDescriptorSetKHRFunctionPointer() const {
 				return vkCmdPushDescriptorSet;
 			}
 
-			void Graphics::executeCommand(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp) {
-				command(commandBuffers.at(imageIndex));
+			void Graphics::queueDatatransfer(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp) {
+				command(dataTransferCommandBuffers.at(currentFrame));
 				cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
 			}
 
@@ -1207,7 +1218,6 @@ namespace love {
 				else {
 					configuration.shader->setMainTex(texture);
 				}
-				configuration.shader->setVideoTextures(standardTexture.get(), standardTexture.get(), standardTexture.get());
 
 				ensureGraphicsPipelineConfiguration(configuration);
 
@@ -1416,6 +1426,7 @@ namespace love {
 
 			void Graphics::createCommandBuffers() {
 				commandBuffers.resize(swapChainImages.size());
+				dataTransferCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 				VkCommandBufferAllocateInfo allocInfo{};
 				allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1425,6 +1436,16 @@ namespace love {
 
 				if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 					throw love::Exception("failed to allocate command buffers");
+				}
+
+				VkCommandBufferAllocateInfo dataTransferAllocInfo{};
+				dataTransferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+				dataTransferAllocInfo.commandPool = commandPool;
+				dataTransferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+				dataTransferAllocInfo.commandBufferCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+				if (vkAllocateCommandBuffers(device, &dataTransferAllocInfo, dataTransferCommandBuffers.data()) != VK_SUCCESS) {
+					throw love::Exception("failed to allocate data transfer command buffers");
 				}
 			}
 
@@ -1565,6 +1586,7 @@ namespace love {
 			void Graphics::cleanupSwapChain() {
 				vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 				vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+				vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
 				for (auto const& p : graphicsPipelines) {
 					vkDestroyPipeline(device, p.second, nullptr);
 				}
