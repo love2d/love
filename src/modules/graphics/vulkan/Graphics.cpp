@@ -564,7 +564,9 @@ const PFN_vkCmdPushDescriptorSetKHR Graphics::getVkCmdPushDescriptorSetKHRFuncti
 
 void Graphics::queueDatatransfer(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp) {
 	command(dataTransferCommandBuffers.at(currentFrame));
-	cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
+	if (cleanUp) {
+		cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
+	}
 }
 
 void Graphics::queueCleanUp(std::function<void()> cleanUp) {

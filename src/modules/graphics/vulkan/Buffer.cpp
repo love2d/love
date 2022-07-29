@@ -86,8 +86,18 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize) {
 }
 
 void Buffer::copyTo(love::graphics::Buffer* dest, size_t sourceoffset, size_t destoffset, size_t size) {
-	throw love::Exception("not implemented yet");
+	Graphics* vgfx = (Graphics*)gfx;
+
+	vgfx->queueDatatransfer([buffer = buffer, dest = dest, sourceoffset, destoffset, size](VkCommandBuffer commandBuffer){
+		VkBufferCopy bufferCopy{};
+		bufferCopy.srcOffset = sourceoffset;
+		bufferCopy.dstOffset = destoffset;
+		bufferCopy.size = size;
+
+		vkCmdCopyBuffer(commandBuffer, buffer, (VkBuffer) dest->getHandle(), 1, &bufferCopy);
+	}, nullptr);
 }
+
 } // vulkan
 } // graphics
 } // love
