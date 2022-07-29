@@ -114,7 +114,9 @@ namespace love {
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
 				GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
 
+				// fixme: better naming for these two functions?
 				void executeCommand(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp);
+				void queueCleanUp(std::function<void()> cleanUp);
 
 				VkCommandBuffer beginSingleTimeCommands();
 				void endSingleTimeCommands(VkCommandBuffer);

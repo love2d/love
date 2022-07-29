@@ -167,19 +167,18 @@ namespace love {
 				}
 
 				auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-				auto device = gfx->getDevice();
-				// fixme: we shouldn't do a greedy wait here.
-				vkDeviceWaitIdle(device);
-				for (const auto shaderModule : shaderModules) {
-					vkDestroyShaderModule(device, shaderModule, nullptr);
-				}
-				shaderModules.clear();
-				shaderStages.clear();
-				vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-				vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout](){
+					for (const auto shaderModule : shaderModules) {
+						vkDestroyShaderModule(device, shaderModule, nullptr);
+					}
+					vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+					vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+				});
 				for (const auto streamBuffer : streamBuffers) {
 					delete streamBuffer;
 				}
+				shaderModules.clear();
+				shaderStages.clear();
 				streamBuffers.clear();
 			}
 

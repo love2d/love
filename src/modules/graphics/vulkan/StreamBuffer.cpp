@@ -46,13 +46,10 @@ namespace love {
 				if (buffer == VK_NULL_HANDLE)
 					return;
 
-				Graphics* vgfx = (Graphics*)gfx;
-				auto device = vgfx->getDevice();
-
-				// FIXME: objects for deletion should probably be put on a queue
-				// instead of greedy waiting here.
-				vkDeviceWaitIdle(device);
-				vmaDestroyBuffer(allocator, buffer, allocation);
+				auto vgfx = (Graphics*)gfx;
+				vgfx->queueCleanUp([allocator=allocator, buffer=buffer, allocation=allocation](){
+					vmaDestroyBuffer(allocator, buffer, allocation);
+				});
 				buffer = VK_NULL_HANDLE;
 			}
 

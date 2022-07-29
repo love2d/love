@@ -556,6 +556,10 @@ namespace love {
 				cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
 			}
 
+			void Graphics::queueCleanUp(std::function<void()> cleanUp) {
+				cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
+			}
+
 			VkCommandBuffer Graphics::beginSingleTimeCommands() {
 				VkCommandBufferAllocateInfo allocInfo{};
 				allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
