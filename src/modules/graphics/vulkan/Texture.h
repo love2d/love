@@ -20,8 +20,8 @@ public:
 	virtual bool loadVolatile() override;
 	virtual void unloadVolatile() override;
 
-	void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override { };
-	void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override { };
+	void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override;
+	void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override;
 
 	ptrdiff_t getRenderTargetHandle() const override { return (ptrdiff_t)textureImage; };
 	ptrdiff_t getSamplerHandle() const override { return (ptrdiff_t)textureSampler; };

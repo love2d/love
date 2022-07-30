@@ -274,6 +274,47 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 
 	vgfx->queueDatatransfer(command, cleanUp);
 }
+
+void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) {
+	vgfx->queueDatatransfer([source, textureImage = textureImage, rect=rect, sourceoffset, sourcewidth, size, slice, mipmap](VkCommandBuffer commandBuffer){
+		VkImageSubresourceLayers layers{};
+		layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		layers.mipLevel = mipmap;
+		layers.baseArrayLayer = slice;
+		layers.layerCount = 1;
+
+		VkBufferImageCopy region{};
+		region.bufferOffset = sourceoffset;
+		region.bufferRowLength = sourcewidth;
+		region.bufferImageHeight = 1;
+		region.imageSubresource = layers;
+		region.imageExtent.width = static_cast<uint32_t>(rect.w);
+		region.imageExtent.height = static_cast<uint32_t>(rect.h);
+
+		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	}, nullptr);
+}
+
+void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) {
+	vgfx->queueDatatransfer([dest, textureImage = textureImage, rect=rect, destoffset, destwidth, size, slice, mipmap](VkCommandBuffer commandBuffer){
+		VkImageSubresourceLayers layers{};
+		layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		layers.mipLevel = mipmap;
+		layers.baseArrayLayer = slice;
+		layers.layerCount = 1;
+
+		VkBufferImageCopy region{};
+		region.bufferOffset = destoffset;
+		region.bufferRowLength = destwidth;
+		region.bufferImageHeight = 1;
+		region.imageSubresource = layers;
+		region.imageExtent.width = static_cast<uint32_t>(rect.w);
+		region.imageExtent.height = static_cast<uint32_t>(rect.h);
+
+		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
+	}, nullptr);
+}
+
 } // vulkan
 } // graphics
 } // love
