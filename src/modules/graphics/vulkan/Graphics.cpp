@@ -1098,13 +1098,15 @@ void Graphics::createDefaultShaders() {
 	}
 }
 
+bool Graphics::usesConstantVertexColor(const VertexAttributes& vertexAttributes) {
+	return !!(vertexAttributes.enableBits & (1u << ATTRIB_COLOR));
+}
+
 void Graphics::createVulkanVertexFormat(
 	VertexAttributes vertexAttributes, 
-	bool& useConstantVertexColor,
-	GraphicsPipelineConfiguration& configuration) {
+	std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
+	std::vector<VkVertexInputAttributeDescription> &attributeDescriptions) {
 	std::set<uint32_t> usedBuffers;
-	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
 	auto allBits = vertexAttributes.enableBits;
 
@@ -1166,23 +1168,17 @@ void Graphics::createVulkanVertexFormat(
 		attributeDescription.offset = 0;
 		attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
 		attributeDescriptions.push_back(attributeDescription);
-
-		useConstantVertexColor = true;
 	}
-	else {
-		useConstantVertexColor = false;
-	}
-
-	configuration.vertexInputBindingDescriptions = bindingDescriptions;
-	configuration.vertexInputAttributeDescriptions = attributeDescriptions;
 }
 
 void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
 	GraphicsPipelineConfiguration configuration;
+	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.primitiveType = primitiveType;
 	configuration.polygonMode = currentPolygonMode;
 	configuration.blendState = states.back().blend;
+	configuration.colorChannelMask = states.back().colorMask;
 	configuration.winding = states.back().winding;
 	configuration.cullmode = cullmode;
 	configuration.framebufferFormat = currentFramebufferOutputFormat;
@@ -1195,11 +1191,7 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 		configuration.scissorRect = std::nullopt;
 	}
 	std::vector<VkBuffer> bufferVector;
-
 	std::vector<VkDeviceSize> offsets;
-
-	bool useConstantColorBuffer;
-	createVulkanVertexFormat(attributes, useConstantColorBuffer, configuration);
 
 	for (uint32_t i = 0; i < VertexAttributes::MAX; i++) {
 		if (buffers.useBits & (1u << i)) {
@@ -1208,7 +1200,7 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 		}
 	}
 
-	if (useConstantColorBuffer) {
+	if (usesConstantVertexColor(attributes)) {
 		bufferVector.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
 		offsets.push_back((VkDeviceSize)0);
 	}
@@ -1279,12 +1271,17 @@ void Graphics::endRenderPass() {
 VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
 	auto &shaderStages = configuration.shader->getShaderStages();
 
+	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+	
+	createVulkanVertexFormat(configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(configuration.vertexInputBindingDescriptions.size());
-	vertexInputInfo.pVertexBindingDescriptions = configuration.vertexInputBindingDescriptions.data();
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(configuration.vertexInputAttributeDescriptions.size());
-	vertexInputInfo.pVertexAttributeDescriptions = configuration.vertexInputAttributeDescriptions.data();
+	vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+	vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -1394,23 +1391,17 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 }
 
 void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration configuration) {
-	VkPipeline pipeline = VK_NULL_HANDLE;
-	for (auto const& p : graphicsPipelines) {
-		if (p.first == configuration) {
-			pipeline = p.second;
-			break;
-		}
-	}
-	if (pipeline != VK_NULL_HANDLE) {
-		if (currentGraphicsPipeline != pipeline) {
-			vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-			currentGraphicsPipeline = pipeline;
+	auto it = graphicsPipelines.find(configuration);
+	if (it != graphicsPipelines.end()) {
+		if (it->second != currentGraphicsPipeline) {
+			vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
+			currentGraphicsPipeline = it->second;
 		}
 	} else {
-		VkPipeline newPipeLine = createGraphicsPipeline(configuration);
-		graphicsPipelines.push_back(std::make_pair(configuration, newPipeLine));
-		vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, newPipeLine);
-		currentGraphicsPipeline = newPipeLine;
+		VkPipeline pipeline = createGraphicsPipeline(configuration);
+		graphicsPipelines.insert({configuration, pipeline});
+		vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+		currentGraphicsPipeline = pipeline;
 	}
 }
 
@@ -1488,78 +1479,6 @@ void Graphics::createQuadIndexBuffer() {
 	auto map = quadIndexBuffer->map(size);
 	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16*)map.data);
 	quadIndexBuffer->unmap(size);
-}
-
-bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other) {
-	if (first.scissorRect != other.scissorRect) {
-		return false;
-	}
-	if (first.viewportHeight != other.viewportHeight) {
-		return false;
-	}
-	if (first.viewportWidth != other.viewportWidth) {
-		return false;
-	}
-	if (first.framebufferFormat != other.framebufferFormat) {
-		return false;
-	}
-	if (first.cullmode != other.cullmode) {
-		return false;
-	}
-	if (first.winding != other.winding) {
-		return false;
-	}
-	if (first.colorChannelMask != other.colorChannelMask) {
-		return false;
-	}
-	if (!(first.blendState == other.blendState)) {	// not sure why != doesn't work
-		return false;
-	}
-	if (first.polygonMode != other.polygonMode) {
-		return false;
-	}
-	if (first.primitiveType != other.primitiveType) {
-		return false;
-	}
-	if (first.shader != other.shader) {
-		return false;
-	}
-	if (first.vertexInputAttributeDescriptions.size() != other.vertexInputAttributeDescriptions.size()) {
-		return false;
-	}
-	if (first.vertexInputBindingDescriptions.size() != other.vertexInputBindingDescriptions.size()) {
-		return false;
-	}
-	for (uint32_t i = 0; i < first.vertexInputAttributeDescriptions.size(); i++) {
-		const VkVertexInputAttributeDescription& x = first.vertexInputAttributeDescriptions[i];
-		const VkVertexInputAttributeDescription& y = other.vertexInputAttributeDescriptions[i];
-		if (x.binding != y.binding) {
-			return false;
-		}
-		if (x.location != y.location) {
-			return false;
-		}
-		if (x.offset != y.offset) {
-			return false;
-		}
-		if (x.format != y.format) {
-			return false;
-		}
-	}
-	for (uint32_t i = 0; i < first.vertexInputBindingDescriptions.size(); i++) {
-		const VkVertexInputBindingDescription& x = first.vertexInputBindingDescriptions[i];
-		const VkVertexInputBindingDescription& y = other.vertexInputBindingDescriptions[i];
-		if (x.binding != y.binding) {
-			return false;
-		}
-		if (x.inputRate != y.inputRate) {
-			return false;
-		}
-		if (x.stride != y.stride) {
-			return false;
-		}
-	}
-	return true;
 }
 
 void Graphics::cleanup() {

@@ -1,16 +1,20 @@
 #ifndef LOVE_GRAPHICS_VULKAN_GRAPHICS_H
 #define LOVE_GRAPHICS_VULKAN_GRAPHICS_H
 
+// löve
 #include "graphics/Graphics.h"
 #include "StreamBuffer.h"
 #include "ShaderStage.h"
 #include "Shader.h"
 #include "Texture.h"
-#include <vulkan/vulkan.h>
-#include "vk_mem_alloc.h"
-
 #include <common/config.h>
 
+// libraries
+#include <vulkan/vulkan.h>
+#include "vk_mem_alloc.h"
+#include "libraries/xxHash/xxhash.h"
+
+// c++
 #include <optional>
 #include <iostream>
 #include <memory>
@@ -21,8 +25,7 @@ namespace love {
 namespace graphics {
 namespace vulkan {
 struct GraphicsPipelineConfiguration {
-	std::vector<VkVertexInputBindingDescription> vertexInputBindingDescriptions;
-	std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+	VertexAttributes vertexAttributes;
 	Shader* shader = nullptr;
 	PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
 	VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
@@ -35,7 +38,19 @@ struct GraphicsPipelineConfiguration {
 	float viewportHeight;
 	std::optional<Rect> scissorRect;
 
-	friend static bool operator==(const GraphicsPipelineConfiguration& first, const GraphicsPipelineConfiguration& other);
+	GraphicsPipelineConfiguration() {
+		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
+	}
+
+	bool operator==(const GraphicsPipelineConfiguration& other) const {
+		return memcmp(this, &other, sizeof(GraphicsPipelineConfiguration)) == 0;
+	}
+};
+
+struct GraphicsPipelineConfigurationHasher {
+	size_t operator() (const GraphicsPipelineConfiguration &configuration) const {
+		return XXH32(&configuration, sizeof(GraphicsPipelineConfiguration), 0);
+	}
 };
 
 struct BatchedDrawBuffers {
@@ -169,7 +184,11 @@ private:
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	void updatedBatchedDrawBuffers();
-	void createVulkanVertexFormat(VertexAttributes vertexAttributes, bool& useConstantVertexColor, GraphicsPipelineConfiguration& configuration);
+	bool usesConstantVertexColor(const VertexAttributes&);
+	void createVulkanVertexFormat(
+		VertexAttributes vertexAttributes, 
+		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
+		std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
 	void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
 	void startRenderPass(Texture*, uint32_t w, uint32_t h);
 	void endRenderPass();
@@ -187,7 +206,7 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
-	std::vector<std::pair<GraphicsPipelineConfiguration, VkPipeline>> graphicsPipelines;	// FIXME improve performance by using a hash map
+	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkCommandBuffer> dataTransferCommandBuffers;
