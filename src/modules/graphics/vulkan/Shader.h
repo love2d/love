@@ -64,7 +64,10 @@ private:
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 
-	std::vector<StreamBuffer*> streamBuffers;
+	// we don't know how much memory we need per frame for the uniform buffer descriptors
+	// we keep a vector of stream buffers per frame in flight
+	// that gets dynamically increased if more memory is needed
+	std::vector<std::vector<StreamBuffer*>> streamBuffers;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
@@ -92,6 +95,7 @@ private:
 	graphics::Texture* crtexture;
 
 	uint32_t currentImage;
+	// todo: give this variable a better name
 	uint32_t count;
 };
 }

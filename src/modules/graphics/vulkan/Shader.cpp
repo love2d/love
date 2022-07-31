@@ -117,7 +117,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 	}
 };
 
-static const uint32_t STREAMBUFFER_SIZE = 1024;
+static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
 
 static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 	switch (type) {
@@ -174,8 +174,10 @@ void Shader::unloadVolatile() {
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	});
-	for (const auto streamBuffer : streamBuffers) {
-		delete streamBuffer;
+	for (const auto streamBufferVector : streamBuffers) {
+		for (const auto streamBuffer : streamBufferVector) {
+			delete streamBuffer;
+		}
 	}
 	shaderModules.clear();
 	shaderStages.clear();
@@ -200,24 +202,46 @@ static VkDescriptorImageInfo createDescriptorImageInfo(graphics::Texture* textur
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+	// detect wether a new frame has begun
 	if (currentImage != imageIndex) {
 		currentImage = imageIndex;
 		count = 0;
-		streamBuffers[currentImage]->nextFrame();
+
+		// we needed more memory last frame, let's collapse all buffers into a single one.
+		if (streamBuffers.at(currentImage).size() > 1) {
+			size_t newSize = 0;
+			for (auto streamBuffer : streamBuffers.at(currentImage)) {
+				newSize += streamBuffer->getSize();
+				delete streamBuffer;
+			}
+			streamBuffers.at(currentImage).clear();
+			streamBuffers.at(currentImage).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, newSize));
+		} 
+		// no collapse necessary, can just call nextFrame to reset the current (only) streambuffer
+		else {
+			streamBuffers.at(currentImage).at(0)->nextFrame();
+		}
 	}
+	// still the same frame
 	else {
-		if (count >= STREAMBUFFER_SIZE) {
-			throw love::Exception("uniform stream buffer: out of memory (fixme: resize)");
+		auto usedStreamBufferMemory = count * uniformBufferSizeAligned;
+		if (usedStreamBufferMemory >= streamBuffers.at(currentImage).back()->getSize()) {
+			// we ran out of memory in the current frame, need to allocate more.
+			streamBuffers.at(currentImage).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
+			count = 0;
 		}
 	}
 
-	auto mapInfo = streamBuffers[currentImage]->map(uniformBufferSizeAligned);
+	// additional data is always added onto the last stream buffer in the current frame
+	auto currentStreamBuffer = streamBuffers.at(currentImage).back();
+
+	auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
 	memcpy(mapInfo.data, &uniformData, uniformBufferSizeAligned);
-	streamBuffers[currentImage]->unmap(uniformBufferSizeAligned);
-	streamBuffers[currentImage]->markUsed(uniformBufferSizeAligned);
+	currentStreamBuffer->unmap(uniformBufferSizeAligned);
+	currentStreamBuffer->markUsed(uniformBufferSizeAligned);
 
 	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = (VkBuffer)streamBuffers[currentImage]->getHandle();
+	bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
 	bufferInfo.offset = count * uniformBufferSizeAligned;
 	bufferInfo.range = sizeof(BuiltinUniformData);
 	
@@ -471,7 +495,7 @@ void Shader::createStreamBuffers() {
 	const auto numImagesInFlight = vgfx->getNumImagesInFlight();
 	streamBuffers.resize(numImagesInFlight);
 	for (uint32_t i = 0; i < numImagesInFlight; i++) {
-		streamBuffers[i] = new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_SIZE * uniformBufferSizeAligned);
+		streamBuffers[i].push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
 	}
 }
 
