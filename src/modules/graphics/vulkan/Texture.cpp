@@ -44,7 +44,9 @@ bool Texture::loadVolatile() {
 		throw love::Exception("failed to create image");
 	}
 	// fixme: we should use VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL as the default image layout instead of VK_IMAGE_LAYOUT_GENERAL.
-	transitionImageLayout(textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+	vgfx->queueDatatransfer([textureImage = textureImage](VkCommandBuffer commandBuffer){
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+	}, nullptr);
 
 	if (data) {
 		auto sliceData = data->get(0, 0);
@@ -211,14 +213,6 @@ VkClearColorValue Texture::getClearValue(bool white) {
 	return clearColor;
 }
 
-void Texture::transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
-	auto commandBuffer = vgfx->beginSingleTimeCommands();
-
-	Vulkan::cmdTransitionImageLayout(commandBuffer, image, oldLayout, newLayout);
-
-	vgfx->endSingleTimeCommands(commandBuffer);
-}
-
 void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) {
 	VkBuffer stagingBuffer;
 	VmaAllocation vmaAllocation;
@@ -291,7 +285,11 @@ void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int 
 		region.imageExtent.width = static_cast<uint32_t>(rect.w);
 		region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 	}, nullptr);
 }
 
@@ -311,7 +309,11 @@ void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const 
 		region.imageExtent.width = static_cast<uint32_t>(rect.w);
 		region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
+
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 	}, nullptr);
 }
 

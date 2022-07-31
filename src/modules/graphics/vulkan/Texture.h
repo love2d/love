@@ -36,7 +36,6 @@ public:
 	VkSampler getSampler() const { return textureSampler; }
 
 private:
-	void transitionImageLayout(VkImage, VkImageLayout oldLayout, VkImageLayout newLayout);
 	void createTextureImageView();
 	void createTextureSampler();
 	void clear(bool white);
