@@ -50,6 +50,7 @@ private:
 	VkImageView textureImageView;
 	VkSampler textureSampler;
 	const Slices* data;
+	int layerCount = 0;
 };
 } // vulkan
 } // graphics

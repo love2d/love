@@ -453,7 +453,36 @@ VkCullModeFlags Vulkan::getCullMode(CullMode cullmode) {
 	}
 }
 
-void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
+VkImageType Vulkan::getImageType(TextureType textureType) {
+	switch (textureType) {
+	case TEXTURE_2D:
+	case TEXTURE_2D_ARRAY:
+		return VK_IMAGE_TYPE_2D;
+	case TEXTURE_VOLUME:
+	case TEXTURE_CUBE:
+		return VK_IMAGE_TYPE_3D;
+	default:
+		throw love::Exception("unknown texture type");
+	}
+}
+
+VkImageViewType Vulkan::getImageViewType(TextureType textureType) {
+	switch (textureType) {
+	case TEXTURE_2D:
+		return VK_IMAGE_VIEW_TYPE_2D;
+	case TEXTURE_2D_ARRAY:
+		return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	case TEXTURE_CUBE:
+		return VK_IMAGE_VIEW_TYPE_CUBE;
+	case TEXTURE_VOLUME:
+		return VK_IMAGE_VIEW_TYPE_3D;
+	default:
+		throw love::Exception("unknown texture type");
+	}
+}
+
+void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
+	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.oldLayout = oldLayout;
@@ -462,10 +491,10 @@ void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage ima
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.image = image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
+	barrier.subresourceRange.baseMipLevel = baseLevel;
+	barrier.subresourceRange.levelCount = levelCount;
+	barrier.subresourceRange.baseArrayLayer = baseLayer;
+	barrier.subresourceRange.layerCount = layerCount;
 
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;

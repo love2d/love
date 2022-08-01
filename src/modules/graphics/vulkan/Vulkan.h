@@ -41,8 +41,12 @@ public:
 	static VkColorComponentFlags getColorMask(ColorChannelMask);
 	static VkFrontFace getFrontFace(Winding);
 	static VkCullModeFlags getCullMode(CullMode);
+	static VkImageType getImageType(TextureType);
+	static VkImageViewType getImageViewType(TextureType);
 
-	static void cmdTransitionImageLayout(VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout);
+	static void cmdTransitionImageLayout(
+		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,
+		uint32_t baseLevel = 0, uint32_t levelCount = 1, uint32_t baseLayer = 0, uint32_t layerCount = 1);
 };
 } // vulkan
 } // graphics

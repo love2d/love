@@ -303,8 +303,8 @@ void Graphics::initCapabilities() {
 	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	capabilities.textureTypes[TEXTURE_2D] = true;
+	capabilities.textureTypes[TEXTURE_2D_ARRAY] = true;
 	capabilities.textureTypes[TEXTURE_VOLUME] = false;
-	capabilities.textureTypes[TEXTURE_2D_ARRAY] = false;
 	capabilities.textureTypes[TEXTURE_CUBE] = false;
 }
 

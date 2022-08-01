@@ -21,16 +21,29 @@ bool Texture::loadVolatile() {
 
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
-	VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	// fixme: can we cut down these flags?
+	VkImageUsageFlags usageFlags = 
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
+		VK_IMAGE_USAGE_SAMPLED_BIT | 
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	layerCount = 1;
+	if (texType == TEXTURE_VOLUME)
+		layerCount = getDepth();
+	else if (texType == TEXTURE_2D_ARRAY)
+		layerCount = getLayerCount();
+	else if (texType == TEXTURE_CUBE)
+		layerCount = 6;
 
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.imageType = Vulkan::getImageType(getTextureType());
 	imageInfo.extent.width = static_cast<uint32_t>(width);
 	imageInfo.extent.height = static_cast<uint32_t>(height);
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
+	imageInfo.arrayLayers = layerCount;
 	imageInfo.format = vulkanFormat.internalFormat;
 	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -44,21 +57,23 @@ bool Texture::loadVolatile() {
 		throw love::Exception("failed to create image");
 	}
 	// fixme: we should use VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL as the default image layout instead of VK_IMAGE_LAYOUT_GENERAL.
-	vgfx->queueDatatransfer([textureImage = textureImage](VkCommandBuffer commandBuffer){
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+	vgfx->queueDatatransfer([textureImage = textureImage, layerCount = layerCount](VkCommandBuffer commandBuffer){
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 0, 1, 0, layerCount);
 	}, nullptr);
 
 	if (data) {
-		auto sliceData = data->get(0, 0);
-		auto size = sliceData->getSize();
-		auto dataPtr = sliceData->getData();
-		Rect rect{};
-		rect.x = 0;
-		rect.y = 0;
-		rect.w = sliceData->getWidth();
-		rect.h = sliceData->getHeight();
+		for (int slice = 0; slice < layerCount; slice++) {
+			auto sliceData = data->get(slice, 0);
+			auto size = sliceData->getSize();
+			auto dataPtr = sliceData->getData();
+			Rect rect{};
+			rect.x = 0;
+			rect.y = 0;
+			rect.w = sliceData->getWidth();
+			rect.h = sliceData->getHeight();
 
-		uploadByteData(format, dataPtr, size, 0, 0, rect);
+			uploadByteData(format, dataPtr, size, 0, slice, rect);
+		}
 	} else {
 		if (isRenderTarget()) {
 			clear(false);
@@ -102,13 +117,13 @@ void Texture::createTextureImageView() {
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = textureImage;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
 	viewInfo.format = vulkanFormat.internalFormat;
 	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount = 1;
+	viewInfo.subresourceRange.layerCount = layerCount;
 	viewInfo.components.r = vulkanFormat.swizzleR;
 	viewInfo.components.g = vulkanFormat.swizzleG;
 	viewInfo.components.b = vulkanFormat.swizzleB;
@@ -154,7 +169,7 @@ void Texture::clear(bool white) {
 
 	VkImageSubresourceRange range{};
 	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	range.layerCount = getMipmapCount();
+	range.layerCount = layerCount;
 	range.levelCount = 1;
 
 	vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
@@ -231,15 +246,15 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 
 	memcpy(allocInfo.pMappedData, data, size);
 
-	auto command = [buffer = stagingBuffer, image = textureImage, r = r](VkCommandBuffer commandBuffer) {
+	auto command = [buffer = stagingBuffer, image = textureImage, r = r, level = level, slice = slice](VkCommandBuffer commandBuffer) {
 		VkBufferImageCopy region{};
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
 
 		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = 0;
-		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.mipLevel = level;
+		region.imageSubresource.baseArrayLayer = slice;
 		region.imageSubresource.layerCount = 1;
 
 		region.imageOffset = { r.x, r.y, 0 };
@@ -248,7 +263,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 			static_cast<uint32_t>(r.h), 1
 		};
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, level, 1, slice, 1);
 
 		vkCmdCopyBufferToImage(
 			commandBuffer,
@@ -259,7 +274,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 			&region
 		);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, level, 1, slice, 1);
 	};
 
 	auto cleanUp = [allocator = allocator, stagingBuffer, vmaAllocation]() {
