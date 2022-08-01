@@ -182,7 +182,6 @@ private:
 	void createCommandBuffers();
 	void createSyncObjects();
 	void createDefaultTexture();
-	void createQuadIndexBuffer();
 	void cleanup();
 	void cleanupSwapChain();
 	void recreateSwapChain();
@@ -230,7 +229,6 @@ private:
 	bool framebufferResized = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	std::unique_ptr<Texture> standardTexture = nullptr;
-	std::unique_ptr<StreamBuffer> quadIndexBuffer = nullptr;
 	// we need an array of draw buffers, since the frames are being rendered asynchronously
 	// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
 	std::vector<BatchedDrawBuffers> batchedDrawBuffers;

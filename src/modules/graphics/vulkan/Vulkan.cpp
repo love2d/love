@@ -301,6 +301,8 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format) {
 		case PIXELFORMAT_ASTC_12x10:
 		case PIXELFORMAT_ASTC_12x12:
 			throw love::Exception("unimplemented pixel format");
+		default:
+			throw love::Exception("unknown pixel format");
 	}
 
 	return textureFormat;

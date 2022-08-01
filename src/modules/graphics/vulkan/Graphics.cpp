@@ -1266,7 +1266,6 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
-	// fixme: determine actual values
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerInfo.magFilter = Vulkan::getFilter(samplerState.magFilter);
@@ -1511,18 +1510,10 @@ void Graphics::createDefaultTexture() {
 	standardTexture.reset((Texture*)newTexture(settings));
 }
 
-void Graphics::createQuadIndexBuffer() {
-	if (quadIndexBuffer != nullptr)
-		return;
-
-	size_t size = sizeof(uint16) * getIndexCount(TRIANGLEINDEX_QUADS, LOVE_UINT16_MAX);
-	quadIndexBuffer.reset((StreamBuffer*)newStreamBuffer(BUFFERUSAGE_INDEX, size));
-	auto map = quadIndexBuffer->map(size);
-	fillIndices(TRIANGLEINDEX_QUADS, 0, LOVE_UINT16_MAX, (uint16*)map.data);
-	quadIndexBuffer->unmap(size);
-}
-
 void Graphics::cleanup() {
+	delete quadIndexBuffer;
+	quadIndexBuffer = nullptr;
+
 	cleanupSwapChain();
 
 	for (auto &cleanUpFns : cleanUpFunctions) {

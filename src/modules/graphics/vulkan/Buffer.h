@@ -2,9 +2,10 @@
 #define LOVE_GRAPHICS_VULKAN_BUFFER_H
 
 #include "graphics/Buffer.h"
+#include "graphics/Volatile.h"
+
 #include <vulkan/vulkan.h>
 #include "vk_mem_alloc.h"
-#include "graphics/Volatile.h"
 
 
 namespace love {
