@@ -469,6 +469,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets& rts, int pixelw, in
 	if (rts.colors.size() == 0) {
 		startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
 	} else {
+		// fixme: multi canvas render.
 		auto& firstRenderTarget = rts.getFirstTarget();
 		startRenderPass(static_cast<Texture*>(firstRenderTarget.texture), pixelw, pixelh);
 	}
@@ -1492,6 +1493,15 @@ void Graphics::cleanup() {
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
 
+	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
+
+	// fixme: maybe we should clean up some pipelines if they haven't been used in a while.
+	for (auto const& p : graphicsPipelines) {
+		vkDestroyPipeline(device, p.second, nullptr);
+	}
+	graphicsPipelines.clear();
+
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -1499,14 +1509,6 @@ void Graphics::cleanup() {
 }
 
 void Graphics::cleanupSwapChain() {
-	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
-	for (auto const& p : graphicsPipelines) {
-		vkDestroyPipeline(device, p.second, nullptr);
-	}
-	graphicsPipelines.clear();
-	currentGraphicsPipeline = VK_NULL_HANDLE;
 	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 		vkDestroyImageView(device, swapChainImageViews[i], nullptr);
 	}
@@ -1520,8 +1522,6 @@ void Graphics::recreateSwapChain() {
 
 	createSwapChain();
 	createImageViews();
-	createCommandBuffers();
-	startRecordingGraphicsCommands();
 }
 
 love::graphics::Graphics* createInstance() {

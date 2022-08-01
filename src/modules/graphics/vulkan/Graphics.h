@@ -210,7 +210,6 @@ private:
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkCommandBuffer> dataTransferCommandBuffers;
-	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
