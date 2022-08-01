@@ -44,6 +44,10 @@ public:
 	static VkImageType getImageType(TextureType);
 	static VkImageViewType getImageViewType(TextureType);
 	static VkPolygonMode getPolygonMode(bool wireframe);
+	static VkFilter getFilter(SamplerState::FilterMode);
+	static VkSamplerAddressMode getWrapMode(SamplerState::WrapMode);
+	static VkCompareOp getCompareOp(CompareMode);
+	static VkSamplerMipmapMode getMipMapMode(SamplerState::MipmapFilterMode);
 
 	static void cmdTransitionImageLayout(
 		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,

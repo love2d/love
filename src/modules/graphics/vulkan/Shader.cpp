@@ -196,8 +196,8 @@ static VkDescriptorImageInfo createDescriptorImageInfo(graphics::Texture* textur
 	VkDescriptorImageInfo imageInfo{};
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	Texture* vkTexture = (Texture*)texture;
-	imageInfo.imageView = vkTexture->getImageView();
-	imageInfo.sampler = vkTexture->getSampler();
+	imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
+	imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
 	return imageInfo;
 }
 

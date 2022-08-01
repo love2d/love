@@ -1220,7 +1220,7 @@ void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
 	colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	if (texture) {
-		colorAttachmentInfo.imageView = texture->getImageView();
+		colorAttachmentInfo.imageView = (VkImageView)texture->getRenderTargetHandle();
 		auto vulkanFormat = Vulkan::getTextureFormat(texture->getPixelFormat());
 		currentFramebufferOutputFormat = vulkanFormat.internalFormat;
 
@@ -1259,6 +1259,53 @@ void Graphics::endRenderPass() {
 	if (renderTargetTexture) {
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 		renderTargetTexture = nullptr;
+	}
+}
+
+VkSampler Graphics::createSampler(const SamplerState& samplerState) {
+	VkPhysicalDeviceProperties properties{};
+	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+	// fixme: determine actual values
+	VkSamplerCreateInfo samplerInfo{};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = Vulkan::getFilter(samplerState.magFilter);
+	samplerInfo.minFilter = Vulkan::getFilter(samplerState.minFilter);
+	samplerInfo.addressModeU = Vulkan::getWrapMode(samplerState.wrapU);
+	samplerInfo.addressModeV = Vulkan::getWrapMode(samplerState.wrapV);
+	samplerInfo.addressModeW = Vulkan::getWrapMode(samplerState.wrapW);
+	samplerInfo.anisotropyEnable = VK_TRUE;
+	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;	// fixme: samplerState.maxAnisotropy
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	if (samplerState.depthSampleMode.hasValue) {
+		samplerInfo.compareEnable = VK_TRUE;
+		samplerInfo.compareOp = Vulkan::getCompareOp(samplerState.depthSampleMode.value);
+	} else {
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	}
+	samplerInfo.mipmapMode = Vulkan::getMipMapMode(samplerState.mipmapFilter);
+	samplerInfo.mipLodBias = samplerState.lodBias;
+	samplerInfo.minLod = 0.0f;	// fixme: samplerState.minLod
+	samplerInfo.maxLod = 0.0f;	// fixme: samplerState.maxLod
+
+	VkSampler sampler;
+	if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+		throw love::Exception("failed to create sampler");
+	}
+
+	return sampler;
+}
+
+VkSampler Graphics::getCachedSampler(const SamplerState& samplerState) {
+	auto it = samplers.find(samplerState);
+	if (it != samplers.end()) {
+		return it->second;
+	} else {
+		VkSampler sampler = createSampler(samplerState);
+		samplers.insert({samplerState, sampler});
+		return sampler;
 	}
 }
 
@@ -1495,6 +1542,11 @@ void Graphics::cleanup() {
 
 	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
+
+	for (auto const& p : samplers) {
+		vkDestroySampler(device, p.second, nullptr);
+	}
+	samplers.clear();
 
 	// fixme: maybe we should clean up some pipelines if they haven't been used in a while.
 	for (auto const& p : graphicsPipelines) {

@@ -53,6 +53,12 @@ struct GraphicsPipelineConfigurationHasher {
 	}
 };
 
+struct SamplerStateHasher {
+	size_t operator()(const SamplerState &samplerState) const {
+		return XXH32(&samplerState, sizeof(SamplerState), 0);
+	}
+};
+
 struct BatchedDrawBuffers {
 	StreamBuffer* vertexBuffer1;
 	StreamBuffer* vertexBuffer2;
@@ -139,6 +145,7 @@ public:
 	const PFN_vkCmdPushDescriptorSetKHR getVkCmdPushDescriptorSetKHRFunctionPointer() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture* getDefaultTexture() const;
+	VkSampler getCachedSampler(const SamplerState&);
 
 protected:
 	graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
@@ -192,6 +199,7 @@ private:
 	void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
 	void startRenderPass(Texture*, uint32_t w, uint32_t h);
 	void endRenderPass();
+	VkSampler createSampler(const SamplerState&);
 
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -207,6 +215,7 @@ private:
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
+	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkCommandBuffer> dataTransferCommandBuffers;

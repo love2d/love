@@ -139,6 +139,10 @@ struct SamplerState
 	static bool getConstant(const char *in, WrapMode &out);
 	static bool getConstant(WrapMode in, const char *&out);
 	static std::vector<std::string> getConstants(WrapMode);
+
+	bool operator==(const SamplerState& other) const {
+		return memcmp(this, &other, sizeof(SamplerState)) == 0;
+	}
 };
 
 /**

@@ -489,6 +489,67 @@ VkPolygonMode Vulkan::getPolygonMode(bool wireframe) {
 	}
 }
 
+VkFilter Vulkan::getFilter(SamplerState::FilterMode mode) {
+	switch (mode) {
+	case SamplerState::FILTER_LINEAR:
+		return VK_FILTER_LINEAR;
+	case SamplerState::FILTER_NEAREST:
+		return VK_FILTER_NEAREST;
+	default:
+		throw love::Exception("unkonwn filter mode");
+	}
+}
+
+VkSamplerAddressMode Vulkan::getWrapMode(SamplerState::WrapMode mode) {
+	switch (mode) {
+		//fixme: not accounting for different clamps (how does that work in vulkan?)
+	case SamplerState::WRAP_CLAMP:
+	case SamplerState::WRAP_CLAMP_ZERO:
+	case SamplerState::WRAP_CLAMP_ONE:
+		return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	case SamplerState::WRAP_REPEAT:
+		return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	case SamplerState::WRAP_MIRRORED_REPEAT:
+		return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+	default:
+		throw love::Exception("unknown wrap mode");
+	}
+}
+
+VkCompareOp Vulkan::getCompareOp(CompareMode mode) {
+	switch (mode) {
+	case COMPARE_LESS:
+		return VK_COMPARE_OP_LESS;
+	case COMPARE_LEQUAL:
+		return VK_COMPARE_OP_LESS_OR_EQUAL;
+	case COMPARE_EQUAL:
+		return VK_COMPARE_OP_EQUAL;
+	case COMPARE_GEQUAL:
+		return VK_COMPARE_OP_GREATER_OR_EQUAL;
+	case COMPARE_GREATER:
+		return VK_COMPARE_OP_GREATER;
+	case COMPARE_NOTEQUAL:
+		return VK_COMPARE_OP_NOT_EQUAL;
+	case COMPARE_ALWAYS:
+		return VK_COMPARE_OP_ALWAYS;
+	case COMPARE_NEVER:
+		return VK_COMPARE_OP_NEVER;
+	default:
+		throw love::Exception("unknown compare mode");
+	}
+}
+
+VkSamplerMipmapMode Vulkan::getMipMapMode(SamplerState::MipmapFilterMode mode) {
+	switch (mode) {
+	case SamplerState::MIPMAP_FILTER_NEAREST:
+		return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	case SamplerState::MIPMAP_FILTER_NONE:
+	case SamplerState::MIPMAP_FILTER_LINEAR:
+	default:
+		return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	}
+}
+
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
 	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
 	VkImageMemoryBarrier barrier{};
