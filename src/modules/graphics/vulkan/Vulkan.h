@@ -43,6 +43,7 @@ public:
 	static VkCullModeFlags getCullMode(CullMode);
 	static VkImageType getImageType(TextureType);
 	static VkImageViewType getImageViewType(TextureType);
+	static VkPolygonMode getPolygonMode(bool wireframe);
 
 	static void cmdTransitionImageLayout(
 		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,

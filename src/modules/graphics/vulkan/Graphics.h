@@ -28,7 +28,7 @@ struct GraphicsPipelineConfiguration {
 	VertexAttributes vertexAttributes;
 	Shader* shader = nullptr;
 	PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
-	VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
+	bool wireFrame;
 	BlendState blendState;
 	ColorChannelMask colorChannelMask;
 	Winding winding;
@@ -230,7 +230,6 @@ private:
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	graphics::Texture* currentTexture = nullptr;
-	VkPolygonMode currentPolygonMode = VK_POLYGON_MODE_FILL;
 
 	// render pass variables.
 	VkFormat currentFramebufferOutputFormat = VK_FORMAT_UNDEFINED;

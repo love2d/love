@@ -250,7 +250,6 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	updatedBatchedDrawBuffers();
 
 	Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
-	currentPolygonMode = VK_POLYGON_MODE_FILL;
 	restoreState(states.back());
 	
 	setViewportSize(width, height, pixelwidth, pixelheight);
@@ -427,13 +426,6 @@ void Graphics::setScissor() {
 
 void Graphics::setWireframe(bool enable) {
 	flushBatchedDraws();
-
-	if (enable) {
-		currentPolygonMode = VK_POLYGON_MODE_LINE;
-	}
-	else {
-		currentPolygonMode = VK_POLYGON_MODE_FILL;
-	}
 
 	states.back().wireframe = enable;
 }
@@ -876,6 +868,7 @@ void Graphics::createLogicalDevice() {
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
+	deviceFeatures.fillModeNonSolid = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -1176,7 +1169,7 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.primitiveType = primitiveType;
-	configuration.polygonMode = currentPolygonMode;
+	configuration.wireFrame = states.back().wireframe;
 	configuration.blendState = states.back().blend;
 	configuration.colorChannelMask = states.back().colorMask;
 	configuration.winding = states.back().winding;
@@ -1319,7 +1312,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = configuration.polygonMode;
+	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = Vulkan::getCullMode(configuration.cullmode);
 	rasterizer.frontFace = Vulkan::getFrontFace(configuration.winding);

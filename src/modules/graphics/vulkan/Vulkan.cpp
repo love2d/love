@@ -481,6 +481,14 @@ VkImageViewType Vulkan::getImageViewType(TextureType textureType) {
 	}
 }
 
+VkPolygonMode Vulkan::getPolygonMode(bool wireframe) {
+	if (wireframe) {
+		return VK_POLYGON_MODE_LINE;
+	} else {
+		return VK_POLYGON_MODE_FILL;
+	}
+}
+
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
 	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
 	VkImageMemoryBarrier barrier{};
