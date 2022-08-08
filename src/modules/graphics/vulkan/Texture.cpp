@@ -11,7 +11,11 @@ namespace love {
 namespace graphics {
 namespace vulkan {
 Texture::Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data)
-	: love::graphics::Texture(gfx, settings, data), gfx(gfx), data(data) {
+	: love::graphics::Texture(gfx, settings, data), gfx(gfx), slices(settings.type) {
+	if (data) {
+		slices = *data;
+	}
+
 	loadVolatile();
 }
 
@@ -42,8 +46,8 @@ bool Texture::loadVolatile() {
 	imageInfo.extent.width = static_cast<uint32_t>(width);
 	imageInfo.extent.height = static_cast<uint32_t>(height);
 	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = layerCount;
+	imageInfo.mipLevels = static_cast<uint32_t>(getMipmapCount());
+	imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
 	imageInfo.format = vulkanFormat.internalFormat;
 	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -60,31 +64,33 @@ bool Texture::loadVolatile() {
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
 	// fixme: we probably should select a different default layout when the texture is not readable, instead of VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1, 0, layerCount);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+		0, static_cast<uint32_t>(getMipmapCount()), 
+		0, static_cast<uint32_t>(layerCount));
 
-	if (data) {
-		for (int slice = 0; slice < layerCount; slice++) {
-			auto sliceData = data->get(slice, 0);
-			auto size = sliceData->getSize();
-			auto dataPtr = sliceData->getData();
-			Rect rect{};
-			rect.x = 0;
-			rect.y = 0;
-			rect.w = sliceData->getWidth();
-			rect.h = sliceData->getHeight();
+	bool hasdata = slices.get(0, 0) != nullptr;
 
-			uploadByteData(format, dataPtr, size, 0, slice, rect);
+	if (hasdata) {
+		for (int mip = 0; mip < layerCount; mip++) {
+			// fixme: deal with compressed images.
+
+			for (int slice = 0; slice < slices.getSliceCount(mip); slice++) {
+				auto* id = slices.get(slice, mip);
+				if (id != nullptr) {
+					uploadImageData(id, mip, slice, 0, 0);
+				}
+			}
 		}
 	} else {
-		if (isRenderTarget()) {
-			clear(false);
-		}
-		else {
-			clear(true);
-		}
+		clear();
 	}
 	createTextureImageView();
 	textureSampler = vgfx->getCachedSampler(samplerState);
+
+	if (slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE) {
+		generateMipmaps();
+	}
 
 	return true;
 }
@@ -138,21 +144,25 @@ void Texture::createTextureImageView() {
 	}
 }
 
-void Texture::clear(bool white) {
+void Texture::clear() {
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-	auto clearColor = getClearValue(white);
+	auto clearColor = getClearValue(false);
 
 	VkImageSubresourceRange range{};
 	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	range.layerCount = layerCount;
-	range.levelCount = 1;
+	range.layerCount = static_cast<uint32_t>(layerCount);
+	range.levelCount = static_cast<uint32_t>(getMipmapCount());
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 1, 0, layerCount);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		0, range.levelCount, 0, range.layerCount);
 
 	vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, 1, 0, layerCount);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+		0, range.levelCount, 0, range.layerCount);
 }
 
 VkClearColorValue Texture::getClearValue(bool white) {
@@ -206,6 +216,83 @@ VkClearColorValue Texture::getClearValue(bool white) {
 	return clearColor;
 }
 
+void Texture::generateMipmapsInternal() {
+	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		0, static_cast<uint32_t>(getMipmapCount()), 0, static_cast<uint32_t>(layerCount));
+
+	VkImageMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.image = textureImage;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = static_cast<uint32_t>(layerCount);
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1u;
+
+	uint32_t mipLevels = static_cast<uint32_t>(getMipmapCount());
+
+	for (uint32_t i = 1; i < mipLevels; i++) {
+		barrier.subresourceRange.baseMipLevel = i - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+
+		VkImageBlit blit{};
+		blit.srcOffsets[0] = { 0, 0, 0 };
+		blit.srcOffsets[1] = { getWidth(i - 1), getHeight(i - 1), 1 };
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.mipLevel = i - 1;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = static_cast<uint32_t>(layerCount);
+
+		blit.dstOffsets[0] = { 0, 0, 0 };
+		blit.dstOffsets[1] = { getWidth(i), getHeight(i), 1 };
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.mipLevel = i;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = static_cast<uint32_t>(layerCount);
+
+		vkCmdBlitImage(commandBuffer, 
+			textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &blit,
+			VK_FILTER_LINEAR);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+	}
+
+	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	vkCmdPipelineBarrier(commandBuffer,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier);
+}
+
 void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) {
 	VkBuffer stagingBuffer;
 	VmaAllocation vmaAllocation;
@@ -242,7 +329,9 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, level, 1, slice, 1);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		level, 1, slice, 1);
 
 	vkCmdCopyBufferToImage(
 		commandBuffer,
@@ -253,7 +342,9 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 		&region
 	);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, level, 1, slice, 1);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+		level, 1, slice, 1);
 
 	vgfx->queueCleanUp([allocator = allocator, stagingBuffer, vmaAllocation]() {
 		vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);

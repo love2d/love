@@ -19,7 +19,7 @@ public:
 
 	virtual bool loadVolatile() override;
 	virtual void unloadVolatile() override;
-
+	 
 	void setSamplerState(const SamplerState &s) override;
 
 	void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override;
@@ -30,25 +30,25 @@ public:
 
 	void uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) override;
 
-	void generateMipmapsInternal()  override { };
+	void generateMipmapsInternal()  override;
 
 	int getMSAA() const override { return 0; };
 	ptrdiff_t getHandle() const override { return (ptrdiff_t)textureImage; }
 
 private:
 	void createTextureImageView();
-	void clear(bool white);
+	void clear();
 
 	VkClearColorValue getClearValue(bool white);
 
-	graphics::Graphics* gfx;
-	VkDevice device;
-	VmaAllocator allocator;
+	graphics::Graphics* gfx = nullptr;
+	VkDevice device = VK_NULL_HANDLE;
+	VmaAllocator allocator = VK_NULL_HANDLE;
 	VkImage textureImage = VK_NULL_HANDLE;
-	VmaAllocation textureImageAllocation;
-	VkImageView textureImageView;
-	VkSampler textureSampler;
-	const Slices* data;
+	VmaAllocation textureImageAllocation = VK_NULL_HANDLE;
+	VkImageView textureImageView = VK_NULL_HANDLE;
+	VkSampler textureSampler = VK_NULL_HANDLE;
+	Slices slices;
 	int layerCount = 0;
 };
 } // vulkan

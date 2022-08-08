@@ -138,9 +138,6 @@ public:
 	VkCommandBuffer getDataTransferCommandBuffer();
 	void queueCleanUp(std::function<void()> cleanUp);
 
-	VkCommandBuffer beginSingleTimeCommands();
-	void endSingleTimeCommands(VkCommandBuffer);
-
 	uint32_t getNumImagesInFlight() const;
 	const PFN_vkCmdPushDescriptorSetKHR getVkCmdPushDescriptorSetKHRFunctionPointer() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
@@ -222,8 +219,8 @@ private:
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
-	VkDeviceSize minUniformBufferOffsetAlignment;
-	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
+	VkDeviceSize minUniformBufferOffsetAlignment = 0;
+	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet = nullptr;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	bool framebufferResized = false;
@@ -239,7 +236,7 @@ private:
 
 	// render pass variables.
 	VkFormat currentFramebufferOutputFormat = VK_FORMAT_UNDEFINED;
-	Texture* renderTargetTexture;
+	Texture* renderTargetTexture = nullptr;
 	float currentViewportWidth = 0;
 	float currentViewportHeight = 0;
 };

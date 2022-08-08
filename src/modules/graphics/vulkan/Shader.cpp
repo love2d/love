@@ -174,7 +174,7 @@ void Shader::unloadVolatile() {
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	});
-	for (const auto streamBufferVector : streamBuffers) {
+	for (const auto &streamBufferVector : streamBuffers) {
 		for (const auto streamBuffer : streamBufferVector) {
 			delete streamBuffer;
 		}

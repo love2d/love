@@ -563,38 +563,6 @@ void Graphics::queueCleanUp(std::function<void()> cleanUp) {
 	cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
 }
 
-VkCommandBuffer Graphics::beginSingleTimeCommands() {
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = commandPool;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-	return commandBuffer;
-}
-
-void Graphics::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
-	vkEndCommandBuffer(commandBuffer);
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicsQueue);
-	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
-}
-
 graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
 	love::graphics::Shader::BuiltinUniformData data;
 
@@ -641,9 +609,9 @@ void Graphics::createVulkanInstance() {
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "LOVE";
-	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
+	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	//todo, get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Engine";
-	appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
+	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
 	appInfo.apiVersion = vulkanApiVersion;
 
 	VkInstanceCreateInfo createInfo{};
@@ -1283,8 +1251,8 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 	}
 	samplerInfo.mipmapMode = Vulkan::getMipMapMode(samplerState.mipmapFilter);
 	samplerInfo.mipLodBias = samplerState.lodBias;
-	samplerInfo.minLod = 0.0f;	// fixme: samplerState.minLod
-	samplerInfo.maxLod = 0.0f;	// fixme: samplerState.maxLod
+	samplerInfo.minLod = static_cast<float>(samplerState.minLod);
+	samplerInfo.maxLod = static_cast<float>(samplerState.maxLod);
 
 	VkSampler sampler;
 	if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
@@ -1505,6 +1473,8 @@ void Graphics::createSyncObjects() {
 void Graphics::createDefaultTexture() {
 	Texture::Settings settings;
 	standardTexture.reset((Texture*)newTexture(settings));
+	uint8_t whitePixels[] = {255, 255, 255, 255};
+	standardTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
 }
 
 void Graphics::cleanup() {
