@@ -135,7 +135,7 @@ public:
 	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
 	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
 
-	void queueDatatransfer(std::function<void(VkCommandBuffer)> command, std::function<void()> cleanUp);
+	VkCommandBuffer getDataTransferCommandBuffer();
 	void queueCleanUp(std::function<void()> cleanUp);
 
 	VkCommandBuffer beginSingleTimeCommands();

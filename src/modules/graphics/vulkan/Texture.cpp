@@ -56,10 +56,11 @@ bool Texture::loadVolatile() {
 	if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS) {
 		throw love::Exception("failed to create image");
 	}
+
+	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+
 	// fixme: we should use VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL as the default image layout instead of VK_IMAGE_LAYOUT_GENERAL.
-	vgfx->queueDatatransfer([textureImage = textureImage, layerCount = layerCount](VkCommandBuffer commandBuffer){
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 0, 1, 0, layerCount);
-	}, nullptr);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 0, 1, 0, layerCount);
 
 	if (data) {
 		for (int slice = 0; slice < layerCount; slice++) {
@@ -221,90 +222,88 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 
 	memcpy(allocInfo.pMappedData, data, size);
 
-	auto command = [buffer = stagingBuffer, image = textureImage, r = r, level = level, slice = slice](VkCommandBuffer commandBuffer) {
-		VkBufferImageCopy region{};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;
-		region.bufferImageHeight = 0;
+	VkBufferImageCopy region{};
+	region.bufferOffset = 0;
+	region.bufferRowLength = 0;
+	region.bufferImageHeight = 0;
 
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel = level;
-		region.imageSubresource.baseArrayLayer = slice;
-		region.imageSubresource.layerCount = 1;
+	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.mipLevel = level;
+	region.imageSubresource.baseArrayLayer = slice;
+	region.imageSubresource.layerCount = 1;
 
-		region.imageOffset = { r.x, r.y, 0 };
-		region.imageExtent = {
-			static_cast<uint32_t>(r.w),
-			static_cast<uint32_t>(r.h), 1
-		};
-
-		Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, level, 1, slice, 1);
-
-		vkCmdCopyBufferToImage(
-			commandBuffer,
-			buffer,
-			image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1,
-			&region
-		);
-
-		Vulkan::cmdTransitionImageLayout(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, level, 1, slice, 1);
+	region.imageOffset = { r.x, r.y, 0 };
+	region.imageExtent = {
+		static_cast<uint32_t>(r.w),
+		static_cast<uint32_t>(r.h), 1
 	};
 
-	auto cleanUp = [allocator = allocator, stagingBuffer, vmaAllocation]() {
+	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, level, 1, slice, 1);
+
+	vkCmdCopyBufferToImage(
+		commandBuffer,
+		stagingBuffer,
+		textureImage,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		1,
+		&region
+	);
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, level, 1, slice, 1);
+
+	vgfx->queueCleanUp([allocator = allocator, stagingBuffer, vmaAllocation]() {
 		vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
-	};
-
-	vgfx->queueDatatransfer(command, cleanUp);
+	});
 }
 
 void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) {
-	vgfx->queueDatatransfer([source, textureImage = textureImage, rect=rect, sourceoffset, sourcewidth, size, slice, mipmap](VkCommandBuffer commandBuffer){
-		VkImageSubresourceLayers layers{};
-		layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		layers.mipLevel = mipmap;
-		layers.baseArrayLayer = slice;
-		layers.layerCount = 1;
+	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-		VkBufferImageCopy region{};
-		region.bufferOffset = sourceoffset;
-		region.bufferRowLength = sourcewidth;
-		region.bufferImageHeight = 1;
-		region.imageSubresource = layers;
-		region.imageExtent.width = static_cast<uint32_t>(rect.w);
-		region.imageExtent.height = static_cast<uint32_t>(rect.h);
+	VkImageSubresourceLayers layers{};
+	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	layers.mipLevel = mipmap;
+	layers.baseArrayLayer = slice;
+	layers.layerCount = 1;
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	VkBufferImageCopy region{};
+	region.bufferOffset = sourceoffset;
+	region.bufferRowLength = sourcewidth;
+	region.bufferImageHeight = 1;
+	region.imageSubresource = layers;
+	region.imageExtent.width = static_cast<uint32_t>(rect.w);
+	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
-		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
-	}, nullptr);
+	vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 }
 
 void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) {
-	vgfx->queueDatatransfer([dest, textureImage = textureImage, rect=rect, destoffset, destwidth, size, slice, mipmap](VkCommandBuffer commandBuffer){
-		VkImageSubresourceLayers layers{};
-		layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		layers.mipLevel = mipmap;
-		layers.baseArrayLayer = slice;
-		layers.layerCount = 1;
+	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-		VkBufferImageCopy region{};
-		region.bufferOffset = destoffset;
-		region.bufferRowLength = destwidth;
-		region.bufferImageHeight = 1;
-		region.imageSubresource = layers;
-		region.imageExtent.width = static_cast<uint32_t>(rect.w);
-		region.imageExtent.height = static_cast<uint32_t>(rect.h);
+	VkImageSubresourceLayers layers{};
+	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	layers.mipLevel = mipmap;
+	layers.baseArrayLayer = slice;
+	layers.layerCount = 1;
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	VkBufferImageCopy region{};
+	region.bufferOffset = destoffset;
+	region.bufferRowLength = destwidth;
+	region.bufferImageHeight = 1;
+	region.imageSubresource = layers;
+	region.imageExtent.width = static_cast<uint32_t>(rect.w);
+	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
-		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
-	}, nullptr);
+	vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
 }
 
 } // vulkan
