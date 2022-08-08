@@ -216,13 +216,13 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	initCapabilities();
 	createSwapChain();
 	createImageViews();
+	createSyncObjects();
 	createCommandPool();
 	createCommandBuffers();
+	startRecordingGraphicsCommands();
+	createQuadIndexBuffer();
 	createDefaultTexture();
 	createDefaultShaders();
-	createQuadIndexBuffer();
-	createSyncObjects();
-	startRecordingGraphicsCommands();
 	currentFrame = 0;
 
 	created = true;
@@ -1242,7 +1242,7 @@ void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
 	currentViewportHeight = (float)h;
 
 	if (renderTargetTexture) {
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)texture->getHandle(), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	}
 
 	vkCmdBeginRendering(commandBuffers.at(imageIndex), &renderingInfo);
@@ -1254,7 +1254,7 @@ void Graphics::endRenderPass() {
 	vkCmdEndRendering(commandBuffers.at(imageIndex));
 
 	if (renderTargetTexture) {
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		renderTargetTexture = nullptr;
 	}
 }

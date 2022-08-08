@@ -194,7 +194,7 @@ const VkPipelineLayout Shader::getGraphicsPipelineLayout() const {
 
 static VkDescriptorImageInfo createDescriptorImageInfo(graphics::Texture* texture) {
 	VkDescriptorImageInfo imageInfo{};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	Texture* vkTexture = (Texture*)texture;
 	imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
 	imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
