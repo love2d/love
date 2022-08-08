@@ -127,6 +127,9 @@ public:
 
 	void requestAttention(bool continuous) override;
 
+	bool setOpacity(float opacity);
+	float getOpacity();
+
 	const char *getName() const override;
 
 private:

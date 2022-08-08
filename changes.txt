@@ -45,6 +45,7 @@ Released: N/A
 * Added love.keyboard.isModifierActive.
 * Added love.system.getPreferredLocales.
 * Added love.localechanged callback.
+* Added love.window.setOpacity and love.window.getOpacity.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.

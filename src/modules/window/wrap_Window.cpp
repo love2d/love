@@ -632,6 +632,19 @@ int w_requestAttention(lua_State *L)
 	return 0;
 }
 
+int w_setOpacity(lua_State *L)
+{
+	float opacity = (float) luaL_checknumber(L, 1);
+	lua_pushboolean(L, instance()->setOpacity(opacity));
+	return 1;
+}
+
+int w_getOpacity(lua_State *L)
+{
+	lua_pushnumber(L, instance()->getOpacity());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
@@ -672,6 +685,8 @@ static const luaL_Reg functions[] =
 	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },
 	{ "requestAttention", w_requestAttention },
+	{ "setOpacity", w_setOpacity },
+	{ "getOpacity", w_getOpacity },
 	{ 0, 0 }
 };
 

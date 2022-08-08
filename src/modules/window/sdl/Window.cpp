@@ -1488,6 +1488,20 @@ void Window::requestAttention(bool continuous)
 	// TODO: Linux?
 }
 
+bool Window::setOpacity(float opacity)
+{
+	int error = SDL_SetWindowOpacity(window, opacity);
+	return error == 0;
+}
+
+float Window::getOpacity()
+{
+	float opacity;
+	int error = SDL_GetWindowOpacity(window, &opacity);
+	// TODO: Handle error
+	return opacity;
+}
+
 const char *Window::getName() const
 {
 	return "love.window.sdl";

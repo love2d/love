@@ -221,6 +221,9 @@ public:
 
 	virtual void requestAttention(bool continuous) = 0;
 
+	virtual bool setOpacity(float opacity) = 0;
+	virtual float getOpacity() = 0;
+
 	static bool getConstant(const char *in, Setting &out);
 	static bool getConstant(Setting in, const char *&out);
 

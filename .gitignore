@@ -1,4 +1,5 @@
 # automake products
+*~
 /config.h
 /config.h.in
 /config.log
