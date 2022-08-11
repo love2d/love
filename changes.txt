@@ -46,6 +46,7 @@ Released: N/A
 * Added love.system.getPreferredLocales.
 * Added love.localechanged callback.
 * Added World:getFixturesInArea().
+* Added CMake build ability.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.

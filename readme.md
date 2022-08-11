@@ -53,6 +53,11 @@ Run `platform/unix/automagic` from the repository root, then run ./configure and
 
 When using a source release, automagic has already been run, and the first step can be skipped.
 
+Also possible to use CMake build platform.
+
+	$ cmake -B Release/ -H. -G "Unix Makefiles"
+	$ cmake --build Release -j`nproc`
+
 ### macOS
 Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
 

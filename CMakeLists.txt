@@ -154,7 +154,7 @@ if(MEGA)
 		# automatically.
 	endif()
 else()
-	if(MSVC or ANDROID)
+	if(MSVC OR ANDROID)
 		message(FATAL_ERROR "
 It is currently only possible to build with megasource on Windows and Android.
 Please see https://github.com/love2d/megasource
@@ -1518,10 +1518,12 @@ set(LOVE_SRC_3P_LUAHTTPS_ANDROID
 	src/libraries/luahttps/src/android/AndroidClient.h
 )
 
-set(LOVE_SRC_3P_LUAHTTPS_APPLE
-	src/libraries/luahttps/src/apple/NSURLClient.mm
-	src/libraries/luahttps/src/apple/NSURLClient.h
-)
+if(APPLE)
+	set(LOVE_SRC_3P_LUAHTTPS_APPLE
+		src/libraries/luahttps/src/apple/NSURLClient.mm
+		src/libraries/luahttps/src/apple/NSURLClient.h
+	)
+endif()
 
 set(LOVE_SRC_3P_LUAHTTPS_COMMON
 	src/libraries/luahttps/src/common/config.h
