@@ -103,7 +103,7 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 	rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
 	rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
 
-	vkCmdClearAttachments(commandBuffers[imageIndex], 1, &attachment, 1, &rect);
+	vkCmdClearAttachments(commandBuffers[currentFrame], 1, &attachment, 1, &rect);
 }
 
 void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) {
@@ -125,7 +125,7 @@ void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt sten
 	rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
 	rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
 
-	vkCmdClearAttachments(commandBuffers[imageIndex], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
+	vkCmdClearAttachments(commandBuffers[currentFrame], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
 }
 
 void Graphics::present(void* screenshotCallbackdata) {
@@ -143,7 +143,7 @@ void Graphics::present(void* screenshotCallbackdata) {
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 	// all data transfers should happen before any draw calls.
-	std::vector<VkCommandBuffer> submitCommandbuffers = { dataTransferCommandBuffers.at(currentFrame), commandBuffers.at(imageIndex) };
+	std::vector<VkCommandBuffer> submitCommandbuffers = { dataTransferCommandBuffers.at(currentFrame), commandBuffers.at(currentFrame) };
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -374,14 +374,14 @@ Graphics::RendererInfo Graphics::getRendererInfo() const {
 void Graphics::draw(const DrawCommand& cmd) {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	vkCmdDraw(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
+	vkCmdDraw(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
 }
 
 void Graphics::draw(const DrawIndexedCommand& cmd) {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), getVulkanIndexBufferType(cmd.indexType));
-	vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
+	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), getVulkanIndexBufferType(cmd.indexType));
+	vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
 }
 
 void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
@@ -390,14 +390,14 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 
 	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
 
-	vkCmdBindIndexBuffer(commandBuffers.at(imageIndex), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
+	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
 
 	int baseVertex = start * 4;
 
 	for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW) {
 		int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
-		vkCmdDrawIndexed(commandBuffers.at(imageIndex), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
+		vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
 		baseVertex += quadcount * 4;
 	}
 }
@@ -503,14 +503,14 @@ void Graphics::startRecordingGraphicsCommands() {
 	beginInfo.flags = 0;
 	beginInfo.pInheritanceInfo = nullptr;
 
-	if (vkBeginCommandBuffer(commandBuffers.at(imageIndex), &beginInfo) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
 		throw love::Exception("failed to begin recording command buffer");
 	}
 	if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
 		throw love::Exception("failed to begin recording data transfer command buffer");
 	}
 
-	Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
 
@@ -520,9 +520,9 @@ void Graphics::startRecordingGraphicsCommands() {
 void Graphics::endRecordingGraphicsCommands() {
 	endRenderPass();
 
-	Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-	if (vkEndCommandBuffer(commandBuffers.at(imageIndex)) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS) {
 		throw love::Exception("failed to record command buffer");
 	}
 	if (vkEndCommandBuffer(dataTransferCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
@@ -1175,8 +1175,8 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 
 	ensureGraphicsPipelineConfiguration(configuration);
 
-	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(imageIndex), static_cast<uint32_t>(currentFrame));
-	vkCmdBindVertexBuffers(commandBuffers.at(imageIndex), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
+	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), static_cast<uint32_t>(currentFrame));
+	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 }
 
 void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
@@ -1210,19 +1210,19 @@ void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
 	currentViewportHeight = (float)h;
 
 	if (renderTargetTexture) {
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), (VkImage)texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	}
 
-	vkCmdBeginRendering(commandBuffers.at(imageIndex), &renderingInfo);
+	vkCmdBeginRendering(commandBuffers.at(currentFrame), &renderingInfo);
 
 	currentGraphicsPipeline = VK_NULL_HANDLE;
 }
 
 void Graphics::endRenderPass() {
-	vkCmdEndRendering(commandBuffers.at(imageIndex));
+	vkCmdEndRendering(commandBuffers.at(currentFrame));
 
 	if (renderTargetTexture) {
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(imageIndex), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		renderTargetTexture = nullptr;
 	}
 }
@@ -1239,7 +1239,7 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 	samplerInfo.addressModeV = Vulkan::getWrapMode(samplerState.wrapV);
 	samplerInfo.addressModeW = Vulkan::getWrapMode(samplerState.wrapW);
 	samplerInfo.anisotropyEnable = VK_TRUE;
-	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;	// fixme: samplerState.maxAnisotropy
+	samplerInfo.maxAnisotropy = static_cast<float>(samplerState.maxAnisotropy);
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
 	if (samplerState.depthSampleMode.hasValue) {
@@ -1399,13 +1399,13 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 	auto it = graphicsPipelines.find(configuration);
 	if (it != graphicsPipelines.end()) {
 		if (it->second != currentGraphicsPipeline) {
-			vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
+			vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
 			currentGraphicsPipeline = it->second;
 		}
 	} else {
 		VkPipeline pipeline = createGraphicsPipeline(configuration);
 		graphicsPipelines.insert({configuration, pipeline});
-		vkCmdBindPipeline(commandBuffers.at(imageIndex), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 		currentGraphicsPipeline = pipeline;
 	}
 }
@@ -1424,14 +1424,14 @@ void Graphics::createCommandPool() {
 }
 
 void Graphics::createCommandBuffers() {
-	commandBuffers.resize(swapChainImages.size());
+	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	dataTransferCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.commandPool = commandPool;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+	allocInfo.commandBufferCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
 
 	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 		throw love::Exception("failed to allocate command buffers");
@@ -1498,7 +1498,7 @@ void Graphics::cleanup() {
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
 
-	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, commandBuffers.data());
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
 
 	for (auto const& p : samplers) {
