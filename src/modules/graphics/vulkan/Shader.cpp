@@ -3,7 +3,7 @@
 
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
 #include "libraries/glslang/SPIRV/GlslangToSpv.h"
-#include "libraries/spirv_cross/spirv_cross.hpp"
+
 
 #include <vector>
 
@@ -150,12 +150,12 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 }
 
 bool Shader::loadVolatile() {
-	calculateUniformBufferSizeAligned();
 	compileShaders();
+	calculateUniformBufferSizeAligned();
 	createDescriptorSetLayout();
 	createPipelineLayout();
 	createStreamBuffers();
-	currentImage = 0;
+	currentFrame = 0;
 	count = 0;
 
 	return true;
@@ -201,42 +201,42 @@ static VkDescriptorImageInfo createDescriptorImageInfo(graphics::Texture* textur
 	return imageInfo;
 }
 
-void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frameIndex) {
 	// detect wether a new frame has begun
-	if (currentImage != imageIndex) {
-		currentImage = imageIndex;
+	if (currentFrame != frameIndex) {
+		currentFrame = frameIndex;
 		count = 0;
 
 		// we needed more memory last frame, let's collapse all buffers into a single one.
-		if (streamBuffers.at(currentImage).size() > 1) {
+		if (streamBuffers.at(currentFrame).size() > 1) {
 			size_t newSize = 0;
-			for (auto streamBuffer : streamBuffers.at(currentImage)) {
+			for (auto streamBuffer : streamBuffers.at(currentFrame)) {
 				newSize += streamBuffer->getSize();
 				delete streamBuffer;
 			}
-			streamBuffers.at(currentImage).clear();
-			streamBuffers.at(currentImage).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, newSize));
+			streamBuffers.at(currentFrame).clear();
+			streamBuffers.at(currentFrame).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, newSize));
 		} 
 		// no collapse necessary, can just call nextFrame to reset the current (only) streambuffer
 		else {
-			streamBuffers.at(currentImage).at(0)->nextFrame();
+			streamBuffers.at(currentFrame).at(0)->nextFrame();
 		}
 	}
 	// still the same frame
 	else {
 		auto usedStreamBufferMemory = count * uniformBufferSizeAligned;
-		if (usedStreamBufferMemory >= streamBuffers.at(currentImage).back()->getSize()) {
+		if (usedStreamBufferMemory >= streamBuffers.at(currentFrame).back()->getSize()) {
 			// we ran out of memory in the current frame, need to allocate more.
-			streamBuffers.at(currentImage).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
+			streamBuffers.at(currentFrame).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
 			count = 0;
 		}
 	}
 
 	// additional data is always added onto the last stream buffer in the current frame
-	auto currentStreamBuffer = streamBuffers.at(currentImage).back();
+	auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
 
 	auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
-	memcpy(mapInfo.data, &uniformData, uniformBufferSizeAligned);
+	memcpy(mapInfo.data, localUniformStagingData.data(), uniformBufferSizeAligned);
 	currentStreamBuffer->unmap(uniformBufferSizeAligned);
 	currentStreamBuffer->markUsed(uniformBufferSizeAligned);
 
@@ -245,53 +245,42 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t image
 	bufferInfo.offset = count * uniformBufferSizeAligned;
 	bufferInfo.range = sizeof(BuiltinUniformData);
 	
-	auto mainTexImageInfo = createDescriptorImageInfo(mainTex);
-	auto ytextureImageInfo = createDescriptorImageInfo(ytexture);
-	auto cbtextureImageInfo = createDescriptorImageInfo(cbtexture);
-	auto crtextureImageInfo = createDescriptorImageInfo(crtexture);
+	std::vector<VkWriteDescriptorSet> descriptorWrite{};
 
-	std::array<VkWriteDescriptorSet, 5> descriptorWrite{};
-	descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite[0].dstSet = 0;
-	descriptorWrite[0].dstBinding = 0;
-	descriptorWrite[0].dstArrayElement = 0;
-	descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	descriptorWrite[0].descriptorCount = 1;
-	descriptorWrite[0].pBufferInfo = &bufferInfo;
+	// uniform buffer update always happens.
+	VkWriteDescriptorSet uniformWrite{};
+	uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	uniformWrite.dstSet = 0;
+	uniformWrite.dstBinding = builtinUniformInfo[BUILTIN_UNIFORMS_PER_DRAW]->location;
+	uniformWrite.dstArrayElement = 0;
+	uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uniformWrite.descriptorCount = 1;
+	uniformWrite.pBufferInfo = &bufferInfo;			
 
-	descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite[1].dstSet = 0;
-	descriptorWrite[1].dstBinding = 1;
-	descriptorWrite[1].dstArrayElement = 0;
-	descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrite[1].descriptorCount = 1;
-	descriptorWrite[1].pImageInfo = &mainTexImageInfo;				
+	descriptorWrite.push_back(uniformWrite);
 
-	descriptorWrite[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite[2].dstSet = 0;
-	descriptorWrite[2].dstBinding = 2;
-	descriptorWrite[2].dstArrayElement = 0;
-	descriptorWrite[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrite[2].descriptorCount = 1;
-	descriptorWrite[2].pImageInfo = &ytextureImageInfo;
+	// update everything other than uniform buffers (since that's already taken care of.
+	for (const auto& [key, val] : uniformInfos) {
+		// fixme: other types.
+		if (val.baseType == UNIFORM_SAMPLER) {
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = 0;
+			write.dstBinding = val.location;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			write.descriptorCount = 1;
+			const auto imageInfo =  createDescriptorImageInfo(val.textures[0]);	// fixme: arrays
+			write.pImageInfo = &imageInfo;
 
-	descriptorWrite[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite[3].dstSet = 0;
-	descriptorWrite[3].dstBinding = 3;
-	descriptorWrite[3].dstArrayElement = 0;
-	descriptorWrite[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrite[3].descriptorCount = 1;
-	descriptorWrite[3].pImageInfo = &cbtextureImageInfo;
+			descriptorWrite.push_back(write);
+		}
+	}
 
-	descriptorWrite[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrite[4].dstSet = 0;
-	descriptorWrite[4].dstBinding = 4;
-	descriptorWrite[4].dstArrayElement = 0;
-	descriptorWrite[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	descriptorWrite[4].descriptorCount = 1;
-	descriptorWrite[4].pImageInfo = &crtextureImageInfo;
-
-	vkCmdPushDescriptorSet(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data());
+	vkCmdPushDescriptorSet(
+		commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
+		pipelineLayout, 0, 
+		static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data());
 
 	count++;
 }
@@ -309,20 +298,87 @@ void Shader::attach() {
 }
 
 int Shader::getVertexAttributeIndex(const std::string& name) {
-	return vertexAttributeIndices.at(name);
+	return 0;
 }
 
 void Shader::calculateUniformBufferSizeAligned() {
 	gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	auto vgfx = (Graphics*)gfx;
 	auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
+	size_t size = localUniformStagingData.size();
 	uniformBufferSizeAligned = 
 		static_cast<VkDeviceSize>(
 			std::ceil(
-				static_cast<float>(sizeof(BuiltinUniformData)) / static_cast<float>(minAlignment)
+				static_cast<float>(size) / static_cast<float>(minAlignment)
 			)
 		)
 		* minAlignment;
+}
+
+void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::SPIRType& type, size_t baseoff, const std::string& basename) {
+	using namespace spirv_cross;
+
+	const auto& membertypes = type.member_types;
+
+	for (size_t uindex = 0; uindex < membertypes.size(); uindex) {
+		const auto& memberType = comp.get_type(membertypes[uindex]);
+		size_t memberSize = comp.get_declared_struct_member_size(type, uindex);
+		size_t offset = baseoff + comp.type_struct_member_offset(type, uindex);
+
+		std::string name = basename + comp.get_member_name(type.self, uindex);
+
+		switch (memberType.basetype) {
+		case SPIRType::Struct:
+			name += ".";
+			buildLocalUniforms(comp, memberType, offset, name);
+			continue;
+		case SPIRType::Int:
+		case SPIRType::UInt:
+		case SPIRType::Float:
+			break;
+		default:
+			continue;
+		}
+
+		UniformInfo u = {};
+		u.name = name;
+		u.dataSize = memberSize;
+		u.count = memberType.array.empty() ? 1 : memberType.array[0];
+		u.components = 1;
+		u.data = localUniformStagingData.data() + offset;
+
+		if (memberType.columns == 1) {
+			if (memberType.basetype == SPIRType::Int) {
+				u.baseType = UNIFORM_INT;
+			}
+			else if (memberType.basetype == SPIRType::UInt) {
+				u.baseType = UNIFORM_UINT;
+			}
+			else {
+				u.baseType = UNIFORM_FLOAT;
+			}
+			u.components = memberType.vecsize;
+		}
+		else {
+			u.baseType = UNIFORM_MATRIX;
+			u.matrix.rows = memberType.vecsize;
+			u.matrix.columns = memberType.columns;
+		}
+
+		// fixme: initializer values
+
+		uniformInfos[u.name] = u;
+
+		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+		if (getConstant(u.name.c_str(), builtin)) {
+			if (builtin == BUILTIN_UNIFORMS_PER_DRAW) {
+				builtinUniformDataOffset = offset;
+			}
+			builtinUniformInfo[builtin] = &uniformInfos[u.name];
+		}
+
+		// update uniform.
+	}
 }
 
 void Shader::compileShaders() {
@@ -335,7 +391,6 @@ void Shader::compileShaders() {
 	auto vgfx = (Graphics*)gfx;
 	device = vgfx->getDevice();
 
-	mainTex = vgfx->getDefaultTexture();
 	ytexture = vgfx->getDefaultTexture();
 	crtexture = vgfx->getDefaultTexture();
 	cbtexture = vgfx->getDefaultTexture();
@@ -385,6 +440,8 @@ void Shader::compileShaders() {
 		throw love::Exception("mapIO failed");
 	}
 
+	uniformInfos.clear();
+
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++) {
 		auto glslangStage = getGlslShaderType((ShaderStageType)i);
 		auto intermediate = program->getIntermediate(glslangStage);
@@ -424,49 +481,158 @@ void Shader::compileShaders() {
 		shaderStageInfo.pName = "main";
 
 		shaderStages.push_back(shaderStageInfo);
+
+		spirv_cross::CompilerGLSL comp(spirv);
+
+		// we only care about variables that are actually getting used.
+		auto active = comp.get_active_interface_variables();
+		auto shaderResources = comp.get_shader_resources(active);
+		comp.set_enabled_interface_variables(std::move(active));
+
+		std::string builtinUniformName = "love_UniformsPerDraw";
+
+		for (const auto& resource : shaderResources.uniform_buffers) {
+			size_t uniformBufferObjectSize = comp.get_declared_struct_size(comp.get_type(resource.base_type_id));
+
+			const auto& resourceType = comp.get_type(resource.type_id);
+			unsigned memberCount = resourceType.member_types.size();
+			for (unsigned i = 0; i < memberCount; i++) {
+				auto& type = comp.get_type(resourceType.member_types[i]);
+				auto baseType = type.basetype;
+				const std::string& name = comp.get_member_name(resourceType.self, i);
+
+				if (name == "gl_DefaultUniformBlock") {
+					auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
+					localUniformStagingData.resize(defaultUniformBlockSize);
+
+					std::string basename("");
+					buildLocalUniforms(comp, type, 0, basename);
+				}
+				else if (name == builtinUniformName) {
+					UniformInfo u{};
+					u.name = name;
+					u.dataSize = sizeof(BuiltinUniformData);
+
+					localUniformStagingData.resize(u.dataSize);
+					builtinUniformDataOffset = 0;
+
+					u.count = type.array.empty() ? 1 : type.array[0];
+					u.components = 1;
+					u.data = localUniformStagingData.data();
+
+					if (type.columns == 1) {
+						if (type.basetype == SPIRType::Int) {
+							u.baseType = UNIFORM_INT;
+						}
+						else if (type.basetype == SPIRType::UInt) {
+							u.baseType = UNIFORM_UINT;
+						}
+						else {
+							u.baseType = UNIFORM_FLOAT;
+						}
+						u.components = type.vecsize;
+					}
+					else {
+						u.baseType = UNIFORM_MATRIX;
+						u.matrix.rows = type.vecsize;
+						u.matrix.columns = type.columns;
+					}
+
+					uniformInfos[u.name] = u;
+
+					builtinUniformInfo[BUILTIN_UNIFORMS_PER_DRAW] = &uniformInfos[u.name];
+				}
+				else {
+					throw love::Exception("unimplemented: non default uniform blocks.");
+				}
+			}
+
+			for (const auto& r : shaderResources.sampled_images) {
+				const SPIRType& basetype = comp.get_type(r.base_type_id);
+				const SPIRType& type = comp.get_type(r.type_id);
+				const SPIRType& imagetype = comp.get_type(basetype.image.type);
+
+				graphics::Shader::UniformInfo info;
+				info.location = comp.get_decoration(r.id, spv::DecorationBinding);
+				info.baseType = UNIFORM_SAMPLER;
+				info.name = r.name;
+				info.count = type.array.empty() ? 1 : type.array[0];
+				info.isDepthSampler = type.image.depth;
+				info.components = 1;
+
+				switch (imagetype.basetype) {
+				case SPIRType::Float:
+					info.dataBaseType = DATA_BASETYPE_FLOAT;
+					break;
+				case SPIRType::Int:
+					info.dataBaseType = DATA_BASETYPE_INT;
+					break;
+				case SPIRType::UInt:
+					info.dataBaseType = DATA_BASETYPE_UINT;
+					break;
+				default:
+					break;
+				}
+
+				switch (basetype.image.dim) {
+				case spv::Dim2D:
+					info.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+					info.textures = new love::graphics::Texture * [info.count];
+					break;
+				case spv::Dim3D:
+					info.textureType = TEXTURE_VOLUME;
+					info.textures = new love::graphics::Texture * [info.count];
+					break;
+				case spv::DimCube:
+					if (basetype.image.arrayed) {
+						throw love::Exception("cubemap arrays are not currently supported");
+					}
+					info.textureType = TEXTURE_CUBE;
+					info.textures = new love::graphics::Texture * [info.count];
+					break;
+				case spv::DimBuffer:
+					throw love::Exception("dim buffers not implemented yet");
+				default:
+					throw love::Exception("unknown dim");
+				}
+
+				if (info.baseType == UNIFORM_SAMPLER) {
+					auto tex = vgfx->getDefaultTexture();
+					for (int i = 0; i < info.count; i++) {
+						info.textures[i] = tex;
+					}
+				}
+				// fixme
+				else if (info.baseType == UNIFORM_TEXELBUFFER) {
+					throw love::Exception("texel buffers not supported yet");
+				}
+
+				uniformInfos[r.name] = info;
+				BuiltinUniform builtin;
+				if (getConstant(r.name.c_str(), builtin)) {
+					builtinUniformInfo[builtin] = &uniformInfos[info.name];
+				}
+			}
+		}
 	}
 }
 
-// fixme: should generate this dynamically.
 void Shader::createDescriptorSetLayout() {
 	auto vgfx = (Graphics*)gfx;
 	vkCmdPushDescriptorSet = vgfx->getVkCmdPushDescriptorSetKHRFunctionPointer();
 
-	VkDescriptorSetLayoutBinding uboLayoutBinding{};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-	samplerLayoutBinding.binding = 1;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding.pImmutableSamplers = nullptr;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	for (auto const& [key, val] : uniformInfos) {
+		VkDescriptorSetLayoutBinding layoutBinding{};
+		layoutBinding.binding = val.location;
+		layoutBinding.descriptorType = val.baseType == UNIFORM_SAMPLER ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		layoutBinding.descriptorCount = 1;	// is this correct?
+		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;	// fixme: can we determine in what shader it got used?
 
-	VkDescriptorSetLayoutBinding videoYBinding{};
-	videoYBinding.binding = 2;
-	videoYBinding.descriptorCount = 1;
-	videoYBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	videoYBinding.pImmutableSamplers = nullptr;
-	videoYBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		bindings.push_back(layoutBinding);
+	}
 
-	VkDescriptorSetLayoutBinding videoCBBinding{};
-	videoCBBinding.binding = 3;
-	videoCBBinding.descriptorCount = 1;
-	videoCBBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	videoCBBinding.pImmutableSamplers = nullptr;
-	videoCBBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	VkDescriptorSetLayoutBinding videoCRinding{};
-	videoCRinding.binding = 4;
-	videoCRinding.descriptorCount = 1;
-	videoCRinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	videoCRinding.pImmutableSamplers = nullptr;
-	videoCRinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	std::array<VkDescriptorSetLayoutBinding, 5> bindings = { uboLayoutBinding, samplerLayoutBinding, videoYBinding, videoCBBinding, videoCRinding };
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -506,11 +672,12 @@ void Shader::setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cb
 }
 
 void Shader::setUniformData(BuiltinUniformData& data) {
-	uniformData = data;
+	char* ptr = (char*) builtinUniformInfo[BUILTIN_UNIFORMS_PER_DRAW]->data + builtinUniformDataOffset;
+	memcpy(ptr, &data, sizeof(BuiltinUniformData));
 }
 
 void Shader::setMainTex(graphics::Texture* texture) {
-	mainTex = texture;
+	builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
 }
 } // vulkan
 } // graphics

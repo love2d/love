@@ -1672,6 +1672,43 @@ endif()
 add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
 
 #
+# spirv_cross
+#
+
+set(LOVE_SRC_3P_SPIRV_CROSS
+	src/libraries/spirv_cross/GLSL.std.450.h
+	src/libraries/spirv_cross/spirv_cfg.cpp
+	src/libraries/spirv_cross/spirv_cfg.hpp
+	src/libraries/spirv_cross/spirv_common.hpp
+	src/libraries/spirv_cross/spirv_cpp.cpp
+	src/libraries/spirv_cross/spirv_cpp.hpp
+	src/libraries/spirv_cross/spirv_cross_c.cpp
+	src/libraries/spirv_cross/spirv_cross_c.h
+	src/libraries/spirv_cross/spirv_cross_containers.hpp
+	src/libraries/spirv_cross/spirv_cross_error_handling.hpp
+	src/libraries/spirv_cross/spirv_cross_parsed_ir.cpp
+	src/libraries/spirv_cross/spirv_cross_parsed_ir.hpp
+	src/libraries/spirv_cross/spirv_cross_util.cpp
+	src/libraries/spirv_cross/spirv_cross_util.hpp
+	src/libraries/spirv_cross/spirv_cross.cpp
+	src/libraries/spirv_cross/spirv_cross.hpp
+	src/libraries/spirv_cross/spirv_glsl.cpp
+	src/libraries/spirv_cross/spirv_glsl.hpp
+	src/libraries/spirv_cross/spirv_hlsl.cpp
+	src/libraries/spirv_cross/spirv_hlsl.hpp
+	src/libraries/spirv_cross/spirv_msl.cpp
+	src/libraries/spirv_cross/spirv_msl.hpp
+	src/libraries/spirv_cross/spirv_parser.cpp
+	src/libraries/spirv_cross/spirv_parser.hpp
+	src/libraries/spirv_cross/spirv_reflect.cpp
+	src/libraries/spirv_cross/spirv_reflect.hpp
+	src/libraries/spirv_cross/spirv.h
+	src/libraries/spirv_cross/spirv.hpp
+)
+
+add_library(love_3p_spirv_cross ${LOVE_SRC_3P_SPIRV_CROSS})
+
+#
 # stb_image
 #
 
@@ -1752,6 +1789,7 @@ set(LOVE_3P
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_physfs
+	love_3p_spirv_cross
 	love_3p_wuff
 	love_3p_xxhash
 )

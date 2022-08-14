@@ -6,9 +6,12 @@
 #include "Vulkan.h"
 
 #include <vulkan/vulkan.h>
+#include "libraries/spirv_cross/spirv_reflect.hpp"
 
 #include <map>
+#include <memory>
 #include <iostream>
+#include <unordered_map>
 
 
 namespace love {
@@ -26,7 +29,7 @@ public:
 
 	const VkPipelineLayout getGraphicsPipelineLayout() const;
 
-	void cmdPushDescriptorSets(VkCommandBuffer, uint32_t currentImage);
+	void cmdPushDescriptorSets(VkCommandBuffer, uint32_t currentFrame);
 
 	void attach() override;
 
@@ -58,6 +61,11 @@ private:
 	void createDescriptorSetLayout();
 	void createPipelineLayout();
 	void createStreamBuffers();
+	void buildLocalUniforms(
+		spirv_cross::Compiler& comp, 
+		const spirv_cross::SPIRType& type, 
+		size_t baseoff, 
+		const std::string& basename);
 
 	VkDeviceSize uniformBufferSizeAligned;
 	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
@@ -75,27 +83,18 @@ private:
 	Graphics* gfx;
 	VkDevice device;
 
-	std::map<std::string, int> vertexAttributeIndices = {
-		{ "VertexPosition", 0 },
-		{ "VertexTexCoord", 1 },
-		{ "VertexColor", 2 }
-	};
+	std::unordered_map<std::string, graphics::Shader::UniformInfo> uniformInfos;
+	UniformInfo* builtinUniformInfo[BUILTIN_MAX_ENUM];
 
-	std::map<std::string, int> uniformBindings = {
-		{ "love_UniformsPerDraw", 0 },
-		{ "love_VideoYChannel", 1 },
-		{ "love_VideoCbChannel", 2 },
-		{ "love_VideoCrChannel", 3 },
-		{ "MainTex", 4 }
-	};
+	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
+	std::vector<uint8> localUniformStagingData;
+	size_t builtinUniformDataOffset;
 
-	BuiltinUniformData uniformData;
-	graphics::Texture* mainTex;
 	graphics::Texture* ytexture;
 	graphics::Texture* cbtexture;
 	graphics::Texture* crtexture;
 
-	uint32_t currentImage;
+	uint32_t currentFrame;
 	// todo: give this variable a better name
 	uint32_t count;
 };
