@@ -42,6 +42,9 @@ public:
 	const UniformInfo* getUniformInfo(const std::string& name) const override { return nullptr; }
 	const UniformInfo* getUniformInfo(BuiltinUniform builtin) const override { return nullptr;  }
 
+	// Not needed right now, since the logic that links the values of the uniforms to the shader is done in cmdPushDescriptorSets
+	// which gets called from the vulkan::Graphics class whenever a draw call happens.
+	// I'll have to reevaluate the use of this function in the future though.
 	void updateUniform(const UniformInfo* info, int count) override {}
 
 	void sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) override {}
@@ -89,10 +92,6 @@ private:
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
 	std::vector<uint8> localUniformStagingData;
 	size_t builtinUniformDataOffset;
-
-	graphics::Texture* ytexture;
-	graphics::Texture* cbtexture;
-	graphics::Texture* crtexture;
 
 	uint32_t currentFrame;
 	// todo: give this variable a better name

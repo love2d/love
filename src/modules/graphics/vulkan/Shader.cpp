@@ -150,6 +150,10 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 }
 
 bool Shader::loadVolatile() {
+	for (int i = 0; i < BUILTIN_MAX_ENUM; i++) {
+		builtinUniformInfo[i] = nullptr;
+	}
+
 	compileShaders();
 	calculateUniformBufferSizeAligned();
 	createDescriptorSetLayout();
@@ -192,12 +196,15 @@ const VkPipelineLayout Shader::getGraphicsPipelineLayout() const {
 	return pipelineLayout;
 }
 
-static VkDescriptorImageInfo createDescriptorImageInfo(graphics::Texture* texture) {
-	VkDescriptorImageInfo imageInfo{};
-	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* texture) {
 	Texture* vkTexture = (Texture*)texture;
-	imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
-	imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
+
+	VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
+
+	imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo->imageView = (VkImageView)vkTexture->getRenderTargetHandle();
+	imageInfo->sampler = (VkSampler)vkTexture->getSamplerHandle();
+
 	return imageInfo;
 }
 
@@ -259,6 +266,11 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 
 	descriptorWrite.push_back(uniformWrite);
 
+	// Vulkan needs the image infos as a pointer.
+	// we collect them all here to properly free them up
+	// after the vulkan call.
+	std::vector<VkDescriptorImageInfo*> imageInfos;
+	
 	// update everything other than uniform buffers (since that's already taken care of.
 	for (const auto& [key, val] : uniformInfos) {
 		// fixme: other types.
@@ -270,8 +282,13 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write.descriptorCount = 1;
-			const auto imageInfo =  createDescriptorImageInfo(val.textures[0]);	// fixme: arrays
-			write.pImageInfo = &imageInfo;
+
+			uint32_t index = static_cast<uint32_t>(imageInfos.size());
+
+			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0]);	// fixme: arrays
+			imageInfos.push_back(imageInfo);
+
+			write.pImageInfo = imageInfo;
 
 			descriptorWrite.push_back(write);
 		}
@@ -281,6 +298,10 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
 		pipelineLayout, 0, 
 		static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data());
+
+	for (const auto imageInfo : imageInfos) {
+		delete imageInfo;
+	}
 
 	count++;
 }
@@ -385,15 +406,13 @@ void Shader::compileShaders() {
 	using namespace glslang;
 	using namespace spirv_cross;
 
+	std::vector<TShader*> glslangShaders;
+
 	TProgram* program = new TProgram();
 
 	gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	auto vgfx = (Graphics*)gfx;
 	device = vgfx->getDevice();
-
-	ytexture = vgfx->getDefaultTexture();
-	crtexture = vgfx->getDefaultTexture();
-	cbtexture = vgfx->getDefaultTexture();
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++) {
 		if (!stages[i])
@@ -430,6 +449,7 @@ void Shader::compileShaders() {
 		}
 
 		program->addShader(tshader);
+		glslangShaders.push_back(tshader);
 	}
 
 	if (!program->link(EShMsgDefault)) {
@@ -615,6 +635,11 @@ void Shader::compileShaders() {
 			}
 		}
 	}
+
+	delete program;
+	for (auto shader : glslangShaders) {
+		delete shader;
+	}
 }
 
 void Shader::createDescriptorSetLayout() {
@@ -666,9 +691,17 @@ void Shader::createStreamBuffers() {
 }
 
 void Shader::setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) {
-	this->ytexture = ytexture;
-	this->cbtexture = cbtexture;
-	this->crtexture = crtexture;
+	// if the shader doesn't actually use these textures they might get optimized out
+	// in that case this function becomes a noop.
+	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y] != nullptr) {
+		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y]->textures[0] = ytexture;
+	}
+	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB] != nullptr) {
+		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB]->textures[0] = cbtexture;
+	}
+	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR] != nullptr) {
+		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR]->textures[0] = crtexture;
+	}
 }
 
 void Shader::setUniformData(BuiltinUniformData& data) {
@@ -677,7 +710,11 @@ void Shader::setUniformData(BuiltinUniformData& data) {
 }
 
 void Shader::setMainTex(graphics::Texture* texture) {
-	builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
+	// if the shader doesn't actually use the texture it might get optimized out
+	// in that case this function becomes a noop.
+	if (builtinUniformInfo[BUILTIN_TEXTURE_MAIN] != nullptr) {
+		builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
+	}
 }
 } // vulkan
 } // graphics
