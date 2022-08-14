@@ -322,6 +322,20 @@ int Shader::getVertexAttributeIndex(const std::string& name) {
 	return 0;
 }
 
+const Shader::UniformInfo* Shader::getUniformInfo(const std::string& name) const {
+	return &uniformInfos.at(name);
+}
+
+const Shader::UniformInfo* Shader::getUniformInfo(BuiltinUniform builtin) const {
+	return builtinUniformInfo[builtin];
+}
+
+void Shader::sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) {
+	for (unsigned i = 0; i < count; i++) {
+		info->textures[i] = textures[i];
+	}
+}
+
 void Shader::calculateUniformBufferSizeAligned() {
 	gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	auto vgfx = (Graphics*)gfx;
@@ -341,7 +355,7 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::
 
 	const auto& membertypes = type.member_types;
 
-	for (size_t uindex = 0; uindex < membertypes.size(); uindex) {
+	for (size_t uindex = 0; uindex < membertypes.size(); uindex++) {
 		const auto& memberType = comp.get_type(membertypes[uindex]);
 		size_t memberSize = comp.get_declared_struct_member_size(type, uindex);
 		size_t offset = baseoff + comp.type_struct_member_offset(type, uindex);
@@ -361,7 +375,7 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::
 			continue;
 		}
 
-		UniformInfo u = {};
+		UniformInfo u{};
 		u.name = name;
 		u.dataSize = memberSize;
 		u.count = memberType.array.empty() ? 1 : memberType.array[0];
@@ -397,8 +411,6 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::
 			}
 			builtinUniformInfo[builtin] = &uniformInfos[u.name];
 		}
-
-		// update uniform.
 	}
 }
 
@@ -509,129 +521,87 @@ void Shader::compileShaders() {
 		auto shaderResources = comp.get_shader_resources(active);
 		comp.set_enabled_interface_variables(std::move(active));
 
-		std::string builtinUniformName = "love_UniformsPerDraw";
-
 		for (const auto& resource : shaderResources.uniform_buffers) {
-			size_t uniformBufferObjectSize = comp.get_declared_struct_size(comp.get_type(resource.base_type_id));
+			if (resource.name == "gl_DefaultUniformBlock") {
+				const auto& type = comp.get_type(resource.base_type_id);
+				size_t uniformBufferObjectSize = comp.get_declared_struct_size(type);
+				auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
+				localUniformStagingData.resize(defaultUniformBlockSize);
 
-			const auto& resourceType = comp.get_type(resource.type_id);
-			unsigned memberCount = resourceType.member_types.size();
-			for (unsigned i = 0; i < memberCount; i++) {
-				auto& type = comp.get_type(resourceType.member_types[i]);
-				auto baseType = type.basetype;
-				const std::string& name = comp.get_member_name(resourceType.self, i);
+				memset(localUniformStagingData.data(), 0, defaultUniformBlockSize);
 
-				if (name == "gl_DefaultUniformBlock") {
-					auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
-					localUniformStagingData.resize(defaultUniformBlockSize);
+				std::string basename("");
+				buildLocalUniforms(comp, type, 0, basename);
+			}
+			else {
+				throw love::Exception("unimplemented: non default uniform blocks.");
+			}
+		}
 
-					std::string basename("");
-					buildLocalUniforms(comp, type, 0, basename);
-				}
-				else if (name == builtinUniformName) {
-					UniformInfo u{};
-					u.name = name;
-					u.dataSize = sizeof(BuiltinUniformData);
+		for (const auto& r : shaderResources.sampled_images) {
+			const SPIRType& basetype = comp.get_type(r.base_type_id);
+			const SPIRType& type = comp.get_type(r.type_id);
+			const SPIRType& imagetype = comp.get_type(basetype.image.type);
 
-					localUniformStagingData.resize(u.dataSize);
-					builtinUniformDataOffset = 0;
+			graphics::Shader::UniformInfo info;
+			info.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			info.baseType = UNIFORM_SAMPLER;
+			info.name = r.name;
+			info.count = type.array.empty() ? 1 : type.array[0];
+			info.isDepthSampler = type.image.depth;
+			info.components = 1;
 
-					u.count = type.array.empty() ? 1 : type.array[0];
-					u.components = 1;
-					u.data = localUniformStagingData.data();
-
-					if (type.columns == 1) {
-						if (type.basetype == SPIRType::Int) {
-							u.baseType = UNIFORM_INT;
-						}
-						else if (type.basetype == SPIRType::UInt) {
-							u.baseType = UNIFORM_UINT;
-						}
-						else {
-							u.baseType = UNIFORM_FLOAT;
-						}
-						u.components = type.vecsize;
-					}
-					else {
-						u.baseType = UNIFORM_MATRIX;
-						u.matrix.rows = type.vecsize;
-						u.matrix.columns = type.columns;
-					}
-
-					uniformInfos[u.name] = u;
-
-					builtinUniformInfo[BUILTIN_UNIFORMS_PER_DRAW] = &uniformInfos[u.name];
-				}
-				else {
-					throw love::Exception("unimplemented: non default uniform blocks.");
-				}
+			switch (imagetype.basetype) {
+			case SPIRType::Float:
+				info.dataBaseType = DATA_BASETYPE_FLOAT;
+				break;
+			case SPIRType::Int:
+				info.dataBaseType = DATA_BASETYPE_INT;
+				break;
+			case SPIRType::UInt:
+				info.dataBaseType = DATA_BASETYPE_UINT;
+				break;
+			default:
+				break;
 			}
 
-			for (const auto& r : shaderResources.sampled_images) {
-				const SPIRType& basetype = comp.get_type(r.base_type_id);
-				const SPIRType& type = comp.get_type(r.type_id);
-				const SPIRType& imagetype = comp.get_type(basetype.image.type);
-
-				graphics::Shader::UniformInfo info;
-				info.location = comp.get_decoration(r.id, spv::DecorationBinding);
-				info.baseType = UNIFORM_SAMPLER;
-				info.name = r.name;
-				info.count = type.array.empty() ? 1 : type.array[0];
-				info.isDepthSampler = type.image.depth;
-				info.components = 1;
-
-				switch (imagetype.basetype) {
-				case SPIRType::Float:
-					info.dataBaseType = DATA_BASETYPE_FLOAT;
-					break;
-				case SPIRType::Int:
-					info.dataBaseType = DATA_BASETYPE_INT;
-					break;
-				case SPIRType::UInt:
-					info.dataBaseType = DATA_BASETYPE_UINT;
-					break;
-				default:
-					break;
+			switch (basetype.image.dim) {
+			case spv::Dim2D:
+				info.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+				info.textures = new love::graphics::Texture * [info.count];
+				break;
+			case spv::Dim3D:
+				info.textureType = TEXTURE_VOLUME;
+				info.textures = new love::graphics::Texture * [info.count];
+				break;
+			case spv::DimCube:
+				if (basetype.image.arrayed) {
+					throw love::Exception("cubemap arrays are not currently supported");
 				}
+				info.textureType = TEXTURE_CUBE;
+				info.textures = new love::graphics::Texture * [info.count];
+				break;
+			case spv::DimBuffer:
+				throw love::Exception("dim buffers not implemented yet");
+			default:
+				throw love::Exception("unknown dim");
+			}
 
-				switch (basetype.image.dim) {
-				case spv::Dim2D:
-					info.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
-					info.textures = new love::graphics::Texture * [info.count];
-					break;
-				case spv::Dim3D:
-					info.textureType = TEXTURE_VOLUME;
-					info.textures = new love::graphics::Texture * [info.count];
-					break;
-				case spv::DimCube:
-					if (basetype.image.arrayed) {
-						throw love::Exception("cubemap arrays are not currently supported");
-					}
-					info.textureType = TEXTURE_CUBE;
-					info.textures = new love::graphics::Texture * [info.count];
-					break;
-				case spv::DimBuffer:
-					throw love::Exception("dim buffers not implemented yet");
-				default:
-					throw love::Exception("unknown dim");
+			if (info.baseType == UNIFORM_SAMPLER) {
+				auto tex = vgfx->getDefaultTexture();
+				for (int i = 0; i < info.count; i++) {
+					info.textures[i] = tex;
 				}
+			}
+			// fixme
+			else if (info.baseType == UNIFORM_TEXELBUFFER) {
+				throw love::Exception("texel buffers not supported yet");
+			}
 
-				if (info.baseType == UNIFORM_SAMPLER) {
-					auto tex = vgfx->getDefaultTexture();
-					for (int i = 0; i < info.count; i++) {
-						info.textures[i] = tex;
-					}
-				}
-				// fixme
-				else if (info.baseType == UNIFORM_TEXELBUFFER) {
-					throw love::Exception("texel buffers not supported yet");
-				}
-
-				uniformInfos[r.name] = info;
-				BuiltinUniform builtin;
-				if (getConstant(r.name.c_str(), builtin)) {
-					builtinUniformInfo[builtin] = &uniformInfos[info.name];
-				}
+			uniformInfos[r.name] = info;
+			BuiltinUniform builtin;
+			if (getConstant(r.name.c_str(), builtin)) {
+				builtinUniformInfo[builtin] = &uniformInfos[info.name];
 			}
 		}
 	}
@@ -702,6 +672,10 @@ void Shader::setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cb
 	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR] != nullptr) {
 		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR]->textures[0] = crtexture;
 	}
+}
+
+bool Shader::hasUniform(const std::string& name) const {
+	return uniformInfos.find(name) != uniformInfos.end();
 }
 
 void Shader::setUniformData(BuiltinUniformData& data) {

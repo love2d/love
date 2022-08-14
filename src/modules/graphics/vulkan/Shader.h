@@ -39,18 +39,18 @@ public:
 
 	int getVertexAttributeIndex(const std::string& name) override;
 
-	const UniformInfo* getUniformInfo(const std::string& name) const override { return nullptr; }
-	const UniformInfo* getUniformInfo(BuiltinUniform builtin) const override { return nullptr;  }
+	const UniformInfo* getUniformInfo(const std::string& name) const override;
+	const UniformInfo* getUniformInfo(BuiltinUniform builtin) const override;
 
 	// Not needed right now, since the logic that links the values of the uniforms to the shader is done in cmdPushDescriptorSets
 	// which gets called from the vulkan::Graphics class whenever a draw call happens.
 	// I'll have to reevaluate the use of this function in the future though.
 	void updateUniform(const UniformInfo* info, int count) override {}
 
-	void sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) override {}
+	void sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) override;
 	void sendBuffers(const UniformInfo* info, love::graphics::Buffer** buffers, int count) override {}
 
-	bool hasUniform(const std::string& name) const override { return false; }
+	bool hasUniform(const std::string& name) const override;
 
 	void setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) override;
 
