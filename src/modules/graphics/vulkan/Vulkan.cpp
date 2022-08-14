@@ -459,9 +459,9 @@ VkImageType Vulkan::getImageType(TextureType textureType) {
 	switch (textureType) {
 	case TEXTURE_2D:
 	case TEXTURE_2D_ARRAY:
+	case TEXTURE_CUBE:
 		return VK_IMAGE_TYPE_2D;
 	case TEXTURE_VOLUME:
-	case TEXTURE_CUBE:
 		return VK_IMAGE_TYPE_3D;
 	default:
 		throw love::Exception("unknown texture type");

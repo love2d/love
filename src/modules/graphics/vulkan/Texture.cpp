@@ -32,16 +32,23 @@ bool Texture::loadVolatile() {
 		VK_IMAGE_USAGE_SAMPLED_BIT | 
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
+	VkImageCreateFlags createFlags = 0;
+
 	layerCount = 1;
-	if (texType == TEXTURE_VOLUME)
+	if (texType == TEXTURE_VOLUME) {
 		layerCount = getDepth();
-	else if (texType == TEXTURE_2D_ARRAY)
+	}
+	else if (texType == TEXTURE_2D_ARRAY) {
 		layerCount = getLayerCount();
-	else if (texType == TEXTURE_CUBE)
+	}
+	else if (texType == TEXTURE_CUBE) {
 		layerCount = 6;
+		createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+	}
 
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.flags = createFlags;
 	imageInfo.imageType = Vulkan::getImageType(getTextureType());
 	imageInfo.extent.width = static_cast<uint32_t>(width);
 	imageInfo.extent.height = static_cast<uint32_t>(height);
@@ -75,7 +82,13 @@ bool Texture::loadVolatile() {
 		for (int mip = 0; mip < layerCount; mip++) {
 			// fixme: deal with compressed images.
 
-			for (int slice = 0; slice < slices.getSliceCount(mip); slice++) {
+			int sliceCount;
+			if (texType == TEXTURE_CUBE) {
+				sliceCount = 6;
+			} else {
+				sliceCount = slices.getSliceCount();
+			}
+			for (int slice = 0; slice < sliceCount; slice++) {
 				auto* id = slices.get(slice, mip);
 				if (id != nullptr) {
 					uploadImageData(id, mip, slice, 0, 0);

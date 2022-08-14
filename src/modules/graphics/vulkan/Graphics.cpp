@@ -304,7 +304,7 @@ void Graphics::initCapabilities() {
 	capabilities.textureTypes[TEXTURE_2D] = true;
 	capabilities.textureTypes[TEXTURE_2D_ARRAY] = true;
 	capabilities.textureTypes[TEXTURE_VOLUME] = false;
-	capabilities.textureTypes[TEXTURE_CUBE] = false;
+	capabilities.textureTypes[TEXTURE_CUBE] = true;
 }
 
 void Graphics::getAPIStats(int& shaderswitches) const {

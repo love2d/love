@@ -254,7 +254,8 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 	
 	std::vector<VkWriteDescriptorSet> descriptorWrite{};
 
-	// uniform buffer update always happens.
+	// uniform buffer update always happens
+	// (are there cases without ubos at all?)
 	VkWriteDescriptorSet uniformWrite{};
 	uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	uniformWrite.dstSet = 0;
@@ -623,7 +624,7 @@ void Shader::createDescriptorSetLayout() {
 		layoutBinding.binding = val.location;
 		layoutBinding.descriptorType = val.baseType == UNIFORM_SAMPLER ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		layoutBinding.descriptorCount = 1;	// is this correct?
-		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;	// fixme: can we determine in what shader it got used?
+		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;	// fixme: can we determine in what shader it got used?
 
 		bindings.push_back(layoutBinding);
 	}
