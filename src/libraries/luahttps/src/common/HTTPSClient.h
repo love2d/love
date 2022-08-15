@@ -20,12 +20,7 @@ public:
 		header_map headers;
 		std::string url;
 		std::string postdata;
-
-		enum Method
-		{
-			GET,
-			POST,
-		} method;
+		std::string method;
 	};
 
 	struct Reply

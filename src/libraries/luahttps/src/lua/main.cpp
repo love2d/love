@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <set>
+
 extern "C"
 {
 #include <lua.h>
@@ -6,6 +9,14 @@ extern "C"
 
 #include "../common/HTTPS.h"
 #include "../common/config.h"
+
+static std::string validMethod[] = {"GET", "HEAD", "POST", "PUT", "DELETE", "PATCH"};
+
+static int str_toupper(char c)
+{
+	unsigned char uc = (unsigned char) c;
+	return toupper(uc);
+}
 
 static std::string w_checkstring(lua_State *L, int idx)
 {
@@ -34,20 +45,20 @@ static void w_readheaders(lua_State *L, int idx, HTTPSClient::header_map &header
 	lua_pop(L, 1);
 }
 
-static HTTPSClient::Request::Method w_optmethod(lua_State *L, int idx, HTTPSClient::Request::Method defaultMethod)
+static std::string w_optmethod(lua_State *L, int idx, const std::string &defaultMethod)
 {
+	std::string *const validMethodEnd = validMethod + sizeof(validMethod) / sizeof(std::string);
+
 	if (lua_isnoneornil(L, idx))
 		return defaultMethod;
 
-	auto str = w_checkstring(L, idx);
-	if (str == "get")
-		return HTTPSClient::Request::GET;
-	else if (str == "post")
-		return HTTPSClient::Request::POST;
-	else
-		luaL_argerror(L, idx, "expected one of \"get\" or \"set\"");
+	std::string str = w_checkstring(L, idx);
+	std::transform(str.begin(), str.end(), str.begin(), str_toupper);
 
-	return defaultMethod;
+	if (std::find(validMethod, validMethodEnd, str) == validMethodEnd)
+		luaL_argerror(L, idx, "expected one of \"get\", \"head\", \"post\", \"put\", \"delete\", or \"patch\"");
+
+	return str;
 }
 
 static int w_request(lua_State *L)
@@ -61,13 +72,13 @@ static int w_request(lua_State *L)
 	{
 		advanced = true;
 
-		HTTPSClient::Request::Method defaultMethod = HTTPSClient::Request::GET;
+		std::string defaultMethod = "GET";
 
 		lua_getfield(L, 2, "data");
 		if (!lua_isnoneornil(L, -1))
 		{
 			req.postdata = w_checkstring(L, -1);
-			defaultMethod = HTTPSClient::Request::POST;
+			defaultMethod = "POST";
 		}
 		lua_pop(L, 1);
 

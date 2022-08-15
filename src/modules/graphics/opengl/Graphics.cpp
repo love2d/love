@@ -1414,12 +1414,17 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	if (enablestencil != gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
 		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, enablestencil);
 
-	GLenum glaction = GL_REPLACE;
+	GLenum glaction = GL_KEEP;
 
 	switch (action)
 	{
+	case STENCIL_KEEP:
+		glaction = GL_KEEP;
+		break;
+	case STENCIL_ZERO:
+		glaction = GL_ZERO;
+		break;
 	case STENCIL_REPLACE:
-	default:
 		glaction = GL_REPLACE;
 		break;
 	case STENCIL_INCREMENT:
@@ -1436,6 +1441,9 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 		break;
 	case STENCIL_INVERT:
 		glaction = GL_INVERT;
+		break;
+	case STENCIL_MAX_ENUM:
+		glaction = GL_KEEP;
 		break;
 	}
 

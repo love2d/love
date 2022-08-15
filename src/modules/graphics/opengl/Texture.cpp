@@ -298,20 +298,18 @@ void Texture::createTexture()
 	{
 		if (isCompressed() && (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME))
 		{
+			int slicecount = slices.getSliceCount(mip);
 			size_t mipsize = 0;
 
-			if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
+			for (int slice = 0; slice < slicecount; slice++)
 			{
-				for (int slice = 0; slice < slices.getSliceCount(mip); slice++)
-				{
-					auto id = slices.get(slice, mip);
-					if (id != nullptr)
-						mipsize += id->getSize();
-				}
+				auto id = slices.get(slice, mip);
+				if (id != nullptr)
+					mipsize += id->getSize();
 			}
 
 			if (mipsize > 0)
-				glCompressedTexImage3D(gltype, mip, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
+				glCompressedTexImage3D(gltype, mip, fmt.internalformat, w, h, slicecount, 0, mipsize, nullptr);
 		}
 
 		for (int slice = 0; slice < slicecount; slice++)

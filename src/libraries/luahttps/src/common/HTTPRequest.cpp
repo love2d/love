@@ -35,7 +35,13 @@ HTTPSClient::Reply HTTPRequest::request(const HTTPSClient::Request &req)
 	// Build the request
 	{
 		std::stringstream request;
-		request << (req.method == HTTPSClient::Request::GET ? "GET " : "POST ") << info.query << " HTTP/1.1\r\n";
+		std::string method = req.method;
+		bool hasData = req.postdata.length() > 0;
+
+		if (method.length() == 0)
+			method = hasData ? "POST" : "GET";
+
+		request << method << " " << info.query << " HTTP/1.1\r\n";
 
 		for (auto &header : req.headers)
 			request << header.first << ": " << header.second << "\r\n";
@@ -44,15 +50,15 @@ HTTPSClient::Reply HTTPRequest::request(const HTTPSClient::Request &req)
 
 		request << "Host: " << info.hostname << "\r\n";
 
-		if (req.method == HTTPSClient::Request::POST && req.headers.count("Content-Type") == 0)
+		if (hasData && req.headers.count("Content-Type") == 0)
 			request << "Content-Type: application/x-www-form-urlencoded\r\n";
 
-		if (req.method == HTTPSClient::Request::POST)
+		if (hasData)
 			request << "Content-Length: " << req.postdata.size() << "\r\n";
 
 		request << "\r\n";
 
-		if (req.method == HTTPSClient::Request::POST)
+		if (hasData)
 			request << req.postdata;
 
 		// Send it

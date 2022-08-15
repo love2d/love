@@ -28,8 +28,13 @@ namespace window
 
 static bool highDPIAllowed = false;
 
+// TODO: find a cleaner way to do this...
+// The window backend (e.g. love.window.sdl) is expected to implement this.
+void setHighDPIAllowedImplementation(bool enable);
+
 void setHighDPIAllowed(bool enable)
 {
+	setHighDPIAllowedImplementation(enable);
 	highDPIAllowed = enable;
 }
 

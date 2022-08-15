@@ -55,8 +55,12 @@ static size_t dequeue(std::vector<char> &buffer, char *data, size_t size)
 	size_t remaining = buffer.size() - size;
 
 	memcpy(data, &buffer[0], size);
-	memmove(&buffer[0], &buffer[size], remaining);
-	buffer.resize(remaining);
+
+	if (remaining > 0)
+	{
+		memmove(&buffer[0], &buffer[size], remaining);
+		buffer.resize(remaining);
+	}
 
 	return size;
 }

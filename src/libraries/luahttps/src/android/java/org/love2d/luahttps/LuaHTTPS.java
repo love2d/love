@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ class LuaHTTPS {
     static private String TAG = "LuaHTTPS";
 
     private String urlString;
+    private String method;
     private byte[] postData;
     private byte[] response;
     private int responseCode;
@@ -34,6 +36,7 @@ class LuaHTTPS {
 
     public void reset() {
         urlString = null;
+        method = "GET";
         postData = null;
         response = null;
         responseCode = 0;
@@ -48,6 +51,11 @@ class LuaHTTPS {
     @Keep
     public void setPostData(byte[] postData) {
         this.postData = postData;
+    }
+
+    @Keep
+    public void setMethod(String method) {
+        this.method = method.toUpperCase();
     }
 
     @Keep
@@ -110,15 +118,22 @@ class LuaHTTPS {
             return false;
         }
 
+        // Set request method
+        try {
+            connection.setRequestMethod(method);
+        } catch (ProtocolException e) {
+            Log.e(TAG, "Error", e);
+            return false;
+        }
+
         // Set header
         for (Map.Entry<String, String> headerData: headers.entrySet()) {
             connection.setRequestProperty(headerData.getKey(), headerData.getValue());
         }
 
         // Set post data
-        if (postData != null) {
+        if (postData != null && canSendData()) {
             connection.setDoOutput(true);
-            connection.setChunkedStreamingMode(0);
 
             try {
                 OutputStream out = connection.getOutputStream();
@@ -167,5 +182,9 @@ class LuaHTTPS {
 
         connection.disconnect();
         return true;
+    }
+
+    private boolean canSendData() {
+        return !method.equals("GET") && !method.equals("HEAD");
     }
 }
