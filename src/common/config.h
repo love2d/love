@@ -128,7 +128,7 @@
 
 // fixme: vulkan graphics only tested on windows for now
 // adjust this later on when testing is successful on other platforms
-#ifdef LOVE_WINDOWS
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX)
 #	define LOVE_GRAPHICS_VULKAN
 #endif
 

@@ -157,7 +157,7 @@ if(MEGA)
 		# automatically.
 	endif()
 else()
-	if(MSVC or ANDROID)
+	if(MSVC OR ANDROID)
 		message(FATAL_ERROR "
 It is currently only possible to build with megasource on Windows and Android.
 Please see https://github.com/love2d/megasource
@@ -173,6 +173,7 @@ Please see https://github.com/love2d/megasource
 	find_package(Vorbis REQUIRED)
 	find_package(ZLIB REQUIRED)
 	find_package(Ogg REQUIRED)
+	find_package(Vulkan REQUIRED)
 
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
@@ -186,6 +187,7 @@ Please see https://github.com/love2d/megasource
 		${MODPLUG_INCLUDE_DIR}
 		${OGG_INCLUDE_DIR}
 		${THEORA_INCLUDE_DIR}
+		${Vulkan_INCLUDE_DIRS}
 	)
 
 	set(LOVE_LINK_LIBRARIES
@@ -200,6 +202,7 @@ Please see https://github.com/love2d/megasource
 		${LOVE_LUA_LIBRARY}
 		${OGG_LIBRARY}
 		${ZLIB_LIBRARY}
+		${Vulkan_LIBRARIES}
 	)
 
 	if(LOVE_JIT)
@@ -1581,12 +1584,15 @@ set(LOVE_SRC_3P_LUAHTTPS_WINDOWS
 # compile on supported platforms.
 set(LOVE_SRC_3P_LUAHTTPS
 	${LOVE_SRC_3P_LUAHTTPS_ANDROID}
-	${LOVE_SRC_3P_LUAHTTPS_APPLE}
 	${LOVE_SRC_3P_LUAHTTPS_COMMON}
 	${LOVE_SRC_3P_LUAHTTPS_GENERIC}
 	${LOVE_SRC_3P_LUAHTTPS_LUA}
 	${LOVE_SRC_3P_LUAHTTPS_WINDOWS}
-)
+	)
+
+if (APPLE)
+	set(LOVE_SRC_3P_LUAHTTPS ${LOVE_SRC_3P_LUAHTTPS} ${LOVE_SRC_3P_LUAHTTPS_APPLE})
+endif()
 
 set(LOVE_LINK_L3P_LUAHTTPS)
 if(MSVC)
