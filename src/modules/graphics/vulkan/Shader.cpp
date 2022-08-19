@@ -118,6 +118,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 };
 
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
+static const uint32_t DESCRIPTOR_POOL_SIZE = 32;
 
 static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 	switch (type) {
@@ -159,8 +160,11 @@ bool Shader::loadVolatile() {
 	createDescriptorSetLayout();
 	createPipelineLayout();
 	createStreamBuffers();
+	descriptorSetsVector.resize(((Graphics*)gfx)->getNumImagesInFlight());
 	currentFrame = 0;
-	count = 0;
+	currentUsedUniformStreamBuffersCount = 0;
+	currentUsedDescriptorSetsCount = 0;
+	currentAllocatedDescriptorSets = DESCRIPTOR_POOL_SIZE;
 
 	return true;
 }
@@ -171,7 +175,10 @@ void Shader::unloadVolatile() {
 	}
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout](){
+	gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools](){
+		for (const auto pool : descriptorPools) {
+			vkDestroyDescriptorPool(device, pool, nullptr);
+		}
 		for (const auto shaderModule : shaderModules) {
 			vkDestroyShaderModule(device, shaderModule, nullptr);
 		}
@@ -186,6 +193,8 @@ void Shader::unloadVolatile() {
 	shaderModules.clear();
 	shaderStages.clear();
 	streamBuffers.clear();
+	descriptorPools.clear();
+	descriptorSetsVector.clear();
 }
 
 const std::vector<VkPipelineShaderStageCreateInfo>& Shader::getShaderStages() const {
@@ -212,7 +221,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 	// detect wether a new frame has begun
 	if (currentFrame != frameIndex) {
 		currentFrame = frameIndex;
-		count = 0;
+
+		currentUsedUniformStreamBuffersCount = 0;
+		currentUsedDescriptorSetsCount = 0;
 
 		// we needed more memory last frame, let's collapse all buffers into a single one.
 		if (streamBuffers.at(currentFrame).size() > 1) {
@@ -223,7 +234,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 			}
 			streamBuffers.at(currentFrame).clear();
 			streamBuffers.at(currentFrame).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, newSize));
-		} 
+		}
 		// no collapse necessary, can just call nextFrame to reset the current (only) streambuffer
 		else {
 			streamBuffers.at(currentFrame).at(0)->nextFrame();
@@ -231,12 +242,16 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 	}
 	// still the same frame
 	else {
-		auto usedStreamBufferMemory = count * uniformBufferSizeAligned;
+		auto usedStreamBufferMemory = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
 		if (usedStreamBufferMemory >= streamBuffers.at(currentFrame).back()->getSize()) {
 			// we ran out of memory in the current frame, need to allocate more.
 			streamBuffers.at(currentFrame).push_back(new StreamBuffer(gfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
-			count = 0;
+			currentUsedUniformStreamBuffersCount = 0;
 		}
+	}
+
+	if (currentUsedDescriptorSetsCount >= descriptorSetsVector.at(currentFrame).size()) {
+		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 	}
 
 	// additional data is always added onto the last stream buffer in the current frame
@@ -249,16 +264,18 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 
 	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
-	bufferInfo.offset = count * uniformBufferSizeAligned;
+	bufferInfo.offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
 	bufferInfo.range = sizeof(BuiltinUniformData);
 	
+	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
+
 	std::vector<VkWriteDescriptorSet> descriptorWrite{};
 
 	// uniform buffer update always happens
 	// (are there cases without ubos at all?)
 	VkWriteDescriptorSet uniformWrite{};
 	uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	uniformWrite.dstSet = 0;
+	uniformWrite.dstSet = currentDescriptorSet;
 	uniformWrite.dstBinding = builtinUniformInfo[BUILTIN_UNIFORMS_PER_DRAW]->location;
 	uniformWrite.dstArrayElement = 0;
 	uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -267,9 +284,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 
 	descriptorWrite.push_back(uniformWrite);
 
-	// Vulkan needs the image infos as a pointer.
-	// we collect them all here to properly free them up
-	// after the vulkan call.
 	std::vector<VkDescriptorImageInfo*> imageInfos;
 	
 	// update everything other than uniform buffers (since that's already taken care of.
@@ -278,7 +292,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		if (val.baseType == UNIFORM_SAMPLER) {
 			VkWriteDescriptorSet write{};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.dstSet = 0;
+			write.dstSet = currentDescriptorSet;
 			write.dstBinding = val.location;
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -295,16 +309,16 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		}
 	}
 
-	vkCmdPushDescriptorSet(
-		commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, 
-		pipelineLayout, 0, 
-		static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data());
+	vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
 
 	for (const auto imageInfo : imageInfos) {
 		delete imageInfo;
 	}
 
-	count++;
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
+
+	currentUsedUniformStreamBuffersCount++;
+	currentUsedDescriptorSetsCount++;
 }
 
 Shader::~Shader() {
@@ -614,9 +628,6 @@ void Shader::compileShaders() {
 }
 
 void Shader::createDescriptorSetLayout() {
-	auto vgfx = (Graphics*)gfx;
-	vkCmdPushDescriptorSet = vgfx->getVkCmdPushDescriptorSetKHRFunctionPointer();
-
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
 	for (auto const& [key, val] : uniformInfos) {
@@ -631,7 +642,6 @@ void Shader::createDescriptorSetLayout() {
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
@@ -690,6 +700,49 @@ void Shader::setMainTex(graphics::Texture* texture) {
 	if (builtinUniformInfo[BUILTIN_TEXTURE_MAIN] != nullptr) {
 		builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
 	}
+}
+
+VkDescriptorSet Shader::allocateDescriptorSet() {
+	if (currentAllocatedDescriptorSets >= DESCRIPTOR_POOL_SIZE) {
+		// fixme: we can optimize this, since sizes should never change for a given shader.
+		std::vector<VkDescriptorPoolSize> sizes;
+
+		for (const auto& [key, val] : uniformInfos) {
+			VkDescriptorPoolSize size{};
+			size.type = Vulkan::getDescriptorType(val.baseType);
+			size.descriptorCount = 1;
+			sizes.push_back(size);
+		}
+
+		VkDescriptorPoolCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		createInfo.maxSets = DESCRIPTOR_POOL_SIZE;
+		createInfo.poolSizeCount = static_cast<uint32_t>(sizes.size());
+		createInfo.pPoolSizes = sizes.data();
+
+		VkDescriptorPool pool;
+		if (vkCreateDescriptorPool(device, &createInfo, nullptr, &pool) != VK_SUCCESS) {
+			throw love::Exception("failed to create descriptor pool");
+		}
+		descriptorPools.push_back(pool);
+
+		currentAllocatedDescriptorSets = 0;
+	}
+
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = descriptorPools.back();
+	allocInfo.descriptorSetCount = 1;
+	allocInfo.pSetLayouts = &descriptorSetLayout;
+
+	VkDescriptorSet descriptorSet;
+	if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
+		throw love::Exception("failed to allocate descriptor set");
+	}
+
+	currentAllocatedDescriptorSets++;
+
+	return descriptorSet;
 }
 } // vulkan
 } // graphics

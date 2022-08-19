@@ -552,6 +552,28 @@ VkSamplerMipmapMode Vulkan::getMipMapMode(SamplerState::MipmapFilterMode mode) {
 	}
 }
 
+
+VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type) {
+	switch (type) {
+	case graphics::Shader::UniformType::UNIFORM_FLOAT:
+	case graphics::Shader::UniformType::UNIFORM_MATRIX:
+	case graphics::Shader::UniformType::UNIFORM_INT:
+	case graphics::Shader::UniformType::UNIFORM_UINT:
+	case graphics::Shader::UniformType::UNIFORM_BOOL:
+		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	case graphics::Shader::UniformType::UNIFORM_SAMPLER:
+		return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	case graphics::Shader::UniformType::UNIFORM_STORAGETEXTURE:
+		return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	case graphics::Shader::UniformType::UNIFORM_TEXELBUFFER:
+		return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+	case graphics::Shader::UniformType::UNIFORM_STORAGEBUFFER:
+		return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	default:
+		throw love::Exception("unkonwn uniform type");
+	}
+}
+
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
 	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
 	VkImageMemoryBarrier barrier{};

@@ -139,7 +139,6 @@ public:
 	void queueCleanUp(std::function<void()> cleanUp);
 
 	uint32_t getNumImagesInFlight() const;
-	const PFN_vkCmdPushDescriptorSetKHR getVkCmdPushDescriptorSetKHRFunctionPointer() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture* getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState&);
@@ -220,7 +219,6 @@ private:
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
 	VkDeviceSize minUniformBufferOffsetAlignment = 0;
-	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet = nullptr;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	bool framebufferResized = false;

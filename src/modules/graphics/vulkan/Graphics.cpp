@@ -36,9 +36,6 @@ const std::vector<const char*> validationLayers = {
 
 const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-
-	// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_push_descriptor.html
-	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
 };
 
 #ifdef NDEBUG
@@ -551,10 +548,6 @@ graphics::Texture* Graphics::getDefaultTexture() const {
 	return dynamic_cast<graphics::Texture*>(standardTexture.get());
 }
 
-const PFN_vkCmdPushDescriptorSetKHR Graphics::getVkCmdPushDescriptorSetKHRFunctionPointer() const {
-	return vkCmdPushDescriptorSet;
-}
-
 VkCommandBuffer Graphics::getDataTransferCommandBuffer() {
 	return dataTransferCommandBuffers.at(currentFrame);
 }
@@ -861,12 +854,6 @@ void Graphics::createLogicalDevice() {
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
-
-	vkCmdPushDescriptorSet = (PFN_vkCmdPushDescriptorSetKHR) vkGetDeviceProcAddr(device, "vkCmdPushDescriptorSetKHR");
-	if (!vkCmdPushDescriptorSet) {
-		// fixme: how widely adopted is this extension?
-		throw love::Exception("could not get a valid function pointer for vkCmdPushDescriptorSetKHR");
-	}
 }
 
 void Graphics::initVMA() {

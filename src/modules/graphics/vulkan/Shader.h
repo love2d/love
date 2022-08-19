@@ -70,8 +70,9 @@ private:
 		size_t baseoff, 
 		const std::string& basename);
 
+	VkDescriptorSet allocateDescriptorSet();
+
 	VkDeviceSize uniformBufferSizeAligned;
-	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSet;
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
@@ -80,6 +81,9 @@ private:
 	// we keep a vector of stream buffers per frame in flight
 	// that gets dynamically increased if more memory is needed
 	std::vector<std::vector<StreamBuffer*>> streamBuffers;
+	std::vector<VkDescriptorPool> descriptorPools;
+	uint32_t currentAllocatedDescriptorSets;
+	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
@@ -94,8 +98,8 @@ private:
 	size_t builtinUniformDataOffset;
 
 	uint32_t currentFrame;
-	// todo: give this variable a better name
-	uint32_t count;
+	uint32_t currentUsedUniformStreamBuffersCount;
+	uint32_t currentUsedDescriptorSetsCount;
 };
 }
 }
