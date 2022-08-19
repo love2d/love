@@ -21,7 +21,10 @@
 // LOVE
 #include "common/config.h"
 #include "graphics/Graphics.h"
-#include "graphics/vulkan/Graphics.h"
+#ifdef LOVE_GRAPHICS_VULKAN
+#	include "graphics/vulkan/Graphics.h"
+#	include "graphics/vulkan/Vulkan.h"
+#endif
 #include "Window.h"
 
 #ifdef LOVE_ANDROID
@@ -1116,6 +1119,9 @@ void Window::setVSync(int vsync)
 	}
 
 	// fixme: doesn't work for vulkan yet.
+#ifdef LOVE_GRAPHICS_VULKAN
+	love::graphics::vulkan::Vulkan::setVsync(vsync);
+#endif
 
 #if defined(LOVE_GRAPHICS_METAL) && defined(LOVE_MACOS)
 	if (metalView != nullptr)

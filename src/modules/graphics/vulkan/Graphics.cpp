@@ -972,14 +972,30 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 }
 
 VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-	// needed ?
-	for (const auto& availablePresentMode : availablePresentModes) {
-		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-			return availablePresentMode;
+	int vsync = Vulkan::getVsync();
+
+	switch (vsync) {
+	case -1: {
+		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+		if (it != availablePresentModes.end()) {
+			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
 		}
 	}
-
-	return VK_PRESENT_MODE_FIFO_KHR;
+	case 1: {
+		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_MAILBOX_KHR);
+		if (it != availablePresentModes.end()) {
+			return VK_PRESENT_MODE_MAILBOX_KHR;
+		}
+	}
+	case 0: {
+		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR);
+		if (it != availablePresentModes.end()) {
+			return VK_PRESENT_MODE_IMMEDIATE_KHR;
+		}
+	}
+	default:
+		return VK_PRESENT_MODE_FIFO_KHR;
+	}
 }
 
 VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
