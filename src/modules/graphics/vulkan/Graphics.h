@@ -38,6 +38,23 @@ struct RenderPassConfigurationHasher {
     }
 };
 
+struct FramebufferConfiguration {
+	VkRenderPass renderPass = VK_NULL_HANDLE;
+	VkImageView imageView = VK_NULL_HANDLE;
+	uint32_t width = 0;
+	uint32_t height = 0;
+
+	bool operator==(const FramebufferConfiguration& conf) const {
+		return memcmp(this, &conf, sizeof(FramebufferConfiguration)) == 0;
+	}
+};
+
+struct FramebufferConfigurationHasher {
+	size_t operator()(const FramebufferConfiguration& configuration) const {
+		return XXH32(&configuration, sizeof(FramebufferConfiguration), 0);
+	}
+};
+
 struct GraphicsPipelineConfiguration {
     VkRenderPass renderPass;
 	VertexAttributes vertexAttributes;
@@ -186,8 +203,8 @@ private:
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 	void createSwapChain();
 	void createImageViews();
-    std::vector<VkFramebuffer> createSwapChainFramebuffers(VkRenderPass);
-    VkFramebuffer getSwapChainFramebuffer(VkRenderPass);
+    VkFramebuffer createFramebuffer(FramebufferConfiguration);
+    VkFramebuffer getFramebuffer(FramebufferConfiguration);
 	void createDefaultShaders();
     VkRenderPass createRenderPass(RenderPassConfiguration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
@@ -224,10 +241,10 @@ private:
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 	VkExtent2D swapChainExtent = VkExtent2D();
 	std::vector<VkImageView> swapChainImageViews;
-    std::unordered_map<VkRenderPass, std::vector<VkFramebuffer>> swapChainFramebufferVector;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
     VkRenderPass currentRenderPass = VK_NULL_HANDLE;
     std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
+	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
@@ -252,7 +269,6 @@ private:
 	graphics::Texture* currentTexture = nullptr;
 
 	// render pass variables.
-	VkFormat currentFramebufferOutputFormat = VK_FORMAT_UNDEFINED;
 	Texture* renderTargetTexture = nullptr;
 	float currentViewportWidth = 0;
 	float currentViewportHeight = 0;

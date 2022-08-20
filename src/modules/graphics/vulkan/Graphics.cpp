@@ -46,7 +46,7 @@ constexpr bool enableValidationLayers = true;
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_3;
+constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_0;
 
 const char* Graphics::getName() const {
 	return "love.graphics.vulkan";
@@ -821,10 +821,6 @@ void Graphics::createLogicalDevice() {
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{};
-	dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-	dynamicRenderingFeature.dynamicRendering = VK_FALSE;
-
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
@@ -834,7 +830,6 @@ void Graphics::createLogicalDevice() {
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.pNext = &dynamicRenderingFeature;
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -1047,41 +1042,37 @@ void Graphics::createImageViews() {
 	}
 }
 
-std::vector<VkFramebuffer> Graphics::createSwapChainFramebuffers(VkRenderPass renderPass) {
-    std::vector<VkFramebuffer> swapChainFramebuffers;
-    swapChainFramebuffers.resize(swapChainImageViews.size());
+VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration) {
+	VkImageView attachments[] = {
+		configuration.imageView
+	};
 
-    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-        VkImageView attachments[] = {
-            swapChainImageViews[i]
-        };
+	VkFramebufferCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	createInfo.renderPass = configuration.renderPass;
+	createInfo.attachmentCount = 1;
+	createInfo.pAttachments = attachments;
+	createInfo.width = configuration.width;
+	createInfo.height = configuration.height;
+	createInfo.layers = 1;	// is this correct?
 
-        VkFramebufferCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        createInfo.renderPass = renderPass;
-        createInfo.attachmentCount = 1;
-        createInfo.pAttachments = attachments;
-        createInfo.width = swapChainExtent.width;
-        createInfo.height = swapChainExtent.height;
-        createInfo.layers = 1;
-
-        if (vkCreateFramebuffer(device, &createInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-            throw love::Exception("failed to create framebuffer");
-        }
-    }
-
-    return swapChainFramebuffers;
+	VkFramebuffer frameBuffer;
+	if (vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer) != VK_SUCCESS) {
+		throw love::Exception("failed to create framebuffer");
+	}
+	return frameBuffer;
 }
 
-VkFramebuffer Graphics::getSwapChainFramebuffer(VkRenderPass renderPass) {
-    auto it = swapChainFramebufferVector.find(renderPass);
-    if (it != swapChainFramebufferVector.end()) {
-        return it->second.at(imageIndex);
-    } else {
-        auto frameBuffers = createSwapChainFramebuffers(renderPass);
-        swapChainFramebufferVector[renderPass] = frameBuffers;
-        return frameBuffers.at(imageIndex);
-    }
+VkFramebuffer Graphics::getFramebuffer(FramebufferConfiguration configuration) {
+	auto it = framebuffers.find(configuration);
+	if (it != framebuffers.end()) {
+		return it->second;
+	}
+	else {
+		VkFramebuffer framebuffer = createFramebuffer(configuration);
+		framebuffers[configuration] = framebuffer;
+		return framebuffer;
+	} 
 }
 
 void Graphics::createDefaultShaders() {
@@ -1258,20 +1249,12 @@ void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
     RenderPassConfiguration renderPassConfiguration{};
 
 	if (texture) {
-		auto vulkanFormat = Vulkan::getTextureFormat(texture->getPixelFormat());
-		currentFramebufferOutputFormat = vulkanFormat.internalFormat;
-        renderPassConfiguration.frameBufferFormat = vulkanFormat.internalFormat;
-
+        renderPassConfiguration.frameBufferFormat = Vulkan::getTextureFormat(texture->getPixelFormat()).internalFormat;
 		renderTargetTexture = texture;
 	} else {
-		currentFramebufferOutputFormat = swapChainImageFormat;
         renderPassConfiguration.frameBufferFormat = swapChainImageFormat;
-
 		renderTargetTexture = nullptr;
 	}
-
-	currentViewportWidth = (float)w;
-	currentViewportHeight = (float)h;
 
     VkRenderPass renderPass;
 
@@ -1283,14 +1266,21 @@ void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
         renderPasses[renderPassConfiguration] = renderPass;
     }
 
+	FramebufferConfiguration configuration{};
+	configuration.renderPass = renderPass;
+	if (renderTargetTexture == nullptr) {
+		configuration.imageView = swapChainImageViews.at(imageIndex);
+	}
+	else {
+		configuration.imageView = (VkImageView)texture->getRenderTargetHandle();
+	}
+	configuration.width = w;
+	configuration.height = h;
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass;
-    if (renderTargetTexture == nullptr)  {
-        renderPassInfo.framebuffer = getSwapChainFramebuffer(renderPass);
-    } else {
-        renderPassInfo.framebuffer = (VkFramebuffer) texture->getRenderTargetHandle();
-    }
+	renderPassInfo.framebuffer = getFramebuffer(configuration);
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(w);
     renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(h);
@@ -1303,6 +1293,8 @@ void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
 
     currentRenderPass = renderPass;
 	currentGraphicsPipeline = VK_NULL_HANDLE;
+	currentViewportWidth = (float)w;
+	currentViewportHeight = (float)h;
 }
 
 void Graphics::endRenderPass() {
@@ -1587,6 +1579,10 @@ void Graphics::cleanup() {
 	}
 	samplers.clear();
 
+	for (const auto& [key, val] : renderPasses) {
+		vkDestroyRenderPass(device, val, nullptr);
+	}
+
 	// fixme: maybe we should clean up some pipelines if they haven't been used in a while.
 	for (auto const& p : graphicsPipelines) {
 		vkDestroyPipeline(device, p.second, nullptr);
@@ -1600,6 +1596,9 @@ void Graphics::cleanup() {
 }
 
 void Graphics::cleanupSwapChain() {
+	for (const auto& [key, val] : framebuffers) {
+		vkDestroyFramebuffer(device, val, nullptr);
+	}
     for (auto & swapChainImageView : swapChainImageViews) {
         vkDestroyImageView(device, swapChainImageView, nullptr);
     }
