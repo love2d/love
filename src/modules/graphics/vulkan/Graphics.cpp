@@ -41,11 +41,7 @@ const std::vector<const char*> deviceExtensions = {
 #ifdef NDEBUG
 constexpr bool enableValidationLayers = false;
 #else
-#ifdef LOVE_ANDROID
-constexpr bool enableValidationLayers = false;
-#else
 constexpr bool enableValidationLayers = true;
-#endif
 #endif
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
@@ -1012,7 +1008,7 @@ void Graphics::createSwapChain() {
 	}
 
 	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
@@ -1089,6 +1085,20 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 
 		return actualExtent;
 	}
+}
+
+VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities) {
+	if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+		return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	} else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+		return VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
+    } else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+        return VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+    } else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+        return VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+    } else {
+        throw love::Exception("failed to find composite alpha");
+    }
 }
 
 void Graphics::createImageViews() {
@@ -1673,9 +1683,11 @@ void Graphics::cleanupSwapChain() {
 	for (const auto& [key, val] : framebuffers) {
 		vkDestroyFramebuffer(device, val, nullptr);
 	}
+    framebuffers.clear();
     for (auto & swapChainImageView : swapChainImageViews) {
         vkDestroyImageView(device, swapChainImageView, nullptr);
     }
+    swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
