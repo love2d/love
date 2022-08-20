@@ -515,7 +515,7 @@ bool Joystick::setVibration(float left, float right, float duration)
 	Uint32 length = SDL_HAPTIC_INFINITY;
 	if (duration >= 0.0f)
 	{
-		float maxduration = std::numeric_limits<Uint32>::max() / 1000;
+		float maxduration = (float) (std::numeric_limits<Uint32>::max() / 1000.0);
 		length = Uint32(std::min(duration, maxduration) * 1000);
 	}
 

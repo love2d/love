@@ -69,9 +69,9 @@ STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MA
 	{ "stadia",       Joystick::GAMEPAD_TYPE_STADIA              },
 	{ "virtual",      Joystick::GAMEPAD_TYPE_VIRTUAL             },
 	{ "shield",       Joystick::GAMEPAD_TYPE_NVIDIA_SHIELD       },
-	{ "joycon_left",  Joystick::GAMEPAD_TYPE_JOYCON_LEFT         },
-	{ "joycon_right", Joystick::GAMEPAD_TYPE_JOYCON_RIGHT        },
-	{ "joycon_pair",  Joystick::GAMEPAD_TYPE_JOYCON_PAIR         },
+	{ "joyconleft",   Joystick::GAMEPAD_TYPE_JOYCON_LEFT         },
+	{ "joyconright",  Joystick::GAMEPAD_TYPE_JOYCON_RIGHT        },
+	{ "joyconpair",   Joystick::GAMEPAD_TYPE_JOYCON_PAIR         },
 }
 STRINGMAP_CLASS_END(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 
