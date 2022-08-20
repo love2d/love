@@ -261,6 +261,12 @@ Joystick::GamepadType Joystick::getGamepadType() const
 		case SDL_CONTROLLER_TYPE_AMAZON_LUNA: return GAMEPAD_TYPE_AMAZON_LUNA;
 		case SDL_CONTROLLER_TYPE_GOOGLE_STADIA: return GAMEPAD_TYPE_STADIA;
 #endif
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+		case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD: return GAMEPAD_TYPE_NVIDIA_SHIELD;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT: return GAMEPAD_TYPE_JOYCON_LEFT;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT: return GAMEPAD_TYPE_JOYCON_RIGHT;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR: return GAMEPAD_TYPE_JOYCON_PAIR;
+#endif
 	}
 #endif
 
@@ -509,7 +515,7 @@ bool Joystick::setVibration(float left, float right, float duration)
 	Uint32 length = SDL_HAPTIC_INFINITY;
 	if (duration >= 0.0f)
 	{
-		float maxduration = std::numeric_limits<Uint32>::max() / 1000.0f;
+		float maxduration = (float) (std::numeric_limits<Uint32>::max() / 1000.0);
 		length = Uint32(std::min(duration, maxduration) * 1000);
 	}
 
