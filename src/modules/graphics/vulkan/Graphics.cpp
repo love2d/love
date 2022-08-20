@@ -566,6 +566,7 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
 
 	data.transformMatrix = getTransform();
 	data.projectionMatrix = getDeviceProjection();
+	data.projectionMatrix = displayRotation * data.projectionMatrix ;
 
 	// The normal matrix is the transpose of the inverse of the rotation portion
 	// (top-left 3x3) of the transform matrix.
@@ -950,6 +951,35 @@ void Graphics::createSwapChain() {
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+
+    if (swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+        swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+        uint32_t width, height;
+        width = extent.width;
+        height = extent.height;
+        extent.width = height;
+        extent.height = width;
+    }
+
+	auto currentTransform = swapChainSupport.capabilities.currentTransform;
+	constexpr float PI = 3.14159265358979323846f;
+	float angle = 0.0f;
+	if (currentTransform & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+		angle = 0.0f;
+	} else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
+		angle = -PI / 2.0f;
+	} else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
+		angle = -PI;
+	} else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+		angle = -3.0f * PI / 2.0f;
+	}
+	float data[] = {
+			cosf(angle), -sinf(angle), 0.0f, 0.0f,
+			sinf(angle), cosf(angle), 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f,
+	};
+	displayRotation = Matrix4(data);
 
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {

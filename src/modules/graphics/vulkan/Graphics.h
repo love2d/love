@@ -19,7 +19,6 @@
 #include <iostream>
 #include <memory>
 #include <functional>
-#include <dlfcn.h>
 
 
 namespace love {
@@ -244,7 +243,8 @@ private:
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+    VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 	VkExtent2D swapChainExtent = VkExtent2D();
@@ -274,9 +274,9 @@ private:
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
-	graphics::Texture* currentTexture = nullptr;
 
 	// render pass variables.
+	graphics::Texture* currentTexture = nullptr;
 	Texture* renderTargetTexture = nullptr;
 	float currentViewportWidth = 0;
 	float currentViewportHeight = 0;
