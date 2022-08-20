@@ -2,7 +2,7 @@
 #define LOVE_GRAPHICS_VULKAN_VULKAN_H
 
 #include "graphics/Graphics.h"
-#include "vulkan/vulkan.h"
+#include "VulkanWrapper.h"
 
 namespace love {
 namespace graphics {

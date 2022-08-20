@@ -4,6 +4,7 @@
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 
+#include "VulkanWrapper.h"
 #include "vk_mem_alloc.h"
 
 #include <iostream>

@@ -4,7 +4,7 @@
 #include "graphics/ShaderStage.h"
 #include "modules/graphics/Graphics.h"
 
-#include <vulkan/vulkan.h>
+#include "VulkanWrapper.h"
 
 namespace love {
 namespace graphics {

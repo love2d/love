@@ -118,7 +118,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 };
 
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
-static const uint32_t DESCRIPTOR_POOL_SIZE = 32;
+static const uint32_t DESCRIPTOR_POOL_SIZE = 1;
 
 static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 	switch (type) {
@@ -128,8 +128,9 @@ static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 		return VK_SHADER_STAGE_FRAGMENT_BIT;
 	case SHADERSTAGE_COMPUTE:
 		return VK_SHADER_STAGE_COMPUTE_BIT;
+    default:
+	    throw love::Exception("invalid type");
 	}
-	throw love::Exception("invalid type");
 }
 
 static EShLanguage getGlslShaderType(ShaderStageType stage) {
@@ -170,7 +171,7 @@ bool Shader::loadVolatile() {
 }
 
 void Shader::unloadVolatile() {
-	if (shaderModules.size() == 0) {
+	if (shaderModules.empty()) {
 		return;
 	}
 
@@ -250,7 +251,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		}
 	}
 
-	if (currentUsedDescriptorSetsCount >= descriptorSetsVector.at(currentFrame).size()) {
+	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size())) {
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 	}
 
@@ -297,8 +298,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write.descriptorCount = 1;
-
-			uint32_t index = static_cast<uint32_t>(imageInfos.size());
 
 			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0]);	// fixme: arrays
 			imageInfos.push_back(imageInfo);
@@ -736,7 +735,8 @@ VkDescriptorSet Shader::allocateDescriptorSet() {
 	allocInfo.pSetLayouts = &descriptorSetLayout;
 
 	VkDescriptorSet descriptorSet;
-	if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
+	VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
+	if (result != VK_SUCCESS) {
 		throw love::Exception("failed to allocate descriptor set");
 	}
 

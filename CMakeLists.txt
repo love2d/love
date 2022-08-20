@@ -613,7 +613,13 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Vulkan.cpp
 	src/modules/graphics/vulkan/vk_mem_alloc.h
 	src/modules/graphics/vulkan/UseVMA.cpp
-)
+	src/modules/graphics/vulkan/VulkanWrapper.h)
+
+if(ANDROID)
+	set(LOVE_SRC_MODULE_GRAPHICS_VULKAN ${LOVE_SRC_MODULE_GRAPHICS_VULKAN}
+			src/modules/graphics/vulkan/volk.h
+			src/modules/graphics/vulkan/volk.cpp)
+endif()
 
 set(LOVE_SRC_MODULE_GRAPHICS
 	${LOVE_SRC_MODULE_GRAPHICS_ROOT}

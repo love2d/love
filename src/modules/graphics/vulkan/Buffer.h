@@ -4,7 +4,7 @@
 #include "graphics/Buffer.h"
 #include "graphics/Volatile.h"
 
-#include <vulkan/vulkan.h>
+#include "VulkanWrapper.h"
 #include "vk_mem_alloc.h"
 
 

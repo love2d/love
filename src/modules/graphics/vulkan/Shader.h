@@ -5,7 +5,7 @@
 #include <graphics/vulkan/ShaderStage.h>
 #include "Vulkan.h"
 
-#include <vulkan/vulkan.h>
+#include "VulkanWrapper.h"
 #include "libraries/spirv_cross/spirv_reflect.hpp"
 
 #include <map>

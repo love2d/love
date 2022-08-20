@@ -10,7 +10,7 @@
 #include <common/config.h>
 
 // libraries
-#include <vulkan/vulkan.h>
+#include "VulkanWrapper.h"
 #include "vk_mem_alloc.h"
 #include "libraries/xxHash/xxhash.h"
 
@@ -19,6 +19,7 @@
 #include <iostream>
 #include <memory>
 #include <functional>
+#include <dlfcn.h>
 
 
 namespace love {
@@ -121,7 +122,14 @@ struct SwapChainSupportDetails {
 
 class Graphics final : public love::graphics::Graphics {
 public:
-	Graphics() = default;
+	Graphics() {
+#ifdef LOVE_ANDROID
+		auto result = volkInitialize();
+		if (result != VK_SUCCESS) {
+			throw love::Exception("could not initialize volk");
+		}
+#endif
+	}
 
 	virtual ~Graphics();
 

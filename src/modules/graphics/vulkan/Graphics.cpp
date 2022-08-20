@@ -41,7 +41,11 @@ const std::vector<const char*> deviceExtensions = {
 #ifdef NDEBUG
 constexpr bool enableValidationLayers = false;
 #else
+#ifdef LOVE_ANDROID
+constexpr bool enableValidationLayers = false;
+#else
 constexpr bool enableValidationLayers = true;
+#endif
 #endif
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
@@ -310,6 +314,7 @@ void Graphics::getAPIStats(int& shaderswitches) const {
 
 void Graphics::unSetMode() {
 	created = false;
+	auto fpn = vkDeviceWaitIdle;
 	vkDeviceWaitIdle(device);
 	Volatile::unloadAll();
 	cleanup();
@@ -646,6 +651,10 @@ void Graphics::createVulkanInstance() {
 		&instance) != VK_SUCCESS) {
 		throw love::Exception("couldn't create vulkan instance");
 	}
+
+#ifdef LOVE_ANDROID
+	volkLoadInstance(instance);
+#endif
 }
 
 bool Graphics::checkValidationSupport() {
@@ -847,21 +856,56 @@ void Graphics::createLogicalDevice() {
 		throw love::Exception("failed to create logical device");
 	}
 
+#ifdef LOVE_ANDROID
+    volkLoadDevice(device);
+#endif
+
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
 void Graphics::initVMA() {
-	VmaVulkanFunctions vulkanFunctions = {};
-	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
-
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
 	allocatorCreateInfo.vulkanApiVersion = vulkanApiVersion;
 	allocatorCreateInfo.physicalDevice = physicalDevice;
 	allocatorCreateInfo.device = device;
 	allocatorCreateInfo.instance = instance;
+#ifdef LOVE_ANDROID
+	VmaVulkanFunctions vulkanFunctions{};
+
+	vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+	vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+	vulkanFunctions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+	vulkanFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+	vulkanFunctions.vkAllocateMemory = vkAllocateMemory;
+	vulkanFunctions.vkFreeMemory = vkFreeMemory;
+	vulkanFunctions.vkMapMemory = vkMapMemory;
+	vulkanFunctions.vkUnmapMemory = vkUnmapMemory;
+	vulkanFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
+    vulkanFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+	vulkanFunctions.vkBindBufferMemory = vkBindBufferMemory;
+	vulkanFunctions.vkBindImageMemory = vkBindImageMemory;
+	vulkanFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+	vulkanFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
+	vulkanFunctions.vkCreateBuffer = vkCreateBuffer;
+	vulkanFunctions.vkCreateImage = vkCreateImage;
+    vulkanFunctions.vkDestroyBuffer = vkDestroyBuffer;
+    vulkanFunctions.vkDestroyImage = vkDestroyImage;
+	vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
+
+    vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
+    vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
+    vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
+    vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
+    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
+
+	vulkanFunctions.vkGetDeviceBufferMemoryRequirements = vkGetDeviceBufferMemoryRequirements;
+	vulkanFunctions.vkGetDeviceImageMemoryRequirements = vkGetDeviceImageMemoryRequirements;
+
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+#else
+	allocatorCreateInfo.pVulkanFunctions = nullptr;
+#endif
 
 	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS) {
 		throw love::Exception("failed to create vma allocator");

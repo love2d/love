@@ -3,9 +3,9 @@
 
 #include "graphics/Volatile.h"
 #include "modules/graphics/StreamBuffer.h"
-#include "vulkan/vulkan.h"
 #include "graphics/Graphics.h"
 
+#include "VulkanWrapper.h"
 #include "vk_mem_alloc.h"
 
 namespace love {
