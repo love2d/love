@@ -65,7 +65,7 @@ const VmaAllocator Graphics::getVmaAllocator() const {
 }
 
 Graphics::~Graphics() {
-	// We already cleaned those up by clearing out batchedDrawBuffers. 
+	// We already cleaned those up by clearing out batchedDrawBuffers.
 	// We set them to nullptr here so the base class doesn't crash
 	// when it tries to free this.
 	batchedDrawState.vb[0] = nullptr;
@@ -146,7 +146,7 @@ void Graphics::present(void* screenshotCallbackdata) {
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores.at(currentFrame) };
-	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
@@ -185,7 +185,7 @@ void Graphics::present(void* screenshotCallbackdata) {
 	else if (result != VK_SUCCESS) {
 		throw love::Exception("failed to present swap chain image");
 	}
-	
+
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	updatedBatchedDrawBuffers();
@@ -248,7 +248,7 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 
 	Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
 	restoreState(states.back());
-	
+
 	setViewportSize(width, height, pixelwidth, pixelheight);
 	renderTargetTexture = nullptr;
 	currentViewportWidth = 0.0f;
@@ -410,7 +410,7 @@ void Graphics::setColor(Colorf c) {
 
 void Graphics::setScissor(const Rect& rect) {
 	flushBatchedDraws();
-	
+
 	states.back().scissor = true;
 	states.back().scissorRect = rect;
 }
@@ -427,7 +427,7 @@ void Graphics::setWireframe(bool enable) {
 	states.back().wireframe = enable;
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const { 
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const {
 	switch (format) {
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect()) {
@@ -443,7 +443,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) { 
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) {
 	return true;
 }
 
@@ -455,7 +455,7 @@ graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size)
 	return new StreamBuffer(this, type, size);
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const { 
+Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const {
 	uint32 flags = DEVICE_PROJECTION_DEFAULT;
 	return calculateDeviceProjection(projection, flags);
 }
@@ -530,7 +530,7 @@ void Graphics::endRecordingGraphicsCommands() {
 void Graphics::updatedBatchedDrawBuffers() {
 	batchedDrawState.vb[0] = batchedDrawBuffers[currentFrame].vertexBuffer1;
 	batchedDrawState.vb[0]->nextFrame();
-	batchedDrawState.vb[1] = batchedDrawBuffers[currentFrame].vertexBuffer2; 
+	batchedDrawState.vb[1] = batchedDrawBuffers[currentFrame].vertexBuffer2;
 	batchedDrawState.vb[1]->nextFrame();
 	batchedDrawState.indexBuffer = batchedDrawBuffers[currentFrame].indexBuffer;
 	batchedDrawState.indexBuffer->nextFrame();
@@ -641,8 +641,8 @@ void Graphics::createVulkanInstance() {
 	}
 
 	if (vkCreateInstance(
-		&createInfo, 
-		nullptr, 
+		&createInfo,
+		nullptr,
 		&instance) != VK_SUCCESS) {
 		throw love::Exception("couldn't create vulkan instance");
 	}
@@ -730,7 +730,7 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device) {
 
 	int score = 1;
 
-	// optional 
+	// optional
 
 	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 		score += 1000;
@@ -823,7 +823,7 @@ void Graphics::createLogicalDevice() {
 
 	VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{};
 	dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
-	dynamicRenderingFeature.dynamicRendering = VK_TRUE;
+	dynamicRenderingFeature.dynamicRendering = VK_FALSE;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -1047,6 +1047,43 @@ void Graphics::createImageViews() {
 	}
 }
 
+std::vector<VkFramebuffer> Graphics::createSwapChainFramebuffers(VkRenderPass renderPass) {
+    std::vector<VkFramebuffer> swapChainFramebuffers;
+    swapChainFramebuffers.resize(swapChainImageViews.size());
+
+    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+        VkImageView attachments[] = {
+            swapChainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        createInfo.renderPass = renderPass;
+        createInfo.attachmentCount = 1;
+        createInfo.pAttachments = attachments;
+        createInfo.width = swapChainExtent.width;
+        createInfo.height = swapChainExtent.height;
+        createInfo.layers = 1;
+
+        if (vkCreateFramebuffer(device, &createInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+            throw love::Exception("failed to create framebuffer");
+        }
+    }
+
+    return swapChainFramebuffers;
+}
+
+VkFramebuffer Graphics::getSwapChainFramebuffer(VkRenderPass renderPass) {
+    auto it = swapChainFramebufferVector.find(renderPass);
+    if (it != swapChainFramebufferVector.end()) {
+        return it->second.at(imageIndex);
+    } else {
+        auto frameBuffers = createSwapChainFramebuffers(renderPass);
+        swapChainFramebufferVector[renderPass] = frameBuffers;
+        return frameBuffers.at(imageIndex);
+    }
+}
+
 void Graphics::createDefaultShaders() {
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++) {
 		auto stype = (Shader::StandardShader)i;
@@ -1060,13 +1097,48 @@ void Graphics::createDefaultShaders() {
 	}
 }
 
+VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
+    VkAttachmentDescription colorDescription{};
+    colorDescription.format = configuration.frameBufferFormat;
+    colorDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorDescription.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subPass{};
+    subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subPass.colorAttachmentCount = 1;
+    subPass.pColorAttachments = &colorAttachmentRef;
+
+    VkRenderPassCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    createInfo.attachmentCount = 1;
+    createInfo.pAttachments = &colorDescription;
+    createInfo.subpassCount = 1;
+    createInfo.pSubpasses = &subPass;
+
+    VkRenderPass renderPass;
+    if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS) {
+        throw love::Exception("failed to create render pass");
+    }
+
+    return renderPass;
+}
+
 bool Graphics::usesConstantVertexColor(const VertexAttributes& vertexAttributes) {
 	return !!(vertexAttributes.enableBits & (1u << ATTRIB_COLOR));
 }
 
 void Graphics::createVulkanVertexFormat(
-	VertexAttributes vertexAttributes, 
-	std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
+	VertexAttributes vertexAttributes,
+	std::vector<VkVertexInputBindingDescription> &bindingDescriptions,
 	std::vector<VkVertexInputAttributeDescription> &attributeDescriptions) {
 	std::set<uint32_t> usedBuffers;
 
@@ -1075,7 +1147,7 @@ void Graphics::createVulkanVertexFormat(
 	bool usesColor = false;
 
 	uint8_t highestBufferBinding = 0;
-	
+
 	for (uint32_t i = 0; i < VertexAttributes::MAX; i++) {	// change to loop like in opengl implementation ?
 		uint32 bit = 1u << i;
 		if (allBits & bit) {
@@ -1135,6 +1207,7 @@ void Graphics::createVulkanVertexFormat(
 
 void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
 	GraphicsPipelineConfiguration configuration;
+    configuration.renderPass = currentRenderPass;
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.primitiveType = primitiveType;
@@ -1143,7 +1216,6 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.colorChannelMask = states.back().colorMask;
 	configuration.winding = states.back().winding;
 	configuration.cullmode = cullmode;
-	configuration.framebufferFormat = currentFramebufferOutputFormat;
 	configuration.viewportWidth = currentViewportWidth;
 	configuration.viewportHeight = currentViewportHeight;
 	if (states.back().scissor) {
@@ -1183,46 +1255,59 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 }
 
 void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
-	VkRenderingAttachmentInfo colorAttachmentInfo{};
-	colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-	colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    RenderPassConfiguration renderPassConfiguration{};
+
 	if (texture) {
-		colorAttachmentInfo.imageView = (VkImageView)texture->getRenderTargetHandle();
 		auto vulkanFormat = Vulkan::getTextureFormat(texture->getPixelFormat());
 		currentFramebufferOutputFormat = vulkanFormat.internalFormat;
+        renderPassConfiguration.frameBufferFormat = vulkanFormat.internalFormat;
 
 		renderTargetTexture = texture;
 	} else {
-		colorAttachmentInfo.imageView = swapChainImageViews[imageIndex];
 		currentFramebufferOutputFormat = swapChainImageFormat;
+        renderPassConfiguration.frameBufferFormat = swapChainImageFormat;
 
 		renderTargetTexture = nullptr;
 	}
-	colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-	VkRenderingInfo renderingInfo{};
-	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-	renderingInfo.renderArea.extent.width = w;
-	renderingInfo.renderArea.extent.height = h;
-	renderingInfo.layerCount = 1;
-	renderingInfo.colorAttachmentCount = 1;
-	renderingInfo.pColorAttachments = &colorAttachmentInfo;
 
 	currentViewportWidth = (float)w;
 	currentViewportHeight = (float)h;
 
-	if (renderTargetTexture) {
+    VkRenderPass renderPass;
+
+    auto it = renderPasses.find(renderPassConfiguration);
+    if (it != renderPasses.end()) {
+        renderPass = it->second;
+    } else {
+        renderPass = createRenderPass(renderPassConfiguration);
+        renderPasses[renderPassConfiguration] = renderPass;
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = renderPass;
+    if (renderTargetTexture == nullptr)  {
+        renderPassInfo.framebuffer = getSwapChainFramebuffer(renderPass);
+    } else {
+        renderPassInfo.framebuffer = (VkFramebuffer) texture->getRenderTargetHandle();
+    }
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(w);
+    renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(h);
+
+    if (renderTargetTexture) {
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), (VkImage)texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	}
 
-	vkCmdBeginRendering(commandBuffers.at(currentFrame), &renderingInfo);
+    vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+    currentRenderPass = renderPass;
 	currentGraphicsPipeline = VK_NULL_HANDLE;
 }
 
 void Graphics::endRenderPass() {
-	vkCmdEndRendering(commandBuffers.at(currentFrame));
+	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
+    currentRenderPass = VK_NULL_HANDLE;
 
 	if (renderTargetTexture) {
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -1281,7 +1366,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-	
+
 	createVulkanVertexFormat(configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -1295,7 +1380,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = Vulkan::getPrimitiveTypeTopology(configuration.primitiveType);
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
-	
+
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -1366,13 +1451,6 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	colorBlending.blendConstants[2] = 0.0f;
 	colorBlending.blendConstants[3] = 0.0f;
 
-	VkFormat framebufferOutputFormat = configuration.framebufferFormat;
-
-	VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{};
-	pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-	pipelineRenderingCreateInfo.colorAttachmentCount = 1;
-	pipelineRenderingCreateInfo.pColorAttachmentFormats = &framebufferOutputFormat;
-
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -1389,7 +1467,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineInfo.basePipelineIndex = -1;
-	pipelineInfo.pNext = &pipelineRenderingCreateInfo;
+    pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
 	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
@@ -1522,9 +1600,9 @@ void Graphics::cleanup() {
 }
 
 void Graphics::cleanupSwapChain() {
-	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-		vkDestroyImageView(device, swapChainImageViews[i], nullptr);
-	}
+    for (auto & swapChainImageView : swapChainImageViews) {
+        vkDestroyImageView(device, swapChainImageView, nullptr);
+    }
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 

@@ -24,7 +24,22 @@
 namespace love {
 namespace graphics {
 namespace vulkan {
+struct RenderPassConfiguration {
+    VkFormat frameBufferFormat;
+
+    bool operator==(const RenderPassConfiguration& conf) const {
+        return memcmp(this, &conf, sizeof(RenderPassConfiguration)) == 0;
+    }
+};
+
+struct RenderPassConfigurationHasher {
+    size_t operator()(const RenderPassConfiguration &configuration) const {
+        return XXH32(&configuration, sizeof(RenderPassConfiguration), 0);
+    }
+};
+
 struct GraphicsPipelineConfiguration {
+    VkRenderPass renderPass;
 	VertexAttributes vertexAttributes;
 	Shader* shader = nullptr;
 	PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
@@ -33,7 +48,6 @@ struct GraphicsPipelineConfiguration {
 	ColorChannelMask colorChannelMask;
 	Winding winding;
 	CullMode cullmode;
-	VkFormat framebufferFormat;
 	float viewportWidth;
 	float viewportHeight;
 	std::optional<Rect> scissorRect;
@@ -172,7 +186,10 @@ private:
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 	void createSwapChain();
 	void createImageViews();
+    std::vector<VkFramebuffer> createSwapChainFramebuffers(VkRenderPass);
+    VkFramebuffer getSwapChainFramebuffer(VkRenderPass);
 	void createDefaultShaders();
+    VkRenderPass createRenderPass(RenderPassConfiguration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
 	void createCommandPool();
 	void createCommandBuffers();
@@ -207,8 +224,10 @@ private:
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 	VkExtent2D swapChainExtent = VkExtent2D();
 	std::vector<VkImageView> swapChainImageViews;
-	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    std::unordered_map<VkRenderPass, std::vector<VkFramebuffer>> swapChainFramebufferVector;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
+    VkRenderPass currentRenderPass = VK_NULL_HANDLE;
+    std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
