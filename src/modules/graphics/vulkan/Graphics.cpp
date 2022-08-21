@@ -83,7 +83,6 @@ love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settin
 	return new Buffer(this, settings, format, data, size, arraylength);
 }
 
-// FIXME: clear stencil and depth missing.
 void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) {
 	VkClearAttachment attachment{};
 
@@ -95,12 +94,31 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 		attachment.clearValue.color.float32[3] = static_cast<float>(color.value.a);
 	}
 
+	VkClearAttachment depthStencilAttachment{};
+
+	if (stencil.hasValue) {
+		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+	}
+	if (depth.hasValue) {
+		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+	}
+
+	std::array<VkClearAttachment, 2> attachments = {
+		attachment,
+		depthStencilAttachment
+	};
+
 	VkClearRect rect{};
 	rect.layerCount = 1;
 	rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
 	rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
 
-	vkCmdClearAttachments(commandBuffers[currentFrame], 1, &attachment, 1, &rect);
+	vkCmdClearAttachments(
+		commandBuffers[currentFrame], 
+		static_cast<uint32_t>(attachments.size()), attachments.data(),
+		1, &rect);
 }
 
 void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) {
@@ -214,6 +232,7 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	createSwapChain();
 	createImageViews();
 	createSyncObjects();
+	createDepthResources();
 	createCommandPool();
 	createCommandBuffers();
 	startRecordingGraphicsCommands();
@@ -420,6 +439,23 @@ void Graphics::setScissor() {
 	flushBatchedDraws();
 
 	states.back().scissor = false;
+}
+
+void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) {
+	flushBatchedDraws();
+
+	states.back().stencil.action = action;
+	states.back().stencil.compare = compare;
+	states.back().stencil.value = value;
+	states.back().stencil.readMask = readmask;
+	states.back().stencil.writeMask = writemask;
+}
+
+void Graphics::setDepthMode(CompareMode compare, bool write) {
+	flushBatchedDraws();
+
+	states.back().depthTest = compare;
+	states.back().depthWrite = write;
 }
 
 void Graphics::setWireframe(bool enable) {
@@ -1048,17 +1084,26 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 		if (it != availablePresentModes.end()) {
 			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
 		}
+		else {
+			[[fallthrough]];
+		}
 	}
 	case 1: {
 		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_MAILBOX_KHR);
 		if (it != availablePresentModes.end()) {
 			return VK_PRESENT_MODE_MAILBOX_KHR;
 		}
+		else {
+			return VK_PRESENT_MODE_FIFO_KHR;
+		}
 	}
 	case 0: {
 		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR);
 		if (it != availablePresentModes.end()) {
 			return VK_PRESENT_MODE_IMMEDIATE_KHR;
+		}
+		else {
+			return VK_PRESENT_MODE_FIFO_KHR;
 		}
 	}
 	default:
@@ -1130,18 +1175,19 @@ void Graphics::createImageViews() {
 }
 
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration) {
-	VkImageView attachments[] = {
-		configuration.imageView
+	std::array<VkImageView, 2> attachments = {
+		configuration.imageView,
+		depthImageView
 	};
 
 	VkFramebufferCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	createInfo.renderPass = configuration.renderPass;
-	createInfo.attachmentCount = 1;
-	createInfo.pAttachments = attachments;
+	createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	createInfo.pAttachments = attachments.data();
 	createInfo.width = configuration.width;
 	createInfo.height = configuration.height;
-	createInfo.layers = 1;	// is this correct?
+	createInfo.layers = 1;
 
 	VkFramebuffer frameBuffer;
 	if (vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer) != VK_SUCCESS) {
@@ -1186,21 +1232,48 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
     colorDescription.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentDescription depthStencilAttachment{};
+	depthStencilAttachment.format = findDepthFormat();
+	depthStencilAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthStencilAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthStencilAttachmentRef{};
+	depthStencilAttachmentRef.attachment = 1;
+	depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subPass{};
     subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subPass.colorAttachmentCount = 1;
     subPass.pColorAttachments = &colorAttachmentRef;
+	subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
+
+	std::array<VkAttachmentDescription, 2> attachments = { colorDescription, depthStencilAttachment };
+
+	VkSubpassDependency dependency{};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
     VkRenderPassCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    createInfo.attachmentCount = 1;
-    createInfo.pAttachments = &colorDescription;
+    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    createInfo.pAttachments = attachments.data();
     createInfo.subpassCount = 1;
     createInfo.pSubpasses = &subPass;
+	createInfo.dependencyCount = 1;
+	createInfo.pDependencies = &dependency;
 
     VkRenderPass renderPass;
     if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS) {
@@ -1284,6 +1357,8 @@ void Graphics::createVulkanVertexFormat(
 }
 
 void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
+	states.back().stencil;
+
 	GraphicsPipelineConfiguration configuration;
     configuration.renderPass = currentRenderPass;
 	configuration.vertexAttributes = attributes;
@@ -1293,6 +1368,9 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.blendState = states.back().blend;
 	configuration.colorChannelMask = states.back().colorMask;
 	configuration.winding = states.back().winding;
+	configuration.stencil = states.back().stencil;
+	configuration.depthState.compare = states.back().depthTest;
+	configuration.depthState.write = states.back().depthWrite;
 	configuration.cullmode = cullmode;
 	configuration.viewportWidth = currentViewportWidth;
 	configuration.viewportHeight = currentViewportHeight;
@@ -1509,6 +1587,32 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
 	multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
+	VkPipelineDepthStencilStateCreateInfo depthStencil{};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = Vulkan::getBool(configuration.depthState.write);
+	depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.depthState.compare);
+	depthStencil.depthBoundsTestEnable = VK_FALSE;
+	depthStencil.minDepthBounds = 0.0f;
+	depthStencil.maxDepthBounds = 1.0f;
+	depthStencil.stencilTestEnable = VK_TRUE;
+
+	depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
+	depthStencil.front.passOp = Vulkan::getStencilOp(configuration.stencil.action);
+	depthStencil.front.depthFailOp = VK_STENCIL_OP_KEEP;
+	depthStencil.front.compareOp = Vulkan::getCompareOp(configuration.stencil.compare);
+	depthStencil.front.compareMask = configuration.stencil.readMask;
+	depthStencil.front.writeMask = configuration.stencil.writeMask;
+	depthStencil.front.reference = configuration.stencil.value;
+
+	depthStencil.back.failOp = VK_STENCIL_OP_KEEP;
+	depthStencil.back.passOp = Vulkan::getStencilOp(configuration.stencil.action);
+	depthStencil.back.depthFailOp = VK_STENCIL_OP_KEEP;
+	depthStencil.back.compareOp = Vulkan::getCompareOp(configuration.stencil.compare);
+	depthStencil.back.compareMask = configuration.stencil.readMask;
+	depthStencil.back.writeMask = configuration.stencil.writeMask;
+	depthStencil.back.reference = static_cast<uint32_t>(configuration.stencil.value);
+
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = Vulkan::getColorMask(configuration.colorChannelMask);
 	colorBlendAttachment.blendEnable = Vulkan::getBool(configuration.blendState.enable);
@@ -1539,7 +1643,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pDepthStencilState = nullptr;
+	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr;
 	pipelineInfo.layout = configuration.shader->getGraphicsPipelineLayout();
@@ -1568,6 +1672,72 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 		currentGraphicsPipeline = pipeline;
 	}
+}
+
+VkFormat Graphics::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+	for (auto format : candidates) {
+		VkFormatProperties properties;
+		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &properties);
+		if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) {
+			return format;
+		}
+		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
+			return format;
+		}
+	}
+
+	throw love::Exception("failed to find supported format");
+}
+
+
+VkFormat Graphics::findDepthFormat() {
+	return findSupportedFormat(
+		{ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+	);
+}
+
+void Graphics::createDepthResources() {
+	VkFormat depthFormat = findDepthFormat();
+
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.format = depthFormat;
+	imageInfo.extent.width = swapChainExtent.width;
+	imageInfo.extent.height = swapChainExtent.height;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	VmaAllocationCreateInfo allocationInfo{};
+	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
+	allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+
+	vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr);
+
+	VkImageViewCreateInfo imageViewInfo{};
+	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewInfo.image = depthImage;
+	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewInfo.format = depthFormat;
+	imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	imageViewInfo.subresourceRange.baseMipLevel = 0;
+	imageViewInfo.subresourceRange.levelCount = 1;
+	imageViewInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewInfo.subresourceRange.layerCount = 1;
+
+	vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView);
 }
 
 void Graphics::createCommandPool() {
@@ -1683,6 +1853,8 @@ void Graphics::cleanup() {
 }
 
 void Graphics::cleanupSwapChain() {
+	vkDestroyImageView(device, depthImageView, nullptr);
+	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
 	for (const auto& [key, val] : framebuffers) {
 		vkDestroyFramebuffer(device, val, nullptr);
 	}
@@ -1701,6 +1873,7 @@ void Graphics::recreateSwapChain() {
 
 	createSwapChain();
 	createImageViews();
+	createDepthResources();
 }
 
 love::graphics::Graphics* createInstance() {

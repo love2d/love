@@ -68,6 +68,8 @@ struct GraphicsPipelineConfiguration {
 	float viewportWidth;
 	float viewportHeight;
 	std::optional<Rect> scissorRect;
+	StencilState stencil;
+	DepthState depthState;
 
 	GraphicsPipelineConfiguration() {
 		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
@@ -154,8 +156,8 @@ public:
 	void setColor(Colorf c) override;
 	void setScissor(const Rect& rect) override;
 	void setScissor() override;
-	void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override { }
-	void setDepthMode(CompareMode compare, bool write) override { }
+	void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override;
+	void setDepthMode(CompareMode compare, bool write) override;
 	void setFrontFaceWinding(Winding winding) override;
 	void setColorMask(ColorChannelMask mask) override;
 	void setBlendState(const BlendState& blend) override;
@@ -216,6 +218,9 @@ private:
 	void createDefaultShaders();
     VkRenderPass createRenderPass(RenderPassConfiguration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
+	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat findDepthFormat();
+	void createDepthResources();
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncObjects();
@@ -252,6 +257,9 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
     VkRenderPass currentRenderPass = VK_NULL_HANDLE;
+	VkImage depthImage;
+	VkImageView depthImageView;
+	VmaAllocation depthImageAllocation;
     std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;

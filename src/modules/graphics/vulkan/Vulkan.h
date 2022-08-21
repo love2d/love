@@ -52,6 +52,7 @@ public:
 	static VkCompareOp getCompareOp(CompareMode);
 	static VkSamplerMipmapMode getMipMapMode(SamplerState::MipmapFilterMode);
 	static VkDescriptorType getDescriptorType(graphics::Shader::UniformType);
+	static VkStencilOp getStencilOp(StencilAction);
 
 	static void cmdTransitionImageLayout(
 		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,

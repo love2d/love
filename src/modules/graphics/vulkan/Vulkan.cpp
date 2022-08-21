@@ -583,6 +583,29 @@ VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type) {
 	}
 }
 
+VkStencilOp Vulkan::getStencilOp(StencilAction action) {
+	switch (action) {
+	case STENCIL_KEEP:
+		return VK_STENCIL_OP_KEEP;
+	case STENCIL_ZERO:
+		return VK_STENCIL_OP_ZERO;
+	case STENCIL_REPLACE:
+		return VK_STENCIL_OP_REPLACE;
+	case STENCIL_INCREMENT:
+		return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+	case STENCIL_DECREMENT:
+		return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+	case STENCIL_INCREMENT_WRAP:
+		return VK_STENCIL_OP_INCREMENT_AND_WRAP;
+	case STENCIL_DECREMENT_WRAP:
+		return VK_STENCIL_OP_DECREMENT_AND_WRAP;
+	case STENCIL_INVERT:
+		return VK_STENCIL_OP_INVERT;
+	default:
+		throw love::Exception("unknown stencil action");
+	}
+}
+
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
 	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
 	VkImageMemoryBarrier barrier{};
