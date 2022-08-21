@@ -879,29 +879,32 @@ void Graphics::initVMA() {
 	vulkanFunctions.vkMapMemory = vkMapMemory;
 	vulkanFunctions.vkUnmapMemory = vkUnmapMemory;
 	vulkanFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
-    vulkanFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+	vulkanFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
 	vulkanFunctions.vkBindBufferMemory = vkBindBufferMemory;
 	vulkanFunctions.vkBindImageMemory = vkBindImageMemory;
 	vulkanFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
 	vulkanFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
 	vulkanFunctions.vkCreateBuffer = vkCreateBuffer;
 	vulkanFunctions.vkCreateImage = vkCreateImage;
-    vulkanFunctions.vkDestroyBuffer = vkDestroyBuffer;
-    vulkanFunctions.vkDestroyImage = vkDestroyImage;
+	vulkanFunctions.vkDestroyBuffer = vkDestroyBuffer;
+	vulkanFunctions.vkDestroyImage = vkDestroyImage;
 	vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
-    vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
-    vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
-    vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
-    vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
-    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
+	vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
+	vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
+	vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
+	vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
+	vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
 
 	vulkanFunctions.vkGetDeviceBufferMemoryRequirements = vkGetDeviceBufferMemoryRequirements;
 	vulkanFunctions.vkGetDeviceImageMemoryRequirements = vkGetDeviceImageMemoryRequirements;
 
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 #else
-	allocatorCreateInfo.pVulkanFunctions = nullptr;
+	VmaVulkanFunctions vulkanFunctions{};
+	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 #endif
 
 	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS) {
