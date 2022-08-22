@@ -67,7 +67,6 @@ struct GraphicsPipelineConfiguration {
 	CullMode cullmode;
 	float viewportWidth;
 	float viewportHeight;
-	std::optional<Rect> scissorRect;
 	StencilState stencil;
 	DepthState depthState;
 
@@ -228,6 +227,7 @@ private:
 	void cleanup();
 	void cleanupSwapChain();
 	void recreateSwapChain();
+	void initDynamicState();
 	void startRecordingGraphicsCommands();
 	void endRecordingGraphicsCommands();
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
@@ -250,6 +250,7 @@ private:
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+	VkSurfaceTransformFlagBitsKHR preTransform;
 	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;

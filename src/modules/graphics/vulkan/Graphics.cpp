@@ -428,8 +428,57 @@ void Graphics::setColor(Colorf c) {
 	states.back().color = c;
 }
 
+static VkRect2D computeScissor(const Rect& r, double bufferWidth, double bufferHeight, double dpiScale, VkSurfaceTransformFlagBitsKHR preTransform) {
+	double x = static_cast<double>(r.x) * dpiScale;
+	double y = static_cast<double>(r.y) * dpiScale;
+	double w = static_cast<double>(r.w) * dpiScale;
+	double h = static_cast<double>(r.h) * dpiScale;
+
+	double scissorX, scissorY, scissorW, scissorH;
+
+	switch (preTransform) {
+	case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+		scissorX = bufferWidth - h - y;
+		scissorY = x;
+		scissorW = h;
+		scissorH = w;
+		break;
+	case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+		scissorX = bufferWidth - w - x;
+		scissorY = bufferHeight - h - y;
+		scissorW = w;
+		scissorH = h;
+		break;
+	case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+		scissorX = y;
+		scissorY = bufferHeight - w - x;
+		scissorW = h;
+		scissorH = w;
+		break;
+	default:
+		scissorX = x;
+		scissorY = y;
+		scissorW = w;
+		scissorH = h;
+		break;
+	}
+
+	VkRect2D scissor = { 
+		{static_cast<int32_t>(scissorX), static_cast<int32_t>(scissorY)},
+		{static_cast<uint32_t>(scissorW), static_cast<uint32_t>(scissorH)}
+	};
+	return scissor;
+}
+
 void Graphics::setScissor(const Rect& rect) {
 	flushBatchedDraws();
+
+	VkRect2D scissor = computeScissor(rect,
+                                      static_cast<double>(swapChainExtent.width),
+                                      static_cast<double>(swapChainExtent.height),
+									  getCurrentDPIScale(),
+                                      preTransform);
+	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 
 	states.back().scissor = true;
 	states.back().scissorRect = rect;
@@ -439,6 +488,12 @@ void Graphics::setScissor() {
 	flushBatchedDraws();
 
 	states.back().scissor = false;
+
+	VkRect2D scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = swapChainExtent;
+
+	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 }
 
 void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) {
@@ -511,6 +566,10 @@ void Graphics::setRenderTargetsInternal(const RenderTargets& rts, int pixelw, in
 
 // END IMPLEMENTATION OVERRIDDEN FUNCTIONS
 
+void Graphics::initDynamicState() {
+	setScissor();
+}
+
 void Graphics::startRecordingGraphicsCommands() {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -543,6 +602,8 @@ void Graphics::startRecordingGraphicsCommands() {
 	if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
 		throw love::Exception("failed to begin recording data transfer command buffer");
 	}
+
+	initDynamicState();
 
 	Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1062,6 +1123,7 @@ void Graphics::createSwapChain() {
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
+	preTransform = swapChainSupport.capabilities.currentTransform;
 }
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
@@ -1374,12 +1436,6 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.cullmode = cullmode;
 	configuration.viewportWidth = currentViewportWidth;
 	configuration.viewportHeight = currentViewportHeight;
-	if (states.back().scissor) {
-		configuration.scissorRect = states.back().scissorRect;
-	}
-	else {
-		configuration.scissorRect = std::nullopt;
-	}
 	std::vector<VkBuffer> bufferVector;
 	std::vector<VkDeviceSize> offsets;
 
@@ -1546,24 +1602,11 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
-	VkRect2D scissor{};
-	if (configuration.scissorRect.has_value()) {
-		scissor.offset.x = configuration.scissorRect.value().x;
-		scissor.offset.y = configuration.scissorRect.value().y;
-		scissor.extent.width = static_cast<uint32_t>(configuration.scissorRect.value().w);
-		scissor.extent.height = static_cast<uint32_t>(configuration.scissorRect.value().h);
-	}
-	else {
-		scissor.offset = { 0, 0 };
-		scissor.extent = swapChainExtent;
-	}
-
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
 	viewportState.pViewports = &viewport;
 	viewportState.scissorCount = 1;
-	viewportState.pScissors = &scissor;
 
 	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1634,6 +1677,15 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	colorBlending.blendConstants[2] = 0.0f;
 	colorBlending.blendConstants[3] = 0.0f;
 
+	std::array<VkDynamicState, 1> dynamicStates = {
+		VK_DYNAMIC_STATE_SCISSOR
+	};
+
+	VkPipelineDynamicStateCreateInfo dynamicState{};
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+	dynamicState.pDynamicStates = dynamicStates.data();
+
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -1645,7 +1697,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
-	pipelineInfo.pDynamicState = nullptr;
+	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = configuration.shader->getGraphicsPipelineLayout();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
