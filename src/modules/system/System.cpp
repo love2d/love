@@ -22,6 +22,22 @@
 #include "common/config.h"
 #include "System.h"
 
+// Library versions
+#include <lua.hpp>
+#include <SDL_version.h>
+#ifdef LOVE_ENABLE_LOVE
+# include "common/version.h"
+#endif
+#ifdef LOVE_ENABLE_FONT
+# include <freetype/freetype.h>
+#endif
+#ifdef LOVE_ENABLE_VIDEO
+# include <theora/codec.h>
+#endif
+#if defined(LOVE_ENABLE_DATA) || defined(LOVE_ENABLE_IMAGE)
+# include <zlib.h>
+#endif
+
 #if defined(LOVE_MACOS)
 #include <CoreServices/CoreServices.h>
 #elif defined(LOVE_IOS)
@@ -191,26 +207,65 @@ bool System::hasBackgroundMusic() const
 #endif
 }
 
-bool System::getConstant(const char *in, System::PowerState &out)
+#define STRINGIFY(x) #x
+#define versToStr(major, minor, patch) versions[lib] = STRINGIFY(major) "." STRINGIFY(minor) "." STRINGIFY(patch)
+
+std::map<System::Library,std::string> System::getLibraryVersions(std::vector<System::Library> libraries)
 {
-	return powerStates.find(in, out);
+	std::map<System::Library,std::string> versions;
+
+	for (System::Library lib : libraries)
+	{
+		switch (lib)
+		{
+#ifdef LOVE_ENABLE_LOVE
+		case System::LIBRARY_LOVE: versions[lib] = LOVE_VERSION_STRING; break;
+#endif
+#ifdef LOVE_ENABLE_FONT
+		case System::LIBRARY_FREETYPE: versToStr(FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH); break;
+#endif
+		case System::LIBRARY_LUA:
+#ifdef LUAJIT_VERSION
+			versions[lib] = LUAJIT_VERSION;
+#else
+			versions[lib] = LUA_RELEASE;
+#endif
+			break;
+		case System::LIBRARY_SDL: versToStr(SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL); break;
+#ifdef LOVE_ENABLE_VIDEO
+		case System::LIBRARY_THEORA: versions[lib] = th_version_string(); break;
+#endif
+#if defined(LOVE_ENABLE_DATA) || defined(LOVE_ENABLE_IMAGE)
+		case System::LIBRARY_ZLIB: versions[lib] = ZLIB_VERSION; break;
+#endif
+		default:
+			versions[lib] = "unknown";
+			break;
+		}
+	}
+	return versions;
 }
 
-bool System::getConstant(System::PowerState in, const char *&out)
+STRINGMAP_CLASS_BEGIN(System, System::PowerState, System::POWER_MAX_ENUM, powerEntries)
 {
-	return powerStates.find(in, out);
+	{ "unknown",   System::POWER_UNKNOWN    },
+	{ "battery",   System::POWER_BATTERY    },
+	{ "nobattery", System::POWER_NO_BATTERY },
+	{ "charging",  System::POWER_CHARGING   },
+	{ "charged",   System::POWER_CHARGED    },
 }
+STRINGMAP_CLASS_END(System, System::PowerState, System::POWER_MAX_ENUM, powerEntries)
 
-StringMap<System::PowerState, System::POWER_MAX_ENUM>::Entry System::powerEntries[] =
+STRINGMAP_CLASS_BEGIN(System, System::Library, System::LIBRARY_MAX_ENUM, libraries)
 {
-	{"unknown", System::POWER_UNKNOWN},
-	{"battery", System::POWER_BATTERY},
-	{"nobattery", System::POWER_NO_BATTERY},
-	{"charging", System::POWER_CHARGING},
-	{"charged", System::POWER_CHARGED},
-};
-
-StringMap<System::PowerState, System::POWER_MAX_ENUM> System::powerStates(System::powerEntries, sizeof(System::powerEntries));
+	{ "love",       System::LIBRARY_LOVE        },
+	{ "freetype",   System::LIBRARY_FREETYPE    },
+	{ "lua",        System::LIBRARY_LUA         },
+	{ "sdl",        System::LIBRARY_SDL         },
+	{ "theora",     System::LIBRARY_THEORA      },
+	{ "zlib",       System::LIBRARY_ZLIB        },
+}
+STRINGMAP_CLASS_END(System, System::Library, System::LIBRARY_MAX_ENUM, libraries)
 
 } // system
 } // love

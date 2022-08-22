@@ -28,6 +28,7 @@
 
 // stdlib
 #include <string>
+#include <map>
 
 namespace love
 {
@@ -46,6 +47,17 @@ public:
 		POWER_CHARGING,
 		POWER_CHARGED,
 		POWER_MAX_ENUM
+	};
+
+	enum Library
+	{
+		LIBRARY_LOVE,
+		LIBRARY_FREETYPE,
+		LIBRARY_LUA,
+		LIBRARY_SDL,
+		LIBRARY_THEORA,
+		LIBRARY_ZLIB,
+		LIBRARY_MAX_ENUM
 	};
 
 	System();
@@ -115,6 +127,14 @@ public:
 	bool hasBackgroundMusic() const;
 
 	/**
+	 * Gets versions of libraries used to compile LÖVE 2D.
+	 * @param libraries Vector (array) of libraries.
+	 *
+	 * @return Map where key is library and value is version in string.
+	 */
+	std::map<System::Library,std::string> getLibraryVersions(std::vector<System::Library> libraries);
+
+	/**
 	 * Gets the list of locales in order of user preference.
 	 * 
 	 * The returned string from this function has format of
@@ -127,13 +147,8 @@ public:
 	 */
 	virtual std::vector<std::string> getPreferredLocales() const = 0;
 
-	static bool getConstant(const char *in, PowerState &out);
-	static bool getConstant(PowerState in, const char *&out);
-
-private:
-
-	static StringMap<PowerState, POWER_MAX_ENUM>::Entry powerEntries[];
-	static StringMap<PowerState, POWER_MAX_ENUM> powerStates;
+	STRINGMAP_CLASS_DECLARE(PowerState);
+	STRINGMAP_CLASS_DECLARE(Library);
 
 }; // System
 

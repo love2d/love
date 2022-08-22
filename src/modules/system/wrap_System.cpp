@@ -117,6 +117,64 @@ int w_getPreferredLocales(lua_State* L)
 	return 1;
 }
 
+int w_getLibraryVersions(lua_State *L)
+{
+	bool istable = lua_istable(L, 1);
+	int num = istable ? (int) luax_objlen(L, 1) : lua_gettop(L);
+
+	System::Library lib;
+	std::vector<System::Library> libraries;
+	libraries.reserve(num);
+
+	if (num == 0) {
+		libraries.reserve(System::LIBRARY_MAX_ENUM);
+		libraries = {
+			System::LIBRARY_LOVE,
+			System::LIBRARY_FREETYPE,
+			System::LIBRARY_LUA,
+			System::LIBRARY_SDL,
+			System::LIBRARY_THEORA,
+			System::LIBRARY_ZLIB,
+		};
+	}
+
+	const char *name;
+	for (int i = 0; i < num; i++)
+	{
+		if (istable)
+		{
+			lua_rawgeti(L, 1, i + 1);
+			name = luaL_checkstring(L, -1);
+			lua_pop(L, 1);
+		}
+		else
+			name = luaL_checkstring(L, i + 1);
+		if (!System::getConstant(name, lib))
+			return luax_enumerror(L, "library name", name);
+
+		libraries.push_back(lib);
+	}
+
+
+	std::map<System::Library,std::string> versions = instance()->getLibraryVersions(libraries);
+	if (num == 1)
+		luax_pushstring(L, versions.begin()->second);
+	else
+	{
+		std::map<System::Library,std::string>::iterator i;
+		lua_createtable(L, 0, num);
+		for (i = versions.begin(); i != versions.end(); i++)
+		{
+			if (!System::getConstant(i->first, name))
+				return luaL_error(L, "Internal error: unknown library name");
+			luax_pushstring(L, i->second);
+			lua_setfield(L, -2, name);
+		}
+	}
+
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -128,6 +186,7 @@ static const luaL_Reg functions[] =
 	{ "vibrate", w_vibrate },
 	{ "hasBackgroundMusic", w_hasBackgroundMusic },
 	{ "getPreferredLocales", w_getPreferredLocales },
+	{ "getLibraryVersions", w_getLibraryVersions },
 	{ 0, 0 }
 };
 
