@@ -139,7 +139,7 @@ public:
 	const VmaAllocator getVmaAllocator() const;
 
 	// implementation for virtual functions
-	love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data = nullptr) override;
+	love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data) override;
 	love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
 	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override;
@@ -150,8 +150,8 @@ public:
 	bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
 	void unSetMode() override;
 	void setActive(bool active) override;
-	int getRequestedBackbufferMSAA() const override { return 0; }
-	int getBackbufferMSAA() const  override { return 0; }
+	int getRequestedBackbufferMSAA() const override;
+	int getBackbufferMSAA() const  override;
 	void setColor(Colorf c) override;
 	void setScissor(const Rect& rect) override;
 	void setScissor() override;
@@ -163,7 +163,7 @@ public:
 	void setPointSize(float size) override;
 	void setWireframe(bool enable) override;
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
@@ -172,7 +172,7 @@ public:
 	void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override;
 
 	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
-	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { return nullptr; }
+	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) override { return nullptr; }
 
 	VkCommandBuffer getDataTransferCommandBuffer();
 	void queueCleanUp(std::function<void()> cleanUp);
@@ -199,6 +199,7 @@ private:
 	void createVulkanInstance();
 	bool checkValidationSupport();
 	void pickPhysicalDevice();
+	void getMaxUsableSampleCount();
 	int rateDeviceSuitability(VkPhysicalDevice device);
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	void createLogicalDevice();
@@ -217,6 +218,7 @@ private:
 	void createDefaultShaders();
     VkRenderPass createRenderPass(RenderPassConfiguration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
+	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
 	void createDepthResources();
@@ -245,12 +247,14 @@ private:
 
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	int requestedMsaa = 0;
+	int actualMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
     VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-	VkSurfaceTransformFlagBitsKHR preTransform;
+	VkSurfaceTransformFlagBitsKHR preTransform = {};
 	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
@@ -258,9 +262,13 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
     VkRenderPass currentRenderPass = VK_NULL_HANDLE;
-	VkImage depthImage;
-	VkImageView depthImageView;
-	VmaAllocation depthImageAllocation;
+	VkSampleCountFlagBits msaaSamples;
+	VkImage colorImage = VK_NULL_HANDLE;
+	VkImageView colorImageView = VK_NULL_HANDLE;
+	VmaAllocation colorImageAllocation = VK_NULL_HANDLE;
+	VkImage depthImage = VK_NULL_HANDLE;
+	VkImageView depthImageView = VK_NULL_HANDLE;
+	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
     std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;

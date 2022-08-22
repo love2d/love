@@ -220,6 +220,8 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 }
 
 bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
+	requestedMsaa = msaa;
+
 	cleanUpFunctions.clear();
 	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -232,6 +234,7 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	createSwapChain();
 	createImageViews();
 	createSyncObjects();
+	createColorResources();
 	createDepthResources();
 	createCommandPool();
 	createCommandBuffers();
@@ -324,7 +327,7 @@ void Graphics::initCapabilities() {
 }
 
 void Graphics::getAPIStats(int& shaderswitches) const {
-	shaderswitches = Vulkan::getNumShaderSwitches();
+	shaderswitches = static_cast<int>(Vulkan::getNumShaderSwitches());
 }
 
 void Graphics::unSetMode() {
@@ -338,6 +341,14 @@ void Graphics::unSetMode() {
 void Graphics::setActive(bool enable) {
 	flushBatchedDraws();
 	active = enable;
+}
+
+int Graphics::getRequestedBackbufferMSAA() const {
+	return requestedMsaa;
+}
+
+int Graphics::getBackbufferMSAA() const {
+	return actualMsaa;
 }
 
 void Graphics::setFrontFaceWinding(Winding winding) {
@@ -555,19 +566,23 @@ Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool render
 void Graphics::setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
 	endRenderPass();
 
-	if (rts.colors.size() == 0) {
+	if (rts.colors.empty()) {
 		startRenderPass(nullptr, swapChainExtent.width, swapChainExtent.height);
 	} else {
 		// fixme: multi canvas render.
 		auto& firstRenderTarget = rts.getFirstTarget();
-		startRenderPass(static_cast<Texture*>(firstRenderTarget.texture), pixelw, pixelh);
+		startRenderPass(dynamic_cast<Texture*>(firstRenderTarget.texture), pixelw, pixelh);
 	}
 }
 
 // END IMPLEMENTATION OVERRIDDEN FUNCTIONS
 
 void Graphics::initDynamicState() {
-	setScissor();
+	if (states.back().scissor) {
+		setScissor(states.back().scissorRect);
+	} else {
+		setScissor();
+	}
 }
 
 void Graphics::startRecordingGraphicsCommands() {
@@ -804,6 +819,8 @@ void Graphics::pickPhysicalDevice() {
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 	minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
+
+	getMaxUsableSampleCount();
 }
 
 bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -1147,25 +1164,22 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
 		}
 		else {
-			[[fallthrough]];
+			return VK_PRESENT_MODE_FIFO_KHR;
 		}
 	}
-	case 1: {
+	case 0: {
 		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_MAILBOX_KHR);
 		if (it != availablePresentModes.end()) {
 			return VK_PRESENT_MODE_MAILBOX_KHR;
 		}
 		else {
-			return VK_PRESENT_MODE_FIFO_KHR;
-		}
-	}
-	case 0: {
-		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR);
-		if (it != availablePresentModes.end()) {
-			return VK_PRESENT_MODE_IMMEDIATE_KHR;
-		}
-		else {
-			return VK_PRESENT_MODE_FIFO_KHR;
+			auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR);
+			if (it != availablePresentModes.end()) {
+				return VK_PRESENT_MODE_IMMEDIATE_KHR;
+			}
+			else {
+				return VK_PRESENT_MODE_FIFO_KHR;
+			}
 		}
 	}
 	default:
@@ -1182,7 +1196,6 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 		const void* handle = window->getHandle();
 
 		int width, height;
-		// is this the equivalent of glfwGetFramebufferSize ?
 		SDL_Vulkan_GetDrawableSize((SDL_Window*)handle, &width, &height);
 
 		VkExtent2D actualExtent = {
@@ -1237,9 +1250,10 @@ void Graphics::createImageViews() {
 }
 
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration) {
-	std::array<VkImageView, 2> attachments = {
+	std::array<VkImageView, 3> attachments = {
+		colorImageView,
+		depthImageView,
 		configuration.imageView,
-		depthImageView
 	};
 
 	VkFramebufferCreateInfo createInfo{};
@@ -1285,24 +1299,34 @@ void Graphics::createDefaultShaders() {
 
 VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
     VkAttachmentDescription colorDescription{};
-    colorDescription.format = configuration.frameBufferFormat;
-    colorDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorDescription.format = swapChainImageFormat;
+    colorDescription.samples = msaaSamples;
     colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorDescription.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription depthStencilAttachment{};
 	depthStencilAttachment.format = findDepthFormat();
-	depthStencilAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthStencilAttachment.samples = msaaSamples;
 	depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	depthStencilAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentDescription colorAttachmentResolve{};
+	colorAttachmentResolve.format = configuration.frameBufferFormat;
+	colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
@@ -1312,13 +1336,18 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 	depthStencilAttachmentRef.attachment = 1;
 	depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentReference colorAttachmentResolveRef{};
+	colorAttachmentResolveRef.attachment = 2;
+	colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     VkSubpassDescription subPass{};
     subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subPass.colorAttachmentCount = 1;
     subPass.pColorAttachments = &colorAttachmentRef;
 	subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
+	subPass.pResolveAttachments = &colorAttachmentResolveRef;
 
-	std::array<VkAttachmentDescription, 2> attachments = { colorDescription, depthStencilAttachment };
+	std::array<VkAttachmentDescription, 3> attachments = { colorDescription, depthStencilAttachment, colorAttachmentResolve };
 
 	VkSubpassDependency dependency{};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -1419,8 +1448,6 @@ void Graphics::createVulkanVertexFormat(
 }
 
 void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
-	states.back().stencil;
-
 	GraphicsPipelineConfiguration configuration;
     configuration.renderPass = currentRenderPass;
 	configuration.vertexAttributes = attributes;
@@ -1624,7 +1651,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	multisampling.rasterizationSamples = msaaSamples;
 	multisampling.minSampleShading = 1.0f; // Optional
 	multisampling.pSampleMask = nullptr; // Optional
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
@@ -1726,6 +1753,83 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 	}
 }
 
+void Graphics::getMaxUsableSampleCount() {
+	VkPhysicalDeviceProperties physicalDeviceProperties;
+	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+	VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+
+	if (counts & VK_SAMPLE_COUNT_64_BIT && requestedMsaa >= 64) { 
+		msaaSamples = VK_SAMPLE_COUNT_64_BIT;
+		actualMsaa = 64;
+	} else if (counts & VK_SAMPLE_COUNT_32_BIT && requestedMsaa >= 32) { 
+		msaaSamples = VK_SAMPLE_COUNT_32_BIT;
+		actualMsaa = 32;
+	}
+	else if (counts & VK_SAMPLE_COUNT_16_BIT && requestedMsaa >= 16) { 
+		msaaSamples = VK_SAMPLE_COUNT_16_BIT;
+		actualMsaa = 16;
+	}
+	else if (counts & VK_SAMPLE_COUNT_8_BIT && requestedMsaa >= 8) {
+		msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+		actualMsaa = 8;
+	}
+	else if (counts & VK_SAMPLE_COUNT_4_BIT && requestedMsaa >= 4) {
+		msaaSamples = VK_SAMPLE_COUNT_4_BIT;
+		actualMsaa = 4;
+	}
+	else if (counts & VK_SAMPLE_COUNT_2_BIT && requestedMsaa >= 2) {
+		msaaSamples = VK_SAMPLE_COUNT_2_BIT;
+		actualMsaa = 2;
+	}
+	else {
+		msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		actualMsaa = 1;
+	}
+}
+
+void Graphics::createColorResources() {
+	VkFormat colorFormat = swapChainImageFormat;
+
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.format = colorFormat;
+	imageInfo.extent.width = swapChainExtent.width;
+	imageInfo.extent.height = swapChainExtent.height;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.samples = msaaSamples;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+	VmaAllocationCreateInfo allocationInfo{};
+	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
+	allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+
+	vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr);
+
+	VkImageViewCreateInfo imageViewInfo{};
+	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewInfo.image = colorImage;
+	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageViewInfo.format = colorFormat;
+	imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageViewInfo.subresourceRange.baseMipLevel = 0;
+	imageViewInfo.subresourceRange.levelCount = 1;
+	imageViewInfo.subresourceRange.baseArrayLayer = 0;
+	imageViewInfo.subresourceRange.layerCount = 1;
+
+	vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView);
+}
+
 VkFormat Graphics::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
 	for (auto format : candidates) {
 		VkFormatProperties properties;
@@ -1740,7 +1844,6 @@ VkFormat Graphics::findSupportedFormat(const std::vector<VkFormat>& candidates, 
 
 	throw love::Exception("failed to find supported format");
 }
-
 
 VkFormat Graphics::findDepthFormat() {
 	return findSupportedFormat(
@@ -1762,7 +1865,7 @@ void Graphics::createDepthResources() {
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = 1;
 	imageInfo.arrayLayers = 1;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.samples = msaaSamples;
 	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -1854,7 +1957,7 @@ void Graphics::createSyncObjects() {
 
 void Graphics::createDefaultTexture() {
 	Texture::Settings settings;
-	standardTexture.reset((Texture*)newTexture(settings));
+	standardTexture.reset((Texture*)newTexture(settings, nullptr));
 	uint8_t whitePixels[] = {255, 255, 255, 255};
 	standardTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
 }
@@ -1905,6 +2008,8 @@ void Graphics::cleanup() {
 }
 
 void Graphics::cleanupSwapChain() {
+	vkDestroyImageView(device, colorImageView, nullptr);
+	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
 	for (const auto& [key, val] : framebuffers) {
@@ -1925,6 +2030,7 @@ void Graphics::recreateSwapChain() {
 
 	createSwapChain();
 	createImageViews();
+	createColorResources();
 	createDepthResources();
 }
 
