@@ -262,7 +262,7 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
     VkRenderPass currentRenderPass = VK_NULL_HANDLE;
-	VkSampleCountFlagBits msaaSamples;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 	VkImage colorImage = VK_NULL_HANDLE;
 	VkImageView colorImageView = VK_NULL_HANDLE;
 	VmaAllocation colorImageAllocation = VK_NULL_HANDLE;

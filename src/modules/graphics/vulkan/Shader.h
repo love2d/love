@@ -95,6 +95,7 @@ private:
 
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
 	std::vector<uint8> localUniformStagingData;
+	uint32_t uniformLocation;
 	size_t builtinUniformDataOffset;
 
 	uint32_t currentFrame;

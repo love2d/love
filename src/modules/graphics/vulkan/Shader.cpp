@@ -207,9 +207,9 @@ const VkPipelineLayout Shader::getGraphicsPipelineLayout() const {
 }
 
 static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* texture) {
-	Texture* vkTexture = (Texture*)texture;
+	auto vkTexture = (Texture*)texture;
 
-	VkDescriptorImageInfo* imageInfo = new VkDescriptorImageInfo();
+	auto imageInfo = new VkDescriptorImageInfo();
 
 	imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	imageInfo->imageView = (VkImageView)vkTexture->getRenderTargetHandle();
@@ -219,7 +219,7 @@ static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* textu
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frameIndex) {
-	// detect wether a new frame has begun
+	// detect whether a new frame has begun
 	if (currentFrame != frameIndex) {
 		currentFrame = frameIndex;
 
@@ -259,14 +259,14 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 	auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
 
 	auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
-	memcpy(mapInfo.data, localUniformStagingData.data(), uniformBufferSizeAligned);
+	memcpy(mapInfo.data, localUniformStagingData.data(), localUniformStagingData.size());
 	currentStreamBuffer->unmap(uniformBufferSizeAligned);
 	currentStreamBuffer->markUsed(uniformBufferSizeAligned);
 
 	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
 	bufferInfo.offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
-	bufferInfo.range = sizeof(BuiltinUniformData);
+	bufferInfo.range = localUniformStagingData.size();
 	
 	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 
@@ -414,7 +414,17 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::
 			u.matrix.columns = memberType.columns;
 		}
 
-		// fixme: initializer values
+		const auto& reflectionIt = validationReflection.localUniforms.find(u.name);
+		if (reflectionIt != validationReflection.localUniforms.end()) {
+			const auto& localUniform = reflectionIt->second;
+			const auto& values = localUniform.initializerValues;
+			if (!values.empty()) {
+				memcpy(
+					u.data,
+					values.data(),
+					std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
+			}
+		}
 
 		uniformInfos[u.name] = u;
 
@@ -434,7 +444,7 @@ void Shader::compileShaders() {
 
 	std::vector<TShader*> glslangShaders;
 
-	TProgram* program = new TProgram();
+	auto program = new TProgram();
 
 	gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	auto vgfx = (Graphics*)gfx;
@@ -450,7 +460,7 @@ void Shader::compileShaders() {
 
 		tshader->setEnvInput(EShSourceGlsl, glslangShaderStage, EShClientVulkan, 450);
 		tshader->setEnvClient(EShClientVulkan, EShTargetVulkan_1_2);
-		tshader->setEnvTarget(EshTargetSpv, EShTargetSpv_1_5);
+		tshader->setEnvTarget(EshTargetSpv, EShTargetSpv_1_0);
 		tshader->setAutoMapLocations(true);
 		tshader->setAutoMapBindings(true);
 		tshader->setEnvInputVulkanRulesRelaxed();
@@ -541,6 +551,7 @@ void Shader::compileShaders() {
 				size_t uniformBufferObjectSize = comp.get_declared_struct_size(type);
 				auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
 				localUniformStagingData.resize(defaultUniformBlockSize);
+				uniformLocation = comp.get_decoration(resource.id, spv::DecorationBinding);
 
 				memset(localUniformStagingData.data(), 0, defaultUniformBlockSize);
 
@@ -630,14 +641,25 @@ void Shader::createDescriptorSetLayout() {
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
 	for (auto const& [key, val] : uniformInfos) {
-		VkDescriptorSetLayoutBinding layoutBinding{};
-		layoutBinding.binding = val.location;
-		layoutBinding.descriptorType = val.baseType == UNIFORM_SAMPLER ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		layoutBinding.descriptorCount = 1;	// is this correct?
-		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;	// fixme: can we determine in what shader it got used?
+		auto type = Vulkan::getDescriptorType(val.baseType);
+		if (type != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+			VkDescriptorSetLayoutBinding layoutBinding{};
 
-		bindings.push_back(layoutBinding);
+			layoutBinding.binding = val.location;
+			layoutBinding.descriptorType = val.baseType == UNIFORM_SAMPLER ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			layoutBinding.descriptorCount = val.count;
+			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;	// fixme: can we determine in what shader it got used?
+
+			bindings.push_back(layoutBinding);
+		}
 	}
+
+	VkDescriptorSetLayoutBinding uniformBinding{};
+	uniformBinding.binding = uniformLocation;
+	uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uniformBinding.descriptorCount = 1;
+	uniformBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	bindings.push_back(uniformBinding);
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -706,9 +728,19 @@ VkDescriptorSet Shader::allocateDescriptorSet() {
 		// fixme: we can optimize this, since sizes should never change for a given shader.
 		std::vector<VkDescriptorPoolSize> sizes;
 
+		VkDescriptorPoolSize size{};
+		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		size.descriptorCount = 1;
+
+		sizes.push_back(size);
+
 		for (const auto& [key, val] : uniformInfos) {
 			VkDescriptorPoolSize size{};
-			size.type = Vulkan::getDescriptorType(val.baseType);
+			auto type = Vulkan::getDescriptorType(val.baseType);
+			if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+				continue;
+			} 
+			size.type = type;
 			size.descriptorCount = 1;
 			sizes.push_back(size);
 		}
