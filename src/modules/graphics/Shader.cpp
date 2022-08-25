@@ -91,53 +91,23 @@ static const char render_uniforms[] = R"(
 // We *really* don't want to use mediump for these in vertex shaders though.
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
 
-// These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
-// do it as an initializer.
-LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix;
-LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix;
-LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
-
-LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
-LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor;
-
-LOVE_HIGHP_OR_MEDIUMP float CurrentDPIScale;
-
-LOVE_HIGHP_OR_MEDIUMP float ConstantPointSize;
-
+// Older GLSL doesn't support preprocessor line continuations...
+#define TransformMatrix mat4(love_UniformsPerDraw[0], love_UniformsPerDraw[1], love_UniformsPerDraw[2], love_UniformsPerDraw[3])
+#define ProjectionMatrix mat4(love_UniformsPerDraw[4], love_UniformsPerDraw[5], love_UniformsPerDraw[6], love_UniformsPerDraw[7])
 #define TransformProjectionMatrix (ProjectionMatrix * TransformMatrix)
+
+#define NormalMatrix mat3(love_UniformsPerDraw[8].xyz, love_UniformsPerDraw[9].xyz, love_UniformsPerDraw[10].xyz)
+
+#define CurrentDPIScale (love_UniformsPerDraw[8].w)
+#define ConstantPointSize (love_UniformsPerDraw[9].w)
+#define ConstantColor (love_UniformsPerDraw[12])
+#define love_ScreenSize (love_UniformsPerDraw[11])
 
 // Alternate names
 #define ViewSpaceFromLocal TransformMatrix
 #define ClipSpaceFromView ProjectionMatrix
 #define ClipSpaceFromLocal TransformProjectionMatrix
 #define ViewNormalFromLocal NormalMatrix
-
-void love_initializeBuiltinUniforms() {
-	TransformMatrix = mat4(
-	   love_UniformsPerDraw[0],
-	   love_UniformsPerDraw[1],
-	   love_UniformsPerDraw[2],
-	   love_UniformsPerDraw[3]
-	);
-
-	ProjectionMatrix = mat4(
-	   love_UniformsPerDraw[4],
-	   love_UniformsPerDraw[5],
-	   love_UniformsPerDraw[6],
-	   love_UniformsPerDraw[7]
-	);
-
-	NormalMatrix = mat3(
-	   love_UniformsPerDraw[8].xyz,
-	   love_UniformsPerDraw[9].xyz,
-	   love_UniformsPerDraw[10].xyz
-	);
-
-	CurrentDPIScale = love_UniformsPerDraw[8].w;
-	ConstantPointSize = love_UniformsPerDraw[9].w;
-	love_ScreenSize = love_UniformsPerDraw[11];
-	ConstantColor = love_UniformsPerDraw[12];
-}
 )";
 
 static const char global_functions[] = R"(
@@ -274,7 +244,6 @@ varying vec4 VaryingColor;
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
 void main() {
-	love_initializeBuiltinUniforms();
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
 	love_Position = position(ClipSpaceFromLocal, VertexPosition);
@@ -285,7 +254,6 @@ static const char vertex_main_raw[] = R"(
 void vertexmain();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	vertexmain();
 }
 )";
@@ -344,7 +312,6 @@ varying mediump vec4 VaryingColor;
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
 
 void main() {
-	love_initializeBuiltinUniforms();
 	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }
 )";
@@ -380,7 +347,6 @@ varying mediump vec4 VaryingColor;
 void effect();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	effect();
 }
 )";
@@ -389,7 +355,6 @@ static const char pixel_main_raw[] = R"(
 void pixelmain();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	pixelmain();
 }
 )";
@@ -404,7 +369,6 @@ static const char compute_header[] = R"(
 )";
 
 static const char compute_uniforms[] = R"(
-void love_initializeBuiltinUniforms() {}
 )";
 
 static const char compute_functions[] = R"()";
@@ -413,7 +377,6 @@ static const char compute_main[] = R"(
 void computemain();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	computemain();
 }
 )";
