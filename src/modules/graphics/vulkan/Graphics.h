@@ -213,6 +213,8 @@ private:
 	VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR& capabilities);
 	void createSwapChain();
 	void createImageViews();
+	void createDefaultRenderPass();
+	void createDefaultFramebuffers();
     VkFramebuffer createFramebuffer(FramebufferConfiguration);
     VkFramebuffer getFramebuffer(FramebufferConfiguration);
 	void createDefaultShaders();
@@ -269,6 +271,8 @@ private:
 	VkImage depthImage = VK_NULL_HANDLE;
 	VkImageView depthImageView = VK_NULL_HANDLE;
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
+	VkRenderPass defaultRenderPass;
+	std::vector<VkFramebuffer> defaultFramebuffers;
     std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;

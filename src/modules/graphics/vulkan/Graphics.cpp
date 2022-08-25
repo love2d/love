@@ -21,15 +21,6 @@
 namespace love {
 namespace graphics {
 namespace vulkan {
-static VkIndexType getVulkanIndexBufferType(IndexDataType type) {
-	switch (type) {
-	case INDEX_UINT16: return VK_INDEX_TYPE_UINT16;
-	case INDEX_UINT32: return VK_INDEX_TYPE_UINT32;
-	default:
-		throw love::Exception("unknown Index Data type");
-	}
-}
-
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -236,6 +227,8 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	createSyncObjects();
 	createColorResources();
 	createDepthResources();
+	createDefaultRenderPass();
+	createDefaultFramebuffers();
 	createCommandPool();
 	createCommandBuffers();
 	startRecordingGraphicsCommands();
@@ -408,7 +401,7 @@ void Graphics::draw(const DrawCommand& cmd) {
 void Graphics::draw(const DrawIndexedCommand& cmd) {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), getVulkanIndexBufferType(cmd.indexType));
+	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), Vulkan::getVulkanIndexBufferType(cmd.indexType));
 	vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
 }
 
@@ -418,7 +411,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 
 	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
 
-	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)quadIndexBuffer->getHandle(), 0, getVulkanIndexBufferType(INDEX_UINT16));
+	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)quadIndexBuffer->getHandle(), 0, Vulkan::getVulkanIndexBufferType(INDEX_UINT16));
 
 	int baseVertex = start * 4;
 
@@ -431,6 +424,8 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 }
 
 void Graphics::setColor(Colorf c) {
+	flushBatchedDraws();
+
 	c.r = std::min(std::max(c.r, 0.0f), 1.0f);
 	c.g = std::min(std::max(c.g, 0.0f), 1.0f);
 	c.b = std::min(std::max(c.b, 0.0f), 1.0f);
@@ -1249,6 +1244,25 @@ void Graphics::createImageViews() {
 	}
 }
 
+void Graphics::createDefaultRenderPass() {
+	RenderPassConfiguration renderPassConfiguration{};
+	renderPassConfiguration.frameBufferFormat = swapChainImageFormat;
+	defaultRenderPass = createRenderPass(renderPassConfiguration);
+}
+
+void Graphics::createDefaultFramebuffers() {
+	defaultFramebuffers.clear();
+
+	for (const auto view : swapChainImageViews) {
+		FramebufferConfiguration configuration{};
+		configuration.renderPass = defaultRenderPass;
+		configuration.width = swapChainExtent.width;
+		configuration.height = swapChainExtent.height;
+		configuration.imageView = view;
+		defaultFramebuffers.push_back(createFramebuffer(configuration));
+	}
+}
+
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration) {
 	std::array<VkImageView, 3> attachments = {
 		colorImageView,
@@ -1494,41 +1508,39 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 }
 
 void Graphics::startRenderPass(Texture* texture, uint32_t w, uint32_t h) {
-    RenderPassConfiguration renderPassConfiguration{};
-
-	if (texture) {
-        renderPassConfiguration.frameBufferFormat = Vulkan::getTextureFormat(texture->getPixelFormat()).internalFormat;
-		renderTargetTexture = texture;
-	} else {
-        renderPassConfiguration.frameBufferFormat = swapChainImageFormat;
-		renderTargetTexture = nullptr;
-	}
-
     VkRenderPass renderPass;
+	VkFramebuffer framebuffer;
 
-    auto it = renderPasses.find(renderPassConfiguration);
-    if (it != renderPasses.end()) {
-        renderPass = it->second;
-    } else {
-        renderPass = createRenderPass(renderPassConfiguration);
-        renderPasses[renderPassConfiguration] = renderPass;
-    }
+	if (texture == nullptr) {
+		renderTargetTexture = nullptr;
+		renderPass = defaultRenderPass;
+		framebuffer = defaultFramebuffers[imageIndex];
+	} else {
+		RenderPassConfiguration renderPassConfiguration{};
 
-	FramebufferConfiguration configuration{};
-	configuration.renderPass = renderPass;
-	if (renderTargetTexture == nullptr) {
-		configuration.imageView = swapChainImageViews.at(imageIndex);
-	}
-	else {
+		renderPassConfiguration.frameBufferFormat = Vulkan::getTextureFormat(texture->getPixelFormat()).internalFormat;
+		renderTargetTexture = texture;
+
+		auto it = renderPasses.find(renderPassConfiguration);
+		if (it != renderPasses.end()) {
+			renderPass = it->second;
+		} else {
+			renderPass = createRenderPass(renderPassConfiguration);
+			renderPasses[renderPassConfiguration] = renderPass;
+		}
+
+		FramebufferConfiguration configuration{};
+		configuration.renderPass = renderPass;
 		configuration.imageView = (VkImageView)texture->getRenderTargetHandle();
+		configuration.width = w;
+		configuration.height = h;
+		framebuffer = getFramebuffer(configuration);
 	}
-	configuration.width = w;
-	configuration.height = h;
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = getFramebuffer(configuration);
+	renderPassInfo.framebuffer = framebuffer;
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(w);
     renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(h);
@@ -2008,6 +2020,10 @@ void Graphics::cleanup() {
 }
 
 void Graphics::cleanupSwapChain() {
+	for (const auto& framebuffer : defaultFramebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+	vkDestroyRenderPass(device, defaultRenderPass, nullptr);
 	vkDestroyImageView(device, colorImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
@@ -2032,6 +2048,8 @@ void Graphics::recreateSwapChain() {
 	createImageViews();
 	createColorResources();
 	createDepthResources();
+	createDefaultRenderPass();
+	createDefaultFramebuffers();
 }
 
 love::graphics::Graphics* createInstance() {

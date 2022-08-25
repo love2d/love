@@ -53,6 +53,7 @@ public:
 	static VkSamplerMipmapMode getMipMapMode(SamplerState::MipmapFilterMode);
 	static VkDescriptorType getDescriptorType(graphics::Shader::UniformType);
 	static VkStencilOp getStencilOp(StencilAction);
+	static VkIndexType getVulkanIndexBufferType(IndexDataType type);
 
 	static void cmdTransitionImageLayout(
 		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,

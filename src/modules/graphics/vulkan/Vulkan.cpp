@@ -606,6 +606,15 @@ VkStencilOp Vulkan::getStencilOp(StencilAction action) {
 	}
 }
 
+VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type) {
+	switch (type) {
+	case INDEX_UINT16: return VK_INDEX_TYPE_UINT16;
+	case INDEX_UINT32: return VK_INDEX_TYPE_UINT32;
+	default:
+		throw love::Exception("unknown Index Data type");
+	}
+}
+
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
 	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
 	VkImageMemoryBarrier barrier{};
