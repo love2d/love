@@ -176,6 +176,17 @@ private:
 
 	DistanceModel distanceModel;
 	//float metersPerUnit = 1.0;
+
+#ifdef LOVE_ANDROID
+#	undef ALC_SOFT_pause_device
+#	ifndef ALC_SOFT_pause_device
+	typedef void (ALC_APIENTRY*LPALCDEVICEPAUSESOFT)(ALCdevice *device);
+	typedef void (ALC_APIENTRY*LPALCDEVICERESUMESOFT)(ALCdevice *device);
+#	endif
+	LPALCDEVICEPAUSESOFT alcDevicePauseSOFT;
+	LPALCDEVICERESUMESOFT alcDeviceResumeSOFT;
+	std::vector<love::audio::Source*> pausedSources;
+#endif
 }; // Audio
 
 #ifdef ALC_EXT_EFX

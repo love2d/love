@@ -195,7 +195,16 @@ Audio::Audio()
 #ifdef LOVE_IOS
 	love::ios::initAudioSessionInterruptionHandler();
 #endif
-        
+
+#ifdef LOVE_ANDROID
+	bool hasPauseDeviceExt = alcIsExtensionPresent(device, "ALC_SOFT_pause_device") == ALC_TRUE;
+	alcDevicePauseSOFT = hasPauseDeviceExt
+		? (LPALCDEVICEPAUSESOFT) alcGetProcAddress(device, "alcDevicePauseSOFT")
+		: nullptr;
+	alcDeviceResumeSOFT = hasPauseDeviceExt
+		? (LPALCDEVICERESUMESOFT) alcGetProcAddress(device, "alcDeviceResumeSOFT")
+		: nullptr;
+#endif
 }
 
 Audio::~Audio()
@@ -305,13 +314,42 @@ std::vector<love::audio::Source*> Audio::pause()
 
 void Audio::pauseContext()
 {
+#ifdef LOVE_ANDROID
+	if (alcDevicePauseSOFT)
+		alcDevicePauseSOFT(device);
+	else
+	{
+		// This is extremely rare case since we're using OpenAL-soft
+		// in Android and the ALC_SOFT_pause_device has been supported
+		// since 1.16
+		for (auto &src: pausedSources)
+			src->release();
+		pausedSources = pause();
+		for (auto &src: pausedSources)
+			src->retain();
+	}
+#else
 	alcMakeContextCurrent(nullptr);
+#endif
 }
 
 void Audio::resumeContext()
 {
+#ifdef LOVE_ANDROID
+	if (alcDeviceResumeSOFT)
+		alcDeviceResumeSOFT(device);
+	else
+	{
+		// Again, this is rare case
+		play(pausedSources);
+		for (auto &src: pausedSources)
+			src->release();
+		pausedSources.resize(0);
+	}
+#else
 	if (context && alcGetCurrentContext() != context)
 		alcMakeContextCurrent(context);
+#endif
 }
 
 void Audio::setVolume(float volume)

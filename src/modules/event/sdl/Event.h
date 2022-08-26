@@ -78,10 +78,6 @@ private:
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
 	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
 
-#ifdef LOVE_ANDROID
-	std::vector<love::audio::Source*> pausedSources;
-#endif
-
 }; // Event
 
 } // sdl
