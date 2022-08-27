@@ -424,8 +424,6 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 }
 
 void Graphics::setColor(Colorf c) {
-	flushBatchedDraws();
-
 	c.r = std::min(std::max(c.r, 0.0f), 1.0f);
 	c.g = std::min(std::max(c.g, 0.0f), 1.0f);
 	c.b = std::min(std::max(c.b, 0.0f), 1.0f);

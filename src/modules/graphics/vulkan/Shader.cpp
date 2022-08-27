@@ -346,7 +346,10 @@ const Shader::UniformInfo* Shader::getUniformInfo(BuiltinUniform builtin) const 
 
 void Shader::sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) {
 	for (unsigned i = 0; i < count; i++) {
+		auto oldTexture = info->textures[i];
 		info->textures[i] = textures[i];
+		info->textures[i]->retain();
+		oldTexture->release();
 	}
 }
 
@@ -616,6 +619,7 @@ void Shader::compileShaders() {
 				auto tex = vgfx->getDefaultTexture();
 				for (int i = 0; i < info.count; i++) {
 					info.textures[i] = tex;
+					tex->retain();
 				}
 			}
 			// fixme
@@ -696,12 +700,22 @@ void Shader::setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cb
 	// if the shader doesn't actually use these textures they might get optimized out
 	// in that case this function becomes a noop.
 	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y] != nullptr) {
+		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y]->textures[0];
+		ytexture->retain();
+		oldTexture->release();
 		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y]->textures[0] = ytexture;
+
 	}
 	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB] != nullptr) {
+		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB]->textures[0];
+		cbtexture->retain();
+		oldTexture->release();
 		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB]->textures[0] = cbtexture;
 	}
 	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR] != nullptr) {
+		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR]->textures[0];
+		crtexture->retain();
+		oldTexture->release();
 		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR]->textures[0] = crtexture;
 	}
 }
@@ -719,6 +733,9 @@ void Shader::setMainTex(graphics::Texture* texture) {
 	// if the shader doesn't actually use the texture it might get optimized out
 	// in that case this function becomes a noop.
 	if (builtinUniformInfo[BUILTIN_TEXTURE_MAIN] != nullptr) {
+		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0];
+		texture->retain();
+		oldTexture->release();
 		builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
 	}
 }
