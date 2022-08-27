@@ -144,7 +144,7 @@ void Texture::createTextureImageView() {
 	viewInfo.format = vulkanFormat.internalFormat;
 	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.levelCount = getMipmapCount();
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = layerCount;
 	viewInfo.components.r = vulkanFormat.swizzleR;
