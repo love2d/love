@@ -56,10 +56,8 @@ static const char global_syntax[] = R"(
 #endif
 #if __VERSION__ >= 300
 #define LOVE_IO_LOCATION(x) layout (location = x)
-#define LOVE_IO_BINDING(x) layout (binding = x)
 #else
 #define LOVE_IO_LOCATION(x)
-#define LOVE_IO_BINDING(x)
 #endif
 #define number float
 #define Image sampler2D
@@ -311,9 +309,9 @@ static const char pixel_header[] = R"(
 )";
 
 static const char pixel_functions[] = R"(
-LOVE_IO_BINDING(2) uniform sampler2D love_VideoYChannel;
-LOVE_IO_BINDING(3) uniform sampler2D love_VideoCbChannel;
-LOVE_IO_BINDING(4) uniform sampler2D love_VideoCrChannel;
+uniform sampler2D love_VideoYChannel;
+uniform sampler2D love_VideoCbChannel;
+uniform sampler2D love_VideoCrChannel;
 
 vec4 VideoTexel(vec2 texcoords) {
 	vec3 yuv;
@@ -339,7 +337,7 @@ static const char pixel_main[] = R"(
 	#define love_PixelColor gl_FragColor
 #endif
 
-LOVE_IO_BINDING(1) uniform sampler2D MainTex;
+uniform sampler2D MainTex;
 LOVE_IO_LOCATION(0) varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
 LOVE_IO_LOCATION(1) varying mediump vec4 VaryingColor;
 

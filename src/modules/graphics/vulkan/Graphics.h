@@ -25,7 +25,10 @@ namespace love {
 namespace graphics {
 namespace vulkan {
 struct RenderPassConfiguration {
-    VkFormat frameBufferFormat;
+    VkFormat colorFormat = VK_FORMAT_UNDEFINED;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
+	bool resolve = false;
 
     bool operator==(const RenderPassConfiguration& conf) const {
         return memcmp(this, &conf, sizeof(RenderPassConfiguration)) == 0;
@@ -41,6 +44,8 @@ struct RenderPassConfigurationHasher {
 struct FramebufferConfiguration {
 	VkRenderPass renderPass = VK_NULL_HANDLE;
 	VkImageView imageView = VK_NULL_HANDLE;
+	VkImageView depthView = VK_NULL_HANDLE;
+	VkImageView resolveView = VK_NULL_HANDLE;
 	uint32_t width = 0;
 	uint32_t height = 0;
 
@@ -69,6 +74,7 @@ struct GraphicsPipelineConfiguration {
 	float viewportHeight;
 	StencilState stencil;
 	DepthState depthState;
+	VkSampleCountFlagBits msaaSamples;
 
 	GraphicsPipelineConfiguration() {
 		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
@@ -122,14 +128,16 @@ struct SwapChainSupportDetails {
 
 class Graphics final : public love::graphics::Graphics {
 public:
-	Graphics() {
 #ifdef LOVE_ANDROID
+	Graphics() {
 		auto result = volkInitialize();
 		if (result != VK_SUCCESS) {
 			throw love::Exception("could not initialize volk");
 		}
-#endif
 	}
+#else
+	Graphics() = default;
+#endif
 
 	virtual ~Graphics();
 
@@ -243,7 +251,8 @@ private:
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
 		std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
 	void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
-	void startRenderPass(Texture*, uint32_t w, uint32_t h);
+	void startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture);
+	void startDefaultRenderPass();
 	void endRenderPass();
 	VkSampler createSampler(const SamplerState&);
 
@@ -271,7 +280,7 @@ private:
 	VkImage depthImage = VK_NULL_HANDLE;
 	VkImageView depthImageView = VK_NULL_HANDLE;
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
-	VkRenderPass defaultRenderPass;
+	VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
 	std::vector<VkFramebuffer> defaultFramebuffers;
     std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
@@ -298,10 +307,10 @@ private:
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 
 	// render pass variables.
-	graphics::Texture* currentTexture = nullptr;
 	Texture* renderTargetTexture = nullptr;
 	float currentViewportWidth = 0;
 	float currentViewportHeight = 0;
+	VkSampleCountFlagBits currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
 };
 } // vulkan
 } // graphics
