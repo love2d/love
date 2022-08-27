@@ -291,7 +291,6 @@ public:
 	 **/
 	int getFixturesInArea(lua_State *L);
 
-
 	/**
 	 * Raycasts the World for all Fixtures in the path of the ray.
 	 **/
