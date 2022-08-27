@@ -188,9 +188,9 @@ int w_World_queryBoundingBox(lua_State *L)
 int w_World_getFixturesInArea(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
-  lua_remove(L, 1);
-  int ret = 0;
-  luax_catchexcept(L, [&](){ ret = t->getFixturesInArea(L); });
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&](){ ret = t->getFixturesInArea(L); });
 	return ret;
 }
 

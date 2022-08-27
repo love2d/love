@@ -102,17 +102,17 @@ public:
 		int funcidx;
 	};
 
-  class CollectCallback : public b2QueryCallback
-  {
-  public:
-    CollectCallback(World *world, lua_State *L);
-    ~CollectCallback();
-    virtual bool ReportFixture(b2Fixture *fixture);
-  private:
-    World *world;
+	class CollectCallback : public b2QueryCallback
+	{
+	public:
+		CollectCallback(World *world, lua_State *L);
+		~CollectCallback();
+		virtual bool ReportFixture(b2Fixture *fixture);
+	private:
+		World *world;
 		lua_State *L;
-    int i = 1;
-  };
+		int i = 1;
+	};
 
 	class RayCastCallback : public b2RayCastCallback
 	{
