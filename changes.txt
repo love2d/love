@@ -45,6 +45,7 @@ Released: N/A
 * Added love.keyboard.isModifierActive.
 * Added love.system.getPreferredLocales.
 * Added love.localechanged callback.
+* Added World:getFixturesInArea().
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
@@ -165,7 +166,7 @@ Released: 2019-10-27
 * Fixed audio clicks immediately after playing a Source on iOS.
 * Fixed Source:play + Source:stop + Source:play looping the first few ms of sound for streaming Sources on iOS.
 * Fixed Source:play + Source:seek looping the first few ms of sound for streaming Sources on iOS.
-* Fixed occasional pops in streaming sources on iOS. 
+* Fixed occasional pops in streaming sources on iOS.
 * Fixed love.audio.play(sources) to use previously set playback positions on stopped Sources.
 * Fixed Source:setEffect(name, true) and Source:getEffect(name) when the effect has no associated Filter.
 * Fixed love.audio.newSource(filename, "queue") to cause a Lua error.
@@ -437,7 +438,7 @@ Released: 2016-10-31
 
   * Improved performance of Channel methods by roughly 2x in many cases.
   * Improved performance of Shader:send when small numbers of arguments are given.
-  
+
   * Updated love.filesystem.mount to accept a DroppedFile as the first parameter.
   * Updated Shader:send to do type and argument checking based on the specified uniform variable's information instead of the arguments to the function.
   * Updated Shader:send to accept a flat table for matrix uniforms.

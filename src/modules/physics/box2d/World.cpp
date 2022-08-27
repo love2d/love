@@ -171,6 +171,28 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 	return true;
 }
 
+World::CollectCallback::CollectCallback(World *world, lua_State *L)
+	: world(world)
+	, L(L)
+{
+	lua_newtable(L);
+}
+
+World::CollectCallback::~CollectCallback()
+{
+}
+
+bool World::CollectCallback::ReportFixture(b2Fixture *f)
+{
+	Fixture *fixture = (Fixture *)world->findObject(f);
+	if (!fixture)
+		throw love::Exception("A fixture has escaped Memoizer!");
+	luax_pushtype(L, fixture);
+	lua_rawseti(L, -2, i);
+	i++;
+	return true;
+}
+
 World::RayCastCallback::RayCastCallback(World *world, lua_State *L, int idx)
 	: world(world)
 	, L(L)
@@ -554,6 +576,20 @@ int World::queryBoundingBox(lua_State *L)
 	QueryCallback query(this, L, 5);
 	world->QueryAABB(&query, box);
 	return 0;
+}
+
+int World::getFixturesInArea(lua_State *L)
+{
+	float lx = (float)luaL_checknumber(L, 1);
+	float ly = (float)luaL_checknumber(L, 2);
+	float ux = (float)luaL_checknumber(L, 3);
+	float uy = (float)luaL_checknumber(L, 4);
+	b2AABB box;
+	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
+	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
+	CollectCallback query(this, L);
+	world->QueryAABB(&query, box);
+	return 1;
 }
 
 int World::rayCast(lua_State *L)

@@ -185,6 +185,15 @@ int w_World_queryBoundingBox(lua_State *L)
 	return t->queryBoundingBox(L);
 }
 
+int w_World_getFixturesInArea(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&](){ ret = t->getFixturesInArea(L); });
+	return ret;
+}
+
 int w_World_rayCast(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
@@ -228,6 +237,7 @@ static const luaL_Reg w_World_functions[] =
 	{ "getJoints", w_World_getJoints },
 	{ "getContacts", w_World_getContacts },
 	{ "queryBoundingBox", w_World_queryBoundingBox },
+	{ "getFixturesInArea", w_World_getFixturesInArea },
 	{ "rayCast", w_World_rayCast },
 	{ "destroy", w_World_destroy },
 	{ "isDestroyed", w_World_isDestroyed },
