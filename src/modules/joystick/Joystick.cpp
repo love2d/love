@@ -58,16 +58,20 @@ STRINGMAP_CLASS_END(Joystick, Joystick::Hat, Joystick::HAT_MAX_ENUM, hat)
 
 STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 {
-	{ "unknown",    Joystick::GAMEPAD_TYPE_UNKNOWN             },
-	{ "xbox360",    Joystick::GAMEPAD_TYPE_XBOX360             },
-	{ "xboxone",    Joystick::GAMEPAD_TYPE_XBOXONE             },
-	{ "ps3",        Joystick::GAMEPAD_TYPE_PS3                 },
-	{ "ps4",        Joystick::GAMEPAD_TYPE_PS4                 },
-	{ "ps5",        Joystick::GAMEPAD_TYPE_PS5                 },
-	{ "switchpro",  Joystick::GAMEPAD_TYPE_NINTENDO_SWITCH_PRO },
-	{ "amazonluna", Joystick::GAMEPAD_TYPE_AMAZON_LUNA         },
-	{ "stadia",     Joystick::GAMEPAD_TYPE_STADIA              },
-	{ "virtual",    Joystick::GAMEPAD_TYPE_VIRTUAL             },
+	{ "unknown",      Joystick::GAMEPAD_TYPE_UNKNOWN             },
+	{ "xbox360",      Joystick::GAMEPAD_TYPE_XBOX360             },
+	{ "xboxone",      Joystick::GAMEPAD_TYPE_XBOXONE             },
+	{ "ps3",          Joystick::GAMEPAD_TYPE_PS3                 },
+	{ "ps4",          Joystick::GAMEPAD_TYPE_PS4                 },
+	{ "ps5",          Joystick::GAMEPAD_TYPE_PS5                 },
+	{ "switchpro",    Joystick::GAMEPAD_TYPE_NINTENDO_SWITCH_PRO },
+	{ "amazonluna",   Joystick::GAMEPAD_TYPE_AMAZON_LUNA         },
+	{ "stadia",       Joystick::GAMEPAD_TYPE_STADIA              },
+	{ "virtual",      Joystick::GAMEPAD_TYPE_VIRTUAL             },
+	{ "shield",       Joystick::GAMEPAD_TYPE_NVIDIA_SHIELD       },
+	{ "joyconleft",   Joystick::GAMEPAD_TYPE_JOYCON_LEFT         },
+	{ "joyconright",  Joystick::GAMEPAD_TYPE_JOYCON_RIGHT        },
+	{ "joyconpair",   Joystick::GAMEPAD_TYPE_JOYCON_PAIR         },
 }
 STRINGMAP_CLASS_END(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 

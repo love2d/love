@@ -89,55 +89,35 @@ static const char render_uniforms[] = R"(
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
+#ifdef LOVE_SPLIT_UNIFORMS_PER_DRAW
+uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[12];
+uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw2[1];
+#else
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+#endif
 
-// These are initialized in love_initializeBuiltinUniforms below. GLSL ES can't
-// do it as an initializer.
-LOVE_HIGHP_OR_MEDIUMP mat4 TransformMatrix;
-LOVE_HIGHP_OR_MEDIUMP mat4 ProjectionMatrix;
-LOVE_HIGHP_OR_MEDIUMP mat3 NormalMatrix;
-
-LOVE_HIGHP_OR_MEDIUMP vec4 love_ScreenSize;
-LOVE_HIGHP_OR_MEDIUMP vec4 ConstantColor;
-
-LOVE_HIGHP_OR_MEDIUMP float CurrentDPIScale;
-
-LOVE_HIGHP_OR_MEDIUMP float ConstantPointSize;
-
+// Older GLSL doesn't support preprocessor line continuations...
+#define TransformMatrix mat4(love_UniformsPerDraw[0], love_UniformsPerDraw[1], love_UniformsPerDraw[2], love_UniformsPerDraw[3])
+#define ProjectionMatrix mat4(love_UniformsPerDraw[4], love_UniformsPerDraw[5], love_UniformsPerDraw[6], love_UniformsPerDraw[7])
 #define TransformProjectionMatrix (ProjectionMatrix * TransformMatrix)
+
+#define NormalMatrix mat3(love_UniformsPerDraw[8].xyz, love_UniformsPerDraw[9].xyz, love_UniformsPerDraw[10].xyz)
+
+#define CurrentDPIScale (love_UniformsPerDraw[8].w)
+#define ConstantPointSize (love_UniformsPerDraw[9].w)
+#define ConstantColor (love_UniformsPerDraw[11])
+
+#ifdef LOVE_SPLIT_UNIFORMS_PER_DRAW
+#define love_ScreenSize (love_UniformsPerDraw2[0])
+#else
+#define love_ScreenSize (love_UniformsPerDraw[12])
+#endif
 
 // Alternate names
 #define ViewSpaceFromLocal TransformMatrix
 #define ClipSpaceFromView ProjectionMatrix
 #define ClipSpaceFromLocal TransformProjectionMatrix
 #define ViewNormalFromLocal NormalMatrix
-
-void love_initializeBuiltinUniforms() {
-	TransformMatrix = mat4(
-	   love_UniformsPerDraw[0],
-	   love_UniformsPerDraw[1],
-	   love_UniformsPerDraw[2],
-	   love_UniformsPerDraw[3]
-	);
-
-	ProjectionMatrix = mat4(
-	   love_UniformsPerDraw[4],
-	   love_UniformsPerDraw[5],
-	   love_UniformsPerDraw[6],
-	   love_UniformsPerDraw[7]
-	);
-
-	NormalMatrix = mat3(
-	   love_UniformsPerDraw[8].xyz,
-	   love_UniformsPerDraw[9].xyz,
-	   love_UniformsPerDraw[10].xyz
-	);
-
-	CurrentDPIScale = love_UniformsPerDraw[8].w;
-	ConstantPointSize = love_UniformsPerDraw[9].w;
-	love_ScreenSize = love_UniformsPerDraw[11];
-	ConstantColor = love_UniformsPerDraw[12];
-}
 )";
 
 static const char global_functions[] = R"(
@@ -274,7 +254,6 @@ LOVE_IO_LOCATION(1) varying vec4 VaryingColor;
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
 void main() {
-	love_initializeBuiltinUniforms();
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
 	love_Position = position(ClipSpaceFromLocal, VertexPosition);
@@ -285,7 +264,6 @@ static const char vertex_main_raw[] = R"(
 void vertexmain();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	vertexmain();
 }
 )";
@@ -344,7 +322,6 @@ LOVE_IO_LOCATION(1) varying mediump vec4 VaryingColor;
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
 
 void main() {
-	love_initializeBuiltinUniforms();
 	love_PixelColor = effect(VaryingColor, MainTex, VaryingTexCoord.st, love_PixelCoord);
 }
 )";
@@ -380,7 +357,6 @@ LOVE_IO_LOCATION(1) varying mediump vec4 VaryingColor;
 void effect();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	effect();
 }
 )";
@@ -389,7 +365,6 @@ static const char pixel_main_raw[] = R"(
 void pixelmain();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	pixelmain();
 }
 )";
@@ -404,7 +379,6 @@ static const char compute_header[] = R"(
 )";
 
 static const char compute_uniforms[] = R"(
-void love_initializeBuiltinUniforms() {}
 )";
 
 static const char compute_functions[] = R"()";
@@ -413,7 +387,6 @@ static const char compute_main[] = R"(
 void computemain();
 
 void main() {
-	love_initializeBuiltinUniforms();
 	computemain();
 }
 )";
@@ -575,7 +548,12 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
 
-	for (const auto& def : options.defines)
+	// Note: backends are expected to handle this situation if highp is ever
+	// conditional in that backend.
+	if (!gfx->getCapabilities().features[Graphics::FEATURE_PIXEL_SHADER_HIGHP])
+		ss << "#define LOVE_SPLIT_UNIFORMS_PER_DRAW 1";
+
+	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
 
 	ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
@@ -1204,11 +1182,12 @@ static StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM> languages(language
 
 static StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry builtinNameEntries[] =
 {
-	{ "MainTex",              Shader::BUILTIN_TEXTURE_MAIN      },
-	{ "love_VideoYChannel",   Shader::BUILTIN_TEXTURE_VIDEO_Y   },
-	{ "love_VideoCbChannel",  Shader::BUILTIN_TEXTURE_VIDEO_CB  },
-	{ "love_VideoCrChannel",  Shader::BUILTIN_TEXTURE_VIDEO_CR  },
-	{ "love_UniformsPerDraw", Shader::BUILTIN_UNIFORMS_PER_DRAW },
+	{ "MainTex",               Shader::BUILTIN_TEXTURE_MAIN        },
+	{ "love_VideoYChannel",    Shader::BUILTIN_TEXTURE_VIDEO_Y     },
+	{ "love_VideoCbChannel",   Shader::BUILTIN_TEXTURE_VIDEO_CB    },
+	{ "love_VideoCrChannel",   Shader::BUILTIN_TEXTURE_VIDEO_CR    },
+	{ "love_UniformsPerDraw",  Shader::BUILTIN_UNIFORMS_PER_DRAW   },
+	{ "love_UniformsPerDraw2", Shader::BUILTIN_UNIFORMS_PER_DRAW_2 },
 };
 
 static StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> builtinNames(builtinNameEntries, sizeof(builtinNameEntries));

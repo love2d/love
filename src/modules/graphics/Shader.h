@@ -64,6 +64,7 @@ public:
 		BUILTIN_TEXTURE_VIDEO_CB,
 		BUILTIN_TEXTURE_VIDEO_CR,
 		BUILTIN_UNIFORMS_PER_DRAW,
+		BUILTIN_UNIFORMS_PER_DRAW_2,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -176,8 +177,10 @@ public:
  		Matrix4 transformMatrix;
  		Matrix4 projectionMatrix;
  		Vector4 normalMatrix[3]; // 3x3 matrix padded to an array of 3 vector4s.
- 		Vector4 screenSizeParams;
  		Colorf constantColor;
+
+		// Pixel shader-centric variables past this point.
+		Vector4 screenSizeParams;
  	};
 
 	// Pointer to currently active Shader.

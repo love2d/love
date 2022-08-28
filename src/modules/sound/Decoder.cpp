@@ -39,7 +39,14 @@ Decoder::Decoder(Stream *stream, int bufferSize)
 	if (!stream->isReadable() || !stream->isSeekable())
 		throw love::Exception("Decoder input stream must be readable and seekable.");
 
-	buffer = new char[bufferSize];
+	try
+	{
+		buffer = new char[bufferSize];
+	}
+	catch (std::exception &)
+	{
+		throw love::Exception("Out of memory.");
+	}
 }
 
 Decoder::~Decoder()

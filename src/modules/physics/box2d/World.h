@@ -102,6 +102,18 @@ public:
 		int funcidx;
 	};
 
+	class CollectCallback : public b2QueryCallback
+	{
+	public:
+		CollectCallback(World *world, lua_State *L);
+		~CollectCallback();
+		virtual bool ReportFixture(b2Fixture *fixture);
+	private:
+		World *world;
+		lua_State *L;
+		int i = 1;
+	};
+
 	class RayCastCallback : public b2RayCastCallback
 	{
 	public:
@@ -270,9 +282,14 @@ public:
 	b2Body *getGroundBody() const;
 
 	/**
-	 * Gets all fixtures that overlap a given bounding box.
+	 * Calls a callback on all fixtures that overlap a given bounding box.
 	 **/
 	int queryBoundingBox(lua_State *L);
+
+	/**
+	 * Gets all fixtures that overlap a given bounding box.
+	 **/
+	int getFixturesInArea(lua_State *L);
 
 	/**
 	 * Raycasts the World for all Fixtures in the path of the ray.
