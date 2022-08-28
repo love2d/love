@@ -12,5 +12,6 @@
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #endif
+#include "vk_mem_alloc.h"
 
 #endif //LOVE_GRAPHICS_VULKAN_VULKANWRAPPER_H

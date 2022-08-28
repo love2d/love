@@ -265,7 +265,6 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	restoreState(states.back());
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
-	renderTargetTexture = nullptr;
 	currentViewportWidth = 0.0f;
 	currentViewportHeight = 0.0f;
 
@@ -283,10 +282,10 @@ void Graphics::initCapabilities() {
 	capabilities.features[FEATURE_LIGHTEN] = false;
 	capabilities.features[FEATURE_FULL_NPOT] = false;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
-	capabilities.features[FEATURE_SHADER_DERIVATIVES] = false;
+	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
 	capabilities.features[FEATURE_GLSL3] = true;
 	capabilities.features[FEATURE_GLSL4] = true;
-	capabilities.features[FEATURE_INSTANCING] = false;
+	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = false;
 	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
 	capabilities.features[FEATURE_COPY_BUFFER] = false;
@@ -305,12 +304,12 @@ void Graphics::initCapabilities() {
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = properties.limits.maxImageDimensionCube;
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = properties.limits.maxTexelBufferElements;	// ?
 	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = properties.limits.maxStorageBufferRange;	// ?
-	capabilities.limits[LIMIT_THREADGROUPS_X] = 0;  // todo
-	capabilities.limits[LIMIT_THREADGROUPS_Y] = 0;  // todo
-	capabilities.limits[LIMIT_THREADGROUPS_Z] = 0;  // todo
-	capabilities.limits[LIMIT_RENDER_TARGETS] = 1;	// todo
+	capabilities.limits[LIMIT_THREADGROUPS_X] = properties.limits.maxComputeWorkGroupSize[0];	// this is correct?
+	capabilities.limits[LIMIT_THREADGROUPS_Y] = properties.limits.maxComputeWorkGroupSize[1];
+	capabilities.limits[LIMIT_THREADGROUPS_Z] = properties.limits.maxComputeWorkGroupSize[2];
+	capabilities.limits[LIMIT_RENDER_TARGETS] = properties.limits.maxColorAttachments;
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = 1;	// todo
-	capabilities.limits[LIMIT_ANISOTROPY] = 1.0f;	// todo
+	capabilities.limits[LIMIT_ANISOTROPY] = properties.limits.maxSamplerAnisotropy;
 	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	capabilities.textureTypes[TEXTURE_2D] = true;
@@ -1242,10 +1241,10 @@ void Graphics::createImageViews() {
 
 void Graphics::createDefaultRenderPass() {
 	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.colorFormat = swapChainImageFormat;
-	renderPassConfiguration.msaaSamples = msaaSamples;
-	renderPassConfiguration.depthFormat = findDepthFormat();
-	renderPassConfiguration.resolve = true;
+	renderPassConfiguration.colorFormats.push_back(swapChainImageFormat);
+	renderPassConfiguration.staticData.msaaSamples = msaaSamples;
+	renderPassConfiguration.staticData.depthFormat = findDepthFormat();
+	renderPassConfiguration.staticData.resolve = true;
 	defaultRenderPass = createRenderPass(renderPassConfiguration);
 }
 
@@ -1254,36 +1253,38 @@ void Graphics::createDefaultFramebuffers() {
 
 	for (const auto view : swapChainImageViews) {
 		FramebufferConfiguration configuration{};
-		configuration.renderPass = defaultRenderPass;
-		configuration.width = swapChainExtent.width;
-		configuration.height = swapChainExtent.height;
-		configuration.imageView = colorImageView;
-		configuration.depthView = depthImageView;
-		configuration.resolveView = view;
+		configuration.staticData.renderPass = defaultRenderPass;
+		configuration.staticData.width = swapChainExtent.width;
+		configuration.staticData.height = swapChainExtent.height;
+		configuration.colorViews.push_back(colorImageView);
+		configuration.staticData.depthView = depthImageView;
+		configuration.staticData.resolveView = view;
 		defaultFramebuffers.push_back(createFramebuffer(configuration));
 	}
 }
 
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration) {
-	std::vector<VkImageView> attachments = {
-		configuration.imageView,
-	};
+	std::vector<VkImageView> attachments;
 
-	if (configuration.depthView) {
-		attachments.push_back(configuration.depthView);
+	for (const auto& colorView : configuration.colorViews) {
+		attachments.push_back(colorView);
 	}
 
-	if (configuration.resolveView) {
-		attachments.push_back(configuration.resolveView);
+	if (configuration.staticData.depthView) {
+		attachments.push_back(configuration.staticData.depthView);
+	}
+
+	if (configuration.staticData.resolveView) {
+		attachments.push_back(configuration.staticData.resolveView);
 	}
 
 	VkFramebufferCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-	createInfo.renderPass = configuration.renderPass;
+	createInfo.renderPass = configuration.staticData.renderPass;
 	createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	createInfo.pAttachments = attachments.data();
-	createInfo.width = configuration.width;
-	createInfo.height = configuration.height;
+	createInfo.width = configuration.staticData.width;
+	createInfo.height = configuration.staticData.height;
 	createInfo.layers = 1;
 
 	VkFramebuffer frameBuffer;
@@ -1319,23 +1320,43 @@ void Graphics::createDefaultShaders() {
 }
 
 VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
+    VkSubpassDescription subPass{};
+    subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
 	std::vector<VkAttachmentDescription> attachments;
+	std::vector<VkAttachmentReference> colorAttachmentRefs;
 
-    VkAttachmentDescription colorDescription{};
-    colorDescription.format = configuration.colorFormat;
-    colorDescription.samples = configuration.msaaSamples;
-    colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	attachments.push_back(colorDescription);
+	uint32_t attachment = 0;
+	for (const auto& colorFormat : configuration.colorFormats) {
+		VkAttachmentReference reference{};
+		reference.attachment = attachment++;
+		reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachmentRefs.push_back(reference);
 
-	if (configuration.depthFormat != VK_FORMAT_UNDEFINED) {
+		VkAttachmentDescription colorDescription{};
+		colorDescription.format = colorFormat;
+		colorDescription.samples = configuration.staticData.msaaSamples;
+		colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		attachments.push_back(colorDescription);
+	}
+
+    subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+    subPass.pColorAttachments = colorAttachmentRefs.data();
+
+	VkAttachmentReference depthStencilAttachmentRef{};
+	if (configuration.staticData.depthFormat != VK_FORMAT_UNDEFINED) {
+		depthStencilAttachmentRef.attachment = attachment++;
+		depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
+
 		VkAttachmentDescription depthStencilAttachment{};
-		depthStencilAttachment.format = configuration.depthFormat;
-		depthStencilAttachment.samples = configuration.msaaSamples;
+		depthStencilAttachment.format = configuration.staticData.depthFormat;
+		depthStencilAttachment.samples = configuration.staticData.msaaSamples;
 		depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -1345,9 +1366,14 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 		attachments.push_back(depthStencilAttachment);
 	}
 
-	if (configuration.resolve) {
+	VkAttachmentReference colorAttachmentResolveRef{};
+	if (configuration.staticData.resolve) {
+		colorAttachmentResolveRef.attachment = attachment++;
+		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		subPass.pResolveAttachments = &colorAttachmentResolveRef;
+
 		VkAttachmentDescription colorAttachmentResolve{};
-		colorAttachmentResolve.format = configuration.colorFormat;
+		colorAttachmentResolve.format = configuration.colorFormats.at(0);
 		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -1356,31 +1382,6 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		attachments.push_back(colorAttachmentResolve);
-	}
-
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference depthStencilAttachmentRef{};
-	depthStencilAttachmentRef.attachment = 1;
-	depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference colorAttachmentResolveRef{};
-	colorAttachmentResolveRef.attachment = 2;
-	colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subPass{};
-    subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subPass.colorAttachmentCount = 1;
-    subPass.pColorAttachments = &colorAttachmentRef;
-
-	if (configuration.depthFormat != VK_FORMAT_UNDEFINED) {
-		subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
-	}
-
-	if (configuration.resolve) {
-		subPass.pResolveAttachments = &colorAttachmentResolveRef;
 	}
 
 	VkSubpassDependency dependency{};
@@ -1498,6 +1499,7 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.viewportWidth = currentViewportWidth;
 	configuration.viewportHeight = currentViewportHeight;
 	configuration.msaaSamples = currentMsaaSamples;
+	configuration.numColorAttachments = currentNumColorAttachments;
 
 	std::vector<VkBuffer> bufferVector;
 	std::vector<VkDeviceSize> offsets;
@@ -1541,17 +1543,36 @@ void Graphics::startDefaultRenderPass() {
 
 	currentRenderPass = defaultRenderPass;
 	currentGraphicsPipeline = VK_NULL_HANDLE;
-	renderTargetTexture = VK_NULL_HANDLE;
+	postRenderPass = std::nullopt;
 	currentViewportWidth = (float)swapChainExtent.width;
 	currentViewportHeight = (float)swapChainExtent.height;
 	currentMsaaSamples = msaaSamples;
+	currentNumColorAttachments = 1;
 }
 
 void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
-	renderTargetTexture = dynamic_cast<Texture*>(rts.colors[0].texture);
+	auto currentCommandBuffer = commandBuffers.at(currentFrame);
 
+	auto width = static_cast<uint32_t>(rts.getFirstTarget().texture->getWidth());
+	auto height = static_cast<uint32_t>(rts.getFirstTarget().texture->getHeight());
+
+	// fixme: hasSRGBtexture
+	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.colorFormat = Vulkan::getTextureFormat(renderTargetTexture->getPixelFormat()).internalFormat;
+	for (const auto &color : rts.colors) {
+		// fixme: use mipmap and slice.
+		color.mipmap;
+		color.slice;
+		renderPassConfiguration.colorFormats.push_back(Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat);
+	}
+	if (rts.depthStencil.texture != nullptr) {
+		// fixme: use mipmap and slice:
+		rts.depthStencil.mipmap;
+		rts.depthStencil.slice;
+		if (rts.depthStencil.texture != nullptr) {
+			renderPassConfiguration.staticData.depthFormat =  Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat;
+		}
+	}
 
     VkRenderPass renderPass;
 	auto it = renderPasses.find(renderPassConfiguration);
@@ -1563,38 +1584,55 @@ void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh,
 	}
 
 	FramebufferConfiguration configuration{};
-	configuration.renderPass = renderPass;
-	configuration.imageView = (VkImageView)renderTargetTexture->getRenderTargetHandle();
-	configuration.width = static_cast<uint32_t>(renderTargetTexture->getWidth());
-	configuration.height = static_cast<uint32_t>(renderTargetTexture->getHeight());
-	VkFramebuffer framebuffer = getFramebuffer(configuration);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	std::vector<VkImage> transitionBackImages;
+
+	for (const auto& color : rts.colors) {
+		configuration.colorViews.push_back((VkImageView)color.texture->getRenderTargetHandle());
+		Vulkan::cmdTransitionImageLayout(currentCommandBuffer, (VkImage)color.texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+		transitionBackImages.push_back((VkImage) color.texture->getHandle());
+	}
+	if (rts.depthStencil.texture != nullptr) {
+		configuration.colorViews.push_back((VkImageView)rts.depthStencil.texture->getRenderTargetHandle());
+		// fixme: layout transition of depth stencil image?
+	}
+
+	configuration.staticData.renderPass = renderPass;
+	configuration.staticData.width = static_cast<uint32_t>(width);
+	configuration.staticData.height = static_cast<uint32_t>(height);
+	VkFramebuffer framebuffer = getFramebuffer(configuration);
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass;
 	renderPassInfo.framebuffer = framebuffer;
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(renderTargetTexture->getWidth());
-    renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(renderTargetTexture->getHeight());
+    renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(width);
+    renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(height);
 
-    vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     currentRenderPass = renderPass;
 	currentGraphicsPipeline = VK_NULL_HANDLE;
-	currentViewportWidth = (float)renderTargetTexture->getWidth();
-	currentViewportHeight = (float)renderTargetTexture->getHeight();
+	currentViewportWidth = (float)width;
+	currentViewportHeight = (float)height;
 	currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	currentNumColorAttachments = static_cast<uint32_t>(rts.colors.size());
+
+	postRenderPass = [=]() {
+		for (const auto& image : transitionBackImages) {
+			Vulkan::cmdTransitionImageLayout(currentCommandBuffer, image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+	};
 }
 
 void Graphics::endRenderPass() {
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
     currentRenderPass = VK_NULL_HANDLE;
 
-	if (renderTargetTexture) {
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), (VkImage)renderTargetTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		renderTargetTexture = nullptr;
+	if (postRenderPass) {
+		postRenderPass.value()();
+		postRenderPass = std::nullopt;
 	}
 }
 
@@ -1736,12 +1774,14 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	colorBlendAttachment.dstAlphaBlendFactor = Vulkan::getBlendFactor(configuration.blendState.dstFactorA);
 	colorBlendAttachment.alphaBlendOp = Vulkan::getBlendOp(configuration.blendState.operationA);
 
+	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments(configuration.numColorAttachments, colorBlendAttachment);
+
 	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable = VK_FALSE;
 	colorBlending.logicOp = VK_LOGIC_OP_COPY;
-	colorBlending.attachmentCount = 1;
-	colorBlending.pAttachments = &colorBlendAttachment;
+	colorBlending.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
+	colorBlending.pAttachments = colorBlendAttachments.data();
 	colorBlending.blendConstants[0] = 0.0f;
 	colorBlending.blendConstants[1] = 0.0f;
 	colorBlending.blendConstants[2] = 0.0f;

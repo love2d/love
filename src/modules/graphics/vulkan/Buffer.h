@@ -5,7 +5,6 @@
 #include "graphics/Volatile.h"
 
 #include "VulkanWrapper.h"
-#include "vk_mem_alloc.h"
 
 
 namespace love {

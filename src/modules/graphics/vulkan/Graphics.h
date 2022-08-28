@@ -2,16 +2,15 @@
 #define LOVE_GRAPHICS_VULKAN_GRAPHICS_H
 
 // löve
+#include "common/config.h"
 #include "graphics/Graphics.h"
 #include "StreamBuffer.h"
 #include "ShaderStage.h"
 #include "Shader.h"
 #include "Texture.h"
-#include <common/config.h>
 
 // libraries
 #include "VulkanWrapper.h"
-#include "vk_mem_alloc.h"
 #include "libraries/xxHash/xxhash.h"
 
 // c++
@@ -25,38 +24,57 @@ namespace love {
 namespace graphics {
 namespace vulkan {
 struct RenderPassConfiguration {
-    VkFormat colorFormat = VK_FORMAT_UNDEFINED;
-	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
-	bool resolve = false;
+	std::vector<VkFormat> colorFormats;
+
+	struct StaticRenderPassConfiguration {
+		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
+		bool resolve = false;
+	} staticData;
 
     bool operator==(const RenderPassConfiguration& conf) const {
-        return memcmp(this, &conf, sizeof(RenderPassConfiguration)) == 0;
+		return colorFormats == conf.colorFormats && 
+			(memcmp(&staticData, &conf.staticData, sizeof(StaticRenderPassConfiguration)) == 0);
     }
 };
 
 struct RenderPassConfigurationHasher {
     size_t operator()(const RenderPassConfiguration &configuration) const {
-        return XXH32(&configuration, sizeof(RenderPassConfiguration), 0);
+		size_t hashes[] = { 
+			XXH32(configuration.colorFormats.data(), configuration.colorFormats.size() * sizeof(VkFormat), 0),
+			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
+		};
+		return XXH32(hashes, sizeof(hashes), 0);
     }
 };
 
 struct FramebufferConfiguration {
-	VkRenderPass renderPass = VK_NULL_HANDLE;
-	VkImageView imageView = VK_NULL_HANDLE;
-	VkImageView depthView = VK_NULL_HANDLE;
-	VkImageView resolveView = VK_NULL_HANDLE;
-	uint32_t width = 0;
-	uint32_t height = 0;
+	std::vector<VkImageView> colorViews;
+
+	struct StaticFramebufferConfiguration {
+		VkImageView depthView = VK_NULL_HANDLE;
+		VkImageView resolveView = VK_NULL_HANDLE;
+
+		uint32_t width = 0;
+		uint32_t height = 0;
+
+		VkRenderPass renderPass = VK_NULL_HANDLE;
+	} staticData;
 
 	bool operator==(const FramebufferConfiguration& conf) const {
-		return memcmp(this, &conf, sizeof(FramebufferConfiguration)) == 0;
+		return colorViews == conf.colorViews &&
+			(memcmp(&staticData, &conf.staticData, sizeof(StaticFramebufferConfiguration)) == 0);
 	}
 };
 
 struct FramebufferConfigurationHasher {
 	size_t operator()(const FramebufferConfiguration& configuration) const {
-		return XXH32(&configuration, sizeof(FramebufferConfiguration), 0);
+		size_t hashes[] = {
+			XXH32(configuration.colorViews.data(), configuration.colorViews.size() * sizeof(VkImageView), 0),
+			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
+		};
+
+		return XXH32(hashes, sizeof(hashes), 0);
 	}
 };
 
@@ -75,6 +93,7 @@ struct GraphicsPipelineConfiguration {
 	StencilState stencil;
 	DepthState depthState;
 	VkSampleCountFlagBits msaaSamples;
+	uint32_t numColorAttachments;
 
 	GraphicsPipelineConfiguration() {
 		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
@@ -307,7 +326,8 @@ private:
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 
 	// render pass variables.
-	Texture* renderTargetTexture = nullptr;
+	std::optional<std::function<void()>> postRenderPass;
+	uint32_t currentNumColorAttachments = 0;
 	float currentViewportWidth = 0;
 	float currentViewportHeight = 0;
 	VkSampleCountFlagBits currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
