@@ -267,34 +267,68 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format) {
 		case PIXELFORMAT_RGB565_UNORM:   // LSB->MSB: [b: g: r]
 		case PIXELFORMAT_RGB10A2_UNORM:  // LSB->MSB: [r: g: b: a]
 		case PIXELFORMAT_RG11B10_FLOAT:  // LSB->MSB: [r: g: b]
+			throw love::Exception("unimplemented pixel format (rgba4, rgb5a1, rgb565, rgb10a2, rg11b10)");
 		case PIXELFORMAT_STENCIL8:
+			textureFormat.internalFormat = VK_FORMAT_S8_UINT;
+			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+			break;
 		case PIXELFORMAT_DEPTH16_UNORM:
-		case PIXELFORMAT_DEPTH24_UNORM:
-		case PIXELFORMAT_DEPTH32_FLOAT:
+			textureFormat.internalFormat = VK_FORMAT_D16_UNORM;
+			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+			break;
+		case PIXELFORMAT_DEPTH24_UNORM:	// ?
 		case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
+			textureFormat.internalFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+			break;
+		case PIXELFORMAT_DEPTH32_FLOAT:
+			textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT;
+			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
+			break;
 		case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
+			textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;	// ?
+			break;
 		case PIXELFORMAT_DXT1_UNORM:
 		case PIXELFORMAT_DXT3_UNORM:
 		case PIXELFORMAT_DXT5_UNORM:
+			throw love::Exception("unimplemented: dxt");
 		case PIXELFORMAT_BC4_UNORM:
+			textureFormat.internalFormat = VK_FORMAT_BC4_UNORM_BLOCK;
+			break;
 		case PIXELFORMAT_BC4_SNORM:
+			textureFormat.internalFormat = VK_FORMAT_BC4_SNORM_BLOCK;
+			break;
 		case PIXELFORMAT_BC5_UNORM:
+			textureFormat.internalFormat = VK_FORMAT_BC5_UNORM_BLOCK;
+			break;
 		case PIXELFORMAT_BC5_SNORM:
+			textureFormat.internalFormat = VK_FORMAT_BC5_SNORM_BLOCK;
+			break;
 		case PIXELFORMAT_BC6H_UFLOAT:
+			textureFormat.internalFormat = VK_FORMAT_BC6H_UFLOAT_BLOCK;
+			break;
 		case PIXELFORMAT_BC6H_FLOAT:
+			textureFormat.internalFormat = VK_FORMAT_BC6H_SFLOAT_BLOCK;
+			break;
 		case PIXELFORMAT_BC7_UNORM:
+			textureFormat.internalFormat = VK_FORMAT_BC7_UNORM_BLOCK;
+			break;
 		case PIXELFORMAT_PVR1_RGB2_UNORM:
 		case PIXELFORMAT_PVR1_RGB4_UNORM:
 		case PIXELFORMAT_PVR1_RGBA2_UNORM:
 		case PIXELFORMAT_PVR1_RGBA4_UNORM:
+			throw love::Exception("unimplemented pixel format: pvr1");
 		case PIXELFORMAT_ETC1_UNORM:
 		case PIXELFORMAT_ETC2_RGB_UNORM:
 		case PIXELFORMAT_ETC2_RGBA_UNORM:
 		case PIXELFORMAT_ETC2_RGBA1_UNORM:
+			throw love::Exception("unimplemented pixel format: etc");
 		case PIXELFORMAT_EAC_R_UNORM:
 		case PIXELFORMAT_EAC_R_SNORM:
 		case PIXELFORMAT_EAC_RG_UNORM:
 		case PIXELFORMAT_EAC_RG_SNORM:
+			throw love::Exception("unimplemented pixel format: eac");
 		case PIXELFORMAT_ASTC_4x4:
 		case PIXELFORMAT_ASTC_5x4:
 		case PIXELFORMAT_ASTC_5x5:
@@ -309,7 +343,7 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format) {
 		case PIXELFORMAT_ASTC_10x10:
 		case PIXELFORMAT_ASTC_12x10:
 		case PIXELFORMAT_ASTC_12x12:
-			throw love::Exception("unimplemented pixel format");
+			throw love::Exception("unimplemented pixel format: astc");
 		default:
 			throw love::Exception("unknown pixel format");
 	}
@@ -325,7 +359,7 @@ std::string Vulkan::getVendorName(uint32_t vendorId) {
 		return "AMD";
 	case 4318:
 		return "Nvidia";
-	case 8086:
+	case 32902:
 		return "Intel";
 	case 4203:
 		return "Apple";

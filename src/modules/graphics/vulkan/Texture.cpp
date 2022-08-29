@@ -50,8 +50,8 @@ bool Texture::loadVolatile() {
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.flags = createFlags;
 	imageInfo.imageType = Vulkan::getImageType(getTextureType());
-	imageInfo.extent.width = static_cast<uint32_t>(width);
-	imageInfo.extent.height = static_cast<uint32_t>(height);
+	imageInfo.extent.width = static_cast<uint32_t>(pixelWidth);
+	imageInfo.extent.height = static_cast<uint32_t>(pixelHeight);
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = static_cast<uint32_t>(getMipmapCount());
 	imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
@@ -164,8 +164,10 @@ void Texture::clear() {
 
 	VkImageSubresourceRange range{};
 	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	range.layerCount = static_cast<uint32_t>(layerCount);
-	range.levelCount = static_cast<uint32_t>(getMipmapCount());
+	range.baseMipLevel = 0;
+	range.levelCount = VK_REMAINING_MIP_LEVELS;
+	range.baseArrayLayer = 0;
+	range.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
 	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
@@ -263,14 +265,14 @@ void Texture::generateMipmapsInternal() {
 
 		VkImageBlit blit{};
 		blit.srcOffsets[0] = { 0, 0, 0 };
-		blit.srcOffsets[1] = { getWidth(i - 1), getHeight(i - 1), 1 };
+		blit.srcOffsets[1] = { getPixelWidth(i - 1), getPixelHeight(i - 1), 1 };
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.srcSubresource.mipLevel = i - 1;
 		blit.srcSubresource.baseArrayLayer = 0;
 		blit.srcSubresource.layerCount = static_cast<uint32_t>(layerCount);
 
 		blit.dstOffsets[0] = { 0, 0, 0 };
-		blit.dstOffsets[1] = { getWidth(i), getHeight(i), 1 };
+		blit.dstOffsets[1] = { getPixelWidth(i), getPixelHeight(i), 1 };
 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.dstSubresource.mipLevel = i;
 		blit.dstSubresource.baseArrayLayer = 0;

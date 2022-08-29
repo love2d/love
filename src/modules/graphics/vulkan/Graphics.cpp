@@ -126,6 +126,19 @@ void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt sten
 		attachments.push_back(attachment);
 	}
 
+	VkClearAttachment depthStencilAttachment{};
+
+	if (stencil.hasValue) {
+		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+	}
+	if (depth.hasValue) {
+		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+	}
+
+	attachments.push_back(depthStencilAttachment);
+
 	VkClearRect rect{};
 	rect.layerCount = 1;
 	rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
@@ -1242,6 +1255,7 @@ void Graphics::createImageViews() {
 void Graphics::createDefaultRenderPass() {
 	RenderPassConfiguration renderPassConfiguration{};
 	renderPassConfiguration.colorFormats.push_back(swapChainImageFormat);
+	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	renderPassConfiguration.staticData.msaaSamples = msaaSamples;
 	renderPassConfiguration.staticData.depthFormat = findDepthFormat();
 	renderPassConfiguration.staticData.resolve = true;
@@ -1336,11 +1350,11 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 		VkAttachmentDescription colorDescription{};
 		colorDescription.format = colorFormat;
 		colorDescription.samples = configuration.staticData.msaaSamples;
-		colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorDescription.initialLayout = configuration.staticData.initialColorImageLayout;
 		colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		attachments.push_back(colorDescription);
 	}
@@ -1387,8 +1401,8 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 	VkSubpassDependency dependency{};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
-	dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.srcAccessMask = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+	dependency.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
@@ -1553,12 +1567,10 @@ void Graphics::startDefaultRenderPass() {
 void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
 	auto currentCommandBuffer = commandBuffers.at(currentFrame);
 
-	auto width = static_cast<uint32_t>(rts.getFirstTarget().texture->getWidth());
-	auto height = static_cast<uint32_t>(rts.getFirstTarget().texture->getHeight());
-
 	// fixme: hasSRGBtexture
 	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
+	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	for (const auto &color : rts.colors) {
 		// fixme: use mipmap and slice.
 		color.mipmap;
@@ -1593,13 +1605,13 @@ void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh,
 		transitionBackImages.push_back((VkImage) color.texture->getHandle());
 	}
 	if (rts.depthStencil.texture != nullptr) {
-		configuration.colorViews.push_back((VkImageView)rts.depthStencil.texture->getRenderTargetHandle());
+		configuration.staticData.depthView = (VkImageView)rts.depthStencil.texture->getRenderTargetHandle();
 		// fixme: layout transition of depth stencil image?
 	}
 
 	configuration.staticData.renderPass = renderPass;
-	configuration.staticData.width = static_cast<uint32_t>(width);
-	configuration.staticData.height = static_cast<uint32_t>(height);
+	configuration.staticData.width = static_cast<uint32_t>(pixelw);
+	configuration.staticData.height = static_cast<uint32_t>(pixelh);
 	VkFramebuffer framebuffer = getFramebuffer(configuration);
 
     VkRenderPassBeginInfo renderPassInfo{};
@@ -1607,15 +1619,15 @@ void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh,
     renderPassInfo.renderPass = renderPass;
 	renderPassInfo.framebuffer = framebuffer;
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(width);
-    renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(height);
+    renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(pixelw);
+    renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(pixelh);
 
     vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     currentRenderPass = renderPass;
 	currentGraphicsPipeline = VK_NULL_HANDLE;
-	currentViewportWidth = (float)width;
-	currentViewportHeight = (float)height;
+	currentViewportWidth = (float)pixelw;
+	currentViewportHeight = (float)pixelh;
 	currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
 	currentNumColorAttachments = static_cast<uint32_t>(rts.colors.size());
 
@@ -2046,9 +2058,6 @@ void Graphics::createDefaultTexture() {
 }
 
 void Graphics::cleanup() {
-	delete quadIndexBuffer;
-	quadIndexBuffer = nullptr;
-
 	cleanupSwapChain();
 
 	for (auto &cleanUpFns : cleanUpFunctions) {

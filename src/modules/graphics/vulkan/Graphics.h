@@ -27,6 +27,7 @@ struct RenderPassConfiguration {
 	std::vector<VkFormat> colorFormats;
 
 	struct StaticRenderPassConfiguration {
+		VkImageLayout initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 		bool resolve = false;
