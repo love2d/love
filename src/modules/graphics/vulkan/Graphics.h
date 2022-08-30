@@ -79,22 +79,42 @@ struct FramebufferConfigurationHasher {
 	}
 };
 
+struct OptionalDeviceFeatures {
+	bool extendedDynamicState = false;
+};
+
+struct ExtendedDynamicStateFunctions {
+	PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT = nullptr;
+	PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT = nullptr;
+	PFN_vkCmdSetDepthCompareOpEXT vkCmdSetDepthCompareOpEXT = nullptr;
+	PFN_vkCmdSetDepthTestEnableEXT vkCmdSetDepthTestEnableEXT = nullptr;
+	PFN_vkCmdSetDepthWriteEnableEXT vkCmdSetDepthWriteEnableEXT = nullptr;
+	PFN_vkCmdSetFrontFaceEXT vkCmdSetFrontFaceEXT = nullptr;
+	PFN_vkCmdSetPrimitiveTopologyEXT vkCmdSetPrimitiveTopologyEXT = nullptr;
+	PFN_vkCmdSetScissorWithCountEXT vkCmdSetScissorWithCountEXT = nullptr;
+	PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT = nullptr;
+	PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT = nullptr;
+	PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT = nullptr;
+};
+
 struct GraphicsPipelineConfiguration {
     VkRenderPass renderPass;
 	VertexAttributes vertexAttributes;
 	Shader* shader = nullptr;
-	PrimitiveType primitiveType = PRIMITIVE_MAX_ENUM;
 	bool wireFrame;
 	BlendState blendState;
 	ColorChannelMask colorChannelMask;
-	Winding winding;
-	CullMode cullmode;
-	float viewportWidth;
-	float viewportHeight;
-	StencilState stencil;
-	DepthState depthState;
 	VkSampleCountFlagBits msaaSamples;
 	uint32_t numColorAttachments;
+	PrimitiveType primitiveType;
+
+	struct DynamicState {
+		CullMode cullmode = CULL_NONE;
+		Winding winding = WINDING_MAX_ENUM;
+		StencilAction stencilAction = STENCIL_MAX_ENUM;
+		CompareMode stencilCompare = COMPARE_MAX_ENUM;
+		DepthState depthState{};
+	} dynamicState;
 
 	GraphicsPipelineConfiguration() {
 		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
@@ -281,6 +301,8 @@ private:
 	int requestedMsaa = 0;
 	int actualMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE;
+	OptionalDeviceFeatures optionalDeviceFeatures;
+	ExtendedDynamicStateFunctions extendedDynamicStateFunctions;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;

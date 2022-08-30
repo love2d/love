@@ -365,6 +365,12 @@ void Graphics::setFrontFaceWinding(Winding winding) {
 	flushBatchedDraws();
 
 	states.back().winding = winding;
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT(
+			commandBuffers.at(currentFrame),
+			Vulkan::getFrontFace(winding));
+	}
 }
 
 void Graphics::setColorMask(ColorChannelMask mask) {
@@ -514,6 +520,18 @@ void Graphics::setScissor() {
 void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) {
 	flushBatchedDraws();
 
+	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, writemask);
+	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, readmask);
+	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, value);
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT(
+			commandBuffers.at(currentFrame),
+			VK_STENCIL_FACE_FRONT_AND_BACK,
+			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
+			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(compare));
+	}
+
 	states.back().stencil.action = action;
 	states.back().stencil.compare = compare;
 	states.back().stencil.value = value;
@@ -523,6 +541,14 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 
 void Graphics::setDepthMode(CompareMode compare, bool write) {
 	flushBatchedDraws();
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		extendedDynamicStateFunctions.vkCmdSetDepthCompareOpEXT(
+			commandBuffers.at(currentFrame), Vulkan::getCompareOp(compare));
+
+		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT(
+			commandBuffers.at(currentFrame), Vulkan::getBool(write));
+	}
 
 	states.back().depthTest = compare;
 	states.back().depthWrite = write;
@@ -585,6 +611,37 @@ void Graphics::initDynamicState() {
 		setScissor(states.back().scissorRect);
 	} else {
 		setScissor();
+	}
+
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = swapChainExtent.width;
+	viewport.height = swapChainExtent.height;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
+
+	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.writeMask);
+	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.readMask);
+	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.value);
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT(
+			commandBuffers.at(currentFrame),
+			VK_STENCIL_FACE_FRONT_AND_BACK,
+			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(states.back().stencil.action),
+			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(states.back().stencil.compare));
+
+		extendedDynamicStateFunctions.vkCmdSetDepthCompareOpEXT(
+			commandBuffers.at(currentFrame), Vulkan::getCompareOp(states.back().depthTest));
+
+		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT(
+			commandBuffers.at(currentFrame), Vulkan::getBool(states.back().depthWrite));
+
+		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT(
+			commandBuffers.at(currentFrame), Vulkan::getFrontFace(states.back().winding));
 	}
 }
 
@@ -928,6 +985,20 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
 	return indices;
 }
 
+static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceFeatures &optionalDeviceFeatures) {
+	uint32_t extensionCount;
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+	for (const auto& extension : availableExtensions) {
+		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0) {
+			optionalDeviceFeatures.extendedDynamicState = true;
+		}
+	}
+}
+
 void Graphics::createLogicalDevice() {
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
@@ -944,6 +1015,8 @@ void Graphics::createLogicalDevice() {
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
+	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
+
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
@@ -954,8 +1027,14 @@ void Graphics::createLogicalDevice() {
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+	}
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
+	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
 	// can this be removed?
 	if (enableValidationLayers) {
@@ -965,6 +1044,13 @@ void Graphics::createLogicalDevice() {
 	else {
 		createInfo.enabledLayerCount = 0;
 	}
+
+	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
+	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
+	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceFeatures.extendedDynamicState);
+	extendedDynamicStateFeatures.pNext = nullptr;
+
+	createInfo.pNext = &extendedDynamicStateFeatures;
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
 		throw love::Exception("failed to create logical device");
@@ -976,6 +1062,34 @@ void Graphics::createLogicalDevice() {
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+#ifdef LOVE_ANDROID
+        extendedDynamicStateFunctions.vkCmdSetCullModeEXT = vkCmdSetCullModeEXT;
+		extendedDynamicStateFunctions.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnableEXT;
+		extendedDynamicStateFunctions.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetCullModeEXT;
+		extendedDynamicStateFunctions.vkCmdSetDepthTestEnableEXT = vkCmdSetDepthTestEnableEXT;
+		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT = vkCmdSetDepthWriteEnableEXT;
+		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT = vkCmdSetFrontFaceEXT;
+		extendedDynamicStateFunctions.vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopologyEXT;
+		extendedDynamicStateFunctions.vkCmdSetScissorWithCountEXT = vkCmdSetScissorWithCountEXT;
+		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT = vkCmdSetStencilOpEXT;
+		extendedDynamicStateFunctions.vkCmdSetStencilTestEnableEXT = vkCmdSetStencilTestEnableEXT;
+		extendedDynamicStateFunctions.vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCountEXT;
+#else
+		extendedDynamicStateFunctions.vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT)vkGetDeviceProcAddr(device, "vkCmdSetCullModeEXT");
+		extendedDynamicStateFunctions.vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthBoundsTestEnableEXT");
+		extendedDynamicStateFunctions.vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthCompareOpEXT");
+		extendedDynamicStateFunctions.vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthTestEnableEXT");
+		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthWriteEnableEXT");
+		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT)vkGetDeviceProcAddr(device, "vkCmdSetFrontFaceEXT");
+		extendedDynamicStateFunctions.vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(device, "vkCmdSetPrimitiveTopologyEXT");
+		extendedDynamicStateFunctions.vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetScissorWithCountEXT");
+		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
+		extendedDynamicStateFunctions.vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
+		extendedDynamicStateFunctions.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
+#endif
+	}
 }
 
 void Graphics::initVMA() {
@@ -1497,23 +1611,28 @@ void Graphics::createVulkanVertexFormat(
 }
 
 void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
-	GraphicsPipelineConfiguration configuration;
+	GraphicsPipelineConfiguration configuration{};
+
     configuration.renderPass = currentRenderPass;
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
-	configuration.primitiveType = primitiveType;
 	configuration.wireFrame = states.back().wireframe;
 	configuration.blendState = states.back().blend;
 	configuration.colorChannelMask = states.back().colorMask;
-	configuration.winding = states.back().winding;
-	configuration.stencil = states.back().stencil;
-	configuration.depthState.compare = states.back().depthTest;
-	configuration.depthState.write = states.back().depthWrite;
-	configuration.cullmode = cullmode;
-	configuration.viewportWidth = currentViewportWidth;
-	configuration.viewportHeight = currentViewportHeight;
 	configuration.msaaSamples = currentMsaaSamples;
 	configuration.numColorAttachments = currentNumColorAttachments;
+	configuration.primitiveType = primitiveType;
+
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		extendedDynamicStateFunctions.vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
+	} else {
+		configuration.dynamicState.winding = states.back().winding;
+		configuration.dynamicState.depthState.compare = states.back().depthTest;
+		configuration.dynamicState.depthState.write = states.back().depthWrite;
+		configuration.dynamicState.stencilAction = states.back().stencil.action;
+		configuration.dynamicState.stencilCompare = states.back().stencil.compare;
+		configuration.dynamicState.cullmode = cullmode;
+	}
 
 	std::vector<VkBuffer> bufferVector;
 	std::vector<VkDeviceSize> offsets;
@@ -1565,6 +1684,16 @@ void Graphics::startDefaultRenderPass() {
 }
 
 void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(pixelw);
+	viewport.height = static_cast<float>(pixelh);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
+
 	auto currentCommandBuffer = commandBuffers.at(currentFrame);
 
 	// fixme: hasSRGBtexture
@@ -1695,6 +1824,9 @@ VkSampler Graphics::getCachedSampler(const SamplerState& samplerState) {
 }
 
 VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+
 	auto &shaderStages = configuration.shader->getShaderStages();
 
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
@@ -1709,37 +1841,10 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
-	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	inputAssembly.topology = Vulkan::getPrimitiveTypeTopology(configuration.primitiveType);
-	inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = configuration.viewportWidth;
-	viewport.height = configuration.viewportHeight;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
-	viewportState.pViewports = &viewport;
 	viewportState.scissorCount = 1;
-
-	VkPipelineRasterizationStateCreateInfo rasterizer{};
-	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizer.depthClampEnable = VK_FALSE;
-	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
-	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = Vulkan::getCullMode(configuration.cullmode);
-	rasterizer.frontFace = Vulkan::getFrontFace(configuration.winding);
-	rasterizer.depthBiasEnable = VK_FALSE;
-	rasterizer.depthBiasConstantFactor = 0.0f;
-	rasterizer.depthBiasClamp = 0.0f;
-	rasterizer.depthBiasSlopeFactor = 0.0f;
 
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -1750,31 +1855,53 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
 	multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
+	VkPipelineRasterizationStateCreateInfo rasterizer{};
+	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizer.depthClampEnable = VK_FALSE;
+	rasterizer.rasterizerDiscardEnable = VK_FALSE;
+	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
+	rasterizer.lineWidth = 1.0f;
+	if (!optionalDeviceFeatures.extendedDynamicState) {
+		rasterizer.cullMode = Vulkan::getCullMode(configuration.dynamicState.cullmode);
+		rasterizer.frontFace = Vulkan::getFrontFace(configuration.dynamicState.winding);
+	}
+
+	rasterizer.depthBiasEnable = VK_FALSE;
+	rasterizer.depthBiasConstantFactor = 0.0f;
+	rasterizer.depthBiasClamp = 0.0f;
+	rasterizer.depthBiasSlopeFactor = 0.0f;
+
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssembly.topology = Vulkan::getPrimitiveTypeTopology(configuration.primitiveType);
+	inputAssembly.primitiveRestartEnable = VK_FALSE;
+
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
-	depthStencil.depthWriteEnable = Vulkan::getBool(configuration.depthState.write);
-	depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.depthState.compare);
+	if (!optionalDeviceFeatures.extendedDynamicState) {
+		depthStencil.depthWriteEnable = Vulkan::getBool(configuration.dynamicState.depthState.write);
+		depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.dynamicState.depthState.compare);
+	}
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.minDepthBounds = 0.0f;
 	depthStencil.maxDepthBounds = 1.0f;
+
 	depthStencil.stencilTestEnable = VK_TRUE;
 
-	depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
-	depthStencil.front.passOp = Vulkan::getStencilOp(configuration.stencil.action);
-	depthStencil.front.depthFailOp = VK_STENCIL_OP_KEEP;
-	depthStencil.front.compareOp = Vulkan::getCompareOp(configuration.stencil.compare);
-	depthStencil.front.compareMask = configuration.stencil.readMask;
-	depthStencil.front.writeMask = configuration.stencil.writeMask;
-	depthStencil.front.reference = configuration.stencil.value;
+	if (!optionalDeviceFeatures.extendedDynamicState) {
+		depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
+		depthStencil.front.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
+		depthStencil.front.depthFailOp = VK_STENCIL_OP_KEEP;
+		depthStencil.front.compareOp = Vulkan::getCompareOp(configuration.dynamicState.stencilCompare);
 
-	depthStencil.back.failOp = VK_STENCIL_OP_KEEP;
-	depthStencil.back.passOp = Vulkan::getStencilOp(configuration.stencil.action);
-	depthStencil.back.depthFailOp = VK_STENCIL_OP_KEEP;
-	depthStencil.back.compareOp = Vulkan::getCompareOp(configuration.stencil.compare);
-	depthStencil.back.compareMask = configuration.stencil.readMask;
-	depthStencil.back.writeMask = configuration.stencil.writeMask;
-	depthStencil.back.reference = static_cast<uint32_t>(configuration.stencil.value);
+		depthStencil.back.failOp = VK_STENCIL_OP_KEEP;
+		depthStencil.back.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
+		depthStencil.back.depthFailOp = VK_STENCIL_OP_KEEP;
+		depthStencil.back.compareOp = Vulkan::getCompareOp(configuration.dynamicState.stencilCompare);
+	}
+
+	pipelineInfo.pDepthStencilState = &depthStencil;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = Vulkan::getColorMask(configuration.colorChannelMask);
@@ -1799,17 +1926,36 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	colorBlending.blendConstants[2] = 0.0f;
 	colorBlending.blendConstants[3] = 0.0f;
 
-	std::array<VkDynamicState, 1> dynamicStates = {
-		VK_DYNAMIC_STATE_SCISSOR
-	};
+	std::vector<VkDynamicState> dynamicStates;
+	
+	if (optionalDeviceFeatures.extendedDynamicState) {
+		dynamicStates = {
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_VIEWPORT,
+			VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
+			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+
+			VK_DYNAMIC_STATE_CULL_MODE_EXT,
+			VK_DYNAMIC_STATE_FRONT_FACE_EXT,
+			VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
+			VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
+			VK_DYNAMIC_STATE_STENCIL_OP_EXT,
+		};
+	}
+	else {
+		dynamicStates = {
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_VIEWPORT,
+			VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
+			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+		};
+	}
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	VkGraphicsPipelineCreateInfo pipelineInfo{};
-	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 	pipelineInfo.pStages = shaderStages.data();
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
@@ -1817,7 +1963,6 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = configuration.shader->getGraphicsPipelineLayout();
