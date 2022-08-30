@@ -1079,6 +1079,9 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0) {
 			optionalDeviceFeatures.extendedDynamicState = true;
 		}
+        if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0) {
+            optionalDeviceFeatures.physicalDeviceProperties2 = true;
+        }
 	}
 }
 
@@ -1100,6 +1103,10 @@ void Graphics::createLogicalDevice() {
 
 	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
 
+    if (optionalDeviceFeatures.extendedDynamicState && !optionalDeviceFeatures.physicalDeviceProperties2) {
+        optionalDeviceFeatures.extendedDynamicState = false;
+    }
+
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
 	deviceFeatures.fillModeNonSolid = VK_TRUE;
@@ -1113,6 +1120,7 @@ void Graphics::createLogicalDevice() {
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
+        enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
 	}
 
@@ -1546,7 +1554,11 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 		VkAttachmentDescription colorDescription{};
 		colorDescription.format = colorFormat;
 		colorDescription.samples = configuration.staticData.msaaSamples;
-		colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        if (configuration.staticData.initialColorImageLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
+		    colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        } else {
+            colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        }
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;

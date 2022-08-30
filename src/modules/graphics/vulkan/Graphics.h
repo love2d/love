@@ -80,6 +80,7 @@ struct FramebufferConfigurationHasher {
 };
 
 struct OptionalDeviceFeatures {
+    bool physicalDeviceProperties2 = false;
 	bool extendedDynamicState = false;
 };
 
