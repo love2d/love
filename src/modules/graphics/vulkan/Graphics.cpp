@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "Buffer.h"
+#include "GraphicsReadback.h"
 #include "SDL_vulkan.h"
 #include "window/Window.h"
 #include "common/Exception.h"
@@ -147,50 +148,81 @@ void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt sten
 	vkCmdClearAttachments(commandBuffers[currentFrame], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
 }
 
-void Graphics::present(void* screenshotCallbackdata) {
-	if (!isActive()) {
-		return;
-	}
-
+void Graphics::submitGpuCommands(bool present) {
 	flushBatchedDraws();
 
-	endRecordingGraphicsCommands();
+	endRecordingGraphicsCommands(present);
 
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
 	}
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
-	// all data transfers should happen before any draw calls.
-	std::vector<VkCommandBuffer> submitCommandbuffers = { dataTransferCommandBuffers.at(currentFrame), commandBuffers.at(currentFrame) };
+	std::vector<VkCommandBuffer> submitCommandbuffers = { 
+		dataTransferCommandBuffers.at(currentFrame), 
+		commandBuffers.at(currentFrame), 
+		readbackCommandBuffers.at(currentFrame)};
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores.at(currentFrame) };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
+
+	if (imageRequested) {
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		imageRequested = false;
+	}
 
 	submitInfo.commandBufferCount = static_cast<uint32_t>(submitCommandbuffers.size());
 	submitInfo.pCommandBuffers = submitCommandbuffers.data();
 
 	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores.at(currentFrame) };
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	vkResetFences(device, 1, &inFlightFences[currentFrame]);
+	VkFence fence = VK_NULL_HANDLE;
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences.at(currentFrame)) != VK_SUCCESS) {
+	if (present) {
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		vkResetFences(device, 1, &inFlightFences[currentFrame]);
+		fence = inFlightFences[currentFrame];
+	}
+
+	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS) {
 		throw love::Exception("failed to submit draw command buffer");
 	}
+	
+	if (!present) {
+		vkQueueWaitIdle(graphicsQueue);
+
+		for (auto& callbacks : readbackCallbacks) {
+			for (const auto& callback : callbacks) {
+				callback();
+			}
+			callbacks.clear();
+		}
+
+		startRecordingGraphicsCommands(false);
+	}
+}
+
+void Graphics::present(void* screenshotCallbackdata) {
+	if (!isActive()) {
+		return;
+	}
+
+	submitGpuCommands(true);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
+	VkSemaphore waitSemaphores[] = { renderFinishedSemaphores.at(currentFrame) };
+
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = signalSemaphores;
+	presentInfo.pWaitSemaphores = waitSemaphores;
 
 	VkSwapchainKHR swapChains[] = { swapChain };
 	presentInfo.swapchainCount = 1;
@@ -210,8 +242,9 @@ void Graphics::present(void* screenshotCallbackdata) {
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
+	beginFrame();
+
 	updatedBatchedDrawBuffers();
-	startRecordingGraphicsCommands();
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
@@ -229,6 +262,9 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	cleanUpFunctions.clear();
 	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
 
+	readbackCallbacks.clear();
+	readbackCallbacks.resize(MAX_FRAMES_IN_FLIGHT);
+
 	createVulkanInstance();
 	createSurface();
 	pickPhysicalDevice();
@@ -244,13 +280,6 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	createDefaultFramebuffers();
 	createCommandPool();
 	createCommandBuffers();
-	startRecordingGraphicsCommands();
-	createQuadIndexBuffer();
-	createDefaultTexture();
-	createDefaultShaders();
-	currentFrame = 0;
-
-	created = true;
 
 	float whiteColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -271,17 +300,26 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 		batchedDrawBuffers[i].constantColorBuffer->unmap(sizeof(whiteColor));
 		batchedDrawBuffers[i].constantColorBuffer->markUsed(sizeof(whiteColor));
 	}
-
 	updatedBatchedDrawBuffers();
 
+	beginFrame();
+
+	createDefaultTexture();
+	createDefaultShaders();
 	Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
+	createQuadIndexBuffer();
+
 	restoreState(states.back());
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
-	currentViewportWidth = 0.0f;
-	currentViewportHeight = 0.0f;
+	currentViewportWidth = 1.0f;
+	currentViewportHeight = 1.0f;
 
 	Vulkan::resetShaderSwitches();
+
+	currentFrame = 0;
+
+	created = true;
 
 	return true;
 }
@@ -301,10 +339,10 @@ void Graphics::initCapabilities() {
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = false;
 	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
-	capabilities.features[FEATURE_COPY_BUFFER] = false;
-	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = false;
-	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = false;
-	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = false;
+	capabilities.features[FEATURE_COPY_BUFFER] = true;
+	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
+	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
+	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
 	static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
@@ -584,6 +622,22 @@ Renderer Graphics::getRenderer() const {
 	return RENDERER_VULKAN;
 }
 
+graphics::GraphicsReadback* Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) { 
+	return new GraphicsReadback(this, method, buffer, offset, size, dest, destoffset);
+}
+
+graphics::GraphicsReadback* Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { 
+	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
+}
+
+graphics::ShaderStage* Graphics::newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) {
+	return new ShaderStage(this, stage, source, gles, cachekey);
+}
+
+graphics::Shader* Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) {
+	return new Shader(stages);
+}
+
 graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
 	return new StreamBuffer(this, type, size);
 }
@@ -645,7 +699,7 @@ void Graphics::initDynamicState() {
 	}
 }
 
-void Graphics::startRecordingGraphicsCommands() {
+void Graphics::beginFrame() {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	while (true) {
@@ -661,11 +715,24 @@ void Graphics::startRecordingGraphicsCommands() {
 		break;
 	}
 
+	imageRequested = true;
+
+	for (auto& readbackCallback : readbackCallbacks.at(currentFrame)) {
+		readbackCallback();
+	}
+	readbackCallbacks.at(currentFrame).clear();
+
 	for (auto& cleanUpFn : cleanUpFunctions.at(currentFrame)) {
 		cleanUpFn();
 	}
 	cleanUpFunctions.at(currentFrame).clear();
 
+	startRecordingGraphicsCommands(true);
+
+	Vulkan::resetShaderSwitches();
+}
+
+void Graphics::startRecordingGraphicsCommands(bool newFrame) {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = 0;
@@ -677,26 +744,34 @@ void Graphics::startRecordingGraphicsCommands() {
 	if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
 		throw love::Exception("failed to begin recording data transfer command buffer");
 	}
+	if (vkBeginCommandBuffer(readbackCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+		throw love::Exception("failed to begin recording readback command buffer");
+	}
 
 	initDynamicState();
 
-	Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	if (newFrame) {
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	}
 
 	startDefaultRenderPass();
-
-	Vulkan::resetShaderSwitches();
 }
 
-void Graphics::endRecordingGraphicsCommands() {
+void Graphics::endRecordingGraphicsCommands(bool present) {
 	endRenderPass();
 
-	Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	if (present) {
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	}
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS) {
 		throw love::Exception("failed to record command buffer");
 	}
 	if (vkEndCommandBuffer(dataTransferCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
 		throw love::Exception("failed to record data transfer command buffer");
+	}
+	if (vkEndCommandBuffer(readbackCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
+		throw love::Exception("failed to record read back command buffer");
 	}
 }
 
@@ -725,8 +800,16 @@ VkCommandBuffer Graphics::getDataTransferCommandBuffer() {
 	return dataTransferCommandBuffers.at(currentFrame);
 }
 
+VkCommandBuffer Graphics::getReadbackCommandBuffer() {
+	return readbackCommandBuffers.at(currentFrame);
+}
+
 void Graphics::queueCleanUp(std::function<void()> cleanUp) {
 	cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
+}
+
+void Graphics::addReadbackCallback(const std::function<void()>& callback) {
+	readbackCallbacks.at(currentFrame).push_back(std::move(callback));
 }
 
 graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
@@ -1036,7 +1119,6 @@ void Graphics::createLogicalDevice() {
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
-	// can this be removed?
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -1520,14 +1602,24 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 	dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
+	VkSubpassDependency readbackDependency{};
+	readbackDependency.srcSubpass = 0;
+	readbackDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+	readbackDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	readbackDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	readbackDependency.dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	readbackDependency.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+	std::array<VkSubpassDependency, 2> dependencies = { dependency, readbackDependency };
+
     VkRenderPassCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
     createInfo.pAttachments = attachments.data();
     createInfo.subpassCount = 1;
     createInfo.pSubpasses = &subPass;
-	createInfo.dependencyCount = 1;
-	createInfo.pDependencies = &dependency;
+	createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	createInfo.pDependencies = dependencies.data();
 
     VkRenderPass renderPass;
     if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS) {
@@ -1681,6 +1773,16 @@ void Graphics::startDefaultRenderPass() {
 	currentViewportHeight = (float)swapChainExtent.height;
 	currentMsaaSamples = msaaSamples;
 	currentNumColorAttachments = 1;
+
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = currentViewportWidth;
+	viewport.height = currentViewportHeight;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 }
 
 void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
@@ -2151,12 +2253,13 @@ void Graphics::createCommandPool() {
 void Graphics::createCommandBuffers() {
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	dataTransferCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	readbackCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.commandPool = commandPool;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+	allocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 		throw love::Exception("failed to allocate command buffers");
@@ -2166,10 +2269,20 @@ void Graphics::createCommandBuffers() {
 	dataTransferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	dataTransferAllocInfo.commandPool = commandPool;
 	dataTransferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	dataTransferAllocInfo.commandBufferCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+	dataTransferAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 	if (vkAllocateCommandBuffers(device, &dataTransferAllocInfo, dataTransferCommandBuffers.data()) != VK_SUCCESS) {
 		throw love::Exception("failed to allocate data transfer command buffers");
+	}
+
+	VkCommandBufferAllocateInfo readbackAllocInfo{};
+	readbackAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	readbackAllocInfo.commandPool = commandPool;
+	readbackAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	readbackAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+	if (vkAllocateCommandBuffers(device, &readbackAllocInfo, readbackCommandBuffers.data()) != VK_SUCCESS) {
+		throw love::Exception("failed to allocate readback command buffers");
 	}
 }
 

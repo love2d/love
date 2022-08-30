@@ -219,11 +219,16 @@ public:
 	void draw(const DrawIndexedCommand& cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override;
 
-	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override { return nullptr;  };
-	GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) override { return nullptr; }
+	graphics::GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override;
+	graphics::GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) override;
 
 	VkCommandBuffer getDataTransferCommandBuffer();
+	VkCommandBuffer getReadbackCommandBuffer();
+
 	void queueCleanUp(std::function<void()> cleanUp);
+	void addReadbackCallback(const std::function<void()> &callback);
+
+	void submitGpuCommands(bool present);
 
 	uint32_t getNumImagesInFlight() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
@@ -231,12 +236,8 @@ public:
 	VkSampler getCachedSampler(const SamplerState&);
 
 protected:
-	graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override { 
-		return new ShaderStage(this, stage, source, gles, cachekey); 
-	}
-	graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override { 
-		return new Shader(stages);
-	}
+	graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override;
+	graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
 	bool dispatch(int x, int y, int z) override { return false; }
 	void initCapabilities() override;
@@ -280,8 +281,9 @@ private:
 	void cleanupSwapChain();
 	void recreateSwapChain();
 	void initDynamicState();
-	void startRecordingGraphicsCommands();
-	void endRecordingGraphicsCommands();
+	void beginFrame();
+	void startRecordingGraphicsCommands(bool newFrame);
+	void endRecordingGraphicsCommands(bool present);
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	void updatedBatchedDrawBuffers();
@@ -329,13 +331,15 @@ private:
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
-	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkCommandBuffer> dataTransferCommandBuffers;
+	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<VkCommandBuffer> readbackCommandBuffers;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
 	VkDeviceSize minUniformBufferOffsetAlignment = 0;
+	bool imageRequested = false;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	bool framebufferResized = false;
@@ -347,6 +351,7 @@ private:
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
+	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
 
 	// render pass variables.
 	std::optional<std::function<void()>> postRenderPass;

@@ -38,7 +38,12 @@ bool Buffer::loadVolatile() {
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = getSize();
-	bufferInfo.usage = getVulkanUsageFlags(usageFlags);
+	if (dataUsage == BUFFERDATAUSAGE_READBACK) {
+		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	}
+	else {
+		bufferInfo.usage = getVulkanUsageFlags(usageFlags);
+	}
 
 	VmaAllocationCreateInfo allocCreateInfo = {};
 	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -88,7 +93,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize) {
 void Buffer::copyTo(love::graphics::Buffer* dest, size_t sourceoffset, size_t destoffset, size_t size) {
 	Graphics* vgfx = (Graphics*)gfx;
 
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getReadbackCommandBuffer();
 
 	VkBufferCopy bufferCopy{};
 	bufferCopy.srcOffset = sourceoffset;

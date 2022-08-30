@@ -391,7 +391,7 @@ void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int 
 }
 
 void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) {
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getReadbackCommandBuffer();
 
 	VkImageSubresourceLayers layers{};
 	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -402,10 +402,11 @@ void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const 
 	VkBufferImageCopy region{};
 	region.bufferOffset = destoffset;
 	region.bufferRowLength = destwidth;
-	region.bufferImageHeight = 1;
+	region.bufferImageHeight = 0;
 	region.imageSubresource = layers;
 	region.imageExtent.width = static_cast<uint32_t>(rect.w);
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
+	region.imageExtent.depth = 1;
 
 	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 

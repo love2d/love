@@ -599,6 +599,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Graphics.h
 	src/modules/graphics/vulkan/Graphics.cpp
+	src/modules/graphics/vulkan/GraphicsReadback.h
+	src/modules/graphics/vulkan/GraphicsReadback.cpp
 	src/modules/graphics/vulkan/Shader.h
 	src/modules/graphics/vulkan/Shader.cpp
 	src/modules/graphics/vulkan/ShaderStage.h
