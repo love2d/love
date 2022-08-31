@@ -79,8 +79,11 @@ struct FramebufferConfigurationHasher {
 	}
 };
 
-struct OptionalDeviceFeatures {
+struct OptionalInstanceExtensions {
     bool physicalDeviceProperties2 = false;
+};
+
+struct OptionalDeviceFeatures {
 	bool extendedDynamicState = false;
 };
 
@@ -307,7 +310,8 @@ private:
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	int requestedMsaa = 0;
 	int actualMsaa = 0;
-	VkDevice device = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE; 
+	OptionalInstanceExtensions optionalInstanceExtensions;
 	OptionalDeviceFeatures optionalDeviceFeatures;
 	ExtendedDynamicStateFunctions extendedDynamicStateFunctions;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;

@@ -15,6 +15,7 @@
 #include <cstring>
 #include <set>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <array>
 
@@ -443,7 +444,14 @@ Graphics::RendererInfo Graphics::getRendererInfo() const {
 	info.device = deviceProperties.deviceName;
 	info.vendor = Vulkan::getVendorName(deviceProperties.vendorID);
 	info.version = Vulkan::getVulkanApiVersion(deviceProperties.apiVersion);
-	info.name = "Vulkan";
+
+	std::stringstream ss;
+	ss << "Vulkan( ";
+	if (optionalDeviceFeatures.extendedDynamicState)
+		ss << "VK_EXT_extended_dynamic_state2 ";
+	ss << ")";
+
+	info.name = ss.str();
 
 	return info;
 }
@@ -910,6 +918,22 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
 	return data;
 }
 
+static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext) {
+	uint32_t count;
+
+	vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+
+	std::vector<VkExtensionProperties> extensions(count);
+
+	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
+
+	for (const auto& extension : extensions) {
+		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0) {
+			ext.physicalDeviceProperties2 = true;
+		}
+	}
+}
+
 void Graphics::createVulkanInstance() {
 	if (enableValidationLayers && !checkValidationSupport()) {
 		throw love::Exception("validation layers requested, but not available");
@@ -936,11 +960,18 @@ void Graphics::createVulkanInstance() {
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
 	}
 
-	std::vector<const char*> extensions = {};	// can add more here
-	size_t addition_extension_count = extensions.size();
-	extensions.resize(addition_extension_count + count);
+	std::vector<const char*> extensions = {};
 
-	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, extensions.data() + addition_extension_count) != SDL_TRUE) {
+	checkOptionalInstanceExtensions(optionalInstanceExtensions);
+
+	if (optionalInstanceExtensions.physicalDeviceProperties2) {
+		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+	}
+
+	size_t additional_extension_count = extensions.size();
+	extensions.resize(additional_extension_count + count);
+
+	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, extensions.data() + additional_extension_count) != SDL_TRUE) {
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
 	}
 
@@ -1138,9 +1169,6 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0) {
 			optionalDeviceFeatures.extendedDynamicState = true;
 		}
-        if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0) {
-            optionalDeviceFeatures.physicalDeviceProperties2 = true;
-        }
 	}
 }
 
@@ -1162,7 +1190,7 @@ void Graphics::createLogicalDevice() {
 
 	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
 
-    if (optionalDeviceFeatures.extendedDynamicState && !optionalDeviceFeatures.physicalDeviceProperties2) {
+    if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2) {
         optionalDeviceFeatures.extendedDynamicState = false;
     }
 
@@ -1179,7 +1207,6 @@ void Graphics::createLogicalDevice() {
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
-        enabledExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
 	}
 
