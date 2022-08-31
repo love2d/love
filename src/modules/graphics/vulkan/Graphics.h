@@ -156,7 +156,7 @@ struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool isComplete() {
+	bool isComplete() const {
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
@@ -226,8 +226,10 @@ public:
 	VkCommandBuffer getDataTransferCommandBuffer();
 	VkCommandBuffer getReadbackCommandBuffer();
 
+	void oneTimeCommand(std::function<void(VkCommandBuffer)> cmd);
+
 	void queueCleanUp(std::function<void()> cleanUp);
-	void addReadbackCallback(const std::function<void()> &callback);
+	void addReadbackCallback(std::function<void()> callback);
 
 	void submitGpuCommands(bool present);
 
@@ -236,11 +238,13 @@ public:
 	graphics::Texture* getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState&);
 
+	void setComputeShader(Shader*);
+
 protected:
 	graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override;
 	graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
-	bool dispatch(int x, int y, int z) override { return false; }
+	bool dispatch(int x, int y, int z) override;
 	void initCapabilities() override;
 	void getAPIStats(int& shaderswitches) const override;
 	void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
@@ -333,8 +337,10 @@ private:
 	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> dataTransferCommandBuffers;
+	std::vector<VkCommandBuffer> computeCommandBuffers;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkCommandBuffer> readbackCommandBuffers;
+	Shader* computeShader = nullptr;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;

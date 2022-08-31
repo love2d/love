@@ -159,7 +159,8 @@ void Graphics::submitGpuCommands(bool present) {
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 	std::vector<VkCommandBuffer> submitCommandbuffers = { 
-		dataTransferCommandBuffers.at(currentFrame), 
+		dataTransferCommandBuffers.at(currentFrame),
+		computeCommandBuffers.at(currentFrame),
 		commandBuffers.at(currentFrame), 
 		readbackCommandBuffers.at(currentFrame)};
 
@@ -642,6 +643,16 @@ graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size)
 	return new StreamBuffer(this, type, size);
 }
 
+bool Graphics::dispatch(int x, int y, int z) {
+	vkCmdBindPipeline(computeCommandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
+
+	computeShader->cmdPushDescriptorSets(computeCommandBuffers.at(currentFrame), currentFrame, VK_PIPELINE_BIND_POINT_COMPUTE);
+
+	vkCmdDispatch(computeCommandBuffers.at(currentFrame), static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z));
+
+	return true;
+}
+
 Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const {
 	uint32 flags = DEVICE_PROJECTION_DEFAULT;
 	return calculateDeviceProjection(projection, flags);
@@ -735,7 +746,7 @@ void Graphics::beginFrame() {
 void Graphics::startRecordingGraphicsCommands(bool newFrame) {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = 0;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 	beginInfo.pInheritanceInfo = nullptr;
 
 	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
@@ -746,6 +757,9 @@ void Graphics::startRecordingGraphicsCommands(bool newFrame) {
 	}
 	if (vkBeginCommandBuffer(readbackCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
 		throw love::Exception("failed to begin recording readback command buffer");
+	}
+	if (vkBeginCommandBuffer(computeCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+		throw love::Exception("failed to begin recording compute command buffer");
 	}
 
 	initDynamicState();
@@ -772,6 +786,9 @@ void Graphics::endRecordingGraphicsCommands(bool present) {
 	}
 	if (vkEndCommandBuffer(readbackCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
 		throw love::Exception("failed to record read back command buffer");
+	}
+	if (vkEndCommandBuffer(computeCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
+		throw love::Exception("failed to record compute command buffer");
 	}
 }
 
@@ -804,12 +821,54 @@ VkCommandBuffer Graphics::getReadbackCommandBuffer() {
 	return readbackCommandBuffers.at(currentFrame);
 }
 
-void Graphics::queueCleanUp(std::function<void()> cleanUp) {
-	cleanUpFunctions.at(currentFrame).push_back(std::move(cleanUp));
+void Graphics::oneTimeCommand(std::function<void(VkCommandBuffer)> cmd) {
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = commandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+		throw love::Exception("failed to allocate one time command buffer");
+	}
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+		throw love::Exception("failed to start recording one time command buffer");
+	}
+
+	cmd(commandBuffer);
+
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+		throw love::Exception("failed to end recording one time command buffer");
+	}
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+		throw love::Exception("failed to submit to queue");
+	}
+	
+	if (vkQueueWaitIdle(graphicsQueue) != VK_SUCCESS) {
+		throw love::Exception("failed to wait for queue idle");
+	}
+
+	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void Graphics::addReadbackCallback(const std::function<void()>& callback) {
-	readbackCallbacks.at(currentFrame).push_back(std::move(callback));
+void Graphics::queueCleanUp(std::function<void()> cleanUp) {
+	cleanUpFunctions.at(currentFrame).push_back(cleanUp);
+}
+
+void Graphics::addReadbackCallback(std::function<void()> callback) {
+	readbackCallbacks.at(currentFrame).push_back(callback);
 }
 
 graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
@@ -1047,7 +1106,7 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
 
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
 			indices.graphicsFamily = i;
 		}
 
@@ -1089,7 +1148,7 @@ void Graphics::createLogicalDevice() {
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value()};
 
 	float queuePriority = 1.0f;
 	for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -1764,7 +1823,7 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 
 	ensureGraphicsPipelineConfiguration(configuration);
 
-	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), static_cast<uint32_t>(currentFrame));
+	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), static_cast<uint32_t>(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
 	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 }
 
@@ -1924,6 +1983,10 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 	}
 
 	return sampler;
+}
+
+void Graphics::setComputeShader(Shader* shader) {
+	computeShader = shader;
 }
 
 VkSampler Graphics::getCachedSampler(const SamplerState& samplerState) {
@@ -2266,6 +2329,7 @@ void Graphics::createCommandBuffers() {
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	dataTransferCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	readbackCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	computeCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2295,6 +2359,16 @@ void Graphics::createCommandBuffers() {
 
 	if (vkAllocateCommandBuffers(device, &readbackAllocInfo, readbackCommandBuffers.data()) != VK_SUCCESS) {
 		throw love::Exception("failed to allocate readback command buffers");
+	}
+
+	VkCommandBufferAllocateInfo commandAllocInfo{};
+	commandAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandAllocInfo.commandPool = commandPool;
+	commandAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	commandAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+	if (vkAllocateCommandBuffers(device, &commandAllocInfo, computeCommandBuffers.data()) != VK_SUCCESS) {
+		throw love::Exception("failed to allocate compute command buffers");
 	}
 }
 
@@ -2347,6 +2421,8 @@ void Graphics::cleanup() {
 
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, commandBuffers.data());
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
+	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, readbackCommandBuffers.data());
+	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, computeCommandBuffers.data());
 
 	for (auto const& p : samplers) {
 		vkDestroySampler(device, p.second, nullptr);

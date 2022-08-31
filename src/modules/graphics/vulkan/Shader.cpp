@@ -152,6 +152,8 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 }
 
 bool Shader::loadVolatile() {
+	computePipeline = VK_NULL_HANDLE;
+
 	for (int i = 0; i < BUILTIN_MAX_ENUM; i++) {
 		builtinUniformInfo[i] = nullptr;
 	}
@@ -176,7 +178,7 @@ void Shader::unloadVolatile() {
 	}
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools](){
+	gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
 		for (const auto pool : descriptorPools) {
 			vkDestroyDescriptorPool(device, pool, nullptr);
 		}
@@ -185,6 +187,8 @@ void Shader::unloadVolatile() {
 		}
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+		if (computePipeline != VK_NULL_HANDLE)
+			vkDestroyPipeline(device, computePipeline, nullptr);
 	});
 	for (const auto &streamBufferVector : streamBuffers) {
 		for (const auto streamBuffer : streamBufferVector) {
@@ -206,19 +210,24 @@ const VkPipelineLayout Shader::getGraphicsPipelineLayout() const {
 	return pipelineLayout;
 }
 
-static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* texture) {
+VkPipeline Shader::getComputePipeline() const {
+	return computePipeline;
+}
+
+static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* texture, bool sampler) {
 	auto vkTexture = (Texture*)texture;
 
 	auto imageInfo = new VkDescriptorImageInfo();
 
-	imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo->imageLayout = vkTexture->getImageLayout();
 	imageInfo->imageView = (VkImageView)vkTexture->getRenderTargetHandle();
-	imageInfo->sampler = (VkSampler)vkTexture->getSamplerHandle();
+	if (sampler)
+		imageInfo->sampler = (VkSampler)vkTexture->getSamplerHandle();
 
 	return imageInfo;
 }
 
-void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frameIndex) {
+void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frameIndex, VkPipelineBindPoint bindPoint) {
 	// detect whether a new frame has begun
 	if (currentFrame != frameIndex) {
 		currentFrame = frameIndex;
@@ -255,35 +264,34 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 	}
 
-	// additional data is always added onto the last stream buffer in the current frame
-	auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
-
-	auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
-	memcpy(mapInfo.data, localUniformStagingData.data(), localUniformStagingData.size());
-	currentStreamBuffer->unmap(uniformBufferSizeAligned);
-	currentStreamBuffer->markUsed(uniformBufferSizeAligned);
-
-	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
-	bufferInfo.offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
-	bufferInfo.range = localUniformStagingData.size();
-	
 	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
-
 	std::vector<VkWriteDescriptorSet> descriptorWrite{};
 
-	// uniform buffer update always happens
-	// (are there cases without ubos at all?)
-	VkWriteDescriptorSet uniformWrite{};
-	uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	uniformWrite.dstSet = currentDescriptorSet;
-	uniformWrite.dstBinding = builtinUniformInfo[BUILTIN_UNIFORMS_PER_DRAW]->location;
-	uniformWrite.dstArrayElement = 0;
-	uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uniformWrite.descriptorCount = 1;
-	uniformWrite.pBufferInfo = &bufferInfo;			
+	if (!localUniformStagingData.empty()) {
+		// additional data is always added onto the last stream buffer in the current frame
+		auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
 
-	descriptorWrite.push_back(uniformWrite);
+		auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
+		memcpy(mapInfo.data, localUniformStagingData.data(), localUniformStagingData.size());
+		currentStreamBuffer->unmap(uniformBufferSizeAligned);
+		currentStreamBuffer->markUsed(uniformBufferSizeAligned);
+
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
+		bufferInfo.offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
+		bufferInfo.range = localUniformStagingData.size();
+
+		VkWriteDescriptorSet uniformWrite{};
+		uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		uniformWrite.dstSet = currentDescriptorSet;
+		uniformWrite.dstBinding = uniformLocation;
+		uniformWrite.dstArrayElement = 0;
+		uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uniformWrite.descriptorCount = 1;
+		uniformWrite.pBufferInfo = &bufferInfo;			
+
+		descriptorWrite.push_back(uniformWrite);
+	}
 
 	std::vector<VkDescriptorImageInfo*> imageInfos;
 	
@@ -299,11 +307,26 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write.descriptorCount = 1;
 
-			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0]);	// fixme: arrays
+			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0], true);	// fixme: arrays
 			imageInfos.push_back(imageInfo);
 
 			write.pImageInfo = imageInfo;
 
+			descriptorWrite.push_back(write);
+		}
+		if (val.baseType == UNIFORM_STORAGETEXTURE) {
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = currentDescriptorSet;
+			write.dstBinding = val.location;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			write.descriptorCount = 1;
+
+			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0], false);	// fixme: arrays
+			imageInfos.push_back(imageInfo);
+
+			write.pImageInfo = imageInfo;
 			descriptorWrite.push_back(write);
 		}
 	}
@@ -314,7 +337,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		delete imageInfo;
 	}
 
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
 
 	currentUsedUniformStreamBuffersCount++;
 	currentUsedDescriptorSetsCount++;
@@ -325,11 +348,15 @@ Shader::~Shader() {
 }
 
 void Shader::attach() {
-	if (Shader::current != this) {
-		Graphics::flushBatchedDrawsGlobal();
-		Shader::current = this;
-		Vulkan::shaderSwitch();
+	if (!isCompute) {
+		if (Shader::current != this) {
+			Graphics::flushBatchedDrawsGlobal();
+			Shader::current = this;
+			Vulkan::shaderSwitch();
+		}
 	}
+	else
+		((Graphics*)gfx)->setComputeShader(this);
 }
 
 int Shader::getVertexAttributeIndex(const std::string& name) {
@@ -349,7 +376,8 @@ void Shader::sendTextures(const UniformInfo* info, graphics::Texture** textures,
 		auto oldTexture = info->textures[i];
 		info->textures[i] = textures[i];
 		info->textures[i]->retain();
-		oldTexture->release();
+		if (oldTexture)
+			oldTexture->release();
 	}
 }
 
@@ -458,6 +486,10 @@ void Shader::compileShaders() {
 			continue;
 
 		auto stage = (ShaderStageType)i;
+
+		if (stage == SHADERSTAGE_COMPUTE)
+			isCompute = true;
+
 		auto glslangShaderStage = getGlslShaderType(stage);
 		auto tshader = new TShader(glslangShaderStage);
 
@@ -475,12 +507,12 @@ void Shader::compileShaders() {
 		const int sourceLength = static_cast<int>(glsl.length());
 		tshader->setStringsWithLengths(&csrc, &sourceLength, 1);
 
-		int defaultVersio = 450;
+		int defaultVersion = 450;
 		EProfile defaultProfile = ECoreProfile;
 		bool forceDefault = false;
 		bool forwardCompat = true;
 
-		if (!tshader->parse(&defaultTBuiltInResource, defaultVersio, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings)) {
+		if (!tshader->parse(&defaultTBuiltInResource, defaultVersion, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings)) {
 			const char* msg1 = tshader->getInfoLog();
 			const char* msg2 = tshader->getInfoDebugLog();
 
@@ -633,6 +665,57 @@ void Shader::compileShaders() {
 				builtinUniformInfo[builtin] = &uniformInfos[info.name];
 			}
 		}
+
+		for (const auto& r : shaderResources.storage_buffers) {
+			const auto& type = comp.get_type(r.type_id);
+
+			UniformInfo u{};
+			u.baseType = UNIFORM_STORAGEBUFFER;
+			u.components = 1;
+			u.name = r.name;
+			u.count = type.array.empty() ? 1 : type.array[0];
+			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			
+			const auto reflectionit = validationReflection.storageBuffers.find(u.name);
+			if (reflectionit != validationReflection.storageBuffers.end()) {
+				u.bufferStride = reflectionit->second.stride;
+				u.bufferMemberCount = reflectionit->second.memberCount;
+				u.access = reflectionit->second.access;
+			}
+			else {
+				continue;
+			}
+
+			// todo: some stuff missing
+
+			u.buffers = new love::graphics::Buffer * [u.count];
+
+			for (int i = 0; i < u.count; i++) {
+				u.buffers[i] = nullptr;
+			}
+
+			uniformInfos[u.name] = u;
+		}
+
+		for (const auto& r : shaderResources.storage_images) {
+			const auto& type = comp.get_type(r.type_id);
+
+			UniformInfo u{};
+			u.baseType = UNIFORM_STORAGETEXTURE;
+			u.components = 1;
+			u.name = r.name;
+			u.count = type.array.empty() ? 1 : type.array[0];
+			u.textures = new love::graphics::Texture * [u.count];
+			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
+
+			for (int i = 0; i < u.count; i++) {
+				u.textures[i] = nullptr;
+			}
+
+			// some stuff missing ?
+
+			uniformInfos[u.name] = u;
+		}
 	}
 
 	delete program;
@@ -650,20 +733,30 @@ void Shader::createDescriptorSetLayout() {
 			VkDescriptorSetLayoutBinding layoutBinding{};
 
 			layoutBinding.binding = val.location;
-			layoutBinding.descriptorType = val.baseType == UNIFORM_SAMPLER ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			layoutBinding.descriptorType = type;
 			layoutBinding.descriptorCount = val.count;
-			layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			if (isCompute) {
+				layoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+			}
+			else {
+				layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			}
 
 			bindings.push_back(layoutBinding);
 		}
 	}
-	
-	VkDescriptorSetLayoutBinding uniformBinding{};
-	uniformBinding.binding = uniformLocation;
-	uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uniformBinding.descriptorCount = 1;
-	uniformBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-	bindings.push_back(uniformBinding);
+
+	if (!localUniformStagingData.empty()) {
+		VkDescriptorSetLayoutBinding uniformBinding{};
+		uniformBinding.binding = uniformLocation;
+		uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uniformBinding.descriptorCount = 1;
+		if (isCompute)
+			uniformBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+		else
+			uniformBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		bindings.push_back(uniformBinding);
+	}
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -684,6 +777,19 @@ void Shader::createPipelineLayout() {
 
 	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw love::Exception("failed to create pipeline layout");
+	}
+
+	if (isCompute) {
+		assert(shaderStages.size() == 1);
+
+		VkComputePipelineCreateInfo computeInfo{};
+		computeInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		computeInfo.stage = shaderStages.at(0);
+		computeInfo.layout = pipelineLayout;
+
+		if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &computeInfo, nullptr, &computePipeline) != VK_SUCCESS) {
+			throw love::Exception("failed to create compute pipeline");
+		}
 	}
 }
 

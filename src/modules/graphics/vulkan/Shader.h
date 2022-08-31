@@ -25,11 +25,13 @@ public:
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
+	VkPipeline getComputePipeline() const;
+
 	const std::vector<VkPipelineShaderStageCreateInfo>& getShaderStages() const;
 
 	const VkPipelineLayout getGraphicsPipelineLayout() const;
 
-	void cmdPushDescriptorSets(VkCommandBuffer, uint32_t currentFrame);
+	void cmdPushDescriptorSets(VkCommandBuffer, uint32_t currentFrame, VkPipelineBindPoint);
 
 	void attach() override;
 
@@ -74,6 +76,8 @@ private:
 
 	VkDeviceSize uniformBufferSizeAligned;
 
+	VkPipeline computePipeline;
+
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 
@@ -89,6 +93,8 @@ private:
 	std::vector<VkShaderModule> shaderModules;
 	Graphics* gfx;
 	VkDevice device;
+
+	bool isCompute = false;
 
 	std::unordered_map<std::string, graphics::Shader::UniformInfo> uniformInfos;
 	UniformInfo* builtinUniformInfo[BUILTIN_MAX_ENUM];

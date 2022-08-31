@@ -22,6 +22,8 @@ public:
 	 
 	void setSamplerState(const SamplerState &s) override;
 
+	VkImageLayout getImageLayout() const;
+
 	void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override;
 	void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override;
 
@@ -39,12 +41,13 @@ private:
 	void createTextureImageView();
 	void clear();
 
-	VkClearColorValue getClearValue(bool white);
+	VkClearColorValue getClearValue();
 
 	graphics::Graphics* gfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;
 	VmaAllocator allocator = VK_NULL_HANDLE;
 	VkImage textureImage = VK_NULL_HANDLE;
+	VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	VmaAllocation textureImageAllocation = VK_NULL_HANDLE;
 	VkImageView textureImageView = VK_NULL_HANDLE;
 	VkSampler textureSampler = VK_NULL_HANDLE;

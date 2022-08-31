@@ -30,7 +30,8 @@ bool Texture::loadVolatile() {
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
 		VK_IMAGE_USAGE_SAMPLED_BIT | 
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+		VK_IMAGE_USAGE_STORAGE_BIT;
 
 	VkImageCreateFlags createFlags = 0;
 
@@ -70,11 +71,17 @@ bool Texture::loadVolatile() {
 
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-	// fixme: we probably should select a different default layout when the texture is not readable, instead of VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
-		0, static_cast<uint32_t>(getMipmapCount()), 
-		0, static_cast<uint32_t>(layerCount));
+	if (computeWrite)
+		imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	else
+		imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	vgfx->oneTimeCommand([=](VkCommandBuffer commandBuffer) {
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+			VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
+			0, VK_REMAINING_MIP_LEVELS,
+			0, VK_REMAINING_ARRAY_LAYERS);
+	});
 
 	bool hasdata = slices.get(0, 0) != nullptr;
 
@@ -134,6 +141,10 @@ void Texture::setSamplerState(const SamplerState &s) {
 	textureSampler = vgfx->getCachedSampler(s);
 }
 
+VkImageLayout Texture::getImageLayout() const {
+	return imageLayout;
+}
+
 void Texture::createTextureImageView() {
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
@@ -160,7 +171,7 @@ void Texture::createTextureImageView() {
 void Texture::clear() {
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-	auto clearColor = getClearValue(false);
+	auto clearColor = getClearValue();
 
 	VkImageSubresourceRange range{};
 	range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -169,64 +180,45 @@ void Texture::clear() {
 	range.baseArrayLayer = 0;
 	range.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-		0, range.levelCount, 0, range.layerCount);
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			0, range.levelCount, 0, range.layerCount);
 
-	vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
+		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
-		0, range.levelCount, 0, range.layerCount);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
+			0, range.levelCount, 0, range.layerCount);
+	}
+	else {
+		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
+	}
 }
 
-VkClearColorValue Texture::getClearValue(bool white) {
+VkClearColorValue Texture::getClearValue() {
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkClearColorValue clearColor{};
-	if (white) {
-		switch (vulkanFormat.internalFormatRepresentation) {
-		case FORMATREPRESENTATION_FLOAT:
-			clearColor.float32[0] = 1.0f;
-			clearColor.float32[1] = 1.0f;
-			clearColor.float32[2] = 1.0f;
-			clearColor.float32[3] = 1.0f;
-			break;
-		case FORMATREPRESENTATION_SINT:
-			clearColor.int32[0] = std::numeric_limits<int32_t>::max();
-			clearColor.int32[1] = std::numeric_limits<int32_t>::max();
-			clearColor.int32[2] = std::numeric_limits<int32_t>::max();
-			clearColor.int32[3] = std::numeric_limits<int32_t>::max();
-			break;
-		case FORMATREPRESENTATION_UINT:
-			clearColor.uint32[0] = std::numeric_limits<uint32_t>::max();
-			clearColor.uint32[1] = std::numeric_limits<uint32_t>::max();
-			clearColor.uint32[2] = std::numeric_limits<uint32_t>::max();
-			clearColor.uint32[3] = std::numeric_limits<uint32_t>::max();
-			break;
-		}
-	}
-	else {
-		switch (vulkanFormat.internalFormatRepresentation) {
-		case FORMATREPRESENTATION_FLOAT:
-			clearColor.float32[0] = 0.0f;
-			clearColor.float32[1] = 0.0f;
-			clearColor.float32[2] = 0.0f;
-			clearColor.float32[3] = 0.0f;
-			break;
-		case FORMATREPRESENTATION_SINT:
-			clearColor.int32[0] = 0;
-			clearColor.int32[1] = 0;
-			clearColor.int32[2] = 0;
-			clearColor.int32[3] = 0;
-			break;
-		case FORMATREPRESENTATION_UINT:
-			clearColor.uint32[0] = 0;
-			clearColor.uint32[1] = 0;
-			clearColor.uint32[2] = 0;
-			clearColor.uint32[3] = 0;
-			break;
-		}
+	switch (vulkanFormat.internalFormatRepresentation) {
+	case FORMATREPRESENTATION_FLOAT:
+		clearColor.float32[0] = 0.0f;
+		clearColor.float32[1] = 0.0f;
+		clearColor.float32[2] = 0.0f;
+		clearColor.float32[3] = 0.0f;
+		break;
+	case FORMATREPRESENTATION_SINT:
+		clearColor.int32[0] = 0;
+		clearColor.int32[1] = 0;
+		clearColor.int32[2] = 0;
+		clearColor.int32[3] = 0;
+		break;
+	case FORMATREPRESENTATION_UINT:
+		clearColor.uint32[0] = 0;
+		clearColor.uint32[1] = 0;
+		clearColor.uint32[2] = 0;
+		clearColor.uint32[3] = 0;
+		break;
 	}
 	return clearColor;
 }
@@ -234,9 +226,10 @@ VkClearColorValue Texture::getClearValue(bool white) {
 void Texture::generateMipmapsInternal() {
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-		0, static_cast<uint32_t>(getMipmapCount()), 0, static_cast<uint32_t>(layerCount));
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			0, static_cast<uint32_t>(getMipmapCount()), 0, static_cast<uint32_t>(layerCount));
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -258,10 +251,11 @@ void Texture::generateMipmapsInternal() {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
+		if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
 
 		VkImageBlit blit{};
 		blit.srcOffsets[0] = { 0, 0, 0 };
@@ -289,10 +283,11 @@ void Texture::generateMipmapsInternal() {
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
+		if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr,
+				0, nullptr,
+				1, &barrier);
 	}
 
 	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
@@ -301,11 +296,12 @@ void Texture::generateMipmapsInternal() {
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	vkCmdPipelineBarrier(commandBuffer,
-		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier);
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
 }
 
 void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) {
@@ -344,22 +340,36 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-		level, 1, slice, 1);
 
-	vkCmdCopyBufferToImage(
-		commandBuffer,
-		stagingBuffer,
-		textureImage,
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		1,
-		&region
-	);
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			level, 1, slice, 1);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
-		level, 1, slice, 1);
+
+		vkCmdCopyBufferToImage(
+			commandBuffer,
+			stagingBuffer,
+			textureImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&region
+		);
+
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			level, 1, slice, 1);
+	}
+	else {
+		vkCmdCopyBufferToImage(
+			commandBuffer,
+			stagingBuffer,
+			textureImage,
+			imageLayout,
+			1,
+			&region
+		);
+	}
 
 	vgfx->queueCleanUp([allocator = allocator, stagingBuffer, vmaAllocation]() {
 		vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
@@ -383,11 +393,15 @@ void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int 
 	region.imageExtent.width = static_cast<uint32_t>(rect.w);
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-	vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	}
+	else
+		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
 }
 
 void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) {
@@ -408,11 +422,15 @@ void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const 
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 	region.imageExtent.depth = 1;
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
-	vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
+		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
 
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	}
+	else
+		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);
 }
 
 } // vulkan
