@@ -267,6 +267,8 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 	std::vector<VkWriteDescriptorSet> descriptorWrite{};
 
+	VkDescriptorBufferInfo* bufferInfo = nullptr;
+
 	if (!localUniformStagingData.empty()) {
 		// additional data is always added onto the last stream buffer in the current frame
 		auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
@@ -276,10 +278,10 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		currentStreamBuffer->unmap(uniformBufferSizeAligned);
 		currentStreamBuffer->markUsed(uniformBufferSizeAligned);
 
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
-		bufferInfo.offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
-		bufferInfo.range = localUniformStagingData.size();
+		bufferInfo = new VkDescriptorBufferInfo();
+		bufferInfo->buffer = (VkBuffer)currentStreamBuffer->getHandle();
+		bufferInfo->offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
+		bufferInfo->range = localUniformStagingData.size();
 
 		VkWriteDescriptorSet uniformWrite{};
 		uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -288,7 +290,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		uniformWrite.dstArrayElement = 0;
 		uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformWrite.descriptorCount = 1;
-		uniformWrite.pBufferInfo = &bufferInfo;			
+		uniformWrite.pBufferInfo = bufferInfo;			
 
 		descriptorWrite.push_back(uniformWrite);
 	}
@@ -335,6 +337,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 
 	for (const auto imageInfo : imageInfos) {
 		delete imageInfo;
+	}
+	if (bufferInfo) {
+		delete bufferInfo;
 	}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
@@ -386,13 +391,10 @@ void Shader::calculateUniformBufferSizeAligned() {
 	auto vgfx = (Graphics*)gfx;
 	auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
 	size_t size = localUniformStagingData.size();
-	uniformBufferSizeAligned = 
-		static_cast<VkDeviceSize>(
-			std::ceil(
-				static_cast<float>(size) / static_cast<float>(minAlignment)
-			)
-		)
-		* minAlignment;
+	auto factor = static_cast<VkDeviceSize>(std::ceil(
+		static_cast<float>(size) / static_cast<float>(minAlignment)
+	));
+	uniformBufferSizeAligned = factor * minAlignment;
 }
 
 void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::SPIRType& type, size_t baseoff, const std::string& basename) {
