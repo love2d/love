@@ -55,7 +55,7 @@ When using a source release, automagic has already been run, and the first step 
 
 Also possible to use CMake build platform.
 
-	$ cmake -B Release/ -H. -G "Unix Makefiles"
+	$ cmake -B Release/ -S. -G "Unix Makefiles"
 	$ cmake --build Release -j`nproc`
 
 ### macOS
