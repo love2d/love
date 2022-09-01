@@ -74,6 +74,8 @@ private:
 
 	VkDescriptorSet allocateDescriptorSet();
 
+	PFN_vkCmdPushDescriptorSetKHR pfn_vkCmdPushDescriptorSetKHR = nullptr;
+
 	VkDeviceSize uniformBufferSizeAligned;
 
 	VkPipeline computePipeline;

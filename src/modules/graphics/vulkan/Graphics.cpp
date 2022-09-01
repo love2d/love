@@ -407,7 +407,7 @@ void Graphics::setFrontFaceWinding(Winding winding) {
 	states.back().winding = winding;
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
-		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT(
+		ext.vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
 	}
@@ -448,7 +448,9 @@ Graphics::RendererInfo Graphics::getRendererInfo() const {
 	std::stringstream ss;
 	ss << "Vulkan( ";
 	if (optionalDeviceFeatures.extendedDynamicState)
-		ss << "VK_EXT_extended_dynamic_state2 ";
+		ss << VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME << " ";
+	if (optionalDeviceFeatures.pushDescriptor)
+		ss << VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME << " ";
 	ss << ")";
 
 	info.name = ss.str();
@@ -572,7 +574,7 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, value);
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
-		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT(
+		ext.vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
@@ -590,10 +592,10 @@ void Graphics::setDepthMode(CompareMode compare, bool write) {
 	flushBatchedDraws();
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
-		extendedDynamicStateFunctions.vkCmdSetDepthCompareOpEXT(
+		ext.vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(compare));
 
-		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT(
+		ext.vkCmdSetDepthWriteEnableEXT(
 			commandBuffers.at(currentFrame), Vulkan::getBool(write));
 	}
 
@@ -701,19 +703,19 @@ void Graphics::initDynamicState() {
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.value);
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
-		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT(
+		 ext.vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(states.back().stencil.action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(states.back().stencil.compare));
 
-		extendedDynamicStateFunctions.vkCmdSetDepthCompareOpEXT(
+		ext.vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(states.back().depthTest));
 
-		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT(
+		ext.vkCmdSetDepthWriteEnableEXT(
 			commandBuffers.at(currentFrame), Vulkan::getBool(states.back().depthWrite));
 
-		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT(
+		ext.vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame), Vulkan::getFrontFace(states.back().winding));
 	}
 }
@@ -1169,6 +1171,9 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0) {
 			optionalDeviceFeatures.extendedDynamicState = true;
 		}
+		if (strcmp(extension.extensionName, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0) {
+			optionalDeviceFeatures.pushDescriptor = true;
+		}
 	}
 }
 
@@ -1206,9 +1211,10 @@ void Graphics::createLogicalDevice() {
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
-	}
+	if (optionalDeviceFeatures.pushDescriptor)
+		enabledExtensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -1241,29 +1247,36 @@ void Graphics::createLogicalDevice() {
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
 #ifdef LOVE_ANDROID
-        extendedDynamicStateFunctions.vkCmdSetCullModeEXT = vkCmdSetCullModeEXT;
-		extendedDynamicStateFunctions.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnableEXT;
-		extendedDynamicStateFunctions.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetCullModeEXT;
-		extendedDynamicStateFunctions.vkCmdSetDepthTestEnableEXT = vkCmdSetDepthTestEnableEXT;
-		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT = vkCmdSetDepthWriteEnableEXT;
-		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT = vkCmdSetFrontFaceEXT;
-		extendedDynamicStateFunctions.vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopologyEXT;
-		extendedDynamicStateFunctions.vkCmdSetScissorWithCountEXT = vkCmdSetScissorWithCountEXT;
-		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT = vkCmdSetStencilOpEXT;
-		extendedDynamicStateFunctions.vkCmdSetStencilTestEnableEXT = vkCmdSetStencilTestEnableEXT;
-		extendedDynamicStateFunctions.vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCountEXT;
+        ext.vkCmdSetCullModeEXT = vkCmdSetCullModeEXT;
+		ext.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnableEXT;
+		ext.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetCullModeEXT;
+		ext.vkCmdSetDepthTestEnableEXT = vkCmdSetDepthTestEnableEXT;
+		ext.vkCmdSetDepthWriteEnableEXT = vkCmdSetDepthWriteEnableEXT;
+		ext.vkCmdSetFrontFaceEXT = vkCmdSetFrontFaceEXT;
+		ext.vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopologyEXT;
+		ext.vkCmdSetScissorWithCountEXT = vkCmdSetScissorWithCountEXT;
+		ext.vkCmdSetStencilOpEXT = vkCmdSetStencilOpEXT;
+		ext.vkCmdSetStencilTestEnableEXT = vkCmdSetStencilTestEnableEXT;
+		ext.vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCountEXT;
 #else
-		extendedDynamicStateFunctions.vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT)vkGetDeviceProcAddr(device, "vkCmdSetCullModeEXT");
-		extendedDynamicStateFunctions.vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthBoundsTestEnableEXT");
-		extendedDynamicStateFunctions.vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthCompareOpEXT");
-		extendedDynamicStateFunctions.vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthTestEnableEXT");
-		extendedDynamicStateFunctions.vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthWriteEnableEXT");
-		extendedDynamicStateFunctions.vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT)vkGetDeviceProcAddr(device, "vkCmdSetFrontFaceEXT");
-		extendedDynamicStateFunctions.vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(device, "vkCmdSetPrimitiveTopologyEXT");
-		extendedDynamicStateFunctions.vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetScissorWithCountEXT");
-		extendedDynamicStateFunctions.vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
-		extendedDynamicStateFunctions.vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
-		extendedDynamicStateFunctions.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
+		ext.vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT)vkGetDeviceProcAddr(device, "vkCmdSetCullModeEXT");
+		ext.vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthBoundsTestEnableEXT");
+		ext.vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthCompareOpEXT");
+		ext.vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthTestEnableEXT");
+		ext.vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthWriteEnableEXT");
+		ext.vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT)vkGetDeviceProcAddr(device, "vkCmdSetFrontFaceEXT");
+		ext.vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(device, "vkCmdSetPrimitiveTopologyEXT");
+		ext.vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetScissorWithCountEXT");
+		ext.vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
+		ext.vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
+		ext.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
+#endif
+	}
+	if (optionalDeviceFeatures.pushDescriptor) {
+#ifdef LOVE_ANDROID
+		ext.vkCmdPushDescriptorSetKHR = vkCmdPushDescriptorSetKHR;
+#else
+		ext.vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(device, "vkCmdPushDescriptorSetKHR");
 #endif
 	}
 }
@@ -1814,7 +1827,7 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.primitiveType = primitiveType;
 
 	if (optionalDeviceFeatures.extendedDynamicState) {
-		extendedDynamicStateFunctions.vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
+		ext.vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
 	} else {
 		configuration.dynamicState.winding = states.back().winding;
 		configuration.dynamicState.depthState.compare = states.back().depthTest;
@@ -2014,6 +2027,14 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 
 void Graphics::setComputeShader(Shader* shader) {
 	computeShader = shader;
+}
+
+const OptionalDeviceFeatures &Graphics::getOptionalDeviceFeatures() const {
+	return optionalDeviceFeatures;
+}
+
+const OptionalDeviceExtensionFunctions &Graphics::getExtensionFunctions() const {
+	return ext;
 }
 
 VkSampler Graphics::getCachedSampler(const SamplerState& samplerState) {

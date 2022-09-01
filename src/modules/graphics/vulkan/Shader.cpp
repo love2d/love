@@ -148,6 +148,13 @@ static EShLanguage getGlslShaderType(ShaderStageType stage) {
 
 Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 	: graphics::Shader(stages) {
+	gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
+	auto vgfx = (Graphics*)gfx;
+	auto &optionalDeviceFeaures = vgfx->getOptionalDeviceFeatures();
+	if (optionalDeviceFeaures.pushDescriptor) {
+		pfn_vkCmdPushDescriptorSetKHR = vgfx->getExtensionFunctions().vkCmdPushDescriptorSetKHR;
+	}
+
 	loadVolatile();
 }
 
@@ -260,11 +267,19 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		}
 	}
 
-	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size())) {
-		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
+	VkDescriptorSet currentDescriptorSet;
+
+	if (pfn_vkCmdPushDescriptorSetKHR) {
+		currentDescriptorSet = 0;
+	}
+	else {
+		if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size())) {
+			descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
+		}
+
+		currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 	}
 
-	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 	std::vector<VkWriteDescriptorSet> descriptorWrite{};
 
 	VkDescriptorBufferInfo* bufferInfo = nullptr;
@@ -333,7 +348,22 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		}
 	}
 
-	vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
+	if (currentDescriptorSet) {
+		vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
+
+		vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
+
+		currentUsedDescriptorSetsCount++;
+	}
+	else {
+		pfn_vkCmdPushDescriptorSetKHR(
+			commandBuffer, 
+			bindPoint, 
+			pipelineLayout, 
+			0, 
+			static_cast<uint32_t>(descriptorWrite.size()),
+			descriptorWrite.data());
+	}
 
 	for (const auto imageInfo : imageInfos) {
 		delete imageInfo;
@@ -342,10 +372,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, uint32_t frame
 		delete bufferInfo;
 	}
 
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
-
 	currentUsedUniformStreamBuffersCount++;
-	currentUsedDescriptorSetsCount++;
 }
 
 Shader::~Shader() {
@@ -387,7 +414,6 @@ void Shader::sendTextures(const UniformInfo* info, graphics::Texture** textures,
 }
 
 void Shader::calculateUniformBufferSizeAligned() {
-	gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	auto vgfx = (Graphics*)gfx;
 	auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
 	size_t size = localUniformStagingData.size();
@@ -764,6 +790,8 @@ void Shader::createDescriptorSetLayout() {
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
+	if (pfn_vkCmdPushDescriptorSetKHR)
+		layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
 
 	if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 		throw love::Exception("failed to create descriptor set layout");

@@ -85,9 +85,11 @@ struct OptionalInstanceExtensions {
 
 struct OptionalDeviceFeatures {
 	bool extendedDynamicState = false;
+	bool pushDescriptor = false;
 };
 
-struct ExtendedDynamicStateFunctions {
+struct OptionalDeviceExtensionFunctions {
+	// extended dynamic state
 	PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT = nullptr;
 	PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT = nullptr;
 	PFN_vkCmdSetDepthCompareOpEXT vkCmdSetDepthCompareOpEXT = nullptr;
@@ -99,6 +101,9 @@ struct ExtendedDynamicStateFunctions {
 	PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT = nullptr;
 	PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT = nullptr;
 	PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT = nullptr;
+
+	// push descriptor
+	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR = nullptr;
 };
 
 struct GraphicsPipelineConfiguration {
@@ -243,6 +248,9 @@ public:
 
 	void setComputeShader(Shader*);
 
+	const OptionalDeviceFeatures &getOptionalDeviceFeatures() const;
+	const OptionalDeviceExtensionFunctions &getExtensionFunctions() const;
+
 protected:
 	graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override;
 	graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
@@ -313,7 +321,7 @@ private:
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;
 	OptionalDeviceFeatures optionalDeviceFeatures;
-	ExtendedDynamicStateFunctions extendedDynamicStateFunctions;
+	OptionalDeviceExtensionFunctions ext;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
