@@ -25,37 +25,42 @@ bool Texture::loadVolatile() {
 
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
-	// fixme: can we cut down these flags?
-	VkImageUsageFlags usageFlags = 
+	VkImageUsageFlags usageFlags =
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-		VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
-		VK_IMAGE_USAGE_SAMPLED_BIT | 
-		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-		VK_IMAGE_USAGE_STORAGE_BIT;
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+	if (readable)
+		usageFlags |= 
+			VK_IMAGE_USAGE_SAMPLED_BIT |
+			VK_IMAGE_USAGE_STORAGE_BIT;
+
+	if (isPixelFormatDepthStencil(format) || isPixelFormatDepth(format))
+		usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+	if (renderTarget)
+		usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	VkImageCreateFlags createFlags = 0;
 
 	layerCount = 1;
-	if (texType == TEXTURE_VOLUME) {
-		layerCount = getDepth();
-	}
-	else if (texType == TEXTURE_2D_ARRAY) {
+
+	if (texType == TEXTURE_2D_ARRAY) {
 		layerCount = getLayerCount();
 	}
 	else if (texType == TEXTURE_CUBE) {
 		layerCount = 6;
 		createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	}
-
+	
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.flags = createFlags;
 	imageInfo.imageType = Vulkan::getImageType(getTextureType());
 	imageInfo.extent.width = static_cast<uint32_t>(pixelWidth);
 	imageInfo.extent.height = static_cast<uint32_t>(pixelHeight);
-	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = static_cast<uint32_t>(getMipmapCount());
+	imageInfo.extent.depth = static_cast<uint32_t>(depth);
 	imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
+	imageInfo.mipLevels = static_cast<uint32_t>(getMipmapCount());
 	imageInfo.format = vulkanFormat.internalFormat;
 	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
