@@ -123,7 +123,7 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 		return nullptr;
 
 	if (map == MAP_READ_ONLY && dataUsage != BUFFERDATAUSAGE_READBACK)
-		return  nullptr;
+		return nullptr;
 
 	Range r(offset, size);
 
