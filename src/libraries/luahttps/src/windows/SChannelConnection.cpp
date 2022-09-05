@@ -45,7 +45,8 @@ static void enqueue_prepend(std::vector<char> &buffer, char *data, size_t size)
 {
 	size_t oldSize = buffer.size();
 	buffer.resize(oldSize + size);
-	memmove(&buffer[size], &buffer[0], oldSize);
+	if (oldSize > 0)
+		memmove(&buffer[size], &buffer[0], oldSize);
 	memcpy(&buffer[0], data, size);
 }
 
@@ -60,6 +61,10 @@ static size_t dequeue(std::vector<char> &buffer, char *data, size_t size)
 	{
 		memmove(&buffer[0], &buffer[size], remaining);
 		buffer.resize(remaining);
+	}
+	else
+	{
+		buffer.resize(0);
 	}
 
 	return size;
