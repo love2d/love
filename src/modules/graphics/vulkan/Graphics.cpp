@@ -2248,7 +2248,7 @@ void Graphics::getMaxUsableSampleCount() {
 }
 
 void Graphics::createColorResources() {
-	if (msaaSamples & VK_SAMPLE_COUNT_16_BIT) {
+	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT) {
 		colorImage = VK_NULL_HANDLE;
 		colorImageView = VK_NULL_HANDLE;
 	} 
