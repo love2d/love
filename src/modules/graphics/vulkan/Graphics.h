@@ -317,7 +317,6 @@ private:
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	int requestedMsaa = 0;
-	int actualMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;
 	OptionalDeviceFeatures optionalDeviceFeatures;

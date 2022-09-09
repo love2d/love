@@ -392,7 +392,7 @@ int Graphics::getRequestedBackbufferMSAA() const {
 }
 
 int Graphics::getBackbufferMSAA() const {
-	return actualMsaa;
+	return static_cast<int>(msaaSamples);
 }
 
 void Graphics::setFrontFaceWinding(Winding winding) {
@@ -1561,7 +1561,10 @@ void Graphics::createDefaultRenderPass() {
 	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	renderPassConfiguration.staticData.msaaSamples = msaaSamples;
 	renderPassConfiguration.staticData.depthFormat = findDepthFormat();
-	renderPassConfiguration.staticData.resolve = true;
+	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+		renderPassConfiguration.staticData.resolve = false;
+	else
+		renderPassConfiguration.staticData.resolve = true;
 	defaultRenderPass = createRenderPass(renderPassConfiguration);
 }
 
@@ -1573,9 +1576,13 @@ void Graphics::createDefaultFramebuffers() {
 		configuration.staticData.renderPass = defaultRenderPass;
 		configuration.staticData.width = swapChainExtent.width;
 		configuration.staticData.height = swapChainExtent.height;
-		configuration.colorViews.push_back(colorImageView);
 		configuration.staticData.depthView = depthImageView;
-		configuration.staticData.resolveView = view;
+		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+			configuration.colorViews.push_back(view);
+		else {
+			configuration.colorViews.push_back(colorImageView);
+			configuration.staticData.resolveView = view;
+		}
 		defaultFramebuffers.push_back(createFramebuffer(configuration));
 	}
 }
@@ -2224,75 +2231,68 @@ void Graphics::getMaxUsableSampleCount() {
 
 	VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 
-	if (counts & VK_SAMPLE_COUNT_64_BIT && requestedMsaa >= 64) { 
+	if (counts & VK_SAMPLE_COUNT_64_BIT && requestedMsaa >= 64)
 		msaaSamples = VK_SAMPLE_COUNT_64_BIT;
-		actualMsaa = 64;
-	} else if (counts & VK_SAMPLE_COUNT_32_BIT && requestedMsaa >= 32) { 
+	else if (counts & VK_SAMPLE_COUNT_32_BIT && requestedMsaa >= 32)
 		msaaSamples = VK_SAMPLE_COUNT_32_BIT;
-		actualMsaa = 32;
-	}
-	else if (counts & VK_SAMPLE_COUNT_16_BIT && requestedMsaa >= 16) { 
+	else if (counts & VK_SAMPLE_COUNT_16_BIT && requestedMsaa >= 16)
 		msaaSamples = VK_SAMPLE_COUNT_16_BIT;
-		actualMsaa = 16;
-	}
-	else if (counts & VK_SAMPLE_COUNT_8_BIT && requestedMsaa >= 8) {
+	else if (counts & VK_SAMPLE_COUNT_8_BIT && requestedMsaa >= 8)
 		msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-		actualMsaa = 8;
-	}
-	else if (counts & VK_SAMPLE_COUNT_4_BIT && requestedMsaa >= 4) {
+	else if (counts & VK_SAMPLE_COUNT_4_BIT && requestedMsaa >= 4)
 		msaaSamples = VK_SAMPLE_COUNT_4_BIT;
-		actualMsaa = 4;
-	}
-	else if (counts & VK_SAMPLE_COUNT_2_BIT && requestedMsaa >= 2) {
+	else if (counts & VK_SAMPLE_COUNT_2_BIT && requestedMsaa >= 2)
 		msaaSamples = VK_SAMPLE_COUNT_2_BIT;
-		actualMsaa = 2;
-	}
-	else {
+	else
 		msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-		actualMsaa = 1;
-	}
 }
 
 void Graphics::createColorResources() {
-	VkFormat colorFormat = swapChainImageFormat;
+	if (msaaSamples & VK_SAMPLE_COUNT_16_BIT) {
+		colorImage = VK_NULL_HANDLE;
+		colorImageView = VK_NULL_HANDLE;
+	} 
+	else {
+		VkFormat colorFormat = swapChainImageFormat;
 
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.format = colorFormat;
-	imageInfo.extent.width = swapChainExtent.width;
-	imageInfo.extent.height = swapChainExtent.height;
-	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
-	imageInfo.samples = msaaSamples;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.format = colorFormat;
+		imageInfo.extent.width = swapChainExtent.width;
+		imageInfo.extent.height = swapChainExtent.height;
+		imageInfo.extent.depth = 1;
+		imageInfo.mipLevels = 1;
+		imageInfo.arrayLayers = 1;
+		imageInfo.samples = msaaSamples;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	VmaAllocationCreateInfo allocationInfo{};
-	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
-	allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+		VmaAllocationCreateInfo allocationInfo{};
+		allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-	vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr);
+		vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr);
 
-	VkImageViewCreateInfo imageViewInfo{};
-	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewInfo.image = colorImage;
-	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewInfo.format = colorFormat;
-	imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageViewInfo.subresourceRange.baseMipLevel = 0;
-	imageViewInfo.subresourceRange.levelCount = 1;
-	imageViewInfo.subresourceRange.baseArrayLayer = 0;
-	imageViewInfo.subresourceRange.layerCount = 1;
+		VkImageViewCreateInfo imageViewInfo{};
+		imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		imageViewInfo.image = colorImage;
+		imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		imageViewInfo.format = colorFormat;
+		imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageViewInfo.subresourceRange.baseMipLevel = 0;
+		imageViewInfo.subresourceRange.levelCount = 1;
+		imageViewInfo.subresourceRange.baseArrayLayer = 0;
+		imageViewInfo.subresourceRange.layerCount = 1;
 
-	vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView);
+		vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView);
+	}
 }
 
 VkFormat Graphics::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
