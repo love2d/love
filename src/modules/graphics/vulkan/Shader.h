@@ -12,6 +12,7 @@
 #include <memory>
 #include <iostream>
 #include <unordered_map>
+#include <queue>
 
 
 namespace love {
@@ -88,7 +89,7 @@ private:
 	// that gets dynamically increased if more memory is needed
 	std::vector<std::vector<StreamBuffer*>> streamBuffers;
 	std::vector<VkDescriptorPool> descriptorPools;
-	uint32_t currentAllocatedDescriptorSets;
+	std::queue<VkDescriptorSet> freeDescriptorSets;
 	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;

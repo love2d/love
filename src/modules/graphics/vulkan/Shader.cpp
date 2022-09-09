@@ -118,7 +118,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 };
 
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
-static const uint32_t DESCRIPTOR_POOL_SIZE = 1;
+static const uint32_t DESCRIPTOR_POOL_SIZE = 16;
 
 static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 	switch (type) {
@@ -174,7 +174,6 @@ bool Shader::loadVolatile() {
 	currentFrame = 0;
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
-	currentAllocatedDescriptorSets = DESCRIPTOR_POOL_SIZE;
 
 	return true;
 }
@@ -197,11 +196,14 @@ void Shader::unloadVolatile() {
 		if (computePipeline != VK_NULL_HANDLE)
 			vkDestroyPipeline(device, computePipeline, nullptr);
 	});
-	for (const auto &streamBufferVector : streamBuffers) {
-		for (const auto streamBuffer : streamBufferVector) {
+
+	while (!freeDescriptorSets.empty())
+		freeDescriptorSets.pop();
+
+	for (const auto &streamBufferVector : streamBuffers)
+		for (const auto streamBuffer : streamBufferVector)
 			delete streamBuffer;
-		}
-	}
+
 	shaderModules.clear();
 	shaderStages.clear();
 	streamBuffers.clear();
@@ -877,7 +879,7 @@ void Shader::setMainTex(graphics::Texture* texture) {
 }
 
 VkDescriptorSet Shader::allocateDescriptorSet() {
-	if (currentAllocatedDescriptorSets >= DESCRIPTOR_POOL_SIZE) {
+	if (freeDescriptorSets.empty()) {
 		// fixme: we can optimize this, since sizes should never change for a given shader.
 		std::vector<VkDescriptorPoolSize> sizes;
 
@@ -910,24 +912,29 @@ VkDescriptorSet Shader::allocateDescriptorSet() {
 		}
 		descriptorPools.push_back(pool);
 
-		currentAllocatedDescriptorSets = 0;
+		std::vector<VkDescriptorSetLayout> layouts(DESCRIPTOR_POOL_SIZE, descriptorSetLayout);
+
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPools.back();
+		allocInfo.descriptorSetCount = DESCRIPTOR_POOL_SIZE;
+		allocInfo.pSetLayouts = layouts.data();
+
+		std::vector<VkDescriptorSet> descriptorSet;
+		descriptorSet.resize(DESCRIPTOR_POOL_SIZE);
+		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSet.data());
+		if (result != VK_SUCCESS) {
+			throw love::Exception("failed to allocate descriptor set");
+		}
+
+		for (const auto ds : descriptorSet) {
+			freeDescriptorSets.push(ds);
+		}
 	}
 
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPools.back();
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = &descriptorSetLayout;
-
-	VkDescriptorSet descriptorSet;
-	VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
-	if (result != VK_SUCCESS) {
-		throw love::Exception("failed to allocate descriptor set");
-	}
-
-	currentAllocatedDescriptorSets++;
-
-	return descriptorSet;
+	auto ds = freeDescriptorSets.front();
+	freeDescriptorSets.pop();
+	return ds;
 }
 } // vulkan
 } // graphics
