@@ -114,7 +114,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
 {
-	auto commandBuffer = vgfx->getReadbackCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	VkBufferCopy bufferCopy{};
 	bufferCopy.srcOffset = sourceoffset;

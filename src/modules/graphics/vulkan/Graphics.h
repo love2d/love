@@ -32,7 +32,6 @@ struct RenderPassConfiguration
 
 	struct StaticRenderPassConfiguration
 	{
-		VkImageLayout initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 		bool resolve = false;
@@ -204,6 +203,19 @@ struct SwapChainSupportDetails
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct RenderpassState
+{
+	bool active = false;
+	VkRenderPassBeginInfo beginInfo{};
+	VkRenderPass renderPass = VK_NULL_HANDLE;
+	VkPipeline pipeline = VK_NULL_HANDLE;
+	std::vector<VkImage> transitionImages;
+	uint32_t numColorAttachments = 0;
+	float width = 0.0f;
+	float height = 0.0f;
+	VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;
+};
+
 class Graphics final : public love::graphics::Graphics
 {
 public:
@@ -261,10 +273,7 @@ public:
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
 
-	VkCommandBuffer getDataTransferCommandBuffer();
-	VkCommandBuffer getReadbackCommandBuffer();
-
-	void oneTimeCommand(std::function<void(VkCommandBuffer)> cmd);
+	VkCommandBuffer getCommandBufferForDataTransfer();
 
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
@@ -339,8 +348,9 @@ private:
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
 		std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
 	void prepareDraw(const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType, CullMode);
-	void startRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture);
-	void startDefaultRenderPass();
+	void setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture);
+	void setDefaultRenderPass();
+	void startRenderPass();
 	void endRenderPass();
 	VkSampler createSampler(const SamplerState&);
 
@@ -361,8 +371,6 @@ private:
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 	VkExtent2D swapChainExtent = VkExtent2D();
 	std::vector<VkImageView> swapChainImageViews;
-	VkPipeline currentGraphicsPipeline = VK_NULL_HANDLE;
-    VkRenderPass currentRenderPass = VK_NULL_HANDLE;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 	VkImage colorImage = VK_NULL_HANDLE;
 	VkImageView colorImageView = VK_NULL_HANDLE;
@@ -377,10 +385,7 @@ private:
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
-	std::vector<VkCommandBuffer> dataTransferCommandBuffers;
-	std::vector<VkCommandBuffer> computeCommandBuffers;
 	std::vector<VkCommandBuffer> commandBuffers;
-	std::vector<VkCommandBuffer> readbackCommandBuffers;
 	Shader* computeShader = nullptr;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -400,13 +405,7 @@ private:
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
-
-	// render pass variables.
-	std::optional<std::function<void()>> postRenderPass;
-	uint32_t currentNumColorAttachments = 0;
-	float currentViewportWidth = 0;
-	float currentViewportHeight = 0;
-	VkSampleCountFlagBits currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	RenderpassState renderPassState;
 };
 
 } // vulkan

@@ -89,6 +89,9 @@ love::graphics::Buffer *Graphics::newBuffer(const love::graphics::Buffer::Settin
 
 void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth)
 {
+	if (!renderPassState.active)
+		startRenderPass();
+
 	VkClearAttachment attachment{};
 
 	if (color.hasValue)
@@ -120,8 +123,8 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 
 	VkClearRect rect{};
 	rect.layerCount = 1;
-	rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
-	rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
+	rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
+	rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
 
 	vkCmdClearAttachments(
 		commandBuffers[currentFrame], 
@@ -131,6 +134,9 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 
 void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
 {
+	if (!renderPassState.active)
+		startRenderPass();
+
 	std::vector<VkClearAttachment> attachments;
 	for (const auto &color : colors)
 	{
@@ -163,8 +169,8 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	VkClearRect rect{};
 	rect.layerCount = 1;
-	rect.rect.extent.width = static_cast<uint32_t>(currentViewportWidth);
-	rect.rect.extent.height = static_cast<uint32_t>(currentViewportHeight);
+	rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
+	rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
 
 	vkCmdClearAttachments(commandBuffers[currentFrame], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
 }
@@ -179,11 +185,7 @@ void Graphics::submitGpuCommands(bool present)
 		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
-	std::vector<VkCommandBuffer> submitCommandbuffers = { 
-		dataTransferCommandBuffers.at(currentFrame),
-		computeCommandBuffers.at(currentFrame),
-		commandBuffers.at(currentFrame), 
-		readbackCommandBuffers.at(currentFrame)};
+	std::array<VkCommandBuffer, 1> submitCommandbuffers = { commandBuffers.at(currentFrame) };
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -339,8 +341,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	restoreState(states.back());
 
 	setViewportSize(width, height, pixelwidth, pixelheight);
-	currentViewportWidth = 1.0f;
-	currentViewportHeight = 1.0f;
 
 	Vulkan::resetShaderSwitches();
 
@@ -715,11 +715,14 @@ graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 
 bool Graphics::dispatch(int x, int y, int z)
 {
-	vkCmdBindPipeline(computeCommandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
+	if (renderPassState.active)
+		endRenderPass();
 
-	computeShader->cmdPushDescriptorSets(computeCommandBuffers.at(currentFrame), currentFrame, VK_PIPELINE_BIND_POINT_COMPUTE);
+	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
 
-	vkCmdDispatch(computeCommandBuffers.at(currentFrame), static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z));
+	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), currentFrame, VK_PIPELINE_BIND_POINT_COMPUTE);
+
+	vkCmdDispatch(commandBuffers.at(currentFrame), static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z));
 
 	return true;
 }
@@ -732,13 +735,14 @@ Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool render
 
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
-	endRenderPass();
+	if (renderPassState.active)
+		endRenderPass();
 
 	bool isWindow = rts.getFirstTarget().texture == nullptr;
 	if (isWindow)
-		startDefaultRenderPass();
+		setDefaultRenderPass();
 	else
-		startRenderPass(rts, pixelw, pixelh, hasSRGBtexture);
+		setRenderPass(rts, pixelw, pixelh, hasSRGBtexture);
 }
 
 // END IMPLEMENTATION OVERRIDDEN FUNCTIONS
@@ -753,8 +757,8 @@ void Graphics::initDynamicState()
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = swapChainExtent.width;
-	viewport.height = swapChainExtent.height;
+	viewport.width = static_cast<float>(swapChainExtent.width);
+	viewport.height = static_cast<float>(swapChainExtent.height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
@@ -790,7 +794,8 @@ void Graphics::beginFrame()
 	while (true)
 	{
 		VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
 			recreateSwapChain();
 			continue;
 		}
@@ -802,15 +807,21 @@ void Graphics::beginFrame()
 
 	imageRequested = true;
 
-	for (auto& readbackCallback : readbackCallbacks.at(currentFrame))
+	for (auto &readbackCallback : readbackCallbacks.at(currentFrame))
 		readbackCallback();
 	readbackCallbacks.at(currentFrame).clear();
 
-	for (auto& cleanUpFn : cleanUpFunctions.at(currentFrame))
+	for (auto &cleanUpFn : cleanUpFunctions.at(currentFrame))
 		cleanUpFn();
 	cleanUpFunctions.at(currentFrame).clear();
 
 	startRecordingGraphicsCommands(true);
+
+	Vulkan::cmdTransitionImageLayout(
+		commandBuffers.at(currentFrame),
+		swapChainImages[imageIndex],
+		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	Vulkan::resetShaderSwitches();
 }
@@ -824,35 +835,25 @@ void Graphics::startRecordingGraphicsCommands(bool newFrame)
 
 	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
 		throw love::Exception("failed to begin recording command buffer");
-	if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
-		throw love::Exception("failed to begin recording data transfer command buffer");
-	if (vkBeginCommandBuffer(readbackCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
-		throw love::Exception("failed to begin recording readback command buffer");
-	if (vkBeginCommandBuffer(computeCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
-		throw love::Exception("failed to begin recording compute command buffer");
 
 	initDynamicState();
 
-	if (newFrame)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	startDefaultRenderPass();
+	setDefaultRenderPass();
 }
 
 void Graphics::endRecordingGraphicsCommands(bool present) {
-	endRenderPass();
+	if (renderPassState.active)
+		endRenderPass();
 
 	if (present)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		Vulkan::cmdTransitionImageLayout(
+			commandBuffers.at(currentFrame), 
+			swapChainImages[imageIndex], 
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
-	if (vkEndCommandBuffer(dataTransferCommandBuffers.at(currentFrame)) != VK_SUCCESS)
-		throw love::Exception("failed to record data transfer command buffer");
-	if (vkEndCommandBuffer(readbackCommandBuffers.at(currentFrame)) != VK_SUCCESS)
-		throw love::Exception("failed to record read back command buffer");
-	if (vkEndCommandBuffer(computeCommandBuffers.at(currentFrame)) != VK_SUCCESS)
-		throw love::Exception("failed to record compute command buffer");
 }
 
 void Graphics::updatedBatchedDrawBuffers()
@@ -880,52 +881,12 @@ graphics::Texture *Graphics::getDefaultTexture() const
 	return dynamic_cast<graphics::Texture*>(standardTexture.get());
 }
 
-VkCommandBuffer Graphics::getDataTransferCommandBuffer()
+VkCommandBuffer Graphics::getCommandBufferForDataTransfer()
 {
-	return dataTransferCommandBuffers.at(currentFrame);
-}
+	if (renderPassState.active)
+		endRenderPass();
 
-VkCommandBuffer Graphics::getReadbackCommandBuffer()
-{
-	return readbackCommandBuffers.at(currentFrame);
-}
-
-void Graphics::oneTimeCommand(std::function<void(VkCommandBuffer)> cmd)
-{
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = commandPool;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer;
-	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
-		throw love::Exception("failed to allocate one time command buffer");
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		throw love::Exception("failed to start recording one time command buffer");
-
-	cmd(commandBuffer);
-
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		throw love::Exception("failed to end recording one time command buffer");
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
-		throw love::Exception("failed to submit to queue");
-	
-	if (vkQueueWaitIdle(graphicsQueue) != VK_SUCCESS)
-		throw love::Exception("failed to wait for queue idle");
-
-	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+	return commandBuffers.at(currentFrame);
 }
 
 void Graphics::queueCleanUp(std::function<void()> cleanUp)
@@ -1381,7 +1342,7 @@ void Graphics::initVMA()
 void Graphics::createSurface()
 {
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
-	const void* handle = window->getHandle();
+	const void *handle = window->getHandle();
 	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, &surface) != SDL_TRUE)
 		throw love::Exception("failed to create window surface");
 }
@@ -1606,7 +1567,6 @@ void Graphics::createDefaultRenderPass()
 {
 	RenderPassConfiguration renderPassConfiguration{};
 	renderPassConfiguration.colorFormats.push_back(swapChainImageFormat);
-	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	renderPassConfiguration.staticData.msaaSamples = msaaSamples;
 	renderPassConfiguration.staticData.depthFormat = findDepthFormat();
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
@@ -1704,7 +1664,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
 
 	uint32_t attachment = 0;
-	for (const auto& colorFormat : configuration.colorFormats)
+	for (const auto &colorFormat : configuration.colorFormats)
 	{
 		VkAttachmentReference reference{};
 		reference.attachment = attachment++;
@@ -1714,14 +1674,11 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		VkAttachmentDescription colorDescription{};
 		colorDescription.format = colorFormat;
 		colorDescription.samples = configuration.staticData.msaaSamples;
-        if (configuration.staticData.initialColorImageLayout != VK_IMAGE_LAYOUT_UNDEFINED)
-		    colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        else
-            colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorDescription.initialLayout = configuration.staticData.initialColorImageLayout;
+		colorDescription.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		attachments.push_back(colorDescription);
 	}
@@ -1880,16 +1837,19 @@ void Graphics::createVulkanVertexFormat(
 
 void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType primitiveType, CullMode cullmode)
 {
+	if (!renderPassState.active)
+		startRenderPass();
+
 	GraphicsPipelineConfiguration configuration{};
 
-    configuration.renderPass = currentRenderPass;
+    configuration.renderPass = renderPassState.renderPass;
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.wireFrame = states.back().wireframe;
 	configuration.blendState = states.back().blend;
 	configuration.colorChannelMask = states.back().colorMask;
-	configuration.msaaSamples = currentMsaaSamples;
-	configuration.numColorAttachments = currentNumColorAttachments;
+	configuration.msaaSamples = renderPassState.msaa;
+	configuration.numColorAttachments = renderPassState.numColorAttachments;
 	configuration.primitiveType = primitiveType;
 
 	if (optionalDeviceFeatures.extendedDynamicState)
@@ -1933,37 +1893,35 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 }
 
-void Graphics::startDefaultRenderPass()
+void Graphics::setDefaultRenderPass()
 {
-	VkRenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = defaultRenderPass;
-	renderPassInfo.framebuffer = defaultFramebuffers[imageIndex];
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChainExtent;
+	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassState.beginInfo.renderPass = defaultRenderPass;
+	renderPassState.beginInfo.framebuffer = defaultFramebuffers[imageIndex];
+	renderPassState.beginInfo.renderArea.offset = { 0, 0 };
+	renderPassState.beginInfo.renderArea.extent = swapChainExtent;
+	renderPassState.beginInfo.clearValueCount = 0;
 
-	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	currentRenderPass = defaultRenderPass;
-	currentGraphicsPipeline = VK_NULL_HANDLE;
-	postRenderPass = std::nullopt;
-	currentViewportWidth = (float)swapChainExtent.width;
-	currentViewportHeight = (float)swapChainExtent.height;
-	currentMsaaSamples = msaaSamples;
-	currentNumColorAttachments = 1;
+	renderPassState.renderPass = defaultRenderPass;
+	renderPassState.pipeline = VK_NULL_HANDLE;
+	renderPassState.width = static_cast<float>(swapChainExtent.width);
+	renderPassState.height = static_cast<float>(swapChainExtent.height);
+	renderPassState.msaa = msaaSamples;
+	renderPassState.numColorAttachments = 1;
+	renderPassState.transitionImages.clear();
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = currentViewportWidth;
-	viewport.height = currentViewportHeight;
+	viewport.width = renderPassState.width;
+	viewport.height = renderPassState.height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 }
 
-void Graphics::startRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
+void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -1980,7 +1938,6 @@ void Graphics::startRenderPass(const RenderTargets &rts, int pixelw, int pixelh,
 	// fixme: hasSRGBtexture
 	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	for (const auto &color : rts.colors)
 	{
 		// fixme: use mipmap and slice.
@@ -2009,13 +1966,12 @@ void Graphics::startRenderPass(const RenderTargets &rts, int pixelw, int pixelh,
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<VkImage> transitionBackImages;
+	std::vector<VkImage> transitionImages;
 
 	for (const auto& color : rts.colors)
 	{
 		configuration.colorViews.push_back((VkImageView)color.texture->getRenderTargetHandle());
-		Vulkan::cmdTransitionImageLayout(currentCommandBuffer, (VkImage)color.texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		transitionBackImages.push_back((VkImage) color.texture->getHandle());
+		transitionImages.push_back((VkImage) color.texture->getHandle());
 	}
 	if (rts.depthStencil.texture != nullptr)
 		// fixme: layout transition of depth stencil image?
@@ -2026,39 +1982,41 @@ void Graphics::startRenderPass(const RenderTargets &rts, int pixelw, int pixelh,
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
 	VkFramebuffer framebuffer = getFramebuffer(configuration);
 
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = framebuffer;
-    renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent.width = static_cast<uint32_t>(pixelw);
-    renderPassInfo.renderArea.extent.height = static_cast<uint32_t>(pixelh);
+	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassState.beginInfo.renderPass = renderPass;
+	renderPassState.beginInfo.framebuffer = framebuffer;
+	renderPassState.beginInfo.renderArea.offset = {0, 0};
+	renderPassState.beginInfo.renderArea.extent.width = static_cast<uint32_t>(pixelw);
+	renderPassState.beginInfo.renderArea.extent.height = static_cast<uint32_t>(pixelh);
+	renderPassState.beginInfo.clearValueCount = 0;
 
-    vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	renderPassState.renderPass = renderPass;
+	renderPassState.pipeline = VK_NULL_HANDLE;
+	renderPassState.width = static_cast<float>(pixelw);
+	renderPassState.height = static_cast<float>(pixelh);
+	renderPassState.msaa = VK_SAMPLE_COUNT_1_BIT;
+	renderPassState.numColorAttachments = static_cast<uint32_t>(rts.colors.size());
+	renderPassState.transitionImages = std::move(transitionImages);
+}
 
-    currentRenderPass = renderPass;
-	currentGraphicsPipeline = VK_NULL_HANDLE;
-	currentViewportWidth = (float)pixelw;
-	currentViewportHeight = (float)pixelh;
-	currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
-	currentNumColorAttachments = static_cast<uint32_t>(rts.colors.size());
+void Graphics::startRenderPass()
+{
+	renderPassState.active = true;
 
-	postRenderPass = [=]() {
-		for (const auto& image : transitionBackImages)
-			Vulkan::cmdTransitionImageLayout(currentCommandBuffer, image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	};
+	for (const auto& image : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void Graphics::endRenderPass()
 {
-	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
-    currentRenderPass = VK_NULL_HANDLE;
+	renderPassState.active = false;
 
-	if (postRenderPass)
-	{
-		postRenderPass.value()();
-		postRenderPass = std::nullopt;
-	}
+	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
+
+	for (const auto &image : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 VkSampler Graphics::createSampler(const SamplerState &samplerState)
@@ -2287,10 +2245,10 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 	auto it = graphicsPipelines.find(configuration);
 	if (it != graphicsPipelines.end())
 	{
-		if (it->second != currentGraphicsPipeline)
+		if (it->second != renderPassState.pipeline)
 		{
 			vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
-			currentGraphicsPipeline = it->second;
+			renderPassState.pipeline = it->second;
 		}
 	}
 	else
@@ -2298,7 +2256,7 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 		VkPipeline pipeline = createGraphicsPipeline(configuration);
 		graphicsPipelines.insert({configuration, pipeline});
 		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		currentGraphicsPipeline = pipeline;
+		renderPassState.pipeline = pipeline;
 	}
 }
 
@@ -2459,9 +2417,6 @@ void Graphics::createCommandPool()
 void Graphics::createCommandBuffers()
 {
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	dataTransferCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	readbackCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	computeCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2471,33 +2426,6 @@ void Graphics::createCommandBuffers()
 
 	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
 		throw love::Exception("failed to allocate command buffers");
-
-	VkCommandBufferAllocateInfo dataTransferAllocInfo{};
-	dataTransferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	dataTransferAllocInfo.commandPool = commandPool;
-	dataTransferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	dataTransferAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	if (vkAllocateCommandBuffers(device, &dataTransferAllocInfo, dataTransferCommandBuffers.data()) != VK_SUCCESS)
-		throw love::Exception("failed to allocate data transfer command buffers");
-
-	VkCommandBufferAllocateInfo readbackAllocInfo{};
-	readbackAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	readbackAllocInfo.commandPool = commandPool;
-	readbackAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	readbackAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	if (vkAllocateCommandBuffers(device, &readbackAllocInfo, readbackCommandBuffers.data()) != VK_SUCCESS)
-		throw love::Exception("failed to allocate readback command buffers");
-
-	VkCommandBufferAllocateInfo commandAllocInfo{};
-	commandAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandAllocInfo.commandPool = commandPool;
-	commandAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-	if (vkAllocateCommandBuffers(device, &commandAllocInfo, computeCommandBuffers.data()) != VK_SUCCESS)
-		throw love::Exception("failed to allocate compute command buffers");
 }
 
 void Graphics::createSyncObjects()
@@ -2548,9 +2476,6 @@ void Graphics::cleanup()
 	}
 
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, commandBuffers.data());
-	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, dataTransferCommandBuffers.data());
-	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, readbackCommandBuffers.data());
-	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, computeCommandBuffers.data());
 
 	for (auto const &p : samplers)
 		vkDestroySampler(device, p.second, nullptr);

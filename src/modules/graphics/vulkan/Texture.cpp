@@ -77,19 +77,17 @@ bool Texture::loadVolatile()
 	if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS)
 		throw love::Exception("failed to create image");
 
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	if (computeWrite)
 		imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	else
 		imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	vgfx->oneTimeCommand([=](VkCommandBuffer commandBuffer) {
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
-			VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
-			0, VK_REMAINING_MIP_LEVELS,
-			0, VK_REMAINING_ARRAY_LAYERS);
-	});
+	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
+		0, VK_REMAINING_MIP_LEVELS,
+		0, VK_REMAINING_ARRAY_LAYERS);
 
 	bool hasdata = slices.get(0, 0) != nullptr;
 
@@ -200,7 +198,7 @@ void Texture::createTextureImageView()
 
 void Texture::clear()
 {
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	auto clearColor = getClearValue();
 
@@ -258,7 +256,7 @@ VkClearColorValue Texture::getClearValue()
 
 void Texture::generateMipmapsInternal()
 {
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
@@ -374,7 +372,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 		static_cast<uint32_t>(r.h), 1
 	};
 
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
@@ -414,7 +412,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
 {
-	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	VkImageSubresourceLayers layers{};
 	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -444,7 +442,7 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 
 void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
 {
-	auto commandBuffer = vgfx->getReadbackCommandBuffer();
+	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	VkImageSubresourceLayers layers{};
 	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
