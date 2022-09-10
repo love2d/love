@@ -240,6 +240,11 @@ void Graphics::present(void *screenshotCallbackdata)
 	if (!isActive())
 		return;
 
+	if (isRenderTargetActive())
+		throw love::Exception("present cannot be called while a render target is active.");
+
+	deprecations.draw(this);
+
 	submitGpuCommands(true);
 
 	VkPresentInfoKHR presentInfo{};
@@ -265,6 +270,13 @@ void Graphics::present(void *screenshotCallbackdata)
 	}
 	else if (result != VK_SUCCESS)
 		throw love::Exception("failed to present swap chain image");
+
+	drawCalls = 0;
+	renderTargetSwitchCount = 0;
+	drawCallsBatched = 0;
+
+	updatePendingReadbacks();
+	updateTemporaryResources();
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -720,7 +732,7 @@ bool Graphics::dispatch(int x, int y, int z)
 
 	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
 
-	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), currentFrame, VK_PIPELINE_BIND_POINT_COMPUTE);
+	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), static_cast<uint32_t>(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
 
 	vkCmdDispatch(commandBuffers.at(currentFrame), static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z));
 
@@ -1475,8 +1487,8 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 {
 	int vsync = Vulkan::getVsync();
 
-	auto begin = availablePresentModes.begin();
-	auto end = availablePresentModes.end();
+	const auto begin = availablePresentModes.begin();
+	const auto end = availablePresentModes.end();
 
 	switch (vsync) {
 	case -1:

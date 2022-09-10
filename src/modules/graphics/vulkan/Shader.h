@@ -1,8 +1,8 @@
 #pragma once
 
 // LÖVE
-#include <graphics/Shader.h>
-#include <graphics/vulkan/ShaderStage.h>
+#include "graphics/Shader.h"
+#include "graphics/vulkan/ShaderStage.h"
 #include "Vulkan.h"
 
 // Libraries
@@ -39,7 +39,7 @@ public:
 
 	VkPipeline getComputePipeline() const;
 
-	const std::vector<VkPipelineShaderStageCreateInfo>& getShaderStages() const;
+	const std::vector<VkPipelineShaderStageCreateInfo> &getShaderStages() const;
 
 	const VkPipelineLayout getGraphicsPipelineLayout() const;
 
@@ -51,26 +51,23 @@ public:
 
 	std::string getWarnings() const override { return ""; }
 
-	int getVertexAttributeIndex(const std::string& name) override;
+	int getVertexAttributeIndex(const std::string &name) override;
 
-	const UniformInfo* getUniformInfo(const std::string& name) const override;
-	const UniformInfo* getUniformInfo(BuiltinUniform builtin) const override;
+	const UniformInfo *getUniformInfo(const std::string &name) const override;
+	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 
-	// Not needed right now, since the logic that links the values of the uniforms to the shader is done in cmdPushDescriptorSets
-	// which gets called from the vulkan::Graphics class whenever a draw call happens.
-	// I'll have to reevaluate the use of this function in the future though.
-	void updateUniform(const UniformInfo* info, int count) override {}
+	void updateUniform(const UniformInfo *info, int count) override;
 
-	void sendTextures(const UniformInfo* info, graphics::Texture** textures, int count) override;
-	void sendBuffers(const UniformInfo* info, love::graphics::Buffer** buffers, int count) override {}
+	void sendTextures(const UniformInfo *info, graphics::Texture **textures, int count) override;
+	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override {}
 
-	bool hasUniform(const std::string& name) const override;
+	bool hasUniform(const std::string &name) const override;
 
-	void setVideoTextures(graphics::Texture* ytexture, graphics::Texture* cbtexture, graphics::Texture* crtexture) override;
+	void setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture) override;
 
 	// fixme: use normal methods for this in the future.
-	void setUniformData(BuiltinUniformData& data);
-	void setMainTex(graphics::Texture* texture);
+	void setUniformData(BuiltinUniformData &data);
+	void setMainTex(graphics::Texture *texture);
 
 private:
 	void calculateUniformBufferSizeAligned();
@@ -79,10 +76,10 @@ private:
 	void createPipelineLayout();
 	void createStreamBuffers();
 	void buildLocalUniforms(
-		spirv_cross::Compiler& comp, 
-		const spirv_cross::SPIRType& type, 
+		spirv_cross::Compiler &comp, 
+		const spirv_cross::SPIRType &type, 
 		size_t baseoff, 
-		const std::string& basename);
+		const std::string &basename);
 
 	VkDescriptorSet allocateDescriptorSet();
 
@@ -112,7 +109,7 @@ private:
 	bool isCompute = false;
 
 	std::unordered_map<std::string, graphics::Shader::UniformInfo> uniformInfos;
-	UniformInfo* builtinUniformInfo[BUILTIN_MAX_ENUM];
+	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
 	std::vector<uint8> localUniformStagingData;

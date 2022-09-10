@@ -217,7 +217,7 @@ void Shader::unloadVolatile()
 	descriptorSetsVector.clear();
 }
 
-const std::vector<VkPipelineShaderStageCreateInfo>& Shader::getShaderStages() const
+const std::vector<VkPipelineShaderStageCreateInfo> &Shader::getShaderStages() const
 {
 	return shaderStages;
 }
@@ -232,7 +232,7 @@ VkPipeline Shader::getComputePipeline() const
 	return computePipeline;
 }
 
-static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* texture, bool sampler)
+static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture *texture, bool sampler)
 {
 	auto vkTexture = (Texture*)texture;
 
@@ -409,13 +409,13 @@ void Shader::attach()
 		vgfx->setComputeShader(this);
 }
 
-int Shader::getVertexAttributeIndex(const std::string& name)
+int Shader::getVertexAttributeIndex(const std::string &name)
 {
 	auto it = attributes.find(name);
 	return it == attributes.end() ? -1 : it->second;
 }
 
-const Shader::UniformInfo* Shader::getUniformInfo(const std::string& name) const
+const Shader::UniformInfo* Shader::getUniformInfo(const std::string &name) const
 {
 	return &uniformInfos.at(name);
 }
@@ -425,7 +425,13 @@ const Shader::UniformInfo* Shader::getUniformInfo(BuiltinUniform builtin) const
 	return builtinUniformInfo[builtin];
 }
 
-void Shader::sendTextures(const UniformInfo* info, graphics::Texture** textures, int count)
+void Shader::updateUniform(const UniformInfo* info, int count)
+{
+	if (current == this)
+		Graphics::flushBatchedDrawsGlobal();
+}
+
+void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures, int count)
 {
 	for (unsigned i = 0; i < count; i++)
 	{
@@ -447,7 +453,7 @@ void Shader::calculateUniformBufferSizeAligned()
 	uniformBufferSizeAligned = factor * minAlignment;
 }
 
-void Shader::buildLocalUniforms(spirv_cross::Compiler& comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename)
+void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename)
 {
 	using namespace spirv_cross;
 
