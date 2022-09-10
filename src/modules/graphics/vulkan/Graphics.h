@@ -1,5 +1,4 @@
-#ifndef LOVE_GRAPHICS_VULKAN_GRAPHICS_H
-#define LOVE_GRAPHICS_VULKAN_GRAPHICS_H
+#pragma once
 
 // löve
 #include "common/config.h"
@@ -20,27 +19,36 @@
 #include <functional>
 
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-struct RenderPassConfiguration {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
+struct RenderPassConfiguration
+{
 	std::vector<VkFormat> colorFormats;
 
-	struct StaticRenderPassConfiguration {
+	struct StaticRenderPassConfiguration
+	{
 		VkImageLayout initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 		bool resolve = false;
 	} staticData;
 
-    bool operator==(const RenderPassConfiguration& conf) const {
+    bool operator==(const RenderPassConfiguration &conf) const
+	{
 		return colorFormats == conf.colorFormats && 
 			(memcmp(&staticData, &conf.staticData, sizeof(StaticRenderPassConfiguration)) == 0);
     }
 };
 
-struct RenderPassConfigurationHasher {
-    size_t operator()(const RenderPassConfiguration &configuration) const {
+struct RenderPassConfigurationHasher
+{
+    size_t operator()(const RenderPassConfiguration &configuration) const
+	{
 		size_t hashes[] = { 
 			XXH32(configuration.colorFormats.data(), configuration.colorFormats.size() * sizeof(VkFormat), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
@@ -49,10 +57,12 @@ struct RenderPassConfigurationHasher {
     }
 };
 
-struct FramebufferConfiguration {
+struct FramebufferConfiguration
+{
 	std::vector<VkImageView> colorViews;
 
-	struct StaticFramebufferConfiguration {
+	struct StaticFramebufferConfiguration
+	{
 		VkImageView depthView = VK_NULL_HANDLE;
 		VkImageView resolveView = VK_NULL_HANDLE;
 
@@ -62,14 +72,17 @@ struct FramebufferConfiguration {
 		VkRenderPass renderPass = VK_NULL_HANDLE;
 	} staticData;
 
-	bool operator==(const FramebufferConfiguration& conf) const {
+	bool operator==(const FramebufferConfiguration &conf) const
+	{
 		return colorViews == conf.colorViews &&
 			(memcmp(&staticData, &conf.staticData, sizeof(StaticFramebufferConfiguration)) == 0);
 	}
 };
 
-struct FramebufferConfigurationHasher {
-	size_t operator()(const FramebufferConfiguration& configuration) const {
+struct FramebufferConfigurationHasher
+{
+	size_t operator()(const FramebufferConfiguration &configuration) const
+	{
 		size_t hashes[] = {
 			XXH32(configuration.colorViews.data(), configuration.colorViews.size() * sizeof(VkImageView), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
@@ -79,16 +92,19 @@ struct FramebufferConfigurationHasher {
 	}
 };
 
-struct OptionalInstanceExtensions {
+struct OptionalInstanceExtensions
+{
     bool physicalDeviceProperties2 = false;
 };
 
-struct OptionalDeviceFeatures {
+struct OptionalDeviceFeatures
+{
 	bool extendedDynamicState = false;
 	bool pushDescriptor = false;
 };
 
-struct OptionalDeviceExtensionFunctions {
+struct OptionalDeviceExtensionFunctions
+{
 	// extended dynamic state
 	PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT = nullptr;
 	PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT = nullptr;
@@ -106,7 +122,8 @@ struct OptionalDeviceExtensionFunctions {
 	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR = nullptr;
 };
 
-struct GraphicsPipelineConfiguration {
+struct GraphicsPipelineConfiguration
+{
     VkRenderPass renderPass;
 	VertexAttributes vertexAttributes;
 	Shader* shader = nullptr;
@@ -117,7 +134,8 @@ struct GraphicsPipelineConfiguration {
 	uint32_t numColorAttachments;
 	PrimitiveType primitiveType;
 
-	struct DynamicState {
+	struct DynamicState
+	{
 		CullMode cullmode = CULL_NONE;
 		Winding winding = WINDING_MAX_ENUM;
 		StencilAction stencilAction = STENCIL_MAX_ENUM;
@@ -125,34 +143,42 @@ struct GraphicsPipelineConfiguration {
 		DepthState depthState{};
 	} dynamicState;
 
-	GraphicsPipelineConfiguration() {
+	GraphicsPipelineConfiguration()
+	{
 		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
 	}
 
-	bool operator==(const GraphicsPipelineConfiguration& other) const {
+	bool operator==(const GraphicsPipelineConfiguration &other) const
+	{
 		return memcmp(this, &other, sizeof(GraphicsPipelineConfiguration)) == 0;
 	}
 };
 
-struct GraphicsPipelineConfigurationHasher {
-	size_t operator() (const GraphicsPipelineConfiguration &configuration) const {
+struct GraphicsPipelineConfigurationHasher
+{
+	size_t operator() (const GraphicsPipelineConfiguration &configuration) const
+	{
 		return XXH32(&configuration, sizeof(GraphicsPipelineConfiguration), 0);
 	}
 };
 
-struct SamplerStateHasher {
-	size_t operator()(const SamplerState &samplerState) const {
+struct SamplerStateHasher
+{
+	size_t operator()(const SamplerState &samplerState) const
+	{
 		return XXH32(&samplerState, sizeof(SamplerState), 0);
 	}
 };
 
-struct BatchedDrawBuffers {
+struct BatchedDrawBuffers
+{
 	StreamBuffer* vertexBuffer1;
 	StreamBuffer* vertexBuffer2;
 	StreamBuffer* indexBuffer;
 	StreamBuffer* constantColorBuffer;
 
-	~BatchedDrawBuffers() {
+	~BatchedDrawBuffers()
+	{
 		delete vertexBuffer1;
 		delete vertexBuffer2;
 		delete indexBuffer;
@@ -160,22 +186,26 @@ struct BatchedDrawBuffers {
 	}
 };
 
-struct QueueFamilyIndices {
+struct QueueFamilyIndices
+{
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool isComplete() const {
+	bool isComplete() const
+	{
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
 
-struct SwapChainSupportDetails {
+struct SwapChainSupportDetails
+{
 	VkSurfaceCapabilitiesKHR capabilities{};
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-class Graphics final : public love::graphics::Graphics {
+class Graphics final : public love::graphics::Graphics
+{
 public:
 #ifdef LOVE_ANDROID
 	Graphics() {
@@ -196,27 +226,27 @@ public:
 	const VmaAllocator getVmaAllocator() const;
 
 	// implementation for virtual functions
-	love::graphics::Texture* newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data) override;
-	love::graphics::Buffer* newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) override;
+	love::graphics::Texture *newTexture(const love::graphics::Texture::Settings &settings, const love::graphics::Texture::Slices *data) override;
+	love::graphics::Buffer *newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void *data, size_t size, size_t arraylength) override;
 	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
-	void clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) override;
-	Matrix4 computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const override;
-	void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override { }
-	void present(void* screenshotCallbackdata) override;
+	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
+	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
+	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override { }
+	void present(void *screenshotCallbackdata) override;
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
 	void unSetMode() override;
 	void setActive(bool active) override;
 	int getRequestedBackbufferMSAA() const override;
 	int getBackbufferMSAA() const  override;
 	void setColor(Colorf c) override;
-	void setScissor(const Rect& rect) override;
+	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 	void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override;
 	void setDepthMode(CompareMode compare, bool write) override;
 	void setFrontFaceWinding(Winding winding) override;
 	void setColorMask(ColorChannelMask mask) override;
-	void setBlendState(const BlendState& blend) override;
+	void setBlendState(const BlendState &blend) override;
 	void setPointSize(float size) override;
 	void setWireframe(bool enable) override;
 	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
@@ -224,12 +254,12 @@ public:
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
-	void draw(const DrawCommand& cmd) override;
-	void draw(const DrawIndexedCommand& cmd) override;
-	void drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) override;
+	void draw(const DrawCommand &cmd) override;
+	void draw(const DrawIndexedCommand &cmd) override;
+	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture) override;
 
-	graphics::GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) override;
-	graphics::GraphicsReadback* newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) override;
+	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
+	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
 
 	VkCommandBuffer getDataTransferCommandBuffer();
 	VkCommandBuffer getReadbackCommandBuffer();
@@ -243,7 +273,7 @@ public:
 
 	uint32_t getNumImagesInFlight() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
-	graphics::Texture* getDefaultTexture() const;
+	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState&);
 
 	void setComputeShader(Shader*);
@@ -252,13 +282,13 @@ public:
 	const OptionalDeviceExtensionFunctions &getExtensionFunctions() const;
 
 protected:
-	graphics::ShaderStage* newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) override;
-	graphics::Shader* newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
-	graphics::StreamBuffer* newStreamBuffer(BufferUsage type, size_t size) override;
+	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
+	graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
+	graphics::StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) override;
 	bool dispatch(int x, int y, int z) override;
 	void initCapabilities() override;
-	void getAPIStats(int& shaderswitches) const override;
-	void setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
+	void getAPIStats(int &shaderswitches) const override;
+	void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
 
 private:
 	void createVulkanInstance();
@@ -272,21 +302,21 @@ private:
 	void createSurface();
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-	VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR& capabilities);
+	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+	VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities);
 	void createSwapChain();
 	void createImageViews();
 	void createDefaultRenderPass();
 	void createDefaultFramebuffers();
-    VkFramebuffer createFramebuffer(FramebufferConfiguration);
-    VkFramebuffer getFramebuffer(FramebufferConfiguration);
+    VkFramebuffer createFramebuffer(FramebufferConfiguration&);
+    VkFramebuffer getFramebuffer(FramebufferConfiguration&);
 	void createDefaultShaders();
-    VkRenderPass createRenderPass(RenderPassConfiguration);
-	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration);
+    VkRenderPass createRenderPass(RenderPassConfiguration&);
+	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration&);
 	void createColorResources();
-	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
 	void createDepthResources();
 	void createCommandPool();
@@ -300,7 +330,7 @@ private:
 	void beginFrame();
 	void startRecordingGraphicsCommands(bool newFrame);
 	void endRecordingGraphicsCommands(bool present);
-	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration);
+	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration&);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	void updatedBatchedDrawBuffers();
 	bool usesConstantVertexColor(const VertexAttributes&);
@@ -308,8 +338,8 @@ private:
 		VertexAttributes vertexAttributes, 
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
 		std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
-	void prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType, CullMode);
-	void startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture);
+	void prepareDraw(const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType, CullMode);
+	void startRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture);
 	void startDefaultRenderPass();
 	void endRenderPass();
 	VkSampler createSampler(const SamplerState&);
@@ -378,8 +408,7 @@ private:
 	float currentViewportHeight = 0;
 	VkSampleCountFlagBits currentMsaaSamples = VK_SAMPLE_COUNT_1_BIT;
 };
+
 } // vulkan
 } // graphics
 } // love
-
-#endif

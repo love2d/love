@@ -1,20 +1,26 @@
-#ifndef LOVE_GRAPHICS_VULKAN_TEXTURE_H
-#define LOVE_GRAPHICS_VULKAN_TEXTURE_H
+#pragma once
 
 #include "graphics/Texture.h"
 #include "graphics/Volatile.h"
 
 #include "VulkanWrapper.h"
 
-#include <iostream>
 
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-class Texture : public graphics::Texture, public Volatile {
+class Graphics;
+
+class Texture
+	: public graphics::Texture
+	, public Volatile
+{
 public:
-	Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data);
+	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
 	~Texture();
 
 	virtual bool loadVolatile() override;
@@ -24,18 +30,18 @@ public:
 
 	VkImageLayout getImageLayout() const;
 
-	void copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override;
-	void copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override;
+	void copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect) override;
+	void copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size) override;
 
-	ptrdiff_t getRenderTargetHandle() const override { return (ptrdiff_t)textureImageView; };
-	ptrdiff_t getSamplerHandle() const override { return (ptrdiff_t)textureSampler; };
+	ptrdiff_t getRenderTargetHandle() const override;
+	ptrdiff_t getSamplerHandle() const override;
 
-	void uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) override;
+	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
 
 	void generateMipmapsInternal()  override;
 
-	int getMSAA() const override { return 0; };
-	ptrdiff_t getHandle() const override { return (ptrdiff_t)textureImage; }
+	int getMSAA() const override;
+	ptrdiff_t getHandle() const override;
 
 private:
 	void createTextureImageView();
@@ -43,7 +49,7 @@ private:
 
 	VkClearColorValue getClearValue();
 
-	graphics::Graphics* gfx = nullptr;
+	Graphics *vgfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;
 	VmaAllocator allocator = VK_NULL_HANDLE;
 	VkImage textureImage = VK_NULL_HANDLE;
@@ -54,8 +60,7 @@ private:
 	Slices slices;
 	int layerCount = 0;
 };
+
 } // vulkan
 } // graphics
 } // love
-
-#endif

@@ -20,9 +20,13 @@
 #include <array>
 
 
-namespace love {
-namespace graphics {
-namespace vulkan {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -41,23 +45,28 @@ constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_0;
 
-const char* Graphics::getName() const {
+const char *Graphics::getName() const
+{
 	return "love.graphics.vulkan";
 }
 
-const VkDevice Graphics::getDevice() const {
+const VkDevice Graphics::getDevice() const
+{
 	return device;
 }
 
-const VkPhysicalDevice Graphics::getPhysicalDevice() const {
+const VkPhysicalDevice Graphics::getPhysicalDevice() const
+{
 	return physicalDevice;
 }
 
-const VmaAllocator Graphics::getVmaAllocator() const {
+const VmaAllocator Graphics::getVmaAllocator() const
+{
 	return vmaAllocator;
 }
 
-Graphics::~Graphics() {
+Graphics::~Graphics()
+{
 	// We already cleaned those up by clearing out batchedDrawBuffers.
 	// We set them to nullptr here so the base class doesn't crash
 	// when it tries to free this.
@@ -68,18 +77,22 @@ Graphics::~Graphics() {
 
 // START OVERRIDEN FUNCTIONS
 
-love::graphics::Texture* Graphics::newTexture(const love::graphics::Texture::Settings& settings, const love::graphics::Texture::Slices* data) {
+love::graphics::Texture *Graphics::newTexture(const love::graphics::Texture::Settings &settings, const love::graphics::Texture::Slices *data)
+{
 	return new Texture(this, settings, data);
 }
 
-love::graphics::Buffer* Graphics::newBuffer(const love::graphics::Buffer::Settings& settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void* data, size_t size, size_t arraylength) {
+love::graphics::Buffer *Graphics::newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
+{
 	return new Buffer(this, settings, format, data, size, arraylength);
 }
 
-void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) {
+void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth)
+{
 	VkClearAttachment attachment{};
 
-	if (color.hasValue) {
+	if (color.hasValue)
+	{
 		attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		attachment.clearValue.color.float32[0] = static_cast<float>(color.value.r);
 		attachment.clearValue.color.float32[1] = static_cast<float>(color.value.g);
@@ -89,11 +102,13 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 
 	VkClearAttachment depthStencilAttachment{};
 
-	if (stencil.hasValue) {
+	if (stencil.hasValue)
+	{
 		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
 	}
-	if (depth.hasValue) {
+	if (depth.hasValue)
+	{
 		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
 		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
 	}
@@ -114,11 +129,14 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 		1, &rect);
 }
 
-void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt stencil, OptionalDouble depth) {
+void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
+{
 	std::vector<VkClearAttachment> attachments;
-	for (const auto& color : colors) {
+	for (const auto &color : colors)
+	{
 		VkClearAttachment attachment{};
-		if (color.hasValue) {
+		if (color.hasValue)
+		{
 			attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			attachment.clearValue.color.float32[0] = static_cast<float>(color.value.r);
 			attachment.clearValue.color.float32[1] = static_cast<float>(color.value.g);
@@ -130,11 +148,13 @@ void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt sten
 
 	VkClearAttachment depthStencilAttachment{};
 
-	if (stencil.hasValue) {
+	if (stencil.hasValue)
+	{
 		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
 	}
-	if (depth.hasValue) {
+	if (depth.hasValue)
+	{
 		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
 	}
@@ -149,14 +169,14 @@ void Graphics::clear(const std::vector<OptionalColorD>& colors, OptionalInt sten
 	vkCmdClearAttachments(commandBuffers[currentFrame], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
 }
 
-void Graphics::submitGpuCommands(bool present) {
+void Graphics::submitGpuCommands(bool present)
+{
 	flushBatchedDraws();
 
 	endRecordingGraphicsCommands(present);
 
-	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
 		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
-	}
 	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
 	std::vector<VkCommandBuffer> submitCommandbuffers = { 
@@ -171,7 +191,8 @@ void Graphics::submitGpuCommands(bool present) {
 	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores.at(currentFrame) };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 
-	if (imageRequested) {
+	if (imageRequested)
+	{
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
@@ -185,7 +206,8 @@ void Graphics::submitGpuCommands(bool present) {
 
 	VkFence fence = VK_NULL_HANDLE;
 
-	if (present) {
+	if (present)
+	{
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -193,17 +215,17 @@ void Graphics::submitGpuCommands(bool present) {
 		fence = inFlightFences[currentFrame];
 	}
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS) {
+	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
 		throw love::Exception("failed to submit draw command buffer");
-	}
 	
-	if (!present) {
+	if (!present)
+	{
 		vkQueueWaitIdle(graphicsQueue);
 
-		for (auto& callbacks : readbackCallbacks) {
-			for (const auto& callback : callbacks) {
+		for (auto &callbacks : readbackCallbacks)
+		{
+			for (const auto &callback : callbacks)
 				callback();
-			}
 			callbacks.clear();
 		}
 
@@ -211,10 +233,10 @@ void Graphics::submitGpuCommands(bool present) {
 	}
 }
 
-void Graphics::present(void* screenshotCallbackdata) {
-	if (!isActive()) {
+void Graphics::present(void *screenshotCallbackdata)
+{
+	if (!isActive())
 		return;
-	}
 
 	submitGpuCommands(true);
 
@@ -234,13 +256,13 @@ void Graphics::present(void* screenshotCallbackdata) {
 
 	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+	{
 		framebufferResized = false;
 		recreateSwapChain();
 	}
-	else if (result != VK_SUCCESS) {
+	else if (result != VK_SUCCESS)
 		throw love::Exception("failed to present swap chain image");
-	}
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -249,7 +271,8 @@ void Graphics::present(void* screenshotCallbackdata) {
 	updatedBatchedDrawBuffers();
 }
 
-void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight) {
+void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
+{
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
@@ -258,7 +281,8 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	resetProjection();
 }
 
-bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) {
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+{
 	requestedMsaa = msaa;
 
 	cleanUpFunctions.clear();
@@ -287,7 +311,8 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 
 	batchedDrawBuffers.clear();
 	batchedDrawBuffers.reserve(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
 		batchedDrawBuffers.emplace_back();
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
@@ -328,7 +353,8 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	return true;
 }
 
-void Graphics::initCapabilities() {
+void Graphics::initCapabilities()
+{
 	// todo
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = false;
 	capabilities.features[FEATURE_CLAMP_ZERO] = false;
@@ -373,72 +399,81 @@ void Graphics::initCapabilities() {
 	capabilities.textureTypes[TEXTURE_CUBE] = true;
 }
 
-void Graphics::getAPIStats(int& shaderswitches) const {
+void Graphics::getAPIStats(int &shaderswitches) const
+{
 	shaderswitches = static_cast<int>(Vulkan::getNumShaderSwitches());
 }
 
-void Graphics::unSetMode() {
+void Graphics::unSetMode()
+{
 	created = false;
 	vkDeviceWaitIdle(device);
 	Volatile::unloadAll();
 	cleanup();
 }
 
-void Graphics::setActive(bool enable) {
+void Graphics::setActive(bool enable)
+{
 	flushBatchedDraws();
 	active = enable;
 }
 
-int Graphics::getRequestedBackbufferMSAA() const {
+int Graphics::getRequestedBackbufferMSAA() const
+{
 	return requestedMsaa;
 }
 
-int Graphics::getBackbufferMSAA() const {
+int Graphics::getBackbufferMSAA() const
+{
 	return static_cast<int>(msaaSamples);
 }
 
-void Graphics::setFrontFaceWinding(Winding winding) {
+void Graphics::setFrontFaceWinding(Winding winding)
+{
 	const auto& currentState = states.back();
 
-	if (currentState.winding == winding) {
+	if (currentState.winding == winding)
 		return;
-	}
 
 	flushBatchedDraws();
 
 	states.back().winding = winding;
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
 		ext.vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
-	}
 }
 
-void Graphics::setColorMask(ColorChannelMask mask) {
+void Graphics::setColorMask(ColorChannelMask mask)
+{
 	flushBatchedDraws();
 
 	states.back().colorMask = mask;
 }
 
-void Graphics::setBlendState(const BlendState& blend) {
+void Graphics::setBlendState(const BlendState &blend)
+{
 	flushBatchedDraws();
 
 	states.back().blend = blend;
 }
 
-void Graphics::setPointSize(float size) {
+void Graphics::setPointSize(float size)
+{
 	if (size != states.back().pointSize)
 		flushBatchedDraws();
 
 	states.back().pointSize = size;
 }
 
-bool Graphics::usesGLSLES() const {
+bool Graphics::usesGLSLES() const
+{
 	return false;
 }
 
-Graphics::RendererInfo Graphics::getRendererInfo() const {
+Graphics::RendererInfo Graphics::getRendererInfo() const
+{
 	VkPhysicalDeviceProperties deviceProperties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
@@ -460,14 +495,16 @@ Graphics::RendererInfo Graphics::getRendererInfo() const {
 	return info;
 }
 
-void Graphics::draw(const DrawCommand& cmd) {
+void Graphics::draw(const DrawCommand &cmd)
+{
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 	vkCmdDraw(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
 	drawCalls++;
 }
 
-void Graphics::draw(const DrawIndexedCommand& cmd) {
+void Graphics::draw(const DrawIndexedCommand &cmd)
+{
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), Vulkan::getVulkanIndexBufferType(cmd.indexType));
@@ -475,7 +512,8 @@ void Graphics::draw(const DrawIndexedCommand& cmd) {
 	drawCalls++;
 }
 
-void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
+void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture)
+{
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
@@ -485,7 +523,8 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 
 	int baseVertex = start * 4;
 
-	for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW) {
+	for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
+	{
 		int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
 		vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
@@ -495,7 +534,8 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 	}
 }
 
-void Graphics::setColor(Colorf c) {
+void Graphics::setColor(Colorf c)
+{
 	c.r = std::min(std::max(c.r, 0.0f), 1.0f);
 	c.g = std::min(std::max(c.g, 0.0f), 1.0f);
 	c.b = std::min(std::max(c.b, 0.0f), 1.0f);
@@ -504,7 +544,8 @@ void Graphics::setColor(Colorf c) {
 	states.back().color = c;
 }
 
-static VkRect2D computeScissor(const Rect& r, double bufferWidth, double bufferHeight, double dpiScale, VkSurfaceTransformFlagBitsKHR preTransform) {
+static VkRect2D computeScissor(const Rect &r, double bufferWidth, double bufferHeight, double dpiScale, VkSurfaceTransformFlagBitsKHR preTransform)
+{
 	double x = static_cast<double>(r.x) * dpiScale;
 	double y = static_cast<double>(r.y) * dpiScale;
 	double w = static_cast<double>(r.w) * dpiScale;
@@ -512,7 +553,8 @@ static VkRect2D computeScissor(const Rect& r, double bufferWidth, double bufferH
 
 	double scissorX, scissorY, scissorW, scissorH;
 
-	switch (preTransform) {
+	switch (preTransform)
+	{
 	case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
 		scissorX = bufferWidth - h - y;
 		scissorY = x;
@@ -546,7 +588,8 @@ static VkRect2D computeScissor(const Rect& r, double bufferWidth, double bufferH
 	return scissor;
 }
 
-void Graphics::setScissor(const Rect& rect) {
+void Graphics::setScissor(const Rect &rect)
+{
 	flushBatchedDraws();
 
 	VkRect2D scissor = computeScissor(rect,
@@ -560,7 +603,8 @@ void Graphics::setScissor(const Rect& rect) {
 	states.back().scissorRect = rect;
 }
 
-void Graphics::setScissor() {
+void Graphics::setScissor()
+{
 	flushBatchedDraws();
 
 	states.back().scissor = false;
@@ -572,20 +616,20 @@ void Graphics::setScissor() {
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) {
+void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask)
+{
 	flushBatchedDraws();
 
 	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, writemask);
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, readmask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, value);
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
 		ext.vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(compare));
-	}
 
 	states.back().stencil.action = action;
 	states.back().stencil.compare = compare;
@@ -594,10 +638,12 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	states.back().stencil.writeMask = writemask;
 }
 
-void Graphics::setDepthMode(CompareMode compare, bool write) {
+void Graphics::setDepthMode(CompareMode compare, bool write)
+{
 	flushBatchedDraws();
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
+	{
 		ext.vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(compare));
 
@@ -609,21 +655,22 @@ void Graphics::setDepthMode(CompareMode compare, bool write) {
 	states.back().depthWrite = write;
 }
 
-void Graphics::setWireframe(bool enable) {
+void Graphics::setWireframe(bool enable)
+{
 	flushBatchedDraws();
 
 	states.back().wireframe = enable;
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const {
-	switch (format) {
+PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
+{
+	switch (format)
+	{
 	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect()) {
+		if (isGammaCorrect())
 			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		}
-		else {
+		else
 			return PIXELFORMAT_RGBA8_UNORM;
-		}
 	case PIXELFORMAT_HDR:
 		return PIXELFORMAT_RGBA16_FLOAT;
 	default:
@@ -631,35 +678,43 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 	}
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) {
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
+{
 	return true;
 }
 
-Renderer Graphics::getRenderer() const {
+Renderer Graphics::getRenderer() const
+{
 	return RENDERER_VULKAN;
 }
 
-graphics::GraphicsReadback* Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Buffer* buffer, size_t offset, size_t size, data::ByteData* dest, size_t destoffset) { 
+graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)
+{
 	return new GraphicsReadback(this, method, buffer, offset, size, dest, destoffset);
 }
 
-graphics::GraphicsReadback* Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture* texture, int slice, int mipmap, const Rect& rect, image::ImageData* dest, int destx, int desty) { 
+graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
+{
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
-graphics::ShaderStage* Graphics::newShaderStageInternal(ShaderStageType stage, const std::string& cachekey, const std::string& source, bool gles) {
+graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
+{
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-graphics::Shader* Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) {
+graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+{
 	return new Shader(stages);
 }
 
-graphics::StreamBuffer* Graphics::newStreamBuffer(BufferUsage type, size_t size) {
+graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
+{
 	return new StreamBuffer(this, type, size);
 }
 
-bool Graphics::dispatch(int x, int y, int z) {
+bool Graphics::dispatch(int x, int y, int z)
+{
 	vkCmdBindPipeline(computeCommandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
 
 	computeShader->cmdPushDescriptorSets(computeCommandBuffers.at(currentFrame), currentFrame, VK_PIPELINE_BIND_POINT_COMPUTE);
@@ -669,30 +724,31 @@ bool Graphics::dispatch(int x, int y, int z) {
 	return true;
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4& projection, bool rendertotexture) const {
+Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
+{
 	uint32 flags = DEVICE_PROJECTION_DEFAULT;
 	return calculateDeviceProjection(projection, flags);
 }
 
-void Graphics::setRenderTargetsInternal(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
+void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
+{
 	endRenderPass();
 
 	bool isWindow = rts.getFirstTarget().texture == nullptr;
-	if (isWindow) {
+	if (isWindow)
 		startDefaultRenderPass();
-	} else {
+	else
 		startRenderPass(rts, pixelw, pixelh, hasSRGBtexture);
-	}
 }
 
 // END IMPLEMENTATION OVERRIDDEN FUNCTIONS
 
-void Graphics::initDynamicState() {
-	if (states.back().scissor) {
+void Graphics::initDynamicState()
+{
+	if (states.back().scissor)
 		setScissor(states.back().scissorRect);
-	} else {
+	else
 		setScissor();
-	}
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -708,7 +764,8 @@ void Graphics::initDynamicState() {
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.value);
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
+	{
 		 ext.vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
@@ -726,32 +783,31 @@ void Graphics::initDynamicState() {
 	}
 }
 
-void Graphics::beginFrame() {
+void Graphics::beginFrame()
+{
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-	while (true) {
+	while (true)
+	{
 		VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			recreateSwapChain();
 			continue;
 		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
 			throw love::Exception("failed to acquire swap chain image");
-		}
 
 		break;
 	}
 
 	imageRequested = true;
 
-	for (auto& readbackCallback : readbackCallbacks.at(currentFrame)) {
+	for (auto& readbackCallback : readbackCallbacks.at(currentFrame))
 		readbackCallback();
-	}
 	readbackCallbacks.at(currentFrame).clear();
 
-	for (auto& cleanUpFn : cleanUpFunctions.at(currentFrame)) {
+	for (auto& cleanUpFn : cleanUpFunctions.at(currentFrame))
 		cleanUpFn();
-	}
 	cleanUpFunctions.at(currentFrame).clear();
 
 	startRecordingGraphicsCommands(true);
@@ -759,30 +815,26 @@ void Graphics::beginFrame() {
 	Vulkan::resetShaderSwitches();
 }
 
-void Graphics::startRecordingGraphicsCommands(bool newFrame) {
+void Graphics::startRecordingGraphicsCommands(bool newFrame)
+{
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 	beginInfo.pInheritanceInfo = nullptr;
 
-	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
 		throw love::Exception("failed to begin recording command buffer");
-	}
-	if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(dataTransferCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
 		throw love::Exception("failed to begin recording data transfer command buffer");
-	}
-	if (vkBeginCommandBuffer(readbackCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(readbackCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
 		throw love::Exception("failed to begin recording readback command buffer");
-	}
-	if (vkBeginCommandBuffer(computeCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(computeCommandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
 		throw love::Exception("failed to begin recording compute command buffer");
-	}
 
 	initDynamicState();
 
-	if (newFrame) {
+	if (newFrame)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	}
 
 	startDefaultRenderPass();
 }
@@ -790,25 +842,21 @@ void Graphics::startRecordingGraphicsCommands(bool newFrame) {
 void Graphics::endRecordingGraphicsCommands(bool present) {
 	endRenderPass();
 
-	if (present) {
+	if (present)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), swapChainImages[imageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-	}
 
-	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
-	}
-	if (vkEndCommandBuffer(dataTransferCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(dataTransferCommandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record data transfer command buffer");
-	}
-	if (vkEndCommandBuffer(readbackCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(readbackCommandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record read back command buffer");
-	}
-	if (vkEndCommandBuffer(computeCommandBuffers.at(currentFrame)) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(computeCommandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record compute command buffer");
-	}
 }
 
-void Graphics::updatedBatchedDrawBuffers() {
+void Graphics::updatedBatchedDrawBuffers()
+{
 	batchedDrawState.vb[0] = batchedDrawBuffers[currentFrame].vertexBuffer1;
 	batchedDrawState.vb[0]->nextFrame();
 	batchedDrawState.vb[1] = batchedDrawBuffers[currentFrame].vertexBuffer2;
@@ -817,27 +865,33 @@ void Graphics::updatedBatchedDrawBuffers() {
 	batchedDrawState.indexBuffer->nextFrame();
 }
 
-uint32_t Graphics::getNumImagesInFlight() const {
+uint32_t Graphics::getNumImagesInFlight() const
+{
 	return MAX_FRAMES_IN_FLIGHT;
 }
 
-const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const {
+const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
+{
 	return minUniformBufferOffsetAlignment;
 }
 
-graphics::Texture* Graphics::getDefaultTexture() const {
+graphics::Texture *Graphics::getDefaultTexture() const
+{
 	return dynamic_cast<graphics::Texture*>(standardTexture.get());
 }
 
-VkCommandBuffer Graphics::getDataTransferCommandBuffer() {
+VkCommandBuffer Graphics::getDataTransferCommandBuffer()
+{
 	return dataTransferCommandBuffers.at(currentFrame);
 }
 
-VkCommandBuffer Graphics::getReadbackCommandBuffer() {
+VkCommandBuffer Graphics::getReadbackCommandBuffer()
+{
 	return readbackCommandBuffers.at(currentFrame);
 }
 
-void Graphics::oneTimeCommand(std::function<void(VkCommandBuffer)> cmd) {
+void Graphics::oneTimeCommand(std::function<void(VkCommandBuffer)> cmd)
+{
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.commandPool = commandPool;
@@ -845,60 +899,57 @@ void Graphics::oneTimeCommand(std::function<void(VkCommandBuffer)> cmd) {
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer commandBuffer;
-	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
 		throw love::Exception("failed to allocate one time command buffer");
-	}
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
 		throw love::Exception("failed to start recording one time command buffer");
-	}
 
 	cmd(commandBuffer);
 
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		throw love::Exception("failed to end recording one time command buffer");
-	}
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
 		throw love::Exception("failed to submit to queue");
-	}
 	
-	if (vkQueueWaitIdle(graphicsQueue) != VK_SUCCESS) {
+	if (vkQueueWaitIdle(graphicsQueue) != VK_SUCCESS)
 		throw love::Exception("failed to wait for queue idle");
-	}
 
 	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void Graphics::queueCleanUp(std::function<void()> cleanUp) {
+void Graphics::queueCleanUp(std::function<void()> cleanUp)
+{
 	cleanUpFunctions.at(currentFrame).push_back(cleanUp);
 }
 
-void Graphics::addReadbackCallback(std::function<void()> callback) {
+void Graphics::addReadbackCallback(std::function<void()> callback)
+{
 	readbackCallbacks.at(currentFrame).push_back(callback);
 }
 
-graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
+graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
+{
 	love::graphics::Shader::BuiltinUniformData data;
 
 	data.transformMatrix = getTransform();
-	data.projectionMatrix = getDeviceProjection();
-	data.projectionMatrix = displayRotation * data.projectionMatrix ;
+	data.projectionMatrix = displayRotation * getDeviceProjection();
 
 	// The normal matrix is the transpose of the inverse of the rotation portion
 	// (top-left 3x3) of the transform matrix.
 	{
 		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
-		const float* e = normalmatrix.getElements();
+		const float *e = normalmatrix.getElements();
 		for (int i = 0; i < 3; i++)
 		{
 			data.normalMatrix[i].x = e[i * 3 + 0];
@@ -926,7 +977,8 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData() {
 	return data;
 }
 
-static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext) {
+static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
+{
 	uint32_t count;
 
 	vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
@@ -935,17 +987,15 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext) {
 
 	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
 
-	for (const auto& extension : extensions) {
-		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0) {
+	for (const auto& extension : extensions)
+		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
 			ext.physicalDeviceProperties2 = true;
-		}
-	}
 }
 
-void Graphics::createVulkanInstance() {
-	if (enableValidationLayers && !checkValidationSupport()) {
+void Graphics::createVulkanInstance()
+{
+	if (enableValidationLayers && !checkValidationSupport())
 		throw love::Exception("validation layers requested, but not available");
-	}
 
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -961,101 +1011,96 @@ void Graphics::createVulkanInstance() {
 	createInfo.pNext = nullptr;
 
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
-	const void* handle = window->getHandle();
+	const void *handle = window->getHandle();
 
 	unsigned int count;
-	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, nullptr) != SDL_TRUE) {
+	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, nullptr) != SDL_TRUE)
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
-	}
 
 	std::vector<const char*> extensions = {};
 
 	checkOptionalInstanceExtensions(optionalInstanceExtensions);
 
-	if (optionalInstanceExtensions.physicalDeviceProperties2) {
+	if (optionalInstanceExtensions.physicalDeviceProperties2)
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-	}
 
 	size_t additional_extension_count = extensions.size();
 	extensions.resize(additional_extension_count + count);
 
-	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, extensions.data() + additional_extension_count) != SDL_TRUE) {
+	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
-	}
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
-	if (enableValidationLayers) {
+	if (enableValidationLayers)
+	{
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
-	else {
+	else
+	{
 		createInfo.enabledLayerCount = 0;
 		createInfo.ppEnabledLayerNames = nullptr;
 	}
 
-	if (vkCreateInstance(
-		&createInfo,
-		nullptr,
-		&instance) != VK_SUCCESS) {
+	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		throw love::Exception("couldn't create vulkan instance");
-	}
 
 #ifdef LOVE_ANDROID
 	volkLoadInstance(instance);
 #endif
 }
 
-bool Graphics::checkValidationSupport() {
+bool Graphics::checkValidationSupport()
+{
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : validationLayers) {
+	for (const char *layerName : validationLayers)
+	{
 		bool layerFound = false;
 
-		for (const auto& layerProperties : availableLayers) {
-			if (strcmp(layerName, layerProperties.layerName) == 0) {
+		for (const auto &layerProperties : availableLayers)
+			if (strcmp(layerName, layerProperties.layerName) == 0)
+			{
 				layerFound = true;
 				break;
 			}
-		}
 
-		if (!layerFound) {
+		if (!layerFound)
 			return false;
-		}
 	}
 
 	return true;
 }
 
-void Graphics::pickPhysicalDevice() {
+void Graphics::pickPhysicalDevice()
+{
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
-	if (deviceCount == 0) {
+	if (deviceCount == 0)
 		throw love::Exception("failed to find GPUs with Vulkan support");
-	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
 	std::multimap<int, VkPhysicalDevice> candidates;
 
-	for (const auto& device : devices) {
+	for (const auto &device : devices)
+	{
 		int score = rateDeviceSuitability(device);
 		candidates.insert(std::make_pair(score, device));
 	}
 
-	if (candidates.rbegin()->first > 0) {
+	if (candidates.rbegin()->first > 0)
 		physicalDevice = candidates.rbegin()->second;
-	}
-	else {
+	else
 		throw love::Exception("failed to find a suitable gpu");
-	}
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -1064,7 +1109,8 @@ void Graphics::pickPhysicalDevice() {
 	getMaxUsableSampleCount();
 }
 
-bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
+{
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -1073,9 +1119,8 @@ bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 
 	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-	for (const auto& extension : availableExtensions) {
+	for (const auto &extension : availableExtensions)
 		requiredExtensions.erase(extension.extensionName);
-	}
 
 	return requiredExtensions.empty();
 }
@@ -1083,7 +1128,8 @@ bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 // if the score is nonzero then the device is suitable.
 // A higher rating means generally better performance
 // if the score is 0 the device is unsuitable
-int Graphics::rateDeviceSuitability(VkPhysicalDevice device) {
+int Graphics::rateDeviceSuitability(VkPhysicalDevice device)
+{
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -1093,48 +1139,42 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device) {
 
 	// optional
 
-	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 		score += 1000;
-	}
-	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
 		score += 100;
-	}
-	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU) {
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
 		score += 10;
-	}
 
 	// definitely needed
 
 	QueueFamilyIndices indices = findQueueFamilies(device);
-	if (!indices.isComplete()) {
+	if (!indices.isComplete())
 		score = 0;
-	}
 
 	bool extensionsSupported = checkDeviceExtensionSupport(device);
-	if (!extensionsSupported) {
+	if (!extensionsSupported)
 		score = 0;
-	}
 
-	if (extensionsSupported) {
+	if (extensionsSupported)
+	{
 		auto swapChainSupport = querySwapChainSupport(device);
 		bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-		if (!swapChainAdequate) {
+		if (!swapChainAdequate)
 			score = 0;
-		}
 	}
 
-	if (!deviceFeatures.samplerAnisotropy) {
+	if (!deviceFeatures.samplerAnisotropy)
 		score = 0;
-	}
 
-	if (!deviceFeatures.fillModeNonSolid) {
+	if (!deviceFeatures.fillModeNonSolid)
 		score = 0;
-	}
 
 	return score;
 }
 
-QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device)
+{
 	QueueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
@@ -1144,21 +1184,19 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 	int i = 0;
-	for (const auto& queueFamily : queueFamilies) {
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+	for (const auto &queueFamily : queueFamilies)
+	{
+		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
 			indices.graphicsFamily = i;
-		}
 
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
-		if (presentSupport) {
+		if (presentSupport)
 			indices.presentFamily = i;
-		}
 
-		if (indices.isComplete()) {
+		if (indices.isComplete())
 			break;
-		}
 
 		i++;
 	}
@@ -1166,31 +1204,33 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device) {
 	return indices;
 }
 
-static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceFeatures &optionalDeviceFeatures) {
+static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceFeatures &optionalDeviceFeatures)
+{
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
 
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 
-	for (const auto& extension : availableExtensions) {
-		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0) {
+	for (const auto& extension : availableExtensions)
+	{
+		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.extendedDynamicState = true;
-		}
-		if (strcmp(extension.extensionName, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0) {
+		if (strcmp(extension.extensionName, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.pushDescriptor = true;
-		}
 	}
 }
 
-void Graphics::createLogicalDevice() {
+void Graphics::createLogicalDevice()
+{
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value()};
 
 	float queuePriority = 1.0f;
-	for (uint32_t queueFamily : uniqueQueueFamilies) {
+	for (uint32_t queueFamily : uniqueQueueFamilies)
+	{
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -1201,9 +1241,8 @@ void Graphics::createLogicalDevice() {
 
 	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
 
-    if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2) {
+    if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
         optionalDeviceFeatures.extendedDynamicState = false;
-    }
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -1225,13 +1264,13 @@ void Graphics::createLogicalDevice() {
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
-	if (enableValidationLayers) {
+	if (enableValidationLayers)
+	{
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
-	else {
+	else
 		createInfo.enabledLayerCount = 0;
-	}
 
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
@@ -1240,9 +1279,8 @@ void Graphics::createLogicalDevice() {
 
 	createInfo.pNext = &extendedDynamicStateFeatures;
 
-	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
-	}
 
 #ifdef LOVE_ANDROID
     volkLoadDevice(device);
@@ -1251,7 +1289,8 @@ void Graphics::createLogicalDevice() {
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
+	{
 #ifdef LOVE_ANDROID
         ext.vkCmdSetCullModeEXT = vkCmdSetCullModeEXT;
 		ext.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnableEXT;
@@ -1278,7 +1317,8 @@ void Graphics::createLogicalDevice() {
 		ext.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
 #endif
 	}
-	if (optionalDeviceFeatures.pushDescriptor) {
+	if (optionalDeviceFeatures.pushDescriptor)
+	{
 #ifdef LOVE_ANDROID
 		ext.vkCmdPushDescriptorSetKHR = vkCmdPushDescriptorSetKHR;
 #else
@@ -1287,7 +1327,8 @@ void Graphics::createLogicalDevice() {
 	}
 }
 
-void Graphics::initVMA() {
+void Graphics::initVMA()
+{
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
 	allocatorCreateInfo.vulkanApiVersion = vulkanApiVersion;
 	allocatorCreateInfo.physicalDevice = physicalDevice;
@@ -1333,20 +1374,20 @@ void Graphics::initVMA() {
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 #endif
 
-	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS) {
+	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS)
 		throw love::Exception("failed to create vma allocator");
-	}
 }
 
-void Graphics::createSurface() {
+void Graphics::createSurface()
+{
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	const void* handle = window->getHandle();
-	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, &surface) != SDL_TRUE) {
+	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, &surface) != SDL_TRUE)
 		throw love::Exception("failed to create window surface");
-	}
 }
 
-SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device) {
+SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
+{
 	SwapChainSupportDetails details;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -1354,7 +1395,8 @@ SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
-	if (formatCount != 0) {
+	if (formatCount != 0)
+	{
 		details.formats.resize(formatCount);
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
 	}
@@ -1362,7 +1404,8 @@ SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
 	uint32_t presentModeCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 
-	if (presentModeCount != 0) {
+	if (presentModeCount != 0)
+	{
 		details.presentModes.resize(presentModeCount);
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
 	}
@@ -1370,7 +1413,8 @@ SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
 	return details;
 }
 
-void Graphics::createSwapChain() {
+void Graphics::createSwapChain()
+{
 	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -1378,7 +1422,8 @@ void Graphics::createSwapChain() {
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
     if (swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
-        swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+        swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+	{
         uint32_t width, height;
         width = extent.width;
         height = extent.height;
@@ -1389,15 +1434,15 @@ void Graphics::createSwapChain() {
 	auto currentTransform = swapChainSupport.capabilities.currentTransform;
 	constexpr float PI = 3.14159265358979323846f;
 	float angle = 0.0f;
-	if (currentTransform & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+	if (currentTransform & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 		angle = 0.0f;
-	} else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
+	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR)
 		angle = -PI / 2.0f;
-	} else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
+	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR)
 		angle = -PI;
-	} else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
 		angle = -3.0f * PI / 2.0f;
-	}
+
 	float data[] = {
 			cosf(angle), -sinf(angle), 0.0f, 0.0f,
 			sinf(angle), cosf(angle), 0.0f, 0.0f,
@@ -1407,9 +1452,8 @@ void Graphics::createSwapChain() {
 	displayRotation = Matrix4(data);
 
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
+	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 		imageCount = swapChainSupport.capabilities.maxImageCount;
-	}
 
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1425,12 +1469,14 @@ void Graphics::createSwapChain() {
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
-	if (indices.graphicsFamily != indices.presentFamily) {
+	if (indices.graphicsFamily != indices.presentFamily)
+	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
 		createInfo.pQueueFamilyIndices = queueFamilyIndices;
 	}
-	else {
+	else
+	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		createInfo.queueFamilyIndexCount = 0;
 		createInfo.pQueueFamilyIndices = nullptr;
@@ -1442,9 +1488,8 @@ void Graphics::createSwapChain() {
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
 		throw love::Exception("failed to create swap chain");
-	}
 
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
 	swapChainImages.resize(imageCount);
@@ -1455,57 +1500,52 @@ void Graphics::createSwapChain() {
 	preTransform = swapChainSupport.capabilities.currentTransform;
 }
 
-VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
-	for (const auto& availableFormat : availableFormats) {
+VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
+{
+	for (const auto& availableFormat : availableFormats)
 		// fixme: what if this format and colorspace is not available?
-		if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+		if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			return availableFormat;
-		}
-	}
 
 	return availableFormats[0];
 }
 
-VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
+{
 	int vsync = Vulkan::getVsync();
 
+	auto begin = availablePresentModes.begin();
+	auto end = availablePresentModes.end();
+
 	switch (vsync) {
-	case -1: {
-		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-		if (it != availablePresentModes.end()) {
+	case -1:
+		if (std::find(begin, end, VK_PRESENT_MODE_FIFO_RELAXED_KHR) != availablePresentModes.end())
 			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-		}
-		else {
+		else
 			return VK_PRESENT_MODE_FIFO_KHR;
-		}
-	}
-	case 0: {
-		auto it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_MAILBOX_KHR);
-		if (it != availablePresentModes.end()) {
+	case 0:
+		if (std::find(begin, end, VK_PRESENT_MODE_MAILBOX_KHR) != availablePresentModes.end())
 			return VK_PRESENT_MODE_MAILBOX_KHR;
-		}
-		else {
-			it = std::find(availablePresentModes.begin(), availablePresentModes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR);
-			if (it != availablePresentModes.end()) {
+		else
+		{
+			if (std::find(begin, end, VK_PRESENT_MODE_IMMEDIATE_KHR) != availablePresentModes.end())
 				return VK_PRESENT_MODE_IMMEDIATE_KHR;
-			}
-			else {
+			else
 				return VK_PRESENT_MODE_FIFO_KHR;
-			}
 		}
-	}
 	default:
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 }
 
-VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
-	if (capabilities.currentExtent.width != UINT32_MAX) {
+VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
+{
+	if (capabilities.currentExtent.width != UINT32_MAX)
 		return capabilities.currentExtent;
-	}
-	else {
+	else
+	{
 		auto window = Module::getInstance<love::window::Window>(M_WINDOW);
-		const void* handle = window->getHandle();
+		const void *handle = window->getHandle();
 
 		int width, height;
 		SDL_Vulkan_GetDrawableSize((SDL_Window*)handle, &width, &height);
@@ -1522,24 +1562,26 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 	}
 }
 
-VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities) {
-	if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR& capabilities)
+{
+	if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
 		return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	} else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
 		return VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
-    } else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+    else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
         return VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
-    } else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+    else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
         return VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
-    } else {
+    else
         throw love::Exception("failed to find composite alpha");
-    }
 }
 
-void Graphics::createImageViews() {
+void Graphics::createImageViews()
+{
 	swapChainImageViews.resize(swapChainImages.size());
 
-	for (size_t i = 0; i < swapChainImages.size(); i++) {
+	for (size_t i = 0; i < swapChainImages.size(); i++)
+	{
 		VkImageViewCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = swapChainImages.at(i);
@@ -1555,13 +1597,13 @@ void Graphics::createImageViews() {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS) {
+		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS)
 			throw love::Exception("failed to create image views");
-		}
 	}
 }
 
-void Graphics::createDefaultRenderPass() {
+void Graphics::createDefaultRenderPass()
+{
 	RenderPassConfiguration renderPassConfiguration{};
 	renderPassConfiguration.colorFormats.push_back(swapChainImageFormat);
 	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -1574,10 +1616,12 @@ void Graphics::createDefaultRenderPass() {
 	defaultRenderPass = createRenderPass(renderPassConfiguration);
 }
 
-void Graphics::createDefaultFramebuffers() {
+void Graphics::createDefaultFramebuffers()
+{
 	defaultFramebuffers.clear();
 
-	for (const auto view : swapChainImageViews) {
+	for (const auto view : swapChainImageViews)
+	{
 		FramebufferConfiguration configuration{};
 		configuration.staticData.renderPass = defaultRenderPass;
 		configuration.staticData.width = swapChainExtent.width;
@@ -1585,7 +1629,8 @@ void Graphics::createDefaultFramebuffers() {
 		configuration.staticData.depthView = depthImageView;
 		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 			configuration.colorViews.push_back(view);
-		else {
+		else
+		{
 			configuration.colorViews.push_back(colorImageView);
 			configuration.staticData.resolveView = view;
 		}
@@ -1593,20 +1638,18 @@ void Graphics::createDefaultFramebuffers() {
 	}
 }
 
-VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration) {
+VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuration)
+{
 	std::vector<VkImageView> attachments;
 
-	for (const auto& colorView : configuration.colorViews) {
+	for (const auto& colorView : configuration.colorViews)
 		attachments.push_back(colorView);
-	}
 
-	if (configuration.staticData.depthView) {
+	if (configuration.staticData.depthView)
 		attachments.push_back(configuration.staticData.depthView);
-	}
 
-	if (configuration.staticData.resolveView) {
+	if (configuration.staticData.resolveView)
 		attachments.push_back(configuration.staticData.resolveView);
-	}
 
 	VkFramebufferCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1618,29 +1661,32 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration configuration
 	createInfo.layers = 1;
 
 	VkFramebuffer frameBuffer;
-	if (vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer) != VK_SUCCESS) {
+	if (vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer) != VK_SUCCESS)
 		throw love::Exception("failed to create framebuffer");
-	}
 	return frameBuffer;
 }
 
-VkFramebuffer Graphics::getFramebuffer(FramebufferConfiguration configuration) {
+VkFramebuffer Graphics::getFramebuffer(FramebufferConfiguration &configuration)
+{
 	auto it = framebuffers.find(configuration);
-	if (it != framebuffers.end()) {
+	if (it != framebuffers.end())
 		return it->second;
-	}
-	else {
+	else
+	{
 		VkFramebuffer framebuffer = createFramebuffer(configuration);
 		framebuffers[configuration] = framebuffer;
 		return framebuffer;
 	} 
 }
 
-void Graphics::createDefaultShaders() {
-	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++) {
+void Graphics::createDefaultShaders()
+{
+	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
+	{
 		auto stype = (Shader::StandardShader)i;
 
-		if (!Shader::standardShaders[i]) {
+		if (!Shader::standardShaders[i])
+		{
 			std::vector<std::string> stages;
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
@@ -1649,7 +1695,8 @@ void Graphics::createDefaultShaders() {
 	}
 }
 
-VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
+VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
+{
     VkSubpassDescription subPass{};
     subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
@@ -1657,7 +1704,8 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
 
 	uint32_t attachment = 0;
-	for (const auto& colorFormat : configuration.colorFormats) {
+	for (const auto& colorFormat : configuration.colorFormats)
+	{
 		VkAttachmentReference reference{};
 		reference.attachment = attachment++;
 		reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -1666,11 +1714,10 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 		VkAttachmentDescription colorDescription{};
 		colorDescription.format = colorFormat;
 		colorDescription.samples = configuration.staticData.msaaSamples;
-        if (configuration.staticData.initialColorImageLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
+        if (configuration.staticData.initialColorImageLayout != VK_IMAGE_LAYOUT_UNDEFINED)
 		    colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        } else {
+        else
             colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        }
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1683,7 +1730,8 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
     subPass.pColorAttachments = colorAttachmentRefs.data();
 
 	VkAttachmentReference depthStencilAttachmentRef{};
-	if (configuration.staticData.depthFormat != VK_FORMAT_UNDEFINED) {
+	if (configuration.staticData.depthFormat != VK_FORMAT_UNDEFINED)
+	{
 		depthStencilAttachmentRef.attachment = attachment++;
 		depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
@@ -1701,7 +1749,8 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 	}
 
 	VkAttachmentReference colorAttachmentResolveRef{};
-	if (configuration.staticData.resolve) {
+	if (configuration.staticData.resolve)
+	{
 		colorAttachmentResolveRef.attachment = attachment++;
 		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		subPass.pResolveAttachments = &colorAttachmentResolveRef;
@@ -1746,21 +1795,22 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration configuration) {
 	createInfo.pDependencies = dependencies.data();
 
     VkRenderPass renderPass;
-    if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
         throw love::Exception("failed to create render pass");
-    }
 
     return renderPass;
 }
 
-bool Graphics::usesConstantVertexColor(const VertexAttributes& vertexAttributes) {
+bool Graphics::usesConstantVertexColor(const VertexAttributes &vertexAttributes)
+{
 	return !!(vertexAttributes.enableBits & (1u << ATTRIB_COLOR));
 }
 
 void Graphics::createVulkanVertexFormat(
 	VertexAttributes vertexAttributes,
 	std::vector<VkVertexInputBindingDescription> &bindingDescriptions,
-	std::vector<VkVertexInputAttributeDescription> &attributeDescriptions) {
+	std::vector<VkVertexInputAttributeDescription> &attributeDescriptions)
+{
 	std::set<uint32_t> usedBuffers;
 
 	auto allBits = vertexAttributes.enableBits;
@@ -1769,26 +1819,27 @@ void Graphics::createVulkanVertexFormat(
 
 	uint8_t highestBufferBinding = 0;
 
-	for (uint32_t i = 0; i < VertexAttributes::MAX; i++) {	// change to loop like in opengl implementation ?
+	// change to loop like in opengl implementation ?
+	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
+	{
 		uint32 bit = 1u << i;
-		if (allBits & bit) {
-			if (i == ATTRIB_COLOR) {
+		if (allBits & bit)
+		{
+			if (i == ATTRIB_COLOR)
 				usesColor = true;
-			}
 
 			auto attrib = vertexAttributes.attribs[i];
 			auto bufferBinding = attrib.bufferIndex;
-			if (usedBuffers.find(bufferBinding) == usedBuffers.end()) {	// use .contains() when c++20 is enabled
+			if (usedBuffers.find(bufferBinding) == usedBuffers.end())	// use .contains() when c++20 is enabled
+			{
 				usedBuffers.insert(bufferBinding);
 
 				VkVertexInputBindingDescription bindingDescription{};
 				bindingDescription.binding = bufferBinding;
-				if (vertexAttributes.instanceBits & (1u << bufferBinding)) {
+				if (vertexAttributes.instanceBits & (1u << bufferBinding))
 					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
-				}
-				else {
+				else
 					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-				}
 				bindingDescription.stride = vertexAttributes.bufferLayouts[bufferBinding].stride;
 				bindingDescriptions.push_back(bindingDescription);
 
@@ -1806,7 +1857,8 @@ void Graphics::createVulkanVertexFormat(
 	}
 
 	// do we need to use a constant VertexColor?
-	if (!usesColor) {
+	if (!usesColor)
+	{
 		// FIXME: is there a case where gaps happen between buffer bindings?
 		// then this doesn't work. We might need to enable null buffers again.
 		const auto constantColorBufferBinding = highestBufferBinding + 1;
@@ -1826,7 +1878,8 @@ void Graphics::createVulkanVertexFormat(
 	}
 }
 
-void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture, PrimitiveType primitiveType, CullMode cullmode) {
+void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType primitiveType, CullMode cullmode)
+{
 	GraphicsPipelineConfiguration configuration{};
 
     configuration.renderPass = currentRenderPass;
@@ -1839,9 +1892,10 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	configuration.numColorAttachments = currentNumColorAttachments;
 	configuration.primitiveType = primitiveType;
 
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
 		ext.vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
-	} else {
+	else
+	{
 		configuration.dynamicState.winding = states.back().winding;
 		configuration.dynamicState.depthState.compare = states.back().depthTest;
 		configuration.dynamicState.depthState.write = states.back().depthWrite;
@@ -1853,26 +1907,25 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	std::vector<VkBuffer> bufferVector;
 	std::vector<VkDeviceSize> offsets;
 
-	for (uint32_t i = 0; i < VertexAttributes::MAX; i++) {
-		if (buffers.useBits & (1u << i)) {
+	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
+		if (buffers.useBits & (1u << i))
+		{
 			bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
 			offsets.push_back((VkDeviceSize)buffers.info[i].offset);
 		}
-	}
 
-	if (usesConstantVertexColor(attributes)) {
+	if (usesConstantVertexColor(attributes))
+	{
 		bufferVector.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
 		offsets.push_back((VkDeviceSize)0);
 	}
 
 	auto currentUniformData = getCurrentBuiltinUniformData();
 	configuration.shader->setUniformData(currentUniformData);
-	if (texture == nullptr) {
+	if (texture == nullptr)
 		configuration.shader->setMainTex(standardTexture.get());
-	}
-	else {
+	else
 		configuration.shader->setMainTex(texture);
-	}
 
 	ensureGraphicsPipelineConfiguration(configuration);
 
@@ -1880,7 +1933,8 @@ void Graphics::prepareDraw(const VertexAttributes& attributes, const BufferBindi
 	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 }
 
-void Graphics::startDefaultRenderPass() {
+void Graphics::startDefaultRenderPass()
+{
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = defaultRenderPass;
@@ -1909,7 +1963,8 @@ void Graphics::startDefaultRenderPass() {
 	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 }
 
-void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh, bool hasSRGBtexture) {
+void Graphics::startRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
+{
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -1926,26 +1981,28 @@ void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh,
 	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
 	renderPassConfiguration.staticData.initialColorImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	for (const auto &color : rts.colors) {
+	for (const auto &color : rts.colors)
+	{
 		// fixme: use mipmap and slice.
 		color.mipmap;
 		color.slice;
 		renderPassConfiguration.colorFormats.push_back(Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat);
 	}
-	if (rts.depthStencil.texture != nullptr) {
+	if (rts.depthStencil.texture != nullptr)
+	{
 		// fixme: use mipmap and slice:
 		rts.depthStencil.mipmap;
 		rts.depthStencil.slice;
-		if (rts.depthStencil.texture != nullptr) {
+		if (rts.depthStencil.texture != nullptr)
 			renderPassConfiguration.staticData.depthFormat =  Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat;
-		}
 	}
 
     VkRenderPass renderPass;
 	auto it = renderPasses.find(renderPassConfiguration);
-	if (it != renderPasses.end()) {
+	if (it != renderPasses.end())
 		renderPass = it->second;
-	} else {
+	else
+	{
 		renderPass = createRenderPass(renderPassConfiguration);
 		renderPasses[renderPassConfiguration] = renderPass;
 	}
@@ -1954,15 +2011,15 @@ void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh,
 
 	std::vector<VkImage> transitionBackImages;
 
-	for (const auto& color : rts.colors) {
+	for (const auto& color : rts.colors)
+	{
 		configuration.colorViews.push_back((VkImageView)color.texture->getRenderTargetHandle());
 		Vulkan::cmdTransitionImageLayout(currentCommandBuffer, (VkImage)color.texture->getHandle(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		transitionBackImages.push_back((VkImage) color.texture->getHandle());
 	}
-	if (rts.depthStencil.texture != nullptr) {
-		configuration.staticData.depthView = (VkImageView)rts.depthStencil.texture->getRenderTargetHandle();
+	if (rts.depthStencil.texture != nullptr)
 		// fixme: layout transition of depth stencil image?
-	}
+		configuration.staticData.depthView = (VkImageView)rts.depthStencil.texture->getRenderTargetHandle();
 
 	configuration.staticData.renderPass = renderPass;
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
@@ -1987,23 +2044,25 @@ void Graphics::startRenderPass(const RenderTargets& rts, int pixelw, int pixelh,
 	currentNumColorAttachments = static_cast<uint32_t>(rts.colors.size());
 
 	postRenderPass = [=]() {
-		for (const auto& image : transitionBackImages) {
+		for (const auto& image : transitionBackImages)
 			Vulkan::cmdTransitionImageLayout(currentCommandBuffer, image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		}
 	};
 }
 
-void Graphics::endRenderPass() {
+void Graphics::endRenderPass()
+{
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
     currentRenderPass = VK_NULL_HANDLE;
 
-	if (postRenderPass) {
+	if (postRenderPass)
+	{
 		postRenderPass.value()();
 		postRenderPass = std::nullopt;
 	}
 }
 
-VkSampler Graphics::createSampler(const SamplerState& samplerState) {
+VkSampler Graphics::createSampler(const SamplerState &samplerState)
+{
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
@@ -2018,10 +2077,13 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 	samplerInfo.maxAnisotropy = static_cast<float>(samplerState.maxAnisotropy);
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
-	if (samplerState.depthSampleMode.hasValue) {
+	if (samplerState.depthSampleMode.hasValue)
+	{
 		samplerInfo.compareEnable = VK_TRUE;
 		samplerInfo.compareOp = Vulkan::getCompareOp(samplerState.depthSampleMode.value);
-	} else {
+	}
+	else
+	{
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	}
@@ -2031,37 +2093,42 @@ VkSampler Graphics::createSampler(const SamplerState& samplerState) {
 	samplerInfo.maxLod = static_cast<float>(samplerState.maxLod);
 
 	VkSampler sampler;
-	if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+	if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
 		throw love::Exception("failed to create sampler");
-	}
 
 	return sampler;
 }
 
-void Graphics::setComputeShader(Shader* shader) {
+void Graphics::setComputeShader(Shader *shader)
+{
 	computeShader = shader;
 }
 
-const OptionalDeviceFeatures &Graphics::getOptionalDeviceFeatures() const {
+const OptionalDeviceFeatures &Graphics::getOptionalDeviceFeatures() const
+{
 	return optionalDeviceFeatures;
 }
 
-const OptionalDeviceExtensionFunctions &Graphics::getExtensionFunctions() const {
+const OptionalDeviceExtensionFunctions &Graphics::getExtensionFunctions() const
+{
 	return ext;
 }
 
-VkSampler Graphics::getCachedSampler(const SamplerState& samplerState) {
+VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
+{
 	auto it = samplers.find(samplerState);
-	if (it != samplers.end()) {
+	if (it != samplers.end())
 		return it->second;
-	} else {
+	else
+	{
 		VkSampler sampler = createSampler(samplerState);
 		samplers.insert({samplerState, sampler});
 		return sampler;
 	}
 }
 
-VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration configuration) {
+VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &configuration)
+{
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
@@ -2099,7 +2166,8 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
 	rasterizer.lineWidth = 1.0f;
-	if (!optionalDeviceFeatures.extendedDynamicState) {
+	if (!optionalDeviceFeatures.extendedDynamicState)
+	{
 		rasterizer.cullMode = Vulkan::getCullMode(configuration.dynamicState.cullmode);
 		rasterizer.frontFace = Vulkan::getFrontFace(configuration.dynamicState.winding);
 	}
@@ -2117,7 +2185,8 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
-	if (!optionalDeviceFeatures.extendedDynamicState) {
+	if (!optionalDeviceFeatures.extendedDynamicState)
+	{
 		depthStencil.depthWriteEnable = Vulkan::getBool(configuration.dynamicState.depthState.write);
 		depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.dynamicState.depthState.compare);
 	}
@@ -2127,7 +2196,8 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 
 	depthStencil.stencilTestEnable = VK_TRUE;
 
-	if (!optionalDeviceFeatures.extendedDynamicState) {
+	if (!optionalDeviceFeatures.extendedDynamicState)
+	{
 		depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
 		depthStencil.front.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
 		depthStencil.front.depthFailOp = VK_STENCIL_OP_KEEP;
@@ -2166,7 +2236,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 
 	std::vector<VkDynamicState> dynamicStates;
 	
-	if (optionalDeviceFeatures.extendedDynamicState) {
+	if (optionalDeviceFeatures.extendedDynamicState)
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -2179,15 +2249,13 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
 			VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
 			VK_DYNAMIC_STATE_STENCIL_OP_EXT,
 		};
-	}
-	else {
+	else
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,
 			VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
 			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
 		};
-	}
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -2210,20 +2278,23 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration config
     pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw love::Exception("failed to create graphics pipeline");
-	}
 	return graphicsPipeline;
 }
 
-void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration configuration) {
+void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration) {
 	auto it = graphicsPipelines.find(configuration);
-	if (it != graphicsPipelines.end()) {
-		if (it->second != currentGraphicsPipeline) {
+	if (it != graphicsPipelines.end())
+	{
+		if (it->second != currentGraphicsPipeline)
+		{
 			vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
 			currentGraphicsPipeline = it->second;
 		}
-	} else {
+	}
+	else
+	{
 		VkPipeline pipeline = createGraphicsPipeline(configuration);
 		graphicsPipelines.insert({configuration, pipeline});
 		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -2231,7 +2302,8 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 	}
 }
 
-void Graphics::getMaxUsableSampleCount() {
+void Graphics::getMaxUsableSampleCount()
+{
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 
@@ -2253,12 +2325,15 @@ void Graphics::getMaxUsableSampleCount() {
 		msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 }
 
-void Graphics::createColorResources() {
-	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT) {
+void Graphics::createColorResources()
+{
+	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+	{
 		colorImage = VK_NULL_HANDLE;
 		colorImageView = VK_NULL_HANDLE;
 	} 
-	else {
+	else
+	{
 		VkFormat colorFormat = swapChainImageFormat;
 
 		VkImageCreateInfo imageInfo{};
@@ -2301,22 +2376,23 @@ void Graphics::createColorResources() {
 	}
 }
 
-VkFormat Graphics::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
-	for (auto format : candidates) {
+VkFormat Graphics::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+{
+	for (auto format : candidates)
+	{
 		VkFormatProperties properties;
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &properties);
-		if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) {
+		if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)
 			return format;
-		}
-		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
+		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)
 			return format;
-		}
 	}
 
 	throw love::Exception("failed to find supported format");
 }
 
-VkFormat Graphics::findDepthFormat() {
+VkFormat Graphics::findDepthFormat()
+{
 	return findSupportedFormat(
 		{ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
 		VK_IMAGE_TILING_OPTIMAL,
@@ -2324,7 +2400,8 @@ VkFormat Graphics::findDepthFormat() {
 	);
 }
 
-void Graphics::createDepthResources() {
+void Graphics::createDepthResources()
+{
 	VkFormat depthFormat = findDepthFormat();
 
 	VkImageCreateInfo imageInfo{};
@@ -2366,7 +2443,8 @@ void Graphics::createDepthResources() {
 	vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView);
 }
 
-void Graphics::createCommandPool() {
+void Graphics::createCommandPool()
+{
 	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
 
 	VkCommandPoolCreateInfo poolInfo{};
@@ -2374,12 +2452,12 @@ void Graphics::createCommandPool() {
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
-	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		throw love::Exception("failed to create command pool");
-	}
 }
 
-void Graphics::createCommandBuffers() {
+void Graphics::createCommandBuffers()
+{
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	dataTransferCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	readbackCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -2391,9 +2469,8 @@ void Graphics::createCommandBuffers() {
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
 		throw love::Exception("failed to allocate command buffers");
-	}
 
 	VkCommandBufferAllocateInfo dataTransferAllocInfo{};
 	dataTransferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2401,9 +2478,8 @@ void Graphics::createCommandBuffers() {
 	dataTransferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	dataTransferAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkAllocateCommandBuffers(device, &dataTransferAllocInfo, dataTransferCommandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device, &dataTransferAllocInfo, dataTransferCommandBuffers.data()) != VK_SUCCESS)
 		throw love::Exception("failed to allocate data transfer command buffers");
-	}
 
 	VkCommandBufferAllocateInfo readbackAllocInfo{};
 	readbackAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2411,9 +2487,8 @@ void Graphics::createCommandBuffers() {
 	readbackAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	readbackAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkAllocateCommandBuffers(device, &readbackAllocInfo, readbackCommandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device, &readbackAllocInfo, readbackCommandBuffers.data()) != VK_SUCCESS)
 		throw love::Exception("failed to allocate readback command buffers");
-	}
 
 	VkCommandBufferAllocateInfo commandAllocInfo{};
 	commandAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -2421,12 +2496,12 @@ void Graphics::createCommandBuffers() {
 	commandAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	commandAllocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkAllocateCommandBuffers(device, &commandAllocInfo, computeCommandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device, &commandAllocInfo, computeCommandBuffers.data()) != VK_SUCCESS)
 		throw love::Exception("failed to allocate compute command buffers");
-	}
 }
 
-void Graphics::createSyncObjects() {
+void Graphics::createSyncObjects()
+{
 	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -2439,35 +2514,34 @@ void Graphics::createSyncObjects() {
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores.at(i)) != VK_SUCCESS ||
 			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores.at(i)) != VK_SUCCESS ||
-			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences.at(i)) != VK_SUCCESS) {
+			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences.at(i)) != VK_SUCCESS)
 			throw love::Exception("failed to create synchronization objects for a frame!");
-		}
-	}
 }
 
-void Graphics::createDefaultTexture() {
+void Graphics::createDefaultTexture()
+{
 	Texture::Settings settings;
 	standardTexture.reset((Texture*)newTexture(settings, nullptr));
 	uint8_t whitePixels[] = {255, 255, 255, 255};
 	standardTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
 }
 
-void Graphics::cleanup() {
+void Graphics::cleanup()
+{
 	cleanupSwapChain();
 
-	for (auto &cleanUpFns : cleanUpFunctions) {
-		for (auto &cleanUpFn : cleanUpFns) {
+	for (auto &cleanUpFns : cleanUpFunctions)
+		for (auto &cleanUpFn : cleanUpFns)
 			cleanUpFn();
-		}
-	}
 	cleanUpFunctions.clear();
 
 	vmaDestroyAllocator(vmaAllocator);
 	batchedDrawBuffers.clear();
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroyFence(device, inFlightFences[i], nullptr);
@@ -2478,19 +2552,16 @@ void Graphics::cleanup() {
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, readbackCommandBuffers.data());
 	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, computeCommandBuffers.data());
 
-	for (auto const& p : samplers) {
+	for (auto const &p : samplers)
 		vkDestroySampler(device, p.second, nullptr);
-	}
 	samplers.clear();
 
-	for (const auto& [key, val] : renderPasses) {
+	for (const auto &[key, val] : renderPasses)
 		vkDestroyRenderPass(device, val, nullptr);
-	}
 
 	// fixme: maybe we should clean up some pipelines if they haven't been used in a while.
-	for (auto const& p : graphicsPipelines) {
+	for (auto const &p : graphicsPipelines)
 		vkDestroyPipeline(device, p.second, nullptr);
-	}
 	graphicsPipelines.clear();
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
@@ -2499,27 +2570,26 @@ void Graphics::cleanup() {
 	vkDestroyInstance(instance, nullptr);
 }
 
-void Graphics::cleanupSwapChain() {
-	for (const auto& framebuffer : defaultFramebuffers) {
+void Graphics::cleanupSwapChain()
+{
+	for (const auto &framebuffer : defaultFramebuffers)
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
-	}
 	vkDestroyRenderPass(device, defaultRenderPass, nullptr);
 	vkDestroyImageView(device, colorImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
-	for (const auto& [key, val] : framebuffers) {
+	for (const auto &[key, val] : framebuffers)
 		vkDestroyFramebuffer(device, val, nullptr);
-	}
     framebuffers.clear();
-    for (auto & swapChainImageView : swapChainImageViews) {
+    for (const auto &swapChainImageView : swapChainImageViews)
         vkDestroyImageView(device, swapChainImageView, nullptr);
-    }
     swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
-void Graphics::recreateSwapChain() {
+void Graphics::recreateSwapChain()
+{
 	vkDeviceWaitIdle(device);
 
 	cleanupSwapChain();
@@ -2532,18 +2602,22 @@ void Graphics::recreateSwapChain() {
 	createDefaultFramebuffers();
 }
 
-love::graphics::Graphics* createInstance() {
-	love::graphics::Graphics* instance = nullptr;
+love::graphics::Graphics *createInstance()
+{
+	love::graphics::Graphics *instance = nullptr;
 
-	try {
+	try
+	{
 		instance = new Graphics();
 	}
-	catch (love::Exception& e) {
+	catch (love::Exception &e)
+	{
 		printf("Cannot create Vulkan renderer: %s\n", e.what());
 	}
 
 	return instance;
 }
+
 } // vulkan
 } // graphics
 } // love

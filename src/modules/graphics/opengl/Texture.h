@@ -46,8 +46,8 @@ public:
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
-	void copyFromBuffer(love::graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) override;
-	void copyToBuffer(love::graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) override;
+	void copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect) override;
+	void copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size) override;
 
 	void setSamplerState(const SamplerState &s) override;
 

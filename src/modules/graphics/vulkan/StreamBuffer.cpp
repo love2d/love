@@ -3,11 +3,17 @@
 #include "Graphics.h"
 
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-static VkBufferUsageFlags getUsageFlags(BufferUsage mode) {
-	switch (mode) {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
+static VkBufferUsageFlags getUsageFlags(BufferUsage mode)
+{
+	switch (mode)
+	{
 	case BUFFERUSAGE_VERTEX: return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	case BUFFERUSAGE_INDEX: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
@@ -16,13 +22,15 @@ static VkBufferUsageFlags getUsageFlags(BufferUsage mode) {
 	}
 }
 
-StreamBuffer::StreamBuffer(graphics::Graphics* gfx, BufferUsage mode, size_t size)
-	:	love::graphics::StreamBuffer(mode, size), gfx(gfx) {
+StreamBuffer::StreamBuffer(graphics::Graphics *gfx, BufferUsage mode, size_t size)
+	: love::graphics::StreamBuffer(mode, size)
+	, vgfx(dynamic_cast<Graphics*>(gfx))
+{
 	loadVolatile();
 }
 
-bool StreamBuffer::loadVolatile() {
-	Graphics* vgfx = (Graphics*)gfx;
+bool StreamBuffer::loadVolatile()
+{
 	allocator = vgfx->getVmaAllocator();
 
 	VkBufferCreateInfo bufferInfo{};
@@ -42,37 +50,48 @@ bool StreamBuffer::loadVolatile() {
 	return true;
 }
 
-void StreamBuffer::unloadVolatile() {
+void StreamBuffer::unloadVolatile()
+{
 	if (buffer == VK_NULL_HANDLE)
 		return;
 
-	auto vgfx = (Graphics*)gfx;
 	vgfx->queueCleanUp([allocator=allocator, buffer=buffer, allocation=allocation](){
 		vmaDestroyBuffer(allocator, buffer, allocation);
 	});
 	buffer = VK_NULL_HANDLE;
 }
 
-StreamBuffer::~StreamBuffer() {
+StreamBuffer::~StreamBuffer()
+{
 	unloadVolatile();
 }
 
-love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize) {
+ptrdiff_t StreamBuffer::getHandle() const
+{
+	return (ptrdiff_t) buffer;
+}
+
+love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize)
+{
 	(void)minsize;
 	return love::graphics::StreamBuffer::MapInfo((uint8*) allocInfo.pMappedData + usedGPUMemory, getSize());
 }
 
-size_t StreamBuffer::unmap(size_t usedSize) {
+size_t StreamBuffer::unmap(size_t usedSize)
+{
 	return usedGPUMemory;
 }
 
-void StreamBuffer::markUsed(size_t usedSize) {
+void StreamBuffer::markUsed(size_t usedSize)
+{
 	usedGPUMemory += usedSize;
 }
 
-void StreamBuffer::nextFrame() {
+void StreamBuffer::nextFrame()
+{
 	usedGPUMemory = 0;
 }
+
 } // vulkan
 } // graphics
 } // love

@@ -18,8 +18,6 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include <iostream>
-
 #include "ShaderStage.h"
 #include "common/Exception.h"
 #include "Graphics.h"
@@ -178,8 +176,7 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 
 		std::string err = "Error validating " + std::string(stagename) + " shader:\n\n"
 			+ std::string(glslangShader->getInfoLog()) + "\n"
-			+ std::string(glslangShader->getInfoDebugLog()) + "\n\nShader Code:\n" 
-			+ glsl;
+			+ std::string(glslangShader->getInfoDebugLog());
 
 		delete glslangShader;
 		throw love::Exception("%s", err.c_str());

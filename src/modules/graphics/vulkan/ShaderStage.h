@@ -1,24 +1,25 @@
-#ifndef LOVE_GRAPHICS_VULKAN_SHADERSTAGE_H
-#define LOVE_GRAPHICS_VULKAN_SHADERSTAGE_H
+#pragma once
 
 #include "graphics/ShaderStage.h"
 #include "modules/graphics/Graphics.h"
 
 #include "VulkanWrapper.h"
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-class ShaderStage final : public graphics::ShaderStage {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
+class ShaderStage final : public graphics::ShaderStage
+{
 public:
-	ShaderStage(love::graphics::Graphics* gfx, ShaderStageType stage, const std::string& glsl, bool gles, const std::string& cachekey);
+	ShaderStage(love::graphics::Graphics *gfx, ShaderStageType stage, const std::string &glsl, bool gles, const std::string &cachekey);
 
-	ptrdiff_t getHandle() const {
-		return 0;
-	}
+	ptrdiff_t getHandle() const override;
 };
-}
-}
-}
 
-#endif
+}
+}
+}

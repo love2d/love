@@ -1,13 +1,15 @@
-#ifndef LOVE_GRAPHICS_VULKAN_SHADER_H
-#define LOVE_GRAPHICS_VULKAN_SHADER_H
+#pragma once
 
+// LÖVE
 #include <graphics/Shader.h>
 #include <graphics/vulkan/ShaderStage.h>
 #include "Vulkan.h"
 
+// Libraries
 #include "VulkanWrapper.h"
 #include "libraries/spirv_cross/spirv_reflect.hpp"
 
+// C++
 #include <map>
 #include <memory>
 #include <iostream>
@@ -15,10 +17,19 @@
 #include <queue>
 
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-class Shader final : public graphics::Shader, public Volatile {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
+class Graphics;
+
+class Shader final
+	: public graphics::Shader
+	, public Volatile
+{
 public:
 	Shader(StrongRef<love::graphics::ShaderStage> stages[]);
 	virtual ~Shader();
@@ -94,7 +105,8 @@ private:
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
-	Graphics* gfx;
+
+	Graphics *vgfx = nullptr;
 	VkDevice device;
 
 	bool isCompute = false;
@@ -113,8 +125,7 @@ private:
 	uint32_t currentUsedUniformStreamBuffersCount;
 	uint32_t currentUsedDescriptorSetsCount;
 };
-}
-}
-}
 
-#endif
+}
+}
+}

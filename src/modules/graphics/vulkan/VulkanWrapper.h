@@ -1,5 +1,4 @@
-#ifndef LOVE_GRAPHICS_VULKAN_VULKANWRAPPER_H
-#define LOVE_GRAPHICS_VULKAN_VULKANWRAPPER_H
+#pragma once
 
 #include "common/config.h"
 
@@ -13,5 +12,3 @@
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #endif
 #include "vk_mem_alloc.h"
-
-#endif //LOVE_GRAPHICS_VULKAN_VULKANWRAPPER_H

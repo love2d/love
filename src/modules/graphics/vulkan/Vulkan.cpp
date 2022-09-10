@@ -3,34 +3,45 @@
 #include <sstream>
 
 
-namespace love {
-namespace graphics {
-namespace vulkan {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
 static uint32_t numShaderSwitches;
 static int vsync = 1;
 
-void Vulkan::shaderSwitch() {
+void Vulkan::shaderSwitch()
+{
 	numShaderSwitches++;
 }
 
-uint32_t Vulkan::getNumShaderSwitches() {
+uint32_t Vulkan::getNumShaderSwitches()
+{
 	return numShaderSwitches;
 }
 
-void Vulkan::resetShaderSwitches() {
+void Vulkan::resetShaderSwitches()
+{
 	numShaderSwitches = 0;
 }
 
-void Vulkan::setVsync(int value) {
+void Vulkan::setVsync(int value)
+{
 	vsync = value;
 }
 
-int Vulkan::getVsync() {
+int Vulkan::getVsync()
+{
 	return vsync;
 }
 
-VkFormat Vulkan::getVulkanVertexFormat(DataFormat format) {
-	switch (format) {
+VkFormat Vulkan::getVulkanVertexFormat(DataFormat format)
+{
+	switch (format)
+	{
 	case DATAFORMAT_FLOAT:
 		return VK_FORMAT_R32_SFLOAT;
 	case DATAFORMAT_FLOAT_VEC2:
@@ -110,10 +121,12 @@ VkFormat Vulkan::getVulkanVertexFormat(DataFormat format) {
 	}
 }
 
-TextureFormat Vulkan::getTextureFormat(PixelFormat format) {
+TextureFormat Vulkan::getTextureFormat(PixelFormat format)
+{
 	TextureFormat textureFormat{};
 
-	switch (format) {
+	switch (format)
+	{
 		case PIXELFORMAT_UNKNOWN:
 			throw love::Exception("unknown pixel format");
 		case PIXELFORMAT_NORMAL:
@@ -353,8 +366,10 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format) {
 
 // values taken from https://pcisig.com/membership/member-companies
 // as specified at https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceProperties.html
-std::string Vulkan::getVendorName(uint32_t vendorId) {
-	switch (vendorId) {
+std::string Vulkan::getVendorName(uint32_t vendorId)
+{
+	switch (vendorId)
+	{
 	case 4130:
 		return "AMD";
 	case 4318:
@@ -376,7 +391,8 @@ std::string Vulkan::getVendorName(uint32_t vendorId) {
 	}
 }
 
-std::string Vulkan::getVulkanApiVersion(uint32_t version) {
+std::string Vulkan::getVulkanApiVersion(uint32_t version)
+{
 	std::stringstream ss;
 
 	ss << VK_API_VERSION_MAJOR(version) 
@@ -386,8 +402,10 @@ std::string Vulkan::getVulkanApiVersion(uint32_t version) {
 	return ss.str();
 }
 
-VkPrimitiveTopology Vulkan::getPrimitiveTypeTopology(graphics::PrimitiveType primitiveType) {
-	switch (primitiveType) {
+VkPrimitiveTopology Vulkan::getPrimitiveTypeTopology(graphics::PrimitiveType primitiveType)
+{
+	switch (primitiveType)
+	{
 	case PRIMITIVE_POINTS:
 		return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 	case PRIMITIVE_TRIANGLES:
@@ -401,8 +419,10 @@ VkPrimitiveTopology Vulkan::getPrimitiveTypeTopology(graphics::PrimitiveType pri
 	}
 }
 
-VkBlendFactor Vulkan::getBlendFactor(BlendFactor blendFactor) {
-	switch (blendFactor) {
+VkBlendFactor Vulkan::getBlendFactor(BlendFactor blendFactor)
+{
+	switch (blendFactor)
+	{
 	case BLENDFACTOR_ZERO:
 		return VK_BLEND_FACTOR_ZERO;
 	case BLENDFACTOR_ONE:
@@ -430,8 +450,10 @@ VkBlendFactor Vulkan::getBlendFactor(BlendFactor blendFactor) {
 	}
 }
 
-VkBlendOp Vulkan::getBlendOp(BlendOperation op) {
-	switch (op) {
+VkBlendOp Vulkan::getBlendOp(BlendOperation op)
+{
+	switch (op)
+	{
 	case BLENDOP_ADD:
 		return VK_BLEND_OP_ADD;
 	case BLENDOP_MAX:
@@ -447,35 +469,34 @@ VkBlendOp Vulkan::getBlendOp(BlendOperation op) {
 	}
 }
 
-VkBool32 Vulkan::getBool(bool b) {
-	if (b) {
+VkBool32 Vulkan::getBool(bool b)
+{
+	if (b)
 		return VK_TRUE;
-	} else {
+	else
 		return VK_FALSE;
-	}
 }
 
-VkColorComponentFlags Vulkan::getColorMask(ColorChannelMask mask) {
+VkColorComponentFlags Vulkan::getColorMask(ColorChannelMask mask)
+{
 	VkColorComponentFlags flags = 0;
 
-	if (mask.r) {
+	if (mask.r)
 		flags |= VK_COLOR_COMPONENT_R_BIT;
-	}
-	if (mask.g) {
+	if (mask.g)
 		flags |= VK_COLOR_COMPONENT_G_BIT;
-	}
-	if (mask.b) {
+	if (mask.b)
 		flags |= VK_COLOR_COMPONENT_B_BIT;
-	}
-	if (mask.a) {
+	if (mask.a)
 		flags |= VK_COLOR_COMPONENT_A_BIT;
-	}
 
 	return flags;
 }
 
-VkFrontFace Vulkan::getFrontFace(Winding winding) {
-	switch (winding) {
+VkFrontFace Vulkan::getFrontFace(Winding winding)
+{
+	switch (winding)
+	{
 	case WINDING_CW:
 		return VK_FRONT_FACE_CLOCKWISE;
 	case WINDING_CCW:
@@ -485,8 +506,10 @@ VkFrontFace Vulkan::getFrontFace(Winding winding) {
 	}
 }
 
-VkCullModeFlags Vulkan::getCullMode(CullMode cullmode) {
-	switch (cullmode) {
+VkCullModeFlags Vulkan::getCullMode(CullMode cullmode)
+{
+	switch (cullmode)
+	{
 	case CULL_BACK:
 		return VK_CULL_MODE_BACK_BIT;
 	case CULL_FRONT:
@@ -498,8 +521,10 @@ VkCullModeFlags Vulkan::getCullMode(CullMode cullmode) {
 	}
 }
 
-VkImageType Vulkan::getImageType(TextureType textureType) {
-	switch (textureType) {
+VkImageType Vulkan::getImageType(TextureType textureType)
+{
+	switch (textureType)
+	{
 	case TEXTURE_2D:
 	case TEXTURE_2D_ARRAY:
 	case TEXTURE_CUBE:
@@ -511,8 +536,10 @@ VkImageType Vulkan::getImageType(TextureType textureType) {
 	}
 }
 
-VkImageViewType Vulkan::getImageViewType(TextureType textureType) {
-	switch (textureType) {
+VkImageViewType Vulkan::getImageViewType(TextureType textureType)
+{
+	switch (textureType)
+	{
 	case TEXTURE_2D:
 		return VK_IMAGE_VIEW_TYPE_2D;
 	case TEXTURE_2D_ARRAY:
@@ -526,16 +553,18 @@ VkImageViewType Vulkan::getImageViewType(TextureType textureType) {
 	}
 }
 
-VkPolygonMode Vulkan::getPolygonMode(bool wireframe) {
-	if (wireframe) {
+VkPolygonMode Vulkan::getPolygonMode(bool wireframe)
+{
+	if (wireframe)
 		return VK_POLYGON_MODE_LINE;
-	} else {
+	else
 		return VK_POLYGON_MODE_FILL;
-	}
 }
 
-VkFilter Vulkan::getFilter(SamplerState::FilterMode mode) {
-	switch (mode) {
+VkFilter Vulkan::getFilter(SamplerState::FilterMode mode)
+{
+	switch (mode)
+	{
 	case SamplerState::FILTER_LINEAR:
 		return VK_FILTER_LINEAR;
 	case SamplerState::FILTER_NEAREST:
@@ -545,8 +574,10 @@ VkFilter Vulkan::getFilter(SamplerState::FilterMode mode) {
 	}
 }
 
-VkSamplerAddressMode Vulkan::getWrapMode(SamplerState::WrapMode mode) {
-	switch (mode) {
+VkSamplerAddressMode Vulkan::getWrapMode(SamplerState::WrapMode mode)
+{
+	switch (mode)
+	{
 		//fixme: not accounting for different clamps (how does that work in vulkan?)
 	case SamplerState::WRAP_CLAMP:
 	case SamplerState::WRAP_CLAMP_ZERO:
@@ -561,8 +592,10 @@ VkSamplerAddressMode Vulkan::getWrapMode(SamplerState::WrapMode mode) {
 	}
 }
 
-VkCompareOp Vulkan::getCompareOp(CompareMode mode) {
-	switch (mode) {
+VkCompareOp Vulkan::getCompareOp(CompareMode mode)
+{
+	switch (mode)
+	{
 	case COMPARE_LESS:
 		return VK_COMPARE_OP_LESS;
 	case COMPARE_LEQUAL:
@@ -584,8 +617,10 @@ VkCompareOp Vulkan::getCompareOp(CompareMode mode) {
 	}
 }
 
-VkSamplerMipmapMode Vulkan::getMipMapMode(SamplerState::MipmapFilterMode mode) {
-	switch (mode) {
+VkSamplerMipmapMode Vulkan::getMipMapMode(SamplerState::MipmapFilterMode mode)
+{
+	switch (mode)
+	{
 	case SamplerState::MIPMAP_FILTER_NEAREST:
 		return VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	case SamplerState::MIPMAP_FILTER_NONE:
@@ -595,9 +630,10 @@ VkSamplerMipmapMode Vulkan::getMipMapMode(SamplerState::MipmapFilterMode mode) {
 	}
 }
 
-
-VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type) {
-	switch (type) {
+VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type)
+{
+	switch (type)
+	{
 	case graphics::Shader::UniformType::UNIFORM_FLOAT:
 	case graphics::Shader::UniformType::UNIFORM_MATRIX:
 	case graphics::Shader::UniformType::UNIFORM_INT:
@@ -617,8 +653,10 @@ VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type) {
 	}
 }
 
-VkStencilOp Vulkan::getStencilOp(StencilAction action) {
-	switch (action) {
+VkStencilOp Vulkan::getStencilOp(StencilAction action)
+{
+	switch (action)
+	{
 	case STENCIL_KEEP:
 		return VK_STENCIL_OP_KEEP;
 	case STENCIL_ZERO:
@@ -640,8 +678,10 @@ VkStencilOp Vulkan::getStencilOp(StencilAction action) {
 	}
 }
 
-VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type) {
-	switch (type) {
+VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type)
+{
+	switch (type)
+	{
 	case INDEX_UINT16: return VK_INDEX_TYPE_UINT16;
 	case INDEX_UINT32: return VK_INDEX_TYPE_UINT32;
 	default:
@@ -650,7 +690,8 @@ VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type) {
 }
 
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
-	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount) {
+	uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount)
+{
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.oldLayout = oldLayout;
@@ -667,63 +708,72 @@ void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage ima
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 
-	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
 		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+	{
 		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
 		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+	{
 		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+	{
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	}
-	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+	{
 		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		barrier.dstAccessMask = 0;
 
@@ -731,16 +781,16 @@ void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage ima
 		destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	}
 	// we use general for images that are both sampled and compute write
-	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL)
+	{
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 
 		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
-	else {
+	else
 		throw std::invalid_argument("unsupported layout transition!");
-	}
 
 	vkCmdPipelineBarrier(
 		commandBuffer,

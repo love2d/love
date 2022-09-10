@@ -49,7 +49,7 @@ static const char global_syntax[] = R"(
 	#define mediump
 	#define highp
 #endif
-#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH) || defined(USE_VULKAN)
+#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
 	#define LOVE_HIGHP_OR_MEDIUMP highp
 #else
 	#define LOVE_HIGHP_OR_MEDIUMP mediump
@@ -248,8 +248,8 @@ LOVE_IO_LOCATION(0) attribute vec4 VertexPosition;
 LOVE_IO_LOCATION(1) attribute vec4 VertexTexCoord;
 LOVE_IO_LOCATION(2) attribute vec4 VertexColor;
 
-LOVE_IO_LOCATION(0) varying vec4 VaryingTexCoord;
-LOVE_IO_LOCATION(1) varying vec4 VaryingColor;
+varying vec4 VaryingTexCoord;
+varying vec4 VaryingColor;
 
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
@@ -316,8 +316,8 @@ static const char pixel_main[] = R"(
 #endif
 
 uniform sampler2D MainTex;
-LOVE_IO_LOCATION(0) varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
-LOVE_IO_LOCATION(1) varying mediump vec4 VaryingColor;
+varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
+varying mediump vec4 VaryingColor;
 
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
 
@@ -351,8 +351,8 @@ static const char pixel_main_custom[] = R"(
 #define LOVE_MULTI_CANVASES 1
 #endif
 
-LOVE_IO_LOCATION(0) varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
-LOVE_IO_LOCATION(1) varying mediump vec4 VaryingColor;
+varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
+varying mediump vec4 VaryingColor;
 
 void effect();
 
@@ -574,8 +574,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
 	ss << code;
 
-	auto result = ss.str();
-	return result;
+	return ss.str();
 }
 
 Shader::Shader(StrongRef<ShaderStage> _stages[])
@@ -877,8 +876,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		{
 			LocalUniform u = {};
 			auto &values = u.initializerValues;
-			// const glslang::TConstUnionArray *constarray = info.getConstArray(); was this function deprecated in a later version?
-			const glslang::TConstUnionArray* constarray = nullptr;
+			const glslang::TConstUnionArray *constarray = info.getConstArray();
 
 			// Store initializer values for local uniforms. Some love graphics
 			// backends strip these out of the shader so we need to be able to

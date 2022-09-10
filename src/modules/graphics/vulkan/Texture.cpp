@@ -4,22 +4,26 @@
 
 #include <limits>
 
-// make vulkan::Graphics functions available
-#define vgfx ((Graphics*)gfx)
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-Texture::Texture(love::graphics::Graphics* gfx, const Settings& settings, const Slices* data)
-	: love::graphics::Texture(gfx, settings, data), gfx(gfx), slices(settings.type) {
-	if (data) {
+Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data)
+	: love::graphics::Texture(gfx, settings, data)
+	, vgfx(dynamic_cast<Graphics*>(gfx))
+	, slices(settings.type)
+{
+	if (data)
 		slices = *data;
-	}
 
 	loadVolatile();
 }
 
-bool Texture::loadVolatile() {
+bool Texture::loadVolatile()
+{
 	allocator = vgfx->getVmaAllocator();
 	device = vgfx->getDevice();
 
@@ -44,10 +48,10 @@ bool Texture::loadVolatile() {
 
 	layerCount = 1;
 
-	if (texType == TEXTURE_2D_ARRAY) {
+	if (texType == TEXTURE_2D_ARRAY)
 		layerCount = getLayerCount();
-	}
-	else if (texType == TEXTURE_CUBE) {
+	else if (texType == TEXTURE_CUBE)
+	{
 		layerCount = 6;
 		createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	}
@@ -70,9 +74,8 @@ bool Texture::loadVolatile() {
 
 	VmaAllocationCreateInfo imageAllocationCreateInfo{};
 
-	if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS) {
+	if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS)
 		throw love::Exception("failed to create image");
-	}
 
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
@@ -90,37 +93,36 @@ bool Texture::loadVolatile() {
 
 	bool hasdata = slices.get(0, 0) != nullptr;
 
-	if (hasdata) {
-		for (int mip = 0; mip < layerCount; mip++) {
+	if (hasdata)
+		for (int mip = 0; mip < layerCount; mip++)
+		{
 			// fixme: deal with compressed images.
 
 			int sliceCount;
-			if (texType == TEXTURE_CUBE) {
+			if (texType == TEXTURE_CUBE)
 				sliceCount = 6;
-			} else {
+			else
 				sliceCount = slices.getSliceCount();
-			}
-			for (int slice = 0; slice < sliceCount; slice++) {
+			for (int slice = 0; slice < sliceCount; slice++)
+			{
 				auto* id = slices.get(slice, mip);
-				if (id != nullptr) {
+				if (id != nullptr)
 					uploadImageData(id, mip, slice, 0, 0);
-				}
 			}
 		}
-	} else {
+	else
 		clear();
-	}
 	createTextureImageView();
 	textureSampler = vgfx->getCachedSampler(samplerState);
 
-	if (slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE) {
+	if (slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
-	}
 
 	return true;
 }
 
-void Texture::unloadVolatile() {
+void Texture::unloadVolatile()
+{
 	if (textureImage == VK_NULL_HANDLE)
 		return;
 
@@ -137,20 +139,44 @@ void Texture::unloadVolatile() {
 	textureImage = VK_NULL_HANDLE;
 }
 
-Texture::~Texture() {
+Texture::~Texture()
+{
 	unloadVolatile();
 }
 
-void Texture::setSamplerState(const SamplerState &s) {
+ptrdiff_t Texture::getRenderTargetHandle() const
+{
+	return (ptrdiff_t)textureImageView;
+}
+
+ptrdiff_t Texture::getSamplerHandle() const
+{
+	return (ptrdiff_t)textureSampler;
+}
+
+int Texture::getMSAA() const
+{
+	return 0;
+}
+
+ptrdiff_t Texture::getHandle() const
+{
+	return (ptrdiff_t)textureImage;
+}
+
+void Texture::setSamplerState(const SamplerState &s)
+{
 	love::graphics::Texture::setSamplerState(s);
 	textureSampler = vgfx->getCachedSampler(s);
 }
 
-VkImageLayout Texture::getImageLayout() const {
+VkImageLayout Texture::getImageLayout() const
+{
 	return imageLayout;
 }
 
-void Texture::createTextureImageView() {
+void Texture::createTextureImageView()
+{
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkImageViewCreateInfo viewInfo{};
@@ -168,12 +194,12 @@ void Texture::createTextureImageView() {
 	viewInfo.components.b = vulkanFormat.swizzleB;
 	viewInfo.components.a = vulkanFormat.swizzleA;
 
-	if (vkCreateImageView(device, &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
+	if (vkCreateImageView(device, &viewInfo, nullptr, &textureImageView) != VK_SUCCESS)
 		throw love::Exception("could not create texture image view");
-	}
 }
 
-void Texture::clear() {
+void Texture::clear()
+{
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
 	auto clearColor = getClearValue();
@@ -185,7 +211,8 @@ void Texture::clear() {
 	range.baseArrayLayer = 0;
 	range.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
-	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			0, range.levelCount, 0, range.layerCount);
@@ -196,16 +223,17 @@ void Texture::clear() {
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
 			0, range.levelCount, 0, range.layerCount);
 	}
-	else {
+	else
 		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
-	}
 }
 
-VkClearColorValue Texture::getClearValue() {
+VkClearColorValue Texture::getClearValue()
+{
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkClearColorValue clearColor{};
-	switch (vulkanFormat.internalFormatRepresentation) {
+	switch (vulkanFormat.internalFormatRepresentation)
+	{
 	case FORMATREPRESENTATION_FLOAT:
 		clearColor.float32[0] = 0.0f;
 		clearColor.float32[1] = 0.0f;
@@ -228,7 +256,8 @@ VkClearColorValue Texture::getClearValue() {
 	return clearColor;
 }
 
-void Texture::generateMipmapsInternal() {
+void Texture::generateMipmapsInternal()
+{
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
@@ -249,7 +278,8 @@ void Texture::generateMipmapsInternal() {
 
 	uint32_t mipLevels = static_cast<uint32_t>(getMipmapCount());
 
-	for (uint32_t i = 1; i < mipLevels; i++) {
+	for (uint32_t i = 1; i < mipLevels; i++)
+	{
 		barrier.subresourceRange.baseMipLevel = i - 1;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -309,7 +339,8 @@ void Texture::generateMipmapsInternal() {
 			1, &barrier);
 }
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t size, int level, int slice, const Rect& r) {
+void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+{
 	VkBuffer stagingBuffer;
 	VmaAllocation vmaAllocation;
 
@@ -346,7 +377,8 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
 
-	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			level, 1, slice, 1);
@@ -365,7 +397,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			level, 1, slice, 1);
 	}
-	else {
+	else
 		vkCmdCopyBufferToImage(
 			commandBuffer,
 			stagingBuffer,
@@ -374,14 +406,14 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void* data, size_t s
 			1,
 			&region
 		);
-	}
 
 	vgfx->queueCleanUp([allocator = allocator, stagingBuffer, vmaAllocation]() {
 		vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
 	});
 }
 
-void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect& rect) {
+void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect)
+{
 	auto commandBuffer = vgfx->getDataTransferCommandBuffer();
 
 	VkImageSubresourceLayers layers{};
@@ -398,7 +430,8 @@ void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int 
 	region.imageExtent.width = static_cast<uint32_t>(rect.w);
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
-	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
@@ -409,7 +442,8 @@ void Texture::copyFromBuffer(graphics::Buffer* source, size_t sourceoffset, int 
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
 }
 
-void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const Rect& rect, size_t destoffset, int destwidth, size_t size) {
+void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
+{
 	auto commandBuffer = vgfx->getReadbackCommandBuffer();
 
 	VkImageSubresourceLayers layers{};
@@ -427,7 +461,8 @@ void Texture::copyToBuffer(graphics::Buffer* dest, int slice, int mipmap, const 
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 	region.imageExtent.depth = 1;
 
-	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL) {
+	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);

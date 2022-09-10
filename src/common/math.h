@@ -70,10 +70,6 @@ struct Rect
 	{
 		return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
 	}
-
-	bool operator != (const Rect& rhs) const {
-		return !(*this == rhs);
-	}
 };
 
 inline int nextP2(int x)

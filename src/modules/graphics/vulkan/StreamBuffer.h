@@ -1,5 +1,4 @@
-#ifndef LOVE_GRAPHICS_VULKAN_STREAMBUFFER_H
-#define LOVE_GRAPHICS_VULKAN_STREAMBUFFER_H
+#pragma once
 
 #include "graphics/Volatile.h"
 #include "modules/graphics/StreamBuffer.h"
@@ -7,12 +6,21 @@
 
 #include "VulkanWrapper.h"
 
-namespace love {
-namespace graphics {
-namespace vulkan {
-class StreamBuffer : public love::graphics::StreamBuffer, public graphics::Volatile {
+namespace love
+{
+namespace graphics
+{
+namespace vulkan
+{
+
+class Graphics;
+
+class StreamBuffer
+	: public love::graphics::StreamBuffer
+	, public graphics::Volatile
+{
 public:
-	StreamBuffer(graphics::Graphics* gfx, BufferUsage mode, size_t size);
+	StreamBuffer(graphics::Graphics *gfx, BufferUsage mode, size_t size);
 	virtual ~StreamBuffer();
 
 	virtual bool loadVolatile() override;
@@ -25,12 +33,10 @@ public:
 
 	void nextFrame() override;
 
-	ptrdiff_t getHandle() const override {
-		return (ptrdiff_t) buffer;
-	}
+	ptrdiff_t getHandle() const override;
 
 private:
-	graphics::Graphics* gfx;
+	Graphics *vgfx = nullptr;
 	VmaAllocator allocator;
 	VmaAllocation allocation;
 	VmaAllocationInfo allocInfo;
@@ -38,8 +44,7 @@ private:
 	size_t usedGPUMemory;
 
 };
+
 } // vulkan
 } // graphics
 } // love
-
-#endif
