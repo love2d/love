@@ -118,7 +118,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 };
 
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
-static const uint32_t DESCRIPTOR_POOL_SIZE = 16;
+static const uint32_t DESCRIPTOR_POOL_SIZE = 1;
 
 static VkShaderStageFlagBits getStageBit(ShaderStageType type) {
 	switch (type) {
@@ -394,7 +394,8 @@ void Shader::attach() {
 }
 
 int Shader::getVertexAttributeIndex(const std::string& name) {
-	return 0;
+	auto it = attributes.find(name);
+	return it == attributes.end() ? -1 : it->second;
 }
 
 const Shader::UniformInfo* Shader::getUniformInfo(const std::string& name) const {
@@ -564,7 +565,8 @@ void Shader::compileShaders() {
 	uniformInfos.clear();
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++) {
-		auto glslangStage = getGlslShaderType((ShaderStageType)i);
+		auto shaderStage = (ShaderStageType)i;
+		auto glslangStage = getGlslShaderType(shaderStage);
 		auto intermediate = program->getIntermediate(glslangStage);
 		if (intermediate == nullptr) {
 			continue;
@@ -745,6 +747,14 @@ void Shader::compileShaders() {
 			// some stuff missing ?
 
 			uniformInfos[u.name] = u;
+		}
+
+		if (shaderStage == SHADERSTAGE_VERTEX) {
+			for (const auto& r : shaderResources.stage_inputs) {
+				const auto& name = r.name;
+				const int attributeLocation = static_cast<int>(comp.get_decoration(r.id, spv::DecorationLocation));
+				attributes[name] = attributeLocation;
+			}
 		}
 	}
 

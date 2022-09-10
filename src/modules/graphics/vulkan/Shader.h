@@ -107,6 +107,8 @@ private:
 	uint32_t uniformLocation;
 	size_t builtinUniformDataOffset;
 
+	std::unordered_map<std::string, int> attributes;
+
 	uint32_t currentFrame;
 	uint32_t currentUsedUniformStreamBuffersCount;
 	uint32_t currentUsedDescriptorSetsCount;

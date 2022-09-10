@@ -322,6 +322,8 @@ bool Graphics::setMode(void* context, int width, int height, int pixelwidth, int
 	currentFrame = 0;
 
 	created = true;
+	drawCalls = 0;
+	drawCallsBatched = 0;
 
 	return true;
 }
@@ -462,6 +464,7 @@ void Graphics::draw(const DrawCommand& cmd) {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 	vkCmdDraw(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
+	drawCalls++;
 }
 
 void Graphics::draw(const DrawIndexedCommand& cmd) {
@@ -469,6 +472,7 @@ void Graphics::draw(const DrawIndexedCommand& cmd) {
 
 	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), Vulkan::getVulkanIndexBufferType(cmd.indexType));
 	vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
+	drawCalls++;
 }
 
 void Graphics::drawQuads(int start, int count, const VertexAttributes& attributes, const BufferBindings& buffers, graphics::Texture* texture) {
@@ -486,6 +490,8 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes& attribute
 
 		vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
 		baseVertex += quadcount * 4;
+
+		drawCalls++;
 	}
 }
 
