@@ -612,6 +612,8 @@ void Shader::compileShaders()
 
 	device = vgfx->getDevice();
 
+	const auto &enabledExtensions = vgfx->getEnabledOptionalDeviceExtensions();
+
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		if (!stages[i])
@@ -627,7 +629,10 @@ void Shader::compileShaders()
 
 		tshader->setEnvInput(EShSourceGlsl, glslangShaderStage, EShClientVulkan, 450);
 		tshader->setEnvClient(EShClientVulkan, EShTargetVulkan_1_2);
-		tshader->setEnvTarget(EshTargetSpv, EShTargetSpv_1_0);
+		if (enabledExtensions.spirv14)
+			tshader->setEnvTarget(EshTargetSpv, EShTargetSpv_1_4);
+		else
+			tshader->setEnvTarget(EshTargetSpv, EShTargetSpv_1_0);
 		tshader->setAutoMapLocations(true);
 		tshader->setAutoMapBindings(true);
 		tshader->setEnvInputVulkanRulesRelaxed();

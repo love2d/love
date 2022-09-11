@@ -492,7 +492,19 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	std::stringstream ss;
 	ss << "Vulkan( ";
 	if (optionalDeviceFeatures.extendedDynamicState)
-		ss << VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME << " ";
+		ss << "eds ";
+	if (optionalDeviceFeatures.memoryRequirements2)
+		ss << "mr2 ";
+	if (optionalDeviceFeatures.dedicatedAllocation)
+		ss << "da ";
+	if (optionalDeviceFeatures.bufferDeviceAddress)
+		ss << "bda ";
+	if (optionalDeviceFeatures.memoryBudget)
+		ss << "mb ";
+	if (optionalDeviceFeatures.shaderFloatControls)
+		ss << "sfc ";
+	if (optionalDeviceFeatures.spirv14)
+		ss << "spv14 ";
 	ss << ")";
 
 	info.name = ss.str();
@@ -950,6 +962,11 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	return data;
 }
 
+const OptionalDeviceFeatures &Graphics::getEnabledOptionalDeviceExtensions() const
+{
+	return optionalDeviceFeatures;
+}
+
 static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
 {
 	uint32_t count;
@@ -1189,6 +1206,18 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 	{
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.extendedDynamicState = true;
+		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
+			optionalDeviceFeatures.memoryRequirements2 = true;
+		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
+			optionalDeviceFeatures.dedicatedAllocation = true;
+		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
+			optionalDeviceFeatures.bufferDeviceAddress = true;
+		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
+			optionalDeviceFeatures.memoryBudget = true;
+		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
+			optionalDeviceFeatures.shaderFloatControls = true;
+		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
+			optionalDeviceFeatures.spirv14 = true;
 	}
 }
 
@@ -1214,6 +1243,14 @@ void Graphics::createLogicalDevice()
 
     if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
         optionalDeviceFeatures.extendedDynamicState = false;
+	if (optionalDeviceFeatures.dedicatedAllocation && !optionalDeviceFeatures.memoryRequirements2)
+		optionalDeviceFeatures.dedicatedAllocation = false;
+	if (optionalDeviceFeatures.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceFeatures.bufferDeviceAddress = false;
+	if (optionalDeviceFeatures.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceFeatures.memoryBudget = false;
+	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
+		optionalDeviceFeatures.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -1226,9 +1263,20 @@ void Graphics::createLogicalDevice()
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
 	if (optionalDeviceFeatures.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+	if (optionalDeviceFeatures.memoryRequirements2)
+		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+	if (optionalDeviceFeatures.dedicatedAllocation)
+		enabledExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+	if (optionalDeviceFeatures.bufferDeviceAddress)
+		enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+	if (optionalDeviceFeatures.memoryBudget)
+		enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+	if (optionalDeviceFeatures.shaderFloatControls)
+		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+	if (optionalDeviceFeatures.spirv14)
+		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -1284,6 +1332,32 @@ void Graphics::createLogicalDevice()
 		ext.vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
 		ext.vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
 		ext.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
+#endif
+	}
+
+	if (optionalDeviceFeatures.memoryRequirements2)
+	{
+#ifdef LOVE_ANDROID
+		ext.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
+		ext.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
+		ext.vkGetImageSparseMemoryRequirements2KHR = vkGetImageSparseMemoryRequirements2KHR;
+#else
+		ext.vkGetBufferMemoryRequirements2KHR = (PFN_vkGetBufferMemoryRequirements2KHR)vkGetDeviceProcAddr(device, "vkGetBufferMemoryRequirements2KHR");
+		ext.vkGetImageMemoryRequirements2KHR = (PFN_vkGetImageMemoryRequirements2KHR)vkGetDeviceProcAddr(device, "vkGetImageMemoryRequirements2KHR");
+		ext.vkGetImageSparseMemoryRequirements2KHR = (PFN_vkGetImageSparseMemoryRequirements2KHR)vkGetDeviceProcAddr(device, "vkGetImageSparseMemoryRequirements2KHR");
+#endif
+	}
+
+	if (optionalDeviceFeatures.bufferDeviceAddress)
+	{
+#ifdef LOVE_ANDROID
+		ext.vkGetBufferDeviceAddressKHR = vkGetBufferDeviceAddressKHR;
+		ext.vkGetBufferOpaqueCaptureAddressKHR = vkGetBufferOpaqueCaptureAddressKHR;
+		ext.vkGetDeviceMemoryOpaqueCaptureAddressKHR = vkGetDeviceMemoryOpaqueCaptureAddressKHR;
+#else
+		ext.vkGetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR)vkGetDeviceProcAddr(device, "vkGetBufferDeviceAddressKHR");
+		ext.vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)vkGetDeviceProcAddr(device, "vkGetBufferOpaqueCaptureAddressKHR");
+		ext.vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)vkGetDeviceProcAddr(device, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
 #endif
 	}
 }
@@ -1523,7 +1597,7 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
 	}
 }
 
-VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR& capabilities)
+VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities)
 {
 	if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
 		return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;

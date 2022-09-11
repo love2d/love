@@ -99,12 +99,31 @@ struct OptionalInstanceExtensions
 
 struct OptionalDeviceFeatures
 {
+	// VK_EXT_extended_dynamic_state
 	bool extendedDynamicState = false;
+
+	// VK_KHR_get_memory_requirements2
+	bool memoryRequirements2 = false;
+
+	// VK_KHR_dedicated_allocation
+	bool dedicatedAllocation = false;
+
+	// VK_KHR_buffer_device_address
+	bool bufferDeviceAddress = false;
+
+	// VK_EXT_memory_budget
+	bool memoryBudget = false;
+
+	// VK_KHR_shader_float_controls
+	bool shaderFloatControls = false;
+
+	// VK_KHR_spirv_1_4
+	bool spirv14 = false;
 };
 
 struct OptionalDeviceExtensionFunctions
 {
-	// extended dynamic state
+	// VK_EXT_extended_dynamic_state
 	PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT = nullptr;
 	PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT = nullptr;
 	PFN_vkCmdSetDepthCompareOpEXT vkCmdSetDepthCompareOpEXT = nullptr;
@@ -116,6 +135,16 @@ struct OptionalDeviceExtensionFunctions
 	PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT = nullptr;
 	PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT = nullptr;
 	PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT = nullptr;
+
+	// VK_KHR_get_memory_requirements2
+	PFN_vkGetBufferMemoryRequirements2KHR vkGetBufferMemoryRequirements2KHR = nullptr;
+	PFN_vkGetImageMemoryRequirements2KHR vkGetImageMemoryRequirements2KHR = nullptr;
+	PFN_vkGetImageSparseMemoryRequirements2KHR vkGetImageSparseMemoryRequirements2KHR = nullptr;
+
+	// VK_KHR_buffer_device_address
+	PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR = nullptr;
+	PFN_vkGetBufferOpaqueCaptureAddressKHR vkGetBufferOpaqueCaptureAddressKHR = nullptr;
+	PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR vkGetDeviceMemoryOpaqueCaptureAddressKHR = nullptr;
 };
 
 struct GraphicsPipelineConfiguration
@@ -287,6 +316,8 @@ public:
 	std::set<Shader*> &getUsedShadersInFrame();
 
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
+
+	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
 
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
