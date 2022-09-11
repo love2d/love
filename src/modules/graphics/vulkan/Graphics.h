@@ -17,6 +17,7 @@
 #include <iostream>
 #include <memory>
 #include <functional>
+#include <set>
 
 
 namespace love
@@ -99,7 +100,6 @@ struct OptionalInstanceExtensions
 struct OptionalDeviceFeatures
 {
 	bool extendedDynamicState = false;
-	bool pushDescriptor = false;
 };
 
 struct OptionalDeviceExtensionFunctions
@@ -116,9 +116,6 @@ struct OptionalDeviceExtensionFunctions
 	PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT = nullptr;
 	PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT = nullptr;
 	PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT = nullptr;
-
-	// push descriptor
-	PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR = nullptr;
 };
 
 struct GraphicsPipelineConfiguration
@@ -232,7 +229,7 @@ public:
 
 	virtual ~Graphics();
 
-	const char* getName() const override;
+	const char *getName() const override;
 	const VkDevice getDevice() const;
 	const VkPhysicalDevice getPhysicalDevice() const;
 	const VmaAllocator getVmaAllocator() const;
@@ -281,14 +278,19 @@ public:
 	void submitGpuCommands(bool present);
 
 	uint32_t getNumImagesInFlight() const;
+	uint32_t getFrameIndex() const;
+
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState&);
 
 	void setComputeShader(Shader*);
+	std::set<Shader*> &getUsedShadersInFrame();
 
 	const OptionalDeviceFeatures &getOptionalDeviceFeatures() const;
 	const OptionalDeviceExtensionFunctions &getExtensionFunctions() const;
+
+	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
@@ -319,11 +321,11 @@ private:
 	void createImageViews();
 	void createDefaultRenderPass();
 	void createDefaultFramebuffers();
-    VkFramebuffer createFramebuffer(FramebufferConfiguration&);
-    VkFramebuffer getFramebuffer(FramebufferConfiguration&);
+    VkFramebuffer createFramebuffer(FramebufferConfiguration &);
+    VkFramebuffer getFramebuffer(FramebufferConfiguration &);
 	void createDefaultShaders();
-    VkRenderPass createRenderPass(RenderPassConfiguration&);
-	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration&);
+    VkRenderPass createRenderPass(RenderPassConfiguration &);
+	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
@@ -339,10 +341,9 @@ private:
 	void beginFrame();
 	void startRecordingGraphicsCommands(bool newFrame);
 	void endRecordingGraphicsCommands(bool present);
-	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration&);
-	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
+	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &);
 	void updatedBatchedDrawBuffers();
-	bool usesConstantVertexColor(const VertexAttributes&);
+	bool usesConstantVertexColor(const VertexAttributes &);
 	void createVulkanVertexFormat(
 		VertexAttributes vertexAttributes, 
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
@@ -405,6 +406,7 @@ private:
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
+	std::set<Shader*> usedShadersInFrame;
 	RenderpassState renderPassState;
 };
 

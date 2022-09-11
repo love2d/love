@@ -498,8 +498,6 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	ss << "Vulkan( ";
 	if (optionalDeviceFeatures.extendedDynamicState)
 		ss << VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME << " ";
-	if (optionalDeviceFeatures.pushDescriptor)
-		ss << VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME << " ";
 	ss << ")";
 
 	info.name = ss.str();
@@ -732,7 +730,7 @@ bool Graphics::dispatch(int x, int y, int z)
 
 	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
 
-	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), static_cast<uint32_t>(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
+	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
 
 	vkCmdDispatch(commandBuffers.at(currentFrame), static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z));
 
@@ -836,6 +834,8 @@ void Graphics::beginFrame()
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	Vulkan::resetShaderSwitches();
+
+	usedShadersInFrame.clear();
 }
 
 void Graphics::startRecordingGraphicsCommands(bool newFrame)
@@ -881,6 +881,11 @@ void Graphics::updatedBatchedDrawBuffers()
 uint32_t Graphics::getNumImagesInFlight() const
 {
 	return MAX_FRAMES_IN_FLIGHT;
+}
+
+uint32_t Graphics::getFrameIndex() const
+{
+	return currentFrame;
 }
 
 const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
@@ -1189,8 +1194,6 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 	{
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.extendedDynamicState = true;
-		if (strcmp(extension.extensionName, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.pushDescriptor = true;
 	}
 }
 
@@ -1231,8 +1234,6 @@ void Graphics::createLogicalDevice()
 
 	if (optionalDeviceFeatures.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
-	if (optionalDeviceFeatures.pushDescriptor)
-		enabledExtensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -1288,14 +1289,6 @@ void Graphics::createLogicalDevice()
 		ext.vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
 		ext.vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
 		ext.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
-#endif
-	}
-	if (optionalDeviceFeatures.pushDescriptor)
-	{
-#ifdef LOVE_ANDROID
-		ext.vkCmdPushDescriptorSetKHR = vkCmdPushDescriptorSetKHR;
-#else
-		ext.vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(device, "vkCmdPushDescriptorSetKHR");
 #endif
 	}
 }
@@ -1852,6 +1845,8 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	if (!renderPassState.active)
 		startRenderPass();
 
+	Shader::current->attach();
+
 	GraphicsPipelineConfiguration configuration{};
 
     configuration.renderPass = renderPassState.renderPass;
@@ -1892,8 +1887,6 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		offsets.push_back((VkDeviceSize)0);
 	}
 
-	auto currentUniformData = getCurrentBuiltinUniformData();
-	configuration.shader->setUniformData(currentUniformData);
 	if (texture == nullptr)
 		configuration.shader->setMainTex(standardTexture.get());
 	else
@@ -1901,7 +1894,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 
 	ensureGraphicsPipelineConfiguration(configuration);
 
-	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), static_cast<uint32_t>(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
+	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
 	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
 }
 
@@ -2072,6 +2065,11 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 void Graphics::setComputeShader(Shader *shader)
 {
 	computeShader = shader;
+}
+
+std::set<Shader*> &Graphics::getUsedShadersInFrame()
+{
+	return usedShadersInFrame;
 }
 
 const OptionalDeviceFeatures &Graphics::getOptionalDeviceFeatures() const

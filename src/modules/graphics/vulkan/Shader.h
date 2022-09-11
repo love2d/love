@@ -12,9 +12,9 @@
 // C++
 #include <map>
 #include <memory>
-#include <iostream>
 #include <unordered_map>
 #include <queue>
+#include <optional>
 
 
 namespace love
@@ -43,7 +43,9 @@ public:
 
 	const VkPipelineLayout getGraphicsPipelineLayout() const;
 
-	void cmdPushDescriptorSets(VkCommandBuffer, uint32_t currentFrame, VkPipelineBindPoint);
+	void newFrame(uint32_t frameIndex);
+
+	void cmdPushDescriptorSets(VkCommandBuffer, VkPipelineBindPoint);
 
 	void attach() override;
 
@@ -65,8 +67,6 @@ public:
 
 	void setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture) override;
 
-	// fixme: use normal methods for this in the future.
-	void setUniformData(BuiltinUniformData &data);
 	void setMainTex(graphics::Texture *texture);
 
 private:
@@ -82,8 +82,6 @@ private:
 		const std::string &basename);
 
 	VkDescriptorSet allocateDescriptorSet();
-
-	PFN_vkCmdPushDescriptorSetKHR pfn_vkCmdPushDescriptorSetKHR = nullptr;
 
 	VkDeviceSize uniformBufferSizeAligned;
 
@@ -112,11 +110,14 @@ private:
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
+	std::vector<uint8> localUniformData;
 	std::vector<uint8> localUniformStagingData;
 	uint32_t uniformLocation;
-	size_t builtinUniformDataOffset;
+	std::optional<size_t> builtinUniformDataOffset;
 
 	std::unordered_map<std::string, int> attributes;
+
+	VkDescriptorSet currentDescriptorSet;
 
 	uint32_t currentFrame;
 	uint32_t currentUsedUniformStreamBuffersCount;
