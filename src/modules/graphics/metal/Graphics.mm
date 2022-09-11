@@ -1520,14 +1520,17 @@ void Graphics::present(void *screenshotCallbackData)
 
 	deprecations.draw(this);
 
+	// endPass calls useRenderEncoder, which makes sure activeDrawable is set
+	// when possible.
 	endPass();
 
 	id<MTLBuffer> screenshotbuffer = nil;
 
+	int w = activeDrawable.texture.width;
+	int h = activeDrawable.texture.height;
+
 	if (!pendingScreenshotCallbacks.empty())
 	{
-		int w = activeDrawable.texture.width;
-		int h = activeDrawable.texture.height;
 		size_t size = w * h * 4;
 
 		screenshotbuffer = [device newBufferWithLength:size options:MTLResourceStorageModeShared];
@@ -1540,7 +1543,7 @@ void Graphics::present(void *screenshotCallbackData)
 						 sourceSlice:0
 						 sourceLevel:0
 						sourceOrigin:MTLOriginMake(0, 0, 0)
-						  sourceSize:MTLSizeMake(w, h, 0)
+						  sourceSize:MTLSizeMake(w, h, 1)
 							toBuffer:screenshotbuffer
 				   destinationOffset:0
 			  destinationBytesPerRow:w * 4
@@ -1564,12 +1567,12 @@ void Graphics::present(void *screenshotCallbackData)
 
 	submitCommandBuffer(SUBMIT_DONE);
 
+	activeDrawable = nil;
+
 	if (!pendingScreenshotCallbacks.empty())
 	{
 		[cmd waitUntilCompleted];
 
-		int w = activeDrawable.texture.width;
-		int h = activeDrawable.texture.height;
 		size_t size = w * h * 4;
 
 		auto imagemodule = Module::getInstance<love::image::Image>(M_IMAGE);
@@ -1619,8 +1622,6 @@ void Graphics::present(void *screenshotCallbackData)
 
 	// This is set to NO when there are pending screen captures.
 	metalLayer.framebufferOnly = YES;
-
-	activeDrawable = nil;
 
 	// Reset the per-frame stat counts.
 	drawCalls = 0;

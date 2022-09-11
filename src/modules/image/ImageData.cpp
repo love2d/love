@@ -206,12 +206,12 @@ love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encod
 	}
 	catch (love::Exception &)
 	{
-		encoder->freeRawPixels(encodedimage.data);
+		encoder->freeEncodedImage(encodedimage.data);
 		throw;
 	}
 
 	memcpy(filedata->getData(), encodedimage.data, encodedimage.size);
-	encoder->freeRawPixels(encodedimage.data);
+	encoder->freeEncodedImage(encodedimage.data);
 
 	if (writefile)
 	{
@@ -859,6 +859,7 @@ StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM>::Entry 
 {
 	{"tga", FormatHandler::ENCODED_TGA},
 	{"png", FormatHandler::ENCODED_PNG},
+	{"exr", FormatHandler::ENCODED_EXR},
 };
 
 StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM> ImageData::encodedFormats(ImageData::encodedFormatEntries, sizeof(ImageData::encodedFormatEntries));

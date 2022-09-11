@@ -264,6 +264,12 @@ void PNGHandler::freeRawPixels(unsigned char *mem)
 		::free(mem);
 }
 
+void PNGHandler::freeEncodedImage(unsigned char *mem)
+{
+	if (mem)
+		::free(mem);
+}
+
 } // magpie
 } // image
 } // love
