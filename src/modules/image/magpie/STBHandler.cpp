@@ -123,15 +123,14 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, EncodedF
 
 	encimg.size = (img.width * img.height * bpp) + headerlen;
 
-	// We need to use malloc because we use stb_image_free (which uses free())
-	// as our custom free() function, which is called by the ImageData after
-	// encode() is complete.
-	// stb_image's source code is compiled with this source, so calling malloc()
-	// directly is fine.
-	encimg.data = (unsigned char *) malloc(encimg.size);
-
-	if (encimg.data == nullptr)
+	try
+	{
+		encimg.data = new unsigned char[encimg.size];
+	}
+	catch (std::exception &)
+	{
 		throw love::Exception("Out of memory.");
+	}
 
 	// here's the header for the Targa file format.
 	encimg.data[0]  = 0; // ID field size
@@ -174,6 +173,11 @@ void STBHandler::freeRawPixels(unsigned char *mem)
 	// The STB decoder gave memory allocated directly by stb_image to the
 	// ImageData, so we use stb_image_free to delete it.
 	stbi_image_free(mem);
+}
+
+void STBHandler::freeEncodedImage(unsigned char *mem)
+{
+	delete[] mem;
 }
 
 } // magpie

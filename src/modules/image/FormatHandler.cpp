@@ -70,5 +70,10 @@ void FormatHandler::freeRawPixels(unsigned char *mem)
 	delete[] mem;
 }
 
+void FormatHandler::freeEncodedImage(unsigned char *mem)
+{
+	delete[] mem;
+}
+
 } // image
 } // love

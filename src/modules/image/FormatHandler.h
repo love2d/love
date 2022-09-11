@@ -43,6 +43,7 @@ public:
 	{
 		ENCODED_TGA,
 		ENCODED_PNG,
+		ENCODED_EXR,
 		ENCODED_MAX_ENUM
 	};
 
@@ -115,6 +116,11 @@ public:
 	 * Frees raw pixel memory allocated by the format handler.
 	 **/
 	virtual void freeRawPixels(unsigned char *mem);
+
+	/**
+	 * Frees encoded image memory allocated by the format handler.
+	 **/
+	virtual void freeEncodedImage(unsigned char *mem);
 
 }; // FormatHandler
 

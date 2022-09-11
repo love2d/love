@@ -47,8 +47,27 @@ bool EXRHandler::canDecode(Data *data)
 	return ParseEXRVersionFromMemory(&version, (const unsigned char *) data->getData(), data->getSize()) == TINYEXR_SUCCESS;
 }
 
-bool EXRHandler::canEncode(PixelFormat /*rawFormat*/, EncodedFormat /*encodedFormat*/)
+bool EXRHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 {
+	if (encodedFormat != ENCODED_EXR)
+		return false;
+
+	switch (rawFormat)
+	{
+	case PIXELFORMAT_R16_FLOAT:
+	case PIXELFORMAT_R32_FLOAT:
+	case PIXELFORMAT_R32_UINT:
+	case PIXELFORMAT_RG16_FLOAT:
+	case PIXELFORMAT_RG32_FLOAT:
+	case PIXELFORMAT_RG32_UINT:
+	case PIXELFORMAT_RGBA16_FLOAT:
+	case PIXELFORMAT_RGBA32_FLOAT:
+	case PIXELFORMAT_RGBA32_UINT:
+		return true;
+	default:
+		return false;
+	}
+
 	return false;
 }
 
@@ -76,7 +95,7 @@ static void getEXRChannels(const EXRHeader &header, const EXRImage &image, T *rg
 }
 
 template <typename T>
-static T *loadEXRChannels(int width, int height, T *rgba[4], T one)
+static T *readEXRChannels(int width, int height, T *rgba[4], T one)
 {
 	T *data = nullptr;
 
@@ -105,6 +124,20 @@ static T *loadEXRChannels(int width, int height, T *rgba[4], T one)
 	return data;
 }
 
+template <typename T>
+static void writeEXRChannels(int width, int height, int components, const T *pixels, T *rgba[4])
+{
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			size_t offset = y * width + x;
+			for (int c = 0; c < components; c++)
+				rgba[c][offset] = pixels[offset * components + c];
+		}
+	}
+}
+
 FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 {
 	const char *err = "unknown error";
@@ -131,7 +164,10 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 			throw love::Exception("Could not parse EXR image header: %s", err);
 
 		if (LoadEXRImageFromMemory(&exrImage, &exrHeader, mem, memsize, &err) != TINYEXR_SUCCESS)
+		{
+			FreeEXRHeader(&exrHeader);
 			throw love::Exception("Could not decode EXR image: %s", err);
+		}
 	}
 	catch (love::Exception &)
 	{
@@ -145,6 +181,7 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	{
 		if (pixelType != exrHeader.pixel_types[i])
 		{
+			FreeEXRHeader(&exrHeader);
 			FreeEXRImage(&exrImage);
 			throw love::Exception("Could not decode EXR image: all channels must have the same data type.");
 		}
@@ -153,7 +190,25 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 	img.width  = exrImage.width;
 	img.height = exrImage.height;
 
-	if (pixelType == TINYEXR_PIXELTYPE_HALF)
+	if (pixelType == TINYEXR_PIXELTYPE_UINT)
+	{
+		img.format = PIXELFORMAT_RGBA32_UINT;
+
+		uint32 *rgba[4] = {nullptr};
+		getEXRChannels(exrHeader, exrImage, rgba);
+
+		try
+		{
+			img.data = (unsigned char *) readEXRChannels(img.width, img.height, rgba, 1u);
+		}
+		catch (love::Exception &)
+		{
+			FreeEXRHeader(&exrHeader);
+			FreeEXRImage(&exrImage);
+			throw;
+		}
+	}
+	else if (pixelType == TINYEXR_PIXELTYPE_HALF)
 	{
 		img.format = PIXELFORMAT_RGBA16_FLOAT;
 
@@ -162,10 +217,11 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 
 		try
 		{
-			img.data = (unsigned char *) loadEXRChannels(img.width, img.height, rgba, float32to16(1.0f));
+			img.data = (unsigned char *) readEXRChannels(img.width, img.height, rgba, float32to16(1.0f));
 		}
 		catch (love::Exception &)
 		{
+			FreeEXRHeader(&exrHeader);
 			FreeEXRImage(&exrImage);
 			throw;
 		}
@@ -179,35 +235,157 @@ FormatHandler::DecodedImage EXRHandler::decode(Data *data)
 
 		try
 		{
-			img.data = (unsigned char *) loadEXRChannels(img.width, img.height, rgba, 1.0f);
+			img.data = (unsigned char *) readEXRChannels(img.width, img.height, rgba, 1.0f);
 		}
 		catch (love::Exception &)
 		{
+			FreeEXRHeader(&exrHeader);
 			FreeEXRImage(&exrImage);
 			throw;
 		}
 	}
 	else
 	{
+		FreeEXRHeader(&exrHeader);
 		FreeEXRImage(&exrImage);
 		throw love::Exception("Could not decode EXR image: unknown pixel format.");
 	}
 
 	img.size = getPixelFormatSliceSize(img.format, img.width, img.height);
 
+	FreeEXRHeader(&exrHeader);
 	FreeEXRImage(&exrImage);
 
 	return img;
 }
 
-FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage & /*img*/, EncodedFormat /*encodedFormat*/)
+FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage &img, EncodedFormat encodedFormat)
 {
-	throw love::Exception("Invalid format.");
+	if (!canEncode(img.format, encodedFormat))
+	{
+		if (encodedFormat != ENCODED_EXR)
+			throw love::Exception("EXR encoder cannot encode to non-EXR format.");
+		else
+			throw love::Exception("EXR encoder cannot encode the given pixel format.");
+	}
+
+	const auto &formatinfo = getPixelFormatInfo(img.format);
+
+	EXRHeader exrHeader;
+	InitEXRHeader(&exrHeader);
+
+	exrHeader.num_channels = formatinfo.components;
+
+	// TODO: this could be configurable.
+	exrHeader.compression_type = TINYEXR_COMPRESSIONTYPE_ZIP;
+
+	// TinyEXR expects malloc here because FreeEXRHeader uses free().
+	exrHeader.channels = (EXRChannelInfo *) malloc(sizeof(EXRChannelInfo) * exrHeader.num_channels);
+	exrHeader.pixel_types = (int *) malloc(sizeof(int) * exrHeader.num_channels);
+	exrHeader.requested_pixel_types = (int *) malloc(sizeof(int) * exrHeader.num_channels);
+
+	int pixeltype = -1;
+	if (formatinfo.dataType == PIXELFORMATTYPE_UINT)
+	{
+		pixeltype = TINYEXR_PIXELTYPE_UINT;
+	}
+	else if (formatinfo.dataType == PIXELFORMATTYPE_SFLOAT)
+	{
+		if (formatinfo.blockSize / formatinfo.components == 2)
+			pixeltype = TINYEXR_PIXELTYPE_HALF;
+		else if (formatinfo.blockSize / formatinfo.components == 4)
+			pixeltype = TINYEXR_PIXELTYPE_FLOAT;
+	}
+
+	if (pixeltype == -1)
+	{
+		FreeEXRHeader(&exrHeader);
+		throw love::Exception("Cannot convert the given pixel format to an EXR pixel type.");
+	}
+
+	for (int i = 0; i < exrHeader.num_channels; i++)
+	{
+		exrHeader.channels[i] = EXRChannelInfo();
+
+		const char names[] = {'R', 'G', 'B', 'A'};
+		exrHeader.channels[i].name[0] = names[i];
+
+		exrHeader.pixel_types[i] = pixeltype;
+		exrHeader.requested_pixel_types[i] = pixeltype;
+	}
+
+	EXRImage exrImage;
+	InitEXRImage(&exrImage);
+
+	exrImage.width = img.width;
+	exrImage.height = img.height;
+	exrImage.num_channels = exrHeader.num_channels;
+
+	exrImage.images = (unsigned char **) malloc(sizeof(unsigned char *) * exrImage.num_channels);
+
+	for (int i = 0; i < exrImage.num_channels; i++)
+	{
+		size_t componentsize = pixeltype == TINYEXR_PIXELTYPE_HALF ? 2 : 4;
+
+		exrImage.images[i] = (unsigned char *) malloc(img.width * img.height * componentsize);
+
+		if (exrImage.images[i] == nullptr)
+		{
+			FreeEXRHeader(&exrHeader);
+			FreeEXRImage(&exrImage);
+			throw love::Exception("Out of memory.");
+		}
+	}
+
+	if (pixeltype == TINYEXR_PIXELTYPE_UINT)
+	{
+		writeEXRChannels(img.width, img.height, formatinfo.components, (const uint32 *) img.data, (uint32 **) exrImage.images);
+	}
+	else if (pixeltype == TINYEXR_PIXELTYPE_HALF)
+	{
+		writeEXRChannels(img.width, img.height, formatinfo.components, (const float16 *) img.data, (float16 **) exrImage.images);
+	}
+	else if (pixeltype == TINYEXR_PIXELTYPE_FLOAT)
+	{
+		writeEXRChannels(img.width, img.height, formatinfo.components, (const float *) img.data, (float **) exrImage.images);
+	}
+
+	EncodedImage encimg;
+
+	const char *err = nullptr;
+	encimg.size = SaveEXRImageToMemory(&exrImage, &exrHeader, &encimg.data, &err);
+
+	FreeEXRHeader(&exrHeader);
+	FreeEXRImage(&exrImage);
+
+	std::string errstring;
+	if (err != nullptr)
+	{
+		errstring = err;
+		FreeEXRErrorMessage(err);
+	}
+
+	if (encimg.size == 0)
+	{
+		if (!errstring.empty())
+			throw love::Exception("Could not encode EXR image: %s", errstring.c_str());
+		else
+			throw love::Exception("Could not encode EXR image");
+	}
+
+	return encimg;
 }
 
 void EXRHandler::freeRawPixels(unsigned char *mem)
 {
 	delete[] mem;
+}
+
+void EXRHandler::freeEncodedImage(unsigned char *mem)
+{
+	// SaveEXRImageToMemory uses malloc.
+	if (mem != nullptr)
+		::free(mem);
 }
 
 } // magpie
