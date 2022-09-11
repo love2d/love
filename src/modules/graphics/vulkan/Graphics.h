@@ -27,20 +27,31 @@ namespace graphics
 namespace vulkan
 {
 
+struct RenderPassAttachment
+{
+	VkFormat format = VK_FORMAT_UNDEFINED;
+	bool discard = true;
+
+	bool operator==(const RenderPassAttachment &attachment) const
+	{
+		return format == attachment.format && discard == attachment.discard;
+	}
+};
+
 struct RenderPassConfiguration
 {
-	std::vector<VkFormat> colorFormats;
+	std::vector<RenderPassAttachment> colorAttachments;
 
 	struct StaticRenderPassConfiguration
 	{
 		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
+		RenderPassAttachment depthAttachment;
 		bool resolve = false;
 	} staticData;
 
     bool operator==(const RenderPassConfiguration &conf) const
 	{
-		return colorFormats == conf.colorFormats && 
+		return colorAttachments == conf.colorAttachments && 
 			(memcmp(&staticData, &conf.staticData, sizeof(StaticRenderPassConfiguration)) == 0);
     }
 };
@@ -50,7 +61,7 @@ struct RenderPassConfigurationHasher
     size_t operator()(const RenderPassConfiguration &configuration) const
 	{
 		size_t hashes[] = { 
-			XXH32(configuration.colorFormats.data(), configuration.colorFormats.size() * sizeof(VkFormat), 0),
+			XXH32(configuration.colorAttachments.data(), configuration.colorAttachments.size() * sizeof(VkFormat), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
 		};
 		return XXH32(hashes, sizeof(hashes), 0);
@@ -233,7 +244,9 @@ struct RenderpassState
 {
 	bool active = false;
 	VkRenderPassBeginInfo beginInfo{};
-	VkRenderPass renderPass = VK_NULL_HANDLE;
+	bool useConfigurations = false;
+	RenderPassConfiguration renderPassConfiguration{};
+	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
 	std::vector<VkImage> transitionImages;
 	uint32_t numColorAttachments = 0;
@@ -268,7 +281,7 @@ public:
 	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
-	void discard(const std::vector<bool> &colorbuffers, bool depthstencil) override { }
+	void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override;
 	void present(void *screenshotCallbackdata) override;
 	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
 	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;

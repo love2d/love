@@ -170,6 +170,51 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 	vkCmdClearAttachments(commandBuffers[currentFrame], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
 }
 
+void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
+{
+	if (renderPassState.active)
+		endRenderPass();
+
+	if (renderPassState.useConfigurations)
+	{
+		auto & renderPassConfiguration = renderPassState.renderPassConfiguration;
+
+		for (size_t i = 0; i < colorbuffers.size(); i++)
+			renderPassConfiguration.colorAttachments[i].discard = colorbuffers[i];
+		renderPassConfiguration.staticData.depthAttachment.discard = depthstencil;
+	}
+	else
+	{
+		RenderPassConfiguration renderPassConfiguration{};
+		renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, colorbuffers[0] });
+		renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), depthstencil };
+		renderPassConfiguration.staticData.msaaSamples = msaaSamples;
+		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+			renderPassConfiguration.staticData.resolve = false;
+		else
+			renderPassConfiguration.staticData.resolve = true;
+
+		FramebufferConfiguration framebufferConfiguration{};
+		framebufferConfiguration.staticData.depthView = depthImageView;
+		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+		{
+			framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
+			framebufferConfiguration.staticData.resolveView = VK_NULL_HANDLE;
+		}
+		else
+		{
+			framebufferConfiguration.colorViews.push_back(colorImageView);
+			framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+		}
+
+		renderPassState.useConfigurations = true;
+		renderPassState.renderPassConfiguration = renderPassConfiguration;
+		renderPassState.framebufferConfiguration = framebufferConfiguration;
+	}
+
+	startRenderPass();
+}
+
 void Graphics::submitGpuCommands(bool present)
 {
 	flushBatchedDraws();
@@ -356,6 +401,12 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	created = true;
 	drawCalls = 0;
 	drawCallsBatched = 0;
+
+	Vulkan::cmdTransitionImageLayout(
+		commandBuffers.at(currentFrame), 
+		depthImage, 
+		VK_IMAGE_LAYOUT_UNDEFINED, 
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 	return true;
 }
@@ -892,7 +943,7 @@ uint32_t Graphics::getNumImagesInFlight() const
 
 uint32_t Graphics::getFrameIndex() const
 {
-	return currentFrame;
+	return static_cast<uint32_t>(currentFrame);
 }
 
 const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
@@ -1640,9 +1691,9 @@ void Graphics::createImageViews()
 void Graphics::createDefaultRenderPass()
 {
 	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.colorFormats.push_back(swapChainImageFormat);
+	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, false });
 	renderPassConfiguration.staticData.msaaSamples = msaaSamples;
-	renderPassConfiguration.staticData.depthFormat = findDepthFormat();
+	renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), false };
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 		renderPassConfiguration.staticData.resolve = false;
 	else
@@ -1738,7 +1789,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
 
 	uint32_t attachment = 0;
-	for (const auto &colorFormat : configuration.colorFormats)
+	for (const auto &colorAttachment : configuration.colorAttachments)
 	{
 		VkAttachmentReference reference{};
 		reference.attachment = attachment++;
@@ -1746,9 +1797,12 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		colorAttachmentRefs.push_back(reference);
 
 		VkAttachmentDescription colorDescription{};
-		colorDescription.format = colorFormat;
+		colorDescription.format = colorAttachment.format;
 		colorDescription.samples = configuration.staticData.msaaSamples;
-		colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		if (colorAttachment.discard)
+			colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		else
+			colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -1761,20 +1815,23 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
     subPass.pColorAttachments = colorAttachmentRefs.data();
 
 	VkAttachmentReference depthStencilAttachmentRef{};
-	if (configuration.staticData.depthFormat != VK_FORMAT_UNDEFINED)
+	if (configuration.staticData.depthAttachment.format != VK_FORMAT_UNDEFINED)
 	{
 		depthStencilAttachmentRef.attachment = attachment++;
 		depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
 
 		VkAttachmentDescription depthStencilAttachment{};
-		depthStencilAttachment.format = configuration.staticData.depthFormat;
+		depthStencilAttachment.format = configuration.staticData.depthAttachment.format;
 		depthStencilAttachment.samples = configuration.staticData.msaaSamples;
-		depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		if (configuration.staticData.depthAttachment.discard)
+			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		else
+			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		depthStencilAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachments.push_back(depthStencilAttachment);
 	}
@@ -1787,7 +1844,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		subPass.pResolveAttachments = &colorAttachmentResolveRef;
 
 		VkAttachmentDescription colorAttachmentResolve{};
-		colorAttachmentResolve.format = configuration.colorFormats.at(0);
+		colorAttachmentResolve.format = configuration.colorAttachments.at(0).format;
 		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
 		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -1861,7 +1918,7 @@ void Graphics::createVulkanVertexFormat(
 
 			auto attrib = vertexAttributes.attribs[i];
 			auto bufferBinding = attrib.bufferIndex;
-			if (usedBuffers.find(bufferBinding) == usedBuffers.end())	// use .contains() when c++20 is enabled
+			if (usedBuffers.find(bufferBinding) == usedBuffers.end())
 			{
 				usedBuffers.insert(bufferBinding);
 
@@ -1918,7 +1975,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 
 	GraphicsPipelineConfiguration configuration{};
 
-    configuration.renderPass = renderPassState.renderPass;
+    configuration.renderPass = renderPassState.beginInfo.renderPass;
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.wireFrame = states.back().wireframe;
@@ -1976,7 +2033,7 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.beginInfo.renderArea.extent = swapChainExtent;
 	renderPassState.beginInfo.clearValueCount = 0;
 
-	renderPassState.renderPass = defaultRenderPass;
+	renderPassState.useConfigurations = false;
 	renderPassState.pipeline = VK_NULL_HANDLE;
 	renderPassState.width = static_cast<float>(swapChainExtent.width);
 	renderPassState.height = static_cast<float>(swapChainExtent.height);
@@ -2017,7 +2074,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 		// fixme: use mipmap and slice.
 		color.mipmap;
 		color.slice;
-		renderPassConfiguration.colorFormats.push_back(Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat);
+		renderPassConfiguration.colorAttachments.push_back({ Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat, false });
 	}
 	if (rts.depthStencil.texture != nullptr)
 	{
@@ -2025,17 +2082,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 		rts.depthStencil.mipmap;
 		rts.depthStencil.slice;
 		if (rts.depthStencil.texture != nullptr)
-			renderPassConfiguration.staticData.depthFormat =  Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat;
-	}
-
-    VkRenderPass renderPass;
-	auto it = renderPasses.find(renderPassConfiguration);
-	if (it != renderPasses.end())
-		renderPass = it->second;
-	else
-	{
-		renderPass = createRenderPass(renderPassConfiguration);
-		renderPasses[renderPassConfiguration] = renderPass;
+			renderPassConfiguration.staticData.depthAttachment = { Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat, false };
 	}
 
 	FramebufferConfiguration configuration{};
@@ -2051,20 +2098,20 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 		// fixme: layout transition of depth stencil image?
 		configuration.staticData.depthView = (VkImageView)rts.depthStencil.texture->getRenderTargetHandle();
 
-	configuration.staticData.renderPass = renderPass;
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
-	VkFramebuffer framebuffer = getFramebuffer(configuration);
 
 	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassState.beginInfo.renderPass = renderPass;
-	renderPassState.beginInfo.framebuffer = framebuffer;
+	renderPassState.beginInfo.renderPass = VK_NULL_HANDLE;
+	renderPassState.beginInfo.framebuffer = VK_NULL_HANDLE;
 	renderPassState.beginInfo.renderArea.offset = {0, 0};
 	renderPassState.beginInfo.renderArea.extent.width = static_cast<uint32_t>(pixelw);
 	renderPassState.beginInfo.renderArea.extent.height = static_cast<uint32_t>(pixelh);
 	renderPassState.beginInfo.clearValueCount = 0;
 
-	renderPassState.renderPass = renderPass;
+	renderPassState.useConfigurations = true;
+	renderPassState.renderPassConfiguration = renderPassConfiguration;
+	renderPassState.framebufferConfiguration = configuration;
 	renderPassState.pipeline = VK_NULL_HANDLE;
 	renderPassState.width = static_cast<float>(pixelw);
 	renderPassState.height = static_cast<float>(pixelh);
@@ -2076,6 +2123,25 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 void Graphics::startRenderPass()
 {
 	renderPassState.active = true;
+
+	if (renderPassState.useConfigurations)
+	{
+		auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
+		VkRenderPass renderPass;
+		auto it = renderPasses.find(renderPassConfiguration);
+		if (it != renderPasses.end())
+			renderPass = it->second;
+		else
+		{
+			renderPass = createRenderPass(renderPassConfiguration);
+			renderPasses[renderPassConfiguration] = renderPass;
+		}
+		renderPassState.beginInfo.renderPass = renderPass;
+
+		auto &framebufferConfiguration = renderPassState.framebufferConfiguration;
+		framebufferConfiguration.staticData.renderPass = renderPass;
+		renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
+	}
 
 	for (const auto& image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -2429,12 +2495,12 @@ VkFormat Graphics::findDepthFormat()
 
 void Graphics::createDepthResources()
 {
-	VkFormat depthFormat = findDepthFormat();
+	VkFormat depthAttachment = findDepthFormat();
 
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.format = depthFormat;
+	imageInfo.format = depthAttachment;
 	imageInfo.extent.width = swapChainExtent.width;
 	imageInfo.extent.height = swapChainExtent.height;
 	imageInfo.extent.depth = 1;
@@ -2456,7 +2522,7 @@ void Graphics::createDepthResources()
 	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewInfo.image = depthImage;
 	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewInfo.format = depthFormat;
+	imageViewInfo.format = depthAttachment;
 	imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
