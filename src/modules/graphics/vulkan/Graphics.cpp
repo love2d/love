@@ -55,11 +55,6 @@ const VkDevice Graphics::getDevice() const
 	return device;
 }
 
-const VkPhysicalDevice Graphics::getPhysicalDevice() const
-{
-	return physicalDevice;
-}
-
 const VmaAllocator Graphics::getVmaAllocator() const
 {
 	return vmaAllocator;
@@ -2070,16 +2065,6 @@ void Graphics::setComputeShader(Shader *shader)
 std::set<Shader*> &Graphics::getUsedShadersInFrame()
 {
 	return usedShadersInFrame;
-}
-
-const OptionalDeviceFeatures &Graphics::getOptionalDeviceFeatures() const
-{
-	return optionalDeviceFeatures;
-}
-
-const OptionalDeviceExtensionFunctions &Graphics::getExtensionFunctions() const
-{
-	return ext;
 }
 
 VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)

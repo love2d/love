@@ -122,7 +122,7 @@ struct GraphicsPipelineConfiguration
 {
     VkRenderPass renderPass;
 	VertexAttributes vertexAttributes;
-	Shader* shader = nullptr;
+	Shader *shader = nullptr;
 	bool wireFrame;
 	BlendState blendState;
 	ColorChannelMask colorChannelMask;
@@ -168,10 +168,10 @@ struct SamplerStateHasher
 
 struct BatchedDrawBuffers
 {
-	StreamBuffer* vertexBuffer1;
-	StreamBuffer* vertexBuffer2;
-	StreamBuffer* indexBuffer;
-	StreamBuffer* constantColorBuffer;
+	StreamBuffer *vertexBuffer1;
+	StreamBuffer *vertexBuffer2;
+	StreamBuffer *indexBuffer;
+	StreamBuffer *constantColorBuffer;
 
 	~BatchedDrawBuffers()
 	{
@@ -231,7 +231,6 @@ public:
 
 	const char *getName() const override;
 	const VkDevice getDevice() const;
-	const VkPhysicalDevice getPhysicalDevice() const;
 	const VmaAllocator getVmaAllocator() const;
 
 	// implementation for virtual functions
@@ -282,13 +281,10 @@ public:
 
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
-	VkSampler getCachedSampler(const SamplerState&);
+	VkSampler getCachedSampler(const SamplerState &);
 
-	void setComputeShader(Shader*);
+	void setComputeShader(Shader *);
 	std::set<Shader*> &getUsedShadersInFrame();
-
-	const OptionalDeviceFeatures &getOptionalDeviceFeatures() const;
-	const OptionalDeviceExtensionFunctions &getExtensionFunctions() const;
 
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 

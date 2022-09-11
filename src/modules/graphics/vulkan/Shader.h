@@ -74,6 +74,7 @@ private:
 	void compileShaders();
 	void createDescriptorSetLayout();
 	void createPipelineLayout();
+	void createDescriptorPoolSizes();
 	void createStreamBuffers();
 	void buildLocalUniforms(
 		spirv_cross::Compiler &comp, 
@@ -89,6 +90,7 @@ private:
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
+	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
 
 	// we don't know how much memory we need per frame for the uniform buffer descriptors
 	// we keep a vector of stream buffers per frame in flight

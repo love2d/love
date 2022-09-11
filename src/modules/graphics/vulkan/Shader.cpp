@@ -159,7 +159,6 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 {
 	auto gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	vgfx = dynamic_cast<Graphics*>(gfx);
-	auto &optionalDeviceFeaures = vgfx->getOptionalDeviceFeatures();
 
 	loadVolatile();
 }
@@ -175,6 +174,7 @@ bool Shader::loadVolatile()
 	calculateUniformBufferSizeAligned();
 	createDescriptorSetLayout();
 	createPipelineLayout();
+	createDescriptorPoolSizes();
 	createStreamBuffers();
 	descriptorSetsVector.resize(vgfx->getNumImagesInFlight());
 	currentFrame = 0;
@@ -230,7 +230,7 @@ VkPipeline Shader::getComputePipeline() const
 	return computePipeline;
 }
 
-static VkDescriptorImageInfo* createDescriptorImageInfo(graphics::Texture* texture, bool sampler)
+static VkDescriptorImageInfo *createDescriptorImageInfo(graphics::Texture *texture, bool sampler)
 {
 	auto vkTexture = (Texture*)texture;
 
@@ -270,10 +270,6 @@ void Shader::newFrame(uint32_t frameIndex)
 
 	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 
-	std::vector<VkWriteDescriptorSet> descriptorWrite{};
-
-	std::vector<VkDescriptorImageInfo*> imageInfos;
-
 	// update everything other than uniform buffers
 	for (const auto &[key, val] : uniformInfos) {
 		// fixme: other types.
@@ -284,14 +280,25 @@ void Shader::newFrame(uint32_t frameIndex)
 			write.dstBinding = val.location;
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			write.descriptorCount = 1;
+			write.descriptorCount = val.count;
 
-			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0], true);	// fixme: arrays
-			imageInfos.push_back(imageInfo);
+			std::vector<VkDescriptorImageInfo> imageInfos;
 
-			write.pImageInfo = imageInfo;
+			for (int i = 0; i < val.count; i++)
+			{
+				auto vkTexture = dynamic_cast<Texture*>(val.textures[i]);
 
-			descriptorWrite.push_back(write);
+				VkDescriptorImageInfo imageInfo{};
+				imageInfo.imageLayout = vkTexture->getImageLayout();
+				imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
+				imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
+
+				imageInfos.push_back(imageInfo);
+			}
+
+			write.pImageInfo = imageInfos.data();
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 		}
 		if (val.baseType == UNIFORM_STORAGETEXTURE) {
 			VkWriteDescriptorSet write{};
@@ -300,20 +307,26 @@ void Shader::newFrame(uint32_t frameIndex)
 			write.dstBinding = val.location;
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			write.descriptorCount = 1;
+			write.descriptorCount = val.count;
 
-			VkDescriptorImageInfo* imageInfo = createDescriptorImageInfo(val.textures[0], false);	// fixme: arrays
-			imageInfos.push_back(imageInfo);
+			std::vector<VkDescriptorImageInfo> imageInfos;
 
-			write.pImageInfo = imageInfo;
-			descriptorWrite.push_back(write);
+			for (int i = 0; i < val.count; i++)
+			{
+				auto vkTexture = dynamic_cast<Texture*>(val.textures[i]);
+
+				VkDescriptorImageInfo imageInfo{};
+				imageInfo.imageLayout = vkTexture->getImageLayout();
+				imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
+
+				imageInfos.push_back(imageInfo);
+			}
+
+			write.pImageInfo = imageInfos.data();
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 		}
 	}
-
-	vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrite.size()), descriptorWrite.data(), 0, nullptr);
-
-	for (const auto imageInfo : imageInfos)
-		delete imageInfo;
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint)
@@ -334,7 +347,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			memcpy(dst, &builtinData, sizeof(builtinData));
 		}
 
-		// additional data is always added onto the last stream buffer in the current frame
 		auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
 
 		auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
@@ -928,6 +940,30 @@ void Shader::createPipelineLayout()
 	}
 }
 
+void Shader::createDescriptorPoolSizes()
+{
+	if (!localUniformData.empty())
+	{
+		VkDescriptorPoolSize size{};
+		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		size.descriptorCount = 1;
+
+		descriptorPoolSizes.push_back(size);
+	}
+
+	for (const auto &[key, val] : uniformInfos)
+	{
+		VkDescriptorPoolSize size{};
+		auto type = Vulkan::getDescriptorType(val.baseType);
+		if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+			continue;
+		}
+		size.type = type;
+		size.descriptorCount = 1;
+		descriptorPoolSizes.push_back(size);
+	}
+}
+
 void Shader::createStreamBuffers()
 {
 	const auto numImagesInFlight = vgfx->getNumImagesInFlight();
@@ -938,29 +974,25 @@ void Shader::createStreamBuffers()
 
 void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture)
 {
-	// if the shader doesn't actually use these textures they might get optimized out
-	// in that case this function becomes a noop.
-	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y] != nullptr)
-	{
-		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y]->textures[0];
-		ytexture->retain();
-		oldTexture->release();
-		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_Y]->textures[0] = ytexture;
-	}
-	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB] != nullptr)
-	{
-		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB]->textures[0];
-		cbtexture->retain();
-		oldTexture->release();
-		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CB]->textures[0] = cbtexture;
-	}
-	if (builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR] != nullptr)
-	{
-		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR]->textures[0];
-		crtexture->retain();
-		oldTexture->release();
-		builtinUniformInfo[BUILTIN_TEXTURE_VIDEO_CR]->textures[0] = crtexture;
-	}
+	std::array<graphics::Texture*, 3> textures = {
+		ytexture, cbtexture, crtexture
+	};
+
+	std::array<BuiltinUniform, 3> builtIns = {
+		BUILTIN_TEXTURE_VIDEO_Y,
+		BUILTIN_TEXTURE_VIDEO_CB,
+		BUILTIN_TEXTURE_VIDEO_CR,
+	};
+
+	static_assert(textures.size() == builtIns.size());
+
+	for (size_t i = 0; i < textures.size(); i++)
+		if (builtinUniformInfo[builtIns[i]] != nullptr)
+		{
+			textures[i]->retain();
+			builtinUniformInfo[builtIns[i]]->textures[0]->release();
+			builtinUniformInfo[builtIns[i]]->textures[0] = textures[i];
+		}
 }
 
 bool Shader::hasUniform(const std::string &name) const
@@ -972,9 +1004,8 @@ void Shader::setMainTex(graphics::Texture *texture)
 {
 	if (builtinUniformInfo[BUILTIN_TEXTURE_MAIN] != nullptr)
 	{
-		auto oldTexture = builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0];
 		texture->retain();
-		oldTexture->release();
+		builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0]->release();
 		builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
 	}
 }
@@ -983,32 +1014,11 @@ VkDescriptorSet Shader::allocateDescriptorSet()
 {
 	if (freeDescriptorSets.empty())
 	{
-		// fixme: we can optimize this, since sizes should never change for a given shader.
-		std::vector<VkDescriptorPoolSize> sizes;
-
-		VkDescriptorPoolSize size{};
-		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		size.descriptorCount = 1;
-
-		sizes.push_back(size);
-
-		for (const auto &[key, val] : uniformInfos)
-		{
-			VkDescriptorPoolSize size{};
-			auto type = Vulkan::getDescriptorType(val.baseType);
-			if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-				continue;
-			} 
-			size.type = type;
-			size.descriptorCount = 1;
-			sizes.push_back(size);
-		}
-
 		VkDescriptorPoolCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		createInfo.maxSets = DESCRIPTOR_POOL_SIZE;
-		createInfo.poolSizeCount = static_cast<uint32_t>(sizes.size());
-		createInfo.pPoolSizes = sizes.data();
+		createInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+		createInfo.pPoolSizes = descriptorPoolSizes.data();
 
 		VkDescriptorPool pool;
 		if (vkCreateDescriptorPool(device, &createInfo, nullptr, &pool) != VK_SUCCESS)
@@ -1019,7 +1029,7 @@ VkDescriptorSet Shader::allocateDescriptorSet()
 
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPools.back();
+		allocInfo.descriptorPool = pool;
 		allocInfo.descriptorSetCount = DESCRIPTOR_POOL_SIZE;
 		allocInfo.pSetLayouts = layouts.data();
 
