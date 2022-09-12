@@ -437,6 +437,7 @@ private:
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	bool framebufferResized = false;
+	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	std::unique_ptr<Texture> standardTexture = nullptr;
 	// we need an array of draw buffers, since the frames are being rendered asynchronously

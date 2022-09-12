@@ -1118,7 +1118,6 @@ void Window::setVSync(int vsync)
 			SDL_GL_SetSwapInterval(1);
 	}
 
-	// fixme: doesn't work for vulkan yet.
 #ifdef LOVE_GRAPHICS_VULKAN
 	love::graphics::vulkan::Vulkan::setVsync(vsync);
 #endif

@@ -1,14 +1,14 @@
-#include "Graphics.h"
-#include "Buffer.h"
-#include "GraphicsReadback.h"
-#include "SDL_vulkan.h"
-#include "window/Window.h"
 #include "common/Exception.h"
-#include "Shader.h"
-#include "graphics/Texture.h"
-#include "Vulkan.h"
-#include "common/version.h"
 #include "common/pixelformat.h"
+#include "common/version.h"
+#include "window/Window.h"
+#include "Buffer.h"
+#include "Graphics.h"
+#include "GraphicsReadback.h"
+#include "Shader.h"
+#include "Vulkan.h"
+
+#include "SDL_vulkan.h"
 
 #include <algorithm>
 #include <vector>
@@ -16,7 +16,6 @@
 #include <set>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include <array>
 
 
@@ -356,6 +355,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createSyncObjects();
 	createColorResources();
 	createDepthResources();
+	transitionColorDepthLayouts = true;
 	createDefaultRenderPass();
 	createDefaultFramebuffers();
 	createCommandPool();
@@ -401,12 +401,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	created = true;
 	drawCalls = 0;
 	drawCallsBatched = 0;
-
-	Vulkan::cmdTransitionImageLayout(
-		commandBuffers.at(currentFrame), 
-		depthImage, 
-		VK_IMAGE_LAYOUT_UNDEFINED, 
-		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 	return true;
 }
@@ -891,6 +885,24 @@ void Graphics::beginFrame()
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+	if (transitionColorDepthLayouts)
+	{
+		Vulkan::cmdTransitionImageLayout(
+			commandBuffers.at(currentFrame),
+			depthImage,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+		if (colorImage)
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				colorImage,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+		transitionColorDepthLayouts = false;
+	}
+
 	Vulkan::resetShaderSwitches();
 
 	usedShadersInFrame.clear();
@@ -1301,6 +1313,8 @@ void Graphics::createLogicalDevice()
 	if (optionalDeviceFeatures.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
 		optionalDeviceFeatures.memoryBudget = false;
 	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
+		optionalDeviceFeatures.spirv14 = false;
+	if (optionalDeviceFeatures.spirv14 && VK_API_VERSION_1_1 > vulkanApiVersion)
 		optionalDeviceFeatures.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
@@ -2248,10 +2262,6 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = configuration.msaaSamples;
-	multisampling.minSampleShading = 1.0f; // Optional
-	multisampling.pSampleMask = nullptr; // Optional
-	multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
-	multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
 	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -2660,6 +2670,8 @@ void Graphics::recreateSwapChain()
 	createDepthResources();
 	createDefaultRenderPass();
 	createDefaultFramebuffers();
+
+	transitionColorDepthLayouts = true;
 }
 
 love::graphics::Graphics *createInstance()
