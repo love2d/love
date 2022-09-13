@@ -275,25 +275,20 @@ public:
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
 
-	VkCommandBuffer getCommandBufferForDataTransfer();
+	// internal functions.
 
+	VkCommandBuffer getCommandBufferForDataTransfer();
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
-
 	void submitGpuCommands(bool present);
-
 	uint32_t getNumImagesInFlight() const;
 	uint32_t getFrameIndex() const;
-
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState &samplerState);
-
 	void setComputeShader(Shader *computeShader);
 	std::set<Shader*> &getUsedShadersInFrame();
-
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
-
 	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
 
 protected:
@@ -352,7 +347,10 @@ private:
 		VertexAttributes vertexAttributes, 
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
 		std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
-	void prepareDraw(const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType, CullMode);
+	void prepareDraw(
+		const VertexAttributes &attributes,
+		const BufferBindings &buffers, graphics::Texture *texture,
+		PrimitiveType, CullMode);
 	void setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture);
 	void setDefaultRenderPass();
 	void startRenderPass();
