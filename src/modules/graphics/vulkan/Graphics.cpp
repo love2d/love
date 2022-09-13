@@ -504,10 +504,12 @@ void Graphics::setFrontFaceWinding(Winding winding)
 
 	states.back().winding = winding;
 
+#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
+#endif
 }
 
 void Graphics::setColorMask(ColorChannelMask mask)
@@ -724,12 +726,14 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, readmask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, value);
 
+#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(compare));
+#endif
 
 	states.back().stencil.action = action;
 	states.back().stencil.compare = compare;
@@ -742,6 +746,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 {
 	flushBatchedDraws();
 
+#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
 		vkCmdSetDepthCompareOpEXT(
@@ -750,6 +755,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 		vkCmdSetDepthWriteEnableEXT(
 			commandBuffers.at(currentFrame), Vulkan::getBool(write));
 	}
+#endif
 
 	states.back().depthTest = compare;
 	states.back().depthWrite = write;
@@ -868,6 +874,7 @@ void Graphics::initDynamicState()
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.value);
 
+#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
 		 vkCmdSetStencilOpEXT(
@@ -885,6 +892,7 @@ void Graphics::initDynamicState()
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame), Vulkan::getFrontFace(states.back().winding));
 	}
+#endif
 }
 
 void Graphics::beginFrame()
@@ -1091,9 +1099,9 @@ void Graphics::createVulkanInstance()
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "LOVE";
-	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	//todo, get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Engine";
-	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
+	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
+	appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
 	appInfo.apiVersion = vulkanApiVersion;
 
 	VkInstanceCreateInfo createInfo{};
@@ -1303,8 +1311,10 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 
 	for (const auto& extension : availableExtensions)
 	{
+#ifdef VK_EXT_extended_dynamic_state
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.extendedDynamicState = true;
+#endif
 		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.memoryRequirements2 = true;
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
@@ -1364,8 +1374,10 @@ void Graphics::createLogicalDevice()
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
+#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+#endif
 	if (optionalDeviceFeatures.memoryRequirements2)
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 	if (optionalDeviceFeatures.dedicatedAllocation)
@@ -1392,12 +1404,14 @@ void Graphics::createLogicalDevice()
 	else
 		createInfo.enabledLayerCount = 0;
 
+#ifdef VK_EXT_extended_dynamic_state
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
 	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceFeatures.extendedDynamicState);
 	extendedDynamicStateFeatures.pNext = nullptr;
 
 	createInfo.pNext = &extendedDynamicStateFeatures;
+#endif
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
@@ -1444,8 +1458,10 @@ void Graphics::initVMA()
 	vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
 	vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
 
+#ifdef VK_KHR_maintenance4
 	vulkanFunctions.vkGetDeviceBufferMemoryRequirements = vkGetDeviceBufferMemoryRequirements;
 	vulkanFunctions.vkGetDeviceImageMemoryRequirements = vkGetDeviceImageMemoryRequirements;
+#endif
 
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
@@ -1974,7 +1990,11 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.primitiveType = primitiveType;
 
 	if (optionalDeviceFeatures.extendedDynamicState)
+#ifdef VK_EXT_extended_dynamic_state
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
+#else
+		;
+#endif
 	else
 	{
 		configuration.dynamicState.winding = states.back().winding;
@@ -2311,7 +2331,8 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	colorBlending.blendConstants[3] = 0.0f;
 
 	std::vector<VkDynamicState> dynamicStates;
-	
+
+#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
@@ -2326,6 +2347,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 			VK_DYNAMIC_STATE_STENCIL_OP_EXT,
 		};
 	else
+#endif
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,
