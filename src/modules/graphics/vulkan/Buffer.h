@@ -15,7 +15,7 @@ namespace vulkan
 
 class Graphics;
 
-class Buffer
+class Buffer final
 	: public love::graphics::Buffer
 	, public Volatile
 {

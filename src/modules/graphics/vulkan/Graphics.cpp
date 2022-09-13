@@ -42,7 +42,11 @@ constexpr bool enableValidationLayers = true;
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
+#if defined(VK_VERSION_1_1)
+constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_1;
+#else
 constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_0;
+#endif
 
 const char *Graphics::getName() const
 {
@@ -166,7 +170,10 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 	rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
 	rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
 
-	vkCmdClearAttachments(commandBuffers[currentFrame], static_cast<uint32_t>(attachments.size()), attachments.data(), 1, &rect);
+	vkCmdClearAttachments(
+		commandBuffers[currentFrame],
+		static_cast<uint32_t>(attachments.size()), attachments.data(),
+		1, &rect);
 }
 
 void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
@@ -387,7 +394,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	createDefaultTexture();
 	createDefaultShaders();
-	Shader::current = Shader::standardShaders[graphics::Shader::StandardShader::STANDARD_DEFAULT];
+	Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
 	createQuadIndexBuffer();
 
 	restoreState(states.back());
@@ -397,7 +404,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	Vulkan::resetShaderSwitches();
 
 	currentFrame = 0;
-
 	created = true;
 	drawCalls = 0;
 	drawCallsBatched = 0;
@@ -561,7 +567,12 @@ void Graphics::draw(const DrawCommand &cmd)
 {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	vkCmdDraw(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.vertexCount), static_cast<uint32_t>(cmd.instanceCount), static_cast<uint32_t>(cmd.vertexStart), 0);
+	vkCmdDraw(
+		commandBuffers.at(currentFrame),
+		static_cast<uint32_t>(cmd.vertexCount),
+		static_cast<uint32_t>(cmd.instanceCount),
+		static_cast<uint32_t>(cmd.vertexStart),
+		0);
 	drawCalls++;
 }
 
@@ -569,8 +580,18 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)cmd.indexBuffer->getHandle(), static_cast<VkDeviceSize>(cmd.indexBufferOffset), Vulkan::getVulkanIndexBufferType(cmd.indexType));
-	vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(cmd.indexCount), static_cast<uint32_t>(cmd.instanceCount), 0, 0, 0);
+	vkCmdBindIndexBuffer(
+		commandBuffers.at(currentFrame),
+		(VkBuffer)cmd.indexBuffer->getHandle(),
+		static_cast<VkDeviceSize>(cmd.indexBufferOffset),
+		Vulkan::getVulkanIndexBufferType(cmd.indexType))
+	vkCmdDrawIndexed(
+		commandBuffers.at(currentFrame),
+		static_cast<uint32_t>(cmd.indexCount),
+		static_cast<uint32_t>(cmd.instanceCount),
+		0,
+		0,
+		0);
 	drawCalls++;
 }
 
@@ -581,7 +602,11 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
 
-	vkCmdBindIndexBuffer(commandBuffers.at(currentFrame), (VkBuffer)quadIndexBuffer->getHandle(), 0, Vulkan::getVulkanIndexBufferType(INDEX_UINT16));
+	vkCmdBindIndexBuffer(
+		commandBuffers.at(currentFrame),
+		(VkBuffer)quadIndexBuffer->getHandle(),
+		0,
+		Vulkan::getVulkanIndexBufferType(INDEX_UINT16));
 
 	int baseVertex = start * 4;
 
@@ -589,7 +614,13 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	{
 		int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
-		vkCmdDrawIndexed(commandBuffers.at(currentFrame), static_cast<uint32_t>(quadcount * 6), 1, 0, baseVertex, 0);
+		vkCmdDrawIndexed(
+			commandBuffers.at(currentFrame),
+			static_cast<uint32_t>(quadcount * 6),
+			1,
+			0,
+			baseVertex,
+			0);
 		baseVertex += quadcount * 4;
 
 		drawCalls++;
@@ -1958,7 +1989,6 @@ void Graphics::createVulkanVertexFormat(
 		}
 	}
 
-	// do we need to use a constant VertexColor?
 	if (!usesColor)
 	{
 		// FIXME: is there a case where gaps happen between buffer bindings?
@@ -2109,7 +2139,6 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 		transitionImages.push_back((VkImage) color.texture->getHandle());
 	}
 	if (rts.depthStencil.texture != nullptr)
-		// fixme: layout transition of depth stencil image?
 		configuration.staticData.depthView = (VkImageView)rts.depthStencil.texture->getRenderTargetHandle();
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);

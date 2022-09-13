@@ -323,9 +323,9 @@ public:
 
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
-	VkSampler getCachedSampler(const SamplerState &);
+	VkSampler getCachedSampler(const SamplerState &samplerState);
 
-	void setComputeShader(Shader *);
+	void setComputeShader(Shader *computeShader);
 	std::set<Shader*> &getUsedShadersInFrame();
 
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
@@ -361,11 +361,11 @@ private:
 	void createImageViews();
 	void createDefaultRenderPass();
 	void createDefaultFramebuffers();
-    VkFramebuffer createFramebuffer(FramebufferConfiguration &);
-    VkFramebuffer getFramebuffer(FramebufferConfiguration &);
+    VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
+    VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
-    VkRenderPass createRenderPass(RenderPassConfiguration &);
-	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &);
+    VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
+	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &configuration);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
@@ -381,9 +381,9 @@ private:
 	void beginFrame();
 	void startRecordingGraphicsCommands(bool newFrame);
 	void endRecordingGraphicsCommands(bool present);
-	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &);
+	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration);
 	void updatedBatchedDrawBuffers();
-	bool usesConstantVertexColor(const VertexAttributes &);
+	bool usesConstantVertexColor(const VertexAttributes &attribs);
 	void createVulkanVertexFormat(
 		VertexAttributes vertexAttributes, 
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
@@ -393,7 +393,7 @@ private:
 	void setDefaultRenderPass();
 	void startRenderPass();
 	void endRenderPass();
-	VkSampler createSampler(const SamplerState&);
+	VkSampler createSampler(const SamplerState &samplerState);
 
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

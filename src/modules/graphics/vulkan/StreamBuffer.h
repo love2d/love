@@ -15,7 +15,7 @@ namespace vulkan
 
 class Graphics;
 
-class StreamBuffer
+class StreamBuffer final
 	: public love::graphics::StreamBuffer
 	, public graphics::Volatile
 {

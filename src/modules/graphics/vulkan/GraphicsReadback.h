@@ -11,7 +11,7 @@ namespace vulkan
 
 class Graphics;
 
-class GraphicsReadback : public graphics::GraphicsReadback
+class GraphicsReadback final : public graphics::GraphicsReadback
 {
 public:
 	GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);

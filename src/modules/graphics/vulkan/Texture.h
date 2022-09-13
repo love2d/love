@@ -15,7 +15,7 @@ namespace vulkan
 
 class Graphics;
 
-class Texture
+class Texture final
 	: public graphics::Texture
 	, public Volatile
 {
