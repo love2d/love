@@ -132,32 +132,6 @@ struct OptionalDeviceFeatures
 	bool spirv14 = false;
 };
 
-struct OptionalDeviceExtensionFunctions
-{
-	// VK_EXT_extended_dynamic_state
-	PFN_vkCmdSetCullModeEXT vkCmdSetCullModeEXT = nullptr;
-	PFN_vkCmdSetDepthBoundsTestEnableEXT vkCmdSetDepthBoundsTestEnableEXT = nullptr;
-	PFN_vkCmdSetDepthCompareOpEXT vkCmdSetDepthCompareOpEXT = nullptr;
-	PFN_vkCmdSetDepthTestEnableEXT vkCmdSetDepthTestEnableEXT = nullptr;
-	PFN_vkCmdSetDepthWriteEnableEXT vkCmdSetDepthWriteEnableEXT = nullptr;
-	PFN_vkCmdSetFrontFaceEXT vkCmdSetFrontFaceEXT = nullptr;
-	PFN_vkCmdSetPrimitiveTopologyEXT vkCmdSetPrimitiveTopologyEXT = nullptr;
-	PFN_vkCmdSetScissorWithCountEXT vkCmdSetScissorWithCountEXT = nullptr;
-	PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOpEXT = nullptr;
-	PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnableEXT = nullptr;
-	PFN_vkCmdSetViewportWithCountEXT vkCmdSetViewportWithCountEXT = nullptr;
-
-	// VK_KHR_get_memory_requirements2
-	PFN_vkGetBufferMemoryRequirements2KHR vkGetBufferMemoryRequirements2KHR = nullptr;
-	PFN_vkGetImageMemoryRequirements2KHR vkGetImageMemoryRequirements2KHR = nullptr;
-	PFN_vkGetImageSparseMemoryRequirements2KHR vkGetImageSparseMemoryRequirements2KHR = nullptr;
-
-	// VK_KHR_buffer_device_address
-	PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR = nullptr;
-	PFN_vkGetBufferOpaqueCaptureAddressKHR vkGetBufferOpaqueCaptureAddressKHR = nullptr;
-	PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR vkGetDeviceMemoryOpaqueCaptureAddressKHR = nullptr;
-};
-
 struct GraphicsPipelineConfiguration
 {
     VkRenderPass renderPass;
@@ -258,18 +232,8 @@ struct RenderpassState
 class Graphics final : public love::graphics::Graphics
 {
 public:
-#ifdef LOVE_ANDROID
-	Graphics() {
-		auto result = volkInitialize();
-		if (result != VK_SUCCESS) {
-			throw love::Exception("could not initialize volk");
-		}
-	}
-#else
-	Graphics() = default;
-#endif
-
-	virtual ~Graphics();
+	Graphics();
+	~Graphics();
 
 	const char *getName() const override;
 	const VkDevice getDevice() const;
@@ -401,7 +365,6 @@ private:
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;
 	OptionalDeviceFeatures optionalDeviceFeatures;
-	OptionalDeviceExtensionFunctions ext;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;

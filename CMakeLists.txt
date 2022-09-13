@@ -107,7 +107,6 @@ if(MEGA)
 		${MEGA_SDL2MAIN}
 		${MEGA_SDL2}
 		${MEGA_ZLIB}
-		${Vulkan_LIBRARIES}
 	)
 
 	# These DLLs are moved next to the love binary in a post-build step to
@@ -202,7 +201,6 @@ Please see https://github.com/love2d/megasource
 		${LOVE_LUA_LIBRARY}
 		${OGG_LIBRARY}
 		${ZLIB_LIBRARY}
-		${Vulkan_LIBRARIES}
 	)
 
 	if(LOVE_JIT)
@@ -613,15 +611,11 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Texture.cpp
 	src/modules/graphics/vulkan/Vulkan.h
 	src/modules/graphics/vulkan/Vulkan.cpp
+	src/modules/graphics/vulkan/volk.h
+	src/modules/graphics/vulkan/volk.cpp
 	src/modules/graphics/vulkan/vk_mem_alloc.h
 	src/modules/graphics/vulkan/UseVMA.cpp
 	src/modules/graphics/vulkan/VulkanWrapper.h)
-
-if(ANDROID)
-	set(LOVE_SRC_MODULE_GRAPHICS_VULKAN ${LOVE_SRC_MODULE_GRAPHICS_VULKAN}
-			src/modules/graphics/vulkan/volk.h
-			src/modules/graphics/vulkan/volk.cpp)
-endif()
 
 set(LOVE_SRC_MODULE_GRAPHICS
 	${LOVE_SRC_MODULE_GRAPHICS_ROOT}

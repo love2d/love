@@ -63,6 +63,13 @@ const VmaAllocator Graphics::getVmaAllocator() const
 	return vmaAllocator;
 }
 
+Graphics::Graphics() {
+	auto result = volkInitialize();
+	if (result != VK_SUCCESS) {
+		throw love::Exception("could not initialize volk");
+	}
+}
+
 Graphics::~Graphics()
 {
 	// We already cleaned those up by clearing out batchedDrawBuffers.
@@ -498,7 +505,7 @@ void Graphics::setFrontFaceWinding(Winding winding)
 	states.back().winding = winding;
 
 	if (optionalDeviceFeatures.extendedDynamicState)
-		ext.vkCmdSetFrontFaceEXT(
+		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
 }
@@ -584,7 +591,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 		commandBuffers.at(currentFrame),
 		(VkBuffer)cmd.indexBuffer->getHandle(),
 		static_cast<VkDeviceSize>(cmd.indexBufferOffset),
-		Vulkan::getVulkanIndexBufferType(cmd.indexType))
+		Vulkan::getVulkanIndexBufferType(cmd.indexType));
 	vkCmdDrawIndexed(
 		commandBuffers.at(currentFrame),
 		static_cast<uint32_t>(cmd.indexCount),
@@ -718,7 +725,7 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, value);
 
 	if (optionalDeviceFeatures.extendedDynamicState)
-		ext.vkCmdSetStencilOpEXT(
+		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
@@ -737,10 +744,10 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
-		ext.vkCmdSetDepthCompareOpEXT(
+		vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(compare));
 
-		ext.vkCmdSetDepthWriteEnableEXT(
+		vkCmdSetDepthWriteEnableEXT(
 			commandBuffers.at(currentFrame), Vulkan::getBool(write));
 	}
 
@@ -863,19 +870,19 @@ void Graphics::initDynamicState()
 
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
-		 ext.vkCmdSetStencilOpEXT(
+		 vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FACE_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(states.back().stencil.action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(states.back().stencil.compare));
 
-		ext.vkCmdSetDepthCompareOpEXT(
+		vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(states.back().depthTest));
 
-		ext.vkCmdSetDepthWriteEnableEXT(
+		vkCmdSetDepthWriteEnableEXT(
 			commandBuffers.at(currentFrame), Vulkan::getBool(states.back().depthWrite));
 
-		ext.vkCmdSetFrontFaceEXT(
+		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame), Vulkan::getFrontFace(states.back().winding));
 	}
 }
@@ -1131,9 +1138,7 @@ void Graphics::createVulkanInstance()
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		throw love::Exception("couldn't create vulkan instance");
 
-#ifdef LOVE_ANDROID
 	volkLoadInstance(instance);
-#endif
 }
 
 bool Graphics::checkValidationSupport()
@@ -1345,7 +1350,7 @@ void Graphics::createLogicalDevice()
 		optionalDeviceFeatures.memoryBudget = false;
 	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
 		optionalDeviceFeatures.spirv14 = false;
-	if (optionalDeviceFeatures.spirv14 && VK_API_VERSION_1_1 > vulkanApiVersion)
+	if (optionalDeviceFeatures.spirv14 && vulkanApiVersion < VK_API_VERSION_1_1)
 		optionalDeviceFeatures.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
@@ -1373,6 +1378,8 @@ void Graphics::createLogicalDevice()
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 	if (optionalDeviceFeatures.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+	if (vulkanApiVersion >= VK_API_VERSION_1_1)
+		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -1395,67 +1402,10 @@ void Graphics::createLogicalDevice()
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
 
-#ifdef LOVE_ANDROID
     volkLoadDevice(device);
-#endif
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
-
-	if (optionalDeviceFeatures.extendedDynamicState)
-	{
-#ifdef LOVE_ANDROID
-        ext.vkCmdSetCullModeEXT = vkCmdSetCullModeEXT;
-		ext.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnableEXT;
-		ext.vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetCullModeEXT;
-		ext.vkCmdSetDepthTestEnableEXT = vkCmdSetDepthTestEnableEXT;
-		ext.vkCmdSetDepthWriteEnableEXT = vkCmdSetDepthWriteEnableEXT;
-		ext.vkCmdSetFrontFaceEXT = vkCmdSetFrontFaceEXT;
-		ext.vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopologyEXT;
-		ext.vkCmdSetScissorWithCountEXT = vkCmdSetScissorWithCountEXT;
-		ext.vkCmdSetStencilOpEXT = vkCmdSetStencilOpEXT;
-		ext.vkCmdSetStencilTestEnableEXT = vkCmdSetStencilTestEnableEXT;
-		ext.vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCountEXT;
-#else
-		ext.vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT)vkGetDeviceProcAddr(device, "vkCmdSetCullModeEXT");
-		ext.vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthBoundsTestEnableEXT");
-		ext.vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthCompareOpEXT");
-		ext.vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthTestEnableEXT");
-		ext.vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetDepthWriteEnableEXT");
-		ext.vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT)vkGetDeviceProcAddr(device, "vkCmdSetFrontFaceEXT");
-		ext.vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(device, "vkCmdSetPrimitiveTopologyEXT");
-		ext.vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetScissorWithCountEXT");
-		ext.vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
-		ext.vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
-		ext.vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT");
-#endif
-	}
-
-	if (optionalDeviceFeatures.memoryRequirements2)
-	{
-#ifdef LOVE_ANDROID
-		ext.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
-		ext.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
-		ext.vkGetImageSparseMemoryRequirements2KHR = vkGetImageSparseMemoryRequirements2KHR;
-#else
-		ext.vkGetBufferMemoryRequirements2KHR = (PFN_vkGetBufferMemoryRequirements2KHR)vkGetDeviceProcAddr(device, "vkGetBufferMemoryRequirements2KHR");
-		ext.vkGetImageMemoryRequirements2KHR = (PFN_vkGetImageMemoryRequirements2KHR)vkGetDeviceProcAddr(device, "vkGetImageMemoryRequirements2KHR");
-		ext.vkGetImageSparseMemoryRequirements2KHR = (PFN_vkGetImageSparseMemoryRequirements2KHR)vkGetDeviceProcAddr(device, "vkGetImageSparseMemoryRequirements2KHR");
-#endif
-	}
-
-	if (optionalDeviceFeatures.bufferDeviceAddress)
-	{
-#ifdef LOVE_ANDROID
-		ext.vkGetBufferDeviceAddressKHR = vkGetBufferDeviceAddressKHR;
-		ext.vkGetBufferOpaqueCaptureAddressKHR = vkGetBufferOpaqueCaptureAddressKHR;
-		ext.vkGetDeviceMemoryOpaqueCaptureAddressKHR = vkGetDeviceMemoryOpaqueCaptureAddressKHR;
-#else
-		ext.vkGetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR)vkGetDeviceProcAddr(device, "vkGetBufferDeviceAddressKHR");
-		ext.vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)vkGetDeviceProcAddr(device, "vkGetBufferOpaqueCaptureAddressKHR");
-		ext.vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)vkGetDeviceProcAddr(device, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
-#endif
-	}
 }
 
 void Graphics::initVMA()
@@ -1465,7 +1415,7 @@ void Graphics::initVMA()
 	allocatorCreateInfo.physicalDevice = physicalDevice;
 	allocatorCreateInfo.device = device;
 	allocatorCreateInfo.instance = instance;
-#ifdef LOVE_ANDROID
+
 	VmaVulkanFunctions vulkanFunctions{};
 
 	vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
@@ -1498,12 +1448,6 @@ void Graphics::initVMA()
 	vulkanFunctions.vkGetDeviceImageMemoryRequirements = vkGetDeviceImageMemoryRequirements;
 
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
-#else
-	VmaVulkanFunctions vulkanFunctions{};
-	vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
-	vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
-	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
-#endif
 
 	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS)
 		throw love::Exception("failed to create vma allocator");
@@ -2030,7 +1974,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.primitiveType = primitiveType;
 
 	if (optionalDeviceFeatures.extendedDynamicState)
-		ext.vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
+		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
 	else
 	{
 		configuration.dynamicState.winding = states.back().winding;
