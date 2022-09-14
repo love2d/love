@@ -96,7 +96,7 @@ bool Texture::loadVolatile()
 	bool hasdata = slices.get(0, 0) != nullptr;
 
 	if (hasdata)
-		for (int mip = 0; mip < layerCount; mip++)
+		for (int mip = 0; mip < getMipmapCount(); mip++)
 		{
 			// fixme: deal with compressed images.
 
@@ -120,6 +120,36 @@ bool Texture::loadVolatile()
 	if (slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 
+	if (renderTarget)
+	{
+		renderTargetImageViews.resize(getMipmapCount());
+		for (int mip = 0; mip < getMipmapCount(); mip++)
+		{
+			renderTargetImageViews.at(mip).resize(layerCount);
+
+			for (int slice = 0; slice < layerCount; slice++)
+			{
+				VkImageViewCreateInfo viewInfo{};
+				viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+				viewInfo.image = textureImage;
+				viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
+				viewInfo.format = vulkanFormat.internalFormat;
+				viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				viewInfo.subresourceRange.baseMipLevel = mip;
+				viewInfo.subresourceRange.levelCount = 1;
+				viewInfo.subresourceRange.baseArrayLayer = slice;
+				viewInfo.subresourceRange.layerCount = 1;
+				viewInfo.components.r = vulkanFormat.swizzleR;
+				viewInfo.components.g = vulkanFormat.swizzleG;
+				viewInfo.components.b = vulkanFormat.swizzleB;
+				viewInfo.components.a = vulkanFormat.swizzleA;
+
+				if (vkCreateImageView(device, &viewInfo, nullptr, &renderTargetImageViews.at(mip).at(slice)) != VK_SUCCESS)
+					throw love::Exception("could not create render target image view");
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -133,9 +163,13 @@ void Texture::unloadVolatile()
 		textureImageView = textureImageView, 
 		allocator = allocator, 
 		textureImage = textureImage, 
-		textureImageAllocation = textureImageAllocation] () {
+		textureImageAllocation = textureImageAllocation,
+		textureImageViews = std::move(renderTargetImageViews)] () {
 		vkDestroyImageView(device, textureImageView, nullptr);
 		vmaDestroyImage(allocator, textureImage, textureImageAllocation);
+		for (const auto &views : textureImageViews)
+			for (const auto &view : views)
+				vkDestroyImageView(device, view, nullptr);
 	});
 
 	textureImage = VK_NULL_HANDLE;
@@ -154,6 +188,11 @@ ptrdiff_t Texture::getRenderTargetHandle() const
 ptrdiff_t Texture::getSamplerHandle() const
 {
 	return (ptrdiff_t)textureSampler;
+}
+
+VkImageView Texture::getRenderTargetView(int mip, int layer)
+{
+	return renderTargetImageViews.at(mip).at(layer);
 }
 
 int Texture::getMSAA() const

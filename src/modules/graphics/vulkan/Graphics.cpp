@@ -2097,20 +2097,10 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
 	for (const auto &color : rts.colors)
-	{
-		// fixme: use mipmap and slice.
-		color.mipmap;
-		color.slice;
 		renderPassConfiguration.colorAttachments.push_back({ Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat, false });
-	}
 	if (rts.depthStencil.texture != nullptr)
-	{
-		// fixme: use mipmap and slice:
-		rts.depthStencil.mipmap;
-		rts.depthStencil.slice;
 		if (rts.depthStencil.texture != nullptr)
 			renderPassConfiguration.staticData.depthAttachment = { Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat, false };
-	}
 
 	FramebufferConfiguration configuration{};
 
@@ -2118,11 +2108,11 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	for (const auto &color : rts.colors)
 	{
-		configuration.colorViews.push_back((VkImageView)color.texture->getRenderTargetHandle());
+		configuration.colorViews.push_back(dynamic_cast<Texture*>(color.texture)->getRenderTargetView(color.mipmap, color.slice));
 		transitionImages.push_back((VkImage) color.texture->getHandle());
 	}
 	if (rts.depthStencil.texture != nullptr)
-		configuration.staticData.depthView = (VkImageView)rts.depthStencil.texture->getRenderTargetHandle();
+		configuration.staticData.depthView = dynamic_cast<Texture*>(rts.depthStencil.texture)->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);

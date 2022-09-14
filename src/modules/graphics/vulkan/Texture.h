@@ -36,6 +36,8 @@ public:
 	ptrdiff_t getRenderTargetHandle() const override;
 	ptrdiff_t getSamplerHandle() const override;
 
+	VkImageView getRenderTargetView(int mip, int layer);
+
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
 
 	void generateMipmapsInternal()  override;
@@ -56,6 +58,7 @@ private:
 	VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	VmaAllocation textureImageAllocation = VK_NULL_HANDLE;
 	VkImageView textureImageView = VK_NULL_HANDLE;
+	std::vector<std::vector<VkImageView>> renderTargetImageViews;
 	VkSampler textureSampler = VK_NULL_HANDLE;
 	Slices slices;
 	int layerCount = 0;
