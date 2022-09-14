@@ -31,10 +31,13 @@ struct RenderPassAttachment
 {
 	VkFormat format = VK_FORMAT_UNDEFINED;
 	bool discard = true;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 	bool operator==(const RenderPassAttachment &attachment) const
 	{
-		return format == attachment.format && discard == attachment.discard;
+		return format == attachment.format && 
+			discard == attachment.discard && 
+			msaaSamples == attachment.msaaSamples;
 	}
 };
 
@@ -44,7 +47,6 @@ struct RenderPassConfiguration
 
 	struct StaticRenderPassConfiguration
 	{
-		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 		RenderPassAttachment depthAttachment;
 		bool resolve = false;
 	} staticData;
@@ -290,6 +292,7 @@ public:
 	std::set<Shader*> &getUsedShadersInFrame();
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
+	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
@@ -304,7 +307,6 @@ private:
 	void createVulkanInstance();
 	bool checkValidationSupport();
 	void pickPhysicalDevice();
-	void getMaxUsableSampleCount();
 	int rateDeviceSuitability(VkPhysicalDevice device);
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	void createLogicalDevice();

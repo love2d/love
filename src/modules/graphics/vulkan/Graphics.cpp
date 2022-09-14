@@ -198,9 +198,8 @@ void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
 	else
 	{
 		RenderPassConfiguration renderPassConfiguration{};
-		renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, colorbuffers[0] });
-		renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), depthstencil };
-		renderPassConfiguration.staticData.msaaSamples = msaaSamples;
+		renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, colorbuffers[0], msaaSamples });
+		renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), depthstencil, msaaSamples };
 		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 			renderPassConfiguration.staticData.resolve = false;
 		else
@@ -1192,7 +1191,7 @@ void Graphics::pickPhysicalDevice()
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 	minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
 
-	getMaxUsableSampleCount();
+	msaaSamples = getMsaaCount(requestedMsaa);
 }
 
 bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -1717,9 +1716,8 @@ void Graphics::createImageViews()
 void Graphics::createDefaultRenderPass()
 {
 	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, false });
-	renderPassConfiguration.staticData.msaaSamples = msaaSamples;
-	renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), false };
+	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, false, msaaSamples });
+	renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), false, msaaSamples };
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 		renderPassConfiguration.staticData.resolve = false;
 	else
@@ -1824,7 +1822,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 
 		VkAttachmentDescription colorDescription{};
 		colorDescription.format = colorAttachment.format;
-		colorDescription.samples = configuration.staticData.msaaSamples;
+		colorDescription.samples = colorAttachment.msaaSamples;
 		if (colorAttachment.discard)
 			colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		else
@@ -1849,7 +1847,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 
 		VkAttachmentDescription depthStencilAttachment{};
 		depthStencilAttachment.format = configuration.staticData.depthAttachment.format;
-		depthStencilAttachment.samples = configuration.staticData.msaaSamples;
+		depthStencilAttachment.samples = configuration.staticData.depthAttachment.msaaSamples;
 		if (configuration.staticData.depthAttachment.discard)
 			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		else
@@ -2096,11 +2094,17 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	// fixme: hasSRGBtexture
 	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
-	for (const auto &color : rts.colors)
-		renderPassConfiguration.colorAttachments.push_back({ Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat, false });
+	for (const auto& color : rts.colors)
+		renderPassConfiguration.colorAttachments.push_back({ 
+			Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat, 
+			false, 
+			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
 		if (rts.depthStencil.texture != nullptr)
-			renderPassConfiguration.staticData.depthAttachment = { Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat, false };
+			renderPassConfiguration.staticData.depthAttachment = { 
+				Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat, 
+				false,
+				dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
 
 	FramebufferConfiguration configuration{};
 
@@ -2409,7 +2413,7 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 	}
 }
 
-void Graphics::getMaxUsableSampleCount()
+VkSampleCountFlagBits Graphics::getMsaaCount(int requestedMsaa) const
 {
 	VkPhysicalDeviceProperties physicalDeviceProperties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
@@ -2417,19 +2421,19 @@ void Graphics::getMaxUsableSampleCount()
 	VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
 
 	if (counts & VK_SAMPLE_COUNT_64_BIT && requestedMsaa >= 64)
-		msaaSamples = VK_SAMPLE_COUNT_64_BIT;
+		return VK_SAMPLE_COUNT_64_BIT;
 	else if (counts & VK_SAMPLE_COUNT_32_BIT && requestedMsaa >= 32)
-		msaaSamples = VK_SAMPLE_COUNT_32_BIT;
+		return VK_SAMPLE_COUNT_32_BIT;
 	else if (counts & VK_SAMPLE_COUNT_16_BIT && requestedMsaa >= 16)
-		msaaSamples = VK_SAMPLE_COUNT_16_BIT;
+		return VK_SAMPLE_COUNT_16_BIT;
 	else if (counts & VK_SAMPLE_COUNT_8_BIT && requestedMsaa >= 8)
-		msaaSamples = VK_SAMPLE_COUNT_8_BIT;
+		return VK_SAMPLE_COUNT_8_BIT;
 	else if (counts & VK_SAMPLE_COUNT_4_BIT && requestedMsaa >= 4)
-		msaaSamples = VK_SAMPLE_COUNT_4_BIT;
+		return VK_SAMPLE_COUNT_4_BIT;
 	else if (counts & VK_SAMPLE_COUNT_2_BIT && requestedMsaa >= 2)
-		msaaSamples = VK_SAMPLE_COUNT_2_BIT;
+		return VK_SAMPLE_COUNT_2_BIT;
 	else
-		msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		return VK_SAMPLE_COUNT_1_BIT;
 }
 
 void Graphics::createColorResources()

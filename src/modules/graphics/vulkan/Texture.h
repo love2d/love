@@ -37,6 +37,7 @@ public:
 	ptrdiff_t getSamplerHandle() const override;
 
 	VkImageView getRenderTargetView(int mip, int layer);
+	VkSampleCountFlagBits getMsaaSamples() const;
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
 
@@ -62,6 +63,7 @@ private:
 	VkSampler textureSampler = VK_NULL_HANDLE;
 	Slices slices;
 	int layerCount = 0;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 };
 
 } // vulkan

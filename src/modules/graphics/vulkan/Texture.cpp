@@ -55,6 +55,8 @@ bool Texture::loadVolatile()
 		layerCount = 6;
 		createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	}
+
+	msaaSamples = vgfx->getMsaaCount(requestedMSAA);
 	
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -70,7 +72,7 @@ bool Texture::loadVolatile()
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageInfo.usage = usageFlags;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.samples = msaaSamples;
 
 	VmaAllocationCreateInfo imageAllocationCreateInfo{};
 
@@ -195,9 +197,14 @@ VkImageView Texture::getRenderTargetView(int mip, int layer)
 	return renderTargetImageViews.at(mip).at(layer);
 }
 
+VkSampleCountFlagBits Texture::getMsaaSamples() const
+{
+	return msaaSamples;
+}
+
 int Texture::getMSAA() const
 {
-	return 0;
+	return static_cast<int>(msaaSamples);
 }
 
 ptrdiff_t Texture::getHandle() const
