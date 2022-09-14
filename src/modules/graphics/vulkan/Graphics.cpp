@@ -42,12 +42,6 @@ constexpr bool enableValidationLayers = true;
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-#if defined(VK_VERSION_1_1)
-constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_1;
-#else
-constexpr uint32_t vulkanApiVersion = VK_API_VERSION_1_0;
-#endif
-
 const char *Graphics::getName() const
 {
 	return "love.graphics.vulkan";
@@ -63,15 +57,20 @@ const VmaAllocator Graphics::getVmaAllocator() const
 	return vmaAllocator;
 }
 
-Graphics::Graphics() {
-	auto result = volkInitialize();
-	if (result != VK_SUCCESS) {
-		throw love::Exception("could not initialize volk");
-	}
+Graphics::Graphics()
+{
+	if (SDL_Vulkan_LoadLibrary(nullptr))
+		throw love::Exception("could not find vulkan");
+
+	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
+
+	vulkanApiVersion = volkGetInstanceVersion();
 }
 
 Graphics::~Graphics()
 {
+	SDL_Vulkan_UnloadLibrary();
+
 	// We already cleaned those up by clearing out batchedDrawBuffers.
 	// We set them to nullptr here so the base class doesn't crash
 	// when it tries to free this.
@@ -302,16 +301,10 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-	VkSemaphore waitSemaphores[] = { renderFinishedSemaphores.at(currentFrame) };
-
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = waitSemaphores;
-
-	VkSwapchainKHR swapChains[] = { swapChain };
+	presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(currentFrame);
 	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = swapChains;
-
+	presentInfo.pSwapchains = &swapChain;
 	presentInfo.pImageIndices = &imageIndex;
 
 	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
@@ -860,16 +853,6 @@ void Graphics::initDynamicState()
 	else
 		setScissor();
 
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(swapChainExtent.width);
-	viewport.height = static_cast<float>(swapChainExtent.height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
-
 	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.writeMask);
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.value);
@@ -1087,8 +1070,12 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
 	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
 
 	for (const auto& extension : extensions)
+	{
+#ifdef VK_KHR_get_physical_device_properties2
 		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
 			ext.physicalDeviceProperties2 = true;
+#endif
+	}
 }
 
 void Graphics::createVulkanInstance()
@@ -1099,9 +1086,9 @@ void Graphics::createVulkanInstance()
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "LOVE";
+	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	//todo, get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Engine";
-	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);	//todo, get this version from somewhere else?
-	appInfo.engineVersion = VK_MAKE_VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
+	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
 	appInfo.apiVersion = vulkanApiVersion;
 
 	VkInstanceCreateInfo createInfo{};
@@ -1120,8 +1107,10 @@ void Graphics::createVulkanInstance()
 
 	checkOptionalInstanceExtensions(optionalInstanceExtensions);
 
+#ifdef VK_KHR_get_physical_device_properties2
 	if (optionalInstanceExtensions.physicalDeviceProperties2)
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+#endif
 
 	size_t additional_extension_count = extensions.size();
 	extensions.resize(additional_extension_count + count);
@@ -1315,18 +1304,30 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.extendedDynamicState = true;
 #endif
+#ifdef VK_KHR_get_memory_requirements2
 		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.memoryRequirements2 = true;
+#endif
+#ifdef VK_KHR_dedicated_allocation
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.dedicatedAllocation = true;
+#endif
+#ifdef VK_KHR_buffer_device_address
 		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.bufferDeviceAddress = true;
+#endif
+#ifdef VK_EXT_memory_budget
 		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.memoryBudget = true;
+#endif
+#ifdef VK_KHR_shader_float_controls
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.shaderFloatControls = true;
+#endif
+#ifdef VK_KHR_spirv_1_4
 		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.spirv14 = true;
+#endif
 	}
 }
 
@@ -1360,7 +1361,7 @@ void Graphics::createLogicalDevice()
 		optionalDeviceFeatures.memoryBudget = false;
 	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
 		optionalDeviceFeatures.spirv14 = false;
-	if (optionalDeviceFeatures.spirv14 && vulkanApiVersion < VK_API_VERSION_1_1)
+	if (optionalDeviceFeatures.spirv14 && vulkanApiVersion < VK_MAKE_API_VERSION(0, 1, 1, 0))
 		optionalDeviceFeatures.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
@@ -1378,20 +1379,34 @@ void Graphics::createLogicalDevice()
 	if (optionalDeviceFeatures.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
 #endif
+#ifdef VK_KHR_get_memory_requirements2
 	if (optionalDeviceFeatures.memoryRequirements2)
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+#endif
+#ifdef VK_KHR_dedicated_allocation
 	if (optionalDeviceFeatures.dedicatedAllocation)
 		enabledExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
+#endif
+#ifdef VK_KHR_buffer_device_address
 	if (optionalDeviceFeatures.bufferDeviceAddress)
 		enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+#endif
+#ifdef VK_EXT_memory_budget
 	if (optionalDeviceFeatures.memoryBudget)
 		enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+#endif
+#ifdef VK_KHR_shader_float_controls
 	if (optionalDeviceFeatures.shaderFloatControls)
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
+#endif
+#ifdef VK_KHR_spirv_1_4
 	if (optionalDeviceFeatures.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+#endif
+#ifdef VK_KHR_bind_memory2
 	if (vulkanApiVersion >= VK_API_VERSION_1_1)
 		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+#endif
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -1452,11 +1467,17 @@ void Graphics::initVMA()
 	vulkanFunctions.vkDestroyImage = vkDestroyImage;
 	vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
+#ifdef VK_KHR_get_memory_requirements2
 	vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
 	vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
+#endif
+#ifdef VK_KHR_bind_memory2
 	vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
 	vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
+#endif
+#ifdef VK_KHR_get_physical_device_properties2
 	vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
+#endif
 
 #ifdef VK_KHR_maintenance4
 	vulkanFunctions.vkGetDeviceBufferMemoryRequirements = vkGetDeviceBufferMemoryRequirements;
@@ -1610,16 +1631,16 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 
 	switch (vsync) {
 	case -1:
-		if (std::find(begin, end, VK_PRESENT_MODE_FIFO_RELAXED_KHR) != availablePresentModes.end())
+		if (std::find(begin, end, VK_PRESENT_MODE_FIFO_RELAXED_KHR) != end)
 			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
 		else
 			return VK_PRESENT_MODE_FIFO_KHR;
 	case 0:
-		if (std::find(begin, end, VK_PRESENT_MODE_MAILBOX_KHR) != availablePresentModes.end())
+		if (std::find(begin, end, VK_PRESENT_MODE_MAILBOX_KHR) != end)
 			return VK_PRESENT_MODE_MAILBOX_KHR;
 		else
 		{
-			if (std::find(begin, end, VK_PRESENT_MODE_IMMEDIATE_KHR) != availablePresentModes.end())
+			if (std::find(begin, end, VK_PRESENT_MODE_IMMEDIATE_KHR) != end)
 				return VK_PRESENT_MODE_IMMEDIATE_KHR;
 			else
 				return VK_PRESENT_MODE_FIFO_KHR;
@@ -1989,13 +2010,11 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.numColorAttachments = renderPassState.numColorAttachments;
 	configuration.primitiveType = primitiveType;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
 #ifdef VK_EXT_extended_dynamic_state
+	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
-#else
-		;
-#endif
 	else
+#endif
 	{
 		configuration.dynamicState.winding = states.back().winding;
 		configuration.dynamicState.depthState.compare = states.back().depthTest;
@@ -2097,7 +2116,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	std::vector<VkImage> transitionImages;
 
-	for (const auto& color : rts.colors)
+	for (const auto &color : rts.colors)
 	{
 		configuration.colorViews.push_back((VkImageView)color.texture->getRenderTargetHandle());
 		transitionImages.push_back((VkImage) color.texture->getHandle());
@@ -2150,7 +2169,7 @@ void Graphics::startRenderPass()
 		renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
 	}
 
-	for (const auto& image : renderPassState.transitionImages)
+	for (const auto &image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);

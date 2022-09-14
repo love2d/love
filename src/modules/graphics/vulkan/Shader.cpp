@@ -390,15 +390,15 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			imageInfo.imageView = (VkImageView)texture->getRenderTargetHandle();
 			imageInfo.sampler = (VkSampler)texture->getSamplerHandle();
 
-			VkWriteDescriptorSet mainTexWrite{};
-			mainTexWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			mainTexWrite.dstSet = currentDescriptorSet;
-			mainTexWrite.dstBinding = builtinUniformInfo[builtin]->location;
-			mainTexWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			mainTexWrite.descriptorCount = 1;
-			mainTexWrite.pImageInfo = &imageInfo;
+			VkWriteDescriptorSet textureWrite{};
+			textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			textureWrite.dstSet = currentDescriptorSet;
+			textureWrite.dstBinding = builtinUniformInfo[builtin]->location;
+			textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			textureWrite.descriptorCount = 1;
+			textureWrite.pImageInfo = &imageInfo;
 
-			vkUpdateDescriptorSets(device, 1, &mainTexWrite, 0, nullptr);
+			vkUpdateDescriptorSets(device, 1, &textureWrite, 0, nullptr);
 		}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
@@ -833,6 +833,7 @@ void Shader::compileShaders()
 
 			// todo: some stuff missing
 
+			// fixme: memory leak
 			u.buffers = new love::graphics::Buffer *[u.count];
 
 			for (int i = 0; i < u.count; i++)

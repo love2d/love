@@ -357,6 +357,7 @@ private:
 	void endRenderPass();
 	VkSampler createSampler(const SamplerState &samplerState);
 
+	uint32_t vulkanApiVersion = VK_VERSION_1_0;
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	int requestedMsaa = 0;
