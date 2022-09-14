@@ -226,9 +226,120 @@ void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(bool present)
+void Graphics::submitGpuCommands(bool present, void* screenshotCallbackData)
 {
 	flushBatchedDraws();
+
+	if (renderPassState.active)
+		endRenderPass();
+
+	if (present)
+	{
+		if (pendingScreenshotCallbacks.empty())
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				swapChainImages.at(imageIndex),
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		else
+		{
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				swapChainImages.at(imageIndex),
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				screenshotReadbackBuffers.at(currentFrame).image,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+			VkImageCopy imageCopy{};
+			imageCopy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageCopy.srcSubresource.layerCount = 1;
+			imageCopy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageCopy.dstSubresource.layerCount = 1;
+			imageCopy.extent = {
+				swapChainExtent.width,
+				swapChainExtent.height,
+				1
+			};
+
+			VkImageBlit blit{};
+			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.layerCount = 1;
+			blit.srcOffsets[1] = {
+				static_cast<int>(swapChainExtent.width),
+				static_cast<int>(swapChainExtent.height),
+				1
+			};
+			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.layerCount = 1;
+			blit.dstOffsets[1] = {
+				static_cast<int>(swapChainExtent.width),
+				static_cast<int>(swapChainExtent.height),
+				1
+			};
+
+			vkCmdBlitImage(
+				commandBuffers.at(currentFrame),
+				swapChainImages.at(imageIndex), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				screenshotReadbackBuffers.at(currentFrame).image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+				1, &blit,
+				VK_FILTER_NEAREST);
+
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				swapChainImages.at(imageIndex),
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				screenshotReadbackBuffers.at(currentFrame).image,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+			VkBufferImageCopy region{};
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.layerCount = 1;
+			region.imageExtent = {
+				swapChainExtent.width,
+				swapChainExtent.height,
+				1
+			};
+
+			vkCmdCopyImageToBuffer(
+				commandBuffers.at(currentFrame),
+				screenshotReadbackBuffers.at(currentFrame).image,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				screenshotReadbackBuffers.at(currentFrame).buffer,
+				1, &region);
+
+			addReadbackCallback([
+				w = swapChainExtent.width,
+				h = swapChainExtent.height,
+				pendingScreenshotCallbacks = pendingScreenshotCallbacks,
+				screenShotReadbackBuffer = screenshotReadbackBuffers.at(currentFrame),
+				screenshotCallbackData = screenshotCallbackData]() {
+				auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
+
+				for (const auto &info : pendingScreenshotCallbacks)
+				{
+					image::ImageData *img = imageModule->newImageData(
+						w,
+						h,
+						PIXELFORMAT_RGBA8_UNORM,
+						screenShotReadbackBuffer.allocationInfo.pMappedData);
+					info.callback(&info, img, screenshotCallbackData);
+					img->release();
+				}
+			});
+
+			pendingScreenshotCallbacks.clear();
+		}
+	}
 
 	endRecordingGraphicsCommands(present);
 
@@ -358,6 +469,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	initCapabilities();
 	createSwapChain();
 	createImageViews();
+	createScreenshotCallbackBuffers();
 	createSyncObjects();
 	createColorResources();
 	createDepthResources();
@@ -954,13 +1066,6 @@ void Graphics::startRecordingGraphicsCommands(bool newFrame)
 void Graphics::endRecordingGraphicsCommands(bool present) {
 	if (renderPassState.active)
 		endRenderPass();
-
-	if (present)
-		Vulkan::cmdTransitionImageLayout(
-			commandBuffers.at(currentFrame), 
-			swapChainImages[imageIndex], 
-			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
@@ -1575,7 +1680,7 @@ void Graphics::createSwapChain()
 	createInfo.imageColorSpace = surfaceFormat.colorSpace;
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -1710,6 +1815,65 @@ void Graphics::createImageViews()
 
 		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS)
 			throw love::Exception("failed to create image views");
+	}
+}
+
+void Graphics::createScreenshotCallbackBuffers()
+{
+	screenshotReadbackBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
+		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VmaAllocationCreateInfo allocCreateInfo{};
+		allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+		auto result = vmaCreateBuffer(
+			vmaAllocator,
+			&bufferInfo,
+			&allocCreateInfo,
+			&screenshotReadbackBuffers.at(i).buffer,
+			&screenshotReadbackBuffers.at(i).allocation,
+			&screenshotReadbackBuffers.at(i).allocationInfo);
+
+		if (result != VK_SUCCESS)
+			throw love::Exception("failed to create screenshot readback buffer");
+
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+		imageInfo.extent = {
+			swapChainExtent.width,
+			swapChainExtent.height,
+			1
+		};
+		imageInfo.mipLevels = 1;
+		imageInfo.arrayLayers = 1;
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+		VmaAllocationCreateInfo imageAllocCreateInfo{};
+
+		result = vmaCreateImage(
+			vmaAllocator, 
+			&imageInfo, 
+			&imageAllocCreateInfo, 
+			&screenshotReadbackBuffers.at(i).image, 
+			&screenshotReadbackBuffers.at(i).imageAllocation, 
+			nullptr);
+
+		if (result != VK_SUCCESS)
+			throw love::Exception("failed to create screenshot readback image");
 	}
 }
 
@@ -1890,7 +2054,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	VkSubpassDependency readbackDependency{};
 	readbackDependency.srcSubpass = 0;
 	readbackDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-	readbackDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	readbackDependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 	readbackDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 	readbackDependency.dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	readbackDependency.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -2092,7 +2256,6 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	auto currentCommandBuffer = commandBuffers.at(currentFrame);
 
 	// fixme: hasSRGBtexture
-	// fixme: msaaSamples
 	RenderPassConfiguration renderPassConfiguration{};
 	for (const auto& color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
@@ -2650,6 +2813,11 @@ void Graphics::cleanup()
 
 void Graphics::cleanupSwapChain()
 {
+	for (const auto& readbackBuffer : screenshotReadbackBuffers)
+	{
+		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
+		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
+	}
 	for (const auto &framebuffer : defaultFramebuffers)
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
 	vkDestroyRenderPass(device, defaultRenderPass, nullptr);
@@ -2674,6 +2842,7 @@ void Graphics::recreateSwapChain()
 
 	createSwapChain();
 	createImageViews();
+	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
 	createDefaultRenderPass();

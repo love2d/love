@@ -231,6 +231,16 @@ struct RenderpassState
 	VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;
 };
 
+struct ScreenshotReadbackBuffer
+{
+	VkBuffer buffer;
+	VmaAllocation allocation;
+	VmaAllocationInfo allocationInfo;
+
+	VkImage image;
+	VmaAllocation imageAllocation;
+};
+
 class Graphics final : public love::graphics::Graphics
 {
 public:
@@ -282,7 +292,7 @@ public:
 	VkCommandBuffer getCommandBufferForDataTransfer();
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
-	void submitGpuCommands(bool present);
+	void submitGpuCommands(bool present, void *screenshotCallbackData = nullptr);
 	uint32_t getNumImagesInFlight() const;
 	uint32_t getFrameIndex() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
@@ -320,6 +330,7 @@ private:
 	VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities);
 	void createSwapChain();
 	void createImageViews();
+	void createScreenshotCallbackBuffers();
 	void createDefaultRenderPass();
 	void createDefaultFramebuffers();
     VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
@@ -411,6 +422,7 @@ private:
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
+	std::vector<ScreenshotReadbackBuffer> screenshotReadbackBuffers;
 	std::set<Shader*> usedShadersInFrame;
 	RenderpassState renderPassState;
 };
