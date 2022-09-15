@@ -61,7 +61,7 @@ public:
 	void updateUniform(const UniformInfo *info, int count) override;
 
 	void sendTextures(const UniformInfo *info, graphics::Texture **textures, int count) override;
-	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override {}
+	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
 
 	bool hasUniform(const std::string &name) const override;
 
@@ -81,6 +81,8 @@ private:
 		const spirv_cross::SPIRType &type, 
 		size_t baseoff, 
 		const std::string &basename);
+	void initDescriptorSet();
+	void updateUniform(const UniformInfo* info, int count, bool internal);
 
 	VkDescriptorSet allocateDescriptorSet();
 

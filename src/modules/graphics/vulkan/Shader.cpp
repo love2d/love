@@ -270,63 +270,7 @@ void Shader::newFrame(uint32_t frameIndex)
 
 	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 
-	// update everything other than uniform buffers
-	for (const auto &[key, val] : uniformInfos) {
-		// fixme: other types.
-		if (val.baseType == UNIFORM_SAMPLER) {
-			VkWriteDescriptorSet write{};
-			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.dstSet = currentDescriptorSet;
-			write.dstBinding = val.location;
-			write.dstArrayElement = 0;
-			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			write.descriptorCount = val.count;
-
-			std::vector<VkDescriptorImageInfo> imageInfos;
-
-			for (int i = 0; i < val.count; i++)
-			{
-				auto vkTexture = dynamic_cast<Texture*>(val.textures[i]);
-
-				VkDescriptorImageInfo imageInfo{};
-				imageInfo.imageLayout = vkTexture->getImageLayout();
-				imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
-				imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
-
-				imageInfos.push_back(imageInfo);
-			}
-
-			write.pImageInfo = imageInfos.data();
-
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-		}
-		if (val.baseType == UNIFORM_STORAGETEXTURE) {
-			VkWriteDescriptorSet write{};
-			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.dstSet = currentDescriptorSet;
-			write.dstBinding = val.location;
-			write.dstArrayElement = 0;
-			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			write.descriptorCount = val.count;
-
-			std::vector<VkDescriptorImageInfo> imageInfos;
-
-			for (int i = 0; i < val.count; i++)
-			{
-				auto vkTexture = dynamic_cast<Texture*>(val.textures[i]);
-
-				VkDescriptorImageInfo imageInfo{};
-				imageInfo.imageLayout = vkTexture->getImageLayout();
-				imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
-
-				imageInfos.push_back(imageInfo);
-			}
-
-			write.pImageInfo = imageInfos.data();
-
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-		}
-	}
+	initDescriptorSet();
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint)
@@ -409,6 +353,8 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 
 	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
+
+	initDescriptorSet();
 }
 
 Shader::~Shader()
@@ -465,12 +411,17 @@ static bool usesLocalUniformData(const graphics::Shader::UniformInfo *info)
 
 void Shader::updateUniform(const UniformInfo *info, int count)
 {
-	if (current == this)
+	updateUniform(info, count, false);
+}
+
+void Shader::updateUniform(const UniformInfo* info, int count, bool internal)
+{
+	if (!internal && current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
 	if (usesLocalUniformData(info))
 		memcpy(localUniformData.data(), localUniformStagingData.data(), localUniformStagingData.size());
-	else if (info->baseType == UNIFORM_SAMPLER || info->baseType == UNIFORM_STORAGETEXTURE)
+	if (info->baseType == UNIFORM_SAMPLER || info->baseType == UNIFORM_STORAGETEXTURE)
 	{
 		bool isSampler = info->baseType == UNIFORM_SAMPLER;
 
@@ -495,9 +446,57 @@ void Shader::updateUniform(const UniformInfo *info, int count)
 		write.dstSet = currentDescriptorSet;
 		write.dstBinding = info->location;
 		write.dstArrayElement = 0;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		if (isSampler)
+			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		else
+			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 		write.descriptorCount = static_cast<uint32_t>(count);
 		write.pImageInfo = imageInfos.data();
+
+		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+	}
+	if (info->baseType == UNIFORM_STORAGEBUFFER)
+	{
+		VkWriteDescriptorSet write{};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = currentDescriptorSet;
+		write.dstBinding = info->location;
+		write.dstArrayElement = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		write.descriptorCount = info->count;
+
+		std::vector<VkDescriptorBufferInfo> bufferInfos;
+
+		for (int i = 0; i < info->count; i++)
+		{
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = (VkBuffer)info->buffers[i]->getHandle();;
+			bufferInfo.offset = 0;
+			bufferInfo.range = info->buffers[i]->getSize();
+
+			bufferInfos.push_back(bufferInfo);
+		}
+
+		write.pBufferInfo = bufferInfos.data();
+
+		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+	}
+	if (info->baseType == UNIFORM_TEXELBUFFER)
+	{
+		VkWriteDescriptorSet write{};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstSet = currentDescriptorSet;
+		write.dstBinding = info->location;
+		write.dstArrayElement = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+		write.descriptorCount = info->count;
+
+		std::vector<VkBufferView> bufferViews;
+
+		for (int i = 0; i < info->count; i++)
+			bufferViews.push_back((VkBufferView)info->buffers[i]->getTexelBufferHandle());
+
+		write.pTexelBufferView = bufferViews.data();
 
 		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 	}
@@ -515,6 +514,18 @@ void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures,
 	}
 }
 
+void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		auto oldBuffer = info->buffers[i];
+		info->buffers[i] = buffers[i];
+		info->buffers[i]->retain();
+		if (oldBuffer)
+			oldBuffer->release();
+	}
+}
+
 void Shader::calculateUniformBufferSizeAligned()
 {
 	auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
@@ -523,6 +534,13 @@ void Shader::calculateUniformBufferSizeAligned()
 		static_cast<float>(size) / static_cast<float>(minAlignment)
 	));
 	uniformBufferSizeAligned = factor * minAlignment;
+}
+
+void Shader::initDescriptorSet()
+{
+	for (const auto &[key, val] : uniformInfos)
+		if (Vulkan::getDescriptorType(val.baseType) != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+			updateUniform(&val, val.count, true);
 }
 
 void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename)
@@ -880,6 +898,12 @@ void Shader::createDescriptorSetLayout()
 {
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
+	VkShaderStageFlags stageFlags;
+	if (isCompute)
+		stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+	else
+		stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
 	for (auto const &[key, val] : uniformInfos)
 	{
 		auto type = Vulkan::getDescriptorType(val.baseType);
@@ -890,10 +914,7 @@ void Shader::createDescriptorSetLayout()
 			layoutBinding.binding = val.location;
 			layoutBinding.descriptorType = type;
 			layoutBinding.descriptorCount = val.count;
-			if (isCompute)
-				layoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-			else
-				layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			layoutBinding.stageFlags = stageFlags;
 
 			bindings.push_back(layoutBinding);
 		}
@@ -905,10 +926,7 @@ void Shader::createDescriptorSetLayout()
 		uniformBinding.binding = uniformLocation;
 		uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformBinding.descriptorCount = 1;
-		if (isCompute)
-			uniformBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-		else
-			uniformBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		uniformBinding.stageFlags = stageFlags;
 		bindings.push_back(uniformBinding);
 	}
 

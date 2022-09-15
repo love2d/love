@@ -15,6 +15,7 @@ static VkBufferUsageFlags getUsageBit(BufferUsage mode)
 	case BUFFERUSAGE_VERTEX: return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 	case BUFFERUSAGE_INDEX: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	case BUFFERUSAGE_TEXEL: return VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
 	default:
 		throw love::Exception("unsupported BufferUsage mode");
 	}
@@ -47,16 +48,27 @@ bool Buffer::loadVolatile()
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = getSize();
-	if (dataUsage == BUFFERDATAUSAGE_READBACK)
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-	else
-		bufferInfo.usage = getVulkanUsageFlags(usageFlags);
+	bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | getVulkanUsageFlags(usageFlags);
 
 	VmaAllocationCreateInfo allocCreateInfo = {};
 	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-	vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
+	auto result = vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
+	if (result != VK_SUCCESS)
+		throw love::Exception("failed to create buffer");
+
+	if (usageFlags & BUFFERUSAGE_TEXEL)
+	{
+		VkBufferViewCreateInfo bufferViewInfo{};
+		bufferViewInfo.buffer = buffer;
+		bufferViewInfo.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+		bufferViewInfo.format = Vulkan::getVulkanVertexFormat(getDataMember(0).decl.format);
+		bufferViewInfo.range = VK_WHOLE_SIZE;
+
+		if (vkCreateBufferView(vgfx->getDevice(), &bufferViewInfo, nullptr, &bufferView) != VK_SUCCESS)
+			throw love::Exception("failed to create texel buffer view");
+	}
 
 	return true;
 }
@@ -69,12 +81,15 @@ void Buffer::unloadVolatile()
 	auto device = vgfx->getDevice();
 
 	vgfx->queueCleanUp(
-		[device=device, allocator=allocator, buffer=buffer, allocation=allocation](){
+		[device=device, allocator=allocator, buffer=buffer, allocation=allocation, bufferView=bufferView](){
 		vkDeviceWaitIdle(device);
 		vmaDestroyBuffer(allocator, buffer, allocation);
+		if (bufferView)
+			vkDestroyBufferView(device, bufferView, nullptr);
 	});
 
 	buffer = VK_NULL_HANDLE;
+	bufferView = VK_NULL_HANDLE;
 }
 
 Buffer::~Buffer()
@@ -89,8 +104,7 @@ ptrdiff_t Buffer::getHandle() const
 
 ptrdiff_t Buffer::getTexelBufferHandle() const
 {
-	throw love::Exception("unimplemented Buffer::getTexelBufferHandle");
-	return (ptrdiff_t) nullptr;	// todo ?
+	return (ptrdiff_t) bufferView;
 }
 
 void* Buffer::map(MapType map, size_t offset, size_t size)

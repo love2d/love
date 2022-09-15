@@ -36,6 +36,7 @@ public:
 private:
 	// todo use a staging buffer for improved performance
 	VkBuffer buffer = VK_NULL_HANDLE;
+	VkBufferView bufferView = VK_NULL_HANDLE;
 	Graphics *vgfx = nullptr;
 	VmaAllocator allocator;
 	VmaAllocation allocation;
