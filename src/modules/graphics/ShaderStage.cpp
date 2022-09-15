@@ -137,6 +137,21 @@ namespace love
 namespace graphics
 {
 
+static EShLanguage getGlslShaderType(ShaderStageType stage)
+{
+	switch (stage)
+	{
+	case SHADERSTAGE_VERTEX:
+		return EShLangVertex;
+	case SHADERSTAGE_PIXEL:
+		return EShLangFragment;
+	case SHADERSTAGE_COMPUTE:
+		return EShLangCompute;
+	default:
+		throw love::Exception("unkonwn shader stage type");
+	}
+}
+
 ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string &glsl, bool gles, const std::string &cachekey)
 	: stageType(stage)
 	, source(glsl)
@@ -168,6 +183,21 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 		forcedefault = true;
 
 	bool forwardcompat = supportsGLSL3 && !forcedefault;
+
+	if (gfx->getCapabilities().features[Graphics::FEATURE_BUILTIN_UNIFORM_PUSH_CONSTANT]) {
+		forcedefault = true;
+		defaultversion = 450;
+		defaultprofile = ECoreProfile;
+
+		glslangShader->setEnvInput(glslang::EShSourceGlsl, getGlslShaderType(stageType), glslang::EShClientVulkan, 450);
+		glslangShader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_2);
+		glslangShader->setEnvTarget(glslang::EshTargetSpv, glslang::EShTargetSpv_1_0);
+		glslangShader->setEnvInputVulkanRulesRelaxed();
+		glslangShader->setAutoMapLocations(true);
+		glslangShader->setAutoMapBindings(true);
+		glslangShader->setGlobalUniformBinding(0);
+		glslangShader->setGlobalUniformSet(0);
+	}
 
 	if (!glslangShader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 	{

@@ -86,6 +86,13 @@ static const char global_syntax[] = R"(
 )";
 
 static const char render_uniforms[] = R"(
+#ifdef LOVE_BUILTIN_UNIFORM_PUSH_CONSTANT
+layout( push_constant, std430 ) uniform LoveBuiltinUniforms
+{
+	vec4 data[13];
+} LovePushConstants;
+#define love_UniformsPerDraw (LovePushConstants.data)
+#else
 // According to the GLSL ES 1.0 spec, uniform precision must match between stages,
 // but we can't guarantee that highp is always supported in fragment shaders...
 // We *really* don't want to use mediump for these in vertex shaders though.
@@ -94,6 +101,7 @@ uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[12];
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw2[1];
 #else
 uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
+#endif
 #endif
 
 // Older GLSL doesn't support preprocessor line continuations...
@@ -542,6 +550,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	ss << (gles ? glsl::versions[lang].glsles : glsl::versions[lang].glsl) << "\n";
 	if (glsl1on3)
 		ss << "#define LOVE_GLSL1_ON_GLSL3 1\n";
+
+	if (gfx->getCapabilities().features[Graphics::FEATURE_BUILTIN_UNIFORM_PUSH_CONSTANT])
+		ss << "#define LOVE_BUILTIN_UNIFORM_PUSH_CONSTANT 1\n";
 
 	if (isGammaCorrect())
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";

@@ -373,6 +373,7 @@ private:
 	uint32_t vulkanApiVersion = VK_VERSION_1_0;
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	bool canUsePushConstants = false;
 	int requestedMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;

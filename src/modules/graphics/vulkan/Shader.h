@@ -88,6 +88,7 @@ private:
 
 	VkPipeline computePipeline;
 
+	bool useBuiltinUniformPushConstant = false;
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
