@@ -226,7 +226,7 @@ void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
+void Graphics::submitGpuCommands(bool present, void* screenshotCallbackData)
 {
 	flushBatchedDraws();
 
@@ -254,6 +254,17 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 				screenshotReadbackBuffers.at(currentFrame).image,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+			VkImageCopy imageCopy{};
+			imageCopy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageCopy.srcSubresource.layerCount = 1;
+			imageCopy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageCopy.dstSubresource.layerCount = 1;
+			imageCopy.extent = {
+				swapChainExtent.width,
+				swapChainExtent.height,
+				1
+			};
 
 			VkImageBlit blit{};
 			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -396,7 +407,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	submitGpuCommands(true, screenshotCallbackdata);
+	submitGpuCommands(true);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -522,7 +533,6 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_FULL_NPOT] = false;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
-	capabilities.features[FEATURE_BUILTIN_UNIFORM_PUSH_CONSTANT] = canUsePushConstants;
 	capabilities.features[FEATURE_GLSL3] = true;
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
@@ -532,7 +542,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	static_assert(FEATURE_MAX_ENUM == 18, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -567,12 +577,6 @@ void Graphics::unSetMode()
 {
 	created = false;
 	vkDeviceWaitIdle(device);
-
-	for (const auto &readbacks : readbackCallbacks)
-		for (const auto &readback : readbacks)
-			readback();
-	readbackCallbacks.clear();
-
 	Volatile::unloadAll();
 	cleanup();
 }
@@ -595,7 +599,7 @@ int Graphics::getBackbufferMSAA() const
 
 void Graphics::setFrontFaceWinding(Winding winding)
 {
-	const auto &currentState = states.back();
+	const auto& currentState = states.back();
 
 	if (currentState.winding == winding)
 		return;
@@ -1137,7 +1141,7 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	}
 
 	// Store DPI scale in an unused component of another vector.
-	data.normalMatrix[0].w = static_cast<float>(getCurrentDPIScale());
+	data.normalMatrix[0].w = (float)getCurrentDPIScale();
 
 	// Same with point size.
 	data.normalMatrix[1].w = getPointSize();
@@ -1291,9 +1295,6 @@ void Graphics::pickPhysicalDevice()
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 	minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
-
-	if (sizeof(graphics::Shader::BuiltinUniformData) <= properties.limits.maxPushConstantsSize)
-		canUsePushConstants = true;
 
 	msaaSamples = getMsaaCount(requestedMsaa);
 }
@@ -2812,7 +2813,7 @@ void Graphics::cleanup()
 
 void Graphics::cleanupSwapChain()
 {
-	for (const auto &readbackBuffer : screenshotReadbackBuffers)
+	for (const auto& readbackBuffer : screenshotReadbackBuffers)
 	{
 		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
 		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
