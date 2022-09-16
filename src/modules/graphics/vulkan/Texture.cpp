@@ -438,7 +438,10 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = level;
-	region.imageSubresource.baseArrayLayer = slice;
+	if (getTextureType() == TEXTURE_VOLUME)
+		region.imageSubresource.baseArrayLayer = 0;
+	else
+		region.imageSubresource.baseArrayLayer = slice;
 	region.imageSubresource.layerCount = 1;
 
 	region.imageOffset = { r.x, r.y, 0 };
@@ -446,6 +449,9 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 		static_cast<uint32_t>(r.w),
 		static_cast<uint32_t>(r.h), 1
 	};
+
+	if (getTextureType() == TEXTURE_VOLUME)
+		region.imageOffset.z = slice;
 
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
