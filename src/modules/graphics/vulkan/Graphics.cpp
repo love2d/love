@@ -18,6 +18,8 @@
 #include <sstream>
 #include <array>
 
+#define VMA_IMPLEMENTATION
+#include "libraries/vma/vk_mem_alloc.h"
 
 namespace love
 {

@@ -20,7 +20,7 @@
 #define VK_API_VERSION_PATCH(version) ((uint32_t)(version) & 0xFFFU)
 #endif
 
-#include "volk.h"
+#include "libraries/volk/volk.h"
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
-#include "vk_mem_alloc.h"
+#include "libraries/vma/vk_mem_alloc.h"

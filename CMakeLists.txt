@@ -611,10 +611,6 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Texture.cpp
 	src/modules/graphics/vulkan/Vulkan.h
 	src/modules/graphics/vulkan/Vulkan.cpp
-	src/modules/graphics/vulkan/volk.h
-	src/modules/graphics/vulkan/volk.cpp
-	src/modules/graphics/vulkan/vk_mem_alloc.h
-	src/modules/graphics/vulkan/UseVMA.cpp
 	src/modules/graphics/vulkan/VulkanWrapper.h)
 
 set(LOVE_SRC_MODULE_GRAPHICS
@@ -1757,6 +1753,24 @@ set(LOVE_SRC_3P_UTF8
 # add_library() here.
 
 #
+# vma
+#
+
+set(LOVE_SRC_3P_VMA src/libraries/vma/vk_mem_alloc.h)
+
+# vulkan memory allocatory has no implementation files of its own.
+
+#
+# volk
+#
+
+set(LOVE_SRC_3P_VOLK 
+	src/libraries/volk/volk.h
+	src/libraries/volk/volk.cpp)
+
+add_library(love_3p_volk ${LOVE_SRC_3P_VOLK})
+
+#
 # Wuff
 #
 
@@ -1798,6 +1812,7 @@ set(LOVE_3P
 	love_3p_noise1234
 	love_3p_physfs
 	love_3p_spirv_cross
+	love_3p_volk
 	love_3p_wuff
 	love_3p_xxhash
 )
