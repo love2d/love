@@ -58,7 +58,7 @@ bool Buffer::loadVolatile()
 	if (result != VK_SUCCESS)
 		throw love::Exception("failed to create buffer");
 
-	if (usageFlags & BUFFERUSAGE_TEXEL)
+	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
 	{
 		VkBufferViewCreateInfo bufferViewInfo{};
 		bufferViewInfo.buffer = buffer;

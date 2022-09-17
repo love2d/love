@@ -184,7 +184,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 		1, &rect);
 }
 
-void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
+void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 {
 	if (renderPassState.active)
 		endRenderPass();
@@ -228,7 +228,7 @@ void Graphics::discard(const std::vector<bool>& colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(bool present, void* screenshotCallbackData)
+void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 {
 	flushBatchedDraws();
 
@@ -409,7 +409,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	submitGpuCommands(true);
+	submitGpuCommands(true, screenshotCallbackdata);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -538,7 +538,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL3] = true;
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
-	capabilities.features[FEATURE_TEXEL_BUFFER] = false;
+	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
 	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
 	capabilities.features[FEATURE_COPY_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
@@ -554,13 +554,13 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_TEXTURE_LAYERS] = properties.limits.maxImageArrayLayers;
 	capabilities.limits[LIMIT_VOLUME_TEXTURE_SIZE] = properties.limits.maxImageDimension3D;
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = properties.limits.maxImageDimensionCube;
-	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = properties.limits.maxTexelBufferElements;	// ?
-	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = properties.limits.maxStorageBufferRange;	// ?
-	capabilities.limits[LIMIT_THREADGROUPS_X] = properties.limits.maxComputeWorkGroupSize[0];	// this is correct?
+	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = properties.limits.maxTexelBufferElements;
+	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = properties.limits.maxStorageBufferRange;
+	capabilities.limits[LIMIT_THREADGROUPS_X] = properties.limits.maxComputeWorkGroupSize[0];
 	capabilities.limits[LIMIT_THREADGROUPS_Y] = properties.limits.maxComputeWorkGroupSize[1];
 	capabilities.limits[LIMIT_THREADGROUPS_Z] = properties.limits.maxComputeWorkGroupSize[2];
 	capabilities.limits[LIMIT_RENDER_TARGETS] = properties.limits.maxColorAttachments;
-	capabilities.limits[LIMIT_TEXTURE_MSAA] = 1;	// todo
+	capabilities.limits[LIMIT_TEXTURE_MSAA] = static_cast<double>(getMsaaCount(64));
 	capabilities.limits[LIMIT_ANISOTROPY] = properties.limits.maxSamplerAnisotropy;
 	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
@@ -892,6 +892,75 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 
 bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
 {
+	(void)sRGB;	// fixme: sRGB
+
+	auto vulkanFormat = Vulkan::getTextureFormat(format);
+
+	VkFormatProperties formatProperties;
+	vkGetPhysicalDeviceFormatProperties(physicalDevice, vulkanFormat.internalFormat, &formatProperties);
+
+	VkFormatFeatureFlags featureFlags;
+	VkImageTiling tiling;
+	VkImageUsageFlags usageFlags = 0;
+
+	if (usage & PIXELFORMATUSAGEFLAGS_LINEAR)
+	{
+		tiling = VK_IMAGE_TILING_LINEAR;
+		featureFlags = formatProperties.linearTilingFeatures;
+	}
+	else
+	{
+		tiling = VK_IMAGE_TILING_OPTIMAL;
+		featureFlags = formatProperties.optimalTilingFeatures;
+	}
+
+	if (!featureFlags)
+		return false;
+
+	if (usage & PIXELFORMATUSAGEFLAGS_SAMPLE)
+	{
+		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+		if (!(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+			return false;
+	}
+
+	if (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET)
+	{
+		if (isPixelFormatDepth(format) || isPixelFormatDepthStencil(format))
+		{
+			usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			if (!(featureFlags & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+				return false;
+		}
+		else
+		{
+			usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			if (!(featureFlags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT))
+				return false;
+		}
+	}
+
+	if (usage & PIXELFORMATUSAGEFLAGS_BLEND)
+		if (!(featureFlags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT))
+			return false;
+
+	if (usage & PIXELFORMATUSAGEFLAGS_COMPUTEWRITE)
+	{
+		usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
+		if (!(featureFlags & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT))
+			return false;
+	}
+
+	if (usage & PIXELFORMATUSAGEFLAGS_MSAA)
+	{
+		VkImageFormatProperties properties;
+
+		vkGetPhysicalDeviceImageFormatProperties(physicalDevice, vulkanFormat.internalFormat, VK_IMAGE_TYPE_2D, tiling, usageFlags, 0, &properties);
+
+		if (static_cast<uint32_t>(properties.sampleCounts) == 1)
+			return false;
+	}
+
 	return true;
 }
 
@@ -1175,7 +1244,7 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
 
 	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
 
-	for (const auto& extension : extensions)
+	for (const auto &extension : extensions)
 	{
 #ifdef VK_KHR_get_physical_device_properties2
 		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
@@ -1404,7 +1473,7 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 
-	for (const auto& extension : availableExtensions)
+	for (const auto &extension : availableExtensions)
 	{
 #ifdef VK_EXT_extended_dynamic_state
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
@@ -1720,7 +1789,7 @@ void Graphics::createSwapChain()
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
-	for (const auto& availableFormat : availableFormats)
+	for (const auto &availableFormat : availableFormats)
 		// fixme: what if this format and colorspace is not available?
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			return availableFormat;
@@ -1735,7 +1804,8 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 	const auto begin = availablePresentModes.begin();
 	const auto end = availablePresentModes.end();
 
-	switch (vsync) {
+	switch (vsync)
+	{
 	case -1:
 		if (std::find(begin, end, VK_PRESENT_MODE_FIFO_RELAXED_KHR) != end)
 			return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
@@ -2097,7 +2167,7 @@ void Graphics::createVulkanVertexFormat(
 
 	uint8_t highestBufferBinding = 0;
 
-	// change to loop like in opengl implementation ?
+	// fixme: change to loop like in opengl implementation ?
 	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
 	{
 		uint32 bit = 1u << i;
@@ -2815,7 +2885,7 @@ void Graphics::cleanup()
 
 void Graphics::cleanupSwapChain()
 {
-	for (const auto& readbackBuffer : screenshotReadbackBuffers)
+	for (const auto &readbackBuffer : screenshotReadbackBuffers)
 	{
 		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
 		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);

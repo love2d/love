@@ -34,9 +34,12 @@ bool Texture::loadVolatile()
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	if (readable)
-		usageFlags |= 
-			VK_IMAGE_USAGE_SAMPLED_BIT |
-			VK_IMAGE_USAGE_STORAGE_BIT;
+	{
+		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+		if (!isPixelFormatCompressed(format))
+			usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
+	}
 
 	if (isPixelFormatDepthStencil(format) || isPixelFormatDepth(format))
 		usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -66,9 +69,12 @@ bool Texture::loadVolatile()
 	imageInfo.extent.height = static_cast<uint32_t>(pixelHeight);
 	imageInfo.extent.depth = static_cast<uint32_t>(depth);
 	imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
-	imageInfo.mipLevels = static_cast<uint32_t>(getMipmapCount());
+	imageInfo.mipLevels = static_cast<uint32_t>(mipmapCount);
 	imageInfo.format = vulkanFormat.internalFormat;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	if (isPixelFormatCompressed(format))
+		imageInfo.tiling = VK_IMAGE_TILING_LINEAR;
+	else
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageInfo.usage = usageFlags;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -100,26 +106,26 @@ bool Texture::loadVolatile()
 	if (hasdata)
 		for (int mip = 0; mip < getMipmapCount(); mip++)
 		{
-			// fixme: deal with compressed images.
-
 			int sliceCount;
 			if (texType == TEXTURE_CUBE)
 				sliceCount = 6;
 			else
 				sliceCount = slices.getSliceCount();
+
 			for (int slice = 0; slice < sliceCount; slice++)
 			{
-				auto *id = slices.get(slice, mip);
+				auto* id = slices.get(slice, mip);
 				if (id != nullptr)
 					uploadImageData(id, mip, slice, 0, 0);
 			}
 		}
 	else
 		clear();
+
 	createTextureImageView();
 	textureSampler = vgfx->getCachedSampler(samplerState);
 
-	if (slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
+	if (mipmapCount > 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 
 	if (renderTarget)
@@ -436,12 +442,15 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 	region.bufferRowLength = 0;
 	region.bufferImageHeight = 0;
 
+	uint32_t baseLayer;
+	if (getTextureType() == TEXTURE_VOLUME)
+		baseLayer = 0;
+	else
+		baseLayer = slice;
+
 	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	region.imageSubresource.mipLevel = level;
-	if (getTextureType() == TEXTURE_VOLUME)
-		region.imageSubresource.baseArrayLayer = 0;
-	else
-		region.imageSubresource.baseArrayLayer = slice;
+	region.imageSubresource.baseArrayLayer = baseLayer;
 	region.imageSubresource.layerCount = 1;
 
 	region.imageOffset = { r.x, r.y, 0 };
@@ -455,13 +464,11 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
-
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-			level, 1, slice, 1);
-
+			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+			level, 1, baseLayer, 1);
 
 		vkCmdCopyBufferToImage(
 			commandBuffer,
@@ -473,8 +480,8 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 		);
 
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			level, 1, slice, 1);
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
+			level, 1, baseLayer, 1);
 	}
 	else
 		vkCmdCopyBufferToImage(
@@ -542,11 +549,11 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout);
 	}
 	else
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);

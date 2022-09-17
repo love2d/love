@@ -20,7 +20,7 @@ enum InternalFormatRepresentation
 
 struct TextureFormat
 {
-	InternalFormatRepresentation internalFormatRepresentation;
+	InternalFormatRepresentation internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
 	VkFormat internalFormat = VK_FORMAT_UNDEFINED;
 
 	VkComponentSwizzle swizzleR = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -63,7 +63,7 @@ public:
 
 	static void cmdTransitionImageLayout(
 		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,
-		uint32_t baseLevel = 0, uint32_t levelCount = 1, uint32_t baseLayer = 0, uint32_t layerCount = 1);
+		uint32_t baseLevel = 0, uint32_t levelCount = VK_REMAINING_MIP_LEVELS, uint32_t baseLayer = 0, uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS);
 };
 
 } // vulkan

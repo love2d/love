@@ -127,238 +127,305 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 
 	switch (format)
 	{
-		case PIXELFORMAT_UNKNOWN:
-			throw love::Exception("unknown pixel format");
-		case PIXELFORMAT_NORMAL:
-			textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_HDR:
-			throw love::Exception("unimplemented pixel format: hdr");
-		case PIXELFORMAT_R8_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_R8_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_R8_INT:
-			textureFormat.internalFormat = VK_FORMAT_R8_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_R8_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R8_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_R16_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_R16_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_R16_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_R16_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_R16_INT:
-			textureFormat.internalFormat = VK_FORMAT_R16_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_R16_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R16_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_R32_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_R32_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_R32_INT:
-			textureFormat.internalFormat = VK_FORMAT_R32_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_R32_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R32_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_RG8_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_R8G8_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RG8_INT:
-			textureFormat.internalFormat = VK_FORMAT_R8G8_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_RG8_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R8G8_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_LA8_UNORM: // Same as RG8: but accessed as (L: L: L: A)
-			textureFormat.internalFormat = VK_FORMAT_R8G8_UNORM;
-			textureFormat.swizzleR = VK_COMPONENT_SWIZZLE_R;
-			textureFormat.swizzleG = VK_COMPONENT_SWIZZLE_R;
-			textureFormat.swizzleB = VK_COMPONENT_SWIZZLE_R;
-			textureFormat.swizzleA = VK_COMPONENT_SWIZZLE_G;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RG16_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_R16G16_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RG16_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_R16G16_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RG16_INT:
-			textureFormat.internalFormat = VK_FORMAT_R16G16_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_RG16_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R16G16_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_RG32_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_R32G32_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RG32_INT:
-			textureFormat.internalFormat = VK_FORMAT_R32G32_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_RG32_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R32G32_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_RGBA8_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RGBA8_UNORM_sRGB:
-			textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_BGRA8_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_BGRA8_UNORM_sRGB:
-			textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_SRGB;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RGBA8_INT:
-			textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_RGBA8_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_RGBA16_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RGBA16_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RGBA16_INT:
-			textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_RGBA16_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_RGBA32_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_RGBA32_INT:
-			textureFormat.internalFormat = VK_FORMAT_R32G32B32A32_SINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
-			break;
-		case PIXELFORMAT_RGBA32_UINT:
-			textureFormat.internalFormat = VK_FORMAT_R32G32B32A32_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_RGBA4_UNORM:    // LSB->MSB: [a: b: g: r]
-		case PIXELFORMAT_RGB5A1_UNORM:   // LSB->MSB: [a: b: g: r]
-		case PIXELFORMAT_RGB565_UNORM:   // LSB->MSB: [b: g: r]
-		case PIXELFORMAT_RGB10A2_UNORM:  // LSB->MSB: [r: g: b: a]
-		case PIXELFORMAT_RG11B10_FLOAT:  // LSB->MSB: [r: g: b]
-			throw love::Exception("unimplemented pixel format (rgba4, rgb5a1, rgb565, rgb10a2, rg11b10)");
-		case PIXELFORMAT_STENCIL8:
-			textureFormat.internalFormat = VK_FORMAT_S8_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_DEPTH16_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_D16_UNORM;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_DEPTH24_UNORM:	// ?
-		case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
-			textureFormat.internalFormat = VK_FORMAT_D24_UNORM_S8_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
-			break;
-		case PIXELFORMAT_DEPTH32_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;
-			break;
-		case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
-			textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
-			textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_FLOAT;	// ?
-			break;
-		case PIXELFORMAT_DXT1_UNORM:
-		case PIXELFORMAT_DXT3_UNORM:
-		case PIXELFORMAT_DXT5_UNORM:
-			throw love::Exception("unimplemented: dxt");
-		case PIXELFORMAT_BC4_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_BC4_UNORM_BLOCK;
-			break;
-		case PIXELFORMAT_BC4_SNORM:
-			textureFormat.internalFormat = VK_FORMAT_BC4_SNORM_BLOCK;
-			break;
-		case PIXELFORMAT_BC5_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_BC5_UNORM_BLOCK;
-			break;
-		case PIXELFORMAT_BC5_SNORM:
-			textureFormat.internalFormat = VK_FORMAT_BC5_SNORM_BLOCK;
-			break;
-		case PIXELFORMAT_BC6H_UFLOAT:
-			textureFormat.internalFormat = VK_FORMAT_BC6H_UFLOAT_BLOCK;
-			break;
-		case PIXELFORMAT_BC6H_FLOAT:
-			textureFormat.internalFormat = VK_FORMAT_BC6H_SFLOAT_BLOCK;
-			break;
-		case PIXELFORMAT_BC7_UNORM:
-			textureFormat.internalFormat = VK_FORMAT_BC7_UNORM_BLOCK;
-			break;
-		case PIXELFORMAT_PVR1_RGB2_UNORM:
-		case PIXELFORMAT_PVR1_RGB4_UNORM:
-		case PIXELFORMAT_PVR1_RGBA2_UNORM:
-		case PIXELFORMAT_PVR1_RGBA4_UNORM:
-			throw love::Exception("unimplemented pixel format: pvr1");
-		case PIXELFORMAT_ETC1_UNORM:
-		case PIXELFORMAT_ETC2_RGB_UNORM:
-		case PIXELFORMAT_ETC2_RGBA_UNORM:
-		case PIXELFORMAT_ETC2_RGBA1_UNORM:
-			throw love::Exception("unimplemented pixel format: etc");
-		case PIXELFORMAT_EAC_R_UNORM:
-		case PIXELFORMAT_EAC_R_SNORM:
-		case PIXELFORMAT_EAC_RG_UNORM:
-		case PIXELFORMAT_EAC_RG_SNORM:
-			throw love::Exception("unimplemented pixel format: eac");
-		case PIXELFORMAT_ASTC_4x4:
-		case PIXELFORMAT_ASTC_5x4:
-		case PIXELFORMAT_ASTC_5x5:
-		case PIXELFORMAT_ASTC_6x5:
-		case PIXELFORMAT_ASTC_6x6:
-		case PIXELFORMAT_ASTC_8x5:
-		case PIXELFORMAT_ASTC_8x6:
-		case PIXELFORMAT_ASTC_8x8:
-		case PIXELFORMAT_ASTC_10x5:
-		case PIXELFORMAT_ASTC_10x6:
-		case PIXELFORMAT_ASTC_10x8:
-		case PIXELFORMAT_ASTC_10x10:
-		case PIXELFORMAT_ASTC_12x10:
-		case PIXELFORMAT_ASTC_12x12:
-			throw love::Exception("unimplemented pixel format: astc");
-		default:
-			throw love::Exception("unknown pixel format");
+	case PIXELFORMAT_UNKNOWN:
+		throw love::Exception("unknown pixel format");
+	case PIXELFORMAT_NORMAL:
+		textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
+		break;
+	case PIXELFORMAT_HDR:
+		throw love::Exception("unimplemented pixel format: hdr");
+	case PIXELFORMAT_R8_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_R8_UNORM;
+		break;
+	case PIXELFORMAT_R8_INT:
+		textureFormat.internalFormat = VK_FORMAT_R8_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_R8_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R8_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_R16_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_R16_UNORM;
+		break;
+	case PIXELFORMAT_R16_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_R16_SFLOAT;
+		break;
+	case PIXELFORMAT_R16_INT:
+		textureFormat.internalFormat = VK_FORMAT_R16_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_R16_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R16_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_R32_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_R32_SFLOAT;
+		break;
+	case PIXELFORMAT_R32_INT:
+		textureFormat.internalFormat = VK_FORMAT_R32_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_R32_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R32_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_RG8_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_R8G8_UNORM;
+		break;
+	case PIXELFORMAT_RG8_INT:
+		textureFormat.internalFormat = VK_FORMAT_R8G8_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_RG8_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R8G8_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_LA8_UNORM: // Same as RG8: but accessed as (L: L: L: A)
+		textureFormat.internalFormat = VK_FORMAT_R8G8_UNORM;
+		textureFormat.swizzleR = VK_COMPONENT_SWIZZLE_R;
+		textureFormat.swizzleG = VK_COMPONENT_SWIZZLE_R;
+		textureFormat.swizzleB = VK_COMPONENT_SWIZZLE_R;
+		textureFormat.swizzleA = VK_COMPONENT_SWIZZLE_G;
+		break;
+	case PIXELFORMAT_RG16_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_R16G16_UNORM;
+		break;
+	case PIXELFORMAT_RG16_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_R16G16_SFLOAT;
+		break;
+	case PIXELFORMAT_RG16_INT:
+		textureFormat.internalFormat = VK_FORMAT_R16G16_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_RG16_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R16G16_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_RG32_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_R32G32_SFLOAT;
+		break;
+	case PIXELFORMAT_RG32_INT:
+		textureFormat.internalFormat = VK_FORMAT_R32G32_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_RG32_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R32G32_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_RGBA8_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UNORM;
+		break;
+	case PIXELFORMAT_RGBA8_UNORM_sRGB:
+		textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SRGB;
+		break;
+	case PIXELFORMAT_BGRA8_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_UNORM;
+		break;
+	case PIXELFORMAT_BGRA8_UNORM_sRGB:
+		textureFormat.internalFormat = VK_FORMAT_B8G8R8A8_SRGB;
+		break;
+	case PIXELFORMAT_RGBA8_INT:
+		textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_RGBA8_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R8G8B8A8_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_RGBA16_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_UNORM;
+		break;
+	case PIXELFORMAT_RGBA16_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+		break;
+	case PIXELFORMAT_RGBA16_INT:
+		textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_RGBA16_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R16G16B16A16_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_RGBA32_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+		break;
+	case PIXELFORMAT_RGBA32_INT:
+		textureFormat.internalFormat = VK_FORMAT_R32G32B32A32_SINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_SINT;
+		break;
+	case PIXELFORMAT_RGBA32_UINT:
+		textureFormat.internalFormat = VK_FORMAT_R32G32B32A32_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_RGBA4_UNORM:    // LSB->MSB: [a: b: g: r]
+		textureFormat.internalFormat = VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+		break;
+	case PIXELFORMAT_RGB5A1_UNORM:   // LSB->MSB: [a: b: g: r]
+		textureFormat.internalFormat = VK_FORMAT_R5G5B5A1_UNORM_PACK16;
+		break;
+	case PIXELFORMAT_RGB565_UNORM:   // LSB->MSB: [b: g: r]
+		textureFormat.internalFormat = VK_FORMAT_R5G6B5_UNORM_PACK16;
+		break;
+	case PIXELFORMAT_RGB10A2_UNORM:  // LSB->MSB: [r: g: b: a]
+	case PIXELFORMAT_RG11B10_FLOAT:  // LSB->MSB: [r: g: b]
+		throw love::Exception("unimplemented pixel format (rgb10a2, rg11b10)");
+	case PIXELFORMAT_STENCIL8:
+		textureFormat.internalFormat = VK_FORMAT_S8_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_DEPTH16_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_D16_UNORM;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_DEPTH24_UNORM:
+	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
+		textureFormat.internalFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
+	case PIXELFORMAT_DEPTH32_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT;
+		break;
+	case PIXELFORMAT_DEPTH32_FLOAT_STENCIL8:
+		textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
+		break;
+	case PIXELFORMAT_DXT1_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_DXT3_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC2_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_DXT5_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC3_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_BC4_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC4_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_BC4_SNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC4_SNORM_BLOCK;
+		break;
+	case PIXELFORMAT_BC5_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC5_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_BC5_SNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC5_SNORM_BLOCK;
+		break;
+	case PIXELFORMAT_BC6H_UFLOAT:
+		textureFormat.internalFormat = VK_FORMAT_BC6H_UFLOAT_BLOCK;
+		break;
+	case PIXELFORMAT_BC6H_FLOAT:
+		textureFormat.internalFormat = VK_FORMAT_BC6H_SFLOAT_BLOCK;
+		break;
+	case PIXELFORMAT_BC7_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_BC7_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_PVR1_RGB2_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		break;
+	case PIXELFORMAT_PVR1_RGB4_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		break;
+	case PIXELFORMAT_PVR1_RGBA2_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		break;
+	case PIXELFORMAT_PVR1_RGBA4_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		break;
+	case PIXELFORMAT_ETC1_UNORM:
+		throw love::Exception("unimplemented pixel format: etc1");
+	case PIXELFORMAT_ETC2_RGB_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_ETC2_RGBA_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_ETC2_RGBA1_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_EAC_R_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_EAC_R11_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_EAC_R_SNORM:
+		textureFormat.internalFormat = VK_FORMAT_EAC_R11_SNORM_BLOCK;
+		break;
+	case PIXELFORMAT_EAC_RG_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_EAC_R11G11_UNORM_BLOCK;
+		break;
+	case PIXELFORMAT_EAC_RG_SNORM:
+		textureFormat.internalFormat = VK_FORMAT_EAC_R11G11_SNORM_BLOCK;
+		break;
+	case PIXELFORMAT_ASTC_4x4:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_5x4:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_5x5:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_6x5:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_6x6:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_8x5:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_8x6:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_8x8:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_10x5:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_10x6:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_10x8:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_10x10:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_12x10:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	case PIXELFORMAT_ASTC_12x12:
+#ifdef VK_EXT_texture_compression_astc_hdr
+		textureFormat.internalFormat = VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT;
+#endif
+		break;
+	default:
+		throw love::Exception("unknown pixel format");
 	}
 
 	return textureFormat;
