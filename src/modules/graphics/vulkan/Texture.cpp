@@ -1,3 +1,23 @@
+/**
+ * Copyright (c) 2006-2022 LOVE Development Team
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ **/
+
 #include "Texture.h"
 #include "Graphics.h"
 #include "Vulkan.h"
@@ -15,6 +35,7 @@ Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const 
 	: love::graphics::Texture(gfx, settings, data)
 	, vgfx(dynamic_cast<Graphics*>(gfx))
 	, slices(settings.type)
+	, imageAspect(0)
 {
 	if (data)
 		slices = *data;
@@ -27,6 +48,13 @@ bool Texture::loadVolatile()
 	allocator = vgfx->getVmaAllocator();
 	device = vgfx->getDevice();
 
+	if (isPixelFormatDepthStencil(format))
+		imageAspect |= VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	else if (isPixelFormatDepth(format))
+		imageAspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
+	else
+		imageAspect |= VK_IMAGE_ASPECT_COLOR_BIT;
+
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkImageUsageFlags usageFlags =
@@ -35,17 +63,20 @@ bool Texture::loadVolatile()
 
 	if (readable)
 	{
-		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+		if (!isPixelFormatDepthStencil(format))
+			usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
-		if (!isPixelFormatCompressed(format))
+		if (!isPixelFormatCompressed(format) && !isPixelFormatDepthStencil(format))
 			usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
 	}
 
-	if (isPixelFormatDepthStencil(format) || isPixelFormatDepth(format))
-		usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
 	if (renderTarget)
-		usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	{
+		if (isPixelFormatDepthStencil(format))
+			usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		else
+			usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	}
 
 	VkImageCreateFlags createFlags = 0;
 
@@ -114,7 +145,7 @@ bool Texture::loadVolatile()
 
 			for (int slice = 0; slice < sliceCount; slice++)
 			{
-				auto* id = slices.get(slice, mip);
+				auto id = slices.get(slice, mip);
 				if (id != nullptr)
 					uploadImageData(id, mip, slice, 0, 0);
 			}
@@ -125,7 +156,7 @@ bool Texture::loadVolatile()
 	createTextureImageView();
 	textureSampler = vgfx->getCachedSampler(samplerState);
 
-	if (mipmapCount > 1 && getMipmapsMode() != MIPMAPS_NONE)
+	if (!isPixelFormatDepthStencil(format) && mipmapCount > 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 
 	if (renderTarget)
@@ -142,7 +173,7 @@ bool Texture::loadVolatile()
 				viewInfo.image = textureImage;
 				viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
 				viewInfo.format = vulkanFormat.internalFormat;
-				viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				viewInfo.subresourceRange.aspectMask = imageAspect;
 				viewInfo.subresourceRange.baseMipLevel = mip;
 				viewInfo.subresourceRange.levelCount = 1;
 				viewInfo.subresourceRange.baseArrayLayer = slice;
@@ -238,7 +269,7 @@ void Texture::createTextureImageView()
 	viewInfo.image = textureImage;
 	viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
 	viewInfo.format = vulkanFormat.internalFormat;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.aspectMask = imageAspect;
 	viewInfo.subresourceRange.baseMipLevel = 0;
 	viewInfo.subresourceRange.levelCount = getMipmapCount();
 	viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -257,12 +288,7 @@ void Texture::clear()
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	VkImageSubresourceRange range{};
-	if (isPixelFormatDepthStencil(format))
-		range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-	else if (isPixelFormatDepth(format))
-		range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	else
-		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	range.aspectMask = imageAspect;
 	range.baseMipLevel = 0;
 	range.levelCount = VK_REMAINING_MIP_LEVELS;
 	range.baseArrayLayer = 0;
@@ -448,7 +474,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 	else
 		baseLayer = slice;
 
-	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.aspectMask = imageAspect;
 	region.imageSubresource.mipLevel = level;
 	region.imageSubresource.baseArrayLayer = baseLayer;
 	region.imageSubresource.layerCount = 1;
@@ -503,7 +529,7 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	VkImageSubresourceLayers layers{};
-	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	layers.aspectMask = imageAspect;
 	layers.mipLevel = mipmap;
 	layers.baseArrayLayer = slice;
 	layers.layerCount = 1;
@@ -533,7 +559,7 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	VkImageSubresourceLayers layers{};
-	layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	layers.aspectMask = imageAspect;
 	layers.mipLevel = mipmap;
 	layers.baseArrayLayer = slice;
 	layers.layerCount = 1;

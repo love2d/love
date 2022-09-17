@@ -1,3 +1,23 @@
+/**
+ * Copyright (c) 2006-2022 LOVE Development Team
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ **/
+
 #include "common/Exception.h"
 #include "common/pixelformat.h"
 #include "common/version.h"
@@ -28,19 +48,13 @@ namespace graphics
 namespace vulkan
 {
 
-const std::vector<const char*> validationLayers = {
+static const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
-const std::vector<const char*> deviceExtensions = {
+static const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
-
-#ifdef NDEBUG
-constexpr bool enableValidationLayers = false;
-#else
-constexpr bool enableValidationLayers = true;
-#endif
 
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -67,6 +81,8 @@ Graphics::Graphics()
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
 	vulkanApiVersion = volkGetInstanceVersion();
+
+	enableValidationLayers = isDebugEnabled();
 }
 
 Graphics::~Graphics()
@@ -526,8 +542,8 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 void Graphics::initCapabilities()
 {
-	// todo
-	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = false;
+	// fixme: unsure what the first few features are for.
+	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = false;
 	capabilities.features[FEATURE_CLAMP_ONE] = false;
 	capabilities.features[FEATURE_BLEND_MINMAX] = false;
