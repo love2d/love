@@ -33,7 +33,6 @@
 #include "libraries/xxHash/xxhash.h"
 
 // c++
-#include <optional>
 #include <iostream>
 #include <memory>
 #include <functional>
@@ -220,12 +219,12 @@ struct BatchedDrawBuffers
 
 struct QueueFamilyIndices
 {
-	std::optional<uint32_t> graphicsFamily;
-	std::optional<uint32_t> presentFamily;
+	Optional<uint32_t> graphicsFamily;
+	Optional<uint32_t> presentFamily;
 
 	bool isComplete() const
 	{
-		return graphicsFamily.has_value() && presentFamily.has_value();
+		return graphicsFamily.hasValue && presentFamily.hasValue;
 	}
 };
 

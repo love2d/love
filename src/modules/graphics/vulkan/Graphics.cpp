@@ -1562,7 +1562,10 @@ void Graphics::createLogicalDevice()
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value()};
+	std::set<uint32_t> uniqueQueueFamilies = {
+		indices.graphicsFamily.value,
+		indices.presentFamily.value
+	};
 
 	float queuePriority = 1.0f;
 	for (uint32_t queueFamily : uniqueQueueFamilies)
@@ -1661,8 +1664,8 @@ void Graphics::createLogicalDevice()
 
     volkLoadDevice(device);
 
-	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
-	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+	vkGetDeviceQueue(device, indices.graphicsFamily.value, 0, &graphicsQueue);
+	vkGetDeviceQueue(device, indices.presentFamily.value, 0, &presentQueue);
 }
 
 void Graphics::initVMA()
@@ -1813,9 +1816,9 @@ void Graphics::createSwapChain()
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value, indices.presentFamily.value };
 
-	if (indices.graphicsFamily != indices.presentFamily)
+	if (indices.graphicsFamily.value != indices.presentFamily.value)
 	{
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
@@ -1885,6 +1888,17 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 	}
 }
 
+static uint32_t clampuint32_t(uint32_t value, uint32_t min, uint32_t max)
+{
+	if (value < min)
+		return min;
+
+	if (value > max)
+		return max;
+
+	return value;
+}
+
 VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
 {
 	if (capabilities.currentExtent.width != UINT32_MAX)
@@ -1902,8 +1916,8 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
 			static_cast<uint32_t>(height)
 		};
 
-		actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+		actualExtent.width = clampuint32_t(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		actualExtent.height = clampuint32_t(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 		return actualExtent;
 	}
@@ -2897,7 +2911,7 @@ void Graphics::createCommandPool()
 
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
 	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
@@ -2971,12 +2985,12 @@ void Graphics::cleanup()
 		vkDestroySampler(device, p.second, nullptr);
 	samplers.clear();
 
-	for (const auto &[key, val] : renderPasses)
-		vkDestroyRenderPass(device, val, nullptr);
+	for (const auto &entry : renderPasses)
+		vkDestroyRenderPass(device, entry.second, nullptr);
 	renderPasses.clear();
 
-	for (const auto &[key, val] : framebuffers)
-		vkDestroyFramebuffer(device, val, nullptr);
+	for (const auto &entry : framebuffers)
+		vkDestroyFramebuffer(device, entry.second, nullptr);
 	framebuffers.clear();
 		
 	for (auto const &p : graphicsPipelines)

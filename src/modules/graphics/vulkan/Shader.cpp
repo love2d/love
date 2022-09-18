@@ -329,10 +329,10 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			currentUsedUniformStreamBuffersCount = 0;
 		}
 
-		if (builtinUniformDataOffset.has_value())
+		if (builtinUniformDataOffset.hasValue)
 		{
 			auto builtinData = vgfx->getCurrentBuiltinUniformData();
-			auto dst = localUniformData.data() + builtinUniformDataOffset.value();
+			auto dst = localUniformData.data() + builtinUniformDataOffset.value;
 			memcpy(dst, &builtinData, sizeof(builtinData));
 		}
 
@@ -583,9 +583,9 @@ void Shader::calculateUniformBufferSizeAligned()
 
 void Shader::initDescriptorSet()
 {
-	for (const auto &[key, val] : uniformInfos)
-		if (Vulkan::getDescriptorType(val.baseType) != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-			updateUniform(&val, val.count, true);
+	for (const auto &entry : uniformInfos)
+		if (Vulkan::getDescriptorType(entry.second.baseType) != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+			updateUniform(&entry.second, entry.second.count, true);
 }
 
 void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename)
@@ -951,16 +951,16 @@ void Shader::createDescriptorSetLayout()
 	else
 		stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	for (auto const &[key, val] : uniformInfos)
+	for (auto const &entry : uniformInfos)
 	{
-		auto type = Vulkan::getDescriptorType(val.baseType);
+		auto type = Vulkan::getDescriptorType(entry.second.baseType);
 		if (type != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 		{
 			VkDescriptorSetLayoutBinding layoutBinding{};
 
-			layoutBinding.binding = val.location;
+			layoutBinding.binding = entry.second.location;
 			layoutBinding.descriptorType = type;
-			layoutBinding.descriptorCount = val.count;
+			layoutBinding.descriptorCount = entry.second.count;
 			layoutBinding.stageFlags = stageFlags;
 
 			bindings.push_back(layoutBinding);
@@ -1022,10 +1022,10 @@ void Shader::createDescriptorPoolSizes()
 		descriptorPoolSizes.push_back(size);
 	}
 
-	for (const auto &[key, val] : uniformInfos)
+	for (const auto &entry : uniformInfos)
 	{
 		VkDescriptorPoolSize size{};
-		auto type = Vulkan::getDescriptorType(val.baseType);
+		auto type = Vulkan::getDescriptorType(entry.second.baseType);
 		if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
 			continue;
 		}
@@ -1055,7 +1055,7 @@ void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cb
 		BUILTIN_TEXTURE_VIDEO_CR,
 	};
 
-	static_assert(textures.size() == builtIns.size());
+	static_assert(textures.size() == builtIns.size(), "expected number of textures to be the same");
 
 	for (size_t i = 0; i < textures.size(); i++)
 		if (builtinUniformInfo[builtIns[i]] != nullptr)

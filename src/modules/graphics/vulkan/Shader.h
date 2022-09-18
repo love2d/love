@@ -21,6 +21,7 @@
 #pragma once
 
 // LÖVE
+#include "common/Optional.h"
 #include "graphics/Shader.h"
 #include "graphics/vulkan/ShaderStage.h"
 #include "Vulkan.h"
@@ -34,7 +35,6 @@
 #include <memory>
 #include <unordered_map>
 #include <queue>
-#include <optional>
 
 
 namespace love
@@ -137,7 +137,7 @@ private:
 	std::vector<uint8> localUniformData;
 	std::vector<uint8> localUniformStagingData;
 	uint32_t uniformLocation;
-	std::optional<size_t> builtinUniformDataOffset;
+	OptionalInt builtinUniformDataOffset;
 
 	std::unordered_map<std::string, int> attributes;
 
