@@ -872,15 +872,16 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 
 	flushBatchedDraws();
 
-	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, writemask);
-	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, readmask);
-	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, value);
+	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, writemask);
+	
+	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, readmask);
+	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, value);
 
 #ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
-			VK_STENCIL_FACE_FRONT_AND_BACK,
+			VK_STENCIL_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(compare));
 #endif
