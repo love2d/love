@@ -115,15 +115,15 @@ namespace vulkan { extern love::graphics::Graphics* createInstance(); }
 
 static const Renderer rendererOrder[] = {
 	RENDERER_METAL,
-	RENDERER_VULKAN,
 	RENDERER_OPENGL,
+	RENDERER_VULKAN,
 };
 
 static std::vector<Renderer> defaultRenderers =
 {
 	RENDERER_METAL,
-	RENDERER_VULKAN,
 	RENDERER_OPENGL,
+	RENDERER_VULKAN,
 };
 
 static std::vector<Renderer> _renderers = defaultRenderers;
