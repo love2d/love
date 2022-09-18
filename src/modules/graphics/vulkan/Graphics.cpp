@@ -1080,16 +1080,16 @@ void Graphics::initDynamicState()
 	else
 		setScissor();
 
-	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.writeMask);
-	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.readMask);
-	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, states.back().stencil.value);
+	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.writeMask);
+	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.readMask);
+	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.value);
 
 #ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
 		 vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
-			VK_STENCIL_FACE_FRONT_AND_BACK,
+			VK_STENCIL_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(states.back().stencil.action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(states.back().stencil.compare));
 
