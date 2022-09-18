@@ -473,6 +473,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
 {
 	requestedMsaa = msaa;
+	windowHasStencil = windowhasstencil;
 
 	cleanUpFunctions.clear();
 	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
@@ -858,6 +859,17 @@ void Graphics::setScissor()
 
 void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask)
 {
+	if (action != STENCIL_KEEP)
+	{
+		const auto& rts = states.back().renderTargets;
+		auto dsTexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !windowHasStencil)
+			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer");
+		if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && dsTexture == nullptr || !isPixelFormatStencil(dsTexture->getPixelFormat()))
+			throw love::Exception("drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type to be used, in setRenderTarget");
+	}
+
 	flushBatchedDraws();
 
 	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FACE_FRONT_AND_BACK, writemask);
@@ -1300,7 +1312,7 @@ void Graphics::createVulkanInstance()
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "LOVE";
-	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	//todo, get this version from somewhere else?
+	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Engine";
 	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
 	appInfo.apiVersion = vulkanApiVersion;
@@ -1564,6 +1576,8 @@ void Graphics::createLogicalDevice()
 	}
 
 	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
+
+	// sanity check for dependencies.
 
     if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
         optionalDeviceFeatures.extendedDynamicState = false;
@@ -2866,7 +2880,9 @@ void Graphics::createDepthResources()
 	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	if (windowHasStencil)
+		imageViewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	imageViewInfo.subresourceRange.baseMipLevel = 0;
 	imageViewInfo.subresourceRange.levelCount = 1;
 	imageViewInfo.subresourceRange.baseArrayLayer = 0;
