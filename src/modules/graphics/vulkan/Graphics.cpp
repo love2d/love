@@ -526,6 +526,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createDefaultShaders();
 	Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
 	createQuadIndexBuffer();
+	createFanIndexBuffer();
 
 	restoreState(states.back());
 

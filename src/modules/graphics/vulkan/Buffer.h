@@ -54,13 +54,16 @@ public:
 	ptrdiff_t getTexelBufferHandle() const override;
 
 private:
-	// todo use a staging buffer for improved performance
+	bool zeroInitialize;
 	VkBuffer buffer = VK_NULL_HANDLE;
+	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VkBufferView bufferView = VK_NULL_HANDLE;
 	Graphics *vgfx = nullptr;
 	VmaAllocator allocator;
 	VmaAllocation allocation;
+	VmaAllocation stagingAllocation;
 	VmaAllocationInfo allocInfo;
+	VmaAllocationInfo stagingAllocInfo;
 	BufferUsageFlags usageFlags;
 };
 

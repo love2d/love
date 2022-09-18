@@ -36,6 +36,7 @@ static VkBufferUsageFlags getUsageBit(BufferUsage mode)
 	case BUFFERUSAGE_INDEX: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	case BUFFERUSAGE_TEXEL: return VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+	case BUFFERUSAGE_SHADER_STORAGE: return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	default:
 		throw love::Exception("unsupported BufferUsage mode");
 	}
@@ -56,7 +57,8 @@ static VkBufferUsageFlags getVulkanUsageFlags(BufferUsageFlags flags)
 Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
 	, usageFlags(settings.usageFlags)
-	, vgfx(dynamic_cast<Graphics*>(gfx)) 
+	, vgfx(dynamic_cast<Graphics*>(gfx))
+	, zeroInitialize(settings.zeroInitialize)
 {
 	loadVolatile();
 }
@@ -70,13 +72,19 @@ bool Buffer::loadVolatile()
 	bufferInfo.size = getSize();
 	bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | getVulkanUsageFlags(usageFlags);
 
-	VmaAllocationCreateInfo allocCreateInfo = {};
+	VmaAllocationCreateInfo allocCreateInfo{};
 	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-	allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	if (dataUsage == BUFFERDATAUSAGE_READBACK)
+		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	else if ((bufferInfo.usage | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT) || (bufferInfo.usage | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT))
+		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
 	auto result = vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
 	if (result != VK_SUCCESS)
 		throw love::Exception("failed to create buffer");
+
+	if (zeroInitialize)
+		vkCmdFillBuffer(vgfx->getCommandBufferForDataTransfer(), buffer, 0, VK_WHOLE_SIZE, 0);
 
 	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
 	{
@@ -129,21 +137,83 @@ ptrdiff_t Buffer::getTexelBufferHandle() const
 
 void *Buffer::map(MapType map, size_t offset, size_t size)
 {
-	char *data = (char*)allocInfo.pMappedData;
-	return (void*) (data + offset);
+	if (dataUsage == BUFFERDATAUSAGE_READBACK)
+	{
+		char *data = (char*)allocInfo.pMappedData;
+		return (void*) (data + offset);
+	}
+	else
+	{
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		VmaAllocationCreateInfo allocInfo{};
+		allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocInfo) != VK_SUCCESS)
+			throw love::Exception("failed to create staging buffer");
+
+		return stagingAllocInfo.pMappedData;
+	}
 }
 
 bool Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	void *dst = (void*)((char*)allocInfo.pMappedData + offset);
-	memcpy(dst, data, size);
+	if (dataUsage == BUFFERDATAUSAGE_READBACK)
+	{
+		void *dst = (void*)((char*)allocInfo.pMappedData + offset);
+		memcpy(dst, data, size);
+	}
+	else
+	{
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		VmaAllocationCreateInfo allocInfo{};
+		allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+		VkBuffer fillBuffer;
+		VmaAllocation fillAllocation;
+		VmaAllocationInfo fillAllocInfo;
+
+		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo) != VK_SUCCESS)
+			throw love::Exception("failed to create fill buffer");
+
+		memcpy(fillAllocInfo.pMappedData, data, size);
+
+		VkBufferCopy bufferCopy{};
+		bufferCopy.srcOffset = offset;
+		bufferCopy.size = size;
+
+		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), fillBuffer, buffer, 1, &bufferCopy);
+
+		vgfx->queueCleanUp([allocator = allocator, fillBuffer = fillBuffer, fillAllocation = fillAllocation]() {
+			vmaDestroyBuffer(allocator, fillBuffer, fillAllocation);
+		});
+	}
 	return true;
 }
 
 void Buffer::unmap(size_t usedoffset, size_t usedsize)
 {
-	(void)usedoffset;
-	(void)usedsize;
+	if (dataUsage != BUFFERDATAUSAGE_READBACK)
+	{
+		VkBufferCopy bufferCopy{};
+		bufferCopy.srcOffset = usedoffset;
+		bufferCopy.size = usedsize;
+
+		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), stagingBuffer, buffer, 1, &bufferCopy);
+
+		vgfx->queueCleanUp([allocator = allocator, stagingBuffer = stagingBuffer, stagingAllocation = stagingAllocation]() {
+			vmaDestroyBuffer(allocator, stagingBuffer, stagingAllocation);
+		});
+	}
 }
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
