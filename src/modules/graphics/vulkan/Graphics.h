@@ -389,9 +389,9 @@ private:
 	void startRenderPass();
 	void endRenderPass();
 	VkSampler createSampler(const SamplerState &samplerState);
+	void cleanupUnusedObjects();
 
 	uint32_t vulkanApiVersion = VK_VERSION_1_0;
-	bool enableValidationLayers = false;
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	int requestedMsaa = 0;
@@ -420,6 +420,9 @@ private:
     std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
+	std::unordered_map<VkRenderPass, bool> renderPassUsages;
+	std::unordered_map<VkFramebuffer, bool> framebufferUsages;
+	std::unordered_map<VkPipeline, bool> pipelineUsages;
 	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
@@ -430,6 +433,7 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	VkDeviceSize minUniformBufferOffsetAlignment = 0;
 	bool imageRequested = false;
+	uint32_t frameCounter = 0;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	bool framebufferResized = false;

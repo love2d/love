@@ -56,7 +56,9 @@ static const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
+constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
 
 const char *Graphics::getName() const
 {
@@ -81,8 +83,6 @@ Graphics::Graphics()
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
 	vulkanApiVersion = volkGetInstanceVersion();
-
-	enableValidationLayers = isDebugEnabled();
 }
 
 Graphics::~Graphics()
@@ -452,6 +452,7 @@ void Graphics::present(void *screenshotCallbackdata)
 	updatePendingReadbacks();
 	updateTemporaryResources();
 
+	frameCounter++;
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	beginFrame();
@@ -532,6 +533,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	Vulkan::resetShaderSwitches();
 
+	frameCounter = 0;
 	currentFrame = 0;
 	created = true;
 	drawCalls = 0;
@@ -593,6 +595,10 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::unSetMode()
 {
+	renderPassUsages.clear();
+	framebufferUsages.clear();
+	pipelineUsages.clear();
+
 	created = false;
 	vkDeviceWaitIdle(device);
 	Volatile::unloadAll();
@@ -667,29 +673,38 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
 	Graphics::RendererInfo info;
+
+	if (isDebugEnabled())
+	{
+		std::stringstream ss;
+		ss << "Vulkan( ";
+		ss << renderPasses.size() << " ";
+		ss << framebuffers.size() << " ";
+		ss << graphicsPipelines.size() << " ";
+		if (optionalDeviceFeatures.extendedDynamicState)
+			ss << "eds ";
+		if (optionalDeviceFeatures.memoryRequirements2)
+			ss << "mr2 ";
+		if (optionalDeviceFeatures.dedicatedAllocation)
+			ss << "da ";
+		if (optionalDeviceFeatures.bufferDeviceAddress)
+			ss << "bda ";
+		if (optionalDeviceFeatures.memoryBudget)
+			ss << "mb ";
+		if (optionalDeviceFeatures.shaderFloatControls)
+			ss << "sfc ";
+		if (optionalDeviceFeatures.spirv14)
+			ss << "spv14 ";
+		ss << ")";
+
+		info.name = ss.str();
+	}
+	else
+		info.name = "Vulkan";
+
 	info.device = deviceProperties.deviceName;
 	info.vendor = Vulkan::getVendorName(deviceProperties.vendorID);
 	info.version = Vulkan::getVulkanApiVersion(deviceProperties.apiVersion);
-
-	std::stringstream ss;
-	ss << "Vulkan( ";
-	if (optionalDeviceFeatures.extendedDynamicState)
-		ss << "eds ";
-	if (optionalDeviceFeatures.memoryRequirements2)
-		ss << "mr2 ";
-	if (optionalDeviceFeatures.dedicatedAllocation)
-		ss << "da ";
-	if (optionalDeviceFeatures.bufferDeviceAddress)
-		ss << "bda ";
-	if (optionalDeviceFeatures.memoryBudget)
-		ss << "mb ";
-	if (optionalDeviceFeatures.shaderFloatControls)
-		ss << "sfc ";
-	if (optionalDeviceFeatures.spirv14)
-		ss << "spv14 ";
-	ss << ")";
-
-	info.name = ss.str();
 
 	return info;
 }
@@ -1080,6 +1095,13 @@ void Graphics::beginFrame()
 {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
+	if (frameCounter >= USAGES_POLL_INTERVAL)
+	{
+		vkDeviceWaitIdle(device);
+		cleanupUnusedObjects();
+		frameCounter = 0;
+	}
+
 	while (true)
 	{
 		VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -1271,7 +1293,7 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
 
 void Graphics::createVulkanInstance()
 {
-	if (enableValidationLayers && !checkValidationSupport())
+	if (isDebugEnabled() && !checkValidationSupport())
 		throw love::Exception("validation layers requested, but not available");
 
 	VkApplicationInfo appInfo{};
@@ -1312,7 +1334,7 @@ void Graphics::createVulkanInstance()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
-	if (enableValidationLayers)
+	if (isDebugEnabled())
 	{
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -1602,7 +1624,7 @@ void Graphics::createLogicalDevice()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
-	if (enableValidationLayers)
+	if (isDebugEnabled())
 	{
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -1676,6 +1698,12 @@ void Graphics::initVMA()
 #endif
 
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+	allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
+	if (optionalDeviceFeatures.dedicatedAllocation)
+		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+	if (optionalDeviceFeatures.memoryBudget)
+		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
 	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS)
 		throw love::Exception("failed to create vma allocator");
@@ -2029,15 +2057,20 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuratio
 
 VkFramebuffer Graphics::getFramebuffer(FramebufferConfiguration &configuration)
 {
+	VkFramebuffer framebuffer;
+
 	auto it = framebuffers.find(configuration);
 	if (it != framebuffers.end())
-		return it->second;
+		framebuffer = it->second;
 	else
 	{
-		VkFramebuffer framebuffer = createFramebuffer(configuration);
+		framebuffer = createFramebuffer(configuration);
 		framebuffers[configuration] = framebuffer;
-		return framebuffer;
-	} 
+	}
+
+	framebufferUsages[framebuffer] = true;
+
+	return framebuffer;
 }
 
 void Graphics::createDefaultShaders()
@@ -2409,6 +2442,8 @@ void Graphics::startRenderPass()
 		}
 		renderPassState.beginInfo.renderPass = renderPass;
 
+		renderPassUsages[renderPass] = true;
+
 		auto &framebufferConfiguration = renderPassState.framebufferConfiguration;
 		framebufferConfiguration.staticData.renderPass = renderPass;
 		renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
@@ -2466,6 +2501,38 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 		throw love::Exception("failed to create sampler");
 
 	return sampler;
+}
+
+template<typename Configuration, typename ObjectHandle, typename ConfigurationHasher, typename Deleter>
+static void eraseUnusedObjects(
+	std::unordered_map<Configuration, ObjectHandle, ConfigurationHasher> &objects,
+	std::unordered_map<ObjectHandle, bool> &usages,
+	Deleter deleter,
+	VkDevice device)
+{
+	std::vector<Configuration> deletionKeys;
+
+	for (const auto &[key, val] : objects)
+	{
+		if (!usages[val])
+		{
+			deletionKeys.push_back(key);
+			usages.erase(val);
+			deleter(device, val, nullptr);
+		}
+		else
+			usages[val] = false;
+	}
+
+	for (const auto &key : deletionKeys)
+		objects.erase(key);
+}
+
+void Graphics::cleanupUnusedObjects()
+{
+	eraseUnusedObjects(renderPasses, renderPassUsages, vkDestroyRenderPass, device);
+	eraseUnusedObjects(framebuffers, framebufferUsages, vkDestroyFramebuffer, device);
+	eraseUnusedObjects(graphicsPipelines, pipelineUsages, vkDestroyPipeline, device);
 }
 
 void Graphics::setComputeShader(Shader *shader)
@@ -2653,6 +2720,7 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 		{
 			vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
 			renderPassState.pipeline = it->second;
+			pipelineUsages[it->second] = true;
 		}
 	}
 	else
@@ -2661,6 +2729,7 @@ void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration
 		graphicsPipelines.insert({configuration, pipeline});
 		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 		renderPassState.pipeline = pipeline;
+		pipelineUsages[pipeline] = true;
 	}
 }
 
@@ -2887,8 +2956,12 @@ void Graphics::cleanup()
 
 	for (const auto &[key, val] : renderPasses)
 		vkDestroyRenderPass(device, val, nullptr);
+	renderPasses.clear();
 
-	// fixme: maybe we should clean up some pipelines if they haven't been used in a while.
+	for (const auto &[key, val] : framebuffers)
+		vkDestroyFramebuffer(device, val, nullptr);
+	framebuffers.clear();
+		
 	for (auto const &p : graphicsPipelines)
 		vkDestroyPipeline(device, p.second, nullptr);
 	graphicsPipelines.clear();
@@ -2913,9 +2986,6 @@ void Graphics::cleanupSwapChain()
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
-	for (const auto &[key, val] : framebuffers)
-		vkDestroyFramebuffer(device, val, nullptr);
-    framebuffers.clear();
     for (const auto &swapChainImageView : swapChainImageViews)
         vkDestroyImageView(device, swapChainImageView, nullptr);
     swapChainImageViews.clear();
