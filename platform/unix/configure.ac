@@ -18,7 +18,7 @@ AC_C_BIGENDIAN
 AC_LANG([C++])
 
 dnl Workaround for old aclocal versions
-m4_include([platform/unix/cpp11.m4])
+m4_include([platform/unix/cpp14.m4])
 m4_include([platform/unix/deps.m4])
 
 includes=
@@ -26,8 +26,8 @@ includes=
 AC_DEFUN([LOVE_MSG_ERROR],
 		 [AC_MSG_ERROR([LÖVE needs "$1"[,] please install "$1" with development files and try again])])
 
-# C++11 support in cpp11.m4
-ACLOVE_CPP11_TEST
+# C++14 support in cpp14.m4
+ACLOVE_CPP14_TEST
 
 # Allow people on OSX to use autotools, they need their platform files
 AC_ARG_ENABLE([osx],
@@ -81,6 +81,8 @@ AS_VAR_IF([enable_module_filesystem], [yes], [enable_library_physfs=yes], [enabl
 AS_VAR_IF([enable_module_physics], [yes], [enable_library_box2d=yes], [enable_library_box2d=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_library_ddsparse=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_spirv_cross=yes], [enable_library_spirv_cross=no])
+AS_VAR_IF([enable_module_graphics], [yes], [enable_library_volk=yes], [enable_library_volk=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glslang=yes], [enable_library_glslang=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_lodepng=yes], [enable_library_lodepng=no])
 AS_VAR_IF([enable_module_data], [yes], [enable_library_lua53=yes], [])

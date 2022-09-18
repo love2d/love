@@ -1766,7 +1766,7 @@ set(LOVE_SRC_3P_VMA src/libraries/vma/vk_mem_alloc.h)
 
 set(LOVE_SRC_3P_VOLK 
 	src/libraries/volk/volk.h
-	src/libraries/volk/volk.cpp)
+	src/libraries/volk/volk.c)
 
 add_library(love_3p_volk ${LOVE_SRC_3P_VOLK})
 

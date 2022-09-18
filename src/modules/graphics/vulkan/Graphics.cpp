@@ -2541,16 +2541,16 @@ static void eraseUnusedObjects(
 {
 	std::vector<Configuration> deletionKeys;
 
-	for (const auto &[key, val] : objects)
+	for (const auto &entry : objects)
 	{
-		if (!usages[val])
+		if (!usages[entry.second])
 		{
-			deletionKeys.push_back(key);
-			usages.erase(val);
-			deleter(device, val, nullptr);
+			deletionKeys.push_back(entry.first);
+			usages.erase(entry.second);
+			deleter(device, entry.second, nullptr);
 		}
 		else
-			usages[val] = false;
+			usages[entry.second] = false;
 	}
 
 	for (const auto &key : deletionKeys)
