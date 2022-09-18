@@ -209,6 +209,31 @@ void Shader::unloadVolatile()
 	if (shaderModules.empty())
 		return;
 
+	for (const auto &uniform : uniformInfos)
+	{
+		switch (uniform.second.baseType)
+		{
+		case UNIFORM_SAMPLER:
+		case UNIFORM_STORAGETEXTURE:
+			for (int i = 0; i < uniform.second.count; i++)
+			{
+				if (uniform.second.textures[i] != nullptr)
+					uniform.second.textures[i]->release();
+			}
+			delete[] uniform.second.textures;
+			break;
+		case UNIFORM_TEXELBUFFER:
+		case UNIFORM_STORAGEBUFFER:
+			for (int i = 0; i < uniform.second.count; i++)
+			{
+				if (uniform.second.buffers[i] != nullptr)
+					uniform.second.buffers[i]->release();
+			}
+			delete[] uniform.second.buffers;
+			break;
+		}
+	}
+
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
 		for (const auto pool : descriptorPools)
@@ -811,36 +836,41 @@ void Shader::compileShaders()
 			{
 			case spv::Dim2D:
 				info.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
-				info.textures = new love::graphics::Texture * [info.count];
+				info.textures = new love::graphics::Texture *[info.count];
 				break;
 			case spv::Dim3D:
 				info.textureType = TEXTURE_VOLUME;
-				info.textures = new love::graphics::Texture * [info.count];
+				info.textures = new love::graphics::Texture *[info.count];
 				break;
 			case spv::DimCube:
 				if (basetype.image.arrayed) {
 					throw love::Exception("cubemap arrays are not currently supported");
 				}
 				info.textureType = TEXTURE_CUBE;
-				info.textures = new love::graphics::Texture * [info.count];
+				info.textures = new love::graphics::Texture *[info.count];
 				break;
 			case spv::DimBuffer:
-				throw love::Exception("dim buffers not implemented yet");
+				info.baseType = UNIFORM_TEXELBUFFER;
+				info.buffers = new love::graphics::Buffer *[info.count];
+				break;
 			default:
 				throw love::Exception("unknown dim");
 			}
 
-			if (info.baseType == UNIFORM_SAMPLER)
+			if (info.baseType == UNIFORM_TEXELBUFFER)
+			{
+				for (int i = 0; i < info.count; i++)
+					info.buffers[i] = nullptr;
+			}
+			else
 			{
 				auto tex = vgfx->getDefaultTexture();
-				for (int i = 0; i < info.count; i++) {
+				for (int i = 0; i < info.count; i++)
+				{
 					info.textures[i] = tex;
 					tex->retain();
 				}
 			}
-			// fixme
-			else if (info.baseType == UNIFORM_TEXELBUFFER)
-				throw love::Exception("texel buffers not supported yet");
 
 			uniformInfos[r.name] = info;
 			BuiltinUniform builtin;
@@ -869,9 +899,6 @@ void Shader::compileShaders()
 			else
 				continue;
 
-			// todo: some stuff missing
-
-			// fixme: memory leak
 			u.buffers = new love::graphics::Buffer *[u.count];
 
 			for (int i = 0; i < u.count; i++)
