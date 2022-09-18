@@ -15248,7 +15248,10 @@ VkResult VmaAllocator_T::CreatePool(const VmaPoolCreateInfo* pCreateInfo, VmaPoo
     // Protection against uninitialized new structure member. If garbage data are left there, this pointer dereference would crash.
     if(pCreateInfo->pMemoryAllocateNext)
     {
-        VMA_ASSERT(((const VkBaseInStructure*)pCreateInfo->pMemoryAllocateNext)->sType != 0);
+        // Sometimes gcc creates an error:
+        // ISO C++ forbis declaration of 'type name' with no type [-fpermissive]
+        
+        // VMA_ASSERT(((const VkBaseInStructure*)pCreateInfo->pMemoryAllocateNext)->sType != 0);
     }
 
     if(newCreateInfo.maxBlockCount == 0)
