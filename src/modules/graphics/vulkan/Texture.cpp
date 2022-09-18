@@ -120,8 +120,6 @@ bool Texture::loadVolatile()
 
 	if (isPixelFormatDepthStencil(format))
 		imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	else if (isPixelFormatDepth(format))
-		imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
 	else if (computeWrite)
 		imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	else
