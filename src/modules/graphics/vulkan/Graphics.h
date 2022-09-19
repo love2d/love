@@ -193,14 +193,6 @@ struct GraphicsPipelineConfigurationHasher
 	}
 };
 
-struct SamplerStateHasher
-{
-	size_t operator()(const SamplerState &samplerState) const
-	{
-		return XXH32(&samplerState, sizeof(SamplerState), 0);
-	}
-};
-
 struct BatchedDrawBuffers
 {
 	StreamBuffer *vertexBuffer1;
@@ -316,7 +308,7 @@ public:
 	uint32_t getFrameIndex() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
-	VkSampler getCachedSampler(const SamplerState &samplerState);
+	VkSampler getCachedSampler(uint64);
 	void setComputeShader(Shader *computeShader);
 	std::set<Shader*> &getUsedShadersInFrame();
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
@@ -387,7 +379,7 @@ private:
 	void setDefaultRenderPass();
 	void startRenderPass();
 	void endRenderPass();
-	VkSampler createSampler(const SamplerState &samplerState);
+	VkSampler createSampler(uint64 samplerKey);
 	void cleanupUnusedObjects();
 
 	uint32_t vulkanApiVersion = VK_VERSION_1_0;
@@ -423,7 +415,7 @@ private:
 	std::unordered_map<VkRenderPass, bool> renderPassUsages;
 	std::unordered_map<VkFramebuffer, bool> framebufferUsages;
 	std::unordered_map<VkPipeline, bool> pipelineUsages;
-	std::unordered_map<SamplerState, VkSampler, SamplerStateHasher> samplers;
+	std::unordered_map<uint64, VkSampler> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
 	Shader* computeShader = nullptr;

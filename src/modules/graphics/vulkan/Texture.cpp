@@ -152,7 +152,7 @@ bool Texture::loadVolatile()
 		clear();
 
 	createTextureImageView();
-	textureSampler = vgfx->getCachedSampler(samplerState);
+	textureSampler = vgfx->getCachedSampler(samplerState.toKey());
 
 	if (!isPixelFormatDepthStencil(format) && mipmapCount > 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
@@ -250,7 +250,8 @@ ptrdiff_t Texture::getHandle() const
 void Texture::setSamplerState(const SamplerState &s)
 {
 	love::graphics::Texture::setSamplerState(s);
-	textureSampler = vgfx->getCachedSampler(s);
+
+	textureSampler = vgfx->getCachedSampler(s.toKey());
 }
 
 VkImageLayout Texture::getImageLayout() const

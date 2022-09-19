@@ -2495,10 +2495,9 @@ void Graphics::endRenderPass()
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-VkSampler Graphics::createSampler(const SamplerState &samplerState)
+VkSampler Graphics::createSampler(uint64 samplerKey)
 {
-	VkPhysicalDeviceProperties properties{};
-	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+	auto samplerState = SamplerState::fromKey(samplerKey);
 
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -2575,15 +2574,15 @@ std::set<Shader*> &Graphics::getUsedShadersInFrame()
 	return usedShadersInFrame;
 }
 
-VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
+VkSampler Graphics::getCachedSampler(uint64 samplerkey)
 {
-	auto it = samplers.find(samplerState);
+	auto it = samplers.find(samplerkey);
 	if (it != samplers.end())
 		return it->second;
 	else
 	{
-		VkSampler sampler = createSampler(samplerState);
-		samplers.insert({samplerState, sampler});
+		VkSampler sampler = createSampler(samplerkey);
+		samplers.insert({ samplerkey, sampler });
 		return sampler;
 	}
 }
