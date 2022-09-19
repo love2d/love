@@ -38,6 +38,9 @@
 #include <sstream>
 #include <array>
 
+#define VOLK_IMPLEMENTATION
+#include "libraries/volk/volk.h"
+
 #define VMA_IMPLEMENTATION
 #include "libraries/vma/vk_mem_alloc.h"
 

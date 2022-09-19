@@ -21,7 +21,7 @@
 #pragma once
 
 #define VK_NO_PROTOTYPES
-#include <vulkan/vulkan.h>
+#include "libraries/vulkan-headers/vulkan.h"
 
 #ifndef VK_MAKE_API_VERSION 
 #define VK_MAKE_API_VERSION(variant, major, minor, patch) \

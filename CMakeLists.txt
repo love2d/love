@@ -75,8 +75,6 @@ if(POLICY CMP0072)
 endif()
 
 if(MEGA)
-	find_package(Vulkan REQUIRED)
-
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
 	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
@@ -84,7 +82,7 @@ if(MEGA)
 	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
 	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
 	# are CMake targets, causing include paths to be added automatically.
-	set(LOVE_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS})
+	set(LOVE_INCLUDE_DIRS)
 
 	if(APPLE)
 		# Some files do #include <SDL2/SDL.h>, but building with megasource
@@ -1768,7 +1766,48 @@ set(LOVE_SRC_3P_VOLK
 	src/libraries/volk/volk.h
 	src/libraries/volk/volk.c)
 
-add_library(love_3p_volk ${LOVE_SRC_3P_VOLK})
+# since we don't want to use the system vulkan header files we need to 
+# compile this library in the löve source code using VOLK_IMPLEMENTATION.
+
+#
+# vulkan headers
+#
+
+set(LOVE_SRC_3P_VULKAN_HEADERS
+	src/libraries/vulkan-headers/vk_icd.h
+	src/libraries/vulkan-headers/vk_layer.h
+	src/libraries/vulkan-headers/vk_platform.h
+	src/libraries/vulkan-headers/vk_sdk-platform.h
+	src/libraries/vulkan-headers/vulkan_android.h
+	src/libraries/vulkan-headers/vulkan_beta.h
+	src/libraries/vulkan-headers/vulkan_core.h
+	src/libraries/vulkan-headers/vulkan_directfb.h
+	src/libraries/vulkan-headers/vulkan_enums.hpp
+	src/libraries/vulkan-headers/vulkan_format_traits.hpp
+	src/libraries/vulkan-headers/vulkan_fuchsia.h
+	src/libraries/vulkan-headers/vulkan_funcs.h
+	src/libraries/vulkan-headers/vulkan_ggp.h
+	src/libraries/vulkan-headers/vulkan_handles.h
+	src/libraries/vulkan-headers/vulkan_hash.hpp
+	src/libraries/vulkan-headers/vulkan_ios.h
+	src/libraries/vulkan-headers/vulkan_macos.h
+	src/libraries/vulkan-headers/vulkan_metal.h
+	src/libraries/vulkan-headers/vulkan_raii.hpp
+	src/libraries/vulkan-headers/vulkan_screen.h
+	src/libraries/vulkan-headers/vulkan_static_assertions.h
+	src/libraries/vulkan-headers/vulkan_structs.hpp
+	src/libraries/vulkan-headers/vulkan_to_string.h
+	src/libraries/vulkan-headers/vulkan_vi.h
+	src/libraries/vulkan-headers/vulkan_wayland.h
+	src/libraries/vulkan-headers/vulkan_win32.h
+	src/libraries/vulkan-headers/vulkan_xcb.h
+	src/libraries/vulkan-headers/vulkan_xlib_xrandr.h
+	src/libraries/vulkan-headers/vulkan_xlib.h
+	src/libraries/vulkan-headers/vulkan.h
+	src/libraries/vulkan-headers/vulkan.hpp
+)
+
+# vulkan headers has no implementation files of its own.
 
 #
 # Wuff
@@ -1812,7 +1851,6 @@ set(LOVE_3P
 	love_3p_noise1234
 	love_3p_physfs
 	love_3p_spirv_cross
-	love_3p_volk
 	love_3p_wuff
 	love_3p_xxhash
 )
