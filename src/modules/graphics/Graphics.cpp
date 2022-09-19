@@ -368,9 +368,6 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, const 
 	for (const std::string &source : stagessource)
 	{
 		Shader::SourceInfo info = Shader::getSourceInfo(source);
-		if (capabilities.features[FEATURE_GLSL4]) {
-			info.language = Shader::LANGUAGE_GLSL4;
-		}
 		bool isanystage = false;
 
 		for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
