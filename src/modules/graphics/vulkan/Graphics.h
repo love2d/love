@@ -308,7 +308,7 @@ public:
 	uint32_t getFrameIndex() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
-	VkSampler getCachedSampler(uint64);
+	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
 	std::set<Shader*> &getUsedShadersInFrame();
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
@@ -379,7 +379,7 @@ private:
 	void setDefaultRenderPass();
 	void startRenderPass();
 	void endRenderPass();
-	VkSampler createSampler(uint64 samplerKey);
+	VkSampler createSampler(const SamplerState &sampler);
 	void cleanupUnusedObjects();
 
 	uint32_t vulkanApiVersion = VK_VERSION_1_0;

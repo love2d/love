@@ -2495,10 +2495,8 @@ void Graphics::endRenderPass()
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-VkSampler Graphics::createSampler(uint64 samplerKey)
+VkSampler Graphics::createSampler(const SamplerState &samplerState)
 {
-	auto samplerState = SamplerState::fromKey(samplerKey);
-
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerInfo.magFilter = Vulkan::getFilter(samplerState.magFilter);
@@ -2520,6 +2518,7 @@ VkSampler Graphics::createSampler(uint64 samplerKey)
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	}
+	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.mipmapMode = Vulkan::getMipMapMode(samplerState.mipmapFilter);
 	samplerInfo.mipLodBias = samplerState.lodBias;
 	samplerInfo.minLod = static_cast<float>(samplerState.minLod);
@@ -2574,14 +2573,15 @@ std::set<Shader*> &Graphics::getUsedShadersInFrame()
 	return usedShadersInFrame;
 }
 
-VkSampler Graphics::getCachedSampler(uint64 samplerkey)
+VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
 {
+	auto samplerkey = samplerState.toKey();
 	auto it = samplers.find(samplerkey);
 	if (it != samplers.end())
 		return it->second;
 	else
 	{
-		VkSampler sampler = createSampler(samplerkey);
+		VkSampler sampler = createSampler(samplerState);
 		samplers.insert({ samplerkey, sampler });
 		return sampler;
 	}
