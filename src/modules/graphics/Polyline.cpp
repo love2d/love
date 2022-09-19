@@ -24,6 +24,7 @@
 
 // C++
 #include <algorithm>
+#include <assert.h>
 
 // treat adjacent segments with angles between their directions <5 degree as straight
 static const float LINES_PARALLEL_EPS = 0.05f;
@@ -176,6 +177,12 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 {
 	Vector2 t    = (r - q);
 	float len_t = t.getLength();
+	if (len_t == 0.0f)
+	{
+		// degenerate segment, skip it
+		return;
+	}
+
 	Vector2 nt   = t.getNormal(hw / len_t);
 
 	anchors.push_back(q);
@@ -185,6 +192,7 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && Vector2::dot(s, t) > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
+		assert(ns == ns); //NaN check
 		normals.push_back(ns);
 		normals.push_back(-ns);
 	}
@@ -193,6 +201,7 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 		// cramers rule
 		float lambda = Vector2::cross((nt - ns), t) / det;
 		Vector2 d = ns + s * lambda;
+		assert(d == d); //NaN check
 		normals.push_back(d);
 		normals.push_back(-d);
 	}
