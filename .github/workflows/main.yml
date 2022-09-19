@@ -67,12 +67,14 @@ jobs:
       run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% ${{ matrix.compatdef }} -DCMAKE_INSTALL_PREFIX=%CD%\install
     - name: Install
       shell: cmd
-      run: cmake --build build --config Release --target install -j2
+      run: cmake --build build --target PACKAGE --config Release -j2
     - name: Artifact
       uses: actions/upload-artifact@v2
       with:
         name: love-windows-${{ matrix.arch }}${{ matrix.compatname }}
-        path: install
+        path: |
+          build/*.zip
+          build/*.exe
     - name: Artifact JIT Modules
       if: matrix.upload_jitmodules
       uses: actions/upload-artifact@v2
