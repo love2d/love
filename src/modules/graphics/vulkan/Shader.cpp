@@ -275,20 +275,6 @@ VkPipeline Shader::getComputePipeline() const
 	return computePipeline;
 }
 
-static VkDescriptorImageInfo *createDescriptorImageInfo(graphics::Texture *texture, bool sampler)
-{
-	auto vkTexture = (Texture*)texture;
-
-	auto imageInfo = new VkDescriptorImageInfo();
-
-	imageInfo->imageLayout = vkTexture->getImageLayout();
-	imageInfo->imageView = (VkImageView)vkTexture->getRenderTargetHandle();
-	if (sampler)
-		imageInfo->sampler = (VkSampler)vkTexture->getSamplerHandle();
-
-	return imageInfo;
-}
-
 void Shader::newFrame(uint32_t frameIndex)
 {
 	currentFrame = frameIndex;

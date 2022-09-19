@@ -82,7 +82,7 @@ Graphics::Graphics()
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
-	vulkanApiVersion = volkGetInstanceVersion();
+	vulkanApiVersion = Vulkan::getSupportedVulkanApiVersion(volkGetInstanceVersion());
 }
 
 Graphics::~Graphics()

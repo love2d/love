@@ -59,6 +59,7 @@ public:
 	static void setVsync(int vsync);
 	static int getVsync();
 
+	static uint32_t getSupportedVulkanApiVersion(uint32_t suggested);
 	static VkFormat getVulkanVertexFormat(DataFormat format);
 	static TextureFormat getTextureFormat(PixelFormat);
 	static std::string getVendorName(uint32_t vendorId);

@@ -58,6 +58,24 @@ int Vulkan::getVsync()
 	return vsync;
 }
 
+uint32_t Vulkan::getSupportedVulkanApiVersion(uint32_t suggested)
+{
+#ifdef VK_VERSION_1_3
+	if (suggested >= VK_API_VERSION_1_3)
+		return VK_API_VERSION_1_3;
+#endif
+#ifdef VK_VERSION_1_2
+	if (suggested >= VK_API_VERSION_1_2)
+		return VK_API_VERSION_1_2;
+#endif
+#ifdef VK_VERSION_1_1
+	if (suggested >= VK_API_VERSION_1_1)
+		return VK_API_VERSION_1_1;
+#endif
+
+	return VK_API_VERSION_1_0;
+}
+
 VkFormat Vulkan::getVulkanVertexFormat(DataFormat format)
 {
 	switch (format)
