@@ -126,6 +126,10 @@
 #	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 #endif
 
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX) || defined(LOVE_ANDROID)
+#	define LOVE_GRAPHICS_VULKAN
+#endif
+
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)
 #	define LOVE_GRAPHICS_METAL
 #endif

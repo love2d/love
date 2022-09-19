@@ -61,7 +61,6 @@ public:
 	void readbackInternal(int slice, int mipmap, const Rect &rect, int destwidth, size_t size, void *dest);
 
 private:
-
 	void createTexture();
 
 	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;

@@ -244,9 +244,9 @@ static const char vertex_header[] = R"(
 static const char vertex_functions[] = R"()";
 
 static const char vertex_main[] = R"(
-attribute vec4 VertexPosition;
-attribute vec4 VertexTexCoord;
-attribute vec4 VertexColor;
+LOVE_IO_LOCATION(0) attribute vec4 VertexPosition;
+LOVE_IO_LOCATION(1) attribute vec4 VertexTexCoord;
+LOVE_IO_LOCATION(2) attribute vec4 VertexColor;
 
 varying vec4 VaryingTexCoord;
 varying vec4 VaryingColor;
@@ -540,9 +540,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	std::stringstream ss;
 
 	ss << (gles ? glsl::versions[lang].glsles : glsl::versions[lang].glsl) << "\n";
-	ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
 	if (glsl1on3)
 		ss << "#define LOVE_GLSL1_ON_GLSL3 1\n";
+
 	if (isGammaCorrect())
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
@@ -556,6 +556,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
 
+	ss << "#define " << stageinfo.name << " " << stageinfo.name << "\n";
 	ss << glsl::global_syntax;
 	ss << stageinfo.header;
 	ss << stageinfo.uniforms;

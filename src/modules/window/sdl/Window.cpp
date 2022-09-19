@@ -21,6 +21,10 @@
 // LOVE
 #include "common/config.h"
 #include "graphics/Graphics.h"
+#ifdef LOVE_GRAPHICS_VULKAN
+#	include "graphics/vulkan/Graphics.h"
+#	include "graphics/vulkan/Vulkan.h"
+#endif
 #include "Window.h"
 
 #ifdef LOVE_ANDROID
@@ -362,25 +366,27 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			return false;
 		}
 
-		if (attribs != nullptr)
-		{
-			glcontext = SDL_GL_CreateContext(window);
-
-			if (!glcontext)
-				contexterror = std::string(SDL_GetError());
-
-			// Make sure the context's version is at least what we requested.
-			if (glcontext && !checkGLVersion(*attribs, glversion))
+		if (renderer == love::graphics::Renderer::RENDERER_OPENGL) {
+			if (attribs != nullptr)
 			{
-				SDL_GL_DeleteContext(glcontext);
-				glcontext = nullptr;
-			}
+				glcontext = SDL_GL_CreateContext(window);
 
-			if (!glcontext)
-			{
-				SDL_DestroyWindow(window);
-				window = nullptr;
-				return false;
+				if (!glcontext)
+					contexterror = std::string(SDL_GetError());
+
+				// Make sure the context's version is at least what we requested.
+				if (glcontext && !checkGLVersion(*attribs, glversion))
+				{
+					SDL_GL_DeleteContext(glcontext);
+					glcontext = nullptr;
+				}
+
+				if (!glcontext)
+				{
+					SDL_DestroyWindow(window);
+					window = nullptr;
+					return false;
+				}
 			}
 		}
 
@@ -596,16 +602,18 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		if (renderer == graphics::RENDERER_OPENGL)
 			sdlflags |= SDL_WINDOW_OPENGL;
-
 	#ifdef LOVE_GRAPHICS_METAL
 		if (renderer == graphics::RENDERER_METAL)
 			sdlflags |= SDL_WINDOW_METAL;
 	#endif
 
-		 if (f.resizable)
+		if (renderer == graphics::RENDERER_VULKAN)
+			sdlflags |= SDL_WINDOW_VULKAN;
+
+		if (f.resizable)
 			 sdlflags |= SDL_WINDOW_RESIZABLE;
 
-		 if (f.borderless)
+		if (f.borderless)
 			 sdlflags |= SDL_WINDOW_BORDERLESS;
 
 		// Note: this flag is ignored on Windows.
@@ -1109,6 +1117,10 @@ void Window::setVSync(int vsync)
 		if (vsync == -1 && SDL_GL_GetSwapInterval() != -1)
 			SDL_GL_SetSwapInterval(1);
 	}
+
+#ifdef LOVE_GRAPHICS_VULKAN
+	love::graphics::vulkan::Vulkan::setVsync(vsync);
+#endif
 
 #if defined(LOVE_GRAPHICS_METAL) && defined(LOVE_MACOS)
 	if (metalView != nullptr)

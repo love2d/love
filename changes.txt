@@ -15,6 +15,7 @@ Released: N/A
 * Added Joystick:getGamepadType.
 * Added new Gamepad API buttons: "misc1", "paddle1", "paddle2", "paddle3", "paddle4". and "touchpad".
 * Added a Metal backend to love.graphics, available on macOS 10.15+ and iOS 13+.
+* Added a Vulkan backend to love.graphics, available on Windows, Linux, and Android 7+.
 * Added '--renderers a,b,c' and '--excluderenderers a,b,c' command line arguments.
 * Added t.renderers and t.excluderenderers love.conf options.
 * Added t.highdpi startup flag in love.conf, replacing t.window.highdpi and the highdpi flag of love.window.setMode.

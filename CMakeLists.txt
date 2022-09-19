@@ -75,6 +75,8 @@ if(POLICY CMP0072)
 endif()
 
 if(MEGA)
+	find_package(Vulkan REQUIRED)
+
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
 	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
@@ -82,7 +84,7 @@ if(MEGA)
 	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
 	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
 	# are CMake targets, causing include paths to be added automatically.
-	set(LOVE_INCLUDE_DIRS)
+	set(LOVE_INCLUDE_DIRS ${Vulkan_INCLUDE_DIRS})
 
 	if(APPLE)
 		# Some files do #include <SDL2/SDL.h>, but building with megasource
@@ -154,7 +156,7 @@ if(MEGA)
 		# automatically.
 	endif()
 else()
-	if(MSVC or ANDROID)
+	if(MSVC OR ANDROID)
 		message(FATAL_ERROR "
 It is currently only possible to build with megasource on Windows and Android.
 Please see https://github.com/love2d/megasource
@@ -170,6 +172,7 @@ Please see https://github.com/love2d/megasource
 	find_package(Vorbis REQUIRED)
 	find_package(ZLIB REQUIRED)
 	find_package(Ogg REQUIRED)
+	find_package(Vulkan REQUIRED)
 
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
@@ -183,6 +186,7 @@ Please see https://github.com/love2d/megasource
 		${MODPLUG_INCLUDE_DIR}
 		${OGG_INCLUDE_DIR}
 		${THEORA_INCLUDE_DIR}
+		${Vulkan_INCLUDE_DIRS}
 	)
 
 	set(LOVE_LINK_LIBRARIES
@@ -590,13 +594,34 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Texture.h
 )
 
+set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
+	src/modules/graphics/vulkan/Graphics.h
+	src/modules/graphics/vulkan/Graphics.cpp
+	src/modules/graphics/vulkan/GraphicsReadback.h
+	src/modules/graphics/vulkan/GraphicsReadback.cpp
+	src/modules/graphics/vulkan/Shader.h
+	src/modules/graphics/vulkan/Shader.cpp
+	src/modules/graphics/vulkan/ShaderStage.h
+	src/modules/graphics/vulkan/ShaderStage.cpp
+	src/modules/graphics/vulkan/StreamBuffer.h
+	src/modules/graphics/vulkan/StreamBuffer.cpp
+	src/modules/graphics/vulkan/Buffer.h
+	src/modules/graphics/vulkan/Buffer.cpp
+	src/modules/graphics/vulkan/Texture.h
+	src/modules/graphics/vulkan/Texture.cpp
+	src/modules/graphics/vulkan/Vulkan.h
+	src/modules/graphics/vulkan/Vulkan.cpp
+	src/modules/graphics/vulkan/VulkanWrapper.h)
+
 set(LOVE_SRC_MODULE_GRAPHICS
 	${LOVE_SRC_MODULE_GRAPHICS_ROOT}
 	${LOVE_SRC_MODULE_GRAPHICS_OPENGL}
+	${LOVE_SRC_MODULE_GRAPHICS_VULKAN}
 )
 
 source_group("modules\\graphics" FILES ${LOVE_SRC_MODULE_GRAPHICS_ROOT})
 source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL})
+source_group("modules\\graphics\\vulkan" FILES ${LOVE_SRC_MODULE_GRAPHICS_VULKAN})
 
 #
 # love.image
@@ -1557,12 +1582,15 @@ set(LOVE_SRC_3P_LUAHTTPS_WINDOWS
 # compile on supported platforms.
 set(LOVE_SRC_3P_LUAHTTPS
 	${LOVE_SRC_3P_LUAHTTPS_ANDROID}
-	${LOVE_SRC_3P_LUAHTTPS_APPLE}
 	${LOVE_SRC_3P_LUAHTTPS_COMMON}
 	${LOVE_SRC_3P_LUAHTTPS_GENERIC}
 	${LOVE_SRC_3P_LUAHTTPS_LUA}
 	${LOVE_SRC_3P_LUAHTTPS_WINDOWS}
-)
+	)
+
+if (APPLE)
+	set(LOVE_SRC_3P_LUAHTTPS ${LOVE_SRC_3P_LUAHTTPS} ${LOVE_SRC_3P_LUAHTTPS_APPLE})
+endif()
 
 set(LOVE_LINK_L3P_LUAHTTPS)
 if(MSVC)
@@ -1648,6 +1676,43 @@ endif()
 add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
 
 #
+# spirv_cross
+#
+
+set(LOVE_SRC_3P_SPIRV_CROSS
+	src/libraries/spirv_cross/GLSL.std.450.h
+	src/libraries/spirv_cross/spirv_cfg.cpp
+	src/libraries/spirv_cross/spirv_cfg.hpp
+	src/libraries/spirv_cross/spirv_common.hpp
+	src/libraries/spirv_cross/spirv_cpp.cpp
+	src/libraries/spirv_cross/spirv_cpp.hpp
+	src/libraries/spirv_cross/spirv_cross_c.cpp
+	src/libraries/spirv_cross/spirv_cross_c.h
+	src/libraries/spirv_cross/spirv_cross_containers.hpp
+	src/libraries/spirv_cross/spirv_cross_error_handling.hpp
+	src/libraries/spirv_cross/spirv_cross_parsed_ir.cpp
+	src/libraries/spirv_cross/spirv_cross_parsed_ir.hpp
+	src/libraries/spirv_cross/spirv_cross_util.cpp
+	src/libraries/spirv_cross/spirv_cross_util.hpp
+	src/libraries/spirv_cross/spirv_cross.cpp
+	src/libraries/spirv_cross/spirv_cross.hpp
+	src/libraries/spirv_cross/spirv_glsl.cpp
+	src/libraries/spirv_cross/spirv_glsl.hpp
+	src/libraries/spirv_cross/spirv_hlsl.cpp
+	src/libraries/spirv_cross/spirv_hlsl.hpp
+	src/libraries/spirv_cross/spirv_msl.cpp
+	src/libraries/spirv_cross/spirv_msl.hpp
+	src/libraries/spirv_cross/spirv_parser.cpp
+	src/libraries/spirv_cross/spirv_parser.hpp
+	src/libraries/spirv_cross/spirv_reflect.cpp
+	src/libraries/spirv_cross/spirv_reflect.hpp
+	src/libraries/spirv_cross/spirv.h
+	src/libraries/spirv_cross/spirv.hpp
+)
+
+add_library(love_3p_spirv_cross ${LOVE_SRC_3P_SPIRV_CROSS})
+
+#
 # stb_image
 #
 
@@ -1686,6 +1751,24 @@ set(LOVE_SRC_3P_UTF8
 
 # This library is all headers ... so there is no need to
 # add_library() here.
+
+#
+# vma
+#
+
+set(LOVE_SRC_3P_VMA src/libraries/vma/vk_mem_alloc.h)
+
+# vulkan memory allocatory has no implementation files of its own.
+
+#
+# volk
+#
+
+set(LOVE_SRC_3P_VOLK 
+	src/libraries/volk/volk.h
+	src/libraries/volk/volk.c)
+
+add_library(love_3p_volk ${LOVE_SRC_3P_VOLK})
 
 #
 # Wuff
@@ -1728,6 +1811,8 @@ set(LOVE_3P
 	love_3p_lz4
 	love_3p_noise1234
 	love_3p_physfs
+	love_3p_spirv_cross
+	love_3p_volk
 	love_3p_wuff
 	love_3p_xxhash
 )
