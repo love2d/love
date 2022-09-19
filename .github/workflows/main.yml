@@ -31,13 +31,24 @@ jobs:
     - name: Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: love-x86_64.AppImage
+        name: love-linux-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
   windows-os:
     runs-on: windows-latest
     strategy:
       matrix:
         platform: [Win32, x64]
+        install: [compat, modern]
+        include:
+          - platform: Win32
+            arch: x86
+          - platform: x64
+            arch: x64
+            upload_jitmodules: true
+          - install: compat
+            compatdef: -DLOVE_INSTALL_UCRT=ON
+            compatname: -compat
+
     steps:
     - name: Clone Megasource
       uses: actions/checkout@v2
@@ -53,19 +64,20 @@ jobs:
       shell: cmd
       env:
         PLATFORM: ${{ matrix.platform }}
-      run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% -DCMAKE_INSTALL_PREFIX=%CD%\install
+      run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% ${{ matrix.compatdef }} -DCMAKE_INSTALL_PREFIX=%CD%\install
     - name: Install
       shell: cmd
       run: cmake --build build --config Release --target install -j2
     - name: Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: love-windows-${{ matrix.platform }}
+        name: love-windows-${{ matrix.arch }}${{ matrix.compatname }}
         path: install
     - name: Artifact JIT Modules
+      if: matrix.upload_jitmodules
       uses: actions/upload-artifact@v2
       with:
-        name: love-windows-jitmodules-${{ matrix.platform }}
+        name: love-windows-jitmodules
         path: build/libs/LuaJIT/src/jit/*.lua
   macOS:
     runs-on: macos-latest
