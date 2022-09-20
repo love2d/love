@@ -1774,37 +1774,37 @@ set(LOVE_SRC_3P_VOLK
 #
 
 set(LOVE_SRC_3P_VULKAN_HEADERS
-	src/libraries/vulkan-headers/vk_icd.h
-	src/libraries/vulkan-headers/vk_layer.h
-	src/libraries/vulkan-headers/vk_platform.h
-	src/libraries/vulkan-headers/vk_sdk-platform.h
-	src/libraries/vulkan-headers/vulkan_android.h
-	src/libraries/vulkan-headers/vulkan_beta.h
-	src/libraries/vulkan-headers/vulkan_core.h
-	src/libraries/vulkan-headers/vulkan_directfb.h
-	src/libraries/vulkan-headers/vulkan_enums.hpp
-	src/libraries/vulkan-headers/vulkan_format_traits.hpp
-	src/libraries/vulkan-headers/vulkan_fuchsia.h
-	src/libraries/vulkan-headers/vulkan_funcs.h
-	src/libraries/vulkan-headers/vulkan_ggp.h
-	src/libraries/vulkan-headers/vulkan_handles.h
-	src/libraries/vulkan-headers/vulkan_hash.hpp
-	src/libraries/vulkan-headers/vulkan_ios.h
-	src/libraries/vulkan-headers/vulkan_macos.h
-	src/libraries/vulkan-headers/vulkan_metal.h
-	src/libraries/vulkan-headers/vulkan_raii.hpp
-	src/libraries/vulkan-headers/vulkan_screen.h
-	src/libraries/vulkan-headers/vulkan_static_assertions.h
-	src/libraries/vulkan-headers/vulkan_structs.hpp
-	src/libraries/vulkan-headers/vulkan_to_string.h
-	src/libraries/vulkan-headers/vulkan_vi.h
-	src/libraries/vulkan-headers/vulkan_wayland.h
-	src/libraries/vulkan-headers/vulkan_win32.h
-	src/libraries/vulkan-headers/vulkan_xcb.h
-	src/libraries/vulkan-headers/vulkan_xlib_xrandr.h
-	src/libraries/vulkan-headers/vulkan_xlib.h
-	src/libraries/vulkan-headers/vulkan.h
-	src/libraries/vulkan-headers/vulkan.hpp
+	src/libraries/vulkanheaders/vk_icd.h
+	src/libraries/vulkanheaders/vk_layer.h
+	src/libraries/vulkanheaders/vk_platform.h
+	src/libraries/vulkanheaders/vk_sdk-platform.h
+	src/libraries/vulkanheaders/vulkan_android.h
+	src/libraries/vulkanheaders/vulkan_beta.h
+	src/libraries/vulkanheaders/vulkan_core.h
+	src/libraries/vulkanheaders/vulkan_directfb.h
+	src/libraries/vulkanheaders/vulkan_enums.hpp
+	src/libraries/vulkanheaders/vulkan_format_traits.hpp
+	src/libraries/vulkanheaders/vulkan_fuchsia.h
+	src/libraries/vulkanheaders/vulkan_funcs.h
+	src/libraries/vulkanheaders/vulkan_ggp.h
+	src/libraries/vulkanheaders/vulkan_handles.h
+	src/libraries/vulkanheaders/vulkan_hash.hpp
+	src/libraries/vulkanheaders/vulkan_ios.h
+	src/libraries/vulkanheaders/vulkan_macos.h
+	src/libraries/vulkanheaders/vulkan_metal.h
+	src/libraries/vulkanheaders/vulkan_raii.hpp
+	src/libraries/vulkanheaders/vulkan_screen.h
+	src/libraries/vulkanheaders/vulkan_static_assertions.h
+	src/libraries/vulkanheaders/vulkan_structs.hpp
+	src/libraries/vulkanheaders/vulkan_to_string.h
+	src/libraries/vulkanheaders/vulkan_vi.h
+	src/libraries/vulkanheaders/vulkan_wayland.h
+	src/libraries/vulkanheaders/vulkan_win32.h
+	src/libraries/vulkanheaders/vulkan_xcb.h
+	src/libraries/vulkanheaders/vulkan_xlib_xrandr.h
+	src/libraries/vulkanheaders/vulkan_xlib.h
+	src/libraries/vulkanheaders/vulkan.h
+	src/libraries/vulkanheaders/vulkan.hpp
 )
 
 # vulkan headers has no implementation files of its own.
