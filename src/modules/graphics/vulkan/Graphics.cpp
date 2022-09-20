@@ -869,7 +869,7 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 
 		if (!isRenderTargetActive() && !windowHasStencil)
 			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer");
-		if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && dsTexture == nullptr || !isPixelFormatStencil(dsTexture->getPixelFormat()))
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dsTexture == nullptr || !isPixelFormatStencil(dsTexture->getPixelFormat())))
 			throw love::Exception("drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type to be used, in setRenderTarget");
 	}
 
@@ -941,6 +941,11 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
 {
 	(void)sRGB;	// fixme: sRGB
+
+	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
+	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
+
+	format = getSizedFormat(format, rendertarget, readable);
 
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
