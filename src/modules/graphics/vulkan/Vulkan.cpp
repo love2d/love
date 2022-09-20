@@ -306,8 +306,11 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormat = VK_FORMAT_R5G6B5_UNORM_PACK16;
 		break;
 	case PIXELFORMAT_RGB10A2_UNORM:  // LSB->MSB: [r: g: b: a]
+		textureFormat.internalFormat = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+		break;
 	case PIXELFORMAT_RG11B10_FLOAT:  // LSB->MSB: [r: g: b]
-		throw love::Exception("unimplemented pixel format (rgb10a2, rg11b10)");
+		textureFormat.internalFormat = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
+		break;
 	case PIXELFORMAT_STENCIL8:
 		textureFormat.internalFormat = VK_FORMAT_S8_UINT;
 		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
@@ -370,7 +373,8 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
 		break;
 	case PIXELFORMAT_ETC1_UNORM:
-		throw love::Exception("unimplemented pixel format: etc1");
+		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+		break;
 	case PIXELFORMAT_ETC2_RGB_UNORM:
 		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
 		break;
