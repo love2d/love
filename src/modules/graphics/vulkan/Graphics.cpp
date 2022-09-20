@@ -121,11 +121,14 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 
 	if (color.hasValue)
 	{
+		Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+		gammaCorrectColor(cf);
+
 		attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		attachment.clearValue.color.float32[0] = static_cast<float>(color.value.r);
-		attachment.clearValue.color.float32[1] = static_cast<float>(color.value.g);
-		attachment.clearValue.color.float32[2] = static_cast<float>(color.value.b);
-		attachment.clearValue.color.float32[3] = static_cast<float>(color.value.a);
+		attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
+		attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
+		attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
+		attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
 	}
 
 	VkClearAttachment depthStencilAttachment{};
@@ -168,11 +171,14 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 		VkClearAttachment attachment{};
 		if (color.hasValue)
 		{
+			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+			gammaCorrectColor(cf);
+
 			attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			attachment.clearValue.color.float32[0] = static_cast<float>(color.value.r);
-			attachment.clearValue.color.float32[1] = static_cast<float>(color.value.g);
-			attachment.clearValue.color.float32[2] = static_cast<float>(color.value.b);
-			attachment.clearValue.color.float32[3] = static_cast<float>(color.value.a);
+			attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
+			attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
+			attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
+			attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
 		}
 		attachments.push_back(attachment);
 	}
