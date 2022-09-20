@@ -82,7 +82,6 @@ AS_VAR_IF([enable_module_physics], [yes], [enable_library_box2d=yes], [enable_li
 AS_VAR_IF([enable_module_image], [yes], [enable_library_ddsparse=yes], [enable_library_ddsparse=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glad=yes], [enable_library_glad=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_spirv_cross=yes], [enable_library_spirv_cross=no])
-AS_VAR_IF([enable_module_graphics], [yes], [enable_library_volk=yes], [enable_library_volk=no])
 AS_VAR_IF([enable_module_graphics], [yes], [enable_library_glslang=yes], [enable_library_glslang=no])
 AS_VAR_IF([enable_module_image], [yes], [enable_library_lodepng=yes], [enable_library_lodepng=no])
 AS_VAR_IF([enable_module_data], [yes], [enable_library_lua53=yes], [])
