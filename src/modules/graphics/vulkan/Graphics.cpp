@@ -1858,6 +1858,15 @@ void Graphics::createSwapChain()
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
+	// TODO: turn off GammaCorrect if a sRGB format can't be found?
+	if (isGammaCorrect())
+	{
+		for (const auto& availableFormat : availableFormats)
+			// fixme: what if this format and colorspace is not available?
+			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+				return availableFormat;
+	}
+
 	for (const auto &availableFormat : availableFormats)
 		// fixme: what if this format and colorspace is not available?
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
