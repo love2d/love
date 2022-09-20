@@ -187,6 +187,20 @@ bool Texture::loadVolatile()
 		}
 	}
 
+	int64 memsize = 0;
+
+	for (int mip = 0; mip < getMipmapCount(); mip++)
+	{
+		int w = getPixelWidth(mip);
+		int h = getPixelHeight(mip);
+		int slices = getDepth(mip) * layerCount;
+		memsize += getPixelFormatSliceSize(format, w, h) * slices;
+	}
+
+	memsize *= static_cast<int>(msaaSamples);
+
+	setGraphicsMemorySize(memsize);
+
 	return true;
 }
 
@@ -210,6 +224,8 @@ void Texture::unloadVolatile()
 	});
 
 	textureImage = VK_NULL_HANDLE;
+
+	setGraphicsMemorySize(0);
 }
 
 Texture::~Texture()
