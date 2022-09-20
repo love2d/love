@@ -159,9 +159,15 @@ VkFormat Vulkan::getVulkanVertexFormat(DataFormat format)
 	}
 }
 
-TextureFormat Vulkan::getTextureFormat(PixelFormat format)
+TextureFormat Vulkan::getTextureFormat(PixelFormat format, bool sRGB)
 {
 	TextureFormat textureFormat{};
+
+	if (sRGB)
+		format = getSRGBPixelFormat(format);
+
+	if (!isPixelFormatCompressed(format) && !isPixelFormatSRGB(format))
+		sRGB = false;
 
 	switch (format)
 	{
@@ -331,13 +337,13 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
 		break;
 	case PIXELFORMAT_DXT1_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_BC1_RGBA_SRGB_BLOCK : VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_DXT3_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_BC2_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_BC2_SRGB_BLOCK : VK_FORMAT_BC2_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_DXT5_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_BC3_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_BC3_SRGB_BLOCK : VK_FORMAT_BC3_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_BC4_UNORM:
 		textureFormat.internalFormat = VK_FORMAT_BC4_UNORM_BLOCK;
@@ -358,31 +364,31 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormat = VK_FORMAT_BC6H_SFLOAT_BLOCK;
 		break;
 	case PIXELFORMAT_BC7_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_BC7_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_BC7_SRGB_BLOCK : VK_FORMAT_BC7_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_PVR1_RGB2_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG : VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG;
 		break;
 	case PIXELFORMAT_PVR1_RGB4_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG : VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG;
 		break;
 	case PIXELFORMAT_PVR1_RGBA2_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG : VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG;
 		break;
 	case PIXELFORMAT_PVR1_RGBA4_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG : VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG;
 		break;
 	case PIXELFORMAT_ETC1_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK : VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ETC2_RGB_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK : VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ETC2_RGBA_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK : VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ETC2_RGBA1_UNORM:
-		textureFormat.internalFormat = VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK : VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_EAC_R_UNORM:
 		textureFormat.internalFormat = VK_FORMAT_EAC_R11_UNORM_BLOCK;
@@ -397,74 +403,46 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormat = VK_FORMAT_EAC_R11G11_SNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_4x4:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_4x4_SRGB_BLOCK : VK_FORMAT_ASTC_4x4_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_5x4:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_5x4_SRGB_BLOCK : VK_FORMAT_ASTC_5x4_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_5x5:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_5x5_SRGB_BLOCK : VK_FORMAT_ASTC_5x5_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_6x5:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_6x5_SRGB_BLOCK : VK_FORMAT_ASTC_6x5_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_6x6:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_6x6_SRGB_BLOCK : VK_FORMAT_ASTC_6x6_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_8x5:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_8x5_SRGB_BLOCK : VK_FORMAT_ASTC_8x5_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_8x6:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_8x6_SRGB_BLOCK : VK_FORMAT_ASTC_8x6_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_8x8:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_8x8_SRGB_BLOCK : VK_FORMAT_ASTC_8x8_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_10x5:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_10x5_SRGB_BLOCK : VK_FORMAT_ASTC_10x5_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_10x6:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_10x6_SRGB_BLOCK : VK_FORMAT_ASTC_10x6_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_10x8:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_10x8_SRGB_BLOCK : VK_FORMAT_ASTC_10x8_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_10x10:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_10x10_SRGB_BLOCK : VK_FORMAT_ASTC_10x10_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_12x10:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_12x10_SRGB_BLOCK : VK_FORMAT_ASTC_12x10_UNORM_BLOCK;
 		break;
 	case PIXELFORMAT_ASTC_12x12:
-#ifdef VK_EXT_texture_compression_astc_hdr
-		textureFormat.internalFormat = VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT;
-#endif
+		textureFormat.internalFormat = sRGB ? VK_FORMAT_ASTC_12x12_SRGB_BLOCK : VK_FORMAT_ASTC_12x12_UNORM_BLOCK;
 		break;
 	default:
 		throw love::Exception("unknown pixel format");

@@ -55,7 +55,7 @@ bool Texture::loadVolatile()
 	else
 		imageAspect |= VK_IMAGE_ASPECT_COLOR_BIT;
 
-	auto vulkanFormat = Vulkan::getTextureFormat(format);
+	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
 
 	VkImageUsageFlags usageFlags =
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
@@ -277,7 +277,7 @@ VkImageLayout Texture::getImageLayout() const
 
 void Texture::createTextureImageView()
 {
-	auto vulkanFormat = Vulkan::getTextureFormat(format);
+	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
 
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -349,7 +349,7 @@ void Texture::clear()
 
 VkClearColorValue Texture::getClearValue()
 {
-	auto vulkanFormat = Vulkan::getTextureFormat(format);
+	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
 
 	VkClearColorValue clearColor{};
 	switch (vulkanFormat.internalFormatRepresentation)

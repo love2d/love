@@ -61,7 +61,7 @@ public:
 
 	static uint32_t getSupportedVulkanApiVersion(uint32_t suggested);
 	static VkFormat getVulkanVertexFormat(DataFormat format);
-	static TextureFormat getTextureFormat(PixelFormat);
+	static TextureFormat getTextureFormat(PixelFormat, bool sRGB);
 	static std::string getVendorName(uint32_t vendorId);
 	static std::string getVulkanApiVersion(uint32_t apiVersion);
 	static VkPrimitiveTopology getPrimitiveTypeTopology(graphics::PrimitiveType);

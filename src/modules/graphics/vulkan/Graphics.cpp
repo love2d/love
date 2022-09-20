@@ -940,14 +940,12 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool
 
 bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
 {
-	(void)sRGB;	// fixme: sRGB
-
 	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
 	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
 
 	format = getSizedFormat(format, rendertarget, readable);
 
-	auto vulkanFormat = Vulkan::getTextureFormat(format);
+	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
 
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(physicalDevice, vulkanFormat.internalFormat, &formatProperties);
@@ -2418,13 +2416,13 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	RenderPassConfiguration renderPassConfiguration{};
 	for (const auto& color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
-			Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat, 
+			Vulkan::getTextureFormat(color.texture->getPixelFormat(), isPixelFormatSRGB(color.texture->getPixelFormat())).internalFormat,
 			false, 
 			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
 		if (rts.depthStencil.texture != nullptr)
 			renderPassConfiguration.staticData.depthAttachment = { 
-				Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat, 
+				Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
 				false,
 				dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
 
