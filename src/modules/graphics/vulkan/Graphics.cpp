@@ -557,11 +557,11 @@ void Graphics::initCapabilities()
 {
 	// fixme: unsure what the first few features are for.
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
-	capabilities.features[FEATURE_CLAMP_ZERO] = false;
-	capabilities.features[FEATURE_CLAMP_ONE] = false;
-	capabilities.features[FEATURE_BLEND_MINMAX] = false;
-	capabilities.features[FEATURE_LIGHTEN] = false;
-	capabilities.features[FEATURE_FULL_NPOT] = false;
+	capabilities.features[FEATURE_CLAMP_ZERO] = true;
+	capabilities.features[FEATURE_CLAMP_ONE] = true;
+	capabilities.features[FEATURE_BLEND_MINMAX] = true;
+	capabilities.features[FEATURE_LIGHTEN] = true;
+	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
 	capabilities.features[FEATURE_GLSL3] = true;
@@ -2527,7 +2527,14 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 	samplerInfo.addressModeW = Vulkan::getWrapMode(samplerState.wrapW);
 	samplerInfo.anisotropyEnable = VK_TRUE;
 	samplerInfo.maxAnisotropy = static_cast<float>(samplerState.maxAnisotropy);
-	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+	// TODO: This probably needs to branch on a pixel format to determine whether
+	// it should be float vs int, and opaque vs transparent.
+	bool clampone = samplerState.wrapU == SamplerState::WRAP_CLAMP_ONE
+		|| samplerState.wrapV == SamplerState::WRAP_CLAMP_ONE
+		|| samplerState.wrapW == SamplerState::WRAP_CLAMP_ONE;
+	samplerInfo.borderColor = clampone ? VK_BORDER_COLOR_INT_OPAQUE_WHITE : VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
 	if (samplerState.depthSampleMode.hasValue)
 	{

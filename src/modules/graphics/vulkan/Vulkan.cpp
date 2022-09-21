@@ -665,11 +665,11 @@ VkSamplerAddressMode Vulkan::getWrapMode(SamplerState::WrapMode mode)
 {
 	switch (mode)
 	{
-		//fixme: not accounting for different clamps (how does that work in vulkan?)
 	case SamplerState::WRAP_CLAMP:
+		return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	case SamplerState::WRAP_CLAMP_ZERO:
 	case SamplerState::WRAP_CLAMP_ONE:
-		return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 	case SamplerState::WRAP_REPEAT:
 		return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	case SamplerState::WRAP_MIRRORED_REPEAT:
