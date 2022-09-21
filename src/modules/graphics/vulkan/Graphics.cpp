@@ -559,9 +559,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
 	capabilities.features[FEATURE_CLAMP_ONE] = true;
-	capabilities.features[FEATURE_BLEND_MINMAX] = false;
-	capabilities.features[FEATURE_LIGHTEN] = false;
-	capabilities.features[FEATURE_FULL_NPOT] = false;
+	capabilities.features[FEATURE_BLEND_MINMAX] = true;
+	capabilities.features[FEATURE_LIGHTEN] = true;
+	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
 	capabilities.features[FEATURE_GLSL3] = true;
