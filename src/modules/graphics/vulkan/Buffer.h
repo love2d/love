@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "common/Range.h"
+
 #include "graphics/Buffer.h"
 #include "graphics/Volatile.h"
 
@@ -55,6 +57,7 @@ public:
 
 private:
 	bool zeroInitialize;
+	const void *initialData;
 	VkBuffer buffer = VK_NULL_HANDLE;
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VkBufferView bufferView = VK_NULL_HANDLE;
@@ -65,6 +68,7 @@ private:
 	VmaAllocationInfo allocInfo;
 	VmaAllocationInfo stagingAllocInfo;
 	BufferUsageFlags usageFlags;
+	Range mappedRange;
 };
 
 } // vulkan
