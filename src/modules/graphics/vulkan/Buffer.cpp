@@ -59,6 +59,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 	, usageFlags(settings.usageFlags)
 	, vgfx(dynamic_cast<Graphics*>(gfx))
 	, zeroInitialize(settings.zeroInitialize)
+	, initialData(data)
 {
 	loadVolatile();
 }
@@ -85,6 +86,9 @@ bool Buffer::loadVolatile()
 
 	if (zeroInitialize)
 		vkCmdFillBuffer(vgfx->getCommandBufferForDataTransfer(), buffer, 0, VK_WHOLE_SIZE, 0);
+
+	if (initialData)
+		fill(0, size, initialData);
 
 	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
 	{
@@ -156,6 +160,8 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocInfo) != VK_SUCCESS)
 			throw love::Exception("failed to create staging buffer");
 
+		mappedRange = Range(offset, size);
+
 		return stagingAllocInfo.pMappedData;
 	}
 }
@@ -188,7 +194,8 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 		memcpy(fillAllocInfo.pMappedData, data, size);
 
 		VkBufferCopy bufferCopy{};
-		bufferCopy.srcOffset = offset;
+		bufferCopy.srcOffset = 0;
+		bufferCopy.dstOffset = offset;
 		bufferCopy.size = size;
 
 		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), fillBuffer, buffer, 1, &bufferCopy);
@@ -205,7 +212,8 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 	if (dataUsage != BUFFERDATAUSAGE_READBACK)
 	{
 		VkBufferCopy bufferCopy{};
-		bufferCopy.srcOffset = usedoffset;
+		bufferCopy.srcOffset = usedoffset - mappedRange.getOffset();
+		bufferCopy.dstOffset = usedoffset;
 		bufferCopy.size = usedsize;
 
 		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), stagingBuffer, buffer, 1, &bufferCopy);
