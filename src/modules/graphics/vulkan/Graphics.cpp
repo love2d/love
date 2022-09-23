@@ -555,7 +555,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 void Graphics::initCapabilities()
 {
-	// fixme: unsure what the first few features are for.
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
 	capabilities.features[FEATURE_CLAMP_ONE] = true;
@@ -2189,8 +2188,11 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		else
 			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 		depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		if (configuration.staticData.depthAttachment.discard)
+			depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		else
+			depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
 		depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		depthStencilAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachments.push_back(depthStencilAttachment);
