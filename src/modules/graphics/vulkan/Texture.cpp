@@ -48,11 +48,11 @@ bool Texture::loadVolatile()
 	allocator = vgfx->getVmaAllocator();
 	device = vgfx->getDevice();
 
-	if (isPixelFormatDepthStencil(format))
-		imageAspect |= VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-	else if (isPixelFormatDepth(format))
+	if (isPixelFormatDepth(format))
 		imageAspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
-	else
+	if (isPixelFormatStencil(format))
+		imageAspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	if (isPixelFormatColor(format))
 		imageAspect |= VK_IMAGE_ASPECT_COLOR_BIT;
 
 	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
@@ -62,13 +62,10 @@ bool Texture::loadVolatile()
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
 	if (readable)
-	{
-		if (!isPixelFormatDepthStencil(format))
-			usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
-		if (!isPixelFormatCompressed(format) && !isPixelFormatDepthStencil(format))
-			usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
-	}
+	if (computeWrite)
+		usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
 
 	if (renderTarget)
 	{
@@ -133,6 +130,7 @@ bool Texture::loadVolatile()
 	bool hasdata = slices.get(0, 0) != nullptr;
 
 	if (hasdata)
+	{
 		for (int mip = 0; mip < getMipmapCount(); mip++)
 		{
 			int sliceCount;
@@ -148,6 +146,7 @@ bool Texture::loadVolatile()
 					uploadImageData(id, mip, slice, 0, 0);
 			}
 		}
+	}
 	else
 		clear();
 
