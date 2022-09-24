@@ -9,6 +9,7 @@ Released: N/A
 * Added love.filesystem.mountFullPath and love.filesystem.unmountFullPath, including opt-in mount-for-write support.
 * Added love.filesystem.mountCommonPath, unmountCommonPath, and getFullCommonPath.
 * Added 'readonly' field to love.filesystem.getInfo's returned table.
+* Added an optional load mode parameter to love.filesystem.load whetever to only allow binary chunks, text chunks, or both.
 * Added SoundData:copyFrom.
 * Added SoundData:slice.
 * Added Joystick:setPlayerIndex and Joystick:getPlayerIndex.

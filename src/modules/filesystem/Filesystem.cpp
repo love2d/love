@@ -221,5 +221,13 @@ STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::MountPermissions, Filesystem::MOUN
 }
 STRINGMAP_CLASS_END(Filesystem, Filesystem::MountPermissions, Filesystem::MOUNT_PERMISSIONS_MAX_ENUM, mountPermissions)
 
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::LoadMode, Filesystem::LOADMODE_MAX_ENUM, loadMode)
+{
+	{ "b",  Filesystem::LOADMODE_BINARY},
+	{ "t",  Filesystem::LOADMODE_TEXT  },
+	{ "bt", Filesystem::LOADMODE_ANY   }
+}
+STRINGMAP_CLASS_END(Filesystem, Filesystem::LoadMode, Filesystem::LOADMODE_MAX_ENUM, loadMode)
+
 } // filesystem
 } // love
