@@ -11,6 +11,8 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
 
+// Modified by the LOVE Development Team to use double precision.
+
 /** \file
 		\brief Implements the Noise1234 class for producing Perlin noise.
 		\author Stefan Gustavson (stegu@itn.liu.se)

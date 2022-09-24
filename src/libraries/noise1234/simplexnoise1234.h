@@ -13,8 +13,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
 
-// Modified by the LOVE Development Team to remove 3D and 4D implementations due
-// to patent issues.
+// Modified by the LOVE Development Team to use double precision.
 
 /** \file
 		\brief Declares the SimplexNoise1234 class for producing Perlin simplex noise.
@@ -37,10 +36,13 @@ class SimplexNoise1234 {
  */
     static float noise( double x );
     static float noise( double x, double y );
+    static float noise( double x, double y, double z );
+    static float noise( double x, double y, double z, double w);
 
   private:
     static unsigned char perm[];
     static double  grad( int hash, double x );
     static double  grad( int hash, double x, double y );
-
+    static double  grad( int hash, double x, double y, double z );
+    static double  grad( int hash, double x, double y, double z, double t );
 };
