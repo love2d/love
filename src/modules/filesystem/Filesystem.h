@@ -89,6 +89,14 @@ public:
 		MOUNT_PERMISSIONS_MAX_ENUM
 	};
 
+	enum LoadMode
+	{
+		LOADMODE_BINARY,
+		LOADMODE_TEXT,
+		LOADMODE_ANY,
+		LOADMODE_MAX_ENUM
+	};
+
 	struct Info
 	{
 		// Numbers will be -1 if they cannot be determined.
@@ -307,6 +315,7 @@ public:
 	STRINGMAP_CLASS_DECLARE(FileType);
 	STRINGMAP_CLASS_DECLARE(CommonPath);
 	STRINGMAP_CLASS_DECLARE(MountPermissions);
+	STRINGMAP_CLASS_DECLARE(LoadMode);
 
 private:
 
