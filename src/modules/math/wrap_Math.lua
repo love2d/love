@@ -113,6 +113,8 @@ local ffifuncs = ffi.cast("FFI_Math **", ffifuncspointer_str)[0]
 -- Overwrite some regular love.math functions with FFI implementations.
 
 function love_math.noise(x, y, z, w)
+	love.markDeprecated(2, "love.math.noise", "function", "replaced", "love.math.perlinNoise or love.math.simplexNoise")
+
 	if w ~= nil then
 		return tonumber(ffifuncs.pnoise4(x, y, z, w))
 	elseif z ~= nil then

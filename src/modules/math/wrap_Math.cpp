@@ -318,6 +318,8 @@ int w_linearToGamma(lua_State *L)
 
 int w_noise(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "love.math.noise", API_FUNCTION, DEPRECATED_REPLACED, "love.math.perlinNoise or love.math.simplexNoise");
+
 	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
 	double args[4];
 
