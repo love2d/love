@@ -83,10 +83,14 @@ float linearToGamma(float c);
  *
  * @return Noise value in the range of [0, 1].
  **/
-static float noise1(double x);
-static float noise2(double x, double y);
-static float noise3(double x, double y, double z);
-static float noise4(double x, double y, double z, double w);
+static float simplexNoise1(double x);
+static float simplexNoise2(double x, double y);
+static float simplexNoise3(double x, double y, double z);
+static float simplexNoise4(double x, double y, double z, double w);
+static float perlinNoise1(double x);
+static float perlinNoise2(double x, double y);
+static float perlinNoise3(double x, double y, double z);
+static float perlinNoise4(double x, double y, double z, double w);
 
 
 class Math : public Module
@@ -132,25 +136,42 @@ private:
 }; // Math
 
 
-static inline float noise1(double x)
+static inline float simplexNoise1(double x)
 {
 	return SimplexNoise1234::noise(x) * 0.5f + 0.5f;
 }
 
-static inline float noise2(double x, double y)
+static inline float simplexNoise2(double x, double y)
 {
 	return SimplexNoise1234::noise(x, y) * 0.5f + 0.5f;
 }
 
-// Perlin noise is used instead of Simplex noise in the 3D and 4D cases to avoid
-// patent issues.
+static inline float simplexNoise3(double x, double y, double z)
+{
+	return SimplexNoise1234::noise(x, y, z) * 0.5f + 0.5f;
+}
 
-static inline float noise3(double x, double y, double z)
+static inline float simplexNoise4(double x, double y, double z, double w)
+{
+	return SimplexNoise1234::noise(x, y, z, w) * 0.5f + 0.5f;
+}
+
+static inline float perlinNoise1(double x)
+{
+	return Noise1234::noise(x) * 0.5f + 0.5f;
+}
+
+static inline float perlinNoise2(double x, double y)
+{
+	return Noise1234::noise(x, y) * 0.5f + 0.5f;
+}
+
+static inline float perlinNoise3(double x, double y, double z)
 {
 	return Noise1234::noise(x, y, z) * 0.5f + 0.5f;
 }
 
-static inline float noise4(double x, double y, double z, double w)
+static inline float perlinNoise4(double x, double y, double z, double w)
 {
 	return Noise1234::noise(x, y, z, w) * 0.5f + 0.5f;
 }
