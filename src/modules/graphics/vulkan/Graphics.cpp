@@ -115,6 +115,11 @@ love::graphics::Buffer *Graphics::newBuffer(const love::graphics::Buffer::Settin
 
 void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth)
 {
+	if (!color.hasValue && !stencil.hasValue && !depth.hasValue)
+		return;
+
+	flushBatchedDraws();
+
 	if (!renderPassState.active)
 		startRenderPass();
 
@@ -163,6 +168,11 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 
 void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
 {
+	if (colors.empty() && !stencil.hasValue && !depth.hasValue)
+		return;
+
+	flushBatchedDraws();
+
 	if (!renderPassState.active)
 		startRenderPass();
 
@@ -188,12 +198,12 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	if (stencil.hasValue)
 	{
-		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
 	}
 	if (depth.hasValue)
 	{
-		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
 		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
 	}
 
@@ -1500,7 +1510,7 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device)
 	int i = 0;
 	for (const auto &queueFamily : queueFamilies)
 	{
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+		if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
 			indices.graphicsFamily = i;
 
 		VkBool32 presentSupport = false;
@@ -1772,8 +1782,8 @@ void Graphics::createSwapChain()
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-    if (swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
-        swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
+    if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
+        (swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
 	{
         uint32_t width, height;
         width = extent.width;
@@ -1795,10 +1805,10 @@ void Graphics::createSwapChain()
 		angle = -3.0f * PI / 2.0f;
 
 	float data[] = {
-			cosf(angle), -sinf(angle), 0.0f, 0.0f,
-			sinf(angle), cosf(angle), 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f,
+		cosf(angle), -sinf(angle), 0.0f, 0.0f,
+		sinf(angle), cosf(angle), 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
 	};
 	displayRotation = Matrix4(data);
 
