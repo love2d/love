@@ -34,10 +34,10 @@ class SimplexNoise1234 {
 
 /** 1D and 2D float Perlin noise
  */
-    static float noise( double x );
-    static float noise( double x, double y );
-    static float noise( double x, double y, double z );
-    static float noise( double x, double y, double z, double w);
+    static double noise( double x );
+    static double noise( double x, double y );
+    static double noise( double x, double y, double z );
+    static double noise( double x, double y, double z, double w);
 
   private:
     static unsigned char perm[];

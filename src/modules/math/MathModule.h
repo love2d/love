@@ -83,14 +83,14 @@ float linearToGamma(float c);
  *
  * @return Noise value in the range of [0, 1].
  **/
-static float simplexNoise1(double x);
-static float simplexNoise2(double x, double y);
-static float simplexNoise3(double x, double y, double z);
-static float simplexNoise4(double x, double y, double z, double w);
-static float perlinNoise1(double x);
-static float perlinNoise2(double x, double y);
-static float perlinNoise3(double x, double y, double z);
-static float perlinNoise4(double x, double y, double z, double w);
+static double simplexNoise1(double x);
+static double simplexNoise2(double x, double y);
+static double simplexNoise3(double x, double y, double z);
+static double simplexNoise4(double x, double y, double z, double w);
+static double perlinNoise1(double x);
+static double perlinNoise2(double x, double y);
+static double perlinNoise3(double x, double y, double z);
+static double perlinNoise4(double x, double y, double z, double w);
 
 
 class Math : public Module
@@ -136,44 +136,44 @@ private:
 }; // Math
 
 
-static inline float simplexNoise1(double x)
+static inline double simplexNoise1(double x)
 {
-	return SimplexNoise1234::noise(x) * 0.5f + 0.5f;
+	return SimplexNoise1234::noise(x) * 0.5 + 0.5;
 }
 
-static inline float simplexNoise2(double x, double y)
+static inline double simplexNoise2(double x, double y)
 {
-	return SimplexNoise1234::noise(x, y) * 0.5f + 0.5f;
+	return SimplexNoise1234::noise(x, y) * 0.5 + 0.5;
 }
 
-static inline float simplexNoise3(double x, double y, double z)
+static inline double simplexNoise3(double x, double y, double z)
 {
-	return SimplexNoise1234::noise(x, y, z) * 0.5f + 0.5f;
+	return SimplexNoise1234::noise(x, y, z) * 0.5 + 0.5;
 }
 
-static inline float simplexNoise4(double x, double y, double z, double w)
+static inline double simplexNoise4(double x, double y, double z, double w)
 {
-	return SimplexNoise1234::noise(x, y, z, w) * 0.5f + 0.5f;
+	return SimplexNoise1234::noise(x, y, z, w) * 0.5 + 0.5;
 }
 
-static inline float perlinNoise1(double x)
+static inline double perlinNoise1(double x)
 {
-	return Noise1234::noise(x) * 0.5f + 0.5f;
+	return Noise1234::noise(x) * 0.5 + 0.5;
 }
 
-static inline float perlinNoise2(double x, double y)
+static inline double perlinNoise2(double x, double y)
 {
-	return Noise1234::noise(x, y) * 0.5f + 0.5f;
+	return Noise1234::noise(x, y) * 0.5 + 0.5;
 }
 
-static inline float perlinNoise3(double x, double y, double z)
+static inline double perlinNoise3(double x, double y, double z)
 {
-	return Noise1234::noise(x, y, z) * 0.5f + 0.5f;
+	return Noise1234::noise(x, y, z) * 0.5 + 0.5;
 }
 
-static inline float perlinNoise4(double x, double y, double z, double w)
+static inline double perlinNoise4(double x, double y, double z, double w)
 {
-	return Noise1234::noise(x, y, z, w) * 0.5f + 0.5f;
+	return Noise1234::noise(x, y, z, w) * 0.5 + 0.5;
 }
 
 } // math

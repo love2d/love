@@ -93,14 +93,14 @@ if not status then return end
 pcall(ffi.cdef, [[
 typedef struct FFI_Math
 {
-	float (*snoise1)(double x);
-	float (*snoise2)(double x, double y);
-	float (*snoise3)(double x, double y, double z);
-	float (*snoise4)(double x, double y, double z, double w);
-	float (*pnoise1)(double x);
-	float (*pnoise2)(double x, double y);
-	float (*pnoise3)(double x, double y, double z);
-	float (*pnoise4)(double x, double y, double z, double w);
+	double (*snoise1)(double x);
+	double (*snoise2)(double x, double y);
+	double (*snoise3)(double x, double y, double z);
+	double (*snoise4)(double x, double y, double z, double w);
+	double (*pnoise1)(double x);
+	double (*pnoise2)(double x, double y);
+	double (*pnoise3)(double x, double y, double z);
+	double (*pnoise4)(double x, double y, double z, double w);
 
 	float (*gammaToLinear)(float c);
 	float (*linearToGamma)(float c);
@@ -108,7 +108,7 @@ typedef struct FFI_Math
 ]])
 
 local ffifuncs = ffi.cast("FFI_Math **", ffifuncspointer_str)[0]
-
+local love = require("love")
 
 -- Overwrite some regular love.math functions with FFI implementations.
 

@@ -32,17 +32,17 @@ class Noise1234 {
 
 /** 1D, 2D, 3D and 4D float Perlin noise, SL "noise()"
  */
-    static float noise( double x );
-    static float noise( double x, double y );
-    static float noise( double x, double y, double z );
-    static float noise( double x, double y, double z, double w );
+    static double noise( double x );
+    static double noise( double x, double y );
+    static double noise( double x, double y, double z );
+    static double noise( double x, double y, double z, double w );
 
 /** 1D, 2D, 3D and 4D float Perlin periodic noise, SL "pnoise()"
  */
-    static float pnoise( double x, int px );
-    static float pnoise( double x, double y, int px, int py );
-    static float pnoise( double x, double y, double z, int px, int py, int pz );
-    static float pnoise( double x, double y, double z, double w,
+    static double pnoise( double x, int px );
+    static double pnoise( double x, double y, int px, int py );
+    static double pnoise( double x, double y, double z, int px, int py, int pz );
+    static double pnoise( double x, double y, double z, double w,
                               int px, int py, int pz, int pw );
 
   private:

@@ -326,7 +326,7 @@ int w_noise(lua_State *L)
 	for (int i = 0; i < nargs; i++)
 		args[i] = luaL_checknumber(L, i + 1);
 
-	float val = 0.0f;
+	double val = 0.0;
 
 	switch (nargs)
 	{
@@ -356,7 +356,7 @@ int w_perlinNoise(lua_State* L)
 	for (int i = 0; i < nargs; i++)
 		args[i] = luaL_checknumber(L, i + 1);
 
-	float val = 0.0f;
+	double val = 0.0;
 
 	switch (nargs)
 	{
@@ -386,7 +386,7 @@ int w_simplexNoise(lua_State* L)
 	for (int i = 0; i < nargs; i++)
 		args[i] = luaL_checknumber(L, i + 1);
 
-	float val = 0.0f;
+	double val = 0.0;
 
 	switch (nargs)
 	{
@@ -411,14 +411,14 @@ int w_simplexNoise(lua_State* L)
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
-	float (*snoise1)(double x);
-	float (*snoise2)(double x, double y);
-	float (*snoise3)(double x, double y, double z);
-	float (*snoise4)(double x, double y, double z, double w);
-	float (*pnoise1)(double x);
-	float (*pnoise2)(double x, double y);
-	float (*pnoise3)(double x, double y, double z);
-	float (*pnoise4)(double x, double y, double z, double w);
+	double (*snoise1)(double x);
+	double (*snoise2)(double x, double y);
+	double (*snoise3)(double x, double y, double z);
+	double (*snoise4)(double x, double y, double z, double w);
+	double (*pnoise1)(double x);
+	double (*pnoise2)(double x, double y);
+	double (*pnoise3)(double x, double y, double z);
+	double (*pnoise4)(double x, double y, double z, double w);
 
 	float (*gammaToLinear)(float c);
 	float (*linearToGamma)(float c);

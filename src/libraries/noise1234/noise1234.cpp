@@ -140,7 +140,7 @@ double  Noise1234::grad( int hash, double x, double y, double z, double t ) {
 //---------------------------------------------------------------------
 /** 1D float Perlin noise, SL "noise()"
  */
-float Noise1234::noise( double x )
+double Noise1234::noise( double x )
 {
     int ix0, ix1;
     double fx0, fx1;
@@ -156,13 +156,13 @@ float Noise1234::noise( double x )
 
     n0 = grad( perm[ ix0 ], fx0 );
     n1 = grad( perm[ ix1 ], fx1 );
-    return 0.188f * ( LERP( s, n0, n1 ) );
+    return 0.188 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 1D float Perlin periodic noise, SL "pnoise()"
  */
-float Noise1234::pnoise( double x, int px )
+double Noise1234::pnoise( double x, int px )
 {
     int ix0, ix1;
     double fx0, fx1;
@@ -178,14 +178,14 @@ float Noise1234::pnoise( double x, int px )
 
     n0 = grad( perm[ ix0 ], fx0 );
     n1 = grad( perm[ ix1 ], fx1 );
-    return 0.188f * ( LERP( s, n0, n1 ) );
+    return 0.188 * ( LERP( s, n0, n1 ) );
 }
 
 
 //---------------------------------------------------------------------
 /** 2D float Perlin noise.
  */
-float Noise1234::noise( double x, double y )
+double Noise1234::noise( double x, double y )
 {
     int ix0, iy0, ix1, iy1;
     double fx0, fy0, fx1, fy1;
@@ -213,13 +213,13 @@ float Noise1234::noise( double x, double y )
     nx1 = grad(perm[ix1 + perm[iy1]], fx1, fy1);
     n1 = LERP(t, nx0, nx1);
 
-    return 0.507f * ( LERP( s, n0, n1 ) );
+    return 0.507 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 2D float Perlin periodic noise.
  */
-float Noise1234::pnoise( double x, double y, int px, int py )
+double Noise1234::pnoise( double x, double y, int px, int py )
 {
     int ix0, iy0, ix1, iy1;
     double fx0, fy0, fx1, fy1;
@@ -247,14 +247,14 @@ float Noise1234::pnoise( double x, double y, int px, int py )
     nx1 = grad(perm[ix1 + perm[iy1]], fx1, fy1);
     n1 = LERP(t, nx0, nx1);
 
-    return 0.507f * ( LERP( s, n0, n1 ) );
+    return 0.507 * ( LERP( s, n0, n1 ) );
 }
 
 
 //---------------------------------------------------------------------
 /** 3D float Perlin noise.
  */
-float Noise1234::noise( double x, double y, double z )
+double Noise1234::noise( double x, double y, double z )
 {
     int ix0, iy0, ix1, iy1, iz0, iz1;
     double fx0, fy0, fz0, fx1, fy1, fz1;
@@ -301,13 +301,13 @@ float Noise1234::noise( double x, double y, double z )
 
     n1 = LERP( t, nx0, nx1 );
 
-    return 0.936f * ( LERP( s, n0, n1 ) );
+    return 0.936 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 3D float Perlin periodic noise.
  */
-float Noise1234::pnoise( double x, double y, double z, int px, int py, int pz )
+double Noise1234::pnoise( double x, double y, double z, int px, int py, int pz )
 {
     int ix0, iy0, ix1, iy1, iz0, iz1;
     double fx0, fy0, fz0, fx1, fy1, fz1;
@@ -354,7 +354,7 @@ float Noise1234::pnoise( double x, double y, double z, int px, int py, int pz )
 
     n1 = LERP( t, nx0, nx1 );
 
-    return 0.936f * ( LERP( s, n0, n1 ) );
+    return 0.936 * ( LERP( s, n0, n1 ) );
 }
 
 
@@ -362,7 +362,7 @@ float Noise1234::pnoise( double x, double y, double z, int px, int py, int pz )
 /** 4D float Perlin noise.
  */
 
-float Noise1234::noise( double x, double y, double z, double w )
+double Noise1234::noise( double x, double y, double z, double w )
 {
     int ix0, iy0, iz0, iw0, ix1, iy1, iz1, iw1;
     double fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
@@ -439,14 +439,14 @@ float Noise1234::noise( double x, double y, double z, double w )
 
     n1 = LERP( t, nx0, nx1 );
 
-    return 0.87f * ( LERP( s, n0, n1 ) );
+    return 0.87 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 4D float Perlin periodic noise.
  */
 
-float Noise1234::pnoise( double x, double y, double z, double w,
+double Noise1234::pnoise( double x, double y, double z, double w,
                             int px, int py, int pz, int pw )
 {
     int ix0, iy0, iz0, iw0, ix1, iy1, iz1, iw1;
@@ -524,7 +524,7 @@ float Noise1234::pnoise( double x, double y, double z, double w,
 
     n1 = LERP( t, nx0, nx1 );
 
-    return 0.87f * ( LERP( s, n0, n1 ) );
+    return 0.87 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------

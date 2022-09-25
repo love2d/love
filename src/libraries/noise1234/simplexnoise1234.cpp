@@ -145,7 +145,7 @@ static unsigned char simplex[64][4] = {
     {2,1,0,3},{0,0,0,0},{0,0,0,0},{0,0,0,0},{3,1,0,2},{0,0,0,0},{3,2,0,1},{3,2,1,0}};
 
 // 1D simplex noise
-float SimplexNoise1234::noise(double x) {
+double SimplexNoise1234::noise(double x) {
 
   int i0 = FASTFLOOR(x);
   int i1 = i0 + 1;
@@ -163,12 +163,12 @@ float SimplexNoise1234::noise(double x) {
   n1 = t1 * t1 * grad(perm[i1 & 0xff], x1);
   // The maximum value of this noise is 8*(3/4)^4 = 2.53125
   // A factor of 0.395 will scale to fit exactly within [-1,1]
-  return 0.395f * (n0 + n1);
+  return 0.395 * (n0 + n1);
 
 }
 
 // 2D simplex noise
-float SimplexNoise1234::noise(double x, double y) {
+double SimplexNoise1234::noise(double x, double y) {
 
 #define F2 0.366025403 // F2 = 0.5*(sqrt(3.0)-1.0)
 #define G2 0.211324865 // G2 = (3.0-Math.sqrt(3.0))/6.0
@@ -231,11 +231,11 @@ float SimplexNoise1234::noise(double x, double y) {
 
     // Add contributions from each corner to get the final noise value.
     // The result is scaled to return values in the interval [-1,1].
-    return 45.23f * (n0 + n1 + n2); // TODO: The scale factor is preliminary!
+    return 45.23 * (n0 + n1 + n2); // TODO: The scale factor is preliminary!
   }
 
 // 3D simplex noise
-float SimplexNoise1234::noise(double x, double y, double z) {
+double SimplexNoise1234::noise(double x, double y, double z) {
 
     // Simple skewing factors for the 3D case
 #define F3 0.333333333
@@ -329,12 +329,12 @@ float SimplexNoise1234::noise(double x, double y, double z) {
 
     // Add contributions from each corner to get the final noise value.
     // The result is scaled to stay just inside [-1,1]
-    return 32.74f * (n0 + n1 + n2 + n3); // TODO: The scale factor is preliminary!
+    return 32.74 * (n0 + n1 + n2 + n3); // TODO: The scale factor is preliminary!
 }
 
 
 // 4D simplex noise
-float SimplexNoise1234::noise(double x, double y, double z, double w) {
+double SimplexNoise1234::noise(double x, double y, double z, double w) {
 
     // The skewing and unskewing factors are hairy again for the 4D case
 #define F4 0.309016994 // F4 = (Math.sqrt(5.0)-1.0)/4.0
@@ -465,6 +465,6 @@ float SimplexNoise1234::noise(double x, double y, double z, double w) {
     }
 
     // Sum up and scale the result to cover the range [-1,1]
-    return 27.3f * (n0 + n1 + n2 + n3 + n4); // TODO: The scale factor is preliminary!
+    return 27.3 * (n0 + n1 + n2 + n3 + n4); // TODO: The scale factor is preliminary!
 }
 //---------------------------------------------------------------------
