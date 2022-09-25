@@ -1315,7 +1315,7 @@ void Graphics::createVulkanInstance()
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	appInfo.pApplicationName = "LOVE";
 	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
-	appInfo.pEngineName = "LOVE Engine";
+	appInfo.pEngineName = "LOVE Game Framework";
 	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
 	appInfo.apiVersion = vulkanApiVersion;
 
