@@ -54,7 +54,7 @@ bool StreamBuffer::loadVolatile()
 
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = getSize();
+	bufferInfo.size = getSize() * MAX_FRAMES_IN_FLIGHT; // TODO: Is this sufficient or should it be +1?
 	bufferInfo.usage = getUsageFlags(mode);
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -62,9 +62,8 @@ bool StreamBuffer::loadVolatile()
 	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-	vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
-
-	usedGPUMemory = 0;
+	if (vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo) != VK_SUCCESS)
+		throw love::Exception("Cannot create stream buffer: out of graphics memory.");
 
 	return true;
 }
@@ -90,25 +89,31 @@ ptrdiff_t StreamBuffer::getHandle() const
 	return (ptrdiff_t) buffer;
 }
 
-love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t minsize)
+love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t /*minsize*/)
 {
-	(void)minsize;
-	return love::graphics::StreamBuffer::MapInfo((uint8*) allocInfo.pMappedData + usedGPUMemory, getSize());
+	// TODO: do we also need to wait until a fence is complete, here?
+
+	MapInfo info;
+	info.size = bufferSize - frameGPUReadOffset;
+	info.data = (uint8*)allocInfo.pMappedData + (frameIndex * bufferSize) + frameGPUReadOffset;
+	return info;
 }
 
-size_t StreamBuffer::unmap(size_t usedSize)
+size_t StreamBuffer::unmap(size_t /*usedSize*/)
 {
-	return usedGPUMemory;
+	size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
+	return offset;
 }
 
 void StreamBuffer::markUsed(size_t usedSize)
 {
-	usedGPUMemory += usedSize;
+	frameGPUReadOffset += usedSize;
 }
 
 void StreamBuffer::nextFrame()
 {
-	usedGPUMemory = 0;
+	frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+	frameGPUReadOffset = 0;
 }
 
 } // vulkan

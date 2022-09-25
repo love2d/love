@@ -249,9 +249,8 @@ void Shader::unloadVolatile()
 	while (!freeDescriptorSets.empty())
 		freeDescriptorSets.pop();
 
-	for (const auto &streamBufferVector : streamBuffers)
-		for (const auto streamBuffer : streamBufferVector)
-			delete streamBuffer;
+	for (const auto streamBuffer : streamBuffers)
+		streamBuffer->release();
 
 	shaderModules.clear();
 	shaderStages.clear();
@@ -282,19 +281,19 @@ void Shader::newFrame(uint32_t frameIndex)
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
 
-	if (streamBuffers.at(currentFrame).size() > 1)
+	if (streamBuffers.size() > 1)
 	{
 		size_t newSize = 0;
-		for (auto streamBuffer : streamBuffers.at(currentFrame))
+		for (auto streamBuffer : streamBuffers)
 		{
 			newSize += streamBuffer->getSize();
-			delete streamBuffer;
+			streamBuffer->release();
 		}
-		streamBuffers.at(currentFrame).clear();
-		streamBuffers.at(currentFrame).push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, newSize));
+		streamBuffers.clear();
+		streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, newSize));
 	}
 	else
-		streamBuffers.at(currentFrame).at(0)->nextFrame();
+		streamBuffers.at(0)->nextFrame();
 
 	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size()))
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
@@ -309,9 +308,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 	if (!localUniformData.empty())
 	{
 		auto usedStreamBufferMemory = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
-		if (usedStreamBufferMemory >= streamBuffers.at(currentFrame).back()->getSize())
+		if (usedStreamBufferMemory >= streamBuffers.back()->getSize())
 		{
-			streamBuffers.at(currentFrame).push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
+			streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
 			currentUsedUniformStreamBuffersCount = 0;
 		}
 
@@ -322,7 +321,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			memcpy(dst, &builtinData, sizeof(builtinData));
 		}
 
-		auto currentStreamBuffer = streamBuffers.at(currentFrame).back();
+		auto currentStreamBuffer = streamBuffers.back();
 
 		auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
 		memcpy(mapInfo.data, localUniformData.data(), localUniformData.size());
@@ -1023,10 +1022,7 @@ void Shader::createDescriptorPoolSizes()
 
 void Shader::createStreamBuffers()
 {
-	const auto numImagesInFlight = vgfx->getNumImagesInFlight();
-	streamBuffers.resize(numImagesInFlight);
-	for (uint32_t i = 0; i < numImagesInFlight; i++)
-		streamBuffers[i].push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
+	streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
 }
 
 void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture)

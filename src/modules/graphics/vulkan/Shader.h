@@ -115,9 +115,8 @@ private:
 	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
 
 	// we don't know how much memory we need per frame for the uniform buffer descriptors
-	// we keep a vector of stream buffers per frame in flight
-	// that gets dynamically increased if more memory is needed
-	std::vector<std::vector<StreamBuffer*>> streamBuffers;
+	// we keep a vector of stream buffers that gets dynamically increased if more memory is needed
+	std::vector<StreamBuffer*> streamBuffers;
 	std::vector<VkDescriptorPool> descriptorPools;
 	std::queue<VkDescriptorSet> freeDescriptorSets;
 	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;

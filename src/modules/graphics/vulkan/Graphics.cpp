@@ -59,8 +59,6 @@ static const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
-constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-
 constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
 
 const char *Graphics::getName() const
@@ -90,6 +88,9 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	defaultConstantColor.set(nullptr);
+	defaultTexture.set(nullptr);
+
 	SDL_Vulkan_UnloadLibrary();
 
 	// We already cleaned those up by clearing out batchedDrawBuffers.
@@ -454,6 +455,10 @@ void Graphics::present(void *screenshotCallbackdata)
 	else if (result != VK_SUCCESS)
 		throw love::Exception("failed to present swap chain image");
 
+	for (love::graphics::StreamBuffer *buffer : batchedDrawState.vb)
+		buffer->nextFrame();
+	batchedDrawState.indexBuffer->nextFrame();
+
 	drawCalls = 0;
 	renderTargetSwitchCount = 0;
 	drawCallsBatched = 0;
@@ -465,8 +470,6 @@ void Graphics::present(void *screenshotCallbackdata)
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	beginFrame();
-
-	updatedBatchedDrawBuffers();
 }
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
@@ -508,29 +511,26 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createCommandPool();
 	createCommandBuffers();
 
-	float whiteColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	beginFrame();
 
-	batchedDrawBuffers.clear();
-	batchedDrawBuffers.reserve(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	uint8 whiteColor[] = { 255, 255, 255, 255 };
+
+	if (batchedDrawState.vb[0] == nullptr)
 	{
-		batchedDrawBuffers.emplace_back();
 		// Initial sizes that should be good enough for most cases. It will
 		// resize to fit if needed, later.
-		batchedDrawBuffers[i].vertexBuffer1 = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawBuffers[i].vertexBuffer2 = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-		batchedDrawBuffers[i].indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
-
-		// sometimes the VertexColor is not set, so we manually adjust it to white color
-		batchedDrawBuffers[i].constantColorBuffer = new StreamBuffer(this, BUFFERUSAGE_VERTEX, sizeof(whiteColor));
-		auto mapInfo = batchedDrawBuffers[i].constantColorBuffer->map(sizeof(whiteColor));
-		memcpy(mapInfo.data, whiteColor, sizeof(whiteColor));
-		batchedDrawBuffers[i].constantColorBuffer->unmap(sizeof(whiteColor));
-		batchedDrawBuffers[i].constantColorBuffer->markUsed(sizeof(whiteColor));
+		batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+		batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+		batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
-	updatedBatchedDrawBuffers();
 
-	beginFrame();
+	// sometimes the VertexColor is not set, so we manually adjust it to white color
+	if (defaultConstantColor == nullptr)
+	{
+		Buffer::DataDeclaration format("ConstantColor", DATAFORMAT_UNORM8_VEC4);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+		defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
+	}
 
 	createDefaultTexture();
 	createDefaultShaders();
@@ -1205,16 +1205,6 @@ void Graphics::endRecordingGraphicsCommands(bool present) {
 		throw love::Exception("failed to record command buffer");
 }
 
-void Graphics::updatedBatchedDrawBuffers()
-{
-	batchedDrawState.vb[0] = batchedDrawBuffers[currentFrame].vertexBuffer1;
-	batchedDrawState.vb[0]->nextFrame();
-	batchedDrawState.vb[1] = batchedDrawBuffers[currentFrame].vertexBuffer2;
-	batchedDrawState.vb[1]->nextFrame();
-	batchedDrawState.indexBuffer = batchedDrawBuffers[currentFrame].indexBuffer;
-	batchedDrawState.indexBuffer->nextFrame();
-}
-
 uint32_t Graphics::getNumImagesInFlight() const
 {
 	return MAX_FRAMES_IN_FLIGHT;
@@ -1232,7 +1222,7 @@ const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
 
 graphics::Texture *Graphics::getDefaultTexture() const
 {
-	return dynamic_cast<graphics::Texture*>(standardTexture.get());
+	return defaultTexture;
 }
 
 VkCommandBuffer Graphics::getCommandBufferForDataTransfer()
@@ -2364,20 +2354,22 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	std::vector<VkDeviceSize> offsets;
 
 	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
+	{
 		if (buffers.useBits & (1u << i))
 		{
 			bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
 			offsets.push_back((VkDeviceSize)buffers.info[i].offset);
 		}
+	}
 
 	if (usesConstantVertexColor(attributes))
 	{
-		bufferVector.push_back((VkBuffer)batchedDrawBuffers[currentFrame].constantColorBuffer->getHandle());
+		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
 		offsets.push_back((VkDeviceSize)0);
 	}
 
 	if (texture == nullptr)
-		configuration.shader->setMainTex(standardTexture.get());
+		configuration.shader->setMainTex(defaultTexture);
 	else
 		configuration.shader->setMainTex(texture);
 
@@ -2986,9 +2978,10 @@ void Graphics::createSyncObjects()
 void Graphics::createDefaultTexture()
 {
 	Texture::Settings settings;
-	standardTexture.reset((Texture*)newTexture(settings, nullptr));
+	defaultTexture.set(newTexture(settings, nullptr), Acquire::NORETAIN);
+
 	uint8_t whitePixels[] = {255, 255, 255, 255};
-	standardTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
+	defaultTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
 }
 
 void Graphics::cleanup()
@@ -3001,7 +2994,6 @@ void Graphics::cleanup()
 	cleanUpFunctions.clear();
 
 	vmaDestroyAllocator(vmaAllocator);
-	batchedDrawBuffers.clear();
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);

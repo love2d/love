@@ -49,6 +49,8 @@ struct TextureFormat
 	VkComponentSwizzle swizzleA = VK_COMPONENT_SWIZZLE_IDENTITY;
 };
 
+constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 class Vulkan
 {
 public:

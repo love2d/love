@@ -193,22 +193,6 @@ struct GraphicsPipelineConfigurationHasher
 	}
 };
 
-struct BatchedDrawBuffers
-{
-	StreamBuffer *vertexBuffer1;
-	StreamBuffer *vertexBuffer2;
-	StreamBuffer *indexBuffer;
-	StreamBuffer *constantColorBuffer;
-
-	~BatchedDrawBuffers()
-	{
-		delete vertexBuffer1;
-		delete vertexBuffer2;
-		delete indexBuffer;
-		delete constantColorBuffer;
-	}
-};
-
 struct QueueFamilyIndices
 {
 	Optional<uint32_t> graphicsFamily;
@@ -365,7 +349,6 @@ private:
 	void startRecordingGraphicsCommands(bool newFrame);
 	void endRecordingGraphicsCommands(bool present);
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration);
-	void updatedBatchedDrawBuffers();
 	bool usesConstantVertexColor(const VertexAttributes &attribs);
 	void createVulkanVertexFormat(
 		VertexAttributes vertexAttributes, 
@@ -431,10 +414,8 @@ private:
 	bool framebufferResized = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
-	std::unique_ptr<Texture> standardTexture = nullptr;
-	// we need an array of draw buffers, since the frames are being rendered asynchronously
-	// and we can't (or shouldn't) update the contents of the buffers while they're still in flight / being rendered.
-	std::vector<BatchedDrawBuffers> batchedDrawBuffers;
+	StrongRef<love::graphics::Texture> defaultTexture;
+	StrongRef<love::graphics::Buffer> defaultConstantColor;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// just like batchedDrawBuffers we need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
