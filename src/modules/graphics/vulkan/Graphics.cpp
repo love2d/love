@@ -965,20 +965,8 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(physicalDevice, vulkanFormat.internalFormat, &formatProperties);
 
-	VkFormatFeatureFlags featureFlags;
-	VkImageTiling tiling;
+	VkFormatFeatureFlags featureFlags = formatProperties.optimalTilingFeatures;
 	VkImageUsageFlags usageFlags = 0;
-
-	if (usage & PIXELFORMATUSAGEFLAGS_LINEAR)
-	{
-		tiling = VK_IMAGE_TILING_LINEAR;
-		featureFlags = formatProperties.linearTilingFeatures;
-	}
-	else
-	{
-		tiling = VK_IMAGE_TILING_OPTIMAL;
-		featureFlags = formatProperties.optimalTilingFeatures;
-	}
 
 	if (!featureFlags)
 		return false;
@@ -987,6 +975,12 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 	{
 		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
 		if (!(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+			return false;
+	}
+
+	if (usage & PIXELFORMATUSAGE_LINEAR)
+	{
+		if (!(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			return false;
 	}
 
@@ -1007,8 +1001,10 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 	}
 
 	if (usage & PIXELFORMATUSAGEFLAGS_BLEND)
+	{
 		if (!(featureFlags & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT))
 			return false;
+	}
 
 	if (usage & PIXELFORMATUSAGEFLAGS_COMPUTEWRITE)
 	{
@@ -1021,7 +1017,8 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 	{
 		VkImageFormatProperties properties;
 
-		vkGetPhysicalDeviceImageFormatProperties(physicalDevice, vulkanFormat.internalFormat, VK_IMAGE_TYPE_2D, tiling, usageFlags, 0, &properties);
+		if (vkGetPhysicalDeviceImageFormatProperties(physicalDevice, vulkanFormat.internalFormat, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usageFlags, 0, &properties) != VK_SUCCESS)
+			return false;
 
 		if (static_cast<uint32_t>(properties.sampleCounts) == 1)
 			return false;

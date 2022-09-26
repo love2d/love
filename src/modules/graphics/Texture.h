@@ -59,12 +59,12 @@ enum TextureType
 
 enum PixelFormatUsage
 {
-	PIXELFORMATUSAGE_SAMPLE,
-	PIXELFORMATUSAGE_LINEAR,
-	PIXELFORMATUSAGE_RENDERTARGET,
-	PIXELFORMATUSAGE_BLEND,
-	PIXELFORMATUSAGE_MSAA,
-	PIXELFORMATUSAGE_COMPUTEWRITE,
+	PIXELFORMATUSAGE_SAMPLE,       // Any sampling in shaders.
+	PIXELFORMATUSAGE_LINEAR,       // Linear filtering.
+	PIXELFORMATUSAGE_RENDERTARGET, // Usable as a render target.
+	PIXELFORMATUSAGE_BLEND,        // Blend support when used as a render target.
+	PIXELFORMATUSAGE_MSAA,         // MSAA support when used as a render target.
+	PIXELFORMATUSAGE_COMPUTEWRITE, // Writable in compute shaders via imageStore.
 	PIXELFORMATUSAGE_MAX_ENUM
 };
 

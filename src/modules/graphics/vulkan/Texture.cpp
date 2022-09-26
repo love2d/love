@@ -99,10 +99,7 @@ bool Texture::loadVolatile()
 	imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
 	imageInfo.mipLevels = static_cast<uint32_t>(mipmapCount);
 	imageInfo.format = vulkanFormat.internalFormat;
-	if (isPixelFormatCompressed(format))
-		imageInfo.tiling = VK_IMAGE_TILING_LINEAR;
-	else
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageInfo.usage = usageFlags;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
