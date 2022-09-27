@@ -38,10 +38,12 @@ uint64 SamplerState::toKey() const
 	union { float f; uint32 i; } conv;
 	conv.f = lodBias;
 
+	const uint32 BITS_4 = 0xF;
+
 	return (minFilter << 0) | (magFilter << 1) | (mipmapFilter << 2)
 	     | (wrapU << 4) | (wrapV << 7) | (wrapW << 10)
-	     | (maxAnisotropy << 12) | (minLod << 16) | (maxLod << 20)
-	     | (depthSampleMode.hasValue << 24) | (depthSampleMode.value << 25)
+	     | (maxAnisotropy << 13) | ((BITS_4 & minLod) << 17) | ((BITS_4 & maxLod) << 21)
+	     | (depthSampleMode.hasValue << 25) | (depthSampleMode.value << 26)
 	     | ((uint64)conv.i << 32);
 }
 
@@ -62,13 +64,13 @@ SamplerState SamplerState::fromKey(uint64 key)
 	s.wrapV = (WrapMode) ((key >> 7 ) & BITS_3);
 	s.wrapW = (WrapMode) ((key >> 10) & BITS_3);
 
-	s.maxAnisotropy = (key >> 12) & BITS_4;
+	s.maxAnisotropy = (key >> 13) & BITS_4;
 
-	s.minLod = (key >> 16) & BITS_4;
-	s.maxLod = (key >> 20) & BITS_4;
+	s.minLod = (key >> 17) & BITS_4;
+	s.maxLod = (key >> 21) & BITS_4;
 
-	s.depthSampleMode.hasValue = ((key >> 24) & BITS_1) != 0;
-	s.depthSampleMode.value = (CompareMode) ((key >> 25) & BITS_4);
+	s.depthSampleMode.hasValue = ((key >> 25) & BITS_1) != 0;
+	s.depthSampleMode.value = (CompareMode) ((key >> 26) & BITS_4);
 
 	union { float f; uint32 i; } conv;
 	conv.i = (uint32) (key >> 32);
