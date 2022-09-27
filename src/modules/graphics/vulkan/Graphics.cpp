@@ -901,7 +901,7 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
-			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(compare));
+			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(compare)));
 #endif
 
 	states.back().stencil.action = action;
@@ -1109,7 +1109,7 @@ void Graphics::initDynamicState()
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(states.back().stencil.action),
-			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(states.back().stencil.compare));
+			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(states.back().stencil.compare)));
 
 		vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(states.back().depthTest));
@@ -2686,12 +2686,12 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 		depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
 		depthStencil.front.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
 		depthStencil.front.depthFailOp = VK_STENCIL_OP_KEEP;
-		depthStencil.front.compareOp = Vulkan::getCompareOp(configuration.dynamicState.stencilCompare);
+		depthStencil.front.compareOp = Vulkan::getCompareOp(getReversedCompareMode(configuration.dynamicState.stencilCompare));
 
 		depthStencil.back.failOp = VK_STENCIL_OP_KEEP;
 		depthStencil.back.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
 		depthStencil.back.depthFailOp = VK_STENCIL_OP_KEEP;
-		depthStencil.back.compareOp = Vulkan::getCompareOp(configuration.dynamicState.stencilCompare);
+		depthStencil.back.compareOp = Vulkan::getCompareOp(getReversedCompareMode(configuration.dynamicState.stencilCompare));
 	}
 
 	pipelineInfo.pDepthStencilState = &depthStencil;
