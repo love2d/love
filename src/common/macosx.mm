@@ -26,9 +26,11 @@
 #import <Cocoa/Cocoa.h>
 
 #ifdef LOVE_MACOSX_SDL_DIRECT_INCLUDE
-# include <SDL.h>
+#include <SDL.h>
+#include <SDL_syswm.h>
 #else
-# include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 #endif
 
 namespace love
@@ -90,6 +92,21 @@ void requestAttention(bool continuous)
 			[NSApp requestUserAttention:NSCriticalRequest];
 		else
 			[NSApp requestUserAttention:NSInformationalRequest];
+	}
+}
+
+void setWindowSRGBColorSpace(SDL_Window *window)
+{
+	@autoreleasepool
+	{
+		// This works on earlier macOS versions, but performance may be worse
+		// (at least, it was back when I tested in December 2016).
+		if (@available(macOS 11.0, *))
+		{
+			SDL_SysWMinfo info = {};
+			if (SDL_GetWindowWMInfo(window, &info))
+				info.info.cocoa.window.colorSpace = [NSColorSpace sRGBColorSpace];
+		}
 	}
 }
 

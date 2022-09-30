@@ -311,6 +311,10 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			return false;
 		}
 
+#ifdef LOVE_MACOS
+		love::macos::setWindowSRGBColorSpace(window);
+#endif
+
 		context = SDL_GL_CreateContext(window);
 
 		if (!context)

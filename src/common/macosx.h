@@ -27,6 +27,8 @@
 
 #include <string>
 
+typedef struct SDL_Window SDL_Window;
+
 namespace love
 {
 namespace macosx
@@ -54,6 +56,12 @@ std::string getExecutablePath();
  * Bounce the dock icon, if the app isn't in the foreground.
  **/
 void requestAttention(bool continuous);
+
+/**
+ * Explicitly sets the window's color space to be sRGB - which stops the OS
+ * from interpreting the backbuffer output as P3 on P3-capable displays.
+ **/
+void setWindowSRGBColorSpace(SDL_Window *window);
 
 } // macosx
 } // love
