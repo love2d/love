@@ -366,27 +366,29 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			return false;
 		}
 
-		if (renderer == love::graphics::Renderer::RENDERER_OPENGL) {
-			if (attribs != nullptr)
+		if (attribs != nullptr && renderer == love::graphics::Renderer::RENDERER_OPENGL)
+		{
+#ifdef LOVE_MACOS
+			love::macos::setWindowSRGBColorSpace(window);
+#endif
+
+			glcontext = SDL_GL_CreateContext(window);
+
+			if (!glcontext)
+				contexterror = std::string(SDL_GetError());
+
+			// Make sure the context's version is at least what we requested.
+			if (glcontext && !checkGLVersion(*attribs, glversion))
 			{
-				glcontext = SDL_GL_CreateContext(window);
+				SDL_GL_DeleteContext(glcontext);
+				glcontext = nullptr;
+			}
 
-				if (!glcontext)
-					contexterror = std::string(SDL_GetError());
-
-				// Make sure the context's version is at least what we requested.
-				if (glcontext && !checkGLVersion(*attribs, glversion))
-				{
-					SDL_GL_DeleteContext(glcontext);
-					glcontext = nullptr;
-				}
-
-				if (!glcontext)
-				{
-					SDL_DestroyWindow(window);
-					window = nullptr;
-					return false;
-				}
+			if (!glcontext)
+			{
+				SDL_DestroyWindow(window);
+				window = nullptr;
+				return false;
 			}
 		}
 

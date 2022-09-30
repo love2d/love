@@ -26,6 +26,8 @@
 
 #include <string>
 
+typedef struct SDL_Window SDL_Window;
+
 namespace love
 {
 namespace macos
@@ -54,6 +56,12 @@ void requestAttention(bool continuous);
  **/
 void setMetalLayerVSync(void *metallayer, bool vsync);
 bool getMetalLayerVSync(void *metallayer);
+
+/**
+ * Explicitly sets the window's color space to be sRGB - which stops the OS
+ * from interpreting the backbuffer output as P3 on P3-capable displays.
+ **/
+void setWindowSRGBColorSpace(SDL_Window *window);
 
 } // macos
 } // love
