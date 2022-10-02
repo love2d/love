@@ -240,30 +240,6 @@ void Texture::createTexture()
 	glGenTextures(1, &texture);
 	gl.bindTextureToUnit(this, 0, false);
 
-	// Use a default texture if the size is too big for the system.
-	// validateDimensions is also called in the base class for RTs and
-	// non-readable textures.
-	if (!renderTarget && !validateDimensions(false))
-	{
-		usingDefaultTexture = true;
-
-		setSamplerState(samplerState);
-
-		bool isSRGB = false;
-		gl.rawTexStorage(texType, 1, PIXELFORMAT_RGBA8_UNORM, isSRGB, 2, 2, 1);
-
-		// A nice friendly checkerboard to signify invalid textures...
-		GLubyte px[] = {0xFF,0xFF,0xFF,0xFF, 0xFF,0xA0,0xA0,0xFF,
-						0xFF,0xA0,0xA0,0xFF, 0xFF,0xFF,0xFF,0xFF};
-
-		int slices = texType == TEXTURE_CUBE ? 6 : 1;
-		Rect rect = {0, 0, 2, 2};
-		for (int slice = 0; slice < slices; slice++)
-			uploadByteData(PIXELFORMAT_RGBA8_UNORM, px, sizeof(px), 0, slice, rect);
-
-		return;
-	}
-
 	GLenum gltype = OpenGL::getGLTextureType(texType);
 	if (renderTarget && GLAD_ANGLE_texture_usage)
 		glTexParameteri(gltype, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);

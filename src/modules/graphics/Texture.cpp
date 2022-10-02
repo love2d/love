@@ -296,7 +296,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		throw love::Exception("%s textures are not supported on this system.", textypestr);
 	}
 
-	validateDimensions(renderTarget || !readable);
+	validateDimensions(true);
 
 	samplerState = gfx->getDefaultSamplerState();
 
