@@ -78,7 +78,7 @@ int w_Data_getIntArray(lua_State *L)
 			getIntArray<uint64_t>(L, t->getSize(), t->getData());
 			break;
 		default:
-			lua_pushnil(L);
+			throw love::Exception("Invalid integer size. Must be 1, 2, 4, or 8.");
 		}
 	}
 	else
@@ -98,7 +98,7 @@ int w_Data_getIntArray(lua_State *L)
 			getIntArray<int64_t>(L, t->getSize(), t->getData());
 			break;
 		default:
-			lua_pushnil(L);
+			throw love::Exception("Invalid integer size. Must be 1, 2, 4, or 8.");
 		}
 	}
 	return 1;
