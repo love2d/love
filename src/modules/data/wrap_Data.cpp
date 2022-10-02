@@ -42,6 +42,68 @@ int w_Data_getString(lua_State *L)
 	return 1;
 }
 
+template <class Int> void getIntArray(lua_State *L, size_t size, void *data)
+{
+	Int *idata = (Int *) data;
+	size_t length = size / sizeof(Int);
+	lua_createtable(L, (int)length, 0);
+	for (size_t i = 1; i <= length; ++i)
+	{
+		lua_pushinteger(L, i);
+		lua_pushinteger(L, (lua_Integer) *idata);
+		lua_settable(L, -3);
+		++idata;
+	}
+}
+
+int w_Data_getIntArray(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	const char *issigned = luaL_optstring(L, 2, "s");
+	int width = luaL_optint(L, 3, 4);
+
+	if (*issigned == 'u')
+	{
+		switch (width) {
+		case 1:
+			getIntArray<uint8_t>(L, t->getSize(), t->getData());
+			break;
+		case 2:
+			getIntArray<uint16_t>(L, t->getSize(), t->getData());
+			break;
+		case 4:
+			getIntArray<uint32_t>(L, t->getSize(), t->getData());
+			break;
+		case 8:
+			getIntArray<uint64_t>(L, t->getSize(), t->getData());
+			break;
+		default:
+			lua_pushnil(L);
+		}
+	}
+	else
+	{
+		switch (width)
+		{
+		case 1:
+			getIntArray<int8_t>(L, t->getSize(), t->getData());
+			break;
+		case 2:
+			getIntArray<int16_t>(L, t->getSize(), t->getData());
+			break;
+		case 4:
+			getIntArray<int32_t>(L, t->getSize(), t->getData());
+			break;
+		case 8:
+			getIntArray<int64_t>(L, t->getSize(), t->getData());
+			break;
+		default:
+			lua_pushnil(L);
+		}
+	}
+	return 1;
+}
+
 int w_Data_getPointer(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
@@ -81,6 +143,7 @@ static FFI_Data ffifuncs =
 const luaL_Reg w_Data_functions[] =
 {
 	{ "getString", w_Data_getString },
+	{ "getIntArray", w_Data_getIntArray },
 	{ "getPointer", w_Data_getPointer },
 	{ "getFFIPointer", w_Data_getFFIPointer },
 	{ "getSize", w_Data_getSize },
