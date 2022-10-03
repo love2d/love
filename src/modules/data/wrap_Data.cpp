@@ -20,6 +20,8 @@
 
 #include "wrap_Data.h"
 
+#include "common/config.h"
+
 // Put the Lua code directly into a raw string literal.
 static const char data_lua[] =
 #include "wrap_Data.lua"
@@ -42,19 +44,43 @@ int w_Data_getString(lua_State *L)
 	return 1;
 }
 
-template <class Int> void getIntArray(lua_State *L, size_t size, void *data)
+template <class Int> void getIntArray(lua_State *L, size_t size, void *data, bool swap)
 {
 	Int *idata = (Int *) data;
 	size_t length = size / sizeof(Int);
-	lua_createtable(L, (int)length, 0);
-	for (size_t i = 1; i <= length; ++i)
+	lua_createtable(L, (int) length, 0);
+	if (swap)
 	{
-		lua_pushinteger(L, i);
-		lua_pushinteger(L, (lua_Integer) *idata);
-		lua_settable(L, -3);
-		++idata;
+		for (size_t i = 1; i <= length; ++i)
+		{
+			Int v = *idata;
+			char *c = (char *) &v;
+			for (size_t b = 0; b < (sizeof(Int) / 2); ++b)
+				std::swap(c[b], c[sizeof(Int) - 1 - b]);
+			lua_pushinteger(L, i);
+			lua_pushinteger(L, (lua_Integer) v);
+			lua_settable(L, -3);
+			++idata;
+		}
+	}
+	else
+	{
+		for (size_t i = 1; i <= length; ++i)
+		{
+			Int v = *idata;
+			lua_pushinteger(L, i);
+			lua_pushinteger(L, (lua_Integer) v);
+			lua_settable(L, -3);
+			++idata;
+		}
 	}
 }
+
+#ifdef LOVE_BIG_ENDIAN
+const char* MY_ENDIAN = "b";
+#else
+const char* MY_ENDIAN = "l";
+#endif
 
 int w_Data_getIntArray(lua_State *L)
 {
@@ -62,20 +88,24 @@ int w_Data_getIntArray(lua_State *L)
 	const char *issigned = luaL_optstring(L, 2, "s");
 	int width = luaL_optint(L, 3, 4);
 
+	const char *endian = luaL_optstring(L, 4, MY_ENDIAN);
+	bool swap = width > 1 && tolower(*endian) != *MY_ENDIAN;
+
 	if (*issigned == 'u')
 	{
-		switch (width) {
+		switch (width)
+		{
 		case 1:
-			getIntArray<uint8_t>(L, t->getSize(), t->getData());
+			getIntArray<uint8_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		case 2:
-			getIntArray<uint16_t>(L, t->getSize(), t->getData());
+			getIntArray<uint16_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		case 4:
-			getIntArray<uint32_t>(L, t->getSize(), t->getData());
+			getIntArray<uint32_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		case 8:
-			getIntArray<uint64_t>(L, t->getSize(), t->getData());
+			getIntArray<uint64_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		default:
 			throw love::Exception("Invalid integer size. Must be 1, 2, 4, or 8.");
@@ -86,16 +116,16 @@ int w_Data_getIntArray(lua_State *L)
 		switch (width)
 		{
 		case 1:
-			getIntArray<int8_t>(L, t->getSize(), t->getData());
+			getIntArray<int8_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		case 2:
-			getIntArray<int16_t>(L, t->getSize(), t->getData());
+			getIntArray<int16_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		case 4:
-			getIntArray<int32_t>(L, t->getSize(), t->getData());
+			getIntArray<int32_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		case 8:
-			getIntArray<int64_t>(L, t->getSize(), t->getData());
+			getIntArray<int64_t>(L, t->getSize(), t->getData(), swap);
 			break;
 		default:
 			throw love::Exception("Invalid integer size. Must be 1, 2, 4, or 8.");
