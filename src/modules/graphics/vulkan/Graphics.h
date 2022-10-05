@@ -417,7 +417,7 @@ private:
 	StrongRef<love::graphics::Texture> defaultTexture;
 	StrongRef<love::graphics::Buffer> defaultConstantColor;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
-	// just like batchedDrawBuffers we need a vector for each frame in flight.
+	// We need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
 	std::vector<ScreenshotReadbackBuffer> screenshotReadbackBuffers;

@@ -19,13 +19,6 @@
  **/
 
 #include "ShaderStage.h"
-#include "Graphics.h"
-
-#include "libraries/glslang/glslang/Public/ShaderLang.h"
-#include "libraries/glslang/SPIRV/GlslangToSpv.h"
-
-#include <fstream>
-#include <cstdio>
 
 namespace love
 {

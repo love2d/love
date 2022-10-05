@@ -83,7 +83,7 @@ Graphics::Graphics()
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
-	vulkanApiVersion = Vulkan::getSupportedVulkanApiVersion(volkGetInstanceVersion());
+	vulkanApiVersion = volkGetInstanceVersion();
 }
 
 Graphics::~Graphics()
@@ -92,13 +92,6 @@ Graphics::~Graphics()
 	defaultTexture.set(nullptr);
 
 	SDL_Vulkan_UnloadLibrary();
-
-	// We already cleaned those up by clearing out batchedDrawBuffers.
-	// We set them to nullptr here so the base class doesn't crash
-	// when it tries to free this.
-	batchedDrawState.vb[0] = nullptr;
-	batchedDrawState.vb[1] = nullptr;
-	batchedDrawState.indexBuffer = nullptr;
 }
 
 // START OVERRIDEN FUNCTIONS
@@ -292,17 +285,6 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 				screenshotReadbackBuffers.at(currentFrame).image,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-			VkImageCopy imageCopy{};
-			imageCopy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			imageCopy.srcSubresource.layerCount = 1;
-			imageCopy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			imageCopy.dstSubresource.layerCount = 1;
-			imageCopy.extent = {
-				swapChainExtent.width,
-				swapChainExtent.height,
-				1
-			};
 
 			VkImageBlit blit{};
 			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -652,12 +634,10 @@ void Graphics::setFrontFaceWinding(Winding winding)
 
 	states.back().winding = winding;
 
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
-#endif
 }
 
 void Graphics::setColorMask(ColorChannelMask mask)
@@ -895,14 +875,12 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, readmask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, value);
 
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
 			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
 			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(compare)));
-#endif
 
 	states.back().stencil.action = action;
 	states.back().stencil.compare = compare;
@@ -915,7 +893,6 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 {
 	flushBatchedDraws();
 
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
 		vkCmdSetDepthCompareOpEXT(
@@ -924,7 +901,6 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 		vkCmdSetDepthWriteEnableEXT(
 			commandBuffers.at(currentFrame), Vulkan::getBool(write));
 	}
-#endif
 
 	states.back().depthTest = compare;
 	states.back().depthWrite = write;
@@ -1102,7 +1078,6 @@ void Graphics::initDynamicState()
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.value);
 
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 	{
 		 vkCmdSetStencilOpEXT(
@@ -1120,7 +1095,6 @@ void Graphics::initDynamicState()
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame), Vulkan::getFrontFace(states.back().winding));
 	}
-#endif
 }
 
 void Graphics::beginFrame()
@@ -1306,10 +1280,8 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
 
 	for (const auto &extension : extensions)
 	{
-#ifdef VK_KHR_get_physical_device_properties2
 		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
 			ext.physicalDeviceProperties2 = true;
-#endif
 	}
 }
 
@@ -1342,10 +1314,8 @@ void Graphics::createVulkanInstance()
 
 	checkOptionalInstanceExtensions(optionalInstanceExtensions);
 
-#ifdef VK_KHR_get_physical_device_properties2
 	if (optionalInstanceExtensions.physicalDeviceProperties2)
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-#endif
 
 	size_t additional_extension_count = extensions.size();
 	extensions.resize(additional_extension_count + count);
@@ -1535,34 +1505,20 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 
 	for (const auto &extension : availableExtensions)
 	{
-#ifdef VK_EXT_extended_dynamic_state
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.extendedDynamicState = true;
-#endif
-#ifdef VK_KHR_get_memory_requirements2
 		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.memoryRequirements2 = true;
-#endif
-#ifdef VK_KHR_dedicated_allocation
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.dedicatedAllocation = true;
-#endif
-#ifdef VK_KHR_buffer_device_address
 		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.bufferDeviceAddress = true;
-#endif
-#ifdef VK_EXT_memory_budget
 		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.memoryBudget = true;
-#endif
-#ifdef VK_KHR_shader_float_controls
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.shaderFloatControls = true;
-#endif
-#ifdef VK_KHR_spirv_1_4
 		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
 			optionalDeviceFeatures.spirv14 = true;
-#endif
 	}
 }
 
@@ -1615,38 +1571,22 @@ void Graphics::createLogicalDevice()
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
-#endif
-#ifdef VK_KHR_get_memory_requirements2
 	if (optionalDeviceFeatures.memoryRequirements2)
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-#endif
-#ifdef VK_KHR_dedicated_allocation
 	if (optionalDeviceFeatures.dedicatedAllocation)
 		enabledExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
-#endif
-#ifdef VK_KHR_buffer_device_address
 	if (optionalDeviceFeatures.bufferDeviceAddress)
 		enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-#endif
-#ifdef VK_EXT_memory_budget
 	if (optionalDeviceFeatures.memoryBudget)
 		enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
-#endif
-#ifdef VK_KHR_shader_float_controls
 	if (optionalDeviceFeatures.shaderFloatControls)
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
-#endif
-#ifdef VK_KHR_spirv_1_4
 	if (optionalDeviceFeatures.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
-#endif
-#ifdef VK_KHR_bind_memory2
 	if (vulkanApiVersion >= VK_API_VERSION_1_1)
 		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
-#endif
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
@@ -1659,14 +1599,12 @@ void Graphics::createLogicalDevice()
 	else
 		createInfo.enabledLayerCount = 0;
 
-#ifdef VK_EXT_extended_dynamic_state
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
 	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceFeatures.extendedDynamicState);
 	extendedDynamicStateFeatures.pNext = nullptr;
 
 	createInfo.pNext = &extendedDynamicStateFeatures;
-#endif
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
@@ -1707,22 +1645,13 @@ void Graphics::initVMA()
 	vulkanFunctions.vkDestroyImage = vkDestroyImage;
 	vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
 
-#ifdef VK_KHR_get_memory_requirements2
 	vulkanFunctions.vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2KHR;
 	vulkanFunctions.vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2KHR;
-#endif
-#ifdef VK_KHR_bind_memory2
 	vulkanFunctions.vkBindBufferMemory2KHR = vkBindBufferMemory2KHR;
 	vulkanFunctions.vkBindImageMemory2KHR = vkBindImageMemory2KHR;
-#endif
-#ifdef VK_KHR_get_physical_device_properties2
 	vulkanFunctions.vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR;
-#endif
-
-#ifdef VK_KHR_maintenance4
 	vulkanFunctions.vkGetDeviceBufferMemoryRequirements = vkGetDeviceBufferMemoryRequirements;
 	vulkanFunctions.vkGetDeviceImageMemoryRequirements = vkGetDeviceImageMemoryRequirements;
-#endif
 
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
@@ -2343,11 +2272,9 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.numColorAttachments = renderPassState.numColorAttachments;
 	configuration.primitiveType = primitiveType;
 
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
 	else
-#endif
 	{
 		configuration.dynamicState.winding = states.back().winding;
 		configuration.dynamicState.depthState.compare = states.back().depthTest;
@@ -2721,7 +2648,6 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 
 	std::vector<VkDynamicState> dynamicStates;
 
-#ifdef VK_EXT_extended_dynamic_state
 	if (optionalDeviceFeatures.extendedDynamicState)
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
@@ -2737,7 +2663,6 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 			VK_DYNAMIC_STATE_STENCIL_OP_EXT,
 		};
 	else
-#endif
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,
