@@ -61,7 +61,6 @@ private:
 	VmaAllocation allocation;
 	VmaAllocationInfo allocInfo;
 	VkBuffer buffer = VK_NULL_HANDLE;
-	int frameIndex = 0;
 
 };
 

@@ -95,13 +95,13 @@ love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t /*minsize*/)
 
 	MapInfo info;
 	info.size = bufferSize - frameGPUReadOffset;
-	info.data = (uint8*)allocInfo.pMappedData + (frameIndex * bufferSize) + frameGPUReadOffset;
+	info.data = (uint8*)allocInfo.pMappedData + (vgfx->getFrameIndex() * bufferSize) + frameGPUReadOffset;
 	return info;
 }
 
 size_t StreamBuffer::unmap(size_t /*usedSize*/)
 {
-	size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
+	size_t offset = (vgfx->getFrameIndex() * bufferSize) + frameGPUReadOffset;
 	return offset;
 }
 
@@ -112,7 +112,6 @@ void StreamBuffer::markUsed(size_t usedSize)
 
 void StreamBuffer::nextFrame()
 {
-	frameIndex = (frameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 	frameGPUReadOffset = 0;
 }
 
