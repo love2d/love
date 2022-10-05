@@ -325,12 +325,12 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 
 		auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
 		memcpy(mapInfo.data, localUniformData.data(), localUniformData.size());
-		currentStreamBuffer->unmap(uniformBufferSizeAligned);
+		auto offset = currentStreamBuffer->unmap(uniformBufferSizeAligned);
 		currentStreamBuffer->markUsed(uniformBufferSizeAligned);
 
 		VkDescriptorBufferInfo bufferInfo{};
 		bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
-		bufferInfo.offset = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
+		bufferInfo.offset = offset;
 		bufferInfo.range = localUniformData.size();
 
 		VkWriteDescriptorSet uniformWrite{};
