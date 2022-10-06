@@ -1557,7 +1557,7 @@ void Graphics::createLogicalDevice()
 		optionalDeviceFeatures.memoryBudget = false;
 	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
 		optionalDeviceFeatures.spirv14 = false;
-	if (optionalDeviceFeatures.spirv14 && vulkanApiVersion < VK_MAKE_API_VERSION(0, 1, 1, 0))
+	if (optionalDeviceFeatures.spirv14 && vulkanApiVersion < VK_API_VERSION_1_1)
 		optionalDeviceFeatures.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};

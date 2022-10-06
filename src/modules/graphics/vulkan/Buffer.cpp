@@ -102,6 +102,13 @@ bool Buffer::loadVolatile()
 			throw love::Exception("failed to create texel buffer view");
 	}
 
+	VkMemoryPropertyFlags memoryProperties;
+	vmaGetAllocationMemoryProperties(allocator, allocation, &memoryProperties);
+	if (memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		coherent = true;
+	else
+		coherent = false;
+
 	return true;
 }
 
@@ -172,6 +179,9 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 	{
 		void *dst = (void*)((char*)allocInfo.pMappedData + offset);
 		memcpy(dst, data, size);
+
+		if (!coherent)
+			vmaFlushAllocation(allocator, allocation, offset, size);
 	}
 	else
 	{
@@ -193,6 +203,11 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 
 		memcpy(fillAllocInfo.pMappedData, data, size);
 
+		VkMemoryPropertyFlags memoryProperties;
+		vmaGetAllocationMemoryProperties(allocator, fillAllocation, &memoryProperties);
+		if (!(memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+			vmaFlushAllocation(allocator, fillAllocation, 0, size);
+
 		VkBufferCopy bufferCopy{};
 		bufferCopy.srcOffset = 0;
 		bufferCopy.dstOffset = offset;
@@ -209,12 +224,22 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 
 void Buffer::unmap(size_t usedoffset, size_t usedsize)
 {
-	if (dataUsage != BUFFERDATAUSAGE_READBACK)
+	if (dataUsage == BUFFERDATAUSAGE_READBACK)
+	{
+		if (!coherent)
+			vmaFlushAllocation(allocator, allocation, usedoffset, usedsize);
+	}
+	else
 	{
 		VkBufferCopy bufferCopy{};
 		bufferCopy.srcOffset = usedoffset - mappedRange.getOffset();
 		bufferCopy.dstOffset = usedoffset;
 		bufferCopy.size = usedsize;
+
+		VkMemoryPropertyFlags memoryProperties;
+		vmaGetAllocationMemoryProperties(allocator, stagingAllocation, &memoryProperties);
+		if (!(memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+			vmaFlushAllocation(allocator, stagingAllocation, bufferCopy.srcOffset, usedsize);
 
 		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), stagingBuffer, buffer, 1, &bufferCopy);
 

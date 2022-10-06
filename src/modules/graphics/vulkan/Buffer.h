@@ -69,6 +69,7 @@ private:
 	VmaAllocationInfo stagingAllocInfo;
 	BufferUsageFlags usageFlags;
 	Range mappedRange;
+	bool coherent;
 };
 
 } // vulkan
