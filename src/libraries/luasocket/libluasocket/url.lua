@@ -59,7 +59,7 @@ local segment_set = make_set {
 local function protect_segment(s)
     return string.gsub(s, "([^A-Za-z0-9_])", function (c)
         if segment_set[c] then return c
-        else return string.format("%%%02x", string.byte(c)) end
+        else return string.format("%%%02X", string.byte(c)) end
     end)
 end
 
@@ -77,6 +77,34 @@ function _M.unescape(s)
 end
 
 -----------------------------------------------------------------------------
+-- Removes '..' and '.' components appropriately from a path.
+-- Input
+--   path
+-- Returns
+--   dot-normalized path
+local function remove_dot_components(path)
+    local marker = string.char(1)
+    repeat
+        local was = path
+        path = path:gsub('//', '/'..marker..'/', 1)
+    until path == was
+    repeat
+        local was = path
+        path = path:gsub('/%./', '/', 1)
+    until path == was
+    repeat
+        local was = path
+        path = path:gsub('[^/]+/%.%./([^/]+)', '%1', 1)
+    until path == was
+    path = path:gsub('[^/]+/%.%./*$', '')
+    path = path:gsub('/%.%.$', '/')
+    path = path:gsub('/%.$', '/')
+    path = path:gsub('^/%.%./', '/')
+    path = path:gsub(marker, '')
+    return path
+end
+
+-----------------------------------------------------------------------------
 -- Builds a path from a base path and a relative path
 -- Input
 --   base_path
@@ -85,23 +113,12 @@ end
 --   corresponding absolute path
 -----------------------------------------------------------------------------
 local function absolute_path(base_path, relative_path)
-    if string.sub(relative_path, 1, 1) == "/" then return relative_path end
-    local path = string.gsub(base_path, "[^/]*$", "")
-    path = path .. relative_path
-    path = string.gsub(path, "([^/]*%./)", function (s)
-        if s ~= "./" then return s else return "" end
-    end)
-    path = string.gsub(path, "/%.$", "/")
-    local reduced
-    while reduced ~= path do
-        reduced = path
-        path = string.gsub(reduced, "([^/]*/%.%./)", function (s)
-            if s ~= "../../" then return "" else return s end
-        end)
-    end
-    path = string.gsub(reduced, "([^/]*/%.%.)$", function (s)
-        if s ~= "../.." then return "" else return s end
-    end)
+    if string.sub(relative_path, 1, 1) == "/" then
+      return remove_dot_components(relative_path) end
+    base_path = base_path:gsub("[^/]*$", "")
+    if not base_path:find'/$' then base_path = base_path .. '/' end
+    local path = base_path .. relative_path
+    path = remove_dot_components(path)
     return path
 end
 
@@ -131,17 +148,17 @@ function _M.parse(url, default)
     if not url or url == "" then return nil, "invalid url" end
     -- remove whitespace
     -- url = string.gsub(url, "%s", "")
-    -- get fragment
-    url = string.gsub(url, "#(.*)$", function(f)
-        parsed.fragment = f
-        return ""
-    end)
     -- get scheme
     url = string.gsub(url, "^([%w][%w%+%-%.]*)%:",
         function(s) parsed.scheme = s; return "" end)
     -- get authority
     url = string.gsub(url, "^//([^/]*)", function(n)
         parsed.authority = n
+        return ""
+    end)
+    -- get fragment
+    url = string.gsub(url, "#(.*)$", function(f)
+        parsed.fragment = f
         return ""
     end)
     -- get query string
@@ -162,9 +179,9 @@ function _M.parse(url, default)
         function(u) parsed.userinfo = u; return "" end)
     authority = string.gsub(authority, ":([^:%]]*)$",
         function(p) parsed.port = p; return "" end)
-    if authority ~= "" then 
+    if authority ~= "" then
         -- IPv6?
-        parsed.host = string.match(authority, "^%[(.+)%]$") or authority 
+        parsed.host = string.match(authority, "^%[(.+)%]$") or authority
     end
     local userinfo = parsed.userinfo
     if not userinfo then return parsed end
@@ -183,8 +200,9 @@ end
 --   a stringing with the corresponding URL
 -----------------------------------------------------------------------------
 function _M.build(parsed)
-    local ppath = _M.parse_path(parsed.path or "")
-    local url = _M.build_path(ppath)
+    --local ppath = _M.parse_path(parsed.path or "")
+    --local url = _M.build_path(ppath)
+    local url = parsed.path or ""
     if parsed.params then url = url .. ";" .. parsed.params end
     if parsed.query then url = url .. "?" .. parsed.query end
     local authority = parsed.authority
@@ -193,7 +211,7 @@ function _M.build(parsed)
         if string.find(authority, ":") then -- IPv6?
             authority = "[" .. authority .. "]"
         end
-        if parsed.port then authority = authority .. ":" .. parsed.port end
+        if parsed.port then authority = authority .. ":" .. base.tostring(parsed.port) end
         local userinfo = parsed.userinfo
         if parsed.user then
             userinfo = parsed.user
@@ -226,10 +244,14 @@ function _M.absolute(base_url, relative_url)
     else
         base_parsed = _M.parse(base_url)
     end
+    local result
     local relative_parsed = _M.parse(relative_url)
-    if not base_parsed then return relative_url
-    elseif not relative_parsed then return base_url
-    elseif relative_parsed.scheme then return relative_url
+    if not base_parsed then
+        result = relative_url
+    elseif not relative_parsed then
+        result = base_url
+    elseif relative_parsed.scheme then
+        result = relative_url
     else
         relative_parsed.scheme = base_parsed.scheme
         if not relative_parsed.authority then
@@ -242,13 +264,14 @@ function _M.absolute(base_url, relative_url)
                         relative_parsed.query = base_parsed.query
                     end
                 end
-            else    
+            else
                 relative_parsed.path = absolute_path(base_parsed.path or "",
                     relative_parsed.path)
             end
         end
-        return _M.build(relative_parsed)
+        result = _M.build(relative_parsed)
     end
+    return remove_dot_components(result)
 end
 
 -----------------------------------------------------------------------------

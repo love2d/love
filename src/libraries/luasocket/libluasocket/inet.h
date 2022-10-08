@@ -14,7 +14,7 @@
 *
 * The Lua functions toip and tohostname are also implemented here.
 \*=========================================================================*/
-#include "lua.h"
+#include "luasocket.h"
 #include "socket.h"
 #include "timeout.h"
 
@@ -22,21 +22,23 @@
 #define LUASOCKET_INET_ATON
 #endif
 
+#ifndef _WIN32
+#pragma GCC visibility push(hidden)
+#endif
+
 int inet_open(lua_State *L);
 
-const char *inet_trycreate(p_socket ps, int family, int type, int protocol);
-const char *inet_tryconnect(p_socket ps, int *family, const char *address,
-        const char *serv, p_timeout tm, struct addrinfo *connecthints);
-const char *inet_trybind(p_socket ps, int *family, const char *address,
-        const char *serv, struct addrinfo *bindhints);
-const char *inet_trydisconnect(p_socket ps, int family, p_timeout tm);
-const char *inet_tryaccept(p_socket server, int family, p_socket client, p_timeout tm);
+int inet_optfamily(lua_State* L, int narg, const char* def);
+int inet_optsocktype(lua_State* L, int narg, const char* def);
 
 int inet_meth_getpeername(lua_State *L, p_socket ps, int family);
 int inet_meth_getsockname(lua_State *L, p_socket ps, int family);
 
-int inet_optfamily(lua_State* L, int narg, const char* def);
-int inet_optsocktype(lua_State* L, int narg, const char* def);
+const char *inet_trycreate(p_socket ps, int family, int type, int protocol);
+const char *inet_trydisconnect(p_socket ps, int family, p_timeout tm);
+const char *inet_tryconnect(p_socket ps, int *family, const char *address, const char *serv, p_timeout tm, struct addrinfo *connecthints);
+const char *inet_tryaccept(p_socket server, int family, p_socket client, p_timeout tm);
+const char *inet_trybind(p_socket ps, int *family, const char *address, const char *serv, struct addrinfo *bindhints);
 
 #ifdef LUASOCKET_INET_ATON
 int inet_aton(const char *cp, struct in_addr *inp);
@@ -45,6 +47,10 @@ int inet_aton(const char *cp, struct in_addr *inp);
 #ifdef LUASOCKET_INET_PTON
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t cnt);
 int inet_pton(int af, const char *src, void *dst);
+#endif
+
+#ifndef _WIN32
+#pragma GCC visibility pop
 #endif
 
 #endif /* INET_H */
