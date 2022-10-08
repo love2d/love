@@ -24,6 +24,7 @@
 extern "C" {
 #include "libluasocket/luasocket.h"
 #include "libluasocket/mime.h"
+#include "libluasocket/unix.h"
 }
 
 // Lua files
@@ -84,6 +85,7 @@ int preload(lua_State * L)
 
 	// Preload code from LuaSocket.
 	preload(L, "socket.core", luaopen_socket_core);
+	preload(L, "socket.unix", luaopen_socket_unix);
 	preload(L, "mime.core",   luaopen_mime_core);
 
 	preload(L, "socket",         "=[socket \"socket.lua\"]",  socket_lua,  sizeof(socket_lua));

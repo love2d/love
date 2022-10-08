@@ -10,7 +10,12 @@
 #include "unixstream.h"
 
 #include <string.h>
+
+#ifdef _WIN32
+#include <afunix.h>
+#else
 #include <sys/un.h>
+#endif
 
 /*=========================================================================*\
 * Internal function prototypes
