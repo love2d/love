@@ -47,10 +47,6 @@
 		217DFC081D9F6D490055D849 /* udp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBCC1D9F6D490055D849 /* udp.h */; };
 		217DFC091D9F6D490055D849 /* unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCD1D9F6D490055D849 /* unix.c */; };
 		217DFC0A1D9F6D490055D849 /* unix.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBCE1D9F6D490055D849 /* unix.h */; };
-		217DFC0B1D9F6D490055D849 /* unixtcp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCF1D9F6D490055D849 /* unixtcp.c */; };
-		217DFC0C1D9F6D490055D849 /* unixtcp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD01D9F6D490055D849 /* unixtcp.h */; };
-		217DFC0D1D9F6D490055D849 /* unixudp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD11D9F6D490055D849 /* unixudp.c */; };
-		217DFC0E1D9F6D490055D849 /* unixudp.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD21D9F6D490055D849 /* unixudp.h */; };
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
@@ -779,8 +775,6 @@
 		FA4F2C0F1DE936FE00CA37D7 /* timeout.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBC71D9F6D490055D849 /* timeout.c */; };
 		FA4F2C101DE936FE00CA37D7 /* udp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCB1D9F6D490055D849 /* udp.c */; };
 		FA4F2C111DE936FE00CA37D7 /* unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCD1D9F6D490055D849 /* unix.c */; };
-		FA4F2C121DE936FE00CA37D7 /* unixtcp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBCF1D9F6D490055D849 /* unixtcp.c */; };
-		FA4F2C131DE936FE00CA37D7 /* unixudp.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD11D9F6D490055D849 /* unixudp.c */; };
 		FA4F2C141DE936FE00CA37D7 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		FA522D4D23F9FE380059EE3C /* MP3Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */; };
 		FA522D4E23F9FE380059EE3C /* MP3Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA522D4B23F9FE370059EE3C /* MP3Decoder.cpp */; };
@@ -1314,6 +1308,12 @@
 		FAF6C9F923C2DE2900D7B5BC /* doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9D823C2DE2900D7B5BC /* doc.cpp */; };
 		FAF6C9FA23C2DE2900D7B5BC /* disassemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9D923C2DE2900D7B5BC /* disassemble.cpp */; };
 		FAF6C9FB23C2DE2900D7B5BC /* disassemble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9D923C2DE2900D7B5BC /* disassemble.cpp */; };
+		FAFEB29928F210550025D7D0 /* unixdgram.c in Sources */ = {isa = PBXBuildFile; fileRef = FAFEB29528F210540025D7D0 /* unixdgram.c */; };
+		FAFEB29A28F210550025D7D0 /* unixdgram.c in Sources */ = {isa = PBXBuildFile; fileRef = FAFEB29528F210540025D7D0 /* unixdgram.c */; };
+		FAFEB29B28F210550025D7D0 /* unixdgram.h in Headers */ = {isa = PBXBuildFile; fileRef = FAFEB29628F210550025D7D0 /* unixdgram.h */; };
+		FAFEB29C28F210550025D7D0 /* unixstream.c in Sources */ = {isa = PBXBuildFile; fileRef = FAFEB29728F210550025D7D0 /* unixstream.c */; };
+		FAFEB29D28F210550025D7D0 /* unixstream.c in Sources */ = {isa = PBXBuildFile; fileRef = FAFEB29728F210550025D7D0 /* unixstream.c */; };
+		FAFEB29E28F210550025D7D0 /* unixstream.h in Headers */ = {isa = PBXBuildFile; fileRef = FAFEB29828F210550025D7D0 /* unixstream.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1378,10 +1378,6 @@
 		217DFBCC1D9F6D490055D849 /* udp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = udp.h; sourceTree = "<group>"; };
 		217DFBCD1D9F6D490055D849 /* unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unix.c; sourceTree = "<group>"; };
 		217DFBCE1D9F6D490055D849 /* unix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unix.h; sourceTree = "<group>"; };
-		217DFBCF1D9F6D490055D849 /* unixtcp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unixtcp.c; sourceTree = "<group>"; };
-		217DFBD01D9F6D490055D849 /* unixtcp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unixtcp.h; sourceTree = "<group>"; };
-		217DFBD11D9F6D490055D849 /* unixudp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unixudp.c; sourceTree = "<group>"; };
-		217DFBD21D9F6D490055D849 /* unixudp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unixudp.h; sourceTree = "<group>"; };
 		217DFBD31D9F6D490055D849 /* url.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = url.lua; sourceTree = "<group>"; };
 		217DFBD41D9F6D490055D849 /* url.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url.lua.h; sourceTree = "<group>"; };
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
@@ -2265,6 +2261,10 @@
 		FAF6C9D823C2DE2900D7B5BC /* doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = doc.cpp; sourceTree = "<group>"; };
 		FAF6C9D923C2DE2900D7B5BC /* disassemble.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = disassemble.cpp; sourceTree = "<group>"; };
 		FAF949FD21DEE8B7001CD27E /* wrap_Event.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = wrap_Event.lua; sourceTree = "<group>"; };
+		FAFEB29528F210540025D7D0 /* unixdgram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unixdgram.c; sourceTree = "<group>"; };
+		FAFEB29628F210550025D7D0 /* unixdgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unixdgram.h; sourceTree = "<group>"; };
+		FAFEB29728F210550025D7D0 /* unixstream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unixstream.c; sourceTree = "<group>"; };
+		FAFEB29828F210550025D7D0 /* unixstream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unixstream.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2579,10 +2579,10 @@
 				217DFBCC1D9F6D490055D849 /* udp.h */,
 				217DFBCD1D9F6D490055D849 /* unix.c */,
 				217DFBCE1D9F6D490055D849 /* unix.h */,
-				217DFBCF1D9F6D490055D849 /* unixtcp.c */,
-				217DFBD01D9F6D490055D849 /* unixtcp.h */,
-				217DFBD11D9F6D490055D849 /* unixudp.c */,
-				217DFBD21D9F6D490055D849 /* unixudp.h */,
+				FAFEB29528F210540025D7D0 /* unixdgram.c */,
+				FAFEB29628F210550025D7D0 /* unixdgram.h */,
+				FAFEB29728F210550025D7D0 /* unixstream.c */,
+				FAFEB29828F210550025D7D0 /* unixstream.h */,
 				217DFBD31D9F6D490055D849 /* url.lua */,
 				217DFBD41D9F6D490055D849 /* url.lua.h */,
 				217DFBD51D9F6D490055D849 /* usocket.c */,
@@ -4019,6 +4019,7 @@
 				FAF140791E20934C00F898D2 /* iomapper.h in Headers */,
 				217DFBEA1D9F6D490055D849 /* io.h in Headers */,
 				FA0B79221A958E3B000E1D17 /* delay.h in Headers */,
+				FAFEB29E28F210550025D7D0 /* unixstream.h in Headers */,
 				FA0B79481A958E3B000E1D17 /* Vector.h in Headers */,
 				FA94728427A6EE1B00817677 /* ConnectionClient.h in Headers */,
 				FA0B7CCF1A95902C000E1D17 /* Audio.h in Headers */,
@@ -4036,7 +4037,6 @@
 				FAF6C9EA23C2DE2900D7B5BC /* GLSL.ext.NV.h in Headers */,
 				FADF54311E3DABF600012CC0 /* SpriteBatch.h in Headers */,
 				FA0B7E5F1A95902C000E1D17 /* wrap_MouseJoint.h in Headers */,
-				217DFC0C1D9F6D490055D849 /* unixtcp.h in Headers */,
 				FA76344C1E28722A0066EF9E /* StreamBuffer.h in Headers */,
 				FA6A2B761F60B6710074C308 /* ByteData.h in Headers */,
 				217DFBF31D9F6D490055D849 /* mime.h in Headers */,
@@ -4192,6 +4192,7 @@
 				FA0B791E1A958E3B000E1D17 /* config.h in Headers */,
 				FAB17BE81ABFAA9000F9BA27 /* lz4.h in Headers */,
 				FA0B7E6B1A95902C000E1D17 /* wrap_PulleyJoint.h in Headers */,
+				FAFEB29B28F210550025D7D0 /* unixdgram.h in Headers */,
 				FA0B7E051A95902C000E1D17 /* Contact.h in Headers */,
 				FA4F2BE41DE6650600CA37D7 /* Transform.h in Headers */,
 				FA0B7E0E1A95902C000E1D17 /* Fixture.h in Headers */,
@@ -4231,7 +4232,6 @@
 				FA0B7DA41A95902C000E1D17 /* PKMHandler.h in Headers */,
 				FAF6C9E423C2DE2900D7B5BC /* doc.h in Headers */,
 				FA0B7AC81A958EA3000E1D17 /* utility.h in Headers */,
-				217DFC0E1D9F6D490055D849 /* unixudp.h in Headers */,
 				FABDA9BA2552448300B5C523 /* b2_weld_joint.h in Headers */,
 				FA522D5323F9FF2A0059EE3C /* dr_mp3.h in Headers */,
 				FA0B791F1A958E3B000E1D17 /* Data.h in Headers */,
@@ -4631,7 +4631,6 @@
 				FABDAA002552448300B5C523 /* b2_time_of_impact.cpp in Sources */,
 				FAF140811E20934C00F898D2 /* parseConst.cpp in Sources */,
 				FA18CF3623DCF67900263725 /* spirv_cross_parsed_ir.cpp in Sources */,
-				FA4F2C121DE936FE00CA37D7 /* unixtcp.c in Sources */,
 				FA0B7EB91A95902C000E1D17 /* Channel.cpp in Sources */,
 				FA18CF2323DCF67900263725 /* spirv_cfg.cpp in Sources */,
 				FAE64A962071365100BC7981 /* physfs_platform_windows.c in Sources */,
@@ -4659,6 +4658,7 @@
 				FA9D53AD1F5307E900125C6B /* Deprecations.cpp in Sources */,
 				FA84DE622778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */,
 				FA0B7E431A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
+				FAFEB29D28F210550025D7D0 /* unixstream.c in Sources */,
 				FAE64A912071364800BC7981 /* physfs.c in Sources */,
 				FAE64A852071363100BC7981 /* physfs_archiver_mvl.c in Sources */,
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
@@ -4804,6 +4804,7 @@
 				FA4F2C0C1DE936ED00CA37D7 /* select.c in Sources */,
 				FA0B7D8E1A95902C000E1D17 /* ddsHandler.cpp in Sources */,
 				FA0B7DFE1A95902C000E1D17 /* ChainShape.cpp in Sources */,
+				FAFEB29A28F210550025D7D0 /* unixdgram.c in Sources */,
 				FAE64A892071363100BC7981 /* physfs_archiver_vdf.c in Sources */,
 				FA15DFB21F9B8D840042AB22 /* TheoraVideoStream.cpp in Sources */,
 				FAF1406D1E20934C00F898D2 /* InfoSink.cpp in Sources */,
@@ -4920,7 +4921,6 @@
 				FA6A2B711F5F845F0074C308 /* wrap_DataView.cpp in Sources */,
 				FA0B7EDC1A95902D000E1D17 /* Touch.cpp in Sources */,
 				FA0B7CE91A95902C000E1D17 /* Event.cpp in Sources */,
-				FA4F2C131DE936FE00CA37D7 /* unixudp.c in Sources */,
 				FABDA97D2552448200B5C523 /* b2_chain_circle_contact.cpp in Sources */,
 				FA9D8DE11DEF843D002CD881 /* Image.cpp in Sources */,
 				FAC8E54723AC832A007B07C8 /* NativeFile.cpp in Sources */,
@@ -5082,6 +5082,7 @@
 				FABDA9EB2552448300B5C523 /* b2_collide_circle.cpp in Sources */,
 				FADF53FD1E3D74F200012CC0 /* Text.cpp in Sources */,
 				FA84DE612778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */,
+				FAFEB29C28F210550025D7D0 /* unixstream.c in Sources */,
 				FA6A2B741F60B6710074C308 /* ByteData.cpp in Sources */,
 				217DFBE91D9F6D490055D849 /* io.c in Sources */,
 				FA0B7E421A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
@@ -5103,7 +5104,6 @@
 				FADF54251E3DA5BA00012CC0 /* Mesh.cpp in Sources */,
 				FA4F2BE51DE6650600CA37D7 /* wrap_Transform.cpp in Sources */,
 				FABDA9A22552448300B5C523 /* b2_friction_joint.cpp in Sources */,
-				217DFC0D1D9F6D490055D849 /* unixudp.c in Sources */,
 				FA0B7CDC1A95902C000E1D17 /* Source.cpp in Sources */,
 				FA6BDF89280B62A000240F2A /* GraphicsReadback.mm in Sources */,
 				FA0B7DC41A95902C000E1D17 /* wrap_JoystickModule.cpp in Sources */,
@@ -5228,6 +5228,7 @@
 				FA84DE6C277943F6002674C6 /* GraphicsReadback.cpp in Sources */,
 				FA4F2B791DE0125B00CA37D7 /* xxhash.c in Sources */,
 				FA0B7E361A95902C000E1D17 /* WheelJoint.cpp in Sources */,
+				FAFEB29928F210550025D7D0 /* unixdgram.c in Sources */,
 				FADF542F1E3DABF600012CC0 /* SpriteBatch.cpp in Sources */,
 				FA0B7D8D1A95902C000E1D17 /* ddsHandler.cpp in Sources */,
 				FAAA3FD91F64B3AD00F89E99 /* lstrlib.c in Sources */,
@@ -5351,7 +5352,6 @@
 				FACA02EC1F5E396B0084B28F /* CompressedData.cpp in Sources */,
 				FAF140531E20934C00F898D2 /* CodeGen.cpp in Sources */,
 				FA27B3B31B498151008A9DCE /* wrap_Video.cpp in Sources */,
-				217DFC0B1D9F6D490055D849 /* unixtcp.c in Sources */,
 				FAF140881E20934C00F898D2 /* PoolAlloc.cpp in Sources */,
 				FA0B7DEE1A95902C000E1D17 /* Mouse.cpp in Sources */,
 				FAAC2F79251A9D2200BCB81B /* apple.mm in Sources */,
