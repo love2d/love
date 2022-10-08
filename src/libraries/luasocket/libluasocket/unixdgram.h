@@ -1,13 +1,13 @@
-#ifndef UNIXUDP_H
-#define UNIXUDP_H
+#ifndef UNIXDGRAM_H
+#define UNIXDGRAM_H
 /*=========================================================================*\
-* UDP object
+* DGRAM object
 * LuaSocket toolkit
 *
-* The udp.h module provides LuaSocket with support for UDP protocol
+* The dgram.h module provides LuaSocket with support for DGRAM protocol
 * (AF_INET, SOCK_DGRAM).
 *
-* Two classes are defined: connected and unconnected. UDP objects are
+* Two classes are defined: connected and unconnected. DGRAM objects are
 * originally unconnected. They can be "connected" to a given address
 * with a call to the setpeername function. The same function can be used to
 * break the connection.
@@ -15,6 +15,14 @@
 
 #include "unix.h"
 
-int unixudp_open(lua_State *L);
+#ifndef _WIN32
+#pragma GCC visibility push(hidden)
+#endif
 
-#endif /* UNIXUDP_H */
+int unixdgram_open(lua_State *L);
+
+#ifndef _WIN32
+#pragma GCC visibility pop
+#endif
+
+#endif /* UNIXDGRAM_H */

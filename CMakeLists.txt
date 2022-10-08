@@ -1500,10 +1500,10 @@ else()
 		src/libraries/luasocket/libluasocket/serial.c
 		src/libraries/luasocket/libluasocket/unix.c
 		src/libraries/luasocket/libluasocket/unix.h
-		src/libraries/luasocket/libluasocket/unixtcp.c
-		src/libraries/luasocket/libluasocket/unixtcp.h
-		src/libraries/luasocket/libluasocket/unixudp.c
-		src/libraries/luasocket/libluasocket/unixudp.h
+		src/libraries/luasocket/libluasocket/unixdgram.c
+		src/libraries/luasocket/libluasocket/unixdgram.h
+		src/libraries/luasocket/libluasocket/unixstream.c
+		src/libraries/luasocket/libluasocket/unixstream.h
 		src/libraries/luasocket/libluasocket/usocket.c
 		src/libraries/luasocket/libluasocket/usocket.h
 	)
