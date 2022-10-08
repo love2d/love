@@ -38,15 +38,6 @@ extern "C" {
 #include "libluasocket/tp.lua.h"
 #include "libluasocket/url.lua.h"
 
-// Quick macro for adding functions to 
-// the preloder.
-#define PRELOAD(name, function) \
-	lua_getglobal(L, "package"); \
-	lua_getfield(L, -1, "preload"); \
-	lua_pushcfunction(L, function); \
-	lua_setfield(L, -2, name); \
-	lua_pop(L, 2);	
-
 static void preload(lua_State* L, const char* name, lua_CFunction func)
 {
 	lua_getglobal(L, "package");
@@ -88,7 +79,7 @@ namespace love
 namespace luasocket
 {
 
-int __open(lua_State * L)
+int preload(lua_State * L)
 {
 
 	// Preload code from LuaSocket.

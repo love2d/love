@@ -29,7 +29,7 @@ namespace love
 namespace luasocket
 {
 
-int __open(lua_State * L);
+int preload(lua_State * L);
 
 } // luasocket
 } // love
