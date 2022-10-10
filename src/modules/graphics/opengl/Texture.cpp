@@ -369,11 +369,8 @@ bool Texture::loadVolatile()
 	if (isReadable())
 		createTexture();
 
-	if (!usingDefaultTexture && framebufferStatus == GL_FRAMEBUFFER_COMPLETE
-		&& (!isReadable() || actualSamples > 1))
-	{
+	if (framebufferStatus == GL_FRAMEBUFFER_COMPLETE && (!isReadable() || actualSamples > 1))
 		framebufferStatus = newRenderbuffer(pixelWidth, pixelHeight, actualSamples, format, renderbuffer);
-	}
 
 	textureGLError = glGetError();
 
@@ -403,7 +400,6 @@ bool Texture::loadVolatile()
 
 	setGraphicsMemorySize(memsize);
 
-	usingDefaultTexture = false;
 	return true;
 }
 
@@ -573,13 +569,6 @@ void Texture::setSamplerState(const SamplerState &s)
 
 		if (samplerState.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
 			samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NEAREST;
-	}
-
-	// We don't want filtering or (attempted) mipmaps on the default texture.
-	if (usingDefaultTexture)
-	{
-		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
-		samplerState.minFilter = samplerState.magFilter = SamplerState::FILTER_NEAREST;
 	}
 
 	// If we only have limited NPOT support then the wrap mode must be CLAMP.
