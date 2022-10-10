@@ -139,6 +139,9 @@ void Shader::mapActiveUniforms()
 		if (u.location == -1)
 			continue;
 
+		if (!fillUniformReflectionData(u))
+			continue;;
+
 		if ((u.baseType == UNIFORM_SAMPLER && builtin != BUILTIN_TEXTURE_MAIN) || u.baseType == UNIFORM_TEXELBUFFER)
 		{
 			TextureUnit unit;
@@ -161,19 +164,6 @@ void Shader::mapActiveUniforms()
 		}
 		else if (u.baseType == UNIFORM_STORAGETEXTURE)
 		{
-			const auto reflectionit = validationReflection.storageTextures.find(u.name);
-			if (reflectionit != validationReflection.storageTextures.end())
-			{
-				u.storageTextureFormat = reflectionit->second.format;
-				u.access = reflectionit->second.access;
-			}
-			else
-			{
-				// No reflection info - maybe glslang was better at detecting
-				// dead code than the driver's compiler?
-				continue;
-			}
-
 			StorageTextureBinding binding = {};
 			binding.gltexture = gl.getDefaultTexture(u.textureType, u.dataBaseType);
 			binding.type = u.textureType;
@@ -373,19 +363,8 @@ void Shader::mapActiveUniforms()
 			u.name = std::string(namebuffer, namelength);
 			u.count = 1;
 
-			const auto reflectionit = validationReflection.storageBuffers.find(u.name);
-			if (reflectionit != validationReflection.storageBuffers.end())
-			{
-				u.bufferStride = reflectionit->second.stride;
-				u.bufferMemberCount = reflectionit->second.memberCount;
-				u.access = reflectionit->second.access;
-			}
-			else
-			{
-				// No reflection info - maybe glslang was better at detecting
-				// dead code than the driver's compiler?
+			if (!fillUniformReflectionData(u))
 				continue;
-			}
 
 			// Make sure previously set uniform data is preserved, and shader-
 			// initialized values are retrieved.

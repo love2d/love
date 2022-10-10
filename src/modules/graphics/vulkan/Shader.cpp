@@ -872,18 +872,11 @@ void Shader::compileShaders()
 			u.components = 1;
 			u.name = r.name;
 			u.count = type.array.empty() ? 1 : type.array[0];
-			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
-			
-			const auto reflectionit = validationReflection.storageBuffers.find(u.name);
-			if (reflectionit != validationReflection.storageBuffers.end())
-			{
-				u.bufferStride = reflectionit->second.stride;
-				u.bufferMemberCount = reflectionit->second.memberCount;
-				u.access = reflectionit->second.access;
-			}
-			else
+
+			if (!fillUniformReflectionData(u))
 				continue;
 
+			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
 			u.buffers = new love::graphics::Buffer *[u.count];
 
 			for (int i = 0; i < u.count; i++)
@@ -901,6 +894,10 @@ void Shader::compileShaders()
 			u.components = 1;
 			u.name = r.name;
 			u.count = type.array.empty() ? 1 : type.array[0];
+
+			if (!fillUniformReflectionData(u))
+				continue;
+
 			u.textures = new love::graphics::Texture *[u.count];
 			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
 
@@ -913,12 +910,14 @@ void Shader::compileShaders()
 		}
 
 		if (shaderStage == SHADERSTAGE_VERTEX)
+		{
 			for (const auto &r : shaderResources.stage_inputs)
 			{
 				const auto &name = r.name;
 				const int attributeLocation = static_cast<int>(comp.get_decoration(r.id, spv::DecorationLocation));
 				attributes[name] = attributeLocation;
 			}
+		}
 	}
 
 	delete program;

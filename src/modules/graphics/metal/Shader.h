@@ -43,6 +43,7 @@ namespace spirv_cross
 {
 class CompilerMSL;
 struct SPIRType;
+struct Resource;
 }
 
 namespace love
@@ -86,6 +87,7 @@ public:
 		Texture *samplerTexture;
 
 		bool isMainTexture;
+		Access access;
 
 		uint8 textureStages[SHADERSTAGE_MAX_ENUM];
 		uint8 samplerStages[SHADERSTAGE_MAX_ENUM];
@@ -95,6 +97,7 @@ public:
 	{
 		id<MTLBuffer> buffer;
 		uint8 stages[SHADERSTAGE_MAX_ENUM];
+		Access access;
 	};
 
 	Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
@@ -137,6 +140,7 @@ private:
 	};
 
 	void buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename);
+	void addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Resource &resource, UniformType baseType);
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
 
 	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
